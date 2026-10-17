@@ -39,7 +39,14 @@ A widget's own contact remains a notification destination without becoming a
 proven inbound identity. Automatic notices resolve the canonical address, never
 a Reply-To or collector preference. `provided_email_source` records `reply_to`,
 `widget` or `operator`; only an `operator` preference can override the canonical
-address. Unmarked historical preferences cannot override it. Signed business
+address. Unchanged profile resubmissions preserve the source; real changes require
+a valid mailbox and record the user or scoped API credential and timestamp. An
+unusable operator preference fails closed, never falling back to the canonical
+mailbox. Widget ownership uses the original channel, including after email replies.
+A committed inbound receipt with a consumed grant proves its exact current canonical
+mailbox on the resulting ticket, including a Closed-ticket follow-up; issuing a
+grant alone proves nothing. The recipient claim rechecks that receipt evidence.
+Unmarked historical preferences cannot override the canonical address. Signed business
 metadata cannot introduce or replace that provenance. Operator replies keep their
 existing preference behavior. All recipients are deduplicated by address. The claim
 freezes the recipient set before the provider batch; a claimed/uncertain result

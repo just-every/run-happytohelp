@@ -141,6 +141,16 @@ async function noticeAddresses(m,call,notices,settle){
  const id=await send(requester,victim)
  assert.equal(notices('Re: Address provenance',requester).length,1)
  assert.equal(notices('Re: Address provenance',victim).length,0)
+ // Old clients resubmit the full profile. A phone edit, including normalized
+ // unchanged aliases, never turns a Reply-To into an operator choice.
+ const profilePath=`${base}/contacts/${(await DB.prepare('SELECT contact_id FROM conversations WHERE id=?').bind(id).first()).contact_id}`
+ const profile=(await call(profilePath,undefined,'GET')).data
+ await call(profilePath,{...profile,...JSON.parse(profile.metadata_json),provided_email:` ${victim.toUpperCase()} `,phone:'+1 555 0100'})
+ assert.equal(JSON.parse((await call(profilePath,undefined,'GET')).data.metadata_json).provided_email_source,'reply_to')
+ for(const path of [profilePath,profilePath.replace('/management/','/dashboard/')]){
+  const rejected=await app.call(path,{method:'PUT',headers:m.operator,body:{provided_email:'phone only please'}})
+  assert.equal(rejected.status,400);assert.match(JSON.stringify(rejected.data),/provided_email/)
+ }
  await call(ticket(id),{resolved:true});await settle()
  assert.equal(notices('solved',requester).length,1);assert.equal(notices('solved',victim).length,0)
  const cc=Array.from({length:5},(_,i)=>`proven-${i}@example.com`)
@@ -161,6 +171,10 @@ async function noticeAddresses(m,call,notices,settle){
  const session=await app.call('/api/identity/widget/session',{body:{widgetKey:'w',identifier:address,email:address,contact_hash:createHmac('sha256',secret).update(address).digest('hex')},headers:{Origin:'https://example.com'},status:201})
  const widget=await app.call('/api/conversations',{token:session.data.token,body:{projectId:'p'},status:201})
  await app.call(`/api/conversations/${widget.data.id}/widget-events`,{token:session.data.token,body:{action:'contact',data:{provided_email:typed}},status:200})
+ await call(`${base}/contacts/${session.data.contactId}`,{provided_email:typed,phone:'+1 555 0101'})
+ assert.equal(JSON.parse((await DB.prepare('SELECT metadata_json FROM contacts WHERE id=?').bind(session.data.contactId).first()).metadata_json).provided_email_source,'widget')
+ const invalidWidget=await app.call(`/api/conversations/${widget.data.id}/widget-events`,{token:session.data.token,body:{action:'contact',data:{provided_email:'not a mailbox'}}})
+ assert.equal(invalidWidget.status,400);assert.match(JSON.stringify(invalidWidget.data),/provided_email/)
  await app.call(`/api/conversations/${widget.data.id}/messages`,{token:session.data.token,body:{localId:'signed-widget-notice',content:'My own widget ticket',expectedRevision:0},status:200});await settle()
  assert.equal(notices('Re: My own widget ticket',address).length,1)
  assert.equal(notices('Re: My own widget ticket',typed).length,0)
@@ -172,7 +186,12 @@ async function noticeAddresses(m,call,notices,settle){
  // An operator explicitly choosing a preferred address makes that address usable.
  const operatorTicket=await send('operator-source@example.com','unproven-before@example.net')
  const contact=(await DB.prepare('SELECT contact_id FROM conversations WHERE id=?').bind(operatorTicket).first()).contact_id
+ const chosenAt=Date.now()
  await call(`${base}/contacts/${contact}`,{provided_email:'chosen-by-operator@example.net'})
+ const chosen=JSON.parse((await DB.prepare('SELECT metadata_json FROM contacts WHERE id=?').bind(contact).first()).metadata_json)
+ assert.deepEqual(chosen.provided_email_set_by,{type:'user',id:'op'});assert.ok(chosen.provided_email_set_at>=chosenAt)
+ await call(`${base}/contacts/${contact}`,{provided_email:' CHOSEN-BY-OPERATOR@example.net ',phone:'+1 555 0102'})
+ assert.deepEqual(JSON.parse((await DB.prepare('SELECT metadata_json FROM contacts WHERE id=?').bind(contact).first()).metadata_json),{...chosen,phone:'+1 555 0102'})
  await call(ticket(operatorTicket),{resolved:true});await settle()
  assert.equal(notices('solved','chosen-by-operator@example.net').length,1)
  assert.equal(notices('solved','operator-source@example.com').length,0)
@@ -183,4 +202,32 @@ async function noticeAddresses(m,call,notices,settle){
  await call(ticket(old),{resolved:true});await settle()
  assert.equal(notices('solved','historical-preference@example.com').length,1)
  assert.equal(notices('solved','unknown-victim@example.net').length,0)
+ // A historical invalid operator preference must not fall through to a Cc
+ // address that nobody proved, even though the old source says operator.
+ const legacyCc='invalid-preference-cc@example.net'
+ const invalidTicket=await send('invalid-preference-sender@example.com',undefined,[legacyCc])
+ await DB.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.provided_email','phone only please','$.provided_email_source','operator') WHERE email=?").bind(legacyCc).run()
+ await call(ticket(invalidTicket),{resolved:true});await settle()
+ assert.equal(notices('solved',legacyCc).length,0)
+ // A widget's origin survives email replies; an actual consumed grant also
+ // proves its exact mailbox on a new email ticket after Closed.
+ for(const closed of [false,true]){
+  const email=`widget-grant-${closed}@example.net`,s=await app.call('/api/identity/widget/session',{body:{widgetKey:'w',email},headers:{Origin:'https://example.com'},status:201})
+  const w=(await app.call('/api/conversations',{token:s.data.token,body:{projectId:'p'},status:201})).data
+  await app.call(`/api/conversations/${w.id}/messages`,{token:s.data.token,body:{localId:'grant-widget-request',content:'Grant widget request',expectedRevision:0},status:200});await settle()
+  const grant=await m.replyAddress(w.id,email)
+  if(closed){const current=(await call(ticket(w.id)+'/ticket',undefined,'GET')).data;await call(ticket(w.id)+'/ticket',{expected_version:current.ticket_version,status_id:'closed'},'PATCH')}
+  const form=new FormData(),messageId=`widget-grant-${closed}@example.net`
+  for(const [key,value] of Object.entries({from:email,to:grant,subject:'My email follow-up',text:'My email follow-up',SPF:'none',envelope:JSON.stringify({from:email,to:[grant]}),headers:`Message-ID: <${messageId}>\r\nFrom: ${email}\r\nTo: ${grant}`}))form.set(key,value)
+  const encoded=new Request('https://sendgrid.example',{method:'POST',body:form})
+  const inbound=await app.request('/api/integrations/email/sendgrid/inbound',{method:'POST',raw:true,headers:{Authorization:'Bearer fixture-gateway','Content-Type':encoded.headers.get('Content-Type')},body:await encoded.arrayBuffer()})
+  assert.equal(inbound.status,201);await settle()
+  const receipt=await m.claim(messageId),proof=JSON.parse(receipt.evidence_json)
+  assert.equal(proof.sender_verified,false);assert.equal(proof.grant.recipient,email)
+  if(closed){assert.notEqual(receipt.conversation_id,w.id);assert.equal(notices('Re: My email follow-up',email).length,1)}
+  else assert.equal((await DB.prepare('SELECT channel FROM conversations WHERE id=?').bind(w.id).first()).channel,'widget')
+  const solvedBefore=notices('solved',email).length
+  await call(ticket(receipt.conversation_id),{resolved:true});await settle();await settle()
+  assert.equal(notices('solved',email).length-solvedBefore,1)
+ }
 }

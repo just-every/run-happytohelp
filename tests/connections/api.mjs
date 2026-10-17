@@ -176,6 +176,17 @@ test('malformed JSON is a client error and denied scope attempts consume the tok
  const h=await harness();try{
   const full=await h.issue(),read=await h.issue(['contacts:read']);const bad=await h.raw('/api/v1/contacts',{token:full.token,method:'POST',headers:{'Content-Type':'application/json'},body:'{'});assert.equal(bad.status,400);assert.equal((await bad.json()).error.code,'invalid_request');
   assert.equal((await h.raw('/api/v1/articles',{token:read.token})).status,403);
+  await h.contact();const contactPath='/api/v1/contacts/visitor';
+  await h.db.prepare("UPDATE contacts SET metadata_json=? WHERE id='visitor'").bind(JSON.stringify({provided_email:'reply-target@example.test',provided_email_source:'reply_to'})).run();
+  for(const provided_email of ['phone only please','a@example.test, b@example.test','a@example.test\r\nBcc: b@example.test',{},'a'.repeat(255)+'@example.test']){
+   const rejected=await h.raw(contactPath,{token:full.token,...body({provided_email}),method:'PUT'});
+   assert.equal(rejected.status,400);assert.match((await rejected.json()).error.message,/provided_email/);
+  }
+  const unchanged=await h.call(contactPath,{token:full.token,...body({provided_email:' REPLY-TARGET@example.test ',phone:'555 0100'}),method:'PUT'});
+  assert.equal(JSON.parse(unchanged.data.metadata_json).provided_email_source,'reply_to');
+  const beforeChoice=Date.now(),chosen=await h.call(contactPath,{token:full.token,...body({provided_email:'chosen@example.test'}),method:'PUT'}),flags=JSON.parse(chosen.data.metadata_json);
+  assert.equal(flags.provided_email_source,'operator');assert.deepEqual(flags.provided_email_set_by,{type:'api',id:full.data.id});assert.ok(flags.provided_email_set_at>=beforeChoice);
+  const readOnly=await h.raw(contactPath,{token:(await h.issue(['contacts:read'])).token,...body({provided_email:'forbidden@example.test'}),method:'PUT'});assert.equal(readOnly.status,403);
   const key='rate:apiRequestsPerTokenMinute:'+sha(read.data.id),row=await h.db.prepare('SELECT used FROM abuse_counters WHERE key=?').bind(key).first();assert.equal(row.used,1);
   await h.db.prepare('UPDATE abuse_counters SET used=120 WHERE key=?').bind(key).run();assert.equal((await h.raw('/api/v1/articles',{token:read.token})).status,429);
  }finally{await h.close()}

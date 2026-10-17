@@ -6,6 +6,7 @@ import {recipientReplyAddress} from '../email-reply-address'
 import {customerNoticeAddress,notificationRecipients,type NotificationContact} from '../notification-recipients'
 import {provenAddressSql} from '../inbound-authority'
 import {noticeParticipantSql} from '../participant-proof'
+import {consumedReplyGrantSql} from '../notice-address-proof'
 import type {TicketNotificationEvent} from '../triggers'
 import {notificationTicket,notificationTicketSql} from './eligibility'
 import {defaultTriggers,renderNotificationTemplate} from './templates'
@@ -30,12 +31,12 @@ export async function customerTicketNotification(env:Env,event:TicketNotificatio
  if(settings?.is_enabled===0)return {state:'disabled'}
  // An operator-set preference proves that address, never a Reply-To or collector.
  const operatorAddress=(ct:string)=>`json_extract(${ct}.metadata_json,'$.provided_email_source')='operator' AND nullif(trim(json_extract(${ct}.metadata_json,'$.provided_email')),'') IS NOT NULL`
- const participant=(ct:string)=>`((${provenAddressSql(ct)} AND ${noticeParticipantSql(ct,'cp')}) OR (${operatorAddress(ct)}))`
- const contacts=await env.DB.prepare(`SELECT ct.* FROM contacts ct WHERE ct.project_id=? AND (ct.id=? OR (
+ const participant=(ct:string)=>`(((${provenAddressSql(ct)} OR ${consumedReplyGrantSql(ct,'cp.conversation_id')}) AND ${noticeParticipantSql(ct,'cp')}) OR (${operatorAddress(ct)}))`
+ const contacts=await env.DB.prepare(`SELECT ct.*,${consumedReplyGrantSql('ct','?')} notice_grant_proven FROM contacts ct WHERE ct.project_id=? AND (ct.id=? OR (
  coalesce(json_extract(ct.metadata_json,'$.unverified_sender'),0)!=1
  AND EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=? AND cp.contact_id=ct.id AND ${participant('ct')}))) ORDER BY ct.id=? DESC,ct.id`)
- .bind(event.projectId,ticket.contact_id,ticket.id,ticket.contact_id).all<NotificationContact>()
- const {recipients}=notificationRecipients(contacts.results,undefined,undefined,contact=>customerNoticeAddress(contact,ticket.notification_channel==='widget'?ticket.contact_id:undefined))
+ .bind(ticket.id,event.projectId,ticket.contact_id,ticket.id,ticket.contact_id).all<NotificationContact>()
+ const {recipients}=notificationRecipients(contacts.results,undefined,undefined,contact=>customerNoticeAddress(contact,ticket.channel==='widget'?ticket.contact_id:undefined))
  if(!recipients.length)return {state:'no_recipient'}
  const context=await notificationTemplateContext(env,ticket,{expectedReplyTime:event.expectedReplyTime??trigger.expected_reply_time,actorId:event.actorId})
  let inputs:EmailInput[]
@@ -55,8 +56,9 @@ export async function customerTicketNotification(env:Env,event:TicketNotificatio
  WHERE current.id=json_extract(j.value,'$.id') AND current.project_id=? AND current.email IS json_extract(j.value,'$.email')
  AND current.metadata_json IS json_extract(j.value,'$.metadata_json')
  AND current.is_verified IS json_extract(j.value,'$.is_verified') AND current.external_id IS json_extract(j.value,'$.external_id')
+ AND (json_extract(j.value,'$.notice_grant_proven')!=1 OR ${consumedReplyGrantSql('current','?')})
  AND (current.id=? OR EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=? AND cp.contact_id=current.id AND ${participant('current')}))))`)
- .bind(id,event.projectId,ticket.id,claimEvent,JSON.stringify({recipients:recipients.map(r=>r.email)}),Date.now(),ticket.id,event.projectId,JSON.stringify(snapshot),event.projectId,ticket.contact_id,ticket.id).run()
+ .bind(id,event.projectId,ticket.id,claimEvent,JSON.stringify({recipients:recipients.map(r=>r.email)}),Date.now(),ticket.id,event.projectId,JSON.stringify(snapshot),event.projectId,ticket.id,ticket.contact_id,ticket.id).run()
  if(!claim.meta.changes)return {state:'claimed'}
  try{
   const outcomes=await sendEmails(env,inputs)

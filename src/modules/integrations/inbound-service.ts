@@ -104,17 +104,15 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
   let conversation:any=null,actor:Actor|null=null
   // An unauthenticated From naming a widget-verified customer, or one the provider
   // reported as failing, may be forged: it never writes as that customer or into
-  // their threads, only into its own conversation flagged as an unverified sender.
+  // their threads. Such mail stays in Suspended until an operator reviews it.
   // Mail with no usable From has no author to authenticate: only the reply address
   // issued to its envelope sender admits it to that thread; otherwise it is kept
-  // apart the same way, and no reply is sent to anybody until an operator chooses.
+  // in Suspended, and no reply is sent to anybody until an operator chooses.
   const rule=await senderRule(env,project.project_id,from)
   const blocked=await env.DB.prepare("SELECT 1 FROM contacts WHERE project_id=? AND lower(email)=? AND (coalesce(json_extract(metadata_json,'$.is_blocked'),0)=1 OR coalesce(json_extract(metadata_json,'$.is_erased'),0)=1 OR coalesce(json_extract(metadata_json,'$.is_deleted'),0)=1)").bind(project.project_id,from).first()
   const spam=input.evidence?.headers['x-spam-flag']==='YES'||Number(input.evidence?.headers['x-spam-score']||0)>=5
   const isolated=!trusted
   const selfLoop=from===target.mailbox||from===project.from_address
-  const suspensionReason=rule?.action==='block'||blocked?'blocked_sender':selfLoop?'mail_loop':threadConflict&&!recovering?'conflicting_thread_keys':thread.unrecognizedToken&&!recovering?'unmatched_thread_key':isolated?(unusable?'unusable_from':input.senderFailed?'authentication_failed':'sender_unproven'):spam&&!recovering&&rule?.action!=='allow'?'spam':null
-  if(suspensionReason)return suspendEmail(env,input,{projectId:project.project_id,receiptId:recordId,claimToken,reason:suspensionReason,candidateId:addressed})
   const addressedConversation=addressed?await env.DB.prepare('SELECT * FROM conversations WHERE id=? AND project_id=?').bind(addressed,project.project_id).first<any>():null
   // A Closed ticket is final. A workspace member's mail to it is refused, with a bounce or
   // a notice; it is never stored, and never filed under a contact made from their address.
@@ -122,6 +120,8 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
    await env.DB.prepare("UPDATE inbound_emails SET state='ignored',error=?,conversation_id=? WHERE id=? AND claim_token=?").bind(CLOSED_TICKET_FINAL,addressedConversation.id,recordId,claimToken).run()
    throw refusal(addressedConversation)
   }
+  const suspensionReason=rule?.action==='block'||blocked?'blocked_sender':selfLoop?'mail_loop':threadConflict&&!recovering?'conflicting_thread_keys':thread.unrecognizedToken&&!recovering?'unmatched_thread_key':isolated?(unusable?'unusable_from':input.senderFailed?'authentication_failed':'sender_unproven'):spam&&!recovering&&rule?.action!=='allow'?'spam':null
+  if(suspensionReason)return suspendEmail(env,input,{projectId:project.project_id,receiptId:recordId,claimToken,reason:suspensionReason,candidateId:addressed})
   if(addressedConversation&&!isolated&&(trusted||!grant)){
    actor=await emailActor(env,project.project_id,addressedConversation,from,trusted,possessed)||(possessed?await preferredAddressActor(env,project.project_id,addressedConversation,from):null)
    if(actor)conversation=addressedConversation

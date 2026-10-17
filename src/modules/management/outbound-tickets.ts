@@ -20,7 +20,7 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
    const note=await logOutboundCall(c.env,actor,sessionHash,reservation.conversationId,input.content)
    return c.json({accepted:true,duplicate:reservation.duplicate,conversation,note},reservation.duplicate?200:201)
   }
-  const result=await admitMessage(c.env,{projectId:actor.projectId,conversationId:reservation.conversationId,actor,sessionHash,localId:input.localId,content:input.content,expectedRevision:0,expectedLastMessageId:null})
+  const result=await admitMessage(c.env,{requireAvailableRequester:true,projectId:actor.projectId,conversationId:reservation.conversationId,actor,sessionHash,localId:input.localId,content:input.content,expectedRevision:0,expectedLastMessageId:null})
   if(!result.accepted)return c.json({...result,conversation},409)
   let generationError:string|undefined
   if(!result.duplicate){

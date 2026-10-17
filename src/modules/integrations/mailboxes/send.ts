@@ -7,6 +7,7 @@ import {base64,base64url,bearer,providerJson,providerBytes,MailboxProviderError}
 import {buildMime,recipients} from './mime'
 import {smtpSend} from './socket'
 import type {ImapCredential,MailboxSendInput} from './types'
+import {auditStatement} from '../../audit/record'
 
 /** Shared sender identity/signatures for forwarding mail sent by the installation
  * adapter. The caller must still validate its verified sender-domain policy. */
@@ -38,9 +39,10 @@ export async function sendViaMailbox(env:Env,input:MailboxSendInput):Promise<{id
   throw new HTTPException(409,{message:`Mailbox delivery ${prior.state}; reconcile before retrying`})
  }
  const raw=buildMime(expanded,sender.fromAddress,sender.displayName,row.provider!=='imap'),r=recipients(input),now=Date.now()
- const claim=await env.DB.prepare(`INSERT OR IGNORE INTO mailbox_sends(id,project_id,mailbox_id,intent_hash,state,created_at,updated_at)
+ const claimed=await env.DB.batch([env.DB.prepare(`INSERT OR IGNORE INTO mailbox_sends(id,project_id,mailbox_id,intent_hash,state,created_at,updated_at)
  SELECT ?,?,?,?,'sending',?,? WHERE EXISTS(SELECT 1 FROM mailbox_connections WHERE id=? AND project_id=? AND status='connected' AND credential_version=?)`)
- .bind(input.idempotencyKey,input.projectId,row.id,intent,now,now,row.id,input.projectId,row.credential_version).run()
+ .bind(input.idempotencyKey,input.projectId,row.id,intent,now,now,row.id,input.projectId,row.credential_version),auditStatement(env.DB,{projectId:input.projectId,category:'integration',action:'mailbox.send_started',actor:input.agentId?{type:'user',id:input.agentId}:{type:'system'},source:input.agentId?'dashboard':'system',target:{type:'mailbox_delivery',id:input.idempotencyKey}})])
+ const claim=claimed[0]
  if(!claim.meta.changes)throw new HTTPException(409,{message:'Mailbox send already claimed or connection changed'})
  try{
   let providerId:string|null=null
@@ -55,11 +57,11 @@ export async function sendViaMailbox(env:Env,input:MailboxSendInput):Promise<{id
     providerId=receipt.id
    }else {const receipt=await providerBytes('https://graph.microsoft.com/v1.0/me/sendMail',{method:'POST',headers:{...bearer(token),'Content-Type':'text/plain'},body:base64(raw)},65536);if(receipt.status!==202)throw new Error('Microsoft did not confirm acceptance')}
   }
-  await env.DB.prepare("UPDATE mailbox_sends SET state='sent',provider_id=?,updated_at=? WHERE id=? AND state='sending'").bind(providerId,Date.now(),input.idempotencyKey).run()
+  await env.DB.batch([env.DB.prepare("UPDATE mailbox_sends SET state='sent',provider_id=?,updated_at=? WHERE id=? AND state='sending'").bind(providerId,Date.now(),input.idempotencyKey),auditStatement(env.DB,{projectId:input.projectId,category:'integration',action:'mailbox.send_accepted',actor:{type:'system'},source:'system',target:{type:'mailbox_delivery',id:input.idempotencyKey}})])
   return {id:providerId,state:'sent'}
  }catch(error){
   const definitive=error instanceof MailboxProviderError&&error.status>=400&&error.status<500&&error.status!==408
-  await env.DB.prepare('UPDATE mailbox_sends SET state=?,error_code=?,updated_at=? WHERE id=? AND state=\'sending\'').bind(definitive?'failed':'uncertain',definitive?`provider_${error.status}`:'outcome_unknown',Date.now(),input.idempotencyKey).run()
+  await env.DB.batch([env.DB.prepare('UPDATE mailbox_sends SET state=?,error_code=?,updated_at=? WHERE id=? AND state=\'sending\'').bind(definitive?'failed':'uncertain',definitive?`provider_${error.status}`:'outcome_unknown',Date.now(),input.idempotencyKey),auditStatement(env.DB,{projectId:input.projectId,category:'integration',action:definitive?'mailbox.send_rejected':'mailbox.send_uncertain',outcome:'failed',actor:{type:'system'},source:'system',target:{type:'mailbox_delivery',id:input.idempotencyKey}})])
   throw new HTTPException(502,{message:definitive?'Mailbox provider rejected delivery':'Mailbox delivery outcome unknown; reconcile before retrying'})
  }
 }

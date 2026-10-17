@@ -23,6 +23,7 @@ export async function installedJourney(){
   const origin=`http://127.0.0.1:${await freePort()}`
   const owner=await call('/api/identity/bootstrap',{password:'synthetic-test-setup-password-123',name:'Widget runtime proof',email:'widget-runtime@example.test',allowedOrigin:origin})
   const project=await call(`/api/identity/projects/${owner.projectId}`,undefined,owner.token)
+  await call(`/api/forms/projects/${owner.projectId}/forms`,{title:'Order question',locale:'en',enabled:true,fields:[]},owner.token)
   assert.equal((await call(`/api/widget/legacy-project?projectId=${encodeURIComponent(owner.projectId)}`,undefined,undefined,{Origin:origin})).widgetKey,project.widget_key)
   assert.equal((await fetch(`${runtime.origin}/api/widget/legacy-project?projectId=${owner.projectId}`,{headers:{Origin:'https://untrusted.example'}})).status,403)
   assert.equal((await fetch(`${runtime.origin}/api/widget/legacy-project?projectId=unknown`,{headers:{Origin:origin}})).status,403)

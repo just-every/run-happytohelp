@@ -111,6 +111,16 @@
     {
       "binding": "MAILBOX_IMAP_AUTHSERV",
       "environment": "MAILBOX_IMAP_AUTHSERV"
+    },
+    {
+      "binding": "FORMS_TURNSTILE_SITE_KEY",
+      "environment": "FORMS_TURNSTILE_SITE_KEY",
+      "optional": true
+    },
+    {
+      "binding": "FORMS_TURNSTILE_SECRET_KEY",
+      "environment": "FORMS_TURNSTILE_SECRET_KEY",
+      "optional": true
     }
   ]
 }

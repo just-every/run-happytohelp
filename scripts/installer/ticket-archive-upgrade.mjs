@@ -15,7 +15,8 @@ export async function ticketArchivePolicy(root,input,excludedMigrations=name=>/^
  try{
   // v0.4.2, the last pre-ticket release, ends at 190; every later migration
   // (191's ticket_history index onward) only ever runs after the ticket model.
-  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!excludedMigrations(name)).sort();
+  // R7b's reserved 172/173 numbers also landed after that release.
+  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!excludedMigrations(name)&&!/^17[23]_/.test(name)).sort();
   const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))));
   for(let index=0;index<plan.length;index++){
    for(const sql of plan[index])scratch.exec(sql);

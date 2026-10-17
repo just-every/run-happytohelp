@@ -42,8 +42,8 @@ customer flow. See [Customer portal](customer-portal.md) for sign-in and replies
 
 Visitors first verify their email through the portal sign-in link. A bot check is
 required for anonymous submissions. A verified customer session lets a signed-in
-customer submit without another bot check. The
-installation needs both `FORMS_TURNSTILE_SITE_KEY` and the private
+customer submit without Turnstile, even when the installation has no Turnstile
+keys. Anonymous submissions need both `FORMS_TURNSTILE_SITE_KEY` and the private
 `FORMS_TURNSTILE_SECRET_KEY`, as well as working outbound email. Without either
 Turnstile key, or when verification cannot be completed, anonymous requests are
 refused; there is no bypass. Request and message rate limits also apply.
@@ -64,9 +64,12 @@ choice values, required flags, conditions, validation and available locales.
 
 Submit with `POST /api/forms/:projectId/:formId/submissions`. The request has
 `subject`, `message`, `fields` keyed by ticket-field ID, and a unique `localId`.
-Anonymous requests supply `turnstileToken` from the bot check. Signed-in submissions
-use the portal cookie established by email verification. Without that verified session, the API returns
-`email_verification_required`; it does not accept an email address as proof.
+Anonymous requests supply `turnstileToken` from the bot check, but a successful
+bot check alone does not create a request: the customer must still verify their
+email. Signed-in submissions use the portal cookie established by email
+verification and do not require `turnstileToken`. Without that verified session,
+the API returns `email_verification_required` after a successful bot check; it
+does not accept an email address as proof.
 The customer's identity comes from the portal session, rather than a contact ID
 supplied in the body.
 
@@ -81,6 +84,6 @@ containing `fieldId`, `operator` and, except for `present`, `value`. Translation
 are keyed by locale; their `fields` entries are keyed by field ID, including
 `subject` and `message`, and contain `label`, `description` and choice `options`.
 
-Order/account lookup fields are not available. Form fields reuse the current
-ticket-field permissions and validation; they do not introduce a separate field
+Order/account lookup fields and a form version-history management screen are not
+available. Form fields reuse the current ticket-field permissions and validation; they do not introduce a separate field
 catalogue or grant access to company requests.

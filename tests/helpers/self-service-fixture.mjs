@@ -6,7 +6,7 @@ export async function selfServiceFixture(){
  const mail=[],challenges=[]
  const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',INBOUND_EMAIL_TOKEN:'fixture-survey-signing-key-for-self-service',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-provider-key',EMAIL_FROM:'support@example.com',FORMS_TURNSTILE_SITE_KEY:'synthetic-site',FORMS_TURNSTILE_SECRET_KEY:'synthetic-secret'},outbound:async request=>{
   if(request.url.startsWith('https://cloudflare-dns.com/'))return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.com.'}]})
-  if(request.url==='https://challenges.cloudflare.com/turnstile/v0/siteverify'){const body=new URLSearchParams(await request.text());challenges.push(body);return Response.json({success:body.get('response')==='valid-challenge',hostname:body.get('response')==='wrong-site'?'foreign.example':'app.example'})}
+  if(request.url==='https://challenges.cloudflare.com/turnstile/v0/siteverify'){const body=new URLSearchParams(await request.text());challenges.push(body);return Response.json({success:['valid-challenge','wrong-site'].includes(body.get('response')),hostname:body.get('response')==='wrong-site'?'foreign.example':'app.example'})}
   if(request.url==='https://api.resend.com/emails'){const body=await request.json();mail.push(body);return Response.json({id:'message-'+mail.length})}
   throw new Error('Unexpected provider request '+request.url)
  }})

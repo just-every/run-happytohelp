@@ -20,9 +20,13 @@ fresh single-use link; the original link can no longer be used. Changes apply
 to new resolution cycles. Turning surveys off cancels invitations that have not
 yet been sent.
 
-Customers can opt out from a survey email. An opt-out applies to later survey
-invitations for that customer in the workspace. If a conversation is reopened,
-its old invitation link is no longer valid. Any earlier response remains in the
+Customers can opt out from a survey email or turn off **Receive support surveys**
+in the portal’s **Preferences**. Portal opt-out cancels pending invitations,
+invalidates available survey links and stops future invitations for that
+customer in the workspace. Turning surveys back on applies to future support
+experiences; it does not restore old links. The separate preference for reply
+notification emails does not control survey invitations. If a conversation is
+reopened, its old invitation link is no longer valid. Any earlier response remains in the
 history for that resolution cycle; a later resolution has its own survey and
 history.
 

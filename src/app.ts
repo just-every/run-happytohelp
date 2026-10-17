@@ -28,6 +28,8 @@ import { previewRoutes } from './modules/site-preview/proxy'
 import {AiConfigurationError} from './modules/ai-support/configuration'
 import {legacyWidget} from './modules/widget/legacy-project'
 import {surveySettings,publicSurveys} from './modules/outcomes/survey-routes'
+import {formSettings,publicForms} from './modules/forms'
+import {portalApi} from './modules/portal/routes'
 import {surveyReports} from './modules/reports/surveys'
 
 import {delegation} from './edition/delegation/routes'
@@ -70,6 +72,9 @@ app.route('/api/conversations',createConversationRoutes(applyMessageEffects,mode
 app.route('/api/conversations',widgetEvents)
 app.route('/api/projects',projectSocketRoutes)
 app.route('/api/ai-support',ai)
+app.route('/api/forms',formSettings)
+app.route('/api/forms',publicForms)
+app.route('/api/portal',portalApi)
 app.route('/api/knowledge',knowledge)
 app.route('/api/outcomes',surveySettings)
 app.route('/api/outcomes',surveyReports)

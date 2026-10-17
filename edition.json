@@ -449,7 +449,13 @@
           "src/modules/tickets",
           "migrations/130_ticket_model.sql",
           "migrations/131_ticket_views_bulk.sql",
-          "migrations/132_ticket_erasure.sql"
+          "migrations/132_ticket_erasure.sql",
+          "src/modules/forms",
+          "src/modules/portal",
+          "migrations/172_request_forms.sql",
+          "migrations/173_customer_portal.sql",
+          "docs/request-forms.md",
+          "docs/customer-portal.md"
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",

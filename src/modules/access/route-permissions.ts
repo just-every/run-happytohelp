@@ -97,6 +97,19 @@ for(const base of [P,D]){
  for(const action of ['preview','apply'])rules[`POST ${base}/tickets/bulk/${action}`]='conversations.manage'
 }
 
+
+for(const base of [P,D]){
+ for(const path of ['workflow-calendars','sla-policies','workflow-rules']){
+  rules[`POST ${base}/${path}`]='settings.manage';rules[`PATCH ${base}/${path}/:id`]='settings.manage';
+ }
+ for(const action of ['preview','publish','pause','cancel'])rules[`POST ${base}/workflow-rules/:id/${action}`]='settings.manage'
+ rules[`PUT ${base}/routing-operators`]='settings.manage'
+ rules[`PATCH ${base}/sla-alerts/:id/ack`]='conversations.manage'
+ rules[`POST ${base}/workflow-schedules`]='self'
+ rules[`PATCH ${base}/workflow-schedules/:id`]='self'
+ rules[`POST ${base}/workflow-clock`]='settings.manage'
+}
+
 const prefixes=['/api/v1/','/api/management/admin/']
 for(const base of [P,D])rules[`POST ${base}/tickets`]='conversations.reply'
 for(const action of ['connect','imap'])rules[`POST ${P}/mailboxes/${action}`]='integrations.install'

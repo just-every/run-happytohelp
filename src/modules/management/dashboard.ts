@@ -41,6 +41,9 @@ for(const prefix of ['/conversations','/projects/:projectId/conversations']){
   const stamp=Date.parse(before);if(!Number.isFinite(stamp))throw new HTTPException(400)
   conditions.push('(coalesce((SELECT created_at FROM messages WHERE id=c.last_message_id),c.updated_at)<? OR (coalesce((SELECT created_at FROM messages WHERE id=c.last_message_id),c.updated_at)=? AND c.id<?))');params.push(stamp,stamp,beforeId)
  }
+ const snoozed=c.req.query('snoozed'),sleeping="EXISTS(SELECT 1 FROM workflow_schedules ws WHERE ws.conversation_id=c.id AND ws.kind='snooze' AND ws.state='pending')"
+ if(snoozed==='only')conditions.push(sleeping)
+ else if(snoozed!=='include'&&(!search||c.req.query('search_scope')==='view'))conditions.push('NOT '+sleeping)
  const where=conditions.join(' AND '),listing=await c.env.DB.batch<any>([
   c.env.DB.prepare(`SELECT count(*) total FROM conversations c WHERE ${where}`).bind(...params),
   c.env.DB.prepare(`SELECT c.* FROM conversations c WHERE ${where} ORDER BY ${sort.sql} LIMIT 30 OFFSET ?`).bind(...params,...sort.params,(page-1)*30)

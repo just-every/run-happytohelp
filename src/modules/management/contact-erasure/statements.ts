@@ -5,6 +5,7 @@ import {eraseSurveyStatements} from '../../outcomes/survey-store'
 import {ticketErasureCount,ticketErasureStatements} from '../../tickets/erasure'
 import {collaborationRecordsCount,collaborationRecordsStatements} from './collaboration'
 import {emailErasureStatements} from '../../integrations/email-erasure'
+import {workflowErasureCount,workflowErasureStatements} from '../../workflows/erasure'
 import type {Env} from '../../../platform/env'
 import {legacyArchiveRedaction} from './archive'
 import {erasureInboundEvidenceStatements} from './inbound-evidence'
@@ -53,7 +54,7 @@ SELECT ?1,?2,?3,?4,?4,1,
  ${sum(trackedTables.map(table => count(table, subject)))},
  ${sum(contextTables.map(table => count(table, subject)))},
  ${count('sessions', 'project_id=?1 AND contact_id=?2')},
- ${ticketErasureCount}+(${collaborationRecordsCount})
+ ${ticketErasureCount}+(${collaborationRecordsCount})+${workflowErasureCount}
 WHERE EXISTS(SELECT 1 FROM contacts WHERE project_id=?1 AND id=?2)
 ON CONFLICT(project_id,contact_id) DO UPDATE SET last_erased_at=excluded.last_erased_at,runs=runs+1,conversations=excluded.conversations,
  messages=messages+excluded.messages,attachments=attachments+excluded.attachments,tracked_events=tracked_events+excluded.tracked_events,
@@ -75,6 +76,7 @@ export function erasureStatements(env: Env, request: ErasureRequest) {
   return [
     env.DB.prepare(tombstone).bind(projectId, contactId, actorId, now),
     ...collaborationRecordsStatements(env,projectId,contactId),
+    ...workflowErasureStatements(env,projectId,contactId),
     ...ticketErasureStatements(env,projectId,contactId),
     ...emailErasureStatements(env,projectId,contactId,request.emails),
     ...eraseFormStatements(env,projectId,contactId),

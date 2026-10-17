@@ -4,6 +4,7 @@ import { nativeRequest } from '../../../native/transport';
 import useLiveInboxLocation from '../../hooks/useLiveInboxLocation';
 import { ChatContext } from '../../contexts/ChatContext';
 import TicketViewRules from './TicketViewRules';
+import WorkflowQueueFilter from '../workflows/WorkflowQueueFilter';
 import { json, queueFields, ticketPath } from './ticket-model';
 import './tickets.css';
 
@@ -39,6 +40,7 @@ export default function TicketViews({ projectId, currentAgentId }) {
     const canEdit = !selected || (selected.visibility === 'shared' ? settings?.permissions.settings : selected.owner_id === currentAgentId);
     return <details className="ticket-queue-tools"><summary>Saved views and ticket filters</summary>
         {error && <p role="alert" className="text-danger">{error}</p>}{notice && <p role="status">{notice}</p>}
+        <WorkflowQueueFilter/>
         <label className="form-label" htmlFor="ticket-saved-view">Saved view</label>
         <select className="form-select" id="ticket-saved-view" value={selected?.id || ''} onChange={event => choose(event.target.value)}><option value="">Current inbox filters</option>{['personal', 'shared'].map(visibility => <optgroup key={visibility} label={visibility === 'personal' ? 'Personal' : 'Shared'}>{views.filter(view => view.visibility === visibility).map(view => <option key={view.id} value={view.id} disabled={view.unavailable}>{view.name}{view.unavailable ? ' (restricted or unavailable field)' : ''}</option>)}</optgroup>)}</select>
         {selected?.unavailable && <p role="alert">This view uses a field you cannot access or that was removed. Its filters are unavailable.</p>}

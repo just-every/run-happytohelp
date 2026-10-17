@@ -94,7 +94,7 @@ export class WidgetTransport {
     }
     return this.session;
   }
-  // A closed ticket is final: the server admits the visitor's next turn into a new ticket for them, which this widget follows from then on.
+  // A closed ticket is final: the server admits the visitor's next turn into its linked follow-up, which this widget follows from then on.
   follow(conversationId) {
     if (!conversationId || conversationId === this.conversationId) return false;
     this.session.conversationId = this.conversationId = conversationId; this.revision = 0; this.lastMessageId = null; this.eventId = 0;
@@ -220,6 +220,7 @@ export class WidgetTransport {
       }
       delete this.session.pendingCommands[data.local_id];
       localStorage.setItem(this.storageKey, JSON.stringify(this.session));
+      this.follow(result.followupConversationId);
       if (result.message) this.onEvent({type: 'message', message: await this.message(result.message)});
       await this.refresh();
       return result;

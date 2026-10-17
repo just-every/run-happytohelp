@@ -134,7 +134,8 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
    if(actor)conversation=addressedConversation
   }
   if(addressed&&!actor)return suspendEmail(env,input,{projectId:project.project_id,receiptId:recordId,claimToken,reason:'thread_identity_mismatch',candidateId:addressed})
-  if(conversation?.status_category==='closed')conversation=await emailFollowup(env,conversation,messageId,actor!.contactId!)
+  // That contact's reply to a Closed ticket is admitted into the ticket's linked follow-up
+  // (workflows/followups.ts; a retry returns to it), never another open ticket of theirs.
   // Everything else is the sender's own mail to the support mailbox: it continues
   // their most recently active open thread or starts one, and is never refused.
   if(!actor){
@@ -174,7 +175,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
   await env.DB.prepare("UPDATE inbound_emails SET state='delivered',message_id=?,error=NULL WHERE id=?").bind(String(result.message!.id),recordId).run()
   await env.DB.batch(emailThreadingStatements(env,{projectId:project.project_id,conversationId:conversation.id,keys:[{kind:'message_id',value:messageId,source:'native',sourceRef:String(result.message!.id)}],createdAt:Date.now()}))
   await keepReplyTarget(env,project.project_id,actor,input.replyTo,{authenticated,automatic,workspace})
-  return {id:messageId,state:'delivered',conversationId:conversation.id,duplicate:false,automatic,message:result.message,actor}
+  return {id:messageId,state:'delivered',conversationId:result.followupConversationId??conversation.id,duplicate:false,automatic,message:result.message,actor}
  }catch(error){await env.DB.prepare("UPDATE inbound_emails SET state='failed',error=? WHERE id=? AND state='processing' AND claim_token=?").bind(String(error).slice(0,1000),recordId,claimToken).run();throw error}
 }
 /** A fresh conversation for an unmatched migration reply, checkpointed for retries. */

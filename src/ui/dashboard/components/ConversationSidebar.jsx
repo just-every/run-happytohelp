@@ -1,3 +1,4 @@
+import WorkflowPanel from './workflows/WorkflowPanel';
 import TicketEditor from './tickets/TicketEditor';
 import { useDashboardSettings } from '../../native/dashboard-state';
 import ResolutionSummary from './conversation/ResolutionSummary';
@@ -61,6 +62,7 @@ export default function ConversationSidebar({ conversation }) {
     return <div className="conversation-details">
         <SlateInquiryLink conversation={ conversation } />
         {!(settings.projects?.[conversation.project_id] || settings.project)?.is_demo && <TicketEditor key={conversation.id} conversation={conversation}/>}
+        {!(settings.projects?.[conversation.project_id] || settings.project)?.is_demo && <WorkflowPanel key={`workflows-${conversation.id}`} conversation={conversation}/>}
         <ConversationTags conversation={conversation}/>
         <ResolutionSummary resolution={conversation.resolution} history={conversation.resolutionHistory}/>
         <ConversationAssignmentControl conversation={ conversation } />

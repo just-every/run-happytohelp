@@ -456,7 +456,14 @@
           "migrations/173_customer_portal.sql",
           "migrations/174_portal_mailbox_requester.sql",
           "docs/request-forms.md",
-          "docs/customer-portal.md"
+          "docs/customer-portal.md",
+          "src/modules/workflows",
+          "migrations/150_workflow_journal.sql",
+          "migrations/151_workflow_sla.sql",
+          "migrations/152_workflow_rules.sql",
+          "migrations/153_workflow_schedules.sql",
+          "migrations/154_workflow_routing.sql",
+          "docs/workflows.md"
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",

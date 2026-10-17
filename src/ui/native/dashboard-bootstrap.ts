@@ -47,7 +47,7 @@ function validateBootstrapInput(input: DashboardBootstrapInput): DashboardBootst
     if (input.conversationId && input.inbox !== 'project') throw new Error('Invalid workspace request');
     if (input.managementKind !== undefined && (!input.projectId || !['contacts','macros','agents'].includes(input.managementKind))) throw new Error('Invalid workspace request');
     if (input.inboxSearch !== undefined && (!input.inboxSearch || typeof input.inboxSearch !== 'object' || Array.isArray(input.inboxSearch)
-        || Object.entries(input.inboxSearch).some(([key,value]) => !['view','q','tag','assigned_to','search_scope','saved_view','filters','sort'].includes(key) || value !== undefined && typeof value !== 'string'))) {
+        || Object.entries(input.inboxSearch).some(([key,value]) => !['view','q','tag','assigned_to','search_scope','saved_view','filters','sort','snoozed'].includes(key) || value !== undefined && typeof value !== 'string'))) {
         throw new Error('Invalid workspace request');
     }
     return { projectId: input.projectId, inbox: input.inbox, conversationId: input.conversationId, inboxSearch: input.inboxSearch, managementKind: input.managementKind };
@@ -77,6 +77,7 @@ export function dashboardBootstrapInput(location: ParsedLocation): DashboardBoot
         tag: search.tag ? String(search.tag) : undefined,
         assigned_to: typeof search.assigned_to === 'string' ? search.assigned_to : undefined,
         search_scope: typeof search.search_scope === 'string' ? search.search_scope : undefined,
+        snoozed: search.snoozed === 'only' || search.snoozed === 'include' ? search.snoozed : undefined,
         saved_view: typeof search.saved_view === 'string' ? search.saved_view : undefined,
         filters: typeof search.filters === 'string' ? search.filters : undefined,
         sort: typeof search.sort === 'string' ? search.sort : undefined,

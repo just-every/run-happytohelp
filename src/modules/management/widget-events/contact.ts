@@ -2,6 +2,7 @@ import { HTTPException } from 'hono/http-exception'
 import { validWidgetOrigin } from '../activation/local-probes'
 import { text } from '../common'
 import {contactWritable} from '../../../platform/contact-state'
+import {providedEmail} from '../../../platform/mailbox'
 import {contactEnvironment} from '../../identity/contact-environment'
 import type { WidgetCommand } from './types'
 
@@ -10,8 +11,7 @@ export async function updateContact({ c, actor, conversation, data }: WidgetComm
   for (const field of ['name', 'email'] as const) {
     const supplied = data[`provided_${field}`] ?? data[field]
     if (supplied === undefined) continue
-    const value = supplied === null ? null : text(supplied, field === 'name' ? 200 : 320)
-    if (field === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) throw new HTTPException(400)
+    const value = field === 'email' ? providedEmail(supplied) : supplied === null ? null : text(supplied, 200)
     // Both collector spellings are self-provided. Preserve them for operators
     // and erasure, without promoting them into an existing verified identity.
     metadata.push(`$.provided_${field}`, value)
@@ -24,7 +24,8 @@ export async function updateContact({ c, actor, conversation, data }: WidgetComm
     // A typed address is a notification preference, never inbound mail authority
     // (integrations/inbound-authority.ts).
     const typedEmail = metadata.includes('$.provided_email') ? `,'$.email_unproven',1,'$.provided_email_source','widget'` : ''
-    fields.push(`metadata_json=json_set(metadata_json,${metadata.map(() => '?').join(',')}${typedEmail})`)
+    const stored=typedEmail?`json_remove(metadata_json,'$.provided_email_set_by','$.provided_email_set_at')`:'metadata_json'
+    fields.push(`metadata_json=json_set(${stored},${metadata.map(() => '?').join(',')}${typedEmail})`)
     values.push(...metadata)
   }
   // Read back the actual canonical values in the same guarded write. Verification

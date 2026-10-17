@@ -180,6 +180,22 @@ try{
   assert.deepEqual(formPosts,[],'nothing is sent');assert.match((await f.getByRole('alert').allInnerTexts()).join(' '),/name|email|external/i);await shot2(f,'desktop-contact-create-empty.png');
   assert.equal((await request(`${api}/contacts`,{token,body:{},raw:true})).status,400);assert.equal((await request(`${api}/contacts`,{token,body:{name:'  ',email:''},raw:true})).status,400);
   assert.equal((await request(`${api}/contacts`,{token,body:{external_id:'crm-1'},raw:true})).status,201);
+  const customer=await make('contacts',{name:'Maya Chen',email:'maya@customer.example'});
+  for(const width of [1440,390]){
+   await f.setViewportSize({width,height:900});await f.goto(`${base}/contacts/${customer.id}`);
+   const phone=`+1 555 ${width}`;await f.getByLabel('Phone',{exact:true}).fill(phone);
+   const put=f.waitForRequest(r=>r.method()==='PUT'&&new URL(r.url()).pathname===`${api}/contacts/${customer.id}`);
+   const saved=f.waitForResponse(r=>r.request().method()==='PUT'&&new URL(r.url()).pathname===`${api}/contacts/${customer.id}`);
+   await f.getByRole('button',{name:'Save',exact:true}).click();assert.deepEqual(JSON.parse((await put).postData()),{phone});assert.equal((await saved).status(),200);
+   await f.getByRole('status').waitFor();
+   await shot2(f,`contact-phone-saved-${width}.png`);
+   const preference=`maya-preferred-${width}@customer.example`;await f.getByLabel('Provided email',{exact:true}).fill(preference);
+   const preferred=f.waitForRequest(r=>r.method()==='PUT'&&new URL(r.url()).pathname===`${api}/contacts/${customer.id}`);
+   const preferredSaved=f.waitForResponse(r=>r.request().method()==='PUT'&&new URL(r.url()).pathname===`${api}/contacts/${customer.id}`);
+   await f.getByRole('button',{name:'Save',exact:true}).click();assert.deepEqual(JSON.parse((await preferred).postData()),{provided_email:preference});assert.equal((await preferredSaved).status(),200);
+   await f.reload();await f.getByLabel('Provided email',{exact:true}).waitFor();assert.equal(await f.getByLabel('Provided email',{exact:true}).inputValue(),preference);assert.equal(await f.getByLabel('Phone',{exact:true}).inputValue(),phone);
+   await shot2(f,`contact-preference-reloaded-${width}.png`);
+  }
  });
  await check('plugin form: non-https URLs are refused before any request',async()=>{
   formPosts.length=0;await f.goto(`${base}/plugins/create`);await f.getByLabel('Name',{exact:true}).fill('Bad');await f.getByLabel('URL',{exact:true}).fill('javascript:alert(1)');await f.getByRole('button',{name:'Add'}).click();

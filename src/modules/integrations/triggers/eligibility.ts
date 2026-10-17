@@ -12,7 +12,7 @@ export const notificationTicketSql=`SELECT c.*,CASE WHEN EXISTS(SELECT 1 FROM in
  AND NOT EXISTS(SELECT 1 FROM messages first_request JOIN inbound_emails proof ON proof.project_id=first_request.project_id
  AND (proof.message_id=first_request.id OR proof.local_id=first_request.local_id) WHERE first_request.id=(
  SELECT first_message.id FROM messages first_message WHERE first_message.project_id=c.project_id AND first_message.conversation_id=c.id AND first_message.actor_role='contact' ORDER BY first_message.revision,first_message.id LIMIT 1)
- AND json_extract(proof.evidence_json,'$.sender_verified')=0)
+ AND json_extract(proof.evidence_json,'$.sender_verified')=0 AND json_extract(proof.evidence_json,'$.grant.recipient') IS NULL)
  AND c.ticket_source NOT IN ('import','merge','legacy-import')
  AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations s WHERE s.project_id=c.project_id AND s.conversation_id=c.id)
  AND NOT EXISTS(SELECT 1 FROM move_in_conversations s WHERE s.project_id=c.project_id AND s.conversation_id=c.id)`

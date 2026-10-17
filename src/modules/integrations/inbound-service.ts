@@ -11,6 +11,7 @@ import {inboundLocalId,legacyInboundLocalId,scopedInboundId} from './inbound-ide
 import {visibleEmailReply} from './email-reply'
 import {replyGrant} from './email-reply-address'
 import {inboundAuthority,emailContact,unverifiedSenderContact,unusableFromContact,isVerifiedCustomerAddress,emailActor,preferredAddressActor,openEmailConversation,ccContacts} from './inbound-authority'
+import {mailboxAddress} from '../../platform/mailbox'
 import {classifyInboundEmail,evidenceJson,type EmailEvidence} from './email-classification'
 import {CLOSED_TICKET_FINAL,ClosedTicketRefusal,isMemberAddress} from './closed-ticket-mail'
 /** `to` lists the recipient addresses in routing order (envelope, forwarding headers,
@@ -54,6 +55,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail){
   :await env.DB.prepare('SELECT * FROM inbound_emails WHERE id=? AND project_id=?').bind(scopedId,project.project_id).first<any>()
  const recordId=prior?.id||(rawPrior&&rawPrior.project_id!==project.project_id?scopedId:messageId)
  const possessed=Boolean(grant&&grant.recipient===from),trusted=possessed||authenticated
+ const consumedGrant=possessed?{recipient:from,token_hash:await hashToken(target.replyToken!)}:undefined
  const refusal=(closed:{id:string;subject:string|null}|null)=>new ClosedTicketRefusal(trusted&&closed?{projectId:project.project_id,conversationId:closed.id,member:from,subject:closed.subject||'',receiptId:recordId}:null)
  if(prior){
   if(prior.project_id!==project.project_id||prior.intent_hash!==intentHash)throw new HTTPException(409,{message:'Inbound email identity conflict'})
@@ -76,7 +78,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail){
  // never exist without the classification that suppresses its effects. A receipt
  // written before classification existed (no local_id) is classified on this claim.
  const classified=prior?.local_id!=null?null:input.evidence?classifyInboundEmail(input.evidence):{automatic:false,reasons:[]}
- const automatic=classified?classified.automatic:Boolean(prior.automatic),evidence=classified&&input.evidence?evidenceJson({...input.evidence,sender_verified:authenticated},classified):null
+ const automatic=classified?classified.automatic:Boolean(prior.automatic),evidence=classified&&input.evidence?evidenceJson({...input.evidence,sender_verified:authenticated,...(consumedGrant?{grant:consumedGrant}:{})},classified):null
  const claimToken=id(),claimed=prior
   ?await env.DB.prepare("UPDATE inbound_emails SET state='processing',error=NULL,claim_token=?,automatic=CASE WHEN local_id IS NULL THEN ? ELSE automatic END,evidence_json=CASE WHEN local_id IS NULL THEN ? ELSE evidence_json END,local_id=coalesce(local_id,?) WHERE id=? AND (state='failed' OR state='processing' AND claim_token IS ? AND NOT EXISTS(SELECT 1 FROM messages WHERE project_id=? AND local_id IN (?,?)))").bind(claimToken,automatic?1:0,evidence,localId,recordId,prior.claim_token,project.project_id,localId,legacyLocalId).run()
   :await env.DB.prepare("INSERT OR IGNORE INTO inbound_emails(id,project_id,conversation_id,intent_hash,state,error,created_at,claim_token,automatic,evidence_json,local_id) VALUES(?,?,NULL,?,'processing',NULL,?,?,?,?,?)").bind(recordId,project.project_id,intentHash,Date.now(),claimToken,automatic?1:0,evidence,localId).run()
@@ -165,8 +167,8 @@ async function newConversation(env:Env,projectId:string,contactId:string,recordI
  * Its source never proves the reply target for automatic notices. It never changes who they are, and never the
  * preference of a widget-verified customer, which only they or an operator set. */
 async function keepReplyTarget(env:Env,projectId:string,actor:Actor,value:unknown,context:{authenticated:boolean;automatic:boolean;workspace:ReadonlySet<string>}){
- const replyTo=emailAddress(value)
+ const replyTo=mailboxAddress(emailAddress(value))
  if(!replyTo||actor.role!=='contact'||!context.authenticated||context.automatic||context.workspace.has(replyTo)||inboundTarget(replyTo)&&await env.DB.prepare('SELECT 1 FROM email_settings WHERE lower(inbound_address)=?').bind(inboundTarget(replyTo)!.mailbox).first())return
- await env.DB.prepare(`UPDATE contacts SET metadata_json=json_set(coalesce(metadata_json,'{}'),'$.provided_email',?,'$.provided_email_source','reply_to') WHERE id=? AND project_id=? AND coalesce(is_verified,0)!=1 AND coalesce(json_extract(metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(metadata_json,'$.is_erased'),0)!=1
+ await env.DB.prepare(`UPDATE contacts SET metadata_json=json_set(json_remove(coalesce(metadata_json,'{}'),'$.provided_email_set_by','$.provided_email_set_at'),'$.provided_email',?,'$.provided_email_source','reply_to') WHERE id=? AND project_id=? AND coalesce(is_verified,0)!=1 AND coalesce(json_extract(metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(metadata_json,'$.is_erased'),0)!=1
   AND NOT EXISTS(SELECT 1 FROM users u JOIN memberships m ON m.user_id=u.id WHERE m.project_id=? AND lower(u.email)=?)`).bind(replyTo,actor.contactId,projectId,projectId,replyTo).run()
 }

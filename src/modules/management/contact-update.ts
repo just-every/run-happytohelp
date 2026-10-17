@@ -4,12 +4,21 @@ import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {text} from './common'
 import {contactWritable} from '../../platform/contact-state'
-export async function updateContactResource(env:Env,projectId:string,id:string,body:Record<string,unknown>,existing:any,guard?:SqlGuard){
+import {providedEmail} from '../../platform/mailbox'
+export async function updateContactResource(env:Env,projectId:string,id:string,body:Record<string,unknown>,existing:any,setBy:{type:'user'|'api';id:string},guard?:SqlGuard){
  const metadata=JSON.parse(existing.metadata_json||'{}')
  if(metadata.is_erased||metadata.is_erasing)throw new HTTPException(409,{message:'This contact is being erased or was erased'})
  const fields:string[]=[],values:(string|null)[]=[]
- for(const key of ['provided_name','provided_email','phone'])if(key in body)metadata[key]=body[key]===null?null:text(body[key],320)
- if('provided_email' in body)metadata.provided_email_source='operator'
+ for(const key of ['provided_name','phone'])if(key in body)metadata[key]=body[key]===null?null:text(body[key],320)
+ if('provided_email' in body){
+  const address=providedEmail(body.provided_email),previous=typeof metadata.provided_email==='string'?metadata.provided_email.trim().toLowerCase()||null:null
+  // A full old client payload or a case-only resubmission is not a new choice.
+  if(address!==previous){
+   metadata.provided_email=address
+   if(address){metadata.provided_email_source='operator';metadata.provided_email_set_by=setBy;metadata.provided_email_set_at=Date.now()}
+   else for(const key of ['provided_email_source','provided_email_set_by','provided_email_set_at'])delete metadata[key]
+  }
+ }
  if('is_blocked' in body){
   const wasBlocked=metadata.is_blocked===undefined?Boolean(metadata.blocked_at):Boolean(metadata.is_blocked)
   metadata.is_blocked=Boolean(body.is_blocked)

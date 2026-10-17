@@ -1,4 +1,5 @@
-export type NotificationContact={id:string;email:string|null;metadata_json?:string;is_verified?:number;external_id?:string|null}
+import {mailboxAddress} from '../../platform/mailbox'
+export type NotificationContact={id:string;email:string|null;metadata_json?:string;is_verified?:number;external_id?:string|null;notice_grant_proven?:number}
 const mailbox=(value:unknown)=>typeof value==='string'&&value.length<=254&&/^[^\s@<>(),:;"\\]+@[^\s@<>(),:;"\\]+\.[^\s@<>(),:;"\\]+$/.test(value.trim())?value.trim().toLowerCase():null
 const metadata=(contact:NotificationContact)=>JSON.parse(contact.metadata_json||'{}')
 
@@ -14,9 +15,9 @@ export function notificationAddress(contact:NotificationContact){const flags=met
  * preferences with no recorded source stay available for human replies only. */
 export function customerNoticeAddress(contact:NotificationContact,widgetContactId?:string){
  const flags=metadata(contact)
- const preferred=flags.provided_email_source==='operator'?mailbox(flags.provided_email):null
+ if(flags.provided_email_source==='operator')return mailboxAddress(flags.provided_email)
  const signed=contact.is_verified===1&&mailbox(contact.external_id)===mailbox(contact.email)
- return preferred||(flags.unusable_from||flags.email_unproven&&!signed&&contact.id!==widgetContactId?null:mailbox(contact.email))
+ return flags.unusable_from||flags.email_unproven&&!signed&&!contact.notice_grant_proven&&contact.id!==widgetContactId?null:mailbox(contact.email)
 }
 
 /** Sending and read-only status use the same safety and author exclusions. */

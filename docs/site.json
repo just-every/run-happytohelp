@@ -94,6 +94,16 @@
           "label": "Help Center"
         },
         {
+          "slug": "request-forms",
+          "source": "docs/request-forms.md",
+          "label": "Customer request forms"
+        },
+        {
+          "slug": "customer-portal",
+          "source": "docs/customer-portal.md",
+          "label": "Customer portal"
+        },
+        {
           "slug": "customer-satisfaction",
           "source": "docs/customer-satisfaction.md",
           "label": "Customer satisfaction surveys"

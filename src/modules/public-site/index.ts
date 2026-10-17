@@ -1,4 +1,6 @@
 /// <reference types="vite/client" />
+import {portalPages} from './portal-pages'
+import {requestFormPages} from './request-pages'
 import { Hono } from 'hono'
 import type { AppEnv, Env } from '../../platform/env'
 import { notFoundResponse, rejectedResponse } from '../../base/rejected-response'
@@ -7,7 +9,7 @@ import { missingHelpCenterPage } from './not-found'
 export { publicHelpHostResponse } from './help-host'
 
 export async function isPublicSitePath(path: string, env: Env) {
- if (path.startsWith('/help/') || path.startsWith('/api/public-site/')) return true
+ if (path.startsWith('/portal/') || path.startsWith('/help/') || path.startsWith('/api/public-site/')) return true
  const parts = path.split('/').filter(Boolean)
  if (!parts.length || parts.length > 2 || reserved.has(parts[0])) return false
  let key: string
@@ -16,6 +18,8 @@ export async function isPublicSitePath(path: string, env: Env) {
 }
 
 export const publicSiteRoutes = new Hono<AppEnv>()
+publicSiteRoutes.route('/',requestFormPages)
+publicSiteRoutes.route('/',portalPages)
 publicSiteRoutes.route('/', helpCenterRoutes)
 
 // A Help Center address no route serves (for example /help/a/b/c) still gets the Help Center frame; API paths keep the plain 404.

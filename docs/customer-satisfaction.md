@@ -2,7 +2,11 @@
 
 HappyToHelp can ask a customer to rate a resolved conversation by email. Each
 invitation is tied to that conversation's current resolution and can be answered
-without opening the chat widget.
+without opening the chat widget. An eligible signed-in customer can also open
+the available survey from their solved request in the [customer portal](customer-portal.md).
+The portal uses the same signed link as email, with the same single-use, expiry,
+opt-out and resolution-cycle rules; it does not create a second invitation.
+Surveys in other messaging channels are not available yet.
 
 ## Set up email surveys
 

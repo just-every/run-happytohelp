@@ -29,6 +29,8 @@ const browser=await launchBrowser(),context=await browser.newContext({viewport:{
 page.on('pageerror',error=>{errors.push(error.message);console.error('BROWSER ERROR',error.stack)});page.on('response',response=>{if(response.status()>=400)failed.push({url:response.url(),status:response.status()});});
 try{
  await page.goto(origin);await page.locator('textarea[name=content]').waitFor({state:'visible'});await page.waitForTimeout(600);
+ const requestForm=page.getByRole('link',{name:'Submit a request form',exact:true});await requestForm.waitFor();
+ assert.equal(await requestForm.getAttribute('href'),`${api}/help/${encodeURIComponent(projectId)}/requests?source=widget`);assert.equal(await requestForm.getAttribute('target'),'_blank');
  await page.locator('textarea[name=content]').fill('Native widget browser message');await page.locator('button[name=submit]').click();
  await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)||'null')?.conversationId,storageKey);
  const session=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),storageKey);

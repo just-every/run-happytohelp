@@ -1596,7 +1596,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "997fde245da68167ee5c14e1ad4288d6bdc9ee187b2cc922693d9c0d9bef4075",
+      "sha256": "92227725a966bd68ea58d3d49a7535886cb0b425830bfa2ef1067af573ab1c4c",
       "executable": false
     },
     "AGENTS.md": {
@@ -1616,7 +1616,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "64ff35e4a11445b0603e1f6d4c751b76494fea720e4741784a75b3df0d560c38",
+      "sha256": "ae0a9ba64788844bd9ecd104810dd88191bc6586bb3b98f09faa7d9a85a23463",
       "executable": false
     },
     "DEMO.md": {
@@ -1632,7 +1632,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "06121d305bf354b8e1628de8123e877621ea8a37475521746acd26cbebefc0ed",
+      "sha256": "eb7fcb947ed2e628693cd439b71c0dadff1b5c2ca879275e04adbb368d31e362",
       "executable": false
     },
     "docs/ACCESSIBILITY-AUDIT-2026-09-30.md": {
@@ -1664,11 +1664,11 @@
       "executable": false
     },
     "docs/customer-portal.md": {
-      "sha256": "c0ba7e7c178dd4d2908e136e024a7e3637f528140c784081ea704cb216a72ac4",
+      "sha256": "6a906398e10f9191e5b0fa3799f549557d789b26c78fd304f3a60ff0fea9b452",
       "executable": false
     },
     "docs/customer-satisfaction.md": {
-      "sha256": "f8f256d5e79c2676ecaee642656df93d47a96900026479fbbc583208577c5d0a",
+      "sha256": "f65a9075115274d63a7940be77e7cf1389cbf4b46a7e02449f2a3d0f41d3967b",
       "executable": false
     },
     "docs/help-before-they-ask.md": {
@@ -1752,7 +1752,7 @@
       "executable": false
     },
     "docs/request-forms.md": {
-      "sha256": "eb5991ae4abc6a5f0030a6d65861d853b2ce5c6ad9e7d98ec0a556fdf0250b83",
+      "sha256": "0aed686060a3b2052a6ab9a4fc39f7974d919c72c8c9d1b31daddac0069fe5a3",
       "executable": false
     },
     "docs/SETUP-WORKFLOW.md": {
@@ -1960,7 +1960,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "1349247a0acfb79d4a55227933f70f42fbf4ddd9956b6f5da5919bf06d7ebdc4",
+      "sha256": "f6b1aa3d92d10e1475cedaa60457a1d91afb1634ca9165b53fa43fa10966d22e",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2372,7 +2372,7 @@
       "executable": false
     },
     "public/site-assets/help_center/request-forms.css": {
-      "sha256": "07f758435fad638ce23d85c86bb486e3afdee36d5b4c4413aeed7c723e5fd5d7",
+      "sha256": "ce04f82108e29f99ce0ee07614c59c2cec5c38d9996f36fb935d59c4ba4db3aa",
       "executable": false
     },
     "public/site-assets/help_center/request-forms.js": {
@@ -2476,7 +2476,7 @@
       "executable": false
     },
     "scripts/delivery/base/packaging.json": {
-      "sha256": "fc9a370c9ba2b292620a0d0cf5d9ed9c53b1559903835d9b011c85b604a66f3d",
+      "sha256": "8821d2c3ddd47a58fc1ce3789c347360b33fb9fe3f5a997edcbb50800fc5d996",
       "executable": false
     },
     "scripts/delivery/base/paths.mjs": {
@@ -2548,7 +2548,7 @@
       "executable": false
     },
     "scripts/deployment/environment.mjs": {
-      "sha256": "dd15facf12313c1cb778b3b568cc0290c79ed4d8dd8d53e55da0297e68ce173a",
+      "sha256": "effb24f609a398f05a1494c16f71c5ebbc69c07a8b337f3b0d11d2c8a8c41d63",
       "executable": false
     },
     "scripts/edition-authoring/base-copies.mjs": {
@@ -2760,7 +2760,7 @@
       "executable": false
     },
     "scripts/installer/ticket-archive-upgrade.mjs": {
-      "sha256": "c3f3f71b3ee4939e43d7bfcb61f860a7de8e662812bbe710be72a4c22caa2339",
+      "sha256": "c63a8c4b1433ed6a68a3fabc243e75879288486563357260b51e673c7c53fc93",
       "executable": false
     },
     "scripts/installer/ui/seed.mjs": {
@@ -5664,7 +5664,7 @@
       "executable": false
     },
     "src/modules/public-site/portal-content.ts": {
-      "sha256": "c370216a914eae15ff0f19a0869f3202181517e8a63af2a4c63e9761ce169f0d",
+      "sha256": "5e1c5ef4014a29ae8c28a2a9f2c5012203a7c6f57d01d33b2e6d3530a8e49d81",
       "executable": false
     },
     "src/modules/public-site/portal-pages.ts": {
@@ -5680,7 +5680,7 @@
       "executable": false
     },
     "src/modules/public-site/request-pages.ts": {
-      "sha256": "22df4a294da94db953dfce1c250f0ef06e537ff96dc9c3d62f2c150b73c5d832",
+      "sha256": "3fcfeb4d0c24eae95b335361ba9b6cf1a7e63f4056710c9cfbbd749852b34ca5",
       "executable": false
     },
     "src/modules/public-site/shell.ts": {
@@ -9136,7 +9136,7 @@
       "executable": false
     },
     "tests/helpers/customer-portal-journey.mjs": {
-      "sha256": "911193b1dfddc87aa5b78550296ba8c7c4b63c8b6ed0f496d8695ed9f0d5b566",
+      "sha256": "8247e868fe0f16fcbdd1a24d83134134cd3398764d0415488559a0123df98e32",
       "executable": false
     },
     "tests/helpers/delegation-journey/browser-ui.mjs": {
@@ -9644,7 +9644,7 @@
       "executable": false
     },
     "tests/helpers/request-forms-journey.mjs": {
-      "sha256": "806751df2c2b83e7006cd5a480f86887aee4c47e12628488b8b7e26d265cfef7",
+      "sha256": "fd1859fea2147b19d1a0f5f1e358ebf4e0e172e51849b6a05797cefa1fe0b331",
       "executable": false
     },
     "tests/helpers/rer-archive.mjs": {
@@ -9664,7 +9664,7 @@
       "executable": false
     },
     "tests/helpers/self-service-fixture.mjs": {
-      "sha256": "193867350ba05e05eb03660cc056b5e889d6bb3f99d887de1c109f02bb5ff93d",
+      "sha256": "5037be7f3dbaffdffa71eb019c98f4a0478e2d0c05aa1387fcfdf3f84da59bb6",
       "executable": false
     },
     "tests/helpers/serving-capacity.mjs": {
@@ -9748,7 +9748,7 @@
       "executable": false
     },
     "tests/helpers/widget/installed.mjs": {
-      "sha256": "0224936a4447ac68ff6b466fb34abac6fa0db15d1fc0bc68c7299ab7f30890e1",
+      "sha256": "26ab7daf256f8852f884bc4a94eb4371d2483e08f2d00c65406e8e42071894e6",
       "executable": false
     },
     "tests/helpers/widget/lifecycle.mjs": {
@@ -9768,7 +9768,7 @@
       "executable": false
     },
     "tests/helpers/widget/runtime.mjs": {
-      "sha256": "4fc93f3c89dec6feb0c286e920c275b7c9fdd638f822659f1567e36712a06c79",
+      "sha256": "5f7831fd07fa31e12fd817560170195b240ef2e560bcf0194e50c1b95e9c333c",
       "executable": false
     },
     "tests/helpers/widget/settings.mjs": {
@@ -9932,7 +9932,7 @@
       "executable": false
     },
     "tests/journeys/public.mjs": {
-      "sha256": "53370b7a362bef47ef9680517e163721584cafac950321f840624a000930b9cf",
+      "sha256": "5ae404f28a0dd14b963fbcbd6efb884a55577d292ac17db802bcb8e212ee07d4",
       "executable": false
     },
     "tests/journeys/reports-browser.mjs": {

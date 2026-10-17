@@ -12,7 +12,8 @@
 .customer-request [aria-invalid=true] {border-color:#a82f26;}
 .request-field p {font-size:.9rem;margin:0;}
 .request-field-error,.request-unavailable {color:#8b2924;}
-.request-identity {background:#f3f6f4;padding:1rem;border-radius:4px;}
+.request-identity {background:#f3f6f4;color:#263b32;padding:1rem;border-radius:4px;}
+.customer-request a,#request-result a {color:#145c3c;text-decoration:underline;}
 .request-form-list {padding:0;list-style:none;display:grid;gap:1rem;}
 .request-form-list li {padding:1rem 1.25rem;border:1px solid #dce4df;border-radius:4px;}
 .request-form-list h2 {margin-top:0;font-size:1.25rem;}

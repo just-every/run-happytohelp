@@ -83,6 +83,16 @@
     {
       "binding": "MAIL_API_KEY",
       "environment": "EMAIL_API_KEY"
+    },
+    {
+      "binding": "FORMS_TURNSTILE_SITE_KEY",
+      "environment": "FORMS_TURNSTILE_SITE_KEY",
+      "optional": true
+    },
+    {
+      "binding": "FORMS_TURNSTILE_SECRET_KEY",
+      "environment": "FORMS_TURNSTILE_SECRET_KEY",
+      "optional": true
     }
   ]
 }

@@ -4,7 +4,8 @@ import SecretSteps from '../../setup-help/SecretSteps';
 
 const link = (href, text) => <a href={href} target="_blank" rel="noreferrer">{text}</a>;
 const guide = '/docs/website-knowledge';
-const examples = { APIFY_TOKEN: 'your-apify-api-token', APIFY_CRAWLER_ACTOR_ID: 'apify~website-content-crawler' };
+const apifyExample = 'your-apify-api-token';
+const examples = { APIFY_TOKEN: apifyExample, APIFY_CRAWLER_ACTOR_ID: 'apify~website-content-crawler' };
 
 /** What this installation's website reading needs, read once per page: which reader runs and the crawler's settings. */
 export function useWebsiteReader(projectId, enabled = true) {

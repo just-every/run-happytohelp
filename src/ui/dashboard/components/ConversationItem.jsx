@@ -1,3 +1,4 @@
+import WorkflowDue from './workflows/WorkflowDue';
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@tanstack/react-router';
@@ -81,6 +82,7 @@ function ConversationItem({ conversation, setConversation }) {
                                 <span className="badge conversation-item-project text-truncate">{ projectName }</span>
                             </div> }
                             {conversation.status_category && !(settings.projects?.[conversation.project_id] || settings.project)?.is_demo && <div className="ticket-row-meta"><span>{conversation.status?.name || conversation.status_category.replaceAll('_', ' ')}</span><span>{conversation.priority}</span>{conversation.subject && <span className="text-truncate">{conversation.subject}</span>}</div>}
+                            {!(settings.projects?.[conversation.project_id] || settings.project)?.is_demo && <WorkflowDue sla={conversation.workflow_sla} snooze={conversation.snooze}/>}
                             <div className="conversation-tags">{(conversation.tags||[]).map(tag=><span className="conversation-tag" key={tag.id}>{tag.name}</span>)}</div>
                             <div className="conversation-item-preview d-flex align-items-center">
                                 { conversation.last_message && <div className="text-truncate me-auto">

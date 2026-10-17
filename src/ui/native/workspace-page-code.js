@@ -22,6 +22,7 @@ const pages = {
     InsightsPage: lazyPageCode(() => import('./pages/InsightsPage')),
     SecurityPage: lazyPageCode(() => import('./pages/security/SecurityPage')),
     SecurityLog: lazyPageCode(() => import('./pages/security/SecurityLog')),
+    WorkflowSettings: lazyPageCode(() => import('./pages/workflows/WorkflowSettings')),
     TicketSettings: lazyPageCode(() => import('./pages/tickets/TicketSettings')),
     SuspendedMail: lazyPageCode(() => import('./pages/SuspendedMail')),
     RolesPage: lazyPageCode(() => import('./pages/security/RolesPage')),
@@ -61,6 +62,7 @@ export function preloadWorkspacePage(pathname, settings) {
     else if (section === 'github-settings') name = 'GitHubSettings';
     else if (section === 'security') name = 'SecurityPage';
     else if (section === 'security-log') name = 'SecurityLog';
+    else if (section === 'workflow-settings') name = 'WorkflowSettings';
     else if (section === 'ticket-settings') name = 'TicketSettings';
     else if (section === 'suspended') name = 'SuspendedMail';
     else if (section === 'roles') name = 'RolesPage';

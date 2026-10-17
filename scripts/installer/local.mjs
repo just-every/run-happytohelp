@@ -8,6 +8,8 @@ import {localPortability} from '@runeditrun/rer/portability';
 import {localInputDefaults,localOwner,nativeOwner,prepareNativeLocal} from './native-local.mjs';
 import {ticketRestoreSql} from './ticket-archive-upgrade.mjs';
 import {r4RestoreSql} from './r4-tables.mjs';
+import {workflowRestoreSql} from './workflow-archive-safety.mjs';
+import {workflowLegacyRestoreSql} from './workflow-archive-defaults.mjs';
 import {fileRecords} from '@runeditrun/rer/modules/portability/files';
 import {checkArchiveSnapshot,readDurableObjects,snapshotSql} from './durable-objects.mjs';
 import * as model from './ui/seed.mjs';
@@ -39,7 +41,7 @@ export const adapter=localInstaller({
  start:preview,owner:nativeOwner,localOwner,signIn:{returnTo:'/setup'},
 });
 export const install=(root,input,store,onApp,signal)=>installOperator(root,input,store,onApp,signal,adapter.hooks);
-const transfer=localPortability({database:'DB',buckets:{FILES:'FILES'},policyModule:'scripts/installer/portability-policy.mjs',transient:['ConversationSocket connections (messages are in D1)','queue execution leases','active sessions and one-use sign-in links','GitHub and integration credentials','local computer pairing, grants and job execution records']});
+const transfer=localPortability({database:'DB',buckets:{FILES:'FILES'},policyModule:'scripts/installer/portability-policy.mjs',transient:['ConversationSocket connections (messages are in D1)','queue execution leases','active sessions and one-use sign-in links','GitHub and integration credentials','local computer pairing, grants and job execution records','local workflow clock overrides; queued workflow sends are cancelled and claimed sends remain uncertain']});
 const d1=(context,label,sql)=>context.store.run(label,'pnpm',['exec','wrangler','d1','execute','DB','--local','--persist-to','.wrangler/state','--config','wrangler.jsonc','--command',sql],{cwd:context.root,signal:context.signal});
 const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async context=>{
  await context.store.run('Collecting local migrations',process.execPath,['scripts/migrations.mjs'],{cwd:context.root,signal:context.signal});
@@ -50,21 +52,27 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
   snapshots=await readDurableObjects(context.root);
   await d1(context,'Recording Durable Object storage',snapshotSql(snapshots));
  }else snapshots=await checkArchiveSnapshot(context.path);
- let selected=transfer;
+ let selected=transfer,upgradeWorkflows=false;
  if(verb==='import'){
-  const historical=await Promise.all(['./ticket-archive-policy.mjs','./r4-archive-policy.mjs','./email-archive-policy.mjs'].map(async module=>({module,policy:(await import(module)).default})));
+  const historical=await Promise.all(['./ticket-archive-policy.mjs','./r4-archive-policy.mjs','./email-archive-policy.mjs','./workflow-archive-policy.mjs','./workflow-archive-ticket-policy.mjs'].map(async module=>({module,policy:(await import(module)).default})));
   // Metadata can select this explicitly supported schema transition, never an
   // executable path supplied by the archive. Base verifies the complete archive.
   for await(const record of fileRecords(context.path))if(record.kind==='manifest'){
    const previous=historical.find(item=>Object.hasOwn(item.policy.acceptedSchemas,record.schema));
-   if(previous)selected=localPortability({database:'DB',buckets:{FILES:'FILES'},policyModule:new URL(previous.module,import.meta.url),transient:[]});
+   if(previous){selected=localPortability({database:'DB',buckets:{FILES:'FILES'},policyModule:new URL(previous.module,import.meta.url),transient:[]});upgradeWorkflows=previous.policy.excludeTables.includes('workflow_rules');}
    break;
   }
  }
  const result=await selected[verb](context);
  // Restore deliberately suspends business triggers. Rebuild derived search
  // before reporting a completed import, including a resumed import.
- if(verb==='import'){await d1(context,'Preparing restored ticket statuses',ticketRestoreSql);await d1(context,'Preparing restored saved replies',r4RestoreSql);await d1(context,'Rebuilding conversation search',"INSERT INTO inbox_message_search(inbox_message_search) VALUES('rebuild')");}
+ if(verb==='import'){
+  await d1(context,'Fencing archived workflow actions',workflowRestoreSql);
+  if(upgradeWorkflows)await d1(context,'Preparing restored workflow defaults',workflowLegacyRestoreSql);
+  await d1(context,'Preparing restored ticket statuses',ticketRestoreSql);
+  await d1(context,'Preparing restored saved replies',r4RestoreSql);
+  await d1(context,'Rebuilding conversation search',"INSERT INTO inbox_message_search(inbox_message_search) VALUES('rebuild')");
+ }
  // The receipt names the Durable Object storage the archive carries (exported) or carried (restored).
  return {...result,durableObjects:snapshots.map(({namespace,className,records,digest})=>({namespace,className,records:Array.isArray(records)?records.length:records,digest}))};
 } ]));

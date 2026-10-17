@@ -1,3 +1,5 @@
+import {processWorkflowEvents} from '../workflows/events'
+import {workflowNow,workflowEnvironment} from '../workflows/clock'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {getTicket,availableTicketSql,type TicketAuthority} from './model'
@@ -24,9 +26,10 @@ export async function previewTicket(env:Env,actor:Actor,id:string,change:TicketC
 /** The receipt is written with live authority, schema and ticket frontier checks.
  * Every effect in the transaction depends on that receipt. */
 export async function mutateTicket(env:Env,actor:Actor,id:string,input:TicketChange,authority:TicketAuthority){
+ env=await workflowEnvironment(env)
  const {change,current,next,fields,values,guard,predicates,params}=await prepareTicketChange(env,actor,id,input,authority)
  if(change.ai_id&&!change.agent_id&&current.last_message_id){const model=await env.DB.prepare("SELECT a.model FROM ai_profiles a JOIN messages m ON m.id=? AND m.actor_role='contact' WHERE a.project_id=? AND a.id=?").bind(current.last_message_id,actor.projectId,change.ai_id).first<{model:string}>();if(model)assertModelConfigured(env,model.model)}
- const now=Math.max(Date.now(),current.updated_at+1),receipt=crypto.randomUUID(),source=authority.source??(authority.tokenAuthority?'api':'dashboard'),actorType=authority.tokenAuthority?'api':'user',actorId=authority.tokenAuthority?.tokenId??actor.id
+ const now=Math.max(workflowNow(env),current.updated_at+1),receipt=crypto.randomUUID(),source=authority.source??(authority.tokenAuthority?'api':'dashboard'),actorType=authority.tokenAuthority?'api':'user',actorId=authority.tokenAuthority?.tokenId??actor.id
  const accepted='EXISTS(SELECT 1 FROM ticket_history WHERE id=? AND conversation_id=?)'
  const history:Record<string,unknown>={}
  for(const key of ['status_id','status_category','priority','subject','channel','group_id','requester_id','submitter_id','submitter_type','assigned_to','current_ai_id'])if(current[key]!==next[key])history[key]={from:current[key],to:next[key]}
@@ -52,6 +55,7 @@ export async function mutateTicket(env:Env,actor:Actor,id:string,input:TicketCha
  const results=await env.DB.batch(statements)
  if(!results[0].meta.changes)throw new HTTPException(409,{message:'Ticket, field configuration or authority changed. Reload before applying changes.'})
  try{
+ await processWorkflowEvents(env,id)
  if(assignmentChanged){await publishActivity(env,actor.projectId,id,'assignment');await dispatchOperatorNotifications(env,{projectId:actor.projectId,conversationId:id})}
  if(change.ai_id&&!change.agent_id)await onAssistantAssignment(env,actor.projectId,id,{sql:`${accepted} AND c.assigned_to IS NULL AND c.last_message_id IS ? AND EXISTS(SELECT 1 FROM conversation_ai WHERE conversation_id=c.id AND ai_id=?) AND EXISTS(${guard.sql}) AND ${availableTicketSql()}`,params:[receipt,id,current.last_message_id,change.ai_id,...guard.params]},assignmentChanged)
  if(current.group_id!==next.group_id&&next.group_id){const members=await env.DB.prepare('SELECT user_id FROM ticket_group_members WHERE project_id=? AND group_id=?').bind(actor.projectId,next.group_id).all<{user_id:string}>();await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:id,event:'group',eventId:receipt,actorId:actor.id,recipientIds:members.results.map(m=>m.user_id)})}

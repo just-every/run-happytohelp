@@ -1,3 +1,6 @@
+import {workflowNow,workflowEnvironment} from '../workflows/clock'
+import {followupId,createFollowupStatement,carryFollowupStatements} from '../workflows/followups'
+import {scheduledAdmission,type ScheduledAdmission} from '../workflows/schedule-authority'
 import {assignmentHistoryStatement} from '../outcomes/assignment-history.ts'
 import {inboundAuthority,provenAddressSql,type InboundAuthority} from '../integrations/inbound-authority.ts'
 import {contactAvailableSql} from './contact-privacy.ts'
@@ -13,11 +16,12 @@ import {writableConversationSql} from '../conversation-actions/merge-read'
 /** Local ids the server mints: `email:` identifies an inbound email claim, `erased:`
  * replaces a client-supplied id when its contact is erased (contact-erasure/statements.ts)
  * and `away:` is the workspace's away reply (management/away-reply.ts). Clients may use none. */
-export const reservedLocalId=(localId:unknown)=>typeof localId==='string'&&/^(?:email|erased|away):/.test(localId)
+export const reservedLocalId=(localId:unknown)=>typeof localId==='string'&&/^(?:email|erased|away|schedule):/.test(localId)
 /** An internal authority may add a transaction predicate; JSON callers cannot mint this symbol. */
 export const messageAuthority=Symbol('messageAuthority')
-export interface MessageInput {requireAvailableRequester?:true;[messageAuthority]?:{sql:string;args:unknown[]};[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
-export async function admitMessage(env:Env,input:MessageInput){
+export interface MessageInput {[messageAuthority]?:{sql:string;args:unknown[]};requireAvailableRequester?:true;[scheduledAdmission]?:ScheduledAdmission;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
+export interface MessageResult {accepted:boolean;duplicate?:boolean;message?:any;reason?:string;followupConversationId?:string}
+export async function admitMessage(env:Env,input:MessageInput):Promise<MessageResult>{
  const {projectId,conversationId,actor,localId,content,expectedRevision}=input,email=input[inboundAuthority]
  if(actor.projectId!==projectId)throw new Error('Project access denied')
  if(actor.role!=='contact')assertPublicReplyPlaceholders(content)
@@ -47,11 +51,15 @@ export async function admitMessage(env:Env,input:MessageInput){
  if(input.generationId&&!generation)return {accepted:false,reason:'generation_not_found'}
  const writerId=generation?.ai_id||actor.id,existing=observations[1].results[0]
  if(existing){if(existing.actor_id!==writerId||existing.intent_hash!==intentHash) return {accepted:false,reason:'local_id_conflict'};return {accepted:true,duplicate:true,message:existing}}
- if(scope.status_category==='closed')return {accepted:false,reason:'ticket_closed_followup_required'}
+ const followup=scope.status_category==='closed'&&actor.role==='contact'&&!input.generationId
+ if(scope.status_category==='closed'&&!followup)return {accepted:false,reason:'ticket_closed_followup_required'}
+ const targetId=followup?await followupId(projectId,conversationId,actor.id,localId):conversationId
+ if(followup){const replay=await env.DB.prepare('SELECT * FROM messages WHERE project_id=? AND conversation_id=? AND local_id=?').bind(projectId,targetId,localId).first<any>();if(replay){if(replay.actor_id!==writerId||replay.intent_hash!==intentHash)return {accepted:false,reason:'local_id_conflict'};return {accepted:true,duplicate:true,message:replay,followupConversationId:targetId}}}
  const autoAssign=actor.role!=='contact'&&!input.generationId&&!input.tokenAuthority&&(!scope.group_id||!!await env.DB.prepare('SELECT 1 FROM ticket_group_members WHERE project_id=? AND group_id=? AND user_id=?').bind(projectId,scope.group_id,actor.id).first())
  const authorship=await authoringSource(env,actor,conversationId,input.authoring,input.generationId)
  const citations=refs.length?await resolvePublicCitations(env,projectId,input.generationId!,refs):[]
- const messageId=crypto.randomUUID(),now=Date.now();const predicates=[writableConversationSql('c'),'c.id=?','c.project_id=?','c.revision=?','c.contact_id=?','c.ticket_version=?',"c.status_category<>'closed'"];const args:unknown[]=[conversationId,projectId,expectedRevision,scope.contact_id,scope.ticket_version]
+ env=await workflowEnvironment(env)
+ const messageId=crypto.randomUUID(),now=workflowNow(env);const predicates=[writableConversationSql('c'),'c.id=?','c.project_id=?','c.revision=?','c.contact_id=?','c.ticket_version=?',followup?"c.status_category='closed'":"c.status_category<>'closed'"];const args:unknown[]=[conversationId,projectId,expectedRevision,scope.contact_id,scope.ticket_version]
  if(input.requireAvailableRequester===true)predicates.push(contactAvailableSql())
  if(autoAssign&&scope.group_id){predicates.push('EXISTS(SELECT 1 FROM ticket_group_members WHERE project_id=c.project_id AND group_id=c.group_id AND user_id=?)');args.push(actor.id)}
  if(input.resolve&&!input.generationId){predicates.push('c.resolved_at IS ?','(SELECT MAX(ordinal) FROM conversation_resolutions WHERE conversation_id=c.id) IS ?');args.push(scope.resolved_at,scope.ordinal)}
@@ -73,6 +81,7 @@ export async function admitMessage(env:Env,input:MessageInput){
    args.push(actor.id,actor.role,email.sender)
   }
  }
+ if(input[scheduledAdmission]){const guard=input[scheduledAdmission]!;predicates.push(guard.sql);args.push(...guard.params)}
  if(input.sessionHash){predicates.push(activeSourceProjectSql('c.project_id'));predicates.push("EXISTS(SELECT 1 FROM sessions s WHERE s.token_hash=? AND s.actor_id=? AND s.revoked_at IS NULL AND s.expires_at>? AND (s.role='contact' AND s.project_id=c.project_id AND s.contact_id=c.contact_id OR s.role<>'contact' AND (s.project_id IS NULL AND s.role='operator' OR s.project_id=c.project_id AND EXISTS(SELECT 1 FROM memberships live WHERE live.project_id=s.project_id AND live.user_id=s.actor_id AND live.role=s.role))))");args.push(input.sessionHash,actor.id,now)}
  if(authority){predicates.push(`(${authority.sql})`);args.push(...authority.args)}
  if(input.expectedLastMessageId!==undefined){predicates.push('c.last_message_id IS ?');args.push(input.expectedLastMessageId)}
@@ -81,15 +90,16 @@ export async function admitMessage(env:Env,input:MessageInput){
  if(authorship.guard){predicates.push(authorship.guard.sql);args.push(...authorship.guard.params)}
  for(const citation of citations){const guard=citationAdmissionGuard(citation);predicates.push(guard.sql);args.push(...guard.args)}
  const citationColumns=(citations.length?',citations_json':'')+(email?',content_raw':''),citationValues=(citations.length?',?':'')+(email?',?':'')
- const nextCategory=actor.role!=='contact'&&input.resolve?'solved':actor.role==='contact'?['pending','on_hold','solved'].includes(scope.status_category)?'open':scope.status_category:['solved','new'].includes(scope.status_category)?'open':scope.status_category
- const nextStatusId=nextCategory===scope.status_category?scope.status_id:nextCategory
- const statements=[env.DB.prepare(`INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at,intent_hash${citationColumns}) SELECT ?,c.project_id,c.id,?,?,?,?,c.revision+1,?,?${citationValues} FROM conversations c WHERE ${predicates.join(' AND ')} AND NOT EXISTS(SELECT 1 FROM messages WHERE conversation_id=c.id AND local_id=?)`).bind(messageId,localId,writerId,input.generationId?'ai':actor.role,content,now,intentHash,...(citations.length?[JSON.stringify(citations)]:[]),...(email?[email.raw]:[]),...args,localId),authorshipStatement(env,messageId,authorship,now),trackingStatement(env,conversationId,false,messageId),env.DB.prepare(`UPDATE conversations SET revision=revision+1,last_message_id=?,updated_at=?,resolved_at=?,status_id=?,status_category=?,ticket_actor_id=?,ticket_actor_type=?,ticket_source=?,subject=CASE WHEN revision=0 AND subject='' THEN COALESCE((SELECT substr(json_extract(evidence_json,'$.subject'),1,500) FROM inbound_emails WHERE id=? AND claim_token=? AND conversation_id=conversations.id),?) ELSE subject END,channel=CASE WHEN revision=0 AND ? THEN 'email' ELSE channel END,assigned_to=CASE WHEN ? THEN ? ELSE assigned_to END WHERE id=? AND EXISTS(SELECT 1 FROM messages WHERE id=?)`).bind(messageId,now,actor.role!=='contact'&&input.resolve?now:null,nextStatusId,nextCategory,writerId,actor.role==='contact'?'contact':input.tokenAuthority?'api':input.generationId?'system':'user',email?'email':actor.role==='contact'?'customer_reply':input.tokenAuthority?'api':input.generationId?'system':'dashboard',email?.receiptId??null,email?.claimToken??null,content.split(/\r?\n/,1)[0].trim().slice(0,500),email?1:0,autoAssign?1:0,actor.id,conversationId,messageId),env.DB.prepare('INSERT INTO conversation_outbox(project_id,conversation_id,message_id,created_at) SELECT project_id,conversation_id,id,created_at FROM messages WHERE id=?').bind(messageId)]
+ const nextCategory=followup?'open':actor.role!=='contact'&&input.resolve?'solved':actor.role==='contact'?['pending','on_hold','solved'].includes(scope.status_category)?'open':scope.status_category:['solved','new'].includes(scope.status_category)?'open':scope.status_category
+ const nextStatusId=!followup&&nextCategory===scope.status_category?scope.status_id:nextCategory
+ const statements=[...(followup?[createFollowupStatement(env,{id:targetId,now,actorId:actor.id,predicates,args})]:[]),env.DB.prepare(`INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at,intent_hash${citationColumns}) SELECT ?,c.project_id,?,?,?,?,?,${followup?'1':'c.revision+1'},?,?${citationValues} FROM conversations c WHERE ${predicates.join(' AND ')} AND NOT EXISTS(SELECT 1 FROM messages WHERE conversation_id=? AND local_id=?)`).bind(messageId,targetId,localId,writerId,input.generationId?'ai':actor.role,content,now,intentHash,...(citations.length?[JSON.stringify(citations)]:[]),...(email?[email.raw]:[]),...args,targetId,localId),authorshipStatement(env,messageId,authorship,now),trackingStatement(env,targetId,followup,messageId),env.DB.prepare(`UPDATE conversations SET revision=revision+1,last_message_id=?,updated_at=?,resolved_at=?,status_id=?,status_category=?,ticket_actor_id=?,ticket_actor_type=?,ticket_source=?,subject=CASE WHEN revision=0 AND subject='' THEN COALESCE((SELECT substr(json_extract(evidence_json,'$.subject'),1,500) FROM inbound_emails WHERE id=? AND claim_token=? AND conversation_id=conversations.id),?) ELSE subject END,channel=CASE WHEN revision=0 AND ? THEN 'email' ELSE channel END,assigned_to=CASE WHEN ? THEN ? ELSE assigned_to END WHERE id=? AND EXISTS(SELECT 1 FROM messages WHERE id=?)`).bind(messageId,now,actor.role!=='contact'&&input.resolve?now:null,nextStatusId,nextCategory,writerId,actor.role==='contact'?'contact':input.tokenAuthority?'api':input.generationId?'system':'user',email?'email':input[scheduledAdmission]?'schedule':actor.role==='contact'?'customer_reply':input.tokenAuthority?'api':input.generationId?'system':'dashboard',email?.receiptId??null,email?.claimToken??null,content.split(/\r?\n/,1)[0].trim().slice(0,500),email?1:0,autoAssign?1:0,actor.id,targetId,messageId),env.DB.prepare('INSERT INTO conversation_outbox(project_id,conversation_id,message_id,created_at) SELECT project_id,conversation_id,id,created_at FROM messages WHERE id=?').bind(messageId)]
+ if(followup){statements.push(...carryFollowupStatements(env,{id:targetId,originalId:conversationId,messageId,actorId:actor.id,localId,now}));if(email)statements.push(env.DB.prepare('UPDATE inbound_emails SET conversation_id=? WHERE id=? AND claim_token=? AND EXISTS(SELECT 1 FROM messages WHERE id=?)').bind(targetId,email.receiptId,email.claimToken,messageId))}
  if(email?.cc.length)for(const contactId of email.cc)statements.push(env.DB.prepare(`INSERT OR IGNORE INTO conversation_participants(id,conversation_id,contact_id,created_at,joined_via) SELECT ?,m.conversation_id,ct.id,?,'cc_header' FROM messages m JOIN contacts ct ON ct.project_id=m.project_id WHERE m.id=? AND ct.id=? AND coalesce(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1`).bind(crypto.randomUUID(),now,messageId,contactId))
- // A participant writing to this ticket with authenticated mail, or through the reply address issued to it, has proven its own address.
- if(email&&actor.role==='contact'&&(email.authenticated||email.grant))statements.push(env.DB.prepare("UPDATE conversation_participants SET joined_via='self' WHERE conversation_id=? AND contact_id=? AND joined_via='cc_header' AND EXISTS(SELECT 1 FROM messages WHERE id=?)").bind(conversationId,actor.id,messageId))
- if(autoAssign&&scope.assigned_to!==actor.id)statements.push(assignmentHistoryStatement(env,{id:`message:${messageId}`,conversationId,actorId:actor.id,agentId:actor.id,createdAt:now},'EXISTS(SELECT 1 FROM messages WHERE id=?)',[messageId]))
+ // A participant writing with authenticated mail or its issued reply address proves its own address.
+ if(email&&actor.role==='contact'&&(email.authenticated||email.grant))statements.push(env.DB.prepare("UPDATE conversation_participants SET joined_via='self' WHERE conversation_id=? AND contact_id=? AND joined_via='cc_header' AND EXISTS(SELECT 1 FROM messages WHERE id=?)").bind(targetId,actor.id,messageId))
+ if(autoAssign&&scope.assigned_to!==actor.id)statements.push(assignmentHistoryStatement(env,{id:`message:${messageId}`,conversationId:targetId,actorId:actor.id,agentId:actor.id,createdAt:now},'EXISTS(SELECT 1 FROM messages WHERE id=?)',[messageId]))
  if(actor.role!=='contact'&&!input.generationId)statements.push(env.DB.prepare("UPDATE ai_generations SET state='cancelled',updated_at=? WHERE conversation_id=? AND project_id=? AND state IN ('queued','running') AND EXISTS(SELECT 1 FROM messages WHERE id=?)").bind(new Date(now).toISOString(),conversationId,projectId,messageId))
- if(mediaIds.length)statements.push(env.DB.prepare(`UPDATE media SET message_id=? WHERE id IN (${mediaIds.map(()=>'?').join(',')}) AND EXISTS(SELECT 1 FROM messages WHERE id=?)`).bind(messageId,...mediaIds,messageId))
+ if(mediaIds.length)statements.push(env.DB.prepare(`UPDATE media SET message_id=?,conversation_id=? WHERE id IN (${mediaIds.map(()=>'?').join(',')}) AND EXISTS(SELECT 1 FROM messages WHERE id=?)`).bind(messageId,targetId,...mediaIds,messageId))
  if(input.generationId)statements.push(env.DB.prepare("UPDATE ai_generations SET state='completed' WHERE id=? AND EXISTS(SELECT 1 FROM messages WHERE id=?)").bind(input.generationId,messageId))
  // Read the admitted row and any competing same-command replay in the same
  // transaction. This preserves their authoritative predicates and avoids a
@@ -102,5 +112,5 @@ export async function admitMessage(env:Env,input:MessageInput){
  )
  const committed=await env.DB.batch<any>(statements),message=committed[committedIndex].results[0]
  if(!message){const duplicate=committed[committedIndex+1].results[0];if(duplicate&&duplicate.actor_id===writerId&&duplicate.intent_hash===intentHash)return {accepted:true,duplicate:true,message:duplicate};return {accepted:false,reason:'conversation_changed_or_admission_denied'}}
- return {accepted:true,duplicate:false,message}
+ return {accepted:true,duplicate:false,message,...(followup?{followupConversationId:targetId}:{})}
 }

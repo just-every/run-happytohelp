@@ -124,6 +124,11 @@
           "label": "Support email"
         },
         {
+          "slug": "workflows",
+          "source": "docs/workflows.md",
+          "label": "Business hours and workflows"
+        },
+        {
           "slug": "help-before-they-ask",
           "source": "docs/help-before-they-ask.md",
           "label": "Help before they ask"

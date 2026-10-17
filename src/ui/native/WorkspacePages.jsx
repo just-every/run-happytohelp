@@ -6,11 +6,11 @@ import { useDashboardLocation } from './dashboard-state';
 import { adminTitles } from './pages/AdminRecords';
 import { workspacePageComponents, workspacePageRoute } from './workspace-page-code';
 import { AdminRequired, PageNotFound, ProjectUnavailable } from './pages/WorkspaceNotices';
-const titles={'ticket-settings':'Tickets','api-settings':'API tokens','webhook-settings':'Webhooks','slack-settings':'Slack','delivery-log':'Delivery log',reports:'Reports','move-in':'Move in',edit:'Project',settings:'Project',ais:'AI',datasets:'Knowledge',articles:'Knowledge',categories:'Knowledge',agents:'Agents','local-agent':'Local computers','email-settings':'Email',suspended:'Suspended email','widget-settings':'Widget',macros:'Saved Replies',contacts:'Contacts',plugins:'Plugins',users:'Profile',insights:'Insights','training-runs':'Evaluation runs',security:'Security','security-log':'Security log',roles:'Roles'};
+const titles={'workflow-settings':'Workflows','ticket-settings':'Tickets','api-settings':'API tokens','webhook-settings':'Webhooks','slack-settings':'Slack','delivery-log':'Delivery log',reports:'Reports','move-in':'Move in',edit:'Project',settings:'Project',ais:'AI',datasets:'Knowledge',articles:'Knowledge',categories:'Knowledge',agents:'Agents','local-agent':'Local computers','email-settings':'Email',suspended:'Suspended email','widget-settings':'Widget',macros:'Saved Replies',contacts:'Contacts',plugins:'Plugins',users:'Profile',insights:'Insights','training-runs':'Evaluation runs',security:'Security','security-log':'Security log',roles:'Roles'};
 export default function WorkspacePages({ settings, pages = {} }) {
     const { Connections, Reports, MoveIn, ActivationPage, SetupTitle, GitHubSettings, ArticleImport,
         ProjectsPage, AdminPage, KnowledgePage, ManagementPage, ProjectSettings, WidgetSettingsPage,
-        ComputersPage, DelegationSettings, DelegationAuthorize, TrainingRuns, AccountPage, InsightsPage, SecurityPage, SecurityLog, RolesPage, TicketSettings, SuspendedMail } = { ...workspacePageComponents, ...pages };
+        ComputersPage, DelegationSettings, DelegationAuthorize, TrainingRuns, AccountPage, InsightsPage, SecurityPage, SecurityLog, RolesPage, TicketSettings, SuspendedMail, WorkflowSettings } = { ...workspacePageComponents, ...pages };
     const pathname = useDashboardLocation().pathname;
     const {segments,section,recordId}=workspacePageRoute(pathname,settings);
     const projectId=segments[0]==='projects'?segments[1]:settings.project?.id||Object.keys(settings.projects||{})[0];
@@ -30,6 +30,7 @@ export default function WorkspacePages({ settings, pages = {} }) {
     else if(section==='github-settings')page=<GitHubSettings {...{projectId}}/>;
     else if(section==='security')page=<SecurityPage {...{projectId}} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='security-log')page=<SecurityLog {...{projectId}} role={settings.projects?.[projectId]?.role}/>;
+    else if(section==='workflow-settings')page=<WorkflowSettings {...{projectId}}/>;
     else if(section==='ticket-settings')page=<TicketSettings {...{projectId}}/>;
     else if(section==='suspended')page=<SuspendedMail {...{projectId}} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='roles')page=<RolesPage {...{projectId}} role={settings.projects?.[projectId]?.role}/>;

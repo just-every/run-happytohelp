@@ -20,14 +20,21 @@ export async function ticketApiPrivacy(f){
  await patch(email.id,{status_id:'pending'})
  await app.ok('/api/integrations/email/inbound',{token:'ticket-gateway',body:{messageId:'r3-inbound-reply',conversationId:email.id,from:'email-customer@example.test',to:'returns@trailhead.example',subject:'Re: Replacement hiking boots',text:'Please use the same size.'}})
  assert.equal((await get(email.id)).status_category,'open')
- // A reply to a Closed ticket is admitted into a new ticket for the same customer, which the operator sees; never refused.
+ // A reply to a Closed ticket is admitted into a linked follow-up for the same customer, which the operator sees; never refused.
+ await ok(`/conversations/${email.id}/participants`,{email:'shipping-team@example.test'})
+ await patch(email.id,{priority:'high',fields:{[f.fields[0].id]:'TO-EMAIL-49313'},status_id:'solved'})
  await patch(email.id,{status_id:'closed'})
+ const oldEmail=await get(email.id)
  const followUp=await app.call('/api/integrations/email/inbound',{token:'ticket-gateway',body:{messageId:'r3-inbound-after-close',conversationId:email.id,from:'email-customer@example.test',to:'returns@trailhead.example',subject:'Re: Replacement hiking boots',text:'The replacement pair leaks too.'}})
  assert.equal(followUp.status,201,JSON.stringify(followUp.data));assert.notEqual(followUp.data.conversationId,email.id)
  const next=await get(followUp.data.conversationId)
  assert.equal(next.requester_id,email.contact_id);assert.equal(next.channel,'email');assert.equal(next.subject,'Re: Replacement hiking boots')
  assert.ok((await app.ok(`/api/conversations/${next.id}/messages`,{token:w.tokens.owner})).messages.some(message=>message.content==='The replacement pair leaks too.'))
  assert.equal((await get(email.id)).status_category,'closed')
+ assert.equal(next.requester_id,oldEmail.requester_id);assert.equal(next.priority,'high');assert.deepEqual(next.fields,oldEmail.fields)
+ assert.equal((await app.first('SELECT count(*) n FROM conversation_participants WHERE conversation_id=?',next.id)).n,1)
+ assert.equal((await ok(`/conversations/${next.id}/workflows`)).followup_of,email.id)
+
  const before=await get(id);assert.ok(before.history.length)
  const referenced=await ok('/ticket-views',{name:'Dana requests',visibility:'personal',filters:[{field:'requester_id',operator:'eq',value:visitor.contactId}],sort:[]})
  const erased=await app.ok(`/api/management/projects/${w.projectId}/contacts/${visitor.contactId}/erase`,{token:w.tokens.owner,body:{}})

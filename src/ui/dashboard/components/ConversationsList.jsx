@@ -39,14 +39,14 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
     const navigate = useNavigate();
     const selectedView = normalizeInboxView(searchParams.view, inboxViewCounts);
     const searchQuery = searchParams.q == null ? '' : String(searchParams.q);
-    const filter = useMemo(() => ({...inboxViewFilter(selectedView, searchQuery, searchParams.assigned_to, searchParams.search_scope),...(searchParams.tag?{tag:String(searchParams.tag)}:{})}), [ selectedView, searchQuery, searchParams.tag, searchParams.assigned_to, searchParams.search_scope ]);
+    const filter = useMemo(() => ({...inboxViewFilter(selectedView, searchQuery, searchParams.assigned_to, searchParams.search_scope),...(searchParams.tag?{tag:String(searchParams.tag)}:{}),...(['only','include'].includes(searchParams.snoozed)?{snoozed:searchParams.snoozed}:{})}), [ selectedView, searchQuery, searchParams.tag, searchParams.assigned_to, searchParams.search_scope, searchParams.snoozed ]);
     const projectId = settings.isGlobalInbox ? null : settings.project?.id;
     const ticketQueue = projectId && !settings.project?.is_demo;
     const [selected, setSelected] = useState({}), [selecting, setSelecting] = useState(false);
     const [creatingTicket,setCreatingTicket] = useState(false);
     const queueFilter = useMemo(() => ticketQueue && (searchParams.saved_view || searchParams.filters)
-        ? { ...(searchQuery.trim() ? { q: searchQuery.trim(), search_scope: searchParams.search_scope || 'all' } : {}), ...(searchParams.tag ? { tag: String(searchParams.tag) } : {}), ...(searchParams.saved_view ? { saved_view: String(searchParams.saved_view) } : { filters: typeof searchParams.filters === 'string' ? searchParams.filters : JSON.stringify(searchParams.filters), sort: typeof searchParams.sort === 'string' ? searchParams.sort : JSON.stringify(searchParams.sort || []) }) }
-        : filter, [ticketQueue, searchParams.saved_view, searchParams.filters, searchParams.sort, filter]);
+        ? { ...(['only','include'].includes(searchParams.snoozed)?{snoozed:searchParams.snoozed}:{}), ...(searchQuery.trim() ? { q: searchQuery.trim(), search_scope: searchParams.search_scope || 'all' } : {}), ...(searchParams.tag ? { tag: String(searchParams.tag) } : {}), ...(searchParams.saved_view ? { saved_view: String(searchParams.saved_view) } : { filters: typeof searchParams.filters === 'string' ? searchParams.filters : JSON.stringify(searchParams.filters), sort: typeof searchParams.sort === 'string' ? searchParams.sort : JSON.stringify(searchParams.sort || []) }) }
+        : filter, [ticketQueue, searchParams.saved_view, searchParams.filters, searchParams.sort, searchParams.snoozed, filter]);
     const listKey = JSON.stringify(queueFilter);
     useEffect(() => { setSelected({}); }, [listKey, projectId]);
     const {

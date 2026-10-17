@@ -7,6 +7,7 @@ export function initialInboxListFilter(search = {}, counts) {
     const query = search.q == null ? '' : String(search.q);
     return {...inboxViewFilter(view, query, search.assigned_to, search.search_scope),
         ...(search.tag ? {tag: String(search.tag)} : {}),
+        ...(['only','include'].includes(search.snoozed) ? {snoozed: search.snoozed} : {}),
         ...Object.fromEntries(['saved_view','filters','sort'].filter(key => search[key]).map(key => [key,String(search[key])]))};
 }
 const filterKey = params => JSON.stringify(Object.entries(params || {})

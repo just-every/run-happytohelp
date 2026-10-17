@@ -93,7 +93,13 @@ async function useAtWidth({runtime,browser,shot,width,kind,races}){
   await composer.fill('Ordinary typing still works.');await page.getByRole('button',{name:'Reply tools',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:savedReply.title,exact:true}).click()
   await page.locator('.saved-replies-picker').waitFor({state:'hidden'})
   assert.ok((await composer.inputValue()).includes('Ordinary typing still works.'));assert.ok((await composer.inputValue()).includes(savedReply.content))
+  const savedText=await composer.inputValue()
   await composer.fill('');assert.equal(owners(await visitor.transcript()).length,2)
+  // Macro drafts persist across reloads. Review and send this one before the
+  // separate late-assistant-response checks, which start with an empty composer.
+  await composer.fill(savedText)
+  await page.getByRole('button',{name:'Send',exact:true}).click();await visitor.page.getByText(savedText,{exact:true}).waitFor()
+  assert.equal(owners(await visitor.transcript()).length,3)
 
   if(races){
    // A late Use response never overwrites a later human edit, files or focus.
@@ -115,7 +121,7 @@ async function useAtWidth({runtime,browser,shot,width,kind,races}){
    assert.equal((await context.request.delete(runtime.origin+`/api/projects/${tenant.projectId}/local-agents/${jobs.data.find(job=>job.id===fresh.jobId).device_id}`)).status(),200)
    const [denied]=await Promise.all([page.waitForResponse(r=>r.url().endsWith('/result/draft')),page.getByRole('button',{name:'Use Reply with screenshot',exact:true}).first().click()])
    assert.equal(denied.status(),409);await page.locator('.delegation-panel__error').waitFor();assert.equal(await composer.inputValue(),'');assert.equal(await page.locator('.conversation-composer__files').count(),0)
-   assert.equal(await panel.getAttribute('aria-hidden'),'false');assert.equal(owners(await visitor.transcript()).length,2)
+   assert.equal(await panel.getAttribute('aria-hidden'),'false');assert.equal(owners(await visitor.transcript()).length,3)
   }
   await page.screenshot({path:shot(`use-${width}.png`)})
   assert.deepEqual(errors,[])

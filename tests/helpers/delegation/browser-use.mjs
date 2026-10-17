@@ -91,6 +91,7 @@ async function useAtWidth({runtime,browser,shot,width,kind,races}){
   await page.getByTestId('nav-settings').click();await page.waitForURL('**/edit');await composer.waitFor({state:'detached'})
   await page.goBack();await page.waitForURL(url);await composer.waitFor();assert.equal(await composer.inputValue(),'');assert.equal(await page.locator('.conversation-composer__files').count(),0)
   await composer.fill('Ordinary typing still works.');await page.getByRole('button',{name:'Reply tools',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:savedReply.title,exact:true}).click()
+  await page.locator('.saved-replies-picker').waitFor({state:'hidden'})
   assert.ok((await composer.inputValue()).includes('Ordinary typing still works.'));assert.ok((await composer.inputValue()).includes(savedReply.content))
   await composer.fill('');assert.equal(owners(await visitor.transcript()).length,2)
 

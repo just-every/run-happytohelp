@@ -2,6 +2,7 @@ import {importErasureStatements} from '../../move-in/erasure'
 import {eraseSurveyStatements} from '../../outcomes/survey-store'
 import {ticketErasureCount,ticketErasureStatements} from '../../tickets/erasure'
 import {collaborationRecordsCount,collaborationRecordsStatements} from './collaboration'
+import {emailErasureStatements} from '../../integrations/email-erasure'
 import type {Env} from '../../../platform/env'
 import {legacyArchiveRedaction} from './archive'
 import {erasureInboundEvidenceStatements} from './inbound-evidence'
@@ -73,6 +74,7 @@ export function erasureStatements(env: Env, request: ErasureRequest) {
     env.DB.prepare(tombstone).bind(projectId, contactId, actorId, now),
     ...collaborationRecordsStatements(env,projectId,contactId),
     ...ticketErasureStatements(env,projectId,contactId),
+    ...emailErasureStatements(env,projectId,contactId,request.emails),
     // Copies of the contact's data held outside the canonical rows, removed while those rows still identify them.
     bound(legacyArchiveRedaction),
     ...importErasureStatements(env,projectId,contactId),

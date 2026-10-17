@@ -13,7 +13,7 @@ import {emailAddress} from './inbound-routing'
 
 // Headers the classifier reads come first; the trailing threading headers are
 // retained for inspection only and are the first dropped from stored evidence.
-export const EVIDENCE_HEADERS=['auto-submitted','precedence','x-auto-response-suppress','list-id','list-unsubscribe','x-autoreply','x-autorespond','return-path','message-id','in-reply-to','references'] as const
+export const EVIDENCE_HEADERS=['auto-submitted','precedence','x-auto-response-suppress','list-id','list-unsubscribe','x-autoreply','x-autorespond','return-path','authentication-results','received-spf','x-spam-flag','x-spam-score','x-zendesk-ticket-id','x-freshdesk-ticket-id','x-hs-conversation-id','x-helpscout-conversation-id','x-intercom-conversation-id','x-intercom-conversation','reply-to','message-id','in-reply-to','references'] as const
 export type EvidenceHeader=typeof EVIDENCE_HEADERS[number]
 /** `sender_verified` records whether the ingress verified the header From (DKIM, DMARC
  * or aligned SPF); the envelope sender is delivery metadata, never identity. */

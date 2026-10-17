@@ -2,6 +2,8 @@ import React, { useCallback, useContext, useMemo, useEffect, useState } from 're
 import TicketViews from './tickets/TicketViews';
 import TicketBulkActions from './tickets/TicketBulkActions';
 import BulkMacros from './macros/BulkMacros';
+import CreateEmailTicket from './CreateEmailTicket';
+import {Link} from '@tanstack/react-router';
 import ConversationItem from "./ConversationItem";
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import { ChatContext } from "../contexts/ChatContext";
@@ -41,6 +43,7 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
     const projectId = settings.isGlobalInbox ? null : settings.project?.id;
     const ticketQueue = projectId && !settings.project?.is_demo;
     const [selected, setSelected] = useState({}), [selecting, setSelecting] = useState(false);
+    const [creatingTicket,setCreatingTicket] = useState(false);
     const queueFilter = useMemo(() => ticketQueue && (searchParams.saved_view || searchParams.filters)
         ? { ...(searchQuery.trim() ? { q: searchQuery.trim(), search_scope: searchParams.search_scope || 'all' } : {}), ...(searchParams.tag ? { tag: String(searchParams.tag) } : {}), ...(searchParams.saved_view ? { saved_view: String(searchParams.saved_view) } : { filters: typeof searchParams.filters === 'string' ? searchParams.filters : JSON.stringify(searchParams.filters), sort: typeof searchParams.sort === 'string' ? searchParams.sort : JSON.stringify(searchParams.sort || []) }) }
         : filter, [ticketQueue, searchParams.saved_view, searchParams.filters, searchParams.sort, filter]);
@@ -89,6 +92,8 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
                 <ConversationsFilter assignment={ filter.assigned_to } searchScope={ filter.search_scope || searchParams.search_scope || 'all' } searching={ Boolean(searchQuery.trim()) } onChange={ changes => navigate({search:{...liveSearch,saved_view:undefined,filters:undefined,sort:undefined,...changes}}) } />
             </div>
             {ticketQueue && <>
+                <div className="ticket-queue-actions"><button type="button" className="btn btn-sm btn-link" onClick={()=>setCreatingTicket(true)}>New ticket</button><Link to={`/projects/${projectId}/suspended`} className="btn btn-sm btn-link">Suspended</Link></div>
+                {creatingTicket && <CreateEmailTicket projectId={projectId} onHide={()=>setCreatingTicket(false)} onCreated={conversation=>{refreshInboxData();if(conversation?.id)navigate({to:`/projects/${projectId}/conversations/${conversation.id}`});}}/>}
                 <TicketViews key={projectId} projectId={projectId} currentAgentId={currentAgent.id}/>
                 <div className="ticket-queue-actions"><button type="button" className="btn btn-sm btn-link" onClick={() => { setSelecting(value => !value); setSelected({}); }}>{selecting ? 'Done selecting' : 'Select tickets'}</button>{selecting && <button type="button" className="btn btn-sm btn-link" onClick={() => setSelected(Object.fromEntries(conversations.slice(0, 100).map(item => [item.id, { id: item.id, subject: item.subject, ticket_version: item.ticket_version }])))}>Select loaded tickets</button>}</div>
                 {selecting && Object.keys(selected).length > 0 && <><TicketBulkActions key={projectId} projectId={projectId} selected={Object.values(selected)} onClear={() => setSelected({})} onApplied={refreshInboxData}/><BulkMacros projectId={projectId} selectedTickets={Object.values(selected).map(ticket=>({id:ticket.id,expected_version:ticket.ticket_version}))} onApplied={refreshInboxData}/></>}

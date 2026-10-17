@@ -98,6 +98,17 @@ for(const base of [P,D]){
 }
 
 const prefixes=['/api/v1/','/api/management/admin/']
+for(const base of [P,D])rules[`POST ${base}/tickets`]='conversations.reply'
+for(const action of ['connect','imap'])rules[`POST ${P}/mailboxes/${action}`]='integrations.install'
+rules[`POST ${P}/mailboxes`]='integrations.install'
+rules[`PATCH ${P}/mailboxes/:mailboxId`]='settings.manage'
+rules[`DELETE ${P}/mailboxes/:mailboxId`]='integrations.install'
+for(const action of ['reconnect','aliases','poll','backfill'])rules[`POST ${P}/mailboxes/:mailboxId/${action}`]='integrations.install'
+rules[`DELETE ${P}/mailboxes/:mailboxId/aliases/:alias`]='integrations.install'
+rules[`PUT ${P}/mailboxes/:mailboxId/signatures/:agentId`]='settings.manage'
+rules[`POST ${P}/suspended/:id/recover`]='conversations.manage'
+rules[`DELETE ${P}/suspended/:id`]='conversations.manage'
+rules[`POST ${P}/sender-rules`]='settings.manage'
 export function routeRule(method:string,path:string):Rule|undefined{
  if(prefixes.some(prefix=>path.startsWith(prefix)))return 'none'
  return r4RouteRule(method,path)??rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]

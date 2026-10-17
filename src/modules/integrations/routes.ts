@@ -12,9 +12,16 @@ import {receivingState} from './inbound-capability'
 import {installation} from '../management/installation'
 import {mailbox} from './inbound-routing'
 import {updateEmailSettings} from './mailbox-settings'
+import {suspendedRoutes} from './suspended'
+import {createMailboxRoutes} from './mailboxes'
+import {receiveMailboxMessage} from './mailbox-ingress'
+import {emailFollowupRoutes} from './email-followup-routes'
 export const integrations=new Hono<AppEnv>()
 integrations.route('/',inboundRecoveryRoutes)
 integrations.route('/',senderDomainRoutes())
+integrations.route('/',suspendedRoutes)
+integrations.route('/',createMailboxRoutes(receiveMailboxMessage))
+integrations.route('/',emailFollowupRoutes)
 // Sending and receiving are reported as they are, so the page never asks for a key that is set
 // or offers a receiving address that no mail can reach.
 integrations.get('/projects/:projectId/email-settings',async c=>{const a=await scope(c,true),row=await c.env.DB.prepare('SELECT * FROM email_settings WHERE project_id=?').bind(a.projectId).first<any>(),configured=Boolean(emailConfigured(c.env))

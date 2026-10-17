@@ -11,8 +11,9 @@ const entities:Record<string,Table[]>={
  macro:[table('macros','id','id,project_id,title,content,created_by,created_at,updated_at')],
  article:[table('knowledge_articles','id','id,project_id,category_id,slug,title,content,summary,status,updated_at,position,source_revision,source_incarnation,publication_version','id',['publication_version']),table('knowledge_article_categories','article_id','article_id,category_id','category_id')],
  conversation:[
-  table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at'),
+  table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at,mailbox_id'),
   table('move_in_conversations','conversation_id','conversation_id,project_id,vendor,source_id,subject,source_state,source_channel'),
+  table('email_threading_keys','conversation_id','project_id,conversation_id,key_kind,key_value,source,source_ref,created_at',"key_kind||':'||key_value"),
   table('messages','conversation_id','id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at,intent_hash,bucket_id,erased_at,citations_json','id'),
   table('move_in_message_sources','message_id','message_id,project_id,author_json,source_id,source_time,time_provenance','message_id'),
   table('move_in_notes','conversation_id','id,project_id,conversation_id,author_json,content,created_at,source_time','id'),
@@ -36,7 +37,8 @@ function definitions(kind:string){const value=entities[kind];if(!value)throw new
 function where(t:Table){if(t.name==='message_authorship')return 'message_id IN (SELECT id FROM messages WHERE conversation_id=? AND project_id=?)';if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return 'resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=? AND project_id=?)';if(t.nativeOnly)return 'conversation_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)';if(t.name==='move_in_message_sources')return 'project_id=? AND message_id IN (SELECT id FROM messages WHERE project_id=? AND conversation_id=?)';if(t.name==='knowledge_article_categories')return 'article_id=? AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=?)';return `project_id=? AND ${t.key}=?`}
 function params(t:Table,destination:string,id:string){return t.nativeOnly?[id,destination]:t.name==='move_in_message_sources'?[destination,destination,id]:t.name==='knowledge_article_categories'?[id,destination]:[destination,id]}
 function select(t:Table){return `(SELECT COALESCE(json_group_array(json_array(${t.columns.join(',')})),'[]') FROM (SELECT ${t.columns.join(',')} FROM ${t.name} WHERE ${where(t)} ORDER BY ${t.order}))`}
-function expected(t:Table,value:NativeValue){return JSON.stringify((value.tables[t.name]??[]).map(row=>t.columns.map(column=>column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null)).sort((a,b)=>String(a[t.columns.indexOf(t.order)])>String(b[t.columns.indexOf(t.order)])?1:String(a[t.columns.indexOf(t.order)])<String(b[t.columns.indexOf(t.order)])?-1:0))}
+function orderKey(t:Table,row:Record<string,any>){return t.name==='email_threading_keys'?`${row.key_kind}:${row.key_value}`:String(row[t.order])}
+function expected(t:Table,value:NativeValue){return JSON.stringify([...(value.tables[t.name]??[])].sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0).map(row=>t.columns.map(column=>column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null)))}
 function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sql {
  const defs=definitions(kind),clauses:string[]=[],bindings:any[]=[]
  for(const t of defs){clauses.push(`${select(t)}=?`);bindings.push(...params(t,destination,id),row?expected(t,row.value as unknown as NativeValue):'[]')}
@@ -46,7 +48,7 @@ function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sq
 }
 export function nativeStatementCount(kind:string,value:NativeValue){return definitions(kind).filter(t=>!t.nativeOnly).reduce((n,t)=>n+(value.tables[t.name]?.length??0),0)+1+(kind==='conversation'?2:kind==='article'||kind==='contact'?1:0)}
 export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
- for(const t of definitions(kind))value.tables[t.name]=(value.tables[t.name]??[]).map(row=>Object.fromEntries(t.columns.map(column=>[column,column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null]))).sort((a,b)=>String(a[t.order])<String(b[t.order])?-1:String(a[t.order])>String(b[t.order])?1:0)
+ for(const t of definitions(kind))value.tables[t.name]=(value.tables[t.name]??[]).map(row=>Object.fromEntries(t.columns.map(column=>[column,column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null]))).sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0)
  return value
 }
 export const nativeTargets:D1TargetAdapter={

@@ -71,7 +71,11 @@ export default {
    return Response.json({rejected})
   }
   // The cron tick; `after` runs the operator-mail dispatch that many milliseconds later, as a later tick would.
-  if(path==='/_test/scheduled'){const {after=0}=await request.json<{after?:number}>().catch(()=>({after:0}));await Promise.all([runScheduled(env),dispatchOperatorNotifications(env,{now:Date.now()+after}),purgeExpiredAudit(env,Date.now()+after)]);return Response.json({ran:true})}
+  if(path==='/_test/scheduled'){const {after=0}=await request.json<{after?:number}>().catch(()=>({after:0}));const originalNow=Date.now
+   // Long retention journeys move the runtime clock, so the actual scheduled
+   // integration sees the same time as the edge; application policy is untouched.
+   const moved=after>=86400000;if(moved)Date.now=()=>originalNow()+after
+   try{await Promise.all([runScheduled(env),dispatchOperatorNotifications(env,{now:Date.now()+(moved?0:after)}),purgeExpiredAudit(env,Date.now()+(moved?0:after))]);return Response.json({ran:true})}finally{Date.now=originalNow}}
   return app.fetch(request,env,context)
  },
  async queue(batch:MessageBatch<any>,env:Env){await consumeQueue(batch,env)},

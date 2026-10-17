@@ -15,7 +15,7 @@ export async function optIntoProactiveHelp(h,conversationId){
 export async function harness({beforeOutcomes,bindings={}}={}){
  const directory=await mkdtemp(join(tmpdir(),'reports-'));let mf,external=0;const tokens={};
  try{
- await build({entryPoints:['tests/reports/worker.ts'],bundle:true,format:'esm',platform:'node',external:['node:*','cloudflare:workers'],outfile:join(directory,'worker.mjs'),logLevel:'silent'});
+ await build({entryPoints:['tests/reports/worker.ts'],bundle:true,format:'esm',platform:'node',external:['node:*','cloudflare:*'],outfile:join(directory,'worker.mjs'),logLevel:'silent'});
  mf=new Miniflare(convertV4MiniflareOptions({name:'reports-check',modules:true,script:await readFile(join(directory,'worker.mjs'),'utf8'),compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings,d1Databases:{DB:'reports-check'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async()=>{external++;throw Error('External requests prohibited')}}));
  const db=await mf.getD1Database('DB');
  for(const file of (await readdir('migrations')).filter(x=>x.endsWith('.sql')).sort()){

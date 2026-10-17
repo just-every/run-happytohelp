@@ -109,6 +109,11 @@
           "label": "Tickets and the inbox"
         },
         {
+          "slug": "email",
+          "source": "docs/email.md",
+          "label": "Support email"
+        },
+        {
           "slug": "help-before-they-ask",
           "source": "docs/help-before-they-ask.md",
           "label": "Help before they ask"

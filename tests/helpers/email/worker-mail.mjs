@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import {mailApp,message} from './app.mjs'
 import {sha} from '../../journeys/kit/app.mjs'
 
-const multipart=({id,to,text})=>`From: Customer <customer@example.com>\r\nTo: ${to}\r\nMessage-ID: <${id}>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="b"\r\n\r\n--b\r\nContent-Type: text/plain\r\n\r\n${text}\r\n--b\r\nContent-Type: text/plain\r\nContent-Disposition: attachment; filename="example.txt"\r\nContent-Transfer-Encoding: base64\r\n\r\nYXR0YWNobWVudA==\r\n--b--`
+const multipart=({id,to,text})=>`From: Customer <customer@example.com>\r\nTo: ${to}\r\nMessage-ID: <${id}>\r\nAuthentication-Results: mx.cloudflare.net; dkim=pass header.d=example.com\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="b"\r\n\r\n--b\r\nContent-Type: text/plain\r\n\r\n${text}\r\n--b\r\nContent-Type: text/plain\r\nContent-Disposition: attachment; filename="example.txt"\r\nContent-Transfer-Encoding: base64\r\n\r\nYXR0YWNobWVudA==\r\n--b--`
 
 // Mail through the Worker's email entry: attachments stored, the reply address continues the thread,
 // duplicates coalesce, HTML is sanitised, and a delivery that crashed mid-admission is admitted once.
@@ -103,8 +103,8 @@ export async function automaticJourney(){
   await idle();assert.equal(mail.sent.filter(entry=>entry.body.to?.includes('op@example.com')).length,2,'only the customer mail notifies')
   // Operators see why in the transcript and dashboard; `email:` local ids belong to inbound claims.
   const transcript=(await m.app.call('/api/conversations/widget/messages',{headers:m.operator,status:200})).data
-  assert.deepEqual(transcript.messages.find(row=>row.id===oooMessage.id).origin,{channel:'email',automatic:true,reasons:['auto-submitted','x-auto-response-suppress','subject'],verified:false})
-  assert.deepEqual(transcript.messages.find(row=>row.id===customerMessage.id).origin,{channel:'email',automatic:false,reasons:[],verified:false})
+  assert.deepEqual(transcript.messages.find(row=>row.id===oooMessage.id).origin,{channel:'email',automatic:true,reasons:['auto-submitted','x-auto-response-suppress','subject']})
+  assert.deepEqual(transcript.messages.find(row=>row.id===customerMessage.id).origin,{channel:'email',automatic:false,reasons:[]})
   const bucket=(await m.app.call('/api/dashboard/projects/p/conversations/widget/buckets/widget',{headers:m.operator,status:200})).data,rows=(bucket.data??bucket).messages
   assert.equal(rows.find(row=>row.id===oooMessage.id).origin.automatic,true);assert.equal(rows.find(row=>row.id===customerMessage.id).origin.automatic,false)
   const revision=(await DB.prepare("SELECT revision FROM conversations WHERE id='widget'").first()).revision
@@ -166,7 +166,7 @@ export async function notificationsJourney(){
 // mailbox, and replies that reach only the address that wrote. Original bodies follow erasure.
 export async function peopleJourney(){
  const m=await seeded(),{DB,mail,deliver,addresses,claim,admitted,gateway,replyAddress,app}=m
- const outside=async(response,id)=>{assert.equal(response.status,201);assert.notEqual((await admitted(id)).conversation_id,'assigned')}
+ const outside=async(response,id)=>{assert.equal(response.status,201);assert.equal((await claim(id)).state,'suspended');assert.equal(await admitted(id),null);assert.equal((await claim(id)).conversation_id,null)}
  const operatorReply=async(conversationId,localId,content)=>{const head=await DB.prepare('SELECT revision FROM conversations WHERE id=?').bind(conversationId).first();assert.equal((await m.post(`${conversationId}/messages`,{localId,content,expectedRevision:head.revision})).status,200);await app.scheduled()}
  const sentWith=text=>mail.sent.filter(entry=>entry.body.text?.includes(text)).map(entry=>entry.body.to)
  try{
@@ -191,12 +191,12 @@ export async function peopleJourney(){
   assert.equal(await deliver({id:'worker-operator@example.com',to:operatorAddress,from:'op@example.com',headerFrom:'Operator <op@example.com>',text:'Reply from the operator mail client'}),undefined)
   assert.equal((await admitted('worker-operator@example.com')).actor_id,'op')
   assert.equal(await deliver({id:'stolen-address@example.com',to:operatorAddress,from:'forged@example.com',headerFrom:'forged@example.com',text:'Forged sender with somebody else’s reply address'}),undefined)
-  assert.notEqual((await admitted('stolen-address@example.com')).conversation_id,'assigned')
+  assert.equal((await claim('stolen-address@example.com')).state,'suspended');assert.equal(await admitted('stolen-address@example.com'),null)
   const operatorMail=await gateway({messageId:'operator-email',to:addresses.assigned,from:'op@example.com',text:'Your export is ready.\n\nOn Fri, 16 Oct 2026 Maya wrote:\n> Please help'})
   assert.equal(operatorMail.status,201);assert.deepEqual([(await admitted('operator-email')).actor_role,(await admitted('operator-email')).actor_id],['operator','op'])
   await DB.prepare("DELETE FROM memberships WHERE project_id='p' AND user_id='op'").run()
   assert.equal(await deliver({id:'revoked-worker@example.com',to:operatorAddress,from:'op@example.com',headerFrom:'Operator <op@example.com>',text:'Reply after leaving the workspace'}),undefined)
-  assert.equal((await admitted('revoked-worker@example.com')).actor_role,'contact')
+  assert.equal((await claim('revoked-worker@example.com')).state,'suspended');assert.equal(await admitted('revoked-worker@example.com'),null)
   await outside(await gateway({messageId:'revoked-operator',to:addresses.assigned,from:'op@example.com',text:'Revoked reply'}),'revoked-operator')
   await DB.prepare("INSERT INTO memberships VALUES('p','op','operator')").run()
   // A preferred notification address replies as the customer only through its own reply address.
@@ -213,33 +213,32 @@ export async function peopleJourney(){
   const verdict=(domain,result='pass')=>`Authentication-Results: mx.cloudflare.net; dkim=${result} header.d=${domain} header.s=s1; dmarc=${result} header.from=${domain}\r\n`
   const forwardedCc='Delivered-To: support@company.example\r\nCc: Colleague <colleague@customer.example>, support@company.example, inbound@example.com\r\n'
   const people=async id=>{const row=await admitted(id);return {contact:(await DB.prepare('SELECT email FROM contacts WHERE id=?').bind(row.actor_id).first()).email,verified:JSON.parse((await claim(id)).evidence_json).sender_verified,participants:(await DB.prepare('SELECT ct.email FROM conversation_participants cp JOIN contacts ct ON ct.id=cp.contact_id WHERE cp.conversation_id=? ORDER BY ct.email').bind(row.conversation_id).all()).results.map(p=>p.email)}}
-  const forwarded=(id,headerFrom,headers)=>deliver({id,to:'support@company.example',envelopeTo:'inbound@example.com',from:`SRS0=x1=AB=customer.example=${id}@company.example`,headerFrom,headers})
-  assert.equal(await forwarded('first-cc','Ana <ana@customer.example>',forwardedCc),undefined);assert.deepEqual(await people('first-cc'),{contact:'ana@customer.example',verified:false,participants:[]})
+  const forwarded=(id,headerFrom,headers)=>deliver({id,authenticated:false,to:'support@company.example',envelopeTo:'inbound@example.com',from:`SRS0=x1=AB=customer.example=${id}@company.example`,headerFrom,headers})
+  assert.equal(await forwarded('first-cc','Ana <ana@customer.example>',forwardedCc),undefined);assert.equal((await claim('first-cc')).state,'suspended');assert.equal(await admitted('first-cc'),null)
   assert.equal(await forwarded('signed-cc','Ben <ben@customer.example>',verdict('customer.example')+forwardedCc),undefined);assert.deepEqual(await people('signed-cc'),{contact:'ben@customer.example',verified:true,participants:['colleague@customer.example']})
-  assert.equal(await forwarded('forged-verdict','Cy <cy@customer.example>',verdict('customer.example','fail')+verdict('customer.example')+forwardedCc),undefined);assert.deepEqual(await people('forged-verdict'),{contact:'cy@customer.example',verified:false,participants:[]})
+  assert.equal(await forwarded('forged-verdict','Cy <cy@customer.example>',verdict('customer.example','fail')+verdict('customer.example')+forwardedCc),undefined);assert.equal((await claim('forged-verdict')).state,'suspended');assert.equal(await admitted('forged-verdict'),null)
   // A widget-verified customer: signed mail continues her thread; mail that may forge her From lands apart, flagged.
   await DB.prepare("INSERT INTO contacts(id,project_id,email,external_id,is_verified,metadata_json,created_at) VALUES('signed-in','p','dana@customer.example','dana@customer.example',1,'{\"provided_email\":\"dana-home@customer.example\"}',1)").run()
-  const dana=(id,headers)=>deliver({id,to:'inbound@example.com',from:'dana@customer.example',headerFrom:'Dana <dana@customer.example>',headers:headers+'Reply-To: attacker@attacker.example\r\n'})
+  const dana=(id,headers)=>deliver({id,authenticated:false,to:'inbound@example.com',from:'dana@customer.example',headerFrom:'Dana <dana@customer.example>',headers:headers+'Reply-To: attacker@attacker.example\r\n'})
   assert.equal(await dana('verified-first',verdict('customer.example')),undefined);const danaThread=(await admitted('verified-first')).conversation_id;assert.equal((await admitted('verified-first')).actor_id,'signed-in')
   const cloudflare=results=>`Authentication-Results: mx.cloudflare.net; ${results}\r\n`
   const forgeries={'quoted-mail-from':cloudflare('dkim=none; spf=pass smtp.mailfrom="x;dkim=pass header.d=customer.example z"@attacker.example; dmarc=fail header.from=customer.example'),'spf-comment':cloudflare('dkim=none (no signatures found); spf=pass (mx.cloudflare.net: domain of "a);dkim=pass header.d=customer.example (b"@attacker.example designates 192.0.2.1 as permitted sender) smtp.mailfrom=attacker.example; dmarc=fail header.from=customer.example'),'helo-semicolon':cloudflare('dkim=none; spf=none smtp.helo=evil;dmarc=pass header.from=customer.example; spf=pass smtp.mailfrom=attacker.example'),'honest-fail':cloudflare('dkim=fail header.d=customer.example; spf=fail smtp.mailfrom=attacker.example; dmarc=fail header.from=customer.example'),'unsigned':''}
   for(const [id,header] of Object.entries(forgeries))assert.equal(await dana(id,header),undefined,id)
-  const isolated=await Promise.all(Object.keys(forgeries).map(async id=>({...await people(id),conversation:(await admitted(id)).conversation_id})))
-  assert.deepEqual(new Set(isolated.map(row=>JSON.stringify([row.verified,row.participants,row.conversation===danaThread]))),new Set([JSON.stringify([false,[],false])]));assert.equal(new Set(isolated.map(row=>row.conversation)).size,1)
-  const impostor=await DB.prepare('SELECT ct.email,ct.metadata_json FROM conversations c JOIN contacts ct ON ct.id=c.contact_id WHERE c.id=?').bind(isolated[0].conversation).first()
-  assert.deepEqual([impostor.email,JSON.parse(impostor.metadata_json)],['dana@customer.example',{unverified_sender:1}]);assert.equal((await DB.prepare("SELECT json_extract(metadata_json,'$.provided_email') p FROM contacts WHERE id='signed-in'").first()).p,'dana-home@customer.example')
-  await operatorReply(isolated[0].conversation,'isolated-reply','Your refund code is 4417');assert.deepEqual(sentWith('4417'),[['dana@customer.example']],'a reply goes only to the unverified From')
+  for(const id of Object.keys(forgeries)){assert.equal((await claim(id)).state,'suspended',id);assert.equal(await admitted(id),null,id);assert.equal((await claim(id)).conversation_id,null)}
+  assert.equal((await DB.prepare("SELECT json_extract(metadata_json,'$.provided_email') p FROM contacts WHERE id='signed-in'").first()).p,'dana-home@customer.example')
+  assert.equal(await DB.prepare("SELECT id FROM contacts WHERE json_extract(metadata_json,'$.unverified_sender')=1").first(),null,'forged mail creates no contact or conversation')
   // A From with no usable address, under Cloudflare's SPF fail for the envelope, never joins her thread; replies email nobody.
-  const anaThread=(await admitted('first-cc')).conversation_id,anaContact=(await admitted('first-cc')).actor_id
+  const anaThread=danaThread,anaContact='signed-in'
   const spfFail=cloudflare('dkim=none; dmarc=none policy.dmarc=none; spf=none smtp.helo=mx.attacker.test; spf=fail (mx.cloudflare.net: domain of ana@customer.example does not designate 192.0.2.7 as permitted sender) smtp.mailfrom=ana@customer.example; arc=none smtp.remote-ip=192.0.2.7')
   const noFrom=(id,fromLines,to='inbound@example.com')=>m.email(`${spfFail}${fromLines}To: ${to}\r\nSubject: Bank details\r\nMessage-ID: <${id}>\r\nContent-Type: text/plain\r\n\r\nPlease change my bank details`,{from:'ana@customer.example',to,direct:true})
   const unusable={'no-from':'','display-only':'From: Ana Customer\r\n','no-tld':'From: ana@customer\r\n','empty-angle':'From: <>\r\n'}
+  await app.scheduled();const sentBefore=mail.sent.length
   for(const [id,line] of Object.entries(unusable))assert.equal(await noFrom(id,line),undefined,id)
-  const kept=await Promise.all(Object.keys(unusable).map(admitted));assert.equal(new Set(kept.map(row=>row.conversation_id)).size,1);assert.notEqual(kept[0].conversation_id,anaThread);assert.notEqual(kept[0].actor_id,anaContact)
-  assert.deepEqual(JSON.parse((await DB.prepare('SELECT metadata_json FROM contacts WHERE id=?').bind(kept[0].actor_id).first()).metadata_json),{unverified_sender:1,unusable_from:1})
-  const sentBefore=mail.sent.length;await operatorReply(kept[0].conversation_id,'unusable-reply','Your new bank details are saved');assert.equal(mail.sent.length,sentBefore)
-  assert.equal(await noFrom('no-from-owned','',await replyAddress(anaThread,'ana@customer.example')),undefined)
-  assert.deepEqual([(await admitted('no-from-owned')).conversation_id,(await admitted('no-from-owned')).actor_id],[anaThread,anaContact])
+  for(const id of Object.keys(unusable)){assert.equal((await claim(id)).state,'suspended',id);assert.equal(await admitted(id),null,id)}
+  await app.scheduled();assert.equal(mail.sent.length,sentBefore,'suspended mail causes no outbound mail')
+  assert.equal(await noFrom('no-from-owned','',await replyAddress(anaThread,'dana@customer.example')),undefined)
+  assert.equal((await claim('no-from-owned')).state,'suspended','an envelope sender different from the grant holder cannot continue the thread')
+  assert.equal(await admitted('no-from-owned'),null)
   // A widget visitor who types a customer's address never receives that customer's mail nor the reply to it.
   const session=async(name,email)=>(await app.call('/api/identity/widget/session',{headers:{Origin:'https://example.com'},body:{widgetKey:'w',name,email},status:201})).data
   const thread=async token=>(await app.call('/api/conversations',{token,body:{projectId:'p'},status:201})).data

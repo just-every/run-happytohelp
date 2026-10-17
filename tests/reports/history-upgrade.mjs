@@ -9,14 +9,14 @@ test('fresh lexical ledger and populated upgrade preserve all prior rows and con
  db.prepare("INSERT INTO conversations(id,project_id,contact_id,revision,created_at,updated_at,resolved_at) VALUES('closed','history','historic-contact',2,10,80,80),('open','history','historic-contact',1,10,80,NULL)"),
  db.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES('old-human','history','closed','old','operator','operator','Historical answer',1,20),('old-reopen','history','closed','reopen','historic-contact','contact','Later cycle',2,70),('old-open','history','open','old','operator','operator','Ambiguous cycle',1,20)")]);before=await snapshot(db)}});try{for(const [name,rows] of Object.entries(before)){
  // Compare whole upgraded rows, retaining every historical value and checking
- // all declared M122/M130/M132 defaults without discarding unknown columns.
+ // all declared M122/M130/M132/M160 defaults without discarding unknown columns.
  const expected=rows.map(old=>{
   const row={...old};
   if(name==='messages')row.content_raw=null;
   if(name==='contact_erasures')row.ticket_records=0;
   if(name==='conversations'){
    const status=row.resolved_at!==null?'solved':row.revision>0?'open':'new';
-   Object.assign(row,{status_id:status,status_category:status,subject:'',priority:'normal',channel:before.inbound_emails.some(email=>email.conversation_id===row.id)?'email':'widget',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'system'});
+   Object.assign(row,{status_id:status,status_category:status,subject:'',priority:'normal',channel:before.inbound_emails.some(email=>email.conversation_id===row.id)?'email':'widget',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'system',mailbox_id:null});
   }
   return row;
  });

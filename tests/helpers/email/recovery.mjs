@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import {mailApp} from './app.mjs'
 import {sha} from '../../journeys/kit/app.mjs'
 
-const withAttachment=(id,text,bytes)=>`From: Customer <customer@example.com>\r\nTo: inbound@example.com\r\nMessage-ID: <${id}>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="b"\r\n\r\n--b\r\nContent-Type: text/plain\r\n\r\n${text}\r\n--b\r\nContent-Type: text/plain\r\nContent-Disposition: attachment; filename="note.txt"\r\nContent-Transfer-Encoding: base64\r\n\r\n${btoa(bytes)}\r\n--b--`
+const withAttachment=(id,text,bytes)=>`From: Customer <customer@example.com>\r\nTo: inbound@example.com\r\nMessage-ID: <${id}>\r\nAuthentication-Results: mx.cloudflare.net; dkim=pass header.d=example.com\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="b"\r\n\r\n--b\r\nContent-Type: text/plain\r\n\r\n${text}\r\n--b\r\nContent-Type: text/plain\r\nContent-Disposition: attachment; filename="note.txt"\r\nContent-Transfer-Encoding: base64\r\n\r\n${btoa(bytes)}\r\n--b--`
 // A delivery's outcome: the Worker's thrown error or rejection, or delivered.
 const outcome=async promise=>{try{return (await promise)||'delivered'}catch(error){return error.message}}
 

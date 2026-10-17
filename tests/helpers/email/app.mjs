@@ -41,7 +41,13 @@ export async function mailApp({bindings={},projectId='p',inbound='inbound@exampl
  return {app,get DB(){return app.db},mail,operator,replyAddress,email,gateway,claim,admitted,replay,idle,count,post,close:()=>app.close()}
 }
 
-export const message=({id,to,from='Customer <customer@example.com>',subject='Question about my order',headers='',text='Hello',type='text/plain'})=>`From: ${from}\r\nTo: ${to}\r\nSubject: ${subject}\r\nMessage-ID: <${id}>\r\n${headers}MIME-Version: 1.0\r\nContent-Type: ${type}\r\n\r\n${text}`
+export const message=({id,to,from='Customer <customer@example.com>',subject='Question about my order',headers='',text='Hello',type='text/plain',authenticated=true})=>{
+ // The network fixture supplies the receiving provider's own top verdict. Cases
+ // about absent/forged authentication opt out or carry their explicit verdict.
+ const domain=from.match(/@([a-z0-9.-]+)/i)?.[1]
+ const auth=authenticated&&domain&&!/Authentication-Results:/i.test(headers)?`Authentication-Results: mx.cloudflare.net; dkim=pass header.d=${domain}; dmarc=pass header.from=${domain}\r\n`:''
+ return `From: ${from}\r\nTo: ${to}\r\nSubject: ${subject}\r\nMessage-ID: <${id}>\r\n${auth}${headers}MIME-Version: 1.0\r\nContent-Type: ${type}\r\n\r\n${text}`
+}
 
 // Recipients and reply address of a captured provider request, whichever transport's shape it has.
 export const recipients=body=>[].concat(body.personalizations?.[0]?.to??body.to??[]).map(to=>to?.email??to)

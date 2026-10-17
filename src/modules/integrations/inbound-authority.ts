@@ -8,7 +8,7 @@ export const inboundAuthority=Symbol('authenticated inbound email')
 /** `grant`: the hash of the reply address this sender holds for the addressed
  * conversation (issued to exactly this sender), when the mail arrived through it.
  * `authenticated`: the ingress verified the From address. */
-export interface InboundAuthority {sender:string;receiptId:string;claimToken:string;raw:string;cc:string[];authenticated:boolean;grant?:string}
+export interface InboundAuthority {sender:string;receiptId:string;claimToken:string;raw:string;cc:string[];authenticated:boolean;grant?:string;mailboxId?:string;mailboxAddress?:string}
 const availableAs=(alias:string)=>`${contactWritable.replaceAll('metadata_json',`${alias}.metadata_json`)} AND coalesce(json_extract(${alias}.metadata_json,'$.is_blocked'),0)!=1 AND coalesce(json_extract(${alias}.metadata_json,'$.is_deleted'),0)!=1`,available=availableAs('contacts')
 
 /** A contact's address is proven, so mail from that address is theirs, when mail
@@ -21,7 +21,6 @@ export const provenAddressSql=(alias:string)=>`(coalesce(${alias}.is_verified,0)
 
 // A contact kept apart for mail whose From could not be authenticated (below).
 const UNVERIFIED_SENDER="coalesce(json_extract(metadata_json,'$.unverified_sender'),0)=1"
-const UNUSABLE_FROM="coalesce(json_extract(metadata_json,'$.unusable_from'),0)=1"
 const ownContact=`NOT ${UNVERIFIED_SENDER} AND ${provenAddressSql('contacts')}`
 
 /** The project's contact for a sender address, created on first mail. Retained
@@ -31,22 +30,6 @@ export async function emailContact(env:Env,projectId:string,email:string){
  return senderContact(env,projectId,email,ownContact,'{}')
 }
 
-/** Mail whose From was not authenticated, when that address belongs to a widget-
- * verified customer or the provider reported an explicit fail, is written by a
- * separate contact flagged `unverified_sender`. Its conversations never continue
- * the customer's, and replies reach only the From address it used. */
-export async function unverifiedSenderContact(env:Env,projectId:string,email:string){
- return senderContact(env,projectId,email,`${UNVERIFIED_SENDER} AND NOT ${UNUSABLE_FROM}`,'{"unverified_sender":1}')
-}
-/** Mail with no usable From is kept under its envelope sender by a contact flagged
- * `unverified_sender` and `unusable_from`. Nothing is sent to it automatically
- * (notifications.ts); an operator chooses who, if anybody, receives a reply. */
-export async function unusableFromContact(env:Env,projectId:string,envelopeSender:string){
- return senderContact(env,projectId,envelopeSender,`${UNVERIFIED_SENDER} AND ${UNUSABLE_FROM}`,'{"unverified_sender":1,"unusable_from":1}')
-}
-export async function isVerifiedCustomerAddress(env:Env,projectId:string,email:string){
- return Boolean(await env.DB.prepare(`SELECT 1 FROM contacts WHERE project_id=? AND lower(email)=? AND is_verified=1 AND ${ownContact}`).bind(projectId,email).first())
-}
 async function senderContact(env:Env,projectId:string,email:string,kind:string,metadata:string){
  const read=()=>env.DB.prepare(`SELECT * FROM contacts WHERE project_id=? AND lower(email)=? AND ${kind} ORDER BY created_at,id LIMIT 1`).bind(projectId,email).first<any>()
  let contact=await read()
@@ -86,8 +69,8 @@ export async function preferredAddressActor(env:Env,projectId:string,conversatio
 
 /** Bare mailbox policy: a fresh email continues the contact's most recently active
  * open thread; closed history starts a new one. */
-export async function openEmailConversation(env:Env,projectId:string,contactId:string){
- return env.DB.prepare("SELECT * FROM conversations WHERE project_id=? AND contact_id=? AND resolved_at IS NULL AND status_category<>'closed' ORDER BY updated_at DESC,id LIMIT 1").bind(projectId,contactId).first<any>()
+export async function openEmailConversation(env:Env,projectId:string,contactId:string,mailboxId?:string|null){
+ return env.DB.prepare("SELECT * FROM conversations WHERE project_id=? AND contact_id=? AND resolved_at IS NULL AND status_category<>'closed' AND (? IS NULL OR mailbox_id=?) ORDER BY updated_at DESC,id LIMIT 1").bind(projectId,contactId,mailboxId??null,mailboxId??null).first<any>()
 }
 
 /** CC recipients the sender may add. Workspace addresses, members and contacts that

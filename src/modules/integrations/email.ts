@@ -8,17 +8,26 @@ import {SendGridSendError} from '../../vendor/base/modules/sendgrid-email/src/se
 export {emailConfigured} from './email-provider'
 import {HTTPException} from 'hono/http-exception'
 import {demoEffect} from '../../vendor/base/modules/demo/index.mjs'
+import {prepareConversationEmail} from './email-preparation'
+import {sendViaMailbox,mailboxSender} from './mailboxes/send'
+import {mailboxForDelivery} from './mailboxes/store'
 
 /** `headers` are extra message headers (loop suppression on notifications); like every
  * other field they are part of the delivery identity. */
 export interface EmailAttachment {filename:string;content:string;contentType:string;contentId?:string}
-export interface EmailInput {to:string;subject:string;text:string;html?:string;attachments?:readonly EmailAttachment[];projectId?:string;idempotencyKey:string;replyTo?:string;headers?:Readonly<Record<string,string>>}
+export interface EmailInput {to:string;cc?:readonly string[];bcc?:readonly string[];mailboxId?:string;agentId?:string;fromAddress?:string;subject:string;text:string;html?:string;attachments?:readonly EmailAttachment[];projectId?:string;idempotencyKey:string;replyTo?:string;headers?:Readonly<Record<string,string>>}
 /** The host retains provider execution only after every sending claim is durable. */
 export type DeferEmailDelivery=(delivery:Promise<unknown>)=>void
 type DeliveryRow={state:string;provider_id:string|null;intent_hash:string}
 
 export type EmailOutcome={id:string|null;state:string;recipient?:string;mode?:'local'}
 async function senderFor(env:Env,input:EmailInput){
+ if(input.mailboxId&&input.projectId){
+  const selected=await mailboxForDelivery(env,input.projectId,input.mailboxId)
+  if(!selected)throw new HTTPException(409,{message:'Mailbox is no longer connected'})
+  const address=input.fromAddress||selected.sender_address||selected.address,name=selected.display_name.replace(/[\r\n"<>]/g,'')
+  return name?`${name} <${address}>`:address
+ }
  // A workspace sender is used only while its email is enabled. Account mail for a
  // workspace with email off (such as one moved in from legacy with its sender
  // unverified) comes from the installation's sender.
@@ -30,6 +39,14 @@ async function updateDelivery(env:Env,id:string,state:'sent'|'failed'|'uncertain
  await env.DB.prepare('UPDATE email_deliveries SET state=?,provider_id=coalesce(?,provider_id),error=?,updated_at=? WHERE id=?').bind(state,providerId,error,Date.now(),id).run()
 }
 async function sendThroughSelectedProvider(env:Env,input:EmailInput,from:string):Promise<string|null>{
+ if(input.mailboxId&&input.projectId){
+  const selected=await mailboxForDelivery(env,input.projectId,input.mailboxId)
+  if(!selected)throw new HTTPException(409,{message:'Mailbox is no longer connected'})
+  const mailboxInput={...input,projectId:input.projectId,mailboxId:input.mailboxId}
+  if(selected.provider!=='forwarding')return (await sendViaMailbox(env,mailboxInput)).id
+  const sender=await mailboxSender(env,mailboxInput)
+  input={...input,text:sender.text,html:sender.html}
+ }
  if(selectedEmailProvider(env)==='sendgrid'){
   const receipt=await sendGridDelivery(env,input,from)
   return receipt.providerMessageId
@@ -52,6 +69,10 @@ async function submitClaimed(env:Env,input:EmailInput,from:string):Promise<Email
   await updateDelivery(env,input.idempotencyKey,'sent',null,providerId)
   return {id:providerId,state:'sent',...(emailMode(env)==='local'?{mode:'local' as const}:{})}
  }catch(error){
+  if(input.mailboxId){
+   const mailbox=await env.DB.prepare('SELECT state FROM mailbox_sends WHERE id=? AND project_id=? AND mailbox_id=?').bind(input.idempotencyKey,input.projectId??null,input.mailboxId).first<{state:string}>()
+   if(mailbox?.state==='failed'){await updateDelivery(env,input.idempotencyKey,'failed','Connected mailbox rejected delivery');throw error}
+  }
   const classified=sendGridFailure(error)
   if(classified){
    await updateDelivery(env,input.idempotencyKey,classified.state,classified.message)
@@ -66,7 +87,8 @@ async function suppressDevelopment(env:Env,input:EmailInput,from:string):Promise
  return {id:null,state:'suppressed',mode:'local'}
 }
 export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelivery):Promise<EmailOutcome>{
- if(!emailConfigured(env))throw new HTTPException(503,{message:'Email provider is not configured'})
+ input=await prepareConversationEmail(env,input)
+ if(!input.mailboxId&&!emailConfigured(env))throw new HTTPException(503,{message:'Email provider is not configured'})
  const from=await senderFor(env,input)
  validateEmailInput(input,from)
  if(localMailOrigin(env))return suppressDevelopment(env,input,from)
@@ -87,7 +109,8 @@ export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelive
  * never a partially reconstructed recipient list on automatic outbox replay. */
 export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:DeferEmailDelivery):Promise<EmailOutcome[]>{
  if(!inputs.length)return []
- if(!emailConfigured(env))throw new HTTPException(503,{message:'Email provider is not configured'})
+ inputs=await Promise.all(inputs.map(input=>prepareConversationEmail(env,input)))
+ if(inputs.some(input=>!input.mailboxId)&&!emailConfigured(env))throw new HTTPException(503,{message:'Email provider is not configured'})
  const prepared=await Promise.all(inputs.map(async input=>{const from=await senderFor(env,input);validateEmailInput(input,from);return {input,from,intentHash:await hashToken(JSON.stringify({...input,from}))}}))
  if(localMailOrigin(env))return Promise.all(prepared.map(({input,from})=>suppressDevelopment(env,input,from)))
  const now=Date.now()

@@ -5,6 +5,7 @@ import {recoveryJourney,classificationRecoveryJourney} from '../helpers/email/re
 import {customerMailJourney} from '../helpers/email/customer-mail.mjs'
 import {transportsJourney} from '../helpers/email/transports.mjs'
 import {senderDomainJourney} from '../helpers/email/domain.mjs'
+import {completeEmailJourney} from '../helpers/email/complete-email.mjs'
 
 // Email on the real application: inbound through the Worker's email entry, the JSON gateway and SendGrid
 // Inbound Parse; outbound through the conversation, schedule and operator routes. Fixtures only at the
@@ -20,7 +21,7 @@ test('mail speaks only for whom it may: CC participants of verified senders, ope
 
 test('the schedule\'s replay of an emailed customer message reaches the reply command its delivery recorded, failed or queued, without a second command',replayJourney)
 
-test('SendGrid Inbound Parse authenticates its token, stores attachment bytes, keys Message-IDs per mailbox, trusts the header From over VERP and SRS envelopes, keeps unverified senders apart and delivers to every mailbox',sendgridInboundJourney)
+test('SendGrid Inbound Parse authenticates its token, stores attachment bytes, keys Message-IDs per mailbox, trusts the header From over VERP and SRS envelopes, suspends unverified senders and delivers to every mailbox',sendgridInboundJourney)
 
 test('inbound mail survives D1 failures before and after admission with stable staged attachments, never admits a changed copy, and only an owner releases an interrupted receipt, exactly once',recoveryJourney)
 
@@ -34,3 +35,4 @@ test('the sender-domain check names missing SPF, DKIM and DMARC records, keeps r
 
 import {notificationTriggersJourney} from '../helpers/r4/notifications.mjs'
 test('editable requester triggers send received and solved once, suppress historical and machine mail, and teammate notices follow current authority and preferences',notificationTriggersJourney)
+test('operators start email and call tickets, header and imported vendor replies preserve identity, suspicious mail stays in Suspended for safe audited recovery or expiry, and erasure removes its new stores',completeEmailJourney)

@@ -14,7 +14,7 @@ import {writableConversationSql} from '../conversation-actions/merge-read'
  * replaces a client-supplied id when its contact is erased (contact-erasure/statements.ts)
  * and `away:` is the workspace's away reply (management/away-reply.ts). Clients may use none. */
 export const reservedLocalId=(localId:unknown)=>typeof localId==='string'&&/^(?:email|erased|away):/.test(localId)
-export interface MessageInput {[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
+export interface MessageInput {requireAvailableRequester?:true;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
 export async function admitMessage(env:Env,input:MessageInput){
  const {projectId,conversationId,actor,localId,content,expectedRevision}=input,email=input[inboundAuthority]
  if(actor.projectId!==projectId)throw new Error('Project access denied')
@@ -48,7 +48,7 @@ export async function admitMessage(env:Env,input:MessageInput){
  const authorship=await authoringSource(env,actor,conversationId,input.authoring,input.generationId)
  const citations=refs.length?await resolvePublicCitations(env,projectId,input.generationId!,refs):[]
  const messageId=crypto.randomUUID(),now=Date.now();const predicates=[writableConversationSql('c'),'c.id=?','c.project_id=?','c.revision=?','c.contact_id=?','c.ticket_version=?',"c.status_category<>'closed'"];const args:unknown[]=[conversationId,projectId,expectedRevision,scope.contact_id,scope.ticket_version]
-  if(actor.role!=='contact')predicates.push(contactAvailableSql())
+ if(input.requireAvailableRequester===true)predicates.push(contactAvailableSql())
  if(autoAssign&&scope.group_id){predicates.push('EXISTS(SELECT 1 FROM ticket_group_members WHERE project_id=c.project_id AND group_id=c.group_id AND user_id=?)');args.push(actor.id)}
  if(input.resolve&&!input.generationId){predicates.push('c.resolved_at IS ?','(SELECT MAX(ordinal) FROM conversation_resolutions WHERE conversation_id=c.id) IS ?');args.push(scope.resolved_at,scope.ordinal)}
  // Reply-and-resolve is a transition into solved: the same required-to-solve fields as every ticket door (tickets/mutate-validation.ts).

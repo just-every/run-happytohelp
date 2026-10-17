@@ -1,6 +1,6 @@
 # Ticket notifications
 
-Your workspace includes editable **request received** and **solved** email notices. Open **Settings → Notifications** to change their text, expected reply time and channel or brand scope. The received notice includes the ticket reference and expected reply time. Use the same [placeholders as saved replies](macros-and-teamwork.md); a missing value is shown as a template failure in the outcomes list instead of being sent literally.
+Your workspace includes editable **request received** and **solved** email notices. Open **Settings → Project → Notifications** to change their text, expected reply time and channel or brand scope. The received notice includes the ticket reference and expected reply time. Use the same [placeholders as saved replies](macros-and-teamwork.md); a missing value is shown as a template failure in the outcomes list instead of being sent literally.
 
 A new customer request receives at most one acknowledgement per ticket. Solving a ticket sends at most one solved notice, even if it is reopened and solved again. Notices go to the requester and proven customer CC recipients. A visitor's own widget address can receive its notice; typing an address into a widget does not prove that address belongs to a customer CC.
 

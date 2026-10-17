@@ -20,7 +20,7 @@ export default function MergeConversation({conversation,onHide,onChanged}) {
             <p>This ticket survives. The source becomes an alias with its history, files and private notes preserved.</p>
             <Form.Group controlId="merge-source-ticket"><Form.Label>Source ticket ID</Form.Label><Form.Control value={source} disabled={busy} onChange={e=>{setSource(e.target.value);setPreview(null)}}/></Form.Group>
             {preview&&<div className="mt-3">
-                {preview.tickets.map(ticket=><p key={ticket.id}><strong>{ticket.id===preview.target_id?'Surviving':'Source'}: {ticket.id}</strong><br/>{ticket.messages} messages · {ticket.attachments} attachments · {ticket.private_notes} private notes<br/>Customer: {ticket.contact_id} · Channel: {ticket.channel} · Status: {ticket.status_category}</p>)}
+                {preview.tickets.map(ticket=><p key={ticket.id}><strong>{ticket.id===preview.target_id?'Surviving':'Source'}: {ticket.id}</strong><br/>{ticket.messages} messages · {ticket.attachments} attachments · {ticket.private_notes} private notes<br/>Customer: {ticket.customer_name||ticket.customer_email||ticket.contact_id}{ticket.customer_name&&ticket.customer_email?` (${ticket.customer_email})`:''} · Channel: {ticket.channel} · Status: {ticket.status_category}</p>)}
                 <p>{preview.private_notes}</p><p>{preview.channel_restrictions}</p><p>{preview.outcome_treatment}</p>
                 <p>No customer notification is sent. Undo is available until a ticket changes or a partner thread advances.</p>
             </div>}

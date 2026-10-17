@@ -35,6 +35,8 @@ export async function notificationTriggersJourney(){
   assert.equal(notices('received','requester@example.com').length,1)
   await call(ticket(id),{resolved:true});await settle();await call(ticket(id),{resolved:false});await call(ticket(id),{resolved:true});await settle()
   assert.equal(notices('solved','requester@example.com').length,1);assert.equal(notices('solved','cc@example.com').length,1)
+  const audit=await call(`${base}/audit?limit=200`,undefined,'GET')
+  assert.ok(audit.data.some(event=>event.action==='notifications.delivery_outcome'&&event.target_id===id),'notification outcome appears in the workspace audit log')
   // Widget's own typed address is a destination, never a proven CC identity.
   await DB.batch([
    DB.prepare("INSERT INTO contacts(id,project_id,name,email,metadata_json,created_at) VALUES('widget-contact','p','Widget','widget@example.com','{\"email_unproven\":1}',1)"),

@@ -490,6 +490,7 @@ export const Provider = (props) => {
                 setLastConnected(Date.now());
                 refreshInboxData();
             } else if (frame.type === 'activity') {
+                setSocketEvent(frame);
                 if (frame.kind === 'read' && Array.isArray(frame.reads)) applyReadReceipts(frame.reads);
                 else { setLastConnected(Date.now()); refreshInboxData(); }
             } else if (frame.type === 'resolution') {

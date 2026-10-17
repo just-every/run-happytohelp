@@ -2,8 +2,8 @@ export type NotificationContact={id:string;email:string|null;metadata_json?:stri
 const mailbox=(value:unknown)=>typeof value==='string'&&value.length<=254&&/^[^\s@<>(),:;"\\]+@[^\s@<>(),:;"\\]+\.[^\s@<>(),:;"\\]+$/.test(value.trim())?value.trim().toLowerCase():null
 const metadata=(contact:NotificationContact)=>JSON.parse(contact.metadata_json||'{}')
 
-/** A collected preference chooses only a notification destination. It never
- * changes canonical identity, verification, participants or inbound authority.
+/** Reply delivery honours a collected preference. Automatic ticket notices use
+ * customerNoticeAddress instead. Neither changes canonical identity or authority.
  * Mail with no usable From names nobody to answer: its contact is notified only at
  * an address an operator chose for it. */
 export function notificationAddress(contact:NotificationContact){const flags=metadata(contact);return mailbox(flags.provided_email)||(flags.unusable_from?null:mailbox(contact.email))}

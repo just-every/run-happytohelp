@@ -161,8 +161,8 @@ async function newConversation(env:Env,projectId:string,contactId:string,recordI
  ])
  return env.DB.prepare('SELECT * FROM conversations WHERE id=? AND project_id=?').bind(key,projectId).first<any>()
 }
-/** An authenticated contact's Reply-To becomes where replies to them are sent (their
- * preferred notification address). It never changes who they are, and never the
+/** An authenticated contact's Reply-To becomes where operator replies are sent.
+ * Its source never proves the reply target for automatic notices. It never changes who they are, and never the
  * preference of a widget-verified customer, which only they or an operator set. */
 async function keepReplyTarget(env:Env,projectId:string,actor:Actor,value:unknown,context:{authenticated:boolean;automatic:boolean;workspace:ReadonlySet<string>}){
  const replyTo=emailAddress(value)

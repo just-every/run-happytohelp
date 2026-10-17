@@ -31,6 +31,7 @@ try{
  await page.goto(origin);await page.locator('textarea[name=content]').waitFor({state:'visible'});await page.waitForTimeout(600);
  const requestForm=page.getByRole('link',{name:'Submit a request form',exact:true});await requestForm.waitFor();
  assert.equal(await requestForm.getAttribute('href'),`${api}/help/${encodeURIComponent(projectId)}/requests?source=widget`);assert.equal(await requestForm.getAttribute('target'),'_blank');
+ const [formPage]=await Promise.all([context.waitForEvent('page'),requestForm.click()]);await formPage.getByRole('heading',{name:'Order question',exact:true}).waitFor();await formPage.close();
  await page.locator('textarea[name=content]').fill('Native widget browser message');await page.locator('button[name=submit]').click();
  await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)||'null')?.conversationId,storageKey);
  const session=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),storageKey);

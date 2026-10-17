@@ -19,7 +19,7 @@ export default function Mailboxes({projectId,role}) {
  };
  const reconnect=async mailbox=>{
   if(mailbox.provider==='imap'){setEditor(mailbox);return;}
-  const response=await act(`/${encodeURIComponent(mailbox.id)}/reconnect`,jsonBody('POST',{}),'Opening provider authorization…');
+  const response=await act(`/${encodeURIComponent(mailbox.id)}/reconnect`,jsonBody('POST',{}),mailbox.provider==='forwarding'?'Mailbox reconnected.':'Opening provider authorization…');
   if(response?.url){const target=new URL(response.url,location.origin);if(target.protocol==='https:')location.assign(target.href);else setError('Authorization returned an invalid URL.');}
  };
  const disconnect=mailbox=>ask({title:`Disconnect ${mailbox.address}?`,body:<p>Mail sync stops. Existing conversations and email history remain. Reconnect this mailbox to resume receiving.</p>,confirmLabel:'Disconnect',busyLabel:'Disconnecting…',run:async()=>{await readMail(`${path}/${encodeURIComponent(mailbox.id)}`,{method:'DELETE'});setNotice('Mailbox disconnected.');await load();}});

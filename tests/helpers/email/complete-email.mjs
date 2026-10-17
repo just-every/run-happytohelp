@@ -13,6 +13,8 @@ export async function completeEmailJourney(){
   const workspace=await app.seedWorkspace('r6'),projectId=workspace.projectId,owner=workspace.tokens.owner,agent=workspace.tokens.operator,base=`/api/management/projects/${projectId}`,gate=body=>app.call('/api/integrations/email/inbound',{token:'gateway-fixture',body})
   await app.ok(base+'/email-settings',{token:owner,method:'PUT',body:{from_address:'support@example.test',from_name:'Parcel Support',inbound_address:'help@example.test',is_enabled:true}})
   const mailbox=(await app.ok(base+'/mailboxes',{token:owner,body:{provider:'forwarding',address:'helpdesk@example.test',displayName:'Parcel Support',aliases:['returns@example.test']}})).data
+  const reconnected=await app.ok(base+`/mailboxes/${mailbox.id}/reconnect`,{token:owner,body:{}})
+  assert.equal(reconnected.data.status,'connected');assert.ok(reconnected.data.addresses.some(alias=>alias.address==='returns@example.test'),'forwarding reconnect retains receiving aliases')
   const command={kind:'email',localId:'operator-first-email',requesterEmail:'maya@customer.example',requesterName:'Maya Chen',mailboxId:mailbox.id,subject:'Your replacement shipment',content:'Your replacement leaves our warehouse today.',cc:['finance@customer.example'],bcc:['archive@example.test']}
   const ticket=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:command})
   await app.until(()=>sent.length===1,{message:'first outbound email'})

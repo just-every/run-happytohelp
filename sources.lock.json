@@ -9424,7 +9424,7 @@
       "executable": false
     },
     "tests/helpers/inbox/management-library-browser.mjs": {
-      "sha256": "62f3ce836077d11d2f5e2fe547fab8732f902be5c5954f7eb88c3fa796ff524e",
+      "sha256": "c77bde4f4a85f43e688102069db5dab126c3f0a4e456c47303bfd3bfda0ccf90",
       "executable": false
     },
     "tests/helpers/inbox/management.mjs": {

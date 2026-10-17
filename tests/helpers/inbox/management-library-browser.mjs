@@ -41,8 +41,12 @@ try{
  browser=await launchBrowser();
  const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage();
  const pageErrors=[],nativeDialogs=[],deletes=[],posts=[];
+ let discardCompletedDraft=false;
  page.on('pageerror',error=>pageErrors.push(error.message));
- page.on('dialog',async dialog=>{nativeDialogs.push(`${dialog.type()}: ${dialog.message()}`);await dialog.dismiss();});
+ page.on('dialog',async dialog=>{
+  if(discardCompletedDraft&&dialog.type()==='beforeunload'){await dialog.accept();return;}
+  nativeDialogs.push(`${dialog.type()}: ${dialog.message()}`);await dialog.dismiss();
+ });
  page.on('request',req=>{const url=new URL(req.url());if(!url.pathname.startsWith('/api/'))return;if(req.method()==='DELETE')deletes.push(url.pathname);if(req.method()==='POST')posts.push(url.pathname);});
  await page.goto(origin+'/login?returnTo='+encodeURIComponent(`/projects/${projectId}/conversations`));await page.getByLabel('Email',{exact:true}).fill(owner.email);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Login',exact:true}).click();await page.waitForURL('**/conversations');
  const base=`${origin}/projects/${projectId}`,shot=name=>page.screenshot({path:join(evidenceDir,name),fullPage:true});
@@ -210,7 +214,11 @@ try{
   await runtime.execute(rows.map(({suffix,seen})=>`INSERT INTO contacts(id,project_id,name,email,metadata_json,created_at) VALUES('archive-contact-${suffix}',${quote(projectId)},'Archive contact ${suffix}','archive${suffix}@example.test',${quote(JSON.stringify({provided_name:suffix==='210'?'Supplied archive name':null,provided_email:suffix==='210'?'supplied-archive@example.test':null,last_seen_at:seen,country_name:seen%2?'Australia':'Canada'}))},1); INSERT INTO macros VALUES('archive-reply-${suffix}',${quote(projectId)},'Archive reply ${suffix}',${quote(suffix==='210'?'Distinctive body phrase for the older saved reply.':'Reusable archive reply.')},${quote(actor)},${seen},${seen});`).join('\n')+Array.from({length:55},(_,i)=>`INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES('archive-thread-${String(i).padStart(3,'0')}',${quote(projectId)},'archive-contact-210',1,${i+1});`).join('\n'));
   for(const width of [1440,390]){
    await page.setViewportSize({width,height:1000});
-   await page.goto(`${base}/contacts`);await page.getByLabel('Sort by',{exact:true}).selectOption('name');await page.getByLabel('Sort direction').selectOption('asc');
+   // The previous viewport's reply was already checked and cleared. Its dirty
+   // effect can still be pending when this deliberate document navigation starts.
+   discardCompletedDraft=width===390;
+   try{await page.goto(`${base}/contacts`);}finally{discardCompletedDraft=false;}
+   await page.getByLabel('Sort by',{exact:true}).selectOption('name');await page.getByLabel('Sort direction').selectOption('asc');
    await page.getByRole('link',{name:'Archive contact 000',exact:true}).waitFor();
    const pages=page.getByRole('navigation',{name:'Contact pages',exact:true});
    for(let next=0;next<4;next++){await pages.getByRole('button',{name:'Next',exact:true}).click();await page.getByRole('link',{name:`Archive contact ${String((next+1)*50).padStart(3,'0')}`,exact:true}).waitFor();}

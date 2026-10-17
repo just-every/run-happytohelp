@@ -12,7 +12,9 @@
   }
  };
  const clear = () => { if (status()) status().hidden = true; };
- const eligible = url => document.body.dataset.helpBase !== '/' && url.origin === location.origin && (url.pathname === document.body.dataset.helpBase || url.pathname.startsWith(document.body.dataset.helpBase + '/'));
+ // Request forms load their own behavior and Turnstile; keep real document navigation.
+ const requestPage = url => /\/requests(?:\/|$)/.test(url.pathname);
+ const eligible = url => !requestPage(url) && document.body.dataset.helpBase !== '/' && url.origin === location.origin && (url.pathname === document.body.dataset.helpBase || url.pathname.startsWith(document.body.dataset.helpBase + '/'));
  async function navigate(destination, push = true) {
   const url = new URL(destination, location.href); pending = url.href;
   controller?.abort(); const request = new AbortController(); controller = request;
@@ -51,7 +53,7 @@
   if (!event.target.matches('.help-center-search, [data-help-language]')) return;
   event.preventDefault(); const url = new URL(event.target.action); url.search = new URLSearchParams(new FormData(event.target)); navigate(url.href);
  });
- window.addEventListener('popstate', () => navigate(location.href, false));
+ window.addEventListener('popstate', () => requestPage(new URL(location.href)) ? location.reload() : navigate(location.href, false));
  window.addEventListener('offline', () => show('You’re offline. The last loaded page is still available.', true));
  window.addEventListener('online', () => {if(pending) show('You’re back online. Try loading that page again.', true);else clear();});
 })();

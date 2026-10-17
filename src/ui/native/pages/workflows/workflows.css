@@ -3,3 +3,5 @@
 .workflow-settings .workflow-explanation{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:2px 12px;font-size:12px;margin:6px 0}.workflow-settings .workflow-explanation dd{min-width:0;margin:0}.workflow-settings .workflow-explanation ul{padding-left:16px}
 
 .workflow-settings button:is(:not([class]),.workflow-secondary){font:inherit;font-size:.875rem;line-height:1.3;padding:.4rem .8rem;border:1px solid var(--bs-border-color);border-radius:999px;background:var(--bs-body-bg);color:var(--bs-body-color)}.workflow-settings button:is(:not([class]),.workflow-secondary):hover:not(:disabled){border-color:var(--bs-body-color)}.workflow-settings button:is(:not([class]),.workflow-secondary):focus-visible{outline:2px solid var(--bs-body-color);outline-offset:2px}.workflow-settings button:is(:not([class]),.workflow-secondary):disabled{opacity:.6;cursor:not-allowed}
+
+.workflow-settings .workflow-outcome{margin:4px 0;font-size:13px}.workflow-settings .workflow-outcome-not_delivered,.workflow-settings .workflow-outcome-failed{color:var(--bs-danger-text-emphasis,var(--bs-danger))}

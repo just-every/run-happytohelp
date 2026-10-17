@@ -1,7 +1,7 @@
 import type {Env} from '../../platform/env'
 import {runEventRules} from './rule-engine'
 import {routeTicket} from './routing'
-import {syncTicketSla} from './sla'
+import {syncSlaTickets} from './sla'
 import {workflowNow} from './clock'
 import type {Spent} from './budget'
 /** Each engine has its own durable effects. Re-reading a pending journal event
@@ -22,7 +22,7 @@ export async function processWorkflowEvents(env:Env,conversationId?:string,limit
     if(routed.state==='pending')continue
    }
   }
-  await syncTicketSla(env,event.conversation_id,workflowNow(env))
+  await syncSlaTickets(env,[event.conversation_id],workflowNow(env))
   await env.DB.prepare("UPDATE workflow_events SET state='complete',error=NULL WHERE id=? AND state='pending'").bind(event.id).run()
   processed++
  }

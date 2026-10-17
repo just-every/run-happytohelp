@@ -37,7 +37,9 @@ threshold and named backups. Alerts distinguish approaching, breached and
 unattended commitments. **Acknowledge** records who has taken notice; it does
 not stop a clock or resolve the ticket. Completion resolves the corresponding
 alerts. Notification outcomes are shown separately: a recorded alert does not
-by itself establish that an email or other notice was delivered.
+by itself establish that an email or other notice was delivered. Alerts are
+recorded within a minute of their moment, however many tickets fall due
+together.
 
 ## Preview and publish rules
 
@@ -57,7 +59,12 @@ outcomes and routing decisions.
 Rules run in ascending order. Later rules evaluate the ticket after earlier
 changes. A repeated event or restarted worker does not apply the same recorded
 action twice. A failed or uncertain external notification remains visible;
-an unknown send is never automatically replayed.
+an unknown send is never automatically replayed. A run that cannot finish yet,
+such as an assignment that keeps losing to a concurrent change, tries again
+after 1, 5, 15 and 60 minutes and then stops, showing its reason in the
+execution history. A notification that this installation cannot deliver is
+marked **Not delivered** with the reason at once; it is not kept to be sent
+late. Waiting work never holds up other rules or other workspaces.
 
 Snoozed tickets retain their status and responsible owner, and still count toward
 that owner’s open workload. Use the snooze filter to see them.
@@ -109,13 +116,14 @@ history so a reload or worker restart does not create a second send.
 
 ## Erasure and portable backups
 
-Contact erasure removes the contact's workflow snapshots, SLA state and alerts,
-rule runs and action details, routing decisions, snoozes and scheduled replies.
-It also removes rules whose draft or published text refers to the contact's
-personal data. Calendar and policy definitions or routing skills containing the
-contact's identity are removed too. Shared plan labels alone are kept. The
-existing erasure record counts removed workflow records with ticket records.
-Other workspace configuration remains available.
+Contact erasure removes the workflow records of the contact's own tickets:
+journal snapshots, follow-up links, SLA state and alerts, rule runs and action
+details, notifications, time-rule state, routing decisions, snoozes and
+scheduled replies. Records are chosen by ticket, never by searching text for a
+name or address, so rules, policies, calendars, routing settings and other
+customers' history stay as they are, even when a name such as "Al" appears
+inside a rule or policy name. The existing erasure record counts removed
+workflow records with ticket records.
 
 Portable backups carry calendars, policies, rules and their versions, routing
 configuration and the retained workflow history. Pending replies, notifications

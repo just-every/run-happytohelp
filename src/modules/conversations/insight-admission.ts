@@ -1,4 +1,4 @@
-import {trackingStatement} from '../outcomes/state.ts'
+import {trackingStatement} from '../outcomes/tracking.ts'
 import type { Actor,Env } from '../../platform/env'
 export async function admitInsightPair(env:Env,input:{actor:Actor;conversationId:string;insightId:string;button:string;aiLocalId:string;contactLocalId:string;expectedRevision:number;sessionHash?:string;assistantId?:string;monitoringRequired?:boolean}){
  const {actor,conversationId,insightId,button,aiLocalId,contactLocalId,expectedRevision}=input

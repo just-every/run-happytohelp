@@ -3,7 +3,7 @@ import {inboundAuthority,provenAddressSql,type InboundAuthority} from '../integr
 import {contactAvailableSql} from './contact-privacy.ts'
 import {tokenGuard,type TokenAuthority} from '../../platform/integration-authority.ts'
 import {authoringSource,authorshipStatement,type Authoring} from '../outcomes/provenance.ts'
-import {trackingStatement} from '../outcomes/state.ts'
+import {trackingStatement} from '../outcomes/tracking.ts'
 import {requiredToSolve,solving} from '../tickets/fields.ts'
 import {memberAccess} from '../access/gate.ts'
 import {resolvePublicCitations,citationAdmissionGuard,activeSourceProjectSql,type PublicReference} from '../knowledge/public-sources.ts'

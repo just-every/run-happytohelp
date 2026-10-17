@@ -31,3 +31,6 @@ test('replies reach the conversation\'s customers by email with safe rendering, 
 test('SendGrid, Resend and Cloudflare each carry the reply with its files and a working reply address, settle acceptance, refusal, bounce or a lost response once, and never submit twice while a send is pending',transportsJourney)
 
 test('the sender-domain check names missing SPF, DKIM and DMARC records, keeps resolver errors unknown and is scoped to the workspace\'s members',senderDomainJourney)
+
+import {notificationTriggersJourney} from '../helpers/r4/notifications.mjs'
+test('editable requester triggers send received and solved once, suppress historical and machine mail, and teammate notices follow current authority and preferences',notificationTriggersJourney)

@@ -87,6 +87,25 @@ body.conversation-workspace {
         gap: .75rem;
     }
 
+    #chat .chat-footer .chat-entry-form:has(> .conversation-placeholder-warning) {
+        flex-direction: column;
+    }
+
+    #chat .conversation-placeholder-warning {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    #chat .chat > .chat-body > .chat-footer:has(.saved-replies-picker) {
+        max-height: 60dvh;
+        overflow-y: auto;
+    }
+
+    #chat .saved-replies-picker [aria-label="Macro preview"] {
+        max-height: 36dvh;
+        overflow-y: auto;
+    }
+
     #chat .saved-replies-picker__results {
         max-height: min(12rem, 24dvh);
         overflow-y: auto;
@@ -170,6 +189,8 @@ body.conversation-workspace {
 
         // Attachments and a refused send need the full width: the buttons go back under the field meanwhile.
         #chat .chat-footer:has(.conversation-composer__files, .saved-replies-picker, .conversation-composer__error) .chat-entry > .flex-grow-1 { flex-direction: column !important; align-items: stretch; }
+        #chat .chat-footer:has(.conversation-composer__files) .chat-buttons { flex-wrap: wrap; width: 100%; }
+        #chat .conversation-composer__files { flex-basis: 100%; }
 
         #chat .chat-footer .chat-entry-form textarea {
             max-height: min(12rem, 28dvh) !important;

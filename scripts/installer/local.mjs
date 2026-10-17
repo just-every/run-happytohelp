@@ -7,6 +7,7 @@ import {hostedDeploy} from './hosted-deploy.mjs';
 import {localPortability} from '@runeditrun/rer/portability';
 import {localInputDefaults,localOwner,nativeOwner,prepareNativeLocal} from './native-local.mjs';
 import {ticketRestoreSql} from './ticket-archive-upgrade.mjs';
+import {r4RestoreSql} from './r4-tables.mjs';
 import {fileRecords} from '@runeditrun/rer/modules/portability/files';
 import {checkArchiveSnapshot,readDurableObjects,snapshotSql} from './durable-objects.mjs';
 import * as model from './ui/seed.mjs';
@@ -51,18 +52,19 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
  }else snapshots=await checkArchiveSnapshot(context.path);
  let selected=transfer;
  if(verb==='import'){
-  const {default:previous}=await import('./ticket-archive-policy.mjs');
+  const historical=await Promise.all(['./ticket-archive-policy.mjs','./r4-archive-policy.mjs'].map(async module=>({module,policy:(await import(module)).default})));
   // Metadata can select this explicitly supported schema transition, never an
   // executable path supplied by the archive. Base verifies the complete archive.
   for await(const record of fileRecords(context.path))if(record.kind==='manifest'){
-   if(Object.hasOwn(previous.acceptedSchemas,record.schema))selected=localPortability({database:'DB',buckets:{FILES:'FILES'},policyModule:new URL('./ticket-archive-policy.mjs',import.meta.url),transient:[]});
+   const previous=historical.find(item=>Object.hasOwn(item.policy.acceptedSchemas,record.schema));
+   if(previous)selected=localPortability({database:'DB',buckets:{FILES:'FILES'},policyModule:new URL(previous.module,import.meta.url),transient:[]});
    break;
   }
  }
  const result=await selected[verb](context);
  // Restore deliberately suspends business triggers. Rebuild derived search
  // before reporting a completed import, including a resumed import.
- if(verb==='import'){await d1(context,'Preparing restored ticket statuses',ticketRestoreSql);await d1(context,'Rebuilding conversation search',"INSERT INTO inbox_message_search(inbox_message_search) VALUES('rebuild')");}
+ if(verb==='import'){await d1(context,'Preparing restored ticket statuses',ticketRestoreSql);await d1(context,'Preparing restored saved replies',r4RestoreSql);await d1(context,'Rebuilding conversation search',"INSERT INTO inbox_message_search(inbox_message_search) VALUES('rebuild')");}
  // The receipt names the Durable Object storage the archive carries (exported) or carried (restored).
  return {...result,durableObjects:snapshots.map(({namespace,className,records,digest})=>({namespace,className,records:Array.isArray(records)?records.length:records,digest}))};
 } ]));

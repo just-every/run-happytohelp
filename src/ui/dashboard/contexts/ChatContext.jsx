@@ -64,6 +64,9 @@ export const Provider = (props) => {
     initialPathRef.current = dashboardLocation?.pathname;
     const [initialChildrenMounted, setInitialChildrenMounted] = useState(null);
     const [ lastConnected, setLastConnected ] = useState(0);
+    const [socketEvent, setSocketEvent] = useState(null);
+    const conversationSocket = useRef(null);
+    const sendSocket = useCallback(frame => conversationSocket.current?.send(frame) || false, []);
     const [ activeConversationId, setActiveConversationId ] = useState(initialActiveConversationId);
     const [ conversationLists, setConversationLists ] = useState(initialConversationLists);
     const [ conversationData, setConversationData ] = useState(initialConversationData);
@@ -478,8 +481,11 @@ export const Provider = (props) => {
 
     useEffect(() => {
         if (!activeConversationId || !activeProjectId) return;
-        return connectConversation(activeConversationId, frame => {
-            if (frame.type === 'message') {
+        setSocketEvent(null);
+        const connection = connectConversation(activeConversationId, frame => {
+            if (frame.type === 'presence') {
+                setSocketEvent(frame);
+            } else if (frame.type === 'message') {
                 // Re-read persisted enriched buckets: actor/media relationships belong to the server.
                 setLastConnected(Date.now());
                 refreshInboxData();
@@ -518,6 +524,8 @@ export const Provider = (props) => {
                 setLastConnected(Date.now());
             }
         }, () => setLastConnected(Date.now()), error => console.warn(error.message));
+        conversationSocket.current = connection;
+        return () => { conversationSocket.current = null; connection(); };
     }, [activeConversationId, activeProjectId]);
 
     useEffect(() => {
@@ -633,6 +641,8 @@ export const Provider = (props) => {
         activeProjectId,
         projectIdFor,
         lastConnected,
+        socketEvent,
+        sendSocket,
         initialInboxListId: initialInboxList?.id,
         initialInboxReadsId: initialInboxReads?.id,
         initialInboxConversationId: initialInboxReads?.conversationId,

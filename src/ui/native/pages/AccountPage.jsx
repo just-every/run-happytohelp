@@ -7,6 +7,8 @@ import AvatarUpload from './AvatarUpload';
 import { confirmStepUp, nativeRequest } from '../transport';
 import { Field, Section, Feedback } from './forms';
 import TwoFactorSettings from './security/TwoFactorSettings';
+import PersonalNotificationSettings from './notifications/PersonalNotificationSettings';
+import NotificationInbox from './notifications/NotificationInbox';
 export default function AccountPage({projectId}) {
  const {markDirty,markSaved}=useUnsavedChanges();
 
@@ -26,8 +28,8 @@ export default function AccountPage({projectId}) {
     if(!data)return <Feedback error={error}/>;
     return <div className="workspace-settings project-account"><Feedback {...{error,saved}}/><SettingsTabs tab={tab} onChange={setTab} tabs={[["general","General"],["notifications","Notification"],["security","Security"]]}/><form onSubmit={submit}>
         {tab==='general'&&<Section title="Profile"><div className="project-avatar">{!data.avatar_url&&<span className="project-avatar-placeholder">{data.name?.slice(0,1)}</span>}<AvatarUpload projectId={projectId} value={data.avatar_url} onChange={value=>change('avatar_url',value)}/></div>{field('name','Name')}{field('email','Email','email')}<TimezoneField value={data.timezone} onChange={change}/></Section>}
-        {tab==='notifications'&&<Section title="Notifications">{field('is_notifiable_on_conversation_assignment','On conversation assigned','checkbox')}{projectId&&<><p>For this workspace</p>{field('is_notified_on_unassigned_activity','Notify on unassigned conversation activity','checkbox')}</>}</Section>}
+        {tab==='notifications'&&<Section title="Notifications">{projectId&&<><p>For this workspace</p>{field('is_notified_on_unassigned_activity','Notify on unassigned conversation activity','checkbox')}</>}</Section>}
         {tab==='security'&&<Section title={settingPassword?(data.has_password?"Set a new password":"Set a password"):"Change your password"}>{!settingPassword&&field('current_password','Current password','password')}{field('password','New password','password')}{field('password_confirmation','Confirm password','password')}{!settingPassword&&!data.has_second_factor&&<button type="button" className="btn btn-outline-secondary" onClick={async()=>{if(await confirmStepUp({accountId:data.id,methods:['email_link']})){const result=await nativeRequest(path);setData(old=>({...old,...result.data}));}}}>Confirm by email to set a password</button>}</Section>}
         <div className="settings-actions"><button className="btn btn-primary">Update</button></div>
-    </form>{tab==='security'&&<div className="account-two-factor"><TwoFactorSettings/></div>}</div>;
+    </form>{tab==='notifications'&&projectId&&<><PersonalNotificationSettings projectId={projectId}/><NotificationInbox projectId={projectId}/></>}{tab==='security'&&<div className="account-two-factor"><TwoFactorSettings/></div>}</div>;
 }

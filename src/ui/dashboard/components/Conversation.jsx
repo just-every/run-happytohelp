@@ -16,7 +16,11 @@ import ConversationBody from "./ConversationBody";
 import '../styles/components/Conversation.scss';
 import NoteModal from "./NoteModal";
 import { useUnsavedChanges } from '../../native/NavigationGuard';
-import { FollowControl, NotesOnlyComposer, useCan } from './ConversationAccess';
+import { NotesOnlyComposer, useCan } from './ConversationAccess';
+import ConversationCollaboration from './collaboration/ConversationCollaboration';
+import ConversationActions from './conversation-actions/ConversationActions';
+import MergedConversationHistory from './conversation-actions/MergedConversationHistory';
+import {nativeRequest} from '../../native/transport';
 
 function Conversation({ projectId, conversationId, conversation, buckets }) {
     const {
@@ -30,6 +34,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         updateBucket,
         sendPluginEvent,
         lastConnected,
+        socketEvent,
+        sendSocket,
         transcriptError,
         retryTranscriptMessages,
         resolutionErrors,
@@ -42,9 +48,13 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const [ draftOrigin, setDraftOrigin ] = useState(null);
     const [ draftFocusRequest, setDraftFocusRequest ] = useState(null);
     const [ draftError, setDraftError ] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
+    const typingTimer = useRef(null);
+    useEffect(() => () => clearTimeout(typingTimer.current), []);
     const [ loadingContent, setLoadingContent ] = useState('');
     const [ isAssistantDisabled, setIsAssistantDisabled ] = useState(false);
     const [ isNoteModalVisible, setIsNoteModalVisible ] = useState(false);
+    const [noteMacro, setNoteMacro] = useState(null);
     const { setDirty } = useUnsavedChanges();
     useEffect(() => {
         setDirty(Boolean(content.trim() || files.length || loadingContent || isSending));
@@ -52,6 +62,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const draftConversationIdRef = useRef(conversationId);
     const activeConversationIdRef = useRef(conversationId);
     const draftAdoptionRef = useRef(null);
+    const draftEditVersion = useRef(0);
 
     activeConversationIdRef.current = conversationId;
 
@@ -83,8 +94,13 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         setIsMainVisible,
         lastConnected,
     });
+    const applyMacroDraft = (text, metadata) => {
+        if (metadata.reply_type === 'note') { setNoteMacro({content:text,media:metadata.media || []}); setIsNoteModalVisible(true); }
+        else if (metadata.media?.length) setFiles(current => [...current,...metadata.media.filter(file=>!current.some(existing=>existing.id===file.id))]);
+        refreshConversation();
+    };
     const visibleTranscriptError = transcriptError?.conversationId === conversationId;
-    const isComposerEnabled = isConversationReady && buckets.length > 0 && !isLoading && !isSending;
+    const isComposerEnabled = isConversationReady && buckets.length > 0 && !isLoading && !isSending && !conversation?.merged_into;
     const cancelDraftAdoption = () => {
         if (draftAdoptionRef.current) {
             draftAdoptionRef.current = null;
@@ -141,9 +157,10 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
 
         try {
             await sendAction('sendMessage', message, conversationProjectId);
+            setDraftError('');
             setDraftOrigin(null);
             setFiles([]);
-        } finally {
+        } catch (error) { setDraftError(error.message); throw error; } finally {
             setIsSending(false);
         }
         if (sendAndClose) {
@@ -155,6 +172,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
 
     useEffect(() => {
         draftConversationIdRef.current = conversationId;
+        draftEditVersion.current++;
         draftAdoptionRef.current = null;
         setDraftError('');
         setContent('');
@@ -165,10 +183,28 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         setIsSending(false);
         setIsAssistantDisabled(false);
         setIsNoteModalVisible(false);
+        setNoteMacro(null);
         return () => { draftAdoptionRef.current = null; };
     }, [ conversationId ]);
 
+    useEffect(() => {
+        if (!isConversationReady) return;
+        let active = true;
+        const editVersion = draftEditVersion.current;
+        nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft`)
+            .then(result => {
+                const draft = result.data;
+                if (!active || !draft || draftEditVersion.current !== editVersion) return;
+                if (draft.reply_type === 'note') setNoteMacro({content:draft.content,media:draft.media || []});
+                else { setContent(draft.content); setFiles(draft.media || []); }
+            }).catch(error => { if (active) setDraftError(`Couldn’t load your saved macro draft: ${error.message}`); });
+        return () => { active = false; };
+    }, [conversationProjectId,conversationId,isConversationReady]);
+
     const updateDraftContent = (nextContent, attachments, origin) => {
+        draftEditVersion.current++;
+        setIsTyping(Boolean(nextContent)); clearTimeout(typingTimer.current);
+        typingTimer.current = setTimeout(() => setIsTyping(false), 1500);
         cancelDraftAdoption();
         draftConversationIdRef.current = conversationId;
         setContent(nextContent);
@@ -274,11 +310,16 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                         </p> }
                         { isLoading && <div className="text-center px-2 py-2" role="status">Loading conversation...</div> }
                         <ConversationBody conversation={ conversation } buckets={ buckets } setAtTop={ setAtTop } />
+                        <MergedConversationHistory conversation={conversation} refreshKey={conversation.ticket_version}/>
+                        <ConversationActions conversation={conversation} refreshKey={socketEvent?.type==='activity'?socketEvent:null} messages={buckets.flatMap(bucket=>bucket.messages || [])} onChanged={refreshConversation}/>
                         { loadMoreError && <p className="conversation-load-error px-2 py-2" role="alert">
                             Couldn’t load older messages. <button type="button" onClick={ loadOlderBuckets }>Retry</button>
                         </p> }
                     </ScrollToBottom>
 
+                    {noteMacro && !isNoteModalVisible && <p className="px-3 py-2" role="status">You have a saved internal note draft. <button className="btn btn-link btn-sm" type="button" onClick={()=>setIsNoteModalVisible(true)}>Review note</button></p>}
+                    {conversation.merged_into && <p className="px-3 py-2" role="status">This ticket was merged. <a href={`/conversations/${conversation.merged_into}`}>Open the surviving ticket</a>.</p>}
+                    {canFollow && <ConversationCollaboration projectId={conversationProjectId} conversationId={conversationId} currentUserId={currentAgent?.id} socketEvent={socketEvent} sendSocket={sendSocket} hasDraft={Boolean(draftContent.trim() || draftFiles.length)} isTyping={isTyping}/> }
                     { draftError && <p className="conversation-load-error px-2 py-2" role="alert">{ draftError }</p> }
                     { canReply ? <ConversationForm
                         key={ conversationId }
@@ -292,13 +333,14 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                         onFileRemove={ handleRemoveFile }
                         onAddNote={ () => setIsNoteModalVisible(true) }
                         onContentChange={ updateDraftContent }
+                        onMacroApplied={applyMacroDraft}
                         onAssistantDisabledChange={ setIsAssistantDisabled }
                         files={ draftFiles }
                         isResolved={ Boolean(conversation.resolved_at) }
                         finalReason={ conversation.status_category === 'closed' ? 'This ticket is closed and final, so it takes no more replies. A customer reply opens a new ticket.' : null }
                         isEnabled={ isComposerEnabled }
                     /> : <>
-                        { canFollow && <FollowControl projectId={ conversationProjectId } conversationId={ conversationId } /> }
+
                         <NotesOnlyComposer onAddNote={ () => setIsNoteModalVisible(true) } />
                     </> }
                 </div>
@@ -319,7 +361,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                     requestedTabVersion={ assistant.requestedTabVersion }
                 />
 
-                { isNoteModalVisible && <NoteModal conversation={ conversation } onHide={ () => setIsNoteModalVisible(false) } /> }
+                { isNoteModalVisible && <NoteModal conversation={ conversation } initialContent={noteMacro?.content || ''} initialMedia={noteMacro?.media || []} onHide={ () => {setIsNoteModalVisible(false);setNoteMacro(null);} } /> }
             </div>
         </ConversationSuggestionsProvider>
     );

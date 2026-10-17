@@ -8,6 +8,7 @@ import {assignmentNotificationStatement,dispatchOperatorNotifications} from '../
 import {publishActivity} from '../conversations/activity'
 import {onAssistantAssignment} from '../ai-support/customer-message'
 import {assertModelConfigured} from '../ai-support/configuration'
+import {notifyTicketEvent} from '../integrations/triggers'
 export type {TicketChange} from './mutate-validation'
 export class TicketCommittedError extends HTTPException {
  readonly committed=true
@@ -53,6 +54,8 @@ export async function mutateTicket(env:Env,actor:Actor,id:string,input:TicketCha
  try{
  if(assignmentChanged){await publishActivity(env,actor.projectId,id,'assignment');await dispatchOperatorNotifications(env,{projectId:actor.projectId,conversationId:id})}
  if(change.ai_id&&!change.agent_id)await onAssistantAssignment(env,actor.projectId,id,{sql:`${accepted} AND c.assigned_to IS NULL AND c.last_message_id IS ? AND EXISTS(SELECT 1 FROM conversation_ai WHERE conversation_id=c.id AND ai_id=?) AND EXISTS(${guard.sql}) AND ${availableTicketSql()}`,params:[receipt,id,current.last_message_id,change.ai_id,...guard.params]},assignmentChanged)
+ if(current.group_id!==next.group_id&&next.group_id){const members=await env.DB.prepare('SELECT user_id FROM ticket_group_members WHERE project_id=? AND group_id=?').bind(actor.projectId,next.group_id).all<{user_id:string}>();await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:id,event:'group',eventId:receipt,actorId:actor.id,recipientIds:members.results.map(m=>m.user_id)})}
+ await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:id,event:'ticket_updated',eventId:receipt,actorId:actor.id})
  if(current.status_id!==next.status_id)await publishResolution(env,actor.projectId,id)
  return await getTicket(env,actor,id,authority.tokenAuthority)
  }catch(error){throw new TicketCommittedError(id,current.ticket_version+1,error)}

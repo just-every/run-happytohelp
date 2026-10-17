@@ -1,7 +1,6 @@
 // What each destructive delete does, in the words shown by the shared confirmation dialog.
 const named = (noun, value) => `${noun}${value ? ` “${value}”` : ''}`;
 export const deleteCopy = {
-    macros: {title: record => `Delete ${named('saved reply', record.title)}?`, effect: 'Your team will no longer be able to insert this saved reply. This cannot be undone.'},
     contacts: {title: record => `Delete ${named('contact', record.provided_name || record.name || record.email)}?`, effect: 'The contact is removed from your contact list, blocked from sending new messages, and signed out of the widget. Their existing conversations stay in place. To permanently remove their personal data, use Erase personal data instead.'},
     ais: {title: record => `Delete ${named('AI assistant', record.name)}?`, effect: 'Its name, prompt and settings are permanently removed and it can no longer respond. This cannot be undone.'},
     plugins: {title: record => `Delete ${named('plugin', record.name)}?`, effect: 'The plugin is removed for everyone in this project. This cannot be undone.'},

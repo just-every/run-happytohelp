@@ -9,13 +9,13 @@ const statuses='[{"id":"new","name":"New"},{"id":"open","name":"Open"},{"id":"pe
 /** Old archives skipped the ticket backfill. Recognize only schemas produced by
  * this installation's own pre-ticket migrations and supply the new ticket cells.
  * The portability engine still validates every row, checksum and foreign key. */
-export async function ticketArchivePolicy(root,input){
+export async function ticketArchivePolicy(root,input,excludedMigrations=name=>/^1[34][0-9]_/.test(name)||name>='191_'){
  const scratch=new DatabaseSync(':memory:'),config=policy(input),acceptedSchemas={...input.acceptedSchemas};
  const db={prepare(sql){return {bind(...args){this.args=args;return this;},async all(){return {results:scratch.prepare(sql).all(...(this.args??[]))};}};}};
  try{
   // v0.4.2, the last pre-ticket release, ends at 190; every later migration
   // (191's ticket_history index onward) only ever runs after the ticket model.
-  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!/^13[0-9]_/.test(name)&&name<'191_').sort();
+  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!excludedMigrations(name)).sort();
   const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))));
   for(let index=0;index<plan.length;index++){
    for(const sql of plan[index])scratch.exec(sql);

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {seedRecoveryR4,verifyRecoveryR4} from './r4-data.mjs';
 import {seedRecoveryTicket,verifyRecoveryTicket} from './tickets.mjs';
 
 const credentials = {name: 'Recovery comparison fixture', email: 'recovery@example.test', password: 'synthetic-recovery-comparison-test-password', allowedOrigin: 'https://recovery.example.test'};
@@ -22,7 +23,8 @@ export async function seedJourney(runtime) {
   const response = await fetch(`${runtime.origin}/api/conversations/${conversation.id}/media`, {method: 'POST', headers: {Authorization: `Bearer ${owner.token}`, 'Content-Type': 'application/octet-stream', 'X-Filename': 'recovery.bin'}, body: Uint8Array.from(bytes)});
   const media = await json(response, 201);
   const ticket = await seedRecoveryTicket(runtime, owner, conversation);
-  const state = {owner, conversation, media, bytes, command, article, ticket};
+  const r4 = await seedRecoveryR4(runtime, {owner, visitor, conversation, media, ticket});
+  const state = {owner, conversation, media, bytes, command, article, ticket, r4};
   await verifyAccess(runtime, state, owner.token);
   return state;
 }
@@ -39,6 +41,7 @@ export async function verifyAccess(runtime, state, token) {
   assert.equal(transcript.messages[0].content, command.content);
   await json(await call(runtime, '/api/identity/session', undefined, token), 200);
   await verifyRecoveryTicket(runtime,state);
+  await verifyRecoveryR4(runtime,state,token);
 }
 export async function verifyFreshLogin(runtime, state) {
   assert.equal((await call(runtime, '/api/identity/bootstrap', {...credentials, setupToken})).status, 409);

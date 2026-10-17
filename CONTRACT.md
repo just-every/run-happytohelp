@@ -563,8 +563,8 @@ Judged from the code and tests at commit `9a07af20eccf264eaa6fd019ccc65cf2003bc3
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 21 | 1 | 0 | 22 |
-| Target and push further | 5 | 26 | 21 | 52 |
-| All | 26 | 27 | 21 | 74 |
+| Target and push further | 8 | 23 | 21 | 52 |
+| All | 29 | 24 | 21 | 74 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -601,15 +601,15 @@ Judged from the code and tests at commit `9a07af20eccf264eaa6fd019ccc65cf2003bc3
 | `QUEUE-001` | Assignment rules and available teams | target | partial | `src/modules/management/dashboard-actions.ts`; `src/modules/tickets`; `tests/journeys/inbox.mjs` | Group membership and manual group/operator assignment exist; assignment rules, capacity and round-robin routing remain for a later round. |
 | `TRIAGE-001` | Intelligent triage | target | missing |  | No implementation located. No intent, sentiment or language classification feeding routing exists. |
 | `QUEUE-002` | Structured and bulk queue work | target | partial | `src/modules/tickets`; `src/modules/management/tags.ts`; `src/modules/management/dashboard.ts`; `tests/journeys/inbox.mjs` | Ticket fields, priorities, saved filters/sorts and previewed per-record bulk changes exist; applying macros and using form-submitted fields remain for later rounds. |
-| `QUEUE-003` | Collaboration without conflicting replies | target | partial | `src/modules/management/dashboard-actions.ts`; `src/modules/tickets`; `src/modules/conversations/admission.ts`; `tests/journeys/inbox.mjs`; `tests/journeys/first-run.mjs` | Internal notes, saved personal/shared views and stale-frontier guards exist; @mentions, followers and viewing/typing/draft collision warnings remain incomplete. |
-| `MACRO-001` | Action macros with placeholders | target | partial | `src/ui/dashboard/utils/insertSavedReply.js`; `tests/journeys/delegation-browser.mjs` | Saved replies insert text into the composer without sending; macro action sets, placeholders and macro permissions do not exist. |
+| `QUEUE-003` | Collaboration without conflicting replies | target | done | `src/modules/collaboration`; `src/modules/conversations/socket.ts`; `src/modules/tickets`; `src/ui/dashboard/components/collaboration`; `tests/journeys/inbox.mjs`; `tests/journeys/first-run.mjs` |  |
+| `MACRO-001` | Action macros with placeholders | target | done | `src/modules/macros`; `src/ui/native/pages/macros`; `src/ui/dashboard/components/macros`; `tests/helpers/r4/macros.mjs`; `tests/journeys/inbox.mjs` |  |
 | `QUEUE-004` | Snooze and scheduled follow-up | target | missing |  | No implementation located. No durable snooze or scheduled-reply product implementation located. |
 | `STATUS-001` | Ticket status lifecycle | target | partial | `src/modules/tickets`; `src/modules/outcomes/resolve.ts`; `src/modules/outcomes/state.ts`; `tests/journeys/inbox.mjs`; `tests/journeys/reports.mjs` | New/Open/Pending/On-hold/Solved/Closed and category-mapped custom statuses exist; the four active states appear as Open to customers and Solved/Closed as Solved. Time-based auto-close and linked follow-up tickets remain for a later round. |
 | `SLA-001` | Business-hour service commitments | target | missing |  | No implementation located. No SLA calendars, clocks or breach-alert engine located. |
 | `AUTOMATION-001` | Explainable durable support workflows | target | missing |  | `src/modules/api-integrations/destinations.ts`. The four fixed signed webhook events belong to CONNECTIONS-001; lead-defined event rules, versioning, a workflow sandbox and explainable runs are absent. |
 | `AUTOMATION-002` | Time-based automations | target | missing |  | No implementation located. No scheduled time-condition automation engine exists. |
-| `NOTIFY-001` | Customer acknowledgements and teammate notifications | target | partial | `src/modules/integrations/operator-notifications.ts`; `src/modules/integrations/notifications.ts`; `src/modules/management/provisioning/owner-alerts.ts`; `tests/journeys/email.mjs`; `tests/journeys/inbox.mjs` | Assignment and coalesced unread-activity mail to permitted operators, per-user preferences (new-conversation alerts on for the creating owner, so a team of one is alerted) and loop-suppression headers exist; requester/CC acknowledgements, group and follower notifications and editable triggers do not. |
-| `CONVERSATION-002` | Merge and external forwarding | target | partial | `src/modules/management/dashboard-actions.ts`; `tests/journeys/inbox.mjs` | Transcript emailing exists; duplicate merge and continuous external-forward threads are absent. |
+| `NOTIFY-001` | Customer acknowledgements and teammate notifications | target | partial | `src/modules/integrations/triggers.ts`; `src/modules/integrations/triggers`; `src/modules/integrations/notification-teammates.ts`; `src/modules/integrations/operator-notifications.ts`; `tests/journeys/email.mjs`; `tests/journeys/inbox.mjs` | R4 supplies editable requester/CC received and solved notices, inbox/email teammate notices, personal preferences, frozen delivery claims and the workflow notification interface. Push and per-user Slack/Teams remain R11. |
+| `CONVERSATION-002` | Merge and external forwarding | target | done | `src/modules/conversation-actions`; `src/ui/dashboard/components/conversation-actions`; `tests/helpers/r4/conversation-actions.mjs`; `tests/journeys/inbox.mjs` |  |
 | `CONVERSATION-003` | Problem and incident linking | target | missing |  | No implementation located. No problem/incident ticket relation exists. |
 | `CUSTOMER-001` | Customer and company support records | target | partial | `src/modules/management/buckets.ts`; `src/modules/management/tracked-transcript.ts`; `src/modules/customer-context/profiles/prompt.js`; `tests/journeys/inbox.mjs` | Contact interaction history and attributed company hints exist; company/account records and cross-channel identity governance are incomplete. |
 | `COMMERCE-001` | Shopify order actions | target | missing |  | No implementation located. No Shopify order/refund connector implementation located. |

@@ -1,5 +1,5 @@
-export {inboundEmail} from './inbound'
-export {handleEmail} from './email-worker'
+export {inboundEmail} from '../conversation-actions/partner-gateway'
+export {handleEmail} from '../conversation-actions/partner-gateway'
 export {notifyMessage} from './notifications'
 export {attachInboundOrigins,isAutomaticInboundEmail} from './inbound-origin'
 export {handleLeadJob,recoverLeadJobs} from './leads'

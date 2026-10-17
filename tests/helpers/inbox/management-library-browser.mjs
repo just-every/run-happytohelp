@@ -231,8 +231,9 @@ try{
    const pickerPages=page.getByRole('navigation',{name:'Saved reply picker pages',exact:true});await page.getByRole('link',{name:'Archive reply 000',exact:true}).waitFor();
    for(let next=0;next<4;next++){await pickerPages.getByRole('button',{name:'Next',exact:true}).click();await page.getByRole('link',{name:`Archive reply ${String((next+1)*50).padStart(3,'0')}`,exact:true}).waitFor();}
    await page.getByRole('link',{name:'Archive reply 210',exact:true}).waitFor();await page.getByRole('searchbox',{name:'Search saved replies',exact:true}).fill('Distinctive body phrase');
-   const reply=page.getByRole('link',{name:'Archive reply 210',exact:true});await reply.waitFor();const draftBox=await composer.boundingBox();assert.ok(draftBox.x>=0&&draftBox.x+draftBox.width<=width&&draftBox.y>=0&&draftBox.y+draftBox.height<=1000,'the draft remains visible while searching saved replies');await reply.click();assert.equal(await composer.inputValue(),'Distinctive body phrase for the older saved reply.');
-   await composer.fill('');
+   const reply=page.getByRole('link',{name:'Archive reply 210',exact:true});await reply.waitFor();const draftBox=await composer.boundingBox();assert.ok(draftBox.x>=0&&draftBox.x+draftBox.width<=width&&draftBox.y>=0&&draftBox.y+draftBox.height<=1000,'the draft remains visible while searching saved replies');await reply.click();await reply.waitFor({state:'hidden'});assert.equal(await composer.inputValue(),'Distinctive body phrase for the older saved reply.');
+   await page.getByRole('button',{name:'Send',exact:true}).click();
+   await page.waitForFunction(()=>document.querySelector('[aria-label="Reply to conversation"]')?.value==='');
   }
  },page);
  await context.close();

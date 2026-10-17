@@ -6,6 +6,7 @@ import {dashboardAccess} from '../management/dashboard'
 import {auditStatement,requestSource} from '../audit/record'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {BASE_PERMISSIONS,PERMISSIONS,ROLE_LABELS,customPermissions} from './catalogue'
+import {setSelfFollowing,listFollowers} from '../collaboration/followers'
 
 /** Settings → Roles: the permission catalogue, built-in roles and the workspace's custom roles. */
 export const roles=new Hono<AppEnv>()
@@ -76,15 +77,6 @@ roles.delete(`${P}/roles/:roleId`,async c=>{
 /** Following a conversation: collaborators and agents keep track of tickets they do not own. */
 export const followers=new Hono<AppEnv>()
 const C=`${P}/conversations/:conversationId`
-const followerList=async(db:D1Database,conversationId:string)=>(await db.prepare('SELECT u.id,u.name FROM conversation_followers f JOIN users u ON u.id=f.user_id WHERE f.conversation_id=? ORDER BY f.created_at').bind(conversationId).all<{id:string;name:string}>()).results
-followers.get(`${C}/followers`,async c=>{const {actor,conversation}=await dashboardAccess(c),list=await followerList(c.env.DB,conversation.id);return c.json({data:{followers:list,following:list.some(row=>row.id===actor.id)}})})
-followers.post(`${C}/follow`,async c=>{
- const {actor,conversation}=await dashboardAccess(c)
- await c.env.DB.prepare('INSERT OR IGNORE INTO conversation_followers(conversation_id,user_id,created_at) VALUES(?,?,?)').bind(conversation.id,actor.id,Date.now()).run()
- return c.json({data:{followers:await followerList(c.env.DB,conversation.id),following:true}})
-})
-followers.delete(`${C}/follow`,async c=>{
- const {actor,conversation}=await dashboardAccess(c)
- await c.env.DB.prepare('DELETE FROM conversation_followers WHERE conversation_id=? AND user_id=?').bind(conversation.id,actor.id).run()
- return c.json({data:{followers:await followerList(c.env.DB,conversation.id),following:false}})
-})
+followers.get(`${C}/followers`,async c=>{const {actor,conversation}=await dashboardAccess(c),list=await listFollowers(c.env,actor.projectId,conversation.id);return c.json({data:{followers:list,following:list.some(row=>row.id===actor.id)}})})
+followers.post(`${C}/follow`,async c=>{const {actor,conversation}=await dashboardAccess(c);const list=await setSelfFollowing(c.env,actor,conversation.id,true,{sessionHash:c.get('sessionHash'),source:requestSource(c)});return c.json({data:{followers:list,following:true}})})
+followers.delete(`${C}/follow`,async c=>{const {actor,conversation}=await dashboardAccess(c);const list=await setSelfFollowing(c.env,actor,conversation.id,false,{sessionHash:c.get('sessionHash'),source:requestSource(c)});return c.json({data:{followers:list,following:false}})})

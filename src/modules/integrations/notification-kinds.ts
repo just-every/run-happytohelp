@@ -1,0 +1,2 @@
+export const teammateKinds=['assignment','group','follower','mention','customer_updated'] as const
+export const notificationLabels:Record<string,string>={assignment:'A teammate assigned a support ticket to you.',group:'An unassigned ticket is waiting for your group.',follower:'A ticket you follow has an update.',mention:'A teammate mentioned you in a ticket.',customer_updated:'A customer updated your assigned ticket.'}

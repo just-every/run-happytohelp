@@ -1,0 +1,5 @@
+export {macroRoutes} from './routes'
+export {renderPlaceholders,unresolvedPlaceholders,assertPublicReplyPlaceholders} from './placeholders'
+export {loadMacroContext} from './context'
+export {macroErasureCount,macroErasureStatements,macroErasureObjectStatements} from './erasure'
+export {macroAttachmentAvailableSql} from './attachments'

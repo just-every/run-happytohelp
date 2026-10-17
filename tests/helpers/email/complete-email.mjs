@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {vendorReplies} from './vendor-replies.mjs'
+import {message} from './app.mjs'
 
 /** R6's operator, mail gateway, review, imported-history and privacy doors. */
 export async function completeEmailJourney(){
@@ -15,6 +16,15 @@ export async function completeEmailJourney(){
   const mailbox=(await app.ok(base+'/mailboxes',{token:owner,body:{provider:'forwarding',address:'helpdesk@example.test',displayName:'Parcel Support',aliases:['returns@example.test']}})).data
   const reconnected=await app.ok(base+`/mailboxes/${mailbox.id}/reconnect`,{token:owner,body:{}})
   assert.equal(reconnected.data.status,'connected');assert.ok(reconnected.data.addresses.some(alias=>alias.address==='returns@example.test'),'forwarding reconnect retains receiving aliases')
+  // Customer order references are ordinary mail in a workspace with no imports.
+  for(const [index,subject] of ['Where is my parcel?','Order [#4521] never arrived','Return label [AB12-CD34] not working','Invoice [2026-1017] question'].entries()){
+   const from=`customer-${index}@customer.example`,id=`customer-reference-${index}@customer.example`
+   await app.email(message({id,to:'helpdesk@example.test',from,subject,text:'Please help with this order.'}),{from,to:'helpdesk@example.test',direct:true})
+   const receipt=await app.first('SELECT state,conversation_id FROM inbound_emails WHERE id=?',`<${id}>`)
+   assert.equal(receipt.state,'delivered',subject);assert.ok(receipt.conversation_id)
+   assert.equal((await app.first('SELECT subject FROM conversations WHERE id=?',receipt.conversation_id)).subject,subject)
+   assert.equal((await app.first('SELECT count(*) n FROM conversation_tags WHERE conversation_id=?',receipt.conversation_id)).n,0)
+  }
   const command={kind:'email',localId:'operator-first-email',requesterEmail:'maya@customer.example',requesterName:'Maya Chen',mailboxId:mailbox.id,subject:'Your replacement shipment',content:'Your replacement leaves our warehouse today.',cc:['finance@customer.example'],bcc:['archive@example.test']}
   const ticket=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:command})
   await app.until(()=>sent.length===1,{message:'first outbound email'})
@@ -49,6 +59,12 @@ export async function completeEmailJourney(){
   const retainedFile=await app.first('SELECT id FROM media WHERE conversation_id=? AND filename=?',ticket.conversation.id,'payment-change.txt')
   assert.ok(retainedFile)
   assert.equal(await (await app.request(`/api/conversations/${ticket.conversation.id}/media/${retainedFile.id}`,{token:agent})).text(),'Unverified payment-change instructions')
+  await gate({messageId:'new-customer-false-positive',to:'helpdesk@example.test',from:'bea@customer.example',subject:'Return label [AB12-CD34] not working',text:'Please replace my return label.',headers:{'X-Spam-Score':'8'}})
+  const newHeld=(await app.ok(base+'/suspended',{token:agent})).data.find(row=>row.from_address==='bea@customer.example')
+  const newTicket=await app.ok(base+`/suspended/${newHeld.id}/recover`,{token:agent,body:{conversationId:'',asNote:false}})
+  const customerMessage=await app.first('SELECT actor_role,content FROM messages WHERE conversation_id=?',newTicket.conversationId)
+  assert.deepEqual(customerMessage,{actor_role:'contact',content:'Please replace my return label.'})
+  assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',newTicket.conversationId)).n,0)
   await app.ok(base+'/sender-rules',{token:owner,body:{address:command.requesterEmail,action:'allow'}})
   assert.equal((await gate({...reply,messageId:'allow-listed-spam',headers:{'X-Spam-Score':'9'}})).data.state,'delivered')
   await app.ok(base+'/sender-rules',{token:owner,body:{address:'@customer.example',action:'block'}})
@@ -64,6 +80,15 @@ export async function completeEmailJourney(){
   const imported=await app.first("SELECT conversation_id FROM email_threading_keys WHERE project_id=? AND key_value='zendesk:ABCD-1234'",projectId);assert.ok(imported)
   const vendorReply=await gate({messageId:'zendesk-followup',to:'helpdesk@example.test',from:'imported@customer.example',subject:'Re: Original shipment [ABCD-1234]',text:'Reply after the cutover.'})
   assert.equal(vendorReply.data.conversationId,imported.conversation_id)
+  for(const [index,subject] of ['Return label [AB12-CD34] not working','Invoice [2026-1017] question'].entries()){
+   const unknown=await gate({messageId:'unmatched-zendesk-'+index,to:'helpdesk@example.test',from:'imported@customer.example',subject,text:'An older reply after moving our support.'})
+   assert.equal(unknown.data.state,'delivered');assert.notEqual(unknown.data.conversationId,imported.conversation_id)
+   const ticketView=(await app.ok(`/api/dashboard/projects/${projectId}/conversations/${unknown.data.conversationId}/ticket`,{token:agent})).data
+   assert.ok(ticketView.tags.some(tag=>tag.name==='Possible pre-migration reply'))
+  }
+  // Importing Zendesk does not turn Freshdesk-shaped order numbers into migration replies.
+  const order=await gate({messageId:'order-number-after-zendesk',to:'helpdesk@example.test',from:'order@customer.example',subject:'Order [#4521] never arrived',text:'Where is my order?'})
+  assert.equal(order.data.state,'delivered');assert.equal((await app.first('SELECT count(*) n FROM conversation_tags WHERE conversation_id=?',order.data.conversationId)).n,0)
   const mismatch=await gate({messageId:'zendesk-mismatch',to:'helpdesk@example.test',from:'stranger@customer.example',subject:'Re: Original shipment [ABCD-1234]',text:'Wrong identity'})
   assert.equal(mismatch.data.state,'suspended');assert.equal(mismatch.data.conversationId,null)
   // The same spoof may be retained as a new ordinary ticket with private provenance.

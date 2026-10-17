@@ -214,7 +214,8 @@ export async function peopleJourney(){
   const forwardedCc='Delivered-To: support@company.example\r\nCc: Colleague <colleague@customer.example>, support@company.example, inbound@example.com\r\n'
   const people=async id=>{const row=await admitted(id);return {contact:(await DB.prepare('SELECT email FROM contacts WHERE id=?').bind(row.actor_id).first()).email,verified:JSON.parse((await claim(id)).evidence_json).sender_verified,participants:(await DB.prepare('SELECT ct.email FROM conversation_participants cp JOIN contacts ct ON ct.id=cp.contact_id WHERE cp.conversation_id=? ORDER BY ct.email').bind(row.conversation_id).all()).results.map(p=>p.email)}}
   const forwarded=(id,headerFrom,headers)=>deliver({id,authenticated:false,to:'support@company.example',envelopeTo:'inbound@example.com',from:`SRS0=x1=AB=customer.example=${id}@company.example`,headerFrom,headers})
-  assert.equal(await forwarded('first-cc','Ana <ana@customer.example>',forwardedCc),undefined);assert.equal((await claim('first-cc')).state,'suspended');assert.equal(await admitted('first-cc'),null)
+  assert.equal(await forwarded('first-cc','Ana <ana@customer.example>',verdict('customer.example')+forwardedCc),undefined);assert.deepEqual(await people('first-cc'),{contact:'ana@customer.example',verified:true,participants:['colleague@customer.example']})
+  assert.equal(await forwarded('unsigned-cc','Ana <ana@customer.example>',forwardedCc),undefined);assert.equal((await claim('unsigned-cc')).state,'suspended');assert.equal(await admitted('unsigned-cc'),null)
   assert.equal(await forwarded('signed-cc','Ben <ben@customer.example>',verdict('customer.example')+forwardedCc),undefined);assert.deepEqual(await people('signed-cc'),{contact:'ben@customer.example',verified:true,participants:['colleague@customer.example']})
   assert.equal(await forwarded('forged-verdict','Cy <cy@customer.example>',verdict('customer.example','fail')+verdict('customer.example')+forwardedCc),undefined);assert.equal((await claim('forged-verdict')).state,'suspended');assert.equal(await admitted('forged-verdict'),null)
   // A widget-verified customer: signed mail continues her thread; mail that may forge her From lands apart, flagged.
@@ -228,7 +229,7 @@ export async function peopleJourney(){
   assert.equal((await DB.prepare("SELECT json_extract(metadata_json,'$.provided_email') p FROM contacts WHERE id='signed-in'").first()).p,'dana-home@customer.example')
   assert.equal(await DB.prepare("SELECT id FROM contacts WHERE json_extract(metadata_json,'$.unverified_sender')=1").first(),null,'forged mail creates no contact or conversation')
   // A From with no usable address, under Cloudflare's SPF fail for the envelope, never joins her thread; replies email nobody.
-  const anaThread=danaThread,anaContact='signed-in'
+  const anaThread=(await admitted('first-cc')).conversation_id,anaContact=(await admitted('first-cc')).actor_id
   const spfFail=cloudflare('dkim=none; dmarc=none policy.dmarc=none; spf=none smtp.helo=mx.attacker.test; spf=fail (mx.cloudflare.net: domain of ana@customer.example does not designate 192.0.2.7 as permitted sender) smtp.mailfrom=ana@customer.example; arc=none smtp.remote-ip=192.0.2.7')
   const noFrom=(id,fromLines,to='inbound@example.com')=>m.email(`${spfFail}${fromLines}To: ${to}\r\nSubject: Bank details\r\nMessage-ID: <${id}>\r\nContent-Type: text/plain\r\n\r\nPlease change my bank details`,{from:'ana@customer.example',to,direct:true})
   const unusable={'no-from':'','display-only':'From: Ana Customer\r\n','no-tld':'From: ana@customer\r\n','empty-angle':'From: <>\r\n'}
@@ -236,9 +237,11 @@ export async function peopleJourney(){
   for(const [id,line] of Object.entries(unusable))assert.equal(await noFrom(id,line),undefined,id)
   for(const id of Object.keys(unusable)){assert.equal((await claim(id)).state,'suspended',id);assert.equal(await admitted(id),null,id)}
   await app.scheduled();assert.equal(mail.sent.length,sentBefore,'suspended mail causes no outbound mail')
-  assert.equal(await noFrom('no-from-owned','',await replyAddress(anaThread,'dana@customer.example')),undefined)
-  assert.equal((await claim('no-from-owned')).state,'suspended','an envelope sender different from the grant holder cannot continue the thread')
-  assert.equal(await admitted('no-from-owned'),null)
+  assert.equal(await noFrom('no-from-owned','',await replyAddress(anaThread,'ana@customer.example')),undefined)
+  assert.deepEqual([(await admitted('no-from-owned')).conversation_id,(await admitted('no-from-owned')).actor_id],[anaThread,anaContact])
+  assert.equal(await noFrom('no-from-other-grant','',await replyAddress(danaThread,'dana@customer.example')),undefined)
+  assert.equal((await claim('no-from-other-grant')).state,'suspended','an envelope sender different from the grant holder cannot continue the thread')
+  assert.equal(await admitted('no-from-other-grant'),null)
   // A widget visitor who types a customer's address never receives that customer's mail nor the reply to it.
   const session=async(name,email)=>(await app.call('/api/identity/widget/session',{headers:{Origin:'https://example.com'},body:{widgetKey:'w',name,email},status:201})).data
   const thread=async token=>(await app.call('/api/conversations',{token,body:{projectId:'p'},status:201})).data

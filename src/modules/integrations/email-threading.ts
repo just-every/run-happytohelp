@@ -1,5 +1,5 @@
 import type {Env} from '../../platform/env'
-import {headerThreadKeys,messageIds,subjectThreadKeys,threadAddresses,type ThreadKey} from './email-threading-keys'
+import {headerThreadKeys,messageIds,subjectThreadKeys,threadAddresses,vendorThreadHeaders,type ThreadKey} from './email-threading-keys'
 export {nativeThreadSubject,messageIds} from './email-threading-keys'
 export type {ThreadKey} from './email-threading-keys'
 export interface ThreadEvidence {projectId:string;messageId?:string;inReplyTo?:string;references?:string;subject?:string;to?:unknown;headers?:unknown}
@@ -17,8 +17,13 @@ export async function resolveEmailThreadCandidates(env:Env,input:ThreadEvidence)
  if(rows.length>300)throw new Error('Email threading candidate limit exceeded')
  const candidates:ThreadCandidate[]=rows.map(row=>({conversationId:row.conversation_id,kind:row.key_kind,value:row.key_value,source:row.source,sourceRef:row.source_ref}))
  const conversationIds=[...new Set(candidates.map(candidate=>candidate.conversationId))]
- const unrecognizedToken=unique.some(key=>key.kind==='vendor_header'||key.kind==='subject_token')&&!candidates.length
- return {candidates,conversationIds,conflict:conversationIds.length>1,unrecognizedToken}
+ // A bracketed customer reference is only vendor evidence when this workspace
+ // actually holds imported keys from that vendor. Unknown native tokens do not
+ // turn otherwise admissible customer mail into a suspended message either.
+ const vendors=[...new Set(unique.flatMap(key=>key.kind==='vendor_header'?[vendorThreadHeaders[key.value.split(':',1)[0]]]:key.kind==='subject_token'&&key.source!=='native'?[key.source]:[]).filter(Boolean))]
+ const importing=vendors.length?await env.DB.prepare(`SELECT 1 FROM email_threading_keys WHERE project_id=? AND source IN (SELECT value FROM json_each(?)) AND key_kind IN ('subject_token','vendor_header') LIMIT 1`).bind(input.projectId,JSON.stringify(vendors)).first():null
+ const possiblePreMigrationReply=Boolean(importing)&&!candidates.length
+ return {candidates,conversationIds,conflict:conversationIds.length>1,possiblePreMigrationReply}
 }
 /** Include these in the same batch as the native message/notification claim. */
 export function emailThreadingStatements(env:Env,input:{projectId:string;conversationId:string;keys:readonly ThreadKey[];createdAt:number}){

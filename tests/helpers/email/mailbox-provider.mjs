@@ -11,11 +11,23 @@ const b64=value=>Buffer.from(value).toString('base64url')
 const mime=(provider,address,id)=>`From: Customer <customer@example.com>\r\nTo: ${address}\r\nSubject: Shipment arrives damaged\r\nMessage-ID: <${id}@example.com>\r\nAuthentication-Results: ${provider==='gmail'?'mx.google.com; dkim=pass header.d=example.com; dmarc=pass header.from=example.com':'spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com; dmarc=pass action=none header.from=example.com; compauth=pass reason=100'}\r\nContent-Type: text/plain\r\n\r\nPlease replace the damaged shipment.`
 
 export async function mailboxProviderJourney(){
- const sent=[],authorization=[],failures={gmail:false,microsoft:false}
+ const sent=[],authorization=[],failures={gmail:false,microsoft:false},accounts=new Map(),polls=[]
  const addresses={gmail:'gmail.support@example.test',microsoft:'m365.support@example.test'}
  const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',INBOUND_EMAIL_TOKEN:'gateway-fixture',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'installation-fixture',EMAIL_FROM:'support@example.test',INTEGRATION_ENCRYPTION_KEY:Buffer.alloc(32,7).toString('base64'),GOOGLE_MAIL_CLIENT_ID:'google-client-fixture',GOOGLE_MAIL_CLIENT_SECRET:'google-secret-fixture',MICROSOFT_MAIL_CLIENT_ID:'microsoft-client-fixture',MICROSOFT_MAIL_CLIENT_SECRET:'microsoft-secret-fixture'},outbound:async request=>{
   const url=new URL(request.url),provider=url.hostname.includes('google')?'gmail':'microsoft',base='https://gmail.googleapis.com/gmail/v1/users/me'
-  if(url.pathname.endsWith('/token')){const body=new URLSearchParams(await request.text());authorization.push(body);assert.ok(body.get('code_verifier')||body.get('grant_type')==='refresh_token');return Response.json({access_token:provider+'-access-fixture',refresh_token:provider+'-refresh-fixture',expires_in:3600,token_type:'Bearer',scope:provider==='gmail'?'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.settings.basic':'Mail.Read Mail.Send User.Read'})}
+  if(url.pathname.endsWith('/token')){const body=new URLSearchParams(await request.text());authorization.push(body);assert.ok(body.get('code_verifier')||body.get('grant_type')==='refresh_token');const account=accounts.get(body.get('code'));return Response.json({access_token:account?.code||provider+'-access-fixture',refresh_token:provider+'-refresh-fixture',expires_in:3600,token_type:'Bearer',scope:provider==='gmail'?'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.settings.basic':'Mail.Read Mail.Send User.Read'})}
+  const account=accounts.get(request.headers.get('authorization')?.replace(/^Bearer /,''))
+  if(account){
+   if(url.pathname.endsWith('/settings/sendAs'))return Response.json({sendAs:[{sendAsEmail:account.address,isPrimary:true,isDefault:true,verificationStatus:'accepted'}]})
+   if(url.pathname.endsWith('/profile')&&!account.failure)return Response.json({emailAddress:account.address,historyId:String(account.history)})
+   polls.push(account.address)
+   if(account.failure)return new Response(null,{status:account.failure})
+   if(url.href.startsWith(base+'/messages?'))return Response.json({messages:account.messages.map(message=>({id:message.id})),resultSizeEstimate:account.messages.length})
+   if(url.pathname.endsWith('/history'))return Response.json({history:account.messages.filter(message=>message.history>Number(url.searchParams.get('startHistoryId'))).map(message=>({id:String(message.history),messagesAdded:[{message:{id:message.id,labelIds:['INBOX']}}]})),historyId:String(account.history)})
+   const id=url.pathname.match(/\/messages\/([^/]+)$/)?.[1],message=account.messages.find(message=>message.id===id)
+   if(message)return Response.json({id:message.id,labelIds:['INBOX'],historyId:String(message.history),raw:b64(message.raw)})
+   throw new Error('Unexpected Gmail account edge '+url.pathname)
+  }
   if(url.href===base+'/profile')return Response.json({emailAddress:addresses.gmail,messagesTotal:41,threadsTotal:22,historyId:'451'})
   if(url.pathname.endsWith('/settings/sendAs'))return Response.json({sendAs:[{sendAsEmail:addresses.gmail,displayName:'Parcel Support',isPrimary:true,isDefault:true,verificationStatus:'accepted'},{sendAsEmail:'returns@example.test',displayName:'Returns',verificationStatus:'accepted'}]})
   if(url.pathname==='/v1.0/me')return Response.json({id:'directory-user',mail:addresses.microsoft,userPrincipalName:addresses.microsoft,proxyAddresses:['SMTP:'+addresses.microsoft,'smtp:billing@example.test']})
@@ -67,5 +79,64 @@ export async function mailboxProviderJourney(){
    assert.equal((await app.first('SELECT credential_cipher FROM mailbox_connections WHERE id=?',row.id)).credential_cipher,null)
   }
   assert.equal(authorization.length,4)
+  const connect=async(address,messages=[])=>{
+   const account={address,code:'mailbox-code-'+accounts.size,messages:messages.map((raw,index)=>({id:'message-'+index,history:index+1,raw})),history:Math.max(1,messages.length),failure:0}
+   accounts.set(account.code,account)
+   const started=await app.ok(base+'/connect',{token,body:{provider:'gmail',displayName:'Parcel Support'}}),state=new URL(started.url).searchParams.get('state')
+   assert.equal((await app.call(`/api/management/mailboxes/oauth/gmail/callback?state=${state}&code=${account.code}`,{token})).status,302)
+   const row=(await app.ok(base,{token})).data.find(row=>row.address===address);assert.ok(row)
+   return {address,row,account}
+  }
+  const append=(box,raw)=>box.account.messages.push({id:'message-'+box.account.messages.length,history:++box.account.history,raw})
+  const poll=box=>app.ok(`${base}/${box.row.id}/poll`,{token,body:{}})
+  const supportAddress='support@parcel.example',billingAddress='billing@parcel.example'
+  const shared=mime('gmail',supportAddress,'two-mailboxes').replace('Subject:',`Cc: ${billingAddress}\r\nSubject:`)
+  const support=await connect(supportAddress,[shared]),billing=await connect(billingAddress,[shared])
+  assert.equal((await poll(support)).received,1)
+  const admitted=await app.first('SELECT * FROM inbound_emails WHERE id=?','<two-mailboxes@example.com>');assert.equal(admitted.state,'delivered')
+  assert.equal(await app.first('SELECT 1 FROM conversation_participants cp JOIN contacts ct ON ct.id=cp.contact_id WHERE cp.conversation_id=? AND lower(ct.email)=?',admitted.conversation_id,billingAddress),null,'a connected CC mailbox is not a customer participant')
+  const before=await app.first('SELECT count(*) AS n FROM messages WHERE conversation_id=?',admitted.conversation_id)
+  await app.takeJobs()
+  assert.equal((await poll(billing)).failed,0,'a CC copy is a duplicate, not a permanent rejection')
+  assert.equal((await app.first('SELECT count(*) AS n FROM messages WHERE conversation_id=?',admitted.conversation_id)).n,before.n,'two connected mailboxes admit one customer message')
+  assert.equal((await app.first('SELECT count(*) AS n FROM mailbox_sync_receipts WHERE mailbox_id IN (?,?)',support.row.id,billing.row.id)).n,2,'each mailbox records its provider copy')
+  assert.deepEqual(await app.takeJobs(),[],'the second mailbox does not repeat message effects')
+  append(billing,mime('gmail',billingAddress,'billing-later').replace('damaged shipment.','invoice copy.'))
+  assert.equal((await poll(billing)).received,1,'new billing-only mail arrives through Gmail history after the duplicate')
+  const later=await app.first('SELECT * FROM inbound_emails WHERE id=?','<billing-later@example.com>');assert.equal(later.state,'delivered')
+  assert.equal((await app.first('SELECT mailbox_id FROM conversations WHERE id=?',later.conversation_id)).mailbox_id,billing.row.id)
+  // Reusing the shared identity for a changed body is still refused. The next
+  // provider message is admitted without replaying or changing the first mail.
+  append(billing,shared.replace('damaged shipment.','different bank details.'))
+  append(billing,mime('gmail',billingAddress,'after-conflict').replace('damaged shipment.','later valid request.'))
+  const partial=await poll(billing);assert.equal(partial.failed,1);assert.equal(partial.received,1)
+  assert.equal((await app.first('SELECT state FROM inbound_emails WHERE id=?','<after-conflict@example.com>')).state,'delivered')
+  assert.equal((await app.first('SELECT * FROM inbound_emails WHERE id=?',admitted.id)).message_id,admitted.message_id)
+  assert.equal((await app.first('SELECT count(*) AS n FROM messages WHERE content LIKE ?','%different bank details%')).n,0,'identity conflict never becomes customer mail')
+  const refusal=await app.first("SELECT outcome,detail_json FROM audit_events WHERE action='mailbox.message_failed' AND target_id=?",billing.row.id)
+  assert.equal(refusal.outcome,'failed');assert.equal(JSON.parse(refusal.detail_json).status,409)
+  assert.deepEqual(await poll(billing),{received:0,failed:0,cursor:partial.cursor,more:false},'permanent rejection is observed once and does not pin the cursor')
+  const backfill=await app.ok(`${base}/${billing.row.id}/backfill`,{token,body:{}})
+  assert.equal(backfill.failed,0);assert.equal(backfill.received,0,'backfill preserves the rejected message replay fence')
+  const stuck=[]
+  for(let index=0;index<10;index++){
+   const box=await connect(`stuck-${index}@parcel.example`);box.account.failure=503;stuck.push(box)
+   assert.equal((await app.call(`${base}/${box.row.id}/poll`,{token,body:{}})).status,502)
+  }
+  const healthy=await connect('healthy@parcel.example',[mime('gmail','healthy@parcel.example','healthy-first')])
+  // Retryable failures whose backoff has elapsed still rank after healthy rows,
+  // including a healthy inbox with a newer successful sync than every failure.
+  await app.db.prepare("UPDATE mailbox_connections SET updated_at=? WHERE error_code='sync_failed'").bind(Date.now()-10*60000).run()
+  append(billing,mime('gmail',billingAddress,'billing-scheduled'))
+  polls.length=0;await app.scheduled()
+  assert.equal((await app.first('SELECT state FROM inbound_emails WHERE id=?','<healthy-first@example.com>')).state,'delivered','ten stuck mailboxes cannot starve a healthy inbox')
+  assert.equal((await app.first('SELECT state FROM inbound_emails WHERE id=?','<billing-scheduled@example.com>')).state,'delivered','recently synced healthy mailboxes stay ahead of failures')
+  const firstFailure=polls.findIndex(address=>address.startsWith('stuck-'))
+  assert.ok(firstFailure>polls.indexOf(healthy.address));assert.ok(firstFailure>polls.indexOf(billing.address))
+  const retried=stuck.find(box=>polls.includes(box.address));assert.ok(retried)
+  const retryAt=(await app.first('SELECT updated_at FROM mailbox_connections WHERE id=?',retried.row.id)).updated_at
+  polls.length=0;await app.scheduled()
+  assert.equal(polls.includes(retried.address),false,'fresh provider failures back off between scheduled runs')
+  assert.equal((await app.first('SELECT updated_at FROM mailbox_connections WHERE id=?',retried.row.id)).updated_at,retryAt)
  }finally{await app.close()}
 }

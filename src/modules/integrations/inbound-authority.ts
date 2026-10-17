@@ -80,6 +80,7 @@ export async function ccContacts(env:Env,projectId:string,conversation:any,addre
  const contacts:string[]=[]
  for(const address of addresses){
   if(skipped.has(address))continue
+  if(await env.DB.prepare('SELECT 1 FROM mailbox_addresses WHERE project_id=? AND lower(address)=? UNION ALL SELECT 1 FROM email_settings WHERE project_id=? AND (lower(inbound_address)=? OR lower(from_address)=?) LIMIT 1').bind(projectId,address,projectId,address,address).first())continue
   if(await env.DB.prepare('SELECT 1 FROM users u JOIN memberships m ON m.user_id=u.id WHERE m.project_id=? AND lower(u.email)=?').bind(projectId,address).first())continue
   const contact=await emailContact(env,projectId,address)
   if(contact&&contact.id!==conversation.contact_id)contacts.push(contact.id)

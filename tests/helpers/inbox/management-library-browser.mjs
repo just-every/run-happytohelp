@@ -208,6 +208,7 @@ try{
   const quote=value=>"'"+String(value).replaceAll("'","''")+"'";
   const rows=Array.from({length:211},(_,i)=>({suffix:String(i).padStart(3,'0'),seen:i+1}));
   await runtime.execute(rows.map(({suffix,seen})=>`INSERT INTO contacts(id,project_id,name,email,metadata_json,created_at) VALUES('archive-contact-${suffix}',${quote(projectId)},'Archive contact ${suffix}','archive${suffix}@example.test',${quote(JSON.stringify({provided_name:suffix==='210'?'Supplied archive name':null,provided_email:suffix==='210'?'supplied-archive@example.test':null,last_seen_at:seen,country_name:seen%2?'Australia':'Canada'}))},1); INSERT INTO macros VALUES('archive-reply-${suffix}',${quote(projectId)},'Archive reply ${suffix}',${quote(suffix==='210'?'Distinctive body phrase for the older saved reply.':'Reusable archive reply.')},${quote(actor)},${seen},${seen});`).join('\n')+Array.from({length:55},(_,i)=>`INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES('archive-thread-${String(i).padStart(3,'0')}',${quote(projectId)},'archive-contact-210',1,${i+1});`).join('\n'));
+  await runtime.execute([1440,390].map(width=>`INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES('archive-picker-${width}',${quote(projectId)},'archive-contact-210',1,0);`).join('\n'));
   for(const width of [1440,390]){
    await page.setViewportSize({width,height:1000});
    await page.goto(`${base}/contacts`);await page.getByLabel('Sort by',{exact:true}).selectOption('name');await page.getByLabel('Sort direction').selectOption('asc');
@@ -226,7 +227,7 @@ try{
    await page.getByRole('textbox',{name:'Search',exact:true}).fill('Distinctive body phrase');await page.getByRole('link',{name:'Archive reply 210',exact:true}).waitFor();await page.waitForFunction(()=>document.querySelectorAll('tbody tr').length===1);
    await page.getByLabel('Sort by',{exact:true}).selectOption('created_at');await page.getByLabel('Sort direction').selectOption('desc');await page.getByRole('link',{name:'Archive reply 210',exact:true}).waitFor();
    await page.screenshot({path:join(evidenceDir,`complete-library-${width}.png`),fullPage:true});
-   await page.goto(`${base}/conversations/archive-thread-000`);const composer=page.getByRole('textbox',{name:'Reply to conversation',exact:true});await composer.waitFor();
+   await page.goto(`${base}/conversations/archive-picker-${width}`);const composer=page.getByRole('textbox',{name:'Reply to conversation',exact:true});await composer.waitFor();
    await page.getByRole('button',{name:'Reply tools',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();
    const pickerPages=page.getByRole('navigation',{name:'Saved reply picker pages',exact:true});await page.getByRole('link',{name:'Archive reply 000',exact:true}).waitFor();
    for(let next=0;next<4;next++){await pickerPages.getByRole('button',{name:'Next',exact:true}).click();await page.getByRole('link',{name:`Archive reply ${String((next+1)*50).padStart(3,'0')}`,exact:true}).waitFor();}

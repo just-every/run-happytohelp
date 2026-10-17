@@ -1,3 +1,5 @@
+import {eraseFormStatements} from '../../forms/erasure'
+import {portalErasureStatements} from '../../portal/privacy'
 import {importErasureStatements} from '../../move-in/erasure'
 import {eraseSurveyStatements} from '../../outcomes/survey-store'
 import {ticketErasureCount,ticketErasureStatements} from '../../tickets/erasure'
@@ -71,6 +73,8 @@ export function erasureStatements(env: Env, request: ErasureRequest) {
   return [
     env.DB.prepare(tombstone).bind(projectId, contactId, actorId, now),
     ...ticketErasureStatements(env,projectId,contactId),
+    ...eraseFormStatements(env,projectId,contactId),
+    ...portalErasureStatements(env,projectId,contactId,request.emails),
     // Copies of the contact's data held outside the canonical rows, removed while those rows still identify them.
     bound(legacyArchiveRedaction),
     ...importErasureStatements(env,projectId,contactId),

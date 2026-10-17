@@ -55,7 +55,7 @@ export default function KnowledgeExperience({ projectId, project, articles }) {
                     <h3>Template preview</h3>
                     <Field name="knowledge-preview-source" label="Preview content" value={previewId} onChange={(_, value) => setPreviewId(value)} options={[{value: '', label: 'Help Center name and welcome message'}, ...articles.map(value => ({value: value.id, label: value.title}))]}/>
                     {template ? <pre aria-live="polite">{preview}</pre> : <p>The standard page will be used.</p>}
-                    <p className="settings-note">Preview uses your current workspace or article content. Saving applies the Help Center templates. The request form template is saved for when request forms are available.</p>
+                    <p className="settings-note">Preview uses your current workspace or article content. Saving applies the Help Center templates. The request form template appears around your published request forms.</p>
                 </div>
             </fieldset>
             <p><Link to={`/projects/${projectId}/settings`}>Workspace branding and Help Center domain</Link></p>

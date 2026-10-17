@@ -465,3 +465,7 @@
 }
 
 /*# sourceMappingURL=Interact.css.map */
+
+#happytohelp-root .happytohelp-request-form-link {font:inherit;font-size:13px;padding:8px 16px;text-align:center;}
+#happytohelp-root .happytohelp-request-form-link a {color:inherit;text-decoration:underline;text-underline-offset:3px;}
+#happytohelp-root .happytohelp-request-form-link a:focus-visible {outline:2px solid currentColor;outline-offset:4px;}

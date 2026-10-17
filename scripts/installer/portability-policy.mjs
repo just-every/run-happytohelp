@@ -9,6 +9,7 @@ export const archivePolicy={
  excludeTables:[
   'operator_notification_activity','operator_notifications',
   'knowledge_help_links','knowledge_help_sessions',
+  'portal_links','portal_session_proofs',
   'sessions','session_factors','webauthn_challenges','audit_purges','conversation_outbox','identity_tokens','magic_signins','registrations','login_attempts',
   'github_connections','github_oauth_states','preview_grants','edition_codes','edition_consents',
   'local_pairings','local_authorizations','local_grants','local_devices','local_device_settings','local_jobs','local_events','local_attachments','local_receipts','local_attachment_grants','local_result_effects',

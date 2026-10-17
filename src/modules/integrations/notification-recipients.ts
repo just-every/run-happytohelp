@@ -17,7 +17,7 @@ export function notificationRecipients(contacts:NotificationContact[],sender:Not
  let senderAddress=false
  for(const contact of contacts){
   const flags=metadata(contact)
-  if(contact.id===senderContactId||flags.is_erasing||flags.is_erased||flags.is_deleted||flags.is_blocked)continue
+  if(contact.id===senderContactId||flags.is_erasing||flags.is_erased||flags.is_deleted||flags.is_blocked||flags.portal_notification_emails===0)continue
   const email=notificationAddress(contact)
   if(email&&senderEmails.has(email))senderAddress=true
   if(email&&!excluded.has(email)){recipients.push({id:contact.id,email});excluded.add(email)}

@@ -62,7 +62,8 @@
         "TRAINING_PRICE_CEILINGS",
         "ENABLE_SYNTHETIC_EVALUATION",
         "RATE_LIMITS",
-        "AI_DAILY_CEILINGS"
+        "AI_DAILY_CEILINGS",
+        "FORMS_TURNSTILE_SITE_KEY"
       ],
       "secretNames": [
         "H2H_SETUP_TOKEN"
@@ -89,7 +90,8 @@
         "GITHUB_CLIENT_SECRET",
         "GITHUB_TOKEN",
         "GITHUB_TOKENS",
-        "TURNSTILE_SECRET"
+        "TURNSTILE_SECRET",
+        "FORMS_TURNSTILE_SECRET_KEY"
       ],
       "surfaces": {
         "app": {

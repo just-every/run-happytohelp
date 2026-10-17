@@ -26,7 +26,9 @@ that a deployed mail provider can deliver links.
 
 Open **New request** at `/portal/:project/requests/new`, choose a published
 [request form](request-forms.md), and complete its subject, message and questions.
-Your identity comes from your customer session.
+Your identity comes from your verified customer session. You do not need a
+Turnstile bot check while signed in, even if anonymous requests are unavailable
+because Turnstile is not configured.
 
 The request list shows **Open** and **Solved**. Internal waiting states and
 custom team status labels are not exposed. Open a request to read the customer
@@ -43,9 +45,18 @@ this one's requests.
 
 ## Preferences and feedback
 
-Open **Preferences** to choose English, Spanish or French and whether to receive
-survey invitations. Survey opt-out applies to future invitations for your
-customer identity in that workspace.
+Open **Preferences** to choose your preferred request-form language (English,
+Spanish or French) and whether to receive
+replies to your requests by email or support surveys. Turn off **Receive replies
+to your requests by email** to stop reply notification emails for your customer
+identity in that workspace. You can still read replies in the portal. Turning
+it back on allows future reply notifications.
+
+Survey preferences are separate from reply notifications. Turning off **Receive
+support surveys** cancels pending invitations, invalidates available survey
+links and stops future invitations for your customer identity in that workspace.
+Turning surveys back on applies to future support experiences; it does not
+restore old links.
 
 When an eligible solved request has an available survey, its feedback link opens
 the same signed survey as the email invitation. It does not create another
@@ -75,9 +86,11 @@ All routes are scoped to `/api/portal/:projectId`:
 
 Ticket operations require the portal cookie. Mutations require a matching Origin or Referer and enforce the
 current identity; they cannot use a teammate session as customer proof. Creation
-uses the [forms submission fields](request-forms.md#api-reference), including
-`turnstileToken`. Preferences contain `locale` (`en`, `es` or `fr`) and the boolean
-`surveyEmails` and `updateEmails`. Replies use a
+uses the [forms submission fields](request-forms.md#api-reference) and the
+verified portal session; `turnstileToken` is not required. Preferences contain
+`locale` (`en`, `es` or `fr`) and the boolean `surveyEmails` and `updateEmails`.
+`updateEmails` controls reply notification emails; `surveyEmails` controls survey
+invitations independently. Replies use a
 unique `localId`, `content`, `expectedRevision` and optional `mediaIds`; reopening
 also requires `expectedRevision`. Reload after a conflict instead of replaying a
 stale change.

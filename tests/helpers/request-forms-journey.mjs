@@ -10,6 +10,7 @@ export async function requestFormsJourney(){
   assert.equal((await app.call(path,{body:valid,status:428})).data.code,'email_verification_required')
   assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,before.n)
   assert.equal((await app.call(path,{body:{...valid,turnstileToken:'bad'},status:422})).data.field,'turnstileToken')
+  assert.equal((await app.call(path,{body:{...valid,turnstileToken:'wrong-site'},status:422})).data.code,'challenge_failed')
   const publicForm=(await app.ok(`${api}/${form.id}?locale=es`)).data;assert.equal(publicForm.title,'Problema con un pedido');assert.equal(publicForm.fields.find(v=>v.id===order.id).label,'Número de pedido');assert.ok(!JSON.stringify(publicForm).includes(internal.id))
   const forbidden=await app.call(admin,{...owner,body:{...f.config,fields:[{fieldId:internal.id}]},status:400});assert.match(forbidden.data.error,/internal/)
   assert.equal((await app.call(admin,{token:f.workspace.tokens.operator,body:f.config})).status,403)
@@ -28,5 +29,15 @@ export async function requestFormsJourney(){
   assert.equal((await app.call(path,{body:{...valid,localId:'not-configured'},status:503})).data.code,'verification_unavailable')
   // A verified mailbox can still use the portal when anonymous submissions are disabled.
   assert.equal((await app.call(path,{...customer,body:{...valid,localId:'verified-second'},status:201})).data.ticket.status,'open')
+  // Abusive anonymous sends and sign-in mail are limited at their public doors.
+  await app.configure({RATE_LIMITS:JSON.stringify({conversationsPerIpHour:1})})
+  await app.call(path,{body:{...valid,localId:'limited-request'},status:429})
+  let limited
+  for(let attempt=0;attempt<16;attempt++){
+   limited=await app.call(`/api/portal/${p}/access/request`,{headers:{Origin:'https://app.example'},body:{email:'limited@example.com'}})
+   if(limited.status===429)break
+   assert.equal(limited.status,202)
+  }
+  assert.equal(limited.status,429,'email-link requests are rate limited')
  }finally{await app.close()}
 }

@@ -556,7 +556,8 @@
     "GITHUB_CLIENT_SECRET",
     "GITHUB_TOKEN",
     "GITHUB_TOKENS",
-    "TURNSTILE_SECRET"
+    "TURNSTILE_SECRET",
+    "FORMS_TURNSTILE_SECRET_KEY"
   ],
   "schedules": [
     "* * * * *"

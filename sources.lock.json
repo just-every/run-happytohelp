@@ -5979,6 +5979,10 @@
       "sha256": "5b9de6a01742ac7c37ae05a8e05dc25a4003aed73a64b0b0e216245aa56f6d87",
       "executable": false
     },
+    "src/modules/widget/css/RequestForms.css": {
+      "sha256": "a5613602b8a47d3bfc57ffdb4f7a4e627f1297e8a340daf4d9fb24a0e5559b03",
+      "executable": false
+    },
     "src/modules/widget/css/ResolutionRating.css": {
       "sha256": "c1e3364bb814b93df86a99910f1bb94931461d4022fe85d7625e194ed1213c2e",
       "executable": false

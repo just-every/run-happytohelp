@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { nativeRequest } from '../../transport';
 import { useNavigationGuard, useUnsavedChanges } from '../../NavigationGuard';
 import { Feedback, Section } from '../forms';
@@ -7,20 +7,26 @@ import RequestFormEditor from './RequestFormEditor';
 import { blankForm, formPath, jsonRequest } from './form-model';
 import './request-forms.css';
 
-export default function RequestFormsSettings({ projectId, role }) {
-    const path = formPath(projectId), { markDirty, markSaved } = useUnsavedChanges(), { confirmNavigation } = useNavigationGuard();
+export default function RequestFormsSettings({ projectId, role, onDirtyChange }) {
+    const path = formPath(projectId), { setDirty } = useUnsavedChanges(), { confirmNavigation } = useNavigationGuard();
     const [data, setData] = useState(null), [draft, setDraft] = useState(null), [error, setError] = useState(''), [saved, setSaved] = useState(false), [busy, setBusy] = useState(false);
     const { ask, dialog } = useConfirmation(), editorHeading = useRef(null);
+    const dirty = useRef(false);
+    const setFormDirty = useCallback(value => {
+        dirty.current = value;
+        setDirty(value);
+        onDirtyChange(value);
+    }, [setDirty, onDirtyChange]);
     const canManage = ['owner', 'admin'].includes(role);
     useEffect(() => {
         const controller = new AbortController();
-        setData(null); setDraft(null); setError(''); setSaved(false); markSaved();
+        setData(null); setDraft(null); setError(''); setSaved(false); setFormDirty(false);
         nativeRequest(path, { signal: controller.signal }).then(result => { if (!controller.signal.aborted) setData(result); }).catch(failure => { if (!controller.signal.aborted) setError(failure.message); });
-        return () => controller.abort();
-    }, [path, markSaved]);
+        return () => { controller.abort(); setFormDirty(false); };
+    }, [path, setFormDirty]);
     const edit = item => { setDraft(item ? structuredClone(item) : blankForm()); setSaved(false); setError(''); requestAnimationFrame(() => editorHeading.current?.focus()); };
-    const change = value => { markDirty(); setSaved(false); setDraft(value); };
-    const cancel = () => { if (confirmNavigation()) { setDraft(null); markSaved(); setError(''); } };
+    const change = value => { setFormDirty(true); setSaved(false); setDraft(value); };
+    const cancel = () => { if (!dirty.current || confirmNavigation()) { setDraft(null); setFormDirty(false); setError(''); } };
     const save = async event => {
         event.preventDefault(); setError(''); setSaved(false);
         try { if (!draft.locale || draft.locale.length > 35) throw new Error(); Intl.getCanonicalLocales(draft.locale); }
@@ -29,7 +35,7 @@ export default function RequestFormsSettings({ projectId, role }) {
         try {
             const { data: form } = await nativeRequest(draft.id ? `${path}/${encodeURIComponent(draft.id)}` : path, jsonRequest(draft.id ? 'PATCH' : 'POST', draft));
             setData(current => ({ ...current, data: draft.id ? current.data.map(item => item.id === form.id ? form : item) : [...current.data, form] }));
-            setDraft(null); markSaved(); setSaved(true);
+            setDraft(null); setFormDirty(false); setSaved(true);
         } catch (failure) { setError(failure.message); }
         finally { setBusy(false); }
     };

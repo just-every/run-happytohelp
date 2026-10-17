@@ -83,6 +83,6 @@ export async function archiveMacro(env:Env,actor:Actor,id:string,expected:number
  if(personal&&row.owner_id!==actor.id)throw new HTTPException(403)
  if(!personal&&!['owner','admin'].includes(actor.role))throw new HTTPException(403)
  const guard=await ticketAuthority(env,actor,authority,personal?'conversations.reply':'settings.manage')
- const result=await env.DB.prepare(`UPDATE macro_heads SET archived_at=? WHERE macro_id=? AND EXISTS(SELECT 1 FROM macros WHERE id=macro_id AND project_id=?) AND version=? AND archived_at IS NULL AND EXISTS(${guard.sql})`).bind(Date.now(),id,actor.projectId,expected,...guard.params).run()
+ const result=await env.DB.prepare(`UPDATE macro_heads SET archived_at=?,archived_by=? WHERE macro_id=? AND EXISTS(SELECT 1 FROM macros WHERE id=macro_id AND project_id=?) AND version=? AND archived_at IS NULL AND EXISTS(${guard.sql})`).bind(Date.now(),actor.id,id,actor.projectId,expected,...guard.params).run()
  if(!result.meta.changes)throw new HTTPException(409,{message:'Macro or authority changed'})
 }

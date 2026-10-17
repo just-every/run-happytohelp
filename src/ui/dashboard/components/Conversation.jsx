@@ -311,7 +311,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                         { isLoading && <div className="text-center px-2 py-2" role="status">Loading conversation...</div> }
                         <ConversationBody conversation={ conversation } buckets={ buckets } setAtTop={ setAtTop } />
                         <MergedConversationHistory conversation={conversation} refreshKey={conversation.ticket_version}/>
-                        <ConversationActions conversation={conversation} refreshKey={socketEvent?.type==='activity'?socketEvent:null} messages={buckets.flatMap(bucket=>bucket.messages || [])} onChanged={refreshConversation}/>
+                        <ConversationActions conversation={conversation} refreshKey={lastConnected} messages={buckets.flatMap(bucket=>bucket.messages || [])} onChanged={refreshConversation}/>
                         { loadMoreError && <p className="conversation-load-error px-2 py-2" role="alert">
                             Couldn’t load older messages. <button type="button" onClick={ loadOlderBuckets }>Retry</button>
                         </p> }
@@ -321,7 +321,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                     {conversation.merged_into && <p className="px-3 py-2" role="status">This ticket was merged. <a href={`/conversations/${conversation.merged_into}`}>Open the surviving ticket</a>.</p>}
                     {canFollow && <ConversationCollaboration projectId={conversationProjectId} conversationId={conversationId} currentUserId={currentAgent?.id} socketEvent={socketEvent} sendSocket={sendSocket} hasDraft={Boolean(draftContent.trim() || draftFiles.length)} isTyping={isTyping}/> }
                     { draftError && <p className="conversation-load-error px-2 py-2" role="alert">{ draftError }</p> }
-                    { canReply ? <ConversationForm
+                    { !conversation.merged_into && (canReply ? <ConversationForm
                         key={ conversationId }
                         content={ draftContent }
                         focusRequest={ draftFocusRequest?.conversationId === conversationId ? draftFocusRequest.version : 0 }
@@ -342,7 +342,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                     /> : <>
 
                         <NotesOnlyComposer onAddNote={ () => setIsNoteModalVisible(true) } />
-                    </> }
+                    </>) }
                 </div>
 
                 { assistant.isVisible && <button type="button" className="conversation-assistant-backdrop" onClick={ assistant.close } aria-label="Close conversation panel overlay" tabIndex={ -1 } /> }

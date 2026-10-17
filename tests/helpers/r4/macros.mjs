@@ -30,6 +30,8 @@ export async function macrosJourney(){
   assert.equal(replay.status,'duplicate');assert.equal((await app.first('SELECT count(*) n FROM macro_usage WHERE macro_id=?',macro.id)).n,1)
   const blocked=await app.call(`/api/conversations/${id}/messages`,{token:w.tokens.owner,body:{localId:'unresolved',content:result.draft.content,expectedRevision:(await get(id)).revision}})
   assert.equal(blocked.status,422);assert.equal(blocked.data.code,'unresolved_placeholders')
+  const audit=await app.ok(`/api/management/projects/${w.projectId}/audit?limit=200`,{token:w.tokens.owner})
+  assert.ok(audit.data.some(event=>event.action==='macro.applied'&&event.target_id===id&&event.actor_id===w.users.owner),'macro and saved draft appear in the workspace audit log')
   const edited=result.draft.content.replace('{{ticket.custom.missing}}','Your return label is attached.')
   assert.equal((await app.ok(`/api/conversations/${id}/messages`,{token:w.tokens.owner,body:{localId:'reviewed-reply',content:edited,mediaIds:result.draft.media_ids,expectedRevision:(await get(id)).revision}})).accepted,true)
   const customer=await app.ok(`/api/conversations/${id}/messages`,{token:visitor.token})

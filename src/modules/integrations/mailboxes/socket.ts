@@ -1,8 +1,9 @@
-import {connect} from 'cloudflare:sockets'
+import type {connect} from 'cloudflare:sockets'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../../platform/env'
 import {base64,MIME_LIMIT} from './http'
 import type {ImapCredential} from './types'
+type Socket=ReturnType<typeof connect>
 
 export function socketHosts(env:Env){return String(env.MAILBOX_SOCKET_HOSTS||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean)}
 export function socketPorts(env:Env){return String(env.MAILBOX_SOCKET_PORTS||'993,465').split(',').map(Number).filter(n=>Number.isSafeInteger(n)&&n>0&&n<=65535)}
@@ -17,10 +18,14 @@ export function validateSocketHost(env:Env,value:unknown){
 }
 /** One TLS connection, fixed port, bounded bytes and a wall-clock deadline. */
 export class MailSocket {
- socket:ReturnType<typeof connect>;reader:ReadableStreamDefaultReader<Uint8Array>;writer:WritableStreamDefaultWriter<Uint8Array>
+ socket:Socket;reader:ReadableStreamDefaultReader<Uint8Array>;writer:WritableStreamDefaultWriter<Uint8Array>
  private buffer=new Uint8Array(0);private total=0;private timer:ReturnType<typeof setTimeout>
- constructor(host:string,port:number){
-  this.socket=connect({hostname:host,port},{secureTransport:'on',allowHalfOpen:false})
+ static async open(host:string,port:number){
+  const {connect}=await import('cloudflare:sockets')
+  return new MailSocket(connect({hostname:host,port},{secureTransport:'on',allowHalfOpen:false}))
+ }
+ constructor(socket:Socket){
+  this.socket=socket
   this.reader=this.socket.readable.getReader();this.writer=this.socket.writable.getWriter()
   this.socket.closed.catch(()=>{})
   this.timer=setTimeout(()=>{void this.socket.close().catch(()=>{})},25000)
@@ -62,7 +67,7 @@ export class ImapSession {
  }
 }
 export async function openImap(env:Env,credential:ImapCredential){
- const wire=new MailSocket(validateSocketHost(env,credential.imapHost),validateSocketPort(env,credential.imapPort,993)),session=new ImapSession(wire)
+ const wire=await MailSocket.open(validateSocketHost(env,credential.imapHost),validateSocketPort(env,credential.imapPort,993)),session=new ImapSession(wire)
  try{
   const greeting=await wire.line();if(!greeting.startsWith('* OK'))throw new Error('IMAP greeting rejected')
   await session.command(`LOGIN ${quote(credential.username)} ${quote(credential.password)}`)
@@ -78,7 +83,7 @@ async function smtpReply(wire:MailSocket,expected:number[]){
  }throw new Error('SMTP response exceeds line limit')
 }
 export async function openSmtp(env:Env,credential:ImapCredential){
- const wire=new MailSocket(validateSocketHost(env,credential.smtpHost),validateSocketPort(env,credential.smtpPort,465))
+ const wire=await MailSocket.open(validateSocketHost(env,credential.smtpHost),validateSocketPort(env,credential.smtpPort,465))
  try{
   await smtpReply(wire,[220]);await wire.write('EHLO happytohelp.invalid\r\n');await smtpReply(wire,[250])
   const user=credential.smtpUsername||credential.username,password=credential.smtpPassword||credential.password

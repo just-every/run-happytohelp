@@ -4822,7 +4822,7 @@
       "executable": false
     },
     "src/modules/integrations/mailboxes/socket.ts": {
-      "sha256": "a203d301259cc8d65d626164b7e3163ceaf4dd5c1f0b456bf8699a3202c0694c",
+      "sha256": "16b70121a0ff8ce2e7bd59c7b7d8d17df076bbd47fa77c2d637d5f6c9dcba3b5",
       "executable": false
     },
     "src/modules/integrations/mailboxes/store.ts": {
@@ -5634,7 +5634,7 @@
       "executable": false
     },
     "src/modules/move-in/email-threading.ts": {
-      "sha256": "f9412f43e44818aa59e65aea639f2024d663cfe10dc7058309e20acbf5a0c687",
+      "sha256": "aeb5165b2ed86e61099308c2c7f93a501d12aa269010f2f5cea5446f32b93e00",
       "executable": false
     },
     "src/modules/move-in/erasure.ts": {
@@ -9210,7 +9210,7 @@
       "executable": false
     },
     "tests/connections/migration.mjs": {
-      "sha256": "e68d5f16d19b864cdceb968d962b993fbb8961aa1571e51c03f77c975dfa7796",
+      "sha256": "ada9645853dd609eec8fcf88d8374084601b75b32a04047fffaf00e677f8fe24",
       "executable": false
     },
     "tests/connections/native-boundary.mjs": {

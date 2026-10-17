@@ -6,7 +6,9 @@ const object=(value:any)=>value&&typeof value==='object'&&!Array.isArray(value)
  * reply addresses. Source paths remain visible in the portable import journal. */
 export function importedEmailThreadKeys(projectId:string,conversationId:string,vendor:Vendor,record:SourceRecord,createdAt:number,pages:SourceRecord[]=[]){
  const p=record.payload as any,keys:ThreadKey[]=[]
- const origin=(source:SourceRecord,path:string)=>JSON.stringify({artifact:source.location?.artifact??null,pointer:`${source.location?.pointer??''}${path}`,sourceId:source.sourceId})
+ // Native effects identify the logical source, so repackaging an unchanged
+ // export preserves the same value. Artifact custody stays in the journal.
+ const origin=(source:SourceRecord,path:string)=>JSON.stringify({kind:source.kind,sourceId:source.sourceId,pointer:path})
  const before=()=>keys.length
  const locate=(start:number,source:SourceRecord)=>{for(let index=start;index<keys.length;index++)keys[index].sourceRef=origin(source,keys[index].sourceRef)}
  const add=(value:any,path:string)=>{

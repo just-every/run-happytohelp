@@ -1,8 +1,10 @@
 import type {Env} from '../../platform/env'
-import {evaluateConditions} from './conditions'
+import {evaluateConditions,columnPrefilter} from './conditions'
 import {publishedRules,ruleTicket,type RuleDefinition} from './rule-model'
 import {evaluateTime} from './rule-time'
 import {planRuleRun,executeRuleRun} from './rule-run'
+import {liveSlaTicketSql} from './sla'
+import type {Spent} from './budget'
 export interface WorkflowEvent {id:number|string;project_id:string;conversation_id:string;kind:string;at:number;source?:string;revision:number;last_message_id:string|null;ticket_version?:number;before_json?:string;after_json?:string}
 /** The native journal is the only admission door. Generated rule/automation
  * changes do not recursively re-enter event rules. Ordered rules see the result
@@ -29,21 +31,24 @@ export async function runEventRules(env:Env,event:WorkflowEvent){
   if(condition.matched)await planRuleRun(env,row,ticket,`event:${event.id}`,{event:event.id,kind:event.kind,conditions:condition.explanation,position:row.position,stop_condition:'Terminal receipt, changed ticket frontier, pause or cancellation'})
  }
 }
-export async function runTimeRules(env:Env,now:number){
+export async function runTimeRules(env:Env,now:number,spent?:Spent){
  // Resuming pending preparation is safe: local actions and notify claims each
  // have a permanent receipt. Failed/uncertain actions are deliberately excluded.
  const pending=await env.DB.prepare("SELECT id FROM workflow_runs WHERE state IN ('running','pending') ORDER BY created_at,id LIMIT 5").all<{id:string}>()
- for(const run of pending.results)await executeRuleRun(env,run.id)
+ for(const run of pending.results){if(spent?.())return;await executeRuleRun(env,run.id)}
  const rules=await publishedRules(env,'time'),hour=Math.floor(now/3600000)
  let budget=30
  for(const row of rules){const d=JSON.parse(row.definition_json) as RuleDefinition
   let cursor=await env.DB.prepare('SELECT * FROM workflow_scheduler_cursors WHERE rule_id=?').bind(row.id).first<any>()
   if(cursor&&cursor.hour===hour&&cursor.version===row.published_version&&cursor.complete)continue
-  if(!budget)break
+  if(!budget||spent?.())break
   if(!cursor||cursor.hour!==hour||cursor.version!==row.published_version){await env.DB.prepare("INSERT INTO workflow_scheduler_cursors(rule_id,project_id,version,hour,after_id,complete,updated_at) VALUES(?,?,?,?,'',0,?) ON CONFLICT(rule_id) DO UPDATE SET version=excluded.version,hour=excluded.hour,after_id='',complete=0,updated_at=excluded.updated_at WHERE workflow_scheduler_cursors.version<excluded.version OR workflow_scheduler_cursors.version=excluded.version AND workflow_scheduler_cursors.hour<=excluded.hour").bind(row.id,row.project_id,row.published_version,hour,now).run();cursor={after_id:''}}
-  const pageSize=budget,conversations=await env.DB.prepare("SELECT id FROM conversations WHERE project_id=? AND id>? AND status_category<>'closed' ORDER BY id LIMIT ?").bind(row.project_id,cursor.after_id,pageSize).all<{id:string}>()
-  budget-=conversations.results.length
-  for(const {id} of conversations.results){const ticket=await ruleTicket(env,row.project_id,id);if(!ticket)continue
+  // Imported history is never acted on by automations, as it never enters the event journal.
+  // A ticket that stops matching is reset by the journal event that changed it (runEventRules).
+  const pageSize=budget,prefilter=columnPrefilter(d.conditions),conversations=await env.DB.prepare(`SELECT c.id FROM conversations c WHERE c.project_id=? AND c.id>? AND c.status_category<>'closed' AND ${liveSlaTicketSql()}${prefilter.sql} ORDER BY c.id LIMIT ?`).bind(row.project_id,cursor.after_id,...prefilter.params,pageSize).all<{id:string}>()
+  let last=cursor.after_id,done=0
+  for(const {id} of conversations.results){if(spent?.())break;done++;last=id
+   const ticket=await ruleTicket(env,row.project_id,id);if(!ticket)continue
    const condition=evaluateConditions(ticket,d.conditions)
    if(!condition.matched){await env.DB.prepare("UPDATE workflow_time_state SET eligible=0,episode='',last_run_at=NULL WHERE rule_id=? AND conversation_id=? AND version=?").bind(row.id,id,row.published_version).run();continue}
    const time=await evaluateTime(env,row.project_id,ticket,d,now)
@@ -56,6 +61,7 @@ export async function runTimeRules(env:Env,now:number){
    const run=await planRuleRun(env,row,ticket,`time:${state.episode}`,{conditions:condition.explanation,time,position:row.position,stop_condition:'Once per continuous eligibility episode; reset by a customer reply or a false condition'})
    if(run)await env.DB.prepare('UPDATE workflow_time_state SET last_run_at=? WHERE rule_id=? AND conversation_id=? AND version=? AND episode=?').bind(now,row.id,id,row.published_version,state.episode).run()
   }
-  await env.DB.prepare('UPDATE workflow_scheduler_cursors SET after_id=max(after_id,?),complete=max(complete,?),updated_at=max(updated_at,?) WHERE rule_id=? AND hour=? AND version=?').bind(conversations.results.at(-1)?.id??cursor.after_id,conversations.results.length<pageSize?1:0,now,row.id,hour,row.published_version).run()
+  budget-=done
+  await env.DB.prepare('UPDATE workflow_scheduler_cursors SET after_id=max(after_id,?),complete=max(complete,?),updated_at=max(updated_at,?) WHERE rule_id=? AND hour=? AND version=?').bind(last,done===conversations.results.length&&done<pageSize?1:0,now,row.id,hour,row.published_version).run()
  }
 }

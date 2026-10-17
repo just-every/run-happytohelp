@@ -5,8 +5,9 @@ export async function followupId(projectId:string,originalId:string,actorId:stri
  const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify([projectId,originalId,actorId,localId])))
  return 'followup-'+Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('')
 }
-export function createFollowupStatement(env:Env,input:{id:string;now:number;actorId:string;predicates:string[];args:unknown[]}){
- return env.DB.prepare(`INSERT OR IGNORE INTO conversations(id,project_id,contact_id,created_at,updated_at,status_id,status_category,subject,priority,channel,brand_id,group_id,requester_id,submitter_id,submitter_type,ticket_actor_id,ticket_actor_type,ticket_source) SELECT ?,c.project_id,c.contact_id,?,?,'new','new',c.subject,c.priority,c.channel,c.brand_id,c.group_id,c.requester_id,?,'contact',?,'contact','customer_reply' FROM conversations c WHERE ${input.predicates.join(' AND ')}`).bind(input.id,input.now,input.now,input.actorId,input.actorId,...input.args)
+/** A follow-up by email takes the mail's own subject, as any new email ticket does. */
+export function createFollowupStatement(env:Env,input:{id:string;now:number;actorId:string;predicates:string[];args:unknown[];email?:{receiptId:string;claimToken:string}}){
+ return env.DB.prepare(`INSERT OR IGNORE INTO conversations(id,project_id,contact_id,created_at,updated_at,status_id,status_category,subject,priority,channel,brand_id,group_id,requester_id,submitter_id,submitter_type,ticket_actor_id,ticket_actor_type,ticket_source) SELECT ?,c.project_id,c.contact_id,?,?,'new','new',coalesce(nullif((SELECT substr(json_extract(r.evidence_json,'$.subject'),1,500) FROM inbound_emails r WHERE r.id=? AND r.claim_token=?),''),c.subject),c.priority,c.channel,c.brand_id,c.group_id,c.requester_id,?,'contact',?,'contact','customer_reply' FROM conversations c WHERE ${input.predicates.join(' AND ')}`).bind(input.id,input.now,input.now,input.email?.receiptId??null,input.email?.claimToken??null,input.actorId,input.actorId,...input.args)
 }
 export function carryFollowupStatements(env:Env,input:{id:string;originalId:string;messageId:string;actorId:string;localId:string;now:number}){
  const accepted='EXISTS(SELECT 1 FROM messages WHERE id=? AND conversation_id=?)',params=[input.messageId,input.id]

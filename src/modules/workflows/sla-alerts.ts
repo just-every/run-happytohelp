@@ -4,6 +4,7 @@ import {notifyWorkflow} from './notify'
 import type {SlaPolicy} from './sla-policy'
 import type {SlaState} from './sla-clocks'
 import {customerSlaMessageSql} from './sla-events'
+import type {Spent} from './budget'
 
 const activeProject=`NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) AND NOT EXISTS(SELECT 1 FROM move_in_conversations imported WHERE imported.project_id=c.project_id AND imported.conversation_id=c.id) AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations legacy WHERE legacy.project_id=c.project_id AND legacy.conversation_id=c.id)`
 const deliveryEligible=`${activeProject} AND ${customerSlaMessageSql()}`
@@ -26,7 +27,7 @@ export async function syncSlaAlerts(env:Env,ticket:any,policy:SlaPolicy,state:Sl
   env.DB.prepare(`INSERT OR IGNORE INTO sla_alerts(id,project_id,conversation_id,policy_id,metric,cycle,kind,recipient_id,state,created_at,resolved_at,notification_state) SELECT json_extract(a.value,'$.id'),?,?,?,json_extract(a.value,'$.metric'),json_extract(a.value,'$.cycle'),json_extract(a.value,'$.kind'),json_extract(a.value,'$.recipient'),CASE WHEN json_extract(a.value,'$.resolved_at') IS NULL THEN 'open' ELSE 'resolved' END,?,json_extract(a.value,'$.resolved_at'),CASE WHEN json_extract(a.value,'$.resolved_at') IS NOT NULL OR json_extract(a.value,'$.recipient') IS NULL THEN 'complete' ELSE 'pending' END FROM json_each(?) a WHERE EXISTS(${frontier})`).bind(ticket.project_id,ticket.id,policy.id,now,JSON.stringify(desired),...frontierArgs)
  ])
 }
-export async function deliverSlaAlerts(env:Env,now:number){
+export async function deliverSlaAlerts(env:Env,now:number,spent?:Spent){
  // A previous claim can have crossed the provider boundary before a restart.
  // Its outcome remains inspectable and is never automatically sent again.
  await env.DB.prepare("UPDATE sla_alerts SET notification_state='uncertain',notification_error='Delivery was interrupted; reconcile before any further send' WHERE notification_state='sending' AND notification_started_at<?").bind(now-3600000).run()
@@ -34,7 +35,10 @@ export async function deliverSlaAlerts(env:Env,now:number){
  const query="SELECT a.* FROM sla_alerts a JOIN conversations c ON c.project_id=a.project_id AND c.id=a.conversation_id WHERE a.id>? AND a.notification_state='pending' AND a.state='open' AND c.status_category NOT IN ('solved','closed') AND "+availableTicketSql()+' AND '+deliveryEligible+' ORDER BY a.id LIMIT 40'
  let pending=await env.DB.prepare(query).bind(cursor?.after_id??'').all<any>()
  if(!pending.results.length&&cursor?.after_id)pending=await env.DB.prepare(query).bind('').all<any>()
+ let after=cursor?.after_id??''
  for(const alert of pending.results){
+  if(spent?.())break
+  after=alert.id
   const claimed=await env.DB.prepare(`UPDATE sla_alerts SET notification_state='sending',notification_started_at=? WHERE id=? AND state='open' AND notification_state='pending' AND EXISTS(SELECT 1 FROM conversations c WHERE c.project_id=sla_alerts.project_id AND c.id=sla_alerts.conversation_id AND c.status_category NOT IN ('solved','closed') AND ${availableTicketSql()} AND ${deliveryEligible})`).bind(now,alert.id).run()
   if(!claimed.meta.changes)continue
   try{
@@ -45,5 +49,6 @@ export async function deliverSlaAlerts(env:Env,now:number){
    await env.DB.prepare("UPDATE sla_alerts SET notification_state='uncertain',notification_error='Delivery outcome unknown; reconcile before any further send' WHERE id=? AND notification_state='sending'").bind(alert.id).run()
   }
  }
- await env.DB.prepare("INSERT INTO sla_scheduler_cursors(id,after_id,updated_at) VALUES('notifications',?,?) ON CONFLICT(id) DO UPDATE SET after_id=excluded.after_id,updated_at=excluded.updated_at").bind(pending.results.at(-1)?.id??'',now).run()
+ if(!pending.results.length)after=''
+ if(after!==(cursor?.after_id??''))await env.DB.prepare("INSERT INTO sla_scheduler_cursors(id,after_id,updated_at) VALUES('notifications',?,?) ON CONFLICT(id) DO UPDATE SET after_id=excluded.after_id,updated_at=excluded.updated_at").bind(after,now).run()
 }

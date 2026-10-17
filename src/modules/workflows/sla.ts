@@ -7,6 +7,7 @@ import {policyData,policyMatches,type SlaPolicy} from './sla-policy'
 import {applySlaEvent,advanceSla,newSlaState,type SlaState} from './sla-clocks'
 import {slaEvents,customerSlaMessageSql} from './sla-events'
 import {syncSlaAlerts,deliverSlaAlerts} from './sla-alerts'
+import type {Spent} from './budget'
 
 export const liveSlaTicketSql=(alias='c')=>`${availableTicketSql(alias)} AND NOT EXISTS(SELECT 1 FROM move_in_conversations imported WHERE imported.project_id=${alias}.project_id AND imported.conversation_id=${alias}.id) AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations legacy WHERE legacy.project_id=${alias}.project_id AND legacy.conversation_id=${alias}.id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=${alias}.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
 export function slaAlertData(row:any){return {...row}}
@@ -45,16 +46,18 @@ export async function ticketSla(env:Env,projectId:string,id:string){
  const state=JSON.parse(row.state_json) as SlaState
  return {policy:JSON.parse(row.policy_json) as SlaPolicy,calendar:JSON.parse(row.calendar_json) as WorkflowCalendar,pause_reason:state.pause_reason,clocks:state.clocks.map(({spent_ms,target_ms,breached_at,...clock})=>clock),last_event_id:row.last_event_id,updated_at:row.updated_at,alerts:alerts.results.map(slaAlertData)}
 }
-export async function runSlaAlerts(env:Env,now=workflowNow(env)){
+export async function runSlaAlerts(env:Env,now=workflowNow(env),spent?:Spent){
  const cursor=await env.DB.prepare("SELECT after_id FROM sla_scheduler_cursors WHERE id='tickets'").first<{after_id:string}>()
  const query=`SELECT c.id FROM conversations c WHERE c.id>? AND ${liveSlaTicketSql()} AND (${customerSlaMessageSql()} OR EXISTS(SELECT 1 FROM sla_alerts a WHERE a.project_id=c.project_id AND a.conversation_id=c.id AND a.state='open') OR EXISTS(SELECT 1 FROM ticket_sla_state s WHERE s.project_id=c.project_id AND s.conversation_id=c.id AND json_array_length(s.state_json,'$.clocks')>0)) AND (c.status_category NOT IN ('solved','closed') OR EXISTS(SELECT 1 FROM sla_alerts a WHERE a.project_id=c.project_id AND a.conversation_id=c.id AND a.state='open')) AND (EXISTS(SELECT 1 FROM sla_policies p WHERE p.project_id=c.project_id AND p.active=1) OR EXISTS(SELECT 1 FROM ticket_sla_state s WHERE s.project_id=c.project_id AND s.conversation_id=c.id)) ORDER BY c.id LIMIT 40`
  let tickets=await env.DB.prepare(query).bind(cursor?.after_id??'').all<{id:string}>()
  if(!tickets.results.length&&cursor?.after_id)tickets=await env.DB.prepare(query).bind('').all<{id:string}>()
  const failed:string[]=[]
- for(const ticket of tickets.results){try{await syncTicketSla(env,ticket.id,now)}catch{failed.push(ticket.id)}}
- const after=tickets.results.at(-1)?.id??''
- await env.DB.prepare("INSERT INTO sla_scheduler_cursors(id,after_id,updated_at) VALUES('tickets',?,?) ON CONFLICT(id) DO UPDATE SET after_id=excluded.after_id,updated_at=excluded.updated_at").bind(after,now).run()
- await deliverSlaAlerts(env,now)
+ let after=cursor?.after_id??'',processed=0
+ for(const ticket of tickets.results){if(spent?.())break;processed++;after=ticket.id;try{await syncTicketSla(env,ticket.id,now)}catch{failed.push(ticket.id)}}
+ if(!tickets.results.length)after=''
+ // An idle minute writes nothing.
+ if(after!==(cursor?.after_id??''))await env.DB.prepare("INSERT INTO sla_scheduler_cursors(id,after_id,updated_at) VALUES('tickets',?,?) ON CONFLICT(id) DO UPDATE SET after_id=excluded.after_id,updated_at=excluded.updated_at").bind(after,now).run()
+ await deliverSlaAlerts(env,now,spent)
  if(failed.length)throw new Error(`SLA refresh failed for tickets: ${failed.join(', ')}`)
- return {processed:tickets.results.length}
+ return {processed}
 }

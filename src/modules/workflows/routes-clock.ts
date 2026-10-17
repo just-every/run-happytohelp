@@ -13,6 +13,7 @@ workflowClockRoutes.post('/projects/:projectId/workflow-clock',async c=>{
  if(!Number.isSafeInteger(now)||now<0)invalid('Enter an epoch millisecond time or an ISO date with timezone')
  const result=await c.env.DB.prepare(`INSERT INTO workflow_clock(project_id,now,updated_at) SELECT ?,?,? WHERE EXISTS(${guard.sql}) ON CONFLICT(project_id) DO UPDATE SET now=excluded.now,updated_at=excluded.updated_at`).bind(actor.projectId,now,Date.now(),...guard.params).run()
  if(!result.meta.changes)throw new HTTPException(409)
- await runWorkflows({...c.env,H2H_WORKFLOW_NOW:String(now)})
+ // A local clock jump runs the minutes it skipped: continuation ticks until one finishes its work.
+ for(let tick=0;tick<100&&!(await runWorkflows({...c.env,H2H_WORKFLOW_NOW:String(now)})).complete;tick++);
  return c.json({data:{now,local:true}})
 })

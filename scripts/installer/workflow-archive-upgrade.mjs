@@ -13,8 +13,11 @@ export const ticketTables=['ticket_statuses','ticket_groups','ticket_group_membe
 export function workflowArchiveUpgradeRow(table,row){
  if(table==='conversations'&&row.status_id===undefined){
   const category=row.resolved_at!==null?'solved':row.revision>0?'open':'new';
-  return {...row,status_id:category,status_category:category,subject:'',priority:'normal',channel:'widget',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'rer'};
+  row={...row,status_id:category,status_category:category,subject:'',priority:'normal',channel:'widget',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'rer'};
  }
+ if(table==='conversations'&&row.mailbox_id===undefined)return {...row,mailbox_id:null};
+ // 146: archived participants without provenance remain unproven.
+ if(table==='conversation_participants'&&row.joined_via===undefined)return {...row,joined_via:'cc_header'};
  if(table==='contact_erasures'&&row.ticket_records===undefined)return {...row,ticket_records:0};
  return row;
 }
@@ -22,13 +25,15 @@ export function workflowArchiveUpgradeRow(table,row){
 /** Enumerate only installation-produced schemas before R5, with or without
  * R3's ticket migrations. Later independent migrations still form part of each
  * historical schema. Never apply 150-159 while constructing that inventory. */
-export async function workflowArchivePolicy(root,input,{beforeTickets=false}={}){
+export async function workflowArchivePolicy(root,input,{beforeTickets=false,excludedMigrations=name=>beforeTickets&&(/^13[0-9]_/.test(name)||name>='191_')}={}){
  const omitted=[...workflowTables,...(beforeTickets?ticketTables:[])];
  const result={...input,excludeTables:[...new Set([...input.excludeTables,...omitted])],replaceableTables:input.replaceableTables.filter(table=>!omitted.includes(table))},config=policy(result);
  const scratch=new DatabaseSync(':memory:'),acceptedSchemas={...input.acceptedSchemas};
  const db={prepare(sql){return {bind(...args){this.args=args;return this;},async all(){return {results:scratch.prepare(sql).all(...(this.args??[]))};}};}};
  try{
-  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!/^15[0-9]_/.test(name)&&(!beforeTickets||!/^13[0-9]_/.test(name))).sort();
+  // v0.4.2, the last pre-ticket release, ends at 190; every later migration
+  // (191's ticket_history index onward) only ever runs after the ticket model.
+  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!/^15[0-9]_/.test(name)&&!excludedMigrations(name)).sort();
   const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))));
   for(let index=0;index<plan.length;index++){
    for(const sql of plan[index])scratch.exec(sql);

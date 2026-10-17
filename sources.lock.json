@@ -1616,7 +1616,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ae0a9ba64788844bd9ecd104810dd88191bc6586bb3b98f09faa7d9a85a23463",
+      "sha256": "f89ae6cf5856e8564f0b8c64a646c69a99ff271b473f7fcbb29c69035a12fa3b",
       "executable": false
     },
     "DEMO.md": {
@@ -2372,7 +2372,7 @@
       "executable": false
     },
     "public/site-assets/help_center/request-forms.css": {
-      "sha256": "ce04f82108e29f99ce0ee07614c59c2cec5c38d9996f36fb935d59c4ba4db3aa",
+      "sha256": "cd32a79a36ba8d4438a000cfb1939248a5053284b32d2ea2bb213947d7464d91",
       "executable": false
     },
     "public/site-assets/help_center/request-forms.js": {
@@ -3856,7 +3856,7 @@
       "executable": false
     },
     "src/modules/forms/routes.ts": {
-      "sha256": "7f52e63e64e75fbbb08c9c0759e18b595c6ca9c3182c04c091d6c5a6b50f002b",
+      "sha256": "3956f480c5b0d70c422c6ff6272b3efa54dab92eb1b9818f843cc9fcdc920c7f",
       "executable": false
     },
     "src/modules/forms/settings.ts": {
@@ -5608,7 +5608,7 @@
       "executable": false
     },
     "src/modules/portal/requests.ts": {
-      "sha256": "cf480ce1c7f1691085df62602676a6f886f2f72da4ff6fef5260f5900352b675",
+      "sha256": "36eaa19f039fda8af54731f25da54dba896cbb65bd62fc8543729d27cca338f5",
       "executable": false
     },
     "src/modules/portal/routes.ts": {
@@ -5668,7 +5668,7 @@
       "executable": false
     },
     "src/modules/public-site/portal-pages.ts": {
-      "sha256": "de9c1f54745b644b426636ec574ef8c1e01548a33b2e44614bf236fc7f0bca01",
+      "sha256": "2004862e6dfb6cf4c425c3ebb31914bffa472780a1b2666f2430299ac8de672a",
       "executable": false
     },
     "src/modules/public-site/portal-styles.ts": {
@@ -5680,7 +5680,7 @@
       "executable": false
     },
     "src/modules/public-site/request-pages.ts": {
-      "sha256": "3fcfeb4d0c24eae95b335361ba9b6cf1a7e63f4056710c9cfbbd749852b34ca5",
+      "sha256": "2b33cc177bb3b72fe23f3537f086d9f2a6a91bba8eea12d6f29c067de974cb93",
       "executable": false
     },
     "src/modules/public-site/shell.ts": {
@@ -5972,7 +5972,7 @@
       "executable": false
     },
     "src/modules/widget/css/Interact.css": {
-      "sha256": "ea3a77a3d13a5f1104d174f4146d3cc8dc8829d50bf9916fffdcdfaae1008e57",
+      "sha256": "0157c51f71fae6b88651d2b97b0929f339a25b9ada9c143b91484a1a206fb4e9",
       "executable": false
     },
     "src/modules/widget/css/MonitoringConsent.css": {
@@ -6292,7 +6292,7 @@
       "executable": false
     },
     "src/modules/widget/js/Style.jsx": {
-      "sha256": "814b8907cfe29845a6d7dafe7c38ddc77c1212717175b4c84e811ea579510b7a",
+      "sha256": "9f10a7f89fea1f9aedff4e608bc0477c04ee7d94f2f93a6563c7c466eed2c5fd",
       "executable": false
     },
     "src/modules/widget/js/TypingIndicator.jsx": {
@@ -9136,7 +9136,7 @@
       "executable": false
     },
     "tests/helpers/customer-portal-journey.mjs": {
-      "sha256": "8247e868fe0f16fcbdd1a24d83134134cd3398764d0415488559a0123df98e32",
+      "sha256": "1306cdd71b9ada02338d46a654f9c235e8f143f3f9be288286562871d5be0c86",
       "executable": false
     },
     "tests/helpers/delegation-journey/browser-ui.mjs": {
@@ -9664,7 +9664,7 @@
       "executable": false
     },
     "tests/helpers/self-service-fixture.mjs": {
-      "sha256": "5037be7f3dbaffdffa71eb019c98f4a0478e2d0c05aa1387fcfdf3f84da59bb6",
+      "sha256": "40a9ba0da1954b0cdf88b4aee9e2ad4f8dc6fa3e9ad881cb1313e9ea30acefe5",
       "executable": false
     },
     "tests/helpers/serving-capacity.mjs": {
@@ -9748,7 +9748,7 @@
       "executable": false
     },
     "tests/helpers/widget/installed.mjs": {
-      "sha256": "26ab7daf256f8852f884bc4a94eb4371d2483e08f2d00c65406e8e42071894e6",
+      "sha256": "0ab21ed55699bf4ea2888a94d373476d6ec55d61efca56db3ad41b40b3e4c5b7",
       "executable": false
     },
     "tests/helpers/widget/lifecycle.mjs": {

@@ -219,6 +219,22 @@ try {
           });
         }).sort();
       }
+      // Every workspace gets the published default Solved->Closed rule (migration 152) and its first immutable version.
+      if(table==='workflow_rules'||table==='workflow_rule_versions'){
+        const definition={name:'Close solved tickets after 4 days',kind:'time',position:1000,conditions:{all:[{field:'status_category',op:'eq',value:'solved'}],any:[]},time:{field:'solved_at',hours:96},actions:[{type:'status',status_id:'closed'}]};
+        expected=beforeAdditional.rows.projects.map(serialized=>{
+          const project=JSON.parse(serialized),id='workflow:auto-close:'+project.id;
+          const actual=final.rows[table].map(JSON.parse).find(row=>(row.id??row.rule_id)===id);
+          assert.ok(actual,'upgrade seeds the default close rule: '+project.id+'/'+table);
+          const at=table==='workflow_rules'?actual.created_at:actual.published_at;
+          assert.ok(Number.isInteger(at)&&at>=Math.floor(additionalStartedAt/1000)*1000&&at<=additionalFinishedAt,'default close rule is timestamped during migration');
+          assert.deepEqual(JSON.parse(table==='workflow_rules'?actual.draft_json:actual.definition_json),definition,'default close rule definition');
+          const row=table==='workflow_rules'
+            ?{id,project_id:project.id,name:definition.name,kind:'time',position:1000,state:'published',draft_json:actual.draft_json,published_version:1,owner_id:'system',created_at:at,updated_at:at}
+            :{rule_id:id,project_id:project.id,version:1,definition_json:actual.definition_json,published_by:'system',published_at:at,event_after_id:0};
+          return JSON.stringify(Object.fromEntries(Object.keys(row).sort().map(key=>[key,row[key]])));
+        }).sort();
+      }
       assert.deepEqual(final.rows[table],expected,'additive upgrade starts without fabricated user data: '+table);
     }
   });

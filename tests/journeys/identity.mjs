@@ -8,7 +8,7 @@ import {twoFactorJourney,totp,encryptionKey} from '../helpers/identity/two-facto
 import {emailStepUpJourney} from '../helpers/identity/email-step-up.mjs'
 import {rolesAuditJourney} from '../helpers/identity/roles-audit.mjs'
 
-const ownerTicketTables=['ticket_views','ticket_field_values','ticket_history','ticket_group_members','ticket_fields','ticket_groups','ticket_statuses']
+const ownerTicketTables=['workflow_rules','ticket_views','ticket_field_values','ticket_history','ticket_group_members','ticket_fields','ticket_groups','ticket_statuses']
 const ownerSetupTables=['owner_setup','users','projects','project_settings','user_settings','user_project_preferences','memberships','credentials','sessions',...ownerTicketTables]
 const migrationStatements=async name=>{const source=(await readFile('migrations/'+name,'utf8')).replace(/^\s*--[^\n]*$/gm,'');return [...source.matchAll(/\s*(CREATE TRIGGER[\s\S]*?END;|[^;]+;)/g)].map(match=>match[1]).filter(sql=>sql.trim()!==';')}
 const mailOutbound=(mail,{reject=()=>false}={})=>async(request,entry)=>{const url=new URL(request.url);if(url.host==='api.resend.com'){if(reject(entry))return new Response('rejected',{status:400});const body=JSON.parse(entry.body);mail.push({to:body.to[0],text:body.text,subject:body.subject});return Response.json({id:'email-'+mail.length})}if(url.host==='api.sendgrid.com'){if(reject(entry))return new Response('rejected',{status:400});const body=JSON.parse(entry.body);mail.push({to:body.personalizations[0].to[0].email,text:body.content.find(part=>part.type==='text/plain').value,subject:body.subject});return new Response(null,{status:202,headers:{'x-message-id':'fixture-'+mail.length}})}throw new Error('Unexpected outbound request: '+request.url)}

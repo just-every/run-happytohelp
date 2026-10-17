@@ -20,3 +20,15 @@ export function evaluateConditions(ticket:any,conditions:Conditions){
  const all=conditions.all.map(c=>({field:c.field,op:c.op,matched:matchesCondition(ticket,c)})),any=conditions.any.map(c=>({field:c.field,op:c.op,matched:matchesCondition(ticket,c)}))
  return {matched:all.every(c=>c.matched)&&(!any.length||any.some(c=>c.matched)),explanation:{all,any}}
 }
+/** SQL for the `all` conditions on plain ticket columns, so a scan reads only the
+ * tickets they can match. The full evaluation still runs on every ticket read. */
+const columns=['status_id','status_category','priority','channel','brand_id','group_id','assigned_to']
+export function columnPrefilter(conditions:Conditions,alias='c'){
+ const sql:string[]=[],params:unknown[]=[]
+ for(const c of conditions.all){
+  if(!columns.includes(c.field))continue
+  if(c.op==='eq'&&typeof c.value==='string'){sql.push(`${alias}.${c.field}=?`);params.push(c.value)}
+  if(c.op==='in'&&Array.isArray(c.value)&&c.value.length&&c.value.every(v=>typeof v==='string')){sql.push(`${alias}.${c.field} IN (${c.value.map(()=>'?').join(',')})`);params.push(...c.value)}
+ }
+ return {sql:sql.map(s=>' AND '+s).join(''),params}
+}

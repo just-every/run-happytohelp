@@ -3,6 +3,8 @@ import { trackingStatement } from '../../outcomes/state'
 import { HTTPException } from 'hono/http-exception'
 import { text } from '../common'
 import { admitInsightPair } from '../../conversations/insight-admission'
+import { followupId, createFollowupStatement, carryFollowupStatements } from '../../workflows/followups'
+import { workflowNow, workflowEnvironment } from '../../workflows/clock'
 import { onCustomerMessage } from '../../ai-support/service'
 import {widgetMonitoringPolicy} from '../../customer-context/widget-policy'
 import type { WidgetCommand } from './types'
@@ -46,6 +48,9 @@ export async function useInsight({ c, actor, conversation, data }: WidgetCommand
     monitoringRequired:!!subject,
     assistantId:policy.enabled&&policy.ready?policy.assistant?.id:undefined,
   })
+  // A follow-up keeps the Closed ticket's requester, participants, tags and fields; replays re-run only idempotent links.
+  const visitorMessage = result.accepted ? await c.env.DB.prepare('SELECT id,created_at FROM messages WHERE conversation_id=? AND local_id=?').bind(target.id, contactLocalId).first<{ id: string; created_at: number }>() : null
+  if (target.id !== conversation.id && visitorMessage) await c.env.DB.batch(carryFollowupStatements(c.env, { id: target.id, originalId: conversation.id, messageId: visitorMessage.id, actorId: actor.id, localId: contactLocalId, now: visitorMessage.created_at }))
   // Admission commits the pair and outbox before delivery; replays schedule no work.
   if (result.accepted && !result.duplicate) {
     const socket = c.env.CONVERSATIONS.get(c.env.CONVERSATIONS.idFromName(target.id))
@@ -59,8 +64,8 @@ export async function useInsight({ c, actor, conversation, data }: WidgetCommand
   return c.json({...result,conversationId:target.id,ai_id:assignment?.ai_id||null}, result.accepted ? 200 : 409)
 }
 
-/** A Closed ticket is final. Until linked follow-ups exist, the visitor's choice on one
- * opens a new ticket for them, as a customer email to it does (inbound-service.ts). */
+/** A Closed ticket is final: the visitor's choice on one is admitted into its linked
+ * follow-up, as a customer reply or email to it is (conversations/admission.ts). */
 async function insightConversation(c: WidgetCommand['c'], actor: WidgetCommand['actor'], conversation: WidgetCommand['conversation'], insightId: string, contactLocalId: string) {
   const current = await c.env.DB.prepare('SELECT status_category FROM conversations WHERE id=? AND project_id=?').bind(conversation.id, actor.projectId).first<{ status_category: string }>()
   if (current?.status_category !== 'closed') return conversation
@@ -69,11 +74,12 @@ async function insightConversation(c: WidgetCommand['c'], actor: WidgetCommand['
   if (admitted) return admitted
   if (await c.env.DB.prepare("SELECT 1 FROM message_authorship WHERE source_kind='insight' AND source_id=? AND kind='visitor'").bind(insightId).first()) return conversation
   await enforceRateLimits(c.env, [['conversationsPerContactHour', actor.contactId!]])
-  const id = crypto.randomUUID(), now = Date.now()
-  const [created] = await c.env.DB.batch([
-    c.env.DB.prepare("INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at,submitter_id,submitter_type,ticket_actor_id,ticket_actor_type,ticket_source) SELECT ?,project_id,id,?,?,?,'contact',?,'contact','widget' FROM contacts WHERE id=? AND project_id=?").bind(id, now, now, actor.id, actor.id, actor.contactId!, actor.projectId),
+  const id = await followupId(actor.projectId, conversation.id, actor.id, contactLocalId), now = workflowNow(await workflowEnvironment(c.env))
+  await c.env.DB.batch([
+    createFollowupStatement(c.env, { id, now, actorId: actor.id, predicates: ['c.id=?', 'c.project_id=?', 'c.contact_id=?', "c.status_category='closed'"], args: [conversation.id, actor.projectId, actor.contactId!] }),
     trackingStatement(c.env, id, true),
   ])
-  if (!created.meta.changes) throw new HTTPException(404)
-  return { id, revision: 0, assigned_to: null }
+  const created = await c.env.DB.prepare('SELECT id,revision,assigned_to FROM conversations WHERE id=? AND project_id=? AND contact_id=?').bind(id, actor.projectId, actor.contactId!).first<WidgetCommand['conversation']>()
+  if (!created) throw new HTTPException(404)
+  return created
 }

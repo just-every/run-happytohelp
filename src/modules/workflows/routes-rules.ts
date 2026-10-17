@@ -1,4 +1,5 @@
 import {Hono,type Context} from 'hono'
+import {emptyCommand} from './command-body'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,AppEnv} from '../../platform/env'
 import {scope} from '../management/common'
@@ -41,9 +42,10 @@ workflowRuleRoutes.patch(`${base}/:id`,async c=>{
  await commitWorkflowSettings(c,actor,'workflow.rule.drafted',row.id,(accepted,args)=>[c.env.DB.prepare(`UPDATE workflow_rules SET draft_json=?,updated_at=? WHERE id=? AND project_id=? AND ${accepted}`).bind(JSON.stringify(definition),Math.max(workflowNow(c.env),row.updated_at+1),row.id,actor.projectId,...args)],andWorkflowGuards(references,{sql:'EXISTS(SELECT 1 FROM workflow_rules WHERE id=? AND project_id=? AND updated_at=?)',params:[row.id,actor.projectId,row.updated_at]}))
  return c.json({rule:ruleData(await getRule(c,actor.projectId))})
 })
-workflowRuleRoutes.post(`${base}/:id/preview`,async c=>{const actor=await workflowScope(c,true),row=await getRule(c,actor.projectId),definition=checkedRule(JSON.parse(row.draft_json));await validateRuleReferences(c.env,actor.projectId,definition,actor.id);return c.json(await previewRule(c.env,actor.projectId,definition))})
+workflowRuleRoutes.post(`${base}/:id/preview`,async c=>{const actor=await workflowScope(c,true),row=await getRule(c,actor.projectId),definition=checkedRule(JSON.parse(row.draft_json));await validateRuleReferences(c.env,actor.projectId,definition,actor.id);await emptyCommand(c);return c.json(await previewRule(c.env,actor.projectId,definition))})
 workflowRuleRoutes.post(`${base}/:id/publish`,async c=>{
  const actor=await workflowScope(c,true),row=await getRule(c,actor.projectId);if(row.state==='cancelled')throw new HTTPException(409,{message:'A cancelled rule cannot be published'})
+ await emptyCommand(c)
  const definition=checkedRule(JSON.parse(row.draft_json));const references=await validateRuleReferences(c.env,actor.projectId,definition,actor.id)
  const version=row.published_version+1,now=Math.max(workflowNow(c.env),row.updated_at+1),serialized=JSON.stringify(definition)
  await commitWorkflowSettings(c,actor,'workflow.rule.published',row.id,(accepted,args)=>[
@@ -57,6 +59,7 @@ workflowRuleRoutes.post(`${base}/:id/publish`,async c=>{
 })
 for(const state of ['pause','cancel'] as const)workflowRuleRoutes.post(`${base}/:id/${state}`,async c=>{
  const actor=await workflowScope(c,true),row=await getRule(c,actor.projectId);if(row.state==='cancelled'&&state==='pause')throw new HTTPException(409)
+ await emptyCommand(c)
  const now=Math.max(workflowNow(c.env),row.updated_at+1)
  await commitWorkflowSettings(c,actor,`workflow.rule.${state}`,row.id,(accepted,args)=>[
   c.env.DB.prepare(`UPDATE workflow_rules SET state=?,updated_at=? WHERE id=? AND project_id=? AND ${accepted}`).bind(state==='pause'?'paused':'cancelled',now,row.id,actor.projectId,...args),

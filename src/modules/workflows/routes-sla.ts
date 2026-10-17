@@ -1,4 +1,5 @@
 import {Hono} from 'hono'
+import {emptyCommand} from './command-body'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,AppEnv} from '../../platform/env'
 import {scope} from '../management/common'
@@ -56,6 +57,7 @@ workflowSlaRoutes.get(`${prefix}/sla-alerts`,async c=>{
 })
 workflowSlaRoutes.patch(`${prefix}/sla-alerts/:id/ack`,async c=>{
  const actor=await scope(c) as Actor,guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash'),source:'dashboard'}),id=c.req.param('id'),now=workflowNow(c.env),receipt=crypto.randomUUID()
+ await emptyCommand(c)
  const alert=await c.env.DB.prepare(`SELECT a.* FROM sla_alerts a JOIN conversations c ON c.project_id=a.project_id AND c.id=a.conversation_id WHERE a.id=? AND a.project_id=? AND ${liveSlaTicketSql()}`).bind(id,actor.projectId).first<any>()
  if(!alert)throw new HTTPException(404)
  if(alert.state!=='open')return c.json({data:alert})

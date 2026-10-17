@@ -70,9 +70,9 @@ for(const state of ['pause','cancel'] as const)workflowRuleRoutes.post(`${base}/
 })
 workflowRuleRoutes.get('/projects/:projectId/workflow-runs',async c=>{
  const actor=await workflowScope(c),limit=Math.min(500,Math.max(1,Number(c.req.query('limit'))||200)),conversation=c.req.query('conversation_id'),[rows,visible]=await Promise.all([
-  c.env.DB.prepare(`SELECT r.*,v.definition_json FROM workflow_runs r JOIN workflow_rule_versions v ON v.rule_id=r.rule_id AND v.version=r.version JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id WHERE r.project_id=? AND ${availableTicketSql()} ${conversation?'AND r.conversation_id=?':''} ORDER BY r.created_at DESC,r.id DESC LIMIT ?`).bind(actor.projectId,...(conversation?[conversation]:[]),limit).all<any>(),
+  c.env.DB.prepare(`SELECT r.*,v.definition_json FROM workflow_runs r LEFT JOIN workflow_rule_versions v ON v.rule_id=r.rule_id AND v.version=r.version JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id WHERE r.project_id=? AND ${availableTicketSql()} ${conversation?'AND r.conversation_id=?':''} ORDER BY r.created_at DESC,r.id DESC LIMIT ?`).bind(actor.projectId,...(conversation?[conversation]:[]),limit).all<any>(),
   workflowVisibleFields(c.env,actor.projectId,actor.id)
  ])
  const allowed=new Set(visible.fields.filter(f=>fieldAllowed(f,visible.access)).map(f=>f.id))
- return c.json({runs:rows.results.filter(row=>definitionVisible(JSON.parse(row.definition_json),visible.fields,visible.access)).map(({actions_json,frontier_json,definition_json,lease_token,lease_until,...row})=>({...row,actions:JSON.parse(actions_json).map((a:any)=>a.type==='fields'?{...a,values:Object.fromEntries(Object.entries(a.values).filter(([id])=>allowed.has(id)))}:a),frontier:JSON.parse(frontier_json)}))})
+ return c.json({runs:rows.results.filter(row=>!row.definition_json||definitionVisible(JSON.parse(row.definition_json),visible.fields,visible.access)).map(({actions_json,frontier_json,definition_json,lease_token,lease_until,...row})=>({...row,...(!definition_json?{explanation:{reason:'The immutable workflow version is missing'}}:{}),actions:(definition_json?JSON.parse(actions_json):[]).map((a:any)=>a.type==='fields'?{...a,values:Object.fromEntries(Object.entries(a.values).filter(([id])=>allowed.has(id)))}:a),frontier:JSON.parse(frontier_json)}))})
 })

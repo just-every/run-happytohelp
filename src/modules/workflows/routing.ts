@@ -4,16 +4,18 @@ import {evaluateConditions} from './conditions'
 import {publishedRules,ruleTicket,type RuleDefinition} from './rule-model'
 import {chooseCandidate,routingCandidates,routingMemberSql} from './routing-candidates'
 import {workflowNow} from './clock'
+import {inRoutingTurn} from './routing-turn'
 import {workflowMemberGuard} from './rule-access'
 import {validateRuleReferences} from './rule-validation'
 export interface RoutingResult {state:'not_found'|'complete'|'skipped'|'pending';decision?:any;explanation?:string}
 /** Fairness state, decision and ticket assignment commit together. Contended
- * plans may be recalculated; no outbound action participates in this loop. */
+ * plans are retried by the durable caller, once per attempt. */
 export async function routeTicket(env:Env,ticketId:string,eventId:string|number,outerGuard?:WorkflowGuard,onCommit?:(accepted:string,args:unknown[])=>D1PreparedStatement[]):Promise<RoutingResult>{
  const ticketProject=await env.DB.prepare('SELECT project_id FROM conversations WHERE id=?').bind(ticketId).first<{project_id:string}>();if(!ticketProject)return {state:'not_found'}
  const projectId=ticketProject.project_id,event=String(eventId)
+ return inRoutingTurn<RoutingResult>(projectId,async()=>{
  const recorded=await env.DB.prepare('SELECT * FROM routing_decisions WHERE project_id=? AND conversation_id=? AND event_id=?').bind(projectId,ticketId,event).first<any>();if(recorded)return {state:'complete',decision:decisionData(recorded)}
- for(let attempt=0;attempt<12;attempt++){
+ {
   const ticket=await ruleTicket(env,projectId,ticketId);if(!ticket||ticket.assigned_to||['solved','closed'].includes(ticket.status_category))return {state:'skipped',explanation:'Existing ownership or terminal status is preserved'}
   const rules=await publishedRules(env,'routing',projectId)
   const winner=rules.find(row=>(!/^\d+$/.test(event)||Number(event)>(row.event_after_id??0))&&evaluateConditions(ticket,(JSON.parse(row.definition_json) as RuleDefinition).conditions).matched)
@@ -36,6 +38,7 @@ export async function routeTicket(env:Env,ticketId:string,eventId:string|number,
   ]})
   if(result.state==='complete'){const decision=await env.DB.prepare('SELECT * FROM routing_decisions WHERE id=?').bind(id).first<any>();return {state:'complete',decision:decisionData(decision)}}
  }
- return {state:'pending',explanation:'Concurrent routing plans changed; the durable event remains pending'}
+ return {state:'pending',explanation:'Routing commit was refused by the current ticket, rule or operator guard'}
+ })
 }
 export function decisionData(row:any){if(!row)return null;const {candidates_json,...rest}=row;return {...rest,overflow:!!row.overflow,candidates:JSON.parse(candidates_json)}}

@@ -19,10 +19,11 @@ workflowRoutingRoutes.put(path,async c=>{const actor=await workflowScope(c,true)
 workflowRoutingRoutes.get('/projects/:projectId/conversations/:conversationId/routing',async c=>{
  const actor=await workflowScope(c),conversationId=c.req.param('conversationId')
  if(!await c.env.DB.prepare(`SELECT 1 FROM conversations c WHERE project_id=? AND id=? AND ${availableTicketSql()}`).bind(actor.projectId,conversationId).first())throw new HTTPException(404)
- const [row,visible]=await Promise.all([
+ const [row,visible,events]=await Promise.all([
   c.env.DB.prepare('SELECT d.*,v.definition_json FROM routing_decisions d JOIN workflow_rule_versions v ON v.rule_id=d.rule_id AND v.version=d.version WHERE d.project_id=? AND d.conversation_id=? ORDER BY d.created_at DESC,d.id DESC LIMIT 1').bind(actor.projectId,conversationId).first<any>(),
-  workflowVisibleFields(c.env,actor.projectId,actor.id)
+  workflowVisibleFields(c.env,actor.projectId,actor.id),
+  c.env.DB.prepare("SELECT id,kind,state,error,attempts,next_attempt_at FROM workflow_events WHERE project_id=? AND conversation_id=? AND (error IS NOT NULL OR state='not_routed') ORDER BY id DESC LIMIT 20").bind(actor.projectId,conversationId).all()
  ])
- if(!row||!definitionVisible(JSON.parse(row.definition_json),visible.fields,visible.access))return c.json({decision:null})
- const {definition_json,...decision}=row;return c.json({decision:decisionData(decision)})
+ if(!row||!definitionVisible(JSON.parse(row.definition_json),visible.fields,visible.access))return c.json({decision:null,events:events.results})
+ const {definition_json,...decision}=row;return c.json({decision:decisionData(decision),events:events.results})
 })

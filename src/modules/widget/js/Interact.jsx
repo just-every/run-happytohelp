@@ -1,5 +1,6 @@
 import React, {useContext, useEffect, useState, useRef, useLayoutEffect} from 'react';
 import AppContext from './context/AppContext';
+import RequestFormLink from './RequestFormLink';
 import ChatHeader from './ChatHeader';
 import ChatList from './ChatList';
 import SendMessage from './SendMessage';
@@ -131,7 +132,7 @@ export default function Interact({ setOpen }) {
                 <div
                     className={"happytohelp-content" + (mainView === 'conversation' ? " happytohelp-content-full" : "")}>
                     <ConnectionNotice />
-                    <AwayNotice />
+                    <RequestFormLink/><AwayNotice />
                     {!isPreview && <MonitoringConsent />}
                     <div className="happytohelp-chatlist-container" ref={nodeRefChatList} role="region" aria-label="Conversation transcript" tabIndex={0}>
                         <ConversationWelcome empty={!messages.length} />

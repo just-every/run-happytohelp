@@ -14,7 +14,9 @@ import {writableConversationSql} from '../conversation-actions/merge-read'
  * replaces a client-supplied id when its contact is erased (contact-erasure/statements.ts)
  * and `away:` is the workspace's away reply (management/away-reply.ts). Clients may use none. */
 export const reservedLocalId=(localId:unknown)=>typeof localId==='string'&&/^(?:email|erased|away):/.test(localId)
-export interface MessageInput {requireAvailableRequester?:true;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
+/** An internal authority may add a transaction predicate; JSON callers cannot mint this symbol. */
+export const messageAuthority=Symbol('messageAuthority')
+export interface MessageInput {requireAvailableRequester?:true;[messageAuthority]?:{sql:string;args:unknown[]};[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
 export async function admitMessage(env:Env,input:MessageInput){
  const {projectId,conversationId,actor,localId,content,expectedRevision}=input,email=input[inboundAuthority]
  if(actor.projectId!==projectId)throw new Error('Project access denied')
@@ -26,13 +28,15 @@ export async function admitMessage(env:Env,input:MessageInput){
  const mediaIds=[...new Set(input.mediaIds||[])];if(mediaIds.length>20||(!content.trim()&&!mediaIds.length))throw new Error('Invalid message content')
  const intentHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify({content,mediaIds:[...mediaIds].sort(),resolve:!!input.resolve,expectedRevision,expectedLastMessageId:input.expectedLastMessageId,generationId:input.generationId,...(refs.length?{citations:refs.map(r=>({id:r.id,sourceVersion:r.sourceVersion}))}: {})}))))).map(x=>x.toString(16).padStart(2,'0')).join('')
  const replayGuard=input.tokenAuthority?tokenGuard(input.tokenAuthority,projectId,'messages:write'):null
- const replayPredicate=replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:''
+ const authority=input[messageAuthority]
+ const replayPredicate=(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')
+ const replayArgs=[...(replayGuard?.params||[]),...(authority?.args||[])]
  const checkMembership=!input.tokenAuthority&&!input.generationId&&actor.role!=='contact'
  // These observations are independent. Keep denial/replay precedence below,
  // and keep every live-authority and frontier predicate in the write itself.
  const observations=await env.DB.batch<any>([
   env.DB.prepare('SELECT c.contact_id,c.resolved_at,c.assigned_to,c.group_id,c.status_id,c.status_category,c.ticket_version,(SELECT MAX(ordinal) FROM conversation_resolutions WHERE conversation_id=c.id) ordinal FROM conversations c WHERE c.id=? AND c.project_id=?').bind(conversationId,projectId),
-  env.DB.prepare(`SELECT * FROM messages WHERE conversation_id=? AND project_id=? AND local_id=? ${replayPredicate}`).bind(conversationId,projectId,localId,...(replayGuard?.params||[])),
+  env.DB.prepare(`SELECT * FROM messages WHERE conversation_id=? AND project_id=? AND local_id=? ${replayPredicate}`).bind(conversationId,projectId,localId,...replayArgs),
   ...(checkMembership?[env.DB.prepare('SELECT 1 FROM memberships WHERE project_id=? AND user_id=? AND role=?').bind(projectId,actor.id,actor.role)]:[]),
   ...(input.generationId?[env.DB.prepare('SELECT ai_id FROM ai_generations WHERE id=? AND project_id=? AND conversation_id=?').bind(input.generationId,projectId,conversationId)]:[])
  ])
@@ -70,6 +74,7 @@ export async function admitMessage(env:Env,input:MessageInput){
   }
  }
  if(input.sessionHash){predicates.push(activeSourceProjectSql('c.project_id'));predicates.push("EXISTS(SELECT 1 FROM sessions s WHERE s.token_hash=? AND s.actor_id=? AND s.revoked_at IS NULL AND s.expires_at>? AND (s.role='contact' AND s.project_id=c.project_id AND s.contact_id=c.contact_id OR s.role<>'contact' AND (s.project_id IS NULL AND s.role='operator' OR s.project_id=c.project_id AND EXISTS(SELECT 1 FROM memberships live WHERE live.project_id=s.project_id AND live.user_id=s.actor_id AND live.role=s.role))))");args.push(input.sessionHash,actor.id,now)}
+ if(authority){predicates.push(`(${authority.sql})`);args.push(...authority.args)}
  if(input.expectedLastMessageId!==undefined){predicates.push('c.last_message_id IS ?');args.push(input.expectedLastMessageId)}
  if(mediaIds.length){predicates.push(`(SELECT COUNT(*) FROM media WHERE id IN (${mediaIds.map(()=>'?').join(',')}) AND project_id=c.project_id AND conversation_id=c.id AND message_id IS NULL AND NOT EXISTS(SELECT 1 FROM conversation_note_media nm WHERE nm.media_id=media.id) AND uploaded_by=?)=?`);args.push(...mediaIds,actor.id,mediaIds.length)}
  if(input.generationId){predicates.push("EXISTS(SELECT 1 FROM ai_generations g WHERE g.id=? AND g.project_id=c.project_id AND g.conversation_id=c.id AND g.state='running' AND g.source_revision=c.revision AND (SELECT revision FROM context_subjects WHERE project_id=c.project_id AND subject_id=c.contact_id)=g.source_context_revision AND c.resolved_at IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id WHERE ca.conversation_id=c.id AND a.id=g.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 AND a.model=json_extract(g.ai_profile_json,'$.model') AND a.prompt=json_extract(g.ai_profile_json,'$.prompt')))");args.push(input.generationId)}
@@ -92,8 +97,8 @@ export async function admitMessage(env:Env,input:MessageInput){
  if(actor.role!=='contact')statements.push(env.DB.prepare('DELETE FROM macro_drafts WHERE project_id=? AND conversation_id=? AND actor_id=? AND EXISTS(SELECT 1 FROM messages WHERE id=?)').bind(projectId,conversationId,actor.id,messageId))
  const committedIndex=statements.length
  statements.push(
-  env.DB.prepare(`SELECT * FROM messages WHERE id=? ${replayPredicate}`).bind(messageId,...(replayGuard?.params||[])),
-  env.DB.prepare(`SELECT * FROM messages WHERE conversation_id=? AND project_id=? AND local_id=? ${replayPredicate}`).bind(conversationId,projectId,localId,...(replayGuard?.params||[]))
+  env.DB.prepare(`SELECT * FROM messages WHERE id=? ${replayPredicate}`).bind(messageId,...replayArgs),
+  env.DB.prepare(`SELECT * FROM messages WHERE conversation_id=? AND project_id=? AND local_id=? ${replayPredicate}`).bind(conversationId,projectId,localId,...replayArgs)
  )
  const committed=await env.DB.batch<any>(statements),message=committed[committedIndex].results[0]
  if(!message){const duplicate=committed[committedIndex+1].results[0];if(duplicate&&duplicate.actor_id===writerId&&duplicate.intent_hash===intentHash)return {accepted:true,duplicate:true,message:duplicate};return {accepted:false,reason:'conversation_changed_or_admission_denied'}}

@@ -10,7 +10,7 @@ export async function readSurveySettings(env:Env,projectId:string):Promise<Surve
 }
 export interface Survey {id:string;project_id:string;resolution_id:string;conversation_id:string;contact_id:string;recipient:string;channel:string;scale:SurveyScale;locale:SurveyLocale;due_at:number;expires_at:number;state:string;token_revision:number;revoked_at:number|null;created_at:number;updated_at:number}
 /** Shared by scheduling, sending and response commit; c,r,ct are scoped joins. */
-export const isSolvedSql=(alias='c')=>`${alias}.resolved_at IS NOT NULL`
+export const isSolvedSql=(alias='c')=>`${alias}.status_category IN ('solved','closed') AND ${alias}.resolved_at IS NOT NULL`
 export const liveCycleSql=`r.reopened_at IS NULL AND ${isSolvedSql()} AND c.contact_id=r.contact_id AND ct.id=r.contact_id AND ct.project_id=r.project_id
  AND r.ordinal=(SELECT MAX(latest.ordinal) FROM conversation_resolutions latest WHERE latest.conversation_id=c.id)
  AND COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1
@@ -19,7 +19,8 @@ export const liveCycleSql=`r.reopened_at IS NULL AND ${isSolvedSql()} AND c.cont
 /** Never turn retained imports, typed widget addresses or machine mail into survey authority.
  * A native inbound receipt must identify a real human message in this exact cycle,
  * or a signed widget identity must name this precise mailbox. */
-export const surveyRecipientSql=`${provenAddressSql('ct')}
+const portalMailboxProof=`EXISTS(SELECT 1 FROM portal_identities pi WHERE pi.project_id=ct.project_id AND pi.contact_id=ct.id AND pi.email=lower(trim(ct.email)))`
+export const surveyRecipientSql=`(${provenAddressSql('ct')} OR ${portalMailboxProof})
  AND COALESCE(json_extract(ct.metadata_json,'$.unverified_sender'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.unusable_from'),0)!=1
  AND NOT EXISTS(SELECT 1 FROM move_in_conversations mi WHERE mi.conversation_id=c.id)
  AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations legacy WHERE legacy.conversation_id=c.id)
@@ -29,7 +30,7 @@ export const surveyRecipientSql=`${provenAddressSql('ct')}
  SELECT 1 FROM messages m JOIN message_authorship ma ON ma.message_id=m.id LEFT JOIN inbound_emails ie ON ie.project_id=m.project_id AND ie.local_id=m.local_id
  WHERE m.conversation_id=c.id AND m.project_id=c.project_id AND m.actor_role='contact' AND m.actor_id=ct.id
  AND m.revision>r.cycle_start_revision AND m.revision<=r.resolved_revision AND ma.kind='visitor'
- AND (ie.id IS NULL AND m.local_id NOT LIKE 'email:%' AND ct.is_verified=1 AND lower(ct.external_id)=lower(ct.email)
+ AND (ie.id IS NULL AND m.local_id NOT LIKE 'email:%' AND ct.is_verified=1 AND (lower(ct.external_id)=lower(ct.email) OR ${portalMailboxProof})
  OR ie.automatic=0 AND (ie.message_id=m.id OR ie.message_id IS NULL AND ie.conversation_id=c.id)
  AND json_extract(ie.evidence_json,'$.sender_verified')=1
  AND lower(trim(CASE WHEN instr(json_extract(ie.evidence_json,'$.header_from'),'<')>0

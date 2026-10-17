@@ -59,16 +59,17 @@ the home, category, section, article, search and request form pages. Use
 `{{title}}`, `{{summary}}` and `{{content}}` to place the page's current content
 in a template. Preview it with current workspace or article content before
 saving. Home, category, section, article and search templates apply to the
-current Help Center. The request form template is saved for when request forms become available.
-Request forms and the signed-in customer portal are not available yet.
+current Help Center. Customers can send a request at `/help/:project/requests`
+and follow it in the [customer portal](customer-portal.md). See
+[Customer request forms](request-forms.md) to publish forms and translated questions.
 
 ## Feedback and analytics
 
 Published articles ask **Was this helpful?** Customers can vote and optionally
 leave a comment. **Article analytics** shows views and helpful votes, search
 terms and whether they returned results, and article click-through. Filter the
-results by brand and language. Ticket creation after reading will be connected
-when customer forms and the portal become available.
+results by brand and language. Ticket-creation attribution after reading an
+article is not available.
 
 From a ticket, open **Reply tools → Help articles** and use **Search help
 articles**. Choose **Insert link** or **Insert text** to add an article to the
@@ -80,6 +81,7 @@ sending it.
 
 An installation may be configured to serve a Help Center host. Separate custom
 domains for each brand are deferred. An email-domain rule controls who may read
-a collection; it does not create a separate customer portal. Forms, ticket
-custom fields and portal request flows are not part of this Help Center
-feature.
+a collection; it does not grant access to another customer's portal requests.
+[Request forms](request-forms.md) reuse the workspace's ticket fields; the
+[portal](customer-portal.md) gives customers access to their own requests.
+Company-wide request visibility is not available yet.

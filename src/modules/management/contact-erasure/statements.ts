@@ -1,3 +1,5 @@
+import {eraseFormStatements} from '../../forms/erasure'
+import {portalErasureStatements} from '../../portal/privacy'
 import {importErasureStatements} from '../../move-in/erasure'
 import {eraseSurveyStatements} from '../../outcomes/survey-store'
 import {ticketErasureCount,ticketErasureStatements} from '../../tickets/erasure'
@@ -75,6 +77,8 @@ export function erasureStatements(env: Env, request: ErasureRequest) {
     ...collaborationRecordsStatements(env,projectId,contactId),
     ...ticketErasureStatements(env,projectId,contactId),
     ...emailErasureStatements(env,projectId,contactId,request.emails),
+    ...eraseFormStatements(env,projectId,contactId),
+    ...portalErasureStatements(env,projectId,contactId,request.emails),
     // Copies of the contact's data held outside the canonical rows, removed while those rows still identify them.
     bound(legacyArchiveRedaction),
     ...importErasureStatements(env,projectId,contactId),

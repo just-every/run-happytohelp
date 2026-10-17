@@ -26,3 +26,7 @@ test('a brand image is paid once per request and fenced when uncertain, assets a
 test('customers see only their permitted reviewed knowledge in public search and ticket insertion; versions, redirects, templates, feedback and analytics remain scoped',experienceJourney)
 
 test('a solved native conversation emails one signed satisfaction survey, records its response and reason in reports, refuses reuse, and respects opt-out, widget feedback, imports and machine mail',csatJourney)
+
+test('a translated request form enforces typed conditional required fields on the server, protects anonymous submissions, and admits one ticket after email verification',async()=>{const {requestFormsJourney}=await import('../helpers/request-forms-journey.mjs');await requestFormsJourney()})
+
+test('customers sign into their own portal by email, reply with attachments, answer a signed survey, reopen a solved request and control notifications while other identities and erased sessions are denied',async()=>{const {customerPortalJourney}=await import('../helpers/customer-portal-journey.mjs');await customerPortalJourney()})

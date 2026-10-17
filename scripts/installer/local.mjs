@@ -31,7 +31,8 @@ export const adapter=localInstaller({
  migrate:async context=>{
   // Existing dev installs reuse their build. Collect newly added source SQL
   // before the migration phase, including an upgrade started with rer dev.
-  await context.run('Collecting local migrations',process.execPath,['scripts/migrations.mjs'],{step:'setup',cwd:context.root,signal:context.signal});
+  // Copying SQL is lightweight filesystem work, not a second heavy job.
+  await context.run('Collecting local migrations',process.execPath,['scripts/migrations.mjs'],{step:'setup',cwd:context.root,signal:context.signal,heavy:false});
   return ['pnpm',['exec','wrangler','d1','migrations','apply','DB','--local','--persist-to',context.demo?.state??'.wrangler/state','--config','wrangler.jsonc']];
  },
  // Add only missing keys: settings saved by 0.3 (setup token, local mail, optional
@@ -44,7 +45,7 @@ export const install=(root,input,store,onApp,signal)=>installOperator(root,input
 const transfer=localPortability({database:'DB',buckets:{FILES:'FILES'},policyModule:'scripts/installer/portability-policy.mjs',transient:['ConversationSocket connections (messages are in D1)','queue execution leases','active sessions and one-use sign-in links','GitHub and integration credentials','local computer pairing, grants and job execution records','local workflow clock overrides; queued workflow sends are cancelled and claimed sends remain uncertain']});
 const d1=(context,label,sql)=>context.store.run(label,'pnpm',['exec','wrangler','d1','execute','DB','--local','--persist-to','.wrangler/state','--config','wrangler.jsonc','--command',sql],{cwd:context.root,signal:context.signal});
 const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async context=>{
- await context.store.run('Collecting local migrations',process.execPath,['scripts/migrations.mjs'],{cwd:context.root,signal:context.signal});
+ await context.store.run('Collecting local migrations',process.execPath,['scripts/migrations.mjs'],{cwd:context.root,signal:context.signal,heavy:false});
  let snapshots;
  if(verb==='export'){
   // Durable Object storage enters the archive as a D1 table with its schema and digest.

@@ -4,6 +4,7 @@ import type {AppEnv} from '../../platform/env'
 import {listForms,readForm} from '../forms'
 import type {PublicForm,PublicField} from '../forms/types'
 import {resolvePortalActor} from '../portal/identity'
+import {readPortalPreferences} from '../portal/preferences'
 import {getKnowledgeExperience} from '../knowledge/experience'
 import {resolvePublicProject} from './help-center'
 import {shell} from './shell'
@@ -27,9 +28,9 @@ async function render(c:any){
  if(!project)throw new HTTPException(404)
  c.header('Cache-Control','private, no-store');c.header('Vary','Cookie, Authorization');c.header('X-Robots-Tag','noindex, nofollow');c.header('Referrer-Policy','same-origin')
  c.header('Content-Security-Policy',"default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; form-action 'self'; frame-ancestors 'self'; base-uri 'self'")
- const portal=c.req.path.startsWith('/portal/'),base=`/help/${enc(key)}`,locale=c.req.query('locale'),forms=await listForms(c.env,project.id,locale)
- const selected=c.req.param('formId')||c.req.query('form'),form=selected?await readForm(c.env,project.id,selected,locale):forms.length===1?forms[0]:null
  const identity=await resolvePortalActor(c.env,project.id,c.req.raw)
+ const portal=c.req.path.startsWith('/portal/'),base=`/help/${enc(key)}`,locale=c.req.query('locale')||(identity?(await readPortalPreferences(c.env,identity)).locale:undefined),forms=await listForms(c.env,project.id,locale)
+ const selected=c.req.param('formId')||c.req.query('form'),form=selected?await readForm(c.env,project.id,selected,locale):forms.length===1?forms[0]:null
  const formBase=portal?`/portal/${enc(key)}/requests/new`:`${base}/requests`,link=(id:string)=>portal?`${formBase}?form=${enc(id)}`:`${formBase}/${enc(id)}`
  const tools=`<nav class="help-center-controls" aria-label="Customer support"><a href="${base}">Help Center</a><a href="/portal/${enc(key)}/requests">My requests</a><a href="/portal/${enc(key)}/preferences">Notification preferences</a></nav>`
  let content=`<h1>Submit a request</h1><p>Choose the form that fits your question. Our support team will reply to your verified email address.</p>`

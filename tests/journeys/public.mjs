@@ -61,7 +61,9 @@ test('a published help center: Markdown rendered safely, complete summary search
   for(const base of [`/${tenant.projectId}`,`/${slug}`,`/help/${slug}`])for(const tail of ['','/','/search?keyword=retained','/retained-guide']){
    const response=await request(base+tail),html=await response.text();assert.equal(response.status,200,base+tail);assert.ok(html.includes(`action="${base}/search"`),'search stays on the retained path')
    assert.doesNotMatch(html,signIn,'a public-only collection needs no sign-in link')
-   assert.doesNotMatch(html,/class="help-center-controls"/,'an empty control bar must not add spacing')
+   assert.match(html,/class="help-center-controls"/,'customer request controls are available on every retained help path')
+   assert.ok(html.includes(`href="/help/${tenant.projectId}/requests"`),'request form entry stays in this workspace')
+   assert.ok(html.includes(`href="/portal/${tenant.projectId}/requests"`),'customer portal entry stays in this workspace')
    if(!tail||tail.startsWith('/search'))assert.ok(html.includes(`href="${base}/retained-guide"`),'article links retain their entry path')
   }
   const article=await (await request(`/${slug}/formatted`)).text();assert.match(article,/<strong>Knowledge<\/strong>/);assert.doesNotMatch(article,/<script>alert/)

@@ -62,7 +62,8 @@
         "TRAINING_PRICE_CEILINGS",
         "ENABLE_SYNTHETIC_EVALUATION",
         "RATE_LIMITS",
-        "AI_DAILY_CEILINGS"
+        "AI_DAILY_CEILINGS",
+        "FORMS_TURNSTILE_SITE_KEY"
       ],
       "secretNames": [
         "H2H_SETUP_TOKEN"
@@ -96,7 +97,8 @@
         "MICROSOFT_MAIL_CLIENT_SECRET",
         "MAILBOX_SOCKET_HOSTS",
         "MAILBOX_SOCKET_PORTS",
-        "MAILBOX_IMAP_AUTHSERV"
+        "MAILBOX_IMAP_AUTHSERV",
+        "FORMS_TURNSTILE_SECRET_KEY"
       ],
       "surfaces": {
         "app": {

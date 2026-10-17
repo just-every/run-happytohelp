@@ -40,6 +40,8 @@ export async function customerPortalJourney(){
   assert.equal((await app.ok(P+`/tickets/${delayed.id}`,rosa)).survey.state,'unavailable','portal survey respects configured delay')
   await app.ok(P+'/preferences',{...rosa,method:'PUT',body:{locale:'es',surveyEmails:false,updateEmails:false}})
   assert.equal((await app.ok(P+'/preferences',rosa)).updateEmails,false)
+  const translated=await app.request(`/portal/${p}/requests/new?form=${form.id}`,rosa)
+  assert.match(await translated.text(),/<h1>Problema con un pedido<\/h1>/,'request forms use the saved customer language')
   let before=mail.length,revision=(await app.first('SELECT revision FROM conversations WHERE id=?',id)).revision
   await app.ok(`/api/conversations/${id}/messages`,{...owner,body:{localId:'operator-no-notify',content:'The refund is now processing.',expectedRevision:revision}})
   assert.ok(!mail.slice(before).some(m=>[].concat(m.to).includes('rosa@example.com')),'reply email respects customer opt-out')
@@ -50,6 +52,8 @@ export async function customerPortalJourney(){
   assert.equal((await app.call(`/api/portal/${f.foreign.projectId}/tickets`,rosa)).status,401)
   await app.ok(`/api/management/projects/${p}/contacts/${contact}/erase`,{...owner,body:{}})
   for(const table of ['portal_identities','portal_preferences','portal_session_proofs','request_form_submissions'])assert.equal((await app.first(`SELECT count(*) n FROM ${table} WHERE project_id=? AND contact_id=?`,p,contact)).n,0)
+  assert.equal((await app.first('SELECT count(*) n FROM portal_links WHERE project_id=? AND email=?',p,'rosa@example.com')).n,0)
+  assert.equal((await app.first('SELECT count(*) n FROM ticket_field_values WHERE conversation_id=?',id)).n,0)
   assert.equal((await app.call(P+`/tickets/${id}`,rosa)).status,401)
   assert.equal(await (await app.files).get(objectKey),null)
   assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='portal.preferences.updated'",p))

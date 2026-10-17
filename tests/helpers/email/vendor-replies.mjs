@@ -24,5 +24,9 @@ export async function vendorReplies(app,{projectId,owner,gate}){
   const received=await gate(reply);assert.equal(received.data.state,'delivered',fixture.vendor);assert.equal(received.data.conversationId,imported.conversation_id)
   const mismatch=await gate({...reply,messageId:fixture.vendor+'-wrong-customer',from:'stranger@customer.example'})
   assert.equal(mismatch.data.state,'suspended',fixture.vendor+' identity mismatch');assert.equal(mismatch.data.conversationId,null)
+  const header=fixture.vendor==='freshdesk'?'X-Freshdesk-Ticket-Id':fixture.vendor==='helpscout'?'X-HS-Conversation-Id':'X-Intercom-Conversation-Id'
+  const unmatched=await gate({...reply,messageId:fixture.vendor+'-unmatched',subject:fixture.vendor==='freshdesk'?'Order [#4521] never arrived':'Reply after the move',to:'helpdesk@example.test',headers:{[header]:'unmatched-old-ticket'}})
+  assert.equal(unmatched.data.state,'delivered',fixture.vendor+' unmatched reply becomes a ticket');assert.notEqual(unmatched.data.conversationId,imported.conversation_id)
+  assert.ok((await app.ok(`/api/dashboard/projects/${projectId}/conversations/${unmatched.data.conversationId}/ticket`,{token:owner})).data.tags.some(tag=>tag.name==='Possible pre-migration reply'))
  }
 }

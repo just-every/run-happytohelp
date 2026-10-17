@@ -7,7 +7,8 @@ import {senderDomain} from './SenderRules';
 export default function SuspendedDetail({mail,busy,onRecover,onDelete,onRule,path}) {
  const [conversationId,setConversationId]=useState(mail.candidate_conversation_id||''),[asNote,setAsNote]=useState(false),[error,setError]=useState('');const id=useId();
  const domain=senderDomain(mail.from_address);
- const recover=()=>{if(!conversationId.trim()&&!asNote){setError('Choose private operator note to create a new ticket, or enter an existing target conversation ID.');return;}setError('');onRecover(mail,{conversationId:conversationId.trim(),asNote});};
+ const auth=safeJson(mail.auth_json),senderVerified=auth?.verified===true&&!auth.failed&&!auth.from_unusable;
+ const recover=()=>{if(!conversationId.trim()&&!asNote&&!senderVerified){setError('Sender authentication is unproven. Choose private operator note to create a new ticket.');return;}setError('');onRecover(mail,{conversationId:conversationId.trim(),asNote});};
  const show = value => typeof safeJson(value)==='string'?safeJson(value):JSON.stringify(safeJson(value),null,2);
  return <article className="email-suspended-detail" aria-label="Suspended email details">
   <h2>{mail.subject||'(No subject)'}</h2>
@@ -18,7 +19,7 @@ export default function SuspendedDetail({mail,busy,onRecover,onDelete,onRule,pat
   <h3 className="h6 mt-4">Plain-text preview</h3><pre className="email-safe-preview">{mail.text||'(No plain-text content)'}</pre><p className="settings-note">Email content is shown as text. Remote images and email HTML are not loaded.</p>
   <SuspendedAttachments path={path} attachments={mail.attachments} disabled={busy}/>
   <fieldset className="email-editor" disabled={busy}><legend>Recover email</legend>
-   <Field name={`${id}-target`} label="Target conversation ID (optional)" value={conversationId} onChange={(_,value)=>setConversationId(value)} hint="Enter an existing ticket ID, or leave blank to create a new ticket with a private note. Check the requester and subject before recovering."/>
+   <Field name={`${id}-target`} label="Target conversation ID (optional)" value={conversationId} onChange={(_,value)=>setConversationId(value)} hint={senderVerified?'Enter an existing ticket ID, or leave blank to create a new ticket with the authenticated customer message. Check the requester and subject before recovering.':'Enter an existing ticket ID, or leave blank to create a new ticket with a private note. Unverified mail must be recovered as a private note.'}/>
    <Field name={`${id}-note`} label="Recover as a private operator note" type="checkbox" value={asNote} onChange={(_,value)=>setAsNote(value)}/><p className="settings-note">Use a private note when sender authentication cannot be proven. It is labeled as recovered mail. Recovery sends no acknowledgment and starts no AI reply.</p>
    {error&&<p className="text-danger" role="alert">{error}</p>}
    <div className="email-actions"><button type="button" className="btn btn-primary" onClick={recover}>{conversationId.trim()?'Recover email':'Create a new ticket'}</button><button type="button" className="btn btn-outline-danger" onClick={()=>onDelete(mail)}>Delete email</button></div>

@@ -114,6 +114,7 @@ export async function notificationTriggersJourney(){
   assert.ok(joined.filter(row=>row.email!=='bulk0@victims0.example').every(row=>row.pivot.joined_via==='cc_header'))
   await call(ticket(bulkId),{resolved:true});await settle()
   assert.deepEqual(mail.sent.slice(bulkSent).filter(entry=>entry.body.subject?.includes('solved')).map(entry=>recipients(entry.body)[0]).sort(),['bulk0@victims0.example','bulk@example.com'])
+  await noticeAddresses(m,call,notices,settle)
   // Missing placeholders are a visible failure and never customer text.
   await call(`${base}/notification-triggers`,{triggers:settings.data.map(row=>({...row,body:'Hello {{ticket.custom.nonexistent}}'}))})
   await m.gateway({...lostRequest,messageId:'r4-template-error',from:'template-error@example.com'});await settle()
@@ -125,4 +126,61 @@ export async function notificationTriggersJourney(){
   const denied=await app.call(ticket(id)+'/notes',{headers:operator,method:'POST',body:{content:'No access @[Quiet](user:quiet)'}})
   assert.equal(denied.status,403);await settle();assert.equal(mail.sent.length,before)
  }finally{await m.close()}
+}
+
+// Address provenance rows in the same journey: eligibility must not let a
+// customer's Reply-To or collector preference redirect automatic notices.
+async function noticeAddresses(m,call,notices,settle){
+ const {app,DB}=m,base='/api/management/projects/p',ticket=id=>`/api/dashboard/projects/p/conversations/${id}`
+ const send=async(from,replyTo,cc=[])=>{
+  const messageId=crypto.randomUUID()
+  assert.equal((await m.gateway({messageId,to:'inbound@example.com',from,replyTo,cc,subject:'Address provenance',text:'Please help'})).status,201)
+  await settle();return (await m.claim(messageId)).conversation_id
+ }
+ const requester='from-proof@example.com',victim='reply-to-victim@example.net'
+ const id=await send(requester,victim)
+ assert.equal(notices('Re: Address provenance',requester).length,1)
+ assert.equal(notices('Re: Address provenance',victim).length,0)
+ await call(ticket(id),{resolved:true});await settle()
+ assert.equal(notices('solved',requester).length,1);assert.equal(notices('solved',victim).length,0)
+ const cc=Array.from({length:5},(_,i)=>`proven-${i}@example.com`)
+ for(const [i,address] of cc.entries())await send(address,`amplified-${i}@example.net`)
+ const amplified=await send('cc-boss@example.com',undefined,cc)
+ await call(ticket(amplified),{resolved:true});await settle()
+ for(const [i,address] of cc.entries()){
+  assert.equal(notices('Re: Address provenance',address).length,2)
+  assert.equal(notices('solved',address).length,1)
+  assert.equal(notices('Re: Address provenance',`amplified-${i}@example.net`).length,0)
+  assert.equal(notices('solved',`amplified-${i}@example.net`).length,0)
+ }
+ // An authenticated widget signature proves the identity address, not the
+ // different address typed into that identity's collector (including on its own ticket).
+ const {createHmac}=await import('node:crypto'),secret='notice-address-secret'
+ await DB.prepare('UPDATE projects SET verification_secret=? WHERE id=?').bind(secret,'p').run()
+ const address='signed-proven@example.com',typed='widget-victim@example.net'
+ const session=await app.call('/api/identity/widget/session',{body:{widgetKey:'w',identifier:address,email:address,contact_hash:createHmac('sha256',secret).update(address).digest('hex')},headers:{Origin:'https://example.com'},status:201})
+ const widget=await app.call('/api/conversations',{token:session.data.token,body:{projectId:'p'},status:201})
+ await app.call(`/api/conversations/${widget.data.id}/widget-events`,{token:session.data.token,body:{action:'contact',data:{provided_email:typed}},status:200})
+ await app.call(`/api/conversations/${widget.data.id}/messages`,{token:session.data.token,body:{localId:'signed-widget-notice',content:'My own widget ticket',expectedRevision:0},status:200});await settle()
+ assert.equal(notices('Re: My own widget ticket',address).length,1)
+ assert.equal(notices('Re: My own widget ticket',typed).length,0)
+ const shared=await send('widget-cc-boss@example.com',undefined,[address])
+ assert.equal(notices('Re: Address provenance',address).length,1)
+ await call(ticket(shared),{resolved:true});await settle()
+ assert.equal(notices('solved',address).length,1)
+ assert.equal(notices('Re: Address provenance',typed).length+notices('solved',typed).length,0)
+ // An operator explicitly choosing a preferred address makes that address usable.
+ const operatorTicket=await send('operator-source@example.com','unproven-before@example.net')
+ const contact=(await DB.prepare('SELECT contact_id FROM conversations WHERE id=?').bind(operatorTicket).first()).contact_id
+ await call(`${base}/contacts/${contact}`,{provided_email:'chosen-by-operator@example.net'})
+ await call(ticket(operatorTicket),{resolved:true});await settle()
+ assert.equal(notices('solved','chosen-by-operator@example.net').length,1)
+ assert.equal(notices('solved','operator-source@example.com').length,0)
+ assert.equal(notices('solved','unproven-before@example.net').length,0)
+ // Historical unmarked preferences fail closed rather than becoming operator choices.
+ const old=await send('historical-preference@example.com')
+ await DB.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.provided_email','unknown-victim@example.net') WHERE id=(SELECT contact_id FROM conversations WHERE id=?)").bind(old).run()
+ await call(ticket(old),{resolved:true});await settle()
+ assert.equal(notices('solved','historical-preference@example.com').length,1)
+ assert.equal(notices('solved','unknown-victim@example.net').length,0)
 }

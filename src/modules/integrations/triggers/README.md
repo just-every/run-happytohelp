@@ -36,7 +36,12 @@ it has itself sent authenticated mail to the workspace. Each participant records
 how it joined (`joined_via`: `cc_header`, `operator`, `self`); a Cc header alone
 never makes an address proven, so a sender cannot have the desk mail third parties.
 A widget's own contact remains a notification destination without becoming a
-proven inbound identity. All recipients are deduplicated by address. The claim
+proven inbound identity. Automatic notices resolve the canonical address, never
+a Reply-To or collector preference. `provided_email_source` records `reply_to`,
+`widget` or `operator`; only an `operator` preference can override the canonical
+address. Unmarked historical preferences cannot override it. Signed business
+metadata cannot introduce or replace that provenance. Operator replies keep their
+existing preference behavior. All recipients are deduplicated by address. The claim
 freezes the recipient set before the provider batch; a claimed/uncertain result
 never reconstructs recipients or sends again. Reconciliation is explicit outside
 this automatic interface. No application substitute for a missing provider exists.

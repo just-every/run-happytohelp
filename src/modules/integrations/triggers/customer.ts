@@ -3,7 +3,7 @@ import type {Env} from '../../../platform/env'
 import {emailConfigured,sendEmails,type EmailInput} from '../email'
 import {loopSuppressionHeaders} from '../notification-delivery'
 import {recipientReplyAddress} from '../email-reply-address'
-import {notificationRecipients,type NotificationContact} from '../notification-recipients'
+import {customerNoticeAddress,notificationRecipients,type NotificationContact} from '../notification-recipients'
 import {provenAddressSql} from '../inbound-authority'
 import {noticeParticipantSql} from '../participant-proof'
 import type {TicketNotificationEvent} from '../triggers'
@@ -28,12 +28,14 @@ export async function customerTicketNotification(env:Env,event:TicketNotificatio
  if(!emailConfigured(env))return {state:'not_configured'}
  const settings=await env.DB.prepare('SELECT inbound_address,is_enabled FROM email_settings WHERE project_id=?').bind(event.projectId).first<any>()
  if(settings?.is_enabled===0)return {state:'disabled'}
- // Requester is its own widget destination; a CC participant only once independently proven (participant-proof.ts).
- const contacts=await env.DB.prepare(`SELECT ct.* FROM contacts ct WHERE ct.project_id=? AND (ct.id=? OR (${provenAddressSql('ct')}
- AND coalesce(json_extract(ct.metadata_json,'$.unverified_sender'),0)!=1
- AND EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=? AND cp.contact_id=ct.id AND ${noticeParticipantSql('ct','cp')}))) ORDER BY ct.id=? DESC,ct.id`)
+ // An operator-set preference proves that address, never a Reply-To or collector.
+ const operatorAddress=(ct:string)=>`json_extract(${ct}.metadata_json,'$.provided_email_source')='operator' AND nullif(trim(json_extract(${ct}.metadata_json,'$.provided_email')),'') IS NOT NULL`
+ const participant=(ct:string)=>`((${provenAddressSql(ct)} AND ${noticeParticipantSql(ct,'cp')}) OR (${operatorAddress(ct)}))`
+ const contacts=await env.DB.prepare(`SELECT ct.* FROM contacts ct WHERE ct.project_id=? AND (ct.id=? OR (
+ coalesce(json_extract(ct.metadata_json,'$.unverified_sender'),0)!=1
+ AND EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=? AND cp.contact_id=ct.id AND ${participant('ct')}))) ORDER BY ct.id=? DESC,ct.id`)
  .bind(event.projectId,ticket.contact_id,ticket.id,ticket.contact_id).all<NotificationContact>()
- const {recipients}=notificationRecipients(contacts.results,undefined)
+ const {recipients}=notificationRecipients(contacts.results,undefined,undefined,contact=>customerNoticeAddress(contact,ticket.notification_channel==='widget'?ticket.contact_id:undefined))
  if(!recipients.length)return {state:'no_recipient'}
  const context=await notificationTemplateContext(env,ticket,{expectedReplyTime:event.expectedReplyTime??trigger.expected_reply_time,actorId:event.actorId})
  let inputs:EmailInput[]
@@ -53,7 +55,7 @@ export async function customerTicketNotification(env:Env,event:TicketNotificatio
  WHERE current.id=json_extract(j.value,'$.id') AND current.project_id=? AND current.email IS json_extract(j.value,'$.email')
  AND current.metadata_json IS json_extract(j.value,'$.metadata_json')
  AND current.is_verified IS json_extract(j.value,'$.is_verified') AND current.external_id IS json_extract(j.value,'$.external_id')
- AND (current.id=? OR EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=? AND cp.contact_id=current.id AND ${noticeParticipantSql('current','cp')}))))`)
+ AND (current.id=? OR EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=? AND cp.contact_id=current.id AND ${participant('current')}))))`)
  .bind(id,event.projectId,ticket.id,claimEvent,JSON.stringify({recipients:recipients.map(r=>r.email)}),Date.now(),ticket.id,event.projectId,JSON.stringify(snapshot),event.projectId,ticket.contact_id,ticket.id).run()
  if(!claim.meta.changes)return {state:'claimed'}
  try{

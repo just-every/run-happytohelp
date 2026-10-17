@@ -1,4 +1,4 @@
-export type NotificationContact={id:string;email:string|null;metadata_json?:string}
+export type NotificationContact={id:string;email:string|null;metadata_json?:string;is_verified?:number;external_id?:string|null}
 const mailbox=(value:unknown)=>typeof value==='string'&&value.length<=254&&/^[^\s@<>(),:;"\\]+@[^\s@<>(),:;"\\]+\.[^\s@<>(),:;"\\]+$/.test(value.trim())?value.trim().toLowerCase():null
 const metadata=(contact:NotificationContact)=>JSON.parse(contact.metadata_json||'{}')
 
@@ -8,8 +8,19 @@ const metadata=(contact:NotificationContact)=>JSON.parse(contact.metadata_json||
  * an address an operator chose for it. */
 export function notificationAddress(contact:NotificationContact){const flags=metadata(contact);return mailbox(flags.provided_email)||(flags.unusable_from?null:mailbox(contact.email))}
 
-/** Sending and read-only status use the same address, safety and author exclusions. */
-export function notificationRecipients(contacts:NotificationContact[],sender:NotificationContact|undefined,senderContactId?:string){
+/** Automatic ticket notices cannot inherit an unproven reply preference. A signed
+ * widget identity proves its canonical address, even after it types a preference.
+ * K3 also allows the widget's own canonical address on its own widget ticket. Old
+ * preferences with no recorded source stay available for human replies only. */
+export function customerNoticeAddress(contact:NotificationContact,widgetContactId?:string){
+ const flags=metadata(contact)
+ const preferred=flags.provided_email_source==='operator'?mailbox(flags.provided_email):null
+ const signed=contact.is_verified===1&&mailbox(contact.external_id)===mailbox(contact.email)
+ return preferred||(flags.unusable_from||flags.email_unproven&&!signed&&contact.id!==widgetContactId?null:mailbox(contact.email))
+}
+
+/** Sending and read-only status use the same safety and author exclusions. */
+export function notificationRecipients(contacts:NotificationContact[],sender:NotificationContact|undefined,senderContactId?:string,address=notificationAddress){
  const senderEmails=new Set<string>()
  if(sender)for(const value of [sender.email,metadata(sender).provided_email]){const email=mailbox(value);if(email)senderEmails.add(email)}
  const excluded=new Set(senderEmails)
@@ -18,7 +29,7 @@ export function notificationRecipients(contacts:NotificationContact[],sender:Not
  for(const contact of contacts){
   const flags=metadata(contact)
   if(contact.id===senderContactId||flags.is_erasing||flags.is_erased||flags.is_deleted||flags.is_blocked)continue
-  const email=notificationAddress(contact)
+  const email=address(contact)
   if(email&&senderEmails.has(email))senderAddress=true
   if(email&&!excluded.has(email)){recipients.push({id:contact.id,email});excluded.add(email)}
  }

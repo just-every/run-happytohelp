@@ -31,7 +31,7 @@ async function render(c:any){
  const identity=await resolvePortalActor(c.env,project.id,c.req.raw)
  const portal=c.req.path.startsWith('/portal/'),base=`/help/${enc(key)}`,locale=c.req.query('locale')||(identity?(await readPortalPreferences(c.env,identity)).locale:undefined),forms=await listForms(c.env,project.id,locale)
  const selected=c.req.param('formId')||c.req.query('form'),form=selected?await readForm(c.env,project.id,selected,locale):forms.length===1?forms[0]:null
- const formBase=portal?`/portal/${enc(key)}/requests/new`:`${base}/requests`,link=(id:string)=>portal?`${formBase}?form=${enc(id)}`:`${formBase}/${enc(id)}`
+ const formBase=portal?`/portal/${enc(key)}/requests/new`:`${base}/requests`,link=(id:string)=>portal?`${formBase}?${new URLSearchParams({form:id,...(locale?{locale}:{})})}`:`${formBase}/${enc(id)}${locale?`?locale=${enc(locale)}`:''}`
  const tools=`<nav class="help-center-controls" aria-label="Customer support"><a href="${base}">Help Center</a><a href="/portal/${enc(key)}/requests">My requests</a><a href="/portal/${enc(key)}/preferences">Notification preferences</a></nav>`
  let content=`<h1>Submit a request</h1><p>Choose the form that fits your question. Our support team will reply to your verified email address.</p>`
  if(!forms.length)content+='<p>No request forms are published yet. Please contact the team through the website chat.</p>'

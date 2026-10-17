@@ -12,7 +12,7 @@ import {escapeHtml as e} from './html'
 
 export const portalPages=new Hono<AppEnv>()
 portalPages.use('/portal/*',async(c,next)=>{
- c.header('Content-Security-Policy',portalCSP);c.header('X-Content-Type-Options','nosniff');c.header('Cache-Control','private, no-store');c.header('Vary','Cookie');c.header('Referrer-Policy','no-referrer');c.header('X-Robots-Tag','noindex, nofollow')
+ c.header('Content-Security-Policy',portalCSP);c.header('X-Content-Type-Options','nosniff');c.header('Cache-Control','private, no-store');c.header('Vary','Cookie');c.header('Referrer-Policy','same-origin');c.header('X-Robots-Tag','noindex, nofollow')
  await next()
 })
 portalPages.get('/portal/assets/portal.css',c=>{c.header('Content-Type','text/css; charset=utf-8');return c.body(portalStyles)})

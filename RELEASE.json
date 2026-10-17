@@ -1,53 +1,31 @@
 {
-  "version": "0.4.4",
-  "previousVersion": "0.4.3",
+  "version": "0.4.5",
+  "previousVersion": "0.4.4",
   "date": "2026-10-18",
-  "contractChanges": {
-    "STATUS-001": {
-      "change": "changed",
-      "summary": "Replies to Closed tickets by email.",
-      "was": "Closed tickets were final and a customer reply opened a new ticket, but a widget visitor's emailed reply could land on a separate contact, a reply could join another open ticket of the customer's, and a teammate's emailed reply was handled like a customer's.",
-      "now": "The sender of mail to a Closed ticket is recognized exactly as on an open ticket, including a widget visitor answering through the reply address. Each customer reply opens a new ticket for that same customer, never joining another ticket of theirs. A teammate's emailed reply is refused: the Email Worker bounces it with the reason and SendGrid or the mail gateway sends the teammate one notice. Nothing is stored and no contact is made from their address. Time-based auto-close and linked follow-up tickets remain unimplemented."
-    },
-    "MAIL-001": {
-      "change": "changed",
-      "summary": "Inbound mail identifies its sender before applying the Closed-ticket rule.",
-      "was": "Mail addressed to a Closed ticket took the new-ticket path before its sender was resolved against that ticket.",
-      "now": "The Email Worker, SendGrid Inbound Parse and JSON gateway resolve the sender against the Closed ticket (its reply address, requester, participants and preferred address) first, so customers, widget visitors and teammates receive the same outcome through each door. Teammate mail is refused with a bounce, or a 422 and one notice; redelivered mail is still received once."
-    }
-  },
+  "contractChanges": {},
   "proseChanges": [
     {
       "document": "README.md",
       "change": "changed",
       "date": "2026-10-18",
-      "summary": "Deploy the current qualified tag.",
-      "was": "The guide named v0.4.3.",
-      "now": "The current release is v0.4.4, with no migrations missing from v0.4.3.",
-      "ownerAction": "Back up, retain private settings and existing data, and replace the Worker."
+      "summary": "Deploy v0.4.5 with the migration-history fix.",
+      "was": "The guide named v0.4.4 and rer 0.2.45.",
+      "now": "The current release is v0.4.5 with rer 0.2.51, which applies missing migrations by name while checking recorded bytes.",
+      "ownerAction": "Back up and deploy with the pinned rer; do not reset or edit migration history."
     },
     {
       "document": "CHANGELOG.md",
       "change": "changed",
       "date": "2026-10-18",
-      "summary": "Describe replies to Closed tickets and the capacity check.",
-      "was": "The newest notes were for v0.4.3.",
-      "now": "The v0.4.4 notes describe customer and teammate email replies to Closed tickets and the live-memory capacity check.",
-      "ownerAction": "Read the notes for every version between yours and v0.4.4."
-    },
-    {
-      "document": "docs/tickets.md",
-      "change": "changed",
-      "date": "2026-10-18",
-      "summary": "Explain how email replies to Closed tickets are handled.",
-      "was": "A customer reply to a Closed ticket opened a new ticket; teammate replies were not described.",
-      "now": "Customer replies are recognized exactly as on an open ticket and open a new ticket for the same customer; teammate email replies are refused with a bounce or notice.",
-      "ownerAction": "Teammates answer Closed-ticket follow-ups from the dashboard."
+      "summary": "Explain hosted upgrades from gated migration subsets.",
+      "was": "The latest notes described v0.4.4.",
+      "now": "v0.4.5 retains v0.4.4 product behavior and pins rer 0.2.51 to accept recorded migration subsets and verify the result by name and bytes.",
+      "ownerAction": "Read the release notes and retain private settings and existing data."
     }
   ],
   "extensionPointChanges": [],
   "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.3 to v0.4.4 without resetting. Stop all writers and back up D1, R2 and Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.45. v0.4.4 adds no migrations; replace the Worker and resume traffic. Older releases first apply every migration they lack in filename order, as listed in the v0.4.3 release: migrations 124_contact_email_proof_guard.sql and 126_restore_contact_erasure.sql bracket the immutable 125 backfill, and the identical runtime erasure trigger must be restored by 126 before writers resume. 125_contact_email_proof.sql changes only eligible unsigned widget contacts metadata_json to mark email_unproven=1; 129_owner_unassigned_alerts.sql enables is_notified_on_unassigned_activity for owners only where an active non-demo workspace has no alerted member. These documented migrations are intentional; every other original value is retained. Preserve owner credentials, native support history, permissions, imports and erasure fences. Keep uncertain external outcomes without replay and retain human Send.",
-  "publicReleaseNotes": "HappyToHelp v0.4.4 handles email replies to Closed tickets: a customer's reply, including a widget visitor's through the reply address, opens a new ticket for that same customer, and a teammate's reply is refused with a bounce or notice and never stored. The 1,000-conversation import check now measures live memory after garbage collection. There are no new migrations; installations on v0.4.3 back up and replace the Worker. Commands use @runeditrun/rer 0.2.45. Hosted and paid-provider quality remain separately qualified; accessibility remains on owner HOLD. Production is separate and unchanged."
+  "agentUpdateInstructions": "Update from v0.4.4 to v0.4.5 without resetting. Stop writers and back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.51. This release adds no migrations or product behavior. Use rer deploy with the pinned rer: it accepts applied migration subsets by name and recorded bytes, applies every missing migration in filename order, and verifies readback by name set and bytes. Unknown migration names, changed bytes and uncertain history remain refused. Do not delete or reorder ledger rows. Older installations may lack migrations that sort below applied rows; apply them through rer before the updated Worker starts. In particular, 124_contact_email_proof_guard.sql and 126_restore_contact_erasure.sql bracket the immutable 125 backfill and restore the identical native_integration_erasure trigger. The documented 125 contact email-proof and 129 owner-alert data changes remain intentional. Preserve owner credentials, support history, permissions, imports, file bytes and erasure fences. Keep uncertain external outcomes without replay and retain human Send.",
+  "publicReleaseNotes": "HappyToHelp v0.4.5 contains the same product behavior as v0.4.4 and pins @runeditrun/rer 0.2.51. Hosted installations deployed from gated migration subsets can now apply missing migrations even when their names sort below already applied rows. Rer still refuses unknown names, changed bytes and uncertain history, and checks the final migration set and recorded bytes. There are no new migrations. Back up, retain private settings and deploy with the pinned rer without resetting. The existing test-runtime queue-consumer isolation from main 5f7c1f3 is included. Hosted and paid-provider quality remain separately qualified; accessibility remains on owner HOLD. Production deployment is separate."
 }

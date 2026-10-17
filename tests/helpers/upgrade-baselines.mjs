@@ -17,7 +17,8 @@ export const baselines = {
   // Published 0.4.1 retains the same real population API and schema.
   '0.4.1': {commit: 'dd1ea8c3d085cc4382bde018b095ff4d464a04fb', tree: '73964a643b50f74eb5c0731b58117ce279bcca8f', migrations: 52, tables: 189, populate: populate041},
   '0.4.2': {commit: '7672fb937abdc445d26438ee75b9bdcbd5b901ce', tree: 'e235c979276414c1216906df82a42aac321070bc', migrations: 66, populate: populate03},
-  '0.4.3': {commit: '0ad45cd50cf5813eb726ac3ccedf0eda271abc06', tree: '677b0f3e54521108bc336a6c7c0c3a4921993385', migrations: 73, previous: true, populate: populate03},
+  '0.4.3': {commit: '0ad45cd50cf5813eb726ac3ccedf0eda271abc06', tree: '677b0f3e54521108bc336a6c7c0c3a4921993385', migrations: 73, populate: populate03},
+  '0.4.4': {commit: '99ffbbea844632d883a46f95df74ef2502cafdc5', tree: '854b431d4449e52e7e85e7e87b016c6a79e17b9d', migrations: 73, previous: true, populate: populate03},
 };
 
 async function populate041(origin, runtime) {

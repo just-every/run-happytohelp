@@ -8,6 +8,12 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.5 — 2026-10-18
+
+- **Hosted migration history.** Pin `@runeditrun/rer` 0.2.51. Deployments from gated migration subsets can apply missing migrations that sort below already applied rows. Rer checks applied names and recorded bytes, refuses unknown names, changed bytes and uncertain history, and verifies the final set by name and bytes.
+- **Upgrade from 0.4.4.** No new migrations or product changes. Back up and deploy with the pinned rer without resetting or editing migration history. Existing credentials, support history and file bytes remain. Earlier releases receive every migration they lack in filename order before traffic resumes.
+- **Test harness.** Includes main's `5f7c1f3` queue-consumer isolation for test runtimes; product behavior is unchanged.
+
 ## 0.4.4 — 2026-10-18
 
 - **Replies to Closed tickets.** A customer's emailed reply to a Closed ticket is recognized as on an open ticket, including a widget visitor answering through the reply address, and always opens a new ticket for that customer instead of a separate contact or another open ticket of theirs. A teammate's emailed reply to a Closed ticket is refused with a bounce or an email notice, never stored as a customer message.

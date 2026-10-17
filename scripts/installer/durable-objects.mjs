@@ -10,7 +10,7 @@ import {fileRecords} from '@runeditrun/rer/modules/portability/files';
 export const SNAPSHOT_SCHEMA='happytohelp.durable-objects/1';
 const NAMESPACES=[{binding:'CONVERSATIONS',className:'ConversationSocket'}];
 // Workerd's own bookkeeping (alarms, the storage format) is not business state.
-const INTERNAL=new Set(['_cf_METADATA']);
+const INTERNAL=new Set(['_cf_METADATA','_cf_ALARM']);
 
 const canonical=value=>Array.isArray(value)?`[${value.map(canonical).join(',')}]`:value&&typeof value==='object'?`{${Object.keys(value).sort().map(key=>`${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}`:JSON.stringify(value);
 const cell=value=>value instanceof Uint8Array?{blob:Buffer.from(value).toString('base64')}:typeof value==='bigint'?Number(value):value;

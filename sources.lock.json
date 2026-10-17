@@ -7098,7 +7098,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/EmailComposer.css": {
-      "sha256": "9d76ac865d1d234ea20bfecc698451c9e15de7e768fb0f3df6fdea8f76fbd766",
+      "sha256": "dbb017683d621ce5646e2d5c77f0189e710eb3731ec841ea70d53d29a6f8aaf0",
       "executable": false
     },
     "src/ui/dashboard/components/EmailConversationTranscriptModal.jsx": {
@@ -7106,7 +7106,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/EmailFollowups.jsx": {
-      "sha256": "934336d1b63b75edf3c51824a27398e661b476019e801be8672caac4df341a01",
+      "sha256": "36fd1b18037723f48fca57b38c7750498e0d8b7d191d2fabb1df0a0195336cf8",
       "executable": false
     },
     "src/ui/dashboard/components/EmailRecipients.jsx": {

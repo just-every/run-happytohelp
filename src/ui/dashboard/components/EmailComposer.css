@@ -2,3 +2,5 @@
 .email-compose-options .settings-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
 .email-compose-options .form-control, .email-compose-options .form-select { min-width:0; }
 @media(max-width:575px) { .email-compose-options .settings-grid { grid-template-columns:minmax(0,1fr); } }
+
+.email-followup-links { min-width: 0; overflow-wrap: anywhere; }

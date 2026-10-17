@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {selfServiceFixture} from './self-service-fixture.mjs'
 export async function customerPortalJourney(){
- const f=await selfServiceFixture(),{app,p,owner,api,form,valid,signin,mail}=f,P=`/api/portal/${p}`
+ const f=await selfServiceFixture({failSurveys:true}),{app,p,owner,api,form,valid,signin,mail}=f,P=`/api/portal/${p}`
  try{
   // A hostile widget visitor may type the real customer's address; signing into
   // that mailbox creates a separate identity and never exposes the visitor thread.
@@ -40,8 +40,8 @@ export async function customerPortalJourney(){
   assert.equal((await app.ok(P+`/tickets/${delayed.id}`,rosa)).survey.state,'unavailable','portal survey respects configured delay')
   await app.ok(P+'/preferences',{...rosa,method:'PUT',body:{locale:'es',surveyEmails:false,updateEmails:false}})
   assert.equal((await app.ok(P+'/preferences',rosa)).updateEmails,false)
-  const translated=await app.request(`/portal/${p}/requests/new?form=${form.id}`,rosa)
-  assert.match(await translated.text(),/<h1>Problema con un pedido<\/h1>/,'request forms use the saved customer language')
+  const translated=await app.ok(`${api}/${form.id}`,rosa)
+  assert.equal(translated.data.title,f.config.translations.es.title,'request forms use the saved customer language')
   let before=mail.length,revision=(await app.first('SELECT revision FROM conversations WHERE id=?',id)).revision
   await app.ok(`/api/conversations/${id}/messages`,{...owner,body:{localId:'operator-no-notify',content:'The refund is now processing.',expectedRevision:revision}})
   assert.ok(!mail.slice(before).some(m=>[].concat(m.to).includes('rosa@example.com')),'reply email respects customer opt-out')

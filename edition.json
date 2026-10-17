@@ -463,6 +463,7 @@
           "migrations/152_workflow_rules.sql",
           "migrations/153_workflow_schedules.sql",
           "migrations/154_workflow_routing.sql",
+          "migrations/155_schedule_team_frontier.sql",
           "docs/workflows.md"
         ],
         "origin": {

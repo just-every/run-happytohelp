@@ -2,7 +2,7 @@
 
 The target is a complete US customer support help desk and AI agent replacing Zendesk, Intercom/Fin, Help Scout or Freshdesk: omnichannel intake, shared queue and service commitments, self-service, business-system actions, operational reporting and verified customer recovery. [CONTRACT.md](CONTRACT.md) contains the named requirements. Every clause below has its required journey, current status and repository evidence; missing/partial requirements remain build obligations.
 
-The status assesses implementation visible at `9a07af20eccf264eaa6fd019ccc65cf2003bc378`, starting from the pinned 16 October code audit. Done is not a fresh execution, hosted deployment or provider-quality claim. Provider-boundary fakes belong only in tests. Live channels, paid models, commerce actions and compliance require separately identified evidence; do not turn an uncertain external outcome into success or automatically replay it.
+The status assesses implementation visible at `9a07af20eccf264eaa6fd019ccc65cf2003bc378`, starting from the pinned 16 October code audit. R5 additionally updates SLA-001, AUTOMATION-001/002, QUEUE-001/004 and STATUS-001 from the workflow, inbox and packaged recovery journeys on 17 October 2026. Done is not a fresh execution, hosted deployment or provider-quality claim. Provider-boundary fakes belong only in tests. Live channels, paid models, commerce actions and compliance require separately identified evidence; do not turn an uncertain external outcome into success or automatically replay it.
 
 The homepage evidence (`tests/homepage-browser.mjs` and `tests/journeys/public.mjs`) must cover the exact “Customer Support, Solved.”
 headline and the 14-word subhead, the six sections in order (hero, Not just

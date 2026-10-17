@@ -98,8 +98,9 @@ snooze to stop that wake-up. A customer reply ends the wait early.
 Schedule a public reply for a future time from the ticket. Review the text,
 sender and due time before saving. You can cancel a pending reply. At send time,
 the workspace, ticket, sender's current permissions and conversation changes
-are checked again. A reply that is no longer eligible is cancelled rather than
-sent against stale context.
+are checked again. A customer reply or a change of responsible operator or team cancels a queued
+reply. A reply that is no longer eligible is cancelled rather than sent against
+stale context.
 
 An **Uncertain** reply means the send may already have happened. Check the
 conversation and delivery evidence before deciding what to do next. It is never

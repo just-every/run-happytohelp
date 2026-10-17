@@ -141,7 +141,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail){
    await env.DB.prepare('INSERT INTO media(id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,created_at) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET conversation_id=excluded.conversation_id,uploaded_by=excluded.uploaded_by,object_key=excluded.object_key WHERE media.message_id IS NULL AND media.project_id=excluded.project_id').bind(key,project.project_id,conversation.id,actor.id,objectKey,file.filename,file.contentType,file.content.byteLength,Date.now()).run()
    mediaIds.push(key)
   }
-  const result=await admitMessage(env,{projectId:project.project_id,conversationId:conversation.id,actor,localId,content,expectedRevision:conversation.revision,expectedLastMessageId:conversation.last_message_id,mediaIds,[inboundAuthority]:{sender:from,receiptId:recordId,claimToken,raw,cc:participants,...(possessed?{grant:await hashToken(target.replyToken!)}:{})}})
+  const result=await admitMessage(env,{projectId:project.project_id,conversationId:conversation.id,actor,localId,content,expectedRevision:conversation.revision,expectedLastMessageId:conversation.last_message_id,mediaIds,[inboundAuthority]:{sender:from,receiptId:recordId,claimToken,raw,cc:participants,authenticated,...(possessed?{grant:await hashToken(target.replyToken!)}:{})}})
   // Closed between routing and admission: a temporary failure, so the retry opens the new ticket.
   if(result.reason==='ticket_closed_followup_required')throw new HTTPException(503,{message:'The addressed ticket was closed; retry later'})
   if(!result.accepted)throw new Error(result.reason)

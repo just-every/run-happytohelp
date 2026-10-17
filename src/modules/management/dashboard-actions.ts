@@ -36,7 +36,8 @@ dashboardActions.post(`${prefix}/participants`,async c=>{
  else{const key=id();await c.env.DB.prepare('INSERT INTO contacts(id,project_id,email,created_at) VALUES(?,?,?,?)').bind(key,actor.projectId,email,Date.now()).run();contact=await c.env.DB.prepare('SELECT * FROM contacts WHERE id=? AND project_id=?').bind(key,actor.projectId).first<any>()}
  if(contact.id===conversation.contact_id)throw new HTTPException(409,{message:'This customer is already the primary recipient'})
  await dashboardAccess(c)
- await c.env.DB.prepare('INSERT OR IGNORE INTO conversation_participants(id,conversation_id,contact_id,created_at) SELECT ?,c.id,ct.id,? FROM conversations c JOIN contacts ct ON ct.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND ct.id=?').bind(id(),Date.now(),conversation.id,actor.projectId,contact.id).run()
+ // An operator adding a recipient vouches for it, including one that first arrived in a Cc header.
+ await c.env.DB.prepare("INSERT INTO conversation_participants(id,conversation_id,contact_id,created_at,joined_via) SELECT ?,c.id,ct.id,?,'operator' FROM conversations c JOIN contacts ct ON ct.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND ct.id=? ON CONFLICT(conversation_id,contact_id) DO UPDATE SET joined_via='operator' WHERE joined_via='cc_header'").bind(id(),Date.now(),conversation.id,actor.projectId,contact.id).run()
  const row=await c.env.DB.prepare('SELECT * FROM conversation_participants WHERE conversation_id=? AND contact_id=?').bind(conversation.id,contact.id).first()
  if(!row)throw new HTTPException(409,{message:'The recipient could not be added'})
  return c.json({data:participantData(contact,row)},201)

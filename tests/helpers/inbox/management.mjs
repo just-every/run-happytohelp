@@ -61,9 +61,9 @@ const profileConversations=Array.from({length:55},(_,i)=>({id:`profile-${String(
 await DB.batch(profileConversations.map(row=>DB.prepare('INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES(?,?,?,?,?)').bind(row.id,'p','directory-000',1,row.updated)))
 await DB.batch([
  DB.prepare("INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES('participant-thread','p','contact',1,100)"),
- DB.prepare("INSERT INTO conversation_participants VALUES('participant-link','participant-thread','directory-000',1)"),
+ DB.prepare("INSERT INTO conversation_participants(id,conversation_id,contact_id,created_at) VALUES('participant-link','participant-thread','directory-000',1)"),
  DB.prepare("INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES('foreign-profile','q','foreign-directory',1,1000)"),
- DB.prepare("INSERT INTO conversation_participants VALUES('foreign-participant-link','foreign-profile','directory-000',1)"),
+ DB.prepare("INSERT INTO conversation_participants(id,conversation_id,contact_id,created_at) VALUES('foreign-participant-link','foreign-profile','directory-000',1)"),
 ])
 assert.deepEqual((await allPages('/projects/p/contacts/directory-000/conversations')).map(row=>row.id),['participant-thread',...profileConversations.toReversed().map(row=>row.id)])
 assert.equal((await call('/api/management','/projects/p/contacts/foreign-directory/conversations')).status,404)

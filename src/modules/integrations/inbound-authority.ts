@@ -6,8 +6,9 @@ import {contactWritable} from '../../platform/contact-state.ts'
 // receipt and sender authority in the transaction that commits the message.
 export const inboundAuthority=Symbol('authenticated inbound email')
 /** `grant`: the hash of the reply address this sender holds for the addressed
- * conversation (issued to exactly this sender), when the mail arrived through it. */
-export interface InboundAuthority {sender:string;receiptId:string;claimToken:string;raw:string;cc:string[];grant?:string}
+ * conversation (issued to exactly this sender), when the mail arrived through it.
+ * `authenticated`: the ingress verified the From address. */
+export interface InboundAuthority {sender:string;receiptId:string;claimToken:string;raw:string;cc:string[];authenticated:boolean;grant?:string}
 const availableAs=(alias:string)=>`${contactWritable.replaceAll('metadata_json',`${alias}.metadata_json`)} AND coalesce(json_extract(${alias}.metadata_json,'$.is_blocked'),0)!=1 AND coalesce(json_extract(${alias}.metadata_json,'$.is_deleted'),0)!=1`,available=availableAs('contacts')
 
 /** A contact's address is proven, so mail from that address is theirs, when mail
@@ -90,7 +91,8 @@ export async function openEmailConversation(env:Env,projectId:string,contactId:s
 }
 
 /** CC recipients the sender may add. Workspace addresses, members and contacts that
- * cannot take part are skipped; none of them refuses the message. */
+ * cannot take part are skipped; none of them refuses the message. They join as
+ * `cc_header` participants, which a Cc header alone never proves (participant-proof.ts). */
 export async function ccContacts(env:Env,projectId:string,conversation:any,addresses:string[],skipped:ReadonlySet<string>){
  const contacts:string[]=[]
  for(const address of addresses){

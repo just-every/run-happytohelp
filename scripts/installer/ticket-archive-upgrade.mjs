@@ -29,6 +29,8 @@ export async function ticketArchivePolicy(root,input,excludedMigrations=name=>/^
      return {...row,status_id:category,status_category:category,subject:'',priority:'normal',channel:'widget',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'rer'};
     }
     if(table==='contact_erasures'&&row.ticket_records===undefined)return {...row,ticket_records:0};
+    // 146: an archived participant has no record of how it joined, so it stays unproven.
+    if(table==='conversation_participants'&&row.joined_via===undefined)return {...row,joined_via:'cc_header'};
     return row;
    }};
   }

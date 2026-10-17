@@ -4814,7 +4814,7 @@
       "executable": false
     },
     "src/modules/integrations/mailboxes/routes.ts": {
-      "sha256": "7286dfd890b57e4d22303fcda7b4ef6fb4c8148db7c4c4ff4d4bcc6098afe97a",
+      "sha256": "0a53b5f41a79c614c1d2d279b667e412bf42b82312bddf658df65953b661e425",
       "executable": false
     },
     "src/modules/integrations/mailboxes/send.ts": {
@@ -8422,7 +8422,7 @@
       "executable": false
     },
     "src/ui/native/pages/email/MailboxDetails.jsx": {
-      "sha256": "3a54293a003f7a5c01916ee9080a5746df12ad5ed8a04e22fd713c671bba1d38",
+      "sha256": "c6ec039d882c87a84f30a257bb858baa2376185251989585e0729a5c83bc1a10",
       "executable": false
     },
     "src/ui/native/pages/email/MailboxEditor.jsx": {
@@ -8430,7 +8430,7 @@
       "executable": false
     },
     "src/ui/native/pages/email/Mailboxes.jsx": {
-      "sha256": "8938bb4ff8d190cbddf42231e970915bfc41473dcbd0fc4be9f63e7b354e6c29",
+      "sha256": "b577095e1267713d35cd08c97d4a0e612c395aac0d8cc81eeaabc80d0a3a7f54",
       "executable": false
     },
     "src/ui/native/pages/email/SenderRules.jsx": {
@@ -9526,7 +9526,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "73f437fd69e813d9bee3b520c1e58b010977ce0f6f1a6e8cc0e35673aada2570",
+      "sha256": "bd84b369537e92b6c32086d8a11226976df6dbbfd2eb2eb540110fb9260d7275",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {

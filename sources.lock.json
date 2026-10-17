@@ -8324,7 +8324,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProjectSettings.jsx": {
-      "sha256": "2ded26277cb4aabc0ee0f7dbb7ba81578deb6c0afbaf0e8ec70aedfa796e3dc1",
+      "sha256": "812df4b55093a23b7d4345331a426d79b5c078b8a0d4a1107294c9fda8911f52",
       "executable": false
     },
     "src/ui/native/pages/ProjectsPage.d.ts": {
@@ -8364,7 +8364,7 @@
       "executable": false
     },
     "src/ui/native/pages/request-forms/RequestFormsSettings.jsx": {
-      "sha256": "8645c4510197ce5e2ca2e2437766bdffdbbc9f01ce26025ff555a185753b2087",
+      "sha256": "feaf0cbd1e90723837b69b53174c303ab635aacd35dd898299957463f4f86d2f",
       "executable": false
     },
     "src/ui/native/pages/request-forms/RequestFormTranslations.jsx": {

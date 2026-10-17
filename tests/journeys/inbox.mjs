@@ -19,3 +19,10 @@ test('library inputs are validated before storage: crawl limits, contacts withou
 test('appearance settings persist whole or not at all, keep Unicode and limits, reset cleanly, respect roles and tenants, and the public brand never shows older invalid values',appearanceJourney)
 
 test('tickets carry typed fields, scoped teams and lifecycle history through customer replies, saved views, previewed bulk changes, the API and erasure',ticketsJourney)
+
+import {macrosJourney} from '../helpers/r4/macros.mjs'
+import {collaborationJourney} from '../helpers/r4/collaboration.mjs'
+import {conversationActionsJourney} from '../helpers/r4/conversation-actions.mjs'
+test('action macros preview and apply scoped versioned changes and attachments to a ticket and thirty tickets, preserve editable drafts and block unresolved sends',macrosJourney)
+test('teammates collaborate with private mentions, followers and live viewing, typing and draft collision warnings while visitors retain their own scope',collaborationJourney)
+test('duplicate tickets merge into a surviving operator thread with safe undo and private partner replies through the real mail gateways',conversationActionsJourney)

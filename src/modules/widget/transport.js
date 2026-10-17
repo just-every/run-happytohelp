@@ -111,6 +111,15 @@ export class WidgetTransport {
   }
   async refresh() {
     const result = await this.request(`/api/conversations/${this.conversationId}/messages`);
+    if (result.mergedInto && result.mergedInto !== this.conversationId) {
+      this.socket?.close(); this.conversationId = result.mergedInto;
+      this.session.conversationId = result.mergedInto; this.revision = 0; this.lastMessageId = null; this.eventId = 0;
+      localStorage.setItem(this.storageKey, JSON.stringify(this.session));
+      const transcript = await this.refresh();
+      this.onEvent({type:'session',session:this.session});
+      if (!this.closed) this.openSocket();
+      return transcript;
+    }
     if (result.revision >= this.revision) {this.revision = result.revision; this.lastMessageId = result.lastMessageId;}
     this.onEvent({type: 'transcript', resolution: result.resolution || null, messages: await Promise.all(result.messages.map(message => this.message(message)))});
     return result;

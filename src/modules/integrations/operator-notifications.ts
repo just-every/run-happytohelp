@@ -1,3 +1,5 @@
+import {dispatchPendingTeammateNotifications} from './notification-teammate-delivery'
+import {teammateTicketNotification} from './notification-teammates'
 import type {Env} from '../../platform/env'
 import {isProjectActive} from '../../platform/project-status'
 import {contactAvailableSql} from '../conversations/contact-privacy'
@@ -28,17 +30,18 @@ async function recipient(env:Env,row:Notification){
  LEFT JOIN user_settings s ON s.user_id=u.id LEFT JOIN user_project_preferences p ON p.project_id=m.project_id AND p.user_id=u.id
  LEFT JOIN conversation_reads r ON r.conversation_id=c.id AND r.user_id=u.id LEFT JOIN email_settings e ON e.project_id=c.project_id
  WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND (?='assignment' OR c.resolved_at IS NULL)
+ AND NOT EXISTS(SELECT 1 FROM notification_preferences np WHERE np.project_id=c.project_id AND np.user_id=u.id AND np.kind='customer_updated' AND np.email=0)
  AND (c.assigned_to=u.id OR (?='unread' AND c.assigned_to IS NULL AND p.is_notified_on_unassigned_activity=1
  AND NOT EXISTS(SELECT 1 FROM conversation_ai ai WHERE ai.conversation_id=c.id AND ai.ai_id IS NOT NULL)))`)
  .bind(row.user_id,row.conversation_id,row.project_id,row.kind,row.kind).first<Recipient>()
 }
 async function sendNotification(env:Env,row:Notification){
+ if(row.kind==='assignment'){return await teammateTicketNotification(env,{projectId:row.project_id,conversationId:row.conversation_id,event:'assignment',eventId:row.id,recipientIds:[row.user_id]})}
  if(await recordedNotification(env,row.id))return
- if(!await isProjectActive(env,row.project_id))return
+ if(!await isProjectActive(env,row.project_id)||!emailConfigured(env))return
  const user=await recipient(env,row)
  if(!user||user.is_enabled===0||!user.email)return
- if(row.kind==='assignment'&&user.assignment_preference===0)return
- let text='A teammate assigned this support conversation to you.'
+ let text=''
  let rich:Pick<EmailInput,'html'|'attachments'>={}
  if(row.kind==='unread'){
   const unread=await env.DB.prepare(`SELECT m.id,m.actor_id,m.actor_role,m.content,m.revision FROM operator_notification_activity a JOIN messages m ON m.id=a.message_id AND m.project_id=a.project_id AND m.conversation_id=a.conversation_id
@@ -58,18 +61,19 @@ async function sendNotification(env:Env,row:Notification){
   if(rich.html)rich.html+=`<p>Open conversation: <a href="${escapeHtml(url)}">${escapeHtml(url)}</a></p>`
  }
  const replyTo=await recipientReplyAddress(env,user.inbound_address,row.project_id,row.conversation_id,user.email)
- await deliverNotification(env,{projectId:row.project_id,to:user.email,subject:row.kind==='assignment'?'A support conversation was assigned to you':'Unread HappyToHelp conversation messages',text,...rich,replyTo,headers:loopSuppressionHeaders({}),idempotencyKey:row.id})
+ await deliverNotification(env,{projectId:row.project_id,to:user.email,subject:'Unread HappyToHelp conversation messages',text,...rich,replyTo,headers:loopSuppressionHeaders({}),idempotencyKey:row.id})
 }
 /** Bounded scheduled recovery. No attempted provider delivery is replayed.
  * `now` allows the scheduler's clock to be supplied by a caller. */
 export async function dispatchOperatorNotifications(env:Env,options:{projectId?:string;conversationId?:string;now?:number}={}){
- if(!emailConfigured(env))return
+ await dispatchPendingTeammateNotifications(env,options)
  await batchOperatorActivity(env,options.now??Date.now(),options.projectId,options.conversationId)
  const pending=await env.DB.prepare(`SELECT * FROM operator_notifications WHERE state='pending' ${options.projectId?'AND project_id=?':''} ${options.conversationId?'AND conversation_id=?':''} ORDER BY created_at,id LIMIT 100`)
  .bind(...(options.projectId?[options.projectId]:[]),...(options.conversationId?[options.conversationId]:[])).all<Notification>()
  for(const row of pending.results){
   try{
-   await sendNotification(env,row)
+   const result=await sendNotification(env,row)
+   if(!emailConfigured(env)||result?.state==='awaiting_provider')continue
    await env.DB.prepare("UPDATE operator_notifications SET state='complete' WHERE id=?").bind(row.id).run()
   }catch{console.error('Operator notification pending',row.id)}
  }

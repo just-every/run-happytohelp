@@ -1,5 +1,6 @@
 import type {Permission} from './catalogue'
 import {selfServiceRules} from './self-service-routes'
+import {r4RouteRule} from './r4-route-permissions'
 
 /**
  * Which permission each authenticated door needs, keyed by `METHOD registered-path`.
@@ -99,5 +100,5 @@ for(const base of [P,D]){
 const prefixes=['/api/v1/','/api/management/admin/']
 export function routeRule(method:string,path:string):Rule|undefined{
  if(prefixes.some(prefix=>path.startsWith(prefix)))return 'none'
- return rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]
+ return r4RouteRule(method,path)??rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]
 }

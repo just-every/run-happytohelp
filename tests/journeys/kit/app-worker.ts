@@ -4,7 +4,7 @@ import {runScheduled} from '../../../src/jobs'
 import {dispatchOperatorNotifications} from '../../../src/modules/integrations/notifications'
 import {purgeExpiredAudit} from '../../../src/modules/audit/retention'
 import {routeRule} from '../../../src/modules/access/route-permissions'
-import {handleEmail} from '../../../src/modules/integrations/email-worker'
+import {handleEmail} from '../../../src/modules/integrations'
 import type {Env} from '../../../src/platform/env'
 export {ConversationSocket} from '../../../src/modules/conversations/socket'
 

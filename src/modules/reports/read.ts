@@ -7,6 +7,7 @@ export interface ReportRow{id:string;created_at:number;resolved_at:number|null;l
 export const cohortSQL=`WITH cohort AS (
  SELECT c.* FROM conversations c WHERE c.project_id=? AND c.created_at>=? AND c.created_at<?
  AND EXISTS(SELECT 1 FROM messages m WHERE m.project_id=c.project_id AND m.conversation_id=c.id)
+ AND NOT EXISTS(SELECT 1 FROM conversation_merges merged WHERE merged.project_id=c.project_id AND merged.source_id=c.id AND merged.undone_at IS NULL)
  AND NOT EXISTS(SELECT 1 FROM move_in_conversations i WHERE i.project_id=c.project_id AND i.conversation_id=c.id)
  AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations i WHERE i.project_id=c.project_id AND i.conversation_id=c.id)
 ), visitors AS (

@@ -127,6 +127,16 @@
           "slug": "account-security",
           "source": "docs/account-security.md",
           "label": "Account security"
+        },
+        {
+          "slug": "macros-and-teamwork",
+          "source": "docs/macros-and-teamwork.md",
+          "label": "Saved replies and teamwork"
+        },
+        {
+          "slug": "notifications",
+          "source": "docs/notifications.md",
+          "label": "Ticket notifications"
         }
       ]
     },

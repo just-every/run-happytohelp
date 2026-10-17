@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useMemo, useEffect, useState } from 'react';
 import TicketViews from './tickets/TicketViews';
 import TicketBulkActions from './tickets/TicketBulkActions';
+import BulkMacros from './macros/BulkMacros';
 import ConversationItem from "./ConversationItem";
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import { ChatContext } from "../contexts/ChatContext";
@@ -90,7 +91,7 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
             {ticketQueue && <>
                 <TicketViews key={projectId} projectId={projectId} currentAgentId={currentAgent.id}/>
                 <div className="ticket-queue-actions"><button type="button" className="btn btn-sm btn-link" onClick={() => { setSelecting(value => !value); setSelected({}); }}>{selecting ? 'Done selecting' : 'Select tickets'}</button>{selecting && <button type="button" className="btn btn-sm btn-link" onClick={() => setSelected(Object.fromEntries(conversations.slice(0, 100).map(item => [item.id, { id: item.id, subject: item.subject, ticket_version: item.ticket_version }])))}>Select loaded tickets</button>}</div>
-                {selecting && Object.keys(selected).length > 0 && <TicketBulkActions key={projectId} projectId={projectId} selected={Object.values(selected)} onClear={() => setSelected({})} onApplied={refreshInboxData}/>}
+                {selecting && Object.keys(selected).length > 0 && <><TicketBulkActions key={projectId} projectId={projectId} selected={Object.values(selected)} onClear={() => setSelected({})} onApplied={refreshInboxData}/><BulkMacros projectId={projectId} selectedTickets={Object.values(selected).map(ticket=>({id:ticket.id,expected_version:ticket.ticket_version}))} onApplied={refreshInboxData}/></>}
             </>}
             <div className="conversation-list-items" ref={ setListRefs }>
                 { conversations.map(conversation => selecting && ticketQueue ? <div className="ticket-bulk-row" key={conversation.id}><input className="form-check-input" type="checkbox" aria-label={`Select ticket ${conversation.subject || conversation.contact?.display_name || conversation.id}`} checked={Boolean(selected[conversation.id])} disabled={!selected[conversation.id] && Object.keys(selected).length >= 100} onChange={event => { const checked = event.target.checked; setSelected(current => { const next = { ...current }; if (checked) next[conversation.id] = { id: conversation.id, subject: conversation.subject, ticket_version: conversation.ticket_version }; else delete next[conversation.id]; return next; }); }}/><ConversationItem conversation={conversation}/></div> : <ConversationItem key={conversation.id} conversation={conversation}/>) }

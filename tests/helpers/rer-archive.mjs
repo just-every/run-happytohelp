@@ -16,7 +16,7 @@ export async function archiveStorage(root,visit){
 export async function archiveSnapshot(root){return archiveStorage(root,async({DB,FILES})=>{
  const config=policy(archivePolicy),inventory=await catalogue(DB,config),rows={};
  // Use the package's excludedTables policy, including all migration ledgers.
- for(const {name} of inventory.tables){const data=(await DB.prepare(`SELECT * FROM "${name.replaceAll('"','""')}"`).all()).results;rows[name]=data.map(row=>{for(const column of config.secretColumns[name]??[])row[column]=null;return JSON.stringify(Object.fromEntries(Object.entries(row).sort(([a],[b])=>a.localeCompare(b))))}).sort()}
+ for(const {name} of inventory.tables){const data=(await DB.prepare(`SELECT * FROM "${name.replaceAll('"','""')}"`).all()).results;rows[name]=data.map(source=>{const row=archivePolicy.exportRow?archivePolicy.exportRow(name,source):source;for(const column of config.secretColumns[name]??[])row[column]=null;return JSON.stringify(Object.fromEntries(Object.entries(row).sort(([a],[b])=>a.localeCompare(b))))}).sort()}
  const objects=[];let cursor;do{const page=await FILES.list({...(cursor?{cursor}:{})});for(const {key} of page.objects){const object=await FILES.get(key);objects.push({key,bytes:Array.from(new Uint8Array(await object.arrayBuffer())),httpMetadata:object.httpMetadata,customMetadata:object.customMetadata})}cursor=page.truncated?page.cursor:undefined}while(cursor);
  return {rows,objects:objects.sort((a,b)=>a.key.localeCompare(b.key)),excludedTables:inventory.excludedTables};
 })}

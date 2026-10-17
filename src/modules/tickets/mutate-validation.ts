@@ -3,6 +3,7 @@ import type {Actor,Env} from '../../platform/env'
 import {ticketAuthority,availableTicketSql,invalid,object,priorities,type TicketAuthority} from './model'
 import {validateFieldChanges,requiredToSolve,solving} from './fields'
 import {audit} from '../audit/record'
+import {writableConversationSql} from '../conversation-actions/merge-read'
 export interface TicketChange {expected_version?:number;expected_ticket_version?:number;expected_revision?:number;expected_last_message_id?:string|null;expected_updated_at?:number;status_id?:string;subject?:string;priority?:string;channel?:string;brand_id?:string;group_id?:string|null;requester_id?:string;submitter_id?:string;submitter_type?:string;fields?:Record<string,unknown>;agent_id?:string|null;assigned_to?:string|null;ai_id?:string|null;tags_add?:string[];tags_remove?:string[];add_tags?:string[];remove_tags?:string[]}
 export async function prepareTicketChange(env:Env,actor:Actor,id:string,input:TicketChange,authority:TicketAuthority){
  const change={...object(input)} as TicketChange,guard=await ticketAuthority(env,actor,authority)
@@ -15,7 +16,7 @@ export async function prepareTicketChange(env:Env,actor:Actor,id:string,input:Ti
  for(const key of ['expected_revision','expected_ticket_version','expected_updated_at'] as const)if(change[key]!==undefined){if(!Number.isSafeInteger(change[key])||change[key]!<0)invalid('Invalid expected frontier');const column=key.slice(9);if(current[column]!==change[key])throw new HTTPException(409,{message:'Ticket changed. Reload before applying changes.'})}
  if(change.expected_last_message_id!==undefined&&change.expected_last_message_id!==current.last_message_id)throw new HTTPException(409,{message:'Ticket message frontier changed'})
  if(current.status_category==='closed')throw new HTTPException(409,{message:'Closed tickets are final'})
- const next={...current},predicates:string[]=[],params:any[]=[]
+ const next={...current},predicates:string[]=[writableConversationSql('c')],params:any[]=[]
  if(change.status_id!==undefined){if(typeof change.status_id!=='string')invalid('Invalid status');const status=await env.DB.prepare('SELECT * FROM ticket_statuses WHERE project_id=? AND id=? AND active=1').bind(actor.projectId,change.status_id).first<any>();if(!status)invalid('Choose an active workspace status');next.status_id=status.id;next.status_category=status.category;predicates.push('EXISTS(SELECT 1 FROM ticket_statuses WHERE project_id=c.project_id AND id=? AND category=? AND active=1 AND updated_at=?)');params.push(status.id,status.category,status.updated_at)}
  if(change.priority!==undefined){if(!priorities.includes(change.priority as any))invalid('Invalid priority');next.priority=change.priority}
  if(change.subject!==undefined){if(typeof change.subject!=='string'||change.subject.length>500)invalid('Subject must be text up to 500 characters');next.subject=change.subject.trim()}

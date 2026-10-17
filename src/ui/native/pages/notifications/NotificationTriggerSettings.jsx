@@ -1,0 +1,25 @@
+import React,{useEffect,useState} from 'react';
+import {nativeRequest} from '../../transport';
+import {Section,Feedback} from '../forms';
+import {useUnsavedChanges} from '../../NavigationGuard';
+export default function NotificationTriggerSettings({projectId}){
+ const path=`/api/management/projects/${projectId}/notification-triggers`,[data,setData]=useState(null),[error,setError]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false);
+ const [newEvent,setNewEvent]=useState('request_received'),[newChannel,setNewChannel]=useState('email'),[brandOnly,setBrandOnly]=useState(false);
+ const {markDirty,markSaved}=useUnsavedChanges();
+ useEffect(()=>{nativeRequest(path).then(setData).catch(e=>setError(e.message));},[path]);
+ const change=(index,key,value)=>{markDirty();setSaved(false);setData(d=>({...d,data:d.data.map((row,i)=>i===index?{...row,[key]:value}:row)}));};
+ const addScope=()=>{const brand_id=brandOnly?projectId:'*';if(data.data.some(row=>row.event===newEvent&&row.channel===newChannel&&row.brand_id===brand_id)){setError('This channel and brand already have a template.');return;}const source=data.data.find(row=>row.event===newEvent);markDirty();setSaved(false);setData(d=>({...d,data:[...d.data,{...source,channel:newChannel,brand_id}]}));};
+ const submit=async e=>{e.preventDefault();setBusy(true);setError('');try{await nativeRequest(path,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({triggers:data.data})});markSaved();setSaved(true);}catch(e){setError(e.message);}finally{setBusy(false);}};
+ if(!data)return <Feedback error={error}/>;
+ return <form onSubmit={submit} className="project-parity-narrow"><Feedback {...{error,saved}}/><Section title="Customer notifications" description="Send one acknowledgement and one solved notice per ticket to the requester and proven customer CCs. Machine mail and imported history stay quiet.">
+ <p className="settings-note">Use macro placeholders such as {'{{requester.first_name | there}}'}, {'{{ticket.id}}'}, {'{{brand.name}}'} and {'{{expected_reply_time}}'}. Missing values are shown below and block that notice.</p>
+ {data.data.map((row,index)=><fieldset key={`${row.event}:${row.channel}:${row.brand_id}`} disabled={!data.can_manage} className="mb-4"><legend className="h6">{row.event==='request_received'?'Request received':'Ticket solved'} · {row.channel==='*'?'All channels':row.channel} · {row.brand_id==='*'?'All brands':'This workspace brand'}</legend>
+ <label className="form-check"><input className="form-check-input" type="checkbox" checked={!!row.enabled} onChange={e=>change(index,'enabled',e.target.checked)}/><span className="form-check-label">Enabled</span></label>
+ <label className="form-label" htmlFor={`notification-subject-${index}`}>Subject</label><input id={`notification-subject-${index}`} className="form-control mb-2" value={row.subject} required maxLength={200} onChange={e=>change(index,'subject',e.target.value)}/>
+ <label className="form-label" htmlFor={`notification-body-${index}`}>Message</label><textarea id={`notification-body-${index}`} className="form-control mb-2" rows={6} value={row.body} required maxLength={10000} onChange={e=>change(index,'body',e.target.value)}/>
+ <label className="form-label" htmlFor={`notification-time-${index}`}>Expected reply time</label><input id={`notification-time-${index}`} className="form-control" value={row.expected_reply_time} required maxLength={200} onChange={e=>change(index,'expected_reply_time',e.target.value)}/>
+ </fieldset>)}
+ {data.can_manage&&<div className="mb-4"><h3 className="h6">Add a channel template</h3><label className="form-label" htmlFor="notification-new-event">Event</label><select id="notification-new-event" className="form-select mb-2" value={newEvent} onChange={e=>setNewEvent(e.target.value)}><option value="request_received">Request received</option><option value="ticket_solved">Ticket solved</option></select><label className="form-label" htmlFor="notification-new-channel">Channel</label><select id="notification-new-channel" className="form-select mb-2" value={newChannel} onChange={e=>setNewChannel(e.target.value)}>{['email','widget','form','api','*'].map(channel=><option key={channel} value={channel}>{channel==='*'?'All channels':channel}</option>)}</select><label className="form-check mb-2"><input className="form-check-input" type="checkbox" checked={brandOnly} onChange={e=>setBrandOnly(e.target.checked)}/><span className="form-check-label">Only this workspace brand</span></label><button type="button" className="btn btn-outline-secondary" onClick={addScope}>Add template</button></div>}
+ {data.can_manage&&<button className="btn btn-primary" disabled={busy}>{busy?'Saving…':'Save customer notifications'}</button>}
+ </Section>{data.outcomes?.length>0&&<Section title="Recent notification outcomes"><ul>{data.outcomes.map((row,index)=><li key={index}>Ticket #{row.conversation_id} · {row.event==='request_received'?'Request received':row.event==='ticket_solved'?'Solved':'Workflow or teammate notice'} · {row.state}{row.outcome?.error&&`: ${row.outcome.error}`}</li>)}</ul></Section>}</form>;
+}

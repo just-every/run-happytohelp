@@ -8,6 +8,8 @@ import {requiredToSolve,solving} from '../tickets/fields.ts'
 import {memberAccess} from '../access/gate.ts'
 import {resolvePublicCitations,citationAdmissionGuard,activeSourceProjectSql,type PublicReference} from '../knowledge/public-sources.ts'
 import type { Actor,Env } from '../../platform/env'
+import {assertPublicReplyPlaceholders} from '../macros/placeholders'
+import {writableConversationSql} from '../conversation-actions/merge-read'
 /** Local ids the server mints: `email:` identifies an inbound email claim, `erased:`
  * replaces a client-supplied id when its contact is erased (contact-erasure/statements.ts)
  * and `away:` is the workspace's away reply (management/away-reply.ts). Clients may use none. */
@@ -16,6 +18,7 @@ export interface MessageInput {[inboundAuthority]?:InboundAuthority;projectId:st
 export async function admitMessage(env:Env,input:MessageInput){
  const {projectId,conversationId,actor,localId,content,expectedRevision}=input,email=input[inboundAuthority]
  if(actor.projectId!==projectId)throw new Error('Project access denied')
+ if(actor.role!=='contact')assertPublicReplyPlaceholders(content)
  if(!localId||localId.length>200||localId.startsWith('erased:')||typeof content!=='string'||content.length>100000||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new Error('Invalid message command')
  if(input.citations?.length&&!input.generationId)throw new Error('Only finalized AI messages may cite knowledge')
  const refs=input.citations??[]
@@ -44,7 +47,7 @@ export async function admitMessage(env:Env,input:MessageInput){
  const autoAssign=actor.role!=='contact'&&!input.generationId&&!input.tokenAuthority&&(!scope.group_id||!!await env.DB.prepare('SELECT 1 FROM ticket_group_members WHERE project_id=? AND group_id=? AND user_id=?').bind(projectId,scope.group_id,actor.id).first())
  const authorship=await authoringSource(env,actor,conversationId,input.authoring,input.generationId)
  const citations=refs.length?await resolvePublicCitations(env,projectId,input.generationId!,refs):[]
- const messageId=crypto.randomUUID(),now=Date.now();const predicates=['c.id=?','c.project_id=?','c.revision=?','c.contact_id=?','c.ticket_version=?',"c.status_category<>'closed'"];const args:unknown[]=[conversationId,projectId,expectedRevision,scope.contact_id,scope.ticket_version]
+ const messageId=crypto.randomUUID(),now=Date.now();const predicates=[writableConversationSql('c'),'c.id=?','c.project_id=?','c.revision=?','c.contact_id=?','c.ticket_version=?',"c.status_category<>'closed'"];const args:unknown[]=[conversationId,projectId,expectedRevision,scope.contact_id,scope.ticket_version]
  if(autoAssign&&scope.group_id){predicates.push('EXISTS(SELECT 1 FROM ticket_group_members WHERE project_id=c.project_id AND group_id=c.group_id AND user_id=?)');args.push(actor.id)}
  if(input.resolve&&!input.generationId){predicates.push('c.resolved_at IS ?','(SELECT MAX(ordinal) FROM conversation_resolutions WHERE conversation_id=c.id) IS ?');args.push(scope.resolved_at,scope.ordinal)}
  // Reply-and-resolve is a transition into solved: the same required-to-solve fields as every ticket door (tickets/mutate-validation.ts).
@@ -67,7 +70,7 @@ export async function admitMessage(env:Env,input:MessageInput){
  }
  if(input.sessionHash){predicates.push(activeSourceProjectSql('c.project_id'));predicates.push("EXISTS(SELECT 1 FROM sessions s WHERE s.token_hash=? AND s.actor_id=? AND s.revoked_at IS NULL AND s.expires_at>? AND (s.role='contact' AND s.project_id=c.project_id AND s.contact_id=c.contact_id OR s.role<>'contact' AND (s.project_id IS NULL AND s.role='operator' OR s.project_id=c.project_id AND EXISTS(SELECT 1 FROM memberships live WHERE live.project_id=s.project_id AND live.user_id=s.actor_id AND live.role=s.role))))");args.push(input.sessionHash,actor.id,now)}
  if(input.expectedLastMessageId!==undefined){predicates.push('c.last_message_id IS ?');args.push(input.expectedLastMessageId)}
- if(mediaIds.length){predicates.push(`(SELECT COUNT(*) FROM media WHERE id IN (${mediaIds.map(()=>'?').join(',')}) AND project_id=c.project_id AND conversation_id=c.id AND message_id IS NULL AND uploaded_by=?)=?`);args.push(...mediaIds,actor.id,mediaIds.length)}
+ if(mediaIds.length){predicates.push(`(SELECT COUNT(*) FROM media WHERE id IN (${mediaIds.map(()=>'?').join(',')}) AND project_id=c.project_id AND conversation_id=c.id AND message_id IS NULL AND NOT EXISTS(SELECT 1 FROM conversation_note_media nm WHERE nm.media_id=media.id) AND uploaded_by=?)=?`);args.push(...mediaIds,actor.id,mediaIds.length)}
  if(input.generationId){predicates.push("EXISTS(SELECT 1 FROM ai_generations g WHERE g.id=? AND g.project_id=c.project_id AND g.conversation_id=c.id AND g.state='running' AND g.source_revision=c.revision AND (SELECT revision FROM context_subjects WHERE project_id=c.project_id AND subject_id=c.contact_id)=g.source_context_revision AND c.resolved_at IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id WHERE ca.conversation_id=c.id AND a.id=g.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 AND a.model=json_extract(g.ai_profile_json,'$.model') AND a.prompt=json_extract(g.ai_profile_json,'$.prompt')))");args.push(input.generationId)}
  if(authorship.guard){predicates.push(authorship.guard.sql);args.push(...authorship.guard.params)}
  for(const citation of citations){const guard=citationAdmissionGuard(citation);predicates.push(guard.sql);args.push(...guard.args)}
@@ -83,6 +86,7 @@ export async function admitMessage(env:Env,input:MessageInput){
  // Read the admitted row and any competing same-command replay in the same
  // transaction. This preserves their authoritative predicates and avoids a
  // separate D1 round trip after the guarded write.
+ if(actor.role!=='contact')statements.push(env.DB.prepare('DELETE FROM macro_drafts WHERE project_id=? AND conversation_id=? AND actor_id=? AND EXISTS(SELECT 1 FROM messages WHERE id=?)').bind(projectId,conversationId,actor.id,messageId))
  const committedIndex=statements.length
  statements.push(
   env.DB.prepare(`SELECT * FROM messages WHERE id=? ${replayPredicate}`).bind(messageId,...(replayGuard?.params||[])),

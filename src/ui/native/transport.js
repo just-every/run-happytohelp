@@ -85,7 +85,9 @@ function connectSocket(resourcePath, cursorKey, onFrame, onReconnect, onError) {
         socket.onclose = () => { if (!stopped) timer = setTimeout(open, Math.min(15000, 500 * 2 ** attempt++)); };
     };
     open();
-    return () => { stopped = true; clearTimeout(timer); socket?.close(); };
+    const dispose = () => { stopped = true; clearTimeout(timer); socket?.close(); };
+    dispose.send = frame => { if (!stopped && socket?.readyState === WebSocket.OPEN) { socket.send(JSON.stringify(frame)); return true; } return false; };
+    return dispose;
 }
 
 export function connectConversation(conversationId, onFrame, onReconnect, onError) {

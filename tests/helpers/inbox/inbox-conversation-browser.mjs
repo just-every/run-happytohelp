@@ -34,7 +34,9 @@ try{
   page.setDefaultTimeout(15000)
   page.on('pageerror',error=>problems.push(`pageerror: ${error.message}`))
   page.on('console',message=>{if(/Moment Timezone/i.test(message.text()))problems.push(`console: ${message.text()}`)})
+  const hydrated=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/identity/auth-options')
   await page.goto(runtime.origin+'/login?'+new URLSearchParams({returnTo:target}))
+  await hydrated
   await page.getByLabel('Email',{exact:true}).fill(fx.owner.email)
   await page.getByLabel('Password',{exact:true}).fill(fx.owner.password)
   await page.getByRole('button',{name:'Login',exact:true}).click()
@@ -193,6 +195,7 @@ try{
   await pick()
   assert.equal(await composer.inputValue(),draft,'the draft stays visible and intact while the picker is open')
   await page.getByRole('link',{name:REPLY.title,exact:true}).click()
+  await page.getByRole('link',{name:REPLY.title,exact:true}).waitFor({state:'hidden'})
   const merged=await composer.inputValue()
   assert.ok(merged.includes(draft)&&merged.includes(expandedReply),`draft and reply both present: ${merged}`)
   assert.ok(merged.startsWith(draft),'a caret inside the draft does not split it: the reply follows the line')
@@ -201,6 +204,7 @@ try{
   await composer.fill('')
   await pick()
   await page.getByRole('link',{name:REPLY.title,exact:true}).click()
+  await page.getByRole('link',{name:REPLY.title,exact:true}).waitFor({state:'hidden'})
   assert.equal(await composer.inputValue(),expandedReply,'an empty composer receives the entire expanded reply')
   await page.getByRole('button',{name:'Send',exact:true}).click()
   await eventually(async()=>(await fx.api(`/api/conversations/${fx.contacts.draft.id}/messages`)).messages,

@@ -10,11 +10,12 @@ import {InvitationCreated,InvitationNotice} from './InvitationActions';
 import ContactDetails from './ContactDetails';
 import ContactErasure,{ContactErased} from './ContactErasure';
 import AssistantsPage from './AssistantsPage';
+import MacrosPage from './macros/MacrosPage';
 import {useConfirmation} from './ConfirmDialog';
 import {deleteCopy} from './delete-copy';
 import {validateManagementDraft} from './management-validation';
 import './management-parity.css';
-export default function ManagementPage(props){return props.section==='ais'?<AssistantsPage {...props}/>:<ResourcePage key={`${props.projectId}/${props.section}`} {...props}/>}
+export default function ManagementPage(props){return props.section==='macros'?<MacrosPage {...props}/>:props.section==='ais'?<AssistantsPage {...props}/>:<ResourcePage key={`${props.projectId}/${props.section}`} {...props}/>}
 const parseContact=data=>({...data,...JSON.parse(data.metadata_json||'{}')});
 function ResourcePage({projectId,section,recordId}) {
  const {markDirty,markSaved}=useUnsavedChanges();
@@ -22,7 +23,7 @@ function ResourcePage({projectId,section,recordId}) {
  const {ask,dialog}=useConfirmation();
  const path=`/api/management/projects/${projectId}/${section}`,base=`/projects/${projectId}/${section}`;
  const [items,setItems]=useState(null),[draft,setDraft]=useState(null),[error,setError]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[invitation,setInvitation]=useState(null),[emailConfigured,setEmailConfigured]=useState(null),[notice,setNotice]=useState(null),[fieldErrors,setFieldErrors]=useState({});
- const paged=section==='contacts'||section==='macros';
+ const paged=section==='contacts';
  // Custom roles a member can be given; only owners and admins can read them.
  const [customRoles,setCustomRoles]=useState([]);
  useEffect(()=>{if(section==='agents'&&recordId&&recordId!=='create')nativeRequest(`/api/management/projects/${projectId}/roles`).then(r=>setCustomRoles(r.data.custom)).catch(()=>setCustomRoles([]));},[section,recordId,projectId]);
@@ -32,7 +33,7 @@ function ResourcePage({projectId,section,recordId}) {
  const load=useCallback(async()=>{const id=++requestId.current;const response=await nativeRequest(listPath);if(id!==requestId.current)return;setItems(response.data||response);setPagination(response.pagination||null);if(section==='agents')setEmailConfigured(response.emailConfigured);},[listPath,section]);
  useEffect(()=>{let active=true;setItems(null);setError('');const timer=setTimeout(()=>load().catch(e=>{if(active)setError(e.message)}),paged&&listQuery.search?200:0);return()=>{active=false;clearTimeout(timer);requestId.current++};},[load]);
  useEffect(()=>{
-  let active=true;setDraft(null);setInvitation(null);setNotice(null);setError('');setSaved(section==='macros'&&Boolean(recordId)&&routeLocation.state?.savedReplyCreated===recordId);setFieldErrors({});
+  let active=true;setDraft(null);setInvitation(null);setNotice(null);setError('');setSaved(false);setFieldErrors({});
   if(recordId==='create'){
    const query=new URLSearchParams(routeLocation.searchStr);
    setDraft(section==='agents'?{role:'operator',is_notified_on_unassigned_activity:true}:section==='plugins'?{name:query.get('name')||'',url:query.get('url')||''}:{});
@@ -53,7 +54,7 @@ function ResourcePage({projectId,section,recordId}) {
    const response=await nativeRequest(path+(draft.id?`/${draft.id}`:''),{method:draft.id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(draft)});
    markSaved();setSaved(true);
    if(section==='agents'&&!draft.id){setInvitation(response.data);await load();}
-   else if(response.data?.id){setDraft({...draft,...response.data});if(recordId==='create')await navigate({to:`${base}/${response.data.id}`,replace:true,...(section==='macros'?{state:{savedReplyCreated:response.data.id}}:{})});}
+   else if(response.data?.id){setDraft({...draft,...response.data});if(recordId==='create')await navigate({to:`${base}/${response.data.id}`,replace:true});}
    await load();
   }catch(e){setError(e.message)}finally{setBusy(false)}
  };

@@ -1,3 +1,4 @@
+import {notifyTicketEvent} from './triggers'
 import type {Actor,Env} from '../../platform/env'
 import {sendEmails,emailConfigured,type EmailInput,type EmailOutcome,type DeferEmailDelivery} from './email'
 import {renderConversationEmail} from './email-content'
@@ -47,6 +48,11 @@ export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:Defer
  if(!data[1].results[0])return {state:'project_deleted'}
  const operatorActivity=message.actor_role==='contact'?await queueOperatorActivity(env,message,actor.projectId):null
  if(operatorActivity?.state==='automatic')return operatorActivity
+ if(message.actor_role==='contact'){
+  await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'request_received',eventId:String(message.id),actorId:senderId})
+  await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'customer_updated',eventId:String(message.id),actorId:senderId})
+ }
+ if(message.actor_role!=='contact')await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'ticket_updated',eventId:String(message.id),actorId:senderId})
  if(!configured)return {state:'not_configured'}
  const conversation=data[2].results[0]
  if(!conversation)return {state:'not_found'}

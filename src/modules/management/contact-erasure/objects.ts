@@ -2,6 +2,8 @@ import {fenceImportErasure,type ErasureIdentity} from '../../move-in/erasure'
 import type {Env} from '../../../platform/env'
 import {localJobs,media} from './scope'
 import {fenceAdmittedIdentity} from './admitted-identity'
+import {macroErasureObjectStatements} from '../../macros/erasure'
+import {conversationActionErasureStage} from '../../conversation-actions/erasure'
 
 const R2_DELETE_LIMIT = 1000
 
@@ -13,6 +15,8 @@ export async function fenceAndStage(env: Env, projectId: string, contactId: stri
   const snapshot=identity??await env.DB.prepare('SELECT email,external_id,metadata_json FROM contacts WHERE project_id=? AND id=?').bind(projectId,contactId).first<ErasureIdentity>()??{}
   const bound = (sql: string) => env.DB.prepare(sql).bind(projectId, contactId)
   await fenceAdmittedIdentity(env,projectId,contactId,snapshot,[
+    bound(conversationActionErasureStage),
+    ...macroErasureObjectStatements(env,projectId,contactId),
     env.DB.prepare("UPDATE contacts SET metadata_json=CASE WHEN json_valid(metadata_json) THEN json_set(metadata_json,'$.is_blocked',1,'$.is_deleted',1,'$.is_erasing',1) ELSE json_object('is_blocked',1,'is_deleted',1,'is_erasing',1) END WHERE project_id=?1 AND id=?2").bind(projectId, contactId),
     env.DB.prepare('UPDATE sessions SET revoked_at=coalesce(revoked_at,?3) WHERE project_id=?1 AND contact_id=?2').bind(projectId, contactId, now),
     bound(`INSERT OR IGNORE INTO contact_erasure_objects(project_id,contact_id,kind,source_id,object_key) SELECT ?1,?2,'media',id,object_key FROM media WHERE ${media}`),

@@ -46,7 +46,7 @@ try {
             const operation = (async () => {
                 posts++;
                 assert.equal(route.request().method(), 'POST');
-                assert.deepEqual(route.request().postDataJSON(), {content});
+                assert.deepEqual(route.request().postDataJSON(), {content, mention_ids: [], media_ids: []});
                 await held;
                 if (respondWithError) await route.fulfill({status: 503, contentType: 'application/json', body: JSON.stringify({message: 'Synthetic note service failure'})});
                 else await route.continue(); // Original request reaches the actual emitted Worker unchanged.

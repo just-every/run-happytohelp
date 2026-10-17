@@ -11,7 +11,7 @@ import {launchBrowser} from '../../journeys/kit/browser.mjs';
 export async function profileBrowser(){
  const evidence=resolve(process.env.H2H_EVIDENCE_DIR||'test-results/visitor-profile');await mkdir(evidence,{recursive:true});
  const port=await freePort(),origin=`http://127.0.0.1:${port}`;
- const runtime=await createRuntime({port,inspectorPort:0,vars:{H2H_LOCAL:'true',APP_ORIGIN:origin}});
+ const runtime=await createRuntime({port,inspectorPort:0,vars:{H2H_LOCAL:'true',APP_ORIGIN:origin},outboundFixture:new URL('../mail-provider-network.mjs',import.meta.url).href});
  const records=[],checks=[],failures=[];let success=false,browser;
  const run=async(name,fn)=>{try{checks.push({name,...await fn()});}catch(error){failures.push({name,error:error.message});}};
  const api=async(path,token,body)=>{const response=await fetch(origin+path,{method:body?'POST':'GET',headers:{...(token?{Authorization:'Bearer '+token}:{}),...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});assert.ok(response.ok,'Native request '+path+' returned '+response.status);return response.json();};
@@ -19,7 +19,7 @@ export async function profileBrowser(){
  // emitted Worker and D1 state. No request header or app fallback selects mail.
  async function mailMode(mode){
   const path=join(runtime.directory,'wrangler.json'),config=JSON.parse(await readFile(path,'utf8'));
-  config.vars=mode==='local'?{EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}:mode==='remote'?{EMAIL_PROVIDER:'sendgrid',EMAIL_API_KEY:randomBytes(24).toString('hex'),EMAIL_FROM:'support@example.test'}:{};
+  config.vars=mode==='local'?{EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}:mode==='remote'?{EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-fixture-mail-provider',EMAIL_FROM:'support@example.test'}:{};
   await chmod(path,0o600);await writeFile(path,JSON.stringify(config),{mode:0o600});await runtime.restart();
  }
  try{
@@ -35,12 +35,16 @@ export async function profileBrowser(){
      await mount();const key=`rer-widget:${origin}:${project.widget_key}`;
      await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)||'null')?.conversationId,key);
      const session=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
+     const submitted=page.waitForResponse(response=>response.url().endsWith(`/conversations/${session.conversationId}/messages`)&&response.request().method()==='POST');
      await page.locator('textarea[name=content]').fill('Please retain my saved details '+width+' '+startingMode);await page.locator('button[name=submit]').click();
      await page.locator('.happytohelp-collect-notify-email').waitFor();
      assert.match(await page.locator('.happytohelp-collect-notify-email').innerText(),/Receive an email/);
      const email=`saved-${startingMode}-${width}@example.test`;
      await page.locator('input[name=email]').fill(email);await page.locator('textarea[name=content]').click();
      await page.locator('.happytohelp-message-show-contact-container').getByText(email,{exact:true}).waitFor();
+     // Optimistic transcript and profile UI can precede the request's notice.
+     // The customer POST settles its mail/model/notification work before replying.
+     const submission=await submitted;assert.equal(submission.status(),200);assert.equal((await submission.json()).accepted,true);
      const before=await api('/api/conversations/'+session.conversationId+'/messages',session.token),beforeEffects=await profileEffects(runtime,session.contactId,email);
      checks.push({name:`${startingMode}-${width}-saved-email-persisted`,savedInRealD1:true});
      await run(`${startingMode}-${width}-saved-profile-reload`,async()=>{

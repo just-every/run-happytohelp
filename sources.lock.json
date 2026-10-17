@@ -9134,7 +9134,7 @@
       "executable": false
     },
     "tests/helpers/first-run/profile-browser.mjs": {
-      "sha256": "5dc910edabc3da38aa9436d57f5d38c52cb6364a0b5bdddd9992dcf15a9775bc",
+      "sha256": "d7a873396e26bbccfbe4e33da127549e0161dc0b82f4a02093b2d358087660c5",
       "executable": false
     },
     "tests/helpers/first-run/provisioning.mjs": {

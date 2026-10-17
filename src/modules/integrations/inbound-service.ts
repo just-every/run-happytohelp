@@ -126,7 +126,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail){
    actor={id:contact.id,contactId:contact.id,projectId:project.project_id,role:'contact'}
    conversation=(prior?.conversation_id?await env.DB.prepare("SELECT * FROM conversations WHERE id=? AND project_id=? AND contact_id=? AND status_category<>'closed'").bind(prior.conversation_id,project.project_id,contact.id).first<any>():null)||await openEmailConversation(env,project.project_id,contact.id)
    if(!conversation){
-    await newConversation(env,project.project_id,contact.id,recordId,claimToken,"WHERE NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND contact_id=? AND resolved_at IS NULL AND status_category<>'closed')")
+    await newConversation(env,project.project_id,contact.id,recordId,claimToken,"WHERE NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND contact_id=? AND resolved_at IS NULL AND status_category<>'closed' AND NOT EXISTS(SELECT 1 FROM request_form_submissions form WHERE form.conversation_id=conversations.id AND form.project_id=conversations.project_id))")
     conversation=await openEmailConversation(env,project.project_id,contact.id)
    }
   }

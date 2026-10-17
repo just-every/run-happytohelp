@@ -9,7 +9,7 @@ const statuses='[{"id":"new","name":"New"},{"id":"open","name":"Open"},{"id":"pe
 /** Old archives skipped the ticket backfill. Recognize only schemas produced by
  * this installation's own pre-ticket migrations and supply the new ticket cells.
  * The portability engine still validates every row, checksum and foreign key. */
-export async function ticketArchivePolicy(root,input,excludedMigrations=name=>/^1[34][0-9]_/.test(name)||name>='191_'){
+export async function ticketArchivePolicy(root,input,excludedMigrations=name=>/^1[346][0-9]_/.test(name)||name>='191_'){
  const scratch=new DatabaseSync(':memory:'),config=policy(input),acceptedSchemas={...input.acceptedSchemas};
  const db={prepare(sql){return {bind(...args){this.args=args;return this;},async all(){return {results:scratch.prepare(sql).all(...(this.args??[]))};}};}};
  try{
@@ -26,7 +26,7 @@ export async function ticketArchivePolicy(root,input,excludedMigrations=name=>/^
    acceptedSchemas[await schemaIdentity(db,config)]={upgradeRow(table,row){
     if(table==='conversations'&&row.status_id===undefined){
      const category=row.resolved_at!==null?'solved':row.revision>0?'open':'new';
-     return {...row,status_id:category,status_category:category,subject:'',priority:'normal',channel:'widget',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'rer'};
+     return {...row,status_id:category,status_category:category,subject:'',priority:'normal',channel:'widget',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'rer',mailbox_id:null};
     }
     if(table==='contact_erasures'&&row.ticket_records===undefined)return {...row,ticket_records:0};
     // 146: an archived participant has no record of how it joined, so it stays unproven.

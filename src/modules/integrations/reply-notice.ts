@@ -5,6 +5,7 @@ const escape=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;
 /** Without a reply address an emailed answer cannot be answered by email, so it says
  * so and links to the chat on the workspace's website, where the widget opens itself. */
 export async function withChatReplyNotice<T extends {text:string;html:string}>(env:Env,projectId:string,content:T):Promise<T>{
+ if(typeof env.H2H_CONNECTED_MESSAGE_MAILBOX==='string')return content
  const row=await env.DB.prepare('SELECT allowed_origin FROM projects WHERE id=?').bind(projectId).first<{allowed_origin:string|null}>()
  let link:string|null=null
  try{const url=new URL(String(row?.allowed_origin));if(['http:','https:'].includes(url.protocol))link=`${url.origin}/#launch-chat`}catch{}

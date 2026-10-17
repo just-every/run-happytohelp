@@ -17,6 +17,7 @@ export function selectedEmailProvider(env:Env):EmailProvider|null{
  return providers.includes(value)?value:null
 }
 export function emailConfigured(env:Env){
+ if(typeof env.H2H_CONNECTED_MESSAGE_MAILBOX==='string')return true
  if(localMailOrigin(env)||demoMode(env))return typeof env.EMAIL_FROM==='string'&&Boolean(env.EMAIL_FROM.trim())
  const provider=selectedEmailProvider(env)
  return Boolean(provider&&typeof env.EMAIL_API_KEY==='string'&&env.EMAIL_API_KEY.trim()&&typeof env.EMAIL_FROM==='string'&&env.EMAIL_FROM.trim()&&(provider!=='cloudflare'||/^[a-f0-9]{32}$/i.test(String(env.EMAIL_ACCOUNT_ID||''))))
@@ -27,7 +28,7 @@ function namedAddress(from:string){
  return named?{name:named[1].trim(),address:named[2]}:from
 }
 export function providerMessage(input:EmailInput,from:string){
- return {from,to:[input.to],subject:input.subject,text:input.text,...(input.html?{html:input.html}:{}),...(input.replyTo?{replyTo:input.replyTo}:{}),...(input.headers?{headers:input.headers}:{}),...(input.attachments?.length?{attachments:input.attachments.map(file=>({filename:file.filename,contentType:file.contentType,content:Uint8Array.from(atob(file.content),char=>char.charCodeAt(0)),...(file.contentId?{contentId:file.contentId,disposition:'inline' as const}:{})}))}:{}),deliveryId:input.idempotencyKey}
+ return {from,to:[input.to],...(input.cc?.length?{cc:[...input.cc]}:{}),...(input.bcc?.length?{bcc:[...input.bcc]}:{}),subject:input.subject,text:input.text,...(input.html?{html:input.html}:{}),...(input.replyTo?{replyTo:input.replyTo}:{}),...(input.headers?{headers:input.headers}:{}),...(input.attachments?.length?{attachments:input.attachments.map(file=>({filename:file.filename,contentType:file.contentType,content:Uint8Array.from(atob(file.content),char=>char.charCodeAt(0)),...(file.contentId?{contentId:file.contentId,disposition:'inline' as const}:{})}))}:{}),deliveryId:input.idempotencyKey}
 }
 export function validateEmailInput(input:EmailInput,from:string){
  if(new TextEncoder().encode(JSON.stringify(input)).byteLength>24*1024*1024)throw new Error('Email content exceeds the total size limit')
@@ -41,7 +42,7 @@ export function providerRequest(env:Env,input:EmailInput,from:string):[string,Re
   method:'POST',headers:{Authorization:`Bearer ${env.EMAIL_API_KEY}`,'Content-Type':'application/json',...(!cloudflare?{'Idempotency-Key':input.idempotencyKey}:{})},
   // Cloudflare Email Sending restricts custom headers to an allow-list that has not been
   // verified for Auto-Submitted, so extra headers are sent through Resend and SendGrid only.
-  body:JSON.stringify({from:cloudflare?namedAddress(from):from,to:[input.to],subject:input.subject,text:input.text,...(input.html?{html:input.html}:{}),...(input.attachments?.length?{attachments:input.attachments.map(file=>cloudflare?{filename:file.filename,content:file.content,type:file.contentType,disposition:file.contentId?'inline':'attachment',...(file.contentId?{content_id:file.contentId}:{})}:{filename:file.filename,content:file.content,content_type:file.contentType,...(file.contentId?{content_id:file.contentId}:{})})}:{}),...(input.replyTo?{reply_to:input.replyTo}:{}),...(!cloudflare&&input.headers&&Object.keys(input.headers).length?{headers:input.headers}:{})}),signal:AbortSignal.timeout(20000),
+  body:JSON.stringify({from:cloudflare?namedAddress(from):from,to:[input.to],...(input.cc?.length?{cc:[...input.cc]}:{}),...(input.bcc?.length?{bcc:[...input.bcc]}:{}),subject:input.subject,text:input.text,...(input.html?{html:input.html}:{}),...(input.attachments?.length?{attachments:input.attachments.map(file=>cloudflare?{filename:file.filename,content:file.content,type:file.contentType,disposition:file.contentId?'inline':'attachment',...(file.contentId?{content_id:file.contentId}:{})}:{filename:file.filename,content:file.content,content_type:file.contentType,...(file.contentId?{content_id:file.contentId}:{})})}:{}),...(input.replyTo?{reply_to:input.replyTo}:{}),...(!cloudflare&&input.headers&&Object.keys(input.headers).length?{headers:input.headers}:{})}),signal:AbortSignal.timeout(20000),
  }]
 }
 export async function sendGridDelivery(env:Env,input:EmailInput,from:string){

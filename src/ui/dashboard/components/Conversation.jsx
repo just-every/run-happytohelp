@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import Api from "../api";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import ConversationHeader from "./ConversationHeader";
+import EmailFollowups from './EmailFollowups';
 import ConversationForm from "./ConversationForm";
 import PropTypes from "prop-types";
 import { ChatContext } from "../contexts/ChatContext";
@@ -142,7 +143,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         setFiles(currentFiles => currentFiles.filter(item => item.id !== file.id));
     };
 
-    const handleSendMessage = async (messageContent, sendAndClose = false) => {
+    const handleSendMessage = async (messageContent, sendAndClose = false, email) => {
         const lastBucket = buckets[buckets.length - 1];
         if (!lastBucket) {
             return Promise.reject(new Error('Conversation history is not ready.'));
@@ -155,6 +156,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
             conversation_id: conversationId,
             media_ids: files.map(file => file.id),
             local_id: uuidv4(),
+            ...(email ? {email} : {}),
         };
         if (sendAndClose) {
             message.resolve = true;
@@ -314,6 +316,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                     />
                     { resolutionErrors?.[conversationId] && <p className="conversation-load-error conversation-resolution-error" role="alert">{ resolutionErrors[conversationId] }</p> }
 
+                    <EmailFollowups projectId={conversationProjectId} conversationId={conversationId}/>
                     <ScrollToBottom className="chat-content" followButtonClassName="follow-button-hide" forwardRef={ infiniteRef }>
                         { loadError && <p className="conversation-load-error px-2 py-2" role="alert">
                             Couldn’t refresh this conversation. <button type="button" onClick={ retryConversationLoad }>Retry</button>

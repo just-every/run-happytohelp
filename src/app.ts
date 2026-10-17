@@ -33,6 +33,7 @@ import {surveyReports} from './modules/reports/surveys'
 import {delegation} from './edition/delegation/routes'
 import {consent} from './edition/delegation/consent'
 import {nativeDelegation} from './edition/delegation/launch'
+import {createOutboundTicketRoutes} from './modules/management/outbound-tickets'
 
 export const app = new Hono<AppEnv>()
 app.use('/api/*',async(c,next)=>{
@@ -83,6 +84,8 @@ app.route('/preview',previewRoutes)
 app.route('/api/integrations',inboundEmail)
 app.route('/api/dashboard',dashboardRoutes)
 app.route('/api/dashboard',tags)
+app.route('/api/dashboard',createOutboundTicketRoutes(applyMessageEffects))
+app.route('/api/management',createOutboundTicketRoutes(applyMessageEffects))
 app.route('/api/move-in',moveInRoutes)
 app.route('/api/widget',publicWidget)
 app.route('/api/widget',legacyWidget)

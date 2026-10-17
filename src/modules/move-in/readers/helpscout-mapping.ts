@@ -1,3 +1,4 @@
+import {importedEmailThreadKeys} from '../email-threading'
 import type {SourceRecord} from '../../import-kit/src/types'
 import type {MappingInput,PreparedMapping} from '../types'
 import {LIMITS,recordKey} from '../types'
@@ -52,6 +53,7 @@ export async function prepareHelpScout({projectId,source,tagIds}:MappingInput):P
     for(const dependency of [`collection/${p.collectionId}`,...(Array.isArray(p.categories)?p.categories.map((id:any)=>`category/${id}`):[])])if(conflicts.has(dependency)||listIssues.has(dependency))throw new Error('article_ancestry_incomplete_or_conflicting');const status=helpScoutArticleStatus(p,records);time(p.createdAt,'iso');tables.knowledge_articles=[{id:target,project_id:projectId,category_id:id('category',p.categories.length?`category:${p.categories[0]}`:`collection:${p.collectionId}`),slug:`import-helpscout-${record.sourceId.replace(/[^a-zA-Z0-9-]/g,'-')}-${target.slice(-8)}`,title:text(p.name,'article_title_required'),content:await markdown(text(p.text,'article_body_required')),summary:'',status,updated_at:time(p.updatedAt,'iso'),position:0,source_revision:1,source_incarnation:crypto.randomUUID()}]
     tables.knowledge_article_categories=(p.categories.length?p.categories.map((category:any)=>id('category',`category:${category}`)):[id('category',`collection:${p.collectionId}`)]).map((category_id:string)=>({article_id:target,category_id}));if(p.hasDraft)omissions.push('article_draft_body_provenance_ambiguous_kept_unpublished');if(status==='draft'&&p.status==='published')omissions.push('private_ancestry_kept_unpublished')
    }else{result.effects.set(key,[]);result.omissions.set(key,[...omissions,kind==='article-ref'?'article_list_metadata_only_detail_body_required':kind==='article-draft'?'unpublished_draft_body_retained_only':`source_metadata_only:${kind}`]);continue}
+   if(kind==='conversation')tables.email_threading_keys=importedEmailThreadKeys(projectId,target,'helpscout',record,tables.conversations[0].created_at,source.records.filter(r=>r.kind==='thread-page'&&r.sourceId.split(':')[0]===record.sourceId))
    const value={tables,source:{vendor:'helpscout',kind:record.kind,id:record.sourceId,created_at:p.createdAt??null,updated_at:p.updatedAt??p.userUpdatedAt??null}}
    if(nativeStatementCount(kind,value)>LIMITS.nativeStatements)throw new Error('native_record_statement_limit')
    result.effects.set(key,[{targetKind:kind,targetId:target,value:completeNativeValue(kind,value) as any}])

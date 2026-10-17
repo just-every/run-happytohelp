@@ -1,3 +1,4 @@
+import {importedEmailThreadKeys} from '../email-threading'
 import type {SourceRecord} from '../../import-kit/src/types'
 import type {MappingInput,PreparedMapping} from '../types'
 import {LIMITS,recordKey} from '../types'
@@ -79,6 +80,7 @@ export async function prepareFreshdesk({projectId,actorId,source,tagIds}:Mapping
     tables.macros=[{id:target,project_id:projectId,title:text(p.title,'macro_title_required'),content:await body(p.content_html,p.content,'macro_body_required'),created_by:actorId,created_at:time(p.created_at,'iso'),updated_at:time(p.updated_at,'iso')}]
     if(array(p.attachments).length)omissions.push('attachments_metadata_retained_bytes_not_imported')
    }else{result.effects.set(key,[]);result.omissions.set(key,[...omissions,`unsupported_record_kind:${kind}`]);continue}
+   if(kind==='conversation')tables.email_threading_keys=importedEmailThreadKeys(projectId,target,'freshdesk',record,tables.conversations[0].created_at)
    const value={tables,source:{vendor:'freshdesk',kind:record.kind,id:record.sourceId,created_at:p.created_at??null,updated_at:p.updated_at??null}}
    if(nativeStatementCount(kind,value)>LIMITS.nativeStatements)throw new Error('native_record_statement_limit')
    result.effects.set(key,[{targetKind:kind,targetId:target,value:completeNativeValue(kind,value) as any}])

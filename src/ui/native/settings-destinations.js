@@ -5,6 +5,7 @@ export const settingsDestinations = [
     { label: 'Project', path: 'edit', alias: 'settings' },
     { label: 'Agents', path: 'agents' },
     { label: 'Email', path: 'email-settings' },
+    { label: 'Suspended email', path: 'suspended' },
     { label: 'Widget', path: 'widget-settings' },
     { label: 'Tickets', path: 'ticket-settings' },
     { label: 'Saved Replies', path: 'macros' },
@@ -21,7 +22,7 @@ export const settingsDestinations = [
 ];
 
 // The first five are always listed; the rest sit behind the menu's "More".
-export const settingsMenuHeadCount = 5;
+export const settingsMenuHeadCount = 6;
 
 export const pathIsWithin = (pathname, path) => pathname === path || pathname.startsWith(`${path}/`);
 

@@ -26,6 +26,8 @@ export async function receivingState(env:Env,address:unknown,resolver:MxResolver
  if(!base)return {address:null,ready:false,reason:'no_address'}
  const result=(reason:Receiving['reason'])=>({address:base,ready:reason==='ready',reason})
  if(localMailOrigin(env))return result('local')
+ const connected=await env.DB.prepare("SELECT 1 FROM mailbox_addresses address JOIN mailbox_connections mailbox ON mailbox.id=address.mailbox_id AND mailbox.project_id=address.project_id WHERE address.address=? AND mailbox.status='connected' AND mailbox.provider<>'forwarding'").bind(base).first()
+ if(connected)return result('ready')
  if(typeof env.INBOUND_EMAIL_TOKEN!=='string'||!env.INBOUND_EMAIL_TOKEN)return result('no_token')
  if(inboundNeedsCustomDomain(base))return result('workers_dev')
  const domain=base.slice(base.indexOf('@')+1)

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {mailApp} from './app.mjs'
+import {mailboxProviderJourney} from './mailbox-provider.mjs'
 
 const png=new TextEncoder().encode('image'),b64=bytes=>btoa(String.fromCharCode(...bytes))
 
@@ -21,6 +22,7 @@ async function transport(provider){
 // Every configured transport carries the reply with its inline image and file, a reply address that leads back,
 // and an exact delivery identity; acceptance, refusal, a lost response or a bounce settles once and is never resent.
 export async function transportsJourney(){
+ await mailboxProviderJourney()
  for(const provider of ['sendgrid','resend','cloudflare']){
   const t=await transport(provider),{mail,app}=t
   try{

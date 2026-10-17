@@ -4,6 +4,7 @@ import OwnerTestMail from '../activation/OwnerTestMail';
 import CopyCommand from '../setup-help/CopyCommand';
 import SecretSteps from '../setup-help/SecretSteps';
 import { Section } from './forms';
+import Mailboxes from './email/Mailboxes';
 
 const providers = {resend: 'Resend', sendgrid: 'SendGrid', cloudflare: 'Cloudflare Email Sending'};
 const domainOf = address => String(address || '').split('@')[1] || '';
@@ -75,5 +76,6 @@ export default function EmailSettings({data, status, field, role, projectId}) {
    {!receiving.ready && <p className="settings-note">Until receiving is ready, emails to customers carry no reply address: they ask the customer to answer in the chat on your website.</p>}
    {receiving.reason !== 'no_token' && <RoutingSteps receiving={receiving} installation={status?.installation}/>}
   </Section>
+  <Mailboxes projectId={projectId} role={role}/>
  </>;
 }

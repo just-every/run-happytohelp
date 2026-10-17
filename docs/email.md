@@ -1,0 +1,76 @@
+# Support email
+
+Use **Settings → Email** to configure sending, forwarding and connected mailboxes. Mailbox connections, sender addresses and signatures belong to the current workspace. Owners and admins manage connections; ordinary ticket permissions still apply when an operator sends a reply or creates a ticket.
+
+Forwarding uses the installation's email provider. Connected mailboxes receive and send through the account you authorize. Disconnecting stops intake and sending while keeping ticket history.
+
+## Connect Gmail or Microsoft 365
+
+The person running the installation first registers an OAuth application with Google or Microsoft for this installation. Use your own application credentials and your own HappyToHelp origin; a connection on another installation does not authorize this one.
+
+Set `APP_ORIGIN` to your HTTPS HappyToHelp origin and configure these installation secrets through your private deployment configuration:
+
+| Provider | Settings | Registered redirect URI |
+| --- | --- | --- |
+| Gmail / Google Workspace | `GOOGLE_MAIL_CLIENT_ID`, `GOOGLE_MAIL_CLIENT_SECRET` | `https://<your-origin>/api/management/mailboxes/oauth/gmail/callback` |
+| Microsoft 365 / Outlook | `MICROSOFT_MAIL_CLIENT_ID`, `MICROSOFT_MAIL_CLIENT_SECRET` | `https://<your-origin>/api/management/mailboxes/oauth/microsoft/callback` |
+
+Keep the values in an owner-only private env file. The native deploy declaration accepts these names; install each with `rer deploy --environment YOUR-ENVIRONMENT --env-file private-mail.env --set-secret NAME`, replacing `NAME` with the setting to install. The same command accepts the IMAP settings below.
+
+Both use `INTEGRATION_ENCRYPTION_KEY`, the installation's base64-encoded 32-byte encryption key. Keep that key available for existing connections; replacing it without migrating the encrypted credentials makes those credentials unreadable. Never paste secrets into ticket notes or commit them to the repository.
+
+In **Mailboxes**, choose the connection type, enter a sender/brand name and select **Authorize mailbox**. Complete the provider's consent screen using the intended mailbox account. Authorization expires after ten minutes, works once and is tied to the signed-in administrator and workspace. Complete any requested security verification before continuing.
+
+Gmail requests read-only mail access, permission to send mail and basic mailbox settings access to discover accepted send-as aliases. Microsoft requests offline access, user profile, mail read and mail send access. Your provider or organization may require administrator consent. If authorization fails, resolve the displayed provider/configuration error; the application does not substitute a simulated connection.
+
+## Connect IMAP and SMTP
+
+Choose **IMAP and SMTP** and supply the mailbox address, IMAP host, SMTP host and credentials. The installation operator must include both exact hostnames in `MAILBOX_SOCKET_HOSTS`, a comma-separated allowlist. Wildcards and numeric IP addresses are not accepted.
+
+Connections use TLS from the start: IMAP defaults to port **993**, SMTP to **465**. Custom numeric `imapPort` and `smtpPort` values are supported when included in the installation's comma-separated `MAILBOX_SOCKET_PORTS` allowlist, whose default is `993,465`. Plaintext and STARTTLS configuration are not supported by this connector. The Worker needs socket access to both hosts. Saving verifies access to IMAP and SMTP; a failed check must be resolved before the connection is usable. Separate SMTP credentials may be supplied when the server requires them. Set `MAILBOX_IMAP_AUTHSERV` to the receiving server's trusted authentication-service identity, so the connector can evaluate its authentication results. If unset, IMAP senders remain unverified and their messages require Suspended review. This value is installation configuration, not a message-supplied header or mailbox credential.
+
+## Forwarding, aliases and signatures
+
+For forwarding, configure **Receive Email** and point your existing provider or relay at the installation's inbound route. The [integration setup guide](../src/modules/integrations/README.md#receive-email) describes the forwarding transports and installation sender. Registering a forwarding mailbox does not configure your external mail server's forwarding rule.
+
+Expand a mailbox to manage **Sender and aliases**. Add an alias to receive messages addressed to that alias. Receiving at an alias does not grant permission to send from it. Gmail send-as aliases must be accepted by Google; Microsoft proxy aliases are receive-only in this connector. IMAP aliases use the configured SMTP server, which must permit the selected sender. A forwarding sender also depends on the installation email provider's verified-sender policy.
+
+Under **Email signature**, save a mailbox default or an agent-specific signature. An agent signature takes precedence over that mailbox's default when that agent sends. Choose **Default sender address** and **Save sender identity** to set the mailbox's sender. Sender names, aliases and signatures remain scoped to the selected mailbox and workspace.
+
+## Sync, backfill and reconnect
+
+Expand a mailbox to see its connection status, saved cursor, last successful sync and error. **Sync now** fetches the next bounded batch. The first sync starts with existing Inbox mail, so review the mailbox contents before starting it. **Backfill history** resets the scan to the beginning of the Inbox; use subsequent **Sync now** requests to continue its saved cursor rather than repeatedly restarting backfill. The saved provider cursor records progress, and incoming messages retain stable identities to detect repeated delivery. Gmail stores history/page progress, Microsoft stores a delta link, and IMAP stores UID validity and the last scanned UID.
+
+A rejected or revoked credential shows **Reconnect required**. Use **Reconnect** and authorize the original mailbox account. A mailbox whose saved provider history has expired or whose IMAP UID state changed needs an explicit backfill decision. Do not treat a cursor error as proof that all mail was received.
+
+Disconnecting removes local provider credentials and routing aliases, stops new intake and sending through the connection, and retains ticket history and delivery receipts. It does not revoke the application grant in your Google or Microsoft account; remove that grant at the provider if needed. An outgoing delivery with an unknown outcome needs reconciliation: do not create another send merely because no success response was received. For inbound mail stuck during admission, see [Inbound email recovery](INBOUND-EMAIL-RECOVERY.md).
+
+## Review Suspended mail
+
+Open **Suspended mail** to inspect held messages. The view shows the reason, sender, authentication information, headers and plain text. Its count and oldest-message age help operators review mail before retention expires. Suspended mail creates no ticket, automatic reply, AI work or customer notification while held.
+
+Treat the message's claimed sender and header text as evidence to review. Preview is plain text; HTML, remote images and other active content are not executed. Attachment inspection returns filename, type and size. Small plain-text and JSON attachments can be inspected as text; other files remain metadata-only, so do not assume their contents have been inspected.
+
+Operators with permission to manage conversations can review, recover and delete held mail. Select an existing target conversation or recover into a new ticket. Public recovery requires proven sender authority; an authenticated false-positive spam message returns as a normal customer message without retrospective AI work or acknowledgement. A failed or unproven sender can be retained only with **Recover as a private operator note**, which records it as unverified evidence rather than speaking as the customer. Recovery into a new ticket keeps its requester explicitly unproven. Recovery does not grant the sender authority for future mail; operators may reply normally after review.
+
+Use **Delete email** for unwanted messages. Owners and admins use **Allow sender**, **Block sender** and **Remove sender rule** for a full address or an `@domain` in this workspace. Block rules take precedence. An allow rule does not establish identity or override failed authentication. Recovery, deletion and sender-rule changes are audited.
+
+Held messages expire after **14 days**. Expiry explicitly deletes held content and records an audit event; reads and the scheduled cleanup process remove expired entries. Deleting or expiring held mail does not send a reply.
+
+## Create an email ticket or log a call
+
+From the inbox, open **New ticket**. Choose **Email requester**, enter the requester's email and optional name, select a mailbox and authorized sender address, and add the subject, message and any CC/BCC recipients. Review recipients before **Create and email**. The customer is the requester; the operator is the submitter. CC recipients receive visible copies; BCC recipients receive hidden copies and are not automatically authorized to participate in the ticket.
+
+Choose **Log a call** to record a subject and private call notes for a requester without emailing the customer. Call logs cannot send CC or BCC copies. These flows cover an individual email or call; bulk proactive notices and SMS/WhatsApp template creation are separate unfinished capabilities.
+
+A send failure or unknown delivery result is visible. Retrying the same creation identity must not produce a second ticket or replay a possibly completed send. Investigate an unknown provider outcome before starting another creation.
+
+## Replies after moving from another help desk
+
+Move in preserves supported email threading keys from explicit export fields for Zendesk, Help Scout, Freshdesk and Intercom. These include message reference headers and supported vendor ticket tokens or reply addresses. Export the actual notification headers/reply metadata where possible; a source ticket ID alone cannot reconstruct every notification ever sent.
+
+After you repoint the live email channel, a matching reply can find the imported conversation. Supported subject tokens include native `[H2H:id]`, Zendesk `[XXXX-XXXX]` and Freshdesk `[#number]`; Help Scout and Intercom use explicit reply-address or vendor-header metadata. A token or reply address identifies a candidate ticket, not the sender's identity. Ambiguous matches and replies from a different or unproven customer go to review instead of being attached to another customer's history. Review the authentication evidence and requester before recovering them. Mail carrying an unrecognized ticket token is held for review. Untagged new mail follows ordinary new-ticket routing.
+
+A reply to a Closed ticket creates a linked follow-up; the original ticket stays Closed.
+
+Imports do not activate the old vendor's reply addresses or send notifications. Test replies to real pre-cutover notifications from each vendor before relying on the cutover. See [Move in your history](moving-in.md) for the broader migration boundary.

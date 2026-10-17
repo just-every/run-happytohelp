@@ -10,10 +10,13 @@ import {routingAddresses} from './inbound-sender'
 import {inboundLocalId,legacyInboundLocalId,scopedInboundId} from './inbound-identity'
 import {visibleEmailReply} from './email-reply'
 import {replyGrant} from './email-reply-address'
-import {inboundAuthority,emailContact,unverifiedSenderContact,unusableFromContact,isVerifiedCustomerAddress,emailActor,preferredAddressActor,openEmailConversation,ccContacts} from './inbound-authority'
+import {inboundAuthority,emailContact,emailActor,preferredAddressActor,openEmailConversation,ccContacts} from './inbound-authority'
 import {mailboxAddress} from '../../platform/mailbox'
 import {classifyInboundEmail,evidenceJson,type EmailEvidence} from './email-classification'
 import {CLOSED_TICKET_FINAL,ClosedTicketRefusal,isMemberAddress} from './closed-ticket-mail'
+import {suspendEmail,senderRule} from './suspended-store'
+import {resolveEmailThreadCandidates,emailThreadingStatements} from './email-threading'
+import {emailFollowup} from './email-followups'
 /** `to` lists the recipient addresses in routing order (envelope, forwarding headers,
  * To); the first configured mailbox selects the project. `from` is the header From and
  * `senderAuthenticated` whether the ingress verified it; `senderFailed` that the
@@ -28,7 +31,7 @@ export interface IncomingEmail {messageId:string;to:string|readonly string[];fro
 // the claim token fences admission, so even a live slow attempt cannot admit twice.
 const STALE_CLAIM_MS=2*60*1000
 const alreadyProcessing=()=>new HTTPException(503,{message:'Inbound email is already processing; retry later'})
-export async function receiveEmail(env:Env,input:IncomingEmail){
+export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recoveryId:string;actorId:string}){
  // Routing candidates are deduplicated and bounded; only a message with no valid
  // recipient at all is refused.
  const to=routingAddresses(Array.isArray(input.to)?input.to:[input.to])
@@ -38,11 +41,20 @@ export async function receiveEmail(env:Env,input:IncomingEmail){
  // Malformed or excess CC entries are skipped, never a reason to refuse the message.
  let content=visibleEmailReply(raw);const cc=[...new Set((input.cc||[]).map(value=>emailAddress(value)).filter((value):value is string=>Boolean(value)))].sort().slice(0,20)
  const received=await receivingMailbox(env,[...to,...cc]);if(!received)throw new HTTPException(404,{message:'Inbound mailbox is not configured'})
- const {project,target}=received,unusable=input.fromUnusable===true,authenticated=!unusable&&input.senderAuthenticated!==false
+ const {project,target}=received,unusable=input.fromUnusable===true,authenticated=!unusable&&input.senderFailed!==true&&input.senderAuthenticated!==false
  if(input.conversationId&&target.conversationId&&input.conversationId!==target.conversationId)throw new HTTPException(400,{message:'Conflicting conversation address'})
  const grant=target.replyToken?await replyGrant(env,project.project_id,target.replyToken):null
  if(input.conversationId&&grant&&input.conversationId!==grant.conversation_id)throw new HTTPException(400,{message:'Conflicting conversation address'})
- const addressed=grant?.conversation_id||input.conversationId||target.conversationId||undefined
+ const thread=await resolveEmailThreadCandidates(env,{projectId:project.project_id,messageId,inReplyTo:input.evidence?.headers['in-reply-to'],references:input.evidence?.headers.references,subject:input.evidence?.subject||undefined,to,headers:input.evidence?.headers})
+ // An imported vendor reply address can use the same +suffix syntax as our old
+ // conversation addresses. Its explicit imported mapping is the candidate; the
+ // vendor suffix is not a native conversation id. Sender authority is still
+ // established below, exactly as for every header-based proposal.
+ const mappedVendorAddress=thread.candidates.some(candidate=>candidate.kind==='reply_address'&&candidate.source!=='native'&&to.some(address=>address===candidate.value&&inboundTarget(address)?.mailbox===target.mailbox))
+ const direct=grant?.conversation_id||input.conversationId||(!mappedVendorAddress&&target.conversationId)||undefined
+ const addressed=direct||thread.conversationIds[0]
+ const threadConflict=thread.conflict||Boolean(direct&&thread.conversationIds.some(value=>value!==direct))
+ const recovering=recovery?await env.DB.prepare("SELECT 1 FROM suspended_emails s JOIN memberships m ON m.project_id=s.project_id WHERE s.id=? AND json_extract(s.input_json,'$.messageId')=? AND s.project_id=? AND m.user_id=? AND m.role IN ('owner','admin','operator') AND s.expires_at>?").bind(recovery.recoveryId,messageId,project.project_id,recovery.actorId,Date.now()).first():null
  // Files past the per-message limits are named in the message instead of refusing it.
  const offered=input.attachments||[],attachments=offered.filter(f=>f.content.byteLength<=20000000).slice(0,20),omitted=offered.filter(f=>!attachments.includes(f)).map(f=>f.filename)
  if(omitted.length)content=[content,`(Not kept, over the 20 MB or 20-file email limit: ${omitted.join(', ')})`].filter(Boolean).join('\n\n')
@@ -58,7 +70,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail){
  const consumedGrant=possessed?{recipient:from,token_hash:await hashToken(target.replyToken!)}:undefined
  const refusal=(closed:{id:string;subject:string|null}|null)=>new ClosedTicketRefusal(trusted&&closed?{projectId:project.project_id,conversationId:closed.id,member:from,subject:closed.subject||'',receiptId:recordId}:null)
  if(prior){
-  if(prior.project_id!==project.project_id||prior.intent_hash!==intentHash)throw new HTTPException(409,{message:'Inbound email identity conflict'})
+  if(prior.project_id!==project.project_id||prior.intent_hash!==intentHash&&!recovering)throw new HTTPException(409,{message:'Inbound email identity conflict'})
   // Admission and its outbox are atomic. Reconcile a lost completion write without
   // re-entering customer-message automation or replaying uncertain provider work.
   const admitted=await env.DB.prepare('SELECT id,conversation_id FROM messages WHERE project_id=? AND local_id IN (?,?) AND (? IS NULL OR conversation_id=?)').bind(project.project_id,localId,legacyLocalId,prior.conversation_id,prior.conversation_id).first<{id:string;conversation_id:string}>()
@@ -96,7 +108,13 @@ export async function receiveEmail(env:Env,input:IncomingEmail){
   // Mail with no usable From has no author to authenticate: only the reply address
   // issued to its envelope sender admits it to that thread; otherwise it is kept
   // apart the same way, and no reply is sent to anybody until an operator chooses.
-  const isolated=!trusted&&(unusable||input.senderFailed===true||await isVerifiedCustomerAddress(env,project.project_id,from))
+  const rule=await senderRule(env,project.project_id,from)
+  const blocked=await env.DB.prepare("SELECT 1 FROM contacts WHERE project_id=? AND lower(email)=? AND (coalesce(json_extract(metadata_json,'$.is_blocked'),0)=1 OR coalesce(json_extract(metadata_json,'$.is_erased'),0)=1 OR coalesce(json_extract(metadata_json,'$.is_deleted'),0)=1)").bind(project.project_id,from).first()
+  const spam=input.evidence?.headers['x-spam-flag']==='YES'||Number(input.evidence?.headers['x-spam-score']||0)>=5
+  const isolated=!trusted
+  const selfLoop=from===target.mailbox||from===project.from_address
+  const suspensionReason=rule?.action==='block'||blocked?'blocked_sender':selfLoop?'mail_loop':threadConflict&&!recovering?'conflicting_thread_keys':thread.unrecognizedToken&&!recovering?'unmatched_thread_key':isolated?(unusable?'unusable_from':input.senderFailed?'authentication_failed':'sender_unproven'):spam&&!recovering&&rule?.action!=='allow'?'spam':null
+  if(suspensionReason)return suspendEmail(env,input,{projectId:project.project_id,receiptId:recordId,claimToken,reason:suspensionReason,candidateId:addressed})
   const addressedConversation=addressed?await env.DB.prepare('SELECT * FROM conversations WHERE id=? AND project_id=?').bind(addressed,project.project_id).first<any>():null
   // A Closed ticket is final. A workspace member's mail to it is refused, with a bounce or
   // a notice; it is never stored, and never filed under a contact made from their address.
@@ -104,33 +122,34 @@ export async function receiveEmail(env:Env,input:IncomingEmail){
    await env.DB.prepare("UPDATE inbound_emails SET state='ignored',error=?,conversation_id=? WHERE id=? AND claim_token=?").bind(CLOSED_TICKET_FINAL,addressedConversation.id,recordId,claimToken).run()
    throw refusal(addressedConversation)
   }
-  // The sender is identified against the addressed ticket, Closed or not, exactly as while it is open.
   if(addressedConversation&&!isolated&&(trusted||!grant)){
    actor=await emailActor(env,project.project_id,addressedConversation,from,trusted,possessed)||(possessed?await preferredAddressActor(env,project.project_id,addressedConversation,from):null)
    if(actor)conversation=addressedConversation
   }
-  // Until linked follow-ups exist, that contact's reply to a Closed ticket always opens a
-  // new ticket of their own (a retry returns to it), never another open ticket of theirs.
-  if(conversation?.status_category==='closed'){
-   const contactId=actor!.contactId!
-   conversation=(prior?.conversation_id&&prior.conversation_id!==conversation.id?await env.DB.prepare("SELECT * FROM conversations WHERE id=? AND project_id=? AND contact_id=? AND status_category<>'closed'").bind(prior.conversation_id,project.project_id,contactId).first<any>():null)||await newConversation(env,project.project_id,contactId,recordId,claimToken)
-  }
+  if(addressed&&!actor)return suspendEmail(env,input,{projectId:project.project_id,receiptId:recordId,claimToken,reason:'thread_identity_mismatch',candidateId:addressed})
+  if(conversation?.status_category==='closed')conversation=await emailFollowup(env,conversation,messageId,actor!.contactId!)
   // Everything else is the sender's own mail to the support mailbox: it continues
   // their most recently active open thread or starts one, and is never refused.
   if(!actor){
-   const contact=!isolated?await emailContact(env,project.project_id,from):unusable?await unusableFromContact(env,project.project_id,from):await unverifiedSenderContact(env,project.project_id,from)
+   const contact=await emailContact(env,project.project_id,from)
    if(!contact){
     await env.DB.prepare("UPDATE inbound_emails SET state='ignored',error='Contact is unavailable' WHERE id=? AND claim_token=?").bind(recordId,claimToken).run()
     return {id:messageId,state:'ignored',conversationId:null,duplicate:false,automatic}
    }
    actor={id:contact.id,contactId:contact.id,projectId:project.project_id,role:'contact'}
-   conversation=(prior?.conversation_id?await env.DB.prepare("SELECT * FROM conversations WHERE id=? AND project_id=? AND contact_id=? AND status_category<>'closed'").bind(prior.conversation_id,project.project_id,contact.id).first<any>():null)||await openEmailConversation(env,project.project_id,contact.id)
+   conversation=(prior?.conversation_id?await env.DB.prepare("SELECT * FROM conversations WHERE id=? AND project_id=? AND contact_id=? AND status_category<>'closed'").bind(prior.conversation_id,project.project_id,contact.id).first<any>():null)||await openEmailConversation(env,project.project_id,contact.id,project.mailbox_id)
    if(!conversation){
-    await newConversation(env,project.project_id,contact.id,recordId,claimToken,"WHERE NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND contact_id=? AND resolved_at IS NULL AND status_category<>'closed')")
-    conversation=await openEmailConversation(env,project.project_id,contact.id)
+    const key=id(),now=Date.now()
+    await env.DB.batch([
+     env.DB.prepare("INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at,mailbox_id) SELECT ?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND contact_id=? AND resolved_at IS NULL AND status_category<>'closed' AND (? IS NULL OR mailbox_id=?))").bind(key,project.project_id,contact.id,now,now,project.mailbox_id,project.project_id,contact.id,project.mailbox_id,project.mailbox_id),
+     env.DB.prepare('UPDATE inbound_emails SET conversation_id=? WHERE id=? AND claim_token=? AND EXISTS(SELECT 1 FROM conversations WHERE id=? AND project_id=?)').bind(key,recordId,claimToken,key,project.project_id),
+     trackingStatement(env,key,true),
+    ])
+    conversation=await openEmailConversation(env,project.project_id,contact.id,project.mailbox_id)
    }
   }
   await env.DB.prepare('UPDATE inbound_emails SET conversation_id=? WHERE id=? AND claim_token=?').bind(conversation.id,recordId,claimToken).run()
+  if(project.mailbox_id)await env.DB.prepare('UPDATE conversations SET mailbox_id=? WHERE id=? AND project_id=? AND mailbox_id IS NULL').bind(project.mailbox_id,conversation.id,project.project_id).run()
   // CC recipients become participants atomically with message admission, only for a
   // sender whose identity or reply address is proven; otherwise they are skipped.
   const participants=automatic||!trusted?[]:await ccContacts(env,project.project_id,conversation,cc,workspace)
@@ -143,11 +162,12 @@ export async function receiveEmail(env:Env,input:IncomingEmail){
    await env.DB.prepare('INSERT INTO media(id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,created_at) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET conversation_id=excluded.conversation_id,uploaded_by=excluded.uploaded_by,object_key=excluded.object_key WHERE media.message_id IS NULL AND media.project_id=excluded.project_id').bind(key,project.project_id,conversation.id,actor.id,objectKey,file.filename,file.contentType,file.content.byteLength,Date.now()).run()
    mediaIds.push(key)
   }
-  const result=await admitMessage(env,{projectId:project.project_id,conversationId:conversation.id,actor,localId,content,expectedRevision:conversation.revision,expectedLastMessageId:conversation.last_message_id,mediaIds,[inboundAuthority]:{sender:from,receiptId:recordId,claimToken,raw,cc:participants,authenticated,...(possessed?{grant:await hashToken(target.replyToken!)}:{})}})
+  const result=await admitMessage(env,{projectId:project.project_id,conversationId:conversation.id,actor,localId,content,expectedRevision:conversation.revision,expectedLastMessageId:conversation.last_message_id,mediaIds,[inboundAuthority]:{sender:from,receiptId:recordId,claimToken,raw,cc:participants,authenticated,...(project.mailbox_id?{mailboxId:project.mailbox_id,mailboxAddress:target.mailbox}:{}),...(possessed?{grant:await hashToken(target.replyToken!)}:{})}})
   // Closed between routing and admission: a temporary failure, so the retry opens the new ticket.
   if(result.reason==='ticket_closed_followup_required')throw new HTTPException(503,{message:'The addressed ticket was closed; retry later'})
   if(!result.accepted)throw new Error(result.reason)
   await env.DB.prepare("UPDATE inbound_emails SET state='delivered',message_id=?,error=NULL WHERE id=?").bind(String(result.message!.id),recordId).run()
+  await env.DB.batch(emailThreadingStatements(env,{projectId:project.project_id,conversationId:conversation.id,keys:[{kind:'message_id',value:messageId,source:'native',sourceRef:String(result.message!.id)}],createdAt:Date.now()}))
   await keepReplyTarget(env,project.project_id,actor,input.replyTo,{authenticated,automatic,workspace})
   return {id:messageId,state:'delivered',conversationId:conversation.id,duplicate:false,automatic,message:result.message,actor}
  }catch(error){await env.DB.prepare("UPDATE inbound_emails SET state='failed',error=? WHERE id=? AND state='processing' AND claim_token=?").bind(String(error).slice(0,1000),recordId,claimToken).run();throw error}

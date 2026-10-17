@@ -13,6 +13,7 @@ import {customerTicket} from '../tickets/customer'
 import type {DeferEmailDelivery} from '../integrations/email'
 import {customerMergeTarget,assertWritableConversation} from '../conversation-actions/merge-read'
 import {macroAttachmentAvailableSql} from '../macros/attachments'
+import {stageEmailMessageOptions} from '../integrations/email-command-options'
 /** `responderReady` says whether an assistant's model can reach its provider. Without it every default assistant is assigned. */
 export function createConversationRoutes(onCommittedMessage?:(env:Env,message:Record<string,unknown>,actor:Actor,defer?:DeferEmailDelivery)=>Promise<unknown>,responderReady?:(env:Env,model:string)=>boolean){
 const routes=new Hono<AppEnv>()
@@ -41,6 +42,7 @@ routes.post('/:id/messages',async c=>{
  // ids are written by contact erasure and must stay unique within a conversation.
  if(reservedLocalId(b?.localId))throw new HTTPException(400,{message:'Reserved local id prefix'})
  if(actor.role==='contact')await enforceRateLimits(c.env,[['messagesPerConversationMinute',conversation.id],['messagesPerContactHour',actor.contactId!]])
+ await stageEmailMessageOptions(c.env,actor,conversation,b)
  const admitting=performance.now(),result=await admitMessage(c.env,{...b,actor,projectId:actor.projectId,conversationId:conversation.id,generationId:undefined,sessionHash:c.get('sessionHash')}),admitted=performance.now()
  let generationError:string|undefined
  // Operator replies acknowledge only after notification preparation and the

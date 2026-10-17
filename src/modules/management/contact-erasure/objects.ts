@@ -4,6 +4,8 @@ import {localJobs,media} from './scope'
 import {fenceAdmittedIdentity} from './admitted-identity'
 import {macroErasureObjectStatements} from '../../macros/erasure'
 import {conversationActionErasureStage} from '../../conversation-actions/erasure'
+import {emailErasureObjectStatements} from '../../integrations/email-erasure'
+import {contactEmails} from './identity'
 
 const R2_DELETE_LIMIT = 1000
 
@@ -21,6 +23,7 @@ export async function fenceAndStage(env: Env, projectId: string, contactId: stri
     env.DB.prepare('UPDATE sessions SET revoked_at=coalesce(revoked_at,?3) WHERE project_id=?1 AND contact_id=?2').bind(projectId, contactId, now),
     bound(`INSERT OR IGNORE INTO contact_erasure_objects(project_id,contact_id,kind,source_id,object_key) SELECT ?1,?2,'media',id,object_key FROM media WHERE ${media}`),
     bound(`INSERT OR IGNORE INTO contact_erasure_objects(project_id,contact_id,kind,source_id,object_key) SELECT ?1,?2,'local_attachment',id,storage_key FROM local_attachments WHERE job_id IN (${localJobs})`),
+    ...emailErasureObjectStatements(env,projectId,contactId,contactEmails(snapshot)),
   ])
   return fenceImportErasure(env,projectId,contactId)
 }

@@ -1,3 +1,4 @@
+import {importedEmailThreadKeys} from '../email-threading'
 import type { SourceBundle, SourceRecord } from '../../import-kit/src/types'
 import type { MappingInput, PreparedMapping, Vendor } from '../types'
 import { recordKey,LIMITS } from '../types'
@@ -107,6 +108,7 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
     tables.knowledge_articles=[{id:target,project_id:projectId,category_id:null,slug:`import-${vendor}-${record.sourceId.replace(/[^a-zA-Z0-9-]/g,'-')}-${target.slice(-8)}`,title:text(p.title,'article_title_required'),content:vendor==='intercom'&&typeof p.body_markdown==='string'?text(p.body_markdown,'article_body_required'):await htmlToMarkdown(text(p.body,'article_body_required')),summary:'',status,updated_at:updated,position:0,source_revision:1,source_incarnation:crypto.randomUUID()}]
     if(p.translated_content||p.section_id||p.parent_id||p.tags||p.scheduled_publish_at||p.scheduled_unpublish_at||p.ai_agent_availability)omissions.push('article_structure_or_translations_retained_in_original_only')
    }else{result.effects.set(key,[]);result.omissions.set(key,[`unsupported_record_kind:${record.kind}`]);continue}
+   if(kind==='conversation')tables.email_threading_keys=importedEmailThreadKeys(projectId,target,vendor,record,tables.conversations[0].created_at)
    const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,created_at:p.created_at??null,updated_at:p.updated_at??null}}
    if(nativeStatementCount(kind,value)>LIMITS.nativeStatements)throw new Error('native_record_statement_limit');result.effects.set(key,[{targetKind:kind,targetId:target,value:completeNativeValue(kind,value) as any}]);if(omissions.length)result.omissions.set(key,omissions)
   }catch(error){result.rejections.set(key,error instanceof Error?error.message:'record_mapping_failed');result.effects.set(key,[]);if(omissions.length)result.omissions.set(key,omissions)}

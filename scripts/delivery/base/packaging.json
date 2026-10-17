@@ -89,7 +89,14 @@
         "GITHUB_CLIENT_SECRET",
         "GITHUB_TOKEN",
         "GITHUB_TOKENS",
-        "TURNSTILE_SECRET"
+        "TURNSTILE_SECRET",
+        "GOOGLE_MAIL_CLIENT_ID",
+        "GOOGLE_MAIL_CLIENT_SECRET",
+        "MICROSOFT_MAIL_CLIENT_ID",
+        "MICROSOFT_MAIL_CLIENT_SECRET",
+        "MAILBOX_SOCKET_HOSTS",
+        "MAILBOX_SOCKET_PORTS",
+        "MAILBOX_IMAP_AUTHSERV"
       ],
       "surfaces": {
         "app": {

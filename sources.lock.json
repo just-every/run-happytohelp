@@ -9446,7 +9446,7 @@
       "executable": false
     },
     "tests/helpers/first-run/visitor-profile.mjs": {
-      "sha256": "2cfe725e778c73b8a3880372c202b7f67c71d7ac5d4f4fcdcdc4d639d13da984",
+      "sha256": "8c740da222a0986148786e3ddaa81000c6f22bc9ac46494eccd522912abf3058",
       "executable": false
     },
     "tests/helpers/help-center-link-contrast.mjs": {

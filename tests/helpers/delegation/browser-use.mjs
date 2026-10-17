@@ -94,9 +94,14 @@ async function useAtWidth({runtime,browser,shot,width,kind,races}){
   await page.locator('.saved-replies-picker').waitFor({state:'hidden'})
   assert.ok((await composer.inputValue()).includes('Ordinary typing still works.'));assert.ok((await composer.inputValue()).includes(savedReply.content))
   const savedText=await composer.inputValue()
+  // Clearing the composer discards the saved macro draft: a reload does not bring it back.
+  const draftDoor=method=>page.waitForResponse(response=>response.request().method()===method&&new URL(response.url()).pathname.endsWith('/macro-draft'))
+  const discarded=draftDoor('DELETE')
   await composer.fill('');assert.equal(owners(await visitor.transcript()).length,2)
-  // Macro drafts persist across reloads. Review and send this one before the
-  // separate late-assistant-response checks, which start with an empty composer.
+  assert.equal((await discarded).status(),200)
+  const reloaded=draftDoor('GET');await page.reload();await composer.waitFor();assert.equal((await (await reloaded).json()).data,null)
+  assert.equal(await composer.inputValue(),'')
+  // Send this reply before the separate late-assistant-response checks, which start with an empty composer.
   await composer.fill(savedText)
   await page.getByRole('button',{name:'Send',exact:true}).click();await visitor.page.getByText(savedText,{exact:true}).waitFor()
   assert.equal(owners(await visitor.transcript()).length,3)

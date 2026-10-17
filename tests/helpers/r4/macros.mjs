@@ -52,6 +52,13 @@ export async function macrosJourney(){
   const bulk=await run(v2,'apply',bulkSelection,{command_id:'reviewed-bulk'})
   assert.equal(bulk.results.filter(r=>r.status==='applied').length,30);assert.equal(bulk.results[0].status,'stale');assert.equal(bulk.results.at(-1).status,'forbidden')
   assert.equal((await get(tickets[1].id)).priority,'urgent')
+  // Discarding names the draft's own macro use; another use's discard leaves it, and only its operator's draft goes.
+  const draftPath=`/conversations/${tickets[1].id}/macro-draft`
+  assert.ok((await call(draftPath)).data.data.content)
+  assert.equal((await ok(`${draftPath}?usage_id=another-use`,undefined,'owner','DELETE')).discarded,false)
+  assert.equal((await ok(`${draftPath}?usage_id=${bulk.results[1].usage_id}`,undefined,'operator','DELETE')).discarded,false)
+  assert.equal((await ok(`${draftPath}?usage_id=${bulk.results[1].usage_id}`,undefined,'owner','DELETE')).discarded,true)
+  assert.equal((await call(draftPath)).data.data,null)
   assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',tickets[1].id)).n,1,'bulk never publishes replies')
   assert.equal((await ok(`/macros/${macro.id}/usage`)).reduce((n,u)=>n+u.uses,0),31)
   const absent=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey},headers:{Origin:w.allowedOrigin}})

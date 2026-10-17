@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import {mailApp,recipients} from '../email/app.mjs'
+import {mailApp,recipients,replyTo} from '../email/app.mjs'
 import {sha} from '../../journeys/kit/app.mjs'
 
 // One public-door journey. Only mail provider/DNS are network fixtures; persistence,
@@ -17,12 +17,14 @@ export async function notificationTriggersJourney(){
    DB.prepare("INSERT INTO memberships VALUES('p','watch','operator'),('p','quiet','operator')"),
    DB.prepare("INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES('p','watch','collaborator',1)"),
    DB.prepare("INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,'watch','p','operator',?)").bind(sha('watch-token'),Date.now()+3600000),
+   // cc@ is independently proven (a widget-signed identity); a Cc header alone proves nothing.
+   DB.prepare("INSERT INTO contacts(id,project_id,email,external_id,is_verified,metadata_json,created_at) VALUES('signed-cc','p','cc@example.com','cc@example.com',1,'{}',1)"),
   ])
   const watch={Authorization:'Bearer watch-token'}
   const settings=await call(`${base}/notification-triggers`,undefined,'GET')
   await call(`${base}/notification-triggers`,{triggers:settings.data.map(row=>({...row,expected_reply_time:'within two business hours'}))})
   assert.equal((await app.call(`${base}/notification-triggers`,{headers:watch,method:'PUT',body:{triggers:settings.data}})).status,403,'collaborator cannot change workspace triggers')
-  const request={messageId:'r4-request',to:'inbound@example.com',from:'requester@example.com',cc:['cc@example.com','CC@example.com'],text:'Please help with my order'}
+  const request={messageId:'r4-request',to:'inbound@example.com',from:'requester@example.com',cc:['cc@example.com','CC@example.com','never-seen1@example.net','never-seen2@example.org'],text:'Please help with my order'}
   assert.equal((await m.gateway(request)).status,201);await settle()
   const id=(await m.claim(request.messageId)).conversation_id,first=await m.admitted(request.messageId)
   for(const address of ['requester@example.com','cc@example.com']){
@@ -31,10 +33,13 @@ export async function notificationTriggersJourney(){
    assert.match(notices('received',address)[0].body.text,/two business hours/)
    assert.equal(notices('received',address)[0].body.headers['X-Auto-Response-Suppress'],'All')
   }
+  // K3: Cc addresses that never wrote to the desk get no notice.
+  for(const address of ['never-seen1@example.net','never-seen2@example.org'])assert.equal(notices('received',address).length,0,`${address} is an unproven CC`)
   await m.gateway(request);await m.replay(first);await settle()
   assert.equal(notices('received','requester@example.com').length,1)
   await call(ticket(id),{resolved:true});await settle();await call(ticket(id),{resolved:false});await call(ticket(id),{resolved:true});await settle()
   assert.equal(notices('solved','requester@example.com').length,1);assert.equal(notices('solved','cc@example.com').length,1)
+  assert.equal(notices('solved','never-seen1@example.net').length+notices('solved','never-seen2@example.org').length,0)
   const audit=await call(`${base}/audit?limit=200`,undefined,'GET')
   assert.ok(audit.data.some(event=>event.action==='notifications.delivery_outcome'&&event.target_id===id),'notification outcome appears in the workspace audit log')
   // Widget's own typed address is a destination, never a proven CC identity.
@@ -94,6 +99,21 @@ export async function notificationTriggersJourney(){
   const raceBefore=mail.sent.length
   await app.call(`/api/conversations/${raced.data.id}/messages`,{token:'widget-token',headers:{'x-test-statement':'INSERT OR IGNORE INTO notification_trigger_claims','x-test-before-statement':`UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erasing',1) WHERE id='widget-contact'`},body:{localId:'race-request',content:'A final request',expectedRevision:0},status:200});await settle()
   assert.equal(mail.sent.length,raceBefore)
+  // A sender's 40 Cc addresses and own subject reach nobody but the sender; a Cc participant
+  // that writes back through the reply address the desk issued it is proven from then on.
+  await call(`${base}/notification-triggers`,{triggers:settings.data.map(row=>row.event==='request_received'?{...row,subject:'Re: {{ticket.subject}}'}:row)})
+  const bulkCc=Array.from({length:40},(_,index)=>`bulk${index}@victims${index}.example`),bulkSent=mail.sent.length
+  const bulk={messageId:'r4-bulk-cc',to:'inbound@example.com',from:'bulk@example.com',cc:bulkCc,subject:'Visit http://spam.example now',text:'Hello'}
+  assert.equal((await m.gateway(bulk)).status,201);await settle()
+  const subjectMail=mail.sent.slice(bulkSent).filter(entry=>entry.body.subject?.includes('spam.example'))
+  assert.deepEqual(subjectMail.map(entry=>recipients(entry.body)),[['bulk@example.com']],'only the requester receives the notice and its subject')
+  const bulkId=(await m.claim(bulk.messageId)).conversation_id,relay=mail.sent.slice(bulkSent).find(entry=>recipients(entry.body).includes('bulk0@victims0.example'))
+  assert.equal((await m.gateway({messageId:'r4-bulk-cc-reply',to:replyTo(relay.body),from:'bulk0@victims0.example',text:'I am on this order too'})).status,201);await settle()
+  const joined=(await call(ticket(bulkId),undefined,'GET')).data.participants
+  assert.equal(joined.find(row=>row.email==='bulk0@victims0.example').pivot.joined_via,'self')
+  assert.ok(joined.filter(row=>row.email!=='bulk0@victims0.example').every(row=>row.pivot.joined_via==='cc_header'))
+  await call(ticket(bulkId),{resolved:true});await settle()
+  assert.deepEqual(mail.sent.slice(bulkSent).filter(entry=>entry.body.subject?.includes('solved')).map(entry=>recipients(entry.body)[0]).sort(),['bulk0@victims0.example','bulk@example.com'])
   // Missing placeholders are a visible failure and never customer text.
   await call(`${base}/notification-triggers`,{triggers:settings.data.map(row=>({...row,body:'Hello {{ticket.custom.nonexistent}}'}))})
   await m.gateway({...lostRequest,messageId:'r4-template-error',from:'template-error@example.com'});await settle()

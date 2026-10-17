@@ -28,8 +28,14 @@ its new personal customer_updated email preference also gates that digest.
 
 Received and solved each claim once per ticket, not once per resolution cycle.
 Imported, machine and isolated tickets are excluded using current stored provenance
-in addition to caller source. Customer CCs must be current proven participants;
-a widget's own contact remains a notification destination without becoming a
+in addition to caller source. A customer CC is notified only when it is a current
+participant proven independently of the Cc header that named it
+(`participant-proof.ts`): an operator added it, it has written to the ticket itself
+(authenticated mail or its issued reply address), it is a widget-signed identity, or
+it has itself sent authenticated mail to the workspace. Each participant records
+how it joined (`joined_via`: `cc_header`, `operator`, `self`); a Cc header alone
+never makes an address proven, so a sender cannot have the desk mail third parties.
+A widget's own contact remains a notification destination without becoming a
 proven inbound identity. All recipients are deduplicated by address. The claim
 freezes the recipient set before the provider batch; a claimed/uncertain result
 never reconstructs recipients or sends again. Reconciliation is explicit outside
@@ -61,7 +67,7 @@ template: {subject, body}, actorId?, source?, expectedReplyTime?})` sends a
 post-commit workflow action. It is exported from `triggers.ts`. The source values
 and template syntax match the event API. Supply a committed stable action ID;
 that ID and audience claim separately from the default once-per-ticket triggers.
-Requester means requester plus proven customer CCs. Assignee, unassigned group
+Requester means requester plus independently proven customer CCs, as above. Assignee, unassigned group
 and follower recipients must currently belong to the workspace; personal
 customer_updated, group and follower preferences govern their respective inbox
 and email channels. The actor receives no self notice. Templates see the same

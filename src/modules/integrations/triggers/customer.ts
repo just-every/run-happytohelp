@@ -5,6 +5,7 @@ import {loopSuppressionHeaders} from '../notification-delivery'
 import {recipientReplyAddress} from '../email-reply-address'
 import {notificationRecipients,type NotificationContact} from '../notification-recipients'
 import {provenAddressSql} from '../inbound-authority'
+import {noticeParticipantSql} from '../participant-proof'
 import type {TicketNotificationEvent} from '../triggers'
 import {notificationTicket,notificationTicketSql} from './eligibility'
 import {defaultTriggers,renderNotificationTemplate} from './templates'
@@ -27,10 +28,10 @@ export async function customerTicketNotification(env:Env,event:TicketNotificatio
  if(!emailConfigured(env))return {state:'not_configured'}
  const settings=await env.DB.prepare('SELECT inbound_address,is_enabled FROM email_settings WHERE project_id=?').bind(event.projectId).first<any>()
  if(settings?.is_enabled===0)return {state:'disabled'}
- // Requester is its own widget destination; customer CCs must already be proven participants.
+ // Requester is its own widget destination; a CC participant only once independently proven (participant-proof.ts).
  const contacts=await env.DB.prepare(`SELECT ct.* FROM contacts ct WHERE ct.project_id=? AND (ct.id=? OR (${provenAddressSql('ct')}
  AND coalesce(json_extract(ct.metadata_json,'$.unverified_sender'),0)!=1
- AND EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=? AND cp.contact_id=ct.id))) ORDER BY ct.id=? DESC,ct.id`)
+ AND EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=? AND cp.contact_id=ct.id AND ${noticeParticipantSql('ct','cp')}))) ORDER BY ct.id=? DESC,ct.id`)
  .bind(event.projectId,ticket.contact_id,ticket.id,ticket.contact_id).all<NotificationContact>()
  const {recipients}=notificationRecipients(contacts.results,undefined)
  if(!recipients.length)return {state:'no_recipient'}
@@ -52,7 +53,7 @@ export async function customerTicketNotification(env:Env,event:TicketNotificatio
  WHERE current.id=json_extract(j.value,'$.id') AND current.project_id=? AND current.email IS json_extract(j.value,'$.email')
  AND current.metadata_json IS json_extract(j.value,'$.metadata_json')
  AND current.is_verified IS json_extract(j.value,'$.is_verified') AND current.external_id IS json_extract(j.value,'$.external_id')
- AND (current.id=? OR EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=? AND cp.contact_id=current.id))))`)
+ AND (current.id=? OR EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=? AND cp.contact_id=current.id AND ${noticeParticipantSql('current','cp')}))))`)
  .bind(id,event.projectId,ticket.id,claimEvent,JSON.stringify({recipients:recipients.map(r=>r.email)}),Date.now(),ticket.id,event.projectId,JSON.stringify(snapshot),event.projectId,ticket.contact_id,ticket.id).run()
  if(!claim.meta.changes)return {state:'claimed'}
  try{

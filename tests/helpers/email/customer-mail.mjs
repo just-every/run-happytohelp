@@ -23,7 +23,7 @@ export async function customerMailJourney(){
   // A lost provider response is uncertain and never resent, even after recipients change.
   mail.mode='lost';const first=await reply('lost','A reply');const attempts=mail.attempts
   assert.deepEqual(await deliveries(first.id),[{recipient:'first@example.com',state:'uncertain'}])
-  await DB.batch([DB.prepare("UPDATE contacts SET email='changed@example.com',metadata_json='{\"provided_email\":\"preferred@example.com\"}' WHERE id='contact'"),DB.prepare("INSERT INTO conversation_participants VALUES('cp','c','participant',1),('invalid-tenant','c','foreign',1)")])
+  await DB.batch([DB.prepare("UPDATE contacts SET email='changed@example.com',metadata_json='{\"provided_email\":\"preferred@example.com\"}' WHERE id='contact'"),DB.prepare("INSERT INTO conversation_participants(id,conversation_id,contact_id,created_at) VALUES('cp','c','participant',1),('invalid-tenant','c','foreign',1)")])
   mail.mode='deliver';await replay(first);assert.equal(mail.attempts,attempts);assert.deepEqual(await deliveries(first.id),[{recipient:'first@example.com',state:'uncertain'}])
   // A rich reply with an image and a file: sanitised HTML, inline image by content id, preferred address and participants only.
   const content='**Resolved**\n\n- Try again\n\n[Guide](https://example.com/help)\n\n<script>alert(1)</script>\n\n[Unsafe](javascript:alert(1))'
@@ -40,7 +40,7 @@ export async function customerMailJourney(){
   await DB.prepare("UPDATE email_deliveries SET state='sending' WHERE recipient='teammate@example.com' AND id LIKE ?").bind(`message:${rich.id}:%`).run();await DB.prepare("DELETE FROM conversation_participants WHERE id='cp'").run()
   await replay(rich);assert.equal(mail.sent.length,calls);assert.deepEqual((await deliveries(rich.id)).map(row=>row.recipient),['preferred@example.com','teammate@example.com'])
   // A participant's emailed message reaches the other customers at once and the operator after a quiet minute, never its author.
-  await DB.prepare("INSERT INTO conversation_participants VALUES('cp2','c','participant',2)").run()
+  await DB.prepare("INSERT INTO conversation_participants(id,conversation_id,contact_id,created_at) VALUES('cp2','c','participant',2)").run()
   const to=await m.replyAddress('c','teammate@example.com'),before=mail.sent.length
   const raw=`From: Teammate <teammate@example.com>\r\nTo: ${to}\r\nMessage-ID: <customer-message@example.com>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="b"\r\n\r\n--b\r\nContent-Type: text/plain\r\n\r\nMore detail: try this export\r\n--b\r\nContent-Type: image/png\r\nContent-Disposition: attachment; filename="customer.png"\r\nContent-Transfer-Encoding: base64\r\n\r\n${b64(png)}\r\n--b\r\nContent-Type: application/pdf\r\nContent-Disposition: attachment; filename="customer.pdf"\r\nContent-Transfer-Encoding: base64\r\n\r\n${b64(pdf)}\r\n--b--`
   assert.equal(await m.email(raw,{from:'teammate@example.com',to}),undefined);await app.scheduled()
@@ -94,7 +94,7 @@ export async function customerMailJourney(){
     assert.deepEqual(await deliveries(message.id),[],key+' does not invent a send attempt')
    }
   }
-  await DB.batch([DB.prepare("UPDATE contacts SET email='op@example.com',metadata_json='{}' WHERE id='contact'"),DB.prepare("INSERT INTO conversation_participants VALUES('status-participant','c','participant',3)")])
+  await DB.batch([DB.prepare("UPDATE contacts SET email='op@example.com',metadata_json='{}' WHERE id='contact'"),DB.prepare("INSERT INTO conversation_participants(id,conversation_id,contact_id,created_at) VALUES('status-participant','c','participant',3)")])
   const participantReply=await reply('same-with-participant','Reply also reaches the other recipient')
   assert.deepEqual(await deliveries(participantReply.id),[{recipient:'teammate@example.com',state:'sent'}])
   await DB.prepare("DELETE FROM conversation_participants WHERE id='status-participant'").run()

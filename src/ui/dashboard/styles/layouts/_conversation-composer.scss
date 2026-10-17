@@ -158,6 +158,8 @@ body.conversation-workspace {
 
         // Send stays the black pill while there is nothing to send yet (it is inert, not faded to grey).
         .btn-primary:disabled { opacity: 1; cursor: default; }
+        // A reply that cannot be sent yet (unresolved placeholders, an open helper, a pending upload) looks unavailable.
+        .btn-primary.conversation-composer__send--blocked:disabled { opacity: .4; cursor: not-allowed; }
     }
 
     // A phone composer is one row, as the pick: the reply field, then "+" and Send beside it; the field still grows.

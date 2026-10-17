@@ -210,7 +210,7 @@ export default function ConversationForm({
                                     onNote={ openNoteModal }
                                     onSendAndClose={ () => sendMessage(true) }
                                 />
-                                <button type="submit" className="btn btn-primary" disabled={ !canSend }>
+                                <button type="submit" className={ `btn btn-primary${ hasContent && !canSend ? ' conversation-composer__send--blocked' : '' }` } disabled={ !canSend }>
                                     <ReplyIcon name="send" /> Send
                                 </button>
                             </div>

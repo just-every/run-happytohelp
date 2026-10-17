@@ -63,6 +63,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const activeConversationIdRef = useRef(conversationId);
     const draftAdoptionRef = useRef(null);
     const draftEditVersion = useRef(0);
+    // The usage of the saved public macro draft in the composer; clearing the composer discards it.
+    const macroDraftUsageRef = useRef(null);
 
     activeConversationIdRef.current = conversationId;
 
@@ -96,7 +98,10 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     });
     const applyMacroDraft = (text, metadata) => {
         if (metadata.reply_type === 'note') { setNoteMacro({content:text,media:metadata.media || []}); setIsNoteModalVisible(true); }
-        else if (metadata.media?.length) setFiles(current => [...current,...metadata.media.filter(file=>!current.some(existing=>existing.id===file.id))]);
+        else {
+            macroDraftUsageRef.current = metadata.usage_id || null;
+            if (metadata.media?.length) setFiles(current => [...current,...metadata.media.filter(file=>!current.some(existing=>existing.id===file.id))]);
+        }
         refreshConversation();
     };
     const visibleTranscriptError = transcriptError?.conversationId === conversationId;
@@ -160,6 +165,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
             setDraftError('');
             setDraftOrigin(null);
             setFiles([]);
+            macroDraftUsageRef.current = null;
         } catch (error) { setDraftError(error.message); throw error; } finally {
             setIsSending(false);
         }
@@ -174,6 +180,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         draftConversationIdRef.current = conversationId;
         draftEditVersion.current++;
         draftAdoptionRef.current = null;
+        macroDraftUsageRef.current = null;
         setDraftError('');
         setContent('');
         setDraftOrigin(null);
@@ -196,7 +203,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                 const draft = result.data;
                 if (!active || !draft || draftEditVersion.current !== editVersion) return;
                 if (draft.reply_type === 'note') setNoteMacro({content:draft.content,media:draft.media || []});
-                else { setContent(draft.content); setFiles(draft.media || []); }
+                else { macroDraftUsageRef.current = draft.usage_id; setContent(draft.content); setFiles(draft.media || []); }
             }).catch(error => { if (active) setDraftError(`Couldn’t load your saved macro draft: ${error.message}`); });
         return () => { active = false; };
     }, [conversationProjectId,conversationId,isConversationReady]);
@@ -210,6 +217,12 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         setContent(nextContent);
         if (origin !== undefined) setDraftOrigin(origin);
         else if (!nextContent.trim()) setDraftOrigin(null);
+        if (!nextContent.trim() && macroDraftUsageRef.current) {
+            const usage = macroDraftUsageRef.current;
+            macroDraftUsageRef.current = null;
+            nativeRequest(`/api/dashboard/projects/${conversationProjectId}/conversations/${conversationId}/macro-draft?usage_id=${encodeURIComponent(usage)}`, { method: 'DELETE' })
+                .catch(error => setDraftError(`Couldn’t discard your saved macro draft: ${error.message}`));
+        }
         if (Array.isArray(attachments)) {
             setFiles(currentFiles => Array.from(new Map([ ...currentFiles, ...attachments ].map(file => [ file.id, file ])).values()));
         }

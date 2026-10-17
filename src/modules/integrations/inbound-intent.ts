@@ -5,8 +5,17 @@ interface Intent {from:string;content:string;conversationId:string|null;attachme
 /** The delivery belongs to the workspace, not whichever connected inbox observed
  * it first. Resolved candidates can change after admission, so only an explicit
  * native address/grant belongs in the immutable intent. */
-export async function inboundIntent(projectId:string,intent:Intent){
- return `v2:${await hashToken(JSON.stringify({projectId,...intent}))}`
+export async function inboundIntent(projectId:string,intent:Intent,mailbox:string){
+ const [payload,recipient]=await Promise.all([hashToken(JSON.stringify({projectId,...intent})),hashToken(JSON.stringify({projectId,mailbox}))])
+ return `v2:${payload}:${recipient}`
+}
+/** Copies share the payload identity. Keep the first recipient binding on the
+ * receipt separately, so Setup can still prove the address actually observed
+ * at ingress rather than a later settings snapshot. */
+export function sameInboundIntent(stored:string,offered:string){
+ if(stored===offered)return true
+ const payload=(value:string)=>/^v2:([a-f0-9]{64})(?::[a-f0-9]{64})?$/.exec(value)?.[1]
+ return Boolean(payload(stored)&&payload(stored)===payload(offered))
 }
 /** Read existing receipts without rewriting their replay fences. Their hash used
  * the selected mailbox and inferred conversation; try only configured addresses

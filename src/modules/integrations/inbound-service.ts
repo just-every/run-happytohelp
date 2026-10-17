@@ -17,7 +17,7 @@ import {CLOSED_TICKET_FINAL,ClosedTicketRefusal,isMemberAddress} from './closed-
 import {suspendEmail,senderRule} from './suspended-store'
 import {resolveEmailThreadCandidates,emailThreadingStatements} from './email-threading'
 import {emailFollowup} from './email-followups'
-import {inboundIntent,legacyInboundIntentMatches} from './inbound-intent'
+import {inboundIntent,sameInboundIntent,legacyInboundIntentMatches} from './inbound-intent'
 import {markPreMigrationReply} from './email-migration-reply'
 /** `to` lists the recipient addresses in routing order (envelope, forwarding headers,
  * To); the first configured mailbox selects the project. `from` is the header From and
@@ -63,7 +63,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
  if(!content.trim()&&!attachments.length)throw new HTTPException(400,{message:'Invalid message content'})
  const hashes=await Promise.all(attachments.map(async f=>({filename:f.filename,type:f.contentType,hash:Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',f.content))).map(x=>x.toString(16).padStart(2,'0')).join('')})))
  const intent={from,content:raw,conversationId:direct||null,attachments:hashes,...(cc.length?{cc}:{})}
- const intentHash=await inboundIntent(project.project_id,intent),localId=await inboundLocalId(project.project_id,messageId),legacyLocalId=await legacyInboundLocalId(messageId),scopedId=await scopedInboundId(project.project_id,messageId)
+ const intentHash=await inboundIntent(project.project_id,intent,target.mailbox),localId=await inboundLocalId(project.project_id,messageId),legacyLocalId=await legacyInboundLocalId(messageId),scopedId=await scopedInboundId(project.project_id,messageId)
  const rawPrior=await env.DB.prepare('SELECT id,project_id FROM inbound_emails WHERE id=?').bind(messageId).first<{id:string;project_id:string}>()
  const prior=rawPrior?.project_id===project.project_id
   ?await env.DB.prepare('SELECT * FROM inbound_emails WHERE id=? AND project_id=?').bind(messageId,project.project_id).first<any>()
@@ -73,7 +73,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
  const consumedGrant=possessed?{recipient:from,token_hash:await hashToken(target.replyToken!)}:undefined
  const refusal=(closed:{id:string;subject:string|null}|null)=>new ClosedTicketRefusal(trusted&&closed?{projectId:project.project_id,conversationId:closed.id,member:from,subject:closed.subject||'',receiptId:recordId}:null)
  if(prior){
-  if(prior.project_id!==project.project_id||prior.intent_hash!==intentHash&&!recovering&&!await legacyInboundIntentMatches(env,project.project_id,prior.intent_hash,intent,target.mailbox,addressed))throw new HTTPException(409,{message:'Inbound email identity conflict'})
+  if(prior.project_id!==project.project_id||!sameInboundIntent(prior.intent_hash,intentHash)&&!recovering&&!await legacyInboundIntentMatches(env,project.project_id,prior.intent_hash,intent,target.mailbox,addressed))throw new HTTPException(409,{message:'Inbound email identity conflict'})
   // Admission and its outbox are atomic. Reconcile a lost completion write without
   // re-entering customer-message automation or replaying uncertain provider work.
   const admitted=await env.DB.prepare('SELECT id,conversation_id FROM messages WHERE project_id=? AND local_id IN (?,?) AND (? IS NULL OR conversation_id=?)').bind(project.project_id,localId,legacyLocalId,prior.conversation_id,prior.conversation_id).first<{id:string;conversation_id:string}>()

@@ -3,6 +3,7 @@ import {hashToken} from '../../../platform/auth'
 import type {Configuration} from './configuration'
 import type {Probe} from './types'
 import {receivingState} from '../../integrations/inbound-capability'
+import {inboundIntent} from '../../integrations/inbound-intent'
 
 /** Verify the immutable ingress intent as well as the settings snapshot. A mailbox
  * can change between ingress lookup and insertion; the trigger alone is not proof
@@ -24,7 +25,10 @@ export async function checkInbound(env:Env,config:Configuration):Promise<Probe> 
   ORDER BY i.created_at DESC LIMIT 20`).bind(config.projectId,address,email.updated_at).all<{id:string;intent_hash:string;content:string;conversation_id:string;sender:string}>()
  for(const row of rows.results) {
   // Initial mail omits a conversation ID; a reply includes the admitted conversation.
-  const hashes=await Promise.all([null,row.conversation_id].map(conversationId=>hashToken(JSON.stringify({to:address,from:row.sender,content:row.content,conversationId,attachments:[]}))))
+  const hashes=(await Promise.all([null,row.conversation_id].map(async conversationId=>{
+   const intent={from:row.sender,content:row.content,conversationId,attachments:[]}
+   return [await hashToken(JSON.stringify({to:address,...intent})),await inboundIntent(config.projectId,intent,address)]
+  }))).flat()
   if(hashes.includes(row.intent_hash))return {state:'done',detail:`A message was received through the configured inbound gateway for ${address}.`,receiptRef:`inbound:${row.id}`}
  }
  if(receiving.reason==='no_mx')return {state:'pending',detail:`${address} cannot receive email yet: its domain has no mail server (MX record). The Email page has the routing steps.`}

@@ -9,11 +9,13 @@ import {knowledgeRateLimit} from '../knowledge/feedback'
 import {activeSourceProjectSql} from '../knowledge/public-sources'
 import {auditStatement} from '../audit/record'
 import {livePortalContact,portalCookie,resolvePortalActor} from './identity'
+import {mailboxProofSql} from '../identity/mailbox'
+import {reconcileMailboxStatements} from './mailbox'
 import {portalSameOrigin,portalReturnPath,portalBody,isPortalForm} from './security'
 
 export const portalAccess=new Hono<AppEnv>()
 // A typed widget address and imported address alone are never identity proof.
-const provenContact=`coalesce(json_extract(ct.metadata_json,'$.email_unproven'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.unverified_sender'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.unusable_from'),0)!=1 AND (ct.is_verified=1 AND lower(trim(ct.external_id))=lower(trim(ct.email)) OR EXISTS(SELECT 1 FROM inbound_emails receipt JOIN messages message ON message.id=receipt.message_id AND message.project_id=receipt.project_id WHERE receipt.project_id=ct.project_id AND message.actor_role='contact' AND message.actor_id=ct.id AND json_extract(receipt.evidence_json,'$.sender_verified')=1 AND lower(trim(CASE WHEN instr(json_extract(receipt.evidence_json,'$.header_from'),'<')>0 THEN substr(json_extract(receipt.evidence_json,'$.header_from'),instr(json_extract(receipt.evidence_json,'$.header_from'),'<')+1,instr(json_extract(receipt.evidence_json,'$.header_from'),'>')-instr(json_extract(receipt.evidence_json,'$.header_from'),'<')-1) ELSE json_extract(receipt.evidence_json,'$.header_from') END))=lower(trim(ct.email))))`
+const provenContact=mailboxProofSql('ct')
 portalAccess.post('/:projectId/access/request',async c=>{
  portalSameOrigin(c.req.raw)
  const projectId=c.req.param('projectId'),body=await portalBody(c),email=typeof body.email==='string'?body.email.trim().toLowerCase():''
@@ -43,11 +45,12 @@ portalAccess.get('/:projectId/access/verify',async c=>{
  const results=await c.env.DB.batch<any>([
   c.env.DB.prepare(`INSERT INTO contacts(id,project_id,email,external_id,is_verified,metadata_json,created_at) SELECT ?,t.project_id,t.email,?,1,'{"email_link_verified":1}',? FROM portal_links t WHERE ${eligibleLink} AND NOT EXISTS(SELECT 1 FROM portal_identities i WHERE i.project_id=t.project_id AND i.email=t.email) AND NOT EXISTS(SELECT 1 FROM contacts ct WHERE ct.project_id=t.project_id AND lower(trim(ct.email))=t.email AND ${provenContact})`).bind(newContact,'portal:'+newContact,now,hash,projectId,now),
   c.env.DB.prepare(`INSERT OR IGNORE INTO portal_identities(project_id,email,contact_id,verified_at) SELECT t.project_id,t.email,COALESCE((SELECT ct.id FROM contacts ct WHERE ct.project_id=t.project_id AND lower(trim(ct.email))=t.email AND ${provenContact} ORDER BY ct.created_at,ct.id LIMIT 1),(SELECT ct.id FROM contacts ct WHERE ct.id=? AND ct.project_id=t.project_id)),? FROM portal_links t WHERE ${eligibleLink} AND (EXISTS(SELECT 1 FROM contacts ct WHERE ct.id=? AND ct.project_id=t.project_id) OR EXISTS(SELECT 1 FROM contacts ct WHERE ct.project_id=t.project_id AND lower(trim(ct.email))=t.email AND ${provenContact}))`).bind(newContact,now,hash,projectId,now,newContact),
+  ...reconcileMailboxStatements(c.env,projectId,hash,now),
   c.env.DB.prepare(`INSERT INTO sessions(token_hash,actor_id,project_id,role,contact_id,expires_at) SELECT ?,i.contact_id,i.project_id,'contact',i.contact_id,? FROM portal_links t JOIN portal_identities i ON i.project_id=t.project_id AND i.email=t.email JOIN contacts ct ON ct.id=i.contact_id AND ct.project_id=i.project_id WHERE ${eligibleLink} AND lower(trim(ct.email))=i.email AND ${livePortalContact()}`).bind(sessionHash,now+86400000,hash,projectId,now),
   c.env.DB.prepare(`INSERT INTO portal_session_proofs SELECT s.token_hash,s.project_id,s.contact_id,i.email,s.expires_at FROM sessions s JOIN portal_identities i ON i.project_id=s.project_id AND i.contact_id=s.contact_id WHERE s.token_hash=?`).bind(sessionHash),
   c.env.DB.prepare('UPDATE portal_links SET consumed_at=? WHERE token_hash=? AND consumed_at IS NULL AND EXISTS(SELECT 1 FROM portal_session_proofs WHERE token_hash=?) RETURNING return_path').bind(now,hash,sessionHash)
  ])
- const link=results[4].results[0]
+ const link=results[results.length-1].results[0]
  if(!link)throw new HTTPException(400,{message:'Invalid or expired sign-in link'})
  await auditStatement(c.env.DB,{projectId,category:'auth',action:'portal.access.verified',actor:{type:'system'},source:'api',detail:{method:'email_link'}}).run()
  c.header('Set-Cookie',portalCookie(session,c.req.url))

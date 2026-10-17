@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {createHmac} from 'node:crypto'
 import {selfServiceFixture} from './self-service-fixture.mjs'
 export async function customerPortalJourney(){
  const f=await selfServiceFixture({failSurveys:true}),{app,p,owner,api,form,valid,signin,mail}=f,P=`/api/portal/${p}`
@@ -13,6 +14,34 @@ export async function customerPortalJourney(){
   assert.equal((await app.call(P+`/tickets/${trap.id}`,rosa)).status,404)
   assert.equal((await app.call(P+'/tickets',rosa)).data.tickets.length,0)
   const create=(await app.call(`${api}/${form.id}/submissions`,{...rosa,body:valid,status:201})).data,id=create.ticket.id
+  // Portal first, then real authenticated inbound mail: a separate ticket with
+  // one requester, visible immediately and after another mailbox verification.
+  const emailed=await app.ok('/api/integrations/email/inbound',{headers:{Authorization:'Bearer fixture-survey-signing-key-for-self-service'},body:{messageId:'rosa-mail-after-portal',to:'help@example.com',from:'rosa@example.com',subject:'Delivery of my replacement order',text:'When will my replacement order arrive?'}})
+  const emailId=emailed.conversationId
+  assert.notEqual(emailId,id)
+  assert.deepEqual(new Set((await app.ok(P+'/tickets',rosa)).tickets.map(t=>t.id)),new Set([id,emailId]))
+  assert.equal((await app.first('SELECT contact_id FROM conversations WHERE id=?',emailId)).contact_id,create.ticket.contact_id??(await app.first('SELECT contact_id FROM conversations WHERE id=?',id)).contact_id)
+  const fresh=await signin('rosa@example.com')
+  assert.deepEqual(new Set((await app.ok(P+'/tickets',fresh)).tickets.map(t=>t.id)),new Set([id,emailId]))
+  let emailTicket=(await app.ok(P+`/tickets/${emailId}`,rosa)).ticket
+  await app.ok(P+`/tickets/${emailId}/reply`,{...rosa,body:{localId:'portal-on-email',content:'Please send the tracking number.',expectedRevision:emailTicket.revision}})
+  await app.ok(`/api/dashboard/projects/${p}/conversations/${emailId}`,{...owner,method:'PUT',body:{resolved:true}})
+  emailTicket=(await app.ok(P+`/tickets/${emailId}`,rosa)).ticket
+  await app.ok(P+`/tickets/${emailId}/reopen`,{...rosa,body:{expectedRevision:emailTicket.revision}})
+  assert.equal((await app.ok(P+`/tickets/${emailId}`,rosa)).ticket.status,'open')
+  assert.equal((await app.call(P+`/tickets/${emailId}`,other)).status,404)
+  const secret=(await app.first('SELECT verification_secret FROM projects WHERE id=?',p)).verification_secret
+  const signed=await app.ok('/api/identity/widget/session',{headers:{Origin:f.workspace.allowedOrigin},body:{widgetKey:f.workspace.widgetKey,email:'rosa@example.com',contact_hash:createHmac('sha256',secret).update('rosa@example.com').digest('hex')}})
+  assert.equal(signed.contactId,(await app.first('SELECT contact_id FROM conversations WHERE id=?',id)).contact_id)
+  const signedThread=await app.ok('/api/conversations',{token:signed.token,body:{projectId:p}})
+  await app.ok(`/api/conversations/${signedThread.id}/messages`,{token:signed.token,body:{localId:'signed-widget-question',content:'An update from my account.',expectedRevision:0}})
+  assert.equal((await app.call(P+`/tickets/${signedThread.id}`,rosa)).status,200)
+  // Unsigned mail impersonating this proven mailbox is kept apart, even when
+  // sent after the customer's proof and after a signed widget visit.
+  await app.email('From: Rosa <rosa@example.com>\r\nTo: help@example.com\r\nMessage-ID: <spoof-rosa>\r\nSubject: Forged request\r\n\r\nThis is an unproven sender.',{from:'rosa@example.com',to:'help@example.com'})
+  const spoof=await app.first("SELECT c.id FROM conversations c JOIN contacts ct ON ct.id=c.contact_id WHERE c.project_id=? AND json_extract(ct.metadata_json,'$.unverified_sender')=1",p)
+  assert.ok(spoof)
+  assert.equal((await app.call(P+`/tickets/${spoof.id}`,rosa)).status,404)
   const detail=()=>app.ok(P+`/tickets/${id}`,rosa)
   assert.equal((await detail()).ticket.status,'open')
   assert.equal((await app.call(P+`/tickets/${id}`,other)).status,404)

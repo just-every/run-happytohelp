@@ -114,6 +114,8 @@ export function erasureStatements(env: Env, request: ErasureRequest) {
     bound(`UPDATE contacts SET name=NULL,email=NULL,external_id=NULL,is_verified=0,
      metadata_json=json_object('is_deleted',1,'is_blocked',1,'is_erased',1,'erased_at',(SELECT erased_at FROM contact_erasures WHERE project_id=?1 AND contact_id=?2))
      WHERE project_id=?1 AND id=?2`),
+    bound(`UPDATE contacts SET name=NULL,email=NULL,external_id=NULL,is_verified=0,metadata_json=json_object('is_deleted',1,'is_blocked',1,'is_erased',1) WHERE project_id=?1 AND id IN (SELECT contact_id FROM mailbox_contact_aliases WHERE project_id=?1 AND canonical_id=?2)`),
+    bound('DELETE FROM mailbox_contact_aliases WHERE project_id=?1 AND canonical_id=?2'),
     bound('DELETE FROM contact_erasure_objects WHERE project_id=?1 AND contact_id=?2'),
   ]
 }

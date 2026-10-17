@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "parent": null,
   "edition": "just-every/happytohelp",
-  "manifest": "d54747af084d1c6fc6db7b360616aebe2ee604fc2e68bb3d997b700e36635d1d",
+  "manifest": "4d1e2bdacf8dd945fee4abe40b7588c3ae822fae9a3c0476ab33976df655da6a",
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
@@ -412,6 +412,7 @@
           "src/modules/portal",
           "migrations/172_request_forms.sql",
           "migrations/173_customer_portal.sql",
+          "migrations/174_portal_mailbox_requester.sql",
           "docs/request-forms.md",
           "docs/customer-portal.md"
         ],
@@ -1664,7 +1665,7 @@
       "executable": false
     },
     "docs/customer-portal.md": {
-      "sha256": "6a906398e10f9191e5b0fa3799f549557d789b26c78fd304f3a60ff0fea9b452",
+      "sha256": "68b18b0af315d62a2103fb2f6bbad72784447166c96e5ceeb60b3e50f790029f",
       "executable": false
     },
     "docs/customer-satisfaction.md": {
@@ -1788,7 +1789,7 @@
       "executable": false
     },
     "edition.json": {
-      "sha256": "d54747af084d1c6fc6db7b360616aebe2ee604fc2e68bb3d997b700e36635d1d",
+      "sha256": "4d1e2bdacf8dd945fee4abe40b7588c3ae822fae9a3c0476ab33976df655da6a",
       "executable": false
     },
     "HANDOVER.md": {
@@ -1960,7 +1961,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "f6b1aa3d92d10e1475cedaa60457a1d91afb1634ca9165b53fa43fa10966d22e",
+      "sha256": "72928cef7c18b26c1d075994d4a9358a776928e754428e1e8bb35e2ca8be5561",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2279,6 +2280,10 @@
       "sha256": "e16b28e79ef30280ac07277e9c81377f907e776002d91155d66d553a02415c3e",
       "executable": false
     },
+    "migrations/174_portal_mailbox_requester.sql": {
+      "sha256": "08529688a99c8d6c9bd82abad4a8178985bc5d173ac3339e77e26be9d1e7c589",
+      "executable": false
+    },
     "migrations/180_account_security.sql": {
       "sha256": "45cc1b0f5a51616c5eff7d0e76b2abf150db7b77713f3b02d5052a0ab84e484e",
       "executable": false
@@ -2372,7 +2377,7 @@
       "executable": false
     },
     "public/site-assets/help_center/request-forms.css": {
-      "sha256": "cd32a79a36ba8d4438a000cfb1939248a5053284b32d2ea2bb213947d7464d91",
+      "sha256": "5b707cc49201fe9e9a3c4f177020369dbd5e01fad6579e9e4e32a689dfcb0d3a",
       "executable": false
     },
     "public/site-assets/help_center/request-forms.js": {
@@ -2760,7 +2765,7 @@
       "executable": false
     },
     "scripts/installer/ticket-archive-upgrade.mjs": {
-      "sha256": "c63a8c4b1433ed6a68a3fabc243e75879288486563357260b51e673c7c53fc93",
+      "sha256": "a6849b1d8ca19f702725851efeb817cb98ec4da0fb33ecaa909b476ee7820d10",
       "executable": false
     },
     "scripts/installer/ui/seed.mjs": {
@@ -3911,6 +3916,10 @@
       "sha256": "ea908825a75a336063c04668c3f7929f9e6ee19c1b631946eae18aa3b26f27f6",
       "executable": false
     },
+    "src/modules/identity/mailbox.ts": {
+      "sha256": "f050f802ae65aaf867c81e61f477856ac04f2ca1aff0800ccd65234434898494",
+      "executable": false
+    },
     "src/modules/identity/options.ts": {
       "sha256": "fe01123885f67850bbec4514a54211abdc3d51cedee0bdb85e32b02a872d7539",
       "executable": false
@@ -4008,7 +4017,7 @@
       "executable": false
     },
     "src/modules/identity/widget.ts": {
-      "sha256": "7a9f651ccdef61514671a8fe5daeb9bbe8fb5ce47bc4d07d6baffaa54006d797",
+      "sha256": "0ba120f9f6cc0ae1f26cee5e87622837fbbae142b14ef84eb27812b9b0f6da3e",
       "executable": false
     },
     "src/modules/identity/workspace-defaults.ts": {
@@ -4640,7 +4649,7 @@
       "executable": false
     },
     "src/modules/integrations/inbound-authority.ts": {
-      "sha256": "4b2bfe499853629aa35b042875ad806e83e0d532ca27e0410130ea7c264f4481",
+      "sha256": "eb432016576d5e0f34124eca5583d4fff5b3f013c3da0962db28848fabb79470",
       "executable": false
     },
     "src/modules/integrations/inbound-capability.ts": {
@@ -4680,7 +4689,7 @@
       "executable": false
     },
     "src/modules/integrations/inbound-service.ts": {
-      "sha256": "a5d2b2a91f596155c7f56ad5370fcee9cb0894b4cec3eeea4d7fc273a1178f8e",
+      "sha256": "a9c46fb822beb3a0124fef4c68238340e874ee71c8d837634277b6ebb6b778ab",
       "executable": false
     },
     "src/modules/integrations/inbound.ts": {
@@ -5116,11 +5125,11 @@
       "executable": false
     },
     "src/modules/management/contact-erasure/scope.ts": {
-      "sha256": "4d34cc3c78f6cece8ae0aaf0ef00b85ef4116d41329d77d1b365800b9c55cdaa",
+      "sha256": "8854a8bf85b427440a9e899fc6dd634b3fa369b7688e6f0b9fa644847f8a6f36",
       "executable": false
     },
     "src/modules/management/contact-erasure/statements.ts": {
-      "sha256": "161b8f5dbfb793c018bc0e5cbf36db03e23c38678bb86e152cc97bdea4ce80ec",
+      "sha256": "e32ae70ab6ce0fd409fa84df91177c3280f90d920e7960256b2e58a816edd4bc",
       "executable": false
     },
     "src/modules/management/contact-identity.ts": {
@@ -5584,7 +5593,7 @@
       "executable": false
     },
     "src/modules/portal/access.ts": {
-      "sha256": "a37c8e717f7dc7a96b516523dc1963d741c5e77acc78115b291a1ecaa25c5096",
+      "sha256": "9ed6e35776317c41211b2a48a52c8d5320f2e956fde1d6b951d782fed16d24e6",
       "executable": false
     },
     "src/modules/portal/attachments.ts": {
@@ -5597,6 +5606,10 @@
     },
     "src/modules/portal/index.ts": {
       "sha256": "8cdfa88e6e4cba689bc59adf3598cfd212f0af337af1ca09cceb6b4d77ea3b80",
+      "executable": false
+    },
+    "src/modules/portal/mailbox.ts": {
+      "sha256": "487825c62a25ba77efbb1b37a3d732279fcd4cb80d3218fa923ac7722354c38b",
       "executable": false
     },
     "src/modules/portal/preferences.ts": {
@@ -9140,7 +9153,7 @@
       "executable": false
     },
     "tests/helpers/customer-portal-journey.mjs": {
-      "sha256": "1306cdd71b9ada02338d46a654f9c235e8f143f3f9be288286562871d5be0c86",
+      "sha256": "b2e1ddeace8f053b9e87e134172e3666ddb11dd9344dd287b0ec469cd4e9fca6",
       "executable": false
     },
     "tests/helpers/delegation-journey/browser-ui.mjs": {

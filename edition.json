@@ -454,6 +454,7 @@
           "src/modules/portal",
           "migrations/172_request_forms.sql",
           "migrations/173_customer_portal.sql",
+          "migrations/174_portal_mailbox_requester.sql",
           "docs/request-forms.md",
           "docs/customer-portal.md"
         ],

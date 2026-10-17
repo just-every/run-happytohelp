@@ -8,8 +8,9 @@ import type {Spent} from './budget'
 
 const activeProject=`NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) AND NOT EXISTS(SELECT 1 FROM move_in_conversations imported WHERE imported.project_id=c.project_id AND imported.conversation_id=c.id) AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations legacy WHERE legacy.project_id=c.project_id AND legacy.conversation_id=c.id)`
 const deliveryEligible=`${activeProject} AND ${customerSlaMessageSql()}`
-export async function syncSlaAlerts(env:Env,ticket:any,policy:SlaPolicy,state:SlaState,now:number){
- const desired:Array<{id:string;metric:string;cycle:number;kind:string;recipient:string|null;resolved_at:number|null}>=[]
+export type DesiredSlaAlert={id:string;metric:string;cycle:number;kind:string;recipient:string|null;resolved_at:number|null}
+export function desiredSlaAlerts(ticket:{project_id:string;id:string;assigned_to?:string|null},policy:SlaPolicy,state:SlaState,now:number){
+ const desired:DesiredSlaAlert[]=[]
  for(const clock of state.clocks){
   if(clock.metric==='unattended'&&!clock.breached)continue
   const resolved=clock.completed_at!==null||['solved','closed'].includes(state.status)
@@ -18,14 +19,19 @@ export async function syncSlaAlerts(env:Env,ticket:any,policy:SlaPolicy,state:Sl
   const recipients=kind==='approaching'?[ticket.assigned_to??null]:[...new Set<string|null>([ticket.assigned_to??null,...policy.backup_user_ids])]
   for(const recipient of recipients)desired.push({id:JSON.stringify(['sla',ticket.project_id,ticket.id,policy.id,clock.metric,clock.cycle,kind,recipient]),metric:clock.metric,cycle:clock.cycle,kind,recipient,resolved_at:resolved?clock.completed_at??now:null})
  }
- const frontier=`SELECT 1 FROM conversations c JOIN ticket_sla_state s ON s.project_id=c.project_id AND s.conversation_id=c.id WHERE c.project_id=? AND c.id=? AND c.ticket_version=? AND c.revision=? AND s.policy_id=? AND s.updated_at=? AND ${availableTicketSql()} AND ${activeProject}`
- const frontierArgs=[ticket.project_id,ticket.id,ticket.ticket_version,ticket.revision,policy.id,now]
- const clocks=JSON.stringify(state.clocks)
- // Two statements regardless of the number of historical clocks or backups.
- await env.DB.batch([
-  env.DB.prepare(`UPDATE sla_alerts SET state='resolved',resolved_at=COALESCE(resolved_at,(SELECT json_extract(clock.value,'$.completed_at') FROM json_each(?) clock WHERE json_extract(clock.value,'$.metric')=sla_alerts.metric AND json_extract(clock.value,'$.cycle')=sla_alerts.cycle LIMIT 1),?) WHERE project_id=? AND conversation_id=? AND state<>'resolved' AND (policy_id<>? OR ? IN ('solved','closed') OR NOT EXISTS(SELECT 1 FROM json_each(?) clock WHERE json_extract(clock.value,'$.metric')=sla_alerts.metric AND json_extract(clock.value,'$.cycle')=sla_alerts.cycle AND json_extract(clock.value,'$.completed_at') IS NULL)) AND EXISTS(${frontier})`).bind(clocks,now,ticket.project_id,ticket.id,policy.id,state.status,clocks,...frontierArgs),
-  env.DB.prepare(`INSERT OR IGNORE INTO sla_alerts(id,project_id,conversation_id,policy_id,metric,cycle,kind,recipient_id,state,created_at,resolved_at,notification_state) SELECT json_extract(a.value,'$.id'),?,?,?,json_extract(a.value,'$.metric'),json_extract(a.value,'$.cycle'),json_extract(a.value,'$.kind'),json_extract(a.value,'$.recipient'),CASE WHEN json_extract(a.value,'$.resolved_at') IS NULL THEN 'open' ELSE 'resolved' END,?,json_extract(a.value,'$.resolved_at'),CASE WHEN json_extract(a.value,'$.resolved_at') IS NOT NULL OR json_extract(a.value,'$.recipient') IS NULL THEN 'complete' ELSE 'pending' END FROM json_each(?) a WHERE EXISTS(${frontier})`).bind(ticket.project_id,ticket.id,policy.id,now,JSON.stringify(desired),...frontierArgs)
- ])
+ return desired
+}
+/** One saved SLA state: its ticket frontier, the policy it was saved under and its clocks. */
+export type SlaAlertTicket={p:string;c:string;v:number;r:number;policy:string;status:string;clocks:SlaState['clocks'];alerts:DesiredSlaAlert[]}
+const savedFrontier=`EXISTS(SELECT 1 FROM conversations c JOIN ticket_sla_state s ON s.project_id=c.project_id AND s.conversation_id=c.id WHERE c.project_id=json_extract(t.value,'$.p') AND c.id=json_extract(t.value,'$.c') AND c.ticket_version=json_extract(t.value,'$.v') AND c.revision=json_extract(t.value,'$.r') AND s.policy_id=json_extract(t.value,'$.policy') AND s.updated_at=?1 AND ${availableTicketSql()} AND ${activeProject})`
+/** Alerts follow the state saved at `now`: two statements for any number of tickets,
+ * clocks or backups. A ticket whose save lost a race keeps its alerts unchanged. */
+export function slaAlertStatements(env:Env,tickets:SlaAlertTicket[],now:number,resolve=true){
+ const json=JSON.stringify(tickets),clock="json_each(t.value,'$.clocks') clock WHERE json_extract(clock.value,'$.metric')=sla_alerts.metric AND json_extract(clock.value,'$.cycle')=sla_alerts.cycle"
+ return [
+  ...(resolve?[env.DB.prepare(`UPDATE sla_alerts SET state='resolved',resolved_at=COALESCE(resolved_at,(SELECT json_extract(clock.value,'$.completed_at') FROM ${clock} LIMIT 1),?1) FROM json_each(?2) t WHERE sla_alerts.project_id=json_extract(t.value,'$.p') AND sla_alerts.conversation_id=json_extract(t.value,'$.c') AND sla_alerts.state<>'resolved' AND (sla_alerts.policy_id<>json_extract(t.value,'$.policy') OR json_extract(t.value,'$.status') IN ('solved','closed') OR NOT EXISTS(SELECT 1 FROM ${clock} AND json_extract(clock.value,'$.completed_at') IS NULL)) AND ${savedFrontier}`).bind(now,json)]:[]),
+  env.DB.prepare(`INSERT OR IGNORE INTO sla_alerts(id,project_id,conversation_id,policy_id,metric,cycle,kind,recipient_id,state,created_at,resolved_at,notification_state) SELECT json_extract(a.value,'$.id'),json_extract(t.value,'$.p'),json_extract(t.value,'$.c'),json_extract(t.value,'$.policy'),json_extract(a.value,'$.metric'),json_extract(a.value,'$.cycle'),json_extract(a.value,'$.kind'),json_extract(a.value,'$.recipient'),CASE WHEN json_extract(a.value,'$.resolved_at') IS NULL THEN 'open' ELSE 'resolved' END,?1,json_extract(a.value,'$.resolved_at'),CASE WHEN json_extract(a.value,'$.resolved_at') IS NOT NULL OR json_extract(a.value,'$.recipient') IS NULL THEN 'complete' ELSE 'pending' END FROM json_each(?2) t,json_each(t.value,'$.alerts') a WHERE ${savedFrontier}`).bind(now,json)
+ ]
 }
 export async function deliverSlaAlerts(env:Env,now:number,spent?:Spent){
  // A previous claim can have crossed the provider boundary before a restart.

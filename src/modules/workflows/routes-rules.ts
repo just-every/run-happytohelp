@@ -52,7 +52,7 @@ workflowRuleRoutes.post(`${base}/:id/publish`,async c=>{
   c.env.DB.prepare(`INSERT INTO workflow_rule_versions(rule_id,project_id,version,definition_json,published_by,published_at,event_after_id) SELECT ?,?,?,?,?,?,coalesce((SELECT max(id) FROM workflow_events),0) WHERE ${accepted}`).bind(row.id,actor.projectId,version,serialized,actor.id,now,...args),
   c.env.DB.prepare(`UPDATE workflow_rules SET name=?,kind=?,position=?,state='published',published_version=?,updated_at=?,owner_id=? WHERE id=? AND project_id=? AND ${accepted}`).bind(definition.name,definition.kind,definition.position,version,now,actor.id,row.id,actor.projectId,...args),
   c.env.DB.prepare(`DELETE FROM workflow_scheduler_cursors WHERE rule_id=? AND ${accepted}`).bind(row.id,...args),
-  c.env.DB.prepare(`UPDATE workflow_runs SET state='cancelled',explanation='Superseded by a newer published version',updated_at=? WHERE rule_id=? AND version<>? AND state IN ('running','pending') AND ${accepted}`).bind(now,row.id,version,...args),
+  c.env.DB.prepare(`UPDATE workflow_runs SET state='cancelled',reason='Superseded by a newer published version',next_attempt_at=NULL,updated_at=? WHERE rule_id=? AND version<>? AND state IN ('running','pending') AND ${accepted}`).bind(now,row.id,version,...args),
   c.env.DB.prepare(`UPDATE workflow_notifications SET state='cancelled',detail='Workflow version superseded',updated_at=? WHERE state='pending' AND EXISTS(SELECT 1 FROM workflow_runs r WHERE r.rule_id=? AND r.version<>? AND substr(workflow_notifications.id,1,length(r.id)+8)=r.id||':action:') AND ${accepted}`).bind(now,row.id,version,...args)
  ],andWorkflowGuards(references,{sql:"EXISTS(SELECT 1 FROM workflow_rules WHERE id=? AND project_id=? AND updated_at=? AND published_version=? AND state<>'cancelled')",params:[row.id,actor.projectId,row.updated_at,row.published_version]}))
  return c.json({rule:ruleData(await getRule(c,actor.projectId))})
@@ -63,7 +63,7 @@ for(const state of ['pause','cancel'] as const)workflowRuleRoutes.post(`${base}/
  const now=Math.max(workflowNow(c.env),row.updated_at+1)
  await commitWorkflowSettings(c,actor,`workflow.rule.${state}`,row.id,(accepted,args)=>[
   c.env.DB.prepare(`UPDATE workflow_rules SET state=?,updated_at=? WHERE id=? AND project_id=? AND ${accepted}`).bind(state==='pause'?'paused':'cancelled',now,row.id,actor.projectId,...args),
-  c.env.DB.prepare(`UPDATE workflow_runs SET state='cancelled',explanation=?,updated_at=? WHERE rule_id=? AND state IN ('running','pending') AND ${accepted}`).bind(`Rule ${state==='pause'?'paused':'cancelled'} before the next side effect`,now,row.id,...args),
+  c.env.DB.prepare(`UPDATE workflow_runs SET state='cancelled',reason=?,next_attempt_at=NULL,updated_at=? WHERE rule_id=? AND state IN ('running','pending') AND ${accepted}`).bind(`Rule ${state==='pause'?'paused':'cancelled'} before the next side effect`,now,row.id,...args),
   c.env.DB.prepare(`UPDATE workflow_notifications SET state='cancelled',detail=?,updated_at=? WHERE state='pending' AND EXISTS(SELECT 1 FROM workflow_runs r WHERE r.rule_id=? AND substr(workflow_notifications.id,1,length(r.id)+8)=r.id||':action:') AND ${accepted}`).bind(`Rule ${state==='pause'?'paused':'cancelled'}`,now,row.id,...args)
  ],{sql:'EXISTS(SELECT 1 FROM workflow_rules WHERE id=? AND project_id=? AND updated_at=?)',params:[row.id,actor.projectId,row.updated_at]})
  return c.json({rule:ruleData(await getRule(c,actor.projectId))})

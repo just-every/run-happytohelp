@@ -73,3 +73,17 @@ export function applySlaEvent(state:SlaState,policy:SlaPolicy,calendar:WorkflowC
  // Recompute due timestamps at the exact transition, without charging pause time.
  advanceSla(state,policy,calendar,event.at)
 }
+/** The next moment the stored state needs the clock: the earliest approaching threshold
+ * or due time among open clocks. Paused and terminal tickets wait for an event instead. */
+export function slaNextCheck(state:SlaState,policy:SlaPolicy,calendar:WorkflowCalendar):number|null{
+ if(state.pause_reason||terminal(state.status))return null
+ let next:number|null=null
+ const consider=(at:number)=>{next=next===null?at:Math.min(next,at)}
+ for(const clock of state.clocks){
+  if(clock.completed_at!==null||clock.breached)continue
+  const remaining=clock.target_ms-clock.spent_ms,approaching=policy.approaching_minutes*MINUTE
+  if(clock.metric!=='unattended'&&remaining>approaching)consider(businessDue(calendar,state.cursor_at,remaining-approaching))
+  if(clock.due_at!==null)consider(clock.due_at)
+ }
+ return next
+}

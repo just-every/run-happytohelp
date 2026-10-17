@@ -30,6 +30,8 @@ export async function rulesFlow(f){
  await clock(initial+48*3600000+1000);await app.scheduled()
  let runs=(await ok(`/workflow-runs?conversation_id=${pending}`)).runs
  assert.equal(runs.filter(r=>r.rule_id===nudge.id).length,1)
+ // A notice that cannot be delivered ends at once, visibly, and never waits in the resume set.
+ assert.equal(runs.find(r=>r.rule_id===nudge.id).state,'not_delivered');assert.ok(runs.find(r=>r.rule_id===nudge.id).reason)
  await app.configure({H2H_WORKFLOW_NOW:String(initial+49*3600000)});await app.scheduled();runs=(await ok(`/workflow-runs?conversation_id=${pending}`)).runs;assert.equal(runs.filter(r=>r.rule_id===nudge.id).length,1)
  await clock(initial+96*3600000+2000);await app.scheduled();assert.equal((await get(pending)).status_category,'solved')
  await clock(initial+192*3600000+4000);await app.scheduled();assert.equal((await get(pending)).status_category,'closed')

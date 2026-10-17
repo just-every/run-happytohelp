@@ -7,17 +7,25 @@ import {ruleTicket,type RuleDefinition} from './rule-model'
 import {workflowNow} from './clock'
 import {workflowMemberGuard} from './rule-access'
 import {validateRuleReferences} from './rule-validation'
+/** A run that cannot finish yet waits 1, 5, 15 and 60 minutes between attempts, then
+ * ends visibly. An interrupted run counts as an attempt too, so nothing retries forever. */
+export const RUN_ATTEMPTS=5
+const backoffMinutes=[1,5,15,60]
 export function activeRuleGuard(row:any):WorkflowGuard{return {sql:"EXISTS(SELECT 1 FROM workflow_rules WHERE id=? AND project_id=? AND state='published' AND published_version=?)",params:[row.rule_id??row.id,row.project_id,row.version??row.published_version]}}
 export async function executeRuleRun(env:Env,runId:string){
  let run=await env.DB.prepare('SELECT * FROM workflow_runs WHERE id=?').bind(runId).first<any>()
  if(!run||!['running','pending'].includes(run.state))return run
- const lease=crypto.randomUUID(),leaseNow=workflowNow(env),claimed=await env.DB.prepare("UPDATE workflow_runs SET lease_token=?,lease_until=? WHERE id=? AND state IN ('running','pending') AND (lease_token IS NULL OR lease_until<=?)").bind(lease,leaseNow+120000,runId,leaseNow).run()
+ const lease=crypto.randomUUID(),leaseNow=workflowNow(env),claimed=await env.DB.prepare("UPDATE workflow_runs SET lease_token=?,lease_until=?,attempts=attempts+1,next_attempt_at=NULL WHERE id=? AND state IN ('running','pending') AND (lease_token IS NULL OR lease_until<=?)").bind(lease,leaseNow+120000,runId,leaseNow).run()
  if(!claimed.meta.changes)return run
+ const attempt=run.attempts+1
  try{
  const definition=(await env.DB.prepare('SELECT definition_json FROM workflow_rule_versions WHERE rule_id=? AND version=?').bind(run.rule_id,run.version).first<{definition_json:string}>())
  if(!definition)return null
  const d=JSON.parse(definition.definition_json) as RuleDefinition,rule=activeRuleGuard(run),actions=JSON.parse(run.actions_json) as WorkflowAction[]
- const setState=async(state:string,explanation:string)=>{await env.DB.prepare("UPDATE workflow_runs SET state=?,explanation=CASE WHEN instr(explanation,?)>0 THEN explanation ELSE explanation||char(10)||? END,updated_at=? WHERE id=? AND lease_token=? AND state IN ('running','pending')").bind(state,explanation,explanation,workflowNow(env),runId,lease).run()}
+ const setState=async(state:string,reason:string,retryAt:number|null=null)=>{await env.DB.prepare("UPDATE workflow_runs SET state=?,reason=?,next_attempt_at=?,updated_at=? WHERE id=? AND lease_token=? AND state IN ('running','pending')").bind(state,reason,retryAt,workflowNow(env),runId,lease).run()}
+ // Waiting work keeps its place with a bounded retry; the last attempt ends it with the reason the admin sees.
+ const defer=async(terminal:'not_delivered'|'failed',reason:string)=>attempt>=RUN_ATTEMPTS?setState(terminal,`${reason}. Stopped after ${attempt} attempts.`):setState('pending',reason,workflowNow(env)+backoffMinutes[attempt-1]*60000)
+ if(attempt>RUN_ATTEMPTS){await setState('failed',`Stopped after ${RUN_ATTEMPTS} interrupted attempts`);return await env.DB.prepare('SELECT * FROM workflow_runs WHERE id=?').bind(runId).first<any>()}
  const owner=await env.DB.prepare('SELECT owner_id FROM workflow_rules WHERE id=?').bind(run.rule_id).first<{owner_id:string}>()
  try{
   const systemDefault=owner?.owner_id==='system'&&run.rule_id===`workflow:auto-close:${run.project_id}`
@@ -32,13 +40,14 @@ export async function executeRuleRun(env:Env,runId:string){
   try{
    if(action.type==='notify'){
     const result=await notifyWorkflow(env,{projectId:run.project_id,conversationId:run.conversation_id,id:actionId,kind:action.kind,recipientId:action.recipient_id,message:action.message,guard})
-    if(result.state!=='complete'){await setState(result.state==='cancelled'?'cancelled':result.state,result.detail??`Notification ${result.state}`);break}
+    if(result.state==='pending'){await defer('not_delivered',result.detail??'Notification delivery is waiting');break}
+    if(result.state!=='complete'){await setState(result.state,result.detail??`Notification ${result.state.replace('_',' ')}`);break}
     await env.DB.prepare("UPDATE workflow_runs SET cursor=max(cursor,?),state='running',updated_at=? WHERE id=? AND cursor=? AND state IN ('running','pending') AND lease_token=?").bind(i+1,workflowNow(env),runId,i,lease).run()
    }else if(action.type==='route'){
     const result=await routeTicket(env,run.conversation_id,actionId,guard,(accepted,args)=>[
      env.DB.prepare(`UPDATE workflow_runs SET cursor=max(cursor,?),frontier_json=(SELECT json_object('ticket_version',ticket_version,'revision',revision,'last_message_id',last_message_id) FROM conversations WHERE id=?),state='running',updated_at=? WHERE id=? AND cursor=? AND ${accepted}`).bind(i+1,run.conversation_id,workflowNow(env),runId,i,...args)
     ])
-    if(result.state==='pending'){await setState('pending',result.explanation??'Routing is contended');break}
+    if(result.state==='pending'){await defer('failed','The assignment kept losing to concurrent routing changes');break}
     if(result.state==='skipped')await env.DB.prepare('UPDATE workflow_runs SET cursor=max(cursor,?),updated_at=? WHERE id=? AND cursor=?').bind(i+1,workflowNow(env),runId,i).run()
    }else{
     const result=await applyWorkflowActions(env,{projectId:run.project_id,conversationId:run.conversation_id,id:actionId,source:d.kind==='time'?'automation':'rule',actorId:`${d.kind==='time'?'automation':'rule'} ${d.name}`,noteAuthorId:owner?.owner_id,expectedVersion:frontier.ticket_version,expectedRevision:frontier.revision,expectedLastMessageId:frontier.last_message_id,actions:[action],guard,after:(accepted,args)=>[

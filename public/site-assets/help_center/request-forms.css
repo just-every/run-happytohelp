@@ -19,3 +19,8 @@
 .request-form-list h2 {margin-top:0;font-size:1.25rem;}
 #request-result:not(:empty) {padding:1rem;border:1px solid #9ba6a2;border-radius:4px;overflow-wrap:anywhere;}
 @media(max-width:480px){.customer-request input:not([type=checkbox]),.customer-request select {width:100%;}.customer-request button {width:100%;}}
+/* Validation focuses fields below the fold. Keep this short, search-free header
+   in document flow so it cannot cover the customer links or language control. */
+.help-center-nav {position:static;}
+.help-center-language {margin:0 0 1.5rem;}
+.help-center-language select,.help-center-language button {font:inherit;min-height:44px;padding:.5rem .75rem;max-width:100%;border:1px solid #9ba6a2;border-radius:4px;background:#fff;color:#263b32;}

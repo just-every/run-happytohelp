@@ -17,7 +17,7 @@ export const notes = `SELECT id FROM conversation_notes WHERE conversation_id IN
 export const projectConversations = 'SELECT id FROM conversations WHERE project_id=?1'
 
 /** Customer-context rows are keyed by (project_id, subject_id); the subject is the contact. */
-export const subject = 'project_id=?1 AND subject_id=?2'
+export const subject = 'project_id=?1 AND (subject_id=?2 OR subject_id IN (SELECT contact_id FROM mailbox_contact_aliases WHERE project_id=?1 AND canonical_id=?2))'
 export const contextJobs = `SELECT id FROM context_jobs WHERE ${subject}`
 /** Page views and widget actions collected for the contact. */
 export const trackedTables = ['context_tracked_events', 'context_actions'] as const

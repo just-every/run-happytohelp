@@ -145,7 +145,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
    if(!conversation){
     const key=id(),now=Date.now()
     await env.DB.batch([
-     env.DB.prepare("INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at,mailbox_id) SELECT ?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND contact_id=? AND resolved_at IS NULL AND status_category<>'closed' AND (? IS NULL OR mailbox_id=?))").bind(key,project.project_id,contact.id,now,now,project.mailbox_id,project.project_id,contact.id,project.mailbox_id,project.mailbox_id),
+     env.DB.prepare("INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at,mailbox_id) SELECT ?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND contact_id=? AND resolved_at IS NULL AND status_category<>'closed' AND (? IS NULL OR mailbox_id=?) AND NOT EXISTS(SELECT 1 FROM request_form_submissions form WHERE form.conversation_id=conversations.id AND form.project_id=conversations.project_id))").bind(key,project.project_id,contact.id,now,now,project.mailbox_id,project.project_id,contact.id,project.mailbox_id,project.mailbox_id),
      env.DB.prepare('UPDATE inbound_emails SET conversation_id=? WHERE id=? AND claim_token=? AND EXISTS(SELECT 1 FROM conversations WHERE id=? AND project_id=?)').bind(key,recordId,claimToken,key,project.project_id),
      trackingStatement(env,key,true),
     ])

@@ -18,6 +18,11 @@ An imported address or an address typed into a widget alone does not prove
 ownership of earlier conversations. The portal links eligible verified history;
 it does not expose unproven history just because an email address matches.
 
+Portal verification, authenticated inbound mail and a widget signature naming
+the same mailbox share one requester. If an older installation split those
+proven identities, the customer’s next sign-in joins their requests, replies
+and survey ownership. Unauthenticated mail and typed widget addresses stay separate.
+
 Outbound email and the installation's public origin must be configured for
 sign-in links. Local development suppresses customer email; it does not establish
 that a deployed mail provider can deliver links.

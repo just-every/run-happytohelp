@@ -1,4 +1,5 @@
 import type {Actor,Env} from '../../platform/env.ts'
+import {portalMailboxSql,signedMailboxSql} from '../identity/mailbox'
 import {id} from '../../platform/db.ts'
 import {contactWritable} from '../../platform/contact-state.ts'
 
@@ -13,11 +14,11 @@ const availableAs=(alias:string)=>`${contactWritable.replaceAll('metadata_json',
 
 /** A contact's address is proven, so mail from that address is theirs, when mail
  * this desk received created the contact, or a widget signature names exactly that
- * address. An address a widget visitor typed (`email_unproven`, set by the widget) is
+ * address, or a portal link proved that mailbox. An address a widget visitor typed (`email_unproven`, set by the widget) is
  * where notifications may go, never who mail is from: otherwise an anonymous visitor
  * who types a customer's address would read that customer's mail. */
 const unproven=(alias:string)=>`coalesce(json_extract(${alias}.metadata_json,'$.email_unproven'),0)=1`
-export const provenAddressSql=(alias:string)=>`(coalesce(${alias}.is_verified,0)=1 AND lower(${alias}.external_id)=lower(${alias}.email) OR coalesce(${alias}.is_verified,0)!=1 AND NOT ${unproven(alias)})`
+export const provenAddressSql=(alias:string)=>`(${signedMailboxSql(alias)} OR coalesce(${alias}.is_verified,0)!=1 AND NOT ${unproven(alias)} OR ${portalMailboxSql(alias)})`
 
 // A contact kept apart for mail whose From could not be authenticated (below).
 const UNVERIFIED_SENDER="coalesce(json_extract(metadata_json,'$.unverified_sender'),0)=1"
@@ -31,7 +32,7 @@ export async function emailContact(env:Env,projectId:string,email:string){
 }
 
 async function senderContact(env:Env,projectId:string,email:string,kind:string,metadata:string){
- const read=()=>env.DB.prepare(`SELECT * FROM contacts WHERE project_id=? AND lower(email)=? AND ${kind} ORDER BY created_at,id LIMIT 1`).bind(projectId,email).first<any>()
+ const read=()=>env.DB.prepare(`SELECT * FROM contacts WHERE project_id=? AND lower(email)=? AND ${kind} ORDER BY ${portalMailboxSql('contacts')} DESC,is_verified DESC,created_at,id LIMIT 1`).bind(projectId,email).first<any>()
  let contact=await read()
  if(!contact){
   await env.DB.prepare(`INSERT INTO contacts(id,project_id,email,metadata_json,created_at) SELECT ?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM contacts WHERE project_id=? AND lower(email)=? AND ${kind})`).bind(id(),projectId,email,metadata,Date.now(),projectId,email).run()
@@ -68,9 +69,9 @@ export async function preferredAddressActor(env:Env,projectId:string,conversatio
 }
 
 /** Bare mailbox policy: a fresh email continues the contact's most recently active
- * open thread; closed history starts a new one. */
+ * open non-form thread; closed history or a form submission starts a new one. */
 export async function openEmailConversation(env:Env,projectId:string,contactId:string,mailboxId?:string|null){
- return env.DB.prepare("SELECT * FROM conversations WHERE project_id=? AND contact_id=? AND resolved_at IS NULL AND status_category<>'closed' AND (? IS NULL OR mailbox_id=?) ORDER BY updated_at DESC,id LIMIT 1").bind(projectId,contactId,mailboxId??null,mailboxId??null).first<any>()
+ return env.DB.prepare("SELECT * FROM conversations WHERE project_id=? AND contact_id=? AND resolved_at IS NULL AND status_category<>'closed' AND (? IS NULL OR mailbox_id=?) AND NOT EXISTS(SELECT 1 FROM request_form_submissions form WHERE form.conversation_id=conversations.id AND form.project_id=conversations.project_id) ORDER BY updated_at DESC,id LIMIT 1").bind(projectId,contactId,mailboxId??null,mailboxId??null).first<any>()
 }
 
 /** CC recipients the sender may add. Workspace addresses, members and contacts that

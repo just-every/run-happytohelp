@@ -558,7 +558,7 @@ The platform admission index's `move_in_contact_keys.email_digest` remains lazy 
 
 ## Status
 
-Judged from the code and tests at commit `9a07af20eccf264eaa6fd019ccc65cf2003bc378` (17 October 2026).
+Judged from the code and tests at commit `9a07af20eccf264eaa6fd019ccc65cf2003bc378` (17 October 2026). R5 additionally updates SLA-001, AUTOMATION-001/002, QUEUE-001/004 and STATUS-001 from the workflow, inbox and packaged recovery journeys on 17 October 2026.
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |

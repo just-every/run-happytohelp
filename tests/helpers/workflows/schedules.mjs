@@ -29,6 +29,7 @@ export async function schedulesFlow(f){
  await app.configure({EMAIL_PROVIDER:'development',EMAIL_API_KEY:undefined})
  // A dependency snooze wakes once the named ticket is solved.
  await clock(initial)
+ const group=await ok('/ticket-groups',{name:'Aftercare',members:Object.values(w.users)});const groupReassigned=await schedule(id);await patch(id,{group_id:group.id});assert.equal((await ok(`/conversations/${id}/workflows`)).schedules.find(s=>s.id===groupReassigned.id).state,'cancelled','Moving the responsible team cancels the old queued reply')
  const dependency=await create('Warehouse confirmation'),dependent=await create('Waiting for warehouse')
  const sleep=await ok('/workflow-schedules',{conversation_id:dependent,kind:'snooze',dependency_id:dependency,timezone:'America/New_York',owner_id:w.users.owner})
  await patch(dependency,{status_id:'solved'});await app.scheduled();assert.equal((await ok(`/conversations/${dependent}/workflows`)).schedules.find(s=>s.id===sleep.id).state,'woken')

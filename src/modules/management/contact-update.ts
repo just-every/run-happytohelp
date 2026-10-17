@@ -9,6 +9,7 @@ export async function updateContactResource(env:Env,projectId:string,id:string,b
  if(metadata.is_erased||metadata.is_erasing)throw new HTTPException(409,{message:'This contact is being erased or was erased'})
  const fields:string[]=[],values:(string|null)[]=[]
  for(const key of ['provided_name','provided_email','phone'])if(key in body)metadata[key]=body[key]===null?null:text(body[key],320)
+ if('provided_email' in body)metadata.provided_email_source='operator'
  if('is_blocked' in body){
   const wasBlocked=metadata.is_blocked===undefined?Boolean(metadata.blocked_at):Boolean(metadata.is_blocked)
   metadata.is_blocked=Boolean(body.is_blocked)

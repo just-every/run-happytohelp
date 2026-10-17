@@ -23,7 +23,7 @@ export function contactEnvironment(request: Request, supplied: unknown) {
 // Business metadata is replaced on signed updates; collected and operator-owned
 // fields survive replacement and cannot be introduced through business metadata.
 export const retainedContactMetadata = [
- 'provided_name', 'provided_email', 'email_unproven', 'phone',
+ 'provided_name', 'provided_email', 'provided_email_source', 'email_unproven', 'phone',
  'timezone', 'language', 'ip_address', 'country_code', 'user_agent', 'last_seen_at', 'widget_opened',
  'is_blocked', 'blocked_at', 'is_deleted', 'deleted_at', 'is_erasing', 'is_erased', 'erased_at',
 ]

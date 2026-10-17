@@ -23,7 +23,7 @@ export async function updateContact({ c, actor, conversation, data }: WidgetComm
   if (metadata.length) {
     // A typed address is a notification preference, never inbound mail authority
     // (integrations/inbound-authority.ts).
-    const typedEmail = metadata.includes('$.provided_email') ? `,'$.email_unproven',1` : ''
+    const typedEmail = metadata.includes('$.provided_email') ? `,'$.email_unproven',1,'$.provided_email_source','widget'` : ''
     fields.push(`metadata_json=json_set(metadata_json,${metadata.map(() => '?').join(',')}${typedEmail})`)
     values.push(...metadata)
   }

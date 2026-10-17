@@ -4,6 +4,8 @@ Your workspace includes editable **request received** and **solved** email notic
 
 A new customer request receives at most one acknowledgement per ticket. Solving a ticket sends at most one solved notice, even if it is reopened and solved again. Notices go to the requester and to customer CC recipients whose address is proven: someone your team added as a recipient, a CC who has written to the ticket or to your support address themselves, or a signed-in widget customer. An address that only appears in an email's Cc line gets no notice until then. A visitor's own widget address can receive its notice; typing an address into a widget does not prove that address belongs to a customer CC.
 
+Automatic notices use the proven identity address, or a preferred address explicitly set by your team. A Reply-To header or a different address typed into the widget cannot redirect a notice. Existing preferences with no recorded source remain available for operator replies; set them again in the customer profile to use them for automatic notices. A widget ticket keeps its own widget identity address.
+
 Machine-generated mail, suspended or isolated mail, imported history and merge operations do not produce these notices. Redelivery does not send another copy. Public replies continue to use the ticket's customer recipients and their individual reply addresses.
 
 Open your **Profile → Notification** tab to choose inbox and email delivery for assignment, customer updates, group tickets, tickets you follow and mentions. Your notification inbox links each notice to its ticket and lets you mark it read. Your existing unassigned-activity preference controls the unread digest for unassigned tickets.

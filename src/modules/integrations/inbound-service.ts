@@ -167,6 +167,6 @@ async function newConversation(env:Env,projectId:string,contactId:string,recordI
 async function keepReplyTarget(env:Env,projectId:string,actor:Actor,value:unknown,context:{authenticated:boolean;automatic:boolean;workspace:ReadonlySet<string>}){
  const replyTo=emailAddress(value)
  if(!replyTo||actor.role!=='contact'||!context.authenticated||context.automatic||context.workspace.has(replyTo)||inboundTarget(replyTo)&&await env.DB.prepare('SELECT 1 FROM email_settings WHERE lower(inbound_address)=?').bind(inboundTarget(replyTo)!.mailbox).first())return
- await env.DB.prepare(`UPDATE contacts SET metadata_json=json_set(coalesce(metadata_json,'{}'),'$.provided_email',?) WHERE id=? AND project_id=? AND coalesce(is_verified,0)!=1 AND coalesce(json_extract(metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(metadata_json,'$.is_erased'),0)!=1
+ await env.DB.prepare(`UPDATE contacts SET metadata_json=json_set(coalesce(metadata_json,'{}'),'$.provided_email',?,'$.provided_email_source','reply_to') WHERE id=? AND project_id=? AND coalesce(is_verified,0)!=1 AND coalesce(json_extract(metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(metadata_json,'$.is_erased'),0)!=1
   AND NOT EXISTS(SELECT 1 FROM users u JOIN memberships m ON m.user_id=u.id WHERE m.project_id=? AND lower(u.email)=?)`).bind(replyTo,actor.contactId,projectId,projectId,replyTo).run()
 }

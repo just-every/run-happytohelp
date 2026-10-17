@@ -1,4 +1,5 @@
 import {runWorkflows,workflowEnvironment} from './modules/workflows/runtime'
+import {withWorkflowInvocation} from './modules/workflows/invocation'
 import {dispatchIntegrations} from './modules/api-integrations/dispatch'
 import {advanceImport,getWorkRun} from './modules/move-in/service'
 import {generationEffects} from './edition/ai/generation-effects'
@@ -39,7 +40,7 @@ export async function consumeJob(job:Job,env:Env) {
 /** How long a message's failing follow-up (AI reply request, notification) is retried. */
 const OUTBOX_RETRY_MS=60*60*1000
 export async function runScheduled(env:Env) {
- env=await workflowEnvironment(env)
+ env=withWorkflowInvocation(await workflowEnvironment(env))
  try { await runWorkflows(env) }
  catch(error) { console.error('Workflow run failed',error) }
  try { await dispatchSurveys(env) }

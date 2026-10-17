@@ -5,7 +5,7 @@ import {unstable_splitSqlQuery} from 'wrangler';
 import {policy,schemaIdentity,excludedTable} from '@runeditrun/rer/modules/portability/catalogue';
 const {changesData}=await import(new URL('./migration-statements.mjs',import.meta.resolve('@runeditrun/rer/modules/portability/migration-history')));
 
-export const workflowTables=['workflow_events','workflow_event_sequence','workflow_clock','ticket_followups','workflow_calendars','sla_policies','ticket_sla_state','sla_alerts','sla_scheduler_cursors','workflow_rules','workflow_rule_versions','workflow_runs','workflow_action_receipts','workflow_notifications','workflow_time_state','workflow_scheduler_cursors','routing_operators','routing_state','routing_decisions','workflow_schedules'];
+export const workflowTables=['workflow_queue_turns','workflow_events','workflow_event_sequence','workflow_clock','ticket_followups','workflow_calendars','sla_policies','ticket_sla_state','sla_alerts','sla_scheduler_cursors','workflow_rules','workflow_rule_versions','workflow_runs','workflow_action_receipts','workflow_notifications','workflow_time_state','workflow_scheduler_cursors','routing_operators','routing_state','routing_decisions','workflow_schedules'];
 export const ticketTables=['ticket_statuses','ticket_groups','ticket_group_members','ticket_fields','ticket_field_values','ticket_history','ticket_views'];
 
 // The exact R3 row transition remains supported, including old erasure receipts.

@@ -11,10 +11,11 @@ const b64=value=>Buffer.from(value).toString('base64url')
 const mime=(provider,address,id)=>`From: Customer <customer@example.com>\r\nTo: ${address}\r\nSubject: Shipment arrives damaged\r\nMessage-ID: <${id}@example.com>\r\nAuthentication-Results: ${provider==='gmail'?'mx.google.com; dkim=pass header.d=example.com; dmarc=pass header.from=example.com':'spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com; dmarc=pass action=none header.from=example.com; compauth=pass reason=100'}\r\nContent-Type: text/plain\r\n\r\nPlease replace the damaged shipment.`
 
 export async function mailboxProviderJourney(){
- const sent=[],authorization=[],failures={gmail:false,microsoft:false},accounts=new Map(),polls=[]
+ const sent=[],notices=[],authorization=[],failures={gmail:false,microsoft:false},accounts=new Map(),polls=[]
  const addresses={gmail:'gmail.support@example.test',microsoft:'m365.support@example.test'}
  const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',INBOUND_EMAIL_TOKEN:'gateway-fixture',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'installation-fixture',EMAIL_FROM:'support@example.test',INTEGRATION_ENCRYPTION_KEY:Buffer.alloc(32,7).toString('base64'),GOOGLE_MAIL_CLIENT_ID:'google-client-fixture',GOOGLE_MAIL_CLIENT_SECRET:'google-secret-fixture',MICROSOFT_MAIL_CLIENT_ID:'microsoft-client-fixture',MICROSOFT_MAIL_CLIENT_SECRET:'microsoft-secret-fixture'},outbound:async request=>{
   const url=new URL(request.url),provider=url.hostname.includes('google')?'gmail':'microsoft',base='https://gmail.googleapis.com/gmail/v1/users/me'
+  if(url.hostname==='api.resend.com'){notices.push(await request.json());return Response.json({id:'notice-'+notices.length})}
   if(url.pathname.endsWith('/token')){const body=new URLSearchParams(await request.text());authorization.push(body);assert.ok(body.get('code_verifier')||body.get('grant_type')==='refresh_token');const account=accounts.get(body.get('code'));return Response.json({access_token:account?.code||provider+'-access-fixture',refresh_token:provider+'-refresh-fixture',expires_in:3600,token_type:'Bearer',scope:provider==='gmail'?'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.settings.basic':'Mail.Read Mail.Send User.Read'})}
   const account=accounts.get(request.headers.get('authorization')?.replace(/^Bearer /,''))
   if(account){
@@ -25,6 +26,7 @@ export async function mailboxProviderJourney(){
    if(url.href.startsWith(base+'/messages?'))return Response.json({messages:account.messages.map(message=>({id:message.id})),resultSizeEstimate:account.messages.length})
    if(url.pathname.endsWith('/history'))return Response.json({history:account.messages.filter(message=>message.history>Number(url.searchParams.get('startHistoryId'))).map(message=>({id:String(message.history),messagesAdded:[{message:{id:message.id,labelIds:['INBOX']}}]})),historyId:String(account.history)})
    const id=url.pathname.match(/\/messages\/([^/]+)$/)?.[1],message=account.messages.find(message=>message.id===id)
+   if(message?.oversized)return new Response('',{headers:{'content-length':String(40*1024*1024)}})
    if(message)return Response.json({id:message.id,labelIds:['INBOX'],historyId:String(message.history),raw:b64(message.raw)})
    throw new Error('Unexpected Gmail account edge '+url.pathname)
   }
@@ -113,19 +115,39 @@ export async function mailboxProviderJourney(){
   assert.equal((await app.first('SELECT state FROM inbound_emails WHERE id=?','<after-conflict@example.com>')).state,'delivered')
   assert.equal((await app.first('SELECT * FROM inbound_emails WHERE id=?',admitted.id)).message_id,admitted.message_id)
   assert.equal((await app.first('SELECT count(*) AS n FROM messages WHERE content LIKE ?','%different bank details%')).n,0,'identity conflict never becomes customer mail')
+  assert.equal((await app.ok(`/api/management/projects/${workspace.projectId}/suspended`,{token})).data.filter(mail=>mail.reason==='message_identity_conflict').length,1,'the conflicting copy is retained for review without changing its original receipt')
   const refusal=await app.first("SELECT outcome,detail_json FROM audit_events WHERE action='mailbox.message_failed' AND target_id=?",billing.row.id)
   assert.equal(refusal.outcome,'failed');assert.equal(JSON.parse(refusal.detail_json).status,409)
   assert.deepEqual(await poll(billing),{received:0,failed:0,cursor:partial.cursor,more:false},'permanent rejection is observed once and does not pin the cursor')
   const backfill=await app.ok(`${base}/${billing.row.id}/backfill`,{token,body:{}})
   assert.equal(backfill.failed,0);assert.equal(backfill.received,0,'backfill preserves the rejected message replay fence')
+  const ticketPath=`/api/dashboard/projects/${workspace.projectId}/conversations/${admitted.conversation_id}/ticket`,ticketState=(await app.ok(ticketPath,{token})).data
+  await app.ok(ticketPath,{token,method:'PATCH',body:{expected_version:ticketState.ticket_version,status_id:'closed'}})
+  const closedReply=mime('gmail',supportAddress,'member-closed').replace('Customer <customer@example.com>','Owner <owner-mailboxes@example.test>').replaceAll('header.d=example.com','header.d=example.test').replaceAll('header.from=example.com','header.from=example.test').replace('Subject:','In-Reply-To: <two-mailboxes@example.com>\r\nSubject:')
+  append(support,closedReply);append(support,mime('gmail',supportAddress,'after-closed-member'))
+  const closedPoll=await poll(support);assert.equal(closedPoll.failed,1);assert.equal(closedPoll.received,1)
+  assert.equal(notices.length,1);assert.ok(notices[0].to.includes('owner-mailboxes@example.test'))
+  assert.equal((await app.first('SELECT state FROM inbound_emails WHERE id=?','<after-closed-member@example.com>')).state,'delivered')
+  assert.equal((await app.first('SELECT count(*) n FROM messages WHERE actor_id=? AND conversation_id=?',workspace.users.owner,admitted.conversation_id)).n,0)
+  append(support,closedReply);await poll(support);await app.ok(`${base}/${support.row.id}/backfill`,{token,body:{}})
+  assert.equal(notices.length,1,'repeated polls and a second provider copy send one notice per receipt')
+  append(billing,mime('gmail',billingAddress,'quoted-only').replace('Please replace the damaged shipment.','> Earlier quoted message'))
+  assert.equal((await poll(billing)).failed,1)
+  const refusedMail=(await app.ok(`/api/management/projects/${workspace.projectId}/suspended`,{token})).data.find(mail=>mail.reason==='message_refused');assert.ok(refusedMail)
+  assert.match((await app.ok(`/api/management/projects/${workspace.projectId}/suspended/${refusedMail.id}`,{token})).data.text,/Earlier quoted message/)
+  append(billing,'');billing.account.messages.at(-1).oversized=true
+  append(billing,mime('gmail',billingAddress,'after-oversized'))
+  assert.equal((await poll(billing)).failed,1)
+  assert.equal((await app.first('SELECT state FROM inbound_emails WHERE id=?','<after-oversized@example.com>')).state,'delivered')
+  assert.ok((await app.ok(`/api/management/projects/${workspace.projectId}/suspended`,{token})).data.some(mail=>mail.reason==='message_too_large'))
   const stuck=[]
   for(let index=0;index<10;index++){
    const box=await connect(`stuck-${index}@parcel.example`);box.account.failure=503;stuck.push(box)
    assert.equal((await app.call(`${base}/${box.row.id}/poll`,{token,body:{}})).status,502)
   }
   const healthy=await connect('healthy@parcel.example',[mime('gmail','healthy@parcel.example','healthy-first')])
-  // Retryable failures whose backoff has elapsed still rank after healthy rows,
-  // including a healthy inbox with a newer successful sync than every failure.
+  // A reserved retry slot cannot displace the three healthy inboxes, including
+  // a healthy inbox with a newer successful sync than every failure.
   await app.db.prepare("UPDATE mailbox_connections SET updated_at=? WHERE error_code='sync_failed'").bind(Date.now()-10*60000).run()
   append(billing,mime('gmail',billingAddress,'billing-scheduled'))
   polls.length=0;await app.scheduled()
@@ -138,5 +160,19 @@ export async function mailboxProviderJourney(){
   polls.length=0;await app.scheduled()
   assert.equal(polls.includes(retried.address),false,'fresh provider failures back off between scheduled runs')
   assert.equal((await app.first('SELECT updated_at FROM mailbox_connections WHERE id=?',retried.row.id)).updated_at,retryAt)
+  for(const box of [support,billing,healthy,...stuck])await app.ok(`${base}/${box.row.id}`,{token,method:'DELETE'})
+  for(const count of [3,4,6,20]){
+   const boxes=[]
+   for(let index=0;index<count;index++){const box=await connect(`fair-${count}-${index}@parcel.example`);await poll(box);boxes.push(box)}
+   const recovered=await connect(`recovered-${count}@parcel.example`);recovered.account.failure=503
+   assert.equal((await app.call(`${base}/${recovered.row.id}/poll`,{token,body:{}})).status,502)
+   append(recovered,mime('gmail',recovered.address,'recovered-'+count));recovered.account.failure=0
+   polls.length=0;await app.scheduled();assert.equal(polls.includes(recovered.address),false,'a failed inbox remains inside its backoff')
+   await app.db.prepare('UPDATE mailbox_connections SET updated_at=? WHERE id=?').bind(Date.now()-10*60000,recovered.row.id).run()
+   polls.length=0;await app.scheduled()
+   assert.ok(polls.includes(recovered.address),`a recovered inbox gets a slot on the first due run beside ${count} healthy inboxes`)
+   assert.equal((await app.first('SELECT state FROM inbound_emails WHERE id=?',`<recovered-${count}@example.com>`)).state,'delivered')
+   for(const box of [...boxes,recovered])await app.ok(`${base}/${box.row.id}`,{token,method:'DELETE'})
+  }
  }finally{await app.close()}
 }

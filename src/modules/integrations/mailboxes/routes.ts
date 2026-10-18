@@ -48,8 +48,8 @@ export function createMailboxRoutes(receive?:(env:Env,message:MailboxIncoming)=>
   const credential=row.provider==='imap'?imapInput(c.env,body):undefined
   if(credential)try{await verifyImap(c.env,credential)}catch{throw new HTTPException(502,{message:'IMAP or SMTP reconnect failed'})}
   await scope(c,true)
-  // A credential-free restored forwarding mailbox retains its configured aliases.
-  const retained=row.provider==='forwarding'?(await c.env.DB.prepare('SELECT address FROM mailbox_addresses WHERE mailbox_id=? AND project_id=? ORDER BY address LIMIT 100').bind(row.id,actor.projectId).all<{address:string}>()).results:[]
+  // Reconnection changes credentials, never the configured receiving aliases.
+  const retained=(await c.env.DB.prepare('SELECT address FROM mailbox_addresses WHERE mailbox_id=? AND project_id=? ORDER BY address LIMIT 100').bind(row.id,actor.projectId).all<{address:string}>()).results
   const addresses=[...new Set([row.address,...retained.map(alias=>alias.address)])].map(address=>({address,canSend:row.provider==='imap'}))
   await saveConnection(c.env,{id:row.id,projectId:actor.projectId,provider:row.provider,address:row.address,displayName:row.display_name,actorId:actor.id,credential,addresses,expectedVersion:row.credential_version})
   return c.json({data:await publicMailbox(c.env,await getMailbox(c.env,actor.projectId,row.id))})

@@ -22,7 +22,8 @@ export async function recoveryJourney(){
   for(const changed of [deliver('Changed intent'),deliver('Durable email','changed')]){assert.equal(await outcome(changed),'delivered');assert.equal(await count('messages'),0)}
   assert.equal((await m.claim('recover')).intent_hash,failed.intent_hash)
   assert.equal(await outcome(deliver()),'delivered');const recovered=await m.claim('recover');assert.equal(recovered.state,'delivered');assert.equal(recovered.conversation_id,failed.conversation_id)
-  assert.deepEqual([await count('conversations'),await count('media'),await count('messages'),(await (await app.files).list()).objects.length],[1,1,1,1],'the staged attachment is stored once')
+  assert.deepEqual([await count('conversations'),await count('media'),await count('messages'),(await (await app.files).list()).objects.length],[1,1,1,3],'one staged attachment and the two refused copies are retained separately')
+  assert.equal(await count('suspended_emails'),2,'neither conflicting copy disappears or becomes a customer message')
   assert.equal(await outcome(deliver()),'delivered');assert.equal(await count('messages'),1)
   // A completion failure after the atomic message/outbox admission: the retry only reconciles.
   const conversationId=recovered.conversation_id,after={messageId:'after-admission',to:'inbound@example.com',from:'customer@example.com',text:'Durable email',conversationId}

@@ -1,5 +1,5 @@
 import type {Env} from '../../../platform/env'
-import {bearer,providerBytes,providerJson,graphPageUrl,unbase64,MIME_LIMIT,MailboxProviderError} from './http'
+import {bearer,providerBytes,providerJson,graphPageUrl,unbase64,MIME_LIMIT,MailboxProviderError,MailboxResponseTooLarge} from './http'
 import {accessToken} from './oauth-provider'
 import {openImap} from './socket'
 import {readCredential} from './store'
@@ -35,7 +35,7 @@ export async function gmailPage(env:Env,row:MailboxRow,cursor:Cursor|null,admit:
  for(const id of ids){if(typeof id!=='string'||id.length>512)throw new Error('Invalid Gmail message identity');await admit(id,async()=>{
   const message=await providerJson(`${base}/messages/${encodeURIComponent(id)}?format=raw`,{headers},Math.ceil(MIME_LIMIT*1.4))
   if(typeof message.raw!=='string')throw new Error('Gmail omitted raw message')
-  const raw=unbase64(message.raw);if(raw.length>MIME_LIMIT)throw new Error('Mailbox message exceeds size limit');return raw
+  const raw=unbase64(message.raw);if(raw.length>MIME_LIMIT)throw new MailboxResponseTooLarge('Mailbox message exceeds size limit');return raw
  })}
  return {cursor:next,more:Boolean(page)||next.kind==='gmail-backfill'}
 }
@@ -66,11 +66,17 @@ export async function imapPage(env:Env,row:MailboxRow,cursor:Cursor|null,admit:A
   const uids=result.lines.filter(l=>l.startsWith('* SEARCH')).flatMap(l=>l.slice(8).trim().split(/\s+/).filter(Boolean).map(Number)).sort((a,b)=>a-b)
   if(uids.some(n=>!Number.isSafeInteger(n)||n<start||n>end))throw new Error('Invalid IMAP UID response')
   const selected=uids.slice(0,20)
-  for(const uid of selected)await admit(`${uidValidity}:${uid}`,async()=>{
-   const result=await session.command(`UID FETCH ${uid} (UID BODY.PEEK[])`)
+  for(const uid of selected){
+   let oversized=false
+   await admit(`${uidValidity}:${uid}`,async()=>{
+   const result=await session.command(`UID FETCH ${uid} (UID BODY.PEEK[])`).catch(error=>{oversized=error instanceof MailboxResponseTooLarge;throw error})
    if(result.literals.length!==1)throw new Error('IMAP omitted message content')
    return result.literals[0]
   })
+   // An oversized literal leaves unread bytes on this connection. Its visible
+   // hold is durable; resume at the next UID with a fresh TLS session next run.
+   if(oversized)return {cursor:{kind:'imap',uidValidity,lastUid:uid},more:uid<uidNext-1}
+  }
   const lastUid=uids.length>selected.length?selected[selected.length-1]:end
   return {cursor:{kind:'imap',uidValidity,lastUid},more:lastUid<uidNext-1}
  }finally{await session.wire.close()}

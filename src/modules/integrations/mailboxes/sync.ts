@@ -1,7 +1,7 @@
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../../platform/env'
 import {getMailbox,mailboxForDelivery} from './store'
-import {MailboxProviderError} from './http'
+import {MailboxProviderError,MailboxResponseTooLarge} from './http'
 import {gmailPage,graphPage,imapPage,BackfillRequired,type Cursor} from './sync-providers'
 import type {MailboxReceiver,MailboxSyncOptions} from './types'
 import {auditStatement} from '../../audit/record'
@@ -35,6 +35,10 @@ export async function syncMailbox(env:Env,projectId:string,mailboxId:string,rece
    // The provider can delete a message after listing it. There is no content to
    // admit and the provider's stable id can be safely recorded as observed.
    if(error instanceof MailboxProviderError&&error.status===404){await env.DB.prepare('INSERT OR IGNORE INTO mailbox_sync_receipts VALUES(?,?,?)').bind(mailboxId,id,Date.now()).run();return}
+   if(error instanceof MailboxResponseTooLarge){
+    await receive({projectId,mailboxId,address:row.address,provider:row.provider,providerMessageId:id,raw:new Uint8Array(),unavailableReason:'message_too_large'})
+    await refuse(id,new HTTPException(413,{message:'Mailbox message exceeds size limit'}));return
+   }
    throw error
   }
   const live=await mailboxForDelivery(env,projectId,mailboxId)
@@ -67,11 +71,17 @@ export async function syncMailbox(env:Env,projectId:string,mailboxId:string,rece
 }
 export async function syncConnectedMailboxes(env:Env,receive:MailboxReceiver,options:{limit?:number}={}){
  const limit=Math.max(1,Math.min(20,Math.floor(options.limit||4)))
- const rows=await env.DB.prepare(`SELECT m.project_id,m.id FROM mailbox_connections m WHERE m.status='connected' AND m.provider<>'forwarding' AND (m.sync_lock_until IS NULL OR m.sync_lock_until<?)
- AND (m.error_code IS NULL OR m.updated_at<=?)
- AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)
- ORDER BY CASE WHEN m.error_code IS NULL THEN 0 ELSE 1 END,CASE WHEN m.error_code IS NULL THEN coalesce(m.last_sync_at,0) ELSE m.updated_at END,m.id LIMIT ?`).bind(Date.now(),Date.now()-FAILURE_BACKOFF_MS,limit).all<{project_id:string;id:string}>()
+ const eligible=`FROM mailbox_connections m WHERE m.status='connected' AND m.provider<>'forwarding' AND (m.sync_lock_until IS NULL OR m.sync_lock_until<?)
+ AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
+ const now=Date.now(),[healthy,retries]=await env.DB.batch<{project_id:string;id:string}>([
+  env.DB.prepare(`SELECT m.project_id,m.id ${eligible} AND m.error_code IS NULL ORDER BY coalesce(m.last_sync_at,0),m.id LIMIT ?`).bind(now,limit),
+  env.DB.prepare(`SELECT m.project_id,m.id ${eligible} AND m.error_code IS NOT NULL AND m.updated_at<=? ORDER BY m.updated_at+?,m.id LIMIT ?`).bind(now,now-FAILURE_BACKOFF_MS,FAILURE_BACKOFF_MS,limit),
+ ])
+ // Reserve a slot for the oldest due retry. Healthy inboxes keep the other slots;
+ // unused healthy slots go to due retries. Neither group can starve the other.
+ const rows=healthy.results.slice(0,retries.results.length?limit-1:limit)
+ rows.push(...retries.results.slice(0,limit-rows.length))
  const results=[]
- for(const row of rows.results)try{results.push({mailboxId:row.id,...await syncMailbox(env,row.project_id,row.id,receive)})}catch{results.push({mailboxId:row.id,error:'sync_failed'})}
+ for(const row of rows)try{results.push({mailboxId:row.id,...await syncMailbox(env,row.project_id,row.id,receive)})}catch{results.push({mailboxId:row.id,error:'sync_failed'})}
  return results
 }

@@ -83,14 +83,16 @@ export async function deliverOperatorNotification(env:Env,row:OperatorNotificati
  }catch(error){
   // Known provider outcomes are already terminal. Only failures before that
   // durable attempt reach here; three preparations end visibly, across restarts.
-  const failure=await env.DB.prepare(`INSERT INTO notification_trigger_claims(id,project_id,conversation_id,event,state,outcome_json,created_at)
+  const failure=env.DB.prepare(`INSERT INTO notification_trigger_claims(id,project_id,conversation_id,event,state,outcome_json,created_at)
    VALUES(?,?,?,?,'pending',json_object('attempts',1,'reason','Notification preparation failed'),?)
    ON CONFLICT(id) DO UPDATE SET state=CASE WHEN json_extract(outcome_json,'$.attempts')+1>=3 THEN 'failed' ELSE 'pending' END,
    outcome_json=json_set(outcome_json,'$.attempts',json_extract(outcome_json,'$.attempts')+1)
-   RETURNING json_extract(outcome_json,'$.attempts') attempts`).bind('operator-recovery:'+row.id,row.project_id,row.conversation_id,'operator-recovery:'+row.id,Date.now()).first<{attempts:number}>()
-  if(failure&&failure.attempts>=3)await env.DB.prepare("UPDATE operator_notifications SET state='complete' WHERE id=?").bind(row.id).run()
+   RETURNING json_extract(outcome_json,'$.attempts') attempts`).bind('operator-recovery:'+row.id,row.project_id,row.conversation_id,'operator-recovery:'+row.id,Date.now())
+  // A terminal preparation outcome and removal from recovery are one commit.
+  // A lost response or restart cannot resurrect a visibly failed notification.
+  const result=await env.DB.batch<{attempts:number}>([failure,env.DB.prepare("UPDATE operator_notifications SET state='complete' WHERE id=? AND EXISTS(SELECT 1 FROM notification_trigger_claims WHERE id=? AND state='failed')").bind(row.id,'operator-recovery:'+row.id)])
   console.error('Operator notification preparation failed',row.id,error instanceof Error?error.name:'Error')
-  return Boolean(failure&&failure.attempts>=3)
+  return (result[0].results[0]?.attempts??0)>=3
  }
 }
 /** Bounded scheduled recovery. No attempted provider delivery is replayed.

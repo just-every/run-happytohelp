@@ -55,9 +55,13 @@ mailboxOAuthRoutes.get('/mailboxes/oauth/:provider/callback',async c=>{
  const credential=await exchangeToken(c.env,provider,{grant_type:'authorization_code',code,redirect_uri:row.redirect_uri,code_verifier:verifier}),identity=await providerIdentity(provider,credential.accessToken)
  const existing=row.mailbox_id?await getMailbox(c.env,row.project_id,row.mailbox_id):null
  if(existing&&(existing.provider!==provider||existing.address!==identity.address))throw new HTTPException(409,{message:'Reconnect using the original mailbox account'})
+ // Receiving aliases are operator configuration. Refresh send-as authority from
+ // the provider, while retaining receive-only addresses across reconnection.
+ const retained=existing?(await c.env.DB.prepare('SELECT address FROM mailbox_addresses WHERE mailbox_id=? AND project_id=? AND can_send=0').bind(existing.id,row.project_id).all<{address:string}>()).results:[]
+ const addresses=[...identity.addresses,...retained.filter(alias=>!identity.addresses.some(current=>current.address===alias.address)).map(alias=>({address:alias.address,canSend:false}))]
  // The exchange can take seconds. Fence membership revocation during that work.
  const live=await c.env.DB.prepare(`SELECT 1 FROM memberships WHERE project_id=? AND user_id=? AND role IN ('owner','admin') AND ?=(SELECT revision FROM integration_authority_epoch WHERE id=1)`).bind(row.project_id,actor.id,row.authority_revision).first()
  if(!live)throw new HTTPException(403)
- await saveConnection(c.env,{id:row.mailbox_id||crypto.randomUUID(),projectId:row.project_id,provider,address:identity.address,displayName:row.display_name,actorId:actor.id,credential,addresses:identity.addresses,expectedVersion:row.mailbox_version??undefined,authorityRevision:row.authority_revision})
+ await saveConnection(c.env,{id:row.mailbox_id||crypto.randomUUID(),projectId:row.project_id,provider,address:identity.address,displayName:row.display_name,actorId:actor.id,credential,addresses,expectedVersion:row.mailbox_version??undefined,authorityRevision:row.authority_revision})
  return c.redirect(`/projects/${encodeURIComponent(row.project_id)}/settings?mailbox=connected`)
 })

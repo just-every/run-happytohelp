@@ -1,3 +1,4 @@
+import {conversationHasMessages} from '../management/inbox-visible'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {availableTicketSql} from '../tickets/model'
@@ -8,7 +9,7 @@ import {applySlaEvent,advanceSla,newSlaState,slaNextCheck,type SlaState} from '.
 import {slaEvents,slaEventSources} from './sla-events'
 import {desiredSlaAlerts,slaAlertStatements,type SlaAlertTicket} from './sla-alerts'
 
-export const liveSlaTicketSql=(alias='c')=>`${availableTicketSql(alias)} AND NOT EXISTS(SELECT 1 FROM move_in_conversations imported WHERE imported.project_id=${alias}.project_id AND imported.conversation_id=${alias}.id) AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations legacy WHERE legacy.project_id=${alias}.project_id AND legacy.conversation_id=${alias}.id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=${alias}.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
+export const liveSlaTicketSql=(alias='c')=>`${availableTicketSql(alias)} AND ${conversationHasMessages(alias)} AND NOT EXISTS(SELECT 1 FROM move_in_conversations imported WHERE imported.project_id=${alias}.project_id AND imported.conversation_id=${alias}.id) AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations legacy WHERE legacy.project_id=${alias}.project_id AND legacy.conversation_id=${alias}.id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=${alias}.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
 export function slaAlertData(row:any){return {...row}}
 const keyJson=(rows:{project_id:string;id:string}[])=>JSON.stringify(rows.map(r=>[r.project_id,r.id]))
 const keyed=(alias:string)=>`(${alias}.project_id,${alias}.conversation_id) IN (SELECT json_extract(value,'$[0]'),json_extract(value,'$[1]') FROM json_each(?))`

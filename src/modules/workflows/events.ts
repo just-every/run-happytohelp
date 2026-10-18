@@ -1,3 +1,4 @@
+import {conversationHasMessages} from '../management/inbox-visible'
 import type {Env} from '../../platform/env'
 import {runEventRules} from './rule-engine'
 import {routeTicket} from './routing'
@@ -17,10 +18,10 @@ export async function processWorkflowEvents(input:Env,conversationId?:string,lim
  for(const event of rows.results){
   if(spent?.())break
   if(served?.has(event.id))continue
-  // One quantum: 39 metered statements, five durable outcome writes and
-  // the shared queue read fit inside 45. The reserve protects its outcome;
+  // Journal work is capped separately from a rule run's 80-statement quantum.
+  // Five durable outcome writes and the shared queue read fit inside 71. The reserve protects its outcome;
   // a continuation is not another failed attempt and never repeats committed effects.
-  const meter=boundedDatabase(input.DB,spent?39:800,3),env={...input,DB:meter.database},lease=crypto.randomUUID()
+  const meter=boundedDatabase(input.DB,spent?65:800,3),env={...input,DB:meter.database},lease=crypto.randomUUID()
   const claim=await env.DB.prepare("UPDATE workflow_events SET lease_token=?,lease_until=?,last_tick=coalesce(?,last_tick),attempts=attempts+CASE WHEN attempts<5 THEN 1 ELSE 0 END WHERE id=? AND state='pending' AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?").bind(lease,now+120000,tick??null,event.id,now,now).run()
   if(!claim.meta.changes)continue
   served?.add(event.id)
@@ -30,17 +31,17 @@ export async function processWorkflowEvents(input:Env,conversationId?:string,lim
   const defer=async(reason:string)=>{retainedAttempt=true;const attempts=event.attempts+1;await update('state=?,attempts=?,next_attempt_at=?,error=?',attempts>=attemptLimit?'not_routed':'pending',attempts,attempts>=attemptLimit?null:now+delays[attempts-1]*60000,attempts>=attemptLimit?`${reason}. Stopped after ${attemptLimit} attempts; ticket remains in its responsible queue.`:reason)}
   try{
    if(event.attempts>=attemptLimit&&!event.routing_done){retainedAttempt=true;await update("state='not_routed',next_attempt_at=NULL,error=?",`Workflow processing was interrupted. Stopped after ${attemptLimit} attempts; ticket remains in its responsible queue.`);continue}
-   const live=await env.DB.prepare(`SELECT c.id FROM conversations c WHERE c.project_id=? AND c.id=? AND NOT EXISTS(SELECT 1 FROM contact_erasures er WHERE er.project_id=c.project_id AND er.contact_id=c.contact_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) AND NOT EXISTS(SELECT 1 FROM move_in_conversations mi WHERE mi.project_id=c.project_id AND mi.conversation_id=c.id) AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations li WHERE li.project_id=c.project_id AND li.conversation_id=c.id)`).bind(event.project_id,event.conversation_id).first()
+   const live=await env.DB.prepare(`SELECT c.id FROM conversations c WHERE c.project_id=? AND c.id=? AND ${conversationHasMessages()} AND NOT EXISTS(SELECT 1 FROM contact_erasures er WHERE er.project_id=c.project_id AND er.contact_id=c.contact_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) AND NOT EXISTS(SELECT 1 FROM move_in_conversations mi WHERE mi.project_id=c.project_id AND mi.conversation_id=c.id) AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations li WHERE li.project_id=c.project_id AND li.conversation_id=c.id)`).bind(event.project_id,event.conversation_id).first()
    if(!live){await update("state='cancelled',error='Historical import, erased contact or unavailable workspace'");continue}
    if(!['rule','automation','schedule','rer'].includes(event.source)){
     if(!event.rules_done){
-     const done=await runEventRules(env,event,spent?()=>meter.statements>=34:undefined)
+     const done=await runEventRules(env,event,spent?()=>spent()||meter.statements>=55:undefined,input)
      if(done===false)continue
      await update('rules_done=1');event.rules_done=1
     }
     if(!event.routing_done&&['created','customer_reply','changed'].includes(event.kind)){
      // Route from a fresh quantum; its transaction is attempted once, never in a loop.
-     if(spent&&meter.statements>12)continue
+     if(spent&&meter.statements>38)continue
      if(event.attempts>=attemptLimit){await update("state='not_routed',next_attempt_at=NULL,error=?",`Routing was interrupted. Stopped after ${attemptLimit} attempts; ticket remains in its responsible queue.`);continue}
      // Count before attempting the transaction, including a process exit after it.
      retainedAttempt=true
@@ -50,7 +51,7 @@ export async function processWorkflowEvents(input:Env,conversationId?:string,lim
      await update('routing_done=1,next_attempt_at=NULL');event.routing_done=1
     }
    }
-   if(spent&&meter.statements>27)continue
+   if(spent&&meter.statements>53)continue
    await syncSlaTickets(env,[event.conversation_id],now)
    await update("state='complete',next_attempt_at=NULL,error=NULL")
    processed++

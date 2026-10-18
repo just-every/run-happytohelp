@@ -12,6 +12,7 @@ export async function messagesData(env:Env,rows:any[]){
  const ids=JSON.stringify(rows.map(row=>row.id))
  const selected='SELECT value FROM json_each(?)'
  const mailRows=rows.filter(row=>!['contact','system'].includes(row.actor_role)&&!row.erased_at),mailIds=JSON.stringify(mailRows.map(row=>row.id))
+ const suppressed=!!localMailOrigin(env),configured=emailConfigured(env),resolveRecipients=!!mailRows.length&&configured&&!suppressed
  const data=await env.DB.batch<any>([
   env.DB.prepare(`SELECT s.* FROM move_in_message_sources s JOIN messages m ON m.id=s.message_id AND m.project_id=s.project_id WHERE m.id IN (${selected})`).bind(ids),
   env.DB.prepare(`SELECT u.id,u.name,s.avatar_url FROM users u LEFT JOIN user_settings s ON s.user_id=u.id WHERE u.id IN (SELECT actor_id FROM messages WHERE id IN (${selected}) AND actor_role<>'contact')`).bind(ids),
@@ -20,14 +21,14 @@ export async function messagesData(env:Env,rows:any[]){
   env.DB.prepare(`SELECT m.id message_id,json_extract(e.payload,'$.reader_id') reader_id,json_extract(e.payload,'$.reader_role') reader_role,e.created_at read_at FROM messages m JOIN context_tracked_events e ON e.project_id=m.project_id AND json_valid(e.payload) AND json_extract(e.payload,'$.message_id')=m.id WHERE m.id IN (${selected}) AND e.type='MESSAGE_READ' ORDER BY e.rowid`).bind(ids),
   ...(mailRows.length?[
    env.DB.prepare(`SELECT m.id,d.state,d.updated_at,s.is_enabled,u.email sender_email FROM messages m LEFT JOIN email_deliveries d ON d.id>='message:'||m.id||':notification' AND d.id<'message:'||m.id||':notification;' AND (d.id='message:'||m.id||':notification' OR substr(d.id,1,length('message:'||m.id||':notification:'))='message:'||m.id||':notification:') AND d.project_id=m.project_id LEFT JOIN email_settings s ON s.project_id=m.project_id LEFT JOIN users u ON u.id=m.actor_id WHERE m.id IN (${selected})`).bind(mailIds),
-   env.DB.prepare(`SELECT m.id message_id,ct.* FROM messages m JOIN (${notificationContactsSql}) ct ON ct.conversation_id=m.conversation_id AND ct.notification_project_id=m.project_id WHERE m.id IN (${selected})`).bind(mailIds)
+   ...(resolveRecipients?[env.DB.prepare(`SELECT m.id message_id,ct.* FROM messages m JOIN (${notificationContactsSql}) ct ON ct.conversation_id=m.conversation_id AND ct.notification_project_id=m.project_id WHERE m.id IN (${selected})`).bind(mailIds)]:[])
   ]:[]),
  ])
  const byId=(values:any[])=>new Map(values.map(row=>[String(row.id),row]))
  const origins=new Map(data[0].results.map(row=>[String(row.message_id),row])),agents=byId(data[1].results),contacts=byId(data[2].results)
  const mail=new Map<string,any>(),reads=new Map<string,{read_by_contacts:Record<string,string>;read_by_agents:Record<string,string>}>()
  const recipients=new Map<string,NotificationContact[]>()
- for(const {message_id,...contact} of mailRows.length?data[6].results:[]){const key=String(message_id);if(!recipients.has(key))recipients.set(key,[]);recipients.get(key)!.push(contact)}
+ for(const {message_id,...contact} of resolveRecipients?data[6].results:[]){const key=String(message_id);if(!recipients.has(key))recipients.set(key,[]);recipients.get(key)!.push(contact)}
  const precedence=['uncertain','sending','failed']
  for(const attempt of mailRows.length?data[5].results:[]){
   const key=String(attempt.id),prior=mail.get(key)
@@ -45,7 +46,6 @@ export async function messagesData(env:Env,rows:any[]){
  }
  const media=new Map<string,any[]>()
  for(const {message_id,...item} of data[3].results){const key=String(message_id);if(!media.has(key))media.set(key,[]);media.get(key)!.push(item)}
- const suppressed=!!localMailOrigin(env),configured=emailConfigured(env)
  return rows.map(row=>{
   const origin:any=origins.get(String(row.id)),sourceAuthor=origin?JSON.parse(origin.author_json):null
   // The workspace's away reply (away-reply.ts) has no teammate author and is never emailed.

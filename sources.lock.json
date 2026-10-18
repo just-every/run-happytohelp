@@ -2861,7 +2861,7 @@
       "executable": false
     },
     "scripts/installer/r4-archive-policy.mjs": {
-      "sha256": "6a7ee9cff790408b6945f0218e2535eb59e40ac2abe6fb434536ddc52d2d67ec",
+      "sha256": "94bef6761d8003a3ec789475bfa56b6585253701478a349f51d700fcaba41fa0",
       "executable": false
     },
     "scripts/installer/r4-tables.mjs": {
@@ -3285,7 +3285,7 @@
       "executable": false
     },
     "src/jobs.ts": {
-      "sha256": "f162e776ee1f8228683d48b42500afda3b26ca7b1e535ffac3fe5a696d5e5e1b",
+      "sha256": "65900f0781af6bf455d92d642f393c3acd8a6dbcd6f5b40125664331dff2a035",
       "executable": false
     },
     "src/message-effects.ts": {
@@ -3753,7 +3753,7 @@
       "executable": false
     },
     "src/modules/api-integrations/dispatch.ts": {
-      "sha256": "0bf063a3b563d588700a9ee5a5bdcd02c0cb8cb5e3b86d03a40bfbcaa1b78b41",
+      "sha256": "9d3763f7c5091adc127a701d3c3a96e3fca6099cf571340bfa12e22683ba03e9",
       "executable": false
     },
     "src/modules/api-integrations/egress.ts": {
@@ -6996,6 +6996,10 @@
       "sha256": "5a2dc2d055a2ade1a1184fc4bf99319731e29a934ae5735017ffa04ecf13072b",
       "executable": false
     },
+    "src/outbox-recovery.ts": {
+      "sha256": "20a5c163b3f0bd2c3f92de18a321a5eeb856de7ddd13fd614374bc3f498fdd47",
+      "executable": false
+    },
     "src/platform/auth.ts": {
       "sha256": "e6261481b9a2de8ff31492311447c6dc1ee7127496a9819062c82d5c7ef4a0f9",
       "executable": false
@@ -7010,6 +7014,10 @@
     },
     "src/platform/cors.ts": {
       "sha256": "437bd3c43cd2d52b5933161f09911dc31f34d27f9f2f690bee9fb6a1bb0a5f34",
+      "executable": false
+    },
+    "src/platform/cron-budget.ts": {
+      "sha256": "514234ec44f676e221de47b0877b5c7913768dec538ac20e6c5997e4bb3f6819",
       "executable": false
     },
     "src/platform/d1-budget.ts": {

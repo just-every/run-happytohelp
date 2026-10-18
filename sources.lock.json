@@ -9689,7 +9689,7 @@
       "executable": false
     },
     "tests/helpers/customer-portal-journey.mjs": {
-      "sha256": "40181ebbd5b27593e7816c6366dd101b2e25eae7f68bf54a096b97933c5a7e47",
+      "sha256": "a37aeec15e4b21aa942111cfed52d0dc25520e2268c393452e46ab7a67e61cb2",
       "executable": false
     },
     "tests/helpers/delegation-journey/browser-ui.mjs": {

@@ -187,12 +187,13 @@ try{
    const put=f.waitForRequest(r=>r.method()==='PUT'&&new URL(r.url()).pathname===`${api}/contacts/${customer.id}`);
    const saved=f.waitForResponse(r=>r.request().method()==='PUT'&&new URL(r.url()).pathname===`${api}/contacts/${customer.id}`);
    await f.getByRole('button',{name:'Save',exact:true}).click();assert.deepEqual(JSON.parse((await put).postData()),{phone});assert.equal((await saved).status(),200);
-   await f.getByRole('status').waitFor();
+   await f.locator('.alert-success[role="status"]').waitFor();
    await shot2(f,`contact-phone-saved-${width}.png`);
    const preference=`maya-preferred-${width}@customer.example`;await f.getByLabel('Provided email',{exact:true}).fill(preference);
    const preferred=f.waitForRequest(r=>r.method()==='PUT'&&new URL(r.url()).pathname===`${api}/contacts/${customer.id}`);
    const preferredSaved=f.waitForResponse(r=>r.request().method()==='PUT'&&new URL(r.url()).pathname===`${api}/contacts/${customer.id}`);
    await f.getByRole('button',{name:'Save',exact:true}).click();assert.deepEqual(JSON.parse((await preferred).postData()),{provided_email:preference});assert.equal((await preferredSaved).status(),200);
+   await f.locator('.alert-success[role="status"]').waitFor();
    await f.reload();await f.getByLabel('Provided email',{exact:true}).waitFor();assert.equal(await f.getByLabel('Provided email',{exact:true}).inputValue(),preference);assert.equal(await f.getByLabel('Phone',{exact:true}).inputValue(),phone);
    await shot2(f,`contact-preference-reloaded-${width}.png`);
   }

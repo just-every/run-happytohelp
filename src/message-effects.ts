@@ -1,4 +1,4 @@
-import {inCron,cronRequire,cronRoom} from './platform/cron-budget'
+import {inCron,cronRequire} from './platform/cron-budget'
 import {workflowEnvironment} from './modules/workflows/clock'
 import {processWorkflowEvents} from './modules/workflows/events'
 import {isProjectActive} from './platform/project-status'
@@ -14,11 +14,11 @@ import {postAwayReply} from './modules/management/away-reply'
 // the transcript but earns no AI reply and no notification, on first delivery and
 // on every replay, so a machine's mail can never start a reply loop. A visitor's chat
 // message to an away team earns the away reply once per conversation (away-reply.ts).
-export async function applyMessageEffects(env:Env,message:Record<string,unknown>,actor:Actor,defer?:DeferEmailDelivery,options:{workflow?:boolean;statements?:number}={}) {
+export async function applyMessageEffects(env:Env,message:Record<string,unknown>,actor:Actor,defer?:DeferEmailDelivery,options:{workflow?:boolean}={}) {
  env=await workflowEnvironment(env)
  if(!await isProjectActive(env,actor.projectId))return
  if(await isAutomaticInboundEmail(env,actor.projectId,message))return
- if(options.workflow!==false)await processWorkflowEvents(env,String(message.conversation_id),20,inCron(env)&&options.statements?()=>!cronRoom(env,151+options.statements!):undefined)
+ if(options.workflow!==false)await processWorkflowEvents(env,String(message.conversation_id),20)
  // Cron leaves each unfinished effect on the durable outbox. Sequential calls
  // keep admission accurate when the services share the same statement budget.
  if(inCron(env)){

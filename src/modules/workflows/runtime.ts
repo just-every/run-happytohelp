@@ -15,7 +15,8 @@ export {workflowEnvironment} from './clock'
  * 155-statement reply, one selection, one recovery write and a 14-statement SLA
  * batch finish: <=711. Time rules admit at 580 with an 80-statement run plus
  * their bounded planning/cursor writes. Cron reserves a 720-statement envelope. */
-const shares={events:30,ruleEvents:15,slaDue:30,slaDelivery:10,slaBackstop:10,resume:65,schedules:380,time:40}
+// Event work owns its recovery credit; it must not depend on spare outbox room.
+const shares={events:100,ruleEvents:50,slaDue:30,slaDelivery:10,slaBackstop:10,resume:65,schedules:275,time:40}
 export async function runWorkflows(input:Env){
  const {env,phase,complete}=workflowBudget(withWorkflowInvocation(await workflowEnvironment(input))),now=workflowNow(env)
  let failed=false

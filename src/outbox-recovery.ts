@@ -1,5 +1,5 @@
 import type {Actor,Env,Job} from './platform/env'
-import {cronRoom,CronDeferred,inCron} from './platform/cron-budget'
+import {cronRoom,CronDeferred} from './platform/cron-budget'
 import {notificationContactsSql} from './modules/integrations/notification-contacts'
 import {applyMessageEffects} from './message-effects'
 const RETRY_MS=60*60*1000
@@ -17,7 +17,8 @@ async function effects(env:Env,projectId:string,message:Message){
  // notice and a relay (80), each teammate one notice (30). Completion stays back.
  const statements=120+80*Math.max(0,Number(message.effect_contacts)-1)+30*Number(message.effect_teammates)
  if(!cronRoom(env,statements+1))throw new CronDeferred()
- try{await applyMessageEffects(env,message,actor,undefined,{statements:inCron(env)?statements:undefined})}catch(error){
+ // Journal recovery owns workflow credit; delivery jobs never add rule attempts.
+ try{await applyMessageEffects(env,message,actor,undefined,{workflow:false})}catch(error){
   if(error instanceof CronDeferred||error instanceof Error&&error.message==='WORKER_D1_STATEMENT_LIMIT'||Date.now()-Number(message.created_at)<=RETRY_MS)throw error
   console.error('Message follow-up abandoned',message.id)
  }

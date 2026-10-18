@@ -1,4 +1,4 @@
-import PostalMime from 'postal-mime'
+import {parseInboundMime,holdRawEmail} from './unreadable-email'
 import type {Env} from '../../platform/env'
 import type {MailboxIncoming} from './mailboxes'
 import {receiveEmail,type IncomingEmail} from './inbound-service'
@@ -18,11 +18,16 @@ import {suspendRefusedEmail} from './refused-email'
 export async function receiveMailboxMessage(env:Env,message:MailboxIncoming){
  const identity=await hashToken(message.mailboxId+':'+message.providerMessageId)
  if(message.unavailableReason){
-  await suspendRefusedEmail(env,{messageId:identity,from:'unknown@invalid.example',to:message.address,text:`This ${message.provider} message exceeds the email size limit. Its content and attachments remain in the connected mailbox ${message.address}. Open provider message ${message.providerMessageId} there to read it.`,senderAuthenticated:false},
-   {projectId:message.projectId,identity,reason:message.unavailableReason})
+  const oversized=message.unavailableReason==='message_too_large'
+  await holdRawEmail(env,message.raw.length?message.raw:null,{recipients:[message.address],projectId:message.projectId,identity,reason:message.unavailableReason,
+   description:oversized?`This ${message.provider} message exceeds the email size limit. Its content and attachments remain in the connected mailbox ${message.address}. Open provider message ${message.providerMessageId} there to read it.`:
+    `This ${message.provider} message could not be processed after repeated attempts. ${message.raw.length?'Its original bytes are retained as original.eml.':'Its content remains in the connected mailbox '+message.address+'.'} Provider message: ${message.providerMessageId}.`})
   return
  }
- const parsed=await PostalMime.parse(message.raw,{attachmentEncoding:'arraybuffer'}),from=headerFromAddress(parsed.headers),envelope=emailAddress(parsed.returnPath)||from
+ const parsed=await parseInboundMime(env,message.raw,{recipients:[message.address],projectId:message.projectId,identity,
+  description:`This ${message.provider} message could not be read. Its original bytes are retained as original.eml. Provider message: ${message.providerMessageId}.`})
+ if(!parsed)return
+ const from=headerFromAddress(parsed.headers),envelope=emailAddress(parsed.returnPath)||from
  const author=from||envelope||'unknown@invalid.example'
  const verdict=mailboxAuthentication(env,message.provider,parsed.headers,from,envelope||'')
  const evidence=emailEvidence({envelopeFrom:envelope||'',headerFrom:from,subject:parsed.subject,headers:parsed.headers})

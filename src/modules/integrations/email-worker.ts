@@ -1,6 +1,6 @@
 import {plainEmail} from './email-reply'
 import {HTTPException} from 'hono/http-exception'
-import PostalMime from 'postal-mime'
+import {parseInboundMime} from './unreadable-email'
 import type {Env} from '../../platform/env'
 import {receiveEmail} from './inbound-service'
 import {hashToken} from '../../platform/auth'
@@ -11,7 +11,12 @@ import {emailAddress} from './inbound-routing'
 const addressList=(entries:any[]|undefined)=>(entries||[]).flatMap((entry:any)=>entry.group?entry.group.map((member:any)=>member.address):[entry.address]).filter(Boolean)
 export async function handleEmail(message:ForwardableEmailMessage,env:Env,execution:ExecutionContext){
  if(message.rawSize>25000000){message.setReject('Message exceeds 25 MB');return}
- const raw=await new Response(message.raw).arrayBuffer(),parsed=await PostalMime.parse(raw,{attachmentEncoding:'arraybuffer'})
+ const raw=await new Response(message.raw).arrayBuffer()
+ let parsed
+ try{parsed=await parseInboundMime(env,raw,{recipients:[message.to]})}catch(error){
+  if(error instanceof HTTPException&&error.status>=400&&error.status<500){message.setReject(error.message);return}throw error
+ }
+ if(!parsed)return
  // The header From is who wrote the message, verified by Cloudflare's own
  // Authentication-Results; the envelope sender (VERP, forwarding SRS, or empty for
  // bounces and auto-replies) is delivery metadata. Mail with no usable From is kept

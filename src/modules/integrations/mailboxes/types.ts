@@ -16,7 +16,7 @@ export interface MailboxSendInput {
  attachments?:readonly EmailAttachment[];headers?:Readonly<Record<string,string>>;replyTo?:string;idempotencyKey:string
 }
 export interface MailboxIncoming {
- projectId:string;mailboxId:string;address:string;provider:MailboxProvider;providerMessageId:string;raw:Uint8Array;unavailableReason?:'message_too_large'
+ projectId:string;mailboxId:string;address:string;provider:MailboxProvider;providerMessageId:string;raw:Uint8Array;unavailableReason?:'message_too_large'|'message_unprocessable'
 }
 /** Must admit idempotently using providerMessageId scoped by mailboxId. A crash
  * between admission and receipt persistence can deliver the same MIME again. */

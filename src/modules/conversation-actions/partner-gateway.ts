@@ -1,6 +1,6 @@
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
-import PostalMime,{addressParser} from 'postal-mime'
+import {addressParser} from 'postal-mime'
 import type {AppEnv,Env} from '../../platform/env'
 import {inboundEmail as ordinaryInbound} from '../integrations/inbound'
 import {handleEmail as ordinaryHandleEmail} from '../integrations/email-worker'
@@ -9,6 +9,8 @@ import {plainEmail} from '../integrations/email-reply'
 import {headerFromAddress,sendGridVerdict,authenticationVerdict} from '../integrations/inbound-sender'
 import {hashToken} from '../../platform/auth'
 import {partnerGrant,receivePartnerReply} from './partner-reply'
+import {parseInboundMime} from '../integrations/unreadable-email'
+import {parseSendgridHeaders} from '../integrations/sendgrid-unreadable'
 
 const addresses=(value:string)=>addressParser(value).flatMap(entry=>entry.group?entry.group.map(member=>member.address):[entry.address]).filter((v):v is string=>Boolean(v))
 async function selectedGrant(env:Env,recipients:unknown[]){
@@ -62,7 +64,8 @@ inboundEmail.use('/email/sendgrid/inbound',async(c,next)=>{
  const bytes=await boundedClone(c.req.raw),form=await new Request(c.req.url,{method:'POST',headers:c.req.raw.headers,body:bytes}).formData()
  const field=(key:string)=>typeof form.get(key)==='string'?String(form.get(key)):''
  let envelope:any={};try{envelope=JSON.parse(field('envelope')||'{}')}catch{}
- const headers=field('headers'),parsed=await PostalMime.parse(`${headers}\r\n\r\n`)
+ const headers=field('headers'),parsed=await parseSendgridHeaders(c.env,`${headers}\r\n\r\n`,Object.fromEntries(form),async()=>bytes)
+ if(!parsed)return c.json({state:'suspended',reason:'message_unreadable'},200)
  const recipients=[...(Array.isArray(envelope.to)?envelope.to:[]),...addresses(field('to')),...addresses(field('cc'))]
  const selected=await selectedGrant(c.env,recipients);if(!selected)return next()
  const from=headerFromAddress(parsed.headers,field('from'));if(!from)throw new HTTPException(403,{message:'One header From address is required for a partner reply'})
@@ -80,7 +83,9 @@ export async function handleEmail(message:ForwardableEmailMessage,env:Env,execut
  if(!selected)return ordinaryHandleEmail(message,env,execution)
  if(message.rawSize>25000000){message.setReject('Message exceeds 25 MB');return}
  try{
-  const raw=await new Response(message.raw).arrayBuffer(),parsed=await PostalMime.parse(raw,{attachmentEncoding:'arraybuffer'}),from=headerFromAddress(parsed.headers)
+  const raw=await new Response(message.raw).arrayBuffer(),parsed=await parseInboundMime(env,raw,{recipients:[message.to]})
+  if(!parsed)return
+  const from=headerFromAddress(parsed.headers)
   if(!from)throw new HTTPException(403,{message:'One header From address is required for a partner reply'})
   const verdict=authenticationVerdict(parsed.headers,from,message.from),rawId=parsed.messageId||await hashToken(new TextDecoder().decode(raw))
   await deliver(env,selected,{messageId:rawId.length>200?await hashToken(rawId):rawId,sender:from,content:plainEmail(parsed.text||'',parsed.html||'')||String(parsed.subject||''),senderFailed:verdict.failed,attachments:parsed.attachments.map(file=>({filename:file.filename||'attachment',contentType:file.mimeType,content:file.content as ArrayBuffer}))})

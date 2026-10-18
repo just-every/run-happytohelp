@@ -9,8 +9,8 @@ import {auditStatement} from '../../audit/record'
 const FAILURE_BACKOFF_MS=5*60000
 const permanentMessageError=(error:unknown):error is HTTPException=>error instanceof HTTPException&&[400,409,413,422].includes(error.status)
 
-/** One durable cursor page per invocation. Only definitive message refusals are
- * recorded and skipped; transient or unknown outcomes retain the cursor. */
+/** One durable cursor page per invocation. Message failures get bounded retries,
+ * then a durable Suspended hold. Provider-page and connection failures retry. */
 export async function syncMailbox(env:Env,projectId:string,mailboxId:string,receive:MailboxReceiver,options:MailboxSyncOptions={}){
  const row=await getMailbox(env,projectId,mailboxId)
  if(row.provider==='forwarding')throw new HTTPException(409,{message:'Forwarding mailbox receives through the email gateway'})
@@ -22,6 +22,16 @@ export async function syncMailbox(env:Env,projectId:string,mailboxId:string,rece
  .bind(lease,now+15*60000,mailboxId,projectId,row.credential_version,now,projectId).run()
  if(!claim.meta.changes)throw new HTTPException(409,{message:'Mailbox sync is already running or connection changed'})
  let received=0,failed=0
+ const assertLive=async()=>{
+  const live=await mailboxForDelivery(env,projectId,mailboxId)
+  const held=await env.DB.prepare('SELECT 1 FROM mailbox_connections WHERE id=? AND sync_lock=? AND sync_lock_until>?').bind(mailboxId,lease,Date.now()).first()
+  if(!live||!held||live.credential_version!==row.credential_version)throw new HTTPException(409,{message:'Mailbox disconnected or sync lease expired'})
+ }
+ const attempt=async(id:string)=>{
+  const result=await env.DB.prepare(`INSERT INTO mailbox_message_attempts VALUES(?,?,1,'message_unprocessable')
+   ON CONFLICT(mailbox_id,provider_message_id) DO UPDATE SET attempts=attempts+1 RETURNING attempts,reason`).bind(mailboxId,id).first<{attempts:number;reason:'message_unprocessable'}>()
+  return result!
+ }
  const refuse=async(id:string,error:HTTPException)=>{
   // Persist the failure and replay fence together. Never turn a rejected message
   // into a ticket or expose its contents, sender, or exception text in the audit.
@@ -30,24 +40,34 @@ export async function syncMailbox(env:Env,projectId:string,mailboxId:string,rece
  }
  const admit=async(id:string,load:()=>Promise<Uint8Array>)=>{
   if(await env.DB.prepare('SELECT 1 FROM mailbox_sync_receipts WHERE mailbox_id=? AND provider_message_id=?').bind(mailboxId,id).first())return
+  const hold=async(raw:Uint8Array,reason:'message_too_large'|'message_unprocessable')=>{
+   await assertLive()
+   await receive({projectId,mailboxId,address:row.address,provider:row.provider,providerMessageId:id,raw,unavailableReason:reason})
+   await refuse(id,new HTTPException(reason==='message_too_large'?413:422))
+  }
   let raw:Uint8Array
   try{raw=await load()}catch(error){
    // The provider can delete a message after listing it. There is no content to
    // admit and the provider's stable id can be safely recorded as observed.
    if(error instanceof MailboxProviderError&&error.status===404){await env.DB.prepare('INSERT OR IGNORE INTO mailbox_sync_receipts VALUES(?,?,?)').bind(mailboxId,id,Date.now()).run();return}
+   // Reconnect/backfill errors concern the connection, not an individual mail.
+   if(error instanceof MailboxProviderError&&[401,403,410].includes(error.status))throw error
+   const failure=await attempt(id)
    if(error instanceof MailboxResponseTooLarge){
-    await receive({projectId,mailboxId,address:row.address,provider:row.provider,providerMessageId:id,raw:new Uint8Array(),unavailableReason:'message_too_large'})
-    await refuse(id,new HTTPException(413,{message:'Mailbox message exceeds size limit'}));return
+    await hold(new Uint8Array(),'message_too_large');return
    }
+   if(failure.attempts>=3){await hold(new Uint8Array(),failure.reason);return}
    throw error
   }
-  const live=await mailboxForDelivery(env,projectId,mailboxId)
-  const held=await env.DB.prepare('SELECT 1 FROM mailbox_connections WHERE id=? AND sync_lock=? AND sync_lock_until>?').bind(mailboxId,lease,Date.now()).first()
-  if(!live||!held||live.credential_version!==row.credential_version)throw new HTTPException(409,{message:'Mailbox disconnected or sync lease expired'})
+  await assertLive()
+  const prior=await env.DB.prepare('SELECT attempts,reason FROM mailbox_message_attempts WHERE mailbox_id=? AND provider_message_id=?').bind(mailboxId,id).first<{attempts:number;reason:'message_unprocessable'}>()
+  if(prior&&prior.attempts>=3){await hold(raw,prior.reason);return}
   try{await receive({projectId,mailboxId,address:row.address,provider:row.provider,providerMessageId:id,raw})}catch(error){
    // This catch excludes connection/lease checks and provider requests: a changed
    // mailbox or rejected credential is never mistaken for a bad message.
+   const failure=await attempt(id)
    if(permanentMessageError(error)){await refuse(id,error);return}
+   if(failure.attempts>=3){await hold(raw,failure.reason);return}
    throw error
   }
   await env.DB.prepare('INSERT OR IGNORE INTO mailbox_sync_receipts VALUES(?,?,?)').bind(mailboxId,id,Date.now()).run();received++

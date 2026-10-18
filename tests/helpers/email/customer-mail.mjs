@@ -117,8 +117,11 @@ async function automaticRelayRows(){
   assert.deepEqual(relays(start),['proven-relay@example.com'],'only the independently proven participant gets one automatic relay')
   const id=(await m.claim('relay-customer')).conversation_id,first=await m.admitted('relay-customer')
   await m.replay(first);await settle();assert.deepEqual(relays(start),['proven-relay@example.com'],'replay cannot add recipients')
-  const head=await m.DB.prepare('SELECT revision FROM conversations WHERE id=?').bind(id).first(),human=mail.sent.length
-  await app.call(`/api/conversations/${id}/messages`,{headers:operator,body:{localId:'human-reply',content:'Your replacement ships tomorrow.',expectedRevision:head.revision},status:200});await settle()
-  assert.deepEqual(relays(human).sort(),['relay-preference@example.net','requester-preference@example.net','unproven-relay@example.net'].sort(),'the human reply retains its Reply-To preferences and participants')
+  const head=await m.DB.prepare('SELECT revision FROM conversations WHERE id=?').bind(id).first(),human=mail.sent.length,humanContent='Your replacement ships tomorrow.'
+  await app.call(`/api/conversations/${id}/messages`,{headers:operator,body:{localId:'human-reply',content:humanContent,expectedRevision:head.revision},status:200});await settle()
+  // Human email carries the ticket's threading subject. Select this reply by
+  // its submitted content so the recipient assertion covers every actual copy.
+  const humanRecipients=mail.sent.slice(human).filter(entry=>entry.body.text?.includes(humanContent)).flatMap(entry=>recipients(entry.body))
+  assert.deepEqual(humanRecipients.sort(),['relay-preference@example.net','requester-preference@example.net','unproven-relay@example.net'].sort(),'the human reply retains its Reply-To preferences and participants')
  }finally{await m.close()}
 }

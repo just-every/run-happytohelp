@@ -45,7 +45,7 @@ export async function dispatchOutbox(env:Env){
   for(const message of messages){
    try{await effects(env,row.project_id,message);done.push(message)}catch(error){if(!(error instanceof CronDeferred))console.error('Message follow-up pending',message.id);queued.push(message)}
   }
-  if(!await complete(env,row.project_id,row.conversation_id,done))queued.push(...done)
+  try{if(!await complete(env,row.project_id,row.conversation_id,done))queued.push(...done)}catch{queued.push(...done);console.error('Outbox completion pending')}
   if(queued.length)try{await env.JOBS.sendBatch(queued.map(message=>({body:job(row.project_id,message)})))}catch{console.error('Outbox queue dispatch pending')}
  }
 }

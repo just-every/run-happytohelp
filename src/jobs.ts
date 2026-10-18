@@ -43,7 +43,7 @@ export async function consumeJob(job:Job,env:Env) {
 }
 /** Each consumer owns a bounded allocation, including its admitted quantum.
  * An exception in one never takes away another consumer's turn. The workflow
- * maximum (650), tail allocations (260) total 910, including the local clock read. */
+ * maximum (720), tail allocations (220) total 940, including the local clock read. */
 export async function runScheduled(env:Env) {
  const budget=boundedDatabase(env.DB)
  env=withWorkflowInvocation(await workflowEnvironment({...env,DB:budget.database}))
@@ -54,12 +54,12 @@ export async function runScheduled(env:Env) {
   const available=Math.min(allocated-budget.statements,Math.max(3,ceiling-budget.statements))
   try{await run(cronConsumer(env,available))}catch(error){if(!(error instanceof CronDeferred))console.error(`${name} recovery failed`,error)}
  }
- await visit('Workflow',650,runWorkflows)
- await visit('Survey',90,dispatchSurveys)
- await visit('Integration',80,dispatchIntegrations)
- // Ordinary post-outbox polls cost 25 and pruning one. A 670 soft ceiling
- // leaves four more statements below the measured-history target of 700.
- await visit('Outbox',3,dispatchOutbox,670)
+ await visit('Workflow',720,runWorkflows)
+ await visit('Survey',70,dispatchSurveys)
+ await visit('Integration',60,dispatchIntegrations)
+ // Hand larger message effects to the queue near the history-load target.
+ // The hard consumer allocation still reserves every later recovery and prune.
+ await visit('Outbox',3,dispatchOutbox,700)
  await visit('Generation',10,env=>recoverQueuedGenerations(env,generationEffects))
  await visit('Knowledge',15,refreshDueDatasets)
  await visit('Context',6,recoverContextJobs)

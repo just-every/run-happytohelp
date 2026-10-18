@@ -8,18 +8,18 @@
       "document": "README.md",
       "change": "changed",
       "date": "2026-10-18",
-      "summary": "Describe R4 collaboration, proven-recipient notices and R6 complete email.",
+      "summary": "Describe R4 collaboration, proven-recipient notices, R6 complete email and R7b portal/request forms.",
       "was": "The latest release was v0.4.5.",
-      "now": "v0.4.6 includes gated R4 and R6, with twelve new migrations and rer 0.2.51.",
+      "now": "v0.4.6 includes gated R4, R6 and R7b, with fifteen new migrations and rer 0.2.51.",
       "ownerAction": "Back up, retain private settings and deploy with the pinned rer without resetting or editing migration history."
     },
     {
       "document": "CHANGELOG.md",
       "change": "changed",
       "date": "2026-10-18",
-      "summary": "Describe R4 collaboration, proven-recipient notices and R6 complete email.",
+      "summary": "Describe R4 collaboration, proven-recipient notices, R6 complete email and R7b portal/request forms.",
       "was": "The latest release was v0.4.5.",
-      "now": "v0.4.6 includes gated R4 and R6, with twelve new migrations and rer 0.2.51.",
+      "now": "v0.4.6 includes gated R4, R6 and R7b, with fifteen new migrations and rer 0.2.51.",
       "ownerAction": "Back up, retain private settings and deploy with the pinned rer without resetting or editing migration history."
     }
   ],
@@ -87,6 +87,6 @@
     }
   ],
   "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.5 to v0.4.6 without resetting. Stop writers and back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.51. Rer applies the twelve listed missing migrations by name in filename order before the updated Worker starts, including 140-146 and 160-164 below already applied rows. It verifies recorded bytes and final readback; unknown names, changed bytes and uncertain history remain refused. Never delete, reorder or edit ledger rows. Existing participants remain unproven until independently verified. Preserve owner credentials, support history, imports, permissions, file bytes and erasure fences. Configure Gmail, Microsoft 365 or IMAP deliberately; mailbox connections and aliases do not grant authority to recipients. Keep uncertain external outcomes without replay and retain human Send.",
-  "publicReleaseNotes": "HappyToHelp v0.4.6 adds gated R4 action macros, proven-recipient ticket notices and private team collaboration, plus R6 connected Gmail, Microsoft 365 and IMAP email, aliases, signatures, CC/BCC, threading, Suspended mail, operator tickets and vendor matching. Cc relay and AI replies reach independently proven addresses only. Unreadable mail is held without stalling healthy intake. The dropdown caret styling is included. Twelve migrations are added; back up and deploy with pinned rer 0.2.51, which accepts the real hosted migration history by name and recorded bytes. Do not reset or edit the ledger. R5 and R7b are not included. Hosted and paid-provider quality remain separately qualified; accessibility remains on owner HOLD. Production deployment is separate."
+  "agentUpdateInstructions": "Update from v0.4.5 to v0.4.6 without resetting. Stop writers and back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.51. Rer applies the fifteen listed missing migrations by name in filename order before the updated Worker starts, including 140-146, 160-164 and 172-174 below already applied rows. It verifies recorded bytes and final readback; unknown names, changed bytes and uncertain history remain refused. Never delete, reorder or edit ledger rows. Existing participants remain unproven until independently verified. Preserve owner credentials, support history, imports, permissions, file bytes and erasure fences. Configure Gmail, Microsoft 365 or IMAP deliberately; mailbox connections and aliases do not grant authority to recipients. Customer portal access requires independent mailbox verification; existing sessions gain no portal authority. Request forms retain typed ticket fields and idempotent submission receipts. Keep uncertain external outcomes without replay and retain human Send.",
+  "publicReleaseNotes": "HappyToHelp v0.4.6 adds gated R4 action macros, proven-recipient ticket notices and private team collaboration, plus R6 connected Gmail, Microsoft 365 and IMAP email, aliases, signatures, CC/BCC, threading, Suspended mail, operator tickets and vendor matching. Cc relay and AI replies reach independently proven addresses only. Unreadable mail is held without stalling healthy intake. R7b adds configurable request forms and a customer portal with independent mailbox verification and protected private history. Installer qualification includes exact participant-provenance upgrade expectations and corrected historical archive policies. The dropdown caret styling is included. Fifteen migrations are added; back up and deploy with pinned rer 0.2.51, which accepts the real hosted migration history by name and recorded bytes. Do not reset or edit the ledger. R5 is not included. Hosted and paid-provider quality remain separately qualified; accessibility remains on owner HOLD. Production deployment is separate."
 }

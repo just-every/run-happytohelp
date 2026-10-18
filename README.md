@@ -45,17 +45,20 @@ recipients and private team collaboration (R4), plus connected Gmail,
 Microsoft 365 and IMAP email (R6): aliases, signatures, CC/BCC, threading,
 Suspended mail, operator tickets and vendor matching. Cc relay and AI replies
 also reach proven addresses only. Unreadable mail is held without blocking
-healthy intake. The dropdown caret styling is included.
+healthy intake. Customer portal access and configurable request forms (R7b)
+are included, with independent mailbox verification and retained ticket history.
+The dropdown caret styling is included.
 
 Fresh installs, README restores and upgrades cover published baselines through
 v0.4.5. Commands keep `@runeditrun/rer` pinned to 0.2.51; local dev starts
 without private setup answers. `rer deploy` claims the hosted owner named by
 `OWNER_EMAIL`; that owner signs in by email and opens Setup. Existing owners
 are preserved. Back up and retain private settings. The pinned rer applies
-all twelve new migrations (`140–146` and `160–164`) by name in filename order
+all fifteen new migrations (`140–146`, `160–164` and `172–174`) by name in
+filename order
 before the updated Worker starts, even below already applied rows. It refuses
 unknown names, changed bytes and uncertain history and verifies readback.
-Do not reset or edit the migration ledger. R5 and R7b ship separately.
+Do not reset or edit the migration ledger. R5 ships separately.
 See [RELEASE.json](RELEASE.json),
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md) and [the changelog](CHANGELOG.md).
 

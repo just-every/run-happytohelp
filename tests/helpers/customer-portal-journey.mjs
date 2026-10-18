@@ -36,6 +36,22 @@ export async function customerPortalJourney(){
   const signedThread=await app.ok('/api/conversations',{token:signed.token,body:{projectId:p}})
   await app.ok(`/api/conversations/${signedThread.id}/messages`,{token:signed.token,body:{localId:'signed-widget-question',content:'An update from my account.',expectedRevision:0}})
   assert.equal((await app.call(P+`/tickets/${signedThread.id}`,rosa)).status,200)
+  // Legacy sites may sign only an identifier before adding email. A portal
+  // sign-in in between must not strand the widget customer or their history.
+  const identifier='fay@example.com',signature=createHmac('sha256',secret).update(identifier).digest('hex')
+  const identify=async withEmail=>(await app.call('/api/identity/widget/session',{headers:{Origin:f.workspace.allowedOrigin},body:{widgetKey:f.workspace.widgetKey,identifier,contact_hash:signature,...(withEmail?{email:identifier}:{})},status:201})).data
+  const first=await identify(false),prior=await app.ok('/api/conversations',{token:first.token,body:{projectId:p}})
+  await app.ok(`/api/conversations/${prior.id}/messages`,{token:first.token,body:{localId:'identifier-only-question',content:'Please check delivery of order NS-10483.',expectedRevision:0}})
+  await signin(identifier)
+  for(let visit=0;visit<2;visit++){
+   const returned=await identify(true)
+   assert.equal(returned.contactId,first.contactId)
+   assert.equal((await app.call(`/api/conversations/${prior.id}`,{token:returned.token})).status,200)
+   assert.ok((await app.ok(`/api/conversations?projectId=${p}`,{token:returned.token})).conversations.some(thread=>thread.id===prior.id))
+  }
+  const joined=await signin(identifier)
+  assert.equal((await app.call(P+`/tickets/${prior.id}`,joined)).status,200)
+  assert.equal((await app.call(`/api/conversations/${prior.id}`,{token:first.token})).status,200)
   // Unsigned mail impersonating this proven mailbox is kept apart, even when
   // sent after the customer's proof and after a signed widget visit.
   await app.email('From: Rosa <rosa@example.com>\r\nTo: help@example.com\r\nMessage-ID: <spoof-rosa>\r\nSubject: Forged request\r\n\r\nThis is an unproven sender.',{from:'rosa@example.com',to:'help@example.com'})

@@ -74,8 +74,11 @@ export async function mailboxProviderJourney(){
    failures[provider]=true;assert.equal((await app.call(`${base}/${row.id}/poll`,{token,body:{}})).status,502)
    assert.equal((await app.ok(base,{token})).data.find(m=>m.id===row.id).status,'reconnect_required')
    failures[provider]=false
+   const receivingAlias=`${provider}+returns@example.test`
+   await app.ok(`${base}/${row.id}/aliases`,{token,body:{address:receivingAlias}})
    const restart=await app.ok(`${base}/${row.id}/reconnect`,{token,body:{}}),state=new URL(restart.url).searchParams.get('state')
    assert.equal((await app.call(`/api/management/mailboxes/oauth/${provider}/callback?state=${state}&code=new-code`,{token})).status,302)
+   assert.ok((await app.ok(base,{token})).data.find(mailbox=>mailbox.id===row.id).addresses.some(alias=>alias.address===receivingAlias&&!alias.can_send),'OAuth reconnect retains manually configured receiving aliases without granting send-as')
    assert.equal((await app.ok(`${base}/${row.id}/backfill`,{token,body:{}})).received,0,'backfill retains deduplication')
    await app.ok(`${base}/${row.id}`,{token,method:'DELETE'})
    assert.equal((await app.call(`${base}/${row.id}/poll`,{token,body:{}})).status,409)

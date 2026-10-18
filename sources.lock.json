@@ -4838,7 +4838,7 @@
       "executable": false
     },
     "src/modules/integrations/mailboxes/oauth-routes.ts": {
-      "sha256": "9a1341c4a5604c95251c43676191b2b72e67353ac3403d9e319551991e268d24",
+      "sha256": "c6609c4ef37aa959351006b1648d87ece95ae654add81d64fe1203e14ea42baa",
       "executable": false
     },
     "src/modules/integrations/mailboxes/routes.ts": {
@@ -9586,7 +9586,7 @@
       "executable": false
     },
     "tests/helpers/email/mailbox-provider.mjs": {
-      "sha256": "fb96bc9935b58eabdca6a89ed3f23939cfcc42b8a30a7c1ee538d55494969208",
+      "sha256": "42d3af12e2d5faaea5d2f2238a608bf18ea74eb7ad3c3bf2f6c0b0e85fa34609",
       "executable": false
     },
     "tests/helpers/email/recovery.mjs": {

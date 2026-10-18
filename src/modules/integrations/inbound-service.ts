@@ -16,7 +16,6 @@ import {classifyInboundEmail,evidenceJson,type EmailEvidence} from './email-clas
 import {CLOSED_TICKET_FINAL,ClosedTicketRefusal,isMemberAddress} from './closed-ticket-mail'
 import {suspendEmail,senderRule} from './suspended-store'
 import {resolveEmailThreadCandidates,emailThreadingStatements} from './email-threading'
-import {emailFollowup} from './email-followups'
 import {inboundIntent,sameInboundIntent,legacyInboundIntentMatches} from './inbound-intent'
 import {markPreMigrationReply} from './email-migration-reply'
 import {suspendRefusedEmail} from './refused-email'
@@ -173,7 +172,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
   if(result.reason==='ticket_closed_followup_required')throw new HTTPException(503,{message:'The addressed ticket was closed; retry later'})
   if(!result.accepted)throw new Error(result.reason)
   await env.DB.prepare("UPDATE inbound_emails SET state='delivered',message_id=?,error=NULL WHERE id=?").bind(String(result.message!.id),recordId).run()
-  await env.DB.batch(emailThreadingStatements(env,{projectId:project.project_id,conversationId:conversation.id,keys:[{kind:'message_id',value:messageId,source:'native',sourceRef:String(result.message!.id)}],createdAt:Date.now()}))
+  await env.DB.batch(emailThreadingStatements(env,{projectId:project.project_id,conversationId:result.followupConversationId??conversation.id,keys:[{kind:'message_id',value:messageId,source:'native',sourceRef:String(result.message!.id)}],createdAt:Date.now()}))
   await keepReplyTarget(env,project.project_id,actor,input.replyTo,{authenticated,automatic,workspace})
   return {id:messageId,state:'delivered',conversationId:result.followupConversationId??conversation.id,duplicate:false,automatic,message:result.message,actor}
  }catch(error){await env.DB.prepare("UPDATE inbound_emails SET state='failed',error=? WHERE id=? AND state='processing' AND claim_token=?").bind(String(error).slice(0,1000),recordId,claimToken).run();throw error}

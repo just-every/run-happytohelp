@@ -18,6 +18,10 @@ export async function schedulesFlow(f){
  const uncertainId=await create('Waiting for a committed reply'),uncertain=await schedule(uncertainId)
  // The provider receives the request body but the connection resets. Only the
  // real network boundary is faked; the persisted send is never replayed.
+ // Isolate the scheduled reply's paid boundary from earlier SLA notices and outbox recovery.
+ await ok(`/sla-policies/${f.policy.id}`,{active:false},'PATCH');await app.scheduled()
+ for(const token of Object.values(w.tokens))await app.ok(`/api/management/projects/${w.projectId}/notification-preferences`,{token,method:'PUT',body:{preferences:['assignment','customer_updated','group','follower','mention'].map(kind=>({kind,inbox:true,email:false}))}})
+ await app.db.prepare('UPDATE contacts SET is_verified=1 WHERE id=? AND project_id=?').bind(f.customer.contactId,w.projectId).run()
  await app.configure({EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'workflow-provider-edge-key',EMAIL_FROM:'support@example.test'})
  await clock(due)
  await app.scheduled()
@@ -25,7 +29,7 @@ export async function schedulesFlow(f){
  await app.configure({H2H_WORKFLOW_NOW:String(due+180000)});await app.scheduled()
  assert.equal((await app.sql('SELECT * FROM messages WHERE local_id=?',`schedule:${uncertain.id}`)).length,1)
  assert.equal((await call(`/workflow-schedules/${uncertain.id}`,{body:'Do not replay'},'PATCH')).status,409)
- assert.equal(app.requests.filter(r=>new URL(r.url).hostname==='api.resend.com').length,1)
+ assert.equal(app.requests.filter(r=>new URL(r.url).hostname==='api.resend.com').length,1,JSON.stringify(app.requests.filter(r=>new URL(r.url).hostname==='api.resend.com').map(r=>{const body=JSON.parse(r.body);return {to:body.to,subject:body.subject}})))
  await app.configure({EMAIL_PROVIDER:'development',EMAIL_API_KEY:undefined})
  // A dependency snooze wakes once the named ticket is solved.
  await clock(initial)
@@ -38,5 +42,20 @@ export async function schedulesFlow(f){
  assert.ok(reply.followupConversationId);assert.equal((await get(closed.id)).status_category,'closed');assert.equal((await ok(`/conversations/${reply.followupConversationId}/workflows`)).followup_of,closed.id)
  assert.equal((await app.call(`/api/dashboard/projects/${f.other.projectId}/workflow-schedules`,{token:w.tokens.owner,body:{conversation_id:id,kind:'reply',due_at:due+999999,timezone:'UTC',body:'forbidden',owner_id:w.users.owner}})).status,403)
  assert.ok((await app.first("SELECT count(*) n FROM audit_events WHERE project_id=? AND action LIKE 'workflow.schedule.%'",w.projectId)).n>0)
+ // A due set returns to the queue and sends without a per-tick singleton bottleneck.
+ await clock(initial)
+ const batch=[]
+ for(let i=0;i<60;i++){
+  const ticket=await create(`Scheduled replacement ${i}`)
+  const sleep=await ok('/workflow-schedules',{conversation_id:ticket,kind:'snooze',due_at:due,timezone:'America/New_York',owner_id:w.users.owner})
+  const reply=i<30?await schedule(ticket):null;batch.push({ticket,sleep,reply})
+ }
+ for(let minute=0;minute<3;minute++){await clock(due+minute*60000);await app.scheduled()}
+ for(const row of batch){
+  const schedules=(await ok(`/conversations/${row.ticket}/workflows`)).schedules
+  assert.equal(schedules.find(s=>s.id===row.sleep.id).state,'woken')
+  if(row.reply){assert.equal(schedules.find(s=>s.id===row.reply.id).state,'sent');assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=? AND local_id=?',row.ticket,`schedule:${row.reply.id}`)).n,1)}
+ }
+ await clock(initial)
  f.scheduleId=id
 }

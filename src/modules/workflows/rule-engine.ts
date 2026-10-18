@@ -29,8 +29,9 @@ export async function runEventRules(env:Env,event:WorkflowEvent,spent?:Spent,exe
   // Publication captures the committed journal frontier in its transaction.
   // A backlog of old events never activates a newly published definition.
   if(Number(event.id)<=(row.event_after_id??0))continue
-  // The first customer message admits the ticket once, and also satisfies reply rules.
-  if(d.event_kind&&d.event_kind!==event.kind&&!(event.kind==='created'&&d.event_kind==='customer_reply'))continue
+  // The first message admits the ticket once and satisfies its corresponding reply rules.
+  const firstReply=event.kind==='created'?(JSON.parse(event.after_json??'{}').actor_role==='contact'?'customer_reply':'operator_reply'):event.kind
+  if(d.event_kind&&d.event_kind!==event.kind&&d.event_kind!==firstReply)continue
   if(evaluated)ticket=await ruleTicket(env,event.project_id,event.conversation_id);evaluated=true;if(!ticket||ticket.revision!==event.revision||ticket.last_message_id!==event.last_message_id)break
   const condition=evaluateConditions(ticket,d.conditions)
   if(condition.matched){const run=await planRuleRun(env,row,ticket,`event:${event.id}`,{event:event.id,kind:event.kind,conditions:condition.explanation,position:row.position,stop_condition:'Terminal receipt, changed ticket frontier, pause or cancellation'},spent,executionEnv);if(run&&['pending','running'].includes(run.state))return false}

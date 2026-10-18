@@ -68,10 +68,12 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
  // Restore deliberately suspends business triggers. Rebuild derived search
  // before reporting a completed import, including a resumed import.
  if(verb==='import'){
-  await d1(context,'Fencing archived workflow actions',workflowRestoreSql);
   if(upgradeWorkflows)await d1(context,'Preparing restored workflow defaults',workflowLegacyRestoreSql);
   await d1(context,'Preparing restored ticket statuses',ticketRestoreSql);
   await d1(context,'Preparing restored saved replies',r4RestoreSql);
+  // Ticket normalization can journal a restored conversation through live
+  // triggers. Fence that work as well as the archived commands before completion.
+  await d1(context,'Fencing archived workflow actions',workflowRestoreSql);
   await d1(context,'Rebuilding conversation search',"INSERT INTO inbox_message_search(inbox_message_search) VALUES('rebuild')");
  }
  // The receipt names the Durable Object storage the archive carries (exported) or carried (restored).

@@ -12,10 +12,11 @@ const mime=(provider,address,id)=>`From: Customer <customer@example.com>\r\nTo: 
 
 export async function mailboxProviderJourney(){
  const sent=[],notices=[],authorization=[],failures={gmail:false,microsoft:false},accounts=new Map(),polls=[]
+ let noticeFailure=false
  const addresses={gmail:'gmail.support@example.test',microsoft:'m365.support@example.test'}
  const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',INBOUND_EMAIL_TOKEN:'gateway-fixture',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'installation-fixture',EMAIL_FROM:'support@example.test',INTEGRATION_ENCRYPTION_KEY:Buffer.alloc(32,7).toString('base64'),GOOGLE_MAIL_CLIENT_ID:'google-client-fixture',GOOGLE_MAIL_CLIENT_SECRET:'google-secret-fixture',MICROSOFT_MAIL_CLIENT_ID:'microsoft-client-fixture',MICROSOFT_MAIL_CLIENT_SECRET:'microsoft-secret-fixture'},outbound:async request=>{
   const url=new URL(request.url),provider=url.hostname.includes('google')?'gmail':'microsoft',base='https://gmail.googleapis.com/gmail/v1/users/me'
-  if(url.hostname==='api.resend.com'){notices.push(await request.json());return Response.json({id:'notice-'+notices.length})}
+  if(url.hostname==='api.resend.com'){const body=await request.json();if(body.subject.startsWith('Not delivered:')){notices.push(body);if(noticeFailure)return new Response(null,{status:503})}return Response.json({id:crypto.randomUUID()})}
   if(url.pathname.endsWith('/token')){const body=new URLSearchParams(await request.text());authorization.push(body);assert.ok(body.get('code_verifier')||body.get('grant_type')==='refresh_token');const account=accounts.get(body.get('code'));return Response.json({access_token:account?.code||provider+'-access-fixture',refresh_token:provider+'-refresh-fixture',expires_in:3600,token_type:'Bearer',scope:provider==='gmail'?'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.settings.basic':'Mail.Read Mail.Send User.Read'})}
   const account=accounts.get(request.headers.get('authorization')?.replace(/^Bearer /,''))
   if(account){
@@ -131,6 +132,12 @@ export async function mailboxProviderJourney(){
   assert.equal((await app.first('SELECT count(*) n FROM messages WHERE actor_id=? AND conversation_id=?',workspace.users.owner,admitted.conversation_id)).n,0)
   append(support,closedReply);await poll(support);await app.ok(`${base}/${support.row.id}/backfill`,{token,body:{}})
   assert.equal(notices.length,1,'repeated polls and a second provider copy send one notice per receipt')
+  noticeFailure=true
+  append(support,closedReply.replaceAll('member-closed','member-closed-notice-failed'));append(support,mime('gmail',supportAddress,'after-notice-failure'))
+  const noticePoll=await poll(support);assert.equal(noticePoll.failed,1);assert.equal(noticePoll.received,1)
+  assert.ok((await app.ok(`/api/management/projects/${workspace.projectId}/suspended`,{token})).data.some(mail=>mail.reason==='closed_ticket_notice_failed'))
+  await poll(support);assert.equal(notices.length,2,'a failed/unknown notice stays visible without an automatic resend or a stuck cursor')
+  noticeFailure=false
   append(billing,mime('gmail',billingAddress,'quoted-only').replace('Please replace the damaged shipment.','> Earlier quoted message'))
   assert.equal((await poll(billing)).failed,1)
   const refusedMail=(await app.ok(`/api/management/projects/${workspace.projectId}/suspended`,{token})).data.find(mail=>mail.reason==='message_refused');assert.ok(refusedMail)

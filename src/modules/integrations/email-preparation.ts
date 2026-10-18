@@ -22,7 +22,9 @@ export async function prepareConversationEmail(env:Env,input:EmailInput):Promise
  const replyTo=mailbox?await recipientReplyAddress(env,mailbox.address,input.projectId,row.conversation_id,to):input.replyTo
  const headers={...input.headers,'Message-ID':messageId,...(prior?{'In-Reply-To':prior.key_value,References:prior.key_value}:{})}
  await env.DB.batch(emailThreadingStatements(env,{projectId:input.projectId,conversationId:row.conversation_id,keys:[{kind:'message_id',value:messageId,source:'native',sourceRef:match[1]},{kind:'subject_token',value:`h2h:${row.conversation_id}`,source:'native',sourceRef:match[1]}],createdAt:Date.now()}))
- return {...input,to,replyTo,subject:nativeThreadSubject(row.subject||input.subject,row.conversation_id),headers,
+ // Customer-authored fan-out keeps its generic subject: an arbitrary incoming
+ // subject must not be propagated to unproven CC participants (R4's notices).
+ return {...input,to,replyTo,subject:row.actor_role==='contact'?input.subject:nativeThreadSubject(row.subject||input.subject,row.conversation_id),headers,
   mailboxId:row.mailbox_id||row.conversation_mailbox||undefined,agentId:row.agent_id||(row.actor_role!=='contact'&&row.actor_role!=='ai'?row.actor_id:undefined),fromAddress:row.from_address||undefined,
   ...(primary?{cc:row.cc_json?JSON.parse(row.cc_json):[],bcc:row.bcc_json?JSON.parse(row.bcc_json):[]}:{})}
 }

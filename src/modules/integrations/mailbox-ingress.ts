@@ -31,9 +31,12 @@ export async function receiveMailboxMessage(env:Env,message:MailboxIncoming){
  const input:IncomingEmail={messageId:rawId.length>200?await hashToken(rawId):rawId,from:author,to:[message.address,...addresses(parsed.to)],cc:addresses(parsed.cc),replyTo:addresses(parsed.replyTo)[0],text:plainEmail(parsed.text||'',parsed.html||'').trim()||parsed.subject||'(Empty email)',senderAuthenticated:verdict.verified,senderFailed:verdict.failed,fromUnusable:!from,evidence,attachments:parsed.attachments.map(file=>({filename:file.filename||'attachment',contentType:file.mimeType,content:file.content as ArrayBuffer}))}
  const result=await receiveEmail(env,input).catch(async error=>{
   if(error instanceof ClosedTicketRefusal&&error.notice){
-   // A provider inbox cannot bounce. Do not consume its copy until the same
-   // receipt-keyed notice used by the gateway and SendGrid has succeeded.
-   try{await noticeMember(env,error,message.mailboxId)}catch{throw new HTTPException(503,{message:'Closed-ticket notice needs delivery reconciliation'})}
+   // A provider inbox cannot bounce. Use the same receipt-keyed notice as the
+   // gateway. An unknown/failed send must not be replayed or pin inbox intake:
+   // retain that refused reply visibly for an operator to reconcile instead.
+   try{await noticeMember(env,error,message.mailboxId)}catch{
+    await suspendRefusedEmail(env,input,{projectId:message.projectId,identity:error.notice.receiptId,reason:'closed_ticket_notice_failed'})
+   }
   }else if(error instanceof HTTPException&&[400,413,422].includes(error.status)){
    await suspendRefusedEmail(env,input,{projectId:message.projectId,identity,reason:error instanceof ClosedTicketRefusal?'closed_ticket_unverified':'message_refused'})
   }

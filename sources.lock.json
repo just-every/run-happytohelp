@@ -2825,7 +2825,7 @@
       "executable": false
     },
     "scripts/installer/r4-archive-policy.mjs": {
-      "sha256": "32b800043d73d4d4a6487d8d5fc8a8f7c18c76739c798a708fc9a024a14f30a6",
+      "sha256": "b28f212bbda7a3b2695896b58f66a5c18e1ada79eb78fc01a4fee3bfb1fd0af3",
       "executable": false
     },
     "scripts/installer/r4-tables.mjs": {
@@ -10309,7 +10309,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "a79f439b76519addeda2c6ee492bbdeb4706787f00d9991a5d82596996af3716",
+      "sha256": "8842891532328c95f96c248ccce0559e5208ce5b6240231afc52a434fdba9eb6",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

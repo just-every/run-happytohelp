@@ -1,3 +1,4 @@
+import {inCron,cronRequire,cronRoom} from './platform/cron-budget'
 import {workflowEnvironment} from './modules/workflows/clock'
 import {processWorkflowEvents} from './modules/workflows/events'
 import {isProjectActive} from './platform/project-status'
@@ -13,12 +14,22 @@ import {postAwayReply} from './modules/management/away-reply'
 // the transcript but earns no AI reply and no notification, on first delivery and
 // on every replay, so a machine's mail can never start a reply loop. A visitor's chat
 // message to an away team earns the away reply once per conversation (away-reply.ts).
-export async function applyMessageEffects(env:Env,message:Record<string,unknown>,actor:Actor,defer?:DeferEmailDelivery) {
+export async function applyMessageEffects(env:Env,message:Record<string,unknown>,actor:Actor,defer?:DeferEmailDelivery,options:{workflow?:boolean;statements?:number}={}) {
  env=await workflowEnvironment(env)
  if(!await isProjectActive(env,actor.projectId))return
  if(await isAutomaticInboundEmail(env,actor.projectId,message))return
- await processWorkflowEvents(env,String(message.conversation_id))
+ if(options.workflow!==false)await processWorkflowEvents(env,String(message.conversation_id),20,inCron(env)&&options.statements?()=>!cronRoom(env,151+options.statements!):undefined)
+ // Cron leaves each unfinished effect on the durable outbox. Sequential calls
+ // keep admission accurate when the services share the same statement budget.
+ if(inCron(env)){
+  cronRequire(env,25);await onCustomerMessage(env,message,actor)
+  cronRequire(env,20);await notifyMessage(env,message,actor,defer)
+  cronRequire(env,8);await postAwayReply(env,message,actor)
+  return
+ }
  const results = await Promise.allSettled([onCustomerMessage(env,message,actor),notifyMessage(env,message,actor,defer),postAwayReply(env,message,actor)])
  const failed = results.filter(result => result.status === 'rejected')
+ const limited=failed.find(result=>result.status==='rejected'&&result.reason instanceof Error&&result.reason.message==='WORKER_D1_STATEMENT_LIMIT')
+ if(limited?.status==='rejected')throw limited.reason
  if (failed.length) throw new Error('Message saved; a follow-up service failed. Check generation and email delivery status.')
 }

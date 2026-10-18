@@ -1,9 +1,11 @@
 import {isProjectActive} from '../../platform/project-status'
 import type {Env,Job} from '../../platform/env'
+import {cronRoom} from '../../platform/cron-budget'
 const staleAfter=20*60*1000
 
 /** Queue acknowledgement is not the durable stage. A failed send leaves that stage recoverable. */
 export async function dispatchKnowledgeJob(env:Env,job:Job,delaySeconds?:number){
+ if(!cronRoom(env,2))return false
  if(!await isProjectActive(env,job.projectId))return false;
  try{await env.JOBS.send(job,delaySeconds===undefined?undefined:{delaySeconds});return true}
  catch(error){
@@ -16,11 +18,13 @@ export async function dispatchKnowledgeJob(env:Env,job:Job,delaySeconds?:number)
 
 /** Redispatch only stages whose provider work has not started, or a persisted crawl's read-only poll. */
 export async function recoverKnowledgeJobs(env:Env){
+ if(!cronRoom(env,4))return
  const cutoff=Date.now()-staleAfter
  await env.DB.prepare("UPDATE knowledge_datasets SET status='failed',error='Interrupted ingestion; provider outcome may be uncertain. Inspect before explicit refresh; never automatically replay.',claim_token=NULL,next_refresh_at=NULL WHERE status='processing' AND (ingest_started_at IS NULL OR ingest_started_at<?)").bind(cutoff).run()
  await env.DB.prepare("UPDATE knowledge_imports SET status='failed',error='Interrupted import page; retained cursor requires explicit inspection',processing_started_at=NULL WHERE status='processing' AND (processing_started_at IS NULL OR processing_started_at<?)").bind(cutoff).run()
  const datasets=await env.DB.prepare("SELECT id,project_id,claim_token,status,ingest_cursor FROM knowledge_datasets WHERE claim_token IS NOT NULL AND status IN ('ingesting','crawling') AND EXISTS(SELECT 1 FROM projects p WHERE p.id=knowledge_datasets.project_id AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)) LIMIT 100").all<any>()
  for(const row of datasets.results){
+  if(!cronRoom(env,4))break
   if(!await isProjectActive(env,row.project_id))continue;
   const job:Job={type:'knowledge.ingest',id:row.claim_token,projectId:row.project_id,datasetId:row.id}
   let retained
@@ -34,6 +38,7 @@ export async function recoverKnowledgeJobs(env:Env){
  }
  const imports=await env.DB.prepare("SELECT id,project_id,cursor FROM knowledge_imports WHERE status='queued' AND EXISTS(SELECT 1 FROM projects p WHERE p.id=knowledge_imports.project_id AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)) LIMIT 100").all<any>()
  for(const row of imports.results){
+  if(!cronRoom(env,3))break
   if(!await isProjectActive(env,row.project_id))continue;
   if(!await env.FILES.get(`knowledge/imports/${row.id}/${row.cursor}.json`)){await env.DB.prepare("UPDATE knowledge_imports SET status='failed',error='Persisted import cursor missing' WHERE id=? AND cursor=? AND status='queued'").bind(row.id,row.cursor).run();continue}
   await dispatchKnowledgeJob(env,{type:'knowledge.import',id:row.id,projectId:row.project_id,cursor:row.cursor})

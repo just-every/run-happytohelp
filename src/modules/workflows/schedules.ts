@@ -1,4 +1,5 @@
 import type {Actor,Env} from '../../platform/env'
+import {syncSlaTickets} from './sla'
 import {memberAccess} from '../access/gate'
 import {admitMessage} from '../conversations/admission'
 import {applyMessageEffects} from '../../message-effects'
@@ -12,7 +13,7 @@ const liveScheduleSql=`EXISTS(SELECT 1 FROM workflow_schedules ws JOIN membershi
 async function settle(env:Env,id:string,state:string,reason:string|null,now:number,messageId?:string,pendingVersion?:number){await env.DB.prepare(`UPDATE workflow_schedules SET state=?,reason=?,message_id=coalesce(?,message_id),updated_at=?,version=version+1 WHERE id=? AND ${pendingVersion===undefined?"state IN ('pending','sending')":"state='pending' AND version=?"}`).bind(state,reason,messageId??null,now,id,...(pendingVersion===undefined?[]:[pendingVersion])).run()}
 /** The sending claim precedes message admission and mail. A lost process never
  * repeats the attempt; a committed message or provider record can be reconciled. */
-async function sendScheduledReply(env:Env,row:any,now:number){
+async function sendScheduledReply(env:Env,row:any,now:number,refresh:Set<string>){
  // Each reply gets its own quantum. Recovery uses the phase database so even a
  // reply that exhausts its quantum can still record an uncertain send.
  const recovery=env,budget=boundedDatabase(env.DB,155)
@@ -31,7 +32,8 @@ async function sendScheduledReply(env:Env,row:any,now:number){
   const result=await admitMessage(env,{projectId:row.project_id,conversationId:row.conversation_id,actor,localId:`schedule:${row.id}`,content:row.body,expectedRevision:row.expected_revision,expectedLastMessageId:row.expected_last_message_id,[scheduledAdmission]:{sql:liveScheduleSql,params:[row.id]}})
   if(!result.accepted){await settle(env,row.id,'cancelled',result.reason??'Message admission refused',now);return}
   messageId=String(result.message!.id)
-  await applyMessageEffects(env,result.message!,actor)
+  refresh.add(row.conversation_id)
+  await applyMessageEffects(env,result.message!,actor,undefined,{workflow:false})
   const broadcasts=await Promise.all([row.conversation_id,`project:${row.project_id}`].map(key=>env.CONVERSATIONS.get(env.CONVERSATIONS.idFromName(key)).fetch('https://conversation.internal/broadcast',{method:'POST'})))
   if(broadcasts.every(response=>response.ok))await env.DB.prepare('UPDATE conversation_outbox SET delivered_at=? WHERE message_id=? AND delivered_at IS NULL').bind(Date.now(),messageId).run()
   const deliveries=(await env.DB.prepare("SELECT state FROM email_deliveries WHERE id=? OR substr(id,1,?)=?").bind(`message:${messageId}:notification`,`message:${messageId}:notification:`.length,`message:${messageId}:notification:`).all<{state:string}>()).results
@@ -48,14 +50,25 @@ async function sendScheduledReply(env:Env,row:any,now:number){
 
 export async function runWorkflowSchedules(env:Env,now=workflowNow(env),spent?:Spent){
  await env.DB.prepare("UPDATE workflow_schedules SET state='uncertain',reason='The worker stopped during a send. Check the transcript and delivery before composing a new reply.',updated_at=?,version=version+1 WHERE state='sending' AND attempted_at<=?").bind(now,now-120000).run()
+ const refresh=new Set<string>()
  let processed=await wakeDueSnoozes(env,now,spent)
+ try{
  while(!spent?.()){
   // Re-select after every attempt: the persisted workspace turn makes even one
   // workspace with a large backlog yield to every other due workspace.
   const row=await env.DB.prepare(`SELECT ws.* FROM workflow_schedules ws JOIN conversations c ON c.id=ws.conversation_id AND c.project_id=ws.project_id JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id LEFT JOIN workflow_queue_turns q ON q.queue='schedules' AND q.project_id=ws.project_id WHERE ws.kind='reply' AND ws.state='pending' AND ws.due_at<=? AND ${liveScheduleTicketSql} ORDER BY coalesce(q.turn,0),ws.due_at,ws.created_at,ws.project_id,ws.id LIMIT 1`).bind(now).first<any>()
   if(!row)break
-  await sendScheduledReply(env,row,now)
+  await sendScheduledReply(env,row,now,refresh)
   processed++
+ }
+ }finally{
+  if(refresh.size){
+   // These generated events only refresh SLA clocks. Capture their exact ids,
+   // then refresh all this tick's replies together. New concurrent events stay pending.
+   const events=(await env.DB.prepare("SELECT id FROM workflow_events WHERE state='pending' AND source='schedule' AND conversation_id IN (SELECT value FROM json_each(?)) AND coalesce(lease_until,0)<=?").bind(JSON.stringify([...refresh]),now).all<{id:number}>()).results
+   await syncSlaTickets(env,[...refresh],now)
+   if(events.length)await env.DB.prepare("UPDATE workflow_events SET state='complete',error=NULL,next_attempt_at=NULL WHERE state='pending' AND id IN (SELECT value FROM json_each(?)) AND coalesce(lease_until,0)<=?").bind(JSON.stringify(events.map(event=>event.id)),now).run()
+  }
  }
  return {processed}
 }

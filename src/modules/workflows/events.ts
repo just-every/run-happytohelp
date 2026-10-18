@@ -1,3 +1,4 @@
+import {inCron,cronRoom} from '../../platform/cron-budget'
 import {conversationHasMessages} from '../management/inbox-visible'
 import type {Env} from '../../platform/env'
 import {runEventRules} from './rule-engine'
@@ -12,7 +13,7 @@ const delays=[1,5,15,60],attemptLimit=5
  * same due/lease predicate as cron, so it cannot bypass a deferred attempt. */
 const dueEvents=`SELECT * FROM (SELECT e.*,coalesce(q.turn,0) workspace_turn,row_number() OVER (PARTITION BY e.project_id ORDER BY e.id) turn FROM workflow_events e LEFT JOIN workflow_queue_turns q ON q.project_id=e.project_id AND q.queue='events' WHERE e.state='pending' AND (?2 IS NULL OR e.last_tick IS NULL OR e.last_tick<>?2) AND e.source NOT IN ('rule','automation','schedule','rer') AND coalesce(e.next_attempt_at,0)<=?1 AND coalesce(e.lease_until,0)<=?1) ORDER BY turn,workspace_turn,id LIMIT ?3`
 export async function processWorkflowEvents(input:Env,conversationId?:string,limit=20,spent?:Spent){
- const tick=workflowInvocation(input),served=servedWorkflowEvents(input);if(tick&&!spent)spent=()=>false
+ const tick=workflowInvocation(input),served=servedWorkflowEvents(input);if(!spent&&inCron(input))spent=()=>!cronRoom(input,250);else if(tick&&!spent)spent=()=>false
  const now=workflowNow(input),rows=await input.DB.prepare(conversationId?`SELECT * FROM workflow_events WHERE state='pending' AND conversation_id=?1 AND (?2 IS NULL OR last_tick IS NULL OR last_tick<>?2) AND coalesce(next_attempt_at,0)<=?3 AND coalesce(lease_until,0)<=?3 ORDER BY id LIMIT ?4`:dueEvents).bind(...(conversationId?[conversationId,tick??null,now,limit]:[now,tick??null,limit])).all<any>()
  let processed=0
  for(const event of rows.results){

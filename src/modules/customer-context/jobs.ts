@@ -1,5 +1,6 @@
 import {requireActiveProject,isProjectActive} from '../../platform/project-status'
 import type {Env,Job} from '../../platform/env'
+import {cronRoom} from '../../platform/cron-budget'
 import {analysisInterval} from './collector'
 import {admitContextRun} from './run-ceiling'
 import {readContextSource,profilePacket,monitoringPacket} from './packets'
@@ -47,8 +48,10 @@ export async function enqueueContextJob(env:Env,projectId:string,subjectId:strin
  return {id,reason:'queued'}
 }
 export async function recoverContextJobs(env:Env){
+ if(!cronRoom(env,2))return
  const queued=await env.DB.prepare("SELECT id,project_id FROM context_jobs WHERE state='queued' AND EXISTS(SELECT 1 FROM projects p WHERE p.id=context_jobs.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=context_jobs.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) ORDER BY created_at LIMIT 100").all<any>()
- for(const row of queued.results)if(await isProjectActive(env,row.project_id))await env.JOBS.send({type:'context.run',id:row.id,projectId:row.project_id} satisfies Job)
+ // The scan selects active projects; the queue consumer rechecks before work.
+ for(const row of queued.results)await env.JOBS.send({type:'context.run',id:row.id,projectId:row.project_id} satisfies Job)
  // An expired running attempt is uncertain. Never automatically replay it.
  await env.DB.prepare("UPDATE context_jobs SET state='uncertain',error='Interrupted provider attempt; explicit review required',finished_at=? WHERE state='running' AND started_at<?").bind(Date.now(),Date.now()-360000).run()
 }

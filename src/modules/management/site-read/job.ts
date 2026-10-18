@@ -1,5 +1,5 @@
 import type {Env, Job} from '../../../platform/env'
-import {isProjectActive} from '../../../platform/project-status'
+import {cronRoom} from '../../../platform/cron-budget'
 import {publicOrigin, SiteFetcher, SiteReadStop} from './fetch'
 import {homeLinks, MAX_HELP_PAGES, pageToDocument, rankHelpLinks, siteColour, siteName, sitemapLocations, type SitePage} from './parse'
 import {allowAll, parseRobots, type Robots} from './robots'
@@ -90,12 +90,13 @@ export async function consumeSiteRead(job: Job, env: Env): Promise<boolean> {
  * harmless. A read that never started in a day is closed as failed.
  */
 export async function recoverSiteReads(env: Env): Promise<void> {
+ if(!cronRoom(env,3))return
  const now = Date.now()
  const state = "json_extract(settings_json,'$.site_read.state')", at = "json_extract(settings_json,'$.site_read.at')"
  await env.DB.prepare(`UPDATE project_settings SET settings_json=json_set(settings_json,'$.site_read.state','uncertain','$.site_read.reason','interrupted','$.site_read.at',?),updated_at=? WHERE ${state}='running' AND ${at}<?`)
   .bind(now, now, now - STALE_RUNNING_MS).run()
  await env.DB.prepare(`UPDATE project_settings SET settings_json=json_set(settings_json,'$.site_read.state','failed','$.site_read.reason','not_started','$.site_read.at',?),updated_at=? WHERE ${state}='queued' AND ${at}<?`)
   .bind(now, now, now - GIVE_UP_MS).run()
- const lost = await env.DB.prepare(`SELECT project_id FROM project_settings WHERE ${state}='queued' AND ${at}<? LIMIT 50`).bind(now - LOST_QUEUE_MS).all<{project_id: string}>()
- for (const row of lost.results) if (await isProjectActive(env, row.project_id)) await env.JOBS.send({type: 'site.read', id: row.project_id, projectId: row.project_id})
+ const lost = await env.DB.prepare(`SELECT project_id FROM project_settings WHERE ${state}='queued' AND ${at}<? AND json_extract(settings_json,'$.deleted_at') IS NULL AND EXISTS(SELECT 1 FROM projects p WHERE p.id=project_settings.project_id) LIMIT 50`).bind(now - LOST_QUEUE_MS).all<{project_id: string}>()
+ for (const row of lost.results) await env.JOBS.send({type: 'site.read', id: row.project_id, projectId: row.project_id})
 }

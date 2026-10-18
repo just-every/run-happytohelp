@@ -11,10 +11,11 @@ import {workflowNow,workflowEnvironment} from './clock'
 import {workflowBudget} from './budget'
 import {withWorkflowInvocation} from './invocation'
 export {workflowEnvironment} from './clock'
-/** SLA deadlines run first. Later phases inherit unused shares and pay for earlier
- * quantum overshoot. The 750-statement pool plus the last rule's 80-statement
- * quantum leaves room for the cron's other consumers. */
-const shares={events:30,ruleEvents:15,slaDue:30,slaDelivery:10,slaBackstop:10,resume:80,schedules:500,time:75}
+/** Admission thresholds total 500. Schedules stop at 460, then at most one
+ * 155-statement reply, one selection, one recovery write and a 14-statement SLA
+ * batch finish: <=631. Time rules admit at 500 with an 80-statement run plus
+ * their bounded planning/cursor writes. Cron reserves a 650-statement envelope. */
+const shares={events:30,ruleEvents:15,slaDue:30,slaDelivery:10,slaBackstop:10,resume:65,schedules:300,time:40}
 export async function runWorkflows(input:Env){
  const {env,phase,complete}=workflowBudget(withWorkflowInvocation(await workflowEnvironment(input))),now=workflowNow(env)
  let failed=false

@@ -1,4 +1,5 @@
-import {isProjectActive,requireActiveProject} from '../../platform/project-status'
+import {requireActiveProject} from '../../platform/project-status'
+import {cronRoom} from '../../platform/cron-budget'
 import type { Env,Job } from '../../platform/env'
 import { HTTPException } from 'hono/http-exception'
 import { DEFAULT_WORKSPACE_COLOUR } from '../management/workspace-colour'
@@ -23,4 +24,9 @@ export async function consumeJob(job:Job,env:Env){
  }catch(error){await env.DB.prepare("UPDATE brand_generations SET state='uncertain',error=?,completed_at=? WHERE id=? AND state='running'").bind(error instanceof Error?error.message:String(error),Date.now(),row.id).run()}
  return true
 }
-export async function recoverBrandJobs(env:Env){await env.DB.prepare("UPDATE brand_generations SET state=CASE WHEN state='running' THEN 'uncertain' ELSE 'failed' END,error='Expired; provider reconciliation required for running attempts' WHERE state IN('queued','running') AND expires_at<=?").bind(Date.now()).run();const rows=await env.DB.prepare("SELECT id,project_id FROM brand_generations WHERE state='queued'").all<{id:string;project_id:string}>();for(const row of rows.results)if(await isProjectActive(env,row.project_id))await env.JOBS.send({type:'brand.generate',id:row.id,projectId:row.project_id})}
+export async function recoverBrandJobs(env:Env){
+ if(!cronRoom(env,2))return
+ await env.DB.prepare("UPDATE brand_generations SET state=CASE WHEN state='running' THEN 'uncertain' ELSE 'failed' END,error='Expired; provider reconciliation required for running attempts' WHERE state IN('queued','running') AND expires_at<=?").bind(Date.now()).run()
+ const rows=await env.DB.prepare("SELECT id,project_id FROM brand_generations WHERE state='queued' AND EXISTS(SELECT 1 FROM projects p WHERE p.id=brand_generations.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=brand_generations.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) ORDER BY created_at,id LIMIT 100").all<{id:string;project_id:string}>()
+ for(const row of rows.results)await env.JOBS.send({type:'brand.generate',id:row.id,projectId:row.project_id})
+}

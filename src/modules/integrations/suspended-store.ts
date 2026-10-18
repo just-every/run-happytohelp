@@ -1,3 +1,4 @@
+import {cronRoom} from '../../platform/cron-budget'
 import type {Env} from '../../platform/env'
 import {auditStatement} from '../audit/record'
 import type {IncomingEmail} from './inbound-service'
@@ -32,6 +33,7 @@ export async function suspendEmail(env:Env,input:IncomingEmail,context:{projectI
 export async function expireSuspendedEmails(env:Env,now=Date.now()){
  const projects=(await env.DB.prepare('SELECT project_id,COUNT(*) count FROM suspended_emails WHERE expires_at<=? GROUP BY project_id').bind(now).all<{project_id:string;count:number}>()).results
  for(const project of projects){
+  if(!cronRoom(env,4))break
   const rows=(await env.DB.prepare('SELECT input_json FROM suspended_emails WHERE project_id=? AND expires_at<=?').bind(project.project_id,now).all<{input_json:string}>()).results
   for(const row of rows)await deleteSuspendedObjects(env,row)
   await env.DB.batch([

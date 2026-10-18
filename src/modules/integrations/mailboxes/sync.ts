@@ -1,3 +1,4 @@
+import {cronRoom,CronDeferred} from '../../../platform/cron-budget'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../../platform/env'
 import {getMailbox,mailboxForDelivery} from './store'
@@ -39,6 +40,7 @@ export async function syncMailbox(env:Env,projectId:string,mailboxId:string,rece
   failed++
  }
  const admit=async(id:string,load:()=>Promise<Uint8Array>)=>{
+  if(!cronRoom(env,180))throw new CronDeferred()
   if(await env.DB.prepare('SELECT 1 FROM mailbox_sync_receipts WHERE mailbox_id=? AND provider_message_id=?').bind(mailboxId,id).first())return
   const hold=async(raw:Uint8Array,reason:'message_too_large'|'message_unprocessable')=>{
    await assertLive()
@@ -63,6 +65,7 @@ export async function syncMailbox(env:Env,projectId:string,mailboxId:string,rece
   const prior=await env.DB.prepare('SELECT attempts,reason FROM mailbox_message_attempts WHERE mailbox_id=? AND provider_message_id=?').bind(mailboxId,id).first<{attempts:number;reason:'message_unprocessable'}>()
   if(prior&&prior.attempts>=3){await hold(raw,prior.reason);return}
   try{await receive({projectId,mailboxId,address:row.address,provider:row.provider,providerMessageId:id,raw})}catch(error){
+   if(error instanceof CronDeferred)throw error
    // This catch excludes connection/lease checks and provider requests: a changed
    // mailbox or rejected credential is never mistaken for a bad message.
    const failure=await attempt(id)
@@ -81,6 +84,9 @@ export async function syncMailbox(env:Env,projectId:string,mailboxId:string,rece
   if(!result.meta.changes)throw new HTTPException(409,{message:'Mailbox connection changed during sync'})
   return {received,failed,cursor:page.cursor,more:page.more}
  }catch(error){
+  // A partially read page keeps its cursor and per-message receipts. No failure
+  // attempt or provider claim is charged for work that did not fit this tick.
+  if(error instanceof CronDeferred)return {received,failed,deferred:true,more:true}
   const expired=error instanceof BackfillRequired||error instanceof MailboxProviderError&&error.status===410
   const auth=error instanceof MailboxProviderError&&[401,403].includes(error.status)
   await env.DB.batch([env.DB.prepare(`UPDATE mailbox_connections SET error_code=?,status=CASE WHEN status IN ('disconnected','reconnect_required') THEN status ELSE ? END,updated_at=? WHERE id=? AND sync_lock=?`)
@@ -102,6 +108,6 @@ export async function syncConnectedMailboxes(env:Env,receive:MailboxReceiver,opt
  const rows=healthy.results.slice(0,retries.results.length?limit-1:limit)
  rows.push(...retries.results.slice(0,limit-rows.length))
  const results=[]
- for(const row of rows)try{results.push({mailboxId:row.id,...await syncMailbox(env,row.project_id,row.id,receive)})}catch{results.push({mailboxId:row.id,error:'sync_failed'})}
+ for(const row of rows)try{if(!cronRoom(env,25))break;results.push({mailboxId:row.id,...await syncMailbox(env,row.project_id,row.id,receive)})}catch{results.push({mailboxId:row.id,error:'sync_failed'})}
  return results
 }

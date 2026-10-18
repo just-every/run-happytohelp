@@ -129,5 +129,29 @@ export async function csatJourney({progress=()=>{}}={}){
   assert.equal((await app.first("SELECT COUNT(*) n FROM csat_surveys WHERE contact_id=? AND recipient<>''",resolution.contact_id)).n,0)
   const paged=await app.ok(endpoint+'/results?limit=1',owner);assert.ok(paged.nextCursor);const secondPage=await app.ok(endpoint+'/results?limit=1&cursor='+encodeURIComponent(paged.nextCursor),owner);assert.notEqual(secondPage.results[0].resolutionId,paged.results[0].resolutionId)
   progress("Expiry, erasure and pagination checked")
+  // A morning of due replies and eligible surveys shares one cron invocation.
+  // Every later consumer must still get its turn; work deferred by admission
+  // stays pending and completes on the following ticks without duplicate sends.
+  const due=Date.now()+3600000,surveyCycles=[],replySchedules=[]
+  for(let index=0;index<30;index++){
+   const question=await inbound(`morning-survey-${index}@example.com`)
+   const cycle=await solve(question.conversationId||question.conversation_id);surveyCycles.push(cycle)
+   const reply=await inbound(`morning-reply-${index}@example.com`),id=reply.conversationId||reply.conversation_id
+   const ticket=(await app.ok(`/api/dashboard/projects/${a.projectId}/conversations/${id}/ticket`,owner)).data
+   const schedule=await app.ok(`/api/dashboard/projects/${a.projectId}/workflow-schedules`,{...owner,body:{conversation_id:id,kind:'reply',due_at:due,timezone:'UTC',body:'Your replacement ships today.',owner_id:a.users.owner,expected_revision:ticket.revision,expected_last_message_id:ticket.last_message_id,expected_ticket_version:ticket.ticket_version}})
+   replySchedules.push(schedule.data.id)
+  }
+  for(let minute=0;minute<4;minute++){
+   await app.db.prepare("INSERT OR REPLACE INTO abuse_counters VALUES('morning-prune',0,1,1)").run()
+   await app.scheduled(undefined,{after:86400000+minute*60000})
+   assert.equal(await app.first("SELECT key FROM abuse_counters WHERE key='morning-prune'"),null,'pruning runs after every loaded tick')
+  }
+  for(const cycle of surveyCycles){const survey=await surveyRow(cycle);assert.equal(survey.state,'sent');assert.equal(surveys().filter(entry=>entry.headers['idempotency-key']==='csat:'+survey.id).length,1)}
+  for(const id of replySchedules){assert.equal((await app.first('SELECT state FROM workflow_schedules WHERE id=?',id)).state,'sent');assert.equal((await app.first('SELECT count(*) n FROM messages WHERE local_id=?',`schedule:${id}`)).n,1)}
+  // An integration poll failure must not skip outbox/job recovery or pruning.
+  await app.db.prepare("INSERT OR REPLACE INTO abuse_counters VALUES('integration-failure-prune',0,1,1)").run()
+  await app.scheduled({'x-test-before-statement':'SELECT * FROM unavailable_integration_fixture','x-test-statement':'SELECT project_id FROM native_integration_dispatch_cursor'})
+  assert.equal(await app.first("SELECT key FROM abuse_counters WHERE key='integration-failure-prune'"),null)
+
  }finally{await m.close()}
 }

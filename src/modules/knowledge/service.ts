@@ -1,4 +1,5 @@
 import {isProjectActive,requireActiveProject} from '../../platform/project-status'
+import {cronRoom} from '../../platform/cron-budget'
 import {dispatchKnowledgeJob,recoverKnowledgeJobs} from './recovery'
 import {consumeImport} from './import-jobs'
 import {startCrawl,crawlStatus,websiteReader,type CrawlConfig} from './crawl'
@@ -75,8 +76,19 @@ export async function searchKnowledge(env:Env,projectId:string,query:string,mode
 
 export async function refreshDueDatasets(env:Env){
  await recoverKnowledgeJobs(env)
+ if(!cronRoom(env,1))return 0
  const due=await env.DB.prepare("SELECT id,project_id,source_input FROM knowledge_datasets WHERE next_refresh_at<=? AND claim_token IS NULL AND source_input IS NOT NULL AND EXISTS(SELECT 1 FROM projects p WHERE p.id=knowledge_datasets.project_id AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)) LIMIT 25").bind(Date.now()).all<{id:string;project_id:string;source_input:string}>();
- for(const row of due.results){if(!await isProjectActive(env,row.project_id))continue;const source=JSON.parse(row.source_input);const input=source.retainedJobId?await(await env.FILES.get(`knowledge/sources/${source.retainedJobId}.json`))!.json<any>():source;await refreshDataset(env,row.project_id,row.id,input)}return due.results.length
+ let refreshed=0
+ for(const row of due.results){
+  // Admission includes both authority checks and a failed queue-send receipt.
+  if(!cronRoom(env,5))break
+  if(!await isProjectActive(env,row.project_id))continue
+  const source=JSON.parse(row.source_input)
+  const input=source.retainedJobId?await(await env.FILES.get(`knowledge/sources/${source.retainedJobId}.json`))!.json<any>():source
+  await refreshDataset(env,row.project_id,row.id,input)
+  refreshed++
+ }
+ return refreshed
 }
 
 // Python's Qdrant MMR retriever selects k=1 independently per collection.

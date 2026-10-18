@@ -1,3 +1,4 @@
+import {cronRoom} from '../../platform/cron-budget'
 import {scheduledProjects,advanceDispatchCursor,readyIntentSql} from './scheduling'
 import type {Env} from '../../platform/env'
 import {DeliveryService,createSlackNotifier,createWebhookProtocol} from '../../vendor/base/modules/integrations/index.ts'
@@ -31,9 +32,9 @@ export async function dispatchIntegrations(env:Env,projectId?:string){
  let preparations=8,sends=8
  const projects=projectId?[{project_id:projectId}]:await scheduledProjects(env,4)
  for(const {project_id:project} of projects){
-  if(!projectId)await advanceDispatchCursor(env,project)
+  if(!cronRoom(env,5))break
   const s=services(env,project,transport),pending=await env.DB.prepare(`SELECT i.id,i.destination_id,d.kind,d.mode,e.event,e.body,e.created_at,e.conversation_id FROM native_integration_intents i JOIN native_integration_events e ON e.id=i.event_id AND e.project_id=i.project_id JOIN native_integration_destinations d ON d.id=i.destination_id AND d.project_id=i.project_id WHERE i.project_id=? AND i.prepared_at IS NULL AND ${readyIntentSql} ORDER BY e.created_at,i.id LIMIT ?`).bind(project,preparations).all<any>()
-  for(const row of pending.results){preparations--;try{
+  for(const row of pending.results){if(!cronRoom(env,47))break;preparations--;try{
    await destination(env,project,row.destination_id)
    if(row.kind==='webhook')await s.webhook.enqueue({id:row.id,tenant:project,destinationId:row.destination_id,event:row.event,protocol:'webhook',body:JSON.stringify({id:row.id,event:row.event,created_at:new Date(row.created_at).toISOString(),data:JSON.parse(row.body)})})
    else {
@@ -55,14 +56,16 @@ export async function dispatchIntegrations(env:Env,projectId?:string){
    if(!(error instanceof DestinationUnavailable))throw error
    await env.DB.prepare("UPDATE native_integration_intents SET prepared_at=?,error_code='configuration_unavailable' WHERE id=? AND project_id=?").bind(Date.now(),row.id,project).run()
   }}
+  if(!cronRoom(env,4))break
   await s.webhook.recoverExpired()
   // One repository has both protocols. Dispatch with its owning service only.
   const due=sends?await s.repo.due(Date.now(),sends):[]
-  for(const id of due){sends--;const delivery=await s.repo.get(id);if(!delivery)continue
+  for(const id of due){if(!cronRoom(env,33))break;sends--;const delivery=await s.repo.get(id);if(!delivery)continue
    const event=await env.DB.prepare('SELECT e.erased_at FROM native_integration_intents i JOIN native_integration_events e ON e.id=i.event_id WHERE i.id=? AND i.project_id=?').bind(id,project).first<any>()
    if(!event||event.erased_at!==null)continue
    await (delivery.protocol==='webhook'?s.webhook:s.slack.delivery).dispatch(id)
   }
+  if(!projectId)await advanceDispatchCursor(env,project)
   // Leave the cursor on the last workspace actually given a complete turn.
   if(!preparations||!sends)break
  }

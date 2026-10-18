@@ -1,7 +1,8 @@
 import type {Env} from '../../platform/env'
 import {emailConfigured} from '../integrations/email-provider'
 import {localMailOrigin} from '../../edition/local-mail/configuration'
-import {notificationRecipients,type NotificationContact} from '../integrations/notification-recipients'
+import {messageNotificationRecipients,type NotificationContact} from '../integrations/notification-recipients'
+import {notificationContactsSql} from '../integrations/notification-contacts'
 import {iso,person} from './dashboard-data'
 
 /** Hydrate an already authorized set. One JSON bind keeps large transcripts
@@ -19,7 +20,7 @@ export async function messagesData(env:Env,rows:any[]){
   env.DB.prepare(`SELECT m.id message_id,json_extract(e.payload,'$.reader_id') reader_id,json_extract(e.payload,'$.reader_role') reader_role,e.created_at read_at FROM messages m JOIN context_tracked_events e ON e.project_id=m.project_id AND json_valid(e.payload) AND json_extract(e.payload,'$.message_id')=m.id WHERE m.id IN (${selected}) AND e.type='MESSAGE_READ' ORDER BY e.rowid`).bind(ids),
   ...(mailRows.length?[
    env.DB.prepare(`SELECT m.id,d.state,d.updated_at,s.is_enabled,u.email sender_email FROM messages m LEFT JOIN email_deliveries d ON d.id>='message:'||m.id||':notification' AND d.id<'message:'||m.id||':notification;' AND (d.id='message:'||m.id||':notification' OR substr(d.id,1,length('message:'||m.id||':notification:'))='message:'||m.id||':notification:') AND d.project_id=m.project_id LEFT JOIN email_settings s ON s.project_id=m.project_id LEFT JOIN users u ON u.id=m.actor_id WHERE m.id IN (${selected})`).bind(mailIds),
-   env.DB.prepare(`SELECT m.id message_id,ct.id,ct.email,ct.metadata_json FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id JOIN contacts ct ON ct.project_id=c.project_id AND ct.id IN (SELECT c.contact_id UNION SELECT cp.contact_id FROM conversation_participants cp WHERE cp.conversation_id=c.id) WHERE m.id IN (${selected})`).bind(mailIds)
+   env.DB.prepare(`SELECT m.id message_id,ct.* FROM messages m JOIN (${notificationContactsSql}) ct ON ct.conversation_id=m.conversation_id AND ct.notification_project_id=m.project_id WHERE m.id IN (${selected})`).bind(mailIds)
   ]:[]),
  ])
  const byId=(values:any[])=>new Map(values.map(row=>[String(row.id),row]))
@@ -52,7 +53,7 @@ export async function messagesData(env:Env,rows:any[]){
   const attempt:any=mail.get(String(row.id))
   // Keep the durable mail-status precedence, including suppressed development
   // mail and unknown delivery. Reads never ask the provider to do work.
-  const emailStatus=origin||row.actor_role==='contact'||row.actor_role==='system'||row.erased_at?null:suppressed?{state:'suppressed'}:attempt?.state?{state:attempt.state,updatedAt:attempt.updated_at}:!configured?{state:'not_configured'}:attempt?.is_enabled===0?{state:'disabled'}:{state:notificationRecipients(recipients.get(String(row.id))||[],attempt?.sender_email?{id:row.actor_id,email:attempt.sender_email}:undefined).state}
+  const emailStatus=origin||row.actor_role==='contact'||row.actor_role==='system'||row.erased_at?null:suppressed?{state:'suppressed'}:attempt?.state?{state:attempt.state,updatedAt:attempt.updated_at}:!configured?{state:'not_configured'}:attempt?.is_enabled===0?{state:'disabled'}:{state:messageNotificationRecipients(recipients.get(String(row.id))||[],attempt?.sender_email?{id:row.actor_id,email:attempt.sender_email}:undefined,row.actor_role).state}
   return {...row,...(reads.get(String(row.id))||{read_by_contacts:{},read_by_agents:{}}),email_status:emailStatus,created_at:iso(row.created_at),source_time_provenance:origin?.time_provenance,source_author:sourceAuthor,bucket_id:row.bucket_id||row.conversation_id,agent:sourceAuthor&&sourceAuthor.role!=='contact'?person({id:row.actor_id,name:sourceAuthor.name||'Imported author'}):agent,agent_id:sourceAuthor&&sourceAuthor.role!=='contact'?row.actor_id:agent?.id,contact_id:row.actor_role==='contact'?row.actor_id:null,contact:row.actor_role==='contact'?person(contacts.get(String(row.actor_id))):null,media:(media.get(String(row.id))||[]).map(m=>({...m,filename_original:m.filename,url:`/api/conversations/${row.conversation_id}/media/${m.id}`,preview_url:`/api/conversations/${row.conversation_id}/media/${m.id}`,aggregate_type:m.content_type.startsWith('image/')?'image':'file'}))}
  })
 }

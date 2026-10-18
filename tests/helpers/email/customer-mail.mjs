@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import {mailApp} from './app.mjs'
+import {mailApp,recipients} from './app.mjs'
 
 const png=Uint8Array.from([137,80,78,71,13,10,26,10]),pdf=new TextEncoder().encode('%PDF-fixture')
 const b64=bytes=>btoa(String.fromCharCode(...bytes))
@@ -23,7 +23,8 @@ export async function customerMailJourney(){
   // A lost provider response is uncertain and never resent, even after recipients change.
   mail.mode='lost';const first=await reply('lost','A reply');const attempts=mail.attempts
   assert.deepEqual(await deliveries(first.id),[{recipient:'first@example.com',state:'uncertain'}])
-  await DB.batch([DB.prepare("UPDATE contacts SET email='changed@example.com',metadata_json='{\"provided_email\":\"preferred@example.com\"}' WHERE id='contact'"),DB.prepare("INSERT INTO conversation_participants(id,conversation_id,contact_id,created_at) VALUES('cp','c','participant',1),('invalid-tenant','c','foreign',1)")])
+  await DB.batch([DB.prepare("UPDATE contacts SET email='changed@example.com',metadata_json='{}' WHERE id='contact'"),DB.prepare("INSERT INTO conversation_participants(id,conversation_id,contact_id,created_at) VALUES('cp','c','participant',1),('invalid-tenant','c','foreign',1)")])
+  await app.call('/api/management/projects/p/contacts/contact',{headers:m.operator,method:'PUT',body:{provided_email:'preferred@example.com'},status:200})
   mail.mode='deliver';await replay(first);assert.equal(mail.attempts,attempts);assert.deepEqual(await deliveries(first.id),[{recipient:'first@example.com',state:'uncertain'}])
   // A rich reply with an image and a file: sanitised HTML, inline image by content id, preferred address and participants only.
   const content='**Resolved**\n\n- Try again\n\n[Guide](https://example.com/help)\n\n<script>alert(1)</script>\n\n[Unsafe](javascript:alert(1))'
@@ -99,5 +100,25 @@ export async function customerMailJourney(){
   assert.deepEqual(await deliveries(participantReply.id),[{recipient:'teammate@example.com',state:'sent'}])
   await DB.prepare("DELETE FROM conversation_participants WHERE id='status-participant'").run()
   assert.equal(await readMailStatus(participantReply.id),'sent','a durable provider outcome takes precedence over a current same-address exclusion')
+ }finally{await m.close()}
+ await automaticRelayRows()
+}
+
+// The same reply journey also covers customer-authored fan-out. A Cc header or
+// Reply-To preference cannot authorize an automatic copy to a different mailbox.
+async function automaticRelayRows(){
+ const m=await mailApp(),{app,mail,operator}=m
+ const settle=async()=>{await app.scheduled();await app.scheduled()}
+ const relays=from=>mail.sent.slice(from).filter(e=>e.body.subject==='Reply to your support conversation').flatMap(e=>recipients(e.body))
+ try{
+  await m.gateway({messageId:'relay-proven',to:'inbound@example.com',from:'proven-relay@example.com',replyTo:'relay-preference@example.net',text:'My own request'});await settle()
+  const start=mail.sent.length
+  await m.gateway({messageId:'relay-customer',to:'inbound@example.com',from:'relay-requester@example.com',replyTo:'requester-preference@example.net',cc:['proven-relay@example.com','unproven-relay@example.net'],text:'Please check order 4827'});await settle()
+  assert.deepEqual(relays(start),['proven-relay@example.com'],'only the independently proven participant gets one automatic relay')
+  const id=(await m.claim('relay-customer')).conversation_id,first=await m.admitted('relay-customer')
+  await m.replay(first);await settle();assert.deepEqual(relays(start),['proven-relay@example.com'],'replay cannot add recipients')
+  const head=await m.DB.prepare('SELECT revision FROM conversations WHERE id=?').bind(id).first(),human=mail.sent.length
+  await app.call(`/api/conversations/${id}/messages`,{headers:operator,body:{localId:'human-reply',content:'Your replacement ships tomorrow.',expectedRevision:head.revision},status:200});await settle()
+  assert.deepEqual(relays(human).sort(),['relay-preference@example.net','requester-preference@example.net','unproven-relay@example.net'].sort(),'the human reply retains its Reply-To preferences and participants')
  }finally{await m.close()}
 }

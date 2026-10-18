@@ -1,9 +1,9 @@
 import {mailboxAddress} from '../../platform/mailbox'
-export type NotificationContact={id:string;email:string|null;metadata_json?:string;is_verified?:number;external_id?:string|null;notice_grant_proven?:number}
+export type NotificationContact={id:string;email:string|null;metadata_json?:string;is_verified?:number;external_id?:string|null;notice_grant_proven?:number;notice_eligible?:number;widget_contact_id?:string}
 const mailbox=(value:unknown)=>typeof value==='string'&&value.length<=254&&/^[^\s@<>(),:;"\\]+@[^\s@<>(),:;"\\]+\.[^\s@<>(),:;"\\]+$/.test(value.trim())?value.trim().toLowerCase():null
 const metadata=(contact:NotificationContact)=>JSON.parse(contact.metadata_json||'{}')
 
-/** Reply delivery honours a collected preference. Automatic ticket notices use
+/** Human reply delivery honours a collected preference. Automatic mail uses
  * customerNoticeAddress instead. Neither changes canonical identity or authority.
  * Mail with no usable From names nobody to answer: its contact is notified only at
  * an address an operator chose for it. */
@@ -17,11 +17,20 @@ export function customerNoticeAddress(contact:NotificationContact,widgetContactI
  const flags=metadata(contact)
  if(flags.provided_email_source==='operator')return mailboxAddress(flags.provided_email)
  const signed=contact.is_verified===1&&mailbox(contact.external_id)===mailbox(contact.email)
- return flags.unusable_from||flags.email_unproven&&!signed&&!contact.notice_grant_proven&&contact.id!==widgetContactId?null:mailbox(contact.email)
+ return flags.unusable_from||(flags.unverified_sender||flags.email_unproven)&&!signed&&!contact.notice_grant_proven&&contact.id!==widgetContactId?null:mailbox(contact.email)
+}
+
+/** Only an actual teammate's persisted message may honour an unproven Reply-To.
+ * AI may run as a person, and API messages carry an operator role without a user;
+ * neither conveys human recipient choice. Unknown authors fail closed. */
+export function messageNotificationRecipients(contacts:NotificationContact[],sender:NotificationContact|undefined,role:string,senderContactId?:string){
+ const human=!!sender&&['owner','admin','operator'].includes(role)
+ return notificationRecipients(human?contacts:contacts.filter(contact=>contact.notice_eligible===1),sender,senderContactId,
+  human?notificationAddress:contact=>customerNoticeAddress(contact,contact.widget_contact_id))
 }
 
 /** Sending and read-only status use the same safety and author exclusions. */
-export function notificationRecipients(contacts:NotificationContact[],sender:NotificationContact|undefined,senderContactId?:string,address=notificationAddress){
+export function notificationRecipients(contacts:NotificationContact[],sender:NotificationContact|undefined,senderContactId:string|undefined,address:(contact:NotificationContact)=>string|null){
  const senderEmails=new Set<string>()
  if(sender)for(const value of [sender.email,metadata(sender).provided_email]){const email=mailbox(value);if(email)senderEmails.add(email)}
  const excluded=new Set(senderEmails)

@@ -4742,7 +4742,7 @@
       "executable": false
     },
     "src/modules/integrations/message-mail-status.ts": {
-      "sha256": "6569d22db40b3d110d4f0c54fcfffccb21e1380b3578965efb005285a29efdc9",
+      "sha256": "37ec269fabb95cd2a3eed9485b8bc4dc6455bed889a898c216aa00d44c43ae58",
       "executable": false
     },
     "src/modules/integrations/notice-address-proof.ts": {
@@ -4751,6 +4751,10 @@
     },
     "src/modules/integrations/notification-actions.ts": {
       "sha256": "512b37681fd186755743acafc945467a287ae5ddaaf73f9f54072dc87e3e12b9",
+      "executable": false
+    },
+    "src/modules/integrations/notification-contacts.ts": {
+      "sha256": "c2d9c1641c441bac5f01756abbd7a0eea5ed7fae75ce65928c7b33e9e2f665fd",
       "executable": false
     },
     "src/modules/integrations/notification-delivery.ts": {
@@ -4762,7 +4766,7 @@
       "executable": false
     },
     "src/modules/integrations/notification-recipients.ts": {
-      "sha256": "a9b5bc0d6d074202df12aff256714c4f7fa42398ad0edec9715e42325ac3b5a0",
+      "sha256": "7c7d6e092bbd0e61ae70991241e7913fa0625a9810053b63e83d929fa8b830a3",
       "executable": false
     },
     "src/modules/integrations/notification-teammate-delivery.ts": {
@@ -4774,7 +4778,7 @@
       "executable": false
     },
     "src/modules/integrations/notifications.ts": {
-      "sha256": "8384bd2060d96b98bba601ba1453305798fee1d3dc1138d2baa47c7b0fd059ef",
+      "sha256": "faec9b707b17b141178a646518196f4be1fe6fba4994a1180f25501d8855b9d9",
       "executable": false
     },
     "src/modules/integrations/operator-activity.ts": {
@@ -4830,7 +4834,7 @@
       "executable": false
     },
     "src/modules/integrations/triggers/customer.ts": {
-      "sha256": "ffc7b29fc251b43bd251ec9c0863369a24723af0a6cd85ba5b7cc6f88f7cf8d8",
+      "sha256": "2ea083239f2a15f8b63326cebf28f275345e11cc561e2d54c1029528db7fa13d",
       "executable": false
     },
     "src/modules/integrations/triggers/eligibility.ts": {
@@ -5306,7 +5310,7 @@
       "executable": false
     },
     "src/modules/management/dashboard-messages.ts": {
-      "sha256": "e2b7f62c47457c0d9198c530911537009bb36632a58a927a7a076f3541534b46",
+      "sha256": "e67df33f22b9cc59b3fe54c4897f2ec991230c50a3e51362dbc1b23006054446",
       "executable": false
     },
     "src/modules/management/dashboard.ts": {
@@ -9178,7 +9182,7 @@
       "executable": false
     },
     "tests/helpers/ai/assistance.mjs": {
-      "sha256": "6c06464b4e1130ec3aabbcdd2fe5624ca139a40bf9e25772f8c19255b71116c9",
+      "sha256": "bda1f7bc65196a6e5f5eafb5f5891296e4d0630f7d025a8381d76e785adcdf52",
       "executable": false
     },
     "tests/helpers/ai/lifecycle.mjs": {
@@ -9350,7 +9354,7 @@
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {
-      "sha256": "09edc3edf37016413aa85da8343f83606e187ae14c20eb0684a4d99bc885baf4",
+      "sha256": "4ecb36ca9141247b8c688b058af83a95e98367c758de32e7bc7c03fb958fbc88",
       "executable": false
     },
     "tests/helpers/email/domain.mjs": {
@@ -9762,7 +9766,7 @@
       "executable": false
     },
     "tests/helpers/r4/notifications.mjs": {
-      "sha256": "3ca6c93b9ec13a4388660426629fc8d131285dadcd94ea9c8d3a6a1da1688d2d",
+      "sha256": "10b0bbc012065e4e425c4673cc958f0a7c3c36520a8cef390be36582a023ee9b",
       "executable": false
     },
     "tests/helpers/recovery/comparison.mjs": {

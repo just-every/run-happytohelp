@@ -107,6 +107,10 @@ export async function notificationTriggersJourney(){
   assert.equal((await m.gateway(bulk)).status,201);await settle()
   const subjectMail=mail.sent.slice(bulkSent).filter(entry=>entry.body.subject?.includes('spam.example'))
   assert.deepEqual(subjectMail.map(entry=>recipients(entry.body)),[['bulk@example.com']],'only the requester receives the notice and its subject')
+  assert.equal(mail.sent.slice(bulkSent).some(entry=>recipients(entry.body).some(address=>bulkCc.includes(address))),false,'unproven Cc addresses receive no automatic mail')
+  // A person deliberately shares the transcript before this participant can
+  // prove its mailbox by using the desk-issued reply address.
+  await call(ticket((await m.claim(bulk.messageId)).conversation_id),{send_transcript_to:'bulk0@victims0.example',idempotencyKey:'r4-bulk-transcript'})
   const bulkId=(await m.claim(bulk.messageId)).conversation_id,relay=mail.sent.slice(bulkSent).find(entry=>recipients(entry.body).includes('bulk0@victims0.example'))
   assert.equal((await m.gateway({messageId:'r4-bulk-cc-reply',to:replyTo(relay.body),from:'bulk0@victims0.example',text:'I am on this order too'})).status,201);await settle()
   const joined=(await call(ticket(bulkId),undefined,'GET')).data.participants

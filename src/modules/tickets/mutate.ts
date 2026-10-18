@@ -7,6 +7,7 @@ import {prepareTicketChange,type TicketChange} from './mutate-validation'
 import {publishResolution} from '../outcomes/state'
 import {assignmentHistoryStatement} from '../outcomes/assignment-history'
 import {assignmentNotificationStatement} from '../integrations/notifications'
+import {dispatchRequestAssignment} from '../integrations/notification-request'
 import {publishActivity} from '../conversations/activity'
 import {onAssistantAssignment} from '../ai-support/customer-message'
 import {assertModelConfigured} from '../ai-support/configuration'
@@ -56,7 +57,7 @@ export async function mutateTicket(env:Env,actor:Actor,id:string,input:TicketCha
  if(!results[0].meta.changes)throw new HTTPException(409,{message:'Ticket, field configuration or authority changed. Reload before applying changes.'})
  try{
  await processWorkflowEvents(env,id)
- // Assignment intent is already durable; cron dispatch owns its bounded delivery.
+ if(assignmentChanged)await dispatchRequestAssignment(env,actor.projectId,id)
  if(assignmentChanged){await publishActivity(env,actor.projectId,id,'assignment')}
  if(change.ai_id&&!change.agent_id)await onAssistantAssignment(env,actor.projectId,id,{sql:`${accepted} AND c.assigned_to IS NULL AND c.last_message_id IS ? AND EXISTS(SELECT 1 FROM conversation_ai WHERE conversation_id=c.id AND ai_id=?) AND EXISTS(${guard.sql}) AND ${availableTicketSql()}`,params:[receipt,id,current.last_message_id,change.ai_id,...guard.params]},assignmentChanged)
  if(current.group_id!==next.group_id&&next.group_id){const members=await env.DB.prepare('SELECT user_id FROM ticket_group_members WHERE project_id=? AND group_id=?').bind(actor.projectId,next.group_id).all<{user_id:string}>();await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:id,event:'group',eventId:receipt,actorId:actor.id,recipientIds:members.results.map(m=>m.user_id)})}

@@ -149,18 +149,98 @@ export async function notificationsJourney(){
   await unread('uncertain-alert','A lost response');mail.mode='lost';const attempts=mail.attempts
   await idle();const uncertain=await DB.prepare("SELECT * FROM email_deliveries WHERE state='uncertain'").first();assert.equal(mail.attempts-attempts,1);assert.equal(uncertain.recipient,'watcher@example.com')
   await replay(await admitted('uncertain-alert'));await idle();assert.equal(mail.attempts-attempts,1);mail.mode='deliver'
-  // The operator's assignment creates assignment-mail intent with the ownership; same-owner, self and opted-out stay quiet.
-  const assign=async agent_id=>{const response=await app.request('/api/dashboard/projects/p/conversations/assigned',{method:'PUT',headers:m.operator,body:{agent_id}});assert.equal(response.status,200,await response.text());if(agent_id!=='op')assert.ok(await app.db.prepare("SELECT 1 FROM operator_notifications WHERE conversation_id='assigned' AND user_id=?").bind(agent_id).first(),'assignment intent is committed before cron delivery');await app.scheduled()}
+  // Assignment mail and its inbox entry exist before the mutation returns; same-owner, self and opted-out stay quiet.
+  const assign=async agent_id=>{const response=await app.request('/api/dashboard/projects/p/conversations/assigned',{method:'PUT',headers:m.operator,body:{agent_id}});assert.equal(response.status,200,await response.text());if(agent_id!=='op')assert.ok(await app.db.prepare("SELECT 1 FROM operator_notifications WHERE conversation_id='assigned' AND user_id=? AND state='complete'").bind(agent_id).first(),'assignment intent completes in the mutation request')}
   const before=toOperators().length
   await assign('watcher');assert.equal(toOperators().length,before+1);assert.deepEqual(toOperators().at(-1).body.to,['watcher@example.com']);assert.ok(toOperators().at(-1).body.text.includes('https://app.example/projects/p/conversations/assigned'))
+  const assignmentKey=toOperators().at(-1).headers['idempotency-key']
+  assert.deepEqual(await app.first('SELECT conversation_id,user_id,inbox,state FROM notification_inbox WHERE id=?',assignmentKey),{conversation_id:'assigned',user_id:'watcher',inbox:1,state:'sent'},'the assignment is in the teammate inbox without cron')
   await assign('watcher');await assign('op');assert.equal(toOperators().length,before+1)
   await DB.prepare("INSERT INTO user_settings(user_id,is_notifiable_on_conversation_assignment) VALUES('watcher',0)").run();await assign('watcher');assert.equal(toOperators().length,before+1)
   // With mail unconfigured the intent waits durably and is sent once by the schedule after mail returns.
   await app.configure({EMAIL_API_KEY:undefined});await assign('quiet');assert.equal(toOperators().length,before+1)
   await app.configure({EMAIL_API_KEY:'fixture-resend'});await app.scheduled();assert.equal(toOperators().length,before+2);assert.deepEqual(toOperators().at(-1).body.to,['quiet@example.com'])
   await app.scheduled();assert.equal(toOperators().length,before+2)
+  await assignmentDeliveryRows(m)
   await cronBacklogFlow(m)
  }finally{await m.close()}
+}
+
+// Assignment rows use real mutations and stored customer conversations. Provider
+// refusals/lost replies and D1 transaction faults are the only injected failures.
+async function assignmentDeliveryRows({app,mail}){
+ const w=await app.seedWorkspace('assignment-delivery'),P=w.projectId,recipient='operator-assignment-delivery@example.test'
+ const management=`/api/management/projects/${P}`,inbox=async()=>(await app.ok(`${management}/notification-inbox`,{token:w.tokens.operator})).data
+ const intent=id=>app.first("SELECT * FROM operator_notifications WHERE project_id=? AND conversation_id=? AND kind='assignment'",P,id)
+ const notice=id=>app.first('SELECT * FROM notification_inbox WHERE project_id=? AND conversation_id=?',P,id)
+ const seed=async id=>app.db.batch([
+  app.db.prepare("INSERT INTO conversations(id,project_id,contact_id,revision,last_message_id,ticket_source,created_at,updated_at) VALUES(?,?,?,1,?,'widget',?,?)").bind(id,P,'assignment-customer','message-'+id,Date.now(),Date.now()),
+  app.db.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,?,?,?,'assignment-customer','contact',?,1,?)").bind('message-'+id,P,id,'question-'+id,'Where is replacement order '+id+'?',Date.now()),
+ ])
+ const assign=async id=>{await app.ok(`/api/dashboard/projects/${P}/conversations/${id}`,{token:w.tokens.owner,method:'PUT',body:{agent_id:w.users.operator}});assert.equal((await app.first('SELECT assigned_to FROM conversations WHERE id=?',id)).assigned_to,w.users.operator)}
+ await app.db.batch([
+  app.db.prepare("INSERT INTO contacts(id,project_id,name,email,is_verified,metadata_json,created_at) VALUES('assignment-customer',?,'Dana','dana@customer.example',1,'{}',?)").bind(P,Date.now()),
+  app.db.prepare("INSERT INTO email_settings VALUES(?,'Support','support@example.com','assignment-inbound@example.com',1,1)").bind(P),
+ ])
+ // Both a permanent provider refusal and a lost response are visible, terminal
+ // outcomes. Restart and cron cannot submit either paid request a second time.
+ for(const state of ['failed','uncertain']){
+  const id='assignment-provider-'+state;await seed(id)
+  const attempts=mail.attempts
+  if(state==='failed')mail.respond=()=>Response.json({message:'Recipient refused'},{status:422});else mail.mode='lost'
+  await assign(id);mail.respond=null;mail.mode='deliver'
+  const row=await notice(id)
+  assert.equal((await intent(id)).state,'complete');assert.equal(row.state,state)
+  assert.equal((await inbox()).find(entry=>entry.id===row.id)?.state,state,'the teammate can see the terminal assignment outcome')
+  assert.deepEqual(await app.first('SELECT recipient,state FROM email_deliveries WHERE id=?',row.id),{recipient,state})
+  assert.equal(mail.attempts-attempts,1)
+  await app.configure({});await app.scheduled();await app.scheduled()
+  assert.equal(mail.attempts-attempts,1,'a terminal assignment outcome is never resent')
+ }
+ // Abort the audience transaction before a provider claim. Recovery must retain
+ // ownership and retry preparation, rather than lose or replay an external send.
+ const fault=async id=>app.db.prepare(`CREATE TRIGGER assignment_preparation_fault BEFORE INSERT ON notification_trigger_claims WHEN NEW.conversation_id='${id}' AND NEW.event LIKE 'team:assignment:%' BEGIN SELECT RAISE(ABORT,'Injected assignment preparation failure'); END`).run()
+ const transient='assignment-transient-preparation';await seed(transient);await fault(transient)
+ const beforeRecovery=mail.attempts;await assign(transient)
+ assert.equal((await intent(transient)).state,'pending');assert.equal(await notice(transient),null);assert.equal(mail.attempts,beforeRecovery)
+ await app.db.prepare('DROP TRIGGER assignment_preparation_fault').run();await app.configure({});await app.scheduled()
+ assert.equal((await intent(transient)).state,'complete');assert.equal((await notice(transient)).state,'sent')
+ const recovered=await intent(transient)
+ assert.deepEqual(mail.sent.filter(entry=>entry.headers['idempotency-key']===recovered.id).map(entry=>entry.body.to),[[recipient]])
+ await app.scheduled();assert.equal(mail.attempts-beforeRecovery,1,'recovered preparation sends only once')
+ const persistent='assignment-persistent-preparation';await seed(persistent);await fault(persistent)
+ const beforeTerminal=mail.attempts;await assign(persistent)
+ assert.equal((await intent(persistent)).state,'pending');assert.equal(await notice(persistent),null)
+ await app.configure({})
+ for(let tick=0;tick<5&&(await intent(persistent)).state==='pending';tick++)await app.scheduled()
+ assert.equal((await intent(persistent)).state,'complete','repeated preparation faults stop automatic recovery')
+ const terminal=(await app.ok(`${management}/notification-triggers`,{token:w.tokens.owner})).outcomes.find(row=>row.conversation_id===persistent)
+ assert.equal(terminal?.state,'failed');assert.ok(terminal.outcome.attempts>1);assert.ok(terminal.outcome.reason,'the operator has a visible recovery reason')
+ await app.db.prepare('DROP TRIGGER assignment_preparation_fault').run();await app.configure({});await app.scheduled()
+ assert.equal(mail.attempts,beforeTerminal);assert.equal(await notice(persistent),null,'terminal preparation failures require operator recovery even after storage returns')
+ assert.deepEqual((await app.ok(`${management}/notification-triggers`,{token:w.tokens.owner})).outcomes.find(row=>row.conversation_id===persistent),terminal,'cron retains the terminal recovery receipt')
+ // An unconfigured provider must not let old assignments occupy the discovery
+ // window. Every one of these 120+1 independent mutations creates its inbox now.
+ await app.configure({EMAIL_API_KEY:undefined})
+ const idle=await app.scheduled(),beforeDormant=mail.attempts,ids=[]
+ for(let index=0;index<=120;index++){
+  const id='assignment-dormant-'+index;ids.push(id);await seed(id);await assign(id)
+  assert.equal((await intent(id)).state,'complete');assert.equal((await notice(id)).state,'awaiting_provider')
+ }
+ const latest=await notice(ids.at(-1))
+ assert.equal((await inbox()).find(entry=>entry.id===latest.id)?.state,'awaiting_provider','the newest assignment is visible immediately behind a dormant backlog')
+ assert.equal((await app.first("SELECT count(*) n FROM operator_notifications WHERE project_id=? AND conversation_id IN (SELECT value FROM json_each(?)) AND state='complete'",P,JSON.stringify(ids))).n,ids.length)
+ for(let tick=0;tick<2;tick++){
+  const dormant=await app.scheduled()
+  assert.equal(dormant.consumers.notifications.statements,idle.consumers.notifications.statements,'dormant inbox rows cause no per-row cron database work')
+ }
+ assert.equal((await app.first("SELECT count(*) n FROM notification_inbox WHERE project_id=? AND state='awaiting_provider'",P)).n,ids.length)
+ assert.equal(mail.attempts,beforeDormant,'unconfigured assignment delivery never calls a provider')
+ // The existing configure-later row above proves resumed delivery. Opt this
+ // bulk fixture out before restoring the provider for subsequent journey rows.
+ await app.ok(`${management}/notification-preferences`,{token:w.tokens.operator,method:'PUT',body:{preferences:[{kind:'assignment',inbox:true,email:false}]}})
+ await app.configure({EMAIL_API_KEY:'fixture-resend'});await app.scheduled();await app.scheduled()
+ assert.equal(mail.attempts,beforeDormant,'a changed preference is honoured when dormant delivery resumes')
 }
 
 // Who mail speaks for: CC participants of verified senders, operators by membership, preferred addresses only

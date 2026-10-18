@@ -24,7 +24,13 @@ export function assignmentNotificationStatement(env:Env,event:AssignmentNotifica
  .bind(`assignment:${event.id}`,event.assignee,Date.now(),event.conversationId,event.projectId,event.assignee,event.assignee,event.assignee,event.previousAssignee,event.assignee,event.actorId,...acceptedArgs)
 }
 const escapeHtml=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!))
-type Notification={id:string;project_id:string;conversation_id:string;user_id:string;kind:'assignment'|'unread';batch_id:string|null;through_revision:number}
+export type OperatorNotification={id:string;project_id:string;conversation_id:string;user_id:string;kind:'assignment'|'unread';batch_id:string|null;through_revision:number;recovery_id?:string|null}
+type Notification=OperatorNotification
+// The ordinary paths cost 21/18. Two failure-accounting statements also fit
+// when preparation fails before a provider claim can be recorded.
+export const operatorNotificationCost={assignment:23,unread:20}
+export const operatorPendingSql="SELECT o.*,(SELECT id FROM notification_trigger_claims WHERE id='operator-recovery:'||o.id) recovery_id FROM operator_notifications o"
+export const operatorAdmission=(row:OperatorNotification)=>operatorNotificationCost[row.kind]+(row.recovery_id?1:0)
 type Recipient={email:string;assigned_to:string|null;assignment_preference:number;unassigned_preference:number;read_revision:number;inbound_address:string|null;is_enabled:number|null}
 async function recipient(env:Env,row:Notification){
  return env.DB.prepare(`SELECT u.email,c.assigned_to,coalesce(s.is_notifiable_on_conversation_assignment,1) assignment_preference,
@@ -66,6 +72,27 @@ async function sendNotification(env:Env,row:Notification){
  const replyTo=await recipientReplyAddress(env,user.inbound_address,row.project_id,row.conversation_id,user.email)
  await deliverNotification(env,{projectId:row.project_id,to:user.email,subject:'Unread HappyToHelp conversation messages',text,...rich,replyTo,headers:loopSuppressionHeaders({}),idempotencyKey:row.id})
 }
+export async function deliverOperatorNotification(env:Env,row:OperatorNotification){
+ try{
+  await sendNotification(env,row)
+  if(row.recovery_id)await env.DB.prepare("UPDATE notification_trigger_claims SET state='complete' WHERE id=?").bind(row.recovery_id).run()
+  // Assignment has durably frozen the inbox audience. Optional email is owned
+  // by that inbox row, including awaiting_provider and terminal send outcomes.
+  await env.DB.prepare("UPDATE operator_notifications SET state='complete' WHERE id=?").bind(row.id).run()
+  return true
+ }catch(error){
+  // Known provider outcomes are already terminal. Only failures before that
+  // durable attempt reach here; three preparations end visibly, across restarts.
+  const failure=await env.DB.prepare(`INSERT INTO notification_trigger_claims(id,project_id,conversation_id,event,state,outcome_json,created_at)
+   VALUES(?,?,?,?,'pending',json_object('attempts',1,'reason','Notification preparation failed'),?)
+   ON CONFLICT(id) DO UPDATE SET state=CASE WHEN json_extract(outcome_json,'$.attempts')+1>=3 THEN 'failed' ELSE 'pending' END,
+   outcome_json=json_set(outcome_json,'$.attempts',json_extract(outcome_json,'$.attempts')+1)
+   RETURNING json_extract(outcome_json,'$.attempts') attempts`).bind('operator-recovery:'+row.id,row.project_id,row.conversation_id,'operator-recovery:'+row.id,Date.now()).first<{attempts:number}>()
+  if(failure&&failure.attempts>=3)await env.DB.prepare("UPDATE operator_notifications SET state='complete' WHERE id=?").bind(row.id).run()
+  console.error('Operator notification preparation failed',row.id,error instanceof Error?error.name:'Error')
+  return Boolean(failure&&failure.attempts>=3)
+ }
+}
 /** Bounded scheduled recovery. No attempted provider delivery is replayed.
  * `now` allows the scheduler's clock to be supplied by a caller. */
 export async function dispatchOperatorNotifications(env:Env,options:{projectId?:string;conversationId?:string;now?:number;statementLimit?:number}={}){
@@ -76,20 +103,16 @@ export async function dispatchOperatorNotifications(env:Env,options:{projectId?:
  // Earlier unused credit rolls forward; unclaimed activity and pending rows keep
  // their existing ordering and remain recoverable on the next tick.
  const teammatesDeferred=await dispatchPendingTeammateNotifications(cronConsumer(env,Math.max(19,Math.floor((limit-3)/2))),options)
- await batchOperatorActivity(cronConsumer(env,Math.min(51,limit-budget.statements-22)),options.now??Date.now(),options.projectId,options.conversationId)
+ await batchOperatorActivity(cronConsumer(env,Math.min(51,limit-budget.statements-25)),options.now??Date.now(),options.projectId,options.conversationId)
  const deliveryEnv=env
  env=cronConsumer(env,limit-budget.statements)
- const pending=await env.DB.prepare(`SELECT * FROM operator_notifications WHERE state='pending' ${options.projectId?'AND project_id=?':''} ${options.conversationId?'AND conversation_id=?':''} ORDER BY created_at,id LIMIT 100`)
+ const pending=await env.DB.prepare(`${operatorPendingSql} WHERE o.state='pending' ${options.projectId?'AND o.project_id=?':''} ${options.conversationId?'AND o.conversation_id=?':''} ORDER BY o.created_at,o.id LIMIT 100`)
  .bind(...(options.projectId?[options.projectId]:[]),...(options.conversationId?[options.conversationId]:[])).all<Notification>()
  for(const row of pending.results){
   // Rendering is two bulk reads, even for a full 100-message digest. Admission
   // includes assignment's one-recipient fan-out and every failure receipt.
-  if(!cronRoom(env,row.kind==='assignment'?21:18))break
-  try{
-   const result=await sendNotification(env,row)
-   if(!emailConfigured(env)||result?.state==='awaiting_provider')continue
-   await env.DB.prepare("UPDATE operator_notifications SET state='complete' WHERE id=?").bind(row.id).run()
-  }catch{console.error('Operator notification pending',row.id)}
+  if(!cronRoom(env,operatorAdmission(row)))break
+  if(!await deliverOperatorNotification(env,row))break
  }
  // Pending work may be empty or cheaper than its admission. Let the teammate
  // queue spend that settled remainder instead of leaving it idle.

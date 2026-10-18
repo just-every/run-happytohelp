@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import {ticketFixture} from '../inbox/ticket-fixture.mjs'
 
 /** One end-state journey through the real router, D1, R2 and native admission.
- * Only the provider network is replaced for the queued assignment row. */
+ * Only the provider network is replaced for assignment delivery. */
 export async function macrosJourney(){
  const notices=[]
  const f=await ticketFixture({outbound:async request=>{assert.equal(new URL(request.url).hostname,'api.resend.com');notices.push({key:request.headers.get('idempotency-key'),body:await request.json()});return Response.json({id:'macro-mail-'+notices.length})}}),{app,w,foreign,id,ok,call,get,patch,create,visitor}=f
@@ -20,22 +20,23 @@ export async function macrosJourney(){
   assert.equal(preview.status,'ready');assert.deepEqual(preview.draft.unresolved,['ticket.custom.missing'])
   for(const key of ['reply','status_id','priority','tags_add','group_id','agent_id','followers','custom.'+field.id,'attachments'])assert.ok(preview.changes.some(c=>c.field===key),key)
   assert.equal((await get(id)).priority,'normal','preview does not change the ticket')
+  await app.configure({EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'macro-provider-fixture',EMAIL_FROM:'support@example.test'})
   const result=(await run(macro,'apply',selected,{command_id:'apply-replacement'})).results[0]
-  assert.equal((await app.first("SELECT count(*) n FROM operator_notifications WHERE conversation_id=? AND kind='assignment' AND state='pending'",id)).n,1,'macro assignment commits its intent for the next tick');
+  assert.equal((await app.first("SELECT count(*) n FROM operator_notifications WHERE conversation_id=? AND kind='assignment' AND state='complete'",id)).n,1,'macro assignment completes its committed intent in the apply request');
   assert.equal(result.status,'applied',JSON.stringify(result));assert.equal(result.draft.media.length,1);assert.notEqual(result.draft.media_ids[0],upload.id)
   assert.equal((await get(id)).status_id,'pending');assert.equal((await get(id)).assigned_to,w.users.operator);assert.equal((await get(id)).fields[field.id],'RMA-123')
-  const assignment=await app.first("SELECT id FROM operator_notifications WHERE conversation_id=? AND kind='assignment' AND state='pending'",id)
-  await app.configure({EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'macro-provider-fixture',EMAIL_FROM:'support@example.test'})
-  await app.scheduled()
-  assert.deepEqual(notices.filter(notice=>notice.key===assignment.id).map(notice=>notice.body.to),[[`operator-tickets@example.test`]],'the next tick sends the macro assignment once to its proven member')
+  const assignment=await app.first("SELECT id FROM operator_notifications WHERE conversation_id=? AND kind='assignment' AND state='complete'",id)
+  assert.deepEqual(notices.filter(notice=>notice.key===assignment.id).map(notice=>notice.body.to),[[`operator-tickets@example.test`]],'the apply request sends the macro assignment once to its proven member')
+  assert.deepEqual(await app.first('SELECT user_id,inbox,state FROM notification_inbox WHERE id=?',assignment.id),{user_id:w.users.operator,inbox:1,state:'sent'},'the assignment is already in the recipient inbox when apply returns')
   await app.configure({EMAIL_PROVIDER:'development',EMAIL_API_KEY:undefined,EMAIL_FROM:undefined})
-  assert.equal((await app.first("SELECT count(*) n FROM operator_notifications WHERE conversation_id=? AND kind='assignment' AND state='pending'",id)).n,0,'the next tick processes the committed macro assignment');
+  assert.equal((await app.first("SELECT count(*) n FROM operator_notifications WHERE conversation_id=? AND kind='assignment' AND state='pending'",id)).n,0,'the apply request leaves no pending macro assignment');
   assert.equal((await app.first('SELECT count(*) n FROM conversation_followers WHERE conversation_id=?',id)).n,2)
   assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',id)).n,before.n,'apply only stores a draft')
   const restored=await ok(`/conversations/${id}/macro-draft`)
   assert.equal(restored.content,result.draft.content);assert.deepEqual(restored.media,result.draft.media);assert.deepEqual(restored.media_ids,result.draft.media_ids)
   const replay=(await run(macro,'apply',selected,{command_id:'apply-replacement'})).results[0]
   assert.equal(replay.status,'duplicate');assert.equal((await app.first('SELECT count(*) n FROM macro_usage WHERE macro_id=?',macro.id)).n,1)
+  assert.equal(notices.filter(notice=>notice.key===assignment.id).length,1,'a repeated macro command never resends assignment mail')
   const blocked=await app.call(`/api/conversations/${id}/messages`,{token:w.tokens.owner,body:{localId:'unresolved',content:result.draft.content,expectedRevision:(await get(id)).revision}})
   assert.equal(blocked.status,422);assert.equal(blocked.data.code,'unresolved_placeholders')
   const audit=await app.ok(`/api/management/projects/${w.projectId}/audit?limit=200`,{token:w.tokens.owner})

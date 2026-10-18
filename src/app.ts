@@ -31,6 +31,7 @@ import {surveySettings,publicSurveys} from './modules/outcomes/survey-routes'
 import {formSettings,publicForms} from './modules/forms'
 import {portalApi} from './modules/portal/routes'
 import {surveyReports} from './modules/reports/surveys'
+import {notificationRequestEnvironment} from './modules/integrations/notification-request'
 
 import {delegation} from './edition/delegation/routes'
 import {consent} from './edition/delegation/consent'
@@ -39,6 +40,7 @@ import {createOutboundTicketRoutes} from './modules/management/outbound-tickets'
 
 export const app = new Hono<AppEnv>()
 app.use('/api/*',async(c,next)=>{
+ c.env=notificationRequestEnvironment(c.env)
  const origin=new URL(c.req.url);
  // A configured canonical origin wins; otherwise capture the actual app URL for queued work.
  if(!c.env.APP_ORIGIN)c.env={...c.env,APP_ORIGIN:origin.origin,H2H_LOCAL:undefined};

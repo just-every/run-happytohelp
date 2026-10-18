@@ -64,7 +64,8 @@ export async function executeRuleRun(env:Env,runId:string,spent?:Spent){
     ]})
     if(result.state!=='complete'){await setState('cancelled','Ticket, authority or configuration changed before action commit');break}
    }
-  if(spent&&i+1<actions.length){await continueRun('Action committed; remaining actions continue in the next workflow execution quantum');break}
+  // Only yield when this run's quantum is full; the durable cursor resumes the next action.
+  if(budget&&budget.statements>=quantumLimit-12&&i+1<actions.length){await continueRun('Action committed; remaining actions continue in the next workflow execution quantum');break}
  }
  const completed=await env.DB.prepare("UPDATE workflow_runs SET state='complete',reason=NULL,updated_at=? WHERE id=? AND lease_token=? AND cursor>=json_array_length(actions_json) AND state IN ('running','pending') RETURNING *").bind(workflowNow(env),runId,lease).first<any>()
  return completed??await env.DB.prepare('SELECT * FROM workflow_runs WHERE id=?').bind(runId).first<any>()
@@ -77,8 +78,8 @@ export async function executeRuleRun(env:Env,runId:string,spent?:Spent){
   return await env.DB.prepare('SELECT * FROM workflow_runs WHERE id=?').bind(runId).first<any>()
  }finally{await env.DB.prepare('UPDATE workflow_runs SET lease_token=NULL,lease_until=NULL WHERE id=? AND lease_token=?').bind(runId,lease).run()}
 }
-export async function planRuleRun(env:Env,row:any,ticket:any,eventId:string,explanation:unknown,spent?:Spent){
+export async function planRuleRun(env:Env,row:any,ticket:any,eventId:string,explanation:unknown,spent?:Spent,executionEnv=env){
  const d=JSON.parse(row.definition_json) as RuleDefinition,id=`workflow:${row.id}:${row.published_version}:${ticket.id}:${eventId}`,now=workflowNow(env)
  await env.DB.prepare("INSERT OR IGNORE INTO workflow_runs(id,project_id,conversation_id,rule_id,version,event_id,rule_name,state,explanation,actions_json,frontier_json,created_at,updated_at) SELECT ?,?,?,?,?,?,?,'running',?,?,?,?,? WHERE EXISTS(SELECT 1 FROM workflow_rules WHERE id=? AND state='published' AND published_version=?)").bind(id,row.project_id,ticket.id,row.id,row.published_version,eventId,d.name,JSON.stringify(explanation),JSON.stringify(d.actions),JSON.stringify({ticket_version:ticket.ticket_version,revision:ticket.revision,last_message_id:ticket.last_message_id}),now,now,row.id,row.published_version).run()
- return executeRuleRun(env,id,spent)
+ return executeRuleRun(executionEnv,id,spent)
 }

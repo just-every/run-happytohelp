@@ -8,6 +8,9 @@ export type Spent=()=>boolean
 export function workflowBudget(env:Env){
  const metered=boundedDatabase(env.DB),phases:{hit:boolean}[]=[]
  // A rolling phase (the SLA refresh scan) never finishes by design, so it never marks the run incomplete.
- const phase=(share:number,rolling=false):Spent=>{const start=metered.statements,state={hit:false};if(!rolling)phases.push(state);return ()=>state.hit||=metered.statements-start>=share}
+ let allocated=0
+ // Unused earlier shares are available to later queues; an admitted quantum's
+ // overshoot is charged against them too. This keeps the aggregate bounded.
+ const phase=(share:number,rolling=false):Spent=>{allocated+=share;const ceiling=allocated,state={hit:false};if(!rolling)phases.push(state);return ()=>state.hit||=metered.statements>=ceiling}
  return {env:{...env,DB:metered.database},phase,complete:()=>!phases.some(p=>p.hit)}
 }

@@ -4,22 +4,39 @@ import {memberAccess} from '../access/gate'
 import {HTTPException} from 'hono/http-exception'
 import {validateFieldValue} from '../tickets/fields'
 import type {RuleDefinition} from './rule-model'
-/** Validate references both when authored and when published. Runtime transactions
- * independently recheck mutable membership/schema/frontiers at commit. */
+/** Reference reads and commit guards are sets. Large published definitions use the
+ * same statement and binding budget as small ones, including on durable resume. */
 export async function validateRuleReferences(env:Env,projectId:string,d:RuleDefinition,actorId:string){
  const access=await memberAccess(env.DB,projectId,actorId);if(!access)throw new HTTPException(403)
- const predicates:string[]=[],params:unknown[]=[]
- const field=async(id:string,write=false)=>{const f=await env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id=?').bind(projectId,id).first<any>();if(!f)invalid('Unknown workflow field');if(!fieldAllowed(f,access)||write&&!fieldAllowed(f,access,true))throw new HTTPException(403,{message:'Your role cannot use this workflow field'});predicates.push('EXISTS(SELECT 1 FROM ticket_fields WHERE project_id=? AND id=? AND updated_at=?)');params.push(projectId,id,f.updated_at);return f}
- const requireRow=async(sql:string,args:unknown[],message:string)=>{if(!await env.DB.prepare(sql).bind(...args).first())invalid(message);predicates.push(`EXISTS(${sql})`);params.push(...args)}
- for(const c of [...d.conditions.all,...d.conditions.any])if(c.field.startsWith('field:'))await field(c.field.slice(6))
+ const predicates:string[]=[],params:unknown[]=[],fields=new Map<string,boolean>(),tags=new Set<string>(),members=new Set<string>(),groups=new Set<string>(),statuses=new Set<string>()
+ for(const c of [...d.conditions.all,...d.conditions.any])if(c.field.startsWith('field:'))fields.set(c.field.slice(6),false)
  for(const a of d.actions){switch(a.type){
-  case 'status':await requireRow('SELECT 1 FROM ticket_statuses WHERE project_id=? AND id=? AND active=1',[projectId,a.status_id],'Unknown active status');break
-  case 'assign':if(a.user_id)await requireRow('SELECT 1 FROM memberships WHERE project_id=? AND user_id=?',[projectId,a.user_id],'Unknown workspace assignee');if(a.group_id)await requireRow('SELECT 1 FROM ticket_groups WHERE project_id=? AND id=?',[projectId,a.group_id],'Unknown workspace group');break
-  case 'tags':for(const tag of [...a.add??[],...a.remove??[]])await requireRow('SELECT 1 FROM workspace_tags WHERE project_id=? AND id=?',[projectId,tag],'Unknown workspace tag');break
-  case 'fields':for(const [id,value] of Object.entries(a.values)){const f=await field(id,true);validateFieldValue(f,value)}break
-  case 'notify':if(a.recipient_id)await requireRow('SELECT 1 FROM memberships WHERE project_id=? AND user_id=?',[projectId,a.recipient_id],'Unknown notification recipient');break
+  case 'status':statuses.add(a.status_id);break
+  case 'assign':if(a.user_id)members.add(a.user_id);if(a.group_id)groups.add(a.group_id);break
+  case 'tags':for(const id of [...a.add??[],...a.remove??[]])tags.add(id);break
+  case 'fields':for(const id of Object.keys(a.values))fields.set(id,true);break
+  case 'notify':if(a.recipient_id)members.add(a.recipient_id);break
  }}
- if(d.routing){if(d.routing.user_id)await requireRow('SELECT 1 FROM memberships WHERE project_id=? AND user_id=?',[projectId,d.routing.user_id],'Unknown routing operator');for(const id of [d.routing.group_id,d.routing.overflow_group_id])if(id)await requireRow('SELECT 1 FROM ticket_groups WHERE project_id=? AND id=?',[projectId,id],'Unknown responsible routing group')}
- if(d.time?.calendar_id)await requireRow('SELECT 1 FROM workflow_calendars WHERE project_id=? AND id=? AND active=1',[projectId,d.time.calendar_id],'Choose an active business-hours calendar')
+ if(d.routing){if(d.routing.user_id)members.add(d.routing.user_id);for(const id of [d.routing.group_id,d.routing.overflow_group_id])if(id)groups.add(id)}
+ if(fields.size){
+  const rows=(await env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id IN (SELECT value FROM json_each(?))').bind(projectId,JSON.stringify([...fields.keys()])).all<any>()).results
+  if(rows.length!==fields.size)invalid('Unknown workflow field')
+  for(const f of rows)if(!fieldAllowed(f,access)||fields.get(f.id)&&!fieldAllowed(f,access,true))throw new HTTPException(403,{message:'Your role cannot use this workflow field'})
+  const byId=new Map(rows.map(f=>[f.id,f]))
+  for(const a of d.actions)if(a.type==='fields')for(const [id,value] of Object.entries(a.values))validateFieldValue(byId.get(id),value)
+  predicates.push("NOT EXISTS(SELECT 1 FROM json_each(?) ref WHERE NOT EXISTS(SELECT 1 FROM ticket_fields f WHERE f.project_id=? AND f.id=json_extract(ref.value,'$[0]') AND f.updated_at=json_extract(ref.value,'$[1]')))")
+  params.push(JSON.stringify(rows.map(f=>[f.id,f.updated_at])),projectId)
+ }
+ const requireSet=async(table:string,column:string,ids:Set<string>,message:string,extra='')=>{
+  if(!ids.size)return
+  const keys=JSON.stringify([...ids]),rows=await env.DB.prepare(`SELECT ${column} FROM ${table} WHERE project_id=? AND ${column} IN (SELECT value FROM json_each(?)) ${extra}`).bind(projectId,keys).all()
+  if(rows.results.length!==ids.size)invalid(message)
+  predicates.push(`NOT EXISTS(SELECT 1 FROM json_each(?) ref WHERE NOT EXISTS(SELECT 1 FROM ${table} WHERE project_id=? AND ${column}=ref.value ${extra}))`);params.push(keys,projectId)
+ }
+ await requireSet('workspace_tags','id',tags,'Unknown workspace tag')
+ await requireSet('memberships','user_id',members,'Unknown workspace member')
+ await requireSet('ticket_groups','id',groups,'Unknown workspace group')
+ await requireSet('ticket_statuses','id',statuses,'Unknown active status','AND active=1')
+ await requireSet('workflow_calendars','id',new Set(d.time?.calendar_id?[d.time.calendar_id]:[]),'Choose an active business-hours calendar','AND active=1')
  return {sql:predicates.length?predicates.join(' AND '):'1',params}
 }

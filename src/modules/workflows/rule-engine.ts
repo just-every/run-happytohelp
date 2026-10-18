@@ -7,7 +7,7 @@ export interface WorkflowEvent {id:number|string;project_id:string;conversation_
 /** The native journal is the only admission door. Generated rule/automation
  * changes do not recursively re-enter event rules. Ordered rules see the result
  * of earlier rules, and every execution retains its immutable version. */
-export async function runEventRules(env:Env,event:WorkflowEvent,spent?:Spent){
+export async function runEventRules(env:Env,event:WorkflowEvent,spent?:Spent,executionEnv=env){
  let ticket=await ruleTicket(env,event.project_id,event.conversation_id);if(!ticket)return
  let applicable:any[]|undefined
  if(!event.time_reset_done){
@@ -29,10 +29,11 @@ export async function runEventRules(env:Env,event:WorkflowEvent,spent?:Spent){
   // Publication captures the committed journal frontier in its transaction.
   // A backlog of old events never activates a newly published definition.
   if(Number(event.id)<=(row.event_after_id??0))continue
-  if(d.event_kind&&d.event_kind!==event.kind)continue
+  // The first customer message admits the ticket once, and also satisfies reply rules.
+  if(d.event_kind&&d.event_kind!==event.kind&&!(event.kind==='created'&&d.event_kind==='customer_reply'))continue
   if(evaluated)ticket=await ruleTicket(env,event.project_id,event.conversation_id);evaluated=true;if(!ticket||ticket.revision!==event.revision||ticket.last_message_id!==event.last_message_id)break
   const condition=evaluateConditions(ticket,d.conditions)
-  if(condition.matched){const run=await planRuleRun(env,row,ticket,`event:${event.id}`,{event:event.id,kind:event.kind,conditions:condition.explanation,position:row.position,stop_condition:'Terminal receipt, changed ticket frontier, pause or cancellation'},spent);if(run&&['pending','running'].includes(run.state))return false}
+  if(condition.matched){const run=await planRuleRun(env,row,ticket,`event:${event.id}`,{event:event.id,kind:event.kind,conditions:condition.explanation,position:row.position,stop_condition:'Terminal receipt, changed ticket frontier, pause or cancellation'},spent,executionEnv);if(run&&['pending','running'].includes(run.state))return false}
   await env.DB.prepare('UPDATE workflow_events SET rule_position=?,rule_after_id=? WHERE id=?').bind(row.position,row.id,event.id).run()
  }
  return true

@@ -3061,7 +3061,7 @@
       "executable": false
     },
     "src/app.ts": {
-      "sha256": "967ebade98a6e0aef22d914aea398bc1ef422b41489a6540c98f45c6559c5fb4",
+      "sha256": "baed9b49359c11805ce54e40864b9a444c99dba144bc6ab69cc2401ffe5e2d9e",
       "executable": false
     },
     "src/base/deployment-health.ts": {
@@ -5036,8 +5036,12 @@
       "sha256": "01771315c1de45304e041f9655ef28ec35cc4da05e48cb7571e448242992d99b",
       "executable": false
     },
+    "src/modules/integrations/notification-request.ts": {
+      "sha256": "82bc6457d3da4c78218b5cdc10ad55c8d4a0b048eb09cb502cbfa039464f31f6",
+      "executable": false
+    },
     "src/modules/integrations/notification-teammate-delivery.ts": {
-      "sha256": "3803084d5c1e93e8790f9cace6536d0c0daecdd6792a281887cf9427bc440038",
+      "sha256": "706141057b446cfa45517e48d950059bbbe122e1eca314cdb04d665270b0a6e3",
       "executable": false
     },
     "src/modules/integrations/notification-teammates.ts": {
@@ -5053,7 +5057,7 @@
       "executable": false
     },
     "src/modules/integrations/operator-notifications.ts": {
-      "sha256": "0d3c698006f2432af143f40a53dc9a081ce03c55325c859b66482bfb0fd68fef",
+      "sha256": "4a841348ba70799049fb490f84e2bdd37837e1458258b9fd9fa8688d4990ab26",
       "executable": false
     },
     "src/modules/integrations/participant-proof.ts": {
@@ -5357,7 +5361,7 @@
       "executable": false
     },
     "src/modules/macros/apply.ts": {
-      "sha256": "6b95f2741ee8f567a8187bc2f635f933fd81bb908fc768b3b25e431975c52d90",
+      "sha256": "12a4f35301351cdf8b97186fb5fa61b868164a1019512257c9febf3e290dd3a4",
       "executable": false
     },
     "src/modules/macros/attachments.ts": {
@@ -6261,7 +6265,7 @@
       "executable": false
     },
     "src/modules/tickets/mutate.ts": {
-      "sha256": "56c89339cda088a355e9ddad74194cb03c92386fe15db04997f1697ea6933ec6",
+      "sha256": "b9c933536343472490a57cccbf50882a653f292e0d1e1a7d8b01531356fcf5f3",
       "executable": false
     },
     "src/modules/tickets/presentation.ts": {
@@ -10145,7 +10149,7 @@
       "executable": false
     },
     "tests/helpers/email/worker-mail.mjs": {
-      "sha256": "2879bf53773c8ed8451b74fcc4f343aef85057784f756b491a5baeb7d9daf650",
+      "sha256": "674d3588d35e9d32c46ebe4f2398be446580a95a05ff1f547e63b81c92b13eb7",
       "executable": false
     },
     "tests/helpers/emitted-runtime-proxy-fault.mjs": {
@@ -10533,7 +10537,7 @@
       "executable": false
     },
     "tests/helpers/r4/macros.mjs": {
-      "sha256": "5e4c4b7b351a549920b2cc88359953075118eff93f000ab1506353a2e3a04bca",
+      "sha256": "d7606133cb7dc032148029b19f51f17ae654b6b712751963b6be18d8cd8047d8",
       "executable": false
     },
     "tests/helpers/r4/notifications.mjs": {

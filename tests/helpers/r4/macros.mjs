@@ -2,9 +2,10 @@ import assert from 'node:assert/strict'
 import {ticketFixture} from '../inbox/ticket-fixture.mjs'
 
 /** One end-state journey through the real router, D1, R2 and native admission.
- * No application substitutes: development mail is the real local transport. */
+ * Only the provider network is replaced for the queued assignment row. */
 export async function macrosJourney(){
- const f=await ticketFixture(),{app,w,foreign,id,ok,call,get,patch,create,visitor}=f
+ const notices=[]
+ const f=await ticketFixture({outbound:async request=>{assert.equal(new URL(request.url).hostname,'api.resend.com');notices.push({key:request.headers.get('idempotency-key'),body:await request.json()});return Response.json({id:'macro-mail-'+notices.length})}}),{app,w,foreign,id,ok,call,get,patch,create,visitor}=f
  const run=async(macro,action,tickets,extra={},role='owner')=>ok(`/macros/${macro.id}/${action}`,{version:macro.version,tickets,...extra},role)
  try{
   const group=await ok('/ticket-groups',{name:'Returns',members:[w.users.owner,w.users.operator]})
@@ -20,8 +21,15 @@ export async function macrosJourney(){
   for(const key of ['reply','status_id','priority','tags_add','group_id','agent_id','followers','custom.'+field.id,'attachments'])assert.ok(preview.changes.some(c=>c.field===key),key)
   assert.equal((await get(id)).priority,'normal','preview does not change the ticket')
   const result=(await run(macro,'apply',selected,{command_id:'apply-replacement'})).results[0]
+  assert.equal((await app.first("SELECT count(*) n FROM operator_notifications WHERE conversation_id=? AND kind='assignment' AND state='pending'",id)).n,1,'macro assignment commits its intent for the next tick');
   assert.equal(result.status,'applied',JSON.stringify(result));assert.equal(result.draft.media.length,1);assert.notEqual(result.draft.media_ids[0],upload.id)
   assert.equal((await get(id)).status_id,'pending');assert.equal((await get(id)).assigned_to,w.users.operator);assert.equal((await get(id)).fields[field.id],'RMA-123')
+  const assignment=await app.first("SELECT id FROM operator_notifications WHERE conversation_id=? AND kind='assignment' AND state='pending'",id)
+  await app.configure({EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'macro-provider-fixture',EMAIL_FROM:'support@example.test'})
+  await app.scheduled()
+  assert.deepEqual(notices.filter(notice=>notice.key===assignment.id).map(notice=>notice.body.to),[[`operator-tickets@example.test`]],'the next tick sends the macro assignment once to its proven member')
+  await app.configure({EMAIL_PROVIDER:'development',EMAIL_API_KEY:undefined,EMAIL_FROM:undefined})
+  assert.equal((await app.first("SELECT count(*) n FROM operator_notifications WHERE conversation_id=? AND kind='assignment' AND state='pending'",id)).n,0,'the next tick processes the committed macro assignment');
   assert.equal((await app.first('SELECT count(*) n FROM conversation_followers WHERE conversation_id=?',id)).n,2)
   assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',id)).n,before.n,'apply only stores a draft')
   const restored=await ok(`/conversations/${id}/macro-draft`)

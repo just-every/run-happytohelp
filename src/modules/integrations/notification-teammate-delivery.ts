@@ -39,5 +39,7 @@ export async function dispatchPendingTeammateNotifications(env:Env,options:{proj
  const pending=await env.DB.prepare(`SELECT * FROM notification_inbox WHERE state IN ('pending','awaiting_provider') ${options.projectId?'AND project_id=?':''} ${options.conversationId?'AND conversation_id=?':''} ORDER BY created_at,id LIMIT 100`)
  .bind(...(options.projectId?[options.projectId]:[]),...(options.conversationId?[options.conversationId]:[])).all<Notice>()
  // Includes reply-address proof, provider failure bookkeeping and final state.
- for(const row of pending.results){if(!cronRoom(env,18))break;await deliverTeammateNotice(env,row)}
+ let visited=0
+ for(const row of pending.results){if(!cronRoom(env,18))break;await deliverTeammateNotice(env,row);visited++}
+ return visited<pending.results.length||pending.results.length===100
 }

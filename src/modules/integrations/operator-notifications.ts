@@ -68,15 +68,17 @@ async function sendNotification(env:Env,row:Notification){
 }
 /** Bounded scheduled recovery. No attempted provider delivery is replayed.
  * `now` allows the scheduler's clock to be supplied by a caller. */
-export async function dispatchOperatorNotifications(env:Env,options:{projectId?:string;conversationId?:string;now?:number}={}){
- const budget=boundedDatabase(env.DB,scheduledReservations.notifications)
+export async function dispatchOperatorNotifications(env:Env,options:{projectId?:string;conversationId?:string;now?:number;statementLimit?:number}={}){
+ const limit=options.statementLimit??scheduledReservations.notifications
+ const budget=boundedDatabase(env.DB,limit)
  env={...env,DB:budget.database}
  // Reserve a turn for both delivery queues, even with sustained teammate work.
  // Earlier unused credit rolls forward; unclaimed activity and pending rows keep
  // their existing ordering and remain recoverable on the next tick.
- await dispatchPendingTeammateNotifications(cronConsumer(env,19),options)
- await batchOperatorActivity(cronConsumer(env,22-budget.statements),options.now??Date.now(),options.projectId,options.conversationId)
- env=cronConsumer(env,scheduledReservations.notifications-budget.statements)
+ const teammatesDeferred=await dispatchPendingTeammateNotifications(cronConsumer(env,Math.max(19,Math.floor((limit-3)/2))),options)
+ await batchOperatorActivity(cronConsumer(env,Math.min(51,limit-budget.statements-22)),options.now??Date.now(),options.projectId,options.conversationId)
+ const deliveryEnv=env
+ env=cronConsumer(env,limit-budget.statements)
  const pending=await env.DB.prepare(`SELECT * FROM operator_notifications WHERE state='pending' ${options.projectId?'AND project_id=?':''} ${options.conversationId?'AND conversation_id=?':''} ORDER BY created_at,id LIMIT 100`)
  .bind(...(options.projectId?[options.projectId]:[]),...(options.conversationId?[options.conversationId]:[])).all<Notification>()
  for(const row of pending.results){
@@ -89,4 +91,7 @@ export async function dispatchOperatorNotifications(env:Env,options:{projectId?:
    await env.DB.prepare("UPDATE operator_notifications SET state='complete' WHERE id=?").bind(row.id).run()
   }catch{console.error('Operator notification pending',row.id)}
  }
+ // Pending work may be empty or cheaper than its admission. Let the teammate
+ // queue spend that settled remainder instead of leaving it idle.
+ if(teammatesDeferred&&limit-budget.statements>=19)await dispatchPendingTeammateNotifications(cronConsumer(deliveryEnv,limit-budget.statements),options)
 }

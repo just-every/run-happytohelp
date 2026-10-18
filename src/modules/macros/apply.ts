@@ -1,7 +1,6 @@
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {availableTicketSql,getTicket,ticketAuthority,type TicketAuthority} from '../tickets/model'
-import {dispatchOperatorNotifications} from '../integrations/notifications'
 import {dispatchFollowerChange} from '../collaboration/followers'
 import {publishActivity} from '../conversations/activity'
 import {publishResolution} from '../outcomes/state'
@@ -35,8 +34,9 @@ export async function applyMacro(env:Env,actor:Actor,macroId:string,version:numb
  }
  // Stored drafts are never sent, including in bulk. Failure after commit is explicit
  // and must not invite replay of an operation with an unknown delivery result.
+ // Assignment intent is already durable; cron dispatch owns its bounded delivery.
  let refresh_error=false
- try{await publishActivity(env,actor.projectId,current.id,'macro');if(Object.keys(plan.macro.actions).some(key=>!['reply_type','attachments'].includes(key)))await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:current.id,event:'ticket_updated',eventId:usage,actorId:actor.id,source:'native'});if(current.status_id!==prepared.next.status_id)await publishResolution(env,actor.projectId,current.id);await dispatchOperatorNotifications(env,{projectId:actor.projectId,conversationId:current.id});if(prepared.current.group_id!==prepared.next.group_id&&prepared.next.group_id&&!prepared.next.assigned_to){const members=(await env.DB.prepare('SELECT user_id FROM ticket_group_members WHERE project_id=? AND group_id=?').bind(actor.projectId,prepared.next.group_id).all<any>()).results.map(m=>m.user_id);await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:current.id,event:'group',eventId:usage,actorId:actor.id,recipientIds:members,source:'native'})};if(followerPlan)await dispatchFollowerChange(env,actor,current.id,followerPlan,usage)}catch(error){console.error('Macro committed; refresh failed',error);refresh_error=true}
+ try{await publishActivity(env,actor.projectId,current.id,'macro');if(Object.keys(plan.macro.actions).some(key=>!['reply_type','attachments'].includes(key)))await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:current.id,event:'ticket_updated',eventId:usage,actorId:actor.id,source:'native'});if(current.status_id!==prepared.next.status_id)await publishResolution(env,actor.projectId,current.id);if(prepared.current.group_id!==prepared.next.group_id&&prepared.next.group_id&&!prepared.next.assigned_to){const members=(await env.DB.prepare('SELECT user_id FROM ticket_group_members WHERE project_id=? AND group_id=?').bind(actor.projectId,prepared.next.group_id).all<any>()).results.map(m=>m.user_id);await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:current.id,event:'group',eventId:usage,actorId:actor.id,recipientIds:members,source:'native'})};if(followerPlan)await dispatchFollowerChange(env,actor,current.id,followerPlan,usage)}catch(error){console.error('Macro committed; refresh failed',error);refresh_error=true}
  return {id:selected.id,status:'applied',committed:true,usage_id:usage,...(refresh_error?{refresh_error:true}:{}),draft:{content:plan.rendered.text,reply_type:plan.macro.actions.reply_type??'public',unresolved:plan.rendered.unresolved,media_ids:copies.map(row=>row.id),media:copies.map(({id,filename,content_type,size})=>({id,filename,content_type,size}))}}
 }
 /** Only the named use's draft goes: a newer macro applied meanwhile stays. */

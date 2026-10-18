@@ -1,8 +1,6 @@
 import {app} from '../../../src/app'
 import {consumeQueue} from '../../../src/queue'
-import {runScheduled} from '../../../src/jobs'
-import {dispatchOperatorNotifications} from '../../../src/modules/integrations/notifications'
-import {purgeExpiredAudit} from '../../../src/modules/audit/retention'
+import {runScheduledInvocation} from '../../../src/platform/scheduled'
 import {routeRule} from '../../../src/modules/access/route-permissions'
 import {handleEmail} from '../../../src/modules/integrations'
 import type {Env} from '../../../src/platform/env'
@@ -16,14 +14,14 @@ const bindings=(env:Env):Env=>env.H2H_TEST_CAPTURE_QUEUE?{...env,JOBS:{send:asyn
 // Count all three cron branches against the same enforced platform limit.
 function scheduledMeter(db:D1Database){
  const counts={statements:0,refused:0,pruned:false},consumers:Record<string,{statements:number;completed:boolean}>={}
- const database=(name:string)=>{
+ const database=(name:string,input=db)=>{
   const own=consumers[name]={statements:0,completed:false},raw=new WeakMap<object,D1PreparedStatement>()
-  const hit=(n:number,sql='')=>{if(counts.statements+n>1000){counts.refused++;throw new Error('D1 invocation statement limit')}counts.statements+=n;own.statements+=n;if(sql.includes('DELETE FROM abuse_counters'))counts.pruned=true}
+  const hit=(n:number,sql='')=>{if(counts.statements+n>1000){counts.refused++;throw new Error('D1 invocation statement limit')}if(name==='invocation')counts.statements+=n;own.statements+=n;if(sql.includes('DELETE FROM abuse_counters'))counts.pruned=true}
   const wrap=(statement:D1PreparedStatement,sql:string):D1PreparedStatement=>{
    const result={bind:(...args:unknown[])=>wrap(statement.bind(...args),sql),...Object.fromEntries(['first','all','run','raw'].map(key=>[key,(...args:unknown[])=>{hit(1,sql);return (statement as any)[key](...args)}]))} as D1PreparedStatement
    raw.set(result,statement);return result
   }
-  return {prepare:(sql:string)=>wrap(db.prepare(sql),sql),batch:(statements:D1PreparedStatement[])=>{hit(statements.length);return db.batch(statements.map(statement=>raw.get(statement)??statement))},exec:()=>{throw new Error('Cron exec is not metered')},dump:()=>db.dump()} as D1Database
+  return {prepare:(sql:string)=>wrap(input.prepare(sql),sql),batch:(statements:D1PreparedStatement[])=>{hit(statements.length);return input.batch(statements.map(statement=>raw.get(statement)??statement))},exec:()=>{throw new Error('Cron exec is not metered')},dump:()=>db.dump()} as D1Database
  }
  return {counts,consumers,database}
 }
@@ -89,8 +87,8 @@ export default {
    // Long retention journeys move the runtime clock, so the actual scheduled
    // integration sees the same time as the edge; application policy is untouched.
    const moved=after>=86400000;if(moved)Date.now=()=>originalNow()+after
-   const meter=scheduledMeter(env.DB),run=async(name:string,task:(input:Env)=>Promise<unknown>)=>{await task({...env,DB:meter.database(name)});meter.consumers[name].completed=true}
-   try{await Promise.all([run('cron',runScheduled),run('notifications',input=>dispatchOperatorNotifications(input,{now:Date.now()+(moved?0:after)})),run('audit',input=>purgeExpiredAudit(input,Date.now()+(moved?0:after)))]);return Response.json({ran:true,...meter.counts,consumers:meter.consumers})}finally{Date.now=originalNow}}
+   const meter=scheduledMeter(env.DB)
+   try{await runScheduledInvocation({...env,DB:meter.database('invocation')},{now:Date.now()+(moved?0:after),consumerEnv:(name,input)=>({...input,DB:meter.database(name,input.DB)})});for(const consumer of Object.values(meter.consumers))consumer.completed=true;delete meter.consumers.invocation;return Response.json({ran:true,...meter.counts,consumers:meter.consumers})}finally{Date.now=originalNow}}
   return app.fetch(request,env,context)
  },
  async queue(batch:MessageBatch<any>,env:Env){await consumeQueue(batch,env)},

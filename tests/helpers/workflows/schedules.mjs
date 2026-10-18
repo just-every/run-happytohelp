@@ -128,6 +128,21 @@ export async function cronBacklogFlow(m){
  assert.equal((await app.first("SELECT count(*) n FROM csat_surveys WHERE project_id=? AND state='sent'",P)).n,60)
  const idle=await app.scheduled(undefined,{after:day});assert.equal(idle.consumers.audit.statements,1,'retention settings alone do no per-workspace work')
  assert.deepEqual(mail.sent.slice(start).map(entry=>entry.headers['idempotency-key']),keys,'an empty follow-up tick never repeats a notice')
+ // Once the cron backlog has cleared, each ready burst uses spare invocation
+ // room in the very same tick, rather than inheriting a per-minute mail cap.
+ for(const count of [4,12]){
+  const ids=[]
+  for(let i=0;i<count;i++){
+   const id=`spare-${count}-${i}`;await seed(id);ids.push(id)
+   await app.db.prepare('INSERT INTO operator_notification_activity(message_id,project_id,conversation_id,revision) SELECT id,project_id,conversation_id,revision FROM messages WHERE conversation_id=?').bind(id).run()
+  }
+  const before=mail.sent.length,result=await app.scheduled(undefined,{after:day})
+  assert.equal(result.refused,0);assert.equal(result.pruned,true)
+  assert.ok(Object.values(result.consumers).every(consumer=>consumer.completed))
+  const sent=mail.sent.slice(before).filter(entry=>ids.some(id=>entry.body.text?.includes(`/conversations/${id}`)))
+  assert.equal(sent.length,count,'every ready digest is delivered in this tick when room exists')
+  console.log(JSON.stringify({proof:'spare-room-notices',ready:count,sent:sent.length,statements:result.statements}))
+ }
  // A workspace with rows expiring every minute must yield to the other due
  // workspaces, including after a restart. This is ordinary advancing cron time.
  const anchor=Date.now(),fair=[]

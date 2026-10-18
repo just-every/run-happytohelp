@@ -12,9 +12,9 @@ const DAY=86400000
  * batch as the delete, so no other delete can pass the append-only trigger. Each
  * purge records how many rows it removed and how many holds kept.
  */
-export async function purgeExpiredAudit(env:Env,now=Date.now()){
- // One discovery read and one complete five-statement purge, including its audit.
- env=cronConsumer(env,scheduledReservations.audit)
+export async function purgeExpiredAudit(env:Env,now=Date.now(),statementLimit:number=scheduledReservations.audit){
+ // The floor is discovery plus one complete purge; settled credit admits more.
+ env=cronConsumer(env,statementLimit)
  const retentionDays="CAST(json_extract(settings_json,'$.audit_retention_days') AS INTEGER)"
  const held=`EXISTS(SELECT 1 FROM audit_holds h WHERE h.project_id=audit_events.project_id AND h.released_at IS NULL AND audit_events.at>=h.starts_at AND (h.ends_at IS NULL OR audit_events.at<=h.ends_at))`
  // The existing purge audit is also a durable turn: a workspace with freshly

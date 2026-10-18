@@ -150,7 +150,7 @@ export async function notificationsJourney(){
   await idle();const uncertain=await DB.prepare("SELECT * FROM email_deliveries WHERE state='uncertain'").first();assert.equal(mail.attempts-attempts,1);assert.equal(uncertain.recipient,'watcher@example.com')
   await replay(await admitted('uncertain-alert'));await idle();assert.equal(mail.attempts-attempts,1);mail.mode='deliver'
   // The operator's assignment creates assignment-mail intent with the ownership; same-owner, self and opted-out stay quiet.
-  const assign=async agent_id=>{const response=await app.request('/api/dashboard/projects/p/conversations/assigned',{method:'PUT',headers:m.operator,body:{agent_id}});assert.equal(response.status,200,await response.text());await app.scheduled()}
+  const assign=async agent_id=>{const response=await app.request('/api/dashboard/projects/p/conversations/assigned',{method:'PUT',headers:m.operator,body:{agent_id}});assert.equal(response.status,200,await response.text());if(agent_id!=='op')assert.ok(await app.db.prepare("SELECT 1 FROM operator_notifications WHERE conversation_id='assigned' AND user_id=?").bind(agent_id).first(),'assignment intent is committed before cron delivery');await app.scheduled()}
   const before=toOperators().length
   await assign('watcher');assert.equal(toOperators().length,before+1);assert.deepEqual(toOperators().at(-1).body.to,['watcher@example.com']);assert.ok(toOperators().at(-1).body.text.includes('https://app.example/projects/p/conversations/assigned'))
   await assign('watcher');await assign('op');assert.equal(toOperators().length,before+1)

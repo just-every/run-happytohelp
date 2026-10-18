@@ -1,3 +1,4 @@
+import {boundedDatabase} from './platform/d1-budget'
 import {runWorkflows,workflowEnvironment} from './modules/workflows/runtime'
 import {withWorkflowInvocation} from './modules/workflows/invocation'
 import {dispatchIntegrations} from './modules/api-integrations/dispatch'
@@ -40,6 +41,8 @@ export async function consumeJob(job:Job,env:Env) {
 /** How long a message's failing follow-up (AI reply request, notification) is retried. */
 const OUTBOX_RETRY_MS=60*60*1000
 export async function runScheduled(env:Env) {
+ const budget=boundedDatabase(env.DB)
+ env={...env,DB:budget.database}
  env=withWorkflowInvocation(await workflowEnvironment(env))
  try { await runWorkflows(env) }
  catch(error) { console.error('Workflow run failed',error) }
@@ -48,6 +51,9 @@ export async function runScheduled(env:Env) {
  await dispatchIntegrations(env)
  const pending=await env.DB.prepare("SELECT project_id,conversation_id,MAX(id) last_id FROM conversation_outbox WHERE delivered_at IS NULL AND EXISTS(SELECT 1 FROM projects p WHERE p.id=conversation_outbox.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=conversation_outbox.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) GROUP BY project_id,conversation_id LIMIT 100").all<{project_id:string;conversation_id:string;last_id:number}>()
  for(const row of pending.results){
+  // Recovery shares the invocation with workflows. Leave room for one message's
+  // effects and the other recovery consumers; remaining outbox rows stay durable.
+  if(budget.statements>=700)break
   if(!await isProjectActive(env,row.project_id))continue
   const messages=await env.DB.prepare('SELECT o.id outbox_id,m.* FROM conversation_outbox o JOIN messages m ON m.id=o.message_id WHERE o.conversation_id=? AND o.id<=? AND o.delivered_at IS NULL ORDER BY o.id LIMIT 90').bind(row.conversation_id,row.last_id).all<Record<string,unknown>>()
   // Each message's effects are independent: one that keeps failing never holds back
@@ -55,6 +61,7 @@ export async function runScheduled(env:Env) {
   // the delivery update under D1's 100 bound parameters.)
   const done:number[]=[]
   for(const message of messages.results){
+   if(budget.statements>=700)break
    const actor:Actor={id:String(message.actor_id),projectId:row.project_id,role:message.actor_role==='contact'?'contact':'operator',...(message.actor_role==='contact'?{contactId:String(message.actor_id)}:{})}
    try { await applyMessageEffects(env,message,actor);done.push(Number(message.outbox_id)) }
    catch {

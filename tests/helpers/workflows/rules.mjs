@@ -39,4 +39,23 @@ export async function rulesFlow(f){
  f.closedId=pending
  await ok(`/workflow-rules/${solve.id}/pause`,{});await ok(`/workflow-rules/${nudge.id}/pause`,{})
  await clock(initial)
+ // Publishing and cron execution share the same set-based reference limits.
+ for(const [label,tagCount,fieldCount] of [['eight',8,0],['large',100,50]]){
+  const id=await create(`Queued reference ${label}`),tagIds=Array.from({length:tagCount},(_,i)=>`cron-${label}-${i}`),values={}
+  await app.db.batch(tagIds.map(tag=>app.db.prepare('INSERT INTO workspace_tags(id,project_id,name,normalized_name) VALUES(?,?,?,?)').bind(tag,w.projectId,tag,tag)))
+  for(let i=0;i<fieldCount;i++){const field=await ok('/ticket-fields',{name:`Cron field ${i}`,type:'text'});values[field.id]=`Order detail ${i}`}
+  const queued=await publish({name:`Queued reference ${label}`,kind:'event',event_kind:'customer_reply',position:2,conditions:{all:[{field:'subject',op:'eq',value:`Queued reference ${label}`}]},actions:[{type:'tags',add:tagIds},...(fieldCount?[{type:'fields',values},{type:'note',content:'Queued order details applied'}]:[])]})
+  const ticket=await get(id),message=`queued-${label}`
+  await app.db.batch([
+   app.db.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,?,?,?,?,'contact','Here are my order details',?,?)").bind(message,w.projectId,id,message,f.customer.contactId,ticket.revision+1,initial+1),
+   app.db.prepare("UPDATE conversations SET revision=revision+1,last_message_id=?,updated_at=?,ticket_source='customer_reply' WHERE id=?").bind(message,initial+1,id)
+  ])
+  await clock(initial+60000);await app.scheduled();await app.scheduled()
+  const runs=(await ok(`/workflow-runs?conversation_id=${id}`)).runs.filter(run=>run.rule_id===queued.id)
+  assert.equal(runs.length,1);assert.equal(runs[0].state,'complete',runs[0].reason);assert.equal(runs[0].cursor,fieldCount?3:1)
+  const applied=await get(id);if(fieldCount)assert.equal((await app.first("SELECT count(*) n FROM conversation_notes WHERE conversation_id=? AND content LIKE '%Queued order details applied%'",id)).n,1);assert.deepEqual(applied.tags.map(t=>t.id).sort(),tagIds.sort());for(const [field,value] of Object.entries(values))assert.equal(applied.fields[field],value)
+  await app.scheduled();assert.equal((await ok(`/workflow-runs?conversation_id=${id}`)).runs.filter(run=>run.rule_id===queued.id).length,1)
+  await ok(`/workflow-rules/${queued.id}/pause`,{});await clock(initial)
+ }
+ await clock(initial)
 }

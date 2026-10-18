@@ -1,9 +1,6 @@
 import {fileURLToPath} from 'node:url';
 import {archivePolicy} from './portability-policy.mjs';
-import {ticketArchivePolicy} from './ticket-archive-upgrade.mjs';
-import {emailArchiveTables} from './email-archive-tables.mjs';
-import {r4Tables} from './r4-tables.mjs';
-/** Recognize only the native pre-R4 migration history, with R3's ticket cells intact. */
-export default await ticketArchivePolicy(fileURLToPath(new URL('../../',import.meta.url)),{
- ...archivePolicy,excludeTables:[...archivePolicy.excludeTables,...r4Tables,...emailArchiveTables],
-},name=>/^1[46][0-9]_/.test(name));
+import {workflowArchivePolicy} from './workflow-archive-upgrade.mjs';
+
+// Published pre-R4 archives retain R3's ticket cells and precede R5/R6.
+export default await workflowArchivePolicy(fileURLToPath(new URL('../../',import.meta.url)),archivePolicy,{beforeR4:true,beforeEmail:true});

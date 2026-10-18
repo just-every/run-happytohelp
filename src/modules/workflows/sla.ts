@@ -9,7 +9,7 @@ import {applySlaEvent,advanceSla,newSlaState,slaNextCheck,type SlaState} from '.
 import {slaEvents,slaEventSources} from './sla-events'
 import {desiredSlaAlerts,slaAlertStatements,type SlaAlertTicket} from './sla-alerts'
 
-export const liveSlaTicketSql=(alias='c')=>`${availableTicketSql(alias)} AND ${conversationHasMessages(alias)} AND NOT EXISTS(SELECT 1 FROM move_in_conversations imported WHERE imported.project_id=${alias}.project_id AND imported.conversation_id=${alias}.id) AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations legacy WHERE legacy.project_id=${alias}.project_id AND legacy.conversation_id=${alias}.id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=${alias}.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
+export const liveSlaTicketSql=(alias='c',requireMessages=true)=>`${availableTicketSql(alias)} ${requireMessages?'AND '+conversationHasMessages(alias):''} AND NOT EXISTS(SELECT 1 FROM move_in_conversations imported WHERE imported.project_id=${alias}.project_id AND imported.conversation_id=${alias}.id) AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations legacy WHERE legacy.project_id=${alias}.project_id AND legacy.conversation_id=${alias}.id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=${alias}.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
 export function slaAlertData(row:any){return {...row}}
 const keyJson=(rows:{project_id:string;id:string}[])=>JSON.stringify(rows.map(r=>[r.project_id,r.id]))
 const keyed=(alias:string)=>`(${alias}.project_id,${alias}.conversation_id) IN (SELECT json_extract(value,'$[0]'),json_extract(value,'$[1]') FROM json_each(?))`
@@ -56,7 +56,7 @@ export async function syncSlaTickets(env:Env,ids:string[],now=workflowNow(env)){
  await env.DB.batch(statements)
 }
 export async function ticketSla(env:Env,projectId:string,id:string){
- const ticket=await env.DB.prepare(`SELECT c.id FROM conversations c WHERE c.project_id=? AND c.id=? AND ${liveSlaTicketSql()}`).bind(projectId,id).first()
+ const ticket=await env.DB.prepare(`SELECT c.id FROM conversations c WHERE c.project_id=? AND c.id=? AND ${liveSlaTicketSql('c',false)}`).bind(projectId,id).first()
  if(!ticket)throw new HTTPException(404)
  await syncSlaTickets(env,[id])
  const [row,alerts]=await Promise.all([

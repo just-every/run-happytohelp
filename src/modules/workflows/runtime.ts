@@ -12,9 +12,9 @@ import {workflowBudget} from './budget'
 import {withWorkflowInvocation} from './invocation'
 export {workflowEnvironment} from './clock'
 /** SLA deadlines run first. Later phases inherit unused shares and pay for earlier
- * quantum overshoot. The 825-statement pool plus the last rule's 80-statement
+ * quantum overshoot. The 750-statement pool plus the last rule's 80-statement
  * quantum leaves room for the cron's other consumers. */
-const shares={events:30,ruleEvents:15,slaDue:30,slaDelivery:10,slaBackstop:10,resume:80,schedules:550,time:100}
+const shares={events:30,ruleEvents:15,slaDue:30,slaDelivery:10,slaBackstop:10,resume:80,schedules:500,time:75}
 export async function runWorkflows(input:Env){
  const {env,phase,complete}=workflowBudget(withWorkflowInvocation(await workflowEnvironment(input))),now=workflowNow(env)
  let failed=false

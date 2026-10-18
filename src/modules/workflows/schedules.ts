@@ -32,6 +32,8 @@ async function sendScheduledReply(env:Env,row:any,now:number){
   if(!result.accepted){await settle(env,row.id,'cancelled',result.reason??'Message admission refused',now);return}
   messageId=String(result.message!.id)
   await applyMessageEffects(env,result.message!,actor)
+  const broadcasts=await Promise.all([row.conversation_id,`project:${row.project_id}`].map(key=>env.CONVERSATIONS.get(env.CONVERSATIONS.idFromName(key)).fetch('https://conversation.internal/broadcast',{method:'POST'})))
+  if(broadcasts.every(response=>response.ok))await env.DB.prepare('UPDATE conversation_outbox SET delivered_at=? WHERE message_id=? AND delivered_at IS NULL').bind(Date.now(),messageId).run()
   const deliveries=(await env.DB.prepare("SELECT state FROM email_deliveries WHERE id=? OR substr(id,1,?)=?").bind(`message:${messageId}:notification`,`message:${messageId}:notification:`.length,`message:${messageId}:notification:`).all<{state:string}>()).results
   const uncertain=deliveries.some(d=>['uncertain','sending'].includes(d.state)),failed=deliveries.some(d=>d.state==='failed')
   await settle(env,row.id,uncertain?'uncertain':failed?'failed':'sent',uncertain?'Mail delivery is uncertain; this reply will not be replayed':failed?'The reply was saved but its mail delivery failed':null,now,messageId)

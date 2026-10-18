@@ -8,7 +8,26 @@ export async function routingFlow(f){
  const initialLoad=Object.fromEntries((await ok('/routing-operators')).operators.map(o=>[o.user_id,o.workload]))
  await ok('/routing-operators',{operators:[{user_id:w.users.owner,available:true,capacity:initialLoad[w.users.owner],skills:['returns']},{user_id:w.users.admin,available:true,capacity:initialLoad[w.users.admin]+3,skills:['returns']},{user_id:w.users.operator,available:true,capacity:initialLoad[w.users.operator]+3,skills:['returns']}]},'PUT')
  const route=await publish({name:'Returns round robin',kind:'routing',position:1,conditions:{all:[]},actions:[],routing:{strategy:'round_robin',group_id:group.id,skills:['returns']}})
- const ids=await Promise.all(Array.from({length:6},(_,i)=>create(`Routing request ${i}`)))
+ const admitted=await publish({name:'Created routing marker',kind:'event',event_kind:'created',position:1,conditions:{all:[]},actions:[{type:'priority',priority:'high'}]})
+ const visitors=[]
+ for(let i=0;i<3;i++){
+  const visitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey,name:`Silent visitor ${i}`},headers:{Origin:w.allowedOrigin}})
+  const ticket=await app.ok('/api/conversations',{token:visitor.token,body:{projectId:w.projectId}});visitors.push({id:ticket.id,token:visitor.token,contactId:visitor.contactId})
+ }
+ const keys=JSON.stringify(visitors.map(v=>v.id)),load=await ok('/routing-operators')
+ await app.scheduled()
+ assert.deepEqual((await ok('/routing-operators')).operators.map(o=>[o.user_id,o.workload]),load.operators.map(o=>[o.user_id,o.workload]))
+ assert.equal((await app.first('SELECT count(*) n FROM workflow_events WHERE conversation_id IN (SELECT value FROM json_each(?))',keys)).n,0)
+ assert.equal((await app.first('SELECT count(*) n FROM workflow_runs WHERE conversation_id IN (SELECT value FROM json_each(?))',keys)).n,0)
+ for(const visitor of visitors){
+  assert.equal((await get(visitor.id)).assigned_to,null)
+  await app.ok(`/api/conversations/${visitor.id}/messages`,{token:visitor.token,body:{localId:'first',content:'Please help with my replacement',expectedRevision:0}})
+  assert.ok((await get(visitor.id)).assigned_to);assert.equal((await get(visitor.id)).priority,'high')
+  assert.equal((await app.first("SELECT count(*) n FROM workflow_events WHERE conversation_id=? AND kind='created'",visitor.id)).n,1)
+  assert.equal((await app.first('SELECT count(*) n FROM workflow_runs WHERE conversation_id=? AND rule_id=?',visitor.id,admitted.id)).n,1)
+ }
+ const ids=[...visitors.map(v=>v.id),...await Promise.all(Array.from({length:3},(_,i)=>create(`Routing request ${i}`)))]
+ await ok(`/workflow-rules/${admitted.id}/pause`,{})
  const owners=await Promise.all(ids.map(async id=>(await get(id)).assigned_to))
  assert.equal(owners.filter(id=>id===w.users.admin).length,3);assert.equal(owners.filter(id=>id===w.users.operator).length,3);assert.ok(!owners.includes(w.users.owner))
  const decision=(await ok(`/conversations/${ids[0]}/routing`)).decision;assert.equal(decision.rule_id,route.id);assert.ok(decision.explanation.includes('capacity')||decision.explanation.includes('workload'));assert.ok(decision.explanation.includes('won'))
@@ -33,7 +52,11 @@ export async function routingFlow(f){
  const customer=await visitor(a,1),stuck=await app.ok('/api/conversations',{token:customer.token,body:{projectId:a.projectId}})
  const contention={"x-test-before-batch":`UPDATE routing_state SET revision=revision+1 WHERE project_id='${a.projectId}' AND rule_id='${ar.id}'`}
  await app.ok(`/api/conversations/${stuck.id}/messages`,{token:customer.token,body:{localId:'first',content:'My parcel has not arrived.',expectedRevision:0},headers:contention})
- const neighbours=[];for(let i=0;i<5;i++){const person=await visitor(b,10+i);neighbours.push((await app.ok('/api/conversations',{token:person.token,body:{projectId:b.projectId}})).id)}
+ const neighbours=[];for(let i=0;i<5;i++){
+  const person=await visitor(b,10+i),ticket=await app.ok('/api/conversations',{token:person.token,body:{projectId:b.projectId}}),message=`neighbour-first-${i}`;neighbours.push(ticket.id)
+  // Admission committed before a worker exit; the journal is left to cron.
+  await app.db.batch([app.db.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,?,?,?,?,'contact','Please trace my parcel',1,?)").bind(message,b.projectId,ticket.id,message,person.contactId,at),app.db.prepare("UPDATE conversations SET revision=1,last_message_id=?,updated_at=?,ticket_source='customer_reply' WHERE id=?").bind(message,at,ticket.id)])
+ }
  for(let minute=1;minute<=5;minute++){await app.configure({H2H_WORKFLOW_NOW:String(at+minute*60000)});await app.ok('/_test/scheduled',{body:{},headers:contention})}
  for(const id of neighbours){const ticket=await api(b,`/conversations/${id}/ticket`);assert.equal(ticket.assigned_to,b.users.owner);assert.equal(ticket.priority,'high')}
  for(const minute of [6,21,81,82,87,102,162]){await app.configure({H2H_WORKFLOW_NOW:String(at+minute*60000)});await app.ok('/_test/scheduled',{body:{},headers:contention})}
@@ -41,5 +64,7 @@ export async function routingFlow(f){
  assert.ok(outcomes.length>0);assert.ok(outcomes.every(event=>event.state==='not_routed'&&event.error&&event.attempts>0&&event.next_attempt_at===null))
  assert.equal((await api(a,`/conversations/${stuck.id}/ticket`)).assigned_to,null)
  }finally{await app.close()}}
+ // The enclosing erasure journey retains its original single-customer fixture.
+ for(const visitor of visitors)await app.ok(`/api/management/projects/${w.projectId}/contacts/${visitor.contactId}/erase`,{token:w.tokens.owner,body:{}})
  f.routingId=available
 }

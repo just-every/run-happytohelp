@@ -1,9 +1,3 @@
-import {workflowArchivePolicy} from './workflow-archive-upgrade.mjs';
-
-// Preserve the native pre-ticket/pre-R4 schema inventory through R5's shared
-// policy builder and row upgrades. No skipped workflow action is restored live.
-export const ticketArchivePolicy=(root,input,excludedMigrations=name=>/^1[346][0-9]_/.test(name)||name>='191_')=>workflowArchivePolicy(root,input,{excludedMigrations:name=>excludedMigrations(name)||/^17[234]_/.test(name)});
-
 const statuses='[{"id":"new","name":"New"},{"id":"open","name":"Open"},{"id":"pending","name":"Pending"},{"id":"on_hold","name":"On-hold"},{"id":"solved","name":"Solved"},{"id":"closed","name":"Closed"}]';
 /** Trigger-free restore leaves newly introduced default status rows empty.
  * Existing archives already carry these definitions and remain byte-identical. */

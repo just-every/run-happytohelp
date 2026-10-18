@@ -3,6 +3,8 @@ import {readFile,readdir} from 'node:fs/promises';
 import {join} from 'node:path';
 import {unstable_splitSqlQuery} from 'wrangler';
 import {policy,schemaIdentity,excludedTable} from '@runeditrun/rer/modules/portability/catalogue';
+import {r4Tables} from './r4-tables.mjs';
+import {emailArchiveTables} from './email-archive-tables.mjs';
 const {changesData}=await import(new URL('./migration-statements.mjs',import.meta.resolve('@runeditrun/rer/modules/portability/migration-history')));
 
 export const workflowTables=['workflow_queue_turns','workflow_events','workflow_event_sequence','workflow_clock','ticket_followups','workflow_calendars','sla_policies','ticket_sla_state','sla_alerts','sla_scheduler_cursors','workflow_rules','workflow_rule_versions','workflow_runs','workflow_action_receipts','workflow_notifications','workflow_time_state','workflow_scheduler_cursors','routing_operators','routing_state','routing_decisions','workflow_schedules'];
@@ -25,15 +27,16 @@ export function workflowArchiveUpgradeRow(table,row){
 /** Enumerate only installation-produced schemas before R5, with or without
  * R3's ticket migrations. Later independent migrations still form part of each
  * historical schema. Never apply 150-159 while constructing that inventory. */
-export async function workflowArchivePolicy(root,input,{beforeTickets=false,excludedMigrations=name=>beforeTickets&&(/^13[0-9]_/.test(name)||name>='191_')}={}){
- const omitted=[...workflowTables,...(beforeTickets?ticketTables:[])];
+export async function workflowArchivePolicy(root,input,{beforeTickets=false,beforeR4=false,beforeEmail=false}={}){
+ const omitted=[...workflowTables,...(beforeTickets?ticketTables:[]),...(beforeR4?r4Tables:[]),...(beforeEmail?emailArchiveTables:[])];
  const result={...input,excludeTables:[...new Set([...input.excludeTables,...omitted])],replaceableTables:input.replaceableTables.filter(table=>!omitted.includes(table))},config=policy(result);
  const scratch=new DatabaseSync(':memory:'),acceptedSchemas={...input.acceptedSchemas};
  const db={prepare(sql){return {bind(...args){this.args=args;return this;},async all(){return {results:scratch.prepare(sql).all(...(this.args??[]))};}};}};
  try{
   // v0.4.2, the last pre-ticket release, ends at 190; every later migration
   // (191's ticket_history index onward) only ever runs after the ticket model.
-  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!/^15[0-9]_/.test(name)&&!excludedMigrations(name)).sort();
+  // R7b's reserved 172–174 numbers also landed after the pre-ticket release.
+  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!/^15[0-9]_/.test(name)&&(!beforeTickets||!/^13[0-9]_/.test(name)&&!/^17[234]_/.test(name)&&name<'191_')&&(!beforeR4||!/^14[0-9]_/.test(name))&&(!beforeEmail||!/^16[0-9]_/.test(name))).sort();
   const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))));
   for(let index=0;index<plan.length;index++){
    for(const sql of plan[index])scratch.exec(sql);

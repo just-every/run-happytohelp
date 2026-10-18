@@ -10,7 +10,7 @@ import type {TicketNotificationEvent} from '../triggers'
 import {notificationTicket,notificationTicketSql} from './eligibility'
 import {defaultTriggers,renderNotificationTemplate} from './templates'
 
-export async function customerTicketNotification(env:Env,event:TicketNotificationEvent & {claimEvent?:string;template?:{subject:string;body:string}}){
+export async function customerTicketNotification(env:Env,event:TicketNotificationEvent & {claimEvent?:string;template?:{subject:string;body:string};guard?:{sql:string;params:unknown[]}}){
  const claimEvent=event.claimEvent??event.event
  const id=`ticket-notice:${event.projectId}:${event.conversationId}:${claimEvent}`
  const prior=await env.DB.prepare('SELECT state,outcome_json FROM notification_trigger_claims WHERE id=?').bind(id).first<any>()
@@ -46,14 +46,15 @@ export async function customerTicketNotification(env:Env,event:TicketNotificatio
  const snapshot=contacts.results.filter(contact=>recipients.some(r=>r.id===contact.id))
  const claim=await env.DB.prepare(`INSERT OR IGNORE INTO notification_trigger_claims(id,project_id,conversation_id,event,state,outcome_json,created_at)
  SELECT ?,?,?,?,'claimed',?,? WHERE EXISTS(SELECT 1 FROM (${notificationTicketSql}) eligible)
+ ${event.guard?'AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ('+event.guard.sql+'))':''}
  AND NOT EXISTS(SELECT 1 FROM json_each(?) j WHERE NOT EXISTS(SELECT 1 FROM contacts current
  WHERE current.id=json_extract(j.value,'$.id') AND current.project_id=? AND current.email IS json_extract(j.value,'$.email')
  AND current.metadata_json IS json_extract(j.value,'$.metadata_json')
  AND current.is_verified IS json_extract(j.value,'$.is_verified') AND current.external_id IS json_extract(j.value,'$.external_id')
  AND (json_extract(j.value,'$.notice_grant_proven')!=1 OR ${consumedReplyGrantSql('current','?')})
  AND (current.id=? OR EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=? AND cp.contact_id=current.id AND ${noticeParticipantProofSql('current','cp')}))))`)
- .bind(id,event.projectId,ticket.id,claimEvent,JSON.stringify({recipients:recipients.map(r=>r.email)}),Date.now(),ticket.id,event.projectId,JSON.stringify(snapshot),event.projectId,ticket.id,ticket.contact_id,ticket.id).run()
- if(!claim.meta.changes)return {state:'claimed'}
+ .bind(id,event.projectId,ticket.id,claimEvent,JSON.stringify({recipients:recipients.map(r=>r.email)}),Date.now(),ticket.id,event.projectId,...(event.guard?[ticket.id,event.projectId,...event.guard.params]:[]),JSON.stringify(snapshot),event.projectId,ticket.id,ticket.contact_id,ticket.id).run()
+ if(!claim.meta.changes){const saved=await env.DB.prepare('SELECT state,outcome_json FROM notification_trigger_claims WHERE id=?').bind(id).first<any>();return saved?{state:saved.state,outcome:JSON.parse(saved.outcome_json)}:{state:'cancelled'}}
  try{
   const outcomes=await sendEmails(env,inputs)
   const state=outcomes.some(row=>['sending','uncertain'].includes(row.state))?'uncertain':outcomes.some(row=>row.state==='failed')?'failed':outcomes.every(row=>row.state==='suppressed')?'suppressed':'complete'

@@ -7,7 +7,7 @@ import {once} from 'node:events';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {waitForServingCapacity} from '../helpers/serving-capacity.mjs';
-import {commandEnvironment} from '../helpers/rer-command.mjs';
+import {commandEnvironment,stopOwnedServer} from '../helpers/rer-command.mjs';
 export function processRun(root,command,args,env){
  // A fresh checkout owns its operation; it cannot inherit another checkout's lock.
  const child=spawn(command,args,{cwd:root,env:commandEnvironment(env),stdio:['ignore','pipe','pipe']});let output='';
@@ -27,7 +27,7 @@ export async function serve(root,env){
  const deadline=Date.now()+180000;
  while(Date.now()<deadline){
   const ready=running.output.match(/^RER_READY (http:\/\/\S+)$/m);
-  if(ready)return {origin:ready[1],...running,async close(){await command(root,['dev','--stop'],env);assert.equal((await running.done).code,0)}};
+  if(ready)return {origin:ready[1],...running,async close(){await stopOwnedServer(running.child,env);assert.equal((await running.done).code,0)}};
   if(running.child.exitCode!==null)break;
   await new Promise(resolve=>setTimeout(resolve,250));
  }

@@ -3,6 +3,27 @@ const __rerTestEntry = __rerTestEntryPath(import.meta.resolve('@runeditrun/rer/i
 const __rerTestEntryArgs = args => args[1] === 'dev' && !args.some(arg => ['--foreground', '--detach', '--stop', '--help'].includes(arg)) ? [...args, '--foreground'] : args;
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
+import {readFile} from 'node:fs/promises';
+import {homedir} from 'node:os';
+import {join} from 'node:path';
+import {createConnection} from 'node:net';
+
+// Cleanup must address only the server PID this journey started. Avoid the
+// CLI stop command, whose registry sweep can recover unrelated checkouts.
+export async function stopOwnedServer(child,env=process.env){
+ const directory=env.RER_SERVERS_DIR??join(homedir(),'.rer/servers');
+ const state=JSON.parse(await readFile(join(directory,'state.json'),'utf8'));
+ const record=state.running.find(record=>record.owner.pid===child.pid);
+ if(!record)throw Error('Journey server PID has no owned control socket');
+ await new Promise((resolve,reject)=>{
+  const socket=createConnection(record.control);let reply='';
+  socket.setTimeout(35000,()=>socket.destroy(Error('Owned server cleanup timed out')));
+  socket.on('connect',()=>socket.end(JSON.stringify({token:record.token,action:'stop'})));
+  socket.on('data',chunk=>{reply+=chunk;if(reply.length>16384)socket.destroy(Error('Invalid owned server reply'));});
+  socket.on('end',()=>{try{if(JSON.parse(reply).token!==record.token)throw Error('Unverified owned server');resolve();}catch(error){reject(error);}});
+  socket.on('error',reject);
+ });
+}
 
 export function commandEnvironment(input=process.env){
  const env={...input,CI:'true',WRANGLER_SEND_METRICS:'false',RER_SERVER_JOURNEY:'1'};

@@ -9505,7 +9505,7 @@
       "executable": false
     },
     "tests/first-run/cli-kit.mjs": {
-      "sha256": "dd11fde06dded3231edb0b14c088aee7505bef2a43dc7a417333d282befcf5ad",
+      "sha256": "845c77b0d0daf106bb3102a79c15d2da777311db0e5742b9de3ef3583b28d7ab",
       "executable": false
     },
     "tests/first-run/cli-sign-in.mjs": {
@@ -10073,7 +10073,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "341638b715028ec6a0f71ad67ec74323735781a11738ffc166b4cbc537e2a45d",
+      "sha256": "6c08a535ed152e74fcabea30ec63707d22b303a3df5713ad485a0790603babb5",
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {
@@ -10241,7 +10241,7 @@
       "executable": false
     },
     "tests/helpers/rer-command.mjs": {
-      "sha256": "69dd617b91b125d024f8a3aef941dbd9942ded3b33b8e74f9440f03b0c5bfb88",
+      "sha256": "523dbe9fefe218bf12ffac47d6d7154de621b72594c503452ebd6794e22c219f",
       "executable": false
     },
     "tests/helpers/rer-data.mjs": {

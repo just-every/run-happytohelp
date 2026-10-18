@@ -8,7 +8,7 @@ import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomBytes} from 'node:crypto';
 import {createServer} from 'node:net';
-import {command,run} from '../rer-command.mjs';
+import {command,run,stopOwnedServer} from '../rer-command.mjs';
 import {waitForServingCapacity} from '../serving-capacity.mjs';
 import {archiveSnapshot,archiveStorage,retainHistoricalLedger,assertHistoricalLedger,compareArchive,compareDevEntryArchive} from '../rer-archive.mjs';
 import {seedPortableData,verifyPortableData} from '../rer-data.mjs';
@@ -42,7 +42,7 @@ async function start(){
 }
 async function stop(){
  if(!server)return;
- await run(root,['dev','--stop']);
+ await stopOwnedServer(server.child);
  const result=await server.result();assert.ok([0,130,143].includes(result.code));
  await server.stop();server=undefined;
  await assert.rejects(fetch(origin+'/health',{signal:AbortSignal.timeout(2000)}));

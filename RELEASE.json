@@ -72,6 +72,18 @@
     {
       "id": "164_mailbox_message_attempts.sql",
       "buyerSteps": "Create bounded per-provider-message attempt tracking so unreadable messages do not stall a mailbox. Apply through pinned rer before the updated Worker serves traffic."
+    },
+    {
+      "id": "172_request_forms.sql",
+      "buyerSteps": "Create request form configuration and idempotent submission receipts, retaining existing tickets and typed fields. Apply through pinned rer before the updated Worker serves traffic."
+    },
+    {
+      "id": "173_customer_portal.sql",
+      "buyerSteps": "Create customer mailbox proof, portal identity and preference storage; existing sessions gain no portal authority. Apply through pinned rer before the updated Worker serves traffic."
+    },
+    {
+      "id": "174_portal_mailbox_requester.sql",
+      "buyerSteps": "Create mailbox-verified contact alias storage without rewriting historical identities or granting address authority. Apply through pinned rer before the updated Worker serves traffic."
     }
   ],
   "breaking": false,

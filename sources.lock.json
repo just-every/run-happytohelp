@@ -7088,6 +7088,10 @@
       "sha256": "2db4594208b5f9995e30bafe2f3e3a743d47ddb0ef1f14f23b2bc0b87fb01c47",
       "executable": false
     },
+    "src/platform/scheduled-budget.ts": {
+      "sha256": "eded3b463e1573822260f109dba25faf16c39b05d330d0374d9ed68b0fdffd4b",
+      "executable": false
+    },
     "src/platform/security-headers.ts": {
       "sha256": "6ad0da053dea4ef21f423d0ba8ef40e17a0af77adac54c4787a895740f01fee2",
       "executable": false

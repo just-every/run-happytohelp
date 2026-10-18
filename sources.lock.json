@@ -6001,7 +6001,7 @@
       "executable": false
     },
     "src/modules/portal/access.ts": {
-      "sha256": "9ed6e35776317c41211b2a48a52c8d5320f2e956fde1d6b951d782fed16d24e6",
+      "sha256": "22ae3bcf3ffdf4eee0a3d379d85fa66ba61d63d90a2a2d3796d16f38fa84596a",
       "executable": false
     },
     "src/modules/portal/attachments.ts": {
@@ -9689,7 +9689,7 @@
       "executable": false
     },
     "tests/helpers/customer-portal-journey.mjs": {
-      "sha256": "5d4fdbe0a002fa9dbbb848e616525c3f6967c327ada8bd0b93bf3f8f73db34c5",
+      "sha256": "40181ebbd5b27593e7816c6366dd101b2e25eae7f68bf54a096b97933c5a7e47",
       "executable": false
     },
     "tests/helpers/delegation-journey/browser-ui.mjs": {

@@ -52,6 +52,19 @@ export async function customerPortalJourney(){
   const joined=await signin(identifier)
   assert.equal((await app.call(P+`/tickets/${prior.id}`,joined)).status,200)
   assert.equal((await app.call(`/api/conversations/${prior.id}`,{token:first.token})).status,200)
+  // An operator's email edit is not mailbox proof. The original mailbox can
+  // sign in again and read later authenticated mail without restoring the edit.
+  const pia=await signin('pia@example.com')
+  const piaRequest=(await app.ok(`${api}/${form.id}/submissions`,{...pia,body:{...valid,localId:'pia-before-email-edit'}})).ticket
+  const piaContact=(await app.first('SELECT contact_id FROM conversations WHERE id=?',piaRequest.id)).contact_id
+  await app.ok(`/api/management/projects/${p}/contacts/${piaContact}`,{...owner,method:'PUT',body:{email:'pia.work@example.com'}})
+  const piaMail=await app.ok('/api/integrations/email/inbound',{headers:{Authorization:'Bearer fixture-survey-signing-key-for-self-service'},body:{messageId:'pia-mail-after-edit',to:'help@example.com',from:'pia@example.com',subject:'Replacement order after my email was edited',text:'Please check my replacement delivery.'}})
+  const recovered=await signin('pia@example.com')
+  assert.deepEqual((await app.ok(P+'/tickets',recovered)).tickets.map(t=>t.id),[piaMail.conversationId])
+  assert.equal((await app.call(P+`/tickets/${piaMail.conversationId}`,recovered)).status,200)
+  const newAddress=await signin('pia.work@example.com')
+  assert.deepEqual((await app.ok(P+'/tickets',newAddress)).tickets,[])
+  assert.equal((await app.call(P+`/tickets/${piaRequest.id}`,newAddress)).status,404)
   // Unsigned mail impersonating this proven mailbox is kept apart, even when
   // sent after the customer's proof and after a signed widget visit.
   await app.email('From: Rosa <rosa@example.com>\r\nTo: help@example.com\r\nMessage-ID: <spoof-rosa>\r\nSubject: Forged request\r\n\r\nThis is an unproven sender.',{from:'rosa@example.com',to:'help@example.com'})

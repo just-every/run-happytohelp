@@ -71,27 +71,30 @@ export async function assistanceJourney(){
 // actor is a person. Human Send remains the explicit Reply-To-honouring path.
 async function automaticReplyRows(){
  const a=await assistantApp({bindings:{EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-mail',EMAIL_FROM:'support@example.com',INBOUND_EMAIL_TOKEN:'fixture-gateway'}}),{app,ai,p}=a,mail=[]
- ai.respond=()=>'Your replacement ships tomorrow.'
+ const aiContent='Your replacement ships tomorrow.'
+ ai.respond=()=>aiContent
  ai.network=async request=>{
   const url=new URL(request.url)
   if(url.hostname==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.com.'}]})
   assert.equal(url.hostname,'api.resend.com');mail.push(await request.json());return Response.json({id:crypto.randomUUID()})
  }
- const replies=from=>mail.slice(from).filter(body=>body.subject==='Reply to your support conversation').flatMap(body=>body.to)
+ // R6 adds ticket threading to reply subjects. Identify the submitted message
+ // independently of that presentation, retaining every recipient assertion.
+ const replies=(from,content)=>mail.slice(from).filter(body=>body.text?.includes(content)).flatMap(body=>body.to)
  try{
   await app.call(`/api/management/projects/${p}/email-settings`,{token:a.owner,method:'PUT',body:{email_from_name:'Support',email_from_address:'support@example.com',inbound_address:'inbound@example.com',is_enabled:true},status:200})
   const request=await app.call('/api/integrations/email/inbound',{headers:{Authorization:'Bearer fixture-gateway'},body:{messageId:'ai-mail-proof',to:'inbound@example.com',from:'ai-requester@example.com',replyTo:'ai-preference@example.net',cc:['ai-unproven-cc@example.net'],text:'When does order 4827 ship?'},status:201})
   await app.scheduled();await a.action(request.data.conversationId,'assignAi',{ai_id:'ai'});await a.run();await app.scheduled()
   const id=request.data.conversationId
   assert.equal((await app.sql("SELECT id FROM messages WHERE conversation_id=? AND actor_role='ai'",id)).length,1)
-  assert.deepEqual(replies(0),['ai-requester@example.com'],'AI sends exactly once to the proven requester and nothing to unproven preferences or Cc')
+  assert.deepEqual(replies(0,aiContent),['ai-requester@example.com'],'AI sends exactly once to the proven requester and nothing to unproven preferences or Cc')
   // A scoped API author is synthetic, despite its persisted operator role.
   const issued=await app.call(`/api/management/projects/${p}/connections/tokens`,{token:a.owner,body:{name:'Reply integration',scopes:['messages:write']},status:201})
-  const current=await app.first('SELECT revision FROM conversations WHERE id=?',id),apiStart=mail.length
-  await app.call(`/api/v1/conversations/${id}/messages`,{token:issued.data.token,body:{localId:'api-mail-proof',content:'The shipment is confirmed.',expectedRevision:current.revision},status:200});await app.scheduled()
-  assert.deepEqual(replies(apiStart),['ai-requester@example.com'],'API replies cannot inherit human Reply-To authority')
-  const humanStart=mail.length,head=await app.first('SELECT revision FROM conversations WHERE id=?',id)
-  await app.call(`/api/conversations/${id}/messages`,{token:a.owner,body:{localId:'human-mail-proof',content:'I checked your order personally.',expectedRevision:head.revision},status:200});await app.scheduled()
-  assert.deepEqual(replies(humanStart).sort(),['ai-preference@example.net','ai-unproven-cc@example.net'].sort())
+  const current=await app.first('SELECT revision FROM conversations WHERE id=?',id),apiStart=mail.length,apiContent='The shipment is confirmed.'
+  await app.call(`/api/v1/conversations/${id}/messages`,{token:issued.data.token,body:{localId:'api-mail-proof',content:apiContent,expectedRevision:current.revision},status:200});await app.scheduled()
+  assert.deepEqual(replies(apiStart,apiContent),['ai-requester@example.com'],'API replies cannot inherit human Reply-To authority')
+  const humanStart=mail.length,head=await app.first('SELECT revision FROM conversations WHERE id=?',id),humanContent='I checked your order personally.'
+  await app.call(`/api/conversations/${id}/messages`,{token:a.owner,body:{localId:'human-mail-proof',content:humanContent,expectedRevision:head.revision},status:200});await app.scheduled()
+  assert.deepEqual(replies(humanStart,humanContent).sort(),['ai-preference@example.net','ai-unproven-cc@example.net'].sort())
  }finally{await a.close()}
 }

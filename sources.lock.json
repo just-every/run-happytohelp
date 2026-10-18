@@ -9414,7 +9414,7 @@
       "executable": false
     },
     "tests/helpers/ai/assistance.mjs": {
-      "sha256": "bda1f7bc65196a6e5f5eafb5f5891296e4d0630f7d025a8381d76e785adcdf52",
+      "sha256": "9cd8f66937c38042a6d9a76a61c1ad3ec7ac6e748bd1dcdb4565f0e70b2188b0",
       "executable": false
     },
     "tests/helpers/ai/lifecycle.mjs": {

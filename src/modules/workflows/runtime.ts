@@ -25,7 +25,7 @@ export async function runWorkflows(input:Env){
  await visit(shares.slaDelivery,spent=>deliverSlaAlerts(env,now,spent))
  await visit(shares.slaBackstop,spent=>runSlaBackstop(env,now,spent),true)
  await visit(shares.events,spent=>processWorkflowEvents(env,undefined,20,spent))
- await visit(shares.ruleEvents,async spent=>{await processWorkflowEvents(env,undefined,20,spent);if(!spent())await processGeneratedEvents(env,now)})
+ await visit(shares.ruleEvents,async spent=>{await processWorkflowEvents(env,undefined,20,spent,true);if(!spent())await processGeneratedEvents(env,now)})
  await visit(shares.resume,spent=>resumeRuleRuns(env,now,spent))
  await visit(shares.schedules,spent=>runWorkflowSchedules(env,now,spent))
  await visit(shares.time,spent=>runTimeRules(env,now,spent))

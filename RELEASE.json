@@ -27,5 +27,31 @@
   "migrations": [],
   "breaking": false,
   "agentUpdateInstructions": "Update from v0.4.6 to v0.4.7 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.51. This release adds no migrations. A v0.4.5 installation still receives exactly v0.4.6's fifteen missing migrations (140-146, 160-164 and 172-174) by name and recorded bytes, before traffic resumes. Never delete, reorder or edit ledger rows. The seven Google, Microsoft and IMAP configuration values are optional; omitted values stay unbound, while held secrets are inherited. Configure providers deliberately when needed. Preserve owners, support history, imports, permissions, file bytes and erasure fences. Keep uncertain external outcomes without replay and retain human Send.",
-  "publicReleaseNotes": "HappyToHelp v0.4.7 fixes hosted deployment for installations without mailbox OAuth apps or IMAP setup: the seven mailbox configuration bindings are optional. Email settings shows unavailable connect options until their providers are configured. Every other deploy binding is unchanged. Includes v0.4.6's R4, R6 and R7b features. No new migrations; v0.4.5 still receives v0.4.6's fifteen missing migrations. Back up and use pinned rer 0.2.51 without resetting or editing migration history. R5 is not included. Production deployment is separate."
+  "publicReleaseNotes": "HappyToHelp v0.4.7 fixes hosted deployment for installations without mailbox OAuth apps or IMAP setup: the seven mailbox configuration bindings are optional. Email settings shows unavailable connect options until their providers are configured. Every other deploy binding is unchanged. Includes v0.4.6's R4, R6 and R7b features. No new migrations; v0.4.5 still receives v0.4.6's fifteen missing migrations. Back up and use pinned rer 0.2.51 without resetting or editing migration history. R5 is not included. Production deployment is separate.",
+  "pendingMigrations": [
+    {
+      "id": "150_workflow_journal.sql",
+      "summary": "Unreleased R5 durable workflow journal and ticket follow-ups."
+    },
+    {
+      "id": "151_workflow_sla.sql",
+      "summary": "Unreleased R5 business calendars, SLA state and alerts."
+    },
+    {
+      "id": "152_workflow_rules.sql",
+      "summary": "Unreleased R5 versioned event and time rules with durable execution."
+    },
+    {
+      "id": "153_workflow_schedules.sql",
+      "summary": "Unreleased R5 snoozes and scheduled replies."
+    },
+    {
+      "id": "154_workflow_routing.sql",
+      "summary": "Unreleased R5 fair routing decisions and operator availability."
+    },
+    {
+      "id": "155_schedule_team_frontier.sql",
+      "summary": "Unreleased R5 scheduled-reply team authority frontier."
+    }
+  ]
 }

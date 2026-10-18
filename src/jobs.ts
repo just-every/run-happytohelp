@@ -1,5 +1,5 @@
 import {cronConsumer,CronDeferred} from './platform/cron-budget'
-import {dispatchOutbox,recoverOutbox} from './outbox-recovery'
+import {dispatchOutbox,recoverOutbox,recoverOutboxPage} from './outbox-recovery'
 import {boundedDatabase} from './platform/d1-budget'
 import {runWorkflows,workflowEnvironment} from './modules/workflows/runtime'
 import {withWorkflowInvocation} from './modules/workflows/invocation'
@@ -23,8 +23,9 @@ import { pruneCounters } from './platform/usage-counters'
 import {dispatchSurveys} from './modules/outcomes/survey-delivery'
 
 export async function consumeJob(job:Job,env:Env) {
+ if(job.type==='outbox.page'){if(!Number.isSafeInteger(job.lastId))throw new Error('Invalid persisted outbox page');await recoverOutboxPage(env,{project_id:job.projectId,conversation_id:job.id,last_id:Number(job.lastId)});return}
  if(job.type==='local.effects'){await recoverLocalResultEffects(env,localComputerIntegration,job.id);return}
- if(job.type==='outbox.recover'){await recoverOutbox(env,job.projectId,job.id,typeof job.until==='number'?job.until:undefined);return}
+ if(job.type==='outbox.recover'){if(typeof job.conversationId!=='string'||!Number.isSafeInteger(job.outboxId))throw new Error('Invalid persisted outbox job');await recoverOutbox(env,job.projectId,job.conversationId,Number(job.outboxId),job.id);return}
  if(job.type!=='lead.process'&&!await isProjectActive(env,job.projectId))return
  if(job.type==='integrations'){await dispatchIntegrations(env,job.projectId);return}
  if(job.type==='move-in'){const run=await getWorkRun(env,job.id);if(run&&run.project_id===job.projectId)await advanceImport(env,run);return}
@@ -47,15 +48,18 @@ export async function runScheduled(env:Env) {
  const budget=boundedDatabase(env.DB)
  env=withWorkflowInvocation(await workflowEnvironment({...env,DB:budget.database}))
  let allocated=0
- const visit=async(name:string,share:number,run:(env:Env)=>Promise<unknown>)=>{
+ const visit=async(name:string,share:number,run:(env:Env)=>Promise<unknown>,ceiling=Infinity)=>{
   allocated+=share
   // Unused earlier credit is available, but every later allocation stays reserved.
-  try{await run(cronConsumer(env,allocated-budget.statements))}catch(error){if(!(error instanceof CronDeferred))console.error(`${name} recovery failed`,error)}
+  const available=Math.min(allocated-budget.statements,Math.max(3,ceiling-budget.statements))
+  try{await run(cronConsumer(env,available))}catch(error){if(!(error instanceof CronDeferred))console.error(`${name} recovery failed`,error)}
  }
  await visit('Workflow',650,runWorkflows)
  await visit('Survey',90,dispatchSurveys)
  await visit('Integration',80,dispatchIntegrations)
- await visit('Outbox',3,dispatchOutbox)
+ // Ordinary post-outbox polls cost 25 and pruning one. A 670 soft ceiling
+ // leaves four more statements below the measured-history target of 700.
+ await visit('Outbox',3,dispatchOutbox,670)
  await visit('Generation',10,env=>recoverQueuedGenerations(env,generationEffects))
  await visit('Knowledge',15,refreshDueDatasets)
  await visit('Context',6,recoverContextJobs)

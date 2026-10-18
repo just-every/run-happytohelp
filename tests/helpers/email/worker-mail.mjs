@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {mailApp,message} from './app.mjs'
 import {sha} from '../../journeys/kit/app.mjs'
+import {cronBacklogFlow} from '../workflows/schedules.mjs'
 
 const multipart=({id,to,text})=>`From: Customer <customer@example.com>\r\nTo: ${to}\r\nMessage-ID: <${id}>\r\nAuthentication-Results: mx.cloudflare.net; dkim=pass header.d=example.com\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="b"\r\n\r\n--b\r\nContent-Type: text/plain\r\n\r\n${text}\r\n--b\r\nContent-Type: text/plain\r\nContent-Disposition: attachment; filename="example.txt"\r\nContent-Transfer-Encoding: base64\r\n\r\nYXR0YWNobWVudA==\r\n--b--`
 
@@ -158,6 +159,7 @@ export async function notificationsJourney(){
   await app.configure({EMAIL_API_KEY:undefined});await assign('quiet');assert.equal(toOperators().length,before+1)
   await app.configure({EMAIL_API_KEY:'fixture-resend'});await app.scheduled();assert.equal(toOperators().length,before+2);assert.deepEqual(toOperators().at(-1).body.to,['quiet@example.com'])
   await app.scheduled();assert.equal(toOperators().length,before+2)
+  await cronBacklogFlow(m)
  }finally{await m.close()}
 }
 

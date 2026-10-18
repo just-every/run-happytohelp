@@ -1,11 +1,14 @@
 import {dispatchPendingTeammateNotifications} from './notification-teammate-delivery'
 import {teammateTicketNotification} from './notification-teammates'
 import type {Env} from '../../platform/env'
+import {boundedDatabase} from '../../platform/d1-budget'
+import {cronConsumer,cronRoom} from '../../platform/cron-budget'
+import {scheduledReservations} from '../../platform/scheduled-budget'
 import {isProjectActive} from '../../platform/project-status'
 import {contactAvailableSql} from '../conversations/contact-privacy'
 import {emailConfigured,type EmailInput} from './email'
 import {recipientReplyAddress} from './email-reply-address'
-import {renderConversationEmail} from './email-content'
+import {renderConversationDigest} from './email-content'
 import {batchOperatorActivity} from './operator-activity'
 import {deliverNotification,loopSuppressionHeaders,recordedNotification} from './notification-delivery'
 
@@ -51,7 +54,7 @@ async function sendNotification(env:Env,row:Notification){
   const context=await env.DB.prepare('SELECT actor_role,content FROM messages WHERE conversation_id=? AND project_id=? AND revision<? ORDER BY revision DESC LIMIT 3')
    .bind(row.conversation_id,row.project_id,unread.results[0].revision).all<{actor_role:string;content:string}>()
   const previous=context.results.reverse()
-  const rendered=await renderConversationEmail(env,{projectId:row.project_id,conversationId:row.conversation_id,messages:unread.results})
+  const rendered=await renderConversationDigest(env,{projectId:row.project_id,conversationId:row.conversation_id,messages:unread.results})
   text=[...(previous.length?['Previous context:',...previous.map(m=>`${m.actor_role}: ${m.content}`),'']:[]),'Unread customer messages:',...unread.results.map(m=>m.content),...(rendered.attachments.length?['Attachments:',...rendered.attachments.map(file=>file.filename)]:[]),...(rendered.omitted.length?['Not attached (view in the conversation):',...rendered.omitted.map(file=>file.url?`${file.filename}: ${file.url}`:file.filename)]:[])].join('\n\n')
   rich={html:[...(previous.length?['<h2>Previous context:</h2>',...previous.map(m=>`<p>${escapeHtml(m.actor_role)}: ${escapeHtml(m.content).replace(/\n/g,'<br />')}</p>`)]:[]),'<h2>Unread customer messages:</h2>',rendered.html].join(''),attachments:rendered.attachments}
  }
@@ -66,11 +69,20 @@ async function sendNotification(env:Env,row:Notification){
 /** Bounded scheduled recovery. No attempted provider delivery is replayed.
  * `now` allows the scheduler's clock to be supplied by a caller. */
 export async function dispatchOperatorNotifications(env:Env,options:{projectId?:string;conversationId?:string;now?:number}={}){
- await dispatchPendingTeammateNotifications(env,options)
- await batchOperatorActivity(env,options.now??Date.now(),options.projectId,options.conversationId)
+ const budget=boundedDatabase(env.DB,scheduledReservations.notifications)
+ env={...env,DB:budget.database}
+ // Reserve a turn for both delivery queues, even with sustained teammate work.
+ // Earlier unused credit rolls forward; unclaimed activity and pending rows keep
+ // their existing ordering and remain recoverable on the next tick.
+ await dispatchPendingTeammateNotifications(cronConsumer(env,19),options)
+ await batchOperatorActivity(cronConsumer(env,22-budget.statements),options.now??Date.now(),options.projectId,options.conversationId)
+ env=cronConsumer(env,scheduledReservations.notifications-budget.statements)
  const pending=await env.DB.prepare(`SELECT * FROM operator_notifications WHERE state='pending' ${options.projectId?'AND project_id=?':''} ${options.conversationId?'AND conversation_id=?':''} ORDER BY created_at,id LIMIT 100`)
  .bind(...(options.projectId?[options.projectId]:[]),...(options.conversationId?[options.conversationId]:[])).all<Notification>()
  for(const row of pending.results){
+  // Rendering is two bulk reads, even for a full 100-message digest. Admission
+  // includes assignment's one-recipient fan-out and every failure receipt.
+  if(!cronRoom(env,row.kind==='assignment'?21:18))break
   try{
    const result=await sendNotification(env,row)
    if(!emailConfigured(env)||result?.state==='awaiting_provider')continue

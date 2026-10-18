@@ -44,7 +44,11 @@ export async function customerMailJourney(){
   await DB.prepare("INSERT INTO conversation_participants(id,conversation_id,contact_id,created_at) VALUES('cp2','c','participant',2)").run()
   const to=await m.replyAddress('c','teammate@example.com'),before=mail.sent.length
   const raw=`From: Teammate <teammate@example.com>\r\nTo: ${to}\r\nMessage-ID: <customer-message@example.com>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="b"\r\n\r\n--b\r\nContent-Type: text/plain\r\n\r\nMore detail: try this export\r\n--b\r\nContent-Type: image/png\r\nContent-Disposition: attachment; filename="customer.png"\r\nContent-Transfer-Encoding: base64\r\n\r\n${b64(png)}\r\n--b\r\nContent-Type: application/pdf\r\nContent-Disposition: attachment; filename="customer.pdf"\r\nContent-Transfer-Encoding: base64\r\n\r\n${b64(pdf)}\r\n--b--`
-  assert.equal(await m.email(raw,{from:'teammate@example.com',to}),undefined);await app.scheduled()
+  assert.equal(await m.email(raw,{from:'teammate@example.com',to}),undefined)
+  // Both MIME parts are staged in one millisecond. Give the fixture a strict
+  // chronology before either delivery; random media ids are not MIME part order.
+  await DB.prepare("UPDATE media SET created_at=CASE filename WHEN 'customer.png' THEN 1 ELSE 2 END WHERE message_id=?").bind((await m.admitted('customer-message@example.com')).id).run()
+  await app.scheduled()
   assert.deepEqual(mail.sent.slice(before).map(entry=>entry.body.to[0]),['preferred@example.com'])
   await idle();const notices=mail.sent.slice(before);assert.deepEqual(notices.map(entry=>entry.body.to[0]).sort(),['op@example.com','preferred@example.com'])
   for(const {body} of notices){assert.deepEqual(body.attachments.map(file=>file.filename),['customer.png','customer.pdf']);assert.equal(body.attachments[0].content,b64(png));assert.equal(body.attachments[1].content,b64(pdf))}

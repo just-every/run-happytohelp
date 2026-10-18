@@ -1,4 +1,5 @@
 import type {Env} from '../../platform/env'
+import {cronRoom} from '../../platform/cron-budget'
 import {contactAvailableSql} from '../conversations/contact-privacy'
 import {isAutomaticInboundEmail} from './inbound-origin'
 
@@ -22,6 +23,7 @@ export async function batchOperatorActivity(env:Env,now:number,projectId?:string
  GROUP BY a.project_id,a.conversation_id ORDER BY MIN(a.revision) LIMIT 25`)
  .bind(now-60000,now-60000,...(projectId?[projectId]:[]),...(conversationId?[conversationId]:[])).all<{project_id:string;conversation_id:string}>()
  for(const row of rows.results){
+  if(!cronRoom(env,2))break
   const batch=crypto.randomUUID()
   // The transaction claims at most 100 messages and snapshots the eligible
   // recipients together. Concurrent schedulers can never claim the same message.

@@ -1,6 +1,7 @@
 import {cronConsumer,CronDeferred} from './platform/cron-budget'
 import {dispatchOutbox,recoverOutbox,recoverOutboxPage} from './outbox-recovery'
 import {boundedDatabase} from './platform/d1-budget'
+import {scheduledReservations} from './platform/scheduled-budget'
 import {runWorkflows,workflowEnvironment} from './modules/workflows/runtime'
 import {withWorkflowInvocation} from './modules/workflows/invocation'
 import {dispatchIntegrations} from './modules/api-integrations/dispatch'
@@ -43,9 +44,10 @@ export async function consumeJob(job:Job,env:Env) {
 }
 /** Each consumer owns a bounded allocation, including its admitted quantum.
  * An exception in one never takes away another consumer's turn. The workflow
- * maximum (720), tail allocations (220) total 940, including the local clock read. */
+ * maximum (720), tail allocations (220) total 940, including the local clock read.
+ * The other parallel scheduled consumers reserve the remaining 60 statements. */
 export async function runScheduled(env:Env) {
- const budget=boundedDatabase(env.DB)
+ const budget=boundedDatabase(env.DB,scheduledReservations.jobs)
  env=withWorkflowInvocation(await workflowEnvironment({...env,DB:budget.database}))
  let allocated=0
  const visit=async(name:string,share:number,run:(env:Env)=>Promise<unknown>,ceiling=Infinity)=>{

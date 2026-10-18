@@ -1,4 +1,5 @@
 import type {Env} from '../../platform/env'
+import {cronRoom} from '../../platform/cron-budget'
 import {notificationTicket,notificationTicketSql} from './triggers/eligibility'
 import {deliverNotification,loopSuppressionHeaders} from './notification-delivery'
 import {emailConfigured} from './email'
@@ -37,5 +38,6 @@ export async function deliverTeammateNotice(env:Env,row:Notice){
 export async function dispatchPendingTeammateNotifications(env:Env,options:{projectId?:string;conversationId?:string}={}){
  const pending=await env.DB.prepare(`SELECT * FROM notification_inbox WHERE state IN ('pending','awaiting_provider') ${options.projectId?'AND project_id=?':''} ${options.conversationId?'AND conversation_id=?':''} ORDER BY created_at,id LIMIT 100`)
  .bind(...(options.projectId?[options.projectId]:[]),...(options.conversationId?[options.conversationId]:[])).all<Notice>()
- for(const row of pending.results)await deliverTeammateNotice(env,row)
+ // Includes reply-address proof, provider failure bookkeeping and final state.
+ for(const row of pending.results){if(!cronRoom(env,18))break;await deliverTeammateNotice(env,row)}
 }

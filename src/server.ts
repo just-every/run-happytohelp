@@ -34,6 +34,8 @@ export default withDemo({
  async fetch(request:Request,env:Env,execution:ExecutionContext){if(import.meta.env.DEV && import.meta.env.RER_LOCAL_ORIGIN && env.H2H_LOCAL==='true' && !env.RER_INSTALLATION_ID)env={...env,APP_ORIGIN:import.meta.env.RER_LOCAL_ORIGIN};const canonical=canonicalNavigation(request,env);if(canonical)return canonical;const asset=await staticAssetResponse(widgetAssetRequest(request,env.APP_ORIGIN),env);if(asset)return withDocumentHeaders(withCompiledAssetCache(request,await widgetAssetOrigin(request,asset,env.APP_ORIGIN)));const documentation=legacyDocumentationResponse(request);if(documentation)return withDocumentHeaders(withSecurityHeaders(documentation,'application',env));const helpHost=await publicHelpHostResponse(request,env);if(helpHost)return withDocumentHeaders(withSecurityHeaders(helpHost,'embeddable',env));const path=new URL(request.url).pathname,publicSite=!path.startsWith('/preview/')&&await isPublicSitePath(path,env);
  return withDocumentHeaders(withSecurityHeaders(withWorkspaceModulePreloads(request,await route(request,env,execution,path,publicSite)),headerSurface(path,publicSite),env))},
  async queue(batch:MessageBatch<Job>,env:Env){await consumeQueue(batch,env)},
+ // Fixed invocation reservations: jobs 940, operator mail 54, audit 6. Each
+ // branch admits complete units before using its share (platform/scheduled-budget).
  async scheduled(_event:ScheduledController,env:Env){await Promise.all([runScheduled(env),dispatchOperatorNotifications(env),purgeExpiredAudit(env)])},
  email:handleEmail,
 } satisfies ExportedHandler<Env,Job>,{seed:seedDemo,owner:demoOwner})

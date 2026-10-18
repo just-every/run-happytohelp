@@ -59,3 +59,74 @@ export async function schedulesFlow(f){
  await clock(initial)
  f.scheduleId=id
 }
+
+
+// Overload rows in the existing operator-mail journey. Stored backlog is fixture
+// data; delivery, schedule admission, retention settings and cron use public doors.
+export async function cronBacklogFlow(m){
+ const {app,mail}=m,w=await app.seedWorkspace('cron-backlog'),P=w.projectId,now=Date.now(),day=86400000
+ await app.configure({INBOUND_EMAIL_TOKEN:'cron-backlog-fixture-signing-token'})
+ await app.db.prepare("INSERT INTO email_settings VALUES(?,'Support','sender@example.com','backlog-inbound@example.com',1,1)").bind(P).run()
+ const seed=async(id,count=1)=>{
+  const statements=[app.db.prepare("INSERT INTO contacts(id,project_id,name,email,is_verified,metadata_json,created_at) VALUES(?,?,?, ?,1,'{}',?)").bind('ct-'+id,P,'Customer '+id,id+'@example.com',now-3600000),
+   app.db.prepare("INSERT INTO conversations(id,project_id,contact_id,assigned_to,created_at,updated_at,ticket_source) VALUES(?,?,?,?,?,?,'widget')").bind(id,P,'ct-'+id,w.users.owner,now-3600000,now-3600000)]
+  for(let n=1;n<=count;n++)statements.push(app.db.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,?,?,?,?,'contact',?,?,?)")
+   .bind(`m-${id}-${n}`,P,id,`local-${n}`,'ct-'+id,`Order ${id}, customer message ${n}`,n,now-3600000+n))
+  statements.push(app.db.prepare("UPDATE conversations SET revision=?,last_message_id=?,updated_at=? WHERE id=?").bind(count,`m-${id}-${count}`,now-3600000,id))
+  await app.db.batch(statements)
+ }
+ const unreadIds=[],teamIds=[],replyIds=[]
+ for(let i=0;i<100;i++)await seed(`backlog-${String(i).padStart(3,'0')}`,i===0?100:1)
+ for(let i=0;i<60;i++)await seed('backlog-reply-'+i)
+ await app.ok(`/api/outcomes/projects/${P}/settings`,{token:w.tokens.owner,method:'PUT',body:{enabled:true,scale:'five',delayMinutes:1,expiresDays:14,locale:'en'}})
+ for(let i=0;i<60;i++){
+  const incoming=await app.ok('/api/integrations/email/inbound',{headers:{Authorization:'Bearer cron-backlog-fixture-signing-token'},body:{messageId:`backlog-survey-${i}@example.com`,to:'backlog-inbound@example.com',from:`survey-buyer-${i}@example.com`,subject:'Replacement order',text:'Where is my replacement?'}}),id=incoming.conversationId||incoming.conversation_id
+  await app.ok(`/api/dashboard/projects/${P}/conversations/${id}`,{token:w.tokens.owner,method:'PUT',body:{resolved:true}})
+ }
+ // Settle ordinary creation events before freezing the scheduled reply frontiers.
+ for(let i=0;i<8;i++)await app.scheduled()
+ for(let i=0;i<60;i++){
+  const id='backlog-reply-'+i,path=`/api/dashboard/projects/${P}`,ticket=(await app.ok(`${path}/conversations/${id}/ticket`,{token:w.tokens.owner})).data
+  const row=(await app.ok(`${path}/workflow-schedules`,{token:w.tokens.owner,body:{conversation_id:id,kind:'reply',due_at:now+3600000,timezone:'UTC',body:'Your replacement ships today.',owner_id:w.users.owner,expected_revision:ticket.revision,expected_last_message_id:ticket.last_message_id,expected_ticket_version:ticket.ticket_version}})).data
+  replyIds.push(row.id)
+ }
+ for(let i=0;i<100;i++){
+  const id=`backlog-${String(i).padStart(3,'0')}`,batch='batch-'+id,unread='unread-'+id,team='team-'+id
+  unreadIds.push(unread);teamIds.push(team)
+  await app.db.batch([
+   app.db.prepare('INSERT INTO operator_notification_activity(message_id,project_id,conversation_id,revision,batch_id) SELECT id,project_id,conversation_id,revision,? FROM messages WHERE conversation_id=?').bind(batch,id),
+   app.db.prepare("INSERT INTO operator_notifications(id,project_id,conversation_id,user_id,kind,batch_id,through_revision,created_at) VALUES(?,?,?,?,'unread',?,?,?)").bind(unread,P,id,w.users.owner,batch,i===0?100:1,now+i),
+   app.db.prepare("INSERT INTO notification_inbox(id,project_id,conversation_id,user_id,kind,inbox,email,email_address,created_at) VALUES(?,?,?,?,'mention',1,1,?,?)").bind(team,P,id,w.users.owner,'owner-cron-backlog@example.test',now+i),
+  ])
+ }
+ for(let i=0;i<50;i++){
+  const a=await app.seedWorkspace('retention-backlog-'+i)
+  await app.ok(`/api/management/projects/${a.projectId}/audit/retention`,{token:a.tokens.owner,method:'PUT',body:{days:90}})
+  await app.db.prepare("INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,source) VALUES(?,?,?,'auth','sign_in.succeeded','succeeded','system','system')").bind('expired-backlog-'+i,a.projectId,now-100*day).run()
+ }
+ const start=mail.sent.length,ticks=[],pending=async()=>(await app.first("SELECT (SELECT count(*) FROM operator_notifications WHERE project_id=?1 AND state='pending')+(SELECT count(*) FROM notification_inbox WHERE project_id=?1 AND state IN ('pending','awaiting_provider')) n",P)).n
+ assert.equal(await pending(),200)
+ for(let tick=0;tick<120;tick++){
+  const result=await app.scheduled(undefined,{after:day});ticks.push(result)
+  assert.equal(result.refused,0);assert.equal(result.pruned,true)
+  assert.deepEqual(Object.keys(result.consumers).sort(),['audit','cron','notifications'])
+  assert.ok(Object.values(result.consumers).every(consumer=>consumer.completed))
+  if(tick===0){assert.ok(await pending()>0,'a saturated tick leaves durable notice backlog');assert.ok((await app.first("SELECT count(*) n FROM workflow_schedules WHERE id IN (SELECT value FROM json_each(?)) AND state='sent'",JSON.stringify(replyIds))).n>0,'R5 replies progress in the same invocation')}
+  if(tick===1)await app.configure({}) // restart the same persisted backlog
+  if(!await pending()&&tick>=49)break
+ }
+ assert.equal(await pending(),0)
+ const sent=mail.sent.slice(start),keys=sent.map(entry=>entry.headers['idempotency-key'])
+ for(const ids of [unreadIds,teamIds])assert.deepEqual(keys.filter(key=>ids.includes(key)),ids,'FIFO notices drain once to their proven member')
+ for(const entry of sent.filter(entry=>unreadIds.includes(entry.headers['idempotency-key'])||teamIds.includes(entry.headers['idempotency-key'])))assert.deepEqual(entry.body.to,['owner-cron-backlog@example.test'])
+ const digest=sent.find(entry=>entry.headers['idempotency-key']===unreadIds[0]).body
+ for(let n=1;n<=100;n++)assert.ok(digest.text.includes(`customer message ${n}`),'a full digest is not truncated to fit the budget')
+ assert.ok(digest.html.includes('Customer backlog-000'))
+ assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE id LIKE 'expired-backlog-%'")).n,0)
+ assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='audit.purged' AND project_id LIKE 'p-retention-backlog-%'")).n,50)
+ assert.equal((await app.first("SELECT count(*) n FROM workflow_schedules WHERE id IN (SELECT value FROM json_each(?)) AND state='sent'",JSON.stringify(replyIds))).n,60)
+ assert.equal((await app.first("SELECT count(*) n FROM csat_surveys WHERE project_id=? AND state='sent'",P)).n,60)
+ const idle=await app.scheduled(undefined,{after:day});assert.equal(idle.consumers.audit.statements,1,'retention settings alone do no per-workspace work')
+ assert.deepEqual(mail.sent.slice(start).map(entry=>entry.headers['idempotency-key']),keys,'an empty follow-up tick never repeats a notice')
+ console.log(JSON.stringify({proof:'whole-cron-backlog',surveys:60,replies:60,unread:100,teammate:100,retentionWorkspaces:50,fullDigestMessages:100,ticks:ticks.length,peak:Math.max(...ticks.map(tick=>tick.statements)),first:ticks[0],idleAuditStatements:idle.consumers.audit.statements}))
+}

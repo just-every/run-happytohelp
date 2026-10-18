@@ -13,6 +13,20 @@ export {ConversationSocket} from '../../../src/modules/conversations/socket'
 // controls when background work happens; otherwise the Miniflare queue runs them.
 const captured:unknown[]=[]
 const bindings=(env:Env):Env=>env.H2H_TEST_CAPTURE_QUEUE?{...env,JOBS:{send:async(job:unknown)=>{captured.push(job)},sendBatch:async(batch:{body:unknown}[])=>{captured.push(...batch.map(item=>item.body))}} as unknown as Env['JOBS']}:env
+// Count all three cron branches against the same enforced platform limit.
+function scheduledMeter(db:D1Database){
+ const counts={statements:0,refused:0,pruned:false},consumers:Record<string,{statements:number;completed:boolean}>={}
+ const database=(name:string)=>{
+  const own=consumers[name]={statements:0,completed:false},raw=new WeakMap<object,D1PreparedStatement>()
+  const hit=(n:number,sql='')=>{if(counts.statements+n>1000){counts.refused++;throw new Error('D1 invocation statement limit')}counts.statements+=n;own.statements+=n;if(sql.includes('DELETE FROM abuse_counters'))counts.pruned=true}
+  const wrap=(statement:D1PreparedStatement,sql:string):D1PreparedStatement=>{
+   const result={bind:(...args:unknown[])=>wrap(statement.bind(...args),sql),...Object.fromEntries(['first','all','run','raw'].map(key=>[key,(...args:unknown[])=>{hit(1,sql);return (statement as any)[key](...args)}]))} as D1PreparedStatement
+   raw.set(result,statement);return result
+  }
+  return {prepare:(sql:string)=>wrap(db.prepare(sql),sql),batch:(statements:D1PreparedStatement[])=>{hit(statements.length);return db.batch(statements.map(statement=>raw.get(statement)??statement))},exec:()=>{throw new Error('Cron exec is not metered')},dump:()=>db.dump()} as D1Database
+ }
+ return {counts,consumers,database}
+}
 // Storage faults for one request, named by test-only headers. x-test-before-batch
 // and x-test-after-batch run a real D1 write around each atomic batch, as a
 // concurrent request would; x-test-fault fails D1 or R2 before or after commit,
@@ -75,7 +89,8 @@ export default {
    // Long retention journeys move the runtime clock, so the actual scheduled
    // integration sees the same time as the edge; application policy is untouched.
    const moved=after>=86400000;if(moved)Date.now=()=>originalNow()+after
-   try{await Promise.all([runScheduled(env),dispatchOperatorNotifications(env,{now:Date.now()+(moved?0:after)}),purgeExpiredAudit(env,Date.now()+(moved?0:after))]);return Response.json({ran:true})}finally{Date.now=originalNow}}
+   const meter=scheduledMeter(env.DB),run=async(name:string,task:(input:Env)=>Promise<unknown>)=>{await task({...env,DB:meter.database(name)});meter.consumers[name].completed=true}
+   try{await Promise.all([run('cron',runScheduled),run('notifications',input=>dispatchOperatorNotifications(input,{now:Date.now()+(moved?0:after)})),run('audit',input=>purgeExpiredAudit(input,Date.now()+(moved?0:after)))]);return Response.json({ran:true,...meter.counts,consumers:meter.consumers})}finally{Date.now=originalNow}}
   return app.fetch(request,env,context)
  },
  async queue(batch:MessageBatch<any>,env:Env){await consumeQueue(batch,env)},

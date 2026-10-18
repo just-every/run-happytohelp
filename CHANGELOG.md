@@ -8,6 +8,11 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.7 — 2026-10-18
+
+- **Optional mailbox setup.** Deployments can omit the seven Google, Microsoft and IMAP configuration values. Held secrets keep their existing bindings; every other deployment binding is unchanged. Email settings explains unavailable connections and disables their connect actions until configured.
+- **Upgrade from 0.4.6.** No new migrations. Back up, retain private settings and deploy with pinned rer 0.2.51. Existing owners, support history and files remain. An installation on 0.4.5 still receives exactly 0.4.6's fifteen missing migrations by name; never reset or edit the ledger.
+
 ## 0.4.6 — 2026-10-18
 
 - **Macros and private collaboration (R4).** Versioned action macros preview changes and editable reply text before Send. Private notes, mentions, followers, collision indicators, reversible merges and partner collaboration retain permissions and private history.

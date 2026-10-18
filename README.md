@@ -37,28 +37,31 @@ work delegated to your own Codex or Claude. It works with human replies without
 an AI provider. The editable React application runs on Cloudflare Workers with
 Hono, D1, R2, Queues and Durable Objects.
 
-## Release 0.4.6
+## Release 0.4.7
 
-Deploy the latest tagged release, **`v0.4.6`**, using the commands below.
-This release adds action macros, ticket notices to independently proven
-recipients and private team collaboration (R4), plus connected Gmail,
-Microsoft 365 and IMAP email (R6): aliases, signatures, CC/BCC, threading,
-Suspended mail, operator tickets and vendor matching. Cc relay and AI replies
-also reach proven addresses only. Unreadable mail is held without blocking
-healthy intake. Customer portal access and configurable request forms (R7b)
-are included, with independent mailbox verification and retained ticket history.
-The dropdown caret styling is included.
+Deploy the latest tagged release, **`v0.4.7`**, using the commands below.
+Mailbox provider configuration is now optional at deployment: installations
+without Google or Microsoft OAuth apps or IMAP settings can deploy normally.
+Email settings explains when a connection is unavailable and disables its
+connect action until the installation owner configures it.
+
+This release includes v0.4.6's action macros, ticket notices to independently
+proven recipients and private team collaboration (R4), connected Gmail,
+Microsoft 365 and IMAP email (R6), and customer portal access and configurable
+request forms (R7b). Cc relay and AI replies reach proven addresses only;
+unreadable mail is held without blocking healthy intake.
 
 Fresh installs, README restores and upgrades cover published baselines through
-v0.4.5. Commands keep `@runeditrun/rer` pinned to 0.2.51; local dev starts
+v0.4.6. Commands keep `@runeditrun/rer` pinned to 0.2.51; local dev starts
 without private setup answers. `rer deploy` claims the hosted owner named by
 `OWNER_EMAIL`; that owner signs in by email and opens Setup. Existing owners
-are preserved. Back up and retain private settings. The pinned rer applies
-all fifteen new migrations (`140–146`, `160–164` and `172–174`) by name in
-filename order
-before the updated Worker starts, even below already applied rows. It refuses
-unknown names, changed bytes and uncertain history and verifies readback.
-Do not reset or edit the migration ledger. R5 ships separately.
+are preserved. Back up and retain private settings. **Upgrading from v0.4.6
+adds no migrations.** Earlier installations receive the migrations they lack;
+v0.4.5 still needs v0.4.6's fifteen (`140–146`, `160–164` and `172–174`).
+The pinned rer applies them by name in filename order before the updated Worker
+starts, even below already applied rows. It refuses unknown names, changed
+bytes and uncertain history and verifies readback. Do not reset or edit the
+migration ledger. R5 ships separately.
 See [RELEASE.json](RELEASE.json),
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md) and [the changelog](CHANGELOG.md).
 
@@ -128,11 +131,11 @@ own operating contract; this seed's CLI is not a platform admission requirement.
 
 ## Deploy to your own Cloudflare account
 
-For a new installation, acquire the latest tagged release, **`v0.4.6`**,
+For a new installation, acquire the latest tagged release, **`v0.4.7`**,
 after installing `rer` as shown above:
 
 ```sh
-git clone --branch v0.4.6 https://github.com/just-every/run-happytohelp
+git clone --branch v0.4.7 https://github.com/just-every/run-happytohelp
 cd run-happytohelp
 ```
 

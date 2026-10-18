@@ -1,6 +1,6 @@
 {
-  "version": "0.4.6",
-  "previousVersion": "0.4.5",
+  "version": "0.4.7",
+  "previousVersion": "0.4.6",
   "date": "2026-10-18",
   "contractChanges": {},
   "proseChanges": [
@@ -8,85 +8,24 @@
       "document": "README.md",
       "change": "changed",
       "date": "2026-10-18",
-      "summary": "Describe R4 collaboration, proven-recipient notices, R6 complete email and R7b portal/request forms.",
-      "was": "The latest release was v0.4.5.",
-      "now": "v0.4.6 includes gated R4, R6 and R7b, with fifteen new migrations and rer 0.2.51.",
-      "ownerAction": "Back up, retain private settings and deploy with the pinned rer without resetting or editing migration history."
+      "summary": "Describe optional mailbox configuration and the migration-free v0.4.7 upgrade.",
+      "was": "The latest release was v0.4.6, whose hosted declaration required seven mailbox configuration values.",
+      "now": "v0.4.7 makes those seven values optional and shows unavailable mailbox connections. No migrations are added.",
+      "ownerAction": "Back up, retain private settings and deploy with pinned rer 0.2.51. Configure mailbox providers only when needed; never reset or edit migration history."
     },
     {
       "document": "CHANGELOG.md",
       "change": "changed",
       "date": "2026-10-18",
-      "summary": "Describe R4 collaboration, proven-recipient notices, R6 complete email and R7b portal/request forms.",
-      "was": "The latest release was v0.4.5.",
-      "now": "v0.4.6 includes gated R4, R6 and R7b, with fifteen new migrations and rer 0.2.51.",
-      "ownerAction": "Back up, retain private settings and deploy with the pinned rer without resetting or editing migration history."
+      "summary": "Describe optional mailbox configuration and the migration-free v0.4.7 upgrade.",
+      "was": "The latest release was v0.4.6, whose hosted declaration required seven mailbox configuration values.",
+      "now": "v0.4.7 makes those seven values optional and shows unavailable mailbox connections. No migrations are added.",
+      "ownerAction": "Back up, retain private settings and deploy with pinned rer 0.2.51. Configure mailbox providers only when needed; never reset or edit migration history."
     }
   ],
   "extensionPointChanges": [],
-  "migrations": [
-    {
-      "id": "140_macros.sql",
-      "buyerSteps": "Version existing saved replies as macros, retaining insertion behavior and existing rows. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "141_notification_triggers.sql",
-      "buyerSteps": "Create editable received/solved notification templates and durable delivery claims. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "142_collaboration.sql",
-      "buyerSteps": "Create private teammate mentions, followers and collaboration state; retain existing notes. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "143_conversation_actions.sql",
-      "buyerSteps": "Create reversible ticket merges, partner forwarding and private partner replies without merging identities. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "144_collaboration_audit.sql",
-      "buyerSteps": "Add collaboration audit triggers and macro archive attribution. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "145_macro_audit_incarnations.sql",
-      "buyerSteps": "Give macro audit occurrences independent identities across import undo and recreation. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "146_participant_provenance.sql",
-      "buyerSteps": "Add participant provenance; existing participants default to unproven cc_header, never address authority. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "160_mailboxes.sql",
-      "buyerSteps": "Create connected mailbox, alias and signature storage and nullable message/mailbox metadata; retain existing content. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "161_suspended_email.sql",
-      "buyerSteps": "Create Suspended email storage for refused and unreadable mail; do not deliver or replay it automatically. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "162_email_threading.sql",
-      "buyerSteps": "Create inert email threading keys for native and vendor matching; keys do not grant sender authority. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "163_email_followups.sql",
-      "buyerSteps": "Create links from Closed-ticket email follow-ups to their original ticket. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "164_mailbox_message_attempts.sql",
-      "buyerSteps": "Create bounded per-provider-message attempt tracking so unreadable messages do not stall a mailbox. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "172_request_forms.sql",
-      "buyerSteps": "Create request form configuration and idempotent submission receipts, retaining existing tickets and typed fields. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "173_customer_portal.sql",
-      "buyerSteps": "Create customer mailbox proof, portal identity and preference storage; existing sessions gain no portal authority. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "174_portal_mailbox_requester.sql",
-      "buyerSteps": "Create mailbox-verified contact alias storage without rewriting historical identities or granting address authority. Apply through pinned rer before the updated Worker serves traffic."
-    }
-  ],
+  "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.5 to v0.4.6 without resetting. Stop writers and back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.51. Rer applies the fifteen listed missing migrations by name in filename order before the updated Worker starts, including 140-146, 160-164 and 172-174 below already applied rows. It verifies recorded bytes and final readback; unknown names, changed bytes and uncertain history remain refused. Never delete, reorder or edit ledger rows. Existing participants remain unproven until independently verified. Preserve owner credentials, support history, imports, permissions, file bytes and erasure fences. Configure Gmail, Microsoft 365 or IMAP deliberately; mailbox connections and aliases do not grant authority to recipients. Customer portal access requires independent mailbox verification; existing sessions gain no portal authority. Request forms retain typed ticket fields and idempotent submission receipts. Keep uncertain external outcomes without replay and retain human Send.",
-  "publicReleaseNotes": "HappyToHelp v0.4.6 adds gated R4 action macros, proven-recipient ticket notices and private team collaboration, plus R6 connected Gmail, Microsoft 365 and IMAP email, aliases, signatures, CC/BCC, threading, Suspended mail, operator tickets and vendor matching. Cc relay and AI replies reach independently proven addresses only. Unreadable mail is held without stalling healthy intake. R7b adds configurable request forms and a customer portal with independent mailbox verification and protected private history. Installer qualification includes exact participant-provenance upgrade expectations and corrected historical archive policies. The dropdown caret styling is included. Fifteen migrations are added; back up and deploy with pinned rer 0.2.51, which accepts the real hosted migration history by name and recorded bytes. Do not reset or edit the ledger. R5 is not included. Hosted and paid-provider quality remain separately qualified; accessibility remains on owner HOLD. Production deployment is separate."
+  "agentUpdateInstructions": "Update from v0.4.6 to v0.4.7 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.51. This release adds no migrations. A v0.4.5 installation still receives exactly v0.4.6's fifteen missing migrations (140-146, 160-164 and 172-174) by name and recorded bytes, before traffic resumes. Never delete, reorder or edit ledger rows. The seven Google, Microsoft and IMAP configuration values are optional; omitted values stay unbound, while held secrets are inherited. Configure providers deliberately when needed. Preserve owners, support history, imports, permissions, file bytes and erasure fences. Keep uncertain external outcomes without replay and retain human Send.",
+  "publicReleaseNotes": "HappyToHelp v0.4.7 fixes hosted deployment for installations without mailbox OAuth apps or IMAP setup: the seven mailbox configuration bindings are optional. Email settings shows unavailable connect options until their providers are configured. Every other deploy binding is unchanged. Includes v0.4.6's R4, R6 and R7b features. No new migrations; v0.4.5 still receives v0.4.6's fifteen missing migrations. Back up and use pinned rer 0.2.51 without resetting or editing migration history. R5 is not included. Production deployment is separate."
 }

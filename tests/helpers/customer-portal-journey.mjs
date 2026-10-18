@@ -68,8 +68,11 @@ export async function customerPortalJourney(){
   // Unsigned mail impersonating this proven mailbox is kept apart, even when
   // sent after the customer's proof and after a signed widget visit.
   await app.email('From: Rosa <rosa@example.com>\r\nTo: help@example.com\r\nMessage-ID: <spoof-rosa>\r\nSubject: Forged request\r\n\r\nThis is an unproven sender.',{from:'rosa@example.com',to:'help@example.com'})
-  const spoof=await app.first("SELECT c.id FROM conversations c JOIN contacts ct ON ct.id=c.contact_id WHERE c.project_id=? AND json_extract(ct.metadata_json,'$.unverified_sender')=1",p)
+  const spoof=(await app.ok(`/api/management/projects/${p}/suspended`,owner)).data.find(entry=>entry.subject==='Forged request')
   assert.ok(spoof)
+  const held=(await app.ok(`/api/management/projects/${p}/suspended/${spoof.id}`,owner)).data
+  assert.equal((await app.first('SELECT state FROM inbound_emails WHERE id=?',held.receipt_id)).state,'suspended')
+  assert.equal(await app.first("SELECT id FROM conversations WHERE project_id=? AND subject='Forged request'",p),null)
   assert.equal((await app.call(P+`/tickets/${spoof.id}`,rosa)).status,404)
   const detail=()=>app.ok(P+`/tickets/${id}`,rosa)
   assert.equal((await detail()).ticket.status,'open')

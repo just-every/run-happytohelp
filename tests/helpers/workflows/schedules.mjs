@@ -128,5 +128,18 @@ export async function cronBacklogFlow(m){
  assert.equal((await app.first("SELECT count(*) n FROM csat_surveys WHERE project_id=? AND state='sent'",P)).n,60)
  const idle=await app.scheduled(undefined,{after:day});assert.equal(idle.consumers.audit.statements,1,'retention settings alone do no per-workspace work')
  assert.deepEqual(mail.sent.slice(start).map(entry=>entry.headers['idempotency-key']),keys,'an empty follow-up tick never repeats a notice')
+ // A workspace with rows expiring every minute must yield to the other due
+ // workspaces, including after a restart. This is ordinary advancing cron time.
+ const anchor=Date.now(),fair=[]
+ for(let i=0;i<5;i++)fair.push(app.db.prepare("INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,source) VALUES(?,'p-retention-backlog-0',?,'auth','sign_in.succeeded','succeeded','system','system')").bind('fair-active-'+i,anchor+day+i*60000-90*day-1))
+ for(let i=1;i<5;i++)fair.push(app.db.prepare("INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,source) VALUES(?,?,?,'auth','sign_in.succeeded','succeeded','system','system')").bind('fair-waiting-'+i,'p-retention-backlog-'+i,anchor-100*day))
+ await app.db.batch(fair)
+ for(let minute=0;minute<5;minute++){
+  const result=await app.scheduled(undefined,{after:day+minute*60000});assert.equal(result.refused,0);assert.equal(result.pruned,true)
+  if(minute===1)await app.configure({})
+ }
+ assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE id LIKE 'fair-waiting-%'")).n,0,'continuous expiry in one workspace never starves another')
+ await app.scheduled(undefined,{after:day+5*60000})
+ assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE id LIKE 'fair-active-%'")).n,0,'the busy workspace also resumes its retained work')
  console.log(JSON.stringify({proof:'whole-cron-backlog',surveys:60,replies:60,unread:100,teammate:100,retentionWorkspaces:50,fullDigestMessages:100,ticks:ticks.length,peak:Math.max(...ticks.map(tick=>tick.statements)),first:ticks[0],idleAuditStatements:idle.consumers.audit.statements}))
 }

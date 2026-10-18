@@ -37,23 +37,26 @@ work delegated to your own Codex or Claude. It works with human replies without
 an AI provider. The editable React application runs on Cloudflare Workers with
 Hono, D1, R2, Queues and Durable Objects.
 
-## Release 0.4.5
+## Release 0.4.6
 
-Deploy the latest tagged release, **`v0.4.5`**, using the commands below.
-This release keeps v0.4.4's product behavior and fixes hosted upgrades from
-migration subsets: rer applies missing migrations by name even when they sort
-below already applied rows, while refusing unknown names, changed bytes and
-uncertain history. It verifies the final migration set and recorded bytes.
-There are no new migrations. A customer's emailed reply to a Closed ticket
-opens a new ticket for that same customer; a teammate's reply is refused with
-a notice. Fresh installs, README restores and upgrades cover published
-baselines through v0.4.4. Commands use the published `@runeditrun/rer` package
-pinned to 0.2.51; local dev starts without private setup answers. `rer deploy`
-claims the hosted owner named by `OWNER_EMAIL` for you; that owner signs in by
-email and opens Setup. Existing owners are preserved. Back up, retain private
-settings and deploy with the pinned rer, which applies every missing migration
-in filename order before the updated Worker starts. Do not reset or edit the
-migration ledger. See [RELEASE.json](RELEASE.json),
+Deploy the latest tagged release, **`v0.4.6`**, using the commands below.
+This release adds action macros, ticket notices to independently proven
+recipients and private team collaboration (R4), plus connected Gmail,
+Microsoft 365 and IMAP email (R6): aliases, signatures, CC/BCC, threading,
+Suspended mail, operator tickets and vendor matching. Cc relay and AI replies
+also reach proven addresses only. Unreadable mail is held without blocking
+healthy intake. The dropdown caret styling is included.
+
+Fresh installs, README restores and upgrades cover published baselines through
+v0.4.5. Commands keep `@runeditrun/rer` pinned to 0.2.51; local dev starts
+without private setup answers. `rer deploy` claims the hosted owner named by
+`OWNER_EMAIL`; that owner signs in by email and opens Setup. Existing owners
+are preserved. Back up and retain private settings. The pinned rer applies
+all twelve new migrations (`140–146` and `160–164`) by name in filename order
+before the updated Worker starts, even below already applied rows. It refuses
+unknown names, changed bytes and uncertain history and verifies readback.
+Do not reset or edit the migration ledger. R5 and R7b ship separately.
+See [RELEASE.json](RELEASE.json),
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md) and [the changelog](CHANGELOG.md).
 
 Version 0.4.0 adds Move in for reviewed support-history imports, resolution
@@ -122,11 +125,11 @@ own operating contract; this seed's CLI is not a platform admission requirement.
 
 ## Deploy to your own Cloudflare account
 
-For a new installation, acquire the latest tagged release, **`v0.4.5`**,
+For a new installation, acquire the latest tagged release, **`v0.4.6`**,
 after installing `rer` as shown above:
 
 ```sh
-git clone --branch v0.4.5 https://github.com/just-every/run-happytohelp
+git clone --branch v0.4.6 https://github.com/just-every/run-happytohelp
 cd run-happytohelp
 ```
 

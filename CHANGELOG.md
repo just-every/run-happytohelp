@@ -8,6 +8,14 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.6 — 2026-10-18
+
+- **Macros and private collaboration (R4).** Versioned action macros preview changes and editable reply text before Send. Private notes, mentions, followers, collision indicators, reversible merges and partner collaboration retain permissions and private history.
+- **Notices to proven recipients.** Editable received and solved notices, Cc relay and AI replies reach independently proven addresses only. Frozen delivery claims preserve uncertainty without replay; Cc headers alone grant no recipient authority.
+- **Complete email (R6).** Connect Gmail, Microsoft 365 or IMAP; manage aliases and signatures, CC/BCC, threading, operator-created tickets and vendor matching. Refused and unreadable mail goes to Suspended; bounded per-message failures keep healthy intake moving. Receiving proof remains separate from sender and recipient authority.
+- **Dropdown carets.** Include the shared select-caret styling.
+- **Upgrade from 0.4.5.** Back up and apply `140_macros.sql` through `146_participant_provenance.sql` and `160_mailboxes.sql` through `164_mailbox_message_attempts.sql` through pinned rer 0.2.51 before serving traffic. These twelve migrations sort below already applied production rows and are planned by name, with bytes and final readback checked. Retain credentials, history, imports, files and private settings; never reset or edit the ledger. Existing participants remain unproven until independently verified. R5 and R7b are not included.
+
 ## 0.4.5 — 2026-10-18
 
 - **Hosted migration history.** Pin `@runeditrun/rer` 0.2.51. Deployments from gated migration subsets can apply missing migrations that sort below already applied rows. Rer checks applied names and recorded bytes, refuses unknown names, changed bytes and uncertain history, and verifies the final set by name and bytes.

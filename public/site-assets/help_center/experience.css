@@ -1,7 +1,9 @@
 .help-center-controls {display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:.75rem; margin:0 0 1.5rem; font-size:.875rem; overflow-wrap:anywhere;}
 .help-center-controls form {margin:0;}
 .help-center-language {display:flex; flex-wrap:wrap; align-items:center; gap:.5rem;}
-.help-center-controls button,.help-center-controls select,.help-center-signin input,.help-center-signin button,.help-center-feedback button,.help-center-feedback textarea {font:inherit; min-height:44px; border:1px solid #9ba6a2; border-radius:4px; background:#fff; color:#263b32; padding:.5rem .75rem; max-width:100%; box-sizing:border-box;}
+.help-center-controls button,.help-center-signin input,.help-center-signin button,.help-center-feedback button,.help-center-feedback textarea {font:inherit; min-height:44px; border:1px solid #9ba6a2; border-radius:4px; background:#fff; color:#263b32; padding:.5rem .75rem; max-width:100%; box-sizing:border-box;}
+/* Single-choice select: one 12 px chevron 14 px in from the right border (--rer-muted), room on the right for the text. */
+.help-center-controls select:not([multiple]):not([size]) {font:inherit; min-height:44px; border:1px solid #9ba6a2; border-radius:4px; background-color:#fff; color:#263b32; padding:.5rem 40px .5rem .75rem; max-width:100%; box-sizing:border-box; -webkit-appearance:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23475569' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; background-size:12px 8px;}
 .help-center-controls button,.help-center-signin button,.help-center-feedback button {cursor:pointer;}
 .help-center-signin,.help-center-feedback form {display:grid; gap:.75rem; max-width:34rem;}
 .help-center-signin button {justify-self:start;}

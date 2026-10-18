@@ -19,7 +19,7 @@
 .demo-workspace-banner__copy span { color: var(--ink-soft); }
 .demo-workspace-banner__return { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .demo-workspace-banner__return label { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
-.demo-workspace-banner__return select { max-width: 100%; min-height: 36px; padding: 0 10px; color: var(--ink); font: inherit; background: var(--surface); border: 1px solid var(--field-line); border-radius: 8px; }
+.demo-workspace-banner__return select { max-width: 100%; min-height: 36px; padding-block: 0; padding-left: 10px; color: var(--ink); font: inherit; background-color: var(--surface); border: 1px solid var(--field-line); border-radius: 8px; }
 .demo-workspace-banner__error { flex-basis: 100%; margin: 0; color: var(--danger); }
 @media (min-width: 1200px) {
     .demo-workspace-banner { margin-left: var(--rail-width); }

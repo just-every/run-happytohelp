@@ -141,14 +141,14 @@ body.conversation-workspace {
         .delegation-field textarea {
             width: 100%;
             color: var(--ink);
-            background: var(--surface);
+            background-color: var(--surface);
             border: 1px solid var(--rule);
             border-radius: .5rem;
             box-shadow: none;
             font: inherit;
             outline: 0;
         }
-        .delegation-field select { height: 2.4rem; padding: .45rem .6rem; font-size: .75rem; font-weight: 500; }
+        .delegation-field select { height: 2.4rem; padding-block: .45rem; padding-left: .6rem; font-size: .75rem; font-weight: 500; }
         .delegation-field textarea { min-height: 6rem; padding: .65rem; font-size: .75rem; font-weight: 400; line-height: 1.45; resize: vertical; }
         .delegation-field select:focus,
         .delegation-field textarea:focus { border-color: var(--ink); box-shadow: 0 0 0 2px rgba(var(--ink-rgb), .11); }
@@ -363,9 +363,10 @@ body.workspace-entry {
         width: 100%;
         height: 2.3rem;
         margin-top: .4rem;
-        padding: .4rem .55rem;
+        padding-block: .4rem;
+        padding-left: .55rem;
         color: var(--ink);
-        background: var(--surface);
+        background-color: var(--surface);
         border: 1px solid var(--rule);
         border-radius: .45rem;
         font: inherit;

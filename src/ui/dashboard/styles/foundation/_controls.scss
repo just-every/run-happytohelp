@@ -198,18 +198,23 @@ form:not(.h2h-setup form) label:not(.form-check-label):not(.btn) {
   }
 }
 
-.form-select {
+// Every single-choice select draws one 12 px chevron, 14 px in from its right border, in the muted ink (--rer-muted #475569;
+// Dark swaps to the dark --ink-soft), with room on the right so text never runs under it. Multiple and sized lists stay native.
+// The selector outranks every scoped select rule below (padding shorthands, background shorthands), so none can undo it.
+select:not([multiple]):not([size]),
+select[size="1"]:not([multiple]) {
+  -webkit-appearance: none;
+  appearance: none;
   padding-right: 40px;
-  background-image: none;
-  background:
-    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23141414' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>") right 14px center / 18px 18px no-repeat,
-    var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23475569' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 8px;
 }
 
-[data-theme="dark"] .form-select {
-  background:
-    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f3efe7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>") right 14px center / 18px 18px no-repeat,
-    var(--surface);
+[data-theme="dark"] select:not([multiple]):not([size]),
+[data-theme="dark"] select[size="1"]:not([multiple]) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23b5afa4' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 textarea.form-control {

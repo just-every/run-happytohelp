@@ -6,7 +6,9 @@
 .survey-card .ratings {display:flex;gap:.5rem;}
 .survey-card .choice {display:flex;flex:1;min-width:0;justify-content:center;align-items:center;gap:.375rem;border:1px solid var(--help-center-border);border-radius:4px;padding:.75rem .25rem;cursor:pointer;min-height:48px;}
 .survey-card input {width:20px;height:20px;accent-color:var(--help-center-link);}
-.survey-card textarea,.survey-card select {display:block;width:100%;margin:.5rem 0 1.25rem;font:inherit;border:1px solid var(--help-center-border);border-radius:4px;padding:.625rem;background:white;color:inherit;}
+.survey-card textarea {display:block;width:100%;margin:.5rem 0 1.25rem;font:inherit;border:1px solid var(--help-center-border);border-radius:4px;padding:.625rem;background:white;color:inherit;}
+/* Single-choice select: one 12 px chevron 14 px in from the right border (--rer-muted), room on the right for the text. */
+.survey-card select:not([multiple]):not([size]) {display:block;width:100%;margin:.5rem 0 1.25rem;font:inherit;border:1px solid var(--help-center-border);border-radius:4px;padding:.625rem 40px .625rem .625rem;background-color:white;color:inherit;line-height:normal;min-height:42px;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23475569' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; background-size:12px 8px;}
 .survey-card textarea {min-height:120px;resize:vertical;}
 .survey-card small {display:block;color:#4e5e75;font-size:.875rem;margin-top:-.75rem;margin-bottom:1.5rem;}
 .survey-card button {font:inherit;font-weight:600;background:var(--help-center-link);color:white;border:0;border-radius:4px;min-height:48px;padding:.75rem 1.5rem;cursor:pointer;}

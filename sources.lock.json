@@ -2342,7 +2342,7 @@
       "executable": false
     },
     "public/site-assets/help_center/experience.css": {
-      "sha256": "ee9ded303388632f24adc26bce8b6a8ef0c0974415aed8e2f435867da1af4c5a",
+      "sha256": "7d388a5c820bf3c9417e70cd07b76552bfdcf8a807a93a2ec0d64e3011717c5c",
       "executable": false
     },
     "public/site-assets/help_center/navigation.js": {
@@ -2350,7 +2350,7 @@
       "executable": false
     },
     "public/site-assets/help_center/surveys.css": {
-      "sha256": "7ac9732b33c96e35e9e6c757c7ec0c6c4d28c6aed26c61be7cde007f33100014",
+      "sha256": "cc358827c7c78fba6868cca865026da102decca8cb9ac907b1f2cedb089170d6",
       "executable": false
     },
     "README.md": {
@@ -6850,7 +6850,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/tickets/tickets.css": {
-      "sha256": "c8b01cb84c09e56fda6ff33b826d6d3e9e07862d598fd6874fa37b1262427865",
+      "sha256": "1cfa861c30de48e8d030d425726c932337bd1ea609aba52a450b65934d856b49",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/TicketViewRules.jsx": {
@@ -7106,7 +7106,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/foundation/_controls.scss": {
-      "sha256": "a4b71e22a068bb0069c51e0cde5c4733a1817b9121b377f05a8207a569208dae",
+      "sha256": "f5867b741301473f89d8cbb0545153968e78d48c58a959c779a10bd35964448f",
       "executable": false
     },
     "src/ui/dashboard/styles/foundation/_feather-icon-names.scss": {
@@ -7166,7 +7166,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-delegation.scss": {
-      "sha256": "b8606ec1931b91995f30b910f93fe5a3f2bb4f3f6f13d86dd63ca8a2c341f0c3",
+      "sha256": "18b58bd142f62bc0c9685bf32d965e0f69cd4072cfc9b12758b60f374091ca92",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-details.scss": {
@@ -7198,7 +7198,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_delegation-computers.scss": {
-      "sha256": "c2ef4385682931b3cccb2a8bd710f527b7771b7e33d81946ce0bee96ba895b30",
+      "sha256": "0afc7e70df79c6e9469fb5bf2524797457eccca5ffa0647d99258110f561e648",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_delegation-pages.scss": {
@@ -7778,7 +7778,7 @@
       "executable": false
     },
     "src/ui/native/demo/demo-banner.css": {
-      "sha256": "487e23e81f5c6feda61acfcf1a291d33f9bbf3c710c364ed344be2fc676db072",
+      "sha256": "07049d476ac803bb88f24398cf0ec72aa4f81ca896dbf8144026b843c93c8c80",
       "executable": false
     },
     "src/ui/native/demo/DemoWorkspaceBanner.jsx": {

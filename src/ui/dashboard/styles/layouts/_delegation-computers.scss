@@ -273,8 +273,8 @@ body.workspace-themed {
     .delegation-computer-settings p { margin: .2rem 0 .3rem; color: var(--ink-soft); font-size: .73rem; line-height: 1.5; }
     .delegation-computer-settings label { margin: .25rem 0 0; color: var(--ink); font-size: .73rem; font-weight: 650; }
     .delegation-computer-settings textarea,
-    .delegation-computer-settings select { width: 100%; min-width: 0; padding: .6rem; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: .5rem; font: inherit; font-size: .75rem; }
-    .delegation-computer-settings textarea { resize: vertical; line-height: 1.5; }
+    .delegation-computer-settings select { width: 100%; min-width: 0; padding-block: .6rem; padding-left: .6rem; color: var(--ink); background-color: var(--surface); border: 1px solid var(--rule); border-radius: .5rem; font: inherit; font-size: .75rem; }
+    .delegation-computer-settings textarea { padding-right: .6rem; resize: vertical; line-height: 1.5; }
     .delegation-computer-settings textarea:focus,
     .delegation-computer-settings select:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
     .delegation-computer-settings > button { justify-self: start; }

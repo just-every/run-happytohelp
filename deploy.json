@@ -86,31 +86,38 @@
     },
     {
       "binding": "GOOGLE_MAIL_CLIENT_ID",
-      "environment": "GOOGLE_MAIL_CLIENT_ID"
+      "environment": "GOOGLE_MAIL_CLIENT_ID",
+      "optional": true
     },
     {
       "binding": "GOOGLE_MAIL_CLIENT_SECRET",
-      "environment": "GOOGLE_MAIL_CLIENT_SECRET"
+      "environment": "GOOGLE_MAIL_CLIENT_SECRET",
+      "optional": true
     },
     {
       "binding": "MICROSOFT_MAIL_CLIENT_ID",
-      "environment": "MICROSOFT_MAIL_CLIENT_ID"
+      "environment": "MICROSOFT_MAIL_CLIENT_ID",
+      "optional": true
     },
     {
       "binding": "MICROSOFT_MAIL_CLIENT_SECRET",
-      "environment": "MICROSOFT_MAIL_CLIENT_SECRET"
+      "environment": "MICROSOFT_MAIL_CLIENT_SECRET",
+      "optional": true
     },
     {
       "binding": "MAILBOX_SOCKET_HOSTS",
-      "environment": "MAILBOX_SOCKET_HOSTS"
+      "environment": "MAILBOX_SOCKET_HOSTS",
+      "optional": true
     },
     {
       "binding": "MAILBOX_SOCKET_PORTS",
-      "environment": "MAILBOX_SOCKET_PORTS"
+      "environment": "MAILBOX_SOCKET_PORTS",
+      "optional": true
     },
     {
       "binding": "MAILBOX_IMAP_AUTHSERV",
-      "environment": "MAILBOX_IMAP_AUTHSERV"
+      "environment": "MAILBOX_IMAP_AUTHSERV",
+      "optional": true
     },
     {
       "binding": "FORMS_TURNSTILE_SITE_KEY",

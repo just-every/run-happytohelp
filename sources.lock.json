@@ -1633,7 +1633,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "139f7dc309d48f02d76fc61bd00aa59211503e5d430fd17ed5db6189c1fa01c4",
+      "sha256": "5aafe4f35b90f2ff428fbe4d2291e7e61a56de732bcf1a875eecf9f84de93b9f",
       "executable": false
     },
     "docs/ACCESSIBILITY-AUDIT-2026-09-30.md": {
@@ -8633,7 +8633,7 @@
       "executable": false
     },
     "src/ui/native/pages/email/MailboxEditor.jsx": {
-      "sha256": "f2ec885b5552390468be54d32160a45a23b0971f38ada182588664fd67ba7ccd",
+      "sha256": "3bab4db46874a02beda98db23996a82285d60a26173314d924018e43e54d38f3",
       "executable": false
     },
     "src/ui/native/pages/email/Mailboxes.jsx": {

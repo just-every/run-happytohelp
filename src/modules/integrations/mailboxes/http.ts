@@ -1,5 +1,6 @@
 import {HTTPException} from 'hono/http-exception'
 export const MIME_LIMIT=24*1024*1024
+export class MailboxResponseTooLarge extends Error {}
 const hosts=new Set(['oauth2.googleapis.com','gmail.googleapis.com','login.microsoftonline.com','graph.microsoft.com'])
 export class MailboxProviderError extends Error {
  status:number
@@ -24,9 +25,9 @@ export async function providerBytes(url:string,init:RequestInit={},limit=MIME_LI
  if(typeof init.body==='string'&&new TextEncoder().encode(init.body).length>36*1024*1024)throw new HTTPException(413)
  const response=await fetch(url,{...init,redirect:'manual',signal:AbortSignal.timeout(20000)})
  if(!response.ok){await response.body?.cancel();throw new MailboxProviderError(response.status)}
- if(Number(response.headers.get('content-length'))>limit){await response.body?.cancel();throw new HTTPException(502,{message:'Mailbox response exceeds size limit'})}
+ if(Number(response.headers.get('content-length'))>limit){await response.body?.cancel();throw new MailboxResponseTooLarge('Mailbox response exceeds size limit')}
  const reader=response.body?.getReader(),parts:Uint8Array[]=[];let length=0
- if(reader)try{while(true){const {done,value}=await reader.read();if(done)break;length+=value.length;if(length>limit)throw new HTTPException(502,{message:'Mailbox response exceeds size limit'});parts.push(value)}}finally{await reader.cancel().catch(()=>{});reader.releaseLock()}
+ if(reader)try{while(true){const {done,value}=await reader.read();if(done)break;length+=value.length;if(length>limit)throw new MailboxResponseTooLarge('Mailbox response exceeds size limit');parts.push(value)}}finally{await reader.cancel().catch(()=>{});reader.releaseLock()}
  const bytes=new Uint8Array(length);let offset=0;for(const part of parts){bytes.set(part,offset);offset+=part.length}
  return {bytes,status:response.status}
 }

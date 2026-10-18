@@ -16,6 +16,9 @@ export async function completeEmailJourney(){
   const mailbox=(await app.ok(base+'/mailboxes',{token:owner,body:{provider:'forwarding',address:'helpdesk@example.test',displayName:'Parcel Support',aliases:['returns@example.test']}})).data
   const reconnected=await app.ok(base+`/mailboxes/${mailbox.id}/reconnect`,{token:owner,body:{}})
   assert.equal(reconnected.data.status,'connected');assert.ok(reconnected.data.addresses.some(alias=>alias.address==='returns@example.test'),'forwarding reconnect retains receiving aliases')
+  await app.ok(base+`/mailboxes/${mailbox.id}/aliases`,{token:owner,body:{address:'helpdesk+returns@example.test'}})
+  const plusMail=await gate({messageId:'plus-alias',from:'plus@customer.example',to:'helpdesk+returns@example.test',text:'Please help with this return.'})
+  assert.equal(plusMail.data.state,'delivered','an exact configured plus alias takes precedence over thread suffix parsing')
   // Customer order references are ordinary mail in a workspace with no imports.
   for(const [index,subject] of ['Where is my parcel?','Order [#4521] never arrived','Return label [AB12-CD34] not working','Invoice [2026-1017] question'].entries()){
    const from=`customer-${index}@customer.example`,id=`customer-reference-${index}@customer.example`

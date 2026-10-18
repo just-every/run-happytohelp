@@ -1,4 +1,4 @@
-const mailboxPattern=/^([^@\s+]+)@([^@\s]+)$/
+const mailboxPattern=/^([^@\s]+)@([^@\s]+)$/
 const addressPattern=/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/
 const conversationPattern=/^[A-Za-z0-9_-]{1,200}$/
 

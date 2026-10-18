@@ -19,6 +19,7 @@ import {resolveEmailThreadCandidates,emailThreadingStatements} from './email-thr
 import {emailFollowup} from './email-followups'
 import {inboundIntent,sameInboundIntent,legacyInboundIntentMatches} from './inbound-intent'
 import {markPreMigrationReply} from './email-migration-reply'
+import {suspendRefusedEmail} from './refused-email'
 /** `to` lists the recipient addresses in routing order (envelope, forwarding headers,
  * To); the first configured mailbox selects the project. `from` is the header From and
  * `senderAuthenticated` whether the ingress verified it; `senderFailed` that the
@@ -73,7 +74,10 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
  const consumedGrant=possessed?{recipient:from,token_hash:await hashToken(target.replyToken!)}:undefined
  const refusal=(closed:{id:string;subject:string|null}|null)=>new ClosedTicketRefusal(trusted&&closed?{projectId:project.project_id,conversationId:closed.id,member:from,subject:closed.subject||'',receiptId:recordId}:null)
  if(prior){
-  if(prior.project_id!==project.project_id||!sameInboundIntent(prior.intent_hash,intentHash)&&!recovering&&!await legacyInboundIntentMatches(env,project.project_id,prior.intent_hash,intent,target.mailbox,addressed))throw new HTTPException(409,{message:'Inbound email identity conflict'})
+  if(prior.project_id!==project.project_id||!sameInboundIntent(prior.intent_hash,intentHash)&&!recovering&&!await legacyInboundIntentMatches(env,project.project_id,prior.intent_hash,intent,target.mailbox,addressed)){
+   await suspendRefusedEmail(env,input,{projectId:project.project_id,identity:intentHash,reason:'message_identity_conflict'})
+   throw new HTTPException(409,{message:'Inbound email identity conflict'})
+  }
   // Admission and its outbox are atomic. Reconcile a lost completion write without
   // re-entering customer-message automation or replaying uncertain provider work.
   const admitted=await env.DB.prepare('SELECT id,conversation_id FROM messages WHERE project_id=? AND local_id IN (?,?) AND (? IS NULL OR conversation_id=?)').bind(project.project_id,localId,legacyLocalId,prior.conversation_id,prior.conversation_id).first<{id:string;conversation_id:string}>()
@@ -135,10 +139,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
   // their most recently active open thread or starts one, and is never refused.
   if(!actor){
    const contact=await emailContact(env,project.project_id,from)
-   if(!contact){
-    await env.DB.prepare("UPDATE inbound_emails SET state='ignored',error='Contact is unavailable' WHERE id=? AND claim_token=?").bind(recordId,claimToken).run()
-    return {id:messageId,state:'ignored',conversationId:null,duplicate:false,automatic}
-   }
+   if(!contact)return suspendEmail(env,input,{projectId:project.project_id,receiptId:recordId,claimToken,reason:'contact_unavailable'})
    actor={id:contact.id,contactId:contact.id,projectId:project.project_id,role:'contact'}
    conversation=(prior?.conversation_id?await env.DB.prepare("SELECT * FROM conversations WHERE id=? AND project_id=? AND contact_id=? AND status_category<>'closed'").bind(prior.conversation_id,project.project_id,contact.id).first<any>():null)||(thread.possiblePreMigrationReply?await newConversation(env,project.project_id,contact.id,recordId,claimToken):await openEmailConversation(env,project.project_id,contact.id,project.mailbox_id))
    if(!conversation){

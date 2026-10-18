@@ -1,7 +1,7 @@
 import type {connect} from 'cloudflare:sockets'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../../platform/env'
-import {base64,MIME_LIMIT} from './http'
+import {base64,MIME_LIMIT,MailboxResponseTooLarge} from './http'
 import type {ImapCredential} from './types'
 type Socket=ReturnType<typeof connect>
 
@@ -43,7 +43,8 @@ export class MailSocket {
   }
  }
  async literal(length:number){
-  if(!Number.isSafeInteger(length)||length<0||length>MIME_LIMIT)throw new Error('Mailbox message exceeds size limit')
+  if(!Number.isSafeInteger(length)||length<0)throw new Error('Invalid mailbox literal length')
+  if(length>MIME_LIMIT)throw new MailboxResponseTooLarge('Mailbox message exceeds size limit')
   while(this.buffer.length<length)await this.fill()
   const value=this.buffer.slice(0,length);this.buffer=this.buffer.slice(length);return value
  }

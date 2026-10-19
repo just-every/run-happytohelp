@@ -14,13 +14,24 @@ export async function companyPortalJourney(f){
  assert.equal((await app.call(P+`/tickets/${tickets[1].id}`,people[0])).status,404)
  await app.ok(`${base}/companies/${company.id}`,{...owner,method:'PATCH',body:{portalCompanyView:true}})
  assert.equal((await app.ok(P+'/tickets',people[0])).tickets.length,12)
+ const upload=await app.ok(P+`/tickets/${tickets[1].id}/attachments`,{...people[1],raw:true,body:'Northstar shipping manifest',headers:{...people[1].headers,'Content-Type':'text/plain','X-Filename':'manifest.txt'}})
  const shared=(await app.ok(P+`/tickets/${tickets[1].id}`,people[0])).ticket
- const reply=await app.ok(P+`/tickets/${shared.id}/reply`,{...people[0],body:{localId:'alex-company-reply',content:'I coordinate deliveries for Northstar. Please use our loading dock.',expectedRevision:shared.revision}})
+ const reply=await app.ok(P+`/tickets/${shared.id}/reply`,{...people[0],body:{localId:'alex-company-reply',content:'I coordinate deliveries for Northstar. Please use our loading dock.',expectedRevision:shared.revision,mediaIds:[]}})
  assert.equal((await app.first('SELECT actor_id FROM messages WHERE id=?',reply.messageId)).actor_id,contacts[0].contact_id,'company replies keep the actual author')
+ const beaTicket=(await app.ok(P+`/tickets/${shared.id}`,people[1])).ticket
+ await app.ok(P+`/tickets/${shared.id}/reply`,{...people[1],body:{localId:'company-file',content:'The shipping manifest is attached.',expectedRevision:beaTicket.revision,mediaIds:[upload.id]}})
+ const file=P+`/tickets/${shared.id}/attachments/${upload.id}`,download=await app.request(file,people[0]);assert.equal(download.status,200);assert.equal(await download.text(),'Northstar shipping manifest')
+ await app.ok(`/api/dashboard/projects/${p}/conversations/${shared.id}`,{...owner,method:'PUT',body:{resolved:true}})
+ const solved=(await app.ok(P+`/tickets/${shared.id}`,people[0])).ticket
+ await app.ok(P+`/tickets/${shared.id}/reopen`,{...people[0],body:{expectedRevision:solved.revision}})
+ assert.equal((await app.ok(P+`/tickets/${shared.id}`,people[0])).ticket.status,'open')
  const outsider=await signin('outside@example.net'),outside=(await app.ok(`${api}/${form.id}/submissions`,{...outsider,body:{...valid,localId:'outside-company'}})).ticket
+ assert.equal((await app.call(file,outsider)).status,404)
+ assert.deepEqual(new Set((await app.ok(`/api/dashboard/projects/${p}/conversations?view=all&company=${company.id}`,owner)).data.map(ticket=>ticket.id)),new Set(tickets.map(ticket=>ticket.id)))
  for(const action of ['', '/reply'])assert.equal((await app.call(P+`/tickets/${outside.id}${action}`,{...people[0],...(action?{body:{localId:'outside-reply',content:'No access',expectedRevision:1}}:{})})).status,404)
  await app.ok(`${base}/companies/${company.id}/members/${contacts[0].contact_id}`,{...owner,method:'DELETE'})
  assert.equal((await app.call(P+`/tickets/${shared.id}`,people[0])).status,404,'membership removal is immediate')
+ assert.equal((await app.call(file,people[0])).status,404,'membership removal fences existing attachment links')
  await app.ok(`${base}/companies/${company.id}`,{...owner,method:'PATCH',body:{portalCompanyView:false}})
  assert.equal((await app.ok(P+'/tickets',people[1])).tickets.length,4,'entitlement removal is immediate')
  assert.equal((await app.call(P+`/tickets/${tickets[2].id}`,people[1])).status,404)

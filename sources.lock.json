@@ -7149,7 +7149,7 @@
       "executable": false
     },
     "src/platform/dashboard-path.js": {
-      "sha256": "6b7ee403997ee5255b65cfeb4a0c8327e571b77fa8f39a7f4b4a9eb0985ccf1f",
+      "sha256": "d4fe17889786d2c5dcfe8ed62ee462d5ef6d2d0745e075904c596521c4fba732",
       "executable": false
     },
     "src/platform/db.ts": {
@@ -10189,7 +10189,7 @@
       "executable": false
     },
     "tests/helpers/company-portal.mjs": {
-      "sha256": "51be9db4c45990eb3fe0345e4cbb33b2900eeb0061737b79370def2c4e871a96",
+      "sha256": "0a5da34f0d27498e8132f16166fec87c1a84af430ac4a8679e4cd63446b544aa",
       "executable": false
     },
     "tests/helpers/company-records.mjs": {

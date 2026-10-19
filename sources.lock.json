@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "bded97cc7568031789a729c4fb42204094196eb6c033d5ecb09cc5274f76fa46",
+      "sha256": "d7931657ca30c4aad0e2713d0b83b946492e2e41c9bc001c53506d50338a8f7c",
       "executable": false
     },
     "CLAUDE.md": {
@@ -5037,7 +5037,7 @@
       "executable": false
     },
     "src/modules/integrations/notification-request.ts": {
-      "sha256": "82bc6457d3da4c78218b5cdc10ad55c8d4a0b048eb09cb502cbfa039464f31f6",
+      "sha256": "2dc70932cb9635056e10e23781af7016a53557e043a542b06312f216f8b994d3",
       "executable": false
     },
     "src/modules/integrations/notification-teammate-delivery.ts": {
@@ -10149,7 +10149,7 @@
       "executable": false
     },
     "tests/helpers/email/worker-mail.mjs": {
-      "sha256": "642e5f0022533b15f3ea0202005eae909c8025f4b45d24ba4b2f83ed9aa1f03d",
+      "sha256": "94e7fbf78b9be10b22f185f499273f975af035804b95085a2aa177791df1e124",
       "executable": false
     },
     "tests/helpers/emitted-runtime-proxy-fault.mjs": {

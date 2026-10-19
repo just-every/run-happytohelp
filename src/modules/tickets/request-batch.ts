@@ -1,7 +1,7 @@
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {contactAvailableSql} from '../conversations/contact-privacy'
-import {deferRequestAssignments,requestRoom} from '../integrations/notification-budget'
+import {deferRequestAssignments,requestRoom,assignmentRequestBudget} from '../integrations/notification-budget'
 
 const preparation=Symbol('ticket batch preparation')
 type BatchEnv=Env&{[preparation]?:{reads:Map<string,Promise<any>>;tickets:Map<string,any>}}
@@ -39,5 +39,5 @@ export class TicketCapacityError extends HTTPException {
  constructor(){super(503,{message:'This ticket was not changed because the request has no room for its complete mutation and receipt.'})}
 }
 export function admitTicketWork(env:Env,statements:number){
- if(requestRoom(env)<statements)throw new TicketCapacityError()
+ if(assignmentRequestBudget(env)&&requestRoom(env)<statements)throw new TicketCapacityError()
 }

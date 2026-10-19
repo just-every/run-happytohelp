@@ -6285,7 +6285,7 @@
       "executable": false
     },
     "src/modules/tickets/request-batch.ts": {
-      "sha256": "1dfc362a68101be3aca8adf2984c882d50650ecf8c6b4a0c7b679a38196bf654",
+      "sha256": "01aa8f1abb2828dec1157c41368895814c4825da8dab74809827c7a09150d944",
       "executable": false
     },
     "src/modules/tickets/routes-settings.ts": {

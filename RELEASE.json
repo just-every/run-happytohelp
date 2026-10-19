@@ -28,5 +28,14 @@
   "breaking": false,
   "agentUpdateInstructions": "Update from v0.4.9 to v0.4.10 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.68. This patch changes a test fixture credential, the ticket collaboration area's ARIA role, a test-runtime helper and release metadata. No new migrations: the current 95-row ledger must plan nothing and refuse nothing. Never delete, reorder or edit ledger rows. Retain owners, imported support history, permissions, files and erasure fences. The seven mailbox settings remain optional and held secrets are inherited. Run rer deploy --dry-run against the retained installation before deployment. Upgrades from v0.4.7 still apply the seven missing v0.4.8 migrations by name. Retain human Send. Production deployment is separate.",
   "publicReleaseNotes": "HappyToHelp v0.4.10 renames the cron-backlog test signing token and its matching inbound request to an explicitly synthetic value. RER's hosted credential scanner can accept the public source before agent dispatch. Ticket collaboration on a conversation is now a labelled group, so its label is valid ARIA in every state, and the account-security browser journey no longer fails by chance because test Workers open an inspector only on a port they are given. Every existing assertion is retained. No new migrations; rer stays at 0.2.68. Back up and retain settings and migration history without resetting. Production deployment is separate.",
-  "pendingMigrations": []
+  "pendingMigrations": [
+    {
+      "id": "192_companies.sql",
+      "buyerSteps": "R9a company records, typed attributes, membership, domains and reversible merge history. Apply through pinned rer before the updated Worker serves traffic; retain existing records and private settings without resetting."
+    },
+    {
+      "id": "193_customer_csv.sql",
+      "buyerSteps": "R9a mapped CSV dry runs and reversible contact and company imports. Apply through pinned rer before the updated Worker serves traffic; retain import journals and erasure fences without resetting."
+    }
+  ]
 }

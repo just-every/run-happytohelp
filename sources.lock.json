@@ -7513,7 +7513,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/collaboration/ConversationCollaboration.jsx": {
-      "sha256": "a5ef0ee908e409dfa401e763aeb4ff1a7a5197c43d0257f7e016a9dc4d1ca560",
+      "sha256": "73a7465fe8a20973d45644378c462b8ed1aff14a6d77d9cda9b06946a7039f59",
       "executable": false
     },
     "src/ui/dashboard/components/collaboration/mention-editor.js": {
@@ -10973,7 +10973,7 @@
       "executable": false
     },
     "tests/helpers/workflows/schedules.mjs": {
-      "sha256": "02389b610077bac02eff3e3a1075b8daff652f3b591e084fefb208a10c5e3556",
+      "sha256": "604e36693e2e2f6ae8abbc4dd759f2f240846c5d0a282af51f7e8be15bfd6da8",
       "executable": false
     },
     "tests/helpers/workflows/sla.mjs": {

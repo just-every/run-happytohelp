@@ -109,7 +109,7 @@ export async function cronBacklogFlow(m){
  for(let tick=0;tick<120;tick++){
   const result=await app.scheduled(undefined,{after:day});ticks.push(result)
   assert.equal(result.refused,0);assert.equal(result.pruned,true)
-  assert.deepEqual(Object.keys(result.consumers).sort(),['audit','cron','notifications'])
+  assert.deepEqual(Object.keys(result.consumers).sort(),['audit','cron','notifications','reports'])
   assert.ok(Object.values(result.consumers).every(consumer=>consumer.completed))
   if(tick===0){assert.ok(await pending()>0,'a saturated tick leaves durable notice backlog');assert.ok((await app.first("SELECT count(*) n FROM workflow_schedules WHERE id IN (SELECT value FROM json_each(?)) AND state='sent'",JSON.stringify(replyIds))).n>0,'R5 replies progress in the same invocation')}
   if(tick===1)await app.configure({}) // restart the same persisted backlog

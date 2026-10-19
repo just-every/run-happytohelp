@@ -2,8 +2,9 @@
 
 The customer portal lets a customer sign in by email, send a request and follow
 its conversation with your team. Share `/portal/:project` for your workspace.
-Customers see only their own requests. Sharing an email domain does not grant
-access to anyone else's tickets; company-wide visibility is not available yet.
+Customers see their own requests. An operator can explicitly grant a company
+access to its members’ requests; this starts off. Sharing an email domain alone
+does not grant access to anyone else's tickets.
 
 ## Sign in
 
@@ -79,7 +80,7 @@ All routes are scoped to `/api/portal/:projectId`:
 | `POST /access/request` | Request a sign-in email with `email` and an optional local `returnTo` path |
 | `GET /access/verify?token=…` | Consume the email link and establish the customer session |
 | `POST /access/logout` | End the customer session |
-| `GET /tickets` | List the customer's requests |
+| `GET /tickets` | List own requests and explicitly entitled company requests |
 | `POST /tickets` | Create a request with `formId` and the forms submission fields |
 | `GET /tickets/:ticketId` | Read a request and its customer conversation |
 | `POST /tickets/:ticketId/reply` | Send a reply |

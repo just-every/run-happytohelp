@@ -1,3 +1,4 @@
+import {csvErasureIdentities} from '../import-kit/csv/erasure'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Env} from '../../platform/env'
@@ -28,9 +29,10 @@ export async function eraseContact(env: Env, projectId: string, contactId: strin
   const fenced=await fenceAndStage(env, projectId, contactId, now, contact)
   await deleteStagedObjects(env, projectId, contactId)
   const emails=[...new Set([...contactEmails(contact),...contactEmails(fenced??{})])]
+  const csvIdentities=await csvErasureIdentities(env,projectId,contactId,emails)
   await env.DB.batch([
     ...await knowledgeErasureStatements(env,projectId,contactId,emails),
-    ...erasureStatements(env, {projectId, contactId, actorId, now, emails}),
+    ...erasureStatements(env, {projectId, contactId, actorId, now, emails,csvIdentities}),
   ])
   return env.DB.prepare('SELECT * FROM contact_erasures WHERE project_id=? AND contact_id=?').bind(projectId, contactId).first<ContactErasure>()
 }

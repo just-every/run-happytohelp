@@ -110,6 +110,21 @@ for(const base of [P,D]){
  rules[`POST ${base}/workflow-clock`]='settings.manage'
 }
 
+for(const base of [P,D]){
+ for(const kind of ['companies','company-fields']){
+  const rule=kind==='companies'?'contacts.manage':'settings.manage'
+  rules[`GET ${base}/${kind}`]=rule
+  rules[`POST ${base}/${kind}`]=rule
+ }
+ rules[`GET ${base}/companies/:companyId`]='contacts.manage'
+ rules[`PATCH ${base}/companies/:companyId`]='contacts.manage'
+ for(const method of ['PUT','DELETE'])rules[`${method} ${base}/companies/:companyId/members/:contactId`]='contacts.manage'
+ for(const tail of ['merge/preview','merge','history/:historyId/undo'])rules[`POST ${base}/companies/:companyId/${tail}`]='contacts.manage'
+ for(const method of ['PATCH','DELETE'])rules[`${method} ${base}/company-fields/:fieldId`]='settings.manage'
+ for(const tail of ['preview',':runId/apply',':runId/undo'])rules[`POST ${base}/customer-imports/${tail}`]='data.import'
+ rules[`GET ${base}/customer-imports/:runId`]='data.import'
+}
+
 const prefixes=['/api/v1/','/api/management/admin/']
 for(const base of [P,D])rules[`POST ${base}/tickets`]='conversations.reply'
 for(const action of ['connect','imap'])rules[`POST ${P}/mailboxes/${action}`]='integrations.install'

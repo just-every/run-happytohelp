@@ -1,3 +1,5 @@
+import {customerErasureStatements,customerErasureCount} from '../../customers/index'
+import {csvCustomerErasureStatements} from '../../import-kit/csv/erasure'
 import {eraseFormStatements} from '../../forms/erasure'
 import {portalErasureStatements} from '../../portal/privacy'
 import {importErasureStatements} from '../../move-in/erasure'
@@ -11,7 +13,7 @@ import {legacyArchiveRedaction} from './archive'
 import {erasureInboundEvidenceStatements} from './inbound-evidence'
 import {attempts,contextJobs,contextTables,conversations,generations,localJobs,messages,projectConversations,staged,subject,trackedTables} from './scope'
 
-export interface ErasureRequest {projectId: string; contactId: string; actorId: string; now: number; emails: string[]}
+export interface ErasureRequest {projectId: string; contactId: string; actorId: string; now: number; emails: string[];csvIdentities?:string[]}
 
 const count = (table: string, where: string) => `(SELECT count(*) FROM ${table} WHERE ${where})`
 const sum = (parts: string[]) => parts.join('+')
@@ -54,7 +56,7 @@ SELECT ?1,?2,?3,?4,?4,1,
  ${sum(trackedTables.map(table => count(table, subject)))},
  ${sum(contextTables.map(table => count(table, subject)))},
  ${count('sessions', 'project_id=?1 AND contact_id=?2')},
- ${ticketErasureCount}+(${collaborationRecordsCount})+${workflowErasureCount}
+ ${customerErasureCount}+${ticketErasureCount}+(${collaborationRecordsCount})+${workflowErasureCount}
 WHERE EXISTS(SELECT 1 FROM contacts WHERE project_id=?1 AND id=?2)
 ON CONFLICT(project_id,contact_id) DO UPDATE SET last_erased_at=excluded.last_erased_at,runs=runs+1,conversations=excluded.conversations,
  messages=messages+excluded.messages,attachments=attachments+excluded.attachments,tracked_events=tracked_events+excluded.tracked_events,
@@ -80,6 +82,8 @@ export function erasureStatements(env: Env, request: ErasureRequest) {
     ...ticketErasureStatements(env,projectId,contactId),
     ...emailErasureStatements(env,projectId,contactId,request.emails),
     ...eraseFormStatements(env,projectId,contactId),
+    ...customerErasureStatements(env,projectId,contactId),
+    ...csvCustomerErasureStatements(env,projectId,contactId,request.csvIdentities??request.emails),
     ...portalErasureStatements(env,projectId,contactId,request.emails),
     // Copies of the contact's data held outside the canonical rows, removed while those rows still identify them.
     bound(legacyArchiveRedaction),

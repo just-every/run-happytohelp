@@ -29,6 +29,8 @@ for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  const filters=structured?await compileFilters(c.env,a,project,saved?.filters??parseFilters(requestedFilters)):inboxFilters(name=>c.req.query(name),search,a.id)
  conditions.push(...filters.conditions);params.push(...filters.params)
  const sort=await compileSort(c.env,a,project,requestedSort===undefined?saved?.sort??[]:parseSort(requestedSort))
+ const company=c.req.query('company')
+ if(company){conditions.push('EXISTS(SELECT 1 FROM contact_companies member JOIN companies account ON account.id=member.company_id AND account.project_id=member.project_id WHERE member.project_id=c.project_id AND member.contact_id=c.contact_id AND member.company_id=? AND account.merged_into IS NULL)');params.push(company)}
  const tag=c.req.query('tag')
  if(tag){
   if(!project||!await c.env.DB.prepare('SELECT id FROM workspace_tags WHERE id=? AND project_id=?').bind(tag,project).first())throw new HTTPException(404)

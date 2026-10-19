@@ -1,3 +1,4 @@
+import {companyPortalReply,portalTicketScope} from '../portal/company-visibility'
 import {workflowNow,workflowEnvironment} from '../workflows/clock'
 import {followupId,createFollowupStatement,carryFollowupStatements} from '../workflows/followups'
 import {scheduledAdmission,type ScheduledAdmission} from '../workflows/schedule-authority'
@@ -19,7 +20,7 @@ import {writableConversationSql} from '../conversation-actions/merge-read'
 export const reservedLocalId=(localId:unknown)=>typeof localId==='string'&&/^(?:email|erased|away|schedule):/.test(localId)
 /** An internal authority may add a transaction predicate; JSON callers cannot mint this symbol. */
 export const messageAuthority=Symbol('messageAuthority')
-export interface MessageInput {[messageAuthority]?:{sql:string;args:unknown[]};requireAvailableRequester?:true;[scheduledAdmission]?:ScheduledAdmission;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
+export interface MessageInput {[companyPortalReply]?:true;[messageAuthority]?:{sql:string;args:unknown[]};requireAvailableRequester?:true;[scheduledAdmission]?:ScheduledAdmission;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
 export interface MessageResult {accepted:boolean;duplicate?:boolean;message?:any;reason?:string;followupConversationId?:string}
 export async function admitMessage(env:Env,input:MessageInput):Promise<MessageResult>{
  const {projectId,conversationId,actor,localId,content,expectedRevision}=input,email=input[inboundAuthority]
@@ -32,6 +33,7 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  const mediaIds=[...new Set(input.mediaIds||[])];if(mediaIds.length>20||(!content.trim()&&!mediaIds.length))throw new Error('Invalid message content')
  const intentHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify({content,mediaIds:[...mediaIds].sort(),resolve:!!input.resolve,expectedRevision,expectedLastMessageId:input.expectedLastMessageId,generationId:input.generationId,...(refs.length?{citations:refs.map(r=>({id:r.id,sourceVersion:r.sourceVersion}))}: {})}))))).map(x=>x.toString(16).padStart(2,'0')).join('')
  const replayGuard=input.tokenAuthority?tokenGuard(input.tokenAuthority,projectId,'messages:write'):null
+ const companyReply=input[companyPortalReply]===true&&actor.role==='contact'&&!!input.sessionHash&&!!input[messageAuthority]
  const authority=input[messageAuthority]
  const replayPredicate=(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')
  const replayArgs=[...(replayGuard?.params||[]),...(authority?.args||[])]
@@ -45,7 +47,7 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
   ...(input.generationId?[env.DB.prepare('SELECT ai_id FROM ai_generations WHERE id=? AND project_id=? AND conversation_id=?').bind(input.generationId,projectId,conversationId)]:[])
  ])
  const scope=observations[0].results[0]
- if(!scope||(!input.generationId&&actor.role==='contact'&&!email&&scope.contact_id!==(actor.contactId||actor.id)))return {accepted:false,reason:'conversation_access_denied'}
+ if(!scope||(!input.generationId&&actor.role==='contact'&&!email&&!companyReply&&scope.contact_id!==(actor.contactId||actor.id)))return {accepted:false,reason:'conversation_access_denied'}
  if(checkMembership&&!observations[2].results[0])return {accepted:false,reason:'conversation_access_denied'}
  const generation=input.generationId?observations[2].results[0]:null
  if(input.generationId&&!generation)return {accepted:false,reason:'generation_not_found'}
@@ -68,7 +70,7 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
   const [definitions,stored]=await env.DB.batch<any>([env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=?').bind(projectId),env.DB.prepare('SELECT field_id,value_json FROM ticket_field_values WHERE project_id=? AND conversation_id=?').bind(projectId,conversationId)])
   for(const field of requiredToSolve(definitions.results,Object.fromEntries(stored.results.map((v:any)=>[v.field_id,JSON.parse(v.value_json)])),{},input.tokenAuthority?null:await memberAccess(env.DB,projectId,actor.id))){predicates.push('EXISTS(SELECT 1 FROM ticket_field_values WHERE project_id=c.project_id AND conversation_id=c.id AND field_id=?)');args.push(field)}
  }
- if(input.tokenAuthority){const guard=tokenGuard(input.tokenAuthority,projectId,'messages:write');predicates.push(`EXISTS(${guard.sql})`,contactAvailableSql());args.push(...guard.params)}else if(input.generationId){predicates.push(`c.assigned_to IS NULL AND ${activeSourceProjectSql('c.project_id')}`)}else if(actor.role==='contact'&&!email){predicates.push("c.contact_id=? AND EXISTS(SELECT 1 FROM contacts contact WHERE contact.id=c.contact_id AND COALESCE(json_extract(contact.metadata_json,'$.is_blocked'),0)!=1)");args.push(actor.contactId||actor.id)}else if(actor.role!=='contact'){predicates.push('EXISTS(SELECT 1 FROM memberships WHERE project_id=c.project_id AND user_id=? AND role=?)');args.push(actor.id,actor.role)}
+ if(input.tokenAuthority){const guard=tokenGuard(input.tokenAuthority,projectId,'messages:write');predicates.push(`EXISTS(${guard.sql})`,contactAvailableSql());args.push(...guard.params)}else if(input.generationId){predicates.push(`c.assigned_to IS NULL AND ${activeSourceProjectSql('c.project_id')}`)}else if(companyReply){const visible=portalTicketScope({actor,sessionHash:input.sessionHash!});predicates.push(visible.sql);args.push(...visible.args)}else if(actor.role==='contact'&&!email){predicates.push("c.contact_id=? AND EXISTS(SELECT 1 FROM contacts contact WHERE contact.id=c.contact_id AND COALESCE(json_extract(contact.metadata_json,'$.is_blocked'),0)!=1)");args.push(actor.contactId||actor.id)}else if(actor.role!=='contact'){predicates.push('EXISTS(SELECT 1 FROM memberships WHERE project_id=c.project_id AND user_id=? AND role=?)');args.push(actor.id,actor.role)}
  if(email){
   predicates.push(`EXISTS(SELECT 1 FROM inbound_emails receipt WHERE receipt.id=? AND receipt.project_id=c.project_id AND receipt.conversation_id=c.id AND receipt.claim_token=? AND receipt.state='processing' AND (EXISTS(SELECT 1 FROM email_settings mailbox WHERE mailbox.project_id=receipt.project_id AND mailbox.is_enabled=1 AND ? IS NULL) OR EXISTS(SELECT 1 FROM mailbox_connections mailbox JOIN mailbox_addresses address ON address.mailbox_id=mailbox.id AND address.project_id=mailbox.project_id WHERE mailbox.id=? AND mailbox.project_id=receipt.project_id AND mailbox.status='connected' AND address.address=?)))`,activeSourceProjectSql('c.project_id'),contactAvailableSql())
   args.push(email.receiptId,email.claimToken,email.mailboxId??null,email.mailboxId??null,email.mailboxAddress??null)
@@ -82,7 +84,7 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
   }
  }
  if(input[scheduledAdmission]){const guard=input[scheduledAdmission]!;predicates.push(guard.sql);args.push(...guard.params)}
- if(input.sessionHash){predicates.push(activeSourceProjectSql('c.project_id'));predicates.push("EXISTS(SELECT 1 FROM sessions s WHERE s.token_hash=? AND s.actor_id=? AND s.revoked_at IS NULL AND s.expires_at>? AND (s.role='contact' AND s.project_id=c.project_id AND s.contact_id=c.contact_id OR s.role<>'contact' AND (s.project_id IS NULL AND s.role='operator' OR s.project_id=c.project_id AND EXISTS(SELECT 1 FROM memberships live WHERE live.project_id=s.project_id AND live.user_id=s.actor_id AND live.role=s.role))))");args.push(input.sessionHash,actor.id,Date.now())}
+ if(input.sessionHash){predicates.push(activeSourceProjectSql('c.project_id'));predicates.push("EXISTS(SELECT 1 FROM sessions s WHERE s.token_hash=? AND s.actor_id=? AND s.revoked_at IS NULL AND s.expires_at>? AND (s.role='contact' AND s.project_id=c.project_id AND s.contact_id="+(companyReply?'?':'c.contact_id')+" OR s.role<>'contact' AND (s.project_id IS NULL AND s.role='operator' OR s.project_id=c.project_id AND EXISTS(SELECT 1 FROM memberships live WHERE live.project_id=s.project_id AND live.user_id=s.actor_id AND live.role=s.role))))");args.push(input.sessionHash,actor.id,Date.now(),...(companyReply?[actor.contactId||actor.id]:[]))}
  if(authority){predicates.push(`(${authority.sql})`);args.push(...authority.args)}
  if(input.expectedLastMessageId!==undefined){predicates.push('c.last_message_id IS ?');args.push(input.expectedLastMessageId)}
  if(mediaIds.length){predicates.push(`(SELECT COUNT(*) FROM media WHERE id IN (${mediaIds.map(()=>'?').join(',')}) AND project_id=c.project_id AND conversation_id=c.id AND message_id IS NULL AND NOT EXISTS(SELECT 1 FROM conversation_note_media nm WHERE nm.media_id=media.id) AND uploaded_by=?)=?`);args.push(...mediaIds,actor.id,mediaIds.length)}

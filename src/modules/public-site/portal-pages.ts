@@ -1,3 +1,4 @@
+import {portalCompanyName} from '../portal/company-visibility'
 import {Hono} from 'hono'
 import {portalStyles,portalCSP,withPortalStyles} from './portal-styles'
 import {HTTPException} from 'hono/http-exception'
@@ -25,7 +26,7 @@ async function render(c:any,view:'home'|'requests'|'detail'|'preferences'){
  else if(view==='detail'){
   try{content=portalDetail(project.id,await portalRequestDetail(c.env,identity,c.req.param('ticketId')))}catch(error){if(!(error instanceof HTTPException)||error.status!==404)throw error;return c.html(shell(project,`/help/${encodeURIComponent(key)}`,`<h1>Request not found</h1><p><a href="${e(base)}/requests">View your requests</a></p>`,{tools,search:false,noindex:true}),404)}
  }else if(view==='preferences')content=portalPreferences(project.id,await readPortalPreferences(c.env,identity),c.req.query('saved')==='1')
- else content=portalList(key,await listPortalRequests(c.env,identity,Number(c.req.query('before'))))
+ else content=portalList(key,await listPortalRequests(c.env,identity,Number(c.req.query('before'))),await portalCompanyName(c.env.DB,identity))
  return c.html(withPortalStyles(shell(project,`/help/${encodeURIComponent(key)}`,content,{tools,search:false,noindex:true,title:`${project.name} support requests`})))
 }
 portalPages.get('/portal/:project',c=>render(c,'home'))

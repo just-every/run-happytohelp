@@ -90,7 +90,7 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
                 {/* Follow the URL immediately, including Back before a read settles.
                     A completed view read must not overwrite newer search typing. */}
                 <InboxSearch query={ liveSearch.q == null ? '' : String(liveSearch.q) } viewPhrase={ inboxViewPhrase(selectedView) } onSearch={ handleSearch } /><InboxTagFilter projectId={settings.isGlobalInbox?null:settings.project?.id} value={String(searchParams.tag||'')} onChange={tag=>navigate({search:{...liveSearch,tag:tag||undefined}})}/>
-                <InboxCompanyFilter projectId={projectId} value={String(searchParams.company||'')} onChange={company=>navigate({search:{...liveSearch,company:company||undefined}})}/>
+                <InboxCompanyFilter projectId={settings.projects?.[projectId]?.access?.permissions?.includes('contacts.manage')?projectId:null} value={String(searchParams.company||'')} onChange={company=>navigate({search:{...liveSearch,company:company||undefined}})}/>
                 <ConversationsFilter assignment={ filter.assigned_to } searchScope={ filter.search_scope || searchParams.search_scope || 'all' } searching={ Boolean(searchQuery.trim()) } onChange={ changes => navigate({search:{...liveSearch,saved_view:undefined,filters:undefined,sort:undefined,...changes}}) } />
             </div>
             {ticketQueue && <>

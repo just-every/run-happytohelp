@@ -1677,7 +1677,7 @@
       "executable": false
     },
     "docs/customer-portal.md": {
-      "sha256": "fd9eade7027795277a99ee766e634927abe88192dee8cd74576d2ea10cb38618",
+      "sha256": "a97c23f56d7a3da56aeb2a2d413364edb8ecf6c2686f0e464259677c18f88680",
       "executable": false
     },
     "docs/customer-satisfaction.md": {
@@ -4085,7 +4085,7 @@
       "executable": false
     },
     "src/modules/customers/read.ts": {
-      "sha256": "994d73685bab6d318429e6a925531dacb5c9306f8ce2f9bfa7babd76e582bcf9",
+      "sha256": "1e2153c2495fab77e71e0aa22a480d78a77c6b00c23f6ac3a1bf91e31095f49e",
       "executable": false
     },
     "src/modules/customers/validation.ts": {
@@ -7613,7 +7613,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationsList.jsx": {
-      "sha256": "891df04517e90c6a05acd4159cf83253b9bd78baeaae5c17dc0de4d5066f8be7",
+      "sha256": "aef9b1a7fdd710bfff6db3d29f472cbd5c86ac5c886f31c327a752294a30baa5",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationSuggestionCard.jsx": {
@@ -8905,7 +8905,7 @@
       "executable": false
     },
     "src/ui/native/Navigation.jsx": {
-      "sha256": "147c7131446f471828d61a17eced2549fb3e3b6916974d6b143d2a485467a8ce",
+      "sha256": "31670f7ea00c0e5491034564bff2a215fc35f248e3ea3c5f3deaac2f0e01b4df",
       "executable": false
     },
     "src/ui/native/NavigationGuard.tsx": {
@@ -8981,7 +8981,7 @@
       "executable": false
     },
     "src/ui/native/pages/companies/CompanyDetail.jsx": {
-      "sha256": "74c6e83a393d5fbda5e5a32b906c3c2adba973bc9b0ef3ebbbffc1691eab7937",
+      "sha256": "7ba252c7d6ef8d1f83c841efe32d703bd21dd64e177920d302d315a556c3dfd1",
       "executable": false
     },
     "src/ui/native/pages/companies/CompanyEditor.jsx": {
@@ -8993,7 +8993,7 @@
       "executable": false
     },
     "src/ui/native/pages/companies/CompanyHistory.jsx": {
-      "sha256": "dfe804f80d577ae31550990511de27d0b04dada79dd353ada0a5dbfbd5104208",
+      "sha256": "902ae3e169025ab3b91b001ef73c072d2dc8fec1e82aec4160f4fc2ba77db05a",
       "executable": false
     },
     "src/ui/native/pages/companies/CompanyList.jsx": {

@@ -1668,6 +1668,10 @@
       "sha256": "609e4407192542956d7fd0274c3137bcff2e5f18aa7556e027140df3de27df41",
       "executable": false
     },
+    "docs/companies-and-csv.md": {
+      "sha256": "9998e58f270b87f1ce20381116a5eae774c5d511ba0589243a271d43f7bb09bb",
+      "executable": false
+    },
     "docs/connected-applications.md": {
       "sha256": "26c331a82ca6f4b96e701a168b87bfd5e1350018bc72137b202f561a183b7570",
       "executable": false
@@ -2404,6 +2408,14 @@
       "sha256": "95b4bf09d10a6e5fff7742ffcc0b1f20af44c936c6749dc7f7a08dfdff421696",
       "executable": false
     },
+    "migrations/192_companies.sql": {
+      "sha256": "da7c07eb172fd49f52997c1c42cc2ecd5fe8ee7617c425e8dcdad23e277709a3",
+      "executable": false
+    },
+    "migrations/193_customer_csv.sql": {
+      "sha256": "675831d446fdd15c97f078360ce2f136999de90da2bb080fc95e4e35c6242ad3",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "0fa396b895e9098cc1db5070d1dc33ca732fae8287f84f69dc8afa3bc8afd1a6",
       "executable": false
@@ -2826,6 +2838,10 @@
     },
     "scripts/independent/source-snapshot.mjs": {
       "sha256": "3bd7ec386859b8fa1608bd1bfb26c98603c2ff09c224c0bac6fdca84112d57f5",
+      "executable": false
+    },
+    "scripts/installer/customer-archive-policy.mjs": {
+      "sha256": "302a22455f3f6382a93288cb617c74c4cff7e89476eeeef51fe0df3810dc3575",
       "executable": false
     },
     "scripts/installer/durable-objects.mjs": {
@@ -4040,6 +4056,42 @@
       "sha256": "104ec6f3c2d2b7f0f20c44f39c49f7efbf6b01ca0d0d889d7b60d8fffe66223f",
       "executable": false
     },
+    "src/modules/customers/company-routes.ts": {
+      "sha256": "3cc4b00f80ed9fc733cd29285aca26f860d6b3eea3fc31d533ecc5b0f483e897",
+      "executable": false
+    },
+    "src/modules/customers/erasure.ts": {
+      "sha256": "e52373c485423363e328d2194bd4d5a23e16de075b00fc887e8297e4a23cce69",
+      "executable": false
+    },
+    "src/modules/customers/field-routes.ts": {
+      "sha256": "582209e291274559370719a07c4bba013afc9e2eee8337cde11eaf20f0d7c35a",
+      "executable": false
+    },
+    "src/modules/customers/index.ts": {
+      "sha256": "b3e8ddc82963ea5044ec5ee6a412236d42994a549bbdbd4c17f8908873dd3ea3",
+      "executable": false
+    },
+    "src/modules/customers/merge.ts": {
+      "sha256": "b6547fa9a1296d49a844cc80a472a123d6ea3e4d4d0debc82ad178b880d6751d",
+      "executable": false
+    },
+    "src/modules/customers/model.ts": {
+      "sha256": "b2577173624d2ab1d5e4d96816cb2fbb2ff489265a22a2b0c55d0af2a99411ae",
+      "executable": false
+    },
+    "src/modules/customers/mutations.ts": {
+      "sha256": "aef31e4f05c5ef76e77fbc3a4c8c846cd75fbf45456123bb33fe79bc38b3e6e9",
+      "executable": false
+    },
+    "src/modules/customers/read.ts": {
+      "sha256": "994d73685bab6d318429e6a925531dacb5c9306f8ce2f9bfa7babd76e582bcf9",
+      "executable": false
+    },
+    "src/modules/customers/validation.ts": {
+      "sha256": "453cd1c2e1dc124c43b7e321a65592207865d9386b2e6a943efbb52ef9d55ff5",
+      "executable": false
+    },
     "src/modules/d1-transport/index.d.mts": {
       "sha256": "b1dcfba529210c9237fa257faa0da8c9062bef946961ba8edeb8af7e171611f3",
       "executable": false
@@ -4234,6 +4286,38 @@
     },
     "src/modules/import-kit/CONTRACT.md": {
       "sha256": "bd72b1541b7d3644099205b3e69de233fd8c5144da76a1cb3a4084378443f1b5",
+      "executable": false
+    },
+    "src/modules/import-kit/csv/authority.ts": {
+      "sha256": "d0ed62f0497c279a442a89c81949919862d287c74ecf88c166852b85c5387276",
+      "executable": false
+    },
+    "src/modules/import-kit/csv/erasure.ts": {
+      "sha256": "9c23b5e37d1ce8f89f63d0483ca12e6133690fb78eba0d41ece3caf400ced1f8",
+      "executable": false
+    },
+    "src/modules/import-kit/csv/mutate.ts": {
+      "sha256": "26bb7055e6f21ec13fabaed906db84f242c1b29ab6c4e5a8034fbe8e9a8240d7",
+      "executable": false
+    },
+    "src/modules/import-kit/csv/parse.ts": {
+      "sha256": "27505e9f19e3940abd95781b864b95875de7dd3e22e17468e62550b7e51455d9",
+      "executable": false
+    },
+    "src/modules/import-kit/csv/plan.ts": {
+      "sha256": "8b1705203c50fad496bcfa75c75075b7abbbef1f0b259c223283cfe8dfe108f6",
+      "executable": false
+    },
+    "src/modules/import-kit/csv/routes.ts": {
+      "sha256": "e5a7c9ea61cf197ce3267c08ad5cddfff0c4d3476084a80e66f9242d932e3de2",
+      "executable": false
+    },
+    "src/modules/import-kit/csv/store.ts": {
+      "sha256": "43579b50b367672af40598f255379b3214609815317e0e8079875d9f50826422",
+      "executable": false
+    },
+    "src/modules/import-kit/csv/types.ts": {
+      "sha256": "deeba7978e32485923df4a83e3766f1af68cb976d944ad367413921726f47954",
       "executable": false
     },
     "src/modules/import-kit/FIXTURES.md": {
@@ -6072,6 +6156,10 @@
       "sha256": "0acaf073aa634346aaebe1293e8b8feb9bec7f14f1f90a41c6d9d7a1b45d2489",
       "executable": false
     },
+    "src/modules/portal/company-visibility.ts": {
+      "sha256": "91a1fe1e304452eff8424e71b954ff49ddd098d01ebdb2d3c3c3fab30caf9602",
+      "executable": false
+    },
     "src/modules/portal/identity.ts": {
       "sha256": "df0ea238d8b087172f33058571359fd9d1275cf702471676ab8eec708921d201",
       "executable": false
@@ -7164,6 +7252,10 @@
       "sha256": "e46b934cfc6553ccab5b0108ad2d0e3d4c37775304162dfae442786012b2838c",
       "executable": false
     },
+    "src/routes/_dashboard._workspace.projects_.$projectId.companies.jsx": {
+      "sha256": "5a05f2cedf1963c01eadd7ce3b08c12d49f68f3576beb4fa65ceaa4c73f68c9f",
+      "executable": false
+    },
     "src/routes/_dashboard._workspace.projects_.$projectId.contacts.jsx": {
       "sha256": "93ae66103bd0f9b61379f31d025c6357f71b17b89385341fe1cf1991237087f7",
       "executable": false
@@ -7614,6 +7706,10 @@
     },
     "src/ui/dashboard/components/FormMedia.jsx": {
       "sha256": "c993d3d1fd62208f09c9d04630991758b4446e9f399243e45568d1258a4a48d6",
+      "executable": false
+    },
+    "src/ui/dashboard/components/InboxCompanyFilter.jsx": {
+      "sha256": "809852e510ca2af29a83a8a05069964b4455be8e57cd086a6879e2c9e2ac4722",
       "executable": false
     },
     "src/ui/dashboard/components/InboxSearch.jsx": {
@@ -8860,6 +8956,70 @@
       "sha256": "fae3986ff836d25227ebaf78a6a46838908ab5a9ca579f7b9c30481093571e43",
       "executable": false
     },
+    "src/ui/native/pages/Companies.jsx": {
+      "sha256": "0e45a698db511f13dd0401554a2813d789f1432b5c4b2181d720d077ef76c811",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/companies.css": {
+      "sha256": "5d79f4a8b1e2d993c97cd92291866debde7249f02df65761298fea05695731e3",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/company-api.js": {
+      "sha256": "5e57be04650d6e93d74106cac342bf052a10dc5dd175d03c16ebf0e7bc0ff0d5",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/company-detail.css": {
+      "sha256": "915ff6852e10ac1c5e6865a64d615b475a86ee7d33bb2b55fc499c87f63c57e9",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/company-import.css": {
+      "sha256": "08591a38158ca1cb998338ae2905e8113dd0bdc7d76894bfed13d6f073a71cac",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/company-responsive.css": {
+      "sha256": "6ff00cecaed006c1f5f022f68d04dfb0c0fe10026ebc799a4b6e34f81a3f077e",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/CompanyDetail.jsx": {
+      "sha256": "74c6e83a393d5fbda5e5a32b906c3c2adba973bc9b0ef3ebbbffc1691eab7937",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/CompanyEditor.jsx": {
+      "sha256": "3a4f48a959b08a1f7723c03a8c4ee601651b158e7b2c5e7790fa42115d4cf527",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/CompanyFields.jsx": {
+      "sha256": "9ddca4f4d035e03e0735c82776b664527eff8ce7b1894d5f69c5769dda81e39e",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/CompanyHistory.jsx": {
+      "sha256": "dfe804f80d577ae31550990511de27d0b04dada79dd353ada0a5dbfbd5104208",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/CompanyList.jsx": {
+      "sha256": "569c5465405e61183e2aa1d16496a61b7c88a1ff9d910aa2a71eb01357642c2e",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/CompanyMembers.jsx": {
+      "sha256": "8e1f3d3e45cd42712c3ef3984912a5940763451d2980a3c2d0b151b55d749110",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/CompanyMerge.jsx": {
+      "sha256": "98ca0087aa99720652cdc46d8ac461027690c47046d4a7ebceed9279fe498868",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/CompanyTickets.jsx": {
+      "sha256": "1422c1f26e783dc18c46b04aaf403d9ebb1690db9d2c8a95cee91816910f003f",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/CustomerImport.jsx": {
+      "sha256": "2c1fa0029a089b19ed5ada3dd442811091ba83791d04ebf08bf3f5578cf2e4da",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/ImportRows.jsx": {
+      "sha256": "c5e4fcd88f83f607db45315795f2208651de2cad74f028312a5e52a3220caacd",
+      "executable": false
+    },
     "src/ui/native/pages/ComputersPage.jsx": {
       "sha256": "dfde94f1f43f8bbf519ab5ed394fa275090cec867a5f3d932f22cc7f4e34c77e",
       "executable": false
@@ -10028,6 +10188,14 @@
       "sha256": "58bf2512bb5e6fdc1afe2608439e1fe431f6465d1188d995f82200d13b0c1ef1",
       "executable": false
     },
+    "tests/helpers/company-portal.mjs": {
+      "sha256": "51be9db4c45990eb3fe0345e4cbb33b2900eeb0061737b79370def2c4e871a96",
+      "executable": false
+    },
+    "tests/helpers/company-records.mjs": {
+      "sha256": "0f39a45f828e6ead2b2ac271e0c63956cd6e6715809920f29df8432de5d0b6c2",
+      "executable": false
+    },
     "tests/helpers/configured-mail-runtime.mjs": {
       "sha256": "fddda0e81f418e7a4ec5b66a26d9ddc8edb79707743f27c26882e3ff2bc10c7b",
       "executable": false
@@ -10058,6 +10226,10 @@
     },
     "tests/helpers/csat-journey.mjs": {
       "sha256": "83629ccacd6c8edd7aa824b17ab4f98680e73bb56903e9e3765bac752af400ba",
+      "executable": false
+    },
+    "tests/helpers/customer-csv.mjs": {
+      "sha256": "a058a4d4b21473d4104fab2fc5e292e6e5d9ded3bb62bb94a75e93ff3cdbdb25",
       "executable": false
     },
     "tests/helpers/customer-portal-journey.mjs": {

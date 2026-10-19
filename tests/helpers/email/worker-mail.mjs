@@ -249,6 +249,77 @@ async function assignmentDeliveryRows({app,mail}){
  await app.ok(`${management}/notification-preferences`,{token:w.tokens.operator,method:'PUT',body:{preferences:[{kind:'assignment',inbox:true,email:false}]}})
  await app.configure({EMAIL_API_KEY:'fixture-resend'});await app.scheduled();await app.scheduled()
  assert.equal(mail.attempts,beforeDormant,'a changed preference is honoured when dormant delivery resumes')
+ await multiTicketAssignmentRows()
+}
+
+async function multiTicketAssignmentRows(){
+ const isolated=await seeded(),{app,mail}=isolated
+ try{
+ const w=await app.seedWorkspace('multi-assignment'),P=w.projectId,recipient='operator-multi-assignment@example.test'
+ const management=`/api/management/projects/${P}`,inbox=async()=>(await app.ok(`${management}/notification-inbox`,{token:w.tokens.operator})).data
+ const intent=id=>app.first("SELECT * FROM operator_notifications WHERE project_id=? AND conversation_id=? AND kind='assignment'",P,id)
+ await app.db.batch([
+  app.db.prepare("INSERT INTO contacts(id,project_id,name,email,is_verified,metadata_json,created_at) VALUES('multi-customer',?,'Dana','dana@customer.example',1,'{}',?)").bind(P,Date.now()),
+  app.db.prepare("INSERT INTO email_settings VALUES(?,'Support','support@example.com','multi-inbound@example.com',1,1)").bind(P),
+ ])
+ const seed=id=>app.db.prepare("INSERT INTO conversations(id,project_id,contact_id,ticket_source,created_at,updated_at) VALUES(?,?,'multi-customer','widget',?,?)").bind(id,P,Date.now(),Date.now()).run()
+ // A full 50-ticket request preserves all receipts. Remaining notices complete on
+ // the first cron tick; replay of that tick cannot send them twice.
+ await app.configure({EMAIL_API_KEY:'fixture-resend'})
+ for(const action of ['bulk','macro']){
+  const ids=Array.from({length:50},(_,index)=>`capacity-${action}-${index}`)
+  for(const id of ids){await seed(id);await app.db.batch([
+   app.db.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,?,?,?,'multi-customer','contact','Please arrange a replacement for the damaged order.',1,?)").bind('message-'+id,P,id,'request-'+id,Date.now()-3600000),
+   app.db.prepare('UPDATE conversations SET revision=1,last_message_id=? WHERE id=?').bind('message-'+id,id),
+  ])}
+  const tickets=await Promise.all(ids.map(async id=>({id,expected_version:(await app.first('SELECT ticket_version FROM conversations WHERE id=?',id)).ticket_version})))
+  const base=`/api/dashboard/projects/${P}`,before=mail.attempts
+  let result
+  if(action==='bulk')result=await app.ok(`${base}/tickets/bulk/apply`,{token:w.tokens.owner,body:{tickets,changes:{assigned_to:w.users.operator}}})
+  else{
+   const macro=(await app.ok(`${base}/macros`,{token:w.tokens.owner,body:{title:'Replace damaged orders',content:'We will arrange your replacement.',actions:{agent_id:w.users.operator,priority:'high'}}})).data
+   result=await app.ok(`${base}/macros/${macro.id}/apply`,{token:w.tokens.owner,body:{version:macro.version,tickets,command_id:'capacity-fifty'}})
+  }
+  assert.deepEqual(result.data.results.map(row=>row.status),ids.map(()=>'applied'))
+  const auditAction=action==='bulk'?'ticket.bulk.apply':'macro.applied'
+  for(const id of ids){
+   assert.equal((await app.first('SELECT assigned_to FROM conversations WHERE id=?',id)).assigned_to,w.users.operator)
+   assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE project_id=? AND target_id=? AND action=? AND outcome='succeeded'",P,id,auditAction)).n,1)
+  }
+  const tick=await app.scheduled()
+  const visible=await inbox()
+  for(const id of ids){const row=await intent(id);assert.equal(row.state,'complete',JSON.stringify({action,id,tick,row}));assert.equal(visible.find(entry=>entry.id===row.id)?.state,'sent')}
+  assert.equal(mail.attempts-before,ids.length)
+  await app.scheduled();assert.equal(mail.attempts-before,ids.length,'the next tick never repeats capacity deliveries')
+ }
+ // One bulk or macro request delivers every admitted assignment before returning,
+ // including inbox-only installations. A shared notice allowance cannot cut it short.
+ for(const provider of [true,false])for(const action of ['bulk','macro']){
+  await app.configure({EMAIL_API_KEY:provider?'fixture-resend':undefined})
+  const ids=Array.from({length:10},(_,index)=>`assignment-${action}-${provider}-${index}`)
+  for(const id of ids)await seed(id)
+  const tickets=await Promise.all(ids.map(async id=>({id,expected_version:(await app.first('SELECT ticket_version FROM conversations WHERE id=?',id)).ticket_version})))
+  const base=`/api/dashboard/projects/${P}`,attempts=mail.attempts
+  let result
+  if(action==='bulk')result=await app.ok(`${base}/tickets/bulk/apply`,{token:w.tokens.owner,body:{tickets,changes:{assigned_to:w.users.operator}}})
+  else{
+   const macro=await app.ok(`${base}/macros`,{token:w.tokens.owner,body:{title:'Assign replacement requests',content:'We are checking your replacement.',actions:{agent_id:w.users.operator}}})
+   result=await app.ok(`${base}/macros/${macro.data.id}/apply`,{token:w.tokens.owner,body:{version:macro.data.version,tickets,command_id:`assign-ten-${provider}`}})
+  }
+  assert.deepEqual(result.data.results.map(row=>row.status),ids.map(()=>'applied'))
+  const visible=await inbox()
+  for(const id of ids){
+   const row=await intent(id)
+   assert.equal(row.state,'complete','every assignment completes inside the multi-ticket request')
+   assert.equal(visible.find(entry=>entry.id===row.id)?.state,provider?'sent':'awaiting_provider','every assignment is already in the recipient inbox')
+   assert.deepEqual(mail.sent.filter(entry=>entry.headers['idempotency-key']===row.id).map(entry=>entry.body.to),provider?[[recipient]]:[])
+  }
+  assert.equal(mail.attempts-attempts,provider?ids.length:0)
+  await app.scheduled();await app.scheduled()
+  assert.equal(mail.attempts-attempts,provider?ids.length:0,'cron never repeats the multi-ticket request deliveries')
+ }
+
+ }finally{await isolated.close()}
 }
 
 // Who mail speaks for: CC participants of verified senders, operators by membership, preferred addresses only

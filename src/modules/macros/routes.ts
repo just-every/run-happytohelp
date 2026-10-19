@@ -1,3 +1,8 @@
+import {queueTicketContinuation} from '../tickets/continuation'
+import {boundedDatabase} from '../../platform/d1-budget'
+import {ticketBatchEnvironment,TicketCapacityError} from '../tickets/request-batch'
+import {finishBatchWorkflows} from '../tickets/batch-workflows'
+import {requestRoom,flushRequestAssignments} from '../integrations/notification-request'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Actor} from '../../platform/env'
@@ -45,14 +50,24 @@ for(const action of ['preview','apply'] as const)macroRoutes.post(`${base}/:macr
  if(!Array.isArray(tickets)||!tickets.length||tickets.length>100||new Set(tickets.map(t=>t?.id)).size!==tickets.length||tickets.some(t=>!t||typeof t.id!=='string'||!t.id||t.id.length>200))invalid('Select 1–100 unique tickets')
  if(action==='apply'&&(typeof body.command_id!=='string'||!body.command_id||body.command_id.length>200))invalid('A unique command_id is required')
  const results=[]
- for(const selected of tickets){try{
-  const result=action==='preview'?(await prepareMacro(c.env,actor,macroId,body.version,selected,authority(c))).preview:await applyMacro(c.env,actor,macroId,body.version,selected,body.command_id,authority(c))
+ if(tickets.length>1)c.env=await ticketBatchEnvironment(c.env,actor,tickets.map(t=>t.id))
+ for(const selected of tickets){
+  if(requestRoom(c.env)<96){results.push({id:selected.id,status:'failed',committed:false,code:'request_capacity',reason:'This ticket was not changed. Apply the remaining selection in a new request.'});continue}
+  const unit=boundedDatabase(c.env.DB,requestRoom(c.env)),env={...c.env,DB:unit.database}
+  try{
+  const result=action==='preview'?(await prepareMacro(env,actor,macroId,body.version,selected,authority(c))).preview:await applyMacro(env,actor,macroId,body.version,selected,body.command_id,authority(c))
   results.push(result)
  }catch(error){
+  if(error instanceof TicketCapacityError){results.push({id:selected.id,status:'failed',committed:false,code:'request_capacity',reason:error.message});continue}
   if(!(error instanceof HTTPException)){console.error('Macro operation failed',error);results.push({id:selected.id,status:'failed',reason:'The operation outcome could not be confirmed. Reload before trying again.'});continue}
-  const status=error.status===409?'stale':[401,403,404].includes(error.status)?'forbidden':'invalid'
+  const status=error.status===409?'stale':[401,403,404].includes(error.status)?'forbidden':[400,422].includes(error.status)?'invalid':'failed'
   results.push({id:selected.id,status,reason:status==='forbidden'?'Macro or ticket is unavailable for your current permissions':error.message})
  }}
+ if(action==='apply'&&tickets.length>1){
+  await queueTicketContinuation(c.env,{actor,authority:authority(c),tickets,macro:{id:macroId,version:body.version,commandId:body.command_id},batchId:crypto.randomUUID()},results)
+  await finishBatchWorkflows(c.env,actor.projectId,results.filter(r=>r.status==='applied').map(r=>r.id))
+  await flushRequestAssignments(c.env)
+ }
  return c.json({data:{results}})
 })
 macroRoutes.get('/projects/:projectId/conversations/:conversationId/macro-draft',async c=>{const actor=await scope(c) as Actor;await getTicket(c.env,actor,c.req.param('conversationId'));return c.json({data:await readDraft(c.env,actor,c.req.param('conversationId'))})})

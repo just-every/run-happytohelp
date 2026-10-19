@@ -10,7 +10,7 @@ updating and backing up an installation, see
 
 ## Unreleased
 
-When one request assigns or applies a macro to more than about three tickets, teammate notices after the third arrive on the next cron tick (about a minute later); a fix is in progress.
+- Bulk assignments and macros deliver teammate notices during the request whenever its remaining database budget has room.
 
 ## 0.4.7 — 2026-10-18
 

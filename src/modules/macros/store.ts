@@ -1,3 +1,4 @@
+import {batchRead} from '../tickets/request-batch'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {ticketAuthority,ticketReadAccess,invalid,object,fieldAllowed,type TicketAuthority} from '../tickets/model'
@@ -16,6 +17,9 @@ export function scopeGuard(actor:Actor,row:any,roleKey:string,brandId:string){
  return {sql:`SELECT 1 FROM macros m JOIN macro_heads h ON h.macro_id=m.id WHERE ${conditions.join(' AND ')}`,params}
 }
 export async function readMacro(env:Env,actor:Actor,id:string,brandId=actor.projectId){
+ return batchRead(env,`macro:${actor.projectId}:${actor.id}:${id}:${brandId}`,()=>loadMacro(env,actor,id,brandId))
+}
+async function loadMacro(env:Env,actor:Actor,id:string,brandId:string){
  const access=await ticketReadAccess(env,actor),row=await env.DB.prepare(`${selection} WHERE m.project_id=? AND m.id=? AND h.archived_at IS NULL`).bind(actor.projectId,id).first<any>()
  if(!row)throw new HTTPException(404)
  const guard=scopeGuard(actor,row,access.key,brandId)

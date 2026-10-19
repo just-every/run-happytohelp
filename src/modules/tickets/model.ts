@@ -1,3 +1,4 @@
+import {batchRead} from './request-batch'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {tokenGuard,type TokenAuthority} from '../../platform/integration-authority'
@@ -14,8 +15,8 @@ export function object(value:unknown):Record<string,any>{if(!value||typeof value
 export async function ticketAuthority(env:Env,actor:Actor,authority:TicketAuthority,permission:Permission='conversations.manage'){
  if(authority.tokenAuthority){if(permission!=='conversations.manage')throw new HTTPException(403);const guard=tokenGuard(authority.tokenAuthority,actor.projectId,'conversations:write');return {...guard,access:null as MemberAccess|null}}
  if(actor.role==='contact'||!authority.sessionHash)throw new HTTPException(403)
- const role=await env.DB.prepare('SELECT mr.role_key,pr.updated_at FROM member_roles mr LEFT JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=? AND mr.user_id=?').bind(actor.projectId,actor.id).first<any>()
- const access=await memberAccess(env.DB,actor.projectId,actor.id)
+ const role=await batchRead(env,`role:${actor.projectId}:${actor.id}`,()=>env.DB.prepare('SELECT mr.role_key,pr.updated_at FROM member_roles mr LEFT JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=? AND mr.user_id=?').bind(actor.projectId,actor.id).first<any>())
+ const access=await batchRead(env,`access:${actor.projectId}:${actor.id}`,()=>memberAccess(env.DB,actor.projectId,actor.id))
  if(!access?.permissions.has(permission)){
   await audit(env,{projectId:actor.projectId,category:'access',action:'ticket.permission_denied',outcome:'refused',actor:{type:'user',id:actor.id},source:authority.source??'dashboard',detail:{permission}})
   throw new HTTPException(403,{message:`Your role does not allow ${permission}`})
@@ -26,7 +27,7 @@ export async function ticketAuthority(env:Env,actor:Actor,authority:TicketAuthor
 }
 export async function ticketReadAccess(env:Env,actor:Actor){
  if(actor.role==='contact')throw new HTTPException(403)
- const access=await memberAccess(env.DB,actor.projectId,actor.id)
+ const access=await batchRead(env,`access:${actor.projectId}:${actor.id}`,()=>memberAccess(env.DB,actor.projectId,actor.id))
  if(!access)throw new HTTPException(403)
  return access
 }

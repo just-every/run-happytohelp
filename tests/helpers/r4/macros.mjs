@@ -70,6 +70,19 @@ export async function macrosJourney(){
   assert.equal((await call(draftPath)).data.data,null)
   assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',tickets[1].id)).n,1,'bulk never publishes replies')
   assert.equal((await ok(`/macros/${macro.id}/usage`)).reduce((n,u)=>n+u.uses,0),31)
+  const overflow=Array.from({length:100},(_,i)=>({id:`overflow-macro-${i}`,expected_version:0}))
+  await app.db.batch(overflow.map(ticket=>app.db.prepare('INSERT INTO conversations(id,project_id,contact_id,subject,created_at,updated_at) SELECT ?,project_id,contact_id,?,created_at,updated_at FROM conversations WHERE id=?').bind(ticket.id,'Replacement macro '+ticket.id,id)))
+  const overflowMacro=await ok('/macros',{title:'Assign batch replacements',content:'We will arrange your replacement.',actions:{agent_id:w.users.operator,priority:'high'}})
+  const overflowing=await run(overflowMacro,'apply',overflow,{command_id:'overflowing-macro'})
+  assert.ok(overflowing.results.every(r=>['applied','queued'].includes(r.status)),JSON.stringify(overflowing))
+  for(const job of (await app.takeJobs()).filter(job=>job.type==='ticket.batch')){
+   assert.deepEqual((await app.runJobs([job])).retried,[])
+   assert.deepEqual((await app.runJobs([job])).retried,[])
+  }
+  for(const selected of overflow){
+   assert.equal((await get(selected.id)).assigned_to,w.users.operator)
+   assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='macro.applied' AND target_id=?",selected.id)).n,1)
+  }
   const absent=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey},headers:{Origin:w.allowedOrigin}})
   const emptyNameTicket=await app.ok('/api/conversations',{body:{projectId:w.projectId},token:absent.token})
   assert.match((await run(v2,'preview',[{id:emptyNameTicket.id,expected_version:0}])).results[0].draft.content,/Hello there/)

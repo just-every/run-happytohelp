@@ -1,13 +1,14 @@
+import {batchRead} from '../tickets/request-batch'
 import type {Actor,Env} from '../../platform/env'
 /** Keep preview values readable while retaining canonical IDs in the API payload. */
 export async function labelMacroChanges(env:Env,actor:Actor,changes:any[]){
- const data=await env.DB.batch<any>([
+ const data=await batchRead(env,`macro-labels:${actor.projectId}`,()=>env.DB.batch<any>([
   env.DB.prepare('SELECT id,name FROM ticket_statuses WHERE project_id=?').bind(actor.projectId),
   env.DB.prepare('SELECT id,name FROM ticket_groups WHERE project_id=?').bind(actor.projectId),
   env.DB.prepare('SELECT u.id,u.name FROM users u JOIN memberships m ON m.user_id=u.id WHERE m.project_id=?').bind(actor.projectId),
   env.DB.prepare('SELECT id,name FROM workspace_tags WHERE project_id=?').bind(actor.projectId),
   env.DB.prepare('SELECT id,name FROM ticket_fields WHERE project_id=?').bind(actor.projectId),
- ])
+ ]))
  const maps=data.map(result=>new Map<string,string>(result.results.map((row:any)=>[String(row.id),String(row.name)])))
  const names=(map:Map<string,string>,value:any):string=>Array.isArray(value)?value.map(id=>map.get(String(id))||String(id)).join(', ')||'None':value==null?'None':map.get(String(value))||String(value)
  return changes.map(change=>{

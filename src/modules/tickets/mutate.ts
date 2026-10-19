@@ -1,3 +1,5 @@
+import {inTicketBatch,admitTicketWork} from './request-batch'
+import {auditStatement,type AuditEvent} from '../audit/record'
 import {processWorkflowEvents} from '../workflows/events'
 import {workflowNow,workflowEnvironment} from '../workflows/clock'
 import {HTTPException} from 'hono/http-exception'
@@ -26,11 +28,11 @@ export class TicketCommittedError extends HTTPException {
 export async function previewTicket(env:Env,actor:Actor,id:string,change:TicketChange,authority:TicketAuthority){const checked=await prepareTicketChange(env,actor,id,change,authority);return {ticket:await getTicket(env,actor,id,authority.tokenAuthority),changes:checked.change}}
 /** The receipt is written with live authority, schema and ticket frontier checks.
  * Every effect in the transaction depends on that receipt. */
-export async function mutateTicket(env:Env,actor:Actor,id:string,input:TicketChange,authority:TicketAuthority){
+export async function mutateTicket(env:Env,actor:Actor,id:string,input:TicketChange,authority:TicketAuthority,receiptAudit?:AuditEvent,receiptId?:string){
  env=await workflowEnvironment(env)
  const {change,current,next,fields,values,guard,predicates,params}=await prepareTicketChange(env,actor,id,input,authority)
  if(change.ai_id&&!change.agent_id&&current.last_message_id){const model=await env.DB.prepare("SELECT a.model FROM ai_profiles a JOIN messages m ON m.id=? AND m.actor_role='contact' WHERE a.project_id=? AND a.id=?").bind(current.last_message_id,actor.projectId,change.ai_id).first<{model:string}>();if(model)assertModelConfigured(env,model.model)}
- const now=Math.max(workflowNow(env),current.updated_at+1),receipt=crypto.randomUUID(),source=authority.source??(authority.tokenAuthority?'api':'dashboard'),actorType=authority.tokenAuthority?'api':'user',actorId=authority.tokenAuthority?.tokenId??actor.id
+ const now=Math.max(workflowNow(env),current.updated_at+1),receipt=receiptId??crypto.randomUUID(),source=authority.source??(authority.tokenAuthority?'api':'dashboard'),actorType=authority.tokenAuthority?'api':'user',actorId=authority.tokenAuthority?.tokenId??actor.id
  const accepted='EXISTS(SELECT 1 FROM ticket_history WHERE id=? AND conversation_id=?)'
  const history:Record<string,unknown>={}
  for(const key of ['status_id','status_category','priority','subject','channel','group_id','requester_id','submitter_id','submitter_type','assigned_to','current_ai_id'])if(current[key]!==next[key])history[key]={from:current[key],to:next[key]}
@@ -53,16 +55,24 @@ export async function mutateTicket(env:Env,actor:Actor,id:string,input:TicketCha
  if('ai_id' in change||change.agent_id)statements.push(env.DB.prepare(`INSERT INTO conversation_ai(conversation_id,ai_id) SELECT ?,? WHERE ${accepted} ON CONFLICT(conversation_id) DO UPDATE SET ai_id=excluded.ai_id`).bind(id,next.current_ai_id,receipt,id))
  if(assignmentChanged||['solved','closed'].includes(next.status_category))statements.push(env.DB.prepare(`UPDATE ai_generations SET state='cancelled',updated_at=? WHERE project_id=? AND conversation_id=? AND state IN ('queued','running') AND ${accepted}`).bind(new Date(now).toISOString(),actor.projectId,id,receipt,id))
  if(assignmentChanged){statements.push(assignmentHistoryStatement(env,{id:receipt,conversationId:id,actorId,agentId:next.assigned_to,aiId:next.current_ai_id,createdAt:now},accepted,[receipt,id]),assignmentNotificationStatement(env,{id:receipt,projectId:actor.projectId,conversationId:id,actorId,previousAssignee:current.assigned_to,assignee:next.assigned_to},accepted,[receipt,id]))}
- const results=await env.DB.batch(statements)
- if(!results[0].meta.changes)throw new HTTPException(409,{message:'Ticket, field configuration or authority changed. Reload before applying changes.'})
+ if(receiptAudit)statements.push(auditStatement(env.DB,receiptAudit,now,{sql:accepted,params:[receipt,id]}))
+ admitTicketWork(env,statements.length+(inTicketBatch(env)?24:64))
+ let committed=false
+ try{committed=Boolean((await env.DB.batch(statements))[0].meta.changes)}catch(error){
+  // Confirm the native receipt after a lost response. The successful bulk audit
+  // is in that same transaction, so confirmed changes always have their receipt.
+  try{committed=Boolean(await env.DB.prepare('SELECT 1 FROM ticket_history WHERE id=? AND conversation_id=?').bind(receipt,id).first())}catch{throw new HTTPException(503,{message:'Ticket outcome could not be confirmed. Reload before trying again.'})}
+  if(!committed)throw error
+ }
+ if(!committed)throw new HTTPException(409,{message:'Ticket, field configuration or authority changed. Reload before applying changes.'})
  try{
- await processWorkflowEvents(env,id)
+ if(!inTicketBatch(env))await processWorkflowEvents(env,id)
  if(assignmentChanged)await dispatchRequestAssignment(env,actor.projectId,id)
  if(assignmentChanged){await publishActivity(env,actor.projectId,id,'assignment')}
  if(change.ai_id&&!change.agent_id)await onAssistantAssignment(env,actor.projectId,id,{sql:`${accepted} AND c.assigned_to IS NULL AND c.last_message_id IS ? AND EXISTS(SELECT 1 FROM conversation_ai WHERE conversation_id=c.id AND ai_id=?) AND EXISTS(${guard.sql}) AND ${availableTicketSql()}`,params:[receipt,id,current.last_message_id,change.ai_id,...guard.params]},assignmentChanged)
  if(current.group_id!==next.group_id&&next.group_id){const members=await env.DB.prepare('SELECT user_id FROM ticket_group_members WHERE project_id=? AND group_id=?').bind(actor.projectId,next.group_id).all<{user_id:string}>();await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:id,event:'group',eventId:receipt,actorId:actor.id,recipientIds:members.results.map(m=>m.user_id)})}
  await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:id,event:'ticket_updated',eventId:receipt,actorId:actor.id})
  if(current.status_id!==next.status_id)await publishResolution(env,actor.projectId,id)
- return await getTicket(env,actor,id,authority.tokenAuthority)
+ return inTicketBatch(env)?{ticket_version:current.ticket_version+1}:await getTicket(env,actor,id,authority.tokenAuthority)
  }catch(error){throw new TicketCommittedError(id,current.ticket_version+1,error)}
 }

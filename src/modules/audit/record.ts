@@ -18,9 +18,9 @@ export interface AuditEvent {
 }
 
 /** One append-only audit row, as a statement to batch with the change it records. */
-export function auditStatement(db:D1Database,event:AuditEvent,at=Date.now()){
- return db.prepare('INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,purpose,detail_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)')
-  .bind(crypto.randomUUID(),event.projectId,at,event.category,event.action,event.outcome??'succeeded',event.actor.type,event.actor.id??null,event.source,event.target?.type??null,event.target?.id??null,event.purpose??null,JSON.stringify(event.detail??{}))
+export function auditStatement(db:D1Database,event:AuditEvent,at=Date.now(),guard?:{sql:string;params:unknown[]}){
+ return db.prepare(`INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,purpose,detail_json) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,? ${guard?`WHERE ${guard.sql}`:''}`)
+  .bind(crypto.randomUUID(),event.projectId,at,event.category,event.action,event.outcome??'succeeded',event.actor.type,event.actor.id??null,event.source,event.target?.type??null,event.target?.id??null,event.purpose??null,JSON.stringify(event.detail??{}),...(guard?.params??[]))
 }
 export async function audit(env:Env,event:AuditEvent){await auditStatement(env.DB,event).run()}
 

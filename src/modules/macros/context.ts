@@ -1,15 +1,16 @@
+import {batchRead,batchTicket,batchContact} from '../tickets/request-batch'
 import type {Actor,Env} from '../../platform/env'
 import {getTicket,ticketReadAccess,fieldAllowed} from '../tickets/model'
 /** Context contains only fields this actor may currently read. Unknown personal
  * metadata never becomes an implicit placeholder namespace. */
 export async function loadMacroContext(env:Env,actor:Actor,conversationId:string){
- const ticket=await getTicket(env,actor,conversationId),access=await ticketReadAccess(env,actor)
+ const ticket=batchTicket(env,conversationId)??await getTicket(env,actor,conversationId),access=await ticketReadAccess(env,actor)
  const [contact,assignee,agent,brand,fields]=await Promise.all([
-  env.DB.prepare('SELECT name,email,metadata_json FROM contacts WHERE id=? AND project_id=?').bind(ticket.contact_id,actor.projectId).first<any>(),
+  batchContact(env,conversationId)??env.DB.prepare('SELECT name,email,metadata_json FROM contacts WHERE id=? AND project_id=?').bind(ticket.contact_id,actor.projectId).first<any>(),
   ticket.assigned_to?env.DB.prepare('SELECT u.name,u.email FROM users u JOIN memberships m ON m.user_id=u.id WHERE u.id=? AND m.project_id=?').bind(ticket.assigned_to,actor.projectId).first<any>():null,
-  env.DB.prepare('SELECT name,email FROM users WHERE id=?').bind(actor.id).first<any>(),
-  env.DB.prepare('SELECT id,name FROM projects WHERE id=?').bind(actor.projectId).first<any>(),
-  env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=?').bind(actor.projectId).all<any>(),
+  batchRead(env,`user:${actor.id}`,()=>env.DB.prepare('SELECT name,email FROM users WHERE id=?').bind(actor.id).first<any>()),
+  batchRead(env,`brand:${actor.projectId}`,()=>env.DB.prepare('SELECT id,name FROM projects WHERE id=?').bind(actor.projectId).first<any>()),
+  batchRead(env,`fields:${actor.projectId}`,async()=>(await env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=?').bind(actor.projectId).all<any>()).results).then(results=>({results})),
  ])
  const metadata=JSON.parse(contact?.metadata_json||'{}'),name=metadata.provided_name?.trim()||contact?.name?.trim()||'',email=metadata.provided_email||contact?.email||''
  const context:Record<string,unknown>={

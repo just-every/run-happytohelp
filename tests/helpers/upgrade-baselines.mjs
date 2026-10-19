@@ -20,7 +20,8 @@ export const baselines = {
   '0.4.3': {commit: '0ad45cd50cf5813eb726ac3ccedf0eda271abc06', tree: '677b0f3e54521108bc336a6c7c0c3a4921993385', migrations: 73, populate: populate03},
   '0.4.4': {commit: '99ffbbea844632d883a46f95df74ef2502cafdc5', tree: '854b431d4449e52e7e85e7e87b016c6a79e17b9d', migrations: 73, populate: populate03},
   '0.4.5': {commit: 'a614393281f71fd604fcfe3eddac3d238f52e10b', tree: '9838e58df00436a6e669809c453021f3be67993a', migrations: 73, populate: populate03},
-  '0.4.6': {commit: '14cdfcb01553081c84932e9132d70e578f318d9e', tree: 'f7f5f0994c1bb34702636f2422928edd20f47878', migrations: 88, previous: true, populate: populate03},
+  '0.4.6': {commit: '14cdfcb01553081c84932e9132d70e578f318d9e', tree: 'f7f5f0994c1bb34702636f2422928edd20f47878', migrations: 88, populate: populate03},
+  '0.4.7': {commit: 'cd1f188b751fd2a39fd31fe0ee75c4bc855cb6bc', tree: 'bfc1d5263ee1814315b0ed8140af4b10b0c7bb21', migrations: 88, previous: true, populate: populate03},
 };
 
 async function populate041(origin, runtime) {

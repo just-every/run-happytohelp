@@ -1,61 +1,61 @@
 {
-  "version": "0.4.7",
-  "previousVersion": "0.4.6",
-  "date": "2026-10-18",
+  "version": "0.4.8",
+  "previousVersion": "0.4.7",
+  "date": "2026-10-19",
   "contractChanges": {},
   "proseChanges": [
     {
       "document": "README.md",
       "change": "changed",
-      "date": "2026-10-18",
-      "summary": "Describe optional mailbox configuration and the migration-free v0.4.7 upgrade.",
-      "was": "The latest release was v0.4.6, whose hosted declaration required seven mailbox configuration values.",
-      "now": "v0.4.7 makes those seven values optional and shows unavailable mailbox connections. No migrations are added.",
-      "ownerAction": "Back up, retain private settings and deploy with pinned rer 0.2.51. Configure mailbox providers only when needed; never reset or edit migration history."
+      "date": "2026-10-19",
+      "summary": "Describe R5, the whole-invocation statement budget, durable bulk work and the seven-migration upgrade.",
+      "was": "The latest release was v0.4.7 with optional mailbox setup and rer 0.2.51.",
+      "now": "v0.4.8 includes R5 and durable bulk continuations, seven migrations and rer 0.2.68.",
+      "ownerAction": "Back up, retain private settings and deploy with pinned rer 0.2.68 without resetting or editing migration history. Preview and publish workflows deliberately."
     },
     {
       "document": "CHANGELOG.md",
       "change": "changed",
-      "date": "2026-10-18",
-      "summary": "Describe optional mailbox configuration and the migration-free v0.4.7 upgrade.",
-      "was": "The latest release was v0.4.6, whose hosted declaration required seven mailbox configuration values.",
-      "now": "v0.4.7 makes those seven values optional and shows unavailable mailbox connections. No migrations are added.",
-      "ownerAction": "Back up, retain private settings and deploy with pinned rer 0.2.51. Configure mailbox providers only when needed; never reset or edit migration history."
+      "date": "2026-10-19",
+      "summary": "Describe R5, the whole-invocation statement budget, durable bulk work and the seven-migration upgrade.",
+      "was": "The latest release was v0.4.7 with optional mailbox setup and rer 0.2.51.",
+      "now": "v0.4.8 includes R5 and durable bulk continuations, seven migrations and rer 0.2.68.",
+      "ownerAction": "Back up, retain private settings and deploy with pinned rer 0.2.68 without resetting or editing migration history. Preview and publish workflows deliberately."
     }
   ],
   "extensionPointChanges": [],
-  "migrations": [],
-  "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.6 to v0.4.7 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.51. This release adds no migrations. A v0.4.5 installation still receives exactly v0.4.6's fifteen missing migrations (140-146, 160-164 and 172-174) by name and recorded bytes, before traffic resumes. Never delete, reorder or edit ledger rows. The seven Google, Microsoft and IMAP configuration values are optional; omitted values stay unbound, while held secrets are inherited. Configure providers deliberately when needed. Preserve owners, support history, imports, permissions, file bytes and erasure fences. Keep uncertain external outcomes without replay and retain human Send.",
-  "publicReleaseNotes": "HappyToHelp v0.4.7 fixes hosted deployment for installations without mailbox OAuth apps or IMAP setup: the seven mailbox configuration bindings are optional. Email settings shows unavailable connect options until their providers are configured. Every other deploy binding is unchanged. Includes v0.4.6's R4, R6 and R7b features. No new migrations; v0.4.5 still receives v0.4.6's fifteen missing migrations. Back up and use pinned rer 0.2.51 without resetting or editing migration history. R5 is not included. Production deployment is separate.",
-  "pendingMigrations": [
+  "migrations": [
     {
       "id": "150_workflow_journal.sql",
-      "summary": "Unreleased R5 durable workflow journal and ticket follow-ups."
+      "buyerSteps": "R5 durable workflow journal and ticket follow-ups. Apply through pinned rer before the updated Worker serves traffic."
     },
     {
       "id": "151_workflow_sla.sql",
-      "summary": "Unreleased R5 business calendars, SLA state and alerts."
+      "buyerSteps": "R5 business calendars, SLA state and alerts. Apply through pinned rer before the updated Worker serves traffic."
     },
     {
       "id": "152_workflow_rules.sql",
-      "summary": "Unreleased R5 versioned event and time rules with durable execution."
+      "buyerSteps": "R5 versioned event and time rules with durable execution. Apply through pinned rer before the updated Worker serves traffic."
     },
     {
       "id": "153_workflow_schedules.sql",
-      "summary": "Unreleased R5 snoozes and scheduled replies."
+      "buyerSteps": "R5 snoozes and scheduled replies. Apply through pinned rer before the updated Worker serves traffic."
     },
     {
       "id": "154_workflow_routing.sql",
-      "summary": "Unreleased R5 fair routing decisions and operator availability."
+      "buyerSteps": "R5 fair routing decisions and operator availability. Apply through pinned rer before the updated Worker serves traffic."
     },
     {
       "id": "155_schedule_team_frontier.sql",
-      "summary": "Unreleased R5 scheduled-reply team authority frontier."
+      "buyerSteps": "R5 scheduled-reply team authority frontier. Apply through pinned rer before the updated Worker serves traffic."
     },
     {
       "id": "156_ticket_batch_jobs.sql",
-      "summary": "Unreleased durable bulk and macro continuation jobs and outcomes."
+      "buyerSteps": "durable bulk and macro continuation jobs and outcomes. Apply through pinned rer before the updated Worker serves traffic."
     }
-  ]
+  ],
+  "breaking": false,
+  "agentUpdateInstructions": "Update from v0.4.7 to v0.4.8 without resetting. Stop writers and back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.68. Apply exactly the seven listed missing migrations, 150 through 156, by name in filename order before the updated Worker starts, including below already applied rows. Preserve all prior ledger identities and bytes; unknown, changed or uncertain history is refused and final readback is checked. Never delete, reorder or edit ledger rows. Retain owners, imported support history, permissions, files and erasure fences. The seven mailbox settings remain optional and held secrets are inherited. Run rer deploy --dry-run against the retained installation before deployment; missing required secrets now refuse. R5 adds business hours, SLAs, event/time rules, routing, follow-ups and schedules. Existing SLA and default-close previews remain inert; preview and publish explicitly. One statement budget covers the entire scheduled invocation. Bulk and macro continuations are durable; interrupted notice attempts remain visibly uncertain without replay. Retain human Send.",
+  "publicReleaseNotes": "HappyToHelp v0.4.8 ships R5: business hours and holiday calendars, SLAs, event and time rules, routing, follow-ups, snoozes and schedules. One database statement budget covers the whole scheduled handler. Bulk actions and macros have durable continuations, bounded notice delivery and explicit outcomes after interruption. Upgrade from v0.4.7 adds exactly seven migrations, 150-156, through pinned rer 0.2.68. Back up and retain settings without resetting or editing migration history. Mailbox provider settings remain optional. Production deployment is separate.",
+  "pendingMigrations": []
 }

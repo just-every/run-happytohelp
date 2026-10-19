@@ -8,13 +8,13 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
-## Unreleased
+## 0.4.8 — 2026-10-19
 
-- Cron recovery completes queued assignment notices within its remaining database budget; interrupted notice attempts retain a visible delivery outcome.
-
-- Queued bulk actions and macros resume after interruptions; exhausted batches report each ticket’s outcome in the audit log.
-
-- Bulk assignments and macros deliver teammate notices during the request whenever its remaining database budget has room.
+- **Support workflows (R5).** Business hours and holiday calendars, first/next response and resolution SLAs, event and time rules, routing, follow-ups, snoozes and scheduled replies. Preview before publishing; existing SLA and default-close previews remain inert.
+- **One budget for the whole cron invocation.** Workflow recovery, operator-mail dispatch and audit work share a single database statement budget within D1's invocation limit.
+- **Durable bulk work.** Bulk assignments and macros deliver teammate notices during the request when its budget permits. Queued work resumes after interruptions; exhausted batches record each ticket's outcome. Cron recovery completes notices within its remaining budget, and interrupted attempts retain visible uncertainty without replay.
+- **Installer and deployment.** Pin rer 0.2.68, including blob-less release reads and safe temporary cleanup (#313), declared mail-provider keys and migration-sized provider budgets (#314), missing-secret dry-run refusal, large-seed publication scanning and portability that skips rer-owned ledgers.
+- **Upgrade from 0.4.7.** Back up D1, R2, Durable Object state and private settings. Apply exactly `150_workflow_journal.sql` through `156_ticket_batch_jobs.sql` with the pinned rer before serving traffic. Missing migrations are planned by name and bytes, including below already applied rows, with final readback. Preserve owners, imported history, permissions, files and erasure fences; never reset or edit the ledger. The seven mailbox settings remain optional.
 
 ## 0.4.7 — 2026-10-18
 

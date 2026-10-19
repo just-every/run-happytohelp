@@ -37,31 +37,37 @@ work delegated to your own Codex or Claude. It works with human replies without
 an AI provider. The editable React application runs on Cloudflare Workers with
 Hono, D1, R2, Queues and Durable Objects.
 
-## Release 0.4.7
+## Release 0.4.8
 
-Deploy the latest tagged release, **`v0.4.7`**, using the commands below.
-Mailbox provider configuration is now optional at deployment: installations
-without Google or Microsoft OAuth apps or IMAP settings can deploy normally.
-Email settings explains when a connection is unavailable and disables its
-connect action until the installation owner configures it.
+Deploy the latest tagged release, **`v0.4.8`**, using the commands below.
+R5 adds business hours and holiday calendars, response and resolution SLAs,
+event and time rules, routing, follow-ups, snoozes and scheduled replies.
+Preview rules before publishing them. Existing SLA and default-close previews
+stay inert until deliberately configured and published.
 
-This release includes v0.4.6's action macros, ticket notices to independently
-proven recipients and private team collaboration (R4), connected Gmail,
-Microsoft 365 and IMAP email (R6), and customer portal access and configurable
-request forms (R7b). Cc relay and AI replies reach proven addresses only;
-unreadable mail is held without blocking healthy intake.
+One database statement budget covers the **whole scheduled invocation**, including
+workflow recovery, teammate notices and audit work, so their combined work stays
+within D1's invocation limit. Bulk actions and macros deliver notices during the
+request when its budget permits; durable queued continuations finish the remainder
+after interruptions and record each ticket's outcome. Interrupted delivery attempts
+retain visible uncertainty without automatic replay.
 
 Fresh installs, README restores and upgrades cover published baselines through
-v0.4.6. Commands keep `@runeditrun/rer` pinned to 0.2.51; local dev starts
-without private setup answers. `rer deploy` claims the hosted owner named by
-`OWNER_EMAIL`; that owner signs in by email and opens Setup. Existing owners
-are preserved. Back up and retain private settings. **Upgrading from v0.4.6
-adds no migrations.** Earlier installations receive the migrations they lack;
-v0.4.5 still needs v0.4.6's fifteen (`140–146`, `160–164` and `172–174`).
-The pinned rer applies them by name in filename order before the updated Worker
-starts, even below already applied rows. It refuses unknown names, changed
-bytes and uncertain history and verifies readback. Do not reset or edit the
-migration ledger. R5 ships separately.
+v0.4.7. Commands pin `@runeditrun/rer` to **0.2.68**, including safe release reads
+from blob-less clones, strict missing-secret dry runs, portable backups that skip
+rer-owned ledgers, and deployment budgets sized to pending migrations. Local dev
+starts without private setup answers. The seven Google, Microsoft and IMAP mailbox
+settings remain optional; configure their providers only when needed.
+
+**Upgrading from v0.4.7 adds seven migrations:** `150_workflow_journal.sql`,
+`151_workflow_sla.sql`, `152_workflow_rules.sql`, `153_workflow_schedules.sql`,
+`154_workflow_routing.sql`, `155_schedule_team_frontier.sql` and
+`156_ticket_batch_jobs.sql`. Back up D1, R2, Durable Object state and private
+settings first. The pinned rer applies missing migrations by name in filename
+order before the updated Worker starts, even below already applied rows. It
+refuses unknown names, changed bytes and uncertain history and verifies readback.
+Never reset or edit the migration ledger. Existing owners, imported history,
+permissions, files and erasure fences remain.
 See [RELEASE.json](RELEASE.json),
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md) and [the changelog](CHANGELOG.md).
 
@@ -131,11 +137,11 @@ own operating contract; this seed's CLI is not a platform admission requirement.
 
 ## Deploy to your own Cloudflare account
 
-For a new installation, acquire the latest tagged release, **`v0.4.7`**,
+For a new installation, acquire the latest tagged release, **`v0.4.8`**,
 after installing `rer` as shown above:
 
 ```sh
-git clone --branch v0.4.7 https://github.com/just-every/run-happytohelp
+git clone --branch v0.4.8 https://github.com/just-every/run-happytohelp
 cd run-happytohelp
 ```
 
@@ -150,24 +156,16 @@ rer deploy --dry-run
 rer deploy --environment production
 ```
 
-Real deployment needs private `EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`
-inputs. With rer 0.2.42 a dry run validates their shape when you supply them, and
-otherwise goes ahead and lists them as needed for the real deploy. Dry run builds
-locally, makes no provider request and sends no mail.
-It needs no Cloudflare account. To check mail values before you deploy, put them
-in a private file; nothing is sent. Replace
-`YOUR-DOMAIN` with your business's domain and `YOUR-EMAIL` with your own address:
-the owner email must be real, because example and test domains are refused.
+Dry run needs the Cloudflare account credentials described in the prerequisites.
+It checks the target's held secrets read-only and refuses when required secrets
+are neither held nor supplied. For a new installation, also supply real
+`EMAIL_PROVIDER`, `EMAIL_FROM`, `EMAIL_API_KEY` and `OWNER_EMAIL` inputs in an
+owned 0600 `--env-file`; the owner email must receive sign-in mail. Existing
+installations retain held secrets. The seven optional mailbox settings can stay
+unset. Dry run builds locally, sends no mail and changes no provider resources.
 
 ```sh
-umask 077
-cat > ~/happytohelp-dry-run.env <<'EOF_ENV'
-EMAIL_PROVIDER=resend
-EMAIL_FROM=support@YOUR-DOMAIN
-EMAIL_API_KEY=re_stand_in
-OWNER_EMAIL=YOUR-EMAIL
-EOF_ENV
-rer deploy --dry-run --env-file ~/happytohelp-dry-run.env
+rer deploy --dry-run --env-file ~/happytohelp-production.env
 ```
 
 Deployment

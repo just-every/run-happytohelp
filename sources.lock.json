@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "8ef1c44c00272b810f157353fb54379fc0ec7dd4c9234810e3ee55ad4af3df21",
+      "sha256": "50149f241e9d3311b8306a4eb46732920c41138a578ada3e662b20b5b778e63e",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2413,11 +2413,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "ed53812e37a401480484c838e23f7ef48b04f86ae0023110dbdb0079f3619d68",
+      "sha256": "0bfd861474d9a3e20f2a7a51dc9e88ff3d7bf9813b7aff477b1d6e43331ae07d",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "5bc569ebbb21b8c92de36011ec3739405a29853cd85c9dd9a9bd3ef3b6ef5ca6",
+      "sha256": "97416fff69f3de513e394b91a943ee39b6827f8e7d38c01d3cdfb9fb81dee139",
       "executable": false
     },
     "public/fonts/inter/InterVariable.woff2": {
@@ -2489,11 +2489,11 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "984d9de0f7c35c9040dd3ad94cb9dec7624469912bb3ddb49affb1000cf21ff6",
+      "sha256": "a14f99ebe44dd51ffeb869340eef57ae218476628e64d763768e965e8f4839d7",
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "a29b81ed9bb2e6b67a605a5664640ec08ad7764672c558bf03db026e809edfd6",
+      "sha256": "0a0fc09ed4519ddb6ca9a0bdb9e5fa93314722b94c01c23ad179e6c6b2671bb5",
       "executable": false
     },
     "rer-project.json": {
@@ -3061,7 +3061,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "89f67b939014bab7383843a907a236acf436e14c2145375e48077eb1636a0e44",
+      "sha256": "922e1e3d3faeb58fae5776f47ad812dc6742301a273c94d163fddea6b332dc5f",
       "executable": false
     },
     "src/app.ts": {
@@ -10665,7 +10665,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-baselines.mjs": {
-      "sha256": "3bd3a05f3ac3cda7a2c757dca3d85b39bcadd670ce21d5dd4f0ccfa3999dcad6",
+      "sha256": "fdc84ddabd031350faa6173b687b49296622545521f32df48f76458d927114bf",
       "executable": false
     },
     "tests/helpers/upgrade-data-expectations.mjs": {

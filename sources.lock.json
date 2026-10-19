@@ -10445,7 +10445,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "6c08a535ed152e74fcabea30ec63707d22b303a3df5713ad485a0790603babb5",
+      "sha256": "7128286c89d8c6d8b53fbc95be8a33c579e9634cd820ab90b43dd9c2aab8c84b",
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {

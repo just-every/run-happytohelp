@@ -59,5 +59,54 @@ export async function ticketQueue(f){
   assert.equal((await get(ticket.id)).assigned_to,w.users.operator)
   assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.bulk.apply' AND target_id=? AND outcome='succeeded'",ticket.id)).n,1)
  }
+ // Failure rows stay in this journey: each starts with real request overflow,
+ // commits two queued tickets, then loses one statement or the invocation.
+ for(const [index,{fault,recovery}] of [
+  {fault:'db-once',recovery:'queue'},{fault:'db-once',recovery:'cron'},
+  {fault:'db-interrupt',recovery:'queue'},{fault:'db-interrupt',recovery:'cron'},
+ ].entries()){
+  const selection=await app.sql('SELECT id,ticket_version expected_version FROM conversations WHERE id IN (SELECT value FROM json_each(?)) ORDER BY id',JSON.stringify(overflow.map(ticket=>ticket.id)))
+  const priority=index%2?'urgent':'high'
+  const accepted=await ok('/tickets/bulk/apply',{tickets:selection,changes:{priority}})
+  const queued=accepted.results.filter(result=>result.status==='queued')
+  assert.ok(queued.length>3,'the fault runs after overflow has durably queued several tickets')
+  const batchId=queued[0].batch_id,wake=(await app.takeJobs()).find(job=>job.type==='ticket.batch'&&job.id===batchId)
+  assert.ok(wake,'durable acceptance also emits its queue wakeup')
+  const read=()=>app.first('SELECT * FROM ticket_batch_jobs WHERE id=?',batchId)
+  const original=await read(),pending=JSON.parse(original.selection_json)
+  assert.equal(original.state,'pending');assert.equal(original.cursor,0)
+  const failedRun=await app.runJobs([wake],{'x-test-fault':fault,'x-test-statement':fault==='db-once'?'INSERT INTO ticket_history':'UPDATE ticket_batch_jobs SET cursor=cursor\\+1','x-test-statement-at':fault==='db-once'?'3':'2'})
+  assert.deepEqual(failedRun.retried,fault==='db-interrupt'?[0]:[])
+  const partial=await read(),outcomes=JSON.parse(partial.results_json),pendingIds=new Set(pending.map(ticket=>ticket.id))
+  const progressed=outcomes.filter(result=>pendingIds.has(result.id)&&result.status==='applied')
+  assert.equal(partial.state,'pending');assert.ok(partial.cursor>=2)
+  assert.ok(progressed.length>=2&&progressed.length<pending.length,'the failure happens after queued progress and before completion')
+  assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.bulk.apply' AND target_id=? AND outcome='succeeded' AND json_extract(detail_json,'$.batch_id')=?",pending[0].id,batchId)).n,1)
+  assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.batch' AND target_id=?",batchId)).n,0,'a pending job has no terminal receipt')
+  if(fault==='db-once'){
+   assert.equal(outcomes.find(result=>result.id===pending[2].id).status,'retry')
+   assert.equal(outcomes.find(result=>result.id===pending[2].id).attempts,1)
+   assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.bulk.apply' AND target_id=? AND outcome='succeeded' AND json_extract(detail_json,'$.batch_id')=?",pending[2].id,batchId)).n,0,'the transient failure rolls back its ticket receipt')
+   assert.ok(pending.slice(3).some(ticket=>outcomes.find(result=>result.id===ticket.id).status==='applied'),'the transient failure does not abandon later tickets')
+   assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.batch.failed' AND target_id=? AND outcome='failed' AND json_extract(detail_json,'$.batch_id')=? AND json_extract(detail_json,'$.retryable')=1",pending[2].id,batchId)).n,1)
+  }
+  if(recovery==='cron'){
+   await app.configure({})
+   assert.deepEqual(await app.takeJobs(),[],'the restarted Worker has lost every in-memory wakeup')
+  }
+  for(let attempt=0;attempt<32&&(await read()).state==='pending';attempt++){
+   if(recovery==='cron')assert.equal((await app.scheduled()).ran,true)
+   else assert.deepEqual((await app.runJobs([wake])).retried,[],'queue redelivery uses the original message')
+  }
+  const completed=await read()
+  assert.equal(completed.state,'complete',`${fault} resumes through ${recovery}`)
+  assert.ok(JSON.parse(completed.results_json).every(result=>result.status==='applied'))
+  assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.batch' AND target_id=? AND outcome='succeeded'",batchId)).n,1)
+  assert.deepEqual((await app.runJobs([wake])).retried,[])
+  for(const ticket of selection){
+   assert.equal((await get(ticket.id)).priority,priority)
+   assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.bulk.apply' AND target_id=? AND outcome='succeeded' AND json_extract(detail_json,'$.batch_id')=?",ticket.id,batchId)).n,1,'recovery preserves exactly one native ticket receipt')
+  }
+ }
  f.queueIds=ids
 }

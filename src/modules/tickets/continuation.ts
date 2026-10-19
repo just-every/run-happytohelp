@@ -1,54 +1,69 @@
-import type {Actor,Env,Job,BaseJob} from '../../platform/env'
-import type {TicketAuthority} from './model'
+import type {Env,Job} from '../../platform/env'
 import {mutateTicket,TicketCommittedError} from './mutate'
 import {applyMacro} from '../macros/apply'
-import {auditStatement,type AuditEvent} from '../audit/record'
+import {auditStatement} from '../audit/record'
 import {notificationRequestEnvironment,requestRoom,flushRequestAssignments} from '../integrations/notification-request'
 import {ticketBatchEnvironment} from './request-batch'
 import {finishBatchWorkflows} from './batch-workflows'
+import {cronRoom} from '../../platform/cron-budget'
+import {batchWake,bulkReceipt,batchEvent,readContinuation,finishContinuation,maxBatchAttempts,type BatchRow,type BatchResult} from './continuation-store'
+export {bulkReceipt,queueTicketContinuation} from './continuation-store'
 
-interface Selection {id:string;expected_version:number}
-export interface TicketContinuation extends BaseJob {
- type:'ticket.batch';actor:Actor;authority:TicketAuthority;tickets:Selection[];
- changes?:Record<string,unknown>;macro?:{id:string;version:number;commandId:string};batchId:string
-}
-export function bulkReceipt(actor:Actor,source:AuditEvent['source'],batchId:string,id:string,changes:Record<string,unknown>):AuditEvent{
- return {projectId:actor.projectId,category:'data',action:'ticket.bulk.apply',actor:{type:'user',id:actor.id},source,target:{type:'conversation',id},detail:{batch_id:batchId,result:'applied',fields:Object.keys(changes)}}
-}
-/** Queue acceptance is the durable continuation boundary. The original live
- * authority and frontier are checked again; fixed receipts fence queue redelivery. */
+/** No process owns the frontier: compare-and-set cursor writes and the native
+ * mutation receipts fence concurrent queue/cron delivery, including process death.
+ * Each invocation is bounded; unsuccessful attempts survive in the job row. */
 export async function consumeTicketContinuation(job:Job,input:Env){
  if(job.type!=='ticket.batch')return false
- const work=job as TicketContinuation
- if(!work.actor||work.actor.projectId!==work.projectId||!work.authority?.sessionHash||!Array.isArray(work.tickets)||!work.tickets.length||work.tickets.length>100||!work.batchId||Boolean(work.changes)===Boolean(work.macro))throw new Error('Invalid ticket continuation')
+ const row=await input.DB.prepare("UPDATE ticket_batch_jobs SET attempts=attempts+1,updated_at=? WHERE id=? AND project_id=? AND state='pending' RETURNING *").bind(Date.now(),job.id,job.projectId).first<BatchRow>()
+ if(!row)return true
+ const work=readContinuation(row),results:BatchResult[]=JSON.parse(row.results_json)
+ if(row.attempts>maxBatchAttempts){await finishContinuation(input,row,work,results,true);return true}
  const env=await ticketBatchEnvironment(notificationRequestEnvironment(input),work.actor,work.tickets.map(t=>t.id)),applied:string[]=[]
- for(let index=0;index<work.tickets.length;index++){
-  if(requestRoom(env)<96){await env.JOBS.send({...work,id:`${work.batchId}:${index}`,tickets:work.tickets.slice(index)});break}
-  const selected=work.tickets[index],receipt=`bulk:${work.batchId}:${selected.id}`
-  try{
-   if(work.macro)await applyMacro(env,work.actor,work.macro.id,work.macro.version,selected,work.macro.commandId,work.authority)
-   else if(!await env.DB.prepare('SELECT 1 FROM ticket_history WHERE id=? AND project_id=? AND conversation_id=?').bind(receipt,work.projectId,selected.id).first())await mutateTicket(env,work.actor,selected.id,{...work.changes,expected_ticket_version:selected.expected_version},work.authority,bulkReceipt(work.actor,work.authority.source??'dashboard',work.batchId,selected.id,work.changes!),receipt)
-   applied.push(selected.id)
-  }catch(error){
-   if(error instanceof TicketCommittedError){applied.push(selected.id);continue}
-   const status=(error as {status?:number}).status
-   if(!status||![400,401,403,404,409,422].includes(status))throw error
-   await auditStatement(env.DB,{projectId:work.projectId,category:'data',action:'ticket.batch.refused',outcome:'refused',actor:{type:'user',id:work.actor.id},source:work.authority.source??'dashboard',target:{type:'conversation',id:selected.id},detail:{batch_id:work.batchId,status}}).run()
+ let retry=false
+ for(;row.cursor<work.tickets.length;){
+  if(requestRoom(env)<112||!cronRoom(env,112))break
+  const selected=work.tickets[row.cursor],prior=results.find(r=>r.id===selected.id)!,receipt=`bulk:${work.batchId}:${selected.id}`
+  let status=prior.status,attempts=prior.attempts??0,event
+  if(['pending','retry'].includes(status)){
+   try{
+    const committed=work.macro?await env.DB.prepare('SELECT 1 FROM macro_usage WHERE project_id=? AND actor_id=? AND command_id=? AND conversation_id=? AND macro_id=? AND version=?').bind(row.project_id,work.actor.id,work.macro.commandId,selected.id,work.macro.id,work.macro.version).first():await env.DB.prepare('SELECT 1 FROM ticket_history WHERE id=? AND project_id=? AND conversation_id=?').bind(receipt,row.project_id,selected.id).first()
+    if(!committed){if(work.macro)await applyMacro(env,work.actor,work.macro.id,work.macro.version,selected,work.macro.commandId,work.authority)
+    else await mutateTicket(env,work.actor,selected.id,{...work.changes,expected_ticket_version:selected.expected_version},work.authority,bulkReceipt(work.actor,work.authority.source??'dashboard',work.batchId,selected.id,work.changes!),receipt)}
+    status='applied';applied.push(selected.id)
+   }catch(error){
+    if(error instanceof TicketCommittedError){status='applied';applied.push(selected.id)}
+    else{
+     const code=(error as {status?:number}).status,refused=Boolean(code&&[400,401,403,404,409,422].includes(code))
+     attempts++;status=refused?'refused':attempts<5?'retry':'failed'
+     event=batchEvent(work,selected.id,refused?'refused':'failed',status==='retry')
+    }
+   }
   }
+  const next=results.map(r=>r.id===selected.id?{id:r.id,status,attempts}:r)
+  const guard={sql:"EXISTS(SELECT 1 FROM ticket_batch_jobs WHERE id=? AND state='pending' AND cursor=?)",params:[row.id,row.cursor]}
+  const saved=await env.DB.batch([
+   ...(event?[auditStatement(env.DB,event,Date.now(),guard)]:[]),
+   env.DB.prepare("UPDATE ticket_batch_jobs SET cursor=cursor+1,results_json=?,updated_at=? WHERE id=? AND state='pending' AND cursor=?").bind(JSON.stringify(next),Date.now(),row.id,row.cursor)
+  ])
+  if(!saved.at(-1)!.meta.changes)return true
+  results.splice(0,results.length,...next);row.cursor++
  }
- await finishBatchWorkflows(env,work.projectId,applied)
- await flushRequestAssignments(env)
+ if(row.cursor===work.tickets.length){
+  const next=work.tickets.findIndex(t=>results.some(r=>r.id===t.id&&r.status==='retry'))
+  if(next<0)await finishContinuation(env,row,work,results)
+  else{await env.DB.prepare("UPDATE ticket_batch_jobs SET cursor=?,updated_at=? WHERE id=? AND state='pending' AND cursor=?").bind(next,Date.now(),row.id,row.cursor).run();retry=true}
+ }else retry=true
+ await finishBatchWorkflows(env,row.project_id,applied)
+ if(cronRoom(env,64))await flushRequestAssignments(env)
+ if(retry){try{await env.JOBS.send(batchWake(work))}catch{console.error('Ticket batch retained for recovery',row.id)}}
  return true
 }
-export async function queueTicketContinuation(env:Env,work:Pick<TicketContinuation,'actor'|'authority'|'tickets'|'changes'|'macro'|'batchId'>,results:Record<string,unknown>[]){
- const pending=results.filter(r=>r.code==='request_capacity')
- if(!pending.length)return
- const ids=new Set(pending.map(r=>r.id))
- try{
-  await env.JOBS.send({...work,type:'ticket.batch',id:work.batchId,projectId:work.actor.projectId,tickets:work.tickets.filter(t=>ids.has(t.id))})
-  for(const result of pending){result.status='queued';result.code='request_continuation';result.reason='Queued to finish with the original permissions and ticket version. Reload to see the result.'}
- }catch{
-  // A lost queue response is not proof of refusal. Do not replay it here.
-  for(const result of pending){result.status='queued';result.code='continuation_unconfirmed';result.reason='Queue acceptance could not be confirmed. Reload this ticket before applying another change.'}
+/** One discovery statement comes from Context's existing reservation. Ticket
+ * units use unused earlier credit only; every later consumer remains reserved. */
+export async function recoverTicketContinuations(env:Env){
+ const rows=await env.DB.prepare("SELECT id,project_id FROM ticket_batch_jobs WHERE state='pending' ORDER BY updated_at,id LIMIT 10").all<{id:string;project_id:string}>()
+ for(const row of rows.results){
+  if(!cronRoom(env,256))break
+  try{await consumeTicketContinuation({type:'ticket.batch',id:row.id,projectId:row.project_id},env)}catch(error){console.error('Ticket batch recovery retained',row.id,error instanceof Error?error.name:'Error')}
  }
 }

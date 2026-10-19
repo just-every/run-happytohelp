@@ -83,6 +83,56 @@ export async function macrosJourney(){
    assert.equal((await get(selected.id)).assigned_to,w.users.operator)
    assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='macro.applied' AND target_id=?",selected.id)).n,1)
   }
+  for(const [index,{fault,recovery}] of [
+   {fault:'db-once',recovery:'queue'},{fault:'db-once',recovery:'cron'},
+   {fault:'db-interrupt',recovery:'queue'},{fault:'db-interrupt',recovery:'cron'},
+  ].entries()){
+   const selection=await app.sql('SELECT id,ticket_version expected_version FROM conversations WHERE id IN (SELECT value FROM json_each(?)) ORDER BY id',JSON.stringify(overflow.map(ticket=>ticket.id)))
+   const priority=index%2?'high':'urgent',commandId=`resumable-macro-${index}`
+   const continuationMacro=await ok('/macros',{title:`Recover replacements ${index}`,content:'We will arrange your replacement.',actions:{priority}})
+   const accepted=await run(continuationMacro,'apply',selection,{command_id:commandId})
+   const queued=accepted.results.filter(result=>result.status==='queued')
+   assert.ok(queued.length>3,'several macro tickets overflow into durable work before the fault')
+   const batchId=queued[0].batch_id,wake=(await app.takeJobs()).find(job=>job.type==='ticket.batch'&&job.id===batchId)
+   assert.ok(wake)
+   const read=()=>app.first('SELECT * FROM ticket_batch_jobs WHERE id=?',batchId)
+   const original=await read(),pending=JSON.parse(original.selection_json)
+   assert.equal(original.state,'pending');assert.equal(original.cursor,0)
+   const failedRun=await app.runJobs([wake],{'x-test-fault':fault,'x-test-statement':fault==='db-once'?'INSERT INTO macro_usage':'UPDATE ticket_batch_jobs SET cursor=cursor\\+1','x-test-statement-at':fault==='db-once'?'3':'2'})
+   assert.deepEqual(failedRun.retried,fault==='db-interrupt'?[0]:[])
+   const partial=await read(),outcomes=JSON.parse(partial.results_json),pendingIds=new Set(pending.map(ticket=>ticket.id))
+   const progressed=outcomes.filter(result=>pendingIds.has(result.id)&&result.status==='applied')
+   assert.equal(partial.state,'pending');assert.ok(partial.cursor>=2)
+   assert.ok(progressed.length>=2&&progressed.length<pending.length,'macro continuation commits queued work before interruption')
+   assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='macro.applied' AND target_id=? AND json_extract(detail_json,'$.macro_id')=?",pending[0].id,continuationMacro.id)).n,1)
+   assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.batch' AND target_id=?",batchId)).n,0)
+   if(fault==='db-once'){
+    assert.equal(outcomes.find(result=>result.id===pending[2].id).status,'retry')
+    assert.equal(outcomes.find(result=>result.id===pending[2].id).attempts,1)
+    assert.equal((await app.first('SELECT count(*) n FROM macro_usage WHERE conversation_id=? AND macro_id=? AND command_id=?',pending[2].id,continuationMacro.id,commandId)).n,0,'the failed macro transaction has no admitted use')
+    assert.ok(pending.slice(3).some(ticket=>outcomes.find(result=>result.id===ticket.id).status==='applied'),'later macro tickets continue after a single transient')
+    assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.batch.failed' AND target_id=? AND outcome='failed' AND json_extract(detail_json,'$.batch_id')=? AND json_extract(detail_json,'$.retryable')=1",pending[2].id,batchId)).n,1)
+   }
+   if(recovery==='cron'){
+    await app.configure({})
+    assert.deepEqual(await app.takeJobs(),[],'restart discards wakeups and keeps the pending macro row')
+   }
+   for(let attempt=0;attempt<32&&(await read()).state==='pending';attempt++){
+    if(recovery==='cron')assert.equal((await app.scheduled()).ran,true)
+    else assert.deepEqual((await app.runJobs([wake])).retried,[],'queue retry reuses the original wakeup')
+   }
+   const completed=await read()
+   assert.equal(completed.state,'complete',`${fault} macro resumes through ${recovery}`)
+   assert.ok(JSON.parse(completed.results_json).every(result=>result.status==='applied'))
+   assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.batch' AND target_id=? AND outcome='succeeded'",batchId)).n,1)
+   assert.deepEqual((await app.runJobs([wake])).retried,[])
+   for(const ticket of selection){
+    assert.equal((await get(ticket.id)).priority,priority)
+    assert.equal((await ok(`/conversations/${ticket.id}/macro-draft`)).content,'We will arrange your replacement.')
+    assert.equal((await app.first('SELECT count(*) n FROM macro_usage WHERE conversation_id=? AND macro_id=? AND command_id=?',ticket.id,continuationMacro.id,commandId)).n,1)
+    assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='macro.applied' AND target_id=? AND json_extract(detail_json,'$.macro_id')=?",ticket.id,continuationMacro.id)).n,1,'recovery writes the macro audit once')
+   }
+  }
   const absent=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey},headers:{Origin:w.allowedOrigin}})
   const emptyNameTicket=await app.ok('/api/conversations',{body:{projectId:w.projectId},token:absent.token})
   assert.match((await run(v2,'preview',[{id:emptyNameTicket.id,expected_version:0}])).results[0].draft.content,/Hello there/)

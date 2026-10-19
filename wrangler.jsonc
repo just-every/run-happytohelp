@@ -51,7 +51,7 @@
       {
         "queue": "happytohelp-native-jobs",
         "max_batch_size": 1,
-        "max_retries": 0,
+        "max_retries": 3,
         "dead_letter_queue": "happytohelp-native-jobs-dead"
       }
     ]

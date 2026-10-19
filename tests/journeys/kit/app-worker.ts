@@ -29,6 +29,9 @@ function scheduledMeter(db:D1Database){
 // and x-test-after-batch run a real D1 write around each atomic batch, as a
 // concurrent request would; x-test-fault fails D1 or R2 before or after commit,
 // or makes the queue refuse (queue-unavailable) or silently lose (queue-lost) sends.
+// db-once throws before the Kth matching D1 statement; db-interrupt commits
+// that statement, then denies all further storage/queue work for this invocation.
+// x-test-statement-at supplies K, with optional x-test-statement SQL matching.
 const faulted=(request:Request,env:Env):Env=>{
  const before=request.headers.get('x-test-before-batch'),after=request.headers.get('x-test-after-batch'),fault=request.headers.get('x-test-fault')
  // x-test-before-statement runs a real D1 write once, just before the first statement (alone or in a batch)
@@ -36,27 +39,39 @@ const faulted=(request:Request,env:Env):Env=>{
  const beforeStatement=request.headers.get('x-test-before-statement'),statementPattern=request.headers.get('x-test-statement')
  if(!before&&!after&&!fault&&!beforeStatement)return env
  if(fault==='no-database')return {...env,DB:{prepare(){throw new Error('Database access forbidden')},batch(){throw new Error('Database access forbidden')},exec(){throw new Error('Database access forbidden')}} as unknown as D1Database}
- const DB=env.DB,FILES=env.FILES;let puts=0,fired=false
+ const DB=env.DB,FILES=env.FILES;let puts=0,fired=false,seen=0,faultFired=false,interrupted=false
+ const counted=fault==='db-once'||fault==='db-interrupt',at=Number(request.headers.get('x-test-statement-at')??1),pattern=statementPattern?new RegExp(statementPattern,'i'):undefined
+ const alive=()=>{if(interrupted)throw new Error('Injected invocation termination')}
+ const checkpoint=(sqls:string[])=>{
+  alive()
+  if(!counted||faultFired)return false
+  for(const sql of sqls)if(!pattern||pattern.test(sql)){if(++seen===at){faultFired=true;if(fault==='db-once')throw new Error('Injected transient D1 failure');return true}}
+  return false
+ }
+ const committed=(stop:boolean)=>{if(stop){interrupted=true;alive()}}
  const fire=async()=>{if(!fired){fired=true;await DB.exec(beforeStatement!)}}
- const targets=new WeakMap<object,D1PreparedStatement>()
- const intercept=(statement:D1PreparedStatement):D1PreparedStatement=>{const proxy=new Proxy(statement,{get(target,key){
-  if(key==='bind')return (...values:unknown[])=>intercept(target.bind(...values))
-  if(key==='run'||key==='all'||key==='first'||key==='raw')return async(...args:unknown[])=>{await fire();return (target as any)[key](...args)}
+ const targets=new WeakMap<object,D1PreparedStatement>(),sqls=new WeakMap<object,string>()
+ const intercept=(statement:D1PreparedStatement,sql:string):D1PreparedStatement=>{const proxy=new Proxy(statement,{get(target,key){
+  if(key==='bind')return (...values:unknown[])=>intercept(target.bind(...values),sql)
+  if(key==='run'||key==='all'||key==='first'||key==='raw')return async(...args:unknown[])=>{const stop=checkpoint([sql]);if(beforeStatement&&pattern?.test(sql))await fire();const result=await (target as any)[key](...args);committed(stop);return result}
   const value=(target as any)[key];return typeof value==='function'?value.bind(target):value
- }});targets.set(proxy,statement);return proxy}
- const prepare=(sql:string)=>beforeStatement&&statementPattern&&new RegExp(statementPattern,'i').test(sql)?intercept(DB.prepare(sql)):DB.prepare(sql)
- const queue=fault==='queue-unavailable'?{send:async()=>{throw new Error('Injected queue delivery failure')},sendBatch:async()=>{throw new Error('Injected queue delivery failure')}}:fault==='queue-lost'?{send:async()=>{},sendBatch:async()=>{}}:undefined
+ }});targets.set(proxy,statement);sqls.set(proxy,sql);return proxy}
+ const prepare=(sql:string)=>{alive();return counted||beforeStatement&&pattern?.test(sql)?intercept(DB.prepare(sql),sql):DB.prepare(sql)}
+ const queue=fault==='queue-unavailable'?{send:async()=>{throw new Error('Injected queue delivery failure')},sendBatch:async()=>{throw new Error('Injected queue delivery failure')}}:fault==='queue-lost'?{send:async()=>{},sendBatch:async()=>{}}:counted?{send:async(job:unknown)=>{alive();await env.JOBS.send(job as any)},sendBatch:async(jobs:any[])=>{alive();await env.JOBS.sendBatch(jobs)}}:undefined
  return {...env,...(queue?{JOBS:queue as unknown as Env['JOBS']}:{}),
-  DB:{prepare,exec:DB.exec.bind(DB),async batch(statements:D1PreparedStatement[]){
+  DB:{prepare,async exec(sql:string){const stop=checkpoint([sql]),result=await DB.exec(sql);committed(stop);return result},async batch(statements:D1PreparedStatement[]){
+   const stop=checkpoint(statements.map(statement=>sqls.get(statement)??''))
    if(fault==='db-before')throw new Error('Injected D1 failure')
    if(before)await DB.exec(before)
-   if(statements.some(statement=>targets.has(statement)))await fire()
+   if(beforeStatement&&statements.some(statement=>pattern?.test(sqls.get(statement)??'')))await fire()
    const result=await DB.batch(statements.map(statement=>targets.get(statement)??statement))
    if(after)await DB.exec(after)
    if(fault==='db-after')throw new Error('Injected lost D1 response')
+   committed(stop)
    return result
   }} as unknown as D1Database,
   FILES:{get:FILES.get.bind(FILES),head:FILES.head.bind(FILES),delete:FILES.delete.bind(FILES),list:FILES.list.bind(FILES),async put(...args:Parameters<R2Bucket['put']>){
+   alive()
    if(fault==='second-copy'&&++puts===2)throw new Error('Injected R2 copy failure')
    if(fault==='unknown-copy'){await FILES.put(...args);throw new Error('Injected lost R2 response')}
    return FILES.put(...args)

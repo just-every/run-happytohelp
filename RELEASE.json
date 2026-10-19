@@ -52,6 +52,10 @@
     {
       "id": "155_schedule_team_frontier.sql",
       "summary": "Unreleased R5 scheduled-reply team authority frontier."
+    },
+    {
+      "id": "156_ticket_batch_jobs.sql",
+      "summary": "Unreleased durable bulk and macro continuation jobs and outcomes."
     }
   ]
 }

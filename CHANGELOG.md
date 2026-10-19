@@ -10,6 +10,8 @@ updating and backing up an installation, see
 
 ## Unreleased
 
+- Queued bulk actions and macros resume after interruptions; exhausted batches report each ticket’s outcome in the audit log.
+
 - Bulk assignments and macros deliver teammate notices during the request whenever its remaining database budget has room.
 
 ## 0.4.7 — 2026-10-18

@@ -1,3 +1,4 @@
+import {recoverTicketContinuations} from './modules/tickets/continuation'
 import {cronConsumer,CronDeferred} from './platform/cron-budget'
 import {dispatchOutbox,recoverOutbox,recoverOutboxPage} from './outbox-recovery'
 import {boundedDatabase} from './platform/d1-budget'
@@ -64,7 +65,8 @@ export async function runScheduled(env:Env) {
  await visit('Outbox',3,dispatchOutbox,700)
  await visit('Generation',10,env=>recoverQueuedGenerations(env,generationEffects))
  await visit('Knowledge',15,refreshDueDatasets)
- await visit('Context',6,recoverContextJobs)
+ await visit('Context',5,recoverContextJobs)
+ await visit('Ticket continuation',1,recoverTicketContinuations)
  await visit('Training',25,recoverTrainingRuns)
  await visit('Local result',5,env=>recoverLocalResultEffects(env,localComputerIntegration))
  await visit('Brand',6,recoverBrandJobs)

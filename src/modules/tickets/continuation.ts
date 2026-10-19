@@ -6,7 +6,7 @@ import {notificationRequestEnvironment,requestRoom,flushRequestAssignments} from
 import {ticketBatchEnvironment} from './request-batch'
 import {finishBatchWorkflows} from './batch-workflows'
 import {cronRoom} from '../../platform/cron-budget'
-import {batchWake,bulkReceipt,batchEvent,readContinuation,finishContinuation,maxBatchAttempts,type BatchRow,type BatchResult} from './continuation-store'
+import {batchWake,bulkReceipt,batchEvent,readContinuation,finishContinuation,maxBatchAttempts,type BatchRow,type BatchResult,type Selection} from './continuation-store'
 export {bulkReceipt,queueTicketContinuation} from './continuation-store'
 
 /** No process owns the frontier: compare-and-set cursor writes and the native
@@ -55,15 +55,18 @@ export async function consumeTicketContinuation(job:Job,input:Env){
  }else retry=true
  await finishBatchWorkflows(env,row.project_id,applied)
  if(cronRoom(env,64))await flushRequestAssignments(env)
- if(retry){try{await env.JOBS.send(batchWake(work))}catch{console.error('Ticket batch retained for recovery',row.id)}}
+ if(retry){try{await env.JOBS.send(batchWake(work.batchId,work.actor.projectId,work.tickets))}catch{console.error('Ticket batch retained for recovery',row.id)}}
  return true
 }
 /** One discovery statement comes from Context's existing reservation. Ticket
  * units use unused earlier credit only; every later consumer remains reserved. */
 export async function recoverTicketContinuations(env:Env){
- const rows=await env.DB.prepare("SELECT id,project_id FROM ticket_batch_jobs WHERE state='pending' ORDER BY updated_at,id LIMIT 10").all<{id:string;project_id:string}>()
+ const rows=await env.DB.prepare("SELECT id,project_id,selection_json FROM ticket_batch_jobs WHERE state='pending' ORDER BY updated_at,id LIMIT 10").all<{id:string;project_id:string;selection_json:string}>()
  for(const row of rows.results){
-  if(!cronRoom(env,256))break
+  // A saturated cron still wakes the job in its own queue invocation. Inline
+  // progress also recovers a lost wakeup without depending on queue delivery.
+  try{await env.JOBS.send(batchWake(row.id,row.project_id,JSON.parse(row.selection_json) as Selection[]))}catch{console.error('Ticket batch wakeup retained',row.id)}
+  if(!cronRoom(env,256))continue
   try{await consumeTicketContinuation({type:'ticket.batch',id:row.id,projectId:row.project_id},env)}catch(error){console.error('Ticket batch recovery retained',row.id,error instanceof Error?error.name:'Error')}
  }
 }

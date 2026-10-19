@@ -2340,6 +2340,10 @@
       "sha256": "d092307fedd1620c54d2b1c8972616f3756b2c7f7c7403d02495c1b97c239556",
       "executable": false
     },
+    "migrations/156_ticket_batch_jobs.sql": {
+      "sha256": "8caa48dc8304273809a54c5db535460a9b8014f85ada90436da359e36f4b1d6a",
+      "executable": false
+    },
     "migrations/160_mailboxes.sql": {
       "sha256": "bce4d8c872b162070eec029ec4c3ca5c0c3f2a05a4e59c961b05745e62b83ebe",
       "executable": false
@@ -6244,8 +6248,12 @@
       "sha256": "74616b87074ac837ff0806ba1fb4a09c3b506307cf200c5b144da07fa9fc8e64",
       "executable": false
     },
+    "src/modules/tickets/continuation-store.ts": {
+      "sha256": "8c1da147002e38c2ba9f0137f06bc7abf1a573dac2d0528d6f65168d6c309bd8",
+      "executable": false
+    },
     "src/modules/tickets/continuation.ts": {
-      "sha256": "efd24e9994f815418b49dfa6c76423f3962744e4182c01a4c8bcb3bdd492e2c9",
+      "sha256": "735b82f389f8059b9dc73555d7c7f561753d1596f53b03bca320fcb76f62b7cd",
       "executable": false
     },
     "src/modules/tickets/customer.ts": {

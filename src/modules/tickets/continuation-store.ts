@@ -14,7 +14,7 @@ export function readContinuation(row:BatchRow):TicketContinuation{
  return {batchId:row.id,actor:JSON.parse(row.actor_json),authority:JSON.parse(row.authority_json),tickets:JSON.parse(row.selection_json),...JSON.parse(row.operation_json)}
 }
 /** Selection ids make a wakeup observable; only the D1 row supplies work or authority. */
-export const batchWake=(work:TicketContinuation):BaseJob=>({type:'ticket.batch',id:work.batchId,projectId:work.actor.projectId,tickets:work.tickets.map(({id})=>({id}))})
+export const batchWake=(id:string,projectId:string,tickets:Pick<Selection,'id'>[]):BaseJob=>({type:'ticket.batch',id,projectId,tickets:tickets.map(({id})=>({id}))})
 export function bulkReceipt(actor:Actor,source:AuditEvent['source'],batchId:string,id:string,changes:Record<string,unknown>):AuditEvent{
  return {projectId:actor.projectId,category:'data',action:'ticket.bulk.apply',actor:{type:'user',id:actor.id},source,target:{type:'conversation',id},detail:{batch_id:batchId,result:'applied',fields:Object.keys(changes)}}
 }
@@ -33,7 +33,7 @@ export async function queueTicketContinuation(env:Env,work:TicketContinuation,re
  }
  if(!persisted){for(const result of pending){result.status='failed';result.code='continuation_unconfirmed';result.reason='Batch acceptance could not be confirmed. Reload this ticket before applying another change.'}return}
  for(const result of pending){result.status='queued';result.code='request_continuation';result.batch_id=work.batchId;result.reason='Queued to finish with the original permissions and ticket version. Reload to see the result.'}
- try{await env.JOBS.send(batchWake({...work,tickets:selection}))}catch{console.error('Ticket batch wakeup retained for recovery',work.batchId)}
+ try{await env.JOBS.send(batchWake(work.batchId,work.actor.projectId,selection))}catch{console.error('Ticket batch wakeup retained for recovery',work.batchId)}
 }
 export function batchEvent(work:TicketContinuation,id:string,status:string,retryable=false):AuditEvent{
  return {projectId:work.actor.projectId,category:'data',action:status==='refused'?'ticket.batch.refused':'ticket.batch.failed',outcome:status==='refused'?'refused':'failed',actor:{type:'user',id:work.actor.id},source:work.authority.source??'dashboard',target:{type:'conversation',id},detail:{batch_id:work.batchId,result:status,retryable}}

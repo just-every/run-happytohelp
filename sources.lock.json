@@ -1989,7 +1989,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "ae5c830adca83ea6f60da74742de255509fc776869f3172d1ea297f3713d5e7f",
+      "sha256": "09e518b41ea5804ac435bfdf7e4e4c164c57c79ea3fe402a80e86630f8a15062",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2416,6 +2416,14 @@
       "sha256": "675831d446fdd15c97f078360ce2f136999de90da2bb080fc95e4e35c6242ad3",
       "executable": false
     },
+    "migrations/194_csv_run_fences.sql": {
+      "sha256": "bd58c81b5edf87b7b3add88af744adc51f50a4d01c42a580e2bde0a50ea96223",
+      "executable": false
+    },
+    "migrations/195_restore_trigger_boundaries.sql": {
+      "sha256": "d290a11db60f8a825af348e938310c4be81219288e8c2dc4253d7332dd1d571a",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "0fa396b895e9098cc1db5070d1dc33ca732fae8287f84f69dc8afa3bc8afd1a6",
       "executable": false
@@ -2505,7 +2513,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "790a79d74c8e4b8cfede32017aafd7acfaa4b9f452705e644d7653891e64f0a2",
+      "sha256": "3c6dfe0ef010e1d554c9aa88aa213cc355b17a1784c18500015140612575eb09",
       "executable": false
     },
     "rer-project.json": {
@@ -10857,7 +10865,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "caf10d73d246da6f8b1330792f075e45789128f58487828856a90aca526933d1",
+      "sha256": "4bc8c327acba61898d891f90b31c3752718b98238980d87a5b6af529c8f79a79",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

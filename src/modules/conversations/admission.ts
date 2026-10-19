@@ -16,7 +16,7 @@ import {writableConversationSql} from '../conversation-actions/merge-read'
 /** Local ids the server mints: `email:` identifies an inbound email claim, `erased:`
  * replaces a client-supplied id when its contact is erased (contact-erasure/statements.ts)
  * and `away:` is the workspace's away reply (management/away-reply.ts). Clients may use none. */
-export const reservedLocalId=(localId:unknown)=>typeof localId==='string'&&/^(?:email|erased|away|schedule):/.test(localId)
+export const reservedLocalId=(localId:unknown)=>typeof localId==='string'&&/^(?:email|erased|away|schedule|problem):/.test(localId)
 /** An internal authority may add a transaction predicate; JSON callers cannot mint this symbol. */
 export const messageAuthority=Symbol('messageAuthority')
 export interface MessageInput {[messageAuthority]?:{sql:string;args:unknown[]};requireAvailableRequester?:true;[scheduledAdmission]?:ScheduledAdmission;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}

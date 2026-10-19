@@ -1,3 +1,4 @@
+import {problemJourney} from './problems.mjs'
 import assert from 'node:assert/strict'
 import {workflowsJourney} from '../workflows/journey.mjs'
 import {ticketFixture} from './ticket-fixture.mjs'
@@ -10,4 +11,5 @@ export async function ticketsJourney(){
  fixture.notices=notices
  try{await ticketLifecycle(fixture);await ticketQueue(fixture);await ticketApiPrivacy(fixture)}finally{await fixture.app.close()}
  await workflowsJourney()
+ await problemJourney()
 }

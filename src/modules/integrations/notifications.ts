@@ -1,3 +1,4 @@
+import {problemMessageDelivery} from '../tickets/problem-delivery'
 import {notifyTicketEvent} from './triggers'
 import type {Actor,Env} from '../../platform/env'
 import {sendEmails,emailConfigured,type EmailInput,type EmailOutcome,type DeferEmailDelivery} from './email'
@@ -27,6 +28,7 @@ async function recorded(env:Env,id:string,observed?:Recorded){
 /** Called after commit. The historical primary ID fences the entire fan-out;
  * edited addresses or newly added participants cannot turn replay into new mail. */
 export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:DeferEmailDelivery){
+ const problem=await problemMessageDelivery(env,message,actor);if(problem)return problem
  const deliveryId=`message:${message.id}:notification`,configured=emailConfigured(env)
  const senderId=message.actor_id||(message.actor_role==='contact'?actor.contactId||actor.id:message.actor_role==='ai'?null:actor.id)
  // Observe current authority, destinations and preparation together. The primary

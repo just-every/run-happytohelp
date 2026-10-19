@@ -10,6 +10,15 @@ from pathlib import Path
 
 CREDENTIAL_TABLES = ('edition_codes', 'edition_consents', 'edition_grants', 'edition_effect_guards')
 
+def punctuated_end(statement):
+    # Wrangler's splitter recognizes END followed by whitespace or a semicolon,
+    # while SQLite also accepts END, and END). Keep those complete trigger
+    # definitions last so they cannot absorb the entire following schema into
+    # one D1 statement. Their original SQL and execution order within each
+    # trigger remain byte-for-byte unchanged.
+    tokens = re.sub(r"'(?:[^']|'')*'|\"(?:[^\"]|\"\")*\"|--[^\n]*|/\*[\s\S]*?\*/", ' ', statement)
+    return bool(re.search(r'\bEND[^;\s\w]', tokens, re.I))
+
 def search_definition(db):
     row = db.execute("SELECT type,sql FROM sqlite_master WHERE name='inbox_message_search'").fetchone()
     if row is None:
@@ -41,11 +50,15 @@ def sanitize(sql):
         # exists. Create the schema first, then defer row checks during import.
         # Its importer owns the transaction, so omit SQLite dump wrappers.
         statements = [line for line in db.iterdump() if line not in ('BEGIN TRANSACTION;', 'COMMIT;')]
-        schema, data = [], []
+        schema, data, triggers = [], [], []
         for statement in statements:
+            if re.match(r'CREATE\s+TRIGGER\s', statement, re.I):
+                triggers.append(statement)
+                continue
             target = schema if re.match(r'CREATE\s+(?:TABLE|(?:UNIQUE\s+)?INDEX)\s', statement, re.I) else data
             target.append(statement)
-        dump = 'PRAGMA defer_foreign_keys=ON;\n' + '\n'.join(schema + data) + '\n'
+        triggers.sort(key=lambda statement: (punctuated_end(statement), statement))
+        dump = 'PRAGMA defer_foreign_keys=ON;\n' + '\n'.join(schema + data + triggers) + '\n'
         if search:
             dump += search + '\nINSERT INTO "inbox_message_search"("inbox_message_search") VALUES(\'rebuild\');\n'
         return dump + 'PRAGMA defer_foreign_keys=OFF;\n'

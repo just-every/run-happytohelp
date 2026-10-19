@@ -2005,7 +2005,7 @@
       "executable": false
     },
     "management/integration/recipe.json": {
-      "sha256": "a3e759331674f2d70b73d981b1f1f62b52e0f9157e7633b0fb4dd5e79f78e6d9",
+      "sha256": "dd3787d38355a8c4a03211af9bbbfee31a59f5e13aad1bef39f4a13ac7ac84db",
       "executable": false
     },
     "management/integration/revision.ts": {
@@ -10865,7 +10865,7 @@
       "executable": false
     },
     "tests/journeys/installer.mjs": {
-      "sha256": "080848d9814b19af60fdc47ed4b5ff98644bb776cf795a67fd89b7b83537ad6c",
+      "sha256": "e05398d76282c4b5d640227312ff9be0556e87e181e51ae9b3d5a6ef5376cd2e",
       "executable": false
     },
     "tests/journeys/kit/app-worker.ts": {

@@ -10,6 +10,7 @@ import {randomBytes} from 'node:crypto'
 import {gunzipSync} from 'node:zlib'
 import {produceArtifact,config} from '../../scripts/delivery/build.mjs'
 import {collectFiles} from '../../scripts/delivery/base/paths.mjs'
+import {wranglerBindings} from '../../scripts/delivery/base/bindings.mjs'
 import {readArtifact,payloadBytes} from '../helpers/artifact-payloads.mjs'
 import {artifactRuntime} from '../helpers/independent-artifact.mjs'
 import {validateArtifact as validateRawArtifact,materializeArtifact,digest} from '../../live-proofs/artifact.mjs'
@@ -24,6 +25,12 @@ const {localAgentArchive,FIXED_MTIME}=createRequire(import.meta.url)('../../scri
 const scratch=async name=>mkdtemp(join(tmpdir(),name))
 
 test('the release artifact carries every built module, migration and asset with browser types, never credential files or symlinks, ships a deterministic connector archive, and starts natively behind its private setup token',async()=>{
+ const recipe=JSON.parse(await readFile('management/integration/recipe.json','utf8')).plan
+ const spec=JSON.parse(await readFile('management/integration/deployment-spec.json','utf8'))
+ const wrangler=JSON.parse(await readFile('wrangler.jsonc','utf8'))
+ for(const field of ['queueConsumers','schedules'])assert.deepEqual(recipe[field],spec[field],`recipe ${field} matches the deployment spec`)
+ if(wrangler.queues?.consumers!==undefined)assert.deepEqual(spec.queueConsumers,wranglerBindings(wrangler).queueConsumers,'queue consumers match Wrangler bindings and declared settings')
+ if(wrangler.triggers?.crons!==undefined)assert.deepEqual(spec.schedules,wrangler.triggers.crons,'schedules match Wrangler')
  // Fixture builds through the real producer: browser MIME types kept, private files refused.
  const root=await scratch('h2h-artifact-')
  try{

@@ -8,6 +8,10 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## Unreleased
+
+When one request assigns or applies a macro to more than about three tickets, teammate notices after the third arrive on the next cron tick (about a minute later); a fix is in progress.
+
 ## 0.4.7 — 2026-10-18
 
 - **Optional mailbox setup.** Deployments can omit the seven Google, Microsoft and IMAP configuration values. Held secrets keep their existing bindings; every other deployment binding is unchanged. Email settings explains unavailable connections and disables their connect actions until configured.

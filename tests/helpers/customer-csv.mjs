@@ -42,10 +42,11 @@ export async function customerCsvJourney(){
   assert.deepEqual((await app.ok(`${B}/companies/${company.id}`,owner)).company.attributes,{})
   const erased=await app.ok(I+'/preview',{...owner,body:input});await app.ok(`${I}/${erased.id}/apply`,{...owner,body:{}})
   const note=(await app.ok(B+'/company-fields',{...owner,body:{name:'Account notes',type:'text'}})).field
-  const privateCompany=await app.ok(I+'/preview',{...owner,body:{kind:'companies',csv:'Account,Notes\nNorthstar Supply,Contact '+original.email,mapping:{name:'Account',['attribute:'+note.id]:'Notes'},matchDomains:false}})
+  const former=(await app.ok(B+'/company-fields',{...owner,body:{name:'Former contact name',type:'text'}})).field
+  const privateCompany=await app.ok(I+'/preview',{...owner,body:{kind:'companies',csv:'Account,Notes,Former name\nNorthstar Supply,Contact '+original.email+',\nNorthstar Supply,,Old name',mapping:{name:'Account',['attribute:'+note.id]:'Notes',['attribute:'+former.id]:'Former name'},matchDomains:false}})
   await app.ok(`${B}/contacts/${original.id}/erase`,{...owner,body:{}})
   const privateRetained=await app.ok(`${I}/${privateCompany.id}`,owner)
-  assert.equal(privateRetained.status,'erased');assert.equal(JSON.stringify(privateRetained).includes(original.email),false,'company CSV images are erased too')
+  assert.equal(JSON.stringify(privateRetained).includes('Old name'),false,'historical names in company CSV images are erased');assert.equal(privateRetained.status,'erased');assert.equal(JSON.stringify(privateRetained).includes(original.email),false,'company CSV images are erased too')
   const retained=JSON.stringify(await app.ok(`${I}/${erased.id}`,owner))
   assert.equal(retained.includes(original.email),false)
   assert.equal((await app.call(`${I}/${erased.id}/undo`,{...owner,body:{}})).status,409)

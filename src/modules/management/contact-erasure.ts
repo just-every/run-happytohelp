@@ -25,11 +25,12 @@ export async function eraseContact(env: Env, projectId: string, contactId: strin
   if(sessionHash)env=erasureEnvironment(env,projectId,actorId,sessionHash)
   const contact = await env.DB.prepare('SELECT email,external_id,metadata_json FROM contacts WHERE project_id=? AND id=?').bind(projectId, contactId).first<{email: string | null; external_id:string|null; metadata_json: string | null}>()
   if (!contact) return null
+  const csvBeforeFence=await csvErasureIdentities(env,projectId,contactId,contactEmails(contact))
   const now = Date.now()
   const fenced=await fenceAndStage(env, projectId, contactId, now, contact)
   await deleteStagedObjects(env, projectId, contactId)
   const emails=[...new Set([...contactEmails(contact),...contactEmails(fenced??{})])]
-  const csvIdentities=await csvErasureIdentities(env,projectId,contactId,emails)
+  const csvIdentities=[...new Set([...csvBeforeFence,...await csvErasureIdentities(env,projectId,contactId,emails)])]
   await env.DB.batch([
     ...await knowledgeErasureStatements(env,projectId,contactId,emails),
     ...erasureStatements(env, {projectId, contactId, actorId, now, emails,csvIdentities}),

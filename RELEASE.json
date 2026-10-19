@@ -28,5 +28,14 @@
   "breaking": false,
   "agentUpdateInstructions": "Update from v0.4.8 to v0.4.9 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.68. This patch adds no migrations: the current 95-row ledger must plan nothing and refuse nothing. Never delete, reorder or edit ledger rows. Retain owners, imported support history, permissions, files and erasure fences. The seven mailbox settings remain optional and held secrets are inherited. Run rer deploy --dry-run against the retained installation before deployment. The recipe JOBS consumer now matches the deployment spec and Wrangler, and the existing installer journey guards every queue-consumer and schedule declaration against drift. Upgrades from v0.4.7 still apply the seven missing v0.4.8 migrations by name. Retain human Send. Production deployment is separate.",
   "publicReleaseNotes": "HappyToHelp v0.4.9 fixes the RER installation recipe: the JOBS consumer now declares the same three retries as the deployment specification and Wrangler, allowing matching fresh-install and upgrade resource plans to approve. The existing installer journey compares every queue-consumer and schedule field across those files and fails CI on drift without pinning values. No new migrations; rer stays at 0.2.68. Back up and retain settings and migration history without resetting. Production deployment is separate.",
-  "pendingMigrations": []
+  "pendingMigrations": [
+    {
+      "id": "192_companies.sql",
+      "buyerSteps": "R9a company records, typed attributes, membership, domains and reversible merge history. Apply through pinned rer before the updated Worker serves traffic; retain existing records and private settings without resetting."
+    },
+    {
+      "id": "193_customer_csv.sql",
+      "buyerSteps": "R9a mapped CSV dry runs and reversible contact and company imports. Apply through pinned rer before the updated Worker serves traffic; retain import journals and erasure fences without resetting."
+    }
+  ]
 }

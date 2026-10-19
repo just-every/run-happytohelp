@@ -4,7 +4,15 @@ import {contactAvailableSql} from '../conversations/contact-privacy'
 import {deferRequestAssignments,requestRoom,assignmentRequestBudget} from '../integrations/notification-budget'
 
 const preparation=Symbol('ticket batch preparation')
-type BatchEnv=Env&{[preparation]?:{reads:Map<string,Promise<any>>;tickets:Map<string,any>}}
+const metadataReads=Symbol('ticket request metadata')
+type BatchEnv=Env&{[preparation]?:{reads:Map<string,Promise<any>>;tickets:Map<string,any>};[metadataReads]?:Map<string,Promise<any>>}
+/** Memoize preparation metadata within one request without snapshotting tickets
+ * or enabling batch mutation behavior. Commit guards still pin the observed role
+ * and schema against live SQL; every ticket/contact read remains current. */
+export function ticketMetadataEnvironment(env:Env):Env{
+ const {[preparation]:_snapshot,...live}=env as BatchEnv
+ return {...live,[metadataReads]:new Map<string,Promise<any>>()}
+}
 /** Preparation is a snapshot, never commit authority. Every native receipt still
  * checks the live session, role, schema, privacy and ticket frontier in SQL. */
 export async function ticketBatchEnvironment(env:Env,actor:Actor,ids:string[]):Promise<Env>{
@@ -30,10 +38,10 @@ export function batchTicket(env:Env,id:string){
 export const batchContact=(env:Env,id:string)=>{const value=(env as BatchEnv)[preparation]?.tickets.get(id)?.batch_contact;return value?JSON.parse(value):undefined}
 export const batchTicketIds=(env:Env)=>[...((env as BatchEnv)[preparation]?.tickets.keys()??[])]
 export function batchRead<T>(env:Env,key:string,read:()=>Promise<T>):Promise<T>{
- const state=(env as BatchEnv)[preparation]
- if(!state)return read()
- if(!state.reads.has(key))state.reads.set(key,read())
- return state.reads.get(key)!
+ const reads=(env as BatchEnv)[preparation]?.reads??(env as BatchEnv)[metadataReads]
+ if(!reads)return read()
+ if(!reads.has(key))reads.set(key,read())
+ return reads.get(key)!
 }
 export class TicketCapacityError extends HTTPException {
  constructor(){super(503,{message:'This ticket was not changed because the request has no room for its complete mutation and receipt.'})}

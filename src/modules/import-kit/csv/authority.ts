@@ -5,7 +5,7 @@ import {issuerGuard} from '../../../platform/integration-authority'
 import {scope} from '../../management/common'
 import {memberAccess} from '../../access/gate'
 import {STEP_UP_MS} from '../../identity/two-factor/state'
-import {epochSql,stale} from './store'
+import {stale} from './store'
 
 export async function csvScope(c:Context<AppEnv>){
  const actor=await scope(c,true),access=await memberAccess(c.env.DB,actor.projectId,actor.id)
@@ -23,10 +23,15 @@ export async function authorization(c:Context<AppEnv>,actor:Actor,stepUp:boolean
  }
  return {sql,params}
 }
-export async function commit(c:Context<AppEnv>,actor:Actor,epoch:number,statements:D1PreparedStatement[],options:{runId?:string;status?:string;stepUp?:boolean}={}){
- const auth=await authorization(c,actor,Boolean(options.stepUp)),params=[actor.projectId,epoch,...auth.params]
- let condition=`${epochSql}=? AND (${auth.sql})`
- if(options.runId){condition+=' AND EXISTS(SELECT 1 FROM csv_customer_imports WHERE id=? AND project_id=? AND status=?)';params.push(options.runId,actor.projectId,options.status!)}
+export async function commit(c:Context<AppEnv>,actor:Actor,epoch:number|null,statements:D1PreparedStatement[],options:{runId?:string;status?:string;stepUp?:boolean}={}){
+ const auth=await authorization(c,actor,Boolean(options.stepUp)),params=[...auth.params]
+ let condition=`(${auth.sql})`
+ if(epoch!==null&&!options.runId)throw new Error('CSV revision guard requires an import run')
+ if(options.runId){
+  condition+=` AND EXISTS(SELECT 1 FROM csv_customer_imports WHERE id=? AND project_id=? AND status=?${epoch===null?'':' AND revision=?'})`
+  params.push(options.runId,actor.projectId,options.status!)
+  if(epoch!==null)params.push(epoch)
+ }
  const assertion=c.env.DB.prepare(`INSERT INTO csv_customer_assertions(ok) SELECT CASE WHEN ${condition} THEN 1 ELSE 0 END`).bind(...params)
  try{await c.env.DB.batch([assertion,...statements,c.env.DB.prepare('DELETE FROM csv_customer_assertions')])}
  catch(error){

@@ -6,4 +6,4 @@ export interface DomainMatch {domain:string;companyId:string;companyName:string}
 export interface PlannedRow {row:number;action:'create'|'update'|'skip';reason:string;data:Record<string,unknown>;domainMatch:DomainMatch|null;entityId:string|null;before:Contact|Company|null;after:Contact|Company|null}
 export interface Snapshot {epoch:number;contacts:Contact[];companies:Company[];definitions:Definition[]}
 export interface PreviewInput {kind:Kind;csv:string;mapping:Record<string,string>;matchDomains:boolean}
-export interface ImportRun {id:string;project_id:string;kind:Kind;status:'preview'|'applied'|'undone'|'erased';epoch:number;actor_id:string;created_at:number;applied_at:number|null;undone_at:number|null}
+export interface ImportRun {id:string;project_id:string;kind:Kind;status:'preview'|'applied'|'undone'|'erased';epoch:number;revision:number;ready:number;actor_id:string;created_at:number;applied_at:number|null;undone_at:number|null}

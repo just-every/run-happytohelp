@@ -48,6 +48,22 @@
     {
       "id": "196_csv_touched_fences.sql",
       "buyerSteps": "R9a import apply and undo recheck only the customer rows each import matched or changed, so unrelated contact writes no longer block them. Apply through pinned rer; retires the workspace-wide import counter and keeps every import run and journal row."
+    },
+    {
+      "id": "201_report_timers_schedules.sql",
+      "buyerSteps": "Add ticket handle-time sessions and permission-scoped report schedules. Apply before the updated Worker serves traffic."
+    },
+    {
+      "id": "202_problem_incidents.sql",
+      "buyerSteps": "Add problem and incident links, reviewed bulk replies and per-incident delivery outcomes. Apply before the updated Worker serves traffic."
+    },
+    {
+      "id": "203_problem_delivery_history.sql",
+      "buyerSteps": "Record bulk incident delivery outcomes in ticket history and the audit log. Apply before the updated Worker serves traffic."
+    },
+    {
+      "id": "204_problem_preview_audit.sql",
+      "buyerSteps": "Audit reviewed problem replies and durable incident delivery claims. Apply before the updated Worker serves traffic."
     }
   ]
 }

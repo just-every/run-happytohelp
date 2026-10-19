@@ -4057,7 +4057,7 @@
       "executable": false
     },
     "src/modules/customers/company-routes.ts": {
-      "sha256": "3cc4b00f80ed9fc733cd29285aca26f860d6b3eea3fc31d533ecc5b0f483e897",
+      "sha256": "4eba33be03f0a44f3b5a12e714dd1a3c0fbc820cc3885234b7c1540f38dab4d8",
       "executable": false
     },
     "src/modules/customers/erasure.ts": {

@@ -5,6 +5,7 @@ import {scope} from '../management/common'
 import {ticketAuthority} from '../tickets/model'
 import {auditStatement} from '../audit/record'
 import {requireStepUp} from '../identity/two-factor/step-up'
+import {STEP_UP_MS} from '../identity/two-factor/state'
 import {companyDetail,companyList} from './read'
 import {companyData,fields,fieldsGuard,snapshot,together,type CompanySnapshot,type Guard,stale} from './model'
 import {attributes,domains,invalid,name,object} from './validation'
@@ -15,6 +16,10 @@ import {contactWritable} from '../../platform/contact-state'
 export const companyRoutes=new Hono<AppEnv>()
 const prefix='/projects/:projectId/companies'
 async function authority(c:any,actor:Actor){const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'contacts.manage');return {sql:`EXISTS(${guard.sql})`,params:guard.params} as Guard}
+function recentFactor(c:any,actor:Actor):Guard{
+ if(actor.security?.installation)return {sql:'1',params:[]}
+ return {sql:`EXISTS(SELECT 1 FROM session_factors factor WHERE factor.token_hash=? AND factor.user_id=? AND factor.verified_at>=max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)-?) AND (NOT EXISTS(SELECT 1 FROM user_factors enrolled WHERE enrolled.user_id=factor.user_id AND enrolled.confirmed_at IS NOT NULL) OR factor.method IN ('totp','webauthn','recovery','installation')))`,params:[c.get('sessionHash'),actor.id,Date.now()-STEP_UP_MS,STEP_UP_MS]}
+}
 async function input(c:any){return object(await c.req.json().catch(()=>invalid('Expected a JSON object')))}
 companyRoutes.get(prefix,async c=>{const actor=await scope(c) as Actor;return c.json(await companyList(c.env,actor.projectId))})
 companyRoutes.get(`${prefix}/:companyId`,async c=>{const actor=await scope(c) as Actor;return c.json(await companyDetail(c.env,actor.projectId,c.req.param('companyId')))})
@@ -59,12 +64,12 @@ companyRoutes.post(`${prefix}/:companyId/merge/preview`,async c=>{
 companyRoutes.post(`${prefix}/:companyId/merge`,async c=>{
  const actor=await scope(c) as Actor,guard=await authority(c,actor)
  await requireStepUp(c,actor,'company.merge')
- const historyId=await mergeCompanies(c.env,actor,c.req.param('companyId'),await input(c),guard)
+ const historyId=await mergeCompanies(c.env,actor,c.req.param('companyId'),await input(c),together(guard,recentFactor(c,actor)))
  return c.json({...await companyDetail(c.env,actor.projectId,c.req.param('companyId')),historyId})
 })
 companyRoutes.post(`${prefix}/:companyId/history/:historyId/undo`,async c=>{
  const actor=await scope(c) as Actor,guard=await authority(c,actor)
  await requireStepUp(c,actor,'company.undo')
- const historyId=await undoCompanyHistory(c.env,actor,c.req.param('companyId'),c.req.param('historyId'),guard)
+ const historyId=await undoCompanyHistory(c.env,actor,c.req.param('companyId'),c.req.param('historyId'),together(guard,recentFactor(c,actor)))
  return c.json({...await companyDetail(c.env,actor.projectId,c.req.param('companyId')),historyId})
 })

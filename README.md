@@ -37,37 +37,29 @@ work delegated to your own Codex or Claude. It works with human replies without
 an AI provider. The editable React application runs on Cloudflare Workers with
 Hono, D1, R2, Queues and Durable Objects.
 
-## Release 0.4.8
+## Release 0.4.9
 
-Deploy the latest tagged release, **`v0.4.8`**, using the commands below.
-R5 adds business hours and holiday calendars, response and resolution SLAs,
-event and time rules, routing, follow-ups, snoozes and scheduled replies.
-Preview rules before publishing them. Existing SLA and default-close previews
-stay inert until deliberately configured and published.
+Deploy the latest tagged release, **`v0.4.9`**, using the commands below.
+The RER installation recipe now gives the JOBS queue the same three retries as
+the deployment specification and Wrangler. Fresh Managed installs and upgrades
+can approve their resource plans with matching queue settings.
 
-One database statement budget covers the **whole scheduled invocation**, including
-workflow recovery, teammate notices and audit work, so their combined work stays
-within D1's invocation limit. Bulk actions and macros deliver notices during the
-request when its budget permits; durable queued continuations finish the remainder
-after interruptions and record each ticket's outcome. Interrupted delivery attempts
-retain visible uncertainty without automatic replay.
+The existing installer journey compares every queue-consumer and schedule field
+between the recipe, deployment specification and Wrangler's declared settings.
+CI fails when these declarations drift; the check compares the files directly.
 
+**Upgrading from v0.4.8 adds no migrations.** Back up D1, R2, Durable Object state
+and private settings. Keep the existing migration ledger and installation state;
+never reset or edit ledger rows. Commands retain `@runeditrun/rer` **0.2.68**.
 Fresh installs, README restores and upgrades cover published baselines through
-v0.4.7. Commands pin `@runeditrun/rer` to **0.2.68**, including safe release reads
-from blob-less clones, strict missing-secret dry runs, portable backups that skip
-rer-owned ledgers, and deployment budgets sized to pending migrations. Local dev
-starts without private setup answers. The seven Google, Microsoft and IMAP mailbox
-settings remain optional; configure their providers only when needed.
+v0.4.8. The seven Google, Microsoft and IMAP mailbox settings remain optional.
 
-**Upgrading from v0.4.7 adds seven migrations:** `150_workflow_journal.sql`,
-`151_workflow_sla.sql`, `152_workflow_rules.sql`, `153_workflow_schedules.sql`,
-`154_workflow_routing.sql`, `155_schedule_team_frontier.sql` and
-`156_ticket_batch_jobs.sql`. Back up D1, R2, Durable Object state and private
-settings first. The pinned rer applies missing migrations by name in filename
-order before the updated Worker starts, even below already applied rows. It
-refuses unknown names, changed bytes and uncertain history and verifies readback.
-Never reset or edit the migration ledger. Existing owners, imported history,
-permissions, files and erasure fences remain.
+R5 workflows, the statement budget for the whole scheduled invocation and durable
+bulk continuations from v0.4.8 remain included. Upgrades from v0.4.7 still apply
+its seven missing migrations, `150_workflow_journal.sql` through
+`156_ticket_batch_jobs.sql`, by name before the updated Worker starts. Preserve
+owners, imported history, permissions, files and erasure fences. Production
+deployment is separate from this release.
 See [RELEASE.json](RELEASE.json),
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md) and [the changelog](CHANGELOG.md).
 
@@ -137,11 +129,11 @@ own operating contract; this seed's CLI is not a platform admission requirement.
 
 ## Deploy to your own Cloudflare account
 
-For a new installation, acquire the latest tagged release, **`v0.4.8`**,
+For a new installation, acquire the latest tagged release, **`v0.4.9`**,
 after installing `rer` as shown above:
 
 ```sh
-git clone --branch v0.4.8 https://github.com/just-every/run-happytohelp
+git clone --branch v0.4.9 https://github.com/just-every/run-happytohelp
 cd run-happytohelp
 ```
 

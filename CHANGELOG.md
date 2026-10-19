@@ -8,6 +8,12 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.9 — 2026-10-20
+
+- **RER queue recipe.** Match the JOBS consumer's three retries to the deployment specification and Wrangler so fresh Managed installs and upgrades approve matching resource plans.
+- **Declaration drift check.** The existing installer journey compares all queue-consumer and schedule fields across the recipe, deployment specification and Wrangler's declared settings. CI fails on differences without pinning their values.
+- **Upgrade from 0.4.8.** No new migrations. Keep rer 0.2.68, back up and retain private settings and the migration ledger without resetting. Existing owners, support history and files remain; the seven mailbox settings stay optional. Production deployment is separate.
+
 ## 0.4.8 — 2026-10-19
 
 - **Support workflows (R5).** Business hours and holiday calendars, first/next response and resolution SLAs, event and time rules, routing, follow-ups, snoozes and scheduled replies. Preview before publishing; existing SLA and default-close previews remain inert.

@@ -1,61 +1,32 @@
 {
-  "version": "0.4.8",
-  "previousVersion": "0.4.7",
-  "date": "2026-10-19",
+  "version": "0.4.9",
+  "previousVersion": "0.4.8",
+  "date": "2026-10-20",
   "contractChanges": {},
   "proseChanges": [
     {
       "document": "README.md",
       "change": "changed",
-      "date": "2026-10-19",
-      "summary": "Describe R5, the whole-invocation statement budget, durable bulk work and the seven-migration upgrade.",
-      "was": "The latest release was v0.4.7 with optional mailbox setup and rer 0.2.51.",
-      "now": "v0.4.8 includes R5 and durable bulk continuations, seven migrations and rer 0.2.68.",
-      "ownerAction": "Back up, retain private settings and deploy with pinned rer 0.2.68 without resetting or editing migration history. Preview and publish workflows deliberately."
+      "date": "2026-10-20",
+      "summary": "Describe the RER queue recipe fix, declaration drift check and migration-free patch upgrade.",
+      "was": "The latest release was v0.4.8 with inconsistent recipe queue retries.",
+      "now": "v0.4.9 aligns the recipe and checks queue-consumer and schedule declarations in CI.",
+      "ownerAction": "Back up, retain private settings and migration history; keep pinned rer 0.2.68. Production deployment remains separate."
     },
     {
       "document": "CHANGELOG.md",
       "change": "changed",
-      "date": "2026-10-19",
-      "summary": "Describe R5, the whole-invocation statement budget, durable bulk work and the seven-migration upgrade.",
-      "was": "The latest release was v0.4.7 with optional mailbox setup and rer 0.2.51.",
-      "now": "v0.4.8 includes R5 and durable bulk continuations, seven migrations and rer 0.2.68.",
-      "ownerAction": "Back up, retain private settings and deploy with pinned rer 0.2.68 without resetting or editing migration history. Preview and publish workflows deliberately."
+      "date": "2026-10-20",
+      "summary": "Describe the RER queue recipe fix, declaration drift check and migration-free patch upgrade.",
+      "was": "The latest release was v0.4.8 with inconsistent recipe queue retries.",
+      "now": "v0.4.9 aligns the recipe and checks queue-consumer and schedule declarations in CI.",
+      "ownerAction": "Back up, retain private settings and migration history; keep pinned rer 0.2.68. Production deployment remains separate."
     }
   ],
   "extensionPointChanges": [],
-  "migrations": [
-    {
-      "id": "150_workflow_journal.sql",
-      "buyerSteps": "R5 durable workflow journal and ticket follow-ups. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "151_workflow_sla.sql",
-      "buyerSteps": "R5 business calendars, SLA state and alerts. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "152_workflow_rules.sql",
-      "buyerSteps": "R5 versioned event and time rules with durable execution. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "153_workflow_schedules.sql",
-      "buyerSteps": "R5 snoozes and scheduled replies. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "154_workflow_routing.sql",
-      "buyerSteps": "R5 fair routing decisions and operator availability. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "155_schedule_team_frontier.sql",
-      "buyerSteps": "R5 scheduled-reply team authority frontier. Apply through pinned rer before the updated Worker serves traffic."
-    },
-    {
-      "id": "156_ticket_batch_jobs.sql",
-      "buyerSteps": "durable bulk and macro continuation jobs and outcomes. Apply through pinned rer before the updated Worker serves traffic."
-    }
-  ],
+  "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.7 to v0.4.8 without resetting. Stop writers and back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.68. Apply exactly the seven listed missing migrations, 150 through 156, by name in filename order before the updated Worker starts, including below already applied rows. Preserve all prior ledger identities and bytes; unknown, changed or uncertain history is refused and final readback is checked. Never delete, reorder or edit ledger rows. Retain owners, imported support history, permissions, files and erasure fences. The seven mailbox settings remain optional and held secrets are inherited. Run rer deploy --dry-run against the retained installation before deployment; missing required secrets now refuse. R5 adds business hours, SLAs, event/time rules, routing, follow-ups and schedules. Existing SLA and default-close previews remain inert; preview and publish explicitly. One statement budget covers the entire scheduled invocation. Bulk and macro continuations are durable; interrupted notice attempts remain visibly uncertain without replay. Retain human Send.",
-  "publicReleaseNotes": "HappyToHelp v0.4.8 ships R5: business hours and holiday calendars, SLAs, event and time rules, routing, follow-ups, snoozes and schedules. One database statement budget covers the whole scheduled handler. Bulk actions and macros have durable continuations, bounded notice delivery and explicit outcomes after interruption. Upgrade from v0.4.7 adds exactly seven migrations, 150-156, through pinned rer 0.2.68. Back up and retain settings without resetting or editing migration history. Mailbox provider settings remain optional. Production deployment is separate.",
+  "agentUpdateInstructions": "Update from v0.4.8 to v0.4.9 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.68. This patch adds no migrations: the current 95-row ledger must plan nothing and refuse nothing. Never delete, reorder or edit ledger rows. Retain owners, imported support history, permissions, files and erasure fences. The seven mailbox settings remain optional and held secrets are inherited. Run rer deploy --dry-run against the retained installation before deployment. The recipe JOBS consumer now matches the deployment spec and Wrangler, and the existing installer journey guards every queue-consumer and schedule declaration against drift. Upgrades from v0.4.7 still apply the seven missing v0.4.8 migrations by name. Retain human Send. Production deployment is separate.",
+  "publicReleaseNotes": "HappyToHelp v0.4.9 fixes the RER installation recipe: the JOBS consumer now declares the same three retries as the deployment specification and Wrangler, allowing matching fresh-install and upgrade resource plans to approve. The existing installer journey compares every queue-consumer and schedule field across those files and fails CI on drift without pinning values. No new migrations; rer stays at 0.2.68. Back up and retain settings and migration history without resetting. Production deployment is separate.",
   "pendingMigrations": []
 }

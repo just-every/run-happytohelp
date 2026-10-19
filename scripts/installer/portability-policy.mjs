@@ -1,9 +1,10 @@
 import {r4ExportRow} from './r4-tables.mjs';
-import {workflowArchiveRow,workflowArchiveStagedSafety} from './workflow-archive-safety.mjs';
+import {workflowArchiveRow} from './workflow-archive-safety.mjs';
+import {customerArchiveStagedSafety} from './customer-archive-policy.mjs';
 // Native identities and password hashes move with their referenced domain rows.
 // Live bearer grants, provider credentials and pending outbound deliveries do not.
 export const archivePolicy={
- product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:workflowArchiveStagedSafety,
+ product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:customerArchiveStagedSafety,
  // Keep invitation history, but restored archives never restore a live survey link or queued send.
  exportRow:(table,row)=>workflowArchiveRow(table,r4ExportRow(table,table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
   :table==='mailbox_connections'?{...row,credential_cipher:null,status:'disconnected',cursor_json:null,sync_lock:null,sync_lock_until:null}

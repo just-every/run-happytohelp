@@ -3,6 +3,7 @@ import { lazyPageCode } from './lazy-page-code';
 const pages = {
     Connections: lazyPageCode(() => import('./pages/Connections')),
     Reports: lazyPageCode(() => import('./pages/surveys/ReportsWithSurveys')),
+    Companies: lazyPageCode(() => import('./pages/Companies')),
     MoveIn: lazyPageCode(() => import('./pages/MoveIn')),
     ActivationPage: lazyPageCode(() => import('./activation/ActivationPage')),
     SetupTitle: lazyPageCode(() => import('./activation/SetupTitle')),
@@ -48,6 +49,7 @@ export function preloadWorkspacePage(pathname, settings) {
     let name;
     if (section === 'projects') name = 'ProjectsPage';
     else if (section === 'reports') name = 'Reports';
+    else if (section === 'companies') name = 'Companies';
     else if (section === 'move-in') name = 'MoveIn';
     else if (section === 'activation') return Promise.all([pages.ActivationPage.preload(), pages.SetupTitle.preload()]);
     else if (section === 'articles' && recordId === 'import') name = 'ArticleImport';

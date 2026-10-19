@@ -77,6 +77,11 @@
           "slug": "legacy-entry-points",
           "source": "docs/legacy-entry-points.md",
           "label": "Legacy entry points"
+        },
+        {
+          "slug": "companies-and-csv",
+          "source": "docs/companies-and-csv.md",
+          "label": "Companies and CSV imports"
         }
       ]
     },

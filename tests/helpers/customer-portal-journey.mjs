@@ -1,9 +1,11 @@
+import {companyPortalJourney} from './company-portal.mjs'
 import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
 import {selfServiceFixture} from './self-service-fixture.mjs'
 export async function customerPortalJourney(){
  const f=await selfServiceFixture({failSurveys:true}),{app,p,owner,api,form,valid,signin,mail}=f,P=`/api/portal/${p}`
  try{
+  await companyPortalJourney(f)
   // A hostile widget visitor may type the real customer's address; signing into
   // that mailbox creates a separate identity and never exposes the visitor thread.
   const widget=await app.ok('/api/identity/widget/session',{body:{widgetKey:f.workspace.widgetKey,email:'rosa@example.com'},headers:{Origin:f.workspace.allowedOrigin}})

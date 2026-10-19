@@ -10,6 +10,7 @@ import { ChatContext } from "../contexts/ChatContext";
 import { useNavigate } from '@tanstack/react-router';
 import { useDashboardSettings, useDashboardLocation } from '../../native/dashboard-state';
 import InboxTagFilter from './InboxTagFilter';
+import InboxCompanyFilter from './InboxCompanyFilter';
 import InboxSearch from './InboxSearch';
 import InboxViews from './InboxViews';
 import ConversationsFilter from './ConversationsFilter';
@@ -39,14 +40,14 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
     const navigate = useNavigate();
     const selectedView = normalizeInboxView(searchParams.view, inboxViewCounts);
     const searchQuery = searchParams.q == null ? '' : String(searchParams.q);
-    const filter = useMemo(() => ({...inboxViewFilter(selectedView, searchQuery, searchParams.assigned_to, searchParams.search_scope),...(searchParams.tag?{tag:String(searchParams.tag)}:{}),...(['only','include'].includes(searchParams.snoozed)?{snoozed:searchParams.snoozed}:{})}), [ selectedView, searchQuery, searchParams.tag, searchParams.assigned_to, searchParams.search_scope, searchParams.snoozed ]);
+    const filter = useMemo(() => ({...(searchParams.company?{company:String(searchParams.company)}:{}),...inboxViewFilter(selectedView, searchQuery, searchParams.assigned_to, searchParams.search_scope),...(searchParams.tag?{tag:String(searchParams.tag)}:{}),...(['only','include'].includes(searchParams.snoozed)?{snoozed:searchParams.snoozed}:{})}), [ selectedView, searchQuery, searchParams.company, searchParams.tag, searchParams.assigned_to, searchParams.search_scope, searchParams.snoozed ]);
     const projectId = settings.isGlobalInbox ? null : settings.project?.id;
     const ticketQueue = projectId && !settings.project?.is_demo;
     const [selected, setSelected] = useState({}), [selecting, setSelecting] = useState(false);
     const [creatingTicket,setCreatingTicket] = useState(false);
     const queueFilter = useMemo(() => ticketQueue && (searchParams.saved_view || searchParams.filters)
-        ? { ...(['only','include'].includes(searchParams.snoozed)?{snoozed:searchParams.snoozed}:{}), ...(searchQuery.trim() ? { q: searchQuery.trim(), search_scope: searchParams.search_scope || 'all' } : {}), ...(searchParams.tag ? { tag: String(searchParams.tag) } : {}), ...(searchParams.saved_view ? { saved_view: String(searchParams.saved_view) } : { filters: typeof searchParams.filters === 'string' ? searchParams.filters : JSON.stringify(searchParams.filters), sort: typeof searchParams.sort === 'string' ? searchParams.sort : JSON.stringify(searchParams.sort || []) }) }
-        : filter, [ticketQueue, searchParams.saved_view, searchParams.filters, searchParams.sort, searchParams.snoozed, filter]);
+        ? { ...(searchParams.company?{company:String(searchParams.company)}:{}), ...(['only','include'].includes(searchParams.snoozed)?{snoozed:searchParams.snoozed}:{}), ...(searchQuery.trim() ? { q: searchQuery.trim(), search_scope: searchParams.search_scope || 'all' } : {}), ...(searchParams.tag ? { tag: String(searchParams.tag) } : {}), ...(searchParams.saved_view ? { saved_view: String(searchParams.saved_view) } : { filters: typeof searchParams.filters === 'string' ? searchParams.filters : JSON.stringify(searchParams.filters), sort: typeof searchParams.sort === 'string' ? searchParams.sort : JSON.stringify(searchParams.sort || []) }) }
+        : filter, [ticketQueue, searchParams.saved_view, searchParams.filters, searchParams.sort, searchParams.snoozed, searchParams.company, filter]);
     const listKey = JSON.stringify(queueFilter);
     useEffect(() => { setSelected({}); }, [listKey, projectId]);
     const {
@@ -89,6 +90,7 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
                 {/* Follow the URL immediately, including Back before a read settles.
                     A completed view read must not overwrite newer search typing. */}
                 <InboxSearch query={ liveSearch.q == null ? '' : String(liveSearch.q) } viewPhrase={ inboxViewPhrase(selectedView) } onSearch={ handleSearch } /><InboxTagFilter projectId={settings.isGlobalInbox?null:settings.project?.id} value={String(searchParams.tag||'')} onChange={tag=>navigate({search:{...liveSearch,tag:tag||undefined}})}/>
+                <InboxCompanyFilter projectId={projectId} value={String(searchParams.company||'')} onChange={company=>navigate({search:{...liveSearch,company:company||undefined}})}/>
                 <ConversationsFilter assignment={ filter.assigned_to } searchScope={ filter.search_scope || searchParams.search_scope || 'all' } searching={ Boolean(searchQuery.trim()) } onChange={ changes => navigate({search:{...liveSearch,saved_view:undefined,filters:undefined,sort:undefined,...changes}}) } />
             </div>
             {ticketQueue && <>

@@ -1,3 +1,5 @@
+import {companyRecordsJourney} from '../helpers/company-records.mjs'
+import {customerCsvJourney} from '../helpers/customer-csv.mjs'
 import test from 'node:test'
 import {ticketsJourney} from '../helpers/inbox/tickets.mjs'
 import {managementJourney} from '../helpers/inbox/management.mjs'
@@ -8,7 +10,7 @@ import {appearanceJourney} from '../helpers/inbox/appearance.mjs'
 
 // The operator's workspace on the real application's routes; fixtures only at the mail provider, DNS and crawler.
 
-test('workspace management keeps settings, resources, bootstrap, owners, notes, participants, transcript mail, widget origins, presence and mailbox ownership within each workspace\'s current authority',managementJourney)
+test('workspace management keeps settings, resources, bootstrap, owners, notes, participants, transcript mail, widget origins, presence and mailbox ownership within each workspace\'s current authority',async()=>{await managementJourney();await companyRecordsJourney();await customerCsvJourney()})
 
 test('inbox search matches literally across names, emails, supplied identity and all history from an index built later and kept by every write, composes with status, assignment and AI views, and bounds its terms',inboxSearchJourney)
 

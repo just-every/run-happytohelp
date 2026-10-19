@@ -99,3 +99,9 @@ invitations independently. Replies use a
 unique `localId`, `content`, `expectedRevision` and optional `mediaIds`; reopening
 also requires `expectedRevision`. Reload after a conflict instead of replaying a
 stale change.
+
+## Company requests
+
+Your support team may give your company access to shared requests. When it does, the request list names your company and includes requests from its current members. You can read and reply to those requests. Your replies keep your identity as their author. Without that entitlement, you see only your own requests. Requests outside your company remain private.
+
+The support team manages membership and access in [Companies](companies-and-csv.md). Removing membership or access takes effect immediately.

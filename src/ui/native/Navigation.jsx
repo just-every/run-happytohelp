@@ -56,7 +56,7 @@ export default function Navigation({ settings }) {
     const primaryActive = path => path==='articles' ? ['articles','datasets','categories','training-runs'].some(section=>pathIsWithin(here,`${base}/${section}`)) : path==='local-agent' ? pathIsWithin(here,`${base}/${path}`)||pathIsWithin(here,'/local-agent/authorize') : pathIsWithin(here,`${base}/${path}`);
     const inboxActive = here.includes('conversations') || here==='/';
     const current = on => on ? 'page' : undefined;
-    const projectRows = [['Setup','activation','check-square'],['Knowledge','articles','book-open'],['AI','ais','cpu'],['Contacts','contacts','users']];
+    const projectRows = [['Setup','activation','check-square'],['Knowledge','articles','book-open'],['AI','ais','cpu'],['Contacts','contacts','users'],['Companies','companies','briefcase']];
     const moreRows = [['Local computers','local-agent'],['Reports','reports'],['Insights','insights']].map(([label,path])=>({label,to:`${base}/${path}`,current:primaryActive(path)}));
     const settingsActive = !settings.isGlobalInbox && onSettingsDestination(here,base);
     const switchWorkspace = async id=>{if(switching||!await confirmNavigation())return;setSwitching(true);setSwitchError('');try{if(id)await nativeRequest('/api/identity/switch-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId:id})});await navigate({to:id?`/projects/${id}/conversations`:'/conversations',ignoreBlocker:true});}catch(error){setSwitchError(error.message);}finally{setSwitching(false);}};

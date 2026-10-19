@@ -48,6 +48,11 @@ const rules:Record<string,Rule>={
  [`GET ${P}/audit`]:'audit.view',[`GET ${P}/audit/export`]:'data.export',[`PUT ${P}/audit/retention`]:'settings.manage',[`POST ${P}/audit/holds`]:'settings.manage',[`POST ${P}/audit/holds/:holdId/release`]:'settings.manage',
  // Reports
  [`GET ${D}/reports`]:'reports.view',
+ [`GET ${D}/reports/team`]:'reports.view',
+ [`GET ${D}/report-schedules`]:'data.export',
+ [`POST ${D}/report-schedules`]:'data.export',
+ [`PATCH ${D}/report-schedules/:scheduleId`]:'data.export',
+ [`DELETE ${D}/report-schedules/:scheduleId`]:'data.export',
  // Workspace settings
  'POST /api/management/projects':'settings.manage',[`PUT ${P}/settings`]:'settings.manage',[`DELETE ${P}`]:'data.erase',
  [`PUT ${P}/appearance`]:'settings.manage',[`PUT ${P}/artwork`]:'settings.manage',[`PUT ${P}/widget-settings`]:'settings.manage',[`PUT ${P}/availability`]:'settings.manage',[`PUT ${P}/ai`]:'settings.manage',
@@ -81,8 +86,14 @@ for(const base of [P,D]){rules[`PUT ${base}/agents/:userId`]='members.manage';ru
 // self-owned and their handlers separately guard shared definitions.
 for(const base of [P,D]){
  rules[`GET ${base}/ticket-settings`]='self'
+ rules[`GET ${base}/ticket-problem-search`]='conversations.manage'
  rules[`GET ${base}/conversations/:conversationId/ticket`]='self'
  rules[`PATCH ${base}/conversations/:conversationId/ticket`]='conversations.manage'
+ for(const method of ['GET','PATCH'])rules[`${method} ${base}/conversations/:conversationId/ticket/problem`]='conversations.manage'
+ for(const action of ['incidents/preview','incidents/apply','solve/preview','solve/apply'])rules[`POST ${base}/conversations/:conversationId/ticket/problem/${action}`]='conversations.manage'
+ rules[`GET ${base}/conversations/:conversationId/ticket/problem/solve/:previewId`]='conversations.manage'
+ rules[`GET ${base}/conversations/:conversationId/timer`]='conversations.manage'
+ for(const action of ['start','stop','adjust'])rules[`POST ${base}/conversations/:conversationId/timer/${action}`]='conversations.manage'
  for(const kind of ['statuses','fields','groups']){
   rules[`GET ${base}/ticket-${kind}`]='self'
   rules[`POST ${base}/ticket-${kind}`]='settings.manage'

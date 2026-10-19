@@ -496,8 +496,8 @@
     {
       "binding": "DB",
       "name": "156_ticket_batch_jobs.sql",
-      "sha256": "8caa48dc8304273809a54c5db535460a9b8014f85ada90436da359e36f4b1d6a",
-      "sql": "-- Ticket work is accepted in D1 before a queue wakeup or a queued response.\nCREATE TABLE ticket_batch_jobs (\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL REFERENCES projects(id),\n actor_json TEXT NOT NULL,\n authority_json TEXT NOT NULL,\n operation_json TEXT NOT NULL,\n selection_json TEXT NOT NULL,\n results_json TEXT NOT NULL,\n state TEXT NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','complete','failed')),\n cursor INTEGER NOT NULL DEFAULT 0,\n attempts INTEGER NOT NULL DEFAULT 0,\n created_at INTEGER NOT NULL,\n updated_at INTEGER NOT NULL\n);\nCREATE INDEX ticket_batch_jobs_pending ON ticket_batch_jobs(state,updated_at,id);\n"
+      "sha256": "84fcf8794613163dd5d58061a01e88244c85fe9f2c735a368cf2914328f265a2",
+      "sql": "-- Ticket work is accepted in D1 before a queue wakeup or a queued response.\nCREATE TABLE ticket_batch_jobs (\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL REFERENCES projects(id),\n actor_json TEXT NOT NULL,\n authority_json TEXT NOT NULL,\n operation_json TEXT NOT NULL,\n selection_json TEXT NOT NULL,\n results_json TEXT NOT NULL,\n state TEXT NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','complete','failed')),\n cursor INTEGER NOT NULL DEFAULT 0,\n attempts INTEGER NOT NULL DEFAULT 0,\n recovery_ticks INTEGER NOT NULL DEFAULT 0,\n created_at INTEGER NOT NULL,\n updated_at INTEGER NOT NULL\n);\nCREATE INDEX ticket_batch_jobs_pending ON ticket_batch_jobs(state,updated_at,id);\n"
     },
     {
       "binding": "DB",

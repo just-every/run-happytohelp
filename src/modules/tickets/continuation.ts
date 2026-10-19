@@ -59,14 +59,21 @@ export async function consumeTicketContinuation(job:Job,input:Env){
  return true
 }
 /** One discovery statement comes from Context's existing reservation. Ticket
- * units use unused earlier credit only; every later consumer remains reserved. */
+ * units use unused earlier credit only; every later consumer remains reserved.
+ * The first cron sighting only wakes a never-started job. This persisted marker
+ * keeps a concurrent request's results boundary, even with a frozen Worker clock.
+ * Already-attempted jobs recover inline immediately; a lost initial wake is
+ * eligible inline on the next tick, without a wall-clock lease or grace delay. */
 export async function recoverTicketContinuations(env:Env){
- const rows=await env.DB.prepare("SELECT id,project_id,selection_json FROM ticket_batch_jobs WHERE state='pending' ORDER BY updated_at,id LIMIT 10").all<{id:string;project_id:string;selection_json:string}>()
+ const rows=await env.DB.prepare(`UPDATE ticket_batch_jobs SET recovery_ticks=recovery_ticks+1
+  WHERE id IN (SELECT id FROM ticket_batch_jobs WHERE state='pending' ORDER BY updated_at,id LIMIT 10)
+  RETURNING id,project_id,selection_json,attempts,recovery_ticks,updated_at`).all<{id:string;project_id:string;selection_json:string;attempts:number;recovery_ticks:number;updated_at:number}>()
+ rows.results.sort((a,b)=>a.updated_at-b.updated_at||a.id.localeCompare(b.id))
  for(const row of rows.results){
   // A saturated cron still wakes the job in its own queue invocation. Inline
   // progress also recovers a lost wakeup without depending on queue delivery.
   try{await env.JOBS.send(batchWake(row.id,row.project_id,JSON.parse(row.selection_json) as Selection[]))}catch{console.error('Ticket batch wakeup retained',row.id)}
-  if(!cronRoom(env,256))continue
+  if((row.attempts===0&&row.recovery_ticks===1)||!cronRoom(env,256))continue
   try{await consumeTicketContinuation({type:'ticket.batch',id:row.id,projectId:row.project_id},env)}catch(error){console.error('Ticket batch recovery retained',row.id,error instanceof Error?error.name:'Error')}
  }
 }

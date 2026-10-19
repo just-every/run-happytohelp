@@ -10,6 +10,7 @@ CREATE TABLE ticket_batch_jobs (
  state TEXT NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','complete','failed')),
  cursor INTEGER NOT NULL DEFAULT 0,
  attempts INTEGER NOT NULL DEFAULT 0,
+ recovery_ticks INTEGER NOT NULL DEFAULT 0,
  created_at INTEGER NOT NULL,
  updated_at INTEGER NOT NULL
 );

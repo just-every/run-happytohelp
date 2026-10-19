@@ -1985,7 +1985,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "6cbc16044dc4832c393e3db95e7d455bdc29011a308cc95a0d3b911e33050aa3",
+      "sha256": "e818eba4241a07fb70cc3ae053e2a333e1aefd119f5c0ef90955a2df3120c1d9",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2341,7 +2341,7 @@
       "executable": false
     },
     "migrations/156_ticket_batch_jobs.sql": {
-      "sha256": "8caa48dc8304273809a54c5db535460a9b8014f85ada90436da359e36f4b1d6a",
+      "sha256": "84fcf8794613163dd5d58061a01e88244c85fe9f2c735a368cf2914328f265a2",
       "executable": false
     },
     "migrations/160_mailboxes.sql": {
@@ -6253,7 +6253,7 @@
       "executable": false
     },
     "src/modules/tickets/continuation.ts": {
-      "sha256": "735b82f389f8059b9dc73555d7c7f561753d1596f53b03bca320fcb76f62b7cd",
+      "sha256": "438cad6d47b15612489c9b093be0f5a3c50bada090995783176de1dcfb8d81de",
       "executable": false
     },
     "src/modules/tickets/customer.ts": {

@@ -1,6 +1,6 @@
 import type {Env} from '../../../platform/env'
 
-/** Read identities while the canonical contact is fenced but still unredacted. */
+/** Read current and retained identities; the caller carries them across the erasure fence. */
 export async function csvErasureIdentities(env:Env,projectId:string,contactId:string,emails:string[]){
  const subjects=`SELECT ?2 id UNION SELECT contact_id FROM mailbox_contact_aliases WHERE project_id=?1 AND canonical_id=?2`
  const [contacts,images]=await env.DB.batch<any>([

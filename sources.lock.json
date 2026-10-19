@@ -4293,7 +4293,7 @@
       "executable": false
     },
     "src/modules/import-kit/csv/erasure.ts": {
-      "sha256": "9c23b5e37d1ce8f89f63d0483ca12e6133690fb78eba0d41ece3caf400ced1f8",
+      "sha256": "6f872e2e7abb95896341d66649e13037a7181b43ebc65edb4938863c167ba4b1",
       "executable": false
     },
     "src/modules/import-kit/csv/mutate.ts": {
@@ -5625,7 +5625,7 @@
       "executable": false
     },
     "src/modules/management/contact-erasure.ts": {
-      "sha256": "a1b4b7cfe5681dd4329d59819387b5da64c45ba26e7467e8611f3027eb45aa8e",
+      "sha256": "85016678a3af24747efccdedd23d3fe023d6d060f069f33c7fb1f9023c9037c9",
       "executable": false
     },
     "src/modules/management/contact-erasure/admitted-identity.ts": {
@@ -10229,7 +10229,7 @@
       "executable": false
     },
     "tests/helpers/customer-csv.mjs": {
-      "sha256": "a058a4d4b21473d4104fab2fc5e292e6e5d9ded3bb62bb94a75e93ff3cdbdb25",
+      "sha256": "3ff1dd94a779f933e361e83f783df22f3d790ed30599e661dd6206003fc29c59",
       "executable": false
     },
     "tests/helpers/customer-portal-journey.mjs": {

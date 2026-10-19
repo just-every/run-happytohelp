@@ -101,10 +101,13 @@ export async function dispatchOperatorNotifications(env:Env,options:{projectId?:
  const limit=options.statementLimit??scheduledReservations.notifications
  const budget=boundedDatabase(env.DB,limit)
  env={...env,DB:budget.database}
+ // Older Workers claimed inbox mail as sending. An abandoned claim has an
+ // unknown outcome, never permission to submit the provider call again.
+ await env.DB.prepare("UPDATE notification_inbox SET state='uncertain' WHERE state='sending'").run()
  // Reserve a turn for both delivery queues, even with sustained teammate work.
  // Earlier unused credit rolls forward; unclaimed activity and pending rows keep
  // their existing ordering and remain recoverable on the next tick.
- const teammatesDeferred=await dispatchPendingTeammateNotifications(cronConsumer(env,Math.max(19,Math.floor((limit-3)/2))),options)
+ const teammatesDeferred=await dispatchPendingTeammateNotifications(cronConsumer(env,Math.max(19,Math.floor((limit-budget.statements-3)/2))),options)
  await batchOperatorActivity(cronConsumer(env,Math.min(51,limit-budget.statements-25)),options.now??Date.now(),options.projectId,options.conversationId)
  const deliveryEnv=env
  env=cronConsumer(env,limit-budget.statements)

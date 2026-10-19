@@ -133,6 +133,59 @@ export async function macrosJourney(){
     assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='macro.applied' AND target_id=? AND json_extract(detail_json,'$.macro_id')=?",ticket.id,continuationMacro.id)).n,1,'recovery writes the macro audit once')
    }
   }
+  // Both cron-only rows change every selected assignee. Prepare the sixteen
+  // tickets outside the first row before enabling real provider delivery.
+  for(const ticket of overflow.slice(84))await patch(ticket.id,{assigned_to:w.users.admin})
+  await app.configure({EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'macro-provider-fixture',EMAIL_FROM:'support@example.test'})
+  const assignmentIntents=()=>app.sql("SELECT id,conversation_id,user_id,state FROM operator_notifications WHERE project_id=? AND kind='assignment'",w.projectId)
+  const cronTick=async()=>{
+   const tick=await app.scheduled()
+   assert.equal(tick.ran,true);assert.equal(tick.refused,0);assert.equal(tick.pruned,true)
+   assert.ok(Object.values(tick.consumers).every(consumer=>consumer.completed),'all consumers finish alongside macro continuation')
+   await app.takeJobs() // Lose every wakeup; only scheduled invocations may progress this work.
+  }
+  for(let tick=0;tick<3;tick++)await cronTick()
+  for(const [size,role] of [[84,'admin'],[100,'operator']]){
+   const selection=await app.sql('SELECT id,ticket_version expected_version FROM conversations WHERE id IN (SELECT value FROM json_each(?)) ORDER BY id',JSON.stringify(overflow.slice(0,size).map(ticket=>ticket.id)))
+   const previousIds=new Set((await assignmentIntents()).map(intent=>intent.id)),mailBefore=notices.length
+   const cronMacro=await ok('/macros',{title:`Assign cron replacements ${size}`,content:'We will arrange your replacement.',actions:{agent_id:w.users[role]}})
+   const commandId=`cron-assignment-macro-${size}`,accepted=await run(cronMacro,'apply',selection,{command_id:commandId})
+   assert.ok(accepted.results.every(result=>['applied','queued'].includes(result.status)),JSON.stringify(accepted))
+   const queued=accepted.results.filter(result=>result.status==='queued')
+   assert.ok(queued.length>0,'the assignment request leaves durable macro continuation work')
+   const batchId=queued[0].batch_id,read=()=>app.first('SELECT * FROM ticket_batch_jobs WHERE id=?',batchId)
+   assert.equal((await read()).state,'pending')
+   assert.ok((await app.takeJobs()).some(job=>job.type==='ticket.batch'&&job.id===batchId),'discard the accepted batch wakeup without delivering it')
+   for(let attempt=0;attempt<32&&(await read()).state==='pending';attempt++)await cronTick()
+   const completed=await read()
+   assert.equal(completed.state,'complete',`${size} macro assignments finish through cron alone`)
+   assert.ok(JSON.parse(completed.results_json).every(result=>result.status==='applied'))
+   for(let tick=0;tick<3;tick++)await cronTick()
+   assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.batch' AND target_id=? AND outcome='succeeded'",batchId)).n,1)
+   for(const ticket of selection){
+    assert.equal((await get(ticket.id)).assigned_to,w.users[role])
+    assert.equal((await app.first('SELECT count(*) n FROM macro_usage WHERE conversation_id=? AND macro_id=? AND command_id=?',ticket.id,cronMacro.id,commandId)).n,1,'cron admits each macro use once')
+    assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='macro.applied' AND target_id=? AND json_extract(detail_json,'$.macro_id')=?",ticket.id,cronMacro.id)).n,1,'cron writes each macro receipt once')
+   }
+   const intents=(await assignmentIntents()).filter(intent=>!previousIds.has(intent.id)),intentIds=intents.map(intent=>intent.id).sort()
+   assert.equal(intents.length,selection.length,'every selected assignment commits exactly one new intent')
+   assert.deepEqual(intents.map(intent=>intent.conversation_id).sort(),selection.map(ticket=>ticket.id).sort())
+   const inbox=await app.sql('SELECT id,user_id,inbox,state FROM notification_inbox WHERE id IN (SELECT value FROM json_each(?))',JSON.stringify(intentIds))
+   assert.equal(inbox.length,selection.length,'every committed assignment reaches the recipient inbox')
+   for(const intent of intents){
+    assert.equal(intent.state,'complete')
+    assert.equal(intent.user_id,w.users[role])
+    assert.deepEqual(inbox.find(row=>row.id===intent.id),{id:intent.id,user_id:w.users[role],inbox:1,state:'sent'})
+    assert.deepEqual(notices.slice(mailBefore).filter(notice=>notice.key===intent.id).map(notice=>notice.body.to),[[`${role}-tickets@example.test`]],'each committed intent sends exactly one provider mail to its assignee')
+   }
+   const sent=notices.slice(mailBefore)
+   assert.equal(new Set(sent.map(notice=>notice.key)).size,sent.length,'provider captures contain no duplicate keys')
+   assert.deepEqual(sent.map(notice=>notice.key).sort(),intentIds,'provider captures contain every assignment and no extra mail')
+   await cronTick()
+   assert.deepEqual(notices.slice(mailBefore),sent,'a later cron tick never replays assignment mail')
+   assert.deepEqual((await assignmentIntents()).filter(intent=>!previousIds.has(intent.id)),intents,'a later cron tick creates no extra assignment intent')
+  }
+  await app.configure({EMAIL_PROVIDER:'development',EMAIL_API_KEY:undefined,EMAIL_FROM:undefined})
   const absent=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey},headers:{Origin:w.allowedOrigin}})
   const emptyNameTicket=await app.ok('/api/conversations',{body:{projectId:w.projectId},token:absent.token})
   assert.match((await run(v2,'preview',[{id:emptyNameTicket.id,expected_version:0}])).results[0].draft.content,/Hello there/)

@@ -6,8 +6,8 @@ import {emailConfigured} from './email'
 import {recipientReplyAddress} from './email-reply-address'
 import {notificationLabels} from './notification-kinds'
 type Notice={id:string;project_id:string;conversation_id:string;user_id:string;kind:string;email:number;email_address:string}
-/** Before sending, durably move out of recoverable states. A process lost after
- * this claim is uncertain and cannot cause an automatic provider replay. */
+/** Claim into uncertainty before any provider work. A process lost after this
+ * commit leaves a visible outcome and cannot cause an automatic replay. */
 export async function deliverTeammateNotice(env:Env,row:Notice){
  const ticket=await notificationTicket(env,row.project_id,row.conversation_id)
  const user=await env.DB.prepare(`SELECT u.email,p.email preference,s.is_notifiable_on_conversation_assignment legacy_assignment,e.inbound_address,e.is_enabled
@@ -19,7 +19,7 @@ export async function deliverTeammateNotice(env:Env,row:Notice){
  const allowed=ticket&&user&&currentAudience&&row.email&&user.preference!==0&&!(row.kind==='assignment'&&user.preference==null&&user.legacy_assignment===0)&&user.is_enabled!==0
  if(!allowed){await env.DB.prepare("UPDATE notification_inbox SET state='complete' WHERE id=? AND state IN ('pending','awaiting_provider')").bind(row.id).run();return}
  if(!emailConfigured(env)){await env.DB.prepare("UPDATE notification_inbox SET state='awaiting_provider' WHERE id=? AND state='pending'").bind(row.id).run();return}
- const claim=await env.DB.prepare(`UPDATE notification_inbox SET state='sending' WHERE id=? AND state IN ('pending','awaiting_provider')
+ const claim=await env.DB.prepare(`UPDATE notification_inbox SET state='uncertain' WHERE id=? AND state IN ('pending','awaiting_provider')
  AND EXISTS(SELECT 1 FROM memberships WHERE project_id=? AND user_id=?)
  AND EXISTS(SELECT 1 FROM (${notificationTicketSql}) eligible)
  AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${relation})
@@ -31,7 +31,7 @@ export async function deliverTeammateNotice(env:Env,row:Notice){
   const url=typeof env.APP_ORIGIN==='string'?new URL(`/projects/${encodeURIComponent(row.project_id)}/conversations/${encodeURIComponent(row.conversation_id)}`,env.APP_ORIGIN).href:''
   const replyTo=user.inbound_address?await recipientReplyAddress(env,user.inbound_address,row.project_id,row.conversation_id,row.email_address):undefined
   const outcome=await deliverNotification(env,{projectId:row.project_id,to:row.email_address,subject:`Support ticket #${row.conversation_id}`,text:`${notificationLabels[row.kind]}${url?'\n\nOpen ticket: '+url:''}`,replyTo,headers:loopSuppressionHeaders({}),idempotencyKey:row.id})
-  state=outcome.state
+  state=outcome.state==='sending'?'uncertain':outcome.state
  }catch{}
  await env.DB.prepare('UPDATE notification_inbox SET state=? WHERE id=?').bind(state,row.id).run()
 }

@@ -108,5 +108,37 @@ export async function ticketQueue(f){
    assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.bulk.apply' AND target_id=? AND outcome='succeeded' AND json_extract(detail_json,'$.batch_id')=?",ticket.id,batchId)).n,1,'recovery preserves exactly one native ticket receipt')
   }
  }
+ // Lost wakeups force cron to finish the selection near its own statement
+ // ceiling. Assignment delivery must still commit every inbox/mail outcome.
+ for(const [size,assignee] of [[92,w.users.admin],[100,w.users.operator]]){
+  await app.configure({EMAIL_PROVIDER:'development',EMAIL_API_KEY:undefined,EMAIL_FROM:undefined})
+  if(size===100)for(const ticket of overflow.slice(92))await patch(ticket.id,{assigned_to:w.users.admin})
+  const selected=await app.sql('SELECT id,ticket_version expected_version FROM conversations WHERE id IN (SELECT value FROM json_each(?)) ORDER BY id',JSON.stringify(overflow.slice(0,size).map(ticket=>ticket.id)))
+  const prior=new Set((await app.sql("SELECT id FROM operator_notifications WHERE kind='assignment'")).map(row=>row.id))
+  await app.configure({EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'bulk-provider-fixture',EMAIL_FROM:'support@example.test'})
+  const accepted=await ok('/tickets/bulk/apply',{tickets:selected,changes:{assigned_to:assignee}})
+  const queued=accepted.results.filter(row=>row.status==='queued')
+  assert.ok(queued.length>0,'the request durably overflows before cron takes over')
+  const batchId=queued[0].batch_id
+  assert.ok((await app.takeJobs()).some(job=>job.type==='ticket.batch'&&job.id===batchId))
+  const read=()=>app.first('SELECT * FROM ticket_batch_jobs WHERE id=?',batchId)
+  for(let tick=0;tick<8&&(await read()).state==='pending';tick++){
+   const result=await app.scheduled();assert.equal(result.refused,0);assert.equal(result.pruned,true)
+   assert.ok(Object.values(result.consumers).every(consumer=>consumer.completed))
+   await app.takeJobs()
+  }
+  assert.equal((await read()).state,'complete');assert.ok((await read()).recovery_ticks>=2)
+  for(let tick=0;tick<3;tick++){const result=await app.scheduled();assert.equal(result.refused,0);await app.takeJobs()}
+  const assignments=(await app.sql("SELECT o.id,n.state,n.inbox FROM operator_notifications o LEFT JOIN notification_inbox n ON n.id=o.id WHERE o.kind='assignment'")).filter(row=>!prior.has(row.id))
+  assert.equal(assignments.length,size)
+  for(const notice of assignments){
+   assert.equal(notice.inbox,1);assert.equal(notice.state,'sent')
+   assert.equal(f.notices.filter(mail=>mail.key===notice.id).length,1,'each assignment reaches the provider exactly once')
+  }
+  for(const ticket of selected){
+   assert.equal((await get(ticket.id)).assigned_to,assignee)
+   assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.bulk.apply' AND target_id=? AND outcome='succeeded' AND json_extract(detail_json,'$.batch_id')=?",ticket.id,batchId)).n,1)
+  }
+ }
  f.queueIds=ids
 }

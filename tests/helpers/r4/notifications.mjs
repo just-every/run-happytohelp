@@ -81,6 +81,22 @@ export async function notificationTriggersJourney(){
   assert.equal(mail.attempts-attempts,1)
   assert.equal((await DB.prepare("SELECT state FROM email_deliveries WHERE recipient='quiet@example.com'").first()).state,'uncertain')
   mail.mode='deliver'
+  // Process loss immediately after the inbox claim leaves a visible unknown
+  // outcome, even before a provider call exists. Recovery never replays it.
+  const beforeCrash=mail.attempts
+  await app.call(ticket(id)+'/notes',{headers:{...operator,'x-test-fault':'db-interrupt','x-test-statement':"UPDATE notification_inbox SET state='uncertain'"},method:'POST',body:{content:'Check this separately @[Quiet](user:quiet)'}})
+  const interrupted=await DB.prepare("SELECT id,state FROM notification_inbox WHERE user_id='quiet' AND kind='mention' AND NOT EXISTS(SELECT 1 FROM email_deliveries e WHERE e.id=notification_inbox.id) ORDER BY created_at DESC LIMIT 1").first()
+  assert.ok(interrupted);assert.equal(interrupted.state,'uncertain');assert.equal(mail.attempts,beforeCrash)
+  await settle();await settle()
+  assert.equal((await DB.prepare('SELECT state FROM notification_inbox WHERE id=?').bind(interrupted.id).first()).state,'uncertain')
+  assert.equal(mail.attempts,beforeCrash,'a crashed claim is not permission to replay mail')
+  // Old-version sending claims also settle without a new provider attempt.
+  await DB.prepare("UPDATE notification_inbox SET state='sending' WHERE id=?").bind(interrupted.id).run()
+  await settle()
+  const quiet={Authorization:'Bearer quiet-token'}
+  await DB.prepare("INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,'quiet','p','operator',?)").bind(sha('quiet-token'),Date.now()+3600000).run()
+  assert.equal((await call(`${base}/notification-inbox`,undefined,'GET',quiet)).data.find(row=>row.id===interrupted.id).state,'uncertain')
+  assert.equal(mail.attempts,beforeCrash)
   await call(`${base}/notification-preferences`,{preferences:[{kind:'group',inbox:true,email:false}]},'PUT',watch)
   const group=await call(`${base}/ticket-groups`,{name:'Shipping',members:['watch']},'POST')
   const groupId=group.id??group.data?.id

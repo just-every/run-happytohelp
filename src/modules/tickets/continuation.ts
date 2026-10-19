@@ -5,7 +5,7 @@ import {auditStatement} from '../audit/record'
 import {notificationRequestEnvironment,requestRoom,flushRequestAssignments} from '../integrations/notification-request'
 import {ticketBatchEnvironment} from './request-batch'
 import {finishBatchWorkflows} from './batch-workflows'
-import {cronRoom} from '../../platform/cron-budget'
+import {cronRoom,inCron} from '../../platform/cron-budget'
 import {batchWake,bulkReceipt,batchEvent,readContinuation,finishContinuation,maxBatchAttempts,type BatchRow,type BatchResult,type Selection} from './continuation-store'
 export {bulkReceipt,queueTicketContinuation} from './continuation-store'
 
@@ -54,7 +54,9 @@ export async function consumeTicketContinuation(job:Job,input:Env){
   else{await env.DB.prepare("UPDATE ticket_batch_jobs SET cursor=?,updated_at=? WHERE id=? AND state='pending' AND cursor=?").bind(next,Date.now(),row.id,row.cursor).run();retry=true}
  }else retry=true
  await finishBatchWorkflows(env,row.project_id,applied)
- if(cronRoom(env,64))await flushRequestAssignments(env)
+ // Cron leaves the committed assignment intents to its notifications consumer,
+ // which admits each entire delivery before claiming it.
+ if(!inCron(env))await flushRequestAssignments(env)
  if(retry){try{await env.JOBS.send(batchWake(work.batchId,work.actor.projectId,work.tickets))}catch{console.error('Ticket batch retained for recovery',row.id)}}
  return true
 }

@@ -43,7 +43,7 @@
     },
     {
       "id": "195_restore_trigger_boundaries.sql",
-      "buyerSteps": "R9a restores preserve the resolution trigger with CASE terminator whitespace compatible with the pinned Wrangler SQL splitter. Apply through pinned rer; trigger behavior and all existing records stay unchanged."
+      "buyerSteps": "R9a restores preserve the resolution trigger with CASE boundary whitespace compatible with the pinned Wrangler SQL splitter. Apply through pinned rer; trigger behavior and all existing records stay unchanged."
     }
   ]
 }

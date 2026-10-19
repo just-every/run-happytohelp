@@ -1,4 +1,4 @@
--- Preserve the resolution trigger byte-for-byte except whitespace after CASE END.
+-- Preserve the resolution trigger byte-for-byte except whitespace at CASE boundaries.
 -- The pinned Wrangler SQL splitter requires that boundary before punctuation.
 DROP TRIGGER conversation_record_resolution;
 CREATE TRIGGER conversation_record_resolution AFTER UPDATE OF resolved_at ON conversations WHEN NEW.resolved_at IS NOT NULL AND (OLD.resolved_at IS NULL OR NEW.revision>OLD.revision) AND EXISTS(SELECT 1 FROM conversation_tracking WHERE conversation_id=NEW.id) BEGIN
@@ -15,5 +15,5 @@ CREATE TRIGGER conversation_record_resolution AFTER UPDATE OF resolved_at ON con
   ELSE 'unknown' END ,
  json_object('historyComplete',t.cycle_history_complete,'messages',json((SELECT json_group_array(json_object('id',m.id,'kind',COALESCE(a.kind,'unknown'),'source',a.source_kind,'sourceId',a.source_id)) FROM messages m LEFT JOIN message_authorship a ON a.message_id=m.id WHERE m.conversation_id=NEW.id AND m.revision>t.cycle_start_revision AND m.revision<=NEW.revision AND m.actor_role<>'contact' AND COALESCE(a.source_kind,'')<>'insight')))
  FROM conversation_tracking t WHERE t.conversation_id=NEW.id;
- UPDATE conversation_tracking SET first_resolved_at=CASE WHEN initial_history_complete=1 THEN COALESCE(first_resolved_at,NEW.resolved_at) ELSE first_resolved_at END ,cycle_start_revision=NEW.revision,cycle_start_at=NEW.resolved_at,cycle_history_complete=1 WHERE conversation_id=NEW.id;
+ UPDATE conversation_tracking SET first_resolved_at= CASE WHEN initial_history_complete=1 THEN COALESCE(first_resolved_at,NEW.resolved_at) ELSE first_resolved_at END ,cycle_start_revision=NEW.revision,cycle_start_at=NEW.resolved_at,cycle_history_complete=1 WHERE conversation_id=NEW.id;
 END;

@@ -1989,7 +1989,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "ae5c830adca83ea6f60da74742de255509fc776869f3172d1ea297f3713d5e7f",
+      "sha256": "09e518b41ea5804ac435bfdf7e4e4c164c57c79ea3fe402a80e86630f8a15062",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2421,7 +2421,7 @@
       "executable": false
     },
     "migrations/195_restore_trigger_boundaries.sql": {
-      "sha256": "9e35a816263db6f14d0af6469b221d223fa332570e8ebfcdc77dc4d97a02cefd",
+      "sha256": "d290a11db60f8a825af348e938310c4be81219288e8c2dc4253d7332dd1d571a",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -2513,7 +2513,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "bed39e4b7c086556b9e408869bef89f0f1bd67fe0218159332047442f8238479",
+      "sha256": "da7c83f12d4b3ec9a5ed4177d6fbce6922eb2fcfc4a3f20d021c31754d8fff5d",
       "executable": false
     },
     "rer-project.json": {
@@ -10865,7 +10865,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "caf10d73d246da6f8b1330792f075e45789128f58487828856a90aca526933d1",
+      "sha256": "4bc8c327acba61898d891f90b31c3752718b98238980d87a5b6af529c8f79a79",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

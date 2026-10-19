@@ -36,6 +36,14 @@
     {
       "id": "193_customer_csv.sql",
       "buyerSteps": "R9a mapped CSV dry runs and reversible contact and company imports. Apply through pinned rer before the updated Worker serves traffic; retain import journals and erasure fences without resetting."
+    },
+    {
+      "id": "194_csv_run_fences.sql",
+      "buyerSteps": "R9a import-local concurrency fences replace the global customer counter. Apply through pinned rer before the updated Worker serves traffic; existing previews retain their stale-change protection without changing unrelated import undo state."
+    },
+    {
+      "id": "195_restore_trigger_boundaries.sql",
+      "buyerSteps": "R9a restores preserve the resolution trigger with CASE terminator whitespace compatible with the pinned Wrangler SQL splitter. Apply through pinned rer; trigger behavior and all existing records stay unchanged."
     }
   ]
 }

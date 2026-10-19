@@ -1,6 +1,6 @@
 # Companies and CSV imports
 
-Open **Companies** in a workspace to keep customer accounts together. Create a company, add its email domains, and add contacts as members. A contact belongs to one company at a time. The company page lists its members and their tickets. In the inbox, choose a company to narrow the ticket list.
+Open **Contacts**, then **Companies**, in a workspace to keep customer accounts together. Create a company, add its email domains, and add contacts as members. A contact belongs to one company at a time. The company page lists its members and their tickets. In the inbox, choose a company to narrow the ticket list.
 
 ## Company attributes
 

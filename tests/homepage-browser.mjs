@@ -323,7 +323,7 @@ try {
   const buttons = await page.locator('.pill--ink').evaluateAll(els => els.map(el => [getComputedStyle(el).backgroundColor, getComputedStyle(el).color, getComputedStyle(el).borderTopLeftRadius]));
   assert.ok(buttons.length === 4 && buttons.every(([bg, fg, radius]) => bg === 'rgb(20, 20, 20)' && fg === 'rgb(255, 255, 255)' && parseFloat(radius) >= 20), JSON.stringify(buttons));
   checks.push('warm paper with grain, near-black ink, black pill buttons, a plain header, and no colour outside the drawings but aqua: the hero\'s discs, docs underline and flourish, the marks\' sparks, and below the hero filled number discs, the promises\' circles, aqua link underlines, two dividers and the closing line');
-  checks.push('below the hero: every drawing on a pale aqua blob, alternating sides; window frames kept only for the code editor, checkout and import, frameless ink cards for the licence and the four desk parts; the licence card over a wordless editor with both highlights; the mark\'s three sparks on four cards; two full-width dividers; the closing headline at the hero\'s size with its aqua line; and the footer lockup identical to the header\'s');
+  checks.push('below the hero: every drawing on its own pale aqua blob; window frames kept only for the code editor and import, frameless ink cards for the licence and the four desk parts; the licence card over a wordless editor with both highlights; the mark\'s three sparks on four cards; two full-width dividers; the closing headline in semibold with its aqua line centred under it; and the footer lockup identical to the header\'s');
 
   // Drawings: real DOM text, one accessible label each, no raster images, legible at every width.
   assert.equal(await page.locator('img').count(), 0);
@@ -510,6 +510,17 @@ try {
     assert.deepEqual(hero.outside, [], `every part of the hero drawing stays inside its figure at ${width}px`);
     assert.ok(hero.sideBySide !== hero.stacked && hero.captionsUnder, `the two moments stand side by side or stacked, with the captions under them, at ${width}px: ${JSON.stringify(hero)}`);
     if (width >= 1280) assert.ok(hero.sideBySide && hero.art.top + (hero.art.bottom - hero.art.top) / 2 < 900, `the moments stand side by side with at least half of the hero drawing above the fold at ${width}px: ${JSON.stringify(hero)}`);
+    // The offer card may float over the checkout's corner, but nothing in the drawing lies over the drawn Pay now.
+    const overPay = await page.locator('.story-art').evaluate(art => {
+      const pay = art.querySelector('.sk-pay'), range = document.createRange();
+      range.selectNodeContents(pay);
+      const text = range.getBoundingClientRect();
+      return [...art.querySelectorAll('.story *')].filter(el => !el.contains(pay) && !pay.contains(el)).filter(el => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && r.left < text.right && r.right > text.left && r.top < text.bottom && r.bottom > text.top;
+      }).map(el => `${el.tagName.toLowerCase()}.${el.getAttribute('class') || ''}`);
+    });
+    assert.deepEqual(overPay, [], `nothing covers the checkout's Pay now at ${width}px`);
     if (width === 390) {
       assert.ok(hero.stacked, 'the two moments stack at 390px');
       assert.ok(await page.locator('.import-art').isVisible() && await page.locator('.licence-art').isVisible(), 'the licence card and import window stay at 390px');
@@ -527,7 +538,7 @@ try {
   }
   checks.push('the four desk drawings end on one line, with their numerals and titles on one baseline, at every four-up width');
 
-  checks.push('no horizontal overflow, drawing text of 12px or more, contained drawings, the hero\'s two moments side by side on wide screens (at least half the drawing above the fold from 1280px) and stacked on phones with the captions under them, the logo\'s three sparks springing from the top-right corners of four cards at the mark\'s own offset and a constant size, inside their figures and clear of every heading and caption, the flourish clear of all text and controls, and the lockup\'s mark on the headline\'s left edge at desktop widths, at 17 widths from 320px to 1920px');
+  checks.push('no horizontal overflow, drawing text of 12px or more, contained drawings, the hero\'s two moments side by side on wide screens (at least half the drawing above the fold from 1280px) and stacked on phones with the captions under them, the checkout\'s Pay now clear of the offer card and every other part of the drawing, the logo\'s three sparks springing from the top-right corners of four cards at the mark\'s own offset and a constant size, inside their figures and clear of every heading and caption, the flourish clear of all text and controls, and the lockup\'s mark on the headline\'s left edge at desktop widths, at 17 widths from 320px to 1920px');
 
   // Motion: the hero flourish draws in once as the page appears; reduced motion removes every animation and transition and smooth scrolling.
   await page.setViewportSize({ width: 1440, height: 900 });

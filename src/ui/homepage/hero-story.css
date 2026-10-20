@@ -53,6 +53,13 @@
   .h2h-home .story-arrow { width: 3.4em; margin: 0.2em 0 0.4em 5em; rotate: 80deg; }
   .h2h-home .story-when { margin-left: 2.6em; }
 }
+/* Narrower still (phones, and the desktop column just past the stacking width), the checkout is too narrow for the card
+   to float over its corner without covering Pay now, so the card drops into the flow under the window and overlaps only
+   the window's empty bottom edge. */
+@container (max-width: 479px) {
+  .h2h-home .story-before { padding-bottom: 0; }
+  .h2h-home .story-offer { position: relative; right: auto; bottom: auto; margin: -1.25em 0 0 auto; }
+}
 
 /* The arrow draws in once, like the flourish, just after it; reduced motion shows it drawn. */
 .h2h-home .story-arrow path { stroke-dasharray: 1 2; stroke-dashoffset: 0; }

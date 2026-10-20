@@ -8849,7 +8849,7 @@
       "executable": false
     },
     "src/ui/homepage/hero-story.css": {
-      "sha256": "25edb2c381d0f1e06f165740425bfc8cf56ae2b39812acdbe03324cd1e13ba81",
+      "sha256": "58e15e1dd104e16d77f2764266bbd4c2a18fd6983e53de1f6d7dd2d9d719c37c",
       "executable": false
     },
     "src/ui/homepage/Hero.tsx": {
@@ -11365,7 +11365,7 @@
       "executable": false
     },
     "tests/homepage-browser.mjs": {
-      "sha256": "00077b1dbd4d8961fc164651dfb9b0f1fa4326e84fe8344fc1268df6f2528184",
+      "sha256": "580bfd0bcaaa49669b48d308fde036bc4f0a2c1faaa40e59d46242cc51f56d96",
       "executable": false
     },
     "tests/journeys/ai-browser.mjs": {

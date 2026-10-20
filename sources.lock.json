@@ -7317,7 +7317,7 @@
       "executable": false
     },
     "src/site/docs-search/search.css": {
-      "sha256": "729177645c83155177413b0161b5bc82a36e67e51c6141078e69d84648af6b44",
+      "sha256": "61e44905ec643d3e4ab914435a7f9d9e66173fcdee563b122617cedd8baddd5c",
       "executable": false
     },
     "src/site/docs-search/SearchField.tsx": {
@@ -8281,7 +8281,7 @@
       "executable": false
     },
     "src/ui/docs/build/hast.ts": {
-      "sha256": "72c63b2580c3c667de56feea34d2abcaaf27527f0d518a5296044f4137daef37",
+      "sha256": "3800e037a5f8dcff7373bb49607e163cb4b3b6820023604eb010f6be9ca0e186",
       "executable": false
     },
     "src/ui/docs/build/highlight-modules.d.ts": {

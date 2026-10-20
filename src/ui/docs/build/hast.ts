@@ -1,4 +1,4 @@
-import { headingSections } from '../../../site/docs-search/sections';
+import { headingSections } from '../../../site/docs-search/sections.ts';
 import type { SearchSection } from '../../../site/docs-search/types';
 import type { DocsTocEntry } from '../types.ts';
 import { rewriteHref, rewriteImageSrc } from './links.ts';

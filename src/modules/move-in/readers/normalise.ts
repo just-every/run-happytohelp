@@ -28,7 +28,7 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
   if(!object(value))throw new Error('author_missing');const sid=sourceId(value.id,vendor),kind=value.type
   const role=['contact','user','lead'].includes(kind)?'contact':['admin','teammate','team'].includes(kind)?'operator':['bot','campaign','system'].includes(kind)?'system':null
   if(!role)throw new Error('author_role_unsupported');return {id:sid,name:typeof value.name==='string'?value.name:null,role}}
- for(const record of source.records){const key=recordKey(record),p=record.payload as any,issues=auditShape(vendor,record.kind,p).issues.filter(issue=>issue.reason!=='record_kind_not_understood'),omissions:string[]=issues.map(shapeReason)
+ for(const record of source.records){const key=recordKey(record),p=record.payload as any,channel=p.channel?.initial??({email:'email',conversation:'messenger'} as Record<string,string>)[p.source?.type],issues=auditShape(vendor,record.kind,p).issues.filter(issue=>issue.reason!=='record_kind_not_understood'&&!(vendor==='intercom'&&record.kind==='conversation'&&channel&&issue.path==='/channel'&&issue.reason==='required_structural_field_missing')),omissions:string[]=issues.map(shapeReason)
   for(const issue of issues)source.diagnostics.push({severity:'warning',code:issue.code,message:shapeReason(issue),kind:record.kind,sourceId:record.sourceId,location:{...record.location,pointer:`${record.location.pointer??''}${vendor==='zendesk'?`/${record.kind}`:''}${issue.path}`}})
   try{if(tags(record).some(name=>name.trim().length>80))throw new Error('tag_name_limit');let kind:string,tables:NativeValue['tables']={},target:string
    if(record.kind==='tag-name'){kind='tag';target=tagIds.get(record.sourceId)??id('tag',record.sourceId);if(tagIds.has(record.sourceId)){result.omissions.set(key,['existing_workspace_tag_reused']);result.effects.set(key,[]);continue}tables.workspace_tags=[{id:target,project_id:projectId,name:p.name,normalized_name:record.sourceId}]}
@@ -61,7 +61,7 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
      for(const part of p.comments){if(!object(part)||typeof part.public!=='boolean')throw new Error('comment_visibility_required');await add(part,sourceId(part.id,vendor),part.plain_body??part.body,part.public,time(part.created_at,'iso'),author(part.author_id),part.created_at,'source')}
      if(p.attachments||p.comments.some((v:any)=>array(v.attachments).length))omissions.push('attachments_metadata_retained_bytes_not_imported')
     }else{
-     if(!object(p.source)||!['email','messenger'].includes(p.channel?.initial))throw new Error('conversation_source_channel_unsupported')
+     if(!object(p.source)||!['email','messenger'].includes(channel))throw new Error('conversation_source_channel_unsupported')
      if(p.conversation_parts?.type!=='conversation_part.list'||!Array.isArray(p.conversation_parts.conversation_parts))throw new Error('conversation_parts_required')
      if(Object.hasOwn(p.conversation_parts,'total_count')&&(!Number.isSafeInteger(p.conversation_parts.total_count)||p.conversation_parts.total_count<0||p.conversation_parts.total_count!==p.conversation_parts.conversation_parts.length))throw new Error('conversation_parts_count_invalid_or_incomplete')
      await add(p.source,`source:${sourceId(p.source.id,vendor)}`,p.source.body,true,created,author(p.source.author),null,'conversation-created-context')
@@ -72,7 +72,7 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
     rows.sort((a,b)=>a.created_at-b.created_at||a.local_id.localeCompare(b.local_id));rows.forEach((row,index)=>{row.revision=index+1})
     const resolved=['closed','solved'].includes(state)?closedAt([],p.updated_at,omissions,vendor==='zendesk'?'iso':'unix'):null
     tables.conversations=[{id:target,project_id:projectId,contact_id:id('contact',contactSource),revision:rows.length,last_message_id:rows.at(-1)?.id??null,assigned_to:null,resolved_at:resolved,created_at:created,updated_at:updated}]
-    tables.move_in_conversations=[{conversation_id:target,project_id:projectId,vendor,source_id:record.sourceId,subject:typeof p.subject==='string'?p.subject:typeof p.title==='string'?p.title:typeof p.source?.subject==='string'?p.source.subject:'',source_state:state,source_channel:vendor==='zendesk'?(p.via?.channel??'unknown'):p.channel.initial}]
+    tables.move_in_conversations=[{conversation_id:target,project_id:projectId,vendor,source_id:record.sourceId,subject:typeof p.subject==='string'?p.subject:typeof p.title==='string'?p.title:typeof p.source?.subject==='string'?p.source.subject:'',source_state:state,source_channel:vendor==='zendesk'?(p.via?.channel??'unknown'):channel}]
     tables.messages=rows;tables.move_in_message_sources=sources;tables.move_in_notes=notes
     tables.conversation_tags=[...new Set(tags(record).map(tagKey))].map(name=>({project_id:projectId,conversation_id:target,tag_id:tagIds.get(name)??id('tag',name)}))
     if(p.assignee_id||p.admin_assignee_id||p.team_assignee_id)omissions.push('historical_assignment_not_activated')

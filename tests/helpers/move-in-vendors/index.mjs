@@ -15,6 +15,7 @@ export async function startVendor(vendor,{tickets=305,port=0}={}) {
     if(!Object.hasOwn(routes,vendor))throw new TypeError(`Unsupported vendor ${vendor}`);
     const corpus=makeCorpus(tickets),requestLog=[],violations=[],faults=[];
     initializeEmailEvidence(corpus,vendor);
+    if(corpus.attachments[1])corpus.attachments[1].redirect=true;
     const token=`fixture-${vendor}-token`,email='importer@fixture.example.test',docsToken='fixture-helpscout-docs-key';
     const wrongToken='fixture-wrong-token',scopeToken=`${token}-scope`,rateToken=`${token}-rate`;
     let handle,baseUrl;
@@ -75,6 +76,7 @@ export async function startVendor(vendor,{tickets=305,port=0}={}) {
             if(file) {
                 const attachment=corpus.attachments.find(a=>a.id===Number(file[1]));
                 if(!attachment||attachment.missing)return send({error:'Attachment not found'},404);
+                if(vendor==='zendesk'&&attachment.redirect&&!url.searchParams.has('download')){log.status=302;response.writeHead(302,{Location:baseUrl+url.pathname+'?download=1'});response.end();return}
                 const bytes=attachmentBytes(attachment);log.status=200;
                 response.writeHead(200,{'Content-Type':attachment.contentType,'Content-Length':String(bytes.length),
                     'Content-Disposition':`attachment; filename="${attachment.filename}"`});

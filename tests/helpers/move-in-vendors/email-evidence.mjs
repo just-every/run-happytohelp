@@ -1,3 +1,4 @@
+import {attachmentBytes} from './corpus.mjs';
 // These objects configure responses from real vendor email-evidence endpoints.
 // They are never placed into undocumented fields on ticket/comment responses.
 export function emailEvidence(corpus,vendor,ticketId=1,commentId) {
@@ -46,6 +47,8 @@ export function originalEmail(evidence,part) {
     // Only the RFC header block may become threading evidence.
     if(evidence.references.length)headers.push(`References: ${evidence.references[0]}`,
         ...evidence.references.slice(1).map(value=>`\t${value}`));
+    const large=(part.attachments??[]).find(file=>file.size===8*1024*1024&&!file.missing);
+    if(large){const boundary='fixture-original-email-boundary';headers.push('MIME-Version: 1.0',`Content-Type: multipart/mixed; boundary="${boundary}"`);return headers.join('\r\n')+'\r\n\r\n'+`--${boundary}\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n${part.body}\r\nMessage-ID: ${evidence.bodyDecoyMessageId}\r\n--${boundary}\r\nContent-Type: ${large.contentType}\r\nContent-Disposition: attachment; filename="${large.filename}"\r\nContent-Transfer-Encoding: base64\r\n\r\n${attachmentBytes(large).toString('base64')}\r\n--${boundary}--\r\n`}
     headers.push('MIME-Version: 1.0','Content-Type: text/plain; charset=UTF-8');
     return headers.join('\r\n')+'\r\n\r\n'+part.body+'\r\n\r\nMessage-ID: '+evidence.bodyDecoyMessageId+'\r\n';
 }

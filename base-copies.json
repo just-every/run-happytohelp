@@ -525,6 +525,17 @@
       }
     },
     {
+      "path": "src/modules/import-kit/src/d1/custody-fence.ts",
+      "originPath": "modules/import-kit/src/d1/custody-fence.ts",
+      "revision": "d1249b3d696c4011e9c72de2097f3757436074a6",
+      "files": {
+        "src/modules/import-kit/src/d1/custody-fence.ts": "22b2a06ecda5f93a551985411941352454e0c6bfe8b5d915a982188ada494dcd"
+      },
+      "modes": {
+        "src/modules/import-kit/src/d1/custody-fence.ts": "100644"
+      }
+    },
+    {
       "path": "src/modules/import-kit/src/d1/custody-state-schema.ts",
       "originPath": "modules/import-kit/src/d1/custody-state-schema.ts",
       "revision": "d1249b3d696c4011e9c72de2097f3757436074a6",
@@ -544,6 +555,17 @@
       },
       "modes": {
         "src/modules/import-kit/src/d1/database.ts": "100644"
+      }
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/entry-locator.ts",
+      "originPath": "modules/import-kit/src/d1/entry-locator.ts",
+      "revision": "d1249b3d696c4011e9c72de2097f3757436074a6",
+      "files": {
+        "src/modules/import-kit/src/d1/entry-locator.ts": "b758e00dfd10785762c2d65e4368d89e552c12886f386e849ef78b46f8a60b27"
+      },
+      "modes": {
+        "src/modules/import-kit/src/d1/entry-locator.ts": "100644"
       }
     },
     {
@@ -767,6 +789,17 @@
       }
     },
     {
+      "path": "src/modules/import-kit/src/d1/erasure-superseded.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-superseded.ts",
+      "revision": "d1249b3d696c4011e9c72de2097f3757436074a6",
+      "files": {
+        "src/modules/import-kit/src/d1/erasure-superseded.ts": "c4323c1d8af17120150ce1a526d655c603d7ee28f2c72de8c34c6f9199a46b81"
+      },
+      "modes": {
+        "src/modules/import-kit/src/d1/erasure-superseded.ts": "100644"
+      }
+    },
+    {
       "path": "src/modules/import-kit/src/d1/erasure-values.ts",
       "originPath": "modules/import-kit/src/d1/erasure-values.ts",
       "revision": "d1249b3d696c4011e9c72de2097f3757436074a6",
@@ -896,6 +929,17 @@
       },
       "modes": {
         "src/modules/import-kit/src/d1/jobs.ts": "100644"
+      }
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/native-set.ts",
+      "originPath": "modules/import-kit/src/d1/native-set.ts",
+      "revision": "d1249b3d696c4011e9c72de2097f3757436074a6",
+      "files": {
+        "src/modules/import-kit/src/d1/native-set.ts": "508634ed4bf44d4f14f44f5d55444a654d56ee37fac14fec49d093f71c136fcd"
+      },
+      "modes": {
+        "src/modules/import-kit/src/d1/native-set.ts": "100644"
       }
     },
     {
@@ -1295,6 +1339,17 @@
       }
     },
     {
+      "path": "src/modules/import-kit/src/d1/referenced-plans.ts",
+      "originPath": "modules/import-kit/src/d1/referenced-plans.ts",
+      "revision": "d1249b3d696c4011e9c72de2097f3757436074a6",
+      "files": {
+        "src/modules/import-kit/src/d1/referenced-plans.ts": "71db1440bd8e8e14e5a1802915893de71c994d6ef51be17d807b80b2f3256b68"
+      },
+      "modes": {
+        "src/modules/import-kit/src/d1/referenced-plans.ts": "100644"
+      }
+    },
+    {
       "path": "src/modules/import-kit/src/d1/retained-values.ts",
       "originPath": "modules/import-kit/src/d1/retained-values.ts",
       "revision": "d1249b3d696c4011e9c72de2097f3757436074a6",
@@ -1314,6 +1369,17 @@
       },
       "modes": {
         "src/modules/import-kit/src/d1/retirement-bounded.ts": "100644"
+      }
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/retirement-door.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-door.ts",
+      "revision": "d1249b3d696c4011e9c72de2097f3757436074a6",
+      "files": {
+        "src/modules/import-kit/src/d1/retirement-door.ts": "970ddc2810e275a1be9c578868ee4293b97da4a67878c3afb9303238361ba4f9"
+      },
+      "modes": {
+        "src/modules/import-kit/src/d1/retirement-door.ts": "100644"
       }
     },
     {
@@ -1424,6 +1490,17 @@
       },
       "modes": {
         "src/modules/import-kit/src/d1/sets.ts": "100644"
+      }
+    },
+    {
+      "path": "src/modules/import-kit/src/d1/staged-creation.ts",
+      "originPath": "modules/import-kit/src/d1/staged-creation.ts",
+      "revision": "d1249b3d696c4011e9c72de2097f3757436074a6",
+      "files": {
+        "src/modules/import-kit/src/d1/staged-creation.ts": "69430dfb9a34f555c53e229b789c7919f6a73805540d17df16595c403f2e1796"
+      },
+      "modes": {
+        "src/modules/import-kit/src/d1/staged-creation.ts": "100644"
       }
     },
     {
@@ -1875,6 +1952,17 @@
       },
       "modes": {
         "src/modules/import-kit/src/provenance/canonical-stream.ts": "100644"
+      }
+    },
+    {
+      "path": "src/modules/import-kit/src/provenance/credential-names.ts",
+      "originPath": "modules/import-kit/src/provenance/credential-names.ts",
+      "revision": "d1249b3d696c4011e9c72de2097f3757436074a6",
+      "files": {
+        "src/modules/import-kit/src/provenance/credential-names.ts": "51c836f11d6c8a938c724a9ceb07746dfbbdd8f1474627ece80fbd917634f01f"
+      },
+      "modes": {
+        "src/modules/import-kit/src/provenance/credential-names.ts": "100644"
       }
     },
     {

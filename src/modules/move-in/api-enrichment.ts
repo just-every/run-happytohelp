@@ -131,7 +131,7 @@ function enrichAssignment(run:Run,record:SourceRecord,value:NativeValue,agents:M
 }
 
 function companyEffect(run:Run,record:SourceRecord):TargetEffect {
- const p=record.payload as any,id=nativeId(run.project_id,run.vendor,'company',record.sourceId),timestamp=p.created_at??p.createdAt??p.updated_at??p.updatedAt,occurred=time(timestamp,run.vendor==='intercom'?'unix':'iso')
+ const p=record.payload as any,id=nativeId(run.project_id,run.vendor,'company',record.sourceId),timestamp=p.created_at??p.createdAt??p.updated_at??p.updatedAt,occurred=timestamp==null?run.created_at:time(timestamp,run.vendor==='intercom'?'unix':'iso')
  const value:NativeValue={source:sourceValue(run,record),tables:{context_subjects:[{project_id:run.project_id,subject_id:id,consent:0,revision:1,help_types:'[]',bot_enabled:0}],context_evidence:[{id,project_id:run.project_id,subject_id:id,source:`import:${run.vendor}:company`,content:JSON.stringify(record.payload),visibility:'private',occurred_at:occurred}]}}
  return {targetKind:'company',targetId:id,value:completeNativeValue('company',value) as any}
 }
@@ -178,7 +178,7 @@ export async function enrichApiMapping(env:Env,run:Run,source:SourceBundle,prepa
   if(prepared.rejections.has(key)||prepared.known.has(key))continue
   try{
    let effects=existing
-   if(record.kind==='company'&&!effects.length){effects=[companyEffect(run,record)];removeMetadataOmission(omissions,record.kind)}
+   if(record.kind==='company'&&!effects.length){effects=[companyEffect(run,record)];removeMetadataOmission(omissions,record.kind);const p=record.payload as any;if((p.created_at??p.createdAt??p.updated_at??p.updatedAt)==null)omissions.push('Company context is dated when fetched; the source API supplies no original company timestamp.')}
    else if(run.vendor==='freshdesk'&&record.kind==='article'&&!effects.length){effects=[await freshdeskArticle(run,record,records,omissions)];removeMetadataOmission(omissions,record.kind)}
    for(const effect of effects){
     const value=effect.value as unknown as NativeValue

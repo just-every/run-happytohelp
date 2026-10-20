@@ -1,5 +1,6 @@
 import type {Reader,Task,ApiRecord,ApiAttachment,SourceAgent} from './types'
 import {agent,attachments,enc,entity,items,pageUrl} from './common'
+import {helpScoutEmailEvidence} from './email-evidence'
 const inbox='https://api.helpscout.net',docs='https://docsapi.helpscout.net'
 // https://developer.helpscout.com/docs-api/ ; Docs has its own API key, separate from Inbox OAuth.
 async function docsGet(client:{get(path:string):Promise<any>},path:string){try{return await client.get(path)}catch(error){const status=(error as any)?.status??(error as any)?.statusCode;if(status===401||status===403||/docs.*(credential|key).*missing|credential.*missing/i.test(String((error as any)?.message)))throw new Error('helpscout_docs_api_key_required');throw error}}
@@ -26,6 +27,7 @@ export const helpscout:Reader={
     if(typeof self!=='string'||new URL(self).origin!==inbox)throw new Error('helpscout_thread_canonical_self_required')
     records.push({kind:'thread-page',payload:data})
     for(const thread of items(data._embedded?.threads,'helpscout_threads')){
+     await helpScoutEmailEvidence(client,p,thread)
      files.push(...attachments(p.id,String(thread.id),thread._embedded?.attachments,thread.type==='note','helpscout'))
      const person=thread.createdBy;if(person?.type==='user'&&!people.has(String(person.id))){people.add(String(person.id));agents.push({id:String(person.id),email:typeof person.email==='string'?person.email:null,name:[person.first,person.last].filter(v=>typeof v==='string').join(' ')||'Unknown historical agent',deleted:!person.first&&!person.last})}
     }

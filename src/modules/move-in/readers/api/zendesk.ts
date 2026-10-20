@@ -1,5 +1,6 @@
 import type {Reader,ApiRecord,ApiAttachment} from './types'
 import {agent,attachments,enc,entity,items,zendeskNext} from './common'
+import {zendeskEmailEvidence} from './email-evidence'
 // https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/
 export const zendesk:Reader={
  initial(since){const tickets={path:`/api/v2/incremental/tickets/cursor.json?start_time=${Math.floor((since??0)/1000)}&per_page=100`,kind:'ticket'};return since!==null?[tickets]:[
@@ -14,6 +15,7 @@ export const zendesk:Reader={
    const p=entity((await client.get(task.path)).ticket,'zendesk_ticket'),comments:any[]=[],records:ApiRecord[]=[],files:ApiAttachment[]=[]
    let path:string|null=`/api/v2/tickets/${enc(p.id)}/comments.json?page[size]=100`;const visited=new Set<string>()
    while(path){if(visited.has(path))throw new Error('zendesk_comment_pagination_cycle');visited.add(path);const data=await client.get(path);comments.push(...items(data.comments,'zendesk_comments'));path=zendeskNext(data)}
+   await zendeskEmailEvidence(client,p.id,comments)
    const users=[...new Set([p.requester_id,p.assignee_id,...(p.collaborator_ids??[]),...comments.map(c=>c.author_id)].filter(id=>id!=null))]
    const agents=[]
    for(const id of users){const user=entity((await client.get(`/api/v2/users/${enc(id)}.json`)).user,'zendesk_user');records.push({kind:'user',payload:user});if(['agent','admin'].includes(user.role))agents.push(agent(user,'zendesk'))}

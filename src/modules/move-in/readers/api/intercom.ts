@@ -21,7 +21,8 @@ export const intercom:Reader={
   {path:'/admins',kind:'agent'},{path:'/contacts?per_page=100',kind:'contact'},{path:'/companies/scroll',kind:'company'},{path:'/articles?per_page=100&page=1',kind:'article'},tickets]},
  async read(client,task){
   if(task.mode==='ticket'){
-   const p=entity(await client.get(task.path),'intercom_conversation'),parts=items(p.conversation_parts?.conversation_parts,'intercom_parts')
+   const path=new URL(task.path,'https://reader.invalid');path.searchParams.set('include_email_history','true')
+   const p=entity(await client.get(task.path.startsWith('https://')?path.href:path.pathname+path.search),'intercom_conversation'),parts=items(p.conversation_parts?.conversation_parts,'intercom_parts')
    if(parts.length>=500||p.conversation_parts.total_count!==parts.length)throw new Error(`intercom_history_incomplete:${p.id}:api_500_part_limit`)
    const records:ApiRecord[]=[],agents:SourceAgent[]=[]
    for(const contact of items(p.contacts?.contacts,'intercom_conversation_contacts'))records.push({kind:'contact',payload:entity(await client.get(`/contacts/${enc(contact.id)}`),'intercom_contact')})

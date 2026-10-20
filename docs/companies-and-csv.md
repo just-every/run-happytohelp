@@ -16,7 +16,7 @@ A merge does not broaden portal access. Review the surviving company's entitleme
 
 In Companies, open **Import CSV** and choose contacts or companies. Upload your CSV, then map its column headings to the fields you want to fill. Leave a column unmapped to ignore it. Company attributes must already exist.
 
-For contacts, you can enable email-domain matching. The preview names the company matched by each email domain. You can also map a company explicitly. Matching a domain never proves ownership of an email address and never signs anyone into the portal.
+For contacts, you can enable email-domain matching. The preview names the company matched by each email domain. You can also map a company explicitly; a blank company cell keeps the current company or uses the domain match, and a named company that differs from the domain match skips the row. Matching a domain never proves ownership of an email address and never signs anyone into the portal.
 
 Run the preview. Every row shows whether it will create a record, update a record, or be skipped, with a reason. Review the entire preview before applying it. If records have changed since the preview, make a new preview. Applying and undoing an import require your import permission and a recent identity confirmation.
 

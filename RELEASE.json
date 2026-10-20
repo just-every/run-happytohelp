@@ -44,6 +44,10 @@
     {
       "id": "195_restore_trigger_boundaries.sql",
       "buyerSteps": "R9a restores preserve the resolution trigger with CASE boundary whitespace compatible with the pinned Wrangler SQL splitter. Apply through pinned rer; trigger behavior and all existing records stay unchanged."
+    },
+    {
+      "id": "196_csv_touched_fences.sql",
+      "buyerSteps": "R9a import apply and undo recheck only the customer rows each import matched or changed, so unrelated contact writes no longer block them. Apply through pinned rer; retires the workspace-wide import counter and keeps every import run and journal row."
     }
   ]
 }

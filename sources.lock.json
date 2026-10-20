@@ -1669,7 +1669,7 @@
       "executable": false
     },
     "docs/companies-and-csv.md": {
-      "sha256": "96029fa5dc6ac2ef7cf8f515d46d5dec0e0cc938fdf23fa4bb334120206c03b3",
+      "sha256": "6be07142c47e77e23a0525b6dc10c58c96cb44356c56bf83b6bd9e049f0fe692",
       "executable": false
     },
     "docs/connected-applications.md": {
@@ -1989,7 +1989,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "09e518b41ea5804ac435bfdf7e4e4c164c57c79ea3fe402a80e86630f8a15062",
+      "sha256": "a4810fc1e24de063e9e5cd45eabcbf21974546e3fdbd2cf150613fdc056bfc42",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2424,6 +2424,10 @@
       "sha256": "d290a11db60f8a825af348e938310c4be81219288e8c2dc4253d7332dd1d571a",
       "executable": false
     },
+    "migrations/196_csv_touched_fences.sql": {
+      "sha256": "4c3ef98d82b85f0e5fbaaa891a06c3825cd6b34df5fab7dc26a3d33a623fe432",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "0fa396b895e9098cc1db5070d1dc33ca732fae8287f84f69dc8afa3bc8afd1a6",
       "executable": false
@@ -2513,7 +2517,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "da7c83f12d4b3ec9a5ed4177d6fbce6922eb2fcfc4a3f20d021c31754d8fff5d",
+      "sha256": "f3687405084ee711682a7da9c0da67309f5058ef27c1f7a8d5187233832909f3",
       "executable": false
     },
     "rer-project.json": {
@@ -4297,11 +4301,15 @@
       "executable": false
     },
     "src/modules/import-kit/csv/authority.ts": {
-      "sha256": "73860068b236599392b615011bac85047315289b62c461424fe3c13e3ac9d419",
+      "sha256": "8768021b28f4313918898bf3b9dea18690d67590e9ae9534b330ca17fe3bd113",
       "executable": false
     },
     "src/modules/import-kit/csv/erasure.ts": {
       "sha256": "3cf15d5af9527a31412175e1cb5fba9130cd907b44e42b01ac3aea6218c386e9",
+      "executable": false
+    },
+    "src/modules/import-kit/csv/fence.ts": {
+      "sha256": "0e0be852a03223d3e4570531366f9c8c4041e8d45fdf53fc65ae039363b3ed64",
       "executable": false
     },
     "src/modules/import-kit/csv/mutate.ts": {
@@ -4313,19 +4321,19 @@
       "executable": false
     },
     "src/modules/import-kit/csv/plan.ts": {
-      "sha256": "8b1705203c50fad496bcfa75c75075b7abbbef1f0b259c223283cfe8dfe108f6",
+      "sha256": "117271e0d48f05a8c25d139e5723db11ffdc78a91f4c5371e0130d84c8a63fb2",
       "executable": false
     },
     "src/modules/import-kit/csv/routes.ts": {
-      "sha256": "001978549c2ba10104fd5bc3cfd17d4733bef36dbb7af5f5575f113f06ddacfc",
+      "sha256": "1227201a827c67085f17f0a11ca627088febf4fd03817ad42364ad5bd2a5aefb",
       "executable": false
     },
     "src/modules/import-kit/csv/store.ts": {
-      "sha256": "00a91d606603fc86222cb9ecf6c9daba98305fdc2d3109aa2c44e8e32dfe648b",
+      "sha256": "5f2154deb2e116da0d75efadfe38515cd4dce8a54db0aeb77ac6051e09be33d3",
       "executable": false
     },
     "src/modules/import-kit/csv/types.ts": {
-      "sha256": "e80ee37a58e20cf1a0600aeefccc48eb2d2fce2d189e03b70dbf55b29b48c030",
+      "sha256": "c882e46a103b190a38fcf84ce5cfe3771da3d9d5d6a826bf426623ccd0f9767b",
       "executable": false
     },
     "src/modules/import-kit/FIXTURES.md": {
@@ -9021,7 +9029,7 @@
       "executable": false
     },
     "src/ui/native/pages/companies/CustomerImport.jsx": {
-      "sha256": "2c1fa0029a089b19ed5ada3dd442811091ba83791d04ebf08bf3f5578cf2e4da",
+      "sha256": "064fbcb091c205217dcd220141bcf4552c0ed705566e421179f8f77508e16a20",
       "executable": false
     },
     "src/ui/native/pages/companies/ImportRows.jsx": {
@@ -10237,7 +10245,7 @@
       "executable": false
     },
     "tests/helpers/customer-csv.mjs": {
-      "sha256": "3ff1dd94a779f933e361e83f783df22f3d790ed30599e661dd6206003fc29c59",
+      "sha256": "80aa59f9f39498ac4894f1edb60806d4e2c970eb6b6519b59b4ef890820c91d4",
       "executable": false
     },
     "tests/helpers/customer-portal-journey.mjs": {
@@ -11477,7 +11485,7 @@
       "executable": false
     },
     "tests/reports/prior-schema-upgrade.mjs": {
-      "sha256": "6a2d43268d9ac1749a83c27533bd04e14eb7eff8bcdfffccdd54c783db645f54",
+      "sha256": "73c7a79cf628d92c54950b29826c73a2c6619aae110ec9a60ab83febdaa1753f",
       "executable": false
     },
     "tests/reports/ratings.mjs": {

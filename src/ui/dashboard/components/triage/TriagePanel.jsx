@@ -44,7 +44,7 @@ function TriageContent({ path, revision }) {
                     {!prediction && <p className="form-text">No prediction available.</p>}
                 </article>;
             })}</div>
-            {data.permissions.correct ? <TriageCorrections data={data} path={path} onSaved={setData} onDirty={correctionDirty} onBusy={setCorrecting}/> : <p className="form-text">Your role can read triage. Ticket management permission is required to correct predictions.</p>}
+            {data.permissions.correct ? <TriageCorrections data={data} path={path} onSaved={setData} onDirty={correctionDirty} onBusy={setCorrecting}/> : data.state === 'complete' ? <p className="form-text">Your role can read triage. Ticket management permission is required to correct predictions.</p> : <p className="form-text">There is no completed prediction to correct.</p>}
             <TriageHistory labels={data.labels} taxonomy={data.taxonomy}/>
         </>}
         <button type="button" className="btn btn-link btn-sm" disabled={busy || correcting} onClick={reload}>{busy && data ? 'Refreshing triage…' : 'Reload triage'}</button>

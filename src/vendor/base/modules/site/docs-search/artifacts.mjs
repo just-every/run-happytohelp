@@ -1,8 +1,11 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { build } from 'esbuild';
+import { createRequire } from 'node:module';
 import { buildSearchIndex } from './index-build.mjs';
+
+// The seed owns its build toolchain; rer remains dependency-free for offline launch.
+const { build } = createRequire(resolve('package.json'))('esbuild');
 
 /** Explicit credentialed build step. A failure stops publication; no lexical fallback. */
 export async function buildSearchArtifacts({ corpus, assets, output, previousUrl, endpoint = '/docs/search', localName = 'docs-search-local', compatibilityDate = '2026-09-08' }, { embed, accountId } = {}) {

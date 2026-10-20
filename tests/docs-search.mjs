@@ -6,8 +6,8 @@ import { resolve } from 'node:path';
 import { rm } from 'node:fs/promises';
 import deployment from '../deploy.json' with { type: 'json' };
 import { chromium } from 'playwright';
-import { dimensions } from '../src/site/docs-search/index-build.mjs';
-import { buildSearchArtifacts } from '../src/site/docs-search/artifacts.mjs';
+import { dimensions } from '../src/vendor/base/modules/site/docs-search/index-build.mjs';
+import { buildSearchArtifacts } from '../src/vendor/base/modules/site/docs-search/artifacts.mjs';
 
 // The only fake is the paid inference boundary. Both corpus and query use the
 // same deterministic embedding, while the built pages, client and Worker run.

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import Markdown from 'react-markdown';
 import gfm from 'remark-gfm';
-import type { SearchSection } from '../../../site/docs-search/types';
+import type { SearchSection } from '../../../vendor/base/modules/site/docs-search/types';
 import type { DocsTocEntry } from '../types.ts';
 import { docsHast } from './hast.ts';
 import type { HastState } from './hast.ts';

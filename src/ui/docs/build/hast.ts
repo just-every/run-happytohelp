@@ -1,5 +1,5 @@
-import { headingSections } from '../../../site/docs-search/sections.ts';
-import type { SearchSection } from '../../../site/docs-search/types';
+import { headingSections } from '../../../vendor/base/modules/site/docs-search/sections.ts';
+import type { SearchSection } from '../../../vendor/base/modules/site/docs-search/types';
 import type { DocsTocEntry } from '../types.ts';
 import { rewriteHref, rewriteImageSrc } from './links.ts';
 import type { AnchorCheck, LinkContext } from './links.ts';

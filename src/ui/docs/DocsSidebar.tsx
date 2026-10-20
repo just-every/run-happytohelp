@@ -1,4 +1,4 @@
-import { SearchField } from '../../site/docs-search/SearchField';
+import { SearchField } from '../../vendor/base/modules/site/docs-search/SearchField';
 import { HydrationUnit } from '../../vendor/base/hydration/unit';
 import { DocsNavList } from './DocsNavList';
 import type { DocsSection } from './types';

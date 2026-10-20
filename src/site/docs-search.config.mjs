@@ -1,6 +1,5 @@
-import declaration from '../../deploy-site.json' with { type: 'json' };
-import deployment from '../../deploy.json' with { type: 'json' };
+// Base owns preparation, published-vector reuse and the site Worker.
 export default {
-  corpus: '.rer/docs-search/corpus.json', assets: '.rer/site', output: '.rer/docs-search',
-  compatibilityDate: deployment.compatibilityDate, endpoint: '/docs/search', previousUrl: `https://${declaration.domain}/docs-search-vectors.json`,
+  type: 'docs-search', module: 'docs-search', bindings: ['ASSETS', 'AI'],
+  endpoint: '/docs/search', corpus: '.rer/docs-search/corpus.json',
 };

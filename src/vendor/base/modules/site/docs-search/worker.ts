@@ -5,14 +5,14 @@ type Environment = { ASSETS: { fetch(request: Request): Promise<Response> }; AI:
 const json = (data: unknown, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
 
 /** No app state, credentials or database. Install on the site's Worker only. */
-export function createSearchWorker({ corpusHash, endpoint = '/docs/search', minimumScore = 0.55, indexAsset = '/docs-search-vectors.json' }: { corpusHash: string; endpoint?: string; minimumScore?: number; indexAsset?: string }) {
+export function createSearchWorker({ corpusHash, endpoint = '/docs/search', minimumScore = 0.55, indexAsset = '/docs-search-vectors.json', model = '@cf/baai/bge-base-en-v1.5', pooling = 'cls' }: { corpusHash: string; endpoint?: string; minimumScore?: number; indexAsset?: string; model?: string; pooling?: string }) {
   let loaded: SearchIndex | undefined;
   async function load(request: Request, env: Environment): Promise<SearchIndex> {
     if (loaded) return loaded;
     const response = await env.ASSETS.fetch(new Request(new URL(indexAsset, request.url)));
     if (!response.ok) throw Error('Search index unavailable');
     const index = await response.json() as SearchIndex;
-    if (index.corpusHash !== corpusHash || index.version !== 1 || index.pooling !== 'cls' || !index.model || !index.dimensions || !Array.isArray(index.chunks)) throw Error('Invalid search index');
+    if (index.corpusHash !== corpusHash || index.version !== 1 || index.pooling !== pooling || index.model !== model || !index.dimensions || !Array.isArray(index.chunks)) throw Error('Invalid search index');
     loaded = index;
     return index;
   }

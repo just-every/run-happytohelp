@@ -3353,7 +3353,7 @@
       "executable": false
     },
     "src/modules/access/assign.ts": {
-      "sha256": "d7acd2f888619365adcee64ee6e4e5b02f6152499c232d76b77f11b53e1415f3",
+      "sha256": "7ff59010b016492bca34944ebf1fa00cac5fbaca09082e0a99ab18933ec6ae3e",
       "executable": false
     },
     "src/modules/access/catalogue.ts": {
@@ -5865,7 +5865,7 @@
       "executable": false
     },
     "src/modules/management/resources.ts": {
-      "sha256": "0966dd9925485f1fa4bf3a616f797fd934d213c65967910e31ec89832317dd93",
+      "sha256": "39877b19b25b6791f668e0024915261a67caa80f933c39d4a5d5894c08978567",
       "executable": false
     },
     "src/modules/management/site-read/fetch.ts": {
@@ -6389,7 +6389,7 @@
       "executable": false
     },
     "src/modules/reports/timers.ts": {
-      "sha256": "9e1cfb1f1818a6bf4d0d120b0e82ea6488540b7f17b1e34633d24bdb4b5069f3",
+      "sha256": "4339b5aba9b2f5454b111d0e6b47ce1f701d87ca320c95b9dbe6a00b636d6675",
       "executable": false
     },
     "src/modules/reports/transcript-records.ts": {
@@ -11705,7 +11705,7 @@
       "executable": false
     },
     "tests/reports/team-journey.mjs": {
-      "sha256": "c7db236721c8778059e05f5776ed0e0816a570326911d63000f66408c896e83a",
+      "sha256": "eded9424945c4cffaf8337cdd354ea728660c6ca9da7c6b3c50aa90cb668383f",
       "executable": false
     },
     "tests/reports/upgrade-categories.mjs": {

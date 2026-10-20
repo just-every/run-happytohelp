@@ -7,7 +7,7 @@ export function freshdeskRoutes({corpus:c,baseUrl}) {
         created_at:iso(FIXTURE_TIME-90*86400_000),updated_at:iso(FIXTURE_TIME)});
     const agent=p=>({id:p.id,available:true,occasional:false,deactivated:false,ticket_scope:1,
         contact:{name:p.name,email:p.email,active:true},created_at:iso(FIXTURE_TIME-90*86400_000),updated_at:iso(FIXTURE_TIME)});
-    const company=p=>({id:p.id,name:p.name,domains:[`company-${p.id}.example.test`],created_at:iso(FIXTURE_TIME-90*86400_000),updated_at:iso(FIXTURE_TIME)});
+    const company=p=>({id:p.id,name:p.name,domains:[`freshdesk-company-${p.id}.example.test`],created_at:iso(FIXTURE_TIME-90*86400_000),updated_at:iso(FIXTURE_TIME)});
     const attachment=a=>({id:a.id,name:a.filename,content_type:a.contentType,size:a.size,
         attachment_url:`${baseUrl}/attachments/${a.id}/${a.filename}`,created_at:iso(FIXTURE_TIME-80*86400_000),updated_at:iso(FIXTURE_TIME-80*86400_000)});
     const ticket=p=>({id:p.id,subject:`${p.subject} [#${p.id}]`,description:`<p>${p.comments[0].body}</p>`,description_text:p.comments[0].body,

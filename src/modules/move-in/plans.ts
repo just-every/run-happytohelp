@@ -10,7 +10,7 @@ import {publicationContact,type PublicationContact} from './publication'
 import {objectKey,updateRun} from './run-store'
 import {LIMITS,MAPPING_VERSION,recordKey,type Run,type PreparedMapping,type SourceClaim} from './types'
 /** The words a report link shows for an imported record: its subject, name or title. */
-function targetLabel(value:any){const t=value?.tables??{},label=t.move_in_conversations?.[0]?.subject||t.contacts?.[0]?.name||t.contacts?.[0]?.email||t.knowledge_articles?.[0]?.title||t.macros?.[0]?.title||t.knowledge_categories?.[0]?.name||t.workspace_tags?.[0]?.name;return typeof label==='string'&&label.trim()?label.trim().slice(0,120):undefined}
+function targetLabel(value:any){const t=value?.tables??{},label=t.move_in_conversations?.[0]?.subject||t.companies?.[0]?.name||t.contacts?.[0]?.name||t.contacts?.[0]?.email||t.knowledge_articles?.[0]?.title||t.macros?.[0]?.title||t.knowledge_categories?.[0]?.name||t.workspace_tags?.[0]?.name;return typeof label==='string'&&label.trim()?label.trim().slice(0,120):undefined}
 export interface ChildPlan {ordinal:number;key:string;fingerprint:string;total:number;bytes:number}
 export interface ReviewManifest {version:1;projectId:string;actorId:string;vendor:string;mappingVersion:string;batches:ChildPlan[];contacts?:PublicationContact[];retainedSources?:SourceClaim[];categories?:PublicationCategory[];original:{key:string;sha256:string;size:number};artifacts:{key:string;sha256:string;size:number}[];diagnostics:any[];fingerprint:string}
 export function reviewFingerprint(manifest:Omit<ReviewManifest,'fingerprint'>|ReviewManifest){const {fingerprint:_,...content}=manifest as ReviewManifest;return sha256(canonicalJson(content))}
@@ -23,7 +23,7 @@ export async function retainReview(env:Env,run:Run,source:SourceBundle,prepared:
  // Rejected, retained and already-held records stay out of the kit's journals: a rejection claims
  // no source ID, so a corrected copy of the record can be uploaded and imported later.
  const held=(key:string)=>prepared.rejections.has(key)||prepared.known.has(key)||!!prepared.retained?.has(key)
- const records=source.records.filter(record=>!held(recordKey(record)))
+ const records=source.records.filter(record=>!held(recordKey(record))).sort((a,b)=>(a.kind==='company'?0:['user','contact'].includes(a.kind)?1:2)-(b.kind==='company'?0:['user','contact'].includes(b.kind)?1:2))
  for(const record of source.records){
   const key=recordKey(record);if(!held(key))continue
   const omissions=(prepared.omissions.get(key)??[]).map(reason=>({reason})),rejection=prepared.rejections.get(key)

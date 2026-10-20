@@ -70,8 +70,6 @@ export function importErasureStatements(env:Env,projectId:string,contactId:strin
  const jobs=`SELECT j.id FROM ik_jobs j JOIN move_in_erasure_runs e ON j.id=e.job_id OR ((j.operation_key=e.run_id OR substr(j.operation_key,1,length(e.run_id)+1)=e.run_id||'/') AND j.destination=e.project_id) WHERE e.project_id=?1 AND e.contact_id=?2`,runs='SELECT run_id FROM move_in_erasure_runs WHERE project_id=?1 AND contact_id=?2',conversations='SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2',bind=(sql:string)=>env.DB.prepare(sql).bind(projectId,contactId)
  return [
   bind(`DELETE FROM move_in_assignment WHERE project_id=?1 AND conversation_id IN (${conversations})`),
-  bind(`DELETE FROM context_evidence WHERE project_id=?1 AND source LIKE 'import:%:company' AND subject_id IN (SELECT target_id FROM ik_provenance WHERE target_kind='company' AND job_id IN (${jobs}))`),
-  bind(`DELETE FROM context_subjects WHERE project_id=?1 AND subject_id IN (SELECT target_id FROM ik_provenance WHERE target_kind='company' AND job_id IN (${jobs}))`),
   bind(`DELETE FROM move_in_api_agents WHERE run_id IN (${runs})`),
   bind(`DELETE FROM move_in_api_files WHERE run_id IN (${runs})`),
   bind(`UPDATE move_in_api_runs SET cursor_json=NULL,counts_json='{}' WHERE run_id IN (${runs})`),

@@ -1,3 +1,4 @@
+import {prepareApiCompanies} from './api-companies'
 import type {Env} from '../../platform/env'
 import type {SourceBundle,SourceRecord,TargetEffect} from '../import-kit/src/types'
 import {htmlToMarkdown} from '../knowledge/importers'
@@ -130,11 +131,6 @@ function enrichAssignment(run:Run,record:SourceRecord,value:NativeValue,agents:M
  value.tables.conversations[0].assigned_to=null
 }
 
-function companyEffect(run:Run,record:SourceRecord):TargetEffect {
- const p=record.payload as any,id=nativeId(run.project_id,run.vendor,'company',record.sourceId),timestamp=p.created_at??p.createdAt??p.updated_at??p.updatedAt,occurred=timestamp==null?run.created_at:time(timestamp,run.vendor==='intercom'?'unix':'iso')
- const value:NativeValue={source:sourceValue(run,record),tables:{context_subjects:[{project_id:run.project_id,subject_id:id,consent:0,revision:1,help_types:'[]',bot_enabled:0}],context_evidence:[{id,project_id:run.project_id,subject_id:id,source:`import:${run.vendor}:company`,content:JSON.stringify(record.payload),visibility:'private',occurred_at:occurred}]}}
- return {targetKind:'company',targetId:id,value:completeNativeValue('company',value) as any}
-}
 function freshdeskPublicAudience(p:any,records:Map<string,SourceRecord>){
  const explicitlyPublic=(row:any)=>row&&(row.visibility===1||row.visibility==='public')&&![row.company_ids,row.contact_segment_ids,row.company_segment_ids].some(v=>v!=null&&(!Array.isArray(v)||v.length>0))
  const category=records.get(`category/${p.category_id}`)?.payload as any
@@ -161,6 +157,7 @@ async function freshdeskArticle(run:Run,record:SourceRecord,records:Map<string,S
 /** Enrich inert mapping effects only; downloads and activation remain separate steps. */
 export async function enrichApiMapping(env:Env,run:Run,source:SourceBundle,prepared:PreparedMapping):Promise<void>{
  if(!await apiRun(env,run.id))return
+ await prepareApiCompanies(env,run,source,prepared)
  const [fileRows,agentRows]=await Promise.all([
   env.DB.prepare('SELECT ticket_id,part_id,source_id,filename,content_type,size,private,object_key,error FROM move_in_api_files WHERE run_id=? ORDER BY ticket_id,part_id,source_id').bind(run.id).all<ApiFile>(),
   env.DB.prepare('SELECT source_id,member_id FROM move_in_api_agents WHERE run_id=?').bind(run.id).all<ApiAgent>()
@@ -178,8 +175,7 @@ export async function enrichApiMapping(env:Env,run:Run,source:SourceBundle,prepa
   if(prepared.rejections.has(key)||prepared.known.has(key))continue
   try{
    let effects=existing
-   if(record.kind==='company'&&!effects.length){effects=[companyEffect(run,record)];removeMetadataOmission(omissions,record.kind);const p=record.payload as any;if((p.created_at??p.createdAt??p.updated_at??p.updatedAt)==null)omissions.push('Company context is dated when fetched; the source API supplies no original company timestamp.')}
-   else if(run.vendor==='freshdesk'&&record.kind==='article'&&!effects.length){effects=[await freshdeskArticle(run,record,records,omissions)];removeMetadataOmission(omissions,record.kind)}
+   if(run.vendor==='freshdesk'&&record.kind==='article'&&!effects.length){effects=[await freshdeskArticle(run,record,records,omissions)];removeMetadataOmission(omissions,record.kind)}
    for(const effect of effects){
     const value=effect.value as unknown as NativeValue
     if(effect.targetKind==='conversation'){

@@ -8,7 +8,7 @@ export function zendeskRoutes({corpus:c,baseUrl}) {
         active:!p.deleted,suspended:p.deleted===true,organization_id:p.companyId??null,
         created_at:iso(FIXTURE_TIME-90*86400_000),updated_at:iso(FIXTURE_TIME),
         ...(p.deleted?{name:'Deleted user',email:null}:{}),url:`${baseUrl}/api/v2/users/${p.id}.json`});
-    const organization=p=>({id:p.id,name:p.name,domain_names:[`company-${p.id}.example.test`],
+    const organization=p=>({id:p.id,name:p.name,domain_names:[`zendesk-company-${p.id}.example.test`],
         created_at:iso(FIXTURE_TIME-90*86400_000),updated_at:iso(FIXTURE_TIME)});
     const attachment=a=>({id:a.id,file_name:a.filename,content_type:a.contentType,size:a.size,
         content_url:`${baseUrl}/attachments/${a.id}/${a.filename}`,inline:false,deleted:false});

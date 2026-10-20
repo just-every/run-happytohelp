@@ -14,7 +14,7 @@ export function helpscoutRoutes({corpus:c}) {
         createdAt:iso(FIXTURE_TIME-90*86400_000),updatedAt:iso(FIXTURE_TIME),
         _embedded:{emails:[{id:p.id+10_000,value:p.email,type:'work'}]},
         _links:{self:{href:`${INBOX}/v2/customers/${p.id}`}}});
-    const organization=p=>({id:p.id,name:p.name,domains:[`company-${p.id}.example.test`]});
+    const organization=p=>({id:p.id,name:p.name,domains:[`helpscout-company-${p.id}.example.test`]});
     const attachment=(a,ticket)=>({id:a.id,filename:a.filename,mimeType:a.contentType,size:a.size,state:'valid',
         _links:{self:{href:`${INBOX}/v2/conversations/${ticket}/attachments/${a.id}`},
             data:{href:`${INBOX}/v2/conversations/${ticket}/attachments/${a.id}/data`},

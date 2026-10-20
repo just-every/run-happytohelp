@@ -1,10 +1,11 @@
 import type {Env} from '../../platform/env'
 import {dimensions,settings} from '../triage/model'
 import {applyWorkflowActions} from './actions'
+import type {RuleDefinition} from './rule-model'
 import type {Conditions} from './conditions'
 /** Existing rules retain their meaning. Intent is an additional native field
  * condition whose use for assignment needs measured, explicit lead approval. */
-export async function triageRouting(env:Env,ticket:any,event:string){
+export async function triageRouting(env:Env,ticket:any,event:string,placeInDefault=true){
  const s=await settings(env,ticket.project_id)
  if(!s.enabled)return {eligible:(conditions:Conditions)=>![...conditions.all,...conditions.any].some(c=>c.field==='field:triage_intent'),guard:{sql:'1',params:[] as unknown[]}}
  const job=await env.DB.prepare('SELECT * FROM triage_jobs WHERE project_id=? AND conversation_id=? ORDER BY source_revision DESC LIMIT 1').bind(ticket.project_id,ticket.id).first<any>()
@@ -15,8 +16,16 @@ export async function triageRouting(env:Env,ticket:any,event:string){
  const confident=job?.state==='complete'&&job.source_revision===latestCustomer?.revision&&p&&dimensions.every(field=>p[field]?.confidence>=s.threshold)&&s.taxonomy.some((t:any)=>t.id===ticket.fields?.triage_intent&&t.active)
  if(!confident){
   const group=s.default_group_id&&await env.DB.prepare('SELECT id FROM ticket_groups WHERE project_id=? AND id=?').bind(ticket.project_id,s.default_group_id).first()?s.default_group_id:null
-  if(ticket.group_id!==group){const result=await applyWorkflowActions(env,{projectId:ticket.project_id,conversationId:ticket.id,id:`triage-default:${ticket.id}:${event}`,source:'rule',actorId:'triage default queue',expectedVersion:ticket.ticket_version,expectedRevision:ticket.revision,expectedLastMessageId:ticket.last_message_id,actions:[{type:'assign',user_id:null,group_id:group}],guard:{sql:`(${guard.sql}) AND c.assigned_to IS NULL`,params:guard.params}});if(result.state!=='complete')return {held:{state:'pending' as const,explanation:'Default queue changed concurrently'},eligible:()=>false,guard}}
+  if(placeInDefault&&ticket.group_id!==group){const result=await applyWorkflowActions(env,{projectId:ticket.project_id,conversationId:ticket.id,id:`triage-default:${ticket.id}:${event}`,source:'rule',actorId:'triage default queue',expectedVersion:ticket.ticket_version,expectedRevision:ticket.revision,expectedLastMessageId:ticket.last_message_id,actions:[{type:'assign',user_id:null,group_id:group}],guard:{sql:`(${guard.sql}) AND c.assigned_to IS NULL`,params:guard.params}});if(result.state!=='complete')return {held:{state:'pending' as const,explanation:'Default queue changed concurrently'},eligible:()=>false,guard}}
   return {held:{state:'skipped' as const,explanation:job?.reason??'Triage is pending, unavailable or below the lead’s confidence threshold; the default queue is responsible'},eligible:()=>false,guard}
  }
  return {eligible:(conditions:Conditions)=>s.routing_enabled||![...conditions.all,...conditions.any].some(c=>c.field==='field:triage_intent'),guard}
+}
+
+/** Event/time assignment actions use the same extra triage condition as queue
+ * rules. Rules unrelated to triage never enter this path. */
+export async function triageAssignmentGuard(env:Env,ticket:any,definition:RuleDefinition){
+ if(![...definition.conditions.all,...definition.conditions.any].some(c=>c.field.startsWith('field:triage_')))return null
+ const policy=await triageRouting(env,ticket,'automation',false)
+ return policy.held||!policy.eligible(definition.conditions)?{sql:'0',params:[]}:policy.guard
 }

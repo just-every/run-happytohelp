@@ -23,12 +23,12 @@ export async function triageBrowserJourney({runtime,browser,shot,fixture}){
   // Reset through the real settings door so each viewport proves explicit approval.
   await f.api(f.base+'/triage-settings',{...await f.settings(),routing_enabled:false},'PUT')
   await page.goto(`${runtime.origin}/projects/${f.projectId}/conversations/${f.tickets[0].id}`)
-  const show=page.getByRole('button',{name:'Show conversation panel',exact:true});if(await show.isVisible())await show.click()
+  await page.locator('.conversation-main, .conversation-body, #conversation-assistant').first().waitFor();const show=page.getByRole('button',{name:'Show conversation panel',exact:true});if(await show.isVisible())await show.click()
   await page.getByRole('tab',{name:'Details',exact:true}).click()
   await page.locator('.triage-panel').scrollIntoViewIfNeeded();await page.locator('.triage-prediction').first().waitFor();await capture(`triage-ticket-${width}`,'.triage-panel')
   await page.getByLabel('Field to correct',{exact:true}).selectOption('sentiment');await page.getByLabel('Correct sentiment',{exact:true}).selectOption('neutral');await page.getByRole('button',{name:'Save correction',exact:true}).click();await page.getByText('Triage correction saved.',{exact:true}).waitFor();await capture(`triage-correction-${width}`,'.triage-panel')
  }
  assert.deepEqual(errors,[])
- }finally{await context.close();if(ownsRuntime)await runtime.close(true)}
+ }catch(error){await page.screenshot({path:shot('triage-failure.png'),fullPage:true});console.error('Triage browser URL',page.url(),await page.locator('body').innerText());throw error}finally{await context.close();if(ownsRuntime)await runtime.close(true)}
  return f
 }

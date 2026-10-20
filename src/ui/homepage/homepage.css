@@ -64,7 +64,9 @@
    top line. */
 .h2h-home .hero { display: grid; grid-template-columns: minmax(0, 0.44fr) minmax(0, 0.56fr); align-items: start; gap: clamp(24px, 2.6vw, 40px); padding: clamp(24px, 7.8vw, 120px) 0 clamp(40px, 4.5vw, 72px); }
 .h2h-home .hero-copy { padding-top: clamp(0px, 2.3vw, 36px); }
-.h2h-home .hero h1 { font-size: clamp(2.5rem, 4.7vw, 4.6rem); font-weight: 600; line-height: 1.08; letter-spacing: -0.035em; text-wrap: balance; }
+/* The lockup's mark is nudged to the side bearing of a round first letter; the headline opens on a K, whose bearing is wider,
+   so its first line is drawn back by the difference and the K's stem keeps the mark's left edge. */
+.h2h-home .hero h1 { font-size: clamp(2.5rem, 4.7vw, 4.6rem); font-weight: 600; line-height: 1.08; letter-spacing: -0.035em; text-wrap: balance; text-indent: -0.032em; }
 .h2h-home .hero-sub { margin-top: 26px; max-width: 25.5em; font-size: clamp(1.1rem, 1.5vw, 1.4375rem); line-height: 1.6; color: #2b2a27; text-wrap: pretty; }
 .h2h-home .hero-copy .actions { margin-top: 44px; gap: 20px 42px; }
 .h2h-home .hero-copy .pill--large { min-height: 74px; padding: 0 50px; font-size: 22px; }

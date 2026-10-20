@@ -8,8 +8,8 @@ import {jsonResponse} from './json-response'
 export async function hashToken(token: string) { return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token)))).map(x=>x.toString(16).padStart(2,'0')).join('') }
 // The only doors a session with an unproven or missing second factor may use.
 const factorDoors:Record<'verify'|'enrol',string[]>={
- verify:['GET /api/identity/session','DELETE /api/identity/session','GET /api/identity/two-factor','POST /api/identity/two-factor/verify','POST /api/identity/two-factor/assertion-options'],
- enrol:['GET /api/identity/session','DELETE /api/identity/session','GET /api/identity/two-factor','POST /api/identity/step-up','POST /api/identity/step-up/email','POST /api/identity/two-factor/totp','POST /api/identity/two-factor/totp/confirm','POST /api/identity/two-factor/webauthn/options','POST /api/identity/two-factor/webauthn'],
+ verify:['POST /auth/signout','GET /api/identity/session','DELETE /api/identity/session','GET /api/identity/two-factor','POST /api/identity/two-factor/verify','POST /api/identity/two-factor/assertion-options'],
+ enrol:['POST /auth/signout','GET /api/identity/session','DELETE /api/identity/session','GET /api/identity/two-factor','POST /api/identity/step-up','POST /api/identity/step-up/email','POST /api/identity/two-factor/totp','POST /api/identity/two-factor/totp/confirm','POST /api/identity/two-factor/webauthn/options','POST /api/identity/two-factor/webauthn'],
 }
 export async function requireActor(c: Context<AppEnv>): Promise<Actor> {
  const token=c.req.header('Authorization')?.replace(/^Bearer /,'') || (c.req.path.endsWith('/socket') ? c.req.query('token') : undefined) || c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]

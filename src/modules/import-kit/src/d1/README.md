@@ -1,5 +1,22 @@
 # Cloudflare D1 port
 
+To bring existing data into a seed, sign in as the owner and use its import
+screen. First step: open this path on the destination app:
+
+```text
+/app/import
+```
+
+Upload a supported source export, review the plan and its differences, then
+approve that exact plan to apply it. Reconcile the result against native data;
+use Undo from the same history when needed. Base's reference accepts people JSON
+here, not installation `.rer` archives. Editions adopt this same door
+with their own supported readers and native adapters.
+
+For seed integration, follow [the door adoption guide](../door/ADOPTING.md)
+first. The D1 primitives below back that shared pipeline; do not mount separate
+job creation/apply routes beside it. Keep native readers and target adapters.
+
 Import `src/d1/index.ts` in Workers with `nodejs_compat`. This entry point does
 not import `node:sqlite` or the optional file/API readers. Products that need the
 readers can explicitly import `src/readers/index.ts`. The synchronous Node API and its guarantees remain
@@ -17,7 +34,7 @@ budget. Calls that still exceed the provider transport ceiling fail explicitly.
 
 Apply `d1Schema`, `d1ErasureSchema`, `d1StreamOriginSchema`,
 `d1LegacyStreamReceiptUpgrade`, `d1StagingSchema`,
-`d1NativeStagingSchema`, `d1CustodyStateSchema`, `d1PreparationSchema`, `d1ReversalFenceSchema` and `d1RetirementSchema` in product-owned numbered migrations, or call
+`d1NativeStagingSchema`, `d1CustodyStateSchema`, `d1PreparationSchema`, `d1ReversalFenceSchema`, `d1RetirementSchema` and `d1CustodyStateReplaceSchema` in product-owned numbered migrations, or call
 `initializeD1ImportStorage(database)` during setup. The schema includes the common
 kit tables and D1 ownership/assertion tables. Do not mix the synchronous engine
 and D1 engine for the same jobs: each engine owns its checkpoint protocol.
@@ -61,7 +78,20 @@ checks the same monotonic custody revisions, including tombstone changes;
 the original plan revision is captured before decoding. This requires the
 additive custody-state schema. Ordinary reads without a transport policy retain
 their existing atomic admission. `readD1PersistedImport` keeps one complete
-atomic native snapshot capped at 2 MiB even when its caller omits a limit.
+atomic native snapshot capped at 2 MiB even when its caller omits a limit. It
+reads each destination job's `ik_d1_custody_states` revision (the same additive
+schema) before any custody and fences those revisions instead of resending
+plans, so its read grows by one revision per job, not by a plan per catch-up.
+Under that fence it checks each owner job by its stored plan header and
+fingerprint and returns only the plan entries its live provenance references,
+parsed inside D1: from an inline plan, or from the run of whole entries a chunked
+plan's entry locator names (the `entries` member of its `d1Plan` 1 envelope,
+which every full plan load checks against the chunks). No SQL value grows past
+one run, so each owner job costs fixed statements and bytes however long a
+catch-up chain grows. A plan without a locator (compressed, staged, or stored
+before locators) and a preserved job with a reversal report still decode their
+whole plan. An oversized snapshot raises
+`ImportSizeLimitError` (its message is the size code) naming `targetKinds`.
 Reads change neither tables nor SQLite `total_changes()` and work with SQLite
 `PRAGMA query_only=ON`. Mutation batches retain inside-transaction CHECK assertions
 and rollback. Planning uses its existing `plan` authorization path. The ordinary-job SELECT fence needs no migration; the bounded stream receipt
@@ -286,6 +316,40 @@ never the concurrency fence. Erasure integrations must delete both new chunk
 tables along with existing job custody. These tables retain audit data through
 undo and rollback.
 
+### Large plans: staged creation and revision fences
+
+A stored plan larger than `LARGE_PLAN_BYTES` (4 MiB) is never sent whole in one
+request. Without a transport policy (`maxBatchBytes` omitted, as the import door
+runs), `createD1ImportJob` stages it: the plan's chunks go into the existing
+private staging tables (`d1StagingSchema`) in batches of at most
+`STAGED_BATCH_BYTES` (4 MiB) on the wire, behind the hash-only privacy index
+that erasure and retirement already reach. Every batch asserts current
+authority, the stage's binding and its exact revision before and after. One
+small final transaction then publishes the job: it copies the staged chunks and
+index inside D1, copies each original from those chunks by position (a
+canonical plan holds it literally, so its bytes travel once), compares every
+copy with its staged source there, checks tombstones and releases the creation
+capture. Only identities, positions and metadata cross the transport. A partly
+staged creation is never a job: the next call resumes from the rows already
+staged (verified by reading them back), or discards a generation that no longer
+matches, and `cancelD1ImportStaging`, erasure and retirement remove it. Every
+remaining batch is admitted against the request budget before the first write.
+`preflightD1ImportJob` sizes the same staged requests.
+
+After creation, an unbounded load of a large plan reads its
+`ik_d1_custody_revisions` revision before any chunk, then verifies the chunks
+against the envelope digest and fingerprint as before. Its guards fence that
+revision and the exact `plan_json` envelope instead of resending every chunk:
+every chunk insert, update or delete and every `plan_json` update advances the
+revision, so the guard holds exactly when the verified chunks are unchanged.
+Originals keep their position comparisons. Smaller plans, and every bounded
+(`maxBatchBytes`) path, keep exact byte guards. Original chunk and plan chunk
+reads are paged.
+
+Creation retains a normalized plan with the target adapter's `planCodec`, as
+streams and erasure re-retention do. A plan holding original bytes (an
+available artifact or an attachment) stays canonical, so its originals are
+copied from and compared by position with its chunks.
 
 ## Erasing normalized personal records
 
@@ -591,8 +655,10 @@ that same parent; new operations still honor source and target tombstones.
 Large child pages use digest-checked compressed encoding inside the existing exact
 chunk manifests. The manifest and every compressed byte remain publication
 preconditions. Compression does not replace snapshot fencing or source identity.
-Existing eager create retains its pure admission and one atomic original-custody
-publication; private normalized stream staging is a separate operation.
+Eager create keeps its pure admission and one atomic original-custody
+publication; a large plan stages that publication's input first (see "Large
+plans: staged creation and revision fences"). Private normalized stream staging
+is a separate operation.
 
 
 A native adapter may provide a versioned `planCodec` with pure `encode(plan)` and
@@ -645,7 +711,11 @@ evaluates current authority inside the initial and final atomic transactions.
 The returned `D1CreatePreflight` contains `mutationStatements`,
 `totalExecutions`, `maxSqlBytes`, `maxBoundBytes` and `maxParameters`. It uses the
 production serialization, chunking and guard packing, reserving initial authority,
-operation-key lookup, job return and chunked-plan return reads. The 36-byte
+operation-key lookup, job return and chunked-plan return reads. For a large
+plan without a transport policy it admits every staged batch, the publication
+and the prior-generation lookup instead, assuming nothing is staged yet. Pass
+the adapter's `planCodec` (or a full context) so it sizes the codec-retained
+plan production creates. The 36-byte
 placeholder UUID has exactly the encoded size of the production-generated UUID.
 Invalid plans/bindings and `IMPORT_D1_REQUEST_LIMIT`,
 `IMPORT_D1_STATEMENT_LIMIT`, `IMPORT_D1_VALUE_LIMIT` throw before any product
@@ -705,7 +775,13 @@ Strict undo retains its full native revision/value/attachment comparison and
 current ordinary `undo` authorization in every transaction, including batches
 which only record conflicts and the terminal batch. The same selected policy applies to rollback of partially published work;
 its report covers only the effects already committed. Undo and rollback cannot change an existing reversal mode.
-A job beneath any successor still rejects with `IMPORT_SUPERSEDED`.
+A job beneath any successor still rejects with `IMPORT_SUPERSEDED`, except
+where the successor's preserved undo kept an effect for the owner: that undo
+releases, in the same batch, the history beneath the kept effect (each
+predecessor returns to its own job's provenance as reversed, and that job's
+claim goes once nothing else backs it). The predecessor job's own undo then
+reports each such effect `retained` with reason `superseded` (a strict job just
+skips it), so a lineage with a catch-up undoes fully and the owner's edit stays.
 
 To support preserved undo, implement `targets.preparePreservedUndo(db,
 destination, effects)` and, only when native effects own disjoint parts of a
@@ -802,8 +878,10 @@ against that protected snapshot and every original byte against its exact plan
 positions. Only after all guards pass does the engine release and delete the
 snapshot, in the same D1 batch. A malformed plan/original INSERT trigger therefore
 rolls back job, originals and snapshots together. No staging survives successful
-creation, and no custody crosses transactions. This avoids a second full plan
+creation, and no public custody crosses transactions. This avoids a second full plan
 copy in D1's serialized batch request while retaining exact byte comparisons.
+A large plan's chunks reach that transaction from private staging instead of
+its own request; the same guards then compare them inside D1.
 
 ## Bounded private stream custody
 
@@ -1092,7 +1170,21 @@ There is no new default transport limit on ordinary omitted-policy APIs.
 The additive `d1CustodyStateSchema` installs `ik_d1_custody_states` and monotonic
 mutation triggers covering job fields, plan and original copies, provenance,
 claims, decisions, history, journal, reversal reports and stream membership.
-Prior jobs receive counters without changes to their public bytes. A counter is
+Prior jobs receive counters without changes to their public bytes. SQLite's
+REPLACE deletes the row it conflicts with without firing DELETE triggers, so apply
+the additive `d1CustodyStateReplaceSchema` as a new numbered migration after
+`d1CustodyStateSchema` and `d1RetirementSchema` (`initializeD1ImportStorage`
+applies it last). It ignores an insert over an existing counter, by job id or
+by rowid (the backfill's `INSERT OR IGNORE` still adds missing ones), refuses to
+change a counter's rowid with `IMPORT_CUSTODY_STATE_CHANGED`, refuses an `ik_jobs`
+id that exists or was retired with `IMPORT_JOB_ID_REUSED`, and makes an insert or
+update (`UPDATE OR REPLACE` deletes a colliding row the same way) that would
+replace a claim, provenance row (by id or live target), history row (by id or
+successor), stream page or stream advance the revision of every job owning the
+replaced row. SQLite's rowid is one more unique key of every custody table and
+tombstone, so a row replaced by rowid advances its owners too (a tombstone's
+owners are found through the plan index, as its own triggers find them).
+A counter is
 captured before each retained report is validated; old cross-effect evidence is
 never copied into private transport. The report's existing policy and content
 hashes are validated before its explicitly redacted replacement is constructed.

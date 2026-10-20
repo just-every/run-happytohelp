@@ -7317,7 +7317,7 @@
       "executable": false
     },
     "src/site/docs-search/search.css": {
-      "sha256": "61e44905ec643d3e4ab914435a7f9d9e66173fcdee563b122617cedd8baddd5c",
+      "sha256": "2bc96258d55d20bd0ccc479b7bb54378c0eb0a75b68984ef87c02e097172ee1b",
       "executable": false
     },
     "src/site/docs-search/SearchField.tsx": {

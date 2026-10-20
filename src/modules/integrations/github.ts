@@ -22,3 +22,6 @@ export async function githubToken(env:Env,projectId:string):Promise<string|undef
 export function githubApiHeaders(token:string){return {Authorization:`Bearer ${token}`,Accept:'application/vnd.github+json','User-Agent':'HappyToHelp-native','X-GitHub-Api-Version':'2022-11-28'}}
 
 export function githubApiRequest(path:string,token:string){return fetch(`https://api.github.com/${path}`,{headers:githubApiHeaders(token),redirect:'manual',signal:AbortSignal.timeout(15000)})}
+
+/** Issue writes have a separate, workspace-installed credential; repository reads keep their existing authority. */
+export {createIssue as createGithubEscalation,getIssue as readGithubEscalation} from '../escalations/providers'

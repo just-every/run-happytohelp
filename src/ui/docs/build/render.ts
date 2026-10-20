@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import Markdown from 'react-markdown';
 import gfm from 'remark-gfm';
+import type { SearchSection } from '../../../site/docs-search/types';
 import type { DocsTocEntry } from '../types.ts';
 import { docsHast } from './hast.ts';
 import type { HastState } from './hast.ts';
@@ -19,6 +20,7 @@ export type RenderedPage = {
   description: string;
   html: string;
   toc: DocsTocEntry[];
+  searchSections: SearchSection[];
   /** Every heading id on the page, the title's first. */
   ids: string[];
   anchors: AnchorCheck[];
@@ -50,7 +52,7 @@ function table({ node, children }: { node?: HastNode; children?: ReactNode }) {
 }
 
 export function renderPage(markdown: string, links: LinkContext): RenderedPage {
-  const state: HastState = { slug: createSlugger(), links, title: '', titleId: '', description: '', toc: [], ids: [], anchors: [], images: [], problems: [] };
+  const state: HastState = { slug: createSlugger(), links, title: '', titleId: '', description: '', toc: [], searchSections: [], ids: [], anchors: [], images: [], problems: [] };
   const html = renderToStaticMarkup(createElement(Markdown, {
     remarkPlugins: [gfm],
     rehypePlugins: [[docsHast, state]],
@@ -63,6 +65,7 @@ export function renderPage(markdown: string, links: LinkContext): RenderedPage {
     description: state.description || `${state.title}: HappyToHelp documentation.`,
     html,
     toc: state.toc,
+    searchSections: state.searchSections,
     ids: state.titleId ? [state.titleId, ...state.ids] : state.ids,
     anchors: state.anchors,
     images: state.images,

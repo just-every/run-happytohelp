@@ -74,7 +74,7 @@ jobs:
           - name: public-browsers
             browser: true
             commands: |
-              node --test --test-concurrency=1 tests/journeys/public-browser.mjs tests/journeys/identity-browser.mjs
+              node --test --test-concurrency=1 tests/journeys/public-browser.mjs tests/journeys/identity-browser.mjs tests/docs-search.mjs
               node tests/demo-inbox-browser.mjs
           - name: inbox-browser
             browser: true

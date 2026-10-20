@@ -119,7 +119,10 @@
     "test:delegation-journey": "node --test --test-concurrency=1 --test-name-pattern=\"agent fix\" tests/journeys/delegation.mjs",
     "verify:release": "pnpm run build && H2H_UPGRADE_RELEASES=0.4.1 node --test --test-concurrency=1 tests/journeys/upgrade-nightly.mjs",
     "test:legacy-export": "node --test tests/legacy-export.mjs",
-    "test:installer-nightly": "node scripts/installer/qualify.mjs"
+    "test:installer-nightly": "node scripts/installer/qualify.mjs",
+    "site:search:build": "node scripts/site-search/build.mjs",
+    "site:search:dev": "wrangler dev --config .rer/docs-search/wrangler.json --ip 127.0.0.1 --port 5479",
+    "test:docs-search": "node --test --test-concurrency=1 tests/docs-search.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.111.0",

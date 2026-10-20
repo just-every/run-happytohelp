@@ -15,7 +15,7 @@ import '../homepage/drawings.css';
 import './docs.css';
 
 /** A documentation page in the homepage's own header, footer, paper, ink and type. */
-export function DocsPage({ page, sections, repository, version }: DocsView) {
+export function DocsPage({ page, sections, repository, version, search = false }: DocsView) {
   useCurrentDocs(version);
   const order = sections.flatMap(section => section.pages.map(entry => ({ ...entry, section: section.title })));
   const index = order.findIndex(entry => entry.slug === page.slug);
@@ -25,9 +25,9 @@ export function DocsPage({ page, sections, repository, version }: DocsView) {
     <a className="skip-link" href="#docs-content">Skip to the content</a>
     <SiteHeader home="/" current="docs" />
     <div className="docs-shell">
-      <DocsSidebar sections={sections} current={page.slug} />
+      <DocsSidebar sections={sections} current={page.slug} search={search} />
       <main id="docs-content" tabIndex={-1} className="docs-main">
-        <DocsMenu sections={sections} current={page.slug} label={current.label} />
+        <DocsMenu sections={sections} current={page.slug} label={current.label} search={search} />
         <DocsArticle page={page} section={current.section} stroke={stroke} />
         <DocsPager previous={order[index - 1]} next={order[index + 1]} editUrl={`${repository.url}/edit/${repository.branch}/${page.source}`} />
       </main>

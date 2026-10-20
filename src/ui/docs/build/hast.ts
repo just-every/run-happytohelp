@@ -1,3 +1,5 @@
+import { headingSections } from '../../../site/docs-search/sections';
+import type { SearchSection } from '../../../site/docs-search/types';
 import type { DocsTocEntry } from '../types.ts';
 import { rewriteHref, rewriteImageSrc } from './links.ts';
 import type { AnchorCheck, LinkContext } from './links.ts';
@@ -19,6 +21,7 @@ export type HastState = {
   titleId: string;
   description: string;
   toc: DocsTocEntry[];
+  searchSections: SearchSection[];
   ids: string[];
   anchors: AnchorCheck[];
   images: string[];
@@ -112,6 +115,7 @@ export function docsHast(state: HastState) {
       while (tree.children[0]?.type === 'text' && !tree.children[0].value.trim()) tree.children.shift();
     } else state.problems.push('the first block must be the page\'s H1');
     for (const child of tree.children) if (isElement(child)) visit(child, state);
+    state.searchSections = headingSections(tree.children, state.title, state.titleId);
     for (const child of tree.children) {
       if (isElement(child) && child.tagName === 'p' && (state.description = describe(child))) break;
     }

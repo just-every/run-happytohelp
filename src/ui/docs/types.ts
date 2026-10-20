@@ -23,4 +23,4 @@ export type DocsPageData = {
 };
 
 /** What a docs route loads: the page, the navigation and repository it is shown with, and the docs version it came from. */
-export type DocsView = { page: DocsPageData; sections: DocsSection[]; repository: DocsRepository; version: number };
+export type DocsView = { page: DocsPageData; sections: DocsSection[]; repository: DocsRepository; version: number; search?: boolean };

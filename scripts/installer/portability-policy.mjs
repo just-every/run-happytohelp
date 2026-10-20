@@ -8,7 +8,7 @@ export const archivePolicy={
  product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await escalationArchiveSafety(input);return reportArchiveStagedSafety(input)},
  // Keep invitation history, but restored archives never restore a live survey link or queued send.
  exportRow:(table,row)=>escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
-  :table==='move_in_connections'?{...row,retry_at:null}:table==='move_in_api_runs'?{...row,cursor_json:null}:table==='mailbox_connections'?{...row,credential_cipher:null,status:'disconnected',cursor_json:null,sync_lock:null,sync_lock_until:null}
+  :table==='move_in_connections'?{...row,retry_at:null}:table==='mailbox_connections'?{...row,credential_cipher:null,status:'disconnected',cursor_json:null,sync_lock:null,sync_lock_until:null}
   :table==='mailbox_sends'&&row.state==='sending'?{...row,state:'uncertain',error_code:'restored_pending_send'}:row)))),
  // Reconstruct the full-text index from retained messages after restore.
  derivedTables:['inbox_message_search'],

@@ -11,7 +11,7 @@ export function providerBase(env:Env,vendor:Vendor,domain?:unknown){
  if(typeof configured==='string')base=configured
  else if(vendor==='intercom')base='https://api.intercom.io'
  else if(vendor==='helpscout')base='https://api.helpscout.net'
- else {if(typeof domain!=='string'||!/^[a-z0-9][a-z0-9-]{0,62}(?:\.(?:zendesk|freshdesk)\.com)?$/i.test(domain))throw new HTTPException(400,{message:`Enter your ${names[vendor]} subdomain`});base=`https://${domain.includes('.')?domain:`${domain}.${vendor}.com`}`}
+ else {if(typeof domain!=='string'||!/^[a-z0-9][a-z0-9-]{0,62}(?:\.(?:zendesk|freshdesk)\.com)?$/i.test(domain))throw new HTTPException(400,{message:`Enter your ${names[vendor]} subdomain`});if(domain.includes('.')&&!domain.toLowerCase().endsWith(`.${vendor}.com`))throw new HTTPException(400,{message:`Enter your ${names[vendor]} domain`});base=`https://${domain.includes('.')?domain:`${domain}.${vendor}.com`}`}
  const url=new URL(base)
  if(url.username||url.password||url.search||url.hash||!(url.protocol==='https:'||url.protocol==='http:'&&['localhost','127.0.0.1','[::1]'].includes(url.hostname)))throw new HTTPException(400,{message:'The provider base URL must use HTTPS (or a local development server)'})
  return url.href.replace(/\/$/,'')
@@ -45,7 +45,7 @@ export function vendorHttp(env:Env,vendor:Vendor,base:string,credential:VendorCr
   const candidate=new URL(path,base+'/'),url=vendor==='helpscout'&&candidate.hostname==='api.helpscout.net'?locate(path):candidate;if(url.username||url.password||!(url.protocol==='https:'||url.origin===origin.origin&&url.protocol==='http:'))throw new VendorError('Attachment URL must use HTTPS')
   // Signed CDN URLs are permitted without the workspace token; authenticated fetches are same-origin only.
   if(url.origin!==origin.origin&&(/^(localhost|127\.|0\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/.test(url.hostname)||url.hostname.includes(':')))throw new VendorError('Attachment host is private')
-  const response=await checked(url,{headers:url.origin===origin.origin?headers(false):new Headers()});return {bytes:await readBounded(response,20_000_000),contentType:response.headers.get('content-type')||'application/octet-stream'}
+  const allowed:Record<Vendor,string[]>={zendesk:['zendesk.com','zdusercontent.com','zendeskusercontent.com','zdassets.com'],intercom:['intercomcdn.com','intercomassets.com','intercom.io'],helpscout:['helpscout.net'],freshdesk:['freshdesk.com','freshworks.com','freshdesk-attachments.com','amazonaws.com']};if(url.origin!==origin.origin&&!allowed[vendor].some(host=>url.hostname===host||url.hostname.endsWith('.'+host)))throw new VendorError('Attachment host is not a documented provider download host');const response=await checked(url,{headers:url.origin===origin.origin?headers(false):new Headers()});return {bytes:await readBounded(response,20_000_000),contentType:response.headers.get('content-type')||'application/octet-stream'}
  }}
 }
 export async function probe(vendor:Vendor,client:ApiClient){await client.get(vendor==='zendesk'?'/api/v2/users.json?page[size]=1':vendor==='intercom'?'/admins':vendor==='helpscout'?'/v2/users?page=1':'/api/v2/agents?per_page=1&page=1')}

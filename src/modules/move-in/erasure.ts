@@ -52,7 +52,7 @@ export async function fenceImportErasure(env:Env,projectId:string,contactId:stri
  for(;;){const runs=(await env.DB.prepare('SELECT r.id,r.object_key,r.files_json FROM move_in_runs r JOIN move_in_erasure_runs e ON e.run_id=r.id WHERE e.project_id=? AND e.contact_id=? AND r.id>? ORDER BY r.id LIMIT 10').bind(projectId,contactId,after).all<any>()).results;if(!runs.length)break
   for(const run of runs){let cursor:string|undefined
    const retain=async(keys:string[])=>{if(keys.length)await env.DB.batch([env.DB.prepare("INSERT OR IGNORE INTO move_in_erasure_objects(project_id,contact_id,run_id,object_key) SELECT ?1,?2,?3,value FROM json_each(?4)").bind(projectId,contactId,run.id,JSON.stringify(keys))])}
-   await retain((await env.DB.prepare('SELECT object_key FROM move_in_api_files WHERE run_id=? AND contact_id=? AND object_key IS NOT NULL').bind(run.id,contactId).all<{object_key:string}>()).results.map(file=>file.object_key))
+   await retain((await env.DB.prepare('SELECT f.object_key FROM move_in_api_files f WHERE f.run_id=? AND f.object_key IS NOT NULL AND (f.contact_id=? OR NOT EXISTS(SELECT 1 FROM media m WHERE m.object_key=f.object_key))').bind(run.id,contactId).all<{object_key:string}>()).results.map(file=>file.object_key))
    await retain([...new Set<string>([run.object_key,...JSON.parse(run.files_json).map((f:any)=>f.key)].filter(Boolean))])
    do{const listed=await env.FILES.list({prefix:`move-in/${projectId}/${run.id}/`,cursor,limit:100});await retain(listed.objects.map(object=>object.key));cursor=listed.truncated?listed.cursor:undefined}while(cursor)
    after=run.id

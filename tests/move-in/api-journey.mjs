@@ -1,4 +1,3 @@
-import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import {nativeHarness} from './harness.mjs';
 import {startVendor} from '../helpers/move-in-vendors/index.mjs';

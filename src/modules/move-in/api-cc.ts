@@ -1,6 +1,5 @@
 import type {Env} from '../../platform/env'
 import type {SourceBundle} from '../import-kit/src/types'
-import {sha256,canonicalJson} from '../import-kit/src/d1/index'
 import type {PreparedMapping,Run} from './types'
 import {recordKey} from './types'
 import {nativeId,sourceRecord} from './readers/common'

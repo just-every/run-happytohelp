@@ -14,7 +14,7 @@ function vectors(text) {
   return { shape: [text.length, 384], data: text.map(value => {
     const vector = Array(384).fill(0);
     const heading = value.replace(/^Represent this sentence for searching relevant passages: /, '').split('\n')[0].split(' > ').at(-1);
-    for (const word of heading.toLowerCase().match(/[a-z]{3,}/g) ?? []) {
+    for (const word of heading.toLowerCase().match(/[a-z0-9]+/g) ?? []) {
       let hash = 0;
       for (const letter of word) hash = (hash * 31 + letter.charCodeAt(0)) >>> 0;
       vector[hash % 384] += 1;

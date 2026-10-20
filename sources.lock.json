@@ -9909,7 +9909,7 @@
       "executable": false
     },
     "tests/docs-search.mjs": {
-      "sha256": "bdc74ca1f8adbfffd4ac430e36564a0f6bba35b6510a56dad455ab04c782f6a9",
+      "sha256": "834148f1df24ae44cd174d26c397419029c47662dc6111bd33ce4c0d65acda2b",
       "executable": false
     },
     "tests/eval-harness/fixtures/assist-human-voice.json": {

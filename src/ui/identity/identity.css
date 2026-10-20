@@ -1,5 +1,5 @@
 /* Public identity pages: the homepage's paper, ink and Outfit (the tokens are brand-tokens.css), with black pill actions,
-   aqua-underlined links, notes as drawn cards and, beside sign-in and sign-up, a drawing in the landing hero's hand. */
+   aqua-underlined links, hairline notes and, beside sign-in and sign-up, a drawing in the landing hero's hand. */
 .h2h-identity {
   display: flex;
   flex-direction: column;
@@ -43,10 +43,10 @@
 .h2h-identity .id-row { display: grid; gap: 20px; }
 @media (min-width: 700px) { .h2h-identity .id-row { grid-template-columns: 1fr 1fr; align-items: start; } }
 .h2h-identity label { font-size: 15px; font-weight: 500; }
-.h2h-identity input { width: 100%; min-height: 48px; padding: 0 14px; color: var(--ink); font: inherit; font-size: 16px; background: var(--surface); border: 1.5px solid var(--field-line); border-radius: 8px; }
+.h2h-identity input { width: 100%; min-height: 48px; padding: 0 14px; color: var(--ink); font: inherit; font-size: 16px; background: var(--surface); border: 1px solid var(--field-line); border-radius: 8px; }
 .h2h-identity input::placeholder { color: var(--ink-soft); opacity: 1; }
-.h2h-identity input:hover { border-color: var(--ink); }
-.h2h-identity input:focus-visible { outline: 0; border-color: var(--ink); border-radius: 8px; box-shadow: 0 0 0 3px var(--d-cyan-deep); }
+.h2h-identity input:hover { border-color: var(--field-line-hover); }
+.h2h-identity input:focus-visible { outline: 0; border-color: var(--ink); border-radius: 8px; box-shadow: 0 0 0 3px var(--ink); }
 .h2h-identity .id-hint { color: var(--ink-soft); font-size: 14px; }
 
 .h2h-identity .pill { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 28px; font: inherit; font-size: 17px; font-weight: 500; line-height: 1; text-decoration: none; white-space: nowrap; border-radius: 999px; cursor: pointer; transition: background-color 0.18s, color 0.18s, border-color 0.18s; }
@@ -56,8 +56,8 @@
 .h2h-identity form .pill { width: 100%; margin-top: 4px; }
 .h2h-identity .id-actions { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin-top: 30px; }
 
-/* The error and the notes are drawn cards: the note on the aqua tint, the error on white in the danger ink. */
-.h2h-identity .id-alert, .h2h-identity .id-note { margin-top: 22px; padding: 14px 18px; border: 2px solid var(--ink); border-radius: var(--card-radius); box-shadow: var(--card-shadow); overflow-wrap: anywhere; }
+/* Quiet hairline notes: aqua for information, white with danger ink for errors. */
+.h2h-identity .id-alert, .h2h-identity .id-note { margin-top: 22px; padding: 14px 18px; border: 1px solid var(--rule-strong); border-radius: var(--card-radius); box-shadow: var(--card-shadow); overflow-wrap: anywhere; }
 .h2h-identity .id-alert { color: var(--danger); background: var(--surface); }
 .h2h-identity .id-note { background: var(--d-cyan-tint); }
 .h2h-identity .id-note a { font-weight: 500; }
@@ -81,7 +81,7 @@
 .h2h-identity .id-line--fix { margin-top: 2.6em; padding-left: 1.6em; }
 .h2h-identity .id-line--reply { margin-top: 2em; }
 .h2h-identity .id-who { padding-left: 0.2em; font-weight: 600; }
-.h2h-identity .id-bubble { position: relative; justify-self: stretch; margin-right: 1.5em; padding: 0.95em 1.2em; border: 2px solid var(--d-ink); border-radius: 1em 1.15em 0.95em 1.05em / 1.05em 0.9em 1.1em 1em; background: var(--surface); box-shadow: var(--card-shadow); transform: rotate(-1.2deg); transform-origin: 2em 50%; }
+.h2h-identity .id-bubble { position: relative; justify-self: stretch; margin-right: 1.5em; padding: 0.95em 1.2em; border: 2px solid var(--d-ink); border-radius: 1em 1.15em 0.95em 1.05em / 1.05em 0.9em 1.1em 1em; background: var(--surface); box-shadow: var(--drawing-shadow); transform: rotate(-1.2deg); transform-origin: 2em 50%; }
 .h2h-identity .id-bubble--team { margin-right: 0; background: var(--d-cyan-tint); }
 .h2h-identity .id-bubble--composer { display: flex; align-items: center; justify-content: space-between; gap: 0.8em; margin-right: 0; padding: 0.6em 0.6em 0.6em 1.2em; }
 .h2h-identity .id-send { display: inline-flex; align-items: center; min-height: 2.2em; padding: 0 1.2em; border-radius: 999px; color: var(--on-ink); background: var(--d-ink); font-weight: 600; }

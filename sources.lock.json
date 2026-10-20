@@ -8397,7 +8397,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/foundation/_app-shell.scss": {
-      "sha256": "ce2a291f1865a199a4cc6359c6eafc10bf3bbcd58e01a4e35105ac391d1bc442",
+      "sha256": "e36c7d13f5febe6b3dc97eda70ef0852b6dfa6901ece6c41c517ef171f5a65bf",
       "executable": false
     },
     "src/ui/dashboard/styles/foundation/_avatars.scss": {
@@ -8449,7 +8449,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-assistant.scss": {
-      "sha256": "3cc70e2141be75d8eaa15a9560141cd1f15ee3f93fb951bb1b0d98c048c5834d",
+      "sha256": "8ebe77aff0464c1965dc7881d1289eaff6b1c40e93864c8c9c0f040e255e5b9e",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-avatars.scss": {
@@ -8717,7 +8717,7 @@
       "executable": false
     },
     "src/ui/homepage/brand-tokens.css": {
-      "sha256": "70d50b2e94be816845bc286dbce701302c33d5cdee35d48c919106a8659ff65f",
+      "sha256": "fb3ebe9e386e9e4b3621639fa5767dc683a5a5a33675371e21e625dfdaa4bb07",
       "executable": false
     },
     "src/ui/homepage/brand-word.ts": {
@@ -8885,7 +8885,7 @@
       "executable": false
     },
     "src/ui/identity/identity.css": {
-      "sha256": "6a9dc222df4eef1cc42858bc8f85908a4f6434bb7cdc0f0960b898d341b93585",
+      "sha256": "66a0cb4251bba38aa9fc2e99b99d66b5aaf4cbf9e0fbc01973463878147d6c9a",
       "executable": false
     },
     "src/ui/identity/IdentityFrame.tsx": {
@@ -9897,11 +9897,11 @@
       "executable": false
     },
     "src/ui/native/setup/setup-form.css": {
-      "sha256": "8c06d1807fc226e85b23c2b8086e98f89191e72f71bb4985ac4a2f05babdccb1",
+      "sha256": "e6ef27026f6f229d3e7d42480181e69bfa996d0307b236bdea0be2be67e4415d",
       "executable": false
     },
     "src/ui/native/setup/setup.css": {
-      "sha256": "c824478d7d4f99c31b3acd4bc8a23f84a4b5cb31e9856e7643188e9613dd8a86",
+      "sha256": "97aceca3006604e895b15d2f8fd2055d2a3a93c32bb68729884e49ae89259d67",
       "executable": false
     },
     "src/ui/native/setup/SetupFields.tsx": {

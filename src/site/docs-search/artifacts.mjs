@@ -39,7 +39,7 @@ export async function buildSearchArtifacts({ corpus, assets, output, previousUrl
   // reuses these vectors by content hash, never a crawler or an update timer.
   await writeFile(resolve(assets, 'docs-search-vectors.json'), bytes);
   const runtime = fileURLToPath(new URL('./worker.ts', import.meta.url));
-  await build({ stdin: { contents: `import {createSearchWorker} from ${JSON.stringify(runtime)};export default createSearchWorker(${JSON.stringify({ endpoint })});`,
+  await build({ stdin: { contents: `import {createSearchWorker} from ${JSON.stringify(runtime)};export default createSearchWorker(${JSON.stringify({ endpoint, corpusHash: index.corpusHash })});`,
     resolveDir: resolve(output), sourcefile: 'site-search-entry.ts', loader: 'ts' }, bundle: true, format: 'esm', platform: 'browser', target: 'es2022', outfile: resolve(output, 'worker.mjs') });
   const configuration = { name: localName, main: './worker.mjs', compatibility_date: compatibilityDate,
     ...(accountId ? { account_id: accountId } : {}), workers_dev: false,

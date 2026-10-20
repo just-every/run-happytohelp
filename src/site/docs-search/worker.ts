@@ -5,14 +5,14 @@ type Environment = { ASSETS: { fetch(request: Request): Promise<Response> }; AI:
 const json = (data: unknown, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
 
 /** No app state, credentials or database. Install on the site's Worker only. */
-export function createSearchWorker({ endpoint = '/docs/search', minimumScore = 0.55, indexAsset = '/docs-search-vectors.json' } = {}) {
+export function createSearchWorker({ corpusHash, endpoint = '/docs/search', minimumScore = 0.55, indexAsset = '/docs-search-vectors.json' }: { corpusHash: string; endpoint?: string; minimumScore?: number; indexAsset?: string }) {
   let loaded: SearchIndex | undefined;
   async function load(request: Request, env: Environment): Promise<SearchIndex> {
     if (loaded) return loaded;
     const response = await env.ASSETS.fetch(new Request(new URL(indexAsset, request.url)));
     if (!response.ok) throw Error('Search index unavailable');
     const index = await response.json() as SearchIndex;
-    if (index.version !== 1 || index.pooling !== 'cls' || !index.model || !index.dimensions || !Array.isArray(index.chunks)) throw Error('Invalid search index');
+    if (index.corpusHash !== corpusHash || index.version !== 1 || index.pooling !== 'cls' || !index.model || !index.dimensions || !Array.isArray(index.chunks)) throw Error('Invalid search index');
     loaded = index;
     return index;
   }
@@ -26,8 +26,8 @@ export function createSearchWorker({ endpoint = '/docs/search', minimumScore = 0
       if (query.length < 2) return json({ results: [] });
       if (query.length > 240) return json({ error: 'Query too long' }, 400);
       try {
-        // ASSETS is bound to this Worker version's immutable deployment. Cache
-        // its index in this isolate; a new deployment gets a new isolate/index.
+        // The generated entry contains the corpus digest, so docs changes also
+        // change Worker code. Binding-only isolate reuse cannot retain old vectors.
         const index = await load(request, env);
         const vectors = await env.AI.run(index.model, { text: [`Represent this sentence for searching relevant passages: ${query}`], pooling: index.pooling });
         return json({ results: search(index, vectors.data[0], minimumScore) });

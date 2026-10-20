@@ -32,9 +32,11 @@ timerRoutes.post(`${path}/start`,async c=>{
  if(!result.running)throw new HTTPException(409,{message:'The ticket or your access changed. Reload before starting the timer.'})
  return c.json({...result,canAdjustOthers:['owner','admin'].includes(access.base)})
 })
+// A lead (owner or admin) stops every running timer on the ticket, so a teammate's forgotten timer can be ended.
 timerRoutes.post(`${path}/stop`,async c=>{
- const {actor,id,access}=await timerScope(c),guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')})
- await c.env.DB.prepare(`UPDATE ticket_handle_sessions SET ended_at=max(started_at,?) WHERE project_id=? AND conversation_id=? AND user_id=? AND ended_at IS NULL AND EXISTS(${guard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=ticket_handle_sessions.conversation_id AND c.project_id=ticket_handle_sessions.project_id AND ${availableTicketSql()})`).bind(Date.now(),actor.projectId,id,actor.id,...guard.params).run()
+ const {actor,id,access}=await timerScope(c),guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')}),lead=['owner','admin'].includes(access.base)
+ const result=await c.env.DB.prepare(`UPDATE ticket_handle_sessions SET ended_at=max(started_at,?) WHERE project_id=? AND conversation_id=? AND (user_id=? OR ?=1) AND ended_at IS NULL AND EXISTS(${guard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=ticket_handle_sessions.conversation_id AND c.project_id=ticket_handle_sessions.project_id AND ${availableTicketSql()})`).bind(Date.now(),actor.projectId,id,actor.id,Number(lead),...guard.params).run()
+ if(!result.meta.changes)throw new HTTPException(409,{message:'No running timer to stop. Reload to see the current timer.'})
  return c.json({...await readTimer(c.env,actor.projectId,id,actor.id),canAdjustOthers:['owner','admin'].includes(access.base)})
 })
 
@@ -46,6 +48,9 @@ timerRoutes.post(`${path}/adjust`,async c=>{
  if(!result.meta.changes)throw new HTTPException(409,{message:'Only your completed timer, or a completed timer managed by a lead, can be adjusted. Reload before trying again.'})
  return c.json({...await readTimer(c.env,actor.projectId,id,actor.id),canAdjustOthers:['owner','admin'].includes(access.base)})
 })
+
+/** A member who loses ticket access (removed, or moved to a role without it) stops accruing handle time now. */
+export function endHandleTimers(db:D1Database,projectId:string,userId:string,now:number){return db.prepare('UPDATE ticket_handle_sessions SET ended_at=max(started_at,?) WHERE project_id=? AND user_id=? AND ended_at IS NULL').bind(now,projectId,userId)}
 
 const owned='SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2'
 export const reportTimerErasureCount=`(SELECT count(*) FROM ticket_handle_sessions WHERE project_id=?1 AND conversation_id IN (${owned}))`

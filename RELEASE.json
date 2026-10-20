@@ -70,6 +70,14 @@
       "buyerSteps": "Record who stopped each handle timer, so a lead's stop of a teammate's timer names the lead in ticket history and the audit log. Apply before the updated Worker serves traffic."
     },
     {
+      "id": "210_move_in_api.sql",
+      "buyerSteps": "Add encrypted vendor connection credentials, resumable API source checkpoints, reviewed agent mappings and attachment download receipts. Apply through pinned rer before the updated Worker serves traffic. Credentials are excluded from portable exports and must be reconnected after restore."
+    },
+    {
+      "id": "211_move_in_delta_fences.sql",
+      "buyerSteps": "Keep reviewed historical ticket updates and undo inert while preserving imported status. Apply through pinned rer before the updated Worker serves traffic; retain owners, source custody and import journals without resetting."
+    },
+    {
       "id": "230_escalations.sql",
       "buyerSteps": "Add workspace-encrypted engineering connections, reciprocal issue links, selected attachment grants, idempotent webhook state, approved customer drafts and Slack handoff history. Apply before the updated Worker serves traffic. Exports retain disconnected links and drafts without provider credentials or download grants; retain human Send and unconfirmed customer recovery."
     }

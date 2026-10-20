@@ -74,8 +74,9 @@
 .h2h-home .hero-copy .text-link:hover { text-decoration-color: var(--ink); }
 .h2h-home .hero-free { margin-top: 28px; font-size: 16px; text-wrap: balance; }
 .h2h-home .hero-free strong { font-weight: 600; }
-/* The four names wrap as one, so the line breaks in the same place in the fallback face and in Outfit. */
-.h2h-home .hero-free-names { display: inline-block; }
+/* Keep the names at their natural width rather than shrink-to-fitting the space left on a line. Balance the outer copy,
+   not the names inside it, so a font swap cannot add an inner line. Small phones can still wrap the names to the column. */
+.h2h-home .hero-free-names { display: inline-block; width: max-content; max-width: 100%; text-wrap: wrap; }
 .h2h-home .hero-stage { min-width: 0; container: hero-stage / inline-size; }
 .h2h-home .hero-stage .story-art { margin-top: clamp(0px, 1.2vw, 18px); }
 /* The two moments' captions under the drawing, each under its own half, numbered on filled aqua discs as in the drawing. When

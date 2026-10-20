@@ -8805,7 +8805,7 @@
       "executable": false
     },
     "src/ui/homepage/homepage.css": {
-      "sha256": "eb837d44b7d36d943c5df68f494ce52dbbfbdd6704d251ce13c7556d2226466e",
+      "sha256": "5024f49c345c9871a306a05a5eabe9d9e47ad51436d6393ada9bec74dd87196f",
       "executable": false
     },
     "src/ui/homepage/Homepage.tsx": {

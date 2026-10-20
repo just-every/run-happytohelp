@@ -8753,7 +8753,7 @@
       "executable": false
     },
     "src/ui/homepage/drawings/HeroStory.tsx": {
-      "sha256": "5847d994d9417d80242598de83fc9a79127e6bd78289b3adfafaa42c105e070a",
+      "sha256": "0662469e73d2ee7bc5c4532d3f1dd66639af7150fe3610727147f688413306ee",
       "executable": false
     },
     "src/ui/homepage/drawings/Icons.tsx": {
@@ -8797,7 +8797,7 @@
       "executable": false
     },
     "src/ui/homepage/hero-story.css": {
-      "sha256": "5219649e6ab80c3701ee2e1cb1e9075ae4a35ad89212de1bd270d12ef1ffb7b1",
+      "sha256": "25edb2c381d0f1e06f165740425bfc8cf56ae2b39812acdbe03324cd1e13ba81",
       "executable": false
     },
     "src/ui/homepage/Hero.tsx": {
@@ -8805,7 +8805,7 @@
       "executable": false
     },
     "src/ui/homepage/homepage.css": {
-      "sha256": "66f0035d04c057c676e8d12aa346aff6857fbfbd5f9443a89c7286374e5f045b",
+      "sha256": "a7fa4b62106d672b9f62d99e30ef613aab2442b8106fe4f5c71a9c2c70cc8d6a",
       "executable": false
     },
     "src/ui/homepage/Homepage.tsx": {
@@ -11313,7 +11313,7 @@
       "executable": false
     },
     "tests/homepage-browser.mjs": {
-      "sha256": "230d5e5877a1c54c86ee487f12cd819f1a608b591e40cb679427345eb1f8f95e",
+      "sha256": "44b7a0d2751e4d78273ab5eb73c996c4ca793e1b1cdb514f624376b2e8824047",
       "executable": false
     },
     "tests/journeys/ai-browser.mjs": {

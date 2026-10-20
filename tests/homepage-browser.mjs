@@ -10,7 +10,7 @@ const origin = process.env.H2H_TEST_ORIGIN;
 if (!origin) throw new Error('Set H2H_TEST_ORIGIN to the real native homepage preview');
 const evidence = process.env.H2H_EVIDENCE_DIR || '/tmp/h2h-homepage-browser';
 await mkdir(evidence, { recursive: true });
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({ headless: true, args: ['--use-mock-keychain', '--password-store=basic'] });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await context.newPage();
 const errors = [];

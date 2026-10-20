@@ -65,7 +65,7 @@
 .h2h-home .hero { display: grid; grid-template-columns: minmax(0, 0.44fr) minmax(0, 0.56fr); align-items: start; gap: clamp(24px, 2.6vw, 40px); padding: clamp(24px, 7.8vw, 120px) 0 clamp(40px, 4.5vw, 72px); }
 .h2h-home .hero-copy { padding-top: clamp(0px, 2.3vw, 36px); }
 .h2h-home .hero h1 { font-size: clamp(2.5rem, 4.7vw, 4.6rem); font-weight: 600; line-height: 1.08; letter-spacing: -0.035em; text-wrap: balance; }
-.h2h-home .hero-sub { margin-top: 26px; max-width: 25.5em; font-size: clamp(1.1rem, 1.5vw, 1.4375rem); line-height: 1.6; color: #2b2a27; }
+.h2h-home .hero-sub { margin-top: 26px; max-width: 25.5em; font-size: clamp(1.1rem, 1.5vw, 1.4375rem); line-height: 1.6; color: #2b2a27; text-wrap: pretty; }
 .h2h-home .hero-copy .actions { margin-top: 44px; gap: 20px 42px; }
 .h2h-home .hero-copy .pill--large { min-height: 74px; padding: 0 50px; font-size: 22px; }
 .h2h-home .hero-copy .text-link { font-size: 21px; font-weight: 600; text-decoration-color: var(--d-cyan-deep); text-decoration-thickness: 3px; text-underline-offset: 10px; }
@@ -77,10 +77,10 @@
 /* The two moments' captions under the drawing, each under its own half, numbered on filled aqua discs as in the drawing. When
    the stage is too narrow for two columns, they stack the way they do on phones. */
 .h2h-home .hero-moments { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 18px clamp(24px, 3vw, 44px); margin-top: 26px; padding-left: 1rem; counter-reset: moment; }
-.h2h-home .hero-moments li { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: center; column-gap: 14px; row-gap: 8px; counter-increment: moment; }
+.h2h-home .hero-moments li { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: center; align-content: start; column-gap: 14px; row-gap: 8px; counter-increment: moment; }
 .h2h-home .hero-moments li::before { content: counter(moment); display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--d-cyan); font-size: 1.1rem; font-weight: 600; }
 .h2h-home .hero-moments b { font-size: 1.3rem; font-weight: 500; letter-spacing: -0.01em; }
-.h2h-home .hero-moments p { grid-column: 1 / -1; max-width: 22em; font-size: 1.05rem; line-height: 1.5; color: var(--ink-soft); }
+.h2h-home .hero-moments p { grid-column: 1 / -1; max-width: 22em; text-wrap: pretty; font-size: 1.05rem; line-height: 1.5; color: var(--ink-soft); }
 @container hero-stage (max-width: 34rem) {
   .h2h-home .hero-moments { grid-template-columns: minmax(0, 1fr); padding-left: 4px; }
 }

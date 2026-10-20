@@ -11,8 +11,11 @@ const label = 'Drawing of two moments. One, before they ask: on a checkout page 
 
 export function HeroStory() {
   return <Drawing className="story-art" label={label}>
-    <svg className="story-blob" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <svg className="story-blob story-blob--wide" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
       <path d="M3 44C5 28 14 16 28 12 40 9 52 12 62 8 72 4 84 1 92 6 99 11 100 26 99 42 98 58 100 76 94 88 87 99 70 98 56 96 44 95 30 99 18 96 6 93 1 80 2 66 2 58 2 51 3 44Z" />
+    </svg>
+    <svg className="story-blob story-blob--tall" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <path d="M6 12C14 3 34 1 52 2 70 3 88 4 95 14 100 24 98 40 98 54 98 70 100 84 93 93 85 100 64 98 48 98 30 98 12 100 5 90 0 80 2 64 2 50 2 34 0 22 6 12Z" />
     </svg>
     <div className="story">
       <div className="story-moment story-before">

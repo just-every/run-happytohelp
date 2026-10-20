@@ -44,6 +44,10 @@
     {
       "id": "204_problem_preview_audit.sql",
       "buyerSteps": "Audit reviewed problem replies and durable incident delivery claims. Apply before the updated Worker serves traffic."
+    },
+    {
+      "id": "205_handle_timer_lead_stop.sql",
+      "buyerSteps": "Record who stopped each handle timer, so a lead's stop of a teammate's timer names the lead in ticket history and the audit log. Apply before the updated Worker serves traffic."
     }
   ]
 }

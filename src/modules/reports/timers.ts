@@ -32,10 +32,13 @@ timerRoutes.post(`${path}/start`,async c=>{
  if(!result.running)throw new HTTPException(409,{message:'The ticket or your access changed. Reload before starting the timer.'})
  return c.json({...result,canAdjustOthers:['owner','admin'].includes(access.base)})
 })
-// A lead (owner or admin) stops every running timer on the ticket, so a teammate's forgotten timer can be ended.
+// A member stops their own running timer. A lead (owner or admin) stops a teammate's only by naming
+// its session, as /adjust does; the stop records who made it (migration 205).
 timerRoutes.post(`${path}/stop`,async c=>{
- const {actor,id,access}=await timerScope(c),guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')}),lead=['owner','admin'].includes(access.base)
- const result=await c.env.DB.prepare(`UPDATE ticket_handle_sessions SET ended_at=max(started_at,?) WHERE project_id=? AND conversation_id=? AND (user_id=? OR ?=1) AND ended_at IS NULL AND EXISTS(${guard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=ticket_handle_sessions.conversation_id AND c.project_id=ticket_handle_sessions.project_id AND ${availableTicketSql()})`).bind(Date.now(),actor.projectId,id,actor.id,Number(lead),...guard.params).run()
+ const {actor,id,access}=await timerScope(c),b=object(await c.req.json()),sessionId=b.sessionId===undefined?null:named(b.sessionId,200)
+ const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')}),lead=['owner','admin'].includes(access.base)
+ const target=sessionId===null?{sql:'user_id=?',params:[actor.id]}:{sql:'id=? AND (user_id=? OR ?=1)',params:[sessionId,actor.id,Number(lead)]}
+ const result=await c.env.DB.prepare(`UPDATE ticket_handle_sessions SET ended_at=max(started_at,?),ended_by=? WHERE project_id=? AND conversation_id=? AND ${target.sql} AND ended_at IS NULL AND EXISTS(${guard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=ticket_handle_sessions.conversation_id AND c.project_id=ticket_handle_sessions.project_id AND ${availableTicketSql()})`).bind(Date.now(),actor.id,actor.projectId,id,...target.params,...guard.params).run()
  if(!result.meta.changes)throw new HTTPException(409,{message:'No running timer to stop. Reload to see the current timer.'})
  return c.json({...await readTimer(c.env,actor.projectId,id,actor.id),canAdjustOthers:['owner','admin'].includes(access.base)})
 })

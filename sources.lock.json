@@ -8801,11 +8801,11 @@
       "executable": false
     },
     "src/ui/homepage/Hero.tsx": {
-      "sha256": "0b6a8d5a0264f67fe09b114f92a3c73f3b5a164034ceed967dee8dc06f80c0f7",
+      "sha256": "1403de75797ae63591ceb9ca39d2f8dc0a1eb9f8a39b87332dab95ac5f9fe388",
       "executable": false
     },
     "src/ui/homepage/homepage.css": {
-      "sha256": "7e55d6ac19504df8168d863c12f11511d966f7ca910c2ba6b39a52cb3e85ab99",
+      "sha256": "eb837d44b7d36d943c5df68f494ce52dbbfbdd6704d251ce13c7556d2226466e",
       "executable": false
     },
     "src/ui/homepage/Homepage.tsx": {

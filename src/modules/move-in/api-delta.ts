@@ -4,6 +4,7 @@ import {canonicalJson,sha256} from '../import-kit/src/d1/index'
 import {sourceIdentity} from '../import-kit/src/provenance/identity'
 import type {PreparedMapping,Run} from './types'
 import {recordKey} from './types'
+import {guarded} from './context'
 import {apiRun} from './api-store'
 /** A source version gets a new journal identity while retaining the stable native ID.
  * Base verifies and archives the exact predecessor; native edits remain conflicts. */
@@ -33,4 +34,14 @@ export async function versionApiDelta(env:Env,run:Run,source:SourceBundle,prepar
   prepared.effects.set(recordKey(record),effects);prepared.effects.delete(key)
   if(prepared.omissions.has(key)){prepared.omissions.set(recordKey(record),prepared.omissions.get(key)!);prepared.omissions.delete(key)}
  }
+ const counts=JSON.parse(api.counts_json),added={ticketsAdded:0,ticketsChanged:0,contactsAdded:0,messagesAdded:0,privateNotesAdded:0,statusChanges:0,attachmentsAdded:0}
+ for(const record of source.records){const key=recordKey(record);if(prepared.rejections.has(key)||prepared.known.has(key)||prepared.retained?.has(key))continue;for(const effect of prepared.effects.get(key)??[]){const before=native.get(`${effect.targetKind}/${effect.targetId}`),value=effect.value as any,old=(before?.value as any)?.tables;
+  if(effect.targetKind==='contact'&&!before)added.contactsAdded++
+  if(effect.targetKind!=='conversation')continue
+  if(before)added.ticketsChanged++;else added.ticketsAdded++
+  for(const [table,counter] of [['messages','messagesAdded'],['move_in_notes','privateNotesAdded'],['media','attachmentsAdded']] as const){const ids=new Set((old?.[table]??[]).map((row:any)=>row.id));added[counter]+=(value.tables[table]??[]).filter((row:any)=>!ids.has(row.id)).length}
+  if(before&&old.conversations[0].status_category!==value.tables.conversations[0].status_category)added.statusChanges++
+ }}
+ await guarded(env,run,[env.DB.prepare('UPDATE move_in_api_runs SET counts_json=? WHERE run_id=?').bind(JSON.stringify({...counts,...added}),run.id)])
+
 }

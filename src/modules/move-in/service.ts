@@ -1,3 +1,6 @@
+import {VendorError} from './api-http'
+import {apiRun} from './api-store'
+import {guarded} from './context'
 import {fetchApiPage} from './api-fetch'
 import {apiCheckpoint} from './api-lifecycle'
 import type { Env } from '../../platform/env'
@@ -26,7 +29,7 @@ async function parseChunk(env:Env,run:Run){const files=JSON.parse(run.files_json
 }
 export async function approve(env:Env,run:Run,fingerprint:string){await requireAuditedCustody(env,run);await approveReview(env,run,fingerprint);await enqueue(env,run)}
 export async function advanceImport(env:Env,run:Run){await assertAuthority(env,run);if(run.error||!['fetching','uploaded','parsing','planning','applying','undoing'].includes(run.state))return
- try{await requireAuditedCustody(env,run);if(run.state==='fetching')await fetchApiPage(env,run);else if(run.state==='uploaded')await unpack(env,run);else if(run.state==='parsing')await parseChunk(env,run);else if(run.state==='planning')await preparePlan(env,run);else await advanceBatch(env,run)}catch(error){const code=error instanceof Error?error.message:'import_failed';await assertAuthority(env,run);await updateRun(env,run,{error:code.startsWith('D1_')?'Import database operation failed':code.slice(0,200)});return}
+ try{await requireAuditedCustody(env,run);if(run.state==='fetching')await fetchApiPage(env,run);else if(run.state==='uploaded')await unpack(env,run);else if(run.state==='parsing')await parseChunk(env,run);else if(run.state==='planning')await preparePlan(env,run);else await advanceBatch(env,run)}catch(error){const code=error instanceof Error?error.message:'import_failed';await assertAuthority(env,run);if(error instanceof VendorError&&error.retryAt){const api=await apiRun(env,run.id);if(api)await guarded(env,run,[env.DB.prepare('UPDATE move_in_connections SET retry_at=? WHERE id=?').bind(error.retryAt,api.connection_id)])}await updateRun(env,run,{error:code.startsWith('D1_')?'Import database operation failed':code.slice(0,200)});return}
  await apiCheckpoint(env,run)
  const current=await getWorkRun(env,run.id);if(current&&!current.error&&['fetching','uploaded','parsing','planning','applying','undoing'].includes(current.state))await enqueue(env,current)
 }

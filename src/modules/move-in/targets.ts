@@ -35,24 +35,26 @@ const entities:Record<string,Table[]>={
    table('conversation_buckets','conversation_id','id,conversation_id,created_at,metadata_json','id'),
   ].map(t=>({...t,nativeOnly:true}))]
 }
-function definitions(kind:string){const value=entities[kind];if(!value)throw new Error('unsupported_native_target');return value}
+const legacyConversation=entities.conversation.filter(t=>t.name!=='move_in_assignment').map(t=>t.name==='conversations'?{...t,columns:t.columns.slice(0,11)}:t.name==='conversation_participants'?{...t,nativeOnly:true,columns:t.columns.filter(c=>c!=='joined_via')}:t.name==='media'?{...t,nativeOnly:true}:t)
+function definitions(kind:string,api=true){const value=kind==='conversation'&&!api?legacyConversation:entities[kind];if(!value)throw new Error('unsupported_native_target');return value}
 function where(t:Table){if(t.name==='message_authorship')return 'message_id IN (SELECT id FROM messages WHERE conversation_id=? AND project_id=?)';if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return 'resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=? AND project_id=?)';if(t.nativeOnly||t.name==='conversation_participants')return 'conversation_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)';if(t.name==='move_in_message_sources')return 'project_id=? AND message_id IN (SELECT id FROM messages WHERE project_id=? AND conversation_id=?)';if(t.name==='knowledge_article_categories')return 'article_id=? AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=?)';return `project_id=? AND ${t.key}=?`}
 function params(t:Table,destination:string,id:string){return t.nativeOnly||t.name==='conversation_participants'?[id,destination]:t.name==='move_in_message_sources'?[destination,destination,id]:t.name==='knowledge_article_categories'?[id,destination]:[destination,id]}
 function select(t:Table){return `(SELECT COALESCE(json_group_array(json_array(${t.columns.join(',')})),'[]') FROM (SELECT ${t.columns.join(',')} FROM ${t.name} WHERE ${where(t)} ORDER BY ${t.order}))`}
 function orderKey(t:Table,row:Record<string,any>){return t.name==='email_threading_keys'?`${row.key_kind}:${row.key_value}`:String(row[t.order])}
 function expected(t:Table,value:NativeValue){return JSON.stringify([...(value.tables[t.name]??[])].sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0).map(row=>t.columns.map(column=>column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null)))}
 function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sql {
- const defs=definitions(kind),clauses:string[]=[],bindings:any[]=[]
+ const defs=definitions(kind,(row?.value as unknown as NativeValue)?.source.api_import===true),clauses:string[]=[],bindings:any[]=[]
  for(const t of defs){clauses.push(`${select(t)}=?`);bindings.push(...params(t,destination,id),row?expected(t,row.value as unknown as NativeValue):'[]')}
  if(row){clauses.push('EXISTS(SELECT 1 FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=? AND revision=? AND source_json=?)');bindings.push(destination,kind,id,row.revision,JSON.stringify((row.value as unknown as NativeValue).source))}
  else {clauses.push('NOT EXISTS(SELECT 1 FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?)');bindings.push(destination,kind,id)}
  return {sql:`(${clauses.join(' AND ')})`,params:bindings}
 }
-export function nativeStatementCount(kind:string,value:NativeValue){return definitions(kind).filter(t=>!t.nativeOnly).reduce((n,t)=>n+(value.tables[t.name]?.length??0),0)+1+(kind==='conversation'?2:kind==='article'||kind==='contact'?1:0)}
+export function nativeStatementCount(kind:string,value:NativeValue){return definitions(kind,value.source.api_import===true).filter(t=>!t.nativeOnly).reduce((n,t)=>n+(value.tables[t.name]?.length??0),0)+1+(kind==='conversation'?2:kind==='article'||kind==='contact'?1:0)}
 export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
- if(kind==='conversation')for(const row of value.tables.conversations??[]){const original=value.tables.move_in_conversations?.[0],state=original?.source_state,status=({active:'open',hold:'on_hold',resolved:'solved',spam:'closed',snoozed:'on_hold'} as Record<string,string>)[state]??state,category=['new','open','pending','on_hold','solved','closed'].includes(status)?status:row.resolved_at?'solved':'open';Object.assign(row,{status_id:category,status_category:category,subject:original?.subject??'',priority:'normal',channel:original?.source_channel==='messenger'?'chat':original?.source_channel??'email',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'system',...row})}
+ if(kind==='conversation'&&value.source.api_import===true)for(const row of value.tables.conversations??[]){const original=value.tables.move_in_conversations?.[0],state=original?.source_state,status=({active:'open',hold:'on_hold',resolved:'solved',spam:'closed',snoozed:'on_hold'} as Record<string,string>)[state]??state,category=['new','open','pending','on_hold','solved','closed'].includes(status)?status:row.resolved_at?'solved':'open';Object.assign(row,{status_id:category,status_category:category,subject:original?.subject??'',priority:'normal',channel:original?.source_channel==='messenger'?'chat':original?.source_channel??'email',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'system',...row})}
 
- for(const t of definitions(kind))value.tables[t.name]=(value.tables[t.name]??[]).map(row=>Object.fromEntries(t.columns.map(column=>[column,column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null]))).sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0)
+ const defs=definitions(kind,value.source.api_import===true);value.tables=Object.fromEntries(defs.map(t=>[t.name,value.tables[t.name]??[]]))
+ for(const t of defs)value.tables[t.name]=(value.tables[t.name]??[]).map(row=>Object.fromEntries(t.columns.map(column=>[column,column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null]))).sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0)
  return value
 }
 export const nativeTargets:D1TargetAdapter={
@@ -61,12 +63,12 @@ export const nativeTargets:D1TargetAdapter={
   const tables:NativeValue['tables']={};for(let i=0;i<defs.length;i++){const t=defs[i];tables[t.name]=JSON.parse(row[`t${i}`]).map((values:any[])=>Object.fromEntries(t.columns.map((column,index)=>[column,values[index]])))}
   if(!row.source&&!Object.values(tables).some(rows=>rows.length))return undefined
   // An unowned native collision is visible to the kit and cannot be overwritten without review.
-  return {destination,targetKind:kind,targetId:id,revision:row.revision??'native',value:{tables,source:row.source?JSON.parse(row.source):{}} as any}
+  return {destination,targetKind:kind,targetId:id,revision:row.revision??'native',value:completeNativeValue(kind,{tables,source:row.source?JSON.parse(row.source):{}}) as any}
  },
  matches:guard,
  write(row){const value=row.value as unknown as NativeValue,statements:D1Sql[]=[]
   if(row.targetKind==='conversation')statements.push({sql:'INSERT INTO move_in_native_fences(project_id,conversation_id) VALUES(?,?)',params:[row.destination,row.targetId]})
-  const defs=definitions(row.targetKind).filter(t=>!t.nativeOnly),api=value.source.api_import===true
+  const api=value.source.api_import===true,defs=definitions(row.targetKind,api).filter(t=>!t.nativeOnly)
   if(api){for(const t of [...defs].reverse().slice(0,-1))statements.push({sql:`DELETE FROM ${t.name} WHERE ${where(t)}`,params:params(t,row.destination,row.targetId)});statements.push({sql:'DELETE FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?',params:[row.destination,row.targetKind,row.targetId]})}
   for(const t of defs)for(const item of value.tables[t.name]??[]){if(item.project_id!==undefined&&item.project_id!==row.destination)throw new Error('native_destination_mismatch');const columns=t.columns.filter(c=>!t.generated?.includes(c));const upsert=api&&t===defs[0]?` ON CONFLICT DO UPDATE SET ${columns.filter(c=>!['id','project_id','subject_id'].includes(c)).map(c=>`${c}=excluded.${c}`).join(',')}`:'';statements.push({sql:`INSERT ${!api&&t.name==='context_subjects'?'OR REPLACE ':''}INTO ${t.name}(${columns.join(',')}) VALUES(${columns.map(()=>'?').join(',')})${upsert}`,params:columns.map(c=>item[c]??null)})}
   if(row.targetKind==='contact'){const contact=value.tables.contacts[0];statements.push({sql:'UPDATE move_in_contact_keys SET email_digest=? WHERE project_id=? AND contact_id=? AND EXISTS(SELECT 1 FROM contacts WHERE project_id=? AND id=? AND email IS ?)',params:[emailKey(row.destination,contact.email),row.destination,row.targetId,row.destination,row.targetId,contact.email]})}

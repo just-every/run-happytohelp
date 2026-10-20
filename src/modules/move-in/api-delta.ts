@@ -18,6 +18,10 @@ export async function versionApiDelta(env:Env,run:Run,source:SourceBundle,prepar
   const existing=effects.map(effect=>native.get(`${effect.targetKind}/${effect.targetId}`))
   if(!existing.some(Boolean))continue
   if(!effects.length||existing.some(row=>!row)){prepared.rejections.set(key,'native_target_conflict');continue}
+  // An unchanged source does not overwrite native state. Dependent messages can
+  // advance a contact-context revision without changing that directory record.
+  const held=await env.DB.prepare('SELECT identity,source_hash,mapping_version,effects_hash,job_id FROM ik_sources WHERE identity=? AND source_hash=?').bind(sourceIdentity(run.project_id,run.vendor,record.kind,record.sourceId),record.payloadHash).first<any>()
+  if(held){prepared.rejections.delete(key);prepared.retained??=new Map();prepared.retained.set(key,held);continue}
   const version=`${record.sourceId}@${record.payloadHash}`,identity=sourceIdentity(run.project_id,run.vendor,record.kind,version),prior=await env.DB.prepare('SELECT identity FROM ik_sources WHERE identity=?').bind(identity).first()
   if(prior){prepared.rejections.delete(key);prepared.known.add(key);continue}
   let changed=false,pristine=true

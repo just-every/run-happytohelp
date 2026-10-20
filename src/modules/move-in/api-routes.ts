@@ -27,6 +27,12 @@ apiRoutes.post(`${root}/:connectionId/sync`,async c=>{
  if(row.cutover_at)throw new HTTPException(409,{message:'Cutover is already complete. This connection is a move-in, not a live sync.'})
  const id=await startApiRun(c.env,row,actor,'delta'),run=(await getRun(c.env,id))!;await enqueue(c.env,run);await auditStatement(c.env.DB,{projectId:actor.project_id,category:'data',action:'import.final_sync',actor:{type:'user',id:actor.actor_id},source:requestSource(c),target:{type:'import',id},detail:{vendor:row.vendor}}).run();return c.json({data:await runView(c.env,run)},202)
 })
+apiRoutes.post(`${root}/:connectionId/reconnect`,async c=>{
+ const actor=await importActor(c),row=await connection(c.env,c.req.param('connectionId'));if(!row||row.project_id!==actor.project_id||row.created_by!==actor.actor_id)throw new HTTPException(404)
+ const value=credentials(row.vendor,await c.req.json());await probe(row.vendor,vendorHttp(c.env,row.vendor,row.base_url,value))
+ await guarded(c.env,actor as Run,[await saveCredential(c.env,row,value),c.env.DB.prepare('UPDATE move_in_connections SET retry_at=NULL WHERE id=?').bind(row.id),auditStatement(c.env.DB,{projectId:actor.project_id,category:'integration',action:'import.reconnected',actor:{type:'user',id:actor.actor_id},source:requestSource(c),target:{type:'import_connection',id:row.id},detail:{vendor:row.vendor}})])
+ return c.json({reconnected:true})
+})
 apiRoutes.post(`${imports}/:runId/agents`,async c=>{
  const actor=await importActor(c),run=await getRun(c.env,c.req.param('runId'));if(!run||run.project_id!==actor.project_id||run.actor_id!==actor.actor_id||!await apiRun(c.env,run.id))throw new HTTPException(404)
  if(run.state!=='ready')throw new HTTPException(409,{message:'Change agent matches while reviewing the import'})

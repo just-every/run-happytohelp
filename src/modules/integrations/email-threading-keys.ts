@@ -21,7 +21,7 @@ export function subjectThreadKeys(value:unknown):{kind:ThreadKeyKind;value:strin
  if(typeof value!=='string'||value.length>16384||/[\r\n\0]/.test(value))return []
  const keys:{kind:ThreadKeyKind;value:string;source:string}[]=[]
  for(const match of value.matchAll(/\[H2H:([A-Za-z0-9_-]{1,200})\]/gi))keys.push({kind:'subject_token',value:`h2h:${match[1]}`,source:'native'})
- for(const match of value.matchAll(/\[([A-Za-z0-9]{4}-[A-Za-z0-9]{4})\]/g))keys.push({kind:'subject_token',value:`zendesk:${match[1].toUpperCase()}`,source:'zendesk'})
+ for(const match of value.matchAll(/\[([A-Za-z0-9]{4,6}-[A-Za-z0-9]{4})\]/g))keys.push({kind:'subject_token',value:`zendesk:${match[1].toUpperCase()}`,source:'zendesk'})
  for(const match of value.matchAll(/\[#([1-9][0-9]{0,19})\]/g))keys.push({kind:'subject_token',value:`freshdesk:${match[1]}`,source:'freshdesk'})
  return keys.slice(0,100)
 }

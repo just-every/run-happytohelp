@@ -17,6 +17,13 @@ export function importedEmailThreadKeys(projectId:string,conversationId:string,v
   for(const field of ['message_id','messageId','in_reply_to','inReplyTo','references'])for(const valueId of messageIds(value[field]))keys.push({kind:'message_id',value:valueId,source:vendor,sourceRef:`${path}/${field}`})
   for(const field of ['reply_to','replyTo','reply_to_email'])for(const address of threadAddresses(value[field]))keys.push({kind:'reply_address',value:address,source:vendor,sourceRef:`${path}/${field}`})
   for(const field of ['subject','title'])for(const key of subjectThreadKeys(value[field]))if(key.source===vendor)keys.push({...key,source:vendor,sourceRef:`${path}/${field}`})
+  const metadata=value.email_message_metadata
+  if(object(metadata)){for(const id of messageIds(metadata.message_id))keys.push({kind:'message_id',value:id,source:vendor,sourceRef:`${path}/email_message_metadata/message_id`});keys.push(...headerThreadKeys(metadata.email_address_headers,vendor,`${path}/email_message_metadata/email_address_headers`))}
+  const evidence=value._move_in_email_evidence
+  if(evidence?.status==='available'){
+   for(const notification of evidence.notifications??[])for(const id of messageIds(notification.message_id))keys.push({kind:'message_id',value:id,source:vendor,sourceRef:`${path}/_move_in_email_evidence/notifications/${notification.notification_id}/message_id`})
+   for(const [name,values] of Object.entries(evidence.headers??{}))for(const header of Array.isArray(values)?values:[])keys.push(...headerThreadKeys({[name]:header},vendor,`${path}/_move_in_email_evidence/headers`))
+  }
  }
  const opening=before();add(p,'');add(p.source,'/source');add(p.source_additional_info,'/source_additional_info');add(p.via?.source,'/via/source');locate(opening,record)
  const children=vendor==='zendesk'?p.comments:vendor==='freshdesk'?p.conversations:vendor==='intercom'?p.conversation_parts?.conversation_parts:[]
@@ -28,6 +35,7 @@ export function importedEmailThreadKeys(projectId:string,conversationId:string,v
   const start=before();add(part,path);add(part?.source,`${path}/source`);add(part?.source_additional_info,`${path}/source_additional_info`);add(part?.via?.source,`${path}/via/source`);add(part?.metadata?.system,`${path}/metadata/system`);add(part?.metadata?.custom,`${path}/metadata/custom`);locate(start,source)
  }
  const identifiers=before()
+ if(vendor==='zendesk'&&typeof p.encoded_id==='string'&&/^[A-Za-z0-9]{4,6}-[A-Za-z0-9]{4}$/.test(p.encoded_id))keys.push({kind:'subject_token',value:`zendesk:${p.encoded_id.toUpperCase()}`,source:vendor,sourceRef:'/encoded_id'})
  const header=vendor==='zendesk'?'x-zendesk-ticket-id':vendor==='freshdesk'?'x-freshdesk-ticket-id':vendor==='helpscout'?'x-hs-conversation-id':'x-intercom-conversation-id'
  keys.push({kind:'vendor_header',value:`${header}:${record.sourceId}`,source:vendor,sourceRef:'/id'})
  if(vendor==='helpscout')keys.push({kind:'vendor_header',value:`x-helpscout-conversation-id:${record.sourceId}`,source:vendor,sourceRef:'/id'})

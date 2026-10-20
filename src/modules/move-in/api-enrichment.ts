@@ -167,6 +167,10 @@ export async function enrichApiMapping(env:Env,run:Run,source:SourceBundle,prepa
  ])
  const conflicts=new Set(source.diagnostics.filter(d=>d.code==='conflicting_duplicate_id').map(d=>`${d.kind}/${d.sourceId}`))
  const files=new Map<string,ApiFile[]>(),agents=new Map(agentRows.results.map(row=>[row.source_id,row.member_id])),contacts=importedContacts(source,prepared),records=new Map(source.records.filter(record=>!prepared.rejections.has(recordKey(record))&&!conflicts.has(recordKey(record))).map(record=>[recordKey(record),record]))
+ // Existing unverified CC contacts can be reused without fetching a directory
+ // profile in a delta. Index exactly the participants prepared for this source.
+ const participantIds=[...new Set([...prepared.effects.values()].flatMap(effects=>effects.flatMap(effect=>((effect.value as any).tables.conversation_participants??[]).map((row:any)=>row.contact_id))))]
+ if(participantIds.length)for(const row of (await env.DB.prepare('SELECT id,email FROM contacts WHERE project_id=? AND id IN (SELECT value FROM json_each(?))').bind(run.project_id,JSON.stringify(participantIds)).all<{id:string;email:string|null}>()).results){const email=address(row.email);if(email)addIndex(contacts.emails,email,row.id)}
  for(const file of fileRows.results){const group=files.get(file.ticket_id)??[];group.push(file);files.set(file.ticket_id,group)}
  for(const record of source.records){
   const key=recordKey(record),omissions=[...(prepared.omissions.get(key)??[])],existing=prepared.effects.get(key)??[]

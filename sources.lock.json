@@ -11492,7 +11492,7 @@
       "executable": false
     },
     "tests/journeys/ai.mjs": {
-      "sha256": "d6e1b597f740f1593d957b71b4ed41ac0a476892d204409dcc7c30f7dd89583b",
+      "sha256": "0b9148799d636a365613f8cd06bee70a3d0f49209fe90c10c48dfcb187f002c4",
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {

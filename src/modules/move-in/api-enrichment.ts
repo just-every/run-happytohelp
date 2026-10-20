@@ -132,7 +132,7 @@ function enrichAssignment(run:Run,record:SourceRecord,value:NativeValue,agents:M
 
 function companyEffect(run:Run,record:SourceRecord):TargetEffect {
  const p=record.payload as any,id=nativeId(run.project_id,run.vendor,'company',record.sourceId),timestamp=p.created_at??p.createdAt??p.updated_at??p.updatedAt,occurred=time(timestamp,run.vendor==='intercom'?'unix':'iso')
- const value:NativeValue={source:sourceValue(run,record),tables:{context_subjects:[{project_id:run.project_id,subject_id:id,consent:0,revision:0,help_types:'[]',bot_enabled:0}],context_evidence:[{id,project_id:run.project_id,subject_id:id,source:`import:${run.vendor}:company`,content:JSON.stringify(record.payload),visibility:'private',occurred_at:occurred}]}}
+ const value:NativeValue={source:sourceValue(run,record),tables:{context_subjects:[{project_id:run.project_id,subject_id:id,consent:0,revision:1,help_types:'[]',bot_enabled:0}],context_evidence:[{id,project_id:run.project_id,subject_id:id,source:`import:${run.vendor}:company`,content:JSON.stringify(record.payload),visibility:'private',occurred_at:occurred}]}}
  return {targetKind:'company',targetId:id,value:completeNativeValue('company',value) as any}
 }
 function freshdeskPublicAudience(p:any,records:Map<string,SourceRecord>){

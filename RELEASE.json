@@ -8,25 +8,25 @@
       "document": "README.md",
       "change": "changed",
       "date": "2026-10-20",
-      "summary": "Describe the synthetic fixture credential fix and migration-free patch upgrade.",
-      "was": "v0.4.9 contained a cron-backlog fixture credential refused by the hosted source scanner.",
-      "now": "v0.4.10 uses an explicitly synthetic fixture token and retains the same assertions.",
+      "summary": "Describe the synthetic fixture credential fix, the ticket collaboration ARIA fix, the deterministic account-security journey and the migration-free patch upgrade.",
+      "was": "v0.4.9 contained a cron-backlog fixture credential refused by the hosted source scanner, and ticket collaboration carried a label without a role.",
+      "now": "v0.4.10 uses an explicitly synthetic fixture token, labels ticket collaboration as a group and starts test Workers without an implied inspector port; all assertions are retained.",
       "ownerAction": "Back up, retain private settings and migration history; keep pinned rer 0.2.68. Production deployment remains separate."
     },
     {
       "document": "CHANGELOG.md",
       "change": "changed",
       "date": "2026-10-20",
-      "summary": "Describe the synthetic fixture credential fix and migration-free patch upgrade.",
-      "was": "v0.4.9 contained a cron-backlog fixture credential refused by the hosted source scanner.",
-      "now": "v0.4.10 uses an explicitly synthetic fixture token and retains the same assertions.",
+      "summary": "Describe the synthetic fixture credential fix, the ticket collaboration ARIA fix, the deterministic account-security journey and the migration-free patch upgrade.",
+      "was": "v0.4.9 contained a cron-backlog fixture credential refused by the hosted source scanner, and ticket collaboration carried a label without a role.",
+      "now": "v0.4.10 uses an explicitly synthetic fixture token, labels ticket collaboration as a group and starts test Workers without an implied inspector port; all assertions are retained.",
       "ownerAction": "Back up, retain private settings and migration history; keep pinned rer 0.2.68. Production deployment remains separate."
     }
   ],
   "extensionPointChanges": [],
   "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.9 to v0.4.10 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.68. This patch changes only a test fixture credential and release metadata. No new migrations: the current 95-row ledger must plan nothing and refuse nothing. Never delete, reorder or edit ledger rows. Retain owners, imported support history, permissions, files and erasure fences. The seven mailbox settings remain optional and held secrets are inherited. Run rer deploy --dry-run against the retained installation before deployment. Upgrades from v0.4.7 still apply the seven missing v0.4.8 migrations by name. Retain human Send. Production deployment is separate.",
-  "publicReleaseNotes": "HappyToHelp v0.4.10 renames the cron-backlog test signing token and its matching inbound request to an explicitly synthetic value. RER's hosted credential scanner can accept the public source before agent dispatch. Existing assertions retain the same behavior; application behavior is unchanged. No new migrations; rer stays at 0.2.68. Back up and retain settings and migration history without resetting. Production deployment is separate.",
+  "agentUpdateInstructions": "Update from v0.4.9 to v0.4.10 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.68. This patch changes a test fixture credential, the ticket collaboration area's ARIA role, a test-runtime helper and release metadata. No new migrations: the current 95-row ledger must plan nothing and refuse nothing. Never delete, reorder or edit ledger rows. Retain owners, imported support history, permissions, files and erasure fences. The seven mailbox settings remain optional and held secrets are inherited. Run rer deploy --dry-run against the retained installation before deployment. Upgrades from v0.4.7 still apply the seven missing v0.4.8 migrations by name. Retain human Send. Production deployment is separate.",
+  "publicReleaseNotes": "HappyToHelp v0.4.10 renames the cron-backlog test signing token and its matching inbound request to an explicitly synthetic value. RER's hosted credential scanner can accept the public source before agent dispatch. Ticket collaboration on a conversation is now a labelled group, so its label is valid ARIA in every state, and the account-security browser journey no longer fails by chance because test Workers open an inspector only on a port they are given. Every existing assertion is retained. No new migrations; rer stays at 0.2.68. Back up and retain settings and migration history without resetting. Production deployment is separate.",
   "pendingMigrations": []
 }

@@ -43,7 +43,7 @@ export default function ConversationCollaboration({projectId, conversationId, cu
     };
     const others = peers.filter(peer => peer.id !== currentUserId && peer.expiresAt > Date.now());
     const collision = others.filter(peer => peer.typing || peer.draft);
-    return <div className="conversation-follow flex-wrap" aria-label="Ticket collaboration">
+    return <div className="conversation-follow flex-wrap" role="group" aria-label="Ticket collaboration">
         {state && <>
             <button type="button" className="btn btn-sm btn-outline-primary" aria-pressed={state.following} disabled={busy}
                 onClick={() => mutate('follow', state.following ? 'DELETE' : 'POST')}>{state.following ? 'Following' : 'Follow'}</button>

@@ -10,7 +10,9 @@ updating and backing up an installation, see
 
 ## 0.4.10 — 2026-10-20
 
-- **Synthetic fixture credential.** Rename the cron-backlog signing token and its matching inbound request to an explicitly synthetic value so RER's hosted source scanner accepts the published archive. The existing test still verifies the same mail, scheduling and backlog behavior; application behavior is unchanged.
+- **Synthetic fixture credential.** Rename the cron-backlog signing token and its matching inbound request to an explicitly synthetic value so RER's hosted source scanner accepts the published archive. The existing test still verifies the same mail, scheduling and backlog behavior.
+- **Ticket collaboration markup.** The follow and live-collaboration area of a conversation is now a labelled group, so its label is valid ARIA in every state, including while the follow controls are still loading. It looks the same.
+- **Deterministic account-security journey.** The emitted-runtime test helper opens a Worker inspector only when a port for it is given, instead of implying one on the next port that might be taken; workerd could then hang without reporting ready. The readiness wait is a named wall-clock bound sized from measured starts. Every assertion of the journey is unchanged.
 - **Upgrade from 0.4.9.** No new migrations. Keep rer 0.2.68, back up and retain private settings and the migration ledger without resetting. The seven mailbox settings remain optional. Production deployment is separate.
 
 ## 0.4.9 — 2026-10-20

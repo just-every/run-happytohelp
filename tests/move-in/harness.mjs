@@ -8,12 +8,12 @@ import {build} from 'esbuild';
 import {snapshotDatabase} from './snapshot.mjs';
 import {children,identifyWorkerd,assertOwnedWorkerd,assertWorkerdStopped} from './owned-workerd.mjs';
 const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[require.resolve('wrangler')]}));
-export async function nativeHarness({beforeMoveIn,afterMoveIn,beforeIdentityAudit,afterIdentityAudit,beforeRuntimeUpgrade,afterRuntimeUpgrade}={}){
+export async function nativeHarness({beforeMoveIn,afterMoveIn,beforeIdentityAudit,afterIdentityAudit,beforeRuntimeUpgrade,afterRuntimeUpgrade,vars={},vendorOrigin}={}){
  const directory=await mkdtemp(join(tmpdir(),'move-in-check-'));let mf,db,outbound=0,maxStatements=0,lastWrites=0,workerdPid;
- const queued=[],tokens={};
+ const queued=[],tokens={},integrationKey=randomBytes(32).toString('base64');
  await build({entryPoints:['tests/move-in/worker.ts'],bundle:true,format:'esm',platform:'node',external:['node:*','cloudflare:*'],outfile:join(directory,'worker.mjs'),logLevel:'silent'});
  const script=await readFile(join(directory,'worker.mjs'),'utf8');
- async function start(){const before=await children();mf=new Miniflare(convertV4MiniflareOptions({name:'move-in-check',modules:true,script,compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{EMAIL_PROVIDER:'sendgrid',EMAIL_API_KEY:randomBytes(32).toString('hex'),EMAIL_FROM:'test@example.test',OPENAI_API_KEY:randomBytes(32).toString('hex')},d1Databases:{DB:'move-in-check'},r2Buckets:['FILES'],resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async()=>{outbound++;throw new Error('External calls prohibited')}}));try{db=await mf.getD1Database('DB');workerdPid=await identifyWorkerd(before)}catch(error){await mf.dispose();throw error}}
+ async function start(){const before=await children();mf=new Miniflare(convertV4MiniflareOptions({name:'move-in-check',modules:true,script,compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{INTEGRATION_ENCRYPTION_KEY:integrationKey,...vars,EMAIL_PROVIDER:'sendgrid',EMAIL_API_KEY:randomBytes(32).toString('hex'),EMAIL_FROM:'test@example.test',OPENAI_API_KEY:randomBytes(32).toString('hex')},d1Databases:{DB:'move-in-check'},r2Buckets:['FILES'],resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async request=>{if(vendorOrigin&&new URL(request.url).origin===vendorOrigin)return fetch(request);outbound++;throw new Error('External calls prohibited')}}));try{db=await mf.getD1Database('DB');workerdPid=await identifyWorkerd(before)}catch(error){await mf.dispose();throw error}}
  await start();
  const applyMigration=async file=>{const source=(await readFile(join('migrations',file),'utf8')).replace(/^\s*--[^\n]*$/gm,'');await db.batch([...source.matchAll(/\s*(CREATE TRIGGER[\s\S]*?END;|[^;]+;)/g)].map(([,sql])=>db.prepare(sql)))};
  // Historical audit fixtures must run at the actual111 boundary. Apply later

@@ -19,14 +19,15 @@ function contactPlan(data:Record<string,unknown>,input:PreviewInput,snapshot:Sna
  if(matches.length>1)throw new Error('Contact identity is ambiguous or conflicts with another contact')
  const before=matches[0]??null,metadata=JSON.parse(before?.metadata_json||'{}')
  if(metadata.is_erased||metadata.is_erasing||metadata.is_deleted)throw new Error('Contact is erased, being erased or deleted')
- let companyId=before?.company_id??null,domainMatch:DomainMatch|null=null
- if('company' in data){companyId=data.company?resolveCompany(String(data.company),snapshot.companies).id:null}
+ // A blank company cell is not supplied: membership stays, or follows the email domain.
+ const company=data.company?String(data.company):''
+ let companyId=company?resolveCompany(company,snapshot.companies).id:before?.company_id??null,domainMatch:DomainMatch|null=null
  if(input.matchDomains&&email){
   const found=domainMatches([email.split('@')[1]],snapshot.companies)
   if(found.length>1)throw new Error('Email domain matches multiple companies')
   domainMatch=found[0]??null
-  if(domainMatch&&'company' in data&&companyId!==domainMatch.companyId)throw new Error('Explicit company conflicts with email domain match')
-  if(domainMatch&&!('company' in data))companyId=domainMatch.companyId
+  if(domainMatch&&company&&companyId!==domainMatch.companyId)throw new Error('Explicit company conflicts with email domain match')
+  if(domainMatch&&!company)companyId=domainMatch.companyId
  }
  const after:Contact={id:before?.id??crypto.randomUUID(),name:before?.name??null,email:before?.email??null,external_id:before?.external_id??null,metadata_json:before?.metadata_json??'{}',is_verified:before?.is_verified??0,created_at:before?.created_at??now,company_id:companyId}
  if('name' in data)after.name=String(data.name)||null

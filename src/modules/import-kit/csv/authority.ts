@@ -23,14 +23,12 @@ export async function authorization(c:Context<AppEnv>,actor:Actor,stepUp:boolean
  }
  return {sql,params}
 }
-export async function commit(c:Context<AppEnv>,actor:Actor,epoch:number|null,statements:D1PreparedStatement[],options:{runId?:string;status?:string;stepUp?:boolean}={}){
+export async function commit(c:Context<AppEnv>,actor:Actor,statements:D1PreparedStatement[],options:{runId?:string;status?:string;stepUp?:boolean}={}){
  const auth=await authorization(c,actor,Boolean(options.stepUp)),params=[...auth.params]
  let condition=`(${auth.sql})`
- if(epoch!==null&&!options.runId)throw new Error('CSV revision guard requires an import run')
  if(options.runId){
-  condition+=` AND EXISTS(SELECT 1 FROM csv_customer_imports WHERE id=? AND project_id=? AND status=?${epoch===null?'':' AND revision=?'})`
+  condition+=' AND EXISTS(SELECT 1 FROM csv_customer_imports WHERE id=? AND project_id=? AND status=?)'
   params.push(options.runId,actor.projectId,options.status!)
-  if(epoch!==null)params.push(epoch)
  }
  const assertion=c.env.DB.prepare(`INSERT INTO csv_customer_assertions(ok) SELECT CASE WHEN ${condition} THEN 1 ELSE 0 END`).bind(...params)
  try{await c.env.DB.batch([assertion,...statements,c.env.DB.prepare('DELETE FROM csv_customer_assertions')])}

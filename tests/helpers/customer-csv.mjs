@@ -33,6 +33,33 @@ export async function customerCsvJourney(){
   const stale=await app.ok(I+'/preview',{...owner,body:input})
   await app.ok(B+'/contacts/'+original.id,{...owner,method:'PUT',body:{name:'Later edit'}})
   assert.equal((await app.call(`${I}/${stale.id}/apply`,{...owner,body:{}})).status,409)
+  // A blank mapped account cell is not supplied: domain matching links it. Only a differing name conflicts.
+  await app.ok(B+'/companies',{...owner,body:{name:'Orbit Labs'}})
+  const accounts={kind:'contacts',csv:'Name,Email,Account\nBlank One,blank1@northstar.example,\nBlank Two,blank2@northstar.example,\nNamed,named@northstar.example,Northstar Supply\nClash,clash@northstar.example,Orbit Labs\nElsewhere,someone@else.example,',mapping:{name:'Name',email:'Email',company:'Account'},matchDomains:true}
+  const customers=async()=>({contacts:await app.sql('SELECT * FROM contacts WHERE project_id=? ORDER BY id',p),links:await app.sql('SELECT * FROM contact_companies WHERE project_id=? ORDER BY contact_id',p)})
+  const visitor=async()=>assert.equal((await app.call('/api/identity/widget/session',{body:{widgetKey:w.widgetKey},headers:{Origin:w.allowedOrigin}})).status,201)
+  const prior=await customers(),linked=await app.ok(I+'/preview',{...owner,body:accounts})
+  assert.deepEqual(linked.counts,{create:4,update:0,skip:1})
+  assert.deepEqual(linked.rows.map(row=>row.domainMatch?.companyId??null),[company.id,company.id,company.id,null,null])
+  assert.match(linked.rows[3].reason,/conflicts with email domain/)
+  // Website visitors write unrelated contacts between the dry run, apply and undo.
+  await visitor()
+  await app.ok(`${I}/${linked.id}/apply`,{...owner,body:{}})
+  assert.deepEqual((await app.sql('SELECT c.email FROM contacts c JOIN contact_companies m ON m.project_id=c.project_id AND m.contact_id=c.id WHERE c.project_id=? AND m.company_id=? AND c.email IN (?,?,?,?) ORDER BY c.email',p,company.id,'blank1@northstar.example','blank2@northstar.example','named@northstar.example','someone@else.example')).map(row=>row.email),['blank1@northstar.example','blank2@northstar.example','named@northstar.example'])
+  await visitor()
+  assert.equal((await app.ok(`${I}/${linked.id}/undo`,{...owner,body:{}})).status,'undone')
+  const restored=await customers()
+  assert.deepEqual(restored.contacts.filter(row=>prior.contacts.some(old=>old.id===row.id)),prior.contacts)
+  assert.deepEqual(restored.links,prior.links)
+  assert.equal(restored.contacts.length,prior.contacts.length+2,'only the two widget visitors remain')
+  // A later write to a row the import created protects that row from undo.
+  const touched=await app.ok(I+'/preview',{...owner,body:accounts})
+  await app.ok(`${I}/${touched.id}/apply`,{...owner,body:{}})
+  await app.ok(B+'/contacts/'+touched.rows[0].entityId,{...owner,method:'PUT',body:{name:'Edited after import'}})
+  const refused=await app.call(`${I}/${touched.id}/undo`,{...owner,body:{}})
+  assert.equal(refused.status,409);assert.equal(refused.data.error,'Customer data, import status or authority changed. Review a fresh preview before continuing.')
+  assert.equal((await app.ok(`${I}/${touched.id}`,owner)).status,'applied')
+  assert.equal((await app.first('SELECT name FROM contacts WHERE id=?',touched.rows[0].entityId)).name,'Edited after import')
   const field=(await app.ok(B+'/company-fields',{...owner,body:{name:'Annual spend',type:'number'}})).field
   const companies=await app.ok(I+'/preview',{...owner,body:{kind:'companies',csv:'Account,Domains,Spend\nNorthstar Supply,northstar.example,400\nHarbor Parts,harbor.example,200\nBad company,bad domain,foo',mapping:{name:'Account',domains:'Domains',['attribute:'+field.id]:'Spend'},matchDomains:true}})
   assert.deepEqual(companies.counts,{create:1,update:1,skip:1})

@@ -7305,7 +7305,7 @@
       "executable": false
     },
     "src/site/docs-search/client.ts": {
-      "sha256": "6980c3bcc8a60316f51ed4745384cfebb5fef3cc8f48122ebb0da60ed57c6756",
+      "sha256": "9d1c3d573c5cab0ef24e1a629f58733126cdb56c90190ec7e21cfa33bf882519",
       "executable": false
     },
     "src/site/docs-search/index-build.mjs": {

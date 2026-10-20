@@ -26,6 +26,7 @@ function mount(root: HTMLElement): () => void {
   if (!input || !panel || !list || !status) throw new Error('Incomplete docs search field');
   const address = root.dataset.endpoint;
   if (!address) throw new Error('Docs search endpoint is missing');
+  const baseEndpoint = new URL(address, document.baseURI);
   const listeners = new AbortController();
   let request: AbortController | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -105,7 +106,7 @@ function mount(root: HTMLElement): () => void {
       request = controller;
       list!.setAttribute('aria-busy', 'true');
       try {
-        const endpoint = new URL(address, document.baseURI);
+        const endpoint = new URL(baseEndpoint);
         endpoint.searchParams.set('q', query);
         const response = await fetch(endpoint, { signal: controller.signal, headers: { Accept: 'application/json' } });
         if (!response.ok) throw new Error('Search request failed');

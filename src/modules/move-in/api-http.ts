@@ -33,19 +33,31 @@ export function vendorHttp(env:Env,vendor:Vendor,base:string,credential:VendorCr
   if(vendor==='helpscout'&&['api.helpscout.net','docsapi.helpscout.net'].includes(requested.hostname)){const target=new URL(requested.hostname==='api.helpscout.net'?base:docsBase);return new URL(requested.pathname+requested.search,target)}
   throw new VendorError('Provider pagination changed to an unapproved host')}
  const headers=(docs:boolean)=>{const h=new Headers({Accept:'application/json'});h.set('Authorization',vendor==='zendesk'?`Basic ${btoa(`${credential.email}/token:${credential.token}`)}`:vendor==='freshdesk'?`Basic ${btoa(`${credential.token}:X`)}`:docs?`Basic ${btoa(`${credential.docsToken}:X`)}`:`Bearer ${credential.token}`);if(vendor==='intercom')h.set('Intercom-Version','2.16');return h}
- const checked=async(url:URL,init:RequestInit={})=>{
+ const redirects=new Set([301,302,303,307,308])
+ const checked=async(url:URL,init:RequestInit={},allowRedirect=false)=>{
   let response:Response;try{response=await fetch(url,{...init,redirect:'manual',signal:AbortSignal.timeout(30000)})}catch{throw new VendorError(`${names[vendor]} could not be reached. Check the connection and resume.`)}
   if(response.status===401)throw new VendorError(`${names[vendor]} rejected this token. Check the token and account.`,401)
   if(response.status===403)throw new VendorError(`${names[vendor]} denied access: this token is missing permission for ${url.pathname}. Grant read access and reconnect.`,403)
   if(response.status===429){const raw=response.headers.get('Retry-After'),seconds=raw&&/^\d+$/.test(raw)?Number(raw)*1000:raw?Date.parse(raw)-Date.now():60000,retryAt=Date.now()+Math.max(1000,Math.min(seconds||60000,86400000));await response.body?.cancel();throw new VendorError(`${names[vendor]} rate limit reached. Try again after ${new Date(retryAt).toISOString()} (Retry-After).`,429,retryAt)}
+  if(allowRedirect&&redirects.has(response.status))return response
   if(!response.ok){await response.body?.cancel();throw new VendorError(`${names[vendor]} returned HTTP ${response.status} for ${url.pathname}. The checkpoint was kept.`,response.status===404?404:502)}return response
  }
- const json=async(path:string,body?:unknown)=>{const url=locate(path),docs=vendor==='helpscout'&&new URL(path,base+'/').hostname==='docsapi.helpscout.net';const h=headers(docs);if(body!==undefined)h.set('Content-Type','application/json');const response=await checked(url,{method:body===undefined?'GET':'POST',headers:h,...(body!==undefined?{body:JSON.stringify(body)}:{})});const bytes=await readBounded(response,2*1024*1024);try{return JSON.parse(new TextDecoder().decode(bytes))}catch{throw new VendorError(`${names[vendor]} returned an unreadable response. The checkpoint was kept.`)}}
- return {get:path=>json(path),post:(path,body)=>json(path,body),async attachment(path){
-  const candidate=new URL(path,base+'/'),url=vendor==='helpscout'&&candidate.hostname==='api.helpscout.net'?locate(path):candidate;if(url.username||url.password||!(url.protocol==='https:'||url.origin===origin.origin&&url.protocol==='http:'))throw new VendorError('Attachment URL must use HTTPS')
-  // Signed CDN URLs are permitted without the workspace token; authenticated fetches are same-origin only.
-  if(url.origin!==origin.origin&&(/^(localhost|127\.|0\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/.test(url.hostname)||url.hostname.includes(':')))throw new VendorError('Attachment host is private')
-  const allowed:Record<Vendor,string[]>={zendesk:['zendesk.com','zdusercontent.com','zendeskusercontent.com','zdassets.com'],intercom:['intercomcdn.com','intercomassets.com','intercom.io'],helpscout:['helpscout.net'],freshdesk:['freshdesk.com','freshworks.com','freshdesk-attachments.com','amazonaws.com']};if(url.origin!==origin.origin&&!allowed[vendor].some(host=>url.hostname===host||url.hostname.endsWith('.'+host)))throw new VendorError('Attachment host is not a documented provider download host');const response=await checked(url,{headers:url.origin===origin.origin?headers(false):new Headers()});return {bytes:await readBounded(response,20_000_000),contentType:response.headers.get('content-type')||'application/octet-stream'}
+ const json=async(path:string,body?:unknown,maxBytes=2*1024*1024)=>{const url=locate(path),docs=vendor==='helpscout'&&new URL(path,base+'/').hostname==='docsapi.helpscout.net';const h=headers(docs);if(body!==undefined)h.set('Content-Type','application/json');const response=await checked(url,{method:body===undefined?'GET':'POST',headers:h,...(body!==undefined?{body:JSON.stringify(body)}:{})});const bytes=await readBounded(response,maxBytes);try{return JSON.parse(new TextDecoder().decode(bytes))}catch{throw new VendorError(`${names[vendor]} returned an unreadable response. The checkpoint was kept.`)}}
+ return {get:(path,options)=>json(path,undefined,options?.maxBytes),post:(path,body)=>json(path,body),async attachment(path){
+  const allowed:Record<Vendor,string[]>={zendesk:['zendesk.com','zdusercontent.com','zendeskusercontent.com','zdassets.com','amazonaws.com'],intercom:['intercomcdn.com','intercomassets.com','intercom.io'],helpscout:['helpscout.net'],freshdesk:['freshdesk.com','freshworks.com','freshdesk-attachments.com','amazonaws.com']}
+  const candidate=new URL(path,base+'/');let url=vendor==='helpscout'&&candidate.hostname==='api.helpscout.net'?locate(path):candidate
+  for(let hop=0;hop<4;hop++){
+   if(url.username||url.password||!(url.protocol==='https:'||url.origin===origin.origin&&url.protocol==='http:'))throw new VendorError('Attachment URL must use HTTPS')
+   if(url.origin!==origin.origin&&(/^(localhost|127\.|0\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/.test(url.hostname)||url.hostname.includes(':')))throw new VendorError('Attachment host is private')
+   if(url.origin!==origin.origin&&!allowed[vendor].some(host=>url.hostname===host||url.hostname.endsWith('.'+host)))throw new VendorError('Attachment host is not a documented provider download host')
+   // Each hop is validated again; credentials go only to the source API origin.
+   const response=await checked(url,{headers:url.origin===origin.origin?headers(false):new Headers()},true)
+   if(!redirects.has(response.status))return {bytes:await readBounded(response,20_000_000),contentType:response.headers.get('content-type')||'application/octet-stream'}
+   const location=response.headers.get('Location');await response.body?.cancel()
+   if(!location)throw new VendorError('Attachment redirect has no download URL')
+   url=new URL(location,url)
+  }
+  throw new VendorError('Attachment download exceeded the redirect limit')
  }}
 }
 export async function probe(vendor:Vendor,client:ApiClient){await client.get(vendor==='zendesk'?'/api/v2/users.json?page[size]=1':vendor==='intercom'?'/admins':vendor==='helpscout'?'/v2/users?page=1':'/api/v2/agents?per_page=1&page=1')}

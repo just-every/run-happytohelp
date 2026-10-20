@@ -1,4 +1,4 @@
-export interface ApiClient {get(path:string):Promise<any>;post(path:string,body:unknown):Promise<any>}
+export interface ApiClient {get(path:string,options?:{maxBytes:number}):Promise<any>;post(path:string,body:unknown):Promise<any>}
 export interface ApiRecord {kind:string;payload:any}
 export interface SourceAgent {id:string;email:string|null;name:string;deleted:boolean}
 export interface ApiAttachment {ticketId:string;partId:string;id:string;filename:string;contentType:string;url:string;private:boolean;size:number|null}

@@ -10,7 +10,7 @@ export async function nativeRequest(path, init = {}) {
         return initial.result;
     }
     const response = await fetch(path, { credentials: 'same-origin', ...init });
-    const body = await response.json();
+    const body = response.status === 204 ? null : await response.json();
     // A sensitive action asks for a recent step-up; once confirmed, the same request runs once more.
     if (response.status === 403 && body.code === 'step_up_required' && !init.stepUpRetried && await confirmStepUp(body)) return nativeRequest(path, { ...init, stepUpRetried: true });
     notifyExpiredSession(path, response.status, body);

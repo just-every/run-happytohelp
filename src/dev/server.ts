@@ -23,7 +23,8 @@ export default {
   // Managed installations never receive a development identity, even through a local proxy.
   if(env.RER_INSTALLATION_ID){registerDevAdmission(null);return devNotFound()}
   const gate=devGate({key:String(env.RER_DEV_KEY||''),origin:String(env.APP_ORIGIN||''),local:env.H2H_LOCAL==='true'})
-  registerDevAdmission(gate?(r:Request)=>gate.admits(r):null)
+  // Native sessions survive top-level OAuth returns; dev sign-in below keeps the stricter gate.
+  registerDevAdmission(gate?(r:Request)=>gate.admitsSession(r):null)
   if(path==='/__dev/key')return gate&&env.RER_DEV_IDENTITY!=='off'?await gate.exchange(request)||devNotFound():devNotFound()
   if(path==='/auth/dev/enter'||path==='/__dev/personas'){
    if(!gate||env.RER_DEV_IDENTITY==='off'||!await gate.admits(request))return devNotFound()

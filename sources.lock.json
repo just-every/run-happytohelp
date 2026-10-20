@@ -1585,7 +1585,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "fd24c80401cc6b7bbfc55459b79ad6789696370f10cd28c1fc696bd531967aa5",
+      "sha256": "7bffd3dabe9bf4fb99bdcec01eb398834989b970ed0c7872fa37d573ee4bdb77",
       "executable": false
     },
     ".gitignore": {
@@ -3409,7 +3409,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "b8438d8a2b46efd8c7b4d27b0fe616910e91397c08a19fc9664db23e97ed7b0f",
+      "sha256": "e5d50e8bb1caf1157302a81d19fa5f2f9ca238e8e1660b69a0bbaefbb038f1d6",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -11397,7 +11397,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "4bc8c327acba61898d891f90b31c3752718b98238980d87a5b6af529c8f79a79",
+      "sha256": "f0044ff586fa12b0981ef54f50daac913977d984886907d93f987db1d3f63aec",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

@@ -17,6 +17,7 @@ export const schemaExceptions = [
   {migration: '182_import_kit_reversal_retirement.sql', names: ['ik_d1_stream_revision_update'], change: 'Allows namespace/operation retirement only for a deleted stream with its recorded retirement'},
   {migration: '190_email_step_up.sql', names: ['session_factors'], change: 'Rebuilds only the proof-method CHECK to admit email_link; all four prior columns and rows retained'},
   {migration: '195_restore_trigger_boundaries.sql', names: ['conversation_record_resolution'], change: 'Adds only whitespace before CASE and between END and its comma so the pinned Wrangler SQL splitter retains statement boundaries'},
+  {migration: '211_move_in_delta_fences.sql', names: ['ticket_version_update', 'ticket_closed_terminal', 'ticket_history_update', 'ticket_conversation_defaults'], change: 'Adds the reviewed import fence to version, terminal-status and history triggers; API imports retain their explicit status in the insert defaults'},
   {migration: '0110_move_in.sql', names: ['context_message_added', 'context_message_removed'], change: 'WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences ...) inserted before BEGIN'},
 ];
 
@@ -39,6 +40,14 @@ export function expectedSchema(before, after, added) {
       }
     }
     if (added.includes('195_restore_trigger_boundaries.sql') && name === 'conversation_record_resolution') wanted = {...entry, sql: entry.sql.replace(/\bEND,/g, 'END ,').replace('first_resolved_at=CASE', 'first_resolved_at= CASE')};
+    if (added.includes('211_move_in_delta_fences.sql')) {
+      const importFence = 'NOT EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=NEW.project_id AND f.conversation_id=NEW.id)';
+      if (name === 'ticket_version_update') wanted = {...entry, sql: entry.sql.replace(' BEGIN ', ` WHEN ${importFence} BEGIN `)};
+      if (name === 'ticket_closed_terminal' || name === 'ticket_history_update') wanted = {...entry, sql: entry.sql.replace(' WHEN ', ` WHEN ${importFence} AND (`).replace(' BEGIN', ') BEGIN')};
+      if (name === 'ticket_conversation_defaults') wanted = {...entry, sql: entry.sql
+        .replace('status_id= CASE WHEN NEW.resolved_at', "status_id= CASE WHEN NEW.ticket_source='move-in-api' THEN NEW.status_id WHEN NEW.resolved_at")
+        .replace('status_category= CASE WHEN NEW.resolved_at', "status_category= CASE WHEN NEW.ticket_source='move-in-api' THEN NEW.status_category WHEN NEW.resolved_at")};
+    }
     if (added.includes('181_context_message_subjects.sql') && name === 'context_message_added') wanted = {...entry, sql: messageSubjectTrigger};
     if (added.includes('182_import_kit_reversal_retirement.sql') && name === 'ik_d1_stream_revision_update') wanted = {...entry, sql: streamRetirementTrigger};
     if (added.includes('121_move_in_categories.sql')) {

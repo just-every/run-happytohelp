@@ -87,7 +87,11 @@ jobs:
           - name: assistant-mail-and-restore
             browser: false
             commands: |
-              node --test --test-concurrency=1 tests/journeys/restore.mjs tests/journeys/ai.mjs tests/journeys/public.mjs tests/journeys/email.mjs tests/journeys/knowledge.mjs tests/journeys/inbox.mjs tests/journeys/widget.mjs tests/journeys/erasure.mjs tests/journeys/legacy.mjs tests/journeys/context.mjs
+              node --test --test-concurrency=1 tests/journeys/restore.mjs tests/journeys/ai.mjs tests/journeys/public.mjs tests/journeys/email.mjs tests/journeys/knowledge.mjs
+          - name: inbox-widget-and-context
+            browser: false
+            commands: |
+              node --test --test-concurrency=1 tests/journeys/inbox.mjs tests/journeys/widget.mjs tests/journeys/erasure.mjs tests/journeys/legacy.mjs tests/journeys/context.mjs
           - name: context-browser
             browser: true
             commands: |

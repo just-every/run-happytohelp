@@ -8,6 +8,7 @@ import TicketIdentityPicker from './TicketIdentityPicker';
 import HandleTimer from './HandleTimer';
 import ProblemPanel from './ProblemPanel';
 import TicketHistory from './TicketHistory';
+import TriagePanel from '../triage/TriagePanel';
 import { json, label, priorities, ticketPath } from './ticket-model';
 import './tickets.css';
 
@@ -74,6 +75,7 @@ export default function TicketEditor({ conversation }) {
                 <HandleTimer conversation={conversation}/>
                 <ProblemPanel projectId={conversation.project_id} conversationId={conversation.id} ticket={ticket} onChanged={async()=>{const result=await nativeRequest(path);setTicket(result.data);setDraft(result.data);updateConversation(conversation.id,result.data);}}/>
             </>}
+            <TriagePanel conversation={conversation}/>
             <TicketHistory history={ticket.history} settings={settings} agents={agents} assistants={aisFor(conversation.project_id) || []} conversation={{ ...conversation, tags: ticket.tags || conversation.tags }}/>
         </>}
     </ConversationDetailSection>;

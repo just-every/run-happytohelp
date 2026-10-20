@@ -25,7 +25,7 @@ export function importedEmailThreadKeys(projectId:string,conversationId:string,v
  for(const {part,path,source} of rows){
   // Private, hidden and unsent records cannot add a customer-facing route.
   if(part?.public===false||part?.private===true||part?.part_type==='note'||part?.type==='note'||part?.state&&part.state!=='published')continue
-  const start=before();add(part,path);add(part?.source,`${path}/source`);add(part?.source_additional_info,`${path}/source_additional_info`);add(part?.via?.source,`${path}/via/source`);add(part?.metadata?.system,`${path}/metadata/system`);locate(start,source)
+  const start=before();add(part,path);add(part?.source,`${path}/source`);add(part?.source_additional_info,`${path}/source_additional_info`);add(part?.via?.source,`${path}/via/source`);add(part?.metadata?.system,`${path}/metadata/system`);add(part?.metadata?.custom,`${path}/metadata/custom`);locate(start,source)
  }
  const identifiers=before()
  const header=vendor==='zendesk'?'x-zendesk-ticket-id':vendor==='freshdesk'?'x-freshdesk-ticket-id':vendor==='helpscout'?'x-hs-conversation-id':'x-intercom-conversation-id'

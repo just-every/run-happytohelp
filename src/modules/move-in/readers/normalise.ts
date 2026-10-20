@@ -33,7 +33,7 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
   try{if(tags(record).some(name=>name.trim().length>80))throw new Error('tag_name_limit');let kind:string,tables:NativeValue['tables']={},target:string
    if(record.kind==='tag-name'){kind='tag';target=tagIds.get(record.sourceId)??id('tag',record.sourceId);if(tagIds.has(record.sourceId)){result.omissions.set(key,['existing_workspace_tag_reused']);result.effects.set(key,[]);continue}tables.workspace_tags=[{id:target,project_id:projectId,name:p.name,normalized_name:record.sourceId}]}
    else if(vendor==='zendesk'&&record.kind==='user'||vendor==='intercom'&&record.kind==='contact'){
-    if(vendor==='zendesk'){text(p.name,'contact_name_required',500);if(!email(p.email))throw new Error('contact_email_missing_or_invalid');time(p.created_at,'iso')}
+    if(vendor==='zendesk'){text(p.name,'contact_name_required',500);if(p.role==='end-user'&&!email(p.email))throw new Error('contact_email_missing_or_invalid');time(p.created_at,'iso')}
     if(vendor==='intercom'&&p.name!=null&&typeof p.name!=='string')throw new Error('contact_name_invalid')
     if(vendor==='zendesk'&&p.role!=='end-user'){if(!['agent','admin'].includes(p.role))throw new Error('user_role_unsupported');result.effects.set(key,[]);result.omissions.set(key,[...omissions,'historical_staff_retained_as_authors_no_access_created']);continue}
     const address=email(p.email);if(!address)throw new Error('contact_email_missing_or_invalid')

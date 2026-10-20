@@ -15,6 +15,8 @@ Keep credentials private. The form clears all credential fields after a successf
 
 ## Fetch, preview and import
 
+Freshdesk archives inactive tickets separately. Its documented API can retrieve an archived ticket when its ID is known, but does not list the archived inventory. This connector fetches ordinary tickets, including older tickets and spam; it cannot establish that every archived ticket was included. Compare the source archive inventory separately and keep source access until an additional archive export has been migrated. A matching ordinary-ticket preview is not proof of a complete account archive. See [Freshdesk ticket archiving](https://support.freshdesk.com/support/solutions/articles/212901-ticket-archiving).
+
 1. Wait while **Fetching history** updates the counts for tickets, contacts, companies, articles, agents, replies and attachments. Fetching does not approve or import the records.
 2. At **Ready for review**, compare the fetched counts with the source inventory. Review what will be imported, records needing fixes, omissions and article publication changes. Fetched counts and imported counts have different meanings; inspect the plan rather than treating a matching total as complete fidelity.
 3. Check **Match source agents to your team**. Matches by email are suggested; choose an existing workspace member or **Keep as source author** for each agent. Save changed mappings before approval. Deleted source agents keep their historical identity and may be explicitly matched to an existing member. No staff account is created or invited, no access is granted, and assignment mappings stay inactive until cutover.

@@ -52,6 +52,7 @@ export async function fenceImportErasure(env:Env,projectId:string,contactId:stri
  for(;;){const runs=(await env.DB.prepare('SELECT r.id,r.object_key,r.files_json FROM move_in_runs r JOIN move_in_erasure_runs e ON e.run_id=r.id WHERE e.project_id=? AND e.contact_id=? AND r.id>? ORDER BY r.id LIMIT 10').bind(projectId,contactId,after).all<any>()).results;if(!runs.length)break
   for(const run of runs){let cursor:string|undefined
    const retain=async(keys:string[])=>{if(keys.length)await env.DB.batch([env.DB.prepare("INSERT OR IGNORE INTO move_in_erasure_objects(project_id,contact_id,run_id,object_key) SELECT ?1,?2,?3,value FROM json_each(?4)").bind(projectId,contactId,run.id,JSON.stringify(keys))])}
+   await retain((await env.DB.prepare('SELECT object_key FROM move_in_api_files WHERE run_id=? AND contact_id=? AND object_key IS NOT NULL').bind(run.id,contactId).all<{object_key:string}>()).results.map(file=>file.object_key))
    await retain([...new Set<string>([run.object_key,...JSON.parse(run.files_json).map((f:any)=>f.key)].filter(Boolean))])
    do{const listed=await env.FILES.list({prefix:`move-in/${projectId}/${run.id}/`,cursor,limit:100});await retain(listed.objects.map(object=>object.key));cursor=listed.truncated?listed.cursor:undefined}while(cursor)
    after=run.id
@@ -62,6 +63,12 @@ export async function fenceImportErasure(env:Env,projectId:string,contactId:stri
 export function importErasureStatements(env:Env,projectId:string,contactId:string){
  const jobs=`SELECT j.id FROM ik_jobs j JOIN move_in_erasure_runs e ON j.id=e.job_id OR ((j.operation_key=e.run_id OR substr(j.operation_key,1,length(e.run_id)+1)=e.run_id||'/') AND j.destination=e.project_id) WHERE e.project_id=?1 AND e.contact_id=?2`,runs='SELECT run_id FROM move_in_erasure_runs WHERE project_id=?1 AND contact_id=?2',conversations='SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2',bind=(sql:string)=>env.DB.prepare(sql).bind(projectId,contactId)
  return [
+  bind(`DELETE FROM move_in_assignment WHERE project_id=?1 AND conversation_id IN (${conversations})`),
+  bind(`DELETE FROM context_evidence WHERE project_id=?1 AND source LIKE 'import:%:company' AND subject_id IN (SELECT target_id FROM ik_provenance WHERE target_kind='company' AND job_id IN (${jobs}))`),
+  bind(`DELETE FROM context_subjects WHERE project_id=?1 AND subject_id IN (SELECT target_id FROM ik_provenance WHERE target_kind='company' AND job_id IN (${jobs}))`),
+  bind(`DELETE FROM move_in_api_agents WHERE run_id IN (${runs})`),
+  bind(`DELETE FROM move_in_api_files WHERE run_id IN (${runs})`),
+  bind(`UPDATE move_in_api_runs SET cursor_json=NULL,counts_json='{}' WHERE run_id IN (${runs})`),
   bind(`DELETE FROM move_in_message_sources WHERE project_id=?1 AND message_id IN (SELECT id FROM messages WHERE ${erasedMessages})`),
   bind(`DELETE FROM move_in_notes WHERE project_id=?1 AND (conversation_id IN (${conversations}) OR (json_extract(author_json,'$.role')='contact' AND EXISTS(SELECT 1 FROM move_in_origins o JOIN move_in_conversations c ON c.conversation_id=move_in_notes.conversation_id AND c.project_id=o.project_id AND c.vendor=o.vendor WHERE o.project_id=?1 AND o.target_kind='contact' AND o.target_id=?2 AND o.source_id=json_extract(move_in_notes.author_json,'$.id'))))`),
   bind(`DELETE FROM move_in_origins WHERE project_id=?1 AND ((target_kind='contact' AND target_id=?2) OR (NOT(target_kind='contact' AND target_id<>?2) AND (target_kind,target_id) IN (SELECT target_kind,target_id FROM ik_provenance WHERE job_id IN (${jobs}))))`),

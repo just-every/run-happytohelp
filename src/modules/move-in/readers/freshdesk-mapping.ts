@@ -21,7 +21,8 @@ export function freshdeskTags(record:SourceRecord):string[]{return array((record
  * or agents (historical staff, never given access). Nothing is sent, assigned or activated. */
 export async function prepareFreshdesk({projectId,actorId,source,tagIds}:MappingInput):Promise<PreparedMapping>{
  const result:PreparedMapping={known:new Set(),effects:new Map(),rejections:new Map(),omissions:new Map()},records=new Map(source.records.map(r=>[recordKey(r),r])),id=(kind:string,sid:string)=>nativeId(projectId,'freshdesk',kind,sid)
- const person=(userId:unknown)=>{const sid=sourceId(userId,'freshdesk'),contact=records.get(`contact/${sid}`)?.payload as any,agent=records.get(`agent/${sid}`)?.payload as any
+ const person=(userId:unknown)=>{const sid=sourceId(userId,'freshdesk'),contact=records.get(`contact/${sid}`)?.payload as any,agent=records.get(`agent/${sid}`)?.payload as any,historical=records.get(`historical-author/${sid}`)?.payload as any
+  if(historical)return {id:sid,name:typeof historical.name==='string'?historical.name:null,role:'system',unrecorded:true,role_unavailable:true}
   if(contact)return {id:sid,name:typeof contact.name==='string'?contact.name:null,role:'contact'}
   if(agent)return {id:sid,name:typeof agent.contact?.name==='string'?agent.contact.name:null,role:'operator'}
   throw new Error('conversation_author_unknown')}

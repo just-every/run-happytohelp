@@ -5,19 +5,23 @@ import {emailKey} from './contact-keys'
 interface Table {name:string;key:string;columns:string[];order:string;generated?:string[];nativeOnly?:boolean}
 const table=(name:string,key:string,columns:string,order=key,generated?:string[]):Table=>({name,key,columns:columns.split(','),order,generated})
 const entities:Record<string,Table[]>={
+ company:[table('context_subjects','subject_id','project_id,subject_id,consent,revision,help_types,bot_enabled'),table('context_evidence','subject_id','id,project_id,subject_id,source,content,visibility,occurred_at','id')],
  category:[table('knowledge_categories','id','id,project_id,parent_id,name,slug,summary,is_published,position')],
  tag:[table('workspace_tags','id','id,project_id,name,normalized_name')],
  contact:[table('contacts','id','id,project_id,name,email,external_id,created_at,is_verified,metadata_json'),table('context_subjects','subject_id','project_id,subject_id,consent,revision,help_types,bot_enabled')],
  macro:[table('macros','id','id,project_id,title,content,created_by,created_at,updated_at')],
  article:[table('knowledge_articles','id','id,project_id,category_id,slug,title,content,summary,status,updated_at,position,source_revision,source_incarnation,publication_version','id',['publication_version']),table('knowledge_article_categories','article_id','article_id,category_id','category_id')],
  conversation:[
-  table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at,mailbox_id'),
+  table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at,mailbox_id,status_id,status_category,subject,priority,channel,brand_id,group_id,requester_id,submitter_id,submitter_type,ticket_version,ticket_actor_id,ticket_actor_type,ticket_source'),
   table('move_in_conversations','conversation_id','conversation_id,project_id,vendor,source_id,subject,source_state,source_channel'),
   table('email_threading_keys','conversation_id','project_id,conversation_id,key_kind,key_value,source,source_ref,created_at',"key_kind||':'||key_value"),
   table('messages','conversation_id','id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at,intent_hash,bucket_id,erased_at,citations_json','id'),
   table('move_in_message_sources','message_id','message_id,project_id,author_json,source_id,source_time,time_provenance','message_id'),
   table('move_in_notes','conversation_id','id,project_id,conversation_id,author_json,content,created_at,source_time','id'),
   table('conversation_tags','conversation_id','project_id,conversation_id,tag_id','tag_id'),
+  table('move_in_assignment','conversation_id','conversation_id,project_id,vendor,source_agent_id,member_id'),
+  table('conversation_participants','conversation_id','id,conversation_id,contact_id,created_at,joined_via','id'),
+  table('media','conversation_id','id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at','id'),
   ...[
    table('message_authorship','message_id','message_id,project_id,kind,source_kind,source_id,source_part,recorded_at','message_id'),
    table('conversation_ratings','resolution_id','resolution_id,value,comment,updated_at,revision','resolution_id'),
@@ -28,14 +32,12 @@ const entities:Record<string,Table[]>={
    table('conversation_resolutions','conversation_id','id,project_id,conversation_id,contact_id,ordinal,resolved_at,resolved_revision,cycle_start_revision,outcome,evidence_json,reopened_at','id'),
    table('conversation_notes','conversation_id','id,conversation_id,user_id,content,created_at','id'),
    table('conversation_ai','conversation_id','conversation_id,ai_id'),
-   table('conversation_participants','conversation_id','id,conversation_id,contact_id,created_at','id'),
    table('conversation_buckets','conversation_id','id,conversation_id,created_at,metadata_json','id'),
-   table('media','conversation_id','id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at','id')
   ].map(t=>({...t,nativeOnly:true}))]
 }
 function definitions(kind:string){const value=entities[kind];if(!value)throw new Error('unsupported_native_target');return value}
-function where(t:Table){if(t.name==='message_authorship')return 'message_id IN (SELECT id FROM messages WHERE conversation_id=? AND project_id=?)';if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return 'resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=? AND project_id=?)';if(t.nativeOnly)return 'conversation_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)';if(t.name==='move_in_message_sources')return 'project_id=? AND message_id IN (SELECT id FROM messages WHERE project_id=? AND conversation_id=?)';if(t.name==='knowledge_article_categories')return 'article_id=? AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=?)';return `project_id=? AND ${t.key}=?`}
-function params(t:Table,destination:string,id:string){return t.nativeOnly?[id,destination]:t.name==='move_in_message_sources'?[destination,destination,id]:t.name==='knowledge_article_categories'?[id,destination]:[destination,id]}
+function where(t:Table){if(t.name==='message_authorship')return 'message_id IN (SELECT id FROM messages WHERE conversation_id=? AND project_id=?)';if(t.name==='conversation_ratings'||t.name==='conversation_rating_history')return 'resolution_id IN (SELECT id FROM conversation_resolutions WHERE conversation_id=? AND project_id=?)';if(t.nativeOnly||t.name==='conversation_participants')return 'conversation_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)';if(t.name==='move_in_message_sources')return 'project_id=? AND message_id IN (SELECT id FROM messages WHERE project_id=? AND conversation_id=?)';if(t.name==='knowledge_article_categories')return 'article_id=? AND article_id IN (SELECT id FROM knowledge_articles WHERE project_id=?)';return `project_id=? AND ${t.key}=?`}
+function params(t:Table,destination:string,id:string){return t.nativeOnly||t.name==='conversation_participants'?[id,destination]:t.name==='move_in_message_sources'?[destination,destination,id]:t.name==='knowledge_article_categories'?[id,destination]:[destination,id]}
 function select(t:Table){return `(SELECT COALESCE(json_group_array(json_array(${t.columns.join(',')})),'[]') FROM (SELECT ${t.columns.join(',')} FROM ${t.name} WHERE ${where(t)} ORDER BY ${t.order}))`}
 function orderKey(t:Table,row:Record<string,any>){return t.name==='email_threading_keys'?`${row.key_kind}:${row.key_value}`:String(row[t.order])}
 function expected(t:Table,value:NativeValue){return JSON.stringify([...(value.tables[t.name]??[])].sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0).map(row=>t.columns.map(column=>column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null)))}
@@ -48,6 +50,8 @@ function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sq
 }
 export function nativeStatementCount(kind:string,value:NativeValue){return definitions(kind).filter(t=>!t.nativeOnly).reduce((n,t)=>n+(value.tables[t.name]?.length??0),0)+1+(kind==='conversation'?2:kind==='article'||kind==='contact'?1:0)}
 export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
+ if(kind==='conversation')for(const row of value.tables.conversations??[]){const original=value.tables.move_in_conversations?.[0],state=original?.source_state,status=({active:'open',hold:'on_hold',resolved:'solved',spam:'closed',snoozed:'on_hold'} as Record<string,string>)[state]??state,category=['new','open','pending','on_hold','solved','closed'].includes(status)?status:row.resolved_at?'solved':'open';Object.assign(row,{status_id:category,status_category:category,subject:original?.subject??'',priority:'normal',channel:original?.source_channel==='messenger'?'chat':original?.source_channel??'email',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'system',...row})}
+
  for(const t of definitions(kind))value.tables[t.name]=(value.tables[t.name]??[]).map(row=>Object.fromEntries(t.columns.map(column=>[column,column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null]))).sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0)
  return value
 }
@@ -62,7 +66,9 @@ export const nativeTargets:D1TargetAdapter={
  matches:guard,
  write(row){const value=row.value as unknown as NativeValue,statements:D1Sql[]=[]
   if(row.targetKind==='conversation')statements.push({sql:'INSERT INTO move_in_native_fences(project_id,conversation_id) VALUES(?,?)',params:[row.destination,row.targetId]})
-  for(const t of definitions(row.targetKind).filter(t=>!t.nativeOnly))for(const item of value.tables[t.name]??[]){if(item.project_id!==undefined&&item.project_id!==row.destination)throw new Error('native_destination_mismatch');const columns=t.columns.filter(c=>!t.generated?.includes(c));statements.push({sql:`INSERT ${t.name==='context_subjects'?'OR REPLACE ':''}INTO ${t.name}(${columns.join(',')}) VALUES(${columns.map(()=>'?').join(',')})`,params:columns.map(c=>item[c]??null)})}
+  const defs=definitions(row.targetKind).filter(t=>!t.nativeOnly),api=value.source.api_import===true
+  if(api){for(const t of [...defs].reverse().slice(0,-1))statements.push({sql:`DELETE FROM ${t.name} WHERE ${where(t)}`,params:params(t,row.destination,row.targetId)});statements.push({sql:'DELETE FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?',params:[row.destination,row.targetKind,row.targetId]})}
+  for(const t of defs)for(const item of value.tables[t.name]??[]){if(item.project_id!==undefined&&item.project_id!==row.destination)throw new Error('native_destination_mismatch');const columns=t.columns.filter(c=>!t.generated?.includes(c));const upsert=api&&t===defs[0]?` ON CONFLICT DO UPDATE SET ${columns.filter(c=>!['id','project_id','subject_id'].includes(c)).map(c=>`${c}=excluded.${c}`).join(',')}`:'';statements.push({sql:`INSERT ${!api&&t.name==='context_subjects'?'OR REPLACE ':''}INTO ${t.name}(${columns.join(',')}) VALUES(${columns.map(()=>'?').join(',')})${upsert}`,params:columns.map(c=>item[c]??null)})}
   if(row.targetKind==='contact'){const contact=value.tables.contacts[0];statements.push({sql:'UPDATE move_in_contact_keys SET email_digest=? WHERE project_id=? AND contact_id=? AND EXISTS(SELECT 1 FROM contacts WHERE project_id=? AND id=? AND email IS ?)',params:[emailKey(row.destination,contact.email),row.destination,row.targetId,row.destination,row.targetId,contact.email]})}
   if(row.targetKind==='article'){const article=value.tables.knowledge_articles[0];statements.push({sql:'UPDATE knowledge_articles SET source_incarnation=?,source_revision=? WHERE id=? AND project_id=?',params:[article.source_incarnation,article.source_revision,row.targetId,row.destination]})}
   if(row.targetKind==='conversation')statements.push({sql:'DELETE FROM move_in_native_fences WHERE project_id=? AND conversation_id=?',params:[row.destination,row.targetId]})
@@ -99,7 +105,7 @@ function snapshotQuery(t:Table){
  return t.name==='message_authorship'?`SELECT c.*,m.conversation_id AS bundle_id FROM ${ids} CROSS JOIN messages m ON m.project_id=?1 AND m.conversation_id=wanted.value CROSS JOIN message_authorship c ON c.message_id=m.id AND c.project_id=?1`:
     t.name==='conversation_ratings'||t.name==='conversation_rating_history'?`SELECT c.*,r.conversation_id AS bundle_id FROM ${ids} CROSS JOIN conversation_resolutions r ON r.project_id=?1 AND r.conversation_id=wanted.value CROSS JOIN ${t.name} c ON c.resolution_id=r.id`:
     t.name==='move_in_message_sources'?`SELECT c.*,m.conversation_id AS bundle_id FROM ${ids} CROSS JOIN messages m ON m.project_id=?1 AND m.conversation_id=wanted.value CROSS JOIN move_in_message_sources c ON c.message_id=m.id AND c.project_id=?1`:
-    t.nativeOnly?`SELECT c.*,c.conversation_id AS bundle_id FROM ${ids} CROSS JOIN conversations v ON v.id=wanted.value AND v.project_id=?1 CROSS JOIN ${t.name} c ON c.conversation_id=v.id`:
+    t.nativeOnly||t.name==='conversation_participants'?`SELECT c.*,c.conversation_id AS bundle_id FROM ${ids} CROSS JOIN conversations v ON v.id=wanted.value AND v.project_id=?1 CROSS JOIN ${t.name} c ON c.conversation_id=v.id`:
     t.name==='knowledge_article_categories'?`SELECT c.*,c.article_id AS bundle_id FROM ${ids} CROSS JOIN knowledge_articles a ON a.id=wanted.value AND a.project_id=?1 CROSS JOIN knowledge_article_categories c ON c.article_id=a.id`:
     `SELECT c.*,c.${t.key} AS bundle_id FROM ${ids} CROSS JOIN ${t.name} c ON c.${t.key}=wanted.value AND c.project_id=?1`
 }

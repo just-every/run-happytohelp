@@ -1,0 +1,9 @@
+/* API import additions use the existing settings forms and Move in column. */
+.move-in-api { min-width: 0; margin: 1rem 0; }
+.move-in-api-counts { display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; margin: 1rem 0; }
+.move-in-api-counts dt { font-weight: 400; color: var(--ink-soft); }
+.move-in-api-counts dd { margin: .2rem 0 0; font-weight: 500; }
+.move-in-agent-list { max-width: 640px; }
+.move-in-cutover-channel { min-width: 0; padding: 0; border: 0; margin: 1rem 0; }
+.move-in-cutover-channel legend { float: none; width: auto; margin-bottom: .5rem; font-size: 1rem; font-weight: 500; }
+.move-in-cutover-channel .form-check { margin: .65rem 0; }

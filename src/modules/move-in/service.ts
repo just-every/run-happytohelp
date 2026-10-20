@@ -1,3 +1,5 @@
+import {fetchApiPage} from './api-fetch'
+import {apiCheckpoint} from './api-lifecycle'
 import type { Env } from '../../platform/env'
 import {requireAuditedCustody} from './legacy-identities'
 import {putPrivate} from './private-custody'
@@ -23,7 +25,8 @@ async function parseChunk(env:Env,run:Run){const files=JSON.parse(run.files_json
  await updateRun(env,run,{cursor:chunk.length===LIMITS.parseBatch?run.cursor+chunk.length:0,file_index:chunk.length===LIMITS.parseBatch?run.file_index:run.file_index+1,parsed_total:run.parsed_total+statements.length,diagnostics_json:JSON.stringify(diagnostics)},statements)
 }
 export async function approve(env:Env,run:Run,fingerprint:string){await requireAuditedCustody(env,run);await approveReview(env,run,fingerprint);await enqueue(env,run)}
-export async function advanceImport(env:Env,run:Run){await assertAuthority(env,run);if(run.error||!['uploaded','parsing','planning','applying','undoing'].includes(run.state))return
- try{await requireAuditedCustody(env,run);if(run.state==='uploaded')await unpack(env,run);else if(run.state==='parsing')await parseChunk(env,run);else if(run.state==='planning')await preparePlan(env,run);else await advanceBatch(env,run)}catch(error){const code=error instanceof Error?error.message:'import_failed';await assertAuthority(env,run);await updateRun(env,run,{error:code.startsWith('D1_')?'Import database operation failed':code.slice(0,200)});return}
- const current=await getWorkRun(env,run.id);if(current&&!current.error&&['uploaded','parsing','planning','applying','undoing'].includes(current.state))await enqueue(env,current)
+export async function advanceImport(env:Env,run:Run){await assertAuthority(env,run);if(run.error||!['fetching','uploaded','parsing','planning','applying','undoing'].includes(run.state))return
+ try{await requireAuditedCustody(env,run);if(run.state==='fetching')await fetchApiPage(env,run);else if(run.state==='uploaded')await unpack(env,run);else if(run.state==='parsing')await parseChunk(env,run);else if(run.state==='planning')await preparePlan(env,run);else await advanceBatch(env,run)}catch(error){const code=error instanceof Error?error.message:'import_failed';await assertAuthority(env,run);await updateRun(env,run,{error:code.startsWith('D1_')?'Import database operation failed':code.slice(0,200)});return}
+ await apiCheckpoint(env,run)
+ const current=await getWorkRun(env,run.id);if(current&&!current.error&&['fetching','uploaded','parsing','planning','applying','undoing'].includes(current.state))await enqueue(env,current)
 }

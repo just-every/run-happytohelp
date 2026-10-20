@@ -54,6 +54,26 @@
           "label": "Move in your history"
         },
         {
+          "slug": "move-from-zendesk",
+          "source": "docs/move-from-zendesk.md",
+          "label": "Move from Zendesk"
+        },
+        {
+          "slug": "move-from-intercom",
+          "source": "docs/move-from-intercom.md",
+          "label": "Move from Intercom"
+        },
+        {
+          "slug": "move-from-helpscout",
+          "source": "docs/move-from-helpscout.md",
+          "label": "Move from Help Scout"
+        },
+        {
+          "slug": "move-from-freshdesk",
+          "source": "docs/move-from-freshdesk.md",
+          "label": "Move from Freshdesk"
+        },
+        {
           "slug": "limits",
           "source": "docs/PUBLIC-LIMITS.md",
           "label": "Limits and AI ceilings"

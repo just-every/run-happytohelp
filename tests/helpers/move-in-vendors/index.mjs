@@ -4,6 +4,7 @@ import {zendeskRoutes} from './zendesk.mjs';
 import {intercomRoutes} from './intercom.mjs';
 import {helpscoutRoutes} from './helpscout.mjs';
 import {freshdeskRoutes} from './freshdesk.mjs';
+import {initializeEmailEvidence,emailEvidence,configureEmailEvidence} from './email-evidence.mjs';
 
 const routes={zendesk:zendeskRoutes,intercom:intercomRoutes,helpscout:helpscoutRoutes,freshdesk:freshdeskRoutes};
 const basic=value=>'Basic '+Buffer.from(value).toString('base64');
@@ -13,6 +14,7 @@ const matches=(value,path)=>!value||(value instanceof RegExp?value.test(path):pa
 export async function startVendor(vendor,{tickets=305}={}) {
     if(!Object.hasOwn(routes,vendor))throw new TypeError(`Unsupported vendor ${vendor}`);
     const corpus=makeCorpus(tickets),requestLog=[],violations=[],faults=[];
+    initializeEmailEvidence(corpus,vendor);
     const token=`fixture-${vendor}-token`,email='importer@fixture.example.test',docsToken='fixture-helpscout-docs-key';
     const wrongToken='fixture-wrong-token',scopeToken=`${token}-scope`,rateToken=`${token}-rate`;
     let handle,baseUrl;
@@ -98,6 +100,8 @@ export async function startVendor(vendor,{tickets=305}={}) {
     };
     return {vendor,baseUrl,docsBaseUrl:baseUrl,token,email,docsToken,wrongToken,scopeToken,rateToken,
         corpus,requestLog,requests:requestLog,violations,
+        emailEvidence:(ticketId,commentId)=>emailEvidence(corpus,vendor,ticketId,commentId),
+        configureEmailEvidence:options=>configureEmailEvidence(corpus,vendor,options),
         change:options=>changeCorpus(corpus,options),fault,
         stopAfter:(after,options={})=>fault({...options,after}),
         clearFaults:()=>{faults.length=0;},clearRequests:()=>{requestLog.length=0;violations.length=0;},

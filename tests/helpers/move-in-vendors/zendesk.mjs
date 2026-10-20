@@ -1,5 +1,6 @@
 import {iso,seconds,FIXTURE_TIME} from './corpus.mjs';
 import {pageSlice,newer} from './pagination.mjs';
+import {emailEvidence} from './email-evidence.mjs';
 
 export function zendeskRoutes({corpus:c,baseUrl}) {
     const person=id=>c.agents.find(p=>p.id===Number(id))??c.contacts.find(p=>p.id===Number(id));
@@ -14,7 +15,7 @@ export function zendeskRoutes({corpus:c,baseUrl}) {
     const comment=(p,t)=>({id:p.id,type:'Comment',author_id:p.authorId,public:!p.private,body:p.body,
         html_body:`<p>${p.body}</p>`,plain_body:p.body,created_at:iso(p.createdAt),attachments:p.attachments.map(attachment),
         via:{channel:'email',source:{from:{address:person(p.authorId)?.email},to:{address:'support@fixture.example.test'},rel:null}},
-        metadata:{system:{},custom:{message_id:`<zendesk-${p.id}@fixture.example.test>`}}});
+        metadata:{system:{},custom:{}}});
     const ticket=p=>({id:p.id,url:`${baseUrl}/api/v2/tickets/${p.id}.json`,subject:p.subject,
         description:p.comments[0].body,requester_id:p.contactId,submitter_id:p.contactId,
         assignee_id:p.agentId,organization_id:p.companyId,status:p.mergedInto?'closed':p.status==='closed'?'solved':p.status,
@@ -28,6 +29,23 @@ export function zendeskRoutes({corpus:c,baseUrl}) {
     };
     return ({url,send})=>{
         const path=url.pathname.replace(/\.json$/,'');let match;
+        if(path==='/api/v2/email_notifications') {
+            const filters=['ticket_id','comment_id','notification_id'].filter(key=>url.searchParams.has(`filter[${key}]`));
+            if(!filters.length)return send({error:'A notification, comment, or ticket filter is required'},400);
+            const rows=c.tickets.flatMap(ticket=>ticket.comments.filter(part=>!part.private&&part.authorId<1000).map(part=>{
+                const evidence=emailEvidence(c,'zendesk',ticket.id,part.id);
+                return {ticket_id:ticket.id,comment_id:part.id,notification_id:evidence.notificationId,
+                    message_id:evidence.messageId,email_id:`fixture-email-${evidence.notificationId}`,
+                    created_at:iso(part.createdAt),updated_at:iso(part.createdAt),
+                    recipients:evidence.to.map(email_address=>({email_address,user_id:ticket.contactId,
+                        delivery_status:{id:5,name:'delivered',code:'200',message:'Email was delivered.'}})),
+                    url:`${baseUrl}/api/v2/email_notifications/${evidence.notificationId}`};
+            })).filter(row=>filters.every(key=>String(row[key])===url.searchParams.get(`filter[${key}]`)))
+                .sort((a,b)=>b.created_at.localeCompare(a.created_at)||b.notification_id-a.notification_id);
+            const p=pageSlice(url,rows,{cursorParam:'page[after]'});
+            return send({email_notifications:p.rows,meta:{has_more:p.more,after_cursor:p.cursor,before_cursor:null},
+                links:{next:p.next,prev:null}});
+        }
         if(path==='/api/v2/users'||path==='/api/v2/deleted_users') {
             const roles=[...url.searchParams.getAll('role'),...url.searchParams.getAll('role[]')];
             let rows=path.endsWith('/deleted_users')?c.agents.filter(a=>a.deleted):[...c.agents.filter(a=>!a.deleted),...c.contacts];

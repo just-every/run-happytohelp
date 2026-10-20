@@ -1,5 +1,6 @@
 import {seconds,FIXTURE_TIME} from './corpus.mjs';
 import {pageSlice,newer,decodeCursor,encodeCursor} from './pagination.mjs';
+import {emailEvidence,intercomEmailMetadata} from './email-evidence.mjs';
 
 export function intercomRoutes({corpus:c,baseUrl}) {
     const person=id=>c.agents.find(p=>p.id===Number(id))??c.contacts.find(p=>p.id===Number(id));
@@ -10,21 +11,23 @@ export function intercomRoutes({corpus:c,baseUrl}) {
         companies:{type:'list',data:[{type:'company',id:String(p.companyId),company_id:`company-${p.companyId}`}],has_more:false},custom_attributes:{}});
     const attachment=a=>({type:'upload',name:a.filename,url:`${baseUrl}/attachments/${a.id}/${a.filename}`,
         content_type:a.contentType,filesize:a.size,width:0,height:0});
-    const conversation=(p,detail)=>({type:'conversation',id:String(p.id),title:p.subject,created_at:seconds(p.createdAt),
+    const conversation=(p,detail,includeEmailHistory=false)=>({type:'conversation',id:String(p.id),title:p.subject,created_at:seconds(p.createdAt),
         updated_at:seconds(p.updatedAt),state:p.mergedInto?'closed':p.status==='pending'?'snoozed':p.status,
         open:p.status!=='closed'&&!p.mergedInto,read:true,priority:'not_priority',admin_assignee_id:String(p.agentId),
         tags:{type:'tag.list',tags:p.tags.map((name,i)=>({type:'tag',id:String(i+1),name}))},
         contacts:{type:'contact.list',contacts:[{type:'contact',id:String(p.contactId),external_id:`customer-${p.contactId}`}]},
-        source:{type:'conversation',id:String(p.comments[0].id),delivered_as:'customer_initiated',subject:p.subject,
+        source:{type:'email',id:String(p.comments[0].id),delivered_as:'customer_initiated',subject:p.subject,
             body:`<p>${p.comments[0].body}</p>`,author:author(p.contactId),attachments:p.comments[0].attachments.map(attachment),
-            url:null,redacted:false},
+            url:null,redacted:false,...(detail&&includeEmailHistory?{
+                email_message_metadata:intercomEmailMetadata(emailEvidence(c,'intercom',p.id,p.comments[0].id),{source:true})}:{} )},
         teammates:{type:'admin.list',admins:[{type:'admin',id:String(p.agentId)}]},
         cc:p.cc.map(email=>({type:'contact',email})),
         ...(detail?{conversation_parts:{type:'conversation_part.list',total_count:p.comments.length-1,
             conversation_parts:p.comments.slice(1).map(v=>({type:'conversation_part',id:String(v.id),
                 part_type:v.private?'note':'comment',body:`<p>${v.body}</p>`,created_at:seconds(v.createdAt),
                 updated_at:seconds(v.createdAt),notified_at:seconds(v.createdAt),author:author(v.authorId),
-                attachments:v.attachments.map(attachment),external_id:null,redacted:false}))}}:{})});
+                attachments:v.attachments.map(attachment),external_id:null,redacted:false,
+                ...(!v.private?{email_message_metadata:intercomEmailMetadata(emailEvidence(c,'intercom',p.id,v.id))}:{})}))}}:{})});
     const list=(url,key,rows,{body,page=false}={})=>{
         const target=new URL(url);
         if(body?.pagination?.starting_after)target.searchParams.set('starting_after',body.pagination.starting_after);
@@ -66,7 +69,7 @@ export function intercomRoutes({corpus:c,baseUrl}) {
             return send(list(url,'conversations',rows.map(p=>conversation(p,false)),{body}));
         }
         if((match=/^\/conversations\/(\d+)$/.exec(url.pathname))) {
-            const p=c.tickets.find(p=>p.id===Number(match[1]));return p?send(conversation(p,true)):send({errors:[{code:'not_found'}]},404);
+            const p=c.tickets.find(p=>p.id===Number(match[1]));return p?send(conversation(p,true,url.searchParams.get('include_email_history')==='true')):send({errors:[{code:'not_found'}]},404);
         }
         return false;
     };

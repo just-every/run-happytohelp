@@ -1,5 +1,6 @@
 import {iso,FIXTURE_TIME} from './corpus.mjs';
 import {hal,docsPage,newer} from './pagination.mjs';
+import {emailEvidence,originalEmail} from './email-evidence.mjs';
 
 // These links intentionally remain canonical. Tests inject a transport which sends
 // canonical requests to the local server; product host validation stays exercised.
@@ -48,6 +49,12 @@ export function helpscoutRoutes({corpus:c}) {
             let rows=newer(c.tickets,url.searchParams.get('modifiedSince'));
             if(url.searchParams.get('status')!=='all')rows=rows.filter(p=>p.status==='open');
             return send(hal(canonical,'conversations',rows.map(conversation)));
+        }
+        if((match=/^\/v2\/conversations\/(\d+)\/threads\/(\d+)\/original-source$/.exec(url.pathname))) {
+            const ticket=c.tickets.find(p=>p.id===Number(match[1]));
+            const part=ticket?.comments.find(p=>p.id===Number(match[2]));
+            if(!part||part.private||part.authorId<1000)return send({message:'Original email source unavailable'},404);
+            return send({original:originalEmail(emailEvidence(c,'helpscout',ticket.id,part.id),part)});
         }
         if((match=/^\/v2\/conversations\/(\d+)(?:\/(threads))?$/.exec(url.pathname))) {
             // A stale merged conversation redirects; its thread collection returns 404.

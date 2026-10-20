@@ -27,6 +27,8 @@ Returned values:
 - `requestLog` (alias `requests`): ordered `{method,path,url,query,auth,intercomVersion,status,body?}`; no credential headers. `auth` is only `valid`, `wrong`, `scope`, or `rate`.
 - `violations`: incorrect Intercom version, HTTP method, unknown path, or internal fixture errors. Expected 401/403/429 and configured faults do not add violations.
 - `corpus`: synthetic tickets, comments, agents, contacts, companies, articles and attachment metadata. Tests may inspect or deliberately mutate it.
+- `emailEvidence(ticketId = 1, commentId?)`: mutable historical email evidence, backed by `corpus.tickets[].comments[].email`. The default comment is the first public outbound reply for Zendesk/Intercom and the first inbound customer thread for Help Scout. Fields include `messageId`, `notificationId`, `subject`, `from`, `to`, `cc`, `references`, and `bodyDecoyMessageId`. Freshdesk returns only ticket/comment identity and its `[#id]` subject token, since its API does not expose Message-ID evidence.
+- `configureEmailEvidence({ticketId = 1, commentId?, ...changes})`: configure an old notification's `messageId`/`notificationId` or addresses before import. Returns the same evidence object. For example, `fixture.configureEmailEvidence({messageId:'<old-notification@fixture.example.test>'})`; later use `fixture.emailEvidence().messageId` for real inbound `In-Reply-To`. Freshdesk rejects this configuration rather than fabricating API evidence.
 - `change(options)`: defaults to one new ticket, a public reply on ticket 1, and closing ticket 2. Options are `addTickets`, `replyTo`, `reply:false`, `private`, `body`, `statusTicket`, `status:false`, and `at` (epoch milliseconds or ISO). Returns `{at,added,replyId,statusTicket}`. Each invocation advances the synthetic clock one minute.
 - `fault({after=0,path,status=503,once=false,disconnect=false,headers={},body})`: after that many matching authenticated requests, fail subsequent matches. `path` is a substring or RegExp. Returns a function that disables this fault.
 - `stopAfter(n, options)`: shorthand for `fault({...options,after:n})`; register immediately before starting a delta to interrupt its fetch. Requests are still logged. `clearFaults()` resumes normal behavior.
@@ -61,11 +63,24 @@ Freshdesk removed agents resolve as 404 from `/agents/:id` and as deleted
 contacts from `/contacts/:id`, without an invented former-agent flag. Their
 ticket `responder_id` retains the documented staff identity relationship.
 
+Historical email evidence uses documented surfaces: Zendesk
+`/api/v2/email_notifications?filter[ticket_id]=id&per_page=100` returns public
+outbound notifications with cursor exhaustion metadata; comment metadata has no
+fabricated Message-ID. Intercom conversation details include source
+`email_message_metadata` only with `include_email_history=true`; public email
+parts also carry their documented metadata. Help Scout inbound customer email
+threads expose `/v2/conversations/:id/threads/:threadId/original-source` as
+`{original: rawMime}`. Outbound/private thread source requests return 404.
+The MIME includes folded `References` and a deliberately different `Message-ID`
+line in the body, so the journey can prove only headers become routing evidence.
+Freshdesk preserves a `[#id]` subject token and adds no synthetic API header fields.
+
 REST shapes come from the official documentation:
 
 - [Zendesk incremental exports](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/), [ticket comments](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_comments/), [pagination](https://developer.zendesk.com/api-reference/introduction/pagination/).
 - [Intercom Data API 2.16](https://developers.intercom.com/docs/references/rest-api/api.intercom.io/conversations), [retrieve conversation](https://developers.intercom.com/docs/references/rest-api/api.intercom.io/conversations/retrieveconversation).
 - [Help Scout conversations](https://developer.helpscout.com/mailbox-api/endpoints/conversations/list/), [threads and merges](https://developer.helpscout.com/mailbox-api/endpoints/conversations/threads/list/), [Docs article lists](https://developer.helpscout.com/docs-api/articles/list/).
 - [Freshdesk API v2](https://developers.freshdesk.com/api/).
+- [Zendesk email notifications](https://developer.zendesk.com/api-reference/ticketing/tickets/email_notifications/), [Intercom 2.16 email history](https://developers.intercom.com/docs/references/changelog), [Help Scout original email source](https://developer.helpscout.com/mailbox-api/endpoints/conversations/threads/thread-source-json/).
 
 The helpers contain no test declarations and run no servers until explicitly started.

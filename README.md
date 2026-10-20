@@ -42,7 +42,11 @@ Hono, D1, R2, Queues and Durable Objects.
 Deploy the latest tagged release, **`v0.4.10`**, using the commands below.
 The cron-backlog test uses an explicitly synthetic signing token, so the public
 source passes RER's hosted credential scanner before agent dispatch. The same
-inbound-mail, scheduled-reply and backlog assertions remain in place.
+inbound-mail, scheduled-reply and backlog assertions remain in place. Ticket
+collaboration on a conversation is now a labelled group, valid ARIA in every
+state, and the account-security browser journey no longer fails by chance: the
+test runtime opens a Worker inspector only on a port it is given. Every journey
+assertion remains in place.
 
 **Upgrading from v0.4.9 adds no migrations.** Back up D1, R2, Durable Object state
 and private settings. Keep the existing migration ledger and installation state;

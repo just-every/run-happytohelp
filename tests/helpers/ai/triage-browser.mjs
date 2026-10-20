@@ -25,8 +25,8 @@ export async function triageBrowserJourney({runtime,browser,shot,fixture}){
   await page.goto(`${runtime.origin}/projects/${f.projectId}/conversations/${f.tickets[0].id}`)
   await page.locator('#conversation-assistant').waitFor({state:'attached'});if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click()
   await page.getByRole('tab',{name:'Details',exact:true}).click()
-  await page.locator('.triage-panel').scrollIntoViewIfNeeded();await page.locator('.triage-prediction').first().waitFor();await capture(`triage-ticket-${width}`,'.triage-panel')
-  await page.getByLabel('Field to correct',{exact:true}).selectOption('sentiment');await page.getByLabel('Correct sentiment',{exact:true}).selectOption('neutral');await page.getByRole('button',{name:'Save correction',exact:true}).click();await page.getByText('Triage correction saved.',{exact:true}).waitFor();await capture(`triage-correction-${width}`,'.triage-panel')
+  await page.locator('.triage-panel summary').first().scrollIntoViewIfNeeded();await page.locator('.triage-prediction').first().waitFor();await capture(`triage-ticket-${width}`,'.triage-panel')
+  await page.getByLabel('Field to correct',{exact:true}).selectOption('sentiment');await page.getByLabel('Correct sentiment',{exact:true}).selectOption('neutral');await page.getByRole('button',{name:'Save correction',exact:true}).click();await page.getByText('Triage correction saved.',{exact:true}).waitFor();await page.locator('.triage-history summary').click();await page.locator('.triage-history li').first().waitFor();await capture(`triage-correction-${width}`,'.triage-panel')
  }
  assert.deepEqual(errors,[])
  }catch(error){await page.screenshot({path:shot('triage-failure.png'),fullPage:true});console.error('Triage browser URL',page.url(),await page.locator('body').innerText());throw error}finally{await context.close();if(ownsRuntime)await runtime.close(true)}

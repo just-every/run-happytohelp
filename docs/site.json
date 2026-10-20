@@ -167,6 +167,11 @@
           "slug": "notifications",
           "source": "docs/notifications.md",
           "label": "Ticket notifications"
+        },
+        {
+          "slug": "triage",
+          "source": "docs/triage.md",
+          "label": "Intelligent triage"
         }
       ]
     },

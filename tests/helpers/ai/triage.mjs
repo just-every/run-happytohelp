@@ -2,12 +2,12 @@ import assert from 'node:assert/strict'
 import {assistantApp} from './app.mjs'
 export async function triageJourney(){
  const a=await assistantApp(),{app,p,owner,workspace:w,ai}=a,base=`/api/dashboard/projects/${p}`
- const call=async(path,body,method='POST',token=owner)=>{const result=await app.ok(base+path,{token,body,method});return result.data??result}
+ const call=async(path,body,method='POST',token=owner)=>{console.log('triage door',method,path);const result=await app.ok(base+path,{token,body,method});return result.data??result}
  const get=path=>call(path,undefined,'GET')
  const settings=()=>get('/triage-settings')
  const save=async change=>call('/triage-settings',{...await settings(),...change},'PUT')
  const read=id=>get(`/conversations/${id}/triage`),ticket=id=>get(`/conversations/${id}/ticket`)
- const run=async()=>a.run((await app.takeJobs()).filter(j=>j.type==='triage'))
+ const run=async()=>{console.log('triage consume');return a.run((await app.takeJobs()).filter(j=>j.type==='triage'))}
  let answer={intent:{value:'refund',confidence:.96,quote:'I need a refund'},sentiment:{value:'negative',confidence:.94,quote:'I am disappointed'},language:{value:'en',confidence:.99,quote:'I need a refund'}}
  ai.respond=()=>answer
  try{

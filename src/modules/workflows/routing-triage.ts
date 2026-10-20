@@ -6,7 +6,7 @@ import type {Conditions} from './conditions'
  * condition whose use for assignment needs measured, explicit lead approval. */
 export async function triageRouting(env:Env,ticket:any,event:string){
  const s=await settings(env,ticket.project_id)
- if(!s.enabled)return {eligible:(_conditions:Conditions)=>true,guard:{sql:'1',params:[] as unknown[]}}
+ if(!s.enabled)return {eligible:(conditions:Conditions)=>![...conditions.all,...conditions.any].some(c=>c.field==='field:triage_intent'),guard:{sql:'1',params:[] as unknown[]}}
  const job=await env.DB.prepare('SELECT * FROM triage_jobs WHERE project_id=? AND conversation_id=? ORDER BY source_revision DESC LIMIT 1').bind(ticket.project_id,ticket.id).first<any>()
  const label=await env.DB.prepare('SELECT max(rowid) version FROM triage_labels WHERE project_id=? AND conversation_id=?').bind(ticket.project_id,ticket.id).first<{version:number|null}>()
  const guard={sql:`EXISTS(SELECT 1 FROM triage_settings s WHERE s.project_id=c.project_id AND s.version=? AND s.enabled=1) AND (SELECT id FROM triage_jobs j WHERE j.conversation_id=c.id ORDER BY source_revision DESC LIMIT 1) IS ? AND (SELECT updated_at FROM triage_jobs j WHERE j.id=?) IS ? AND (SELECT max(rowid) FROM triage_labels l WHERE l.conversation_id=c.id) IS ?`,params:[s.version,job?.id??null,job?.id??null,job?.updated_at??null,label?.version??null] as unknown[]}

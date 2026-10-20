@@ -26,7 +26,7 @@ test('a reader searches the built docs and opens a linked heading through the si
   const { Miniflare } = await import(require.resolve('miniflare'));
   const output = '.rer/docs-search-test';
   await rm(output, { recursive: true, force: true });
-  execFileSync('pnpm', ['exec', 'rer', 'build', '--site'], { stdio: 'pipe' });
+  execFileSync('pnpm', ['exec', 'rer', 'build', '--site', '--no-queue'], { stdio: 'pipe' });
   await buildSearchArtifacts({ corpus: '.rer/docs-search/corpus.json', assets: '.rer/site', output }, { embed: async (_model, { text }) => vectors(text) });
   const mf = new Miniflare({ workers: [
     { name: 'site', modules: true, scriptPath: resolve(output, 'worker.mjs'), compatibilityDate: '2026-10-20',

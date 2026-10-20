@@ -3029,7 +3029,7 @@
       "executable": false
     },
     "scripts/site-search/build.mjs": {
-      "sha256": "b6c66d066fdd67a6f8ff25cc0f07dd36296a2f8074e26d52deccd31833861b75",
+      "sha256": "a82b2cfad894e13ab871080261566290b26c675cea7b10887111de9bdb6317e2",
       "executable": false
     },
     "scripts/usage/measure.mjs": {
@@ -9909,7 +9909,7 @@
       "executable": false
     },
     "tests/docs-search.mjs": {
-      "sha256": "25c4599440d4a4b193b390f320414c6b78328b48d9a9275cbeab7efc29ccb382",
+      "sha256": "6c7323d60c4a66de2e3f5bb4b792d7ecbf8691a41ace20546db2638aead737f2",
       "executable": false
     },
     "tests/eval-harness/fixtures/assist-human-voice.json": {

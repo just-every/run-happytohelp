@@ -50,6 +50,7 @@ export async function triageJourney(){
  assert.equal((await app.call(base+`/conversations/${id}/triage`,{token:collaborator.tokens.owner})).status,404)
  await app.ok(`/api/management/projects/${p}/contacts/${visitor.contactId}/erase`,{token:owner,body:{}})
  for(const table of ['triage_jobs','triage_labels'])assert.equal((await app.first(`SELECT count(*) n FROM ${table} WHERE conversation_id=?`,id)).n,0)
+ const taxonomy=(await settings()).taxonomy.map(t=>({...t,name:t.id==='refund'?'Returns and refunds':t.name,active:t.id!=='how_to'}));taxonomy.push({id:'cancel_subscription',name:'Cancel subscription',active:true});await save({routing_enabled:false,taxonomy});assert.deepEqual((await settings()).taxonomy,taxonomy)
  assert.ok((await app.sql("SELECT action FROM audit_events WHERE project_id=? AND action LIKE 'triage.%'",p)).length)
  }finally{await a.close()}
 }

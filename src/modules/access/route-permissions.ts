@@ -15,7 +15,7 @@ type Rule=Permission|'self'|'none'
 const P='/api/management/projects/:projectId',D='/api/dashboard/projects/:projectId',C=`${D}/conversations/:conversationId`,K='/api/knowledge/:projectId',X='/api/customer-context/:projectId/:subjectId',L='/api/projects/:project'
 const rules:Record<string,Rule>={
  // Own account and sign-in
- 'POST /api/identity/switch-project':'self','POST /api/identity/password':'self','POST /api/identity/accept-invitation':'self','DELETE /api/identity/session':'self',
+ 'POST /auth/signout':'self','POST /api/identity/switch-project':'self','POST /api/identity/password':'self','POST /api/identity/accept-invitation':'self','DELETE /api/identity/session':'self',
  'PUT /api/management/profile':'self',[`PUT ${P}/agents/:userId/primary`]:'self',
  'POST /api/identity/two-factor/totp':'self','POST /api/identity/two-factor/totp/confirm':'self','POST /api/identity/two-factor/webauthn/options':'self','POST /api/identity/two-factor/webauthn':'self',
  'DELETE /api/identity/two-factor/factors/:factorId':'self','POST /api/identity/two-factor/recovery-codes':'self','POST /api/identity/two-factor/verify':'self','POST /api/identity/two-factor/assertion-options':'self','POST /api/identity/step-up':'self','POST /api/identity/step-up/email':'self',
@@ -48,6 +48,11 @@ const rules:Record<string,Rule>={
  [`GET ${P}/audit`]:'audit.view',[`GET ${P}/audit/export`]:'data.export',[`PUT ${P}/audit/retention`]:'settings.manage',[`POST ${P}/audit/holds`]:'settings.manage',[`POST ${P}/audit/holds/:holdId/release`]:'settings.manage',
  // Reports
  [`GET ${D}/reports`]:'reports.view',
+ [`GET ${D}/reports/team`]:'reports.view',
+ [`GET ${D}/report-schedules`]:'data.export',
+ [`POST ${D}/report-schedules`]:'data.export',
+ [`PATCH ${D}/report-schedules/:scheduleId`]:'data.export',
+ [`DELETE ${D}/report-schedules/:scheduleId`]:'data.export',
  // Workspace settings
  'POST /api/management/projects':'settings.manage',[`PUT ${P}/settings`]:'settings.manage',[`DELETE ${P}`]:'data.erase',
  [`PUT ${P}/appearance`]:'settings.manage',[`PUT ${P}/artwork`]:'settings.manage',[`PUT ${P}/widget-settings`]:'settings.manage',[`PUT ${P}/availability`]:'settings.manage',[`PUT ${P}/ai`]:'settings.manage',
@@ -81,8 +86,14 @@ for(const base of [P,D]){rules[`PUT ${base}/agents/:userId`]='members.manage';ru
 // self-owned and their handlers separately guard shared definitions.
 for(const base of [P,D]){
  rules[`GET ${base}/ticket-settings`]='self'
+ rules[`GET ${base}/ticket-problem-search`]='conversations.manage'
  rules[`GET ${base}/conversations/:conversationId/ticket`]='self'
  rules[`PATCH ${base}/conversations/:conversationId/ticket`]='conversations.manage'
+ for(const method of ['GET','PATCH'])rules[`${method} ${base}/conversations/:conversationId/ticket/problem`]='conversations.manage'
+ for(const action of ['incidents/preview','incidents/apply','solve/preview','solve/apply'])rules[`POST ${base}/conversations/:conversationId/ticket/problem/${action}`]='conversations.manage'
+ rules[`GET ${base}/conversations/:conversationId/ticket/problem/solve/:previewId`]='conversations.manage'
+ rules[`GET ${base}/conversations/:conversationId/timer`]='conversations.manage'
+ for(const action of ['start','stop','adjust'])rules[`POST ${base}/conversations/:conversationId/timer/${action}`]='conversations.manage'
  for(const kind of ['statuses','fields','groups']){
   rules[`GET ${base}/ticket-${kind}`]='self'
   rules[`POST ${base}/ticket-${kind}`]='settings.manage'
@@ -110,6 +121,21 @@ for(const base of [P,D]){
  rules[`POST ${base}/workflow-clock`]='settings.manage'
 }
 
+for(const base of [P,D]){
+ for(const kind of ['companies','company-fields']){
+  const rule=kind==='companies'?'contacts.manage':'settings.manage'
+  rules[`GET ${base}/${kind}`]=rule
+  rules[`POST ${base}/${kind}`]=rule
+ }
+ rules[`GET ${base}/companies/:companyId`]='contacts.manage'
+ rules[`PATCH ${base}/companies/:companyId`]='contacts.manage'
+ for(const method of ['PUT','DELETE'])rules[`${method} ${base}/companies/:companyId/members/:contactId`]='contacts.manage'
+ for(const tail of ['merge/preview','merge','history/:historyId/undo'])rules[`POST ${base}/companies/:companyId/${tail}`]='contacts.manage'
+ for(const method of ['PATCH','DELETE'])rules[`${method} ${base}/company-fields/:fieldId`]='settings.manage'
+ for(const tail of ['preview',':runId/apply',':runId/undo'])rules[`POST ${base}/customer-imports/${tail}`]='data.import'
+ rules[`GET ${base}/customer-imports/:runId`]='data.import'
+}
+
 const prefixes=['/api/v1/','/api/management/admin/']
 for(const base of [P,D])rules[`POST ${base}/tickets`]='conversations.reply'
 for(const action of ['connect','imap'])rules[`POST ${P}/mailboxes/${action}`]='integrations.install'
@@ -123,6 +149,13 @@ rules[`POST ${P}/suspended/:id/recover`]='conversations.manage'
 rules[`DELETE ${P}/suspended/:id`]='conversations.manage'
 rules[`POST ${P}/sender-rules`]='settings.manage'
 export function routeRule(method:string,path:string):Rule|undefined{
+ if(path==='/api/escalations/webhooks/:connectionId'||path==='/api/escalations/attachments/:token')return 'none'
+ if(path.startsWith('/api/escalations/projects/:projectId/')){
+  if(method==='GET')return 'self'
+  if(path.endsWith('/connections'))return 'integrations.install'
+  if(path.endsWith('/send'))return 'conversations.reply'
+  return 'conversations.manage'
+ }
  if(prefixes.some(prefix=>path.startsWith(prefix)))return 'none'
  return r4RouteRule(method,path)??rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]
 }

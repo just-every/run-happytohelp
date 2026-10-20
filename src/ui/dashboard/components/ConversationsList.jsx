@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useMemo, useEffect, useState } from 'react';
 import TicketViews from './tickets/TicketViews';
 import TicketBulkActions from './tickets/TicketBulkActions';
+import ProblemBulkLink from './tickets/ProblemBulkLink';
 import BulkMacros from './macros/BulkMacros';
 import CreateEmailTicket from './CreateEmailTicket';
 import {Link} from '@tanstack/react-router';
@@ -10,6 +11,7 @@ import { ChatContext } from "../contexts/ChatContext";
 import { useNavigate } from '@tanstack/react-router';
 import { useDashboardSettings, useDashboardLocation } from '../../native/dashboard-state';
 import InboxTagFilter from './InboxTagFilter';
+import InboxCompanyFilter from './InboxCompanyFilter';
 import InboxSearch from './InboxSearch';
 import InboxViews from './InboxViews';
 import ConversationsFilter from './ConversationsFilter';
@@ -39,14 +41,14 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
     const navigate = useNavigate();
     const selectedView = normalizeInboxView(searchParams.view, inboxViewCounts);
     const searchQuery = searchParams.q == null ? '' : String(searchParams.q);
-    const filter = useMemo(() => ({...inboxViewFilter(selectedView, searchQuery, searchParams.assigned_to, searchParams.search_scope),...(searchParams.tag?{tag:String(searchParams.tag)}:{}),...(['only','include'].includes(searchParams.snoozed)?{snoozed:searchParams.snoozed}:{})}), [ selectedView, searchQuery, searchParams.tag, searchParams.assigned_to, searchParams.search_scope, searchParams.snoozed ]);
+    const filter = useMemo(() => ({...(searchParams.company?{company:String(searchParams.company)}:{}),...inboxViewFilter(selectedView, searchQuery, searchParams.assigned_to, searchParams.search_scope),...(searchParams.tag?{tag:String(searchParams.tag)}:{}),...(['only','include'].includes(searchParams.snoozed)?{snoozed:searchParams.snoozed}:{})}), [ selectedView, searchQuery, searchParams.company, searchParams.tag, searchParams.assigned_to, searchParams.search_scope, searchParams.snoozed ]);
     const projectId = settings.isGlobalInbox ? null : settings.project?.id;
     const ticketQueue = projectId && !settings.project?.is_demo;
     const [selected, setSelected] = useState({}), [selecting, setSelecting] = useState(false);
     const [creatingTicket,setCreatingTicket] = useState(false);
     const queueFilter = useMemo(() => ticketQueue && (searchParams.saved_view || searchParams.filters)
-        ? { ...(['only','include'].includes(searchParams.snoozed)?{snoozed:searchParams.snoozed}:{}), ...(searchQuery.trim() ? { q: searchQuery.trim(), search_scope: searchParams.search_scope || 'all' } : {}), ...(searchParams.tag ? { tag: String(searchParams.tag) } : {}), ...(searchParams.saved_view ? { saved_view: String(searchParams.saved_view) } : { filters: typeof searchParams.filters === 'string' ? searchParams.filters : JSON.stringify(searchParams.filters), sort: typeof searchParams.sort === 'string' ? searchParams.sort : JSON.stringify(searchParams.sort || []) }) }
-        : filter, [ticketQueue, searchParams.saved_view, searchParams.filters, searchParams.sort, searchParams.snoozed, filter]);
+        ? { ...(searchParams.company?{company:String(searchParams.company)}:{}), ...(['only','include'].includes(searchParams.snoozed)?{snoozed:searchParams.snoozed}:{}), ...(searchQuery.trim() ? { q: searchQuery.trim(), search_scope: searchParams.search_scope || 'all' } : {}), ...(searchParams.tag ? { tag: String(searchParams.tag) } : {}), ...(searchParams.saved_view ? { saved_view: String(searchParams.saved_view) } : { filters: typeof searchParams.filters === 'string' ? searchParams.filters : JSON.stringify(searchParams.filters), sort: typeof searchParams.sort === 'string' ? searchParams.sort : JSON.stringify(searchParams.sort || []) }) }
+        : filter, [ticketQueue, searchParams.saved_view, searchParams.filters, searchParams.sort, searchParams.snoozed, searchParams.company, filter]);
     const listKey = JSON.stringify(queueFilter);
     useEffect(() => { setSelected({}); }, [listKey, projectId]);
     const {
@@ -89,6 +91,7 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
                 {/* Follow the URL immediately, including Back before a read settles.
                     A completed view read must not overwrite newer search typing. */}
                 <InboxSearch query={ liveSearch.q == null ? '' : String(liveSearch.q) } viewPhrase={ inboxViewPhrase(selectedView) } onSearch={ handleSearch } /><InboxTagFilter projectId={settings.isGlobalInbox?null:settings.project?.id} value={String(searchParams.tag||'')} onChange={tag=>navigate({search:{...liveSearch,tag:tag||undefined}})}/>
+                <InboxCompanyFilter projectId={settings.projects?.[projectId]?.access?.permissions?.includes('contacts.manage')?projectId:null} value={String(searchParams.company||'')} onChange={company=>navigate({search:{...liveSearch,company:company||undefined}})}/>
                 <ConversationsFilter assignment={ filter.assigned_to } searchScope={ filter.search_scope || searchParams.search_scope || 'all' } searching={ Boolean(searchQuery.trim()) } onChange={ changes => navigate({search:{...liveSearch,saved_view:undefined,filters:undefined,sort:undefined,...changes}}) } />
             </div>
             {ticketQueue && <>
@@ -96,7 +99,7 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
                 {creatingTicket && <CreateEmailTicket projectId={projectId} onHide={()=>setCreatingTicket(false)} onCreated={conversation=>{refreshInboxData();if(conversation?.id)navigate({to:`/projects/${projectId}/conversations/${conversation.id}`});}}/>}
                 <TicketViews key={projectId} projectId={projectId} currentAgentId={currentAgent.id}/>
                 <div className="ticket-queue-actions"><button type="button" className="btn btn-sm btn-link" onClick={() => { setSelecting(value => !value); setSelected({}); }}>{selecting ? 'Done selecting' : 'Select tickets'}</button>{selecting && <button type="button" className="btn btn-sm btn-link" onClick={() => setSelected(Object.fromEntries(conversations.slice(0, 100).map(item => [item.id, { id: item.id, subject: item.subject, ticket_version: item.ticket_version }])))}>Select loaded tickets</button>}</div>
-                {selecting && Object.keys(selected).length > 0 && <><TicketBulkActions key={projectId} projectId={projectId} selected={Object.values(selected)} onClear={() => setSelected({})} onApplied={refreshInboxData}/><BulkMacros projectId={projectId} selectedTickets={Object.values(selected).map(ticket=>({id:ticket.id,expected_version:ticket.ticket_version}))} onApplied={refreshInboxData}/></>}
+                {selecting && Object.keys(selected).length > 0 && <><TicketBulkActions key={projectId} projectId={projectId} selected={Object.values(selected)} onClear={() => setSelected({})} onApplied={refreshInboxData}/><ProblemBulkLink projectId={projectId} selectedIds={Object.values(selected).map(ticket=>ticket.id)} onApplied={refreshInboxData}/><BulkMacros projectId={projectId} selectedTickets={Object.values(selected).map(ticket=>({id:ticket.id,expected_version:ticket.ticket_version}))} onApplied={refreshInboxData}/></>}
             </>}
             <div className="conversation-list-items" ref={ setListRefs }>
                 { conversations.map(conversation => selecting && ticketQueue ? <div className="ticket-bulk-row" key={conversation.id}><input className="form-check-input" type="checkbox" aria-label={`Select ticket ${conversation.subject || conversation.contact?.display_name || conversation.id}`} checked={Boolean(selected[conversation.id])} disabled={!selected[conversation.id] && Object.keys(selected).length >= 100} onChange={event => { const checked = event.target.checked; setSelected(current => { const next = { ...current }; if (checked) next[conversation.id] = { id: conversation.id, subject: conversation.subject, ticket_version: conversation.ticket_version }; else delete next[conversation.id]; return next; }); }}/><ConversationItem conversation={conversation}/></div> : <ConversationItem key={conversation.id} conversation={conversation}/>) }

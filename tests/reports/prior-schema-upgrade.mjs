@@ -13,6 +13,7 @@ import {m9Migrations} from '../helpers/recovery/m9-inventory.mjs';
 import {createHash} from 'node:crypto';
 import {seedCategoryUpgrade,assertCategoryUpgrade} from './upgrade-categories.mjs';
 import {knowledgeUpgradeDefaults,assertKnowledgeHistoryBackfill} from '../helpers/knowledge/upgrade.mjs';
+import {expectedSchema} from '../helpers/upgrade-schema-expectations.mjs';
 
 // A packaged install populated before the outcome, integration, mail and import stages upgrades in place; every prior row and file is kept.
 export async function priorSchemaUpgrade(){
@@ -191,6 +192,13 @@ try {
       if(entry.name==='edition_category_delete'){
         assert.ok(current,'category deletion retains its invalidation trigger');
         assert.deepEqual({...current,sql:entry.sql},entry,'category deletion retains its schema identity');
+        continue;
+      }
+      // M195 changes exactly three whitespace boundaries for native restore.
+      // Use the same explicit expectation as the released-install upgrade;
+      // every other character and schema property still has to match.
+      if(entry.name==='conversation_record_resolution'&&remaining.some(m=>m.name==='195_restore_trigger_boundaries.sql')){
+        assert.deepEqual(expectedSchema({[entry.name]:entry},{[entry.name]:current},remaining.map(m=>m.name)),[],'resolution trigger retains its exact schema except the three restore boundaries');
         continue;
       }
       for(const {column} of added)assert.ok(current.sql.includes(', '+column),'additional stage adds '+column+' to '+entry.name);

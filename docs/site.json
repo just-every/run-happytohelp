@@ -77,6 +77,11 @@
           "slug": "legacy-entry-points",
           "source": "docs/legacy-entry-points.md",
           "label": "Legacy entry points"
+        },
+        {
+          "slug": "companies-and-csv",
+          "source": "docs/companies-and-csv.md",
+          "label": "Companies and CSV imports"
         }
       ]
     },
@@ -117,6 +122,11 @@
           "slug": "tickets",
           "source": "docs/tickets.md",
           "label": "Tickets and the inbox"
+        },
+        {
+          "slug": "reports",
+          "source": "docs/reports.md",
+          "label": "Team reports"
         },
         {
           "slug": "email",
@@ -260,10 +270,6 @@
     {
       "source": "docs/moving-in-shapes.md",
       "reason": "Detailed supported import shapes beside the importer source and workflow guide"
-    },
-    {
-      "source": "docs/reports.md",
-      "reason": "Prepared 0.4 report cohorts, metrics and CSV reference linked from the overview"
     },
     {
       "source": "SEED-COMMAND-CONTRACT.md",

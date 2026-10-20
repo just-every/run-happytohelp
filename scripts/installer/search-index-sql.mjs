@@ -1,6 +1,7 @@
 import {constants} from 'node:fs';
 import {lstat, open, unlink} from 'node:fs/promises';
 import {isAbsolute} from 'node:path';
+import {orderSqlTriggers} from './sql-trigger-order.mjs';
 
 const table = 'inbox_message_search';
 const lookup = "SELECT type,sql FROM sqlite_master WHERE name='inbox_message_search'";
@@ -89,5 +90,16 @@ export async function exportD1Sql({inspect, runExport, output}) {
     await file.writeFile(`\n-- Derived conversation search cache, rebuilt from retained messages.\n${restore}`);
     await file.sync();
   } finally {await file.close();}
+  // Keep the native SQL restore usable as its additive schema grows. SQLite
+  // definitions remain unchanged; only complete trigger statements move.
+  const ordered = await open(output, constants.O_RDWR | constants.O_NOFOLLOW);
+  try {
+    const status = await ordered.stat();
+    if (!status.isFile() || status.nlink !== 1) throw new Error('SQL export is not a private regular file.');
+    const contents = orderSqlTriggers(await ordered.readFile('utf8'));
+    await ordered.truncate(0);
+    await ordered.write(contents, 0, 'utf8');
+    await ordered.sync();
+  } finally {await ordered.close();}
   return {output, derivedTable: table};
 }

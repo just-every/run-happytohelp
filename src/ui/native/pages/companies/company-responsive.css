@@ -1,0 +1,41 @@
+@media (max-width: 1100px) {
+    .companies-detail-grid { grid-template-columns: 220px minmax(0, 1fr); gap: 20px; }
+    .companies-summary { padding: 18px; }
+}
+@media (max-width: 900px) {
+    .companies-detail-grid { grid-template-columns: minmax(0, 1fr); }
+    .companies-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    .companies-summary section + section { border-top: 0; margin: 0; padding: 0; }
+}
+@media (max-width: 767px) {
+    .companies-tabs { gap: 18px; font-size: 13px; }
+    .companies-intro { align-items: flex-start; flex-direction: column; gap: 16px; }
+    .companies-workspace h2 { font-size: 21px; }
+    .companies-name { justify-content: flex-end; }
+    .companies-table .companies-chips { justify-content: flex-end; }
+    .companies-workspace .stack-table td { align-items: flex-start; }
+    .companies-form-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .companies-form-grid .form-switch { margin-top: 0; }
+    .companies-workspace .h2h-card { padding: 20px; }
+    .companies-section-heading { flex-wrap: wrap; gap: 12px; }
+    .companies-detail-hero { flex-wrap: wrap; }
+    .companies-detail-identity h2 { font-size: 25px; }
+    .companies-summary { grid-template-columns: minmax(0, 1fr); }
+    .companies-summary section + section { border-top: 1px solid var(--rule); padding-top: 20px; }
+    .companies-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .companies-member-search form, .companies-merge-select { flex-direction: column; align-items: stretch; }
+    .companies-member-list li { padding: 12px; gap: 10px; }
+    .companies-member-list .management-avatar { width: 32px; height: 32px; }
+    .companies-member-list .btn { padding: 4px; font-size: 13px; }
+    .companies-import-steps { flex-wrap: wrap; gap: 12px 0; padding-bottom: 16px; }
+    .companies-import-steps li { flex: 0 0 50%; padding: 0; font-size: 12px; gap: 8px; }
+    .companies-import-result { flex-direction: column; align-items: stretch; padding: 20px; }
+    .companies-import-counts { gap: 32px; }
+    .companies-import-run { flex-wrap: wrap; gap: 0; }
+    .companies-import-table td[data-label="Record values"] { display: block; text-align: left; }
+    .companies-import-table td[data-label="Record values"]::before { display: block; max-width: 100%; margin-bottom: 12px; }
+    .companies-import-values { min-width: 0; }
+    .companies-import-values > div { grid-template-columns: 90px minmax(0, 1fr); }
+    .companies-history > li { flex-wrap: wrap; }
+    .companies-merge-facts { grid-template-columns: minmax(0, 1fr); }
+}

@@ -54,7 +54,7 @@ export async function enforceRole(c:Context<AppEnv>,actor:Actor){
  let rule=route.path?routeRule(route.method,route.path):undefined
  if(rule==='members.manage'&&/\/agents\/:userId$/.test(route.path)&&c.req.param('userId')===actor.id)rule='self'
  // A report downloaded as CSV is an export.
- if((route.path.endsWith('/reports')||route.path==='/api/outcomes/projects/:projectId/results')&&c.req.query('format'))rule='data.export'
+ if(((route.path.endsWith('/reports')||route.path.endsWith('/reports/team'))||route.path==='/api/outcomes/projects/:projectId/results')&&c.req.query('format'))rule='data.export'
  if(route.path.endsWith('/conversations/:conversationId/actions')){const body=await c.req.json().catch(()=>null);if(body?.action==='markAsRead')rule='self'}
  if(rule==='self'||rule==='none')return
  if(rule===undefined){if(route.method==='GET'||access.base!=='collaborator')return}

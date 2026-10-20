@@ -1,5 +1,6 @@
 import React from 'react';
 import { fieldOptions, label } from './ticket-model';
+import {operationalHistory} from './TicketOperationalHistory';
 
 const titles = { status_id: 'Status', status_category: 'Status category', assigned_to: 'Assignee', agent_id: 'Assignee', current_ai_id: 'Assistant', ai_id: 'Assistant', brand_id: 'Brand', group_id: 'Group', requester_id: 'Requester', submitter_id: 'Submitter', submitter_type: 'Submitter type' };
 const actorRoles = { user: 'Teammate', agent: 'Teammate', contact: 'Customer', customer: 'Customer', system: 'System', installation: 'Installation', api: 'Workspace API', rule: 'Workflow rule', automation: 'Automation' };
@@ -57,6 +58,8 @@ function HistoryEntry({ item, settings, agents, assistants, conversation, tags }
     const rows = [];
     if (!erased) for (const [key, change] of Object.entries(changes)) {
         if (key === 'erased' || key === 'status_category' && changes.status_id?.from !== changes.status_id?.to) continue;
+        const operational = operationalHistory(key, change, changes);
+        if (operational !== undefined) { rows.push(operational); continue; }
         if (key === 'fields') {
             for (const [id, fieldChange] of Object.entries(change || {})) {
                 const field = settings.fields?.find(field => field.id === id);

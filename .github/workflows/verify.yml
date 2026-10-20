@@ -99,7 +99,12 @@ jobs:
           - name: connections-and-delegation
             browser: false
             commands: |
-              node --test --test-concurrency=1 tests/journeys/connections.mjs tests/journeys/delegation.mjs tests/journeys/delegation-computers.mjs tests/journeys/connector.mjs
+              node --test --test-concurrency=1 --test-skip-pattern=engineering tests/journeys/connections.mjs tests/journeys/delegation.mjs tests/journeys/delegation-computers.mjs tests/journeys/connector.mjs
+          - name: engineering-escalations
+            browser: true
+            commands: |
+              node --test --test-concurrency=1 --test-name-pattern=engineering tests/journeys/connections.mjs
+              node --test --test-concurrency=1 --test-name-pattern=selected.engineering tests/journeys/connections-browser.mjs
           - name: inbox-library-browser
             browser: true
             commands: |
@@ -115,7 +120,7 @@ jobs:
           - name: business-browsers
             browser: true
             commands: |
-              node --test --test-concurrency=1 tests/journeys/move-in-browser.mjs tests/journeys/reports-browser.mjs tests/journeys/connections-browser.mjs tests/journeys/erasure-browser.mjs
+              node --test --test-concurrency=1 --test-skip-pattern=selected.engineering tests/journeys/move-in-browser.mjs tests/journeys/reports-browser.mjs tests/journeys/connections-browser.mjs tests/journeys/erasure-browser.mjs
           - name: first-run-browser
             browser: true
             commands: |

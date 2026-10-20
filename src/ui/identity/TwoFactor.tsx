@@ -17,7 +17,7 @@ export default function TwoFactor() {
         nativeRequest('/api/identity/two-factor').then((value: Status) => { if (!value.pending) return proceed(); setStatus(value); })
             .catch((failure: any) => { if (failure.status === 401) location.assign('/login'); else setError(failure.message); });
     }, []);
-    const signOut = async () => { await nativeRequest('/api/identity/session', { method: 'DELETE' }).catch(() => {}); location.assign('/login'); };
+    const signOut = async () => { try { await nativeRequest('/auth/signout', { method: 'POST' }); location.assign('/login'); } catch (failure: any) { setError(failure.message); } };
     const away = <div className="id-links"><button type="button" className="tf-text-button" onClick={signOut}>Sign out</button><a href="/owner-recovery">Owner lost every factor?</a></div>;
     if (codes) return <IdentityFrame><RecoveryCodes codes={codes} look="identity" onDone={proceed} doneLabel="I have saved them. Continue" /></IdentityFrame>;
     if (!status) return <IdentityFrame><h1>Two-step sign-in</h1><Alert>{error}</Alert>{!error && <p className="id-lede">Checking your account…</p>}</IdentityFrame>;
@@ -25,7 +25,7 @@ export default function TwoFactor() {
         <h1>Check it’s you</h1>
         <p className="id-lede">Enter the code from your authenticator app, use your passkey, or use a recovery code.</p>
         <FactorProof look="identity" endpoint="/api/identity/two-factor/verify" passkey={status.factors.some(factor => factor.kind === 'webauthn')} submitLabel="Continue" onDone={proceed} />
-        {away}
+        <Alert>{error}</Alert>{away}
     </IdentityFrame>;
     return <IdentityFrame wide>
         <h1>Turn on two-factor sign-in</h1>
@@ -34,7 +34,7 @@ export default function TwoFactor() {
             <section><h2>Authenticator app</h2><AuthenticatorSetup look="identity" onDone={result => result ? setCodes(result) : proceed()} /></section>
             <section><h2>Passkey or security key</h2><PasskeySetup look="identity" onDone={result => result ? setCodes(result) : proceed()} /></section>
         </div>
-        {away}
+        <Alert>{error}</Alert>{away}
         {/* Setting up a factor asks for the password again when the sign-in is over 15 minutes old. */}
         <StepUpHost />
     </IdentityFrame>;

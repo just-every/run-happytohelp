@@ -1,3 +1,4 @@
+import { iconHead } from './icon-head'
 // The run site's shared pages: the Run page (Direction A: centred headline, two
 // stacked step cards, the facts under them), a small composed homepage for
 // seeds without an approved one (Base's references), and the not-found page.
@@ -64,12 +65,13 @@ const BASE = '*,*::before,*::after{box-sizing:border-box}html{-webkit-text-size-
   + 'h1,h2,p,ol{margin:0;padding:0}ol{list-style:none}a{color:inherit;text-decoration:none}'
   + 'a:focus-visible,button:focus-visible{outline:3px solid var(--rer-focus,var(--site-ink));outline-offset:3px;border-radius:8px}'
   + '.art{position:absolute;left:0;right:0;bottom:0;height:var(--art);pointer-events:none;z-index:0}.art img{width:100%;height:100%;display:block;object-fit:cover;object-position:center bottom}'
-  + '.bar,main{position:relative;z-index:1}.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:1360px;margin:0 auto;padding:26px 56px 0}'
+  + '.bar,main{position:relative;z-index:1}.bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;max-width:1360px;margin:0 auto;padding:26px 56px 0}'
   + '.brand{display:inline-flex;align-items:center;gap:12px;font:600 28px/1 var(--rer-font-heading,var(--rer-font-body,inherit));letter-spacing:var(--rer-wordmark-tracking,-.02em);color:var(--site-ink)}.brand img{width:40px;height:40px}'
-  + '.bar nav{display:flex;gap:36px;font-weight:500;font-size:16px}.bar nav a:hover{text-decoration:underline;text-underline-offset:4px}'
+  // The brand takes only its narrowest width when deciding whether the nav still fits beside it, so a long name wraps the nav onto its own row instead of pushing it past the viewport.
+  + '.bar .brand{flex:1 1 0;max-width:max-content}.bar nav{display:flex;flex-wrap:wrap;gap:36px;font-weight:500;font-size:16px}.bar nav a:hover{text-decoration:underline;text-underline-offset:4px}'
   + 'h1{font:600 64px/1.08 var(--rer-font-heading,var(--rer-font-body,inherit));letter-spacing:-.03em;color:var(--site-ink);text-wrap:balance}'
   + '.sub{margin-top:24px;color:var(--site-body);font-size:21px;text-wrap:pretty}'
-  + '@media(max-width:760px){body{font-size:16px;--art:180px}.bar{padding:18px 16px 0}.brand{font-size:23px;gap:9px}.brand img{width:32px;height:32px}.bar nav{gap:22px;font-size:15px}h1{font-size:38px;line-height:1.12}.sub{font-size:16.5px;margin-top:16px}}'
+  + '@media(max-width:760px){body{font-size:16px;--art:180px}.bar{padding:18px 16px 0}.brand{font-size:23px;gap:9px}.brand img{width:32px;height:32px}.bar nav{gap:22px;font-size:15px}.bar nav a{min-height:24px}h1{font-size:38px;line-height:1.12}.sub{font-size:16.5px;margin-top:16px}}'
 
 const HOME = 'main{max-width:1360px;margin:0 auto;padding:0 56px calc(var(--art) + 40px);text-align:center}.hero{padding-top:18vh;display:flex;flex-direction:column;align-items:center}.hero h1{max-width:20ch}.hero .sub{max-width:640px}'
   + '.actions{margin-top:40px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:16px 28px}'
@@ -79,31 +81,36 @@ const HOME = 'main{max-width:1360px;margin:0 auto;padding:0 56px calc(var(--art)
   + '.link{font-weight:500;text-decoration:underline;text-underline-offset:4px}'
   + '@media(max-width:760px){main{padding:0 16px calc(var(--art) + 40px)}.hero{padding-top:96px}.btn{min-height:56px;font-size:18px}}'
 
-const RUN = 'body{--art:max(20vh,150px)}main{max-width:1360px;margin:0 auto;padding:0 56px calc(var(--art) + 40px)}.intro{text-align:center;padding-top:36px}.intro h1{font-size:58px}.intro .sub{margin-inline:auto;max-width:760px;margin-top:20px}'
+// Keep overflow visible so a layout defect cannot be clipped away; the header's
+// bar and nav reflow in BASE when a seed's wordmark and links need more room.
+const RUN = 'body{--art:max(20vh,150px);overflow-x:visible}main{max-width:1360px;margin:0 auto;padding:0 56px calc(var(--art) + 40px)}.intro{text-align:center;padding-top:36px}.intro h1{font-size:58px}.intro .sub{margin-inline:auto;max-width:760px;margin-top:20px}'
   + '.steps{max-width:990px;margin:34px auto 0;display:grid;gap:18px}'
   + '.step{position:relative;display:grid;grid-template-columns:62px 1fr;gap:0 32px;padding:24px 30px 24px 28px;border-radius:24px;background:color-mix(in srgb,var(--rer-surface,#fff) 86%,transparent);border:1px solid var(--site-line);box-shadow:0 24px 48px -36px color-mix(in srgb,var(--site-ink) 45%,transparent);backdrop-filter:blur(6px)}'
   + '.step.option{grid-template-columns:1fr;padding-left:124px}.body{min-width:0}'
   + '.num{display:grid;place-items:center;width:62px;height:62px;border-radius:50%;background:var(--site-accent);color:var(--site-accent-ink);font:600 28px/1 var(--rer-font-heading,var(--rer-font-body,inherit))}'
   + '.step h2{margin-top:10px;font:600 26px/1.25 var(--rer-font-heading,var(--rer-font-body,inherit));letter-spacing:-.02em;color:var(--site-ink)}.step.option h2{margin-top:0}'
   + '.body>p{color:var(--site-body);font-size:18px;margin-top:6px}.body>p.alt{margin-top:14px;font-size:16px}.body>p.note{margin-top:14px;font-size:17px}.body>p.go{margin-top:14px}.go a{font-weight:600;text-decoration:underline;text-underline-offset:4px}'
-  + 'code{font-family:var(--site-mono);font-size:.92em;color:var(--site-ink)}.alt code{margin-left:.2em}.note code{margin-right:.1em}'
-  + '.code{position:relative;margin-top:16px;border-radius:12px;background:var(--rer-code-background,var(--site-ink));color:var(--rer-code-text,var(--rer-page,#f3f5f8))}'
-  + '.code pre{margin:0;padding:18px 108px 18px 22px;overflow-x:auto;font:500 16px/1.75 var(--site-mono);white-space:pre}.code pre code{color:inherit;font-size:inherit}'
+  + 'code{font-family:var(--site-mono);font-size:.92em;color:var(--site-ink)}.code-word{white-space:nowrap}.alt code{margin-left:.2em}.note code{margin-right:.1em}'
+  + '.code{position:relative;container-type:inline-size;margin-top:16px;border-radius:12px;background:var(--rer-code-background,var(--site-ink));color:var(--rer-code-text,var(--rer-page,#f3f5f8))}'
+  + '.code pre{margin:0;padding:18px 108px 18px 22px;font:500 16px/1.75 var(--site-mono);white-space:pre-wrap;overflow-wrap:anywhere}.code pre code{color:inherit;font-size:inherit}'
   + '.copy{position:absolute;top:50%;right:14px;transform:translateY(-50%);display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 14px;border:1px solid color-mix(in srgb,currentColor 35%,transparent);border-radius:999px;background:transparent;color:inherit;font:500 14px/1 var(--rer-font-body,inherit);cursor:pointer}'
   + '.copy:hover{background:color-mix(in srgb,currentColor 12%,transparent)}.copy svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.4}'
   + '.facts{margin-top:32px;color:var(--site-body);font-size:14px;display:grid;gap:6px;text-align:center}.facts a{text-decoration:underline;text-underline-offset:3px}'
   + '@media(max-width:760px){body{--art:180px}main{padding:0 16px calc(var(--art) + 40px)}.intro{padding-top:34px}.intro h1{font-size:38px}.steps{margin-top:28px}'
   + '.step,.step.option{padding:20px 18px;border-radius:18px;grid-template-columns:1fr;gap:0}.num{position:absolute;top:18px;left:18px;width:34px;height:34px;font-size:16px}'
   + '.step h2{margin:3px 0 0 46px;min-height:30px;font-size:20px}.step.option h2{margin-left:0}.body>p,.body>p.note{font-size:15.5px}.body>p.alt{font-size:14.5px}'
-  + '.code{margin-top:12px}.code pre{padding:46px 14px 14px;font-size:13px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}'
-  + '.copy{top:8px;right:8px;transform:none;min-height:32px;padding:0 12px;font-size:13px}.facts{font-size:13px;margin-top:28px}}'
+  + '.code{margin-top:12px}.facts{font-size:13px;margin-top:28px}}'
+  // The command keeps its own room: beside the Copy button while the block is wide enough for both, and under it
+  // (button on a row of its own above the text) as soon as it is not, whatever the page width or command length.
+  + '@container (max-width:700px){.code pre{padding:52px 20px 18px;font-size:15px;line-height:1.7}.copy{top:10px;right:10px;transform:none;min-height:32px;padding:0 12px;font-size:13px}}'
+  + '@container (max-width:480px){.code pre{padding:46px 14px 14px;font-size:13px}.copy{top:8px;right:8px}}'
 
 const COPY_SCRIPT = "document.addEventListener('click',async event=>{const button=event.target.closest('.copy');if(!button)return;try{await navigator.clipboard.writeText(button.dataset.copy);const label=button.querySelector('span');label.textContent='Copied';setTimeout(()=>{label.textContent='Copy'},1600)}catch{}})"
 const ARROW = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg>'
 
 export function document(identity: EditionIdentity, title: string, description: string, style: string, body: string, script = ''): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)}</title><meta name="description" content="${escape(description)}">`
-    + `<link rel="icon" href="${escape(identity.mark)}">${identity.fonts ? `<link rel="stylesheet" href="${escape(identity.fonts)}">` : ''}<link rel="stylesheet" href="${escape(identity.theme)}"><style>${identity.accentColor ? `:root{--rer-brand-accent:${identity.accentColor};--rer-brand-accent-text:${ink(identity.accentColor)}}` : ''}${BASE}${style}</style></head>`
+    + `${iconHead}${identity.fonts ? `<link rel="stylesheet" href="${escape(identity.fonts)}">` : ''}<link rel="stylesheet" href="${escape(identity.theme)}"><style>${identity.accentColor ? `:root{--rer-brand-accent:${identity.accentColor};--rer-brand-accent-text:${ink(identity.accentColor)}}` : ''}${BASE}${style}</style></head>`
     + `<body>${identity.band ? `<div class="art" aria-hidden="true"><img src="${escape(identity.band)}" alt=""></div>` : ''}${body}${script ? `<script>${script}</script>` : ''}</body></html>`
 }
 /** Docs, Contract and Source: Docs when the site has /docs, Contract when the seed has a CONTRACT.md. */
@@ -114,6 +121,11 @@ export function header(identity: EditionIdentity, run: RunData, contract?: SeedC
   return `<header class="bar"><a class="brand" href="/"><img src="${escape(identity.mark)}" alt="" width="40" height="40"><span>${escape(identity.product)}</span></a>`
     + `<nav aria-label="Site">${siteLinks(run, contract, current)}</nav></header>`
 }
+// Keep each word/path whole, leaving the original whitespace between words so
+// inline commands can wrap at spaces and selection copies the same text.
+const inlineCode = (value: string) => `<code>${escape(value).replace(/\S+/g, word => `<span class="code-word">${word}</span>`)}</code>`
+// The one-line alternative can break only before the repository; keep plain spaces for copying.
+const inlineStart = (run: RunData) => `<code><span class="code-word">${escape(npxStart)}dev</span> <span class="code-word">${escape(run.clone.slice(npxStart.length + 'dev '.length))}</span></code>`
 const codeBlock = (lines: string[], label: string) => `<div class="code"><pre aria-label="${escape(label)}"><code>${lines.map(escape).join('\n')}</code></pre>`
   + `<button class="copy" type="button" data-copy="${escape(lines.join('\n'))}"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M3 10.5V4a1.5 1.5 0 0 1 1.5-1.5H10"/></svg><span>Copy</span></button></div>`
 
@@ -124,10 +136,10 @@ export function runPageHtml(identity: EditionIdentity, run: RunData, contract?: 
   const hosted = run.hosted.map(option => `<li class="step option"><div class="body"><h2>${escape(option.title)}</h2><p>${escape(option.body)}</p><p class="go"><a href="${escape(option.href)}">${escape(option.action)}</a></p></div></li>`).join('')
   const body = `${header(identity, run, contract)}<main><div class="intro"><h1>Run ${name} on your computer.</h1><p class="sub">100% free and open source. Two lines, and ${name} opens in your browser.</p></div>`
     + `<ol class="steps"><li class="step"><span class="num" aria-hidden="true">1</span><div class="body"><h2>Install rer</h2>${codeBlock([installRer], 'Install rer')}`
-    + `<p class="note">It installs rer for you alone, with its own Node if you have no Node 22 or later. It changes no shell settings: if its last line puts rer on your PATH, run that line before step 2.</p></div></li>`
+    + `<p class="note">It installs rer for you alone, with its own Node if you have no Node 22 or later. The installer does not edit your shell files itself. If it ends with a line to run, run it before step 2: it puts rer on your PATH now and appends the same setting to your shell's startup file (for example ~/.zshrc) for new terminals.</p></div></li>`
     + `<li class="step"><span class="num" aria-hidden="true">2</span><div class="body"><h2>Start ${name}</h2>${codeBlock([rerStart(run)], `Start ${run.name}`)}`
-    + `<p class="note">rer gets ${name}, installs everything, makes you the owner and prints a link that opens ${name} signed in. To start it again later: <code>${escape(`cd ${run.folder} && rer dev`)}</code></p>`
-    + `<p class="alt">Already have Node 22 or later? <code>${escape(run.clone)}</code> does both steps in one line.</p></div></li>${hosted}</ol>`
+    + `<p class="note">rer gets ${name}, installs everything, makes you the owner and prints a link that opens ${name} signed in. To start it again later: ${inlineCode(`cd ${run.folder} && rer dev`)}</p>`
+    + `<p class="alt">Already have Node 22 or later? ${inlineStart(run)} does both steps in one line.</p></div></li>${hosted}</ol>`
     + `<footer class="facts"><p>${escape(run.requirements)}</p><p>Source: <a href="${escape(run.repository)}">${source}</a> · ${escape(run.licence)} license</p></footer></main>`
   return document(identity, `Run ${run.name}`, `Run ${run.name} on your computer. 100% free and open source.`, RUN, body, COPY_SCRIPT)
 }

@@ -432,3 +432,69 @@ working deployment.
   [Mail Send API](https://www.twilio.com/docs/sendgrid/api-reference/mail-send/mail-send),
   [Inbound Parse setup](https://www.twilio.com/docs/sendgrid/for-developers/parsing-email/setting-up-the-inbound-parse-webhook),
   [parse webhook security](https://www.twilio.com/docs/sendgrid/for-developers/parsing-email/securing-your-parse-webhooks).
+
+## Engineering escalations
+
+Open a ticket and expand **Engineering escalations**. Owners and admins can open
+**Workspace connections** and connect GitHub, Linear, Jira and Slack separately.
+Each workspace keeps its own encrypted token and webhook secret. Secret fields
+clear after saving; tokens never appear in reads, audit records or exports.
+An administrator needs to confirm their identity before installing credentials.
+
+For GitHub, enter the owner name, a slash, and the repository name. Use a
+fine-grained token with Issues read and write permission. For Linear, enter the team UUID and an API
+key that can create issues and comments. For Jira Cloud, enter the project key,
+`https://your-team.atlassian.net`, your Atlassian email and API token; the project
+must support the Task issue type. For Slack, use a bot token with `chat:write`,
+invite its app to the channel, and enter the channel ID. API URLs are restricted
+to each provider's own host, with loopback HTTP available for local installs.
+
+Choose **Create or link an issue / Slack handoff**, a destination, and create or
+link. Existing GitHub issues use their number, Linear uses an issue identifier or
+UUID, and Jira uses its project issue key. A ticket can link several issues, and
+several tickets can link the same issue. Repeating a link keeps one ticket link.
+The issue body or comment contains a link back to the ticket.
+
+Nothing is selected for sharing at first. Check each public message and each
+attachment separately, then preview the chosen context. Private notes and their
+attachments cannot be selected or shared. The ticket link is always included.
+Shared attachments use download links that expire after seven days; anyone with
+one of those links can download that chosen file until expiry or customer erasure.
+An unchecked attachment stays private even if its message is checked. Select a
+Slack channel explicitly or use the connection's default channel.
+
+Configure each tracker's issue webhooks at the endpoint displayed beside the
+saved connection. Use the same signing secret in the provider and HappyToHelp.
+GitHub uses its SHA-256 signature, Linear uses its body signature and fresh
+webhook timestamp, and Jira uses its secret-token `X-Hub-Signature` signature.
+Unsigned or forged deliveries are refused. Returning updates read the provider's
+current issue, update assignee and status, and notify the ticket's assigned owner.
+Duplicate and older deliveries cannot move the issue backwards. Assign an owner
+to each ticket that needs a notification. **Refresh status** reloads the ticket's
+saved issue state without sending anything to a provider.
+
+When an issue closes, each linked ticket gets a draft customer update. Choose
+**Review customer update** to put it in that ticket's reply composer. Edit it,
+review the recipient and channel, then click **Send** to approve and publish.
+Nothing is sent on closure alone. Recovery stays **Unconfirmed** until an
+operator records an observed customer result; an issue closing is not evidence
+that the customer recovered. A reopened issue withdraws unsent closure drafts.
+Collaborators can read escalations but cannot create, link, hand off, approve or
+record recovery. This version does not offer automatic publication policies.
+
+A lost provider response is shown as an unknown outcome. Check the provider
+before posting again; a request with that same identity is never automatically
+replayed. Link an issue that the provider already created. Audit records keep
+actors, counts and outcomes, without copying shared content or credentials.
+
+`rer export` includes saved links, issue state, handoffs, drafts and audit history.
+Import restores those records with disconnected credentials and no attachment
+grants. Reconnect each provider before accepting updates or sharing again.
+Contact erasure removes the contact's links, drafts, operations and download
+grants, retaining issues that other customers still link. It also records a
+provider deletion task: remove already shared context and copies in the tracker
+or Slack yourself. Local erasure cannot recall external copies.
+
+These paths are qualified locally against provider-shaped HTTP servers. Live
+GitHub, Linear, Jira and Slack accounts have not been qualified by this evidence.
+Teams handoffs belong to the separate business channels work.

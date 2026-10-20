@@ -1,4 +1,5 @@
 import React from 'react';
 import Reports from '../Reports';
 import SurveyPanel from './SurveyPanel';
-export default function ReportsWithSurveys(props){return <><Reports {...props}/><SurveyPanel {...props}/></>;}
+import TeamReports from '../reports/TeamReports';
+export default function ReportsWithSurveys(props){return <><TeamReports key={props.projectId} {...props}/><Reports {...props}/><SurveyPanel {...props}/></>;}

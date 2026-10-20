@@ -1,0 +1,53 @@
+/* Company management extends the app's native 12ui management cards, ink, cyan and hairline tables. */
+.companies-workspace { min-width: 0; max-width: 1440px; }
+.companies-workspace h2 { font-size: 22px; font-weight: 500; line-height: 1.3; margin: 0 0 8px; }
+.companies-workspace h3 { font-size: 17px; font-weight: 500; line-height: 1.4; margin: 0 0 8px; }
+.companies-workspace h4 { font-size: 14px; font-weight: 500; margin: 0 0 12px; }
+.companies-workspace p { line-height: 1.55; }
+.companies-workspace button, .companies-workspace input, .companies-workspace select { max-width: 100%; }
+.companies-workspace :is(button, a):focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.companies-workspace fieldset { min-width: 0; border: 0; margin: 0; padding: 0; }
+.companies-workspace .settings-note { color: var(--ink-soft); font-size: 14px; }
+.companies-tabs { display: flex; gap: 24px; flex-wrap: wrap; border-bottom: 1px solid var(--rule-strong); margin: -8px 0 28px; }
+.companies-tabs button { min-height: 48px; border: 0; border-bottom: 2px solid transparent; background: transparent; padding: 0 0 12px; color: var(--ink-soft); font: inherit; }
+.companies-tabs button[aria-current] { color: var(--ink); border-bottom-color: var(--ink); font-weight: 500; }
+.companies-intro, .companies-section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+.companies-intro { align-items: center; padding: 4px 0 12px; }
+.companies-intro p { margin-bottom: 0; }
+.companies-eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .09em; color: var(--ink-soft); margin: 0 0 8px !important; }
+.companies-total { white-space: nowrap; border: 1px solid var(--rule-strong); border-radius: 999px; padding: 7px 14px; font-size: 13px; }
+.companies-table { margin-bottom: 0; }
+.companies-name { display: inline-flex; align-items: center; text-align: left; gap: 12px; color: var(--ink); border: 0; background: transparent; padding: 3px 0; font: inherit; font-weight: 500; }
+.companies-name:hover > span:last-child { text-decoration: underline; text-underline-offset: 3px; }
+.companies-avatar { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; flex-shrink: 0; border: 1px solid var(--rule-strong); border-radius: 10px; background: var(--d-cyan-tint); font-size: 18px; }
+.companies-avatar--large { width: 56px; height: 56px; font-size: 25px; border-radius: 14px; }
+.companies-chips { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.companies-chip { display: inline-block; padding: 3px 8px; border: 1px solid var(--rule); border-radius: 5px; font-size: 12px; overflow-wrap: anywhere; }
+.companies-status { display: inline-flex; gap: 6px; align-items: center; border: 1px solid var(--rule-strong); border-radius: 999px; padding: 3px 10px; white-space: nowrap; font-size: 12px; color: var(--ink-soft); }
+.companies-status.is-enabled, .companies-status--create { background: var(--d-cyan-tint); color: var(--ink); border-color: var(--d-cyan-deep); }
+.companies-status--update { color: var(--ink); border-color: var(--ink-soft); }
+.companies-status--skip { border-style: dashed; }
+.companies-empty { padding: 64px 24px; text-align: center; border: 1px solid var(--rule-strong); border-radius: 12px; background: var(--surface); }
+.companies-empty h3 { font-size: 20px; margin-top: 16px; }
+.companies-empty p { max-width: 440px; margin: 8px auto 24px; color: var(--ink-soft); }
+.companies-empty-icon { display: inline-flex; width: 58px; height: 58px; align-items: center; justify-content: center; border: 1px solid var(--control-line); border-radius: 16px; background: var(--d-cyan-tint); font-size: 26px; }
+.companies-empty--small { padding: 32px 24px; }
+.companies-empty--small h3 { font-size: 17px; margin-top: 0; }
+.companies-empty--small p { margin-bottom: 0; }
+.companies-back { color: var(--ink-soft); border: 0; padding: 0; background: transparent; font: inherit; margin-bottom: 24px; }
+.companies-back:hover { color: var(--ink); }
+.companies-editor { max-width: 920px; }
+.companies-editor > h2 { margin-bottom: 24px; }
+.companies-workspace .h2h-card { border: 1px solid var(--rule-strong); border-radius: 12px; background: var(--surface); padding: 24px; margin-bottom: 24px; }
+.companies-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; }
+.companies-form-grid .form-switch { margin-top: 30px; }
+.companies-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.companies-entitlement .form-switch { margin-bottom: 12px; }
+.companies-entitlement > p { max-width: 700px; }
+.companies-access-note { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 6px; background: var(--d-cyan-tint); margin: 18px 0 0; font-size: 13px; }
+.companies-fields { max-width: 1100px; }
+.companies-section-heading > div { min-width: 0; }
+.companies-section-heading p { margin: 0; }
+.companies-section-heading > button { flex-shrink: 0; }
+.companies-field-editor { max-width: 850px; }
+.companies-field-editor h3 { margin-bottom: 20px; }

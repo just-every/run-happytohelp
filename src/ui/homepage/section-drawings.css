@@ -1,9 +1,8 @@
 /* The drawings below the hero, in the hero's language: hand-drawn ink cards on pale aqua blobs, the logo's sparks on a corner,
-   aqua for what matters. A frame stays only where it helps: the code editor behind the licence, the checkout page and the
-   import page. Every figure is its own stacking context with padding round the drawing, so its blob (filling the figure)
+   aqua for what matters. A frame stays only where it helps: the code editor behind the licence and the import page. Every figure is its own stacking context with padding round the drawing, so its blob (filling the figure)
    shows on every side and swells to one, and a card's sparks stay inside the figure. This file is the final drawing;
    motion.css says how each one arrives. */
-.h2h-home .licence-art, .h2h-home .offer-art, .h2h-home .import-art, .h2h-home .product-art { display: grid; isolation: isolate; }
+.h2h-home .licence-art, .h2h-home .import-art, .h2h-home .product-art { display: grid; isolation: isolate; }
 
 /* Not just better. Free.: the MIT License card over the code it licenses, on a blob that swells up and left. */
 .h2h-home .licence-art { font-size: clamp(14px, 1.2vw, 17px); padding: 3.4em 2.6em 3em 3.6em; }
@@ -22,27 +21,6 @@
 .h2h-home .licence-mark { --sweep: var(--d-cyan); padding: 0.05em 0.3em; margin: 0 -0.1em; border-radius: 0.3em 0.7em 0.4em 0.8em; }
 .h2h-home .licence-rights { display: flex; align-items: center; justify-content: space-between; gap: 0.8em; margin-top: 0.2em; }
 .h2h-home .licence-grant { --sweep: var(--d-cyan-tint); padding: 0.15em 0.35em; margin-left: -0.35em; border-radius: 0.5em 0.3em 0.6em 0.4em; }
-
-/* Help before they ask: the checkout, still in its window, and the widget's offer floating over its lower right corner on a
-   blob that swells right; on phones the offer sits under the page, overlapping its foot. */
-.h2h-home .offer-art { position: relative; font-size: clamp(13px, 1.15vw, 15px); padding: 2.4em 3.4em 3.6em 2.2em; }
-.h2h-home .offer-window { width: 62%; }
-.h2h-home .offer-checkout { display: grid; align-content: start; gap: 0.9em; width: 68%; padding: 1.5em 1.6em 2.2em; }
-.h2h-home .offer-title { display: flex; align-items: center; gap: 0.6em; font-weight: 500; font-size: 1.15em; }
-.h2h-home .sk-field { display: block; height: 2.6em; border: 1.5px solid var(--d-line); border-radius: 0.6em; background: #fbfaf7; }
-.h2h-home .sk-pay { display: inline-flex; justify-content: center; align-items: center; height: 2.8em; margin-top: 0.3em; border-radius: 999px; background: #d9d6ce; color: var(--d-ink); }
-.h2h-home .offer-widget { position: absolute; right: 1.4em; bottom: 1.1em; display: grid; gap: 0.8em; width: 20.5em; }
-.h2h-home .offer-message { display: flex; align-items: flex-end; gap: 0.6em; }
-.h2h-home .offer-avatar { display: grid; place-items: center; flex: none; width: 3.3em; height: 3.3em; border: 2px solid var(--d-ink); border-radius: 50%; background: #fff; box-shadow: 1px 1.5px 0 rgba(20, 20, 20, 0.55); }
-.h2h-home .offer-avatar .brand-mark { height: 2.05em; margin: -0.15em 0 0 0.1em; padding: 0; }
-.h2h-home .offer-say { position: relative; flex: 1; min-width: 0; }
-.h2h-home .offer-bubble { padding: 1em 1.15em; border: 2px solid var(--d-ink); border-radius: 1.1em 1.15em 1.1em 0.3em; background: #fff; box-shadow: 1px 1.5px 0 rgba(20, 20, 20, 0.55); font-size: 1.08em; line-height: 1.45; }
-/* The typing dots hold the bubble's place before it speaks: they sit on its foot, and rest hidden in the final drawing. */
-.h2h-home .offer-typing { position: absolute; left: 0; bottom: 0; display: flex; gap: 0.35em; padding: 0.95em 1.1em; border: 2px solid var(--d-ink); border-radius: 1.1em 1.1em 1.1em 0.3em; background: #fff; opacity: 0; }
-.h2h-home .offer-typing i { width: 0.5em; height: 0.5em; border-radius: 50%; background: var(--d-ink-soft); }
-.h2h-home .offer-choices { display: flex; gap: 0.5em; padding-left: 3.9em; }
-.h2h-home .offer-choices .d-btn { flex: 1; min-height: 2.5em; padding: 0 1em; border: 1.5px solid var(--d-ink); background: #fff; }
-.h2h-home .offer-choices .d-btn--ink { background: var(--d-ink); }
 
 /* The rest of your support desk: four frameless cards, a fixed 13px scale sized to a four-column grid. */
 .h2h-home .product-art { padding: 2em 2em 1.9em 1.3em; }
@@ -101,15 +79,11 @@
   .h2h-home .product-art { font-size: 14px; max-width: 520px; }
 }
 @media (max-width: 860px) {
-  .h2h-home .offer-art, .h2h-home .licence-art, .h2h-home .import-art { font-size: clamp(14px, 2.1vw, 16px); }
+  .h2h-home .licence-art, .h2h-home .import-art { font-size: clamp(14px, 2.1vw, 16px); }
 }
 @media (max-width: 640px) {
   .h2h-home .licence-art { padding: 2.8em 2.4em 2.4em 1.2em; }
   .h2h-home .licence-editor { width: 86%; }
   .h2h-home .licence-card { width: 92%; padding: 1.3em 1.3em 1.4em; }
-  .h2h-home .offer-art { font-size: 14px; padding: 1.6em 1.2em 2em; }
-  .h2h-home .offer-window { width: 100%; }
-  .h2h-home .offer-checkout { width: 100%; padding: 1.3em 1.3em 4.2em; }
-  .h2h-home .offer-widget { position: relative; right: auto; bottom: auto; justify-self: end; width: min(100% - 0.6em, 21em); margin-top: -3.2em; }
   .h2h-home .import-art { padding: 2.8em 2.8em 2.4em 1.2em; }
 }

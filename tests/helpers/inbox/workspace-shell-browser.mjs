@@ -200,8 +200,9 @@ try {
       assert.equal(await toggle.locator('img').count(),0,'no image mark');
       assert.equal(await adminPage.getByRole('link',{name:'HappyToHelp Administration',exact:true}).count(),1,'the toggle is named HappyToHelp Administration');
       const mark=await toggle.evaluate(link=>{const svg=link.querySelector('svg.brand-mark'),box=svg.getBoundingClientRect(),outer=link.getBoundingClientRect(),paths=[...svg.querySelectorAll('path')];return {ink:getComputedStyle(link).color,bubble:getComputedStyle(paths[0]).stroke,sparks:[...new Set(paths.slice(4).map(path=>getComputedStyle(path).stroke))],filter:getComputedStyle(svg).filter,height:box.height,inside:box.left>=outer.left&&box.right<=outer.right&&box.top>=outer.top&&box.bottom<=outer.bottom}});
-      const ink=await adminPage.evaluate(()=>{const hex=getComputedStyle(document.body).getPropertyValue('--ink').trim();return 'rgb('+hex.slice(1).match(/../g).map(v=>parseInt(v,16)).join(', ')+')'});
-      assert.equal(mark.ink,ink,'the nav\'s ink is the brand ink');
+      // The rail wears the dark palette (Ink rail), so the nav's ink is the rail's own --ink, not the page's.
+      const ink=await adminPage.evaluate(()=>{const hex=getComputedStyle(document.querySelector('#sidebar')).getPropertyValue('--ink').trim();return 'rgb('+hex.slice(1).match(/../g).map(v=>parseInt(v,16)).join(', ')+')'});
+      assert.equal(mark.ink,ink,'the nav\'s ink is the rail\'s ink');
       assert.equal(mark.bubble,mark.ink,'the bubble is drawn in the nav\'s ink');
       assert.deepEqual(mark.sparks,['rgb(143, 227, 238)'],'aqua sparks');
       assert.equal(mark.filter,'none','no filter recolours the mark');

@@ -6,9 +6,9 @@ import { useDashboardLocation } from './dashboard-state';
 import { adminTitles } from './pages/AdminRecords';
 import { workspacePageComponents, workspacePageRoute } from './workspace-page-code';
 import { AdminRequired, PageNotFound, ProjectUnavailable } from './pages/WorkspaceNotices';
-const titles={'workflow-settings':'Workflows','ticket-settings':'Tickets','api-settings':'API tokens','webhook-settings':'Webhooks','slack-settings':'Slack','delivery-log':'Delivery log',reports:'Reports','move-in':'Move in',edit:'Project',settings:'Project',ais:'AI',datasets:'Knowledge',articles:'Knowledge',categories:'Knowledge',agents:'Agents','local-agent':'Local computers','email-settings':'Email',suspended:'Suspended email','widget-settings':'Widget',macros:'Saved Replies',contacts:'Contacts',plugins:'Plugins',users:'Profile',insights:'Insights','training-runs':'Evaluation runs',security:'Security','security-log':'Security log',roles:'Roles'};
+const titles={companies:'Companies','workflow-settings':'Workflows','ticket-settings':'Tickets','api-settings':'API tokens','webhook-settings':'Webhooks','slack-settings':'Slack','delivery-log':'Delivery log',reports:'Reports','move-in':'Move in',edit:'Project',settings:'Project',ais:'AI',datasets:'Knowledge',articles:'Knowledge',categories:'Knowledge',agents:'Agents','local-agent':'Local computers','email-settings':'Email',suspended:'Suspended email','widget-settings':'Widget',macros:'Saved Replies',contacts:'Contacts',plugins:'Plugins',users:'Profile',insights:'Insights','training-runs':'Evaluation runs',security:'Security','security-log':'Security log',roles:'Roles'};
 export default function WorkspacePages({ settings, pages = {} }) {
-    const { Connections, Reports, MoveIn, ActivationPage, SetupTitle, GitHubSettings, ArticleImport,
+    const { Connections, Reports, Companies, MoveIn, ActivationPage, SetupTitle, GitHubSettings, ArticleImport,
         ProjectsPage, AdminPage, KnowledgePage, ManagementPage, ProjectSettings, WidgetSettingsPage,
         ComputersPage, DelegationSettings, DelegationAuthorize, TrainingRuns, AccountPage, InsightsPage, SecurityPage, SecurityLog, RolesPage, TicketSettings, SuspendedMail, WorkflowSettings } = { ...workspacePageComponents, ...pages };
     const pathname = useDashboardLocation().pathname;
@@ -20,6 +20,7 @@ export default function WorkspacePages({ settings, pages = {} }) {
     if(settings.projectUnavailable)page=<ProjectUnavailable/>;
     else if(section==='projects')page=<ProjectsPage/>;
     else if(section==='reports')page=<Reports projectId={projectId}/>;
+    else if(section==='companies')page=<Companies projectId={projectId} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='move-in')page=<MoveIn projectId={projectId}/>;
     else if(section==='activation')page=<ActivationPage projectId={projectId} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='articles'&&recordId==='import')page=<ArticleImport {...{projectId}}/>;

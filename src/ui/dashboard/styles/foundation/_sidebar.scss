@@ -1,7 +1,9 @@
 // The workspace navigation (Navigation.jsx, AdminNavigation.jsx): `nav#sidebar.navbar-vertical.navbar-expand-xl`.
-// From xl up a 232px paper column: the lockup, the workspace switcher, the primary list (Inbox, Setup, Knowledge, AI,
+// From xl up a 232px ink column: the lockup, the workspace switcher, the primary list (Inbox, Setup, Knowledge, AI,
 // Contacts, More), the one Settings row and the account row. Below xl a 64px top bar (menu, switcher, account) whose menu
-// opens as a full-height sheet. The current row is an aqua tint, never an ink fill.
+// opens as a full-height sheet. The rail is the brand ink in every display mode: it wears the dark palette
+// (homepage/brand-tokens.css), so every rule below reads its light ink, soft ink, hover and rule. The current row is an
+// aqua wash with white type, an aqua icon and an aqua edge, never a fill.
 
 body.workspace-themed {
   --rail-width: 232px;
@@ -13,10 +15,15 @@ body.workspace-themed {
   --bs-navbar-padding-y: 0;
   display: block;
   z-index: $zindex-fixed;
+  // Bootstrap's and the keyboard ring's variables are set on the body (foundation/_base.scss); the rail re-reads them.
+  --bs-body-color: var(--ink);
+  --bs-border-color: var(--rule);
+  --accessibility-focus-ring: var(--ink);
+  --accessibility-focus-halo: var(--rail);
   padding: 0;
   border: 0;
   color: var(--ink);
-  background: var(--paper-deep);
+  background: var(--rail);
   font-family: var(--font-sans);
 
   > .container-fluid { padding: 0; }
@@ -82,7 +89,7 @@ body.workspace-themed {
 
     .dropdown-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; white-space: normal; }
     // The workspace's own colour (its widget and help centre) as a swatch beside its name.
-    .navbar-workspace-swatch { flex: none; width: 14px; height: 14px; border: 1.5px solid var(--ink); border-radius: 50%; }
+    .navbar-workspace-swatch { flex: none; width: 14px; height: 14px; border: 1px solid var(--control-line); border-radius: 50%; }
     .dropdown-item.active { font-weight: 500; }
   }
 
@@ -117,14 +124,16 @@ body.workspace-themed {
   // Items change state at once (current page, hover): no fade through in-between colours.
   .nav-link, .native-global-contacts > summary, .nav-more > summary { transition: none; }
 
-  // The current row: a quiet aqua tint, with its icon in ink.
+  // The current row: an aqua wash with white type and an aqua icon; the aqua edge (12:1 on the rail) carries the state
+  // where the wash alone would be too faint.
   .navbar-nav > .nav-item > .nav-link.active,
   .nav-more .nav-link.active {
-    color: var(--ink);
+    color: #ffffff;
     background: var(--d-cyan-tint);
+    box-shadow: inset 3px 0 0 var(--d-cyan);
     font-weight: 500;
 
-    > .fe { color: var(--ink); }
+    > .fe { color: var(--d-cyan); }
   }
 
   // The unread count is a disc only while something is unread (navigationInboxBadge.jsx hides it at zero).
@@ -207,7 +216,7 @@ body.workspace-themed {
   .navbar-account-menu { position: relative; }
   .native-profile-toggle { display: flex; align-items: center; gap: 12px; width: 100%; padding: 4px 8px; border: 0; border-radius: 12px; color: var(--ink); background: transparent; text-align: left; }
   .native-profile-toggle:hover { background: var(--hover); }
-  .native-profile-avatar { display: flex; flex: 0 0 36px; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1.5px solid var(--ink); border-radius: 50%; color: var(--ink); background: var(--surface); font-size: 16px; font-weight: 500; }
+  .native-profile-avatar { display: flex; flex: 0 0 36px; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1px solid var(--control-line); border-radius: 50%; color: var(--ink); background: transparent; font-size: 16px; font-weight: 500; }
   .native-profile-avatar img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
   .navbar-profile-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; }
   .native-profile-toggle > .fe { flex: 0 0 18px; font-size: 18px; }
@@ -242,7 +251,7 @@ body.workspace-themed {
   }
 }
 
-// Desktop: the fixed paper column.
+// Desktop: the fixed ink column.
 @include media-breakpoint-up(xl) {
   #sidebar {
     position: fixed;
@@ -259,7 +268,7 @@ body.workspace-themed {
     .navbar-lockup { flex: 0 0 auto; margin: 0 0 22px 4px; }
     .navbar-workspace { flex: 0 0 auto; margin-bottom: 20px; }
     // The switcher sits in a quiet box so it reads as the workspace's name, not as a nav row.
-    button.navbar-workspace-toggle { padding: 10px 12px; border-radius: 12px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--rule); }
+    button.navbar-workspace-toggle { padding: 10px 12px; border-radius: 12px; background: rgba(var(--ink-rgb), .03); box-shadow: inset 0 0 0 1px var(--rule); }
     // The open switcher takes its own room in the column, so it never half-covers the items under it.
     .navbar-workspace-menu { position: static; width: 100%; margin-top: 8px; }
     .navbar-collapse { display: flex !important; flex: 1 1 auto; flex-direction: column; align-items: stretch; min-height: 0; }
@@ -330,7 +339,7 @@ body.workspace-themed {
       padding: 16px 20px 24px;
       overflow-y: auto;
       border-top: 1px solid var(--rule);
-      background: var(--paper-deep);
+      background: var(--rail);
 
       &:not(.show) { display: none; }
     }

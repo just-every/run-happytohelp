@@ -25,7 +25,7 @@ function AccountMenu({ agent, desktop = false, showAdmin = false }) {
             <span className="native-profile-avatar">{agent.avatar_url ? <img src={agent.avatar_url} alt=""/> : agent.name?.slice(0,1)}</span>
             {desktop && <><span className="navbar-profile-name">{agent.name}</span><i className="fe fe-chevron-up" aria-hidden="true"/></>}
         </button>
-        {open && <div className="dropdown-menu show native-account-dropdown"><Link className="dropdown-item" to="/users/profile">Profile</Link>{showAdmin&&<Link className="dropdown-item" to="/admin">Admin</Link>}<button className="dropdown-item" onClick={async()=>{if(!await confirmNavigation())return;try {setError('');await nativeRequest('/api/identity/session',{method:'DELETE'});await invalidateDashboardSession(router);await navigate({to:'/login',replace:true,ignoreBlocker:true});} catch(failure) {setError(failure.message);}}}>Sign out</button>{error && <p className="px-3 mb-1 text-danger" role="alert">{error}</p>}</div>}
+        {open && <div className="dropdown-menu show native-account-dropdown"><Link className="dropdown-item" to="/users/profile">Profile</Link>{showAdmin&&<Link className="dropdown-item" to="/admin">Admin</Link>}<button className="dropdown-item" onClick={async()=>{if(!await confirmNavigation())return;try {setError('');await nativeRequest('/auth/signout',{method:'POST'});await invalidateDashboardSession(router);await navigate({to:'/login',replace:true,ignoreBlocker:true});} catch(failure) {setError(failure.message);}}}>Sign out</button>{error && <p className="px-3 mb-1 text-danger" role="alert">{error}</p>}</div>}
     </div>;
 }
 
@@ -53,7 +53,7 @@ export default function Navigation({ settings }) {
     const workspaceName = settings.projectUnavailable ? 'Workspace unavailable' : settings.isGlobalInbox ? 'Global Inbox' : settings.project?.name;
     const brand = !settings.isGlobalInbox && (settings.project?.brand_image_url || settings.project?.avatar_url);
     // A row is current on its own path and on pages that render the same screen.
-    const primaryActive = path => path==='articles' ? ['articles','datasets','categories','training-runs'].some(section=>pathIsWithin(here,`${base}/${section}`)) : path==='local-agent' ? pathIsWithin(here,`${base}/${path}`)||pathIsWithin(here,'/local-agent/authorize') : pathIsWithin(here,`${base}/${path}`);
+    const primaryActive = path => path==='articles' ? ['articles','datasets','categories','training-runs'].some(section=>pathIsWithin(here,`${base}/${section}`)) : path==='contacts' ? ['contacts','companies'].some(section=>pathIsWithin(here,`${base}/${section}`)) : path==='local-agent' ? pathIsWithin(here,`${base}/${path}`)||pathIsWithin(here,'/local-agent/authorize') : pathIsWithin(here,`${base}/${path}`);
     const inboxActive = here.includes('conversations') || here==='/';
     const current = on => on ? 'page' : undefined;
     const projectRows = [['Setup','activation','check-square'],['Knowledge','articles','book-open'],['AI','ais','cpu'],['Contacts','contacts','users']];

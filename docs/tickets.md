@@ -33,3 +33,19 @@ Ticket records are returned by the conversation API with their status ID and cat
 Personal and shared views use `GET`, `POST`, `PUT` and `DELETE /api/dashboard/projects/:projectId/ticket-views`. Leads preview and apply changes with `POST /api/dashboard/projects/:projectId/tickets/bulk/preview` and `/apply`. The preview reports eligible and refused records before commit; the apply response reports each record's result. These dashboard routes use the signed-in workspace session and enforce current permissions.
 
 The conversation API's existing messages and contact operations remain documented in [Workspace API](api.md).
+
+## Handle time
+
+Open a ticket's **Details → Ticket** panel and choose **Start timer** while working. Choose **Stop timer** when you finish. Solving or closing the ticket stops every operator's running timer, including when a rule or bulk action solves it. Reopening a ticket lets you start another session.
+
+Choose **Adjust completed time** to correct a stopped session. Enter the corrected duration and a reason. Operators can correct their own sessions; permitted leads can correct a teammate's. Original timestamps and corrections stay in ticket history and the security log. The [team report](reports.md#team-report) adds these sessions using the workspace's calendar range.
+
+## Problems and incidents
+
+For an issue affecting several customers, mark its tracking ticket as a **Problem** in the Ticket panel. Search for affected tickets and preview their links, or select tickets in the inbox and choose a problem in the bulk-link control. Each incident keeps its own customer, conversation, SLA and rating. A problem lists its linked incidents, customers and count; large lists have page controls. Preview an unlink before removing a ticket that belongs elsewhere. Link changes are recorded in both tickets' history and the security log.
+
+In the problem, compose a public update and preview it before sending. Placeholders such as `{{contact.name}}` and `{{agent.name}}` are expanded separately for every requester; unresolved placeholders block that ticket. Review each rendered reply, channel and recipient. Choose whether to solve the incidents or send an update that leaves them open. The problem itself is solved after this operation. You can also solve the problem through the ordinary status control without sending an incident update.
+
+Email replies go only to each incident's requester, through that incident's connected mailbox when present. Widget replies appear in that incident's own conversation and do not send an extra email. Opted-out email recipients, unavailable requesters, disconnected mailboxes, unsupported channels and changed tickets are reported with a reason. Unsupported channels wait for their own transport; an email address does not turn another channel into email.
+
+Each ticket has a separate result. A failed or uncertain send leaves the incident open. The result remains readable after reloading; repeating the same operation does not resend its replies. A new customer message, changed requester, changed link or permission loss invalidates the reviewed ticket before delivery. For more than 100 incidents, review and send explicit batches from the incident pages. Ticket history and the security log record links, admitted replies and confirmed bulk solves. Export/import preserves the relationship history while preventing old previews or uncertain sends from restarting.

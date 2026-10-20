@@ -1,3 +1,5 @@
+import {customerRoutes} from '../customers/index'
+import {csvCustomerRoutes} from '../import-kit/csv/routes'
 import {workflowRoutes} from '../workflows/routes'
 import {reports} from '../reports/routes'
 import {Hono} from 'hono'
@@ -29,11 +31,11 @@ import {notificationRoutes} from '../integrations/triggers'
 import {collaborationRoutes} from '../collaboration/routes'
 import {conversationActionRoutes} from '../conversation-actions/routes'
 export const routes=new Hono<AppEnv>()
-routes.route('/',activation).route('/',workspaceArtwork).route('/',projects).route('/',resources).route('/',contactErasure).route('/',widgetSettings).route('/',integrations).route('/',admin).route('/',invitations).route('/',githubOAuth).route('/',projectPolicy).route('/',auditRoutes).route('/',roles).route('/',twoFactorPolicy)
+routes.route('/',customerRoutes).route('/',csvCustomerRoutes).route('/',activation).route('/',workspaceArtwork).route('/',projects).route('/',resources).route('/',contactErasure).route('/',widgetSettings).route('/',integrations).route('/',admin).route('/',invitations).route('/',githubOAuth).route('/',projectPolicy).route('/',auditRoutes).route('/',roles).route('/',twoFactorPolicy)
 export const dashboardRoutes=new Hono<AppEnv>()
 routes.route('/',workflowRoutes).route('/',ticketRoutes).route('/',queueRoutes).route('/',macroRoutes).route('/',notificationRoutes)
 dashboardRoutes.route('/',workflowRoutes).route('/',ticketRoutes).route('/',queueRoutes).route('/',macroRoutes).route('/',notificationRoutes).route('/',collaborationRoutes).route('/',conversationActionRoutes)
-dashboardRoutes.route('/',reports).route('/',demoInbox).route('/',dashboard).route('/',dashboardActions).route('/',dashboardMedia).route('/',resources).route('/',aiUsage).route('/',aiSpend).route('/',followers)
+dashboardRoutes.route('/',customerRoutes).route('/',csvCustomerRoutes).route('/',reports).route('/',demoInbox).route('/',dashboard).route('/',dashboardActions).route('/',dashboardMedia).route('/',resources).route('/',aiUsage).route('/',aiSpend).route('/',followers)
 export {publicWidget} from './widget-settings'
 
 export {widgetEvents} from './widget-events'

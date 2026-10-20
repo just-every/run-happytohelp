@@ -25,7 +25,7 @@ let sessionVersion = 0;
 const listeners = new Set<() => void>();
 // These route leaves statically provide their page; TanStack awaits its split
 // component. Other paths still need the wildcard page's dynamic code preload.
-const directDashboardPagePath = /^\/(?:conversations(?:\/[^/]+)?|projects(?:\/(?!create(?:\/|$))[^/]+\/(?:contacts|articles|macros|agents|reports|settings|conversations(?:\/[^/]+)?))?)\/?$/;
+const directDashboardPagePath = /^\/(?:conversations(?:\/[^/]+)?|projects(?:\/(?!create(?:\/|$))[^/]+\/(?:contacts|companies|articles|macros|agents|reports|settings|conversations(?:\/[^/]+)?))?)\/?$/;
 export function useDashboardSessionVersion() {
     return useSyncExternalStore(listener => {
         listeners.add(listener);

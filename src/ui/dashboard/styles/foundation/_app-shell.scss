@@ -3,22 +3,29 @@
 // `.sidebar` and the open conversation in `.main`). From xl up the three sit side by side; below xl the sidebar is
 // the fixed top bar and the conversation slides over the list.
 
-// The workspace canvas: the homepage's paper gives way to a neutral canvas, rail and muted chip (light mode only; Dark
-// keeps its tokens), fields take a hairline at 3:1 and menus lift on a soft shadow instead of the drawn card's ink
-// offset. Scoped to the signed-in workspace (DashboardClient sets the class), so the homepage, setup and sign-in keep
-// their paper.
+// The workspace canvas: the homepage's paper gives way to the Ink rail look (owner pick H3 A, 20 Oct 2026): a white
+// middle, ink 1px hairlines at 8-16% for rules, fields and outlined controls, a near-white for the deeper surfaces and
+// the muted chip, and a paler aqua tint (light mode only; Dark keeps its tokens). Checks and switches keep a 3:1
+// outline, since their boundary is their only affordance. The left rail is the brand ink (./_sidebar.scss). Menus lift
+// on a soft shadow instead of the drawn card's ink offset. Scoped to the signed-in workspace (DashboardClient sets the
+// class); setup and sign-in share the form hairlines in brand-tokens.css and keep their paper.
 body.workspace-themed {
-  --menu-shadow: 0 8px 24px -12px rgba(20, 20, 20, .25);
+  --rail: #141414;
+  --menu-shadow: 0 8px 24px -12px rgba(20, 20, 20, .18);
 }
 
 body.workspace-themed:not([data-theme="dark"]) {
-  --paper: #f6f7f8;
-  --paper-deep: #eceef1;
-  --muted-chip: #e7e9ec;
-  --field-line: rgba(20, 20, 20, .5);
+  --paper: #ffffff;
+  --paper-deep: #fbfbfa;
+  --muted-chip: #f1f1ef;
+  --control-line: rgba(20, 20, 20, .16);
+  --toggle-line: rgba(20, 20, 20, .5);
+  --hover: rgba(20, 20, 20, .04);
+  --d-cyan-tint: #eef9fb;
 }
 
 body.workspace-themed[data-theme="dark"] {
+  --rail: #1f1d1a;
   --menu-shadow: 0 8px 24px -12px rgba(0, 0, 0, .6);
 }
 

@@ -10,7 +10,7 @@ export async function nativeRequest(path, init = {}) {
         return initial.result;
     }
     const response = await fetch(path, { credentials: 'same-origin', ...init });
-    const body = await response.json();
+    const body = response.status === 204 ? null : await response.json();
     // A sensitive action asks for a recent step-up; once confirmed, the same request runs once more.
     if (response.status === 403 && body.code === 'step_up_required' && !init.stepUpRetried && await confirmStepUp(body)) return nativeRequest(path, { ...init, stepUpRetried: true });
     notifyExpiredSession(path, response.status, body);
@@ -50,7 +50,10 @@ export async function sendCommand(projectId, conversationId, action, data) {
     if (action === 'setConversationId') return;
     if (action === 'sendMessage') {
         const frontier = await nativeRequest(`/api/conversations/${encodeURIComponent(conversationId)}`);
-        return nativeRequest(`/api/conversations/${encodeURIComponent(conversationId)}/messages`, {
+        const messagePath=data.escalation_draft_id
+            ? `/api/escalations/projects/${encodeURIComponent(projectId)}/conversations/${encodeURIComponent(conversationId)}/drafts/${encodeURIComponent(data.escalation_draft_id)}/send`
+            : `/api/conversations/${encodeURIComponent(conversationId)}/messages`;
+        return nativeRequest(messagePath, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ localId: data.local_id, content: data.content, expectedRevision: frontier.revision,
                 expectedLastMessageId: frontier.last_message_id, mediaIds: data.media_ids, resolve: data.resolve, authoring: data.authoring,

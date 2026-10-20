@@ -12,6 +12,7 @@ import {command,run,stopOwnedServer} from '../rer-command.mjs';
 import {waitForServingCapacity} from '../serving-capacity.mjs';
 import {archiveSnapshot,archiveStorage,retainHistoricalLedger,assertHistoricalLedger,compareArchive,compareDevEntryArchive} from '../rer-archive.mjs';
 import {seedPortableData,verifyPortableData} from '../rer-data.mjs';
+import {seedReportClaimedRecovery} from '../reports-portable.mjs';
 import {safeDiagnostic} from '../delegation-journey/diagnostics.mjs';
 import {readDurableObjects} from '../../../scripts/installer/durable-objects.mjs';
 
@@ -79,6 +80,7 @@ try{
  assert.ok((await json('/api/management/projects',undefined,retained.token)).data.some(row=>row.id===project.id));
  const portable=await seedPortableData(origin,project.id,retained.token,json);
  await stop();
+ await seedReportClaimedRecovery(root,portable.reports);
  const historical=await retainHistoricalLedger(root);
  const beforeExport=await archiveSnapshot(root);
  assert.ok(beforeExport.rows.move_in_runs.length>0 && beforeExport.rows.contact_erasures.length>0 && beforeExport.objects.length>0);
@@ -206,7 +208,9 @@ globalThis.fetch=async(input,init)=>{
  throw Error(`Rer journey failed (${error.name}, source line ${line}${diagnostic?'; '+diagnostic:''}${code}); private browser diagnostics withheld.`);
 }finally{
  if(server)await server.stop();
- if(success)await rm(scratch,{recursive:true,force:true});
+ // Finder can recreate .DS_Store between readdir and rmdir on macOS.
+ // Node retries only transient filesystem errors; functional failures still fail.
+ if(success)await rm(scratch,{recursive:true,force:true,maxRetries:3,retryDelay:100});
  else console.error('Private native journey scratch retained:',scratch);
 }
 

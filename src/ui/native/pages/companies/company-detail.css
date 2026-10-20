@@ -1,0 +1,55 @@
+.companies-detail-hero { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 28px; }
+.companies-detail-identity { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.companies-detail-identity h2 { font-size: 28px; margin: 0 0 4px; overflow-wrap: anywhere; }
+.companies-detail-identity .settings-note { margin: 0; }
+.companies-detail-grid { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 28px; align-items: start; }
+.companies-summary { padding: 22px; border: 1px solid var(--rule-strong); border-radius: 12px; background: var(--surface); min-width: 0; }
+.companies-summary section + section { border-top: 1px solid var(--rule); margin-top: 24px; padding-top: 20px; }
+.companies-summary h3 { font-size: 14px; margin-bottom: 12px; }
+.companies-summary .settings-note { font-size: 13px; }
+.companies-facts { margin: 0; display: grid; gap: 16px; }
+.companies-facts dt { color: var(--ink-soft); font-size: 12px; font-weight: 400; margin-bottom: 3px; }
+.companies-facts dd { font-size: 14px; margin: 0; overflow-wrap: anywhere; }
+.companies-detail-main { min-width: 0; }
+.companies-detail-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; border-bottom: 1px solid var(--rule); padding-bottom: 12px; }
+.companies-detail-tabs button { border: 1px solid transparent; border-radius: 6px; padding: 8px 12px; background: transparent; color: var(--ink-soft); font-size: 14px; }
+.companies-detail-tabs button[aria-current] { border-color: var(--rule-strong); background: var(--surface); color: var(--ink); }
+.companies-panel { min-width: 0; margin-bottom: 28px; }
+.companies-panel + .companies-panel { padding-top: 24px; border-top: 1px solid var(--rule); }
+.companies-count { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; font-size: 12px; padding: 2px 7px; margin-left: 5px; vertical-align: middle; }
+.companies-member-list, .companies-member-results { padding: 0; margin: 0; list-style: none; }
+.companies-member-list { border: 1px solid var(--rule-strong); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.companies-member-list li { display: flex; align-items: center; gap: 12px; padding: 16px; min-width: 0; }
+.companies-member-list li + li, .companies-member-results li + li { border-top: 1px solid var(--rule); }
+.companies-member-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.companies-member-name > span, .companies-member-results .settings-note { display: block; font-size: 13px; }
+.companies-member-search { margin-top: 20px; }
+.companies-member-search form { display: flex; gap: 10px; }
+.companies-member-search form button { flex-shrink: 0; }
+.companies-member-results li { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; }
+.companies-member-results li > div { min-width: 0; overflow-wrap: anywhere; }
+.companies-inline-empty { border: 1px dashed var(--rule-strong); border-radius: 10px; padding: 24px; font-size: 14px; color: var(--ink-soft); }
+.companies-merge-select { display: flex; align-items: flex-end; gap: 12px; margin: 24px 0; }
+.companies-merge-select .form-group { flex: 1; min-width: 0; margin: 0; }
+.companies-merge-select button { flex-shrink: 0; }
+.companies-merge-plan { border: 1px solid var(--rule-strong); border-radius: 12px; padding: 24px; background: var(--surface); }
+.companies-merge-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 24px; }
+.companies-merge-attribute-heading { margin-top: 24px !important; }
+.companies-merge-conflicts { margin-top: 24px; border-top: 1px solid var(--rule); padding-top: 20px; }
+.companies-merge-conflicts li { margin-bottom: 8px; overflow-wrap: anywhere; }
+.companies-merge-confirm { margin-top: 24px; }
+.companies-merge-direction { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--rule); }
+.companies-merge-direction > div { min-width: 0; flex: 1; }
+.companies-merge-direction strong { display: block; overflow-wrap: anywhere; }
+.companies-merge-direction span { font-size: 12px; color: var(--ink-soft); }
+.companies-history { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.companies-history > li { display: flex; gap: 16px; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid var(--rule); }
+.companies-history > li > div { min-width: 0; }
+.companies-history h4 { margin-bottom: 4px; }
+.companies-history time { font-size: 12px; color: var(--ink-soft); }
+.companies-history .btn { flex-shrink: 0; align-self: flex-start; }
+.companies-history details { margin-top: 12px; font-size: 13px; }
+.companies-change-details { display: grid; gap: 8px; margin: 12px 0; }
+.companies-change-details > div { min-width: 0; }
+.companies-change-details dt { font-weight: 400; color: var(--ink-soft); text-transform: capitalize; }
+.companies-change-details dd { margin: 4px 0 0 12px; overflow-wrap: anywhere; }

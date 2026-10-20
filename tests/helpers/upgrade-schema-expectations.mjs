@@ -16,6 +16,7 @@ export const schemaExceptions = [
   {migration: '181_context_message_subjects.sql', names: ['context_message_added'], change: 'Replaces the OR lookup with the keyed UNION for the same two subjects; retains the import fence'},
   {migration: '182_import_kit_reversal_retirement.sql', names: ['ik_d1_stream_revision_update'], change: 'Allows namespace/operation retirement only for a deleted stream with its recorded retirement'},
   {migration: '190_email_step_up.sql', names: ['session_factors'], change: 'Rebuilds only the proof-method CHECK to admit email_link; all four prior columns and rows retained'},
+  {migration: '195_restore_trigger_boundaries.sql', names: ['conversation_record_resolution'], change: 'Adds only whitespace before CASE and between END and its comma so the pinned Wrangler SQL splitter retains statement boundaries'},
   {migration: '0110_move_in.sql', names: ['context_message_added', 'context_message_removed'], change: 'WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences ...) inserted before BEGIN'},
 ];
 
@@ -37,6 +38,7 @@ export function expectedSchema(before, after, added) {
         } finally { db.close(); }
       }
     }
+    if (added.includes('195_restore_trigger_boundaries.sql') && name === 'conversation_record_resolution') wanted = {...entry, sql: entry.sql.replace(/\bEND,/g, 'END ,').replace('first_resolved_at=CASE', 'first_resolved_at= CASE')};
     if (added.includes('181_context_message_subjects.sql') && name === 'context_message_added') wanted = {...entry, sql: messageSubjectTrigger};
     if (added.includes('182_import_kit_reversal_retirement.sql') && name === 'ik_d1_stream_revision_update') wanted = {...entry, sql: streamRetirementTrigger};
     if (added.includes('121_move_in_categories.sql')) {

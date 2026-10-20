@@ -2354,7 +2354,7 @@
     {
       "path": "src/vendor/base/modules/site/docs-search",
       "originPath": "modules/site/docs-search",
-      "revision": "4b110a1a541269613172bfc1b6c6b7c5225d7b49",
+      "revision": "dd9f5d61309789bec663c889a1e9b413a76cb048",
       "files": {
         "src/vendor/base/modules/site/docs-search/artifacts.mjs": "8c21c7d8183927544050510df2af45f5dd482937aab7b4d6cbebb2f2393caab8",
         "src/vendor/base/modules/site/docs-search/client.ts": "9d1c3d573c5cab0ef24e1a629f58733126cdb56c90190ec7e21cfa33bf882519",

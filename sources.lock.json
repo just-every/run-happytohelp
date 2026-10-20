@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "abbe039817ffac316bfc4aa8e7f9bcb510267ffc38a86f3f48c5ed8e2fb9acce",
+      "sha256": "4139184b0074c379e3670e6e3c6b9f54a63e72fd328b43f359b7cc52e5f3d34a",
       "executable": false
     },
     "CHANGELOG.md": {
@@ -2461,11 +2461,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "f220dab4d8bb06a951e0c7057b98ca8c36b504d8cec2df58fe7dfce4eb6f02b5",
+      "sha256": "fbe6e11558575a20b09970c3dda1e1b29e44e74494bd512645741ddea1ba0b07",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "a7d148f4ff613b74cf11f18d774a03b9ea868f1756cc379b6fd488f209496e27",
+      "sha256": "1d1aa836feaaffd907ab6759e26603e5e2789dabec931ffac578df93ccb2ac5f",
       "executable": false
     },
     "public/fonts/inter/InterVariable.woff2": {

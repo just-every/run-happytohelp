@@ -149,6 +149,13 @@ rules[`POST ${P}/suspended/:id/recover`]='conversations.manage'
 rules[`DELETE ${P}/suspended/:id`]='conversations.manage'
 rules[`POST ${P}/sender-rules`]='settings.manage'
 export function routeRule(method:string,path:string):Rule|undefined{
+ if(path==='/api/escalations/webhooks/:connectionId'||path==='/api/escalations/attachments/:token')return 'none'
+ if(path.startsWith('/api/escalations/projects/:projectId/')){
+  if(method==='GET')return 'self'
+  if(path.endsWith('/connections'))return 'integrations.install'
+  if(path.endsWith('/send'))return 'conversations.reply'
+  return 'conversations.manage'
+ }
  if(prefixes.some(prefix=>path.startsWith(prefix)))return 'none'
  return r4RouteRule(method,path)??rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]
 }

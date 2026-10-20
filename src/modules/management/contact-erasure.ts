@@ -43,7 +43,7 @@ contactErasure.post('/projects/:projectId/contacts/:contactId/erase', async c =>
   const actor = await scope(c, true), contactId = c.req.param('contactId')
   const token=c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]
   // What reached providers is read before local erasure removes the evidence of it.
-  const reach = await c.env.DB.prepare(`SELECT external_id,EXISTS(${generations}) ai,EXISTS(${localJobs}) computers FROM contacts WHERE project_id=?1 AND id=?2`).bind(actor.projectId, contactId).first<{external_id:string|null;ai:number;computers:number}>()
+  const reach = await c.env.DB.prepare(`SELECT external_id,(EXISTS(${generations}) OR EXISTS(SELECT 1 FROM triage_jobs WHERE project_id=?1 AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2) AND provider_started=1)) ai,EXISTS(${localJobs}) computers FROM contacts WHERE project_id=?1 AND id=?2`).bind(actor.projectId, contactId).first<{external_id:string|null;ai:number;computers:number}>()
   if (!reach) throw new HTTPException(404)
   await requireStepUp(c, actor, 'contact.erase')
   const erasure = await eraseContact(c.env, actor.projectId, contactId, actor.id,await hashToken(token!))

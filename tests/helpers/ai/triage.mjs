@@ -15,7 +15,7 @@ export async function triageJourney(){
  await save({enabled:true,default_group_id:group.id})
  const early=await app.call(base+'/triage-settings',{token:owner,method:'PUT',body:{...await settings(),routing_enabled:true,accuracy_reviewed:true}});assert.equal(early.status,400)
  const visitor=await a.visitor('Jamie Rivera'),id=visitor.conversationId
- await visitor.say('I need a refund. I am disappointed with my order.')
+ await a.action(id,'assignAi',{ai_id:null});await visitor.say('I need a refund. I am disappointed with my order.')
  assert.equal(ai.calls.length,0,'admission never invokes the model')
  assert.equal((await read(id)).state,'pending');assert.equal((await ticket(id)).group_id,group.id)
  await run();const triage=await read(id)
@@ -48,7 +48,7 @@ export async function triageJourney(){
  const collaborator=await app.seedWorkspace('triage-collab');await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(collaborator.projectId,collaborator.users.operator,Date.now()).run()
  assert.equal((await app.call(`/api/dashboard/projects/${collaborator.projectId}/triage-settings`,{token:collaborator.tokens.operator,method:'PUT',body:{}})).status,403)
  assert.equal((await app.call(base+`/conversations/${id}/triage`,{token:collaborator.tokens.owner})).status,404)
- await app.ok(`/api/management/projects/${p}/contacts/${visitor.contactId}/erase`,{token:owner,body:{}})
+ const erased=await app.ok(`/api/management/projects/${p}/contacts/${visitor.contactId}/erase`,{token:owner,body:{}});assert.ok(erased.data.providers.requests.some(r=>r.store==='ai_provider'))
  for(const table of ['triage_jobs','triage_labels'])assert.equal((await app.first(`SELECT count(*) n FROM ${table} WHERE conversation_id=?`,id)).n,0)
  const taxonomy=(await settings()).taxonomy.map(t=>({...t,name:t.id==='refund'?'Returns and refunds':t.name,active:t.id!=='how_to'}));taxonomy.push({id:'cancel_subscription',name:'Cancel subscription',active:true});await save({routing_enabled:false,taxonomy});assert.deepEqual((await settings()).taxonomy,taxonomy)
  assert.ok((await app.sql("SELECT action FROM audit_events WHERE project_id=? AND action LIKE 'triage.%'",p)).length)

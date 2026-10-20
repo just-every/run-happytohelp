@@ -57,7 +57,7 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
  }else snapshots=await checkArchiveSnapshot(context.path);
  let selected=transfer,upgradeWorkflows=false;
  if(verb==='import'){
-  const historical=await Promise.all(['./triage-archive-policy.mjs','./report-archive-policy.mjs','./ticket-archive-policy.mjs','./r4-archive-policy.mjs','./email-archive-policy.mjs','./workflow-archive-policy.mjs','./workflow-archive-ticket-policy.mjs'].map(async module=>({module,policy:(await import(module)).default})));
+  const historical=await Promise.all(['./triage-archive-policy.mjs','./triage-historical-report-policy.mjs','./ticket-archive-policy.mjs','./r4-archive-policy.mjs','./email-archive-policy.mjs','./workflow-archive-policy.mjs','./workflow-archive-ticket-policy.mjs'].map(async module=>({module,policy:(await import(module)).default})));
   // Metadata can select this explicitly supported schema transition, never an
   // executable path supplied by the archive. Base verifies the complete archive.
   for await(const record of fileRecords(context.path))if(record.kind==='manifest'){

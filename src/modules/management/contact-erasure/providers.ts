@@ -21,7 +21,7 @@ export function providerErasureStatements(env:Env,request:{projectId:string;cont
   db.prepare("INSERT OR IGNORE INTO erasure_requests(id,project_id,contact_id,store,destination_id,state,detail,requested_at,settled_at) SELECT lower(hex(randomblob(16))),project_id,?,'slack',id,'unsupported','Slack messages already posted to '||name||' are not recalled. Delete them in Slack.',?,? FROM native_integration_destinations WHERE project_id=? AND kind='slack'").bind(contactId,now,now,projectId),
  ]
  if(emailConfigured(env)&&emailMode(env)!=='local')statements.push(unsupported('email_provider','Email already sent stays in the recipients’ mailboxes, and your email provider keeps its delivery logs for its own retention period.'))
- if(request.usedAi)statements.push(unsupported('ai_provider','Conversation text sent to your AI provider for answers is kept under that provider’s retention policy and cannot be recalled from here.'))
+ if(request.usedAi)statements.push(unsupported('ai_provider','Conversation text sent to your AI provider for AI assistance or triage is kept under that provider’s retention policy and cannot be recalled from here.'))
  if(request.usedComputers)statements.push(unsupported('local_computers','Files a paired computer downloaded for delegated work stay on that computer. Delete them there.'))
  return statements
 }

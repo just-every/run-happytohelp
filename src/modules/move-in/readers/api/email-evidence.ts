@@ -28,7 +28,7 @@ export async function helpScoutEmailEvidence(client:ApiClient,conversation:any,t
  if(thread.type!=='customer'||(thread.source?.type??conversation.type)!=='email')return
  const source='helpscout_original_source'
  let response:any
- try{response=await client.get(`https://api.helpscout.net/v2/conversations/${enc(conversation.id)}/threads/${enc(thread.id)}/original-source`)}
+ try{response=await client.get(`https://api.helpscout.net/v2/conversations/${enc(conversation.id)}/threads/${enc(thread.id)}/original-source`,{maxBytes:32*1024*1024})}
  catch(error){if(((error as any)?.status??(error as any)?.statusCode)!==404)throw error;thread._move_in_email_evidence={source,status:'unavailable',reason:'original_source_not_found'};return}
  if(typeof response?.original!=='string'){thread._move_in_email_evidence={source,status:'unavailable',reason:'original_source_response_invalid'};return}
  try{

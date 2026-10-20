@@ -84,3 +84,5 @@ REST shapes come from the official documentation:
 - [Zendesk email notifications](https://developer.zendesk.com/api-reference/ticketing/tickets/email_notifications/), [Intercom 2.16 email history](https://developers.intercom.com/docs/references/changelog), [Help Scout original email source](https://developer.helpscout.com/mailbox-api/endpoints/conversations/threads/thread-source-json/).
 
 The helpers contain no test declarations and run no servers until explicitly started.
+
+Zendesk secure downloads include a 302 to a temporary download URL, following [Zendesk’s documented attachment flow](https://developer.zendesk.com/documentation/ticketing/managing-tickets/accessing-end-user-uploaded-attachments/). Help Scout original-source JSON includes a multipart MIME body for the 8 MiB email attachment; only its RFC header block becomes threading evidence.

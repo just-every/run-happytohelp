@@ -15,6 +15,8 @@ Keep credentials private. The form clears all credential fields after a successf
 
 ## Fetch, preview and import
 
+Intercom’s conversation retrieval returns at most 500 parts. The connector stops if that history is incomplete; it does not import the latest parts as a complete conversation. Keep the source and obtain a complete export for longer conversations. See the [Intercom history limits and export guide](moving-in.md#intercom).
+
 1. Wait while **Fetching history** updates the counts for tickets, contacts, companies, articles, agents, replies and attachments. Fetching does not approve or import the records.
 2. At **Ready for review**, compare the fetched counts with the source inventory. Review what will be imported, records needing fixes, omissions and article publication changes. Fetched counts and imported counts have different meanings; inspect the plan rather than treating a matching total as complete fidelity.
 3. Check **Match source agents to your team**. Matches by email are suggested; choose an existing workspace member or **Keep as source author** for each agent. Save changed mappings before approval. Deleted source agents keep their historical identity and may be explicitly matched to an existing member. No staff account is created or invited, no access is granted, and assignment mappings stay inactive until cutover.

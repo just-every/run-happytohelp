@@ -109,6 +109,21 @@ export async function securityBrowserJourney(browser){
   await phone.getByRole('heading',{name:'Check it’s you'}).waitFor();await inspect(phone,'two-factor-verify-390')
   await phone.goto(origin+'/owner-recovery');await phone.getByRole('heading',{name:'Recover owner access'}).waitFor();await inspect(phone,'owner-recovery-390')
 
+  // A password-only sign-in can leave the second-factor screen by signing out.
+  for(const viewport of [viewports.desktop,viewports.mobile]){
+   const pending=await open(viewport),context=pending.context()
+   try{
+    const login=await context.request.post(origin+'/api/identity/login',{headers:{Origin:origin},data:{email:'casey@lantern.test',password}});assert.equal(login.status(),200)
+    const oldCookie=(await context.cookies(origin)).find(cookie=>cookie.name==='h2h_session');assert.ok(oldCookie)
+    await pending.goto(origin+'/two-factor');await pending.getByRole('heading',{name:'Check it’s you'}).waitFor();await inspect(pending,`signout-pending-factor-${viewport.width}`)
+    const response=pending.waitForResponse(result=>result.url()===origin+'/auth/signout'&&result.request().method()==='POST')
+    await pending.getByRole('button',{name:'Sign out',exact:true}).click();assert.equal((await response).status(),204)
+    await pending.waitForURL(url=>url.pathname==='/login');assert.equal((await context.cookies(origin)).some(cookie=>cookie.name==='h2h_session'),false)
+    const replay=await fetch(origin+'/api/identity/session',{headers:{Cookie:'h2h_session='+oldCookie.value}});assert.equal(replay.status,401)
+    await inspect(pending,`signed-out-pending-factor-${viewport.width}`)
+   }finally{await context.close()}
+  }
+
   // Each browser signs out only its own native session. The owner's other browser
   // and a different account stay signed in, including after refused CSRF/replay requests.
   const sessionPath=origin+'/api/identity/session',signoutPath=origin+'/auth/signout',auditPath=origin+`/api/management${P}/audit?limit=200`
@@ -140,7 +155,7 @@ export async function securityBrowserJourney(browser){
     await signedIn.getByRole('button',{name:'Account menu',exact:true}).click();await inspect(signedIn,`signout-menu-${viewport.width}`)
     const response=signedIn.waitForResponse(result=>result.url()===signoutPath&&result.request().method()==='POST')
     await signedIn.getByRole('button',{name:'Sign out',exact:true}).click()
-    const signedOut=await response;assert.equal(signedOut.status(),204);assert.equal(await signedOut.text(),'')
+    const signedOut=await response;assert.equal(signedOut.status(),204,'HTTP 204 completes without a response body')
     assert.match((await signedOut.allHeaders())['set-cookie'],/h2h_session=;.*Max-Age=0/i)
     await signedIn.waitForURL(url=>url.pathname==='/login');await signedIn.getByRole('button',{name:'Login',exact:true}).waitFor()
     assert.equal((await context.cookies(origin)).some(item=>item.name==='h2h_session'),false,'the browser removes the session cookie')

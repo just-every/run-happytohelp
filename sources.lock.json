@@ -10905,7 +10905,7 @@
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {
-      "sha256": "ccd340502b2026a25ba05227854ade4ad29fc7bd74ffe2efdc26f5cf4d555dd1",
+      "sha256": "0508ca973b92a31996edf1182231683a752f20ea9482c702807e53c988336382",
       "executable": false
     },
     "tests/helpers/identity/step-up-mail-edge.mjs": {

@@ -1,0 +1,14 @@
+.problem-panel { border-top: 1px solid var(--bs-border-color, #d8dee8); margin-top: 1rem; padding-top: .8rem; overflow-wrap: anywhere; }
+.problem-panel summary, .problem-solve summary { cursor: pointer; font-weight: 600; margin-bottom: .65rem; }
+.problem-panel p, .problem-panel .form-text { margin-top: .65rem; }
+.problem-actions { display: flex; gap: .5rem; align-items: center; }
+.problem-actions input { min-width: 0; }
+.problem-ticket-list { list-style: none; margin: .65rem 0; padding: 0; }
+.problem-ticket-list > li { padding: .6rem 0; border-bottom: 1px solid var(--bs-border-color, #d8dee8); }
+.problem-ticket-list .btn-link { text-align: left; padding-left: 0; white-space: normal; }
+.problem-check { display: flex; align-items: flex-start; gap: .5rem; margin: .7rem 0; }
+.problem-check input { flex: none; margin-top: .25rem; }
+.problem-selection { max-height: 16rem; overflow-y: auto; margin: .65rem 0; }
+.problem-reply { white-space: pre-wrap; border-left: 3px solid var(--bs-border-color, #bac5d5); padding: .7rem; margin: .6rem 0; background: var(--bs-light, #f5f7fa); color: var(--bs-body-color, #243146); }
+.problem-solve { margin-top: 1rem; }
+@media (max-width: 480px) { .problem-actions { flex-wrap: wrap; } .problem-actions .form-control { flex-basis: 100%; } .problem-panel .btn { white-space: normal; } }

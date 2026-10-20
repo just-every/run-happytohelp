@@ -1,5 +1,8 @@
 import {customerErasureStatements,customerErasureCount} from '../../customers/index'
+import {escalationErasureStatements,escalationErasureCount} from '../../escalations/erasure'
 import {csvCustomerErasureStatements} from '../../import-kit/csv/erasure'
+import {problemErasureCount,problemErasureStatements} from '../../tickets/problem-erasure'
+import {reportTimerErasureCount,reportTimerErasureStatements} from '../../reports/timers'
 import {eraseFormStatements} from '../../forms/erasure'
 import {portalErasureStatements} from '../../portal/privacy'
 import {importErasureStatements} from '../../move-in/erasure'
@@ -56,7 +59,7 @@ SELECT ?1,?2,?3,?4,?4,1,
  ${sum(trackedTables.map(table => count(table, subject)))},
  ${sum(contextTables.map(table => count(table, subject)))},
  ${count('sessions', 'project_id=?1 AND contact_id=?2')},
- ${customerErasureCount}+${ticketErasureCount}+(${collaborationRecordsCount})+${workflowErasureCount}
+ ${customerErasureCount}+${ticketErasureCount}+(${collaborationRecordsCount})+${workflowErasureCount}+${problemErasureCount}+${reportTimerErasureCount}+${escalationErasureCount}
 WHERE EXISTS(SELECT 1 FROM contacts WHERE project_id=?1 AND id=?2)
 ON CONFLICT(project_id,contact_id) DO UPDATE SET last_erased_at=excluded.last_erased_at,runs=runs+1,conversations=excluded.conversations,
  messages=messages+excluded.messages,attachments=attachments+excluded.attachments,tracked_events=tracked_events+excluded.tracked_events,
@@ -77,8 +80,11 @@ export function erasureStatements(env: Env, request: ErasureRequest) {
   const withTime = (sql: string, time: number | string) => env.DB.prepare(sql).bind(projectId, contactId, time)
   return [
     env.DB.prepare(tombstone).bind(projectId, contactId, actorId, now),
+    ...escalationErasureStatements(env,projectId,contactId),
     ...collaborationRecordsStatements(env,projectId,contactId),
     ...workflowErasureStatements(env,projectId,contactId),
+    ...problemErasureStatements(env,projectId,contactId),
+    ...reportTimerErasureStatements(env,projectId,contactId),
     ...ticketErasureStatements(env,projectId,contactId),
     ...emailErasureStatements(env,projectId,contactId,request.emails),
     ...eraseFormStatements(env,projectId,contactId),

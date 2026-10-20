@@ -22,6 +22,7 @@ import ConversationCollaboration from './collaboration/ConversationCollaboration
 import ConversationActions from './conversation-actions/ConversationActions';
 import MergedConversationHistory from './conversation-actions/MergedConversationHistory';
 import {nativeRequest} from '../../native/transport';
+import EscalationsPanel from './escalations/EscalationsPanel';
 
 function Conversation({ projectId, conversationId, conversation, buckets }) {
     const {
@@ -49,6 +50,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const [ draftOrigin, setDraftOrigin ] = useState(null);
     const [ draftFocusRequest, setDraftFocusRequest ] = useState(null);
     const [ draftError, setDraftError ] = useState('');
+    const [ escalationDraftId, setEscalationDraftId ] = useState(null);
     const [isTyping, setIsTyping] = useState(false);
     const typingTimer = useRef(null);
     useEffect(() => () => clearTimeout(typingTimer.current), []);
@@ -156,6 +158,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
             conversation_id: conversationId,
             media_ids: files.map(file => file.id),
             local_id: uuidv4(),
+            escalation_draft_id: escalationDraftId,
             ...(email ? {email} : {}),
         };
         if (sendAndClose) {
@@ -166,6 +169,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
             await sendAction('sendMessage', message, conversationProjectId);
             setDraftError('');
             setDraftOrigin(null);
+            setEscalationDraftId(null);
             setFiles([]);
             macroDraftUsageRef.current = null;
         } catch (error) { setDraftError(error.message); throw error; } finally {
@@ -186,6 +190,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         setDraftError('');
         setContent('');
         setDraftOrigin(null);
+        setEscalationDraftId(null);
         setDraftFocusRequest(null);
         setLoadingContent('');
         setFiles([]);
@@ -328,6 +333,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                         <ConversationBody conversation={ conversation } buckets={ buckets } setAtTop={ setAtTop } />
                         <MergedConversationHistory conversation={conversation} refreshKey={conversation.ticket_version}/>
                         <ConversationActions conversation={conversation} refreshKey={lastConnected} messages={buckets.flatMap(bucket=>bucket.messages || [])} onChanged={refreshConversation}/>
+                        <EscalationsPanel projectId={conversationProjectId} conversationId={conversationId} refreshKey={socketEvent?.kind==='escalation' ? socketEvent : lastConnected} onDraft={draft=>{updateDraftContent(draft.content,[],{kind:'human'});setEscalationDraftId(draft.id);setDraftFocusRequest(previous=>({conversationId,version:(previous?.version||0)+1}));}}/>
                         { loadMoreError && <p className="conversation-load-error px-2 py-2" role="alert">
                             Couldn’t load older messages. <button type="button" onClick={ loadOlderBuckets }>Retry</button>
                         </p> }

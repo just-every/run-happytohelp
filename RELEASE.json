@@ -26,7 +26,7 @@
   "extensionPointChanges": [],
   "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.9 to v0.4.10 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.68. This patch changes a test fixture credential, the ticket collaboration area's ARIA role, a test-runtime helper and release metadata. The v0.4.10 tag itself adds no migrations: a 95-row ledger updated to that tag plans nothing and refuses nothing. Source after v0.4.10 carries the five pendingMigrations, 192_companies.sql through 196_csv_touched_fences.sql: an install updated to that source applies exactly those five by name through pinned rer before the updated Worker serves traffic, taking the ledger from 95 to 100 rows. Never delete, reorder or edit ledger rows. Retain owners, imported support history, permissions, files and erasure fences. The seven mailbox settings remain optional and held secrets are inherited. Run rer deploy --dry-run against the retained installation before deployment. Upgrades from v0.4.7 still apply the seven missing v0.4.8 migrations by name. Retain human Send. Production deployment is separate.",
+  "agentUpdateInstructions": "Update from v0.4.9 to v0.4.10 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.68. This patch changes a test fixture credential, the ticket collaboration area's ARIA role, a test-runtime helper and release metadata. The v0.4.10 tag itself adds no migrations: a 95-row ledger updated to that tag plans nothing and refuses nothing. Source after v0.4.10 carries the pendingMigrations listed below, including 230_escalations.sql for engineering escalations. Apply every listed migration once, in its listed order and by name, through pinned rer before the updated Worker serves traffic. Never delete, reorder or edit ledger rows. Retain owners, imported support history, permissions, files and erasure fences. The seven mailbox settings remain optional and held secrets are inherited. Run rer deploy --dry-run against the retained installation before deployment. Upgrades from v0.4.7 still apply the seven missing v0.4.8 migrations by name. Retain human Send. Production deployment is separate.",
   "publicReleaseNotes": "HappyToHelp v0.4.10 renames the cron-backlog test signing token and its matching inbound request to an explicitly synthetic value. RER's hosted credential scanner can accept the public source before agent dispatch. Ticket collaboration on a conversation is now a labelled group, so its label is valid ARIA in every state, and the account-security browser journey no longer fails by chance because test Workers open an inspector only on a port they are given. Every existing assertion is retained. No new migrations; rer stays at 0.2.68. Back up and retain settings and migration history without resetting. Production deployment is separate.",
   "pendingMigrations": [
     {
@@ -48,6 +48,30 @@
     {
       "id": "196_csv_touched_fences.sql",
       "buyerSteps": "R9a import apply and undo recheck only the customer rows each import matched or changed, so unrelated contact writes no longer block them. Apply through pinned rer; retires the workspace-wide import counter and keeps every import run and journal row."
+    },
+    {
+      "id": "201_report_timers_schedules.sql",
+      "buyerSteps": "Add ticket handle-time sessions and permission-scoped report schedules. Apply before the updated Worker serves traffic."
+    },
+    {
+      "id": "202_problem_incidents.sql",
+      "buyerSteps": "Add problem and incident links, reviewed bulk replies and per-incident delivery outcomes. Apply before the updated Worker serves traffic."
+    },
+    {
+      "id": "203_problem_delivery_history.sql",
+      "buyerSteps": "Record bulk incident delivery outcomes in ticket history and the audit log. Apply before the updated Worker serves traffic."
+    },
+    {
+      "id": "204_problem_preview_audit.sql",
+      "buyerSteps": "Audit reviewed problem replies and durable incident delivery claims. Apply before the updated Worker serves traffic."
+    },
+    {
+      "id": "205_handle_timer_lead_stop.sql",
+      "buyerSteps": "Record who stopped each handle timer, so a lead's stop of a teammate's timer names the lead in ticket history and the audit log. Apply before the updated Worker serves traffic."
+    },
+    {
+      "id": "230_escalations.sql",
+      "buyerSteps": "Add workspace-encrypted engineering connections, reciprocal issue links, selected attachment grants, idempotent webhook state, approved customer drafts and Slack handoff history. Apply before the updated Worker serves traffic. Exports retain disconnected links and drafts without provider credentials or download grants; retain human Send and unconfirmed customer recovery."
     }
   ]
 }

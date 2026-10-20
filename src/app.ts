@@ -38,6 +38,7 @@ import {delegation} from './edition/delegation/routes'
 import {consent} from './edition/delegation/consent'
 import {nativeDelegation} from './edition/delegation/launch'
 import {createOutboundTicketRoutes} from './modules/management/outbound-tickets'
+import {createEscalationRoutes} from './modules/escalations/routes'
 
 export const app = new Hono<AppEnv>()
 app.use('/api/*',async(c,next)=>{
@@ -91,6 +92,7 @@ app.route('/api/management',brandMediaRoutes)
 app.route('/api/site-preview',sitePreview)
 app.route('/preview',previewRoutes)
 app.route('/api/integrations',inboundEmail)
+app.route('/api/escalations',createEscalationRoutes(applyMessageEffects))
 app.route('/api/dashboard',dashboardRoutes)
 app.route('/api/dashboard',tags)
 app.route('/api/dashboard',createOutboundTicketRoutes(applyMessageEffects))

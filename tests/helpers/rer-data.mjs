@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {generate} from '../move-in/generator.mjs';
 import {customer,history} from '../move-in/helpscout-fixtures.mjs';
+import {seedReportsPortable,verifyReportsPortable} from './reports-portable.mjs';
 
 export async function seedImportHistory(origin,projectId,token,json){
  const base=`/api/move-in/projects/${projectId}/imports`;
@@ -46,12 +47,14 @@ export async function seedPortableData(origin,projectId,token,json){
  const bytes=Uint8Array.from([0,255,128,42,13,10]);
  const upload=await fetch(origin+`/api/conversations/${retained.id}/media`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/octet-stream','X-Filename':'retained.bin'},body:bytes});assert.equal(upload.status,201);const media=await upload.json();
  const imports=await seedImportHistory(origin,projectId,token,json);
- return {projectId,erasedContactId:visitor.contactId,conversationId:retained.id,mediaId:media.id,bytes:[...bytes],imports};
+ const reports=await seedReportsPortable(origin,projectId,kept.contactId,retained.id,kept.token,token);
+ return {projectId,erasedContactId:visitor.contactId,conversationId:retained.id,mediaId:media.id,bytes:[...bytes],imports,reports};
 }
 export async function verifyPortableData(origin,state,token,json){
  const contact=(await json(`/api/management/projects/${state.projectId}/contacts/${state.erasedContactId}`,undefined,token)).data;
  assert.equal(contact.email,null);assert.equal(JSON.parse(contact.metadata_json).is_erased,1);
  await verifyImportHistory(origin,state.projectId,state.imports,token,json);
+ await verifyReportsPortable(origin,state.reports,token,json);
  const matches=await json(`/api/dashboard/projects/${state.projectId}/conversations?q=retained%20cobalt%20parcel`,undefined,token);
  assert.ok(matches.data.some(row=>row.id===state.conversationId),'restored messages are searchable after the derived index rebuild');
  const response=await fetch(origin+`/api/conversations/${state.conversationId}/media/${state.mediaId}`,{headers:{Authorization:`Bearer ${token}`}});assert.equal(response.status,200);assert.deepEqual([...new Uint8Array(await response.arrayBuffer())],state.bytes);

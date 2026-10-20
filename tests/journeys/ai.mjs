@@ -1,3 +1,4 @@
+import {triageJourney} from '../helpers/ai/triage.mjs'
 import test from 'node:test'
 import {answersJourney} from '../helpers/ai/answers.mjs'
 import {lifecycleJourney} from '../helpers/ai/lifecycle.mjs'
@@ -10,7 +11,7 @@ import {requestLimits,projectCeilings,invalidLimits,aiCeilings,requestIds,usageS
 
 test('the visitor\'s assistant searches published knowledge and answers with exact citations, live and on replay; citations it was never issued, unpublished or changed sources admit nothing, and asking for a person hands over',answersJourney)
 
-test('each visitor turn is answered once and only if nothing it depends on changed; cancelled, interrupted or post-commit-failed attempts never replay the provider, and a missing key is visible without losing the message',lifecycleJourney)
+test('each visitor turn is answered once and only if nothing it depends on changed; cancelled, interrupted or post-commit-failed attempts never replay the provider, and a missing key is visible without losing the message',async()=>{await lifecycleJourney();await triageJourney()})
 
 test('operator suggestions and draft tools run once per request and never send, fail whole when alternatives fail, and handing a waiting conversation back answers its turn once within ceilings and current authority',assistanceJourney)
 

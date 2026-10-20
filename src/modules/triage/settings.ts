@@ -1,13 +1,13 @@
 import {HTTPException} from 'hono/http-exception'
 import type {Context} from 'hono'
 import type {Actor,AppEnv} from '../../platform/env'
-import {ticketAuthority,invalid,named,object} from '../tickets/model'
+import {ticketAuthority,ticketReadAccess,invalid,named,object} from '../tickets/model'
 import {settings,accuracy,fieldRows} from './model'
 export async function settingsData(c:Context<AppEnv>,actor:Actor){
- const s=await settings(c.env,actor.projectId),access=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'conversations.manage').catch(()=>null)
- const canEdit=['owner','admin'].includes(actor.role)&&!!(await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'settings.manage').catch(()=>null))
+ const s=await settings(c.env,actor.projectId),access=await ticketReadAccess(c.env,actor)
+ const canEdit=['owner','admin'].includes(actor.role)&&access.permissions.has('settings.manage')
  const groups=(await c.env.DB.prepare('SELECT id,name FROM ticket_groups WHERE project_id=? ORDER BY name').bind(actor.projectId).all()).results
- return {...s,accuracy:await accuracy(c.env,actor.projectId,s.taxonomy),groups,permissions:{settings:canEdit,correct:!!access}}
+ return {...s,accuracy:await accuracy(c.env,actor.projectId,s.taxonomy),groups,permissions:{settings:canEdit,correct:access.permissions.has('conversations.manage')}}
 }
 export async function saveSettings(c:Context<AppEnv>,actor:Actor){
  if(!['owner','admin'].includes(actor.role))throw new HTTPException(403)

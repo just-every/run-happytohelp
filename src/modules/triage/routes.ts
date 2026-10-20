@@ -1,6 +1,6 @@
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
-import type {AppEnv} from '../../platform/env'
+import type {AppEnv,Actor} from '../../platform/env'
 import {scope} from '../management/common'
 import {dashboardAccess} from '../management/dashboard'
 import {ticketAuthority,object,invalid} from '../tickets/model'
@@ -9,8 +9,8 @@ import {triageData} from './read'
 import {dimensions} from './model'
 import {processWorkflowEvents} from '../workflows/events'
 export const triageRoutes=new Hono<AppEnv>()
-triageRoutes.get('/projects/:projectId/triage-settings',async c=>{const actor=await scope(c);return c.json({data:await settingsData(c,actor)})})
-triageRoutes.put('/projects/:projectId/triage-settings',async c=>{const actor=await scope(c,true);return c.json({data:await saveSettings(c,actor)})})
+triageRoutes.get('/projects/:projectId/triage-settings',async c=>{const actor=await scope(c) as Actor;return c.json({data:await settingsData(c,actor)})})
+triageRoutes.put('/projects/:projectId/triage-settings',async c=>{const actor=await scope(c,true) as Actor;return c.json({data:await saveSettings(c,actor)})})
 const path='/projects/:projectId/conversations/:conversationId/triage'
 triageRoutes.get(path,async c=>{const {actor,conversation}=await dashboardAccess(c);return c.json({data:await triageData(c.env,actor,conversation.id)})})
 triageRoutes.patch(path,async c=>{

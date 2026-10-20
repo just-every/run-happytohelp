@@ -70,6 +70,10 @@
       "buyerSteps": "Record who stopped each handle timer, so a lead's stop of a teammate's timer names the lead in ticket history and the audit log. Apply before the updated Worker serves traffic."
     },
     {
+      "id": "220_ticket_triage.sql",
+      "buyerSteps": "Add asynchronous triage settings, predictions, operator labels and usage. Apply before the updated Worker serves traffic. Intent routing starts off; restored model work is unavailable and routing requires renewed lead approval."
+    },
+    {
       "id": "230_escalations.sql",
       "buyerSteps": "Add workspace-encrypted engineering connections, reciprocal issue links, selected attachment grants, idempotent webhook state, approved customer drafts and Slack handoff history. Apply before the updated Worker serves traffic. Exports retain disconnected links and drafts without provider credentials or download grants; retain human Send and unconfirmed customer recovery."
     }

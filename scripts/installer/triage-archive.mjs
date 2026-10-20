@@ -19,8 +19,9 @@ export async function beforeTriagePolicy(root,input){
  const result={...input,excludeTables:[...input.excludeTables,...triageTables]},scratch=new DatabaseSync(':memory:');
  const db={prepare(sql){return {bind(...args){this.args=args;return this},async all(){return {results:scratch.prepare(sql).all(...(this.args??[]))}}}}};
  try{
-  const names=(await readdir(join(root,'migrations'))).filter(n=>n.endsWith('.sql')&&n<'220_').sort();
-  for(const name of names)for(const sql of unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8')))scratch.exec(sql);
-  return {...result,acceptedSchemas:{[await schemaIdentity(db,policy(result))]:{upgradeRow:(_table,row)=>row}}};
+  const names=(await readdir(join(root,'migrations'))).filter(n=>n.endsWith('.sql')&&!/^22[0-9]_/.test(n)).sort(),acceptedSchemas={};
+  const remember=async()=>{acceptedSchemas[await schemaIdentity(db,policy(result))]={upgradeRow:(_table,row)=>row}};
+  for(const name of names){if(name>='230_'&&!Object.keys(acceptedSchemas).length)await remember();for(const sql of unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8')))scratch.exec(sql);if(name>='230_')await remember();}
+  await remember();return {...result,acceptedSchemas};
  }finally{scratch.close()}
 }

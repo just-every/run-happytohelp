@@ -60,7 +60,7 @@ export default function TicketEditor({ conversation }) {
                     <TicketIdentityPicker id="ticket-requester_id" label="Requester" projectId={conversation.project_id} value={draft.requester_id} currentContact={conversation.contact} disabled={disabled} onChange={value => change('requester_id', value)}/>
                     {select('submitter_type', 'Submitter type', ['contact', 'agent', 'system'].map(value => ({ value, label: label(value) })))}
                     <TicketIdentityPicker key={draft.submitter_type} id="ticket-submitter_id" label="Submitter" type={draft.submitter_type} projectId={conversation.project_id} value={draft.submitter_id} currentContact={conversation.contact} agents={agents} disabled={disabled} onChange={value => change('submitter_id', value)}/>
-                    {(settings.fields || []).map(field => <React.Fragment key={field.id}>
+                    {(settings.fields || []).filter(field => !field.write_roles.includes('triage-system')).map(field => <React.Fragment key={field.id}>
                         <TicketField id={`ticket-custom-${field.id}`} field={{ ...field, pattern: field.validation?.pattern }} value={draft.fields?.[field.id]} disabled={!field.writable} onChange={value => change('fields', { ...draft.fields, [field.id]: value })}/>
                         <small className="ticket-permission">{field.writable ? 'You can edit' : 'Read only'} · Read: {field.read_roles.join(', ') || 'Every role'} · Edit: {field.write_roles.join(', ') || 'Every role'}</small>
                     </React.Fragment>)}

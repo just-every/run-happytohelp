@@ -2,12 +2,12 @@ import assert from 'node:assert/strict'
 import {assistantApp} from './app.mjs'
 export async function triageJourney(){
  const a=await assistantApp(),{app,p,owner,workspace:w,ai}=a,base=`/api/dashboard/projects/${p}`
- const call=async(path,body,method='POST',token=owner)=>{console.log('triage door',method,path);const result=await app.ok(base+path,{token,body,method});return result.data??result}
+ const call=async(path,body,method='POST',token=owner)=>{const result=await app.ok(base+path,{token,body,method});return result.data??result}
  const get=path=>call(path,undefined,'GET')
  const settings=()=>get('/triage-settings')
  const save=async change=>call('/triage-settings',{...await settings(),...change},'PUT')
  const read=id=>get(`/conversations/${id}/triage`),ticket=id=>get(`/conversations/${id}/ticket`)
- const run=async()=>{console.log('triage consume');return a.run((await app.takeJobs()).filter(j=>j.type==='triage'))}
+ const run=async()=>a.run((await app.takeJobs()).filter(j=>j.type==='triage'))
  let answer={intent:{value:'refund',confidence:.96,quote:'I need a refund'},sentiment:{value:'negative',confidence:.94,quote:'I am disappointed'},language:{value:'en',confidence:.99,quote:'I need a refund'}}
  ai.respond=()=>answer
  try{
@@ -43,8 +43,8 @@ export async function triageJourney(){
  ai.reject=true;await spanish.say('¿Pueden ayudarme con la factura?');assert.equal((await ticket(spanish.conversationId)).fields.triage_intent,undefined);await run();assert.equal((await read(spanish.conversationId)).state,'unavailable');assert.ok((await read(spanish.conversationId)).reason)
  const calls=ai.calls.length;await a.run([{type:'triage',id:(await app.first('SELECT id FROM triage_jobs WHERE conversation_id=? ORDER BY source_revision DESC',spanish.conversationId)).id,projectId:p}]);assert.equal(ai.calls.length,calls)
  ai.reject=false;await app.configure({OPENAI_API_KEY:undefined});const missing=await a.visitor('No key');await missing.say('Help with my bill');await run();assert.match((await read(missing.conversationId)).reason,/OPENAI_API_KEY/)
- const collaborator=await app.seedWorkspace('triage-collab',{roles:['owner','collaborator']})
- assert.equal((await app.call(`/api/dashboard/projects/${collaborator.projectId}/triage-settings`,{token:collaborator.tokens.collaborator,method:'PUT',body:{}})).status,403)
+ const collaborator=await app.seedWorkspace('triage-collab');await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(collaborator.projectId,collaborator.users.operator,Date.now()).run()
+ assert.equal((await app.call(`/api/dashboard/projects/${collaborator.projectId}/triage-settings`,{token:collaborator.tokens.operator,method:'PUT',body:{}})).status,403)
  assert.equal((await app.call(base+`/conversations/${id}/triage`,{token:collaborator.tokens.owner})).status,404)
  await app.ok(`/api/management/projects/${p}/contacts/${visitor.contactId}/erase`,{token:owner,body:{}})
  for(const table of ['triage_jobs','triage_labels'])assert.equal((await app.first(`SELECT count(*) n FROM ${table} WHERE conversation_id=?`,id)).n,0)

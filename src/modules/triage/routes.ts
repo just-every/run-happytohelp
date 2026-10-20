@@ -16,6 +16,7 @@ triageRoutes.get(path,async c=>{const {actor,conversation}=await dashboardAccess
 triageRoutes.patch(path,async c=>{
  const {actor,conversation}=await dashboardAccess(c),guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')}),b=object(await c.req.json()),data=await triageData(c.env,actor,conversation.id)
  if(!dimensions.includes(b.field)||typeof b.value!=='string'||!b.value||b.value.length>80)invalid('Choose a triage field and value')
+ if(!data.predictions[b.field])throw new HTTPException(403,{message:'This triage field is unavailable to your role'})
  if(!data.permissions.correct)throw new HTTPException(409,{message:'Wait for a completed prediction before labeling it'})
  if(b.field==='intent'&&!data.taxonomy.some((t:any)=>t.active&&t.id===b.value)||b.field==='sentiment'&&!['positive','neutral','negative'].includes(b.value)||b.field==='language'&&!/^([a-z]{2,3})(-[A-Za-z0-9]{2,8})*$/.test(b.value))invalid('Choose an active intent, sentiment or language tag')
  const row=await c.env.DB.prepare("SELECT id,source_revision FROM triage_jobs WHERE project_id=? AND conversation_id=? AND state='complete' ORDER BY source_revision DESC LIMIT 1").bind(actor.projectId,conversation.id).first<any>()

@@ -8,6 +8,11 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.10 — 2026-10-20
+
+- **Synthetic fixture credential.** Rename the cron-backlog signing token and its matching inbound request to an explicitly synthetic value so RER's hosted source scanner accepts the published archive. The existing test still verifies the same mail, scheduling and backlog behavior; application behavior is unchanged.
+- **Upgrade from 0.4.9.** No new migrations. Keep rer 0.2.68, back up and retain private settings and the migration ledger without resetting. The seven mailbox settings remain optional. Production deployment is separate.
+
 ## 0.4.9 — 2026-10-20
 
 - **RER queue recipe.** Match the JOBS consumer's three retries to the deployment specification and Wrangler so fresh Managed installs and upgrades approve matching resource plans.

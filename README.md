@@ -37,29 +37,25 @@ work delegated to your own Codex or Claude. It works with human replies without
 an AI provider. The editable React application runs on Cloudflare Workers with
 Hono, D1, R2, Queues and Durable Objects.
 
-## Release 0.4.9
+## Release 0.4.10
 
-Deploy the latest tagged release, **`v0.4.9`**, using the commands below.
-The RER installation recipe now gives the JOBS queue the same three retries as
-the deployment specification and Wrangler. Fresh Managed installs and upgrades
-can approve their resource plans with matching queue settings.
+Deploy the latest tagged release, **`v0.4.10`**, using the commands below.
+The cron-backlog test uses an explicitly synthetic signing token, so the public
+source passes RER's hosted credential scanner before agent dispatch. The same
+inbound-mail, scheduled-reply and backlog assertions remain in place.
 
-The existing installer journey compares every queue-consumer and schedule field
-between the recipe, deployment specification and Wrangler's declared settings.
-CI fails when these declarations drift; the check compares the files directly.
-
-**Upgrading from v0.4.8 adds no migrations.** Back up D1, R2, Durable Object state
+**Upgrading from v0.4.9 adds no migrations.** Back up D1, R2, Durable Object state
 and private settings. Keep the existing migration ledger and installation state;
 never reset or edit ledger rows. Commands retain `@runeditrun/rer` **0.2.68**.
 Fresh installs, README restores and upgrades cover published baselines through
-v0.4.8. The seven Google, Microsoft and IMAP mailbox settings remain optional.
+v0.4.9. The seven Google, Microsoft and IMAP mailbox settings remain optional.
 
-R5 workflows, the statement budget for the whole scheduled invocation and durable
-bulk continuations from v0.4.8 remain included. Upgrades from v0.4.7 still apply
-its seven missing migrations, `150_workflow_journal.sql` through
-`156_ticket_batch_jobs.sql`, by name before the updated Worker starts. Preserve
-owners, imported history, permissions, files and erasure fences. Production
-deployment is separate from this release.
+The queue recipe fix from v0.4.9, R5 workflows, the statement budget for the whole
+scheduled invocation and durable bulk continuations remain included. Upgrades
+from v0.4.7 still apply its seven missing v0.4.8 migrations,
+`150_workflow_journal.sql` through `156_ticket_batch_jobs.sql`, by name before
+the updated Worker starts. Preserve owners, imported history, permissions, files
+and erasure fences. Production deployment is separate from this release.
 See [RELEASE.json](RELEASE.json),
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md) and [the changelog](CHANGELOG.md).
 
@@ -129,11 +125,11 @@ own operating contract; this seed's CLI is not a platform admission requirement.
 
 ## Deploy to your own Cloudflare account
 
-For a new installation, acquire the latest tagged release, **`v0.4.9`**,
+For a new installation, acquire the latest tagged release, **`v0.4.10`**,
 after installing `rer` as shown above:
 
 ```sh
-git clone --branch v0.4.9 https://github.com/just-every/run-happytohelp
+git clone --branch v0.4.10 https://github.com/just-every/run-happytohelp
 cd run-happytohelp
 ```
 

@@ -11,7 +11,7 @@ const basic=value=>'Basic '+Buffer.from(value).toString('base64');
 const matches=(value,path)=>!value||(value instanceof RegExp?value.test(path):path.includes(value));
 
 /** Local vendor REST server. Every credential below is a synthetic test fixture. */
-export async function startVendor(vendor,{tickets=305}={}) {
+export async function startVendor(vendor,{tickets=305,port=0}={}) {
     if(!Object.hasOwn(routes,vendor))throw new TypeError(`Unsupported vendor ${vendor}`);
     const corpus=makeCorpus(tickets),requestLog=[],violations=[],faults=[];
     initializeEmailEvidence(corpus,vendor);
@@ -89,7 +89,7 @@ export async function startVendor(vendor,{tickets=305}={}) {
             if(!response.headersSent)send({error:error.message},500);else response.destroy(error);
         }
     });
-    server.listen(0,'127.0.0.1');
+    server.listen(port,'127.0.0.1');
     await new Promise((resolve,reject)=>{server.once('listening',resolve);server.once('error',reject);});
     baseUrl=`http://127.0.0.1:${server.address().port}`;
     handle=routes[vendor]({corpus,baseUrl});

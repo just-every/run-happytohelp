@@ -4,15 +4,14 @@ The target is a complete US customer support help desk and AI agent replacing Ze
 
 The status assesses implementation visible at `9a07af20eccf264eaa6fd019ccc65cf2003bc378`, starting from the pinned 16 October code audit. R5 additionally updates SLA-001, AUTOMATION-001/002, QUEUE-001/004 and STATUS-001 from the workflow, inbox and packaged recovery journeys on 17 October 2026. Done is not a fresh execution, hosted deployment or provider-quality claim. Provider-boundary fakes belong only in tests. Live channels, paid models, commerce actions and compliance require separately identified evidence; do not turn an uncertain external outcome into success or automatically replay it.
 
-The homepage evidence (`tests/homepage-browser.mjs` and `tests/journeys/public.mjs`) must cover the exact “Customer Support, Solved.”
-headline and the 14-word subhead, the six sections in order (hero, Not just
-better. Free., Help before they ask, The rest of your support desk, Try it beside
-what you have, Ready when you are.), the hero drawing of a conversation the
-connected Codex or Claude has already fixed (three staggered bubbles on a pale aqua
-blob: Maya's message, the untitled fix beside a code glyph, the reply with Send inside
-it beside a person glyph, ink arrows landing on the bubbles they point at, five strings
-and at least 15px at 1440), the aqua number discs of the caption steps, the hero
-flourish that draws in once and stands drawn under reduced motion, the MIT license, offer, product and
+The homepage evidence (`tests/homepage-browser.mjs` and `tests/journeys/public.mjs`) must cover the exact “Knows what your customer needs before they do.”
+headline and its subhead, the five sections in order (hero, Not just
+better. Free., The rest of your support desk, Try it beside
+what you have, Ready when you are.), the hero drawing of both moments on one pale aqua
+blob (1, the checkout with the widget's offer card over its corner signed with the mark; 2, the conversation the
+connected Codex or Claude has already fixed, with Send inside the reply; numbered on aqua discs and joined by an aqua
+arrow, side by side on wide screens and stacked on phones), the aqua number discs of the two moments' captions, the hero
+flourish that draws in once and stands drawn under reduced motion, the MIT license, product and
 import drawings in the hero's language (pale aqua blobs, the mark's sparks, frames kept only for the code
 editor, checkout and import, filled aqua number discs, the promises' icon circles, aqua link underlines, two
 full-width dividers, the closing headline's aqua line and the footer lockup), each moment below the hero playing

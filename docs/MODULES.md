@@ -22,7 +22,7 @@ The remaining identity (including `src/modules/identity/two-factor`), access (ro
 legacy-import, dashboard and bootstrapping paths are edition integration. They
 remain editable source and can be extracted later when a real second use
 establishes a useful boundary. The public-site integration serves dynamic
-published help centers; the “Customer Support, Solved.” homepage is the React root route in
+published help centers; the public homepage is the React root route in
 `src/ui/homepage`. The original service's marketing, pricing, waitlist, referrer
 and homepage-widget paths are not part of this edition.
 The customer widget module remains an independently installable support surface.

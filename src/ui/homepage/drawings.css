@@ -1,5 +1,5 @@
 /* Drawings: ink linework on paper with soft cyan accents. The aqua family is the only colour on the page: the drawings use
-   it here (this file has the shared parts and the hero; section-drawings.css the drawings below it), and the page's discs,
+   it here (this file has the shared parts and the flourish; hero-story.css the hero's drawing; section-drawings.css the drawings below it), and the page's discs,
    links, dividers and closing line (homepage.css) borrow the same tokens, which brand-tokens.css defines. */
 .h2h-home .drawing { position: relative; margin: 0; font-size: 13px; line-height: 1.35; color: var(--d-ink); }
 .h2h-home :where(.drawing ul, .drawing ol) { list-style: none; margin: 0; padding: 0; }
@@ -33,47 +33,13 @@
 .h2h-home .d-chip { border: 1px solid var(--d-cyan); display: inline-flex; align-items: center; gap: 0.5em; padding: 0.4em 0.9em; border-radius: 999px; background: var(--d-cyan-tint); font-style: normal; }
 .h2h-home .d-chip .d-icon { width: 1.1em; height: 1.1em; }
 .h2h-home .d-bubble { padding: 0.8em 1em; border-radius: 1em; background: var(--d-cyan-tint); }
+.h2h-home .sk-field { display: block; height: 2.6em; border: 1.5px solid var(--d-line); border-radius: 0.6em; background: #fbfaf7; }
+.h2h-home .sk-pay { display: inline-flex; justify-content: center; align-items: center; height: 2.8em; margin-top: 0.3em; border-radius: 999px; background: #d9d6ce; color: var(--d-ink); }
 .h2h-home .sk-line { display: block; height: 0.65em; border-radius: 999px; background: #e3e1da; }
 .h2h-home .sk-line.w60 { width: 60%; }
 .h2h-home .sk-line.w90 { width: 90%; }
 .h2h-home .d-check { display: inline-grid; place-items: center; flex: none; width: 1.7em; height: 1.7em; border-radius: 50%; background: var(--d-cyan); color: var(--d-ink); }
 .h2h-home .d-check .d-icon { width: 1.1em; height: 1.1em; }
-
-/* Hero drawing: three staggered, hand-outlined bubbles on a pale aqua blob. The figure is a size container; the thread's
-   type is set from its width, and every length inside is in em, so the picture scales as one. The blob fills the figure's
-   box and the thread sits inside its padding, so nothing reaches past the drawing. */
-.h2h-home .hero-art { container-type: inline-size; isolation: isolate; }
-.h2h-home .hero-blob { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; fill: var(--d-cyan-wash); }
-.h2h-home .hero-thread { --gap-long: 3.6em; --gap-short: 2.5em; display: grid; padding: 1.9em 0.8em 1.8em 3.9em; font-size: clamp(15.5px, 2.95cqw, 22px); line-height: 1.4; }
-.h2h-home .hc-row { position: relative; display: flex; align-items: center; gap: 0.55em; }
-.h2h-home .hc-ask { display: grid; justify-items: start; gap: 0.3em; margin-right: 3em; }
-.h2h-home .hc-who { padding-left: 0.2em; font-weight: 600; }
-.h2h-home .hc-fix { margin-top: var(--gap-long); padding-left: 1.75em; }
-.h2h-home .hc-reply { margin-top: var(--gap-short); }
-/* An ink outline that wobbles a little: uneven corners, a slight tilt about the left end (where the arrows land) and a
-   heavier pen line along the bottom and right. */
-.h2h-home .hc-bubble { flex: 1; justify-self: stretch; min-width: 0; padding: 1.05em 1.25em; border: 2px solid var(--d-ink); border-radius: 1em 1.15em 0.95em 1.05em / 1.05em 0.9em 1.1em 1em; background: #fff; box-shadow: 1px 1.5px 0 rgba(20, 20, 20, 0.55); transform: rotate(-1.2deg); transform-origin: 2em 50%; }
-.h2h-home .hc-bubble--fix { background: var(--d-cyan-tint); }
-.h2h-home .hc-composer { display: flex; align-items: center; gap: 0.8em; padding: 0.7em 0.7em 0.7em 1.25em; }
-.h2h-home .hc-text { flex: 1; min-width: 0; }
-.h2h-home .hc-send { flex: none; min-height: 2.3em; padding: 0 1.3em; font-weight: 600; }
-/* The glyphs hang beside their bubble without changing the row's height, so each row's top edge is its bubble's. */
-.h2h-home .hc-glyph { display: grid; place-items: center; flex: none; width: 3.5em; height: 3.5em; margin-block: -1em; border: 2px solid var(--d-ink); border-radius: 50%; background: #fff; }
-.h2h-home .hc-glyph--code { background: var(--d-cyan-tint); }
-.h2h-home .hc-glyph .d-icon { width: 1.55em; height: 1.55em; }
-/* Each arrow fills the gap above its row exactly: it starts under the bubble above and its tip lands on this row's bubble. */
-.h2h-home .hc-arrow { position: absolute; bottom: 100%; color: var(--d-ink); overflow: visible; pointer-events: none; }
-.h2h-home .hc-arrow--long { left: 0.7em; width: 2.2em; height: var(--gap-long); }
-.h2h-home .hc-arrow--short { left: 0.8em; width: 1.3em; height: var(--gap-short); }
-@container (max-width: 560px) {
-  .h2h-home .hero-thread { --gap-long: 3em; --gap-short: 2.4em; padding: 1.5em 0.8em 1.5em 1em; font-size: clamp(13px, 4.1cqw, 16px); }
-  .h2h-home .hc-ask { margin-right: 2.6em; }
-  .h2h-home .hc-fix { padding-left: 1.2em; }
-  .h2h-home .hc-bubble { padding: 0.85em 1em; }
-  .h2h-home .hc-composer { padding: 0.55em 0.55em 0.55em 1em; }
-  .h2h-home .hc-glyph { width: 2.6em; height: 2.6em; }
-  .h2h-home .hc-glyph .d-icon { width: 1.3em; height: 1.3em; }
-}
 
 /* The hero flourish: an aqua pen stroke under the calls to action, drawn in once as the page appears. Its box takes the
    viewBox's aspect ratio from the first paint, so only the stroke moves. Reduced motion shows it fully drawn. Beside the

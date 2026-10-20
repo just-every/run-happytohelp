@@ -4,7 +4,8 @@ import { createRequire } from 'node:module';
 import { chromium } from 'playwright';
 import { wordGlyphs, wordHeightEm, wordStrokeWidth, wordViewBox, wordWidthEm } from '../src/ui/homepage/brand-word.ts';
 
-// Real-browser check of the approved "Customer Support, Solved." homepage (owner approval 2026-10-01).
+// Real-browser check of the approved homepage (owner approval 2026-10-01; hero leading with "Knows what your customer needs
+// before they do.", owner pick 2026-10-20).
 const origin = process.env.H2H_TEST_ORIGIN;
 if (!origin) throw new Error('Set H2H_TEST_ORIGIN to the real native homepage preview');
 const evidence = process.env.H2H_EVIDENCE_DIR || '/tmp/h2h-homepage-browser';
@@ -43,19 +44,20 @@ try {
   await page.evaluate(() => document.fonts.ready);
 
   // Content, in order. The page is the clarity pass: one idea per section, free plainly and absolutely, nothing small-print.
-  await page.getByRole('heading', { level: 1, name: 'Customer Support, Solved.', exact: true }).waitFor();
+  await page.getByRole('heading', { level: 1, name: 'Knows what your customer needs before they do.', exact: true }).waitFor();
   assert.equal(await page.locator('h1').count(), 1);
-  const subhead = await page.locator('.hero-sub').innerText();
-  assert.equal(subhead, 'Your Codex or Claude fixes the problem and writes the reply. You press Send.');
-  assert.equal(subhead.split(/\s+/).length, 14, 'the subhead stays at 14 words');
+  assert.equal(await page.locator('.hero-sub').innerText(), 'Some customers who get stuck never write in. They just leave.');
   assert.equal((await page.locator('.hero-free').innerText()).replace(/\u00a0/g, ' '), '100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk');
   assert.deepEqual(await page.locator('.hero-free strong').allInnerTexts(), ['Zendesk', 'Intercom', 'Help\u00a0Scout', 'Freshdesk'], 'the four company names are strong elements and Help Scout does not break');
   assert.deepEqual(await page.locator('.hero-free').evaluate(el => [getComputedStyle(el).fontWeight, ...[...el.querySelectorAll('strong')].map(s => getComputedStyle(s).fontWeight)]), ['400', '600', '600', '600', '600'], 'the names are bold and the lead-in is not');
   assert.equal(await page.locator('.hero-examples').count(), 0, 'the examples strip is removed');
-  assert.deepEqual(await page.locator('.hero-steps li').allInnerTexts(), ['The customer asks', 'The agent fixes it', 'You press Send']);
+  assert.deepEqual(await page.locator('.hero-moments li').evaluateAll(items => items.map(item => [item.querySelector('b').textContent, item.querySelector('p').textContent])), [
+    ['Before they ask', 'When someone seems stuck, the widget offers a hand.'],
+    ['When they ask', 'Your Codex or Claude fixes the problem and writes the reply. You press Send.'],
+  ], 'the hero names its two moments, before they ask and when they ask, under the drawing');
   assert.deepEqual(await page.locator('.hero-copy .actions a').allInnerTexts(), ['Get the code', 'Read the docs'], 'the hero has two controls and no third');
-  assert.deepEqual(await page.locator('main > section').evaluateAll(sections => sections.map(section => section.id)), ['top', 'free', 'help-before-they-ask', 'product', 'move-in', 'get-started']);
-  assert.deepEqual(await page.locator('main h2').allInnerTexts(), ['Not just better. Free.', 'Help before they ask', 'The rest of your support desk', 'Try it beside what you have', 'Ready when you are.']);
+  assert.deepEqual(await page.locator('main > section').evaluateAll(sections => sections.map(section => section.id)), ['top', 'free', 'product', 'move-in', 'get-started']);
+  assert.deepEqual(await page.locator('main h2').allInnerTexts(), ['Not just better. Free.', 'The rest of your support desk', 'Try it beside what you have', 'Ready when you are.']);
   assert.equal(await page.locator('#product .section-head p').count(), 0, 'the Product heading has no sub-line');
   assert.deepEqual(await page.locator('.parts > li h3').allInnerTexts(), ['Chat widget', 'Shared inbox', 'Help centre', 'Suggested replies']);
   assert.deepEqual(await page.locator('.parts > li > p').allInnerTexts(), [
@@ -65,8 +67,6 @@ try {
     'Drafted from your own articles, with sources.',
   ]);
   assert.equal(await page.locator('.signals').count(), 0, 'the signals list is removed');
-  assert.equal(await page.locator('#help-before-they-ask .split-copy > p').innerText(), 'Some customers who get stuck never write in. They just leave. When someone seems stuck, the widget offers a hand.');
-  assert.equal(await page.locator('#help-before-they-ask .actions, #help-before-they-ask a').count(), 0, 'Help before they ask has no calls to action');
   assert.equal(await page.locator('#free .split-copy > p').innerText(), 'HappyToHelp is 100% free and open source. Free as in code, and free as in cost. It’s MIT licensed, so it’s yours to use, change and run however you like.');
   assert.deepEqual(await page.locator('#free .proof li').allInnerTexts(), ['No seats.', 'No plans.', 'No fees.']);
   assert.deepEqual(await page.locator('#free .actions a').allInnerTexts(), ['Get the code']);
@@ -95,7 +95,7 @@ try {
   assert.doesNotMatch(`${pageText} ${labels}`, /Cursor|Copilot|Gemini|Windsurf|Devin|ChatGPT|Aider|Cline|autonomous|autopilot|hands-free|no human|automatically|on its own|by itself|full access|admin access|read-write|sandbox|locked down|cloud agent|hosted agent|our agents|guaranteed|unlimited|forever/i, 'no claim the product cannot back');
   assert.deepEqual([...pageText.matchAll(/\d+\s?%[^.]*/g)].map(match => match[0].slice(0, 6)), ['100% f', '100% f'], '100% appears only in "100% free"');
   assert.ok(!/sends? (it|the reply|replies) (automatically|itself)/i.test(pageText));
-  checks.push('headline, 14-word subhead, 100% free line and three caption steps; six sections in order (hero, Not just better. Free., Help before they ask, The rest of your support desk, Try it beside what you have, Ready when you are.); exact short copy for each; no cost, hosting, provider or Run Edit Run text; no unbacked claims; footer');
+  checks.push('headline, subhead, 100% free line and the two moments\' captions; five sections in order (hero, Not just better. Free., The rest of your support desk, Try it beside what you have, Ready when you are.); exact short copy for each; no cost, hosting, provider or Run Edit Run text; no unbacked claims; footer');
 
   // The lockup: one link named HappyToHelp by visually hidden text, the decorative mark first, then the drawn wordmark (the
   // geometry's strokes, round-capped, in currentColor); ink in currentColor, cyan sparks.
@@ -262,84 +262,75 @@ try {
   ];
   assert.deepEqual(filledDiscs, ['1', '2', '3', '4', '1', '2', '3'].map(number => [number, 'rgb(143, 227, 238)', 'rgb(20, 20, 20)', '0px', '50%', true]), 'the desk and the three steps are numbered on filled aqua discs, as in the hero');
   assert.deepEqual(await page.locator('#free .proof li').evaluateAll(items => items.map(item => { const circle = item.firstElementChild, style = getComputedStyle(circle), icon = circle.querySelector('svg'); return [item.textContent, circle.className, style.backgroundColor, style.borderTopLeftRadius, style.width === style.height, icon.getAttribute('aria-hidden'), getComputedStyle(icon).stroke]; })), ['No seats.', 'No plans.', 'No fees.'].map(text => [text, 'proof-icon', 'rgb(214, 245, 250)', '50%', true, 'true', 'rgb(20, 20, 20)']), 'each promise has an ink line icon in a pale aqua circle');
-  const discs = await page.locator('.hero-steps li').evaluateAll(items => items.map(item => { const disc = getComputedStyle(item, '::before'); return [disc.content, disc.backgroundColor, disc.color, disc.width, disc.height, disc.borderTopLeftRadius, disc.borderTopWidth]; }));
-  assert.deepEqual(discs, Array(3).fill(['counter(step)', 'rgb(143, 227, 238)', 'rgb(20, 20, 20)', '40px', '40px', '50%', '0px']), 'each caption step has a filled aqua number disc');
+  const discs = await page.locator('.hero-moments li').evaluateAll(items => items.map(item => { const disc = getComputedStyle(item, '::before'); return [disc.content, disc.backgroundColor, disc.color, disc.borderTopLeftRadius, disc.width === disc.height]; }));
+  assert.deepEqual(discs, Array(2).fill(['counter(moment)', 'rgb(143, 227, 238)', 'rgb(20, 20, 20)', '50%', true]), 'each of the two moments\' captions has a filled aqua number disc');
   assert.deepEqual(await page.locator('.site-header').evaluate(header => [getComputedStyle(header).backgroundColor, header.querySelector('.brand').textContent, [...header.querySelectorAll('nav a')].map(a => a.textContent)]), ['rgba(0, 0, 0, 0)', 'HappyToHelp', ['Docs', 'GitHub', 'Sign in', 'Get the code']], 'the header is the plain paper with the wordmark, Docs, GitHub, Sign in and the pill');
   const cyan = await page.locator('.drawing *').evaluateAll(elements => elements.filter(el => getComputedStyle(el).backgroundColor === 'rgb(214, 245, 250)' || getComputedStyle(el).borderTopColor === 'rgb(143, 227, 238)').length);
   assert.ok(cyan >= 5, `soft cyan accents inside the drawings: the hero's fix bubble and code glyph, and three below it (${cyan})`);
-  const aquaPerDrawing = await page.locator('figure.drawing:not(.hero-art)').evaluateAll((figures, palette) => figures.map(figure => [...figure.querySelectorAll('*')].filter(el => {
+  const aquaPerDrawing = await page.locator('figure.drawing:not(.story-art)').evaluateAll((figures, palette) => figures.map(figure => [...figure.querySelectorAll('*')].filter(el => {
     const style = getComputedStyle(el);
     return palette.some(colour => [style.backgroundColor, style.borderTopColor, style.color, style.stroke].includes(colour) || style.boxShadow.includes(colour) || style.backgroundImage.includes(colour)) && el.getBoundingClientRect().width > 0;
   }).length), aqua);
-  assert.ok(aquaPerDrawing.length === 7 && aquaPerDrawing.every(count => count > 0), `every drawing below the hero carries an accent from the aqua palette: ${aquaPerDrawing}`);
+  assert.ok(aquaPerDrawing.length === 6 && aquaPerDrawing.every(count => count > 0), `every drawing below the hero carries an accent from the aqua palette: ${aquaPerDrawing}`);
   // The drawings below the hero, as they rest once each has played.
   await scrollThrough(page);
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   // Each drawing below the hero floats on its own pale aqua blob, which fills its figure (the figure's padding is the room it
   // shows in) and sits behind the drawing; in a row of desk cards it reaches a little past the figure into the gaps.
-  const blobs = await page.locator('figure.drawing:not(.hero-art)').evaluateAll(figures => figures.map(figure => {
+  const blobs = await page.locator('figure.drawing:not(.story-art)').evaluateAll(figures => figures.map(figure => {
     // Its layout box, before any transform (a waiting moment holds its blob a little shrunk), against the figure's.
     const blob = figure.querySelector(':scope > svg.d-blob'), style = getComputedStyle(blob), [left, top, width, height] = [style.left, style.top, style.width, style.height].map(parseFloat);
     return { first: figure.firstElementChild === blob, hidden: blob.getAttribute('aria-hidden'), fill: style.fill, behind: style.zIndex === '-1' && style.position === 'absolute' && getComputedStyle(figure).isolation === 'isolate',
       covers: left <= 0.5 && top <= 0.5 && left + width >= figure.clientWidth - 0.5 && top + height >= figure.clientHeight - 0.5 && width <= figure.clientWidth * 1.15 };
   }));
-  assert.deepEqual(blobs, Array(7).fill({ first: true, hidden: 'true', fill: 'rgb(232, 249, 252)', behind: true, covers: true }), `every drawing below the hero sits on a pale aqua blob: ${JSON.stringify(blobs)}`);
-  assert.deepEqual(await page.locator('figure.drawing:not(.hero-art) .d-blob').evaluateAll(blobs => blobs.map(blob => blob.getAttribute('class'))), ['d-blob d-blob--left', 'd-blob d-blob--right', 'd-blob d-blob--left', 'd-blob d-blob--right', 'd-blob d-blob--pebble', 'd-blob d-blob--long', 'd-blob d-blob--pebble'], 'the blobs alternate the side they swell to');
+  assert.deepEqual(blobs, Array(6).fill({ first: true, hidden: 'true', fill: 'rgb(232, 249, 252)', behind: true, covers: true }), `every drawing below the hero sits on a pale aqua blob: ${JSON.stringify(blobs)}`);
+  assert.deepEqual(await page.locator('figure.drawing:not(.story-art) .d-blob').evaluateAll(blobs => blobs.map(blob => blob.getAttribute('class'))), ['d-blob d-blob--left', 'd-blob d-blob--left', 'd-blob d-blob--right', 'd-blob d-blob--pebble', 'd-blob d-blob--long', 'd-blob d-blob--pebble'], 'each drawing keeps its own blob');
   // Frames kept and dropped: a window frame (ink border and a bar of three ink dots) stays only where it helps: the code editor
-  // under the licence card, the checkout page and the import page. The desk cards and the licence itself are frameless ink cards.
-  const frames = await page.locator('figure.drawing:not(.hero-art)').evaluateAll(figures => figures.map(figure => ({
+  // under the licence card and the import page. The desk cards and the licence itself are frameless ink cards.
+  const frames = await page.locator('figure.drawing:not(.story-art)').evaluateAll(figures => figures.map(figure => ({
     windows: [...figure.querySelectorAll('.d-window')].map(win => { const bar = win.querySelector(':scope > .d-bar'); return [win.classList[1] || '', bar ? bar.querySelectorAll('i').length : 0, getComputedStyle(win).borderTopColor, parseFloat(getComputedStyle(win).borderTopWidth) >= 2, bar ? getComputedStyle(bar.querySelector('i')).borderTopColor : null]; }),
     cards: [...figure.querySelectorAll('.d-card')].map(card => [card.classList[1], getComputedStyle(card).borderTopColor, parseFloat(getComputedStyle(card).borderTopWidth) >= 2, getComputedStyle(card).backgroundColor, getComputedStyle(card).boxShadow.startsWith('rgba(20, 20, 20, 0.55) 1px 1.5px'), card.querySelectorAll('.d-bar').length]),
   })));
   const ink = 'rgb(20, 20, 20)';
   assert.deepEqual(frames, [
     { windows: [['licence-editor', 3, ink, true, ink]], cards: [['licence-card', ink, true, 'rgb(255, 255, 255)', true, 0]] },
-    { windows: [['offer-window', 3, ink, true, ink]], cards: [] },
     { windows: [], cards: [['chat-art', ink, true, 'rgb(255, 255, 255)', true, 0]] },
     { windows: [], cards: [['inbox-art', ink, true, 'rgb(255, 255, 255)', true, 0]] },
     { windows: [], cards: [['help-art', ink, true, 'rgb(255, 255, 255)', true, 0]] },
     { windows: [], cards: [['sr-panel', ink, true, 'rgb(255, 255, 255)', true, 0]] },
     { windows: [['import-window', 3, ink, true, ink]], cards: [] },
-  ], `frames kept (editor, checkout, import) and dropped (licence card and the four desk cards are frameless ink cards): ${JSON.stringify(frames)}`);
+  ], `frames kept (editor, import) and dropped (licence card and the four desk cards are frameless ink cards): ${JSON.stringify(frames)}`);
   const licenceStack = await page.locator('.licence-art').evaluate(art => { const editor = art.querySelector('.licence-editor').getBoundingClientRect(), card = art.querySelector('.licence-card').getBoundingClientRect(); return { cardOverEditor: card.top < editor.bottom - 20 && card.left > editor.left && card.right > editor.right && card.left < editor.right, codeRows: art.querySelectorAll('.code-line').length, aquaRuns: art.querySelectorAll('.code-run.is-aqua').length, editorText: art.querySelector('.licence-editor').textContent.trim() }; });
   assert.deepEqual(licenceStack, { cardOverEditor: true, codeRows: 7, aquaRuns: 8, editorText: '' }, `the licence card lies over the lower right of a wordless code editor: ${JSON.stringify(licenceStack)}`);
   assert.deepEqual(await page.locator('.licence-art .d-sweep').evaluateAll(marks => marks.map(mark => [mark.textContent, getComputedStyle(mark).backgroundImage, getComputedStyle(mark).backgroundSize])), [['free of charge', 'linear-gradient(rgb(143, 227, 238), rgb(143, 227, 238))', '100% 100%'], ['use, copy, modify, merge, publish, distribute', 'linear-gradient(rgb(214, 245, 250), rgb(214, 245, 250))', '100% 100%']], '"free of charge" and the rights carry full aqua highlights');
-  // The widget's offer: the speech-bubble mark as the avatar, floating over the checkout window but not inside it.
-  const offer = await page.locator('.offer-art').evaluate(art => {
-    const widget = art.querySelector('.offer-widget'), avatar = widget.querySelector('.offer-avatar svg.brand-mark'), header = document.querySelector('.site-header .brand-mark');
-    const win = art.querySelector('.offer-window').getBoundingClientRect(), w = widget.getBoundingClientRect();
-    return { outsideWindow: !widget.closest('.d-window'), sameMark: avatar.innerHTML === header.innerHTML, hidden: avatar.getAttribute('aria-hidden'), overlapsWindow: w.left < win.right && w.right > win.right && w.top < win.bottom, dots: widget.querySelectorAll('.offer-typing i').length, dotsAtRest: getComputedStyle(widget.querySelector('.offer-typing')).opacity };
-  });
-  assert.deepEqual(offer, { outsideWindow: true, sameMark: true, hidden: 'true', overlapsWindow: true, dots: 3, dotsAtRest: '0' }, `the offer floats over the checkout window's lower right edge with the mark as its avatar: ${JSON.stringify(offer)}`);
   // Sparks: the logo's three aqua sparks, the same paths as the mark, on the cards of four drawings.
   const markSparks = await page.locator('.site-header .brand-mark g:last-child path').evaluateAll(paths => paths.map(path => path.getAttribute('d')));
-  assert.deepEqual(await page.locator('figure.drawing:not(.hero-art)').evaluateAll(figures => figures.map(figure => figure.querySelectorAll('.d-sparks').length)), [1, 0, 1, 0, 1, 0, 1], 'sparks on the licence card, the chat widget, the help centre and the import window');
+  assert.deepEqual(await page.locator('figure.drawing:not(.story-art)').evaluateAll(figures => figures.map(figure => figure.querySelectorAll('.d-sparks').length)), [1, 1, 0, 1, 0, 1], 'sparks on the licence card, the chat widget, the help centre and the import window');
   const sparks = await page.locator('.d-sparks').evaluateAll(list => list.map(svg => ({ paths: [...svg.querySelectorAll('path')].map(path => path.getAttribute('d')), stroke: getComputedStyle(svg.querySelector('path')).stroke, hidden: svg.getAttribute('aria-hidden'), frame: svg.parentElement.matches('.d-card, .d-window') })));
   assert.deepEqual(sparks, Array(4).fill({ paths: markSparks, stroke: 'rgb(90, 216, 236)', hidden: 'true', frame: true }), 'each set of sparks is the mark\'s three, in deep aqua, decorative, seated on a card or window');
-  // Dividers: two full-width aqua pen lines that draw different squiggles, between Free and Help before they ask, and between the desk and Try it.
+  // Dividers: two full-width aqua pen lines that draw different squiggles, between Free and the desk, and between the desk and Try it.
   const dividers = await page.locator('main > .divider').evaluateAll(list => list.map(divider => { const shown = [...divider.querySelectorAll('svg')].filter(svg => svg.getBoundingClientRect().width > 0), main = document.querySelector('main'), inner = main.getBoundingClientRect().width - parseFloat(getComputedStyle(main).paddingLeft) - parseFloat(getComputedStyle(main).paddingRight); return { between: [divider.previousElementSibling.id, divider.nextElementSibling.id], hidden: divider.getAttribute('aria-hidden'), shown: shown.length, fullWidth: Math.abs(shown[0].getBoundingClientRect().width - inner) <= 1, paths: divider.querySelectorAll('path').length }; }));
-  assert.deepEqual(dividers, [{ between: ['free', 'help-before-they-ask'], hidden: 'true', shown: 1, fullWidth: true, paths: 2 }, { between: ['product', 'move-in'], hidden: 'true', shown: 1, fullWidth: true, paths: 2 }], `two full-width dividers: ${JSON.stringify(dividers)}`);
-  // The closing band echoes the hero: a headline as big as the hero's, an aqua line under it, centred.
-  const closing = await page.locator('#get-started h2').evaluate(h2 => { const line = h2.querySelector('svg.ready-line'), range = document.createRange(); range.selectNodeContents(h2.firstChild); const text = range.getBoundingClientRect(), l = line.getBoundingClientRect(); return { size: getComputedStyle(h2).fontSize === getComputedStyle(document.querySelector('#hero-title')).fontSize, weight: getComputedStyle(h2).fontWeight, hidden: line.getAttribute('aria-hidden'), stroke: getComputedStyle(line.querySelector('path')).stroke, under: l.top >= text.bottom - text.height * 0.2, centred: Math.abs((l.left + l.right) / 2 - (text.left + text.right) / 2) <= 4, spans: l.width >= text.width * 0.85 && l.width <= text.width * 1.15 }; });
-  assert.deepEqual(closing, { size: true, weight: '600', hidden: 'true', stroke: 'rgb(90, 216, 236)', under: true, centred: true, spans: true }, `"Ready when you are." is as big as the hero headline with an aqua line drawn under it: ${JSON.stringify(closing)}`);
+  assert.deepEqual(dividers, [{ between: ['free', 'product'], hidden: 'true', shown: 1, fullWidth: true, paths: 2 }, { between: ['product', 'move-in'], hidden: 'true', shown: 1, fullWidth: true, paths: 2 }], `two full-width dividers: ${JSON.stringify(dividers)}`);
+  // The closing band: a big headline with an aqua line under it, centred.
+  const closing = await page.locator('#get-started h2').evaluate(h2 => { const line = h2.querySelector('svg.ready-line'), range = document.createRange(); range.selectNodeContents(h2.firstChild); const text = range.getBoundingClientRect(), l = line.getBoundingClientRect(); return { weight: getComputedStyle(h2).fontWeight, hidden: line.getAttribute('aria-hidden'), stroke: getComputedStyle(line.querySelector('path')).stroke, under: l.top >= text.bottom - text.height * 0.2, centred: Math.abs((l.left + l.right) / 2 - (text.left + text.right) / 2) <= 4, spans: l.width >= text.width * 0.85 && l.width <= text.width * 1.15 }; });
+  assert.deepEqual(closing, { weight: '600', hidden: 'true', stroke: 'rgb(90, 216, 236)', under: true, centred: true, spans: true }, `"Ready when you are." has an aqua line drawn under it: ${JSON.stringify(closing)}`);
   // The footer signs off with the header's lockup.
   const lockups = await page.locator('.site-header .brand, .site-footer .brand').evaluateAll(brands => brands.map(brand => ({ children: [...brand.childNodes].map(node => node.nodeType === 3 ? `text:${node.textContent}` : node.nodeName.toLowerCase()), mark: brand.querySelector('svg.brand-mark').outerHTML, word: brand.querySelector('svg.brand-word').outerHTML, hidden: [...brand.querySelectorAll('svg')].map(svg => svg.getAttribute('aria-hidden')), name: brand.querySelector('.brand-name').textContent, size: getComputedStyle(brand).fontSize, markHeight: brand.querySelector('svg.brand-mark').getBoundingClientRect().height, wordBox: [brand.querySelector('svg.brand-word').getBoundingClientRect().width, brand.querySelector('svg.brand-word').getBoundingClientRect().height], penWidth: getComputedStyle(brand.querySelector('svg.brand-word path')).strokeWidth, display: getComputedStyle(brand).display })));
   assert.deepEqual(lockups[1], lockups[0], `the footer lockup is the header's: the mark, then the drawn wordmark, at the same size: ${JSON.stringify(lockups)}`);
   assert.deepEqual([lockups[1].children, lockups[1].hidden, lockups[1].name, lockups[1].penWidth], [['svg', 'svg', 'span'], ['true', 'true'], 'HappyToHelp', `${wordStrokeWidth}px`]);
   assert.equal(await page.locator('.site-footer').getByRole('link', { name: 'HappyToHelp', exact: true }).count(), 1, 'the footer lockup is one link named HappyToHelp');
-  assert.deepEqual(await page.locator('.hero-art').evaluate(art => [getComputedStyle(art.querySelector('.hero-blob')).fill, getComputedStyle(art.querySelector('.hc-bubble--fix')).backgroundColor, getComputedStyle(art.querySelector('.hc-glyph--code')).backgroundColor]), ['rgb(232, 249, 252)', 'rgb(214, 245, 250)', 'rgb(214, 245, 250)'], 'the hero drawing is a pale aqua blob with an aqua-tinted fix bubble and code glyph');
+  assert.deepEqual(await page.locator('.story-art').evaluate(art => [getComputedStyle(art.querySelector('.story-blob')).fill, getComputedStyle(art.querySelector('.story-bubble--fix')).backgroundColor, getComputedStyle(art.querySelector('.story-glyph')).backgroundColor, ...[...art.querySelectorAll('.story-number')].map(n => getComputedStyle(n).backgroundColor)]), ['rgb(232, 249, 252)', 'rgb(214, 245, 250)', 'rgb(214, 245, 250)', 'rgb(143, 227, 238)', 'rgb(143, 227, 238)'], 'the hero drawing is a pale aqua blob with an aqua-tinted fix bubble and code glyph, its two moments numbered on filled aqua discs');
   const buttons = await page.locator('.pill--ink').evaluateAll(els => els.map(el => [getComputedStyle(el).backgroundColor, getComputedStyle(el).color, getComputedStyle(el).borderTopLeftRadius]));
   assert.ok(buttons.length === 4 && buttons.every(([bg, fg, radius]) => bg === 'rgb(20, 20, 20)' && fg === 'rgb(255, 255, 255)' && parseFloat(radius) >= 20), JSON.stringify(buttons));
   checks.push('warm paper with grain, near-black ink, black pill buttons, a plain header, and no colour outside the drawings but aqua: the hero\'s discs, docs underline and flourish, the marks\' sparks, and below the hero filled number discs, the promises\' circles, aqua link underlines, two dividers and the closing line');
-  checks.push('below the hero: every drawing on a pale aqua blob, alternating sides; window frames kept only for the code editor, checkout and import, frameless ink cards for the licence and the four desk parts; the licence card over a wordless editor with both highlights; the offer floating over the checkout with the mark as its avatar; the mark\'s three sparks on four cards; two full-width dividers; the closing headline at the hero\'s size with its aqua line; and the footer lockup identical to the header\'s');
+  checks.push('below the hero: every drawing on a pale aqua blob, alternating sides; window frames kept only for the code editor, checkout and import, frameless ink cards for the licence and the four desk parts; the licence card over a wordless editor with both highlights; the mark\'s three sparks on four cards; two full-width dividers; the closing headline at the hero\'s size with its aqua line; and the footer lockup identical to the header\'s');
 
   // Drawings: real DOM text, one accessible label each, no raster images, legible at every width.
   assert.equal(await page.locator('img').count(), 0);
   const drawings = await page.locator('figure.drawing').evaluateAll(figures => figures.map(figure => ({ role: figure.getAttribute('role'), label: figure.getAttribute('aria-label') })));
-  assert.equal(drawings.length, 8);
+  assert.equal(drawings.length, 7);
   assert.ok(drawings.every(drawing => drawing.role === 'img' && drawing.label.length > 40), JSON.stringify(drawings));
-  assert.equal(await page.locator('.hero-art').getAttribute('aria-label'), "Drawing of a HappyToHelp conversation. Maya can't turn on the Spanish version of her store. The agent fixes it: Spanish is live on her store. The reply to Maya is ready, and the next step is to press Send.");
-  assert.equal(await page.locator('.offer-art').getAttribute('aria-label'), 'Drawing of a checkout page where the chat widget asks: Looks like you might be stuck. Would you like a hand with checkout? with Yes please and No thanks.');
+  assert.equal(await page.locator('.story-art').getAttribute('aria-label'), 'Drawing of two moments. One, before they ask: on a checkout page the chat widget asks: Looks like you might be stuck. Would you like a hand with checkout? with Yes please and No thanks. Two, when they ask: Maya can’t turn on the Spanish version of her store. The agent fixes it: Spanish is live on her store. The reply to Maya is ready, and the next step is to press Send.');
   assert.equal(await page.locator('.licence-art').getAttribute('aria-label'), 'Drawing of the MIT licence: permission is granted, free of charge, to use, copy, modify, merge, publish and distribute HappyToHelp.');
   assert.equal(await page.locator('.import-art').getAttribute('aria-label'), 'Drawing of the help-centre import from Zendesk, complete with 128 articles and 9 categories.');
   assert.deepEqual(await page.locator('.parts figure.drawing').evaluateAll(figures => figures.map(figure => figure.getAttribute('aria-label'))), [
@@ -352,49 +343,33 @@ try {
   assert.equal(await page.locator('.drawing a, .drawing button, .drawing input').count(), 0, 'drawn controls are not interactive');
   const wordsIn = text => text.split(/\s+/).filter(word => /[A-Za-z0-9]/.test(word)).length;
   const textOf = async selector => (await page.locator(selector).innerText()).replace(/\s+/g, ' ');
-  // The hero drawing: three staggered bubbles, five strings, 26 words (the cap is 30).
-  const heroNodes = await page.locator('.hero-art').evaluate(root => {
-    const found = [];
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    for (let node = walker.nextNode(); node; node = walker.nextNode()) if (node.nodeValue.trim() && !node.parentElement.closest('[aria-hidden="true"]')) found.push(node.nodeValue.trim());
-    return found;
+  // The hero drawing: both moments in one picture. 1, the checkout with the widget's offer card floating over its corner, signed
+  // with the header's mark; 2, Maya's conversation, solved, with Send the one step left; numbered as the captions are.
+  const moments = await page.locator('.story-art').evaluate(art => [...art.querySelectorAll('.story-moment')].map(moment => {
+    const strings = [];
+    const walker = document.createTreeWalker(moment, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) if (node.nodeValue.trim()) strings.push(node.nodeValue.trim());
+    return strings;
+  }));
+  assert.deepEqual(moments, [
+    ['Checkout', 'Pay now', 'Looks like you might be stuck. Would you like a hand with checkout?', 'Yes please', 'No thanks', '1'],
+    ['Maya', 'I can’t turn on the Spanish version of my store.', 'Fixed. Spanish is live on Maya’s store.', 'All done, Maya. Refresh and it’s there.', 'Send', '2'],
+  ], 'the hero drawing shows exactly the two moments\' strings, each numbered');
+  const story = await page.locator('.story-art').evaluate(art => {
+    const offer = art.querySelector('.story-offer'), checkout = art.querySelector('.story-checkout').getBoundingClientRect(), card = offer.getBoundingClientRect();
+    const composer = art.querySelector('.story-composer').getBoundingClientRect(), send = art.querySelector('.story-send').getBoundingClientRect();
+    return { offerOutsideWindow: !offer.closest('.d-window'), offerOverWindow: card.left < checkout.right && card.right > checkout.right && card.top < checkout.bottom,
+      sameMark: offer.querySelector('svg.brand-mark').innerHTML === document.querySelector('.site-header .brand-mark').innerHTML,
+      sendInReply: send.left >= composer.left && send.right <= composer.right && send.top >= composer.top && send.bottom <= composer.bottom,
+      solid: [...art.querySelectorAll('.d-btn--ink')].map(button => button.textContent), arrow: [art.querySelector('.story-arrow').getAttribute('aria-hidden'), getComputedStyle(art.querySelector('.story-arrow path')).stroke] };
   });
-  assert.deepEqual(heroNodes, ['Maya', 'I can’t turn on the Spanish version of my store.', 'Fixed. Spanish is live on Maya’s store.', 'All done, Maya. Refresh and it’s there.', 'Send'], 'the hero drawing shows exactly its five strings');
-  assert.equal(wordsIn(heroNodes.join(' ')), 26);
-  assert.ok(!heroNodes.includes('Codex'), 'the fix bubble has no Codex title');
-  const heroText = await textOf('.hero-art');
-  for (const text of ['Maya Chen', 'maya@example.com', 'Open', 'Close', 'Local', '10:24', '10:31', 'Internal note', 'Local agent', 'Draft', 'Published Spanish', 'Checked the store', 'AI', 'Details', 'Work with your local agent', 'Ready', 'Mina', 'Resolve completed', 'Hola', 'Suggested replies', 'Use', 'Evidence and details', 'Verified', 'Type your reply']) assert.ok(!new RegExp(`\\b${text}\\b`).test(heroText), `hero drawing does not show ${text}`);
-  assert.deepEqual(await page.locator('.hero-art .hero-thread > *').evaluateAll(rows => rows.map(row => row.className)), ['hc-row hc-ask', 'hc-row hc-fix', 'hc-row hc-reply'], 'three rows: the question, the fix and the reply');
-  assert.deepEqual(await page.locator('.hero-art .hc-bubble').evaluateAll(bubbles => bubbles.map(bubble => { const style = getComputedStyle(bubble); return [bubble.className, style.backgroundColor, style.borderTopColor, parseFloat(style.borderTopWidth) >= 1.5, style.transform !== 'none']; })), [
-    ['hc-bubble', 'rgb(255, 255, 255)', 'rgb(20, 20, 20)', true, true],
-    ['hc-bubble hc-bubble--fix', 'rgb(214, 245, 250)', 'rgb(20, 20, 20)', true, true],
-    ['hc-bubble hc-composer', 'rgb(255, 255, 255)', 'rgb(20, 20, 20)', true, true],
-  ], 'three hand-outlined bubbles, slightly tilted: white, pale aqua, white');
-  assert.equal(await page.locator('.hero-art .hc-ask .hc-who').evaluate(who => who.nextElementSibling.matches('.hc-bubble') && who.textContent), 'Maya', 'the Maya label sits above the first bubble');
-  assert.equal(await page.locator('.hero-art .hc-composer .hc-text').innerText(), 'All done, Maya. Refresh and it’s there.', 'the reply is real text in the bubble, not a placeholder');
-  assert.equal(await page.locator('.hero-art .hc-composer > .hc-send.d-btn--ink').innerText(), 'Send', 'Send is a solid button inside the reply bubble');
-  assert.equal(await page.locator('.hero-art .hc-composer > *').evaluateAll(children => children.map(child => child.className).join(' | ')), 'hc-text | d-btn d-btn--ink hc-send', 'Send comes after the reply, at the bubble\'s right end');
-  assert.equal(await page.locator('.hero-art .d-btn--ink').count(), 1, 'Send is the only solid control');
-  assert.equal(await page.locator('.hero-art .d-window, .hero-art .d-bar, .hero-art .d-marks, .hero-art .callout, .hero-art .hc-ring, .hero-art .d-underline').count(), 0, 'no window frame, dots, corner mark, callouts, ring or underline');
-  assert.deepEqual(await page.locator('.hero-art').evaluate(art => [getComputedStyle(art).transform, getComputedStyle(art.querySelector('.hero-thread')).transform]), ['none', 'none'], 'the drawing as a whole is not tilted');
-  assert.deepEqual(await page.locator('.hero-art .hc-glyph').evaluateAll(glyphs => glyphs.map(glyph => [glyph.parentElement.className, glyph.previousElementSibling.className, glyph.querySelector('svg').getAttribute('aria-hidden'), getComputedStyle(glyph).borderTopLeftRadius, getComputedStyle(glyph).borderTopColor])), [
-    ['hc-row hc-fix', 'hc-bubble hc-bubble--fix', 'true', '50%', 'rgb(20, 20, 20)'],
-    ['hc-row hc-reply', 'hc-bubble hc-composer', 'true', '50%', 'rgb(20, 20, 20)'],
-  ], 'a circled code glyph follows the fix bubble and a circled person glyph follows the reply');
-  assert.deepEqual(await page.locator('.hero-art .hc-arrow').evaluateAll(arrows => arrows.map(arrow => [arrow.parentElement.className, arrow.getAttribute('aria-hidden'), getComputedStyle(arrow).color])), [['hc-row hc-fix', 'true', 'rgb(20, 20, 20)'], ['hc-row hc-reply', 'true', 'rgb(20, 20, 20)']], 'two ink arrows, one into the fix and one into the reply');
-  assert.deepEqual(await page.locator('.hero-art .hero-blob').evaluate(blob => [blob.getAttribute('aria-hidden'), blob.parentElement.matches('.hero-art')]), ['true', true], 'the blob is decoration inside the figure');
+  assert.deepEqual(story, { offerOutsideWindow: true, offerOverWindow: true, sameMark: true, sendInReply: true, solid: ['Yes please', 'Send'], arrow: ['true', 'rgb(90, 216, 236)'] }, `the offer floats over the checkout's lower right corner, Send sits inside the reply, an aqua arrow joins the moments: ${JSON.stringify(story)}`);
   // The licence card: the real LICENSE file, drawn.
   const licenceText = await textOf('.licence-art');
   assert.equal(licenceText, 'MIT License Permission is hereby granted, free of charge, use, copy, modify, merge, publish, distribute');
   assert.equal(await page.locator('.licence-art .licence-mark').innerText(), 'free of charge');
   assert.equal(wordsIn(licenceText), 15);
-  // The offer, the product drawings and the import.
-  const offerText = await textOf('.offer-art');
-  assert.equal(offerText, 'Checkout Pay now Looks like you might be stuck. Would you like a hand with checkout? Yes please No thanks');
-  assert.equal(wordsIn(offerText), 20);
-  assert.equal(await page.locator('.offer-art .d-btn--ink').innerText(), 'Yes please');
-  assert.doesNotMatch(offerText, /Casey|Support assistant/, 'the offer has no assistant footer');
-  assert.equal(await page.locator('.offer-art .offer-close').count(), 0, 'the offer has no close control');
+  // The product drawings and the import.
   assert.equal((await page.locator('.parts .product-art').nth(0).innerText()).replace(/\s+/g, ' '), 'C Casey How do I add my team? Go to Settings and choose Invite. Message...');
   assert.equal((await page.locator('.parts .product-art').nth(1).innerText()).replace(/\s+/g, ' '), 'Inbox M Maya Chen Can’t turn on Spanish T Tom Reyes The widget isn’t loading P Priya Shah Where do I change my logo?');
   assert.equal((await page.locator('.parts .product-art').nth(2).innerText()).replace(/\s+/g, ' '), 'Search the Help Center Turn on another language Reset your password Invite team members');
@@ -405,7 +380,7 @@ try {
   assert.equal(importText, 'Import articles from Zendesk Import progress complete Articles: 128 · Categories: 9');
   assert.equal(await page.locator('.import-art .d-check').count(), 1, 'the cyan check marks only the finished import');
   assert.equal(await page.locator('.import-art input, .import-art .d-btn').count(), 0, 'the finished import takes no input');
-  checks.push('eight labelled drawings built from real text (hero conversation of three staggered bubbles, five strings and 26 words with Send inside the reply and no window, callouts or ring, MIT licence card, checkout offer, widget, inbox, Help Center, suggestion, finished import), no raster images, no controls');
+  checks.push('seven labelled drawings built from real text (the hero\'s two numbered moments: the checkout with the offer card over its corner signed with the mark, and Maya\'s solved conversation with Send inside the reply, joined by an aqua arrow; MIT licence card, widget, inbox, Help Center, suggestion, finished import), no raster images, no controls');
 
   // Layout at every width: no overflow, two-line headline on wide screens, legible drawings, nothing clipped.
   const markOffsets = new Map(); // each set of sparks' size at the first width, to hold every other width to it
@@ -415,9 +390,6 @@ try {
     await page.waitForTimeout(150);
     const metrics = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
     assert.ok(metrics.scroll <= metrics.client, `horizontal overflow at ${width}: ${JSON.stringify(metrics)}`);
-    const lines = await page.locator('#hero-title > span').evaluateAll(spans => spans.map(span => ({ text: span.textContent, top: span.getBoundingClientRect().top })));
-    assert.deepEqual(lines.map(line => line.text), ['Customer Support,', 'Solved.']);
-    if (width >= 861) assert.ok(lines[0].top < lines[1].top, `headline breaks after the comma at ${width}px`);
     const fontSize = await page.locator('h1').evaluate(h1 => parseFloat(getComputedStyle(h1).fontSize));
     assert.ok(fontSize >= 40, `headline size ${fontSize} at ${width}`);
     const outside = await page.locator('.drawing').evaluateAll((figures, viewport) => figures.flatMap(figure => [...figure.querySelectorAll('*')].filter(el => {
@@ -443,19 +415,14 @@ try {
       const fold = await page.evaluate(() => ({ h1: document.querySelector('h1').getBoundingClientRect().bottom, cta: document.querySelector('.hero .pill').getBoundingClientRect().bottom }));
       assert.ok(fold.h1 < 844 && fold.cta < 844, `headline and Get the code above the fold at ${width}px: ${JSON.stringify(fold)}`);
     }
+    // The hero drawing: every part inside its figure; wide, the two moments side by side (the conversation right of the checkout),
+    // stacked once the stage is narrow; the captions under the drawing.
     const hero = await page.evaluate(() => {
-      // Measured flat: the bubbles' tilt would otherwise move the boxes by a few pixels.
-      const flat = document.createElement('style');
-      flat.textContent = '.hc-bubble { transform: none !important; }';
-      document.head.appendChild(flat);
-      const box = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width }; };
-      const smallest = [];
-      const walker = document.createTreeWalker(document.querySelector('.hero-art'), NodeFilter.SHOW_TEXT);
-      for (let node = walker.nextNode(); node; node = walker.nextNode()) if (node.nodeValue.trim()) smallest.push(parseFloat(getComputedStyle(node.parentElement).fontSize));
-      const glyphs = [...document.querySelectorAll('.hc-glyph')].map(glyph => { const rect = glyph.getBoundingClientRect(); return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom }; });
-      const measured = { message: box('.hc-ask'), bubble: box('.hc-ask .hc-bubble'), note: box('.hc-bubble--fix'), composer: box('.hc-composer'), send: box('.hc-composer .hc-send'), art: box('.hero-art'), glyphs, smallest: Math.min(...smallest) };
-      flat.remove();
-      return measured;
+      const art = document.querySelector('.story-art'), box = art.getBoundingClientRect();
+      const parts = [...art.querySelectorAll('.story *')].filter(el => el.getBoundingClientRect().width > 0);
+      const [before, when] = [...art.querySelectorAll('.story-moment')].map(el => el.getBoundingClientRect());
+      return { art: { top: box.top, bottom: box.bottom }, outside: parts.filter(el => { const r = el.getBoundingClientRect(); return r.left < box.left - 0.5 || r.right > box.right + 0.5 || r.top < box.top - 0.5 || r.bottom > box.bottom + 0.5; }).map(el => el.getAttribute('class')),
+        sideBySide: when.left >= before.right, stacked: when.top >= before.bottom, captionsUnder: document.querySelector('.hero-moments').getBoundingClientRect().top >= box.bottom };
     });
     // The logo's sparks are seated on their own card, the same way at every width.
     const seating = await page.evaluate(() => {
@@ -505,27 +472,7 @@ try {
       const flourish = rect(document.querySelector('.hero-flourish'));
       const controls = [...document.querySelectorAll('main a, main button')].map(rect).filter(r => r.width && r.height);
       const underFlourish = [...lines, ...controls].filter(t => t.left < flourish.right && t.right > flourish.left && t.top < flourish.bottom && t.bottom > flourish.top).map(t => t.text || 'control');
-      // Each arrow's tip (the middle vertex of its head) on screen, its bubble, and what lies 8px further along the arrow.
-      // Hit-tested on screen (so it is scrolled into view first) against the tilted bubble; the distance to the top edge is
-      // measured with the bubble flat.
-      const arrows = [...document.querySelectorAll('.hc-arrow')].map(arrow => {
-        arrow.scrollIntoView({ block: 'center', behavior: 'instant' });
-        const head = arrow.querySelectorAll('path')[1];
-        const [, tx, ty] = head.getAttribute('d').match(/^M[\d.]+ [\d.]+ ([\d.]+) ([\d.]+)/).map(Number);
-        const m = arrow.getScreenCTM();
-        const tip = [m.a * tx + m.c * ty + m.e, m.b * tx + m.d * ty + m.f];
-        const bubble = arrow.parentElement.querySelector('.hc-bubble');
-        const beyond = document.elementsFromPoint(tip[0] + 5.7, tip[1] + 5.7);
-        const atTip = document.elementsFromPoint(tip[0], tip[1]);
-        const flat = document.createElement('style');
-        flat.textContent = '.hc-bubble { transform: none !important; }';
-        document.head.appendChild(flat);
-        const b = rect(bubble);
-        flat.remove();
-        return { tip, beyondInBubble: beyond.some(el => bubble.contains(el)), tipOutsideBubble: !atTip.some(el => bubble.contains(el)), toTop: b.top - tip[1], inside: tip[0] > b.left && tip[0] < b.right };
-      });
-      window.scrollTo({ top: 0, behavior: 'instant' });
-      return { marks, onText, underFlourish, flourish, arrows };
+      return { marks, onText, underFlourish, flourish };
     });
     assert.equal(seating.marks.length, 4, `four sets of sparks at ${width}px`);
     // Each set of sparks springs from its card's top-right corner as the mark's do from the bubble's shoulder: the strokes' inner
@@ -545,10 +492,6 @@ try {
       assert.ok(Math.abs(mark.size - first.size) <= 1, `a set of sparks keeps its size at every width, ${where} against ${JSON.stringify(first)}`);
     }
     assert.deepEqual(seating.onText, [], `no sparks touch a heading, numeral or caption at ${width}px`);
-    // Each ink arrow lands on the bubble it points at: its tip is outside the bubble, within 10px of its top edge, and a point
-    // 8px further along the arrow is inside the (tilted) bubble.
-    assert.equal(seating.arrows.length, 2);
-    for (const arrow of seating.arrows) assert.ok(arrow.tipOutsideBubble && arrow.beyondInBubble && arrow.inside && arrow.toTop >= 0 && arrow.toTop <= 10, `an arrow tip lands within 10px of its bubble at ${width}px: ${JSON.stringify(seating.arrows)}`);
     // The flourish touches no text and no control, and has its full aspect-ratio box.
     assert.deepEqual(seating.underFlourish, [], `the flourish overlaps no text or control at ${width}px`);
     assert.ok(seating.flourish.height > 0 && Math.abs(seating.flourish.width / seating.flourish.height - 640 / 150) < 0.05, `the flourish keeps its 640:150 box at ${width}px: ${JSON.stringify(seating.flourish)}`);
@@ -557,45 +500,18 @@ try {
     if (width >= 861) {
       const edges = await page.evaluate(() => {
         const mark = Math.min(...[...document.querySelectorAll('.site-header .brand svg path')].map(path => { const box = path.getBBox(), matrix = path.getScreenCTM(); return matrix.a * (box.x - parseFloat(getComputedStyle(path).strokeWidth) / 2) + matrix.e; }));
-        const line = document.querySelector('#hero-title > span'), range = document.createRange(), style = getComputedStyle(line), context = document.createElement('canvas').getContext('2d');
+        const line = document.querySelector('#hero-title'), range = document.createRange(), style = getComputedStyle(line), context = document.createElement('canvas').getContext('2d');
         range.selectNodeContents(line);
         context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-        return [mark, range.getBoundingClientRect().left - context.measureText(line.textContent[0]).actualBoundingBoxLeft];
+        return [mark, range.getClientRects()[0].left - context.measureText(line.textContent[0]).actualBoundingBoxLeft];
       });
       assert.ok(Math.abs(edges[0] - edges[1]) <= 2, `the lockup and the headline share a left edge at ${width}px: ${edges}`);
     }
-    // Both glyphs sit inside the pale aqua blob, with its wash all round them, and clear of the page gutter.
-    const glyphSeats = await page.evaluate(() => {
-      const blob = document.querySelector('.hero-blob path'), toBlob = blob.getScreenCTM().inverse();
-      const main = document.querySelector('main'), contentRight = main.getBoundingClientRect().right - parseFloat(getComputedStyle(main).paddingRight);
-      return [...document.querySelectorAll('.hc-glyph')].map(glyph => {
-        const box = glyph.getBoundingClientRect(), x = (box.left + box.right) / 2, y = (box.top + box.bottom) / 2, radius = box.width / 2 + 4;
-        const inBlob = Array.from({ length: 48 }, (_, i) => new DOMPoint(x + Math.cos((i * Math.PI) / 24) * radius, y + Math.sin((i * Math.PI) / 24) * radius).matrixTransform(toBlob)).every(point => blob.isPointInFill(point));
-        return { inBlob, clearOfGutter: contentRight - box.right >= (innerWidth >= 1280 ? 12 : 8) };
-      });
-    });
-    assert.deepEqual(glyphSeats, [{ inBlob: true, clearOfGutter: true }, { inBlob: true, clearOfGutter: true }], `both glyphs sit inside the blob with 4px of wash round them, clear of the gutter (12px at 1280px and wider, 8px below), at ${width}px`);
-
-    // Three bubbles with room between them: the fix is indented, the question and reply share a left edge; Send sits inside the
-    // reply after the text; each glyph sits just right of its bubble, level with it.
-    assert.ok(hero.message.bottom <= hero.note.top - (width >= 1000 ? 28 : 8) && hero.note.bottom <= hero.composer.top - (width >= 1000 ? 28 : 8), `the thread elements are spaced apart at ${width}px: ${JSON.stringify(hero)}`);
-    assert.ok(hero.note.left - hero.bubble.left >= 12 && hero.note.left - hero.bubble.left <= 48 && Math.abs(hero.bubble.left - hero.composer.left) <= 2, `the bubbles are staggered (the fix indented) at ${width}px: ${JSON.stringify(hero)}`);
-    assert.ok(hero.send.left >= hero.composer.left && hero.send.right <= hero.composer.right && hero.send.top >= hero.composer.top && hero.send.bottom <= hero.composer.bottom, `Send sits inside the reply bubble at ${width}px`);
-    for (const [glyph, bubble] of [[hero.glyphs[0], hero.note], [hero.glyphs[1], hero.composer]]) {
-      const middle = (glyph.top + glyph.bottom) / 2;
-      assert.ok(glyph.left > bubble.right && glyph.left - bubble.right <= 24 && middle > bubble.top && middle < bubble.bottom, `a glyph sits just right of its bubble at ${width}px: ${JSON.stringify({ glyph, bubble })}`);
-    }
-    assert.ok(hero.bubble.bottom - hero.bubble.top < 4.5 * 17 * 1.55, `the customer bubble stays within two lines at ${width}px`);
-    if (width === 1440) {
-      const column = Math.max(hero.bubble.right, hero.note.right, hero.composer.right) - hero.message.left;
-      assert.ok(column >= 440 && column <= 620, `the thread column is about 520px wide at 1440px (${column})`);
-      assert.ok(hero.send.left > hero.composer.left + hero.composer.width * 0.55, 'Send sits at the right of the reply bubble');
-      assert.ok(hero.composer.bottom - hero.composer.top < 100, `the reply and Send share one line at 1440px (${hero.composer.bottom - hero.composer.top})`);
-    }
-    assert.ok(hero.smallest >= (width >= 723 ? 15 : 13), `every hero drawing text run is at least ${width >= 723 ? 15 : 13}px at ${width}px (smallest ${hero.smallest})`);
-    if (width >= 1280) assert.ok(hero.art.top + (hero.art.bottom - hero.art.top) / 2 < 900, `at least half of the hero drawing is above the fold at ${width}px`);
+    assert.deepEqual(hero.outside, [], `every part of the hero drawing stays inside its figure at ${width}px`);
+    assert.ok(hero.sideBySide !== hero.stacked && hero.captionsUnder, `the two moments stand side by side or stacked, with the captions under them, at ${width}px: ${JSON.stringify(hero)}`);
+    if (width >= 1280) assert.ok(hero.sideBySide && hero.art.top + (hero.art.bottom - hero.art.top) / 2 < 900, `the moments stand side by side with at least half of the hero drawing above the fold at ${width}px: ${JSON.stringify(hero)}`);
     if (width === 390) {
-      assert.equal(await page.locator('.hero-art .hc-arrow, .hero-art .hc-glyph').evaluateAll(els => els.filter(el => el.getBoundingClientRect().width > 0).length), 4, 'both arrows and both glyphs stay at 390px');
+      assert.ok(hero.stacked, 'the two moments stack at 390px');
       assert.ok(await page.locator('.import-art').isVisible() && await page.locator('.licence-art').isVisible(), 'the licence card and import window stay at 390px');
       assert.equal(await page.locator('.parts').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length), 1);
     }
@@ -609,17 +525,9 @@ try {
       assert.ok(spread(desk.map(item => item.title)) <= 2, `the four desk titles share a baseline at ${width}px`);
     }
   }
-  // The hero's three captions are one row or one per line at every width, never two and one.
-  for (let width = 600; width <= 1366; width += 20) {
-    await page.setViewportSize({ width, height: 900 });
-    await page.waitForTimeout(80);
-    const tops = await page.locator('.hero-steps li').evaluateAll(items => items.map(item => item.getBoundingClientRect().top));
-    const distinct = new Set(tops.map(top => Math.round(top / 3))).size;
-    assert.ok(distinct === 1 || distinct === 3, `the three hero captions are one row or one per line at ${width}px: ${tops.map(top => top.toFixed(1))}`);
-  }
-  checks.push('the four desk drawings end on one line, with their numerals and titles on one baseline, at every four-up width, and the three hero captions are one row or one per line from 600px to 1366px in 20px steps');
+  checks.push('the four desk drawings end on one line, with their numerals and titles on one baseline, at every four-up width');
 
-  checks.push('no horizontal overflow, headline breaking, drawing text of 12px or more (15px in the hero), contained drawings, the logo\'s three sparks springing from the top-right corners of four cards at the mark\'s own offset and a constant size, inside their figures and clear of every heading and caption, staggered hero bubbles with Send inside the reply and glyphs beside them, both ink arrows landing within 10px of their bubbles, the flourish clear of all text and controls, both glyphs inside the blob and clear of the gutter, and the lockup\'s mark on the headline\'s left edge at desktop widths, at 17 widths from 320px to 1920px');
+  checks.push('no horizontal overflow, drawing text of 12px or more, contained drawings, the hero\'s two moments side by side on wide screens (at least half the drawing above the fold from 1280px) and stacked on phones with the captions under them, the logo\'s three sparks springing from the top-right corners of four cards at the mark\'s own offset and a constant size, inside their figures and clear of every heading and caption, the flourish clear of all text and controls, and the lockup\'s mark on the headline\'s left edge at desktop widths, at 17 widths from 320px to 1920px');
 
   // Motion: the hero flourish draws in once as the page appears; reduced motion removes every animation and transition and smooth scrolling.
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -659,7 +567,7 @@ try {
   // The moments below the hero. Each waits in its first frame until it crosses the reveal line (85% down the viewport), then
   // plays once: a few short, eased animations that end within 1.8s and come to rest on exactly the drawing reduced motion
   // shows. Nothing is laid out again (every element keeps its layout box) and the page's layout shift stays at about zero.
-  const momentNames = ['figure licence-art', 'ul proof', 'div divider', 'figure offer-art', 'li Chat widget', 'li Shared inbox', 'li Help centre', 'li Suggested replies', 'div divider', 'ol steps', 'figure import-art', 'h2 get-started-title'];
+  const momentNames = ['figure licence-art', 'ul proof', 'div divider', 'li Chat widget', 'li Shared inbox', 'li Help centre', 'li Suggested replies', 'div divider', 'ol steps', 'figure import-art', 'h2 get-started-title'];
   const watchMoments = () => {
     window.__shifts = [];
     new PerformanceObserver(list => { for (const entry of list.getEntries()) if (!entry.hadRecentInput) window.__shifts.push(entry.value); }).observe({ type: 'layout-shift', buffered: true });
@@ -679,7 +587,7 @@ try {
   };
   // Every property a moment animates, and every element's layout box, for each element of each moment. The layout box is the
   // element's place on the page before any transform: its offsets summed up the chain of offset parents, and its size.
-  const snapshot = () => { const layoutBox = el => { let x = 0, y = 0; for (let node = el; node; node = node.offsetParent) { x += node.offsetLeft + (node === el ? 0 : node.clientLeft); y += node.offsetTop + (node === el ? 0 : node.clientTop); } return [x, y, el.offsetWidth, el.offsetHeight].join(); }; return [...document.querySelectorAll('main [data-reveal], main .divider, .free .proof, .parts > li, #move-in .steps, #get-started h2, figure.drawing:not(.hero-art)')].filter((el, i, all) => all.indexOf(el) === i).map(moment => [moment, ...moment.querySelectorAll('*')].map(el => {
+  const snapshot = () => { const layoutBox = el => { let x = 0, y = 0; for (let node = el; node; node = node.offsetParent) { x += node.offsetLeft + (node === el ? 0 : node.clientLeft); y += node.offsetTop + (node === el ? 0 : node.clientTop); } return [x, y, el.offsetWidth, el.offsetHeight].join(); }; return [...document.querySelectorAll('main [data-reveal], main .divider, .free .proof, .parts > li, #move-in .steps, #get-started h2, figure.drawing:not(.story-art)')].filter((el, i, all) => all.indexOf(el) === i).map(moment => [moment, ...moment.querySelectorAll('*')].map(el => {
     const style = getComputedStyle(el), before = el instanceof HTMLElement ? getComputedStyle(el, '::before') : null;
     return [style.opacity, style.translate, style.scale, style.transform, style.clipPath, style.backgroundSize, style.backgroundColor, style.strokeDashoffset, style.strokeDasharray, before?.opacity, before?.scale,
       el instanceof HTMLElement ? layoutBox(el) : ''].join('|');
@@ -690,7 +598,7 @@ try {
   await motionPage.goto(origin, { waitUntil: 'networkidle' });
   await motionPage.evaluate(() => document.fonts.ready);
   await motionPage.waitForTimeout(2000);
-  assert.deepEqual(await motionPage.evaluate(() => [...document.querySelectorAll('[data-reveal]')].map(el => `${window.__name(el)}: ${el.dataset.reveal}`)), momentNames.map(name => `${name}: wait`), 'below the fold, the twelve moments wait in their first frames');
+  assert.deepEqual(await motionPage.evaluate(() => [...document.querySelectorAll('[data-reveal]')].map(el => `${window.__name(el)}: ${el.dataset.reveal}`)), momentNames.map(name => `${name}: wait`), 'below the fold, the eleven moments wait in their first frames');
   const held = await motionPage.evaluate(snapshot);
   const fromTop = await motionPage.evaluate(() => [...document.querySelectorAll('[data-reveal]')].sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top).map(el => window.__name(el)));
   await motionPage.evaluate(() => { window.__shifts = []; }); // from here on, only what scrolling and the reveals do
@@ -706,7 +614,6 @@ try {
     'figure licence-art': ['h2h-bloom', 'h2h-pen', 'h2h-pop', 'h2h-rise', 'h2h-sweep'],
     'ul proof': ['h2h-pop', 'h2h-rise'],
     'div divider': ['h2h-pen'],
-    'figure offer-art': ['h2h-bloom', 'h2h-dot', 'h2h-pop', 'h2h-rise', 'h2h-typing'],
     'li Chat widget': ['h2h-bloom', 'h2h-pen', 'h2h-pop', 'h2h-rise'],
     'li Shared inbox': ['h2h-bloom', 'h2h-pop', 'h2h-rise', 'h2h-slide'],
     'li Help centre': ['h2h-bloom', 'h2h-caret', 'h2h-pen', 'h2h-pop', 'h2h-rise', 'h2h-type'],
@@ -714,7 +621,7 @@ try {
     'ol steps': ['h2h-pop'],
     'figure import-art': ['h2h-bloom', 'h2h-pen', 'h2h-pop', 'h2h-rise', 'h2h-tick'],
     'h2 get-started-title': ['h2h-pen'],
-  }, 'each moment is the one its section asks for: the licence card lands and is highlighted, the promises pop in, the dividers and the closing line are drawn, the offer types then speaks, the desk cards rise with their own small moment, the steps pop and the import ticks through to complete');
+  }, 'each moment is the one its section asks for: the licence card lands and is highlighted, the promises pop in, the dividers and the closing line are drawn, the desk cards rise with their own small moment, the steps pop and the import ticks through to complete');
   const rested = await motionPage.evaluate(snapshot);
   // Offsets are whole pixels, rounded along the chain of offset parents, so a box may read 1px apart; anything more is a move.
   const moved = rested.flatMap((moment, m) => moment.map((el, i) => [el.split('|').at(-1), held[m][i].split('|').at(-1)]).filter(([now, then]) => now.split(',').some((value, k) => Math.abs(Number(value) - Number(then.split(',')[k])) > 1)));
@@ -727,7 +634,7 @@ try {
   await motionPage.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   await motionPage.waitForTimeout(300);
   await scrollThrough(motionPage);
-  assert.deepEqual(await motionPage.evaluate(() => ({ starts: window.__starts, played: window.__played.length, states: [...new Set([...document.querySelectorAll('[data-reveal]')].map(el => el.dataset.reveal))], running: document.getAnimations().filter(a => a.playState === 'running').length })), { starts, played: 12, states: ['play'], running: 0 }, 'scrolled through again, no moment plays a second time');
+  assert.deepEqual(await motionPage.evaluate(() => ({ starts: window.__starts, played: window.__played.length, states: [...new Set([...document.querySelectorAll('[data-reveal]')].map(el => el.dataset.reveal))], running: document.getAnimations().filter(a => a.playState === 'running').length })), { starts, played: 11, states: ['play'], running: 0 }, 'scrolled through again, no moment plays a second time');
   // Nor when the layout changes under it: a window resized across the phone breakpoint and back (as a rotated phone does)
   // swaps the dividers' lines but draws nothing in again.
   for (const size of [{ width: 600, height: 900 }, { width: 1440, height: 900 }, { width: 900, height: 600 }, { width: 1440, height: 900 }]) {
@@ -785,7 +692,7 @@ try {
   assert.ok(typed.frames.every(([inset, caret, opacity]) => Math.abs(caret + inset) < 0.01 && opacity === '1'), `the caret is drawn at the edge of the typing on every step: ${JSON.stringify(typed.frames)}`);
   assert.deepEqual(typed.rest, ['inset(0px 0px 0px -2px)', '0'], 'once typed, the whole query shows and the caret is gone');
   checks.push('the help-centre search types its query in 22 even steps over 0.7s with the caret riding the edge, then rests on the whole query without a caret');
-  checks.push('below the hero, twelve moments wait in their first frames, play once each as they cross 85% of the viewport (from the top of the page down, eased, done within 1.8s), come to rest on exactly the reduced-motion drawing without any element changing its layout box or any layout shift, never replay (scrolled through again or resized across the phone breakpoint), never wait under reduced motion, and stay drawn when already in view at load');
+  checks.push('below the hero, eleven moments wait in their first frames, play once each as they cross 85% of the viewport (from the top of the page down, eased, done within 1.8s), come to rest on exactly the reduced-motion drawing without any element changing its layout box or any layout shift, never replay (scrolled through again or resized across the phone breakpoint), never wait under reduced motion, and stay drawn when already in view at load');
 
   // Accessibility: axe-core WCAG A and AA at the wide and narrow layouts, once every moment has played, so all of it is checked.
   await scrollThrough(page);
@@ -836,8 +743,8 @@ try {
     const layout = () => swapPage.evaluate(() => ({
       outfit: document.fonts.check('600 80px Outfit'),
       faces: [...document.fonts].filter(face => face.status === 'loaded').map(face => face.family.replace(/["']/g, '')),
-      headline: [...document.querySelectorAll('#hero-title > span')].map(span => { const range = document.createRange(); range.selectNodeContents(span); return range.getClientRects().length; }),
-      tops: ['.site-header .brand', '.site-header nav', '#hero-title', '.hero-sub', '.hero-copy .actions', '.hero-free', '.hero-flourish', '.hero-art', '.hero-steps', '#free'].map(selector => document.querySelector(selector).getBoundingClientRect().top),
+      headline: (() => { const range = document.createRange(); range.selectNodeContents(document.querySelector('#hero-title')); return new Set([...range.getClientRects()].map(rect => Math.round(rect.top))).size; })(),
+      tops: ['.site-header .brand', '.site-header nav', '#hero-title', '.hero-sub', '.hero-copy .actions', '.hero-free', '.hero-flourish', '.story-art', '.hero-moments', '#free'].map(selector => document.querySelector(selector).getBoundingClientRect().top),
     }));
     const fallback = await layout();
     assert.ok(!fallback.outfit && fallback.faces.length > 0 && fallback.faces.every(family => family === 'Outfit Fallback'), `the page first lays out in the metric-matched fallback at ${width}px: ${JSON.stringify(fallback)}`);
@@ -847,7 +754,6 @@ try {
     await swapPage.waitForTimeout(600);
     const swapped = await layout();
     assert.deepEqual(swapped.headline, fallback.headline, `the headline wraps the same in the fallback and in Outfit at ${width}px`);
-    assert.deepEqual(swapped.headline, [1, 1], `"Customer Support," and "Solved." each stay on one line at ${width}px`);
     assert.ok(swapped.tops.every((top, i) => Math.abs(top - fallback.tops[i]) <= 1), `the header, hero copy, drawing and next section keep their places when Outfit swaps in at ${width}px: ${fallback.tops} -> ${swapped.tops}`);
     const shift = await swapPage.evaluate(() => window.__layoutShifts.reduce((sum, value) => sum + value, 0));
     assert.ok(shift < 0.001, `cumulative layout shift while Outfit loads is about zero at ${width}px: ${shift}`);

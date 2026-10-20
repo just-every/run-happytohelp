@@ -22,7 +22,7 @@
 .project-account { max-width: 800px; }
 .project-account .settings-section__heading { display: none; }
 .project-account .project-avatar { position: relative; }
-.project-account .project-avatar-placeholder { position: absolute; top: 27px; display: grid; place-items: center; width: 82px; height: 82px; border: 1.5px solid var(--ink); border-radius: 50%; color: var(--ink); background: var(--surface); font-size: 28px; }
+.project-account .project-avatar-placeholder { position: absolute; top: 27px; display: grid; place-items: center; width: 82px; height: 82px; border: 1px solid var(--control-line); border-radius: 50%; color: var(--ink); background: var(--surface); font-size: 28px; }
 .project-account .project-avatar .d-flex { min-height: 82px; margin-bottom: 54px; }
 .project-account .project-avatar .d-flex input { min-width: 0; max-width: calc(100% - 106px); margin-left: 106px; }
 .project-account .project-avatar:has(img) .d-flex input { margin-left: 0; }

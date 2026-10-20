@@ -357,13 +357,13 @@ body.conversation-workspace #chat {
             &::before, &::after { display: none; }
         }
 
-        // The internal note: a dashed ink outline on the note paper.
+        // The internal note: a dashed outline at 3:1 on the note paper.
         .transcript-note-card {
             display: block;
             width: 100%;
             box-sizing: border-box;
             padding: 12px 16px 14px;
-            border: 1px dashed var(--ink);
+            border: 1px dashed var(--toggle-line);
             border-radius: 12px;
             background: var(--note);
             box-shadow: none;

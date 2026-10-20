@@ -24,7 +24,7 @@ body.workspace-page .widget-code {
     &__copy,
     &__secret-action {
         display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-        min-height: 36px; padding: 0 16px; border: 1px solid var(--ink); border-radius: 999px;
+        min-height: 36px; padding: 0 16px; border: 1px solid var(--control-line); border-radius: 999px;
         background: transparent; color: var(--ink);
         font: inherit; font-size: 12px; font-weight: 500; white-space: nowrap;
         &:hover { background: var(--hover); }
@@ -71,7 +71,7 @@ body.workspace-page .widget-code {
     &__snippet .hljs-type,
     &__snippet .hljs-attr,
     &__snippet .hljs-attribute { color: #5ad8ec; }
-    &__languages { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; margin-bottom: 10px; border: 1px solid var(--ink); border-radius: 999px; background: var(--surface); }
+    &__languages { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; margin-bottom: 10px; border: 1px solid var(--control-line); border-radius: 999px; background: var(--surface); }
     &__languages button { border: 0; border-radius: 999px; padding: 6px 16px; background: transparent; color: var(--ink-soft); font: inherit; font-size: 12px; line-height: 1.4; }
     &__languages button.is-active,
     &__languages button[aria-selected=true] { color: var(--ink); background: var(--d-cyan-tint); }

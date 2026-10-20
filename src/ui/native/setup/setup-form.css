@@ -1,10 +1,11 @@
-/* The form: hand-inked fields on paper (a 2px ink line with slightly uneven corners, as in design E) and the black pill action
-   as on the homepage. */
+/* Paper fields share the application hairlines; the black pill action stays in the homepage language. */
 .h2h-setup form { margin-top: 30px; }
 .h2h-setup .setup-fields { display: grid; gap: 19px; }
 .h2h-setup .setup-field { display: grid; gap: 8px; }
 .h2h-setup .setup-field > span { font-size: 18.5px; font-weight: 600; line-height: 1.3; }
-.h2h-setup .setup-field input { width: 100%; min-width: 0; height: 58px; padding: 0 20px; color: var(--ink); font: inherit; font-size: 19px; background: var(--field); border: 2px solid var(--ink); border-radius: 20px 21px 18px 19px; }
+.h2h-setup .setup-field input { width: 100%; min-width: 0; height: 58px; padding: 0 20px; color: var(--ink); font: inherit; font-size: 19px; background: var(--field); border: 1px solid var(--field-line); border-radius: 20px 21px 18px 19px; }
+.h2h-setup .setup-field input:hover { border-color: var(--field-line-hover); }
+.h2h-setup .setup-field input:focus-visible { border-color: var(--ink); }
 .h2h-setup .setup-field small { margin-top: 2px; color: var(--ink-soft); font-size: 15px; line-height: 1.5; }
 
 .h2h-setup .setup-promise { margin-top: 26px; color: var(--ink-soft); font-size: 17px; line-height: 1.5; }

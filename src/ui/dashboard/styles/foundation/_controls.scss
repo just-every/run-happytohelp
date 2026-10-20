@@ -1,5 +1,5 @@
 // Buttons, fields, tabs, menus, chips and the two frames (card, tile), in the landing's language: black pills,
-// hairline ink secondary pills, 44px hairline fields with an aqua focus halo, aqua-underlined tabs. Every surface of the workspace
+// hairline secondary pills, 44px hairline fields with an ink edge and aqua halo on focus, aqua-underlined tabs. Every surface of the workspace
 // (pages, the inbox, dialogs) uses these; layouts only place them.
 
 // Pills -----------------------------------------------------------------------
@@ -54,7 +54,7 @@
   --bs-btn-disabled-border-color: var(--ink);
 }
 
-// Secondary: an ink outline on whatever it sits on; hover inverts.
+// Secondary: a hairline outline on whatever it sits on; hover inverts to the ink pill.
 .btn-white,
 .btn-light,
 .btn-secondary,
@@ -62,7 +62,7 @@
 .btn-outline-secondary {
   --bs-btn-color: var(--ink);
   --bs-btn-bg: transparent;
-  --bs-btn-border-color: var(--ink);
+  --bs-btn-border-color: var(--control-line);
   --bs-btn-hover-color: var(--on-ink);
   --bs-btn-hover-bg: var(--ink);
   --bs-btn-hover-border-color: var(--ink);
@@ -71,7 +71,7 @@
   --bs-btn-active-border-color: var(--ink);
   --bs-btn-disabled-color: var(--ink);
   --bs-btn-disabled-bg: transparent;
-  --bs-btn-disabled-border-color: var(--ink);
+  --bs-btn-disabled-border-color: var(--control-line);
 }
 
 // Destructive: the secondary pill in the danger ink. No fill.
@@ -173,7 +173,7 @@ form:not(.h2h-setup form) label:not(.form-check-label):not(.btn) {
 
   &::placeholder { color: var(--ink-soft); opacity: 1; }
 
-  &:hover { border-color: rgba(var(--ink-rgb), .7); }
+  &:hover { border-color: var(--field-line-hover); }
 
   &:focus {
     border-color: var(--ink);
@@ -292,7 +292,7 @@ textarea.form-control {
   width: 18px;
   height: 18px;
   margin-top: 3px;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--toggle-line);
   background-color: var(--surface);
   cursor: pointer;
 
@@ -315,7 +315,7 @@ textarea.form-control {
   line-height: 1.4;
 }
 
-// The toggle: 44 by 24, off on the muted chip with an ink-outlined knob, on an ink track with a white knob.
+// The toggle: 44 by 24, off on the muted chip inside a 3:1 outline with an outlined knob, on an ink track with a white knob.
 .form-switch {
   display: flex;
   align-items: center;
@@ -328,14 +328,15 @@ textarea.form-control {
     width: 44px;
     height: 24px;
     margin: 0;
-    border: 1px solid var(--ink);
+    border: 1px solid var(--toggle-line);
     border-radius: 999px;
     background-color: var(--muted-chip);
-    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='2.9' fill='white' stroke='%23141414' stroke-width='.55'/></svg>");
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='2.9' fill='white' stroke='%238a8a8a' stroke-width='.55'/></svg>");
     background-position: left center;
     float: none;
 
     &:checked {
+      border-color: var(--ink);
       background-color: var(--ink);
       background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='2.9' fill='white'/></svg>");
       background-position: right center;
@@ -528,7 +529,7 @@ textarea.form-control {
 .pagination {
   --bs-pagination-color: var(--ink);
   --bs-pagination-bg: transparent;
-  --bs-pagination-border-color: var(--ink);
+  --bs-pagination-border-color: var(--control-line);
   --bs-pagination-border-width: 1px;
   --bs-pagination-hover-color: var(--on-ink);
   --bs-pagination-hover-bg: var(--ink);

@@ -17,7 +17,7 @@ body.conversation-workspace #chat {
         cursor: text;
         transition: border-color .15s ease, box-shadow .15s ease;
 
-        &:hover { border-color: rgba(var(--ink-rgb), .7); }
+        &:hover { border-color: var(--field-line-hover); }
         &:focus-within {
             border-color: var(--ink);
             box-shadow: 0 0 0 2px var(--d-cyan-deep);

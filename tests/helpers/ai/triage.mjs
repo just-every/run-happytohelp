@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import {assistantApp} from './app.mjs'
 export async function triageJourney(){
  const a=await assistantApp(),{app,p,owner,workspace:w,ai}=a,base=`/api/dashboard/projects/${p}`
- const call=async(path,body,method='POST',token=owner)=>(await app.call(base+path,{token,body,method,status:200})).data.data
+ const call=async(path,body,method='POST',token=owner)=>{const result=await app.ok(base+path,{token,body,method});return result.data??result}
  const get=path=>call(path,undefined,'GET')
  const settings=()=>get('/triage-settings')
  const save=async change=>call('/triage-settings',{...await settings(),...change},'PUT')

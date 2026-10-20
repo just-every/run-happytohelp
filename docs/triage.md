@@ -14,10 +14,14 @@ fields empty and shows why. Interrupted paid requests are never repeated.
 A new customer message clears the previous fields while its classification is
 pending. Historical imports do not start model requests.
 
-Set a confidence threshold and a default queue. Pending, unavailable or
-below-threshold predictions keep an unassigned ticket in that queue. A teammate's
-existing assignment is preserved. A retired intent cannot route new tickets.
-Triage starts with intent routing off.
+Set a confidence threshold and a default queue. When triage finishes below the
+threshold or cannot run, a ticket that no teammate or rule has assigned or queued
+moves to that queue once. A teammate's later queue or assignee choice is kept.
+Routing rules that do not use a triage field run as soon as the ticket arrives,
+whatever the model is doing. A rule that uses a triage field acts only on a
+confident prediction for the latest customer message, and is checked again when
+triage finishes. A retired intent cannot route new tickets. Triage starts with
+intent routing off.
 
 Operators use **Operator correction** in the ticket panel to label intent,
 sentiment or language. A confirmation can use the same value as the prediction.

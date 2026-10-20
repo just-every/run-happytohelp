@@ -17,7 +17,8 @@ export async function triageJourney(){
  const visitor=await a.visitor('Jamie Rivera'),id=visitor.conversationId
  await a.action(id,'assignAi',{ai_id:null});await visitor.say('I need a refund. I am disappointed with my order.')
  assert.equal(ai.calls.length,0,'admission never invokes the model')
- assert.equal((await read(id)).state,'pending');assert.equal((await ticket(id)).group_id,group.id)
+ // The default queue is applied when triage finishes unsure or fails, never while it is pending.
+ assert.equal((await read(id)).state,'pending');assert.equal((await ticket(id)).group_id,null)
  await run();const triage=await read(id)
  assert.equal(triage.state,'complete',JSON.stringify(triage));assert.deepEqual(triage.predictions,answer)
  assert.equal((await ticket(id)).fields.triage_intent,'refund');assert.equal((await settings()).routing_enabled,false)
@@ -45,6 +46,19 @@ export async function triageJourney(){
  ai.reject=true;await spanish.say('¿Pueden ayudarme con la factura?');assert.equal((await ticket(spanish.conversationId)).fields.triage_intent,undefined);await run();assert.equal((await read(spanish.conversationId)).state,'unavailable');assert.ok((await read(spanish.conversationId)).reason)
  const calls=ai.calls.length;await a.run([{type:'triage',id:(await app.first('SELECT id FROM triage_jobs WHERE conversation_id=? ORDER BY source_revision DESC',spanish.conversationId)).id,projectId:p}]);assert.equal(ai.calls.length,calls)
  ai.reject=false;await app.configure({OPENAI_API_KEY:undefined});const missing=await a.visitor('No key');await missing.say('Help with my bill');await run();assert.match((await read(missing.conversationId)).reason,/OPENAI_API_KEY/)
+ // Default queue placement happens once; an operator's queue choice survives later customer, triage and ticket events.
+ const placed=await ticket(missing.conversationId),desk=await call('/ticket-groups',{name:'Billing desk',members:[w.users.operator]});assert.equal(placed.group_id,group.id)
+ await call(`/conversations/${missing.conversationId}/ticket`,{expected_version:placed.ticket_version,group_id:desk.id},'PATCH',w.tokens.operator)
+ await missing.say('Any news about my bill?');await run();await app.scheduled();assert.equal((await read(missing.conversationId)).state,'unavailable');assert.equal((await ticket(missing.conversationId)).group_id,desk.id)
+ await call(`/conversations/${missing.conversationId}/ticket`,{expected_version:(await ticket(missing.conversationId)).ticket_version,priority:'high'},'PATCH',w.tokens.operator);await app.scheduled();assert.equal((await ticket(missing.conversationId)).group_id,desk.id)
+ const moves=(await app.sql('SELECT actor_id,actor_type FROM ticket_history WHERE conversation_id=? AND json_extract(changes_json,\'$.group_id.from\') IS NOT json_extract(changes_json,\'$.group_id.to\') ORDER BY at,rowid',missing.conversationId)).map(r=>r.actor_type==='user'?'operator':r.actor_id);assert.deepEqual(moves,['triage default queue','operator'])
+ // Triage gates only rules that read its fields: an existing round-robin rule assigns at admission with the model key removed or a language it is unsure of.
+ const returns=await call('/ticket-groups',{name:'Returns',members:[w.users.operator]}),robin=await call('/workflow-rules',{name:'Existing round robin',kind:'routing',position:1,conditions:{all:[]},actions:[],routing:{strategy:'round_robin',group_id:returns.id,skills:[]}})
+ await call(`/workflow-rules/${robin.rule.id}/publish`,{})
+ const admitted=async(name,words)=>{const v=await a.visitor(name);await v.say(words);const t=await ticket(v.conversationId);assert.equal((await read(v.conversationId)).state,'pending');assert.equal(t.assigned_to,w.users.operator,name);assert.equal(t.group_id,returns.id,name);await run();const after=await ticket(v.conversationId);assert.equal(after.assigned_to,w.users.operator,name);assert.equal(after.group_id,returns.id,name);return v.conversationId}
+ assert.equal((await read(await admitted('Model down','Where is my parcel?'))).state,'unavailable')
+ await app.configure({OPENAI_API_KEY:'sk-test'});answer={intent:{value:'shipping',confidence:.95,quote:'my parcel'},sentiment:{value:'neutral',confidence:.9,quote:'my parcel'},language:{value:'en',confidence:.5,quote:'my parcel'}}
+ assert.equal((await read(await admitted('Unsure language','Hola, my parcel is late'))).state,'complete')
  const collaborator=await app.seedWorkspace('triage-collab');await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(collaborator.projectId,collaborator.users.operator,Date.now()).run()
  assert.equal((await app.call(`/api/dashboard/projects/${collaborator.projectId}/triage-settings`,{token:collaborator.tokens.operator,method:'PUT',body:{}})).status,403)
  assert.equal((await app.call(base+`/conversations/${id}/triage`,{token:collaborator.tokens.owner})).status,404)

@@ -1,6 +1,7 @@
 import type {Env,Job} from '../../platform/env'
 import {auditStatement} from '../audit/record'
 import {processWorkflowEvents} from '../workflows/events'
+import {placeUnsureTicket} from '../workflows/routing-triage'
 import {classify} from './provider'
 import {currentJob,liveJob,settings,dimensions} from './model'
 export async function dispatchTriage(env:Env,conversationId?:string){
@@ -11,7 +12,7 @@ export async function consumeTriage(job:Job,env:Env){
  if(job.type!=='triage')return false
  const row=await env.DB.prepare(liveJob).bind(job.id).first<any>()
  if(!row||row.project_id!==job.projectId||!['pending','running'].includes(row.state))return true
- if(row.state==='running'){await unavailable(env,row,'Interrupted model attempt; outcome unknown and never replayed');return true}
+ if(row.state==='running'){await unavailable(env,row,'Interrupted model attempt; outcome unknown and never replayed');await placeUnsureTicket(env,row.project_id,row.conversation_id,row.id);return true}
  const claim=await env.DB.prepare(`UPDATE triage_jobs SET state='running',updated_at=? WHERE id=? AND state='pending' AND ${currentJob}`).bind(Date.now(),row.id).run()
  if(!claim.meta.changes){await unavailable(env,row,'A newer customer message or triage settings superseded this request');return true}
  try{
@@ -26,6 +27,7 @@ export async function consumeTriage(job:Job,env:Env){
   ])
   if(!result[0].meta.changes)await unavailable(env,row,'A newer customer message, erasure or settings change superseded this result')
  }catch(error){const reason=error instanceof Error&&/^(CONFIGURATION_REQUIRED: [A-Z_]+$|No enabled workspace AI model|AI_REPLY_CEILING:|Model returned|Model evidence)/.test(error.message)?error.message:'The configured model was unavailable, refused the request or returned invalid evidence. Ticket kept in the default queue.';await unavailable(env,row,reason)}
+ await placeUnsureTicket(env,row.project_id,row.conversation_id,row.id)
  await processWorkflowEvents(env,row.conversation_id,20)
  return true
 }

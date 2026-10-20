@@ -6196,6 +6196,10 @@
       "sha256": "00a6739bc317503b339897ca3a41d13331b89eaedeb6f8e35d5a5ca181f2332d",
       "executable": false
     },
+    "src/modules/move-in/widget-snippet.d.ts": {
+      "sha256": "65b3d176d7cde795d75610071dbaf8c97e9a50a7afc537207d783a27823f787e",
+      "executable": false
+    },
     "src/modules/outcomes/assignment-history.ts": {
       "sha256": "edc17bc55823f65e29a6bb23855dd8aa7f1b3e618e143abe378d405b7e05075d",
       "executable": false

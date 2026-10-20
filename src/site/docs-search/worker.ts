@@ -5,7 +5,7 @@ type Environment = { ASSETS: { fetch(request: Request): Promise<Response> }; AI:
 const json = (data: unknown, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
 
 /** No app state, credentials or database. Install on the site's Worker only. */
-export function createSearchWorker(index: SearchIndex, { endpoint = '/docs/search', minimumScore = 0.6 } = {}) {
+export function createSearchWorker(index: SearchIndex, { endpoint = '/docs/search', minimumScore = 0.55 } = {}) {
   return {
     async fetch(request: Request, env: Environment): Promise<Response> {
       const url = new URL(request.url);

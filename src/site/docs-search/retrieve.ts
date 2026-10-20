@@ -1,7 +1,7 @@
 import type { SearchIndex, SearchResult } from './types';
 
 const magnitude = (vector: number[]) => Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
-export function search(index: SearchIndex, query: number[], minimumScore = 0.6): SearchResult[] {
+export function search(index: SearchIndex, query: number[], minimumScore = 0.55): SearchResult[] {
   if (query.length !== index.dimensions || !query.every(Number.isFinite)) throw Error('Invalid query embedding');
   const norm = magnitude(query);
   if (!norm) throw Error('Empty query embedding');

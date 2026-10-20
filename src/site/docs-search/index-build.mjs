@@ -8,17 +8,26 @@ const digest = value => createHash('sha256').update(value).digest('hex');
 // Keep long sections inside the model's context. Every part keeps the same
 // heading link; retrieval collapses duplicate links after scoring.
 function parts(text) {
-  const words = text.split(/\s+/), chunks = [];
-  let part = '';
-  for (const word of words) {
-    if (part.length + word.length > 1100) { if (part) chunks.push(part); part = ''; }
-    // Also bound long unbroken commands/URLs.
-    if (word.length > 1100) {
-      if (part) { chunks.push(part); part = ''; }
-      for (let i = 0; i < word.length; i += 1100) chunks.push(word.slice(i, i + 1100));
-    } else part += `${part ? ' ' : ''}${word}`;
+  const chunks = [];
+  // Paragraph boundaries are stable cache boundaries. Within a long paragraph,
+  // keep sentences together so a short task isn't diluted by an entire guide.
+  for (const paragraph of text.split(/\n\n+/).filter(Boolean)) {
+    let part = '';
+    const sentences = paragraph.match(/[^.!?]+(?:[.!?]+(?=\s|$)|$)/g) ?? [paragraph];
+    for (const sentence of sentences) {
+      if (part && part.length + sentence.length > 650) { chunks.push(part.trim()); part = ''; }
+      if (sentence.length > 650) {
+        for (const word of sentence.split(/\s+/).filter(Boolean)) {
+          if (part && part.length + word.length > 650) { chunks.push(part.trim()); part = ''; }
+          if (word.length > 650) {
+            if (part) { chunks.push(part.trim()); part = ''; }
+            for (let i = 0; i < word.length; i += 650) chunks.push(word.slice(i, i + 650));
+          } else part += `${part ? ' ' : ''}${word}`;
+        }
+      } else part += `${part ? ' ' : ''}${sentence.trim()}`;
+    }
+    if (part.trim()) chunks.push(part.trim());
   }
-  if (part) chunks.push(part);
   return chunks;
 }
 

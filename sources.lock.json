@@ -7309,11 +7309,11 @@
       "executable": false
     },
     "src/site/docs-search/index-build.mjs": {
-      "sha256": "1b659307342a381ae46d87ec11e6320f3010a79468b040b856e7bf1e2344d661",
+      "sha256": "51e68f4f6bd134afb39b006f31f6fd22637b7c669ca6a0e05367fe03b3d93343",
       "executable": false
     },
     "src/site/docs-search/retrieve.ts": {
-      "sha256": "97d09ecb7ea889912c3f39702d09a9150bd0a6d9ac11fe24a2f7ac02b4fb8a49",
+      "sha256": "c468569c07b3d5f36ae68a3278c417d74800075fe9f2b1fd9b6c72390c82ec42",
       "executable": false
     },
     "src/site/docs-search/search.css": {
@@ -7325,7 +7325,7 @@
       "executable": false
     },
     "src/site/docs-search/sections.ts": {
-      "sha256": "b4fb2eeef0281fdf291c64b5f27f3518448cada5a21377111b4ea62f3f32a730",
+      "sha256": "41f65966a45f23cb8ec08d43c416ae28a2a9cdad177e15eadaf7c11f78f2dec7",
       "executable": false
     },
     "src/site/docs-search/types.ts": {
@@ -7333,7 +7333,7 @@
       "executable": false
     },
     "src/site/docs-search/worker.ts": {
-      "sha256": "fe40ac9b251115d55a65f18cd1138b3041bd584f0f339b5caf64a3adb1905dc8",
+      "sha256": "30c0aec913a404d52ab4643da4a56c3cfe3cffddec008afb369e0406f40f9b7a",
       "executable": false
     },
     "src/site/identity.ts": {

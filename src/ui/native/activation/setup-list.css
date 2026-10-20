@@ -51,7 +51,7 @@
 .setup-list .h2h-link { display: inline-flex; align-items: center; min-height: 24px; }
 .sl-set .h2h-chip { justify-self: start; }
 .sl-set .h2h-link { justify-self: end; font-size: 15px; }
-.sl-swatch { display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px; border: 1.5px solid var(--ink); border-radius: 50%; }
+.sl-swatch { display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px; border: 1px solid var(--control-line); border-radius: 50%; }
 
 /* Skipped: quiet rows, lighter than What we've set, with the way back at the end of each. */
 .sl-skipped { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }

@@ -20,7 +20,7 @@ body.conversation-workspace {
         cursor: text;
         transition: box-shadow .15s ease;
 
-        &:hover { border-color: rgba(var(--ink-rgb), .7) !important; }
+        &:hover { border-color: var(--field-line-hover) !important; }
 
         &:focus-within {
             border-color: var(--ink) !important;

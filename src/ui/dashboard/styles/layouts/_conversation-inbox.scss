@@ -57,7 +57,7 @@ body.conversation-workspace #chat .conversation-inbox {
         background: var(--surface);
         transition: border-color .15s ease, box-shadow .15s ease;
 
-        &:hover { border-color: rgba(var(--ink-rgb), .7); }
+        &:hover { border-color: var(--field-line-hover); }
         &:focus-within { border-color: var(--ink); box-shadow: 0 0 0 2px var(--d-cyan-deep); }
     }
     .search-query .form-control,
@@ -151,11 +151,12 @@ body.conversation-workspace #chat .sidebar .conversation-item {
     .conversation-item-project { display: block; max-width: 100%; overflow: hidden; font-size: 12px; line-height: 22px; text-overflow: ellipsis; }
 
     &:not(.active):hover .card-body { background: var(--hover); }
-    &.active .card-body { background: var(--d-cyan-tint); }
+    // The open conversation: the aqua tint, with an ink edge that holds 3:1 where the pale tint alone would not.
+    &.active .card-body { background: var(--d-cyan-tint); box-shadow: inset 3px 0 0 var(--ink); }
     &:focus-visible .card { outline: 2px solid var(--ink); outline-offset: 2px; }
 }
 
-// Close / Reopen sits in the row's reserved right column: a small round ink-outlined button.
+// Close / Reopen sits in the row's reserved right column: a small round hairline-outlined button.
 body.conversation-workspace #chat .conversation-item-wrap .conversation-item-action {
     top: 12px;
     right: 8px;
@@ -237,7 +238,7 @@ body.conversation-workspace #chat .inbox-views {
         white-space: nowrap;
 
         &:hover { color: var(--ink); background: var(--hover); }
-        &.is-active { color: var(--ink); background: var(--d-cyan-tint); font-weight: 500; }
+        &.is-active { color: var(--ink); background: var(--d-cyan-tint); box-shadow: inset 0 0 0 1px var(--toggle-line); font-weight: 500; }
         &:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
     }
 

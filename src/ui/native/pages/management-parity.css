@@ -7,7 +7,7 @@
 .management-table th { padding: 14px 16px; color: var(--ink-soft); font-size: 13px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
 .management-table td { height: 56px; padding: 10px 16px; border-top: 1px solid var(--rule); vertical-align: middle; }
 .management-table td p { margin: 4px 0; color: var(--ink-soft); }
-.management-avatar { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1.5px solid var(--ink); border-radius: 50%; color: var(--ink); background: var(--surface); object-fit: cover; }
+.management-avatar { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--control-line); border-radius: 50%; color: var(--ink); background: var(--surface); object-fit: cover; }
 .management-person { display: flex; align-items: center; gap: 12px; }
 .management-role { display: inline-flex; align-items: center; min-height: 24px; padding: 0 10px; border: 1px solid var(--d-cyan); border-radius: 999px; color: var(--ink); background: var(--d-cyan-tint); font-size: 13px; font-weight: 500; }
 .management-plugin-intro { max-width: 520px; margin: 22px 0 32px; }

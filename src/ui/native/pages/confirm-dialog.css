@@ -7,7 +7,7 @@
 .confirm-dialog__body ul { margin: 0 0 10px; padding-left: 20px; }
 .confirm-dialog .form-group { margin-bottom: 16px; }
 .confirm-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
-.confirm-dialog .confirm-dialog__cancel { color: var(--ink); border-color: var(--ink); background: transparent; }
+.confirm-dialog .confirm-dialog__cancel { color: var(--ink); border-color: var(--control-line); background: transparent; }
 .confirm-dialog .confirm-dialog__cancel:hover:not(:disabled) { color: var(--on-ink); background: var(--ink); }
 .confirm-dialog .confirm-dialog__confirm { color: var(--danger); border-color: var(--danger); background: transparent; }
 .confirm-dialog .confirm-dialog__confirm:hover:not(:disabled) { color: var(--danger); background: var(--hover); }

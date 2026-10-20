@@ -30,7 +30,7 @@
 .companies-empty { padding: 64px 24px; text-align: center; border: 1px solid var(--rule-strong); border-radius: 12px; background: var(--surface); }
 .companies-empty h3 { font-size: 20px; margin-top: 16px; }
 .companies-empty p { max-width: 440px; margin: 8px auto 24px; color: var(--ink-soft); }
-.companies-empty-icon { display: inline-flex; width: 58px; height: 58px; align-items: center; justify-content: center; border: 1px solid var(--ink); border-radius: 16px; background: var(--d-cyan-tint); font-size: 26px; }
+.companies-empty-icon { display: inline-flex; width: 58px; height: 58px; align-items: center; justify-content: center; border: 1px solid var(--control-line); border-radius: 16px; background: var(--d-cyan-tint); font-size: 26px; }
 .companies-empty--small { padding: 32px 24px; }
 .companies-empty--small h3 { font-size: 17px; margin-top: 0; }
 .companies-empty--small p { margin-bottom: 0; }

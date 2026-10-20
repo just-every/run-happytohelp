@@ -1,6 +1,6 @@
 .avatar-title {
     background-color: var(--surface);
-    border: 1.5px solid var(--ink);
+    border: 1px solid var(--control-line);
     color: var(--ink);
     font-size: 1.1em;
     font-weight: 500;
@@ -18,5 +18,5 @@
 }
 
 .badge-avatar .avatar-title {
-    border: 1.5px solid var(--ink);
+    border: 1px solid var(--control-line);
 }

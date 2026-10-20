@@ -11,7 +11,7 @@ import {credentials,providerBase,vendorHttp,probe,VendorError} from './api-http'
 import {auditStatement,requestSource} from '../audit/record'
 export const apiRoutes=new Hono<AppEnv>()
 const root='/projects/:projectId/import-connections',imports='/projects/:projectId/imports'
-apiRoutes.onError((error,c)=>{if(error instanceof VendorError)return c.json({error:error.message},error.status===401?401:error.status===403?403:error.status===429?429:502);if(error instanceof HTTPException)return error.getResponse();return c.json({error:'The move-in operation could not finish. Its saved checkpoint was kept.'},409)})
+apiRoutes.onError((error,c)=>{if(error instanceof VendorError){if(error.retryAt)c.header('Retry-After',String(Math.max(1,Math.ceil((error.retryAt-Date.now())/1000))));return c.json({error:error.message,providerStatus:error.status,...(error.status===401?{code:'vendor_token_rejected'}:{})},error.status===401?422:error.status===403?403:error.status===429?429:502)}if(error instanceof HTTPException)return error.getResponse();return c.json({error:'The move-in operation could not finish. Its saved checkpoint was kept.'},409)})
 apiRoutes.post(root,async c=>{
  const actor=await importActor(c),body=await c.req.json(),vendor=body.vendor as Vendor
  if(!['zendesk','intercom','helpscout','freshdesk'].includes(vendor))throw new HTTPException(400,{message:'Choose a supported help desk'})

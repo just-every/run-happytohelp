@@ -11013,7 +11013,7 @@
       "executable": false
     },
     "tests/helpers/inbox/workspace-shell-browser.mjs": {
-      "sha256": "31889da73f06f6018b451012462064dde07b47e332afc578de05c2dafe9fc3a5",
+      "sha256": "bcb5518457cf555d5e518cbe773a22be57244a428d25494358eb597fcd2e52d3",
       "executable": false
     },
     "tests/helpers/independent-artifact.mjs": {

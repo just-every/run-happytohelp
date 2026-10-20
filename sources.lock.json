@@ -7297,11 +7297,11 @@
       "executable": false
     },
     "src/site/docs-search.config.mjs": {
-      "sha256": "3d73019b15f19a72560d7890164a6854717c15273b9cea7bf353f402025784d2",
+      "sha256": "44b819f4e59a2f003a88c9db5c8eb67b707d4a7eaf12fe072c395b45dde0916a",
       "executable": false
     },
     "src/site/docs-search/artifacts.mjs": {
-      "sha256": "417e8c42d2a1f9f4060523c5b706a4af5a09c86da0a40cc5e1b0e0b16a7228d5",
+      "sha256": "a22a6fb591bc17613e23fbab5b4af77de050556a2302c63dc617ab1221650d3f",
       "executable": false
     },
     "src/site/docs-search/client.ts": {
@@ -9909,7 +9909,7 @@
       "executable": false
     },
     "tests/docs-search.mjs": {
-      "sha256": "d81cecb427ee8245209f1cec6d2f4b2ffb0495c9f5be4e8816d4b9ccf1d4d529",
+      "sha256": "bdc74ca1f8adbfffd4ac430e36564a0f6bba35b6510a56dad455ab04c782f6a9",
       "executable": false
     },
     "tests/eval-harness/fixtures/assist-human-voice.json": {

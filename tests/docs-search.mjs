@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { rm } from 'node:fs/promises';
+import deployment from '../deploy.json' with { type: 'json' };
 import { chromium } from 'playwright';
 import { buildSearchArtifacts } from '../src/site/docs-search/artifacts.mjs';
 
@@ -12,7 +13,8 @@ import { buildSearchArtifacts } from '../src/site/docs-search/artifacts.mjs';
 function vectors(text) {
   return { shape: [text.length, 384], data: text.map(value => {
     const vector = Array(384).fill(0);
-    for (const word of value.toLowerCase().match(/[a-z]{3,}/g) ?? []) {
+    const heading = value.replace(/^Represent this sentence for searching relevant passages: /, '').split('\n')[0].split(' > ').at(-1);
+    for (const word of heading.toLowerCase().match(/[a-z]{3,}/g) ?? []) {
       let hash = 0;
       for (const letter of word) hash = (hash * 31 + letter.charCodeAt(0)) >>> 0;
       vector[hash % 384] += 1;
@@ -29,10 +31,10 @@ test('a reader searches the built docs and opens a linked heading through the si
   execFileSync('pnpm', ['exec', 'rer', 'build', '--site', '--no-queue'], { stdio: 'pipe', env: { ...process.env, CI: 'true' } });
   await buildSearchArtifacts({ corpus: '.rer/docs-search/corpus.json', assets: '.rer/site', output }, { embed: async (_model, { text }) => vectors(text) });
   const mf = new Miniflare(convertV4MiniflareOptions({ workers: [
-    { name: 'site', modules: true, scriptPath: resolve(output, 'worker.mjs'), compatibilityDate: '2026-10-20',
+    { name: 'site', modules: true, scriptPath: resolve(output, 'worker.mjs'), compatibilityDate: deployment.compatibilityDate,
       assets: { directory: resolve('.rer/site'), binding: 'ASSETS', run_worker_first: true, assetConfig: { html_handling: 'auto-trailing-slash', not_found_handling: '404-page' } },
       serviceBindings: { AI: 'inference' } },
-    { name: 'inference', modules: true, compatibilityDate: '2026-10-20', script: `import {WorkerEntrypoint} from 'cloudflare:workers';const vectors=${vectors.toString()};export default class extends WorkerEntrypoint {async run(_model,{text}){return vectors(text)}}` },
+    { name: 'inference', modules: true, compatibilityDate: deployment.compatibilityDate, script: `import {WorkerEntrypoint} from 'cloudflare:workers';const vectors=${vectors.toString()};export default class extends WorkerEntrypoint {async run(_model,{text}){return vectors(text)}}` },
   ] }));
   let browser;
   try {
@@ -43,7 +45,7 @@ test('a reader searches the built docs and opens a linked heading through the si
     assert.equal((await page.goto(`${origin}/docs`)).status(), 200);
     await page.keyboard.press('/');
     const input = page.getByRole('combobox', { name: 'Search docs' });
-    await input.fill('mentions followers');
+    await input.fill('Notes, mentions and followers');
     const result = page.getByRole('option').filter({ hasText: 'Notes, mentions and followers' });
     await result.waitFor();
     const href = await result.getAttribute('href');

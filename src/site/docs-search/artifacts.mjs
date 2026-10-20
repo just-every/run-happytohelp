@@ -5,7 +5,7 @@ import { build } from 'esbuild';
 import { buildSearchIndex } from './index-build.mjs';
 
 /** Explicit credentialed build step. A failure stops publication; no lexical fallback. */
-export async function buildSearchArtifacts({ corpus, assets, output, previousUrl, endpoint = '/docs/search', localName = 'docs-search-local' }, { embed, accountId } = {}) {
+export async function buildSearchArtifacts({ corpus, assets, output, previousUrl, endpoint = '/docs/search', localName = 'docs-search-local', compatibilityDate = '2026-09-08' }, { embed, accountId } = {}) {
   const pages = JSON.parse(await readFile(corpus, 'utf8'));
   await mkdir(output, { recursive: true });
   const indexPath = resolve(output, 'index.json');
@@ -41,7 +41,7 @@ export async function buildSearchArtifacts({ corpus, assets, output, previousUrl
   const runtime = fileURLToPath(new URL('./worker.ts', import.meta.url));
   await build({ stdin: { contents: `import {createSearchWorker} from ${JSON.stringify(runtime)};import index from './index.json';export default createSearchWorker(index,${JSON.stringify({ endpoint })});`,
     resolveDir: resolve(output), sourcefile: 'site-search-entry.ts', loader: 'ts' }, bundle: true, format: 'esm', platform: 'browser', target: 'es2022', outfile: resolve(output, 'worker.mjs') });
-  const configuration = { name: localName, main: './worker.mjs', compatibility_date: '2026-10-20',
+  const configuration = { name: localName, main: './worker.mjs', compatibility_date: compatibilityDate,
     ...(accountId ? { account_id: accountId } : {}), workers_dev: false,
     assets: { directory: relative(resolve(output), resolve(assets)), binding: 'ASSETS', run_worker_first: true, html_handling: 'auto-trailing-slash', not_found_handling: '404-page' },
     ai: { binding: 'AI', remote: true } };

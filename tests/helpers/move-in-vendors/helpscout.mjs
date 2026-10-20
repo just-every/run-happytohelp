@@ -24,7 +24,7 @@ export function helpscoutRoutes({corpus:c}) {
         createdAt:iso(v.createdAt),createdBy:reference(v.authorId),customer:reference(p.contactId),
         to:['support@fixture.example.test'],cc:p.cc,bcc:[],source:{type:'email',via:v.authorId>=1000?'customer':'user'},
         _embedded:{attachments:v.attachments.map(a=>attachment(a,p.id))}}));
-    const conversation=p=>({id:p.id,number:p.id,threads:p.comments.length,type:'email',folderId:1,mailboxId:1,
+    const conversation=p=>({id:p.id,number:p.id,threads:p.comments.filter(part=>!part.private).length,type:'email',folderId:1,mailboxId:1,
         status:p.status==='open'?'active':p.status,state:'published',subject:p.subject,preview:p.comments[0].body,
         primaryCustomer:reference(p.contactId),createdBy:reference(p.contactId),assignee:reference(p.agentId),
         createdAt:iso(p.createdAt),userUpdatedAt:iso(p.updatedAt),closedAt:p.status==='closed'?iso(p.updatedAt):null,

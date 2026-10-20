@@ -464,7 +464,10 @@
           "migrations/153_workflow_schedules.sql",
           "migrations/154_workflow_routing.sql",
           "migrations/155_schedule_team_frontier.sql",
-          "docs/workflows.md"
+          "docs/workflows.md",
+          "src/modules/triage",
+          "migrations/220_ticket_triage.sql",
+          "docs/triage.md"
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",

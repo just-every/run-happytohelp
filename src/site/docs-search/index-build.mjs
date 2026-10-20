@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 
-export const model = '@cf/baai/bge-small-en-v1.5';
+export const model = '@cf/baai/bge-base-en-v1.5';
 export const pooling = 'cls';
-export const dimensions = 384;
+export const dimensions = 768;
 const digest = value => createHash('sha256').update(value).digest('hex');
 
 // Keep long sections inside the model's context. Every part keeps the same
@@ -44,7 +44,7 @@ export async function buildSearchIndex(pages, { previous = [], embed, onBatch = 
     const batch = missing.slice(offset, offset + 32);
     const response = await embed(model, { text: batch.map(chunk => `${chunk.titlePath.join(' > ')}\n${chunk.text}`), pooling });
     if (response.data?.length !== batch.length || !response.data.every(validVector)) throw Error('Workers AI returned invalid embeddings; search build stopped.');
-    batch.forEach((chunk, i) => cached.set(chunk.hash, response.data[i]));
+    batch.forEach((chunk, i) => cached.set(chunk.hash, response.data[i].map(value => Number(value.toFixed(6)))));
     embedded += batch.length;
     onBatch({ embedded, total: missing.length });
   }

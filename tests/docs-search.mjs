@@ -6,18 +6,19 @@ import { resolve } from 'node:path';
 import { rm } from 'node:fs/promises';
 import deployment from '../deploy.json' with { type: 'json' };
 import { chromium } from 'playwright';
+import { dimensions } from '../src/site/docs-search/index-build.mjs';
 import { buildSearchArtifacts } from '../src/site/docs-search/artifacts.mjs';
 
 // The only fake is the paid inference boundary. Both corpus and query use the
 // same deterministic embedding, while the built pages, client and Worker run.
 function vectors(text) {
-  return { shape: [text.length, 384], data: text.map(value => {
-    const vector = Array(384).fill(0);
+  return { shape: [text.length, dimensions], data: text.map(value => {
+    const vector = Array(dimensions).fill(0);
     const heading = value.replace(/^Represent this sentence for searching relevant passages: /, '').split('\n')[0].split(' > ').at(-1);
     for (const word of heading.toLowerCase().match(/[a-z0-9]+/g) ?? []) {
       let hash = 0;
       for (const letter of word) hash = (hash * 31 + letter.charCodeAt(0)) >>> 0;
-      vector[hash % 384] += 1;
+      vector[hash % dimensions] += 1;
     }
     return vector;
   }) };
@@ -34,7 +35,7 @@ test('a reader searches the built docs and opens a linked heading through the si
     { name: 'site', modules: true, scriptPath: resolve(output, 'worker.mjs'), compatibilityDate: deployment.compatibilityDate,
       assets: { directory: resolve('.rer/site'), binding: 'ASSETS', run_worker_first: true, routerConfig: { has_user_worker: true }, assetConfig: { html_handling: 'auto-trailing-slash', not_found_handling: '404-page' } },
       serviceBindings: { AI: 'inference' } },
-    { name: 'inference', modules: true, compatibilityDate: deployment.compatibilityDate, script: `import {WorkerEntrypoint} from 'cloudflare:workers';const vectors=${vectors.toString()};export default class extends WorkerEntrypoint {async run(_model,{text}){return vectors(text)}}` },
+    { name: 'inference', modules: true, compatibilityDate: deployment.compatibilityDate, script: `import {WorkerEntrypoint} from 'cloudflare:workers';const dimensions=${dimensions};const vectors=${vectors.toString()};export default class extends WorkerEntrypoint {async run(_model,{text}){return vectors(text)}}` },
   ] }));
   let browser;
   try {

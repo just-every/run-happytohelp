@@ -7309,11 +7309,11 @@
       "executable": false
     },
     "src/site/docs-search/index-build.mjs": {
-      "sha256": "b0868a5ac238858db1fcd770f0e3a0cb8b9697efb72d30d81acb576618b9b473",
+      "sha256": "1b659307342a381ae46d87ec11e6320f3010a79468b040b856e7bf1e2344d661",
       "executable": false
     },
     "src/site/docs-search/retrieve.ts": {
-      "sha256": "c558e7b963b600f7fd1c412f369bbd0921a8b7ff5509f61f08dbdb5a485ee2af",
+      "sha256": "97d09ecb7ea889912c3f39702d09a9150bd0a6d9ac11fe24a2f7ac02b4fb8a49",
       "executable": false
     },
     "src/site/docs-search/search.css": {
@@ -7333,7 +7333,7 @@
       "executable": false
     },
     "src/site/docs-search/worker.ts": {
-      "sha256": "9aaaf51f38bd627a0e986618fe0fb63af567d0f147be0c125c890a7047b115b9",
+      "sha256": "fe40ac9b251115d55a65f18cd1138b3041bd584f0f339b5caf64a3adb1905dc8",
       "executable": false
     },
     "src/site/identity.ts": {
@@ -9909,7 +9909,7 @@
       "executable": false
     },
     "tests/docs-search.mjs": {
-      "sha256": "1ab25a78603ce7fd117b8833c67ec4f2180c6c9f870821de156ff931e5016876",
+      "sha256": "963dd3118f60a9ef3f658822e5224ef12c1e2cf4afc2288e21b8013acca5157a",
       "executable": false
     },
     "tests/eval-harness/fixtures/assist-human-voice.json": {

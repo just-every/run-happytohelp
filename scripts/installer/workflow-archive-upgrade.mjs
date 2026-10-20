@@ -1,3 +1,4 @@
+import {triageTables} from './triage-archive.mjs';
 import {DatabaseSync} from 'node:sqlite';
 import {readFile,readdir} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -28,7 +29,7 @@ export function workflowArchiveUpgradeRow(table,row){
  * R3's ticket migrations. Later independent migrations still form part of each
  * historical schema. Never apply 150-159 while constructing that inventory. */
 export async function workflowArchivePolicy(root,input,{beforeTickets=false,beforeR4=false,beforeEmail=false}={}){
- const omitted=[...workflowTables,...(beforeTickets?ticketTables:[]),...(beforeR4?r4Tables:[]),...(beforeEmail?emailArchiveTables:[])];
+ const omitted=[...triageTables,...workflowTables,...(beforeTickets?ticketTables:[]),...(beforeR4?r4Tables:[]),...(beforeEmail?emailArchiveTables:[])];
  const result={...input,excludeTables:[...new Set([...input.excludeTables,...omitted])],replaceableTables:input.replaceableTables.filter(table=>!omitted.includes(table))},config=policy(result);
  const scratch=new DatabaseSync(':memory:'),acceptedSchemas={...input.acceptedSchemas};
  const db={prepare(sql){return {bind(...args){this.args=args;return this;},async all(){return {results:scratch.prepare(sql).all(...(this.args??[]))};}};}};
@@ -36,7 +37,7 @@ export async function workflowArchivePolicy(root,input,{beforeTickets=false,befo
   // v0.4.2, the last pre-ticket release, ends at 190; every later migration
   // (191's ticket_history index onward) only ever runs after the ticket model.
   // R7b's reserved 172–174 numbers also landed after the pre-ticket release.
-  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!/^15[0-9]_/.test(name)&&(!beforeTickets||!/^13[0-9]_/.test(name)&&!/^17[234]_/.test(name)&&name<'191_')&&(!beforeR4||!/^14[0-9]_/.test(name))&&(!beforeEmail||!/^16[0-9]_/.test(name))).sort();
+  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!/^22[0-9]_/.test(name)&&!/^15[0-9]_/.test(name)&&(!beforeTickets||!/^13[0-9]_/.test(name)&&!/^17[234]_/.test(name)&&name<'191_')&&(!beforeR4||!/^14[0-9]_/.test(name))&&(!beforeEmail||!/^16[0-9]_/.test(name))).sort();
   const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))));
   for(let index=0;index<plan.length;index++){
    for(const sql of plan[index])scratch.exec(sql);

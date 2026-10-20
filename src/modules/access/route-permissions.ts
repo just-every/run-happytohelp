@@ -85,6 +85,10 @@ for(const base of [P,D]){rules[`PUT ${base}/agents/:userId`]='members.manage';ru
 // Ticket configuration follows existing settings authority; personal views are
 // self-owned and their handlers separately guard shared definitions.
 for(const base of [P,D]){
+ rules[`GET ${base}/triage-settings`]='self'
+ rules[`PUT ${base}/triage-settings`]='settings.manage'
+ rules[`GET ${base}/conversations/:conversationId/triage`]='self'
+ rules[`PATCH ${base}/conversations/:conversationId/triage`]='conversations.manage'
  rules[`GET ${base}/ticket-settings`]='self'
  rules[`GET ${base}/ticket-problem-search`]='conversations.manage'
  rules[`GET ${base}/conversations/:conversationId/ticket`]='self'

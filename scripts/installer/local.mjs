@@ -1,3 +1,4 @@
+import {triageRestoreSql} from './triage-archive.mjs';
 import {localInstaller} from '@runeditrun/rer/local-installer';
 import {developmentTarget,previewTarget} from '@runeditrun/rer/operator-installer';
 import {installOperator} from '@runeditrun/rer/operator-install';
@@ -56,7 +57,7 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
  }else snapshots=await checkArchiveSnapshot(context.path);
  let selected=transfer,upgradeWorkflows=false;
  if(verb==='import'){
-  const historical=await Promise.all(['./report-archive-policy.mjs','./ticket-archive-policy.mjs','./r4-archive-policy.mjs','./email-archive-policy.mjs','./workflow-archive-policy.mjs','./workflow-archive-ticket-policy.mjs'].map(async module=>({module,policy:(await import(module)).default})));
+  const historical=await Promise.all(['./triage-archive-policy.mjs','./report-archive-policy.mjs','./ticket-archive-policy.mjs','./r4-archive-policy.mjs','./email-archive-policy.mjs','./workflow-archive-policy.mjs','./workflow-archive-ticket-policy.mjs'].map(async module=>({module,policy:(await import(module)).default})));
   // Metadata can select this explicitly supported schema transition, never an
   // executable path supplied by the archive. Base verifies the complete archive.
   for await(const record of fileRecords(context.path))if(record.kind==='manifest'){
@@ -74,6 +75,7 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
   await d1(context,'Preparing restored saved replies',r4RestoreSql);
   // Ticket normalization can journal a restored conversation through live
   // triggers. Fence that work as well as the archived commands before completion.
+  await d1(context,'Fencing archived triage work',triageRestoreSql);
   await d1(context,'Fencing archived workflow actions',workflowRestoreSql);
   await d1(context,'Fencing restored report schedules and bulk replies',reportRestoreSql);
   await d1(context,'Rebuilding conversation search',"INSERT INTO inbox_message_search(inbox_message_search) VALUES('rebuild')");

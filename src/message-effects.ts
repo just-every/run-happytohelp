@@ -1,3 +1,4 @@
+import {dispatchTriage} from './modules/triage/worker'
 import {inCron,cronRequire} from './platform/cron-budget'
 import {workflowEnvironment} from './modules/workflows/clock'
 import {processWorkflowEvents} from './modules/workflows/events'
@@ -18,6 +19,7 @@ export async function applyMessageEffects(env:Env,message:Record<string,unknown>
  env=await workflowEnvironment(env)
  if(!await isProjectActive(env,actor.projectId))return
  if(await isAutomaticInboundEmail(env,actor.projectId,message))return
+ await dispatchTriage(env,String(message.conversation_id)).catch(()=>console.error('Triage dispatch deferred to recovery'))
  if(options.workflow!==false)await processWorkflowEvents(env,String(message.conversation_id),20)
  // Cron leaves each unfinished effect on the durable outbox. Sequential calls
  // keep admission accurate when the services share the same statement budget.

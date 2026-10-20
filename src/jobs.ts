@@ -1,3 +1,4 @@
+import {consumeTriage,dispatchTriage} from './modules/triage/worker'
 import {dispatchScheduledReports} from './modules/reports/schedule-dispatch'
 import {recoverTicketContinuations} from './modules/tickets/continuation'
 import {cronConsumer,CronDeferred} from './platform/cron-budget'
@@ -33,6 +34,7 @@ export async function consumeJob(job:Job,env:Env) {
  if(job.type!=='lead.process'&&!await isProjectActive(env,job.projectId))return
  if(job.type==='integrations'){await dispatchIntegrations(env,job.projectId);return}
  if(job.type==='move-in'){const run=await getWorkRun(env,job.id);if(run&&run.project_id===job.projectId)await advanceImport(env,run);return}
+ if(await consumeTriage(job,env))return
  if(await handleGeneration(env,job,generationEffects))return
  if(await consumeKnowledge(job,env))return
  if(await consumeContextJob(job,env,requestContextModel))return
@@ -65,7 +67,7 @@ export async function runScheduled(env:Env) {
  // Hand larger message effects to the queue near the history-load target.
  // The hard consumer allocation still reserves every later recovery and prune.
  await visit('Outbox',3,dispatchOutbox,700)
- await visit('Generation',10,env=>recoverQueuedGenerations(env,generationEffects))
+ await visit('Generation',10,async env=>{await recoverQueuedGenerations(env,generationEffects);await dispatchTriage(env)})
  await visit('Knowledge',15,refreshDueDatasets)
  await visit('Context',5,recoverContextJobs)
  await visit('Ticket continuation',1,recoverTicketContinuations)

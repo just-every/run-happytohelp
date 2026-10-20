@@ -1,3 +1,4 @@
+import {triageRoutes} from '../triage/routes'
 import {customerRoutes} from '../customers/index'
 import {csvCustomerRoutes} from '../import-kit/csv/routes'
 import {workflowRoutes} from '../workflows/routes'
@@ -33,8 +34,8 @@ import {conversationActionRoutes} from '../conversation-actions/routes'
 export const routes=new Hono<AppEnv>()
 routes.route('/',customerRoutes).route('/',csvCustomerRoutes).route('/',activation).route('/',workspaceArtwork).route('/',projects).route('/',resources).route('/',contactErasure).route('/',widgetSettings).route('/',integrations).route('/',admin).route('/',invitations).route('/',githubOAuth).route('/',projectPolicy).route('/',auditRoutes).route('/',roles).route('/',twoFactorPolicy)
 export const dashboardRoutes=new Hono<AppEnv>()
-routes.route('/',workflowRoutes).route('/',ticketRoutes).route('/',queueRoutes).route('/',macroRoutes).route('/',notificationRoutes)
-dashboardRoutes.route('/',workflowRoutes).route('/',ticketRoutes).route('/',queueRoutes).route('/',macroRoutes).route('/',notificationRoutes).route('/',collaborationRoutes).route('/',conversationActionRoutes)
+routes.route('/',triageRoutes).route('/',workflowRoutes).route('/',ticketRoutes).route('/',queueRoutes).route('/',macroRoutes).route('/',notificationRoutes)
+dashboardRoutes.route('/',triageRoutes).route('/',workflowRoutes).route('/',ticketRoutes).route('/',queueRoutes).route('/',macroRoutes).route('/',notificationRoutes).route('/',collaborationRoutes).route('/',conversationActionRoutes)
 dashboardRoutes.route('/',customerRoutes).route('/',csvCustomerRoutes).route('/',reports).route('/',demoInbox).route('/',dashboard).route('/',dashboardActions).route('/',dashboardMedia).route('/',resources).route('/',aiUsage).route('/',aiSpend).route('/',followers)
 export {publicWidget} from './widget-settings'
 

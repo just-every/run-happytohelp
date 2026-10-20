@@ -8,7 +8,7 @@
 // the muted chip, and a paler aqua tint (light mode only; Dark keeps its tokens). Checks and switches keep a 3:1
 // outline, since their boundary is their only affordance. The left rail is the brand ink (./_sidebar.scss). Menus lift
 // on a soft shadow instead of the drawn card's ink offset. Scoped to the signed-in workspace (DashboardClient sets the
-// class), so the homepage, setup and sign-in keep their paper.
+// class); setup and sign-in share the form hairlines in brand-tokens.css and keep their paper.
 body.workspace-themed {
   --rail: #141414;
   --menu-shadow: 0 8px 24px -12px rgba(20, 20, 20, .18);
@@ -18,15 +18,10 @@ body.workspace-themed:not([data-theme="dark"]) {
   --paper: #ffffff;
   --paper-deep: #fbfbfa;
   --muted-chip: #f1f1ef;
-  --rule: rgba(20, 20, 20, .08);
-  --rule-strong: rgba(20, 20, 20, .12);
-  --field-line: rgba(20, 20, 20, .16);
-  --field-line-hover: rgba(20, 20, 20, .32);
   --control-line: rgba(20, 20, 20, .16);
   --toggle-line: rgba(20, 20, 20, .5);
   --hover: rgba(20, 20, 20, .04);
   --d-cyan-tint: #eef9fb;
-  --card-shadow: none;
 }
 
 body.workspace-themed[data-theme="dark"] {

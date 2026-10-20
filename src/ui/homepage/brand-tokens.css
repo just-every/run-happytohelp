@@ -1,8 +1,8 @@
 /* The brand's tokens, defined once for every surface: the homepage and the pages built on it (the docs and the 404),
    first-run setup, the identity pages and the signed-in workspace. Paper, ink and one geometric sans-serif's chrome, and the
    drawings' ink and aqua family; the workspace adds its surfaces, lines, chips and the one danger ink below. No other
-   stylesheet defines them, so no surface can drift from the homepage; the one exception is the signed-in workspace's white
-   canvas and hairlines, which re-point paper, the lines and the tints at its root (dashboard foundation/_app-shell.scss).
+   stylesheet defines them, so no surface can drift from the homepage; the workspace re-points its canvas and tints at its root, while identity and setup keep paper.
+   All application forms share the Ink rail hairlines below.
    Nothing else has a hue. */
 :root {
   --paper: #f6f2ea;
@@ -47,7 +47,8 @@
   --avatar-sage: #e1e8d8;
   /* The drawn card: the landing's .d-card outline at 14px to the em, with its offset ink shadow. */
   --card-radius: 14px 16px 13px 15px / 15px 13px 16px 14px;
-  --card-shadow: 1px 1.5px 0 rgba(20, 20, 20, 0.55);
+  --drawing-shadow: 1px 1.5px 0 rgba(20, 20, 20, 0.55);
+  --card-shadow: var(--drawing-shadow);
   --font-sans: Outfit, 'Outfit Fallback', 'Avenir Next', 'Segoe UI', sans-serif;
 }
 /* A workspace in Dark display mode (Settings, Project, Appearance) sets data-theme="dark" on its root. The aqua stays.
@@ -85,8 +86,21 @@ body.workspace-themed #sidebar {
   --avatar-mint: #264a38;
   --avatar-blush: #3b2a26;
   --avatar-sage: #2a3326;
-  --card-shadow: 1px 1.5px 0 rgba(0, 0, 0, 0.6);
+  --drawing-shadow: 1px 1.5px 0 rgba(0, 0, 0, 0.6);
+  --card-shadow: var(--drawing-shadow);
   color-scheme: dark;
 }
 /* The body holding a page in the homepage's language reads the paper. */
 body:has(.h2h-home), body:has(.h2h-setup), body:has(.h2h-identity) { margin: 0; padding: 0; background: var(--paper); }
+
+/* Owner pick H3 A: the same quiet rules and fields across the workspace, identity and first-run setup.
+   Paper and illustration tokens stay independent of the form treatment. */
+body.workspace-themed:not([data-theme="dark"]),
+.h2h-identity,
+.h2h-setup {
+  --rule: rgba(20, 20, 20, .08);
+  --rule-strong: rgba(20, 20, 20, .12);
+  --field-line: rgba(20, 20, 20, .16);
+  --field-line-hover: rgba(20, 20, 20, .32);
+  --card-shadow: none;
+}

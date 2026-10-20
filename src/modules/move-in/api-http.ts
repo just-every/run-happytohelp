@@ -48,4 +48,4 @@ export function vendorHttp(env:Env,vendor:Vendor,base:string,credential:VendorCr
   const response=await checked(url,{headers:url.origin===origin.origin?headers(false):new Headers()});return {bytes:await readBounded(response,20_000_000),contentType:response.headers.get('content-type')||'application/octet-stream'}
  }}
 }
-export async function probe(vendor:Vendor,client:ApiClient){await client.get(vendor==='zendesk'?'/api/v2/users/me.json':vendor==='intercom'?'/me':vendor==='helpscout'?'/v2/users/me':'/api/v2/agents/me')}
+export async function probe(vendor:Vendor,client:ApiClient){await client.get(vendor==='zendesk'?'/api/v2/users.json?page[size]=1':vendor==='intercom'?'/admins':vendor==='helpscout'?'/v2/users?page=1':'/api/v2/agents?per_page=1&page=1')}

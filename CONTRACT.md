@@ -563,8 +563,8 @@ Judged from the code and tests at commit `9a07af20eccf264eaa6fd019ccc65cf2003bc3
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 21 | 1 | 0 | 22 |
-| Target and push further | 14 | 25 | 13 | 52 |
-| All | 35 | 26 | 13 | 74 |
+| Target and push further | 14 | 26 | 12 | 52 |
+| All | 35 | 27 | 12 | 74 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -615,7 +615,7 @@ Judged from the code and tests at commit `9a07af20eccf264eaa6fd019ccc65cf2003bc3
 | `COMMERCE-001` | Shopify order actions | target | missing |  | No implementation located. No Shopify order/refund connector implementation located. |
 | `BILLING-001` | Stripe billing and subscription resolution | target | missing |  | No implementation located. No active Stripe billing/subscription action connector located; legacy financial imports confer no action authority. |
 | `CRM-001` | Live CRM and account context | target | missing |  | No implementation located. No Orbit, HubSpot or Salesforce connector implementation located. |
-| `ESCALATION-001` | Engineering and team escalations that return | target | missing |  | `src/modules/integrations/github.ts`; `src/modules/api-integrations/dispatch.ts`. GitHub access is read-only and Slack sees only new conversations; creating or linking GitHub, Linear and Jira issues, returning status and customer-update drafts are absent. |
+| `ESCALATION-001` | Engineering and team escalations that return | target | partial | `src/modules/escalations`; `tests/journeys/connections.mjs`; `tests/journeys/connections-browser.mjs`; `tests/helpers/escalations/dev-proof.mjs` | Teams belongs to R11; live provider accounts remain unqualified. |
 | `API-001` | Owned API and managed connectors | target | partial | `src/modules/api-integrations`; `local-agent/lib/mcp.mjs`; `src/modules/move-in/plan.ts`; `tests/connections/api.mjs`; `tests/connections/delivery.mjs` | Native API/webhooks, Help Scout export import and connector MCP transport exist; managed catalog, Zapier and continuous Help Scout synchronization do not. |
 | `MOVE-IN-002` | Switch from every named incumbent | target | partial | `src/modules/move-in/plan.ts`; `src/modules/move-in/readers/normalise.ts`; `tests/journeys/move-in-capacity.mjs`; `tests/move-in/helpscout-security.mjs`; `tests/move-in/door-readers.mjs`; `tests/journeys/move-in-browser.mjs` | Reviewed Zendesk, Help Scout, Freshdesk and Intercom history import exists (`tests/journeys/move-in-admission.mjs`); attachment bytes, one-click API connection, final delta cutover, channel repoint, companies and custom fields, activated ownership and configuration move-in are incomplete. |
 | `MOVE-IN-003` | Replies to pre-migration mail land in the imported ticket | target | partial | `src/modules/move-in/email-threading.ts`; `src/modules/integrations/email-threading.ts`; `src/modules/integrations/email-threading-keys.ts`; `tests/helpers/email/complete-email.mjs`; `docs/email.md` | R6 vendor scope complete: inert imported message/header, subject-token and reply-address keys for Zendesk, Freshdesk, Help Scout and Intercom. Public upload/review/apply and inbound journeys match all four vendors and hold wrong-customer replies. Header proposals preserve sender-authority gates; Closed remains final with a linked follow-up. Live cutover, broader legacy acceptance and unmatched-migration hints remain unqualified. |

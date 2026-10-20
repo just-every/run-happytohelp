@@ -50,7 +50,10 @@ export async function sendCommand(projectId, conversationId, action, data) {
     if (action === 'setConversationId') return;
     if (action === 'sendMessage') {
         const frontier = await nativeRequest(`/api/conversations/${encodeURIComponent(conversationId)}`);
-        return nativeRequest(`/api/conversations/${encodeURIComponent(conversationId)}/messages`, {
+        const messagePath=data.escalation_draft_id
+            ? `/api/escalations/projects/${encodeURIComponent(projectId)}/conversations/${encodeURIComponent(conversationId)}/drafts/${encodeURIComponent(data.escalation_draft_id)}/send`
+            : `/api/conversations/${encodeURIComponent(conversationId)}/messages`;
+        return nativeRequest(messagePath, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ localId: data.local_id, content: data.content, expectedRevision: frontier.revision,
                 expectedLastMessageId: frontier.last_message_id, mediaIds: data.media_ids, resolve: data.resolve, authoring: data.authoring,

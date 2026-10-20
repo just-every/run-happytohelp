@@ -37,3 +37,10 @@ for(const width of [1440,390])test(`at ${width}px an owner creates and revokes a
 
   await context.close()
 }catch(error){success=false;throw error}})
+
+import {startProviders} from '../helpers/escalations/providers.mjs'
+import {exerciseEscalations} from '../helpers/escalations/browser.mjs'
+for(const width of [1440,390])test(`at ${width}px selected engineering context reaches connected trackers and Slack, signed closure updates return as drafts, and an operator edits and sends the approved customer update`,async()=>{
+ const providers=await startProviders();let runtime,passed=false;
+ try{runtime=await createRuntime({outboundFixture:new URL('../helpers/escalations/outbound.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}});const owner=await runtime.seedTenant({name:'Engineering escalations '+width,email:`engineering-${width}@example.test`});const result=await exerciseEscalations({browser,origin:runtime.origin,owner,providers,width,directory:shot('escalations')});await result.context.close();passed=true}finally{await runtime?.close(passed);await providers.close()}
+})

@@ -12,7 +12,7 @@ export function attachments(ticket:any,partId:string,values:any,privatePart:bool
  return items(values??[],`${vendor}_attachments`).map(a=>{
   const url=vendor==='helpscout'?`https://api.helpscout.net/v2/conversations/${enc(ticket)}/attachments/${enc(a.id)}/file`:a.content_url??a.attachment_url??a.url
   if((a.id==null&&vendor!=='intercom')||typeof url!=='string'||!url)throw new Error(`${vendor}_attachment_download_unavailable`)
-  return {ticketId:String(ticket),partId,id:String(a.id??url),filename:a.file_name??a.filename??a.name??'',contentType:a.content_type??a.mimeType??a.contentType??'application/octet-stream',url,private:privatePart,size:typeof (a.size??a.filesize)==='number'?(a.size??a.filesize):null}
+  return {ticketId:String(ticket),partId,id:String(a.id??new URL(url).pathname),filename:a.file_name??a.filename??a.name??'',contentType:a.content_type??a.mimeType??a.contentType??'application/octet-stream',url,private:privatePart,size:typeof (a.size??a.filesize)==='number'?(a.size??a.filesize):null}
  })
 }
 export function zendeskNext(p:any):string|null{

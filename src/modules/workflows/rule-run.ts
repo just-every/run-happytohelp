@@ -46,9 +46,10 @@ export async function executeRuleRun(env:Env,runId:string,spent?:Spent){
   const frontier=JSON.parse(run.frontier_json),action=actions[i]
   const ticket=action.type==='route'?await ruleTicket(env,run.project_id,run.conversation_id):frontier
   if(!ticket||ticket.ticket_version!==frontier.ticket_version||ticket.revision!==frontier.revision||ticket.last_message_id!==frontier.last_message_id){await setState('cancelled','Ticket changed after the run was planned; stale actions were cancelled');break}
-  const triageGuard=action.type==='assign'?await triageAssignmentGuard(env,frontier,d):null
+  const triageGuard=action.type==='assign'?await triageAssignmentGuard(env,{...frontier,id:run.conversation_id,project_id:run.project_id},d):null
   if(triageGuard?.sql==='0'){await setState('cancelled','Triage assignment is below confidence or has not been approved');break}
   const actionId=`${runId}:action:${i}`,guard:WorkflowGuard={sql:`${rule.sql} AND c.ticket_version=? AND c.revision=? AND c.last_message_id IS ? AND EXISTS(SELECT 1 FROM workflow_runs WHERE id=? AND lease_token=? AND state IN ('running','pending') AND cursor=?)`,params:[...rule.params,frontier.ticket_version,frontier.revision,frontier.last_message_id,runId,lease,i]}
+  if(triageGuard){guard.sql+=` AND (${triageGuard.sql})`;guard.params.push(...triageGuard.params)}
    if(action.type==='notify'){
     const result=await notifyWorkflow(env,{projectId:run.project_id,conversationId:run.conversation_id,id:actionId,kind:action.kind,recipientId:action.recipient_id,message:action.message,guard})
     if(result.state==='pending'){if(attempt>=RUN_ATTEMPTS)await env.DB.prepare("UPDATE workflow_notifications SET state='not_delivered',detail=?,updated_at=? WHERE id=? AND state='pending'").bind(`${result.detail??'Notification delivery is waiting'}. Stopped after ${RUN_ATTEMPTS} attempts.`,workflowNow(env),actionId).run();await defer('not_delivered',result.detail??'Notification delivery is waiting');break}

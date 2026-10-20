@@ -37,31 +37,38 @@ work delegated to your own Codex or Claude. It works with human replies without
 an AI provider. The editable React application runs on Cloudflare Workers with
 Hono, D1, R2, Queues and Durable Objects.
 
-## Release 0.4.10
+## Release 0.4.11
 
-Deploy the latest tagged release, **`v0.4.10`**, using the commands below.
-The cron-backlog test uses an explicitly synthetic signing token, so the public
-source passes RER's hosted credential scanner before agent dispatch. The same
-inbound-mail, scheduled-reply and backlog assertions remain in place. Ticket
-collaboration on a conversation is now a labelled group, valid ARIA in every
-state, and the account-security browser journey no longer fails by chance: the
-test runtime opens a Worker inspector only on a port it is given. Every journey
-assertion remains in place.
+Deploy the latest tagged release **`v0.4.11`** using the commands below.
+No breaking change.
 
-**Upgrading from v0.4.9 adds no migrations.** Back up D1, R2, Durable Object state
-and private settings. Keep the existing migration ledger and installation state;
-never reset or edit ledger rows. Commands retain `@runeditrun/rer` **0.2.68**.
-Fresh installs, README restores and upgrades cover published baselines through
-v0.4.9. The seven Google, Microsoft and IMAP mailbox settings remain optional.
+- **R9a companies and customer CSV:** company records, domains, membership, reversible merge and mapped CSV preview, apply and undo with import-local fences.
+- **R10a reports, handle timers, problems and incidents:** permission-scoped team reports and scheduled CSV, adjustable handle timers with named lead stops, reviewed incident updates and delivery history.
+- **R12a escalations:** encrypted engineering connections, reciprocal issue links, selected attachment grants, idempotent webhook state, approved customer drafts and Slack handoff. Exports keep no provider credentials; human Send stays.
+- **Native signout and rer 0.2.74:** audited POST /auth/signout retires only the current session; the pinned installer retains existing deployment resources and private state.
+- **H1 homepage hero:** one drawing tells both moments, with Pay now clear of the offer card at narrow phone and desktop widths.
+- **H3 Ink rail app theme:** the accepted rail, form and identity styling reaches the installed application.
+- **Scanner fixture correction:** the synthetic Slack escalation token is assembled from parts with identical runtime bytes; every assertion and product behavior is retained.
+- **TRIAGE-001:** asynchronous intent, sentiment and language predictions, operator correction labels and explicitly approved intent routing; other rules act at admission and default placement never overrides a teammate.
 
-The queue recipe fix from v0.4.9, R5 workflows, the statement budget for the whole
-scheduled invocation and durable bulk continuations remain included. Upgrades
-from v0.4.7 still apply its seven missing v0.4.8 migrations,
-`150_workflow_journal.sql` through `156_ticket_batch_jobs.sql`, by name before
-the updated Worker starts. Preserve owners, imported history, permissions, files
-and erasure fences. Production deployment is separate from this release.
-See [RELEASE.json](RELEASE.json),
-[Updates and recovery](docs/INDEPENDENT-RELEASE.md) and [the changelog](CHANGELOG.md).
+**Migrations from v0.4.10 (also pending on v0.4.8):**
+
+- `192_companies.sql`
+- `193_customer_csv.sql`
+- `194_csv_run_fences.sql`
+- `195_restore_trigger_boundaries.sql`
+- `196_csv_touched_fences.sql`
+- `201_report_timers_schedules.sql`
+- `202_problem_incidents.sql`
+- `203_problem_delivery_history.sql`
+- `204_problem_preview_audit.sql`
+- `205_handle_timer_lead_stop.sql`
+- `220_ticket_triage.sql`
+- `230_escalations.sql`
+
+Update from v0.4.10, or any earlier line, to v0.4.11 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.74. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. Apply the following twelve migrations once, in listed order and by file name, through pinned rer before the updated Worker serves traffic: 192_companies.sql, 193_customer_csv.sql, 194_csv_run_fences.sql, 195_restore_trigger_boundaries.sql, 196_csv_touched_fences.sql, 201_report_timers_schedules.sql, 202_problem_incidents.sql, 203_problem_delivery_history.sql, 204_problem_preview_audit.sql, 205_handle_timer_lead_stop.sql, 220_ticket_triage.sql, 230_escalations.sql. An earlier installation also applies its other missing published migrations by name through pinned rer. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. No breaking change.
+
+See [RELEASE.json](RELEASE.json), [Updates and recovery](docs/INDEPENDENT-RELEASE.md) and [the changelog](CHANGELOG.md).
 
 Version 0.4.0 adds Move in for reviewed support-history imports, resolution
 feedback with workspace-calendar Reports, Connections with scoped API tokens,
@@ -129,11 +136,11 @@ own operating contract; this seed's CLI is not a platform admission requirement.
 
 ## Deploy to your own Cloudflare account
 
-For a new installation, acquire the latest tagged release, **`v0.4.10`**,
+For a new installation, acquire the latest tagged release **`v0.4.11`**,
 after installing `rer` as shown above:
 
 ```sh
-git clone --branch v0.4.10 https://github.com/just-every/run-happytohelp
+git clone --branch v0.4.11 https://github.com/just-every/run-happytohelp
 cd run-happytohelp
 ```
 

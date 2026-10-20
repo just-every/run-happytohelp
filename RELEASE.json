@@ -1,6 +1,6 @@
 {
-  "version": "0.4.10",
-  "previousVersion": "0.4.9",
+  "version": "0.4.11",
+  "previousVersion": "0.4.10",
   "date": "2026-10-20",
   "contractChanges": {},
   "proseChanges": [
@@ -8,27 +8,23 @@
       "document": "README.md",
       "change": "changed",
       "date": "2026-10-20",
-      "summary": "Describe the synthetic fixture credential fix, the ticket collaboration ARIA fix, the deterministic account-security journey and the migration-free patch upgrade.",
-      "was": "v0.4.9 contained a cron-backlog fixture credential refused by the hosted source scanner, and ticket collaboration carried a label without a role.",
-      "now": "v0.4.10 uses an explicitly synthetic fixture token, labels ticket collaboration as a group and starts test Workers without an implied inspector port; all assertions are retained.",
-      "ownerAction": "Back up, retain private settings and migration history; keep pinned rer 0.2.68. Production deployment remains separate."
+      "summary": "R9a companies and customer CSV; R10a reports, handle timers, problems and incidents; R12a escalations; native signout and rer 0.2.74; H1 homepage hero; H3 Ink rail app theme; TRIAGE-001; scanner fixture correction. No breaking change.",
+      "was": "v0.4.10 did not include these landed rounds and their twelve pending migrations.",
+      "now": "v0.4.11 includes R9a companies and customer CSV; R10a reports, handle timers, problems and incidents; R12a escalations; native signout and rer 0.2.74; H1 homepage hero; H3 Ink rail app theme; TRIAGE-001; scanner fixture correction.",
+      "ownerAction": "Update from v0.4.10, or any earlier line, to v0.4.11 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.74. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. Apply the following twelve migrations once, in listed order and by file name, through pinned rer before the updated Worker serves traffic: 192_companies.sql, 193_customer_csv.sql, 194_csv_run_fences.sql, 195_restore_trigger_boundaries.sql, 196_csv_touched_fences.sql, 201_report_timers_schedules.sql, 202_problem_incidents.sql, 203_problem_delivery_history.sql, 204_problem_preview_audit.sql, 205_handle_timer_lead_stop.sql, 220_ticket_triage.sql, 230_escalations.sql. An earlier installation also applies its other missing published migrations by name through pinned rer. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. No breaking change."
     },
     {
       "document": "CHANGELOG.md",
       "change": "changed",
       "date": "2026-10-20",
-      "summary": "Describe the synthetic fixture credential fix, the ticket collaboration ARIA fix, the deterministic account-security journey and the migration-free patch upgrade.",
-      "was": "v0.4.9 contained a cron-backlog fixture credential refused by the hosted source scanner, and ticket collaboration carried a label without a role.",
-      "now": "v0.4.10 uses an explicitly synthetic fixture token, labels ticket collaboration as a group and starts test Workers without an implied inspector port; all assertions are retained.",
-      "ownerAction": "Back up, retain private settings and migration history; keep pinned rer 0.2.68. Production deployment remains separate."
+      "summary": "R9a companies and customer CSV; R10a reports, handle timers, problems and incidents; R12a escalations; native signout and rer 0.2.74; H1 homepage hero; H3 Ink rail app theme; TRIAGE-001; scanner fixture correction. No breaking change.",
+      "was": "v0.4.10 did not include these landed rounds and their twelve pending migrations.",
+      "now": "v0.4.11 includes R9a companies and customer CSV; R10a reports, handle timers, problems and incidents; R12a escalations; native signout and rer 0.2.74; H1 homepage hero; H3 Ink rail app theme; TRIAGE-001; scanner fixture correction.",
+      "ownerAction": "Update from v0.4.10, or any earlier line, to v0.4.11 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.74. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. Apply the following twelve migrations once, in listed order and by file name, through pinned rer before the updated Worker serves traffic: 192_companies.sql, 193_customer_csv.sql, 194_csv_run_fences.sql, 195_restore_trigger_boundaries.sql, 196_csv_touched_fences.sql, 201_report_timers_schedules.sql, 202_problem_incidents.sql, 203_problem_delivery_history.sql, 204_problem_preview_audit.sql, 205_handle_timer_lead_stop.sql, 220_ticket_triage.sql, 230_escalations.sql. An earlier installation also applies its other missing published migrations by name through pinned rer. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. No breaking change."
     }
   ],
   "extensionPointChanges": [],
-  "migrations": [],
-  "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.9 to v0.4.10 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.68. This patch changes a test fixture credential, the ticket collaboration area's ARIA role, a test-runtime helper and release metadata. The v0.4.10 tag itself adds no migrations: a 95-row ledger updated to that tag plans nothing and refuses nothing. Source after v0.4.10 carries the pendingMigrations listed below, including 230_escalations.sql for engineering escalations. Apply every listed migration once, in its listed order and by name, through pinned rer before the updated Worker serves traffic. Never delete, reorder or edit ledger rows. Retain owners, imported support history, permissions, files and erasure fences. The seven mailbox settings remain optional and held secrets are inherited. Run rer deploy --dry-run against the retained installation before deployment. Upgrades from v0.4.7 still apply the seven missing v0.4.8 migrations by name. Retain human Send. Production deployment is separate.",
-  "publicReleaseNotes": "HappyToHelp v0.4.10 renames the cron-backlog test signing token and its matching inbound request to an explicitly synthetic value. RER's hosted credential scanner can accept the public source before agent dispatch. Ticket collaboration on a conversation is now a labelled group, so its label is valid ARIA in every state, and the account-security browser journey no longer fails by chance because test Workers open an inspector only on a port they are given. Every existing assertion is retained. No new migrations; rer stays at 0.2.68. Back up and retain settings and migration history without resetting. Production deployment is separate.",
-  "pendingMigrations": [
+  "migrations": [
     {
       "id": "192_companies.sql",
       "buyerSteps": "R9a company records, typed attributes, membership, domains and reversible merge history. Apply through pinned rer before the updated Worker serves traffic; retain existing records and private settings without resetting."
@@ -77,5 +73,9 @@
       "id": "230_escalations.sql",
       "buyerSteps": "Add workspace-encrypted engineering connections, reciprocal issue links, selected attachment grants, idempotent webhook state, approved customer drafts and Slack handoff history. Apply before the updated Worker serves traffic. Exports retain disconnected links and drafts without provider credentials or download grants; retain human Send and unconfirmed customer recovery."
     }
-  ]
+  ],
+  "breaking": false,
+  "agentUpdateInstructions": "Update from v0.4.10, or any earlier line, to v0.4.11 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.74. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. Apply the following twelve migrations once, in listed order and by file name, through pinned rer before the updated Worker serves traffic: 192_companies.sql, 193_customer_csv.sql, 194_csv_run_fences.sql, 195_restore_trigger_boundaries.sql, 196_csv_touched_fences.sql, 201_report_timers_schedules.sql, 202_problem_incidents.sql, 203_problem_delivery_history.sql, 204_problem_preview_audit.sql, 205_handle_timer_lead_stop.sql, 220_ticket_triage.sql, 230_escalations.sql. An earlier installation also applies its other missing published migrations by name through pinned rer. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. No breaking change.",
+  "publicReleaseNotes": "HappyToHelp v0.4.11 includes R9a companies and customer CSV; R10a reports, handle timers, problems and incidents; R12a escalations; native signout and rer 0.2.74; H1 homepage hero; H3 Ink rail app theme; TRIAGE-001; scanner fixture correction. No breaking change. Back up and retain existing data and private settings without resetting. Apply all twelve listed migrations through pinned rer before the updated Worker serves traffic; retain human Send.",
+  "pendingMigrations": []
 }

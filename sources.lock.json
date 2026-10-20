@@ -7393,7 +7393,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/collaboration/ConversationCollaboration.jsx": {
-      "sha256": "a5ef0ee908e409dfa401e763aeb4ff1a7a5197c43d0257f7e016a9dc4d1ca560",
+      "sha256": "73a7465fe8a20973d45644378c462b8ed1aff14a6d77d9cda9b06946a7039f59",
       "executable": false
     },
     "src/ui/dashboard/components/collaboration/mention-editor.js": {
@@ -10185,7 +10185,7 @@
       "executable": false
     },
     "tests/helpers/emitted-runtime.mjs": {
-      "sha256": "8b341e17b50975139cef5842d3d0056d019a0e6090d997f106e35837817ed672",
+      "sha256": "74bb92af31b83f8962186a60e122e72c735cde823fd2165cc5c15db934525f4b",
       "executable": false
     },
     "tests/helpers/first-run/activation-app.mjs": {

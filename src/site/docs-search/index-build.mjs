@@ -13,7 +13,7 @@ function parts(text) {
   // keep sentences together so a short task isn't diluted by an entire guide.
   for (const paragraph of text.split(/\n\n+/).filter(Boolean)) {
     let part = '';
-    const sentences = paragraph.match(/[^.!?]+(?:[.!?]+(?=\s|$)|$)/g) ?? [paragraph];
+    const sentences = paragraph.split(/(?<=[.!?])\s+/);
     for (const sentence of sentences) {
       if (part && part.length + sentence.length > 650) { chunks.push(part.trim()); part = ''; }
       if (sentence.length > 650) {

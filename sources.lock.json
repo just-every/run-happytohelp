@@ -7309,7 +7309,7 @@
       "executable": false
     },
     "src/site/docs-search/index-build.mjs": {
-      "sha256": "51e68f4f6bd134afb39b006f31f6fd22637b7c669ca6a0e05367fe03b3d93343",
+      "sha256": "44ebca88d3ae194c97348af2b240c3ee980d7d8dd132670aa13813895c67c852",
       "executable": false
     },
     "src/site/docs-search/retrieve.ts": {

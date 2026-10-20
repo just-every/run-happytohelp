@@ -563,8 +563,8 @@ Judged from the code and tests at commit `9a07af20eccf264eaa6fd019ccc65cf2003bc3
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 21 | 1 | 0 | 22 |
-| Target and push further | 14 | 26 | 12 | 52 |
-| All | 35 | 27 | 12 | 74 |
+| Target and push further | 15 | 25 | 12 | 52 |
+| All | 36 | 26 | 12 | 74 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -599,7 +599,7 @@ Judged from the code and tests at commit `9a07af20eccf264eaa6fd019ccc65cf2003bc3
 | `CHANNELS-002` | B2B shared-channel support | target | missing |  | `src/modules/api-integrations/dispatch.ts`; `tests/connections/slack.mjs`. Slack receives new-conversation notifications only, which this clause excludes; customer intake, bidirectional Slack Connect and Teams are absent. |
 | `VOICE-001` | Telephone service and unified voice agent | target | missing |  | No implementation located. No voice routing/agent or Aircall connector implementation located. |
 | `QUEUE-001` | Assignment rules and available teams | target | done | `src/modules/workflows/routing.ts`; `src/modules/workflows/routing-candidates.ts`; `src/ui/native/pages/workflows/RoutingSettings.jsx`; `tests/helpers/workflows/routing.mjs` |  |
-| `TRIAGE-001` | Intelligent triage | target | partial | `src/modules/triage/`; `src/modules/workflows/routing-triage.ts`; `tests/helpers/ai/triage.mjs` | Asynchronous configured-model classification, confidence and quoted evidence, native ticket fields, labeled accuracy, explicit routing approval, default queue, roles, audit and portable erasure custody. Local qualification is in progress; live model quality is not claimed. |
+| `TRIAGE-001` | Intelligent triage | target | done | `src/modules/triage/`; `src/modules/workflows/routing-triage.ts`; `tests/helpers/ai/triage.mjs`; `tests/helpers/ai/triage-browser.mjs`; `docs/triage.md` | Configured-model classification runs after admission, with confidence, exact quoted evidence and native ticket fields. Operator labels measure accuracy before explicit intent-routing approval; uncertain results stay in the default queue. Local API, dashboard, widget admission, erasure and rer archive journeys cover roles and custody. Live model quality is not claimed. |
 | `QUEUE-002` | Structured and bulk queue work | target | partial | `src/modules/tickets`; `src/modules/management/tags.ts`; `src/modules/management/dashboard.ts`; `tests/journeys/inbox.mjs` | Ticket fields, priorities, saved filters/sorts and previewed per-record bulk changes exist; applying macros and using form-submitted fields remain for later rounds. |
 | `QUEUE-003` | Collaboration without conflicting replies | target | done | `src/modules/collaboration`; `src/modules/conversations/socket.ts`; `src/modules/tickets`; `src/ui/dashboard/components/collaboration`; `tests/journeys/inbox.mjs`; `tests/journeys/first-run.mjs` |  |
 | `MACRO-001` | Action macros with placeholders | target | done | `src/modules/macros`; `src/ui/native/pages/macros`; `src/ui/dashboard/components/macros`; `tests/helpers/r4/macros.mjs`; `tests/journeys/inbox.mjs` |  |

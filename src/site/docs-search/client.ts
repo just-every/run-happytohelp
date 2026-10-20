@@ -81,12 +81,13 @@ function mount(root: HTMLElement): () => void {
       const snippet = document.createElement('span');
       snippet.className = 'docs-search-result-snippet';
       snippet.textContent = result.snippet;
-      link.append(title, snippet);
-      item.append(link);
-      fragment.append(item);
+      link.appendChild(title);
+      link.appendChild(snippet);
+      item.appendChild(link);
+      fragment.appendChild(item);
       return link;
     });
-    list!.append(fragment);
+    list!.appendChild(fragment);
     list!.hidden = !links.length;
   }
   function search() {

@@ -47,7 +47,7 @@ function attachmentFailure(file:ApiFile,reason:string){
 function markdownLabel(value:string){return value.replace(/[\u0000-\u001f\u007f]/g,' ').replace(/[\\`*_[\]<>!&]/g,char=>`&#${char.charCodeAt(0)};`)}
 
 function enrichAttachments(run:Run,record:SourceRecord,source:SourceBundle,value:NativeValue,files:ApiFile[],omissions:string[]){
- const conversation=value.tables.conversations[0],messages=new Set((value.tables.messages??[]).map(row=>row.id)),notes=new Map((value.tables.move_in_notes??[]).map(row=>[row.id,row])),imported=new Map<string,ApiFile[]>(),media=value.tables.media??[]
+ const conversation=value.tables.conversations[0],messages=new Map((value.tables.messages??[]).map(row=>[row.id,row])),notes=new Map((value.tables.move_in_notes??[]).map(row=>[row.id,row])),imported=new Map<string,ApiFile[]>(),media=value.tables.media??[]
  for(const file of files){
   const messageId=nativeId(run.project_id,run.vendor,'message',`${record.sourceId}:${file.part_id}`),note=notes.get(messageId)
   let failure:string|null=null
@@ -58,7 +58,7 @@ function enrichAttachments(run:Run,record:SourceRecord,source:SourceBundle,value
   else if(!file.filename.trim()||!file.content_type.trim())failure='the source filename or content type is missing'
   if(failure){omissions.push(attachmentFailure(file,failure));continue}
   const id=nativeId(run.project_id,run.vendor,'media',`${record.sourceId}:${file.part_id}:${file.source_id}`)
-  if(!media.some(row=>row.id===id))media.push({id,project_id:run.project_id,conversation_id:conversation.id,uploaded_by:run.actor_id,object_key:file.object_key,filename:file.filename,content_type:file.content_type,size:file.size,message_id:file.private?null:messageId,created_at:conversation.created_at})
+  if(!media.some(row=>row.id===id))media.push({id,project_id:run.project_id,conversation_id:conversation.id,uploaded_by:run.actor_id,object_key:file.object_key,filename:file.filename,content_type:file.content_type,size:file.size,message_id:file.private?null:messageId,created_at:(note??messages.get(messageId))!.created_at})
   if(file.private&&note){
    const url=`/api/conversations/${encodeURIComponent(conversation.id)}/media/${encodeURIComponent(id)}`
    const link=`[${markdownLabel(file.filename)}](${url})`

@@ -25,6 +25,6 @@ export async function startApiRun(env:Env,row:Connection,actor:Pick<Run,'actor_i
 export async function apiDetails(env:Env,run:Run){
  const api=await apiRun(env,run.id);if(!api)return undefined
  const conn=await connection(env,api.connection_id),agents=(await env.DB.prepare('SELECT source_id id,name,email,deleted,member_id memberId FROM move_in_api_agents WHERE run_id=? ORDER BY deleted,name,source_id').bind(run.id).all<any>()).results,members=(await env.DB.prepare('SELECT u.id,u.name,u.email FROM memberships m JOIN users u ON u.id=m.user_id WHERE m.project_id=? ORDER BY u.name').bind(run.project_id).all<any>()).results,failures=(await env.DB.prepare('SELECT ticket_id ticketId,filename,error FROM move_in_api_files WHERE run_id=? AND error IS NOT NULL ORDER BY ticket_id,filename').bind(run.id).all<any>()).results
- const needsReconnect=!await env.DB.prepare('SELECT 1 FROM move_in_credentials WHERE connection_id=?').bind(api.connection_id).first()
+ const needsReconnect=!await env.DB.prepare('SELECT 1 FROM move_in_credentials WHERE connection_id=?').bind(api.connection_id).first()||/rejected this token|denied access|docs_api_key_required/.test(run.error??'')
  return {connectionId:api.connection_id,mode:api.mode,checkpoint:JSON.parse(run.files_json).length,needsReconnect,counts:JSON.parse(api.counts_json),agents,members,attachmentFailures:failures,cutover:!!(api.cutover_at||conn?.cutover_at),channels:await cutoverChannels(env,run)}
 }

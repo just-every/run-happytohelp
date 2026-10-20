@@ -37,6 +37,12 @@ export async function fenceImportErasure(env:Env,projectId:string,contactId:stri
   env.DB.prepare(`INSERT OR IGNORE INTO move_in_erasure_runs(project_id,contact_id,run_id,job_id)
    SELECT ?1,?2,r.id,r.kit_job_id FROM move_in_runs r WHERE r.project_id=?1 AND r.state<>'erased' AND
    ((r.identity_complete=0 AND r.id NOT IN (SELECT value FROM json_each(?3))) OR EXISTS(SELECT 1 FROM move_in_identity_links x JOIN move_in_erased_identities e ON e.project_id=x.project_id AND e.digest=x.digest WHERE x.run_id=r.id AND x.project_id=?1))`).bind(projectId,contactId,JSON.stringify(cleared)),
+  // A delta can contain no new source records and still inherit confidential
+  // agent mappings from an affected import. Fence that derived lineage too.
+  env.DB.prepare(`INSERT OR IGNORE INTO move_in_erasure_runs(project_id,contact_id,run_id,job_id)
+   SELECT ?1,?2,r.id,r.kit_job_id FROM move_in_runs r JOIN move_in_api_runs a ON a.run_id=r.id
+   WHERE r.project_id=?1 AND r.state<>'erased' AND a.connection_id IN
+   (SELECT parent.connection_id FROM move_in_api_runs parent JOIN move_in_erasure_runs affected ON affected.run_id=parent.run_id WHERE affected.project_id=?1 AND affected.contact_id=?2)`).bind(projectId,contactId),
   // Reused decisions retain an owner-job FK. Fence their complete import groups
   // before deleting an erased owner's journal, including transitive reuse.
   env.DB.prepare(`WITH RECURSIVE affected(id) AS (

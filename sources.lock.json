@@ -11313,7 +11313,7 @@
       "executable": false
     },
     "tests/homepage-browser.mjs": {
-      "sha256": "44b7a0d2751e4d78273ab5eb73c996c4ca793e1b1cdb514f624376b2e8824047",
+      "sha256": "00077b1dbd4d8961fc164651dfb9b0f1fa4326e84fe8344fc1268df6f2528184",
       "executable": false
     },
     "tests/journeys/ai-browser.mjs": {

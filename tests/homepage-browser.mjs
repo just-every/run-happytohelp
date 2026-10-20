@@ -47,7 +47,7 @@ try {
   await page.getByRole('heading', { level: 1, name: 'Knows what your customer needs before they do.', exact: true }).waitFor();
   assert.equal(await page.locator('h1').count(), 1);
   assert.equal(await page.locator('.hero-sub').innerText(), 'Some customers who get stuck never write in. They just leave.');
-  assert.equal((await page.locator('.hero-free').innerText()).replace(/\u00a0/g, ' '), '100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk');
+  assert.equal((await page.locator('.hero-free').innerText()).replace(/\s+/g, ' '), '100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk');
   assert.deepEqual(await page.locator('.hero-free strong').allInnerTexts(), ['Zendesk', 'Intercom', 'Help\u00a0Scout', 'Freshdesk'], 'the four company names are strong elements and Help Scout does not break');
   assert.deepEqual(await page.locator('.hero-free').evaluate(el => [getComputedStyle(el).fontWeight, ...[...el.querySelectorAll('strong')].map(s => getComputedStyle(s).fontWeight)]), ['400', '600', '600', '600', '600'], 'the names are bold and the lead-in is not');
   assert.equal(await page.locator('.hero-examples').count(), 0, 'the examples strip is removed');

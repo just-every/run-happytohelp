@@ -20,6 +20,7 @@ export async function consumeTriage(job:Job,env:Env){
   const guarded=`EXISTS(SELECT 1 FROM triage_jobs WHERE id=? AND state='running' AND ${currentJob})`
   const result=await env.DB.batch([
    env.DB.prepare(`INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,source,target_type,target_id,detail_json) SELECT ?,?,?,'data','triage.classified','succeeded','system','system','conversation',?,'{}' WHERE ${guarded}`).bind(receipt,row.project_id,now,row.conversation_id,row.id),
+   env.DB.prepare(`UPDATE conversations SET ticket_source='system',ticket_actor_type='system',ticket_actor_id='triage' WHERE id=? AND ${ok}`).bind(row.conversation_id,receipt),
    env.DB.prepare(`UPDATE triage_jobs SET state='complete',reason=NULL,predictions_json=?,updated_at=? WHERE id=? AND ${ok}`).bind(JSON.stringify(predictions),now,row.id,receipt),
    ...dimensions.flatMap(field=>[{id:`triage_${field}`,value:predictions[field].value},{id:`triage_${field}_confidence`,value:predictions[field].confidence},{id:`triage_${field}_quote`,value:predictions[field].quote}]).map(f=>env.DB.prepare(`INSERT INTO ticket_field_values(project_id,conversation_id,field_id,value_json) SELECT ?,?,?,? WHERE ${ok} AND EXISTS(SELECT 1 FROM ticket_fields WHERE project_id=? AND id=?) ON CONFLICT(project_id,conversation_id,field_id) DO UPDATE SET value_json=excluded.value_json`).bind(row.project_id,row.conversation_id,f.id,JSON.stringify(f.value),receipt,row.project_id,f.id)),
   ])

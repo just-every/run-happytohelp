@@ -23,17 +23,17 @@ function vectors(text) {
 
 test('a reader searches the built docs and opens a linked heading through the site Worker', { timeout: 120000 }, async () => {
   const require = createRequire(import.meta.resolve('wrangler'));
-  const { Miniflare } = await import(require.resolve('miniflare'));
+  const { Miniflare, convertV4MiniflareOptions } = await import(require.resolve('miniflare'));
   const output = '.rer/docs-search-test';
   await rm(output, { recursive: true, force: true });
   execFileSync('pnpm', ['exec', 'rer', 'build', '--site', '--no-queue'], { stdio: 'pipe', env: { ...process.env, CI: 'true' } });
   await buildSearchArtifacts({ corpus: '.rer/docs-search/corpus.json', assets: '.rer/site', output }, { embed: async (_model, { text }) => vectors(text) });
-  const mf = new Miniflare({ workers: [
+  const mf = new Miniflare(convertV4MiniflareOptions({ workers: [
     { name: 'site', modules: true, scriptPath: resolve(output, 'worker.mjs'), compatibilityDate: '2026-10-20',
       assets: { directory: resolve('.rer/site'), binding: 'ASSETS', run_worker_first: true, assetConfig: { html_handling: 'auto-trailing-slash', not_found_handling: '404-page' } },
       serviceBindings: { AI: 'inference' } },
     { name: 'inference', modules: true, compatibilityDate: '2026-10-20', script: `import {WorkerEntrypoint} from 'cloudflare:workers';const vectors=${vectors.toString()};export default class extends WorkerEntrypoint {async run(_model,{text}){return vectors(text)}}` },
-  ] });
+  ] }));
   let browser;
   try {
     const origin = (await mf.ready).origin;

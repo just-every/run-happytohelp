@@ -78,4 +78,4 @@ for(const [name,viewport] of Object.entries(viewports))test(`magic sign-in in a 
  })
 })
 
-test('account security in a 1440 and 390px browser: an authenticator app and a passkey, two-factor sign-in, the step-up dialog on an export, Settings → Security, Security log and Roles, and a collaborator\'s notes-only conversation',{timeout:10*60_000},async()=>{await securityBrowserJourney(browser);await emailStepUpBrowserJourney(browser)})
+test('account security in a 1440 and 390px browser: an authenticator app and a passkey, two-factor sign-in, the step-up dialog on an export, Settings → Security, Security log and Roles, a collaborator\'s notes-only conversation, and scoped native sign-out',{timeout:10*60_000},async()=>{await securityBrowserJourney(browser);await emailStepUpBrowserJourney(browser)})

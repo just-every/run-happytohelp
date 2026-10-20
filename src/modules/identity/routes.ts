@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import type { AppEnv } from '../../platform/env'
-import { hashToken,requireActor,requireProject } from '../../platform/auth'
+import { requireActor,requireProject } from '../../platform/auth'
+import { endSession } from './signout'
 import { accounts } from './accounts'
 import { recovery } from './recovery'
 import { widget } from './widget'
@@ -28,7 +29,7 @@ routes.route('/',twoFactor)
 routes.route('/',emailStepUp)
 routes.route('/',ownerRecovery)
 routes.get('/session',async c=>{const {security,...actor}=await requireActor(c),twoFactor=security?pendingFactor(security):null;return c.json(twoFactor?{...actor,twoFactor}:actor)})
-routes.delete('/session',async c=>{await requireActor(c);const token=c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/h2h_session=([^;]+)/)?.[1];await c.env.DB.prepare('UPDATE sessions SET revoked_at=? WHERE token_hash=?').bind(Date.now(),await hashToken(token!)).run();return c.json({revoked:true})})
+routes.delete('/session',async c=>{await endSession(c);return c.json({revoked:true})})
 routes.get('/projects/:projectId',async c=>{await requireProject(c,c.req.param('projectId'),true);return c.json(await c.env.DB.prepare('SELECT id,name,widget_key,allowed_origin,created_at FROM projects WHERE id=?').bind(c.req.param('projectId')).first())})
 
 routes.get('/editor-config',async c=>{

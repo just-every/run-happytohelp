@@ -16,12 +16,12 @@ const axe=await readFile(resolve('node_modules/axe-core/axe.min.js'),'utf8')
 /**
  * The account-security screens in a real browser: an authenticator app and a passkey
  * (a virtual WebAuthn authenticator) on the profile, the two-factor sign-in page, the
- * step-up dialog on an export, Settings → Security, Security log and Roles, and a
- * collaborator's notes-only conversation. Every screen is axe-checked for serious
- * findings and horizontal overflow, and photographed at 1440 and 390.
+ * step-up dialog on an export, Settings → Security, Security log and Roles, a
+ * collaborator's notes-only conversation, and native session sign-out. Every screen
+ * is axe-checked for serious findings and horizontal overflow, and photographed at 1440 and 390.
  */
 export async function securityBrowserJourney(browser){
- const shot=await evidence('account-security'),errors=[],records=[]
+ const shot=await evidence('account-security'),errors=[],records=[],signouts=[]
  const runtime=await createRuntime({vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}})
  let passed=false,current
  try{
@@ -59,7 +59,7 @@ export async function securityBrowserJourney(browser){
   await owner.getByRole('cell',{name:/Passkey or security key/}).waitFor();await inspect(owner,'profile-security-on-1440')
 
   // Signing in again stops at the second step; the passkey finishes it.
-  await owner.evaluate(()=>fetch('/api/identity/session',{method:'DELETE'}));await owner.goto(origin+'/login')
+  assert.equal(await owner.evaluate(async()=>(await fetch('/auth/signout',{method:'POST'})).status),204);await owner.goto(origin+'/login')
   await owner.getByLabel('Email').fill('casey@lantern.test');await owner.getByLabel('Password').fill(password);await owner.getByRole('button',{name:'Login'}).click()
   await owner.waitForURL(url=>url.pathname==='/two-factor');await owner.getByRole('heading',{name:'Check it’s you'}).waitFor();await inspect(owner,'two-factor-verify-1440')
   await owner.getByRole('button',{name:'Use a passkey or security key'}).click();await owner.waitForURL(url=>url.pathname.startsWith(P))
@@ -108,8 +108,58 @@ export async function securityBrowserJourney(browser){
   await phone.getByLabel('Email').fill('casey@lantern.test');await phone.getByLabel('Password').fill(password);await phone.getByRole('button',{name:'Login'}).click()
   await phone.getByRole('heading',{name:'Check it’s you'}).waitFor();await inspect(phone,'two-factor-verify-390')
   await phone.goto(origin+'/owner-recovery');await phone.getByRole('heading',{name:'Recover owner access'}).waitFor();await inspect(phone,'owner-recovery-390')
+
+  // Each browser signs out only its own native session. The owner's other browser
+  // and a different account stay signed in, including after refused CSRF/replay requests.
+  const sessionPath=origin+'/api/identity/session',signoutPath=origin+'/auth/signout',auditPath=origin+`/api/management${P}/audit?limit=200`
+  const ownerCookie=(await owner.context().cookies(origin)).find(cookie=>cookie.name==='h2h_session');assert.ok(ownerCookie)
+  const ownerActor=await (await owner.context().request.get(sessionPath)).json(),collaboratorActor=await (await collaborator.context().request.get(sessionPath)).json()
+  const auditRows=async()=>{const response=await owner.context().request.get(auditPath);assert.equal(response.status(),200);return (await response.json()).data}
+  const auditIds=rows=>rows.map(row=>row.id).sort()
+  const retainedSessions=async()=>{
+   for(const [page,actor] of [[owner,ownerActor],[collaborator,collaboratorActor]]){
+    const response=await page.context().request.get(sessionPath);assert.equal(response.status(),200,'other sessions remain valid');assert.equal((await response.json()).id,actor.id)
+   }
+  }
+  for(const viewport of [viewports.desktop,viewports.mobile]){
+   const signedIn=await open(viewport,ownerCookie.value),context=signedIn.context(),anonymous=await browser.newContext({viewport})
+   try{
+    await signedIn.goto(origin+P+'/security-log');await signedIn.getByRole('heading',{name:'Activity'}).waitFor()
+    const switched=await signedIn.evaluate(async projectId=>{const response=await fetch('/api/identity/switch-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId})});return response.status},projectId)
+    assert.equal(switched,200)
+    const cookie=(await context.cookies(origin)).find(item=>item.name==='h2h_session');assert.ok(cookie);assert.notEqual(cookie.value,ownerCookie.value,'a distinct native session signs out')
+    const before=await auditRows()
+    for(const headers of [{Origin:'https://untrusted.example'},{}]){
+     const refused=await context.request.post(signoutPath,{headers,maxRedirects:0});assert.equal(refused.status(),403,'sign-out requires the application Origin');assert.equal(refused.headers()['set-cookie'],undefined)
+     assert.equal((await context.cookies(origin)).find(item=>item.name==='h2h_session')?.value,cookie.value,'a refused request does not clear the cookie')
+     assert.equal((await context.request.get(sessionPath)).status(),200,'a refused request does not revoke the session')
+    }
+    const unauthenticated=await anonymous.request.post(signoutPath,{headers:{Origin:origin},maxRedirects:0});assert.equal(unauthenticated.status(),401);assert.equal(unauthenticated.headers()['set-cookie'],undefined)
+    assert.deepEqual(auditIds(await auditRows()),auditIds(before),'refused sign-outs write no audit events');await retainedSessions()
+
+    await signedIn.getByRole('button',{name:'Account menu',exact:true}).click();await inspect(signedIn,`signout-menu-${viewport.width}`)
+    const response=signedIn.waitForResponse(result=>result.url()===signoutPath&&result.request().method()==='POST')
+    await signedIn.getByRole('button',{name:'Sign out',exact:true}).click()
+    const signedOut=await response;assert.equal(signedOut.status(),204);assert.equal(await signedOut.text(),'')
+    assert.match((await signedOut.allHeaders())['set-cookie'],/h2h_session=;.*Max-Age=0/i)
+    await signedIn.waitForURL(url=>url.pathname==='/login');await signedIn.getByRole('button',{name:'Login',exact:true}).waitFor()
+    assert.equal((await context.cookies(origin)).some(item=>item.name==='h2h_session'),false,'the browser removes the session cookie')
+    assert.equal((await context.request.get(sessionPath)).status(),401,'the signed-out browser loses private access')
+    assert.equal((await anonymous.request.get(sessionPath,{headers:{Cookie:'h2h_session='+cookie.value}})).status(),401,'replaying the old cookie loses private access')
+    const after=await auditRows(),events=after.filter(row=>!before.some(previous=>previous.id===row.id))
+    assert.equal(events.length,1,'one successful sign-out records one event');assert.equal(events[0].category,'auth');assert.equal(events[0].action,'session.signed_out');assert.equal(events[0].outcome,'succeeded');assert.equal(events[0].actor_id,ownerActor.id)
+    const replay=await anonymous.request.post(signoutPath,{headers:{Origin:origin,Cookie:'h2h_session='+cookie.value},maxRedirects:0});assert.equal(replay.status(),401);assert.equal(replay.headers()['set-cookie'],undefined)
+    assert.deepEqual(auditIds(await auditRows()),auditIds(after),'replaying sign-out adds no audit event');await retainedSessions()
+    await inspect(signedIn,`signed-out-${viewport.width}`)
+    await signedIn.goto(origin+P+'/security-log');await signedIn.waitForURL(url=>url.pathname==='/login');assert.equal((await context.request.get(sessionPath)).status(),401,'a private page cannot restore the signed-out session')
+    await owner.setViewportSize(viewport);await owner.goto(origin+P+'/security-log');await owner.getByRole('heading',{name:'Activity'}).waitFor()
+    const visibleSignouts=owner.getByRole('row').filter({hasText:/signed out/i}).filter({hasText:'Casey Owner'}).filter({hasText:'succeeded'}),expectedSignouts=after.filter(row=>row.action==='session.signed_out'&&row.actor_id===ownerActor.id).length
+    await visibleSignouts.nth(expectedSignouts-1).waitFor();assert.equal(await visibleSignouts.count(),expectedSignouts,'the Security log includes the new sign-out');await inspect(owner,`signout-security-log-${viewport.width}`)
+    signouts.push({width:viewport.width,status:204,cookieCleared:true,oldCookieRefused:true,otherSessionsValid:true,refusalsHaveNoEffects:true,auditAction:events[0].action})
+   }finally{await context.close();await anonymous.close()}
+  }
   assert.deepEqual(errors,[],'no page or console errors')
-  await writeFile(shot('proof.json'),JSON.stringify({screens:records},null,2))
+  await writeFile(shot('proof.json'),JSON.stringify({screens:records,signouts},null,2))
   passed=true
  }catch(error){await current?.screenshot({path:shot('failure.png'),fullPage:true}).catch(()=>{});throw error}
  finally{await runtime.close(passed)}

@@ -7,6 +7,7 @@ import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from './platform/env'
 import { projectCors } from './platform/cors'
 import { ownerClaim } from './modules/identity/owner-claim'
+import { signout } from './modules/identity/signout'
 import { demoOwnerClaim } from './demo/owner-claim'
 import { routes as identity } from './modules/identity/routes'
 import { visitorProfileCredential } from './modules/identity/widget-profile'
@@ -67,6 +68,7 @@ app.route('/api/delegation/v1',delegation)
 app.route('/api/delegation',nativeDelegation)
 app.route('/delegation',consent)
 app.route('/auth',ownerClaim)
+app.route('/auth',signout)
 app.route('/auth',demoOwnerClaim)
 app.route('/api/identity',identity)
 // A default assistant answers new conversations only once its provider key is installed.

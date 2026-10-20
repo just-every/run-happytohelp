@@ -1,5 +1,17 @@
 # Import kit contract v1
 
+For records move-in, start at the seed's signed-in owner import screen:
+
+```text
+/app/import
+```
+
+Upload a supported source export, review its plan, approve that fingerprint,
+apply, reconcile and undo through the shared door. Follow
+[src/door/ADOPTING.md](src/door/ADOPTING.md) for integration; the engine APIs
+below implement that door rather than a second product importer. Installation
+archive backup/restore is a separate recovery mechanism.
+
 This is an inert data import engine. It cannot send, enqueue or activate access.
 The default adapter retains JSON rows and attachment originals in durable SQLite;
 native integrations supply a synchronous TargetAdapter on the SAME database and
@@ -77,11 +89,13 @@ plans or the durable job; secret-bearing keys and credential URLs in persisted
 metadata are rejected rather than retained.
 
 
-## Optional D1 import door
+## Shared D1 import door with optional grant authority
 
 `src/door/index.ts` exports `createImportDoorHandler(options)`, returning an
 async `(request: Request) => Promise<Response | null>` handler for POST
-`/api/rer/import/{uploads,plan,apply,status,reconcile,undo}`. A seed must mount it
+`/api/rer/import/{uploads,plan,apply,status,reconcile,undo,archive,restore-check}`
+(the last two grant-only: an archive of a tool's final export and its
+no-write test restore). A seed must mount it
 explicitly, retain its own product parser and D1 target adapter, and apply
 `importDoorSchema` as a new numbered migration after the D1 schemas. No seed is
 mounted by this module. The door is disabled by default and answers 404 until
@@ -104,7 +118,25 @@ write. Settings contain `enabled` and optional `revokedKids`; revoked key ids
 remain revoked permanently, so rotation uses a new id. These controls are not
 public door routes. `readImportDoorHistory(database, installationId,
 ownerPredicate)` joins approval metadata to the real kit jobs, with the caption
-"approved via Business by <owner> at <time>, fingerprint <x>". Configure
+"approved via Business by <owner> at <time>, fingerprint <x>". Failed target
+applies end the job as `failed`, with an allowlisted reason in `job.error`:
+`import_door_apply_constraint` (409), `import_door_apply_transient` (503), or
+`import_door_apply_failed` (409). Status/history include a durable `failureCode`
+and caption the approval as "approved, then failed". The failed atomic batch
+leaves no native effects. Its approval and consumed nonce remain audit facts;
+the failed plan and its approval cannot authorise a retry. Replan the retained
+upload for a fresh fingerprint and owner approval; roll back earlier committed
+batches first. Existing adopters apply the door migrations once each, in order, each in a
+new numbered migration: `importDoorApplyFailureMigration` as one atomic batch,
+then `importDoorScopesMigration`, then `importDoorArchiveMigration`; they never
+re-apply `importDoorSchema`. Fresh
+adopters use `importDoorSchema`, whose first statement refuses the older door
+schema so a wrong upgrade fails at deploy. An enabled door on an outdated schema
+(old per-bundle uniqueness, no failure table or no scope table) answers 503
+`import_door_schema_outdated`; without the archive tables only `archive` and
+`restore-check` answer it. Retryable D1 errors
+(storage resets, code updates, lost connections, overload, timeouts) and SQLite
+busy/locked classify as `import_door_apply_transient`. Configure
 `ownerPrincipalId` as the seed owner's actual principal, and use that same
 principal in its ordinary history and undo context. The door does not rebind
 existing operator jobs or weaken their authority predicates.
@@ -116,8 +148,11 @@ changed records replace only rows the import created, fenced by their original
 provenance revision and native values. Missing source records are listed, never
 deleted. One plan remains pending per logical namespace until applied or undone;
 kit job state recovers the lineage after interrupted calls. The same bundle
-reuses its exact retained plan; changing mapping requires a fresh explicit
-namespace and review. Undo proceeds newest first and preserves native edits.
+reuses its exact retained plan unless its apply failed or its import was undone
+or rolled back; a catch-up never reuses an applied plan, so an unchanged source
+plans a catch-up with no changes against the head. Changing mapping requires a
+fresh explicit namespace and review.
+Undo proceeds newest first and preserves native edits.
 
 Bounded catch-up requires a nonempty prior snapshot and a standing owner approval
 record and time. It refuses gone, conflicting, rejected or unmapped records and
@@ -216,10 +251,53 @@ append-only (no update, delete or insert over an existing key). A batch that
 rewrites or retires custody carries the product's restore checkpoint, so an
 archive older than the erasure is refused whole under the later journal.
 
-Credential-key validation permits a JSON boolean under the exact key `secret`,
-a common noncredential visibility flag. Every nonboolean value under that key,
-other credential keys and credential-bearing URLs remain forbidden, including in
-raw file/API originals excluded by a parser. Accepted originals remain exact.
+Credential keys are names whose whole parts are a credential word or phrase
+(see `README.md`, "Credential names"): the name is split at camelCase, `_`, `-`,
+`.`, spaces and digits. Refuse mode takes the whole name, after an optional
+header `x-`, as the phrase: `token`, `access_token`, `refresh_token`,
+`authorization`, `cookie`, `password`, `api_key`/`apiKey`, `secret`, `bearer`,
+`X-Auth`, `X-Auth-Token`, `httpPassword`, `client_secret`, `private_key`,
+any name with `secret`, `subscription` or `functions` before `key`
+(`secret_key`, `x-functions-key`, `Ocp-Apim-Subscription-Key`), `pwd`,
+`passphrase`, `jwt`, `JSESSIONID` and `PHPSESSID`, and
+their plurals holding text (`tokens: [...]`, `apiKeys: [...]`), under an object
+key or as the name of a `[name, value]` pair in a list of them. `sessionId` and
+`sig`/`signature` are credential keys only as HTTP header names (a
+`[name, value]` pair, a key under `headers`, a `{name|key, value}` pair in a
+header list) and URL keys, never as record fields; a `{name|key, value}` pair
+elsewhere (Help Scout's `customFields`) labels a field. `auth` and
+`credentials` count only when their value is text naming no scheme or mode (not
+`include` or `oauth2`), or a list with such a member; an object under them is
+checked field by field, and directly under them a `value`, `pass`, `pw` or
+`secret…` member (Keycloak's `credentials: [{type: 'password', value}]`,
+`secretData`, nodemailer's `{user, pass}`) is a credential too. A URL query or fragment key is a
+credential when it ends in such a phrase, or is a bare `key`, ends in
+`sig`/`signature` (`X-Amz-Signature`), has `application`, `user`, `account`,
+`deploy` or `shared` before `key`, or `token`, `basic`, `http`, `proxy` or
+`api` before `auth`, or is one part ending in `apikey`, `accesstoken` or
+`authtoken` (`hapikey`). Names merely containing such letters
+(`keyword`, `monkey`, `author`, `signal`, `design`, `tokenizer`, `primaryKey`,
+`sortKey`) are not credential keys, and neither is a longer name such as the
+pagination cursor `next_page_token`.
+Credential-key validation permits a JSON boolean (a common noncredential
+visibility flag such as `secret: true`), and null, an empty string or a mask
+(`****`, `[redacted]`, `[removed]` and similar) under any credential key: they sit
+where a credential would go but are not one. Every other value under a credential
+key and credential-bearing URLs remain forbidden, including in raw file/API
+originals excluded by a parser. Accepted originals remain exact.
+
+`readFileSource` with `credentials: 'remove'` (the import door's choice) keeps a
+record holding a plain credential value instead. It casts a wider net than the
+refusal above: it drops any field whose name's parts end in a credential word or
+phrase (`httpPassword`, `client_secret`, `X-Api-Key`, `pushToken`) or its plural holding text
+(`apiKeys: [...]`), the `value` of a `{name|key, value}` pair naming one or of
+such a `[name, value]` pair in a list of them, and a URL's (any scheme's) user name, password and
+credential query and fragment parameters, keeping booleans. It reports each
+per record as a `CREDENTIAL_REMOVED` warning diagnostic (field pointer and kind,
+never the value), and withholds the file's original bytes as
+`{ status: 'unavailable', reason: 'credentials-removed' }`. A record that still
+repeats a removed value, or a credential in a form it cannot remove (encoded or
+nested in a query value), still fails.
 
 Public D1 planning is SELECT-only and checks the current SQL `plan` grant before
 mapping and before returning. A different `read` grant cannot substitute for it.

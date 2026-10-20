@@ -1,7 +1,7 @@
 {
   "id": "happytohelp",
   "name": "HappyToHelp",
-  "version": "0.4.9",
+  "version": "0.4.10",
   "license": "MIT",
   "repository": "https://github.com/just-every/run-happytohelp",
   "maturity": "Owner-installable MIT source release. Local verification and hosted, real-provider and accessibility acceptance are separate; see ACCEPTANCE.md.",

@@ -65,7 +65,7 @@ export async function schedulesFlow(f){
 // data; delivery, schedule admission, retention settings and cron use public doors.
 export async function cronBacklogFlow(m){
  const {app,mail}=m,w=await app.seedWorkspace('cron-backlog'),P=w.projectId,now=Date.now(),day=86400000
- await app.configure({INBOUND_EMAIL_TOKEN:'cron-backlog-fixture-signing-token'})
+ await app.configure({INBOUND_EMAIL_TOKEN:'synthetic-cron-backlog-signing-token'})
  await app.db.prepare("INSERT INTO email_settings VALUES(?,'Support','sender@example.com','backlog-inbound@example.com',1,1)").bind(P).run()
  const seed=async(id,count=1)=>{
   const statements=[app.db.prepare("INSERT INTO contacts(id,project_id,name,email,is_verified,metadata_json,created_at) VALUES(?,?,?, ?,1,'{}',?)").bind('ct-'+id,P,'Customer '+id,id+'@example.com',now-3600000),
@@ -80,7 +80,7 @@ export async function cronBacklogFlow(m){
  for(let i=0;i<60;i++)await seed('backlog-reply-'+i)
  await app.ok(`/api/outcomes/projects/${P}/settings`,{token:w.tokens.owner,method:'PUT',body:{enabled:true,scale:'five',delayMinutes:1,expiresDays:14,locale:'en'}})
  for(let i=0;i<60;i++){
-  const incoming=await app.ok('/api/integrations/email/inbound',{headers:{Authorization:'Bearer cron-backlog-fixture-signing-token'},body:{messageId:`backlog-survey-${i}@example.com`,to:'backlog-inbound@example.com',from:`survey-buyer-${i}@example.com`,subject:'Replacement order',text:'Where is my replacement?'}}),id=incoming.conversationId||incoming.conversation_id
+  const incoming=await app.ok('/api/integrations/email/inbound',{headers:{Authorization:'Bearer synthetic-cron-backlog-signing-token'},body:{messageId:`backlog-survey-${i}@example.com`,to:'backlog-inbound@example.com',from:`survey-buyer-${i}@example.com`,subject:'Replacement order',text:'Where is my replacement?'}}),id=incoming.conversationId||incoming.conversation_id
   await app.ok(`/api/dashboard/projects/${P}/conversations/${id}`,{token:w.tokens.owner,method:'PUT',body:{resolved:true}})
  }
  // Settle ordinary creation events before freezing the scheduled reply frontiers.

@@ -1,6 +1,6 @@
 {
-  "version": "0.4.9",
-  "previousVersion": "0.4.8",
+  "version": "0.4.10",
+  "previousVersion": "0.4.9",
   "date": "2026-10-20",
   "contractChanges": {},
   "proseChanges": [
@@ -8,26 +8,26 @@
       "document": "README.md",
       "change": "changed",
       "date": "2026-10-20",
-      "summary": "Describe the RER queue recipe fix, declaration drift check and migration-free patch upgrade.",
-      "was": "The latest release was v0.4.8 with inconsistent recipe queue retries.",
-      "now": "v0.4.9 aligns the recipe and checks queue-consumer and schedule declarations in CI.",
+      "summary": "Describe the synthetic fixture credential fix and migration-free patch upgrade.",
+      "was": "v0.4.9 contained a cron-backlog fixture credential refused by the hosted source scanner.",
+      "now": "v0.4.10 uses an explicitly synthetic fixture token and retains the same assertions.",
       "ownerAction": "Back up, retain private settings and migration history; keep pinned rer 0.2.68. Production deployment remains separate."
     },
     {
       "document": "CHANGELOG.md",
       "change": "changed",
       "date": "2026-10-20",
-      "summary": "Describe the RER queue recipe fix, declaration drift check and migration-free patch upgrade.",
-      "was": "The latest release was v0.4.8 with inconsistent recipe queue retries.",
-      "now": "v0.4.9 aligns the recipe and checks queue-consumer and schedule declarations in CI.",
+      "summary": "Describe the synthetic fixture credential fix and migration-free patch upgrade.",
+      "was": "v0.4.9 contained a cron-backlog fixture credential refused by the hosted source scanner.",
+      "now": "v0.4.10 uses an explicitly synthetic fixture token and retains the same assertions.",
       "ownerAction": "Back up, retain private settings and migration history; keep pinned rer 0.2.68. Production deployment remains separate."
     }
   ],
   "extensionPointChanges": [],
   "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.8 to v0.4.9 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.68. This patch adds no migrations: the current 95-row ledger must plan nothing and refuse nothing. Never delete, reorder or edit ledger rows. Retain owners, imported support history, permissions, files and erasure fences. The seven mailbox settings remain optional and held secrets are inherited. Run rer deploy --dry-run against the retained installation before deployment. The recipe JOBS consumer now matches the deployment spec and Wrangler, and the existing installer journey guards every queue-consumer and schedule declaration against drift. Upgrades from v0.4.7 still apply the seven missing v0.4.8 migrations by name. Retain human Send. Production deployment is separate.",
-  "publicReleaseNotes": "HappyToHelp v0.4.9 fixes the RER installation recipe: the JOBS consumer now declares the same three retries as the deployment specification and Wrangler, allowing matching fresh-install and upgrade resource plans to approve. The existing installer journey compares every queue-consumer and schedule field across those files and fails CI on drift without pinning values. No new migrations; rer stays at 0.2.68. Back up and retain settings and migration history without resetting. Production deployment is separate.",
+  "agentUpdateInstructions": "Update from v0.4.9 to v0.4.10 without resetting. Back up D1, R2, Durable Object state and private settings. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and @runeditrun/rer 0.2.68. This patch changes only a test fixture credential and release metadata. No new migrations: the current 95-row ledger must plan nothing and refuse nothing. Never delete, reorder or edit ledger rows. Retain owners, imported support history, permissions, files and erasure fences. The seven mailbox settings remain optional and held secrets are inherited. Run rer deploy --dry-run against the retained installation before deployment. Upgrades from v0.4.7 still apply the seven missing v0.4.8 migrations by name. Retain human Send. Production deployment is separate.",
+  "publicReleaseNotes": "HappyToHelp v0.4.10 renames the cron-backlog test signing token and its matching inbound request to an explicitly synthetic value. RER's hosted credential scanner can accept the public source before agent dispatch. Existing assertions retain the same behavior; application behavior is unchanged. No new migrations; rer stays at 0.2.68. Back up and retain settings and migration history without resetting. Production deployment is separate.",
   "pendingMigrations": [
     {
       "id": "192_companies.sql",

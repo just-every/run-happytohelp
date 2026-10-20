@@ -21,12 +21,12 @@ export default function TriageSettings({ projectId, changed, clean }) {
     }, [path]);
     const change = (key, value) => {
         changed(); setDirty(true); setSaved(false);
-        if (key === 'taxonomy') setReviewed(false);
+        if (key === 'taxonomy' || key === 'threshold') setReviewed(false);
         setDraft(current => ({ ...current, [key]: value, ...(key === 'enabled' && !value ? { routing_enabled: false } : {}) }));
     };
     const save = async event => {
         event.preventDefault(); setError(''); setSaved(false);
-        if (draft.routing_enabled && !settings.routing_enabled && !reviewed) { setError('Review accuracy by intent before enabling prediction routing.'); return; }
+        if (draft.routing_enabled && requiresReview && !reviewed) { setError('Review accuracy by intent before enabling prediction routing.'); return; }
         setBusy(true);
         try {
             const { enabled, threshold, default_group_id, routing_enabled, taxonomy, version } = draft;
@@ -44,6 +44,7 @@ export default function TriageSettings({ projectId, changed, clean }) {
     };
     const canEdit = settings?.permissions.settings === true;
     const hasLabels = settings?.accuracy.some(row => row.total > 0);
+    const requiresReview = settings && draft && (!settings.routing_enabled || draft.threshold !== settings.threshold || JSON.stringify(draft.taxonomy) !== JSON.stringify(settings.taxonomy));
     return <div className="triage-settings">
         <Feedback error={error} saved={saved}/>
         {!settings && !error && <p role="status">Loading triage settings…</p>}
@@ -64,10 +65,10 @@ export default function TriageSettings({ projectId, changed, clean }) {
                 <Section card title="Accuracy and prediction routing" description="Review accuracy against operator corrections before allowing predictions to drive routing rules.">
                     <TriageAccuracy rows={settings.accuracy}/>
                     {!hasLabels && <p className="settings-note">Routing can be enabled after operators label predictions and accuracy is available.</p>}
-                    {!settings.routing_enabled && <fieldset disabled={!hasLabels} className="triage-routing-review"><Field name="triage-accuracy-reviewed" label="I reviewed accuracy by intent" type="checkbox" value={reviewed} onChange={(_, value) => { setReviewed(value); setSaved(false); }}/></fieldset>}
-                    <fieldset disabled={!draft.enabled || !settings.routing_enabled && (!hasLabels || !reviewed)} className="triage-routing-review"><Field name="triage-routing-enabled" label="Use predictions for routing" type="checkbox" value={draft.routing_enabled} onChange={(_, value) => change('routing_enabled', value)}/></fieldset>
+                    {requiresReview && <fieldset disabled={!hasLabels} className="triage-routing-review"><Field name="triage-accuracy-reviewed" label="I reviewed accuracy by intent" type="checkbox" value={reviewed} onChange={(_, value) => { setReviewed(value); setSaved(false); }}/></fieldset>}
+                    <fieldset disabled={!draft.enabled || requiresReview && (!hasLabels || !reviewed)} className="triage-routing-review"><Field name="triage-routing-enabled" label="Use predictions for routing" type="checkbox" value={draft.routing_enabled} onChange={(_, value) => change('routing_enabled', value)}/></fieldset>
                 </Section>
-                {canEdit && <button className="btn btn-primary" disabled={!dirty || busy || draft.routing_enabled && !settings.routing_enabled && !reviewed}>{busy ? 'Saving…' : 'Save triage settings'}</button>}
+                {canEdit && <button className="btn btn-primary" disabled={!dirty || busy || draft.routing_enabled && requiresReview && !reviewed}>{busy ? 'Saving…' : 'Save triage settings'}</button>}
             </fieldset>
             <button type="button" className="btn btn-link" disabled={busy} onClick={reload}>Reload triage settings</button>
         </form>}

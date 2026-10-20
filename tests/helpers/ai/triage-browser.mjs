@@ -1,6 +1,9 @@
+import {createRuntime} from '../emitted-runtime.mjs'
 import assert from 'node:assert/strict'
 import {seedTriageDataset} from './triage-dataset.mjs'
 export async function triageBrowserJourney({runtime,browser,shot,fixture}){
+ const ownsRuntime=!runtime
+ runtime??=await createRuntime({queueConsumers:true,vars:{OPENAI_API_KEY:'sk-test',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'},outboundFixture:new URL('./triage-network.mjs',import.meta.url).href})
  const f=fixture??await seedTriageDataset(runtime.origin),context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]
  await context.addCookies([{name:'h2h_session',value:f.token,url:runtime.origin}]);page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());page.setDefaultTimeout(20000)
  const capture=async(name,selector)=>{
@@ -25,6 +28,6 @@ export async function triageBrowserJourney({runtime,browser,shot,fixture}){
   await page.getByLabel('Field to correct',{exact:true}).selectOption('sentiment');await page.getByLabel('Correct sentiment',{exact:true}).selectOption('neutral');await page.getByRole('button',{name:'Save correction',exact:true}).click();await page.getByText('Triage correction saved.',{exact:true}).waitFor();await capture(`triage-correction-${width}`,'.triage-panel')
  }
  assert.deepEqual(errors,[])
- }finally{await context.close()}
+ }finally{await context.close();if(ownsRuntime)await runtime.close(true)}
  return f
 }

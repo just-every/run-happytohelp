@@ -16,7 +16,7 @@ export function zendeskRoutes({corpus:c,baseUrl}) {
         html_body:`<p>${p.body}</p>`,plain_body:p.body,created_at:iso(p.createdAt),attachments:p.attachments.map(attachment),
         via:{channel:'email',source:{from:{address:person(p.authorId)?.email},to:{address:'support@fixture.example.test'},rel:null}},
         metadata:{system:{},custom:{}}});
-    const ticket=p=>({id:p.id,url:`${baseUrl}/api/v2/tickets/${p.id}.json`,subject:p.subject,
+    const ticket=p=>({id:p.id,encoded_id:`ZD${String(p.id).padStart(4,'0')}-MAIL`,url:`${baseUrl}/api/v2/tickets/${p.id}.json`,subject:p.subject,
         description:p.comments[0].body,requester_id:p.contactId,submitter_id:p.contactId,
         assignee_id:p.agentId,organization_id:p.companyId,status:p.mergedInto?'closed':p.status==='closed'?'solved':p.status,
         priority:'normal',type:'question',tags:p.tags,collaborator_ids:[],email_cc_ids:[],

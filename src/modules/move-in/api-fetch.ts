@@ -4,7 +4,7 @@ import {apiRun,connection,readCredential} from './api-store'
 import {vendorHttp,VendorError} from './api-http'
 import {readVendorPage,type ApiAttachment,type ApiRecord} from './readers/api'
 import {sourceRecord,nativeId} from './readers/common'
-import {identityStatements,sourceDigest,identityDigest,type IdentityLink} from './identities'
+import {identityStatements,sourceDigest,identityDigest,erasedUpload,type IdentityLink} from './identities'
 import {sha256,canonicalJson} from '../import-kit/src/d1/index'
 import {updateRun,objectKey} from './run-store'
 import {putPrivate} from './private-custody'
@@ -35,6 +35,7 @@ export async function fetchApiPage(env:Env,run:Run){
  const client=vendorHttp(env,run.vendor,conn.base_url,await readCredential(env,conn));let page
  try{page=await readVendorPage(run.vendor,client,api.cursor_json?JSON.parse(api.cursor_json):null,api.since)}catch(error){if(error instanceof VendorError&&error.retryAt)await guarded(env,run,[env.DB.prepare('UPDATE move_in_connections SET retry_at=? WHERE id=?').bind(error.retryAt,conn.id)]);throw error}
  const records=page.records.map(r=>({...r,payload:withoutLocators(r.payload)})),links=identities(run,records)
+ if(await erasedUpload(env,run.project_id,links))throw new Error('This source page contains erased contact identities. It cannot be imported again.')
  // Install identity fences before either source bytes or attachment bytes exist.
  await guarded(env,run,identityStatements(env,run.project_id,run.id,links))
  for(const file of page.attachments)await retainAttachment(env,run,file,page.records,client)

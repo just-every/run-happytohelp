@@ -9,5 +9,9 @@ CREATE TABLE triage_usage(job_id TEXT NOT NULL REFERENCES triage_jobs(id),reques
 -- Historical imports never enter this journal. No model work runs in admission.
 CREATE TRIGGER triage_admission AFTER INSERT ON workflow_events WHEN NEW.kind IN ('created','customer_reply') AND EXISTS(SELECT 1 FROM triage_settings s WHERE s.project_id=NEW.project_id AND s.enabled=1) AND EXISTS(SELECT 1 FROM messages m WHERE m.id=NEW.last_message_id AND m.actor_role='contact' AND m.erased_at IS NULL) BEGIN
  INSERT OR IGNORE INTO triage_jobs(id,project_id,conversation_id,message_id,source_revision,settings_version,created_at,updated_at) SELECT 'triage:'||NEW.last_message_id,NEW.project_id,NEW.conversation_id,NEW.last_message_id,NEW.revision,s.version,NEW.at,NEW.at FROM triage_settings s WHERE s.project_id=NEW.project_id;
- DELETE FROM ticket_field_values WHERE project_id=NEW.project_id AND conversation_id=NEW.conversation_id AND field_id IN ('triage_intent','triage_sentiment','triage_language','triage_intent_confidence','triage_sentiment_confidence','triage_language_confidence','triage_intent_quote','triage_sentiment_quote','triage_language_quote');
+END;
+-- Clear the previous fields outside the workflow journal's INSERT trigger so
+-- nested field-change events receive their own sequence IDs before admission.
+CREATE TRIGGER triage_clear_fields AFTER UPDATE OF last_message_id ON conversations WHEN NEW.last_message_id IS NOT OLD.last_message_id AND EXISTS(SELECT 1 FROM triage_settings s WHERE s.project_id=NEW.project_id AND s.enabled=1) AND EXISTS(SELECT 1 FROM messages m WHERE m.id=NEW.last_message_id AND m.actor_role='contact' AND m.erased_at IS NULL) BEGIN
+ DELETE FROM ticket_field_values WHERE project_id=NEW.project_id AND conversation_id=NEW.id AND field_id IN ('triage_intent','triage_sentiment','triage_language','triage_intent_confidence','triage_sentiment_confidence','triage_language_confidence','triage_intent_quote','triage_sentiment_quote','triage_language_quote');
 END;

@@ -1,8 +1,9 @@
 /* The brand's tokens, defined once for every surface: the homepage and the pages built on it (the docs and the 404),
    first-run setup, the identity pages and the signed-in workspace. Paper, ink and one geometric sans-serif's chrome, and the
    drawings' ink and aqua family; the workspace adds its surfaces, lines, chips and the one danger ink below. No other
-   stylesheet defines them, so no surface can drift from the homepage; the one exception is the signed-in workspace's neutral
-   canvas, which re-points paper and the field line at its root (dashboard foundation/_app-shell.scss). Nothing else has a hue. */
+   stylesheet defines them, so no surface can drift from the homepage; the one exception is the signed-in workspace's white
+   canvas and hairlines, which re-point paper, the lines and the tints at its root (dashboard foundation/_app-shell.scss).
+   Nothing else has a hue. */
 :root {
   --paper: #f6f2ea;
   --paper-deep: #efe9dd;
@@ -18,6 +19,11 @@
   --rule: rgba(20, 20, 20, 0.16);
   --rule-strong: rgba(20, 20, 20, 0.22);
   --field-line: rgba(20, 20, 20, 0.55);
+  --field-line-hover: rgba(20, 20, 20, 0.7);
+  /* The outline of a control whose label or glyph already shows it (secondary pills, round icon buttons, avatars). */
+  --control-line: var(--ink);
+  /* The outline of a check, radio or switch: its boundary is its only affordance, so it holds 3:1 on every canvas. */
+  --toggle-line: var(--ink);
   --hover: rgba(20, 20, 20, 0.06);
   --gutter: clamp(20px, 5vw, 76px);
   --d-ink: var(--ink);
@@ -44,8 +50,10 @@
   --card-shadow: 1px 1.5px 0 rgba(20, 20, 20, 0.55);
   --font-sans: Outfit, 'Outfit Fallback', 'Avenir Next', 'Segoe UI', sans-serif;
 }
-/* A workspace in Dark display mode (Settings, Project, Appearance) sets data-theme="dark" on its root. The aqua stays. */
-[data-theme="dark"] {
+/* A workspace in Dark display mode (Settings, Project, Appearance) sets data-theme="dark" on its root. The aqua stays.
+   The workspace's left rail wears the same dark palette in either mode (dashboard foundation/_sidebar.scss). */
+[data-theme="dark"],
+body.workspace-themed #sidebar {
   --paper: #171614;
   --paper-deep: #1f1d1a;
   --surface: #24221f;
@@ -58,6 +66,9 @@
   --rule: rgba(243, 239, 231, 0.16);
   --rule-strong: rgba(243, 239, 231, 0.26);
   --field-line: rgba(243, 239, 231, 0.5);
+  --field-line-hover: rgba(243, 239, 231, 0.7);
+  --control-line: rgba(243, 239, 231, 0.26);
+  --toggle-line: #b5afa4;
   --hover: rgba(243, 239, 231, 0.08);
   --d-cyan-tint: #1d3a3f;
   --d-cyan-wash: #1a2c30;

@@ -2,11 +2,11 @@
 body.conversation-workspace {
     .avatar .avatar-img { object-fit: cover; }
 
-    // Agents: a white circle with an ink ring and an ink initial.
+    // Agents: a white circle with a hairline ring and an ink initial.
     .avatar-agent.avatar-fallback .avatar-title {
         color: var(--ink) !important;
         background: var(--surface) !important;
-        border: 1.5px solid var(--ink) !important;
+        border: 1px solid var(--control-line) !important;
         font-weight: 500;
     }
 }
@@ -19,7 +19,7 @@ body.conversation-workspace #chat {
         justify-content: center;
         color: var(--contact-profile-symbol-ink, var(--ink)) !important;
         background: var(--contact-profile-symbol-tile, var(--d-cyan-tint)) !important;
-        border: 1.5px solid var(--ink) !important;
+        border: 1px solid var(--control-line) !important;
         overflow: hidden;
     }
 

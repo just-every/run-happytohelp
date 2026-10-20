@@ -1,0 +1,69 @@
+/* The hero drawing (HeroStory.tsx): both moments on one pale aqua blob. The figure is a size container; the type is set from
+   its width and every length inside is in em, so the picture scales as one. Wide, the moments stand side by side, the
+   checkout first and Maya's conversation a little higher on the right, with the aqua pen arrow between them; narrow, they
+   stack and the arrow turns down. The blob fills the figure's box, so it never reaches past the drawing. */
+.h2h-home .story-art { container-type: inline-size; isolation: isolate; }
+.h2h-home .story-blob { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; fill: var(--d-cyan-wash); }
+/* One blob for the wide picture and a rounder one for the stacked picture; the other is not drawn. */
+.h2h-home .story-blob--tall { display: none; }
+.h2h-home .story { display: grid; grid-template-columns: minmax(0, 1.45fr) 3.4em minmax(0, 1fr); align-items: start; padding: 2.6em 2em 2.4em 1.3em; font-size: min(16px, 2.06cqw); line-height: 1.4; }
+.h2h-home .story-moment { position: relative; }
+
+/* 1. The checkout, cut to the essentials, and the widget's offer card over its lower right corner. */
+.h2h-home .story-before { margin-top: 3.4em; padding-bottom: 2.4em; }
+.h2h-home .story-checkout { width: 74%; }
+.h2h-home .story-page { display: grid; align-content: start; gap: 0.85em; width: 66%; padding: 1.3em 1.3em 2em; }
+.h2h-home .story-page-title { display: flex; align-items: center; gap: 0.55em; font-weight: 500; font-size: 1.15em; }
+.h2h-home .story-offer { position: absolute; right: 0; bottom: 0; display: grid; gap: 0.55em; width: 15.5em; padding: 1em 1.05em 1.1em; transform: rotate(-1deg); transform-origin: 0 100%; }
+.h2h-home .story-offer-mark { display: block; height: 2.3em; }
+.h2h-home .story-offer-mark .brand-mark { height: 100%; margin: 0; }
+.h2h-home .story-offer p { margin-bottom: 0.3em; font-size: 1.05em; line-height: 1.45; }
+.h2h-home .story-offer .d-btn { min-height: 2.4em; border: 1.5px solid var(--d-ink); }
+
+/* The arrow from the first moment to the second, in the flourish's aqua pen. */
+.h2h-home .story-arrow { display: block; width: 100%; height: auto; margin-top: 8.5em; color: var(--d-cyan-deep); overflow: visible; }
+
+/* 2. Maya's conversation, already solved: her question, the fix beside a code glyph, and the reply with Send to press. */
+.h2h-home .story-thread { display: grid; gap: 0.75em; padding-bottom: 1em; }
+.h2h-home .story-thread > :not(.d-bar) { margin: 0 0.95em; }
+.h2h-home .story-thread > .story-who { display: flex; align-items: center; gap: 0.5em; margin-top: 0.85em; font-weight: 600; }
+.h2h-home .story-who .d-icon { width: 2em; height: 2em; padding: 0.35em; border: 1.5px solid var(--d-ink); border-radius: 50%; }
+.h2h-home .story-bubble { padding: 0.7em 0.85em; border: 1.5px solid var(--d-ink); border-radius: 0.8em 0.95em 0.8em 0.9em / 0.9em 0.8em 0.95em 0.8em; background: #fff; }
+.h2h-home .story-row { display: flex; align-items: center; gap: 0.5em; }
+.h2h-home .story-row .story-bubble { flex: 1; min-width: 0; }
+.h2h-home .story-bubble--fix { background: var(--d-cyan-tint); }
+.h2h-home .story-glyph { display: grid; place-items: center; flex: none; width: 2.2em; height: 2.2em; border: 1.5px solid var(--d-ink); border-radius: 50%; background: var(--d-cyan-tint); }
+.h2h-home .story-glyph .d-icon { width: 1.25em; height: 1.25em; }
+.h2h-home .story-composer { display: grid; justify-items: end; gap: 0.6em; padding: 0.7em 0.7em 0.7em 0.85em; }
+.h2h-home .story-composer p { justify-self: stretch; }
+.h2h-home .story-send { min-height: 2.2em; padding: 0 1.3em; font-weight: 600; }
+
+/* The two numbers, on filled aqua discs on each moment's top right corner, as the captions under the drawing are. */
+.h2h-home .story-number { position: absolute; top: -1.2em; right: -1em; display: grid; place-items: center; width: 2.5em; height: 2.5em; border-radius: 50%; background: var(--d-cyan); color: var(--d-ink); font-size: 1.1em; font-weight: 600; }
+.h2h-home .story-before .story-number { right: calc(26% - 1.1em); }
+
+@container (max-width: 599px) {
+  .h2h-home .story { grid-template-columns: minmax(0, 1fr); padding: 2em 1.4em 1.8em 1.5em; font-size: clamp(12px, 4.1cqw, 15px); }
+  .h2h-home .story-blob--wide { display: none; }
+  .h2h-home .story-blob--tall { display: block; }
+  .h2h-home .story-before { margin-top: 0; padding-bottom: 5.5em; }
+  .h2h-home .story-checkout { width: 78%; }
+  .h2h-home .story-page { width: 100%; }
+  .h2h-home .story-offer { width: 14em; }
+  .h2h-home .story-arrow { width: 3.4em; margin: 0.2em 0 0.4em 5em; rotate: 80deg; }
+  .h2h-home .story-when { margin-left: 2.6em; }
+}
+/* Narrower still (phones, and the desktop column just past the stacking width), the checkout is too narrow for the card
+   to float over its corner without covering Pay now, so the card drops into the flow under the window and overlaps only
+   the window's empty bottom edge. */
+@container (max-width: 479px) {
+  .h2h-home .story-before { padding-bottom: 0; }
+  .h2h-home .story-offer { position: relative; right: auto; bottom: auto; margin: -1.25em 0 0 auto; }
+}
+
+/* The arrow draws in once, like the flourish, just after it; reduced motion shows it drawn. */
+.h2h-home .story-arrow path { stroke-dasharray: 1 2; stroke-dashoffset: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .h2h-home .story-arrow path { animation: h2h-flourish 0.6s cubic-bezier(0.55, 0.05, 0.35, 1) 1.4s both; }
+  .h2h-home .story-arrow path + path { animation-delay: 1.95s; animation-duration: 0.25s; }
+}

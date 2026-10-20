@@ -12,7 +12,7 @@
   .h2h-home [data-reveal="wait"] :is(.d-blob) { opacity: 0; scale: 0.9; }
   .h2h-home [data-reveal="wait"] :is(.d-window, .d-card, .chat-visitor, .chat-agent, .sr-card, .help-art li, .import-status, .import-counts) { opacity: 0; translate: 0 18px; }
   .h2h-home [data-reveal="wait"].proof li, .h2h-home .parts > li[data-reveal="wait"] { opacity: 0; translate: 0 18px; }
-  .h2h-home [data-reveal="wait"] :is(.proof-icon, .d-check, .offer-avatar, .offer-bubble, .d-chip, .step), .h2h-home [data-reveal="wait"].steps li::before, .h2h-home [data-reveal="wait"] .offer-choices .d-btn { opacity: 0; scale: 0.5; }
+  .h2h-home [data-reveal="wait"] :is(.proof-icon, .d-check, .d-chip, .step), .h2h-home [data-reveal="wait"].steps li::before { opacity: 0; scale: 0.5; }
   .h2h-home [data-reveal="wait"] .inbox-list li { opacity: 0; translate: -14px 0; }
   .h2h-home [data-reveal="wait"] .d-sweep { background-size: 0% 100%; }
   .h2h-home [data-reveal="wait"] .help-query { clip-path: inset(0 100% 0 -2px); }
@@ -45,20 +45,6 @@
   /* A divider is drawn left to right like the hero flourish. Both its lines are drawn together, the one the width shows and
      the one folded away, so crossing the phone breakpoint later shows a line already drawn. 1.3s. */
   .h2h-home .divider[data-reveal="play"] .divider-line path { animation: h2h-pen 1.3s var(--ease-pen) backwards; }
-
-  /* Help before they ask: the checkout settles, the widget's mark pops up, typing dots hold the bubble's place, then the offer
-     and its two choices. 1.68s. */
-  .h2h-home .offer-art[data-reveal="play"] .d-blob { animation: h2h-bloom 0.7s var(--ease-out) backwards; }
-  .h2h-home .offer-art[data-reveal="play"] .d-window { animation: h2h-rise 0.6s var(--ease-out) 0.05s backwards; }
-  .h2h-home .offer-art[data-reveal="play"] .offer-avatar { animation: h2h-pop 0.45s var(--ease-pop) 0.4s backwards; }
-  .h2h-home .offer-art[data-reveal="play"] .offer-typing { transform-origin: 0 100%; animation: h2h-typing 0.6s ease-in-out 0.5s backwards; }
-  .h2h-home .offer-art[data-reveal="play"] .offer-typing i { animation: h2h-dot 0.4s ease-in-out calc(0.62s + var(--dot) * 0.09s) backwards; }
-  .h2h-home .offer-typing i:nth-child(1) { --dot: 0; }
-  .h2h-home .offer-typing i:nth-child(2) { --dot: 1; }
-  .h2h-home .offer-typing i:nth-child(3) { --dot: 2; }
-  .h2h-home .offer-art[data-reveal="play"] .offer-bubble { transform-origin: 0 100%; animation: h2h-pop 0.4s var(--ease-pop) 1s backwards; }
-  .h2h-home .offer-art[data-reveal="play"] .offer-choices .d-btn { animation: h2h-pop 0.4s var(--ease-pop) 1.2s backwards; }
-  .h2h-home .offer-art[data-reveal="play"] .offer-choices .d-btn + .d-btn { animation-delay: 1.28s; }
 
   /* The rest of your support desk: each card rises in with its blob, staggered across its row, its number disc pops, and the
      small thing in it happens. At most 1.66s. */
@@ -120,5 +106,3 @@
 @keyframes h2h-type { from { clip-path: inset(0 100% 0 -2px); } to { clip-path: inset(0 0 0 -2px); } }
 @keyframes h2h-tick { from { background-color: #e3e1da; scale: 1 0.6; } }
 @keyframes h2h-caret { 0%, 12% { opacity: 1; translate: -100% 0; } 68% { opacity: 1; translate: 0 0; } 92% { opacity: 1; translate: 0 0; } 100% { opacity: 0; translate: 0 0; } }
-@keyframes h2h-typing { 0% { opacity: 0; scale: 0.7; } 20%, 80% { opacity: 1; scale: 1; } 100% { opacity: 0; scale: 1; } }
-@keyframes h2h-dot { 0%, 100% { translate: 0 0; } 50% { translate: 0 -0.35em; } }

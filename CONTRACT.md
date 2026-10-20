@@ -256,29 +256,29 @@ HappyToHelp is the complete help desk and AI support agent a US SMB support lead
   **Acceptance evidence:** Use configured email, inbound mail, GitHub and knowledge-import public doors; test idempotency, machine-generated-mail suppression, separate-origin preview grants and network denial. An operator reply emails the visitor even with an online/unverified widget; a visitor address matching the reply sender is intentionally excluded and the message status explains that cause. Test accepted, failed and uncertain outcomes without invented delivery; business-action evidence is also required by COMMERCE-001, BILLING-001 and CRM-001.
 
 - **PUBLIC-001 — Public product source.** The approved
-  “Customer Support, Solved.” homepage (owner approval 2026-10-01, clarity pass
-  2026-10-02, hero redesign 2026-10-08) is the real public `/` experience, in
-  this order: the hero, which shows a problem already solved as three staggered,
-  hand-outlined bubbles on a pale aqua blob, joined by ink arrows (a customer,
-  Maya, cannot turn on the Spanish version of her store; the untitled agent bubble,
-  beside a code glyph, says it is fixed; the reply to Maya, beside a person glyph,
-  carries Send inside it, the only step left) beside the subhead “Your Codex or
-  Claude fixes the problem and writes the reply. You press Send.”, the line
+  homepage (owner approval 2026-10-01, clarity pass 2026-10-02, hero redesign
+  2026-10-08, hero leading with help before they ask 2026-10-20) is the real public `/` experience, in
+  this order: the hero, whose headline “Knows what your customer needs before they do.” stands left-aligned beside one
+  hand-drawn picture of both moments on a pale aqua blob, joined by an aqua pen arrow: 1, a checkout page in its window
+  with the widget's offer card (signed with the speech-bubble mark) floating over its corner; 2, a conversation already
+  solved (a customer, Maya, cannot turn on the Spanish version of her store; the agent's fix, beside a code glyph, says
+  it is fixed; the reply to Maya carries Send inside it, the only step left), each numbered on a filled aqua disc; with
+  the subhead “Some customers who get stuck never write in. They just leave.”, the line
   “100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk”, an aqua pen-stroke flourish under the calls to
-  action that draws itself in once, and the caption steps “The customer asks”,
-  “The agent fixes it” and “You press Send” on filled aqua number discs; “Not just better. Free.” (100% free and
+  action that draws itself in once, and under the picture the captions “Before they ask” (“When someone seems stuck,
+  the widget offers a hand.”) and “When they ask” (“Your Codex or Claude fixes the problem and writes the reply. You
+  press Send.”) on filled aqua number discs; “Not just better. Free.” (100% free and
   open source, free as in code and free as in cost, MIT licensed, “No seats. No
   plans. No fees.”, each promise after a line icon in a pale aqua circle, with the MIT license drawn as an ink card
-  over a wordless code editor, “free of charge” and the rights highlighted in aqua); “Help before they ask” (the
-  checkout page in its window, and the widget's offer floating over it with the speech-bubble mark as its avatar);
+  over a wordless code editor, “free of charge” and the rights highlighted in aqua);
   “The rest of your support desk” (chat widget, shared inbox, help center, suggested
   replies, as frameless ink cards numbered on filled aqua discs); “Try it beside what you have” (install, bring the
   help center from Zendesk, Intercom or Freshdesk, add the chat widget, on filled aqua discs, beside the finished
-  import in its window); “Ready when you are.”, as big as the hero headline with an aqua pen line drawn under it;
+  import in its window); “Ready when you are.”, a big closing headline with an aqua pen line drawn under it;
   and the footer, signed with the header's lockup. Below the hero the drawings carry the hero's language: each
   floats on a pale aqua blob, the mark's three aqua sparks spring from the corner of four of its cards, a window
   frame stays only for the code editor, the checkout and the import, the text links carry the hero's aqua
-  underline, and a full-width aqua pen line with one loop divides Free from Help before they ask and the desk
+  underline, and a full-width aqua pen line with one loop divides Free from the desk and the desk
   from Try it beside what you have. The page carries no price, hosting or provider line and no plug for any other service.
   The drawings mirror the real interface and make no claim the product cannot
   back; conversation, ticket-history and automation import, reporting and
@@ -339,7 +339,7 @@ HappyToHelp is the complete help desk and AI support agent a US SMB support lead
 
   **Acceptance evidence:** Through the installed widget and operator inbox, exchange messages and real attachment bytes, search/filter the resulting queue, insert and edit a saved reply, reload both sides and deny another tenant the same records.
 
-- **WIDGET-001 — Availability-aware messenger and proactive messages.** The messenger shows team availability from business-hour schedules (SLA-001) and live agent presence. When no human or permitted AI assistant is available it says so with the expected reply time, captures the visitor's email (or, where consented, SMS/WhatsApp under CHANNELS-001) so the answer reaches them, and creates the ticket instead of leaving the visitor waiting. Leads configure proactive messages triggered by page URL, time on page, scroll depth, exit intent, visitor attributes, returning visit or cart value, with audience, brand, frequency caps and quiet hours. Each proactive message shows a clear sender identity and an easy dismiss, respects consent and collector settings, and never starts a conversation that sends personal data on the visitor's behalf. Impressions, opens, dismissals and resulting conversations and resolutions are reported. This clause backs the homepage's "Help before they ask".
+- **WIDGET-001 — Availability-aware messenger and proactive messages.** The messenger shows team availability from business-hour schedules (SLA-001) and live agent presence. When no human or permitted AI assistant is available it says so with the expected reply time, captures the visitor's email (or, where consented, SMS/WhatsApp under CHANNELS-001) so the answer reaches them, and creates the ticket instead of leaving the visitor waiting. Leads configure proactive messages triggered by page URL, time on page, scroll depth, exit intent, visitor attributes, returning visit or cart value, with audience, brand, frequency caps and quiet hours. Each proactive message shows a clear sender identity and an easy dismiss, respects consent and collector settings, and never starts a conversation that sends personal data on the visitor's behalf. Impressions, opens, dismissals and resulting conversations and resolutions are reported. This clause backs the homepage hero's "Before they ask".
 
   **Acceptance evidence:** Outside configured hours, open the installed widget, see the offline message and expected reply time, leave an email and verify the ticket and the emailed answer. During hours with no agent online verify the same; with an available AI assistant verify it answers and discloses itself. Configure a proactive message on a checkout URL after 20 seconds with a once-per-day cap; verify it appears once, dismisses, stays silent under a declined collector setting and appears in reports with its impressions and conversations.
 

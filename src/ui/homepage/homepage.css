@@ -60,26 +60,34 @@
 .h2h-home .section .text-link { font-weight: 600; text-decoration-color: var(--d-cyan-deep); text-decoration-thickness: 3px; text-underline-offset: 9px; }
 .h2h-home .section .text-link:hover { text-decoration-color: var(--ink); }
 
-/* Hero: the copy column (with the flourish under it) and the drawing, both hung from one top line. */
-.h2h-home .hero { display: grid; grid-template-columns: minmax(0, 0.475fr) minmax(0, 0.525fr); align-items: start; gap: clamp(24px, 2.6vw, 40px); padding: clamp(24px, 7.8vw, 120px) 0 clamp(40px, 4.5vw, 72px); }
+/* Hero: the copy column (with the flourish under it) and the drawing of both moments with their captions, both hung from one
+   top line. */
+.h2h-home .hero { display: grid; grid-template-columns: minmax(0, 0.44fr) minmax(0, 0.56fr); align-items: start; gap: clamp(24px, 2.6vw, 40px); padding: clamp(24px, 7.8vw, 120px) 0 clamp(40px, 4.5vw, 72px); }
 .h2h-home .hero-copy { padding-top: clamp(0px, 2.3vw, 36px); }
-.h2h-home .hero h1 { font-size: clamp(2.5rem, 5.2vw, 5rem); font-weight: 600; line-height: 1.08; letter-spacing: -0.035em; text-wrap: balance; }
-.h2h-home .hero h1 span { display: inline-block; }
-.h2h-home .hero-sub { margin-top: 26px; max-width: 25.5em; font-size: clamp(1.1rem, 1.5vw, 1.4375rem); line-height: 1.6; color: #2b2a27; }
+/* The lockup's mark is nudged to the side bearing of a round first letter; the headline opens on a K, whose bearing is wider,
+   so its first line is drawn back by the difference and the K's stem keeps the mark's left edge. */
+.h2h-home .hero h1 { font-size: clamp(2.5rem, 4.7vw, 4.6rem); font-weight: 600; line-height: 1.08; letter-spacing: -0.035em; text-wrap: balance; text-indent: -0.032em; }
+.h2h-home .hero-sub { margin-top: 26px; max-width: 25.5em; font-size: clamp(1.1rem, 1.5vw, 1.4375rem); line-height: 1.6; color: #2b2a27; text-wrap: pretty; }
 .h2h-home .hero-copy .actions { margin-top: 44px; gap: 20px 42px; }
 .h2h-home .hero-copy .pill--large { min-height: 74px; padding: 0 50px; font-size: 22px; }
 .h2h-home .hero-copy .text-link { font-size: 21px; font-weight: 600; text-decoration-color: var(--d-cyan-deep); text-decoration-thickness: 3px; text-underline-offset: 10px; }
 .h2h-home .hero-copy .text-link:hover { text-decoration-color: var(--ink); }
 .h2h-home .hero-free { margin-top: 28px; font-size: 16px; text-wrap: balance; }
 .h2h-home .hero-free strong { font-weight: 600; }
+/* Start the names on their own line: the fallback fits the whole sentence at wide widths where Outfit needs two lines.
+   Both faces now use the same lines without preventing the names from wrapping on small phones. */
+.h2h-home .hero-free-names { display: block; }
 .h2h-home .hero-stage { min-width: 0; container: hero-stage / inline-size; }
-.h2h-home .hero-steps { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 32px; margin-top: 22px; counter-reset: step; font-size: 1.125rem; }
-.h2h-home .hero-steps li { display: inline-flex; align-items: center; gap: 14px; counter-increment: step; }
-.h2h-home .hero-steps li::before { content: counter(step); display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--d-cyan); font-size: 1.1rem; font-weight: 600; }
-/* The three captions are one row or one per line, never two and one: when the stage is too narrow for the row (the three items
-   and their gaps need about 40rem, set by the caption size in rem), they stack the way they do on phones. */
-@container hero-stage (max-width: 40rem) {
-  .h2h-home .hero-steps { flex-direction: column; align-items: flex-start; padding-left: 4px; }
+.h2h-home .hero-stage .story-art { margin-top: clamp(0px, 1.2vw, 18px); }
+/* The two moments' captions under the drawing, each under its own half, numbered on filled aqua discs as in the drawing. When
+   the stage is too narrow for two columns, they stack the way they do on phones. */
+.h2h-home .hero-moments { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 18px clamp(24px, 3vw, 44px); margin-top: 26px; padding-left: 1rem; counter-reset: moment; }
+.h2h-home .hero-moments li { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: center; align-content: start; column-gap: 14px; row-gap: 8px; counter-increment: moment; }
+.h2h-home .hero-moments li::before { content: counter(moment); display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--d-cyan); font-size: 1.1rem; font-weight: 600; }
+.h2h-home .hero-moments b { font-size: 1.3rem; font-weight: 500; letter-spacing: -0.01em; }
+.h2h-home .hero-moments p { grid-column: 1 / -1; max-width: 22em; text-wrap: pretty; font-size: 1.05rem; line-height: 1.5; color: var(--ink-soft); }
+@container hero-stage (max-width: 34rem) {
+  .h2h-home .hero-moments { grid-template-columns: minmax(0, 1fr); padding-left: 4px; }
 }
 
 /* Sections */
@@ -145,9 +153,6 @@
   .h2h-home .parts { row-gap: 0; }
   .h2h-home .parts > li { display: grid; grid-row: span 4; grid-template-rows: subgrid; align-items: stretch; justify-items: start; }
 }
-@media (min-width: 861px) {
-  .h2h-home .hero h1 span { display: block; }
-}
 @media (max-width: 860px) {
   .h2h-home .hero, .h2h-home .split { grid-template-columns: minmax(0, 1fr); }
   .h2h-home .split--reverse .drawing { order: 0; }
@@ -166,7 +171,6 @@
   .h2h-home .proof { grid-template-columns: minmax(0, 1fr); }
   .h2h-home .divider-line--wide { position: absolute; width: 0; height: 0; visibility: hidden; }
   .h2h-home .divider-line--short { position: static; width: 100%; height: auto; visibility: visible; }
-  .h2h-home .hero-steps { flex-direction: column; align-items: flex-start; padding-left: 4px; }
   .h2h-home .pill--large { min-height: 56px; padding: 0 30px; font-size: 18px; }
   .h2h-home .hero-copy .pill--large { min-height: 58px; padding: 0 32px; font-size: 18px; }
   .h2h-home .hero-copy .text-link { font-size: 18px; }

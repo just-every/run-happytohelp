@@ -83,26 +83,45 @@ export async function teamReportsJourney(){
  }finally{await app.close()}
 }
 
-// A member who loses ticket access stops accruing handle time: a lead stops a teammate's timer, and
-// downgrading or removing a member ends their running timers, so the team report's handle time freezes.
+// A member who loses ticket access stops accruing handle time: a lead stops a teammate's timer by naming it,
+// and downgrading or removing a member ends their running timers, so the team report's handle time freezes.
+// A lead's Stop on their own timer never ends a teammate's.
 async function timerCustody(app){
  const w=await app.seedWorkspace('timer-custody'),p=w.projectId,base=`/api/dashboard/projects/${p}`
  const ticket=async name=>{const visitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey,name,email:`${name}@customer.example.test`},headers:{Origin:w.allowedOrigin}}),created=await app.ok('/api/conversations',{body:{projectId:p,contactId:visitor.contactId},token:visitor.token});await app.ok(`/api/conversations/${created.id}/messages`,{body:{localId:name,content:'Where is my parcel?',expectedRevision:0},token:visitor.token});return `${base}/conversations/${created.id}/timer`}
  const day=86400000,today=Date.parse(new Date().toISOString().slice(0,10)),date=at=>new Date(at).toISOString().slice(0,10)
  const handled=async userId=>(await app.ok(`${base}/reports/team?period=custom&start=${date(today-day)}&end=${date(today+2*day)}`,{token:w.tokens.owner})).handleTime.byAgent.find(row=>row.id===userId)?.duration_ms
+ const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms))
+ const stopRow=sessionId=>app.first("SELECT actor_id,json_extract(changes_json,'$.handle_timer.reason') reason FROM ticket_history WHERE id=?",'timer:stop:'+sessionId)
  const frozen=async(userId,timer)=>{
   const session=await app.first('SELECT id,ended_at FROM ticket_handle_sessions WHERE project_id=? AND user_id=? ORDER BY started_at DESC LIMIT 1',p,userId)
-  assert.ok(session.ended_at,'the running timer is ended');assert.equal((await app.first("SELECT count(*) n FROM ticket_history WHERE id=?",'timer:stop:'+session.id)).n,1)
-  const first=await handled(userId);await new Promise(resolve=>setTimeout(resolve,2000));const second=await handled(userId)
-  assert.ok(first>=0);assert.equal(second,first,'handle time stops growing');await app.call(timer+'/stop',{token:w.tokens.owner,body:{},status:409})
+  assert.ok(session.ended_at,'the running timer is ended');assert.deepEqual({...await stopRow(session.id)},{actor_id:userId,reason:'operator'})
+  const first=await handled(userId);await pause(2000);const second=await handled(userId)
+  assert.ok(first>=0);assert.equal(second,first,'handle time stops growing');await app.call(timer+'/stop',{token:w.tokens.owner,body:{sessionId:session.id},status:409})
   return first
  }
  const [first,second]=[await ticket('custody-one'),await ticket('custody-two')]
- // A lead stops another member's running timer; a stop that ends nothing is a conflict, not a success.
- await app.ok(first+'/start',{token:w.tokens.operator,body:{}})
+ // Concurrent timers: the admin's Stop ends only the admin's own timer; the agent's keeps running and accruing.
+ const agentSession=(await app.ok(first+'/start',{token:w.tokens.operator,body:{}})).running,adminSession=(await app.ok(first+'/start',{token:w.tokens.admin,body:{}})).running
+ await app.call(first+'/stop',{token:w.tokens.operator,body:{sessionId:adminSession},status:409})
  assert.equal((await app.ok(first+'/stop',{token:w.tokens.admin,body:{}})).running,null)
+ assert.equal((await app.ok(first,{token:w.tokens.operator})).running,agentSession,'the agent\'s timer keeps running')
+ assert.deepEqual({...await stopRow(adminSession)},{actor_id:w.users.admin,reason:'operator'})
+ const growing=[await handled(w.users.operator)];await pause(1500);growing.push(await handled(w.users.operator))
+ assert.ok(growing[1]>growing[0],'the agent\'s handle time keeps growing')
+ // A lead stops a teammate's timer only by naming it; the stop is recorded as the lead's in history and audit.
+ const ownerSession=(await app.ok(first+'/start',{token:w.tokens.owner,body:{}})).running
+ assert.equal((await app.ok(first+'/stop',{token:w.tokens.admin,body:{sessionId:agentSession}})).running,null)
  assert.equal((await app.ok(first,{token:w.tokens.operator})).running,null)
+ assert.equal((await app.ok(first,{token:w.tokens.owner})).running,ownerSession,'only the named session ends')
+ assert.deepEqual({...await stopRow(agentSession)},{actor_id:w.users.admin,reason:'lead'})
+ const audit=await app.sql("SELECT action,actor_id,target_type,target_id,detail_json FROM audit_events WHERE project_id=? AND id IN (?,?) ORDER BY id",p,'ticket:timer:stop:'+agentSession,'timer-lead-stop:'+agentSession)
+ assert.deepEqual(audit.map(row=>[row.action,row.actor_id,row.target_type,row.target_id]),[['ticket.updated',w.users.admin,'conversation',first.split('/').at(-2)],['ticket.handle_timer.lead_stopped',w.users.admin,'conversation',first.split('/').at(-2)]])
+ assert.deepEqual(JSON.parse(audit[1].detail_json),{session_id:agentSession,member_id:w.users.operator})
+ // A stop that ends nothing is a conflict, not a success.
  await app.call(first+'/stop',{token:w.tokens.operator,body:{},status:409})
+ await app.call(first+'/stop',{token:w.tokens.admin,body:{sessionId:agentSession},status:409})
+ await app.ok(first+'/stop',{token:w.tokens.owner,body:{}})
  // Downgraded to collaborator through the role door: the running timer ends with the role change.
  assert.ok((await app.ok(first+'/start',{token:w.tokens.operator,body:{}})).running)
  await app.ok(`/api/management/projects/${p}/agents/${w.users.operator}`,{token:w.tokens.owner,method:'PUT',body:{role:'collaborator'}})
@@ -111,5 +130,5 @@ async function timerCustody(app){
  assert.ok((await app.ok(second+'/start',{token:w.tokens.admin,body:{}})).running)
  await app.ok(`/api/management/projects/${p}/agents/${w.users.admin}`,{token:w.tokens.owner,method:'DELETE'})
  const removed=await frozen(w.users.admin,second)
- return {downgradedMs:downgraded,removedMs:removed}
+ return {agentGrowingMs:growing,downgradedMs:downgraded,removedMs:removed}
 }

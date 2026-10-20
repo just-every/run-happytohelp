@@ -1989,7 +1989,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "a4a2fd32dae09187baa54357854e3c8456b773182a2b3f3fc1acebcb64046f94",
+      "sha256": "d5107d24c87853541bcef87617db97d3996d4be421177b837eb9c7b88f01d0fa",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2444,6 +2444,10 @@
       "sha256": "111a40c8393f77bb5d49e146cc1703991d8670b8df9ae85275b79f888e9081f6",
       "executable": false
     },
+    "migrations/205_handle_timer_lead_stop.sql": {
+      "sha256": "e41c9ba6c08373f03e723020dd0d864016680d16732d66795e6d8e957cea0d21",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "0fa396b895e9098cc1db5070d1dc33ca732fae8287f84f69dc8afa3bc8afd1a6",
       "executable": false
@@ -2533,7 +2537,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "5c353b04f5d01306959e604da4b09235ac32b5cd7b1672bfd4a2aa9c8eebbd36",
+      "sha256": "30e9ea036fc4042cc6a2d820241f596d3b137973cbe8abdf984f003e5b5b597d",
       "executable": false
     },
     "rer-project.json": {
@@ -6389,7 +6393,7 @@
       "executable": false
     },
     "src/modules/reports/timers.ts": {
-      "sha256": "4339b5aba9b2f5454b111d0e6b47ce1f701d87ca320c95b9dbe6a00b636d6675",
+      "sha256": "ca03ef90cdc8e852e459b41c79dc7e96ce408871dd89184ffecf929929434dfe",
       "executable": false
     },
     "src/modules/reports/transcript-records.ts": {
@@ -11705,7 +11709,7 @@
       "executable": false
     },
     "tests/reports/team-journey.mjs": {
-      "sha256": "eded9424945c4cffaf8337cdd354ea728660c6ca9da7c6b3c50aa90cb668383f",
+      "sha256": "27fdfefba351f0820bc876c2cb61d9e4ded174ff99e93846c7ed994faba95545",
       "executable": false
     },
     "tests/reports/upgrade-categories.mjs": {

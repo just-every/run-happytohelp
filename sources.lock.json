@@ -2472,11 +2472,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "de17d9ebbdf87002dc29e1753b7385372f61348b271e7b1aff37e81fab50b032",
+      "sha256": "f11f43c93b8606c4edc9c4974b01dc174c73d40c19dafa450ce95ee3975f9609",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "a7d148f4ff613b74cf11f18d774a03b9ea868f1756cc379b6fd488f209496e27",
+      "sha256": "b057dd63e06f8070dadeb1194922a115d35ce46d8ff8cddae59733269f344037",
       "executable": false
     },
     "public/fonts/inter/InterVariable.woff2": {

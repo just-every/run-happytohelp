@@ -8292,7 +8292,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/tickets/TicketViews.jsx": {
-      "sha256": "37b324b1adc363127be6e7027ed5df2f6b6ceb1caba0ce0bb0b811288f9a43df",
+      "sha256": "ba4e78a7c8c5852a05b8e9e5dce27b76ede89578389d0561f995c9953f8aa602",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/useHandleTimer.js": {

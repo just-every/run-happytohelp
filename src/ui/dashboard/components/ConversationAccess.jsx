@@ -25,7 +25,7 @@ export function NotesOnlyComposer({ onAddNote, presence, noteDraft, draftError, 
             <p>You can read this conversation, add internal notes and follow it. Only teammates who can reply send messages to the customer.</p>
             <div className="conversation-notes-only__actions">
                 <button type="button" className="btn btn-primary" onClick={ onAddNote }>Add internal note</button>
-                <StartMenu id="conversation-notes-tools" main={ <>
+                <StartMenu id="conversation-notes-tools" lead={ <>
                     <StartMenuGroup label="Notes">
                         <StartMenuItem icon="lock" onSelect={ onAddNote } dialog>Internal note</StartMenuItem>
                     </StartMenuGroup>

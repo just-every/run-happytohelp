@@ -12,9 +12,9 @@ const rewriteTools = [
 ];
 
 /**
- * The reply card's "+" start menu: Reply, Write with AI and Draft in the first column, Ticket in the second, and
- * Send & close as its footer. Reply rows wait while the field is locked (an AI draft or a final ticket); ticket
- * rows stay available, as their controls were before they moved here.
+ * The reply card's "+" start menu: Reply, Write with AI and Draft in the first column, Ticket in the second (one
+ * column reads Reply, Write with AI, Ticket, Draft), and Send & close as its footer. Reply rows wait while the field
+ * is locked (an AI draft or a final ticket); ticket rows stay available, as their controls were before they moved here.
  */
 export default function ConversationComposerTools({ disabled, locked, hasHelper, canSend, canClose, onAttach, onSaved, onArticle, onNote, onRecipients, onSendAndClose, ticketMenu }) {
     const { canRunTools, canUndo, canRedo, runTool, undo, redo, suggestions } = useReplySuggestions();
@@ -23,7 +23,7 @@ export default function ConversationComposerTools({ disabled, locked, hasHelper,
     return <StartMenu
         id="conversation-composer-tools"
         disabled={ disabled }
-        main={ <>
+        lead={ <>
             <StartMenuGroup label="Reply">
                 <StartMenuItem icon="paperclip" onSelect={ onAttach } disabled={ locked || hasHelper }>Attach file</StartMenuItem>
                 <StartMenuItem icon="bookmark" onSelect={ onSaved } disabled={ locked }>{ hasHelper ? 'Back to reply' : 'Saved replies' }</StartMenuItem>
@@ -34,12 +34,12 @@ export default function ConversationComposerTools({ disabled, locked, hasHelper,
             <StartMenuGroup label="Write with AI">
                 { rewriteTools.map(tool => <StartMenuItem key={ tool.name } icon={ tool.icon } onSelect={ () => runTool(tool.name) } disabled={ locked || !canRunTools }>{ tool.label }</StartMenuItem>) }
             </StartMenuGroup>
-            <StartMenuGroup label="Draft">
-                <StartMenuItem icon="corner-up-left" onSelect={ undo } disabled={ historyDisabled || !canUndo }>Undo</StartMenuItem>
-                <StartMenuItem icon="corner-up-right" onSelect={ redo } disabled={ historyDisabled || !canRedo }>Redo</StartMenuItem>
-            </StartMenuGroup>
         </> }
         aside={ <StartMenuTicket { ...ticketMenu } /> }
+        trail={ <StartMenuGroup label="Draft">
+            <StartMenuItem icon="corner-up-left" onSelect={ undo } disabled={ historyDisabled || !canUndo }>Undo</StartMenuItem>
+            <StartMenuItem icon="corner-up-right" onSelect={ redo } disabled={ historyDisabled || !canRedo }>Redo</StartMenuItem>
+        </StartMenuGroup> }
         footer={ canClose && <StartMenuItem icon="check-circle" onSelect={ onSendAndClose } disabled={ !canSend }>Send &amp; close</StartMenuItem> } />;
 }
 

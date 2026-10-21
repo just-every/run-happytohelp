@@ -347,9 +347,10 @@ body.workspace-themed {
     .navbar-collapse { display: flex !important; flex: 1 1 auto; flex-direction: column; align-items: stretch; min-height: 0; }
     .navbar-scroll { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
     .navbar-nav-primary { flex: 0 0 auto; }
-    // Settings is pinned above the account row on any viewport height; the list above it is what scrolls. An open
-    // Settings list scrolls under its own row, within half of the column.
-    .navbar-bottom { display: flex; flex: 0 0 auto; flex-direction: column; min-height: 0; max-height: 55%; }
+    // Settings is pinned above the account row on any viewport height; the list above it is what scrolls, and the
+    // hairline marks where it ends once the Inbox group fills the column. An open Settings list scrolls under its own
+    // row, within half of the column.
+    .navbar-bottom { display: flex; flex: 0 0 auto; flex-direction: column; min-height: 0; max-height: 55%; border-top: 1px solid var(--rule); }
     .navbar-nav-utility, .navbar-nav-utility > .nav-item { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
     #sidebarSettings { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
   }

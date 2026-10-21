@@ -7792,7 +7792,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/BucketGroup.jsx": {
-      "sha256": "ec85205230e35cdf5b8c76c4d5562e4952115784ffc2e86399fe5790ec57a956",
+      "sha256": "f8bd0174eb8db95017247257a4c052d5e950f1cc5b7336cf653de2561b3d738c",
       "executable": false
     },
     "src/ui/dashboard/components/Chat.jsx": {
@@ -11180,7 +11180,7 @@
       "executable": false
     },
     "tests/helpers/inbox/tickets-browser.mjs": {
-      "sha256": "99de752bcd895323fc33c1fbb2a49a5c1db8c66972996c12d9042ae9fa062563",
+      "sha256": "bc09e013bcc37f60a469a32fddeb42ccbc5d5f59d111cd147e7dda21a4215f1a",
       "executable": false
     },
     "tests/helpers/inbox/tickets.mjs": {

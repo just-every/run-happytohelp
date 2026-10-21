@@ -11095,8 +11095,12 @@
       "sha256": "4aae0459f67785f881fc7c81549a2b5992924639599e7c64553668d3c7bd8eb0",
       "executable": false
     },
+    "tests/helpers/inbox/ticket-queue-capabilities.mjs": {
+      "sha256": "9f526abfe75f91ca07862e6f2580043f0bcbf7507b220e19f50e8d3ff4312451",
+      "executable": false
+    },
     "tests/helpers/inbox/ticket-queue.mjs": {
-      "sha256": "e6d9db1bfd7709f1ab9ff3d4cae6c6f1210f3711a8b5ea825d1563d4a2b6a180",
+      "sha256": "57f6ce6a47391ef8d3f5d45423fbee3d3163567a33dcd5d8adeb74366a843b0f",
       "executable": false
     },
     "tests/helpers/inbox/tickets-browser.mjs": {
@@ -11460,7 +11464,7 @@
       "executable": false
     },
     "tests/helpers/workflows/rules.mjs": {
-      "sha256": "1488e9ee3b5fa52bb97a82ee8b4ff1802f191fad31591e4469b7106ed1c4ec25",
+      "sha256": "66e029c7f0461d6a05a48824b07cdbb372fe0de4fa1ed6aa381d1a42ee6bf354",
       "executable": false
     },
     "tests/helpers/workflows/schedules.mjs": {

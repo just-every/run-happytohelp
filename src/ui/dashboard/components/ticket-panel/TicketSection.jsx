@@ -15,7 +15,7 @@ export default function TicketSection({ id, title, badge, open, onToggle, childr
         <h3 className="ticket-section__heading">
             <button type="button" id={ headingId } className="ticket-section__toggle" aria-expanded={ open } aria-controls={ bodyId } onClick={ () => onToggle(id) }>
                 <span className="ticket-section__title">{ title }</span>
-                { shown && <span className="ticket-section__badge">{ badge }</span> }
+                { shown && <span className="ticket-section__badge h2h-count">{ badge }</span> }
                 <ReplyIcon name="chevron-right" className="ticket-section__chevron" />
             </button>
         </h3>

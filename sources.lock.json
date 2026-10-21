@@ -8068,7 +8068,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/InboxListHeader.jsx": {
-      "sha256": "6a4081d226a96fa98e45dc5ca7cda8e6c876ac13bfca312186e1ded704490027",
+      "sha256": "851487aca7cc68ab15ca1aeff802f669ba685d4513f83682d92f2c9959fba4b2",
       "executable": false
     },
     "src/ui/dashboard/components/InboxSearch.jsx": {
@@ -10484,7 +10484,7 @@
       "executable": false
     },
     "tests/demo-inbox.mjs": {
-      "sha256": "4a0a3087a28abee009331450a1152e5fc1815b30e9025fd21e1eab783bd90763",
+      "sha256": "2ca59e8226e492711d14811bfb8cdff375593d9497ddcb3976957ec9c094b356",
       "executable": false
     },
     "tests/demo-knowledge-activation.mjs": {

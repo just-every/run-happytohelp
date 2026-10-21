@@ -134,8 +134,8 @@ function BucketGroup({ conversation, groupBy = 'all', groupDate = 'none', bucket
             lastDate = bucketStart;
         }
 
-        grouping.map(bucketGroup => {
-            content.push(<BucketGroup  key={ bucketGroup.buckets[0].id } conversation={ conversation } { ...bucketGroup } />);
+        grouping.map(({ key, ...bucketGroup }) => {
+            content.push(<BucketGroup key={ key } conversation={ conversation } { ...bucketGroup } />);
         });
     }
 

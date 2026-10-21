@@ -113,7 +113,7 @@ try {
       assert.equal(await nav().getByTestId('nav-settings').getAttribute('aria-current'),'page',path);
     }
   });
-  await check('a project sidebar is one short list; the Settings pages share one menu',async()=>{
+  await check('a project sidebar keeps six rows with the inbox views under Inbox; the Settings pages share one menu',async()=>{
     await page.setViewportSize({width:1440,height:900});
     await bindSession(bound.id);
     await page.goto(`${runtime.origin}/projects/${bound.id}/conversations`);await ready();

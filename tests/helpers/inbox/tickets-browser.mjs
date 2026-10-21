@@ -57,7 +57,8 @@ export async function ticketsBrowser({count=12,installation}={}){
   await page.getByRole('button',{name:'Filters',exact:true}).click();await page.getByRole('button',{name:'Edit view…',exact:true}).click()
   await page.getByLabel('View name',{exact:true}).fill('Urgent returns queue');await page.getByRole('button',{name:'Save view',exact:true}).click();await page.getByText('View saved.',{exact:true}).waitFor()
   assert.equal((await fixture.api(base+'/ticket-views')).data.find(view=>view.id===saved.id).name,'Urgent returns queue')
-  await views.locator('a[href*="view=open"]').click();
+  // Select once the Open list is on screen: a selection belongs to the list it was made in.
+  await views.locator('a[href*="view=open"]').click();await page.getByRole('heading',{level:2,name:/^Open\b/}).waitFor()
   await page.getByRole('button',{name:'Select tickets',exact:true}).click();await page.getByRole('checkbox',{name:/Select ticket/}).first().check();await page.getByRole('checkbox',{name:/Select ticket/}).nth(1).check();
   const bulk=page.getByRole('region',{name:'Bulk ticket changes',exact:true});await bulk.getByLabel('Priority',{exact:true}).selectOption('urgent');
   await bulk.getByLabel('Assign to',{exact:true}).selectOption({label:owner.ownerName});await bulk.getByLabel('Status',{exact:true}).selectOption({label:'Pending'});await bulk.getByLabel('Add tags',{exact:true}).selectOption({label:'Needs return label'});

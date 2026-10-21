@@ -1,14 +1,18 @@
-// Type tokens for the conversation pieces of the H6 Start menu pick (reply card, "+" start menu, Ticket tab).
-// Outfit stays the face (H9 waits for the owner's pick); nothing here is below 13px (H11), so the 12px capitals
-// the build spec drew for captions are set at the 13px floor. Runtime custom properties, so Dark display mode and
-// the app-scoped theme read them unchanged.
-:root {
-  --h6-reply-text-size: 16px;
-  --h6-menu-caption-size: 13px;
-  --h6-menu-caption-tracking: .06em;
-  --h6-menu-item-size: 15px;
-  --h6-summary-label-size: 13px;
-  --h6-summary-value-size: 15px;
-  --h6-section-title-size: 15px;
-  --h6-chip-size: 14px;
-}
+// Type for the conversation's reply card, "+" start menu and Ticket tab (H6, pick A · Start menu). No text is set
+// below 13px (H11), so the menu and Summary captions, drawn at 12px capitals, are 13px here. Outfit stays the face.
+
+// The reply field: its placeholder and typed text share one size, so nothing grows on the first keystroke (H8).
+$reply-text-font-size: 16px;
+
+// The "+" start menu: group captions in soft-ink capitals, then the rows.
+$menu-caption-font-size: 13px;
+$menu-caption-letter-spacing: .06em;
+$menu-item-font-size: 15px;
+
+// Ticket › Summary: a soft label beside its value; the collapsed sections' titles read at the value size.
+$summary-label-font-size: 13px;
+$summary-value-font-size: 15px;
+$ticket-section-title-font-size: 15px;
+
+// The chips inside the reply card (Cc, Bcc, From, and the saved note draft).
+$composer-chip-font-size: 14px;

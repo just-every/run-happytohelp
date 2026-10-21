@@ -65,9 +65,9 @@ body.conversation-workspace #chat {
     .start-menu__caption {
         padding: .5rem .65rem .3rem;
         color: var(--ink-soft);
-        font-size: var(--h6-menu-caption-size);
+        font-size: $menu-caption-font-size;
         font-weight: 500;
-        letter-spacing: var(--h6-menu-caption-tracking);
+        letter-spacing: $menu-caption-letter-spacing;
         line-height: 1.3;
         text-transform: uppercase;
     }
@@ -80,7 +80,7 @@ body.conversation-workspace #chat {
         padding: .45rem .65rem;
         border-radius: 8px;
         color: var(--ink);
-        font-size: var(--h6-menu-item-size);
+        font-size: $menu-item-font-size;
         line-height: 1.3;
         white-space: normal;
 

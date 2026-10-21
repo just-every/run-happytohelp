@@ -1,6 +1,7 @@
 import React, { useContext, useId, useState } from 'react';
 import PropTypes from 'prop-types';
 import { ChatContext } from '../../contexts/ChatContext';
+import ReplyIcon from '../reply-icons/ReplyIcon';
 import { nativeRequest } from '../../../native/transport';
 import SlateInquiryLink from '../../../native/SlateInquiryLink';
 import { EmailFollowupLink, useEmailFollowups } from '../EmailFollowups';
@@ -28,9 +29,12 @@ function TicketChoice({ id, name, value, options, disabled, onSave }) {
     return <div className="ticket-summary__row ticket-summary__row--choice">
         <dt><label htmlFor={ id }>{ name }</label></dt>
         <dd>
-            <select id={ id } className="ticket-summary__select" value={ pending ?? value ?? '' } disabled={ disabled || pending !== null } onChange={ change }>
-                { options.map(option => <option key={ option.value } value={ option.value }>{ option.label }</option>) }
-            </select>
+            <span className="ticket-summary__choice">
+                <select id={ id } className="ticket-summary__select" value={ pending ?? value ?? '' } disabled={ disabled || pending !== null } onChange={ change }>
+                    { options.map(option => <option key={ option.value } value={ option.value }>{ option.label }</option>) }
+                </select>
+                { !disabled && <ReplyIcon name="chevron-right" className="ticket-summary__chevron" /> }
+            </span>
             { error && <p role="alert" className="ticket-summary__error">{ error }</p> }
             <p role="status" className="visually-hidden">{ saved }</p>
         </dd>

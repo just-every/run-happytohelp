@@ -8216,7 +8216,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/TicketSummary.jsx": {
-      "sha256": "1ea0f5ef892714980932cda2ecbafda87ebfc3f764ee5d2a716e5577c66faaf9",
+      "sha256": "9a43f3245d659417f82e535a043b9bc1cd47142f7145691e31cb2dbe78e143d8",
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/useTicketRecord.js": {
@@ -8600,7 +8600,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/foundation/_h6-convo-tokens.scss": {
-      "sha256": "64a585548ec79897d82086747de4daa10b4f496ce0bade5ab8577506b687ba97",
+      "sha256": "a76697b36ff902b7bdd6ccf939431a851e9462875ad0ea8be2529a9338750bda",
       "executable": false
     },
     "src/ui/dashboard/styles/foundation/_icons.scss": {
@@ -8644,11 +8644,11 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-composer-tools.scss": {
-      "sha256": "7300f38d3bcfe38e01db6e7ac78bc3ad22afaa51e4c1415d0683a6701a052a6d",
+      "sha256": "5a65ea7cda03bfb324df7c65e48e511d56101da46026a5609f78f513875fe458",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-composer.scss": {
-      "sha256": "1fe36d543868dff623ee1cf69abc3894ff6b98ca7cf2d9b34016d1ccc6af75b0",
+      "sha256": "7e0e07fb511ca6872987e8c343b6dc9420b0441e2d4ef1107fd0b33a8bca4c7a",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-delegation-results.scss": {
@@ -8660,7 +8660,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-details.scss": {
-      "sha256": "c1d0b1d53c93e281c1a8d4c7fd01455070429d6e0ec1f097f25b30bd7c3f7532",
+      "sha256": "5bfadcc3b9623bce6547a5ce0d60bffe22e00c42af35ea5252c056797c148387",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-header.scss": {

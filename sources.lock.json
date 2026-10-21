@@ -11096,7 +11096,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ticket-queue-capabilities.mjs": {
-      "sha256": "7768c3db1754d4cf27d8d0c795341624fc1b1616b1ed235c823246c4ac6a77bc",
+      "sha256": "aead168fe0a16de9e06a4038405a7214fa7837d4f0703235589e05b0441b1ed5",
       "executable": false
     },
     "tests/helpers/inbox/ticket-queue.mjs": {

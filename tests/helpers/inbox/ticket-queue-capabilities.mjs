@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 // The queue composes the native macro, status and public request-form doors.
 // It runs inside ticketsJourney; provider mail uses that journey's network edge.
 export async function ticketQueueCapabilities(f,queueIds,tag){
- const {app,w,ok,get,patch,notices}=f
+ const {app,w,ok,call,get,patch,notices}=f
  const ids=queueIds.slice(7,10)
  const field=await ok('/ticket-fields',{name:'Replacement stage',type:'dropdown',options:['Awaiting label','Label sent']})
  f.fields.push(field)
@@ -22,7 +22,7 @@ export async function ticketQueueCapabilities(f,queueIds,tag){
  }
  assert.deepEqual(await Promise.all(tickets.map(ticket=>get(ticket.id))),before,'macro preview leaves tickets unchanged')
  assert.deepEqual(await Promise.all(tickets.map(ticket=>messages(ticket.id))),messagesBefore,'macro preview sends no replies')
- for(const ticket of tickets)assert.equal(await ok(`/conversations/${ticket.id}/macro-draft`),null)
+ for(const ticket of tickets)assert.equal((await call(`/conversations/${ticket.id}/macro-draft`)).data.data,null)
  const applied=await ok(`/macros/${macro.id}/apply`,{version:macro.version,tickets,command_id:'queue-replacement-labels'})
  assert.deepEqual(applied.results.map(row=>row.status),['applied','applied'])
  for(const [i,row] of applied.results.entries()){

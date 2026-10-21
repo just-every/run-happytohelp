@@ -29,7 +29,8 @@ export default function TicketViews({ projectId, currentAgentId, view, editing, 
     const [ error, setError ] = useState(''), [ busy, setBusy ] = useState(false);
     const path = `${ ticketPath(projectId) }/ticket-views`;
     const contacts = [ ...new Map(Object.values(conversationData).filter(conversation => conversation.project_id === projectId).flatMap(conversation => [ conversation.contact, ...(conversation.participants || []) ]).filter(contact => contact?.id && !contact.is_erased && !contact.is_erasing).map(contact => [ contact.id, contact ])).values() ];
-    const deletable = editing && settings && canEditView(view, settings.permissions, currentAgentId);
+    // Deleting calls refreshInboxData(), so the view leaves the list (and `view` goes) while this dialog is still closing.
+    const deletable = editing && settings && view && canEditView(view, settings.permissions, currentAgentId);
     const update = patch => setDraft(current => ({ ...current, ...patch }));
     const finish = async (next, notice) => { await navigate({ search: next }); onNotice(notice); onClose(); };
     const save = async event => {

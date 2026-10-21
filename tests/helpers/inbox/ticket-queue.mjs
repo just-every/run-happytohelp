@@ -44,7 +44,7 @@ export async function ticketQueue(f){
  assert.deepEqual(await get(ids[1]),staleBefore,'the stale ticket retains its concurrent edit and none of the bulk changes')
  assert.deepEqual(await foreignRead(),foreignBefore,'the other workspace retains its whole ticket and history')
  assert.equal((await call(`/conversations/${foreignTicket.id}/ticket`)).status,404)
- const audit=await ok('/audit?category=data&limit=200')
+ const audit=(await app.ok(`/api/management/projects/${w.projectId}/audit?category=data&limit=200`,{token:w.tokens.owner})).data
  for(const [receipt,action,outcomes] of [[preview,'preview',['ready','ready','forbidden']],[result,'apply',['applied','stale','forbidden']]]){
   const events=audit.filter(row=>row.action===`ticket.bulk.${action}`&&row.detail.batch_id===receipt.batch_id)
   assert.equal(events.length,body.tickets.length)

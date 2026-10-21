@@ -11096,11 +11096,11 @@
       "executable": false
     },
     "tests/helpers/inbox/ticket-queue-capabilities.mjs": {
-      "sha256": "9f526abfe75f91ca07862e6f2580043f0bcbf7507b220e19f50e8d3ff4312451",
+      "sha256": "7768c3db1754d4cf27d8d0c795341624fc1b1616b1ed235c823246c4ac6a77bc",
       "executable": false
     },
     "tests/helpers/inbox/ticket-queue.mjs": {
-      "sha256": "57f6ce6a47391ef8d3f5d45423fbee3d3163567a33dcd5d8adeb74366a843b0f",
+      "sha256": "fd5590b88ba2d730e71cf738c99ed9ee9f41ec0a6176b502acdd5ffbf22ecc48",
       "executable": false
     },
     "tests/helpers/inbox/tickets-browser.mjs": {

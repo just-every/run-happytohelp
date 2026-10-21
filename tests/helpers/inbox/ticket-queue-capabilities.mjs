@@ -36,7 +36,7 @@ export async function ticketQueueCapabilities(f,queueIds,tag){
  assert.deepEqual(await Promise.all(tickets.map(ticket=>messages(ticket.id))),messagesBefore,'bulk application retains replies as drafts until an operator sends them')
  const usage=await ok(`/macros/${macro.id}/usage`)
  assert.equal(usage.find(row=>row.version===macro.version&&row.actor_id===w.users.owner).uses,2)
- const audit=await ok('/audit?category=data&limit=200')
+ const audit=(await app.ok(`/api/management/projects/${w.projectId}/audit?category=data&limit=200`,{token:w.tokens.owner})).data
  for(const row of applied.results){
   const receipt=audit.find(event=>event.action==='macro.applied'&&event.target_id===row.id&&event.detail.usage_id===row.usage_id)
   assert.ok(receipt);assert.equal(receipt.outcome,'succeeded');assert.equal(receipt.detail.macro_id,macro.id)

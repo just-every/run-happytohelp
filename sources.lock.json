@@ -8676,7 +8676,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-inbox.scss": {
-      "sha256": "305f01f460098494839c52a5ae326b739c365a06a3577580efd243baf5e24608",
+      "sha256": "ac84f1c8844e6d6f54ba30ba895838626c2d83a29a04082d3f42354585b8e2cf",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-profile-symbols.scss": {

@@ -8644,7 +8644,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_workspace-insights.scss": {
-      "sha256": "4aa15760cc4f54a96a22334c21d2348b3af49af293968f4d7703827d9a3fc68a",
+      "sha256": "789c079d6bce8b76ad41045cdd240bf0e1613c1e9c740076577703ff5cb7bbd3",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_workspace-notifications.scss": {

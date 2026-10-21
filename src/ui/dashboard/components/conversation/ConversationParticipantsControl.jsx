@@ -9,6 +9,9 @@ ConversationParticipantsControl.propTypes = {
     conversation: PropTypes.object.isRequired,
 };
 
+// An address may wrap before its @, never inside a word.
+const address = email => { const at = String(email || '').lastIndexOf('@'); return at > 0 ? <>{ email.slice(0, at) }<wbr />{ email.slice(at) }</> : email; };
+
 export default function ConversationParticipantsControl({ conversation }) {
     const [isAddParticipantModalVisible, setIsAddParticipantModalVisible] = useState(false);
     const [removing, setRemoving] = useState(null);
@@ -27,28 +30,25 @@ export default function ConversationParticipantsControl({ conversation }) {
             .finally(() => setRemoving(null));
     };
 
+    // Summary › Recipients: the requester's reply address, then every added recipient with its remove control.
+    const requester = conversation.contact?.provided_email || conversation.contact?.email;
     return (
-        <section className="conversation-details-section conversation-details-participants">
-            <div className="conversation-details-section-heading">
-                <h3>Recipients</h3>
-                <button type="button" className="btn btn-link" onClick={ () => setIsAddParticipantModalVisible(true) }><ReplyIcon name="plus" />Add recipient</button>
-            </div>
+        <div className="conversation-details-participants">
             { error && <p role="alert" className="text-danger">{ error }</p> }
-            { participants.length > 0
-                ? <ul className="conversation-details-participant-list">
-                    { participants.map(participant => {
-                        const email = participant.provided_email || participant.email;
-                        return <li key={ `participant-${participant.id}` }>
-                            <ReplyIcon name="mail" />
-                            <span>{ email }</span>
-                            <button type="button" className="btn btn-link" disabled={ removing !== null } aria-label={ `Remove ${email}` } onClick={ () => removeParticipant(participant.pivot.id) }>
-                                <ReplyIcon name="x" />
-                            </button>
-                        </li>;
-                    }) }
-                </ul>
-                : <p className="conversation-details-empty">No additional recipients.</p> }
+            <ul className="conversation-details-participant-list">
+                { requester && <li className="is-requester"><span title="Requester">{ address(requester) }</span></li> }
+                { participants.map(participant => {
+                    const email = participant.provided_email || participant.email;
+                    return <li key={ `participant-${participant.id}` }>
+                        <span>{ address(email) }</span>
+                        <button type="button" className="btn btn-link" disabled={ removing !== null } aria-label={ `Remove ${email}` } onClick={ () => removeParticipant(participant.pivot.id) }>
+                            <ReplyIcon name="x" />
+                        </button>
+                    </li>;
+                }) }
+            </ul>
+            <button type="button" className="btn btn-link ticket-summary__add" aria-label="Add recipient" onClick={ () => setIsAddParticipantModalVisible(true) }><ReplyIcon name="plus" />Add</button>
             { isAddParticipantModalVisible && <AddParticipantModal conversation={ conversation } onHide={ () => setIsAddParticipantModalVisible(false) } /> }
-        </section>
+        </div>
     );
 }

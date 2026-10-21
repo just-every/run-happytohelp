@@ -5,6 +5,8 @@
 // own variables are imported. ./_base.scss points Bootstrap's runtime custom
 // properties at the brand tokens, so these values only seed Bootstrap's build.
 
+@import "./h6-convo-tokens";
+
 // Palette ------------------------------------------------------------------
 // The landing's paper and ink (src/ui/homepage/brand-tokens.css holds the same values as CSS custom properties, which
 // every rule reads at runtime, so Dark display mode only swaps the tokens). Bootstrap needs literal colours to build its

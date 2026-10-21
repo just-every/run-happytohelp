@@ -93,7 +93,10 @@ export async function securityBrowserJourney(browser){
   await collaborator.goto(origin+`${P}/conversations/${conversation.json.id}`);await collaborator.getByRole('note').filter({hasText:'add internal notes'}).waitFor()
   assert.equal(await collaborator.getByPlaceholder('Type your reply…').count(),0,'no reply box for a collaborator')
   assert.equal(await collaborator.getByRole('button',{name:'Close',exact:true}).count(),0,'no close button for a collaborator')
-  await collaborator.getByRole('button',{name:'Follow',exact:true}).click();await collaborator.getByRole('button',{name:'Following'}).waitFor();await inspect(collaborator,'collaborator-conversation-1440')
+  // Follow is in the notes-only box's "+" (Actions), with Internal note.
+  const notesActions=collaborator.locator('#conversation-notes-tools'),follow=collaborator.getByRole('menuitemcheckbox',{name:'Follow',exact:true})
+  await notesActions.click();await follow.and(collaborator.locator(':not(.disabled)')).waitFor();await follow.click()
+  await notesActions.click();await collaborator.getByRole('menuitemcheckbox',{name:'Following',exact:true}).waitFor();await collaborator.keyboard.press('Escape');await inspect(collaborator,'collaborator-conversation-1440')
 
   // The same screens at phone width.
   for(const [page,path,heading,name] of [[owner,'/users/profile',null,'profile-security'],[owner,P+'/security','Two-factor sign-in','security-policy'],[owner,P+'/security-log','Activity','security-log'],[owner,P+'/roles','Built-in roles','roles'],[collaborator,`${P}/conversations/${conversation.json.id}`,null,'collaborator-conversation']]){

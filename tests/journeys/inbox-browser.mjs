@@ -13,6 +13,7 @@ import {visualHydration} from '../helpers/inbox/visual-hydration-browser.mjs'
 import {noteBusyFocus} from '../helpers/inbox/note-busy-focus-browser.mjs'
 import {panelResize} from '../helpers/inbox/conversation-panel-resize-browser.mjs'
 import {uiBrowser} from '../helpers/inbox/ui-browser.mjs'
+import {startMenu} from '../helpers/inbox/start-menu-browser.mjs'
 
 // The operator dashboard in Chromium against the emitted Worker; each case starts its own installation.
 
@@ -31,3 +32,5 @@ test('a busy internal note keeps focus and its draft, and the conversation panel
 test('the dashboard reads and writes through the native transport with readiness, reply tools and dialogs at desktop and phone widths',uiBrowser)
 
 test('ticket settings and ticket fields save through the dashboard at desktop and phone widths',()=>ticketsBrowser())
+
+test('the reply card\'s "+" start menu reaches every ticket action its role allows at 1440 and 390: an owner opens each dialog, a role without ticket management never sees Merge or Snooze, a collaborator sees only notes and follow, and a CC set there shows as a chip in the card',startMenu)

@@ -61,11 +61,9 @@ export default function ConversationAssignmentControl({ conversation }) {
         toggleRef.current?.focus();
     };
 
+    // Summary › Assignee: the server's assignment, changed from its menu.
     return (
-        <section className="conversation-details-section conversation-details-assignment">
-            <div className="conversation-details-section-heading">
-                <h3>Assignment</h3>
-            </div>
+        <div className="conversation-details-assignment">
             <div className={ `dropdown${isOpen ? ' show' : ''}` } onKeyDown={ handleKeyDown }>
                 <OverlayTrigger placement="bottom" overlay={ <Tooltip id={ `${conversation.id}-assignment` }>Change assignment</Tooltip> }>
                     <button
@@ -78,9 +76,8 @@ export default function ConversationAssignmentControl({ conversation }) {
                         disabled={ pending }
                         aria-label={ `Assign conversation. Current assignment: ${assignmentName}` }
                         onClick={ () => setIsOpen(current => !current) }>
-                        <ReplyIcon name="user-round-check" />
                         <span>{ assignmentName }</span>
-                        <ReplyIcon name="chevron-down" className="conversation-details-assignment__chevron" />
+                        <ReplyIcon name="chevron-right" className="conversation-details-assignment__chevron" />
                     </button>
                 </OverlayTrigger>
                 { isOpen && <div className="dropdown-menu p-1 show" ref={ dropdownRef } role="menu">
@@ -98,6 +95,6 @@ export default function ConversationAssignmentControl({ conversation }) {
                 </div> }
             </div>
             { error && <p role="alert" className="text-danger">{ error }</p> }
-        </section>
+        </div>
     );
 }

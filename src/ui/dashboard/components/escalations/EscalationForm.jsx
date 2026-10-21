@@ -2,7 +2,8 @@ import React, {useId, useState} from 'react';
 import ContextSelector from './ContextSelector';
 import {escalationWrite, providerNames} from './api';
 
-export default function EscalationForm({base, connections, messages, onChanged}) {
+/** The selected-context escalation form, shown by "+" › Escalate to engineering… in a dialog. */
+export default function EscalationForm({base, connections, messages, onChanged, onBusyChange}) {
     const id = useId();
     const available = connections.filter(connection => connection.connected);
     const [provider, setProvider] = useState(available[0]?.provider || '');
@@ -20,9 +21,9 @@ export default function EscalationForm({base, connections, messages, onChanged})
         setPreview(null); setNotice('');
     };
     const run = async action => {
-        setBusy(true); setError(''); setNotice('');
+        setBusy(true); onBusyChange?.(true); setError(''); setNotice('');
         try { await action(); } catch (failure) { setError(failure.message); }
-        finally { setBusy(false); }
+        finally { setBusy(false); onBusyChange?.(false); }
     };
     const inspect = event => {
         event.preventDefault();
@@ -41,9 +42,9 @@ export default function EscalationForm({base, connections, messages, onChanged})
         setNotice(slack ? 'Selected context shared to Slack.' : 'Engineering issue linked to this ticket.');
         await onChanged();
     });
-    if (available.length === 0) return <p className="escalation-hint">An administrator needs to connect GitHub, Linear, Jira or Slack before you can share an escalation.</p>;
-    return <details className="escalation-new">
-        <summary>Create or link an issue / Slack handoff</summary>
+    if (available.length === 0) return <p className="escalation-hint">An administrator needs to connect GitHub, Linear, Jira or Slack before you can share an escalation. Connections are in Ticket › Escalations.</p>;
+    return <div className="escalation-new">
+        <p className="escalation-hint">Create or link an issue, or hand off to Slack, with only the context you select.</p>
         <form className="escalation-form" onSubmit={inspect}>
             <fieldset disabled={busy}>
                 <legend className="visually-hidden">Share an escalation</legend>
@@ -76,5 +77,5 @@ export default function EscalationForm({base, connections, messages, onChanged})
         </form>
         {error && <p className="escalation-error" role="alert">{error}</p>}
         {notice && <p className="escalation-hint" role="status">{notice}</p>}
-    </details>;
+    </div>;
 }

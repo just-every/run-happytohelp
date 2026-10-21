@@ -1,0 +1,6 @@
+/* "+" › Escalate to engineering…: the selected-context form fills a large dialog, its preview scrolls inside it. */
+.escalation-dialog .modal-body { color: var(--ink); font-size: 15px; overflow-wrap: anywhere; }
+.escalation-dialog .escalation-new > .escalation-hint:first-child { margin-top: 0; }
+.escalation-dialog .escalation-form { margin-top: 0; }
+.escalation-dialog .escalation-context-list { max-height: min(280px, 36dvh); }
+.escalation-dialog .escalation-preview pre { max-height: min(300px, 40dvh); }

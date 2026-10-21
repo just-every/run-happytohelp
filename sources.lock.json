@@ -1620,7 +1620,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "f2f9ccb74df8352872e9ebcf33805f937280c4235ed53d498b12f99a22129d45",
+      "sha256": "a541f156b9d7578ec05da6a19cc50c65ad7597e0a861492f4be9bc0004c72802",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2472,11 +2472,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "f11f43c93b8606c4edc9c4974b01dc174c73d40c19dafa450ce95ee3975f9609",
+      "sha256": "1b3902f39de2cfe36d006ff268c1d6d1666ea2d9d5b95d6037b2a84139a886a0",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "b057dd63e06f8070dadeb1194922a115d35ce46d8ff8cddae59733269f344037",
+      "sha256": "0f8c00765dc1470dc93b76b408e192d3ef321022908be1deeda4a483cdc949f3",
       "executable": false
     },
     "public/fonts/inter/InterVariable.woff2": {
@@ -2916,7 +2916,11 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "94474e42756c51eb2c5b18977a89c11744a175ebf9f9e70b564cfbbead626483",
+      "sha256": "e480c786727a1490fdd02de3254f1383def215a42af2afc3da76434fd1151c17",
+      "executable": false
+    },
+    "scripts/installer/migration-ledger.mjs": {
+      "sha256": "92e416b2e86161b5357341a72282412690b93be65dd9757b627881b36af7218a",
       "executable": false
     },
     "scripts/installer/native-local.mjs": {
@@ -11235,6 +11239,10 @@
       "sha256": "19fe60cd275db9614dd15a22aff12b4a6b72547e304d96d851b3287d877dfe66",
       "executable": false
     },
+    "tests/helpers/platform-archive.mjs": {
+      "sha256": "cd094991197ed1c3d2dfabe18886bcfad63584a345c760729114d9e9cfa092d2",
+      "executable": false
+    },
     "tests/helpers/proactive-provider-network.mjs": {
       "sha256": "3babf77f5cdc67032cc86a33f903631bb2c769b7ca84234e05b9d6419ad00070",
       "executable": false
@@ -11632,7 +11640,7 @@
       "executable": false
     },
     "tests/journeys/restore.mjs": {
-      "sha256": "55762e1000e4ac500c08bec659c63fdf428a4df8285bf942d2be230ccca7a7cf",
+      "sha256": "b80a55e04c3d55a12bb30d8d663c5326428a36caebf50636cf8dd6f650555c59",
       "executable": false
     },
     "tests/journeys/runtime.mjs": {

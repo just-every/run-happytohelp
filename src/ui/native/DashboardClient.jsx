@@ -8,6 +8,7 @@ import { InboxPage, WorkspacePages } from './dashboard-page-code';
 import Navigation from './Navigation';
 import { NavigationGuard } from './NavigationGuard';
 import { MobileNavigationProvider } from './MobileNavigation';
+import { InboxNavigationProvider } from './inbox-navigation-state';
 import DemoWorkspaceBanner from './demo/DemoWorkspaceBanner';
 import WorkspaceLiveCounts from './WorkspaceLiveCounts';
 export default function DashboardClient({ settings }) {
@@ -31,6 +32,7 @@ export default function DashboardClient({ settings }) {
     }, [settings.initialWorkspaceReads]);
     useEffect(() => {
         document.body.className = `${isInbox ? 'conversation-workspace' : 'workspace-page'} workspace-themed`;
+        return () => { document.body.className = ''; };
     }, [isInbox]);
     // The workspace chrome is always paper, ink and aqua; the workspace's own colour belongs to its widget and help centre.
     // Dark display mode swaps the brand tokens (brand-tokens.css); Light and Balanced both render the light tokens.
@@ -41,7 +43,7 @@ export default function DashboardClient({ settings }) {
         window.addEventListener('workspace-appearance',update);
         return () => { window.removeEventListener('workspace-appearance',update); delete document.body.dataset.theme; };
     }, [settings]);
-    return <NavigationGuard><MobileNavigationProvider>
+    return <NavigationGuard><MobileNavigationProvider><InboxNavigationProvider>
         <a className="workspace-skip-link" href="#workspace-main">Skip to main content</a>
         <Navigation settings={settings} />
         {/* The inbox holds these connections itself, with its listing. */}
@@ -50,7 +52,7 @@ export default function DashboardClient({ settings }) {
             <DemoWorkspaceBanner settings={settings} />
             <Outlet />
         </main>
-    </MobileNavigationProvider></NavigationGuard>;
+    </InboxNavigationProvider></MobileNavigationProvider></NavigationGuard>;
 }
 
 export function DashboardContent({ Inbox = InboxPage, Workspace = WorkspacePages, Conversation }) {

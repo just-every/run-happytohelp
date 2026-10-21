@@ -78,9 +78,11 @@ try {
     await page.waitForURL(`**/projects/${fixture.projects[1].id}/conversations`);
     await assertShell(page, stamp, size + ': workspace switch retains shell before All open');
     await checkpoint(size + ': click All open');
-    // The views are one row above the list on both widths: choosing one needs no menu.
+    // The views sit under Inbox in the rail; below 1200px in the menu sheet, which the list title opens at Inbox.
     const view = name => page.locator(`nav[data-testid="inbox-views"]:visible a[href*="view=${name}"]`);
-    assert.equal(await nav.locator('a[href*="view="]').count(), 0, size + ': the navigation holds no inbox views');
+    const showViews = () => page.getByRole('button', {name:/, show inbox views$/}).click();
+    if (size === 'mobile') await showViews();
+    for (const name of ['mine', 'open', 'unassigned', 'ai', 'closed']) assert.equal(await nav.locator(`nav[data-testid="inbox-views"]:visible a[href*="view=${name}"]`).count(), 1, size + ': the navigation holds the ' + name + ' view');
     await view('open').click();
     await page.waitForURL(url => url.searchParams.get('view') === 'open');
     await page.locator('.conversation-list-items').getByText('Beta Visitor', {exact:true}).waitFor();
@@ -93,13 +95,13 @@ try {
       const toggle = nav.getByRole('button', {name:'Toggle navigation'});
       assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
       assert.equal(await nav.locator('#sidebarCollapse').isVisible(), false);
-      // A query-only selection again: the row stays in reach and the menu stays closed.
+      // A query-only selection again: the sheet opens at Inbox and closes on the choice.
+      await showViews();
+      assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
       await view('unassigned').click();
       await page.waitForURL(url => url.searchParams.get('view') === 'unassigned');
       assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
-      await toggle.click();
-      assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
-      assert.equal(await nav.locator('a[href*="view="]').count(), 0, 'mobile: the opened menu holds no inbox views');
+      assert.equal(await nav.locator('#sidebarCollapse').isVisible(), false);
       await assertShell(page, stamp, 'mobile: repeated view selection retains shell');
     }
     await checkpoint(size + ': completed');

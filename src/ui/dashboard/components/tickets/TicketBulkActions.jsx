@@ -1,9 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { ChatContext } from '../../contexts/ChatContext';
 import { nativeRequest } from '../../../native/transport';
+import ProblemBulkLink from './ProblemBulkLink';
+import BulkMacros from '../macros/BulkMacros';
 import { json, label, priorities, ticketPath } from './ticket-model';
+import './tickets.css';
 
-export default function TicketBulkActions({ projectId, selected, onClear, onApplied }) {
+function BulkChanges({ projectId, selected, onClear, onApplied }) {
     const { agentsFor } = useContext(ChatContext);
     const [settings, setSettings] = useState(null), [tags, setTags] = useState([]), [changes, setChanges] = useState({});
     const [preview, setPreview] = useState(null), [applied, setApplied] = useState(false), [error, setError] = useState(''), [busy, setBusy] = useState(false);
@@ -26,7 +29,7 @@ export default function TicketBulkActions({ projectId, selected, onClear, onAppl
         return label(value);
     };
     return <div className="ticket-queue-tools" role="region" aria-label="Bulk ticket changes">
-        <details open><summary>{selected.length} selected tickets</summary>
+        <details open><summary>Bulk changes</summary>
             {error && <p role="alert" className="text-danger">{error}</p>}
             {settings && <>
                 {select('assigned_to', 'Assign to', [{ value: '__none', label: 'Unassigned' }, ...(agentsFor(projectId) || []).filter(agent => agent.access_role !== 'collaborator').map(agent => ({ value: agent.id, label: agent.name }))])}
@@ -37,5 +40,24 @@ export default function TicketBulkActions({ projectId, selected, onClear, onAppl
                 {preview && <><p className="mt-2" role="status">{applied ? 'Bulk update results' : 'Preview — no changes applied'}</p><ul className="ticket-result-list">{preview.results.map(result => <li key={result.id}><strong>{selected.find(ticket => ticket.id === result.id)?.subject || result.id}</strong>: {label(result.status)}{result.changes && <div>{Object.entries(result.changes).filter(([key,value]) => !key.startsWith('expected_') && (!Array.isArray(value) || value.length)).map(([key, value]) => <div key={key}>{label(key === 'agent_id' ? 'Assignee' : key === 'status_id' ? 'Status' : key)}: {describe(key,value)}</div>)}</div>}{result.reason || result.error ? ` — ${result.reason || (typeof result.error === 'string' ? result.error : result.error.message)}` : ''}</li>)}</ul>{!applied && <button className="btn btn-sm btn-primary" type="button" disabled={busy || !preview.results.some(result => result.status === 'ready')} onClick={() => run(true)}>Apply to eligible tickets</button>}</>}
             </>}
         </details>
+    </div>;
+}
+
+/** The bulk bar, shown only while selecting: how many are selected, "Select loaded tickets" and Done, then the bulk
+ *  changes, problem link and macros for the selection. `selected` maps ticket ids to {id, subject, ticket_version}. */
+export default function TicketBulkActions({ projectId, loaded, selected, onSelect, onDone, onApplied }) {
+    const tickets = Object.values(selected);
+    const selectLoaded = () => onSelect(Object.fromEntries(loaded.slice(0, 100).map(item => [item.id, { id: item.id, subject: item.subject, ticket_version: item.ticket_version }])));
+    return <div className="ticket-bulk-bar">
+        <div className="ticket-bulk-bar-head">
+            <span className="ticket-bulk-count" role="status">{tickets.length} selected</span>
+            <button type="button" className="btn btn-sm btn-white" onClick={selectLoaded}>Select loaded tickets</button>
+            <button type="button" className="btn btn-sm btn-link" onClick={onDone}>Done</button>
+        </div>
+        {tickets.length > 0 && <>
+            <BulkChanges projectId={projectId} selected={tickets} onClear={() => onSelect({})} onApplied={onApplied}/>
+            <ProblemBulkLink projectId={projectId} selectedIds={tickets.map(ticket => ticket.id)} onApplied={onApplied}/>
+            <BulkMacros projectId={projectId} selectedTickets={tickets.map(ticket => ({ id: ticket.id, expected_version: ticket.ticket_version }))} onApplied={onApplied}/>
+        </>}
     </div>;
 }

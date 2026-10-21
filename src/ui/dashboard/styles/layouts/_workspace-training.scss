@@ -7,7 +7,7 @@ body.workspace-page .workspace-training-source {
         align-items: center;
         gap: 9px;
         color: var(--bs-primary);
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 600;
         text-decoration: none;
     }
@@ -29,7 +29,7 @@ body.workspace-page .workspace-training-source {
     .training-source-identity__body { min-width: 0; }
     .training-source-identity__title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
     .training-source-identity h1 { margin: 0; color: var(--ink); font-size: 24px; font-weight: 650; letter-spacing: -.025em; line-height: 1.25; overflow-wrap: anywhere; }
-    .training-source-identity__url { display: inline-flex; align-items: center; gap: 7px; margin: 6px 0 0; color: var(--bs-primary); font-size: 13px; overflow-wrap: anywhere; text-decoration: none; }
+    .training-source-identity__url { display: inline-flex; align-items: center; gap: 7px; margin: 6px 0 0; color: var(--bs-primary); font-size: 14.5px; overflow-wrap: anywhere; text-decoration: none; }
     .training-source-identity__url:hover { color: var(--bs-action, var(--bs-primary)); text-decoration: underline; }
     p.training-source-identity__url { color: var(--ink-soft); }
     .training-source-status { text-transform: capitalize; }
@@ -38,7 +38,7 @@ body.workspace-page .workspace-training-source {
     .training-source-status--crawling, .training-source-status--ingesting { color: var(--bs-primary) !important; background: var(--d-cyan-tint) !important; }
     .training-source-identity__refresh { text-align: right; }
     .training-source-identity__refresh .btn { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
-    .training-source-identity__refresh p { margin: 7px 0 0; color: var(--ink-soft); font-size: 12px; }
+    .training-source-identity__refresh p { margin: 7px 0 0; color: var(--ink-soft); font-size: 14px; }
 
     .training-source-panel {
         margin-bottom: 14px;
@@ -51,8 +51,8 @@ body.workspace-page .workspace-training-source {
 
     .training-source-overview__metrics { display: grid; grid-template-columns: minmax(110px, .65fr) repeat(3, minmax(150px, 1fr)) minmax(200px, 1.35fr); gap: 18px 28px; margin: 18px 0 4px; }
     .training-source-overview__metrics > div { min-width: 0; }
-    .training-source-overview dt { margin: 0 0 8px; color: var(--ink-soft); font-size: 12px; font-weight: 500; }
-    .training-source-overview dd { margin: 0; color: var(--ink); font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+    .training-source-overview dt { margin: 0 0 8px; color: var(--ink-soft); font-size: 14px; font-weight: 500; }
+    .training-source-overview dd { margin: 0; color: var(--ink); font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
     .training-source-overview__status { display: flex; align-items: center; gap: 8px; font-weight: 500 !important; }
     .training-source-overview__status > span { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; background: var(--ink-soft); }
     .training-source-overview__status--ready > span { background: var(--bs-success); }
@@ -60,31 +60,31 @@ body.workspace-page .workspace-training-source {
     .training-source-overview__status--crawling > span, .training-source-overview__status--ingesting > span { background: var(--bs-primary); }
 
     .training-source-settings fieldset { min-width: 0; margin: 18px 0 0; padding: 0; border: 0; }
-    .training-source-settings legend { margin: 0 0 10px; color: var(--ink); font-size: 13px; font-weight: 500; }
+    .training-source-settings legend { margin: 0 0 10px; color: var(--ink); font-size: 14.5px; font-weight: 500; }
     .training-source-cadence__options { display: flex; flex-wrap: wrap; gap: 8px; }
-    .training-source-cadence__option { display: inline-flex; align-items: center; gap: 8px; min-height: 34px; margin: 0; padding: 6px 10px; border-radius: 7px; color: var(--ink); cursor: pointer; font-size: 13px; }
+    .training-source-cadence__option { display: inline-flex; align-items: center; gap: 8px; min-height: 34px; margin: 0; padding: 6px 10px; border-radius: 7px; color: var(--ink); cursor: pointer; font-size: 14.5px; }
     .training-source-cadence__option:has(input:checked) { color: var(--bs-primary); background: var(--d-cyan-tint); }
     .training-source-cadence__option input { width: 16px; height: 16px; margin: 0; accent-color: var(--bs-primary); }
     .training-source-settings__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 28px; margin-top: 20px; }
     .training-source-settings__grid .form-group { min-width: 0; margin: 0; }
     .training-source-settings__grid textarea.form-control { min-height: 64px; resize: vertical; }
     .training-source-settings__actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
-    .training-source-settings__actions p { flex: 1 1 180px; margin: 0; color: var(--ink-soft); font-size: 12px; }
+    .training-source-settings__actions p { flex: 1 1 180px; margin: 0; color: var(--ink-soft); font-size: 14px; }
 
     .training-source-pages__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
-    .training-source-pages__heading > span { color: var(--ink-soft); font-size: 12px; }
+    .training-source-pages__heading > span { color: var(--ink-soft); font-size: 14px; }
     .training-source-pages__table td { padding-top: 11px; padding-bottom: 11px; border-bottom: 1px solid var(--rule); }
     .training-source-pages__table tr:last-child td { border-bottom: 0; }
     .training-source-pages__table td:first-child { overflow-wrap: anywhere; }
     .training-source-pages__table td > a, .training-source-pages__table td > span { color: var(--ink); font-weight: 500; text-decoration: none; }
     .training-source-pages__table td > a:hover { color: var(--bs-primary); text-decoration: underline; }
-    .training-source-pages__table p { margin: 3px 0 0; color: var(--ink-soft); font-size: 12px; }
+    .training-source-pages__table p { margin: 3px 0 0; color: var(--ink-soft); font-size: 14px; }
     .training-source-pages__open { color: var(--ink) !important; }
-    .training-source-pages__empty { margin: 16px 0 0; color: var(--ink-soft); font-size: 13px; }
+    .training-source-pages__empty { margin: 16px 0 0; color: var(--ink-soft); font-size: 14.5px; }
     .training-source-pages .pagination { margin: 16px 0 0; }
 
     .training-source-advanced { margin-top: 22px; }
-    .training-source-advanced > summary { width: fit-content; color: var(--ink-soft); cursor: pointer; font-size: 12px; font-weight: 600; }
+    .training-source-advanced > summary { width: fit-content; color: var(--ink-soft); cursor: pointer; font-size: 14px; font-weight: 600; }
     .training-source-advanced__actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 
     @media (max-width: 991.98px) {

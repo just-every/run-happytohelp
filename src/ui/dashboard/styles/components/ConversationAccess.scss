@@ -1,5 +1,5 @@
 // Follow control and the notes-only composer a collaborator sees in place of the reply box.
-.conversation-follow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 16px 0; font-size: 14px; }
+.conversation-follow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 16px 0; font-size: 15px; }
 .conversation-follow__who { color: var(--ink-soft); overflow-wrap: anywhere; }
 .conversation-notes-only { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; margin: 12px 16px 16px; padding: 14px 18px; border: 1px solid var(--rule-strong); border-radius: 12px; background: var(--surface); }
 .conversation-notes-only p { flex: 1 1 260px; margin: 0; }

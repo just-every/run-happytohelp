@@ -7,18 +7,18 @@ body.workspace-page .widget-code {
     font-size: 15px;
 
     &__section { min-width: 0; }
-    &__section-heading { margin: 0 0 8px; color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.4; }
+    &__section-heading { margin: 0 0 8px; color: var(--ink); font-size: 15px; font-weight: 600; line-height: 1.4; }
     &__section-heading h2 { margin: 0 0 8px; color: inherit; font: inherit; }
-    &__section-heading p { margin: 0 0 12px; color: var(--ink-soft); font-size: 12px; font-weight: 400; line-height: 1.5; }
-    &__section > p { margin: 0 0 12px; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
+    &__section-heading p { margin: 0 0 12px; color: var(--ink-soft); font-size: 14px; font-weight: 400; line-height: 1.5; }
+    &__section > p { margin: 0 0 12px; color: var(--ink-soft); font-size: 14px; line-height: 1.5; }
     &__secret-frame { display: grid; grid-template-columns: minmax(160px, .9fr) minmax(0, 1fr) auto; align-items: center; gap: 12px 16px; padding: 14px 16px; }
-    &__secret-name { color: inherit; font-size: 11px; overflow-wrap: anywhere; }
+    &__secret-name { color: inherit; font-size: 13px; overflow-wrap: anywhere; }
     &__secret-value { min-width: 0; }
-    &__secret-value code { color: inherit; font-size: 12px; overflow-wrap: anywhere; }
+    &__secret-value code { color: inherit; font-size: 14px; overflow-wrap: anywhere; }
     &__secret-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
-    &__secret-unavailable { margin: 10px 0 0; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
-    &__secret-note { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; color: var(--ink-soft); font-size: 11px; line-height: 1.5; }
-    &__secret-note code { padding: 2px 5px; border-radius: 4px; color: var(--ink); background: var(--d-cyan-tint); font-size: 12px; }
+    &__secret-unavailable { margin: 10px 0 0; color: var(--ink-soft); font-size: 14px; line-height: 1.5; }
+    &__secret-note { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; color: var(--ink-soft); font-size: 13px; line-height: 1.5; }
+    &__secret-note code { padding: 2px 5px; border-radius: 4px; color: var(--ink); background: var(--d-cyan-tint); font-size: 14px; }
     &__secret-server-only { margin-left: auto; }
 
     &__copy,
@@ -26,13 +26,13 @@ body.workspace-page .widget-code {
         display: inline-flex; align-items: center; justify-content: center; gap: 6px;
         min-height: 36px; padding: 0 16px; border: 1px solid var(--control-line); border-radius: 999px;
         background: transparent; color: var(--ink);
-        font: inherit; font-size: 12px; font-weight: 500; white-space: nowrap;
+        font: inherit; font-size: 14px; font-weight: 500; white-space: nowrap;
         &:hover { background: var(--hover); }
         &:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
         &:disabled { cursor: default; opacity: .55; }
     }
     &__secret-action { padding: 6px 0; border: 0; background: transparent; }
-    &__copy-feedback { color: var(--ink-soft); font-size: 11px; }
+    &__copy-feedback { color: var(--ink-soft); font-size: 13px; }
     &__copy-feedback:empty { display: none; }
     // Code and the server secret share one ink surface in every display mode: the landing's ink with paper text and an
     // aqua-family highlight. These literals are deliberate; the tokens would turn the block light in Dark mode.
@@ -41,7 +41,7 @@ body.workspace-page .widget-code {
     &__snippet { overflow: hidden; }
     &__snippet pre { margin: 0; max-height: 360px; padding: 4px 16px 16px; overflow: auto; }
     &__snippet pre:focus-visible { outline: 2px solid #5ad8ec; outline-offset: -2px; }
-    &__snippet code { display: block; overflow: visible; padding: 0; background: transparent; color: #f6f2ea; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 14px; line-height: 1.6; tab-size: 4; }
+    &__snippet code { display: block; overflow: visible; padding: 0; background: transparent; color: #f6f2ea; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 15px; line-height: 1.6; tab-size: 4; }
     // Reset the inherited VS2015 tokens before applying one complete palette.
     &__snippet code span { color: inherit; background: transparent; }
     &__snippet-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; padding: 10px 12px; }
@@ -72,15 +72,15 @@ body.workspace-page .widget-code {
     &__snippet .hljs-attr,
     &__snippet .hljs-attribute { color: #5ad8ec; }
     &__languages { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; margin-bottom: 10px; border: 1px solid var(--control-line); border-radius: 999px; background: var(--surface); }
-    &__languages button { border: 0; border-radius: 999px; padding: 6px 16px; background: transparent; color: var(--ink-soft); font: inherit; font-size: 12px; line-height: 1.4; }
+    &__languages button { border: 0; border-radius: 999px; padding: 6px 16px; background: transparent; color: var(--ink-soft); font: inherit; font-size: 14px; line-height: 1.4; }
     &__languages button.is-active,
     &__languages button[aria-selected=true] { color: var(--ink); background: var(--d-cyan-tint); }
     &__languages button:hover { color: var(--ink); background: var(--hover); }
     &__languages button:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 1px; }
     &__metadata { min-width: 0; }
-    &__metadata summary { cursor: pointer; color: var(--ink); font-size: 13px; font-weight: 600; }
-    &__metadata > p { margin: 10px 0 12px; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
-    &__metadata-content p { margin: 10px 0 12px; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
+    &__metadata summary { cursor: pointer; color: var(--ink); font-size: 14.5px; font-weight: 600; }
+    &__metadata > p { margin: 10px 0 12px; color: var(--ink-soft); font-size: 14px; line-height: 1.5; }
+    &__metadata-content p { margin: 10px 0 12px; color: var(--ink-soft); font-size: 14px; line-height: 1.5; }
     &__metadata .widget-code__snippet { margin-top: 12px; }
 
     @media (max-width: 991.98px) {

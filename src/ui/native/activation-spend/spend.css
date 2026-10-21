@@ -9,10 +9,10 @@
 .activation-spend__details[open] > summary { margin-bottom: 8px; }
 .activation-spend h3 { margin: 22px 0 0; font-size: 16px; font-weight: 500; }
 .activation-spend__amount { font-size: 28px; font-weight: 500; letter-spacing: -.02em; }
-.activation-spend__scope, .activation-spend__note { color: var(--ink-soft); font-size: 14px; }
+.activation-spend__scope, .activation-spend__note { color: var(--ink-soft); font-size: 15px; }
 .activation-spend__limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 12px 0; }
 .activation-spend__limits div { padding: 12px; border-radius: 10px; background: var(--paper); }
-.activation-spend dt { font-size: 14px; font-weight: 500; }
+.activation-spend dt { font-size: 15px; font-weight: 500; }
 .activation-spend dd { margin: 4px 0 0; font-size: 16px; }
 .activation-spend button { min-height: 36px; }
 @media (max-width: 500px) { .activation-spend__limits { grid-template-columns: 1fr; } }

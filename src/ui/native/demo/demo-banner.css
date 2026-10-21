@@ -12,7 +12,7 @@
     border-bottom: 1px solid var(--rule);
     color: var(--ink);
     background: var(--d-cyan-wash);
-    font-size: 14px;
+    font-size: 15px;
 }
 .demo-workspace-banner__copy { display: flex; flex: 1 1 18rem; flex-wrap: wrap; gap: 2px 10px; }
 .demo-workspace-banner__copy strong { font-weight: 600; }
@@ -31,11 +31,11 @@
 /* A phone keeps the band to one row beside the pill, so the inbox and the thread keep the screen: the fictional-data line
    and the workspace's name stay for screen readers; the pill still says where it goes. */
 @media (max-width: 767.98px) {
-    .demo-workspace-banner { flex-wrap: nowrap; gap: 12px; font-size: 13px; line-height: 1.35; }
+    .demo-workspace-banner { flex-wrap: nowrap; gap: 12px; font-size: 14.5px; line-height: 1.35; }
     .demo-workspace-banner__copy { flex: 1 1 auto; min-width: 0; }
     .demo-workspace-banner__copy span,
     .demo-workspace-banner__origin { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
     .demo-workspace-banner__return { flex: 0 1 auto; justify-content: flex-end; }
-    .demo-workspace-banner__return .btn { min-height: 34px; padding: 0 14px; font-size: 13px; }
+    .demo-workspace-banner__return .btn { min-height: 34px; padding: 0 14px; font-size: 14.5px; }
     .demo-workspace-banner:has(.demo-workspace-banner__error, .demo-workspace-banner__return label) { flex-wrap: wrap; }
 }

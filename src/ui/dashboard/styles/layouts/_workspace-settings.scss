@@ -12,7 +12,7 @@ body.workspace-page {
         h2, h3 { display: flex; align-items: center; gap: 12px; margin: 0; font: inherit; }
         > .fe, h2 > .fe { flex: 0 0 20px; font-size: 20px; color: inherit; }
     }
-    .settings-section__description, .settings-note { margin: 0 0 16px; color: var(--ink-soft); font-size: 14px; line-height: 1.5; }
+    .settings-section__description, .settings-note { margin: 0 0 16px; color: var(--ink-soft); font-size: 15px; line-height: 1.5; }
     .settings-section__heading + .settings-section__description { margin-top: -8px; }
 
     // The cards. A section inside a card is a sub-group under one hairline (Contact tracking in Help Center).
@@ -45,7 +45,7 @@ body.workspace-page {
     .settings-header-actions { display: flex; align-items: center; gap: 12px; }
     .settings-header-actions .workspace-filter-bar--header { width: 260px; }
     .workspace-settings table tbody tr + tr { border-top: 1px solid var(--rule); }
-    .workspace-settings .settings-empty { padding: 32px 12px; color: var(--ink-soft); font-size: 14px; }
+    .workspace-settings .settings-empty { padding: 32px 12px; color: var(--ink-soft); font-size: 15px; }
     .settings-empty p { margin: 0 0 4px; color: var(--ink); font-size: 16px; font-weight: 600; }
     .workspace-settings details > summary { width: fit-content; margin-top: 8px; color: var(--ink); cursor: pointer; font-size: 16px; font-weight: 500; text-decoration: underline 1.5px var(--d-cyan-deep); text-underline-offset: 5px; }
 

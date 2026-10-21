@@ -6,20 +6,20 @@
 .email-mailbox-heading { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
 .email-mailbox-title { text-align:left; padding:0; min-width:0; }
 .email-mailbox-title strong, .email-mailbox-title span { display:block; overflow-wrap:anywhere; }
-.email-mailbox-title span { font-size:14px; color:var(--ink-soft); }
+.email-mailbox-title span { font-size:15px; color:var(--ink-soft); }
 .email-mailbox-detail { margin-top:16px; }
 .email-facts { display:flex; gap:16px 32px; flex-wrap:wrap; margin:16px 0; }
-.email-facts dt { font-size:13px; font-weight:500; color:var(--ink-soft); }
+.email-facts dt { font-size:14.5px; font-weight:500; color:var(--ink-soft); }
 .email-facts dd { margin:4px 0 0; }
 .email-addresses { list-style:none; padding:0; margin:20px 0; }
 .email-addresses li { display:flex; gap:12px; justify-content:space-between; align-items:baseline; padding:8px 0; border-bottom:1px solid var(--rule); }
-.email-safe-preview { white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; max-height:380px; overflow:auto; border:1px solid var(--rule); padding:16px; border-radius:8px; color:var(--ink); background:var(--surface); font-size:13px; }
+.email-safe-preview { white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; max-height:380px; overflow:auto; border:1px solid var(--rule); padding:16px; border-radius:8px; color:var(--ink); background:var(--surface); font-size:14.5px; }
 .email-suspended-layout { display:grid; grid-template-columns:minmax(240px,1fr) minmax(0,2fr); gap:24px; }
 .email-suspended-list { list-style:none; padding:0; margin:0; }
 .email-suspended-list button { display:block; width:100%; text-align:left; padding:16px 12px; border:0; border-bottom:1px solid var(--rule); color:var(--ink); background:transparent; }
 .email-suspended-list button[aria-pressed=true] { background:var(--hover); }
 .email-suspended-list strong, .email-suspended-list span { display:block; overflow-wrap:anywhere; }
-.email-suspended-list span { font-size:14px; color:var(--ink-soft); margin-top:4px; }
+.email-suspended-list span { font-size:15px; color:var(--ink-soft); margin-top:4px; }
 .email-suspended-detail { min-width:0; }
 .email-suspended-detail h2 { font-size:20px; margin:0 0 16px; }
 @media(max-width:767px) { .email-suspended-layout { grid-template-columns:minmax(0,1fr); } }

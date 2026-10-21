@@ -1,18 +1,18 @@
 /* Setup list (SetupList.jsx): one quiet page. Needs you in a white outlined tile, What we've set as plain rows on the paper.
    Tokens only (brand-tokens.css); .h2h-chip, .h2h-count, .h2h-link and .btn come from the app. */
-.setup-list { min-width: 0; max-width: 820px; color: var(--ink); text-align: left; }
+.setup-list { min-width: 0; max-width: 1100px; color: var(--ink); text-align: left; }
 .setup-list p { margin: 0; }
-.setup-list code { padding: 0; color: inherit; font-size: 13.5px; background: none; overflow-wrap: anywhere; }
+.setup-list code { padding: 0; color: inherit; font-size: 14.5px; background: none; overflow-wrap: anywhere; }
 
 .sl-head { margin: 0 0 32px; }
 .sl-lede { max-width: 700px; font-size: 18px; line-height: 1.5; }
-.sl-quiet { display: flex; align-items: center; gap: 12px; margin-top: 14px !important; color: var(--ink-soft); font-size: 14.5px; line-height: 1.45; }
+.sl-quiet { display: flex; align-items: center; gap: 12px; margin-top: 14px !important; color: var(--ink-soft); font-size: 15px; line-height: 1.45; }
 .sl-head > .sl-quiet:first-child { margin-top: 0 !important; }
 .sl-dots { display: inline-flex; flex: none; gap: 4px; }
 .sl-dots i { width: 14px; height: 6px; border-radius: 999px; background: var(--muted-chip); }
 .sl-dots i.on { background: var(--d-cyan); }
-.sl-local { margin-top: 8px !important; color: var(--ink-soft); font-size: 14.5px; line-height: 1.45; }
-.sl-error { margin-top: 8px !important; color: var(--danger); font-size: 14.5px; }
+.sl-local { margin-top: 8px !important; color: var(--ink-soft); font-size: 15px; line-height: 1.45; }
+.sl-error { margin-top: 8px !important; color: var(--danger); font-size: 15px; }
 
 .sl-section { margin: 0 0 40px; }
 .sl-title { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; }
@@ -26,20 +26,20 @@
 .sl-need > p b { color: var(--ink); font-weight: 500; }
 .sl-act { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
 .sl-act .btn { white-space: nowrap; }
-.sl-wait { display: inline-flex; align-items: center; gap: 8px; margin-left: 6px; color: var(--ink-soft); font-size: 14px; line-height: 1.35; }
+.sl-wait { display: inline-flex; align-items: center; gap: 8px; margin-left: 6px; color: var(--ink-soft); font-size: 15px; line-height: 1.35; }
 .sl-wait i { flex: none; width: 8px; height: 8px; border: 1.5px solid var(--d-cyan-deep); border-radius: 50%; }
 .sl-wait[data-status="problem"] { color: var(--danger); }
 .sl-wait[data-status="problem"] i { border-color: var(--danger); background: var(--danger); }
 .sl-wait[data-status="review"] i, .sl-wait[data-status="checking"] i { background: var(--d-cyan); }
-.sl-act .sl-skip { margin-left: auto; padding: 0 2px; color: var(--ink-soft); font-size: 14px; font-weight: 400; text-decoration-thickness: 1px; }
-.sl-copied { color: var(--ink-soft); font-size: 14px; }
+.sl-act .sl-skip { margin-left: auto; padding: 0 2px; color: var(--ink-soft); font-size: 15px; font-weight: 400; text-decoration-thickness: 1px; }
+.sl-copied { color: var(--ink-soft); font-size: 15px; }
 .sl-how { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: var(--d-cyan-wash); }
 .sl-how[hidden] { display: none; }
-.sl-how p { max-width: 640px; color: var(--ink); font-size: 14.5px; line-height: 1.55; }
+.sl-how p { max-width: 640px; color: var(--ink); font-size: 15px; line-height: 1.55; }
 .sl-how p + p, .sl-how p + .sl-records { margin-top: 8px; }
-.sl-records { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+.sl-records { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 15px; }
 .sl-records li { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
-.sl-snippet { display: block; max-width: 640px; margin: 10px 0 0; padding: 9px 12px; overflow-x: auto; border-radius: 10px; color: var(--ink); background: var(--paper); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13.5px; line-height: 1.4; white-space: pre; }
+.sl-snippet { display: block; max-width: 640px; margin: 10px 0 0; padding: 9px 12px; overflow-x: auto; border-radius: 10px; color: var(--ink); background: var(--paper); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14.5px; line-height: 1.4; white-space: pre; }
 .sl-snippet code { font-family: inherit; white-space: inherit; overflow-wrap: normal !important; }
 .sl-empty p:first-child { font-size: 17px; font-weight: 500; }
 .sl-empty p + p { margin-top: 4px; color: var(--ink-soft); font-size: 15px; }

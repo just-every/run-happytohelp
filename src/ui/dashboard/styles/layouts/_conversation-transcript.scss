@@ -179,7 +179,7 @@ body.conversation-workspace #chat {
             min-width: 0;
             overflow-wrap: anywhere;
             color: var(--ink);
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 500;
         }
 
@@ -190,7 +190,7 @@ body.conversation-workspace #chat {
             min-height: 24px;
             color: var(--ink-soft);
             margin-left: auto;
-            font-size: 13px;
+            font-size: 14.5px;
             font-weight: 400;
             white-space: nowrap;
         }
@@ -289,7 +289,7 @@ body.conversation-workspace #chat {
             border: 0;
             background: transparent;
             color: var(--ink-soft);
-            font-size: 13px;
+            font-size: 14.5px;
             text-align: center;
         }
 
@@ -343,7 +343,7 @@ body.conversation-workspace #chat {
             margin-left: 0;
         }
 
-        .transcript-event-actor { font-size: 13px; }
+        .transcript-event-actor { font-size: 14.5px; }
 
         .transcript-event-note {
             display: block !important;
@@ -379,12 +379,12 @@ body.conversation-workspace #chat {
             align-items: center;
             gap: 0.35rem;
             color: var(--ink);
-            font-size: 13px;
+            font-size: 14.5px;
             font-weight: 600;
         }
 
         .transcript-note-label i {
-            font-size: 14px;
+            font-size: 15px;
         }
 
         .message-content.message-note.transcript-note-content {
@@ -471,7 +471,7 @@ body.conversation-workspace #chat {
             margin-left: 0;
             padding-top: 1.25rem;
             color: var(--ink-soft);
-            font-size: 0.78rem;
+            font-size: 0.90625rem;
             letter-spacing: 0.02em;
             text-align: center;
 
@@ -522,7 +522,7 @@ body.conversation-workspace #chat {
             min-width: 28px;
             height: 28px;
             min-height: 28px;
-            font-size: .75rem;
+            font-size: 0.875rem;
         }
 
         .transcript-message-card,

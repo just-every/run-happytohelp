@@ -75,14 +75,14 @@ body.conversation-workspace #chat {
         .conversation-ai-instructions__footer .btn {
             padding-right: .625rem;
             padding-left: .625rem;
-            font-size: .75rem;
+            font-size: 0.875rem;
         }
     }
 
     @media (min-width: 1200px) {
         .conversation-ai-instructions textarea,
         .conversation-ai-instructions textarea::placeholder {
-            font-size: .875rem;
+            font-size: 0.9375rem;
         }
     }
 

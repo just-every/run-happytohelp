@@ -27,7 +27,7 @@
 }
 
 .btn-sm {
-  --bs-btn-font-size: 14px;
+  --bs-btn-font-size: 15px;
   --bs-btn-padding-x: 16px;
   min-height: 36px;
 }
@@ -137,7 +137,7 @@ label.form-check-label {
 form:not(.h2h-setup form) label:not(.form-check-label):not(.btn) {
   margin-bottom: 6px;
   color: var(--ink-soft);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.35;
 }
@@ -151,7 +151,7 @@ form:not(.h2h-setup form) label:not(.form-check-label):not(.btn) {
 .invalid-feedback {
   margin-top: 6px;
   color: var(--ink-soft);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.45;
 }
 
@@ -226,7 +226,7 @@ textarea.form-control {
 .form-select-sm {
   min-height: 36px;
   padding-block: 6px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .form-control-lg {
@@ -446,7 +446,7 @@ textarea.form-control {
   border-radius: 999px;
   color: var(--ink) !important;
   background: var(--d-cyan-tint) !important;
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
@@ -477,7 +477,7 @@ textarea.form-control {
   border-radius: 999px;
   color: var(--on-aqua);
   background: var(--d-cyan);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -546,7 +546,7 @@ textarea.form-control {
   --bs-pagination-border-radius: 999px;
   gap: 6px;
 
-  .page-link { min-width: 36px; min-height: 36px; border-radius: 999px !important; font-size: 14px; text-align: center; }
+  .page-link { min-width: 36px; min-height: 36px; border-radius: 999px !important; font-size: 15px; text-align: center; }
 }
 
 // Confirm and other dialogs: hairline cards on an ink scrim.

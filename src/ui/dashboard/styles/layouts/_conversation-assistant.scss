@@ -203,20 +203,20 @@ body.conversation-workspace {
         line-height: 1.45;
 
         strong { font-weight: 600; }
-        span { color: var(--ink-soft); font-size: 14px; }
+        span { color: var(--ink-soft); font-size: 15px; }
     }
 
     #chat .conversation-suggestions__hint {
         margin: .5rem 0 0;
         color: var(--ink-soft);
-        font-size: 13px;
+        font-size: 14.5px;
         line-height: 1.5;
         text-align: center;
     }
 
     #chat .conversation-ai-instructions__hint {
         color: var(--ink-soft);
-        font-size: 13px;
+        font-size: 14.5px;
         line-height: 1.4;
     }
 

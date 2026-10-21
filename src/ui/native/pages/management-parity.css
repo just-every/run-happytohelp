@@ -4,12 +4,12 @@
 .management-toolbar .input-group { width: 280px; }
 .management-toolbar .btn { white-space: nowrap; }
 .management-table { overflow: hidden; border: 1px solid var(--rule-strong); border-radius: 12px; background: var(--surface); }
-.management-table th { padding: 14px 16px; color: var(--ink-soft); font-size: 13px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+.management-table th { padding: 14px 16px; color: var(--ink-soft); font-size: 14.5px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
 .management-table td { height: 56px; padding: 10px 16px; border-top: 1px solid var(--rule); vertical-align: middle; }
 .management-table td p { margin: 4px 0; color: var(--ink-soft); }
 .management-avatar { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--control-line); border-radius: 50%; color: var(--ink); background: var(--surface); object-fit: cover; }
 .management-person { display: flex; align-items: center; gap: 12px; }
-.management-role { display: inline-flex; align-items: center; min-height: 24px; padding: 0 10px; border: 1px solid var(--d-cyan); border-radius: 999px; color: var(--ink); background: var(--d-cyan-tint); font-size: 13px; font-weight: 500; }
+.management-role { display: inline-flex; align-items: center; min-height: 24px; padding: 0 10px; border: 1px solid var(--d-cyan); border-radius: 999px; color: var(--ink); background: var(--d-cyan-tint); font-size: 14.5px; font-weight: 500; }
 .management-plugin-intro { max-width: 520px; margin: 22px 0 32px; }
 .management-plugin-intro h4 { font-size: 16px; font-weight: 600; }
 .management-plugin-intro p { margin: 12px 0 22px; line-height: 1.5; }
@@ -27,7 +27,7 @@
 .contact-profile .settings-section h2 { font-size: 16px; }
 .contact-profile .management-person p { margin: 4px 0; color: var(--ink-soft); }
 .contact-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 16px 0; }
-.contact-facts dt { color: var(--ink-soft); font-size: 13px; font-weight: 400; }
+.contact-facts dt { color: var(--ink-soft); font-size: 14.5px; font-weight: 400; }
 .contact-facts dd { margin: 4px 0; overflow-wrap: anywhere; }
 .contact-erasure { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--rule); }
 .management-invite-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }

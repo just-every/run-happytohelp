@@ -1,7 +1,7 @@
 body.conversation-workspace {
     #chat {
         .transcript-message-avatar.local-agent-avatar { display: inline-flex; }
-        .delegation-connection__scope { display: block; margin-top: .25rem; color: var(--ink-soft); font-size: .65rem; }
+        .delegation-connection__scope { display: block; margin-top: .25rem; color: var(--ink-soft); font-size: 0.8125rem; }
         .delegation-job.is-completed { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
         .delegation-job__completion {
             display: flex;
@@ -13,12 +13,12 @@ body.conversation-workspace {
             border-radius: .7rem;
         }
         .delegation-job__completion > i { flex: 0 0 auto; font-size: 1.1rem; }
-        .delegation-job__completion h3 { font-size: .8rem; }
+        .delegation-job__completion h3 { font-size: 0.90625rem; }
         .delegation-job__completion .delegation-job__summary { margin-top: .3rem; }
         .delegation-result-options { display: grid; gap: 1rem; margin-top: 1rem; }
         .delegation-result-options:empty { display: none; }
         .delegation-result-options > section { display: grid; min-width: 0; gap: .55rem; }
-        .delegation-result-options h3 { display: flex; align-items: center; gap: .4rem; font-size: .8rem; margin-bottom: .1rem; }
+        .delegation-result-options h3 { display: flex; align-items: center; gap: .4rem; font-size: 0.90625rem; margin-bottom: .1rem; }
         .delegation-result-options h3 > i { color: var(--ink); }
         .delegation-result-option {
             display: grid;
@@ -33,14 +33,14 @@ body.conversation-workspace {
         }
         .delegation-result-option > i { margin-top: .1rem; color: var(--ink); font-size: 1rem; }
         .delegation-result-option__content { min-width: 0; }
-        .delegation-result-option h4 { font-size: .75rem; }
-        .delegation-result-option p { margin: .35rem 0 0; color: var(--ink-soft); font-size: .75rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
-        .delegation-result-option small { display: block; margin-top: .3rem; color: var(--ink-soft); font-size: .65rem; }
+        .delegation-result-option h4 { font-size: 0.875rem; }
+        .delegation-result-option p { margin: .35rem 0 0; color: var(--ink-soft); font-size: 0.875rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+        .delegation-result-option small { display: block; margin-top: .3rem; color: var(--ink-soft); font-size: 0.8125rem; }
         .delegation-result-option__actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: .4rem; }
-        .delegation-result-option__actions .btn { display: inline-flex; align-items: center; gap: .3rem; padding: .35rem .6rem; font-size: .7rem; }
+        .delegation-result-option__actions .btn { display: inline-flex; align-items: center; gap: .3rem; padding: .35rem .6rem; font-size: 0.8125rem; }
         .delegation-job__completed-details { padding: .6rem .1rem; border-bottom: 1px solid var(--rule); }
         .delegation-job__completed-details > summary { color: var(--ink-soft); }
-        .delegation-history-toggle { justify-self: start; padding: .25rem 0; font-size: .7rem; }
+        .delegation-history-toggle { justify-self: start; padding: .25rem 0; font-size: 0.8125rem; }
     }
 }
 :root { --local-agent-codex-color: var(--ink); }
@@ -64,7 +64,7 @@ body.conversation-workspace {
 
 .transcript-local-agent-label {
     color: var(--ink-soft);
-    font-size: .6875rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     white-space: nowrap;
 }

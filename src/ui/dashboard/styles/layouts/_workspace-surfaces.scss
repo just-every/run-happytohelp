@@ -11,7 +11,7 @@ body.workspace-page .workspace-page-content {
         border: 0;
     }
     .card-header { min-height: 0; padding: 12px 0; border: 0; }
-    .card-header-title { font-size: 14px; font-weight: 600; }
+    .card-header-title { font-size: 15px; font-weight: 600; }
     .card-body { padding: 16px 0; }
     .card-footer { padding: 16px 0 0; border: 0; background: transparent; }
     .list-group-item { padding: 16px 0; border: 0; color: inherit; background: transparent; }
@@ -27,8 +27,8 @@ body.workspace-page .workspace-page-content {
         --bs-table-active-bg: var(--d-cyan-tint);
         --bs-table-active-color: var(--bs-primary);
         margin-bottom: 0;
-        font-size: 13px;
-        th { padding: 12px; color: var(--ink-soft); background: transparent; font-size: 11px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+        font-size: 14.5px;
+        th { padding: 12px; color: var(--ink-soft); background: transparent; font-size: 13px; font-weight: 600; text-transform: none; letter-spacing: 0; }
         th a { color: inherit; }
         th a:hover { color: var(--bs-primary); }
         td { padding: 16px 12px; vertical-align: middle; }
@@ -42,7 +42,7 @@ body.workspace-page .workspace-page-content {
         td a:not(.btn, .dropdown-item):hover { color: var(--bs-primary); }
         td small { color: var(--ink-soft); }
     }
-    .badge { border-radius: 6px; font-size: 11px; font-weight: 500; }
+    .badge { border-radius: 6px; font-size: 13px; font-weight: 500; }
     .badge:is(.text-bg-light, .text-bg-primary-subtle) { color: var(--bs-primary) !important; background: var(--d-cyan-tint) !important; }
     .dropdown-ellipses { padding: 6px; color: var(--ink-soft); }
     [data-record-row] {
@@ -57,7 +57,7 @@ body.workspace-page .workspace-page-content {
         gap: 5px;
         margin-top: 8px;
         color: var(--bs-primary) !important;
-        font-size: 12px;
+        font-size: 14px;
         font-weight: 600;
     }
     .workspace-filter-bar {

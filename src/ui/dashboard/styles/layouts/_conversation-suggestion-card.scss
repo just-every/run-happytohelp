@@ -97,7 +97,7 @@ body.conversation-workspace {
         display: block;
         margin-bottom: .375rem;
         color: var(--ink-soft);
-        font-size: 13px;
+        font-size: 14.5px;
         line-height: 1.45;
         overflow-wrap: anywhere;
     }
@@ -183,7 +183,7 @@ body.conversation-workspace #chat .conversation-suggestions__error {
     border-radius: var(--card-radius);
     color: var(--ink);
     background: var(--note);
-    font-size: 14px;
+    font-size: 15px;
 
     .btn-link {
         flex-shrink: 0;

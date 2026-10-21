@@ -1,14 +1,14 @@
 /* Setup guidance shared by the Email, GitHub, Knowledge import, Move in and Setup pages. */
-.sh-steps { max-width: 720px; color: var(--ink); font-size: 14.5px; line-height: 1.55; }
+.sh-steps { max-width: 720px; color: var(--ink); font-size: 15px; line-height: 1.55; }
 .sh-steps ol { margin: 6px 0 10px; padding-left: 22px; }
 .sh-steps li + li { margin-top: 6px; }
 .sh-steps p { margin: 8px 0 4px; }
 .sh-steps code, .sh-note code { overflow-wrap: anywhere; }
-.sh-note { color: var(--ink-soft); font-size: 13.5px; }
+.sh-note { color: var(--ink-soft); font-size: 14.5px; }
 .sh-copy { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; margin: 6px 0 4px; }
-.sh-copy pre { flex: 1 1 260px; min-width: 0; margin: 0; padding: 8px 12px; overflow-x: auto; border-radius: 10px; color: var(--ink); background: var(--paper); border: 1px solid var(--rule, rgba(127,127,127,.25)); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 1.45; white-space: pre; }
+.sh-copy pre { flex: 1 1 260px; min-width: 0; margin: 0; padding: 8px 12px; overflow-x: auto; border-radius: 10px; color: var(--ink); background: var(--paper); border: 1px solid var(--rule, rgba(127,127,127,.25)); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14.5px; line-height: 1.45; white-space: pre; }
 .sh-copy pre code { font-family: inherit; white-space: inherit; overflow-wrap: normal; }
-.sh-copied { align-self: center; color: var(--ink-soft); font-size: 13px; }
+.sh-copied { align-self: center; color: var(--ink-soft); font-size: 14.5px; }
 .sh-state { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin: 4px 0 10px; }
 .sh-state p { margin: 0; max-width: 680px; }
 .sh-guide { margin: 10px 0; }

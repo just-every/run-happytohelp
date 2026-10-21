@@ -1,7 +1,7 @@
 .companies-import { max-width: 1200px; }
 .companies-import-steps { display: flex; list-style: none; margin: 0 0 28px; padding: 0; border-bottom: 1px solid var(--rule-strong); }
-.companies-import-steps li { display: flex; align-items: center; gap: 10px; flex: 1; padding: 0 12px 20px 0; color: var(--ink-soft); font-size: 13px; }
-.companies-import-steps li > span { display: inline-flex; justify-content: center; align-items: center; width: 25px; height: 25px; border: 1px solid var(--rule-strong); border-radius: 50%; flex-shrink: 0; font-size: 12px; }
+.companies-import-steps li { display: flex; align-items: center; gap: 10px; flex: 1; padding: 0 12px 20px 0; color: var(--ink-soft); font-size: 14.5px; }
+.companies-import-steps li > span { display: inline-flex; justify-content: center; align-items: center; width: 25px; height: 25px; border: 1px solid var(--rule-strong); border-radius: 50%; flex-shrink: 0; font-size: 14px; }
 .companies-import-steps .is-active { color: var(--ink); }
 .companies-import-steps .is-active > span { background: var(--d-cyan-tint); border-color: var(--ink); }
 .companies-import-steps [aria-current] { font-weight: 500; }
@@ -9,22 +9,22 @@
 .companies-import-domain p { margin: 12px 0 0; }
 .companies-import-result { display: flex; align-items: center; gap: 24px; justify-content: space-between; border: 1px solid var(--rule-strong); padding: 24px; border-radius: 12px; margin-bottom: 12px; background: var(--surface); }
 .companies-import-result.is-applied, .companies-import-result.is-undone { background: var(--d-cyan-tint); }
-.companies-import-result p { font-size: 14px; color: var(--ink-soft); margin-bottom: 0; }
+.companies-import-result p { font-size: 15px; color: var(--ink-soft); margin-bottom: 0; }
 .companies-import-counts { display: flex; gap: 24px; }
 .companies-import-counts > div { display: grid; gap: 2px; min-width: 48px; }
 .companies-import-counts strong { font-size: 26px; font-weight: 500; }
-.companies-import-counts span { font-size: 12px; color: var(--ink-soft); }
+.companies-import-counts span { font-size: 14px; color: var(--ink-soft); }
 .companies-import-run { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
 .companies-import-run code { color: var(--ink); overflow-wrap: anywhere; }
 .companies-import-rows { min-width: 0; }
-.companies-import-table { font-size: 13px; }
+.companies-import-table { font-size: 14.5px; }
 .companies-import-table td { vertical-align: top; }
 .companies-import-values { margin: 0; min-width: 160px; display: grid; gap: 6px; }
 .companies-import-values > div { display: grid; grid-template-columns: 85px minmax(0, 1fr); gap: 8px; }
-.companies-import-values dt { font-weight: 400; color: var(--ink-soft); font-size: 12px; }
+.companies-import-values dt { font-weight: 400; color: var(--ink-soft); font-size: 14px; }
 .companies-import-values dd { margin: 0; overflow-wrap: anywhere; }
 .companies-import-table small { display: block; }
 .companies-import-apply { border-top: 1px solid var(--rule); margin-top: 24px; padding-top: 20px; }
 .companies-import-restore { margin-top: 32px; max-width: 600px; }
-.companies-import-restore label { font-size: 14px; margin-bottom: 8px; }
+.companies-import-restore label { font-size: 15px; margin-bottom: 8px; }
 .companies-import-restore input { flex: 1; width: auto; min-width: 100px; }

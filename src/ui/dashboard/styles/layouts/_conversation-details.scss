@@ -24,7 +24,7 @@ body.conversation-workspace #chat {
         h3 {
             margin: 0;
             color: var(--ink-soft);
-            font-size: 13px;
+            font-size: 14.5px;
             font-weight: 500;
             line-height: 1.5;
             letter-spacing: .06em;
@@ -40,7 +40,7 @@ body.conversation-workspace #chat {
         min-height: 36px;
         padding: 0 16px;
         border-radius: 999px;
-        font-size: 14px;
+        font-size: 15px;
         line-height: 1.2;
         box-shadow: none;
 
@@ -54,7 +54,7 @@ body.conversation-workspace #chat {
         margin: -.25rem 0;
         padding: .25rem;
         gap: .25rem;
-        font-size: 13px;
+        font-size: 14.5px;
     }
 
     .conversation-details-assignment .dropdown-toggle {
@@ -107,7 +107,7 @@ body.conversation-workspace #chat {
         .btn:hover { color: var(--danger); background: var(--surface); }
     }
 
-    .conversation-details-empty { margin: 0; color: var(--ink-soft); font-size: 13px; }
+    .conversation-details-empty { margin: 0; color: var(--ink-soft); font-size: 14.5px; }
     .conversation-details-fields { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
     .conversation-detail-field { display: flex; align-items: flex-start; gap: .75rem; min-width: 0; }
     .conversation-detail-field__icon {
@@ -123,7 +123,7 @@ body.conversation-workspace #chat {
     }
 
     .conversation-detail-field__body { min-width: 0; flex: 1; }
-    .conversation-detail-field__label { display: block; margin: 0 0 .125rem; color: var(--ink-soft); font-size: 13px; }
+    .conversation-detail-field__label { display: block; margin: 0 0 .125rem; color: var(--ink-soft); font-size: 14.5px; }
     .conversation-detail-field__value {
         display: block;
         margin: 0;
@@ -139,7 +139,7 @@ body.conversation-workspace #chat {
 
     .conversation-detail-field__value .conversation-detail-field__secondary-value { display: block; color: var(--ink-soft); }
     .conversation-detail-field__online { color: var(--ink); }
-    .conversation-detail-field__timezone { display: block; color: var(--ink-soft); font-size: 13px; white-space: nowrap; }
+    .conversation-detail-field__timezone { display: block; color: var(--ink-soft); font-size: 14.5px; white-space: nowrap; }
     .conversation-detail-field--metadata .conversation-detail-field__label { text-transform: capitalize; }
 
     .conversation-detail-grid {
@@ -175,8 +175,8 @@ body.conversation-workspace #chat .conversation-tags {
     gap: 6px;
 
     &:empty { display: none; }
-    .conversation-tag { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 0 9px; border: 1px solid var(--d-cyan); border-radius: 999px; color: var(--ink); background: var(--d-cyan-tint); font-size: 12px; font-weight: 500; }
-    button.conversation-tag { min-height: 28px; font-size: 13px; cursor: pointer; }
+    .conversation-tag { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 0 9px; border: 1px solid var(--d-cyan); border-radius: 999px; color: var(--ink); background: var(--d-cyan-tint); font-size: 14px; font-weight: 500; }
+    button.conversation-tag { min-height: 28px; font-size: 14.5px; cursor: pointer; }
 }
 body.conversation-workspace #chat .conversation-item .conversation-tags { margin: 2px 0 4px; }
 body.conversation-workspace #chat .conversation-tags-form { display: flex; gap: 8px; margin-top: 10px; }

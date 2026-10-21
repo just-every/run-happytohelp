@@ -43,7 +43,7 @@ body.conversation-workspace #chat .chat > .chat-body > .chat-header {
     .conversation-header-name-row { grid-area: name; display: flex; min-width: 0; }
     .conversation-header-chips { grid-area: chips; display: flex; align-items: center; gap: 6px; }
     .conversation-header-actions { grid-area: actions; }
-    .conversation-header-meta { grid-area: meta; display: flex; align-items: center; flex-wrap: nowrap; gap: 6px; min-width: 0; color: var(--ink-soft); font-size: 14px; }
+    .conversation-header-meta { grid-area: meta; display: flex; align-items: center; flex-wrap: nowrap; gap: 6px; min-width: 0; color: var(--ink-soft); font-size: 15px; }
     .conversation-header-meta-project,
     .conversation-header-meta-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .conversation-header-meta-project { flex: 0 1 auto; }
@@ -54,7 +54,7 @@ body.conversation-workspace #chat .chat > .chat-body > .chat-header {
     .conversation-header-back { display: inline-flex; flex: 0 0 40px; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 1px solid var(--control-line); border-radius: 50%; background: transparent; color: var(--ink); font-size: 20px; }
 
     .conversation-header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
-    .conversation-header-status { display: inline-flex; align-items: center; flex: 0 0 auto; min-height: 24px; padding: 0 10px; border: 1px solid var(--d-cyan); border-radius: 999px; color: var(--ink); background: var(--d-cyan-tint); font-size: 13px; font-weight: 500; }
+    .conversation-header-status { display: inline-flex; align-items: center; flex: 0 0 auto; min-height: 24px; padding: 0 10px; border: 1px solid var(--d-cyan); border-radius: 999px; color: var(--ink); background: var(--d-cyan-tint); font-size: 14.5px; font-weight: 500; }
     .conversation-header-status.is-closed { border-color: transparent; background: var(--muted-chip); }
     .conversation-header-status.is-final { border-color: var(--ink-soft); }
     .chat-header-title { display: block; flex: 0 1 auto; min-width: 0; min-height: 24px; overflow: hidden; color: var(--ink); font-size: 26px; font-weight: 500; line-height: 1.2; letter-spacing: -.02em; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
@@ -62,7 +62,7 @@ body.conversation-workspace #chat .chat > .chat-body > .chat-header {
     .dropdown-menu .avatar, .dropdown-menu .avatar img { width: 24px; min-width: 24px; height: 24px; min-height: 24px; }
     .badge { flex: 0 0 auto; }
     // "Close"/"Reopen" and "AI & details": small secondary pills.
-    .btn { min-height: 36px; padding: 0 16px; font-size: 14px; white-space: nowrap; }
+    .btn { min-height: 36px; padding: 0 16px; font-size: 15px; white-space: nowrap; }
     .btn .fe { display: none; }
     .conversation-assistant-toggle[aria-expanded=true] { color: var(--on-ink); background: var(--ink); }
     .conversation-assistant-toggle { display: inline-flex; align-items: center; justify-content: center; }
@@ -114,7 +114,7 @@ body.conversation-workspace #chat .chat > .chat-body > .chat-header {
         .conversation-header-chips { align-self: center; margin-top: 8px; }
         .conversation-header-actions { gap: 6px; margin-top: 8px; }
         .chat-header-title { font-size: 20px; }
-        .conversation-header-meta { font-size: 13px; }
+        .conversation-header-meta { font-size: 14.5px; }
         .avatar, .avatar img { width: 40px; min-width: 40px; height: 40px; min-height: 40px; }
         .btn { min-height: 34px; padding: 0 14px; }
     }

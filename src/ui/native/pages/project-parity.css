@@ -29,10 +29,10 @@
 .project-account .project-avatar img { width: 82px; height: 82px; border-radius: 50% !important; object-fit: cover; }
 
 .project-list-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--rule-strong); border-radius: 12px; overflow: hidden; }
-.project-list-table th { padding: 14px 20px; color: var(--ink-soft); font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-align: left; text-transform: uppercase; }
+.project-list-table th { padding: 14px 20px; color: var(--ink-soft); font-size: 15px; font-weight: 500; letter-spacing: 0.06em; text-align: left; text-transform: uppercase; }
 .project-list-table td { height: 56px; padding: 10px 20px; border-top: 1px solid var(--rule); }
 .project-list-table th:first-child { width: 74%; }
-.project-list-badge { display: inline-flex; align-items: center; min-height: 24px; padding: 0 10px; border: 1px solid var(--d-cyan); border-radius: 999px; color: var(--ink); background: var(--d-cyan-tint); font-size: 14px; font-weight: 500; }
+.project-list-badge { display: inline-flex; align-items: center; min-height: 24px; padding: 0 10px; border: 1px solid var(--d-cyan); border-radius: 999px; color: var(--ink); background: var(--d-cyan-tint); font-size: 15px; font-weight: 500; }
 .project-list-menu { position: relative; }
 .project-list-menu summary { display: flex; align-items: center; justify-content: center; min-width: 32px; min-height: 32px; margin: -6px 0; cursor: pointer; list-style: none; }
 .project-list-menu summary::-webkit-details-marker { display: none; }

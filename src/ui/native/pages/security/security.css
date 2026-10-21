@@ -1,5 +1,5 @@
 /* Settings → Security, Security log and Roles. */
-.security-badge { display: inline-block; margin-right: 6px; padding: 2px 10px; font-size: 13px; font-weight: 500; border: 1px solid var(--rule-strong); border-radius: 999px; }
+.security-badge { display: inline-block; margin-right: 6px; padding: 2px 10px; font-size: 14.5px; font-weight: 500; border: 1px solid var(--rule-strong); border-radius: 999px; }
 .security-badge--on, .security-badge--succeeded { background: var(--d-cyan-tint); border-color: var(--d-cyan-deep); }
 .security-badge--due, .security-badge--refused, .security-badge--failed { color: var(--danger); border-color: currentColor; }
 .security-badge--held { background: var(--surface); border-style: dashed; }
@@ -16,8 +16,8 @@
 .roles-grid { display: grid; gap: 14px; margin-bottom: 16px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 .roles-card { padding: 14px 16px; border: 1px solid var(--rule); border-radius: 12px; background: var(--surface); overflow-wrap: anywhere; }
 .roles-card h3 { margin: 0 0 6px; font-size: 1.05rem; }
-.roles-card ul { margin: 0 0 6px; padding-left: 1.1em; font-size: 14px; }
-.roles-card p { margin: 0 0 6px; font-size: 14px; }
+.roles-card ul { margin: 0 0 6px; padding-left: 1.1em; font-size: 15px; }
+.roles-card p { margin: 0 0 6px; font-size: 15px; }
 .step-up-dialog .tf-step { margin-top: 8px; }
 .account-two-factor { margin-top: 40px; }
 .erasure-providers { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }

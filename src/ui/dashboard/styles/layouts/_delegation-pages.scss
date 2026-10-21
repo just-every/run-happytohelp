@@ -1,8 +1,8 @@
 // Connected applications and the consent screen render inside the workspace shell.
 body.workspace-themed {
     .delegation-page { max-width: 760px; }
-    .delegation-page__empty { margin: 0 0 1rem; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
-    .delegation-page code { color: var(--ink-soft); font-size: 11px; overflow-wrap: anywhere; }
+    .delegation-page__empty { margin: 0 0 1rem; color: var(--ink-soft); font-size: 14px; line-height: 1.5; }
+    .delegation-page code { color: var(--ink-soft); font-size: 13px; overflow-wrap: anywhere; }
 
     .delegation-grants, .delegation-clients, .delegation-projects { display: grid; gap: .75rem; margin: 0 0 1rem; padding: 0; list-style: none; }
     .delegation-grant {
@@ -14,28 +14,28 @@ body.workspace-themed {
         background: var(--surface);
     }
     .delegation-grant__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; }
-    .delegation-grant__head h3 { margin: 0; color: var(--ink); font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
-    .delegation-grant__meta { margin: 0; color: var(--ink-soft); font-size: 12px; }
+    .delegation-grant__head h3 { margin: 0; color: var(--ink); font-size: 15px; font-weight: 700; overflow-wrap: anywhere; }
+    .delegation-grant__meta { margin: 0; color: var(--ink-soft); font-size: 14px; }
     .delegation-grant__status {
         padding: .1rem .55rem;
         border-radius: 999px;
         color: var(--ink);
         background: var(--d-cyan-tint);
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 650;
         text-transform: capitalize;
     }
     .delegation-grant__status.is-revoked, .delegation-grant__status.is-expired { color: var(--ink); background: var(--note); }
-    .delegation-grant__list { display: grid; gap: .3rem; margin: 0; padding: 0; list-style: none; font-size: 12px; }
+    .delegation-grant__list { display: grid; gap: .3rem; margin: 0; padding: 0; list-style: none; font-size: 14px; }
     .delegation-grant__list li { display: flex; flex-wrap: wrap; align-items: baseline; gap: .15rem .6rem; color: var(--ink); }
     .delegation-grant .btn { justify-self: start; }
 
-    .delegation-clients li { color: var(--ink-soft); font-size: 12px; overflow-wrap: anywhere; }
+    .delegation-clients li { color: var(--ink-soft); font-size: 14px; overflow-wrap: anywhere; }
     .delegation-clients strong { color: var(--ink); }
 
     .delegation-client-form { display: grid; gap: 1rem; max-width: 32rem; }
     .delegation-client-form .form-group { margin: 0; }
-    .delegation-client-form .form-text { margin-top: .25rem; color: var(--ink-soft); font-size: 12px; }
+    .delegation-client-form .form-text { margin-top: .25rem; color: var(--ink-soft); font-size: 14px; }
     .delegation-client-form .btn { justify-self: start; }
 
     .delegation-exits { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }

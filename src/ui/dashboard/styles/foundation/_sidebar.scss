@@ -66,7 +66,7 @@ body.workspace-themed {
     > .fe { flex: 0 0 18px; font-size: 18px; }
   }
   .navbar-workspace-copy { flex: 1 1 auto; min-width: 0; }
-  .navbar-workspace-label { display: block; color: var(--ink-soft); font-size: 13px; line-height: 1.3; }
+  .navbar-workspace-label { display: block; color: var(--ink-soft); font-size: 14.5px; line-height: 1.3; }
   .navbar-workspace-name { display: block; overflow-wrap: anywhere; font-size: 16px; font-weight: 400; line-height: 1.35; }
   .navbar-workspace-menu {
     position: absolute;
@@ -124,13 +124,11 @@ body.workspace-themed {
   // Items change state at once (current page, hover): no fade through in-between colours.
   .nav-link, .native-global-contacts > summary, .nav-more > summary { transition: none; }
 
-  // The current row: an aqua wash with white type and an aqua icon; the aqua edge (12:1 on the rail) carries the state
-  // where the wash alone would be too faint.
+  // The current row: an aqua wash with white type, weight and an aqua icon; no edge rule, the highlight is the state.
   .navbar-nav > .nav-item > .nav-link.active,
   .nav-more .nav-link.active {
     color: #ffffff;
     background: var(--d-cyan-tint);
-    box-shadow: inset 3px 0 0 var(--d-cyan);
     font-weight: 500;
 
     > .fe { color: var(--d-cyan); }
@@ -148,7 +146,7 @@ body.workspace-themed {
     border-radius: 999px;
     color: var(--on-aqua);
     background: var(--d-cyan);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
   }
   // More: Local computers, Reports and Insights under one row, each indented under its summary.

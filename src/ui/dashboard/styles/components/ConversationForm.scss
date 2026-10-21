@@ -175,7 +175,7 @@
 
     textarea {
         &::placeholder {
-            --bs-nav-link-font-size: 0.8125rem;
+            --bs-nav-link-font-size: 0.90625rem;
             font-size: var(--bs-nav-link-font-size) !important;
         }
     }
@@ -279,7 +279,7 @@
 .conversation-composer__error {
     margin: 12px 0 0;
     color: var(--danger);
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.5;
     overflow-wrap: anywhere;
 }

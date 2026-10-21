@@ -31,7 +31,7 @@ body.conversation-workspace #chat .conversation-inbox {
         overscroll-behavior: contain;
     }
 
-    .conversation-demo-label { padding: 0 16px; color: var(--ink-soft); font-size: 13px; line-height: 1.5; }
+    .conversation-demo-label { padding: 0 16px; color: var(--ink-soft); font-size: 14.5px; line-height: 1.5; }
 
     .conversation-empty-state {
         display: flex;
@@ -104,7 +104,7 @@ body.conversation-workspace #chat .sidebar .conversation-item {
 
         > h4 { min-width: 0; max-width: none; margin: 0; color: var(--ink); font-size: 16px; font-weight: 600; line-height: 1.3; }
         > time,
-        > .conversation-item-time { flex: 0 0 auto; margin-left: auto !important; color: var(--ink-soft) !important; font-size: 13px; }
+        > .conversation-item-time { flex: 0 0 auto; margin-left: auto !important; color: var(--ink-soft) !important; font-size: 14.5px; }
         > .fe-check-circle { color: var(--ink) !important; }
     }
 
@@ -118,14 +118,14 @@ body.conversation-workspace #chat .sidebar .conversation-item {
         > .text-truncate {
             display: -webkit-box;
             color: var(--ink-soft);
-            font-size: 14px;
+            font-size: 15px;
             line-height: 1.45;
             white-space: normal !important;
             overflow-wrap: anywhere;
             -webkit-box-orient: vertical;
             -webkit-line-clamp: 2;
         }
-        > .text-truncate h4 { color: var(--ink-soft); font-size: 14px; font-weight: 500; }
+        > .text-truncate h4 { color: var(--ink-soft); font-size: 15px; font-weight: 500; }
     }
 
     // The unread disc: aqua with an ink numeral.
@@ -140,7 +140,7 @@ body.conversation-workspace #chat .sidebar .conversation-item {
         border-radius: 999px;
         color: var(--on-aqua);
         background: var(--d-cyan);
-        font-size: 12px;
+        font-size: 14px;
         font-weight: 600;
         line-height: 1;
     }
@@ -148,11 +148,11 @@ body.conversation-workspace #chat .sidebar .conversation-item {
     .conversation-item-agent { display: inline-flex; flex: 0 0 auto; align-items: center; margin-left: auto; }
     .conversation-item-agent .avatar { --avatar-size: 24px; }
 
-    .conversation-item-project { display: block; max-width: 100%; overflow: hidden; font-size: 12px; line-height: 22px; text-overflow: ellipsis; }
+    .conversation-item-project { display: block; max-width: 100%; overflow: hidden; font-size: 14px; line-height: 22px; text-overflow: ellipsis; }
 
     &:not(.active):hover .card-body { background: var(--hover); }
-    // The open conversation: the aqua tint, with an ink edge that holds 3:1 where the pale tint alone would not.
-    &.active .card-body { background: var(--d-cyan-tint); box-shadow: inset 3px 0 0 var(--ink); }
+    // The open conversation: the aqua tint inside a complete hairline ring that holds 3:1 where the pale tint alone would not.
+    &.active .card-body { background: var(--d-cyan-tint); box-shadow: inset 0 0 0 1px var(--toggle-line); }
     &:focus-visible .card { outline: 2px solid var(--ink); outline-offset: 2px; }
 }
 
@@ -178,7 +178,7 @@ body.conversation-workspace #chat {
         margin: 12px 0;
         padding: 8px 12px;
         color: var(--ink-soft);
-        font-size: 14px;
+        font-size: 15px;
         line-height: 1.5;
         overflow-wrap: anywhere;
     }
@@ -233,7 +233,7 @@ body.conversation-workspace #chat .inbox-views {
         color: var(--ink-soft);
         background: transparent;
         box-shadow: none;
-        font-size: 14px;
+        font-size: 15px;
         text-decoration: none;
         white-space: nowrap;
 
@@ -252,7 +252,7 @@ body.conversation-workspace #chat .inbox-views {
         border-radius: 999px;
         color: var(--on-aqua);
         background: var(--d-cyan);
-        font-size: 12px;
+        font-size: 14px;
         font-weight: 600;
         line-height: 1;
     }

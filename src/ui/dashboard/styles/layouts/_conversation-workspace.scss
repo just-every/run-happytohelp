@@ -129,7 +129,7 @@ body.conversation-workspace #chat .inbox-start {
         &:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
     }
     .inbox-start__demo .inbox-start__quiet { margin-top: 0; }
-    .inbox-start__demo p { margin: 8px 0 0; font-size: 14px; }
+    .inbox-start__demo p { margin: 8px 0 0; font-size: 15px; }
 
     // In the list column of a phone: the same block, tighter.
     @media (max-width: 1199.98px) {

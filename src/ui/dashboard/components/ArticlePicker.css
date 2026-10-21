@@ -2,7 +2,7 @@
 body.conversation-workspace #chat .chat-footer .chat-entry-form:has(> .article-picker) {flex-direction:column; gap:.75rem;}
 body.conversation-workspace #chat .chat-footer:has(.article-picker) .chat-entry > .flex-grow-1 {flex-direction:column !important; align-items:stretch;}
 .article-picker h2 {font-size: 1rem; margin: 0 0 .5rem;}
-.article-picker p, .article-picker small {font-size: .875rem;}
+.article-picker p, .article-picker small {font-size: 0.9375rem;}
 .article-picker ul {list-style: none; padding: 0; margin: .75rem 0 0;}
 .article-picker li {display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; padding: .65rem 0; border-bottom: 1px solid #e3e8ed;}
 .article-picker li > span {min-width: 0; flex: 1 1 14rem; overflow-wrap: anywhere;}

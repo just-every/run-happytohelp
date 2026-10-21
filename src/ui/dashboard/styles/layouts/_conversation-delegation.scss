@@ -22,7 +22,7 @@ body.conversation-workspace {
             align-items: center;
             gap: .35rem;
             color: var(--ink);
-            font-size: .6875rem;
+            font-size: 0.8125rem;
             font-weight: 700;
             letter-spacing: .06em;
             text-transform: uppercase;
@@ -44,7 +44,7 @@ body.conversation-workspace {
         .delegation-empty-worker p {
             margin: .3rem 0 0;
             color: var(--ink-soft);
-            font-size: .75rem;
+            font-size: 0.875rem;
             line-height: 1.45;
         }
 
@@ -57,7 +57,7 @@ body.conversation-workspace {
             border-radius: .55rem;
             color: var(--ink);
             background: var(--note);
-            font-size: .75rem;
+            font-size: 0.875rem;
             line-height: 1.4;
         }
         .delegation-panel__error i { flex: 0 0 auto; margin-top: .05rem; }
@@ -96,7 +96,7 @@ body.conversation-workspace {
             align-items: center;
             gap: .3rem;
             color: var(--ink);
-            font-size: .75rem;
+            font-size: 0.875rem;
             font-weight: 700;
             line-height: 1.2;
         }
@@ -108,13 +108,13 @@ body.conversation-workspace {
         .delegation-connection p {
             margin: .16rem 0 0;
             color: var(--ink-soft);
-            font-size: .6875rem;
+            font-size: 0.8125rem;
             line-height: 1.35;
         }
         .delegation-connection__action {
             padding: .1rem 0;
             color: var(--ink);
-            font-size: .7rem;
+            font-size: 0.8125rem;
             font-weight: 650;
             text-decoration: none;
             white-space: nowrap;
@@ -134,7 +134,7 @@ body.conversation-workspace {
             gap: .35rem;
             margin: 0;
             color: var(--ink);
-            font-size: .75rem;
+            font-size: 0.875rem;
             font-weight: 650;
         }
         .delegation-field select,
@@ -148,22 +148,22 @@ body.conversation-workspace {
             font: inherit;
             outline: 0;
         }
-        .delegation-field select { height: 2.4rem; padding-block: .45rem; padding-left: .6rem; font-size: .75rem; font-weight: 500; }
-        .delegation-field textarea { min-height: 6rem; padding: .65rem; font-size: .75rem; font-weight: 400; line-height: 1.45; resize: vertical; }
+        .delegation-field select { height: 2.4rem; padding-block: .45rem; padding-left: .6rem; font-size: 0.875rem; font-weight: 500; }
+        .delegation-field textarea { min-height: 6rem; padding: .65rem; font-size: 0.875rem; font-weight: 400; line-height: 1.45; resize: vertical; }
         .delegation-field select:focus,
         .delegation-field textarea:focus { border-color: var(--ink); box-shadow: 0 0 0 2px rgba(var(--ink-rgb), .11); }
-        .delegation-field--instructions > small { justify-self: end; margin-top: -.15rem; color: var(--ink-soft); font-size: .6875rem; font-weight: 500; }
+        .delegation-field--instructions > small { justify-self: end; margin-top: -.15rem; color: var(--ink-soft); font-size: 0.8125rem; font-weight: 500; }
         .delegation-task-form__worker-state {
             display: flex;
             align-items: center;
             gap: .35rem;
             margin: -.25rem 0 0;
             color: var(--ink);
-            font-size: .6875rem;
+            font-size: 0.8125rem;
             line-height: 1.4;
         }
         .delegation-task-form__worker-state.is-ready { color: var(--ink); }
-        .delegation-delivery-notice { display: flex; align-items: flex-start; gap: .4rem; margin: -.1rem 0 0; color: var(--ink); font-size: .6875rem; line-height: 1.4; }
+        .delegation-delivery-notice { display: flex; align-items: flex-start; gap: .4rem; margin: -.1rem 0 0; color: var(--ink); font-size: 0.8125rem; line-height: 1.4; }
         .delegation-submit {
             display: inline-flex;
             align-items: center;
@@ -173,14 +173,14 @@ body.conversation-workspace {
             color: var(--on-ink);
             background: var(--ink);
             border-color: var(--ink);
-            font-size: .75rem;
+            font-size: 0.875rem;
             font-weight: 650;
         }
         .delegation-submit:hover:not(:disabled),
         .delegation-submit:focus-visible { color: var(--on-ink); background: var(--ink); border-color: var(--ink); }
 
         .delegation-empty-worker { display: grid; gap: .65rem; }
-        .delegation-empty-worker .btn { justify-self: start; font-size: .75rem; }
+        .delegation-empty-worker .btn { justify-self: start; font-size: 0.875rem; }
 
         .delegation-job__topline {
             display: flex;
@@ -194,7 +194,7 @@ body.conversation-workspace {
             align-items: center;
             margin-bottom: .35rem;
             color: var(--ink-soft);
-            font-size: .6875rem;
+            font-size: 0.8125rem;
             font-weight: 650;
             line-height: 1;
         }
@@ -211,7 +211,7 @@ body.conversation-workspace {
         .delegation-status.is-needs_input::before { background: var(--ink); }
         .delegation-status.is-failed::before,
         .delegation-status.is-cancelled::before { background: var(--danger); }
-        .delegation-job__cancel { flex: 0 0 auto; padding: .1rem 0; color: var(--danger); font-size: .75rem; text-decoration: none; }
+        .delegation-job__cancel { flex: 0 0 auto; padding: .1rem 0; color: var(--danger); font-size: 0.875rem; text-decoration: none; }
 
         .delegation-job__activity,
         .delegation-job__result {
@@ -219,16 +219,16 @@ body.conversation-workspace {
             padding-top: .7rem;
             border-top: 1px solid var(--rule);
         }
-        .delegation-job h4 { margin: 0; color: var(--ink); font-size: .75rem; font-weight: 700; line-height: 1.3; }
+        .delegation-job h4 { margin: 0; color: var(--ink); font-size: 0.875rem; font-weight: 700; line-height: 1.3; }
         .delegation-job__activity > p,
-        .delegation-job__summary { margin: .42rem 0 0; color: var(--ink-soft); font-size: .75rem; line-height: 1.45; white-space: pre-wrap; }
+        .delegation-job__summary { margin: .42rem 0 0; color: var(--ink-soft); font-size: 0.875rem; line-height: 1.45; white-space: pre-wrap; }
         .delegation-job__disclosure { margin-top: .6rem; }
         .delegation-job__disclosure summary,
         .delegation-mcp-setup > summary,
         .delegation-device-management > summary {
             color: var(--ink);
             cursor: pointer;
-            font-size: .7rem;
+            font-size: 0.8125rem;
             font-weight: 650;
         }
         .delegation-job__activity ol {
@@ -244,7 +244,7 @@ body.conversation-workspace {
             align-items: start;
             gap: .4rem;
             color: var(--ink-soft);
-            font-size: .72rem;
+            font-size: 0.8125rem;
             line-height: 1.4;
         }
         .delegation-job__activity li span { width: .42rem; height: .42rem; margin-top: .25rem; border: 1px solid var(--ink); border-radius: 50%; }
@@ -255,7 +255,7 @@ body.conversation-workspace {
             border-radius: .55rem;
         }
         .delegation-job__input-request h4 { display: flex; align-items: center; gap: .35rem; color: var(--ink); }
-        .delegation-job__input-request p { margin: .35rem 0 0; color: var(--ink-soft); font-size: .75rem; line-height: 1.45; }
+        .delegation-job__input-request p { margin: .35rem 0 0; color: var(--ink-soft); font-size: 0.875rem; line-height: 1.45; }
         .delegation-job__input-request form { display: grid; gap: .5rem; margin-top: .65rem; }
         .delegation-job__input-request textarea {
             width: 100%;
@@ -265,11 +265,11 @@ body.conversation-workspace {
             border: 1px solid var(--rule);
             border-radius: .5rem;
             font: inherit;
-            font-size: .75rem;
+            font-size: 0.875rem;
             line-height: 1.45;
             resize: vertical;
         }
-        .delegation-job__input-request .btn { justify-self: start; font-size: .75rem; }
+        .delegation-job__input-request .btn { justify-self: start; font-size: 0.875rem; }
         .delegation-job__freshness-review {
             display: flex;
             align-items: flex-start;
@@ -278,31 +278,31 @@ body.conversation-workspace {
             color: var(--ink);
             background: rgba(255, 255, 255, .58);
             border-radius: .45rem;
-            font-size: .7rem;
+            font-size: 0.8125rem;
             line-height: 1.4;
         }
         .delegation-job__freshness-review input { flex: 0 0 auto; margin: .12rem 0 0; }
         .delegation-job__freshness-review strong { display: block; font-weight: 700; }
-        .delegation-job__last-input { padding-top: .5rem; color: var(--ink-soft) !important; font-size: .6875rem !important; }
+        .delegation-job__last-input { padding-top: .5rem; color: var(--ink-soft) !important; font-size: 0.8125rem !important; }
 
         .delegation-job__provider-error { margin-top: .6rem; overflow-wrap: anywhere; }
-        .delegation-job__provider-error p { margin: .2rem 0 0; font-size: .75rem; line-height: 1.5; }
+        .delegation-job__provider-error p { margin: .2rem 0 0; font-size: 0.875rem; line-height: 1.5; }
         .delegation-job__result-details { margin-top: .6rem; }
         .delegation-job__result-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
-        .delegation-job__result-heading > span { display: inline-flex; align-items: center; gap: .25rem; font-size: .6875rem; font-weight: 650; }
+        .delegation-job__result-heading > span { display: inline-flex; align-items: center; gap: .25rem; font-size: 0.8125rem; font-weight: 650; }
         .delegation-job__result-heading .is-verified { color: var(--ink); }
         .delegation-job__result-heading .is-unverified { color: var(--ink); }
         .delegation-job__evidence { display: grid; gap: .45rem; margin: .65rem 0 0; padding: 0; list-style: none; }
-        .delegation-job__evidence li { padding-left: .65rem; border-left: 2px solid var(--d-cyan-tint); color: var(--ink-soft); font-size: .75rem; line-height: 1.4; }
+        .delegation-job__evidence li { padding-left: .65rem; border-left: 2px solid var(--d-cyan-tint); color: var(--ink-soft); font-size: 0.875rem; line-height: 1.4; }
         .delegation-job__evidence strong,
         .delegation-job__evidence span { display: block; }
         .delegation-job__evidence strong { color: var(--ink); font-weight: 650; }
         .delegation-job__evidence span { margin-top: .1rem; overflow-wrap: anywhere; }
         .delegation-job__draft { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: .75rem; margin-top: .75rem; padding: .7rem; background: var(--d-cyan-tint); border-radius: .55rem; }
-        .delegation-job__draft span { color: var(--ink); font-size: .6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-        .delegation-job__draft p { margin: .3rem 0 0; color: var(--ink); font-size: .75rem; line-height: 1.45; white-space: pre-wrap; }
-        .delegation-job__draft .btn { padding: .42rem .55rem; color: var(--ink); border-color: rgba(var(--ink-rgb), .22); font-size: .6875rem; white-space: nowrap; }
-        .delegation-job__sent { display: inline-flex; align-items: center; align-self: center; gap: .3rem; color: var(--ink); font-size: .7rem; font-weight: 650; white-space: nowrap; }
+        .delegation-job__draft span { color: var(--ink); font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+        .delegation-job__draft p { margin: .3rem 0 0; color: var(--ink); font-size: 0.875rem; line-height: 1.45; white-space: pre-wrap; }
+        .delegation-job__draft .btn { padding: .42rem .55rem; color: var(--ink); border-color: rgba(var(--ink-rgb), .22); font-size: 0.8125rem; white-space: nowrap; }
+        .delegation-job__sent { display: inline-flex; align-items: center; align-self: center; gap: .3rem; color: var(--ink); font-size: 0.8125rem; font-weight: 650; white-space: nowrap; }
 
         @media (max-width: 575.98px) {
             .conversation-local-agent-toggle span { display: none; }
@@ -341,7 +341,7 @@ body.workspace-entry {
     .local-agent-consent__state.is-approved .local-agent-consent__icon { color: var(--ink); background: var(--d-cyan-tint); }
     .local-agent-consent h2 { margin: .06rem 0 0; color: var(--ink); font-size: 1rem; font-weight: 700; line-height: 1.3; }
     .local-agent-consent__intro p,
-    .local-agent-consent__state p { margin: .3rem 0 0; color: var(--ink-soft); font-size: .78rem; line-height: 1.5; }
+    .local-agent-consent__state p { margin: .3rem 0 0; color: var(--ink-soft); font-size: 0.90625rem; line-height: 1.5; }
     .local-agent-consent form { padding: 0 1.15rem 1.15rem; }
     .local-agent-consent__steps { display: grid; gap: .8rem; margin: 0; padding: .85rem 0; list-style: none; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
     .local-agent-consent__steps li { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); gap: .6rem; }
@@ -353,12 +353,12 @@ body.workspace-entry {
         color: var(--ink);
         background: var(--d-cyan-tint);
         border-radius: 50%;
-        font-size: .7rem;
+        font-size: 0.8125rem;
         font-weight: 700;
     }
     .local-agent-consent h3,
-    .local-agent-consent label { display: block; margin: .12rem 0 0; color: var(--ink); font-size: .78rem; font-weight: 700; line-height: 1.35; }
-    .local-agent-consent__steps p { margin: .16rem 0 0; color: var(--ink-soft); font-size: .76rem; line-height: 1.45; }
+    .local-agent-consent label { display: block; margin: .12rem 0 0; color: var(--ink); font-size: 0.90625rem; font-weight: 700; line-height: 1.35; }
+    .local-agent-consent__steps p { margin: .16rem 0 0; color: var(--ink-soft); font-size: 0.875rem; line-height: 1.45; }
     .local-agent-consent select {
         width: 100%;
         height: 2.3rem;
@@ -370,17 +370,17 @@ body.workspace-entry {
         border: 1px solid var(--rule);
         border-radius: .45rem;
         font: inherit;
-        font-size: .76rem;
+        font-size: 0.875rem;
     }
     .local-agent-consent select:focus { border-color: var(--ink); box-shadow: 0 0 0 2px rgba(var(--ink-rgb), .12); outline: 0; }
     .local-agent-consent ul { display: grid; gap: .25rem; margin: .35rem 0 0; padding: 0; list-style: none; }
-    .local-agent-consent li li { display: block; position: relative; padding-left: .8rem; color: var(--ink-soft); font-size: .72rem; line-height: 1.4; }
+    .local-agent-consent li li { display: block; position: relative; padding-left: .8rem; color: var(--ink-soft); font-size: 0.8125rem; line-height: 1.4; }
     .local-agent-consent li li::before { position: absolute; top: .45rem; left: 0; width: .28rem; height: .28rem; border-radius: 50%; content: ''; background: var(--ink); }
-    .local-agent-consent__scope { display: flex; align-items: flex-start; gap: .35rem; margin: .8rem 0 0; color: var(--ink-soft); font-size: .72rem; line-height: 1.4; }
+    .local-agent-consent__scope { display: flex; align-items: flex-start; gap: .35rem; margin: .8rem 0 0; color: var(--ink-soft); font-size: 0.8125rem; line-height: 1.4; }
     .local-agent-consent__scope i { margin-top: .08rem; color: var(--ink); }
     .local-agent-consent__actions { display: grid; justify-items: center; gap: .3rem; margin-top: .85rem; }
-    .local-agent-consent__actions .btn-primary { min-height: 2.45rem; font-size: .78rem; font-weight: 650; }
-    .local-agent-consent__actions .btn-link { padding: .35rem; color: var(--ink-soft); font-size: .74rem; text-decoration: none; }
+    .local-agent-consent__actions .btn-primary { min-height: 2.45rem; font-size: 0.90625rem; font-weight: 650; }
+    .local-agent-consent__actions .btn-link { padding: .35rem; color: var(--ink-soft); font-size: 0.8125rem; text-decoration: none; }
 
     @media (max-width: 575.98px) {
         .local-agent-consent__intro,

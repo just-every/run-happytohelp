@@ -173,12 +173,6 @@
         }
     }
 
-    textarea {
-        &::placeholder {
-            --bs-nav-link-font-size: 0.90625rem;
-            font-size: var(--bs-nav-link-font-size) !important;
-        }
-    }
 }
 .animated-text {
     position: relative;

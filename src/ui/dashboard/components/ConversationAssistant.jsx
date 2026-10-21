@@ -7,10 +7,11 @@ import useScrollEdge from '../hooks/useScrollEdge';
 
 import './conversation/ai-controls.css';
 
+// The tab and panel ids keep their first names (ai, local, details); the words say what each is for.
 const tabs = [
-    { id: 'ai', label: 'AI', icon: 'fe-star', panelId: 'conversation-ai-panel' },
-    { id: 'local', label: 'Local', icon: 'fe-monitor', panelId: 'conversation-local-panel' },
-    { id: 'details', label: 'Details', icon: 'fe-list', panelId: 'conversation-details-panel' },
+    { id: 'ai', label: 'Suggest', icon: 'fe-star', panelId: 'conversation-ai-panel' },
+    { id: 'local', label: 'Delegate', icon: 'fe-monitor', panelId: 'conversation-local-panel' },
+    { id: 'details', label: 'Ticket', icon: 'fe-list', panelId: 'conversation-details-panel' },
 ];
 
 ConversationAssistant.propTypes = {
@@ -20,10 +21,16 @@ ConversationAssistant.propTypes = {
     draftError: PropTypes.string,
     isDraftDisabled: PropTypes.bool,
     isVisible: PropTypes.bool,
+    liveKey: PropTypes.any,
+    onAlertChange: PropTypes.func,
     onClose: PropTypes.func,
     onInsertDraft: PropTypes.func.isRequired,
     onConversationChanged: PropTypes.func.isRequired,
+    onReviewEscalationDraft: PropTypes.func,
+    onTicketChanged: PropTypes.func.isRequired,
+    panelReads: PropTypes.number,
     panelRef: PropTypes.object,
+    requestedSection: PropTypes.string,
     requestedTab: PropTypes.string,
     requestedTabVersion: PropTypes.number,
 };
@@ -35,10 +42,16 @@ export default function ConversationAssistant({
     draftError,
     isDraftDisabled,
     isVisible,
+    liveKey,
+    onAlertChange,
     onClose,
     onInsertDraft,
     onConversationChanged,
+    onReviewEscalationDraft,
+    onTicketChanged,
+    panelReads,
     panelRef,
+    requestedSection,
     requestedTab,
     requestedTabVersion,
 }) {
@@ -127,7 +140,17 @@ export default function ConversationAssistant({
                     aria-labelledby="conversation-tab-details"
                     hidden={ activeTab !== 'details' }
                     ref={ detailsScrollEdge.ref }>
-                    <ConversationSidebar conversation={ conversation } />
+                    <ConversationSidebar
+                        conversation={ conversation }
+                        isShown={ Boolean(isVisible) && activeTab === 'details' }
+                        requestedSection={ requestedTab === 'details' ? requestedSection : null }
+                        requestVersion={ requestedTabVersion }
+                        reads={ panelReads }
+                        liveKey={ liveKey }
+                        onAlertChange={ onAlertChange }
+                        onReviewEscalationDraft={ onReviewEscalationDraft }
+                        onTicketChanged={ onTicketChanged }
+                    />
                 </div>
                 <div
                     id="conversation-local-panel"

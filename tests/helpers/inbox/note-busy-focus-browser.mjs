@@ -33,7 +33,7 @@ try {
         await page.waitForURL(url => url.pathname === target);
         const dialog = page.getByRole('dialog', {name: 'Add Note'});
         const open = async () => {
-            await page.getByRole('button', {name: 'Reply tools', exact: true}).click();
+            await page.getByRole('button', {name: 'Actions', exact: true}).click();
             await page.getByRole('menuitem', {name: 'Internal note', exact: true}).click();
             await dialog.waitFor();
         };
@@ -113,7 +113,7 @@ try {
             if (dismiss === 'Escape') await page.keyboard.press('Escape');
             else await dialog.getByRole('button', {name: 'Close', exact: true}).nth(dismiss === 'header Close' ? 0 : 1).click();
             await dialog.waitFor({state: 'detached'});
-            assert.equal(await page.getByRole('button', {name: 'Reply tools', exact: true}).evaluate(element => document.activeElement === element), true);
+            assert.equal(await page.getByRole('button', {name: 'Actions', exact: true}).evaluate(element => document.activeElement === element), true);
             assert.equal((await notes()).length, before, `${dismiss} discards note without writing`);
         }
         await context.close();

@@ -1,4 +1,4 @@
-.handle-timer { margin: 0 0 1rem; padding: .8rem; border: 1px solid var(--bs-border-color, #d8dce3); border-radius: .5rem; }
+.handle-timer { margin: 0; }
 .handle-timer-row { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; }
 .handle-timer-row output { font-variant-numeric: tabular-nums; font-size: 1.15rem; font-weight: 600; }
 .handle-timer-note { color: var(--bs-secondary-color, #596270); font-size: 0.90625rem; margin: .5rem 0; }

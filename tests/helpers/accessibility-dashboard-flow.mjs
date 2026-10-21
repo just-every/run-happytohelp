@@ -90,9 +90,9 @@ export async function runDashboardAccessibility({browser, page, runtime, hostOri
     assert.equal(await workspaceToggle.evaluate(element => element === document.activeElement), true, 'workspace switcher Escape did not restore focus');
     checks.push('workspace switcher closes on Escape and restores trigger focus');
 
-    const replyTools = page.getByRole('button', {name: 'Reply tools', exact: true});
+    const replyTools = page.getByRole('button', {name: 'Actions', exact: true});
     await replyTools.click();
-    const toolsMenu = page.getByRole('menu', {name: 'Reply tools'});
+    const toolsMenu = page.getByRole('menu', {name: 'Actions'});
     await toolsMenu.waitFor();
     assertAxeClean(await scan(page, 'dashboard-composer-tools-open'), 'composer tools');
     await page.getByRole('menuitem', {name: 'Internal note', exact: true}).click();
@@ -105,11 +105,11 @@ export async function runDashboardAccessibility({browser, page, runtime, hostOri
     await page.keyboard.press('Escape');
     await noteDialog.waitFor({state: 'detached'});
     const noteRestored = await page.evaluate(() => ({active: document.activeElement?.outerHTML?.slice(0, 240), label: document.activeElement?.getAttribute('aria-label') || document.activeElement?.innerText?.trim()}));
-    assert.equal(await replyTools.evaluate(element => element === document.activeElement), true, 'note dialog Escape did not restore focus to Reply tools');
+    assert.equal(await replyTools.evaluate(element => element === document.activeElement), true, 'note dialog Escape did not restore focus to Actions');
     checks.push('note dialog Escape returns focus to the triggering composer control');
     await writeFile(join(evidenceDir, 'dashboard-note-focus.json'), JSON.stringify({onOpen: noteFocus, afterEscape: noteRestored}, null, 2));
 
-    await page.getByRole('button', {name: /Reply tools/}).click();
+    await page.getByRole('button', {name: 'Actions', exact: true}).click();
     await page.getByRole('menuitem', {name: 'Internal note', exact: true}).click();
     await page.getByRole('dialog', {name: 'Add Note'}).getByLabel('Note', {exact: true}).fill('Accessibility audit note, synthetic content.');
     await submitBusyNote(page, evidenceDir);

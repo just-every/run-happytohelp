@@ -253,7 +253,7 @@ try{
    await page.getByLabel('Sort by',{exact:true}).selectOption('created_at');await page.getByLabel('Sort direction').selectOption('desc');await page.getByRole('link',{name:'Archive reply 210',exact:true}).waitFor();
    await page.screenshot({path:join(evidenceDir,`complete-library-${width}.png`),fullPage:true});
    await page.goto(`${base}/conversations/archive-picker-${width}`);const composer=page.getByRole('textbox',{name:'Reply to conversation',exact:true});await composer.waitFor();
-   await page.getByRole('button',{name:'Reply tools',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();
+   await page.getByRole('button',{name:'Actions',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();
    const pickerPages=page.getByRole('navigation',{name:'Saved reply picker pages',exact:true});await page.getByRole('link',{name:'Archive reply 000',exact:true}).waitFor();
    for(let next=0;next<4;next++){await pickerPages.getByRole('button',{name:'Next',exact:true}).click();await page.getByRole('link',{name:`Archive reply ${String((next+1)*50).padStart(3,'0')}`,exact:true}).waitFor();}
    await page.getByRole('link',{name:'Archive reply 210',exact:true}).waitFor();await page.getByRole('searchbox',{name:'Search saved replies',exact:true}).fill('Distinctive body phrase');

@@ -183,7 +183,7 @@ try {
   checks.push('session expiry login restores requested project route and real settings');
   await link('Inbox').click();await page.locator('.conversation-inbox').waitFor();
   await view('open').click();await page.locator('.conversation-list-items').getByRole('link').filter({hasText:'Alpha Visitor'}).first().click();
-  await page.getByPlaceholder('Type your reply…').waitFor();await page.getByRole('button',{name:'Reply tools',exact:true}).click();
+  await page.getByPlaceholder('Type your reply…').waitFor();await page.getByRole('button',{name:'Actions',exact:true}).click();
   // Expire only this request: clearing all cookies lets unrelated inbox refreshes
   // remove the menu before the click. Forward to the real Worker without auth.
   const macrosPath=`/api/dashboard/projects/${alpha.id}/macros`;

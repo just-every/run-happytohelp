@@ -68,7 +68,7 @@ export async function readinessBrowser(){
          }
          await page.goto(`${runtime.origin}/projects/${tenant.projectId}/conversations/${conversation.id}`);
          await page.locator('.transcript-message-content').getByText('Check dialog opening frames.', {exact: true}).waitFor();
-         await page.getByRole('button', {name: 'Reply tools', exact: true}).click();
+         await page.getByRole('button', {name: 'Actions', exact: true}).click();
          await page.getByRole('menuitem', {name: 'Internal note', exact: true}).click();
          await page.getByRole('dialog', {name: 'Add Note'}).waitFor();
          await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));

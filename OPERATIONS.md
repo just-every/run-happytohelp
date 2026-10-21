@@ -204,9 +204,14 @@ Worker already holds and sends only ones it lacks.
 The declaration maps the same `EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`
 inputs to rer's shared `MAIL_PROVIDER`, `MAIL_FROM` and `MAIL_API_KEY` preflight
 bindings as well as HappyToHelp's native bindings. Real deployment requires these
-mail inputs. With rer 0.2.42, `rer deploy --dry-run` validates their shape when you
-supply them, and otherwise goes ahead without them and lists them as needed for the
-real deploy. Dry run builds locally; it makes no provider requests and sends no mail.
+mail inputs. `rer deploy --dry-run` validates their shape when you supply them. It
+needs the Cloudflare account credentials: without them it refuses before any
+provider request and lists what the real deploy needs. With them it builds locally
+and makes only read-only Cloudflare GET requests: the account's Workers subdomain
+and the Worker's settings and secret names (three requests against an existing
+Worker in `tests/helpers/installer/fresh-install.mjs`). It refuses when a required
+secret, such as a mail input, is neither held by the Worker nor supplied. Dry run
+sends no mail and changes no provider resources.
 
 Cloudflare Email Sending additionally needs `EMAIL_ACCOUNT_ID`. Add
 `{"binding":"EMAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}` to the
@@ -226,10 +231,12 @@ rer deploy --environment production
 ```
 
 Default environment is production. Dry run validates the declaration and real
-build locally with zero provider requests. Real deploy builds, provisions,
-applies migrations, publishes and checks health in the owner account. It is an
-external change requiring owner authorization. Release produces source/artifacts
-with its existing `--repo` and `--output` arguments and never pushes or deploys.
+build locally; its only provider requests are the read-only Cloudflare GET
+requests above, and without Cloudflare credentials it makes none. Real deploy
+builds, provisions, applies migrations, publishes and checks health in the owner
+account. It is an external change requiring owner authorization. Release produces
+source/artifacts with its existing `--repo` and `--output` arguments and never
+pushes or deploys.
 Inspect `rer describe` and per-command `--help` for other flags.
 
 ### If setup fails at the R2 step

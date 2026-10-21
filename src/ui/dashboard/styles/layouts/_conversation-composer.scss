@@ -59,7 +59,7 @@ body.conversation-workspace {
             min-height: 24px !important;
             max-height: min(18rem, 32dvh) !important;
             padding: 0;
-            font-size: var(--h6-reply-text-size);
+            font-size: $reply-text-font-size;
             line-height: 1.5;
             overflow-y: auto !important;
             overflow-wrap: break-word;
@@ -69,7 +69,7 @@ body.conversation-workspace {
             box-shadow: none !important;
             outline: 0 !important;
 
-            &::placeholder { font-size: var(--h6-reply-text-size); }
+            &::placeholder { font-size: $reply-text-font-size; }
 
             &:focus,
             &:focus-visible {
@@ -83,7 +83,7 @@ body.conversation-workspace {
         .loading-content {
             top: 0;
             max-height: min(18rem, 32dvh);
-            font-size: var(--h6-reply-text-size);
+            font-size: $reply-text-font-size;
         }
     }
 
@@ -111,10 +111,10 @@ body.conversation-workspace {
         background: var(--note);
         border: 1px solid var(--rule);
         border-radius: 999px;
-        font-size: var(--h6-chip-size);
+        font-size: $composer-chip-font-size;
 
         .fe { color: var(--ink-soft); }
-        .btn-link { min-height: 24px; padding: 0 8px; font-size: var(--h6-chip-size); text-decoration: underline; }
+        .btn-link { min-height: 24px; padding: 0 8px; font-size: $composer-chip-font-size; text-decoration: underline; }
     }
 
     #chat .conversation-recipient-chips {
@@ -134,7 +134,7 @@ body.conversation-workspace {
         border: 1px solid var(--rule-strong);
         border-radius: 999px;
         background: var(--paper-deep);
-        font-size: var(--h6-chip-size);
+        font-size: $composer-chip-font-size;
 
         button { min-height: 26px; border: 0; background: transparent; color: var(--ink); }
         .conversation-recipient-chip__edit { min-width: 0; padding: 0 4px 0 10px; overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; }

@@ -50,14 +50,6 @@ try {
             }
             await page.waitForTimeout(800); // Real entrance motion must finish before pointer input.
             assert.equal(await page.locator('.happytohelp-button img, .happytohelp-button .happytohelp-agent-avatar-initials, .happytohelp-button .happytohelp-workspace-brand').count(), 0, 'open launcher contains only close icon');
-            const font = await page.evaluate(async () => {
-                await document.fonts.ready;
-                const face = [...document.fonts].find(face => face.family.replace(/^(["'])(.*)\1$/, '$2') === 'HappyToHelp Inter');
-                const composer = document.querySelector('#happytohelp > div').shadowRoot.querySelector('textarea[name=content]');
-                return {status: face?.status, family: getComputedStyle(composer).fontFamily};
-            });
-            assert.equal(font.status, 'loaded', 'licensed bundled widget font loads');
-            assert.ok(font.family.includes('HappyToHelp Inter'), 'composer uses bundled font');
             assert.deepEqual(googleFonts, [], 'customer page requests no Google Fonts');
         };
         const check = async (message, phase) => {

@@ -1,23 +1,16 @@
 import React, { useCallback, useContext, useMemo, useEffect, useState } from 'react';
-import TicketViews from './tickets/TicketViews';
 import TicketBulkActions from './tickets/TicketBulkActions';
-import ProblemBulkLink from './tickets/ProblemBulkLink';
-import BulkMacros from './macros/BulkMacros';
 import CreateEmailTicket from './CreateEmailTicket';
-import {Link} from '@tanstack/react-router';
 import ConversationItem from "./ConversationItem";
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import { ChatContext } from "../contexts/ChatContext";
 import { useNavigate } from '@tanstack/react-router';
 import { useDashboardSettings, useDashboardLocation } from '../../native/dashboard-state';
-import InboxTagFilter from './InboxTagFilter';
-import InboxCompanyFilter from './InboxCompanyFilter';
-import InboxSearch from './InboxSearch';
-import InboxViews from './InboxViews';
-import ConversationsFilter from './ConversationsFilter';
+import { inboxSource, useInboxNavigation, useInboxNavigationActions } from '../../native/inbox-navigation-state';
+import InboxListHeader from './InboxListHeader';
 import InboxStart from './InboxStart';
 import { InboxTray } from '../../native/drawings';
-import { inboxViewFilter, inboxViewPhrase, normalizeInboxView } from './inboxViewDefinitions';
+import { inboxPlace, inboxViewFilter, inboxViewPhrase } from './inboxViewDefinitions';
 import useConversationList from '../hooks/useConversationList';
 import useScrollEdge from '../hooks/useScrollEdge';
 import useLiveInboxLocation from '../hooks/useLiveInboxLocation';
@@ -33,17 +26,19 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
         inboxViewCounts,
         currentAgent,
         refreshInboxData,
+        setIsMainVisible,
     } = useContext(ChatContext);
     const settings = useDashboardSettings();
     const searchParams = useDashboardLocation().search;
     // The list shows what the loader finished; actions start from the router's live location so a quick second one keeps `q` and `tag`.
     const liveSearch = useLiveInboxLocation().search;
     const navigate = useNavigate();
-    const selectedView = normalizeInboxView(searchParams.view, inboxViewCounts);
+    const projectId = settings.isGlobalInbox ? null : settings.project?.id;
+    const ticketQueue = Boolean(projectId) && !settings.project?.is_demo;
+    const place = inboxPlace(searchParams, inboxViewCounts, ticketQueue);
+    const selectedView = place.view;
     const searchQuery = searchParams.q == null ? '' : String(searchParams.q);
     const filter = useMemo(() => ({...(searchParams.company?{company:String(searchParams.company)}:{}),...inboxViewFilter(selectedView, searchQuery, searchParams.assigned_to, searchParams.search_scope),...(searchParams.tag?{tag:String(searchParams.tag)}:{}),...(['only','include'].includes(searchParams.snoozed)?{snoozed:searchParams.snoozed}:{})}), [ selectedView, searchQuery, searchParams.company, searchParams.tag, searchParams.assigned_to, searchParams.search_scope, searchParams.snoozed ]);
-    const projectId = settings.isGlobalInbox ? null : settings.project?.id;
-    const ticketQueue = projectId && !settings.project?.is_demo;
     const [selected, setSelected] = useState({}), [selecting, setSelecting] = useState(false);
     const [creatingTicket,setCreatingTicket] = useState(false);
     const queueFilter = useMemo(() => ticketQueue && (searchParams.saved_view || searchParams.filters)
@@ -80,27 +75,38 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
         scrollEdgeRef(element);
     }, [ rootRef, scrollEdgeRef ]);
 
-    const handleSearch = query => {
-        navigate({ search: { ...liveSearch, view: normalizeInboxView(liveSearch.view, inboxViewCounts), q: query.trim() || undefined } });
+    const { savedViews } = useInboxNavigation(inboxSource(settings.isGlobalInbox, projectId));
+    const { onViewChosen } = useInboxNavigationActions();
+    // A view chosen from the phone's menu sheet shows its list, even from an open conversation.
+    useEffect(() => onViewChosen(() => { if (window.matchMedia('(max-width: 1199.98px)').matches) setIsMainVisible(false); }), [ onViewChosen, setIsMainVisible ]);
+
+    // A search keeps a view explicit (its default follows the counts); a saved view or the Snoozed place stays as it is.
+    const handleSearch = (query, scope) => {
+        const livePlace = inboxPlace(liveSearch, inboxViewCounts, ticketQueue);
+        navigate({ search: { ...liveSearch, view: livePlace.kind === 'view' ? livePlace.view : liveSearch.view, q: query.trim() || undefined, search_scope: query.trim() && scope === 'view' ? 'view' : undefined } });
     };
 
     return (
         <div className={ `sidebar conversation-inbox px-4 py-3${isScrolled ? ' is-scrolled' : ''}` } aria-hidden={ hideBehindConversation ? 'true' : undefined } inert={ hideBehindConversation || undefined }>
-            <InboxViews />
-            <div className="conversation-inbox-header">
-                {/* Follow the URL immediately, including Back before a read settles.
-                    A completed view read must not overwrite newer search typing. */}
-                <InboxSearch query={ liveSearch.q == null ? '' : String(liveSearch.q) } viewPhrase={ inboxViewPhrase(selectedView) } onSearch={ handleSearch } /><InboxTagFilter projectId={settings.isGlobalInbox?null:settings.project?.id} value={String(searchParams.tag||'')} onChange={tag=>navigate({search:{...liveSearch,tag:tag||undefined}})}/>
-                <InboxCompanyFilter projectId={settings.projects?.[projectId]?.access?.permissions?.includes('contacts.manage')?projectId:null} value={String(searchParams.company||'')} onChange={company=>navigate({search:{...liveSearch,company:company||undefined}})}/>
-                <ConversationsFilter assignment={ filter.assigned_to } searchScope={ filter.search_scope || searchParams.search_scope || 'all' } searching={ Boolean(searchQuery.trim()) } onChange={ changes => navigate({search:{...liveSearch,saved_view:undefined,filters:undefined,sort:undefined,...changes}}) } />
-            </div>
-            {ticketQueue && <>
-                <div className="ticket-queue-actions"><button type="button" className="btn btn-sm btn-link" onClick={()=>setCreatingTicket(true)}>New ticket</button><Link to={`/projects/${projectId}/suspended`} className="btn btn-sm btn-link">Suspended</Link></div>
-                {creatingTicket && <CreateEmailTicket projectId={projectId} onHide={()=>setCreatingTicket(false)} onCreated={conversation=>{refreshInboxData();if(conversation?.id)navigate({to:`/projects/${projectId}/conversations/${conversation.id}`});}}/>}
-                <TicketViews key={projectId} projectId={projectId} currentAgentId={currentAgent.id}/>
-                <div className="ticket-queue-actions"><button type="button" className="btn btn-sm btn-link" onClick={() => { setSelecting(value => !value); setSelected({}); }}>{selecting ? 'Done selecting' : 'Select tickets'}</button>{selecting && <button type="button" className="btn btn-sm btn-link" onClick={() => setSelected(Object.fromEntries(conversations.slice(0, 100).map(item => [item.id, { id: item.id, subject: item.subject, ticket_version: item.ticket_version }])))}>Select loaded tickets</button>}</div>
-                {selecting && Object.keys(selected).length > 0 && <><TicketBulkActions key={projectId} projectId={projectId} selected={Object.values(selected)} onClear={() => setSelected({})} onApplied={refreshInboxData}/><ProblemBulkLink projectId={projectId} selectedIds={Object.values(selected).map(ticket=>ticket.id)} onApplied={refreshInboxData}/><BulkMacros projectId={projectId} selectedTickets={Object.values(selected).map(ticket=>({id:ticket.id,expected_version:ticket.ticket_version}))} onApplied={refreshInboxData}/></>}
-            </>}
+            <InboxListHeader
+                projectId={ projectId }
+                companyProjectId={ settings.projects?.[projectId]?.access?.permissions?.includes('contacts.manage') ? projectId : null }
+                queue={ ticketQueue }
+                currentAgentId={ currentAgent.id }
+                search={ searchParams }
+                liveQuery={ liveSearch.q == null ? '' : String(liveSearch.q) }
+                place={ place }
+                counts={ inboxViewCounts }
+                savedViews={ savedViews }
+                query={ searchQuery.trim() }
+                assignment={ filter.assigned_to }
+                selecting={ selecting }
+                onSelecting={ () => { setSelecting(value => !value); setSelected({}); } }
+                onNewTicket={ () => setCreatingTicket(true) }
+                onSearch={ handleSearch }
+                onChange={ patch => navigate({ search: { ...liveSearch, ...patch } }) } />
+            {creatingTicket && <CreateEmailTicket projectId={projectId} onHide={()=>setCreatingTicket(false)} onCreated={conversation=>{refreshInboxData();if(conversation?.id)navigate({to:`/projects/${projectId}/conversations/${conversation.id}`});}}/>}
+            {ticketQueue && selecting && <TicketBulkActions key={projectId} projectId={projectId} loaded={conversations} selected={selected} onSelect={setSelected} onDone={() => { setSelecting(false); setSelected({}); }} onApplied={refreshInboxData}/>}
             <div className="conversation-list-items" ref={ setListRefs }>
                 { conversations.map(conversation => selecting && ticketQueue ? <div className="ticket-bulk-row" key={conversation.id}><input className="form-check-input" type="checkbox" aria-label={`Select ticket ${conversation.subject || conversation.contact?.display_name || conversation.id}`} checked={Boolean(selected[conversation.id])} disabled={!selected[conversation.id] && Object.keys(selected).length >= 100} onChange={event => { const checked = event.target.checked; setSelected(current => { const next = { ...current }; if (checked) next[conversation.id] = { id: conversation.id, subject: conversation.subject, ticket_version: conversation.ticket_version }; else delete next[conversation.id]; return next; }); }}/><ConversationItem conversation={conversation}/></div> : <ConversationItem key={conversation.id} conversation={conversation}/>) }
                 { isInitialLoading && conversations.length === 0 && <p className="text-center" role="status">Loading conversations...</p> }

@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Api from '../api';
 import { inboxViewCountsPath } from '../components/inboxViewDefinitions';
 import { createInboxRefreshScheduler } from '../utils/inboxRefreshScheduler';
+import { inboxSource, useInboxNavigationActions } from '../../native/inbox-navigation-state';
 
 const REQUIRED_COUNT_KEYS = [ 'mine', 'open', 'unassigned', 'ai', 'closed', 'unread' ];
 
 /**
  * Co-ordinates event-driven inbox list recovery and its aggregate view counts.
- * It deliberately has no polling loop.
+ * It deliberately has no polling loop. The counts and data version are published
+ * to the shell, whose rail shows them beside every page.
  */
 export default function useInboxRefresh({
     isGlobalInbox,
@@ -21,12 +23,18 @@ export default function useInboxRefresh({
     const [ inboxDataVersion, setInboxDataVersion ] = useState(0);
     const schedulerRef = useRef(null);
     const wasFocusedRef = useRef(isWindowFocused);
-    const sourceKey = isGlobalInbox ? 'global' : `project:${ projectId }`;
+    const sourceKey = inboxSource(isGlobalInbox, projectId);
+    const { publish } = useInboxNavigationActions();
     const sourceKeyRef = useRef(sourceKey);
+    // Each navigation brings fresh counts, which restart the scheduler and would drop a refresh asked for just before
+    // it (a saved view, then the move to it): the next scheduler runs any refresh the last one did not.
+    const refreshesAsked = useRef(0);
+    const refreshesRun = useRef(0);
 
     sourceKeyRef.current = sourceKey;
 
     const refreshInboxData = useCallback(() => {
+        refreshesAsked.current += 1;
         const entry = schedulerRef.current;
 
         if (entry?.sourceKey === sourceKeyRef.current) {
@@ -60,7 +68,10 @@ export default function useInboxRefresh({
 
                 return counts;
             }),
-            onInvalidate: () => setInboxDataVersion(version => version + 1),
+            onInvalidate: () => {
+                refreshesRun.current = refreshesAsked.current;
+                setInboxDataVersion(version => version + 1);
+            },
             onCounts: setInboxViewCounts,
             onError: error => console.error('Unable to refresh inbox view counts', error),
         });
@@ -68,6 +79,7 @@ export default function useInboxRefresh({
         schedulerRef.current = { scheduler, sourceKey };
         setInboxViewCounts(initialCounts || {});
         if (!initialCounts) scheduler.loadInitialCounts();
+        if (refreshesAsked.current > refreshesRun.current) scheduler.invalidate();
 
         return () => {
             scheduler.dispose();
@@ -77,6 +89,10 @@ export default function useInboxRefresh({
             }
         };
     }, [ delayMs, isGlobalInbox, projectId, sourceKey, initialCounts ]);
+
+    useEffect(() => {
+        publish(sourceKey, inboxViewCounts, inboxDataVersion);
+    }, [ publish, sourceKey, inboxViewCounts, inboxDataVersion ]);
 
     useEffect(() => {
         if (lastConnected) refreshInboxData();

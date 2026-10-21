@@ -113,13 +113,13 @@ try {
       assert.equal(await nav().getByTestId('nav-settings').getAttribute('aria-current'),'page',path);
     }
   });
-  await check('a project sidebar is one short list; the Settings pages share one menu',async()=>{
+  await check('a project sidebar keeps six rows with the inbox views under Inbox; the Settings pages share one menu',async()=>{
     await page.setViewportSize({width:1440,height:900});
     await bindSession(bound.id);
     await page.goto(`${runtime.origin}/projects/${bound.id}/conversations`);await ready();
-    const rows=await nav().locator('#sidebar a, #sidebar button, #sidebar summary').evaluateAll(items=>items.filter(item=>item.checkVisibility()&&!item.closest('.navbar-lockup,.navbar-workspace,.navbar-account-menu')).map(item=>item.textContent.trim().replace(/\s+/g,' ')));
-    assert.ok(rows.length<=8,`the sidebar lists ${rows.length} rows: ${rows}`);
-    assert.equal(await nav().locator('a[href*="view="]').count(),0,'the inbox views are not in the sidebar');
+    // The five inbox views sit inside Inbox's item, so the primary list keeps its six rows.
+    const inbox=nav().getByTestId('nav-primary').locator('> li').first();
+    for(const view of ['mine','open','unassigned','ai','closed'])assert.equal(await inbox.locator(`nav[data-testid="inbox-views"] a[href*="view=${view}"]:visible`).count(),1,`the ${view} view sits under Inbox`);
     assert.equal(await nav().getByTestId('nav-primary').locator('> li').count(),6);
     const more=nav().getByTestId('nav-more');assert.equal(await more.getAttribute('open'),null,'More is closed on the inbox');
     await more.locator('summary').focus();await page.keyboard.press('Enter');

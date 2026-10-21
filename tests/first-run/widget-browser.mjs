@@ -4,6 +4,8 @@ import {assertLauncherAvatarFits} from '../helpers/widget-launcher-geometry.mjs'
 
 export async function widgetJourney({browser,runtime,projectId,token,width,evidence,mailMode}){
  const project=await (await fetch(runtime.origin+'/api/identity/projects/'+projectId,{headers:{Authorization:'Bearer '+token}})).json();
+ // The customer writes while nobody has the dashboard open and this team answers anyway, so presence-based away is off.
+ await runtime.presenceAwayOff(projectId);
  const context=await browser.newContext({viewport:{width,height:844},bypassCSP:true}),page=await context.newPage();
  try{
   await page.goto(runtime.origin+'/help/'+projectId);await page.addScriptTag({url:runtime.origin+'/widget.js'});

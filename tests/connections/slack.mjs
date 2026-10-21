@@ -7,6 +7,8 @@ test('both Slack modes deliver one logical new-conversation notification and esc
  for(const mode of ['incoming-webhook','bot']){const h=await harness();try{
   const privateValue=randomBytes(24).toString('hex'),input=mode==='bot'?{token:'xoxb-'+privateValue,channel:'C12345678'}:{url:'https://hooks.slack.com/services/T123/B123/'+privateValue};
   const saved=await h.call(root+'/slack',body({name:'Slack',mode,...input}));await h.contact();const conv=await h.conversation();
+  // The owner answers the visitor without the dashboard open, so presence-based away is off.
+  await h.call('/api/management/projects/p/availability',{...body({is_presence_away_enabled:false}),method:'PUT'});
   const hostile='<!channel> <@U123> & <https://example.test|link>';
   await h.dispatch();assert.equal(h.received.length,0,'empty widget conversation waits for native visitor context');
   await h.call('/api/conversations/'+conv.id+'/messages',{actor:'visitor',...body({content:hostile,localId:'hostile-visitor',expectedRevision:0})});

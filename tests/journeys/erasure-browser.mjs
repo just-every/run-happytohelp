@@ -14,6 +14,8 @@ for(const viewport of Object.values(viewports))test(`at ${viewport.width}px an o
  try{
  const owner={email:'erasure-owner@example.test',password:'synthetic-native-erasure-test-password-2026'};
  const setup=await request('/api/identity/bootstrap',{body:{...owner,name:'Erasure Workspace',allowedOrigin:origin}}),projectId=setup.projectId;
+ // The visitors write while nobody has the dashboard open and this team answers anyway, so presence-based away is off.
+ await runtime.presenceAwayOff(projectId);
  const login=await request('/api/identity/login',{body:owner}),project=await request(`/api/identity/projects/${projectId}`,{token:login.token});
  const secret='Please delete my account, my phone is 0400 123 456';
  const visitor=await request('/api/identity/widget/session',{body:{widgetKey:project.widget_key,name:'Erasure Visitor',email:'erase-me@example.test'},headers:{Origin:origin}});

@@ -26,6 +26,8 @@ export async function profileBrowser(){
   browser=await launchBrowser();
   const owner=await post(origin,'/api/identity/bootstrap',{name:'Profile workspace',ownerName:'Profile operator',email:'profile-owner@example.test',password:randomBytes(24).toString('base64url'),allowedOrigin:origin});
   const project=await api('/api/identity/projects/'+owner.projectId,owner.token);
+  // The returning visitor writes while nobody has the dashboard open and this team answers anyway, so presence-based away is off.
+  await runtime.presenceAwayOff(owner.projectId);
   for(const startingMode of ['remote']){
    await mailMode(startingMode);
    for(const width of [1440,390]){

@@ -24,6 +24,9 @@ test('the emitted Worker starts on real D1/R2, signs in its native owner and ref
   for(const path of ['/does-not-exist','/docs/does-not-exist']){const response=await request(path),body=await response.text();assert.equal(response.status,404,path);assert.match(body,/<title>Page not found · HappyToHelp<\/title>/);assert.match(body,/Back to the homepage/)}
   assert.equal((await call('/api/identity/session')).status,401);assert.equal((await call('/api/management/bootstrap')).status,401)
   const first=(await call('/api/identity/bootstrap',{body:{password:'synthetic-test-setup-password-123',name:'Runtime project',email:'runtime-owner@example.com',allowedOrigin:origin},status:201})).data
+  // Visitors in these journeys write while nobody has the dashboard open and the team answers anyway, so presence-based away is off
+  // (presence itself: tests/helpers/widget/presence.mjs).
+  await runtime.presenceAwayOff(first.projectId)
   assert.equal((await call('/api/identity/bootstrap',{body:{password:'synthetic-second-claim-password-123',name:'Second claim',email:'second-claim@example.com',allowedOrigin:origin}})).status>=400,true,'a claimed installation refuses a second first-owner claim')
   await call('/api/identity/password',{body:{currentPassword:'synthetic-test-setup-password-123',password:'synthetic-runtime-fixture-password-123'},token:first.token,status:200})
   assert.equal((await call('/api/identity/session',{token:first.token})).status,401,'a password change revokes the old session')
@@ -110,6 +113,7 @@ test('default limits refuse excess widget sessions and visitor messages with a r
  await withRuntime({},async(runtime,{call})=>{
   const widgetOrigin='https://customer-site.example'
   const owner=(await call('/api/identity/bootstrap',{body:{password:'synthetic-test-setup-password-123',name:'Limits project',email:'limits-owner@example.com',allowedOrigin:widgetOrigin},status:201})).data
+  await runtime.presenceAwayOff(owner.projectId)
   const project=(await call('/api/identity/projects/'+owner.projectId,{token:owner.token})).data
   // Each burst must fall inside one UTC-aligned window of the limit it exercises.
   await awaitWindowRoom(3600,30000)
@@ -128,6 +132,7 @@ test('default limits refuse excess widget sessions and visitor messages with a r
 test('message admission under contention: one writer per revision, exact replay, refused collisions, foreign media and stale operator frontiers',async()=>{
  await withRuntime({},async(runtime,{call})=>{
   const tenant=await runtime.seedTenant({name:'Admission',email:'admission@native.test',allowedOrigin:runtime.origin}),other=await runtime.seedTenant({name:'Admission other',email:'admission-other@native.test',allowedOrigin:runtime.origin})
+  await runtime.presenceAwayOff(tenant.projectId)
   const project=(await call(`/api/identity/projects/${tenant.projectId}`,{token:tenant.token})).data
   const visitor=(await call('/api/identity/widget/session',{body:{widgetKey:project.widget_key},headers:{Origin:runtime.origin},status:201})).data
   const conversation=(await call('/api/conversations',{body:{projectId:tenant.projectId},token:visitor.token,status:201})).data,path=`/api/conversations/${conversation.id}/messages`
@@ -155,6 +160,7 @@ test('the native HTTP transport pairs actual connectors once across the idle bou
   const emitted=JSON.parse(await readFile(resolve('dist/server/wrangler.json'),'utf8')),isolated=JSON.parse(await readFile(join(runtime.directory,'wrangler.json'),'utf8'))
   for(const key of ['compatibility_date','compatibility_flags','rules','durable_objects','migrations'])assert.deepEqual(isolated[key],emitted[key],key)
   const tenant=await runtime.seedTenant({name:'Native transport',email:'transport@native.test',allowedOrigin:runtime.origin})
+  await runtime.presenceAwayOff(tenant.projectId)
   const json=async(path,body,token=tenant.token)=>{const response=await call(path,{body,token,headers:{Origin:runtime.origin}});assert.match(response.headers.get('Content-Type'),/application\/json/,`${response.status}`);return response}
   const project=await json(`/api/identity/projects/${tenant.projectId}`);const visitor=await json('/api/identity/widget/session',{widgetKey:project.data.widget_key});assert.equal(visitor.status,201)
   const conversation=await json('/api/conversations',{projectId:tenant.projectId},visitor.data.token);assert.equal(conversation.status,201)

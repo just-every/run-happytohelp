@@ -10,6 +10,8 @@ const owners=messages=>messages.filter(message=>message.actor_role==='owner')
 // A paired connector resolves a visitor's request, then the person reviews its proposed reply with Use and presses Send.
 async function heroAtWidth({runtime,browser,shot,viewport}){
  const tenant=await runtime.seedTenant({name:'Hero '+viewport.width,email:`owner-${viewport.width}@hero.test`,allowedOrigin:runtime.origin})
+ // The visitor writes before the operator opens the dashboard and the team answers anyway, so presence-based away is off.
+ await runtime.presenceAwayOff(tenant.projectId)
  const context=await browser.newContext({viewport}),page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message))
  try{
   await context.addCookies([{name:'h2h_session',value:tenant.token,url:runtime.origin}])
@@ -28,6 +30,7 @@ async function useAtWidth({runtime,browser,shot,width,kind,races}){
  page.on('pageerror',error=>errors.push(error.message));page.on('dialog',dialog=>dialog.accept())
  try{
   const tenant=await runtime.seedTenant({name:`Use ${width}`,email:randomUUID()+'@use.test',allowedOrigin:runtime.origin})
+  await runtime.presenceAwayOff(tenant.projectId)
   await context.addCookies([{name:'h2h_session',value:tenant.token,url:runtime.origin}])
   const project=await (await context.request.get(runtime.origin+`/api/identity/projects/${tenant.projectId}`)).json()
   visitor=await visitorConversation({browser,origin:runtime.origin,widgetKey:project.widget_key,projectId:tenant.projectId,viewport})

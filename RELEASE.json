@@ -77,5 +77,10 @@
   "breaking": false,
   "agentUpdateInstructions": "Update from v0.4.10, or any earlier line, to v0.4.11 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.74. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. Apply the following twelve migrations once, in listed order and by file name, through pinned rer before the updated Worker serves traffic: 192_companies.sql, 193_customer_csv.sql, 194_csv_run_fences.sql, 195_restore_trigger_boundaries.sql, 196_csv_touched_fences.sql, 201_report_timers_schedules.sql, 202_problem_incidents.sql, 203_problem_delivery_history.sql, 204_problem_preview_audit.sql, 205_handle_timer_lead_stop.sql, 220_ticket_triage.sql, 230_escalations.sql. An earlier installation also applies its other missing published migrations by name through pinned rer. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. No breaking change.",
   "publicReleaseNotes": "HappyToHelp v0.4.11 includes R9a companies and customer CSV; R10a reports, handle timers, problems and incidents; R12a escalations; native signout and rer 0.2.74; H1 homepage hero; H3 Ink rail app theme; TRIAGE-001; scanner fixture correction. No breaking change. Back up and retain existing data and private settings without resetting. Apply all twelve listed migrations through pinned rer before the updated Worker serves traffic; retain human Send.",
-  "pendingMigrations": []
+  "pendingMigrations": [
+    {
+      "id": "240_operator_presence.sql",
+      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings → Availability."
+    }
+  ]
 }

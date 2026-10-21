@@ -2556,7 +2556,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "ea8f1f91d174b66240d928781273169b09e4d291aaea186d7c5b9bf5f2ee5242",
+      "sha256": "532d86bdca5d8a6571489e8a44dbf762574a3535cf867093e1e5a8e115b30558",
       "executable": false
     },
     "rer-project.json": {
@@ -10468,7 +10468,7 @@
       "executable": false
     },
     "tests/connections/slack.mjs": {
-      "sha256": "0de98b6822fd4bfc29260c9bf51849de45dcc3752328190ff62fb4f22661e9b6",
+      "sha256": "98b333be37029e346cc6378a8e224d745209e0339cdd4068abf65ee58a99604d",
       "executable": false
     },
     "tests/connections/worker.ts": {
@@ -10488,7 +10488,7 @@
       "executable": false
     },
     "tests/demo-inbox.mjs": {
-      "sha256": "384d8b506b1937f60d0ee194291b3856b08d77948a668c4eb10623374cb249f3",
+      "sha256": "9c923afb72689a467f54c8bd5cc8f767af5a65f0af92ee20178fd4ceb298ef67",
       "executable": false
     },
     "tests/demo-knowledge-activation.mjs": {
@@ -10548,7 +10548,7 @@
       "executable": false
     },
     "tests/first-run/widget-browser.mjs": {
-      "sha256": "8115fa5fc4f41d1b67e2ac176ae1654c87bfe0fcc69aa4222a030526167b5877",
+      "sha256": "8f7a93589fd571756db5a2d226c24b6d4daa88e90373cd58f110f026093b5630",
       "executable": false
     },
     "tests/fixtures/usage/local-workload.json": {
@@ -10780,7 +10780,7 @@
       "executable": false
     },
     "tests/helpers/delegation/browser-use.mjs": {
-      "sha256": "d8db0b5bdf8af789937affc1fbe7f97ee736bad715dfa63b7dbe223f13b24a8d",
+      "sha256": "792440455028688aff5cd42feae0b1e3491c0e107e4c2c0fd238ffc4ef440bdc",
       "executable": false
     },
     "tests/helpers/delegation/computers.mjs": {
@@ -10872,7 +10872,7 @@
       "executable": false
     },
     "tests/helpers/escalations/journeys.mjs": {
-      "sha256": "cba74893c90e74226257729827d752403eb696d607b45d60eb1702aeefd40a72",
+      "sha256": "25dd98425d9521fd0a583532353950afcfde60d5e113d52e9950d9ec80659cb4",
       "executable": false
     },
     "tests/helpers/escalations/linear.mjs": {
@@ -10920,7 +10920,7 @@
       "executable": false
     },
     "tests/helpers/first-run/first-release.mjs": {
-      "sha256": "c8f7b2c45ceb9b912a62912f9db314ed7d828a8ce4d569aa752b323867f2fb8d",
+      "sha256": "98bf0a8ad3f0eeba3c473fc3d5b659d3867ebd5851a05d256b4893d5b092f961",
       "executable": false
     },
     "tests/helpers/first-run/first-run-browser.mjs": {
@@ -10940,7 +10940,7 @@
       "executable": false
     },
     "tests/helpers/first-run/profile-browser.mjs": {
-      "sha256": "d7a873396e26bbccfbe4e33da127549e0161dc0b82f4a02093b2d358087660c5",
+      "sha256": "b8b8f2fcc70ea2918bcbdef95765c025655879db32ea6d36c69eaf41931a2a9a",
       "executable": false
     },
     "tests/helpers/first-run/provisioning.mjs": {
@@ -11556,7 +11556,7 @@
       "executable": false
     },
     "tests/journeys/erasure-browser.mjs": {
-      "sha256": "7c63fa3c8bbc2540358b05a05b76f319cbbb0276c7c1a153b36ee6df17ce42c7",
+      "sha256": "4eb5bbf041d2afbed7ae3479fd6848ac76f2c474ed29bc79960fbc7096fd145e",
       "executable": false
     },
     "tests/journeys/erasure.mjs": {
@@ -11664,7 +11664,7 @@
       "executable": false
     },
     "tests/journeys/runtime.mjs": {
-      "sha256": "9b514d212d4b7ccadc13b98a1bc65499de39aff551e7c4a80a2b31351b43805b",
+      "sha256": "bd7133102520a921680309617de1d3e712738c256cad1097acf1c1f2273150c9",
       "executable": false
     },
     "tests/journeys/upgrade-nightly.mjs": {

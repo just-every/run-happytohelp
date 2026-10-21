@@ -7,6 +7,8 @@ export async function escalationHarness({tickets=8}={}){
  try{
  app=await startApp({bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outbound:async req=>{if(!Object.values(providers).some(p=>p.baseUrl&&new URL(req.url).origin===p.baseUrl))throw Error('Network edge refused');return fetch(req.url,{method:req.method,headers:req.headers,body:['GET','HEAD'].includes(req.method)?undefined:await req.arrayBuffer()})}});
  const ws=await app.seedWorkspace('escalations'),foreign=await app.seedWorkspace('foreign'),token=ws.tokens.owner,base=`/api/escalations/projects/${ws.projectId}`;
+ // Customers write while nobody has the dashboard open and this team answers anyway, so presence-based away is off.
+ await app.presenceAwayOff(ws.projectId);
  const call=(path,body,options={})=>app.ok(base+path,{token,body,...options});
  for(const name of ['github','linear','jira','slack']){const p=providers[name];await call('/connections',{provider:name,target:p.target,base_url:p.baseUrl,token:p.token,webhook_secret:p.secret})}
  const records=[];

@@ -8680,7 +8680,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-profile-symbols.scss": {
-      "sha256": "9d60227c08740724b33bdd4ac325f4b641a6057fbaf06e66fcad21a41b651a3a",
+      "sha256": "904d1bf8402439250799f94e9ac644bb37f7ab5cbadb40c8ad79e73753354f5e",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-suggestion-card.scss": {

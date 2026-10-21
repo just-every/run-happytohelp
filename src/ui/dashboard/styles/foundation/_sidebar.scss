@@ -3,7 +3,7 @@
 // Contacts, More), the one Settings row and the account row. Below xl a 64px top bar (menu, switcher, account) whose menu
 // opens as a full-height sheet. The rail is the brand ink in every display mode: it wears the dark palette
 // (homepage/brand-tokens.css), so every rule below reads its light ink, soft ink, hover and rule. The current row is an
-// aqua wash with white type, an aqua icon and an aqua edge, never a fill.
+// aqua highlight with white type and an aqua icon, never an edge rule.
 
 body.workspace-themed {
   --rail-width: 232px;
@@ -124,11 +124,12 @@ body.workspace-themed {
   // Items change state at once (current page, hover): no fade through in-between colours.
   .nav-link, .native-global-contacts > summary, .nav-more > summary { transition: none; }
 
-  // The current row: an aqua wash with white type, weight and an aqua icon; no edge rule, the highlight is the state.
+  // The current row: an aqua highlight with white type, weight and an aqua icon; no edge rule, the highlight is the state.
+  // #39727c keeps the tint's 189deg aqua at 3.4:1 on the #141414 rail (3.1:1 on Dark's #1f1d1a) under white at 5.4:1.
   .navbar-nav > .nav-item > .nav-link.active,
   .nav-more .nav-link.active {
     color: #ffffff;
-    background: var(--d-cyan-tint);
+    background: #39727c;
     font-weight: 500;
 
     > .fe { color: var(--d-cyan); }

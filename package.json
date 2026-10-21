@@ -140,7 +140,7 @@
     "h2h-widget-gfm": "npm:remark-gfm@^4.0.0",
     "h2h-widget-markdown": "npm:react-markdown@^9.0.1",
     "highlight.js": "^10.7.3",
-    "hono": "4.13.7",
+    "hono": "4.13.11",
     "html-to-text": "10.0.1",
     "i18n-iso-countries": "^6.3.0",
     "initials": "^3.1.1",

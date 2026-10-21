@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import AddParticipantModal from '../AddParticipantModal';
+import address from './emailAddress';
 import ReplyIcon from '../reply-icons/ReplyIcon';
 import Api from '../../api';
 import { ChatContext } from '../../contexts/ChatContext';
@@ -9,8 +10,6 @@ ConversationParticipantsControl.propTypes = {
     conversation: PropTypes.object.isRequired,
 };
 
-// An address may wrap before its @, never inside a word.
-const address = email => { const at = String(email || '').lastIndexOf('@'); return at > 0 ? <>{ email.slice(0, at) }<wbr />{ email.slice(at) }</> : email; };
 
 export default function ConversationParticipantsControl({ conversation }) {
     const [isAddParticipantModalVisible, setIsAddParticipantModalVisible] = useState(false);

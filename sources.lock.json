@@ -7888,7 +7888,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ConversationContactDetails.jsx": {
-      "sha256": "2b3566a697b5b5074953d220b392178d4ed65de3a2c98cd204c584400647c400",
+      "sha256": "1cbe0cf0e1f6c626b3b87f2a38019dd0247f51304956a7e1aa88e5dcdd94c899",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ConversationDetailField.jsx": {
@@ -7904,11 +7904,15 @@
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ConversationParticipantsControl.jsx": {
-      "sha256": "986456ed57fb86d87a14817fd4149c8287d4d3a6f8f2eef40dd0fe1c4c287753",
+      "sha256": "5bf89f3018bb8a531c9bfe85aa16691dd8782d9d9353686bec0bfaf7ff19eed0",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ConversationTags.jsx": {
       "sha256": "88ed90c37115ff68537a9cd81992205b73506f6a53cfd0cedaa21b40659e3563",
+      "executable": false
+    },
+    "src/ui/dashboard/components/conversation/emailAddress.jsx": {
+      "sha256": "e74675be0811655c42e081573139047b22f33d787fa782b209ba726a00151297",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ResolutionSummary.jsx": {

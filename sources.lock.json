@@ -8656,7 +8656,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-composer.scss": {
-      "sha256": "7e0e07fb511ca6872987e8c343b6dc9420b0441e2d4ef1107fd0b33a8bca4c7a",
+      "sha256": "de151fb544796a3f19d0a8b3b85f8bcabe7e3be89856b33c17cc19c2455221e5",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-delegation-results.scss": {

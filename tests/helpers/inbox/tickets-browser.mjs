@@ -23,7 +23,6 @@ export async function ticketsBrowser({count=12,installation}={}){
     else if(name.startsWith('08'))await page.locator('.ticket-history li').first().scrollIntoViewIfNeeded();
     else await page.getByText('Ticket',{exact:true}).scrollIntoViewIfNeeded();
    }
-   if(/^09|^10|^11/.test(name))await page.locator('details.ticket-queue-tools').evaluate(element=>{element.scrollTop=0});
    if(name==='10b-view-save')await page.getByLabel('View name',{exact:true}).scrollIntoViewIfNeeded();
    if(/^1[23]/.test(name))await page.getByRole('region',{name:'Bulk ticket changes',exact:true}).locator('.ticket-result-list').scrollIntoViewIfNeeded();
    await page.waitForTimeout(200);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${name} ${width} overflow`);
@@ -44,15 +43,21 @@ export async function ticketsBrowser({count=12,installation}={}){
   assert.equal((await fixture.api(`${base}/conversations/${fixture.tickets[0].id}/ticket`)).data.priority,'high')
   await page.getByText('Status and field history',{exact:true}).click();await capture('08-ticket-history')
   await page.goto(`${runtime.origin}/projects/${projectId}/conversations`)
-  await page.getByText('Saved views and ticket filters',{exact:true}).click();await capture('09-views')
-  await page.getByRole('button',{name:'Edit filters',exact:true}).click();await page.getByRole('button',{name:'Add filter',exact:true}).click();
+  await page.getByRole('button',{name:'Filters',exact:true}).click();await capture('09-views')
+  await page.getByRole('button',{name:'Save as view…',exact:true}).click();await page.getByRole('button',{name:'Add filter',exact:true}).click();
   await page.getByLabel('Filter 1 field').selectOption('priority');await page.getByLabel('Value',{exact:true}).selectOption({label:'Urgent'});
   await page.getByRole('button',{name:'Add filter',exact:true}).click();await page.getByLabel('Filter 2 field').selectOption('group_id');await page.locator('#view-filter-1').selectOption({label:'Returns & replacements'});
   await page.getByRole('button',{name:'Add sort',exact:true}).click();await page.getByLabel('Sort 1 field').selectOption('subject');await page.getByLabel('Sort 1 direction').selectOption('asc');
   await page.getByLabel('View name',{exact:true}).fill('Urgent returns');await page.getByLabel('Visibility',{exact:true}).selectOption('shared');await capture('10-view-form');await capture('10b-view-save');
   await page.getByRole('button',{name:'Save new view',exact:true}).click();await page.getByText('View saved.',{exact:true}).waitFor();await capture('11-saved-view');
   const savedViews=(await fixture.api(base+'/ticket-views')).data;assert.ok(savedViews.some(view=>view.name==='Urgent returns'&&view.visibility==='shared'));
-  await page.getByLabel('Saved view',{exact:true}).selectOption('');await page.getByText('Saved views and ticket filters',{exact:true}).click();
+  // Saved views are chosen from the rail and edited through Filters › Edit view….
+  const views=page.locator('nav[data-testid="inbox-views"]'),saved=savedViews.find(view=>view.name==='Urgent returns')
+  await views.locator('a[href*="view=open"]').click();await views.getByRole('link',{name:'Urgent returns',exact:true}).click();await page.waitForURL(url=>url.searchParams.get('saved_view')===saved.id)
+  await page.getByRole('button',{name:'Filters',exact:true}).click();await page.getByRole('button',{name:'Edit view…',exact:true}).click()
+  await page.getByLabel('View name',{exact:true}).fill('Urgent returns queue');await page.getByRole('button',{name:'Save view',exact:true}).click();await page.getByText('View saved.',{exact:true}).waitFor()
+  assert.equal((await fixture.api(base+'/ticket-views')).data.find(view=>view.id===saved.id).name,'Urgent returns queue')
+  await views.locator('a[href*="view=open"]').click();
   await page.getByRole('button',{name:'Select tickets',exact:true}).click();await page.getByRole('checkbox',{name:/Select ticket/}).first().check();await page.getByRole('checkbox',{name:/Select ticket/}).nth(1).check();
   const bulk=page.getByRole('region',{name:'Bulk ticket changes',exact:true});await bulk.getByLabel('Priority',{exact:true}).selectOption('urgent');
   await bulk.getByLabel('Assign to',{exact:true}).selectOption({label:owner.ownerName});await bulk.getByLabel('Status',{exact:true}).selectOption({label:'Pending'});await bulk.getByLabel('Add tags',{exact:true}).selectOption({label:'Needs return label'});

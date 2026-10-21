@@ -8,6 +8,7 @@ import { InboxPage, WorkspacePages } from './dashboard-page-code';
 import Navigation from './Navigation';
 import { NavigationGuard } from './NavigationGuard';
 import { MobileNavigationProvider } from './MobileNavigation';
+import { InboxNavigationProvider } from './inbox-navigation-state';
 import DemoWorkspaceBanner from './demo/DemoWorkspaceBanner';
 import WorkspaceLiveCounts from './WorkspaceLiveCounts';
 export default function DashboardClient({ settings }) {
@@ -41,7 +42,7 @@ export default function DashboardClient({ settings }) {
         window.addEventListener('workspace-appearance',update);
         return () => { window.removeEventListener('workspace-appearance',update); delete document.body.dataset.theme; };
     }, [settings]);
-    return <NavigationGuard><MobileNavigationProvider>
+    return <NavigationGuard><MobileNavigationProvider><InboxNavigationProvider>
         <a className="workspace-skip-link" href="#workspace-main">Skip to main content</a>
         <Navigation settings={settings} />
         {/* The inbox holds these connections itself, with its listing. */}
@@ -50,7 +51,7 @@ export default function DashboardClient({ settings }) {
             <DemoWorkspaceBanner settings={settings} />
             <Outlet />
         </main>
-    </MobileNavigationProvider></NavigationGuard>;
+    </InboxNavigationProvider></MobileNavigationProvider></NavigationGuard>;
 }
 
 export function DashboardContent({ Inbox = InboxPage, Workspace = WorkspacePages, Conversation }) {

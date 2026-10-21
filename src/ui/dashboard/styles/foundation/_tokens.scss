@@ -105,6 +105,8 @@ $code-font-size: 87.5%;
 $code-color: $black;
 $kbd-font-size: 87.5%;
 
+@import "./h6-nav-tokens";
+
 // Tables -------------------------------------------------------------------
 
 $table-cell-padding-y: 1rem;

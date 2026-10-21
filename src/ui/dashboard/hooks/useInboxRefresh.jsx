@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Api from '../api';
 import { inboxViewCountsPath } from '../components/inboxViewDefinitions';
 import { createInboxRefreshScheduler } from '../utils/inboxRefreshScheduler';
+import { inboxSource, useInboxNavigationActions } from '../../native/inbox-navigation-state';
 
 const REQUIRED_COUNT_KEYS = [ 'mine', 'open', 'unassigned', 'ai', 'closed', 'unread' ];
 
 /**
  * Co-ordinates event-driven inbox list recovery and its aggregate view counts.
- * It deliberately has no polling loop.
+ * It deliberately has no polling loop. The counts and data version are published
+ * to the shell, whose rail shows them beside every page.
  */
 export default function useInboxRefresh({
     isGlobalInbox,
@@ -21,7 +23,8 @@ export default function useInboxRefresh({
     const [ inboxDataVersion, setInboxDataVersion ] = useState(0);
     const schedulerRef = useRef(null);
     const wasFocusedRef = useRef(isWindowFocused);
-    const sourceKey = isGlobalInbox ? 'global' : `project:${ projectId }`;
+    const sourceKey = inboxSource(isGlobalInbox, projectId);
+    const { publish } = useInboxNavigationActions();
     const sourceKeyRef = useRef(sourceKey);
 
     sourceKeyRef.current = sourceKey;
@@ -77,6 +80,10 @@ export default function useInboxRefresh({
             }
         };
     }, [ delayMs, isGlobalInbox, projectId, sourceKey, initialCounts ]);
+
+    useEffect(() => {
+        publish(sourceKey, inboxViewCounts, inboxDataVersion);
+    }, [ publish, sourceKey, inboxViewCounts, inboxDataVersion ]);
 
     useEffect(() => {
         if (lastConnected) refreshInboxData();

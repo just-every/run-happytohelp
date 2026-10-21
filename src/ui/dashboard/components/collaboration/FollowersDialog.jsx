@@ -1,6 +1,7 @@
 import React, {useId, useState} from 'react';
 import {Alert, Button, Form, Modal} from 'react-bootstrap';
 import useCollaboration from './useCollaboration';
+import './followers-dialog.css';
 
 /** Internal CC: choose the teammates who follow this ticket. Followers get its updates; the customer never sees them. */
 export default function FollowersDialog({onHide}) {

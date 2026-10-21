@@ -67,8 +67,9 @@ Its source and documentation links derive from the `repository` field in
   `dashboard.scss` and the `foundation/` partials) and the component styles
   beside them are first-party, built on Bootstrap 5.3 (MIT). Their only
   third-party inputs are Bootstrap, the `feather-icons` package (MIT), the
-  highlight.js `vs2015` code style (BSD-3-Clause) and Inter (SIL Open Font
-  License 1.1). The public homepage uses Outfit instead (see below). No commercial theme, font or image is used; the removed files
+  highlight.js `vs2015` code style (BSD-3-Clause) and the self-hosted Outfit
+  file their icon metrics borrow (see below). Their text is the system UI face,
+  so they host no text font. No commercial theme, font or image is used; the removed files
   and their hashes are recorded in
   [`src/ui/dashboard/asset-provenance.json`](../src/ui/dashboard/asset-provenance.json).
 - **Help Center stylesheet**: `public/site-assets/help_center/css/app.css` is a
@@ -85,7 +86,6 @@ Its source and documentation links derive from the `repository` field in
 | Component | Where | Licence and notice |
 | --- | --- | --- |
 | Outfit typeface (Copyright 2021 The Outfit Project Authors, <https://github.com/Outfitio/Outfit-Fonts>) | `public/fonts/outfit/`: the variable-weight latin and latin-ext WOFF2 files, copied unchanged from the npm package `@fontsource-variable/outfit` 5.3.0 (built from <https://github.com/google/fonts>) and declared in `src/ui/homepage/outfit.css`. The homepage serves them itself and makes no request to a font host. Chosen over Plus Jakarta Sans, Manrope, Urbanist, Figtree, Lexend, Albert Sans and Sora as the closest match to the approved headline by rendering them side by side | SIL Open Font License 1.1, `public/fonts/outfit/LICENSE.txt` |
-| Inter typeface | `public/fonts/inter/`; the customer widget embeds `InterVariable.woff2` through `src/modules/widget/js/includes/widgetFont.js` | SIL Open Font License, `public/fonts/inter/LICENSE.txt` |
 | Feather icons (`feather-icons` 4.29.2, Cole Bemis) | npm package; its SVGs are inlined as CSS masks in the built dashboard stylesheet (`src/ui/dashboard/styles/foundation/_icons.scss`) | MIT, [`docs/licenses/FEATHER-ICONS.md`](licenses/FEATHER-ICONS.md) |
 | Font Awesome Free | npm packages used by the widget and dashboard | MIT code and CC BY 4.0 icons, [`docs/licenses/FONT-AWESOME-FREE.md`](licenses/FONT-AWESOME-FREE.md) |
 | Lobe Icons (Claude and Codex logo paths) | `src/ui/dashboard/components/LocalAgentGlyph.jsx` | MIT, [`docs/licenses/LOBE-ICONS.md`](licenses/LOBE-ICONS.md) |
@@ -100,8 +100,8 @@ No Font Awesome Pro package or asset is included.
 ## External requests
 
 The homepage makes no third-party request: its Outfit font files are served
-from `public/fonts/outfit/`. The customer widget embeds its licensed Inter font
-in `/widget.js` and makes no external font request on the page that embeds it. The Help
+from `public/fonts/outfit/`. The customer widget sets its text in the visitor's
+system UI face, so it embeds no font and makes no font request on the page that embeds it. The Help
 Center stylesheet makes no external font or image request. The homepage does not
 load the customer widget, analytics or any tracking script, and no public page
 embeds an operator token, widget secret or tracking ID. The customer widget is a

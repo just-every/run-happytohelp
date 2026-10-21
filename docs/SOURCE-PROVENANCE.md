@@ -57,7 +57,7 @@ Third-party material keeps its own notice:
   nulls through required nullable tool parameters; `model_providers/openrouter.js`
   attributes requests to this open-source project), which are not part of the
   recorded upstream patch.
-- Outfit, Inter, Feather icons, Lucide reply icons and Font Awesome Free: see
+- Outfit, Feather icons, Lucide reply icons and Font Awesome Free: see
   [PUBLIC-SOURCE-PROVENANCE.md](PUBLIC-SOURCE-PROVENANCE.md#third-party-components).
   The dashboard's earlier third-party admin theme (its styles, template entry
   files and avatar masks) and its Feather webfont were removed and replaced by

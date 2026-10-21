@@ -43,6 +43,17 @@ assistant takes a new widget conversation only while its provider key is install
 which secret it needs, never key material), so without a key visitors stay with the team and no reply fails; an
 explicit AI request still fails naming the missing secret. `tests/journeys/first-run.mjs` covers this through public routes.
 
+Availability (`availability.ts`, also used by Settings → Availability) decides from the schedule and the "Accept new
+conversations" switch; `live-availability.ts` adds presence-based away for the widget settings door and the away reply
+(`away-reply.ts`): while they say open, the team is away when no teammate who may reply is online, unless the visitor
+assistant answers (enabled, provider key installed). Presence lives in `operator_presence` (migration 240), written only
+by the workspace's operator stream (`conversations/socket.ts` with `collaboration/presence.ts` and `presence-store.ts`):
+the dashboard reports its idle time every 20 seconds, a row counts until it expires (90 seconds past the last report, 10
+after the last stream closes) and while its member was active within the lead's idle time. Member removal and workspace
+deletion clear it; archives never carry it. Leads change it through `PUT /projects/:id/availability`, which records each
+change of the setting or idle time in the security log; `GET /projects/:id/presence` lists who is online.
+`tests/journeys/widget.mjs` and `tests/journeys/widget-browser.mjs` cover it.
+
 Pending invitations (`invitations.ts`, `invitation-store.ts`) are the unused invite links for one email in one
 workspace, listed on `GET /projects/:projectId/agents` with `invitation_id` (the lower-cased email), `expires_at`
 and a per-row `canManage` computed from the caller's role (owners: all; admins: invitations that grant the operator

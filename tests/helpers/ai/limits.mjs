@@ -18,10 +18,9 @@ async function seedProject(db,id,{ai=false}={}){
  await db.prepare('INSERT INTO users(id,email,name,created_at) VALUES(?,?,?,?)').bind('owner-'+id,`owner-${id}@example.com`,'Owner '+id,now).run()
  await db.prepare("INSERT INTO memberships VALUES(?,?,'owner')").bind(id,'owner-'+id).run()
  await db.prepare("INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,?,?,'owner',?)").bind(sha('token-'+id),'owner-'+id,id,now+3600000).run()
- if(ai){
-  await db.prepare('INSERT INTO ai_profiles VALUES(?,?,?,?,?,?,1,0,NULL,?)').bind('ai-'+id,id,'Assistant','support','Answer from evidence','gpt-5.6-luna',now).run()
-  await db.prepare('INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES(?,?,?)').bind(id,JSON.stringify({default_visitor_ai_id:'ai-'+id}),now).run()
- }
+ if(ai)await db.prepare('INSERT INTO ai_profiles VALUES(?,?,?,?,?,?,1,0,NULL,?)').bind('ai-'+id,id,'Assistant','support','Answer from evidence','gpt-5.6-luna',now).run()
+ // These teams answer without the dashboard open: presence-based away (tests/helpers/widget/presence.mjs) is off.
+ await db.prepare('INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES(?,?,?)').bind(id,JSON.stringify({is_presence_away_enabled:false,...(ai?{default_visitor_ai_id:'ai-'+id}:{})}),now).run()
  return {id,widgetKey:'widget-'+id,origin:`https://${id}.example`,ownerToken:'token-'+id}
 }
 async function expectLimited(response,limit){

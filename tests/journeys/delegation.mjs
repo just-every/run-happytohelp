@@ -17,6 +17,7 @@ let app,fixture,scratch,api,actor
 before(async()=>{
  app=await startApp({listen:true,bindings:{RER_INSTALLATION_ID:'journey-installation'}});fixture=await customerFixture();scratch=await mkdtemp(join(await realpath(tmpdir()),'h2h-delegation-journey-'))
  const workspace=await app.seedWorkspace('fix',{name:'Agent fix journey',allowedOrigin:app.url});api=client(app.url,workspace.tokens.owner);actor={id:workspace.users.owner,projectId:workspace.projectId}
+ await app.presenceAwayOff(workspace.projectId)
  // Work in another conversation never enters a delegated job's evidence.
  await (await newVisitor({origin:app.url,api,projectId:actor.projectId})).say('OUTSIDE SCOPED CONVERSATION')
 })

@@ -11,7 +11,7 @@ async function call(path,token,body,origin){const response=await fetch(runtime.o
 async function frame(predicate){for(let i=0;i<100;i++){const found=frames.find(predicate);if(found)return found;await new Promise(r=>setTimeout(r,100))}throw new Error('Expected native visitor socket frame missing')}
 try{
 
-const allowedOrigin='https://widget.example',owner=await runtime.seedTenant({name:'Emitted API',email:'emitted-api@example.test',allowedOrigin});
+const allowedOrigin='https://widget.example',owner=await runtime.seedTenant({name:'Emitted API',email:'emitted-api@example.test',allowedOrigin});await runtime.presenceAwayOff(owner.projectId);
  const project=await call('/api/identity/projects/'+owner.projectId,owner.token),visitor=await call('/api/identity/widget/session',null,{widgetKey:project.widget_key},allowedOrigin);
  const conversation=await call('/api/conversations',visitor.token,{projectId:owner.projectId});
  await call('/api/conversations/'+conversation.id+'/messages',visitor.token,{localId:'visitor-first',content:'Please help through the native channel',expectedRevision:0});

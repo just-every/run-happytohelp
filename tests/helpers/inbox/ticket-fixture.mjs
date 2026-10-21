@@ -4,6 +4,7 @@ import {startApp} from '../../journeys/kit/app.mjs'
 export async function ticketFixture(options={}){
  const app=await startApp({...options,captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',INBOUND_EMAIL_TOKEN:'ticket-gateway'}})
  const w=await app.seedWorkspace('tickets'),foreign=await app.seedWorkspace('elsewhere')
+ await app.presenceAwayOff(w.projectId);await app.presenceAwayOff(foreign.projectId)
  const base=`/api/dashboard/projects/${w.projectId}`
  const call=(path,body,role='owner',method)=>app.call(base+path,{token:w.tokens[role],...(body!==undefined?{body}:{}),...(method?{method}:{})})
  const ok=async(path,body,role='owner',method)=>{const result=await call(path,body,role,method);assert.ok(result.status>=200&&result.status<300,JSON.stringify(result.data));return result.data.data??result.data}

@@ -14,7 +14,7 @@ import {checkUnmarkedFailures} from '../provider-helpers/unmarked-failures.mjs'
 // The shipped connector CLI against the real application over loopback HTTP. Only
 // the paid provider CLIs (codex, claude) are scripted fixtures on the PATH.
 let app,ws,scratch,conversations=0
-before(async()=>{app=await startApp({listen:true});ws=await app.seedWorkspace('connector',{allowedOrigin:'http://127.0.0.1'});scratch=await mkdtemp(join(tmpdir(),'h2h-connector-'))})
+before(async()=>{app=await startApp({listen:true});ws=await app.seedWorkspace('connector',{allowedOrigin:'http://127.0.0.1'});await app.presenceAwayOff(ws.projectId);scratch=await mkdtemp(join(tmpdir(),'h2h-connector-'))})
 after(async()=>{await app?.close();if(scratch)await rm(scratch,{recursive:true,force:true})})
 
 async function computer(name,scenario={},{provider='codex',chatgpt=false}={}){

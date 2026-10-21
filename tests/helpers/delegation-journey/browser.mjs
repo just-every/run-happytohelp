@@ -47,6 +47,8 @@ export async function browserJourney(evidence){
     const value=await response.json();assert.equal(response.status(),status,`${method} ${path}: ${JSON.stringify(value)}`);return value;
    };
    const project=await api('/api/identity/projects/'+actor.projectId);const errors=[];page.on('pageerror',error=>errors.push(error.message));
+   // The visitor reports before the owner opens the dashboard; this team answers without it, so presence-based away is off.
+   await api(`/api/management/projects/${actor.projectId}/availability`,{is_presence_away_enabled:false},{method:'PUT'});
    const directory=join(scratch,String(width));await mkdir(directory);
    let visitorContext,visitor,visitorSession;const frames=[];
    const ui=browserUI({page,context,origin,actor,api,width,evidence,captions});

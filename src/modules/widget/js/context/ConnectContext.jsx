@@ -11,6 +11,8 @@ import {widgetAppearance} from '../../appearance';
 
 export const ConnectContext = createContext({});
 const INSIGHT_POLL_MIN = 2500, INSIGHT_POLL_MAX = 60000;
+// While open, a widget whose availability follows who is online asks again this often, and on opening.
+const LIVE_AVAILABILITY_MS = 30000;
 export function ConnectProvider({children, open, setOpen, setInsightOpen, onSettingsUpdated}) {
   const context = useContext(AppContext);
   const transport = useRef(null);
@@ -34,6 +36,7 @@ export function ConnectProvider({children, open, setOpen, setInsightOpen, onSett
   const [lastResponse, setLastResponse] = useState(null);
   const [lastConnected, setLastConnected] = useState(0);
   const [conversationSettings, setConversationSettings] = useState({ais: [], human: null, is_human_response_enabled: true, ...context.conversationSettings});
+  const configuredAt = useRef(0);
   const fail = useCallback(error => {setConnectionState(navigator.onLine ? 'interrupted' : 'offline');setConnectErrors(current => [...new Set([...current.slice(-4), error.message || String(error)])]);}, []);
   const setFilteredMessages = useCallback(incoming => {
     setMessages(current => {
@@ -55,6 +58,7 @@ export function ConnectProvider({children, open, setOpen, setInsightOpen, onSett
     switch (event.type || event.event) {
       case 'configuration': {
         const value = event.configuration;
+        configuredAt.current = Date.now();
         setCollectorReady(value.proactiveHelpEnabled === true && !(context.settings.collector.disable_bots && isBot));
         const brand = value.brand?.name || value.project?.name;
         setConversationSettings(current => ({...current, ais: value.ais || [], human: value.currentAgent || (brand ? {id: null, name: `${brand} Team`, initials: brand.split(/\s+/).map(part => part[0]).join('').slice(0,2)} : null), mailMode: value.mailMode, availability: value.availability || null, workspace_brand: {name: brand, avatar_url: value.brand?.avatar_url || value.brand?.logo_url}, is_human_response_enabled: value.is_human_response_enabled, is_contact_tracking_enabled: value.collectorEnabled}));
@@ -105,6 +109,15 @@ export function ConnectProvider({children, open, setOpen, setInsightOpen, onSett
     const timer = setTimeout(() => { transport.current?.refreshConfiguration().catch(() => {}); }, Math.min(Math.max(availabilityChangesAt - Date.now(), 0) + 1000, 2147483647));
     return () => clearTimeout(timer);
   }, [availabilityChangesAt]);
+  // Presence-based away: a teammate can come online or leave at any moment, so an open widget keeps asking.
+  const liveAvailability = conversationSettings.availability?.live === true;
+  useEffect(() => {
+    if (!liveAvailability || !open) return;
+    const refresh = () => { transport.current?.refreshConfiguration().catch(() => {}); };
+    if (Date.now() - configuredAt.current > LIVE_AVAILABILITY_MS / 2) refresh();
+    const timer = setInterval(refresh, LIVE_AVAILABILITY_MS);
+    return () => clearInterval(timer);
+  }, [liveAvailability, open]);
   useEffect(() => {
     const active = () => transport.current === client && !client.closed;
     const onError = error => { if (active()) fail(error); };

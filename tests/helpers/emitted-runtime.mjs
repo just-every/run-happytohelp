@@ -32,6 +32,9 @@ export async function createRuntime({port=Number(process.env.H2H_RUNTIME_PORT||p
  }
  // Runs SQL against the isolated test database, for states the public APIs cannot produce (an expired link, a pending sign-up).
  const execute=command=>run(['d1','execute','DB','--local','--config',configPath,'--persist-to',persist,'--command',command])
+ // A lead turned presence-based away off: the schedule and switch alone decide availability, as for a team that answers
+ // without the dashboard open. Presence itself: tests/helpers/widget/presence-browser.mjs.
+ const presenceAwayOff=projectId=>execute(`INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES('${String(projectId).replaceAll("'","''")}',json_object('is_presence_away_enabled',json('false')),${Date.now()}) ON CONFLICT(project_id) DO UPDATE SET settings_json=json_set(settings_json,'$.is_presence_away_enabled',json('false'))`)
  const restart=async(beforeStart)=>{
   child.kill('SIGTERM');await Promise.race([new Promise(resolveStop=>child.exitCode!==null?resolveStop():child.once('exit',resolveStop)),new Promise(resolveStop=>setTimeout(resolveStop,3000))]);
   if(child.exitCode===null){child.kill('SIGKILL');await new Promise(resolveStop=>child.exitCode!==null?resolveStop():child.once('exit',resolveStop));}
@@ -44,5 +47,5 @@ export async function createRuntime({port=Number(process.env.H2H_RUNTIME_PORT||p
   while(Date.now()<deadline&&child.exitCode===null){try{const response=await fetch(origin+'/health',{signal:AbortSignal.timeout(2000)});if(response.ok)return}catch{}await new Promise(resolveWait=>setTimeout(resolveWait,500))}
   throw Error('Restarted native Worker did not become healthy');
  }
- return {origin,close,restart,directory,seedTenant,execute,migrationCount:names.size,get logs(){return logs}}
+ return {origin,close,restart,directory,seedTenant,execute,presenceAwayOff,migrationCount:names.size,get logs(){return logs}}
 }

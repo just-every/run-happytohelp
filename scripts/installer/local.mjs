@@ -44,7 +44,7 @@ export const adapter=localInstaller({
  start:preview,owner:nativeOwner,localOwner,signIn:{returnTo:'/setup'},
 });
 export const install=(root,input,store,onApp,signal)=>installOperator(root,input,store,onApp,signal,adapter.hooks);
-const transfer=localPortability({database:'DB',buckets:{FILES:'FILES'},policyModule:'scripts/installer/portability-policy.mjs',transient:['ConversationSocket connections (messages are in D1)','queue execution leases','active sessions and one-use sign-in links','GitHub and integration credentials','local computer pairing, grants and job execution records','local workflow clock overrides; queued workflow sends are cancelled and claimed sends remain uncertain']});
+const transfer=localPortability({database:'DB',buckets:{FILES:'FILES'},policyModule:'scripts/installer/portability-policy.mjs',transient:['ConversationSocket connections (messages are in D1)','live teammate presence (who has the dashboard open)','queue execution leases','active sessions and one-use sign-in links','GitHub and integration credentials','local computer pairing, grants and job execution records','local workflow clock overrides; queued workflow sends are cancelled and claimed sends remain uncertain']});
 const d1=(context,label,sql)=>context.store.run(label,'pnpm',['exec','wrangler','d1','execute','DB','--local','--persist-to','.wrangler/state','--config','wrangler.jsonc','--command',sql],{cwd:context.root,signal:context.signal});
 const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async context=>{
  await context.store.run('Collecting local migrations',process.execPath,['scripts/migrations.mjs'],{cwd:context.root,signal:context.signal,heavy:false});

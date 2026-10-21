@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {WebSocket} from 'ws';
 import {generate} from '../move-in/generator.mjs';
 import {customer,history} from '../move-in/helpscout-fixtures.mjs';
 import {seedReportsPortable,verifyReportsPortable} from './reports-portable.mjs';
@@ -47,12 +48,21 @@ export async function seedPortableData(origin,projectId,token,json){
  const bytes=Uint8Array.from([0,255,128,42,13,10]);
  const upload=await fetch(origin+`/api/conversations/${retained.id}/media`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/octet-stream','X-Filename':'retained.bin'},body:bytes});assert.equal(upload.status,201);const media=await upload.json();
  const imports=await seedImportHistory(origin,projectId,token,json);
+ // Presence-based away settings travel with the workspace; who has the dashboard open is recorded, and never travels.
+ const availability=await fetch(origin+`/api/management/projects/${projectId}/availability`,{method:'PUT',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({presence_idle_minutes:30,presence_away_message:'Back soon from the workshop.'})});assert.equal(availability.status,200,await availability.text());
+ const stream=new WebSocket(`${origin.replace(/^http/,'ws')}/api/projects/${projectId}/socket?token=${token}`);await new Promise((resolve,reject)=>{stream.once('open',resolve);stream.once('error',reject)});
+ stream.send(JSON.stringify({type:'presence',idleMs:0}));
+ const online=async()=>(await json(`/api/management/projects/${projectId}/presence`,undefined,token)).data.online.length;
+ for(let attempt=0;attempt<40&&!await online();attempt++)await new Promise(resolve=>setTimeout(resolve,250));
+ assert.equal(await online(),1,'the owner\'s open dashboard is online');stream.close();
  const reports=await seedReportsPortable(origin,projectId,kept.contactId,retained.id,kept.token,token);
  return {projectId,erasedContactId:visitor.contactId,conversationId:retained.id,mediaId:media.id,bytes:[...bytes],imports,reports};
 }
 export async function verifyPortableData(origin,state,token,json){
  const contact=(await json(`/api/management/projects/${state.projectId}/contacts/${state.erasedContactId}`,undefined,token)).data;
  assert.equal(contact.email,null);assert.equal(JSON.parse(contact.metadata_json).is_erased,1);
+ const settings=(await json(`/api/management/projects/${state.projectId}/settings`,undefined,token)).data;
+ assert.deepEqual([settings.presence_idle_minutes,settings.presence_away_message],[30,'Back soon from the workshop.'],'presence-based away settings are restored');
  await verifyImportHistory(origin,state.projectId,state.imports,token,json);
  await verifyReportsPortable(origin,state.reports,token,json);
  const matches=await json(`/api/dashboard/projects/${state.projectId}/conversations?q=retained%20cobalt%20parcel`,undefined,token);

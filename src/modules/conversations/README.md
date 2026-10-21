@@ -19,3 +19,7 @@ atomic message/outbox/generation batch. Repeated commands return the committed
 message, including after later source changes; they never regenerate it. REST
 and socket replay read the same stored metadata. Widget/inbox anchors use only
 that durable metadata, suppress provisional and erased links, and set noopener.
+
+The operator project stream also carries workspace presence: a dashboard's `{type:'presence',idleMs}` reports are
+folded per teammate into `operator_presence` (see `src/modules/management/README.md`); conversation streams keep their
+per-conversation viewing and typing presence.

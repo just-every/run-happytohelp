@@ -80,6 +80,8 @@ try{
  assert.ok((await json('/api/management/projects',undefined,retained.token)).data.some(row=>row.id===project.id));
  const portable=await seedPortableData(origin,project.id,retained.token,json);
  await stop();
+ const presenceRows=()=>archiveStorage(root,async({DB})=>(await DB.prepare('SELECT count(*) n FROM operator_presence').first()).n);
+ assert.ok(await presenceRows()>0,'the owner\'s dashboard presence was recorded');
  await seedReportClaimedRecovery(root,portable.reports);
  const historical=await retainHistoricalLedger(root);
  const beforeExport=await archiveSnapshot(root);
@@ -117,6 +119,7 @@ try{
  await writeFile(additive,'CREATE TABLE rer_journey_additive(id TEXT PRIMARY KEY, value TEXT);\n');
  await run(root,['import','--input','exports/support.rer','--yes']);
  compareArchive(before,await archiveSnapshot(root),['rer_journey_additive']);
+ assert.equal(await presenceRows(),0,'who had the dashboard open never travels in an archive');
  const migrationCount=()=>archiveStorage(root,async({DB})=>(await DB.prepare("SELECT count(*) n FROM d1_migrations WHERE name='9999_rer_journey.sql'").first()).n);
  assert.equal(await migrationCount(),1);
  let restoredData=await archiveSnapshot(root);

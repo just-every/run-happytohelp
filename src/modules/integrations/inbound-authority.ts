@@ -2,6 +2,7 @@ import type {Actor,Env} from '../../platform/env.ts'
 import {portalMailboxSql,signedMailboxSql} from '../identity/mailbox'
 import {id} from '../../platform/db.ts'
 import {contactWritable} from '../../platform/contact-state.ts'
+import {mayReplySql} from '../access/reply-sql'
 
 // A Symbol cannot arrive in a public JSON message command. Admission rechecks the
 // receipt and sender authority in the transaction that commits the message.
@@ -50,9 +51,8 @@ async function senderContact(env:Env,projectId:string,email:string,kind:string,m
  * whoever reads that mailbox was sent this thread and is answering it. Fresh mail
  * from that address, or mail to another thread, goes to its own email contact. */
 /** A member whose role cannot reply publicly (a collaborator, or a custom role without it) never writes to a thread by email. */
-const mayReply=(m:string)=>`NOT EXISTS(SELECT 1 FROM member_roles mr LEFT JOIN project_roles pr ON pr.id=mr.role_key AND pr.project_id=mr.project_id WHERE mr.project_id=${m}.project_id AND mr.user_id=${m}.user_id AND (mr.role_key='collaborator' OR pr.base='collaborator' OR pr.id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM json_each(pr.permissions_json) p WHERE p.value='conversations.reply')))`
 export async function emailActor(env:Env,projectId:string,conversation:any,sender:string,members:boolean,granted:boolean):Promise<Actor|null>{
- const people=members?(await env.DB.prepare(`SELECT u.id,m.role FROM users u JOIN memberships m ON m.user_id=u.id WHERE m.project_id=? AND lower(u.email)=? AND ${mayReply('m')} LIMIT 2`).bind(projectId,sender).all<{id:string;role:Actor['role']}>()).results:[]
+ const people=members?(await env.DB.prepare(`SELECT u.id,m.role FROM users u JOIN memberships m ON m.user_id=u.id WHERE m.project_id=? AND lower(u.email)=? AND ${mayReplySql('m')} LIMIT 2`).bind(projectId,sender).all<{id:string;role:Actor['role']}>()).results:[]
  const contacts=(await env.DB.prepare(`SELECT ct.id FROM contacts ct WHERE ct.project_id=? AND lower(ct.email)=? AND ${granted?'1':provenAddressSql('ct')} AND ${availableAs('ct')} AND (ct.id=? OR EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=? AND cp.contact_id=ct.id))`).bind(projectId,sender,conversation.contact_id,conversation.id).all<{id:string}>()).results
  if(people.length+contacts.length!==1)return null
  if(people[0])return {id:people[0].id,role:people[0].role,projectId}

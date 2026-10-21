@@ -1,9 +1,10 @@
 # When your team is away
 
-Outside your opening hours, or when you turn off new conversations for a while,
-the chat widget tells visitors the truth: nobody is there right now. It says
-when you are back, asks for an email so your answer reaches them, and keeps
-their conversation in your inbox for when you return.
+Outside your opening hours, when you turn off new conversations for a while, or
+when nobody on your team is online, the chat widget tells visitors the truth:
+nobody is there right now. It says when you are back, asks for an email so your
+answer reaches them, and keeps their conversation in your inbox for when you
+return.
 
 ## What visitors see
 
@@ -24,6 +25,36 @@ chat and is emailed to the address they left.
 
 If one of your AI assistants answers the conversation, it keeps answering after
 hours, and no away message is posted.
+
+## When nobody is online
+
+During your hours (or, without hours, while you accept new conversations) the
+widget also checks whether anyone is actually there. A teammate who can reply
+to customers counts as online while they have HappyToHelp open in a browser and
+have used it recently. Collaborators, who only add internal notes, do not count.
+
+When nobody is online, visitors see the same away notice and email field as
+outside your hours, without a time ("We'll reply as soon as we're back."), and
+one away message is posted in their conversation. As soon as a teammate opens
+HappyToHelp again, the widget shows your team as available.
+
+- Closing HappyToHelp counts as away within about 10 seconds; a lost connection
+  or a server restart within 90 seconds. A teammate who has not used
+  HappyToHelp for the idle time you choose (15 minutes unless you change it)
+  counts as away until they use it again.
+- An open chat widget checks again every 30 seconds, and whenever the visitor
+  opens it.
+- If your visitor AI assistant answers visitors (it is on and its provider key
+  is installed), the widget stays available when nobody is online.
+
+To change it, open **Settings → Project**, **Availability** tab, **When nobody
+is online**: turn **Show away when no teammate is online** off or on (it is on
+for every workspace until you turn it off), choose after how long without use a
+teammate counts as away, and optionally write an **Away message when nobody is
+online**. Leave it empty for a standard one, for example: "Thanks for your
+message. Acme is away right now. We'll reply here and by email." The **Right
+now** line lists who is online. Turning it on or off, or changing the idle
+time, is recorded in **Settings → Security log**.
 
 ## Set your hours
 

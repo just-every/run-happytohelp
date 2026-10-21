@@ -2,7 +2,8 @@ import {DurableObject} from 'cloudflare:workers'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
 import {pendingFactor,policyRoles,type FactorMethod} from '../identity/two-factor/state'
-import {mergePresence,presenceFrame,PRESENCE_SWEEP_MS,PRESENCE_TTL_MS,type SocketAttachment as Attachment,type SocketActor} from '../collaboration/presence'
+import {mergePresence,presenceFrame,teammateOnline,ONLINE_IDLE_REPORT_MAX_MS,PRESENCE_SWEEP_MS,PRESENCE_TTL_MS,type OnlineState,type SocketAttachment as Attachment,type SocketActor} from '../collaboration/presence'
+import {recordOnline} from '../collaboration/presence-store'
 
 export class ConversationSocket extends DurableObject<Env>{
  async authorized(a:Attachment):Promise<SocketActor|null>{
@@ -22,7 +23,7 @@ export class ConversationSocket extends DurableObject<Env>{
  }
  async replay(ws:WebSocket){
   const a=ws.deserializeAttachment() as Attachment,actor=await this.authorized(a)
-  if(!actor){ws.close(1008,'Session revoked');return}
+  if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return}
   const rows=await this.env.DB.prepare('SELECT o.id eventId,m.* FROM conversation_outbox o JOIN messages m ON m.id=o.message_id WHERE '+(a.projectId?'o.project_id':'o.conversation_id')+'=? AND o.id>? ORDER BY o.id LIMIT 500').bind(a.projectId||a.conversationId,a.cursor).all()
   for(const row of rows.results){
    if(actor.role==='contact')delete row.content_raw
@@ -51,6 +52,19 @@ export class ConversationSocket extends DurableObject<Env>{
   if(hasPresence||receivers.length)await this.ctx.storage.setAlarm(Date.now()+PRESENCE_SWEEP_MS)
  }
  async alarm(){await this.publishPresence()}
+ /** Workspace presence (project stream only): one teammate across every stream of theirs this object holds, recorded
+  * for availability. A failed write is logged; the next heartbeat writes again and an unrefreshed row expires. */
+ async syncOnline(projectId:string,userId:string,exclude?:WebSocket){
+  const now=Date.now(),states=this.ctx.getWebSockets().filter(ws=>ws!==exclude).map(ws=>(ws.deserializeAttachment() as Attachment).online).filter((state):state is OnlineState=>state?.userId===userId)
+  try{await recordOnline(this.env,projectId,userId,teammateOnline(states,now),now)}catch{console.error('Workspace presence write failed; it is retried on the next heartbeat')}
+ }
+ async releaseOnline(ws:WebSocket){
+  const a=ws.deserializeAttachment() as Attachment
+  if(!a.projectId||!a.online)return
+  const userId=a.online.userId;delete a.online
+  try{ws.serializeAttachment(a)}catch{}
+  await this.syncOnline(a.projectId,userId,ws)
+ }
  async fetch(request:Request){
   const url=new URL(request.url)
   if(url.pathname==='/event'){
@@ -59,13 +73,13 @@ export class ConversationSocket extends DurableObject<Env>{
     const a=ws.deserializeAttachment() as Attachment
     if(a.conversationId&&a.conversationId!==event.conversationId||a.projectId&&a.projectId!==event.projectId)continue
     const actor=await this.authorized(a)
-    if(!actor){ws.close(1008,'Session revoked');continue}
+    if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');continue}
     if(event.operatorOnly===true&&actor.role==='contact')continue
     ws.send(JSON.stringify(event))
    }
    return new Response('ok')
   }
-  if(url.pathname==='/broadcast'){for(const ws of this.ctx.getWebSockets())try{await this.replay(ws)}catch{ws.close(1011,'Delivery failed')}return new Response('ok')}
+  if(url.pathname==='/broadcast'){for(const ws of this.ctx.getWebSockets())try{await this.replay(ws)}catch{await this.releaseOnline(ws);ws.close(1011,'Delivery failed')}return new Response('ok')}
   if(request.headers.get('Upgrade')!=='websocket')return new Response('WebSocket required',{status:426})
   const conversationId=request.headers.get('X-Conversation-Id'),projectId=request.headers.get('X-Project-Id'),token=request.headers.get('X-Session-Token')
   if((!conversationId&&!projectId)||!token)return new Response('Unauthorized',{status:401})
@@ -82,7 +96,13 @@ export class ConversationSocket extends DurableObject<Env>{
   let command:any;try{command=JSON.parse(message)}catch{ws.close(1003,'Invalid JSON');return}
   if(!command||typeof command!=='object')return
   const a=ws.deserializeAttachment() as Attachment,actor=await this.authorized(a)
-  if(!actor){ws.close(1008,'Session revoked');await this.publishPresence(ws);return}
+  if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');await this.publishPresence(ws);return}
+  // On the project stream, presence is the workspace's: how long this person has been idle, as their dashboard saw it.
+  if(command.type==='presence'&&a.projectId&&!a.conversationId){
+   if(typeof command.idleMs!=='number'||!Number.isFinite(command.idleMs)){await this.releaseOnline(ws);ws.close(1003,'Invalid command');return}
+   const now=Date.now();a.online={userId:actor.actor_id,activeAt:now-Math.min(Math.max(command.idleMs,0),ONLINE_IDLE_REPORT_MAX_MS),seenAt:now}
+   ws.serializeAttachment(a);await this.syncOnline(a.projectId,actor.actor_id);return
+  }
   if(command.type==='presence'){
    if(actor.role==='contact'||!a.conversationId){ws.close(1008,'Operator conversation required');return}
    if(command.viewing===false)delete a.presence
@@ -91,6 +111,6 @@ export class ConversationSocket extends DurableObject<Env>{
   }
   if(command.type==='replay'||command.type==='ping'){await this.replay(ws);ws.send(JSON.stringify({type:'pong'}))}
  }
- async webSocketClose(ws:WebSocket,code:number,reason:string){ws.close([1005,1006,1015].includes(code)?1000:code,reason);await this.publishPresence(ws)}
- async webSocketError(ws:WebSocket){ws.close(1011,'Socket error');await this.publishPresence(ws)}
+ async webSocketClose(ws:WebSocket,code:number,reason:string){await this.releaseOnline(ws);ws.close([1005,1006,1015].includes(code)?1000:code,reason);await this.publishPresence(ws)}
+ async webSocketError(ws:WebSocket){await this.releaseOnline(ws);ws.close(1011,'Socket error');await this.publishPresence(ws)}
 }

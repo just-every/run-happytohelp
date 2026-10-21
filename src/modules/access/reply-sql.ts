@@ -1,0 +1,3 @@
+/** SQL for a membership row `m` whose role may reply publicly: not a collaborator, nor a custom role without
+ * `conversations.reply`. Email authority and workspace presence apply the same rule. */
+export const mayReplySql=(m:string)=>`NOT EXISTS(SELECT 1 FROM member_roles mr LEFT JOIN project_roles pr ON pr.id=mr.role_key AND pr.project_id=mr.project_id WHERE mr.project_id=${m}.project_id AND mr.user_id=${m}.user_id AND (mr.role_key='collaborator' OR pr.base='collaborator' OR pr.id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM json_each(pr.permissions_json) p WHERE p.value='conversations.reply')))`

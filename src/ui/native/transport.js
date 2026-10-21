@@ -65,8 +65,8 @@ export async function sendCommand(projectId, conversationId, action, data) {
     });
 }
 
-/** Reconnect uses the persisted event cursor. Never repeats a mutation on a reconnect. */
-function connectSocket(resourcePath, cursorKey, onFrame, onReconnect, onError) {
+/** Reconnect uses the persisted event cursor. Never repeats a mutation on a reconnect. `onOpen` runs on every (re)connection. */
+function connectSocket(resourcePath, cursorKey, onFrame, onReconnect, onError, onOpen) {
     let socket, timer, stopped = false, connected = false, attempt = 0;
     const key = cursorKey;
     let cursor = sessionStorage.getItem(key) || '';
@@ -76,7 +76,7 @@ function connectSocket(resourcePath, cursorKey, onFrame, onReconnect, onError) {
         if (cursor) url.searchParams.set('after', cursor);
         if (window.chatSettings.socketToken) url.searchParams.set('token', window.chatSettings.socketToken);
         socket = new WebSocket(url);
-        socket.onopen = () => { attempt = 0; if (connected) onReconnect(); connected = true; };
+        socket.onopen = () => { attempt = 0; if (connected) onReconnect(); connected = true; onOpen?.(); };
         socket.onmessage = event => {
             try {
                 const frame = JSON.parse(event.data);
@@ -97,6 +97,31 @@ function connectSocket(resourcePath, cursorKey, onFrame, onReconnect, onError) {
 export function connectConversation(conversationId, onFrame, onReconnect, onError) {
     return connectSocket(`/api/conversations/${encodeURIComponent(conversationId)}/socket`, `h2h-event:${conversationId}`, onFrame, onReconnect, onError);
 }
+
+// Workspace presence: every project stream reports how long this person has been idle, on connecting and every
+// heartbeat (collaboration/presence.ts ONLINE_HEARTBEAT_MS), so visitors hear when nobody is there. Input anywhere in
+// the tab is activity; a hidden tab gets none. Activity after a quiet spell reports at once rather than at the next beat.
+const PRESENCE_HEARTBEAT_MS = 20000;
+let lastActivity = Date.now();
+const presenceReporters = new Set();
+function watchActivity() {
+    if (watchActivity.started || typeof window === 'undefined') return;
+    watchActivity.started = true;
+    const active = () => {
+        const quiet = Date.now() - lastActivity > PRESENCE_HEARTBEAT_MS;
+        lastActivity = Date.now();
+        if (quiet) presenceReporters.forEach(report => report());
+    };
+    for (const type of ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart', 'focus']) window.addEventListener(type, active, {capture: true, passive: true});
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') active(); });
+}
 export function connectProject(projectId, onFrame, onReconnect, onError) {
-    return connectSocket(`/api/projects/${encodeURIComponent(projectId)}/socket`, `h2h-project-event:${projectId}`, onFrame, onReconnect, onError);
+    watchActivity();
+    const report = () => connection.send({type: 'presence', idleMs: Math.max(0, Date.now() - lastActivity)});
+    const connection = connectSocket(`/api/projects/${encodeURIComponent(projectId)}/socket`, `h2h-project-event:${projectId}`, onFrame, onReconnect, onError, report);
+    const heartbeat = setInterval(report, PRESENCE_HEARTBEAT_MS);
+    presenceReporters.add(report);
+    const dispose = () => { clearInterval(heartbeat); presenceReporters.delete(report); connection(); };
+    dispose.send = connection.send;
+    return dispose;
 }

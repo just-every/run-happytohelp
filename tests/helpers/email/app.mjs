@@ -21,6 +21,7 @@ export async function mailApp({bindings={},projectId='p',inbound='inbound@exampl
   app.db.prepare("INSERT INTO users VALUES('op','op@example.com','Operator',1)"),app.db.prepare("INSERT INTO memberships VALUES(?,'op','operator')").bind(projectId),
   app.db.prepare("INSERT INTO sessions(token_hash,actor_id,project_id,role,contact_id,expires_at) VALUES(?,'op',?,'operator',NULL,?)").bind(sha('operator-token'),projectId,Date.now()+3600000),
  ])
+ await app.presenceAwayOff(projectId)
  const operator={Authorization:'Bearer operator-token'}
  // The reply address a transcript mail carries for that recipient, as the customer would see it.
  const replyAddress=async(conversationId,recipient)=>{

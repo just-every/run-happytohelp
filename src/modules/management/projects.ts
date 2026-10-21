@@ -120,6 +120,7 @@ projects.delete('/projects/:projectId',async c=>{
   c.env.DB.prepare('UPDATE sessions SET revoked_at=? WHERE project_id=?').bind(now,a.projectId),
   c.env.DB.prepare("UPDATE identity_tokens SET consumed_at=COALESCE(consumed_at,?) WHERE project_id=? AND kind='invite'").bind(now,a.projectId),
   c.env.DB.prepare('DELETE FROM memberships WHERE project_id=?').bind(a.projectId),
+  c.env.DB.prepare('DELETE FROM operator_presence WHERE project_id=?').bind(a.projectId),
   c.env.DB.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_blocked',1) WHERE project_id=?").bind(a.projectId),
   c.env.DB.prepare('UPDATE projects SET widget_key=?,allowed_origin=? WHERE id=?').bind(id(),'https://deleted.invalid',a.projectId),
   c.env.DB.prepare("UPDATE ai_profiles SET is_enabled=0 WHERE project_id=?").bind(a.projectId),

@@ -15,7 +15,8 @@ owner, admin or operator so older archives restore unchanged):
 - `assign.ts`: role changes (step-up, last-owner protection, audit).
 - `routes.ts`: Settings → Roles and conversation follow.
 
-Collaborators cannot reply by email either (`integrations/inbound-authority.ts`),
+Collaborators cannot reply by email either (`integrations/inbound-authority.ts`), never count as online for
+presence-based away (`reply-sql.ts` is the shared rule),
 and a delegated reply needs the operator's reply permission at send time
 (`src/edition/local-computer.ts`). Tests: `tests/journeys/identity.mjs`,
 `tests/journeys/identity-browser.mjs`.

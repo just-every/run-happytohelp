@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict'
 import {startApp,sha} from '../../journeys/kit/app.mjs'
+import {socketClient} from './sockets.mjs'
 
 // Conversation sockets on the real application: scoped REST and socket admission by token, origin and membership,
 // durable replay without operator-only data, the operator project stream, private notes live only to operators,
 // first-read receipts live to teammates, and a revoked session closing its socket.
 export async function socketJourney(){
  const app=await startApp({origin:'https://app.example'})
- const socketTo=async(path,headers)=>{const response=await app.request(path,{headers:{Upgrade:'websocket',...headers}});if(response.status!==101)return {status:response.status};const socket=response.webSocket;socket.accept();const frames=[],waiters=[];socket.addEventListener('message',event=>{const frame=JSON.parse(event.data);frames.push(frame);for(const waiter of waiters.splice(0))waiter()});return {status:101,socket,frames,next:(accept=()=>true,timeout=3000)=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('socket timeout')),timeout);const check=()=>{const found=frames.find(accept);if(found){frames.splice(frames.indexOf(found),1);clearTimeout(timer);resolve(found)}else waiters.push(check)};check()})}}
+ const socketTo=socketClient(app)
  try{
   const workspace=await app.seedWorkspace('socket',{allowedOrigin:'https://widget.example'}),p=workspace.projectId,owner=workspace.tokens.owner,teammate=workspace.tokens.operator
+  await app.presenceAwayOff(p)
   const session=async()=>(await app.call('/api/identity/widget/session',{body:{widgetKey:workspace.widgetKey},headers:{Origin:'https://widget.example'},status:201})).data
   const contact=await session(),other=await session()
   const conversation=(await app.call('/api/conversations',{token:contact.token,body:{projectId:p},status:201})).data

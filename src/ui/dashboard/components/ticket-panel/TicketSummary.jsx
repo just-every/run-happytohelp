@@ -55,7 +55,8 @@ export default function TicketSummary({ conversation, record, workflows, escalat
     const sla = workflows?.sla.data?.data;
     const due = nextSlaDue(sla);
     const openAlerts = (sla?.alerts || []).filter(alert => alert.state === 'open');
-    const canAcknowledge = workflows?.schedules.data?.data.permissions?.manage === true;
+    // Ticket management acknowledges SLA alerts and reads the routing decision ("Why routed").
+    const manage = workflows?.schedules.data?.data.permissions?.manage === true;
     const acknowledge = alert => workflows.sla.run(() => nativeRequest(`${ workflows.base }/sla-alerts/${ encodeURIComponent(alert.id) }/ack`, json('PATCH', {})));
     const followers = collaboration.followers.map(person => person.id === currentAgent?.id ? 'You' : person.name);
     const emailFollowups = useEmailFollowups(conversation.project_id, conversation.id);
@@ -68,7 +69,7 @@ export default function TicketSummary({ conversation, record, workflows, escalat
         <dl className="ticket-summary__rows">
             <Row label="Assignee" className="ticket-summary__row--assignee">
                 <ConversationAssignmentControl conversation={ conversation } />
-                { workflows && <>
+                { workflows && manage && <>
                     <button type="button" className="btn btn-link ticket-summary__why" aria-expanded={ routedOpen } aria-controls={ routedId } onClick={ () => setRoutedOpen(open => !open) }>Why routed</button>
                     <div id={ routedId } hidden={ !routedOpen }><RoutingExplanation routing={ workflows.routing } agents={ operatorsFor(agentsFor, conversation.project_id) } /></div>
                 </> }
@@ -84,7 +85,7 @@ export default function TicketSummary({ conversation, record, workflows, escalat
                 { due && <span className={ due.breached ? 'text-danger' : undefined }>{ due.text }</span> }
                 { openAlerts.map(alert => <div className="ticket-summary__alert" key={ alert.id }>
                     <span>{ label(alert.kind) } · { label(alert.metric) } · { workflowTime(alert.created_at) }</span>
-                    { canAcknowledge && <button type="button" className="btn btn-sm btn-white" disabled={ workflows.sla.busy } onClick={ () => acknowledge(alert) }>Acknowledge</button> }
+                    { manage && <button type="button" className="btn btn-sm btn-white" disabled={ workflows.sla.busy } onClick={ () => acknowledge(alert) }>Acknowledge</button> }
                 </div>) }
             </Row> }
             { escalationUpdates > 0 && <Row label="Update" className="is-alert">

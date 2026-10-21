@@ -14,7 +14,9 @@ import './workflows.css';
 /** The ticket's schedules, SLA and routing decision, read once for the Ticket tab and read again after a ticket action. */
 export function useConversationWorkflows(conversation, reads) {
     const path = `${ticketPath(conversation.project_id)}/conversations/${encodeURIComponent(conversation.id)}`;
-    const schedules = useWorkflowResource(`${path}/workflows`), sla = useWorkflowResource(`${path}/sla`), routing = useWorkflowResource(`${path}/routing`);
+    const schedules = useWorkflowResource(`${path}/workflows`), sla = useWorkflowResource(`${path}/sla`);
+    // The routing decision is readable only with ticket management, which the schedules read reports for this member.
+    const routing = useWorkflowResource(schedules.data?.data.permissions?.manage === true ? `${path}/routing` : null);
     const first = useRef(true);
     const reload = () => Promise.all([schedules.reload(), sla.reload(), routing.reload()]);
     useEffect(() => {

@@ -8216,7 +8216,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/TicketSummary.jsx": {
-      "sha256": "9a43f3245d659417f82e535a043b9bc1cd47142f7145691e31cb2dbe78e143d8",
+      "sha256": "2fd50e04574dceeae164b9eecdf48659a3bb760f955db4e6afc469762fd58cdc",
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/useTicketRecord.js": {
@@ -8444,7 +8444,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/workflows/WorkflowPanel.jsx": {
-      "sha256": "52e8e9cf20fb6344a2d32b8e0e1b0543477d2908bb10b5aba9c60a661c0d1442",
+      "sha256": "a84bc056571715c6a4694152ec862ce282f9350f2da456a1ce1f49e44673def8",
       "executable": false
     },
     "src/ui/dashboard/components/workflows/WorkflowQueueFilter.jsx": {
@@ -10048,7 +10048,7 @@
       "executable": false
     },
     "src/ui/native/pages/workflows/workflow-model.js": {
-      "sha256": "4ae435349696a9997859f433a900746b6e5b6703ad62613f3397a95a0579c3ea",
+      "sha256": "5e5a17e50fed570890984114262a46176763f82f33d38e835f1be61540838bea",
       "executable": false
     },
     "src/ui/native/pages/workflows/workflows.css": {

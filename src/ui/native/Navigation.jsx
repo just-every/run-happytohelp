@@ -6,6 +6,8 @@ import { nativeRequest } from './transport';
 import AdminNavigation from './AdminNavigation';
 import WorkspaceSidebarArtwork from './WorkspaceSidebarArtwork';
 import NavigationMore from './NavigationMore';
+import InboxNavigation from './InboxNavigation';
+import { inboxSource, useInboxNavigation, useInboxNavigationActions } from './inbox-navigation-state';
 import { onSettingsDestination, pathIsWithin } from './settings-destinations';
 import { BrandLockup } from '../homepage/BrandLockup';
 import { DEFAULT_WORKSPACE_COLOUR } from '../../modules/management/workspace-colour';
@@ -47,7 +49,7 @@ export default function Navigation({ settings }) {
     useEffect(()=>{const close = e=>{if(e.key==='Escape'){if(workspaceOpen){e.preventDefault();setWorkspaceOpen(false);workspaceToggle.current?.focus();}else if(open){e.preventDefault();setOpen(false);navigationToggle.current?.focus();}}};document.addEventListener('keydown',close);return()=>document.removeEventListener('keydown',close);},[open,workspaceOpen]);
     useEffect(()=>{const close=e=>{if(nav.current && !nav.current.contains(e.target))setWorkspaceOpen(false);};document.addEventListener('click',close);return()=>document.removeEventListener('click',close);},[]);
     // The primary list and the Global Inbox's Settings list each scroll on short viewports: keep the current page's link fully visible inside its own box.
-    useEffect(()=>{let live=true;const reveal=()=>{if(!live)return;for(const box of nav.current?.querySelectorAll('.navbar-scroll, #sidebarSettings')||[]){const item=box.querySelector('.nav-link.active');if(!item||!box.clientHeight)continue;const frame=box.getBoundingClientRect(),link=item.getBoundingClientRect();if(link.bottom>frame.bottom)box.scrollTop+=link.bottom-frame.bottom+8;else if(link.top<frame.top)box.scrollTop-=frame.top-link.top+8;}};reveal();document.fonts?.ready.then(reveal);return()=>{live=false};},[here,open,settingsOpen]);
+    useEffect(()=>{let live=true;const reveal=()=>{if(!live)return;for(const box of nav.current?.querySelectorAll('.navbar-scroll, #sidebarSettings')||[]){const item=box.querySelector('.nav-link.active, .nav-link.is-current');if(!item||!box.clientHeight)continue;const frame=box.getBoundingClientRect(),link=item.getBoundingClientRect();if(link.bottom>frame.bottom)box.scrollTop+=link.bottom-frame.bottom+8;else if(link.top<frame.top)box.scrollTop-=frame.top-link.top+8;}};reveal();document.fonts?.ready.then(reveal);return()=>{live=false};},[here,open,settingsOpen]);
     const project = settings.project?.id || Object.keys(settings.projects || {})[0];
     const base = project ? `/projects/${project}` : '';
     const workspaceName = settings.projectUnavailable ? 'Workspace unavailable' : settings.isGlobalInbox ? 'Global Inbox' : settings.project?.name;
@@ -55,6 +57,11 @@ export default function Navigation({ settings }) {
     // A row is current on its own path and on pages that render the same screen.
     const primaryActive = path => path==='articles' ? ['articles','datasets','categories','training-runs'].some(section=>pathIsWithin(here,`${base}/${section}`)) : path==='contacts' ? ['contacts','companies'].some(section=>pathIsWithin(here,`${base}/${section}`)) : path==='local-agent' ? pathIsWithin(here,`${base}/${path}`)||pathIsWithin(here,'/local-agent/authorize') : pathIsWithin(here,`${base}/${path}`);
     const inboxActive = here.includes('conversations') || here==='/';
+    // Inbox's group opens whenever the inbox becomes current; its chevron (or the phone's list title) holds a choice until the next one.
+    const {expanded} = useInboxNavigation(inboxSource(settings.isGlobalInbox, project));
+    const {setExpanded} = useInboxNavigationActions();
+    useEffect(()=>{if(inboxActive)setExpanded(true);},[inboxActive,setExpanded]);
+    const inboxOpen = expanded ?? inboxActive;
     const current = on => on ? 'page' : undefined;
     const projectRows = [['Setup','activation','check-square'],['Knowledge','articles','book-open'],['AI','ais','cpu'],['Contacts','contacts','users']];
     const moreRows = [['Local computers','local-agent'],['Reports','reports'],['Insights','insights']].map(([label,path])=>({label,to:`${base}/${path}`,current:primaryActive(path)}));
@@ -68,7 +75,10 @@ export default function Navigation({ settings }) {
         {workspaceOpen && <ul className="dropdown-menu navbar-workspace-menu show"><li><h6 className="dropdown-header">Your workspaces</h6></li>{Object.values(settings.projects || {}).map(p=><li key={p.id}><button className={`dropdown-item ${!settings.isGlobalInbox && p.id === project ? 'active' : ''}`} disabled={switching} onClick={()=>switchWorkspace(p.id)}><span>{p.name}</span><span className="navbar-workspace-swatch" style={{background:p.primary_color||DEFAULT_WORKSPACE_COLOUR}} aria-hidden="true"/></button></li>)}<li><hr className="dropdown-divider"/></li><li><button className={`dropdown-item ${settings.isGlobalInbox && !settings.projectUnavailable ? 'active' : ''}`} disabled={switching} onClick={()=>switchWorkspace('')}>Global Inbox</button></li></ul>}{switchError&&<p className="text-danger" role="alert">{switchError}</p>}</div>
         <div className="navbar-user d-xl-none"><AccountMenu agent={settings.currentAgent} showAdmin={settings.isPlatformAdmin}/></div>
         <div className={`navbar-collapse collapse ${open ? 'show' : ''}`} id="sidebarCollapse"><div className="navbar-scroll"><ul className="navbar-nav navbar-nav-primary" data-testid="nav-primary">
-            <li className="nav-item nav-item-inbox"><Link className={`nav-link ${inboxActive ? 'active' : ''}`} aria-current={current(inboxActive)} to={settings.isGlobalInbox ? '/conversations' : `${base}/conversations`}><i className="fe fe-inbox" aria-hidden="true"/><span className="navbar-link-label">Inbox</span><span id="navigation-inbox-unread" hidden><span className="navbar-unread-count" data-testid="count-disc"/></span></Link></li>
+            {/* On the inbox the current view, saved view or Snoozed row carries the highlight; Inbox reads as its section. */}
+            <li className="nav-item nav-item-inbox"><Link className={`nav-link ${inboxActive ? 'is-section' : ''}`} aria-current={current(inboxActive)} activeProps={{}} to={settings.isGlobalInbox ? '/conversations' : `${base}/conversations`}><i className="fe fe-inbox" aria-hidden="true"/><span className="navbar-link-label">Inbox</span><span id="navigation-inbox-unread" hidden><span className="navbar-unread-count" data-testid="count-disc"/></span></Link>
+                <button type="button" className="nav-inbox-toggle" aria-label="Inbox views" aria-controls="navigation-inbox-views" aria-expanded={inboxOpen} onClick={()=>setExpanded(!inboxOpen)}><i className="fe fe-chevron-down" aria-hidden="true"/></button>
+                <InboxNavigation id="navigation-inbox-views" settings={settings} inboxActive={inboxActive} open={inboxOpen}/></li>
             {settings.isGlobalInbox && <li className="nav-item"><details className="native-global-contacts"><summary><i className="fe fe-users" aria-hidden="true"/><span>Contacts</span><i className="fe fe-chevron-down" aria-hidden="true"/></summary><ul className="nav flex-column">{Object.values(settings.projects || {}).map(p=><li className="nav-item" key={p.id}><Link className="nav-link" to={`/projects/${p.id}/contacts`}>Contacts in {p.name}</Link></li>)}</ul></details></li>}
             {!settings.isGlobalInbox && projectRows.map(([label,path,icon])=><li className="nav-item" key={path}><Link className={`nav-link ${primaryActive(path) ? 'active' : ''}`} aria-current={current(primaryActive(path))} to={`${base}/${path}`}><i className={`fe fe-${icon}`} aria-hidden="true"/><span className="navbar-link-label">{label}</span></Link></li>)}
             {!settings.isGlobalInbox && <NavigationMore links={moreRows}/>}</ul>

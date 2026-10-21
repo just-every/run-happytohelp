@@ -69,7 +69,7 @@ try {
     assert.ok(buckets.data.flatMap(bucket=>bucket.messages).every(message=>message.contact || message.agent));
   }
   const counts = await (await request(dashboard,`/projects/${demoId}/conversations/counts`)).json();
-  assert.deepEqual(counts.data,{mine:3,open:6,unassigned:3,ai:0,closed:2,unread:6});
+  assert.deepEqual(counts.data,{mine:3,open:6,unassigned:3,ai:0,closed:2,unread:6,snoozed:0,suspended:0});
   assert.equal((await request(dashboard,`/projects/${demoId}/conversations/${conversations[0].id}`,'other')).status,404);
   const richIds = ['group-hike','strap-followup'].map(key=>`${demoId}-${key}`);
   const richRows = async () => ({

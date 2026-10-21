@@ -4,6 +4,7 @@ export async function schedulesFlow(f){
  const id=await create('Please follow up about the replacement'),due=initial+3600000
  const snooze=await ok('/workflow-schedules',{conversation_id:id,kind:'snooze',due_at:due,timezone:'America/New_York',owner_id:w.users.owner})
  assert.ok(!(await ok('/conversations')).some(t=>t.id===id));assert.ok((await ok('/conversations?snoozed=only')).some(t=>t.id===id))
+ assert.equal((await ok('/conversations/counts')).snoozed,(await ok('/conversations?snoozed=only&view=open')).length,'the Snoozed count is its list')
  await send(id);assert.equal((await ok(`/conversations/${id}/workflows`)).schedules.find(s=>s.id===snooze.id).state,'woken');assert.ok((await ok('/conversations')).some(t=>t.id===id))
  const schedule=async(ticketId,body='Your replacement is on its way.')=>{const t=await get(ticketId);return ok('/workflow-schedules',{conversation_id:ticketId,kind:'reply',due_at:due,timezone:'America/New_York',body,owner_id:w.users.owner,expected_revision:t.revision,expected_last_message_id:t.last_message_id,expected_ticket_version:t.ticket_version})}
  const cancel=await schedule(id);await ok(`/workflow-schedules/${cancel.id}`,{body:'A revised shipment update',due_at:due+60000},'PATCH');await ok(`/workflow-schedules/${cancel.id}`,{action:'cancel'},'PATCH')

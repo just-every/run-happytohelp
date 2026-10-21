@@ -37,7 +37,7 @@ async function vendorJourney(width,vendor){
    assert.ok(await page.locator('.transcript-message-time').count()>0);
   }
   const input=page.getByRole('textbox',{name:'New tag',exact:true});await input.fill('Review me');await input.locator('..').getByRole('button',{name:'Add',exact:true}).click();const remove=page.getByRole('button',{name:'Remove tag Review me',exact:true});await remove.waitFor();await inspect(`${label}-tag-added`);await remove.click();await remove.waitFor({state:'hidden'});await inspect(`${label}-tag-removed`);
-  await page.goto(runtime.origin+base+'/conversations');const filter=page.getByRole('combobox',{name:'Filter conversations by tag'});await filter.waitFor();await page.locator('.conversation-item').first().waitFor();
+  await page.goto(runtime.origin+base+'/conversations');await page.getByRole('button',{name:'Filters',exact:true}).click();const filter=page.getByRole('combobox',{name:'Filter conversations by tag'});await filter.waitFor();await page.locator('.conversation-item').first().waitFor();
   // Imported closed history is in Closed, so the Open view already shows only the three Priority rows.
   // Mark them: a new filter starts from an empty list, so only rows rendered for the filter lack the mark.
   await page.evaluate(()=>document.querySelectorAll('.conversation-item').forEach(row=>{row.dataset.beforeFilter='1'}));await filter.selectOption({label:'Priority'});

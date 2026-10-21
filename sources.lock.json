@@ -7840,7 +7840,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/composer/StartMenu.jsx": {
-      "sha256": "a356732647847608404b67c0fb37d37248692052baaf3aba3608f052bdbfbcdc",
+      "sha256": "23b88a49840276d6b2e4519c54c5a795837abd145b82841035e49546e2176be7",
       "executable": false
     },
     "src/ui/dashboard/components/composer/StartMenuItem.jsx": {
@@ -7924,7 +7924,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationAccess.jsx": {
-      "sha256": "39927f802352f49bdd954325196ca7069135b574928f759bf99cec5e2027c9f1",
+      "sha256": "9fbee36524cc4d625bd615507ed98d2a8b0a91d501fefa112d3f7d71a3bdd4a3",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationAIInstructions.jsx": {
@@ -7940,7 +7940,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationComposerTools.jsx": {
-      "sha256": "3f9acdc5d68d1778a4032d7a92badd6df0fd2e788eef32f2cc2ead43a4f7f3e2",
+      "sha256": "4a22a8c10591471f61df1d2d244ec9c17f11a1390e7e970216e485c16cb62f5b",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationDraftStatus.jsx": {

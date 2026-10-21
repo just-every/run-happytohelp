@@ -36,9 +36,10 @@ function useSheetRoom(active, menuRef, toggleRef) {
 
 /**
  * The "+" start menu named "Actions": a popover rising from the "+" from 768 px (two columns when there is room) and a
- * bottom sheet with a grab handle and a pinned footer below 768 px. `main` is the first column, `aside` the second.
+ * bottom sheet with a grab handle and a pinned footer below 768 px. Two columns read `lead` then `trail` on the left
+ * and `aside` on the right; one column reads `lead`, `aside`, `trail` (Reply, Write with AI, Ticket, Draft).
  */
-export default function StartMenu({ id, disabled = false, main, aside, footer }) {
+export default function StartMenu({ id, disabled = false, lead, aside, trail, footer }) {
     const [ show, setShow ] = useState(false);
     const [ layout, setLayout ] = useState('popover');
     const toggleRef = useRef(null);
@@ -62,8 +63,9 @@ export default function StartMenu({ id, disabled = false, main, aside, footer })
         <Dropdown.Menu ref={ menuRef } role="menu" aria-label="Actions" className={ `start-menu__menu is-${ layout }` }>
             { layout === 'sheet' && <div className="start-menu__handle" aria-hidden="true" { ...handle }><span /></div> }
             <div className="start-menu__body">
-                <div className="start-menu__column">{ main }</div>
-                { aside && <div className="start-menu__column">{ aside }</div> }
+                { layout === 'two-column'
+                    ? <><div className="start-menu__column">{ lead }{ trail }</div><div className="start-menu__column">{ aside }</div></>
+                    : <div className="start-menu__column">{ lead }{ aside }{ trail }</div> }
             </div>
             { footer && <div className="start-menu__footer" role="group" aria-label="Message actions">{ footer }</div> }
         </Dropdown.Menu>
@@ -73,7 +75,8 @@ export default function StartMenu({ id, disabled = false, main, aside, footer })
 StartMenu.propTypes = {
     id: PropTypes.string.isRequired,
     disabled: PropTypes.bool,
-    main: PropTypes.node.isRequired,
+    lead: PropTypes.node.isRequired,
     aside: PropTypes.node,
+    trail: PropTypes.node,
     footer: PropTypes.node,
 };

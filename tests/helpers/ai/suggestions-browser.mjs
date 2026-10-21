@@ -16,7 +16,7 @@ export async function suggestionsAtWidth({runtime,browser,shot,viewport}){
  page.on('request',request=>{if(request.method()==='POST'&&request.url().endsWith('/actions')&&request.postDataJSON()?.action==='agentAssist')assists.push(request.postDataJSON())})
  try{
   await context.addCookies([{name:'h2h_session',value:tenant.token,url:origin}])
-  const open=async()=>{await page.goto(`${origin}/projects/${tenant.projectId}/conversations/${conversation.id}`);const toggle=page.getByRole('button',{name:'Show conversation panel',exact:true});await page.locator('.conversation-assistant-toggle').waitFor();if(await toggle.isVisible())await toggle.click();await page.getByRole('tab',{name:'AI',exact:true}).click()}
+  const open=async()=>{await page.goto(`${origin}/projects/${tenant.projectId}/conversations/${conversation.id}`);const toggle=page.getByRole('button',{name:'Show conversation panel',exact:true});await page.locator('.conversation-assistant-toggle').waitFor();if(await toggle.isVisible())await toggle.click();await page.getByRole('tab',{name:'Suggest',exact:true}).click()}
   await open();const generate=page.getByRole('button',{name:'Generate',exact:true})
   await page.getByText('Add a customer message first.',{exact:true}).waitFor();assert.ok(await generate.isDisabled())
   await json(`/api/conversations/${conversation.id}/messages`,{localId:randomUUID(),content:'How do I cancel my order?',expectedRevision:0},visitor.token)

@@ -1,8 +1,34 @@
-body.conversation-workspace #chat .conversation-assistant-toggle {
+/* The panel toggle is a square icon button beside Close, as tall as Close; its names stay "Show/Hide conversation panel". */
+body.conversation-workspace #chat .chat > .chat-body > .chat-header .btn.conversation-assistant-toggle {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: .4rem;
+    flex: 0 0 auto;
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+}
+
+@media (max-width: 767.98px) {
+    body.conversation-workspace #chat .chat > .chat-body > .chat-header .btn.conversation-assistant-toggle { width: 34px; min-width: 34px; height: 34px; min-height: 34px; }
+}
+
+/* The header hides its pills' icons; this one is the button's whole face (a panel at the right). */
+body.conversation-workspace #chat .chat > .chat-body > .chat-header .btn.conversation-assistant-toggle .fe.conversation-assistant-toggle__icon { display: inline-block; font-size: 19px; transform: scaleX(-1); }
+
+/* While the panel is closed: a small dot when the ticket summary has an alert. */
+body.conversation-workspace #chat .conversation-assistant-toggle__dot {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 9px;
+    height: 9px;
+    border: 2px solid var(--surface);
+    border-radius: 50%;
+    background: var(--danger);
 }
 
 body.conversation-workspace #chat .conversation-assistant-toggle:focus-visible {

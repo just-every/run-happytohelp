@@ -110,26 +110,26 @@ export async function aiControlsBrowser(){
          const panel = page.locator('#conversation-assistant');
          const panelEntry = page.locator('.conversation-assistant-toggle');
          await panelEntry.waitFor({ state: 'visible' });
-         assert.equal(await panelEntry.count(), 1, `${width}px: one labelled AI and details entry`);
-         await panelEntry.getByText('AI & details', { exact: true }).waitFor();
+         assert.equal(await panelEntry.count(), 1, `${width}px: one labelled conversation panel entry`);
+         assert.match(await panelEntry.getAttribute('aria-label'), /^(Show|Hide) conversation panel$/);
          if (width < 1280) {
              await panel.waitFor({ state: 'hidden' });
              assert.equal(await panelEntry.getAttribute('aria-label'), 'Show conversation panel');
              await panelEntry.click();
          }
          await page.waitForFunction(() => document.querySelector('#conversation-assistant')?.getAttribute('aria-hidden') === 'false');
-         await panel.getByRole('tab', { name: 'Local', exact: true }).waitFor({ state: 'visible' });
-         assert.equal(await panel.getByRole('tab', { name: 'Local', exact: true }).count(), 1, `${width}px: Local appears once as a panel tab`);
-         assert.equal(await page.locator('.conversation-header').getByRole('button', { name: 'Local', exact: true }).count(), 0, `${width}px: no duplicate Local header button`);
+         await panel.getByRole('tab', { name: 'Delegate', exact: true }).waitFor({ state: 'visible' });
+         assert.equal(await panel.getByRole('tab', { name: 'Delegate', exact: true }).count(), 1, `${width}px: Delegate appears once as a panel tab`);
+         assert.equal(await page.locator('.conversation-header').getByRole('button', { name: 'Delegate', exact: true }).count(), 0, `${width}px: no duplicate Delegate header button`);
          assert.equal(await page.locator('[data-ai-generate="true"]').count(), 1, `${width}px: one Generate control with a result`);
          await page.getByRole('button', { name: 'Fixture answer' }).waitFor();
 
-         await page.getByRole('tab', { name: 'Details', exact: true }).click();
-         assert.equal(await page.locator('#conversation-details-panel').isVisible(), true, `${width}px: Details is reachable`);
-         await page.getByRole('tab', { name: 'Local', exact: true }).click();
+         await page.getByRole('tab', { name: 'Ticket', exact: true }).click();
+         assert.equal(await page.locator('#conversation-details-panel').isVisible(), true, `${width}px: Ticket is reachable`);
+         await page.getByRole('tab', { name: 'Delegate', exact: true }).click();
          assert.equal(await page.locator('#conversation-local-panel').isVisible(), true, `${width}px: Local delegation is reachable`);
-         await page.getByRole('tab', { name: 'AI', exact: true }).click();
-         checks.push(`${width}px: single labelled panel entry opens AI, Details, and Local tabs`);
+         await page.getByRole('tab', { name: 'Suggest', exact: true }).click();
+         checks.push(`${width}px: single labelled panel entry opens Suggest, Ticket, and Delegate tabs`);
 
          const before = (await call(
              runtime.origin,
@@ -224,12 +224,12 @@ export async function aiControlsBrowser(){
              await page.waitForFunction(() => document.querySelector('#conversation-assistant')?.getAttribute('aria-hidden') === 'true');
              checks.push('390px: sheet opens, tabs contain focus, Escape restores focus, and resize closes the sheet');
          } else {
-             await page.getByRole('tab', { name: 'AI', exact: true }).focus();
+             await page.getByRole('tab', { name: 'Suggest', exact: true }).focus();
              await page.keyboard.press('ArrowRight');
-             assert.equal(await page.getByRole('tab', { name: 'Local', exact: true }).getAttribute('aria-selected'), 'true');
-             await page.getByRole('tab', { name: 'AI', exact: true }).focus();
+             assert.equal(await page.getByRole('tab', { name: 'Delegate', exact: true }).getAttribute('aria-selected'), 'true');
+             await page.getByRole('tab', { name: 'Suggest', exact: true }).focus();
              await page.keyboard.press('End');
-             assert.equal(await page.getByRole('tab', { name: 'Details', exact: true }).getAttribute('aria-selected'), 'true');
+             assert.equal(await page.getByRole('tab', { name: 'Ticket', exact: true }).getAttribute('aria-selected'), 'true');
              checks.push('1440px: panel tabs preserve arrow and End keyboard navigation');
          }
 

@@ -15,6 +15,7 @@ import '../styles/components/ConversationHeader.scss';
 ConversationHeader.propTypes = {
     conversation: PropTypes.object,
     atTop: PropTypes.bool,
+    hasPanelAlert: PropTypes.bool,
     isPanelVisible: PropTypes.bool,
     onPanelToggle: PropTypes.func,
     panelToggleRef: PropTypes.object,
@@ -23,6 +24,7 @@ ConversationHeader.propTypes = {
 export default function ConversationHeader({
     conversation,
     atTop,
+    hasPanelAlert,
     isPanelVisible,
     onPanelToggle,
     panelToggleRef,
@@ -50,6 +52,9 @@ export default function ConversationHeader({
         conversation.contact.country_code && { key: 'country', node: <span className="conversation-header-meta-fixed"><CountryName code={ conversation.contact.country_code } prefix /></span> },
     ].filter(Boolean);
     const contactName = conversation.contact.display_name;
+    const panelLabel = isPanelVisible ? 'Hide conversation panel' : 'Show conversation panel';
+    // While the panel is closed, a small dot says the ticket summary has an alert (an SLA alert or a customer update to review).
+    const showAlert = Boolean(hasPanelAlert) && !isPanelVisible;
 
     return (
         <div className={ `chat-header conversation-header${atTop ? '' : ' is-scrolled'}` }>
@@ -86,16 +91,16 @@ export default function ConversationHeader({
                         : <button type="button" className="btn btn-white conversation-header-close" title="Close conversation" onClick={ () => resolveConversation(conversation).catch(() => {}) }><i className="fe fe-check-circle me-2" aria-hidden="true"></i>Close</button>) }
                     <button
                         type="button"
-                        className="btn btn-white conversation-assistant-toggle"
+                        className={ `btn btn-white conversation-assistant-toggle${ showAlert ? ' has-alert' : '' }` }
                         ref={ panelToggleRef }
-                        title={ isPanelVisible ? 'Hide AI and details' : 'Show AI and details' }
-                        aria-label={ isPanelVisible ? 'Hide conversation panel' : 'Show conversation panel' }
-                        aria-description="Opens AI replies, Local delegation, and conversation details."
+                        title={ panelLabel }
+                        aria-label={ panelLabel }
+                        aria-description={ `Suggest, Delegate and Ticket.${ showAlert ? ' The ticket summary has an alert.' : '' }` }
                         aria-controls="conversation-assistant"
                         aria-expanded={ Boolean(isPanelVisible) }
                         onClick={ onPanelToggle }>
-                        <i className="fe fe-message-square" aria-hidden="true"></i>
-                        <span>AI &amp; details</span>
+                        <i className="fe fe-sidebar conversation-assistant-toggle__icon" aria-hidden="true"></i>
+                        { showAlert && <span className="conversation-assistant-toggle__dot" aria-hidden="true" /> }
                     </button>
                 </div>
             </div>

@@ -87,7 +87,7 @@ conversation.
 Visible replies omit conventional quoted history and signatures. **Original email**
 retains the original text in the inbox. Replies and emailed transcripts carry rich
 text, inline images and files, up to 8 MiB per file and 20 MiB encoded content. A
-larger or unavailable file is left out and named in the email with a link to open it. **Details → Contact actions →
+larger or unavailable file is left out and named in the email with a link to open it. **Ticket → Customer → Contact actions →
 Email conversation** sends the latest customer conversation segment, excluding
 automated messages, with its conversation reply address. Reopening or retrying a
 transcript keeps the same request and revision. Provider acceptance is distinct

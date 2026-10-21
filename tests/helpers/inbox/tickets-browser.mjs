@@ -18,10 +18,10 @@ export async function ticketsBrowser({count=12,installation}={}){
    if(/^0[78]/.test(name)){
     await page.waitForTimeout(100);
     if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click();
-    await page.getByRole('tab',{name:'Details',exact:true}).click();
+    await page.getByRole('tab',{name:'Ticket',exact:true}).click();
     if(name.includes('custom'))await page.getByLabel('Reason',{exact:true}).scrollIntoViewIfNeeded();
     else if(name.startsWith('08'))await page.locator('.ticket-history li').first().scrollIntoViewIfNeeded();
-    else await page.getByText('Ticket',{exact:true}).scrollIntoViewIfNeeded();
+    else await page.locator('#ticket-section-fields').scrollIntoViewIfNeeded();
    }
    if(/^09|^10|^11/.test(name))await page.locator('details.ticket-queue-tools').evaluate(element=>{element.scrollTop=0});
    if(name==='10b-view-save')await page.getByLabel('View name',{exact:true}).scrollIntoViewIfNeeded();
@@ -38,11 +38,14 @@ export async function ticketsBrowser({count=12,installation}={}){
   await page.getByRole('button',{name:'New field',exact:true}).click();await page.getByLabel('Name',{exact:true}).fill('Warehouse reference');await page.getByLabel('Type',{exact:true}).selectOption('regex');await page.getByLabel('Validation pattern').fill('^WH-[0-9]{4}$');await capture('04-field-form');await page.getByRole('button',{name:'Create',exact:true}).click();await page.getByRole('status').filter({hasText:'Saved.'}).waitFor()
   await page.getByRole('button',{name:'Groups',exact:true}).click();await capture('05-groups');await page.getByRole('button',{name:'New group',exact:true}).click();await page.getByLabel('Name',{exact:true}).fill('Warranty');await page.getByLabel(owner.ownerName,{exact:true}).check();await capture('06-group-form');await page.getByRole('button',{name:'Create',exact:true}).click();await page.getByRole('status').filter({hasText:'Saved.'}).waitFor()
   await page.goto(`${runtime.origin}/projects/${projectId}/conversations/${fixture.tickets[0].id}`)
-  await page.getByRole('tab',{name:'Details',exact:true}).click();await page.getByLabel('Subject',{exact:true}).waitFor();await capture('07-ticket-fields')
+  // Status and Priority save on change in the Summary; the other fields sit under Ticket fields with Save ticket.
+  await page.getByRole('tab',{name:'Ticket',exact:true}).click();await page.locator('#ticket-section-fields-heading').click();await page.getByLabel('Subject',{exact:true}).waitFor();await capture('07-ticket-fields')
   await capture('07b-custom-fields');
-  await page.getByLabel('Priority',{exact:true}).selectOption('high');await page.getByRole('button',{name:'Save ticket',exact:true}).click();await page.getByText('Ticket saved.',{exact:true}).waitFor()
+  await page.getByLabel('Priority',{exact:true}).selectOption('high');await page.getByText('Priority saved.',{exact:true}).waitFor({state:'attached'})
   assert.equal((await fixture.api(`${base}/conversations/${fixture.tickets[0].id}/ticket`)).data.priority,'high')
-  await page.getByText('Status and field history',{exact:true}).click();await capture('08-ticket-history')
+  await page.getByLabel('Subject',{exact:true}).fill('Replacement for a cracked lid');await page.getByRole('button',{name:'Save ticket',exact:true}).click();await page.getByText('Ticket saved.',{exact:true}).waitFor()
+  const saved=(await fixture.api(`${base}/conversations/${fixture.tickets[0].id}/ticket`)).data;assert.equal(saved.subject,'Replacement for a cracked lid');assert.equal(saved.priority,'high')
+  await page.locator('#ticket-section-history-heading').click();await page.locator('.ticket-history li').first().waitFor();await capture('08-ticket-history')
   await page.goto(`${runtime.origin}/projects/${projectId}/conversations`)
   await page.getByText('Saved views and ticket filters',{exact:true}).click();await capture('09-views')
   await page.getByRole('button',{name:'Edit filters',exact:true}).click();await page.getByRole('button',{name:'Add filter',exact:true}).click();

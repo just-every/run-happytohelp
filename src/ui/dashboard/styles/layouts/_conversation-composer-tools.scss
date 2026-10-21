@@ -1,73 +1,110 @@
+// The "+" start menu (Actions): a popover rising from the "+" from 768px, two columns when the conversation has room
+// (Reply, Write with AI and Draft; then Ticket), and a bottom sheet with a grab handle and a pinned footer below.
+// It sits on the card's button row (and the notes-only box), so the popover aligns to the card's right edge.
 body.conversation-workspace #chat {
-    .conversation-composer__tools-menu {
+    .start-menu {
+        position: static;
         flex: 0 0 auto;
+    }
 
-        .conversation-composer__tools-toggle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 2.5rem;
-            height: 2.5rem;
-            padding: 0;
-            color: var(--ink);
-            text-decoration: none;
-            border: 1px solid var(--control-line);
-            border-radius: 50%;
-            background: transparent;
-            font-size: 20px;
-            transition: background .15s ease, color .15s ease;
+    // As specific as the card's .btn pill rules, and later, so the "+" stays a 40px circle.
+    .start-menu .start-menu__toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        min-height: 2.5rem;
+        padding: 0;
+        color: var(--ink);
+        text-decoration: none;
+        border: 1px solid var(--control-line);
+        border-radius: 50%;
+        background: transparent;
+        font-size: 20px;
+        transition: background .15s ease, color .15s ease;
 
-            &::after { display: none; }
+        &::after { display: none; }
 
-            &:hover, &[aria-expanded='true'] {
-                color: var(--on-ink);
-                background: var(--ink);
-            }
-        }
-
-        .dropdown-menu {
-            animation: none;
-            width: min(18rem, calc(100vw - 2rem));
-            max-height: min(32rem, calc(100dvh - 7rem));
-            overflow-y: auto;
-            overscroll-behavior: contain;
-            padding: 6px;
-        }
-
-        .dropdown-header {
-            padding: .5rem .65rem .3rem;
-            color: var(--ink-soft);
-            font-size: 0.8125rem;
-            font-weight: 600;
-        }
-
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: .7rem;
-            min-height: 2.25rem;
-            padding: .5rem .65rem;
-            border-radius: .4rem;
-            color: var(--ink);
-            font-size: 0.90625rem;
-
-            i { color: var(--ink-soft); font-size: .95rem; }
-
-            &:hover:not(.disabled), &:focus-visible, &:active:not(.disabled) {
-                color: var(--ink);
-                background: var(--d-cyan-tint);
-
-                i { color: inherit; }
-            }
-
-            &.disabled { opacity: .4; }
-        }
-
-        .dropdown-divider {
-            margin: .35rem .65rem;
-            border-color: var(--rule);
+        &:hover, &[aria-expanded='true'] {
+            color: var(--on-ink);
+            background: var(--ink);
         }
     }
+
+    .start-menu__menu.dropdown-menu {
+        top: auto;
+        right: 0;
+        bottom: calc(100% + 8px);
+        left: auto;
+        width: min(18.5rem, calc(100vw - 2rem));
+        max-height: min(34rem, calc(100dvh - 9rem));
+        margin: 0;
+        padding: 8px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        animation: none;
+
+        &.is-two-column { width: min(30rem, calc(100vw - 2rem)); }
+    }
+
+    .start-menu__menu.is-two-column .start-menu__body {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 10px;
+
+        &:has(> .start-menu__column:empty) { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    .start-menu__menu.is-two-column .start-menu__column:empty { display: none; }
+
+    .start-menu__menu.is-two-column .start-menu__footer { margin-left: calc(50% + 5px); }
+
+    .start-menu__group + .start-menu__group { margin-top: 6px; }
+
+    .start-menu__caption {
+        padding: .5rem .65rem .3rem;
+        color: var(--ink-soft);
+        font-size: var(--h6-menu-caption-size);
+        font-weight: 500;
+        letter-spacing: var(--h6-menu-caption-tracking);
+        line-height: 1.3;
+        text-transform: uppercase;
+    }
+
+    .start-menu__item.dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: .7rem;
+        min-height: 2.25rem;
+        padding: .45rem .65rem;
+        border-radius: 8px;
+        color: var(--ink);
+        font-size: var(--h6-menu-item-size);
+        line-height: 1.3;
+        white-space: normal;
+
+        i { flex: 0 0 auto; color: var(--ink-soft); font-size: .95rem; }
+
+        &:hover:not(.disabled), &:focus-visible, &:active:not(.disabled) {
+            color: var(--ink);
+            background: var(--d-cyan-tint);
+
+            i { color: inherit; }
+        }
+
+        &[aria-checked='true'] i { color: var(--ink); }
+
+        &.disabled, &:disabled { color: var(--ink-soft); opacity: .45; }
+    }
+
+    .start-menu__footer {
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid var(--rule);
+    }
+
+    .start-menu__handle { display: none; }
 
     .conversation-composer__status,
     .conversation-composer__error {
@@ -86,7 +123,55 @@ body.conversation-workspace #chat {
 
     .conversation-composer__error { color: var(--danger); }
 
+    @media (max-width: 767.98px) {
+        .start-menu__menu.dropdown-menu {
+            position: fixed;
+            z-index: 1045;
+            inset: auto 0 0 0;
+            width: 100%;
+            max-width: none;
+            // Leaves the conversation header and the reply card in view above the sheet.
+            max-height: min(62dvh, 40rem);
+            padding: 0;
+            overflow: hidden;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .start-menu__menu.dropdown-menu.show {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .start-menu__handle {
+            display: grid;
+            flex: 0 0 auto;
+            place-items: center;
+            height: 22px;
+            cursor: grab;
+            touch-action: none;
+
+            span { width: 40px; height: 4px; border-radius: 2px; background: var(--rule-strong); }
+        }
+
+        .start-menu__body {
+            flex: 1 1 auto;
+            min-height: 0;
+            padding: 0 8px 8px;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+
+        .start-menu__footer {
+            flex: 0 0 auto;
+            margin: 0;
+            padding: 6px 8px calc(8px + env(safe-area-inset-bottom));
+            background: var(--surface);
+        }
+
+        .start-menu__item.dropdown-item { min-height: 2.75rem; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
-        .conversation-composer__tools-toggle { transition: none; }
+        .start-menu .start-menu__toggle { transition: none; }
     }
 }

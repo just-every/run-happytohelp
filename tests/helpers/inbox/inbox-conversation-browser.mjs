@@ -51,7 +51,7 @@ try{
   const {context,page}=await open(conversationPath('kenji'))
   await page.locator('.conversation-header-meta-email').waitFor()
   await page.getByPlaceholder('Type your reply…').fill('typing triggers renders')
-  await page.getByRole('tab',{name:'Details'}).click()
+  await page.getByRole('tab',{name:'Ticket'}).click();await page.locator('#ticket-section-customer-heading').click()
   await page.getByText('Local time',{exact:true}).waitFor()
   await page.waitForTimeout(500)
   const meta=await page.locator('.conversation-header-meta').innerText()
@@ -59,15 +59,15 @@ try{
   const location=await page.locator('.conversation-details-location').innerText()
   assert.ok(/Local time\s*Unknown/.test(location)&&!/\d{1,2}:\d{2}|UTC[+-]/.test(location),`details show a clock without a timezone: ${location}`)
   assert.deepEqual(problems,[],'Moment Timezone console errors for a contact without a timezone')
-  check('contact without a timezone: no header clock, Details says Unknown, no Moment console errors')
+  check('contact without a timezone: no header clock, Ticket › Customer says Unknown, no Moment console errors')
   await context.close()
   await runtime.restart(()=>runtime.execute(`UPDATE contacts SET metadata_json=json_set(metadata_json,'$.timezone','Asia%2FTokyo') WHERE id=(SELECT contact_id FROM conversations WHERE id='${fx.contacts.tokyo.id}')`))
   const tokyo=await open(conversationPath('tokyo'))
   await tokyo.page.locator('.conversation-header-meta').getByText(/\d{1,2}:\d{2}/).waitFor()
-  await tokyo.page.getByRole('tab',{name:'Details'}).click()
+  await tokyo.page.getByRole('tab',{name:'Ticket'}).click();await tokyo.page.locator('#ticket-section-customer-heading').click()
   await tokyo.page.getByText('UTC+09:00',{exact:true}).waitFor()
   assert.deepEqual(problems,[])
-  check('contact with a URL-encoded timezone: header clock and Details UTC offset shown')
+  check('contact with a URL-encoded timezone: header clock and Ticket › Customer UTC offset shown')
   await tokyo.context.close()
  }
 
@@ -168,7 +168,7 @@ try{
  // 4. Assignment menu closes on Escape however it was opened.
  {
   const {context,page}=await open(conversationPath('assign'))
-  await page.getByRole('tab',{name:'Details'}).click()
+  await page.getByRole('tab',{name:'Ticket'}).click()
   const toggle=page.getByRole('button',{name:/^Assign conversation/})
   const menu=page.locator('.conversation-details-assignment [role=menu]')
   const focusedToggle=()=>page.evaluate(()=>document.activeElement?.getAttribute('aria-haspopup')==='menu'&&document.activeElement.closest('.conversation-details-assignment')!==null)
@@ -188,7 +188,7 @@ try{
   const {context,page}=await open(conversationPath('draft'))
   const composer=page.getByRole('textbox',{name:'Reply to conversation'})
   const expandedReply='Hi Maya Chen, a black replacement buckle is approved for express dispatch tomorrow. — Alex Rivers'
-  const pick=async()=>{await page.getByRole('button',{name:'Reply tools',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:REPLY.title,exact:true}).waitFor()}
+  const pick=async()=>{await page.getByRole('button',{name:'Actions',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:REPLY.title,exact:true}).waitFor()}
   const draft='Draft that must not be sent'
   await composer.fill(draft)
   await composer.evaluate(element=>element.setSelectionRange(6,6))
@@ -264,7 +264,7 @@ try{
   assert.ok(box.width>=24&&box.height>=24&&box.y>=barBox.y&&box.y+box.height<=barBox.y+barBox.height,'Reopen sits inside the header bar')
   await bar.getByText('Closed',{exact:true}).waitFor()
   assert.equal(await bar.getByRole('button',{name:'Close',exact:true}).count(),0)
-  const menuItems=async()=>{await page.getByRole('button',{name:'Reply tools',exact:true}).click();const names=await page.getByRole('menuitem').allInnerTexts();await page.keyboard.press('Escape');return names.map(name=>name.trim())}
+  const menuItems=async()=>{await page.getByRole('button',{name:'Actions',exact:true}).click();const names=await page.getByRole('menuitem').allInnerTexts();await page.keyboard.press('Escape');return names.map(name=>name.trim())}
   let items=await menuItems()
   assert.ok(items.includes('Saved replies')&&!items.some(name=>/Send & close/.test(name)),`closed conversation tools: ${items}`)
   await page.screenshot({path:join(evidence,'closed-header.png')})

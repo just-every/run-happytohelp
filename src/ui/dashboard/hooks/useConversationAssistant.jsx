@@ -11,8 +11,8 @@ export default function useConversationAssistant() {
     const panelRef = useRef(null);
     const openedFromToggle = useRef(false);
     const returnFocusRef = useRef(null);
-    const [ requestedTab, setRequestedTab ] = useState('ai');
-    const [ requestedTabVersion, setRequestedTabVersion ] = useState(0);
+    // The tab (and, on Ticket, the section) the panel was last asked to show; the version repeats a request.
+    const [ request, setRequest ] = useState({ tab: 'ai', section: null, version: 0 });
 
     const close = useCallback(() => {
         setIsVisible(false);
@@ -32,12 +32,23 @@ export default function useConversationAssistant() {
             return;
         }
 
-        setRequestedTab('ai');
-        setRequestedTabVersion(version => version + 1);
+        setRequest(current => ({ tab: 'ai', section: null, version: current.version + 1 }));
         returnFocusRef.current = toggleRef.current;
         openedFromToggle.current = true;
         setIsVisible(true);
     }, [ close, isVisible ]);
+
+    // Opens the panel (an overlay below 1280 px) on a tab and expands one of its sections, which takes focus.
+    // Closing a compact overlay returns focus to the control that asked (the menu toggle it came from), or to the
+    // panel toggle when the request came from a closing dialog.
+    const openPanel = useCallback((tab, section = null) => {
+        const active = document.activeElement;
+        const asker = active && active !== document.body && !active.closest?.('.modal') ? active : null;
+        returnFocusRef.current = asker?.closest?.('.dropdown-menu')?.parentElement?.querySelector('.dropdown-toggle') || asker || toggleRef.current;
+        openedFromToggle.current = false;
+        setRequest(current => ({ tab, section, version: current.version + 1 }));
+        setIsVisible(true);
+    }, []);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia(desktopQuery);
@@ -99,9 +110,11 @@ export default function useConversationAssistant() {
 
     return {
         isVisible,
-        requestedTab,
-        requestedTabVersion,
+        requestedTab: request.tab,
+        requestedSection: request.section,
+        requestedTabVersion: request.version,
         toggle,
+        openPanel,
         close,
         releaseDraft,
         toggleRef,

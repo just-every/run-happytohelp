@@ -1,5 +1,5 @@
 import { ConversationSuggestionsProvider } from '../contexts/ConversationSuggestionsContext';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import Api from "../api";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import ConversationHeader from "./ConversationHeader";
@@ -17,12 +17,13 @@ import ConversationBody from "./ConversationBody";
 import '../styles/components/Conversation.scss';
 import NoteModal from "./NoteModal";
 import { useUnsavedChanges } from '../../native/NavigationGuard';
+import { useDashboardSettings } from '../../native/dashboard-state';
 import { NotesOnlyComposer, useCan } from './ConversationAccess';
 import ConversationCollaboration from './collaboration/ConversationCollaboration';
-import ConversationActions from './conversation-actions/ConversationActions';
-import MergedConversationHistory from './conversation-actions/MergedConversationHistory';
+import { CollaborationProvider } from './collaboration/useCollaboration';
+import { HandleTimerProvider } from './tickets/useHandleTimer';
+import TicketActionDialogs from './composer/TicketActionDialogs';
 import {nativeRequest} from '../../native/transport';
-import EscalationsPanel from './escalations/EscalationsPanel';
 
 function Conversation({ projectId, conversationId, conversation, buckets }) {
     const {
@@ -43,6 +44,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         resolutionErrors,
     } = useContext(ChatContext);
     const assistant = useConversationAssistant();
+    const settings = useDashboardSettings();
     const [ isSending, setIsSending ] = useState(false);
     const [ atTop, setAtTop ] = useState(true);
     const [ files, setFiles ] = useState([]);
@@ -58,6 +60,10 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const [ isAssistantDisabled, setIsAssistantDisabled ] = useState(false);
     const [ isNoteModalVisible, setIsNoteModalVisible ] = useState(false);
     const [noteMacro, setNoteMacro] = useState(null);
+    // The start menu's ticket dialogs, and a read key for the Ticket panel's records after one of them changes the ticket.
+    const [ ticketDialog, setTicketDialog ] = useState(null);
+    const [ panelReads, setPanelReads ] = useState(0);
+    const [ panelAlert, setPanelAlert ] = useState(false);
     const { setDirty } = useUnsavedChanges();
     useEffect(() => {
         setDirty(Boolean(content.trim() || files.length || loadingContent || isSending));
@@ -76,6 +82,9 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     // A role without reply permission (a collaborator) gets notes and follow instead of the reply box;
     // the agent's view stays as approved.
     const canReply = useCan(conversationProjectId, 'conversations.reply'), canFollow = useCan(conversationProjectId, 'conversations.follow');
+    const canManage = useCan(conversationProjectId, 'conversations.manage');
+    // Ticket and workflow tools stay hidden in a demo project.
+    const isDemo = Boolean((settings.projects?.[conversationProjectId] || settings.project)?.is_demo);
     const {
         hasNextPage,
         isConversationReady,
@@ -198,6 +207,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         setIsAssistantDisabled(false);
         setIsNoteModalVisible(false);
         setNoteMacro(null);
+        setTicketDialog(null);
+        setPanelAlert(false);
         return () => { draftAdoptionRef.current = null; };
     }, [ conversationId ]);
 
@@ -273,6 +284,25 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         assistant.releaseDraft();
         setDraftFocusRequest(previous => ({ conversationId, version: (previous?.version || 0) + 1 }));
     };
+    // After a start menu dialog changes the ticket, the panel reads its records again and the conversation refreshes.
+    const ticketChanged = useCallback(async () => {
+        setPanelReads(count => count + 1);
+        await refreshConversation();
+    }, [ refreshConversation ]);
+    const openPanel = assistant.openPanel;
+    const ticketMenu = useMemo(() => conversation && ({
+        conversation,
+        isDemo,
+        onDialog: setTicketDialog,
+        onOpenPanel: openPanel,
+    }), [ conversation, isDemo, openPanel ]);
+    // An escalation's customer update goes to the composer for review; a compact panel sheet steps aside for it.
+    const reviewEscalationDraft = draft => {
+        updateDraftContent(draft.content, [], {kind:'human'});
+        setEscalationDraftId(draft.id);
+        assistant.releaseDraft();
+        setDraftFocusRequest(previous => ({conversationId, version: (previous?.version || 0) + 1}));
+    };
     const isDraftCurrent = draftConversationIdRef.current === conversationId;
     const draftContent = isDraftCurrent ? content : '';
     const draftFiles = isDraftCurrent ? files : [];
@@ -297,6 +327,12 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         </div>;
     }
 
+    const messages = buckets.flatMap(bucket => bucket.messages || []);
+    const presence = canFollow && <ConversationCollaboration projectId={conversationProjectId} conversationId={conversationId} currentUserId={currentAgent?.id} socketEvent={socketEvent} sendSocket={sendSocket} hasDraft={Boolean(draftContent.trim() || draftFiles.length)} isTyping={isTyping}/>;
+    const noteDraft = noteMacro && !isNoteModalVisible && <p className="conversation-note-draft" role="status">
+        <i className="fe fe-lock" aria-hidden="true" /> Saved internal note draft <button className="btn btn-link btn-sm" type="button" onClick={()=>setIsNoteModalVisible(true)}>Review note</button>
+    </p>;
+
     return (
         <ConversationSuggestionsProvider
             key={ conversationId }
@@ -309,12 +345,15 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                 draftConversationIdRef.current = conversationId;
                 setLoadingContent(nextLoadingContent);
             } }>
+            <CollaborationProvider projectId={ conversationProjectId } conversationId={ conversationId } socketEvent={ socketEvent }>
+            <HandleTimerProvider conversation={ conversation } enabled={ canManage && !isDemo }>
             <div className="chat">
                 <div className="chat-body">
                     <ConversationHeader
                         conversation={ conversation }
                         onPanelToggle={ assistant.toggle }
                         isPanelVisible={ assistant.isVisible }
+                        hasPanelAlert={ panelAlert }
                         panelToggleRef={ assistant.toggleRef }
                         isLoading={ isLoading || isLoadingMore }
                         atTop={ atTop }
@@ -331,40 +370,35 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                         </p> }
                         { isLoading && <div className="text-center px-2 py-2" role="status">Loading conversation...</div> }
                         <ConversationBody conversation={ conversation } buckets={ buckets } setAtTop={ setAtTop } />
-                        <MergedConversationHistory conversation={conversation} refreshKey={conversation.ticket_version}/>
-                        <ConversationActions conversation={conversation} refreshKey={lastConnected} messages={buckets.flatMap(bucket=>bucket.messages || [])} onChanged={refreshConversation}/>
-                        <EscalationsPanel projectId={conversationProjectId} conversationId={conversationId} refreshKey={socketEvent?.kind==='escalation' ? socketEvent : lastConnected} onDraft={draft=>{updateDraftContent(draft.content,[],{kind:'human'});setEscalationDraftId(draft.id);setDraftFocusRequest(previous=>({conversationId,version:(previous?.version||0)+1}));}}/>
                         { loadMoreError && <p className="conversation-load-error px-2 py-2" role="alert">
                             Couldn’t load older messages. <button type="button" onClick={ loadOlderBuckets }>Retry</button>
                         </p> }
                     </ScrollToBottom>
 
-                    {noteMacro && !isNoteModalVisible && <p className="px-3 py-2" role="status">You have a saved internal note draft. <button className="btn btn-link btn-sm" type="button" onClick={()=>setIsNoteModalVisible(true)}>Review note</button></p>}
-                    {conversation.merged_into && <p className="px-3 py-2" role="status">This ticket was merged. <a href={`/conversations/${conversation.merged_into}`}>Open the surviving ticket</a>.</p>}
-                    {canFollow && <ConversationCollaboration projectId={conversationProjectId} conversationId={conversationId} currentUserId={currentAgent?.id} socketEvent={socketEvent} sendSocket={sendSocket} hasDraft={Boolean(draftContent.trim() || draftFiles.length)} isTyping={isTyping}/> }
-                    { draftError && <p className="conversation-load-error px-2 py-2" role="alert">{ draftError }</p> }
-                    { !conversation.merged_into && (canReply ? <ConversationForm
-                        key={ conversationId }
-                        content={ draftContent }
-                        focusRequest={ draftFocusRequest?.conversationId === conversationId ? draftFocusRequest.version : 0 }
-                        conversationId={ conversationId }
-                        projectId={ conversationProjectId }
-                        loadingContent={ draftLoadingContent }
-                        onSendMessage={ handleSendMessage }
-                        onFileSelect={ handleSendFile }
-                        onFileRemove={ handleRemoveFile }
-                        onAddNote={ () => setIsNoteModalVisible(true) }
-                        onContentChange={ updateDraftContent }
-                        onMacroApplied={applyMacroDraft}
-                        onAssistantDisabledChange={ setIsAssistantDisabled }
-                        files={ draftFiles }
-                        isResolved={ Boolean(conversation.resolved_at) }
-                        finalReason={ conversation.status_category === 'closed' ? 'This ticket is closed and final, so it takes no more replies. A customer reply opens a new ticket.' : null }
-                        isEnabled={ isComposerEnabled }
-                    /> : <>
-
-                        <NotesOnlyComposer onAddNote={ () => setIsNoteModalVisible(true) } />
-                    </>) }
+                    { conversation.merged_into ? <p className="conversation-merged-notice" role="status">This ticket was merged. <a href={`/conversations/${conversation.merged_into}`}>Open the surviving ticket</a>.</p>
+                        : canReply ? <ConversationForm
+                            key={ conversationId }
+                            content={ draftContent }
+                            focusRequest={ draftFocusRequest?.conversationId === conversationId ? draftFocusRequest.version : 0 }
+                            conversationId={ conversationId }
+                            projectId={ conversationProjectId }
+                            loadingContent={ draftLoadingContent }
+                            onSendMessage={ handleSendMessage }
+                            onFileSelect={ handleSendFile }
+                            onFileRemove={ handleRemoveFile }
+                            onAddNote={ () => setIsNoteModalVisible(true) }
+                            onContentChange={ updateDraftContent }
+                            onMacroApplied={applyMacroDraft}
+                            onAssistantDisabledChange={ setIsAssistantDisabled }
+                            files={ draftFiles }
+                            isResolved={ Boolean(conversation.resolved_at) }
+                            finalReason={ conversation.status_category === 'closed' ? 'This ticket is closed and final, so it takes no more replies. A customer reply opens a new ticket.' : null }
+                            isEnabled={ isComposerEnabled }
+                            presence={ presence }
+                            noteDraft={ noteDraft }
+                            draftError={ draftError }
+                            ticketMenu={ ticketMenu }
+                        /> : <NotesOnlyComposer onAddNote={ () => setIsNoteModalVisible(true) } presence={ presence } noteDraft={ noteDraft } draftError={ draftError } ticketMenu={ ticketMenu } /> }
                 </div>
 
                 { assistant.isVisible && <button type="button" className="conversation-assistant-backdrop" onClick={ assistant.close } aria-label="Close conversation panel overlay" tabIndex={ -1 } /> }
@@ -378,13 +412,29 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                     onClose={ assistant.close }
                     onInsertDraft={ insertAssistantDraft }
                     onConversationChanged={ refreshConversation }
+                    onTicketChanged={ ticketChanged }
+                    onAlertChange={ setPanelAlert }
+                    onReviewEscalationDraft={ canReply ? reviewEscalationDraft : undefined }
+                    panelReads={ panelReads }
+                    liveKey={ socketEvent?.kind === 'escalation' ? socketEvent : lastConnected }
                     panelRef={ assistant.panelRef }
                     requestedTab={ assistant.requestedTab }
+                    requestedSection={ assistant.requestedSection }
                     requestedTabVersion={ assistant.requestedTabVersion }
                 />
 
+                <TicketActionDialogs
+                    dialog={ ticketDialog }
+                    onHide={ () => setTicketDialog(null) }
+                    conversation={ conversation }
+                    messages={ messages }
+                    onChanged={ ticketChanged }
+                    onEscalated={ () => { openPanel('details', 'escalations'); return ticketChanged(); } }
+                />
                 { isNoteModalVisible && <NoteModal conversation={ conversation } initialContent={noteMacro?.content || ''} initialMedia={noteMacro?.media || []} onHide={ () => {setIsNoteModalVisible(false);setNoteMacro(null);} } /> }
             </div>
+            </HandleTimerProvider>
+            </CollaborationProvider>
         </ConversationSuggestionsProvider>
     );
 }

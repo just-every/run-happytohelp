@@ -49,7 +49,7 @@ export async function computersBrowserJourney({runtime,browser,shot}){
   const runner=new LocalRunner(newConfig({server:origin,token:computer.token,device:computer.device,provider:'codex',name:'Error proof computer',workingDirectory:fixture.directory}),{configPath:join(fixture.directory,'connector.json')})
   await runner.run({once:true})
   const location=`${origin}/projects/${project}/conversations/${conversation}`
-  const openLocal=async()=>{await page.goto(location);await page.locator('.conversation-assistant-toggle').waitFor();const show=page.getByRole('button',{name:'Show conversation panel',exact:true});if(await show.isVisible())await show.click();await page.locator('#conversation-assistant[aria-hidden=false]').waitFor();await page.getByRole('tab',{name:'Local',exact:true}).click()}
+  const openLocal=async()=>{await page.goto(location);await page.locator('.conversation-assistant-toggle').waitFor();const show=page.getByRole('button',{name:'Show conversation panel',exact:true});if(await show.isVisible())await show.click();await page.locator('#conversation-assistant[aria-hidden=false]').waitFor();await page.getByRole('tab',{name:'Delegate',exact:true}).click()}
   await openLocal()
   await page.locator('#delegation-device').selectOption(computer.device.id);await page.locator('#delegation-mode').selectOption('resolve');await page.locator('#delegation-instructions').fill('Inspect the configuration; do not send a customer message.')
   await page.getByRole('button',{name:/^(Send|Queue) task$/}).click();await page.locator('.delegation-job.is-queued').waitFor()

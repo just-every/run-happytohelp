@@ -71,7 +71,7 @@ terms and whether they returned results, and article click-through. Filter the
 results by brand and language. Ticket-creation attribution after reading an
 article is not available.
 
-From a ticket, open **Reply tools → Help articles** and use **Search help
+From a ticket, open **+ (Actions) → Help articles** and use **Search help
 articles**. Choose **Insert link** or **Insert text** to add an article to the
 reply draft. Only published articles the recipient can read are offered, and
 access is checked again when you insert one. You can edit the draft before

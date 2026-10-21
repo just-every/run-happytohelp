@@ -4,7 +4,7 @@ Use **Saved Replies** in your workspace to save text and actions your team repea
 
 Open a saved reply to edit its actions and choose who can use it: just you, selected groups or the shared workspace. Role and brand restrictions apply every time someone previews or applies it. Saving creates a new version. Version history and usage show which version teammates used; deleting removes it from the picker while preserving its history.
 
-From a ticket, open **Reply tools → Saved replies**. Read the rendered text and action preview, then apply. Review and edit the resulting draft before sending. Applying a macro never sends a reply or note. A simple text-only saved reply inserts at your cursor and preserves the rest of your draft.
+From a ticket, open **+ (Actions) → Saved replies**. Read the rendered text and action preview, then apply. Review and edit the resulting draft before sending. Applying a macro never sends a reply or note. A simple text-only saved reply inserts at your cursor and preserves the rest of your draft.
 
 Use placeholders such as `{{requester.first_name | there}}`, `{{requester.email}}`, `{{ticket.id}}`, `{{ticket.subject}}`, `{{ticket.link}}`, `{{assignee.name}}`, `{{brand.name}}` and `{{organisation.name}}`. Custom values use `{{ticket.custom.FIELD_ID}}` and `{{contact.custom.FIELD_KEY}}`. A value after `|` is an explicit fallback. A missing value stays visible in the preview and blocks sending until you resolve it. Private custom fields stay subject to their read permissions.
 

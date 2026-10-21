@@ -50,10 +50,10 @@ window.plugin=client;window.ready=true;
     await context.addCookies([{name:'h2h_session',value:token,url:origin}])
     await page.goto(`${origin}/projects/${projectId}/conversations/${active}`)
     const composer=page.getByRole('textbox',{name:'Reply to conversation'});await composer.waitFor()
-    // Plugins live in the conversation panel's Details section; at phone width the panel opens on request.
+    // Each plugin is its own section of the conversation panel's Ticket tab; at phone width the panel opens on request.
     const frameElement=page.locator('iframe[title="Order lookup"]'),toggle=page.getByRole('button',{name:'Show conversation panel'})
     if(await toggle.isVisible())await toggle.click()
-    await page.getByRole('tab',{name:'Details',exact:true}).click()
+    await page.getByRole('tab',{name:'Ticket',exact:true}).click();await page.locator('#conversation-details-panel .ticket-section__toggle').filter({hasText:'Order lookup'}).click()
     await frameElement.waitFor({state:'attached'})
     const frame=await (await frameElement.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.ready===true)
     const log=async()=>JSON.parse(await frame.locator('#state').textContent())

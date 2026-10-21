@@ -4,7 +4,7 @@ import {join} from 'node:path'
 export async function emailConversationJourney({page,api,projectId,conversationId,width,evidence,rawBody=false,transcriptRecipient='transcript@example.test'}){
  const path=`/api/dashboard/projects/${projectId}/conversations/${conversationId}`
  const recipient=`finance-${width}@northstar.example`
- const details=async()=>{await page.locator('.conversation-header').waitFor();const tab=page.getByRole('tab',{name:'Details',exact:true});if(!await tab.isVisible())await page.getByRole('button',{name:'Show conversation panel',exact:true}).click();await tab.click()}
+ const details=async()=>{await page.locator('.conversation-header').waitFor();const tab=page.getByRole('tab',{name:'Ticket',exact:true});if(!await tab.isVisible())await page.getByRole('button',{name:'Show conversation panel',exact:true}).click();await tab.click();const customer=page.locator('#ticket-section-customer-heading');if(await customer.getAttribute('aria-expanded')!=='true')await customer.click()}
  const screenshot=async name=>page.screenshot({path:join(evidence,`${width}-${name}.png`),fullPage:true})
  if(rawBody){
   const original=page.locator('.transcript-original-email').first()

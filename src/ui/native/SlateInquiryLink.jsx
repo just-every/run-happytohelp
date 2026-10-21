@@ -1,7 +1,7 @@
 import React,{useContext,useEffect,useState} from 'react';
 import {nativeRequest} from './transport';
 import {ChatContext} from '../dashboard/contexts/ChatContext';
-/** The native edition supplies only its real case URL; Slate owns its private inquiry context. */
+/** Summary › Investigate, only while a Slate client is connected. The native edition supplies only its real case URL; Slate owns its private inquiry context. */
 export default function SlateInquiryLink({conversation}) {
  const [clients,setClients]=useState(null),[error,setError]=useState('');
  const {takeInitialInboxRead,initialInboxReadsId}=useContext(ChatContext);
@@ -16,5 +16,5 @@ export default function SlateInquiryLink({conversation}) {
  },[conversation.project_id,conversation.id,initialInboxReadsId,takeInitialInboxRead]);
  if(!error&&!clients?.length)return null;
  const sourceUrl=typeof window==='undefined'?'':`${window.location.origin}/projects/${encodeURIComponent(conversation.project_id)}/conversations/${encodeURIComponent(conversation.id)}`;
- return <section aria-label="Slate investigation" className="conversation-details-section"><h3>Investigate with Slate</h3>{error?<p role="alert">{error}</p>:clients.map(client=><p key={client.id}><a href={`${client.origin}/app/resolve?sourceUrl=${encodeURIComponent(sourceUrl)}`}>Start investigation{clients.length>1?` in ${client.id}`:''}</a></p>)}<p>Slate is a separate connected app for investigating customer problems. Replies remain in HappyToHelp. Slate requests permission before reading this case.</p></section>;
+ return <div className="ticket-summary__row ticket-summary__row--slate"><dt>Investigate</dt><dd>{error?<p role="alert">{error}</p>:clients.map(client=><p key={client.id}><a href={`${client.origin}/app/resolve?sourceUrl=${encodeURIComponent(sourceUrl)}`}>Investigate with Slate{clients.length>1?` in ${client.id}`:''}</a></p>)}<p className="ticket-summary__note">A separate connected app for investigating customer problems. Replies remain in HappyToHelp. Slate requests permission before reading this case.</p></dd></div>;
 }

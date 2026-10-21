@@ -38,7 +38,7 @@ export async function configuredSupportBrowser({browser, runtime, owner, project
             await page.goto(runtime.origin + base + '/conversations/' + conversation.id);
             const panel=page.getByRole('button',{name:/^(Show|Hide) conversation panel$/});
             if(await panel.getAttribute('aria-expanded')==='false')await panel.click();
-            await page.getByRole('tab',{name:'Details',exact:true}).click();
+            await page.getByRole('tab',{name:'Ticket',exact:true}).click();
             const assignment = page.getByRole('button', {name: /Assign conversation\. Current assignment:/});
             const human = await assignment.getAttribute('aria-label');
             await assignment.click();

@@ -36,13 +36,13 @@ The conversation API's existing messages and contact operations remain documente
 
 ## Handle time
 
-Open a ticket's **Details → Ticket** panel and choose **Start timer** while working. Choose **Stop timer** when you finish. Solving or closing the ticket stops every operator's running timer, including when a rule or bulk action solves it. Reopening a ticket lets you start another session.
+From a ticket, choose **+ (Actions) → Start timer** while working, and **Stop timer** there when you finish. **Ticket → Handle time** shows your total and the ticket's, and corrects completed sessions. Solving or closing the ticket stops every operator's running timer, including when a rule or bulk action solves it. Reopening a ticket lets you start another session.
 
 Choose **Adjust completed time** to correct a stopped session. Enter the corrected duration and a reason. Operators can correct their own sessions; permitted leads can correct a teammate's. Original timestamps and corrections stay in ticket history and the security log. The [team report](reports.md#team-report) adds these sessions using the workspace's calendar range.
 
 ## Problems and incidents
 
-For an issue affecting several customers, mark its tracking ticket as a **Problem** in the Ticket panel. Search for affected tickets and preview their links, or select tickets in the inbox and choose a problem in the bulk-link control. Each incident keeps its own customer, conversation, SLA and rating. A problem lists its linked incidents, customers and count; large lists have page controls. Preview an unlink before removing a ticket that belongs elsewhere. Link changes are recorded in both tickets' history and the security log.
+For an issue affecting several customers, mark its tracking ticket as a **Problem** with **+ (Actions) → Mark as problem…**, which opens **Ticket → Problem and incidents**. Search for affected tickets and preview their links, or select tickets in the inbox and choose a problem in the bulk-link control. Each incident keeps its own customer, conversation, SLA and rating. A problem lists its linked incidents, customers and count; large lists have page controls. Preview an unlink before removing a ticket that belongs elsewhere. Link changes are recorded in both tickets' history and the security log.
 
 In the problem, compose a public update and preview it before sending. Placeholders such as `{{contact.name}}` and `{{agent.name}}` are expanded separately for every requester; unresolved placeholders block that ticket. Review each rendered reply, channel and recipient. Choose whether to solve the incidents or send an update that leaves them open. The problem itself is solved after this operation. You can also solve the problem through the ordinary status control without sending an incident update.
 

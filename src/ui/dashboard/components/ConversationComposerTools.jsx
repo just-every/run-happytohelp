@@ -1,79 +1,51 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Dropdown from 'react-bootstrap/Dropdown';
 import { useReplySuggestions } from '../contexts/ConversationSuggestionsContext';
+import StartMenu from './composer/StartMenu';
+import StartMenuTicket from './composer/StartMenuTicket';
+import { StartMenuGroup, StartMenuItem } from './composer/StartMenuItem';
 
 const rewriteTools = [
-    { name: 'improve', label: 'Improve writing', icon: 'fe-star' },
-    { name: 'extend', label: 'Make longer', icon: 'fe-align-left' },
-    { name: 'shorten', label: 'Make shorter', icon: 'fe-align-center' },
+    { name: 'improve', label: 'Improve writing', icon: 'star' },
+    { name: 'extend', label: 'Make longer', icon: 'align-left' },
+    { name: 'shorten', label: 'Make shorter', icon: 'align-center' },
 ];
 
-export default function ConversationComposerTools({ disabled, hasHelper, canSend, canClose, onAttach, onSaved, onArticle, onNote, onSendAndClose }) {
+/**
+ * The reply card's "+" start menu: Reply, Write with AI and Draft in the first column, Ticket in the second, and
+ * Send & close as its footer. Reply rows wait while the field is locked (an AI draft or a final ticket); ticket
+ * rows stay available, as their controls were before they moved here.
+ */
+export default function ConversationComposerTools({ disabled, locked, hasHelper, canSend, canClose, onAttach, onSaved, onArticle, onNote, onRecipients, onSendAndClose, ticketMenu }) {
     const { canRunTools, canUndo, canRedo, runTool, undo, redo, suggestions } = useReplySuggestions();
-    const historyDisabled = disabled || hasHelper || suggestions.loading;
+    const historyDisabled = locked || hasHelper || suggestions.loading;
 
-    return <Dropdown drop="up" align="end" className="conversation-composer__tools-menu">
-        <Dropdown.Toggle
-            id="conversation-composer-tools"
-            variant="link"
-            className="conversation-composer__tools-toggle"
-            disabled={ disabled }
-            aria-label="Reply tools">
-            <i className="fe fe-plus" aria-hidden="true" />
-        </Dropdown.Toggle>
-        <Dropdown.Menu role="menu" aria-label="Reply tools">
-            <div role="group" aria-label="Add to conversation">
-                <div className="dropdown-header" aria-hidden="true">Add to conversation</div>
-                <Dropdown.Item as="button" type="button" role="menuitem" onClick={ onAttach } disabled={ hasHelper }>
-                    <i className="fe fe-paperclip" aria-hidden="true" /> Attach file
-                </Dropdown.Item>
-                <Dropdown.Item as="button" type="button" role="menuitem" onClick={ onSaved }>
-                    <i className="fe fe-bookmark" aria-hidden="true" /> { hasHelper ? 'Back to reply' : 'Saved replies' }
-                </Dropdown.Item>
-                <Dropdown.Item as="button" type="button" role="menuitem" onClick={ onNote } aria-haspopup="dialog">
-                    <i className="fe fe-lock" aria-hidden="true" /> Internal note
-                </Dropdown.Item>
-                <Dropdown.Item as="button" type="button" role="menuitem" onClick={ onArticle }>
-                    <i className="fe fe-file-text" aria-hidden="true" /> Help articles
-                </Dropdown.Item>
-            </div>
-            <Dropdown.Divider role="separator" />
-            <div role="group" aria-label="Write with AI">
-                <div className="dropdown-header" aria-hidden="true">Write with AI</div>
-                { rewriteTools.map(tool => <Dropdown.Item
-                    key={ tool.name }
-                    as="button"
-                    type="button"
-                    role="menuitem"
-                    onClick={ () => runTool(tool.name) }
-                    disabled={ !canRunTools }>
-                    <i className={ `fe ${tool.icon}` } aria-hidden="true" /> { tool.label }
-                </Dropdown.Item>) }
-            </div>
-            <Dropdown.Divider role="separator" />
-            <div role="group" aria-label="Draft history">
-                <Dropdown.Item as="button" type="button" role="menuitem" onClick={ undo } disabled={ historyDisabled || !canUndo }>
-                    <i className="fe fe-corner-up-left" aria-hidden="true" /> Undo draft change
-                </Dropdown.Item>
-                <Dropdown.Item as="button" type="button" role="menuitem" onClick={ redo } disabled={ historyDisabled || !canRedo }>
-                    <i className="fe fe-corner-up-right" aria-hidden="true" /> Redo draft change
-                </Dropdown.Item>
-            </div>
-            { canClose && <>
-                <Dropdown.Divider role="separator" />
-                <div role="group" aria-label="Message actions">
-                    <Dropdown.Item as="button" type="button" role="menuitem" onClick={ onSendAndClose } disabled={ !canSend }>
-                        <i className="fe fe-check-circle" aria-hidden="true" /> Send &amp; close
-                    </Dropdown.Item>
-                </div>
-            </> }
-        </Dropdown.Menu>
-    </Dropdown>;
+    return <StartMenu
+        id="conversation-composer-tools"
+        disabled={ disabled }
+        main={ <>
+            <StartMenuGroup label="Reply">
+                <StartMenuItem icon="paperclip" onSelect={ onAttach } disabled={ locked || hasHelper }>Attach file</StartMenuItem>
+                <StartMenuItem icon="bookmark" onSelect={ onSaved } disabled={ locked }>{ hasHelper ? 'Back to reply' : 'Saved replies' }</StartMenuItem>
+                <StartMenuItem icon="file-text" onSelect={ onArticle } disabled={ locked }>Help articles</StartMenuItem>
+                <StartMenuItem icon="lock" onSelect={ onNote } disabled={ locked } dialog>Internal note</StartMenuItem>
+                <StartMenuItem icon="users" onSelect={ onRecipients } disabled={ locked } dialog>CC, BCC and sender…</StartMenuItem>
+            </StartMenuGroup>
+            <StartMenuGroup label="Write with AI">
+                { rewriteTools.map(tool => <StartMenuItem key={ tool.name } icon={ tool.icon } onSelect={ () => runTool(tool.name) } disabled={ locked || !canRunTools }>{ tool.label }</StartMenuItem>) }
+            </StartMenuGroup>
+            <StartMenuGroup label="Draft">
+                <StartMenuItem icon="corner-up-left" onSelect={ undo } disabled={ historyDisabled || !canUndo }>Undo</StartMenuItem>
+                <StartMenuItem icon="corner-up-right" onSelect={ redo } disabled={ historyDisabled || !canRedo }>Redo</StartMenuItem>
+            </StartMenuGroup>
+        </> }
+        aside={ <StartMenuTicket { ...ticketMenu } /> }
+        footer={ canClose && <StartMenuItem icon="check-circle" onSelect={ onSendAndClose } disabled={ !canSend }>Send &amp; close</StartMenuItem> } />;
 }
 
 ConversationComposerTools.propTypes = {
     disabled: PropTypes.bool,
+    locked: PropTypes.bool,
     hasHelper: PropTypes.bool,
     canSend: PropTypes.bool,
     canClose: PropTypes.bool,
@@ -81,5 +53,7 @@ ConversationComposerTools.propTypes = {
     onSaved: PropTypes.func.isRequired,
     onArticle: PropTypes.func,
     onNote: PropTypes.func.isRequired,
+    onRecipients: PropTypes.func.isRequired,
     onSendAndClose: PropTypes.func.isRequired,
+    ticketMenu: PropTypes.object.isRequired,
 };

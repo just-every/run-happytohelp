@@ -78,7 +78,8 @@ function HistoryEntry({ item, settings, agents, assistants, conversation, tags }
     </li>;
 }
 
+/** Ticket › History: every status and field change, who made it, from where and when. */
 export default function TicketHistory({ history = [], settings, agents = [], assistants = [], conversation }) {
     const tags = [...(conversation.tags || []), ...(settings.tags || [])];
-    return <details><summary>Status and field history</summary>{history.length ? <ol className="ticket-history">{history.map(item => <HistoryEntry key={item.id} {...{item, settings, agents, assistants, conversation, tags}}/>)}</ol> : <p className="form-text">No changes recorded.</p>}</details>;
+    return <section className="ticket-history-block" aria-label="Status and field history"><h4 className="ticket-panel-subheading">Status and field history</h4>{history.length ? <ol className="ticket-history">{history.map(item => <HistoryEntry key={item.id} {...{item, settings, agents, assistants, conversation, tags}}/>)}</ol> : <p className="form-text">No changes recorded.</p>}</section>;
 }

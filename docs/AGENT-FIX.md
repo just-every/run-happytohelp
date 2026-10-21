@@ -7,7 +7,7 @@ reply in HappyToHelp.
 1. **The customer asks.** Their widget message appears in your inbox. Open the
    conversation and read what they reported.
 2. **You grant an investigation.** Pair a computer you control from Local
-   computers, open the conversation's Local panel, choose **Investigate** and
+   computers, open the conversation panel's **Delegate** tab, choose **Investigate** and
    state the scope. The connector receives that conversation's context. The
    investigation instruction permits reading, not changing the customer system.
 3. **The agent proposes a fix.** Read its finding and evidence. A proposed

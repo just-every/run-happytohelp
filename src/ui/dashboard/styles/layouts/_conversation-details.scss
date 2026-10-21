@@ -356,21 +356,8 @@ body.conversation-workspace #chat {
 
     .ticket-section__title { min-width: 0; overflow-wrap: anywhere; }
 
-    .ticket-section__badge {
-        display: inline-flex;
-        align-items: center;
-        min-height: 22px;
-        padding: 0 8px;
-        color: var(--ink);
-        border: 1px solid var(--d-cyan);
-        border-radius: 999px;
-        background: var(--d-cyan-tint);
-        font-size: 13px;
-        font-weight: 500;
-        font-variant-numeric: tabular-nums;
-
-        &:empty { display: none; }
-    }
+    // A section's count is the app's count disc (.h2h-count), as in the rail and the list title.
+    .ticket-section__badge:empty { display: none; }
 
     .ticket-section__chevron { flex: 0 0 auto; width: 16px; height: 16px; margin-left: auto; color: var(--ink-soft); transition: transform .15s ease; }
     .ticket-section.is-open .ticket-section__chevron { transform: rotate(90deg); }

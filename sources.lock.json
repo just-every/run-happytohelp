@@ -8216,7 +8216,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/TicketSection.jsx": {
-      "sha256": "200c8ed8d9182613c1ab33c59180252b6f30bdc56354a25db332221bd56f56c6",
+      "sha256": "879a8ec81f9a0754a6621dd8c1f334b57ac89bde373f449cd7478c882fb2fcfc",
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/TicketSummary.jsx": {
@@ -8668,7 +8668,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-details.scss": {
-      "sha256": "5bfadcc3b9623bce6547a5ce0d60bffe22e00c42af35ea5252c056797c148387",
+      "sha256": "b66e698efc5c74477e64f8db31a899b375434769823fe39c2cc351f31aa1d143",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-header.scss": {

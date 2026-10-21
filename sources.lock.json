@@ -11112,7 +11112,7 @@
       "executable": false
     },
     "tests/helpers/inbox/tickets-browser.mjs": {
-      "sha256": "749848cd0037c60ce3c6523d7c570732c034c5ef7d0b6395e9ddeaf171b6e85f",
+      "sha256": "508f7f22f0432082307603bd62db84508c2a7dd620d2fbf16ed020fc31074cbd",
       "executable": false
     },
     "tests/helpers/inbox/tickets.mjs": {
@@ -11132,7 +11132,7 @@
       "executable": false
     },
     "tests/helpers/inbox/workspace-shell-browser.mjs": {
-      "sha256": "78771362998d9015257314e4ef70132f7fbaf4996846653f1532f3a842b03c6b",
+      "sha256": "1270c3f30cd21c6dd16a71e53b17d0909eb951e7c69bd7464aecd5dcb5071a22",
       "executable": false
     },
     "tests/helpers/independent-artifact.mjs": {

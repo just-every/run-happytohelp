@@ -11464,7 +11464,7 @@
       "executable": false
     },
     "tests/helpers/workflows/rules.mjs": {
-      "sha256": "7441e9a8c97574272f077e5f7b5e239185fa76025e1b1b4ee5e310cebc734659",
+      "sha256": "6ada96af5259c27fc35f748fb873b7af2523fd7dbe42c625d54795bd1ca7e5f2",
       "executable": false
     },
     "tests/helpers/workflows/schedules.mjs": {

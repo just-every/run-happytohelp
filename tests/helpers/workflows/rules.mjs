@@ -105,7 +105,7 @@ export async function timeAutomationFlow(f){
  }
  assert.deepEqual(await runs(reset),[],'a customer reply cancels the old Pending eligibility episode')
  assert.equal((await get(reset)).status_category,'open')
- const audit=await app.ok(`/api/management/projects/${w.projectId}/audit?limit=200`,{token:w.tokens.owner})
+ const audit=await app.ok(`/api/management/projects/${w.projectId}/audit?limit=200&actor=${encodeURIComponent(`automation ${solve.name}`)}`,{token:w.tokens.owner})
  assert.ok(audit.data.some(row=>row.target_id===pending&&row.actor_id===`automation ${solve.name}`))
  f.closedId=pending
  for(const rule of rules)await ok(`/workflow-rules/${rule.id}/pause`,{})

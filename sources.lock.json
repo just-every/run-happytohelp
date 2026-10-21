@@ -7811,6 +7811,10 @@
       "sha256": "5ae17df0665eb5517dd422109a0221368b55bbf45fb677c84a05dd2520755e9b",
       "executable": false
     },
+    "src/ui/dashboard/components/collaboration/followers-dialog.css": {
+      "sha256": "d32ed019d1231cae71c032ac82be90baf0710df86c610e67650d1dff220fe6e9",
+      "executable": false
+    },
     "src/ui/dashboard/components/collaboration/FollowersDialog.jsx": {
       "sha256": "3447625e75f2a580f242bb087d62e2e7d70699fa885bfb3c409d270596da937d",
       "executable": false
@@ -7845,6 +7849,10 @@
     },
     "src/ui/dashboard/components/composer/StartMenuTicket.jsx": {
       "sha256": "a5b96ef463623fd122baf704cdd3eebf55ce90461245fb50bdc5583abf5a46bd",
+      "executable": false
+    },
+    "src/ui/dashboard/components/composer/ticket-action-dialogs.css": {
+      "sha256": "18ca92632377549b928362f1e76d19a82ad99304a886cfe8421002abc68b0f74",
       "executable": false
     },
     "src/ui/dashboard/components/composer/TicketActionDialogs.jsx": {

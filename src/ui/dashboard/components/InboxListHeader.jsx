@@ -47,7 +47,7 @@ export default function InboxListHeader({ projectId, companyProjectId, queue, cu
     // The sheet opens at Inbox with focus on the current view, so the keyboard continues from where the list is.
     const openViews = () => {
         setExpanded(true); setSheetOpen(true);
-        requestAnimationFrame(() => document.querySelector('#navigation-inbox-views .is-current, #navigation-inbox-views a')?.focus());
+        requestAnimationFrame(() => (document.querySelector('#navigation-inbox-views .is-current') ?? document.querySelector('#navigation-inbox-views a'))?.focus());
     };
 
     return <div className="conversation-inbox-header">

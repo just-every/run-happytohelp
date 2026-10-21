@@ -8,6 +8,11 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.12 — Unreleased
+
+- **Export and leave:** backups now work on Platform-applied installs without re-running their database migrations. Incomplete or conflicting migration history is refused before data changes; native installs retain their usual migration path.
+- **Installer:** pin rer 0.2.77, including migration-ledger checks and the narrowed GitHub-reference rule.
+
 ## 0.4.11 — 2026-10-20
 
 No breaking change.

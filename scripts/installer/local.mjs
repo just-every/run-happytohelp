@@ -14,6 +14,7 @@ import {workflowRestoreSql} from './workflow-archive-safety.mjs';
 import {workflowLegacyRestoreSql} from './workflow-archive-defaults.mjs';
 import {fileRecords} from '@runeditrun/rer/modules/portability/files';
 import {checkArchiveSnapshot,readDurableObjects,snapshotSql} from './durable-objects.mjs';
+import {platformMigrationLedger} from './migration-ledger.mjs';
 import * as model from './ui/seed.mjs';
 
 const environment=context=>({...process.env,...context.vars,APP_ORIGIN:context.origin,WRANGLER_SEND_METRICS:'false',CLOUDFLARE_INCLUDE_PROCESS_ENV:'false',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false',X_LOCAL_EXPLORER:'false'});
@@ -51,7 +52,7 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
  let snapshots;
  if(verb==='export'){
   // Durable Object storage enters the archive as a D1 table with its schema and digest.
-  await context.store.run('Applying local data migrations','pnpm',['exec','wrangler','d1','migrations','apply','DB','--local','--persist-to','.wrangler/state','--config','wrangler.jsonc'],{cwd:context.root,signal:context.signal});
+  if(!await platformMigrationLedger(context))await context.store.run('Applying local data migrations','pnpm',['exec','wrangler','d1','migrations','apply','DB','--local','--persist-to','.wrangler/state','--config','wrangler.jsonc'],{cwd:context.root,signal:context.signal});
   snapshots=await readDurableObjects(context.root);
   await d1(context,'Recording Durable Object storage',snapshotSql(snapshots));
  }else snapshots=await checkArchiveSnapshot(context.path);

@@ -24,6 +24,7 @@ export async function rulesFlow(f){
  await ok(`/workflow-rules/${rule.id}/pause`,{});assert.equal((await get(await create('Refund another order'))).priority,'normal')
  await ok(`/workflow-rules/${rule.id}/cancel`,{});assert.equal((await call(`/workflow-rules/${rule.id}/publish`,{})).status,409)
  assert.equal((await call('/workflow-rules',{name:'Unsafe repeat',kind:'time',conditions:{all:[{field:'status_category',op:'eq',value:'pending'}]},time:{field:'pending_at',hours:48,repeat_hours:48},actions:[{type:'notify',kind:'customer_update'}]})).status,400)
+ await defaultCloseFlow(f)
  await timeAutomationFlow(f)
  // Publishing and cron execution share the same set-based reference limits.
  for(const [label,tagCount,fieldCount] of [['eight',8,0],['large',100,50]]){
@@ -43,6 +44,24 @@ export async function rulesFlow(f){
   await app.scheduled();assert.equal((await ok(`/workflow-runs?conversation_id=${id}`)).runs.filter(run=>run.rule_id===queued.id).length,1)
   await ok(`/workflow-rules/${queued.id}/pause`,{});await clock(initial)
  }
+ await clock(initial)
+}
+
+// Before any close template is published, the workspace's seeded default alone
+// closes a ticket four calendar days after it is solved, as that named automation.
+export async function defaultCloseFlow(f){
+ const {app,w,ok,create,get,patch,clock,initial}=f
+ const seeded=(await ok('/workflow-rules')).rules.find(rule=>rule.id===`workflow:auto-close:${w.projectId}`),closeAt=initial+4*86400000
+ assert.ok(seeded,'every workspace is seeded with the default close rule')
+ await clock(initial-60000);const solved=await create('The replacement boots fit, thank you.')
+ await clock(initial);await patch(solved,{status_id:'solved'})
+ await clock(closeAt-3600000);await app.scheduled();assert.equal((await get(solved)).status_category,'solved')
+ await clock(closeAt);await app.scheduled();assert.equal((await get(solved)).status_category,'closed')
+ await app.scheduled()
+ const runs=(await ok(`/workflow-runs?conversation_id=${solved}`)).runs.filter(run=>run.rule_id===seeded.id)
+ assert.equal(runs.length,1);assert.equal(runs[0].state,'complete',runs[0].reason)
+ const closes=(await get(solved)).history.filter(h=>h.changes.status_id?.to==='closed')
+ assert.deepEqual(closes.map(h=>[h.actor_id,h.source,h.at]),[[`automation ${seeded.name}`,'automation',closeAt]])
  await clock(initial)
 }
 

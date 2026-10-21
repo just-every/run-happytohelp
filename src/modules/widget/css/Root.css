@@ -183,6 +183,8 @@
   will-change: opacity;
   position: relative;
   z-index: 2147483600;
+  /* The widget's text is the visitor's system UI face, as in the help center and the dashboard: nothing to embed or load. */
+  --happytohelp-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 #happytohelp-root html, #happytohelp-root body, #happytohelp-root div, #happytohelp-root span, #happytohelp-root applet, #happytohelp-root object, #happytohelp-root iframe,
 #happytohelp-root h1, #happytohelp-root h2, #happytohelp-root h3, #happytohelp-root h4, #happytohelp-root h5, #happytohelp-root h6, #happytohelp-root p, #happytohelp-root blockquote, #happytohelp-root pre,
@@ -462,11 +464,9 @@ html.wf-sacramento-n4-active .happytohelp-title {
   will-change: opacity;
   line-height: 60px;
   text-align: center;
-  font-family: "HappyToHelp Inter", sans-serif;
-  font-optical-sizing: auto;
+  font-family: var(--happytohelp-font);
   font-weight: 400;
   font-style: normal;
-  font-variation-settings: "wdth" 100;
   border-radius: 50%;
   padding: 0;
   border: 0;
@@ -1085,11 +1085,9 @@ html.wf-sacramento-n4-active .happytohelp-title {
 }
 
 #happytohelp-root .happytohelp-chat-box {
-  font-family: "HappyToHelp Inter", sans-serif;
-  font-optical-sizing: auto;
+  font-family: var(--happytohelp-font);
   font-weight: 400;
   font-style: normal;
-  font-variation-settings: "wdth" 100;
   letter-spacing: 0.01em;
   padding: 0.7rem 1rem;
   list-style: none;
@@ -1486,11 +1484,9 @@ html.wf-sacramento-n4-active .happytohelp-title {
   max-height: calc(var(--vh) * 100 - 114px);
   text-align: left;
   line-height: 1.45em;
-  font-family: "HappyToHelp Inter", sans-serif;
-  font-optical-sizing: auto;
+  font-family: var(--happytohelp-font);
   font-weight: 400;
   font-style: normal;
-  font-variation-settings: "wdth" 100;
   font-size: 1em;
   word-break: break-word;
   display: flex;
@@ -1744,11 +1740,9 @@ html.wf-sacramento-n4-active .happytohelp-title {
   display: inline-block;
   margin: 0;
   cursor: pointer;
-  font-family: "HappyToHelp Inter", sans-serif;
-  font-optical-sizing: auto;
+  font-family: var(--happytohelp-font);
   font-style: normal;
   font-weight: 400;
-  font-variation-settings: "wdth" 100;
   padding: 0.5rem 1rem;
   border-radius: 1rem;
   transition: opacity 0.4s ease 0.1s, color 0.6s ease 0.1s;
@@ -1801,11 +1795,9 @@ html.wf-sacramento-n4-active .happytohelp-title {
 
 #happytohelp-root .happytohelp-tooltip {
   z-index: 2147483621;
-  font-family: "HappyToHelp Inter", sans-serif;
-  font-optical-sizing: auto;
+  font-family: var(--happytohelp-font);
   font-weight: 400;
   font-style: normal;
-  font-variation-settings: "wdth" 100;
   padding: 8px 21px;
   font-size: 13px;
   margin: 0 10px 0 0;
@@ -1858,11 +1850,9 @@ html.wf-sacramento-n4-active .happytohelp-title {
   scroll-behavior: initial !important;
 }
 #happytohelp-root input, #happytohelp-root textarea {
-  font-family: "HappyToHelp Inter", sans-serif;
-  font-optical-sizing: auto;
+  font-family: var(--happytohelp-font);
   font-weight: 400;
   font-style: normal;
-  font-variation-settings: "wdth" 100;
   margin: 0;
   box-shadow: none;
   display: inline-block;
@@ -1888,11 +1878,9 @@ html.wf-sacramento-n4-active .happytohelp-title {
   box-shadow: none;
   font-weight: 400;
   line-height: 41px;
-  font-family: "HappyToHelp Inter", sans-serif;
-  font-optical-sizing: auto;
+  font-family: var(--happytohelp-font);
   font-weight: 400;
   font-style: normal;
-  font-variation-settings: "wdth" 100;
   margin: 0;
   -webkit-appearance: none;
   text-align: center;
@@ -1982,11 +1970,9 @@ html.wf-sacramento-n4-active .happytohelp-title {
   }
 }
 #happytohelp-root .happytohelp-interact {
-  font-family: "HappyToHelp Inter", sans-serif;
-  font-optical-sizing: auto;
+  font-family: var(--happytohelp-font);
   font-weight: 400;
   font-style: normal;
-  font-variation-settings: "wdth" 100;
   border-radius: 8px;
   border-top-right-radius: 0px;
   border-bottom-left-radius: 0px;
@@ -2481,11 +2467,9 @@ html.wf-sacramento-n4-active .happytohelp-title {
   z-index: 1;
 }
 #happytohelp-root .happytohelp-send-message .happytohelp-send-message-row textarea {
-  font-family: "HappyToHelp Inter", sans-serif;
-  font-optical-sizing: auto;
+  font-family: var(--happytohelp-font);
   font-weight: 400;
   font-style: normal;
-  font-variation-settings: "wdth" 100;
   letter-spacing: 0.01em;
   width: 100%;
   border: none;

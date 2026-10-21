@@ -3004,7 +3004,7 @@
       "executable": false
     },
     "scripts/installer/workflow-archive-upgrade.mjs": {
-      "sha256": "8814bbd146848678b304bce99ed88be19940f8fe1578160deb3d139614b4094c",
+      "sha256": "e1458eb71b9bbec32f2b55ac36f64eb7e8158976eb50770f475611ca1aee0aa5",
       "executable": false
     },
     "scripts/legacy-export/attachments.mjs": {

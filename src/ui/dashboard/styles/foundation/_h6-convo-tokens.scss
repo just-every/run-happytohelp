@@ -1,5 +1,6 @@
 // Type for the conversation's reply card, "+" start menu and Ticket tab (H6, pick A · Start menu). No text is set
-// below 13px (H11), so the menu and Summary captions, drawn at 12px capitals, are 13px here. Outfit stays the face.
+// below 13px (H11), so the menu and Summary captions, drawn at 12px capitals, are 13px here. The face is the app's
+// system UI stack (H9, ./_tokens.scss).
 
 // The reply field: its placeholder and typed text share one size, so nothing grows on the first keystroke (H8).
 $reply-text-font-size: 16px;

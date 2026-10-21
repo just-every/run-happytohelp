@@ -114,6 +114,8 @@ body.conversation-workspace #chat .conversation-inbox {
         box-shadow: 0 12px 32px rgba(var(--ink-rgb), .12);
 
         &:focus { outline: 0; }
+        // On a phone it spans the list between the search field's gutters, so nothing peeks out beside it.
+        @media (max-width: 575.98px) { left: 16px; width: auto; }
     }
     .inbox-filter-field, .inbox-filters-panel .form-group { display: flex; flex-direction: column; gap: 6px; margin: 0; }
     .inbox-filters-panel .form-label { margin: 0; color: var(--ink-soft); font-size: 15px; }

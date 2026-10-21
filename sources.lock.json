@@ -8616,7 +8616,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/foundation/_sidebar.scss": {
-      "sha256": "8e9df39b6d75cd89767aad63a15ba18e1c0b406df2b880889f7aca6be20d07eb",
+      "sha256": "bae03b65310a378de81fd328ba928ca823e272580a0498f81b7de519ed28a472",
       "executable": false
     },
     "src/ui/dashboard/styles/foundation/_surfaces.scss": {

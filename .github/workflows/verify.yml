@@ -84,10 +84,14 @@ jobs:
             browser: false
             commands: |
               node --test --test-concurrency=1 tests/journeys/move-in-custody.mjs tests/journeys/move-in-capacity.mjs
-          - name: assistant-mail-and-restore
+          - name: restore
             browser: false
             commands: |
-              node --test --test-concurrency=1 tests/journeys/restore.mjs tests/journeys/ai.mjs tests/journeys/public.mjs tests/journeys/email.mjs tests/journeys/knowledge.mjs tests/journeys/inbox.mjs tests/journeys/widget.mjs tests/journeys/erasure.mjs tests/journeys/legacy.mjs tests/journeys/context.mjs
+              node --test --test-concurrency=1 tests/journeys/restore.mjs
+          - name: assistant-and-mail
+            browser: false
+            commands: |
+              node --test --test-concurrency=1 tests/journeys/ai.mjs tests/journeys/public.mjs tests/journeys/email.mjs tests/journeys/knowledge.mjs tests/journeys/inbox.mjs tests/journeys/widget.mjs tests/journeys/erasure.mjs tests/journeys/legacy.mjs tests/journeys/context.mjs
           - name: context-browser
             browser: true
             commands: |

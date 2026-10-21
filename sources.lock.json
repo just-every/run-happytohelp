@@ -7812,7 +7812,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/collaboration/FollowersDialog.jsx": {
-      "sha256": "7ac4e3152bef9db61cc89a1d77a664899ec0cf06674829e4fb879f60a3bba7a2",
+      "sha256": "3447625e75f2a580f242bb087d62e2e7d70699fa885bfb3c409d270596da937d",
       "executable": false
     },
     "src/ui/dashboard/components/collaboration/mention-editor.js": {
@@ -7848,7 +7848,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/composer/TicketActionDialogs.jsx": {
-      "sha256": "c434ecece2eda05947875323eb36de8330d3453d7f5dac8b84516d433b4143a0",
+      "sha256": "f6361acbc057fe90259b03397722aea59e0d6a42439e8d530fa9c32127ade407",
       "executable": false
     },
     "src/ui/dashboard/components/ContactAvatar.jsx": {
@@ -8084,7 +8084,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/escalations/escalations.css": {
-      "sha256": "15b08e46ada0d77537940ca95a85a01342623f06c2390b1fc8452051e547da42",
+      "sha256": "0de3a229349eb452561515c6f3d5461781fb8edf79a4490d2f07df1b29faf8a7",
       "executable": false
     },
     "src/ui/dashboard/components/escalations/EscalationsPanel.jsx": {

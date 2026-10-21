@@ -9,6 +9,7 @@ import ForwardConversation from '../conversation-actions/ForwardConversation';
 import FollowersDialog from '../collaboration/FollowersDialog';
 import EscalationDialog from '../escalations/EscalationDialog';
 import ScheduleForm from '../workflows/ScheduleForm';
+import './ticket-action-dialogs.css';
 
 /** Snooze… and Schedule reply…: today's schedule form, in a dialog. */
 function ScheduleDialog({ kind, conversation, onHide, onSaved }) {

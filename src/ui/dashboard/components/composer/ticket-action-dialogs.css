@@ -1,0 +1,3 @@
+/* "+" › Snooze… and Schedule reply…: the dialog's title names the form, so the form's own legend is kept for
+   assistive tech but not drawn a second time. */
+.schedule-dialog .workflow-schedule-form > fieldset > legend { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

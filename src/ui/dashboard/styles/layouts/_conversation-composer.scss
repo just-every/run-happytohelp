@@ -161,6 +161,8 @@ body.conversation-workspace {
         cursor: default;
 
         .settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; margin-bottom: 12px; }
+        // The mailbox choice spans the row until a mailbox brings its sender address beside it.
+        .email-sender-fields > .form-group:only-child { grid-column: 1 / -1; }
         .form-control, .form-select { min-width: 0; }
         .form-group { min-width: 0; }
     }

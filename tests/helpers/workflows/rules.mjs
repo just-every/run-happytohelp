@@ -24,21 +24,8 @@ export async function rulesFlow(f){
  await ok(`/workflow-rules/${rule.id}/pause`,{});assert.equal((await get(await create('Refund another order'))).priority,'normal')
  await ok(`/workflow-rules/${rule.id}/cancel`,{});assert.equal((await call(`/workflow-rules/${rule.id}/publish`,{})).status,409)
  assert.equal((await call('/workflow-rules',{name:'Unsafe repeat',kind:'time',conditions:{all:[{field:'status_category',op:'eq',value:'pending'}]},time:{field:'pending_at',hours:48,repeat_hours:48},actions:[{type:'notify',kind:'customer_update'}]})).status,400)
- const templates=(await ok('/workflow-rules')).templates
- const nudge=await publish(templates.find(r=>r.name==='Pending 48h nudge')),solve=await publish(templates.find(r=>r.name==='Pending 96h solve'))
- const pending=await create('Still waiting for the return label');await patch(pending,{status_id:'pending'})
- await clock(initial+48*3600000+1000);await app.scheduled()
- let runs=(await ok(`/workflow-runs?conversation_id=${pending}`)).runs
- assert.equal(runs.filter(r=>r.rule_id===nudge.id).length,1)
- // A notice that cannot be delivered ends at once, visibly, and never waits in the resume set.
- assert.equal(runs.find(r=>r.rule_id===nudge.id).state,'not_delivered');assert.ok(runs.find(r=>r.rule_id===nudge.id).reason)
- await app.configure({H2H_WORKFLOW_NOW:String(initial+49*3600000)});await app.scheduled();runs=(await ok(`/workflow-runs?conversation_id=${pending}`)).runs;assert.equal(runs.filter(r=>r.rule_id===nudge.id).length,1)
- await clock(initial+96*3600000+2000);await app.scheduled();assert.equal((await get(pending)).status_category,'solved')
- await clock(initial+192*3600000+4000);await app.scheduled();assert.equal((await get(pending)).status_category,'closed')
- assert.ok((await get(pending)).history.some(h=>h.actor_id?.includes('automation')))
- f.closedId=pending
- await ok(`/workflow-rules/${solve.id}/pause`,{});await ok(`/workflow-rules/${nudge.id}/pause`,{})
- await clock(initial)
+ await defaultCloseFlow(f)
+ await timeAutomationFlow(f)
  // Publishing and cron execution share the same set-based reference limits.
  for(const [label,tagCount,fieldCount] of [['eight',8,0],['large',100,50]]){
   const id=await create(`Queued reference ${label}`),tagIds=Array.from({length:tagCount},(_,i)=>`cron-${label}-${i}`),values={}
@@ -58,4 +45,89 @@ export async function rulesFlow(f){
   await ok(`/workflow-rules/${queued.id}/pause`,{});await clock(initial)
  }
  await clock(initial)
+}
+
+// Before any close template is published, the workspace's seeded default alone
+// closes a ticket four calendar days after it is solved, as that named automation.
+export async function defaultCloseFlow(f){
+ const {app,w,ok,create,get,patch,clock,initial}=f
+ const seeded=(await ok('/workflow-rules')).rules.find(rule=>rule.id===`workflow:auto-close:${w.projectId}`),closeAt=initial+4*86400000
+ assert.ok(seeded,'every workspace is seeded with the default close rule')
+ await clock(initial-60000);const solved=await create('The replacement boots fit, thank you.')
+ await clock(initial);await patch(solved,{status_id:'solved'})
+ await clock(closeAt-3600000);await app.scheduled();assert.equal((await get(solved)).status_category,'solved')
+ await clock(closeAt);await app.scheduled();assert.equal((await get(solved)).status_category,'closed')
+ await app.scheduled()
+ const runs=(await ok(`/workflow-runs?conversation_id=${solved}`)).runs.filter(run=>run.rule_id===seeded.id)
+ assert.equal(runs.length,1);assert.equal(runs[0].state,'complete',runs[0].reason)
+ const closes=(await get(solved)).history.filter(h=>h.changes.status_id?.to==='closed')
+ assert.deepEqual(closes.map(h=>[h.actor_id,h.source,h.at]),[[`automation ${seeded.name}`,'automation',closeAt]])
+ await clock(initial)
+}
+
+// The same hourly scheduler that production calls owns all effects. Only the
+// existing runtime clock and storage-interruption edge are controlled here.
+export async function timeAutomationFlow(f){
+ const {app,w,ok,call,create,get,patch,clock,send,initial}=f
+ await app.ok(`/api/management/projects/${w.projectId}/settings`,{token:w.tokens.owner,method:'PUT',body:{timezone:'America/New_York'}})
+ const calendar=await ok('/workflow-calendars',{name:'Workspace weekday support',timezone:'America/New_York',weekly:[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})),holidays:'none',closures:[]})
+ const start=Date.parse('2026-10-23T20:00:00Z'),nudgeAt=Date.parse('2026-11-02T21:00:00Z'),solveAt=Date.parse('2026-11-10T21:00:00Z'),closeAt=solveAt+4*86400000
+ await clock(start-60000)
+ const pending=await create('Return label for Ridgeline boots'),reset=await create('Customer answered about the carrier')
+ await clock(start);await patch(pending,{status_id:'pending'});await patch(reset,{status_id:'pending'})
+ const templates=(await ok('/workflow-rules')).templates,rules=[]
+ for(const template of templates){
+  const definition={...template,...(template.time.field==='pending_at'?{time:{...template.time,calendar_id:calendar.id}}:{})}
+  if(template.name==='Pending 48h nudge')definition.actions=[{type:'priority',priority:'high'},{type:'note',content:'Pending return label follow-up'},...template.actions]
+  const {rule}=await ok('/workflow-rules',definition),before=await get(pending),requests=app.requests.length
+  const preview=await ok(`/workflow-rules/${rule.id}/preview`,{})
+  assert.equal(preview.side_effects,false);assert.deepEqual(await get(pending),before);assert.equal(app.requests.length,requests)
+  rules.push((await ok(`/workflow-rules/${rule.id}/publish`,{})).rule)
+ }
+ const [nudge,solve,close]=rules,runs=async id=>(await ok(`/workflow-runs?conversation_id=${id}`)).runs.filter(run=>rules.some(rule=>rule.id===run.rule_id))
+ // Creation and publication both reject an unsafe repeat. A stored invalid draft
+ // represents a previously authored rule, not an alternate application path.
+ const unsafe={name:'Unsafe repeated pending notice',kind:'time',position:0,conditions:{all:[{field:'status_category',op:'eq',value:'pending'}],any:[]},time:{field:'pending_at',hours:48,repeat_hours:48},actions:[{type:'notify',kind:'customer_update'}]}
+ assert.equal((await call('/workflow-rules',unsafe)).status,400)
+ const {rule:draft}=await ok('/workflow-rules',{...unsafe,time:{field:'pending_at',hours:48}})
+ await app.db.prepare('UPDATE workflow_rules SET draft_json=? WHERE id=?').bind(JSON.stringify(unsafe),draft.id).run()
+ assert.equal((await call(`/workflow-rules/${draft.id}/publish`,{})).status,400)
+ for(const at of ['2026-10-24T20:00:00Z','2026-10-26T13:00:00Z','2026-11-01T05:00:00Z','2026-11-01T06:00:00Z','2026-11-02T20:00:00Z']){
+  await clock(at);await app.scheduled();assert.deepEqual(await runs(pending),[],'no nudge before 48 workspace business hours, through weekend and DST fold')
+ }
+ await send(reset,'The return label arrived.');assert.equal((await get(reset)).status_category,'open')
+ await clock(nudgeAt)
+ // Stop after the first action and its durable cursor commit, before the note or
+ // notification. Dispose/recreate the Worker, losing all in-memory wakeups.
+ const stopped=await app.call('/_test/scheduled',{body:{after:0},headers:{'x-test-fault':'db-interrupt','x-test-statement':'UPDATE workflow_runs SET cursor=max'}})
+ assert.equal(stopped.status,500,'the interrupted invocation cannot finish its remaining consumers')
+ const interrupted=(await runs(pending)).find(run=>run.rule_id===nudge.id)
+ assert.ok(interrupted);assert.equal(interrupted.cursor,1);assert.equal(interrupted.state,'running');assert.equal((await get(pending)).priority,'high')
+ await app.configure({});assert.deepEqual(await app.takeJobs(),[])
+ await clock(nudgeAt+3600000);await app.scheduled()
+ let completed=(await runs(pending)).filter(run=>run.rule_id===nudge.id)
+ assert.equal(completed.length,1);assert.equal(completed[0].state,'not_delivered');assert.ok(completed[0].reason);assert.equal(completed[0].cursor,2)
+ const nudgeHistory=(await get(pending)).history.filter(h=>h.actor_id===`automation ${nudge.name}`)
+ assert.equal(nudgeHistory.filter(h=>h.changes.priority).length,1);assert.equal(nudgeHistory.filter(h=>h.changes.notes).length,1)
+ assert.ok(nudgeHistory.every(h=>h.source==='automation'))
+ await app.scheduled();assert.equal((await runs(pending)).filter(run=>run.rule_id===nudge.id).length,1)
+ await clock(solveAt-3600000);await app.scheduled();assert.equal((await get(pending)).status_category,'pending')
+ await clock(solveAt);await app.scheduled();assert.equal((await get(pending)).status_category,'solved')
+ await clock(closeAt-3600000);await app.scheduled();assert.equal((await get(pending)).status_category,'solved')
+ await clock(closeAt);await app.scheduled();assert.equal((await get(pending)).status_category,'closed')
+ await app.configure({});await app.scheduled()
+ const final=await get(pending),finalRuns=await runs(pending)
+ for(const rule of [solve,close]){
+  assert.equal(finalRuns.filter(run=>run.rule_id===rule.id&&run.state==='complete').length,1)
+  const changes=final.history.filter(h=>h.actor_id===`automation ${rule.name}`&&h.changes.status_id)
+  assert.equal(changes.length,1);assert.equal(changes[0].source,'automation')
+ }
+ assert.deepEqual(await runs(reset),[],'a customer reply cancels the old Pending eligibility episode')
+ assert.equal((await get(reset)).status_category,'open')
+ const audit=await app.ok(`/api/management/projects/${w.projectId}/audit?limit=200&actor=${encodeURIComponent(`automation ${solve.name}`)}`,{token:w.tokens.owner})
+ assert.ok(audit.data.some(row=>row.target_id===pending&&row.actor_id===`automation ${solve.name}`))
+ f.closedId=pending
+ for(const rule of rules)await ok(`/workflow-rules/${rule.id}/pause`,{})
+ await clock(initial)
+ console.log('AUTOMATION-002: 48/96 business hours, four-day close, weekend/DST, interrupted cursor restart, reset, repeat refusal and automation actors passed')
 }

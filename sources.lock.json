@@ -8644,7 +8644,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-assistant.scss": {
-      "sha256": "5a30ced44f28b1b84dda8fbd8496bc77b8d1dfed17d0f3c8a2805b6881930a29",
+      "sha256": "9f48cb58804695329922e5eb4dfa4070e4628bc4828a19d9bbbe35f50581b8b2",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-avatars.scss": {

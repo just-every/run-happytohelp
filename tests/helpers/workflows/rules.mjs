@@ -68,7 +68,7 @@ export async function timeAutomationFlow(f){
  const [nudge,solve,close]=rules,runs=async id=>(await ok(`/workflow-runs?conversation_id=${id}`)).runs.filter(run=>rules.some(rule=>rule.id===run.rule_id))
  // Creation and publication both reject an unsafe repeat. A stored invalid draft
  // represents a previously authored rule, not an alternate application path.
- const unsafe={name:'Unsafe repeated pending notice',kind:'time',conditions:{all:[{field:'status_category',op:'eq',value:'pending'}]},time:{field:'pending_at',hours:48,repeat_hours:48},actions:[{type:'notify',kind:'customer_update'}]}
+ const unsafe={name:'Unsafe repeated pending notice',kind:'time',position:0,conditions:{all:[{field:'status_category',op:'eq',value:'pending'}],any:[]},time:{field:'pending_at',hours:48,repeat_hours:48},actions:[{type:'notify',kind:'customer_update'}]}
  assert.equal((await call('/workflow-rules',unsafe)).status,400)
  const {rule:draft}=await ok('/workflow-rules',{...unsafe,time:{field:'pending_at',hours:48}})
  await app.db.prepare('UPDATE workflow_rules SET draft_json=? WHERE id=?').bind(JSON.stringify(unsafe),draft.id).run()

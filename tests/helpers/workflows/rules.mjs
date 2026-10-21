@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 export async function rulesFlow(f){
- const {app,w,ok,call,create,get,patch,clock,publish,initial}=f
+ const {app,w,ok,call,create,get,patch,clock,publish,send,initial}=f
  const tag=await ok(`/conversations/${f.slaId}/tags`,{name:'Refund review'})
  const definition={name:'Refund review and escalation',kind:'event',position:5,event_kind:'customer_reply',conditions:{all:[{field:'subject',op:'contains',value:'refund'}]},actions:[{type:'tags',add:[tag.id]},{type:'priority',priority:'high'},{type:'notify',kind:'assignee',recipient_id:w.users.owner}]}
  const {rule}=await ok('/workflow-rules',definition)
@@ -57,5 +57,17 @@ export async function rulesFlow(f){
   await app.scheduled();assert.equal((await ok(`/workflow-runs?conversation_id=${id}`)).runs.filter(run=>run.rule_id===queued.id).length,1)
   await ok(`/workflow-rules/${queued.id}/pause`,{});await clock(initial)
  }
+ // Nobody is online, so the customer gets the workspace's away reply. It is not a teammate's reply: rules for one, by
+ // event or by the time since the last one, wait for a teammate and then run as before.
+ const subject='Away check: is anyone there?',teammate={all:[{field:'subject',op:'eq',value:subject}]}
+ const replied=await publish({name:'Teammate replied',kind:'event',event_kind:'operator_reply',position:3,conditions:teammate,actions:[{type:'priority',priority:'urgent'}]})
+ const quiet=await publish({name:'An hour after a teammate replied',kind:'time',position:4,conditions:teammate,time:{field:'last_operator_reply_at',hours:1},actions:[{type:'tags',add:[tag.id]}]})
+ const away=await create(subject),ran=async()=>(await ok(`/workflow-runs?conversation_id=${away}`)).runs.map(r=>r.rule_id).filter(id=>[replied.id,quiet.id].includes(id)).sort()
+ assert.deepEqual((await app.sql('SELECT actor_role FROM messages WHERE conversation_id=? ORDER BY revision',away)).map(m=>m.actor_role),['contact','system'])
+ await clock(initial+2*3600000);await app.scheduled();await app.scheduled()
+ assert.deepEqual(await ran(),[],'no rule for a teammate reply runs on the away reply')
+ await send(away,'A teammate here: the replacement ships today.',w.tokens.owner);await clock(initial+4*3600000);await app.scheduled();await app.scheduled()
+ assert.deepEqual(await ran(),[replied.id,quiet.id].sort(),'both rules run on the teammate reply');assert.equal((await get(away)).priority,'urgent');assert.ok((await get(away)).tags.some(t=>t.id===tag.id))
+ await ok(`/workflow-rules/${replied.id}/pause`,{});await ok(`/workflow-rules/${quiet.id}/pause`,{})
  await clock(initial)
 }

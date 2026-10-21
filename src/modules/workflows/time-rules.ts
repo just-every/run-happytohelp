@@ -8,7 +8,8 @@ import type {Spent} from './budget'
 const PAGE=10
 const statusChanged="coalesce((SELECT max(h.at) FROM ticket_history h WHERE h.conversation_id=c.id AND json_extract(h.changes_json,'$.status_id.to')=c.status_id),c.created_at)"
 /** Each anchor as ruleTicket computes it. Business hours never exceed wall-clock hours,
- * so `anchor <= now - hours` is a necessary condition for every calendar too. */
+ * so `anchor <= now - hours` is a necessary condition for every calendar too. The
+ * workspace's away reply (actor_role 'system') is not an operator reply. */
 const anchors:Record<string,string>={
  created_at:'c.created_at',updated_at:'c.updated_at',status_changed_at:statusChanged,
  pending_at:`CASE WHEN c.status_category='pending' THEN ${statusChanged} END`,
@@ -16,7 +17,7 @@ const anchors:Record<string,string>={
  solved_at:"CASE WHEN c.status_category='solved' THEN c.resolved_at END",
  assigned_at:"(SELECT max(h.at) FROM ticket_history h WHERE h.conversation_id=c.id AND json_extract(h.changes_json,'$.assigned_to.to')=c.assigned_to)",
  last_customer_reply_at:"(SELECT max(m.created_at) FROM messages m WHERE m.conversation_id=c.id AND m.actor_role='contact')",
- last_operator_reply_at:"(SELECT max(m.created_at) FROM messages m WHERE m.conversation_id=c.id AND m.actor_role<>'contact')",
+ last_operator_reply_at:"(SELECT max(m.created_at) FROM messages m WHERE m.conversation_id=c.id AND m.actor_role NOT IN ('contact','system'))",
 }
 /** Rules are served least recently first, one per workspace before any workspace's
  * second, so one workspace's backlog never holds another's tickets. */

@@ -46,7 +46,10 @@ together.
 In **Rules**, create an event rule for a new ticket, customer reply, operator
 reply or ticket change. Combine conditions that must all match with alternatives
 where any match is enough. Choose actions such as status, priority, assignment,
-tags, custom fields, a private note or an operator notification.
+tags, custom fields, a private note or an operator notification. The away
+message your workspace posts while nobody can answer is not an operator reply:
+it starts no rule, and time since the last operator reply counts from a
+teammate's or an assistant's reply.
 
 Save the draft, then choose **Preview draft**. The preview explains which
 historical tickets match and what the actions would do. It changes no tickets

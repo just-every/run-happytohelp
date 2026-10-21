@@ -4,7 +4,6 @@ export async function workflowFixture(){
  const initial=Date.parse('2026-11-25T21:00:00Z'),app=await startApp({captureQueue:true,outbound:async request=>{if(new URL(request.url).hostname==='api.resend.com')throw new TypeError('Connection reset after request body was received');throw new Error('Unexpected external call '+request.url)},bindings:{APP_ORIGIN:'https://app.example',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',INBOUND_EMAIL_TOKEN:'workflow-gateway',H2H_WORKFLOW_NOW:String(initial)}})
  if(process.env.H2H_WORKFLOW_TRACE)console.log('fixture started')
  const w=await app.seedWorkspace('workflow'),other=await app.seedWorkspace('other-workflow'),base=`/api/dashboard/projects/${w.projectId}`
- await app.presenceAwayOff(w.projectId);await app.presenceAwayOff(other.projectId)
  const call=(path,body,method,role='owner',headers={})=>{if(process.env.H2H_WORKFLOW_TRACE)console.log('workflow',method??(body===undefined?'GET':'POST'),path);return app.call(base+path,{token:w.tokens[role],...(body===undefined?{}:{body}),...(method?{method}:{}),headers})}
  const ok=async(path,body,method,role='owner')=>{const result=await call(path,body,method,role);assert.ok(result.status>=200&&result.status<300,`${path}: ${result.status} ${JSON.stringify(result.data)}`);return result.data.data??result.data}
  const customer=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey,name:'Riley Bennett',email:'riley@example.test'},headers:{Origin:w.allowedOrigin}})

@@ -81,9 +81,10 @@ one. Turn it back on when you return.
 
 ## Good to know
 
-- The away message is never emailed, never earns an AI reply, and does not
-  count as a reply in **Reports**: response times still run until a person or
-  an assistant answers.
+- The away message is never emailed, never earns an AI reply, and is not a
+  reply: response times in **Reports** still run until a person or an
+  assistant answers, a conversation an assistant resolves still counts as
+  resolved by AI, and automations for an operator reply wait for a teammate.
 - The widget asks for an email only when this installation can send email.
 - You can change the away texts, for example to translate them, in
   **Settings → Widget → Texts**, under **When your team is away**.

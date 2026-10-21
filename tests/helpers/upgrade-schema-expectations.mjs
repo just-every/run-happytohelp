@@ -17,6 +17,7 @@ export const schemaExceptions = [
   {migration: '182_import_kit_reversal_retirement.sql', names: ['ik_d1_stream_revision_update'], change: 'Allows namespace/operation retirement only for a deleted stream with its recorded retirement'},
   {migration: '190_email_step_up.sql', names: ['session_factors'], change: 'Rebuilds only the proof-method CHECK to admit email_link; all four prior columns and rows retained'},
   {migration: '195_restore_trigger_boundaries.sql', names: ['conversation_record_resolution'], change: 'Adds only whitespace before CASE and between END and its comma so the pinned Wrangler SQL splitter retains statement boundaries'},
+  {migration: '241_away_reply_not_a_reply.sql', names: ['workflow_changed', 'conversation_record_resolution'], change: "Adds only the away reply's (actor_role 'system') exclusions: its revision bump journals no event and is never an operator reply, and outcomes do not count it as an answer"},
   {migration: '0110_move_in.sql', names: ['context_message_added', 'context_message_removed'], change: 'WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences ...) inserted before BEGIN'},
 ];
 
@@ -39,6 +40,7 @@ export function expectedSchema(before, after, added) {
       }
     }
     if (added.includes('195_restore_trigger_boundaries.sql') && name === 'conversation_record_resolution') wanted = {...entry, sql: entry.sql.replace(/\bEND,/g, 'END ,').replace('first_resolved_at=CASE', 'first_resolved_at= CASE')};
+    if (added.includes('241_away_reply_not_a_reply.sql') && awayReplyExclusions[name]) wanted = {...wanted, sql: awayReplyExclusions[name](wanted.sql)};
     if (added.includes('181_context_message_subjects.sql') && name === 'context_message_added') wanted = {...entry, sql: messageSubjectTrigger};
     if (added.includes('182_import_kit_reversal_retirement.sql') && name === 'ik_d1_stream_revision_update') wanted = {...entry, sql: streamRetirementTrigger};
     if (added.includes('121_move_in_categories.sql')) {
@@ -52,6 +54,13 @@ export function expectedSchema(before, after, added) {
   }
   return changed;
 }
+
+// 241 keeps every other byte of both triggers, including 195's boundaries.
+const awayReply = "(SELECT actor_role FROM messages WHERE id=NEW.last_message_id) IS NOT 'system'";
+const awayReplyExclusions = {
+  workflow_changed: sql => sql.replace('AND (NEW.revision<>OLD.revision OR', `AND ((NEW.revision<>OLD.revision AND ${awayReply}) OR`).replace("WHEN NEW.revision<>OLD.revision THEN 'operator_reply'", `WHEN NEW.revision<>OLD.revision AND ${awayReply} THEN 'operator_reply'`),
+  conversation_record_resolution: sql => sql.replaceAll("m.actor_role<>'contact' AND", "m.actor_role NOT IN ('contact','system') AND"),
+};
 
 // The deliberate replacement's full expected body: unrelated article revisions
 // must not be invalidated, including articles linked through the join table.

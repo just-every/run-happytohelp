@@ -12,7 +12,8 @@ export const AWAY_AUTHOR='away',AWAY_REPLY='away:reply'
 /** Outside the workspace's hours, with "Accept new conversations" off, or with no teammate online while no assistant
  * answers the workspace's visitors (presence-based away), a visitor's chat message that no assistant will answer earns
  * the workspace's away message, once per conversation (legacy chat sendMessage.js behaviour). It is the workspace
- * speaking, not a teammate or the AI: it is not emailed, earns no AI reply, and does not count as a reply in reports.
+ * speaking, not a teammate or the AI: it is not emailed, earns no AI reply, and does not count as a reply in reports,
+ * outcomes or automations (migration 241, workflows/time-rules.ts and rule-model.ts).
  * It is posted only directly after the message that earned it, judged by the schedule at that message's time and by
  * presence when its effects run. */
 export async function postAwayReply(env:Env,message:Record<string,unknown>,actor:Actor){

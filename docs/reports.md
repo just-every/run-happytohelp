@@ -6,7 +6,7 @@ A new visitor message reopens the conversation. Its next resolution has a separa
 
 ## Outcomes
 
-Each resolution records its evidence at the time it occurs. Confirmed operator-sent AI or paired-local-agent drafts make the cycle **assisted**, including drafts edited after adoption. Assisted takes precedence when a cycle also has human-written replies. Otherwise confirmed operator-written answers make the cycle **human**, even when other replies have unknown provenance. **AI** requires every visible answer to be confirmed AI, a complete cycle history, and no person handoff. Missing evidence produces **unknown**. Notes, provisional replies and context insights are not answers.
+Each resolution records its evidence at the time it occurs. Confirmed operator-sent AI or paired-local-agent drafts make the cycle **assisted**, including drafts edited after adoption. Assisted takes precedence when a cycle also has human-written replies. Otherwise confirmed operator-written answers make the cycle **human**, even when other replies have unknown provenance. **AI** requires every visible answer to be confirmed AI, a complete cycle history, and no person handoff. Missing evidence produces **unknown**. Notes, provisional replies, context insights and the workspace's away message are not answers.
 
 Draft provenance travels with the composer through edits, suggestion changes and undo/redo. The server validates the stored completed draft against the workspace, conversation and current operator/device authority before admitting an assisted reply. External integrations that omit provenance are unknown; an operator role alone does not prove human authorship.
 

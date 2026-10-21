@@ -194,11 +194,11 @@ try {
         assert.deepEqual({...current,sql:entry.sql},entry,'category deletion retains its schema identity');
         continue;
       }
-      // M195 changes exactly three whitespace boundaries for native restore.
-      // Use the same explicit expectation as the released-install upgrade;
-      // every other character and schema property still has to match.
+      // M195 changes exactly three whitespace boundaries for native restore and
+      // M241 only excludes the away reply. Use the same explicit expectation as
+      // the released-install upgrade; every other character and property still has to match.
       if(entry.name==='conversation_record_resolution'&&remaining.some(m=>m.name==='195_restore_trigger_boundaries.sql')){
-        assert.deepEqual(expectedSchema({[entry.name]:entry},{[entry.name]:current},remaining.map(m=>m.name)),[],'resolution trigger retains its exact schema except the three restore boundaries');
+        assert.deepEqual(expectedSchema({[entry.name]:entry},{[entry.name]:current},remaining.map(m=>m.name)),[],'resolution trigger retains its exact schema except the three restore boundaries and the away reply exclusions');
         continue;
       }
       for(const {column} of added)assert.ok(current.sql.includes(', '+column),'additional stage adds '+column+' to '+entry.name);

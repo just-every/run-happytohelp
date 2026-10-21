@@ -51,7 +51,8 @@ by the workspace's operator stream (`conversations/socket.ts` with `collaboratio
 the dashboard reports its idle time every 20 seconds, a row counts until it expires (90 seconds past the last report, 10
 after the last stream closes) and while its member was active within the lead's idle time. Member removal and workspace
 deletion clear it; archives never carry it. Leads change it through `PUT /projects/:id/availability`, which records each
-change of the setting or idle time in the security log; `GET /projects/:id/presence` lists who is online.
+change of the setting or idle time in the security log; `GET /projects/:id/presence` lists who is online. The away
+reply is the workspace speaking: reports, outcomes and automations never count it as a reply (migration 241).
 `tests/journeys/widget.mjs` and `tests/journeys/widget-browser.mjs` cover it.
 
 Pending invitations (`invitations.ts`, `invitation-store.ts`) are the unused invite links for one email in one

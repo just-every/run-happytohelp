@@ -7,8 +7,6 @@ import {randomBytes,createHash} from 'node:crypto';
 import {build} from 'esbuild';
 const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[require.resolve('wrangler')]}));
 export const json=body=>({method:'POST',body:JSON.stringify(body),headers:{'Content-Type':'application/json'}});
-// A team that answers without the dashboard open: presence-based away is off (presence: tests/helpers/widget/presence.mjs).
-export async function presenceAwayOff(h){await h.db.prepare(`INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES('p','{"is_presence_away_enabled":false}',?) ON CONFLICT(project_id) DO UPDATE SET settings_json=json_set(settings_json,'$.is_presence_away_enabled',json('false')),updated_at=excluded.updated_at`).bind(Date.now()).run()}
 export async function optIntoProactiveHelp(h,conversationId){
  // Insight admission requires the workspace policy and the visitor's own consent.
  await h.db.prepare(`INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES('p','{"is_contact_tracking_enabled":true,"proactive_help_enabled":true}',?) ON CONFLICT(project_id) DO UPDATE SET settings_json=json_set(settings_json,'$.is_contact_tracking_enabled',json('true'),'$.proactive_help_enabled',json('true')),updated_at=excluded.updated_at`).bind(Date.now()).run();

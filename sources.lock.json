@@ -1608,11 +1608,11 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "9d7f6b9196f8dff250bb9c64a9d71626f446dca58efbd2a0e866cf6e8c931ef0",
+      "sha256": "b0fc2e45222ad8ca3975f4f9edf64a0ce91387bd40a89fc77ba57141c93f6756",
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "a8bbc04778cd37d619930e31278a4db8e4c5ec3ed8e1d155ec4f2d77f1bf3b60",
+      "sha256": "7dd81920a3340ee4f90006a05e52659bcf6fc689ebc974f385041428277524ac",
       "executable": false
     },
     "base-copies.json": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "fa5dcb434e00e96c7ee65b8b15af66f7c4d2ee5b8a4a9f9455a7890902c6b39a",
+      "sha256": "431035d157c0fb51477d30b35d20ab22452212150a7d33f95bc6d49b087a02c5",
       "executable": false
     },
     "DEMO.md": {
@@ -2468,7 +2468,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "9199018e102758bb5a14001405321cc0316bfccc38693c8fa47617f057103cde",
+      "sha256": "01ffb3e9123396de1c6817f0072d1feb3a72e6c17ff0c1ababc40e6e4d69367a",
       "executable": false
     },
     "package.json": {
@@ -2540,7 +2540,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "5b50cdf15242ec3c4cbd12c4bfe347b987de0322fd0a8ee5c1edbde54bcd74ab",
+      "sha256": "759cd1e999aa74c96d11b5186ada8d7f18bb296f5d8a85ffb452edd173bfb4e1",
       "executable": false
     },
     "RELEASE.json": {

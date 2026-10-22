@@ -47,6 +47,10 @@ body {
   // Keyboard focus stays in ink on paper (dashboard.scss draws the ring).
   --accessibility-focus-ring: var(--ink);
   --accessibility-focus-halo: var(--paper);
+  // A text field's focus, drawn on its one border: an ink edge and the aqua ring. A field draws it on its own border, or
+  // the frame that holds a borderless field draws it on the frame's (H8, H17); the keyboard ring never adds a second line.
+  --field-focus-edge: var(--ink);
+  --field-focus-ring: 0 0 0 2px var(--d-cyan-deep);
   min-height: 100%;
   color: var(--ink);
   background-color: var(--paper);

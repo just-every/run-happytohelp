@@ -176,6 +176,7 @@ body.workspace-themed {
         font-size: 0.875rem;
         font-weight: 500;
     }
+    .delegation-provider-picker input:focus { border-color: var(--field-focus-edge); box-shadow: var(--field-focus-ring); outline: 0; }
     .delegation-setup-help { margin-top: .55rem; }
     .delegation-setup-help details { margin-top: .3rem; }
     .delegation-setup-help summary { color: var(--ink); cursor: pointer; font-size: 0.8125rem; font-weight: 650; }
@@ -276,7 +277,7 @@ body.workspace-themed {
     .delegation-computer-settings select { width: 100%; min-width: 0; padding-block: .6rem; padding-left: .6rem; color: var(--ink); background-color: var(--surface); border: 1px solid var(--rule); border-radius: .5rem; font: inherit; font-size: 0.875rem; }
     .delegation-computer-settings textarea { padding-right: .6rem; resize: vertical; line-height: 1.5; }
     .delegation-computer-settings textarea:focus,
-    .delegation-computer-settings select:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
+    .delegation-computer-settings select:focus { border-color: var(--field-focus-edge); box-shadow: var(--field-focus-ring); outline: 0; }
     .delegation-computer-settings > button { justify-self: start; }
     .delegation-computer-settings .delegation-computer-settings__error { color: var(--danger); }
 }

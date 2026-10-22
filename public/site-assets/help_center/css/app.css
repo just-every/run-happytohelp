@@ -100,6 +100,11 @@ body {
     outline-offset: 2px;
 }
 
+/* A field's ring is drawn over its own 1px border, never a gap outside it: one line around the field. */
+.help-center-search input:focus-visible {
+    outline-offset: -1px;
+}
+
 .help-center-search button {
     flex: 0 0 auto;
     padding: 0.5rem 1rem;

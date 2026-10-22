@@ -20,6 +20,7 @@ export const portalStyles=`
 .help-center-content time{font-size:.9rem;color:#4d666a}
 .help-center-content a{overflow-wrap:anywhere}
 .help-center-content :focus-visible{outline:3px solid #177b85;outline-offset:3px}
+.help-center-content :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus-visible{outline-offset:-1px}
 @media(max-width:600px){.help-center-controls{gap:.8rem}.help-center-signin button{width:100%}.help-center-content{padding-inline:.25rem}}
 `
 export const portalCSP="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'"

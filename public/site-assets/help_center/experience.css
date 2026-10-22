@@ -13,5 +13,7 @@
 .help-center-feedback form>div {display:flex; gap:.75rem;}
 .help-center-feedback button {min-width:5rem;}
 .help-center-language :focus-visible,.help-center-signin :focus-visible,.help-center-feedback :focus-visible {outline:3px solid #337557; outline-offset:3px;}
+/* A field's ring is drawn over its own 1px border, never a gap outside it: one line around the field. */
+.help-center-language :is(input,select,textarea):focus-visible,.help-center-signin :is(input,select,textarea):focus-visible,.help-center-feedback :is(input,select,textarea):focus-visible {outline-offset:-1px;}
 .help-center-translation-note {font-size:.875rem; color:#4c5f55; padding:.75rem; background:#f3f6f4;}
 @media(max-width:480px){.help-center-controls {justify-content:flex-start;}.help-center-controls>a{flex-basis:100%;}.help-center-signin input{width:100%;}}

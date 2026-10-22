@@ -22,7 +22,7 @@
 .h2h-setup a { color: inherit; text-decoration: none; }
 /* Focus stays in ink, as on the homepage: the dashboard stylesheet's shared keyboard ring reads these two variables. */
 .h2h-setup { --accessibility-focus-ring: var(--ink); --accessibility-focus-halo: var(--paper); }
-.h2h-setup :is(a, button, input):focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; box-shadow: 0 0 0 4px var(--paper); }
+.h2h-setup :is(a, button):focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; box-shadow: 0 0 0 4px var(--paper); }
 
 /* One grid. Its DOM order is the phone's reading order (brand, welcome, form, drawing); from 861px up the left column stacks the
    brand, welcome and drawing in three rows, and the form spans them all on the right. The last row takes up whatever the right

@@ -135,7 +135,7 @@ body.conversation-workspace #chat .conversation-inbox {
         transition: border-color .15s ease, box-shadow .15s ease;
 
         &:hover { border-color: var(--field-line-hover); }
-        &:focus-within { border-color: var(--ink); box-shadow: 0 0 0 2px var(--d-cyan-deep); }
+        &:focus-within { border-color: var(--field-focus-edge); box-shadow: var(--field-focus-ring); }
     }
     .search-query .form-control,
     .search-query .btn {
@@ -148,8 +148,8 @@ body.conversation-workspace #chat .conversation-inbox {
     .search-query .form-control { padding: 0 4px 0 14px; border-radius: 8px 0 0 8px !important; }
     .search-query .btn { width: 44px; padding: 0; border-radius: 0 8px 8px 0 !important; color: var(--ink); }
     .search-query .btn:hover { color: var(--ink); background: var(--hover) !important; }
-    // The field's own ring would draw inside the group's: the group's :focus-within edge is the one focus indicator.
-    .search-query :is(.form-control, .btn):focus-visible { outline: 0 !important; box-shadow: none !important; }
+    // The button's keyboard ring would draw inside the group's: the group's :focus-within edge is the one focus indicator.
+    .search-query .btn:focus-visible { outline: 0 !important; box-shadow: none !important; }
     .search-query .input-group-append { display: flex; margin-left: 0; }
 
     .inbox-search-scope { display: inline-flex; gap: 2px; margin-top: 8px; padding: 2px; border: 1px solid var(--rule-strong); border-radius: 999px; }

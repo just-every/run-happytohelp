@@ -176,10 +176,10 @@ form:not(.h2h-setup form) label:not(.form-check-label):not(.btn) {
   &:hover { border-color: var(--field-line-hover); }
 
   &:focus {
-    border-color: var(--ink);
+    border-color: var(--field-focus-edge);
     color: var(--ink);
     background-color: var(--surface);
-    box-shadow: 0 0 0 2px var(--d-cyan-deep);
+    box-shadow: var(--field-focus-ring);
     outline: 0;
   }
 
@@ -267,7 +267,7 @@ textarea.form-control {
   border-radius: 8px;
   background: var(--surface);
 
-  &:focus-within { border-color: var(--ink); box-shadow: 0 0 0 2px var(--d-cyan-deep); }
+  &:focus-within { border-color: var(--field-focus-edge); box-shadow: var(--field-focus-ring); }
 
   > .form-control,
   > .input-group-text,

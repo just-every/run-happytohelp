@@ -19,8 +19,8 @@ body.conversation-workspace #chat {
 
         &:hover { border-color: var(--field-line-hover); }
         &:focus-within {
-            border-color: var(--ink);
-            box-shadow: 0 0 0 2px var(--d-cyan-deep);
+            border-color: var(--field-focus-edge);
+            box-shadow: var(--field-focus-ring);
         }
 
         textarea {

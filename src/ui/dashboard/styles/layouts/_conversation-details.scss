@@ -245,6 +245,14 @@ body.conversation-workspace #chat {
         &:disabled { color: var(--ink); cursor: default; opacity: 1; }
     }
 
+    // The summary's borderless fields (Status, Priority and a new tag) read as row values: the ink keyboard ring is their
+    // one line when focused (the field focus's aqua ring alone would be too faint without an edge).
+    .ticket-summary :is(.ticket-summary__select, .conversation-tags-form input):focus-visible {
+        outline: 2px solid var(--accessibility-focus-ring);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 4px var(--accessibility-focus-halo);
+    }
+
     .ticket-summary__chevron { position: absolute; top: 50%; right: 0; width: 16px; height: 16px; color: var(--ink-soft); transform: translateY(-50%); pointer-events: none; }
 
     .ticket-summary__error { margin: 4px 0 0; color: var(--danger); font-size: 14px; }

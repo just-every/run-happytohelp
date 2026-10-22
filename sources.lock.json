@@ -1752,7 +1752,7 @@
       "executable": false
     },
     "docs/NAVIGATION.md": {
-      "sha256": "1eb295f0908a7a253d94c45924cfb6cdc99f913f26694dc57db8ed418193a17b",
+      "sha256": "015b83b7d6267483af1aa5cdb3984edcb083fbdaf7a007b0e9f9cdec71284785",
       "executable": false
     },
     "docs/notifications.md": {
@@ -2540,7 +2540,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "5489589c9796ec9126e3a05addbbb9d1dbd20c165970874d1d1e2ca3e93585c0",
+      "sha256": "5b50cdf15242ec3c4cbd12c4bfe347b987de0322fd0a8ee5c1edbde54bcd74ab",
       "executable": false
     },
     "RELEASE.json": {
@@ -9220,7 +9220,7 @@
       "executable": false
     },
     "src/ui/native/activation/useSetupNeeds.js": {
-      "sha256": "2ae7e9877c229a1178af7cc54bb9b1fa3af942b23d18ad59e2c7d1828a23a30c",
+      "sha256": "fa479d5fd77c422e9b46962e5ee830cd2f9060a25d7a59ff224feee0918e472a",
       "executable": false
     },
     "src/ui/native/AdminNavigation.jsx": {
@@ -9384,7 +9384,7 @@
       "executable": false
     },
     "src/ui/native/Navigation.jsx": {
-      "sha256": "dd6e1e554c326ff5e718a5a152213db08e8b0bad192138fff71e49c038984c61",
+      "sha256": "d7925e56b1f8a893be0ab2c46811102783bee33da6c5751ac1b725ca2cfaad29",
       "executable": false
     },
     "src/ui/native/NavigationGuard.tsx": {
@@ -10080,7 +10080,7 @@
       "executable": false
     },
     "src/ui/native/SettingsNavigation.jsx": {
-      "sha256": "cefbdd981c0913687698a91467625b487f284d613f0a2ef0c6b6bc6cb57a712d",
+      "sha256": "425e424d4ec117f6f0e9e45b7661f0db8f478421db927b7bf76ba903bc675f02",
       "executable": false
     },
     "src/ui/native/setup-help/CopyCommand.jsx": {
@@ -11204,7 +11204,7 @@
       "executable": false
     },
     "tests/helpers/inbox/workspace-shell-browser.mjs": {
-      "sha256": "8b7b220856cb50ef7ddb15fd9e48227b59f6030aaf8bdcccbf05fda6380840e6",
+      "sha256": "6b63ea4802fd8dcd9dd6c1b7108f6ef552bb074529250e0a965f9576f12d3be0",
       "executable": false
     },
     "tests/helpers/independent-artifact.mjs": {

@@ -2,22 +2,25 @@ import React from 'react';
 import { Link } from '@tanstack/react-router';
 import { CountDisc } from './InboxNavigation';
 import { useMobileNavigation } from './MobileNavigation';
+import useSetupNeeds from './activation/useSetupNeeds';
 import { destinationActive, settingsGroups } from './settings-destinations';
 
 /**
  * The rail on a Settings page (and, below 1200px, the menu sheet), under the row back to the inbox: Setup, then every
  * destination under its topic. The current destination carries the rail's highlight; the Settings row below reads as
- * its section. Setup counts what still needs the owner.
+ * its section. For an owner or admin, Setup's row counts what still needs them: only this menu reads it, so the inbox
+ * loads none of Setup and links to it instead (ACTIVATION-001).
  */
-export default function SettingsNavigation({ base, projectId, here, setupNeeds }) {
+export default function SettingsNavigation({ base, projectId, here, countSetup }) {
     const { setOpen } = useMobileNavigation();
+    const setupNeeds = useSetupNeeds(projectId, countSetup);
     const close = () => setOpen(false);
     const entry = destination => {
         const current = destinationActive(here, base, destination);
         const props = { className: `nav-link${ current ? ' is-current' : '' }`, 'aria-current': current ? 'page' : undefined, activeProps: {}, onClick: close };
         const label = <>
             <span className="navbar-link-label">{ destination.label }</span>
-            { destination.path === 'activation' && <CountDisc count={ setupNeeds }/> }
+            { destination.path === 'activation' && setupNeeds > 0 && <span aria-label={ `${ setupNeeds } ${ setupNeeds === 1 ? 'step needs' : 'steps need' } you` }><CountDisc count={ setupNeeds }/></span> }
         </>;
         return <li key={ destination.label }>{ destination.absolute
             ? <Link to={ destination.absolute } search={ { account_id: projectId } } { ...props }>{ label }</Link>

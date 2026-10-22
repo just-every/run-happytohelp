@@ -5,9 +5,8 @@ import { Link, useLocation, useNavigate, useRouter } from '@tanstack/react-route
 import { nativeRequest } from './transport';
 import AdminNavigation from './AdminNavigation';
 import WorkspaceSidebarArtwork from './WorkspaceSidebarArtwork';
-import InboxNavigation, { CountDisc } from './InboxNavigation';
+import InboxNavigation from './InboxNavigation';
 import SettingsNavigation from './SettingsNavigation';
-import useSetupNeeds from './activation/useSetupNeeds';
 import { inboxSource, useInboxNavigation, useInboxNavigationActions } from './inbox-navigation-state';
 import { onSettingsDestination, pathIsWithin } from './settings-destinations';
 import { BrandLockup } from '../homepage/BrandLockup';
@@ -68,7 +67,6 @@ export default function Navigation({ settings }) {
     // The rail holds the daily work; everything that configures the workspace is under Settings, whose pages turn the rail into the Settings menu.
     const projectRows = [['Knowledge','articles','book-open'],['Contacts','contacts','users'],['Reports','reports','bar-chart-2']];
     const settingsActive = !settings.isGlobalInbox && onSettingsDestination(here,base);
-    const setupNeeds = useSetupNeeds(settings.isGlobalInbox ? null : project, ['owner','admin'].includes(settings.project?.role));
     const switchWorkspace = async id=>{if(switching||!await confirmNavigation())return;setSwitching(true);setSwitchError('');try{if(id)await nativeRequest('/api/identity/switch-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId:id})});await navigate({to:id?`/projects/${id}/conversations`:'/conversations',ignoreBlocker:true});}catch(error){setSwitchError(error.message);}finally{setSwitching(false);}};
     if (settings.isPlatformAdmin && (pathname === '/admin' || pathname.startsWith('/admin/'))) return <AdminNavigation agent={settings.currentAgent} AccountMenu={AccountMenu}/>;
     return <nav ref={nav} className="navbar navbar-vertical fixed-left navbar-expand-xl navbar-light navbar-refined native-shell" id="sidebar" aria-label="Main navigation"><div className="container-fluid">
@@ -83,12 +81,12 @@ export default function Navigation({ settings }) {
             <li className={`nav-item ${settingsActive ? '' : 'nav-item-inbox'}`}><Link className={`nav-link ${inboxActive ? 'is-section' : ''}`} aria-current={current(inboxActive)} activeProps={{}} to={settings.isGlobalInbox ? '/conversations' : `${base}/conversations`}><i className={`fe fe-${settingsActive ? 'arrow-left' : 'inbox'}`} aria-hidden="true"/><span className="navbar-link-label">Inbox</span><span id="navigation-inbox-unread" hidden><span className="navbar-unread-count" data-testid="count-disc"/></span></Link>
                 {!settingsActive && <><button type="button" className="nav-inbox-toggle" aria-label="Inbox views" aria-controls="navigation-inbox-views" aria-expanded={inboxOpen} onClick={()=>setExpanded(!inboxOpen)}><i className="fe fe-chevron-down" aria-hidden="true"/></button>
                 <InboxNavigation id="navigation-inbox-views" settings={settings} inboxActive={inboxActive} open={inboxOpen}/></>}</li>
-            {settingsActive ? <SettingsNavigation base={base} projectId={project} here={here} setupNeeds={setupNeeds}/> : <>
+            {settingsActive ? <SettingsNavigation base={base} projectId={project} here={here} countSetup={['owner','admin'].includes(settings.project?.role)}/> : <>
             {settings.isGlobalInbox && <li className="nav-item"><details className="native-global-contacts"><summary><i className="fe fe-users" aria-hidden="true"/><span>Contacts</span><i className="fe fe-chevron-down" aria-hidden="true"/></summary><ul className="nav flex-column">{Object.values(settings.projects || {}).map(p=><li className="nav-item" key={p.id}><Link className="nav-link" to={`/projects/${p.id}/contacts`}>Contacts in {p.name}</Link></li>)}</ul></details></li>}
             {!settings.isGlobalInbox && projectRows.map(([label,path,icon])=><li className="nav-item" key={path}><Link className={`nav-link ${primaryActive(path) ? 'active' : ''}`} aria-current={current(primaryActive(path))} to={`${base}/${path}`}><i className={`fe fe-${icon}`} aria-hidden="true"/><span className="navbar-link-label">{label}</span></Link></li>)}</>}</ul>
             <WorkspaceSidebarArtwork project={settings.isGlobalInbox ? null : settings.project}/></div><div className="navbar-bottom"><ul className="navbar-nav navbar-nav-utility"><li className="nav-item">{settings.isGlobalInbox
                 ? <><button className="nav-link navbar-settings-toggle" type="button" data-testid="nav-settings" aria-controls="sidebarSettings" aria-expanded={settingsOpen} onClick={()=>setSettingsOpen(!settingsOpen)}><i className="fe fe-settings" aria-hidden="true"/><span className="navbar-link-label">Settings</span><i className="fe fe-chevron-down navbar-settings-chevron" aria-hidden="true"/></button><div id="sidebarSettings" hidden={!settingsOpen}><ul className="nav nav-md flex-column" aria-label="Project settings">{Object.values(settings.projects || {}).map(p=><li className="nav-item" key={p.id}><Link className="nav-link" to={`/projects/${p.id}/edit`}>Settings for {p.name}</Link></li>)}</ul></div></>
-                : <Link className={`nav-link ${settingsActive ? 'is-section' : ''}`} data-testid="nav-settings" aria-current={current(settingsActive)} activeProps={{}} to={`${base}/edit`}><i className="fe fe-settings" aria-hidden="true"/><span className="navbar-link-label">Settings</span>{setupNeeds > 0 && <span aria-label={`Setup: ${setupNeeds} ${setupNeeds === 1 ? 'step needs' : 'steps need'} you`}><CountDisc count={setupNeeds}/></span>}</Link>}</li></ul></div>
+                : <Link className={`nav-link ${settingsActive ? 'is-section' : ''}`} data-testid="nav-settings" aria-current={current(settingsActive)} activeProps={{}} to={`${base}/edit`}><i className="fe fe-settings" aria-hidden="true"/><span className="navbar-link-label">Settings</span></Link>}</li></ul></div>
         <div className="navbar-user d-none d-xl-flex" id="sidebarUser"><AccountMenu agent={settings.currentAgent} desktop showAdmin={settings.isPlatformAdmin}/></div></div>
     </div></nav>;
 }

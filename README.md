@@ -194,7 +194,7 @@ assistant for visitors, a reply-by-email mailbox when the installation holds an
 until your sending domain is verified. The inbound token authenticates incoming
 mail; configure your email provider's domain routing and webhook before replies
 can arrive. Creating the workspace may send you one welcome email. Use **Setup**,
-the first entry in **Settings** (the Settings row counts what still needs you): **Needs you** lists what cannot be done for you (the widget on your website, an AI key and, with a hosted
+the first entry in **Settings** (its row there counts what still needs you; an empty inbox links to it): **Needs you** lists what cannot be done for you (the widget on your website, an AI key and, with a hosted
 email provider, your sending domain's DNS records), and **What we've set** lists
 the rest. Anything under **Needs you** can be skipped for now and picked up later
 from **Skipped**. The system runs its own checks while Setup is open, and what it

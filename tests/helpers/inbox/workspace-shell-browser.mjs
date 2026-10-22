@@ -128,7 +128,8 @@ try {
     assert.equal(await menu.locator('details').count(),0,'no More group in the Settings menu');
     const paths=new Set();
     for(const name of ['Setup','Project','Widget','Email','Suspended email','Agents','Roles','Security','Security log','Tickets','Saved Replies','AI','Workflows','Local computers','Slack','GitHub','Webhooks','API tokens','Plugins','Connected applications','Delivery log']){
-      const entry=menu.getByRole('link',{name,exact:true});
+      // Setup's row adds how many steps still need the owner to its name.
+      const entry=menu.getByRole('link',{name:name==='Setup'?/^Setup(?:\s+\d+ steps? needs? you)?$/:name,exact:true});
       await entry.click();await entry.and(menu.locator('[aria-current="page"]')).waitFor();
       // The link is current while the destination still loads; continue once its page is shown.
       await page.getByRole('heading',{level:1,name:{GitHub:'Project',Setup:/^(Nearly ready|All set)$/}[name]||name,exact:true}).waitFor();

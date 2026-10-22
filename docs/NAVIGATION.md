@@ -95,10 +95,11 @@ above each Settings page's title opens it there. Settings pages have no second
 menu of their own, so they use the full width. Every page keeps its URL.
 
 Setup is not a daily row: it heads the Settings menu. For an owner or admin,
-the Settings row and Setup's own row count the Setup steps that still need them
-(one read of the stored snapshot, `activation/useSetupNeeds.js`), and the count
-goes once nothing does. No page carries the workspace's name above its title:
-the sidebar's switcher names the workspace.
+Setup's row there counts the Setup steps that still need them (one read of the
+stored snapshot when the menu opens, `activation/useSetupNeeds.js`), and the
+count goes once nothing does. Only the Settings menu reads it: the empty inbox
+links to Setup and loads none of it (ACTIVATION-001). No page carries the
+workspace's name above its title: the sidebar's switcher names the workspace.
 
 The bootstrap also carries `isPlatformAdmin`. The account menu offers Admin
 only to platform administrators, and `/admin` pages show an in-shell

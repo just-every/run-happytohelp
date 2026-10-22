@@ -3,9 +3,10 @@ import {nativeRequest} from '../transport';
 import {setupStore} from './setup-store';
 import {needs} from './setup-model';
 
-/** How many Setup steps still need the owner, for the Settings row and Setup's own menu row. One read of the snapshot as
- *  stored (never a check), then whatever Setup's own loop finds while that page is open. Only owners and admins can read
- *  it; for anyone else, and until it arrives, nothing is counted (a failed read is logged, as the live counts' are). */
+/** How many Setup steps still need the owner, for Setup's row in the Settings menu. One read of the snapshot as stored
+ *  (never a check) when the menu opens, then whatever Setup's own loop finds while that page is open. Only owners and
+ *  admins can read it; for anyone else, and until it arrives, nothing is counted (a failed read is logged, as the live
+ *  counts' are). */
 export default function useSetupNeeds(projectId,enabled) {
  const [count,setCount]=useState(0);
  useEffect(()=>{

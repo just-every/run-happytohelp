@@ -44,7 +44,7 @@ No breaking change. No migrations.
 
 - **Hono security patch:** the Worker runtime dependency Hono moves from 4.13.7 to 4.13.11, which fixes Hono's static path decoding vulnerability.
 - **H5/H10/H11 app pass:** stylesheets only. Selected navigation and the open inbox row show selection with a wash or a complete hairline ring, never a border on one side of a rounded rectangle; the active rail item has an accessible aqua highlight; the in-app Setup page uses up to 1100px; small app text is raised one step.
-- **AUTOMATION-002/QUEUE-002 proof:** tests and documentation only. Journeys prove time-based automations, including the seeded rule that closes solved tickets after four days, and structured queue work; both clauses now read done.
+- **AUTOMATION-002/QUEUE-002 proof:** tests and documentation only. Journeys prove time-based automations, including the seeded rule that closes solved tickets after four days, and structured queue work. QUEUE-002 reads done. AUTOMATION-002 reads partial: the last-agent-update time (`src/modules/workflows/time-rules.ts`, `src/modules/workflows/rule-model.ts`) also counts the workspace's system away reply, so an automation timed from the last agent update can act on a ticket no teammate answered.
 - **Platform migration-ledger guard with rer 0.2.77:** export and leave backups now work on Platform-applied installs without re-running their database migrations. Incomplete or conflicting migration history (a `rer_migrations` ledger that is missing rows, sits beside a second ledger or does not match the migration files) is refused with exit 4 before data changes, and an empty legacy `d1_migrations` is never dropped automatically; native installs retain their usual migration path. The installer pins rer 0.2.77, including migration-ledger checks and the narrowed GitHub-reference rule; restore journeys run in their own CI shard.
 
 Update from v0.4.11, or any earlier line, to v0.4.12 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.77. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. v0.4.12 adds no migration, so a v0.4.11 installation's migration ledger stays unchanged and nothing is applied. An earlier installation applies its missing published migrations once, in order and by file name, through pinned rer before the updated Worker serves traffic. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. No breaking change.
@@ -193,8 +193,8 @@ assistant for visitors, a reply-by-email mailbox when the installation holds an
 `INBOUND_EMAIL_TOKEN`, and mail that leaves from the installation's own sender
 until your sending domain is verified. The inbound token authenticates incoming
 mail; configure your email provider's domain routing and webhook before replies
-can arrive. Creating the workspace may send you one welcome email. Use **Setup**
-in the workspace sidebar: **Needs you** lists what cannot be done for you (the widget on your website, an AI key and, with a hosted
+can arrive. Creating the workspace may send you one welcome email. Use **Setup**,
+the first entry in **Settings** (its row there counts what still needs you; an empty inbox links to it): **Needs you** lists what cannot be done for you (the widget on your website, an AI key and, with a hosted
 email provider, your sending domain's DNS records), and **What we've set** lists
 the rest. Anything under **Needs you** can be skipped for now and picked up later
 from **Skipped**. The system runs its own checks while Setup is open, and what it
@@ -230,7 +230,7 @@ and Setup say a key is missing.
      a file named `.dev.vars` in the `run-happytohelp` folder, then restart the app.
 3. **Setup notices the key.** While the starter assistant is untouched it uses a
    model of whichever provider's key is installed, and Setup confirms the key with
-   the provider. To use a different assistant, open **AI** in the sidebar, add one
+   the provider. To use a different assistant, open **Settings → AI**, add one
    (or choose **Customize** on an existing one), enter the **Model** it uses and
    keep it **Enabled**. Then, under **Responder defaults**, choose which assistant
    answers visitors.

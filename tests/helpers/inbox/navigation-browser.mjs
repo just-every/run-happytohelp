@@ -21,14 +21,13 @@ page.on('request',request=>requests.push({method:request.method(),url:request.ur
 const nav=page.getByRole('navigation',{name:'Main navigation'});
 // The real unread badge contributes '<count> unread conversations' to Inbox's
 // accessible name after its asynchronous count arrives. Keep other names exact.
-// Project is the one Settings row; the other Settings pages are reached through the Settings menu beside the page.
+// Project is the Settings row's own page; on it the rail becomes the Settings menu, which reaches the other Settings pages.
 const link=name=>name==='Project'?nav.getByTestId('nav-settings'):nav.getByRole('link',{name:name==='Inbox'?/^Inbox(?:\s+\d+ unread conversations)?$/:name,exact:true});
 const view=name=>page.locator(`nav[data-testid="inbox-views"]:visible a[href*="view=${name}"]`);
 const settingsMenu=()=>page.getByTestId('settings-menu');
 const menuLink=async name=>{
   if(!await settingsMenu().count())await link('Project').click();
   const menu=settingsMenu();await menu.waitFor();const entry=menu.getByRole('link',{name,exact:true});
-  if(!await entry.isVisible())await menu.getByTestId('settings-menu-more').locator('summary').click();
   await entry.click();await entry.and(menu.locator('[aria-current="page"]')).waitFor();
 };
 const sameDocument=async(stamp,label)=>assert.equal(await page.evaluate(()=>performance.timeOrigin),stamp,label);
@@ -63,6 +62,8 @@ try {
   await link('Project').click();await page.getByLabel('Website',{exact:true}).waitFor();
   assert.equal(await page.locator('#workspace-header-actions').getByRole('link').count(),0);
   await page.getByRole('button',{name:'Appearance',exact:true}).waitFor();
+  // Settings pages turn the rail into the Settings menu; its Inbox row leads back to the daily rows.
+  await link('Inbox').click();await page.locator('.conversation-inbox').waitFor();
   await link('Contacts').click();await page.getByRole('heading',{name:'Contacts',exact:true}).waitFor();
   assert.equal(await page.getByRole('button',{name:'Appearance',exact:true}).count(),0);
   await assertShell(page,stamp,'header portals update on route changes');

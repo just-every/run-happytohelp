@@ -27,7 +27,8 @@ function railSavedViews(views, currentId) {
     return current && !listed.includes(current) ? [ ...listed.slice(0, RAIL_SAVED_VIEWS - 1), current ] : listed;
 }
 
-function CountDisc({ count }) {
+/** A count disc, shown only above zero, in the compact form ("1k"). */
+export function CountDisc({ count }) {
     return count > 0 ? <span className="navbar-unread-count" data-testid="count-disc" title={ String(count) }>{ formatCompactCount(count) }</span> : null;
 }
 

@@ -5,7 +5,7 @@ import {contrastRatio} from './accessibility-contrast.mjs';
 export function installReadinessSampler() {
     window.readinessFrames = [];
     window.stopReadinessSampling = false;
-    const selectors = ['.navbar-link-label', '#sidebar .nav-link.active', '.settings-menu a[aria-current="page"]', '.native-account-dropdown .dropdown-item', '#widget-settings-tabs-tab-theme', '.tab-pane.active label', '.modal label', '.modal textarea', '.modal .btn'];
+    const selectors = ['.navbar-link-label', '#sidebar .nav-link.active', '#sidebar .nav-link.is-current', '.native-account-dropdown .dropdown-item', '#widget-settings-tabs-tab-theme', '.tab-pane.active label', '.modal label', '.modal textarea', '.modal .btn'];
     const sample = () => {
         for (const selector of selectors) for (const element of document.querySelectorAll(selector)) {
             const rect = element.getBoundingClientRect();

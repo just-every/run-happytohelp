@@ -19,7 +19,7 @@ page records what was restored and which original features are still missing.
 
 | Surface | Changes |
 | --- | --- |
-| Workspace and inbox | Original workspace switcher, icons, active states, unread count, account menu and mobile header, with the colour reduced to paper, ink and aqua. The native sidebar is shorter than the original: the inbox views sit above the list, Local computers, Reports and Insights sit under More, and Settings is one row whose twelve destinations share a Settings menu in the page. |
+| Workspace and inbox | Original workspace switcher, icons, active states, unread count, account menu and mobile header, with the colour reduced to paper, ink and aqua. The native sidebar holds only the daily work: Inbox with its views, Knowledge, Contacts and Reports (with Insights); everything that configures the workspace, Setup, AI and Local computers included, is under Settings, whose pages turn the sidebar into the Settings menu. |
 | Project | General, Appearance, Availability and GitHub tabs; original columns, timezone selector, brand controls, persisted color/mode and real schedule settings. |
 | Account and access | Profile tabs and avatar layout; tokenless setup retained for loopback development only. The public identity pages no longer follow the original centered frame: see [Public identity pages](#public-identity-pages). |
 | Projects and owner controls | Project table and header action; owner settings and project controls retained. Earlier billing/payment layout observations are historical comparison evidence only. |
@@ -40,7 +40,7 @@ defects; each is fixed and covered by `tests/journeys/inbox-browser.mjs`.
 | Opening a project (deep link, Projects list, switcher) | The URL's project becomes the session's active project before its pages load, so Help Center, Categories, AI Training, Training runs, Insights and conversation attachments no longer show "Project access denied" or broken images under a switcher that names that project. |
 | Unknown or non-member project URL | An in-shell "Project not found" state with a link to Projects. It never offers "Sign in" to a signed-in user; the route error boundary offers "Sign in" only for an expired session. |
 | Global Inbox Settings | Lists "Settings for <project>" for each of the account's projects instead of unlabelled links that acted on the session's project. |
-| `/local-agent/authorize` | Scoped to the session's active project: full project sidebar with Local computers current (More open), and the form names the project it acts on. |
+| `/local-agent/authorize` | Scoped to the session's active project: the project's Settings menu with Local computers current, and the form names the project it acts on. |
 | Admin | The account menu offers Admin only to platform administrators; `/admin` pages show an access-limited state with no tables, forms or admin API calls for everyone else. |
 | Account menu | Rows use the body text colour (AA contrast) in light and dark workspaces. |
 | Sidebar | The active item is scrolled fully into view in the sidebar's own scroll area (900 px and shorter viewports); `/projects/<id>/settings` marks Project current in the Settings menu like `/edit`. |

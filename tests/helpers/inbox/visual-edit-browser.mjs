@@ -69,10 +69,9 @@ try {
   await assertEdits();
   const stamp = await watchShell(page);
   // Address links by destination because their visible labels are owner editable.
-  for (const route of ['contacts', 'insights', 'conversations']) {
-    // Insights lives in the navigation's More menu, which opens first.
-    const link = nav.locator(`a.nav-link[href="${base}/${route}"]`);
-    if (!await link.isVisible()) await nav.locator('summary', {hasText: 'More'}).click();
+  for (const route of ['contacts', 'reports', 'insights', 'conversations']) {
+    // Insights is a tab of Reports, beside the page's title; the others are rows of the navigation.
+    const link = route === 'insights' ? page.locator(`nav[aria-label="Reports sections"] a[href="${base}/${route}"]`) : nav.locator(`a.nav-link[href="${base}/${route}"]`);
     await link.click();
     await page.waitForURL(url => url.pathname === `${base}/${route}`);
     await assertEdits();

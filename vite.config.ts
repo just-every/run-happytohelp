@@ -22,8 +22,6 @@ const local = (name: string) => process.env[name] ? { [name]: process.env[name] 
 // belongs to the public entry graph and must never bring the inbox with it.
 const workspaceCoreModules = new Set([
  'native/WorkspacePages.jsx',
- 'native/SettingsMenu.jsx',
- 'native/settings-menu.css',
  'dashboard/components/conversation/ai-controls.css',
  'native/InboxPage.jsx',
  'native/Moment.jsx',

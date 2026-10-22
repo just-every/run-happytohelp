@@ -93,7 +93,7 @@ try {
     assert.equal(await nav().getByRole('button',{name:/Switch workspace:/}).getAttribute('aria-label'),`Switch workspace: ${names[bound.id]}`);
     assert.match(await page.locator('#workspace-main').innerText(),new RegExp(`applies to the project ${names[bound.id]}`));
     assert.equal(await nav().getByText('Global Inbox').count(),0);
-    assert.match(await nav().locator('.nav-link.active').allInnerTexts().then(t=>t.join('|')),/Local computers/);
+    assert.deepEqual(await nav().getByTestId('settings-menu').locator('[aria-current="page"]').allInnerTexts(),['Local computers'],'Local computers is current in the Settings menu');
     await shot('local-agent-authorize');
   });
   await check('Global Inbox settings name the project each link acts on',async()=>{
@@ -113,32 +113,33 @@ try {
       assert.equal(await nav().getByTestId('nav-settings').getAttribute('aria-current'),'page',path);
     }
   });
-  await check('a project sidebar keeps six rows with the inbox views under Inbox; the Settings pages share one menu',async()=>{
+  await check('a project sidebar holds the daily work with the inbox views under Inbox; on Settings pages it becomes the Settings menu',async()=>{
     await page.setViewportSize({width:1440,height:900});
     await bindSession(bound.id);
     await page.goto(`${runtime.origin}/projects/${bound.id}/conversations`);await ready();
-    // The five inbox views sit inside Inbox's item, so the primary list keeps its six rows.
+    // The five inbox views sit inside Inbox's item; the other rows are the daily pages, with no More group.
     const inbox=nav().getByTestId('nav-primary').locator('> li').first();
     for(const view of ['mine','open','unassigned','ai','closed'])assert.equal(await inbox.locator(`nav[data-testid="inbox-views"] a[href*="view=${view}"]:visible`).count(),1,`the ${view} view sits under Inbox`);
-    assert.equal(await nav().getByTestId('nav-primary').locator('> li').count(),6);
-    const more=nav().getByTestId('nav-more');assert.equal(await more.getAttribute('open'),null,'More is closed on the inbox');
-    await more.locator('summary').focus();await page.keyboard.press('Enter');
-    assert.deepEqual(await more.locator('a').evaluateAll(links=>links.map(a=>new URL(a.href).pathname.split('/').pop())),['local-agent','reports','insights']);
+    assert.deepEqual(await nav().getByTestId('nav-primary').locator('> li > a.nav-link').evaluateAll(links=>links.map(a=>new URL(a.href).pathname.split('/').pop())),['conversations','articles','contacts','reports']);
+    assert.equal(await nav().locator('details').count(),0,'no More group');
     assert.equal(await page.getByTestId('settings-menu').count(),0,'the inbox has no Settings menu');
     await nav().getByTestId('nav-settings').click();
-    const menu=page.getByTestId('settings-menu');await menu.waitFor();
+    const menu=nav().getByTestId('settings-menu');await menu.waitFor();
+    assert.equal(await menu.locator('details').count(),0,'no More group in the Settings menu');
     const paths=new Set();
-    for(const name of ['Project','Agents','Email','Widget','Saved Replies','API tokens','Webhooks','Slack','Delivery log','Plugins','GitHub','Roles','Security','Security log','Connected applications']){
-      const entry=menu.getByRole('link',{name,exact:true});
-      if(!await entry.isVisible())await menu.getByTestId('settings-menu-more').locator('summary').click();
+    for(const name of ['Setup','Project','Widget','Email','Suspended email','Agents','Roles','Security','Security log','Tickets','Saved Replies','AI','Workflows','Local computers','Slack','GitHub','Webhooks','API tokens','Plugins','Connected applications','Delivery log']){
+      // Setup's row adds how many steps still need the owner to its name.
+      const entry=menu.getByRole('link',{name:name==='Setup'?/^Setup(?:\s+\d+ steps? needs? you)?$/:name,exact:true});
       await entry.click();await entry.and(menu.locator('[aria-current="page"]')).waitFor();
       // The link is current while the destination still loads; continue once its page is shown.
-      await page.getByRole('heading',{level:1,name:{GitHub:'Project'}[name]||name,exact:true}).waitFor();
+      await page.getByRole('heading',{level:1,name:{GitHub:'Project',Setup:/^(Nearly ready|All set)$/}[name]||name,exact:true}).waitFor();
       assert.equal(await menu.locator('[aria-current="page"]').count(),1,name);
       assert.equal(await nav().getByTestId('nav-settings').getAttribute('aria-current'),'page',name);
       assert.equal(await page.locator('h1').count(),1,name);paths.add(new URL(page.url()).pathname);
     }
-    assert.equal(paths.size,15,'each destination is its own page');
+    assert.equal(paths.size,21,'each destination is its own page');
+    await nav().getByRole('link',{name:/^Inbox/}).click();await page.locator('.conversation-inbox').waitFor();
+    assert.equal(await page.getByTestId('settings-menu').count(),0,'the Inbox row leads back to the daily rows');
     await nav().getByRole('link',{name:'Contacts',exact:true}).click();await page.getByRole('heading',{name:'Contacts',level:1}).waitFor();
     assert.equal(await page.getByTestId('settings-menu').count(),0,'Contacts has no Settings menu');
   });
@@ -146,8 +147,8 @@ try {
     await page.setViewportSize({width,height});
     await page.goto(`${runtime.origin}/projects/${bound.id}/local-agent`);await ready();
     await page.getByRole('heading',{name:'Local computers',level:1}).waitFor();
-    await page.waitForFunction(()=>document.querySelector('.navbar-scroll .nav-link.active'));
-    const rects=await page.evaluate(()=>{const box=document.querySelector('.navbar-scroll').getBoundingClientRect(),link=document.querySelector('.navbar-scroll .nav-link.active').getBoundingClientRect();return {boxTop:box.top,boxBottom:box.bottom,top:link.top,bottom:link.bottom}});
+    await page.waitForFunction(()=>document.querySelector('.navbar-scroll .nav-link.is-current'));
+    const rects=await page.evaluate(()=>{const box=document.querySelector('.navbar-scroll').getBoundingClientRect(),link=document.querySelector('.navbar-scroll .nav-link.is-current').getBoundingClientRect();return {boxTop:box.top,boxBottom:box.bottom,top:link.top,bottom:link.bottom}});
     assert.ok(rects.top>=rects.boxTop-1&&rects.bottom<=rects.boxBottom+1,`active link ${rects.top}-${rects.bottom} must sit inside the sidebar ${rects.boxTop}-${rects.boxBottom}`);
     const settings=await nav().getByTestId('nav-settings').evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return {top:r.top,bottom:r.bottom,reachable:el.contains(hit),height:innerHeight}});
     assert.ok(settings.top>=0&&settings.bottom<=settings.height&&settings.reachable,`Settings ${settings.top}-${settings.bottom} must be visible in a ${settings.height}px viewport`);

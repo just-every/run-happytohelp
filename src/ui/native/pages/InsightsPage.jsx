@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { nativeRequest } from '../transport';
+import ReportsTabs from './reports/ReportsTabs';
 export default function InsightsPage({ projectId }) {
  const [items,setItems]=useState([]),[cursor,setCursor]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(true);
  const load=async(after)=>{setBusy(true);setError('');try{const result=await nativeRequest(`/api/customer-context/${projectId}/insights${after?`?cursor=${encodeURIComponent(after)}`:''}`);setItems(previous=>after?[...previous,...result.data]:result.data);setCursor(result.nextCursor);}catch(e){setError(e.message);}finally{setBusy(false);}};
  useEffect(()=>{setItems([]);setCursor(null);load();},[projectId]);
  return <section className="workspace-insights workspace-insights--index" aria-busy={busy}>
+  <ReportsTabs projectId={projectId} activeSection="insights"/>
   {error&&<p className="alert alert-danger" role="alert">{error}</p>}
   <div className="table-responsive workspace-insights__list"><table className="table table-hover insights-list">
    <thead><tr><th scope="col">Insight</th><th scope="col">Status</th><th scope="col" className="insights-list__seen">Seen</th></tr></thead>

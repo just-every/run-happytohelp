@@ -34,9 +34,12 @@ export async function knowledgeViews({page,runtime,projectId,evidence,artifacts,
   if(width===390)await nav.getByRole('button',{name:'Toggle navigation'}).click();
   assert.equal(await nav.getByRole('link',{name:'Knowledge',exact:true}).count(),1);
   assert.ok(await nav.getByRole('link',{name:'Knowledge',exact:true}).isVisible(),'primary knowledge link is visible');
-  assert.ok(await nav.getByRole('link',{name:'AI',exact:true}).isVisible());
-  const more=nav.locator('details[data-testid="nav-more"]');if(!await more.evaluate(details=>details.open))await more.locator('summary').click();
-  assert.ok(await nav.getByRole('link',{name:'Local computers',exact:true}).isVisible(),'Local computers is reachable in More');
+  // AI and Local computers configure the workspace: they are in the Settings menu, which the rail becomes on a Settings page.
+  await nav.getByTestId('nav-settings').click();await page.waitForURL(`${base}/edit`);await page.getByRole('heading',{name:'Project',exact:true}).waitFor();
+  if(width===390)await nav.getByRole('button',{name:'Toggle navigation'}).click();
+  const settingsMenu=nav.getByTestId('settings-menu');
+  assert.ok(await settingsMenu.getByRole('link',{name:'AI',exact:true}).isVisible(),'AI is reachable in Settings');
+  assert.ok(await settingsMenu.getByRole('link',{name:'Local computers',exact:true}).isVisible(),'Local computers is reachable in Settings');
   await page.goto(base+'/articles');const draftRow=page.getByRole('row').filter({hasText:'Activation draft again'});await draftRow.getByText('Not used by AI answers',{exact:true}).waitFor();assert.match(await page.locator('body').innerText(),/Used by AI answers/i);assert.match((await draftRow.innerText()).replace('Activation draft again',''),/\bdraft\b|not used|\bno\b/i,'draft source is explicitly ineligible');await noOverflow(page,'Knowledge');
   await page.goto(base+'/articles/create');await page.getByRole('heading',{name:'New article',exact:true}).waitFor();
   await page.getByLabel('Title',{exact:true}).fill(`Long activation article ${width}`);await page.getByLabel('Summary',{exact:true}).fill('Long article checks persistent actions.');
@@ -54,7 +57,7 @@ export async function knowledgeViews({page,runtime,projectId,evidence,artifacts,
   assert.equal(await page.getByRole('button',{name:'Publish',exact:true}).count(),0,`${width} a published article offers no second Publish`);
   const saved=page.waitForResponse(response=>new URL(response.url()).pathname===`/api/knowledge/${projectId}/articles`&&response.request().method()==='POST');await page.getByRole('button',{name:'Save',exact:true}).click();assert.equal((await saved).status(),201);await noOverflow(page,'article editor');await capture(page,evidence,`${width}-article-actions`,artifacts);
  }
- checks.push('one primary Knowledge/AI/Local computers navigation, source status and long new article Save/Publish and published-article Save at both widths');
+ checks.push('one primary Knowledge navigation, AI and Local computers in the Settings menu, source status and long new article Save/Publish and published-article Save at both widths');
 }
 export async function demoAndAiViews({page,runtime,projectId,evidence,artifacts,checks}){
  const base=`${runtime.origin}/projects/${projectId}`;await page.goto(base+'/conversations');await page.getByRole('button',{name:'Try a demo inbox',exact:true}).click();await page.waitForURL(/\/projects\/demo-[^/]+\/conversations/);const demoId=new URL(page.url()).pathname.split('/')[2];

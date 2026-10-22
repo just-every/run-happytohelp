@@ -193,8 +193,8 @@ assistant for visitors, a reply-by-email mailbox when the installation holds an
 `INBOUND_EMAIL_TOKEN`, and mail that leaves from the installation's own sender
 until your sending domain is verified. The inbound token authenticates incoming
 mail; configure your email provider's domain routing and webhook before replies
-can arrive. Creating the workspace may send you one welcome email. Use **Setup**
-in the workspace sidebar: **Needs you** lists what cannot be done for you (the widget on your website, an AI key and, with a hosted
+can arrive. Creating the workspace may send you one welcome email. Use **Setup**,
+the first entry in **Settings** (the Settings row counts what still needs you): **Needs you** lists what cannot be done for you (the widget on your website, an AI key and, with a hosted
 email provider, your sending domain's DNS records), and **What we've set** lists
 the rest. Anything under **Needs you** can be skipped for now and picked up later
 from **Skipped**. The system runs its own checks while Setup is open, and what it
@@ -230,7 +230,7 @@ and Setup say a key is missing.
      a file named `.dev.vars` in the `run-happytohelp` folder, then restart the app.
 3. **Setup notices the key.** While the starter assistant is untouched it uses a
    model of whichever provider's key is installed, and Setup confirms the key with
-   the provider. To use a different assistant, open **AI** in the sidebar, add one
+   the provider. To use a different assistant, open **Settings → AI**, add one
    (or choose **Customize** on an existing one), enter the **Model** it uses and
    keep it **Enabled**. Then, under **Responder defaults**, choose which assistant
    answers visitors.

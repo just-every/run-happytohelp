@@ -65,31 +65,40 @@ error boundary offers "Sign in" only for a 401 and otherwise "Try again" and a
 way back to the inbox.
 
 `/local-agent/authorize` has no project in the URL but acts on the session's
-project, so the loader scopes it to that project: the sidebar shows the full
-project navigation with "Local computers" current (its More group open), and the
-authorize form names the project it approves or denies for. In the Global Inbox
+project, so the loader scopes it to that project: the sidebar shows that
+project's Settings menu with "Local computers" current, and the authorize form
+names the project it approves or denies for. In the Global Inbox
 the Settings disclosure lists "Settings for <project>" per project instead of
 unlabelled links to the session's project.
 
 ## The sidebar and the Settings menu
 
-A project's sidebar is one short list: Inbox, Setup, Knowledge, AI, Contacts and
-a **More** group (Local computers, Reports, Insights; closed unless one of them
-is the page), then one **Settings** row and the account row. The inbox views
-live above the conversation list, not in the sidebar. The current row is an aqua
-tint with `aria-current="page"`, never an ink fill, and a count disc shows only
-while its number is above zero. The Global Inbox keeps Inbox plus closed
-Contacts and Settings disclosures that list one link per project.
+A project's sidebar holds the daily work: Inbox with its views (Yours, Open,
+Unassigned, With AI, Closed, then saved views, Snoozed and Suspended while they
+apply), Knowledge, Contacts and Reports (Insights is a tab of Reports), then one
+**Settings** row and the account row. There is no More group. The current row is
+an aqua highlight with `aria-current="page"`, never an edge rule, and a count
+disc shows only while its number is above zero. The Global Inbox keeps Inbox
+plus closed Contacts and Settings disclosures that list one link per project.
 
-Settings is a single row to the project's page; the twelve destinations it holds
-(Project, Agents, Email, Widget, Saved Replies, API tokens, Webhooks, Slack,
-Delivery log, Plugins, GitHub, Connected applications) share their own
-Settings menu in the page, defined in `src/ui/native/settings-destinations.js`
-and rendered by `SettingsMenu.jsx` from `WorkspacePages.jsx`. A wide screen shows
-a short column beside the page with five destinations and a disclosure for the
-rest; a phone shows one sideways-scrolling row under the title. Pages outside
-those twelve have no such menu, and no page carries the workspace's name above
-its title: the sidebar's switcher names the workspace.
+Everything that configures the workspace is under Settings, listed in
+`src/ui/native/settings-destinations.js`: Setup, then Workspace (Project, Widget,
+Email, Suspended email), Team (Agents, Roles, Security, Security log), Support
+(Tickets, Saved Replies), Automation (AI, Workflows, Local computers) and
+Connections (Slack, GitHub, Webhooks, API tokens, Plugins, Connected applications,
+Delivery log). On any of those pages (and on Move in, reached from Project) the
+sidebar itself becomes the Settings menu (`SettingsNavigation.jsx`): the Inbox
+row turns into a way back to the inbox, the destinations follow under their
+topic captions with the current one highlighted, and the Settings row reads as
+the section. Below 1200px the same menu is in the menu sheet, and a Settings pill
+above each Settings page's title opens it there. Settings pages have no second
+menu of their own, so they use the full width. Every page keeps its URL.
+
+Setup is not a daily row: it heads the Settings menu. For an owner or admin,
+the Settings row and Setup's own row count the Setup steps that still need them
+(one read of the stored snapshot, `activation/useSetupNeeds.js`), and the count
+goes once nothing does. No page carries the workspace's name above its title:
+the sidebar's switcher names the workspace.
 
 The bootstrap also carries `isPlatformAdmin`. The account menu offers Admin
 only to platform administrators, and `/admin` pages show an in-shell

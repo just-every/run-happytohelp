@@ -1,6 +1,6 @@
-import SettingsMenu from './SettingsMenu';
-import { onSettingsDestination } from './settings-destinations';
 import React from 'react';
+import { SettingsMenuButton } from './SettingsNavigation';
+import { onSettingsDestination } from './settings-destinations';
 import { Link } from '@tanstack/react-router';
 import { useDashboardLocation } from './dashboard-state';
 import { adminTitles } from './pages/AdminRecords';
@@ -60,13 +60,13 @@ export default function WorkspacePages({ settings, pages = {} }) {
     const header=<h1 className="header-title">{title}</h1>;
     // A page the account cannot open is a centred notice under its drawing, titled there; it has no page header.
     if([ProjectUnavailable,PageNotFound,AdminRequired].includes(page.type))return <div className="main-content"><div className="workspace-notice-page" key={pathname}>{React.cloneElement(page,{header})}</div></div>;
-    // The Settings destinations of a project share one side menu; no other page has it.
-    const menuProject=settings.isGlobalInbox||settings.projectUnavailable?null:segments[0]==='projects'?projectId:settings.project?.id;
-    const menu=menuProject&&onSettingsDestination(pathname,`/projects/${menuProject}`);
-    return <div className="main-content"><div className={`container-fluid workspace-page-container${menu?' has-settings-menu':''}`}>
-        {menu&&<SettingsMenu projectId={menuProject}/>}
+    // On a Settings page the rail is the Settings menu; below 1200px a pill above the title opens it in the menu sheet.
+    const settingsProject=settings.isGlobalInbox||settings.projectUnavailable?null:segments[0]==='projects'?projectId:settings.project?.id;
+    const inSettings=Boolean(settingsProject)&&onSettingsDestination(pathname,`/projects/${settingsProject}`);
+    return <div className="main-content"><div className="container-fluid workspace-page-container">
         <div className="header workspace-page-header"><div className="header-body">
             <div className="workspace-page-heading"><div className="workspace-page-titles">
+                {inSettings&&<SettingsMenuButton title={typeof title==='string'?title:'Setup'}/>}
                 {section==='users'&&!foreignUser&&<h6 className="header-pretitle">Overview</h6>}
                 {header}
             </div><div className="workspace-page-actions" id="workspace-header-actions"/></div>

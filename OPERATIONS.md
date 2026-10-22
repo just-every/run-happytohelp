@@ -33,7 +33,7 @@ working directly with pnpm.
 ### Find your way around
 
 The inbox, knowledge, customer context and workspace settings use the same native
-actor/project authority. The sidebar's Setup page runs its own checks and records
+actor/project authority. Setup, the first page under Settings, runs its own checks and records
 observed provider and widget behavior; saved defaults do not pass it. Every new
 workspace starts with a starter assistant, a reply-by-email mailbox (when
 `INBOUND_EMAIL_TOKEN` exists) and the installation sender. Workspace creation starts

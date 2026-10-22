@@ -269,6 +269,7 @@ body.conversation-workspace {
             line-height: 1.45;
             resize: vertical;
         }
+        .delegation-job__input-request textarea:focus { border-color: var(--field-focus-edge); box-shadow: var(--field-focus-ring); outline: 0; }
         .delegation-job__input-request .btn { justify-self: start; font-size: 0.875rem; }
         .delegation-job__freshness-review {
             display: flex;

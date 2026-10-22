@@ -1,6 +1,7 @@
 // The reply card: one hairline card pinned to the conversation's foot, nothing between it and the thread. The reply
 // field is borderless inside it; "+" (Actions) and the black Send pill sit at the bottom right. Its :focus-within ring
-// is the only focus indicator (H8): the field never draws a second outline, and its placeholder and text are both 16px.
+// is the only focus indicator (H8): no field in it draws a second border or outline (H17), and the reply's placeholder
+// and text are both 16px.
 body.conversation-workspace {
     #chat .chat > .chat-body > .chat-footer {
         position: relative;
@@ -25,8 +26,8 @@ body.conversation-workspace {
         &:hover { border-color: var(--field-line-hover) !important; }
 
         &:focus-within {
-            border-color: var(--ink) !important;
-            box-shadow: 0 0 0 2px var(--d-cyan-deep);
+            border-color: var(--field-focus-edge) !important;
+            box-shadow: var(--field-focus-ring);
         }
     }
 
@@ -51,8 +52,7 @@ body.conversation-workspace {
         padding: 0;
         overflow: visible;
 
-        // The global keyboard ring (dashboard.scss) matches a clicked text field too; inside the card it would draw a
-        // second border, so the field opts out with !important and the card's ring stands for it (WCAG 2.4.7).
+        // The card's ring stands for the field's focus (WCAG 2.4.7): the field drops .form-control's own edge and halo.
         textarea {
             display: block;
             width: 100%;
@@ -67,17 +67,16 @@ body.conversation-workspace {
             background: transparent !important;
             border-color: transparent !important;
             box-shadow: none !important;
-            outline: 0 !important;
 
             &::placeholder { font-size: $reply-text-font-size; }
+        }
 
-            &:focus,
-            &:focus-visible {
-                background: transparent !important;
-                border-color: transparent !important;
-                box-shadow: none !important;
-                outline: 0 !important;
-            }
+        // A helper's search (Saved replies, Help articles) takes the reply's place in the card: borderless like it, at
+        // the card's text edge, so the card's edge is its one border too.
+        :is(.saved-replies-picker, .article-picker) input[type="search"] {
+            padding-inline: 0;
+            border-color: transparent;
+            box-shadow: none;
         }
 
         .loading-content {

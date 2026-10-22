@@ -9,6 +9,8 @@
 .customer-request input[type=checkbox] {width:24px;height:24px;min-height:24px;justify-self:start;}
 .customer-request button {justify-self:start;background:#24553e;color:white;border-color:#24553e;cursor:pointer;padding:.75rem 1.25rem;}
 .customer-request :focus-visible {outline:3px solid #337557;outline-offset:3px;}
+/* A field's ring is drawn over its own 1px border, never a gap outside it: one line around the field. */
+.customer-request :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus-visible {outline-offset:-1px;}
 .customer-request [aria-invalid=true] {border-color:#a82f26;}
 .request-field p {font-size:.9rem;margin:0;}
 .request-field-error,.request-unavailable {color:#8b2924;}

@@ -67,7 +67,7 @@
 .team-report-recipients label { overflow-wrap: anywhere; }.team-report-recipients small { display: block; color: var(--team-muted); }
 .team-report-rules { font-size: 14px; color: var(--team-muted); line-height: 1.8; margin-top: 20px; }.team-report-rules ul { padding-left: 20px; }
 .team-report-empty { background: #f4f8f6; border-radius: 8px; padding: 14px; font-size: 14.5px; }
-.team-reports :is(button,a,select,input,summary):focus-visible { outline: 2px solid #21855b; outline-offset: 3px; }
+.team-reports :is(button,a,summary):focus-visible { outline: 2px solid #21855b; outline-offset: 3px; }
 @media(max-width:1199px) { .team-report-metrics { grid-template-columns: repeat(4,minmax(0,1fr)); } .team-report-panels { grid-template-columns: 1fr; } .team-report-sla h4 { min-height: auto; } }
 @media(max-width:575px) {
     .team-reports { margin-top: 24px; }.team-report-title { align-items: start; }

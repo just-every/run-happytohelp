@@ -88,8 +88,10 @@
 @import "./layouts/conversation-ai-instructions";
 @import "./layouts/conversation-composer-tools";
 
-// The keyboard ring: ink on paper, as on the landing (foundation/_base.scss sets the two variables).
-body :is(a[href], button:not(:disabled), input:not([type="hidden"]):not(:disabled), select:not(:disabled), textarea:not(:disabled), summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+// The keyboard ring: ink on paper, as on the landing (foundation/_base.scss sets the two variables). Text fields never
+// take it: a field shows focus on its one border (foundation/_controls.scss), or on its frame's (H8, H17), and a ring
+// 2px outside that border would draw a second line around it.
+body :is(a[href], button:not(:disabled), input:is([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="button"], [type="submit"], [type="reset"], [type="image"]):not(:disabled, .form-control), summary, [tabindex]:not([tabindex="-1"], input, select, textarea, [contenteditable])):focus-visible {
     outline: 2px solid var(--accessibility-focus-ring) !important;
     outline-offset: 2px !important;
     box-shadow: 0 0 0 4px var(--accessibility-focus-halo) !important;

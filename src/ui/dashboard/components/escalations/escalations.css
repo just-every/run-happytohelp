@@ -7,12 +7,10 @@
     overflow-wrap: anywhere;
 }
 .escalations-panel summary { cursor: pointer; }
+/* Its fields show focus on their own border (the shared field focus), never a ring a gap outside it. */
 .escalations-panel summary:focus-visible,
 .escalations-panel a:focus-visible,
-.escalations-panel button:focus-visible,
-.escalations-panel input:focus-visible,
-.escalations-panel select:focus-visible,
-.escalations-panel textarea:focus-visible { outline: 2px solid #087c8c; outline-offset: 3px; }
+.escalations-panel button:focus-visible { outline: 2px solid #087c8c; outline-offset: 3px; }
 .escalation-count { display: inline-block; padding: 0 6px; margin-left: 5px; border-radius: 9px; background: #e8f4f3; color: #265a59; font-size: 13px; }
 .escalation-toolbar { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: space-between; margin: 0 0 12px; }
 .escalation-toolbar .escalation-hint { flex: 1 1 12rem; margin: 0; }

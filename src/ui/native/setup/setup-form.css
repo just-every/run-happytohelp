@@ -5,7 +5,8 @@
 .h2h-setup .setup-field > span { font-size: 18.5px; font-weight: 600; line-height: 1.3; }
 .h2h-setup .setup-field input { width: 100%; min-width: 0; height: 58px; padding: 0 20px; color: var(--ink); font: inherit; font-size: 19px; background: var(--field); border: 1px solid var(--field-line); border-radius: 20px 21px 18px 19px; }
 .h2h-setup .setup-field input:hover { border-color: var(--field-line-hover); }
-.h2h-setup .setup-field input:focus-visible { border-color: var(--ink); }
+/* Focus shows on the field's one border: the ink ring sits on it, never a gap outside it. */
+.h2h-setup .setup-field input:focus-visible { border-color: var(--ink); outline: 0; box-shadow: 0 0 0 2px var(--ink); }
 .h2h-setup .setup-field small { margin-top: 2px; color: var(--ink-soft); font-size: 15px; line-height: 1.5; }
 
 .h2h-setup .setup-promise { margin-top: 26px; color: var(--ink-soft); font-size: 17px; line-height: 1.5; }

@@ -17,7 +17,8 @@ export function ticketStates(conversation) {
 
 /**
  * A list row's quiet line, for what is not the everyday default: the workspace (Global Inbox only: its switcher colour
- * and name), the ticket's other states, a due time or snooze, and the first tag with "+n". The tag a filter chose leads;
+ * and name, the full name its tooltip when the line cuts it short), the ticket's other states, a due time or snooze,
+ * and the first tag with "+n". The tag a filter chose leads;
  * the others are the "+n" tooltip and screen-reader text, and the Ticket panel lists them all. Demo workspaces have no
  * ticket states. Nothing renders when there is nothing to add.
  */
@@ -30,7 +31,7 @@ function ConversationItemMeta({ conversation, workspace, ticket, leadingTagId })
     if (!workspace && !states.length && !due && !firstTag) return null;
 
     return <div className="conversation-item-meta">
-        { workspace && <span className="conversation-item-workspace">
+        { workspace && <span className="conversation-item-workspace" title={ workspace.name }>
             <span className="conversation-item-workspace-dot" style={ { background: workspace.colour || DEFAULT_WORKSPACE_COLOUR } } aria-hidden="true"/>
             <span className="conversation-item-workspace-name">{ workspace.name }</span>
         </span> }

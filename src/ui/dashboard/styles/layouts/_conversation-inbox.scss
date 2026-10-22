@@ -220,8 +220,8 @@ body.conversation-workspace #chat .sidebar .conversation-item {
         }
     }
     .conversation-item-subject { color: var(--ink); font-weight: 500; }
-    // Separators are drawn, not spoken: the second content value gives them empty alternative text.
-    .conversation-item-subject + .conversation-item-message::before { content: " \00b7  "; content: " \00b7  " / ""; }
+    // The dot between the subject and the message is read as a pause (its alternative text), so the two stay apart.
+    .conversation-item-subject + .conversation-item-message::before { content: " \00b7  "; content: " \00b7  " / ", "; }
     .conversation-item-author { font-weight: 500; }
 
     .conversation-item-meta {

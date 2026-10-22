@@ -7956,7 +7956,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationItemMeta.jsx": {
-      "sha256": "510e79eb563f5466cd2b069af6c68ce239f62c6e173c3f539ee2ff2db5e87690",
+      "sha256": "57072a3d85d5d5445b575dd67d2cef6668458987f9ea1eea62335ec3a5b25362",
       "executable": false
     },
     "src/ui/dashboard/components/conversationListPagination.jsx": {
@@ -8680,7 +8680,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-inbox.scss": {
-      "sha256": "5ca2701b00f13a59e63152b7ed6a01380f4a74ef3f2db666d3187463a41b3802",
+      "sha256": "3d25dfb78421a896e15813d1957166ed10d372838c89ce5543875f7f6eeddb2f",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-profile-symbols.scss": {

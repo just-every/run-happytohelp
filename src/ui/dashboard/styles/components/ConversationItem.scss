@@ -1,36 +1,40 @@
 .conversation-item-wrap {
     position: relative;
 
-    // Close / Reopen sits in its own reserved column of the row, level with the avatar and name
-    // (see the card padding in layouts/_conversation-inbox.scss), so it never covers the time,
-    // avatar or badges.
-    // It stays in the tab order and on touch screens; only mouse users see it on hover.
+    // Close / Reopen sits over the row's time (its size and place: layouts/_conversation-inbox.scss). At rest it is out
+    // of sight; it shows on hover and on keyboard focus, and the time steps aside while it shows. On touch screens it
+    // takes no taps at rest, so a tap anywhere opens the conversation, whose header holds Close and Reopen.
     .conversation-item-action {
         position: absolute;
-        top: 14px;
-        right: 8px;
         z-index: 1;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 32px;
-        height: 32px;
-        padding: 0;
+        opacity: 0;
     }
+}
+
+@media not all and (hover: hover) and (pointer: fine) {
+    .conversation-item-wrap .conversation-item-action { pointer-events: none; }
+}
+
+.conversation-item-wrap:has(:focus-visible) .conversation-item-action,
+.conversation-item-wrap .conversation-item-action:focus-visible { opacity: 1; pointer-events: auto; }
+
+.conversation-item-wrap:has(> .conversation-item-action):has(:focus-visible) {
+    .conversation-item-time,
+    .conversation-item-closed { opacity: 0; }
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .conversation-item-wrap .conversation-item-action { opacity: 0; }
+    .conversation-item-wrap:hover .conversation-item-action { opacity: 1; }
 
-    .conversation-item-wrap:hover .conversation-item-action,
-    .conversation-item-wrap:focus-within .conversation-item-action { opacity: 1; }
-}
-
-.conversation-item {
-    h4 {
-        line-height: 1.2rem;
+    .conversation-item-wrap:has(> .conversation-item-action):hover {
+        .conversation-item-time,
+        .conversation-item-closed { opacity: 0; }
     }
 }
+
 .tooltip-light {
     .tooltip-inner {
         background-color: var(--paper-deep);
@@ -40,22 +44,6 @@
             border-left-color: var(--paper-deep);
         }
     }
-}
-
-
-.conversation-item-project {
-    font-weight: 400;
-    max-width: 100%;
-    background-color: var(--paper-deep); // $gray-200
-    color: var(--ink-soft); // $gray-800
-    border: 1px solid var(--rule); // $gray-300
-}
-
-// The active conversation card is var(--rule), near-identical to the badge's default
-// tint, so lift the badge to white and darken its border to keep it readable.
-.conversation-item.active .conversation-item-project {
-    background-color: var(--surface);
-    border-color: var(--rule); // $gray-600
 }
 
 .conversation-item-error {

@@ -7952,7 +7952,11 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationItem.jsx": {
-      "sha256": "0b86b7bdec1666efbf15b72732cfdec9a02d100b37abd6de96b37704354e9e70",
+      "sha256": "f5f572b54759527a5a390d232b8e4262c5b615e4aa0d194ed75ad78d73b492f5",
+      "executable": false
+    },
+    "src/ui/dashboard/components/ConversationItemMeta.jsx": {
+      "sha256": "3b43d708938b5a07b099cc602d75bd66c915f699bb83c077816edc732eaad93b",
       "executable": false
     },
     "src/ui/dashboard/components/conversationListPagination.jsx": {
@@ -8288,7 +8292,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/tickets/tickets.css": {
-      "sha256": "c4fe3fdfa2edebdca3a9e6f4c72595f81a736c3c5c699f7e18faa74396887c36",
+      "sha256": "b9d92bf8d618c20f93c2eaaaf75743bf36376f2a8d7ed835a0b7fbeda5b3da7d",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/TicketViewRules.jsx": {
@@ -8444,7 +8448,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/workflows/WorkflowDue.jsx": {
-      "sha256": "18cc9640bdba3f1713db6ba9f28d41aa45ca6ddc1f4a19fa9360473c42df8d96",
+      "sha256": "0c478b1c0ff90e30ac6fa869451b341c121976527dd760be248fa818403037f3",
       "executable": false
     },
     "src/ui/dashboard/components/workflows/WorkflowPanel.jsx": {
@@ -8456,7 +8460,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/workflows/workflows.css": {
-      "sha256": "2d3fff8d10e52961e79ea62025e000d7afc00334539eec4e191c40dc4c3e8225",
+      "sha256": "aba2ed2a5aa642385f3308cd4acb76a90a7edbf9556480053ab2c56dcbd14c5e",
       "executable": false
     },
     "src/ui/dashboard/contexts/ChatContext.jsx": {
@@ -8535,6 +8539,10 @@
       "sha256": "d32439f5db531a56ef5ef0d77a09deb251575402a224d58d4f6bb021182de4c4",
       "executable": false
     },
+    "src/ui/dashboard/hooks/useQuietLine.jsx": {
+      "sha256": "6cdf0b7f4f080ae027f6b1ab95bb7c007d9ef0354baf72fa7346b57b91939a80",
+      "executable": false
+    },
     "src/ui/dashboard/hooks/useScrollEdge.jsx": {
       "sha256": "4147455f04856d9f7468c934bc9ce5bfd63fd3dda9cc63a1605f5cf4ffd067f3",
       "executable": false
@@ -8572,7 +8580,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/components/ConversationItem.scss": {
-      "sha256": "c7e97a927f8fbe16b115ab54b9d23b53a53349e9d38292a6d6deef34fb0b7a39",
+      "sha256": "5e062b0cb41afdf4d4145d15ea031c0c8e42bfa1c5515b673e7904c8ce041f70",
       "executable": false
     },
     "src/ui/dashboard/styles/components/MessageItem.scss": {
@@ -8668,7 +8676,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-details.scss": {
-      "sha256": "7a404fd0e4c07aa2bfc25a3d210e571727bae5e10c2f84a4bd36ad105e58b610",
+      "sha256": "4504fb8d930a65522579de48e85c2ff64bf610290b7eeef5ff41301600882d02",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-header.scss": {
@@ -8676,7 +8684,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-inbox.scss": {
-      "sha256": "78bf4056f10e327d1fd5c8c6cf6e8fe03443c8a3cdfcfb20802bc007e5131a83",
+      "sha256": "c3c295af1fd0c2858d5b9a03a8a1e229d68fff3e8722ff8f4f862a4ed44fdb17",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-profile-symbols.scss": {
@@ -11112,7 +11120,7 @@
       "executable": false
     },
     "tests/helpers/inbox/inbox-conversation-browser.mjs": {
-      "sha256": "7335fd07529a2e53d828223bc8398c2872fa05154957a8eff3b7bcbca8ce444b",
+      "sha256": "5eb9a7890898764ad35f3f5f84285ad2366fb27c3709de420c791ebad8bb0a58",
       "executable": false
     },
     "tests/helpers/inbox/inbox-default-browser.mjs": {

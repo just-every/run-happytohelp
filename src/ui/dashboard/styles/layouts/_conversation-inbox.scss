@@ -1,6 +1,7 @@
 // The inbox list column (ConversationsList.jsx, ConversationItem.jsx, InboxListHeader.jsx): 340px on paper behind a
-// rule; the list head (title, icon buttons, search, filter chips), then rows with no dividers. A row is 76px or more with
-// a 14px radius, its contact's avatar, name, time, a two-line preview and the unread disc; the open one sits on the aqua tint.
+// rule; the list head (title, icon buttons, search, filter chips), then rows with no dividers. A row has a 14px radius,
+// its contact's avatar and up to three lines (H16): name and time, a one-line preview, one quiet line; the open one sits
+// on the aqua tint.
 body.conversation-workspace #chat .conversation-inbox {
     display: flex;
     flex-direction: column;
@@ -167,7 +168,10 @@ body.conversation-workspace #chat .conversation-inbox {
     .inbox-filter-chip > .fe { font-size: 15px; }
 }
 
-// Rows.
+// Rows: the name and time, a one-line preview with the assignee's initial and the unread disc, then a quiet line of what
+// is not the everyday default (the workspace in Global Inbox, a status or priority, the first tag and "+n", a due time or
+// snooze), on a second line only when its parts do not fit on one. Close / Reopen takes the time's place on hover and
+// keyboard focus.
 body.conversation-workspace #chat .sidebar .conversation-item-wrap { position: relative; margin-bottom: 4px; }
 
 body.conversation-workspace #chat .sidebar .conversation-item {
@@ -178,9 +182,7 @@ body.conversation-workspace #chat .sidebar .conversation-item {
 
     .card-body {
         position: relative;
-        min-height: 76px;
-        // The right edge is the row's Close / Reopen column.
-        padding: 12px 42px 12px 12px;
+        padding: 12px;
         border-radius: inherit;
         background: transparent;
 
@@ -189,35 +191,79 @@ body.conversation-workspace #chat .sidebar .conversation-item {
     }
 
     .conversation-item-heading {
-        min-width: 0;
-        flex-wrap: nowrap;
+        display: flex;
+        align-items: center;
         gap: 8px;
+        min-width: 0;
 
-        > h4 { min-width: 0; max-width: none; margin: 0; color: var(--ink); font-size: 16px; font-weight: 600; line-height: 1.3; }
-        > time,
-        > .conversation-item-time { flex: 0 0 auto; margin-left: auto !important; color: var(--ink-soft) !important; font-size: 14.5px; }
-        > .fe-check-circle { color: var(--ink) !important; }
+        > h4 { flex: 0 1 auto; min-width: 0; margin: 0; overflow: hidden; color: var(--ink); font-size: 16px; font-weight: 600; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+        > .conversation-item-time { flex: 0 0 auto; margin-left: auto; color: var(--ink-soft); font-size: 14.5px; line-height: 1.3; white-space: nowrap; }
+        > .conversation-item-closed { flex: 0 0 auto; color: var(--ink); font-size: 16px; line-height: 1; }
     }
 
-    .conversation-item-meta { gap: 6px; min-height: 1.25rem; }
-
     .conversation-item-preview {
-        min-width: 0;
+        display: flex;
+        align-items: center;
         gap: 8px;
-        align-items: flex-start !important;
+        min-width: 0;
+        min-height: 24px;
+        margin-top: 4px;
 
-        > .text-truncate {
-            display: -webkit-box;
+        > .conversation-item-text {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
             color: var(--ink-soft);
             font-size: 15px;
             line-height: 1.45;
-            white-space: normal !important;
-            overflow-wrap: anywhere;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 2;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        > .text-truncate h4 { color: var(--ink-soft); font-size: 15px; font-weight: 500; }
     }
+    .conversation-item-subject { color: var(--ink); font-weight: 500; }
+    // The dot between the subject and the message is read as a pause (its alternative text), so the two stay apart.
+    .conversation-item-subject + .conversation-item-message::before { content: " \00b7  "; content: " \00b7  " / ", "; }
+    .conversation-item-author { font-weight: 500; }
+
+    // The quiet line's parts keep their own width; useQuietLine places them (one line, or a second for what does not fit)
+    // and gives a narrower width to a part that must end in an ellipsis.
+    .conversation-item-meta {
+        --quiet-sep: 5px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+        margin-top: 4px;
+        color: var(--ink-soft);
+        font-size: 14px;
+        line-height: 22px;
+        white-space: nowrap;
+    }
+    .conversation-item-meta-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+
+        > * { flex: none; }
+    }
+    // A middle dot between words that follow one another on a line (the workspace, the states, a due time), read as a
+    // pause; the tag's chip needs none.
+    .conversation-item-sep { width: var(--quiet-sep); text-align: center; }
+    .conversation-item-sep::before,
+    .conversation-item-state + .conversation-item-state::before { content: "\00b7"; content: "\00b7" / ", "; color: var(--ink-soft); font-weight: 400; }
+    .conversation-item-state + .conversation-item-state::before { margin: 0 8px; }
+    :is(.conversation-item-workspace-name, .conversation-item-states, .workflow-inbox-due) { overflow: hidden; text-overflow: ellipsis; }
+
+    // The workspace in Global Inbox: its switcher swatch, small, before its name.
+    .conversation-item-workspace { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+    .conversation-item-workspace-dot { flex: none; width: 10px; height: 10px; border: 1px solid var(--control-line); border-radius: 50%; }
+
+    .conversation-item-states { color: var(--ink); font-weight: 500; }
+
+    .conversation-item-tags { display: inline-flex; align-items: center; gap: 6px; }
+    .conversation-item-tags .conversation-tag { display: block; overflow: hidden; line-height: 20px; text-overflow: ellipsis; }
+    .conversation-item-more-tags { flex: none; color: var(--ink-soft); font-weight: 500; }
 
     // The unread disc: aqua with an ink numeral.
     .conversation-item-unread {
@@ -236,24 +282,23 @@ body.conversation-workspace #chat .sidebar .conversation-item {
         line-height: 1;
     }
 
-    .conversation-item-agent { display: inline-flex; flex: 0 0 auto; align-items: center; margin-left: auto; }
+    .conversation-item-agent { display: inline-flex; flex: 0 0 auto; align-items: center; }
     .conversation-item-agent .avatar { --avatar-size: 24px; }
 
-    .conversation-item-project { display: block; max-width: 100%; overflow: hidden; font-size: 14px; line-height: 22px; text-overflow: ellipsis; }
-
-    &:not(.active):hover .card-body { background: var(--hover); }
     // The open conversation: the aqua tint inside a complete hairline ring that holds 3:1 where the pale tint alone would not.
     &.active .card-body { background: var(--d-cyan-tint); box-shadow: inset 0 0 0 1px var(--toggle-line); }
     &:focus-visible .card { outline: 2px solid var(--ink); outline-offset: 2px; }
 }
+// The hover tint holds while the pointer is on the row's Close / Reopen.
+body.conversation-workspace #chat .sidebar .conversation-item-wrap:hover > .conversation-item:not(.active) .card-body { background: var(--hover); }
 
-// Close / Reopen sits in the row's reserved right column: a small round hairline-outlined button.
+// Close / Reopen: a small round hairline-outlined button over the time, centred on the name's line.
 body.conversation-workspace #chat .conversation-item-wrap .conversation-item-action {
-    top: 12px;
-    right: 8px;
-    width: 32px;
-    min-height: 32px;
-    height: 32px;
+    top: 8px;
+    right: 10px;
+    width: 28px;
+    min-height: 28px;
+    height: 28px;
     padding: 0;
     border-radius: 50%;
 }

@@ -1,15 +1,11 @@
+/* Ticket › Escalations: the section draws the frame, so the panel itself is flat. */
 .escalations-panel {
-    margin: 12px 0;
-    border: 1px solid var(--bs-border-color, #d8e0e4);
-    border-radius: 8px;
-    background: var(--bs-body-bg, #fff);
     color: var(--bs-body-color, #25353d);
     font-size: 14.5px;
     min-width: 0;
     max-width: 100%;
     overflow-wrap: anywhere;
 }
-.escalations-panel > summary { padding: 11px 14px; font-weight: 600; }
 .escalations-panel summary { cursor: pointer; }
 .escalations-panel summary:focus-visible,
 .escalations-panel a:focus-visible,
@@ -18,8 +14,8 @@
 .escalations-panel select:focus-visible,
 .escalations-panel textarea:focus-visible { outline: 2px solid #087c8c; outline-offset: 3px; }
 .escalation-count { display: inline-block; padding: 0 6px; margin-left: 5px; border-radius: 9px; background: #e8f4f3; color: #265a59; font-size: 13px; }
-.escalation-panel-body { padding: 0 14px 14px; }
-.escalation-toolbar { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; margin: 0 0 12px; }
+.escalation-toolbar { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: space-between; margin: 0 0 12px; }
+.escalation-toolbar .escalation-hint { flex: 1 1 12rem; margin: 0; }
 .escalation-toolbar .btn { flex-shrink: 0; }
 .escalation-hint { color: var(--bs-secondary-color, #596970); font-size: 14px; margin: 7px 0; line-height: 1.5; }
 .escalation-error { padding: 9px 11px; margin: 10px 0 0; border: 1px solid #e7b6b6; border-radius: 6px; background: #fff2f2; color: #842121; }
@@ -64,9 +60,6 @@
 .escalation-draft + .escalation-draft { margin-top: 12px; padding-top: 4px; border-top: 1px solid var(--bs-border-color, #d8e0e4); }
 .escalation-handoff { margin: 10px 0; }
 @media (max-width: 480px) {
-    .escalations-panel > summary { padding: 10px; }
-    .escalation-panel-body { padding: 0 10px 10px; }
-    .escalation-toolbar { flex-wrap: wrap; gap: 4px; }
     .escalation-toolbar .escalation-hint { flex-basis: 100%; }
     .escalation-link dl > div { grid-template-columns: 88px minmax(0, 1fr); }
 }

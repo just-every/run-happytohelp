@@ -7,6 +7,7 @@ import {readArtifact} from '../helpers/artifact-payloads.mjs'
 import {sha256} from '../helpers/recovery/snapshot.mjs'
 import {recoveryComparison} from '../helpers/recovery/comparison.mjs'
 import {independentRestoreJourney} from '../helpers/recovery/independent-journey.mjs'
+import {platformArchiveJourney} from '../helpers/platform-archive.mjs'
 
 test('a populated packaged install restores from its documented credential-free backup into a fresh destination with every row, object and metadata equal, sessions and password sign-in working, setup closed and delegated credentials gone',{timeout:10*60_000},async()=>{
  const scratch=await mkdtemp(join(tmpdir(),'h2h-recovery-')),output=process.env.H2H_EVIDENCE_DIR?await mkdtemp(join(resolve(process.env.H2H_EVIDENCE_DIR),'recovery-')):scratch
@@ -21,3 +22,5 @@ test('a populated packaged install restores from its documented credential-free 
 })
 
 test('an independent packaged install opens setup only with its token, keeps media through the app, recovers search after a failed export, and restores natively to an exact, re-exportable copy',{timeout:10*60_000},independentRestoreJourney)
+
+test('a Platform-applied install exports an older archive into Platform and native destinations, and incomplete or multiple migration ledgers refuse without writes',{timeout:10*60_000},platformArchiveJourney)

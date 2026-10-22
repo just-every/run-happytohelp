@@ -5,6 +5,7 @@ import useOnclickOutside from 'react-cool-onclickoutside';
 import ReplyIcon from '../reply-icons/ReplyIcon';
 import ConversationDetailField from './ConversationDetailField';
 import ConversationDetailSection from './ConversationDetailSection';
+import address from './emailAddress';
 
 const contactPath = (conversation, contact) => `/projects/${ conversation.project_id }/contacts/${ contact.id }`;
 
@@ -37,9 +38,9 @@ export default function ConversationContactDetails({ conversation, onEdit, onEma
             <a href={ contactPath(conversation, contact) }>{ contact.display_name }</a>
         </ConversationDetailField> }
         { email && <ConversationDetailField className="conversation-detail-field--primary" icon="mail" label="Email">
-            <a href={ `mailto:${ email }` }>{ email }</a>
-            <small className="d-block text-muted">Replies go to {contact.provided_email || email}. Delivery status appears below each reply.{hasDifferentProvidedEmail && ' This supplied reply address does not change the signed identity.'}</small>
-            { hasDifferentProvidedEmail && <a href={ `mailto:${ contact.provided_email }` } className="conversation-detail-field__secondary-value">{ contact.provided_email }</a> }
+            <a href={ `mailto:${ email }` }>{ address(email) }</a>
+            <small className="d-block text-muted">Replies go to {address(contact.provided_email || email)}. Delivery status appears below each reply.{hasDifferentProvidedEmail && ' This supplied reply address does not change the signed identity.'}</small>
+            { hasDifferentProvidedEmail && <a href={ `mailto:${ contact.provided_email }` } className="conversation-detail-field__secondary-value">{ address(contact.provided_email) }</a> }
         </ConversationDetailField> }
         <ConversationDetailField
             className="conversation-detail-field--primary"

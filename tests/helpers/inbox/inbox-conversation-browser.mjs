@@ -10,7 +10,8 @@ import {launchBrowser} from '../../journeys/kit/browser.mjs'
 export async function inboxConversation(){
 // Inbox and conversation regressions against the emitted Worker and a real browser:
 // contact clocks, header fit, literal bounded search, Escape on the assignment menu, saved replies over a draft,
-// the row Close/Reopen control by keyboard and touch, and Reopen on a closed conversation.
+// the row Close/Reopen control by keyboard (and on touch, through the opened conversation's header), and Reopen on a
+// closed conversation.
 
 const optionalPort=name=>process.env[name]?Number(process.env[name]):undefined
 const evidence=join(process.env.H2H_EVIDENCE_DIR?resolve(process.env.H2H_EVIDENCE_DIR):await mkdtemp(join(tmpdir(),'h2h-inbox-conversation-')),'inbox-conversation')
@@ -51,7 +52,7 @@ try{
   const {context,page}=await open(conversationPath('kenji'))
   await page.locator('.conversation-header-meta-email').waitFor()
   await page.getByPlaceholder('Type your reply…').fill('typing triggers renders')
-  await page.getByRole('tab',{name:'Details'}).click()
+  await page.getByRole('tab',{name:'Ticket'}).click();await page.locator('#ticket-section-customer-heading').click()
   await page.getByText('Local time',{exact:true}).waitFor()
   await page.waitForTimeout(500)
   const meta=await page.locator('.conversation-header-meta').innerText()
@@ -59,15 +60,15 @@ try{
   const location=await page.locator('.conversation-details-location').innerText()
   assert.ok(/Local time\s*Unknown/.test(location)&&!/\d{1,2}:\d{2}|UTC[+-]/.test(location),`details show a clock without a timezone: ${location}`)
   assert.deepEqual(problems,[],'Moment Timezone console errors for a contact without a timezone')
-  check('contact without a timezone: no header clock, Details says Unknown, no Moment console errors')
+  check('contact without a timezone: no header clock, Ticket › Customer says Unknown, no Moment console errors')
   await context.close()
   await runtime.restart(()=>runtime.execute(`UPDATE contacts SET metadata_json=json_set(metadata_json,'$.timezone','Asia%2FTokyo') WHERE id=(SELECT contact_id FROM conversations WHERE id='${fx.contacts.tokyo.id}')`))
   const tokyo=await open(conversationPath('tokyo'))
   await tokyo.page.locator('.conversation-header-meta').getByText(/\d{1,2}:\d{2}/).waitFor()
-  await tokyo.page.getByRole('tab',{name:'Details'}).click()
+  await tokyo.page.getByRole('tab',{name:'Ticket'}).click();await tokyo.page.locator('#ticket-section-customer-heading').click()
   await tokyo.page.getByText('UTC+09:00',{exact:true}).waitFor()
   assert.deepEqual(problems,[])
-  check('contact with a URL-encoded timezone: header clock and Details UTC offset shown')
+  check('contact with a URL-encoded timezone: header clock and Ticket › Customer UTC offset shown')
   await tokyo.context.close()
  }
 
@@ -121,10 +122,13 @@ try{
   for(const length of [48,49,200]) assert.equal((await page.request.get(runtime.origin+api+'a'.repeat(length))).status(),200,`${length} characters`)
   for(const length of [201,400,6000]){const response=await page.request.get(runtime.origin+api+'a'.repeat(length));assert.equal(response.status(),400);assert.match((await response.json()).error,/too long/i)}
   check('search API: literal wildcards, 200 up to the limit, friendly 400 beyond it')
+  const filters=page.getByRole('button',{name:'Filters',exact:true})
+  await filters.click();await page.getByRole('dialog',{name:'Filters'}).waitFor()
   assert.equal(await page.getByRole('combobox',{name:'Filter conversations by tag'}).count(),0,'no tag filter while the workspace has no tag')
+  await page.keyboard.press('Escape')
   const tagged=await fx.api(`/api/dashboard/projects/${fx.projectId}/conversations/${fx.contacts.percent.id}/tags`,{method:'POST',body:{name:'Search scope'}})
   await page.goto(runtime.origin+inboxPath({tag:tagged.data.id}))
-  await page.getByRole('combobox',{name:'Filter conversations by tag'}).waitFor()
+  await page.getByRole('button',{name:'Remove filter Tag: Search scope',exact:true}).waitFor()
   await page.waitForFunction(()=>document.querySelectorAll('.conversation-list-items .conversation-item').length===1)
   await input.fill('x'.repeat(400));await input.press('Enter');await page.getByText(/too long/i).waitFor()
   await input.fill('   ');await input.press('Enter')
@@ -135,6 +139,7 @@ try{
   assert.equal(cleared.searchParams.get('q'),null)
   assert.equal(cleared.searchParams.get('view'),'open')
   assert.equal(cleared.searchParams.get('tag'),tagged.data.id)
+  await filters.click()
   assert.equal(await page.getByRole('combobox',{name:'Filter conversations by tag'}).inputValue(),tagged.data.id)
   assert.equal(await page.getByText(/too long/i).count(),0)
   check('clearing a rejected search preserves its workspace, open status and native tag filter')
@@ -147,18 +152,22 @@ try{
   const input=page.locator('.conversation-inbox input[type=search]'),rows=page.locator('.conversation-list-items')
   await input.fill('Invoice reminder resolved');await input.press('Enter')
   await rows.getByText('Hannah Closed',{exact:true}).waitFor()
-  const scope=page.getByRole('combobox',{name:'Conversation search scope'})
-  await scope.selectOption('view')
+  await page.getByRole('radiogroup',{name:'Conversation search scope'}).getByRole('radio',{name:'This view'}).check()
   await rows.getByText(/No results/).waitFor()
+  // Below 1200px the views are in the menu sheet, which the list title opens at Inbox.
+  if(width<1200)await page.getByRole('button',{name:/, show inbox views$/}).click()
   await page.getByRole('link',{name:'Closed',exact:true}).click()
   await rows.getByText('Hannah Closed',{exact:true}).waitFor()
-  await page.getByRole('combobox',{name:'Filter conversations by assignment'}).selectOption('myself')
+  const filters=page.getByRole('button',{name:'Filters',exact:true}),assignment=page.getByRole('combobox',{name:'Filter conversations by assignment'})
+  await filters.click()
+  await assignment.selectOption('myself')
   await rows.getByText(/No results/).waitFor()
-  await page.getByRole('combobox',{name:'Filter conversations by assignment'}).selectOption('none')
+  await assignment.selectOption('none')
   await rows.getByText('Hannah Closed',{exact:true}).waitFor()
   await page.reload();await rows.getByText('Hannah Closed',{exact:true}).waitFor()
-  assert.equal(await page.getByRole('combobox',{name:'Filter conversations by assignment'}).inputValue(),'none')
-  assert.equal(await page.getByRole('combobox',{name:'Conversation search scope'}).inputValue(),'view')
+  await filters.click()
+  assert.equal(await assignment.inputValue(),'none')
+  assert.equal(await page.getByRole('radio',{name:'This view'}).isChecked(),true)
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true)
   await page.screenshot({path:join(evidence,`history-search-${width}.png`)})
   await context.close()
@@ -168,7 +177,7 @@ try{
  // 4. Assignment menu closes on Escape however it was opened.
  {
   const {context,page}=await open(conversationPath('assign'))
-  await page.getByRole('tab',{name:'Details'}).click()
+  await page.getByRole('tab',{name:'Ticket'}).click()
   const toggle=page.getByRole('button',{name:/^Assign conversation/})
   const menu=page.locator('.conversation-details-assignment [role=menu]')
   const focusedToggle=()=>page.evaluate(()=>document.activeElement?.getAttribute('aria-haspopup')==='menu'&&document.activeElement.closest('.conversation-details-assignment')!==null)
@@ -188,7 +197,7 @@ try{
   const {context,page}=await open(conversationPath('draft'))
   const composer=page.getByRole('textbox',{name:'Reply to conversation'})
   const expandedReply='Hi Maya Chen, a black replacement buckle is approved for express dispatch tomorrow. — Alex Rivers'
-  const pick=async()=>{await page.getByRole('button',{name:'Reply tools',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:REPLY.title,exact:true}).waitFor()}
+  const pick=async()=>{await page.getByRole('button',{name:'Actions',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:REPLY.title,exact:true}).waitFor()}
   const draft='Draft that must not be sent'
   await composer.fill(draft)
   await composer.evaluate(element=>element.setSelectionRange(6,6))
@@ -214,7 +223,8 @@ try{
   await context.close()
  }
 
- // 6. Row Close control: keyboard, touch, no overlap.
+ // 6. Row Close control: shown on keyboard focus in the time's place, clear of the rest of the row; touch opens the
+ // conversation instead, whose header closes it.
  {
   const {context,page}=await open(inboxPath())
   const label='Close conversation with Row Alpha'
@@ -223,26 +233,28 @@ try{
   let reached=false
   for(let i=0;i<80&&!reached;i++){await page.keyboard.press('Tab');reached=await page.evaluate(text=>document.activeElement?.getAttribute('aria-label')===text,label)}
   assert.ok(reached,'Tab reaches the row Close control')
-  const focused=await page.evaluate(()=>{const el=document.activeElement,r=el.getBoundingClientRect(),cs=getComputedStyle(el),row=el.parentElement,hit=[...row.querySelectorAll('.conversation-item-time,.avatar,.conversation-item-unread,.conversation-item-agent,h4')].filter(other=>{const o=other.getBoundingClientRect();return Math.min(o.right,r.right)-Math.max(o.left,r.left)>2&&Math.min(o.bottom,r.bottom)-Math.max(o.top,r.top)>2}).map(other=>other.className||other.tagName);return {w:r.width,h:r.height,opacity:Number(cs.opacity),display:cs.display,hit,insideLink:el.closest('a')!==null}})
+  const focused=await page.evaluate(()=>{const el=document.activeElement,r=el.getBoundingClientRect(),cs=getComputedStyle(el),row=el.parentElement,shown=other=>getComputedStyle(other).opacity!=='0'&&getComputedStyle(other).visibility!=='hidden',hit=[...row.querySelectorAll('.conversation-item-time,.avatar,.conversation-item-unread,.conversation-item-agent,h4')].filter(shown).filter(other=>{const o=other.getBoundingClientRect();return Math.min(o.right,r.right)-Math.max(o.left,r.left)>2&&Math.min(o.bottom,r.bottom)-Math.max(o.top,r.top)>2}).map(other=>other.className||other.tagName);return {w:r.width,h:r.height,opacity:Number(cs.opacity),display:cs.display,hit,time:getComputedStyle(row.querySelector('.conversation-item-time')).opacity,insideLink:el.closest('a')!==null}})
   assert.ok(focused.w>=24&&focused.h>=24&&focused.opacity>0.3&&focused.display!=='none',`focused control visible and large enough: ${JSON.stringify(focused)}`)
-  assert.deepEqual(focused.hit,[],'the control covers no row content')
+  assert.equal(focused.time,'0','the time steps aside while the control shows in its place')
+  assert.deepEqual(focused.hit,[],'the control covers no visible row content')
   assert.equal(focused.insideLink,false,'the control is not nested in the row link')
   await page.keyboard.press('Enter')
   await page.waitForFunction(text=>!document.querySelector(`[aria-label="${text}"]`),label)
   assert.ok(new URL(page.url()).pathname.endsWith('/conversations'),'closing from the list does not open the conversation')
   await eventually(()=>state('alpha'),row=>row.resolved_at,'server closed the conversation')
-  check('row Close control: reachable by Tab, visible, clear of row content, Enter closes without navigating')
+  check('row Close control: reachable by Tab, shown in the time\'s place, clear of the rest of the row, Enter closes without navigating')
   await context.close()
   const touch=await open(inboxPath(),{viewport:{width:390,height:844},hasTouch:true,isMobile:true})
   const button=touch.page.getByRole('button',{name:'Close conversation with Row Beta'})
-  await button.waitFor()
-  const box=await button.boundingBox();assert.ok(box.width>=24&&box.height>=24)
-  assert.equal(await button.evaluate(el=>Number(getComputedStyle(el).opacity)),1,'visible at rest on touch')
-  await button.tap()
-  await touch.page.waitForFunction(()=>!document.querySelector('[aria-label="Close conversation with Row Beta"]'))
-  assert.ok(new URL(touch.page.url()).pathname.endsWith('/conversations'))
+  await button.waitFor({state:'attached'})
+  assert.deepEqual(await button.evaluate(el=>({opacity:getComputedStyle(el).opacity,pointerEvents:getComputedStyle(el).pointerEvents})),{opacity:'0',pointerEvents:'none'},'on touch the row shows no Close at rest and takes no tap there')
+  const box=await button.boundingBox()
+  await touch.page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2)
+  await touch.page.waitForURL(url=>url.pathname===conversationPath('beta'))
+  assert.equal((await state('beta')).resolved_at,null,'the tap opened Row Beta without closing it')
+  await header(touch.page).getByRole('button',{name:'Close',exact:true}).tap()
   await eventually(()=>state('beta'),row=>row.resolved_at,'server closed Row Beta')
-  check('row Close control is visible at rest on touch and closes without opening the conversation')
+  check('touch: no row Close at rest; a tap where it sits opens the conversation, and its header closes it')
   await touch.context.close()
   const closed=await open(inboxPath({view:'closed'}))
   const reopen=closed.page.getByRole('button',{name:'Reopen conversation with Hannah Closed'})
@@ -264,7 +276,7 @@ try{
   assert.ok(box.width>=24&&box.height>=24&&box.y>=barBox.y&&box.y+box.height<=barBox.y+barBox.height,'Reopen sits inside the header bar')
   await bar.getByText('Closed',{exact:true}).waitFor()
   assert.equal(await bar.getByRole('button',{name:'Close',exact:true}).count(),0)
-  const menuItems=async()=>{await page.getByRole('button',{name:'Reply tools',exact:true}).click();const names=await page.getByRole('menuitem').allInnerTexts();await page.keyboard.press('Escape');return names.map(name=>name.trim())}
+  const menuItems=async()=>{await page.getByRole('button',{name:'Actions',exact:true}).click();const names=await page.getByRole('menuitem').allInnerTexts();await page.keyboard.press('Escape');return names.map(name=>name.trim())}
   let items=await menuItems()
   assert.ok(items.includes('Saved replies')&&!items.some(name=>/Send & close/.test(name)),`closed conversation tools: ${items}`)
   await page.screenshot({path:join(evidence,'closed-header.png')})

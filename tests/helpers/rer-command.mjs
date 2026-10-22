@@ -18,9 +18,9 @@ export async function stopOwnedServer(child,env=process.env){
  await new Promise((resolve,reject)=>{
   const socket=createConnection(record.control);let reply='';
   socket.setTimeout(35000,()=>socket.destroy(Error('Owned server cleanup timed out')));
-  socket.on('connect',()=>socket.end(JSON.stringify({token:record.token,action:'stop'})));
+  socket.on('connect',()=>socket.end(JSON.stringify({token:record.token,checkout:record.checkout,generation:record.generation,action:'stop'})));
   socket.on('data',chunk=>{reply+=chunk;if(reply.length>16384)socket.destroy(Error('Invalid owned server reply'));});
-  socket.on('end',()=>{try{if(JSON.parse(reply).token!==record.token)throw Error('Unverified owned server');resolve();}catch(error){reject(error);}});
+  socket.on('end',()=>{try{const response=JSON.parse(reply);if(response.token!==record.token||response.checkout!==record.checkout||response.generation!==record.generation)throw Error('Unverified owned server');resolve();}catch(error){reject(error);}});
   socket.on('error',reject);
  });
 }

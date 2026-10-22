@@ -1,7 +1,7 @@
 # Plugins
 
 A plugin is a small web page of your own that HappyToHelp shows in the side
-panel of every conversation, under the customer's details. Use one to show what
+panel of every conversation, as its own section of the **Ticket** tab after **Customer**. Use one to show what
 your other systems know about the customer (orders, plan, account status) next
 to the chat, or to give your team buttons that write a reply for them.
 

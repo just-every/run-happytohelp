@@ -37,7 +37,7 @@ async function useAtWidth({runtime,browser,shot,width,kind,races}){
   const fixture=await assistantDraftFixture(runtime,context,visitor.session,tenant,width)
   const savedReply={title:'Handoff saved reply',content:'Saved reply still inserts.'};assert.ok((await context.request.post(runtime.origin+`/api/dashboard/projects/${tenant.projectId}/macros`,{data:savedReply})).ok())
   const panel=page.locator('#conversation-assistant'),composer=page.getByRole('textbox',{name:'Reply to conversation',exact:true}),compact=width<1280
-  const openLocal=async()=>{const toggle=page.getByRole('button',{name:'Show conversation panel',exact:true});if(await toggle.isVisible())await toggle.click();await page.getByRole('tab',{name:'Local',exact:true}).click()}
+  const openLocal=async()=>{const toggle=page.getByRole('button',{name:'Show conversation panel',exact:true});if(await toggle.isVisible())await toggle.click();await page.getByRole('tab',{name:'Delegate',exact:true}).click()}
   const handedOff=async body=>{
    await page.waitForFunction(expected=>document.querySelector('textarea[aria-label="Reply to conversation"]')?.value===expected,body)
    assert.equal(await panel.getAttribute('aria-hidden'),String(compact));if(compact)await panel.waitFor({state:'hidden'});else assert.ok(await panel.isVisible(),'the permanent desktop column stays open')
@@ -53,14 +53,14 @@ async function useAtWidth({runtime,browser,shot,width,kind,races}){
   const use=page.getByRole('button',{name:'Use Reviewed reply',exact:true});await use.waitFor();await page.getByText('Evidence and details',{exact:true}).click()
   assert.ok(await use.isDisabled(),'Use waits for conversation history');assert.ok(await panel.locator('.delegation-job__draft').getByRole('button',{name:'Use',exact:true}).isDisabled(),'legacy Use obeys the same readiness');assert.equal(await composer.inputValue(),'')
   if(compact){
-   await page.getByRole('tab',{name:'Local',exact:true}).click();await page.keyboard.press('Shift+Tab');assert.ok(await panel.evaluate(element=>element.contains(document.activeElement)),'the open compact sheet traps backwards Tab')
+   await page.getByRole('tab',{name:'Delegate',exact:true}).click();await page.keyboard.press('Shift+Tab');assert.ok(await panel.evaluate(element=>element.contains(document.activeElement)),'the open compact sheet traps backwards Tab')
    await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement?.id),'conversation-tab-local','and wraps to its first control')
    await page.keyboard.press('Escape');await panel.waitFor({state:'hidden'});assert.ok(await page.getByRole('button',{name:'Show conversation panel',exact:true}).evaluate(element=>element===document.activeElement),'Escape returns focus to the opener');await openLocal()
   }
   release();const [adoption]=await Promise.all([page.waitForResponse(response=>response.url().endsWith('/result/draft')&&response.request().method()==='POST'),use.click()]);await page.unrouteAll({behavior:'wait'})
   assert.equal(bucketStatus,200);assert.equal(adoption.status(),200);await handedOff(fixture.body)
   await page.keyboard.type(' Edited by the operator.');const edited=fixture.body+' Edited by the operator.';assert.equal(await composer.inputValue(),edited)
-  await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement?.id),'conversation-composer-tools','Tab reaches Reply tools, not the assistant')
+  await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement?.id),'conversation-composer-tools','Tab reaches Actions, not the assistant')
   await page.keyboard.press('Shift+Tab');assert.ok(await composer.evaluate(element=>element===document.activeElement))
   assert.equal(owners(await visitor.transcript()).length,0,'Use and editing never send')
   await page.screenshot({path:shot(`before-send-${width}.png`)})
@@ -93,7 +93,7 @@ async function useAtWidth({runtime,browser,shot,width,kind,races}){
   const navigation=page.getByRole('button',{name:'Toggle navigation',exact:true});if(await navigation.isVisible())await navigation.click()
   await page.getByTestId('nav-settings').click();await page.waitForURL('**/edit');await composer.waitFor({state:'detached'})
   await page.goBack();await page.waitForURL(url);await composer.waitFor();assert.equal(await composer.inputValue(),'');assert.equal(await page.locator('.conversation-composer__files').count(),0)
-  await composer.fill('Ordinary typing still works.');await page.getByRole('button',{name:'Reply tools',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:savedReply.title,exact:true}).click()
+  await composer.fill('Ordinary typing still works.');await page.getByRole('button',{name:'Actions',exact:true}).click();await page.getByRole('menuitem',{name:'Saved replies',exact:true}).click();await page.getByRole('link',{name:savedReply.title,exact:true}).click()
   await page.locator('.saved-replies-picker').waitFor({state:'hidden'})
   assert.ok((await composer.inputValue()).includes('Ordinary typing still works.'));assert.ok((await composer.inputValue()).includes(savedReply.content))
   const savedText=await composer.inputValue()
@@ -124,7 +124,7 @@ async function useAtWidth({runtime,browser,shot,width,kind,races}){
    if(await navigation.isVisible())await navigation.click();await page.getByTestId('nav-settings').click();await page.waitForURL('**/edit');await composer.waitFor({state:'detached'})
    releaseDraft();await page.unrouteAll({behavior:'wait'});await page.goBack();await page.waitForURL(url);await composer.waitFor()
    assert.equal(await composer.inputValue(),'');assert.equal(await page.locator('.conversation-composer__files').count(),0);assert.equal(await composer.evaluate(element=>element===document.activeElement),false)
-   // The visible result loses its device's authority: the failure shows in the Local panel and nothing is inserted.
+   // The visible result loses its device's authority: the failure shows in the Delegate panel and nothing is inserted.
    await openLocal();const jobs=await (await context.request.get(runtime.origin+`/api/projects/${tenant.projectId}/conversations/${visitor.session.conversationId}/delegations`)).json()
    assert.equal((await context.request.delete(runtime.origin+`/api/projects/${tenant.projectId}/local-agents/${jobs.data.find(job=>job.id===fresh.jobId).device_id}`)).status(),200)
    const [denied]=await Promise.all([page.waitForResponse(r=>r.url().endsWith('/result/draft')),page.getByRole('button',{name:'Use Reply with screenshot',exact:true}).first().click()])

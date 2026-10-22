@@ -35,7 +35,7 @@ export async function hero({browser,operator,origin,bootstrap,directory,viewport
   await page.locator('.conversation-assistant-toggle').waitFor();
   const show=page.getByRole('button',{name:'Show conversation panel',exact:true});if(await show.isVisible())await show.click();
   await page.locator('#conversation-assistant[aria-hidden=false]').waitFor();
-  await page.getByRole('tab',{name:'Local',exact:true}).click();
+  await page.getByRole('tab',{name:'Delegate',exact:true}).click();
   await page.locator('#delegation-device').selectOption(connector.deviceId);await page.locator('#delegation-mode').selectOption('resolve');await page.locator('#delegation-instructions').fill(instructions);
   await page.getByRole('button',{name:'Send task',exact:true}).click();
   const jobsPath=origin+`/api/projects/${projectId}/conversations/${session.conversationId}/delegations`;

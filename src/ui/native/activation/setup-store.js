@@ -57,6 +57,9 @@ function createStore(projectId) {
    };
   },
   snapshot: () => state,
+  // Follows every snapshot the loop takes without starting it (the Settings row's count while Setup is open).
+  watch(listener) { listeners.add(listener); return () => listeners.delete(listener); },
+  path,
   // The footer's explicit "Check again": a check that is not marked automatic, so the server runs it now.
   checkAgain: async () => { await inflight; await observe(false); polls = 0; schedule(); },
   // Skip for now, or undo it: stored on the server for the workspace, never in the browser. The answer is the snapshot.

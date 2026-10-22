@@ -19,7 +19,7 @@ page records what was restored and which original features are still missing.
 
 | Surface | Changes |
 | --- | --- |
-| Workspace and inbox | Original workspace switcher, icons, active states, unread count, account menu and mobile header, with the colour reduced to paper, ink and aqua. The native sidebar is shorter than the original: the inbox views sit above the list, Local computers, Reports and Insights sit under More, and Settings is one row whose twelve destinations share a Settings menu in the page. |
+| Workspace and inbox | Original workspace switcher, icons, active states, unread count, account menu and mobile header, with the colour reduced to paper, ink and aqua. The native sidebar holds only the daily work: Inbox with its views, Knowledge, Contacts and Reports (with Insights); everything that configures the workspace, Setup, AI and Local computers included, is under Settings, whose pages turn the sidebar into the Settings menu. |
 | Project | General, Appearance, Availability and GitHub tabs; original columns, timezone selector, brand controls, persisted color/mode and real schedule settings. |
 | Account and access | Profile tabs and avatar layout; tokenless setup retained for loopback development only. The public identity pages no longer follow the original centered frame: see [Public identity pages](#public-identity-pages). |
 | Projects and owner controls | Project table and header action; owner settings and project controls retained. Earlier billing/payment layout observations are historical comparison evidence only. |
@@ -40,7 +40,7 @@ defects; each is fixed and covered by `tests/journeys/inbox-browser.mjs`.
 | Opening a project (deep link, Projects list, switcher) | The URL's project becomes the session's active project before its pages load, so Help Center, Categories, AI Training, Training runs, Insights and conversation attachments no longer show "Project access denied" or broken images under a switcher that names that project. |
 | Unknown or non-member project URL | An in-shell "Project not found" state with a link to Projects. It never offers "Sign in" to a signed-in user; the route error boundary offers "Sign in" only for an expired session. |
 | Global Inbox Settings | Lists "Settings for <project>" for each of the account's projects instead of unlabelled links that acted on the session's project. |
-| `/local-agent/authorize` | Scoped to the session's active project: full project sidebar with Local computers current (More open), and the form names the project it acts on. |
+| `/local-agent/authorize` | Scoped to the session's active project: the project's Settings menu with Local computers current, and the form names the project it acts on. |
 | Admin | The account menu offers Admin only to platform administrators; `/admin` pages show an access-limited state with no tables, forms or admin API calls for everyone else. |
 | Account menu | Rows use the body text colour (AA contrast) in light and dark workspaces. |
 | Sidebar | The active item is scrolled fully into view in the sidebar's own scroll area (900 px and shorter viewports); `/projects/<id>/settings` marks Project current in the Settings menu like `/edit`. |
@@ -111,13 +111,13 @@ Corrections from the 1 October 2026 independent UI sweep, checked by
 
 | Surface | Behaviour |
 | --- | --- |
-| Contact local time | The conversation header and Details show the contact's clock only when a known timezone is recorded. Without one the header omits the time and Details shows **Local time: Unknown**; the viewer's own clock is never presented as the contact's and nothing is logged by Moment Timezone. |
-| Conversation header | With the right panel open the name, verification badge and status share one line inside the 72px bar. A long name, email or project name is ellipsised and carries its full text as a tooltip. Between 1200 and 1599px the **Local** button shows only its icon (its accessible name is unchanged) to leave room for the name. |
+| Contact local time | The conversation header and **Ticket → Customer** show the contact's clock only when a known timezone is recorded. Without one the header omits the time and **Ticket → Customer** shows **Local time: Unknown**; the viewer's own clock is never presented as the contact's and nothing is logged by Moment Timezone. |
+| Conversation header | With the right panel open the name, verification badge and status share one line inside the 72px bar. A long name, email or project name is ellipsised and carries its full text as a tooltip. The conversation panel toggle is an icon button named **Show conversation panel** or **Hide conversation panel**; while the panel is closed it shows a small dot when the ticket summary has an alert (an SLA alert or a customer update to review). |
 | Inbox search | Matches a contact's name or email address, literally (`%`, `_` and `\` are ordinary characters), up to 200 characters. Longer input is answered with a 400 and the message "That search is too long…", shown in the list without a Retry button. The placeholder and accessible name say "name or email"; an empty result reads "No results for “query” in all open. Search looks at customer names and email addresses." Message text is **not** searched; there is no full-text index. |
 | Assignment menu | Escape closes it however it was opened (mouse, Enter, or from a menu item) and focus returns to the toggle. |
 | Saved replies | The draft stays visible while the picker is open. Choosing a reply inserts it as its own paragraph beside the caret's line (before it when the caret is at the line's start, after it otherwise), so typed text is never split or overwritten; an empty composer receives exactly the reply. |
 | Row Close / Reopen | A real button beside the row link (not nested in it) in its own column of the row. It is in the tab order, visible on keyboard focus and always visible on touch screens; on hover-capable pointers it is revealed on row hover or focus. |
-| Closed conversations | The header shows **Reopen** in place of **Close**, and the composer tools no longer offer **Send & close**. |
+| Closed conversations | The header shows **Reopen** in place of **Close**, and the reply card's **+ (Actions)** menu no longer offers **Send & close**. |
 
 ## Verification and limits
 

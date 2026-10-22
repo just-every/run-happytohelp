@@ -45,8 +45,11 @@ body.conversation-workspace {
             align-self: stretch;
             align-items: center;
             min-width: 0;
-            // The panel is only ~300px wide on 1280px screens: three tabs plus Hide must keep clear of each other.
+            // The panel is only 296px wide from 1200 to 1439px: three tabs plus Hide must keep clear of each other, also in
+            // the wider system faces (DejaVu Sans on Linux), so the tabs sit closer there.
             gap: 1rem;
+
+            @media (min-width: 1200px) and (max-width: 1439.98px) { gap: 10px; }
         }
 
         // Each tab is 40px tall around its word, so the current tab's aqua bar sits just under it, as the pick.

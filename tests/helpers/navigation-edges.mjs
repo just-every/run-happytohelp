@@ -55,8 +55,7 @@ export async function rapidTenantBack(page,alpha,beta) {
 export async function pluginPrefill(page) {
   const nav=page.getByRole('navigation',{name:'Main navigation'});
   await nav.getByTestId('nav-settings').click();
-  const menu=page.getByTestId('settings-menu'),more=menu.getByTestId('settings-menu-more');await menu.waitFor();
-  if(await more.getAttribute('open')===null)await more.locator('summary').click();
+  const menu=page.getByTestId('settings-menu');await menu.waitFor();
   await menu.getByRole('link',{name:'Plugins',exact:true}).click();
   const requests=[],origin=new URL(page.url()).origin;
   const observe=request=>requests.push({method:request.method(),url:request.url()});

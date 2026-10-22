@@ -1,0 +1,16 @@
+// Type for the rail's Inbox group and the inbox list head (H6, pick A · Start menu). No text is set below 13px (H11),
+// so the group caption, drawn at 12px capitals, is 13px here.
+
+// Rail sub-items (the five views, saved views, Snoozed and Suspended) under Inbox; the phone's menu sheet sets them larger.
+$rail-subitem-font-size: 15px;
+$rail-subitem-height: 32px;
+$rail-subitem-font-size-sheet: 16px;
+$rail-subitem-height-sheet: 40px;
+
+// The group caption ("Saved views"): capitals in the soft ink.
+$rail-caption-font-size: 13px;
+$rail-caption-letter-spacing: .06em;
+
+// The list title: the current view's name beside its count.
+$list-title-font-size: 18px;
+$list-title-font-weight: 600;

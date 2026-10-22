@@ -8,6 +8,18 @@ upgrade, read the notes for every version between yours and the new one. For
 updating and backing up an installation, see
 [Updates and recovery](docs/INDEPENDENT-RELEASE.md).
 
+## 0.4.12 — 2026-10-21
+
+No breaking change.
+
+- **Hono security patch:** the Worker runtime dependency Hono moves from 4.13.7 to 4.13.11, which fixes Hono's static path decoding vulnerability.
+- **H5/H10/H11 app pass:** stylesheets only. Selected navigation and the open inbox row show selection with a wash or a complete hairline ring, never a border on one side of a rounded rectangle; the active rail item has an accessible aqua highlight; the in-app Setup page uses up to 1100px; small app text is raised one step.
+- **AUTOMATION-002/QUEUE-002 proof:** tests and documentation only. Journeys prove time-based automations, including the seeded rule that closes solved tickets after four days, and structured queue work; both clauses now read done.
+- **Platform migration-ledger guard with rer 0.2.77:** export and leave backups now work on Platform-applied installs without re-running their database migrations. Incomplete or conflicting migration history (a `rer_migrations` ledger that is missing rows, sits beside a second ledger or does not match the migration files) is refused with exit 4 before data changes, and an empty legacy `d1_migrations` is never dropped automatically; native installs retain their usual migration path. The installer pins rer 0.2.77, including migration-ledger checks and the narrowed GitHub-reference rule; restore journeys run in their own CI shard.
+- **Migrations:** No migrations. v0.4.12 adds no migration file, so a v0.4.11 installation's migration ledger stays unchanged.
+- **Upgrade:** Update from v0.4.11, or any earlier line, to v0.4.12 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.77. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. v0.4.12 adds no migration, so a v0.4.11 installation's migration ledger stays unchanged and nothing is applied. An earlier installation applies its missing published migrations once, in order and by file name, through pinned rer before the updated Worker serves traffic. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. No breaking change.
+- **Recovery note (Platform-applied installs):** if an export made with v0.4.11 or earlier failed, it may have left an empty `d1_migrations` table beside the complete `rer_migrations` ledger. v0.4.12 refuses that state as multiple migration histories (exit 4) before any write and never drops either table. Do not delete or edit either table by hand. Recovery is a separate, verified operator procedure for that one installation, taken only after a fresh snapshot and with an explicit source scope; this release performs no cleanup. Native installs, whose history is `d1_migrations` alone, are unaffected.
+
 ## 0.4.11 — 2026-10-20
 
 No breaking change.

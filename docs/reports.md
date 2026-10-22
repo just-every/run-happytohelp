@@ -1,6 +1,6 @@
 # Ratings and Reports
 
-A visitor sees **Did this answer your question?** after a conversation is resolved. Thumbs up or down and an optional comment (up to 1,000 characters) belong to that resolution. Only the conversation's current owning visitor session can submit a rating. A visitor can change the rating; each change remains in history. The usual widget action rate limit applies. Operators see the current rating and comment in the conversation's Details panel.
+A visitor sees **Did this answer your question?** after a conversation is resolved. Thumbs up or down and an optional comment (up to 1,000 characters) belong to that resolution. Only the conversation's current owning visitor session can submit a rating. A visitor can change the rating; each change remains in history. The usual widget action rate limit applies. Operators see the current rating and comment in the conversation panel's **Ticket → History**.
 
 A new visitor message reopens the conversation. Its next resolution has a separate outcome and rating. A rating for an earlier cycle cannot be submitted while the conversation is open or against a later resolution. Contact erasure removes comments from both the current rating and change history.
 

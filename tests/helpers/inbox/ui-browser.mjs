@@ -43,7 +43,7 @@ try{
  await transcriptReply().waitFor();await page.reload();await transcriptReply().waitFor();
  await page.unroute('**/api/conversations/*/messages');
  checks.push('operator send waits for durable acceptance and survives reload');
- await page.getByRole('button',{name:'Reply tools',exact:true}).click();await page.getByRole('menuitem',{name:'Internal note',exact:true}).click();console.log('DIALOG',await page.getByRole('dialog').innerText());
+ await page.getByRole('button',{name:'Actions',exact:true}).click();await page.getByRole('menuitem',{name:'Internal note',exact:true}).click();console.log('DIALOG',await page.getByRole('dialog').innerText());
  const note=`Internal browser regression note ${Date.now()}`; await page.getByRole('dialog').getByRole('textbox').fill(note);await page.getByRole('dialog').getByRole('button',{name:/Save|Add/}).click();await page.locator('.transcript-note-content').getByText(note,{exact:true}).waitFor();checks.push('internal note persisted');
  await page.screenshot({path:join(evidenceDir,'inbox.png'),fullPage:true});
  await page.goto(`${origin}/projects/${f.projectId}/macros/create`);await page.getByLabel('Title',{exact:true}).fill('Browser saved reply');await page.getByLabel('Content',{exact:true}).fill('Saved reply content from native UI.');await page.getByRole('button',{name:/^(Save|Update|Create)$/,exact:true}).click();await page.waitForURL(url=>url.pathname.includes('/macros/')&&!url.pathname.endsWith('/create'));await page.reload();assert.equal(await page.getByLabel('Content',{exact:true}).inputValue(),'Saved reply content from native UI.');checks.push('saved reply creation survives reload');

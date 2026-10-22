@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
-export default function InboxSearch({ query, viewPhrase, onSearch }) {
+const scopes = [ [ 'all', 'All history' ], [ 'view', 'This view' ] ];
+
+/** The search field. While a query is typed, "All history / This view" chooses what it searches; choosing runs it. */
+export default function InboxSearch({ query, scope, onSearch }) {
     const [ value, setValue ] = useState(query);
+    // The chosen scope shows at once; the URL catches up when its search runs.
+    const [ chosen, setChosen ] = useState(scope);
 
     useEffect(() => {
         setValue(query);
     }, [ query ]);
 
+    useEffect(() => {
+        setChosen(scope);
+    }, [ scope ]);
+
     const submit = event => {
         event.preventDefault();
-        onSearch(value);
+        onSearch(value, chosen);
     };
 
     return (
@@ -29,13 +38,19 @@ export default function InboxSearch({ query, viewPhrase, onSearch }) {
                     </button>
                 </div>
             </div>
+            { value.trim() && <div className="inbox-search-scope" role="radiogroup" aria-label="Conversation search scope">
+                { scopes.map(([ option, label ]) => <label key={ option } className="inbox-search-scope-option">
+                    <input type="radio" name="inbox-search-scope" value={ option } checked={ chosen === option } onChange={ () => { setChosen(option); onSearch(value, option); } } />
+                    <span>{ label }</span>
+                </label>) }
+            </div> }
         </form>
     );
 }
 
 InboxSearch.propTypes = {
     query: PropTypes.string,
-    viewPhrase: PropTypes.string.isRequired,
+    scope: PropTypes.oneOf([ 'all', 'view' ]).isRequired,
     onSearch: PropTypes.func.isRequired,
 };
 

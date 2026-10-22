@@ -1,82 +1,33 @@
 {
-  "version": "0.4.11",
-  "previousVersion": "0.4.10",
-  "date": "2026-10-20",
+  "version": "0.4.12",
+  "previousVersion": "0.4.11",
+  "date": "2026-10-21",
   "contractChanges": {},
   "proseChanges": [
     {
       "document": "README.md",
       "change": "changed",
-      "date": "2026-10-20",
-      "summary": "R9a companies and customer CSV; R10a reports, handle timers, problems and incidents; R12a escalations; native signout and rer 0.2.74; H1 homepage hero; H3 Ink rail app theme; TRIAGE-001; scanner fixture correction. No breaking change.",
-      "was": "v0.4.10 did not include these landed rounds and their twelve pending migrations.",
-      "now": "v0.4.11 includes R9a companies and customer CSV; R10a reports, handle timers, problems and incidents; R12a escalations; native signout and rer 0.2.74; H1 homepage hero; H3 Ink rail app theme; TRIAGE-001; scanner fixture correction.",
-      "ownerAction": "Update from v0.4.10, or any earlier line, to v0.4.11 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.74. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. Apply the following twelve migrations once, in listed order and by file name, through pinned rer before the updated Worker serves traffic: 192_companies.sql, 193_customer_csv.sql, 194_csv_run_fences.sql, 195_restore_trigger_boundaries.sql, 196_csv_touched_fences.sql, 201_report_timers_schedules.sql, 202_problem_incidents.sql, 203_problem_delivery_history.sql, 204_problem_preview_audit.sql, 205_handle_timer_lead_stop.sql, 220_ticket_triage.sql, 230_escalations.sql. An earlier installation also applies its other missing published migrations by name through pinned rer. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. No breaking change."
+      "date": "2026-10-21",
+      "summary": "Hono security patch (4.13.7 to 4.13.11); H5/H10/H11 app pass; AUTOMATION-002/QUEUE-002 journey proof; Platform migration-ledger guard with rer 0.2.77. No breaking change. No migrations.",
+      "was": "v0.4.11 did not include the Hono security patch, the H5/H10/H11 app pass, the AUTOMATION-002/QUEUE-002 journey proof or the Platform migration-ledger guard with rer 0.2.77.",
+      "now": "v0.4.12 includes the Hono security patch (4.13.7 to 4.13.11); H5/H10/H11 app pass; AUTOMATION-002/QUEUE-002 journey proof; Platform migration-ledger guard with rer 0.2.77. No migrations.",
+      "ownerAction": "Update from v0.4.11, or any earlier line, to v0.4.12 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.77. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. v0.4.12 adds no migration, so a v0.4.11 installation's migration ledger stays unchanged and nothing is applied. An earlier installation applies its missing published migrations once, in order and by file name, through pinned rer before the updated Worker serves traffic. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. Recovery note (Platform-applied installs): if an export made with v0.4.11 or earlier failed, it may have left an empty d1_migrations table beside the complete rer_migrations ledger. v0.4.12 refuses that state as multiple migration histories (exit 4) before any write and never drops either table. Do not delete or edit either table by hand. Recovery is a separate, verified operator procedure for that one installation, taken only after a fresh snapshot and with an explicit source scope; this release performs no cleanup. Native installs, whose history is d1_migrations alone, are unaffected. No breaking change."
     },
     {
       "document": "CHANGELOG.md",
       "change": "changed",
-      "date": "2026-10-20",
-      "summary": "R9a companies and customer CSV; R10a reports, handle timers, problems and incidents; R12a escalations; native signout and rer 0.2.74; H1 homepage hero; H3 Ink rail app theme; TRIAGE-001; scanner fixture correction. No breaking change.",
-      "was": "v0.4.10 did not include these landed rounds and their twelve pending migrations.",
-      "now": "v0.4.11 includes R9a companies and customer CSV; R10a reports, handle timers, problems and incidents; R12a escalations; native signout and rer 0.2.74; H1 homepage hero; H3 Ink rail app theme; TRIAGE-001; scanner fixture correction.",
-      "ownerAction": "Update from v0.4.10, or any earlier line, to v0.4.11 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.74. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. Apply the following twelve migrations once, in listed order and by file name, through pinned rer before the updated Worker serves traffic: 192_companies.sql, 193_customer_csv.sql, 194_csv_run_fences.sql, 195_restore_trigger_boundaries.sql, 196_csv_touched_fences.sql, 201_report_timers_schedules.sql, 202_problem_incidents.sql, 203_problem_delivery_history.sql, 204_problem_preview_audit.sql, 205_handle_timer_lead_stop.sql, 220_ticket_triage.sql, 230_escalations.sql. An earlier installation also applies its other missing published migrations by name through pinned rer. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. No breaking change."
+      "date": "2026-10-21",
+      "summary": "Hono security patch (4.13.7 to 4.13.11); H5/H10/H11 app pass; AUTOMATION-002/QUEUE-002 journey proof; Platform migration-ledger guard with rer 0.2.77. No breaking change. No migrations.",
+      "was": "v0.4.11 did not include the Hono security patch, the H5/H10/H11 app pass, the AUTOMATION-002/QUEUE-002 journey proof or the Platform migration-ledger guard with rer 0.2.77.",
+      "now": "v0.4.12 includes the Hono security patch (4.13.7 to 4.13.11); H5/H10/H11 app pass; AUTOMATION-002/QUEUE-002 journey proof; Platform migration-ledger guard with rer 0.2.77. No migrations.",
+      "ownerAction": "Update from v0.4.11, or any earlier line, to v0.4.12 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.77. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. v0.4.12 adds no migration, so a v0.4.11 installation's migration ledger stays unchanged and nothing is applied. An earlier installation applies its missing published migrations once, in order and by file name, through pinned rer before the updated Worker serves traffic. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. Recovery note (Platform-applied installs): if an export made with v0.4.11 or earlier failed, it may have left an empty d1_migrations table beside the complete rer_migrations ledger. v0.4.12 refuses that state as multiple migration histories (exit 4) before any write and never drops either table. Do not delete or edit either table by hand. Recovery is a separate, verified operator procedure for that one installation, taken only after a fresh snapshot and with an explicit source scope; this release performs no cleanup. Native installs, whose history is d1_migrations alone, are unaffected. No breaking change."
     }
   ],
   "extensionPointChanges": [],
-  "migrations": [
-    {
-      "id": "192_companies.sql",
-      "buyerSteps": "R9a company records, typed attributes, membership, domains and reversible merge history. Apply through pinned rer before the updated Worker serves traffic; retain existing records and private settings without resetting."
-    },
-    {
-      "id": "193_customer_csv.sql",
-      "buyerSteps": "R9a mapped CSV dry runs and reversible contact and company imports. Apply through pinned rer before the updated Worker serves traffic; retain import journals and erasure fences without resetting."
-    },
-    {
-      "id": "194_csv_run_fences.sql",
-      "buyerSteps": "R9a import-local concurrency fences replace the global customer counter. Apply through pinned rer before the updated Worker serves traffic; existing previews retain their stale-change protection without changing unrelated import undo state."
-    },
-    {
-      "id": "195_restore_trigger_boundaries.sql",
-      "buyerSteps": "R9a restores preserve the resolution trigger with CASE boundary whitespace compatible with the pinned Wrangler SQL splitter. Apply through pinned rer; trigger behavior and all existing records stay unchanged."
-    },
-    {
-      "id": "196_csv_touched_fences.sql",
-      "buyerSteps": "R9a import apply and undo recheck only the customer rows each import matched or changed, so unrelated contact writes no longer block them. Apply through pinned rer; retires the workspace-wide import counter and keeps every import run and journal row."
-    },
-    {
-      "id": "201_report_timers_schedules.sql",
-      "buyerSteps": "Add ticket handle-time sessions and permission-scoped report schedules. Apply before the updated Worker serves traffic."
-    },
-    {
-      "id": "202_problem_incidents.sql",
-      "buyerSteps": "Add problem and incident links, reviewed bulk replies and per-incident delivery outcomes. Apply before the updated Worker serves traffic."
-    },
-    {
-      "id": "203_problem_delivery_history.sql",
-      "buyerSteps": "Record bulk incident delivery outcomes in ticket history and the audit log. Apply before the updated Worker serves traffic."
-    },
-    {
-      "id": "204_problem_preview_audit.sql",
-      "buyerSteps": "Audit reviewed problem replies and durable incident delivery claims. Apply before the updated Worker serves traffic."
-    },
-    {
-      "id": "205_handle_timer_lead_stop.sql",
-      "buyerSteps": "Record who stopped each handle timer, so a lead's stop of a teammate's timer names the lead in ticket history and the audit log. Apply before the updated Worker serves traffic."
-    },
-    {
-      "id": "220_ticket_triage.sql",
-      "buyerSteps": "Add asynchronous triage settings, predictions, operator labels and usage. Apply before the updated Worker serves traffic. Intent routing starts off; restored model work is unavailable and routing requires renewed lead approval."
-    },
-    {
-      "id": "230_escalations.sql",
-      "buyerSteps": "Add workspace-encrypted engineering connections, reciprocal issue links, selected attachment grants, idempotent webhook state, approved customer drafts and Slack handoff history. Apply before the updated Worker serves traffic. Exports retain disconnected links and drafts without provider credentials or download grants; retain human Send and unconfirmed customer recovery."
-    }
-  ],
+  "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Update from v0.4.10, or any earlier line, to v0.4.11 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.74. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. Apply the following twelve migrations once, in listed order and by file name, through pinned rer before the updated Worker serves traffic: 192_companies.sql, 193_customer_csv.sql, 194_csv_run_fences.sql, 195_restore_trigger_boundaries.sql, 196_csv_touched_fences.sql, 201_report_timers_schedules.sql, 202_problem_incidents.sql, 203_problem_delivery_history.sql, 204_problem_preview_audit.sql, 205_handle_timer_lead_stop.sql, 220_ticket_triage.sql, 230_escalations.sql. An earlier installation also applies its other missing published migrations by name through pinned rer. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. No breaking change.",
-  "publicReleaseNotes": "HappyToHelp v0.4.11 includes R9a companies and customer CSV; R10a reports, handle timers, problems and incidents; R12a escalations; native signout and rer 0.2.74; H1 homepage hero; H3 Ink rail app theme; TRIAGE-001; scanner fixture correction. No breaking change. Back up and retain existing data and private settings without resetting. Apply all twelve listed migrations through pinned rer before the updated Worker serves traffic; retain human Send.",
+  "agentUpdateInstructions": "Update from v0.4.11, or any earlier line, to v0.4.12 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.77. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. v0.4.12 adds no migration, so a v0.4.11 installation's migration ledger stays unchanged and nothing is applied. An earlier installation applies its missing published migrations once, in order and by file name, through pinned rer before the updated Worker serves traffic. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. Recovery note (Platform-applied installs): if an export made with v0.4.11 or earlier failed, it may have left an empty d1_migrations table beside the complete rer_migrations ledger. v0.4.12 refuses that state as multiple migration histories (exit 4) before any write and never drops either table. Do not delete or edit either table by hand. Recovery is a separate, verified operator procedure for that one installation, taken only after a fresh snapshot and with an explicit source scope; this release performs no cleanup. Native installs, whose history is d1_migrations alone, are unaffected. No breaking change.",
+  "publicReleaseNotes": "HappyToHelp v0.4.12 includes the Hono security patch (4.13.7 to 4.13.11); H5/H10/H11 app pass; AUTOMATION-002/QUEUE-002 journey proof; Platform migration-ledger guard with rer 0.2.77. No breaking change. No migrations. v0.4.12 adds no migration file, so a v0.4.11 installation's migration ledger stays unchanged. Back up and retain existing data and private settings without resetting; retain human Send. Recovery note (Platform-applied installs): if an export made with v0.4.11 or earlier failed, it may have left an empty d1_migrations table beside the complete rer_migrations ledger. v0.4.12 refuses that state as multiple migration histories (exit 4) before any write and never drops either table. Do not delete or edit either table by hand. Recovery is a separate, verified operator procedure for that one installation, taken only after a fresh snapshot and with an explicit source scope; this release performs no cleanup. Native installs, whose history is d1_migrations alone, are unaffected.",
   "pendingMigrations": [
     {
       "id": "240_operator_presence.sql",

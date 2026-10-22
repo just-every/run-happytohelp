@@ -6,7 +6,11 @@ import ProblemTicketSearch from './ProblemTicketSearch';
 import ProblemSolve from './ProblemSolve';
 import './problem.css';
 
-export default function ProblemPanel({ projectId, conversationId, ticket, onChanged = () => {} }) {
+/**
+ * Ticket › Problem and incidents: mark the ticket as a problem, link and unlink incidents, and solve them together.
+ * "+" › Mark as problem… opens this section with its Mark button focused. `onBadge` reports the incident count.
+ */
+export default function ProblemPanel({ projectId, conversationId, ticket, onChanged = () => {}, onBadge }) {
     const { setActiveConversationId } = useContext(ChatContext), [data, setData] = useState(null), [error, setError] = useState('');
     const [incidentOffset, setIncidentOffset] = useState(0);
     const [busy, setBusy] = useState(false), [linkPreview, setLinkPreview] = useState(null), [linkResult, setLinkResult] = useState(null);
@@ -36,12 +40,13 @@ export default function ProblemPanel({ projectId, conversationId, ticket, onChan
     };
     const open = id => setActiveConversationId(id);
     const disabled = busy || data?.status_category === 'closed';
-    return <details className="problem-panel"><summary>Problem and incidents{data?.is_problem ? ` · ${data.incident_count}` : ''}</summary>
+    useEffect(() => { onBadge?.(data?.is_problem ? data.incident_count || 'Problem' : data?.parent ? 'Incident' : null); }, [data?.is_problem, data?.incident_count, data?.parent, onBadge]);
+    return <div className="problem-panel">
         {error && <p role="alert" className="text-danger">{error}</p>}
         {!data && !error && <p role="status">Loading problem links…</p>}
         {data && <>
             {data.parent && <p>Incident of <button className="btn btn-sm btn-link" type="button" onClick={() => open(data.parent.problem_id)}>{data.parent.subject || data.parent.problem_id}</button></p>}
-            {!data.parent && <button className="btn btn-sm btn-white" type="button" disabled={disabled || data.is_problem && data.incident_count > 0} onClick={changeMark}>{data.is_problem ? 'Remove problem designation' : 'Mark as problem'}</button>}
+            {!data.parent && <button className="btn btn-sm btn-white" type="button" data-section-focus disabled={disabled || data.is_problem && data.incident_count > 0} onClick={changeMark}>{data.is_problem ? 'Remove problem designation' : 'Mark as problem'}</button>}
             {data.is_problem && <>
                 <p>{data.incident_count} linked incident{data.incident_count === 1 ? '' : 's'}. Each keeps its own history, service targets and satisfaction feedback.</p>
                 <ul className="problem-ticket-list">{data.incidents.map(incident => <li key={incident.id}><button type="button" className="btn btn-sm btn-link" onClick={() => open(incident.id)}>{incident.subject || incident.id}</button><div>{incident.requester_name || incident.requester_email || 'Requester'} · {incident.channel} · {incident.status_category}</div><button className="btn btn-sm btn-white" type="button" disabled={disabled} onClick={() => prepareLink(incident, 'unlink')}>Preview unlink</button></li>)}</ul>
@@ -52,5 +57,5 @@ export default function ProblemPanel({ projectId, conversationId, ticket, onChan
                 {!!data.incidents.length && <ProblemSolve key={`${path}:${data.problem_version}:${data.incident_offset}`} path={path} recentPreviewId={data.recent_preview_id} incidents={data.incidents} disabled={disabled} onChanged={reload} />}
             </>}
         </>}
-    </details>;
+    </div>;
 }

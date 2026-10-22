@@ -110,9 +110,13 @@ export async function completeEmailJourney(){
   assert.equal((await app.first('SELECT status_category FROM conversations WHERE id=?',ticket.conversation.id)).status_category,'closed')
   const links=await app.ok(base+`/conversations/${followup.data.conversationId}/email-followups`,{token:owner})
   assert.equal(links.data[0].parent_id,ticket.conversation.id)
+  // The inbox rail counts held mail only for a member who may review it.
+  const counts=`/api/dashboard/projects/${projectId}/conversations/counts`
+  assert.equal((await app.ok(counts,{token:agent})).data.suspended,(await app.ok(base+'/suspended',{token:agent})).count)
   // A collaborator cannot review, recover, send, or change policy.
   await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(projectId,workspace.users.operator,Date.now()).run()
   assert.equal((await app.call(base+'/suspended',{token:agent})).status,403)
+  assert.equal('suspended' in (await app.ok(counts,{token:agent})).data,false)
   assert.equal((await app.call(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...command,localId:'collaborator-denied'}})).status,403)
   assert.equal((await app.call(base+'/sender-rules',{token:agent,body:{address:'@example.test',action:'block'}})).status,403)
   await app.db.prepare('DELETE FROM member_roles WHERE project_id=? AND user_id=?').bind(projectId,workspace.users.operator).run()

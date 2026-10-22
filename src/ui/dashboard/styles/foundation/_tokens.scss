@@ -5,6 +5,8 @@
 // own variables are imported. ./_base.scss points Bootstrap's runtime custom
 // properties at the brand tokens, so these values only seed Bootstrap's build.
 
+@import "./h6-convo-tokens";
+
 // Palette ------------------------------------------------------------------
 // The landing's paper and ink (src/ui/homepage/brand-tokens.css holds the same values as CSS custom properties, which
 // every rule reads at runtime, so Dark display mode only swaps the tokens). Bootstrap needs literal colours to build its
@@ -76,7 +78,11 @@ $container-max-widths: (sm: 540px, md: 720px, lg: 960px, xl: 1140px);
 
 // Type -----------------------------------------------------------------------
 
-$font-family-sans-serif: Outfit, 'Outfit Fallback', 'Avenir Next', 'Segoe UI', sans-serif;
+// The app's text is the system UI face (H9): San Francisco on Apple devices, Segoe UI on Windows, Roboto on Android, so
+// there is no font file to host or load. ./_base.scss points the shared --font-sans at it inside the workspace only; the
+// homepage, sign-in, setup and docs pages read the same variable or Outfit directly and keep the brand face.
+$font-family-app: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+$font-family-sans-serif: $font-family-app;
 $font-size-base: 1rem;
 $font-size-sm: .90625rem;
 $font-size-lg: 1.0625rem;
@@ -104,6 +110,8 @@ $dt-font-weight: 600;
 $code-font-size: 87.5%;
 $code-color: $black;
 $kbd-font-size: 87.5%;
+
+@import "./h6-nav-tokens";
 
 // Tables -------------------------------------------------------------------
 

@@ -7,7 +7,7 @@ export function browserUI({page,context,origin,actor,api,width,evidence,captions
  const openPanel=async()=>{
   await page.locator('.conversation-assistant-toggle').waitFor();
   const show=page.getByRole('button',{name:'Show conversation panel',exact:true});if(await show.isVisible())await show.click();
-  await page.locator('#conversation-assistant[aria-hidden=false]').waitFor();await page.getByRole('tab',{name:'Local',exact:true}).click();
+  await page.locator('#conversation-assistant[aria-hidden=false]').waitFor();await page.getByRole('tab',{name:'Delegate',exact:true}).click();
  };
  const ui={
   async open(id,{panel=true}={}){
@@ -18,7 +18,7 @@ export function browserUI({page,context,origin,actor,api,width,evidence,captions
    }
   },
   async refresh(){
-   // Reload unmounts the polling Local panel and resets the selected tab to AI.
+   // Reload unmounts the polling Delegate panel and resets the selected tab to Suggest.
    // Observe a request started by opening Local in the new document, so an old
    // poll cannot supply a response whose body navigation has already discarded.
    await page.reload();

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {ticketQueueCapabilities} from './ticket-queue-capabilities.mjs'
 
 export async function ticketQueue(f){
  const {app,w,foreign,ok,call,get,patch,create}=f
@@ -10,6 +11,8 @@ export async function ticketQueue(f){
  const first=await page(1),second=await page(2)
  assert.equal(first.length,30);assert.equal(second.length,7)
  assert.deepEqual([...first,...second].map(t=>t.fields[f.fields[1].id]),Array.from({length:37},(_,i)=>i+1))
+ const priorityView=await ok('/ticket-views',{name:'High-priority returns',visibility:'shared',filters:[...filters,{field:'priority',operator:'eq',value:'high'}],sort})
+ assert.deepEqual((await ok(`/conversations?saved_view=${priorityView.id}`)).map(t=>t.id),ids.filter((_,i)=>i%2))
  const personal=await ok('/ticket-views',{name:'My urgent work',visibility:'personal',filters:[{field:'priority',operator:'eq',value:'urgent'}],sort:[]},'operator')
  assert.equal((await call('/ticket-views/'+personal.id)).status,404)
  assert.equal((await call('/ticket-views',{name:'Forbidden shared',visibility:'shared',filters:[],sort:[]},'operator')).status,403)
@@ -21,16 +24,36 @@ export async function ticketQueue(f){
  const selected=await Promise.all(ids.slice(0,2).map(async id=>({id,expected_version:(await get(id)).ticket_version})))
  const stranger=(await app.ok('/api/identity/widget/session',{body:{widgetKey:foreign.widgetKey},headers:{Origin:foreign.allowedOrigin}}))
  const foreignTicket=await app.ok('/api/conversations',{body:{projectId:foreign.projectId},token:stranger.token})
+ const foreignRead=async()=>(await app.ok(`/api/dashboard/projects/${foreign.projectId}/conversations/${foreignTicket.id}/ticket`,{token:foreign.tokens.owner})).data
+ const foreignBefore=await foreignRead(),before=await Promise.all(selected.map(ticket=>get(ticket.id)))
  const body={tickets:[...selected,{id:foreignTicket.id,expected_version:0}],changes:{assigned_to:w.users.operator,priority:'urgent',status_id:'pending',add_tags:[tag.id]}}
- const before=(await get(ids[0])).priority
  const preview=await ok('/tickets/bulk/preview',body)
- assert.deepEqual(preview.results.map(r=>r.status),['ready','ready','forbidden']);assert.equal((await get(ids[0])).priority,before)
+ assert.deepEqual(preview.results.map(r=>r.status),['ready','ready','forbidden'])
+ assert.match(preview.results[2].reason,/unavailable|role/i)
+ assert.deepEqual(await Promise.all(selected.map(ticket=>get(ticket.id))),before,'preview changes neither eligible ticket')
+ assert.deepEqual(await foreignRead(),foreignBefore)
  await patch(ids[1],{subject:'Changed while preview was open'})
+ const staleBefore=await get(ids[1])
  const result=await ok('/tickets/bulk/apply',body)
  assert.deepEqual(result.results.map(r=>r.status),['applied','stale','forbidden'])
- assert.equal((await get(ids[0])).priority,'urgent');assert.equal((await get(ids[0])).status_category,'pending')
- assert.equal((await get(ids[1])).priority,'high');assert.equal((await app.first('SELECT status_category FROM conversations WHERE id=?',foreignTicket.id)).status_category,'new')
- assert.ok(await app.first('SELECT 1 FROM conversation_tags WHERE conversation_id=? AND tag_id=?',ids[0],tag.id))
+ assert.match(result.results[1].reason,/changed.*reload/i);assert.match(result.results[2].reason,/unavailable|role/i)
+ const applied=await get(ids[0])
+ assert.equal(applied.priority,'urgent');assert.equal(applied.status_id,'pending');assert.equal(applied.status_category,'pending')
+ assert.equal(applied.assigned_to,w.users.operator);assert.ok(applied.tags.some(t=>t.id===tag.id))
+ assert.deepEqual(applied.fields,before[0].fields);assert.ok(applied.ticket_version>before[0].ticket_version)
+ assert.deepEqual(await get(ids[1]),staleBefore,'the stale ticket retains its concurrent edit and none of the bulk changes')
+ assert.deepEqual(await foreignRead(),foreignBefore,'the other workspace retains its whole ticket and history')
+ assert.equal((await call(`/conversations/${foreignTicket.id}/ticket`)).status,404)
+ const audit=(await app.ok(`/api/management/projects/${w.projectId}/audit?category=data&limit=200`,{token:w.tokens.owner})).data
+ for(const [receipt,action,outcomes] of [[preview,'preview',['ready','ready','forbidden']],[result,'apply',['applied','stale','forbidden']]]){
+  const events=audit.filter(row=>row.action===`ticket.bulk.${action}`&&row.detail.batch_id===receipt.batch_id)
+  assert.equal(events.length,body.tickets.length)
+  for(const [i,ticket] of body.tickets.entries()){
+   const event=events.find(row=>row.target_id===ticket.id)
+   assert.ok(event);assert.equal(event.detail.result,outcomes[i]);assert.equal(event.outcome,i===2||action==='apply'&&i===1?'refused':'succeeded')
+   assert.equal(event.actor_id,w.users.owner);assert.deepEqual(event.detail.fields,Object.keys(body.changes))
+  }
+ }
  // A later audit failure rolls back its ticket, while earlier committed
  // tickets retain both their change and receipt in the per-ticket response.
  const auditTickets=await Promise.all(ids.slice(4,6).map(async id=>({id,expected_version:(await get(id)).ticket_version})))
@@ -140,5 +163,6 @@ export async function ticketQueue(f){
    assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE action='ticket.bulk.apply' AND target_id=? AND outcome='succeeded' AND json_extract(detail_json,'$.batch_id')=?",ticket.id,batchId)).n,1)
   }
  }
+ await ticketQueueCapabilities(f,ids,tag)
  f.queueIds=ids
 }

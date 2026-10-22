@@ -22,7 +22,7 @@ function ResourcePage({projectId,section,recordId}) {
  const navigate=useNavigate(); const routeLocation=useDashboardLocation(); const {currentAgent}=useDashboardSettings();
  const {ask,dialog}=useConfirmation();
  const path=`/api/management/projects/${projectId}/${section}`,base=`/projects/${projectId}/${section}`;
- const [items,setItems]=useState(null),[draft,setDraft]=useState(null),[error,setError]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[invitation,setInvitation]=useState(null),[emailConfigured,setEmailConfigured]=useState(null),[notice,setNotice]=useState(null),[fieldErrors,setFieldErrors]=useState({});
+ const [items,setItems]=useState(null),[listFailed,setListFailed]=useState(false),[draft,setDraft]=useState(null),[error,setError]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[invitation,setInvitation]=useState(null),[emailConfigured,setEmailConfigured]=useState(null),[notice,setNotice]=useState(null),[fieldErrors,setFieldErrors]=useState({});
  const paged=section==='contacts';
  // Custom roles a member can be given; only owners and admins can read them.
  const [customRoles,setCustomRoles]=useState([]);
@@ -31,7 +31,7 @@ function ResourcePage({projectId,section,recordId}) {
  const requestId=useRef(0),savedContact=useRef(null);
  const listPath=path+(paged?'?'+new URLSearchParams(listQuery):'');
  const load=useCallback(async()=>{const id=++requestId.current;const response=await nativeRequest(listPath);if(id!==requestId.current)return;setItems(response.data||response);setPagination(response.pagination||null);if(section==='agents')setEmailConfigured(response.emailConfigured);},[listPath,section]);
- useEffect(()=>{let active=true;setItems(null);setError('');const timer=setTimeout(()=>load().catch(e=>{if(active)setError(e.message)}),paged&&listQuery.search?200:0);return()=>{active=false;clearTimeout(timer);requestId.current++};},[load]);
+ useEffect(()=>{let active=true;setItems(null);setListFailed(false);setError('');const timer=setTimeout(()=>load().catch(e=>{if(active){setError(e.message);setListFailed(true);}}),paged&&listQuery.search?200:0);return()=>{active=false;clearTimeout(timer);requestId.current++};},[load]);
  useEffect(()=>{
   let active=true;savedContact.current=null;setDraft(null);setInvitation(null);setNotice(null);setError('');setSaved(false);setFieldErrors({});
   if(recordId==='create'){
@@ -62,8 +62,11 @@ function ResourcePage({projectId,section,recordId}) {
  const erased=async()=>{markSaved();const r=await nativeRequest(`${path}/${draft.id}`);const value=parseContact(r.data);savedContact.current=value;setDraft(value);await load();};
  const move=async(id,direction)=>{try{await nativeRequest(`${path}/${id}/${direction}`,{method:'POST'});await load()}catch(e){setError(e.message)}};
  // Deleting always goes through the shared confirmation. The last owner cannot be removed; removing yourself is called out.
+ // Both are decided from the members list, which loads apart from the editor: until it has loaded, removal is neither
+ // offered nor classified, so a pending or failed list never reads as "last owner".
+ const ownersKnown=section!=='agents'||items!==null;
  const owners=(items||[]).filter(row=>row.role==='owner'&&!row.pending).length;
- const lastOwner=section==='agents'&&draft?.role==='owner'&&owners<=1;
+ const lastOwner=section==='agents'&&ownersKnown&&draft?.role==='owner'&&owners<=1;
  const removeSelf=section==='agents'&&Boolean(draft?.id)&&draft.id===currentAgent?.id;
  const requestRemoval=()=>{
   setError('');
@@ -84,7 +87,8 @@ function ResourcePage({projectId,section,recordId}) {
   {draft&&section==='contacts'&&draft.is_erased&&<div className="workspace-settings"><ContactErased projectId={projectId} contact={draft}/></div>}
   {draft&&!(section==='contacts'&&draft.is_erased)&&<div className="workspace-settings">{section==='contacts'&&draft.id&&<ContactDetails projectId={projectId} contact={draft}/>}
    <form onSubmit={save} noValidate={section==='contacts'||section==='plugins'}><ManagementEditor {...{section,draft,change,emailConfigured,fieldErrors,customRoles}}/>
-    <div className="settings-actions"><button className="btn btn-primary" disabled={busy||Boolean(invitation)}>{busy?'Saving…':draft.id?'Save':section==='agents'?'Invite':section==='plugins'?'Add':'Create'}</button>{draft.id&&<button type="button" className="btn btn-outline-danger ms-2" disabled={busy} onClick={requestRemoval}>Delete</button>}</div>
+    <div className="settings-actions"><button className="btn btn-primary" disabled={busy||Boolean(invitation)}>{busy?'Saving…':draft.id?'Save':section==='agents'?'Invite':section==='plugins'?'Add':'Create'}</button>{draft.id&&ownersKnown&&<button type="button" className="btn btn-outline-danger ms-2" disabled={busy} onClick={requestRemoval}>Delete</button>}</div>
+    {draft.id&&!ownersKnown&&<p className="settings-note mt-3" role="status">{listFailed?'Removal is unavailable: the project’s owners could not be checked. Reload the page to try again.':'Checking the project’s owners…'}</p>}
     {lastOwner&&<p className="settings-note mt-3">This is the project’s last owner, so it cannot be removed. Make another member an owner first.</p>}
    </form>
    {section==='contacts'&&draft.id&&<ContactErasure projectId={projectId} contact={draft} onErased={erased}/>}</div>}

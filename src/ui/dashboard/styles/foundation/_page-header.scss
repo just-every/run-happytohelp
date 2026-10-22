@@ -15,6 +15,25 @@
   #workspace-header-tabs:not(:empty) { margin-top: 20px; }
 }
 
+// Below 1200px the Settings menu lives in the menu sheet: a pill above a Settings page's title opens it there.
+.settings-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  margin: 0 0 12px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  font: inherit;
+  font-size: 15px;
+
+  &:hover { color: var(--ink); border-color: var(--ink); }
+  > .fe { flex: 0 0 auto; font-size: 16px; }
+}
+
 // The tabs rail: a page's text link (e.g. "Move in existing support history") sits at its right end.
 .workspace-tabs-rail {
   display: flex;

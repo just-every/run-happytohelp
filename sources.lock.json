@@ -8748,7 +8748,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_workspace-widget-settings.scss": {
-      "sha256": "71541fd76f43d0a740e67aaa8a301494d2f394914529779a1e505744f0bd3e1a",
+      "sha256": "4cae8de7fe41b6ff3d59de72b2558315000695a0b9653780bbab5dbfe8cdb57e",
       "executable": false
     },
     "src/ui/dashboard/utils/agentAssistRequest.js": {

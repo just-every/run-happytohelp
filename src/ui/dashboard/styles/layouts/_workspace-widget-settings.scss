@@ -8,6 +8,8 @@ body.workspace-page {
     .widget-color-field { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     .widget-color-field label { margin: 0 !important; }
     .widget-color-field .form-control-color { flex: 0 0 40px; width: 40px; height: 34px; padding: 3px; border-radius: 7px; border-color: var(--rule); }
+    // The swatch's pale edge above outranks .form-control:focus: draw the field focus's ink edge on that one border (H17).
+    .widget-color-field .form-control-color:focus { border-color: var(--field-focus-edge); }
     .widget-settings-preview { position: sticky; top: 24px; min-width: 0; }
     .widget-settings-preview #happytohelp { max-width: 100%; }
     .widget-settings-preview__header { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; margin-bottom: 12px; font-size: 14px; font-weight: 600; }

@@ -7952,11 +7952,11 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationItem.jsx": {
-      "sha256": "34d8358365ceae56119b31f2103958a89268cf0e7b8f7226cf435c823b216488",
+      "sha256": "f5f572b54759527a5a390d232b8e4262c5b615e4aa0d194ed75ad78d73b492f5",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationItemMeta.jsx": {
-      "sha256": "57072a3d85d5d5445b575dd67d2cef6668458987f9ea1eea62335ec3a5b25362",
+      "sha256": "3b43d708938b5a07b099cc602d75bd66c915f699bb83c077816edc732eaad93b",
       "executable": false
     },
     "src/ui/dashboard/components/conversationListPagination.jsx": {
@@ -8448,7 +8448,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/workflows/WorkflowDue.jsx": {
-      "sha256": "9b96df83ddfcece822b5ff8196e67bda608836712792a86146e49386128b6320",
+      "sha256": "0c478b1c0ff90e30ac6fa869451b341c121976527dd760be248fa818403037f3",
       "executable": false
     },
     "src/ui/dashboard/components/workflows/WorkflowPanel.jsx": {
@@ -8537,6 +8537,10 @@
     },
     "src/ui/dashboard/hooks/usePluginMessageEvent.jsx": {
       "sha256": "d32439f5db531a56ef5ef0d77a09deb251575402a224d58d4f6bb021182de4c4",
+      "executable": false
+    },
+    "src/ui/dashboard/hooks/useQuietLine.jsx": {
+      "sha256": "6cdf0b7f4f080ae027f6b1ab95bb7c007d9ef0354baf72fa7346b57b91939a80",
       "executable": false
     },
     "src/ui/dashboard/hooks/useScrollEdge.jsx": {
@@ -8680,7 +8684,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-inbox.scss": {
-      "sha256": "3d25dfb78421a896e15813d1957166ed10d372838c89ce5543875f7f6eeddb2f",
+      "sha256": "b9faa41780ef5683bd362de81fc0ddc5592cc417af8e51352939c64aec73f4af",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-profile-symbols.scss": {

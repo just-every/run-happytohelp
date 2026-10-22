@@ -168,9 +168,10 @@ body.conversation-workspace #chat .conversation-inbox {
     .inbox-filter-chip > .fe { font-size: 15px; }
 }
 
-// Rows: the name and time, a one-line preview with the assignee's initial and the unread disc, then one quiet line of
-// what is not the everyday default (the workspace in Global Inbox, a status or priority, a due time or snooze, the first
-// tag and "+n"). Close / Reopen takes the time's place on hover and keyboard focus.
+// Rows: the name and time, a one-line preview with the assignee's initial and the unread disc, then a quiet line of what
+// is not the everyday default (the workspace in Global Inbox, a status or priority, the first tag and "+n", a due time or
+// snooze), on a second line only when its parts do not fit on one. Close / Reopen takes the time's place on hover and
+// keyboard focus.
 body.conversation-workspace #chat .sidebar .conversation-item-wrap { position: relative; margin-bottom: 4px; }
 
 body.conversation-workspace #chat .sidebar .conversation-item {
@@ -224,33 +225,44 @@ body.conversation-workspace #chat .sidebar .conversation-item {
     .conversation-item-subject + .conversation-item-message::before { content: " \00b7  "; content: " \00b7  " / ", "; }
     .conversation-item-author { font-weight: 500; }
 
+    // The quiet line's parts keep their own width; useQuietLine places them (one line, or a second for what does not fit)
+    // and gives a narrower width to a part that must end in an ellipsis.
     .conversation-item-meta {
+        --quiet-sep: 5px;
         display: flex;
-        align-items: center;
-        gap: 8px;
+        flex-direction: column;
+        gap: 4px;
         min-width: 0;
         margin-top: 4px;
-        overflow: hidden;
         color: var(--ink-soft);
         font-size: 14px;
         line-height: 22px;
         white-space: nowrap;
-
-        > .workflow-inbox-due { flex: 0 100 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-        // A middle dot between words that follow one another (the workspace, states, a due time); the tag's chip needs none.
-        > :is(.conversation-item-workspace, .conversation-item-state, .workflow-inbox-due) + :is(.conversation-item-state, .workflow-inbox-due)::before { content: "\00b7"; content: "\00b7" / ""; margin-right: 8px; color: var(--ink-soft); font-weight: 400; }
     }
+    .conversation-item-meta-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
 
-    // The workspace in Global Inbox: its switcher swatch, small, before its name. The name gives way first, then a due
-    // time or snooze; the state words and the tag hold (a very long tag stops at 60% of the line).
-    .conversation-item-workspace { display: inline-flex; flex: 0 1000 auto; align-items: center; gap: 6px; min-width: 0; }
-    .conversation-item-workspace-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+        > * { flex: none; }
+    }
+    // A middle dot between words that follow one another on a line (the workspace, the states, a due time), read as a
+    // pause; the tag's chip needs none.
+    .conversation-item-sep { width: var(--quiet-sep); text-align: center; }
+    .conversation-item-sep::before,
+    .conversation-item-state + .conversation-item-state::before { content: "\00b7"; content: "\00b7" / ", "; color: var(--ink-soft); font-weight: 400; }
+    .conversation-item-state + .conversation-item-state::before { margin: 0 8px; }
+    :is(.conversation-item-workspace-name, .conversation-item-states, .workflow-inbox-due) { overflow: hidden; text-overflow: ellipsis; }
+
+    // The workspace in Global Inbox: its switcher swatch, small, before its name.
+    .conversation-item-workspace { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
     .conversation-item-workspace-dot { flex: none; width: 10px; height: 10px; border: 1px solid var(--control-line); border-radius: 50%; }
 
-    .conversation-item-state { flex: none; color: var(--ink); font-weight: 500; }
+    .conversation-item-states { color: var(--ink); font-weight: 500; }
 
-    .conversation-item-tags { display: inline-flex; flex: none; align-items: center; gap: 6px; min-width: 0; max-width: 60%; }
-    .conversation-item-tags .conversation-tag { display: block; min-width: 0; overflow: hidden; line-height: 20px; text-overflow: ellipsis; }
+    .conversation-item-tags { display: inline-flex; align-items: center; gap: 6px; }
+    .conversation-item-tags .conversation-tag { display: block; overflow: hidden; line-height: 20px; text-overflow: ellipsis; }
     .conversation-item-more-tags { flex: none; color: var(--ink-soft); font-weight: 500; }
 
     // The unread disc: aqua with an ink numeral.

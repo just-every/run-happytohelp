@@ -16,7 +16,7 @@ import Tooltip from "react-bootstrap/Tooltip";
 import '../styles/components/ConversationItem.scss';
 
 // One inbox row (H16): the name and time; the message on one line with the assignee's initial and the unread count;
-// then one quiet line for what is not the everyday default (ConversationItemMeta).
+// then a quiet line for what is not the everyday default (ConversationItemMeta; a second only when its parts need it).
 function ConversationItem({ conversation }) {
     const {
         setIsMainVisible,

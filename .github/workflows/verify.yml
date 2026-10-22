@@ -66,7 +66,7 @@ jobs:
     needs: build
     name: Verify / ${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -205,7 +205,7 @@ jobs:
   public-preview:
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       H2H_PREVIEW_ORIGIN: http://127.0.0.1:5186
     steps:

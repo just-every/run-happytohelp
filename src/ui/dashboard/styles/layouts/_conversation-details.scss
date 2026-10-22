@@ -389,14 +389,11 @@ body.conversation-workspace #chat {
     }
 }
 
-// Conversation tags: aqua chips (the list rows show them small; the Ticket summary adds and removes them).
-body.conversation-workspace #chat .conversation-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-
-    &:empty { display: none; }
-    .conversation-tag { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 0 9px; border: 1px solid var(--d-cyan); border-radius: 999px; color: var(--ink); background: var(--d-cyan-tint); font-size: 14px; font-weight: 500; }
-    button.conversation-tag { min-height: 28px; font-size: 14.5px; cursor: pointer; }
+// Conversation tags: aqua chips (a list row shows its first, layouts/_conversation-inbox.scss; the Ticket summary adds and
+// removes them).
+body.conversation-workspace #chat {
+    .conversation-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .conversation-tags:empty { display: none; }
+    :is(.conversation-tags, .conversation-item-tags) .conversation-tag { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 0 9px; border: 1px solid var(--d-cyan); border-radius: 999px; color: var(--ink); background: var(--d-cyan-tint); font-size: 14px; font-weight: 500; }
+    .conversation-tags button.conversation-tag { min-height: 28px; font-size: 14.5px; cursor: pointer; }
 }
-body.conversation-workspace #chat .conversation-item .conversation-tags { margin: 2px 0 4px; }

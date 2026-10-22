@@ -10,7 +10,8 @@ import {launchBrowser} from '../../journeys/kit/browser.mjs'
 export async function inboxConversation(){
 // Inbox and conversation regressions against the emitted Worker and a real browser:
 // contact clocks, header fit, literal bounded search, Escape on the assignment menu, saved replies over a draft,
-// the row Close/Reopen control by keyboard and touch, and Reopen on a closed conversation.
+// the row Close/Reopen control by keyboard (and on touch, through the opened conversation's header), and Reopen on a
+// closed conversation.
 
 const optionalPort=name=>process.env[name]?Number(process.env[name]):undefined
 const evidence=join(process.env.H2H_EVIDENCE_DIR?resolve(process.env.H2H_EVIDENCE_DIR):await mkdtemp(join(tmpdir(),'h2h-inbox-conversation-')),'inbox-conversation')
@@ -222,7 +223,8 @@ try{
   await context.close()
  }
 
- // 6. Row Close control: keyboard, touch, no overlap.
+ // 6. Row Close control: shown on keyboard focus in the time's place, clear of the rest of the row; touch opens the
+ // conversation instead, whose header closes it.
  {
   const {context,page}=await open(inboxPath())
   const label='Close conversation with Row Alpha'
@@ -231,26 +233,28 @@ try{
   let reached=false
   for(let i=0;i<80&&!reached;i++){await page.keyboard.press('Tab');reached=await page.evaluate(text=>document.activeElement?.getAttribute('aria-label')===text,label)}
   assert.ok(reached,'Tab reaches the row Close control')
-  const focused=await page.evaluate(()=>{const el=document.activeElement,r=el.getBoundingClientRect(),cs=getComputedStyle(el),row=el.parentElement,hit=[...row.querySelectorAll('.conversation-item-time,.avatar,.conversation-item-unread,.conversation-item-agent,h4')].filter(other=>{const o=other.getBoundingClientRect();return Math.min(o.right,r.right)-Math.max(o.left,r.left)>2&&Math.min(o.bottom,r.bottom)-Math.max(o.top,r.top)>2}).map(other=>other.className||other.tagName);return {w:r.width,h:r.height,opacity:Number(cs.opacity),display:cs.display,hit,insideLink:el.closest('a')!==null}})
+  const focused=await page.evaluate(()=>{const el=document.activeElement,r=el.getBoundingClientRect(),cs=getComputedStyle(el),row=el.parentElement,shown=other=>getComputedStyle(other).opacity!=='0'&&getComputedStyle(other).visibility!=='hidden',hit=[...row.querySelectorAll('.conversation-item-time,.avatar,.conversation-item-unread,.conversation-item-agent,h4')].filter(shown).filter(other=>{const o=other.getBoundingClientRect();return Math.min(o.right,r.right)-Math.max(o.left,r.left)>2&&Math.min(o.bottom,r.bottom)-Math.max(o.top,r.top)>2}).map(other=>other.className||other.tagName);return {w:r.width,h:r.height,opacity:Number(cs.opacity),display:cs.display,hit,time:getComputedStyle(row.querySelector('.conversation-item-time')).opacity,insideLink:el.closest('a')!==null}})
   assert.ok(focused.w>=24&&focused.h>=24&&focused.opacity>0.3&&focused.display!=='none',`focused control visible and large enough: ${JSON.stringify(focused)}`)
-  assert.deepEqual(focused.hit,[],'the control covers no row content')
+  assert.equal(focused.time,'0','the time steps aside while the control shows in its place')
+  assert.deepEqual(focused.hit,[],'the control covers no visible row content')
   assert.equal(focused.insideLink,false,'the control is not nested in the row link')
   await page.keyboard.press('Enter')
   await page.waitForFunction(text=>!document.querySelector(`[aria-label="${text}"]`),label)
   assert.ok(new URL(page.url()).pathname.endsWith('/conversations'),'closing from the list does not open the conversation')
   await eventually(()=>state('alpha'),row=>row.resolved_at,'server closed the conversation')
-  check('row Close control: reachable by Tab, visible, clear of row content, Enter closes without navigating')
+  check('row Close control: reachable by Tab, shown in the time\'s place, clear of the rest of the row, Enter closes without navigating')
   await context.close()
   const touch=await open(inboxPath(),{viewport:{width:390,height:844},hasTouch:true,isMobile:true})
   const button=touch.page.getByRole('button',{name:'Close conversation with Row Beta'})
-  await button.waitFor()
-  const box=await button.boundingBox();assert.ok(box.width>=24&&box.height>=24)
-  assert.equal(await button.evaluate(el=>Number(getComputedStyle(el).opacity)),1,'visible at rest on touch')
-  await button.tap()
-  await touch.page.waitForFunction(()=>!document.querySelector('[aria-label="Close conversation with Row Beta"]'))
-  assert.ok(new URL(touch.page.url()).pathname.endsWith('/conversations'))
+  await button.waitFor({state:'attached'})
+  assert.deepEqual(await button.evaluate(el=>({opacity:getComputedStyle(el).opacity,pointerEvents:getComputedStyle(el).pointerEvents})),{opacity:'0',pointerEvents:'none'},'on touch the row shows no Close at rest and takes no tap there')
+  const box=await button.boundingBox()
+  await touch.page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2)
+  await touch.page.waitForURL(url=>url.pathname===conversationPath('beta'))
+  assert.equal((await state('beta')).resolved_at,null,'the tap opened Row Beta without closing it')
+  await header(touch.page).getByRole('button',{name:'Close',exact:true}).tap()
   await eventually(()=>state('beta'),row=>row.resolved_at,'server closed Row Beta')
-  check('row Close control is visible at rest on touch and closes without opening the conversation')
+  check('touch: no row Close at rest; a tap where it sits opens the conversation, and its header closes it')
   await touch.context.close()
   const closed=await open(inboxPath({view:'closed'}))
   const reopen=closed.page.getByRole('button',{name:'Reopen conversation with Hannah Closed'})

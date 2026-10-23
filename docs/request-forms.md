@@ -55,6 +55,23 @@ refused. Accepted custom answers are stored as typed ticket values for the
 inbox and the existing ticket-field filters and rules. Changing a form does not
 rewrite values on earlier requests.
 
+## Route requests and apply service commitments
+
+Workflow conditions can match `form_id` and `field:<ticket-field-id>` together,
+so two forms with the same answer can route to different teams. The form ID is
+read from the admitted submission, rather than supplied as a ticket attribute.
+
+The SLA policy API at `/api/dashboard/projects/:projectId/sla-policies` accepts
+`conditions.form_ids` (any listed form) and `conditions.fields` (all listed typed
+answers). For example, `fields: {"priority-field-id": "urgent"}` matches that
+exact stored answer. Numbers and booleans retain their types; multi-select lists
+match their complete stored list in order. Empty conditions match any value.
+References must belong to the workspace, field values must pass the field's
+validation, and restricted fields cannot be used. If a field becomes restricted,
+its values no longer select that SLA. Existing policies without these conditions
+keep their behavior. The settings screen displays these conditions and preserves
+them when editing a policy; configure these two conditions through the API.
+
 ## API reference
 
 Public form definitions are available through `GET /api/forms/:projectId` and

@@ -76,6 +76,7 @@ export async function ticketLifecycle(f){
  assert.equal((await call(`/ticket-fields/${required.id}`,undefined,'owner','DELETE')).status,400,'a used definition cannot delete the solved ticket value')
  await ok(`/ticket-fields/${required.id}`,{required:false},'owner','PATCH')
  assert.equal((await get(unsolved)).fields[required.id],'DAMAGED-SEAM','making the field optional preserves its historical value')
+ f.retainedField=required
  const log=await app.sql("SELECT * FROM audit_events WHERE project_id=? AND action='ticket.updated'",w.projectId)
  assert.ok(log.length>0)
 }

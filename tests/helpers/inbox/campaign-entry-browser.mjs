@@ -4,7 +4,7 @@ import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 import {pathToFileURL} from 'node:url'
 import {createRuntime} from '../emitted-runtime.mjs'
-import {seedTicketBrowser} from './ticket-browser-fixture.mjs'
+import {seedTicketBrowser,ticketOwner} from './ticket-browser-fixture.mjs'
 import {launchBrowser,evidence} from '../../journeys/kit/browser.mjs'
 
 /** Public built pages and routes, with only the DNS/mail network edge faked. */
@@ -12,11 +12,12 @@ export async function campaignEntryBrowser(){
  const directory=await mkdtemp(join(tmpdir(),'h2h-entry-browser-')),mailPath=join(directory,'mail.ndjson'),fixturePath=join(directory,'provider.mjs')
  await writeFile(mailPath,'')
  await writeFile(fixturePath,`import {appendFile} from 'node:fs/promises';export default async request=>{if(new URL(request.url).hostname==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]});if(request.url!=='https://api.resend.com/emails')throw Error('Unexpected provider request');const mail=await request.json();await appendFile(${JSON.stringify(mailPath)},JSON.stringify(mail)+'\\n');return mail.text?.includes('synthetic-happytohelp-90')&&[].concat(mail.to).includes('browser-notice-fail@example.test')?Response.json({error:'Recipient refused'},{status:422}):Response.json({id:crypto.randomUUID()});};`)
- const runtime=await createRuntime({vars:{H2H_LOCAL:'true',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-80',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'synthetic-happytohelp-81',APP_ORIGIN:'https://app.example'},outboundFixture:pathToFileURL(fixturePath).href}),browser=await launchBrowser(),shot=await evidence('campaign-entry')
+ const runtime=await createRuntime({vars:{H2H_LOCAL:'true',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-80',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'synthetic-happytohelp-81',H2H_SETUP_TOKEN:'synthetic-happytohelp-82',APP_ORIGIN:'https://app.example'},outboundFixture:pathToFileURL(fixturePath).href}),browser=await launchBrowser(),shot=await evidence('campaign-entry')
  const mails=async()=>(await readFile(mailPath,'utf8')).trim().split('\n').filter(Boolean).map(line=>JSON.parse(line)),until=async check=>{const deadline=Date.now()+15000;while(Date.now()<deadline){const result=await check();if(result)return result;await new Promise(done=>setTimeout(done,100))}throw Error('Browser fixture did not settle')}
  let success=false
  try{
-  const f=await seedTicketBrowser(runtime.origin,1),{projectId,base,api,owner}=f,management=`/api/management/projects/${projectId}`,context=await browser.newContext({viewport:{width:1440,height:900}}),page=await context.newPage()
+  const setup=await fetch(runtime.origin+'/api/identity/bootstrap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...ticketOwner,allowedOrigin:runtime.origin,setupToken:'synthetic-happytohelp-82'})});assert.equal(setup.status,200);const initial=await setup.json()
+  const f=await seedTicketBrowser(runtime.origin,1,{owner:ticketOwner,projectId:initial.projectId}),{projectId,base,api,owner}=f,management=`/api/management/projects/${projectId}`,context=await browser.newContext({viewport:{width:1440,height:900}}),page=await context.newPage()
   page.setDefaultTimeout(15000)
   await api(management+'/email-settings',{from_address:'support@example.test',from_name:'Trailhead support',inbound_address:'help@example.test',is_enabled:true},'PUT')
   const mailbox=(await api(management+'/mailboxes',{provider:'forwarding',address:'helpdesk@example.test',displayName:'Trailhead support'})).data

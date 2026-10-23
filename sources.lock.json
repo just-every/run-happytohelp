@@ -4276,7 +4276,7 @@
       "executable": false
     },
     "src/modules/forms/cc.ts": {
-      "sha256": "d6b77313962bacaf15b0bdb016c78bfe2f7d7d328d94d9c294ce93c79405d585",
+      "sha256": "b0efa19e5311e9e43e41956f0d9dd72ceb543d99b00e5bde6a8b2ef8f61d8663",
       "executable": false
     },
     "src/modules/forms/challenge.ts": {
@@ -4297,6 +4297,10 @@
     },
     "src/modules/forms/index.ts": {
       "sha256": "914545382244d05d604eda30e2238e02febf06845abf2733713cd401df218a53",
+      "executable": false
+    },
+    "src/modules/forms/lookups.ts": {
+      "sha256": "aa0f190f4786928a12da269ac1cf67c1874fefae69c5e23b3ff443d960acd5c4",
       "executable": false
     },
     "src/modules/forms/routes.ts": {
@@ -5152,7 +5156,7 @@
       "executable": false
     },
     "src/modules/integrations/email-preparation.ts": {
-      "sha256": "f68581c388b74bc500acbf5e7a0235e00bc798d254d911a62038eeac36728431",
+      "sha256": "e4700795c17f3e2fa9fc6f9c8b9eeef56d9004b53e963dfeb3e6dbd28dc1f8aa",
       "executable": false
     },
     "src/modules/integrations/email-provider.ts": {
@@ -6060,7 +6064,7 @@
       "executable": false
     },
     "src/modules/management/service-notices.ts": {
-      "sha256": "077e7eafb631684428476b52af16f1262f919dcc6c7f43584deba5f0f2b3215b",
+      "sha256": "af741cbc88bdb1a9927e3af100259b092c2f1b0c213d54fe9b3de257a13f6f6b",
       "executable": false
     },
     "src/modules/management/site-read/fetch.ts": {
@@ -6659,12 +6663,16 @@
       "sha256": "16707d359330997aa7032a688cc8402af1e96d802d5813a0d1c30d355e6c95c7",
       "executable": false
     },
+    "src/modules/tickets/lookups.ts": {
+      "sha256": "7f3974a36195cac6173c9534343fbb2990fc93b2f37c595a0ec6e7dcbc246b9f",
+      "executable": false
+    },
     "src/modules/tickets/model.ts": {
       "sha256": "3714160b02d4838341fb8c8a0efc32193d7be6c0263118a68471d55011a1b54c",
       "executable": false
     },
     "src/modules/tickets/mutate-validation.ts": {
-      "sha256": "c78073978d97a7953acf84fe01a486fc83090e404988a7a870b700f8dc16ef1d",
+      "sha256": "344091d8dd9ee00fd42bda4ccee3be993d8dc9b33ddbd4a058b7da4de47ac118",
       "executable": false
     },
     "src/modules/tickets/mutate.ts": {
@@ -8047,6 +8055,10 @@
       "sha256": "e07d71fa8f07f0f272301c8364e7181354ec7299e59879cfe7822fe112036870",
       "executable": false
     },
+    "src/ui/dashboard/components/CreateTicketConfiguration.jsx": {
+      "sha256": "6d27ecbc3d39dc337e7f8a542a15055b6c75bb0c6a14bb25062d3dde18ea14e0",
+      "executable": false
+    },
     "src/ui/dashboard/components/DelegationAttachments.jsx": {
       "sha256": "a7d173d43e7671087d3f82afc32c87cceb952de453c247939287903741927859",
       "executable": false
@@ -8287,6 +8299,10 @@
       "sha256": "7ebfe0459849462d62b0894f20d36ddb38c3de3e38b4ffe490ae2cde4cbd8096",
       "executable": false
     },
+    "src/ui/dashboard/components/TicketRequesterPicker.jsx": {
+      "sha256": "87247add6714e10cd989389e8e0653efff833f2fe1286bd922796b82e4b02ff4",
+      "executable": false
+    },
     "src/ui/dashboard/components/tickets/handle-timer.css": {
       "sha256": "048eb15c5ba6cc067861a31d4015e0965041ab79d4223b3d8ee9143076897aed",
       "executable": false
@@ -8328,7 +8344,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/tickets/TicketField.jsx": {
-      "sha256": "429c9c54c038a6f4faeeb948cd6ae496f33dc5134a465f30e0357519572201bf",
+      "sha256": "431b8081c612ebb8702a242677e672e35ed5523c23ede9e3a81c50cffb6f5a92",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/TicketFilterValue.jsx": {
@@ -11173,6 +11189,10 @@
     },
     "tests/helpers/inbox/artwork.mjs": {
       "sha256": "a73cb9d178c14f0a143434df404361e98406aba2819c55f91d82a111936520d8",
+      "executable": false
+    },
+    "tests/helpers/inbox/campaign-entry-browser.mjs": {
+      "sha256": "10986ea4ef1690c6c7ff82ef14cb1b1b5f1278a2530b597bf2fe071293b1afc0",
       "executable": false
     },
     "tests/helpers/inbox/conversation-panel-resize-browser.mjs": {

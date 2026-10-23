@@ -10,6 +10,7 @@ import {outboundConfiguration} from './outbound-ticket-configuration'
 import {createOutboundTicket,type OutboundTicketCommitted} from './outbound-tickets'
 
 const base='/projects/:projectId/service-notices'
+function publicPreview(id:string,plan:any){return {id,ticket:plan.ticket,expiresAt:plan.expiresAt,recipients:plan.recipients.map(({metadata_json,...recipient}:any)=>recipient)}}
 export function serviceNoticeRoutes(onCommittedMessage?:OutboundTicketCommitted){
  const routes=new Hono<AppEnv>()
  routes.post(base+'/preview',async c=>{
@@ -20,7 +21,7 @@ export function serviceNoticeRoutes(onCommittedMessage?:OutboundTicketCommitted)
   if(ticket.cc.length||ticket.bcc.length||ticket.configuration?.internal)throw new HTTPException(400,{message:'Service notices send one public ticket per requester without copies'})
   await outboundConfiguration(c.env,actor,ticket,authority.access)
   const intent=await hashToken(JSON.stringify({ticket,ids:[...ids].sort()})),prior=await c.env.DB.prepare('SELECT * FROM operator_service_notices WHERE project_id=? AND actor_id=? AND local_id=?').bind(actor.projectId,actor.id,ticket.localId).first<any>()
-  if(prior){if(prior.intent_hash!==intent)throw new HTTPException(409,{message:'Notice command conflicts with its earlier preview'});return c.json({data:{id:prior.id,...JSON.parse(prior.plan_json)}})}
+  if(prior){if(prior.intent_hash!==intent)throw new HTTPException(409,{message:'Notice command conflicts with its earlier preview'});return c.json({data:publicPreview(prior.id,JSON.parse(prior.plan_json))})}
   const recipients=[]
   for(const id of ids){
    const contact=await c.env.DB.prepare(`SELECT ct.id,ct.name,ct.email,ct.metadata_json FROM contacts ct WHERE ct.project_id=? AND ct.id=? AND ${livePortalContact()}`).bind(actor.projectId,id).first<any>()
@@ -31,7 +32,7 @@ export function serviceNoticeRoutes(onCommittedMessage?:OutboundTicketCommitted)
   const id=crypto.randomUUID(),now=Date.now(),plan={ticket,recipients,expiresAt:now+15*60000}
   const written=await c.env.DB.prepare(`INSERT INTO operator_service_notices(id,project_id,actor_id,local_id,intent_hash,plan_json,created_at) SELECT ?,?,?,?,?,?,? WHERE EXISTS(${authority.sql})`).bind(id,actor.projectId,actor.id,ticket.localId,intent,JSON.stringify(plan),now,...authority.params).run()
   if(!written.meta.changes)throw new HTTPException(409,{message:'Operator authority changed'})
-  return c.json({data:{id,...plan}},201)
+  return c.json({data:publicPreview(id,plan)},201)
  })
  routes.post(base+'/:noticeId/apply',async c=>{
   const actor=await requireProject(c,c.req.param('projectId')!,true),authority=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'conversations.reply'),id=c.req.param('noticeId')!

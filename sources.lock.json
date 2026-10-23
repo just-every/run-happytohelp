@@ -1621,7 +1621,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "746e3b592ea6eb97266cc62ca901eaa16462e5da47ca662b25d0cc0b8235a0e1",
+      "sha256": "ebb65f4cf40bd1818181c75cc54318ebbeaa2a69d66c607fe85450145d71e1b2",
       "executable": false
     },
     "AGENTS.md": {
@@ -1641,7 +1641,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "9d5da339a1ce99a570f6b15aa16bdbb7c227f0d32eff12408303c4aec1aea843",
+      "sha256": "341568ae67320fa878015986ea1be5b0e23015254d6429926902f7151f02e489",
       "executable": false
     },
     "DEMO.md": {
@@ -3957,7 +3957,7 @@
       "executable": false
     },
     "src/modules/business-connectors/actions.ts": {
-      "sha256": "a79b05ba0ede33b2abf0c5cde01c6d8c90e92a04b466d68bb2eb6cc66bb0910d",
+      "sha256": "a0e45c42d11d1edeec86a9070892bf411d7f4d67d29bf4d9346330b45f02ba41",
       "executable": false
     },
     "src/modules/business-connectors/confirmation.ts": {
@@ -3989,11 +3989,11 @@
       "executable": false
     },
     "src/modules/business-connectors/providers/actions.ts": {
-      "sha256": "dd8bbad8e5a6de66eb71ee8db99229b59e36999ebee08736ef1ff643bf8209ba",
+      "sha256": "6476c96956154433f3099cf45626aa6ded14a5e3f5a05d9d422595a182832889",
       "executable": false
     },
     "src/modules/business-connectors/providers/context.ts": {
-      "sha256": "990e07266e28e5e89682e34e63b3baf2b0f47cdaf12138d99545f2e22e77c673",
+      "sha256": "18f607facb26666fe026cec502fe1be4c48881938956c638be37ac79f03190e2",
       "executable": false
     },
     "src/modules/business-connectors/providers/http.ts": {
@@ -4004,8 +4004,12 @@
       "sha256": "03063070035e48954a72f0ea53cfeaf5dc1ea4b529a1f6c6e1fb6815fb4c3068",
       "executable": false
     },
+    "src/modules/business-connectors/providers/stripe-billing.ts": {
+      "sha256": "3591827c89cecb592b82361847896316d19d113fa51ead041230c497f3f9ac7d",
+      "executable": false
+    },
     "src/modules/business-connectors/README.md": {
-      "sha256": "fc6f3580ca226b04989fad2671e8a88923dd63da29f3362455fe124db970b301",
+      "sha256": "3d772451fc67b73d6b7c3f2917529e74f786d38a85772c587039d991e11e26ac",
       "executable": false
     },
     "src/modules/business-connectors/routes.ts": {
@@ -9553,7 +9557,7 @@
       "executable": false
     },
     "src/ui/native/pages/business-connectors/Context.jsx": {
-      "sha256": "0e7c6b748587d7fec3fbe98c1f8319d12573217e0273d015f274d463cfcb2faa",
+      "sha256": "38053453c4c671312d1aacba03b65c1d7268def470185fa92626ba5fcab13f6c",
       "executable": false
     },
     "src/ui/native/pages/business-connectors/controls.css": {
@@ -9561,11 +9565,11 @@
       "executable": false
     },
     "src/ui/native/pages/business-connectors/Panel.jsx": {
-      "sha256": "2e5e2517ae94595039a94905cf927fd529def1e78728c46694324339c17219a6",
+      "sha256": "538dd3119bba27e9266b44f5e0e5ca04c6058145c76f6f8c966c22c683b7e6f4",
       "executable": false
     },
     "src/ui/native/pages/business-connectors/Settings.jsx": {
-      "sha256": "8f0b7c225446d22a8d281053dc2922e320bfeba4987605d8ff18b8c63b4e9b2d",
+      "sha256": "eb3f1b3a0a36f4c36549d93e0e9333a6cba7978ea1d3ea1fd8b69c334fd2290c",
       "executable": false
     },
     "src/ui/native/pages/Companies.jsx": {
@@ -10885,15 +10889,15 @@
       "executable": false
     },
     "tests/helpers/business-connectors/browser.mjs": {
-      "sha256": "16bd22872f191c4c85eb7476d12ac8d6f68ef715506d1fb8c614ad44577943ac",
+      "sha256": "7fb9fbdd3f13bc3cdbb6340e977a97b576fc280b796a4bbef21d35944fcb1865",
       "executable": false
     },
     "tests/helpers/business-connectors/journeys.mjs": {
-      "sha256": "d64548c8915c531c3f8b38142dcfc308c3e298efdff7fc728b1ef9b2e77a7b5c",
+      "sha256": "06b83afc5343afc16c5bfeb05330a302bb5c9aaccca1739796371ef6a71d0c88",
       "executable": false
     },
     "tests/helpers/business-connectors/network.mjs": {
-      "sha256": "4e6ff7e919f99cf435304f7797cafaec6083fa1f9de208f1fba7895e3594065e",
+      "sha256": "146b3d95e61133e75b39086a035b00a2dc55446a54bdd482bcba7cf485196d74",
       "executable": false
     },
     "tests/helpers/company-portal.mjs": {

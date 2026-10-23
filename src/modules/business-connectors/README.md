@@ -31,9 +31,11 @@ Implemented provider paths:
   cancellation, multi-tender and tax/shipping allocation remain gaps, along
   with live Shopify sandbox receipts.
 - Stripe: customer, invoice and subscription context; bounded USD payment-intent
-  refunds and subscription cancellation at period end, with no proration.
-  Credits, pause, plan changes, broader proration previews and broader
-  proration previews remain gaps.
+  refunds, future-invoice credits, collection pause and cancellation at period
+  end. Single-item plan changes preserve quantity and billing interval, preview
+  the provider invoice, tax and proration at a fixed date, and verify the paid
+  invoice after execution. Quotes expire after five minutes. Broader multi-item
+  and billing-interval changes are refused.
 - HubSpot and Salesforce: independent account verification and contact
   context, source freshness and approved outcome activities/notes. Provider
   sales lifecycle is not a support entitlement. Plan and support-entitlement properties are explicitly selected in Settings;
@@ -58,8 +60,8 @@ existing credentials, API, erasure and uncertainty journeys. Provider fixtures
 prove local protocol behavior only; they are not live sandbox receipts. The
 campaign separately exercised a held Stripe test key through verified account
 settings, a paid USD invoice, one refund with a deliberately lost response,
-provider reconciliation, a reviewed customer-visible confirmation and period-end
-cancellation. That receipt is kept outside product source. Shopify, HubSpot and Salesforce live
+provider reconciliation, a reviewed customer-visible confirmation, a paid prorated plan change,
+future-invoice credit, collection pause and period-end cancellation. That receipt is kept outside product source. Shopify, HubSpot and Salesforce live
 sandbox receipts remain pending. Orbit means the fleet Sales CRM in
 `just-every/run-orbit`; its API-001 still lacks admin-issued scoped public
 credentials and a general public records API. Orbit is explicitly unavailable

@@ -1,8 +1,10 @@
+import {extendedStripeKinds,stripeBillingPreview,stripeBillingExecute,stripeBillingReadback} from './stripe-billing'
 import {shopifyPreview,shopifyExecute,shopifyReadback} from './shopify'
 import type {Connection,Action} from '../model'
 import {request,ProviderFailure} from './http'
 import {context} from './context'
-export async function preview(row:Connection,token:string,source:string,kind:string,target:string,amount:number,reason:string){
+export async function preview(row:Connection,token:string,source:string,kind:string,target:string,amount:number,reason:string,options:any={}){
+ if(row.provider==='stripe'&&extendedStripeKinds.includes(kind))return stripeBillingPreview(row,token,source,kind,target,amount,reason,options)
  if(row.provider==='shopify'&&kind==='refund')return shopifyPreview(row,token,source,target,amount,reason)
  if(row.provider==='stripe'&&kind==='refund'){
   const payment=await request(row,token,'/v1/payment_intents/'+target),refunds=await request(row,token,`/v1/refunds?payment_intent=${target}&limit=100`)
@@ -28,6 +30,7 @@ export async function preview(row:Connection,token:string,source:string,kind:str
 export async function execute(row:Connection,token:string,action:Action){
  if(row.provider==='shopify')return shopifyExecute(row,token,action)
  if(row.provider==='stripe'){
+  if(extendedStripeKinds.includes(action.kind))return stripeBillingExecute(row,token,action)
   if(action.kind==='refund')return request(row,token,'/v1/refunds',{method:'POST',key:action.id,body:{payment_intent:action.target_id,amount:String(action.amount_cents),'metadata[h2h_action]':action.id}})
   return request(row,token,'/v1/subscriptions/'+action.target_id,{method:'POST',key:action.id,body:{cancel_at_period_end:'true','metadata[h2h_action]':action.id}})
  }
@@ -37,6 +40,7 @@ export async function execute(row:Connection,token:string,action:Action){
 }
 export async function readback(row:Connection,token:string,action:Action,remoteId:string|null){
  if(row.provider==='shopify')return shopifyReadback(row,token,action,remoteId)
+ if(row.provider==='stripe'&&extendedStripeKinds.includes(action.kind))return stripeBillingReadback(row,token,action,remoteId)
  if(row.provider==='stripe'&&action.kind==='refund'){
   let result
   if(remoteId)result=await request(row,token,'/v1/refunds/'+encodeURIComponent(remoteId))

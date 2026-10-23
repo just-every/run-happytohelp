@@ -4001,7 +4001,7 @@
       "executable": false
     },
     "src/modules/business-connectors/providers/context.ts": {
-      "sha256": "3a78bdd12be57b4ccd66f5fa1d856d8cbc52d137bde34847c839b65a17ec6797",
+      "sha256": "5aab79de6ebbc836d518f0a3ac817ccb03f6eaf06218e739148a58e445e1d24d",
       "executable": false
     },
     "src/modules/business-connectors/providers/crm-context.ts": {
@@ -9621,7 +9621,7 @@
       "executable": false
     },
     "src/ui/native/pages/business-connectors/Panel.jsx": {
-      "sha256": "e421e44ce0c69e53f8f117377846a3a2ce8e13664a2db9a276846f59d3f587b9",
+      "sha256": "da1a09812b019d073eaab4f70fc198222fc7dad3f980718b807d37a74a9bbe67",
       "executable": false
     },
     "src/ui/native/pages/business-connectors/Settings.jsx": {
@@ -9629,7 +9629,7 @@
       "executable": false
     },
     "src/ui/native/pages/business-connectors/ShopifyOptions.jsx": {
-      "sha256": "be228ee6bb5ad6ba98836fcaa0e84ce70cfe8c0900a5cd85d780104752be269d",
+      "sha256": "baa329353f7c8174cbdfa6eb8a644e3076d869af0ed84aace3e4394ff2b7966d",
       "executable": false
     },
     "src/ui/native/pages/Companies.jsx": {
@@ -10949,7 +10949,7 @@
       "executable": false
     },
     "tests/helpers/business-connectors/browser.mjs": {
-      "sha256": "bd61e641f77e3e46ae6d77cea863ca68e61c48740f5c7a7b199062d72c688b01",
+      "sha256": "d619a47e9ccdd59aaabac25c48a1c51de61f1024fcd73c4c892904fa40fe2bdd",
       "executable": false
     },
     "tests/helpers/business-connectors/crm-journeys.mjs": {

@@ -1,5 +1,5 @@
 import React from 'react';
-export default function ShopifyOptions({prefix,kind,options,setOptions,orders,target}){
+export default function ShopifyOptions({prefix,kind,options,setOptions,orders,target,reasons}){
  const set=(key,value)=>setOptions(previous=>({...previous,[key]:value})),order=orders?.find(x=>x.id===target),mode=options.mode||'amount';
  if(kind==='refund')return <>
   <label htmlFor={prefix+'mode'}>Refund allocation</label><select id={prefix+'mode'} className="form-select mb-2" value={mode} onChange={e=>setOptions({mode:e.target.value})}><option value="amount">USD amount, original payments</option><option value="items">Selected items and shipping</option><option value="full">All remaining items and shipping</option></select>
@@ -8,7 +8,7 @@ export default function ShopifyOptions({prefix,kind,options,setOptions,orders,ta
  if(kind==='create_return')return <>
   <label htmlFor={prefix+'return-item'}>Fulfilled item to return</label><select id={prefix+'return-item'} required className="form-select mb-2" value={options.fulfillment_line_id||''} onChange={e=>set('fulfillment_line_id',e.target.value)}><option value="">Choose a fulfilled item</option>{order?.fulfillment_items?.map(x=><option key={x.id} value={x.id}>{x.title} · {x.quantity} fulfilled</option>)}</select>
   <label htmlFor={prefix+'return-quantity'}>Return quantity</label><input id={prefix+'return-quantity'} required className="form-control mb-2" type="number" min="1" max="1000" value={options.quantity||1} onChange={e=>set('quantity',Number(e.target.value))}/>
-  <label htmlFor={prefix+'return-reason'}>Shopify return reason ID</label><input id={prefix+'return-reason'} required className="form-control mb-2" value={options.reason_definition_id||''} onChange={e=>set('reason_definition_id',e.target.value)}/>
+  <label htmlFor={prefix+'return-reason'}>Return reason</label><select id={prefix+'return-reason'} required className="form-select mb-2" value={options.reason_definition_id||''} onChange={e=>set('reason_definition_id',e.target.value)}><option value="">Choose a return reason</option>{reasons?.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select>
  </>;
  if(kind==='cancel_order')return <><label htmlFor={prefix+'cancel-reason'}>Shopify cancellation reason</label><select id={prefix+'cancel-reason'} required className="form-select mb-2" value={options.cancellation_reason||''} onChange={e=>set('cancellation_reason',e.target.value)}><option value="">Choose a reason</option>{['CUSTOMER','DECLINED','FRAUD','INVENTORY','OTHER','STAFF'].map(x=><option value={x} key={x}>{x.toLowerCase()}</option>)}</select><label className="d-block mb-2"><input type="checkbox" checked={options.restock||false} onChange={e=>set('restock',e.target.checked)}/> Restock eligible inventory</label><p>Captured payments stay refundable. Review a separate refund when needed.</p></>;
  return null;

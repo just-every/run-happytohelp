@@ -9443,6 +9443,10 @@
       "sha256": "feb75f46b8b1dd6a9b3787082b511e7855a5528746ef030e724633701372a8bf",
       "executable": false
     },
+    "src/ui/native/IconHints.jsx": {
+      "sha256": "dd90141aaf916d87f226e584c685ee2df0ec5997c2babe05c564da8fca91afd3",
+      "executable": false
+    },
     "src/ui/native/inbox-navigation-state.jsx": {
       "sha256": "3f8c8a41c845d07d2c8cf1d4a869b9364b33451c58d0dded6f57a75ad7339e5f",
       "executable": false

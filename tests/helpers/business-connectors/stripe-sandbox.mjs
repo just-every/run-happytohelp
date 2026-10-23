@@ -22,7 +22,7 @@ try{
  app=await startApp({bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outbound:async request=>{
   const url=new URL(request.url);assert.equal(url.origin,'https://api.stripe.com');
   const body=request.method==='GET'?undefined:await request.text();
-  const response=await fetch(request,{redirect:'manual',signal:AbortSignal.timeout(15000)});
+  const response=await fetch(url,{method:request.method,headers:Object.fromEntries(request.headers),body,redirect:'manual',signal:AbortSignal.timeout(15000)});
   statuses[response.status]=(statuses[response.status]??0)+1;
   if(url.pathname==='/v1/refunds'&&request.method==='POST'){
    refundPosts++;assert.equal(new URLSearchParams(body).get('amount'),'125');

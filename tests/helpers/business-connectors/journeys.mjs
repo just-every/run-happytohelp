@@ -70,6 +70,19 @@ export async function uncertainty(){const h=await harness();try{
  await h.connect('stripe',['read']);assert.equal((await h.call(root+'/reconcile',{})).data.state,'succeeded');assert.ok(await h.app.first("SELECT id FROM audit_events WHERE action='business.uncertain'"));assert.equal(h.network.refunds.length,1);
  await h.connect('shopify');const shop=await h.map('shopify'),shopAction=(await h.call(shop+'/prepare',{kind:'refund',target_id:'901',amount_cents:1250,reason:'Shopify lost response',request_key:randomUUID()})).data,shopRoot=shop+'/actions/'+shopAction.id;await h.call(shopRoot+'/approve',{confirmed:true});h.network.timeoutAfterWrite();assert.equal((await h.call(shopRoot+'/execute',{})).state,'uncertain');assert.equal(h.network.shopifyRefunds.length,1);assert.equal((await h.call(shopRoot+'/reconcile',{})).data.state,'succeeded');assert.equal(h.network.shopifyRefunds.length,1);
  const readback=h.network.calls.filter(x=>x.path==='/v1/refunds'&&x.method==='POST');assert.equal(readback.length,1);assert.equal(readback[0].headers['idempotency-key'],action.id);
+ // Provider acceptance is not settlement. Pending and then failed refunds
+ // cannot authorize a success confirmation or another execution attempt.
+ await h.connect('stripe');
+ const pending=(await h.call(path+'/prepare',{kind:'refund',target_id:h.network.payment,amount_cents:1000,reason:'Wait for actual settlement',request_key:randomUUID()})).data,pendingRoot=path+'/actions/'+pending.id;
+ await h.call(pendingRoot+'/approve',{confirmed:true});h.network.pendingNextRefund();
+ const accepted=await h.app.call(h.base+pendingRoot+'/execute',{token:h.token,body:{}});assert.equal(accepted.status,202);assert.equal(accepted.data.data.state,'uncertain');assert.equal(accepted.data.data.result.provider_status,'pending');
+ const confirmation={content:'A refund was confirmed.',expectedRevision:h.conversation.revision,expectedLastMessageId:h.conversation.last_message_id};
+ assert.equal((await h.app.call(h.base+h.ticket+'/actions/'+pending.id+'/send',{token:h.token,body:confirmation})).status,409);
+ assert.equal((await h.app.call(h.base+pendingRoot+'/execute',{token:h.token,body:{}})).status,409);
+ h.network.failLastRefund();const failed=(await h.call(pendingRoot+'/reconcile',{})).data;assert.equal(failed.state,'failed');assert.equal(failed.result.provider_status,'failed');
+ assert.equal((await h.call(pendingRoot+'/execute',{})).data.state,'failed');
+ assert.equal((await h.app.call(h.base+h.ticket+'/actions/'+pending.id+'/send',{token:h.token,body:confirmation})).status,409);
+ assert.equal(h.network.calls.filter(x=>x.path==='/v1/refunds'&&x.method==='POST').length,2,'each distinct refund executes once regardless of settlement');
 }finally{await h.close();}}
 export async function erasure(){const h=await harness();try{
  await h.connect('stripe');const path=await h.map('stripe'),action=(await h.call(path+'/prepare',{kind:'refund',target_id:h.network.payment,amount_cents:1000,reason:'Never execute after erasure',request_key:randomUUID()})).data;await h.call(path+'/actions/'+action.id+'/approve',{confirmed:true});

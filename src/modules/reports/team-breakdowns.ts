@@ -48,7 +48,7 @@ export async function teamBreakdowns(context:TeamReportContext){
  WHERE json_extract(j.value,'$.metric') IN ('first_response','next_response','resolution')
  ), service AS (SELECT dimension,key,metric,SUM(completed_at IS NOT NULL AND breached=0) met,SUM(breached) breached,SUM(completed_at IS NULL AND breached=0) pending FROM clocks GROUP BY dimension,key,metric)
  SELECT d.dimension,d.key id,d.label,COUNT(*) tickets,
- SUM(e.was_resolved) resolved,COALESCE(SUM(e.was_resolved=1 AND e.history_unknown=0),0) reopenDenominator,SUM(e.reopen_events>0) reopened,SUM(e.reopen_events) reopenEvents,SUM(e.history_unknown) historyUnknown,
+ SUM(e.was_resolved) resolved,COALESCE(SUM(e.was_resolved=1 AND e.history_unknown=0),0) reopenDenominator,SUM(e.reopen_events>0 AND e.history_unknown=0) reopened,SUM(e.reopen_events) reopenEvents,SUM(e.history_unknown) historyUnknown,
  SUM(e.score IS NOT NULL) rated,COALESCE(SUM(e.scale='thumbs' AND e.score=1 OR e.scale='five' AND e.score>=4),0) positive,
  COALESCE(SUM(e.outcome='ai'),0) closed,COALESCE(SUM(e.handoff),0) assignmentHandoffs,COALESCE(SUM(e.ai_handoff),0) handedOff,COALESCE(SUM(e.failed),0) failed,COALESCE(SUM(e.uncertain),0) uncertain,COALESCE(SUM(e.outcome IS NULL OR e.outcome='unknown'),0) outcomeUnknown,
  (SELECT json_group_array(json_object('metric',metric,'count',count,'median',median,'p90',p90)) FROM distributions s WHERE s.dimension=d.dimension AND s.key IS d.key) durations,

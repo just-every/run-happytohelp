@@ -12004,7 +12004,7 @@
       "executable": false
     },
     "tests/move-in/parse-accounting.mjs": {
-      "sha256": "da73e2d852790c6a058e88e834f10af3cac40c535cab3f1a21da156964dd4adb",
+      "sha256": "9feaedff0e5a46ff0943c0d17c6c3e0df027d77afa7f10480f0140b04431da75",
       "executable": false
     },
     "tests/move-in/partitions.mjs": {

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {startApp} from '../../journeys/kit/app.mjs'
 export async function slaFlow(f){
  const {app,w,ok,call,create,get,patch,clock,send,initial}=f
  const calendar=await ok('/workflow-calendars',{name:'New York support',timezone:'America/New_York',weekly:[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})),holidays:'us_federal',closures:[]})
@@ -75,4 +76,43 @@ export async function slaFlow(f){
  await ok(`/sla-policies/${policy.id}`,{active:true,conditions:{plans:['enterprise'],priorities:['urgent'],channels:['email'],brands:[w.projectId]}},'PATCH')
  await patch(id,{priority:'urgent',channel:'email'});await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.plan','enterprise') WHERE id=?").bind(f.customer.contactId).run()
  assert.equal((await ok(`/conversations/${id}/sla`)).policy.id,policy.id)
+ await slaEmailAlertJourney()
+}
+
+// One real scheduled alert per kind reaches the named backup at the email
+// boundary as well as the inbox. No external account is represented by this fake.
+async function slaEmailAlertJourney(){
+ const sent=[],app=await startApp({captureQueue:true,bindings:{H2H_LOCAL:'true',APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-11',EMAIL_FROM:'support@example.test'},outbound:async request=>{assert.equal(new URL(request.url).hostname,'api.resend.com');sent.push({key:request.headers.get('idempotency-key'),body:await request.json()});return Response.json({id:'synthetic-happytohelp-'+(sent.length+11)})}});
+ try{
+  const w=await app.seedWorkspace('sla-email'),p=w.projectId,owner={token:w.tokens.owner},base=`/api/dashboard/projects/${p}`;
+  const api=async(path,body,method,token=w.tokens.owner)=>(await app.ok(base+path,{token,...(body===undefined?{}:{body}),...(method?{method}:{})})).data;
+  const calendar=await api('/workflow-calendars',{name:'Everyday backup coverage',timezone:'America/New_York',weekly:[0,1,2,3,4,5,6].map(day=>({day,start:'00:00',end:'23:59'})),holidays:'none',closures:[]});
+  await api('/sla-policies',{name:'Named backup alerts',calendar_id:calendar.id,position:0,conditions:{},first_response_minutes:30,next_response_minutes:null,resolution_minutes:null,pause_on_hold:true,approaching_minutes:10,unattended_minutes:45,backup_user_ids:[w.users.admin]});
+  const customer=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey,name:'Requester'},headers:{Origin:w.allowedOrigin}});
+  const ticket=await app.ok('/api/conversations',{token:customer.token,body:{projectId:p}}),id=ticket.id;
+  await app.ok(`/api/conversations/${id}/messages`,{token:customer.token,body:{localId:'synthetic-happytohelp-12',content:'My order needs attention.',expectedRevision:0}});
+  const current=await api(`/conversations/${id}/ticket`);
+  await api(`/conversations/${id}/ticket`,{expected_version:current.ticket_version,assigned_to:w.users.admin},'PATCH');
+  const sla=()=>api(`/conversations/${id}/sla`),initial=await sla(),clock=initial.clocks.find(row=>row.metric==='first_response');
+  assert.ok(clock);const backupMail='admin-sla-email@example.test';
+  const alertMail=()=>sent.filter(mail=>/SLA (approaching|breach|unattended)/.test(mail.body.text));
+  const priorInbox=new Set((await app.ok(`/api/management/projects/${p}/notification-inbox`,{token:w.tokens.admin})).data.map(row=>row.id));
+  const tick=async at=>{await app.configure({H2H_WORKFLOW_NOW:String(at)});for(let i=0;i<3;i++)await app.scheduled();};
+  await tick(clock.due_at-5*60000);
+  let state=await sla(),approaching=state.alerts.find(row=>row.kind==='approaching');assert.ok(approaching,JSON.stringify(state));assert.equal(approaching.state,'open');assert.equal(approaching.recipient_id,w.users.admin);
+  assert.equal(alertMail().length,1);assert.deepEqual(alertMail()[0].body.to,[backupMail]);assert.match(alertMail()[0].body.text,/first response SLA approaching/);
+  const ack=await api(`/sla-alerts/${encodeURIComponent(approaching.id)}/ack`,{},'PATCH',w.tokens.admin);assert.equal(ack.state,'acknowledged');assert.equal(ack.acknowledged_by,w.users.admin);
+  await tick(clock.due_at+1);
+  state=await sla();const breach=state.alerts.find(row=>row.kind==='breach');assert.ok(breach);assert.equal(breach.state,'open');assert.equal(breach.recipient_id,w.users.admin);
+  await tick(clock.due_at+16*60000);
+  state=await sla();const unattended=state.alerts.find(row=>row.kind==='unattended');assert.ok(unattended);assert.equal(unattended.recipient_id,w.users.admin);assert.equal(unattended.state,'open');
+  assert.equal(alertMail().length,3);assert.ok(alertMail().every(mail=>JSON.stringify(mail.body.to)===JSON.stringify([backupMail])));assert.equal(new Set(alertMail().map(mail=>mail.key)).size,3);
+  const notices=await app.ok(`/api/management/projects/${p}/notification-inbox`,{token:w.tokens.admin});assert.equal(notices.data.filter(row=>row.conversation_id===id&&!priorInbox.has(row.id)).length,3);
+  await app.configure({});await app.scheduled();state=await sla();
+  assert.equal(state.alerts.find(row=>row.id===approaching.id).state,'acknowledged');assert.equal(state.alerts.find(row=>row.id===breach.id).state,'open');assert.equal(state.alerts.find(row=>row.id===unattended.id).state,'open');assert.equal(alertMail().length,3,'restart does not resend any alert');
+  await api(`/sla-alerts/${encodeURIComponent(breach.id)}/ack`,{},'PATCH',w.tokens.admin);
+  const latest=await api(`/conversations/${id}/ticket`);await api(`/conversations/${id}/ticket`,{expected_version:latest.ticket_version,status_id:'solved'},'PATCH');
+  state=await sla();assert.ok(state.alerts.every(row=>row.state==='resolved'),'resolution ends every still-persisted alert');await app.scheduled();assert.equal(alertMail().length,3);
+  console.log(JSON.stringify({proof:'SLA named backup email',approaching:1,breach:1,unattended:1,inbox:3,email:3,restartDuplicates:0,acknowledgedByBackup:true,resolved:true}));
+ }finally{await app.close()}
 }

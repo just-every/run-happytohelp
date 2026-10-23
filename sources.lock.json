@@ -12256,7 +12256,7 @@
       "executable": false
     },
     "tests/reports/figures.mjs": {
-      "sha256": "0a51e6cd63fd92420b517c838af186c7b10d505fcb6d14820d1ed7e3e2b889a4",
+      "sha256": "142d197f93fcda522a83d29aaa30a741bbc777bff98577c8fc11b54c39e17ce5",
       "executable": false
     },
     "tests/reports/harness.mjs": {

@@ -1612,7 +1612,7 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "7dd81920a3340ee4f90006a05e52659bcf6fc689ebc974f385041428277524ac",
+      "sha256": "1048af85686e2bb4847180c4199dc224028e064fac4901b4054b7fc7c188e913",
       "executable": false
     },
     "base-copies.json": {
@@ -2581,6 +2581,10 @@
     },
     "scripts/ci/run-checks.mjs": {
       "sha256": "0b060966dedf9ecedcb02be565a289059925b0726342c140bdfaeaabe8f605f8",
+      "executable": false
+    },
+    "scripts/count-tests.mjs": {
+      "sha256": "6505470e3a1743829e2815f3f25e3dddf25b85841b6076996c6738c988007401",
       "executable": false
     },
     "scripts/delivery/base/artifact.mjs": {

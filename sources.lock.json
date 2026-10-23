@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "ca848197c548d8171fc777f4c1ecce719a4507495d97e0a7a7075b5958804f7b",
+      "sha256": "1b10f8c1127ea942dadd22b958505bcf820f7bd948699f790e4ec84689b6fd64",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2556,7 +2556,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "dc9ea1a547b13488e6dba5bed3d719a943644fe5849a17f80c36c2329d12571b",
+      "sha256": "ec8879628f2923fd170de2d919a283518686f09b76aaacf6c392a961868f4a22",
       "executable": false
     },
     "rer-project.json": {
@@ -2932,7 +2932,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "0612be94f8e8c6c86b95b49fc8f05c0686ee2fa51f485e2716ad16e5b0db6671",
+      "sha256": "9fa1570dc200ddf3ddb54f4fae03e1b3607cd335fab80f74204f7d130f3b1575",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -3428,7 +3428,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "ebd84aa79276ca09dc7eaf3617460d8f95cc700b0f28e8cb676353ec1c354fd6",
+      "sha256": "1246749687cdd20c18b23da1418d508744106c54e450e3cdd21440bc8e67c5fa",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -4269,6 +4269,10 @@
     },
     "src/modules/escalations/webhooks.ts": {
       "sha256": "e9f33eef4122e1fb694cc8a56c8b4a24a37dcdd6ca4a90db12ef7d0eff6bd500",
+      "executable": false
+    },
+    "src/modules/forms/cc.ts": {
+      "sha256": "d6b77313962bacaf15b0bdb016c78bfe2f7d7d328d94d9c294ce93c79405d585",
       "executable": false
     },
     "src/modules/forms/challenge.ts": {
@@ -5140,7 +5144,7 @@
       "executable": false
     },
     "src/modules/integrations/email-preparation.ts": {
-      "sha256": "88d03cbd41b57dd796df2cfd0a86d49e9a53c101c90ad14684f399639159797d",
+      "sha256": "f68581c388b74bc500acbf5e7a0235e00bc798d254d911a62038eeac36728431",
       "executable": false
     },
     "src/modules/integrations/email-provider.ts": {
@@ -5168,7 +5172,7 @@
       "executable": false
     },
     "src/modules/integrations/email.ts": {
-      "sha256": "a953393855459932f349b06a92f7c3c589d3f93825c3a07c11301f2a1c6f8cbb",
+      "sha256": "51c5555e845fb7f61a4490cf5bf0b6e5625171bfa70347927032745092698a1e",
       "executable": false
     },
     "src/modules/integrations/github-discovery.ts": {
@@ -5984,15 +5988,15 @@
       "executable": false
     },
     "src/modules/management/outbound-ticket-input.ts": {
-      "sha256": "58d15947fdd21617286d8c1222800f1f06e3897607b872d365a1a6c15348dc32",
+      "sha256": "d053af6045d6bad6869486432062efee125d490202d8d49d3f5b05c07d869e51",
       "executable": false
     },
     "src/modules/management/outbound-ticket-store.ts": {
-      "sha256": "05846fd896554fefcbbeefbc82f7db2b59efaf46880c553962adee2d70723801",
+      "sha256": "ba612cf67377fa8f8d611e4f98b18f727fb3dc5ef7acb238cc80d86787e80e88",
       "executable": false
     },
     "src/modules/management/outbound-tickets.ts": {
-      "sha256": "f78523929d3838f803bbe19b101017443626c0f9568c0971fc0205e6dc14d8be",
+      "sha256": "b9d5affad92a1855949b2f4b911a35781be3a7bec9f7262f65ab95e608dc00b4",
       "executable": false
     },
     "src/modules/management/policy.ts": {
@@ -7368,7 +7372,7 @@
       "executable": false
     },
     "src/modules/workflows/rule-model.ts": {
-      "sha256": "ad13513626399100d793b21d77b1f4962afd40f206be6c7f24a7a86e47edee2d",
+      "sha256": "9f63538a59dd8535609aa1c52024dbfed16fcf70525949564f3602f058b97e8b",
       "executable": false
     },
     "src/modules/workflows/rule-preview.ts": {
@@ -7440,7 +7444,7 @@
       "executable": false
     },
     "src/modules/workflows/sla.ts": {
-      "sha256": "da3125403ef27f3581b6cb183fa92e05efd7215e95f4fe6be24264f3c7936271",
+      "sha256": "41e682eb62b2f237ced344c6088d448fa7fa61a682954e41bc55c98eab1a3c9e",
       "executable": false
     },
     "src/modules/workflows/time-rules.ts": {
@@ -10904,7 +10908,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "db3f957538a33b9394ae8cf6ce8f5b72c145b5cce939ecce5861b16ac9091fee",
+      "sha256": "88dd311df72db200380ef86a5a4378c4b211494be5797c4d0da9e862e4ea10c4",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {

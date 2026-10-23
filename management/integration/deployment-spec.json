@@ -678,6 +678,12 @@
       "name": "242_customer_identity_links.sql",
       "sha256": "e7cbc64e55293e71cdae0ee92af3aabe82c891a49c9b7a54afa2441887f81492",
       "sql": "-- Operator-reviewed associations do not confer authentication or shared history.\nCREATE TABLE customer_identity_links (\n project_id TEXT NOT NULL REFERENCES projects(id),\n contact_id TEXT NOT NULL REFERENCES contacts(id),\n linked_contact_id TEXT NOT NULL REFERENCES contacts(id),\n provenance TEXT NOT NULL,\n actor_id TEXT NOT NULL REFERENCES users(id),\n created_at INTEGER NOT NULL,\n PRIMARY KEY(project_id,contact_id,linked_contact_id),\n CHECK(contact_id<linked_contact_id)\n);\nCREATE INDEX customer_identity_links_reverse ON customer_identity_links(project_id,linked_contact_id);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "243_outbound_ticket_configuration.sql",
+      "sha256": "64df907186660d459e041eb9fae3bce42b710ea7fe03cffabd02efcca10f5c58",
+      "sql": "-- Operator-created tickets retain a selected form independently of customer submissions.\nALTER TABLE conversations ADD COLUMN request_form_id TEXT;\nALTER TABLE operator_ticket_commands ADD COLUMN service_notice_id TEXT;\nCREATE TABLE operator_service_notices (\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL REFERENCES projects(id),\n actor_id TEXT NOT NULL REFERENCES users(id),\n local_id TEXT NOT NULL,\n intent_hash TEXT NOT NULL,\n plan_json TEXT NOT NULL,\n created_at INTEGER NOT NULL,\n UNIQUE(project_id,actor_id,local_id)\n);\n-- A preview contains requester destinations. Erasure removes it and cannot recreate its id.\nCREATE TRIGGER service_notice_erasure AFTER UPDATE OF metadata_json ON contacts\nWHEN coalesce(json_extract(NEW.metadata_json,'$.is_erasing'),0)=1 OR coalesce(json_extract(NEW.metadata_json,'$.is_erased'),0)=1\nBEGIN\n DELETE FROM operator_service_notices WHERE project_id=NEW.project_id AND EXISTS(SELECT 1 FROM json_each(plan_json,'$.recipients') recipient WHERE json_extract(recipient.value,'$.id')=NEW.id);\nEND;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

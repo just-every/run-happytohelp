@@ -8,7 +8,7 @@ export async function completeEmailJourney(){
  const sent=[]
  const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'provider-fixture',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'gateway-fixture'},outbound:async request=>{
   if(new URL(request.url).hostname==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]})
-  assert.equal(new URL(request.url).hostname,'api.resend.com');const copy=await request.json();sent.push(copy);if(copy.text?.includes('synthetic-happytohelp-41'))return Response.json({error:'Recipient refused'},{status:422});return Response.json({id:'mail-'+sent.length})
+  assert.equal(new URL(request.url).hostname,'api.resend.com');const copy=await request.json();sent.push(copy);if(copy.text?.includes('synthetic-happytohelp-41')||copy.text?.includes('synthetic-happytohelp-62')&&[].concat(copy.to).includes('notice-fail@example.test'))return Response.json({error:'Recipient refused'},{status:422});return Response.json({id:'mail-'+sent.length})
  }})
  try{
   const workspace=await app.seedWorkspace('r6'),projectId=workspace.projectId,owner=workspace.tokens.owner,agent=workspace.tokens.operator,base=`/api/management/projects/${projectId}`,gate=body=>app.call('/api/integrations/email/inbound',{token:'gateway-fixture',body})
@@ -124,6 +124,49 @@ export async function completeEmailJourney(){
   assert.equal(repeated.conversation.id,existing.conversation.id)
   assert.equal((await app.first('SELECT count(*) n FROM contacts WHERE project_id=?',projectId)).n,contactCount)
   assert.equal(sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-41')).length,1)
+  // Configuration is admitted atomically before the first public message.
+  const field=(await app.ok(base+'/ticket-fields',{token:owner,body:{name:'Service category',type:'dropdown',options:['delivery','refund']}})).data
+  const form=(await app.ok(`/api/forms/projects/${projectId}/forms`,{token:owner,body:{title:'Service follow-up',enabled:true,fields:[{fieldId:field.id,required:true}]}})).data
+  const group=(await app.ok(base+'/ticket-groups',{token:owner,body:{name:'Service desk',members:[workspace.users.owner]}})).data
+  const configured={kind:'email',localId:'synthetic-happytohelp-50',requesterId:ticket.conversation.contact_id,mailboxId:mailbox.id,subject:'Internal service record',content:'Staff-only replacement details.',configuration:{brandId:projectId,formId:form.id,groupId:group.id,assigneeId:workspace.users.owner,fields:{[field.id]:'delivery'},internal:true}}
+  const beforeInternal=sent.length,internal=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:configured})
+  assert.equal(sent.length,beforeInternal,'an internal first comment sends nothing')
+  assert.equal(internal.conversation.request_form_id,form.id);assert.equal(internal.conversation.group_id,group.id);assert.equal(internal.conversation.assigned_to,workspace.users.owner)
+  assert.equal((await app.first('SELECT value_json FROM ticket_field_values WHERE conversation_id=? AND field_id=?',internal.conversation.id,field.id)).value_json,'"delivery"')
+  assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',internal.conversation.id)).n,0)
+  assert.ok(internal.note.content.includes('Staff-only'))
+  const walkin=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...configured,kind:'call',localId:'synthetic-happytohelp-51',configuration:{...configured.configuration,channel:'walk_in'}}})
+  assert.equal(walkin.conversation.channel,'walk_in');assert.equal(sent.length,beforeInternal)
+  for(const configuration of [{...configured.configuration,brandId:'foreign'},{...configured.configuration,fields:{}},{...configured.configuration,assigneeId:workspace.users.operator}])assert.ok([400,422].includes((await app.call(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...configured,localId:crypto.randomUUID(),configuration}})).status))
+  // Three separately consenting customers get three independently tracked tickets.
+  const portal=async(email,updateEmails=true)=>{
+   await app.ok(`/api/portal/${projectId}/access/request`,{body:{email},headers:{Origin:'https://app.example'}})
+   const mail=sent.findLast(copy=>copy.subject==='Sign in to your support requests'&&[].concat(copy.to).includes(email)),url=new URL(mail.text.match(/https:\/\/app\.example\/api\/portal\/\S+/)[0]),response=await app.request(url.pathname+url.search),cookie=response.headers.get('set-cookie').split(';')[0]
+   await app.ok(`/api/portal/${projectId}/preferences`,{method:'PUT',headers:{Cookie:cookie,Origin:'https://app.example'},body:{locale:'en',surveyEmails:false,updateEmails}})
+   return (await app.first('SELECT contact_id FROM portal_identities WHERE project_id=? AND email=?',projectId,email)).contact_id
+  }
+  const requesterIds=[]
+  for(const email of ['notice-one@example.test','notice-fail@example.test','notice-three@example.test'])requesterIds.push(await portal(email))
+  const optedOut=await portal('notice-out@example.test',false),noticeBase=`/api/dashboard/projects/${projectId}/service-notices`,noticeCommand={localId:'synthetic-happytohelp-60',purpose:'service',requesterIds:[...requesterIds,optedOut],ticket:{mailboxId:mailbox.id,subject:'Replacement delivery delay',content:'synthetic-happytohelp-62: Your existing replacement shipment is delayed.'}}
+  const notice=(await app.ok(noticeBase+'/preview',{token:agent,body:noticeCommand})).data,beforeNotice=sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length
+  assert.equal(beforeNotice,0,'preview sends nothing');assert.equal(notice.recipients.filter(r=>r.status==='ready').length,3);assert.equal(notice.recipients.find(r=>r.id===optedOut).status,'blocked')
+  assert.equal((await app.ok(noticeBase+'/preview',{token:agent,body:noticeCommand})).data.id,notice.id)
+  assert.equal((await app.call(noticeBase+'/preview',{token:agent,body:{...noticeCommand,ticket:{...noticeCommand.ticket,content:'Changed notice'}}})).status,409)
+  const applied=(await app.ok(noticeBase+'/'+notice.id+'/apply',{token:agent,body:{}})).data
+  assert.equal(new Set(applied.results.filter(r=>r.ticketId).map(r=>r.ticketId)).size,3)
+  await app.until(()=>sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length===3,{message:'three service notice delivery attempts'})
+  await app.configure({})
+  const retried=(await app.ok(noticeBase+'/'+notice.id+'/apply',{token:agent,body:{}})).data
+  assert.equal(retried.results.find(r=>r.requesterId===requesterIds[1]).state,'failed')
+  assert.equal(retried.results.filter(r=>r.state==='sent').length,2)
+  assert.equal(sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length,3,'retry after restart cannot resend a failed or successful notice')
+  const next=(await app.ok(noticeBase+'/preview',{token:agent,body:{...noticeCommand,localId:'synthetic-happytohelp-63',requesterIds:[requesterIds[0]]}})).data
+  await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.portal_notification_emails',0) WHERE id=?").bind(requesterIds[0]).run()
+  assert.equal((await app.ok(noticeBase+'/'+next.id+'/apply',{token:agent,body:{}})).data.results[0].state,'blocked','revocation after preview prevents creation')
+  const limited=(await app.ok(noticeBase+'/preview',{token:agent,body:{...noticeCommand,localId:'synthetic-happytohelp-64',requesterIds:[requesterIds[2]]}})).data
+  await app.configure({RATE_LIMITS:JSON.stringify({conversationsPerProjectHour:1})})
+  assert.equal((await app.ok(noticeBase+'/'+limited.id+'/apply',{token:agent,body:{}})).data.results[0].state,'blocked','rate limits apply before a new service ticket')
+  await app.configure({RATE_LIMITS:undefined})
   // Closed remains final: a real emailed reply creates a linked fresh ticket.
   const ticketState=(await app.ok(`/api/dashboard/projects/${projectId}/conversations/${ticket.conversation.id}/ticket`,{token:owner})).data
   await app.ok(`/api/dashboard/projects/${projectId}/conversations/${ticket.conversation.id}/ticket`,{token:owner,method:'PATCH',body:{status_id:'closed',expected_version:ticketState.ticket_version}})

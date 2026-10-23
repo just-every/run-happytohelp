@@ -1,7 +1,8 @@
 import {HTTPException} from 'hono/http-exception'
+import {object} from '../tickets/model'
 import {reservedLocalId} from '../conversations/admission'
 import {emailAddress} from '../integrations/inbound-routing'
-export interface OutboundTicketInput {kind:'email'|'call';localId:string;requesterId:string|null;requesterEmail:string|null;requesterName:string;subject:string;content:string;mailboxId:string|null;fromAddress:string|null;cc:string[];bcc:string[]}
+export interface OutboundTicketInput {kind:'email'|'call';localId:string;requesterId:string|null;requesterEmail:string|null;requesterName:string;subject:string;content:string;mailboxId:string|null;fromAddress:string|null;cc:string[];bcc:string[];configuration?:{brandId?:string;formId?:string|null;fields?:Record<string,unknown>;assigneeId?:string|null;groupId?:string|null;channel?:'walk_in';internal?:boolean}}
 function string(value:unknown,label:string,max:number,required=true){
  if(typeof value!=='string'||value.length>max||required&&!value.trim()||/[\0]/.test(value))throw new HTTPException(400,{message:`Invalid ${label}`})
  return value.trim()
@@ -24,5 +25,17 @@ export function outboundTicketInput(body:Record<string,unknown>):OutboundTicketI
  if(/[\r\n]/.test(subject))throw new HTTPException(400,{message:'Subject must fit on one line'})
  if(cc.length+bcc.length>50||cc.some(address=>bcc.includes(address)))throw new HTTPException(400,{message:'Recipients must be unique across CC and BCC'})
  if(kind==='call'&&(cc.length||bcc.length||fromAddress))throw new HTTPException(400,{message:'Call logs cannot send email copies'})
- return {kind,localId,requesterId,requesterEmail,requesterName,subject,content,mailboxId,fromAddress,cc,bcc}
+ let configuration:OutboundTicketInput['configuration']
+ if(body.configuration!==undefined){
+  const c=object(body.configuration)
+  if(Object.keys(c).some(key=>!['brandId','formId','fields','assigneeId','groupId','channel','internal'].includes(key)))throw new HTTPException(400,{message:'Unknown ticket configuration'})
+  configuration={}
+  if(c.brandId!==undefined)configuration.brandId=string(c.brandId,'brandId',200)
+  for(const key of ['formId','assigneeId','groupId'] as const)if(c[key]!==undefined)configuration[key]=c[key]===null?null:string(c[key],key,200)
+  if(c.fields!==undefined)configuration.fields=Object.fromEntries(Object.entries(object(c.fields)).sort(([a],[b])=>a.localeCompare(b)))
+  if(c.channel!==undefined){if(c.channel!=='walk_in'||kind!=='call')throw new HTTPException(400,{message:'Walk-in tickets must contain private notes'});configuration.channel=c.channel}
+  if(c.internal!==undefined){if(typeof c.internal!=='boolean')throw new HTTPException(400,{message:'Internal must be boolean'});configuration.internal=c.internal}
+  if(configuration.internal&&(cc.length||bcc.length))throw new HTTPException(400,{message:'Internal tickets cannot send email copies'})
+ }
+ return {kind,localId,requesterId,requesterEmail,requesterName,subject,content,mailboxId,fromAddress,cc,bcc,...(configuration?{configuration}:{})}
 }

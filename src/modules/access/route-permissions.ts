@@ -89,6 +89,7 @@ for(const base of [P,D]){
  rules[`PUT ${base}/triage-settings`]='settings.manage'
  rules[`GET ${base}/conversations/:conversationId/triage`]='self'
  rules[`PATCH ${base}/conversations/:conversationId/triage`]='conversations.manage'
+ for(const action of ['preview',':noticeId/apply'])rules[`POST ${base}/service-notices/${action}`]='conversations.reply'
  rules[`GET ${base}/ticket-settings`]='self'
  rules[`GET ${base}/ticket-problem-search`]='conversations.manage'
  rules[`GET ${base}/conversations/:conversationId/ticket`]='self'

@@ -40,6 +40,10 @@
     {
       "id": "242_customer_identity_links.sql",
       "buyerSteps": "CUSTOMER-001: add operator-reviewed associations between independently proven identities. Apply after 241 and before the updated Worker serves traffic. Existing contacts, sessions and conversations are unchanged; links grant no customer access or sending authority. Back up and restore with the rest of customer data; erasure removes either side of a link."
+    },
+    {
+      "id": "243_outbound_ticket_configuration.sql",
+      "buyerSteps": "OUTBOUND-001: retain selected forms on operator-created tickets and reviewed, short-lived service-notice previews. Apply after 242 and before the updated Worker serves traffic. No existing ticket or customer value changes; previews never move through export/restore and erasure removes previews naming the requester."
     }
   ]
 }

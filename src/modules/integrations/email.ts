@@ -1,3 +1,4 @@
+import {emailAuthority,type EmailAuthority} from './email-authority'
 import {hashToken} from '../../platform/auth'
 import {localMailOrigin} from '../../edition/local-mail/configuration'
 import {sendDevelopment} from '../../edition/local-mail/sender.mjs'
@@ -15,7 +16,7 @@ import {mailboxForDelivery} from './mailboxes/store'
 /** `headers` are extra message headers (loop suppression on notifications); like every
  * other field they are part of the delivery identity. */
 export interface EmailAttachment {filename:string;content:string;contentType:string;contentId?:string}
-export interface EmailInput {to:string;cc?:readonly string[];bcc?:readonly string[];mailboxId?:string;agentId?:string;fromAddress?:string;subject:string;text:string;html?:string;attachments?:readonly EmailAttachment[];projectId?:string;idempotencyKey:string;replyTo?:string;headers?:Readonly<Record<string,string>>}
+export interface EmailInput {[emailAuthority]?:EmailAuthority;to:string;cc?:readonly string[];bcc?:readonly string[];mailboxId?:string;agentId?:string;fromAddress?:string;subject:string;text:string;html?:string;attachments?:readonly EmailAttachment[];projectId?:string;idempotencyKey:string;replyTo?:string;headers?:Readonly<Record<string,string>>}
 /** The host retains provider execution only after every sending claim is durable. */
 export type DeferEmailDelivery=(delivery:Promise<unknown>)=>void
 type DeliveryRow={state:string;provider_id:string|null;intent_hash:string}
@@ -98,7 +99,7 @@ export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelive
   if(existing.state==='sent')return {id:existing.provider_id,state:'sent',...(emailMode(env)==='local'?{mode:'local' as const}:{})}
   throw new HTTPException(409,{message:`Email delivery ${existing.state}; reconcile before retrying`})
  }
- const now=Date.now(),claimed=await env.DB.prepare("INSERT OR IGNORE INTO email_deliveries VALUES(?,?,?,?,?,'sending',NULL,NULL,?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now).run()
+ const now=Date.now(),claimed=await env.DB.prepare(`INSERT OR IGNORE INTO email_deliveries SELECT ?,?,?,?,?,'sending',NULL,NULL,?,? WHERE ${input[emailAuthority]?.sql??'1'}`).bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now,...(input[emailAuthority]?.params??[])).run()
  if(!claimed.meta.changes)throw new HTTPException(409)
  const delivery=submitClaimed(env,input,from)
  if(defer){defer(delivery);return {id:null,state:'sending'}}
@@ -116,7 +117,9 @@ export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:Def
  const now=Date.now()
  // D1 batch is one transaction. A duplicate primary claim rolls back every
  // participant claim; only the process that owns the whole set may submit it.
- await env.DB.batch(prepared.map(({input,intentHash})=>env.DB.prepare("INSERT INTO email_deliveries VALUES(?,?,?,?,?,'sending',NULL,NULL,?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now)))
+ const guards=prepared.map(({input})=>input[emailAuthority]).filter((guard):guard is EmailAuthority=>!!guard),authority=guards.length?guards.map(guard=>`(${guard.sql})`).join(' AND '):'1',args=guards.flatMap(guard=>guard.params)
+ const claims=await env.DB.batch(prepared.map(({input,intentHash})=>env.DB.prepare(`INSERT INTO email_deliveries SELECT ?,?,?,?,?,'sending',NULL,NULL,?,? WHERE ${authority}`).bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now,...args)))
+ if(claims.some(claim=>!claim.meta.changes))throw new HTTPException(409,{message:'Notification consent or sending authority changed'})
  const delivery=Promise.all(prepared.map(async({input,from})=>{
   try{return {...await submitClaimed(env,input,from),recipient:input.to}}
   catch(error){

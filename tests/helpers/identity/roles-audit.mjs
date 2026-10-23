@@ -153,5 +153,22 @@ export async function rolesAuditJourney(){
   assert.equal((await call(`${P}/plugins`,plugin,session)).status,201)
   assert.equal((await call('/api/identity/password',{password:'synthetic-admin-first-password-2026'},session)).status,200)
   assert.equal((await call('/api/identity/login',{email:'admin-roles@example.test',password:'synthetic-admin-first-password-2026'})).status,200)
+
+  // Deprovision during active delegated work: neither a live native session nor
+  // an already-issued tool grant may keep customer data or perform a pending edit.
+  assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:'operator'},w.tokens.owner,'PUT')).status,200)
+  const active=await delegated('/evidence?target='+article);assert.equal(active.status,200)
+  const frontier=(await active.json()).revision,readAudience=await audience('draft')
+  assert.equal((await call(C,undefined,w.tokens.operator)).status,200)
+  const unchanged=await app.first("SELECT content,status,source_revision FROM knowledge_articles WHERE id='art-r'")
+  assert.equal((await call(`${P}/agents/${w.users.operator}`,undefined,w.tokens.owner,'DELETE')).status,200)
+  assert.equal((await call(C,undefined,w.tokens.operator)).status,401,'the active native session ends')
+  for(const door of ['identity','evidence?target='+article,'check?target='+article,'audience?target='+article]){
+   const denied=await delegated('/'+door);assert.ok([401,403].includes(denied.status),'removed member loses '+door)
+  }
+  const pending=await delegated('/effects',{operationKey:'synthetic-happytohelp-11',operation:'happytohelp.article.update',target:article,expectedRevision:frontier,expectedAudienceRevision:readAudience,content:{title:'Returns',content:'Must not apply',summary:'',status:'draft'}})
+  assert.ok([401,403].includes(pending.status),'pending tool authority ends with membership')
+  assert.deepEqual(await app.first("SELECT content,status,source_revision FROM knowledge_articles WHERE id='art-r'"),unchanged)
+  assert.equal((await call(C,undefined,w.tokens.owner)).status,200,'the native owner keeps access')
  }finally{await app.close()}
 }

@@ -10924,7 +10924,7 @@
       "executable": false
     },
     "tests/helpers/csat-journey.mjs": {
-      "sha256": "f3dafc09996afef1322a0f20b10899cb5f98e38c7fb591abb884bc2611f5d418",
+      "sha256": "fb45a1574cc3b2689cadcc226e8fe4ffd35325fe87b85d7365c111ad4e849d2a",
       "executable": false
     },
     "tests/helpers/customer-csv.mjs": {
@@ -11385,6 +11385,10 @@
     },
     "tests/helpers/installer/hosted-export.mjs": {
       "sha256": "0cc364e4726a6b426023f0ad477b8d192892655190b6c585ef23dfd9493adcb4",
+      "executable": false
+    },
+    "tests/helpers/installer/hosted-source-d1.mjs": {
+      "sha256": "197822b2dd08bace4e255c5d215de060562205c7c8c914360e77574d25a68b46",
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {

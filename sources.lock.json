@@ -8060,7 +8060,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/DelegationJob.jsx": {
-      "sha256": "9c1ac28d37f3e264327ce2ba7775c2cae43bd80535c51b40341ac3183b99e1a5",
+      "sha256": "9c0ae5915f7fb5cc7d3ea406e5d8cad7417c069312af975653922aac75b4b30d",
       "executable": false
     },
     "src/ui/dashboard/components/DelegationPairing.jsx": {
@@ -8724,7 +8724,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-delegation.scss": {
-      "sha256": "343cac491e53e57a9d1575aae3d9d998f5a007cb05a4a5c37d0d44a7e2856d34",
+      "sha256": "9193398082860f337ea23d97adb5aae7e34f157e268f75091edcbeeab1e68122",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-details.scss": {
@@ -10916,7 +10916,7 @@
       "executable": false
     },
     "tests/helpers/delegation/time-authority-browser.mjs": {
-      "sha256": "ec9374d5b84f2eedbad3082c67b5f0713a6e6159e40726a94dc56d292ba519d0",
+      "sha256": "64e5bcd5bc05e1088a341537c5f47f9628cbda514c843d23f62bb527462cdd99",
       "executable": false
     },
     "tests/helpers/email-conversation-browser.mjs": {

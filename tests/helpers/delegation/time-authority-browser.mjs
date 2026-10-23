@@ -12,6 +12,7 @@ export async function timeAuthorityBrowser({runtime,browser,shot}){
    const response=await fetch(origin+path,{method,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},...(data===undefined?{}:{body:JSON.stringify(data)})})
    const result=await response.json();assert.ok(response.ok,JSON.stringify({status:response.status,result}));return result
   }
+  await api(`/api/management/projects/${tenant.projectId}/availability`,{is_availability_schedule_enabled:false,is_presence_away_enabled:false},tenant.token,'PUT')
   const pairing=await api(`/api/projects/${tenant.projectId}/local-agents/pairings`,{})
   const computer=(await api('/api/local-agents/pair',{code:pairing.data.code,name:'Time-bound computer',provider:'codex',capabilities:['terminal']})).data
   const project=await api('/api/identity/projects/'+tenant.projectId)
@@ -32,9 +33,9 @@ export async function timeAuthorityBrowser({runtime,browser,shot}){
    assert.equal(job.authority.granted_by,tenant.userId);assert.equal(job.authority.minutes,1);assert.equal(job.authority.expires_at-job.authority.granted_at,60000)
    await page.locator('.delegation-job.is-queued').waitFor();await page.getByText(/Authority expires/).waitFor()
    await page.screenshot({path:shot(`time-authority-granted-${viewport.width}.png`),fullPage:true})
-   await runtime.execute(`UPDATE local_events SET payload=json_set(payload,'$.expires_at',0) WHERE job_id='${job.id}' AND event_id='authority';`)
+   await runtime.execute(`UPDATE local_events SET payload=json_set(payload,'$.expires_at',${Date.now()-1000}) WHERE job_id='${job.id}' AND event_id='authority';`)
    assert.equal((await api('/api/local-agents/claim',{claim_id:randomUUID()},computer.token)).data,null)
-   await open();await page.getByText('Task authority expired · local outcome unconfirmed',{exact:true}).waitFor()
+   await open();await page.getByText('Task authority expired · never started',{exact:true}).waitFor()
    assert.equal((await api(path)).data[0].status,'cancelled')
    await page.screenshot({path:shot(`time-authority-expired-${viewport.width}.png`),fullPage:true})
    assert.equal((await api(`/api/conversations/${conversation.id}/messages`,undefined,visitor.token)).messages.filter(m=>m.actor_role!=='contact').length,0)

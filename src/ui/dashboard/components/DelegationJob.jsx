@@ -45,7 +45,7 @@ export default function DelegationJob({ job, isDraftDisabled, onCancel, onInsert
     const canInsertDraft = Boolean(result?.reply_draft) && job.mode !== 'resolve_reply' && !expired;
     const freshnessReview = job.freshness_review?.required ? job.freshness_review : null;
     const freshnessReviewId = freshnessReview?.latest_last_message_id || null;
-    const statusLabel = expired ? 'Task authority expired · local outcome unconfirmed' : job.status === 'revoked' && job.delivery_state === 'membership_lost'
+    const statusLabel = expired ? (job.started_at ? 'Task authority expired · local outcome unconfirmed' : 'Task authority expired · never started') : job.status === 'revoked' && job.delivery_state === 'membership_lost'
         ? 'Workspace access ended · local outcome unconfirmed'
         : statusNames[job.status] || job.status;
     const latestProgress = progress[progress.length - 1] || null;

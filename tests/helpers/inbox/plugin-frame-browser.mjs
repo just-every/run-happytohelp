@@ -55,7 +55,11 @@ window.plugin=client;window.ready=true;
     if(await toggle.isVisible())await toggle.click()
     await page.getByRole('tab',{name:'Ticket',exact:true}).click();await page.locator('#conversation-details-panel .ticket-section__toggle').filter({hasText:'Order lookup'}).click()
     await frameElement.waitFor({state:'attached'})
-    const frame=await (await frameElement.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.ready===true)
+    // The plugin's section can sit below the fold of the panel, and Chromium runs no animation frames in a cross-origin
+    // frame out of view: Playwright's default requestAnimationFrame polling would check the plugin's state once and never
+    // again, so waits inside the frame poll on a timer.
+    const frame=await (await frameElement.elementHandle()).contentFrame(),waitInFrame=predicate=>frame.waitForFunction(predicate,undefined,{polling:100})
+    await waitInFrame(()=>window.ready===true)
     const log=async()=>JSON.parse(await frame.locator('#state').textContent())
     // The wandering frame and the operator page itself are ignored.
     await page.locator('iframe[title="Wandering plugin"]').waitFor({state:'attached'})
@@ -64,7 +68,7 @@ window.plugin=client;window.ready=true;
     assert.notEqual(await page.locator('iframe[title="Wandering plugin"]').getAttribute('height'),'999px','a frame off its configured origin cannot resize itself')
     // The configured plugin reads the active conversation, fills the draft and sizes its frame.
     await frame.evaluate(()=>window.plugin.getConversation())
-    await frame.waitForFunction(()=>document.getElementById('state').textContent.includes('conversation'))
+    await waitInFrame(()=>document.getElementById('state').textContent.includes('conversation'))
     const told=await log();assert.ok(told.length&&told.every(entry=>entry.conversation===active),'the plugin is told only the open conversation: '+JSON.stringify(told))
     await frame.evaluate(width=>window.plugin.setMessageContent(`Your order ships today (${width})`),width)
     await page.waitForFunction(width=>document.querySelector('textarea[aria-label="Reply to conversation"], [aria-label="Reply to conversation"]')?.value===`Your order ships today (${width})`,width)
@@ -74,7 +78,7 @@ window.plugin=client;window.ready=true;
     assert.match(await frame.evaluate(()=>{try{window.plugin.setHeight('100%');return 'sent'}catch(error){return error.message}}),/Invalid/)
     if(width===1440){
      await frame.evaluate(other=>window.plugin.resolveConversation(other),other)
-     await frame.waitForFunction(()=>document.getElementById('state').textContent.includes('error'))
+     await waitInFrame(()=>document.getElementById('state').textContent.includes('error'))
      assert.deepEqual((await log()).at(-1),{error:'resolveConversation'})
      assert.equal((await request(`/api/dashboard/projects/${projectId}/conversations/${other}`,{token})).data.resolved_at??null,null,'the other conversation stays open')
     }else{

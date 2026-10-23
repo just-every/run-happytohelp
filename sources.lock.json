@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "df13efd1916d29a997b787d6db0003a09b5e6c37665d1f567bb69dcbf0f02322",
+      "sha256": "77629674569a8deeafb635ebc4ae501abfdf875c62b2507f43a08132c10fd5c3",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "853256e9d99bbfd33f070312936e047090c6bb94cd74538a5201e857b6238a87",
+      "sha256": "a57927b2f3e3563c990ac509d88d5a7a9b981c69cc0d65847c033a4b6acf146d",
       "executable": false
     },
     "DEMO.md": {
@@ -3931,6 +3931,10 @@
       "sha256": "8807038fbba939793d06f94893d5cb3cb4d609df38d8dd002f89813f16c111e0",
       "executable": false
     },
+    "src/modules/assurance/permissions.ts": {
+      "sha256": "43fc352e5317a795d9e1d630cf2077017edce7bdae2e1efb3e69f0055c72f4bb",
+      "executable": false
+    },
     "src/modules/assurance/README.md": {
       "sha256": "81cee47c7c1fab158cb973575b691dc08cdfc4f46eb63b0d6205f210d2346444",
       "executable": false
@@ -4321,6 +4325,10 @@
     },
     "src/modules/feedback/penny.ts": {
       "sha256": "aa7c7c2dc2d622c744f55ca34b5b4b5e18f0a1595ccb6f6050fc58f681a7eb1d",
+      "executable": false
+    },
+    "src/modules/feedback/permissions.ts": {
+      "sha256": "72c6f903d910de4f107e406119697b451755d2731070a3000352f02155d2f7e0",
       "executable": false
     },
     "src/modules/feedback/README.md": {

@@ -11,7 +11,7 @@ const app=await startApp({captureQueue:true,bindings:{EMAIL_PROVIDER:'sendgrid',
  const body=await request.clone().text(),payload=JSON.parse(body)
  assert.deepEqual(payload.personalizations.flatMap(value=>value.to.map(to=>to.email)),[recipient])
  if(payload.custom_args?.rer_delivery_id?.startsWith('csat:'))sent.push(payload)
- return fetch(request.url,{method:request.method,headers:request.headers,body,signal:AbortSignal.timeout(15000)})
+ const response=await fetch(request.url,{method:request.method,headers:request.headers,body,signal:AbortSignal.timeout(15000)});console.log(JSON.stringify({diagnostic:'provider response',survey:payload.custom_args?.rer_delivery_id?.startsWith('csat:')??false,status:response.status}));return new Response(await response.arrayBuffer(),{status:response.status,headers:response.headers})
 }})
 try{
  const w=await app.seedWorkspace('live-csat-mail'),token=w.tokens.owner,p=w.projectId,endpoint=`/api/outcomes/projects/${p}`

@@ -14,7 +14,7 @@ Uploads are limited to 2 MiB, with at most 2 MiB of expanded source bytes, 64 ZI
 
 Planning reads only candidate native identities and complete related target bundles. A persisted email index preserves Unicode comparisons and reconciles at most 100 changed native contacts per background turn; unrelated workspace history is not accumulated in memory. A native target larger than 512 KiB, or combined native candidates larger than 8 MiB, is reported as a review-size conflict before its content is loaded. Parsing indexes structural source offsets and physical lines once per file, then stages at most 100 records per batch from those saved positions. Archive extraction stages at most 20 entries per batch. One immutable review covers the whole import. Internally, reviewed plans contain at most twenty source records, 512 KiB of estimated decision material and 1 MiB of serialized plan data; an individual decision beyond that bound is refused. Large conversation bundles get a plan of their own; any record needing more than 750 native SQL writes is rejected during review with its source location. A review supports at most 300 internal plans; a larger expansion is refused before approval. Application and undo process at most twenty source records or target bundles per batch, with an additional whole-invocation D1 statement cap. Durable child journals apply in dependency order and undo in reverse order while the report shows global progress. Original uploads and extracted source bytes are retained in private object storage. The global review binds the exact original upload and parsed files by private object key, size and digest; every apply/undo invocation verifies those bytes again. Each smaller Base journal retains its reviewed decisions, source digests and provenance, and explicitly marks original bytes unavailable within that child journal. Exact bytes live in the private group custody, not duplicated in every child journal. Erasure fences the entire group before removing all child journals and source objects.
 
-Unsupported records and fields are reported rather than turned into guessed data. Attachments remain original source bytes or metadata; they are not attached to native messages. Automation, assignment rules, external actions, company/segment rules, and unsupported conversation parts are not activated. Inspect the report's source filename, physical line and JSON pointer to locate a problem. Invalid JSON, duplicate JSON members (including equivalent escaped names), invalid UTF-8, excessive nesting, oversized records, excess source positions and exhausted identity work budgets refuse the entire upload before private R2/D1 custody or native effects. The refusal gives the source file, physical line, JSON path and reason. Every ZIP member is checked first, including directories and later extraction batches; no partial upload is retained. An export with no source records is refused after the complete bounded scan. Blank files, supported empty record lists and empty stored or deflated directories can accompany actual records, including records in later archive batches. Directories must first pass header, empty-body and checksum validation. Unsupported record kinds still count as source records and reach the reasoned plan. ZIP32 stored/deflated members and checked 32-bit data descriptors are supported. Opaque archive comments/extra fields, undeclared bytes, encrypted/multidisk/ZIP64 members and unsupported compression are refused; repackage the source files without that metadata. Correct the export and upload again. Valid JSON with unsupported kinds or mapping errors still reaches the reasoned plan; those decisions have no fabricated source ID or native effect. Input counts include repeated records and derived tags; per-kind counts describe distinct identified decisions plus invalid positions. The progress total counts only identified source decisions.
+Unsupported records and fields are reported rather than turned into guessed data. Attachment metadata alone stays in the original. A reviewed ZIP may also carry the exact bytes using the packaging below; those bytes become native files on their original public messages or private notes. Automation, assignment rules, external actions, company/segment rules, and unsupported conversation parts are not activated. Inspect the report's source filename, physical line and JSON pointer to locate a problem. Invalid JSON, duplicate JSON members (including equivalent escaped names), invalid UTF-8, excessive nesting, oversized records, excess source positions and exhausted identity work budgets refuse the entire upload before private R2/D1 custody or native effects. The refusal gives the source file, physical line, JSON path and reason. Every ZIP member is checked first, including directories and later extraction batches; no partial upload is retained. An export with no source records is refused after the complete bounded scan. Blank files, supported empty record lists and empty stored or deflated directories can accompany actual records, including records in later archive batches. Directories must first pass header, empty-body and checksum validation. Unsupported record kinds still count as source records and reach the reasoned plan. ZIP32 stored/deflated members and checked 32-bit data descriptors are supported. Opaque archive comments/extra fields, undeclared bytes, encrypted/multidisk/ZIP64 members and unsupported compression are refused; repackage the source files without that metadata. Correct the export and upload again. Valid JSON with unsupported kinds or mapping errors still reaches the reasoned plan; those decisions have no fabricated source ID or native effect. Input counts include repeated records and derived tags; per-kind counts describe distinct identified decisions plus invalid positions. The progress total counts only identified source decisions.
 
 ## Zendesk
 
@@ -68,7 +68,7 @@ Each line is one Freshdesk object in a singular wrapper: `{"ticket":{...}}`, `{"
 - Resolved (4) and closed (5) tickets, and spam, land closed. The closing time is `stats.closed_at` or `stats.resolved_at`, else the ticket's last update. Open (2), pending (3) and custom statuses stay open. Assignment is not activated.
 - Agents stay as the authors of their messages and get no access. Contacts need a valid email; extra addresses (`other_emails`) are kept for erasure matching but not imported.
 - Canned responses visible to all agents (`visibility` 0) become saved replies. Personal or group responses, and responses with placeholders such as `{{ticket.requester.name}}`, are rejected.
-- Attachments keep their names and sizes in your original file; the files themselves stay in Freshdesk. Freshdesk's attachment and avatar links contain signed keys, which an import must not keep, so the script removes them and an upload that still has one is refused with its line. The script also leaves out email address lists (to, cc, from) and empty custom fields; other custom fields stay in your original file.
+- Attachment metadata keeps its original names and sizes. Include separately obtained bytes using the reviewed ZIP packaging below to import the files; without them, files stay in Freshdesk. Freshdesk's attachment and avatar links contain signed keys, which an import must not keep, so the script removes them and an upload that still has one is refused with its line. The script also leaves out email address lists (to, cc, from) and empty custom fields; other custom fields stay in your original file.
 - Deleted tickets and contacts are rejected. Help articles come across with **Knowledge → Import → Freshdesk**.
 
 ```json
@@ -206,6 +206,48 @@ undo rather than losing those edits.
 
 ### Configuration and lifecycle mapping
 
-A Zendesk file can also contain singular `group`, `view`, `schedule`, `trigger` and `automation` records. Include complete original timestamps. Groups import without members or a new default. Views with supported all-conditions import privately for the importing admin. Schedules retain supported weekly intervals, timezone and explicit holiday date ranges but start inactive. Supported triggers and hourly automations become native drafts: review the per-item changes, open their native settings from the import report, preview, then publish explicitly. Unsupported rule conditions or actions set the whole rule aside; a missing condition is never dropped to broaden a rule. Native rules process new journal events, and hourly automations run once per matching ticket episode. SLA policies, forms, memberships, brands and other vendors’ configuration equivalents are still incomplete.
+A Zendesk file can also contain singular `group`, `view`, `schedule`, `trigger` and `automation` records. Include complete original timestamps. Groups import without members or a new default. Views with supported all-conditions import privately for the importing admin. Schedules retain supported weekly intervals, timezone and explicit holiday date ranges but start inactive. Supported triggers and hourly automations become native drafts: review the per-item changes, open their native settings from the import report, preview, then publish explicitly. Unsupported rule conditions or actions set the whole rule aside; a missing condition is never dropped to broaden a rule. Native rules process new journal events, and hourly automations run once per matching ticket episode. Zendesk `ticket_field` and `ticket_form` records also import supported typed values and disabled forms. Required-to-solve rules stay off until native review, and publishing a form is a separate action. SLA policies, memberships, brands and other vendors’ full configuration equivalents remain incomplete.
 
 New imports retain their explicit lifecycle and channel. Zendesk/Freshdesk distinguish final Closed from Solved; Help Scout/Intercom use a reopenable Closed state, which maps to native Solved. Historical owners are not granted native access or activated. Existing imported records are not rewritten when this mapping changes: a changed mapping meeting earlier native state remains a review conflict.
+
+
+### Reviewed attachment bytes
+
+Package supported source records and separately downloaded files in one ZIP. No
+provider URL is fetched by HappyToHelp. For every supplied attachment occurrence,
+use `attachments/<encoded conversation ID>/<encoded parent ID and position>`.
+Encode each whole path component with `encodeURIComponent`; the last component
+is `<parent ID>:<zero-based attachment position>` (for example
+`attachments/921/922%3A0`). Zendesk uses comment IDs, Help Scout thread IDs,
+Freshdesk conversation IDs or `description:<ticket ID>` for the initial
+attachment list, and Intercom part IDs or `source:<source ID>`. This occurrence
+identity also works for Intercom attachments, which have no documented ID.
+
+Include all the files referenced by each conversation when supplying bytes. The
+review refuses missing or unreferenced members, changed sizes, unsafe attachment
+states and replacement of existing native bytes. The normal archive limits still
+apply. File names, types and declared sizes come from source metadata; Help Scout
+may omit size, in which case the review discloses the measured byte count.
+Private-note files stay private and cannot be downloaded by a customer. Repeat
+imports preserve the same bytes. Undo removes untouched imported files; customer
+erasure removes that customer's published files and the indivisible source
+original, while retaining another customer's published files.
+
+### Companies and ownership
+
+Zendesk organizations, Freshdesk companies, Help Scout organizations and Intercom
+companies become native company names. Only an explicit single-company source
+relationship links a requester. Intercom relationships use the internal company
+ID and must be complete; an external `company_id`, truncated list or multiple
+companies never selects a primary company by guesswork. Domains, source sharing
+flags and custom company attributes do not grant portal access or verification.
+Help Scout organizations and Intercom teams lack documented creation timestamps;
+the import records and discloses the native import time instead of inventing a
+source timestamp. Groups and teams import names without staff membership grants.
+
+After completion, **Review imported ownership** maps recorded source owner/group
+IDs to current teammates and groups. Preview and explicit apply are separate from
+history import. Assignment requires current membership and group compatibility,
+preserves source lifecycle, sends nothing, and protects the resulting native edit
+from history undo. A final delta and channel repoint are still separate unfinished
+migration work; repeating an export does not overwrite changed source records.

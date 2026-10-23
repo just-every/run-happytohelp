@@ -82,7 +82,7 @@ export async function teamReportsJourney(){
   for(const dimension of ['agent','team','channel','brand','tag','account'])for(let i=0;i<expected.workload[dimension].length;i++)for(const key of ['incoming','resolved','backlog'])assert.ok(csv.includes(`"workload.${dimension}.${i}.${key}","${expected.workload[dimension][i][key]}"`))
   for(const dimension of Object.keys(expected.breakdowns))for(let i=0;i<expected.breakdowns[dimension].length;i++){
    const row=expected.breakdowns[dimension][i]
-   for(const path of ['tickets','firstResponse.count','firstResponse.median','firstResolution.count','csat.positive','csat.rated','ai.failed','ai.uncertain','sla.resolution.denominator']){const value=path.split('.').reduce((value,key)=>value[key],row);assert.ok(csv.includes(`"breakdowns.${dimension}.${i}.${path}","${value===null?'null':value}"`),'scheduled CSV includes '+dimension+' '+path)}
+   for(const path of ['tickets','firstResponse.count','firstResponse.median','firstResolution.count','csat.positive','csat.rated','ai.failed','ai.uncertain','sla.resolution.denominator','reopens.denominator','reopens.reopened']){const value=path.split('.').reduce((value,key)=>value[key],row);assert.ok(csv.includes(`"breakdowns.${dimension}.${i}.${path}","${value===null?'null':value}"`),'scheduled CSV includes '+dimension+' '+path)}
   }
   for(const metric of ['first_response','next_response','resolution'])for(const key of ['met','breached','pending','total','denominator','rate'])assert.ok(csv.includes(`\"sla.${metric}.${key}\",\"${expected.sla[metric][key]===null?'null':expected.sla[metric][key]}\"`))
   for(const key of ['resolved','denominator','reopened','events','rate'])assert.ok(csv.includes(`\"reopens.${key}\",\"${expected.reopens[key]===null?'null':expected.reopens[key]}\"`))
@@ -175,6 +175,11 @@ function assertBreakdowns(report,fixture,companyId,accountTickets){
   assert.equal(row.tickets,indices.length,dimension+' complete ticket count')
   assert.deepEqual(row.firstResponse,oracle(indices.map(i=>(i%4+1)*1000)),dimension+' first responses')
   assert.deepEqual(row.firstResolution,oracle(indices.filter(i=>fixture.tickets[i].wasResolved).map(i=>(i%5+1)*60000)),dimension+' first resolutions')
+  const wasResolved=indices.filter(i=>fixture.tickets[i].wasResolved).length,reopened=indices.filter(i=>fixture.tickets[i].reopened).length
+  assert.deepEqual(row.reopens,{resolved:wasResolved,denominator:wasResolved,reopened,events:reopened,historyUnknown:0,rate:wasResolved?reopened/wasResolved:null},dimension+' reopen numerator and denominator')
+  const workload=report.workload[dimension].find(candidate=>candidate.id===row.id),ages=indices.filter(i=>!['solved','closed'].includes(fixture.tickets[i].status_category)).map(i=>report.generatedAt-fixture.tickets[i].created_at)
+  assert.equal(workload.oldest_age_ms,ages.length?Math.max(0,...ages):null,dimension+' oldest backlog age')
+  assert.deepEqual(workload.ageBuckets.map(bucket=>bucket.count),[ages.filter(ms=>ms<86400000).length,ages.filter(ms=>ms>=86400000&&ms<259200000).length,ages.filter(ms=>ms>=259200000&&ms<604800000).length,ages.filter(ms=>ms>=604800000&&ms<2592000000).length,ages.filter(ms=>ms>=2592000000).length],dimension+' backlog age buckets')
   const rated=indices.filter(i=>i%4===0).length,positive=indices.filter(i=>i%8===0).length
   assert.deepEqual(row.csat,{rated,positive,rate:rated?positive/rated:null},dimension+' latest-cycle CSAT')
   assert.equal(row.ai.closed,positive);assert.equal(row.ai.assignmentHandoffs,indices.filter(i=>i%9===0).length)

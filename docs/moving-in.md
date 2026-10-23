@@ -202,3 +202,10 @@ reviewed snapshot inside the transaction, so an intervening native privacy edit
 stops remaining articles. Later native articles or child categories referencing
 an imported category block whole-import
 undo rather than losing those edits.
+
+
+### Configuration and lifecycle mapping
+
+A Zendesk file can also contain singular `group`, `view`, `schedule`, `trigger` and `automation` records. Include complete original timestamps. Groups import without members or a new default. Views with supported all-conditions import privately for the importing admin. Schedules retain supported weekly intervals, timezone and explicit holiday date ranges but start inactive. Supported triggers and hourly automations become native drafts: review the per-item changes, open their native settings from the import report, preview, then publish explicitly. Unsupported rule conditions or actions set the whole rule aside; a missing condition is never dropped to broaden a rule. Native rules process new journal events, and hourly automations run once per matching ticket episode. SLA policies, forms, memberships, brands and other vendors’ configuration equivalents are still incomplete.
+
+New imports retain their explicit lifecycle and channel. Zendesk/Freshdesk distinguish final Closed from Solved; Help Scout/Intercom use a reopenable Closed state, which maps to native Solved. Historical owners are not granted native access or activated. Existing imported records are not rewritten when this mapping changes: a changed mapping meeting earlier native state remains a review conflict.

@@ -64,3 +64,5 @@ silently omitting data. Use the individual brand report door for CSV exports.
 This API does not grant shared administration or move customers between brands.
 
 Workload can also be grouped by **Account**, using each requester’s current explicitly linked company. Unlinked requesters have a **No account** bucket. Email domains never assign accounts. Account rows include complete incoming, resolved and backlog totals and appear in manual and scheduled team CSV exports. Procedure-version and service/outcome breakdowns by account are not yet qualified.
+
+Satisfaction results distinguish the signed response link’s issuance surface (**email** or **portal**) from the invitation’s email transport. A link remains bound to the same customer and resolution cycle, and email/portal use the same invitation and single-use revision. Widget responses remain identified as widget feedback. Previously unrecorded response surfaces appear as **unknown**; existing signed links remain valid. The additive `242_csat_response_surface.sql` migration preserves existing feedback and adds this metadata without sending invitations.

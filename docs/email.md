@@ -81,3 +81,5 @@ Imported Zendesk tickets also retain their source ticket number. Explicit
 `[Ticket #123]` and `[Request #123]` subject tags propose that imported ticket;
 ordinary order numbers do not grant sender authority. Conflicting keys or a
 different customer still go to Suspended for review.
+
+Imported Help Scout conversation-number tags such as `[#1901]` use the export’s explicit `number`, independently of its API `id`. The same bracket form can also name a Freshdesk ticket; if imported keys identify multiple tickets, the message is held for review. Neither form grants sender authority, and an API ID is never guessed to be a Help Scout notification number.

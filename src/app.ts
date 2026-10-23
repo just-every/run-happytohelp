@@ -1,3 +1,4 @@
+import {businessRoutes} from './modules/business-connectors/routes'
 import {api as scopedApi} from './modules/api-integrations/routes'
 import {integrationSettings} from './modules/api-integrations/settings'
 import { notFoundResponse, rejectedResponse } from './base/rejected-response'
@@ -87,6 +88,7 @@ app.route('/api/outcomes/surveys',publicSurveys)
 app.route('/api/customer-context',context)
 app.route('/api/training',trainingRoutes)
 app.route('/api/management',integrationSettings)
+app.route('/api/business',businessRoutes)
 app.route('/api/management',management)
 app.route('/api/management',brandMediaRoutes)
 app.route('/api/site-preview',sitePreview)

@@ -1,10 +1,12 @@
+import BusinessSettings from './business-connectors/Settings';
 import React,{useEffect,useState} from 'react';
 import './connections/connections.css';
 import {nativeRequest} from '../transport';
 import Tokens from './connections/Tokens';
 import Destinations from './connections/Destinations';
 import Deliveries from './connections/Deliveries';
-export default function Connections({projectId,section,role}){
+export default function Connections(props){return props.section==='business-settings'?<BusinessSettings {...props}/>:<NativeConnections {...props}/>;}
+function NativeConnections({projectId,section,role}){
  const kind=section==='api-settings'?'tokens':section==='webhook-settings'?'webhooks':section==='slack-settings'?'slack':'deliveries',root=`/api/management/projects/${projectId}/connections`;
  const [rows,setRows]=useState([]),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
  const allowed=['owner','admin'].includes(role);

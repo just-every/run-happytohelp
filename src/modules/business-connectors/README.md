@@ -1,0 +1,53 @@
+# Business connectors
+
+Settings → Business connections verifies the provider account before storing an
+AES-GCM credential using the existing integration key. Accounts have independent
+read, prepare, approve and execute grants, optional expiry and a per-action USD
+limit. These local grants narrow provider authority; they cannot grant remote
+permissions. Credentials never return from a read and are removed from archives.
+
+The ticket's Business context section maps a provider customer ID explicitly.
+Operators must confirm the identity; an email match grants nothing. Refresh reads
+only the mapped record and projects bounded context, source IDs and sync time.
+Disconnect removes the credential, hides cached context and invalidates approvals.
+Source providers remain the system of record.
+
+The `/api/business/projects/:projectId` routes compose native sessions and roles.
+Installing credentials and approving or executing an action require a recent
+identity step-up. Prepared previews retain the exact target, amount, consequences
+and reason. Approval and execution are separate commands. Execution re-reads the
+provider and refuses changed previews. A durable claim serializes execution;
+Stripe receives the action ID as its idempotency key and refund metadata. A
+started action never executes twice, including after a lost response. Reconcile
+only reads the provider. Success requires provider readback; pending settlement
+and unknown results remain uncertain. A pending operation on the same provider
+record prevents a second browser request key from bypassing reconciliation.
+
+Implemented provider paths:
+
+- Shopify: verified store and customer order, fulfillment, delivery, return and
+  refund context. Return, cancellation and refund writes are disabled pending a
+  qualified provider idempotency path and live sandbox receipts.
+- Stripe: customer, invoice and subscription context; bounded USD payment-intent
+  refunds and subscription cancellation at period end, with no proration.
+  Credits, pause, plan changes, broader proration previews and an integrated
+  customer-visible confirmation remain gaps.
+- Orbit, HubSpot and Salesforce: independent account verification and contact
+  context, source freshness and approved outcome activities/notes. Provider
+  lifecycle/community level is not a support entitlement. Configurable company,
+  plan and support-entitlement mapping and approved field edits remain gaps.
+  Orbit availability and every live provider protocol still need sandbox proof.
+
+The panel records results in the originating ticket for the operator. It sends
+nothing to a customer automatically. Review a confirmed result before replying.
+No raw card data is requested, stored or displayed. HappyToHelp holds no funds.
+
+Erasure removes local mappings, snapshots, reasons and action records and fences
+in-flight completions. An external erasure task explicitly records that provider
+copies and legally retained financial records need separate handling. Restore
+removes credentials and snapshots, cancels unexecuted approvals and preserves
+started outcomes as uncertain; it never resumes execution.
+
+`tests/connections/business.mjs` folds network-boundary scenarios into the
+existing credentials, API, erasure and uncertainty journeys. Provider fixtures
+prove local protocol behavior only; they are not live sandbox receipts.

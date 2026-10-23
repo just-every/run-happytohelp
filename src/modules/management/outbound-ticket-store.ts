@@ -49,7 +49,7 @@ export async function reserveOutboundTicket(env:Env,actor:Actor,sessionHash:stri
  return {conversationId,duplicate:results[selected?0:1].meta.changes===0}
 }
 export async function logOutboundCall(env:Env,actor:Actor,sessionHash:string,conversationId:string,content:string){
- const noteId=`call-${conversationId}`,now=Date.now(),authority=await outboundTicketAuthority(env,actor,sessionHash)
+ const noteId=`call-${conversationId}`,now=Date.now(),authority=await ticketAuthority(env,actor,{sessionHash,source:'dashboard'},'conversations.notes')
  await env.DB.prepare(`INSERT OR IGNORE INTO conversation_notes(id,conversation_id,user_id,content,created_at) SELECT ?,c.id,?,?,? FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND ${writableContact} AND EXISTS(${authority.sql})`).bind(noteId,actor.id,content,now,conversationId,actor.projectId,...authority.params).run()
  const note=await env.DB.prepare(`SELECT n.* FROM conversation_notes n JOIN conversations c ON c.id=n.conversation_id JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE n.id=? AND c.project_id=? AND ${writableContact} AND EXISTS(${authority.sql})`).bind(noteId,actor.projectId,...authority.params).first()
  if(!note)throw new HTTPException(409,{message:'Call log admission denied'})

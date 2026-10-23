@@ -56,10 +56,18 @@ export async function requestFormsJourney(){
   const question=await app.ok(path,{...customer,body:{...valid,localId:'question-not-refund',fields:{[reason.id]:'question'}}}),questionId=question.ticket.id
   assert.equal((await app.ok(`${dashboard}/conversations/${questionId}/ticket`,owner)).data.assigned_to,null,'a nonmatching answer does not route')
   assert.equal((await app.ok(`${dashboard}/conversations/${questionId}/sla`,owner)).data.policy,null,'a nonmatching answer does not select the refund SLA')
-  const technical=(await app.ok(admin,{...owner,body:{...f.config,title:'Technical',translations:{},fields:[{fieldId:reason.id,required:true}]}})).data
-  const technicalTicket=await app.ok(`${api}/${technical.id}/submissions`,{...customer,body:{...valid,localId:'technical-refund',fields:{[reason.id]:'refund'}}})
+  const technical=(await app.ok(admin,{...owner,body:{...f.config,title:'Technical',translations:{},fields:f.config.fields}})).data
+  const technicalTicket=await app.ok(`${api}/${technical.id}/submissions`,{...customer,body:{...valid,localId:'technical-refund',fields:valid.fields}})
   assert.equal((await app.ok(`${dashboard}/conversations/${technicalTicket.ticket.id}/sla`,owner)).data.policy,null,'a matching answer on another form does not select the refund SLA')
   assert.equal((await app.ok(`${dashboard}/conversations/${technicalTicket.ticket.id}/ticket`,owner)).data.assigned_to,null,'another form does not use the refund route')
+  const techPolicy=await manage('/sla-policies',{...policyInput,name:'Technical form response',conditions:{form_ids:[technical.id],fields:{[reason.id]:'refund'}},first_response_minutes:30})
+  await app.ok(dashboard+'/routing-operators',{...owner,method:'PUT',body:{operators:[{user_id:f.workspace.users.operator,available:true,capacity:10,skills:[]},{user_id:f.workspace.users.owner,available:true,capacity:10,skills:[]}]}})
+  const techRoute=await manage('/workflow-rules',{name:'Route technical form',kind:'routing',position:0,conditions:{all:[{field:'form_id',op:'eq',value:technical.id},{field:`field:${reason.id}`,op:'eq',value:'refund'}]},actions:[],routing:{strategy:'named',user_id:f.workspace.users.owner,skills:[]}})
+  await manage(`/workflow-rules/${techRoute.rule.id}/publish`,{})
+  assert.equal((await app.call(`${api}/${technical.id}/submissions`,{...customer,body:{...valid,localId:'technical-missing-condition',fields:{[reason.id]:'refund'}},status:422})).data.field,order.id)
+  const routedTechnical=(await app.ok(`${api}/${technical.id}/submissions`,{...customer,body:{...valid,localId:'technical-routed'}})).ticket
+  assert.equal((await app.ok(`${dashboard}/conversations/${routedTechnical.id}/ticket`,owner)).data.assigned_to,f.workspace.users.owner,'the signed-in Technical form routes on its typed conditional answer')
+  assert.equal((await app.ok(`${dashboard}/conversations/${routedTechnical.id}/sla`,owner)).data.policy.id,techPolicy.id,'the Technical form also selects its own SLA policy')
   await app.configure({})
   assert.equal((await app.ok(`${dashboard}/conversations/${id}/sla`,owner)).data.policy.id,policy.id,'form-based commitments survive worker restart')
   assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='form.submitted'",p))

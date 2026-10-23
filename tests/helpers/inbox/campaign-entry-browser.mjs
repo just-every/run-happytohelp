@@ -23,7 +23,7 @@ export async function campaignEntryBrowser(){
   const mailbox=(await api(management+'/mailboxes',{provider:'forwarding',address:'helpdesk@example.test',displayName:'Trailhead support'})).data
   await api(management+`/mailboxes/${mailbox.id}/reconnect`,{})
   const form=(await api(`/api/forms/projects/${projectId}/forms`,{title:'Order follow-up',enabled:true,fields:[{fieldId:f.fields[4].id,required:true},{fieldId:f.fields[0].id,required:true,condition:{fieldId:f.fields[4].id,operator:'equals',value:'Damaged'}}]})).data
-  const capture=async name=>{for(const width of [1440,390]){await page.setViewportSize({width,height:width===390?844:900});await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(200);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${name} overflow at ${width}`);assert.ok(await page.locator('.modal-body').evaluateAll(nodes=>nodes.every(node=>node.scrollWidth<=node.clientWidth+1)),`${name} dialog overflow at ${width}`);await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true});}await page.setViewportSize({width:1440,height:900})}
+  const capture=async name=>{for(const width of [1440,390]){await page.setViewportSize({width,height:width===390?844:900});await page.evaluate(()=>document.fonts.ready);if(name==='outbound-configuration')await page.locator(`#new-ticket-field-${f.fields[0].id}`).scrollIntoViewIfNeeded();if(name==='service-notice-preview')await page.getByRole('region',{name:'Service notice preview'}).scrollIntoViewIfNeeded();if(name==='service-notice-outcomes')await page.getByRole('status',{name:'Service notice outcomes'}).scrollIntoViewIfNeeded();await page.waitForTimeout(200);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${name} overflow at ${width}`);assert.ok(await page.locator('.modal-body').evaluateAll(nodes=>nodes.every(node=>node.scrollWidth<=node.clientWidth+1)),`${name} dialog overflow at ${width}`);await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true});}await page.setViewportSize({width:1440,height:900})}
   await page.goto(runtime.origin+`/login?returnTo=/projects/${projectId}/conversations`)
   await page.getByLabel('Email',{exact:true}).fill(owner.email);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Login',exact:true}).click()
   await page.getByRole('button',{name:'New ticket',exact:true}).click()
@@ -45,8 +45,20 @@ export async function campaignEntryBrowser(){
   const loggedId=new URL(page.url()).pathname.split('/').pop(),logged=(await api(`${base}/conversations/${loggedId}/ticket`)).data
   assert.equal(logged.channel,'walk_in');assert.equal(logged.request_form_id,form.id);assert.equal(logged.fields[f.fields[0].id],'TO-48213')
   assert.equal((await mails()).some(mail=>mail.text?.includes('Customer brought the damaged boots')),false,'walk-in notes never leave by mail')
+  await page.goto(runtime.origin+`/projects/${projectId}/conversations`);await page.getByRole('button',{name:'New ticket',exact:true}).click();dialog=page.getByRole('dialog')
+  await dialog.getByLabel('Requester email',{exact:true}).fill('browser-new-requester@example.test');await dialog.getByLabel('Requester name',{exact:true}).fill('New browser requester')
+  await dialog.getByLabel('Subject',{exact:true}).fill('Replacement for your shipment');await dialog.getByLabel('Message',{exact:true}).fill('synthetic-happytohelp-88: Your replacement is ready.')
+  await dialog.getByRole('button',{name:'Create and email',exact:true}).click();await page.waitForURL(url=>url.pathname.includes('/conversations/ticket-'))
+  const emailedId=new URL(page.url()).pathname.split('/').pop(),emailed=(await api(`${base}/conversations/${emailedId}/ticket`)).data
+  assert.equal(emailed.requester_id,emailed.contact_id);assert.equal(emailed.submitter_type,'agent')
+  await until(async()=>(await mails()).some(mail=>mail.text?.includes('synthetic-happytohelp-88')&&[].concat(mail.to).includes('browser-new-requester@example.test')))
+  await page.goto(runtime.origin+`/projects/${projectId}/conversations`);await page.getByRole('button',{name:'New ticket',exact:true}).click();dialog=page.getByRole('dialog')
+  await dialog.getByLabel('Search requesters by name, email or phone').fill('browser-new-requester@');await dialog.locator('input[name="ticket-requester"]').first().check()
+  await dialog.getByLabel('Internal first comment (no email)',{exact:true}).check();await dialog.getByLabel('Subject',{exact:true}).fill('Private email-channel record');await dialog.getByLabel('Private notes',{exact:true}).fill('synthetic-happytohelp-89: Staff-only delivery context.')
+  await dialog.getByRole('button',{name:'Create internal ticket',exact:true}).click();await page.waitForURL(url=>url.pathname.includes('/conversations/ticket-'))
+  assert.equal((await mails()).some(mail=>mail.text?.includes('synthetic-happytohelp-89')),false,'internal email notes never send')
   const signIn=async(email,customerPage)=>{
-   const before=(await mails()).length;await api(`/api/portal/${projectId}/access/request`,{email})
+   const before=(await mails()).length;const requested=await customerPage.request.post(runtime.origin+`/api/portal/${projectId}/access/request`,{headers:{Origin:runtime.origin},data:{email}});assert.equal(requested.status(),202)
    const mail=await until(async()=>(await mails()).slice(before).find(mail=>mail.subject==='Sign in to your support requests'&&[].concat(mail.to).includes(email)))
    const url=new URL(mail.text.match(/https:\/\/app\.example\/api\/portal\/\S+/)[0]);await customerPage.goto(runtime.origin+url.pathname+url.search)
    const response=await customerPage.request.put(runtime.origin+`/api/portal/${projectId}/preferences`,{headers:{Origin:runtime.origin},data:{locale:'en',surveyEmails:false,updateEmails:true}});assert.equal(response.status(),200)

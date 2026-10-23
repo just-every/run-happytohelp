@@ -37,8 +37,7 @@ export async function hostedExportLive(root,scratch,input='exports/support.rer',
     let cursor;do{const page=await proxy.env.FILES.list({cursor});if(page.objects.length)await proxy.env.FILES.delete(page.objects.map(row=>row.key));cursor=page.truncated?page.cursor:undefined}while(cursor);
    }
   }finally{
-   await proxy?.dispose();
-   await removeHostedSource(source);
+   try{await proxy?.dispose()}finally{await removeHostedSource(source)}
   }
  }
 }

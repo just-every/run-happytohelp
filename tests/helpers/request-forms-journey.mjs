@@ -129,6 +129,11 @@ export async function requestFormsJourney(){
   assert.equal(race.status,409,'membership lost during admission cannot create a ticket')
   assert.equal((await app.first('SELECT count(*) n FROM request_form_submissions WHERE project_id=? AND local_id=?',p,'synthetic-happytohelp-72')).n,0)
   assert.equal((await fieldValues()).value_json,JSON.stringify(account.id),'revocation does not erase a historical reference')
+  const merge=(await app.ok(`${accounts}/${other.id}/merge/preview`,{...owner,body:{sourceId:account.id}})).preview
+  await app.ok(`${accounts}/${other.id}/merge`,{...owner,body:{sourceId:account.id,preview:merge.token}})
+  const oldTicket=(await app.ok(`${dashboard}/conversations/${accountTicket.id}/ticket`,owner)).data
+  await app.ok(`${dashboard}/conversations/${accountTicket.id}/ticket`,{...owner,method:'PATCH',body:{subject:'A later support update',fields:{[accountField.id]:account.id},expected_version:oldTicket.ticket_version}})
+  assert.equal((await fieldValues()).value_json,JSON.stringify(account.id),'a merged account remains a retained reference when unrelated ticket details are saved')
   await app.ok(`/api/management/projects/${p}/ticket-fields/${accountField.id}`,{...owner,method:'PATCH',body:{read_roles:['owner'],write_roles:['owner']}})
   assert.equal((await app.call(lookup,customer)).status,404,'later field restrictions hide the entire public form and its lookup')
 

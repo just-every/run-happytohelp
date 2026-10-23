@@ -16,7 +16,7 @@ export async function campaignEntryBrowser(){
  const mails=async()=>(await readFile(mailPath,'utf8')).trim().split('\n').filter(Boolean).map(line=>JSON.parse(line)),until=async check=>{const deadline=Date.now()+15000;while(Date.now()<deadline){const result=await check();if(result)return result;await new Promise(done=>setTimeout(done,100))}throw Error('Browser fixture did not settle')}
  let success=false
  try{
-  const setup=await fetch(runtime.origin+'/api/identity/bootstrap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...ticketOwner,allowedOrigin:runtime.origin,setupToken:'synthetic-happytohelp-82'})});assert.equal(setup.status,200);const initial=await setup.json()
+  const setup=await fetch(runtime.origin+'/api/identity/bootstrap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...ticketOwner,allowedOrigin:runtime.origin,setupToken:'synthetic-happytohelp-82'})});assert.equal(setup.status,201);const initial=await setup.json()
   const f=await seedTicketBrowser(runtime.origin,1,{owner:ticketOwner,projectId:initial.projectId}),{projectId,base,api,owner}=f,management=`/api/management/projects/${projectId}`,context=await browser.newContext({viewport:{width:1440,height:900}}),page=await context.newPage()
   page.setDefaultTimeout(15000)
   await api(management+'/email-settings',{from_address:'support@example.test',from_name:'Trailhead support',inbound_address:'help@example.test',is_enabled:true},'PUT')
@@ -66,9 +66,9 @@ export async function campaignEntryBrowser(){
   await dialog.getByRole('region',{name:'Service notice preview'}).scrollIntoViewIfNeeded();await capture('service-notice-preview')
   await dialog.getByRole('button',{name:'Confirm service notice',exact:true}).click();await dialog.getByRole('heading',{name:'Delivery outcomes',exact:true}).waitFor()
   await until(async()=>(await mails()).filter(mail=>mail.text?.includes('synthetic-happytohelp-90')).length===3)
-  await until(async()=>{await dialog.getByRole('button',{name:'Refresh outcomes',exact:true}).click();return (await dialog.getByRole('region',{name:'Service notice outcomes'}).innerText()).includes('failed')})
+  await until(async()=>{await dialog.getByRole('button',{name:'Refresh outcomes',exact:true}).click();return (await dialog.getByRole('status',{name:'Service notice outcomes'}).innerText()).includes('failed')})
   assert.equal((await mails()).filter(mail=>mail.text?.includes('synthetic-happytohelp-90')).length,3,'refresh never resends')
-  await dialog.getByRole('region',{name:'Service notice outcomes'}).scrollIntoViewIfNeeded();await capture('service-notice-outcomes');await dialog.getByRole('button',{name:'Close',exact:true}).click()
+  await dialog.getByRole('status',{name:'Service notice outcomes'}).scrollIntoViewIfNeeded();await capture('service-notice-outcomes');await dialog.getByRole('button',{name:'Close',exact:true}).click()
   // Customer account lookup choices and a retained typed reference in the built form.
   const account=(await api(management+'/companies',{name:'Rosa Books browser',domains:[],portalCompanyView:false})).company
   await api(management+`/companies/${account.id}/members/${requesterIds[2]}`,{},'PUT')

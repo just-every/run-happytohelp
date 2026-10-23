@@ -6655,8 +6655,12 @@
       "sha256": "d8d8c4dabe47860b1c1e0f62763c65e0267212501338db841a30cb3851f7910a",
       "executable": false
     },
+    "src/modules/support-channels/settings.css": {
+      "sha256": "b6a39f0126db4b38105c80b51af8549e801a2d1f0dd79f36fdb160a4bad94795",
+      "executable": false
+    },
     "src/modules/support-channels/Settings.jsx": {
-      "sha256": "3e0d4a2f689dbee53cf3f37050069a4ff76d494eb98b3e85fd123ce2d3a34dba",
+      "sha256": "b0e23a9431901672057830ac4ace3ab747831d8956548316469c83df3e5bd0d3",
       "executable": false
     },
     "src/modules/support-channels/settings.ts": {
@@ -6680,7 +6684,7 @@
       "executable": false
     },
     "src/modules/support-channels/TicketChannel.jsx": {
-      "sha256": "ee07fce3e0306a3818c37baae3cde9b35fa93970cf2f5111d86a50f0925df9bb",
+      "sha256": "4448bcf64d75c2e1ed6cdebe1eb22231379c9f16760acb3478c943bc00a77322",
       "executable": false
     },
     "src/modules/tickets/batch-workflows.ts": {
@@ -11556,7 +11560,7 @@
       "executable": false
     },
     "tests/helpers/support-channels/browser.mjs": {
-      "sha256": "7deb12d5016c83d47a9f20ef95dddcca1415543de8ca016ca6ff79744b9d7d50",
+      "sha256": "93c766d9cf619d02a3853df3dd51f4d05224d648c56606d09595e8d621bab362",
       "executable": false
     },
     "tests/helpers/support-channels/journeys.mjs": {

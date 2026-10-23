@@ -93,13 +93,14 @@ export default function useConversationDelegations({ conversationId, projectId, 
         }
     }, [ devicesPath, scopeKey ]);
 
-    const createDelegation = useCallback(async ({ deviceId, instructions, mode }) => {
+    const createDelegation = useCallback(async ({ deviceId, instructions, mode, timeLimitMinutes = 15 }) => {
         if (!basePath) return null;
 
         const requestScope = scopeKey;
         try {
             const response = await Api.create(basePath, {
                 device_id: deviceId,
+                time_limit_minutes: timeLimitMinutes,
                 mode,
                 instructions,
                 request_id: uuidv4(),

@@ -23,6 +23,7 @@ const statusNames = {
 // A completed report whose follow-up effects stopped says why, so an undelivered reply is never mistaken for a sent one.
 const completionNotices = {
     authorization_lost: 'Authority was withdrawn before this report’s note or reply was recorded.',
+    authority_expired: 'Task authority expired. No further reply or follow-up may use this grant; inspect the local outcome before authorizing new work.',
     review: 'The reply was not delivered. Review the conversation before replying yourself.',
 };
 
@@ -37,19 +38,21 @@ export default function DelegationJob({ job, isDraftDisabled, onCancel, onInsert
     const result = job.result && typeof job.result === 'object' ? job.result : null;
     const progress = Array.isArray(job.progress) ? job.progress : [];
     const inputMessages = Array.isArray(job.input_messages) ? job.input_messages : [];
-    const active = isActive(job);
+    const expired = Boolean(job.authority?.expired);
+    const active = isActive(job) && !expired;
     const completed = job.status === 'completed';
     const replyWasSent = job.mode === 'resolve_reply' && job.delivery_state === 'delivered';
     const canInsertDraft = Boolean(result?.reply_draft) && job.mode !== 'resolve_reply';
     const freshnessReview = job.freshness_review?.required ? job.freshness_review : null;
     const freshnessReviewId = freshnessReview?.latest_last_message_id || null;
-    const statusLabel = job.status === 'revoked' && job.delivery_state === 'membership_lost'
+    const statusLabel = expired ? 'Task authority expired · local outcome unconfirmed' : job.status === 'revoked' && job.delivery_state === 'membership_lost'
         ? 'Workspace access ended · local outcome unconfirmed'
         : statusNames[job.status] || job.status;
     const latestProgress = progress[progress.length - 1] || null;
     const authority = <small className="delegation-job__authority">
         Authorized by operator { job.operator_id }{ ' · ' }
         <time dateTime={ job.created_at }>{ new Date(job.created_at).toLocaleString() }</time>
+        { job.authority && <span>{' · '}Authority {expired ? 'expired' : 'expires'} <time dateTime={new Date(job.authority.expires_at).toISOString()}>{new Date(job.authority.expires_at).toLocaleString()}</time></span> }
         { job.parent_delegation_id && <span>{ ' · ' }Approved follow-up of{ ' ' }
             <a href={ '#delegation-job-' + job.parent_delegation_id }>investigation { job.parent_delegation_id }</a>
         </span> }
@@ -126,7 +129,7 @@ export default function DelegationJob({ job, isDraftDisabled, onCancel, onInsert
                 </div>
             </div>
             <DelegationAttachments attachments={ result?.attachments } />
-            <DelegationResultOptions job={ job } isDraftDisabled={ isDraftDisabled } onInsertDraft={ onInsertDraft } onRunFollowUp={ onRunFollowUp } />
+            <DelegationResultOptions job={ job } isDraftDisabled={ isDraftDisabled || expired } onInsertDraft={ onInsertDraft } onRunFollowUp={ onRunFollowUp } />
             { resultDetails && <details className="delegation-job__disclosure delegation-job__completed-details">
                 <summary>Evidence and details</summary>
                 { resultDetails }
@@ -159,7 +162,7 @@ export default function DelegationJob({ job, isDraftDisabled, onCancel, onInsert
             </details> }
         </div> }
 
-        { job.status === 'needs_input' && <div className="delegation-job__input-request">
+        { job.status === 'needs_input' && !expired && <div className="delegation-job__input-request">
             <div>
                 <h4><i className="fe fe-message-circle" aria-hidden="true" /> Input requested</h4>
                 <p>{ result?.question || 'The local worker needs more context before it can continue.' }</p>

@@ -696,6 +696,12 @@
       "name": "245_ai_handoff_receipts.sql",
       "sha256": "3c16dd6197e9887b840ae6c50278d44859e85836a103c3ca5f7a68094025ea68",
       "sql": "-- A causal receipt, committed in the same batch as a successful model-requested\n-- assignment. Historical generic assignments are deliberately not backfilled.\n-- No prompt, customer text, credential or replay authority is retained here.\nCREATE TABLE ai_handoff_receipts(\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL,\n conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,\n generation_id TEXT NOT NULL UNIQUE,\n agent_id TEXT NOT NULL,\n revision INTEGER NOT NULL,\n created_at INTEGER NOT NULL\n);\nCREATE INDEX ai_handoff_receipts_conversation ON ai_handoff_receipts(project_id,conversation_id);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "246_customer_recovery.sql",
+      "sha256": "b77c64c20ea6c2a1046c1a46641059f567f759f74a5348cf7279a389435afd6c",
+      "sql": "-- A customer's explicit recovery answer is distinct from satisfaction.\n-- Existing positive ratings establish no recovery claim.\nALTER TABLE csat_responses ADD COLUMN recovery TEXT NOT NULL DEFAULT 'unknown' CHECK(recovery IN ('unknown','recovered','not_recovered'));\nALTER TABLE csat_response_history ADD COLUMN recovery TEXT NOT NULL DEFAULT 'unknown' CHECK(recovery IN ('unknown','recovered','not_recovered'));\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

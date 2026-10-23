@@ -118,6 +118,7 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
                 <div className="happytohelp-insight-agent">
                     <span className="happytohelp-insight-agent-name">
                         {currentAgent.first_name ?? currentAgent.name}
+                        {currentAgent.is_ai && <small className="happytohelp-ai-disclosure">AI assistant</small>}
                         {canExpand && <span className="happytohelp-chat-header-edit-inline-tiny">
                             <FontAwesomeIcon icon={faAngleDown}/>
                         </span>}

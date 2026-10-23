@@ -9,7 +9,7 @@ import {run} from '../rer-command.mjs';
 /** The public command and seed hook run unchanged; only the D1 API and R2
  * network boundaries point at the stopped disposable native installation. */
 export async function hostedExportJourney(root,scratch){
- const config=join(scratch,'hosted-target.json'),shim=join(scratch,'remote-bindings.mjs'),loader=join(scratch,'remote-loader.mjs');
+ const config=join(scratch,'hosted-target.json'),shim=join(scratch,'remote-bindings.mjs'),loader=join(scratch,'remote-loader.mjs'),r2=join(scratch,'remote-r2.mjs');
  await writeFile(config,JSON.stringify({account_id:'11111111111111111111111111111111',d1_databases:[{binding:'DB',database_id:'00000000-0000-4000-8000-000000000002',database_name:'synthetic-happytohelp-2'}],r2_buckets:[{binding:'FILES',bucket_name:'synthetic-happytohelp-3'}]}),{mode:0o600});
  const wrangler=pathToFileURL(join(root,'node_modules/wrangler/wrangler-dist/cli.js')).href;
  await writeFile(shim,`import {getPlatformProxy as real,unstable_splitSqlQuery} from ${JSON.stringify(wrangler)};
@@ -24,18 +24,20 @@ export async function hostedExportJourney(root,scratch){
   return new Response(JSON.stringify({success:true,result},(_,value)=>value instanceof ArrayBuffer?Array.from(new Uint8Array(value)):ArrayBuffer.isView(value)?Array.from(new Uint8Array(value.buffer,value.byteOffset,value.byteLength)):value),{headers:{'Content-Type':'application/json'}});
  };
  export {unstable_splitSqlQuery};
- export async function getPlatformProxy(options){
-  const selected=JSON.parse(await readFile(options.configPath,'utf8'));
-  if(!options.remoteBindings||selected.d1_databases[0].remote!==true||selected.r2_buckets[0].remote!==true)throw Error('Remote binding selection missing');
+ export async function stoppedSource(){
+  if(sourceProxy)return sourceProxy;
   const source=parseJsonc(await readFile(${JSON.stringify(join(root,'wrangler.jsonc'))},'utf8'));
   const path=${JSON.stringify(join(scratch,'stopped-source.json'))};
   await writeFile(path,JSON.stringify({name:source.name,compatibility_date:source.compatibility_date,compatibility_flags:source.compatibility_flags,d1_databases:source.d1_databases,r2_buckets:source.r2_buckets}),{mode:0o600});
   sourceProxy=await real({configPath:path,envFiles:[],persist:{path:${JSON.stringify(join(root,'.wrangler/state/v3'))}},remoteBindings:false});return sourceProxy;
  }
  `,{mode:0o600});
+ await writeFile(r2,`import {stoppedSource} from ${JSON.stringify(pathToFileURL(shim).href)};
+ export async function hostedR2(){const proxy=await stoppedSource();return {list:options=>proxy.env.FILES.list(options),get:(key,options)=>proxy.env.FILES.get(key,options),dispose:()=>proxy.dispose()}};
+ `,{mode:0o600});
  await writeFile(loader,`import {registerHooks} from 'node:module';
  const hook=${JSON.stringify(pathToFileURL(await realpath(join(root,'scripts/installer/hosted-export.mjs'))).href)};
- registerHooks({resolve(specifier,context,next){return specifier==='wrangler'&&context.parentURL===hook?{url:${JSON.stringify(pathToFileURL(shim).href)},shortCircuit:true}:next(specifier,context)}});
+ registerHooks({resolve(specifier,context,next){if(context.parentURL===hook){if(specifier==='wrangler')return {url:${JSON.stringify(pathToFileURL(shim).href)},shortCircuit:true};if(specifier==='./hosted-r2.mjs')return {url:${JSON.stringify(pathToFileURL(r2).href)},shortCircuit:true}}return next(specifier,context)}});
  `,{mode:0o600});
  const env={H2H_EXPORT_CONFIG:config,H2H_EXPORT_WRITERS_STOPPED:'yes',CLOUDFLARE_API_TOKEN:'synthetic-happytohelp-4',NODE_OPTIONS:[process.env.NODE_OPTIONS,`--import=${pathToFileURL(loader).href}`].filter(Boolean).join(' ')};
  await run(root,['export','--target','remote','--output','exports/unacknowledged.rer'],1,{env:{...env,H2H_EXPORT_WRITERS_STOPPED:''}});

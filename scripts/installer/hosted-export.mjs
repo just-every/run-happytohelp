@@ -1,18 +1,19 @@
 import {constants} from 'node:fs';
-import {open,mkdtemp,writeFile,rm,link,lstat,mkdir} from 'node:fs/promises';
+import {open,mkdtemp,rm,link,lstat,mkdir} from 'node:fs/promises';
 import {join,resolve,dirname} from 'node:path';
 import {parseArgs} from 'node:util';
 import {fileURLToPath} from 'node:url';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {checkArchiveSnapshot} from './durable-objects.mjs';
-import {getPlatformProxy,unstable_splitSqlQuery} from 'wrangler';
+import {unstable_splitSqlQuery} from 'wrangler';
 import {parseJsonc} from '@runeditrun/rer/jsonc';
 import {createPortability} from '@runeditrun/rer/modules/portability';
 import {exportArchive,fileRecords} from '@runeditrun/rer/modules/portability/files';
 import {appliedMigrations,platformMigrationPreflight} from '@runeditrun/rer/internal/cli/portability-migrations.mjs';
 import {archivePolicy} from './portability-policy.mjs';
 import {hostedD1} from './hosted-d1.mjs';
+import {hostedR2} from './hosted-r2.mjs';
 
 const root=fileURLToPath(new URL('../..',import.meta.url));
 class HostedExportRefusal extends Error {}
@@ -52,11 +53,10 @@ export async function hostedExport({output,configPath,stopped,origin}){
  const config=await configuration(configPath),destination=resolve(output);
  if(await lstat(destination).then(()=>true,error=>{if(error.code==='ENOENT')return false;throw error}))throw failure('Hosted export output already exists; choose a new private archive path.');
  await mkdir(dirname(destination),{recursive:true,mode:0o700});
- const temporary=await mkdtemp(join(dirname(destination),'.h2h-hosted-export-'));let proxy;
+ const temporary=await mkdtemp(join(dirname(destination),'.h2h-hosted-export-'));let FILES;
  try{
-  const path=join(temporary,'bindings.json');await writeFile(path,JSON.stringify(config),{mode:0o600});
-  proxy=await getPlatformProxy({configPath:path,envFiles:[],persist:false,remoteBindings:true});
-  const DB=hostedD1({accountId:config.account_id,databaseId:config.d1_databases[0].database_id,token:process.env.CLOUDFLARE_API_TOKEN}),FILES=proxy.env.FILES;
+  const DB=hostedD1({accountId:config.account_id,databaseId:config.d1_databases[0].database_id,token:process.env.CLOUDFLARE_API_TOKEN});
+  FILES=await hostedR2({accountId:config.account_id,bucket:config.r2_buckets[0].bucket_name,token:process.env.CLOUDFLARE_API_TOKEN,directory:temporary});
   await promisify(execFile)(process.execPath,['scripts/migrations.mjs'],{cwd:root});
   await platformMigrationPreflight(root,DB,'DB',{},unstable_splitSqlQuery);
   const migrations=await appliedMigrations(root,DB,'DB',{},unstable_splitSqlQuery);
@@ -75,7 +75,7 @@ export async function hostedExport({output,configPath,stopped,origin}){
   if(!manifest||fence?.source_identity!==manifest.sourceIdentity||fence.epoch!==manifest.epoch)throw failure('Hosted erasure fence changed; export again before restoring.');
   await mkdir(dirname(destination),{recursive:true,mode:0o700});await link(staged,destination);
   return {...receipt,target:'remote',durableObjects:{CONVERSATIONS:'lossless D1 reconstruction; transient sockets and alarms excluded'}};
- }finally{await proxy?.dispose();await rm(temporary,{recursive:true,force:true})}
+ }finally{try{await FILES?.dispose()}finally{await rm(temporary,{recursive:true,force:true})}}
 }
 
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){

@@ -2940,7 +2940,7 @@
       "executable": false
     },
     "scripts/installer/hosted-export.mjs": {
-      "sha256": "cd8c61b503b6f3eefa044da27abba8d5efbea6c39c28864509e53fb697a7f1da",
+      "sha256": "97b4d5a500f10210820c273f5c232d9ad54894455cf60c04e411f50621428ac4",
       "executable": false
     },
     "scripts/installer/hosted-origin.mjs": {
@@ -11404,7 +11404,7 @@
       "executable": false
     },
     "tests/helpers/installer/hosted-export.mjs": {
-      "sha256": "3222b0f5bc77cd0ca6f4b53b6b46eb438f10c12ce4b5fa03d9cde3183f0b95c3",
+      "sha256": "6fc55bcaa154dbe9813852e60409e8f2af3f942dba2dc93c579a4f78fcb5d4e8",
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {

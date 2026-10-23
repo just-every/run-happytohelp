@@ -569,8 +569,8 @@ The 23 October 2026 contract-text clarification separates local implementation/f
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 20 | 2 | 0 | 22 |
-| Target and push further | 15 | 26 | 12 | 53 |
-| All | 35 | 28 | 12 | 75 |
+| Target and push further | 15 | 29 | 9 | 53 |
+| All | 35 | 31 | 9 | 75 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |

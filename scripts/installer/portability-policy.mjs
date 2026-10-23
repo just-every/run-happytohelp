@@ -14,6 +14,9 @@ export const archivePolicy={
  // Reconstruct the full-text index from retained messages after restore.
  derivedTables:['inbox_message_search'],
  excludeTables:[
+  // Provider credentials and active sync state are reconfigured after restore;
+  // ordinary Move in history and its erased-identity tombstones remain native.
+  'helpscout_connections','helpscout_sync_receipts','helpscout_webhook_receipts',
   'escalation_attachment_grants',
   'workflow_clock',
   'operator_notification_activity','operator_notifications',

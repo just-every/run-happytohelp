@@ -31,11 +31,19 @@
   "pendingMigrations": [
     {
       "id": "240_operator_presence.sql",
-      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings → Availability."
+      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings \u2192 Availability."
     },
     {
       "id": "241_away_reply_not_a_reply.sql",
       "buyerSteps": "WIDGET-001: the workspace's away message is no longer a reply for automations or outcomes. Rules for an operator reply, and time since the last one, wait for a teammate or an assistant, and a conversation an assistant resolves after the away message records AI. Apply after 240 and before the updated Worker serves traffic; it redefines two triggers and changes no stored row, so earlier journal events and recorded outcomes stay as they were."
+    },
+    {
+      "id": "242_escalation_teams.sql",
+      "buyerSteps": "Adds isolated Teams handoff credentials without rebuilding existing escalation connections or changing issue history. Apply before the updated Worker serves traffic; connect an explicitly authorized Graph delegated ChannelMessage.Send token and team/channel target. Export excludes credentials and restore requires reconnecting."
+    },
+    {
+      "id": "243_helpscout_sync.sql",
+      "buyerSteps": "Apply before serving the updated Worker. Adds optional read-only Help Scout connection and digest/Move in receipts; it changes no prior ticket or import. Configure an explicitly authorized mailbox read token, private webhook secret and existing integration encryption key through the native connection API. Sync stages ordinary Move in reviews; approval remains explicit. Provider credentials and active sync stores are excluded from export and require reconnecting after restore; native import history and erased-identity tombstones remain retained."
     }
   ]
 }

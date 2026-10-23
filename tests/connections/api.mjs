@@ -1,5 +1,7 @@
 import {phases} from '../journeys/kit/scenarios.mjs';const test=phases(import.meta.url);import assert from 'node:assert/strict';
 import {harness,body,sha,allScopes} from './harness.mjs';
+import {helpScoutSyncJourney} from '../helpers/helpscout-sync.mjs';
+test('Help Scout incremental ingestion stages reviewed history once, preserves reconnect cursors and refuses erased identities and revoked connections',helpScoutSyncJourney);
 const settings='/api/management/projects/p/connections';
 test('current native admins manage workspace credentials while operators cannot create or inspect them',async()=>{
  const h=await harness();try{
@@ -213,5 +215,51 @@ test('destination disable refuses a revoked issuer at commit without recording a
   const before=(await h.db.prepare("SELECT * FROM native_integration_audit WHERE action='destination.disabled'").all()).results;
   const result=await h.raw('/_test/race',body({path:path+'/'+saved.id,method:'DELETE',match:'UPDATE native_integration_destinations',race:[{sql:"UPDATE sessions SET revoked_at=1 WHERE actor_id='owner'"}]}));assert.equal(result.status,404);
   assert.deepEqual((await h.db.prepare("SELECT * FROM native_integration_audit WHERE action='destination.disabled'").all()).results,before,'refused command cannot mint a success audit');
+ }finally{await h.close()}
+});
+
+
+test('managed MCP tools inherit scoped native reads, guarded replies, foreign-resource refusal and revocation',async()=>{
+ const h=await harness();try{
+  await h.contact();const conversation=await h.conversation();await h.contact('foreign-visitor','q');const foreign=await h.conversation('foreign-visitor','q');
+  const read=await h.issue(['conversations:read']),write=await h.issue(['messages:write']);
+  const rpc=(token,method,params={})=>h.call('/api/v1/mcp',{token,...body({jsonrpc:'2.0',id:1,method,params})});
+  const call=async(token,name,args)=>{const answer=await rpc(token,'tools/call',{name,arguments:args});return {...answer.result,data:JSON.parse(answer.result.content[0].text)}};
+  assert.equal((await h.raw('/api/v1/mcp',{token:read.token})).status,405);
+  assert.equal((await h.raw('/api/v1/mcp',{token:read.token,...body({jsonrpc:'2.0',id:1,method:'tools/list'}),headers:{'Content-Type':'application/json',Origin:'https://elsewhere.example'}})).status,403);
+  const initialized=await rpc(read.token,'initialize',{protocolVersion:'2025-03-26'});assert.equal(initialized.result.serverInfo.name,'happytohelp');
+  assert.equal((await rpc(read.token,'initialize',{protocolVersion:'2025-11-25'})).result.protocolVersion,'2025-06-18','newer clients negotiate a supported protocol version');
+  const list=await rpc(read.token,'tools/list');assert.ok(list.result.tools.some(tool=>tool.name==='list_conversations'));assert.equal(list.result.tools.some(tool=>tool.name==='reply'),false);
+  assert.deepEqual((await call(read.token,'list_conversations',{limit:1})).data.data.map(row=>row.id),[conversation.id]);
+  assert.equal((await call(read.token,'get_conversation',{id:foreign.id})).data.error.code,'not_found');
+  const command={id:conversation.id,localId:'synthetic-happytohelp-7',content:'We are investigating.',expectedRevision:0,expectedLastMessageId:null};
+  const refused=await call(read.token,'reply',command);assert.equal(refused.isError,true);assert.equal(refused.data.error.code,'insufficient_scope');
+  assert.equal((await h.db.prepare('SELECT count(*) n FROM messages').first()).n,0);
+  const sent=await call(write.token,'reply',command);assert.equal(sent.isError,false);assert.equal(sent.data.data.content,command.content);
+  assert.equal((await call(write.token,'reply',command)).data.duplicate,true);
+  assert.equal((await call(write.token,'reply',{...command,localId:'synthetic-happytohelp-8'})).data.error.code,'conflict');
+  assert.equal((await rpc(read.token,'tools/call',{name:'list_contacts',arguments:{url:'https://elsewhere.example'}})).error.code,-32602);
+  await h.call(settings+'/tokens/'+read.data.id,{method:'DELETE'});
+  assert.equal((await h.raw('/api/v1/mcp',{token:read.token,...body({jsonrpc:'2.0',id:1,method:'tools/list'})})).status,401);
+ }finally{await h.close()}
+});
+
+
+test('Zapier polling and reply actions use the same tenant, frontier, deduplication and revocation fences',async()=>{
+ const {default:definition}=await import('../../connectors/zapier/index.mjs');
+ const h=await harness();try{
+  await h.contact();const conversation=await h.conversation();await h.contact('foreign-visitor','q');await h.conversation('foreign-visitor','q');
+  const issued=await h.issue(['conversations:read','messages:write']);
+  const bundle={authData:{origin:'https://app.example',token:issued.token},inputData:{}};
+  const z={async request(options){const url=new URL(options.url);assert.equal(url.origin,'https://app.example');const response=await h.raw(url.pathname+url.search,{token:issued.token,method:options.method,headers:options.headers,...(options.body?{body:options.body}:{})});return {data:await response.json(),throwForStatus(){assert.ok(response.ok,'HTTP '+response.status)}}}};
+  const trigger=definition.triggers.updatedConversation.operation.perform,reply=definition.creates.reply.operation.perform;
+  assert.deepEqual((await trigger(z,bundle)).map(row=>row.conversation_id),[conversation.id]);
+  const found=await definition.searches.conversation.operation.perform(z,{...bundle,inputData:{id:conversation.id}});assert.equal(found[0].revision,0);
+  const command={conversationId:conversation.id,localId:'synthetic-happytohelp-9',content:'We are investigating.',expectedRevision:0,expectedLastMessageId:null};
+  const sent=await reply(z,{...bundle,inputData:command});assert.equal(sent.content,command.content);
+  assert.equal((await reply(z,{...bundle,inputData:command})).duplicate,true);
+  await assert.rejects(reply(z,{...bundle,inputData:{...command,localId:'synthetic-happytohelp-10'}}),/HTTP 409/);
+  await assert.rejects(trigger(z,{...bundle,authData:{...bundle.authData,origin:'https://app.example/private'}}),/HTTPS installation origin/);
+  await h.call(settings+'/tokens/'+issued.data.id,{method:'DELETE'});await assert.rejects(trigger(z,bundle),/HTTP 401/);
  }finally{await h.close()}
 });

@@ -4,25 +4,27 @@ import type {AppEnv} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
 import {auditStatement,requestSource} from '../audit/record'
 import {escalationAccess,string} from './access'
+import {validTeamsTarget} from './providers/teams'
 import {prefix,loadConnection,provider} from './connections'
 import {selectedContext,shareContext} from './context'
 import {saveIssue,ticketEscalations} from './issues'
-import {createIssue,getIssue,addTicketLink,postSlack} from './providers'
+import {createIssue,getIssue,addTicketLink,postSlack,postTeams} from './providers'
 export const ticketPrefix=prefix+'/conversations/:conversationId'
 export const actionRoutes=new Hono<AppEnv>()
 actionRoutes.get(ticketPrefix,async c=>{const {actor,conversation}=await escalationAccess(c);return c.json({data:await ticketEscalations(c.env,actor.projectId,conversation.id)})})
 actionRoutes.post(ticketPrefix+'/preview',async c=>{const {actor,conversation}=await escalationAccess(c,'conversations.manage'),body=await c.req.json(),context=await selectedContext(c.env,actor.projectId,conversation.id,body);return c.json({data:{body:[`Support ticket: ${new URL(`/projects/${actor.projectId}/conversations/${conversation.id}`,c.req.url).href}`,context.body,...context.attachments.map(f=>`${f.filename} (${f.size} bytes; download link expires in 7 days)`)].filter(Boolean).join('\n\n')}})})
-async function perform(c:any,slack=false){
- const {actor,conversation}=await escalationAccess(c,'conversations.manage'),body=await c.req.json(),p=slack?'slack':provider(body.provider)
- if(!slack&&p==='slack')throw new HTTPException(400)
+async function perform(c:any,handoff:'slack'|'teams'|null=null){
+ const {actor,conversation}=await escalationAccess(c,'conversations.manage'),body=await c.req.json(),p=handoff??provider(body.provider)
+ if(!handoff&&['slack','teams'].includes(p))throw new HTTPException(400)
  const {row,connection}=await loadConnection(c.env,actor.projectId,p)
  const context=await selectedContext(c.env,actor.projectId,conversation.id,body)
- const mode=slack?'slack':body.mode
- if(!['create','link','slack'].includes(mode))throw new HTTPException(400,{message:'Choose create or link'})
+ const mode=handoff??body.mode
+ if(!['create','link','slack','teams'].includes(mode))throw new HTTPException(400,{message:'Choose create or link'})
  const title=mode==='create'?string(body.title,'issue title',240):'',key=mode==='link'?string(body.key,'issue key',200):''
  const dependency=typeof body.dependency==='string'?body.dependency.slice(0,500):''
- const channel=slack?string(body.channel||row.target,'Slack channel',100):''
- if(slack&&!/^[CG][A-Z0-9]+$/.test(channel))throw new HTTPException(400,{message:'Choose a Slack channel ID'})
+ const channel=handoff?string(body.channel||row.target,'handoff channel',500):''
+ if(handoff==='slack'&&!/^[CG][A-Z0-9]+$/.test(channel))throw new HTTPException(400,{message:'Choose a Slack channel ID'})
+ if(handoff==='teams'&&!validTeamsTarget(channel))throw new HTTPException(400,{message:'Use a Teams team UUID/channel ID target'})
  const operationId=typeof body.request_id==='string'?string(body.request_id,'request id',100):crypto.randomUUID()
  const intent=await hashToken(JSON.stringify({project:actor.projectId,ticket:conversation.id,p,mode,title,key,dependency,channel,messages:context.messageIds,attachments:context.attachmentIds}))
  const existing=await c.env.DB.prepare('SELECT * FROM escalation_operations WHERE id=?').bind(operationId).first()
@@ -36,7 +38,7 @@ async function perform(c:any,slack=false){
  try{
   const url=new URL(`/projects/${encodeURIComponent(actor.projectId)}/conversations/${encodeURIComponent(conversation.id)}`,c.req.url).href
   const shared=await shareContext(c.env,actor.projectId,conversation.id,operationId,context,c.req.url),outgoing=[`Support ticket: ${url}`,shared].filter(Boolean).join('\n\n')
-  if(slack){const posted=await postSlack(connection,{channel,body:outgoing});remoteUrl=posted.url;await escalationAccess(c,'conversations.manage');await c.env.DB.prepare('INSERT INTO escalation_handoffs VALUES(?,?,?,?,?,?)').bind(operationId,actor.projectId,conversation.id,channel,posted.url,Date.now()).run()}
+  if(handoff){const posted=await (handoff==='slack'?postSlack:postTeams)(connection,{channel,body:outgoing});remoteUrl=posted.url;await escalationAccess(c,'conversations.manage');await c.env.DB.prepare('INSERT INTO escalation_handoffs VALUES(?,?,?,?,?,?)').bind(operationId,actor.projectId,conversation.id,channel,posted.url,Date.now()).run()}
   else{
    const issue=linked??await createIssue(connection,{title,body:outgoing});remoteUrl=issue.url
    if(linked)await addTicketLink(connection,issue,{url,body:shared})
@@ -44,12 +46,13 @@ async function perform(c:any,slack=false){
    await escalationAccess(c,'conversations.manage')
    await c.env.DB.prepare('INSERT OR IGNORE INTO escalation_links(id,project_id,conversation_id,issue_id,dependency,created_at) VALUES(?,?,?,?,?,?)').bind(crypto.randomUUID(),actor.projectId,conversation.id,issueId,dependency,Date.now()).run()
   }
-  await c.env.DB.batch([c.env.DB.prepare("UPDATE escalation_operations SET state='complete',remote_url=? WHERE id=?").bind(remoteUrl,operationId),auditStatement(c.env.DB,{projectId:actor.projectId,category:'integration',action:slack?'escalation.slack_handoff':'escalation.linked',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'escalation_operation',id:operationId},detail:{provider:p}})])
+  await c.env.DB.batch([c.env.DB.prepare("UPDATE escalation_operations SET state='complete',remote_url=? WHERE id=?").bind(remoteUrl,operationId),auditStatement(c.env.DB,{projectId:actor.projectId,category:'integration',action:handoff?`escalation.${handoff}_handoff`:'escalation.linked',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'escalation_operation',id:operationId},detail:{provider:p}})])
   return c.json({data:await ticketEscalations(c.env,actor.projectId,conversation.id)},201)
  }catch(error){await c.env.DB.batch([c.env.DB.prepare("UPDATE escalation_operations SET state='uncertain',remote_url=? WHERE id=?").bind(remoteUrl,operationId),auditStatement(c.env.DB,{projectId:actor.projectId,category:'integration',action:'escalation.share_uncertain',outcome:'failed',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'escalation_operation',id:operationId},detail:{provider:p}})]);throw new HTTPException(502,{message:'The provider outcome is unknown. Check the provider before posting again. Any created issue can be linked explicitly.'})}
 }
 actionRoutes.post(ticketPrefix+'/links',c=>perform(c))
-actionRoutes.post(ticketPrefix+'/slack',c=>perform(c,true))
+actionRoutes.post(ticketPrefix+'/slack',c=>perform(c,'slack'))
+actionRoutes.post(ticketPrefix+'/teams',c=>perform(c,'teams'))
 actionRoutes.post(ticketPrefix+'/links/:linkId/recovery',async c=>{
  const {actor,conversation}=await escalationAccess(c,'conversations.manage'),body=await c.req.json(),observation=string(body.observation,'customer recovery observation',2000),id=c.req.param('linkId')
  if(!id)throw new HTTPException(404)

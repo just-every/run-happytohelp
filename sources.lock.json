@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "e2dc54be74aa08351179e6e26bb072d5f5ab1b6bf64297d9a1cbb3c86e835bf3",
+      "sha256": "0c5da289fef4ab3e8a10eb4a1d99ccf9fb2f747a64ef4e5f41119c9a38fe9d9b",
       "executable": false
     },
     "AGENTS.md": {
@@ -1632,7 +1632,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "114ff992ec0a090255afd6f3b3780dd39e8de75464c5ebbd67eaa459d869c808",
+      "sha256": "f50f98babc0f1a2161cc9ed60fc3a27872ce0e4f9a0ad01cc75f995ab6d6c68d",
       "executable": false
     },
     "DEMO.md": {
@@ -3880,7 +3880,7 @@
       "executable": false
     },
     "src/modules/api-integrations/managed-tools.ts": {
-      "sha256": "0909ce6e1ee76cb706c0d36696beb84ae4622cf4e3c83c1dbe2afe4fd71997eb",
+      "sha256": "aad1c25451aff0c93741503b1529551e744cc585b571eb29506c87e084cfa415",
       "executable": false
     },
     "src/modules/api-integrations/module.json": {
@@ -10908,7 +10908,7 @@
       "executable": false
     },
     "tests/helpers/email/imap-provider.mjs": {
-      "sha256": "63e9b7201148a117e0a2d40cc365e6d72a73d5d133867b4cc9baaa5aa5affbdf",
+      "sha256": "3adc87d28dfc160488c174a36514d6fa395a9d965a4efe9884488b3d85559a5c",
       "executable": false
     },
     "tests/helpers/email/mailbox-provider.mjs": {

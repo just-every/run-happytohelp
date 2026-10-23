@@ -33,7 +33,7 @@ function validArguments(value:unknown,schema:ReturnType<typeof object>):value is
 export function managedTools(api:Hono<ApiEnv>){
  api.use('/mcp',async(c,next)=>{
   const origin=c.req.header('Origin')
-  if(origin&&origin!==new URL(c.env.APP_ORIGIN||c.req.url).origin)throw new HTTPException(403,{message:'Origin not permitted'})
+  if(origin&&origin!==new URL(String(c.env.APP_ORIGIN||c.req.url)).origin)throw new HTTPException(403,{message:'Origin not permitted'})
   await next()
  })
  for(const method of ['get','delete'] as const)api[method]('/mcp',requireBearer(),c=>c.json({error:{code:'method_not_allowed',message:'Stateless MCP uses POST'}},405))

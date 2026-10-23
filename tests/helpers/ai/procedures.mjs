@@ -41,11 +41,14 @@ export async function proceduresJourney(){
  const cycle=await app.first('SELECT id FROM conversation_resolutions WHERE conversation_id=? ORDER BY ordinal DESC LIMIT 1',customer.conversationId)
  await app.call(`/api/conversations/${customer.conversationId}/widget-events`,{token:customer.token,body:{action:'rateResolution',data:{resolutionId:cycle.id,value:-1,comment:'Still broken'}},status:200})
  await app.call(`/api/dashboard/projects/${p}/conversations/${customer.conversationId}`,{token:owner,method:'PUT',body:{resolved:false},status:200})
+ assert.equal((await call('',{status:200})).data.releases.find(r=>r.id===release.id).state,'stopped','native reopening automatically stops its exact released procedure')
+ assert.equal((await call('',{status:200})).data.releases.find(r=>r.id===release.id).regression_resolution_id,cycle.id)
+ assert.equal((await app.first('SELECT assigned_to FROM conversations WHERE id=?',customer.conversationId)).assigned_to,a.workspace.users.owner,'regression restores a responsible human before more AI work')
  const reportPath=`/api/ai-support/projects/${p}/procedure-reports/${key}`
  let report=(await app.call(reportPath,{token:owner,status:200})).data
  assert.equal(report.versions[0].denominator,1);assert.equal(report.versions[0].reopened,1);assert.equal(report.versions[0].negativeCsat,1)
  assert.equal(report.cases[0].resolutionId,cycle.id);assert.equal(report.cases[0].versionId,v2.id)
- assert.ok(report.accounting.length>0);assert.ok(report.evaluationCoverage.some(v=>v.versionId===v1.id&&v.passed===0))
+ assert.ok(report.accounting.length>0);assert.equal(report.providerCostEstimateUsd,report.accounting.reduce((n,r)=>n+r.cost,0));assert.ok(report.evaluationCoverage.some(v=>v.versionId===v1.id&&v.passed===0))
  assert.equal((await app.call(reportPath,{token:customer.token})).status,403)
  const proposal={fromVersionId:v2.id,resolutionIds:[cycle.id],expectedEffect:'Reduce reopened refund-advice cases with clearer human escalation.'}
  const v3=(await call(`/${key}/versions`,{body:{...definition,proposal},status:201})).data
@@ -53,10 +56,12 @@ export async function proceduresJourney(){
  await call(`/${key}/versions/${v3.id}/review`,{body:{state:'rejected',reason:'The first draft does not address this failure.'},status:200})
  assert.equal((await call(`/${key}/releases`,{body:{versionId:v3.id,evaluationId:replay.id,cohortLimit:1}})).status,409)
  await call(`/${key}/versions/${v3.id}/review`,{body:{state:'approved',reason:'Reviewed the case and passing replay.'},status:200})
+ assert.deepEqual((await call(`/${key}/versions/${v3.id}/reviews`,{status:200})).data.reviews.map(r=>r.state),['rejected','approved'])
  const regression=(await call(`/${key}/releases/${release.id}/check-regression`,{body:{},status:200})).data
  assert.equal(regression.regression,true);assert.equal(regression.stopped,true);assert.equal(regression.reopened,1)
  const next=(await call(`/${key}/releases`,{body:{versionId:v3.id,evaluationId:replay.id,cohortLimit:1},status:201})).data
  await call(`/${key}/releases/${next.id}/cohort`,{body:{conversationId:customer.conversationId},status:200})
+ assert.equal((await a.action(customer.conversationId,'assignAi',{ai_id:'ai'})).status,200,'only an explicit human handback resumes AI on the approved release')
  ai.respond=()=> 'A human can review your request.'
  await customer.say('Please explain the revised refund advice.');await a.run()
  await app.call(`/api/dashboard/projects/${p}/conversations/${customer.conversationId}`,{token:owner,method:'PUT',body:{resolved:true},status:200})

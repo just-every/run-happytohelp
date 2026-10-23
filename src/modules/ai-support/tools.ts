@@ -9,7 +9,7 @@ const text={type:'string'},offset={type:'integer',minimum:0}
 export function contextTools(env:Env,projectId:string,conversationId:string,evidenceIds:Set<string>,publicSources=new Map<string,PublicReference>(),selected:PublicReference[]=[],generationId?:string){
  const entry=(row:any)=>{const evidence_id=`message:${row.id}`;evidenceIds.add(evidence_id);return {...row,evidence_id,kind:'message',visibility:'customer-conversation'}}
  return [
- tool('propose_followup','Propose an explicit commitment quoted exactly from this conversation for human acceptance. Never invent a promise. This does not send a message, accept terms or claim progress. ownerId must be a workspace teammate; dueAt is Unix milliseconds.',{messageId:text,quote:text,ownerId:text,dueAt:{type:'integer'},stopCondition:text},async(messageId:string,quote:string,ownerId:string,dueAt:number,stopCondition:string)=>{
+ tool('propose_followup','Propose an explicit commitment quoted exactly from this conversation for human acceptance. Never invent a promise. This does not send a message, accept terms or claim progress. ownerId must be a workspace teammate, or "human" to propose an active responsible teammate; dueAt is Unix milliseconds.',{messageId:text,quote:text,ownerId:text,dueAt:{type:'integer'},stopCondition:text},async(messageId:string,quote:string,ownerId:string,dueAt:number,stopCondition:string)=>{
   if(!generationId||!await env.DB.prepare("SELECT 1 FROM ai_generations WHERE id=? AND project_id=? AND conversation_id=? AND state='running'").bind(generationId,projectId,conversationId).first())throw new Error('Current generation required')
   return proposeObligation(env,projectId,conversationId,{messageId,quote,ownerId,dueAt,stopCondition})
  }),

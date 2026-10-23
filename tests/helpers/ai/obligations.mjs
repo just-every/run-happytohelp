@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {assistantApp} from './app.mjs'
+import {openaiToolCall} from '../openai-stream.mjs'
 export async function obligationsJourney(){
  const a=await assistantApp({bindings:{OPENAI_API_KEY:undefined}}),{app,p,owner,workspace}=a
  try{
@@ -48,6 +49,24 @@ export async function obligationsJourney(){
  await app.db.prepare("UPDATE escalation_links SET recovery='observed' WHERE id='link'").run()
  row=(await call('',{status:200})).data.obligations.find(o=>o.id===dependent.id)
  assert.equal(row.dependency.progress,'recovery observed')
+ assert.equal((await call(`/${row.id}/complete`,{body:{version:4,stopConditionMet:true,confirmationMessageId:message.id,quote:body.quote}})).status,409,'the original promise is not fresh completion evidence')
+ await v.say('Thank you; the export works now.')
+ const confirmation=(await v.transcript()).messages.filter(m=>m.actor_role==='contact').at(-1)
+ await call(`/${row.id}/complete`,{body:{version:4,stopConditionMet:true,confirmationMessageId:confirmation.id,quote:'the export works now'},status:200})
+ row=(await call('',{status:200})).data.obligations[0]
+ assert.equal(row.state,'completed');assert.equal(row.reminderDue,false);assert.equal(row.draft,null)
+ assert.equal(row.completion.confirmationMessageId,confirmation.id);assert.equal(row.completion.reviewerId,workspace.users.owner)
+ // A real generation can extract a quoted candidate, but it cannot accept it.
+ await app.configure({OPENAI_API_KEY:'synthetic-happytohelp-19'})
+ const proposedVisitor=await a.visitor();await proposedVisitor.say('I was promised a follow-up tomorrow.')
+ const promised=(await proposedVisitor.transcript()).messages.find(m=>m.actor_role==='contact')
+ let turn=0
+ a.ai.respond=()=>++turn===1?openaiToolCall('propose_followup',{messageId:promised.id,quote:'promised a follow-up tomorrow',ownerId:'human',dueAt:Date.now()+86400000,stopCondition:'A teammate supplies the follow-up.'},'propose-followup'):'A teammate can review the follow-up.'
+ await a.run()
+ const extracted=(await app.call(`/api/ai-support/projects/${p}/conversations/${proposedVisitor.conversationId}/obligations`,{token:owner,status:200})).data.obligations[0]
+ assert.equal(extracted.state,'proposed');assert.equal(extracted.accepted_by,null);assert.equal(extracted.quote,'promised a follow-up tomorrow')
+ await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erasing',1) WHERE id=?").bind(proposedVisitor.contactId).run()
+
  await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erasing',1) WHERE id=?").bind(v.contactId).run()
  assert.equal((await call('')).status,404)
  assert.equal((await app.first('SELECT count(*) n FROM followup_obligations')).n,0,'erasure removes obligations and accepted history')

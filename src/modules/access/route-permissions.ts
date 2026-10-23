@@ -55,6 +55,7 @@ const rules:Record<string,Rule>={
  'POST /api/knowledge/:projectId/proposals/:id/reject':'knowledge.publish',
  'POST /api/knowledge/:projectId/proposals/:id/publish':'knowledge.publish',
  'POST /api/knowledge/:projectId/proposals/:id/analyze-corrections':'knowledge.edit',
+ 'POST /api/ai-support/projects/:projectId/conversations/:conversationId/obligations/:id/complete':'conversations.manage',
  // Knowledge
  [`POST ${K}/articles`]:'knowledge.publish',[`DELETE ${K}/articles/:articleId`]:'knowledge.publish',[`PUT ${K}/articles/:articleId/categories`]:'knowledge.edit',[`PUT ${K}/articles/:articleId/order`]:'knowledge.edit',
  [`POST ${K}/categories`]:'knowledge.edit',[`PUT ${K}/categories/:categoryId`]:'knowledge.edit',[`DELETE ${K}/categories/:categoryId`]:'knowledge.edit',

@@ -236,7 +236,7 @@ and optional linked `dependencyId`. POST `/:id/accept` requires the current
 `version`, accepted `ownerId` and `dueAt`; it can explicitly set a linked
 `dependencyId`. Only a human with conversation-management permission accepts
 material changes. A handoff does not silently change that accepted responsibility.
-Internal reminders and pre-due drafts are permission scoped; a closed engineering
+POST `/:id/complete` requires a current `version`, `stopConditionMet: true`, a fresh human/customer `confirmationMessageId` and its exact `quote`; the original promise is not completion evidence. The reviewer and evidence ID remain inspectable. Completing the follow-up does not establish engineering progress. Internal reminders and pre-due drafts are permission scoped; a closed engineering
 issue without current readback and observed recovery remains unconfirmed.
 
 Leads manage advice procedures at `/api/ai-support/projects/:projectId/procedures`.
@@ -260,7 +260,7 @@ CSAT. POST `/:key/versions/:versionId/review` records an `approved` or `rejected
 review and `reason`; GET `.../reviews` preserves both decisions. A proposal needs
 approval as well as passing evaluations before release. POST
 `/:key/releases/:releaseId/check-regression` explicitly checks the rollout and
-stops it on any attributed reopening; automatic monitoring is not implemented.
+reports its gate and stops it on any attributed reopening. Native resolution reopenings also enforce that gate automatically: the exact active rollout stops, queued/running generations cancel and an active human regains responsibility. Returning to AI requires explicit enrollment in an approved release and a human handback.
 
 GET `/api/ai-support/projects/:projectId/procedure-reports/:key` requires report
 permission. It reports committed-answer resolution-cycle denominators, reopen and

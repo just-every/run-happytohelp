@@ -60,11 +60,14 @@ export async function proposalsJourney(){
  assert.equal(result.correctionRequired,true);assert.equal(result.outcomes.reopened,1)
  for(let i=0;i<2;i++)assert.equal((await call(base+'/analyze-corrections',{body:{},status:200})).data.proposedCorrections.length,1)
 
+ await call(base+'/publish',{body:{title:'Export repair',content:'Select UTF-8 export encoding and retry.',slug:'export-repair',redactionReviewed:true},status:200})
+ result=(await call(`/api/knowledge/${p}/proposals`,{status:200})).data.proposals[0]
+ assert.equal(result.outcomes.citedResolutionCycles,1);assert.equal(result.outcomes.reopened,1,'an edited article preserves earlier cited failure evidence')
  await app.call(`/api/dashboard/projects/${p}/conversations/${cid}`,{token:k.token,method:'PUT',body:{resolved:false},status:200})
  result=(await call(`/api/knowledge/${p}/proposals`,{status:200})).data.proposals[0]
  assert.equal(result.correctionRequired,true)
  for(let i=0;i<2;i++)assert.equal((await call(base+'/analyze-corrections',{body:{},status:200})).data.proposedCorrections.length,2)
- assert.equal((await app.call(`/api/knowledge/public/${p}/articles/export-repair`,{token:next.token,status:200})).data.content,'Select UTF-8 export encoding.','a corrective proposal never silently changes guidance')
+ assert.equal((await app.call(`/api/knowledge/public/${p}/articles/export-repair`,{token:next.token,status:200})).data.content,'Select UTF-8 export encoding and retry.','a corrective proposal never silently changes guidance')
  await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erasing',1) WHERE id=?").bind(customer.contactId).run()
  assert.equal((await call(`/api/knowledge/${p}/proposals`,{status:200})).data.proposals.length,0)
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/export-repair`,{token:next.token})).status,404,'erasure removes source-derived articles and drafts')

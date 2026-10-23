@@ -18,6 +18,11 @@ async function terms(env:Env,pid:string,cid:string,b:any){
 /** The model can propose only an exact quote in this conversation, never accept,
  * send or claim progress. Human acceptance confirms the meaning and due time. */
 export async function proposeObligation(env:Env,pid:string,cid:string,b:any){
+ if(b.ownerId==='human'){
+  const user=await env.DB.prepare("SELECT user_id FROM memberships WHERE project_id=? ORDER BY CASE role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END,user_id LIMIT 1").bind(pid).first<{user_id:string}>()
+  if(!user)throw new HTTPException(409,{message:'No responsible teammate is available'})
+  b={...b,ownerId:user.user_id}
+ }
  await terms(env,pid,cid,b)
  if(typeof b.quote!=='string'||!b.quote.trim()||b.quote.length>2000||typeof b.stopCondition!=='string'||!b.stopCondition.trim()||b.stopCondition.length>500)throw new HTTPException(400,{message:'An exact message quote and stop condition are required'})
  const source=await env.DB.prepare(`SELECT m.content FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE m.id=? AND c.id=? AND c.project_id=? AND m.actor_role IN ('contact','operator','admin','owner','ai') AND ${live}`).bind(b.messageId,cid,pid).first<{content:string}>()
@@ -53,7 +58,7 @@ obligationRoutes.use(path+'*',async(c,next)=>{
 obligationRoutes.get(path,async c=>{
  const rows=await c.env.DB.prepare(`${evidenceSql} WHERE o.project_id=? AND o.conversation_id=? AND ${live} ORDER BY o.due_at,o.id`).bind(c.req.param('projectId')!,c.req.param('conversationId')!).all<any>()
  const obligations=[]
- for(const row of rows.results){const changes=await c.env.DB.prepare('SELECT version,owner_id,due_at,accepted_by,accepted_at FROM followup_changes WHERE obligation_id=? ORDER BY version').bind(row.id).all();obligations.push({...present(row),changes:changes.results})}
+ for(const row of rows.results){const changes=await c.env.DB.prepare('SELECT version,owner_id,due_at,accepted_by,accepted_at FROM followup_changes WHERE obligation_id=? ORDER BY version').bind(row.id).all();const completion=await c.env.DB.prepare("SELECT actor_id reviewerId,at,json_extract(detail_json,'$.confirmationMessageId') confirmationMessageId FROM audit_events WHERE project_id=? AND target_type='obligation' AND target_id=? AND action='followup.completed' ORDER BY at DESC,id DESC LIMIT 1").bind(row.project_id,row.id).first();obligations.push({...present(row),changes:changes.results,completion:completion||null})}
  return c.json({obligations})
 })
 obligationRoutes.post(path,async c=>c.json(await proposeObligation(c.env,c.req.param('projectId')!,c.req.param('conversationId')!,await c.req.json()),201))
@@ -69,6 +74,16 @@ obligationRoutes.post(path+'/:id/accept',async c=>{
  ])
  if(!result[0].meta.changes)throw new HTTPException(409,{message:'Obligation or authority changed'})
  return c.json({accepted:true,version:b.version+1})
+})
+
+obligationRoutes.post(path+'/:id/complete',async c=>{
+ const pid=c.req.param('projectId')!,cid=c.req.param('conversationId')!,id=c.req.param('id')!,b=await c.req.json(),actor=c.get('actor'),now=Date.now()
+ if(b.stopConditionMet!==true||!Number.isSafeInteger(b.version)||typeof b.confirmationMessageId!=='string'||typeof b.quote!=='string'||!b.quote.trim()||b.quote.length>2000)throw new HTTPException(400,{message:'Confirm the accepted stop condition with a fresh, exact human/customer message quote and current version'})
+ const result=await c.env.DB.batch([
+ c.env.DB.prepare(`UPDATE followup_obligations SET state='completed',version=version+1,updated_at=? WHERE id=? AND project_id=? AND conversation_id=? AND version=? AND state='open' AND EXISTS(SELECT 1 FROM messages m JOIN message_authorship a ON a.message_id=m.id WHERE m.id=? AND m.id<>followup_obligations.message_id AND m.project_id=followup_obligations.project_id AND m.conversation_id=followup_obligations.conversation_id AND m.created_at>=followup_obligations.accepted_at AND a.kind IN ('human','visitor') AND instr(m.content,?)>0) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=followup_obligations.conversation_id AND c.project_id=followup_obligations.project_id AND ${live}) AND EXISTS(SELECT 1 FROM sessions s JOIN memberships m ON m.project_id=? AND m.user_id=s.actor_id LEFT JOIN member_roles mr ON mr.project_id=m.project_id AND mr.user_id=m.user_id LEFT JOIN project_roles pr ON pr.project_id=m.project_id AND pr.id=mr.role_key WHERE s.token_hash=? AND s.actor_id=? AND s.revoked_at IS NULL AND s.expires_at>? AND (m.role='owner' OR (mr.role_key IS NULL AND m.role IN ('admin','operator')) OR (pr.base IN ('admin','operator') AND EXISTS(SELECT 1 FROM json_each(pr.permissions_json) WHERE value='conversations.manage'))))`).bind(now,id,pid,cid,b.version,b.confirmationMessageId,b.quote,pid,c.get('sessionHash'),actor.id,now),
+ auditStatement(c.env.DB,{projectId:pid,category:'data',action:'followup.completed',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'obligation',id},detail:{confirmationMessageId:b.confirmationMessageId,version:b.version+1}},now,{sql:'changes()>0',params:[]})])
+ if(!result[0].meta.changes)throw new HTTPException(409,{message:'Fresh completion evidence or current authority is missing'})
+ return c.json({completed:true,version:b.version+1,dependencyProgress:'Completion records the accepted follow-up stop condition; engineering progress still requires its own current readback.'})
 })
 
 /** One bounded, idempotent internal reminder per accepted version. No mail or

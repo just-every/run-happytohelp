@@ -6560,7 +6560,7 @@
       "executable": false
     },
     "src/modules/reports/team-breakdowns.ts": {
-      "sha256": "567c9bc06220a4b60c81c32a8778892b02d0bee589bc0d9624d015f6ad3ba8b5",
+      "sha256": "cf6e5c757c7f4fef7b3b4ee90b7c76165913554b1e9dd771d036c0eb63b5cca0",
       "executable": false
     },
     "src/modules/reports/team-csv.ts": {
@@ -6584,7 +6584,7 @@
       "executable": false
     },
     "src/modules/reports/team-service.ts": {
-      "sha256": "1415a90d12c8470ff5df09ed3dad1c84d86c46e736cbf7c81b02aa0af169b040",
+      "sha256": "5b0227acbcb57f8387a9c567c35c9072833c3a901c92f03f76ae8c02949991e7",
       "executable": false
     },
     "src/modules/reports/team-workload.ts": {
@@ -12188,7 +12188,7 @@
       "executable": false
     },
     "tests/reports/team-journey.mjs": {
-      "sha256": "5a859076aee45b9cc6e5ab776ef98414ca58bb0cb59ac34fbebf958b3459aab2",
+      "sha256": "891dd72b9280af659c6509e29cdbe0130c0c8c25db37511dcfc72bff740f03af",
       "executable": false
     },
     "tests/reports/upgrade-categories.mjs": {

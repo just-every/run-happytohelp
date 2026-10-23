@@ -5928,7 +5928,7 @@
       "executable": false
     },
     "src/modules/management/dashboard-data.ts": {
-      "sha256": "3800269608797f439c84d0c4e9f536d55069d2c6f6520ad9d77e5bac6e8cf2da",
+      "sha256": "710009d4edc66842275b966c55603c210dd8f7deba66977dd4baf87d440ca63c",
       "executable": false
     },
     "src/modules/management/dashboard-media.ts": {
@@ -6352,7 +6352,7 @@
       "executable": false
     },
     "src/modules/outcomes/operator-feedback.ts": {
-      "sha256": "094d059dd2778e4846a3a20014a03105b7b4de3c26601ada3401b945250170d7",
+      "sha256": "d66f12bd7952bd8c30555deb3dcbf9e250dc3fe53e6f9e7836afddc133563a92",
       "executable": false
     },
     "src/modules/outcomes/provenance.ts": {
@@ -12288,7 +12288,7 @@
       "executable": false
     },
     "tests/reports/ratings.mjs": {
-      "sha256": "f80537828e3a535b7f2fe6fa00254f43192f0209aa75bb736d555d95e4cd10ab",
+      "sha256": "557e2302377109553327d258e3d5860279e6f161423dc1fbe48aabdbbea177cf",
       "executable": false
     },
     "tests/reports/status-categories.mjs": {

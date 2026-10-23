@@ -6,7 +6,7 @@ import {createWriteStream} from 'node:fs';
 import {open,rm,stat} from 'node:fs/promises';
 import {join} from 'node:path';
 import {cloudflare} from '@runeditrun/rer/modules/deploy-kit/provider';
-import {r2ObjectPath} from '@runeditrun/rer/modules/deploy-kit/r2-objects.mjs';
+import {r2ObjectPath} from '@runeditrun/rer/internal/modules/deploy-kit/r2-objects.mjs';
 
 // The object API returns the whole object, even for Range requests. Spool one
 // object privately so archive parts remain bounded without a preview tunnel.

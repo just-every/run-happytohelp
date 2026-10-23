@@ -27,6 +27,8 @@ hooks.post('/hooks/:numberId',async c=>{
  const id=await callId(n,remote),s:VoiceSettings=JSON.parse(n.settings_json)
  let call=step==='entry'?await admitCall(c.env,n,remote,phone(b.From)):await c.env.DB.prepare(`SELECT v.* FROM voice_calls v JOIN conversations c ON c.id=v.conversation_id AND c.project_id=v.project_id WHERE v.id=? AND v.number_id=? AND v.erased=0 AND ${usableContact}`).bind(id,n.id).first<any>()
  if(!call)throw new HTTPException(404)
+ const commandId=c.req.query('command'),stepKey=commandId?step+':'+commandId:step
+ if(commandId&&(step!=='dial'||!await c.env.DB.prepare("SELECT id FROM voice_commands WHERE id=? AND call_id=? AND number_id=? AND project_id=? AND kind='transfer' AND state<>'erased'").bind(commandId,id,n.id,n.project_id).first()))throw new HTTPException(404)
  const alive=`EXISTS(SELECT 1 FROM voice_calls v JOIN conversations c ON c.id=v.conversation_id AND c.project_id=v.project_id JOIN voice_numbers vn ON vn.id=v.number_id AND vn.project_id=v.project_id WHERE v.id=? AND v.erased=0 AND vn.enabled=1 AND vn.version=? AND ${usableContact})`,args=[id,n.version]
  if(step==='recording'||step==='transcript'){
   if(call.consent!=='granted'||!s.recording_enabled)throw new HTTPException(409,{message:'Recording consent is unavailable'})
@@ -46,7 +48,7 @@ hooks.post('/hooks/:numberId',async c=>{
   return c.body(response(Number.isFinite(waited)&&waited>=120?'<Leave/>':say('You are waiting for a human support teammate.')+'<Pause length="20"/><Redirect method="POST">'+xml(hookUrl(c,n,'queue-wait'))+'</Redirect>'),200,{'Content-Type':'application/xml'})
  }
  if(!['entry','consent','ivr','dial','finish','queue-finish'].includes(step))throw new HTTPException(400)
- const input=await hashToken(JSON.stringify([step,b.Digits??'',b.DialCallStatus??'',b.QueueResult??''])),prior=await c.env.DB.prepare('SELECT * FROM voice_steps WHERE call_id=? AND step=?').bind(id,step).first<any>()
+ const input=await hashToken(JSON.stringify([stepKey,b.Digits??'',b.DialCallStatus??'',b.QueueResult??''])),prior=await c.env.DB.prepare('SELECT * FROM voice_steps WHERE call_id=? AND step=?').bind(id,stepKey).first<any>()
  if(prior){if(prior.input_hash!==input)throw new HTTPException(409,{message:'This voice step already has a different result'});return c.body(prior.response_xml,200,{'Content-Type':'application/xml'})}
  let body='',state=call.state,consent=call.consent,follow=call.follow_up
  if(step==='entry')body=say(limitations)+(s.recording_enabled?gather(hookUrl(c,n,'consent'),'Recording and transcription are optional. Press 1 to consent, or press 2 to continue without recording.'):say('This call is not recorded.')+route(c,n,call,s))
@@ -64,12 +66,12 @@ hooks.post('/hooks/:numberId',async c=>{
  if((step==='entry'||step==='consent')&&!isOpen(s)){state='after_hours';follow=1}
  const output=response(body),now=Date.now(),summary=state==='transfer_failed'?'Human transfer failed; follow-up needed':state==='after_hours'?'After-hours call; follow-up needed':state==='voicemail'?'Voicemail; follow-up needed':'Telephone call: '+state
  const results=await c.env.DB.batch([
- c.env.DB.prepare(`INSERT OR IGNORE INTO voice_steps(call_id,step,input_hash,response_xml) SELECT ?,?,?,? WHERE ${alive}`).bind(id,step,input,output,...args),
- c.env.DB.prepare(`UPDATE voice_calls SET consent=?,state=?,follow_up=?,summary=?,updated_at=? WHERE id=? AND ${alive} AND EXISTS(SELECT 1 FROM voice_steps WHERE call_id=? AND step=? AND input_hash=?)`).bind(consent,state,follow,summary,now,id,...args,id,step,input),
- c.env.DB.prepare(`INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,source,target_type,target_id,detail_json) SELECT ?,project_id,?,'integration',?,'succeeded','system','integration','conversation',conversation_id,? FROM voice_calls WHERE id=? AND ${alive}`).bind('voice-step:'+id+':'+step,now,step==='consent'?'voice.consent_recorded':'voice.routing_step',JSON.stringify({step,consent,state}),id,...args),
+ c.env.DB.prepare(`INSERT OR IGNORE INTO voice_steps(call_id,step,input_hash,response_xml) SELECT ?,?,?,? WHERE ${alive}`).bind(id,stepKey,input,output,...args),
+ c.env.DB.prepare(`UPDATE voice_calls SET consent=?,state=?,follow_up=?,summary=?,updated_at=? WHERE id=? AND ${alive} AND EXISTS(SELECT 1 FROM voice_steps WHERE call_id=? AND step=? AND input_hash=?)`).bind(consent,state,follow,summary,now,id,...args,id,stepKey,input),
+ c.env.DB.prepare(`INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,source,target_type,target_id,detail_json) SELECT ?,project_id,?,'integration',?,'succeeded','system','integration','conversation',conversation_id,? FROM voice_calls WHERE id=? AND ${alive}`).bind('voice-step:'+id+':'+stepKey,now,step==='consent'?'voice.consent_recorded':'voice.routing_step',JSON.stringify({step,consent,state}),id,...args),
  ])
  if(!results[1].meta.changes)throw new HTTPException(409,{message:'Call, connection or consent changed'})
- const committed=await c.env.DB.prepare('SELECT input_hash,response_xml FROM voice_steps WHERE call_id=? AND step=?').bind(id,step).first<any>()
+ const committed=await c.env.DB.prepare('SELECT input_hash,response_xml FROM voice_steps WHERE call_id=? AND step=?').bind(id,stepKey).first<any>()
  if(committed?.input_hash!==input)throw new HTTPException(409)
  await privateReceipt(c.env,id,summary+'. Recording consent: '+consent+'. Voice history: /api/voice/projects/'+n.project_id+'/conversations/'+call.conversation_id+'/calls')
  return c.body(committed.response_xml,200,{'Content-Type':'application/xml'})

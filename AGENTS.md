@@ -34,12 +34,12 @@ and an explicit no-outbound report, then a separately started **read-only provid
 preflight** with owner consent and the owner's scoped Cloudflare token. The
 preflight's own acceptance allows only the account's Workers subdomain and the
 Worker's settings and secret names (three GETs for an existing Worker), no mail
-and no mutations; neither step is a mock of the other. That split is not yet built
-or proved. Today's `rer deploy --dry-run` still requires Cloudflare credentials,
-refuses without them, and with them builds locally and makes those read-only GETs,
-validates supplied private mail inputs and refuses missing required secrets.
-Do not describe today's command as a zero-outbound dry-run or a qualified live
-preflight. It sends no mail and changes no provider resources.
+and no mutations; neither step is a mock of the other. `--dry-run` now validates
+and builds locally without provider requests or credentials. Its receipt leaves
+remote resources, credential validity and existing secret bindings unchecked.
+The separately started read-only provider preflight remains unimplemented.
+A real deployment checks provider state before changing resources; the dry-run
+sends no mail and changes no provider resources.
 See [OPERATIONS.md](OPERATIONS.md) for state, deployment and restore requirements.
 
 ## Working on HappyToHelp

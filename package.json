@@ -48,6 +48,7 @@
     "source:release": "node scripts/edition-authoring/cli.mjs release",
     "migrations:prepare": "node scripts/migrations.mjs",
     "test:modules": "pnpm run test:routes",
+    "test:homepage-source": "node tests/homepage-browser.mjs",
     "test:docs-site": "node --test --test-concurrency=1 --test-name-pattern=\"documentation\" tests/journeys/public.mjs",
     "test:docs-browser": "node --test --test-concurrency=1 tests/journeys/public-browser.mjs",
     "test:widget-browser": "node --test --test-concurrency=1 tests/journeys/widget-browser.mjs",

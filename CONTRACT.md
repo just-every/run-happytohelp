@@ -591,7 +591,7 @@ Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd
 | `DELEGATION-001` | Explicit local authority | published | done | `src/modules/local-computer/results.ts`; `src/edition/delegation/routes.ts`; `tests/journeys/delegation.mjs` |  |
 | `TRAINING-001` | Durable evaluation | published | done | `src/modules/training-runs/runner.ts`; `src/edition/ai/training.ts`; `tests/journeys/ai.mjs` |  |
 | `INTEGRATION-001` | Honest external effects | published | partial | `src/modules/integrations/inbound.ts`; `src/modules/integrations/github.ts`; `tests/journeys/email.mjs`; `tests/journeys/knowledge.mjs` | Existing mail/GitHub adapters work at test boundaries; the newly required business connectors are missing. |
-| `PUBLIC-001` | Public product source | published | done | `src/ui/homepage`; `tests/journeys/public.mjs`; `tests/journeys/public-browser.mjs` |  |
+| `PUBLIC-001` | Public product source | published | done | `src/ui/homepage`; `tests/homepage-browser.mjs` (navigation and native sign-in entry); `tests/journeys/public.mjs`; `tests/journeys/public-browser.mjs` |  |
 | `MIGRATION-001` | Prior-data custody | published | done | `src/modules/legacy-import`; `tests/journeys/erasure.mjs`; `tests/journeys/move-in-admission.mjs` |  |
 | `SOURCE-001` | Author-owned capability graph | published | done | `scripts/edition-authoring/cli.mjs` |  |
 | `DESK-001` | The shared support desk | target | done | `src/modules/management/dashboard.ts`; `src/modules/management/inbox-search.ts`; `src/modules/tickets`; `tests/journeys/first-run.mjs`; `tests/journeys/inbox.mjs`; `tests/journeys/reports.mjs`; `tests/journeys/delegation-browser.mjs` |  |

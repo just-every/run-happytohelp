@@ -11196,7 +11196,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ticket-api-privacy.mjs": {
-      "sha256": "5b1fc352a42d2e3d63a5f1b07934ba472fbb21c86d555397c243c75f7d3921e8",
+      "sha256": "331d25a84cc900e4611270ad9d1fbb773f9d95d82361b85a1b33f5dc6c12f22e",
       "executable": false
     },
     "tests/helpers/inbox/ticket-browser-fixture.mjs": {
@@ -11208,7 +11208,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ticket-lifecycle.mjs": {
-      "sha256": "8a1e83ab4d5c091a3c473d90dc4f727f92769c6b02efaedc621d026d9a0faddb",
+      "sha256": "2ccbafe0b2233e09802f71bfb3bc63180990c238419f8b083800fcf36b7c3d32",
       "executable": false
     },
     "tests/helpers/inbox/ticket-queue-capabilities.mjs": {

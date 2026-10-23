@@ -31,7 +31,7 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
 }
 
 export async function createOutboundTicket(env:Env,actor:Actor,sessionHash:string,input:OutboundTicketInput,onCommittedMessage:OutboundTicketCommitted|undefined,waitUntil:DeferEmailDelivery,additional?:{sql:string;params:unknown[];noticeId:string}){
-  if(input.kind==='email'&&!onCommittedMessage)throw new HTTPException(503,{message:'Outbound email delivery is unavailable'})
+  if(input.kind==='email'&&!input.configuration?.internal&&!onCommittedMessage)throw new HTTPException(503,{message:'Outbound email delivery is unavailable'})
   if(input.kind==='call'||input.configuration?.internal)await ticketAuthority(env,actor,{sessionHash},'conversations.notes')
   const reservation=await reserveOutboundTicket(env,actor,sessionHash,input,additional),conversation=await env.DB.prepare(`SELECT c.* FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1`).bind(reservation.conversationId,actor.projectId).first()
   if(!conversation)throw new HTTPException(409,{message:'Requester is unavailable'})

@@ -135,6 +135,8 @@ export async function completeEmailJourney(){
   assert.equal((await app.first('SELECT value_json FROM ticket_field_values WHERE conversation_id=? AND field_id=?',internal.conversation.id,field.id)).value_json,'"delivery"')
   assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',internal.conversation.id)).n,0)
   assert.ok(internal.note.content.includes('Staff-only'))
+  const noMailbox=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...configured,localId:'synthetic-happytohelp-52',mailboxId:undefined}})
+  assert.ok(noMailbox.note);assert.equal(sent.length,beforeInternal,'internal-only tickets need no connected mailbox')
   const walkin=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...configured,kind:'call',localId:'synthetic-happytohelp-51',configuration:{...configured.configuration,channel:'walk_in'}}})
   assert.equal(walkin.conversation.channel,'walk_in');assert.equal(sent.length,beforeInternal)
   for(const configuration of [{...configured.configuration,brandId:'foreign'},{...configured.configuration,fields:{}},{...configured.configuration,assigneeId:workspace.users.operator}])assert.ok([400,422].includes((await app.call(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...configured,localId:crypto.randomUUID(),configuration}})).status))
@@ -180,6 +182,8 @@ export async function completeEmailJourney(){
   await app.until(()=>sent.some(copy=>copy.text?.includes('A normal support follow-up after the preview expired.')),{message:'ordinary reply remains available'})
   await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.phone','+12025550123') WHERE id=?").bind(ticket.conversation.contact_id).run()
   for(const search of ['Maya','maya@customer.example','+12025550123'])assert.ok((await app.ok(`/api/dashboard/projects/${projectId}/tickets/requesters?`+new URLSearchParams({search}),{token:agent})).data.some(row=>row.id===ticket.conversation.contact_id),'requester search by '+search)
+  await app.ok(base+`/contacts/${raceCustomer}/erase`,{token:owner,body:{}})
+  assert.equal((await app.call(noticeBase+'/'+raceNotice.id+'/apply',{token:agent,body:{}})).status,404,'erasure removes recipient previews and cannot unlock another send')
   // Closed remains final: a real emailed reply creates a linked fresh ticket.
   const ticketState=(await app.ok(`/api/dashboard/projects/${projectId}/conversations/${ticket.conversation.id}/ticket`,{token:owner})).data
   await app.ok(`/api/dashboard/projects/${projectId}/conversations/${ticket.conversation.id}/ticket`,{token:owner,method:'PATCH',body:{status_id:'closed',expected_version:ticketState.ticket_version}})

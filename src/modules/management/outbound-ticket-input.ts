@@ -21,7 +21,7 @@ export function outboundTicketInput(body:Record<string,unknown>):OutboundTicketI
  if(!requesterId&&!requesterEmail)throw new HTTPException(400,{message:'Provide a requester or requester email'})
  const fromAddress=body.fromAddress===undefined?null:emailAddress(body.fromAddress)
  if(body.fromAddress!==undefined&&(!fromAddress||String(body.fromAddress).trim().toLowerCase()!==fromAddress))throw new HTTPException(400,{message:'Invalid sender address'})
- const subject=string(body.subject,'subject',500),content=string(body.content,'content',100000),cc=addresses(body.cc,'CC'),bcc=addresses(body.bcc,'BCC'),mailboxId=kind==='email'?string(body.mailboxId,'mailboxId',200):null
+ const subject=string(body.subject,'subject',500),content=string(body.content,'content',100000),cc=addresses(body.cc,'CC'),bcc=addresses(body.bcc,'BCC'),mailboxId=kind==='email'&&object(body.configuration??{}).internal!==true?string(body.mailboxId,'mailboxId',200):null
  if(/[\r\n]/.test(subject))throw new HTTPException(400,{message:'Subject must fit on one line'})
  if(cc.length+bcc.length>50||cc.some(address=>bcc.includes(address)))throw new HTTPException(400,{message:'Recipients must be unique across CC and BCC'})
  if(kind==='call'&&(cc.length||bcc.length||fromAddress))throw new HTTPException(400,{message:'Call logs cannot send email copies'})

@@ -6004,15 +6004,15 @@
       "executable": false
     },
     "src/modules/management/outbound-ticket-input.ts": {
-      "sha256": "d053af6045d6bad6869486432062efee125d490202d8d49d3f5b05c07d869e51",
+      "sha256": "1117c691472c03b9af4b3559bf242c4ca29da4b4b16f1c21925d373c1bcb39ec",
       "executable": false
     },
     "src/modules/management/outbound-ticket-store.ts": {
-      "sha256": "cffeb33f241ddd2378c1f4d551714a95726c626bd1bdc75108a14d73686719d7",
+      "sha256": "4d8cfbcfdfb5d611b4c2013e9a966dc7709d79f2278f3c7f0a76f873bcbe1473",
       "executable": false
     },
     "src/modules/management/outbound-tickets.ts": {
-      "sha256": "2691104c3d283b9d7b41bba4f4dadd6149a4306daaef67a236bffaf10360d561",
+      "sha256": "83afc32048e5789dd2d569a06fe13f4f887b1e91d09f9f711b892ad93496db76",
       "executable": false
     },
     "src/modules/management/policy.ts": {
@@ -8052,7 +8052,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/CreateEmailTicket.jsx": {
-      "sha256": "e07d71fa8f07f0f272301c8364e7181354ec7299e59879cfe7822fe112036870",
+      "sha256": "8755c398ae64e70dd9b0d22513795b14e1974da832230ee4625de8e0ffb5c761",
       "executable": false
     },
     "src/ui/dashboard/components/CreateTicketConfiguration.jsx": {
@@ -10944,7 +10944,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "ff57da0f68b47c196a9d43c1bbbe1badca88a120037fe02dc50abb89ef438d0c",
+      "sha256": "a96d0f3f81616e2dd9b44f4a15d68ea9e0fbb203f416080b71b679310abda70a",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {
@@ -11192,7 +11192,7 @@
       "executable": false
     },
     "tests/helpers/inbox/campaign-entry-browser.mjs": {
-      "sha256": "efae93d1018434c42fa59def6bf8c070c605f89b459dd37ef3e02692c9787522",
+      "sha256": "77516628c6a346fc325b95f480a03711f632e8f5abccfc6b63acad099ab1a614",
       "executable": false
     },
     "tests/helpers/inbox/conversation-panel-resize-browser.mjs": {

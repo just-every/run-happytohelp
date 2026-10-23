@@ -83,10 +83,10 @@ relationships before restore.
 **Settings → Regulated deployment** is an administrator’s qualification preview.
 It does not supply HIPAA, SOC 2 or FedRAMP assurance. Before requesting qualification,
 prepare a separate isolated deployment, export your data and disconnect unqualified
-mail, automation and public channels. Requesting qualification places native
-operator, API and widget-session access on hold. There is currently no remove-hold
-or health-data activation action. Administrators retain qualification, security-log
-and customer-erasure remediation controls.
+mail, automation and public channels. Requesting qualification records a preflight for independent review and keeps
+health-data activation disabled. It does not intercept ordinary support access or
+qualify existing channels. Administrators retain the ordinary security-log,
+retention and customer-erasure controls.
 
 Record the qualification partner/provider, isolated deployment reference and IANA
 timezone. This preview requires United States contracts, USD, recording disabled,
@@ -108,6 +108,6 @@ Even a complete set of manually recorded receipts only becomes **ready for
 independent review**. Health-data activation remains disabled pending independent
 partner review of actual executed agreements and representative sensitive-data
 acceptance on that isolated deployment. Mail, background automation and remaining
-public doors are not qualified by this preview. Successful activation and
+public doors are not qualified by this preview. Successful activation, sensitive-data access enforcement and
 withdrawal of a previously qualified deployment remain unimplemented. Keep health
 data out until those paths and the live provider/partner qualification are proven.

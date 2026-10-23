@@ -1,4 +1,3 @@
-import {assertWorkspaceOpen} from '../assurance/gate'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -23,7 +22,6 @@ export const requireScope=(scope:ApiScope)=>async(c:any,next:()=>Promise<void>)=
  if(!credential){const live=await c.env.DB.prepare('SELECT 1 FROM integration_tokens WHERE token_hash=? AND revoked_at IS NULL AND (expires_at IS NULL OR expires_at>?)').bind(hash,Date.now()).first();throw new HTTPException(live?403:401,{message:live?'Token does not grant this scope':'Invalid or expired bearer token'})}
  const active=await c.env.DB.prepare("SELECT p.id FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)").bind(row.namespace).first()
  if(!active)throw new HTTPException(401,{message:'Invalid or expired bearer token'})
- await assertWorkspaceOpen(c.env,row.namespace)
  c.set('authority',verifiedToken(row.namespace,credential.id,scope));c.header('Cache-Control','no-store');await next()
 }
 export function iso(row:any){if(!row)return row;return Object.fromEntries(Object.entries(row).map(([k,v])=>[k,typeof v==='number'&&/(?:_at|At)$/.test(k)?new Date(v).toISOString():v]))}

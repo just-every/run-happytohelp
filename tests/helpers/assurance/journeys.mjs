@@ -17,8 +17,9 @@ export async function assuranceJourney(){
  assert.equal((await app.call(base,{method:'PUT',body:config,headers:{Cookie:'h2h_session='+token,Origin:'https://foreign.example'}})).status,403)
  await call('',config,{method:'PUT'})
  const held=(await call()).data;assert.equal(held.profile.country,'US');assert.equal(held.profile.currency,'USD');assert.equal(held.profile.timezone,'America/New_York');assert.equal(held.recording_enabled,false)
- for(const [path,auth,body] of [[`/api/conversations/${ticket.id}`,token],[`/api/conversations/${ticket.id}/messages`,person.token],[`/api/dashboard/projects/${ws.projectId}/conversations/${ticket.id}`,token],['/api/identity/widget/session',null,{widgetKey:ws.widgetKey,name:'Must stay blocked'}],['/api/conversations',token,{projectId:ws.projectId}],['/api/management/bootstrap?projectId='+ws.projectId+'&inbox=project',token]])assert.equal((await app.call(path,{token:auth,body,headers})).status,403,path)
- // Admin remediation remains available after the hold, including the shell read and native retention policy.
+ assert.equal((await app.call('/api/conversations/'+ticket.id,{token})).status,200,'recording a preflight does not change ordinary support access')
+ assert.equal((await app.call(base+'/activate',{token,body:{}})).status,409,'missing controls block health-data configuration without a shared runtime interception')
+ // Evidence review and native retention remain available in the ordinary workspace.
  assert.equal((await app.call('/api/management/bootstrap?projectId='+ws.projectId,{token})).status,200)
  await app.ok(`/api/management/projects/${ws.projectId}/audit/retention`,{token,method:'PUT',body:{days:365}})
  const now=Date.now(),date=offset=>new Date(now+offset).toISOString()
@@ -30,8 +31,8 @@ export async function assuranceJourney(){
  const records=[];for(const kind of ['dpa','baa','subprocessor','tenant_isolation','permissions','audit','retention','recovery','erasure','export','incident_response','channel_consent'])records.push({kind,...await add(kind)})
  const ready=(await call()).data;assert.equal(ready.readiness,'ready_for_independent_review');assert.deepEqual(ready.blockers,[]);assert.equal(ready.health_data_enabled,false)
  const refused=await app.call(base+'/activate',{token,body:{health_data_enabled:true}});assert.equal(refused.status,409);assert.match(refused.data.error,/independent partner review/)
- // Reopening an ordinary data door is impossible even after all manually recorded evidence passes.
- assert.equal((await app.call('/api/conversations/'+ticket.id,{token})).status,403)
+ // All manually recorded evidence still cannot authorize health-data processing.
+ assert.equal((await app.call('/api/conversations/'+ticket.id,{token})).status,200,'standard support stays separate from the unqualified regulated mode')
  const baa=records.find(r=>r.kind==='baa');await call('/evidence/'+baa.id+'/revoke',{})
  const revoked=(await call()).data;assert.equal(revoked.health_data_enabled,false);assert.ok(revoked.blockers.some(b=>b.includes('BAA')))
  const report=await app.call(base+'/report',{token});assert.equal(report.status,200);assert.match(report.headers.get('Content-Disposition'),/qualification.json/);assert.equal(report.data.data.health_data_enabled,false)

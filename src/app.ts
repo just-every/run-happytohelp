@@ -1,5 +1,4 @@
 import {assuranceRoutes} from './modules/assurance/routes'
-import {qualificationGate} from './modules/assurance/gate'
 import {api as scopedApi} from './modules/api-integrations/routes'
 import {integrationSettings} from './modules/api-integrations/settings'
 import { notFoundResponse, rejectedResponse } from './base/rejected-response'
@@ -51,7 +50,6 @@ app.use('/api/*',async(c,next)=>{
  if(!c.env.APP_ORIGIN)c.env={...c.env,APP_ORIGIN:origin.origin,H2H_LOCAL:undefined};
  await next();
 })
-app.use('/api/*',qualificationGate)
 app.route('/api/assurance',assuranceRoutes)
 // The bearer-only API never enters native cookie/project CORS, including errors.
 app.route('/api/v1',scopedApi)

@@ -1,4 +1,3 @@
-import {assertWorkspaceOpen,qualificationRemediation} from '../modules/assurance/gate'
 import {devAdmitted} from '@runeditrun/rer/modules/operator-auth/dev-admission'
 import type { Context } from 'hono'
 import { HTTPException } from 'hono/http-exception'
@@ -37,7 +36,6 @@ export async function requireActor(c: Context<AppEnv>): Promise<Actor> {
   if(pending&&!(route&&factorDoors[pending].includes(`${route.method} ${route.path}`)))
    throw new HTTPException(401,{res:jsonResponse({error:pending==='verify'?'Enter the code from your authenticator, a passkey or a recovery code to finish signing in.':'This workspace requires two-factor sign-in. Set it up to continue.',code:'two_factor_required',twoFactor:pending},401)})
  }
- if(!qualificationRemediation(c.req.path)||c.req.path==='/api/management/bootstrap'&&!!c.req.query('inbox'))await assertWorkspaceOpen(c.env,actor.projectId)
  c.set('sessionHash',sessionHash)
  c.set('actor',actor)
  // Only someone holding a collaborator or custom role somewhere is narrowed further than the handlers' own checks.

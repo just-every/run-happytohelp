@@ -27,7 +27,8 @@ async function platformDestination(root){
 
 async function databaseSnapshot(root){return archiveStorage(root,async({DB})=>{
  const schema=(await DB.prepare("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE name NOT LIKE '_cf_%' ORDER BY name").all()).results,rows={};
- for(const {name} of schema.filter(item=>item.type==='table'))rows[name]=(await DB.prepare(`SELECT * FROM "${name.replaceAll('"','""')}"`).all()).results.map(row=>JSON.stringify(row)).sort();
+ const tables=schema.filter(item=>item.type==='table');
+ for(let offset=0;offset<tables.length;offset+=50){const chunk=tables.slice(offset,offset+50),results=await DB.batch(chunk.map(({name})=>DB.prepare(`SELECT * FROM "${name.replaceAll('"','""')}"`)));for(const [index,{name}] of chunk.entries())rows[name]=results[index].results.map(row=>JSON.stringify(row)).sort();}
  return {schema,rows};
 });}
 

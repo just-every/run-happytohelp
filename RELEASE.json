@@ -43,7 +43,7 @@
     },
     {
       "id": "251_assurance.sql",
-      "buyerSteps": "ASSURANCE-001: add regulated-deployment qualification profiles and expiring agreement/control evidence. Standard workspaces are unchanged. Requesting qualification places that workspace on a data-access hold; there is deliberately no health-data activation or remove-hold action until independent provider/partner deployment acceptance exists. Keep an isolated deployment and export/backup before requesting qualification."
+      "buyerSteps": "ASSURANCE-001: add regulated-deployment preflight profiles and expiring agreement/control evidence. Standard support access is unchanged. Recorded references prepare independent review; they never authorize health-data activation or supply compliance. Use an isolated deployment with health-data processing disabled until provider/partner acceptance and shared-runtime activation/withdrawal are implemented."
     },
     {
       "id": "252_feedback_penny.sql",

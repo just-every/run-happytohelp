@@ -7,11 +7,11 @@ no route enables health-data support or recording.
 
 `routes.ts` enforces current administrator authority and native step-up for
 changes, records audit events and exports the current qualification assessment.
-`gate.ts` holds native operator/API and new widget-session access for requested
-workspaces while retaining qualification, security-log and erasure remediation.
-These hooks are not complete qualification of mail, automation, public channels,
-providers or a live regulated deployment. Do not extend the hold into shared
-processing without reviewing that processing’s delivery and recovery contracts.
+The qualification flow is preflight evidence only. It does not intercept shared
+authentication, API, widget or background processing. Standard workspaces keep
+their retained query budgets and schema behavior. Regulated activation and
+sensitive-data access enforcement need an independently reviewed shared-runtime
+implementation; recorded references cannot authorize them.
 
 Actual executed agreements, approved provider account settings, representative
 sensitive-data acceptance, independent partner qualification, an activation path

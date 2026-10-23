@@ -1,6 +1,8 @@
 // The tooltip of icon-only controls: one layer per document (or shadow root), so no control is wrapped, re-rendered or
 // remounted to have one. Give each icon-only control the props of tooltip('New ticket'): its accessible name, which is
-// also the tooltip's text, and the data-tooltip marker. The tooltip shows ~300 ms after a mouse rests on the control
+// also the tooltip's text, and the data-tooltip marker. A control that acts on one row of a list keeps the short name
+// and names its row as its accessible description: tooltip('Remove category', { describedBy }) with the id of the element
+// that shows the row's name. The tooltip shows ~300 ms after a mouse rests on the control
 // (at once while another has just been showing), at once on keyboard focus, and on a touch long press, whose tap is then
 // not acted on; a plain tap still acts. It hides when the pointer leaves, on a press, Escape, a scroll that moves the
 // control, a resize or a tap elsewhere. It sits clear of the pointer and of the viewport's edges, flipping to the other
@@ -11,9 +13,23 @@
 
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
 
-/** The props that give an icon-only control its tooltip: its accessible name and the layer's marker. */
-export function tooltip(label: string, placement?: TooltipPlacement): Record<string, string> {
-    return placement ? { 'aria-label': label, 'data-tooltip': '', 'data-tooltip-placement': placement } : { 'aria-label': label, 'data-tooltip': '' };
+export interface TooltipOptions {
+    placement?: TooltipPlacement;
+    /** The id of the element that shows the name of the row the control acts on (a chip's text, a row's title). */
+    describedBy?: string;
+}
+
+/**
+ * The props that give an icon-only control its tooltip: its accessible name and the layer's marker. With `describedBy`
+ * the control's row is its accessible description, so a list of "Remove category" buttons is heard as "Remove category,
+ * Billing" while each tooltip and name stay the short words. Pass a placement alone as a string.
+ */
+export function tooltip(label: string, options?: TooltipPlacement | TooltipOptions): Record<string, string> {
+    const { placement, describedBy } = typeof options === 'string' ? { placement: options, describedBy: undefined } : options ?? {};
+    const props: Record<string, string> = { 'aria-label': label, 'data-tooltip': '' };
+    if (placement) props['data-tooltip-placement'] = placement;
+    if (describedBy) props['aria-describedby'] = describedBy;
+    return props;
 }
 
 const SHOW_DELAY = 300;

@@ -1530,6 +1530,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
   position: absolute;
   top: -0.6em;
   right: -0.6em;
+  box-sizing: content-box;
   cursor: pointer;
   font-size: 1em;
   transform: scale(1);
@@ -2689,6 +2690,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
 #happytohelp-root button.happytohelp-return-to-chat,
 #happytohelp-root button.happytohelp-preview-close,
 #happytohelp-root button.happytohelp-error-close,
+#happytohelp-root button.happytohelp-insight-close,
 #happytohelp-root button.happytohelp-chat-header-desc,
 #happytohelp-modal-preview button.happytohelp-modal-preview-close {
   appearance: none;
@@ -2702,6 +2704,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
 #happytohelp-root button.happytohelp-return-to-chat,
 #happytohelp-root button.happytohelp-preview-close,
 #happytohelp-root button.happytohelp-error-close,
+#happytohelp-root button.happytohelp-insight-close,
 #happytohelp-root button.happytohelp-chat-header-desc,
 #happytohelp-modal-preview button.happytohelp-modal-preview-close {
   background: transparent;

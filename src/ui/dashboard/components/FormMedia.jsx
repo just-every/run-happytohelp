@@ -29,8 +29,7 @@ function FormMedia({ media, onRemove }) {
             <div className="theme-file-preview position-relative me-3 dz-processing dz-image-preview dz-error dz-complete">
                 <a className="avatar avatar-lg dropzone-image-preview bg-body-secondary rounded"
                    href="#"
-                   { ...tooltip('Preview image') }
-                   aria-describedby={ imageId }
+                   { ...tooltip('Preview image', { describedBy: imageId }) }
                    onClick={ handleShowModal }>
                     <img
                         id={ imageId }
@@ -38,7 +37,7 @@ function FormMedia({ media, onRemove }) {
                         alt={ media.filename_original }
                         className="avatar-img rounded file-title" />
                 </a>
-                <a className="badge badge-circle text-bg-secondary position-absolute badge-top-right" href="#" { ...tooltip('Remove attachment') } aria-describedby={ imageId } onClick={ handleRemove }>
+                <a className="badge badge-circle text-bg-secondary position-absolute badge-top-right" href="#" { ...tooltip('Remove attachment', { describedBy: imageId }) } onClick={ handleRemove }>
                     <i className="fe fe-x" aria-hidden="true"></i>
                 </a>
             </div>
@@ -50,10 +49,10 @@ function FormMedia({ media, onRemove }) {
             </Modal>
         </>
         : <div className="theme-file-preview position-relative me-3 dz-processing dz-image-preview dz-error dz-complete">
-            <a href={ media.url } target="_blank" rel="noreferrer" className="avatar avatar-lg dropzone-image-preview" { ...tooltip('Open attachment') } aria-describedby={ imageId }>
+            <a href={ media.url } target="_blank" rel="noreferrer" className="avatar avatar-lg dropzone-image-preview" { ...tooltip('Open attachment', { describedBy: imageId }) }>
                 <span className="avatar-text rounded bg-secondary file-title" id={ imageId }><i className="fe fe-file" aria-hidden="true"></i><span className="visually-hidden">{ media.filename_original }</span></span>
             </a>
-            <a className="badge badge-circle text-bg-secondary position-absolute badge-top-right" href="#" { ...tooltip('Remove attachment') } aria-describedby={ imageId } onClick={ handleRemove }>
+            <a className="badge badge-circle text-bg-secondary position-absolute badge-top-right" href="#" { ...tooltip('Remove attachment', { describedBy: imageId }) } onClick={ handleRemove }>
                 <i className="fe fe-x" aria-hidden="true"></i>
             </a>
         </div>;

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useId, useState} from 'react';
 import PropTypes from 'prop-types';
 import { tooltip } from '../../tooltip/tooltip';
 
@@ -10,8 +10,11 @@ function humanFileSize (size) {
     return ( size / Math.pow(factor, i) ).toFixed(1) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
 }
 
-function Media({ upload, media, setPreview }) {
+function Media({ upload, media, setPreview, nameId }) {
     const [loaded, setLoaded] = useState(upload);
+    // The file's name describes its controls: Preview image here, and Remove attachment beside it in the composer.
+    const ownNameId = useId();
+    const fileNameId = nameId ?? ownNameId;
 
     // Try to normalise this data @todo correct params at source
     if(upload) {
@@ -24,23 +27,25 @@ function Media({ upload, media, setPreview }) {
         media.preview = media.preview_url ?? media.url;
     }
 
-    return media.isImage ? <button type="button" className="happytohelp-preview-trigger" { ...tooltip('Preview image') } onClick={() => setPreview(media)}>
+    return media.isImage ? <button type="button" className="happytohelp-preview-trigger" { ...tooltip('Preview image', { describedBy: fileNameId }) } onClick={() => setPreview(media)}>
             <img
                 src={media.preview}
                 className={ "happytohelp-preview " + (loaded ? "happytohelp-preview-loaded" : "happytohelp-preview-loading")}
                 alt=""
                 style={{ maxWidth: '100%' }}
                 onLoad={() => setLoaded(true)} />
+            <span id={ fileNameId } hidden>{ media.filename }</span>
         </button>
             :
         <div className="happytohelp-preview">
-            <a href={media.preview} target="_blank" rel="noopener noreferrer">{media.filename}</a>
+            <a id={ fileNameId } href={media.preview} target="_blank" rel="noopener noreferrer">{media.filename}</a>
             {media.size ? " ("+humanFileSize(media.size)+")" : ""}
         </div>;
 }
 
 Media.propTypes = {
     media: PropTypes.object,
+    nameId: PropTypes.string,
 };
 
 export default Media;

@@ -20,7 +20,7 @@ function Media({ media }) {
 
     return media.aggregate_type === 'image'
         ? <>
-            <a href={ media.url } { ...tooltip('Open image') } aria-describedby={ imageId } onClick={ handleShowModal }><img id={ imageId } src={ media.preview_url ?? media.url } alt={ media.filename_original } /></a>
+            <a href={ media.url } { ...tooltip('Open image', { describedBy: imageId }) } onClick={ handleShowModal }><img id={ imageId } src={ media.preview_url ?? media.url } alt={ media.filename_original } /></a>
             <Modal show={showModal} onHide={handleCloseModal} dialogClassName="modal-fullscreen">
                 <DialogHeader closeButton>
                     <h4 className="mb-0">{ media.filename_original }</h4>

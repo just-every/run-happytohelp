@@ -7,6 +7,8 @@ export default function CategoryChips({ id, categories, value = [], onChange }) 
     const [text, setText] = useState('');
     const listId = useId();
     const name = category => category.title || category.name;
+    // Each chip's text names the category its × removes.
+    const chipId = category => `${listId}-category-${category.id}`;
     const selected = value.map(categoryId => categories.find(category => String(category.id) === String(categoryId))).filter(Boolean);
     const available = categories.filter(category => !value.some(categoryId => String(categoryId) === String(category.id)));
     const add = typed => {
@@ -17,8 +19,8 @@ export default function CategoryChips({ id, categories, value = [], onChange }) 
         return true;
     };
     return <><div className="category-chips form-control">
-        {selected.map(category => <span className="h2h-chip category-chips__chip" key={category.id}>{name(category)}
-            <button type="button" {...tooltip('Remove category')} onClick={() => onChange(value.filter(categoryId => String(categoryId) !== String(category.id)))}><i className="fe fe-x" aria-hidden="true"/></button>
+        {selected.map(category => <span className="h2h-chip category-chips__chip" key={category.id}><span id={chipId(category)}>{name(category)}</span>
+            <button type="button" {...tooltip('Remove category', {describedBy: chipId(category)})} onClick={() => onChange(value.filter(categoryId => String(categoryId) !== String(category.id)))}><i className="fe fe-x" aria-hidden="true"/></button>
         </span>)}
         <input id={id} list={listId} value={text} placeholder="Add a category…" autoComplete="off" disabled={!available.length}
             onChange={event => { if (!add(event.target.value)) setText(event.target.value); }}

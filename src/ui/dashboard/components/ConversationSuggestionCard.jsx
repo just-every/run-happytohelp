@@ -40,6 +40,7 @@ const previewMarkdownComponents = {
 export default function ConversationSuggestionCard({ disabled, icon, label, onSelect, response, selected, useWhen }) {
     const previewRef = useRef(null);
     const previewId = `conversation-suggestion-preview-${ useId() }`;
+    const labelId = `${ previewId }-label`;
     const [ isExpanded, setIsExpanded ] = useState(false);
     const [ isExpandable, setIsExpandable ] = useState(false);
 
@@ -79,7 +80,7 @@ export default function ConversationSuggestionCard({ disabled, icon, label, onSe
             </span> }
             <span className="conversation-suggestion-card__content">
                 <span className="conversation-suggestion-card__header">
-                    <span className="conversation-suggestion-card__heading">{ label }</span>
+                    <span id={ labelId } className="conversation-suggestion-card__heading">{ label }</span>
                 </span>
                 { useWhen && <span className="conversation-suggestion-card__condition">
                     <strong>Use when:</strong> { useWhen }
@@ -98,7 +99,7 @@ export default function ConversationSuggestionCard({ disabled, icon, label, onSe
         { isExpandable && <button
             type="button"
             className="conversation-suggestion-card__toggle"
-            { ...tooltip(isExpanded ? 'Collapse reply' : 'Expand reply') }
+            { ...tooltip(isExpanded ? 'Collapse reply' : 'Expand reply', { describedBy: labelId }) }
             aria-expanded={ isExpanded }
             aria-controls={ previewId }
             onClick={ event => {

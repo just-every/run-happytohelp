@@ -42,7 +42,7 @@ export default function ConversationParticipantsControl({ conversation }) {
                     // The address describes its Remove, which is named for the action like every row's control.
                     return <li key={ `participant-${participant.id}` }>
                         <span id={ `participant-${participant.id}-address` }>{ address(email) }</span>
-                        <button type="button" className="btn btn-link" disabled={ removing !== null } { ...tooltip('Remove participant') } aria-describedby={ `participant-${participant.id}-address` } onClick={ () => removeParticipant(participant.pivot.id) }>
+                        <button type="button" className="btn btn-link" disabled={ removing !== null } { ...tooltip('Remove participant', { describedBy: `participant-${participant.id}-address` }) } onClick={ () => removeParticipant(participant.pivot.id) }>
                             <ReplyIcon name="x" />
                         </button>
                     </li>;

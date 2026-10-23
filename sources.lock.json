@@ -3957,7 +3957,7 @@
       "executable": false
     },
     "src/modules/business-connectors/actions.ts": {
-      "sha256": "a0e45c42d11d1edeec86a9070892bf411d7f4d67d29bf4d9346330b45f02ba41",
+      "sha256": "762a0aba540729df5b75f6ec71f9b5c76b32ffbb23b0a9c4dd36330c9e70f07b",
       "executable": false
     },
     "src/modules/business-connectors/confirmation.ts": {
@@ -3989,11 +3989,11 @@
       "executable": false
     },
     "src/modules/business-connectors/providers/actions.ts": {
-      "sha256": "6476c96956154433f3099cf45626aa6ded14a5e3f5a05d9d422595a182832889",
+      "sha256": "dd504b1b59062993041a1d63546bc4e62b4e2b48cf974eca4c201c14efc0e25c",
       "executable": false
     },
     "src/modules/business-connectors/providers/context.ts": {
-      "sha256": "18f607facb26666fe026cec502fe1be4c48881938956c638be37ac79f03190e2",
+      "sha256": "8991a347869f3215a8e42ad208341c952fd4446c99faf1fda7ee04f999005aec",
       "executable": false
     },
     "src/modules/business-connectors/providers/http.ts": {
@@ -4001,7 +4001,7 @@
       "executable": false
     },
     "src/modules/business-connectors/providers/shopify.ts": {
-      "sha256": "03063070035e48954a72f0ea53cfeaf5dc1ea4b529a1f6c6e1fb6815fb4c3068",
+      "sha256": "818c2402f6559c58a55d452d7ce9ac4b99a979e59c507c5627bb27b1918f749d",
       "executable": false
     },
     "src/modules/business-connectors/providers/stripe-billing.ts": {
@@ -9593,11 +9593,11 @@
       "executable": false
     },
     "src/ui/native/pages/business-connectors/Panel.jsx": {
-      "sha256": "538dd3119bba27e9266b44f5e0e5ca04c6058145c76f6f8c966c22c683b7e6f4",
+      "sha256": "7e786a49f1065308ea4b1d669fd22821c301042c528a8f8b83545a97e66f33b4",
       "executable": false
     },
     "src/ui/native/pages/business-connectors/Settings.jsx": {
-      "sha256": "eb3f1b3a0a36f4c36549d93e0e9333a6cba7978ea1d3ea1fd8b69c334fd2290c",
+      "sha256": "e24841893e29ec02714635d9a5d76f7929d8be93ab6a87aa5c861394769e4e37",
       "executable": false
     },
     "src/ui/native/pages/Companies.jsx": {
@@ -10921,11 +10921,11 @@
       "executable": false
     },
     "tests/helpers/business-connectors/journeys.mjs": {
-      "sha256": "72dc25558074fce07b9cb4de978cb5f12bd08800bee708ced244316985fef936",
+      "sha256": "f35572dcaaf7e36fd0dc4731fe7d88c044c5f1b8b9faa89a578ea5744d4f37b6",
       "executable": false
     },
     "tests/helpers/business-connectors/network.mjs": {
-      "sha256": "7fd3d012fa35d4bbedf0a05e753760b1bccb893676f6204ca37a1660701ce0ad",
+      "sha256": "344d8f5dec296dfecb76d1e469165e09f73b8472f64404408fa88759577a7f0c",
       "executable": false
     },
     "tests/helpers/company-portal.mjs": {

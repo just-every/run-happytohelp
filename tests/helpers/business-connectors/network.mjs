@@ -1,20 +1,14 @@
-// Protocol fixtures exist only at fetch. Application routes, D1, approval, custody and browser rendering remain real.
-function assertProtocol(data){if(!data.query.includes('@idempotent(key:$key)')||!data.variables.key||data.variables.input.notify!==false)throw Error('Invalid Shopify refund protocol');}
+import {shopifyNetwork} from './shopify-network.mjs';
 export function createNetwork(){
- const calls=[],refunds=[],credits=[],shopifyRefunds=[],notes=new Map(),tasks=new Map(),activities=new Map();let failAfterWrite=false,stage='customer',revision='2026-10-23T12:00:00Z',subscriptionCancelled=false,subscriptionMetadata={},taxStatus='complete',balance=0,paused=null,currentPrice='synthetic-happytohelp-303';
+ const calls=[],refunds=[],credits=[],notes=new Map(),tasks=new Map(),activities=new Map();let failAfterWrite=false,stage='customer',revision='2026-10-23T12:00:00Z',subscriptionCancelled=false,subscriptionMetadata={},taxStatus='complete',balance=0,paused=null,currentPrice='synthetic-happytohelp-303';
  const json=value=>Response.json(value),customer='synthetic-happytohelp-201',payment='synthetic-happytohelp-202',subscription='synthetic-happytohelp-203';
+ const writeShopify=value=>{if(failAfterWrite){failAfterWrite=false;throw Error('synthetic network timeout after provider commit');}return value;};
+ const shopify=shopifyNetwork({customer,writeResult:writeShopify}),shopifyRefunds=shopify.refunds;
  const handle=async request=>{
   const url=new URL(request.url),path=url.pathname,body=request.method==='GET'?null:await request.text(),data=body?(request.headers.get('content-type')?.includes('application/x-www-form-urlencoded')?Object.fromEntries(new URLSearchParams(body)):JSON.parse(body)):null;
   calls.push({host:url.hostname,path,method:request.method,data,headers:Object.fromEntries(request.headers)});
   const writeResult=value=>{if(failAfterWrite){failAfterWrite=false;throw Error('synthetic network timeout after provider commit');}return json(value);};
-  if(url.hostname==='synthetic-happytohelp-1.myshopify.com'){
-   if(data.query.includes('currentAppInstallation'))return json({data:{shop:{id:'gid://shopify/Shop/101',myshopifyDomain:url.hostname},currentAppInstallation:{accessScopes:[{handle:'read_orders'},{handle:'read_customers'}]}}});
-   if(data.query.includes('BusinessRefundPreview')){if(data.variables.id!=='gid://shopify/Order/901')return json({data:{order:null}});const remaining=(10000-shopifyRefunds.length*1250)/100;const bag={presentmentMoney:{amount:remaining.toFixed(2),currencyCode:'USD'}};return json({data:{order:{id:data.variables.id,name:'#901',customer:{id:'gid://shopify/Customer/'+customer},currencyCode:'USD',presentmentCurrencyCode:'USD',refundable:true,totalTaxSet:{shopMoney:{amount:'5.00',currencyCode:'USD'}},totalShippingPriceSet:{shopMoney:{amount:'10.00',currencyCode:'USD'}},suggestedRefund:{maximumRefundableSet:bag,suggestedTransactions:[{kind:'REFUND',gateway:'synthetic-happytohelp-1',maximumRefundableSet:bag,parentTransaction:{id:'gid://shopify/OrderTransaction/902'}}]}}}});}
-   if(data.query.includes('BusinessRefundReadback'))return json({data:{order:{id:data.variables.id,customer:{id:'gid://shopify/Customer/'+customer},refunds:shopifyRefunds}}});
-   if(data.query.includes('mutation BusinessRefund(')){assertProtocol(data);const input=data.variables.input,transaction=input.transactions[0],bag={presentmentMoney:{amount:transaction.amount,currencyCode:'USD'}},existing=shopifyRefunds.find(x=>x.note.endsWith(data.variables.key));if(existing)return json({data:{refundCreate:{refund:{id:existing.id},userErrors:[]}}});const result={id:'gid://shopify/Refund/'+(903+shopifyRefunds.length),note:input.note,totalRefundedSet:bag,transactions:{nodes:[{id:'gid://shopify/OrderTransaction/904',kind:'REFUND',status:'SUCCESS',amountSet:bag}]}};shopifyRefunds.push(result);return writeResult({data:{refundCreate:{refund:{id:result.id},userErrors:[]}}});}
-   const source=data.variables?.id;if(source!=='gid://shopify/Customer/'+customer)return json({data:{customer:null}});
-   return json({data:{customer:{id:source,displayName:'Synthetic customer',orders:{pageInfo:{hasNextPage:false},nodes:[{id:'gid://shopify/Order/901',name:'#901',displayFinancialStatus:'PAID',displayFulfillmentStatus:'FULFILLED',totalPriceSet:{shopMoney:{amount:'100.00',currencyCode:'USD'}},totalTaxSet:{shopMoney:{amount:'5.00',currencyCode:'USD'}},totalShippingPriceSet:{shopMoney:{amount:'10.00',currencyCode:'USD'}},totalRefundedSet:{shopMoney:{amount:'0.00',currencyCode:'USD'}},fulfillments:[{status:'SUCCESS',trackingInfo:[{company:'Synthetic delivery',number:'901'}]}],returns:{nodes:[]},refunds:[]}]}}}});
-  }
+  if(url.hostname==='synthetic-happytohelp-1.myshopify.com')return json(await shopify.handle(url,data));
   if(url.hostname==='api.stripe.com'){
    if(path==='/v1/account')return json({id:'synthetic-happytohelp-101'});
    if(path==='/v1/customers/'+customer)return json({id:customer,name:'Synthetic customer',currency:'usd',balance});
@@ -46,7 +40,7 @@ export function createNetwork(){
   }
   return new Response('Unavailable',{status:404});
  };
- return {handle,calls,refunds,credits,shopifyRefunds,notes,tasks,activities,customer,payment,subscription,taxUnavailable(value){taxStatus=value?'failed':'complete';},timeoutAfterWrite(){failAfterWrite=true;},changeSource(){stage='subscriber';revision='2026-10-23T13:00:00Z';}};
+ return {handle,calls,refunds,credits,shopifyRefunds,shopify,notes,tasks,activities,customer,payment,subscription,taxUnavailable(value){taxStatus=value?'failed':'complete';},timeoutAfterWrite(){failAfterWrite=true;},changeSource(){stage='subscriber';revision='2026-10-23T13:00:00Z';}};
 }
 export const accounts={shopify:{account:'101',host:'https://synthetic-happytohelp-1.myshopify.com'},stripe:{account:'synthetic-happytohelp-101'},hubspot:{account:'301'},salesforce:{account:'synthetic-happytohelp-501',host:'https://synthetic-happytohelp-1.my.salesforce.com'}};
 const network=createNetwork();export default request=>network.handle(request);

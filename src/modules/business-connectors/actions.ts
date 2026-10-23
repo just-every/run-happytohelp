@@ -9,19 +9,21 @@ import {access,link,guard} from './access'
 import {mapped} from './context'
 import {id,text,cents,demand,type Action} from './model'
 import {preview,execute,readback} from './providers/actions'
+import {actionOptions} from './options'
 import {code} from './providers/http'
 export const actions=new Hono<AppEnv>()
 const safe=(a:Action)=>({...a,preview:JSON.parse(a.preview_json),result:a.result_json?JSON.parse(a.result_json):null,preview_json:undefined,result_json:undefined})
 actions.post(mapped+'/prepare',async c=>{
  const {actor,row,mapped:l}=await link(c);await access(c,'conversations.manage');demand(row,'read');demand(row,'prepare')
- const body=await c.req.json(),kind=text(body.kind,'action'),target=id(body.target_id),reason=text(body.reason,'reason',2000),requestKey=id(body.request_key);let amount=cents(body.amount_cents??0)
+ const body=await c.req.json(),kind=text(body.kind,'action'),target=id(body.target_id),reason=text(body.reason,'reason',2000),requestKey=id(body.request_key),options=actionOptions(kind,body.options);let amount=cents(body.amount_cents??0)
  if(!['refund','credit'].includes(kind)&&amount!==0)throw new HTTPException(400,{message:'This action cannot move funds'})
  if(kind==='support_outcome'&&target!==l.source_id)throw new HTTPException(409,{message:'Outcome target must match the mapped customer'})
  if(amount>row.limit_cents)throw new HTTPException(403,{message:'Action exceeds the configured USD limit'})
+ const derived=kind==='change_plan'||(row.provider==='shopify'&&kind==='refund'&&['full','items'].includes((options as any).mode))
  const existing=await c.env.DB.prepare('SELECT * FROM business_actions WHERE connection_id=? AND conversation_id=? AND request_key=?').bind(row.id,l.conversation_id,requestKey).first<Action>()
- if(existing){if(existing.kind!==kind||existing.target_id!==target||(kind==='change_plan'?JSON.parse(existing.preview_json).next_price!==body.price_id:existing.amount_cents!==amount)||existing.reason!==reason)throw new HTTPException(409,{message:'Request identity already belongs to a different action'});return c.json({data:safe(existing)})}
- let prepared;try{prepared=await preview(row,await decryptToken(c.env,actor.projectId,row.token_cipher!),l.source_id,kind,target,amount,reason,kind==='change_plan'?{price_id:id(body.price_id),proration_date:Math.floor(Date.now()/1000)}:{})}catch(error){throw new HTTPException(409,{message:'Preview refused: '+code(error)})}
- if(kind==='change_plan')amount=cents(prepared.amount_cents)
+ if(existing){if(existing.kind!==kind||existing.target_id!==target||(kind==='change_plan'?JSON.parse(existing.preview_json).next_price!==body.price_id:(!derived&&existing.amount_cents!==amount))||existing.reason!==reason||JSON.stringify(JSON.parse(existing.preview_json).input??{})!==JSON.stringify(options))throw new HTTPException(409,{message:'Request identity already belongs to a different action'});return c.json({data:safe(existing)})}
+ let prepared;try{prepared=await preview(row,await decryptToken(c.env,actor.projectId,row.token_cipher!),l.source_id,kind,target,amount,reason,kind==='change_plan'?{price_id:id(body.price_id),proration_date:Math.floor(Date.now()/1000)}:options)}catch(error){throw new HTTPException(409,{message:'Preview refused: '+code(error)})}
+ if(derived)amount=cents(prepared.amount_cents)
  if(amount>row.limit_cents)throw new HTTPException(403,{message:'Provider preview exceeds the configured USD limit'})
  await access(c,'conversations.manage');const g=guard(c,row,l),now=Date.now(),actionId=crypto.randomUUID()
  try{

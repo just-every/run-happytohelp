@@ -1,11 +1,13 @@
 import {extendedStripeKinds,stripeBillingPreview,stripeBillingExecute,stripeBillingReadback} from './stripe-billing'
+import {shopifyOrderPreview,shopifyOrderExecute,shopifyOrderReadback} from './shopify-orders'
 import {shopifyPreview,shopifyExecute,shopifyReadback} from './shopify'
 import type {Connection,Action} from '../model'
 import {request,ProviderFailure} from './http'
 import {context} from './context'
 export async function preview(row:Connection,token:string,source:string,kind:string,target:string,amount:number,reason:string,options:any={}){
  if(row.provider==='stripe'&&extendedStripeKinds.includes(kind))return stripeBillingPreview(row,token,source,kind,target,amount,reason,options)
- if(row.provider==='shopify'&&kind==='refund')return shopifyPreview(row,token,source,target,amount,reason)
+ if(row.provider==='shopify'&&kind==='refund')return shopifyPreview(row,token,source,target,amount,reason,options)
+ if(row.provider==='shopify'&&['create_return','cancel_order'].includes(kind))return shopifyOrderPreview(row,token,source,kind,target,reason,options)
  if(row.provider==='stripe'&&kind==='refund'){
   const payment=await request(row,token,'/v1/payment_intents/'+target),refunds=await request(row,token,`/v1/refunds?payment_intent=${target}&limit=100`)
   if(payment.customer!==source||payment.id!==target)throw new ProviderFailure('identity_mismatch')
@@ -28,6 +30,7 @@ export async function preview(row:Connection,token:string,source:string,kind:str
  throw new ProviderFailure('action_not_supported')
 }
 export async function execute(row:Connection,token:string,action:Action){
+ if(row.provider==='shopify'&&action.kind!=='refund')return shopifyOrderExecute(row,token,action)
  if(row.provider==='shopify')return shopifyExecute(row,token,action)
  if(row.provider==='stripe'){
   if(extendedStripeKinds.includes(action.kind))return stripeBillingExecute(row,token,action)
@@ -39,6 +42,7 @@ export async function execute(row:Connection,token:string,action:Action){
  throw new ProviderFailure('orbit_scoped_api_unavailable')
 }
 export async function readback(row:Connection,token:string,action:Action,remoteId:string|null){
+ if(row.provider==='shopify'&&action.kind!=='refund')return shopifyOrderReadback(row,token,action,remoteId)
  if(row.provider==='shopify')return shopifyReadback(row,token,action,remoteId)
  if(row.provider==='stripe'&&extendedStripeKinds.includes(action.kind))return stripeBillingReadback(row,token,action,remoteId)
  if(row.provider==='stripe'&&action.kind==='refund'){

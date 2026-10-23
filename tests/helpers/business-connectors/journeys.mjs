@@ -1,3 +1,4 @@
+import {shopifyActions,shopifyLostReturn} from './shopify-journeys.mjs';
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {startApp} from '../../journeys/kit/app.mjs';
@@ -56,6 +57,7 @@ export async function money(){const h=await harness();try{
  await h.connect('shopify');const shop=await h.map('shopify'),shopInput={kind:'refund',target_id:'901',amount_cents:1250,reason:'Approved Shopify partial refund',request_key:randomUUID()};
  assert.equal((await h.app.call(h.base+shop+'/prepare',{token:h.token,body:{...shopInput,target_id:'foreign-order'}})).status,409);
  const shopAction=(await h.call(shop+'/prepare',shopInput)).data;await h.call(shop+'/actions/'+shopAction.id+'/approve',{confirmed:true});assert.equal((await h.call(shop+'/actions/'+shopAction.id+'/execute',{})).data.state,'succeeded');assert.equal(h.network.shopifyRefunds.length,1);assert.equal((await h.call(shop+'/actions/'+shopAction.id+'/execute',{})).data.state,'succeeded');assert.equal(h.network.shopifyRefunds.length,1);
+ await shopifyActions(h,shop);
  // A grant changed between provider preview and the D1 write cannot create an executable action.
  const raceInput={kind:'refund',target_id:h.network.payment,amount_cents:1000,reason:'Authority changed at commit',request_key:randomUUID()};
  const race=await h.app.call(h.base+path+'/prepare',{token:h.token,body:raceInput,headers:{'x-test-statement':'INSERT INTO business_actions','x-test-before-statement':`UPDATE business_connections SET version=version+1 WHERE id='${h.rows.stripe.id}'`}});assert.equal(race.status,409);assert.equal(await h.app.first('SELECT id FROM business_actions WHERE request_key=?',raceInput.request_key),null);
@@ -69,6 +71,7 @@ export async function uncertainty(){const h=await harness();try{
  assert.equal((await h.app.call(h.base+path+'/prepare',{token:h.token,body:{kind:'refund',target_id:h.network.payment,amount_cents:1500,reason:'Second key cannot bypass pending refund',request_key:randomUUID()}})).status,409);
  await h.connect('stripe',['read']);assert.equal((await h.call(root+'/reconcile',{})).data.state,'succeeded');assert.ok(await h.app.first("SELECT id FROM audit_events WHERE action='business.uncertain'"));assert.equal(h.network.refunds.length,1);
  await h.connect('shopify');const shop=await h.map('shopify'),shopAction=(await h.call(shop+'/prepare',{kind:'refund',target_id:'901',amount_cents:1250,reason:'Shopify lost response',request_key:randomUUID()})).data,shopRoot=shop+'/actions/'+shopAction.id;await h.call(shopRoot+'/approve',{confirmed:true});h.network.timeoutAfterWrite();assert.equal((await h.call(shopRoot+'/execute',{})).state,'uncertain');assert.equal(h.network.shopifyRefunds.length,1);assert.equal((await h.call(shopRoot+'/reconcile',{})).data.state,'succeeded');assert.equal(h.network.shopifyRefunds.length,1);
+ await shopifyLostReturn(h,shop);
  const readback=h.network.calls.filter(x=>x.path==='/v1/refunds'&&x.method==='POST');assert.equal(readback.length,1);assert.equal(readback[0].headers['idempotency-key'],action.id);
 }finally{await h.close();}}
 export async function erasure(){const h=await harness();try{

@@ -12008,7 +12008,7 @@
       "executable": false
     },
     "tests/move-in/partitions.mjs": {
-      "sha256": "f1c4b636c1ba2aff712e3e1edc98af560903f3ab070c8237c4390b6d3180ddbf",
+      "sha256": "f00cef6bc8123de69ce5f4f20da6cf83ec072e5590ed7799beecdb73ad71acd3",
       "executable": false
     },
     "tests/move-in/publication-correction.mjs": {

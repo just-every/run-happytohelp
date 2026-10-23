@@ -1,3 +1,4 @@
+import {configurationFieldsJourney} from './configuration-fields.mjs';
 import assert from 'node:assert/strict';
 import {phases} from '../journeys/kit/scenarios.mjs';
 import {nativeHarness} from './harness.mjs';
@@ -126,6 +127,7 @@ test('one Intercom source in four packagings and a ZIP of all of them map the sa
 // composer draft, never a sent message. Repeat and undo cover their full version.
 test('Zendesk macros translate placeholders and four actions into native preview and guarded manual apply',async()=>{
  await configurationJourney()
+ await configurationFieldsJourney(imported)
  const body=ndjson(user,staff,ticket,{macro:{id:81,title:'Refund follow-up',restriction:null,created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',actions:[
   {field:'comment_value',value:'Hello {{ticket.requester.first_name}}, about {{ticket.title}}.'},
   {field:'priority',value:'high'},{field:'status',value:'pending'},{field:'current_tags',value:'refund-followup'},

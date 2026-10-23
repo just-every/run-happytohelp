@@ -6,6 +6,8 @@ import {emailKey} from './contact-keys'
 interface Table {name:string;key:string;columns:string[];order:string;generated?:string[];nativeOnly?:boolean}
 const table=(name:string,key:string,columns:string,order=key,generated?:string[]):Table=>({name,key,columns:columns.split(','),order,generated})
 const entities:Record<string,Table[]>={
+ field:[table('ticket_fields','id','project_id,id,name,type,required,options_json,validation_json,read_roles_json,write_roles_json,updated_at')],
+ form:[table('request_forms','id','project_id,id,config_json,enabled,updated_at')],
  group:[table('ticket_groups','id','project_id,id,name,updated_at'),table('ticket_group_members','group_id','project_id,group_id,user_id','user_id')],
  calendar:[table('workflow_calendars','id','project_id,id,name,timezone,weekly_json,holidays,closures_json,active,updated_at')],
  view:[table('ticket_views','id','id,project_id,owner_id,name,visibility,filters_json,sort_json,version,created_at,updated_at')],
@@ -16,12 +18,13 @@ const entities:Record<string,Table[]>={
  macro:[table('macros','id','id,project_id,title,content,created_by,created_at,updated_at'),table('macro_heads','macro_id','macro_id,version,archived_at,archived_by'),table('macro_versions','macro_id','macro_id,project_id,version,title,content,actions_json,scope_json,created_by,created_at','version')],
  article:[table('knowledge_articles','id','id,project_id,category_id,slug,title,content,summary,status,updated_at,position,source_revision,source_incarnation,publication_version','id',['publication_version']),table('knowledge_article_categories','article_id','article_id,category_id','category_id')],
  conversation:[
-  table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at,mailbox_id,subject,status_id,status_category,channel'),
+  table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at,mailbox_id,subject,status_id,status_category,channel,group_id'),
   table('move_in_conversations','conversation_id','conversation_id,project_id,vendor,source_id,subject,source_state,source_channel'),
   table('email_threading_keys','conversation_id','project_id,conversation_id,key_kind,key_value,source,source_ref,created_at',"key_kind||':'||key_value"),
   table('messages','conversation_id','id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at,intent_hash,bucket_id,erased_at,citations_json','id'),
   table('move_in_message_sources','message_id','message_id,project_id,author_json,source_id,source_time,time_provenance','message_id'),
   table('move_in_notes','conversation_id','id,project_id,conversation_id,author_json,content,created_at,source_time','id'),
+  table('ticket_field_values','conversation_id','project_id,conversation_id,field_id,value_json','field_id'),
   table('conversation_tags','conversation_id','project_id,conversation_id,tag_id','tag_id'),
   ...[
    table('message_authorship','message_id','message_id,project_id,kind,source_kind,source_id,source_part,recorded_at','message_id'),
@@ -48,6 +51,8 @@ function expected(t:Table,value:NativeValue){return JSON.stringify([...(value.ta
 function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sql {
  const defs=definitions(kind),clauses:string[]=[],bindings:any[]=[]
  for(const t of defs){clauses.push(`${select(t)}=?`);bindings.push(...params(t,destination,id),row?expected(t,row.value as unknown as NativeValue):'[]')}
+ if(row&&kind==='field'){clauses.push("NOT EXISTS(SELECT 1 FROM ticket_field_values WHERE project_id=? AND field_id=?) AND NOT EXISTS(SELECT 1 FROM request_forms f,json_each(f.config_json,'$.fields') ref WHERE f.project_id=? AND json_extract(ref.value,'$.fieldId')=?)");bindings.push(destination,id,destination,id)}
+ if(row&&kind==='form'){clauses.push('NOT EXISTS(SELECT 1 FROM request_form_submissions WHERE project_id=? AND form_id=?)');bindings.push(destination,id)}
  if(row&&kind==='group'){clauses.push('NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND group_id=?)');bindings.push(destination,id)}
  if(row&&kind==='calendar'){clauses.push('NOT EXISTS(SELECT 1 FROM sla_policies WHERE project_id=? AND calendar_id=?)');bindings.push(destination,id)}
  if(row){clauses.push('EXISTS(SELECT 1 FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=? AND revision=? AND source_json=?)');bindings.push(destination,kind,id,row.revision,JSON.stringify((row.value as unknown as NativeValue).source))}

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {readFile,writeFile,stat,access} from 'node:fs/promises';
+import {readFile,writeFile,stat,access,realpath} from 'node:fs/promises';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {parseJsonc} from '@runeditrun/rer/jsonc';
@@ -34,7 +34,7 @@ export async function hostedExportJourney(root,scratch){
  }
  `,{mode:0o600});
  await writeFile(loader,`import {registerHooks} from 'node:module';
- const hook=${JSON.stringify(pathToFileURL(join(root,'scripts/installer/hosted-export.mjs')).href)};
+ const hook=${JSON.stringify(pathToFileURL(await realpath(join(root,'scripts/installer/hosted-export.mjs'))).href)};
  registerHooks({resolve(specifier,context,next){return specifier==='wrangler'&&context.parentURL===hook?{url:${JSON.stringify(pathToFileURL(shim).href)},shortCircuit:true}:next(specifier,context)}});
  `,{mode:0o600});
  const env={H2H_EXPORT_CONFIG:config,H2H_EXPORT_WRITERS_STOPPED:'yes',CLOUDFLARE_API_TOKEN:'synthetic-happytohelp-4',NODE_OPTIONS:[process.env.NODE_OPTIONS,`--import=${pathToFileURL(loader).href}`].filter(Boolean).join(' ')};

@@ -7316,7 +7316,7 @@
       "executable": false
     },
     "src/modules/voice/calls.ts": {
-      "sha256": "7d83dc36ff7a1fcb28e60c39329ec7d5d0666e9dff0e40c2852aa578ab2fef0b",
+      "sha256": "7a1c27444ab81ee50484d8d9c2807d06c82976ebfaf107d7951c58d7d7cf24cd",
       "executable": false
     },
     "src/modules/voice/erasure.ts": {
@@ -7324,7 +7324,7 @@
       "executable": false
     },
     "src/modules/voice/hooks.ts": {
-      "sha256": "c02a24acb8474f6c3763eb37033bf08dbefbb4794eef06c7070a54cf9d21ff0f",
+      "sha256": "c36578e5efdd21564c9b8dceb5b951d041fc1cbf16792575e47e69f5e9f1f0ae",
       "executable": false
     },
     "src/modules/voice/model.ts": {
@@ -12360,7 +12360,7 @@
       "executable": false
     },
     "tests/helpers/voice/journeys.mjs": {
-      "sha256": "5f22c3c0ec9f4d898e289ab0922a193b62613093ac9681650780e9e81f83df56",
+      "sha256": "53c5a272a1322a444dd3bc3075dcdb092bacf8f566c8c9f669ef1c932732e21f",
       "executable": false
     },
     "tests/helpers/widget-failed-send-browser.mjs": {

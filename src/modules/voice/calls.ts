@@ -6,14 +6,16 @@ import {decryptToken} from '../integrations/secrets'
 import {object,named,invalid} from '../tickets/model'
 import {callAccess,voiceAccess,number,usableContact,phone,xml,response,say,credentials,type VoiceSettings} from './model'
 import {providerRequest} from './provider'
+import {linkedContext} from './privacy'
+import {mediaAllowed} from './media'
 import {privateReceipt} from './store'
 const base='/projects/:projectId/conversations/:conversationId'
 export const callRoutes=new Hono<AppEnv>()
 callRoutes.get(base+'/calls',async c=>{
  const {actor,conversation}=await callAccess(c)
- const rows=(await c.env.DB.prepare(`SELECT v.id,v.number_id,n.provider,n.phone support_number,v.direction,v.state,v.consent,v.transcript,v.summary,v.follow_up,v.created_at,v.updated_at,v.recording_cipher IS NOT NULL has_recording FROM voice_calls v JOIN voice_numbers n ON n.id=v.number_id AND n.project_id=v.project_id JOIN conversations c ON c.id=v.conversation_id AND c.project_id=v.project_id WHERE v.project_id=? AND v.conversation_id=? AND v.erased=0 AND ${usableContact} ORDER BY v.created_at DESC,v.id LIMIT 100`).bind(actor.projectId,conversation.id).all()).results
+ const rows=(await c.env.DB.prepare(`SELECT v.id,v.number_id,n.provider,n.phone support_number,v.direction,v.state,v.consent,v.media_expires_at,v.media_withdrawn_at,CASE WHEN v.provider_stop_state='sending' THEN 'uncertain' ELSE v.provider_stop_state END provider_stop_state,CASE WHEN v.media_withdrawn_at IS NULL AND v.media_expires_at>? THEN v.transcript ELSE NULL END transcript,CASE WHEN v.media_withdrawn_at IS NULL AND v.media_expires_at>? THEN v.summary ELSE '' END summary,v.follow_up,v.created_at,v.updated_at,(v.recording_cipher IS NOT NULL AND v.media_withdrawn_at IS NULL AND v.media_expires_at>?) has_recording FROM voice_calls v JOIN voice_numbers n ON n.id=v.number_id AND n.project_id=v.project_id JOIN conversations c ON c.id=v.conversation_id AND c.project_id=v.project_id WHERE v.project_id=? AND v.conversation_id=? AND v.erased=0 AND ${usableContact} ORDER BY v.created_at DESC,v.id LIMIT 100`).bind(Date.now(),Date.now(),Date.now(),actor.projectId,conversation.id).all()).results
  const commands=(await c.env.DB.prepare('SELECT id,kind,state,created_at FROM voice_commands WHERE project_id=? AND conversation_id=? ORDER BY created_at DESC LIMIT 100').bind(actor.projectId,conversation.id).all()).results
- return c.json({data:rows,commands:commands.map((v:any)=>({...v,state:v.state==='sending'?'uncertain':v.state})),agent:{available:false,hook:'Voice uses the native conversation ID. Governed AI procedures and immediate agent handoff belong to AGENT-001.'}})
+ return c.json({data:rows,linked_context:await linkedContext(c,actor,conversation),commands:commands.map((v:any)=>({...v,state:v.state==='sending'?'uncertain':v.state})),agent:{available:false,hook:'Voice uses the native conversation ID. Governed AI procedures and immediate agent handoff belong to AGENT-001.'}})
 })
 callRoutes.post(base+'/commands',async c=>{
  const {actor,conversation,guard}=await callAccess(c,true),b=object(await c.req.json()),kind=b.kind
@@ -53,7 +55,7 @@ callRoutes.post(base+'/commands',async c=>{
 })
 callRoutes.get(base+'/calls/:callId/recording',async c=>{
  const {actor,conversation}=await callAccess(c),id=c.req.param('callId')
- const call=await c.env.DB.prepare('SELECT * FROM voice_calls WHERE id=? AND project_id=? AND conversation_id=? AND erased=0 AND consent=\'granted\'').bind(id,actor.projectId,conversation.id).first<any>()
+ const call=await c.env.DB.prepare('SELECT * FROM voice_calls WHERE id=? AND project_id=? AND conversation_id=? AND erased=0 AND consent=\'granted\' AND media_withdrawn_at IS NULL AND media_expires_at>?').bind(id,actor.projectId,conversation.id,Date.now()).first<any>()
  if(!call?.recording_cipher)throw new HTTPException(404)
  const n=await number(c.env,call.number_id,actor.projectId);if(n.provider!=='twilio')throw new HTTPException(404)
  const recording=await decryptToken(c.env,actor.projectId,call.recording_cipher),token=await credentials(c.env,n)
@@ -61,7 +63,7 @@ callRoutes.get(base+'/calls/:callId/recording',async c=>{
  if(!result.ok){await result.body?.cancel();throw new HTTPException(502,{message:'Recording unavailable from the provider'})}
  // Do not start disclosing media if erasure or role revocation completed during the provider read.
  try{await callAccess(c)}catch(error){await result.body?.cancel();throw error}
- if(!await c.env.DB.prepare('SELECT id FROM voice_calls WHERE id=? AND erased=0 AND recording_cipher=?').bind(id,call.recording_cipher).first()){await result.body?.cancel();throw new HTTPException(404)}
+ if(!await c.env.DB.prepare('SELECT id FROM voice_calls WHERE id=? AND erased=0 AND recording_cipher=? AND media_withdrawn_at IS NULL AND media_expires_at>?').bind(id,call.recording_cipher,Date.now()).first()){await result.body?.cancel();throw new HTTPException(404)}
  return new Response(result.body,{headers:{'Content-Type':'audio/mpeg','Cache-Control':'no-store','Content-Disposition':'attachment; filename="support-call.mp3"','X-Content-Type-Options':'nosniff'}})
 })
 callRoutes.get('/projects/:projectId/report',async c=>{

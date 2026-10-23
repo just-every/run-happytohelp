@@ -1,3 +1,4 @@
+import {acceptTranscript,liveTranscription} from './media'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -14,9 +15,9 @@ function route(c:any,n:VoiceNumber,call:any,s:VoiceSettings){
  if(s.ivr.length)return gather(hookUrl(c,n,'ivr'),s.ivr.map(v=>`Press ${v.digit} for ${v.label}.`).join(' '))
  return dial(c,n,s.human_phone,call.consent==='granted'&&s.recording_enabled)
 }
-const dial=(c:any,n:VoiceNumber,destination:string,record=false)=>`<Dial ${record?'record="record-from-answer-dual" recordingStatusCallbackMethod="POST" recordingStatusCallback="'+xml(hookUrl(c,n,'recording'))+'" ':''}timeout="25" method="POST" action="${xml(hookUrl(c,n,'dial'))}"><Number>${xml(destination)}</Number></Dial>`
+const dial=(c:any,n:VoiceNumber,destination:string,record=false)=>(record?liveTranscription(hookUrl(c,n,'live-transcript')):'')+`<Dial ${record?'record="record-from-answer-dual" recordingStatusCallbackMethod="POST" recordingStatusCallback="'+xml(hookUrl(c,n,'recording'))+'" ':''}timeout="25" method="POST" action="${xml(hookUrl(c,n,'dial'))}"><Number>${xml(destination)}</Number></Dial>`
 function voicemail(c:any,n:VoiceNumber,call:any,s:VoiceSettings){
- if(call.consent!=='granted'||!s.recording_enabled)return say('Our team is unavailable. Recording is off. Please contact us by chat or email, or call again during business hours.')+'<Hangup/>'
+ if(call.consent!=='granted'||!s.recording_enabled||call.media_expires_at<=Date.now())return say('Our team is unavailable. Recording is off. Please contact us by chat or email, or call again during business hours.')+'<Hangup/>'
  return say('Our team is unavailable. After the tone, leave a voicemail. Your consented recording and transcript will be available to the support team.')+`<Record maxLength="120" playBeep="true" transcribe="true" recordingStatusCallbackMethod="POST" recordingStatusCallback="${xml(hookUrl(c,n,'recording'))}" transcribeCallback="${xml(hookUrl(c,n,'transcript'))}" action="${xml(hookUrl(c,n,'finish'))}" method="POST"/>`
 }
 hooks.post('/hooks/:numberId',async c=>{
@@ -30,16 +31,14 @@ hooks.post('/hooks/:numberId',async c=>{
  const commandId=c.req.query('command'),stepKey=commandId?step+':'+commandId:step
  if(commandId&&(step!=='dial'||!await c.env.DB.prepare("SELECT id FROM voice_commands WHERE id=? AND call_id=? AND number_id=? AND project_id=? AND kind='transfer' AND state<>'erased'").bind(commandId,id,n.id,n.project_id).first()))throw new HTTPException(404)
  const alive=`EXISTS(SELECT 1 FROM voice_calls v JOIN conversations c ON c.id=v.conversation_id AND c.project_id=v.project_id JOIN voice_numbers vn ON vn.id=v.number_id AND vn.project_id=v.project_id WHERE v.id=? AND v.erased=0 AND vn.enabled=1 AND vn.version=? AND ${usableContact})`,args=[id,n.version]
- if(step==='recording'||step==='transcript'){
-  if(call.consent!=='granted'||!s.recording_enabled)throw new HTTPException(409,{message:'Recording consent is unavailable'})
+ if(call.media_withdrawn_at){if(['recording','transcript','live-transcript'].includes(step))throw new HTTPException(409,{message:'Consent was withdrawn'});return c.body(response(say('Recording consent was withdrawn. This call will end. Please call again for unrecorded support.')+'<Hangup/>'),200,{'Content-Type':'application/xml'})}
+ if(step==='recording'||step==='transcript'||step==='live-transcript'){
+  if(call.consent!=='granted'||!s.recording_enabled||call.media_expires_at<=Date.now())throw new HTTPException(409,{message:'Recording consent is unavailable'})
   if(step==='recording'&&b.RecordingStatus==='completed'){
    const recording=await encryptToken(c.env,n.project_id,providerId(b.RecordingSid))
-   await c.env.DB.prepare(`UPDATE voice_calls SET recording_cipher=coalesce(recording_cipher,?),state=CASE WHEN state='after_hours' THEN 'voicemail' ELSE state END,updated_at=? WHERE id=? AND ${alive}`).bind(recording,Date.now(),id,...args).run()
+   await c.env.DB.prepare(`UPDATE voice_calls SET recording_cipher=coalesce(recording_cipher,?),state=CASE WHEN state='after_hours' THEN 'voicemail' ELSE state END,updated_at=? WHERE id=? AND media_withdrawn_at IS NULL AND consent='granted' AND media_expires_at>? AND ${alive}`).bind(recording,Date.now(),id,Date.now(),...args).run()
   }
-  if(step==='transcript'&&b.TranscriptionStatus==='completed'){
-   if(typeof b.TranscriptionText!=='string'||b.TranscriptionText.length>16000)throw new HTTPException(400)
-   await c.env.DB.prepare(`UPDATE voice_calls SET transcript=coalesce(transcript,?),updated_at=? WHERE id=? AND ${alive}`).bind(b.TranscriptionText,Date.now(),id,...args).run()
-  }
+  if(step==='live-transcript'||step==='transcript'&&b.TranscriptionStatus==='completed')await acceptTranscript(c.env,n,call,b,step==='live-transcript')
   await privateReceipt(c.env,id,'Telephone '+(call.follow_up?'voicemail; follow-up needed':'call')+'. Recording consent granted. Open the authenticated voice call history for its recording and transcript.')
   return c.body(response(''),200,{'Content-Type':'application/xml'})
  }
@@ -67,7 +66,7 @@ hooks.post('/hooks/:numberId',async c=>{
  const output=response(body),now=Date.now(),summary=state==='transfer_failed'?'Human transfer failed; follow-up needed':state==='after_hours'?'After-hours call; follow-up needed':state==='voicemail'?'Voicemail; follow-up needed':'Telephone call: '+state
  const results=await c.env.DB.batch([
  c.env.DB.prepare(`INSERT OR IGNORE INTO voice_steps(call_id,step,input_hash,response_xml) SELECT ?,?,?,? WHERE ${alive}`).bind(id,stepKey,input,output,...args),
- c.env.DB.prepare(`UPDATE voice_calls SET consent=?,state=?,follow_up=?,summary=?,updated_at=? WHERE id=? AND ${alive} AND EXISTS(SELECT 1 FROM voice_steps WHERE call_id=? AND step=? AND input_hash=?)`).bind(consent,state,follow,summary,now,id,...args,id,stepKey,input),
+ c.env.DB.prepare(`UPDATE voice_calls SET consent=?,state=?,follow_up=?,summary=CASE WHEN transcript IS NULL THEN ? ELSE summary END,updated_at=? WHERE id=? AND media_withdrawn_at IS NULL AND ${alive} AND EXISTS(SELECT 1 FROM voice_steps WHERE call_id=? AND step=? AND input_hash=?)`).bind(consent,state,follow,summary,now,id,...args,id,stepKey,input),
  c.env.DB.prepare(`INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,source,target_type,target_id,detail_json) SELECT ?,project_id,?,'integration',?,'succeeded','system','integration','conversation',conversation_id,? FROM voice_calls WHERE id=? AND ${alive}`).bind('voice-step:'+id+':'+stepKey,now,step==='consent'?'voice.consent_recorded':'voice.routing_step',JSON.stringify({step,consent,state}),id,...args),
  ])
  if(!results[1].meta.changes)throw new HTTPException(409,{message:'Call, connection or consent changed'})

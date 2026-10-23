@@ -18,7 +18,13 @@ async function mailboxReceipt(answer,since){
   const response=await fetch(url,{headers:{Authorization:`Bearer ${process.env.QA_INBOX_RECEIPT_TOKEN}`},signal:AbortSignal.timeout(Math.min(10_000,deadline-Date.now()))})
   assert.equal(response.status,200,'the held QA mailbox receiver must be reachable')
   const receipt=authenticatedReplyReceipt(await response.json(),answer)
-  if(receipt){assert.equal(receipt.to,process.env.TEST_MAIL_TO);return receipt}
+  if(receipt){
+   assert.equal(receipt.to,process.env.TEST_MAIL_TO)
+   assert.equal(receipt.from,'support@native-mail.happytohelp.com','the answer comes from the HH-owned sender')
+   assert.equal(receipt.auth.dkim,'pass')
+   assert.equal(receipt.auth.dkimDomain,'native-mail.happytohelp.com')
+   return receipt
+  }
   await new Promise(done=>setTimeout(done,2000))
  }
  throw Error('Delivered answer unconfirmed: no authenticated QA mailbox receipt; do not resend')

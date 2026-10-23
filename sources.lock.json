@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "8d83f3e57dd2f21177989d58faf0c8e6a66053ff179546d42abbe1aebd452a24",
+      "sha256": "cb03669ec1e7ab98dee2214d3911571132aca0a3ee409233b9329fb3bd991d8a",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "22fa52a23145893003df6cc8a7295798fecbfc997cf68dcc2c5482ee19f3c020",
+      "sha256": "82fa62467ecb948854b7cb3d1d6b7fbf7947fddb8ec4684b21422770827ee28f",
       "executable": false
     },
     "DEMO.md": {
@@ -11628,7 +11628,7 @@
       "executable": false
     },
     "tests/helpers/widget/mailbox-live.mjs": {
-      "sha256": "9424ad16465f45b3ac3ecb0bf2ff530ad2ea6e6015b44d750d9c2fc4b5f82bd1",
+      "sha256": "6fbbc991c9d21e4ba8aa5d2cf889987784d2436456ea228df250cb1be249ed2d",
       "executable": false
     },
     "tests/helpers/widget/opening.mjs": {

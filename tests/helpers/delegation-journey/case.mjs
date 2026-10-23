@@ -42,7 +42,7 @@ export async function runCase({origin,api,actor,fixture,directory,ui,restart}){
   return (await api(path,{device_id:worker.deviceId,mode,instructions,request_id:randomUUID()})).data;
  };
  try{
-  const investigation=await delegate('investigate','Investigate the Spanish setting on the disposable fixture. Read only; propose any change for my approval.');
+  const investigation=await delegate('investigate',`Reproduce the Spanish storefront failure at ${fixture.origin}${fixture.customerPath}. Read only; propose any change for my approval.`);
   assert.equal(investigation.status,'queued');assert.equal(investigation.mode,'investigate');assert.equal(investigation.operator_id,actor.id);
   assert.equal(fixture.events.length,0);await screenshot('b','Owner pairs a computer and explicitly queues an investigation of this conversation.');
   const findingReceipt=await worker.run(task('investigate'));
@@ -62,7 +62,7 @@ export async function runCase({origin,api,actor,fixture,directory,ui,restart}){
   assert.match(changed.result.summary,/independent investigation is still required/);await noReply();
   const conversation=await api('/api/conversations/'+conversationId);assert.equal(conversation.resolved_at,null);
   await ui?.refresh();await screenshot('e','Resolve changes the real loopback fixture once; its report explicitly awaits independent observation.');
-  const observation=await delegate('investigate','Independently read the Spanish setting from the disposable customer system. Do not rely on the resolve report. Do not write.');
+  const observation=await delegate('investigate',`Independently read ${fixture.origin}${fixture.customerPath} to check this customer’s Spanish storefront. Do not rely on the resolve report or a successful settings write. Do not write.`);
   assert.notEqual(observation.id,child.id);const readsBefore=fixture.events.filter(e=>e.path===fixture.customerPath).length;
   const observationReceipt=await worker.run(task('observe'));const observed=await lookup(observation.id);
   assert.equal(observed.status,'completed');assert.equal(observed.mode,'investigate');assert.equal(observed.result.verified,true);assert.equal(observationReceipt.before.enabled,true);
@@ -107,7 +107,7 @@ export async function runCase({origin,api,actor,fixture,directory,ui,restart}){
   const beforeNew=await transcript();
   await api(`${path}/${observation.id}/result/draft`,{proposal_id:reply.id,expected_revision:beforeNew.revision,expected_last_message_id:beforeNew.lastMessageId},{status:409});
   await api(`/api/conversations/${conversationId}/messages`,{localId:randomUUID(),content:reply.body,expectedRevision:beforeNew.revision,expectedLastMessageId:beforeNew.lastMessageId,authoring:{kind:'local',jobId:observation.id,proposalId:reply.id}},{status:409});
-  const fresh=await delegate('investigate','Reproduce the customer recurrence on the disposable Spanish setting fixture. Read only; do not repeat the previous repair or publish a reply.');
+  const fresh=await delegate('investigate',`Reproduce the recurrence at ${fixture.origin}${fixture.customerPath}. Read only; do not repeat the previous repair or publish a reply.`);
   const failedReceipt=await worker.run(task('investigate'));const failed=await lookup(fresh.id);
   assert.equal(failedReceipt.before.enabled,false);assert.equal(failedReceipt.customer.status,503);assert.equal(failedReceipt.customer.available,false);assert.equal(failed.mode,'investigate');
   assert.match(failed.result.summary,/disabled/);assert.equal(fixture.events.filter(e=>e.method==='POST').length,0);

@@ -1572,7 +1572,7 @@
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "d0b9ab6c9c52d84bbf7ae8340570e2b8cb936425fc3e07f9499cb67497f92477",
+      "sha256": "44294e763da713be8d625e9dadd0e73360d0178eba84fa185d8dce2c20851078",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "7908339026a12cd581e62026984c02b22b174f99e302e7b5cd23f7b62ad4e2b9",
+      "sha256": "05cfb0f7161b09c21f1d57e6a42e3a3a641d73d53e8739ea7d0d5f0695e63eff",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "1d8056cf5ac56fce694be2287d701e6c945666d0635489d81ccab2c93a606d74",
+      "sha256": "446d2f0eb228745494d15519d9f4d05cb84806333815906da3f4540427e9c183",
       "executable": false
     },
     "DEMO.md": {
@@ -1776,7 +1776,7 @@
       "executable": false
     },
     "docs/reports.md": {
-      "sha256": "bcd58f548106a67139093dbbf3338e352d0eba50b75c02c5ba05c2535ba06f10",
+      "sha256": "befc7e6bf5e956ccc57098d5a09fc83f399665911e99f039953735f41c28e8ec",
       "executable": false
     },
     "docs/request-forms.md": {
@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "f114b86575f55a685a90232dbacc179346a10f4836bee7b59f5fb3e4fb8791bc",
+      "sha256": "4c2c4b226b8f806dfc10d955fdddd9b9436fa6355101a735098d682cf8fe9f6b",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2471,10 +2471,6 @@
       "sha256": "e0b666f7007df585dcefca23a5e3567fca5b3f6c283f55f5295658297ae28175",
       "executable": false
     },
-    "migrations/242_csat_response_surface.sql": {
-      "sha256": "ac04f0b9547f266723aca30fd0855bced2417297fdaaa561b76126b424e5e1e8",
-      "executable": false
-    },
     "migrations/242_customer_identity_links.sql": {
       "sha256": "e7cbc64e55293e71cdae0ee92af3aabe82c891a49c9b7a54afa2441887f81492",
       "executable": false
@@ -2483,19 +2479,23 @@
       "sha256": "431531c17902e5dcc6eeae3cabe46694c6f2e991445ed73eb0e8b88dcc00ec8c",
       "executable": false
     },
-    "migrations/243_widget_survey_cycles.sql": {
+    "migrations/244_csat_response_surface.sql": {
+      "sha256": "ac04f0b9547f266723aca30fd0855bced2417297fdaaa561b76126b424e5e1e8",
+      "executable": false
+    },
+    "migrations/245_widget_survey_cycles.sql": {
       "sha256": "24cef079571722429dc4c14156b3ca546c7b959a3fa60fc11462e6500dfe1ef9",
       "executable": false
     },
-    "migrations/244_imported_ticket_lifecycle.sql": {
+    "migrations/246_imported_ticket_lifecycle.sql": {
       "sha256": "7ad2137095bd2234fc1eac7e3017217fd9351e15b8368b268c2c3f4f532c7524",
       "executable": false
     },
-    "migrations/245_ai_handoff_receipts.sql": {
+    "migrations/247_ai_handoff_receipts.sql": {
       "sha256": "3c16dd6197e9887b840ae6c50278d44859e85836a103c3ca5f7a68094025ea68",
       "executable": false
     },
-    "migrations/246_customer_recovery.sql": {
+    "migrations/248_customer_recovery.sql": {
       "sha256": "b77c64c20ea6c2a1046c1a46641059f567f759f74a5348cf7279a389435afd6c",
       "executable": false
     },
@@ -2580,7 +2580,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "7f63760abc4f38fb7478769b45342228ec7ab8788caa709916b9de3c05e64a3d",
+      "sha256": "b022cf40c6b0169936805a9f0e1b6305e6c0a8ff397b36d11caedc244067f4f9",
       "executable": false
     },
     "rer-project.json": {
@@ -11728,7 +11728,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "ed44ad4b07988c153d2ab6872350af4808759efaa997682e6e29055480e3050a",
+      "sha256": "6fbdeba72a9bf2733f3a7d0f2f9ed79464c62082cc8c5322286a4558cfef4f0b",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {
@@ -12128,7 +12128,7 @@
       "executable": false
     },
     "tests/move-in/claims.mjs": {
-      "sha256": "08aa18b705b51a2bccb17410504962e478003dd722088cb3d602eb8d4be3595d",
+      "sha256": "75591549708ad940ce23ef2813e8d3d6fff1e10834c35fb974b481fdc4347455",
       "executable": false
     },
     "tests/move-in/companies.mjs": {
@@ -12292,7 +12292,7 @@
       "executable": false
     },
     "tests/move-in/security.mjs": {
-      "sha256": "8fbda4047a016f056fa16928aafdfe5eeae140a57442d5125fe498235510d5a9",
+      "sha256": "26f56c8386beed0cc63b99549e73e9308bda5b779b737b6000cc8bbc58829124",
       "executable": false
     },
     "tests/move-in/shape-custody.mjs": {

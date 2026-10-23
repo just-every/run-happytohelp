@@ -42,6 +42,10 @@
       "buyerSteps": "Preserve the signed response surface separately from survey invitation transport. Apply before the updated Worker serves traffic; existing feedback and links remain intact."
     },
     {
+      "id": "242_customer_identity_links.sql",
+      "buyerSteps": "CUSTOMER-001: add operator-reviewed associations between independently proven identities. Apply after 241 and before the updated Worker serves traffic. Existing contacts, sessions and conversations are unchanged; links grant no customer access or sending authority. Back up and restore with the rest of customer data; erasure removes either side of a link."
+    },
+    {
       "id": "243_widget_survey_cycles.sql",
       "buyerSteps": "Snapshot widget scale, language and timing on new resolution cycles. Apply after 242 and before the updated Worker serves traffic. Existing cycles retain immediate English thumbs feedback; visitors can stop widget surveys without changing mail preferences. No prior feedback is rewritten and this migration sends nothing."
     },
@@ -52,6 +56,14 @@
     {
       "id": "245_ai_handoff_receipts.sql",
       "buyerSteps": "Apply after 244 and before serving the updated Worker. Successful model-requested human transfers retain a causal receipt in the same database batch as assignment. Historical generic assignments are not backfilled or relabeled; no customer text, provider secret or replay authority is added."
+    },
+    {
+      "id": "246_customer_recovery.sql",
+      "buyerSteps": "Keep customer-confirmed recovery separate from satisfaction. Apply before the updated Worker serves traffic; existing responses remain unknown and no customer feedback is rewritten or sent."
+    },
+    {
+      "id": "247_import_attachment_notes.sql",
+      "buyerSteps": "Add canonical private-note attachment associations and reserved import-object custody. Apply before importing files with the updated Worker; existing media is unchanged and this migration grants no access or sending authority."
     }
   ]
 }

@@ -681,6 +681,12 @@
     },
     {
       "binding": "DB",
+      "name": "242_customer_identity_links.sql",
+      "sha256": "e7cbc64e55293e71cdae0ee92af3aabe82c891a49c9b7a54afa2441887f81492",
+      "sql": "-- Operator-reviewed associations do not confer authentication or shared history.\nCREATE TABLE customer_identity_links (\n project_id TEXT NOT NULL REFERENCES projects(id),\n contact_id TEXT NOT NULL REFERENCES contacts(id),\n linked_contact_id TEXT NOT NULL REFERENCES contacts(id),\n provenance TEXT NOT NULL,\n actor_id TEXT NOT NULL REFERENCES users(id),\n created_at INTEGER NOT NULL,\n PRIMARY KEY(project_id,contact_id,linked_contact_id),\n CHECK(contact_id<linked_contact_id)\n);\nCREATE INDEX customer_identity_links_reverse ON customer_identity_links(project_id,linked_contact_id);\n"
+    },
+    {
+      "binding": "DB",
       "name": "243_widget_survey_cycles.sql",
       "sha256": "24cef079571722429dc4c14156b3ca546c7b959a3fa60fc11462e6500dfe1ef9",
       "sql": "-- Keep each widget survey's scale, locale and timing with its exact resolution.\n-- Old cycles retain the original immediate thumbs behavior. Settings changes do\n-- not reinterpret old feedback; widget opt-out is a visitor-owned preference.\nCREATE TRIGGER csat_widget_cycle AFTER INSERT ON conversation_resolutions BEGIN\n UPDATE conversation_resolutions SET evidence_json=json_set(evidence_json,'$.widgetSurvey',json_object(\n 'enabled',COALESCE((SELECT json_extract(settings_json,'$.csat_widget_enabled') FROM project_settings WHERE project_id=NEW.project_id),1),\n 'scale',COALESCE((SELECT scale FROM csat_settings WHERE project_id=NEW.project_id),'thumbs'),\n 'locale',COALESCE((SELECT locale FROM csat_settings WHERE project_id=NEW.project_id),'en'),\n 'availableAt',NEW.resolved_at+COALESCE((SELECT delay_minutes FROM csat_settings WHERE project_id=NEW.project_id),0)*60000,\n 'expiresAt',NEW.resolved_at+(COALESCE((SELECT delay_minutes FROM csat_settings WHERE project_id=NEW.project_id),0)*60000)+(COALESCE((SELECT expires_days FROM csat_settings WHERE project_id=NEW.project_id),14)*86400000)\n )) WHERE id=NEW.id;\nEND;\n"

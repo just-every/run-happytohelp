@@ -3,7 +3,7 @@ const F='/api/forms/projects/:projectId/forms', P='/api/portal/:projectId'
 const K='/api/knowledge/:projectId', O='/api/outcomes/projects/:projectId'
 /** R7 doors participate in the same custom-role policy as the rest of the desk. */
 export const selfServiceRules:Record<string,Permission|'self'|'none'>={
- [`GET ${F}`]:'self',[`GET ${F}/:formId`]:'self',
+ [`GET ${F}`]:'self',[`GET ${F}/:formId`]:'self',[`GET ${F}/:formId/versions`]:'settings.manage',
  [`POST ${F}`]:'settings.manage',[`PUT ${F}/:formId`]:'settings.manage',[`PATCH ${F}/:formId`]:'settings.manage',[`DELETE ${F}/:formId`]:'settings.manage',
  'POST /api/forms/:projectId/:formId/submissions':'none',
  [`POST ${P}/access/request`]:'none',[`POST ${P}/access/logout`]:'none',

@@ -49,6 +49,7 @@ export function zendeskConfiguration(record:SourceRecord,projectId:string,actorI
    if(!object(interval)||!Number.isInteger(interval.start_time)||!Number.isInteger(interval.end_time)||interval.start_time<0||interval.end_time>10080||interval.end_time<=interval.start_time)throw Error('schedule_interval_invalid')
    for(let start=interval.start_time;start<interval.end_time;){const day=Math.floor(start/1440),end=Math.min(interval.end_time,(day+1)*1440),hhmm=(minutes:number)=>String(Math.floor(minutes/60)).padStart(2,'0')+':'+String(minutes%60).padStart(2,'0');weekly.push({day,start:hhmm(start-day*1440),end:hhmm(end-day*1440)});start=end}
   }
+  if(p.holidays!==undefined&&!Array.isArray(p.holidays))throw Error('schedule_holidays_required')
   const closures:string[]=[]
   for(const holiday of p.holidays??[]){
    if(!object(holiday)||!/^\d{4}-\d\d-\d\d$/.test(holiday.start_date)||!/^\d{4}-\d\d-\d\d$/.test(holiday.end_date))throw Error('schedule_holiday_date_required')

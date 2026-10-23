@@ -18,12 +18,20 @@ export async function vendorReplies(app,{projectId,owner,gate}){
   const payload=fixture.vendor==='zendesk'||fixture.vendor==='freshdesk'?fixture.rows.find(row=>row.ticket).ticket:fixture.vendor==='helpscout'?fixture.rows[1]:fixture.rows[1].source
   const notificationId=`<old-${fixture.vendor}-notification@notify.example.test>`
   payload.headers={'Message-ID':notificationId}
+  if(fixture.vendor==='freshdesk')fixture.rows.push({ticket:{...structuredClone(payload),id:821,status:5,reply_to:'helpdesk+freshdesk-821@example.test',headers:{'Message-ID':'<old-freshdesk-final@notify.example.test>'}}})
   const upload=await app.ok(imports+'?vendor='+fixture.vendor,{token:owner,raw:true,headers:{'X-Import-Filename':fixture.vendor+'.jsonl','Content-Type':'application/octet-stream',...(fixture.schema?{'X-Import-Schema':fixture.schema}:{})},body:fixture.rows.map(JSON.stringify).join('\n')})
   await app.drainJobs();const ready=(await app.ok(imports+'/'+upload.data.id,{token:owner})).data
   assert.equal(ready.state,'ready',fixture.vendor);assert.equal(ready.plan.counts.rejected,0,JSON.stringify(ready.plan))
   await app.ok(imports+'/'+ready.id+'/apply',{token:owner,body:{fingerprint:ready.plan.fingerprint}});await app.drainJobs()
   const imported=await app.first('SELECT conversation_id FROM email_threading_keys WHERE project_id=? AND source=? AND key_value=?',projectId,fixture.vendor,fixture.vendor==='freshdesk'?'freshdesk:820':fixture.to)
   assert.ok(imported,fixture.vendor+' imported its explicit threading key')
+  if(fixture.vendor==='freshdesk'){
+   const final=await app.first("SELECT conversation_id FROM email_threading_keys WHERE project_id=? AND source='freshdesk' AND key_value='helpdesk+freshdesk-821@example.test'",projectId)
+   assert.equal((await app.ok(`/api/dashboard/projects/${projectId}/conversations/${final.conversation_id}/ticket`,{token:owner})).data.status_category,'closed')
+   const linked=await gate({messageId:'freshdesk-source-final',from:fixture.email,to:'helpdesk@example.test',headers:{'In-Reply-To':'<old-freshdesk-final@notify.example.test>'},text:'A new question after source final closure.'})
+   assert.equal(linked.data.state,'delivered');assert.notEqual(linked.data.conversationId,final.conversation_id)
+   assert.ok(JSON.stringify(await app.ok(`/api/management/projects/${projectId}/conversations/${linked.data.conversationId}/email-followups`,{token:owner})).includes(final.conversation_id))
+  }
   const ticketPath=`/api/dashboard/projects/${projectId}/conversations/${imported.conversation_id}/ticket`
   const beforeReply=(await app.ok(ticketPath,{token:owner})).data
   assert.equal(beforeReply.status_category,'solved',fixture.vendor+' reopenable source resolution is retained')

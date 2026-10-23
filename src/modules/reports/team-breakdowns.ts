@@ -7,6 +7,7 @@ interface Breakdown {
  firstResponse:{count:number;median:number|null;p90:number|null}
  firstResolution:{count:number;median:number|null;p90:number|null}
  csat:{rated:number;positive:number;rate:number|null}
+ reopens:{resolved:number;denominator:number;reopened:number;events:number;historyUnknown:number;rate:number|null}
  ai:{closed:number;assignmentHandoffs:number;failed:number;uncertain:number;outcomeUnknown:number}
  sla:Record<string,{met:number;breached:number;pending:number;denominator:number;rate:number|null}>
 }
@@ -19,6 +20,9 @@ export async function teamBreakdowns(context:TeamReportContext){
  replies AS (SELECT m.conversation_id,MIN(m.revision) revision FROM messages m JOIN visitors v ON v.conversation_id=m.conversation_id AND m.revision>v.revision LEFT JOIN message_authorship a ON a.message_id=m.id WHERE m.actor_role NOT IN ('contact','system') AND COALESCE(a.source_kind,'')<>'insight' GROUP BY m.conversation_id),
  evidence AS (
  SELECT c.id,c.created_at,
+ CASE WHEN c.resolved_at IS NOT NULL OR t.first_resolved_at IS NOT NULL OR EXISTS(SELECT 1 FROM ticket_history h WHERE h.project_id=c.project_id AND h.conversation_id=c.id AND (json_extract(h.changes_json,'$.status_category.to') IN ('solved','closed') OR json_extract(h.changes_json,'$.status_category.from') IN ('solved','closed'))) THEN 1 ELSE 0 END was_resolved,
+ (SELECT COUNT(*) FROM ticket_history h WHERE h.project_id=c.project_id AND h.conversation_id=c.id AND json_extract(h.changes_json,'$.status_category.from') IN ('solved','closed') AND json_extract(h.changes_json,'$.status_category.to') IN ('new','open','pending','on_hold')) reopen_events,
+ CASE WHEN c.imported=1 AND NOT EXISTS(SELECT 1 FROM ticket_history h WHERE h.project_id=c.project_id AND h.conversation_id=c.id) THEN 1 ELSE 0 END history_unknown,
  CASE WHEN answer.created_at>=question.created_at THEN answer.created_at-question.created_at END response_ms,
  CASE WHEN t.first_resolved_at>=c.created_at THEN t.first_resolved_at-c.created_at END resolution_ms,
  COALESCE((SELECT COUNT(*) FROM conversation_handoffs h WHERE h.project_id=c.project_id AND h.conversation_id=c.id),0)>0 handoff,
@@ -43,6 +47,7 @@ export async function teamBreakdowns(context:TeamReportContext){
  WHERE json_extract(j.value,'$.metric') IN ('first_response','next_response','resolution')
  ), service AS (SELECT dimension,key,metric,SUM(completed_at IS NOT NULL AND breached=0) met,SUM(breached) breached,SUM(completed_at IS NULL AND breached=0) pending FROM clocks GROUP BY dimension,key,metric)
  SELECT d.dimension,d.key id,d.label,COUNT(*) tickets,
+ SUM(e.was_resolved) resolved,COALESCE(SUM(e.was_resolved=1 AND e.history_unknown=0),0) reopenDenominator,SUM(e.reopen_events>0) reopened,SUM(e.reopen_events) reopenEvents,SUM(e.history_unknown) historyUnknown,
  SUM(e.score IS NOT NULL) rated,COALESCE(SUM(e.scale='thumbs' AND e.score=1 OR e.scale='five' AND e.score>=4),0) positive,
  COALESCE(SUM(e.outcome='ai'),0) closed,COALESCE(SUM(e.handoff),0) assignmentHandoffs,COALESCE(SUM(e.failed),0) failed,COALESCE(SUM(e.uncertain),0) uncertain,COALESCE(SUM(e.outcome IS NULL OR e.outcome='unknown'),0) outcomeUnknown,
  (SELECT json_group_array(json_object('metric',metric,'count',count,'median',median,'p90',p90)) FROM distributions s WHERE s.dimension=d.dimension AND s.key IS d.key) durations,
@@ -54,7 +59,7 @@ export async function teamBreakdowns(context:TeamReportContext){
   const durations=JSON.parse(row.durations),sla=JSON.parse(row.sla)
   const distribution=(metric:string)=>{const r=durations.find((r:any)=>r.metric===metric);return r?{count:r.count,median:r.median,p90:r.p90}:{count:0,median:null,p90:null}}
   const service=Object.fromEntries(['first_response','next_response','resolution'].map(metric=>{const r=sla.find((r:any)=>r.metric===metric)??{met:0,breached:0,pending:0},denominator=r.met+r.breached;return [metric,{met:r.met,breached:r.breached,pending:r.pending,denominator,rate:denominator?r.met/denominator:null}]}))
-  breakdowns[row.dimension as Dimension].push({id:row.id,label:row.label,tickets:row.tickets,firstResponse:distribution('response'),firstResolution:distribution('resolution'),csat:{rated:row.rated,positive:row.positive,rate:row.rated?row.positive/row.rated:null},ai:{closed:row.closed,assignmentHandoffs:row.assignmentHandoffs,failed:row.failed,uncertain:row.uncertain,outcomeUnknown:row.outcomeUnknown},sla:service})
+  breakdowns[row.dimension as Dimension].push({id:row.id,label:row.label,tickets:row.tickets,firstResponse:distribution('response'),firstResolution:distribution('resolution'),reopens:{resolved:row.resolved,denominator:row.reopenDenominator,reopened:row.reopened,events:row.reopenEvents,historyUnknown:row.historyUnknown,rate:row.reopenDenominator?row.reopened/row.reopenDenominator:null},csat:{rated:row.rated,positive:row.positive,rate:row.rated?row.positive/row.rated:null},ai:{closed:row.closed,assignmentHandoffs:row.assignmentHandoffs,failed:row.failed,uncertain:row.uncertain,outcomeUnknown:row.outcomeUnknown},sla:service})
  }
  return breakdowns
 }

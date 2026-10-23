@@ -684,6 +684,12 @@
       "name": "243_widget_survey_cycles.sql",
       "sha256": "24cef079571722429dc4c14156b3ca546c7b959a3fa60fc11462e6500dfe1ef9",
       "sql": "-- Keep each widget survey's scale, locale and timing with its exact resolution.\n-- Old cycles retain the original immediate thumbs behavior. Settings changes do\n-- not reinterpret old feedback; widget opt-out is a visitor-owned preference.\nCREATE TRIGGER csat_widget_cycle AFTER INSERT ON conversation_resolutions BEGIN\n UPDATE conversation_resolutions SET evidence_json=json_set(evidence_json,'$.widgetSurvey',json_object(\n 'enabled',COALESCE((SELECT json_extract(settings_json,'$.csat_widget_enabled') FROM project_settings WHERE project_id=NEW.project_id),1),\n 'scale',COALESCE((SELECT scale FROM csat_settings WHERE project_id=NEW.project_id),'thumbs'),\n 'locale',COALESCE((SELECT locale FROM csat_settings WHERE project_id=NEW.project_id),'en'),\n 'availableAt',NEW.resolved_at+COALESCE((SELECT delay_minutes FROM csat_settings WHERE project_id=NEW.project_id),0)*60000,\n 'expiresAt',NEW.resolved_at+(COALESCE((SELECT delay_minutes FROM csat_settings WHERE project_id=NEW.project_id),0)*60000)+(COALESCE((SELECT expires_days FROM csat_settings WHERE project_id=NEW.project_id),14)*86400000)\n )) WHERE id=NEW.id;\nEND;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "244_imported_ticket_lifecycle.sql",
+      "sha256": "7ad2137095bd2234fc1eac7e3017217fd9351e15b8368b268c2c3f4f532c7524",
+      "sql": "-- Import publication carries reviewed lifecycle categories. A final Closed\n-- ticket must stay final; ordinary legacy/native writers retain their defaults.\nDROP TRIGGER ticket_conversation_defaults;\nCREATE TRIGGER ticket_conversation_defaults AFTER INSERT ON conversations BEGIN\n UPDATE conversations SET brand_id=NEW.project_id,requester_id=NEW.contact_id,submitter_id=COALESCE(NEW.submitter_id,NEW.contact_id),status_id= CASE WHEN EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=NEW.project_id AND f.conversation_id=NEW.id) THEN NEW.status_id WHEN NEW.resolved_at IS NOT NULL THEN 'solved' ELSE NEW.status_id END ,status_category= CASE WHEN EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=NEW.project_id AND f.conversation_id=NEW.id) THEN NEW.status_category WHEN NEW.resolved_at IS NOT NULL THEN 'solved' ELSE NEW.status_category END WHERE id=NEW.id;\nEND;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

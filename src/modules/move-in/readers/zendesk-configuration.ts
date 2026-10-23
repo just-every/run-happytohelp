@@ -14,7 +14,7 @@ const tagNames=(value:unknown)=>text(value,'configuration_tags_required',8000).s
 export function configurationTags(record:SourceRecord){
  if(!['macro','trigger','automation'].includes(record.kind))return []
  const p=record.payload as any,actions=Array.isArray(p.actions)?p.actions:[],conditions=[...(Array.isArray(p.conditions?.all)?p.conditions.all:[]),...(Array.isArray(p.conditions?.any)?p.conditions.any:[])]
- return [...actions.filter((a:any)=>['current_tags','remove_tags'].includes(a?.field)&&typeof a.value==='string').flatMap((a:any)=>tagNames(a.value)),...conditions.filter((c:any)=>c?.field==='tags'&&typeof c.value==='string').flatMap((c:any)=>tagNames(c.value))]
+ return [...actions.filter((a:any)=>['current_tags','remove_tags'].includes(a?.field)&&typeof a.value==='string').flatMap((a:any)=>a.value.split(/\s+/).filter(Boolean)),...conditions.filter((c:any)=>c?.field==='tags'&&typeof c.value==='string').flatMap((c:any)=>c.value.split(/\s+/).filter(Boolean))]
 }
 export function zendeskConfiguration(record:SourceRecord,projectId:string,actorId:string,records:Map<string,SourceRecord>,tagIds:Map<string,string>,omissions:string[]):{kind:string;target:string;tables:NativeValue['tables']}|null{
  if(!kinds.has(record.kind))return null
@@ -53,7 +53,7 @@ export function zendeskConfiguration(record:SourceRecord,projectId:string,actorI
   for(const holiday of p.holidays??[]){
    if(!object(holiday)||!/^\d{4}-\d\d-\d\d$/.test(holiday.start_date)||!/^\d{4}-\d\d-\d\d$/.test(holiday.end_date))throw Error('schedule_holiday_date_required')
    const start=Date.parse(holiday.start_date),end=Date.parse(holiday.end_date)
-   if(!Number.isFinite(start)||!Number.isFinite(end)||end<start||(end-start)/86400000>3660)throw Error('schedule_holiday_range_invalid')
+   if(!Number.isFinite(start)||!Number.isFinite(end)||new Date(start).toISOString().slice(0,10)!==holiday.start_date||new Date(end).toISOString().slice(0,10)!==holiday.end_date||end<start||(end-start)/86400000>3660)throw Error('schedule_holiday_range_invalid')
    for(let at=start;at<=end;at+=86400000){if(closures.length>=3660)throw Error('schedule_holiday_limit');closures.push(new Date(at).toISOString().slice(0,10))}
   }
   const definition=calendarDefinition({name:p.name,timezone:timezoneAliases[p.time_zone]??p.time_zone,weekly,holidays:'none',closures,active:false})

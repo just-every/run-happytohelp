@@ -98,13 +98,13 @@ export async function csatJourney({progress=()=>{}}={}){
   await app.ok(`/api/conversations/${uc.id}/messages`,{token:unsigned.token,body:{localId:randomUUID(),content:'A widget question',expectedRevision:0}})
   const ur=await solve(uc.id);await app.scheduled();assert.equal(await surveyRow(ur),null)
   progress("Automatic and unsigned identities excluded")
-  // Signed widget thumbs and email feedback share one latest response per cycle.
+  // The configured widget scale and signed email share one latest response per cycle.
   const signedEmail='signed@example.com',project=await app.first('SELECT verification_secret FROM projects WHERE id=?',a.projectId),signed=await app.ok('/api/identity/widget/session',{body:{widgetKey:a.widgetKey,identifier:signedEmail,email:signedEmail,contact_hash:createHmac('sha256',project.verification_secret).update(signedEmail).digest('hex')}})
   const wc=await app.ok('/api/conversations',{token:signed.token,body:{projectId:a.projectId}})
   await app.ok(`/api/conversations/${wc.id}/messages`,{token:signed.token,body:{localId:randomUUID(),content:'Signed question',expectedRevision:0}})
   const wr=await solve(wc.id);await app.scheduled();assert.ok(await surveyRow(wr))
-  await app.ok(`/api/conversations/${wc.id}/widget-events`,{token:signed.token,body:{action:'rateResolution',data:{resolutionId:wr.id,value:-1,comment:'Widget feedback'}}})
-  assert.equal((await app.first('SELECT channel FROM csat_responses WHERE resolution_id=?',wr.id)).channel,'widget')
+  await app.ok(`/api/conversations/${wc.id}/widget-events`,{token:signed.token,body:{action:'rateResolution',data:{resolutionId:wr.id,score:2,comment:'Widget feedback'}}})
+  assert.deepEqual(await app.first('SELECT channel,scale,score FROM csat_responses WHERE resolution_id=?',wr.id),{channel:'widget',scale:'five',score:2})
   await app.ok(endpoint+`/surveys/${(await surveyRow(wr)).id}/revoke`,{...owner,body:{}})
   assert.equal((await app.call(link(invitation({surveyId:(await surveyRow(wr)).id})))) .status,410)
   progress("Signed widget, cycle rating and revoke checked")

@@ -39,7 +39,7 @@ traceRoutes.get('/projects/:projectId/conversations/:conversationId/trace',async
    providerCostEstimateUsd:completeCost?rounds.reduce((sum,r)=>sum+r.usage.cost!,0):null,priceData:completeCost?'available':'unavailable',
    result:{customerMessageCommitted:!!g.message_id,messageId:g.message_id||null},
    toolTrace:{available:false,reason:'Per-tool scope, approval and verified outcomes are not recorded by this generation store.'},
-   procedure:{available:false,reason:'No versioned procedure is linked to this generation.'}})
+   procedure:(await c.env.DB.prepare('SELECT pg.version_id versionId,pg.release_id releaseId,v.procedure_key procedureKey,v.version,r.state releaseState FROM procedure_generation pg JOIN procedure_versions v ON v.id=pg.version_id AND v.project_id=? JOIN procedure_releases r ON r.id=pg.release_id AND r.project_id=v.project_id WHERE pg.generation_id=?').bind(pid,g.id).first())||{available:false,reason:'No versioned procedure is linked to this generation.'}})
  }
  return c.json({conversationId:cid,traces,limit:100,accounting:'Provider cost estimates describe recorded usage, not a customer balance or savings.'})
 })

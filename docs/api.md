@@ -221,3 +221,50 @@ never duplicate the count. This adds no tracking cookie and makes no claim that 
 article caused the ticket. Existing knowledge contact export and erasure include
 these events. Deployment-level `PUBLIC_HELP_HOSTS` remains the host-routing door;
 lead-managed custom-domain verification and publishing are not implemented.
+
+
+### Native follow-ups and advice procedures
+
+These session-authenticated doors are separate from the scoped integration API.
+They inherit native workspace permissions and cookie origin checks. They do not
+send customer messages automatically or add refund or other business-action tools.
+
+At `/api/ai-support/projects/:projectId/conversations/:conversationId/obligations`,
+GET lists quoted proposals and accepted history. POST proposes an exact
+`messageId`/`quote`, `ownerId`, future Unix-millisecond `dueAt`, `stopCondition`
+and optional linked `dependencyId`. POST `/:id/accept` requires the current
+`version`, accepted `ownerId` and `dueAt`; it can explicitly set a linked
+`dependencyId`. Only a human with conversation-management permission accepts
+material changes. A handoff does not silently change that accepted responsibility.
+Internal reminders and pre-due drafts are permission scoped; a closed engineering
+issue without current readback and observed recovery remains unconfirmed.
+
+Leads manage advice procedures at `/api/ai-support/projects/:projectId/procedures`.
+POST `/:key/versions` creates an immutable `intent`, `instructions`, `model` and
+`config` (`tools`, `humanEscalation`, `maxCost`, `maxTokens`). Tools can only narrow
+the application's existing read-only surface. Submit an ordinary training run
+with `procedureVersionId` to evaluate that exact version: only customer-reply
+cases with declared `expected.must_include_all` outcomes and the version's model
+and budget qualify. These evaluations perform no business actions.
+
+POST `/:key/releases` accepts `versionId`, `evaluationId` and a `cohortLimit` of
+1–100 only after every stored case passes. POST `/:key/releases/:releaseId/cohort`
+explicitly enrolls a `conversationId`. POST `.../revoke-tool` narrows authority;
+POST `.../stop` stops the rollout. A stopped conversation fails closed until a
+lead explicitly enrolls it in another approved release. Restored archives retain
+history and stop all releases; they never restore live rollout authority.
+
+A version may carry a `proposal` naming `fromVersionId`, `resolutionIds` and an
+`expectedEffect`; its cited native cycles must include a reopening or negative
+CSAT. POST `/:key/versions/:versionId/review` records an `approved` or `rejected`
+review and `reason`; GET `.../reviews` preserves both decisions. A proposal needs
+approval as well as passing evaluations before release. POST
+`/:key/releases/:releaseId/check-regression` explicitly checks the rollout and
+stops it on any attributed reopening; automatic monitoring is not implemented.
+
+GET `/api/ai-support/projects/:projectId/procedure-reports/:key` requires report
+permission. It reports committed-answer resolution-cycle denominators, reopen and
+negative-CSAT rates, supporting cycles (100 per page using `offset`), evaluation
+coverage and numeric recorded usage. Unversioned cycles and attempts without a
+committed answer are excluded from resolution denominators. Provider costs retain
+unknown prices; closing a cycle never establishes verified customer recovery.

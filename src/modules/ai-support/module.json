@@ -8,7 +8,8 @@
     "tests/journeys/ai.mjs",
     "tests/journeys/ai-browser.mjs",
     "tests/journeys/ai-live.mjs",
-    "migrations/242_followup_obligations.sql"
+    "migrations/242_followup_obligations.sql",
+    "migrations/243_procedure_versions.sql"
   ],
   "selectedEditionDependencies": [
     "runeditrun/base",

@@ -40,6 +40,10 @@
     {
       "id": "242_followup_obligations.sql",
       "buyerSteps": "Apply before the updated Worker serves traffic. Adds quoted follow-up proposals and human-accepted responsibility history; no customer message is sent automatically. Erasing a customer purges their obligations."
+    },
+    {
+      "id": "243_procedure_versions.sql",
+      "buyerSteps": "Apply before the updated Worker serves traffic. Adds immutable advice-procedure versions, exact-version evaluation release gates and bounded explicit cohorts. No business-action tools are added. A stopped cohort stays with a human review requirement until explicitly enrolled into another approved release; historical evaluations and version links remain available."
     }
   ]
 }

@@ -28,3 +28,5 @@ test('repositories selected for operators are read as redacted, attributed evide
 test('operators inspect an allowlisted production answer trace with exact sources and measured usage, unknown prices remain unavailable, and customer, cross-workspace and revoked report access are refused',async()=>(await import('../helpers/ai/trace.mjs')).traceJourney())
 
 test('quoted follow-up proposals require human acceptance, preserve accepted responsibility through handoffs and restart, and never invent engineering progress',async()=>(await import('../helpers/ai/obligations.mjs')).obligationsJourney())
+
+test('immutable advice procedures require exact-version passing evaluations before bounded production cohorts, narrow tools on revocation and preserve failed evidence after stopping',async()=>(await import('../helpers/ai/procedures.mjs')).proceduresJourney())

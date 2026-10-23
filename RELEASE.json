@@ -56,6 +56,10 @@
     {
       "id": "244_imported_ticket_lifecycle.sql",
       "buyerSteps": "Preserve reviewed native lifecycle and channel fields on new imports. Apply after 243 before serving the updated Worker. Existing imported records are not rewritten; changed mappings that meet prior native state stop for review. Zendesk/Freshdesk final Closed stays final; Help Scout/Intercom reopenable Closed maps to Solved."
+    },
+    {
+      "id": "245_ai_handoff_receipts.sql",
+      "buyerSteps": "Apply after 244 and before serving the updated Worker. Successful model-requested human transfers retain a causal receipt in the same database batch as assignment. Historical generic assignments are not backfilled or relabeled; no customer text, provider secret or replay authority is added."
     }
   ]
 }

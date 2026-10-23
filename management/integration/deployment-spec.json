@@ -702,6 +702,12 @@
       "name": "244_imported_ticket_lifecycle.sql",
       "sha256": "7ad2137095bd2234fc1eac7e3017217fd9351e15b8368b268c2c3f4f532c7524",
       "sql": "-- Import publication carries reviewed lifecycle categories. A final Closed\n-- ticket must stay final; ordinary legacy/native writers retain their defaults.\nDROP TRIGGER ticket_conversation_defaults;\nCREATE TRIGGER ticket_conversation_defaults AFTER INSERT ON conversations BEGIN\n UPDATE conversations SET brand_id=NEW.project_id,requester_id=NEW.contact_id,submitter_id=COALESCE(NEW.submitter_id,NEW.contact_id),status_id= CASE WHEN EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=NEW.project_id AND f.conversation_id=NEW.id) THEN NEW.status_id WHEN NEW.resolved_at IS NOT NULL THEN 'solved' ELSE NEW.status_id END ,status_category= CASE WHEN EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=NEW.project_id AND f.conversation_id=NEW.id) THEN NEW.status_category WHEN NEW.resolved_at IS NOT NULL THEN 'solved' ELSE NEW.status_category END WHERE id=NEW.id;\nEND;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "245_ai_handoff_receipts.sql",
+      "sha256": "3c16dd6197e9887b840ae6c50278d44859e85836a103c3ca5f7a68094025ea68",
+      "sql": "-- A causal receipt, committed in the same batch as a successful model-requested\n-- assignment. Historical generic assignments are deliberately not backfilled.\n-- No prompt, customer text, credential or replay authority is retained here.\nCREATE TABLE ai_handoff_receipts(\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL,\n conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,\n generation_id TEXT NOT NULL UNIQUE,\n agent_id TEXT NOT NULL,\n revision INTEGER NOT NULL,\n created_at INTEGER NOT NULL\n);\nCREATE INDEX ai_handoff_receipts_conversation ON ai_handoff_receipts(project_id,conversation_id);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

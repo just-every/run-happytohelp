@@ -29,6 +29,7 @@ const entities:Record<string,Table[]>={
    table('conversation_rating_history','resolution_id','id,resolution_id,value,comment,created_at,revision','id'),
    table('reporting_legacy_conversations','conversation_id','project_id,conversation_id,run_id'),
    table('conversation_tracking','conversation_id','conversation_id,project_id,initial_history_complete,cycle_history_complete,cycle_start_revision,cycle_start_at,cycle_epoch,first_resolved_at,transition_id'),
+   table('ai_handoff_receipts','conversation_id','id,project_id,conversation_id,generation_id,agent_id,revision,created_at','id'),
    table('conversation_handoffs','conversation_id','id,project_id,conversation_id,agent_id,revision,created_at,cycle_epoch','id'),
    table('conversation_resolutions','conversation_id','id,project_id,conversation_id,contact_id,ordinal,resolved_at,resolved_revision,cycle_start_revision,outcome,evidence_json,reopened_at','id'),
    table('conversation_notes','conversation_id','id,conversation_id,user_id,content,created_at','id'),

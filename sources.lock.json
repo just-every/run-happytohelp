@@ -1796,7 +1796,7 @@
       "executable": false
     },
     "docs/support-channels.md": {
-      "sha256": "aa4fb6d481ac6d98c7fe0c2afc68c32cfab60107caba61c077a055120f582987",
+      "sha256": "b3a1890813839bcea9a052b3d264be96a5aa5548629cdc32f85c1c4123d44a0d",
       "executable": false
     },
     "docs/tickets.md": {
@@ -2980,7 +2980,7 @@
       "executable": false
     },
     "scripts/installer/support-channel-archive.mjs": {
-      "sha256": "8150a7f525d48e3a1de7acc0b2d312c4dc6ba0f1a77e33cc179628845362c9a9",
+      "sha256": "03f9bc3ff52afbf71e1bf06db1afff0fe890afe26f1aa5201f07cdc04006875b",
       "executable": false
     },
     "scripts/installer/ticket-archive-policy.mjs": {
@@ -11613,6 +11613,10 @@
     },
     "tests/helpers/support-channels/journeys.mjs": {
       "sha256": "9ad5c45e1db71f4a3a8e1952d412875992494792c93fb1690e511bfc8d3223cc",
+      "executable": false
+    },
+    "tests/helpers/support-channels/restore.mjs": {
+      "sha256": "35d16d7e5bb7769e9827e8d416721200f961cdca7d3176954806461b3593abcc",
       "executable": false
     },
     "tests/helpers/training-readiness.mjs": {

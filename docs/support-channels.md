@@ -124,7 +124,9 @@ redelivery (including shared participants), and records external provider deleti
 work. Local erasure does not claim to remove provider copies.
 
 Archives omit credentials, verification grants, identity-link codes and temporary
-attachment grants. Restored connections are disconnected; in-flight message/status
+attachment grants. Restored connections are disconnected and support-reply consent is inactive until
+a new authenticated subscriber START. Continuation requires a fresh agreement,
+and a prior STOP continuation fence remains; in-flight message/status
 sends become uncertain. Reconfigure credentials explicitly. Back up D1, R2 and
 private configuration and apply migrations 250, 251, 252 and 253 in order before serving
 the updated Worker, without resetting or editing the existing migration ledger.

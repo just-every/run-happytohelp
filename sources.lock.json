@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "4f06f099aef6ef590df298eccaab9864ad243c6e264d4caa9f6c92e2131b8d6a",
+      "sha256": "2663001f59deae1118f7c53190936b685c443550e375b66840c19681fdb0ec6c",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a518cb64ab908433c0e01b43c223a02c182be06db93656ca4a783b09d63aa54f",
+      "sha256": "8860b6c4c0fbc7474eaa804aec59c71aee687efc0fac8ad6811b89b2883de42e",
       "executable": false
     },
     "DEMO.md": {
@@ -11196,7 +11196,7 @@
       "executable": false
     },
     "tests/helpers/inbox/campaign-entry-browser.mjs": {
-      "sha256": "4cd7923da0353b9464ea5a024e3beb88bfbced627cfd09ef4e07d9e9c82dcb13",
+      "sha256": "66e0839c7c2ad4ef28b129b62b662ed7d4d1b9725fb956044baeafa775609a50",
       "executable": false
     },
     "tests/helpers/inbox/conversation-panel-resize-browser.mjs": {
@@ -11744,7 +11744,7 @@
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {
-      "sha256": "84c129b004716a949ccbb30c733ce7bf949c2e83743cf0784bdb20977d64aa6d",
+      "sha256": "f981f7886b863a537444e85420abb359061e80873bb616cf286553e5a2ef3318",
       "executable": false
     },
     "tests/journeys/inbox.mjs": {

@@ -1,5 +1,5 @@
 import test from 'node:test'
-import {campaignEntryBrowser} from '../helpers/inbox/campaign-entry-browser.mjs'
+import {outboundEntryBrowser,accountFormBrowser} from '../helpers/inbox/campaign-entry-browser.mjs'
 import {ticketsBrowser} from '../helpers/inbox/tickets-browser.mjs'
 import {inboxConversation} from '../helpers/inbox/inbox-conversation-browser.mjs'
 import {inboxDefault} from '../helpers/inbox/inbox-default-browser.mjs'
@@ -32,6 +32,10 @@ test('a busy internal note keeps focus and its draft, and the conversation panel
 
 test('the dashboard reads and writes through the native transport with readiness, reply tools and dialogs at desktop and phone widths',uiBrowser)
 
-test('ticket settings and ticket fields save through the dashboard at desktop and phone widths',async()=>{await ticketsBrowser();await campaignEntryBrowser()})
+test('ticket settings and ticket fields save through the dashboard at desktop and phone widths',ticketsBrowser)
+
+test('operators configure private and public tickets and review service-notice outcomes at desktop and phone widths',outboundEntryBrowser)
+
+test('account request forms keep anonymous choices private and prefill verified memberships at desktop and phone widths',accountFormBrowser)
 
 test('the reply card\'s "+" start menu reaches every ticket action its role allows at 1440 and 390: an owner opens each dialog, a role without ticket management never sees Merge or Snooze, a collaborator sees only notes and follow, and a CC set there shows as a chip in the card',startMenu)

@@ -8,7 +8,10 @@ import {seedTicketBrowser,ticketOwner} from './ticket-browser-fixture.mjs'
 import {launchBrowser,evidence} from '../../journeys/kit/browser.mjs'
 
 /** Public built pages and routes, with only the DNS/mail network edge faked. */
-export async function campaignEntryBrowser(){
+export const outboundEntryBrowser=()=>campaignEntryBrowser('outbound')
+export const accountFormBrowser=()=>campaignEntryBrowser('forms')
+
+async function campaignEntryBrowser(mode){
  const directory=await mkdtemp(join(tmpdir(),'h2h-entry-browser-')),mailPath=join(directory,'mail.ndjson'),fixturePath=join(directory,'provider.mjs')
  await writeFile(mailPath,'')
  await writeFile(fixturePath,`import {appendFile} from 'node:fs/promises';export default async request=>{if(new URL(request.url).hostname==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]});if(request.url!=='https://api.resend.com/emails')throw Error('Unexpected provider request');const mail=await request.json();await appendFile(${JSON.stringify(mailPath)},JSON.stringify(mail)+'\\n');return mail.text?.includes('synthetic-happytohelp-90')&&[].concat(mail.to).includes('browser-notice-fail@example.test')?Response.json({error:'Recipient refused'},{status:422}):Response.json({id:crypto.randomUUID()});};`)
@@ -30,8 +33,10 @@ export async function campaignEntryBrowser(){
   const capture=async name=>{for(const width of [1440,390]){await page.setViewportSize({width,height:width===390?844:900});await page.evaluate(()=>document.fonts.ready);if(name==='outbound-configuration')await page.locator(`#new-ticket-field-${f.fields[0].id}`).scrollIntoViewIfNeeded();if(name==='service-notice-preview')await page.getByRole('region',{name:'Service notice preview'}).scrollIntoViewIfNeeded();if(name==='service-notice-outcomes')await page.getByRole('status',{name:'Service notice outcomes'}).scrollIntoViewIfNeeded();await page.waitForTimeout(200);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${name} overflow at ${width}`);assert.ok(await page.locator('.modal-footer button').evaluateAll(nodes=>nodes.every(node=>{const r=node.getBoundingClientRect(),parent=node.closest('.modal-content').getBoundingClientRect();return r.left>=parent.left-1&&r.right<=parent.right+1})),`${name} footer clipping at ${width}`);assert.ok(await page.locator('.modal-body').evaluateAll(nodes=>nodes.every(node=>node.scrollWidth<=node.clientWidth+1)),`${name} dialog overflow at ${width}`);await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true});}await page.setViewportSize({width:1440,height:900})}
   await page.goto(runtime.origin+`/login?returnTo=/projects/${projectId}/conversations`)
   await page.getByLabel('Email',{exact:true}).fill(owner.email);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Login',exact:true}).click()
+  let dialog
+  if(mode==='outbound'){
   await page.getByRole('button',{name:'New ticket',exact:true}).click()
-  let dialog=page.getByRole('dialog')
+  dialog=page.getByRole('dialog')
   await dialog.getByLabel('Ticket type',{exact:true}).selectOption('walk_in')
   await dialog.getByLabel('Search requesters by name, email or phone').fill('customer-0@')
   await dialog.locator('input[name="ticket-requester"]').first().check()
@@ -61,6 +66,7 @@ export async function campaignEntryBrowser(){
   await dialog.getByLabel('Internal first comment (no email)',{exact:true}).check();await dialog.getByLabel('Subject',{exact:true}).fill('Private email-channel record');await dialog.getByLabel('Private notes',{exact:true}).fill('synthetic-happytohelp-89: Staff-only delivery context.')
   await dialog.getByRole('button',{name:'Create internal ticket',exact:true}).click();await page.waitForURL(url=>url.pathname.includes('/conversations/ticket-'))
   assert.equal((await mails()).some(mail=>mail.text?.includes('synthetic-happytohelp-89')),false,'internal email notes never send')
+  }
   const signIn=async(email,customerPage)=>{
    const before=(await mails()).length;const requested=await customerPage.request.post(runtime.origin+`/api/portal/${projectId}/access/request`,{headers:{Origin:runtime.origin},data:{email}});assert.equal(requested.status(),202)
    const mail=await until(async()=>(await mails()).slice(before).find(mail=>mail.subject==='Sign in to your support requests'&&[].concat(mail.to).includes(email)))
@@ -69,7 +75,9 @@ export async function campaignEntryBrowser(){
    return (await api(management+'/contacts?'+new URLSearchParams({search:email}))).data.find(contact=>contact.email===email).id
   }
   const customerContext=await browser.newContext(),customerPage=await customerContext.newPage(),requesterIds=[]
-  for(const email of ['browser-notice-one@example.test','browser-notice-fail@example.test','browser-notice-three@example.test'])requesterIds.push(await signIn(email,customerPage))
+  const recipients=mode==='outbound'?['browser-notice-one@example.test','browser-notice-fail@example.test','browser-notice-three@example.test']:['browser-notice-three@example.test']
+  for(const email of recipients)requesterIds.push(await signIn(email,customerPage))
+  if(mode==='outbound'){
   await page.goto(runtime.origin+`/projects/${projectId}/conversations`);await page.getByRole('button',{name:'New ticket',exact:true}).click();dialog=page.getByRole('dialog')
   await dialog.getByLabel('Ticket type',{exact:true}).selectOption('service')
   await dialog.getByLabel('Search requesters by name, email or phone').fill('browser-notice-')
@@ -85,9 +93,11 @@ export async function campaignEntryBrowser(){
   await until(async()=>{await dialog.getByRole('button',{name:'Refresh outcomes',exact:true}).click();return (await dialog.getByRole('status',{name:'Service notice outcomes'}).innerText()).includes('failed')})
   assert.equal((await mails()).filter(mail=>mail.text?.includes('synthetic-happytohelp-90')).length,3,'refresh never resends')
   await dialog.getByRole('status',{name:'Service notice outcomes'}).scrollIntoViewIfNeeded();await capture('service-notice-outcomes');await dialog.getByRole('button',{name:'Close',exact:true}).click()
+  }
+  if(mode==='forms'){
   // Customer account lookup choices and a retained typed reference in the built form.
   const account=(await api(management+'/companies',{name:'Rosa Books browser',domains:[],portalCompanyView:false})).company
-  await api(management+`/companies/${account.id}/members/${requesterIds[2]}`,{},'PUT')
+  await api(management+`/companies/${account.id}/members/${requesterIds.at(-1)}`,{},'PUT')
   const lookup=(await api(base+'/ticket-fields',{name:'Support account',type:'account_lookup'})).data
   const accountForm=(await api(`/api/forms/projects/${projectId}/forms`,{title:'Account support',enabled:true,fields:[{fieldId:lookup.id,required:true}],translations:{es:{title:'Ayuda con tu cuenta',fields:{subject:{label:'Asunto'},message:{label:'Mensaje'},[lookup.id]:{label:'Cuenta'}}}}})).data
   await page.goto(runtime.origin+`/projects/${projectId}/ticket-settings`);await page.getByRole('button',{name:'Fields',exact:true}).click();await page.getByRole('heading',{name:'Support account',exact:true}).waitFor();await page.getByRole('article').filter({has:page.getByRole('heading',{name:'Support account',exact:true})}).getByRole('button',{name:'Edit',exact:true}).click();assert.equal(await page.getByLabel('Type',{exact:true}).inputValue(),'account_lookup');await page.getByLabel('Type',{exact:true}).scrollIntoViewIfNeeded();await capture('account-field-settings')
@@ -99,6 +109,7 @@ export async function campaignEntryBrowser(){
   for(const width of [1440,390]){await customerPage.setViewportSize({width,height:844});assert.ok(await customerPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await customerPage.screenshot({path:shot(`account-form-signed-${width}.png`),fullPage:true})}
   await customerPage.getByRole('button',{name:'Submit request',exact:true}).click();await customerPage.getByRole('link',{name:'View your request',exact:true}).waitFor()
   const submitted=(await customerPage.getByRole('link',{name:'View your request'}).getAttribute('href')).split('/').pop();assert.equal((await api(`${base}/conversations/${submitted}/ticket`)).data.fields[lookup.id],account.id)
+  }
   success=true
  }finally{await browser.close();await runtime.close(success);await rm(directory,{recursive:true,force:true})}
 }

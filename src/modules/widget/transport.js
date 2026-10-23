@@ -121,6 +121,7 @@ export class WidgetTransport {
       return transcript;
     }
     if (result.revision >= this.revision) {this.revision = result.revision; this.lastMessageId = result.lastMessageId;}
+    if (result.widget) this.onEvent({type:'settings',payload:result.widget});
     this.onEvent({type: 'transcript', resolution: result.resolution || null, messages: await Promise.all(result.messages.map(message => this.message(message)))});
     return result;
   }
@@ -134,7 +135,8 @@ export class WidgetTransport {
       }
       return {...item, url, preview_url: url, filename_original: item.filename || item.name, aggregate_type: (item.content_type || item.mime_type || '').startsWith('image/') ? 'image' : 'file'};
     }));
-    const agent = message.actor_role === 'system' ? this.workspaceAuthor(message.actor_id) : message.actor_role !== 'contact' ? this.configuration?.agents?.find(person => person.id === message.actor_id) : undefined;
+    const ai = message.actor_role === 'ai' ? this.configuration?.ais?.find(person => person.id === message.actor_id) : null;
+    const agent = ai ? {...ai, is_ai:true, ai} : message.actor_role === 'system' ? this.workspaceAuthor(message.actor_id) : message.actor_role !== 'contact' ? this.configuration?.agents?.find(person => person.id === message.actor_id) : undefined;
     return {...message, ...(agent ? {agent} : {}), created_at: typeof message.created_at === 'number' ? new Date(message.created_at).toISOString() : message.created_at, local_id: message.local_id || message.localId, contact_id: message.actor_role === 'contact' ? this.session.contactId : message.contact_id, agent_id: message.actor_role && message.actor_role !== 'contact' ? message.actor_id : message.agent_id, media};
   }
   // The workspace itself, as the author of its away reply.

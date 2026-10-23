@@ -1,3 +1,4 @@
+import CampaignSettings from './widget-settings/CampaignSettings';
 import {widgetAppearance} from '../../../modules/widget/appearance';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Tab, Tabs } from 'react-bootstrap';
@@ -37,11 +38,12 @@ export default function WidgetSettings({ projectId }) {
     };
     const changed = event => {
         if (fieldNames.includes(event.target.name) || event.target.name === 'allowed_origin') editedFields.current.add(event.target.name);
+        if (event.target.closest('.campaign-settings')) return;
         markDirty(); setSaved(false);
         window.h2h('settings', previewSettings(savedSettings.current, edits(), previewBrand));
     };
     // A link can open one tab by name, as Setup's Website link opens Settings: /widget-settings#settings.
-    const [activeTab, setActiveTab] = useState(() => { const named = typeof window === 'undefined' ? '' : window.location.hash.slice(1); return ['code', 'theme', 'texts', 'settings'].includes(named) ? named : 'code'; });
+    const [activeTab, setActiveTab] = useState(() => { const named = typeof window === 'undefined' ? '' : window.location.hash.slice(1); return ['code', 'theme', 'texts', 'settings', 'campaigns'].includes(named) ? named : 'code'; });
     const [previewOpen, setPreviewOpen] = useState(true);
 
     useEffect(() => {
@@ -75,18 +77,19 @@ export default function WidgetSettings({ projectId }) {
     };
 
     return (
-        <div className={`widget-settings-layout${activeTab === 'code' ? ' widget-settings-layout--code' : ''}`}>
+        <div className={`widget-settings-layout${['code','campaigns'].includes(activeTab) ? ' widget-settings-layout--code' : ''}`}>
             <form onChange={changed} onSubmit={save}>
                 {saveError && <p role="alert">{saveError}</p>}{saved && <p role="status">Saved.</p>}
                 <Tabs activeKey={activeTab} onSelect={setActiveTab} id="widget-settings-tabs" transition={false}>
                     <Tab eventKey="code" title="Code"><WidgetInstallationCode /></Tab>
                     <Tab eventKey="theme" title="Theme"><WidgetAppearanceFields register={register} /></Tab>
                     <Tab eventKey="settings" title="Settings"><section className="settings-section"><h2>Website origin</h2><label htmlFor="widget-website-origin" className="form-label">Widget website origin</label><input id="widget-website-origin" className="form-control" type="url" required {...register('allowed_origin')} aria-describedby="widget-origin-hint"/><p id="widget-origin-hint" className="form-text">The exact website allowed to use this widget, for example https://shop.example.com or http://127.0.0.1:8840. Use only the scheme, hostname and optional port. Saving replaces the previous origin without removing your conversations.</p></section><WidgetBehaviorFields register={register} projectId={projectId} /></Tab>
+                    <Tab eventKey="campaigns" title="Campaigns"><CampaignSettings projectId={projectId}/></Tab>
                     <Tab eventKey="texts" title="Texts"><WidgetTextFields register={register} /></Tab>
                 </Tabs>
-                <div className="settings-actions" hidden={activeTab === 'code'}><button type="submit" className="btn btn-primary">Save</button></div>
+                <div className="settings-actions" hidden={['code','campaigns'].includes(activeTab)}><button type="submit" className="btn btn-primary">Save</button></div>
             </form>
-            <WidgetPreview open={previewOpen} onOpenChange={changePreviewState} hidden={activeTab === 'code'} />
+            <WidgetPreview open={previewOpen} onOpenChange={changePreviewState} hidden={['code','campaigns'].includes(activeTab)} />
         </div>
     );
 }

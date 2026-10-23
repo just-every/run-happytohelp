@@ -48,8 +48,10 @@ export async function campaignsBrowser({browser,page,origin,projectId,owner,evid
     assert.equal(writes.filter(w=>w.body?.includes('campaignEvaluate')).length,0,'decline sends no campaign context');
     await visitor.getByRole('button',{name:'Open chat',exact:true}).first().click();
     await visitor.getByRole('button',{name:'Allow proactive help',exact:true}).click();
-    await visitor.getByRole('button',{name:'Close chat',exact:true}).first().click();
-    await card.waitFor({timeout:20000});
+    await visitor.reload();
+    await visitor.waitForTimeout(10000);assert.equal(await card.count(),0,'a consenting visit still waits for the 20-second page trigger');
+    await visitor.evaluate(()=>window.dispatchEvent(new Event('scroll')));
+    await card.waitFor({timeout:15000});
     assert.match(await card.innerText(),/Alex from Support/);assert.match(await card.innerText(),/Synthetic shop/);
     for(const button of await card.getByRole('button').all()){
      const {foreground,background}=await button.evaluate(el=>({foreground:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));

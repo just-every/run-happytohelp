@@ -4,17 +4,17 @@ import {startApp} from '../../journeys/kit/app.mjs';
 import {supportChannelArchiveRow} from '../../../scripts/installer/support-channel-archive.mjs';
 const secret='synthetic-happytohelp-1',credential='synthetic-happytohelp-2';
 export async function channelHarness(){
- const sends=[],responses=[];
- const app=await startApp({cf:{},bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outbound:async(req,entry)=>{assert.ok(['api.twilio.com','graph.facebook.com','slack.com'].includes(new URL(req.url).hostname));sends.push(entry);const reply=responses.shift();if(reply?.disconnect)throw Error('Network edge lost response');return new Response(JSON.stringify(reply?.body??{sid:'synthetic-happytohelp-3',message_id:'synthetic-happytohelp-4',messages:[{id:'synthetic-happytohelp-5'}],ok:true,ts:'1710000000.3'}),{status:reply?.status??200});}});
+ const sends=[],responses=[],mediaResponses=[],templates=[{id:'synthetic-happytohelp-template',name:'support_update',status:'APPROVED',language:'en_US',category:'UTILITY',components:[{type:'BODY',text:'Your order {{1}} is ready.'}]}];
+ const app=await startApp({cf:{},bindings:{APP_ORIGIN:'https://app.example',INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outbound:async(req,entry)=>{const url=new URL(req.url);if(req.method==='GET'){if(url.pathname.endsWith('/message_templates'))return Response.json({data:templates});if(url.hostname==='graph.facebook.com')return Response.json({id:'synthetic-happytohelp-media',url:'https://lookaside.fbsbx.com/synthetic-happytohelp-media'});assert.ok(['api.twilio.com','files.slack.com','lookaside.fbsbx.com'].includes(url.hostname));const response=mediaResponses.shift();return new Response(response?.body??'synthetic attachment',{status:response?.status??200,headers:{'Content-Type':'text/plain',...response?.headers}})}assert.ok(['api.twilio.com','graph.facebook.com','slack.com'].includes(url.hostname));sends.push(entry);const reply=responses.shift();if(reply?.disconnect)throw Error('Network edge lost response');return new Response(JSON.stringify(reply?.body??{sid:'synthetic-happytohelp-3',message_id:'synthetic-happytohelp-4',messages:[{id:'synthetic-happytohelp-5'}],ok:true,ts:'1710000000.3'}),{status:reply?.status??200});}});
  const ws=await app.seedWorkspace('support-channels'),other=await app.seedWorkspace('support-channels-foreign'),root=`/api/support-channels/projects/${ws.projectId}`,token=ws.tokens.owner;
  const call=(p,body,options={})=>app.ok(root+p,{token,body,...options});
  const input=p=>({provider:p,account:'synthetic-happytohelp-account-'+p,sender:p==='sms'?'+12025550123':p==='slack'?'U12345':'synthetic-happytohelp-page',token:credential,signing_secret:secret,channels:['C12345678'],registered:true});
  const connect=async(p,extra={})=>(await call('/connections',{...input(p),...extra})).data;
  const event=(p,options={})=>{const n=options.id??randomUUID(),sender=options.sender??(p==='sms'?'+12025550124':'synthetic-happytohelp-customer'),text=options.text??'Please help with my order';
-  if(p==='sms')return new URLSearchParams({AccountSid:input(p).account,To:input(p).sender,From:sender,MessageSid:n,Body:text,NumMedia:options.media?'1':'0'}).toString();
-  if(p==='slack')return JSON.stringify({team_id:input(p).account,event_id:n,event:{type:'message',channel:options.channel??'C12345678',user:sender,ts:options.thread??'1710000000.1',text,...(options.media?{files:[{id:'synthetic-happytohelp-file'}]}:{}),...(options.subtype?{subtype:options.subtype}:{})}});
-  if(p==='whatsapp')return JSON.stringify({entry:[{id:input(p).account,changes:[{value:{metadata:{phone_number_id:input(p).sender},messages:[{timestamp:String(Math.floor((options.at??Date.now())/1000)),id:n,from:sender,type:options.media?'image':'text',text:{body:text}}]}}]}]});
-  return JSON.stringify({entry:[{id:input(p).account,messaging:[{timestamp:options.at??Date.now(),sender:{id:sender},recipient:{id:input(p).sender},message:{mid:n,text,...(options.media?{attachments:[{type:'image'}]}:{})}}]}]});
+  if(p==='sms')return new URLSearchParams({AccountSid:input(p).account,To:input(p).sender,From:sender,MessageSid:n,Body:text,NumMedia:options.media?'1':'0',...(options.validMedia?{MediaUrl0:'https://api.twilio.com/2010-04-01/Accounts/'+input(p).account+'/Messages/'+n+'/Media/synthetic-happytohelp-media',MediaContentType0:'text/plain'}:{})}).toString();
+  if(p==='slack')return JSON.stringify({team_id:input(p).account,event_id:n,event:{type:'message',channel:options.channel??'C12345678',user:sender,ts:options.thread??'1710000000.1',text,...(options.media?{files:[{id:'synthetic-happytohelp-file',...(options.validMedia?{url_private:'https://files.slack.com/files-pri/synthetic-happytohelp-media',mimetype:'text/plain',name:'support.txt'}:{})}]}:{}),...(options.subtype?{subtype:options.subtype}:{})}});
+  if(p==='whatsapp')return JSON.stringify({entry:[{id:input(p).account,changes:[{value:{metadata:{phone_number_id:input(p).sender},messages:[{timestamp:String(Math.floor((options.at??Date.now())/1000)),id:n,from:sender,type:options.media?'document':'text',text:{body:text},...(options.validMedia?{document:{id:'synthetic-happytohelp-media',mime_type:'text/plain',filename:'support.txt',caption:text}}:{})}]}}]}]});
+  return JSON.stringify({entry:[{id:input(p).account,messaging:[{timestamp:options.at??Date.now(),sender:{id:sender},recipient:{id:input(p).sender},message:{mid:n,text,...(options.media?{attachments:[{type:'file',...(options.validMedia?{payload:{url:'https://lookaside.fbsbx.com/synthetic-happytohelp-media'}}:{})}]}:{})}}]}]});
  };
  const signed=(c,p,raw,now=String(Math.floor(Date.now()/1000)))=>{
   const url=app.origin+'/api/support-channels/webhooks/'+c.id;
@@ -25,7 +25,7 @@ export async function channelHarness(){
  const deliver=(c,p,raw,headers=signed(c,p,raw))=>app.call('/api/support-channels/webhooks/'+c.id,{body:raw,raw:true,headers});
  const ticket=async c=>app.first('SELECT * FROM support_channel_threads WHERE connection_id=? ORDER BY last_inbound_at DESC',c.id);
  const reply=async(t,{localId=randomUUID(),content='We can help.',...extra}={})=>{const current=await app.ok('/api/conversations/'+t.conversation_id,{token});return app.ok('/api/conversations/'+t.conversation_id+'/messages',{token,body:{localId,content,expectedRevision:current.revision,authoring:{kind:'human'},...extra}});};
- return {app,ws,other,root,token,call,input,connect,event,signed,deliver,ticket,reply,sends,responses,close:()=>app.close()};
+ return {app,ws,other,root,token,call,input,connect,event,signed,deliver,ticket,reply,sends,responses,mediaResponses,templates,close:()=>app.close()};
 }
 export async function credentials(){const h=await channelHarness();try{
  assert.deepEqual((await h.app.call('/_test/unclassified-routes')).data,[],'channel settings, consent and provider ingress have explicit role rules');
@@ -37,7 +37,7 @@ export async function credentials(){const h=await channelHarness();try{
  const next=await h.connect('sms');assert.equal(next.id,c.id);assert.equal((await h.deliver(next,'sms',raw)).status,200);
  assert.ok((await h.app.sql("SELECT action FROM audit_events WHERE action LIKE 'support_channel.%'")).length>=3);
  }finally{await h.close();}}
-export async function exchange(providers=['sms','whatsapp','instagram','messenger']){const h=await channelHarness();try{
+export async function exchange(providers=['sms','whatsapp','instagram','messenger']){await mediaExchange();await templateExchange();const h=await channelHarness();try{
  for(const p of providers){const c=await h.connect(p),raw=h.event(p);
   assert.equal((await h.deliver(c,p,raw,{})).status,401);assert.equal((await h.deliver(c,p,raw+' ',h.signed(c,p,raw))).status,401);
   assert.equal((await h.deliver(c,p,h.event(p,{media:true}))).status,422);
@@ -72,4 +72,32 @@ export async function erasure(){const h=await channelHarness();try{
  }finally{await h.close();}}
 export async function uncertainty(){const h=await channelHarness();try{
  for(const response of [{status:500},{disconnect:true},{status:400}]){const p='sms',c=await h.connect(p);await h.deliver(c,p,h.event(p,{sender:'+1202555012'+(h.sends.length+5)}));const t=await h.ticket(c);h.responses.push(response);const message=await h.reply(t);const count=h.sends.length;const state=(await h.call('/conversations/'+t.conversation_id)).data.sends[0].state;assert.equal(state,response.status===400?'failed':'uncertain');await h.app.scheduled();assert.equal(h.sends.length,count,'recovery does not replay channel sends');assert.equal(supportChannelArchiveRow('support_channel_sends',{state:'sending'}).state,'uncertain');assert.ok(message.accepted);}
+ }finally{await h.close();}}
+
+async function mediaExchange(){const h=await channelHarness();try{
+ for(const p of ['sms','whatsapp','instagram','messenger','slack']){
+  const c=await h.connect(p),raw=h.event(p,{media:true,validMedia:true,text:''});assert.equal((await h.deliver(c,p,raw)).status,200);const t=await h.ticket(c);
+  let transcript=await h.app.ok('/api/conversations/'+t.conversation_id+'/messages',{token:h.token});assert.equal(transcript.messages.length,1);assert.equal(transcript.messages[0].media.length,1);
+  const f=transcript.messages[0].media[0],download='/api/conversations/'+t.conversation_id+'/media/'+f.id;
+  assert.equal((await h.app.call(download,{token:h.token})).data,'synthetic attachment');assert.equal((await h.app.call(download,{token:h.other.tokens.owner})).status,404);
+  await h.deliver(c,p,raw);transcript=await h.app.ok('/api/conversations/'+t.conversation_id+'/messages',{token:h.token});assert.equal(transcript.messages.length,1);assert.equal(transcript.messages[0].media.length,1);
+  const file=await h.app.ok('/api/conversations/'+t.conversation_id+'/media',{token:h.token,raw:true,body:'synthetic outbound attachment',headers:{'Content-Type':'text/plain','X-Filename':'answer.txt'}});
+  await h.reply(t,{content:'',mediaIds:[file.id]});assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].state,'accepted');
+  const sent=h.sends.at(-1),grant=p==='sms'?new URLSearchParams(sent.body).get('MediaUrl'):p==='whatsapp'?JSON.parse(sent.body).document.link:p==='slack'?JSON.parse(sent.body).attachments[0].title_link:JSON.parse(sent.body).message.attachment.payload.url;
+  assert.ok(grant.startsWith('https://app.example/api/support-channels/attachments/'));assert.equal((await h.app.call(new URL(grant).pathname)).data,'synthetic outbound attachment');
+  await h.call('/connections/'+c.id,undefined,{method:'DELETE'});assert.equal((await h.app.call(new URL(grant).pathname)).status,404);
+ }
+ const c=await h.connect('sms');h.mediaResponses.push({status:302,headers:{location:'https://untrusted.example/private'}});assert.equal((await h.deliver(c,'sms',h.event('sms',{sender:'+12025550128',media:true,validMedia:true}))).status,422);assert.ok(!h.app.requests.some(r=>r.url.includes('untrusted.example')));
+ h.mediaResponses.push({headers:{'content-length':'10000001'}});assert.equal((await h.deliver(c,'sms',h.event('sms',{sender:'+12025550129',media:true,validMedia:true}))).status,413);
+ }finally{await h.close();}}
+async function templateExchange(){const h=await channelHarness();try{
+ const c=await h.connect('whatsapp');await h.deliver(c,'whatsapp',h.event('whatsapp'));const t=await h.ticket(c),path='/conversations/'+t.conversation_id+'/templates';
+ const send=async(extra={})=>h.app.call(h.root+path,{token:h.token,body:{template_id:h.templates[0].id,local_id:randomUUID(),parameters:['123'],expected_revision:(await h.app.ok('/api/conversations/'+t.conversation_id,{token:h.token})).revision,...extra}});
+ await h.app.db.prepare('UPDATE support_channel_threads SET last_inbound_at=0 WHERE id=?').bind(t.id).run();assert.equal((await send()).status,409);assert.equal(h.sends.length,0);
+ await h.deliver(c,'whatsapp',h.event('whatsapp',{text:'I agree to WhatsApp support updates'}));await h.app.db.prepare('UPDATE support_channel_threads SET last_inbound_at=0 WHERE id=?').bind(t.id).run();
+ assert.equal((await h.call(path)).data.length,1);assert.equal((await send({template_id:'unapproved'})).status,409);assert.equal((await send({parameters:[]})).status,400);
+ h.templates[0].status='PAUSED';assert.equal((await send()).status,409);h.templates[0].status='APPROVED';
+ const revision=(await h.app.ok('/api/conversations/'+t.conversation_id,{token:h.token})).revision,local_id=randomUUID();assert.equal((await send({expected_revision:revision,local_id})).status,200);assert.equal((await send({expected_revision:revision,local_id})).status,200);assert.equal(h.sends.length,1);assert.equal(JSON.parse(h.sends[0].body).type,'template');
+ await h.reply(t);assert.equal(h.sends.length,1,'a template does not reopen the free-text window');
+ await h.deliver(c,'whatsapp',h.event('whatsapp',{text:'STOP'}));assert.equal((await send()).status,409);await h.call('/connections/'+c.id,undefined,{method:'DELETE'});await h.connect('whatsapp');await h.deliver(c,'whatsapp',h.event('whatsapp',{text:'I agree to WhatsApp support updates'}));assert.equal((await send()).status,409);assert.equal(h.sends.length,1);
  }finally{await h.close();}}

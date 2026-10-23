@@ -40,6 +40,10 @@
     {
       "id": "250_support_channels.sql",
       "buyerSteps": "CHANNELS-001/002: add isolated support-channel connections, scoped text threads, delivery claims and contact-erasure fences. Back up D1, R2 and private configuration; apply before the updated Worker serves traffic, without resetting or editing prior migration ledger rows. Configure authorized provider accounts explicitly. Restored connections are disconnected and pending sends are uncertain; opt-out and erasure fences remain. Media, Teams, approved continuation templates and live provider qualification remain pending."
+    },
+    {
+      "id": "251_support_channel_media.sql",
+      "buyerSteps": "CHANNELS-001: apply after 250 with D1/R2/private settings backed up. Adds attachment grants and explicit WhatsApp continuation consent without changing existing consent. Temporary attachment grants never export; opt-out stays fenced. Live provider qualification remains required."
     }
   ]
 }

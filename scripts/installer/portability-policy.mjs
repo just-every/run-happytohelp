@@ -15,6 +15,7 @@ export const archivePolicy={
  // Reconstruct the full-text index from retained messages after restore.
  derivedTables:['inbox_message_search'],
  excludeTables:[
+  'support_channel_attachment_grants',
   'escalation_attachment_grants',
   'workflow_clock',
   'operator_notification_activity','operator_notifications',

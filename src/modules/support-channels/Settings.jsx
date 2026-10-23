@@ -13,7 +13,7 @@ export default function ChannelSettings({projectId,role}){
  if(!allowed)return <p role="alert">Only workspace owners and administrators can manage support channels.</p>;
  return <div className="workspace-settings connections-page" style={{maxWidth:800,overflowWrap:'anywhere'}} aria-busy={busy}>
   <p>Receive customer messages in the shared inbox and reply in their original channel.</p>
-  <p className="alert alert-warning">Text support is available for qualification. Media intake and sending, approved WhatsApp continuation templates, and live provider acceptance remain pending. Teams shared-channel intake is unavailable.</p>
+  <p className="alert alert-warning">Messaging and attachments are available for qualification. Live provider acceptance remains pending. Teams shared-channel intake is unavailable.</p>
   {error&&<p role="alert" className="alert alert-danger">{error}</p>}{notice&&<p role="status" className="alert alert-info">{notice}</p>}
   <h2>Connect a support channel</h2>
   <p>Install an authorized provider app first. Use only the account and customer channels it can access. Slack needs chat:write, channels:history and files:read for the selected shared channels; notifications alone do not provide intake.</p>
@@ -25,7 +25,7 @@ export default function ChannelSettings({projectId,role}){
    <label>{provider==='sms'?'Twilio auth token for signature verification':'App signing secret'}<input className="form-control" name="signing_secret" type="password" autoComplete="new-password" required/></label>
    {provider==='slack'&&<label>Allowed customer channel IDs (comma separated)<input className="form-control" name="channels" required placeholder="C12345678, C23456789"/></label>}
    {provider==='sms'&&<label><input name="registered" type="checkbox" required/> I have completed the provider’s A2P 10DLC registration for this US sender.</label>}
-   <p>Credentials are encrypted and never read back. Reconnecting the same account preserves opt-out and erasure fences. A teammate cannot override customer opt-out. After a reply window expires, wait for the customer; approved template continuation is pending.</p>
+   <p>Credentials are encrypted and never read back. Reconnecting the same account preserves opt-out and erasure fences. A teammate cannot override customer opt-out. After a WhatsApp reply window expires, choose an approved utility template in the ticket. The customer must first send “I agree to WhatsApp support updates”. STOP remains fenced.</p>
    <button className="btn btn-primary" disabled={busy}>Save support channel</button>
   </form>
   {verify&&<section className="alert alert-info"><h2>Configure provider webhook</h2><p>Webhook: <code>{verify.webhook_url}</code></p><label>Verification token (shown once)<input className="form-control" value={verify.verify_token} readOnly/></label><button className="btn btn-outline-secondary mt-2" onClick={()=>setVerify(null)}>Dismiss verification token</button></section>}

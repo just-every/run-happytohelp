@@ -1796,7 +1796,7 @@
       "executable": false
     },
     "docs/support-channels.md": {
-      "sha256": "57b3eb1324dc32817cbb9f8a89b9bbab523244e6ca04d343358ebd820ae4fbf2",
+      "sha256": "6d2b0089f00e79f86311a0a94299a14399ce192650fb270eb59fb99f05b19c8a",
       "executable": false
     },
     "docs/tickets.md": {
@@ -2560,7 +2560,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "0c107195419ebc5c96a695cd8b13121c160f0ede96d87bc3d8e6d12cccddc20b",
+      "sha256": "c50b45e2222de15df686b8a1ccf066d5d773dcd767e5131374225b741a063fa5",
       "executable": false
     },
     "rer-project.json": {
@@ -2936,7 +2936,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "3a92b19f4aa9213a2a2f938775bdb7450d0d974b07cba4155e12811442b72cdd",
+      "sha256": "357f7e1a57a6e7d60e42e4302bc6a9c2d0050ff61d735652a4ba9fd6dfbb185d",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -6604,7 +6604,7 @@
       "executable": false
     },
     "src/modules/support-channels/inbound.ts": {
-      "sha256": "2eca2eb289c8524d1bb2b9d7afa311b4acf5ca0ebcf91977944da7f7fe79a0cd",
+      "sha256": "c00c65e49b574243aef250ef6becae001feb2869176c05e5c051a9b711c574e1",
       "executable": false
     },
     "src/modules/support-channels/MessageChannelStatus.jsx": {
@@ -6616,11 +6616,11 @@
       "executable": false
     },
     "src/modules/support-channels/outbound.ts": {
-      "sha256": "b8f7a92ad92d59ebe7ffcde4fb717600a1ebbc5353842cb42fd3d729dded2044",
+      "sha256": "b41ae409df5c3f1f0ee10f2b7341cff5e0ad7f96e88b94650a870bc2eda67aaa",
       "executable": false
     },
     "src/modules/support-channels/permissions.ts": {
-      "sha256": "2ce21249fdbe33438e1fa1658fe8c9bddd95f96744fd90f81cb3b481933834b3",
+      "sha256": "a7883926d0af097ee1dc61b2461418f107df770ad3ed515d468d89a3c353658a",
       "executable": false
     },
     "src/modules/support-channels/presentation.ts": {
@@ -6628,23 +6628,23 @@
       "executable": false
     },
     "src/modules/support-channels/protocol.ts": {
-      "sha256": "43dca85da58fed9652d26c2b660fa5eee364708ae76e7600a18c8f863f0473de",
+      "sha256": "8ab4dde4d5de7ce5f6b8d8f7907d611b2aa0697676fcb005133e6369073c4d73",
       "executable": false
     },
     "src/modules/support-channels/routes.ts": {
-      "sha256": "bfdb56f30f5bb76519f5eebf7f3f9ee639f959f255570feefaeb419258382cbe",
+      "sha256": "0381f000d4878b56a0d255cb85ed90cca06a0009708aac20c861b1fab9f4759b",
       "executable": false
     },
     "src/modules/support-channels/Settings.jsx": {
-      "sha256": "1072122c8b149fce32b5cb390ab1c50ec455835676a20719e8a3b050ab2219c2",
+      "sha256": "18d2c5834dc8b550513e30e750165c6a71867564d360e52a86b2a26df46b8cf8",
       "executable": false
     },
     "src/modules/support-channels/settings.ts": {
-      "sha256": "eb5c2cdbe0951cc16154ba231e7e604c84267e6d990cde9620eda3facda5fd32",
+      "sha256": "37367819545b07e21d290b436dd4a31c631efb694cfb554a729e5d6b34205a88",
       "executable": false
     },
     "src/modules/support-channels/TicketChannel.jsx": {
-      "sha256": "c53c96ddbb21e646cab6a9e66969f4407ffd7995d266dd603fe1c957a5fb05e5",
+      "sha256": "3e36547ee4248192dab230e2d319fac1c376b653e366e012c82b0002b4837d3f",
       "executable": false
     },
     "src/modules/tickets/batch-workflows.ts": {
@@ -11524,7 +11524,7 @@
       "executable": false
     },
     "tests/helpers/support-channels/journeys.mjs": {
-      "sha256": "1243d28d395fb569c78c0f58d67e937373436c81eefee3d620cb0ca03a48be86",
+      "sha256": "224fade500c0cd7070874992cf591158a58496485ab764a38d42d6ceb5b4d2cd",
       "executable": false
     },
     "tests/helpers/training-readiness.mjs": {

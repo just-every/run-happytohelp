@@ -2896,7 +2896,7 @@
       "executable": false
     },
     "scripts/independent/delegation-backup.py": {
-      "sha256": "9e15c3f10b8642d5100703e3bed79c3a1ee5c1f48420b20ec623c8098cd95193",
+      "sha256": "5a3d37cc1a04cca8abc7d4912d81dedf2460b71d73a66131beb2a87feff80baf",
       "executable": false
     },
     "scripts/independent/setup-build.mjs": {

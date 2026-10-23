@@ -37,6 +37,10 @@ def sanitize(sql):
         db.executescript(sql)
         db.execute('PRAGMA foreign_keys=OFF')
         tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        # Switched-workspace SSO sessions still depend on their original IdP.
+        # Remove them before dropping the binding; native password sessions stay.
+        if 'sessions' in tables and 'enterprise_sessions' in tables:
+            db.execute('DELETE FROM sessions WHERE token_hash IN (SELECT token_hash FROM enterprise_sessions)')
         for table in CREDENTIAL_TABLES:
             if table in tables:
                 db.execute(f'DELETE FROM "{table}"')

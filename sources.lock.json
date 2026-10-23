@@ -11108,7 +11108,7 @@
       "executable": false
     },
     "tests/helpers/helpscout-sync.mjs": {
-      "sha256": "859e110a3f98f1ee1b6fcf5dac57ddee9c6e82cb15f45fc98f48cc210b4b7ba7",
+      "sha256": "91bf28b1700b67caf1d12479581fed1c73587d73fd3cb4da351ecdeb6308b00c",
       "executable": false
     },
     "tests/helpers/hero/article-capability.mjs": {

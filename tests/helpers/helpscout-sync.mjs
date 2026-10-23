@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
+import {execFileSync} from 'node:child_process'
 import {startApp} from '../journeys/kit/app.mjs'
 import {customer,history} from '../move-in/helpscout-fixtures.mjs'
 
@@ -77,6 +78,10 @@ export async function helpScoutSyncJourney(){
   assert.equal((await sync()).status,410);assert.equal((await app.first('SELECT count(*) n FROM helpscout_sync_receipts')).n,2)
   histories[0].conversation.subject='A changed copy';assert.equal((await sync()).status,410)
   assert.equal((await app.first('SELECT count(*) n FROM native_integration_events')).n,0,'staging emits no native support event')
-  const {archivePolicy}=await import('../../scripts/installer/portability-policy.mjs');for(const table of ['helpscout_connections','helpscout_sync_receipts','helpscout_webhook_receipts'])assert.ok(archivePolicy.excludeTables.includes(table),'restore does not transplant '+table)
+  // Installer policy imports Wrangler, which configures process-wide network
+  // handling. Keep its complete credential-exclusion assertion in a child so
+  // later provider-edge journeys retain their own loopback transport.
+  const policy=new URL('../../scripts/installer/portability-policy.mjs',import.meta.url).href
+  execFileSync(process.execPath,['--input-type=module','-e',`import assert from 'node:assert/strict';const {archivePolicy}=await import(${JSON.stringify(policy)});for(const table of ['helpscout_connections','helpscout_sync_receipts','helpscout_webhook_receipts'])assert.ok(archivePolicy.excludeTables.includes(table),'restore does not transplant '+table);process.exit(0)`],{timeout:30000,stdio:'pipe'})
  }finally{await app.close()}
 }

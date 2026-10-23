@@ -1,9 +1,9 @@
-import {MobileMemory,clearMemory,type MobileCredential,type MobileSession,type TicketSnapshot,type MobileDraft,type DraftFile,type ConnectionState,type PurgeReason} from './client-state'
+import {MobileMemory,clearMemory,type MobileCredential,type MobileSession,type TicketSnapshot,type MobileDraft,type DraftFile,type ConnectionState,type PurgeReason,type MobileApproval,type MobileApprovalReceipt} from './client-state'
 import {MobileClientError,MobileTransport,type MobileFetch} from './client-transport'
 import type {MobileScope} from './authority'
 import type {Authoring} from '../outcomes/provenance'
 export {MobileClientError} from './client-transport'
-export type {MobileCredential,MobileSession,TicketSnapshot,MobileDraft,ConnectionState,PurgeReason} from './client-state'
+export type {MobileCredential,MobileSession,TicketSnapshot,MobileDraft,ConnectionState,PurgeReason,MobileApproval,MobileApprovalReceipt} from './client-state'
 const json=(body:unknown):RequestInit=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
 const ticketPath=(id:string)=>'/tickets/'+encodeURIComponent(id)
 
@@ -144,12 +144,12 @@ export class MobileClient {
  async assign(id:string,assignee:string|null){return this.#change(id,'assignment','assign',{assignee})}
  async note(id:string,content:string,mediaIds:string[]=[]){return this.#change(id,'notes','notes',{content,mediaIds})}
  async approvals(id:string){
-  this.#requireOnline('approval');return this.#resource(id+'/approvals',ticketPath(id)+'/approvals')
+  this.#requireOnline('approval');return this.#resource<{approvals:MobileApproval[]}>(id+'/approvals',ticketPath(id)+'/approvals')
  }
  async approveFollowUp(id:string,jobId:string,proposalId:string){
   this.#requireOnline('approval');const snapshot=this.#memory.tickets.get(id)
   if(!snapshot)throw new MobileClientError('Refresh this ticket before approving')
-  const result=await this.#transport.request(ticketPath(id)+'/approvals/'+encodeURIComponent(jobId)+'/follow-ups/'+encodeURIComponent(proposalId),json({frontier:snapshot.frontier}))
+  const result=await this.#transport.request<{receipt:MobileApprovalReceipt}>(ticketPath(id)+'/approvals/'+encodeURIComponent(jobId)+'/follow-ups/'+encodeURIComponent(proposalId),json({frontier:snapshot.frontier}))
   this.#memory.invalidate();this.#notify();return result
  }
  async adoptReply(id:string,jobId:string,proposalId:string|null){

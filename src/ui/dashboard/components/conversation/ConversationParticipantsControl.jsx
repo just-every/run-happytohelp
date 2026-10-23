@@ -39,9 +39,10 @@ export default function ConversationParticipantsControl({ conversation }) {
                 { requester && <li className="is-requester"><span title="Requester">{ address(requester) }</span></li> }
                 { participants.map(participant => {
                     const email = participant.provided_email || participant.email;
+                    // The address describes its Remove, which is named for the action like every row's control.
                     return <li key={ `participant-${participant.id}` }>
-                        <span>{ address(email) }</span>
-                        <button type="button" className="btn btn-link" disabled={ removing !== null } { ...tooltip('Remove participant') } onClick={ () => removeParticipant(participant.pivot.id) }>
+                        <span id={ `participant-${participant.id}-address` }>{ address(email) }</span>
+                        <button type="button" className="btn btn-link" disabled={ removing !== null } { ...tooltip('Remove participant') } aria-describedby={ `participant-${participant.id}-address` } onClick={ () => removeParticipant(participant.pivot.id) }>
                             <ReplyIcon name="x" />
                         </button>
                     </li>;

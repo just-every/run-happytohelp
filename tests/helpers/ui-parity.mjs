@@ -134,7 +134,7 @@ export async function verifyAssistantParity(page,{origin,projectId,checks}) {
   assert.equal(await page.getByLabel('Default responder for non-logged in users',{exact:true}).inputValue(),id);
   assert.equal(await page.getByLabel('Allow human responders',{exact:true}).isChecked(),true);
   await page.getByLabel('Default responder for non-logged in users',{exact:true}).selectOption('-');await save(page);
-  const toggle=page.locator('.settings-section').filter({has:page.getByRole('heading',{name:'Browser assistant',exact:true})}).getByRole('checkbox',{name:'Enable assistant',exact:true});
+  const toggle=page.getByRole('checkbox',{name:'Enable assistant',description:'Browser assistant',exact:true});
   await Promise.all([page.waitForResponse(r=>r.url().endsWith(`/ais/${id}`)&&r.request().method()==='PUT'),toggle.click()]);await page.reload();
   assert.equal(await toggle.isChecked(),false);
   await Promise.all([page.waitForResponse(r=>r.url().endsWith(`/ais/${id}`)&&r.request().method()==='PUT'),toggle.click()]);await page.reload();

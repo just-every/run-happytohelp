@@ -2928,7 +2928,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "0612be94f8e8c6c86b95b49fc8f05c0686ee2fa51f485e2716ad16e5b0db6671",
+      "sha256": "3a92b19f4aa9213a2a2f938775bdb7450d0d974b07cba4155e12811442b72cdd",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -3160,7 +3160,7 @@
       "executable": false
     },
     "src/app.ts": {
-      "sha256": "c0ad373f9f772b3229a8be2d2213ad05c351e0ca8671ec6bdb1876b188f534a0",
+      "sha256": "187936a7018341146a009a6bf887e6f46db4b3595eeba0d96c01a1ef81f34ae4",
       "executable": false
     },
     "src/base/deployment-health.ts": {
@@ -3396,7 +3396,7 @@
       "executable": false
     },
     "src/message-effects.ts": {
-      "sha256": "cf48b80dcc8eaef1f1b366f0dd891cd27264d4cb6d1d7c29a849abc4e6517ab7",
+      "sha256": "3cd13bd882792df0823d53879defc7a3840350aeeab47b1767db6e8d5936226d",
       "executable": false
     },
     "src/modules/access/assign.ts": {
@@ -7988,7 +7988,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationSidebar.jsx": {
-      "sha256": "199d294b784b7dfd6b1808b0fe73a636abd3978af6b850d4356f077c3f6aae1f",
+      "sha256": "f3396283f2b9069df7bb44dbc4c57d37571f179d4eae74ed8498bf454bb8fac3",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationsList.jsx": {
@@ -10104,7 +10104,7 @@
       "executable": false
     },
     "src/ui/native/settings-destinations.js": {
-      "sha256": "96858c4daed0207ac8a1d75d89034e900617946ccaf43b44503f90c1e47d8d30",
+      "sha256": "b65f1fe2d39530650daaa676beb53f8037051df6ebfd8bf20d80a7401a2e43ba",
       "executable": false
     },
     "src/ui/native/SettingsNavigation.jsx": {
@@ -10168,7 +10168,7 @@
       "executable": false
     },
     "src/ui/native/workspace-page-code.js": {
-      "sha256": "6b2bad1b0bc8456bce0feb8db8a58c0d9b0301d000513082414a496744d9d766",
+      "sha256": "c732b5146dff7405211f0cd3f42b4b81105573c143ecf7ad312e65f223dbc2ab",
       "executable": false
     },
     "src/ui/native/workspace-scope.ts": {
@@ -10180,7 +10180,7 @@
       "executable": false
     },
     "src/ui/native/WorkspacePages.jsx": {
-      "sha256": "0cb61f56ea2f1c25a809d4abc15e8d95abf5bc2c360121c1a125d98e2794dfb6",
+      "sha256": "9e84ea77882c9b1feb3e71680c49d375d8e09df7e18633e99f8eb8a596b7baf9",
       "executable": false
     },
     "src/ui/native/WorkspaceSidebarArtwork.jsx": {
@@ -10500,11 +10500,11 @@
       "executable": false
     },
     "tests/connections/api.mjs": {
-      "sha256": "ad953bb783bb36c016c79a1b2bf353ff672d71b6dc35575938f397f040f6b48d",
+      "sha256": "d0a131e6d424249452e89556378603394aa67692354f6d650c82b2a66df2743f",
       "executable": false
     },
     "tests/connections/browser-network.mjs": {
-      "sha256": "3a255a9fd665d3ec620dedb695861e3fd1a832057afc48885cc84f4bafcbc338",
+      "sha256": "604125d39e9634313f0868232cbd8c7e92e90c2f7429980b5b6049c56cc69709",
       "executable": false
     },
     "tests/connections/claims.mjs": {
@@ -10512,7 +10512,7 @@
       "executable": false
     },
     "tests/connections/delivery.mjs": {
-      "sha256": "7a0eec3cca70569dd1a734a6d428fe6cc7dfed0e8f25ede3c61a25326a6693f8",
+      "sha256": "45d7564208a979ae0abb4d5f0fa13d1067cef1f8eac65df589ffdb53ce0cbb90",
       "executable": false
     },
     "tests/connections/docs.mjs": {
@@ -10556,7 +10556,7 @@
       "executable": false
     },
     "tests/connections/slack.mjs": {
-      "sha256": "98b333be37029e346cc6378a8e224d745209e0339cdd4068abf65ee58a99604d",
+      "sha256": "3ae2d4b1110efb14d9f84bb6ded00756f8a2d1ae6f6ab0b30e19699c2d9f168b",
       "executable": false
     },
     "tests/connections/worker.ts": {
@@ -11616,7 +11616,7 @@
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {
-      "sha256": "ff68a2592bc7b72846823a3728563a20b407eaf04ad88d642d1e96f2e1961a97",
+      "sha256": "5c1f456edb743ced432dd677e7b8525d7e474b8cef9a53fbc04cda40a22f6efc",
       "executable": false
     },
     "tests/journeys/connections.mjs": {

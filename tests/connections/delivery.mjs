@@ -36,6 +36,7 @@ test('response timeout remains uncertain across dispatch and Worker restart',asy
  }finally{await h.close()}
 });
 test('all server errors and after-send timeout remain uncertain without replay while rate limits retry exact signed delivery within the bounded policy',async()=>{
+ await (await import('../helpers/support-channels/journeys.mjs')).uncertainty();
  const h=await harness();try{
   const a=await webhook(h),uncertain=[];
   // Exercise the management action and actual receiver for the entire 5xx

@@ -154,3 +154,27 @@ entry. Visitor and teammate email is suppressed without storage or external
 sending by the rer dev v2 development transport. Without configured hosted mail,
 email links are unavailable with a plain explanation and the widget promises no email reply.
 Stop the installer or dev terminal with Ctrl+C; closing a browser leaves it running.
+
+## Governed advice procedures and production traces
+
+Open **Knowledge → Evaluation runs → Advice procedures** to create an immutable
+procedure version with an intent, model, read-only tools, human escalation and
+evaluation cost/token limits. Use that version in the evaluation form, inspect
+its failing cases and choose its exact completed evaluation before approving a
+bounded rollout. The server refuses a failed or different-version evaluation.
+Enroll conversations explicitly; approval never hands a human conversation back
+to AI by itself. Revoke tools or stop the rollout without deleting evidence.
+A native attributed reopening stops the exact advice rollout automatically.
+
+In a conversation’s **Ticket → Production AI trace** section, load recorded
+generations, source/version identities, tool scope/timing/denial receipts and raw
+numeric usage. Follow the procedure report to supporting cases. Resolution-cycle
+rates and generation/handoff rates use separate visible denominators. Unknown
+price data stays unavailable, and an attempted read or prepared draft never
+counts as an executed business action. Human attribution corrections cite an exact
+native message, retain prior decisions and adjust reports without undoing a stop.
+
+These procedures govern advice and draft preparation. Refund execution and other
+business-action tools remain unavailable. Historical cited cases have a masked
+local preview; automatic transfer of historical customer text into model replay
+is held pending a privacy and retention ruling.

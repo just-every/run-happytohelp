@@ -1,3 +1,4 @@
+import {tracedTools} from './tool-trace';
 import {handoffTool} from './handoff';
 import type { Env } from '../../platform/env';
 import type { Generation } from './repository';
@@ -24,10 +25,10 @@ export async function executeGenerationProvider(
   effects: GenerationEffects,
   onProviderStarted: () => void,
 ) {
-  let chunkIndex = 0;
   let usageResult: unknown = null;
   const context = await replyContext(env, row.project_id, row.conversation_id, row.kind === 'suggestions' ? 'agent' : 'contact', row.id);
   if (row.kind === 'reply') context.tools.push(handoffTool(env,row,effects));
+  context.tools=tracedTools(env,row,context.tools,checkCurrent);
   if (row.instruction) {
     Object.assign(context.assistPacket, { operator_guidance: { content: row.instruction, visibility: 'private-to-operators' } });
     context.packet.trigger.server_instructions.push({ visibility: 'server-trigger', content: row.instruction });
@@ -40,12 +41,9 @@ export async function executeGenerationProvider(
       if (event.type === 'agent_start') onProviderStarted();
       await saveEvent(env, attemptId, event);
       await checkCurrent();
-      if (row.kind === 'reply' && event.type === 'message_delta' && typeof event.content === 'string' && !event.thinking) {
-        await effects.emit(env, row, {
-          type: 'chunk',
-          payload: { localId: `generation:${row.id}`, chunk: event.content, index: chunkIndex++, agent: context.agent },
-        });
-      }
+      // Customer text is published only by durable message admission. Model
+      // deltas can contain a source revoked mid-turn; sending them here would
+      // bypass the final recipient/source and clean-handoff checks.
     },
     async onUsage(usage: unknown) {
       usageResult = usage;
@@ -97,5 +95,9 @@ export async function executeGenerationProvider(
       trace,
     });
   }), () => demoGeneration(env, row, clientOptions));
-  return { result: row.kind === 'reply' ? {...result, citations: context.selectedCitations} : result, usage: usageResult };
+  if(row.kind==='reply'&&context.followupReview.required){
+    await checkCurrent();
+    await tracedTools(env,row,[handoffTool(env,row,effects)],checkCurrent)[0].function('human');
+  }
+  return { result: row.kind === 'reply' ? {...result, requiresHumanReview:context.followupReview.required,citations: context.selectedCitations} : result, usage: usageResult };
 }

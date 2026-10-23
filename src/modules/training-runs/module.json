@@ -11,7 +11,8 @@
     "migrations/041_training_model_usage.sql"
   ],
   "selectedEditionDependencies": [
-    "runeditrun/base"
+    "runeditrun/base",
+    "runeditrun/ai-support"
   ],
   "runtime": "Workers TypeScript/ESM with edition-owned integration",
   "license": "See docs/SOURCE-PROVENANCE.md; original notices travel with selected source",

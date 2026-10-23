@@ -19,7 +19,7 @@ export async function answersJourney(){
   // Search, cite and answer: the model sees only citable results; `cite(rows)` chooses what to cite.
   let searched
   const answering=(cite,{before}={})=>{let turn=0;return async body=>{
-   turn++;assert.ok(toolNames(body).includes('cite_knowledge')&&toolNames(body).includes('switch_agent'),'the assistant can cite and hand off')
+   turn++;assert.ok(!toolNames(body).includes('propose_knowledge_change')&&!toolNames(body).includes('read_verified_resolution'),'customer-facing generations cannot inspect other customer cases or create knowledge drafts');assert.ok(toolNames(body).includes('cite_knowledge')&&toolNames(body).includes('switch_agent'),'the assistant can cite and hand off')
    if(turn===1)return openaiToolCall('search_knowledge',{query:'refund'},'search')
    if(turn===2){searched=JSON.stringify(body.input);return openaiToolCall('cite_knowledge',{sources:cite()},'cite')}
    await before?.();return 'Refunds are available within 30 days.'
@@ -50,6 +50,97 @@ export async function answersJourney(){
    const raced=await ask('One more time?',answering(()=>current,{before:()=>app.db.prepare(change).run()}));assert.equal(raced.answers.length,0,change)
    await app.db.prepare("UPDATE knowledge_articles SET status='published' WHERE id='a'").run();await app.db.prepare("UPDATE knowledge_datasets SET published_version='v' WHERE id='ds'").run()
   }
+  // Retrieval and citations use the recipient's proven identity, never a typed
+  // address or the wider authority of the operator/provider running the turn.
+  const {createHmac}=await import('node:crypto')
+  const secret=(await app.first('SELECT verification_secret FROM projects WHERE id=?',p)).verification_secret
+  const category=(await app.call(`/api/knowledge/${p}/categories`,{token:a.owner,body:{title:'Private account',audience:'domains',allowedDomains:['trusted.test']},status:201})).data.id
+  const privateArticle=(await app.call(`/api/knowledge/${p}/articles`,{token:a.owner,body:{title:'Private export guide',content:'Privatemarker: reset the export queue using a fresh draft.',categoryIds:[category],status:'published'},status:201})).data.id
+  let privateVersion=(await app.first('SELECT publication_version FROM knowledge_articles WHERE id=?',privateArticle)).publication_version
+  const privateVisitor=async(email,proven=true)=>a.visitor('Member',proven?{identifier:email,email,contact_hash:createHmac('sha256',secret).update(email).digest('hex')}:{email})
+  const privateAnswer=async(visitor,{revoke=false,cite=true}={})=>{
+   let turn=0,observed
+   ai.respond=async body=>{
+    if(++turn===1)return openaiToolCall('search_knowledge',{query:'privatemarker'},'private-search')
+    observed=JSON.stringify(body.input)
+    if(turn===2&&cite&&observed.includes('reset the export queue'))return openaiToolCall('cite_knowledge',{sources:[{id:'article:'+privateArticle,sourceVersion:privateVersion}]},'private-cite')
+    if(revoke)await app.db.prepare('UPDATE contacts SET is_verified=0 WHERE id=?').bind(visitor.contactId).run()
+    return observed.includes('reset the export queue')?'Reset the export queue using a fresh draft.':'I cannot locate approved guidance; ask a teammate.'
+   }
+   await visitor.say('How can I use the privatemarker guidance?');await a.run()
+   return {observed,answers:(await visitor.transcript()).messages.filter(m=>m.actor_role==='ai')}
+  }
+  const member=await privateVisitor('member@trusted.test')
+  const permitted=await privateAnswer(member)
+  assert.match(permitted.observed,/reset the export queue/);assert.equal(permitted.answers.length,1)
+  assert.equal(JSON.parse(permitted.answers[0].citations_json)[0].id,'article:'+privateArticle)
+  for(const visitor of [await privateVisitor('outsider@other.test'),await privateVisitor('typed@trusted.test',false),await a.visitor()]){
+   const denied=await privateAnswer(visitor);assert.doesNotMatch(denied.observed,/reset the export queue/)
+   for(const answer of denied.answers){assert.doesNotMatch(answer.content,/reset the export queue/);assert.deepEqual(JSON.parse(answer.citations_json),[])}
+  }
+  // Reviewed translations are real retrieval evidence, with their own admission identity.
+  const management=(path,body)=>app.call(`/api/knowledge/${p}`+path,{token:a.owner,method:'PUT',body,status:200})
+  await management('/experience',{defaultLocale:'en',locales:['en','fr'],templates:{}})
+  const translate=(content,reviewStatus='reviewed')=>management(`/articles/${privateArticle}/translations/fr`,{title:'Guide privé',content,summary:'',reviewStatus})
+  await translate('Guidemarqueur: réinitialiser la file avec un brouillon neuf.')
+  const localized=async(visitor,{before,query='guidemarqueur',cite=true}={})=>{
+   let turn=0,observed,ref
+   ai.respond=async body=>{
+    if(++turn===1)return openaiToolCall('search_knowledge',{query,locale:'fr'},'localized-search')
+    if(turn===2){
+     observed=JSON.stringify(body.input)
+     const issued=await app.first('SELECT source_id,source_version FROM ai_generation_sources WHERE source_id=? AND source_version LIKE ? ORDER BY rowid DESC LIMIT 1','article:'+privateArticle,'%~fr~%')
+     ref=issued&&{id:issued.source_id,sourceVersion:issued.source_version}
+     if(cite&&observed.includes('Guidemarqueur'))return openaiToolCall('cite_knowledge',{sources:[ref]},'localized-cite')
+    }
+    await before?.();return 'Consultez le guide.'
+   }
+   await visitor.say('Comment utiliser ce guide en français?');await a.run()
+   return {observed,ref,answers:(await visitor.transcript()).messages.filter(m=>m.actor_role==='ai')}
+  }
+  const translated=await localized(await privateVisitor('french@trusted.test'))
+  assert.match(translated.observed,/réinitialiser la file/);assert.equal(translated.answers.length,1)
+  const translatedCitation=JSON.parse(translated.answers[0].citations_json)[0]
+  assert.equal(translatedCitation.locale,'fr');assert.equal(translatedCitation.localeFallback,false);assert.match(translatedCitation.url,/locale=fr/)
+  await translate('Unreviewed French secret', 'draft')
+  const retained=await localized(await privateVisitor('draft-reader@trusted.test'))
+  assert.match(retained.observed,/réinitialiser la file/);assert.doesNotMatch(retained.observed,/Unreviewed French secret/)
+  assert.equal(retained.ref.sourceVersion,translated.ref.sourceVersion,'editing a draft preserves the reviewed identity')
+  const changed=await localized(await privateVisitor('raced-fr@trusted.test'),{before:()=>translate('Guidemarqueur: nouvelle publication.')})
+  assert.equal(changed.answers.length,0,'a translated publication changed mid-answer admits no stale customer draft')
+  const uncited=await localized(await privateVisitor('uncited-fr@trusted.test'),{cite:false,before:()=>translate('Guidemarqueur: troisième publication.')})
+  assert.equal(uncited.answers.length,0,'uncited translated evidence has the same atomic fence')
+  const localeChanged=await localized(await privateVisitor('locale-race@trusted.test'),{before:()=>management('/experience',{defaultLocale:'fr',locales:['en','fr'],templates:{}})})
+  assert.equal(localeChanged.answers.length,0,'changing the configured source language withdraws old locale evidence')
+  await management('/experience',{defaultLocale:'en',locales:['en','fr'],templates:{}})
+  for(const visitor of [await privateVisitor('french@other.test'),await privateVisitor('typed-fr@trusted.test',false),await a.visitor()]){
+   const denied=await localized(visitor);assert.doesNotMatch(denied.observed,/Guidemarqueur|nouvelle publication|troisième publication/)
+  }
+  await app.call(`/api/knowledge/${p}/articles`,{token:a.owner,body:{id:privateArticle,title:'Private export guide',slug:'private-export-guide',content:'Privatemarker: reset the export queue using a fresh draft. Updated source.',status:'published'},status:201})
+  const fallback=await localized(await privateVisitor('fallback@trusted.test'),{query:'privatemarker'})
+  assert.match(fallback.observed,/localeFallback/);assert.match(fallback.observed,/Updated source/)
+  // Select the issued fallback explicitly; the server, not the model, discloses it.
+  let fallbackTurn=0
+  ai.respond=async body=>{
+   if(++fallbackTurn===1)return openaiToolCall('search_knowledge',{query:'privatemarker',locale:'fr'},'fallback-search')
+   if(fallbackTurn===2){const issued=await app.first('SELECT source_id,source_version FROM ai_generation_sources WHERE source_id=? ORDER BY rowid DESC LIMIT 1','article:'+privateArticle);return openaiToolCall('cite_knowledge',{sources:[{id:issued.source_id,sourceVersion:issued.source_version}]},'fallback-cite')}
+   return 'Read the source guidance.'
+  }
+  const fallbackVisitor=await privateVisitor('fallback-cited@trusted.test');await fallbackVisitor.say('Please explain in French');await a.run()
+  const fallbackMessage=(await fallbackVisitor.transcript()).messages.find(m=>m.actor_role==='ai')
+  assert.match(fallbackMessage.content,/Knowledge language fallback: fr → en/)
+  assert.equal(JSON.parse(fallbackMessage.citations_json)[0].localeFallback,true)
+
+  privateVersion=(await app.first('SELECT publication_version FROM knowledge_articles WHERE id=?',privateArticle)).publication_version
+  // Even an uncited source is fenced at final admission. Model deltas never
+  // bypass that fence or leak an answer while the recipient's grant is revoked.
+  const revoked=await privateVisitor('revoked@trusted.test')
+  const upgradePrivate=await app.request(`/api/conversations/${revoked.conversationId}/socket?token=${revoked.token}`,{headers:{Upgrade:'websocket'}})
+  const privateSocket=upgradePrivate.webSocket;privateSocket.accept();const privateFrames=[]
+  privateSocket.addEventListener('message',event=>privateFrames.push(JSON.parse(event.data)))
+  const revokedAnswer=await privateAnswer(revoked,{revoke:true,cite:false})
+  assert.equal(revokedAnswer.answers.length,0);assert.ok(!privateFrames.some(frame=>frame.type==='chunk'),'unadmitted model deltas are never customer-visible');privateSocket.close()
+
   // Asking for a person hands the conversation to a human; the assistant writes nothing more and a person can reply.
   ai.respond=async()=>openaiToolCall('switch_agent',{agent_id:'human'},'handoff')
   const handoff=await a.visitor();await handoff.say('I need a human');await a.run()

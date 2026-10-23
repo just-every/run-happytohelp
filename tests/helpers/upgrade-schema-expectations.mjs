@@ -18,6 +18,8 @@ export const schemaExceptions = [
   {migration: '190_email_step_up.sql', names: ['session_factors'], change: 'Rebuilds only the proof-method CHECK to admit email_link; all four prior columns and rows retained'},
   {migration: '195_restore_trigger_boundaries.sql', names: ['conversation_record_resolution'], change: 'Adds only whitespace before CASE and between END and its comma so the pinned Wrangler SQL splitter retains statement boundaries'},
   {migration: '241_away_reply_not_a_reply.sql', names: ['workflow_changed', 'conversation_record_resolution'], change: "Adds only the away reply's (actor_role 'system') exclusions: its revision bump journals no event and is never an operator reply, and outcomes do not count it as an answer"},
+  {migration: '246_translated_ai_publications.sql', names: ['knowledge_translations'], change: 'Adds nullable publication_version TEXT; every prior column definition is retained'},
+  {migration: '247_help_domain_publication.sql', names: ['knowledge_experience'], change: "Adds nullable published_host TEXT and link_color TEXT NOT NULL DEFAULT ''; every prior column definition is retained"},
   {migration: '0110_move_in.sql', names: ['context_message_added', 'context_message_removed'], change: 'WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences ...) inserted before BEGIN'},
 ];
 
@@ -94,6 +96,8 @@ const tableChanges = [
   {migration: '132_ticket_erasure.sql', table: 'contact_erasures', sql: 'ALTER TABLE contact_erasures ADD COLUMN ticket_records INTEGER NOT NULL DEFAULT 0'},
   {migration: '170_knowledge_experience.sql', table: 'knowledge_categories', sql: `ALTER TABLE knowledge_categories ADD COLUMN audience TEXT NOT NULL DEFAULT 'public' CHECK(audience IN ('public','signed-in','domains')); ALTER TABLE knowledge_categories ADD COLUMN allowed_domains TEXT NOT NULL DEFAULT '[]'`},
   {migration: '170_knowledge_experience.sql', table: 'knowledge_articles', sql: 'ALTER TABLE knowledge_articles ADD COLUMN editor_id TEXT'},
+  {migration: '246_translated_ai_publications.sql', table: 'knowledge_translations', sql: 'ALTER TABLE knowledge_translations ADD COLUMN publication_version TEXT'},
+  {migration: '247_help_domain_publication.sql', table: 'knowledge_experience', sql: "ALTER TABLE knowledge_experience ADD COLUMN published_host TEXT; ALTER TABLE knowledge_experience ADD COLUMN link_color TEXT NOT NULL DEFAULT ''"},
   {migration: '190_email_step_up.sql', table: 'session_factors', sql: `CREATE TABLE session_factors_email(token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL,method TEXT NOT NULL CHECK(method IN ('password','email_link','totp','webauthn','recovery','installation')),verified_at INTEGER NOT NULL); DROP TABLE session_factors; ALTER TABLE session_factors_email RENAME TO session_factors`},
 ];
 const messageSubjectTrigger = 'CREATE TRIGGER context_message_added AFTER INSERT ON messages WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=NEW.project_id AND f.conversation_id=NEW.conversation_id) BEGIN UPDATE context_subjects SET revision=revision+1 WHERE project_id=NEW.project_id AND subject_id IN (SELECT contact_id FROM conversations WHERE id=NEW.conversation_id AND project_id=NEW.project_id UNION SELECT NEW.actor_id); END';

@@ -31,11 +31,43 @@
   "pendingMigrations": [
     {
       "id": "240_operator_presence.sql",
-      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings → Availability."
+      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings \u2192 Availability."
     },
     {
       "id": "241_away_reply_not_a_reply.sql",
       "buyerSteps": "WIDGET-001: the workspace's away message is no longer a reply for automations or outcomes. Rules for an operator reply, and time since the last one, wait for a teammate or an assistant, and a conversation an assistant resolves after the away message records AI. Apply after 240 and before the updated Worker serves traffic; it redefines two triggers and changes no stored row, so earlier journal events and recorded outcomes stay as they were."
+    },
+    {
+      "id": "242_followup_obligations.sql",
+      "buyerSteps": "Apply before the updated Worker serves traffic. Adds quoted follow-up proposals and human-accepted responsibility history; no customer message is sent automatically. Erasing a customer purges their obligations."
+    },
+    {
+      "id": "243_procedure_versions.sql",
+      "buyerSteps": "Apply before the updated Worker serves traffic. Adds immutable advice-procedure versions, exact-version evaluation release gates and bounded explicit cohorts. No business-action tools are added. A stopped cohort stays with a human review requirement until explicitly enrolled into another approved release; historical evaluations and version links remain available."
+    },
+    {
+      "id": "244_reviewed_knowledge_proposals.sql",
+      "buyerSteps": "Apply before the updated Worker serves traffic. Adds reviewed, source-linked private knowledge proposals and corrective review records. No draft is automatically published; named editors confirm redaction review. Source-derived publication is held to the customer\u2019s currently proven email-domain collection. Erasing that source customer removes the derived articles and proposals."
+    },
+    {
+      "id": "245_procedure_regression_stop.sql",
+      "buyerSteps": "Apply before serving the updated Worker. A native reopening of a cycle answered by an active advice procedure now stops that exact bounded rollout automatically, cancels its queued/running generations and restores an active human owner without publishing an AI draft. A lead must explicitly enroll an approved release and hand the conversation back to AI to resume; existing cases, reviews and failures remain retained."
+    },
+    {
+      "id": "246_translated_ai_publications.sql",
+      "buyerSteps": "Apply before the updated Worker serves traffic. Gives reviewed translations their own publication identity, preserving existing drafts and reviewed text. AI retrieval and admission now fence the exact translated publication and disclose source-language fallback."
+    },
+    {
+      "id": "247_help_domain_publication.sql",
+      "buyerSteps": "Apply before serving the updated Worker. Lets knowledge publishers select one exact help host already mapped to their workspace by PUBLIC_HELP_HOSTS, or select built-in paths. DNS and TLS remain the hosting administrator\u2019s prerequisite; existing mapped hosts keep working until a lead makes a choice."
+    },
+    {
+      "id": "248_ai_tool_trace.sql",
+      "buyerSteps": "Apply before the updated Worker serves traffic. Records allowlisted per-tool timing, scoped read/proposal authority, denial and human handoff metadata. No arguments, response text, credentials or external business-action authority are added. Started calls without a terminal receipt remain unknown."
+    },
+    {
+      "id": "249_procedure_attribution_reviews.sql",
+      "buyerSteps": "Apply before serving the updated Worker. Adds append-only human attribution corrections backed by an exact native message. Reports show original cycle counts, corrected denominators and retained reviews separately. Corrections do not resume a stopped rollout or convert a closure into verified recovery."
     }
   ]
 }

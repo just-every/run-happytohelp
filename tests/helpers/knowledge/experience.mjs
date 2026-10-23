@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict'
 import {knowledgeApp} from './app.mjs'
 export async function experienceJourney(){
-const k=await knowledgeApp({bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'fixture-native-knowledge'}}),{app,p,call}=k
+const k=await knowledgeApp({bindings:{APP_ORIGIN:'https://app.example',PUBLIC_HELP_HOSTS:JSON.stringify({'alpha-help.example':'p-p','alpha-old.example':'p-p','beta-help.example':'p-other','app.example':'p-p'}),EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'fixture-native-knowledge'}}),{app,p,call}=k
 try{
  const mail=[];k.provider=async (request,entry)=>{assert.equal(new URL(request.url).host,'api.resend.com');mail.push(JSON.parse(entry.body));return Response.json({id:'mail-'+mail.length})}
  const category=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Members',audience:'domains',allowedDomains:['trusted.test']},status:201})).data.id
  const aid=(await call(`/api/knowledge/${p}/articles`,{body:{title:'Secret',content:'Restricted instructions',slug:'secret',categoryIds:[category],status:'published'},status:201})).data.id
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`)).status,404)
  assert.equal((await k.search('Restricted')).length,0)
+ assert.equal((await call(`/api/knowledge/${p}/articles`,{status:200})).data.find(a=>a.id===aid).aiEligibility,'recipient_scoped')
  const openCategory=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Public'},status:201})).data.id
  const child=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Child',parentId:category},status:201})).data.id
  const nested=(await call(`/api/knowledge/${p}/articles`,{body:{title:'Nested secret',slug:'nested-secret',content:'Restricted hierarchy',categoryIds:[openCategory,child],status:'published'},status:201})).data.id
@@ -44,9 +45,30 @@ try{
  const inserted=(await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles/${aid}/insert`,{body:{mode:'text'},status:200})).data
  assert.equal(inserted.text,'Restricted instructions')
  assert.equal((await call(`/api/knowledge/${p}/conversations/${badConversation}/articles/${aid}/insert`,{body:{mode:'text'}})).status,404)
+ const articleLink=(await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles/${aid}/insert`,{body:{mode:'link'},status:200})).data
+ const ticket=(await app.call(`/api/conversations/${goodConversation}/messages`,{token:good.token,status:200})).data
+ const sent=(await app.call(`/api/conversations/${goodConversation}/messages`,{token:k.token,body:{localId:crypto.randomUUID(),content:articleLink.text,expectedRevision:ticket.revision,expectedLastMessageId:ticket.lastMessageId},status:200})).data
+ assert.equal(sent.accepted,true)
+ const receivedLink=(await app.call(`/api/conversations/${goodConversation}/messages`,{token:good.token,status:200})).data.messages.find(m=>m.id===sent.message.id)
+ assert.equal(receivedLink.content,articleLink.text);assert.equal(new URL(articleLink.url).origin,'https://app.example','the inserted native article link is sent through the permitted conversation')
+
 
  await call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{article:'{{title}}\n{{content}}'}},status:200})
  assert.equal((await call(`/api/knowledge/${p}/experience`,{status:200})).data.templates.article,'{{title}}\n{{content}}')
+ const domainSettings=(await call(`/api/knowledge/${p}/experience`,{status:200})).data
+ assert.deepEqual(domainSettings.approvedHosts,['alpha-help.example','alpha-old.example'])
+ const domainWrite=(publishedHost)=>call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{article:'Branded {{title}}\n{{content}}'},publishedHost}})
+ assert.equal((await domainWrite('beta-help.example')).status,409,'another workspace’s host is never claimable')
+ assert.equal((await domainWrite('unconfigured.example')).status,409,'a typed URL cannot create hosting authority')
+ assert.equal((await domainWrite('app.example')).status,409,'the installation homepage is never a help host')
+ await app.call(`/api/management/projects/${p}/settings`,{token:k.token,method:'PUT',body:{name:'Alpha brand',brand_name:'Alpha Support',primary_color:'#204b3a'},status:200})
+ assert.equal((await call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{},publishedHost:'alpha-help.example',linkColor:'#ffffff'}})).status,400,'unreadable custom links are refused before publication')
+ await domainWrite('alpha-help.example')
+ await app.call(`/api/knowledge/${k.other}/experience`,{token:k.owner.tokens.owner,method:'PUT',body:{defaultLocale:'en',locales:['en'],templates:{},publishedHost:'alpha-help.example'}}).then(r=>assert.equal(r.status,403))
+ await domainWrite('')
+ assert.equal((await call(`/api/knowledge/${p}/experience`,{status:200})).data.publishedHost,'')
+ await domainWrite('alpha-help.example')
+
  await call(`/api/knowledge/${p}/articles/${aid}/translations/fr`,{method:'PUT',body:{title:'Secret FR',content:'Reviewed French',summary:'',reviewStatus:'reviewed'},status:200})
  let article=await app.call(`/api/knowledge/public/${p}/articles/secret?locale=fr`,{token:good.token,status:200});assert.equal(article.data.content,'Reviewed French')
  await call(`/api/knowledge/${p}/articles/${aid}/translations/fr`,{method:'PUT',body:{title:'Draft FR',content:'Unreviewed French',reviewStatus:'draft'},status:200})
@@ -64,7 +86,18 @@ try{
  await app.call(`/api/knowledge/public/${p}/search?q=absent&locale=fr`,{token:good.token,status:200})
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret/helpful`,{token:good.token,headers:{Origin:'https://evil.test'},body:{helpful:true}})).status,403)
  const stats=(await call(`/api/knowledge/${p}/analytics`,{status:200})).data;assert.equal(stats.totals.helpful,1);assert.equal(stats.comments[0].comment,'Worked');assert.equal(stats.totals.views,1);assert.equal(stats.totals.clicks,1);assert.ok(stats.searches.some(row=>row.query==='Restricted'&&row.withResults>0&&row.clicks===1));assert.ok(stats.searches.some(row=>row.query==='absent'&&row.withoutResults>0))
- assert.equal((await k.search('Restricted')).length,0,'private articles remain excluded from AI even after human access')
+ assert.equal((await k.search('Restricted')).length,0,'unscoped search never inherits a prior human session')
+
+ // A content-only update through the native door must retain the current private collections.
+ await call(`/api/knowledge/${p}/articles`,{body:{id:aid,title:'Secret refreshed',content:'Restricted refresh marker',slug:'secret',status:'published'},status:201})
+ assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`)).status,404)
+ assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:bad.token})).status,404)
+ const refreshed=(await app.call(`/api/knowledge/public/${p}/articles/secret?locale=fr`,{token:good.token,status:200})).data
+ assert.equal(refreshed.content,'Restricted refresh marker')
+ assert.equal(refreshed.locale,'en');assert.equal(refreshed.requestedLocale,'fr','stale translation falls back with the requested locale disclosed')
+ assert.equal((await k.search('Restricted refresh marker')).length,0)
+ assert.ok((await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles`,{status:200})).data.some(a=>a.id===aid))
+ assert.ok(!(await call(`/api/knowledge/${p}/conversations/${badConversation}/articles`,{status:200})).data.some(a=>a.id===aid))
 
 }finally{await k.close()}
 }

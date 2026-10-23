@@ -12032,7 +12032,7 @@
       "executable": false
     },
     "tests/move-in/record-upgrade.mjs": {
-      "sha256": "85803654ab5c259b7bd187b5c443b3349d88cf0e503a650974b7558fe86a7907",
+      "sha256": "e4a88cf31c1265585063b2a3c6c36fa8010947e48138119f0dc501f6780a67ba",
       "executable": false
     },
     "tests/move-in/security.mjs": {

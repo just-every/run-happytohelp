@@ -10308,7 +10308,7 @@
       "executable": false
     },
     "src/ui/native/workspace-page-code.js": {
-      "sha256": "c732b5146dff7405211f0cd3f42b4b81105573c143ecf7ad312e65f223dbc2ab",
+      "sha256": "ec4a86bd28bfa90dd73b4a2a875dc3500a078cd2d8096ae94a5ca6a36f673c74",
       "executable": false
     },
     "src/ui/native/workspace-scope.ts": {
@@ -11608,7 +11608,7 @@
       "executable": false
     },
     "tests/helpers/support-channels/browser.mjs": {
-      "sha256": "583c783564db894cc00e9b616c717f2743c589e2f9b0e31b85ef7a70d30aacc0",
+      "sha256": "375f87253a04e1ce2cf730906b4c32114e7095b77c10bba05955b0da117dc594",
       "executable": false
     },
     "tests/helpers/support-channels/journeys.mjs": {

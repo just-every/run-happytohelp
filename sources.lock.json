@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "42ba3b039dd87823f9533510105dd48d81418eb3bed72570adbf81bfae9036f2",
+      "sha256": "600bc1548525dd11742746e99dc34079d5553c7b33958042f57217ff4599bd09",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "e92ef0feac776b8b77ade28300ba75ae04bf7e00a840fa3e57e982fdcfa169e4",
+      "sha256": "81d114ecbcab0080575c62fbcba335c6ea0cb98515a238b4dc58675ff931fba9",
       "executable": false
     },
     "DEMO.md": {
@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "7490047bd24f7a4d47e61a5b221385bb59b2db5790314045ec0c6fe581e1142c",
+      "sha256": "5423f2877714aaeb412bd61b74b2f8792f4d559756bbb070841acb783e433ffe",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2475,7 +2475,7 @@
       "sha256": "e7cbc64e55293e71cdae0ee92af3aabe82c891a49c9b7a54afa2441887f81492",
       "executable": false
     },
-    "migrations/242_widget_campaigns.sql": {
+    "migrations/243_widget_campaigns.sql": {
       "sha256": "431531c17902e5dcc6eeae3cabe46694c6f2e991445ed73eb0e8b88dcc00ec8c",
       "executable": false
     },
@@ -2560,7 +2560,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "2ba857157aea42662cdb20434ad181c063f1ff113ffd9a4391ec2f10757e0ebb",
+      "sha256": "9516f10142f14d35f0a6d27a287001fe5443799761a5724c8448ed323289efc3",
       "executable": false
     },
     "rer-project.json": {

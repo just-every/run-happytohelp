@@ -201,7 +201,8 @@ Slack posts one durable notification for a new native conversation once its firs
 Connect a Streamable HTTP MCP client to `/api/v1/mcp` with a workspace bearer
 token. This stateless endpoint accepts JSON-RPC over POST, with protocol versions
 `2025-03-26` and `2025-06-18`; it uses no cookies, browser session, SSE stream or
-server session ID. Initialize, then use `tools/list` and `tools/call`. The catalog
+server session ID. A newer client proposal negotiates down to `2025-06-18`.
+Initialize, then use `tools/list` and `tools/call`. The catalog
 shows only tools the current token scopes permit. Revocation and expiry apply to
 every request, including discovery. Tool results carry native JSON in a text
 content block; a native refusal has `isError: true`. Authentication failures use

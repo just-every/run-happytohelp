@@ -226,6 +226,7 @@ test('managed MCP tools inherit scoped native reads, guarded replies, foreign-re
   assert.equal((await h.raw('/api/v1/mcp',{token:read.token})).status,405);
   assert.equal((await h.raw('/api/v1/mcp',{token:read.token,...body({jsonrpc:'2.0',id:1,method:'tools/list'}),headers:{'Content-Type':'application/json',Origin:'https://elsewhere.example'}})).status,403);
   const initialized=await rpc(read.token,'initialize',{protocolVersion:'2025-03-26'});assert.equal(initialized.result.serverInfo.name,'happytohelp');
+  assert.equal((await rpc(read.token,'initialize',{protocolVersion:'2025-11-25'})).result.protocolVersion,'2025-06-18','newer clients negotiate a supported protocol version');
   const list=await rpc(read.token,'tools/list');assert.ok(list.result.tools.some(tool=>tool.name==='list_conversations'));assert.equal(list.result.tools.some(tool=>tool.name==='reply'),false);
   assert.deepEqual((await call(read.token,'list_conversations',{limit:1})).data.data.map(row=>row.id),[conversation.id]);
   assert.equal((await call(read.token,'get_conversation',{id:foreign.id})).data.error.code,'not_found');

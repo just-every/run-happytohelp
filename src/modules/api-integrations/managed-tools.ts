@@ -43,8 +43,9 @@ export function managedTools(api:Hono<ApiEnv>){
   if(body.jsonrpc!=='2.0'||typeof body.method!=='string'||requestId!==null&&typeof requestId!=='string'&&typeof requestId!=='number')return error(-32600,'Invalid request')
   if(body.method==='notifications/initialized'&&body.id===undefined)return c.body(null,202)
   if(body.method==='initialize'){
-   if(!['2025-03-26','2025-06-18'].includes(body.params?.protocolVersion))return error(-32602,'Unsupported protocol version')
-   return c.json({jsonrpc:'2.0',id:requestId,result:{protocolVersion:body.params.protocolVersion,capabilities:{tools:{listChanged:false}},serverInfo:{name:'happytohelp',version:'1.0.0'}}})
+   if(typeof body.params?.protocolVersion!=='string')return error(-32602,'Protocol version required')
+   const protocolVersion=['2025-03-26','2025-06-18'].includes(body.params.protocolVersion)?body.params.protocolVersion:'2025-06-18'
+   return c.json({jsonrpc:'2.0',id:requestId,result:{protocolVersion,capabilities:{tools:{listChanged:false}},serverInfo:{name:'happytohelp',version:'1.0.0'}}})
   }
   if(body.method==='ping')return c.json({jsonrpc:'2.0',id:requestId,result:{}})
   if(body.method==='tools/list')return c.json({jsonrpc:'2.0',id:requestId,result:{tools:tools.filter(tool=>c.get('tokenScopes').includes(tool.scope)).map(({name,description,inputSchema})=>({name,description,inputSchema}))}})

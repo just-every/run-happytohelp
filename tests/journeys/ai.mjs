@@ -24,3 +24,5 @@ test('daily AI reply and spend ceilings skip replies visibly to operators only, 
 test('training runs seed a confirmed synthetic workspace, check every reply, execute each evaluation family, and keep unreported, failed, expired or interrupted paid work uncertain rather than replaying it',async()=>(await import('../helpers/ai/training.mjs')).trainingJourney())
 
 test('repositories selected for operators are read as redacted, attributed evidence that suggestions cite, while secrets files, other repositories and visitor replies get nothing',async()=>(await import('../helpers/ai/repository.mjs')).repositoryJourney())
+
+test('operators inspect an allowlisted production answer trace with exact sources and measured usage, unknown prices remain unavailable, and customer, cross-workspace and revoked report access are refused',async()=>(await import('../helpers/ai/trace.mjs')).traceJourney())

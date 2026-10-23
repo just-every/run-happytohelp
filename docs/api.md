@@ -194,3 +194,30 @@ text, and shares conservative durable delivery. Local recorded responses do not
 establish live Slack acceptance: **live Slack: not-supplied**.
 
 Slack posts one durable notification for a new native conversation once its first visitor message is committed. The notification includes up to 500 characters of that native visitor message, escaped through Base's Slack renderer. Empty widget conversations wait for that context. Erasure suppresses pending delivery and removes retained payloads; it cannot remove messages already accepted by Slack.
+
+
+### Production assistant traces
+
+`GET /api/ai-support/projects/:projectId/conversations/:conversationId/trace`
+requires workspace membership and `reports.view`. It returns up to 100 generations
+in creation order, immutable assistant configuration fingerprints, issued knowledge
+source/version references, attempt timings, numeric provider-round usage and the
+committed customer-message ID, when one exists. A completed provider attempt alone
+is not proof that a customer answer was committed. Cost estimates are USD provider
+accounting; missing or invalid round pricing yields `null` and `priceData: unavailable`.
+
+The response allowlists fields. It excludes prompts, customer text, raw provider
+errors, tool arguments and unknown usage metadata. Per-tool approval/scope/results
+and procedure attribution are explicitly unavailable until those records exist.
+
+### Requests after reading an article
+
+An article's **Submit a request** link carries an opaque `afterReading` receipt to
+the request form. The form forwards it on submission. The server attributes at most
+one article event per admitted ticket, only for a view within 30 minutes from the
+same reader or authenticated contact, in the same workspace, while that customer
+still has article access. Invalid receipts do not prevent support requests. Retries
+never duplicate the count. This adds no tracking cookie and makes no claim that the
+article caused the ticket. Existing knowledge contact export and erasure include
+these events. Deployment-level `PUBLIC_HELP_HOSTS` remains the host-routing door;
+lead-managed custom-domain verification and publishing are not implemented.

@@ -34,6 +34,8 @@ const rules:Record<string,Rule>={
  // Customer context and contacts
  [`PUT ${X}/consent`]:'contacts.manage',[`POST ${X}/evidence`]:'contacts.manage',[`PUT ${X}/profiles/:type`]:'contacts.manage',[`POST ${X}/insights`]:'contacts.manage',[`POST ${X}/insights/:insightId/dismiss`]:'contacts.manage',[`PUT ${X}/monitoring`]:'contacts.manage',[`POST ${X}/generate/:kind`]:'contacts.manage',[`POST ${X}/jobs/:jobId/abandon`]:'contacts.manage',
  [`POST ${P}/contacts/:contactId/erase`]:'data.erase',
+ // Production assistant traces contain provider usage and require report authority.
+ 'GET /api/ai-support/projects/:projectId/conversations/:conversationId/trace':'reports.view',
  // Knowledge
  [`POST ${K}/articles`]:'knowledge.publish',[`DELETE ${K}/articles/:articleId`]:'knowledge.publish',[`PUT ${K}/articles/:articleId/categories`]:'knowledge.edit',[`PUT ${K}/articles/:articleId/order`]:'knowledge.edit',
  [`POST ${K}/categories`]:'knowledge.edit',[`PUT ${K}/categories/:categoryId`]:'knowledge.edit',[`DELETE ${K}/categories/:categoryId`]:'knowledge.edit',

@@ -1612,7 +1612,7 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "7dd81920a3340ee4f90006a05e52659bcf6fc689ebc974f385041428277524ac",
+      "sha256": "5a3f03262634c1771e0885cfa4d543b291434c5c9683b55aef9618e74cfed506",
       "executable": false
     },
     "base-copies.json": {
@@ -2908,7 +2908,7 @@
       "executable": false
     },
     "scripts/installer/hosted-deploy.mjs": {
-      "sha256": "107057fba1ce2ea31d764a8d27b291beff3f2734f19ec12a1aca7b26355e37a9",
+      "sha256": "53d87ced2506469a4a83d3b4141031ff1981f223924a2e86487a4d2e0daa7fa4",
       "executable": false
     },
     "scripts/installer/hosted-origin.mjs": {
@@ -2925,6 +2925,10 @@
     },
     "scripts/installer/native-local.mjs": {
       "sha256": "df742425e82f608e1bf66a566d64bc4dc0d8edda04a1722dd1abe089d5598bb2",
+      "executable": false
+    },
+    "scripts/installer/offline-deploy.mjs": {
+      "sha256": "178ef95db55aac74be1acbd46f835ff275fe88f58f25684eb96167ff13cdda4a",
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
@@ -11248,7 +11252,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "6ae9782b3235e4a2348bbec35532dfba66bd1ab7711daee2c0b66de2f82f363d",
+      "sha256": "1f2cd19d786283029c9b89682cf5ab27520610cffa474e8bea293a418d1140e2",
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {

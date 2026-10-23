@@ -5,8 +5,8 @@ import {assertAuthority,guarded} from './context'
 import {putPrivate} from './private-custody'
 import type {Run} from './types'
 
-export async function stageAttachmentBytes(env:Env,run:Run,plan:ImportPlan){
- const files=new Map<string,any>(JSON.parse(run.files_json).map((file:any)=>[file.name,file]))
+export async function stageAttachmentBytes(env:Env,run:Run,plan:ImportPlan,artifacts:{name?:string;key:string;sha256:string;size:number}[]){
+ const files=new Map(artifacts.map(file=>[file.name,file]))
  for(const entry of plan.entries)for(const effect of entry.effects){
   const value=effect.value as any
   for(const descriptor of value.source?.attachments??[]){

@@ -1,3 +1,5 @@
+import {sourceCompany,contactCompany} from './companies'
+import {sourceGroup} from './groups'
 import {sourceOwnership} from '../source-ownership'
 import {importedEmailThreadKeys} from '../email-threading'
 import type {SourceRecord} from '../../import-kit/src/types'
@@ -20,7 +22,7 @@ export function freshdeskTags(record:SourceRecord):string[]{return array((record
 /** Tickets keep their description as the first message and every conversation after it: public
  * replies become messages, private notes stay notes. People are Freshdesk contacts (customers)
  * or agents (historical staff, never given access). Nothing is sent, assigned or activated. */
-export async function prepareFreshdesk({projectId,actorId,source,tagIds}:MappingInput):Promise<PreparedMapping>{
+export async function prepareFreshdesk({projectId,actorId,importedAt,source,tagIds}:MappingInput):Promise<PreparedMapping>{
  const result:PreparedMapping={known:new Set(),effects:new Map(),rejections:new Map(),omissions:new Map()},records=new Map(source.records.map(r=>[recordKey(r),r])),id=(kind:string,sid:string)=>nativeId(projectId,'freshdesk',kind,sid)
  const person=(userId:unknown)=>{const sid=sourceId(userId,'freshdesk'),contact=records.get(`contact/${sid}`)?.payload as any,agent=records.get(`agent/${sid}`)?.payload as any
   if(contact)return {id:sid,name:typeof contact.name==='string'?contact.name:null,role:'contact'}
@@ -29,7 +31,9 @@ export async function prepareFreshdesk({projectId,actorId,source,tagIds}:Mapping
  for(const record of source.records){const key=recordKey(record),p=record.payload as any,issues=auditShape('freshdesk',record.kind,p).issues.filter(issue=>issue.reason!=='record_kind_not_understood'),omissions:string[]=issues.map(shapeReason),tables:Record<string,any[]>={};let kind=record.kind,target=id(kind,record.sourceId)
   for(const issue of issues)source.diagnostics.push({severity:'warning',code:issue.code,message:shapeReason(issue),kind:record.kind,sourceId:record.sourceId,location:{...record.location,pointer:`${record.location.pointer??''}/${record.kind}${issue.path}`}})
   try{
-   if(kind==='tag-name'){kind='tag';target=tagIds.get(record.sourceId)??id('tag',record.sourceId);if(tagIds.has(record.sourceId)){result.effects.set(key,[]);result.omissions.set(key,['existing_workspace_tag_reused']);continue}tables.workspace_tags=[{id:target,project_id:projectId,name:p.name,normalized_name:record.sourceId}]}
+   const common=sourceCompany(record,projectId,importedAt,omissions)??sourceGroup(record,projectId,importedAt,omissions)
+   if(common){kind=common.kind;target=common.target;Object.assign(tables,common.tables)}
+   else if(kind==='tag-name'){kind='tag';target=tagIds.get(record.sourceId)??id('tag',record.sourceId);if(tagIds.has(record.sourceId)){result.effects.set(key,[]);result.omissions.set(key,['existing_workspace_tag_reused']);continue}tables.workspace_tags=[{id:target,project_id:projectId,name:p.name,normalized_name:record.sourceId}]}
    else if(kind==='agent'){result.effects.set(key,[]);result.omissions.set(key,[...omissions,'historical_staff_retained_as_authors_no_access_created']);continue}
    else if(kind==='contact'){
     if(p.deleted===true)throw new Error('deleted_contact_not_imported')
@@ -81,8 +85,9 @@ export async function prepareFreshdesk({projectId,actorId,source,tagIds}:Mapping
     tables.macros=[{id:target,project_id:projectId,title:text(p.title,'macro_title_required'),content:await body(p.content_html,p.content,'macro_body_required'),created_by:actorId,created_at:time(p.created_at,'iso'),updated_at:time(p.updated_at,'iso')}]
     if(array(p.attachments).length)omissions.push('attachments_metadata_retained_bytes_not_imported')
    }else{result.effects.set(key,[]);result.omissions.set(key,[...omissions,`unsupported_record_kind:${kind}`]);continue}
+   if(kind==='contact')tables.contact_companies=contactCompany(record,projectId,records,target,omissions)
    if(kind==='conversation')tables.email_threading_keys=importedEmailThreadKeys(projectId,target,'freshdesk',record,tables.conversations[0].created_at)
-   const value={tables,source:{vendor:'freshdesk',kind:record.kind,id:record.sourceId,...(kind==='conversation'?{ownership:sourceOwnership('freshdesk',p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null}}
+   const value={tables,source:{vendor:'freshdesk',kind:record.kind,id:record.sourceId,...(kind==='conversation'?{ownership:sourceOwnership('freshdesk',p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null,...(common&&'nativeCreatedAt' in common?{nativeCreatedAt:common.nativeCreatedAt}:{})}}
    if(nativeStatementCount(kind,value)>LIMITS.nativeStatements)throw new Error('native_record_statement_limit')
    result.effects.set(key,[{targetKind:kind,targetId:target,value:completeNativeValue(kind,value) as any}])
   }catch(error){result.rejections.set(key,error instanceof Error?error.message:'record_mapping_failed');result.effects.set(key,[])}

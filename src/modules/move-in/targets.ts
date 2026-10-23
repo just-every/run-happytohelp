@@ -6,6 +6,7 @@ import {emailKey} from './contact-keys'
 interface Table {name:string;key:string;columns:string[];order:string;generated?:string[];nativeOnly?:boolean}
 const table=(name:string,key:string,columns:string,order=key,generated?:string[]):Table=>({name,key,columns:columns.split(','),order,generated})
 const entities:Record<string,Table[]>={
+ company:[table('companies','id','id,project_id,name,attributes_json,portal_company_view,revision,created_at,updated_at,merged_into'),table('company_domains','company_id','project_id,domain,company_id','domain')],
  field:[table('ticket_fields','id','project_id,id,name,type,required,options_json,validation_json,read_roles_json,write_roles_json,updated_at')],
  form:[table('request_forms','id','project_id,id,config_json,enabled,updated_at')],
  group:[table('ticket_groups','id','project_id,id,name,updated_at'),table('ticket_group_members','group_id','project_id,group_id,user_id','user_id')],
@@ -14,7 +15,7 @@ const entities:Record<string,Table[]>={
  rule:[table('workflow_rules','id','id,project_id,name,kind,position,state,draft_json,published_version,owner_id,created_at,updated_at'),table('workflow_rule_versions','rule_id','rule_id,project_id,version,definition_json,published_by,published_at,event_after_id','version')],
  category:[table('knowledge_categories','id','id,project_id,parent_id,name,slug,summary,is_published,position')],
  tag:[table('workspace_tags','id','id,project_id,name,normalized_name')],
- contact:[table('contacts','id','id,project_id,name,email,external_id,created_at,is_verified,metadata_json'),table('context_subjects','subject_id','project_id,subject_id,consent,revision,help_types,bot_enabled')],
+ contact:[table('contacts','id','id,project_id,name,email,external_id,created_at,is_verified,metadata_json'),table('context_subjects','subject_id','project_id,subject_id,consent,revision,help_types,bot_enabled'),table('contact_companies','contact_id','project_id,contact_id,company_id')],
  macro:[table('macros','id','id,project_id,title,content,created_by,created_at,updated_at'),table('macro_heads','macro_id','macro_id,version,archived_at,archived_by'),table('macro_versions','macro_id','macro_id,project_id,version,title,content,actions_json,scope_json,created_by,created_at','version')],
  article:[table('knowledge_articles','id','id,project_id,category_id,slug,title,content,summary,status,updated_at,position,source_revision,source_incarnation,publication_version','id',['publication_version']),table('knowledge_article_categories','article_id','article_id,category_id','category_id')],
  conversation:[
@@ -56,6 +57,7 @@ function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sq
  if(row&&kind==='form'){clauses.push('NOT EXISTS(SELECT 1 FROM request_form_submissions WHERE project_id=? AND form_id=?)');bindings.push(destination,id)}
  if(row&&kind==='group'){clauses.push('NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND group_id=?)');bindings.push(destination,id)}
  if(row&&kind==='calendar'){clauses.push('NOT EXISTS(SELECT 1 FROM sla_policies WHERE project_id=? AND calendar_id=?)');bindings.push(destination,id)}
+ if(row&&kind==='company'){clauses.push('NOT EXISTS(SELECT 1 FROM company_history WHERE project_id=? AND (company_id=? OR source_company_id=?))');bindings.push(destination,id,id)}
  if(row){clauses.push('EXISTS(SELECT 1 FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=? AND revision=? AND source_json=?)');bindings.push(destination,kind,id,row.revision,JSON.stringify((row.value as unknown as NativeValue).source))}
  else {clauses.push('NOT EXISTS(SELECT 1 FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?)');bindings.push(destination,kind,id)}
  return {sql:`(${clauses.join(' AND ')})`,params:bindings}

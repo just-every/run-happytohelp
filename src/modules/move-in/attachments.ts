@@ -12,6 +12,7 @@ import {LIMITS,recordKey,type PreparedMapping,type Run} from './types'
 export async function prepareAttachments(env:Env,run:Run,records:SourceRecord[],prepared:PreparedMapping){
  const files=new Map<string,{key:string;sha256:string;size:number}>(JSON.parse(run.files_json).map((file:any)=>[file.name,file]))
  const references=records.flatMap(record=>attachmentReferences(run.vendor,record.kind,record.payload))
+ if(!references.length)return
  const candidates=references.map(ref=>nativeId(run.project_id,run.vendor,'attachment',`${ref.conversation}:${ref.occurrence}`))
  const existing=(await env.DB.prepare('SELECT * FROM media WHERE project_id=? AND id IN (SELECT value FROM json_each(?))').bind(run.project_id,JSON.stringify(candidates)).all<any>()).results
  const prior=new Map(existing.map(row=>[row.id,row])),hashes=new Map<string,string>()

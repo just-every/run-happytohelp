@@ -1,3 +1,4 @@
+import {attachmentBrowser} from '../move-in/attachment-browser.mjs'
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile,writeFile} from 'node:fs/promises'
@@ -64,6 +65,7 @@ test('entry points and limits: Settings and Setup lead to Move in, an oversized 
  const keeper=(await request(`/api/management/projects/${project}/contacts`,{token,body:{name:'Native keeper',email:'FENCE-browser@example.test'}})).data;
  await page.getByRole('button',{name:'Approve and import',exact:true}).click();await page.getByText('Native contact identities changed after review.',{exact:false}).waitFor({timeout:120000});assert.match(await page.locator('.move-in-page').innerText(),/0 of 1 source records processed/);await page.getByRole('button',{name:'Undo whole import',exact:true}).waitFor();await inspect('late-native-conflict-stopped-390');
  await page.getByRole('button',{name:'Undo whole import',exact:true}).click();await page.getByRole('heading',{name:`Undone: ${stoppedName}`,exact:true}).waitFor({timeout:120000});const nativeContacts=(await request(`/api/management/projects/${project}/contacts`,{token})).data;assert.deepEqual(nativeContacts.filter(contact=>contact.email?.toLowerCase()==='fence-browser@example.test').map(contact=>contact.id),[keeper.id]);await inspect('late-native-conflict-undone-390');
+ for(const width of [1440,390])await attachmentBrowser({page,origin:runtime.origin,base,project,token,request,inspect,width})
  const member={email:'move-in-operator@example.test',name:'Operator',password:randomBytes(24).toString('base64url')},invite=await request(`/api/management/projects/${project}/agents`,{token,body:{email:member.email,role:'operator'}});await request('/api/identity/accept-token',{body:{token:new URL(invite.data.invitationUrl).searchParams.get('token'),name:member.name,password:member.password}});const memberSession=await request('/api/identity/login',{body:member});await context.clearCookies();await context.addCookies([{name:'h2h_session',value:memberSession.token,url:runtime.origin}]);await page.goto(runtime.origin+base+'/move-in');await page.getByText('Only a workspace owner or admin can move in support history.',{exact:false}).waitFor();assert.equal(await page.getByLabel('Export file',{exact:true}).count(),0);await inspect('operator-denied-390');await page.goto(runtime.origin+base+'/settings');await page.getByRole('heading',{name:'Project details',exact:true}).waitFor();assert.equal(await page.getByRole('link',{name:'Move in existing support history',exact:true}).count(),0);
 }))
 

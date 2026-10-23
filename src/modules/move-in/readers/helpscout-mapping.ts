@@ -1,3 +1,5 @@
+import {sourceCompany,contactCompany} from './companies'
+import {sourceGroup} from './groups'
 import {sourceOwnership} from '../source-ownership'
 import {importedEmailThreadKeys} from '../email-threading'
 import type {SourceRecord} from '../../import-kit/src/types'
@@ -12,14 +14,16 @@ import {helpScoutHistory,helpScoutCustomer,helpScoutArticleStatus} from './helps
 import {closedAt} from './closed-state'
 const markdown=async(body:string)=>/<[a-z][^>]*>/i.test(body)?htmlToMarkdown(body):body
 export function helpScoutTags(record:SourceRecord):string[]{const p=record.payload as any;return record.kind==='tag'&&typeof p.name==='string'?[p.name]:Array.isArray(p.tags)?p.tags.filter((t:any)=>object(t)&&typeof t.tag==='string').map((t:any)=>t.tag):[]}
-export async function prepareHelpScout({projectId,source,tagIds}:MappingInput):Promise<PreparedMapping>{
+export async function prepareHelpScout({projectId,importedAt,source,tagIds}:MappingInput):Promise<PreparedMapping>{
  const listIssues=helpScoutListIssues(source.records),conflicts=new Set(source.diagnostics.filter(d=>d.code==='conflicting_duplicate_id').map(d=>`${d.kind}/${d.sourceId}`))
  const result:PreparedMapping={known:new Set(),effects:new Map(),rejections:new Map(),omissions:new Map()},records=new Map(source.records.map(r=>[recordKey(r),r])),id=(kind:string,sid:string)=>nativeId(projectId,'helpscout',kind,sid)
  for(const record of source.records){const key=recordKey(record),p=record.payload as any,omissions:string[]=[],tables:Record<string,any[]>={};let kind=record.kind,target=id(kind,record.sourceId)
   for(const issue of auditShape('helpscout',record.kind,p).issues){omissions.push(shapeReason(issue));source.diagnostics.push({severity:'warning',code:issue.code,message:shapeReason(issue),kind:record.kind,sourceId:record.sourceId,location:{...record.location,pointer:`${record.location.pointer??''}${issue.path}`}})}
   try{
    if(listIssues.has(key))throw new Error(listIssues.get(key))
-   if(kind==='tag-name'){kind='tag';target=tagIds.get(record.sourceId)??id('tag',record.sourceId);if(tagIds.has(record.sourceId)){result.effects.set(key,[]);result.omissions.set(key,['existing_workspace_tag_reused']);continue}tables.workspace_tags=[{id:target,project_id:projectId,name:p.name,normalized_name:record.sourceId}]}
+   const common=sourceCompany(record,projectId,importedAt,omissions)??sourceGroup(record,projectId,importedAt,omissions)
+   if(common){kind=common.kind;target=common.target;Object.assign(tables,common.tables)}
+   else if(kind==='tag-name'){kind='tag';target=tagIds.get(record.sourceId)??id('tag',record.sourceId);if(tagIds.has(record.sourceId)){result.effects.set(key,[]);result.omissions.set(key,['existing_workspace_tag_reused']);continue}tables.workspace_tags=[{id:target,project_id:projectId,name:p.name,normalized_name:record.sourceId}]}
    else if(kind==='contact'){const customer=helpScoutCustomer(p);tables.contacts=[{id:target,project_id:projectId,name:customer.name,email:customer.email,external_id:`import:helpscout:${record.sourceId}`,created_at:customer.created,is_verified:0,metadata_json:JSON.stringify({imported_tags:[]})}];tables.context_subjects=[{project_id:projectId,subject_id:target,consent:0,revision:0,help_types:'[]',bot_enabled:0}]}
    else if(kind==='conversation'){
     if(p.state!=='published')throw new Error('conversation_not_published');if(!['active','closed','pending','spam'].includes(p.status)||!['email','chat','phone'].includes(p.type))throw new Error('conversation_state_or_channel_unsupported')
@@ -54,8 +58,9 @@ export async function prepareHelpScout({projectId,source,tagIds}:MappingInput):P
     for(const dependency of [`collection/${p.collectionId}`,...(Array.isArray(p.categories)?p.categories.map((id:any)=>`category/${id}`):[])])if(conflicts.has(dependency)||listIssues.has(dependency))throw new Error('article_ancestry_incomplete_or_conflicting');const status=helpScoutArticleStatus(p,records);time(p.createdAt,'iso');tables.knowledge_articles=[{id:target,project_id:projectId,category_id:id('category',p.categories.length?`category:${p.categories[0]}`:`collection:${p.collectionId}`),slug:`import-helpscout-${record.sourceId.replace(/[^a-zA-Z0-9-]/g,'-')}-${target.slice(-8)}`,title:text(p.name,'article_title_required'),content:await markdown(text(p.text,'article_body_required')),summary:'',status,updated_at:time(p.updatedAt,'iso'),position:0,source_revision:1,source_incarnation:crypto.randomUUID()}]
     tables.knowledge_article_categories=(p.categories.length?p.categories.map((category:any)=>id('category',`category:${category}`)):[id('category',`collection:${p.collectionId}`)]).map((category_id:string)=>({article_id:target,category_id}));if(p.hasDraft)omissions.push('article_draft_body_provenance_ambiguous_kept_unpublished');if(status==='draft'&&p.status==='published')omissions.push('private_ancestry_kept_unpublished')
    }else{result.effects.set(key,[]);result.omissions.set(key,[...omissions,kind==='article-ref'?'article_list_metadata_only_detail_body_required':kind==='article-draft'?'unpublished_draft_body_retained_only':`source_metadata_only:${kind}`]);continue}
+   if(kind==='contact')tables.contact_companies=contactCompany(record,projectId,records,target,omissions)
    if(kind==='conversation')tables.email_threading_keys=importedEmailThreadKeys(projectId,target,'helpscout',record,tables.conversations[0].created_at,source.records.filter(r=>r.kind==='thread-page'&&r.sourceId.split(':')[0]===record.sourceId))
-   const value={tables,source:{vendor:'helpscout',kind:record.kind,id:record.sourceId,...(kind==='conversation'?{ownership:sourceOwnership('helpscout',p)}:{}),created_at:p.createdAt??null,updated_at:p.updatedAt??p.userUpdatedAt??null}}
+   const value={tables,source:{vendor:'helpscout',kind:record.kind,id:record.sourceId,...(kind==='conversation'?{ownership:sourceOwnership('helpscout',p)}:{}),created_at:p.createdAt??null,updated_at:p.updatedAt??p.userUpdatedAt??null,...(common&&'nativeCreatedAt' in common?{nativeCreatedAt:common.nativeCreatedAt}:{})}}
    if(nativeStatementCount(kind,value)>LIMITS.nativeStatements)throw new Error('native_record_statement_limit')
    result.effects.set(key,[{targetKind:kind,targetId:target,value:completeNativeValue(kind,value) as any}])
   }catch(error){result.rejections.set(key,error instanceof Error?error.message:'record_mapping_failed');result.effects.set(key,[])}

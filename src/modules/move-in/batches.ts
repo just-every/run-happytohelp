@@ -53,7 +53,7 @@ export async function advanceBatch(env:Env,run:Run){
   if(!object||object.size>LIMITS.planBytes)throw new Error('reviewed_plan_missing')
   const plan=await object.json<ImportPlan>()
   if(plan.fingerprint!==batch.fingerprint||plan.entries.length!==batch.total)throw new Error('reviewed_plan_changed')
-  await stageAttachmentBytes(env,run,plan)
+  await stageAttachmentBytes(env,run,plan,review.artifacts)
  }
  if(!batch.kit_job_id){if(undo)throw new Error('import_job_missing');const object=await env.FILES.get(batch.plan_key);if(!object||object.size>LIMITS.planBytes)throw new Error('reviewed_plan_missing');const plan=await object.json<ImportPlan>();if(plan.fingerprint!==batch.fingerprint||plan.entries.length!==batch.total)throw new Error('reviewed_plan_changed');const job=await createD1ImportJob(plan,{...context,reviewedFingerprint:batch.fingerprint});await publishCheckpoint(env,run,batch,job);return}
  // Both entry points perform Base current authorization, stored-plan validation,

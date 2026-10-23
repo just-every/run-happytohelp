@@ -10,7 +10,7 @@ export function helpScoutPositions(raw:string,maxRecords:number):JsonPosition[]{
  if(syntax.some(position=>position.error))return syntax.filter(position=>position.error)
  const root=JSON.parse(raw),result:JsonPosition[]=[],esc=(s:string)=>s.replace(/~/g,'~0').replace(/\//g,'~1')
  const add=(pointer:string,sourceKind:string)=>{const position=offsets.get(pointer);if(!position)throw new Error('helpscout_document_depth_unsupported');if(result.length>=maxRecords)throw new IndexLimitError(position.row,pointer);result.push({...position,sourceKind})}
- const kinds:Record<string,string>={conversations:'conversation',customers:'contact',tags:'tag',collections:'collection',categories:'category',articles:'article-ref'}
+ const kinds:Record<string,string>={teams:'team',organizations:'organization',conversations:'conversation',customers:'contact',tags:'tag',collections:'collection',categories:'category',articles:'article-ref'}
  function record(value:any,pointer:string,hint?:string){
   if(!object(value))throw new Error('helpscout_record_must_be_object')
   if(hint){add(pointer,hint);return}

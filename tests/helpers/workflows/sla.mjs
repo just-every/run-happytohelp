@@ -31,6 +31,14 @@ export async function slaFlow(f){
  assert.equal(sla.pause_reason,'pending');assert.equal(sla.clocks.find(c=>c.metric==='resolution'&&!c.completed_at).remaining_minutes,remaining)
  await send(id);sla=await ok(`/conversations/${id}/sla`);assert.equal(sla.pause_reason,null);assert.ok(sla.clocks.some(c=>c.metric==='next_response'&&!c.completed_at))
  await patch(id,{status_id:'on_hold'});await clock('2026-11-30T17:00:00Z');assert.equal((await ok(`/conversations/${id}/sla`)).pause_reason,'on_hold')
+ // The opposite On-hold policy must keep spending business time too; merely
+ // testing the paused choice would not prove the lead's configurable choice.
+ const held=(await ok(`/conversations/${id}/sla`)).clocks.find(c=>c.metric==='resolution'&&!c.completed_at)
+ await ok(`/sla-policies/${policy.id}`,{pause_on_hold:false},'PATCH')
+ const running=await ok(`/conversations/${id}/sla`)
+ assert.equal(running.pause_reason,null)
+ assert.ok(running.clocks.find(c=>c.metric==='resolution'&&!c.completed_at).remaining_minutes<held.remaining_minutes,'On-hold consumes business minutes when the policy does not pause')
+ await ok(`/sla-policies/${policy.id}`,{pause_on_hold:true},'PATCH')
  // A separate policy and Sunday window exercise both copies of the fall-back hour.
  await ok(`/sla-policies/${policy.id}`,{active:false},'PATCH')
  const weekendPolicy=await ok('/sla-policies',{name:'Weekend response',calendar_id:pacific.id,position:0,conditions:{},first_response_minutes:180,next_response_minutes:null,resolution_minutes:null,pause_on_hold:false,approaching_minutes:15,backup_user_ids:[]})

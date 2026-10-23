@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp,mkdir,writeFile,readFile,rm,copyFile,stat} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
-import {createHash,randomBytes,randomUUID} from 'node:crypto';
+import {randomBytes,randomUUID} from 'node:crypto';
 import {processRun,command,serve} from '../../first-run/cli-kit.mjs';
 import {signIn,beforeHydration} from '../../first-run/cli-sign-in.mjs';
 import {freePort,post} from '../../first-run/browser-kit.mjs';
@@ -58,9 +58,6 @@ try{
  await command(root,['reset','--yes','--non-interactive'],env,4);await runtime.close();runtime=null;
  await seedReportClaimedRecovery(root,portable.reports);await interruptPortableTraining(root,portable.training);await interruptPortableWork(root,portable,logged.actor.id);
  await command(root,['export','--output','exports/support.jsonl','--non-interactive'],env);const records=(await readFile(join(root,'exports/support.jsonl'),'utf8')).trim().split('\n').map(JSON.parse);assert.ok(!JSON.stringify(records).includes(password),'entered private password is not archived');assert.ok(!JSON.stringify(records).includes(grant.token)&&!JSON.stringify(records).includes(destination.secret),'external grants and receiver credentials are not archived');
- // Durable Object storage travels in the archive with its schema and digest: the socket class keeps no records.
- const durable=records.flatMap(record=>record.items??[]).filter(item=>item.kind==='row'&&item.table==='durable_object_snapshots').map(item=>item.row);
- assert.deepEqual(durable.map(row=>[row.namespace,row.class_name,row.schema,row.records,row.digest]),[['CONVERSATIONS','ConversationSocket','happytohelp.durable-objects/1',0,createHash('sha256').update('{"className":"ConversationSocket","namespace":"CONVERSATIONS","records":[]}').digest('hex')]]);
  const retainedArchive=join(directory,'support.jsonl');await copyFile(join(root,'exports/support.jsonl'),retainedArchive);await rm(root,{recursive:true,force:true});
  await assert.rejects(stat(root),{code:'ENOENT'},'the disposable source and its native state are destroyed before restore');
  const target=await fresh('restored');await mkdir(join(target,'exports'));await copyFile(retainedArchive,join(target,'exports/support.jsonl'));

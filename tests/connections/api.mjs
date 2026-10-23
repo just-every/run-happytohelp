@@ -2,6 +2,7 @@ import {phases} from '../journeys/kit/scenarios.mjs';const test=phases(import.me
 import {harness,body,sha,allScopes} from './harness.mjs';
 const settings='/api/management/projects/p/connections';
 test('current native admins manage workspace credentials while operators cannot create or inspect them',async()=>{
+ await (await import('../helpers/support-channels/journeys.mjs')).credentials();
  const h=await harness();try{
   for(const role of ['admin','operator']){await h.db.prepare('INSERT INTO users VALUES(?,?,?,1)').bind(role,role+'@example.test',role).run();await h.db.prepare('INSERT INTO memberships VALUES(?,?,?)').bind('p',role,role).run();await h.session(role,'p',role,role)}
   // Installing a credential needs a recent step-up: a sign-in older than 15 minutes is asked again.
@@ -56,6 +57,7 @@ test('all foreign resource operations equal missing IDs and change no native dat
  }finally{await h.close()}
 });
 test('native API replies and resolve keep frontiers and reject revoked-token write races',async()=>{
+ await (await import('../helpers/support-channels/journeys.mjs')).exchange();
  const h=await harness();try{
   await h.contact();const c=await h.conversation(),issued=await h.issue(),token=issued.token;
   const command={content:'First reply',localId:'api-reply',expectedRevision:0,expectedLastMessageId:null};const first=await h.call('/api/v1/conversations/'+c.id+'/messages',{token,...body(command)});assert.equal(first.data.revision,1);assert.equal(first.data.content,'First reply');const again=await h.call('/api/v1/conversations/'+c.id+'/messages',{token,...body(command)});assert.equal(again.duplicate,true);assert.equal((await h.db.prepare('SELECT count(*) n FROM conversation_outbox WHERE conversation_id=?').bind(c.id).first()).n,1);
@@ -109,6 +111,7 @@ test('foreign webhook and Slack settings have the same refusal as missing worksp
  }finally{await h.close()}
 });
 test('erased identities cannot be recreated or assigned to another contact through API writes',async()=>{
+ await (await import('../helpers/support-channels/journeys.mjs')).erasure();
  const h=await harness();try{
   await h.contact();await h.contact('another');await h.db.prepare("UPDATE contacts SET email='erased@example.test',external_id='customer-42' WHERE id='visitor'").run();await h.call('/api/management/projects/p/contacts/visitor/erase',body({}));const {token}=await h.issue(['contacts:write']);
   for(const input of [{email:'ERASED@example.test'},{external_id:'customer-42'},{provided_email:'erased@example.test'}]){

@@ -4,6 +4,7 @@ import {harness,body} from './harness.mjs';
 const recorded=JSON.parse(readFileSync(new URL('./fixtures/slack-responses.json',import.meta.url),'utf8'));
 const root='/api/management/projects/p/connections';
 test('both Slack modes deliver one logical new-conversation notification and escape mentions, ampersands and links',async()=>{
+ await (await import('../helpers/support-channels/journeys.mjs')).slack();
  for(const mode of ['incoming-webhook','bot']){const h=await harness();try{
   const privateValue=randomBytes(24).toString('hex'),input=mode==='bot'?{token:'xoxb-'+privateValue,channel:'C12345678'}:{url:'https://hooks.slack.com/services/T123/B123/'+privateValue};
   const saved=await h.call(root+'/slack',body({name:'Slack',mode,...input}));await h.contact();const conv=await h.conversation();

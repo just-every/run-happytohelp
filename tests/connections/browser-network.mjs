@@ -2,6 +2,7 @@
 const deliveries=new Map();
 export default async request=>{
  const url=new URL(request.url);
+ if(url.hostname==='api.twilio.com')return Response.json({sid:'synthetic-happytohelp-3'});
  if(url.origin==='https://receiver.example.com'&&url.pathname==='/browser-resend'){const id=request.headers.get('webhook-id'),count=deliveries.get(id)||0;deliveries.set(id,count+1);return new Response(count<2?'':null,{status:count<2?500:204})}
  if(url.origin==='https://receiver.example.com'||url.href==='https://slack.com/api/chat.postMessage')return new Response('',{status:401});
  throw Error('External request prohibited');

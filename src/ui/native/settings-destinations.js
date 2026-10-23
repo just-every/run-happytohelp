@@ -29,6 +29,7 @@ export const settingsGroups = [
         { label: 'Local computers', path: 'local-agent', session: '/local-agent/authorize' },
     ] },
     { label: 'Connections', destinations: [
+        { label: 'Support channels', path: 'support-channels' },
         { label: 'Slack', path: 'slack-settings' },
         { label: 'GitHub', path: 'github-settings' },
         { label: 'Webhooks', path: 'webhook-settings' },

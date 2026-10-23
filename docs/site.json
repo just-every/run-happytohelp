@@ -172,6 +172,11 @@
           "slug": "triage",
           "source": "docs/triage.md",
           "label": "Intelligent triage"
+        },
+        {
+          "slug": "support-channels",
+          "source": "docs/support-channels.md",
+          "label": "Support channels"
         }
       ]
     },

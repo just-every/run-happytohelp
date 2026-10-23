@@ -1,91 +1,118 @@
 # Support channels
 
-Settings → **Support channels** connects text support from Twilio US SMS,
-WhatsApp Business, Instagram Direct, Facebook Messenger and explicitly allowed
-Slack customer channels to the shared inbox. This is an implementation for
-qualification. Connected-account acceptance remains pending. Teams support apps,
-live provider qualification remain pending. Supported attachments and approved
-text utility templates are available for qualification.
+Settings → **Support channels** connects Twilio US SMS, WhatsApp Business,
+Instagram Direct, Facebook Messenger, Slack Connect and Microsoft Teams to the
+shared inbox. Code and network-edge tests are available for qualification.
+Connected-account sandbox acceptance remains pending for every provider.
 
 ## Connect an account
 
-An owner or administrator with integration installation permission confirms their
-recent sign-in, installs the provider app, then enters its account ID, sender ID,
-access token and signing secret. Tokens are encrypted with the existing
-installation integration key. Readback never returns them. The verification token
-appears once; copy it into Meta's webhook verification configuration and dismiss
-it. Configure the displayed HTTPS webhook URL with the provider.
+An owner or administrator installs the provider app, confirms recent sign-in,
+and supplies the account, sender and private credentials. Credentials are
+encrypted and never read back. Configure the displayed HTTPS webhook with the
+provider. Meta's verification token appears once. Reconnect rotates credentials
+on the same connection, preserving thread identities, opt-out and erasure fences.
 
-For Twilio, supply a US +1 sender and its Account SID. The signing secret is that
-account's auth token. Confirm that the provider has completed A2P 10DLC
-registration. The checkbox records the administrator's attestation; it does not
-verify or complete carrier registration. Configure Twilio's inbound webhook for
-form-encoded POSTs. Delivery callbacks must return to this connection's webhook.
+For Twilio, enter the Account SID, US +1 sender, auth token and Messaging Service
+ID. Installation checks that the sender belongs to the account's service and that
+Twilio reports a VERIFIED US A2P campaign. This does not perform carrier
+registration or replace live deliverability qualification. Delivery callbacks
+return to the connection's webhook.
 
-For Meta, use an authorized business account and page or WhatsApp phone-number ID,
-its authorized access token and the app secret. Webhooks must include the exact
-account and recipient identity configured here. Subscribe to the relevant message
-and delivery events. A configured connection alone does not prove provider
-permissions, delivery, customer consent or business approval.
+For Meta, use the authorized business account and page or WhatsApp phone-number
+ID, its access token and app signing secret. Subscribe to message and delivery
+callbacks. Signature verification and the exact configured account/recipient are
+required. The provider still owns business authorization and consent qualification.
 
-For Slack, install a bot in the customer workspace and selected shared channels.
-Enter its team ID, bot user ID, bot token, signing secret and an explicit list of
-customer channel IDs. Subscribe to message events for those channels. Text intake
-requires `channels:history` and replies require `chat:write`; private-channel
-intake is not enabled. Authenticated file intake requires `files:read`.
-Slack notification settings are a separate feature. This connection does not yet
-install the app through OAuth or verify the granted scopes against Slack.
+For Slack, install a bot with `chat:write`, `channels:history`, `files:read` and
+`im:history`; subscribe to shared-channel and direct-message events. Installation
+checks its team/bot identity, scopes and membership in each active Slack Connect
+channel. Enter allowed customer channel IDs explicitly. Slack notifications are
+a separate feature and do not provide support intake.
 
-## Inbox and delivery
+For Teams, install a single-tenant Bot Framework app in the customer tenant and
+allowed customer channels. Supply its tenant ID, bot application ID and client
+secret. Configure the webhook as its messaging endpoint and enable personal scope
+for private teammate linking. Incoming activities require Microsoft's RS256
+signature, the configured app audience, issuer, expiry, signed service URL and
+matching tenant. Replies use tenant-scoped client credentials and the original
+conversation. Live app consent, installation and channel accessibility must still
+be qualified in the provider sandbox.
 
-Provider-scoped customer identities create separate contacts; an unverified
-channel identity never merges into an email contact. Slack replies stay in their
-original thread. Open the ticket's **Support channel** section for its source,
-blocker and recorded send outcomes. Public replies and supported attachments return in the original
-channel. Private notes never enter that sending path. Automatic AI, email and away
-reply effects are suppressed for these channel conversations.
+## Reply and continue
 
-A durable message claim precedes a provider send. Redelivery of the same signed
-message does not create a second message. A saved public reply with an unknown
-provider outcome is never automatically replayed, including after process
-recovery. Check the provider before any deliberately new reply. **Accepted** means
-provider acceptance, not customer delivery. Settings includes counts of accepted,
-failed, blocked and unknown sends. SMS and WhatsApp status callbacks can advance
-recorded delivery outcomes; Instagram/Messenger delivery/read callbacks also advance matching sends.
+Provider-scoped identities stay separate from unverified email identities. Shared
+channel participants retain distinct attribution; the original requester stays
+on the ticket. Owners map each customer channel to an existing company in
+Settings. New requester identities inherit that explicit mapping. Existing
+threads cannot silently be reassigned to another account.
 
-SMS and WhatsApp STOP/UNSUBSCRIBE messages prevent further sends. Teammates cannot
-override opt-out. A verified provider opt-in recovery flow is still pending, so
-reconnecting does not reset consent. Meta free-text replies are refused after the
-24-hour customer reply window. Wait for a new customer message, or explicitly choose a currently approved text-only
-UTILITY template in the ticket. Continuation requires the customer to have sent
-“I agree to WhatsApp support updates” through the signed WhatsApp webhook. STOP
-remains fenced, including after another consent phrase or reconnect. The template
-is checked against the connected account at send time; marketing, authentication,
-and media/interactive templates are excluded. Sending it does not reopen the
-free-text window. There is no automatic switch to email, another number or channel.
+Public replies return in the original channel. Internal notes, email, automatic
+AI and away replies never enter the channel sending path. The ticket's **Support
+channel** section shows blockers, delivery and status-post outcomes. **Accepted**
+means provider acceptance, not customer delivery. SMS/WhatsApp callbacks and
+social delivery/read events advance the matching send. A durable claim precedes
+each send; unknown outcomes never replay automatically. Review the provider's
+record before deliberately composing another reply.
 
-Supported attachments are downloaded from approved provider hosts into private
-conversation storage, with no arbitrary redirects, a 10 MB per-file limit and at
-most five inbound files. Unsupported, oversized or unavailable files explicitly
-refuse the event for review. Outbound files use one-hour grants fenced by current
-connection, conversation and erasure authority. Social channels accept one file
-per reply; Messenger/Instagram attachments and audio must be sent separately from
-text where the provider does not support captions. Revoke invalidates grants. Slack edited/deleted and other
-noncustomer subtypes are held with an audit record; they do not rewrite the
-canonical transcript. Acknowledgment, assignment and handoff from Slack/Teams,
-account/company mapping and bidirectional status synchronization are pending.
+SMS and WhatsApp STOP/UNSUBSCRIBE messages fence further sends across reconnects.
+No teammate or START event clears that fence. Meta free-text replies expire after
+24 hours. Wait for a new customer message, or deliberately choose a currently
+approved WhatsApp text-only UTILITY template. The customer must first send
+“I agree to WhatsApp support updates” in WhatsApp. The signed customer event is
+recorded as continuation consent only while no opt-out fence exists. STOP takes
+precedence even after another consent phrase. The template is checked against the
+connected account at send time; marketing/authentication and media/interactive
+templates are excluded. Sending a template does not reopen free-text replies.
+There is no automatic cross-channel continuation.
+
+## Attachments and shared-channel work
+
+Supported image, audio, video, PDF and plain-text attachments use private native
+media storage. Download origins are limited to the connected provider; credentials
+never follow arbitrary redirects. Twilio's media CDN redirect is checked and gets
+no account credential. Each file is limited to 10 MB, with at most five inbound
+files. Teams supports Bot Framework inline image attachments. Unsupported or
+unavailable attachments explicitly refuse the provider event for review.
+
+Outbound files use one-hour grants bound to the message, conversation, active
+connection and allowed channel. Revoke, credential rotation, channel removal and
+erasure invalidate access. Social replies support one file each; where a provider
+cannot accept a caption, send the file separately from text. Private-note files
+cannot enter a public reply or download grant.
+
+In a shared-channel ticket, choose **Link my teammate identity**, then send the
+one-use code privately to the installed bot within ten minutes. The code requires
+a current native session and membership; display names and email matches never
+grant teammate authority. Unlink from the same ticket. Linked teammates can reply
+in the provider thread, including supported attachments, or use:
+
+- `support acknowledge` — take responsibility and open the ticket.
+- `support assign provider-user-id` — assign to a linked workspace teammate.
+- `support handoff provider-user-id` — transfer responsibility to a linked teammate.
+- `support status` — post current public status and whether a teammate is responsible.
+
+Commands are permission-checked again at the canonical ticket write. Assignment
+and status changes from the inbox also post the current public state. Private
+notes and internal group details are excluded. Duplicate events/actions do not
+repeat messages or sends. Failed or uncertain status posts are visible in the
+ticket and are not automatically replayed.
+
+Attributed provider edits/deletions appear as notices in the ticket alongside
+the retained original support record. They do not silently rewrite history.
+Attachment changes require review. Events without an attributable original are
+held. Customer erasure removes the retained content and notices.
 
 ## Revoke, erase and restore
 
-Revoke removes local credentials and refuses new intake/sends. A request already
-accepted by a provider cannot be recalled. Reconnecting the same account preserves
-thread identities, opt-out and erasure fences. Erasing a contact removes local
-channel identity links and blocks historical redelivery from recreating it. It
-also records explicit external-provider deletion work; local erasure does not
-claim to delete provider copies.
+Revoke removes credentials, invalidates attachment grants and refuses new
+intake/sends. A request already accepted by the provider cannot be recalled.
+Contact erasure removes local channel identity links and media, fences historical
+redelivery (including shared participants), and records external provider deletion
+work. Local erasure does not claim to remove provider copies.
 
-Archives preserve channel mappings and erasure fences, omit credentials and
-verification grants, disconnect restored connections and mark in-flight sends
-uncertain. Reconfigure provider credentials explicitly after restore. Apply
-migrations `250_support_channels.sql` and `251_support_channel_media.sql` before serving the updated Worker; back up
-D1, R2 and private configuration first, and retain the existing migration ledger.
+Archives omit credentials, verification grants, identity-link codes and temporary
+attachment grants. Restored connections are disconnected; in-flight message/status
+sends become uncertain. Reconfigure credentials explicitly. Back up D1, R2 and
+private configuration and apply migrations 250, 251 and 252 in order before serving
+the updated Worker, without resetting or editing the existing migration ledger.

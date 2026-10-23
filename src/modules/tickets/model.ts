@@ -6,7 +6,9 @@ import {memberAccess,type MemberAccess} from '../access/gate'
 import type {Permission} from '../access/catalogue'
 import {audit,type AuditSource} from '../audit/record'
 import {contactAvailableSql} from '../conversations/contact-privacy'
-export type TicketAuthority={sessionHash?:string;tokenAuthority?:TokenAuthority;source?:AuditSource}
+/** Only authenticated in-process adapters can supply external authority; JSON cannot mint this symbol. */
+export const externalTicketAuthority=Symbol('externalTicketAuthority')
+export type TicketAuthority={[externalTicketAuthority]?:{sql:string;params:unknown[]};sessionHash?:string;tokenAuthority?:TokenAuthority;source?:AuditSource}
 export const categories=['new','open','pending','on_hold','solved','closed'] as const
 export const priorities=['low','normal','high','urgent'] as const
 export function invalid(message:string):never{throw new HTTPException(400,{message})}
@@ -14,7 +16,7 @@ export function named(value:unknown,max=120){if(typeof value!=='string'||!value.
 export function object(value:unknown):Record<string,any>{if(!value||typeof value!=='object'||Array.isArray(value))invalid('Expected an object');return value as Record<string,any>}
 export async function ticketAuthority(env:Env,actor:Actor,authority:TicketAuthority,permission:Permission='conversations.manage'){
  if(authority.tokenAuthority){if(permission!=='conversations.manage')throw new HTTPException(403);const guard=tokenGuard(authority.tokenAuthority,actor.projectId,'conversations:write');return {...guard,access:null as MemberAccess|null}}
- if(actor.role==='contact'||!authority.sessionHash)throw new HTTPException(403)
+ if(actor.role==='contact'||(!authority.sessionHash&&!authority[externalTicketAuthority]))throw new HTTPException(403)
  const role=await batchRead(env,`role:${actor.projectId}:${actor.id}`,()=>env.DB.prepare('SELECT mr.role_key,pr.updated_at FROM member_roles mr LEFT JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=? AND mr.user_id=?').bind(actor.projectId,actor.id).first<any>())
  const access=await batchRead(env,`access:${actor.projectId}:${actor.id}`,()=>memberAccess(env.DB,actor.projectId,actor.id))
  if(!access?.permissions.has(permission)){
@@ -22,8 +24,9 @@ export async function ticketAuthority(env:Env,actor:Actor,authority:TicketAuthor
   throw new HTTPException(403,{message:`Your role does not allow ${permission}`})
  }
  // Pin both the role assignment and role definition at commit, including removals.
- const sql=`SELECT 1 FROM memberships m JOIN sessions s ON s.token_hash=? WHERE m.project_id=? AND m.user_id=? AND m.role=? AND s.actor_id=m.user_id AND s.role<>'contact' AND s.revoked_at IS NULL AND s.expires_at>max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)) AND (s.project_id IS NULL AND s.role='operator' OR s.project_id=m.project_id AND s.role=m.role) AND (SELECT role_key FROM member_roles WHERE project_id=m.project_id AND user_id=m.user_id) IS ? AND (SELECT pr.updated_at FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=m.project_id AND mr.user_id=m.user_id) IS ? AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
- return {sql,params:[authority.sessionHash,actor.projectId,actor.id,actor.role,Date.now(),role?.role_key??null,role?.updated_at??null],access}
+ const external=authority[externalTicketAuthority]
+ const sql=external?`SELECT 1 FROM memberships m WHERE m.project_id=? AND m.user_id=? AND m.role=? AND (${external.sql}) AND (SELECT role_key FROM member_roles WHERE project_id=m.project_id AND user_id=m.user_id) IS ? AND (SELECT pr.updated_at FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=m.project_id AND mr.user_id=m.user_id) IS ? AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`:`SELECT 1 FROM memberships m JOIN sessions s ON s.token_hash=? WHERE m.project_id=? AND m.user_id=? AND m.role=? AND s.actor_id=m.user_id AND s.role<>'contact' AND s.revoked_at IS NULL AND s.expires_at>max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)) AND (s.project_id IS NULL AND s.role='operator' OR s.project_id=m.project_id AND s.role=m.role) AND (SELECT role_key FROM member_roles WHERE project_id=m.project_id AND user_id=m.user_id) IS ? AND (SELECT pr.updated_at FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=m.project_id AND mr.user_id=m.user_id) IS ? AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
+ return {sql,params:external?[actor.projectId,actor.id,actor.role,...external.params,role?.role_key??null,role?.updated_at??null]:[authority.sessionHash,actor.projectId,actor.id,actor.role,Date.now(),role?.role_key??null,role?.updated_at??null],access}
 }
 export async function ticketReadAccess(env:Env,actor:Actor){
  if(actor.role==='contact')throw new HTTPException(403)

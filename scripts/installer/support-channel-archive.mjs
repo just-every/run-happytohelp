@@ -1,5 +1,6 @@
 export function supportChannelArchiveRow(table,row){
  if(table==='support_channel_connections')return {...row,token_cipher:null,signing_cipher:null,verify_hash:'',revoked_at:row.revoked_at??row.created_at};
+ if(table==='support_channel_actions'&&row.state==='sending')return {...row,state:'uncertain'};
  if(table==='support_channel_sends'&&row.state==='sending')return {...row,state:'uncertain',error_code:'restored_pending_send'};
  return row;
 }

@@ -12052,7 +12052,7 @@
       "executable": false
     },
     "tests/move-in/shape-upgrade.mjs": {
-      "sha256": "a276000496ff07f979e12d08a8daf766d72d9a3e73dfd210899f43372a4636b0",
+      "sha256": "56a04d59b7d72ad7b66f388f456c685dbd727984bce99abcdb1e9e2fa305e197",
       "executable": false
     },
     "tests/move-in/snapshot.mjs": {

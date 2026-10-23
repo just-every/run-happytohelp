@@ -1,4 +1,4 @@
-import {phases} from '../journeys/kit/scenarios.mjs';
+import {phases,matrix} from '../journeys/kit/scenarios.mjs';
 const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
@@ -20,7 +20,7 @@ async function legacy(vendor,body,{extra=0}={}){let before,sequence;
   for(const table of Object.keys(before)){const expected=table==='move_in_runs'?before[table].map(row=>({...row,identity_complete:{sqliteInteger:'0'},identity_audited:{sqliteInteger:'0'}})):before[table];const delta=assertUnchangedTable(table,expected,after[table]);if(delta)sequence=delta}
  }});return {h,sequence,tableCount:Object.keys(before).length};
 }
-for(const vendor of ['intercom','zendesk'])test(`${vendor} persisted old completeness claims upgrade conservatively without changing any native row`,async()=>{
+test("persisted old completeness claims upgrade conservatively without changing any native row",matrix(['intercom','zendesk'],async (vendor)=>{
  const person=vendor==='intercom'?{type:'contact',id:'old-customer',email:'other@example.test',name:{email:'upgrade-private@example.test'},created_at:1704067200}:{user:{id:931,role:'end-user',email:'other@example.test',name:{email:'upgrade-private@example.test'},created_at:'2024-01-01T00:00:00Z'}},body=JSON.stringify(person),{h,sequence,tableCount}=await legacy(vendor,body);try{
  const files=await h.files,keeper=await h.db.prepare("SELECT * FROM contacts WHERE id='keeper'").first();assert.equal(await (await files.get('move-in/p/old/original')).text(),body);
  const beforeRepeat=await h.snapshot(),repeat=await h.call(`${root}?vendor=${vendor}`,{method:'POST',headers:{'X-Import-Filename':'old-original.jsonl','X-Import-Schema':'2.16'},body});assert.equal(repeat.data.id,'old');assert.equal(repeat.writes,0);assert.equal(h.lastWrites,0);await unchanged(h,beforeRepeat,`${vendor}-pre-audit-repeat`);
@@ -29,7 +29,7 @@ for(const vendor of ['intercom','zendesk'])test(`${vendor} persisted old complet
  const replay=structuredClone(person);if(vendor==='intercom')replay.id='new-customer';else replay.user.id=932;
  assert.equal((await h.raw(`${root}?vendor=${vendor}`,{method:'POST',headers:{'X-Import-Filename':'old-original.jsonl','X-Import-Schema':'2.16'},body:JSON.stringify(replay)})).response.status,410);assert.equal(h.outbound,0);
  console.log(JSON.stringify({proof:'shape-upgrade',vendor,tableCount,sequence,literalEquality:'UNFULFILLED',changedCells:'move_in_runs.identity_complete plus additive audit status only; explicit D1 sequence increment',privateObjectsAfterErasure:0}));
- }finally{await h.close()}});
+ }finally{await h.close()}}));
 
 test('upgrade reindexes real original bytes before ordinary native erasure loses old unrecorded aliases',async()=>{
  const {conversation}=documents('intercom'),fields=Object.fromEntries(Array.from({length:150},(_,i)=>[`opaque${i}`,null]));conversation.source.author={type:'admin',id:'old-unrecorded-staff',email:'upgrade-private@example.test',external_id:'old-external'};

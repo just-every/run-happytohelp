@@ -10996,7 +10996,7 @@
       "executable": false
     },
     "tests/helpers/escalations/dev-proof.mjs": {
-      "sha256": "8e063580314445097454d43d2c4c2c86518fedcf62fad5d73a59cf03e3d0c5fd",
+      "sha256": "b4c1b84bd7d9ef6fe0e816512cbe21389824fae59cb1594b3f5b5ac7611a91e5",
       "executable": false
     },
     "tests/helpers/escalations/edge.mjs": {
@@ -11025,6 +11025,10 @@
     },
     "tests/helpers/escalations/outbound.mjs": {
       "sha256": "066c8ee5ba19f6cad1650bba46697e2eb4aa83418425c05f058fced0844f3838",
+      "executable": false
+    },
+    "tests/helpers/escalations/private-context.mjs": {
+      "sha256": "6ef69285470d9f69f46b31ed99f16595b6db73b1fad5922c9847fbd72f5befa0",
       "executable": false
     },
     "tests/helpers/escalations/providers.mjs": {

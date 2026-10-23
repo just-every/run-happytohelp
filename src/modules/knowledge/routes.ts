@@ -1,3 +1,4 @@
+import {proposalRoutes} from './proposals'
 import {helpAuth} from './help-auth'
 import {publicKnowledgeRoutes} from './public-routes'
 import {experienceRoutes} from './experience-routes'
@@ -18,6 +19,7 @@ export const routes=new Hono<AppEnv>()
 routes.use('/public/:projectId/*',async(c,next)=>{const project=await c.env.DB.prepare("SELECT id FROM projects WHERE id=? AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=projects.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)").bind(c.req.param('projectId')).first();if(!project)return c.json({error:'Not found'},404);await next()})
 routes.route('/',helpAuth)
 routes.route('/',publicKnowledgeRoutes)
+routes.route('/',proposalRoutes)
 routes.route('/',experienceRoutes)
 routes.route('/',analyticsRoutes)
 routes.route('/',authoring)

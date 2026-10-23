@@ -44,6 +44,10 @@
     {
       "id": "243_procedure_versions.sql",
       "buyerSteps": "Apply before the updated Worker serves traffic. Adds immutable advice-procedure versions, exact-version evaluation release gates and bounded explicit cohorts. No business-action tools are added. A stopped cohort stays with a human review requirement until explicitly enrolled into another approved release; historical evaluations and version links remain available."
+    },
+    {
+      "id": "244_reviewed_knowledge_proposals.sql",
+      "buyerSteps": "Apply before the updated Worker serves traffic. Adds reviewed, source-linked private knowledge proposals and corrective review records. No draft is automatically published; named editors confirm redaction review. Source-derived publication is held to the customer\u2019s currently proven email-domain collection. Erasing that source customer removes the derived articles and proposals."
     }
   ]
 }

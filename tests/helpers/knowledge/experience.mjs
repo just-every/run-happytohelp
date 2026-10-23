@@ -8,6 +8,7 @@ try{
  const aid=(await call(`/api/knowledge/${p}/articles`,{body:{title:'Secret',content:'Restricted instructions',slug:'secret',categoryIds:[category],status:'published'},status:201})).data.id
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`)).status,404)
  assert.equal((await k.search('Restricted')).length,0)
+ assert.equal((await call(`/api/knowledge/${p}/articles`,{status:200})).data.find(a=>a.id===aid).aiEligibility,'recipient_scoped')
  const openCategory=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Public'},status:201})).data.id
  const child=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Child',parentId:category},status:201})).data.id
  const nested=(await call(`/api/knowledge/${p}/articles`,{body:{title:'Nested secret',slug:'nested-secret',content:'Restricted hierarchy',categoryIds:[openCategory,child],status:'published'},status:201})).data.id
@@ -64,7 +65,7 @@ try{
  await app.call(`/api/knowledge/public/${p}/search?q=absent&locale=fr`,{token:good.token,status:200})
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret/helpful`,{token:good.token,headers:{Origin:'https://evil.test'},body:{helpful:true}})).status,403)
  const stats=(await call(`/api/knowledge/${p}/analytics`,{status:200})).data;assert.equal(stats.totals.helpful,1);assert.equal(stats.comments[0].comment,'Worked');assert.equal(stats.totals.views,1);assert.equal(stats.totals.clicks,1);assert.ok(stats.searches.some(row=>row.query==='Restricted'&&row.withResults>0&&row.clicks===1));assert.ok(stats.searches.some(row=>row.query==='absent'&&row.withoutResults>0))
- assert.equal((await k.search('Restricted')).length,0,'private articles remain excluded from AI even after human access')
+ assert.equal((await k.search('Restricted')).length,0,'unscoped search never inherits a prior human session')
 
  // A content-only update through the native door must retain the current private collections.
  await call(`/api/knowledge/${p}/articles`,{body:{id:aid,title:'Secret refreshed',content:'Restricted refresh marker',slug:'secret',status:'published'},status:201})

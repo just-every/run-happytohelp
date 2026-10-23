@@ -268,3 +268,32 @@ negative-CSAT rates, supporting cycles (100 per page using `offset`), evaluation
 coverage and numeric recorded usage. Unversioned cycles and attempts without a
 committed answer are excluded from resolution denominators. Provider costs retain
 unknown prices; closing a cycle never establishes verified customer recovery.
+
+
+### Reviewed knowledge from support resolutions
+
+At `/api/knowledge/:projectId/gaps`, editors inspect exact normalized no-result
+search topics by locale/brand and cited reopened cycles. This groups existing
+native evidence; it does not claim semantic diagnosis.
+
+POST `/api/knowledge/:projectId/proposals` with `conversationId`, `resolutionId`,
+`messageId`, exact `quote`, `title`, private `categoryId` and the workspace default
+`locale`. The source must still be resolved with positive native customer
+feedback. The generated draft masks known contact names, addresses, URLs,
+credential labels and long identifiers. A named editor must review free text:
+automatic masking does not guarantee arbitrary anonymization.
+
+POST `/:id/reject` records a reason. POST `/:id/publish` requires edited `title`
+and `content`, optional `slug`, and explicit `redactionReviewed: true`; neither
+creation nor rejection publishes. GET the proposals to inspect source links,
+review history and later cited resolution/reopen cycles. POST
+`/:id/analyze-corrections` creates deduplicated review proposals from source or
+later cited reopenings. No correction automatically changes a published article.
+
+Customer-derived publication is conservatively limited to the source customer's
+proven email-domain collection. Ordinary article/category edits cannot broaden
+that scope. Public reuse and translations remain held; source erasure removes
+the derived article and proposal. Native AI search/read/citation admission uses
+the recipient's current proof. Unscoped search stays public only. Customer model
+text is withheld until durable message admission, which revalidates every issued
+source even when the model did not select it as a citation.

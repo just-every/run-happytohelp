@@ -49,6 +49,12 @@ const rules:Record<string,Rule>={
  'POST /api/ai-support/projects/:projectId/procedures/:key/versions/:versionId/review':'settings.manage',
  'POST /api/ai-support/projects/:projectId/procedures/:key/releases/:releaseId/check-regression':'settings.manage',
  'GET /api/ai-support/projects/:projectId/procedures/:key/versions/:versionId/reviews':'settings.manage',
+ 'GET /api/knowledge/:projectId/gaps':'knowledge.edit',
+ 'GET /api/knowledge/:projectId/proposals':'knowledge.edit',
+ 'POST /api/knowledge/:projectId/proposals':'knowledge.edit',
+ 'POST /api/knowledge/:projectId/proposals/:id/reject':'knowledge.publish',
+ 'POST /api/knowledge/:projectId/proposals/:id/publish':'knowledge.publish',
+ 'POST /api/knowledge/:projectId/proposals/:id/analyze-corrections':'knowledge.edit',
  // Knowledge
  [`POST ${K}/articles`]:'knowledge.publish',[`DELETE ${K}/articles/:articleId`]:'knowledge.publish',[`PUT ${K}/articles/:articleId/categories`]:'knowledge.edit',[`PUT ${K}/articles/:articleId/order`]:'knowledge.edit',
  [`POST ${K}/categories`]:'knowledge.edit',[`PUT ${K}/categories/:categoryId`]:'knowledge.edit',[`DELETE ${K}/categories/:categoryId`]:'knowledge.edit',

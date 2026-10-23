@@ -50,6 +50,43 @@ export async function answersJourney(){
    const raced=await ask('One more time?',answering(()=>current,{before:()=>app.db.prepare(change).run()}));assert.equal(raced.answers.length,0,change)
    await app.db.prepare("UPDATE knowledge_articles SET status='published' WHERE id='a'").run();await app.db.prepare("UPDATE knowledge_datasets SET published_version='v' WHERE id='ds'").run()
   }
+  // Retrieval and citations use the recipient's proven identity, never a typed
+  // address or the wider authority of the operator/provider running the turn.
+  const {createHmac}=await import('node:crypto')
+  const secret=(await app.first('SELECT verification_secret FROM projects WHERE id=?',p)).verification_secret
+  const category=(await app.call(`/api/knowledge/${p}/categories`,{token:a.owner,body:{title:'Private account',audience:'domains',allowedDomains:['trusted.test']},status:201})).data.id
+  const privateArticle=(await app.call(`/api/knowledge/${p}/articles`,{token:a.owner,body:{title:'Private export guide',content:'Privatemarker: reset the export queue using a fresh draft.',categoryIds:[category],status:'published'},status:201})).data.id
+  const privateVersion=(await app.first('SELECT publication_version FROM knowledge_articles WHERE id=?',privateArticle)).publication_version
+  const privateVisitor=async(email,proven=true)=>a.visitor('Member',proven?{identifier:email,email,contact_hash:createHmac('sha256',secret).update(email).digest('hex')}:{email})
+  const privateAnswer=async(visitor,{revoke=false,cite=true}={})=>{
+   let turn=0,observed
+   ai.respond=async body=>{
+    if(++turn===1)return openaiToolCall('search_knowledge',{query:'privatemarker'},'private-search')
+    observed=JSON.stringify(body.input)
+    if(turn===2&&cite&&observed.includes('reset the export queue'))return openaiToolCall('cite_knowledge',{sources:[{id:'article:'+privateArticle,sourceVersion:privateVersion}]},'private-cite')
+    if(revoke)await app.db.prepare('UPDATE contacts SET is_verified=0 WHERE id=?').bind(visitor.contactId).run()
+    return observed.includes('reset the export queue')?'Reset the export queue using a fresh draft.':'I cannot locate approved guidance; ask a teammate.'
+   }
+   await visitor.say('How can I use the privatemarker guidance?');await a.run()
+   return {observed,answers:(await visitor.transcript()).messages.filter(m=>m.actor_role==='ai')}
+  }
+  const member=await privateVisitor('member@trusted.test')
+  const permitted=await privateAnswer(member)
+  assert.match(permitted.observed,/reset the export queue/);assert.equal(permitted.answers.length,1)
+  assert.equal(JSON.parse(permitted.answers[0].citations_json)[0].id,'article:'+privateArticle)
+  for(const visitor of [await privateVisitor('outsider@other.test'),await privateVisitor('typed@trusted.test',false),await a.visitor()]){
+   const denied=await privateAnswer(visitor);assert.doesNotMatch(denied.observed,/reset the export queue/)
+   for(const answer of denied.answers){assert.doesNotMatch(answer.content,/reset the export queue/);assert.deepEqual(JSON.parse(answer.citations_json),[])}
+  }
+  // Even an uncited source is fenced at final admission. Model deltas never
+  // bypass that fence or leak an answer while the recipient's grant is revoked.
+  const revoked=await privateVisitor('revoked@trusted.test')
+  const upgradePrivate=await app.request(`/api/conversations/${revoked.conversationId}/socket?token=${revoked.token}`,{headers:{Upgrade:'websocket'}})
+  const privateSocket=upgradePrivate.webSocket;privateSocket.accept();const privateFrames=[]
+  privateSocket.addEventListener('message',event=>privateFrames.push(JSON.parse(event.data)))
+  const revokedAnswer=await privateAnswer(revoked,{revoke:true,cite:false})
+  assert.equal(revokedAnswer.answers.length,0);assert.ok(!privateFrames.some(frame=>frame.type==='chunk'),'unadmitted model deltas are never customer-visible');privateSocket.close()
+
   // Asking for a person hands the conversation to a human; the assistant writes nothing more and a person can reply.
   ai.respond=async()=>openaiToolCall('switch_agent',{agent_id:'human'},'handoff')
   const handoff=await a.visitor();await handoff.say('I need a human');await a.run()

@@ -12152,7 +12152,7 @@
       "executable": false
     },
     "tests/move-in/ownership-browser-flow.mjs": {
-      "sha256": "90877cba4cee55954611320a755a33b3e3cbd05c3d4f3a7c5ca8e9752d9fbd5e",
+      "sha256": "b19e5daba6938d0ffef17887c4f0609b7cbaa5e5de5daa966b6b6d5b88cf1533",
       "executable": false
     },
     "tests/move-in/parse-accounting.mjs": {

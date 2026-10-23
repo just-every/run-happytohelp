@@ -11264,7 +11264,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "697c4fff1026b0df963977a22a3331f360b18d6e72920f4d6c464194a3253352",
+      "sha256": "b496808fe84bdb218dbdf7cb8e2dc5a76a3220a85d5a2ed7e50566ff4b0c6552",
       "executable": false
     },
     "tests/helpers/installer/hosted-export.mjs": {

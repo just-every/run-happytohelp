@@ -71,6 +71,7 @@ const rules:Record<string,Rule>={
  'POST /delegation/authorize':'integrations.install','POST /delegation/settings/revoke':'integrations.install','POST /delegation/settings/clients':'integrations.install',
  // Move in
  'POST /api/move-in/projects/:projectId/imports':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/apply':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/resume':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/undo':'data.import',
+ 'POST /api/move-in/projects/:projectId/imports/:runId/ownership/preview':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/ownership/apply':'data.import',
  // Doors with their own authority
  'POST /auth/bootstrap':'none','POST /auth/owner-claim':'none','POST /api/identity/login':'none','POST /api/identity/accept-token':'none','POST /api/identity/forgot-password':'none','POST /api/identity/widget/session':'none','POST /api/identity/register':'none','POST /api/identity/verify-email':'none','POST /api/identity/bootstrap':'none','POST /api/identity/link-status':'none','POST /api/identity/magic-link':'none','POST /api/identity/magic-link/consume':'none','POST /api/identity/owner-recovery':'none',
  'POST /api/conversations/:id/widget-events':'none','POST /api/integrations/email/inbound':'none','POST /api/integrations/email/sendgrid/inbound':'none','POST /api/dashboard/demo-inbox':'none',

@@ -9400,7 +9400,7 @@
       "executable": false
     },
     "src/ui/native/IconHints.jsx": {
-      "sha256": "dd90141aaf916d87f226e584c685ee2df0ec5997c2babe05c564da8fca91afd3",
+      "sha256": "9cd53f7c6b3dd5ae0c930b5e277fc967fbb4aafcd62863ac2b3891988e5bf78c",
       "executable": false
     },
     "src/ui/native/inbox-navigation-state.jsx": {
@@ -11804,7 +11804,7 @@
       "executable": false
     },
     "tests/journeys/reports-browser.mjs": {
-      "sha256": "7cf843eae7de4c5a7c74852560ba9f1d8f19b1e5014a564e72067623eca09e0d",
+      "sha256": "f3e01025c4521cb4d95c73ef55bd0a2706d3c4042c91878aabe0ad75a383b38f",
       "executable": false
     },
     "tests/journeys/reports.mjs": {

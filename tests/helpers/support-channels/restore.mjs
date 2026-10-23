@@ -12,7 +12,7 @@ import {sha} from '../../journeys/kit/app.mjs';
 export async function restoreConsent(harness){
  const directory=await mkdtemp(join(tmpdir(),'happytohelp-channel-restore-'));let source,target;
  try{
-  source=await harness();const c=await source.connect('sms');await source.deliver(c,'sms',source.event('sms',{text:'STOP'}));const t=await source.ticket(c);const held=await source.reply(t);
+  source=await harness();const c=await source.connect('sms');await source.deliver(c,'sms',source.event('sms',{text:'STOP'}));const t=await source.ticket(c);const held=await source.reply(t);await source.deliver(c,'sms',source.event('sms',{sender:'+12025550125'}));const previouslyActive=await source.ticket(c);await source.reply(previouslyActive);
   const plan=await Promise.all((await readdir('migrations')).filter(n=>n.endsWith('.sql')).sort().map(async name=>({name,statements:splitSqlStatements(await readFile(join('migrations',name),'utf8'))})));
   const service=async app=>createPortability({db:app.db,buckets:{FILES:await app.files},policy:archivePolicy,migrations:async()=>migrationReplay(plan,archivePolicy)});
   const path=join(directory,'support.jsonl');await exportArchive(await service(source.app),path,[]);
@@ -24,7 +24,7 @@ export async function restoreConsent(harness){
    target.app.db.prepare("INSERT INTO session_factors(token_hash,user_id,method,verified_at) VALUES(?,?,'password',?)").bind(sha(token),user,now),
   ]);
   assert.equal((await target.deliver(c,'sms',target.event('sms'))).status,410);
-  await target.connect('sms');await target.reply(t);let status=(await target.call('/conversations/'+t.conversation_id)).data;assert.match(status.blocked,/customer_opted_out/);assert.ok(status.sends.every(s=>s.state==='blocked'));
+  await target.connect('sms');await target.reply(previouslyActive);assert.match((await target.call('/conversations/'+previouslyActive.conversation_id)).data.blocked,/customer_opted_out/,'import does not restore an earlier active consent');await target.reply(t);let status=(await target.call('/conversations/'+t.conversation_id)).data;assert.match(status.blocked,/customer_opted_out/);assert.ok(status.sends.every(s=>s.state==='blocked'));
   await target.deliver(c,'sms',target.event('sms',{text:'START'}));assert.equal((await target.call('/conversations/'+t.conversation_id)).data.blocked,null);await target.app.scheduled();assert.equal(target.sends.length,0);assert.equal((await target.call('/conversations/'+t.conversation_id)).data.sends.find(s=>s.message_id===held.message.id).state,'blocked');
   await target.reply(t,{content:'Reviewed after a new customer START'});assert.equal(target.sends.length,1);
  }finally{await source?.close();await target?.close();await rm(directory,{recursive:true,force:true});}

@@ -19,6 +19,7 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
    await openSettings()
    await page.getByLabel('Procedure instructions',{exact:true}).fill('trace-browser: refund advice only. Explain the policy. Payment changes require a person.')
    await page.getByLabel('Procedure model',{exact:true}).fill('gpt-5.6-luna')
+   await page.getByLabel('Procedure evaluation budget (USD)',{exact:true}).fill('100')
    await page.getByLabel('Human escalation rule',{exact:true}).fill('A person must review every payment change.')
    await page.getByRole('button',{name:'Create procedure version',exact:true}).click()
    await page.getByText('Immutable procedure version created.',{exact:false}).waitFor()

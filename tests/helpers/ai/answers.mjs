@@ -19,7 +19,7 @@ export async function answersJourney(){
   // Search, cite and answer: the model sees only citable results; `cite(rows)` chooses what to cite.
   let searched
   const answering=(cite,{before}={})=>{let turn=0;return async body=>{
-   turn++;assert.ok(toolNames(body).includes('cite_knowledge')&&toolNames(body).includes('switch_agent'),'the assistant can cite and hand off')
+   turn++;assert.ok(!toolNames(body).includes('propose_knowledge_change')&&!toolNames(body).includes('read_verified_resolution'),'customer-facing generations cannot inspect other customer cases or create knowledge drafts');assert.ok(toolNames(body).includes('cite_knowledge')&&toolNames(body).includes('switch_agent'),'the assistant can cite and hand off')
    if(turn===1)return openaiToolCall('search_knowledge',{query:'refund'},'search')
    if(turn===2){searched=JSON.stringify(body.input);return openaiToolCall('cite_knowledge',{sources:cite()},'cite')}
    await before?.();return 'Refunds are available within 30 days.'

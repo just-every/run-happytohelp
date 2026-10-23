@@ -12,7 +12,7 @@ export function failureCategory(value:unknown){
  * tool output. Every invocation rechecks the conversation's current authority. */
 export function tracedTools(env:Env,row:Generation,tools:any[],checkCurrent:()=>Promise<void>){
  return tools.map(tool=>({...tool,function:async(...args:any[])=>{
-  const id=crypto.randomUUID(),name=tool.definition.function.name,proposal=name==='propose_followup',assignment=name==='switch_agent'
+  const id=crypto.randomUUID(),name=tool.definition.function.name,proposal=['propose_followup','propose_knowledge_change'].includes(name),assignment=name==='switch_agent'
   await env.DB.prepare("INSERT INTO ai_tool_traces(id,generation_id,tool_name,state,started_at,approval,authority_scope) VALUES(?,?,?,'started',?,?,?)").bind(id,row.id,name,Date.now(),proposal?'human-review-required':assignment?'assignment-only':'not-required-read-only',row.kind==='suggestions'?'operator-project':'conversation-recipient').run()
   try{
    await checkCurrent()

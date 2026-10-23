@@ -11,7 +11,7 @@ export default function KnowledgeProposals({projectId,categories}){
  const proposal=data?.proposals.find(p=>p.id===selected);
  const post=(path,body)=>nativeRequest(base+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
  const field=(name,label,props={})=><Field name={'knowledge-proposal-'+name} label={label} value={draft[name]} onChange={(_,value)=>setDraft(d=>({...d,[name]:value}))} {...props}/>;
- const create=event=>{event.preventDefault();work(async current=>{const result=await post('/proposals',draft),rows=await load(current);if(current===epoch.current){choose(result.id,rows.proposals);setNotice('Private draft prepared. It is not published.');}});};
+ const create=event=>{event.preventDefault();work(async current=>{const result=await post('/proposals',draft),rows=await load(current);if(current===epoch.current){choose(result.id,rows.proposals);setNotice(result.state==='published'?'This source already has reviewed published guidance.':'Private draft prepared. It is not published.');}});};
  const review=(suffix,body)=>work(async current=>{await post(`/proposals/${proposal.id}/${suffix}`,body);await load(current);if(current===epoch.current)setNotice(suffix==='publish'?'Edited private guidance published by you.':suffix==='reject'?'Rejection retained for review.':'Correction proposals updated; published guidance is unchanged.');});
  return <section className="knowledge-form knowledge-proposals"><h2>Review knowledge proposals</h2>
   <p>Turn a verified support resolution into a private draft. Masking assists review; a named editor must check every publication for personal data and appropriate scope.</p>

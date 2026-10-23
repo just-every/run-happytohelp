@@ -28,5 +28,5 @@ routes.post('/projects/:projectId/generations/:id/cancel',async c=>{
 
 routes.post('/projects/:projectId/conversations/:conversationId/suggestions',async c=>{
  const projectId=c.req.param('projectId'),actor=await requireProject(c,projectId,true),body=await c.req.json()
- try{return c.json(await requestGeneration(c.env,{projectId,conversationId:c.req.param('conversationId'),actor,expectedRevision:body.expectedRevision,kind:'suggestions'}),202)}catch(error){return c.json({error:String(error)},409)}
+ try{return c.json(await requestGeneration(c.env,{projectId,conversationId:c.req.param('conversationId'),actor,sessionHash:c.get('sessionHash'),expectedRevision:body.expectedRevision,kind:'suggestions'}),202)}catch(error){return c.json({error:String(error)},409)}
 })

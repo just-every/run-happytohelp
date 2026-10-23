@@ -1,7 +1,7 @@
 import {failureCategory} from '../ai-support/tool-trace'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
-import type {AppEnv} from '../../platform/env'
+import type {AppEnv,Env} from '../../platform/env'
 import {requireProject} from '../../platform/auth'
 import {memberAccess} from '../access/gate'
 import {contactAvailableSql} from '../conversations/contact-privacy'
@@ -46,18 +46,7 @@ proposalRoutes.get(root,async c=>{
  }
  return c.json({proposals,publicationDefault:'Source-derived drafts can publish only into the source customer’s currently proven email-domain collection, after explicit redaction review. Public reuse is held.'})
 })
-proposalRoutes.post(root,async c=>{
- const pid=c.req.param('projectId')!,b=await c.req.json(),settings=await getKnowledgeExperience(c.env,pid),locale=validLocale(b.locale||settings.defaultLocale)
- if(locale!==settings.defaultLocale||!['conversationId','resolutionId','messageId','categoryId'].every(k=>typeof b[k]==='string'&&b[k].length>0)||!settings.locales.includes(locale)||typeof b.quote!=='string'||!b.quote.trim()||b.quote.length>10000||typeof b.title!=='string'||!b.title.trim()||b.title.length>500)throw new HTTPException(400,{message:'Choose a configured locale, title and exact resolution quote'})
- const source=await c.env.DB.prepare(`SELECT c.contact_id,c.brand_id,ct.name,m.content,r.id FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id JOIN conversation_resolutions r ON r.conversation_id=c.id AND r.project_id=c.project_id JOIN messages m ON m.conversation_id=c.id AND m.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND r.id=? AND r.reopened_at IS NULL AND c.resolved_at IS NOT NULL AND m.id=? AND m.revision>=r.cycle_start_revision AND m.revision<=r.resolved_revision AND ${contactAvailableSql()} AND EXISTS(SELECT 1 FROM csat_responses f WHERE f.resolution_id=r.id AND (f.scale='thumbs' AND f.score=1 OR f.scale='five' AND f.score>=4))`).bind(b.conversationId,pid,b.resolutionId,b.messageId).first<any>()
- if(!source||source.brand_id!==pid||!source.content.includes(b.quote))throw new HTTPException(409,{message:'A current resolved native case in this workspace’s brand with positive customer feedback and an exact source quote is required'})
- const access=await accessForContact(c.env,pid,source.contact_id),domain=access?.email?.split('@')[1]
- const category=await c.env.DB.prepare("SELECT 1 FROM knowledge_categories WHERE id=? AND project_id=? AND audience='domains' AND json_array_length(allowed_domains)=1 AND json_extract(allowed_domains,'$[0]')=?").bind(b.categoryId,pid,domain||'').first()
- if(!domain||!category)throw new HTTPException(409,{message:'Use a private collection restricted to the source customer’s proven email domain'})
- const id=crypto.randomUUID(),articleId=crypto.randomUUID(),now=Date.now(),title=redactKnowledgeDraft(b.title,source.name),content=redactKnowledgeDraft(b.quote,source.name)
- await c.env.DB.prepare("INSERT INTO knowledge_proposals VALUES(?,?,?,?,?,?,?,?,?,?,?,'draft',NULL,'',?,?)").bind(id,pid,b.conversationId,b.resolutionId,b.messageId,b.categoryId,locale,domain,title,content,articleId,now,now).run()
- return c.json({id,articleId,title,content,state:'draft',requiresNamedEditor:true},201)
-})
+proposalRoutes.post(root,async c=>c.json(await prepareKnowledgeProposal(c.env,c.req.param('projectId')!,await c.req.json()),201))
 proposalRoutes.post(root+'/:id/reject',async c=>{
  const pid=c.req.param('projectId')!,id=c.req.param('id')!,b=await c.req.json(),guard=await knowledgeEditorGuard(c)
  if(typeof b.reason!=='string'||!b.reason.trim()||b.reason.length>2000)throw new HTTPException(400,{message:'A review reason is required'})
@@ -85,3 +74,19 @@ proposalRoutes.post(root+'/:id/analyze-corrections',async c=>{
  await c.env.DB.prepare(`INSERT OR IGNORE INTO knowledge_corrections SELECT lower(hex(randomblob(16))),p.id,r.id,? FROM knowledge_proposals p JOIN messages m ON m.project_id=p.project_id JOIN conversation_resolutions r ON r.conversation_id=m.conversation_id AND r.project_id=m.project_id WHERE p.id=? AND p.project_id=? AND m.actor_role='ai' AND m.created_at>=p.created_at AND m.revision>=r.cycle_start_revision AND m.revision<=r.resolved_revision AND r.reopened_at IS NOT NULL AND EXISTS(SELECT 1 FROM json_each(m.citations_json) ref WHERE json_extract(ref.value,'$.id')='article:'||p.article_id)`).bind(Date.now(),id,pid).run()
  return c.json({proposedCorrections:(await c.env.DB.prepare('SELECT resolution_id resolutionId,created_at FROM knowledge_corrections WHERE proposal_id=?').bind(id).all()).results,action:'Review the cited reopened resolution; no article is automatically changed or published.'})
 })
+export async function prepareKnowledgeProposal(env:Env,pid:string,b:any,guard:{sql:string;args:unknown[]}={sql:'1=1',args:[]}){
+ const settings=await getKnowledgeExperience(env,pid),locale=validLocale(b.locale||settings.defaultLocale)
+ if(locale!==settings.defaultLocale||!['conversationId','resolutionId','messageId','categoryId'].every(k=>typeof b[k]==='string'&&b[k].length>0)||!settings.locales.includes(locale)||typeof b.quote!=='string'||!b.quote.trim()||b.quote.length>10000||typeof b.title!=='string'||!b.title.trim()||b.title.length>500)throw new HTTPException(400,{message:'Choose a configured locale, title and exact resolution quote'})
+ const source=await env.DB.prepare(`SELECT c.contact_id,c.brand_id,ct.name,m.content,r.id FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id JOIN conversation_resolutions r ON r.conversation_id=c.id AND r.project_id=c.project_id JOIN messages m ON m.conversation_id=c.id AND m.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND r.id=? AND r.reopened_at IS NULL AND c.resolved_at IS NOT NULL AND m.id=? AND m.revision>=r.cycle_start_revision AND m.revision<=r.resolved_revision AND ${contactAvailableSql()} AND EXISTS(SELECT 1 FROM csat_responses f WHERE f.resolution_id=r.id AND (f.scale='thumbs' AND f.score=1 OR f.scale='five' AND f.score>=4))`).bind(b.conversationId,pid,b.resolutionId,b.messageId).first<any>()
+ if(!source||source.brand_id!==pid||!source.content.includes(b.quote))throw new HTTPException(409,{message:'A current resolved native case in this workspace’s brand with positive customer feedback and an exact source quote is required'})
+ const access=await accessForContact(env,pid,source.contact_id),domain=access?.email?.split('@')[1]
+ const category=await env.DB.prepare("SELECT 1 FROM knowledge_categories WHERE id=? AND project_id=? AND audience='domains' AND json_array_length(allowed_domains)=1 AND json_extract(allowed_domains,'$[0]')=?").bind(b.categoryId,pid,domain||'').first()
+ if(!domain||!category)throw new HTTPException(409,{message:'Use a private collection restricted to the source customer’s proven email domain'})
+ const prior=await env.DB.prepare('SELECT id,article_id articleId,title,content,state FROM knowledge_proposals WHERE project_id=? AND resolution_id=? AND message_id=? AND category_id=? AND locale=? ORDER BY created_at,id LIMIT 1').bind(pid,b.resolutionId,b.messageId,b.categoryId,locale).first<any>()
+ if(prior)return {...prior,existing:true,requiresNamedEditor:true}
+ const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify([pid,b.resolutionId,b.messageId,b.categoryId,locale]))),id=Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,'0')).join(''),articleId=crypto.randomUUID(),now=Date.now(),title=redactKnowledgeDraft(b.title,source.name),content=redactKnowledgeDraft(b.quote,source.name)
+ const identity=helpAccessWriteGuard(pid,access)
+ const inserted=await env.DB.prepare(`INSERT OR IGNORE INTO knowledge_proposals SELECT ?,?,?,?,?,?,?,?,?,?,?,'draft',NULL,'',?,? WHERE (${guard.sql}) AND (${identity.sql}) AND EXISTS(SELECT 1 FROM conversations c JOIN conversation_resolutions r ON r.conversation_id=c.id AND r.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND c.brand_id=c.project_id AND c.resolved_at IS NOT NULL AND r.id=? AND r.reopened_at IS NULL AND ${contactAvailableSql()})`).bind(id,pid,b.conversationId,b.resolutionId,b.messageId,b.categoryId,locale,domain,title,content,articleId,now,now,...guard.args,...identity.args,b.conversationId,pid,b.resolutionId).run()
+ if(!inserted.meta.changes){const existing=await env.DB.prepare('SELECT id,article_id articleId,title,content,state FROM knowledge_proposals WHERE id=? AND project_id=?').bind(id,pid).first<any>();if(existing)return {...existing,existing:true,requiresNamedEditor:true};throw new HTTPException(409,{message:'Source or draft authority changed'})}
+ return {id,articleId,title,content,state:'draft',requiresNamedEditor:true}
+}

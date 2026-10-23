@@ -4,6 +4,7 @@ import {join} from 'node:path';
 import {createHash,randomUUID} from 'node:crypto';
 import {cloudflare} from '@runeditrun/rer/modules/deploy-kit/provider';
 import {migrate} from '@runeditrun/rer/internal/modules/deploy-kit/migrations.mjs';
+import {r2ObjectPath,r2ObjectPages} from '@runeditrun/rer/internal/modules/deploy-kit/r2-objects.mjs';
 
 export function hostedSourceApi(source){
  assert.match(source.name,/^h2h-portability-[a-f0-9-]{12}$/);assert.equal(source.bucket,source.name+'-files');
@@ -14,6 +15,10 @@ export async function removeHostedSource(source){
  const api=hostedSourceApi(source);
  try{if(source.bucketCreated)await api.request('/r2/buckets/'+source.bucket,{method:'DELETE'})}
  finally{if(source.databaseId)await api.request('/d1/database/'+source.databaseId,{method:'DELETE'})}
+}
+export async function clearHostedObjects(source){
+ const api=hostedSourceApi(source);
+ for await(const rows of r2ObjectPages(api,source.bucket))for(const row of rows)await api.request(r2ObjectPath(source.bucket,row.key),{method:'DELETE'});
 }
 /** Provider HTTP only; no app, workerd or browser process is started here. */
 export async function prepareHostedSource(root,scratch){

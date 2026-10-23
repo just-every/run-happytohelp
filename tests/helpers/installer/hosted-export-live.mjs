@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {stat} from 'node:fs/promises';
 import {join} from 'node:path';
 import {getPlatformProxy,unstable_splitSqlQuery} from 'wrangler';
-import {prepareHostedSource,removeHostedSource,hostedSourceApi} from './hosted-export-resources.mjs';
+import {prepareHostedSource,removeHostedSource,clearHostedObjects,hostedSourceApi} from './hosted-export-resources.mjs';
 import {hostedD1} from '../../../scripts/installer/hosted-d1.mjs';
 import {createPortability} from '@runeditrun/rer/modules/portability';
 import {importArchive,fileRecords} from '@runeditrun/rer/modules/portability/files';
@@ -35,10 +35,7 @@ export async function hostedExportLive(root,scratch,input='exports/support.rer',
   return output;
  }finally{
   try{
-   if(ownsObjects){
-    proxy??=await getPlatformProxy({configPath:config,envFiles:[],persist:false,remoteBindings:true});
-    let cursor;do{const page=await proxy.env.FILES.list({cursor});if(page.objects.length)await proxy.env.FILES.delete(page.objects.map(row=>row.key));cursor=page.truncated?page.cursor:undefined}while(cursor);
-   }
+   if(ownsObjects)await clearHostedObjects(source);
   }finally{
    try{await proxy?.dispose()}finally{await removeHostedSource(source)}
   }

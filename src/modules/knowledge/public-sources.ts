@@ -1,9 +1,15 @@
 import {articleAccessSql,accessParams,accessForContact,helpAccessWriteGuard,type HelpAccess} from './access'
+import {getKnowledgeExperience} from './experience'
 import type {Env} from '../../platform/env'
 import {isProjectActive} from '../../platform/project-status.ts'
 
 export interface PublicReference {id:string;sourceVersion:string}
-export interface PublicCitation extends PublicReference {title:string;url:string}
+export interface PublicCitation extends PublicReference {title:string;url:string;locale?:string;requestedLocale?:string;localeFallback?:boolean}
+const publicationParts=(version:string)=>{const [base,locale,translation]=version.split('~');return {base,locale,translation}}
+/** The requested locale stays in the reference even on fallback. This prevents a
+ * translation arriving or changing mid-turn from silently changing the evidence. */
+export function articlePublicationSql(alias='a',version='issued.source_version'){return `((${alias}.publication_version=${version}) OR EXISTS(SELECT 1 FROM knowledge_translations t WHERE t.article_id=${alias}.id AND t.published_source_version=${alias}.publication_version AND t.published_json IS NOT NULL AND ${alias}.publication_version||'~'||t.locale||'~'||t.publication_version=${version}) OR (${version} LIKE ${alias}.publication_version||'~%~base' AND NOT EXISTS(SELECT 1 FROM knowledge_translations t WHERE t.article_id=${alias}.id AND t.published_source_version=${alias}.publication_version AND t.published_json IS NOT NULL AND ${alias}.publication_version||'~'||t.locale||'~base'=${version})))`}
+
 export const activeSourceProjectSql = (project:string) => `EXISTS(SELECT 1 FROM projects p WHERE p.id=${project} AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL))`
 export const articleEligibilitySql = (alias='a',authenticated='0',domain="''") => `${alias}.status='published' AND ${articleAccessSql(alias,authenticated,domain)} AND ${activeSourceProjectSql(`${alias}.project_id`)}`
 /** Shared with the owner checklist: exactly the eligibility retrieval uses. */
@@ -23,10 +29,17 @@ export function articleCanonicalUrl(env:Env,projectId:string,slug:string){
 export async function readKnowledgeSource(env:Env,projectId:string,ref:PublicReference,access?:HelpAccess){
  if(!await isProjectActive(env,projectId))return null
  if(ref.id.startsWith('article:')){
-  const id=ref.id.slice(8)
-  if(!await isArticleEligibleForAI(env,projectId,id,ref.sourceVersion,access))return null
-  const row=await env.DB.prepare(`SELECT title,slug,content,publication_version sourceVersion FROM knowledge_articles a WHERE id=? AND project_id=? AND publication_version=? AND ${articleEligibilitySql('a','?', '?')}`).bind(id,projectId,ref.sourceVersion,...accessParams(access)).first<any>()
-  return row?{...row,id:ref.id,url:articleCanonicalUrl(env,projectId,row.slug)}:null
+  const id=ref.id.slice(8),parts=publicationParts(ref.sourceVersion)
+  if(!await isArticleEligibleForAI(env,projectId,id,parts.base,access))return null
+  const row=await env.DB.prepare(`SELECT title,slug,content,publication_version sourceVersion FROM knowledge_articles a WHERE id=? AND project_id=? AND publication_version=? AND ${articleEligibilitySql('a','?', '?')}`).bind(id,projectId,parts.base,...accessParams(access)).first<any>()
+  if(!row)return null
+  if(!parts.locale)return {...row,id:ref.id,url:articleCanonicalUrl(env,projectId,row.slug)}
+  const settings=await getKnowledgeExperience(env,projectId)
+  if(!settings.locales.includes(parts.locale))return null
+  const tr=parts.locale!==settings.defaultLocale?await env.DB.prepare('SELECT published_json,publication_version FROM knowledge_translations WHERE article_id=? AND locale=? AND published_source_version=? AND published_json IS NOT NULL').bind(id,parts.locale,parts.base).first<any>():null
+  if((tr?.publication_version||'base')!==parts.translation)return null
+  const locale=tr?parts.locale:settings.defaultLocale,url=new URL(articleCanonicalUrl(env,projectId,row.slug));url.searchParams.set('locale',parts.locale)
+  return {...row,...(tr?JSON.parse(tr.published_json):{}),id:ref.id,sourceVersion:ref.sourceVersion,url:url.href,locale,requestedLocale:parts.locale,localeFallback:locale!==parts.locale}
  }
  if(!ref.id.startsWith('knowledge:'))return null
  const row=await env.DB.prepare(`SELECT f.title,f.url,f.content,f.version_id sourceVersion FROM knowledge_documents f JOIN knowledge_datasets d ON d.published_version=f.version_id WHERE f.id=? AND d.project_id=? AND f.version_id=? AND ${activeSourceProjectSql('d.project_id')}`).bind(ref.id.slice(10),projectId,ref.sourceVersion).first<any>()
@@ -40,7 +53,7 @@ export async function resolvePublicCitations(env:Env,projectId:string,generation
   if(!await env.DB.prepare('SELECT 1 FROM ai_generation_sources WHERE generation_id=? AND project_id=? AND source_id=? AND source_version=?').bind(generationId,projectId,ref.id,ref.sourceVersion).first())throw new Error('Unissued public citation')
   const row=await readKnowledgeSource(env,projectId,ref,access),url=safePublicUrl(row?.url)
   if(!row||!url)throw new Error('Stale or unsafe public citation')
-  if(!citations.some(c=>c.id===ref.id))citations.push({id:ref.id,sourceVersion:ref.sourceVersion,title:row.title,url})
+  if(!citations.some(c=>c.id===ref.id))citations.push({id:ref.id,sourceVersion:ref.sourceVersion,title:row.title,url,...(row.requestedLocale?{locale:row.locale,requestedLocale:row.requestedLocale,localeFallback:row.localeFallback}:{})})
  }
  return citations
 }
@@ -66,7 +79,7 @@ export async function generationKnowledgeAccess(env:Env,projectId:string,generat
 export function knowledgeRetrievalAdmissionGuard(generationId:string,projectId:string,access?:HelpAccess){
  const identity=helpAccessWriteGuard(projectId,access)
  return {sql:`(${identity.sql}) AND NOT EXISTS(SELECT 1 FROM ai_generation_sources issued WHERE issued.generation_id=? AND issued.project_id=c.project_id AND (
- (substr(issued.source_id,1,8)='article:' AND NOT EXISTS(SELECT 1 FROM knowledge_articles a WHERE a.id=substr(issued.source_id,9) AND a.project_id=c.project_id AND a.publication_version=issued.source_version AND ${articleEligibilitySql('a','?', '?')})) OR
+ (substr(issued.source_id,1,8)='article:' AND NOT EXISTS(SELECT 1 FROM knowledge_articles a WHERE a.id=substr(issued.source_id,9) AND a.project_id=c.project_id AND ${articlePublicationSql()} AND ${articleEligibilitySql('a','?', '?')})) OR
  (substr(issued.source_id,1,10)='knowledge:' AND NOT EXISTS(SELECT 1 FROM knowledge_documents f JOIN knowledge_datasets d ON d.published_version=f.version_id WHERE f.id=substr(issued.source_id,11) AND d.project_id=c.project_id AND f.version_id=issued.source_version AND ${activeSourceProjectSql('d.project_id')})) OR
  (substr(issued.source_id,1,8)<>'article:' AND substr(issued.source_id,1,10)<>'knowledge:')))`,args:[...identity.args,generationId,...accessParams(access)]}
 }

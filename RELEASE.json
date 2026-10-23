@@ -52,6 +52,10 @@
     {
       "id": "245_procedure_regression_stop.sql",
       "buyerSteps": "Apply before serving the updated Worker. A native reopening of a cycle answered by an active advice procedure now stops that exact bounded rollout automatically, cancels its queued/running generations and restores an active human owner without publishing an AI draft. A lead must explicitly enroll an approved release and hand the conversation back to AI to resume; existing cases, reviews and failures remain retained."
+    },
+    {
+      "id": "246_translated_ai_publications.sql",
+      "buyerSteps": "Apply before the updated Worker serves traffic. Gives reviewed translations their own publication identity, preserving existing drafts and reviewed text. AI retrieval and admission now fence the exact translated publication and disclose source-language fallback."
     }
   ]
 }

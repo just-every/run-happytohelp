@@ -56,7 +56,7 @@ export async function answersJourney(){
   const secret=(await app.first('SELECT verification_secret FROM projects WHERE id=?',p)).verification_secret
   const category=(await app.call(`/api/knowledge/${p}/categories`,{token:a.owner,body:{title:'Private account',audience:'domains',allowedDomains:['trusted.test']},status:201})).data.id
   const privateArticle=(await app.call(`/api/knowledge/${p}/articles`,{token:a.owner,body:{title:'Private export guide',content:'Privatemarker: reset the export queue using a fresh draft.',categoryIds:[category],status:'published'},status:201})).data.id
-  const privateVersion=(await app.first('SELECT publication_version FROM knowledge_articles WHERE id=?',privateArticle)).publication_version
+  let privateVersion=(await app.first('SELECT publication_version FROM knowledge_articles WHERE id=?',privateArticle)).publication_version
   const privateVisitor=async(email,proven=true)=>a.visitor('Member',proven?{identifier:email,email,contact_hash:createHmac('sha256',secret).update(email).digest('hex')}:{email})
   const privateAnswer=async(visitor,{revoke=false,cite=true}={})=>{
    let turn=0,observed
@@ -78,6 +78,57 @@ export async function answersJourney(){
    const denied=await privateAnswer(visitor);assert.doesNotMatch(denied.observed,/reset the export queue/)
    for(const answer of denied.answers){assert.doesNotMatch(answer.content,/reset the export queue/);assert.deepEqual(JSON.parse(answer.citations_json),[])}
   }
+  // Reviewed translations are real retrieval evidence, with their own admission identity.
+  const management=(path,body)=>app.call(`/api/knowledge/${p}`+path,{token:a.owner,method:'PUT',body,status:200})
+  await management('/experience',{defaultLocale:'en',locales:['en','fr'],templates:{}})
+  const translate=(content,reviewStatus='reviewed')=>management(`/articles/${privateArticle}/translations/fr`,{title:'Guide privé',content,summary:'',reviewStatus})
+  await translate('Guidemarqueur: réinitialiser la file avec un brouillon neuf.')
+  const localized=async(visitor,{before,query='guidemarqueur',cite=true}={})=>{
+   let turn=0,observed,ref
+   ai.respond=async body=>{
+    if(++turn===1)return openaiToolCall('search_knowledge',{query,locale:'fr'},'localized-search')
+    if(turn===2){
+     observed=JSON.stringify(body.input)
+     const issued=await app.first('SELECT source_id,source_version FROM ai_generation_sources WHERE source_id=? AND source_version LIKE ? ORDER BY rowid DESC LIMIT 1','article:'+privateArticle,'%~fr~%')
+     ref=issued&&{id:issued.source_id,sourceVersion:issued.source_version}
+     if(cite&&observed.includes('Guidemarqueur'))return openaiToolCall('cite_knowledge',{sources:[ref]},'localized-cite')
+    }
+    await before?.();return 'Consultez le guide.'
+   }
+   await visitor.say('Comment utiliser ce guide en français?');await a.run()
+   return {observed,ref,answers:(await visitor.transcript()).messages.filter(m=>m.actor_role==='ai')}
+  }
+  const translated=await localized(await privateVisitor('french@trusted.test'))
+  assert.match(translated.observed,/réinitialiser la file/);assert.equal(translated.answers.length,1)
+  const translatedCitation=JSON.parse(translated.answers[0].citations_json)[0]
+  assert.equal(translatedCitation.locale,'fr');assert.equal(translatedCitation.localeFallback,false);assert.match(translatedCitation.url,/locale=fr/)
+  await translate('Unreviewed French secret', 'draft')
+  const retained=await localized(await privateVisitor('draft-reader@trusted.test'))
+  assert.match(retained.observed,/réinitialiser la file/);assert.doesNotMatch(retained.observed,/Unreviewed French secret/)
+  assert.equal(retained.ref.sourceVersion,translated.ref.sourceVersion,'editing a draft preserves the reviewed identity')
+  const changed=await localized(await privateVisitor('raced-fr@trusted.test'),{before:()=>translate('Guidemarqueur: nouvelle publication.')})
+  assert.equal(changed.answers.length,0,'a translated publication changed mid-answer admits no stale customer draft')
+  const uncited=await localized(await privateVisitor('uncited-fr@trusted.test'),{cite:false,before:()=>translate('Guidemarqueur: troisième publication.')})
+  assert.equal(uncited.answers.length,0,'uncited translated evidence has the same atomic fence')
+  for(const visitor of [await privateVisitor('french@other.test'),await privateVisitor('typed-fr@trusted.test',false),await a.visitor()]){
+   const denied=await localized(visitor);assert.doesNotMatch(denied.observed,/Guidemarqueur|nouvelle publication|troisième publication/)
+  }
+  await app.call(`/api/knowledge/${p}/articles`,{token:a.owner,body:{id:privateArticle,title:'Private export guide',slug:'private-export-guide',content:'Privatemarker: reset the export queue using a fresh draft. Updated source.',status:'published'},status:201})
+  const fallback=await localized(await privateVisitor('fallback@trusted.test'),{query:'privatemarker'})
+  assert.match(fallback.observed,/localeFallback/);assert.match(fallback.observed,/Updated source/)
+  // Select the issued fallback explicitly; the server, not the model, discloses it.
+  let fallbackTurn=0
+  ai.respond=async body=>{
+   if(++fallbackTurn===1)return openaiToolCall('search_knowledge',{query:'privatemarker',locale:'fr'},'fallback-search')
+   if(fallbackTurn===2){const issued=await app.first('SELECT source_id,source_version FROM ai_generation_sources WHERE source_id=? ORDER BY rowid DESC LIMIT 1','article:'+privateArticle);return openaiToolCall('cite_knowledge',{sources:[{id:issued.source_id,sourceVersion:issued.source_version}]},'fallback-cite')}
+   return 'Read the source guidance.'
+  }
+  const fallbackVisitor=await privateVisitor('fallback-cited@trusted.test');await fallbackVisitor.say('Please explain in French');await a.run()
+  const fallbackMessage=(await fallbackVisitor.transcript()).messages.find(m=>m.actor_role==='ai')
+  assert.match(fallbackMessage.content,/Knowledge language fallback: fr → en/)
+  assert.equal(JSON.parse(fallbackMessage.citations_json)[0].localeFallback,true)
+
+  privateVersion=(await app.first('SELECT publication_version FROM knowledge_articles WHERE id=?',privateArticle)).publication_version
   // Even an uncited source is fenced at final admission. Model deltas never
   // bypass that fence or leak an answer while the recipient's grant is revoked.
   const revoked=await privateVisitor('revoked@trusted.test')

@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "9dc9fe1942ce1ff146a698a3bb3c6a6b274d800cc9904f505bdfb32a5ecda877",
+      "sha256": "06db0966aa456774504c3692e7b2d46f8ab3ecbb8c9f869bf6473cbb6228aad8",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2477,6 +2477,10 @@
     },
     "migrations/251_assurance.sql": {
       "sha256": "472fc38afaaf4c171d53cb626cbd1965e5d3919c4253bfcd4ea658bf093afcc3",
+      "executable": false
+    },
+    "migrations/252_feedback_penny.sql": {
+      "sha256": "0763293833bc7643746975d2974ed5c232ea1c0b4a736ae14c07639615e7928d",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -4307,6 +4311,10 @@
       "sha256": "25d1df3d997c780febeca92fe590f529edcd5c04d7494cd39810bbc8af57ec98",
       "executable": false
     },
+    "src/modules/feedback/penny.ts": {
+      "sha256": "45e9a8484fd99ccc62dffc5c3edab2d050b5a919d77d155b2f977f97fb7ad60a",
+      "executable": false
+    },
     "src/modules/feedback/routes.ts": {
       "sha256": "f6706bc1a6e6197c3eb921fc179dbd47ebcdb7384a51f0e043e20e19a695f69d",
       "executable": false
@@ -4317,6 +4325,14 @@
     },
     "src/modules/feedback/ui/FeedbackPanel.jsx": {
       "sha256": "edac2072313283dcc81d7442db020e52fc992837520f247497e8b4cb7c37bd11",
+      "executable": false
+    },
+    "src/modules/feedback/ui/PennyConnection.jsx": {
+      "sha256": "13d14d7730bf849d3f16c58afb2c52c620b659ec5308efbfa4685f2e23fb8732",
+      "executable": false
+    },
+    "src/modules/feedback/ui/PennyHandoff.jsx": {
+      "sha256": "7cf9e1d02cdf82063e34917b3729e58bf936a60d03f3fb34539aa6db8c7adf4e",
       "executable": false
     },
     "src/modules/forms/challenge.ts": {
@@ -11680,7 +11696,7 @@
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {
-      "sha256": "ff68a2592bc7b72846823a3728563a20b407eaf04ad88d642d1e96f2e1961a97",
+      "sha256": "f70519147a8e6ae5f9ebc34eeffa78fd681d7e0fc432f7a60a3cdd991ac7cb2f",
       "executable": false
     },
     "tests/journeys/connections.mjs": {
@@ -11736,7 +11752,7 @@
       "executable": false
     },
     "tests/journeys/identity-browser.mjs": {
-      "sha256": "9d4843c418c4e2fbe93cf51a67098d84fc75bae42d5676dd67ca5164788fa313",
+      "sha256": "60f2fb1eb7b6311bae9c73c71f799a711025e547bda265105394c9b04f15ebb8",
       "executable": false
     },
     "tests/journeys/identity.mjs": {

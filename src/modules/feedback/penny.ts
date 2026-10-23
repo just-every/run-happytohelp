@@ -1,4 +1,4 @@
-import {Hono} from 'hono'
+import {Hono,type Context} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
 import {validateDestination} from '../../vendor/base/modules/integrations/index.ts'
@@ -23,7 +23,7 @@ pennyRoutes.put(root+'/penny-connection',async c=>{
  await c.env.DB.batch([c.env.DB.prepare('INSERT INTO feedback_penny_connections VALUES(?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET origin=excluded.origin,token_cipher=excluded.token_cipher,updated_at=excluded.updated_at').bind(actor.projectId,origin,cipher,now),auditStatement(c.env.DB,{projectId:actor.projectId,category:'integration',action:'feedback.penny_connected',actor:{type:'user',id:actor.id},source:requestSource(c)})])
  return c.json({saved:true})
 })
-async function sourceContext(c:any){
+async function sourceContext(c:Context<AppEnv>){
  const {actor,conversation}=await access(c,'conversations.manage'),sourceId=c.req.param('sourceId')
  const row=await c.env.DB.prepare(`SELECT s.*,co.name account_name,ct.name contact_name FROM feedback_sources s JOIN contacts ct ON ct.id=s.contact_id AND ct.project_id=s.project_id LEFT JOIN companies co ON co.id=s.account_id AND co.project_id=s.project_id WHERE s.id=? AND s.project_id=? AND s.conversation_id=?`).bind(sourceId,actor.projectId,conversation.id).first<any>()
  if(!row)throw new HTTPException(404)

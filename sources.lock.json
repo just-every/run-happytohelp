@@ -11996,7 +11996,7 @@
       "executable": false
     },
     "tests/move-in/nested-upgrade.mjs": {
-      "sha256": "738db534d5abeb63247829d5262cddcda6df179613ca238f115dc000d422c19c",
+      "sha256": "ec3b1c99bb70fcf3f1713ac21edbc40ef0679ea5d347e4e67546efedc667066c",
       "executable": false
     },
     "tests/move-in/owned-workerd.mjs": {

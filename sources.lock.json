@@ -11800,7 +11800,7 @@
       "executable": false
     },
     "tests/journeys/kit/app.mjs": {
-      "sha256": "5b55aa415ad55d9dc5e544264241ef38cdb348065fbcaa65a0b71f91dd4c31e1",
+      "sha256": "d14f49024ff9ce9bc88b580408938c116a744d8e34de75e64e9881d70c3e26df",
       "executable": false
     },
     "tests/journeys/kit/browser.mjs": {

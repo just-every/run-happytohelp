@@ -12,6 +12,7 @@ import {createPortability} from '@runeditrun/rer/modules/portability';
 import {exportArchive,fileRecords} from '@runeditrun/rer/modules/portability/files';
 import {appliedMigrations,platformMigrationPreflight} from '@runeditrun/rer/internal/cli/portability-migrations.mjs';
 import {archivePolicy} from './portability-policy.mjs';
+import {hostedD1} from './hosted-d1.mjs';
 
 const root=fileURLToPath(new URL('../..',import.meta.url));
 class HostedExportRefusal extends Error {}
@@ -55,7 +56,7 @@ export async function hostedExport({output,configPath,stopped,origin}){
  try{
   const path=join(temporary,'bindings.json');await writeFile(path,JSON.stringify(config),{mode:0o600});
   proxy=await getPlatformProxy({configPath:path,envFiles:[],persist:false,remoteBindings:true});
-  const {DB,FILES}=proxy.env;
+  const DB=hostedD1({accountId:config.account_id,databaseId:config.d1_databases[0].database_id,token:process.env.CLOUDFLARE_API_TOKEN}),FILES=proxy.env.FILES;
   await promisify(execFile)(process.execPath,['scripts/migrations.mjs'],{cwd:root});
   await platformMigrationPreflight(root,DB,'DB',{},unstable_splitSqlQuery);
   const migrations=await appliedMigrations(root,DB,'DB',{},unstable_splitSqlQuery);

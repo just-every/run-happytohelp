@@ -6,15 +6,23 @@ import {parseJsonc} from '@runeditrun/rer/jsonc';
 import {fileRecords} from '@runeditrun/rer/modules/portability/files';
 import {run} from '../rer-command.mjs';
 
-/** The public rer command and seed hook run unchanged. Only Wrangler's remote
- * binding boundary is redirected to the stopped disposable source installation. */
+/** The public command and seed hook run unchanged; only the D1 API and R2
+ * network boundaries point at the stopped disposable native installation. */
 export async function hostedExportJourney(root,scratch){
  const config=join(scratch,'hosted-target.json'),shim=join(scratch,'remote-bindings.mjs'),loader=join(scratch,'remote-loader.mjs');
- await writeFile(config,JSON.stringify({account_id:'synthetic-happytohelp-1',d1_databases:[{binding:'DB',database_id:'synthetic-happytohelp-2',database_name:'synthetic-happytohelp-2'}],r2_buckets:[{binding:'FILES',bucket_name:'synthetic-happytohelp-3'}]}),{mode:0o600});
+ await writeFile(config,JSON.stringify({account_id:'00000000000000000000000000000000',d1_databases:[{binding:'DB',database_id:'00000000-0000-4000-8000-000000000002',database_name:'synthetic-happytohelp-2'}],r2_buckets:[{binding:'FILES',bucket_name:'synthetic-happytohelp-3'}]}),{mode:0o600});
  const wrangler=pathToFileURL(join(root,'node_modules/wrangler/wrangler-dist/cli.js')).href;
  await writeFile(shim,`import {getPlatformProxy as real,unstable_splitSqlQuery} from ${JSON.stringify(wrangler)};
  import {readFile,writeFile} from 'node:fs/promises';
  import {parseJsonc} from ${JSON.stringify(pathToFileURL(join(root,'node_modules/@runeditrun/rer/cli/jsonc.mjs')).href)};
+ let sourceProxy;const actualFetch=globalThis.fetch;
+ globalThis.fetch=async(input,options)=>{
+  const url=new URL(typeof input==='string'?input:input.url);
+  if(url.protocol==='http:'&&url.hostname==='127.0.0.1')return actualFetch(input,options);
+  if(url.href!=='https://api.cloudflare.com/client/v4/accounts/00000000000000000000000000000000/d1/database/00000000-0000-4000-8000-000000000002/query'||options.method!=='POST'||options.headers.Authorization!=='Bearer synthetic-happytohelp-4'||!sourceProxy)throw Error('Unexpected hosted D1 network request');
+  const body=JSON.parse(options.body),result=await sourceProxy.env.DB.batch(body.batch.map(({sql,params})=>sourceProxy.env.DB.prepare(sql).bind(...params.map(value=>Array.isArray(value)?Uint8Array.from(value).buffer:value))));
+  return Response.json({success:true,result});
+ };
  export {unstable_splitSqlQuery};
  export async function getPlatformProxy(options){
   const selected=JSON.parse(await readFile(options.configPath,'utf8'));
@@ -22,7 +30,7 @@ export async function hostedExportJourney(root,scratch){
   const source=parseJsonc(await readFile(${JSON.stringify(join(root,'wrangler.jsonc'))},'utf8'));
   const path=${JSON.stringify(join(scratch,'stopped-source.json'))};
   await writeFile(path,JSON.stringify({name:source.name,compatibility_date:source.compatibility_date,compatibility_flags:source.compatibility_flags,d1_databases:source.d1_databases,r2_buckets:source.r2_buckets}),{mode:0o600});
-  return real({configPath:path,envFiles:[],persist:{path:${JSON.stringify(join(root,'.wrangler/state/v3'))}},remoteBindings:false});
+  sourceProxy=await real({configPath:path,envFiles:[],persist:{path:${JSON.stringify(join(root,'.wrangler/state/v3'))}},remoteBindings:false});return sourceProxy;
  }
  `,{mode:0o600});
  await writeFile(loader,`import {registerHooks} from 'node:module';

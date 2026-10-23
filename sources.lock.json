@@ -1744,7 +1744,7 @@
       "executable": false
     },
     "docs/moving-in-shapes.md": {
-      "sha256": "d64c246de322686dddd98e95efb1d075f3d83db6d6d97ee080709129058dfe04",
+      "sha256": "3f5a246ffb224be26a94af4b9166547dc7a5b48de9ad7e04ccfce73c861f5874",
       "executable": false
     },
     "docs/moving-in.md": {
@@ -6236,7 +6236,7 @@
       "executable": false
     },
     "src/modules/move-in/readers/companies.ts": {
-      "sha256": "43527a9185b8cf2058786298b5e3e53201afaabf012135177ef0a967e247db27",
+      "sha256": "5aba5e529115ba81b2fc904ffd55df2b5e85551963a0941363f38910bd3ec09c",
       "executable": false
     },
     "src/modules/move-in/readers/freshdesk-mapping.ts": {
@@ -9896,7 +9896,7 @@
       "executable": false
     },
     "src/ui/native/pages/move-in-presentation.js": {
-      "sha256": "2246537e498e408a8cffa553787ee1cc55bdac9464faeb00727a1c989d58b577",
+      "sha256": "640ee8055f711d50a52605e1d4f55c97479720899710f600652ec42ad66e01b4",
       "executable": false
     },
     "src/ui/native/pages/move-in-reasons.js": {

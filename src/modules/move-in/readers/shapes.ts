@@ -26,6 +26,11 @@ function common(timestamp:'iso'|'unix'){return {id,type:string,kind:string,creat
  * read by mappings. Opaque retained fields are explicit leaves, never traversed or
  * guessed from arbitrary text. Missing mapping requirements remain mapper errors. */
 export const recordShapes:Record<string,Shape>={
+ 'zendesk/group':record({...common('iso'),name:string,deleted:boolean,default:boolean,description:nullable(string)},['id','name','created_at','updated_at']),
+ 'zendesk/schedule':record({...common('iso'),name:string,time_zone:string,intervals:array(record({start_time:integer,end_time:integer},['start_time','end_time'])),holidays:array(record({id,name:string,start_date:string,end_date:string},['start_date','end_date']))},['id','name','time_zone','intervals']),
+ 'zendesk/view':record({...common('iso'),title:string,active:boolean,restriction:nullable(opaque),conditions:opaque,execution:opaque},['id','title','conditions']),
+ 'zendesk/trigger':record({...common('iso'),title:string,active:boolean,position:integer,conditions:opaque,actions:array({type:'action'})},['id','title','conditions','actions']),
+ 'zendesk/automation':record({...common('iso'),title:string,active:boolean,position:integer,conditions:opaque,actions:array({type:'action'})},['id','title','conditions','actions']),
  'zendesk/user':{...record({...common('iso'),...contactFields,role:oneOf('end-user','agent','admin'),tags:nullable(array(string))},['id']),person:true},
  'zendesk/ticket':record({...common('iso'),subject:nullable(string),requester_id:reference,status:oneOf('new','open','pending','hold','solved','closed'),tags:nullable(array(string)),comments:array(comment),attachments:nullable(opaque),assignee_id:nullable(reference),via},['requester_id','comments']),
  'zendesk/macro':record({...common('iso'),title:string,restriction:nullable(opaque),actions:array({type:'action'})}),

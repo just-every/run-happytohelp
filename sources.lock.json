@@ -6172,7 +6172,7 @@
       "executable": false
     },
     "src/modules/move-in/planning-state.ts": {
-      "sha256": "12067a737297b05d8168658663525716324852d18304edd08cbcaf9b260ba143",
+      "sha256": "d2a783622bfd0bfea03059ac24ac75a8c72e9c034c0cf1965bf9d2ac8a92fabd",
       "executable": false
     },
     "src/modules/move-in/plans.ts": {
@@ -6248,7 +6248,7 @@
       "executable": false
     },
     "src/modules/move-in/readers/normalise.ts": {
-      "sha256": "cd1c5419195833cb98f7b61be1406d13e18d807e5c99d5f6cb098c1b2749117b",
+      "sha256": "69c2664a3cd51f353a2b938dd9dd962492e4f23851e5cb4716799170d351ef3b",
       "executable": false
     },
     "src/modules/move-in/readers/records.ts": {
@@ -6256,7 +6256,11 @@
       "executable": false
     },
     "src/modules/move-in/readers/shapes.ts": {
-      "sha256": "7e1a646ed03359a6a0eea0dde461bb20f133f4ea96d2cb0efc1e6e1057dff4c6",
+      "sha256": "07553d27282667c0835dfab0d89be329b13541ba28dbb2f69289dd0283e5840d",
+      "executable": false
+    },
+    "src/modules/move-in/readers/zendesk-configuration.ts": {
+      "sha256": "ce1d7658bbd654b6660f29fc48a55c93c44105761958d420ff08e33c16a8daac",
       "executable": false
     },
     "src/modules/move-in/readers/zendesk-macro.ts": {
@@ -6284,7 +6288,7 @@
       "executable": false
     },
     "src/modules/move-in/targets.ts": {
-      "sha256": "aa2a6e98968107f01d2554f8ebf8e0b1751f864adf2e9ddf81ff0290b0773f33",
+      "sha256": "737ecdffaec91465e9975b169935325d0fba8015f80184ae3a4e8f6bca72cb3b",
       "executable": false
     },
     "src/modules/move-in/types.ts": {
@@ -10000,7 +10004,7 @@
       "executable": false
     },
     "src/ui/native/pages/surveys/SurveyPanel.jsx": {
-      "sha256": "c2ca388b0be4843b96830fb496f0ae89b693a2e3014c7e0a886919628e8e97d3",
+      "sha256": "6512f7451ac211f5df07251a8d31e2c4dc267fdb7d588df868eb9a4ddfdf5f35",
       "executable": false
     },
     "src/ui/native/pages/surveys/surveys.css": {
@@ -11928,7 +11932,7 @@
       "executable": false
     },
     "tests/move-in/door-mapping.mjs": {
-      "sha256": "e2e3e317f083e02b40cc272e897cfabb3d63e82323340ed30bd89d1ca8d2a1f6",
+      "sha256": "6d98e8387907a254244f7c999e1cb4a8ab6ec8ce572aede4dbd2db9070b825e0",
       "executable": false
     },
     "tests/move-in/door-readers.mjs": {

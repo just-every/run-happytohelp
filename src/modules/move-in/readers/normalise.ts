@@ -1,3 +1,4 @@
+import {zendeskConfiguration,configurationTags} from './zendesk-configuration'
 import {zendeskMacroBody,zendeskMacroActions} from './zendesk-macro'
 import {importedEmailThreadKeys} from '../email-threading'
 import type { SourceBundle, SourceRecord } from '../../import-kit/src/types'
@@ -16,10 +17,10 @@ const array=(value:unknown):any[]=>Array.isArray(value)?value:[]
 const tags=(record:SourceRecord):string[]=>record.namespace==='helpscout'?helpScoutTags(record):record.namespace==='freshdesk'?freshdeskTags(record):record.namespace==='zendesk'?array((record.payload as any)?.tags).filter(v=>typeof v==='string'&&v.trim()):array((record.payload as any)?.tags?.tags ?? (record.payload as any)?.tags?.data).filter(v=>object(v)&&typeof v.name==='string'&&v.name.trim()).map(v=>v.name)
 export function withTags(source:SourceBundle,vendor:Vendor):SourceBundle {
  const seen=new Set<string>(),added:SourceRecord[]=[]
- for(const record of source.records.filter(r=>['ticket','conversation'].includes(r.kind)||vendor==='helpscout'&&r.kind==='tag'||vendor==='zendesk'&&r.kind==='macro'))for(const name of vendor==='zendesk'&&record.kind==='macro'?array((record.payload as any)?.actions).filter(a=>['current_tags','remove_tags'].includes(a?.field)&&typeof a.value==='string').flatMap(a=>a.value.split(/\s+/).filter(Boolean)):tags(record)){if(name.trim().length>80){source.diagnostics.push({severity:'error',code:'tag_name_limit',message:'Tag names longer than 80 characters are not imported',location:record.location});continue}const key=tagKey(name);if(seen.has(key))continue;if(source.records.length+added.length>=LIMITS.records)throw new Error('export_record_limit');seen.add(key);added.push(sourceRecord(vendor,'tag-name',key,{name:name.trim()},record.location.artifact,record.artifactHash,record.location.row??1,`${record.location.pointer??''}/tags`))}
+ for(const record of source.records.filter(r=>['ticket','conversation'].includes(r.kind)||vendor==='helpscout'&&r.kind==='tag'||vendor==='zendesk'&&['macro','trigger','automation'].includes(r.kind)))for(const name of vendor==='zendesk'&&['macro','trigger','automation'].includes(record.kind)?configurationTags(record):tags(record)){if(name.trim().length>80){source.diagnostics.push({severity:'error',code:'tag_name_limit',message:'Tag names longer than 80 characters are not imported',location:record.location});continue}const key=tagKey(name);if(seen.has(key))continue;if(source.records.length+added.length>=LIMITS.records)throw new Error('export_record_limit');seen.add(key);added.push(sourceRecord(vendor,'tag-name',key,{name:name.trim()},record.location.artifact,record.artifactHash,record.location.row??1,`${record.location.pointer??''}/tags`))}
  return {...source,records:[...added,...source.records].sort((a,b)=>rank(a.kind)-rank(b.kind))}
 }
-const rank=(kind:string)=>kind==='tag-name'?0:kind==='user'||kind==='contact'||kind==='agent'?1:kind==='collection'?2:kind==='category'?3:4
+const rank=(kind:string)=>kind==='tag-name'?0:['group','schedule'].includes(kind)?1:kind==='user'||kind==='contact'||kind==='agent'?1:kind==='collection'?2:kind==='category'?3:4
 export async function prepareMapping(input:MappingInput):Promise<PreparedMapping> {
  if(input.vendor==='helpscout')return prepareHelpScout(input)
  if(input.vendor==='freshdesk')return prepareFreshdesk(input)
@@ -32,7 +33,9 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
  for(const record of source.records){const key=recordKey(record),p=record.payload as any,issues=auditShape(vendor,record.kind,p).issues.filter(issue=>issue.reason!=='record_kind_not_understood'),omissions:string[]=issues.map(shapeReason)
   for(const issue of issues)source.diagnostics.push({severity:'warning',code:issue.code,message:shapeReason(issue),kind:record.kind,sourceId:record.sourceId,location:{...record.location,pointer:`${record.location.pointer??''}${vendor==='zendesk'?`/${record.kind}`:''}${issue.path}`}})
   try{if(tags(record).some(name=>name.trim().length>80))throw new Error('tag_name_limit');let kind:string,tables:NativeValue['tables']={},target:string
-   if(record.kind==='tag-name'){kind='tag';target=tagIds.get(record.sourceId)??id('tag',record.sourceId);if(tagIds.has(record.sourceId)){result.omissions.set(key,['existing_workspace_tag_reused']);result.effects.set(key,[]);continue}tables.workspace_tags=[{id:target,project_id:projectId,name:p.name,normalized_name:record.sourceId}]}
+   const configuration=vendor==='zendesk'?zendeskConfiguration(record,projectId,actorId,records,tagIds,omissions):null
+   if(configuration){kind=configuration.kind;target=configuration.target;Object.assign(tables,configuration.tables)}
+   else if(record.kind==='tag-name'){kind='tag';target=tagIds.get(record.sourceId)??id('tag',record.sourceId);if(tagIds.has(record.sourceId)){result.omissions.set(key,['existing_workspace_tag_reused']);result.effects.set(key,[]);continue}tables.workspace_tags=[{id:target,project_id:projectId,name:p.name,normalized_name:record.sourceId}]}
    else if(vendor==='zendesk'&&record.kind==='user'||vendor==='intercom'&&record.kind==='contact'){
     if(vendor==='zendesk'){text(p.name,'contact_name_required',500);if(!email(p.email))throw new Error('contact_email_missing_or_invalid');time(p.created_at,'iso')}
     if(vendor==='intercom'&&p.name!=null&&typeof p.name!=='string')throw new Error('contact_name_invalid')

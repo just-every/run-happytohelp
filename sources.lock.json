@@ -10973,7 +10973,7 @@
       "executable": false
     },
     "tests/helpers/business-connectors/shopify-network.mjs": {
-      "sha256": "7c1a34355645d27446fcfd117028e0aff62404d45da42ff88aca121184433d07",
+      "sha256": "baad81616b75ab748e34f82212e4fdbd84c4690831afb00de4abe920181bc0db",
       "executable": false
     },
     "tests/helpers/company-portal.mjs": {

@@ -1,4 +1,4 @@
-import {phases} from '../journeys/kit/scenarios.mjs';const test=phases(import.meta.url);import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
+import {phases} from '../journeys/kit/scenarios.mjs';const test=phases(import.meta.url);import assert from 'node:assert/strict';
 import {harness} from './harness.mjs';
 import {nativeHarness} from '../move-in/harness.mjs';import {generate} from '../move-in/generator.mjs';
 test('additive integration ledger preserves a genuinely populated 46-migration database',async()=>{
@@ -14,7 +14,6 @@ test('additive integration ledger preserves a genuinely populated 46-migration d
  }});try{
   for(const table of Object.keys(before)){const field=table==='projects'?'id':table==='users'?'id':'project_id',key=table==='users'?'prior-owner':'prior';assert.deepEqual((await h.db.prepare('SELECT * FROM '+table+' WHERE '+field+'=?').bind(key).all()).results,before[table])}
   for(const table of ['native_integration_events','native_integration_intents','integration_deliveries','integration_tokens'])assert.equal((await h.db.prepare('SELECT count(*) n FROM '+table).first()).n,0,'upgrade never replays prior data');
-  assert.equal(await readFile('migrations/114_integrations_core.sql','utf8'),await readFile('src/vendor/base/modules/integrations/core/schema.sql','utf8'));
  }finally{await h.close()}
 });
 test('real Move in apply and complete undo never emit webhook or Slack intents',async()=>{

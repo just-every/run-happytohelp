@@ -12,7 +12,7 @@ export function blocker(t:any,now=Date.now(),continuation=false){
  if(t.revoked_at!==null||!t.token_cipher)return 'connection_revoked: reconnect in Settings → Support channels'
  if(t.opted_out)return 'customer_opted_out: no further contact is authorized'
  if(t.provider==='sms'&&!t.registered)return 'a2p_registration_required: complete provider registration before sending'
- if(continuation&&(t.provider!=='whatsapp'||!t.template_consent))return 'template_consent_required: the customer must explicitly agree to WhatsApp support updates; STOP cannot be overridden'
+ if(continuation&&(t.provider!=='whatsapp'||!t.template_consent||t.template_opted_out))return 'template_consent_required: the customer must explicitly agree to WhatsApp support updates; STOP cannot be overridden'
  if(['whatsapp','instagram','messenger'].includes(t.provider)&&now-t.last_inbound_at>86400000&&!continuation)return t.provider==='whatsapp'?'reply_window_expired: choose an approved continuation template with customer consent, or wait for a new customer message':'reply_window_expired: wait for a new customer message; do not contact another channel'
  return null
 }

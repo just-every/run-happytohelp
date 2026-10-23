@@ -16,7 +16,7 @@ export async function verify(row:Connection,secret:string,url:string,raw:string,
  }else{expected='sha256='+await mac(secret,raw);received=headers.get('x-hub-signature-256')||''}
  if(!equal(expected,received))throw new HTTPException(401,{message:'Provider signature rejected'})
 }
-export interface Inbound {at?:number;id:string;sender:string;channel:string;thread:string;text:string;optOut?:boolean;templateConsent?:boolean;media:Attachment[];status?:string;providerId?:string;watermark?:number;ignored?:string;serviceUrl?:string;providerConversation?:string;private?:boolean;providerMessageId?:string;editId?:string;deleted?:boolean;action?:{kind:string;target?:string}}
+export interface Inbound {at?:number;id:string;sender:string;channel:string;thread:string;text:string;optOut?:boolean;optIn?:boolean;help?:boolean;carrierHelp?:boolean;templateConsent?:boolean;media:Attachment[];status?:string;providerId?:string;watermark?:number;ignored?:string;serviceUrl?:string;providerConversation?:string;private?:boolean;providerMessageId?:string;editId?:string;attachmentChange?:boolean;deleted?:boolean;action?:{kind:string;target?:string}}
 function timestamp(value:unknown,seconds=false){const time=Number(value)*(seconds?1000:1);if(!Number.isFinite(time)||time<=0||time>Date.now()+300000)throw new HTTPException(400,{message:'Invalid provider message timestamp'});return time}
 export function events(row:Connection,raw:string):Inbound[]{
  if(row.provider==='teams')return teamsEvents(row,raw)
@@ -27,7 +27,7 @@ export function events(row:Connection,raw:string):Inbound[]{
   const sender=f.get('From')||'';if(!/^\+1\d{10}$/.test(sender)||!f.get('MessageSid'))throw new HTTPException(400)
   const count=Number(f.get('NumMedia')||0);if(!Number.isInteger(count)||count<0||count>5)throw new HTTPException(413)
   const media=Array.from({length:count},(_,i)=>({url:f.get('MediaUrl'+i)||'',type:f.get('MediaContentType'+i)||''}))
-  const text=f.get('Body')||'';return [{id:f.get('MessageSid')!,sender,channel:row.sender,thread:sender,text,optOut:/^(STOP|STOPALL|UNSUBSCRIBE|CANCEL|END|QUIT)$/i.test(text.trim())||f.get('OptOutType')==='STOP',media}]
+  const text=f.get('Body')||'',opt=f.get('OptOutType');return [{id:f.get('MessageSid')!,sender,channel:row.sender,thread:sender,text,optOut:/^(STOP|STOPALL|UNSUBSCRIBE|CANCEL|END|QUIT)$/i.test(text.trim())||opt==='STOP',optIn:/^(START|UNSTOP)$/i.test(text.trim())||opt==='START',help:/^HELP$/i.test(text.trim())||opt==='HELP',carrierHelp:opt==='HELP',media}]
  }
  let body:any;try{body=JSON.parse(raw)}catch{throw new HTTPException(400,{message:'Invalid provider JSON'})}
  if(row.provider==='slack'){
@@ -35,7 +35,7 @@ export function events(row:Connection,raw:string):Inbound[]{
   const e=body.event;if(!e)return []
   if(!JSON.parse(row.channels_json).includes(e.channel)&&!(/^D/.test(e.channel)&&/^support link [a-f0-9-]{36}$/i.test(e.text||'')))throw new HTTPException(403,{message:'Customer channel is not installed and allowed'})
   if(e.bot_id||e.user===row.sender)return []
-  if(['message_changed','message_deleted'].includes(e.subtype)){const m=e.message||e.previous_message;return [{id:body.event_id,sender:m?.user||'',channel:e.channel,thread:m?.thread_ts||m?.ts||e.deleted_ts,text:m?.text||'',media:[],editId:m?.ts||e.deleted_ts,deleted:e.subtype==='message_deleted',at:timestamp(e.event_ts||e.ts,true)}]}
+  if(['message_changed','message_deleted'].includes(e.subtype)){const m=e.message||e.previous_message;return [{id:body.event_id,sender:m?.user||'',channel:e.channel,thread:m?.thread_ts||m?.ts||e.deleted_ts,text:m?.text||'',media:[],attachmentChange:!e.subtype.includes('deleted')&&(Object.hasOwn(m||{},'files')||(e.previous_message?.files?.length??0)>0),editId:m?.ts||e.deleted_ts,deleted:e.subtype==='message_deleted',at:timestamp(e.event_ts||e.ts,true)}]}
   if(e.subtype)return [{id:body.event_id,sender:'',channel:e.channel,thread:'',text:'',media:[],ignored:e.subtype}]
   if(e.type!=='message'||!e.user||!e.ts||!body.event_id)return []
   return [{id:body.event_id,private:/^D/.test(e.channel),providerMessageId:e.ts,sender:e.user,channel:e.channel,thread:e.thread_ts||e.ts,text:e.text||'',media:(e.files||[]).map((f:any)=>({url:f.url_private_download||f.url_private,name:f.name,type:f.mimetype}))}]
@@ -50,7 +50,7 @@ export function events(row:Connection,raw:string):Inbound[]{
     if(!['text','image','audio','video','document','button','interactive'].includes(m.type))throw new HTTPException(422,{message:'Unsupported WhatsApp message type; retain the event for review'})
     const file=m[m.type],text=m.text?.body||file?.caption||m.button?.text||m.interactive?.button_reply?.title||''
     const consent=text.trim().toLowerCase()==='i agree to whatsapp support updates'
-    result.push({at:timestamp(m.timestamp,true),id:m.id,sender:m.from,channel:row.sender,thread:m.from,text,media:['image','audio','video','document'].includes(m.type)?[{id:file?.id,type:file?.mime_type||'',name:file?.filename}]:[],templateConsent:consent,optOut:/^(stop|unsubscribe)$/i.test(text.trim())})
+    result.push({at:timestamp(m.timestamp,true),id:m.id,sender:m.from,channel:row.sender,thread:m.from,text,media:['image','audio','video','document'].includes(m.type)?[{id:file?.id,type:file?.mime_type||'',name:file?.filename}]:[],templateConsent:consent,optIn:/^start$/i.test(text.trim()),help:/^help$/i.test(text.trim()),optOut:/^(stop|unsubscribe)$/i.test(text.trim())})
    }
   }else for(const e of entry.messaging||[]){
    if(String(e.recipient?.id)!==row.sender)throw new HTTPException(403)

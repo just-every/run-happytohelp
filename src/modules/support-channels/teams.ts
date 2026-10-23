@@ -27,8 +27,8 @@ export function teamsEvents(row:Connection,raw:string):Inbound[]{
  const link=/^support link ([a-f0-9-]{36})$/i.exec(text)
  if(!JSON.parse(row.channels_json).includes(channel)&&!(link&&b.conversation.conversationType==='personal'))throw new HTTPException(403,{message:'Teams customer channel is not installed and allowed'})
  if(!['message','messageUpdate','messageDelete'].includes(b.type))return [{id:b.id,sender,channel,thread:'',text:'',media:[],ignored:b.type}]
- const attachments=(b.attachments||[]).map((a:any)=>{if(!a.contentUrl||!a.contentType?.startsWith('image/'))throw new HTTPException(422,{message:'Teams supports inline image attachments; retain unsupported files for review'});return {url:a.contentUrl,name:a.name,type:a.contentType}})
- return [{private:b.conversation.conversationType==='personal',id:b.id+(b.type==='message'?'':':'+b.type+':'+b.timestamp),sender,channel,thread:b.replyToId||b.id,text,media:attachments,serviceUrl:b.serviceUrl,providerConversation:b.conversation.id,...(b.type!=='message'?{editId:b.id,deleted:b.type==='messageDelete',at:Date.parse(b.timestamp)}:{})}]
+ const changing=b.type!=='message',attachments=(changing?[]:b.attachments||[]).map((a:any)=>{if(!a.contentUrl||!a.contentType?.startsWith('image/'))throw new HTTPException(422,{message:'Teams supports inline image attachments; retain unsupported files for review'});return {url:a.contentUrl,name:a.name,type:a.contentType}})
+ return [{private:b.conversation.conversationType==='personal',id:b.id+(b.type==='message'?'':':'+b.type+':'+b.timestamp),sender,channel,thread:b.replyToId||b.id,text,media:attachments,serviceUrl:b.serviceUrl,providerConversation:b.conversation.id,...(b.type!=='message'?{editId:b.id,attachmentChange:b.type==='messageUpdate'&&Object.hasOwn(b,'attachments'),deleted:b.type==='messageDelete',at:Date.parse(b.timestamp)}:{})}]
 }
 export async function teamsToken(env:Env,row:Connection){
  const secret=await decryptToken(env,row.project_id,row.token_cipher!)

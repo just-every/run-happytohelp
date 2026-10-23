@@ -15,7 +15,7 @@ export const actions=new Hono<AppEnv>()
 const safe=(a:Action)=>({...a,preview:JSON.parse(a.preview_json),result:a.result_json?JSON.parse(a.result_json):null,preview_json:undefined,result_json:undefined})
 actions.post(mapped+'/prepare',async c=>{
  const {actor,row,mapped:l}=await link(c);await access(c,'conversations.manage');demand(row,'read');demand(row,'prepare')
- const body=await c.req.json(),kind=text(body.kind,'action'),rawTarget=id(body.target_id),reason=text(body.reason,'reason',2000),requestKey=id(body.request_key),options=actionOptions(kind,body.options);const crm=['hubspot','salesforce'].includes(row.provider),target=crm&&(kind==='edit_fields'||kind==='support_outcome')?((kind==='edit_fields'?(options as any).object:'contact')+':'+rawTarget):rawTarget;let amount=cents(body.amount_cents??0)
+ const body=await c.req.json(),kind=text(body.kind,'action'),rawTarget=id(body.target_id),reason=text(body.reason,'reason',2000),requestKey=id(body.request_key),options=actionOptions(kind,body.options);const crm=['hubspot','salesforce'].includes(row.provider),target=crm&&kind==='edit_fields'&&(options as any).object==='account'?'account:'+rawTarget:rawTarget;let amount=cents(body.amount_cents??0)
  if(!['refund','credit'].includes(kind)&&amount!==0)throw new HTTPException(400,{message:'This action cannot move funds'})
  if(kind==='support_outcome'&&rawTarget!==l.source_id)throw new HTTPException(409,{message:'Outcome target must match the mapped customer'})
  if(amount>row.limit_cents)throw new HTTPException(403,{message:'Action exceeds the configured USD limit'})

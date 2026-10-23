@@ -3957,7 +3957,7 @@
       "executable": false
     },
     "src/modules/business-connectors/actions.ts": {
-      "sha256": "2bfdbd5edd42453ba3aa823a26d236a6ee5666c8ab8afb629ad36b6263a83ece",
+      "sha256": "f15c7e5e8f8ca6de57adb5a7fedd6e2493590e1822690599859e317fb0caaab1",
       "executable": false
     },
     "src/modules/business-connectors/confirmation.ts": {
@@ -4009,7 +4009,7 @@
       "executable": false
     },
     "src/modules/business-connectors/providers/crm-fields.ts": {
-      "sha256": "f10f503f73f0ec7dcd266f774ee1b184c95738025b49b0624e5d0b05d1e67733",
+      "sha256": "2ac0cb9cefe0dcad4f1e17667c7bfb7b5df0eee8f9855b59331ff789e37e03f4",
       "executable": false
     },
     "src/modules/business-connectors/providers/http.ts": {
@@ -10953,7 +10953,7 @@
       "executable": false
     },
     "tests/helpers/business-connectors/crm-journeys.mjs": {
-      "sha256": "5ef71b7a812fbd024850e4843dbd8e519ad2fa1b78e21adb357035de19b77fe4",
+      "sha256": "e91c7a36186ccd301035cf313275accc53a5534019ff0e15c180b99e9b8b08af",
       "executable": false
     },
     "tests/helpers/business-connectors/crm-network.mjs": {

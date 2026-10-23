@@ -15,8 +15,8 @@ function fieldValue(meta:any,value:any,hub:boolean){
  return value
 }
 export async function crmFieldPreview(row:Connection,token:string,source:string,target:string,reason:string,options:any){
- const input=options.input??options,object=input.object,recordId=target.slice(target.indexOf(':')+1),snapshot=await crmContext(row,token,source),hub=row.provider==='hubspot',config=JSON.parse(row.fields_json),allowed=config[object==='account'?'editable_account':'editable_contact']??[]
- if(target!==object+':'+recordId||object==='contact'&&recordId!==source)throw new ProviderFailure('identity_mismatch')
+ const input=options.input??options,object=input.object,recordId=object==='account'?target.slice('account:'.length):target,snapshot=await crmContext(row,token,source),hub=row.provider==='hubspot',config=JSON.parse(row.fields_json),allowed=config[object==='account'?'editable_account':'editable_contact']??[]
+ if(object==='account'&&target!=='account:'+recordId||object==='contact'&&recordId!==source)throw new ProviderFailure('identity_mismatch')
  const record=object==='contact'?snapshot:snapshot.accounts.find((x:any)=>x.id===recordId)
  if(!record||object==='account'&&!snapshot.relationships_complete||!record.source_revision||!snapshot.source_revision)throw new ProviderFailure('account_relationship_unavailable')
  const keys=Object.keys(input.changes)

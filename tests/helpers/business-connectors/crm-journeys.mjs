@@ -4,6 +4,9 @@ export async function crmFields(h){
  for(const provider of ['hubspot','salesforce']){
   await h.connect(provider);const path=await h.map(provider),field=provider==='hubspot'?'support_note':'Support_Note__c',context=(await h.call(h.ticket)).data.connections.find(x=>x.provider===provider).link.context;
   assert.equal(context.accounts[0].name,'Synthetic account');assert.equal(context.accounts[0].plan,'Company plan');assert.equal(context.accounts[0].entitlement,'priority');assert.equal(context.relationships_complete,true);
+  const pending=(await h.call(path+'/prepare',{kind:'support_outcome',target_id:h.network.customer,reason:'Pending contact support outcome',request_key:randomUUID()})).data;
+  assert.equal((await h.app.call(h.base+path+'/prepare',{token:h.token,body:{kind:'edit_fields',target_id:h.network.customer,reason:'Cannot bypass a pending contact outcome',request_key:randomUUID(),options:{object:'contact',changes:{[field]:'Unapproved concurrent contact write'}}}})).status,409);
+  await h.call(path+'/actions/'+pending.id+'/cancel',{});
   const input={kind:'edit_fields',target_id:'801',reason:'Approved account support outcome',request_key:randomUUID(),options:{object:'account',changes:{[field]:'Recovery confirmed by customer'}}};
   assert.equal((await h.app.call(h.base+path+'/prepare',{token:h.token,body:{...input,target_id:'foreign'}})).status,409);
   assert.equal((await h.app.call(h.base+path+'/prepare',{token:h.token,body:{...input,options:{object:'account',changes:{OwnerId:'foreign'}}}})).status,409);

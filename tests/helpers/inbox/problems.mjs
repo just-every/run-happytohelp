@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
-import {createHash,createHmac} from 'node:crypto'
+import {createHash,createHmac,randomUUID} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {seedReportFixture} from '../reports-team-fixture.mjs'
 
 export async function problemJourney(){
- const sent=[],issue={id:901,number:17,state:'open',assignee:{login:'Support engineer'},updated_at:'2026-10-23T08:00:00Z'}
- const app=await startApp({captureQueue:true,bindings:{EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-1',INTEGRATION_ENCRYPTION_KEY:createHash('sha256').update('synthetic-happytohelp-2').digest('base64'),EMAIL_FROM:'support@example.test'},outbound:async(request,entry)=>{if(new URL(request.url).hostname==='api.github.com'){assert.match(new URL(request.url).pathname,/^\/repos\/synthetic-owner\/synthetic-repo\/issues(?:\/17)?$/);return Response.json(issue)}assert.equal(new URL(request.url).hostname,'api.resend.com');const body=JSON.parse(entry.body);sent.push(body);return body.to.includes('customer2@customer.example.test')?new Response('rejected',{status:422}):Response.json({id:'incident-mail-'+sent.length})}})
+ const sent=[],receipts=[],issue={id:901,number:17,state:'open',assignee:{login:'Support engineer'},updated_at:'2026-10-23T08:00:00Z'}
+ const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',INBOUND_EMAIL_TOKEN:'synthetic-happytohelp-10',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-1',INTEGRATION_ENCRYPTION_KEY:createHash('sha256').update('synthetic-happytohelp-2').digest('base64'),EMAIL_FROM:'support@example.test'},outbound:async(request,entry)=>{if(new URL(request.url).hostname==='api.github.com'){assert.match(new URL(request.url).pathname,/^\/repos\/synthetic-owner\/synthetic-repo\/issues(?:\/17)?$/);return Response.json(issue)}assert.equal(new URL(request.url).hostname,'api.resend.com');const body=JSON.parse(entry.body);sent.push(body);receipts.push({body,key:request.headers.get('idempotency-key')});return body.to.includes('customer2@customer.example.test')?new Response('rejected',{status:422}):Response.json({id:'incident-mail-'+sent.length})}})
  try{
   const w=await app.seedWorkspace('problems'),p=w.projectId,base=`/api/dashboard/projects/${p}`
   const fixture=await seedReportFixture(app.db,p,{count:30})
@@ -88,5 +88,68 @@ export async function problemJourney(){
   assert.ok((await app.first("SELECT count(*) n FROM ticket_problem_previews WHERE id=? AND state='erased' AND plan_json='{\"tickets\":[]}'",plan.preview_id)).n)
   assert.ok((await app.first("SELECT count(*) n FROM audit_events WHERE project_id=? AND action LIKE 'ticket.problem%'",p)).n>0)
   console.log(JSON.stringify({proof:'R10 problem incidents',linked:25,solved:23,providerRejected:1,optOutBlocked:1,emails:sends,replayEmails:0}))
+  await incidentCommitmentsJourney(app,receipts)
  }finally{await app.close()}
+}
+
+// Real widget and email intake, with only the outgoing mail provider faked.
+// Linking and bulk resolution must retain each requester's service and feedback cycle.
+async function incidentCommitmentsJourney(app,receipts){
+ const w=await app.seedWorkspace('incident-service'),p=w.projectId,owner={token:w.tokens.owner},base=`/api/dashboard/projects/${p}`;
+ const api=async(path,body,method)=>(await app.ok(base+path,{...owner,...(body===undefined?{}:{body}),...(method?{method}:{})})).data;
+ const ticket=id=>api(`/conversations/${id}/ticket`),problemPath=id=>`/conversations/${id}/ticket/problem`;
+ const frontier=async id=>(await api(problemPath(id))).ticket;
+ const secret=(await app.first('SELECT verification_secret FROM projects WHERE id=?',p)).verification_secret;
+ const visitors=[];
+ const widget=async index=>{
+  const email=`incident${index}@support.example.test`;
+  const visitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey,identifier:email,email,name:`Requester ${index}`,contact_hash:createHmac('sha256',secret).update(email).digest('hex')},headers:{Origin:w.allowedOrigin}});
+  const conversation=await app.ok('/api/conversations',{token:visitor.token,body:{projectId:p}});
+  await app.ok(`/api/conversations/${conversation.id}/messages`,{token:visitor.token,body:{localId:randomUUID(),content:`Checkout outage for requester ${index}`,expectedRevision:0}});
+  visitors.push({...visitor,id:conversation.id,email});return conversation.id;
+ };
+ await app.db.prepare("INSERT INTO email_settings VALUES(?,'Support','support@example.test','incident-service@example.test',1,1)").bind(p).run();
+ const email=async index=>{
+  const received=await app.ok('/api/integrations/email/inbound',{headers:{Authorization:'Bearer synthetic-happytohelp-10'},body:{messageId:randomUUID()+'@example.test',to:'incident-service@example.test',from:`incident${index}@support.example.test`,subject:`Checkout outage ${index}`,text:`Checkout failed for requester ${index}`}});
+  return received.conversationId||received.conversation_id;
+ };
+ const calendar=await api('/workflow-calendars',{name:'Incident service',timezone:'America/New_York',weekly:[0,1,2,3,4,5,6].map(day=>({day,start:'00:00',end:'23:59'})),holidays:'none',closures:[]});
+ const policies={};
+ for(const [channel,minutes] of [['widget',120],['email',60]])policies[channel]=await api('/sla-policies',{name:channel+' commitment',calendar_id:calendar.id,position:0,conditions:{channels:[channel]},first_response_minutes:minutes,next_response_minutes:minutes,resolution_minutes:minutes*4,pause_on_hold:true,approaching_minutes:10,backup_user_ids:[]});
+ await app.ok(`/api/outcomes/projects/${p}/settings`,{...owner,method:'PUT',body:{enabled:true,scale:'five',delayMinutes:0,expiresDays:14,locale:'en'}});
+ const root=await widget(0),ids=[await widget(1),await email(2),await widget(3),await email(4),await widget(5)];
+ assert.ok(ids.every(Boolean),'all five incidents arrived through native intake');
+ await api(problemPath(root),{...await frontier(root),is_problem:true},'PATCH');
+ await api(`/conversations/${ids[0]}/ticket`,{expected_version:(await ticket(ids[0])).ticket_version,status_id:'pending'},'PATCH');
+ const sla=id=>api(`/conversations/${id}/sla`),before=new Map();
+ for(const id of ids){const own=await sla(id),t=await ticket(id);assert.equal(own.policy.id,policies[t.channel].id);assert.ok(own.clocks.some(clock=>clock.metric==='resolution'&&!clock.completed_at));before.set(id,own);}
+ assert.equal(before.get(ids[0]).pause_reason,'pending');
+ await api(problemPath(root)+'/incidents/apply',{action:'link',tickets:await Promise.all(ids.map(frontier))});
+ for(const id of ids){const own=await sla(id),prior=before.get(id);assert.equal(own.policy.id,prior.policy.id);assert.deepEqual(own.clocks.map(({metric,cycle,started_at,due_at,target_ms})=>({metric,cycle,started_at,due_at,target_ms})),prior.clocks.map(({metric,cycle,started_at,due_at,target_ms})=>({metric,cycle,started_at,due_at,target_ms})),'linking preserves the incident SLA targets and start times');}
+ const unlinked=ids.at(-1);await api(problemPath(root)+'/incidents/apply',{action:'unlink',tickets:[await frontier(unlinked)]});
+ const unlinkedHistory=await ticket(unlinked),sentBefore=receipts.length;
+ const preview=await api(problemPath(root)+'/solve/preview',{reply:'Hello {{contact.name}}, your checkout is working again.',solve_incidents:true});
+ assert.equal(preview.results.length,4);assert.ok(preview.results.every(row=>row.status==='ready'));
+ const solved=await api(problemPath(root)+'/solve/apply',{preview_id:preview.preview_id});
+ assert.equal(solved.results.filter(row=>row.status==='solved').length,4,JSON.stringify(solved));
+ await app.configure({});await app.scheduled();
+ const results=await app.ok(`/api/outcomes/projects/${p}/results`,owner),cycles=[];
+ for(const id of ids.slice(0,-1)){
+  const own=await sla(id);assert.equal(own.policy.id,before.get(id).policy.id);
+  assert.ok(own.clocks.filter(clock=>['first_response','resolution'].includes(clock.metric)).every(clock=>clock.completed_at!==null),'each resolved incident completes its own service clocks');
+  const row=results.results.find(row=>row.conversationId===id);assert.ok(row,'each incident retains its own resolution history');cycles.push(row.resolutionId);
+  const survey=await app.first('SELECT * FROM csat_surveys WHERE resolution_id=?',row.resolutionId);assert.ok(survey,'each requester earns a separate invitation');assert.equal(survey.conversation_id,id);assert.equal(survey.state,'sent');
+  const deliveries=receipts.slice(sentBefore).filter(entry=>entry.key==='csat:'+survey.id);assert.equal(deliveries.length,1);assert.deepEqual(deliveries[0].body.to,[survey.recipient]);
+ }
+ assert.equal(new Set(cycles).size,4,'resolution and CSAT never share a problem-level cycle');
+ assert.deepEqual(await ticket(unlinked),unlinkedHistory,'an unlinked incident keeps its independent status and history');
+ assert.ok((await sla(unlinked)).clocks.find(clock=>clock.metric==='resolution'&&!clock.completed_at));
+ assert.equal(await app.first('SELECT * FROM csat_surveys WHERE conversation_id=?',unlinked),null);
+ for(const visitor of visitors){
+  const transcript=await app.ok(`/api/conversations/${visitor.id}/messages`,{token:visitor.token});
+  const text=JSON.stringify(transcript);
+  for(const other of visitors.filter(other=>other.id!==visitor.id))assert.ok(!text.includes(other.email),'customer transcript never contains another requester identity');
+ }
+ const count=receipts.length;await app.scheduled();await api(problemPath(root)+'/solve/apply',{preview_id:preview.preview_id});assert.equal(receipts.length,count,'restart, cron and replay cannot duplicate replies or invitations');
+ console.log(JSON.stringify({proof:'independent incident commitments',nativeIntake:5,linked:5,unlinked:1,solved:4,independentSla:4,independentCsat:4,replaySends:0}));
 }

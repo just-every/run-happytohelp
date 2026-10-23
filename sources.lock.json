@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d6252906c027a3186b65942373d22c777a293480798e8d572c9c6b470d414ad9",
+      "sha256": "705420b859037307881328bd2d0986500adc4b75f13bd8849f95eef79cc64038",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "af19da2110265116ecfdad83943d5306425aa3f31be893149ea8b537e4a03f55",
+      "sha256": "22c12df0a9a3b484bd9a56eac1c162149cd79bcc76c90c18630d571887dec16b",
       "executable": false
     },
     "DEMO.md": {
@@ -6680,7 +6680,7 @@
       "executable": false
     },
     "src/modules/tickets/problem-search.ts": {
-      "sha256": "c4f1aead94937eb6216ca6187a1f5a7b0e2b8c4b264515e7efa2408abd62c6e6",
+      "sha256": "24141605dcb4ccd64528b44425b3c2d3ee204f8e570af2576306c9bcaaf8a52e",
       "executable": false
     },
     "src/modules/tickets/problem-solve-state.ts": {
@@ -8280,7 +8280,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/tickets/ProblemPanel.jsx": {
-      "sha256": "ff890dbfb5da39a6b1febb803bb3136d1e6e389a9050f5b34d89f327dc4ee186",
+      "sha256": "4ea256bec3c233bef951e7e1657e4ffe6d98543e871de7b64412fcc7b52fd5f8",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/ProblemSolve.jsx": {
@@ -8288,7 +8288,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/tickets/ProblemTicketSearch.jsx": {
-      "sha256": "2655ca7c5f6bbaa1e45458b290dfa3748e687b6872416c1600db2ce5bb67b436",
+      "sha256": "3c8b5d0752f1ae1880092bcaed08bf02fad46381174440143bbf8f088151d4db",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/ticket-model.js": {
@@ -9583,6 +9583,10 @@
       "sha256": "26cae4ec622937b3a2d00daeea18fe68caea19121c3c867d951c00b3b1176224",
       "executable": false
     },
+    "src/ui/native/pages/ContactIdentityLinks.jsx": {
+      "sha256": "b4ac1fd7262766ef15a53c6b7ea8ca515ca8af9e86836595a7e38a2b22efeb93",
+      "executable": false
+    },
     "src/ui/native/pages/delegation-shared.js": {
       "sha256": "02a8d00f98f770e26dd6f379b2337d9139f1e5d75acf00d432c7a81b807a53e7",
       "executable": false
@@ -10756,7 +10760,7 @@
       "executable": false
     },
     "tests/helpers/ai/triage.mjs": {
-      "sha256": "dd7df65d1471a4a1c99f31c36e9671f24da1025e07b91d5d1302da825c1988e3",
+      "sha256": "3ebf7c7cb036e008f6dbd6ff61d6d32107efddb2fd5f3edf01811d4f2b531529",
       "executable": false
     },
     "tests/helpers/appearance-audit.mjs": {
@@ -11192,7 +11196,7 @@
       "executable": false
     },
     "tests/helpers/inbox/problems.mjs": {
-      "sha256": "abd7f8fa471213e6ba653d52eb7c32a5aec816c099a86cec74e41856e133615d",
+      "sha256": "49d95341eaca679b9b230400b60c5e32e3903803c77e10de7758605fee13bd3e",
       "executable": false
     },
     "tests/helpers/inbox/search.mjs": {
@@ -11200,7 +11204,7 @@
       "executable": false
     },
     "tests/helpers/inbox/start-menu-browser.mjs": {
-      "sha256": "6b364476f0b74398e5f0596b951b788d9e9854cb295d45c6d562849d4334b1db",
+      "sha256": "ee1f1848a61b4e7e9362992ff5f2d625a3e0f55fc998eff05cdcae13aeba178c",
       "executable": false
     },
     "tests/helpers/inbox/ticket-api-privacy.mjs": {

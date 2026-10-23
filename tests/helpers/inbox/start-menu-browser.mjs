@@ -40,6 +40,17 @@ export async function startMenu(){
   const collaborator=await member('collaborator@example.test','Casey Collaborator','collaborator')
   const conversationPath=`/projects/${fx.projectId}/conversations/${fx.contacts.draft.id}`
 
+  // Historical model results are a fixture; discovery, preview and confirmation
+  // all use the emitted application's ordinary public doors.
+  const D=`/api/dashboard/projects/${fx.projectId}`,root=fx.contacts.draft.id,candidate=fx.contacts.under.id;
+  const ticket=async id=>(await call(`${D}/conversations/${id}/ticket`,undefined,ownerToken)).data;
+  await call(`${D}/conversations/${candidate}/ticket`,{expected_version:(await ticket(candidate)).ticket_version,subject:'Checkout incident candidate'},ownerToken,'PATCH');
+  const settings=(await call(D+'/triage-settings',undefined,ownerToken)).data;
+  const configured=(await call(D+'/triage-settings',{...settings,enabled:true},ownerToken,'PUT')).data;
+  const quote=value=>"'"+String(value).replaceAll("'","''")+"'";
+  const predictions=JSON.stringify({intent:{value:'bug',confidence:.96,quote:'Checkout'},sentiment:{value:'negative',confidence:.95,quote:'Checkout'},language:{value:'en',confidence:.99,quote:'Checkout'}});
+  await runtime.execute([root,candidate].map(id=>`INSERT INTO triage_jobs(id,project_id,conversation_id,message_id,source_revision,settings_version,state,predictions_json,created_at,updated_at) SELECT 'triage:'||last_message_id,project_id,id,last_message_id,revision,${configured.version},'complete',${quote(predictions)},created_at,updated_at FROM conversations WHERE id=${quote(id)}; INSERT INTO ticket_field_values(project_id,conversation_id,field_id,value_json) VALUES(${quote(fx.projectId)},${quote(id)},'triage_intent','"bug"');`).join('\n'));
+
   for(const width of [1440,390]){
    const open=async token=>{
     const context=await browser.newContext({viewport:{width,height:width===390?844:900}})
@@ -81,6 +92,23 @@ export async function startMenu(){
     await page.locator('#conversation-tab-details[aria-selected=true]').waitFor()
     await page.waitForFunction(()=>document.activeElement?.textContent==='Mark as problem')
     assert.equal(await page.locator('#ticket-section-problem-heading').getAttribute('aria-expanded'),'true')
+    await page.getByRole('button',{name:'Mark as problem',exact:true}).click();
+    await page.getByRole('button',{name:'Show triage suggestions',exact:true}).click();
+    await page.getByRole('button',{name:'Checkout incident candidate',exact:true}).waitFor();
+    await page.getByText('Same triage intent. Review the ticket and confirm the link; suggestions make no changes.',{exact:true}).waitFor();
+    assert.equal((await call(`${D}/conversations/${root}/ticket/problem`,undefined,ownerToken)).data.incident_count,0);
+    await page.getByRole('button',{name:'Checkout incident candidate',exact:true}).click();
+    await page.getByRole('button',{name:'Confirm link',exact:true}).waitFor();
+    assert.equal((await call(`${D}/conversations/${root}/ticket/problem`,undefined,ownerToken)).data.incident_count,0,'preview does not link the suggested ticket');
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'suggestion preview fits the viewport');
+    await page.screenshot({path:join(evidence,`${width}-problem-suggestion-preview.png`),fullPage:true});
+    await page.getByRole('button',{name:'Confirm link',exact:true}).click();
+    await page.getByText('1 linked incident.',{exact:false}).waitFor();
+    await page.screenshot({path:join(evidence,`${width}-problem-suggestion-confirmed.png`),fullPage:true});
+    await page.getByRole('button',{name:'Preview unlink',exact:true}).click();await page.getByRole('button',{name:'Confirm unlink',exact:true}).click();
+    await page.getByText('0 linked incidents.',{exact:false}).waitFor();
+    await page.getByRole('button',{name:'Remove problem designation',exact:true}).click();
+    await page.getByRole('button',{name:'Mark as problem',exact:true}).waitFor();
     await panelAside(page)
     // Follow toggles in place; Ticket › Summary › Followers shows the same state.
     const followers=()=>page.locator('.ticket-summary__row').filter({has:page.locator('dt',{hasText:/^Followers$/})}).locator('dd').textContent()

@@ -53,6 +53,9 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
    assert.ok(transcript.messages.some(m=>m.actor_role==='ai'&&JSON.parse(m.citations_json).length===1),'a released procedure produced one cited native answer')
    await page.getByRole('button',{name:'Revoke tool',exact:true}).click();await page.getByText('Rollout change recorded.',{exact:false}).waitFor()
    await call(`/api/dashboard/projects/${pid}/conversations/${conversation.id}`,{method:'PUT',body:{resolved:true}})
+   const resolved=(await call(`/api/dashboard/projects/${pid}/conversations/${conversation.id}`)).data.resolution
+   const sourceMessage=transcript.messages.find(m=>m.actor_role==='contact')
+   await call(`/api/ai-support/projects/${pid}/procedure-reports/${key}/cases/${resolved.id}/review`,{body:{decision:'include',reason:'procedure-contributed',evidenceMessageId:sourceMessage.id,quote:sourceMessage.content}})
    await page.goto(`${origin}/projects/${pid}/conversations/${conversation.id}`)
    const toggle=page.getByRole('button',{name:'Show conversation panel',exact:true});await page.locator('.conversation-assistant-toggle').waitFor();if(await toggle.isVisible())await toggle.click()
    await page.getByRole('tab',{name:'Ticket',exact:true}).click();await page.getByRole('button',{name:'Production AI trace',exact:true}).click()
@@ -62,6 +65,7 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
    assert.equal(trace.procedure.versionId,version.id);assert.ok(trace.toolTrace.calls.every(t=>!t.businessActionExecuted))
    await page.getByRole('button',{name:`Open procedure report: ${key} v1`,exact:true}).click();await page.getByRole('link',{name:'Supporting case, version 1',exact:true}).waitFor()
    assert.match(await page.locator('[aria-label="Procedure report"]').innerText(),/0\/1 resolution cycles reopened/)
+   assert.match(await page.locator('[aria-label="Attribution reviews"]').innerText(),/include: procedure-contributed/)
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'trace and report fit the viewport')
    await page.screenshot({path:shot(`procedure-production-trace-${width}.png`),fullPage:true})
    await select();await page.getByRole('button',{name:'Stop rollout',exact:true}).click();await page.getByText('Rollout change recorded.',{exact:false}).waitFor()

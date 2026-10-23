@@ -64,6 +64,10 @@
     {
       "id": "248_ai_tool_trace.sql",
       "buyerSteps": "Apply before the updated Worker serves traffic. Records allowlisted per-tool timing, scoped read/proposal authority, denial and human handoff metadata. No arguments, response text, credentials or external business-action authority are added. Started calls without a terminal receipt remain unknown."
+    },
+    {
+      "id": "249_procedure_attribution_reviews.sql",
+      "buyerSteps": "Apply before serving the updated Worker. Adds append-only human attribution corrections backed by an exact native message. Reports show original cycle counts, corrected denominators and retained reviews separately. Corrections do not resume a stopped rollout or convert a closure into verified recovery."
     }
   ]
 }

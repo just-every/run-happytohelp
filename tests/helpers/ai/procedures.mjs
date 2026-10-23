@@ -36,6 +36,13 @@ export async function proceduresJourney(){
  assert.equal(trace.procedure.versionId,v2.id);assert.equal(trace.procedure.releaseId,release.id)
  await call(`/${key}/releases/${release.id}/revoke-tool`,{body:{tool:'search_knowledge'},status:200})
  await customer.say('What about my refund?');await a.run();assert.ok(!names.includes('search_knowledge'),'revocation narrows the next production turn')
+ // A failed paid attempt is retained as a failure, never counted as a resolution.
+ const measured=(await app.call(`/api/ai-support/projects/${p}/procedure-reports/${key}`,{token:owner,status:200})).data
+ assert.equal(measured.providerCostEstimateUsd,measured.accounting.reduce((n,r)=>n+r.cost,0))
+ ai.reject=true;await customer.say('Please check this failed provider turn.');await a.run();ai.reject=false
+ const gapReport=(await app.call(`/api/knowledge/${p}/gaps`,{token:owner,status:200})).data
+ assert.ok(gapReport.procedureFailures.some(f=>f.conversationId===customer.conversationId&&f.versionId===v2.id&&f.category==='provider-or-runtime-error'))
+ assert.doesNotMatch(JSON.stringify(gapReport),/authorization|api_key|request_body/)
  // Native resolution, customer rating and reopen become attributable source cases.
  await app.call(`/api/dashboard/projects/${p}/conversations/${customer.conversationId}`,{token:owner,method:'PUT',body:{resolved:true},status:200})
  const cycle=await app.first('SELECT id FROM conversation_resolutions WHERE conversation_id=? ORDER BY ordinal DESC LIMIT 1',customer.conversationId)
@@ -48,7 +55,7 @@ export async function proceduresJourney(){
  let report=(await app.call(reportPath,{token:owner,status:200})).data
  assert.equal(report.versions[0].denominator,1);assert.equal(report.versions[0].reopened,1);assert.equal(report.versions[0].negativeCsat,1)
  assert.equal(report.cases[0].resolutionId,cycle.id);assert.equal(report.cases[0].versionId,v2.id)
- assert.ok(report.accounting.length>0);assert.equal(report.providerCostEstimateUsd,report.accounting.reduce((n,r)=>n+r.cost,0));assert.ok(report.evaluationCoverage.some(v=>v.versionId===v1.id&&v.passed===0))
+ assert.ok(report.accounting.length>0);assert.equal(report.providerCostEstimateUsd,null);assert.equal(report.priceData,'unavailable');assert.ok(report.failureClusters.some(c=>c.category==='provider-or-runtime-error'));assert.ok(report.generations.some(g=>!g.customerMessageCommitted&&g.failureCategory));assert.ok(report.evaluationCoverage.some(v=>v.versionId===v1.id&&v.passed===0))
  assert.equal((await app.call(reportPath,{token:customer.token})).status,403)
  const proposal={fromVersionId:v2.id,resolutionIds:[cycle.id],expectedEffect:'Reduce reopened refund-advice cases with clearer human escalation.'}
  const v3=(await call(`/${key}/versions`,{body:{...definition,proposal},status:201})).data
@@ -69,10 +76,24 @@ export async function proceduresJourney(){
  assert.equal((await a.action(customer.conversationId,'assignAi',{ai_id:'ai'})).status,200,'only an explicit human handback resumes AI on the approved release')
  ai.respond=()=> 'A human can review your request.'
  await customer.say('Please explain the revised refund advice.');await a.run()
+ const reviewTranscript=await customer.transcript()
+ const humanEvidence=(await app.call(`/api/conversations/${customer.conversationId}/messages`,{token:owner,body:{localId:crypto.randomUUID(),content:'I reviewed this case and took responsibility for the next step.',expectedRevision:reviewTranscript.revision,expectedLastMessageId:reviewTranscript.lastMessageId},status:200})).data.message
  await app.call(`/api/dashboard/projects/${p}/conversations/${customer.conversationId}`,{token:owner,method:'PUT',body:{resolved:true},status:200})
  report=(await app.call(reportPath,{token:owner,status:200})).data
  assert.equal(report.totalCases,2);assert.equal(report.versions.find(v=>v.versionId===v3.id).reopened,0)
  assert.equal(report.versions.find(v=>v.versionId===v2.id).reopenRate,1)
+ const reviewedCycle=report.cases.find(c=>c.versionId===v3.id).resolutionId,reviewPath=reportPath+`/cases/${reviewedCycle}/review`
+ const exclusion={decision:'exclude',reason:'human-led',evidenceMessageId:humanEvidence.id,quote:'I reviewed this case and took responsibility'}
+ assert.equal((await app.call(reviewPath,{token:customer.token,body:exclusion})).status,403)
+ assert.equal((await app.call(reviewPath,{token:owner,body:{...exclusion,quote:'invented evidence'}})).status,409)
+ await app.call(reviewPath,{token:owner,body:exclusion,status:200})
+ report=(await app.call(reportPath,{token:owner,status:200})).data
+ const adjusted=report.versions.find(v=>v.versionId===v3.id)
+ assert.equal(adjusted.originalDenominator,1);assert.equal(adjusted.denominator,0);assert.equal(adjusted.excluded,1);assert.equal(adjusted.reopenRate,null);assert.equal(report.totalCases,2)
+ assert.equal(report.attributionReviews[0].evidenceMessageId,humanEvidence.id)
+ await app.call(reviewPath,{token:owner,body:{...exclusion,decision:'include',reason:'procedure-contributed'},status:200})
+ report=(await app.call(reportPath,{token:owner,status:200})).data
+ assert.equal(report.versions.find(v=>v.versionId===v3.id).denominator,1);assert.deepEqual(report.attributionReviews.map(r=>r.decision),['exclude','include'],'dissent and the original source cycles remain inspectable')
  await call(`/${key}/releases/${next.id}/stop`,{body:{},status:200})
  await app.call(`/api/dashboard/projects/${p}/conversations/${customer.conversationId}`,{token:owner,method:'PUT',body:{resolved:false},status:200})
  const before=a.providerCalls();await customer.say('Anyone there?');await a.run();assert.equal(a.providerCalls(),before,'stopped cohort fails closed before another provider request')

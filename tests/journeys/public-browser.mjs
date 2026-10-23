@@ -1,3 +1,4 @@
+import {proposalsBrowserJourney} from '../helpers/knowledge/proposals-browser.mjs'
 import {domainsBrowserJourney} from '../helpers/knowledge/domains-browser.mjs'
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
@@ -134,3 +135,5 @@ for(const [label,viewport] of Object.entries(viewports))test(`the documentation 
   for(const path of ['/docs','/docs/install','/docs/operations']){await open(path);await page.screenshot({path:shot(`${path.slice(1).replace(/\//g,'-')}-${label}.png`),fullPage:true})}
  }finally{await context.close()}
 }))
+
+test('knowledge proposal review at 1440 and 390 prepares a masked cited draft, preserves rejection before edited private publication, and requests corrections after reopening without changing guidance',async()=>guarded(async()=>{const shot=await evidence('knowledge-proposals');await proposalsBrowserJourney({runtime,browser,shot})}))

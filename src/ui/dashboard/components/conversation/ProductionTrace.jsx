@@ -38,10 +38,11 @@ export default function ProductionTrace({projectId,conversationId,shown}){
   </details>)}
   {result?.nextOffset!==null&&result?.nextOffset!==undefined&&<button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>read(result.nextOffset)}>More traces</button>}
   {report&&<div aria-label="Procedure report"><h4>Procedure report: {report.procedureKey}</h4><p>{report.attribution}</p><p>{money(report.providerCostEstimateUsd)}</p>
-   <ul>{report.versions.map(version=><li key={version.versionId}>Version {version.version}: {version.reopened}/{version.denominator} resolution cycles reopened; {version.negativeCsat}/{version.rated} rated cycles negative.</li>)}</ul>
+   <ul>{report.versions.map(version=><li key={version.versionId}>Version {version.version}: {version.reopened}/{version.denominator} resolution cycles reopened ({version.excluded} excluded from {version.originalDenominator} original cycles); {version.negativeCsat}/{version.rated} rated cycles negative.</li>)}</ul>
    <p>{report.productionScope}</p><ul>{report.productionVersions.map(version=><li key={version.versionId}>{version.handoffs}/{version.generationDenominator} linked generations handed off; {version.failures} failed or uncertain outcomes.</li>)}</ul>
-   <ul>{report.cases.map(item=><li key={item.resolutionId}><a href={`/projects/${projectId}/conversations/${item.conversationId}`}>Supporting case, version {item.version}</a>: {item.reopenedAt?'reopened':'closed, recovery unconfirmed'}{item.negativeCsat?'; negative CSAT':''}</li>)}</ul>
+   <ul>{report.cases.map(item=><li key={item.resolutionId}><a href={`/projects/${projectId}/conversations/${item.conversationId}`}>Supporting case, version {item.version}</a>: {item.included===0?'excluded by human attribution review':item.reopenedAt?'reopened':'closed, recovery unconfirmed'}{item.negativeCsat?'; negative CSAT':''}</li>)}</ul>
    {report.nextOffset!==null&&<button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={moreCases}>More supporting cases</button>}
+   <ul aria-label="Attribution reviews">{report.attributionReviews.map(review=><li key={review.id}>{review.decision}: {review.reason}; reviewer {review.reviewedBy}; evidence {review.evidenceMessageId}.</li>)}</ul>
    <ul>{report.failureClusters.map(cluster=><li key={cluster.category}>{cluster.category}: {cluster.count} linked generations.</li>)}</ul>
   </div>}
  </div>;

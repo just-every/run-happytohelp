@@ -47,6 +47,7 @@ const rules:Record<string,Rule>={
  'POST /api/ai-support/projects/:projectId/procedures/:key/releases/:releaseId/stop':'settings.manage',
  'POST /api/ai-support/projects/:projectId/procedures/:key/releases/:releaseId/revoke-tool':'settings.manage',
  'GET /api/ai-support/projects/:projectId/procedure-reports/:key':'reports.view',
+ 'POST /api/ai-support/projects/:projectId/procedure-reports/:key/cases/:resolutionId/review':'settings.manage',
  'POST /api/ai-support/projects/:projectId/procedures/:key/versions/:versionId/review':'settings.manage',
  'POST /api/ai-support/projects/:projectId/procedures/:key/releases/:releaseId/check-regression':'settings.manage',
  'GET /api/ai-support/projects/:projectId/procedures/:key/versions/:versionId/reviews':'settings.manage',

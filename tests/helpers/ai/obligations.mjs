@@ -31,8 +31,8 @@ export async function obligationsJourney(){
  assert.match(row.draft.content,/do not yet have current evidence/)
  assert.equal((await v.transcript()).messages.filter(m=>m.actor_role==='ai').length,0,'drafting never sends')
  await app.db.batch([
- app.db.prepare("INSERT INTO escalation_connections(id,project_id,provider,target,updated_at) VALUES('con',?,'github','example/project',1)").bind(p),
- app.db.prepare("INSERT INTO escalation_issues VALUES('issue',?,'con','github','1','EX-1','https://github.com/example/project/issues/1','closed',NULL,1,1)").bind(p),
+ app.db.prepare("INSERT INTO escalation_connections(id,project_id,provider,target,updated_at) VALUES('con',?,'github','just-every/run-happytohelp',1)").bind(p),
+ app.db.prepare("INSERT INTO escalation_issues VALUES('issue',?,'con','github','1','EX-1','https://github.com/just-every/run-happytohelp/issues/1','closed',NULL,1,1)").bind(p),
  app.db.prepare("INSERT INTO escalation_links(id,project_id,conversation_id,issue_id,created_at) VALUES('link',?,?,'issue',1)").bind(p,v.conversationId)
  ])
  const dependent=(await call('',{body:{...body,dependencyId:'issue'},status:201})).data

@@ -1,6 +1,7 @@
 import {redactKnowledgeDraft} from '../knowledge/proposals'
 import {validateProcedureProposal,procedureCycles} from './procedure-reports'
-import {Hono,type Context} from 'hono'
+import {settingsGuard} from './procedure-authority'
+import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Env} from '../../platform/env'
 import {requireProject} from '../../platform/auth'
@@ -9,9 +10,7 @@ import {auditStatement,requestSource} from '../audit/record'
 import {activeSourceProjectSql} from '../knowledge/public-sources'
 import {contactAvailableSql} from '../conversations/contact-privacy'
 const root='/projects/:projectId/procedures'
-function settingsGuard(c:Context<AppEnv>){
- return {sql:`EXISTS(SELECT 1 FROM sessions s JOIN memberships m ON m.user_id=s.actor_id AND m.project_id=? LEFT JOIN member_roles mr ON mr.project_id=m.project_id AND mr.user_id=m.user_id LEFT JOIN project_roles pr ON pr.project_id=m.project_id AND pr.id=mr.role_key WHERE s.token_hash=? AND s.actor_id=? AND s.role<>'contact' AND s.revoked_at IS NULL AND s.expires_at>? AND ${activeSourceProjectSql('m.project_id')} AND (m.role='owner' OR (m.role='admin' AND mr.role_key IS NULL) OR (pr.base='admin' AND EXISTS(SELECT 1 FROM json_each(pr.permissions_json) WHERE value='settings.manage'))))`,args:[c.req.param('projectId')!,c.get('sessionHash'),c.get('actor').id,Date.now()]}
-}
+
 
 // Procedures can narrow the existing read-only tool surface. They cannot confer
 // business-action authority that the application does not implement.

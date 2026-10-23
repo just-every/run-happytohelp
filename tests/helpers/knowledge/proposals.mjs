@@ -24,6 +24,8 @@ export async function proposalsJourney(){
  await app.call(`/api/knowledge/public/${p}/search?q=encoding&locale=en`,{status:200})
  assert.ok((await call(`/api/knowledge/${p}/gaps`,{status:200})).data.searchTopics.some(g=>g.topic==='encoding'&&g.occurrences===1))
  assert.equal((await call(`/api/knowledge/${p}/proposals`,{body:{...body,categoryId:publicCategory}})).status,409,'customer-derived drafts cannot silently become public knowledge')
+ await call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{}},status:200})
+ assert.equal((await call(`/api/knowledge/${p}/proposals`,{body:{...body,locale:'fr'}})).status,400,'a source draft cannot be mislabeled as a reviewed translation')
  const proposal=(await call(`/api/knowledge/${p}/proposals`,{body,status:201})).data
  assert.doesNotMatch(proposal.content,/Alice|alice@|synthetic-happytohelp-17/)
  assert.match(proposal.content,/UTF-8 export encoding/)

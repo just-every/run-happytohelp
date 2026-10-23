@@ -700,8 +700,8 @@
     {
       "binding": "DB",
       "name": "246_translated_ai_publications.sql",
-      "sha256": "4a72a5a31187a73e91619a22114e58ebee32fd94077aecc98eb286dd65d5558d",
-      "sql": "-- Give each reviewed translation an independent immutable retrieval identity.\nALTER TABLE knowledge_translations ADD COLUMN publication_version TEXT;\nUPDATE knowledge_translations SET publication_version=lower(hex(randomblob(16))) WHERE published_json IS NOT NULL;\nCREATE TRIGGER knowledge_translation_publication_insert AFTER INSERT ON knowledge_translations WHEN NEW.published_json IS NOT NULL BEGIN\n UPDATE knowledge_translations SET publication_version=lower(hex(randomblob(16))) WHERE article_id=NEW.article_id AND locale=NEW.locale;\nEND;\nCREATE TRIGGER knowledge_translation_publication_update AFTER UPDATE OF published_json,published_source_version ON knowledge_translations WHEN NEW.published_json IS NOT OLD.published_json OR NEW.published_source_version IS NOT OLD.published_source_version BEGIN\n UPDATE knowledge_translations SET publication_version=CASE WHEN NEW.published_json IS NULL THEN NULL ELSE lower(hex(randomblob(16))) END WHERE article_id=NEW.article_id AND locale=NEW.locale;\nEND;\n"
+      "sha256": "bfba9ae562aaad2ad85060c21494d99fcfd627b2f55aff98ddd2de42ea31baf5",
+      "sql": "-- Give each reviewed translation an independent immutable retrieval identity.\nALTER TABLE knowledge_translations ADD COLUMN publication_version TEXT;\nUPDATE knowledge_translations SET publication_version=lower(hex(randomblob(16))) WHERE published_json IS NOT NULL;\nCREATE TRIGGER knowledge_translation_publication_insert AFTER INSERT ON knowledge_translations WHEN NEW.published_json IS NOT NULL BEGIN\n UPDATE knowledge_translations SET publication_version=lower(hex(randomblob(16))) WHERE article_id=NEW.article_id AND locale=NEW.locale;\nEND;\nCREATE TRIGGER knowledge_translation_publication_update AFTER UPDATE OF published_json,published_source_version ON knowledge_translations WHEN NEW.published_json IS NOT OLD.published_json OR NEW.published_source_version IS NOT OLD.published_source_version BEGIN\n UPDATE knowledge_translations SET publication_version = CASE WHEN NEW.published_json IS NULL THEN NULL ELSE lower(hex(randomblob(16))) END WHERE article_id=NEW.article_id AND locale=NEW.locale;\nEND;\n"
     },
     {
       "binding": "DB",
@@ -714,6 +714,12 @@
       "name": "248_ai_tool_trace.sql",
       "sha256": "e80ec97c5a4a36241f9f8cd770b408366741273e6e72b5e13e95442a68b0b487",
       "sql": "-- Allowlisted metadata only. Arguments, output text and provider errors stay out.\nCREATE TABLE ai_tool_traces(id TEXT PRIMARY KEY,generation_id TEXT NOT NULL REFERENCES ai_generations(id) ON DELETE CASCADE,tool_name TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN ('started','completed','denied','failed','handoff')),started_at INTEGER NOT NULL,finished_at INTEGER,approval TEXT NOT NULL,authority_scope TEXT NOT NULL,error_category TEXT,responsible_user_id TEXT);\nCREATE INDEX ai_tool_traces_generation ON ai_tool_traces(generation_id,started_at,id);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "249_procedure_attribution_reviews.sql",
+      "sha256": "5e0ccc8483b5a683717a7d26f7f9a197ab66769a76f8907c42f09362153cf8c8",
+      "sql": "-- Corrections adjust report attribution, never erase original cycles or undo a stop.\nCREATE TABLE procedure_attribution_reviews(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),resolution_id TEXT NOT NULL REFERENCES conversation_resolutions(id) ON DELETE CASCADE,decision TEXT NOT NULL CHECK(decision IN ('include','exclude')),reason TEXT NOT NULL CHECK(reason IN ('human-led','unrelated','procedure-contributed')),evidence_message_id TEXT REFERENCES messages(id),reviewed_by TEXT NOT NULL,created_at INTEGER NOT NULL);\nCREATE INDEX procedure_attribution_cycle ON procedure_attribution_reviews(resolution_id,created_at,id);\nCREATE TRIGGER procedure_attribution_immutable BEFORE UPDATE ON procedure_attribution_reviews BEGIN SELECT RAISE(ABORT,'Attribution reviews are append-only'); END;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

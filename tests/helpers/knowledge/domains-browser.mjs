@@ -50,7 +50,8 @@ export async function domainsBrowserJourney({runtime,browser,fixture,viewport,sh
   const article=await call(`/api/knowledge/${fixture.projectId}/articles`,{status:201,body:{title:'Private export guide',slug:`private-export-${width}`,content:'Use the approved export queue.',categoryIds:[category.id],status:'published'}})
   const translation=`/api/knowledge/${fixture.projectId}/articles/${article.id}/translations/fr`
   await call(translation,{method:'PUT',body:{title:'Guide privé',content:'Utilisez la file approuvée.',reviewStatus:'reviewed'}})
-  const secret=(await call(`/api/identity/projects/${fixture.projectId}`)).verification_secret
+  const secret='synthetic-happytohelp-43'
+  await runtime.execute(`UPDATE projects SET verification_secret='${secret}' WHERE id='${fixture.projectId}'`)
   const session=async email=>call('/api/identity/widget/session',{status:201,body:{widgetKey:(await call(`/api/identity/projects/${fixture.projectId}`)).widget_key,identifier:email,email,contact_hash:createHmac('sha256',secret).update(email).digest('hex')}})
   const member=await session(`member-${width}@trusted.test`),forbidden=await session(`reader-${width}@other.test`)
   const privateUrl=new URL(`/private-export-${width}?locale=fr`,publicHost).href

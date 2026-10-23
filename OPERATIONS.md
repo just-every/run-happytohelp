@@ -886,3 +886,7 @@ Keep asset provenance and third-party notices with selected source. The
 [authoring guide](docs/AUTHORING.md) describes exact Base copies and source graph
 checks. Reproducible artifact and prior-data checks have their own public paths;
 a source lock is not product or provider acceptance.
+
+### Operating description before installation
+
+The operating declaration is available in `OPERATIONS.json`. The current pinned global `rer` launcher bootstraps the checkout’s locked dependencies before it dispatches `rer describe`, including in a fresh clone. NATIVE-001’s before-dependency inspection point remains blocked on a Base launcher change. Published rer 0.2.79 has the same ordering. A successful description after bootstrap does not establish dependency-free inspection.

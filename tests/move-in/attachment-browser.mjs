@@ -3,7 +3,7 @@ import {readFile} from 'node:fs/promises'
 import {attachmentFixtures,publicBytes,privateBytes} from './attachment-fixtures.mjs'
 
 export async function attachmentBrowser({page,origin,base,project,token,request,inspect,width}){
- const fixture=attachmentFixtures()[0],n=width*100,ticket=fixture.rows.find(row=>row.ticket).ticket,previous=ticket.id
+ const fixture=attachmentFixtures()[0],n=width*100,ticket=fixture.rows.find(row=>row.ticket).ticket
  for(const row of fixture.rows)if(row.user)row.user.id+=n
  ticket.id+=n;ticket.requester_id+=n;ticket.subject=`Replacement parcel ${width}`;ticket.reply_to=`helpdesk+historical-${ticket.id}@example.test`
  for(const comment of ticket.comments){comment.id+=n;comment.author_id+=n}
@@ -27,5 +27,4 @@ export async function attachmentBrowser({page,origin,base,project,token,request,
   const pending=page.waitForEvent('download');await link.click();const download=await pending;assert.deepEqual(await readFile(await download.path()),bytes)
  }
  await inspect('imported-attachment-history-'+width)
- assert.notEqual(ticket.id,previous)
 }

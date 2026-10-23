@@ -8,7 +8,9 @@ export async function notificationCustody(app){
   const w=await app.seedWorkspace(`notification-${fixture.vendor}-${operation}`),p=w.projectId,token=w.tokens.owner
   const imports=`/api/move-in/projects/${p}/imports`,base=`/api/management/projects/${p}`
   const address=`history-${fixture.vendor}-${operation}@example.test`,replyTo=fixture.to.replace('helpdesk',address.split('@')[0])
-  await app.ok(base+'/mailboxes',{token,body:{provider:'forwarding',address,displayName:'Historical support'}})
+  await app.ok(base+'/email-settings',{token,method:'PUT',body:{from_address:'support@example.test',from_name:'Historical support',inbound_address:address,is_enabled:true}})
+  const mailbox=(await app.ok(base+'/mailboxes',{token,body:{provider:'forwarding',address,displayName:'Historical support'}})).data
+  await app.ok(base+'/mailboxes/'+mailbox.id+'/reconnect',{token,body:{}})
   const original=fixture.rows.map(JSON.stringify).join('\n').replaceAll(fixture.to,replyTo)
   const apply=async body=>{
    const upload=await app.ok(imports+'?vendor='+fixture.vendor,{token,raw:true,headers:{'X-Import-Filename':'history.jsonl','Content-Type':'application/octet-stream',...(fixture.schema?{'X-Import-Schema':fixture.schema}:{})},body})
@@ -30,6 +32,7 @@ export async function notificationCustody(app){
    assert.equal((await app.ok(imports+'/'+run.id,{token})).data.state,'undone')
    assert.equal((await app.first('SELECT count(*) n FROM email_threading_keys WHERE project_id=?',p)).n,0)
    const reply=await receive({messageId:'after-undo'})
+   assert.equal(reply.data.state,'delivered','a reply after undo is admitted through the current mailbox')
    assert.notEqual(reply.data.conversationId,imported.id,'an undone key never routes into the old ticket')
    assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=? AND id=?',p,imported.id)).n,0)
   }else{
@@ -39,6 +42,7 @@ export async function notificationCustody(app){
    assert.equal(replay.status,410,'source erasure fences a repackaged notification import')
    const reply=await receive({messageId:'after-erasure'})
    assert.notEqual(reply.data.conversationId,imported.id,'an erased key cannot resurrect its old customer or ticket')
+   assert.equal((await app.first('SELECT count(*) n FROM contacts WHERE project_id=? AND email=?',p,fixture.email)).n,0,'the old email identity is not recreated')
   }
  }
 }

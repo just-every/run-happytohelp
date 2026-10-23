@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "47c4f22fb980fe87999ed5f10b51332862db2b5c64324b929461d5e541b099b4",
+      "sha256": "43a4aabd1d0b2b646637856540b3935fc6ad3ce73594b19c38f2555448845a77",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -6163,6 +6163,10 @@
       "sha256": "b6e9bd6c80ab55ccc2bf5adf02cb612fb23ce4d4a95c28cf526b5f691cf77b3e",
       "executable": false
     },
+    "src/modules/move-in/company-dependencies.ts": {
+      "sha256": "74d3ad5d98005eaeb73089c12ef1bef32b328a7a215020b54732911ad4f48c0c",
+      "executable": false
+    },
     "src/modules/move-in/contact-keys.ts": {
       "sha256": "e24b1d8dea7e46343f020ca25e317262b8d9cd58e1346f231df103d8cffbd717",
       "executable": false
@@ -6247,12 +6251,20 @@
       "sha256": "3278f971f9b0ba4babe97f23a770dec37e77a6dac480327abe148b984c112270",
       "executable": false
     },
+    "src/modules/move-in/readers/companies.ts": {
+      "sha256": "9f932c60077e784cd55b9ba12c702f48b234b871417a672e913c5c11dd402154",
+      "executable": false
+    },
     "src/modules/move-in/readers/freshdesk-mapping.ts": {
       "sha256": "4a7855cf8b637b5941e19958b74ad2039249f3474bedab750fcb02bfa35fb2a6",
       "executable": false
     },
     "src/modules/move-in/readers/freshdesk-shapes.ts": {
       "sha256": "28f0a1be7cf783479b500d8aa8cdb4049c7877c0c47e1e1a9f8a1be29a8431c3",
+      "executable": false
+    },
+    "src/modules/move-in/readers/groups.ts": {
+      "sha256": "e35ac462a0df1c948c5b219c158538498deb4f9e92968721f6892219eb0fc9aa",
       "executable": false
     },
     "src/modules/move-in/readers/helpscout-history.ts": {
@@ -11032,7 +11044,7 @@
       "executable": false
     },
     "tests/helpers/email/notification-custody.mjs": {
-      "sha256": "c9c96f00346c102bc4107b4e4ff5292e797070477dcff19ca6bf6d01368a204c",
+      "sha256": "b19d5bec1b6d63cb2dfc95b2128eac3576cc72e12e5ec48f7b10be29ea1c49c7",
       "executable": false
     },
     "tests/helpers/email/recovery.mjs": {
@@ -12019,6 +12031,10 @@
       "sha256": "bf1de7945a5483cb14908fc7e65d16971bec6f96bf18d2f71536f7cd9591835e",
       "executable": false
     },
+    "tests/move-in/attachment-browser.mjs": {
+      "sha256": "6a2e2e9e6cd1f6dfab60c914ea470f576ae0c6cc6bda7b366067d8c4907097ee",
+      "executable": false
+    },
     "tests/move-in/attachment-fixtures.mjs": {
       "sha256": "fbdb77fb47321d2b287ccc11fd501d1bd1a3599632d85f0e27016d1c3cb78bbb",
       "executable": false
@@ -12037,6 +12053,10 @@
     },
     "tests/move-in/claims.mjs": {
       "sha256": "b2f5cad630ac6a9a4c417bb36fff33b14fe14039d5591f831f55a3db851755bf",
+      "executable": false
+    },
+    "tests/move-in/company-journey.mjs": {
+      "sha256": "9ae7ba1e15cf4c2249439db944a3104f00c42ce1dd0aa07efabf54289f76c53c",
       "executable": false
     },
     "tests/move-in/configuration-fields.mjs": {

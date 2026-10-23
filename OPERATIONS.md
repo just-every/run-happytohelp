@@ -20,7 +20,7 @@ password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
 real local owner and reach **Setup**. No private answers, email service or AI
 account are needed. Use `rer dev --stop` from the checkout to stop the managed app.
 
-The checkout pins **`@runeditrun/rer` 0.2.42** in `package.json` and
+The checkout pins **`@runeditrun/rer` 0.2.77** in `package.json` and
 `pnpm-lock.yaml`. The launcher you run (npx or a global install) may have a different
 version; inside the checkout it provisions the tools and delegates to the pinned
 local package. Updating the launcher does not change the project's pin.
@@ -229,20 +229,24 @@ Worker already holds and sends only ones it lacks.
 The declaration maps the same `EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`
 inputs to rer's shared `MAIL_PROVIDER`, `MAIL_FROM` and `MAIL_API_KEY` preflight
 bindings as well as HappyToHelp's native bindings. Real deployment requires these
-mail inputs. `rer deploy --dry-run` validates their shape when you supply them. It
-needs the Cloudflare account credentials: without them it refuses before any
-provider request and lists what the real deploy needs. With them it builds locally
-and makes only read-only Cloudflare GET requests: the account's Workers subdomain
-and the Worker's settings and secret names (three requests against an existing
-Worker in `tests/helpers/installer/fresh-install.mjs`). It refuses when a required
-secret, such as a mail input, is neither held by the Worker nor supplied. Dry run
-sends no mail and changes no provider resources.
+mail inputs. NATIVE-001 requires a **zero-outbound dry-run** that explicitly
+reports no outbound requests and needs no provider credentials. A separate,
+explicitly started **read-only provider preflight** requires owner consent and
+the owner's scoped Cloudflare token. Its own acceptance permits only three GETs
+for an existing Worker: the account's Workers subdomain and the Worker's settings
+and secret names, with no mail or mutations. Neither step is a mock of the other.
+
+The candidate implements the zero-outbound dry-run: it validates and builds without
+provider credentials, sends no mail and changes no resources. Its report leaves
+remote resources, credential validity and existing secret bindings unchecked.
+The separately started owner-consented preflight and remote provisioning still
+need implementation or qualification, respectively.
 
 Cloudflare Email Sending additionally needs `EMAIL_ACCOUNT_ID`. Add
 `{"binding":"EMAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}` to the
 declaration's `secrets` array, plus
 `{"binding":"MAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}`, and supply that account ID privately before deploying
-with Cloudflare mail. It is not required for Resend or SendGrid; rer 0.2.42 requires
+with Cloudflare mail. It is not required for Resend or SendGrid; rer 0.2.77 requires
 every declared secret not marked `optional` on a new Worker.
 
 Preserve existing keys and owner data. Configure other optional mail/model inputs
@@ -256,8 +260,7 @@ rer deploy --environment production
 ```
 
 Default environment is production. Dry run validates the declaration and real
-build locally; its only provider requests are the read-only Cloudflare GET
-requests above, and without Cloudflare credentials it makes none. Real deploy
+build locally without provider requests or credentials. Real deploy
 builds, provisions, applies migrations, publishes and checks health in the owner
 account. It is an external change requiring owner authorization. Release produces
 source/artifacts with its existing `--repo` and `--output` arguments and never

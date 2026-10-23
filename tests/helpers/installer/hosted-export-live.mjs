@@ -21,20 +21,21 @@ export async function hostedExportLive(root,scratch,input='exports/support.rer')
  let database,bucketCreated=false,ownsObjects=false,proxy;
  const output='exports/hosted-live.rer',config=join(scratch,'live-hosted-target.json');
  try{
+  console.log('Hosted portability: creating disposable staging storage.');
   database=await api.request('/d1/database',{method:'POST',body:{name}});
   await api.request('/r2/buckets',{method:'POST',body:{name:bucket}});bucketCreated=true;
   const directory=join(root,'.generated/migrations'),migrations=[];
   for(const name of (await readdir(directory)).filter(name=>name.endsWith('.sql')).sort()){
    const sql=await readFile(join(directory,name),'utf8');migrations.push({name,sql,sha256:createHash('sha256').update(sql).digest('hex')});
   }
-  await migrate(api,database.uuid,migrations);
+  console.log('Hosted portability: applying the native migration ledger.');await migrate(api,database.uuid,migrations);
   await writeFile(config,JSON.stringify({name,account_id:accountId,compatibility_date:'2026-09-08',compatibility_flags:['nodejs_compat'],d1_databases:[{binding:'DB',database_id:database.uuid,database_name:name,migrations_dir:directory,remote:true}],r2_buckets:[{binding:'FILES',bucket_name:bucket,remote:true}]}),{mode:0o600});
   proxy=await getPlatformProxy({configPath:config,envFiles:[],persist:false,remoteBindings:true});
   const {DB,FILES}=proxy.env;
   const service=await createPortability({db:DB,buckets:{FILES},policy:archivePolicy,migrations:async()=>migrationReplay(await appliedMigrations(root,DB,'DB',{},unstable_splitSqlQuery),archivePolicy,{})});
-  ownsObjects=true;await importArchive(service,join(root,input),[]);
+  console.log('Hosted portability: copying the populated native archive into staging storage.');ownsObjects=true;await importArchive(service,join(root,input),[]);
   await proxy.dispose();proxy=undefined;
-  await run(root,['export','--target','remote','--output',output],0,{env:{H2H_EXPORT_CONFIG:config,H2H_EXPORT_WRITERS_STOPPED:'yes',CLOUDFLARE_API_TOKEN:token}});
+  console.log('Hosted portability: exporting through the public rer remote command.');await run(root,['export','--target','remote','--output',output],0,{env:{H2H_EXPORT_CONFIG:config,H2H_EXPORT_WRITERS_STOPPED:'yes',CLOUDFLARE_API_TOKEN:token}});
   const closing=async path=>{let found;for await(const record of fileRecords(path))if(record.kind==='closing')found=record;assert.ok(found);return found};
   assert.equal((await closing(join(root,output))).contentHash,(await closing(join(root,input))).contentHash,'real hosted D1 rows and R2 bytes match the complete native source archive');
   assert.equal((await stat(join(root,output))).mode&0o777,0o600);

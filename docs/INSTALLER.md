@@ -182,12 +182,13 @@ restore. Re-enter private configuration before setup/dev. See
 
 ## Deploy and inspect
 
-Real deployment requires private mail inputs: `EMAIL_PROVIDER`, `EMAIL_FROM` and
-`EMAIL_API_KEY`. With rer 0.2.42 a dry run validates them when supplied and
-otherwise lists them as needed. The declaration maps
-these to both rer's `MAIL_*` preflight bindings and HappyToHelp's native `EMAIL_*`
-bindings. For Cloudflare mail, supply the additional account ID described in
-[Operations](../OPERATIONS.md#deploy-to-your-cloudflare-account).
+NATIVE-001 requires two independent steps: a **zero-outbound dry-run** that
+explicitly reports no outbound requests and needs no provider credentials, then a
+separately started **read-only provider preflight** with owner consent and the
+owner's scoped Cloudflare token. The preflight has its own acceptance: only the
+account's Workers subdomain and the Worker's settings and secret names (three
+GETs for an existing Worker), no mail and no mutations. Neither step is a mock of
+the other. The zero-outbound dry-run is implemented in this candidate. The separately started preflight still needs implementation and live qualification.
 
 `rer deploy --dry-run` validates the input shape and builds locally. It makes no
 provider requests, sends no mail and makes no deployment. Cloudflare credentials

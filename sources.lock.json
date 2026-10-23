@@ -6904,7 +6904,7 @@
       "executable": false
     },
     "src/modules/widget/css/CampaignOffer.css": {
-      "sha256": "c14a22e38421764276426ae54d20f4a97c6dc5c30a753c5a30093e0753389ec0",
+      "sha256": "5c877e10bb895faf7593bc0e6b4db4da8283c977b16a7ee218878cc24b6869fe",
       "executable": false
     },
     "src/modules/widget/css/ChatHeader.css": {
@@ -11604,7 +11604,7 @@
       "executable": false
     },
     "tests/helpers/widget/campaigns-browser.mjs": {
-      "sha256": "a737ae08b3896372ecae0256b984e13065197ae5362c099ad0bfc9de6fe7bf90",
+      "sha256": "734d7ac2c423e6978a6e4166f48fd0d23b59c73c2b2bc13dfaa1678498a5e5f5",
       "executable": false
     },
     "tests/helpers/widget/campaigns.mjs": {

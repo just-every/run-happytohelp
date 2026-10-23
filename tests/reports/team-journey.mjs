@@ -57,6 +57,14 @@ export async function teamReportsJourney(){
   assert.equal(withLegacyInitialization.reopens.imported_history_unknown,1)
   assert.equal(withLegacyInitialization.reopens.denominator,report.reopens.denominator,'unattributed legacy initialization cannot increase the known-resolution denominator')
   assert.equal(withLegacyInitialization.breakdowns.channel.find(row=>row.id===fixture.tickets[3].channel).reopens.historyUnknown,1)
+  await app.db.prepare("INSERT INTO ticket_history(id,project_id,conversation_id,actor_id,actor_type,source,at,changes_json) VALUES(?,?,?,NULL,'system','legacy',?,?)").bind('legacy-import-unattributed-reopen',p,fixture.tickets[3].id,fixture.tickets[3].created_at+1,JSON.stringify({status_category:{from:'solved',to:'open'}})).run()
+  const uncertainHistory=await get('&includeImported=true')
+  assert.equal(uncertainHistory.reopens.imported_history_unknown,1)
+  assert.equal(uncertainHistory.reopens.denominator,report.reopens.denominator)
+  assert.equal(uncertainHistory.reopens.reopened,report.reopens.reopened,'unknown history is excluded from both halves of the known-history rate')
+  assert.equal(uncertainHistory.reopens.events,report.reopens.events+1,'the raw recorded event remains inspectable')
+  assert.equal(uncertainHistory.breakdowns.channel.find(row=>row.id===fixture.tickets[3].channel).reopens.reopened,report.breakdowns.channel.find(row=>row.id===fixture.tickets[3].channel).reopens.reopened)
+
 
   const exported=await app.call(url+'&format=summary.csv',{token:w.tokens.owner,status:200})
   assert.ok(exported.data.includes('"denominators.cohort","425"'))

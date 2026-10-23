@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict'
+import {createHash,createHmac} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {seedReportFixture} from '../reports-team-fixture.mjs'
 
 export async function problemJourney(){
- const sent=[]
- const app=await startApp({captureQueue:true,bindings:{EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test'},outbound:async(request,entry)=>{assert.equal(new URL(request.url).hostname,'api.resend.com');const body=JSON.parse(entry.body);sent.push(body);return body.to.includes('customer2@customer.example.test')?new Response('rejected',{status:422}):Response.json({id:'incident-mail-'+sent.length})}})
+ const sent=[],issue={id:901,number:17,state:'open',assignee:{login:'Support engineer'},updated_at:'2026-10-23T08:00:00Z'}
+ const app=await startApp({captureQueue:true,bindings:{EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-1',INTEGRATION_ENCRYPTION_KEY:createHash('sha256').update('synthetic-happytohelp-2').digest('base64'),EMAIL_FROM:'support@example.test'},outbound:async(request,entry)=>{if(new URL(request.url).hostname==='api.github.com'){assert.match(new URL(request.url).pathname,/^\/repos\/synthetic-owner\/synthetic-repo\/issues(?:\/17)?$/);return Response.json(issue)}assert.equal(new URL(request.url).hostname,'api.resend.com');const body=JSON.parse(entry.body);sent.push(body);return body.to.includes('customer2@customer.example.test')?new Response('rejected',{status:422}):Response.json({id:'incident-mail-'+sent.length})}})
  try{
   const w=await app.seedWorkspace('problems'),p=w.projectId,base=`/api/dashboard/projects/${p}`
   const fixture=await seedReportFixture(app.db,p,{count:30})
@@ -14,6 +15,27 @@ export async function problemJourney(){
   const call=async(id,suffix='',body,method)=>{const data=await app.ok(path(id)+suffix,{token:w.tokens.owner,...(body?{body}:{}),...(method?{method}:{})});return data.data}
   const frontier=async id=>(await call(id)).ticket
   await call(problem,'',{...await frontier(problem),is_problem:true},'PATCH')
+  // A Problem is an ordinary support ticket at the engineering doors. Link
+  // its chosen context once, then use the returned fix in its incident preview.
+  const escalation=`/api/escalations/projects/${p}`,secret='synthetic-happytohelp-3'
+  await app.ok(escalation+'/connections',{token:w.tokens.owner,body:{provider:'github',target:'synthetic-owner/synthetic-repo',token:'synthetic-happytohelp-4',webhook_secret:secret}})
+  await app.ok(`${escalation}/conversations/${problem}/links`,{token:w.tokens.owner,body:{provider:'github',mode:'create',title:'Checkout incident',message_ids:[],attachment_ids:[],request_id:'synthetic-happytohelp-5'}})
+  let engineering=(await call(problem)).engineering_issues
+  assert.equal(engineering.length,1);assert.equal(engineering[0].issue_key,'17');assert.equal(engineering[0].recovery,'unconfirmed');assert.equal(engineering[0].stale,false)
+  assert.equal((await app.call(`/api/dashboard/projects/${p}/conversations/${problem}/ticket/problem`,{token:(await app.seedWorkspace('foreign-problem')).tokens.owner})).status,404)
+  issue.state='closed';issue.updated_at='2026-10-23T08:05:00Z'
+  const raw=JSON.stringify({action:'closed',repository:{full_name:'synthetic-owner/synthetic-repo'},issue})
+  const event={token:w.tokens.owner,body:raw,raw:true,headers:{'Content-Type':'application/json','x-github-event':'issues','x-github-delivery':'synthetic-happytohelp-6','x-hub-signature-256':'sha256='+createHmac('sha256',secret).update(raw).digest('hex')}}
+  await app.ok(`/api/escalations/webhooks/${p}:github`,event)
+  assert.equal((await app.ok(`/api/escalations/webhooks/${p}:github`,event)).duplicate,true)
+  engineering=(await call(problem)).engineering_issues
+  assert.equal(engineering[0].status,'closed');assert.equal(engineering[0].recovery,'unconfirmed')
+  assert.equal((await app.ok(`${escalation}/conversations/${problem}`,{token:w.tokens.owner})).data.drafts.length,1)
+  assert.equal(sent.length,0,'engineering closure drafts an update without contacting incidents')
+  await app.db.prepare('UPDATE escalation_connections SET token_cipher=NULL WHERE project_id=?').bind(p).run()
+  assert.equal((await call(problem)).engineering_issues[0].stale,true,'disconnect retains context with an explicit stale state')
+  await app.configure({})
+  assert.equal((await call(problem)).engineering_issues[0].status,'closed')
   const matches=await app.ok(base+'/ticket-problem-search?q='+encodeURIComponent(fixture.tickets[3].subject),{token:w.tokens.owner});assert.ok(matches.data.some(t=>t.id===fixture.tickets[3].id))
   const byReference=await app.ok(base+'/ticket-problem-search?q='+encodeURIComponent(incidents[0]),{token:w.tokens.owner});assert.equal(byReference.data[0].id,incidents[0])
   const tickets=await Promise.all(incidents.map(frontier))
@@ -23,6 +45,15 @@ export async function problemJourney(){
   const linked=await call(problem,'/incidents/apply',{action:'link',tickets})
   assert.equal(linked.results.filter(r=>r.status==='applied').length,25)
   assert.equal((await call(problem)).incident_count,25)
+  // Link another incident, then unlink it before previewing the resolution.
+  // Its independently owned ticket and delivery history must remain untouched.
+  const unlinked=fixture.tickets[26].id,unchanged=await frontier(unlinked)
+  await call(problem,'/incidents/apply',{action:'link',tickets:[unchanged]})
+  assert.equal((await call(problem)).incident_count,26)
+  await call(problem,'/incidents/apply',{action:'unlink',tickets:[await frontier(unlinked)]})
+  assert.equal((await call(problem)).incident_count,25)
+  const unlinkedBefore=await frontier(unlinked)
+  const unlinkedHistory=await app.ok(`${base}/conversations/${unlinked}/ticket`,{token:w.tokens.owner})
   await app.db.prepare("UPDATE contacts SET metadata_json='{\"portal_notification_emails\":0}' WHERE id=?").bind(fixture.tickets[4].contact_id).run()
   const plan=await call(problem,'/solve/preview',{reply:'Hi {{contact.name}}, checkout is working again. — {{agent.name}}',solve_incidents:true})
   assert.equal(plan.results.length,25)
@@ -37,6 +68,9 @@ export async function problemJourney(){
   assert.equal(result.problem.status,'solved',JSON.stringify(result.problem))
   assert.equal((await call(problem)).recent_preview_id,plan.preview_id)
   assert.equal((await call(problem,'/solve/'+plan.preview_id)).results.filter(r=>r.status==='solved').length,23)
+  assert.deepEqual(await frontier(unlinked),unlinkedBefore,'an incident unlinked before solve retains its own state')
+  assert.deepEqual(await app.ok(`${base}/conversations/${unlinked}/ticket`,{token:w.tokens.owner}),unlinkedHistory,'problem resolution does not rewrite the unlinked incident history')
+  assert.ok(!sent.some(mail=>mail.to.includes('customer26@customer.example.test')))
   const sends=sent.length
   await call(problem,'/solve/apply',{preview_id:plan.preview_id})
   assert.equal(sent.length,sends)

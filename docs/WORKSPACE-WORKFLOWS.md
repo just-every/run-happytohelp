@@ -140,6 +140,31 @@ uses recorded responses for both modes; **live Slack: not-supplied**. Import and
 undo generate no connection notifications. Erasure suppresses pending payloads;
 it cannot withdraw a message already accepted by a receiver.
 
+## Call a signed webhook from a rule
+
+The workflow API accepts `{ "type": "webhook", "destination_id": "..." }` in an
+event or time rule's ordered actions. Use the ID of an enabled webhook created
+in this workspace's Connections settings; a Slack destination or another
+workspace's receiver is refused. Configure this action through the API in this
+release. Previewing a rule never calls its receiver.
+
+A published action sends one `workflow.action` event with opaque workspace and
+ticket IDs. It uses the connection's encrypted signing key and the same
+`webhook-id`, `webhook-tenant`, `webhook-destination`, `webhook-event`,
+`webhook-timestamp` and `webhook-signature` format as ordinary connection events.
+Verify the exact body and these audience/freshness fields at the receiver. No
+customer message, email address or arbitrary payload is included.
+
+Execution rechecks the current ticket, publisher permission, rule version and
+enabled destination at its durable send claim. A 2xx response allows the next
+action. A known refusal, including rate limiting, fails visibly and stops later
+actions. A lost response, ambiguous response or interrupted sending claim is
+uncertain and is never automatically replayed, including after restart. Inspect
+the workflow run before reviewing the receiver's result; a new business action
+requires an explicit decision rather than retrying the uncertain command.
+Pausing or cancelling the rule prevents its next send. Webhook requests retain
+the existing HTTPS, redirect, timeout and byte limits described above.
+
 ## Start a local trial
 
 Follow [README](../README.md#run-it-on-your-computer). Password login is retained.
@@ -154,3 +179,20 @@ entry. Visitor and teammate email is suppressed without storage or external
 sending by the rer dev v2 development transport. Without configured hosted mail,
 email links are unavailable with a plain explanation and the widget promises no email reply.
 Stop the installer or dev terminal with Ctrl+C; closing a browser leaves it running.
+
+### Review linked customer identities
+
+The management API exposes `GET contacts/:contactId/identity-links`,
+`POST contacts/:contactId/identity-links/preview` and
+`POST contacts/:contactId/identity-links` under a workspace. Submit `action`
+(`link` or `unlink`), the other `contact_id`, and a source/reference in
+`provenance`; apply the returned preview including its `signature`.
+Both records must have independently proven mailbox or signed widget identity
+before linking. A typed email or imported identifier supplies no proof.
+Changed identities, permissions, relationships or workspace erasure require
+another preview; a pre-erasure preview cannot reinstall removed provenance.
+Links are symmetric, audited and retained across restart. Erasure removes links
+for either identity and links whose source text names the erased customer.
+They are operator context only: customer sessions, ticket ownership, company
+visibility and sending authority do not change. Social-provider identity proof
+and live business-system context still need their configured providers.

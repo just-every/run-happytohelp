@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict'
+import {createHmac} from 'node:crypto'
 export async function rulesFlow(f){
  const {app,w,ok,call,create,get,patch,clock,publish,send,initial}=f
  const tag=await ok(`/conversations/${f.slaId}/tags`,{name:'Refund review'})
  const definition={name:'Refund review and escalation',kind:'event',position:5,event_kind:'customer_reply',conditions:{all:[{field:'subject',op:'contains',value:'refund'}]},actions:[{type:'tags',add:[tag.id]},{type:'priority',priority:'high'},{type:'notify',kind:'assignee',recipient_id:w.users.owner}]}
  const {rule}=await ok('/workflow-rules',definition)
+ assert.equal(rule.owner_id,w.users.owner,'the published settings record names its responsible lead')
  // Fixtures are storage history, then all preview effects go through the public sandbox.
  const now=initial-3600000
  await app.db.batch(Array.from({length:205},(_,i)=>app.db.prepare("INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at,subject) VALUES(?,?,?,?,?,?)").bind(`historical-refund-${i}`,w.projectId,f.customer.contactId,now-i,now-i,`Refund on order TO-${49000+i}`)))
@@ -17,6 +19,9 @@ export async function rulesFlow(f){
  assert.deepEqual(await app.first('SELECT count(*) n FROM workflow_action_receipts'),before);assert.deepEqual(await app.first('SELECT count(*) n FROM workflow_notifications'),notifications);assert.equal(app.requests.length,requests)
  await app.db.prepare("UPDATE conversations SET status_id='closed',status_category='closed',resolved_at=?,updated_at=? WHERE id LIKE 'historical-refund-%' AND project_id=?").bind(now,now,w.projectId).run()
  await ok(`/workflow-rules/${rule.id}/publish`,{})
+ const nonmatching=await create('Please replace the damaged parcel.')
+ assert.equal((await get(nonmatching)).priority,'normal');assert.ok(!(await get(nonmatching)).tags.some(t=>t.id===tag.id))
+ assert.ok(!(await ok(`/workflow-runs?conversation_id=${nonmatching}`)).runs.some(run=>run.rule_id===rule.id),'a published rule does not act on a nonmatching request')
  const id=await create('Please refund my order TO-50000.');assert.equal((await get(id)).priority,'high');assert.ok((await get(id)).tags.some(t=>t.id===tag.id))
  const receipts=await app.first('SELECT count(*) n FROM workflow_action_receipts WHERE conversation_id=?',id);await app.scheduled();assert.deepEqual(await app.first('SELECT count(*) n FROM workflow_action_receipts WHERE conversation_id=?',id),receipts)
  const original=(await ok('/workflow-rules')).rules.find(r=>r.id===rule.id)
@@ -57,6 +62,7 @@ export async function rulesFlow(f){
  assert.deepEqual(await ran(),[replied.id,quiet.id].sort(),'both rules run on the teammate reply');assert.equal((await get(away)).priority,'urgent');assert.ok((await get(away)).tags.some(t=>t.id===tag.id))
  await ok(`/workflow-rules/${replied.id}/pause`,{});await ok(`/workflow-rules/${quiet.id}/pause`,{})
  await clock(initial)
+ await signedWebhookFlow(f)
 }
 
 // Before any close template is published, the workspace's seeded default alone
@@ -142,4 +148,54 @@ export async function timeAutomationFlow(f){
  for(const rule of rules)await ok(`/workflow-rules/${rule.id}/pause`,{})
  await clock(initial)
  console.log('AUTOMATION-002: 48/96 business hours, four-day close, weekend/DST, interrupted cursor restart, reset, repeat refusal and automation actors passed')
+}
+
+
+async function signedWebhookFlow(f){
+ const {app,w,ok,call,create,get,clock,initial}=f,connections=`/api/management/projects/${w.projectId}/connections/webhooks`
+ const requests=()=>app.requests.filter(r=>new URL(r.url).hostname==='hooks.example.com')
+ const action=destination=>({type:'webhook',destination_id:destination})
+ assert.equal((await call('/workflow-rules',{name:'Unknown receiver',actions:[action('synthetic-happytohelp-2')]})).status,400)
+ for(const [mode,expected] of [['ok','complete'],['reject','failed'],['lost','uncertain']]){
+  const target=await app.ok(connections,{token:w.tokens.owner,body:{name:`Workflow ${mode}`,url:`https://hooks.example.com/${mode}`,events:['conversation.rated']}})
+  const subject=`Signed webhook ${mode}`,definition={name:subject,kind:'event',event_kind:'customer_reply',conditions:{all:[{field:'subject',op:'eq',value:subject}]},actions:[action(target.id),{type:'priority',priority:'high'}]}
+  await create(subject)
+  const {rule}=await ok('/workflow-rules',definition),before=requests().length
+  const preview=await ok(`/workflow-rules/${rule.id}/preview`,{})
+  assert.equal(preview.side_effects,false);assert.ok(preview.results.some(r=>r.matched&&r.actions.some(a=>a.type==='webhook')))
+  assert.equal(requests().length,before,'the webhook sandbox never sends')
+  assert.equal((await call('/workflow-rules',definition,undefined,'operator')).status,403)
+  await ok(`/workflow-rules/${rule.id}/publish`,{})
+  const id=await create(subject),runs=(await ok(`/workflow-runs?conversation_id=${id}`)).runs.filter(r=>r.rule_id===rule.id)
+  assert.equal(runs.length,1);assert.equal(runs[0].state,expected,runs[0].reason)
+  assert.equal((await get(id)).priority,expected==='complete'?'high':'normal','subsequent actions require a confirmed webhook outcome')
+  const request=requests().at(-1),headers=request.headers,envelope=JSON.parse(request.body)
+  assert.equal(requests().length,before+1)
+  assert.equal(headers['webhook-tenant'],w.projectId);assert.equal(headers['webhook-destination'],target.id);assert.equal(headers['webhook-event'],'workflow.action')
+  assert.deepEqual(envelope.data,{project_id:w.projectId,conversation_id:id})
+  const signed=JSON.stringify(['integrations.webhook.v1',w.projectId,target.id,'workflow.action',headers['webhook-id'],headers['webhook-timestamp'],request.body])
+  assert.equal(headers['webhook-signature'],'v1='+createHmac('sha256',Buffer.from(target.secret,'hex')).update(signed).digest('hex'))
+  const count=requests().length
+  await app.configure({});await clock(initial+180000);await app.scheduled();await app.scheduled()
+  assert.equal(requests().length,count,'restart never replays a completed, refused or uncertain webhook')
+  if(mode==='ok'){
+   await app.ok(connections+'/'+target.id,{token:w.tokens.owner,method:'DELETE'})
+   const disabled=await create(subject)
+   assert.equal(requests().length,count,'a disabled receiver cannot send')
+   assert.equal((await ok(`/workflow-runs?conversation_id=${disabled}`)).runs.find(run=>run.rule_id===rule.id).state,'cancelled')
+  }
+  await ok(`/workflow-rules/${rule.id}/pause`,{});await create(subject);assert.equal(requests().length,count,'pausing prevents another webhook')
+  await clock(initial)
+ }
+ const target=await app.ok(connections,{token:w.tokens.owner,body:{name:'Interrupted workflow',url:'https://hooks.example.com/ok',events:['conversation.rated']}})
+ const subject='Interrupted signed webhook',rule=await f.publish({name:subject,kind:'event',event_kind:'customer_reply',conditions:{all:[{field:'subject',op:'eq',value:subject}]},actions:[action(target.id),{type:'priority',priority:'high'}]})
+ const ticket=await app.ok('/api/conversations',{token:w.tokens.owner,body:{projectId:w.projectId,contactId:f.customer.contactId}}),before=requests().length
+ await app.call(`/api/conversations/${ticket.id}/messages`,{token:f.customer.token,headers:{'x-test-fault':'db-interrupt','x-test-statement':"UPDATE workflow_notifications SET state='sending'"},body:{localId:'synthetic-happytohelp-3',content:subject,expectedRevision:0}})
+ await app.configure({});await clock(initial+180000);await app.scheduled();await app.scheduled()
+ const interrupted=(await ok(`/workflow-runs?conversation_id=${ticket.id}`)).runs.find(run=>run.rule_id===rule.id)
+ assert.equal(interrupted.state,'uncertain',interrupted.reason)
+ assert.equal(requests().length,before,'an interrupted sending claim is never replayed, even before any request was observed')
+ assert.equal((await get(ticket.id)).priority,'normal')
+ await ok(`/workflow-rules/${rule.id}/pause`,{});await clock(initial)
+
 }

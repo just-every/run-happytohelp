@@ -79,8 +79,8 @@ END`;
 // Expected additions/replacements are explicit, independent of the migration
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
-  ...['csat_responses','csat_response_history'].map(table => ({migration: '246_customer_recovery.sql', table, sql: `ALTER TABLE ${table} ADD COLUMN recovery TEXT NOT NULL DEFAULT 'unknown' CHECK(recovery IN ('unknown','recovered','not_recovered'))`})),
   ...['csat_responses','csat_response_history'].map(table => ({migration: '242_csat_response_surface.sql', table, sql: `ALTER TABLE ${table} ADD COLUMN response_surface TEXT NOT NULL DEFAULT 'unknown' CHECK(response_surface IN ('email','portal','widget','unknown'))`})),
+  ...['csat_responses','csat_response_history'].map(table => ({migration: '246_customer_recovery.sql', table, sql: `ALTER TABLE ${table} ADD COLUMN recovery TEXT NOT NULL DEFAULT 'unknown' CHECK(recovery IN ('unknown','recovered','not_recovered'))`})),
   {migration: '0105_edition_delegation.sql', table: 'knowledge_articles', sql: "ALTER TABLE knowledge_articles ADD COLUMN source_revision INTEGER NOT NULL DEFAULT 1; ALTER TABLE knowledge_articles ADD COLUMN source_incarnation TEXT NOT NULL DEFAULT ''"},
   {migration: '0108_public_answer_citations.sql', table: 'knowledge_articles', sql: "ALTER TABLE knowledge_articles ADD COLUMN publication_version TEXT GENERATED ALWAYS AS (source_incarnation || ':' || source_revision) VIRTUAL"},
   {migration: '0108_public_answer_citations.sql', table: 'messages', sql: "ALTER TABLE messages ADD COLUMN citations_json TEXT NOT NULL DEFAULT '[]'"},

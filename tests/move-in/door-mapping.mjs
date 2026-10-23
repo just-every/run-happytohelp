@@ -1,4 +1,5 @@
 import {configurationFieldsJourney} from './configuration-fields.mjs';
+import {companyJourney} from './companies.mjs';
 import assert from 'node:assert/strict';
 import {phases} from '../journeys/kit/scenarios.mjs';
 import {nativeHarness} from './harness.mjs';
@@ -31,6 +32,7 @@ const staff={user:{id:2,role:'agent',name:'Teammate',email:'staff@example.test',
 const ticket={ticket:{id:42,requester_id:1,subject:'Quoted "subject" مرحبا',created_at:'2024-01-02T00:00:00Z',updated_at:'2024-01-02T00:02:00Z',status:'open',tags:[' Billing ','billing'],comments:[{id:9,author_id:1,body:'Customer <script>inert</script>',public:true,created_at:'2024-01-02T00:00:00Z'},{id:10,author_id:2,body:'Private note',public:false,created_at:'2024-01-02T00:01:00Z'},{id:11,author_id:2,body:'Public reply',public:true,created_at:'2024-01-02T00:02:00Z'}]}};
 
 test('Zendesk history lands with roles, original times, private notes, one tag, contact-only tags and plain bodies; incomplete or restricted sources are review rejections',async()=>{
+ await companyJourney(imported,'zendesk')
  await lifecycleJourney()
  await imported('zendesk','\n'+ndjson(user,staff,ticket),{check:async({plan,omissions,rows})=>{
   assert.equal(plan.counts.rejected,0);assert.deepEqual(omissions('user/2'),['historical_staff_retained_as_authors_no_access_created'])
@@ -53,6 +55,7 @@ const macro={type:'macro',id:'m',name:'Reply',body:'Hello',body_text:'Hello',vis
 const conversation={type:'conversation',id:'v',state:'open',channel:{initial:'messenger'},created_at:1704067200,updated_at:1704067200,contacts:{type:'contact.list',contacts:[{id:'c'}]},source:{id:'s',body:'First',author:{type:'contact',id:'c'}},conversation_parts:{type:'conversation_part.list',conversation_parts:[]}};
 
 test('Intercom lists, envelopes and lines land with original times, initial-message context, private notes and closing state; placeholders, bad part counts and unknown collections are explicit review outcomes',async()=>{
+ await companyJourney(imported,'intercom')
  await imported('intercom',JSON.stringify({contacts:[contact],conversations:[{type:'conversation',id:'x'}]}),{name:'group.json',apply:false,check:({plan})=>assert.deepEqual(plan.decisions.filter(row=>['contact','conversation'].includes(row.kind)).map(row=>row.location.pointer).sort(),['/contacts/0','/conversations/0'])})
  await imported('intercom','{\n "contacts": [\n {"type":"contact","id":"a","email":"a@example.test","created_at":1704067200},\n {"type":"contact","id":"b","email":"b@example.test","created_at":1704067200}\n ],\n "conversations": [{"type":"conversation","id":"z"}]\n}',{name:'export.json',apply:false,check:({plan})=>assert.deepEqual(plan.decisions.filter(row=>['contact','conversation'].includes(row.kind)).map(row=>[row.sourceId,row.location.row]).sort(),[['a',3],['b',4],['z',6]])})
  await imported('intercom',ndjson(contact,macro),{check:async({rows})=>assert.deepEqual(await rows('SELECT content,updated_at FROM macros'),[{content:'Hello',updated_at:1704153600000}])})
@@ -68,8 +71,8 @@ test('Intercom lists, envelopes and lines land with original times, initial-mess
  await imported('intercom',ndjson(contact,...counts.map((count,i)=>({...conversation,id:`v${i}`,conversation_parts:{...conversation.conversation_parts,total_count:count}})),{...conversation,id:'ok-plain'},{...conversation,id:'ok-zero',conversation_parts:{...conversation.conversation_parts,total_count:0}}),{apply:false,check:({rejection})=>{for(let i=0;i<counts.length;i++)assert.equal(rejection(`conversation/v${i}`),'conversation_parts_count_invalid_or_incomplete',String(counts[i]));assert.equal(rejection('conversation/ok-plain'),undefined);assert.equal(rejection('conversation/ok-zero'),undefined)}})
  await imported('intercom',JSON.stringify(contact)+'\n'+JSON.stringify(conversation).replace('"conversation_parts":[]','"conversation_parts":[],"total_count":1e400'),{apply:false,check:({plan})=>assert.ok(plan.diagnostics.some(row=>row.code==='conversation_parts_count_invalid_or_incomplete'&&row.location.row===2))})
  await imported('intercom','{\n"contacts":['+JSON.stringify(contact)+'],\n"companies":[{"type":"company","id":"co"},{"id":"co2"}],\n"segments":[],\n"unknown_metadata":{"note":"retained only"},\n"type":"list","total_count":1,"pages":{}\n}',{name:'source.json',check:async({plan,rows})=>{
-  assert.equal(plan.counts.effects,1);const omitted=plan.decisions.filter(row=>row.omissions.some(item=>item.reason.startsWith('unsupported_record_kind:')));assert.equal(omitted.length,4)
-  assert.deepEqual(omitted.map(row=>row.location),[{artifact:'source.json',row:3,pointer:'/companies/0'},{artifact:'source.json',row:3,pointer:'/companies/1'},{artifact:'source.json',row:4,pointer:'/segments'},{artifact:'source.json',row:5,pointer:'/unknown_metadata'}]);assert.equal((await rows('SELECT * FROM contacts')).length,1)
+  assert.equal(plan.counts.effects,1);assert.ok(plan.decisions.some(row=>row.kind==='company'&&row.sourceId==='co'&&row.rejection),'an incomplete documented company is refused');const omitted=plan.decisions.filter(row=>row.omissions.some(item=>item.reason.startsWith('unsupported_record_kind:')))
+  assert.deepEqual(omitted.map(row=>row.location),[{artifact:'source.json',row:3,pointer:'/companies/1'},{artifact:'source.json',row:4,pointer:'/segments'},{artifact:'source.json',row:5,pointer:'/unknown_metadata'}]);assert.equal((await rows('SELECT * FROM contacts')).length,1)
  }})
  await imported('intercom','{"type":"li\\u0073t","companies":[{"id":"one"}],"unknown":null}',{name:'escaped.json',apply:false,check:({plan})=>{assert.equal(plan.decisions.length,2);assert.equal(plan.decisions.filter(row=>row.omissions.length).length,2)}})
  await imported('intercom',JSON.stringify({...contact,unknown_feature:{private:'kept only in original'}}),{check:({omissions})=>assert.deepEqual(omissions('contact/c'),['unsupported_source_field:unknown_feature'])})
@@ -79,6 +82,7 @@ test('Intercom lists, envelopes and lines land with original times, initial-mess
 });
 
 test('Help Scout responses and Docs map only documented, complete and public content; incomplete history, unsent threads and ambiguous drafts never publish',async()=>{
+ await companyJourney(imported,'helpscout')
  const {responses,customer,history,docs}=await import('./helpscout-fixtures.mjs')
  await imported('helpscout',JSON.stringify({responses:responses()}),{name:'export.json',check:async({plan,rows})=>{
   assert.equal(plan.counts.rejected,0)
@@ -101,6 +105,7 @@ test('Help Scout responses and Docs map only documented, complete and public con
 });
 
 test('Freshdesk tickets keep the description first, private notes, staff as authors and the resolved time; signed download links are refused',async()=>{
+ await companyJourney(imported,'freshdesk')
  const {contact:person,agent,ticket:freshTicket,cannedResponse}=await import('./freshdesk-fixtures.mjs')
  await imported('freshdesk',ndjson(person,agent,freshTicket(5001,4),freshTicket(5002,2),freshTicket(5003,5),freshTicket(5004,3),cannedResponse),{check:async({plan,omissions,rows})=>{
   assert.equal(plan.counts.rejected,0);const solved=(await rows("SELECT c.id,c.resolved_at,c.assigned_to FROM conversations c JOIN move_in_origins o ON o.target_id=c.id WHERE o.source_id='5001'"))[0]

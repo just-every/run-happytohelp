@@ -1608,11 +1608,11 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "fbf2cb8f8abaf3dd8c5ff03919c1fa49352a4459c61c8823473bae06bc470043",
+      "sha256": "f44b3998886f0b7b378ba7cdca288c7ffe47acf96b977472ab5e0b0e511a31f3",
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "7dd81920a3340ee4f90006a05e52659bcf6fc689ebc974f385041428277524ac",
+      "sha256": "2293f60162ba86773ca62f9314f1b25fd6480f2be2e5b6dd88bee2fed44c2c31",
       "executable": false
     },
     "base-copies.json": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "579b2fe776145cbf30bff73e333d3d2a4434b2365cf79328bdca4fd5b03c8b88",
+      "sha256": "cc97564d91b621beb062c1bfd1c65f7a40b07f5d64966d9cc3cd03d5f7970429",
       "executable": false
     },
     "DEMO.md": {
@@ -1704,11 +1704,11 @@
       "executable": false
     },
     "docs/INDEPENDENT-RELEASE.md": {
-      "sha256": "0fda8f83594a2c7323658b0ce0e6bd86791890b9f58431255fe5b7192e74227a",
+      "sha256": "5e4fb1f673eb9879989565992501a57058ce7c42240ab0b8e749b2d431cc0545",
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "f317edcfc80125091ffdb162bca202eff0d248e5830c9fbc6c1c20ac15e62f1c",
+      "sha256": "82e693f4a726d98405987d14d38bd8c6070d137c53958fbf027d22e7d9dd620c",
       "executable": false
     },
     "docs/legacy-entry-points.md": {
@@ -2492,11 +2492,11 @@
       "executable": false
     },
     "OPERATIONS.json": {
-      "sha256": "0fa396b895e9098cc1db5070d1dc33ca732fae8287f84f69dc8afa3bc8afd1a6",
+      "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "01ffb3e9123396de1c6817f0072d1feb3a72e6c17ff0c1ababc40e6e4d69367a",
+      "sha256": "f07544b9e8d573d01e36f6ad4f3fa9a6201adbea74fdbd5cf4cb5712080aa617",
       "executable": false
     },
     "package.json": {
@@ -2568,7 +2568,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "759cd1e999aa74c96d11b5186ada8d7f18bb296f5d8a85ffb452edd173bfb4e1",
+      "sha256": "ad2e154f0fd297f279a49af698c7a9e6d5dcc43566defd23fe9f5c82a3b2ae73",
       "executable": false
     },
     "RELEASE.json": {
@@ -2584,7 +2584,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "816f3a5500fad402374d8819253befe34b51d52691b943232af7bffe14585813",
+      "sha256": "c5d3fa9f934a0d462f73ce492d73a75ca9a08fc695cac9435d831656312967bd",
       "executable": false
     },
     "scripts/build-local-agent.cjs": {

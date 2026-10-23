@@ -201,8 +201,8 @@ function assertBreakdowns(report,fixture,companyId,accountTickets){
 // the initial signed-in workspace are fixtures. No report rows are seeded.
 export async function publicCohort(){
  const a=await assistantApp({bindings:{OPENAI_API_KEY:'synthetic-happytohelp-1',H2H_LOCAL:'true',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-2',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'synthetic-happytohelp-3'}})
- const {app,p,ai,owner,workspace:w}=a,base=`/api/dashboard/projects/${p}`
- ai.network=async request=>{const host=new URL(request.url).hostname;if(host==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]});assert.equal(host,'api.resend.com');return Response.json({id:crypto.randomUUID()})}
+ const {app,p,ai,owner,workspace:w}=a,sent=[],base=`/api/dashboard/projects/${p}`
+ ai.network=async request=>{const host=new URL(request.url).hostname;if(host==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]});assert.equal(host,'api.resend.com');sent.push(await request.json());return Response.json({id:crypto.randomUUID()})}
  const door=(path,body,method)=>app.ok(base+path,{token:owner,...(body===undefined?{}:{body}),...(method?{method}:{})})
  const ticket=async id=>(await door(`/conversations/${id}/ticket`)).data
  const status=async(id,status_id)=>{const t=await ticket(id);return door(`/conversations/${id}/ticket`,{status_id,expected_version:t.ticket_version},'PATCH')}
@@ -226,7 +226,8 @@ export async function publicCohort(){
   await app.ok(`/api/management/projects/${p}/ai`,{token:owner,method:'PUT',body:{default_visitor_ai_id:'-',default_verified_user_ai_id:'-'}})
   await app.ok(`/api/management/projects/${p}/email-settings`,{token:owner,method:'PUT',body:{email_from_name:'Support',email_from_address:'support@example.test',inbound_address:'inbound@example.test',is_enabled:true}})
   const email=await app.ok('/api/integrations/email/inbound',{headers:{Authorization:'Bearer synthetic-happytohelp-3'},body:{messageId:'public-cohort-email',to:'inbound@example.test',from:'public-cohort@customer.example.test',text:'My parcel arrived damaged.'}})
-  const emailId=email.conversationId
+  const emailId=email.conversationId,group=(await door('/ticket-groups',{name:'Cohort team',members:[w.users.operator,w.users.admin]})).data
+  const emailTicket=await ticket(emailId);await door(`/conversations/${emailId}/ticket`,{group_id:group.id,expected_version:emailTicket.ticket_version},'PATCH')
   await door(`/conversations/${emailId}`,{ai_id:null,agent_id:w.users.operator},'PUT');await door(`/conversations/${emailId}`,{agent_id:w.users.admin},'PUT')
   await humanReply(emailId,'We have arranged a replacement.');await status(emailId,'solved')
   const unanswered=await a.visitor('Waiting');await unanswered.say('Please check my invoice.');await app.drainJobs()
@@ -250,6 +251,8 @@ export async function publicCohort(){
   }
   const distribution=values=>{const s=values.sort((a,b)=>a-b);return {count:s.length,median:s.length%2?s[(s.length-1)/2]:(s[s.length/2-1]+s[s.length/2])/2,p90:s[Math.ceil(s.length*.9)-1]}}
   const native=report.breakdowns.brand.find(r=>r.id===p);assert.deepEqual(native.firstResponse,distribution(response));assert.deepEqual(native.firstResolution,distribution(resolved))
+  assert.equal(report.breakdowns.team.find(r=>r.id===group.id).tickets,1)
+  assert.equal(report.breakdowns.agent.find(r=>r.id===w.users.admin).tickets,1)
   assert.equal(report.breakdowns.account.find(r=>r.id===company.id).tickets,2)
   assert.equal(report.breakdowns.tag.find(r=>r.label==='Cohort follow-up').reopens.reopened,1)
   const importedAt=new Date(Date.now()-3600000).toISOString(),imports=`/api/move-in/projects/${p}/imports`,source=[
@@ -266,6 +269,15 @@ export async function publicCohort(){
   assert.equal((await door(url+'&includeImported=true')).reopens.imported_history_unknown,1,'an ordinary field edit cannot invent missing lifecycle history')
   await status(importedTicket,'open');const observed=await door(url+'&includeImported=true');assert.equal(observed.reopens.denominator,4);assert.equal(observed.reopens.reopened,2);assert.equal(observed.reopens.imported_history_unknown,0)
   const csv=await app.call(base+url+'&format=summary.csv',{token:owner,status:200});assert.ok(csv.data.includes('"denominators.cohort","4"'))
+  const schedule=await door('/report-schedules',{name:'Daily public cohort',frequency:'daily',hour:0,recipients:[w.users.owner,w.users.admin],includeImported:true})
+  // Advance only the delivery-window fixture; every ticket, assignment, rating,
+  // native lifecycle event and schedule was admitted through its public route.
+  await app.db.prepare('UPDATE report_schedules SET window_date=?,next_run_at=? WHERE id=?').bind(date(Date.now()+day),Date.now()-1,schedule.id).run()
+  await app.ok(`/api/management/projects/${p}/agents/${w.users.admin}`,{token:owner,method:'PUT',body:{role:'collaborator'}})
+  await app.scheduled();const queued=await app.takeJobs(),delivery=queued.find(job=>job.type==='reports.schedule');assert.ok(delivery);for(let pass=0;pass<3;pass++)await app.runJobs([delivery])
+  const reports=sent.filter(mail=>mail.attachments?.some(file=>file.filename.startsWith('team-report-')));assert.equal(reports.length,1);assert.deepEqual(reports[0].to,['owner-ai@example.test'],'a revoked recipient receives no private report')
+  const delivered=Buffer.from(reports[0].attachments[0].content,'base64').toString('utf8')
+  for(const [key,value] of [['denominators.cohort',5],['denominators.imported',1],['backlog.total',2],['reopens.denominator',4],['reopens.reopened',2],['reopens.events',2]])assert.ok(delivered.includes(`"${key}","${value}"`),'scheduled public cohort '+key)
   console.log(JSON.stringify({proof:'public-door multichannel report cohort',tickets:5,nativeTickets:4,importedTickets:1,nativeChannels:['widget','email'],firstResponse:native.firstResponse,firstResolution:native.firstResolution,reopens:report.reopens,providerBoundary:'network-edge fixture; no live delivery'}))
  }finally{await a.close()}
 }

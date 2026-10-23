@@ -1776,7 +1776,7 @@
       "executable": false
     },
     "docs/reports.md": {
-      "sha256": "1a0220857ddcef7da7e6cea66997219a969b806015103acd850d89987c0ce322",
+      "sha256": "65e069f3a72c247e7e75d2e440905952c34a0e426011da02d44629554897c098",
       "executable": false
     },
     "docs/request-forms.md": {
@@ -2481,6 +2481,10 @@
     },
     "migrations/244_imported_ticket_lifecycle.sql": {
       "sha256": "7ad2137095bd2234fc1eac7e3017217fd9351e15b8368b268c2c3f4f532c7524",
+      "executable": false
+    },
+    "migrations/245_ai_handoff_receipts.sql": {
+      "sha256": "3c16dd6197e9887b840ae6c50278d44859e85836a103c3ca5f7a68094025ea68",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -10844,7 +10848,7 @@
       "executable": false
     },
     "tests/helpers/csat-journey.mjs": {
-      "sha256": "99a41d6d173a8d6a59f0cd4735bcf3539b28acf95450546acc154c5db89a8837",
+      "sha256": "0ed95e97a856d17731de17dcc3c6d898af4211cdaefb7e29a995a9e3b66aaed8",
       "executable": false
     },
     "tests/helpers/customer-csv.mjs": {
@@ -12180,7 +12184,7 @@
       "executable": false
     },
     "tests/reports/team-journey.mjs": {
-      "sha256": "fe93bef2e3dc7706b0ece8716f2b5384d3154c2927e2f54756152435b4713e94",
+      "sha256": "5a859076aee45b9cc6e5ab776ef98414ca58bb0cb59ac34fbebf958b3459aab2",
       "executable": false
     },
     "tests/reports/upgrade-categories.mjs": {

@@ -34,6 +34,9 @@ export async function requestFormsJourney(){
   assert.equal((await app.call(path,{...customer,body:valid,status:200})).data.ticket.id,id)
   assert.equal((await app.call(path,{...customer,body:{...valid,message:'Changed command'},status:409})).status,409)
   assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,before.n+1)
+  const acknowledgments=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&[].concat(mail.to).includes('rosa@example.com'))
+  assert.equal(acknowledgments().length,1,'a verified request-form submission acknowledges the requester once, including on exact-command replay')
+  assert.equal(acknowledgments()[0].headers['X-Auto-Response-Suppress'],'All')
   const ticket=(await app.ok(`${dashboard}/conversations/${id}/ticket`,owner)).data
   assert.equal(ticket.assigned_to,f.workspace.users.operator,'the selected form and typed field route the ticket')
   const sla=(await app.ok(`${dashboard}/conversations/${id}/sla`,owner)).data

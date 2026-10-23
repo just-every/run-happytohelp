@@ -24,7 +24,8 @@ async function iconHint(page,control,label){
  assert.equal(await control.isEnabled(),true);assert.equal(await control.evaluate(element=>element.matches(':focus-visible')),true);
  const tooltip=page.locator('.ui-tooltip[data-open]');await tooltip.waitFor({timeout:200});assert.equal(await tooltip.textContent(),label);
  await page.keyboard.press('Escape');await tooltip.waitFor({state:'hidden'});await control.evaluate(element=>element.blur());
- await page.mouse.move(0,0);await control.hover();await page.waitForTimeout(100);assert.equal(await tooltip.count(),0);await tooltip.waitFor();assert.equal(await tooltip.textContent(),label);
+ // A recently shown tooltip deliberately keeps hover warm; measure a cold hover.
+ await page.mouse.move(0,0);await page.waitForTimeout(400);await control.hover();await page.waitForTimeout(100);assert.equal(await tooltip.count(),0);await tooltip.waitFor();assert.equal(await tooltip.textContent(),label);
  const bounds=await control.boundingBox();await control.hover({position:{x:bounds.width/2,y:bounds.height/4}});assert.ok(await tooltip.isVisible());await page.mouse.move(0,0);await tooltip.waitFor({state:'hidden'});
 }
 for(const width of [1440,390])test(`at ${width}px a widget rating reaches the operator live and on reload, Reports range and both CSVs include it, and reopening clears the prompt while keeping prior feedback`,async()=>{try{

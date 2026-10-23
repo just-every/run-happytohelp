@@ -11932,7 +11932,7 @@
       "executable": false
     },
     "tests/journeys/reports-browser.mjs": {
-      "sha256": "3da4a4525fcafeedca3ec72fef648a92719ebb6d1bc4ac84d79d3318804a7012",
+      "sha256": "1328efebf0aba72869091755b02fce087075d122350e1aad1cfea1c603d2b163",
       "executable": false
     },
     "tests/journeys/reports.mjs": {

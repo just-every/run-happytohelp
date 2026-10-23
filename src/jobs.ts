@@ -1,3 +1,4 @@
+import {expireVoiceMedia} from './modules/voice/media'
 import {consumeTriage,dispatchTriage} from './modules/triage/worker'
 import {dispatchScheduledReports} from './modules/reports/schedule-dispatch'
 import {recoverTicketContinuations} from './modules/tickets/continuation'
@@ -63,7 +64,8 @@ export async function runScheduled(env:Env) {
  }
  await visit('Workflow',720,runWorkflows)
  await visit('Survey',70,dispatchSurveys)
- await visit('Integration',60,dispatchIntegrations)
+ await visit('Integration',58,dispatchIntegrations)
+ await visit('Voice media',2,expireVoiceMedia)
  // Hand larger message effects to the queue near the history-load target.
  // The hard consumer allocation still reserves every later recovery and prune.
  await visit('Outbox',3,dispatchOutbox,700)

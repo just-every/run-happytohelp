@@ -156,6 +156,8 @@ export function routeRule(method:string,path:string):Rule|undefined{
  if(path==='/api/voice/hooks/:numberId')return 'none'
  if(path.startsWith('/api/voice/projects/:projectId/')){
   if(path.endsWith('/report'))return 'reports.view'
+  if(path.endsWith('/context-link')||path.endsWith('/context-candidates'))return 'contacts.manage'
+  if(path.endsWith('/withdraw'))return 'conversations.manage'
   if(path.includes('/conversations/'))return method==='GET'?'conversations.manage':'conversations.reply'
   return 'integrations.install'
  }

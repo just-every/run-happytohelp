@@ -1,0 +1,2 @@
+ALTER TABLE project_roles ADD COLUMN team_ids_json TEXT;
+CREATE TABLE refund_approvals(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,payment_reference TEXT NOT NULL,amount_minor INTEGER NOT NULL CHECK(amount_minor>0),currency TEXT NOT NULL,approved_by TEXT NOT NULL REFERENCES users(id),request_key TEXT NOT NULL,request_hash TEXT NOT NULL,created_at INTEGER NOT NULL,expires_at INTEGER NOT NULL,UNIQUE(project_id,request_key));

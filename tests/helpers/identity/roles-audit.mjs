@@ -1,3 +1,4 @@
+import {scopedAccessJourney} from './scoped-access.mjs'
 import {enterpriseJourney} from './enterprise.mjs'
 import assert from 'node:assert/strict'
 import {startApp,sha} from '../../journeys/kit/app.mjs'
@@ -172,4 +173,5 @@ export async function rolesAuditJourney(){
   assert.equal((await call(C,undefined,w.tokens.owner)).status,200,'the native owner keeps access')
  }finally{await app.close()}
  await enterpriseJourney()
+ await scopedAccessJourney()
 }

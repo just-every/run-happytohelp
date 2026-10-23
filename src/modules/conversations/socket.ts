@@ -1,3 +1,5 @@
+import {ticketScopeSql} from '../access/ticket-scope'
+import {activeEnterpriseMember,activeEnterpriseSession} from '../identity/enterprise/authority'
 import {DurableObject} from 'cloudflare:workers'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
@@ -8,23 +10,24 @@ import {recordOnline} from '../collaboration/presence-store'
 export class ConversationSocket extends DurableObject<Env>{
  async authorized(a:Attachment):Promise<SocketActor|null>{
   const scope=a.projectId?'EXISTS(SELECT 1 FROM memberships target WHERE target.user_id=s.actor_id AND target.project_id=?) AND s.role<>\'contact\'':`EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=s.project_id AND (s.role<>'contact' OR s.contact_id=c.contact_id AND EXISTS(SELECT 1 FROM contacts ct WHERE ct.id=c.contact_id AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1)))`
-  const row=await this.env.DB.prepare(`SELECT s.actor_id,s.role,u.name,s.project_id,sf.verified_at factorAt,sf.method factorMethod,
+  const row=await this.env.DB.prepare(`SELECT s.actor_id,s.role,u.name,s.project_id,COALESCE(sf.verified_at,(SELECT authenticated_at FROM enterprise_sessions WHERE token_hash=s.token_hash)) factorAt,CASE WHEN EXISTS(SELECT 1 FROM enterprise_sessions es WHERE es.token_hash=s.token_hash) THEN 'sso' ELSE sf.method END factorMethod,
    EXISTS(SELECT 1 FROM user_factors f WHERE f.user_id=s.actor_id AND f.confirmed_at IS NOT NULL) hasFactor,
    (SELECT json_extract(ps.settings_json,'$.two_factor_roles') FROM project_settings ps WHERE ps.project_id=s.project_id) twoFactorRoles,
    (SELECT CASE WHEN mr.role_key='collaborator' OR pr.base='collaborator' THEN 'collaborator' END FROM member_roles mr LEFT JOIN project_roles pr ON pr.id=mr.role_key AND pr.project_id=mr.project_id WHERE mr.project_id=s.project_id AND mr.user_id=s.actor_id) policyRole
    FROM sessions s LEFT JOIN users u ON u.id=s.actor_id LEFT JOIN session_factors sf ON sf.token_hash=s.token_hash
-   WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND ${scope}
+   WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND ${scope} AND ${activeEnterpriseSession} AND ${activeEnterpriseMember('s.actor_id','s.project_id')}
    AND (s.role='contact' OR EXISTS(SELECT 1 FROM memberships live WHERE live.user_id=s.actor_id AND live.project_id=s.project_id AND live.role=s.role))
    AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=COALESCE(?,s.project_id) AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`)
    .bind(a.tokenHash,Date.now(),a.projectId||a.conversationId,a.projectId??null).first<SocketActor&{project_id:string;factorAt:number|null;factorMethod:FactorMethod|null;hasFactor:number;twoFactorRoles:string|null;policyRole:string|null}>()
   if(!row)return null
+  if(a.conversationId&&row.role!=='contact'&&!await this.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND ${ticketScopeSql('?')}`).bind(a.conversationId,row.actor_id).first())return null
   if(row.role!=='contact'&&pendingFactor({factorAt:row.factorAt,factorMethod:row.factorMethod,hasFactor:!!row.hasFactor,required:policyRoles(row.twoFactorRoles).includes(row.policyRole||row.role),installation:row.factorMethod==='installation'}))return null
   return row
  }
  async replay(ws:WebSocket){
   const a=ws.deserializeAttachment() as Attachment,actor=await this.authorized(a)
   if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return}
-  const rows=await this.env.DB.prepare('SELECT o.id eventId,m.* FROM conversation_outbox o JOIN messages m ON m.id=o.message_id WHERE '+(a.projectId?'o.project_id':'o.conversation_id')+'=? AND o.id>? ORDER BY o.id LIMIT 500').bind(a.projectId||a.conversationId,a.cursor).all()
+  const rows=await this.env.DB.prepare(`SELECT o.id eventId,m.* FROM conversation_outbox o JOIN messages m ON m.id=o.message_id JOIN conversations c ON c.id=o.conversation_id WHERE ${a.projectId?'o.project_id':'o.conversation_id'}=? AND o.id>? ${actor.role==='contact'?'':`AND ${ticketScopeSql('?')}`} ORDER BY o.id LIMIT 500`).bind(a.projectId||a.conversationId,a.cursor,...(actor.role==='contact'?[]:[actor.actor_id])).all()
   for(const row of rows.results){
    if(actor.role==='contact')delete row.content_raw
    row.media=(await this.env.DB.prepare('SELECT id,filename,content_type,size FROM media WHERE message_id=?').bind(row.id).all()).results
@@ -74,6 +77,7 @@ export class ConversationSocket extends DurableObject<Env>{
     if(a.conversationId&&a.conversationId!==event.conversationId||a.projectId&&a.projectId!==event.projectId)continue
     const actor=await this.authorized(a)
     if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');continue}
+    if(actor.role!=='contact'&&!await this.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND ${ticketScopeSql('?')}`).bind(event.conversationId,actor.actor_id).first())continue
     if(event.operatorOnly===true&&actor.role==='contact')continue
     ws.send(JSON.stringify(event))
    }

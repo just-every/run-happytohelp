@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import type {Env} from '../../platform/env'
 import {cronRoom} from '../../platform/cron-budget'
 import {contactAvailableSql} from '../conversations/contact-privacy'
@@ -40,7 +41,7 @@ export async function batchOperatorActivity(env:Env,now:number,projectId?:string
     JOIN memberships m ON m.project_id=c.project_id
     LEFT JOIN user_project_preferences p ON p.project_id=m.project_id AND p.user_id=m.user_id
     LEFT JOIN conversation_reads r ON r.conversation_id=c.id AND r.user_id=m.user_id
-    WHERE c.id=? AND c.project_id=? AND c.resolved_at IS NULL AND ${contactAvailableSql()}
+    WHERE c.id=? AND c.project_id=? AND c.resolved_at IS NULL AND ${ticketScopeSql('m.user_id')} AND ${contactAvailableSql()}
     AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)
     AND (c.assigned_to=m.user_id OR (c.assigned_to IS NULL AND p.is_notified_on_unassigned_activity=1
      AND NOT EXISTS(SELECT 1 FROM conversation_ai ai WHERE ai.conversation_id=c.id AND ai.ai_id IS NOT NULL)))

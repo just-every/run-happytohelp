@@ -34,7 +34,7 @@ export async function enterpriseJourney(){
   assert.equal(url.pathname,'/token');const form=new URLSearchParams(entry.body),issued=codes.get(form.get('code'));assert.ok(issued,'only an issued authorization code is exchanged')
   assert.equal(form.get('client_secret'),'synthetic-happytohelp-5');assert.equal(await challengeOf(form.get('code_verifier')),issued.challenge)
   assert.equal(form.get('redirect_uri'),issued.callback)
-  const token=await new SignJWT({nonce:issued.nonce,...issued.claims}).setProtectedHeader({alg:'RS256',kid:jwk.kid}).setIssuer(issued.issuer).setAudience(issued.audience).setSubject(issued.subject).setIssuedAt().setExpirationTime(issued.expired?'1s':'3m').sign(keys.privateKey)
+  const token=await new SignJWT({nonce:issued.nonce,...issued.claims}).setProtectedHeader({alg:'RS256',kid:jwk.kid}).setIssuer(issued.issuer).setAudience(issued.audience).setSubject(issued.subject).setIssuedAt().setExpirationTime(issued.expired?new Date(Date.now()-60000):'3m').sign(keys.privateKey)
   return Response.json({id_token:token})
  }})
  try{
@@ -63,12 +63,13 @@ export async function enterpriseJourney(){
    const session=login.headers.getSetCookie().find(s=>s.startsWith('h2h_session=')).split(';')[0].slice('h2h_session='.length)
    assert.equal((await submit(accepted)).status,403,'a signed assertion/code cannot be replayed')
    const mismatched=await begin();assert.equal((await app.request(mismatched.path,{...mismatched.options,headers:{...mismatched.options.headers,Cookie:''}})).status,403,'login CSRF is refused')
-   for(const invalid of protocol==='oidc'?[{claims:{nonce:'wrong'}},{audience:'foreign'},{issuer:'https://foreign.okta.com'},{subject:'unprovisioned'}]:[{wrongRecipient:true},{audience:'foreign'},{expired:true},{tamper:true},{issuer:'foreign'}])assert.equal((await submit(await begin(invalid))).status,403,JSON.stringify(invalid))
+   for(const invalid of protocol==='oidc'?[{expired:true},{claims:{nonce:'wrong'}},{audience:'foreign'},{issuer:'https://foreign.okta.com'},{subject:'unprovisioned'}]:[{wrongRecipient:true},{audience:'foreign'},{expired:true},{tamper:true},{issuer:'foreign'}])assert.equal((await submit(await begin(invalid))).status,403,JSON.stringify(invalid))
    const concurrent=await begin(),race=await Promise.all([submit(concurrent),submit(concurrent)]);assert.deepEqual(race.map(r=>r.status).sort(),[302,403],'one request creates at most one session')
    // Owner-assigned permissions apply to SSO sessions and connected applications.
    const role=(await app.ok(P+'/roles',{token:owner,body:{name:'Identity reviewer',base:'operator',permissions:['conversations.notes','conversations.follow','knowledge.edit']}})).data
    await app.ok(P+'/agents/'+user,{token:owner,method:'PUT',body:{role:role.id}})
    for(const path of [P+'/audit/export',`/api/dashboard/projects/${w.projectId}/reports?format=summary.csv`])assert.equal((await app.call(path,{token:session})).status,403)
+   assert.equal((await app.call(P+'/refund-approvals',{token:session,body:{}})).status,403)
    assert.equal((await app.call(`/api/knowledge/${w.projectId}/articles`,{token:session,body:{title:'Must not publish',content:'No'}})).status,403)
    assert.equal((await app.call(`/api/management/projects/${other.projectId}/agents`,{token:session})).status,403,'membership remains a brand boundary')
    assert.equal((await app.call(P+'/agents/'+user,{token:owner,method:'PUT',body:{role:'owner'}})).status,409)

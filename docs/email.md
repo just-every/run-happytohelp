@@ -83,5 +83,9 @@ ends before the server confirms acceptance, delivery remains uncertain. Neither
 outcome is automatically resent; reconcile the original attempt before choosing
 any new send. Protocol-edge journeys under `tests/helpers/email/imap-provider.mjs`
 exercise IMAP/SMTP through native connection, sync and ticket routes with a
-fragmented byte-stream fixture. This is separate from the still-required real
+local TLS IMAP and SMTP servers with fragmented protocol writes. A test-only
+platform adapter connects workerd streams to certificate-validating Node TLS;
+the production MailSocket opener and parser execute unchanged. Untrusted
+certificates and wrong hostnames are refused before a connection is saved. This
+proves that boundary, not a live Cloudflare socket or provider tenant. It is separate from the still-required real
 provider-account UI qualification for forwarding, IMAP, Gmail and Microsoft 365.

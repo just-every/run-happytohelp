@@ -85,6 +85,8 @@ for(const method of ['GET','POST'] as const)sso.on(method,`${P}/callback`,async 
    if(confirmed?.Recipient!==callback(c,row)||confirmed?.InResponseTo!==state.request_id||!Number.isFinite(Date.parse(confirmed?.NotOnOrAfter))||Date.parse(confirmed.NotOnOrAfter)<=Date.now())throw new Error('SAML recipient or request mismatch')
    const document=new DOMParser({errorHandler:()=>{throw new Error('Malformed SAML XML')}}).parseFromString(profile.getSamlResponseXml!(),'text/xml')
    if(document.documentElement?.getAttribute('Destination')!==callback(c,row))throw new Error('SAML destination mismatch')
+   const algorithms={SignatureMethod:['http://www.w3.org/2001/04/xmldsig-more#rsa-sha256','http://www.w3.org/2001/04/xmldsig-more#rsa-sha384','http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'],DigestMethod:['http://www.w3.org/2001/04/xmlenc#sha256','http://www.w3.org/2001/04/xmldsig-more#sha384','http://www.w3.org/2001/04/xmlenc#sha512']}
+   for(const [name,allowed] of Object.entries(algorithms)){const nodes=document.getElementsByTagNameNS('http://www.w3.org/2000/09/xmldsig#',name);for(let i=0;i<nodes.length;i++)if(!allowed.includes(nodes.item(i)!.getAttribute('Algorithm')||''))throw new Error('Weak SAML signature algorithm refused')}
    subject=text(profile.nameID)
   }
   return await finish(c,row,state,subject)

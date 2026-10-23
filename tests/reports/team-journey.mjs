@@ -50,6 +50,14 @@ export async function teamReportsJourney(){
   assert.equal((await get()).denominators.cohort,raw.length-1)
   assert.equal((await get('&includeImported=true')).denominators.imported,1)
   assert.equal((await get('&includeImported=true')).denominators.cohort,raw.length)
+  // Older import defaults could append an unattributed legacy status row. It
+  // does not prove a native resolution cycle, even when its categories differ.
+  await app.db.prepare("INSERT INTO ticket_history(id,project_id,conversation_id,actor_id,actor_type,source,at,changes_json) VALUES(?,?,?,NULL,'system','legacy',?,?)").bind('legacy-import-initialization',p,fixture.tickets[3].id,fixture.tickets[3].created_at,JSON.stringify({status_category:{from:'new',to:'solved'}})).run()
+  const withLegacyInitialization=await get('&includeImported=true')
+  assert.equal(withLegacyInitialization.reopens.imported_history_unknown,1)
+  assert.equal(withLegacyInitialization.reopens.denominator,report.reopens.denominator,'unattributed legacy initialization cannot increase the known-resolution denominator')
+  assert.equal(withLegacyInitialization.breakdowns.channel.find(row=>row.id===fixture.tickets[3].channel).reopens.historyUnknown,1)
+
   const exported=await app.call(url+'&format=summary.csv',{token:w.tokens.owner,status:200})
   assert.ok(exported.data.includes('"denominators.cohort","425"'))
   assert.ok(exported.data.includes(`"handleTime.total_ms","${totalMs-fixture.timerRows.find(t=>t.conversation_id===fixture.tickets[3].id).ended_at+fixture.timerRows.find(t=>t.conversation_id===fixture.tickets[3].id).started_at}"`))

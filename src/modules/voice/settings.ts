@@ -46,7 +46,7 @@ settingsRoutes.delete(base+'/numbers/:numberId',async c=>{
 
 settingsRoutes.patch(base+'/numbers/:numberId',async c=>{
  const {actor,guard}=await voiceAccess(c);await requireStepUp(c,actor,'voice.configure')
- const b=object(await c.req.json()),settings=settingsInput(b.settings),id=c.req.param('numberId'),now=Date.now()
+ const b=object(await c.req.json()),settings=settingsInput(b.settings),id=c.req.param('numberId')!,now=Date.now()
  if(!Number.isSafeInteger(b.version)||b.version<1)invalid('Reload the number before updating it')
  if(settings.group_id&&!await c.env.DB.prepare('SELECT id FROM ticket_groups WHERE project_id=? AND id=?').bind(actor.projectId,settings.group_id).first())invalid('Choose a workspace queue')
  const result=await c.env.DB.batch([

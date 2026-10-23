@@ -7348,7 +7348,7 @@
       "executable": false
     },
     "src/modules/voice/settings.ts": {
-      "sha256": "1996c1086db3816ae5e559323050987344a1e8a7257e96f6ba4ce0c0d9ae25ba",
+      "sha256": "de12516390cead1d6070de3da710696339fc71df4965448bc65fcc3a887ff6b5",
       "executable": false
     },
     "src/modules/voice/store.ts": {

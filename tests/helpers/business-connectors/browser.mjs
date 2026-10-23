@@ -8,6 +8,7 @@ export async function exerciseBusiness({page,context,origin,owner,width,audit}){
   await page.getByLabel('Provider',{exact:true}).selectOption(provider);
   await page.getByLabel('Provider account ID (Orbit workspace slug)',{exact:true}).fill(accounts[provider].account);
   await page.getByLabel('Provider HTTPS origin (required for Shopify and Salesforce)',{exact:true}).fill(accounts[provider].host||'');
+  if(['orbit','hubspot','salesforce'].includes(provider)){await page.getByLabel('CRM plan property (optional)',{exact:true}).fill(provider==='salesforce'?'Plan__c':'plan');await page.getByLabel('CRM support entitlement property (optional)',{exact:true}).fill(provider==='salesforce'?'Support_Entitlement__c':'support_entitlement');}
   await page.getByLabel('Provider credential',{exact:true}).fill('synthetic-happytohelp-1');
   for(const scope of ['prepare','approve','execute'])await page.getByLabel(scope,{exact:true}).check();
   await page.getByLabel('Maximum per action (USD)',{exact:true}).fill('50');
@@ -27,10 +28,10 @@ export async function exerciseBusiness({page,context,origin,owner,width,audit}){
   await details.locator('summary').click();await details.getByLabel('Provider customer ID',{exact:true}).fill('synthetic-happytohelp-201');await details.getByLabel('I verified this provider customer is the requester. Email alone is insufficient.',{exact:true}).check();
   const mapped=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname.endsWith('/map'));await details.getByRole('button',{name:'Map customer',exact:true}).click();assert.equal((await mapped).status(),200);
   await details.getByRole('button',{name:'Refresh '+names[provider]+' context',exact:true}).click();await details.getByText('Current · Last synced:',{exact:false}).waitFor();await audit(page,'business-'+provider+'-context-'+width);
-  if(provider==='stripe'){
-   await details.getByLabel('Payment intent or subscription ID',{exact:true}).fill('synthetic-happytohelp-202');await details.getByLabel('Refund amount (USD)',{exact:true}).fill('12.50');await details.getByLabel('Reason',{exact:true}).fill('Customer approved partial refund');
-   await details.getByRole('button',{name:'Preview business action',exact:true}).click();await panel.getByRole('button',{name:'Approve exact preview',exact:true}).waitFor();await audit(page,'business-refund-preview-'+width);
-   await panel.getByRole('button',{name:'Approve exact preview',exact:true}).click();await panel.getByRole('button',{name:'Execute approved action',exact:true}).click();await panel.getByText('Provider result: succeeded.',{exact:false}).waitFor();await audit(page,'business-refund-result-'+width);
+  if(['stripe','shopify'].includes(provider)){
+   await details.getByLabel('Order, payment intent or subscription ID',{exact:true}).fill(provider==='shopify'?'901':'synthetic-happytohelp-202');await details.getByLabel('Refund amount (USD)',{exact:true}).fill('12.50');await details.getByLabel('Reason',{exact:true}).fill('Customer approved partial refund');
+   await details.getByRole('button',{name:'Preview business action',exact:true}).click();await panel.getByRole('button',{name:'Approve exact preview',exact:true}).waitFor();await audit(page,'business-'+provider+'-refund-preview-'+width);
+   await panel.getByRole('button',{name:'Approve exact preview',exact:true}).click();await panel.getByRole('button',{name:'Execute approved action',exact:true}).click();await panel.getByText('Provider result: '+(provider==='shopify'?'SUCCESS':'succeeded')+'.',{exact:false}).waitFor();await audit(page,'business-'+provider+'-refund-result-'+width);
   }
   await details.locator('summary').click();
  }

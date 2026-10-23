@@ -2,7 +2,7 @@ import {HTTPException} from 'hono/http-exception'
 export const PROVIDERS=['shopify','stripe','orbit','hubspot','salesforce'] as const
 export type Provider=typeof PROVIDERS[number]
 export const SCOPES=['read','prepare','approve','execute'] as const
-export interface Connection {id:string;project_id:string;provider:Provider;account:string;host:string;token_cipher:string|null;scopes_json:string;limit_cents:number;expires_at:number|null;version:number;updated_at:number}
+export interface Connection {id:string;project_id:string;provider:Provider;account:string;host:string;token_cipher:string|null;scopes_json:string;fields_json:string;limit_cents:number;expires_at:number|null;version:number;updated_at:number;authority_epoch?:number}
 export interface Link {connection_id:string;project_id:string;conversation_id:string;contact_id:string;source_id:string;version:number;context_json:string|null;fetched_at:number|null;error:string|null}
 export interface Action {id:string;project_id:string;conversation_id:string;connection_id:string;connection_version:number;link_version:number;source_id:string;request_key:string;kind:string;target_id:string;amount_cents:number;reason:string;preview_json:string;state:string;remote_id:string|null;result_json:string|null;approved_by:string|null;created_at:number;updated_at:number}
 export function text(value:unknown,label:string,max=200){if(typeof value!=='string'||!value.trim()||value.length>max||/[\r\n\x00]/.test(value))throw new HTTPException(400,{message:`Invalid ${label}`});return value.trim()}

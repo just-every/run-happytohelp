@@ -40,6 +40,14 @@
     {
       "id": "250_business_connectors.sql",
       "buyerSteps": "Apply before serving business connector routes. Business credentials are excluded from exports; reconnect provider accounts after restore. Restore cancels unexecuted approvals and preserves unknown outcomes without replay."
+    },
+    {
+      "id": "251_business_source_fields.sql",
+      "buyerSteps": "Apply after 250. Source plan and support entitlement properties are opt-in; sales lifecycle and community level confer no support rights."
+    },
+    {
+      "id": "252_business_role_fences.sql",
+      "buyerSteps": "Apply after 251. Custom role and membership role changes invalidate in-flight business connector write authority."
     }
   ]
 }

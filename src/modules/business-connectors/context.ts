@@ -4,7 +4,7 @@ import type {AppEnv} from '../../platform/env'
 import {decryptToken} from '../integrations/secrets'
 import {auditStatement,requestSource} from '../audit/record'
 import {access,connection,link,guard} from './access'
-import {id,demand,hasScope,type Connection} from './model'
+import {id,demand,hasScope,active,type Connection} from './model'
 import {context} from './providers/context'
 import {code} from './providers/http'
 import {root,publicConnection} from './connections'
@@ -26,7 +26,8 @@ contexts.post(mapped+'/map',async c=>{
  try{await context(row,await decryptToken(c.env,actor.projectId,row.token_cipher!),source)}catch(error){throw new HTTPException(409,{message:'Customer mapping refused: '+code(error)})}
  const current=await connection(c);demand(current.row,'read');if(current.row.version!==row.version)throw new HTTPException(409,{message:'Connection changed'})
  await access(c,'contacts.manage')
- await c.env.DB.batch([c.env.DB.prepare(`INSERT INTO business_links(connection_id,project_id,conversation_id,contact_id,source_id) VALUES(?,?,?,?,?) ON CONFLICT(connection_id,conversation_id) DO UPDATE SET source_id=excluded.source_id,version=business_links.version+1,context_json=NULL,fetched_at=NULL,error=NULL`).bind(row.id,actor.projectId,conversation.id,conversation.contact_id,source),auditStatement(c.env.DB,{projectId:actor.projectId,category:'integration',action:'business.customer_mapped',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'conversation',id:conversation.id},detail:{connection_id:row.id}})])
+ const saved=await c.env.DB.batch([c.env.DB.prepare(`INSERT INTO business_links(connection_id,project_id,conversation_id,contact_id,source_id) SELECT ?,?,?,?,? WHERE EXISTS(SELECT 1 FROM business_connections bc JOIN conversations cv ON cv.project_id=bc.project_id JOIN contacts ct ON ct.id=cv.contact_id AND ct.project_id=cv.project_id WHERE bc.id=? AND bc.version=? AND cv.id=? AND ${active}) AND (SELECT revision FROM integration_authority_epoch WHERE id=1)=? ON CONFLICT(connection_id,conversation_id) DO UPDATE SET source_id=excluded.source_id,version=business_links.version+1,context_json=NULL,fetched_at=NULL,error=NULL`).bind(row.id,actor.projectId,conversation.id,conversation.contact_id,source,row.id,row.version,conversation.id,row.authority_epoch!),auditStatement(c.env.DB,{projectId:actor.projectId,category:'integration',action:'business.customer_mapped',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'conversation',id:conversation.id},detail:{connection_id:row.id}})])
+ if(!saved[0].meta.changes)throw new HTTPException(409,{message:'Customer or workspace authority changed'})
  return c.json({mapped:true})
 })
 contexts.post(mapped+'/refresh',async c=>{

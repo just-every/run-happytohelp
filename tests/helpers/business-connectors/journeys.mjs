@@ -9,7 +9,7 @@ export async function harness(){
  const headers={Origin:ws.allowedOrigin,'CF-Connecting-IP':'198.51.100.81'},visitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:ws.widgetKey,name:'Synthetic customer',email:'synthetic-happytohelp-1@example.test'},headers});
  const conversation=await app.ok('/api/conversations',{token:visitor.token,headers,body:{projectId:ws.projectId}}),ticket=`/conversations/${conversation.id}`;
  const call=(path,body,options={})=>app.ok(base+path,{token,body,...options}),rows={};
- const connect=async(provider,scopes=['read','prepare','approve','execute'])=>{const r=await call('/connections',{provider,...accounts[provider],token:'synthetic-happytohelp-1',scopes,limit_cents:5000});rows[provider]=r.data;return r.data;};
+ const connect=async(provider,scopes=['read','prepare','approve','execute'])=>{const r=await call('/connections',{provider,...accounts[provider],token:'synthetic-happytohelp-1',scopes,fields:provider==='salesforce'?{plan:'Plan__c',entitlement:'Support_Entitlement__c'}:['hubspot','orbit'].includes(provider)?{plan:'plan',entitlement:'support_entitlement'}:{},limit_cents:5000});rows[provider]=r.data;return r.data;};
  const map=async provider=>{const path=ticket+'/connections/'+encodeURIComponent(rows[provider].id);await call(path+'/map',{source_id:network.customer,confirmed:true});await call(path+'/refresh',{});return path;};
  return {app,network,ws,foreign,token,base,call,rows,connect,map,conversation,visitor,ticket,async close(){await app.close();}};
 }
@@ -47,6 +47,9 @@ export async function money(){const h=await harness();try{
  assert.match(subscription.preview.proration,/No credit or proration/);await h.call(path+'/actions/'+subscription.id+'/approve',{confirmed:true});assert.equal((await h.call(path+'/actions/'+subscription.id+'/execute',{})).data.state,'succeeded');
  await h.connect('hubspot');const crm=await h.map('hubspot');const outcome=(await h.call(crm+'/prepare',{kind:'support_outcome',target_id:h.network.customer,reason:'Customer confirmed recovery',request_key:randomUUID()})).data;await h.call(crm+'/actions/'+outcome.id+'/approve',{confirmed:true});h.network.changeSource();assert.equal((await h.app.call(h.base+crm+'/actions/'+outcome.id+'/execute',{token:h.token,body:{}})).status,409);assert.equal(h.network.notes.size,0);await h.call(crm+'/actions/'+outcome.id+'/cancel',{});
  await h.connect('hubspot',['read']);assert.equal((await h.app.call(h.base+crm+'/prepare',{token:h.token,body:{kind:'support_outcome',target_id:h.network.customer,reason:'Denied',request_key:randomUUID()}})).status,403);
+ await h.connect('shopify');const shop=await h.map('shopify'),shopInput={kind:'refund',target_id:'901',amount_cents:1250,reason:'Approved Shopify partial refund',request_key:randomUUID()};
+ assert.equal((await h.app.call(h.base+shop+'/prepare',{token:h.token,body:{...shopInput,target_id:'foreign-order'}})).status,409);
+ const shopAction=(await h.call(shop+'/prepare',shopInput)).data;await h.call(shop+'/actions/'+shopAction.id+'/approve',{confirmed:true});assert.equal((await h.call(shop+'/actions/'+shopAction.id+'/execute',{})).data.state,'succeeded');assert.equal(h.network.shopifyRefunds.length,1);assert.equal((await h.call(shop+'/actions/'+shopAction.id+'/execute',{})).data.state,'succeeded');assert.equal(h.network.shopifyRefunds.length,1);
  assert.ok((await h.app.sql("SELECT action FROM audit_events WHERE action LIKE 'business.%'")).some(x=>x.action==='business.succeeded'));
 }finally{await h.close();}}
 export async function uncertainty(){const h=await harness();try{
@@ -55,6 +58,7 @@ export async function uncertainty(){const h=await harness();try{
  const count=h.network.calls.length;assert.equal((await h.app.call(h.base+root+'/execute',{token:h.token,body:{}})).status,409);assert.equal(h.network.calls.length,count);
  assert.equal((await h.app.call(h.base+path+'/prepare',{token:h.token,body:{kind:'refund',target_id:h.network.payment,amount_cents:1500,reason:'Second key cannot bypass pending refund',request_key:randomUUID()}})).status,409);
  assert.equal((await h.call(root+'/reconcile',{})).data.state,'succeeded');assert.equal(h.network.refunds.length,1);
+ await h.connect('shopify');const shop=await h.map('shopify'),shopAction=(await h.call(shop+'/prepare',{kind:'refund',target_id:'901',amount_cents:1250,reason:'Shopify lost response',request_key:randomUUID()})).data,shopRoot=shop+'/actions/'+shopAction.id;await h.call(shopRoot+'/approve',{confirmed:true});h.network.timeoutAfterWrite();assert.equal((await h.call(shopRoot+'/execute',{})).state,'uncertain');assert.equal(h.network.shopifyRefunds.length,1);assert.equal((await h.call(shopRoot+'/reconcile',{})).data.state,'succeeded');assert.equal(h.network.shopifyRefunds.length,1);
  const readback=h.network.calls.filter(x=>x.path==='/v1/refunds'&&x.method==='POST');assert.equal(readback.length,1);assert.equal(readback[0].headers['idempotency-key'],action.id);
 }finally{await h.close();}}
 export async function erasure(){const h=await harness();try{

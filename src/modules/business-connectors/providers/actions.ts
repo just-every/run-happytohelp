@@ -1,7 +1,9 @@
+import {shopifyPreview,shopifyExecute,shopifyReadback} from './shopify'
 import type {Connection,Action} from '../model'
 import {request,ProviderFailure} from './http'
 import {context} from './context'
 export async function preview(row:Connection,token:string,source:string,kind:string,target:string,amount:number,reason:string){
+ if(row.provider==='shopify'&&kind==='refund')return shopifyPreview(row,token,source,target,amount,reason)
  if(row.provider==='stripe'&&kind==='refund'){
   const payment=await request(row,token,'/v1/payment_intents/'+target),refunds=await request(row,token,`/v1/refunds?payment_intent=${target}&limit=100`)
   if(payment.customer!==source||payment.id!==target)throw new ProviderFailure('identity_mismatch')
@@ -24,6 +26,7 @@ export async function preview(row:Connection,token:string,source:string,kind:str
  throw new ProviderFailure('action_not_supported')
 }
 export async function execute(row:Connection,token:string,action:Action){
+ if(row.provider==='shopify')return shopifyExecute(row,token,action)
  if(row.provider==='stripe'){
   if(action.kind==='refund')return request(row,token,'/v1/refunds',{method:'POST',key:action.id,body:{payment_intent:action.target_id,amount:String(action.amount_cents),'metadata[h2h_action]':action.id}})
   return request(row,token,'/v1/subscriptions/'+action.target_id,{method:'POST',key:action.id,body:{cancel_at_period_end:'true','metadata[h2h_action]':action.id}})
@@ -33,6 +36,7 @@ export async function execute(row:Connection,token:string,action:Action){
  return request(row,token,`/api/v1/${encodeURIComponent(row.account)}/activities`,{method:'POST',body:{activity:{member_id:action.source_id,activity_type:'support:outcome',title:'Support outcome',description:action.reason,key:action.id}}})
 }
 export async function readback(row:Connection,token:string,action:Action,remoteId:string|null){
+ if(row.provider==='shopify')return shopifyReadback(row,token,action,remoteId)
  if(row.provider==='stripe'&&action.kind==='refund'){
   let result
   if(remoteId)result=await request(row,token,'/v1/refunds/'+encodeURIComponent(remoteId))

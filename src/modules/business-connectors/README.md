@@ -26,16 +26,19 @@ record prevents a second browser request key from bypassing reconciliation.
 Implemented provider paths:
 
 - Shopify: verified store and customer order, fulfillment, delivery, return and
-  refund context. Return, cancellation and refund writes are disabled pending a
-  qualified provider idempotency path and live sandbox receipts.
+  refund context. Bounded USD amount-only partial/full refunds on single-gateway orders use
+  the 2026-10 `refundCreate @idempotent` mutation and ledger readback. Return,
+  cancellation, multi-tender and tax/shipping allocation remain gaps, along
+  with live Shopify sandbox receipts.
 - Stripe: customer, invoice and subscription context; bounded USD payment-intent
   refunds and subscription cancellation at period end, with no proration.
   Credits, pause, plan changes, broader proration previews and an integrated
   customer-visible confirmation remain gaps.
 - Orbit, HubSpot and Salesforce: independent account verification and contact
   context, source freshness and approved outcome activities/notes. Provider
-  lifecycle/community level is not a support entitlement. Configurable company,
-  plan and support-entitlement mapping and approved field edits remain gaps.
+  lifecycle/community level is not a support entitlement. Plan and support-entitlement properties are explicitly selected in Settings;
+  no lifecycle inference grants support rights. Complete company/account
+  relationship mapping and approved arbitrary field edits remain gaps.
   Orbit availability and every live provider protocol still need sandbox proof.
 
 The panel records results in the originating ticket for the operator. It sends

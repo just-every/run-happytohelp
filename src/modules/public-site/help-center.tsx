@@ -27,7 +27,7 @@ export async function renderHelpCenter(c:any,key:string,base:string,tail?:string
  const project=await resolvePublicProject(c.env,key)
  if(!project)return c.html(missingHelpCenterPage(),404)
  // Personalized help and feedback never enter shared caches.
- c.header('Cache-Control','private, no-store');c.header('Vary','Cookie, Authorization')
+ c.header('Cache-Control','private, no-store');c.header('Vary','Cookie, Authorization');c.header('Referrer-Policy','same-origin')
  const access=await resolveHelpAccess(c.env,project.id,c.req.raw)
  const settings=await getKnowledgeExperience(c.env,project.id)
  const locale=await selectKnowledgeLocale(c.env,project.id,c.req.query('locale'))
@@ -35,7 +35,7 @@ export async function renderHelpCenter(c:any,key:string,base:string,tail?:string
  const keyword=String(c.req.query('keyword')||c.req.query('q')||'').trim().slice(0,200)
  const visitorHash=await knowledgeVisitorHash(project.id,c.req.raw,access)
  const restrictedCollections=await hasRestrictedCollections(c.env,project.id)
- const tools=helpControls(base,tail,locale,{...settings,projectId:project.id,restrictedCollections},access,keyword)
+ let tools=helpControls(base,tail,locale,{...settings,projectId:project.id,restrictedCollections},access,keyword)
  let content=''
  if(c.req.query('access')==='signin')content=signInContent(project.id,base,c.req.query('sent')==='1')
  else if(tail==='search'){
@@ -55,7 +55,8 @@ export async function renderHelpCenter(c:any,key:string,base:string,tail?:string
   if(!found)return c.html(missingArticlePage(project,base),404)
   if(found.redirectSlug)return c.redirect(`${base}/${encodeURIComponent(found.redirectSlug)}${suffix}`,308)
   const article=found.article
-  await recordKnowledgeEvent(c.env,project.id,{kind:'view',slug:article.slug,locale,visitorHash,access})
+  const view=await recordKnowledgeEvent(c.env,project.id,{kind:'view',slug:article.slug,locale,visitorHash,access})
+  tools=tools.replace('/requests\"',`/requests?afterReading=${encodeURIComponent(view.eventId)}&amp;locale=${encodeURIComponent(locale)}\"`)
   content=(article.locale!==locale?`<p class="help-center-translation-note">This article is available in ${e(article.locale)} while its translation is being reviewed.</p>`:'')+`<article lang="${e(article.locale)}"><h1>${e(article.title)}</h1>`+renderToStaticMarkup(<Markdown remarkPlugins={[remarkGfm]} components={articleComponents}>{String(article.content)}</Markdown>)+'</article>'
   content=helpTemplate(settings.templates.article,content,article.title,article.summary)
   content+=helpfulContent(project.id,article.slug,article.locale,`${base}/${encodeURIComponent(article.slug)}${suffix}`,c.req.query('feedback')==='1')

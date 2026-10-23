@@ -17,11 +17,30 @@ export async function requestFormsJourney(){
   assert.equal((await app.call(`${api}/${form.id}`,{headers:{Cookie:'h2h_portal=not-a-proof'}})).status,200)
   const customer=await signin('rosa@example.com',`/help/${p}/requests/${form.id}`)
   assert.equal(customer.location,`/help/${p}/requests/${form.id}`);assert.equal((await app.call(customer.path)).status,400)
-  const created=await app.call(path,{...customer,body:{...valid,locale:'es'},status:201}),id=created.data.ticket.id;assert.equal(created.data.ticket.status,'open')
+  const article=(await app.call(`/api/knowledge/${p}/articles`,{...owner,body:{title:'Refund help',slug:'refund-help',content:'Contact support after checking the duplicate charge.',status:'published'},status:201})).data
+  const view=(await app.call(`/api/knowledge/public/${p}/events`,{body:{kind:'view',slug:'refund-help',locale:'es'},status:200})).data.eventId
+  assert.ok(view)
+  const created=await app.call(path,{...customer,body:{...valid,locale:'es',afterReading:view},status:201}),id=created.data.ticket.id;assert.equal(created.data.ticket.status,'open')
+  const analytics=async()=>(await app.call(`/api/knowledge/${p}/analytics`,{...owner,status:200})).data
+  assert.equal((await analytics()).totals.tickets,1,'only an admitted request counts after reading')
+  assert.equal((await analytics()).articles.find(row=>row.articleId===article.id).tickets,1)
+  await app.call(path,{...customer,body:{...valid,locale:'es',afterReading:view},status:200})
+  assert.equal((await analytics()).totals.tickets,1,'a replay never counts twice')
+  const newRequest=async(localId,afterReading,headers={})=>app.call(path,{...customer,headers:{...customer.headers,...headers},body:{...valid,localId,afterReading},status:201})
+  await newRequest('synthetic-happytohelp-1',crypto.randomUUID())
+  const foreignView=(await app.call(`/api/knowledge/public/${p}/events`,{headers:{'User-Agent':'another-reader'},body:{kind:'view',slug:'refund-help'},status:200})).data.eventId
+  await newRequest('synthetic-happytohelp-2',foreignView)
+  const staleView=(await app.call(`/api/knowledge/public/${p}/events`,{body:{kind:'view',slug:'refund-help'},status:200})).data.eventId
+  await app.db.prepare('UPDATE knowledge_events SET created_at=? WHERE id=?').bind(Date.now()-1800001,staleView).run()
+  await newRequest('synthetic-happytohelp-3',staleView)
+  const restricted=(await app.call(`/api/knowledge/${p}/categories`,{...owner,body:{title:'Private',audience:'domains',allowedDomains:['private.test']},status:201})).data.id
+  await app.call(`/api/knowledge/${p}/articles`,{...owner,body:{...article,title:'Refund help',slug:'refund-help',content:'Restricted now',status:'published',categoryIds:[restricted]},status:201})
+  await newRequest('synthetic-happytohelp-4',view)
+  assert.equal((await analytics()).totals.tickets,1,'forged, other-reader, expired and now-restricted receipts count nothing')
   const values=await app.sql('SELECT field_id,value_json FROM ticket_field_values WHERE conversation_id=?',id);assert.deepEqual(Object.fromEntries(values.map(v=>[v.field_id,JSON.parse(v.value_json)])),valid.fields)
   assert.equal((await app.call(path,{...customer,body:valid,status:200})).data.ticket.id,id)
   assert.equal((await app.call(path,{...customer,body:{...valid,message:'Changed command'},status:409})).status,409)
-  assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,before.n+1)
+  assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,before.n+5)
   assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='form.submitted'",p))
   const stale=await app.call(`${admin}/${form.id}`,{...owner,method:'PUT',body:{...form,title:'Order help'}});assert.equal(stale.status,200)
   assert.equal((await app.call(`${admin}/${form.id}`,{...owner,method:'PUT',body:form})).status,409)

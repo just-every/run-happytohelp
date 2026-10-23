@@ -25,7 +25,7 @@ export async function recordKnowledgeEvent(env:Env,projectId:string,input:Knowle
  const proof=helpAccessWriteGuard(projectId,input.access),articleGuard=article?`EXISTS(SELECT 1 FROM knowledge_articles a WHERE a.id=? AND a.project_id=? AND a.status='published' AND a.publication_version=? AND ${articleAccessSql('a','?', '?')})`:'1=1'
  const result=await env.DB.prepare(`INSERT INTO knowledge_events SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE ${activeSourceProjectSql('?')} AND ${proof.sql} AND ${articleGuard} RETURNING id`).bind(crypto.randomUUID(),projectId,article?.article.id||null,locale,(input.brand||'').slice(0,200),input.kind,(input.query||'').slice(0,200),Number.isInteger(input.resultCount)?Math.max(0,input.resultCount!):null,input.visitorHash,input.access?.contactId||null,Date.now(),projectId,...proof.args,...(article?[article.article.id,projectId,article.article.publication_version,...accessParams(input.access)]:[])).all()
  if(!result.results.length)throw new HTTPException(409,{message:'Knowledge access changed'})
- return {recorded:true}
+ return {recorded:true,eventId:String(result.results[0].id)}
 }
 export async function recordHelpfulVote(env:Env,projectId:string,slug:string,input:{helpful:boolean;comment?:string;locale?:string;brand?:string;visitorHash:string;access?:HelpAccess}){
  if(typeof input.helpful!=='boolean'||typeof (input.comment||'')!=='string'||(input.comment||'').length>2000)throw new HTTPException(400,{message:'Invalid feedback'})
@@ -33,7 +33,7 @@ export async function recordHelpfulVote(env:Env,projectId:string,slug:string,inp
  const proof=helpAccessWriteGuard(projectId,input.access)
  const result=await env.DB.prepare(`INSERT INTO knowledge_feedback SELECT ?,?,?,?,?,?,?,?,? WHERE ${proof.sql} AND EXISTS(SELECT 1 FROM knowledge_articles a WHERE a.id=? AND a.project_id=? AND a.status='published' AND a.publication_version=? AND ${activeSourceProjectSql('a.project_id')} AND ${articleAccessSql('a','?', '?')}) ON CONFLICT(project_id,article_id,locale,visitor_hash) DO UPDATE SET helpful=excluded.helpful,comment=excluded.comment,updated_at=excluded.updated_at RETURNING article_id`).bind(projectId,found.article.id,found.article.locale,(input.brand||'').slice(0,200),input.visitorHash,input.access?.contactId||null,input.helpful?1:0,input.comment||'',Date.now(),...proof.args,found.article.id,projectId,found.article.publication_version,...accessParams(input.access)).all()
  if(!result.results.length)throw new HTTPException(409,{message:'Knowledge access changed'})
- return {recorded:true}
+ return {recorded:true,eventId:String(result.results[0].id)}
 }
 /** Root erasure/export adapters call these before deleting the contact itself. */
 export async function exportKnowledgeContact(env:Env,projectId:string,contactId:string){

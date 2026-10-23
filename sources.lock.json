@@ -11680,7 +11680,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "717efed0457a4f95794cfc5ce88d5538a8b607de150479ab4bc9ffece758d8e7",
+      "sha256": "03a2cbdacbb668f0445708c9a4f411be0e45792daf6082dd6b86c400fe88bb6f",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

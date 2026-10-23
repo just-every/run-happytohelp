@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
-import {join} from 'node:path';
+import {join,resolve} from 'node:path';
 
 // The campaign editor, the installed offer, and Reports on the real emitted application at both widths.
 export async function campaignsBrowser({browser,page,origin,projectId,owner,evidenceDir}){
@@ -84,6 +84,11 @@ export async function campaignsBrowser({browser,page,origin,projectId,owner,evid
     const row=report.getByRole('row').filter({hasText:`Checkout ${width}`});
     const counts=await row.locator('td').allTextContents();
     assert.deepEqual(counts,width===1440?['1','0','1','0','0']:['1','1','0','1','0']);
+    await page.addScriptTag({path:resolve('node_modules/axe-core/axe.min.js')});
+    const violations=await report.evaluate(async element=>(await axe.run(element)).violations.filter(x=>['serious','critical'].includes(x.impact)).map(x=>({id:x.id,nodes:x.nodes.map(n=>n.target)})));
+    assert.deepEqual(violations,[],'campaign reporting has no serious or critical accessibility findings');
+    if(width===390){const metrics=report.getByRole('region',{name:'Campaign metrics',exact:true});await metrics.focus();await metrics.press('ArrowRight');await page.waitForTimeout(200);assert.ok(await metrics.evaluate(el=>el.scrollLeft>0),'campaign metrics scroll from the keyboard');}
+
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`reports fit at ${width}`);
     await report.scrollIntoViewIfNeeded();await page.screenshot({path:join(evidenceDir,`campaign-reports-${width}.png`),fullPage:true});
     assert.deepEqual(errors,[]);

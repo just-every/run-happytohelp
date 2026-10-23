@@ -2556,7 +2556,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "626f58d891fe0b9ea2a1bed3a966d75d24598974de3ce85c70d71fdeb81e7dd5",
+      "sha256": "c64bacd1dedbc4fece3be96ec54b9f7d597080f4fa2c0175c1dff734667e0829",
       "executable": false
     },
     "rer-project.json": {
@@ -3428,7 +3428,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "a7198e796d6aab578c1bad98395a6f98b65c7755a1f562068c49b6bafa3e9fc8",
+      "sha256": "58d1cb6dc97b86dc3e0491a64abfdd671cf6d7f35374763369f51f6839f2a5a6",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -9900,7 +9900,7 @@
       "executable": false
     },
     "src/ui/native/pages/Reports.jsx": {
-      "sha256": "e8976f210da3bb39277e9053443104ca23e0998894c77f0895c624df9b78b98f",
+      "sha256": "cb168840cd131a7d63783ed29ea4471c5e3d8adcc553a063c2294484a0d42c2c",
       "executable": false
     },
     "src/ui/native/pages/reports/BacklogPanel.jsx": {
@@ -11572,7 +11572,7 @@
       "executable": false
     },
     "tests/helpers/widget/campaigns-browser.mjs": {
-      "sha256": "3edce34d864019a7ef75aae1013238ba9c2666e314f00234705bf2ec2aa1240b",
+      "sha256": "51c24675e2f97028f1f519beb4db380db400de3b3d62a83c2e0d47e5d1c4246a",
       "executable": false
     },
     "tests/helpers/widget/campaigns.mjs": {

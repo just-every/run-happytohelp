@@ -1,3 +1,4 @@
+import {crmFields} from './crm-journeys.mjs';
 import {shopifyActions,shopifyLostReturn} from './shopify-journeys.mjs';
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
@@ -10,7 +11,7 @@ export async function harness(){
  const headers={Origin:ws.allowedOrigin,'CF-Connecting-IP':'198.51.100.81'},visitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:ws.widgetKey,name:'Synthetic customer',email:'synthetic-happytohelp-1@example.test'},headers});
  const conversation=await app.ok('/api/conversations',{token:visitor.token,headers,body:{projectId:ws.projectId}}),ticket=`/conversations/${conversation.id}`;
  const call=(path,body,options={})=>app.ok(base+path,{token,body,...options}),rows={};
- const connect=async(provider,scopes=['read','prepare','approve','execute'])=>{const r=await call('/connections',{provider,...accounts[provider],token:'synthetic-happytohelp-1',scopes,fields:provider==='salesforce'?{plan:'Plan__c',entitlement:'Support_Entitlement__c'}:provider==='hubspot'?{plan:'plan',entitlement:'support_entitlement'}:{},limit_cents:5000});rows[provider]=r.data;return r.data;};
+ const connect=async(provider,scopes=['read','prepare','approve','execute'])=>{const r=await call('/connections',{provider,...accounts[provider],token:'synthetic-happytohelp-1',scopes,fields:provider==='salesforce'?{plan:'Plan__c',entitlement:'Support_Entitlement__c',account_plan:'Plan__c',account_entitlement:'Support_Entitlement__c',editable_contact:['Support_Note__c'],editable_account:['Support_Note__c']}:provider==='hubspot'?{plan:'plan',entitlement:'support_entitlement',account_plan:'plan',account_entitlement:'support_entitlement',editable_contact:['support_note'],editable_account:['support_note']}:{},limit_cents:5000});rows[provider]=r.data;return r.data;};
  const map=async provider=>{const path=ticket+'/connections/'+encodeURIComponent(rows[provider].id);await call(path+'/map',{source_id:network.customer,confirmed:true});await call(path+'/refresh',{});return path;};
  return {app,network,ws,foreign,token,base,call,rows,connect,map,conversation,visitor,ticket,async close(){await app.close();}};
 }
@@ -62,6 +63,7 @@ export async function money(){const h=await harness();try{
  const raceInput={kind:'refund',target_id:h.network.payment,amount_cents:1000,reason:'Authority changed at commit',request_key:randomUUID()};
  const race=await h.app.call(h.base+path+'/prepare',{token:h.token,body:raceInput,headers:{'x-test-statement':'INSERT INTO business_actions','x-test-before-statement':`UPDATE business_connections SET version=version+1 WHERE id='${h.rows.stripe.id}'`}});assert.equal(race.status,409);assert.equal(await h.app.first('SELECT id FROM business_actions WHERE request_key=?',raceInput.request_key),null);
  const expiry=await h.app.call(h.base+path+'/refresh',{token:h.token,body:{},headers:{'x-test-statement':'UPDATE business_links SET context_json','x-test-before-statement':`UPDATE business_connections SET expires_at=1 WHERE id='${h.rows.stripe.id}'`}});assert.equal(expiry.status,409);
+ await crmFields(h);
  assert.ok((await h.app.sql("SELECT action FROM audit_events WHERE action LIKE 'business.%'")).some(x=>x.action==='business.succeeded'));
 }finally{await h.close();}}
 export async function uncertainty(){const h=await harness();try{

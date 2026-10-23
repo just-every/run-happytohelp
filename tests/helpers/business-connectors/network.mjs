@@ -1,9 +1,10 @@
+import {crmNetwork} from './crm-network.mjs';
 import {shopifyNetwork} from './shopify-network.mjs';
 export function createNetwork(){
- const calls=[],refunds=[],credits=[],notes=new Map(),tasks=new Map(),activities=new Map();let failAfterWrite=false,stage='customer',revision='2026-10-23T12:00:00Z',subscriptionCancelled=false,subscriptionMetadata={},taxStatus='complete',balance=0,paused=null,currentPrice='synthetic-happytohelp-303';
+ const calls=[],refunds=[],credits=[],activities=new Map();let failAfterWrite=false,subscriptionCancelled=false,subscriptionMetadata={},taxStatus='complete',balance=0,paused=null,currentPrice='synthetic-happytohelp-303';
  const json=value=>Response.json(value),customer='synthetic-happytohelp-201',payment='synthetic-happytohelp-202',subscription='synthetic-happytohelp-203';
  const writeShopify=value=>{if(failAfterWrite){failAfterWrite=false;throw Error('synthetic network timeout after provider commit');}return value;};
- const shopify=shopifyNetwork({customer,writeResult:writeShopify}),shopifyRefunds=shopify.refunds;
+ const shopify=shopifyNetwork({customer,writeResult:writeShopify}),shopifyRefunds=shopify.refunds,crm=crmNetwork({customer,writeResult:writeShopify}),{notes,tasks}=crm;
  const handle=async request=>{
   const url=new URL(request.url),path=url.pathname,body=request.method==='GET'?null:await request.text(),data=body?(request.headers.get('content-type')?.includes('application/x-www-form-urlencoded')?Object.fromEntries(new URLSearchParams(body)):JSON.parse(body)):null;
   calls.push({host:url.hostname,path,method:request.method,data,headers:Object.fromEntries(request.headers)});
@@ -26,21 +27,10 @@ export function createNetwork(){
    if(path==='/v1/refunds'&&data){const existing=refunds.find(r=>r.metadata.h2h_action===data['metadata[h2h_action]']);if(existing)return json(existing);if(!request.headers.get('idempotency-key'))throw Error('Stripe requires idempotency');const result={id:'synthetic-happytohelp-refund-'+(refunds.length+1),payment_intent:data.payment_intent,amount:Number(data.amount),currency:'usd',status:'succeeded',metadata:{h2h_action:data['metadata[h2h_action]']}};refunds.push(result);return writeResult(result);}
    if(path.startsWith('/v1/refunds/'))return json(refunds.find(r=>r.id===path.split('/').pop()));
   }
-  if(url.hostname==='api.hubapi.com'){
-   if(path==='/account-info/v3/details')return json({portalId:301});
-   if(path==='/crm/v3/objects/contacts/'+customer)return json({id:customer,updatedAt:revision,properties:{firstname:'Synthetic',lastname:'Customer',company:'Synthetic account',hubspot_owner_id:'801',lifecyclestage:stage,support_entitlement:stage,plan:'Synthetic plan'}});
-   if(path==='/crm/v3/objects/notes'&&data){const r={id:'synthetic-happytohelp-note-'+notes.size,properties:data.properties,associations:{contacts:{results:[{id:data.associations[0].to.id}]}}};notes.set(r.id,r);return writeResult(r);}
-   if(path.startsWith('/crm/v3/objects/notes/'))return json(notes.get(path.split('/').pop()));
-  }
-  if(url.hostname==='synthetic-happytohelp-1.my.salesforce.com'){
-   if(path==='/services/oauth2/userinfo')return json({organization_id:'synthetic-happytohelp-501'});
-   if(path==='/services/data/v66.0/sobjects/Contact/'+customer)return json({Id:customer,Name:'Synthetic customer',AccountId:'801',OwnerId:'802',LastModifiedDate:revision,Support_Entitlement__c:stage,Plan__c:'Synthetic plan'});
-   if(path==='/services/data/v66.0/sobjects/Task'&&data){const r={Id:'synthetic-happytohelp-task-'+tasks.size,...data};tasks.set(r.Id,r);return writeResult({id:r.Id,success:true});}
-   if(path.startsWith('/services/data/v66.0/sobjects/Task/'))return json(tasks.get(path.split('/').pop()));
-  }
+  if(['api.hubapi.com','synthetic-happytohelp-1.my.salesforce.com'].includes(url.hostname)){const result=crm.handle(url,request,data);return result instanceof Response?result:json(result);}
   return new Response('Unavailable',{status:404});
  };
- return {handle,calls,refunds,credits,shopifyRefunds,shopify,notes,tasks,activities,customer,payment,subscription,taxUnavailable(value){taxStatus=value?'failed':'complete';},timeoutAfterWrite(){failAfterWrite=true;},changeSource(){stage='subscriber';revision='2026-10-23T13:00:00Z';}};
+ return {handle,calls,refunds,credits,shopifyRefunds,shopify,crm,notes,tasks,activities,customer,payment,subscription,taxUnavailable(value){taxStatus=value?'failed':'complete';},timeoutAfterWrite(){failAfterWrite=true;},changeSource(){crm.changeSource();}};
 }
 export const accounts={shopify:{account:'101',host:'https://synthetic-happytohelp-1.myshopify.com'},stripe:{account:'synthetic-happytohelp-101'},hubspot:{account:'301'},salesforce:{account:'synthetic-happytohelp-501',host:'https://synthetic-happytohelp-1.my.salesforce.com'}};
 const network=createNetwork();export default request=>network.handle(request);

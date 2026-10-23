@@ -11,14 +11,14 @@ export function host(provider:Provider,input:unknown){
 }
 export class ProviderFailure extends Error {constructor(public code:string){super(code)}}
 /** No redirects, retries, arbitrary returned URLs, raw provider errors or unbounded responses. */
-export async function request(row:Connection,token:string,path:string,{method='GET',body,key}:{method?:string;body?:unknown;key?:string}={}){
+export async function request(row:Connection,token:string,path:string,{method='GET',body,key,unmodifiedSince}:{method?:string;body?:unknown;key?:string;unmodifiedSince?:string}={}){
  const origin=host(row.provider,row.host),controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000)
  let reader:ReadableStreamDefaultReader<Uint8Array>|undefined
  try{
   if(!path.startsWith('/')||path.startsWith('//'))throw new ProviderFailure('invalid_path')
   const form=row.provider==='stripe'&&body!==undefined,encoded=body===undefined?undefined:form?new URLSearchParams(body as Record<string,string>).toString():JSON.stringify(body)
   if(encoded&&new TextEncoder().encode(encoded).length>1048576)throw new ProviderFailure('request_too_large')
-  const response=await fetch(origin+path,{method,body:encoded,redirect:'manual',signal:controller.signal,headers:{Accept:'application/json',...(row.provider==='stripe'?{'Stripe-Version':'2024-06-20'}:{}),...(row.provider==='shopify'?{'X-Shopify-Access-Token':token}:{Authorization:'Bearer '+token}),...(body===undefined?{}:{'Content-Type':form?'application/x-www-form-urlencoded':'application/json'}),...(key?{'Idempotency-Key':key}:{})}})
+  const response=await fetch(origin+path,{method,body:encoded,redirect:'manual',signal:controller.signal,headers:{Accept:'application/json',...(row.provider==='stripe'?{'Stripe-Version':'2024-06-20'}:{}),...(row.provider==='shopify'?{'X-Shopify-Access-Token':token}:{Authorization:'Bearer '+token}),...(body===undefined?{}:{'Content-Type':form?'application/x-www-form-urlencoded':'application/json'}),...(key?{'Idempotency-Key':key}:{}),...(unmodifiedSince?{'If-Unmodified-Since':unmodifiedSince}:{})}})
   if(!response.ok){await response.body?.cancel();throw new ProviderFailure(response.status===401||response.status===403?'grant_refused':response.status===409||response.status===412?'source_conflict':response.status>=500||response.status===429?'provider_uncertain':'provider_refused')}
   const length=response.headers.get('content-length');if(length&&(!/^\d+$/.test(length)||Number(length)>65536)){await response.body?.cancel();throw new ProviderFailure('response_too_large')}
   reader=response.body?.getReader();const chunks:Uint8Array[]=[];let size=0

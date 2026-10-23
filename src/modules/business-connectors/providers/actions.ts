@@ -1,3 +1,4 @@
+import {crmFieldPreview,crmFieldExecute,crmFieldReadback} from './crm-fields'
 import {extendedStripeKinds,stripeBillingPreview,stripeBillingExecute,stripeBillingReadback} from './stripe-billing'
 import {shopifyOrderPreview,shopifyOrderExecute,shopifyOrderReadback} from './shopify-orders'
 import {shopifyPreview,shopifyExecute,shopifyReadback} from './shopify'
@@ -23,6 +24,7 @@ export async function preview(row:Connection,token:string,source:string,kind:str
   if(!['active','trialing','past_due'].includes(subscription.status)||subscription.cancel_at_period_end||!Number.isSafeInteger(subscription.current_period_end))throw new ProviderFailure('unsupported_subscription')
   return {provider:'stripe',kind,target,source_id:source,currency:'USD',amount_cents:0,reason,proration:'No credit or proration; cancel at the end of the current period.',effective_at:subscription.current_period_end,tax:'No invoice or tax change.'}
  }
+ if(['hubspot','salesforce'].includes(row.provider)&&kind==='edit_fields')return crmFieldPreview(row,token,source,target,reason,options)
  if(['hubspot','salesforce'].includes(row.provider)&&kind==='support_outcome'){
   const snapshot=await context(row,token,source)
   return {provider:row.provider,kind,target:source,source_id:source,amount_cents:0,reason,source_revision:(snapshot as any).source_revision,notice:'Only this approved outcome is shared. No private notes, transcript or other CRM fields are sent.'}
@@ -30,6 +32,7 @@ export async function preview(row:Connection,token:string,source:string,kind:str
  throw new ProviderFailure('action_not_supported')
 }
 export async function execute(row:Connection,token:string,action:Action){
+ if(['hubspot','salesforce'].includes(row.provider)&&action.kind==='edit_fields')return crmFieldExecute(row,token,action)
  if(row.provider==='shopify'&&action.kind!=='refund')return shopifyOrderExecute(row,token,action)
  if(row.provider==='shopify')return shopifyExecute(row,token,action)
  if(row.provider==='stripe'){
@@ -42,6 +45,7 @@ export async function execute(row:Connection,token:string,action:Action){
  throw new ProviderFailure('orbit_scoped_api_unavailable')
 }
 export async function readback(row:Connection,token:string,action:Action,remoteId:string|null){
+ if(['hubspot','salesforce'].includes(row.provider)&&action.kind==='edit_fields')return crmFieldReadback(row,token,action)
  if(row.provider==='shopify'&&action.kind!=='refund')return shopifyOrderReadback(row,token,action,remoteId)
  if(row.provider==='shopify')return shopifyReadback(row,token,action,remoteId)
  if(row.provider==='stripe'&&extendedStripeKinds.includes(action.kind))return stripeBillingReadback(row,token,action,remoteId)
@@ -60,7 +64,7 @@ export async function readback(row:Connection,token:string,action:Action,remoteI
  if(!remoteId)throw new ProviderFailure('result_unconfirmed')
  if(row.provider==='hubspot'){
   const r=await request(row,token,'/crm/v3/objects/notes/'+encodeURIComponent(remoteId)+'?properties=hs_note_body&associations=contacts')
-  if(r.id!==remoteId||!r.associations?.contacts?.results?.some((x:any)=>String(x.id)===action.source_id))throw new ProviderFailure('result_unconfirmed')
+  if(r.id!==remoteId||r.properties?.hs_note_body!==action.reason.replace(/[<>&"']/g,char=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[char]!))||!r.associations?.contacts?.results?.some((x:any)=>String(x.id)===action.source_id))throw new ProviderFailure('result_unconfirmed')
  }else if(row.provider==='salesforce'){
   const r=await request(row,token,'/services/data/v66.0/sobjects/Task/'+encodeURIComponent(remoteId));if(r.Id!==remoteId||r.WhoId!==action.source_id||r.Description!==action.reason||r.Status!=='Completed')throw new ProviderFailure('result_unconfirmed')
  }else {

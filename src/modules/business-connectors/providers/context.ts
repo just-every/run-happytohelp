@@ -1,3 +1,4 @@
+import {crmContext} from './crm-context'
 import type {Connection} from '../model'
 import {id} from '../model'
 import {request,ProviderFailure} from './http'
@@ -15,7 +16,7 @@ export async function identity(row:Connection,token:string){
  throw new ProviderFailure('orbit_scoped_api_unavailable')
 }
 export async function context(row:Connection,token:string,source:string){
- source=id(source);const fields=JSON.parse(row.fields_json||'{}'),selected=Object.values(fields) as string[]
+ source=id(source)
  if(row.provider==='stripe'){
   const customer=await request(row,token,'/v1/customers/'+source)
   if(customer.id!==source||customer.deleted)throw new ProviderFailure('identity_mismatch')
@@ -28,15 +29,6 @@ export async function context(row:Connection,token:string,source:string){
   const customer=result.data?.customer;if(result.errors||!customer||customer.id!=='gid://shopify/Customer/'+source)throw new ProviderFailure('identity_mismatch')
   return {source_id:source,customer:scalar(customer.displayName),truncated:customer.orders.pageInfo.hasNextPage,orders:customer.orders.nodes.map((x:any)=>({id:String(x.id).split('/').pop(),name:x.name,financial:x.displayFinancialStatus,fulfillment:x.displayFulfillmentStatus,total:money(x.totalPriceSet?.shopMoney),tax:money(x.totalTaxSet?.shopMoney),shipping:money(x.totalShippingPriceSet?.shopMoney),refunded:money(x.totalRefundedSet?.shopMoney),items:x.lineItems.nodes.map((i:any)=>({id:String(i.id).split('/').pop(),title:scalar(i.title),refundable_quantity:i.refundableQuantity})),fulfillment_items:x.fulfillments.flatMap((f:any)=>f.fulfillmentLineItems.nodes.map((i:any)=>({id:String(i.id).split('/').pop(),title:scalar(i.lineItem.title),quantity:i.quantity}))),delivery:x.fulfillments.map((f:any)=>({status:f.status,tracking:f.trackingInfo.map((t:any)=>({company:scalar(t.company),number:scalar(t.number)}))})),returns:x.returns.nodes.map((r:any)=>({id:r.id,status:r.status})),refunds:x.refunds.map((r:any)=>({id:r.id,created_at:r.createdAt,total:money(r.totalRefundedSet?.shopMoney)}))}))}
  }
- if(row.provider==='hubspot'){
-  const r=await request(row,token,`/crm/v3/objects/contacts/${source}?properties=firstname,lastname,company,hubspot_owner_id,lifecyclestage,hs_lastmodifieddate${selected.length?','+selected.join(','):''}`)
-  if(String(r.id)!==source||r.archived)throw new ProviderFailure('identity_mismatch')
-  const p=r.properties??{};return {source_id:source,customer:[scalar(p.firstname),scalar(p.lastname)].filter(Boolean).join(' '),company:scalar(p.company),owner:scalar(p.hubspot_owner_id),plan:scalar(p[fields.plan]),entitlement:scalar(p[fields.entitlement]),lifecycle:scalar(p.lifecyclestage),source_revision:scalar(r.updatedAt)}
- }
- if(row.provider==='salesforce'){
-  const r=await request(row,token,`/services/data/v66.0/sobjects/Contact/${source}?fields=Id,Name,AccountId,OwnerId,LastModifiedDate${selected.length?','+selected.join(','):''}`)
-  if(r.Id!==source)throw new ProviderFailure('identity_mismatch')
-  return {source_id:source,customer:scalar(r.Name),company:scalar(r.AccountId),owner:scalar(r.OwnerId),plan:scalar(r[fields.plan]),entitlement:scalar(r[fields.entitlement]),source_revision:scalar(r.LastModifiedDate)}
- }
+ if(['hubspot','salesforce'].includes(row.provider))return crmContext(row,token,source)
  throw new ProviderFailure('orbit_scoped_api_unavailable')
 }

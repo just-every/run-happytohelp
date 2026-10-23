@@ -8,6 +8,7 @@ import {auditStatement,requestSource} from '../audit/record'
 import {access,connection} from './access'
 import {SCOPES,provider,text,id,cents,type Connection} from './model'
 import {host,code} from './providers/http'
+import {connectionFields} from './fields'
 import {identity} from './providers/context'
 export const root='/projects/:projectId'
 export const connections=new Hono<AppEnv>()
@@ -18,7 +19,7 @@ connections.post(root+'/connections',async c=>{
  const body=await c.req.json(),p=provider(body.provider);if(p==='orbit')throw new HTTPException(409,{message:'Orbit connection is unavailable: the fleet CRM has not shipped its admin-issued scoped public API (run-orbit API-001). Browser sessions are not integration credentials.'});const account=id(body.account),origin=host(p,body.host),token=text(body.token,'credential',10000),limit=cents(body.limit_cents??0)
  if(!Array.isArray(body.scopes)||!body.scopes.includes('read')||body.scopes.some((s:string)=>!(SCOPES as readonly string[]).includes(s)))throw new HTTPException(400,{message:'Select explicit supported scopes including read'})
  const expires=body.expires_at==null?null:Number(body.expires_at);if(expires!==null&&(!Number.isSafeInteger(expires)||expires<=Date.now()))throw new HTTPException(400,{message:'Expiry must be in the future'})
- const fields=body.fields??{};if(!fields||typeof fields!=='object'||Array.isArray(fields)||Object.keys(fields).some(k=>!['plan','entitlement'].includes(k))||Object.values(fields).some(v=>typeof v!=='string'||!(/^[A-Za-z_][A-Za-z0-9_]{0,79}$/).test(v)))throw new HTTPException(400,{message:'Use explicit CRM property names for plan and support entitlement'});
+ const fields=connectionFields(body.fields)
  const row:Connection={id:actor.projectId+':'+p+':'+account,project_id:actor.projectId,provider:p,account,host:origin,token_cipher:null,scopes_json:JSON.stringify([...new Set(body.scopes)]),fields_json:JSON.stringify(fields),limit_cents:limit,expires_at:expires,version:1,updated_at:Date.now()}
  try{if(String(await identity(row,token))!==account)throw Error('identity_mismatch')}catch(error){throw new HTTPException(409,{message:'Provider account verification failed: '+code(error)})}
  const cipher=await encryptToken(c.env,actor.projectId,token)

@@ -83,6 +83,39 @@ export async function ticketsBrowser({count=12,installation}={}){
   await capture('17-refused-close')
   await fixture.api(`${base}/ticket-fields/${required.id}`,undefined,'DELETE')
   await page.goto(runtime.origin+'/docs/tickets');await page.getByRole('heading',{name:'Tickets',level:1,exact:true}).waitFor();await capture('14-ticket-docs');
+  // Policies configured through the public API remain readable and editable in
+  // settings, including object-shaped typed conditions and form restrictions.
+  const tier=(await fixture.api(base+'/ticket-fields',{name:'Plan tier',type:'dropdown',options:['business','personal']})).data
+  const requestForm=(await fixture.api(`/api/forms/projects/${projectId}/forms`,{title:'Account help',enabled:true,fields:[{fieldId:tier.id,required:true}]})).data
+  const calendar=(await fixture.api(base+'/workflow-calendars',{name:'Account support hours',timezone:'America/New_York',weekly:[{day:1,start:'09:00',end:'17:00'}]})).data
+  const policy=(await fixture.api(base+'/sla-policies',{name:'Business account help',calendar_id:calendar.id,conditions:{form_ids:[requestForm.id],fields:{[tier.id]:'business'}},first_response_minutes:60})).data
+  await page.goto(`${runtime.origin}/projects/${projectId}/workflow-settings`)
+  await page.getByRole('button',{name:'SLA policies',exact:true}).click()
+  await page.getByRole('heading',{name:'SLA policies',exact:true}).waitFor()
+  await page.getByText('Plan tier = "business"',{exact:false}).waitFor()
+  await page.getByText('Request forms: Account help',{exact:false}).waitFor()
+  await capture('18-sla-policy')
+  await page.setViewportSize({width:390,height:844})
+  await page.mouse.move(380,800)
+  const menu=page.getByRole('button',{name:'Toggle navigation',exact:true})
+  await menu.focus()
+  assert.equal(await page.getByRole('tooltip',{name:'Navigation menu',exact:true}).isVisible(),true,'keyboard focus names the icon immediately')
+  await page.screenshot({path:shot('20-navigation-hint-focus-390.png'),fullPage:true})
+  await menu.press('Escape');assert.equal(await page.getByRole('tooltip').count(),0)
+  await menu.evaluate(node=>node.blur());await menu.hover();await page.waitForTimeout(350)
+  await page.getByRole('tooltip',{name:'Navigation menu',exact:true}).waitFor()
+  await page.mouse.move(380,800)
+  const account=page.getByRole('button',{name:'Account menu',exact:true}).filter({visible:true})
+  await account.focus();assert.equal(await page.getByRole('tooltip',{name:'Account menu',exact:true}).isVisible(),true)
+  await account.evaluate(node=>node.blur());await page.setViewportSize({width:1440,height:1000})
+  await page.getByRole('button',{name:'Edit policy',exact:true}).click()
+  await page.getByLabel('Name',{exact:true}).fill('Business account response')
+  await capture('19-sla-policy-edit')
+  await page.getByRole('button',{name:'Save policy',exact:true}).click()
+  await page.getByRole('heading',{name:/Business account response/}).waitFor()
+  const savedPolicy=(await fixture.api(base+'/sla-policies')).data.find(row=>row.id===policy.id)
+  assert.deepEqual(savedPolicy.conditions.fields,{[tier.id]:'business'})
+  assert.deepEqual(savedPolicy.conditions.form_ids,[requestForm.id])
   await fixture.api(`/api/management/projects/${projectId}/contacts/${fixture.tickets[0].visitor.contactId}/erase`,{},'POST');
   await page.goto(`${runtime.origin}/projects/${projectId}/contacts/${fixture.tickets[0].visitor.contactId}`);await page.getByText('Personal data erased.',{exact:true}).waitFor();await capture('15-erasure');
   assert.deepEqual(errors,[]);success=true

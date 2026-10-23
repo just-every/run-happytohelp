@@ -35,6 +35,16 @@ export async function completeEmailJourney(){
   assert.deepEqual(sent[0].cc,command.cc);assert.deepEqual(sent[0].bcc,command.bcc);assert.match(sent[0].from,/Parcel Support/)
   assert.ok(sent[0].headers['Message-ID']);assert.match(sent[0].subject,/\[H2H:/)
   assert.equal((await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:command})).conversation.id,ticket.conversation.id);assert.equal(sent.length,1)
+  // Losing create/reply authority after route entry must also fence the durable
+  // reservation, including its first email. The race is a real role write at D1.
+  const deniedCommand={...command,localId:'synthetic-happytohelp-4',requesterEmail:'denied@customer.example'}
+  const revoked=await app.call(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:deniedCommand,headers:{'x-test-statement':'INSERT OR IGNORE INTO conversations','x-test-before-statement':`INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES('${projectId}','${workspace.users.operator}','collaborator',1)`}})
+  assert.equal(revoked.status,409,JSON.stringify(revoked.data))
+  assert.equal((await app.first('SELECT count(*) n FROM operator_ticket_commands WHERE project_id=? AND local_id=?',projectId,deniedCommand.localId)).n,0)
+  assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=? AND subject=?',projectId,command.subject)).n,1,'revoked authority cannot create a second ticket')
+  assert.equal(sent.length,1,'revoked authority cannot send a first comment')
+  assert.equal((await app.call(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:command})).status,403,'replaying an existing command still requires current authority')
+  await app.db.prepare('DELETE FROM member_roles WHERE project_id=? AND user_id=?').bind(projectId,workspace.users.operator).run()
   const call=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{kind:'call',localId:'logged-call',requesterEmail:'maya@customer.example',subject:'Customer called about delivery',content:'Confirmed the replacement address over the phone.'}})
   assert.equal(call.conversation.channel,'phone');assert.equal(sent.length,1)
   assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='ticket.created' AND target_id=?",projectId,call.conversation.id))

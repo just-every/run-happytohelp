@@ -1,19 +1,20 @@
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
+import {ticketAuthority} from '../tickets/model'
 import {apiContactIdentityGuard} from './contact-identity'
 import {trackingStatement} from '../outcomes/state'
 import {emailThreadingStatements} from '../integrations/email-threading'
 import {emailAddress} from '../integrations/inbound-routing'
 import type {OutboundTicketInput} from './outbound-ticket-input'
 const writableContact=`COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1`
-export function outboundTicketAuthority(actor:Actor,sessionHash:string,now:number){
- return {sql:`SELECT 1 FROM memberships member JOIN projects p ON p.id=member.project_id JOIN sessions s ON s.actor_id=member.user_id WHERE member.project_id=? AND member.user_id=? AND member.role=? AND s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND (s.project_id=member.project_id AND s.role=member.role OR s.project_id IS NULL AND s.role='operator') AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=member.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`,params:[actor.projectId,actor.id,actor.role,sessionHash,now]}
+async function outboundTicketAuthority(env:Env,actor:Actor,sessionHash:string){
+ return ticketAuthority(env,actor,{sessionHash,source:'dashboard'},'conversations.reply')
 }
 /** Reserve one durable ticket per operator command. A lost response resumes the
  * same first-message admission; changed command content is always a conflict. */
 export async function reserveOutboundTicket(env:Env,actor:Actor,sessionHash:string,input:OutboundTicketInput){
- const intentHash=await hashToken(JSON.stringify(input)),conversationId=`ticket-${await hashToken(JSON.stringify([actor.projectId,actor.id,input.localId]))}`,now=Date.now(),authority=outboundTicketAuthority(actor,sessionHash,now)
+ const intentHash=await hashToken(JSON.stringify(input)),conversationId=`ticket-${await hashToken(JSON.stringify([actor.projectId,actor.id,input.localId]))}`,now=Date.now(),authority=await outboundTicketAuthority(env,actor,sessionHash)
  const existing=await env.DB.prepare('SELECT * FROM operator_ticket_commands WHERE project_id=? AND actor_id=? AND local_id=?').bind(actor.projectId,actor.id,input.localId).first<{conversation_id:string;intent_hash:string;kind:string}>()
  if(existing){if(existing.intent_hash!==intentHash)throw new HTTPException(409,{message:'Ticket command conflicts with an earlier request'});return {conversationId:existing.conversation_id,duplicate:true}}
  const contacts=(await env.DB.prepare(`SELECT ct.id,ct.email,ct.metadata_json FROM contacts ct WHERE ct.project_id=? AND ${input.requesterId?'ct.id=?':'lower(ct.email)=?'} LIMIT 2`).bind(actor.projectId,input.requesterId??input.requesterEmail).all<{id:string;email:string|null;metadata_json:string}>()).results
@@ -44,7 +45,7 @@ export async function reserveOutboundTicket(env:Env,actor:Actor,sessionHash:stri
  return {conversationId,duplicate:results[selected?0:1].meta.changes===0}
 }
 export async function logOutboundCall(env:Env,actor:Actor,sessionHash:string,conversationId:string,content:string){
- const noteId=`call-${conversationId}`,now=Date.now(),authority=outboundTicketAuthority(actor,sessionHash,now)
+ const noteId=`call-${conversationId}`,now=Date.now(),authority=await outboundTicketAuthority(env,actor,sessionHash)
  await env.DB.prepare(`INSERT OR IGNORE INTO conversation_notes(id,conversation_id,user_id,content,created_at) SELECT ?,c.id,?,?,? FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND ${writableContact} AND EXISTS(${authority.sql})`).bind(noteId,actor.id,content,now,conversationId,actor.projectId,...authority.params).run()
  const note=await env.DB.prepare(`SELECT n.* FROM conversation_notes n JOIN conversations c ON c.id=n.conversation_id JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE n.id=? AND c.project_id=? AND ${writableContact} AND EXISTS(${authority.sql})`).bind(noteId,actor.projectId,...authority.params).first()
  if(!note)throw new HTTPException(409,{message:'Call log admission denied'})

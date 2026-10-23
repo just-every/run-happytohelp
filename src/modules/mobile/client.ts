@@ -83,6 +83,14 @@ export class MobileClient {
  async knowledge(id:string,query=''){
   this.#requireOnline('knowledge');const data=await this.#transport.request(ticketPath(id)+'/knowledge?q='+encodeURIComponent(query));const key=id+'/knowledge';clearMemory(this.#memory.resources.get(key));this.#memory.resources.set(key,data);return data
  }
+ async openLink(link:string){
+  this.#requireOnline()
+  const url=new URL(link)
+  if(url.protocol!=='h2h:'||url.hostname!=='open'||!/^\/[A-Za-z0-9_-]+$/.test(url.pathname)||url.search||url.hash||url.username||url.password||url.port)throw new MobileClientError('Invalid support link',400)
+  const route=await this.#transport.request<{projectId:string;ticketId:string;path:string}>('/links/'+encodeURIComponent(url.pathname.slice(1)))
+  if(route.projectId!==this.#transport.credential?.projectId){this.purge('workspace-change');throw new MobileClientError('Workspace changed. Sign in again.',401)}
+  await this.openTicket(route.ticketId);return route
+ }
  saveDraft(id:string,content:string,{resolve=false,mediaIds=[],authoring}:{resolve?:boolean;mediaIds?:string[];authoring?:Authoring}={}){
   this.#checkExpiry()
   const snapshot=this.#memory.tickets.get(id)

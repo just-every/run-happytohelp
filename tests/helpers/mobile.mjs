@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 
-import {fixture,root,allScopes} from './mobile-fixture.mjs'
-import {offlineAdmission,offlineAuthority} from './mobile-offline.mjs'
+import {fixture,allScopes} from './mobile-fixture.mjs'
+import {offlineAdmission,offlineAuthority,controller} from './mobile-offline.mjs'
 
 // Extends the native admission journey with the same business behavior through
 // the mobile door; no additional node:test registration or fixture-only engine.
@@ -55,10 +55,13 @@ export async function mobileAuthority(){
   assert.equal((await call('/devices',{token:w.tokens.operator,body:{platform:'ios',scopes:allScopes}})).status,403)
   const collaborator=await pair({scopes:['read','notes','attachments']})
   const current=await read(collaborator)
-  const note={localId:'collaborator-note',content:'Private collaborator note',frontier:current.frontier}
+  const attachment=await call(`/tickets/${t.id}/attachments`,{token:collaborator.token,method:'POST',raw:true,body:'Private note attachment',headers:{'Mobile-Frontier':current.frontier,'Content-Type':'text/plain','X-Filename':'private-note.txt'},status:201})
+  const note={localId:'collaborator-note',content:'Private collaborator note',frontier:current.frontier,mediaIds:[attachment.data.id]}
   await call(`/tickets/${t.id}/notes`,{token:collaborator.token,body:note,status:201})
   assert.equal((await call(`/tickets/${t.id}/notes`,{token:collaborator.token,body:note,status:200})).data.duplicate,true)
   assert.equal((await read(collaborator)).notes.filter(n=>n.content===note.content).length,1)
+  assert.equal((await call(`/tickets/${t.id}/attachments/${attachment.data.id}`,{token:collaborator.token,status:200})).data,'Private note attachment')
+  assert.equal((await call(`/tickets/${foreign.id}/attachments/${attachment.data.id}`,{token:collaborator.token})).status,404)
   await app.ok(`/api/management/projects/${w.projectId}/agents/${w.users.operator}`,{token:w.tokens.owner,method:'PUT',body:{role:'operator'}})
   assert.equal((await call('/session',{token:device.token})).status,401,'restoring the role never revives an offline credential')
   const fresh=await pair(),signedOut=await call('/session',{token:fresh.token,method:'DELETE',status:200});assert.equal(signedOut.data.purge,true)
@@ -100,7 +103,7 @@ export async function mobileTicketWork(){
 }
 
 export async function mobileNotifications(){
- const {app,w,other,t,pair,call}=await fixture()
+ const f=await fixture(),{app,w,other,t,pair,call}=f
  try{
   const device=await pair(),second=await pair({platform:'android'}),foreign=await pair({token:other.tokens.operator})
   await call('/push',{token:device.token,method:'PUT',body:{enabled:true},status:200})
@@ -113,6 +116,8 @@ export async function mobileNotifications(){
   const payload=one.payloads[0],link=new URL(payload.link).pathname.slice(1)
   for(const sensitive of [content,w.projectId,t.id,'Private customer','customer-one@example.test'])assert.equal(JSON.stringify(payload).includes(sensitive),false)
   assert.deepEqual((await call('/links/'+link,{token:device.token,status:200})).data,{projectId:w.projectId,ticketId:t.id,path:`/projects/${w.projectId}/conversations/${t.id}`})
+  const {client}=await controller(f,device)
+  try{const route=await client.openLink(payload.link);assert.equal(route.ticketId,t.id);assert.equal(client.cachedTicket(t.id).ticket.id,t.id);await assert.rejects(()=>client.openLink('https://example.test/open/'+link))}finally{client.dispose()}
   assert.equal((await call('/links/'+link,{token:second.token})).status,404);assert.equal((await call('/links/'+link,{token:foreign.token})).status,404)
   await app.ok(`/api/management/projects/${w.projectId}/notification-preferences`,{token:w.tokens.operator,method:'PUT',body:{preferences:[{kind:'mention',inbox:false,email:false}]}})
   await app.ok(base+'/notes',{token:w.tokens.owner,body:{content}})

@@ -20,7 +20,7 @@ export async function companyJourney(imported,vendor){
   const companies=await h.call(native+'/companies');assert.equal(companies.companies.length,1);const company=companies.companies[0];assert.equal(company.name,'Northstar Bikes');assert.equal(company.portalCompanyView,false);assert.equal(company.memberCount,1);
   assert.deepEqual(company.domains,vendor==='intercom'?[]:['northstar.example']);
   const detail=await h.call(native+'/companies/'+company.id);assert.equal(detail.members.length,1);assert.equal(detail.members[0].email,'mara@northstar.example');
-  const before=await h.snapshot(),uploaded=(await h.call(root+'?vendor='+vendor,{method:'POST',headers:{'X-Import-Filename':'companies-repeat.jsonl'},body:'\n'+source})).data;await h.drain();const repeat=(await h.call(root+'/'+uploaded.id)).data;assert.equal(repeat.plan.counts.rejected,0,JSON.stringify(repeat.plan.decisions));await h.call(root+'/'+repeat.id+'/apply',post({fingerprint:repeat.plan.fingerprint}));await h.drain();assertBusinessEquality(before,await h.snapshot());
+  const before=await h.snapshot(),uploaded=(await h.call(root+'?vendor='+vendor,{method:'POST',headers:{'X-Import-Filename':'companies-repeat.jsonl','X-Import-Schema':'2.16'},body:'\n'+source})).data;await h.drain();const repeat=(await h.call(root+'/'+uploaded.id)).data;assert.equal(repeat.plan.counts.rejected,0,JSON.stringify(repeat.plan.decisions));await h.call(root+'/'+repeat.id+'/apply',post({fingerprint:repeat.plan.fingerprint}));await h.drain();assertBusinessEquality(before,await h.snapshot());
   await h.call(root+'/'+review.id+'/undo',post({}));await h.drain();assertBusinessEquality(initial,await h.snapshot());
  }});
  await imported(vendor,source,{check:async({h,review})=>{

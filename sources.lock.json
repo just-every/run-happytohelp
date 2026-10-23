@@ -11627,6 +11627,10 @@
       "sha256": "b2687503c3e42a5b13372df345de86a7218b21331f8d5de3f712d3837cf3a649",
       "executable": false
     },
+    "tests/helpers/widget/mailbox-live.mjs": {
+      "sha256": "c237ac9cb3c2afe05df75619ff58881fbe559c62aaef2145dd4b4c8b29d08062",
+      "executable": false
+    },
     "tests/helpers/widget/opening.mjs": {
       "sha256": "2f59f6e1d6788f3b6c9aed9e8b6c761eae2452119110e81cbd86815b21527758",
       "executable": false

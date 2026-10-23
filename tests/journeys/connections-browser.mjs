@@ -12,7 +12,7 @@ before(async()=>{runtime=await createRuntime({outboundFixture:new URL('../connec
 after(async()=>{await writeFile(shot('connections-browser.json'),JSON.stringify({records},null,2)).catch(()=>{});await browser?.close();await runtime?.close(success)})
 async function audit(page,name){await page.addScriptTag({path:resolve('node_modules/axe-core/axe.min.js')});const violations=await page.evaluate(async()=>{const result=await axe.run();return result.violations.filter(x=>['serious','critical'].includes(x.impact)).map(x=>({id:x.id,impact:x.impact,targets:x.nodes.map(n=>n.target)}))});assert.deepEqual(violations,[],name);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' overflow');await page.screenshot({path:shot(name+'.png'),fullPage:true});records.push({name,violations})}
 
-for(const width of [1440,390])test(`at ${width}px an owner creates and revokes a token, connects a webhook and Slack with secrets shown once, reads the delivery log, and resends an uncertain delivery only after a duplicate warning`,async()=>{try{
+test(`at 1440 and 390px an owner creates and revokes a token, connects a webhook and Slack with secrets shown once, reads the delivery log, and resends an uncertain delivery only after a duplicate warning`,async()=>{for(const width of [1440,390]){try{
 
   const owner=await runtime.seedTenant({name:'Connections workspace '+width,email:'connections-'+width+'@example.test'});
   const context=await browser.newContext({viewport:{width,height:1000}});await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}]);const page=await context.newPage();page.setDefaultTimeout(20000);
@@ -36,11 +36,11 @@ for(const width of [1440,390])test(`at ${width}px an owner creates and revokes a
   const freshResponse=await context.request.post(settings+'/webhooks/'+original.destination_id+'/test',{data:{}});assert.equal(freshResponse.status(),202);const fresh=await freshResponse.json();await page.getByRole('button',{name:'Refresh delivery log',exact:true}).click();await page.getByRole('button',{name:'Resend uncertain webhook',exact:true}).click();assert.equal((await context.request.delete(settings+'/webhooks/'+original.destination_id)).status(),200);await page.getByRole('button',{name:'Resend despite duplicate risk',exact:true}).click();await page.getByRole('alert').filter({hasText:'The original destination is unavailable or changed'}).waitFor();await audit(page,'resend-error-'+width);assert.equal((await (await context.request.get(settings+'/deliveries')).json()).data.find(row=>row.id===fresh.id).state,'uncertain');
 
   await context.close()
-}catch(error){success=false;throw error}})
+}catch(error){success=false;throw error}}})
 
 import {startProviders} from '../helpers/escalations/providers.mjs'
 import {exerciseEscalations} from '../helpers/escalations/browser.mjs'
-for(const width of [1440,390])test(`at ${width}px selected engineering context reaches connected trackers and Slack, signed closure updates return as drafts, and an operator edits and sends the approved customer update`,async()=>{
- const providers=await startProviders();let runtime,passed=false;
- try{runtime=await createRuntime({outboundFixture:new URL('../helpers/escalations/outbound.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}});const owner=await runtime.seedTenant({name:'Engineering escalations '+width,email:`engineering-${width}@example.test`});const result=await exerciseEscalations({browser,origin:runtime.origin,owner,providers,width,directory:shot('escalations')});await result.context.close();passed=true}finally{await runtime?.close(passed);await providers.close()}
+test(`at 1440 and 390px selected engineering context reaches connected trackers and Slack, signed closure updates return as drafts, and an operator edits and sends the approved customer update`,async()=>{
+ for(const width of [1440,390]){const providers=await startProviders();let runtime,passed=false;
+ try{runtime=await createRuntime({outboundFixture:new URL('../helpers/escalations/outbound.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}});const owner=await runtime.seedTenant({name:'Engineering escalations '+width,email:`engineering-${width}@example.test`});const result=await exerciseEscalations({browser,origin:runtime.origin,owner,providers,width,directory:shot('escalations')});await result.context.close();passed=true}finally{await runtime?.close(passed);await providers.close()}}
 })

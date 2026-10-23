@@ -32,8 +32,8 @@ Implemented provider paths:
   with live Shopify sandbox receipts.
 - Stripe: customer, invoice and subscription context; bounded USD payment-intent
   refunds and subscription cancellation at period end, with no proration.
-  Credits, pause, plan changes, broader proration previews and an integrated
-  customer-visible confirmation remain gaps.
+  Credits, pause, plan changes, broader proration previews and broader
+  proration previews remain gaps.
 - Orbit, HubSpot and Salesforce: independent account verification and contact
   context, source freshness and approved outcome activities/notes. Provider
   lifecycle/community level is not a support entitlement. Plan and support-entitlement properties are explicitly selected in Settings;
@@ -42,7 +42,9 @@ Implemented provider paths:
   Orbit availability and every live provider protocol still need sandbox proof.
 
 The panel records results in the originating ticket for the operator. It sends
-nothing to a customer automatically. Review a confirmed result before replying.
+nothing to a customer automatically. After a provider-confirmed commerce or
+billing result, a human can review and send an edited confirmation through the
+normal native message admission; duplicate clicks retain one reply.
 No raw card data is requested, stored or displayed. HappyToHelp holds no funds.
 
 Erasure removes local mappings, snapshots, reasons and action records and fences

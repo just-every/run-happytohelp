@@ -1,3 +1,4 @@
+import './controls.css';
 import React,{useEffect,useId,useState} from 'react';
 import {nativeRequest} from '../../transport';
 import {command,names,money} from './api';
@@ -11,7 +12,7 @@ export default function BusinessSettings({projectId,role}){
  const act=async task=>{if(busy)return;setBusy(true);setError('');setNotice('');try{await task();await load();}catch(e){setError(e.message);}finally{setBusy(false);}};
  const field=(name,label,value,set,type='text',extra={})=><div className="mb-3"><label className="form-label" htmlFor={prefix+name}>{label}</label><input id={prefix+name} className="form-control" type={type} value={value} onChange={e=>set(e.target.value)} {...extra}/></div>;
  if(!allowed)return <p role="alert">Only workspace owners and admins can manage business connections.</p>;
- return <div className="workspace-settings connections-page" style={{maxWidth:800,overflowWrap:'anywhere'}} aria-busy={busy}>
+ return <div className="workspace-settings connections-page business-connections" style={{maxWidth:800,overflowWrap:'anywhere'}} aria-busy={busy}>
   <p>Connect each merchant or CRM account separately. Map customers explicitly from a ticket. Credentials are encrypted, never displayed again and excluded from backups.</p>
   {error&&<p className="alert alert-danger" role="alert">{error}</p>}{notice&&<p className="alert alert-info" role="status">{notice}</p>}
   <form onSubmit={e=>{e.preventDefault();act(async()=>{await command(root,{provider,account,host:host||undefined,token,scopes,fields:{...(plan?{plan}:{}),...(entitlement?{entitlement}:{})},limit_cents:Math.round(Number(limit)*100),expires_at:expiry?new Date(expiry).getTime():null});setToken('');setNotice('Account verified and connected.');});}}>

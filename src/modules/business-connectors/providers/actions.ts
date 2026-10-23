@@ -54,9 +54,9 @@ export async function readback(row:Connection,token:string,action:Action,remoteI
   const r=await request(row,token,'/crm/v3/objects/notes/'+encodeURIComponent(remoteId)+'?properties=hs_note_body&associations=contacts')
   if(r.id!==remoteId||!r.associations?.contacts?.results?.some((x:any)=>String(x.id)===action.source_id))throw new ProviderFailure('result_unconfirmed')
  }else if(row.provider==='salesforce'){
-  const r=await request(row,token,'/services/data/v66.0/sobjects/Task/'+encodeURIComponent(remoteId));if(r.Id!==remoteId||r.WhoId!==action.source_id||r.Description!==action.reason)throw new ProviderFailure('result_unconfirmed')
+  const r=await request(row,token,'/services/data/v66.0/sobjects/Task/'+encodeURIComponent(remoteId));if(r.Id!==remoteId||r.WhoId!==action.source_id||r.Description!==action.reason||r.Status!=='Completed')throw new ProviderFailure('result_unconfirmed')
  }else {
-  const r=await request(row,token,`/api/v1/${encodeURIComponent(row.account)}/activities/${encodeURIComponent(remoteId)}`);if(String(r.data?.id)!==remoteId||r.data?.attributes?.key!==action.id)throw new ProviderFailure('result_unconfirmed')
+  const r=await request(row,token,`/api/v1/${encodeURIComponent(row.account)}/activities/${encodeURIComponent(remoteId)}`);if(String(r.data?.id)!==remoteId||r.data?.attributes?.key!==action.id||String(r.data?.attributes?.member_id??r.data?.relationships?.member?.data?.id)!==action.source_id)throw new ProviderFailure('result_unconfirmed')
  }
  return {id:remoteId,state:'succeeded',kind:action.kind}
 }

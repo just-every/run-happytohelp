@@ -1,3 +1,4 @@
+import './controls.css';
 import React,{useEffect,useId,useState} from 'react';
 import {nativeRequest} from '../../transport';
 import {command,names,money} from './api';
@@ -19,18 +20,23 @@ function CustomerConnection({connection,root,act,busy}){
   </>}
  </details>;
 }
+function CustomerConfirmation({action,root,act,busy}){
+ const prefix=useId(),[content,setContent]=useState(''),[sent,setSent]=useState(false);
+ return <form className="mt-3" onSubmit={e=>{e.preventDefault();act(async()=>{const frontier=await nativeRequest(`/api/conversations/${action.conversation_id}`);await command(root+'/actions/'+action.id+'/send',{content,expectedRevision:frontier.revision,expectedLastMessageId:frontier.last_message_id});setSent(true);});}}><label htmlFor={prefix}>Customer confirmation</label><textarea className="form-control mb-2" id={prefix} required maxLength={2000} disabled={busy||sent} value={content} onChange={e=>setContent(e.target.value)}/><p>Review the confirmed result and approve the exact text. This sends a normal reply in the original conversation.</p><button className="btn btn-sm btn-outline-primary" disabled={busy||sent}>{sent?'Customer confirmation sent':'Send reviewed customer confirmation'}</button></form>;
+}
 export default function BusinessPanel({projectId,conversationId}){
  const root=`/api/business/projects/${projectId}/conversations/${conversationId}`,[data,setData]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const load=async()=>setData((await nativeRequest(root)).data);
  useEffect(()=>{let live=true;setData(null);setError('');nativeRequest(root).then(r=>{if(live)setData(r.data);}).catch(e=>{if(live)setError(e.message);});return()=>{live=false;};},[root]);
  const act=async task=>{if(busy)return;setBusy(true);setError('');try{await task();}catch(e){setError(e.message);}finally{await load().catch(e=>setError(e.message));setBusy(false);}};
- return <div aria-busy={busy} style={{overflowWrap:'anywhere'}}>{error&&<p className="text-danger" role="alert">{error}</p>}<p>Business data stays at its source. <a href={`/projects/${projectId}/business-settings`}>Manage business connections</a></p><button className="btn btn-sm btn-outline-secondary mb-2" disabled={busy} onClick={()=>act(async()=>{})}>Refresh business panel</button>
+ return <div className="business-panel" aria-busy={busy} style={{overflowWrap:'anywhere'}}>{error&&<p className="text-danger" role="alert">{error}</p>}<p>Business data stays at its source. <a href={`/projects/${projectId}/business-settings`}>Manage business connections</a></p><button className="btn btn-sm btn-outline-secondary mb-2" disabled={busy} onClick={()=>act(async()=>{})}>Refresh business panel</button>
   {data?.connections.map(connection=><CustomerConnection key={root+connection.id} connection={connection} root={root} act={act} busy={busy}/>)}{data&&!data.connections.length&&<p>No business accounts connected.</p>}
   {data?.actions.map(action=>{const base=root+'/connections/'+encodeURIComponent(action.connection_id)+'/actions/'+action.id;return <article className="card mt-3" key={action.id}><div className="card-body"><h5>{action.kind.replaceAll('_',' ')} · {action.state}</h5><p>Provider record: {action.target_id}<br/>Amount: {money(action.amount_cents)}<br/>Reason: {action.reason}</p>{Object.entries(action.preview).filter(([k])=>['tax','shipping','effective','effective_at','proration','notice'].includes(k)).map(([key,value])=><p key={key}>{key.replaceAll('_',' ')}: {String(value)}</p>)}
    {action.state==='prepared'&&<button className="btn btn-sm btn-outline-primary" disabled={busy} onClick={()=>act(()=>command(base+'/approve',{confirmed:true}))}>Approve exact preview</button>}
    {action.state==='approved'&&<button className="btn btn-sm btn-primary" disabled={busy} onClick={()=>act(()=>command(base+'/execute',{}))}>Execute approved action</button>}
    {['prepared','approved'].includes(action.state)&&<button className="btn btn-sm btn-outline-secondary ms-2" disabled={busy} onClick={()=>act(()=>command(base+'/cancel',{}))}>Cancel action</button>}
    {['sending','uncertain'].includes(action.state)&&<><p role="status">Provider outcome is unconfirmed. Do not repeat this action.</p><button className="btn btn-sm btn-outline-secondary" disabled={busy} onClick={()=>act(()=>command(base+'/reconcile',{}))}>Reconcile provider result</button></>}
+   {action.state==='succeeded'&&['shopify','stripe'].includes(action.preview.provider)&&<CustomerConfirmation action={action} root={root} act={act} busy={busy}/>}
    {action.result&&<p role="status">Provider result: {action.result.provider_status||action.result.state||action.result.code}. {action.state==='succeeded'?'Confirmed at provider. Review the result before replying to the customer.':'Customer success is not confirmed.'}</p>}
   </div></article>;})}
  </div>;

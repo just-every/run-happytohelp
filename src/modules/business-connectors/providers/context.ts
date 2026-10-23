@@ -1,7 +1,7 @@
 import type {Connection} from '../model'
 import {id} from '../model'
 import {request,ProviderFailure} from './http'
-const scalar=(value:unknown,max=500)=>typeof value==='string'?value.slice(0,max):null
+const scalar=(value:unknown,max=500)=>['string','number','boolean'].includes(typeof value)?String(value).slice(0,max):null
 const money=(value:any)=>value&&({amount:scalar(value.amount),currency:scalar(value.currencyCode)})
 export async function identity(row:Connection,token:string){
  if(row.provider==='shopify'){

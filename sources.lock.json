@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "87831515c7a1f652d81c51b200cc3f61aea5e4be6bfb1ae214005a5d511ea91e",
+      "sha256": "2e1d105363c1f8822deac181a8534d0885b1f1e4001a3f5e3979d60c445f5bc9",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "59374dee65b1b85cde81dfc2279fc2b8dee0e39c668d752fac73d278a23cbf95",
+      "sha256": "3f00567a51beab13dc2719f701385e202c88e259896d6218975525c0f8503f5e",
       "executable": false
     },
     "DEMO.md": {
@@ -1660,7 +1660,7 @@
       "executable": false
     },
     "docs/api.md": {
-      "sha256": "0a53fee2f610c140451d24f0a81888813c0d75d2fd9116076a9b199b70ec4dbb",
+      "sha256": "c600583331d77546a8b77332829fb1e6046824b33a17bddf25e629abe0edb33f",
       "executable": false
     },
     "docs/AUTHORING.md": {
@@ -3504,7 +3504,7 @@
       "executable": false
     },
     "src/modules/ai-support/context.ts": {
-      "sha256": "fe2dfb6c5c8e92099b8885b78236dca0c5036ee28b82e39c59e4ffc878c44833",
+      "sha256": "665ca3a7b812c00c045e6522e6c8b3352214408751accb7b2bd480a1c53a410b",
       "executable": false
     },
     "src/modules/ai-support/customer-message.ts": {
@@ -3520,7 +3520,7 @@
       "executable": false
     },
     "src/modules/ai-support/generation-finalization.ts": {
-      "sha256": "a26d40aa250971eb4dda33f62737ccfa16e6502f17fe22afb2b7bc66323f0e31",
+      "sha256": "ee7526e1820707e616937d9bd2b063c7d3969e664daac91a0a23e7f9e3f97aeb",
       "executable": false
     },
     "src/modules/ai-support/generation-id.ts": {
@@ -3528,7 +3528,7 @@
       "executable": false
     },
     "src/modules/ai-support/generation-provider.ts": {
-      "sha256": "22de01016dbba5bc0a1003b7e6a7685816f3bc5897c37aa1b7057e6f015b59e0",
+      "sha256": "0fcc14f338a7c30f466c58331a7ec7eb8b8ba915553c22633f5e544cde3144c8",
       "executable": false
     },
     "src/modules/ai-support/generation-queue.ts": {
@@ -3632,7 +3632,7 @@
       "executable": false
     },
     "src/modules/ai-support/tools.ts": {
-      "sha256": "de4325f39431ff6989dd9d04eb3b849d8a44f18286d552544dfa403473e1cb40",
+      "sha256": "41452ba532a8cec432b6ff5c7b27a46ae2d847d48f5dee992817a631c15446c6",
       "executable": false
     },
     "src/modules/ai-support/trace.ts": {
@@ -10748,7 +10748,7 @@
       "executable": false
     },
     "tests/helpers/ai/obligations.mjs": {
-      "sha256": "1f645f464d98d787e4644380661e64a963653406cdef1279aed169c67f6cc9da",
+      "sha256": "0108a456dc9f60d6a8e9aeed2a5a1e62572458625ae702810459a0de7ddf84f9",
       "executable": false
     },
     "tests/helpers/ai/procedures.mjs": {

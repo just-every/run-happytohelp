@@ -70,6 +70,8 @@ export async function obligationsJourney(){
  a.ai.respond=body=>{if(++turn===1)return openaiToolCall('list_followup_dependencies',{},'followup-dependencies');if(turn===2){assert.match(JSON.stringify(body.input),/EX-1/);return openaiToolCall('propose_followup',{messageId:promised.id,quote:'follow up tomorrow',ownerId:'human',dueAt:Date.now()+86400000,stopCondition:'A teammate supplies the follow-up.',dependencyId:'issue'},'propose-followup')}return 'A teammate can review the follow-up.'}
  await a.run()
  const extracted=(await app.call(`/api/ai-support/projects/${p}/conversations/${proposedVisitor.conversationId}/obligations`,{token:owner,status:200})).data.obligations[0]
+ assert.equal((await proposedVisitor.transcript()).messages.filter(m=>m.actor_role==='ai').length,0,'internal promise and dependency work never publishes an unapproved customer update')
+ assert.equal((await app.first('SELECT assigned_to FROM conversations WHERE id=?',proposedVisitor.conversationId)).assigned_to,workspace.users.owner,'internal promise work transfers the next customer response to a human')
  assert.equal(extracted.state,'proposed');assert.equal(extracted.accepted_by,null);assert.equal(extracted.quote,'follow up tomorrow');assert.equal(extracted.dependency_id,'issue')
  await app.call(`/api/ai-support/projects/${p}/conversations/${proposedVisitor.conversationId}/obligations/${extracted.id}/accept`,{token:owner,body:{version:1,ownerId:workspace.users.owner,dueAt:Date.now()+7*86400000},status:200})
  await app.db.prepare('UPDATE escalation_deliveries SET received_at=? WHERE issue_id=?').bind(Date.now()-2*86400000,'issue').run()

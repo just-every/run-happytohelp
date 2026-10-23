@@ -93,5 +93,9 @@ export async function executeGenerationProvider(
       trace,
     });
   }), () => demoGeneration(env, row, clientOptions));
-  return { result: row.kind === 'reply' ? {...result, citations: context.selectedCitations} : result, usage: usageResult };
+  if(row.kind==='reply'&&context.followupReview.required){
+    await checkCurrent();
+    await handoffTool(env,row,effects).function('human');
+  }
+  return { result: row.kind === 'reply' ? {...result, requiresHumanReview:context.followupReview.required,citations: context.selectedCitations} : result, usage: usageResult };
 }

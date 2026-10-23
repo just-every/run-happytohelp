@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "009a9108618b4e2f770e93b3f92964a18d76296fe8b7b6246716fe6ad2249fe8",
+      "sha256": "12ec835b171fc8a5fdb78f26b260a7ca785e79c8f76ca4dc92351b1727864236",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "34132fef280bb50f0f553951f7ab9d953670541ca9dc1fa5d8d70eddbe3a3858",
+      "sha256": "4ae209bf6e66b4e018d3da6bfdb81020216c5f5db290d64f9369080144394632",
       "executable": false
     },
     "DEMO.md": {
@@ -1776,7 +1776,7 @@
       "executable": false
     },
     "docs/reports.md": {
-      "sha256": "9942b250d6841fde8e2e412055e161adba77678368db3ace0eb118fabd5f94e4",
+      "sha256": "00241a4ccc95c361e064b973043688efe0c37e89c9baba2a2a756d1a10c7314d",
       "executable": false
     },
     "docs/request-forms.md": {
@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "d00d37a5170a69539e2cf4b9e5961a999fdf8aac676362452830747ad37490c9",
+      "sha256": "2a1f4a882e5b80796b774b6a508ede30e064d53b90105771a8a9f6be39736968",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2475,6 +2475,10 @@
       "sha256": "ac04f0b9547f266723aca30fd0855bced2417297fdaaa561b76126b424e5e1e8",
       "executable": false
     },
+    "migrations/243_widget_survey_cycles.sql": {
+      "sha256": "24cef079571722429dc4c14156b3ca546c7b959a3fa60fc11462e6500dfe1ef9",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "0fa396b895e9098cc1db5070d1dc33ca732fae8287f84f69dc8afa3bc8afd1a6",
       "executable": false
@@ -2556,7 +2560,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "626f58d891fe0b9ea2a1bed3a966d75d24598974de3ce85c70d71fdeb81e7dd5",
+      "sha256": "bc956182464d6bfc24eb588877509e4bd0f6446088072e4f6bb5391621a237f4",
       "executable": false
     },
     "rer-project.json": {
@@ -6088,7 +6092,7 @@
       "executable": false
     },
     "src/modules/management/widget-events.ts": {
-      "sha256": "63d7dc375f50ffbb46046647f63e9547b3b0d66f1a2c531b1ee5e11c8bbb8131",
+      "sha256": "0da03f089e5f0cf5f24afc01ba04dc4eb2fd20d7fbc48e516f645e8c4c44664e",
       "executable": false
     },
     "src/modules/management/widget-events/contact.ts": {
@@ -6312,7 +6316,7 @@
       "executable": false
     },
     "src/modules/outcomes/rating.ts": {
-      "sha256": "9c4c92e4fc745da11a09a68cf25865ec48362eb50bb696d7feb21a8054702d8d",
+      "sha256": "4b615d0769b2fca4d91004bcd0d9d38222c034103c4bc3364742c73d7d3ec2ec",
       "executable": false
     },
     "src/modules/outcomes/README.md": {
@@ -6324,7 +6328,7 @@
       "executable": false
     },
     "src/modules/outcomes/state.ts": {
-      "sha256": "c8171c22c2759fa6a8428a042c29ba11fa0266d34d111218506a601e06ccd8ae",
+      "sha256": "3fa997fb8879d41ceca987f7be33e05785ca6f1b104314b6312e69f7c6602dd5",
       "executable": false
     },
     "src/modules/outcomes/survey-delivery.ts": {
@@ -6340,11 +6344,11 @@
       "executable": false
     },
     "src/modules/outcomes/survey-routes.ts": {
-      "sha256": "4b4d068ffba81d5428ec94de140af9504d7c0335d3909e5044105f39cb65fd6d",
+      "sha256": "11d2ade769b1a3ebd8074da852efa71540acbdec4c7748ddc669b7b8de4423d3",
       "executable": false
     },
     "src/modules/outcomes/survey-store.ts": {
-      "sha256": "2ef9b587712fc326ce0554c8a9522796f48398d1e46b9a583c6d6a82a9085d91",
+      "sha256": "7b3ebd0b3ae57062ba20eb8a0af19f432c423867d11812df01bcc064798c0cdb",
       "executable": false
     },
     "src/modules/outcomes/tracking.ts": {
@@ -6920,7 +6924,7 @@
       "executable": false
     },
     "src/modules/widget/css/ResolutionRating.css": {
-      "sha256": "c1e3364bb814b93df86a99910f1bb94931461d4022fe85d7625e194ed1213c2e",
+      "sha256": "73ee915738de1ba8865594271de043e86e537a4e00c42c0abfcd0bac2f72b3ca",
       "executable": false
     },
     "src/modules/widget/css/Root.css": {
@@ -7215,12 +7219,16 @@
       "sha256": "4fa960f70b9492459a22f383ac8c3b5d2d48f9de4303a7e966b66f31bf00edf0",
       "executable": false
     },
+    "src/modules/widget/js/rating-copy.js": {
+      "sha256": "ce7c47f0fb15806577fa6d2286130e81d907fc5568cf2481286a23325f08bba8",
+      "executable": false
+    },
     "src/modules/widget/js/RequestFormLink.jsx": {
       "sha256": "75eb429b7cc022ea8855b1c3a524992b5c1ab05c5d9c22393bf78bf624b77139",
       "executable": false
     },
     "src/modules/widget/js/ResolutionRating.jsx": {
-      "sha256": "fea5353a4103464594549f13951707051a3195393ab4ea0824abb982dc479faf",
+      "sha256": "176977ffdc6d34b154615f5bf358e19003aa96e76271b3a512df82b90734c73e",
       "executable": false
     },
     "src/modules/widget/js/SendMessage.jsx": {
@@ -7956,7 +7964,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ResolutionSummary.jsx": {
-      "sha256": "4d880bec2f291b8ea5308ef0ecc9799b700d323b0e193dbc418aca9c74cd629c",
+      "sha256": "cb9fd2b4aad6ea9ba0d0c64301e517e9cb2442fde075f55b743d13d553eb6ef6",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationAccess.jsx": {
@@ -9992,7 +10000,7 @@
       "executable": false
     },
     "src/ui/native/pages/surveys/SurveyPanel.jsx": {
-      "sha256": "bfc1ff8c56f803c2136ff7a5c0e42b4bf4df5f94a3255b7156484ff6c71dcb46",
+      "sha256": "c2ca388b0be4843b96830fb496f0ae89b693a2e3014c7e0a886919628e8e97d3",
       "executable": false
     },
     "src/ui/native/pages/surveys/surveys.css": {
@@ -11776,7 +11784,7 @@
       "executable": false
     },
     "tests/journeys/reports-browser.mjs": {
-      "sha256": "e03c9bd436aa1f34ca2646d430c813644dab9abaeb3bee8ed16d1a4c83411f7c",
+      "sha256": "d3283954355fa09443965397185105ec506e828c14413c8a65ff157b01b901b2",
       "executable": false
     },
     "tests/journeys/reports.mjs": {
@@ -12152,7 +12160,7 @@
       "executable": false
     },
     "tests/reports/ratings.mjs": {
-      "sha256": "88675eb8dae9c108a3a4fcffaf55c7bfda86e4cb0ec4a6cb4aecd7c3a7e54ae1",
+      "sha256": "771d998987d5f8eb1c847ccfb1923ee8c7a39cd3d9bf75e501c7c17665a683b4",
       "executable": false
     },
     "tests/reports/status-categories.mjs": {

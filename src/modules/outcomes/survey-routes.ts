@@ -11,13 +11,16 @@ export const surveySettings=new Hono<AppEnv>()
 surveySettings.get('/projects/:projectId/settings',async c=>{const actor=await scope(c);return c.json(await readSurveySettings(c.env,actor.projectId))})
 surveySettings.put('/projects/:projectId/settings',async c=>{
  const actor=await scope(c,true),body=await c.req.json<SurveySettings>()
+ if(body.widgetEnabled!==undefined&&typeof body.widgetEnabled!=='boolean')throw new HTTPException(400,{message:'Choose whether to show widget surveys'})
+ if(body.widgetEnabled===undefined)body.widgetEnabled=(await readSurveySettings(c.env,actor.projectId)).widgetEnabled
  if(typeof body.enabled!=='boolean'||!['thumbs','five'].includes(body.scale)||!['en','es','fr'].includes(body.locale)||!Number.isInteger(body.delayMinutes)||body.delayMinutes<0||body.delayMinutes>43200||!Number.isInteger(body.expiresDays)||body.expiresDays<1||body.expiresDays>90)throw new HTTPException(400,{message:'Choose a scale, locale, delay (0–43,200 minutes), and link lifetime (1–90 days)'})
  if(body.enabled&&!surveySigningConfigured(c.env))throw new HTTPException(503,{message:'Set INBOUND_EMAIL_TOKEN to at least 16 characters before enabling email surveys'})
  const now=Date.now()
  await c.env.DB.batch([
   c.env.DB.prepare(`INSERT INTO csat_settings(project_id,enabled,scale,delay_minutes,expires_days,locale,enabled_at,updated_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET enabled=excluded.enabled,scale=excluded.scale,delay_minutes=excluded.delay_minutes,expires_days=excluded.expires_days,locale=excluded.locale,enabled_at=CASE WHEN csat_settings.enabled=0 AND excluded.enabled=1 THEN excluded.enabled_at ELSE csat_settings.enabled_at END,updated_at=excluded.updated_at`).bind(actor.projectId,body.enabled?1:0,body.scale,body.delayMinutes,body.expiresDays,body.locale,now,now),
+  c.env.DB.prepare("INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES(?,json_object('csat_widget_enabled',json(?)),?) ON CONFLICT(project_id) DO UPDATE SET settings_json=json_set(settings_json,'$.csat_widget_enabled',json(?)),updated_at=excluded.updated_at").bind(actor.projectId,JSON.stringify(body.widgetEnabled),now,JSON.stringify(body.widgetEnabled)),
   ...(!body.enabled?[c.env.DB.prepare("UPDATE csat_surveys SET state='cancelled',revoked_at=?,updated_at=? WHERE project_id=? AND state='pending'").bind(now,now,actor.projectId)]:[]),
-  auditStatement(c.env.DB,{projectId:actor.projectId,category:'integration',action:'csat.settings.updated',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{enabled:body.enabled,scale:body.scale,delayMinutes:body.delayMinutes,expiresDays:body.expiresDays,locale:body.locale}})
+  auditStatement(c.env.DB,{projectId:actor.projectId,category:'integration',action:'csat.settings.updated',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{enabled:body.enabled,widgetEnabled:body.widgetEnabled,scale:body.scale,delayMinutes:body.delayMinutes,expiresDays:body.expiresDays,locale:body.locale}})
  ])
  return c.json(await readSurveySettings(c.env,actor.projectId))
 })

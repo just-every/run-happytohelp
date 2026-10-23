@@ -1,6 +1,6 @@
 #happytohelp-root .happytohelp-resolution-rating { position: relative; z-index: 1; margin: 16px; padding: 16px; border: 1px solid #c5cbd4; border-radius: 12px; background: #fff; color: #202936; font-size: 14px; }
 #happytohelp-root .happytohelp-resolution-rating p { margin: 0 0 10px; }
-#happytohelp-root .happytohelp-rating-options { display: flex; gap: 8px; margin-bottom: 12px; }
+#happytohelp-root .happytohelp-rating-options { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 #happytohelp-root .happytohelp-resolution-rating button { min-height: 40px; padding: 8px 12px; border: 1px solid #65748b; border-radius: 7px; background: #fff; color: #202936; cursor: pointer; font: inherit; }
 #happytohelp-root .happytohelp-resolution-rating button[aria-pressed=true] { background: #243b60; color: #fff; border-color: #243b60; }
 #happytohelp-root .happytohelp-resolution-rating button:focus-visible, #happytohelp-root .happytohelp-resolution-rating textarea:focus-visible { outline: 3px solid #2364be; outline-offset: 2px; }

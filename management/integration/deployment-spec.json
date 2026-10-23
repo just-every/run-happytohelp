@@ -678,6 +678,12 @@
       "name": "242_csat_response_surface.sql",
       "sha256": "ac04f0b9547f266723aca30fd0855bced2417297fdaaa561b76126b424e5e1e8",
       "sql": "-- Keep the invitation transport separate from the signed response surface.\n-- Existing email links remain valid; widget surface is derived from its channel.\nALTER TABLE csat_responses ADD COLUMN response_surface TEXT NOT NULL DEFAULT 'unknown' CHECK(response_surface IN ('email','portal','widget','unknown'));\nALTER TABLE csat_response_history ADD COLUMN response_surface TEXT NOT NULL DEFAULT 'unknown' CHECK(response_surface IN ('email','portal','widget','unknown'));\n"
+    },
+    {
+      "binding": "DB",
+      "name": "243_widget_survey_cycles.sql",
+      "sha256": "24cef079571722429dc4c14156b3ca546c7b959a3fa60fc11462e6500dfe1ef9",
+      "sql": "-- Keep each widget survey's scale, locale and timing with its exact resolution.\n-- Old cycles retain the original immediate thumbs behavior. Settings changes do\n-- not reinterpret old feedback; widget opt-out is a visitor-owned preference.\nCREATE TRIGGER csat_widget_cycle AFTER INSERT ON conversation_resolutions BEGIN\n UPDATE conversation_resolutions SET evidence_json=json_set(evidence_json,'$.widgetSurvey',json_object(\n 'enabled',COALESCE((SELECT json_extract(settings_json,'$.csat_widget_enabled') FROM project_settings WHERE project_id=NEW.project_id),1),\n 'scale',COALESCE((SELECT scale FROM csat_settings WHERE project_id=NEW.project_id),'thumbs'),\n 'locale',COALESCE((SELECT locale FROM csat_settings WHERE project_id=NEW.project_id),'en'),\n 'availableAt',NEW.resolved_at+COALESCE((SELECT delay_minutes FROM csat_settings WHERE project_id=NEW.project_id),0)*60000,\n 'expiresAt',NEW.resolved_at+(COALESCE((SELECT delay_minutes FROM csat_settings WHERE project_id=NEW.project_id),0)*60000)+(COALESCE((SELECT expires_days FROM csat_settings WHERE project_id=NEW.project_id),14)*86400000)\n )) WHERE id=NEW.id;\nEND;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

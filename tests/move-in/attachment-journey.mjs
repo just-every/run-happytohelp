@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import {createHash} from 'node:crypto'
 import {startApp} from '../journeys/kit/app.mjs'
 import {attachmentFixtures,publicBytes,privateBytes} from './attachment-fixtures.mjs'
+import {mixedAttachmentErasure} from './attachment-erasure.mjs'
 
 export async function attachmentJourney(){
  const app=await startApp({captureQueue:true})
@@ -38,6 +39,7 @@ export async function attachmentJourney(){
   assert.equal((await app.call(imports+'?vendor='+fixture.vendor,{token,body:fixture.archive(),raw:true,headers:{'X-Import-Filename':'again.zip','X-Import-Schema':'2.16'}})).status,410)
   assert.equal((await app.ok(imports+'/'+restored.id,{token})).data.state,'erased')
  }
+ await mixedAttachmentErasure(app)
  assert.equal(app.requests.length,0,'acquiring history never fetches provider URLs or sends mail')
  }finally{await app.close()}
 }

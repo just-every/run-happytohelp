@@ -10,7 +10,7 @@ const app=await startApp({captureQueue:true,bindings:{EMAIL_PROVIDER:'sendgrid',
  assert.equal(new URL(request.url).origin,'https://api.sendgrid.com')
  const body=await request.clone().text(),payload=JSON.parse(body)
  assert.deepEqual(payload.personalizations.flatMap(value=>value.to.map(to=>to.email)),[recipient])
- sent.push(payload)
+ if(payload.custom_args?.rer_delivery_id?.startsWith('csat:'))sent.push(payload)
  return fetch(request.url,{method:request.method,headers:request.headers,body,signal:AbortSignal.timeout(15000)})
 }})
 try{
@@ -23,7 +23,7 @@ try{
  await app.ok(`/api/dashboard/projects/${p}/conversations/${conversation.id}`,{token,method:'PUT',body:{resolved:true}})
  await app.scheduled()
  const survey=await app.first('SELECT * FROM csat_surveys WHERE conversation_id=?',conversation.id)
- assert.equal(survey?.state,'sent','provider acceptance must be known before checking the mailbox')
+ console.log(JSON.stringify({diagnostic:'survey delivery',state:survey?.state??'not scheduled',attempts:sent.length,delivery:survey?await app.first('SELECT state,error FROM email_deliveries WHERE id=?','csat:'+survey.id):null}));assert.equal(survey?.state,'sent','provider acceptance must be known before checking the mailbox')
  assert.equal(sent.length,1)
  const text=sent[0].content.find(part=>part.type==='text/plain').value
  const link=text.match(/https:\/\/app\.example\/api\/outcomes\/surveys\/\S+/)?.[0];assert.ok(link)

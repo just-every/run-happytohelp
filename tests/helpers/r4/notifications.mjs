@@ -261,7 +261,7 @@ async function workflowNotices(m){
  const deliveries=marker=>mail.sent.filter(entry=>entry.body.text?.startsWith(marker))
  for(const mode of ['confirmed','refused','uncertain']){
   const marker=`Workflow ${mode}:`,subject=`Workflow notice ${mode}`
-  const definition={name:subject,kind:'event',event_kind:'customer_reply',conditions:{all:[{field:'subject',op:'eq',value:subject}]},actions:[{type:'assign',user_id:'op'},{type:'notify',kind:'assignee',message:marker+' {{ticket.id}}'},...(mode==='confirmed'?[{type:'notify',kind:'customer_update',message:'Customer '+marker+' {{ticket.id}}'}]:[]),{type:'priority',priority:'high'}]}
+  const definition={name:subject,kind:'event',event_kind:'customer_reply',conditions:{all:[{field:'subject',op:'eq',value:subject}]},actions:[{type:'assign',user_id:'op'},{type:'notify',kind:'assignee',message:marker+' {{ticket.id}}'},...(mode==='confirmed'?[{type:'notify',kind:'customer_update',message:'Customer '+marker+' {{ticket.id}}'}]:[]),{type:'priority',priority:'high'},...(mode==='confirmed'?[{type:'status',status_id:'pending'}]:[])]}
   const {rule}=await request(rules,definition),before=mail.attempts
   assert.equal((await request(`${rules}/${rule.id}/preview`,{})).side_effects,false)
   assert.equal(mail.attempts,before,'workflow previews have no network effects')
@@ -277,10 +277,26 @@ async function workflowNotices(m){
   for(const entry of deliveries(marker))assert.equal(entry.body.headers['X-Auto-Response-Suppress'],'All')
   if(mode==='confirmed')assert.deepEqual(deliveries('Customer '+marker).flatMap(entry=>recipients(entry.body)).sort(),['cc@example.com',from].sort(),'customer actions reach the requester and independently proven CC only')
   assert.equal((await app.first('SELECT priority FROM conversations WHERE id=?',id)).priority,mode==='confirmed'?'high':'normal','later actions require a confirmed delivery')
+  if(mode==='confirmed')assert.equal((await app.first('SELECT status_category FROM conversations WHERE id=?',id)).status_category,'pending','the published event rule applies its status action after confirmed notices')
   const counts=[deliveries(marker).length,deliveries('Customer '+marker).length]
   await app.configure({});await app.scheduled();await app.scheduled()
   assert.deepEqual([deliveries(marker).length,deliveries('Customer '+marker).length],counts,'restart never repeats a terminal or uncertain notification')
   assert.equal((await runs()).length,1)
+  if(mode==='uncertain'){
+   const current=(await runs())[0],review={expected_updated_at:current.updated_at,note:'Reviewed the provider receipt; the external outcome is still unknown. Close remaining work.',reference:'synthetic-happytohelp-5'},path=`${base}/workflow-runs/${current.id}/reconcile`,beforeReview=mail.attempts
+   assert.equal((await app.call(path,{headers:{Authorization:'Bearer watch-token'},body:review})).status,403)
+   assert.equal((await app.call(path,{...owner,body:{...review,expected_updated_at:current.updated_at-1}})).status,409)
+   const foreign=await app.seedWorkspace('workflow-review-foreign')
+   assert.equal((await app.call(`/api/dashboard/projects/${foreign.projectId}/workflow-runs/${current.id}/reconcile`,{token:foreign.tokens.owner,body:review})).status,404)
+   const reconciled=await request(path,review);assert.equal(reconciled.state,'cancelled');assert.equal(reconciled.provider_outcome,'unchanged')
+   assert.equal((await app.call(path,{...owner,body:review})).status,409,'review cannot be repeated against an obsolete frontier')
+   assert.equal((await runs())[0].state,'cancelled')
+   const audit=await app.first("SELECT detail_json FROM audit_events WHERE project_id='p' AND action='workflow.run.reconciled' AND target_id=?",current.id)
+   assert.deepEqual(JSON.parse(audit.detail_json),{run_id:current.id,previous_state:'uncertain',cursor:current.cursor,note:review.note,reference:review.reference,disposition:'remaining_actions_cancelled',provider_outcome:'unchanged'})
+   await app.configure({});await app.scheduled();assert.equal(mail.attempts,beforeReview,'manual reconciliation and restart never send or resume remaining actions')
+   assert.equal((await app.first('SELECT priority FROM conversations WHERE id=?',id)).priority,'normal')
+   assert.equal((await app.first("SELECT count(*) n FROM workflow_notifications WHERE conversation_id=? AND state='uncertain'",id)).n,1,'the uncertain provider record remains uncertain')
+  }
   await request(`${rules}/${rule.id}/pause`,{})
   await m.gateway({messageId:messageId+'-paused',to:'inbound@example.com',from,subject,text:'Another matching request'})
   await app.scheduled();assert.deepEqual([deliveries(marker).length,deliveries('Customer '+marker).length],counts,'pause prevents subsequent effects')

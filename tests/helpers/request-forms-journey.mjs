@@ -65,6 +65,25 @@ export async function requestFormsJourney(){
   assert.equal((await app.call(`${admin}/${form.id}`,{...owner,method:'PUT',body:form})).status,409)
   assert.deepEqual((await app.ok(`${admin}/${form.id}/versions`,owner)).data,versions.data,'refused stale updates cannot create history')
   assert.equal((await app.call(`${admin.replace(p,f.foreign.projectId)}/${form.id}/versions`,{token:f.foreign.tokens.owner})).data.data.length,0,'another workspace cannot read a form history')
+  const fieldPath=`/api/management/projects/${p}/ticket-fields/${order.id}`
+  await app.ok(fieldPath,{...owner,method:'PATCH',body:{name:'Order reference'}})
+  const fieldVersions=(await app.ok(fieldPath+'/versions',owner)).data
+  assert.equal(fieldVersions.length,2);assert.equal(fieldVersions[0].definition.name,'Order reference');assert.equal(fieldVersions[1].definition.name,'Order number')
+  assert.equal(fieldVersions[0].previousVersion,fieldVersions[1].version)
+  assert.equal((await app.call(fieldPath+'/versions',{token:f.workspace.tokens.operator})).status,403)
+  assert.equal((await app.call(`/api/management/projects/${p}/ticket-fields/${internal.id}/versions`,{token:f.workspace.tokens.admin})).status,403,'settings authority does not reveal a field restricted to the owner')
+  assert.equal((await app.call(fieldPath,{...owner,method:'DELETE'})).status,400,'deleting a used field cannot erase old ticket values')
+  assert.deepEqual((await app.ok(fieldPath+'/versions',owner)).data,fieldVersions,'refused deletes add no field version')
+  assert.deepEqual(Object.fromEntries((await app.sql('SELECT field_id,value_json FROM ticket_field_values WHERE conversation_id=?',id)).map(row=>[row.field_id,JSON.parse(row.value_json)])),valid.fields)
+  await app.configure({})
+  assert.deepEqual((await app.ok(fieldPath+'/versions',owner)).data,fieldVersions,'field versions survive restart')
+  const late=(await app.ok(`/api/management/projects/${p}/ticket-fields`,{...owner,body:{name:'Late request detail',type:'text'}})).data
+  const raced=await app.call(`/api/management/projects/${p}/ticket-fields/${late.id}`,{...owner,method:'DELETE',headers:{'x-test-statement':'INSERT INTO audit_events','x-test-before-statement':`INSERT INTO ticket_field_values(project_id,conversation_id,field_id,value_json) VALUES('${p}','${id}','${late.id}','"synthetic-happytohelp-6"')`}})
+  assert.equal(raced.status,409,'a value arriving after the deletion preflight still protects the field')
+  const afterRace=(await app.ok(`${dashboard}/conversations/${id}/ticket`,owner)).data
+  assert.equal(afterRace.fields[late.id],'synthetic-happytohelp-6')
+  assert.equal((await app.ok(`/api/management/projects/${p}/ticket-fields/${late.id}/versions`,owner)).data.length,1,'a refused deletion adds no version')
+
   await app.configure({FORMS_TURNSTILE_SECRET_KEY:undefined})
   assert.equal((await app.call(path,{body:{...valid,localId:'not-configured'},status:503})).data.code,'verification_unavailable')
   // A verified mailbox can still use the portal when anonymous submissions are disabled.

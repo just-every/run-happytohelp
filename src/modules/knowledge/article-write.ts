@@ -7,6 +7,9 @@ import {requiredString} from '../../platform/db'
 export async function writeArticle(env:Env,projectId:string,b:any,guard?:SqlGuard,preserveCategories=false,editorId?:string){
  const articleId=b.id||crypto.randomUUID(),status=b.status||(b.is_published?'published':'draft')
  const existing=await env.DB.prepare('SELECT project_id,slug FROM knowledge_articles WHERE id=?').bind(articleId).first<{project_id:string;slug:string}>()
+ // Omitted category fields are a content-only edit. Preserve the current fence
+ // inside the write transaction rather than reconstructing it from an earlier read.
+ preserveCategories=preserveCategories||Boolean(existing&&!['categoryIds','categories','categoryId'].some(key=>Object.hasOwn(b,key)))
  const slug=b.slug||existing?.slug||`${String(b.title).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'article'}-${articleId.slice(0,8)}`
  if(slug!==existing?.slug&&(typeof slug!=='string'||!/^[\p{L}\p{N}][\p{L}\p{N}_-]*$/u.test(slug)))throw new HTTPException(400,{message:'Slug must be a single URL segment containing letters, numbers, hyphens or underscores'})
  if(!['draft','published'].includes(status))throw new HTTPException(400,{message:'Invalid status'})

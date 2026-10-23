@@ -36,6 +36,9 @@ const rules:Record<string,Rule>={
  [`POST ${P}/contacts/:contactId/erase`]:'data.erase',
  // Production assistant traces contain provider usage and require report authority.
  'GET /api/ai-support/projects/:projectId/conversations/:conversationId/trace':'reports.view',
+ 'GET /api/ai-support/projects/:projectId/conversations/:conversationId/obligations':'conversations.manage',
+ 'POST /api/ai-support/projects/:projectId/conversations/:conversationId/obligations':'conversations.manage',
+ 'POST /api/ai-support/projects/:projectId/conversations/:conversationId/obligations/:id/accept':'conversations.manage',
  // Knowledge
  [`POST ${K}/articles`]:'knowledge.publish',[`DELETE ${K}/articles/:articleId`]:'knowledge.publish',[`PUT ${K}/articles/:articleId/categories`]:'knowledge.edit',[`PUT ${K}/articles/:articleId/order`]:'knowledge.edit',
  [`POST ${K}/categories`]:'knowledge.edit',[`PUT ${K}/categories/:categoryId`]:'knowledge.edit',[`DELETE ${K}/categories/:categoryId`]:'knowledge.edit',

@@ -1,3 +1,4 @@
+import {remindObligations} from './modules/ai-support/obligations'
 import {consumeTriage,dispatchTriage} from './modules/triage/worker'
 import {dispatchScheduledReports} from './modules/reports/schedule-dispatch'
 import {recoverTicketContinuations} from './modules/tickets/continuation'
@@ -67,7 +68,7 @@ export async function runScheduled(env:Env) {
  // Hand larger message effects to the queue near the history-load target.
  // The hard consumer allocation still reserves every later recovery and prune.
  await visit('Outbox',3,dispatchOutbox,700)
- await visit('Generation',10,async env=>{await recoverQueuedGenerations(env,generationEffects);await dispatchTriage(env)})
+ await visit('Generation',10,async env=>{await recoverQueuedGenerations(env,generationEffects);await dispatchTriage(env);await remindObligations(env)})
  await visit('Knowledge',15,refreshDueDatasets)
  await visit('Context',5,recoverContextJobs)
  await visit('Ticket continuation',1,recoverTicketContinuations)

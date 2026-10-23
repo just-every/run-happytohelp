@@ -1,3 +1,4 @@
+import {obligationRoutes} from './obligations'
 import {traceRoutes} from './trace'
 import { Hono } from 'hono'
 import type { AppEnv } from '../../platform/env'
@@ -5,6 +6,7 @@ import { requireProject } from '../../platform/auth'
 import { requestGeneration } from './repository'
 export const routes=new Hono<AppEnv>()
 routes.route('/',traceRoutes)
+routes.route('/',obligationRoutes)
 routes.post('/projects/:projectId/conversations/:conversationId/generations',async c=>{
  const projectId=c.req.param('projectId'),actor=await requireProject(c,projectId,true),body=await c.req.json()
  try{return c.json(await requestGeneration(c.env,{projectId,conversationId:c.req.param('conversationId'),actor,expectedRevision:body.expectedRevision}),202)}catch(error){return c.json({error:String(error)},409)}

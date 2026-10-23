@@ -66,5 +66,16 @@ try{
  const stats=(await call(`/api/knowledge/${p}/analytics`,{status:200})).data;assert.equal(stats.totals.helpful,1);assert.equal(stats.comments[0].comment,'Worked');assert.equal(stats.totals.views,1);assert.equal(stats.totals.clicks,1);assert.ok(stats.searches.some(row=>row.query==='Restricted'&&row.withResults>0&&row.clicks===1));assert.ok(stats.searches.some(row=>row.query==='absent'&&row.withoutResults>0))
  assert.equal((await k.search('Restricted')).length,0,'private articles remain excluded from AI even after human access')
 
+ // A content-only update through the native door must retain the current private collections.
+ await call(`/api/knowledge/${p}/articles`,{body:{id:aid,title:'Secret refreshed',content:'Restricted refresh marker',slug:'secret',status:'published'},status:201})
+ assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`)).status,404)
+ assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:bad.token})).status,404)
+ const refreshed=(await app.call(`/api/knowledge/public/${p}/articles/secret?locale=fr`,{token:good.token,status:200})).data
+ assert.equal(refreshed.content,'Restricted refresh marker')
+ assert.equal(refreshed.locale,'en');assert.equal(refreshed.requestedLocale,'fr','stale translation falls back with the requested locale disclosed')
+ assert.equal((await k.search('Restricted refresh marker')).length,0)
+ assert.ok((await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles`,{status:200})).data.some(a=>a.id===aid))
+ assert.ok(!(await call(`/api/knowledge/${p}/conversations/${badConversation}/articles`,{status:200})).data.some(a=>a.id===aid))
+
 }finally{await k.close()}
 }

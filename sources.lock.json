@@ -11716,7 +11716,7 @@
       "executable": false
     },
     "tests/journeys/kit/scenarios.mjs": {
-      "sha256": "a6b045e163c1447dff08a462f3f301a1f836cf161304ef00489a0051e18ed3bb",
+      "sha256": "38b96ef9eeba473ac02a9fd28b6cc09f1ed73c78154d482d2f24ec40dc0c8d41",
       "executable": false
     },
     "tests/journeys/knowledge.mjs": {

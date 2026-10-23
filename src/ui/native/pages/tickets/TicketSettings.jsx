@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useDashboardSettings } from '../../dashboard-state';
+import { useDashboardSettings, useDashboardLocation } from '../../dashboard-state';
 import { nativeRequest } from '../../transport';
 import { useUnsavedChanges } from '../../NavigationGuard';
 import { Feedback, Section } from '../forms';
@@ -13,9 +13,10 @@ import '../../../dashboard/components/tickets/tickets.css';
 const blanks = { statuses: { name: '', category: 'open' }, fields: { name: '', type: 'text', required: false, options: [], validation: {}, read_roles: ['owner', 'admin', 'operator', 'collaborator', 'api'], write_roles: ['owner', 'admin', 'operator', 'api'] }, groups: { name: '', members: [] } };
 const singular = { statuses: 'status', fields: 'field', groups: 'group' };
 export default function TicketSettings({ projectId }) {
+    const location = useDashboardLocation(), requestedTab = new URLSearchParams(location.searchStr).get('tab');
     const workspace = useDashboardSettings(), { markDirty, markSaved } = useUnsavedChanges();
     const { ask, dialog } = useConfirmation();
-    const [data, setData] = useState(null), [kind, setKind] = useState('statuses'), [draft, setDraft] = useState(null);
+    const [data, setData] = useState(null), [kind, setKind] = useState(['statuses','fields','groups'].includes(requestedTab) ? requestedTab : 'statuses'), [draft, setDraft] = useState(null);
     const [error, setError] = useState(''), [saved, setSaved] = useState(false), [busy, setBusy] = useState(false);
     const base = ticketPath(projectId), resource = `${base}/ticket-${kind}`;
     const load = async () => setData((await nativeRequest(`${base}/ticket-settings`)).data);

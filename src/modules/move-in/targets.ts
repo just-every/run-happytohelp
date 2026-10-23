@@ -1,6 +1,7 @@
 import type { D1Sql, D1TargetAdapter, TargetRow, D1Database } from '../import-kit/src/d1/index'
 import {LIMITS} from './types'
 import type { NativeValue } from './readers/normalise'
+import {completeImportedTicket} from './ticket-state'
 import {emailKey} from './contact-keys'
 interface Table {name:string;key:string;columns:string[];order:string;generated?:string[];nativeOnly?:boolean}
 const table=(name:string,key:string,columns:string,order=key,generated?:string[]):Table=>({name,key,columns:columns.split(','),order,generated})
@@ -15,7 +16,7 @@ const entities:Record<string,Table[]>={
  macro:[table('macros','id','id,project_id,title,content,created_by,created_at,updated_at'),table('macro_heads','macro_id','macro_id,version,archived_at,archived_by'),table('macro_versions','macro_id','macro_id,project_id,version,title,content,actions_json,scope_json,created_by,created_at','version')],
  article:[table('knowledge_articles','id','id,project_id,category_id,slug,title,content,summary,status,updated_at,position,source_revision,source_incarnation,publication_version','id',['publication_version']),table('knowledge_article_categories','article_id','article_id,category_id','category_id')],
  conversation:[
-  table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at,mailbox_id,subject'),
+  table('conversations','id','id,project_id,contact_id,revision,last_message_id,assigned_to,resolved_at,created_at,updated_at,mailbox_id,subject,status_id,status_category,channel'),
   table('move_in_conversations','conversation_id','conversation_id,project_id,vendor,source_id,subject,source_state,source_channel'),
   table('email_threading_keys','conversation_id','project_id,conversation_id,key_kind,key_value,source,source_ref,created_at',"key_kind||':'||key_value"),
   table('messages','conversation_id','id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at,intent_hash,bucket_id,erased_at,citations_json','id'),
@@ -54,7 +55,7 @@ function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sq
 }
 export function nativeStatementCount(kind:string,value:NativeValue){return definitions(kind).filter(t=>!t.nativeOnly).reduce((n,t)=>n+(value.tables[t.name]?.length??0),0)+1+(kind==='conversation'?2:kind==='article'||kind==='contact'?1:0)}
 export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
- if(kind==='conversation')for(const row of value.tables.conversations)row.subject??=value.tables.move_in_conversations?.[0]?.subject??''
+ if(kind==='conversation')completeImportedTicket(value)
  if(kind==='macro'){
   const m=value.tables.macros[0]
   value.tables.macro_heads??=[{macro_id:m.id,version:1,archived_at:null,archived_by:null}]

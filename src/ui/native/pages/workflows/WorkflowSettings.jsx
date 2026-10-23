@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { nativeRequest } from '../../transport';
-import { useDashboardSettings } from '../../dashboard-state';
+import { useDashboardSettings, useDashboardLocation } from '../../dashboard-state';
 import { useUnsavedChanges } from '../../NavigationGuard';
 import { SettingsTabs } from '../ProjectControls';
 import { Feedback } from '../forms';
@@ -12,8 +12,9 @@ import TriageSettings from '../triage/TriageSettings';
 import { ticketPath } from './workflow-model';
 import './workflows.css';
 export default function WorkflowSettings({ projectId }) {
+    const location = useDashboardLocation(), requestedTab = new URLSearchParams(location.searchStr).get('tab');
     const workspace = useDashboardSettings(), { markDirty, markSaved } = useUnsavedChanges();
-    const [tab, setTab] = useState('calendars'), [settings, setSettings] = useState(null), [error, setError] = useState(''), [dirty, setDirty] = useState(false);
+    const [tab, setTab] = useState(['calendars','sla','rules','routing','triage'].includes(requestedTab) ? requestedTab : 'calendars'), [settings, setSettings] = useState(null), [error, setError] = useState(''), [dirty, setDirty] = useState(false);
     useEffect(() => { let active = true; setSettings(null); Promise.all([nativeRequest(`${ticketPath(projectId)}/ticket-settings`), nativeRequest(`${ticketPath(projectId)}/tags`)]).then(([result, tags]) => { if (active) setSettings({...result.data, tags:tags.data}); }).catch(failure => { if (active) setError(failure.message); }); return () => { active = false; }; }, [projectId]);
     const changed = () => { setDirty(true); markDirty(); };
     const clean = () => { setDirty(false); markSaved(); };

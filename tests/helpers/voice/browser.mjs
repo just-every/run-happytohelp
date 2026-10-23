@@ -3,7 +3,7 @@ import {randomBytes,createHmac} from 'node:crypto'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {launchBrowser,evidence} from '../../journeys/kit/browser.mjs'
 
-export async function voiceBrowserProof({widths=[1440,390],debug=false}={}){
+export async function voiceBrowserProof({widths=[1440,390]}={}){
  const runtime=await createRuntime({outboundFixture:new URL('./browser-network.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}}),browser=await launchBrowser(),shot=await evidence('voice')
  let passed=false
  try{
@@ -15,6 +15,7 @@ export async function voiceBrowserProof({widths=[1440,390],debug=false}={}){
    const capture=async name=>{assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${name} fits ${width}`);await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true})}
    await page.goto(runtime.origin+`/projects/${owner.projectId}/settings`)
    await page.getByRole('button',{name:'Telephone',exact:true}).click()
+   await page.getByRole('button',{name:'Account menu',exact:true}).focus();await page.getByRole('tooltip').waitFor()
    await page.getByRole('button',{name:'Connect support number',exact:true}).click()
    await page.getByLabel('Provider number ID',{exact:true}).fill('synthetic-happytohelp-3')
    await page.getByLabel('Account SID or API ID',{exact:true}).fill('synthetic-happytohelp-2')
@@ -27,11 +28,10 @@ export async function voiceBrowserProof({widths=[1440,390],debug=false}={}){
    let number=(await req(base+'/numbers')).data[0];assert.ok(number.enabled)
    await page.getByRole('button',{name:'Edit routing for +12025550101',exact:true}).click()
    await page.getByLabel('Media retention in days',{exact:true}).fill('2')
-   await capture('settings')
-   if(debug)await page.evaluate(()=>{window.voiceEvents=[];for(const event of ['pointerdown','pointerup','click','submit'])document.addEventListener(event,e=>window.voiceEvents.push({type:event,tag:e.target.tagName,text:e.target.tagName==='BUTTON'?e.target.textContent:null,prevented:e.defaultPrevented}),true)})
    await page.getByRole('button',{name:'Save voice number',exact:true}).click()
    await page.getByText('Voice number saved. Configure the provider webhook before testing.',{exact:true}).waitFor()
    number=(await req(base+'/numbers')).data[0];assert.equal(number.settings.retention_days,2)
+   await page.getByRole('button',{name:'Edit routing for +12025550101',exact:true}).click();await capture('settings')
    const hook=async(step,extra={},remote='synthetic-happytohelp-'+width)=>{const path='/api/voice/hooks/'+number.id+(step?'?step='+step:''),form={AccountSid:'synthetic-happytohelp-2',CallSid:remote,...(step==='recording'?{}:{From:'+12025550102',To:'+12025550101'}),...extra};let value=runtime.origin+path;for(const key of Object.keys(form).sort())value+=key+form[key];const signature=createHmac('sha1','synthetic-happytohelp-1').update(value).digest('base64');const result=await context.request.post(runtime.origin+path,{data:new URLSearchParams(form).toString(),headers:{'Content-Type':'application/x-www-form-urlencoded','X-Twilio-Signature':signature}});assert.equal(result.status(),200);return result.text()}
    assert.match(await hook(),/Press 1 to consent/);assert.match(await hook('consent',{Digits:'1'}),/<Record /)
    await hook('recording',{RecordingStatus:'completed',RecordingSid:'synthetic-happytohelp-13'})
@@ -73,7 +73,7 @@ export async function voiceBrowserProof({widths=[1440,390],debug=false}={}){
    await page.goto(runtime.origin+`/projects/${owner.projectId}/settings`);await page.getByRole('button',{name:'Telephone',exact:true}).click()
    page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Disconnect +12025550101',exact:true}).click();await page.getByText('Disconnected',{exact:true}).waitFor()
    assert.equal((await req(base+'/numbers')).data[0].enabled,0);assert.deepEqual(errors,[])
-  }catch(error){for(const p of context.pages()){await p.screenshot({path:shot(`failure-${width}.png`),fullPage:true}).catch(()=>{});if(debug)console.error('Voice events',await p.evaluate(()=>({events:window.voiceEvents,buttons:[...document.querySelectorAll('button')].filter(n=>n.textContent.includes('Save voice')).map(n=>({form:!!n.form,type:n.type,disabled:n.disabled})),active:document.activeElement?.tagName})));console.error('Voice form validity',await p.locator('input:invalid,select:invalid').evaluateAll(nodes=>nodes.map(n=>({name:n.name,message:n.validationMessage}))).catch(()=>[]));}throw error}finally{await context.close()}
+  }catch(error){for(const p of context.pages()){await p.screenshot({path:shot(`failure-${width}.png`),fullPage:true}).catch(()=>{});console.error('Voice form validity',await p.locator('input:invalid,select:invalid').evaluateAll(nodes=>nodes.map(n=>({name:n.name,message:n.validationMessage}))).catch(()=>[]));}throw error}finally{await context.close()}
  }
  passed=true
  }finally{await browser.close();await runtime.close(passed)}

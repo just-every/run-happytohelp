@@ -5836,7 +5836,7 @@
       "executable": false
     },
     "src/modules/management/brands.ts": {
-      "sha256": "a30872d13757f592e5649039d45c61a31e4f3ece56bca38f30b8de3fa8e8481e",
+      "sha256": "2cd3f1605ded54d283d50071ac7d2e78c93cb86bdb8835563244a5e2e11f684e",
       "executable": false
     },
     "src/modules/management/buckets.ts": {

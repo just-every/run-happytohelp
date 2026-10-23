@@ -26,7 +26,7 @@ brands.get('/projects/:projectId/brands',async c=>{
    c.env.DB.prepare('SELECT slug FROM public_project_aliases WHERE project_id=?').bind(id),
   ])
   let hosts:Record<string,unknown>={}
-  try{const value=JSON.parse(c.env.PUBLIC_HELP_HOSTS||'{}');if(value&&typeof value==='object'&&!Array.isArray(value))hosts=value}catch{}
+  try{const value=JSON.parse(typeof c.env.PUBLIC_HELP_HOSTS==='string'?c.env.PUBLIC_HELP_HOSTS:'{}');if(value&&typeof value==='object'&&!Array.isArray(value))hosts=value}catch{}
   const helpKeys=new Set([id,...aliases.results.map(alias=>alias.slug)])
   data.push({id:row.id,name:row.name,origin:row.allowed_origin,widgetKey:row.widget_key,helpCenterContextUrl:settings.help_center_domain||null,helpCenterPath:`/help/${id}`,helpHosts:Object.entries(hosts).filter(([,key])=>typeof key==='string'&&helpKeys.has(key)).map(([host])=>host),mailboxes:mail.results,
    policy:{timezone:settings.timezone||'UTC',collectEmail:settings.collect_email!==false,acceptNewConversations:settings.is_enabled!==false},

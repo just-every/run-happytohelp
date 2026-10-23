@@ -11916,7 +11916,7 @@
       "executable": false
     },
     "tests/move-in/empty-upgrade.mjs": {
-      "sha256": "e7d2b643f3c7efdf5bcefc7c82b7912ad49770363580dfbc5f2b0e4ecf2c2ba4",
+      "sha256": "41e52a6d0a73381d9459efb10e3b79e7b1782a069b9858059b320798666968e9",
       "executable": false
     },
     "tests/move-in/envelope-inputs.mjs": {

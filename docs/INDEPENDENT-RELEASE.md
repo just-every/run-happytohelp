@@ -81,7 +81,14 @@ covers retained owners and settings from the older local installer.
 
 ## Back up your data
 
-Your data lives in two places: the D1 database (named `<prefix>-db`, where
+For a versioned portable archive containing D1 records, R2 bytes and metadata,
+and the lossless conversation-state reconstruction, follow [Portable archive from
+a hosted installation](../OPERATIONS.md#portable-archive-from-a-hosted-installation).
+Keep every source writer stopped until that command completes. Restore into a
+clean installation with `rer import`; sessions, provider credentials and execution
+authority are excluded, and interrupted work stays inactive.
+
+The separate SQL recovery procedure below also requires an R2 copy. Your data lives in two places: the D1 database (named `<prefix>-db`, where
 `<prefix>` is your resource name) and the R2 file bucket (`<prefix>-files`). To
 take a consistent backup:
 
@@ -96,9 +103,9 @@ take a consistent backup:
    node scripts/export-d1.mjs --database <prefix>-db --config wrangler.jsonc --remote --output private-backup.sql
    ```
 
-3. Export every R2 object, with both its metadata and its bytes. HappyToHelp
-   doesn't include a command for this, so use a tool that copies each object's
-   metadata as well as its contents.
+3. For this SQL recovery path, copy every R2 object's metadata and bytes with
+   a separate storage tool. A SQL file alone does not contain attachments. The
+   portable archive command linked above includes both stores.
 4. Write down any call to an outside service whose outcome you're unsure of,
    such as an email or AI reply that may or may not have gone out (HappyToHelp
    marks these as *uncertain*). Before you let HappyToHelp try one again, check

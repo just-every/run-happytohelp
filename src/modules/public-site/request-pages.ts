@@ -17,7 +17,8 @@ const safeJson=(value:unknown)=>JSON.stringify(value).replaceAll('<','\\u003c').
 function input(f:PublicField){
  const name=['subject','message'].includes(f.id)?f.id:`field:${f.id}`,id=`request-${f.id}`,required=f.required?' required':'',hint=f.description?` aria-describedby="${e(id)}-hint"`:''
  let control=''
- if(f.type==='dropdown'||f.type==='multiselect')control=`<select id="${e(id)}" name="${e(name)}"${f.type==='multiselect'?' multiple':''}${required}${hint}>${f.type==='dropdown'?'<option value="">Choose an option</option>':''}${f.options.map(o=>`<option value="${e(o.value)}">${e(o.label)}</option>`).join('')}</select>`
+ if(f.validation.lookup==='account')control=`<select id="${e(id)}" name="${e(name)}"${required}${hint}><option value="">Verify your email to choose an account</option></select>`
+ else if(f.type==='dropdown'||f.type==='multiselect')control=`<select id="${e(id)}" name="${e(name)}"${f.type==='multiselect'?' multiple':''}${required}${hint}>${f.type==='dropdown'?'<option value="">Choose an option</option>':''}${f.options.map(o=>`<option value="${e(o.value)}">${e(o.label)}</option>`).join('')}</select>`
  else if(f.id==='message')control=`<textarea id="${e(id)}" name="${e(name)}" rows="7" maxlength="100000"${required}${hint}></textarea>`
  else if(f.type==='checkbox')control=`<input id="${e(id)}" name="${e(name)}" type="checkbox"${hint}>`
  else control=`<input id="${e(id)}" name="${e(name)}" type="${['number','decimal'].includes(f.type)?'number':f.type==='date'?'date':'text'}"${f.type==='decimal'?' step="any"':''}${f.type==='number'?' step="1"':''}${['text','regex'].includes(f.type)?` maxlength="${f.validation.max??4000}"`:''}${required}${hint}>`

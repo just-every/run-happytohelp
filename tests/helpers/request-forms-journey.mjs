@@ -102,6 +102,36 @@ export async function requestFormsJourney(){
   await app.ok(fieldPath,{...owner,method:'PATCH',body:{read_roles:[],write_roles:[]}})
 
 
+  // Account lookups list only the verified customer's current memberships.
+  const accountField=(await app.ok(`/api/management/projects/${p}/ticket-fields`,{...owner,body:{name:'Support account',type:'account_lookup'}})).data
+  const accountForm=(await app.ok(admin,{...owner,body:{...f.config,title:'Account support',fields:[{fieldId:accountField.id,required:true}],translations:{es:{fields:{[accountField.id]:{label:'Cuenta'}}}}}})).data
+  const customerId=(await app.first('SELECT contact_id FROM portal_identities WHERE project_id=? AND email=?',p,'rosa@example.com')).contact_id
+  const accounts=`/api/management/projects/${p}/companies`
+  const account=(await app.ok(accounts,{...owner,body:{name:'Rosa Books',domains:[],portalCompanyView:false}})).company
+  const other=(await app.ok(accounts,{...owner,body:{name:'Other customer account',domains:[]}})).company
+  await app.ok(`${accounts}/${account.id}/members/${customerId}`,{...owner,method:'PUT'})
+  const lookup=`${api}/${accountForm.id}/lookups/${accountField.id}`
+  assert.equal((await app.call(lookup)).status,401,'anonymous callers cannot enumerate accounts')
+  assert.deepEqual((await app.ok(lookup,customer)).data,[{value:account.id,label:'Rosa Books'}])
+  assert.equal((await app.ok(lookup+'?query=Other',customer)).data.length,0,'search cannot discover another customer account')
+  const accountPath=`${api}/${accountForm.id}/submissions`,accountInput={...valid,localId:'synthetic-happytohelp-70',fields:{[accountField.id]:account.id}}
+  assert.equal((await app.call(accountPath,{...customer,body:{...accountInput,fields:{[accountField.id]:other.id}},status:422})).data.field,accountField.id,'a forged account id is refused by the shared submission door')
+  const accountTicket=(await app.ok(accountPath,{...customer,body:accountInput})).ticket
+  assert.equal((await app.ok(`${dashboard}/conversations/${accountTicket.id}/ticket`,owner)).data.fields[accountField.id],account.id,'lookup values retain typed account references')
+  const fieldValues=()=>app.first('SELECT value_json FROM ticket_field_values WHERE conversation_id=? AND field_id=?',accountTicket.id,accountField.id)
+  await app.ok(`${accounts}/${account.id}`,{...owner,method:'PATCH',body:{name:'Rosa Books renamed'}})
+  assert.equal((await fieldValues()).value_json,JSON.stringify(account.id),'renaming the lookup target preserves the ticket reference')
+  await app.ok(`${accounts}/${account.id}/members/${customerId}`,{...owner,method:'DELETE'})
+  assert.deepEqual((await app.ok(lookup,customer)).data,[],'revocation removes lookup choices immediately')
+  assert.equal((await app.call(accountPath,{...customer,body:{...accountInput,localId:'synthetic-happytohelp-71'},status:422})).data.field,accountField.id)
+  await app.ok(`${accounts}/${account.id}/members/${customerId}`,{...owner,method:'PUT'})
+  const race=await app.call(accountPath,{...customer,body:{...accountInput,localId:'synthetic-happytohelp-72'},headers:{...customer.headers,'x-test-statement':'INSERT OR IGNORE INTO conversations','x-test-before-statement':`DELETE FROM contact_companies WHERE project_id='${p}' AND company_id='${account.id}' AND contact_id='${customerId}'`}})
+  assert.equal(race.status,409,'membership lost during admission cannot create a ticket')
+  assert.equal((await app.first('SELECT count(*) n FROM request_form_submissions WHERE project_id=? AND local_id=?',p,'synthetic-happytohelp-72')).n,0)
+  assert.equal((await fieldValues()).value_json,JSON.stringify(account.id),'revocation does not erase a historical reference')
+  await app.ok(`/api/management/projects/${p}/ticket-fields/${accountField.id}`,{...owner,method:'PATCH',body:{read_roles:['owner'],write_roles:['owner']}})
+  assert.equal((await app.call(lookup,customer)).status,404,'later field restrictions hide the entire public form and its lookup')
+
   await app.configure({FORMS_TURNSTILE_SECRET_KEY:undefined})
   assert.equal((await app.call(path,{body:{...valid,localId:'not-configured'},status:503})).data.code,'verification_unavailable')
   // A verified mailbox can still use the portal when anonymous submissions are disabled.

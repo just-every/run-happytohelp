@@ -61,3 +61,28 @@ fix creates a draft for operator approval; it does not prove customer recovery
 or send to the linked incidents. Preview an incident update separately to
 render and approve each requester's reply. SMS and expired messaging windows
 remain unavailable until a supported, consented channel is connected.
+
+## Create tickets and service notices
+
+In the inbox, **New ticket** searches existing requesters by name, email or phone,
+or accepts a new email contact inline. Choose the workspace brand, connected
+mailbox and sender, form, typed fields, group and assignee before creating the
+ticket. A selected form enforces its required and conditional fields. The customer
+remains the requester and the current teammate is recorded as submitter.
+
+Choose **Internal first comment**, **Log a call** or **Log a walk-in** to record
+private notes without sending a message. A new outbound email still has its own
+threading reference and immutable sender, CC and BCC choices.
+
+**Service notice to several requesters** accepts up to ten existing contacts. It
+is for a concrete support update, never marketing. Preview shows the exact
+message and each recipient's eligibility; confirm creates a separate ticket for
+each eligible requester and records its delivery outcome. This interim consent
+default requires the customer to explicitly enable update emails in their portal
+preferences. Missing consent and opt-outs are blocked. New tickets use the
+workspace's and contact's conversation rate limits. Previews expire after fifteen
+minutes, and requester changes or permission revocation require a fresh review.
+**Refresh outcomes** checks the same command: it never resends a failed or
+uncertain delivery. Pending or sending means the outcome has not been confirmed.
+Email provider receipt, customer-mailbox delivery and messaging-provider sandbox
+qualification remain separate checks.

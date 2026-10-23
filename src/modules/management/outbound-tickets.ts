@@ -1,3 +1,5 @@
+import {ticketAuthority} from '../tickets/model'
+import {livePortalContact} from '../portal/identity'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,AppEnv,Env} from '../../platform/env'
@@ -14,6 +16,12 @@ export type OutboundTicketCommitted=(env:Env,message:Record<string,unknown>,acto
 export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCommitted){
  const routes=new Hono<AppEnv>()
  routes.route('/',serviceNoticeRoutes(onCommittedMessage))
+ routes.get('/projects/:projectId/tickets/requesters',async c=>{
+  const actor=await requireProject(c,c.req.param('projectId'),true);await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'conversations.reply')
+  const search=c.req.query('search')??'';if(search.length>200)throw new HTTPException(400,{message:'Search is too long'})
+  const rows=await c.env.DB.prepare(`SELECT ct.id,ct.name,ct.email,json_extract(ct.metadata_json,'$.phone') phone FROM contacts ct WHERE ct.project_id=? AND ${livePortalContact()} AND (instr(lower(coalesce(ct.name,'')),lower(?))>0 OR instr(lower(coalesce(ct.email,'')),lower(?))>0 OR instr(coalesce(json_extract(ct.metadata_json,'$.phone'),''),?)>0) ORDER BY ct.name,ct.email,ct.id LIMIT 20`).bind(actor.projectId,search,search,search).all()
+  return c.json({data:rows.results})
+ })
  routes.post('/projects/:projectId/tickets',async c=>{
   const actor=await requireProject(c,c.req.param('projectId'),true),input=outboundTicketInput(await c.req.json()),sessionHash=c.get('sessionHash')
   const result=await createOutboundTicket(c.env,actor,sessionHash,input,onCommittedMessage,delivery=>c.executionCtx.waitUntil(delivery))

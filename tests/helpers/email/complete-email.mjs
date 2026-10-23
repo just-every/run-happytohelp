@@ -155,6 +155,7 @@ export async function completeEmailJourney(){
   const applied=(await app.ok(noticeBase+'/'+notice.id+'/apply',{token:agent,body:{}})).data
   assert.equal(new Set(applied.results.filter(r=>r.ticketId).map(r=>r.ticketId)).size,3)
   await app.until(()=>sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length===3,{message:'three service notice delivery attempts'})
+  await app.until(async()=>(await app.first("SELECT count(*) n FROM email_deliveries WHERE id IN (SELECT 'message:'||id||':notification' FROM messages WHERE content LIKE 'synthetic-happytohelp-62:%') AND state IN ('sent','failed')")).n===3,{message:'service notice outcomes settled before restart'})
   await app.configure({})
   const retried=(await app.ok(noticeBase+'/'+notice.id+'/apply',{token:agent,body:{}})).data
   assert.equal(retried.results.find(r=>r.requesterId===requesterIds[1]).state,'failed')
@@ -167,6 +168,18 @@ export async function completeEmailJourney(){
   await app.configure({RATE_LIMITS:JSON.stringify({conversationsPerProjectHour:1})})
   assert.equal((await app.ok(noticeBase+'/'+limited.id+'/apply',{token:agent,body:{}})).data.results[0].state,'blocked','rate limits apply before a new service ticket')
   await app.configure({RATE_LIMITS:undefined})
+  const raceCustomer=await portal('notice-race@example.test'),raceNotice=(await app.ok(noticeBase+'/preview',{token:agent,body:{...noticeCommand,localId:'synthetic-happytohelp-65',requesterIds:[raceCustomer]}})).data
+  const countBeforeRace=sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length
+  const raceResult=(await app.ok(noticeBase+'/'+raceNotice.id+'/apply',{token:agent,body:{},headers:{'x-test-statement':'INSERT INTO email_deliveries','x-test-before-statement':`UPDATE contacts SET metadata_json=json_set(metadata_json,'$.portal_notification_emails',0) WHERE id='${raceCustomer}'`}})).data
+  assert.equal(raceResult.results[0].state,'blocked','consent revoked at the sending claim prevents provider submission')
+  assert.equal(sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length,countBeforeRace)
+  // Preview expiry fences only its first proactive send, not future support replies.
+  await app.db.prepare('UPDATE operator_service_notices SET created_at=1 WHERE id=?').bind(notice.id).run()
+  const normalTicket=retried.results.find(result=>result.requesterId===requesterIds[2]).ticketId,current=await app.first('SELECT revision,last_message_id FROM conversations WHERE id=?',normalTicket)
+  await app.ok(`/api/conversations/${normalTicket}/messages`,{token:agent,body:{localId:'synthetic-happytohelp-66',content:'A normal support follow-up after the preview expired.',expectedRevision:current.revision,expectedLastMessageId:current.last_message_id}})
+  await app.until(()=>sent.some(copy=>copy.text?.includes('A normal support follow-up after the preview expired.')),{message:'ordinary reply remains available'})
+  await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.phone','+12025550123') WHERE id=?").bind(ticket.conversation.contact_id).run()
+  for(const search of ['Maya','maya@customer.example','+12025550123'])assert.ok((await app.ok(`/api/dashboard/projects/${projectId}/tickets/requesters?`+new URLSearchParams({search}),{token:agent})).data.some(row=>row.id===ticket.conversation.contact_id),'requester search by '+search)
   // Closed remains final: a real emailed reply creates a linked fresh ticket.
   const ticketState=(await app.ok(`/api/dashboard/projects/${projectId}/conversations/${ticket.conversation.id}/ticket`,{token:owner})).data
   await app.ok(`/api/dashboard/projects/${projectId}/conversations/${ticket.conversation.id}/ticket`,{token:owner,method:'PATCH',body:{status_id:'closed',expected_version:ticketState.ticket_version}})
@@ -180,6 +193,8 @@ export async function completeEmailJourney(){
   assert.equal((await app.ok(counts,{token:agent})).data.suspended,(await app.ok(base+'/suspended',{token:agent})).count)
   // A collaborator cannot review, recover, send, or change policy.
   await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(projectId,workspace.users.operator,Date.now()).run()
+  assert.equal((await app.call(noticeBase+'/preview',{token:agent,body:noticeCommand})).status,403)
+  assert.equal((await app.call(noticeBase+'/'+notice.id+'/apply',{token:agent,body:{}})).status,403)
   assert.equal((await app.call(base+'/suspended',{token:agent})).status,403)
   assert.equal('suspended' in (await app.ok(counts,{token:agent})).data,false)
   assert.equal((await app.call(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...command,localId:'collaborator-denied'}})).status,403)

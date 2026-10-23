@@ -131,3 +131,19 @@ triggers. Unknown or ambiguous addresses are refused without creating contacts o
 sending invitations. A CC joins only this ticket; it gains no portal access.
 The recipient list is part of the immutable submission ID, so changing CCs on a
 retry is refused and exact replay cannot send another acknowledgment.
+
+## Account lookup fields
+
+A lead can create an **Account lookup** ticket field and include it in a request
+form. The server stores the account ID as a typed reference. Verified customers
+see only accounts they currently belong to; a single available account is
+prefilled. Anonymous visitors verify their email before any account choices are
+shown. This lookup grants no company-wide request visibility.
+
+Submission and staff field edits check the current workspace and active account.
+Customer submissions additionally check current membership inside admission. A
+forged ID, merged account or revoked membership is refused with the field named.
+Staff use the same field control under existing field permissions. Renaming an
+account or changing a form preserves historical references. External order
+lookups are not available: no commerce provider account or order source is
+configured or qualified in this edition.

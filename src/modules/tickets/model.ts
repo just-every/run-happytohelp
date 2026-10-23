@@ -37,7 +37,7 @@ export function fieldAllowed(field:any,access:MemberAccess|null,write=false){
  // Tokens never inherit an owner's private field permissions.
  return Array.isArray(roles)&&(roles.length===0||roles.includes(access?.key??'api'))
 }
-export function fieldData(field:any,access:MemberAccess|null){const {options_json,validation_json,read_roles_json,write_roles_json,...rest}=field;return {...rest,required:!!field.required,options:JSON.parse(options_json),validation:JSON.parse(validation_json),read_roles:JSON.parse(read_roles_json),write_roles:JSON.parse(write_roles_json),writable:fieldAllowed(field,access,true)}}
+export function fieldData(field:any,access:MemberAccess|null){const {options_json,validation_json,read_roles_json,write_roles_json,...rest}=field;return {...rest,...(JSON.parse(field.validation_json).lookup==='account'?{type:'account_lookup'}:{}),required:!!field.required,options:JSON.parse(options_json),validation:JSON.parse(validation_json),read_roles:JSON.parse(read_roles_json),write_roles:JSON.parse(write_roles_json),writable:fieldAllowed(field,access,true)}}
 export async function getTicket(env:Env,actor:Actor,id:string,tokenAuthority?:TokenAuthority){
  const access=tokenAuthority?null:await ticketReadAccess(env,actor)
  const token=tokenAuthority?tokenGuard(tokenAuthority,actor.projectId,tokenAuthority.scope):null
@@ -55,13 +55,14 @@ export async function getTicket(env:Env,actor:Actor,id:string,tokenAuthority?:To
 }
 export async function ticketSettings(env:Env,actor:Actor){
  const access=await ticketReadAccess(env,actor)
- const [statuses,fields,groups,members,brand,roles]=await Promise.all([
+ const [statuses,fields,groups,members,brand,roles,accounts]=await Promise.all([
   env.DB.prepare('SELECT * FROM ticket_statuses WHERE project_id=? ORDER BY is_default DESC,category,name').bind(actor.projectId).all<any>(),
   env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? ORDER BY name').bind(actor.projectId).all<any>(),
   env.DB.prepare('SELECT * FROM ticket_groups WHERE project_id=? ORDER BY name').bind(actor.projectId).all<any>(),
   env.DB.prepare('SELECT group_id,user_id FROM ticket_group_members WHERE project_id=?').bind(actor.projectId).all<any>(),
   env.DB.prepare('SELECT id,name FROM projects WHERE id=?').bind(actor.projectId).first(),
   env.DB.prepare('SELECT id,name FROM project_roles WHERE project_id=?').bind(actor.projectId).all<any>(),
+  env.DB.prepare('SELECT id value,name label FROM companies WHERE project_id=? AND merged_into IS NULL ORDER BY name,id LIMIT 200').bind(actor.projectId).all<any>(),
  ])
- return {statuses:statuses.results,fields:fields.results.filter(f=>fieldAllowed(f,access)).map(f=>fieldData(f,access)),groups:groups.results.map(g=>({...g,members:members.results.filter(m=>m.group_id===g.id).map(m=>m.user_id)})),brands:[brand],permissions:{manage:access.permissions.has('conversations.manage'),settings:['owner','admin'].includes(actor.role)&&access.permissions.has('settings.manage')},role:access.key,roles:[...['owner','admin','operator','collaborator'].map(id=>({id,name:id})),{id:'api',name:'Workspace API'},...roles.results]}
+ return {statuses:statuses.results,fields:fields.results.filter(f=>fieldAllowed(f,access)).map(f=>({...fieldData(f,access),...(JSON.parse(f.validation_json).lookup==='account'?{lookupOptions:accounts.results}:{})})),groups:groups.results.map(g=>({...g,members:members.results.filter(m=>m.group_id===g.id).map(m=>m.user_id)})),brands:[brand],permissions:{manage:access.permissions.has('conversations.manage'),settings:['owner','admin'].includes(actor.role)&&access.permissions.has('settings.manage')},role:access.key,roles:[...['owner','admin','operator','collaborator'].map(id=>({id,name:id})),{id:'api',name:'Workspace API'},...roles.results]}
 }

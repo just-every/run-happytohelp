@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "9dc9fe1942ce1ff146a698a3bb3c6a6b274d800cc9904f505bdfb32a5ecda877",
+      "sha256": "d00d37a5170a69539e2cf4b9e5961a999fdf8aac676362452830747ad37490c9",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2469,6 +2469,10 @@
     },
     "migrations/241_away_reply_not_a_reply.sql": {
       "sha256": "e0b666f7007df585dcefca23a5e3567fca5b3f6c283f55f5295658297ae28175",
+      "executable": false
+    },
+    "migrations/242_csat_response_surface.sql": {
+      "sha256": "ac04f0b9547f266723aca30fd0855bced2417297fdaaa561b76126b424e5e1e8",
       "executable": false
     },
     "OPERATIONS.json": {

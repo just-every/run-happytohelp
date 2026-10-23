@@ -42,7 +42,7 @@ export default function DelegationJob({ job, isDraftDisabled, onCancel, onInsert
     const active = isActive(job) && !expired;
     const completed = job.status === 'completed';
     const replyWasSent = job.mode === 'resolve_reply' && job.delivery_state === 'delivered';
-    const canInsertDraft = Boolean(result?.reply_draft) && job.mode !== 'resolve_reply';
+    const canInsertDraft = Boolean(result?.reply_draft) && job.mode !== 'resolve_reply' && !expired;
     const freshnessReview = job.freshness_review?.required ? job.freshness_review : null;
     const freshnessReviewId = freshnessReview?.latest_last_message_id || null;
     const statusLabel = expired ? 'Task authority expired · local outcome unconfirmed' : job.status === 'revoked' && job.delivery_state === 'membership_lost'

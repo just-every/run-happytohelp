@@ -193,7 +193,7 @@ export default function useConversationDelegations({ conversationId, projectId, 
 
     const clearPairing = useCallback(() => setPairing(null), []);
 
-    const activeDelegation = delegations.find(job => activeStatuses.has(job.status)) || null;
+    const activeDelegation = delegations.find(job => activeStatuses.has(job.status) && !job.authority?.expired) || null;
     const latestDelegation = delegations[0] || null;
 
     return {

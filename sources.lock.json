@@ -5636,7 +5636,7 @@
       "executable": false
     },
     "src/modules/local-computer/jobs.ts": {
-      "sha256": "1d050e30452c8ebca8f8501a018892a5a23dd2183f5fa0b671d6cdfb22313e56",
+      "sha256": "1f4bfc8798382a002576ab8ec1fb7220870997574a1f4c9a30fe2e818f72b437",
       "executable": false
     },
     "src/modules/local-computer/module.json": {
@@ -5668,7 +5668,7 @@
       "executable": false
     },
     "src/modules/local-computer/results.ts": {
-      "sha256": "5e08980bac7d591506799d09700bd5f037032c73a38ef52380c1dc2a3ffb475c",
+      "sha256": "ae688c002f7aa4f56b8afb638c3d4af68918c44084c4da7cf1a0a94284fcedd3",
       "executable": false
     },
     "src/modules/local-computer/setup.ts": {
@@ -8060,7 +8060,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/DelegationJob.jsx": {
-      "sha256": "86bc7e60349925c10d7cfd907be0a595fa34a71d04af42ab8ed5a1aa54861be3",
+      "sha256": "9c1ac28d37f3e264327ce2ba7775c2cae43bd80535c51b40341ac3183b99e1a5",
       "executable": false
     },
     "src/ui/dashboard/components/DelegationPairing.jsx": {
@@ -8544,7 +8544,7 @@
       "executable": false
     },
     "src/ui/dashboard/hooks/useConversationDelegations.jsx": {
-      "sha256": "e99812dc3031b0ba3fcc4bf077067bab577573d80cf464c689e99efec9dedd2f",
+      "sha256": "d0e9c071e61a457d570c68f6641b300880229ea3163f904f0f8cc60f536e5671",
       "executable": false
     },
     "src/ui/dashboard/hooks/useConversationList.jsx": {

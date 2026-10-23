@@ -63,7 +63,7 @@ callRoutes.get(base+'/calls/:callId/recording',async c=>{
  if(!result.ok){await result.body?.cancel();throw new HTTPException(502,{message:'Recording unavailable from the provider'})}
  // Do not start disclosing media if erasure or role revocation completed during the provider read.
  try{await callAccess(c)}catch(error){await result.body?.cancel();throw error}
- if(!await c.env.DB.prepare('SELECT id FROM voice_calls WHERE id=? AND erased=0 AND recording_cipher=? AND media_withdrawn_at IS NULL AND media_expires_at>?').bind(id,call.recording_cipher,Date.now()).first()){await result.body?.cancel();throw new HTTPException(404)}
+ if(!await c.env.DB.prepare('SELECT id FROM voice_calls WHERE id=? AND erased=0 AND recording_cipher=? AND media_withdrawn_at IS NULL AND media_expires_at>? AND EXISTS(SELECT 1 FROM voice_numbers WHERE id=? AND enabled=1 AND version=?)').bind(id,call.recording_cipher,Date.now(),n.id,n.version).first()){await result.body?.cancel();throw new HTTPException(404)}
  return new Response(result.body,{headers:{'Content-Type':'audio/mpeg','Cache-Control':'no-store','Content-Disposition':'attachment; filename="support-call.mp3"','X-Content-Type-Options':'nosniff'}})
 })
 callRoutes.get('/projects/:projectId/report',async c=>{

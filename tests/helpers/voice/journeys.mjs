@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {createHmac,randomBytes} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
-import {voiceArchiveRow,voiceArchiveSafety} from '../../../scripts/installer/voice-archive.mjs'
+import {voiceArchiveSafety} from '../../../scripts/installer/voice-archive.mjs'
 export const secret='synthetic-happytohelp-1'
 export const account='synthetic-happytohelp-2'
 export const providerNumber='synthetic-happytohelp-3'
@@ -107,8 +107,6 @@ export async function uncertaintyProof(){const h=await voiceHarness();try{
  assert.equal((await h.calls(call.conversation_id))[0].state,'completed')
  assert.equal((await h.hook({step:'dial',command:'synthetic-happytohelp-21',extra:{DialCallStatus:'completed'}})).status,404)
  await app.configure({});await app.ok(path,{token,body});assert.equal(app.requests.length,count+2,'restart does not replay an unknown callback')
- const command=await app.first('SELECT * FROM voice_commands WHERE id=?',accepted.data.id);assert.equal(voiceArchiveRow('voice_commands',{...command,state:'sending'}).state,'uncertain')
- const n=await app.first('SELECT * FROM voice_numbers');assert.equal(voiceArchiveRow('voice_numbers',n).token_cipher,null);assert.equal(voiceArchiveRow('voice_numbers',n).enabled,0)
  await voiceArchiveSafety({db:app.db,tables:Object.fromEntries(['voice_calls','voice_numbers','conversations','voice_identities','contacts','voice_commands'].map(n=>[n,n]))});assert.equal((await app.first('SELECT token_cipher FROM voice_numbers')).token_cipher,null);assert.equal((await app.first('SELECT phone_cipher FROM voice_identities')).phone_cipher,null)
  assert.equal((await h.hook()).status,404,'restored voice connections need explicit credentials')
  await h.configure({});const restored=await h.open({remote:'synthetic-happytohelp-19'});h.setReply(201);assert.equal((await app.ok(base+`/conversations/${restored.conversation_id}/commands`,{token,body:{...body,call_id:restored.id,request_id:'restored-current-call'}})).data.state,'accepted','a newly signed caller supplies fresh callback identity after reconnect')

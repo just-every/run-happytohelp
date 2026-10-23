@@ -5,6 +5,7 @@ export async function rulesFlow(f){
  const tag=await ok(`/conversations/${f.slaId}/tags`,{name:'Refund review'})
  const definition={name:'Refund review and escalation',kind:'event',position:5,event_kind:'customer_reply',conditions:{all:[{field:'subject',op:'contains',value:'refund'}]},actions:[{type:'tags',add:[tag.id]},{type:'priority',priority:'high'},{type:'notify',kind:'assignee',recipient_id:w.users.owner}]}
  const {rule}=await ok('/workflow-rules',definition)
+ assert.equal(rule.owner_id,w.users.owner,'the published settings record names its responsible lead')
  // Fixtures are storage history, then all preview effects go through the public sandbox.
  const now=initial-3600000
  await app.db.batch(Array.from({length:205},(_,i)=>app.db.prepare("INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at,subject) VALUES(?,?,?,?,?,?)").bind(`historical-refund-${i}`,w.projectId,f.customer.contactId,now-i,now-i,`Refund on order TO-${49000+i}`)))
@@ -18,6 +19,9 @@ export async function rulesFlow(f){
  assert.deepEqual(await app.first('SELECT count(*) n FROM workflow_action_receipts'),before);assert.deepEqual(await app.first('SELECT count(*) n FROM workflow_notifications'),notifications);assert.equal(app.requests.length,requests)
  await app.db.prepare("UPDATE conversations SET status_id='closed',status_category='closed',resolved_at=?,updated_at=? WHERE id LIKE 'historical-refund-%' AND project_id=?").bind(now,now,w.projectId).run()
  await ok(`/workflow-rules/${rule.id}/publish`,{})
+ const nonmatching=await create('Please replace the damaged parcel.')
+ assert.equal((await get(nonmatching)).priority,'normal');assert.ok(!(await get(nonmatching)).tags.some(t=>t.id===tag.id))
+ assert.ok(!(await ok(`/workflow-runs?conversation_id=${nonmatching}`)).runs.some(run=>run.rule_id===rule.id),'a published rule does not act on a nonmatching request')
  const id=await create('Please refund my order TO-50000.');assert.equal((await get(id)).priority,'high');assert.ok((await get(id)).tags.some(t=>t.id===tag.id))
  const receipts=await app.first('SELECT count(*) n FROM workflow_action_receipts WHERE conversation_id=?',id);await app.scheduled();assert.deepEqual(await app.first('SELECT count(*) n FROM workflow_action_receipts WHERE conversation_id=?',id),receipts)
  const original=(await ok('/workflow-rules')).rules.find(r=>r.id===rule.id)

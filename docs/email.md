@@ -76,3 +76,8 @@ After you repoint the live email channel, a matching reply can find the imported
 A reply to a Closed ticket creates a linked follow-up; the original ticket stays Closed.
 
 Imports do not activate the old vendor's reply addresses or send notifications. Test replies to real pre-cutover notifications from each vendor before relying on the cutover. See [Move in your history](moving-in.md) for the broader migration boundary.
+
+Imported Zendesk tickets also retain their source ticket number. Explicit
+`[Ticket #123]` and `[Request #123]` subject tags propose that imported ticket;
+ordinary order numbers do not grant sender authority. Conflicting keys or a
+different customer still go to Suspended for review.

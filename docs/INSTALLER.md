@@ -188,14 +188,13 @@ separately started **read-only provider preflight** with owner consent and the
 owner's scoped Cloudflare token. The preflight has its own acceptance: only the
 account's Workers subdomain and the Worker's settings and secret names (three
 GETs for an existing Worker), no mail and no mutations. Neither step is a mock of
-the other. This split is not yet built or proved.
+the other.
 
-Today's pinned rer 0.2.77 `rer deploy --dry-run` combines local validation/build
-with those credentialed Cloudflare reads. It refuses without Cloudflare
-credentials before any provider request, validates supplied private mail inputs,
-and refuses a required secret neither held by the Worker nor supplied. It sends
-no mail and changes no provider resources. It is not the required zero-outbound
-dry-run or a separately qualified provider preflight.
+`rer deploy --dry-run` validates the input shape and builds locally. It makes no
+provider requests, sends no mail and makes no deployment. Cloudflare credentials
+are not required. Remote resources, credential validity and existing secret
+bindings remain unchecked. The separately started read-only preflight is not yet
+implemented or qualified.
 
 Real deployment requires private `EMAIL_PROVIDER`, `EMAIL_FROM` and
 `EMAIL_API_KEY` inputs. The declaration maps them to both rer's `MAIL_*`

@@ -9359,6 +9359,10 @@
       "sha256": "feb75f46b8b1dd6a9b3787082b511e7855a5528746ef030e724633701372a8bf",
       "executable": false
     },
+    "src/ui/native/IconHint.jsx": {
+      "sha256": "8eed21c2a8072154131ecaca9d543effc56ac98521f57834d58838ad9212ef4c",
+      "executable": false
+    },
     "src/ui/native/inbox-navigation-state.jsx": {
       "sha256": "3f8c8a41c845d07d2c8cf1d4a869b9364b33451c58d0dded6f57a75ad7339e5f",
       "executable": false
@@ -9416,7 +9420,7 @@
       "executable": false
     },
     "src/ui/native/Navigation.jsx": {
-      "sha256": "d7925e56b1f8a893be0ab2c46811102783bee33da6c5751ac1b725ca2cfaad29",
+      "sha256": "f0a9c202d086b983dfa42fd5d35325a2e1f9f0a939e14dce05095ef781d156b2",
       "executable": false
     },
     "src/ui/native/NavigationGuard.tsx": {
@@ -11216,7 +11220,7 @@
       "executable": false
     },
     "tests/helpers/inbox/tickets-browser.mjs": {
-      "sha256": "1b49fbfbdf55bfe7a22f33ca3bae6ef1a9b98f05ba957cb7fecb32578125dd91",
+      "sha256": "009126ab75d9f11e1997d040c776e5c5f9e9ff334295da7532d5e7a1ee385475",
       "executable": false
     },
     "tests/helpers/inbox/tickets.mjs": {

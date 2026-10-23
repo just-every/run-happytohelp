@@ -16,7 +16,7 @@ const opaqueEtag=value=>String(value??'').replace(/^W\//,'').replace(/^"|"$/g,''
 export function hostedR2({accountId,bucket,token,directory}){
  assert.match(bucket,/^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/);
  const api=cloudflare({accountId,token,maxRequests:5000}),file=join(directory,'object.bytes');
- let cached;
+ let cached;const objects=new Map();
  const raw=key=>new Promise((resolve,reject)=>{
   // Keep opaque slash/dot segments and compressed bytes intact; never redirect.
   const request=https.request({hostname:'api.cloudflare.com',port:443,path:'/client/v4/accounts/'+accountId+r2ObjectPath(bucket,key),method:'GET',headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(120000)},response=>{
@@ -24,23 +24,29 @@ export function hostedR2({accountId,bucket,token,directory}){
    resolve(response);
   });request.on('error',reject);request.end();
  });
- return {
-  async list({cursor,prefix}={}){
+ const list=async({cursor,prefix}={})=>{
    const query=new URLSearchParams({per_page:'1000'});if(cursor)query.set('cursor',cursor);if(prefix)query.set('prefix',prefix);
    const page=await api.envelope('/r2/buckets/'+bucket+'/objects?'+query);
    assert.ok(Array.isArray(page.result)&&page.result.length<=1000,'Invalid hosted object inventory');
    assert.ok(!page.result_info?.is_truncated||(typeof page.result_info.cursor==='string'&&page.result_info.cursor&&page.result_info.cursor!==cursor),'Invalid hosted object cursor');
-   return {objects:page.result.map(row=>({key:row.key,size:row.size,etag:opaqueEtag(row.etag),httpMetadata:row.http_metadata??{},customMetadata:row.custom_metadata??{}})),truncated:page.result_info?.is_truncated===true,cursor:page.result_info?.cursor};
-  },
+   const rows=page.result.map(row=>({key:row.key,size:row.size,etag:opaqueEtag(row.etag),httpMetadata:row.http_metadata??{},customMetadata:row.custom_metadata??{}}));
+   for(const row of rows)objects.set(row.key,row);
+   return {objects:rows,truncated:page.result_info?.is_truncated===true,cursor:page.result_info?.cursor};
+ };
+ return {list,
   async get(key,{range}={}){
    if(cached?.key!==key){
     cached=undefined;await rm(file,{force:true});
-    const response=await raw(key),etag=opaqueEtag(response.headers.etag),checksum=createHash('md5');
-    // Cloudflare marks some API replies weak without changing their object
-    // bytes. Verify ordinary R2 content digests rather than trusting that mark.
+    const descriptor=objects.get(key);assert.ok(descriptor,'Hosted object must be inventoried before reading');
+    const response=await raw(key),etag=descriptor.etag,checksum=createHash('md5');
+    // The HTTP API may rewrite its representation ETag (including an encoding
+    // suffix). R2's inventory carries the actual object tag. Bind ordinary
+    // objects to that digest and fence multipart reads with a fresh inventory.
     await pipeline(response,new Transform({transform(chunk,encoding,done){checksum.update(chunk);done(null,chunk)}}),createWriteStream(file,{flags:'wx',mode:0o600}));
-    const digest=checksum.digest('hex');if(/^[a-f0-9]{32}$/i.test(etag))assert.equal(digest,etag.toLowerCase(),'Hosted object bytes changed');
-    cached={key,etag,size:(await stat(file)).size};
+    const size=(await stat(file)).size,digest=checksum.digest('hex');assert.equal(size,descriptor.size,'Hosted object size changed');
+    if(/^[a-f0-9]{32}$/i.test(etag))assert.equal(digest,etag.toLowerCase(),'Hosted object bytes changed');
+    else{const current=(await list({prefix:key})).objects.find(row=>row.key===key);assert.ok(current&&current.etag===etag&&current.size===size,'Hosted multipart object changed')}
+    cached={key,etag,size};
    }
    const offset=range?.offset??0,length=range?.length??cached.size;
    assert.ok(Number.isSafeInteger(offset)&&Number.isSafeInteger(length)&&offset>=0&&length>=0&&offset+length<=cached.size,'Invalid hosted object range');

@@ -12092,11 +12092,11 @@
       "executable": false
     },
     "tests/move-in/empty-inputs.mjs": {
-      "sha256": "75c8b1523511f42a0aa8542be6101299a4e3d5559dfe00a7cc96f989d3b48bc2",
+      "sha256": "912d78179827859cf1136f09d6a9decf0fab22a4b44f49e012dd2c9188bc2b0b",
       "executable": false
     },
     "tests/move-in/empty-native.mjs": {
-      "sha256": "e4a27212f52380af1782e58992db88425c105a0f649e916944ba138d1961c4c7",
+      "sha256": "f7f2dc7db3b2243ed76c3c989acc7ce657ab6e3f29b62150e03b70dbad1b3a3d",
       "executable": false
     },
     "tests/move-in/empty-upgrade.mjs": {

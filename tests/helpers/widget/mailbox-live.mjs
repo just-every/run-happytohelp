@@ -41,7 +41,7 @@ export async function mailboxLiveJourney(){
    assert.ok(response.ok,`${method} ${path}: HTTP ${response.status}`)
    return response.json()
   }
-  owner=await call('/api/identity/bootstrap',{name:'HH owned widget mailbox test',ownerName:'HH test support',email:process.env.TEST_MAIL_TO,password:randomBytes(32).toString('base64url'),allowedOrigin:site})
+  owner=await call('/api/identity/bootstrap',{name:'HH owned widget mailbox test',ownerName:'HH test support',email:'qa-inbox-2@runeditrun.com',password:randomBytes(32).toString('base64url'),allowedOrigin:site})
   const p=owner.projectId,settings=await call(`/api/management/projects/${p}/widget-settings`),widgetKey=settings.widgetKey
   await call(`/api/management/projects/${p}/settings`,{timezone:'UTC'},'PUT')
   browser=await launchBrowser()
@@ -92,6 +92,14 @@ export async function mailboxLiveJourney(){
     const sent=await call(`/api/conversations/${session.conversationId}/messages`,{localId:`synthetic-happytohelp-${marker}`,content:answer,expectedRevision:transcript.revision,expectedLastMessageId:transcript.lastMessageId})
     assert.equal(sent.accepted,true)
     await page.getByText(answer,{exact:true}).waitFor()
+    let delivery
+    for(const deadline=Date.now()+15_000;Date.now()<deadline;){
+     const buckets=await call(`/api/dashboard/projects/${p}/conversations/${session.conversationId}/buckets`)
+     delivery=buckets.data.flatMap(bucket=>bucket.messages).find(message=>message.id===sent.message.id)?.email_status?.state
+     if(delivery==='sent')break
+     await new Promise(done=>setTimeout(done,200))
+    }
+    assert.equal(delivery,'sent','the normal reply route submits the visitor notification once')
     const receipt=await mailboxReceipt(answer,since)
     const {id,receivedAt,to,from,subject,messageId,excerpt,auth}=receipt
     assert.ok(messageId)

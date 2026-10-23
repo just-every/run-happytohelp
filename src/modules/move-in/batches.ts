@@ -1,4 +1,5 @@
 import {retainedSourcePredicates} from './retained-sources'
+import {stageAttachmentBytes,clearUnpublishedAttachments} from './attachment-custody'
 import {categoryPublicationPredicates} from './category-publication'
 import type {Env} from '../../platform/env'
 import {custodyHash} from './custody-hash'
@@ -30,6 +31,7 @@ async function publishCheckpoint(env:Env,run:Run,batch:Batch,job:ImportJob){
  const progress=undo?await env.DB.prepare('SELECT COUNT(*) total,COALESCE(SUM(reversed),0) checkpoint FROM ik_provenance WHERE job_id IN (SELECT kit_job_id FROM move_in_batches WHERE run_id=?)').bind(run.id).first<any>():{checkpoint:other.checkpoint+job.checkpoint,total:run.total}
  const done=nextState===(undo?'undone':'completed')&&other.finished===other.total,state=done?undo?'undone':'completed':run.state
  await updateRun(env,run,{state,cursor:progress.checkpoint,kit_job_id:job.id,report_json:JSON.stringify({state,checkpoint:progress.checkpoint,total:progress.total,counts:JSON.parse(other.counts)}),error:job.error??null},[env.DB.prepare('UPDATE move_in_batches SET kit_job_id=?,state=?,checkpoint=? WHERE run_id=? AND ordinal=?').bind(job.id,nextState,job.checkpoint,run.id,batch.ordinal)])
+ if(done&&undo)await clearUnpublishedAttachments(env,{...run,state})
 }
 export async function advanceBatch(env:Env,run:Run){
  if(run.state!=='undoing'&&!await reconcileContactKeys(env,run))return
@@ -46,6 +48,13 @@ export async function advanceBatch(env:Env,run:Run){
  const publication=undo?[]:publicationPredicates(run.project_id,await reviewedContacts(env,review))
  for(const predicate of publication)if(!(await env.DB.prepare(`SELECT (${predicate.sql}) allowed`).bind(...predicate.params!).first<{allowed:number}>())?.allowed)throw new Error('native_contact_changed_since_review')
  const context={...importContext({...env,DB:publicationDatabase(env.DB,[...publication,...categoryPredicates,...retained])},{...run,kit_job_id:batch.kit_job_id},fence),operationKey:`${run.id}/${batch.ordinal}`}
+ if(!undo){
+  const object=await env.FILES.get(batch.plan_key)
+  if(!object||object.size>LIMITS.planBytes)throw new Error('reviewed_plan_missing')
+  const plan=await object.json<ImportPlan>()
+  if(plan.fingerprint!==batch.fingerprint||plan.entries.length!==batch.total)throw new Error('reviewed_plan_changed')
+  await stageAttachmentBytes(env,run,plan)
+ }
  if(!batch.kit_job_id){if(undo)throw new Error('import_job_missing');const object=await env.FILES.get(batch.plan_key);if(!object||object.size>LIMITS.planBytes)throw new Error('reviewed_plan_missing');const plan=await object.json<ImportPlan>();if(plan.fingerprint!==batch.fingerprint||plan.entries.length!==batch.total)throw new Error('reviewed_plan_changed');const job=await createD1ImportJob(plan,{...context,reviewedFingerprint:batch.fingerprint});await publishCheckpoint(env,run,batch,job);return}
  // Both entry points perform Base current authorization, stored-plan validation,
  // custody/inventory checks and atomic fences. No redundant read-and-reload.

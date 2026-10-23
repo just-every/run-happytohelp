@@ -4,6 +4,7 @@ import { LIMITS, type Vendor } from '../types'
 import { issue, sourceRecord, wrappedVendor } from './common'
 import {lowerPosition,recordSourceId,RecordStructureError} from './classification'
 import type { ExportFile } from './archive'
+import {isAttachmentMember} from './attachment-references'
 export interface ParsedItem { record?:SourceRecord; diagnostic?:Diagnostic; ordinal:number;serialized?:string }
 import {helpScoutPositions} from './helpscout-input'
 import {IndexLimitError} from './admission-error'
@@ -11,6 +12,7 @@ import {jsonPositions,type JsonPosition} from './json-index'
 interface Item extends JsonPosition {raw:string}
 export interface RecordPosition extends JsonPosition {}
 function* items(file:ExportFile,vendor:Vendor,maxRecords:number):Generator<Item> {
+ if(isAttachmentMember(file.name))return
  if(/(?:^|\/)attachments\//i.test(file.name))throw new Error('attachment_original_retained_not_imported')
  const raw=new TextDecoder('utf-8',{fatal:true}).decode(file.bytes).replace(/^\uFEFF/,''),extension=file.name.split('.').pop()?.toLowerCase()
  if(wrappedVendor(vendor)||extension==='jsonl'){
@@ -42,6 +44,7 @@ export function indexFile(file:ExportFile,vendor:Vendor,maxRecords:number=LIMITS
  return positions
 }
 export function* parseFile(file:ExportFile,vendor:Vendor,start=0,limit=LIMITS.parseBatch,index=indexFile(file,vendor)):Generator<ParsedItem> {
+ if(isAttachmentMember(file.name))return
  const hash=sha256(file.bytes);let raw:string;try{raw=new TextDecoder('utf-8',{fatal:true}).decode(file.bytes).replace(/^\uFEFF/,'')}catch{yield {ordinal:start,diagnostic:issue('invalid_utf8',file.name,1)};return}
  for(let ordinal=start;ordinal<Math.min(index.length,start+limit);ordinal++){
   const item=index[ordinal]

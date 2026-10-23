@@ -1,3 +1,4 @@
+import {attachmentJourney} from './attachment-journey.mjs';
 import {configurationFieldsJourney} from './configuration-fields.mjs';
 import assert from 'node:assert/strict';
 import {phases} from '../journeys/kit/scenarios.mjs';
@@ -113,18 +114,8 @@ test('Freshdesk tickets keep the description first, private notes, staff as auth
  await refusedUpload('freshdesk',JSON.stringify({contact:{...person.contact,avatar:{avatar_url:'https://s3.example.test/a.png?X-Amz-Signature=abc'}}}),'signed.ndjson',{code:'signed_download_link_not_accepted'})
 });
 
-test('one Intercom source in four packagings and a ZIP of all of them map the same five records exactly once',async()=>{
- const {intercomRecords}=await import('./record-inputs.mjs'),records=intercomRecords(),values=Object.values(records)
- const packages=[['separate.jsonl',values.map(JSON.stringify).join('\n')],['array.json',JSON.stringify(values)],['list.json',JSON.stringify({type:'list',data:values,total_count:4,pages:null})],['collections.json',JSON.stringify({contacts:[records.contact],conversations:[records.conversation],macros:[records.macro],articles:[records.article],pages:{}})]]
- for(const [name,body] of packages)await imported('intercom',body,{name,check:async({plan,rows})=>{
-  assert.equal(plan.counts.rejected,0);assert.deepEqual(plan.decisions.filter(row=>row.targets.length).map(row=>`${row.kind}/${row.sourceId}`).sort(),['article/article-39','contact/person-31','conversation/conversation-32','macro/macro-38','tag-name/returns'])
-  assert.deepEqual(await rows('SELECT name FROM contacts'),[{name:'Mara'}]);assert.deepEqual((await rows('SELECT content FROM messages'))[0],{content:'Opening message'});assert.deepEqual(await rows('SELECT content FROM move_in_notes'),[{content:'Private note'}]);assert.deepEqual(await rows('SELECT content FROM macros'),[{content:'Hello Mara'}]);assert.deepEqual(await rows('SELECT status FROM knowledge_articles'),[{status:'draft'}])
- }})
- await imported('intercom',zip(packages.map(([name,body])=>({name:'nested/'+name,body}))),{name:'multi.zip',check:async({plan,rows})=>{assert.equal(plan.counts.unique,5);assert.equal(plan.counts.duplicates,plan.counts.input-plan.counts.unique);assert.ok(plan.counts.duplicates>0);assert.deepEqual([...new Set(plan.decisions.map(row=>`${row.kind}/${row.sourceId}`))].sort(),['article/article-39','contact/person-31','conversation/conversation-32','macro/macro-38','tag-name/returns'])}})
-});
+test('all four vendors preserve reviewed attachment bytes and links, private-note access, repeat, undo and erasure',attachmentJourney);
 
-// Imported macros are manual commands: preview is pure and apply creates a
-// composer draft, never a sent message. Repeat and undo cover their full version.
 test('Zendesk macros translate placeholders and four actions into native preview and guarded manual apply',async()=>{
  await configurationJourney()
  await configurationFieldsJourney(imported)

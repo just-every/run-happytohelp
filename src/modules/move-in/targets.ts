@@ -26,6 +26,8 @@ const entities:Record<string,Table[]>={
   table('move_in_notes','conversation_id','id,project_id,conversation_id,author_json,content,created_at,source_time','id'),
   table('ticket_field_values','conversation_id','project_id,conversation_id,field_id,value_json','field_id'),
   table('conversation_tags','conversation_id','project_id,conversation_id,tag_id','tag_id'),
+  table('media','conversation_id','id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at','id'),
+  table('move_in_note_media','conversation_id','project_id,conversation_id,note_id,media_id','media_id'),
   ...[
    table('message_authorship','message_id','message_id,project_id,kind,source_kind,source_id,source_part,recorded_at','message_id'),
    table('conversation_ratings','resolution_id','resolution_id,value,comment,updated_at,revision','resolution_id'),
@@ -38,8 +40,7 @@ const entities:Record<string,Table[]>={
    table('conversation_notes','conversation_id','id,conversation_id,user_id,content,created_at','id'),
    table('conversation_ai','conversation_id','conversation_id,ai_id'),
    table('conversation_participants','conversation_id','id,conversation_id,contact_id,created_at','id'),
-   table('conversation_buckets','conversation_id','id,conversation_id,created_at,metadata_json','id'),
-   table('media','conversation_id','id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at','id')
+   table('conversation_buckets','conversation_id','id,conversation_id,created_at,metadata_json','id')
   ].map(t=>({...t,nativeOnly:true}))]
 }
 function definitions(kind:string){const value=entities[kind];if(!value)throw new Error('unsupported_native_target');return value}

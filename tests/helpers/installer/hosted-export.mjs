@@ -22,7 +22,19 @@ export async function hostedExportJourney(root,scratch){
   const source=parseJsonc(await readFile(${JSON.stringify(join(root,'wrangler.jsonc'))},'utf8'));
   const path=${JSON.stringify(join(scratch,'stopped-source.json'))};
   await writeFile(path,JSON.stringify({name:source.name,compatibility_date:source.compatibility_date,compatibility_flags:source.compatibility_flags,d1_databases:source.d1_databases,r2_buckets:source.r2_buckets}),{mode:0o600});
-  return real({configPath:path,envFiles:[],persist:{path:${JSON.stringify(join(root,'.wrangler/state/v3'))}},remoteBindings:false});
+  const proxy=await real({configPath:path,envFiles:[],persist:{path:${JSON.stringify(join(root,'.wrangler/state/v3'))}},remoteBindings:false});
+  const mode=process.env.H2H_HOSTED_EDGE_CHANGE,db=proxy.env.DB,bucket=proxy.env.FILES;let inventories=0;
+  // These changes represent a remote writer or erasure racing the transfer.
+  // Keep the disposable source intact while exercising the real publication guard.
+  if(mode==='objects')proxy.env.FILES={get:(...args)=>bucket.get(...args),list:async options=>{
+   const page=await bucket.list(options);inventories++;
+   return inventories>1?{...page,objects:[...page.objects,{key:'synthetic-happytohelp-5',size:1,etag:'changed'}]}:page;
+  }};
+  if(mode==='erasure')proxy.env.DB={prepare:sql=>{
+   const statement=db.prepare(sql);
+   return sql==='SELECT source_identity,epoch FROM rer_portability_state WHERE id=1'?{first:async()=>{const row=await statement.first();return {...row,epoch:row.epoch+1}}}:statement;
+  },batch:statements=>db.batch(statements),exec:sql=>db.exec(sql)};
+  return proxy;
  }
  `,{mode:0o600});
  await writeFile(loader,`import {registerHooks} from 'node:module';
@@ -37,5 +49,10 @@ export async function hostedExportJourney(root,scratch){
  const closing=async name=>{let found;for await(const item of fileRecords(join(root,'exports',name)))if(item.kind==='closing')found=item;assert.ok(found);return found};
  assert.equal((await closing('hosted.rer')).contentHash,(await closing('support.rer')).contentHash,'remote boundary exports every portable row and exact object byte of the stopped source');
  await run(root,['export','--target','remote','--output','exports/hosted.rer'],1,{env});
- console.log('Hosted export through rer: stopped-writer refusal, complete archive equality, private custody and existing-output refusal passed at a local remote-binding edge; no hosted provider receipt claimed.');
+ for(const mode of ['objects','erasure']){
+  const name='exports/changed-'+mode+'.rer';
+  await run(root,['export','--target','remote','--output',name],1,{env:{...env,H2H_HOSTED_EDGE_CHANGE:mode}});
+  await assert.rejects(access(join(root,name)),'a changing hosted source publishes no archive');
+ }
+ console.log('Hosted export through rer: stopped-writer, changing-object, changing-erasure and overwrite refusals, complete archive equality and private custody passed at a local remote-binding edge; no hosted provider receipt claimed.');
 }

@@ -1,4 +1,5 @@
 import {retainNativeConflicts} from './retained-sources'
+import {prepareAttachments} from './attachments'
 import {reconcileContactKeys} from './contact-keys'
 import {Buffer} from 'node:buffer'
 import {validateArtifactOriginal} from '../import-kit/src/storage/originals'
@@ -19,6 +20,7 @@ export async function preparePlan(env:Env,run:Run){
  for(const row of retained){const record=JSON.parse(row.record_json),key=recordKey(record);if(seen.has(key)&&(run.vendor==='intercom'||seen.get(key)!==row.serialized)){conflicts.add(key);diagnostics.push({severity:'error',code:'conflicting_duplicate_id',message:`Conflicting ${record.kind} ID ${record.sourceId}`,kind:record.kind,sourceId:record.sourceId,location:record.location})}else if(!seen.has(key)){seen.set(key,row.serialized);records.push(record)}}
  const artifacts=[];for(const file of JSON.parse(run.files_json)){const object=await env.FILES.get(file.key);if(!object)throw new Error('source_file_missing');const bytes=new Uint8Array(await object.arrayBuffer());if(sha256(bytes)!==file.sha256)throw new Error('source_file_changed');validateArtifactOriginal({name:file.name,sha256:file.sha256,size:file.size,original:{status:'available',base64:Buffer.from(bytes).toString('base64')}});artifacts.push({name:file.name,sha256:file.sha256,size:file.size,original:{status:'unavailable' as const,reason:'not-supplied' as const}})}
  const source:SourceBundle=withTags({records,artifacts,diagnostics},run.vendor),existing=await relevantTags(env,run.project_id,source.records),prepared=await prepareMapping({projectId:run.project_id,actorId:run.actor_id,vendor:run.vendor,source,tagIds:new Map(existing.map(t=>[t.normalized_name,t.id]))})
+ await prepareAttachments(env,run,source.records,prepared)
  for(const key of conflicts)prepared.rejections.set(key,'conflicting_duplicate_id')
  // A conversation cannot publish when its required imported contact was rejected.
  const rejectedContacts=new Set(source.records.filter(r=>['user','contact'].includes(r.kind)&&prepared.rejections.has(recordKey(r))).map(r=>r.sourceId))

@@ -15,7 +15,7 @@ export const claims={
   any('door-readers',/^every supported envelope/,/^untyped nested/,/^record discrimination/,/^Zendesk singular/),any('empty-native',/blank auxiliary members/),any('parse-accounting',/^repeated source/),
   any('security',/generated diagnostics/,/seeded 1,000/,/^malformed line and conflicting/),any('limits',/^derived unique tag/,/3,000-ticket/,/400-comment/),any('native-corrections',/^native macro HTML/))],
  landing:['an approved import lands each vendor\'s history, people, replies, notes, tags and knowledge exactly, keeps notes private, and repeats or repackages as a no-op',either(
-  any('door-mapping',/^Zendesk history/,/^Zendesk macros/,/^Intercom lists/,/^Freshdesk/,/^one Intercom source/),any('formats',/private ZIP upload/),any('record-native',/^separate typed/),any('envelope-native',/^unknown parent records map/),
+  any('door-mapping',/^Zendesk history/,/^Zendesk macros/,/^Intercom lists/,/^Freshdesk/,/^all four vendors preserve/),any('formats',/private ZIP upload/),any('record-native',/^separate typed/),any('envelope-native',/^unknown parent records map/),
   any('security',/^an admin can review/,/^a differently packaged/,/^imported private notes/),any('partitions',/^a matching prior native tag/),any('limits',/200-comment/))],
  publication:['publication meets later native changes safely: conflicts stop it before any write, a stopped publication resumes or undoes exactly, and guards stay bounded',either(
   any('publication-correction'),any('publication-resume'),any('native-corrections',/^planning reads/,/^email collision index/,/^oversized relevant native/),any('partitions',/^one immutable review/))],

@@ -12,3 +12,6 @@ CREATE TRIGGER widget_campaign_subject_erased AFTER DELETE ON context_subjects B
  DELETE FROM widget_campaign_impressions WHERE project_id=OLD.project_id AND contact_id=OLD.subject_id;
  DELETE FROM widget_campaign_visits WHERE project_id=OLD.project_id AND contact_id=OLD.subject_id;
 END;
+
+CREATE INDEX widget_campaign_impressions_expiry ON widget_campaign_impressions(created_at);
+CREATE INDEX widget_campaign_visits_expiry ON widget_campaign_visits(created_at);

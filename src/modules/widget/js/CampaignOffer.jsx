@@ -4,9 +4,9 @@ import AppContext from './context/AppContext';
 export default function CampaignOffer(){
  const {monitoring,open,sendMessage,conversationSettings}=useContext(ConnectContext),context=useContext(AppContext);
  const [offer,setOffer]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
- const entered=useRef(Date.now()),exitIntent=useRef(false),offered=useRef(false),current=useRef(null);
+ const entered=useRef(Date.now()),exitIntent=useRef(false),offered=useRef(false),path=useRef(location.pathname);
  const enabled=monitoring?.enabled===true&&conversationSettings.campaignsEnabled===true;
- useEffect(()=>{if(!enabled){setOffer(null);current.current=null;}},[enabled]);
+ useEffect(()=>{if(!enabled){setOffer(null);}},[enabled]);
  useEffect(()=>{
   if(!enabled||open||offered.current)return;
   let active=true,pending=false,timer;
@@ -16,12 +16,12 @@ export default function CampaignOffer(){
   const evaluate=async()=>{
    if(!active||pending||offered.current||document.hidden)return;
    const elapsedSeconds=Math.min(86400,(Date.now()-entered.current)/1000);
-   if(elapsedSeconds<(conversationSettings.campaignsStartAfter||0))return;
+   if(elapsedSeconds<(conversationSettings.campaignsStartAfter||0)){clearTimeout(timer);timer=setTimeout(evaluate,(conversationSettings.campaignsStartAfter-elapsedSeconds)*1000);return;}
    pending=true;
    try{
     const height=document.documentElement.scrollHeight-window.innerHeight;
     const result=await sendMessage('campaignEvaluate',{visitId,path:location.pathname.slice(0,500),elapsedSeconds,scrollPercent:height>0?Math.min(100,Math.max(0,window.scrollY/height*100)):0,exitIntent:exitIntent.current,...(Number.isFinite(context.campaignContext?.cartValue)?{cartValue:context.campaignContext.cartValue}:{})});
-    if(active&&result?.offer){offered.current=true;current.current=result.offer;setOffer(result.offer);}
+    if(active&&result?.offer){offered.current=true;setOffer(result.offer);}
    }catch{}finally{pending=false;}
   };
   const schedule=()=>{clearTimeout(timer);timer=setTimeout(evaluate,300);};
@@ -29,8 +29,9 @@ export default function CampaignOffer(){
   const delay=Math.max(0,(conversationSettings.campaignsStartAfter||0)*1000-(Date.now()-entered.current));
   timer=setTimeout(evaluate,delay);
   const interval=setInterval(evaluate,15000);
+  const navigation=setInterval(()=>{if(path.current!==location.pathname){path.current=location.pathname;entered.current=Date.now();exitIntent.current=false;evaluate();}},1000);
   window.addEventListener('scroll',schedule,{passive:true});document.addEventListener('mouseout',exit);window.addEventListener('popstate',schedule);
-  return()=>{active=false;clearTimeout(timer);clearInterval(interval);window.removeEventListener('scroll',schedule);document.removeEventListener('mouseout',exit);window.removeEventListener('popstate',schedule);};
+  return()=>{active=false;clearTimeout(timer);clearInterval(interval);clearInterval(navigation);window.removeEventListener('scroll',schedule);document.removeEventListener('mouseout',exit);window.removeEventListener('popstate',schedule);};
  },[enabled,open,sendMessage,conversationSettings.campaignsStartAfter,context.campaignContext?.cartValue]);
  // Count display after the card is actually committed, rather than counting every reservation as an impression.
  useEffect(()=>{if(!offer||!enabled||open)return;sendMessage('campaignEvent',{id:offer.id,event:'show'}).then(result=>{if(!result?.accepted)setOffer(null);}).catch(()=>{});},[offer?.id,enabled,open,sendMessage]);

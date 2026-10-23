@@ -90,6 +90,7 @@ export async function campaignsJourney(){
    const c=await save({...base,audience})
    const result=(await command('campaignEvaluate',{...context,visitId:randomUUID()})).data
    assert.equal(!!result.offer,audience==='returning',`${audience} audience`)
+   if(audience==='new')assert.ok((await command('campaignEvaluate',{...context,visitId:randomUUID()},200,foreignVisitor.token,foreignConversation.id)).data.offer,'new audience admits a first visit')
    await disable(c)
   }
   const hour=Number(new Intl.DateTimeFormat('en',{timeZone:'America/New_York',hour:'numeric',hourCycle:'h23'}).format(new Date()))
@@ -107,5 +108,9 @@ export async function campaignsJourney(){
   await command('contextConsent',{consent:false})
   assert.equal((await command('campaignEvaluate',context)).data.offer,null)
   assert.equal((await app.first('SELECT count(*) n FROM widget_campaign_impressions WHERE contact_id=?',visitor.contactId)).n,0,'revocation erases campaign attribution')
+  assert.ok((await app.first('SELECT count(*) n FROM widget_campaign_impressions')).n>0)
+  await app.scheduled({}, {after:31*86400000})
+  assert.equal((await app.first('SELECT count(*) n FROM widget_campaign_impressions')).n,0,'scheduled expiry removes campaign identifiers after 30 days')
+  assert.equal((await app.first('SELECT count(*) n FROM widget_campaign_visits')).n,0)
  }finally{await app.close()}
 }

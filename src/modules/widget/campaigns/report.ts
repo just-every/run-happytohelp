@@ -1,6 +1,9 @@
+import {purgeCampaignData,CAMPAIGN_RETENTION_DAYS} from './retention'
 import type {Env} from '../../../platform/env'
 /** Impression cohorts in the report range. A conversation requires an actual visitor message after opening. */
 export async function campaignReport(env:Env,projectId:string,start:number,end:number){
+ await purgeCampaignData(env,Date.now(),projectId)
+ start=Math.max(start,Date.now()-CAMPAIGN_RETENTION_DAYS*86400000)
  return (await env.DB.prepare(`SELECT w.id,json_extract(w.config_json,'$.name') name,
  count(i.shown_at) impressions,count(i.opened_at) opens,count(i.dismissed_at) dismissals,
  count(DISTINCT CASE WHEN EXISTS(SELECT 1 FROM messages m WHERE m.conversation_id=i.conversation_id AND m.actor_role='contact' AND m.created_at>=i.opened_at) THEN i.conversation_id END) conversations,

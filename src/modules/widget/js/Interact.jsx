@@ -143,7 +143,7 @@ export default function Interact({ setOpen }) {
                     {errors.map((error, index) =>
                         <div key={"error-" + index} className="happytohelp-error" role="alert">
                             <span>{error}</span>
-                            <button type="button" className="happytohelp-error-close" aria-label="Dismiss message" onClick={() => {
+                            <button type="button" className="happytohelp-error-close" aria-label="Dismiss message" data-h2h-tip="Dismiss message" onClick={() => {
                             setErrors(errors => errors.splice(index, 1) && [...errors])
                         }}>
                                 <FontAwesomeIcon icon={falTimes} className="happytohelp-show-opened" aria-hidden="true" />

@@ -1,5 +1,6 @@
 import {HTTPException} from 'hono/http-exception'
 import type {WidgetCommand} from '../../management/widget-events/types'
+import {CAMPAIGN_RETENTION_DAYS} from './retention'
 import {visitorMonitoring} from '../../customer-context/widget-policy'
 import {campaignClock,campaignSchema,contextSchema,matchesCampaign,type Campaign} from './model'
 
@@ -13,7 +14,7 @@ export async function campaignAction({c,actor,conversation,action}:Omit<WidgetCo
   if(!parsed.success)throw new HTTPException(400,{message:'Invalid campaign context'})
   const context=parsed.data
   await db.prepare('INSERT OR IGNORE INTO widget_campaign_visits VALUES(?,?,?,?)').bind(projectId,contactId,context.visitId,now).run()
-  const returning=!!await db.prepare('SELECT 1 FROM widget_campaign_visits WHERE project_id=? AND contact_id=? AND visit_id<>? LIMIT 1').bind(projectId,contactId,context.visitId).first()
+  const returning=!!await db.prepare('SELECT 1 FROM widget_campaign_visits WHERE project_id=? AND contact_id=? AND visit_id<>? AND created_at>=? LIMIT 1').bind(projectId,contactId,context.visitId,now-CAMPAIGN_RETENTION_DAYS*86400000).first()
   const contact=await db.prepare('SELECT metadata_json FROM contacts WHERE id=? AND project_id=?').bind(contactId,projectId).first<{metadata_json:string}>()
   const metadata=JSON.parse(contact?.metadata_json||'{}')
   const rows=(await db.prepare('SELECT id,revision,config_json FROM widget_campaigns WHERE project_id=? ORDER BY updated_at,id LIMIT 50').bind(projectId).all<{id:string;revision:number;config_json:string}>()).results

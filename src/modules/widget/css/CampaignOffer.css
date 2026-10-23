@@ -5,3 +5,8 @@
 .happytohelp-campaign button {font:inherit;padding:8px 12px;min-height:44px;border:1px solid #667085;border-radius:6px;background:#fff;color:#182230;cursor:pointer;}
 .happytohelp-campaign button:first-child {background:#182230;color:#fff;}
 .happytohelp-campaign button:focus-visible {outline:2px solid #1570ef;outline-offset:3px;}
+.happytohelp-ai-disclosure {display:block;font-size:12px;font-weight:500;}
+#happytohelp-root [data-h2h-tip]::after,#happytohelp-modal-preview [data-h2h-tip]::after {content:attr(data-h2h-tip);position:absolute;bottom:calc(100% + 6px);right:0;padding:5px 8px;border-radius:4px;background:#182230;color:#fff;font:12px/1.4 system-ui,sans-serif;white-space:nowrap;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 0s .3s,visibility 0s .3s;z-index:2147483640;}
+#happytohelp-root [data-h2h-tip]:hover::after,#happytohelp-modal-preview [data-h2h-tip]:hover::after {opacity:1;visibility:visible;}
+#happytohelp-root [data-h2h-tip]:focus-visible::after,#happytohelp-modal-preview [data-h2h-tip]:focus-visible::after {opacity:1;visibility:visible;transition-delay:0s;}
+#happytohelp-root button.happytohelp-insight-close {border:0;font:inherit;}

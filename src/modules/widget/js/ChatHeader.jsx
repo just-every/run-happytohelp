@@ -117,6 +117,7 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
                 <div className="happytohelp-insight-agent">
                     <span className="happytohelp-insight-agent-name">
                         {currentAgent.first_name ?? currentAgent.name}
+                        {currentAgent.is_ai && <small className="happytohelp-ai-disclosure">AI assistant</small>}
                         {canExpand && <span className="happytohelp-chat-header-edit-inline-tiny">
                             <FontAwesomeIcon icon={faAngleDown}/>
                         </span>}
@@ -144,7 +145,7 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
     }
 
     return <div className={"happytohelp-chat-header-container " + (headerExpanded ? "happytohelp-chat-header-container-expanded" : "happytohelp-chat-header-container-collapsed")} style={style} onKeyDown={handleHeaderKeyDown}>
-        <button type="button" className="happytohelp-close" aria-label="Close chat" onClick={() => { setOpen(false) }}>
+        <button type="button" className="happytohelp-close" aria-label="Close chat" data-h2h-tip="Close chat" onClick={() => { setOpen(false) }}>
             <FontAwesomeIcon icon={falTimes} aria-hidden="true"/>
         </button>
         <div ref={contentEl}>

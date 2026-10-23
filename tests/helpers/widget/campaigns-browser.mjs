@@ -16,6 +16,7 @@ export async function campaignsBrowser({browser,page,origin,projectId,owner,evid
   for(const width of [1440,390]){
    await page.setViewportSize({width,height:width===1440?900:844});
    await page.goto(`${origin}/projects/${projectId}/widget-settings#campaigns`);
+   await page.getByRole('tab',{name:'Campaigns',exact:true}).click();
    const editor=page.getByRole('region',{name:'Proactive campaigns'});
    await editor.getByRole('button',{name:'New campaign',exact:true}).click();
    await editor.getByLabel('Campaign name',{exact:true}).fill(`Checkout ${width}`);

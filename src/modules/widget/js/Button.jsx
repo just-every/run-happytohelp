@@ -79,7 +79,7 @@ export default function Button(props) {
 
     return (
         <button type="button" className={classes.join(" ")} onMouseOver={props.onMouseOver} onClick={props.onClick}
-                aria-label={props.open ? 'Close chat' : 'Open chat'} aria-expanded={props.open}
+                data-h2h-tip={props.open ? 'Close chat' : 'Open chat'} aria-label={props.open ? 'Close chat' : 'Open chat'} aria-expanded={props.open}
                 style={ props.open ? context.theme.button.open : context.theme.button.closed }>
             {!props.open && (workspaceBrand
                 ? <WorkspaceBrandAvatar brand={workspaceBrand} />

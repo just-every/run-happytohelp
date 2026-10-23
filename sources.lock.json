@@ -6060,11 +6060,11 @@
       "executable": false
     },
     "src/modules/management/service-notice-authority.ts": {
-      "sha256": "e2f3a6276be491c1d7daa2175e9316c730a013f8b966acbed3c55998c873714e",
+      "sha256": "8b099e101ed478f8ccf58c99a3f7e7aa3a9fb5d56feee05061bdd81dc7d64eb9",
       "executable": false
     },
     "src/modules/management/service-notices.ts": {
-      "sha256": "ae34cf59cda7a87514109f8faacb03ab6ba84b6e461a768e025edebdc06c29cf",
+      "sha256": "c96708904a1a8f35a58723cb69f1b158504d178872f55830ec2c3e8c65f4f343",
       "executable": false
     },
     "src/modules/management/site-read/fetch.ts": {
@@ -10944,7 +10944,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "a96d0f3f81616e2dd9b44f4a15d68ea9e0fbb203f416080b71b679310abda70a",
+      "sha256": "d9712bfb5d27e77a7e9a0adfa00b5e0d5b0f2efb0fd25b4d1860ba16b630cf9b",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {

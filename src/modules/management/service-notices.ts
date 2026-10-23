@@ -10,7 +10,7 @@ import {outboundConfiguration} from './outbound-ticket-configuration'
 import {createOutboundTicket,type OutboundTicketCommitted} from './outbound-tickets'
 
 const base='/projects/:projectId/service-notices'
-function publicPreview(id:string,plan:any){return {id,ticket:plan.ticket,expiresAt:plan.expiresAt,recipients:plan.recipients.map(({metadata_json,...recipient}:any)=>recipient)}}
+function publicPreview(id:string,plan:any){return {id,ticket:plan.ticket,expiresAt:plan.expiresAt,recipients:plan.recipients.map(({metadata_json,consented,preference_version,...recipient}:any)=>recipient)}}
 export function serviceNoticeRoutes(onCommittedMessage?:OutboundTicketCommitted){
  const routes=new Hono<AppEnv>()
  routes.post(base+'/preview',async c=>{
@@ -24,7 +24,7 @@ export function serviceNoticeRoutes(onCommittedMessage?:OutboundTicketCommitted)
   if(prior){if(prior.intent_hash!==intent)throw new HTTPException(409,{message:'Notice command conflicts with its earlier preview'});return c.json({data:publicPreview(prior.id,JSON.parse(prior.plan_json))})}
   const recipients=[]
   for(const id of ids){
-   const contact=await c.env.DB.prepare(`SELECT ct.id,ct.name,ct.email,ct.metadata_json,EXISTS(SELECT 1 FROM portal_preferences preference WHERE preference.project_id=ct.project_id AND preference.contact_id=ct.id AND preference.update_emails=1) consented FROM contacts ct WHERE ct.project_id=? AND ct.id=? AND ${livePortalContact()}`).bind(actor.projectId,id).first<any>()
+   const contact=await c.env.DB.prepare(`SELECT ct.id,ct.name,ct.email,ct.metadata_json,EXISTS(SELECT 1 FROM portal_preferences preference WHERE preference.project_id=ct.project_id AND preference.contact_id=ct.id AND preference.update_emails=1) consented,(SELECT updated_at FROM portal_preferences preference WHERE preference.project_id=ct.project_id AND preference.contact_id=ct.id) preference_version FROM contacts ct WHERE ct.project_id=? AND ct.id=? AND ${livePortalContact()}`).bind(actor.projectId,id).first<any>()
    if(!contact)throw new HTTPException(400,{message:'A selected requester is unavailable'})
    const metadata=JSON.parse(contact.metadata_json),status=contact.consented&&metadata.portal_notification_emails===1&&!!contact.email?'ready':'blocked'
    recipients.push({...contact,status,...(status==='blocked'?{reason:'Requester must explicitly enable update emails in their portal preferences'}:{})})
@@ -43,13 +43,13 @@ export function serviceNoticeRoutes(onCommittedMessage?:OutboundTicketCommitted)
    const localId=`service-${id}-${contact.id}`,existing=await c.env.DB.prepare('SELECT conversation_id FROM operator_ticket_commands WHERE project_id=? AND actor_id=? AND local_id=?').bind(actor.projectId,actor.id,localId).first<{conversation_id:string}>()
    if(!existing){
     if(contact.status!=='ready'||Date.now()>plan.expiresAt){results.push({requesterId:contact.id,state:'blocked',reason:contact.reason??'Preview expired; review a new notice'});continue}
-    const current=await c.env.DB.prepare(`SELECT 1 FROM contacts ct WHERE ct.project_id=? AND ct.id=? AND ct.email IS ? AND ct.metadata_json=? AND ${livePortalContact()} AND json_extract(ct.metadata_json,'$.portal_notification_emails')=1 AND EXISTS(SELECT 1 FROM portal_preferences preference WHERE preference.project_id=ct.project_id AND preference.contact_id=ct.id AND preference.update_emails=1)`).bind(actor.projectId,contact.id,contact.email,contact.metadata_json).first()
+    const current=await c.env.DB.prepare(`SELECT 1 FROM contacts ct WHERE ct.project_id=? AND ct.id=? AND ct.email IS ? AND ct.metadata_json=? AND ${livePortalContact()} AND json_extract(ct.metadata_json,'$.portal_notification_emails')=1 AND EXISTS(SELECT 1 FROM portal_preferences preference WHERE preference.project_id=ct.project_id AND preference.contact_id=ct.id AND preference.update_emails=1 AND preference.updated_at=?)`).bind(actor.projectId,contact.id,contact.email,contact.metadata_json,contact.preference_version).first()
     if(!current){results.push({requesterId:contact.id,state:'blocked',reason:'Requester or consent changed since preview'});continue}
     try{await enforceRateLimits(c.env,[['conversationsPerProjectHour',actor.projectId],['conversationsPerContactHour',contact.id]])}catch(error){results.push({requesterId:contact.id,state:'blocked',reason:error instanceof Error?error.message:'Rate limit exceeded'});continue}
    }
    try{
     const input:OutboundTicketInput={...plan.ticket,localId,requesterId:contact.id,requesterEmail:null}
-    const extra={noticeId:id,sql:`EXISTS(SELECT 1 FROM operator_service_notices WHERE id=? AND project_id=? AND actor_id=? AND created_at>?) AND EXISTS(SELECT 1 FROM contacts ct WHERE ct.project_id=? AND ct.id=? AND ct.email IS ? AND ct.metadata_json=? AND ${livePortalContact()} AND json_extract(ct.metadata_json,'$.portal_notification_emails')=1 AND EXISTS(SELECT 1 FROM portal_preferences preference WHERE preference.project_id=ct.project_id AND preference.contact_id=ct.id AND preference.update_emails=1))`,params:[id,actor.projectId,actor.id,Date.now()-15*60000,actor.projectId,contact.id,contact.email,contact.metadata_json]}
+    const extra={noticeId:id,sql:`EXISTS(SELECT 1 FROM operator_service_notices WHERE id=? AND project_id=? AND actor_id=? AND created_at>?) AND EXISTS(SELECT 1 FROM contacts ct WHERE ct.project_id=? AND ct.id=? AND ct.email IS ? AND ct.metadata_json=? AND ${livePortalContact()} AND json_extract(ct.metadata_json,'$.portal_notification_emails')=1 AND EXISTS(SELECT 1 FROM portal_preferences preference WHERE preference.project_id=ct.project_id AND preference.contact_id=ct.id AND preference.update_emails=1 AND preference.updated_at=?))`,params:[id,actor.projectId,actor.id,Date.now()-15*60000,actor.projectId,contact.id,contact.email,contact.metadata_json,contact.preference_version]}
     const created=await createOutboundTicket(c.env,actor,c.get('sessionHash'),input,onCommittedMessage,delivery=>c.executionCtx.waitUntil(delivery),extra)
     const conversation=created.conversation as {id:string}
     const delivery=await c.env.DB.prepare("SELECT state,error FROM email_deliveries WHERE id IN (SELECT 'message:'||id||':notification' FROM messages WHERE conversation_id=? AND local_id=?)").bind(conversation.id,localId).first<{state:string;error:string|null}>()

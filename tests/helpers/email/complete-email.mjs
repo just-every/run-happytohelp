@@ -141,11 +141,12 @@ export async function completeEmailJourney(){
   assert.equal(walkin.conversation.channel,'walk_in');assert.equal(sent.length,beforeInternal)
   for(const configuration of [{...configured.configuration,brandId:'foreign'},{...configured.configuration,fields:{}},{...configured.configuration,assigneeId:workspace.users.operator}])assert.ok([400,422].includes((await app.call(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...configured,localId:crypto.randomUUID(),configuration}})).status))
   // Three separately consenting customers get three independently tracked tickets.
+  const portalProofs=new Map()
   const portal=async(email,updateEmails=true)=>{
    await app.ok(`/api/portal/${projectId}/access/request`,{body:{email},headers:{Origin:'https://app.example'}})
    const mail=sent.findLast(copy=>copy.subject==='Sign in to your support requests'&&[].concat(copy.to).includes(email)),url=new URL(mail.text.match(/https:\/\/app\.example\/api\/portal\/\S+/)[0]),response=await app.request(url.pathname+url.search),cookie=response.headers.get('set-cookie').split(';')[0]
    await app.ok(`/api/portal/${projectId}/preferences`,{method:'PUT',headers:{Cookie:cookie,Origin:'https://app.example'},body:{locale:'en',surveyEmails:false,updateEmails}})
-   return (await app.first('SELECT contact_id FROM portal_identities WHERE project_id=? AND email=?',projectId,email)).contact_id
+   const id=(await app.first('SELECT contact_id FROM portal_identities WHERE project_id=? AND email=?',projectId,email)).contact_id;portalProofs.set(id,cookie);return id
   }
   const requesterIds=[]
   for(const email of ['notice-one@example.test','notice-fail@example.test','notice-three@example.test'])requesterIds.push(await portal(email))
@@ -164,8 +165,11 @@ export async function completeEmailJourney(){
   assert.equal(retried.results.filter(r=>r.state==='sent').length,2)
   assert.equal(sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length,3,'retry after restart cannot resend a failed or successful notice')
   const next=(await app.ok(noticeBase+'/preview',{token:agent,body:{...noticeCommand,localId:'synthetic-happytohelp-63',requesterIds:[requesterIds[0]]}})).data
-  await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.portal_notification_emails',0) WHERE id=?").bind(requesterIds[0]).run()
+  const savePreference=updateEmails=>app.ok(`/api/portal/${projectId}/preferences`,{method:'PUT',headers:{Cookie:portalProofs.get(requesterIds[0]),Origin:'https://app.example'},body:{locale:'en',surveyEmails:false,updateEmails}})
+  await savePreference(false)
   assert.equal((await app.ok(noticeBase+'/'+next.id+'/apply',{token:agent,body:{}})).data.results[0].state,'blocked','revocation after preview prevents creation')
+  await savePreference(true)
+  assert.equal((await app.ok(noticeBase+'/'+next.id+'/apply',{token:agent,body:{}})).data.results[0].state,'blocked','re-enabling consent does not revive an earlier preview; review is required again')
   const limited=(await app.ok(noticeBase+'/preview',{token:agent,body:{...noticeCommand,localId:'synthetic-happytohelp-64',requesterIds:[requesterIds[2]]}})).data
   await app.configure({RATE_LIMITS:JSON.stringify({conversationsPerProjectHour:1})})
   assert.equal((await app.ok(noticeBase+'/'+limited.id+'/apply',{token:agent,body:{}})).data.results[0].state,'blocked','rate limits apply before a new service ticket')

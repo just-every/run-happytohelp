@@ -18,7 +18,11 @@ export async function syncHelpScout(env:Env,row:Connection,grant:Awaited<ReturnT
  const current=()=>env.DB.prepare("INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(SELECT 1 FROM helpscout_connections WHERE project_id=? AND generation=? AND status='connected' AND sync_lock=? AND sync_lock_until>?) THEN 1 ELSE 0 END").bind(actor.project_id,row.generation,lock,Date.now())
  const runs:string[]=[];let unchanged=0
  try{
-  const snapshots=await helpScoutSnapshot(helpScoutReader(await decryptToken(env,actor.project_id,row.token_cipher)),row.mailbox_id,row.cursor)
+  const beforeRead=async()=>{
+   await grant.assertCurrent()
+   if(!await env.DB.prepare("SELECT 1 FROM helpscout_connections WHERE project_id=? AND generation=? AND status='connected' AND sync_lock=? AND sync_lock_until>?").bind(actor.project_id,row.generation,lock,Date.now()).first())throw new HTTPException(409,{message:'helpscout_connection_changed'})
+  }
+  const snapshots=await helpScoutSnapshot(helpScoutReader(await decryptToken(env,actor.project_id,row.token_cipher),beforeRead),row.mailbox_id,row.cursor)
   for(const snapshot of snapshots){
    const sourceDigest=await hashToken('helpscout:'+row.mailbox_id+':'+snapshot.id),content=canonicalJson({responses:snapshot.responses}),digest=await hashToken(content)
    const receipt=await env.DB.prepare('SELECT r.run_id,m.state FROM helpscout_sync_receipts r JOIN move_in_runs m ON m.id=r.run_id WHERE r.project_id=? AND r.mailbox_id=? AND r.source_digest=? AND r.content_digest=?').bind(actor.project_id,row.mailbox_id,sourceDigest,digest).first<{run_id:string;state:string}>()

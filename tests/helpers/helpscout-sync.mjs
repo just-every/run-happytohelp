@@ -115,6 +115,26 @@ export async function helpScoutSyncJourney(){
    failure=response;assert.equal((await sync()).status,502);const health=(await call()).data.data;assert.equal(health.cursor,cursor);assert.equal(health.syncing,false);assert.equal(health.pending,true)
   }
   failure=null
+  // The session and its current custom role fence each provider request, not
+  // merely the eventual staging write after a whole mailbox has been read.
+  const role='synthetic-happytohelp-14'
+  await app.db.prepare('INSERT INTO project_roles(id,project_id,name,base,permissions_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?)').bind(role,w.projectId,'Import administrator','admin',JSON.stringify(['data.import','integrations.install']),Date.now(),Date.now()).run()
+  await app.db.prepare('INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES(?,?,?,?)').bind(w.projectId,w.users.owner,role,Date.now()).run()
+  for(const revoke of [
+   ()=>app.db.prepare('UPDATE project_roles SET permissions_json=? WHERE id=? AND project_id=?').bind(JSON.stringify(['integrations.install']),role,w.projectId).run(),
+   ()=>app.db.prepare('UPDATE sessions SET revoked_at=1 WHERE actor_id=?').bind(w.users.owner).run(),
+  ]){
+   const requests=app.requests.length,runs=(await app.first('SELECT count(*) n FROM move_in_runs')).n
+   afterRead=revoke
+   assert.equal((await sync()).status,403)
+   assert.equal(app.requests.length,requests+1,'no conversation, customer or private-thread read follows revoked authority')
+   assert.equal((await app.first('SELECT count(*) n FROM move_in_runs')).n,runs)
+   assert.equal((await app.first('SELECT cursor FROM helpscout_connections')).cursor,cursor)
+   await app.db.prepare('UPDATE project_roles SET permissions_json=? WHERE id=? AND project_id=?').bind(JSON.stringify(['data.import','integrations.install']),role,w.projectId).run()
+   await app.db.prepare('UPDATE sessions SET revoked_at=NULL WHERE actor_id=?').bind(w.users.owner).run()
+  }
+  await app.db.prepare('DELETE FROM member_roles WHERE project_id=? AND user_id=?').bind(w.projectId,w.users.owner).run()
+  await app.db.prepare('DELETE FROM project_roles WHERE project_id=? AND id=?').bind(w.projectId,role).run()
   // Revoking a connection during provider I/O fences staging at its next write.
   const interrupted=history(903);interrupted.conversation.mailboxId=mailbox;histories.push(interrupted)
   const countBeforeDisconnect=(await app.first('SELECT count(*) n FROM move_in_runs')).n
@@ -122,7 +142,7 @@ export async function helpScoutSyncJourney(){
   afterRead=async()=>{entered();await held}
   const inFlight=sync();await started
   assert.equal((await call('',{method:'DELETE'})).status,200);release()
-  assert.equal((await inFlight).status,502)
+  assert.equal((await inFlight).status,409)
   assert.equal((await app.first('SELECT count(*) n FROM move_in_runs')).n,countBeforeDisconnect)
   assert.equal((await call()).data.data.status,'disconnected')
   histories.pop();assert.equal((await connect()).status,200)

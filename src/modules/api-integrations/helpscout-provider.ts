@@ -7,10 +7,11 @@ const failure=(code:string):never=>{throw new HTTPException(502,{message:code})}
 
 /** Fixed provider origin, GET only, bounded bytes/deadline, and no redirects.
  * Provider bodies and credential-bearing request objects never enter diagnostics. */
-export function helpScoutReader(token:string){
+export function helpScoutReader(token:string,beforeRead?:()=>Promise<void>){
  let requests=0,bytes=0
  return async(path:string):Promise<any>=>{
   if(++requests>60)failure('helpscout_request_limit')
+  await beforeRead?.()
   const response=await fetch(origin+path,{headers:{Authorization:'Bearer '+token,Accept:'application/json'},redirect:'manual',signal:AbortSignal.timeout(10000)}).catch(()=>failure('helpscout_network_error'))
   if(!response.ok){await response.body?.cancel();failure(response.status===401||response.status===403?'helpscout_permission_denied':response.status===429?'helpscout_rate_limited':'helpscout_http_error')}
   const reader=response.body?.getReader();if(!reader)throw new HTTPException(502,{message:'helpscout_empty_response'})

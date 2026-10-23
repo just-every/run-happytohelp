@@ -253,8 +253,12 @@ native session and a recent step-up. The JSON fields are `mailboxId`,
 Optional `continuous: true` explicitly authorizes five-minute background reads.
 Existing connections default to manual reads. Continuous reads require the
 connecting native session to remain valid with current `data.import` permission;
-expiry, revocation or removal stops intake. Reconnect from a current session to
-renew this bounded grant. No provider token creates native write authority.
+expiry, revocation or removal stops intake before the next provider request.
+Permission and connection generation are rechecked at every read and staging
+commit, including after a prior request was in flight. Reconnect from a current session to
+renew this bounded grant. Durable workspace grants beyond the connecting session
+are not approved. Every native merge requires explicit review with current
+`data.import` authority. No provider token creates native write authority.
 Supply these from a private answers file or client secret fields; keep provider
 credentials out of command arguments, logs and source. The installation needs
 `INTEGRATION_ENCRYPTION_KEY`. Credentials are encrypted for this workspace and

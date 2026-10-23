@@ -20,8 +20,9 @@ export async function helpScoutGrant(db:D1Database,actor:Awaited<ReturnType<type
   catch(error){const live=await db.prepare(`SELECT (${sql}) allowed`).bind(...params).first<{allowed:number}>();if(!live?.allowed)throw new HTTPException(403,{message:'Current workspace authority required'});throw error}
  }
  // Reads also require this permission, even though generic role rules classify mutations.
- if(!(await db.prepare(`SELECT (${sql}) allowed`).bind(...params).first<{allowed:number}>())?.allowed)throw new HTTPException(403,{message:'Current workspace authority required'})
- return {actor,batch}
+ const assertCurrent=async()=>{if(!(await db.prepare(`SELECT (${sql}) allowed`).bind(...params).first<{allowed:number}>())?.allowed)throw new HTTPException(403,{message:'Current workspace authority required'})}
+ await assertCurrent()
+ return {actor,batch,assertCurrent}
 }
 
 export async function helpScoutBytes(request:Request,limit:number){

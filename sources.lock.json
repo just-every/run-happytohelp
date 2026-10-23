@@ -1621,7 +1621,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "2708f9ce1341e1fe35da7f69dd1637b0247cee97dce9dbec247283640370e907",
+      "sha256": "239a1bdec2a778ad6e1cad9b6a116ffdff5ae0afaabb28dd7380f26bf6ed5592",
       "executable": false
     },
     "AGENTS.md": {
@@ -1645,7 +1645,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "37fa7371a6c1c9fa49dcb105f44aee5b1d8496b1d88107ce98a17392f4248c64",
+      "sha256": "9c0bdca31c36ff68a9d03daef3c5f8f4259e844d2890f3d2ec0daa936bb8eb3f",
       "executable": false
     },
     "DEMO.md": {
@@ -1677,7 +1677,7 @@
       "executable": false
     },
     "docs/api.md": {
-      "sha256": "0ddc712328ef2888dd7370bc53f23e8a93a0a23907ff8ba8a6bfc3412d8b93cc",
+      "sha256": "b0814d04b53803e7dcad5dfc55e9e0a3c050e554b14dfa94e9fa2e582c66fdbb",
       "executable": false
     },
     "docs/AUTHORING.md": {
@@ -2013,7 +2013,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "66e95e9a7b7f44223fc412b835be6d906ce326dd74da6ad8fe7cac2fe945c808",
+      "sha256": "22af844c036b9c78945afdc48fb968996c836a8ca07e414091e26323a694d67d",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -3917,7 +3917,7 @@
       "executable": false
     },
     "src/modules/api-integrations/helpscout-authority.ts": {
-      "sha256": "0d53b7a77108e4f15f9f34c17baa57f76cf898ad8931a05a205817ac871c6b89",
+      "sha256": "97fedc7927d8e90fd18e18442bb2c2cd106a37d62315673902776d29de69c6c2",
       "executable": false
     },
     "src/modules/api-integrations/helpscout-merge.ts": {
@@ -3925,7 +3925,7 @@
       "executable": false
     },
     "src/modules/api-integrations/helpscout-provider.ts": {
-      "sha256": "8cd912d18f5d6a3e058bbcaa8ad11037f2a87fbdb62fba0aab1f8950f0d5d5b3",
+      "sha256": "4998cc1864d9ad1d62ce43882d275cf419e3fe306e144b80453e6923235b514d",
       "executable": false
     },
     "src/modules/api-integrations/helpscout-schedule.ts": {
@@ -3937,7 +3937,7 @@
       "executable": false
     },
     "src/modules/api-integrations/helpscout-sync.ts": {
-      "sha256": "b1853cdcf90f77d0430a705f0237461903bad82b55ebe6fdc508c05ebb0f5747",
+      "sha256": "38f6718145ca6610e44355d360b0e60dcdd6bdd304ab50527225f4c8e05bd69e",
       "executable": false
     },
     "src/modules/api-integrations/helpscout.ts": {
@@ -3957,7 +3957,7 @@
       "executable": false
     },
     "src/modules/api-integrations/README.md": {
-      "sha256": "69fc0c1864827633ab711689d1212cdc501565e5612cf934b3d875e35d1737ed",
+      "sha256": "f2cda64a419885723b741d655f02ced1bba1660c8ec220692bd495f8d5c7cd94",
       "executable": false
     },
     "src/modules/api-integrations/resend.ts": {
@@ -10988,6 +10988,14 @@
       "sha256": "7fd3d012fa35d4bbedf0a05e753760b1bccb893676f6204ca37a1660701ce0ad",
       "executable": false
     },
+    "tests/helpers/business-connectors/stripe-sandbox-setup.mjs": {
+      "sha256": "585d9b011390d521554aecefb9eab996cbde1460d8e6c6e32da3a24b767ae51e",
+      "executable": false
+    },
+    "tests/helpers/business-connectors/stripe-sandbox.mjs": {
+      "sha256": "8427c5874a0787b4fd1e0f3bb069e23e1325d2fa160d1fe3bcd6d02f56a5850b",
+      "executable": false
+    },
     "tests/helpers/company-portal.mjs": {
       "sha256": "0a5da34f0d27498e8132f16166fec87c1a84af430ac4a8679e4cd63446b544aa",
       "executable": false
@@ -11289,7 +11297,7 @@
       "executable": false
     },
     "tests/helpers/helpscout-sync.mjs": {
-      "sha256": "fb1cff295e5b6d88a191de44fc9b47c4812314ae0cfd34f8c64144343510a2d3",
+      "sha256": "e1a15fb4b92a85f0b3ca187049ad8c97decd445bc7dd20582be8ed8a1e5c6a83",
       "executable": false
     },
     "tests/helpers/hero/article-capability.mjs": {

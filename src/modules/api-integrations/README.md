@@ -10,6 +10,11 @@ message admission, resolution transitions, contact erasure and knowledge rules.
 `managed-tools.ts` exposes the stateless MCP catalog and dispatches fixed tools
 through these same native API routes. `connectors/zapier/index.mjs` is the
 owner-deployed Zapier Platform definition. Neither bypasses native authority.
+`helpscout-provider.ts` bounds read-only provider requests; each read and staging
+commit rechecks the connecting native session, current import permission and
+connection generation. `helpscout-merge.ts` requires an explicit current review
+for each append-only native merge. Durable session-independent grants are not
+approved.
 `settings.ts` owns management operations. `destinations.ts` uses the native
 server encryption custody. `dispatch.ts` prepares durable native event intents
 and delegates send classification, signatures, claims and retry timing to Base.

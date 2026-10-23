@@ -37,3 +37,6 @@ test('ticket settings and ticket fields save through the dashboard at desktop an
 test('the reply card\'s "+" start menu reaches every ticket action its role allows at 1440 and 390: an owner opens each dialog, a role without ticket management never sees Merge or Snooze, a collaborator sees only notes and follow, and a CC set there shows as a chip in the card',startMenu)
 
 test('an icon-only control reached by the keyboard shows its tooltip at once, worded as its accessible name and read once, at 1440 and 390',tooltipBrowser)
+
+import {brandsBrowser} from '../helpers/inbox/brands-browser.mjs'
+test('two brands retain their own native configuration, sender, inbox and reports at 1440 and 390 with explicit shared-team report selection',brandsBrowser)

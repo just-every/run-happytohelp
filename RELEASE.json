@@ -136,6 +136,10 @@
     {
       "id": "250_voice.sql",
       "buyerSteps": "VOICE-001 partial: apply the additive voice tables before the updated Worker. Back up D1 and private settings. Configure provider credentials again after restore; restored numbers stay disabled and unknown call commands never replay. Voice launch remains held for live provider, emergency-calling and consent qualification."
+    },
+    {
+      "id": "251_voice_media.sql",
+      "buyerSteps": "Apply after 250_voice.sql before the updated Worker. Back up D1. Existing call media expires one day after admission; expired and withdrawn content stays unavailable after restore. Provider copies require separate cleanup. Voice launch remains held for sandbox, emergency routing and consent qualification."
     }
   ]
 }

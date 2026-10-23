@@ -83,6 +83,11 @@ export async function requestFormsJourney(){
   const afterRace=(await app.ok(`${dashboard}/conversations/${id}/ticket`,owner)).data
   assert.equal(afterRace.fields[late.id],'synthetic-happytohelp-6')
   assert.equal((await app.ok(`/api/management/projects/${p}/ticket-fields/${late.id}/versions`,owner)).data.length,1,'a refused deletion adds no version')
+  await app.ok(fieldPath,{...owner,method:'PATCH',body:{read_roles:['owner'],write_roles:['owner']}})
+  assert.equal((await app.call(`${admin}/${form.id}/versions`,{token:f.workspace.tokens.admin})).status,403,'form history honors a later field-read restriction')
+  assert.equal((await app.ok(`${admin}/${form.id}/versions`,owner)).data.length,2,'the permitted owner retains access to the same history')
+  await app.ok(fieldPath,{...owner,method:'PATCH',body:{read_roles:[],write_roles:[]}})
+
 
   await app.configure({FORMS_TURNSTILE_SECRET_KEY:undefined})
   assert.equal((await app.call(path,{body:{...valid,localId:'not-configured'},status:503})).data.code,'verification_unavailable')

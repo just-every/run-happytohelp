@@ -16,7 +16,7 @@ export const archivePolicy={
  excludeTables:[
   // Provider credentials and active sync state are reconfigured after restore;
   // ordinary Move in history and its erased-identity tombstones remain native.
-  'helpscout_connections','helpscout_sync_receipts','helpscout_webhook_receipts',
+  'helpscout_connections','helpscout_sync_receipts','helpscout_webhook_receipts','helpscout_merge_receipts',
   'escalation_attachment_grants',
   'workflow_clock',
   'operator_notification_activity','operator_notifications',

@@ -44,6 +44,10 @@
     {
       "id": "243_helpscout_sync.sql",
       "buyerSteps": "Apply before serving the updated Worker. Adds optional read-only Help Scout connection and digest/Move in receipts; it changes no prior ticket or import. Configure an explicitly authorized mailbox read token, private webhook secret and existing integration encryption key through the native connection API. Sync stages ordinary Move in reviews; approval remains explicit. Provider credentials and active sync stores are excluded from export and require reconnecting after restore; native import history and erased-identity tombstones remain retained."
+    },
+    {
+      "id": "253_helpscout_continuous_merge.sql",
+      "buyerSteps": "Apply after the existing Help Scout connection migration and before the updated Worker serves traffic. Existing connections keep continuous reads off. An explicit reconnect can authorize five-minute staging only while the connecting native session and data.import permission remain valid. Existing-ticket changes require a separately reviewed append-only merge. No native ticket is updated automatically; credentials and active sync receipts are excluded from export and require reconnecting after restore."
     }
   ]
 }

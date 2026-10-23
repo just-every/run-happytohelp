@@ -1,3 +1,4 @@
+import {enqueueHelpScout,consumeHelpScout} from './modules/api-integrations/helpscout-schedule'
 import {consumeTriage,dispatchTriage} from './modules/triage/worker'
 import {dispatchScheduledReports} from './modules/reports/schedule-dispatch'
 import {recoverTicketContinuations} from './modules/tickets/continuation'
@@ -32,6 +33,7 @@ export async function consumeJob(job:Job,env:Env) {
  if(job.type==='local.effects'){await recoverLocalResultEffects(env,localComputerIntegration,job.id);return}
  if(job.type==='outbox.recover'){if(typeof job.conversationId!=='string'||!Number.isSafeInteger(job.outboxId))throw new Error('Invalid persisted outbox job');await recoverOutbox(env,job.projectId,job.conversationId,Number(job.outboxId),job.id);return}
  if(job.type!=='lead.process'&&!await isProjectActive(env,job.projectId))return
+ if(job.type==='helpscout.sync'){await consumeHelpScout(env,job);return}
  if(job.type==='integrations'){await dispatchIntegrations(env,job.projectId);return}
  if(job.type==='move-in'){const run=await getWorkRun(env,job.id);if(run&&run.project_id===job.projectId)await advanceImport(env,run);return}
  if(await consumeTriage(job,env))return
@@ -63,7 +65,7 @@ export async function runScheduled(env:Env) {
  }
  await visit('Workflow',720,runWorkflows)
  await visit('Survey',70,dispatchSurveys)
- await visit('Integration',60,dispatchIntegrations)
+ await visit('Integration',60,async env=>{await enqueueHelpScout(env);await dispatchIntegrations(env)})
  // Hand larger message effects to the queue near the history-load target.
  // The hard consumer allocation still reserves every later recovery and prune.
  await visit('Outbox',3,dispatchOutbox,700)

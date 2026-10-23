@@ -6,7 +6,11 @@ import {authority} from '../move-in/context'
 import type {Permission} from '../access/catalogue'
 
 export async function helpScoutActor(c:Context<AppEnv>,permission:Permission){
- const actor=await importActor(c),db=c.env.DB,a=authority(actor)
+ const actor=await importActor(c)
+ return helpScoutGrant(c.env.DB,actor,permission)
+}
+export async function helpScoutGrant(db:D1Database,actor:Awaited<ReturnType<typeof importActor>>,permission:Permission){
+ const a=authority(actor)
  // Check the custom role again inside every batch, including after provider I/O.
  const sql=`(${a.sql}) AND (NOT EXISTS(SELECT 1 FROM member_roles WHERE project_id=? AND user_id=?) OR EXISTS(SELECT 1 FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key,json_each(pr.permissions_json) p WHERE mr.project_id=? AND mr.user_id=? AND pr.base='admin' AND p.value=?))`
  const params=[...a.params!,actor.project_id,actor.actor_id,actor.project_id,actor.actor_id,permission]

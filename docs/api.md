@@ -250,6 +250,11 @@ An owner or admin can connect one Help Scout Inbox mailbox per workspace through
 `POST /api/management/projects/:projectId/connections/helpscout`, using their
 native session and a recent step-up. The JSON fields are `mailboxId`,
 `accessToken`, `webhookSecret` and `startFrom` (an ISO timestamp in the past).
+Optional `continuous: true` explicitly authorizes five-minute background reads.
+Existing connections default to manual reads. Continuous reads require the
+connecting native session to remain valid with current `data.import` permission;
+expiry, revocation or removal stops intake. Reconnect from a current session to
+renew this bounded grant. No provider token creates native write authority.
 Supply these from a private answers file or client secret fields; keep provider
 credentials out of command arguments, logs and source. The installation needs
 `INTEGRATION_ENCRYPTION_KEY`. Credentials are encrypted for this workspace and
@@ -263,15 +268,24 @@ thread page, including private notes. Every changed conversation becomes an
 ordinary **Move in** review. Open that review and approve its fingerprint before
 any native record changes. Import warnings and unsupported fields stay visible
 there. Imported history never sends replies, notifications or support events.
-An unchanged snapshot is not staged again; a new snapshot of an already imported
-source is reviewed under Move in's conflict rules and cannot overwrite native
-edits or silently replay old messages. This is staged coexistence, not automatic
-live ticket mirroring: applying incremental changes to existing imported tickets
-still needs an explicit merge/reconciliation implementation. Attachment metadata
-is retained in the review; Help Scout attachment bytes are not fetched here.
+An unchanged snapshot is not staged again. For a new ticket, approve the ordinary
+Move in plan. For an existing imported ticket, request
+`GET .../connections/helpscout/runs/:runId/merge` to review the added public messages,
+private notes and omissions. Approve with `POST` to that same path and the returned
+`fingerprint`. Native changes since review invalidate it. Exact-request retries
+return the existing merge receipt without adding history again. The merge keeps
+native replies, status, assignment, subject, tags and contact identity; it appends
+only source messages, private notes and email threading keys under inert import
+fences. Source edits or deletions of already imported history are refused for
+manual reconciliation. Merges do not automatically send, resolve or run rules.
+An old import cannot undo a later merge or native edit. The original Move in
+review remains available; the connection's attempt shows its separate merge
+receipt. Attachment metadata is retained in the review; Help Scout attachment
+bytes are not fetched here.
 
 `GET .../connections/helpscout` shows read scope, connection state, pending work,
-cursor, last successful sync, safe error code and recent import run IDs/states.
+cursor, last successful sync, safe error code, continuous-read setting, next poll,
+connecting-session expiry and recent import run IDs/states with merge counts.
 A failed or incomplete read keeps its prior cursor. A sync refuses more than
 20 conversations, 200 threads per conversation, ten pages per list, 60 provider
 requests or 2 MiB of provider responses; it never treats a truncated read as a
@@ -286,7 +300,10 @@ base64 HMAC-SHA1 protocol. The event and mailbox must match the supported
 conversation notification and connection. Duplicate signed notifications are
 deduplicated; the receipt retains only a digest. A notification marks pending
 work and never imports its body or authorizes a native write. An owner/admin
-performs sync explicitly; notifications do not start background polling.
+can perform sync explicitly. When continuous reads are enabled, the scheduler
+admits one due connection per invocation and queues its bounded read. Polls stage
+reviews only; each native import or merge still needs explicit approval.
+A delayed job cannot cross a disconnect/reconnect generation.
 
 `DELETE .../connections/helpscout` disconnects and removes both credentials;
 native import history stays. Repeating POST with renewed provider credentials

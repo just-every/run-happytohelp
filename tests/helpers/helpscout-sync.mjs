@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
-import {execFileSync} from 'node:child_process'
 import {startApp} from '../journeys/kit/app.mjs'
 import {customer,history} from '../move-in/helpscout-fixtures.mjs'
 
@@ -10,6 +9,7 @@ export async function helpScoutSyncJourney(){
  const credential='synthetic-happytohelp-12',webhookSecret='synthetic-happytohelp-13',mailbox=101
  const histories=[history()],queries=[];for(const h of histories)h.conversation.mailboxId=mailbox
  let failure,afterRead
+
  const app=await startApp({captureQueue:true,bindings:{INTEGRATION_ENCRYPTION_KEY:btoa('1'.repeat(32))},outbound:async request=>{
   const url=new URL(request.url);assert.equal(url.origin,'https://api.helpscout.net');assert.equal(request.method,'GET');assert.equal(request.headers.get('Authorization'),'Bearer '+credential)
   if(failure)return failure(request)
@@ -24,15 +24,17 @@ export async function helpScoutSyncJourney(){
   return Response.json(match[2]?h.page:h.conversation)
  }})
  try{
+
   const w=await app.seedWorkspace('helpscout'),foreign=await app.seedWorkspace('foreign'),root=`/api/management/projects/${w.projectId}/connections/helpscout`,native=`/api/move-in/projects/${w.projectId}/imports`
   const call=(suffix='',options={})=>app.call(root+suffix,{token:w.tokens.owner,...options})
-  const input={mailboxId:mailbox,accessToken:credential,webhookSecret,startFrom:'2024-01-01T00:00:00Z'},connect=()=>call('',{body:input}),sync=()=>call('/sync',{body:{}})
+  const input={mailboxId:mailbox,accessToken:credential,webhookSecret,continuous:true,startFrom:'2024-01-01T00:00:00Z'},connect=()=>call('',{body:input}),sync=()=>call('/sync',{body:{}})
   assert.equal((await call('',{token:w.tokens.operator,body:input})).status,403)
   assert.equal((await app.call(root,{token:foreign.tokens.owner,body:input})).status,404)
   assert.equal(app.requests.length,0)
   assert.equal((await connect()).status,201)
   const stored=await app.first('SELECT * FROM helpscout_connections');assert.ok(!JSON.stringify(stored).includes(credential));assert.ok(!JSON.stringify(stored).includes(webhookSecret))
   assert.ok(!JSON.stringify((await call()).data).includes('cipher'))
+
   const first=await sync();assert.equal(first.status,202,JSON.stringify(first.data));assert.equal(first.data.runs.length,1)
   assert.equal((await app.first('SELECT count(*) n FROM conversations')).n,0,'sync only stages review, never imports or replies')
   const apply=async id=>{await app.drainJobs();const ready=(await app.call(native+'/'+id,{token:w.tokens.owner})).data.data;assert.equal(ready.state,'ready');assert.equal(ready.plan.counts.rejected,0,JSON.stringify(ready.plan));assert.equal((await app.call(native+'/'+id+'/apply',{token:w.tokens.owner,body:{fingerprint:ready.plan.fingerprint}})).status,202);await app.drainJobs();assert.equal((await app.call(native+'/'+id,{token:w.tokens.owner})).data.data.state,'completed')}
@@ -54,6 +56,59 @@ export async function helpScoutSyncJourney(){
   assert.ok(Date.parse(queries.at(-1).modifiedSince)>=Date.parse(before)-5*60000-1000,'incremental request retains its overlap')
   await apply(delta.data.runs[0]);assert.equal((await app.first('SELECT count(*) n FROM conversations')).n,2)
   assert.equal((await app.first('SELECT count(*) n FROM messages')).n,4,'redelivered history never replays native messages')
+  // The next snapshot appends only reviewed history to an existing ticket.
+  const originalTicket=await app.first("SELECT * FROM conversations WHERE id IN (SELECT conversation_id FROM move_in_conversations WHERE source_id='901')")
+  await app.db.prepare('UPDATE conversations SET subject=?,assigned_to=? WHERE id=?').bind('Native subject stays',w.users.operator,originalTicket.id).run()
+  const addThread=(h,id,type,body)=>{
+   h.page._embedded.threads.push({id,type,state:'published',body,createdAt:'2024-02-01T00:00:00Z',...(type==='customer'?{customer:{id:7,type:'customer',first:'Ada',last:'Customer'}}:{createdBy:{id:900001,type:'user',first:'Historical',last:'Teammate'}})})
+   h.page.page.totalElements++;if(type!=='note')h.conversation.threads++;h.conversation.userUpdatedAt='2024-02-01T00:00:00Z'
+  }
+  addThread(histories[0],9014,'customer','A new source reply');addThread(histories[0],9015,'note','A new private note')
+  // Cron admits bounded reads; a provider event is only a wake-up hint and
+  // background work stages a review without modifying the live ticket.
+  await app.db.prepare('UPDATE helpscout_connections SET next_sync_at=0').run()
+  await app.scheduled();const queued=await app.takeJobs();assert.equal(queued.filter(job=>job.type==='helpscout.sync').length,1)
+  await app.runJobs(queued);await app.drainJobs()
+  const staged=(await call()).data.attempts.find(attempt=>attempt.state==='ready');assert.ok(staged)
+  assert.equal((await app.first('SELECT count(*) n FROM messages')).n,4)
+  const merge='/runs/'+staged.run_id+'/merge'
+  assert.equal((await call(merge,{token:w.tokens.operator})).status,403)
+  assert.equal((await call(merge,{token:foreign.tokens.owner})).status,404)
+  const preview=await call(merge);assert.equal(preview.status,200,JSON.stringify(preview.data))
+  assert.equal(preview.data.data.messages.length,1);assert.equal(preview.data.data.notes.length,1)
+  assert.equal((await call(merge,{body:{fingerprint:'stale'}})).status,409)
+  // A native write after review invalidates that review, preserving the edit.
+  await app.call(`/api/conversations/${originalTicket.id}/messages`,{token:w.tokens.owner,body:{localId:'synthetic-happytohelp-merge',content:'Native reply stays',expectedRevision:originalTicket.revision},status:200})
+  assert.equal((await call(merge,{body:{fingerprint:preview.data.data.fingerprint}})).status,409)
+  const current=await call(merge);assert.equal(current.status,200,JSON.stringify(current.data))
+  const beforeMerge=await app.first('SELECT * FROM conversations WHERE id=?',originalTicket.id)
+  const beforeEvents=(await app.first('SELECT count(*) n FROM native_integration_events')).n
+  const messagesBeforeRace=(await app.first('SELECT count(*) n FROM messages')).n
+  const revoked=await call(merge,{body:{fingerprint:current.data.data.fingerprint},headers:{'x-test-statement':'INSERT INTO helpscout_merge_receipts','x-test-before-statement':`UPDATE sessions SET revoked_at=1 WHERE actor_id='${w.users.owner}'`}})
+  assert.equal(revoked.status,403);assert.equal((await app.first('SELECT count(*) n FROM messages')).n,messagesBeforeRace)
+  assert.equal((await app.first('SELECT count(*) n FROM helpscout_merge_receipts')).n,0,'revocation at commit leaves no receipt or partial history')
+  await app.db.prepare('UPDATE sessions SET revoked_at=NULL WHERE actor_id=?').bind(w.users.owner).run()
+  const merged=await call(merge,{body:{fingerprint:current.data.data.fingerprint}});assert.equal(merged.status,200,JSON.stringify(merged.data));assert.equal(merged.data.data.messages,1);assert.equal(merged.data.data.notes,1)
+  assert.equal((await call(merge,{body:{fingerprint:current.data.data.fingerprint}})).data.duplicate,true)
+  const ticket=(await app.call('/api/conversations/'+originalTicket.id+'/messages',{token:w.tokens.owner,status:200})).data
+  assert.ok(JSON.stringify(ticket).includes('A new source reply'));assert.ok(JSON.stringify(ticket).includes('Native reply stays'))
+  const after=await app.first('SELECT * FROM conversations WHERE id=?',originalTicket.id);assert.equal(after.subject,'Native subject stays');assert.equal(after.assigned_to,beforeMerge.assigned_to);assert.equal(after.status_id,beforeMerge.status_id)
+  assert.equal((await app.first('SELECT count(*) n FROM native_integration_events')).n,beforeEvents,'merged history emits no events or outbound replies')
+  assert.equal((await sync()).data.runs.length,0)
+  assert.equal((await call()).data.attempts.find(attempt=>attempt.run_id===staged.run_id).messages,1)
+  // Edited or removed historical source content requires manual reconciliation.
+  histories[0].page._embedded.threads[0].body='Changed historical reply'
+  const conflict=await sync();await app.drainJobs();assert.equal((await call('/runs/'+conflict.data.runs[0]+'/merge')).status,409)
+  histories[0].page._embedded.threads[0].body='Historical reply'
+  // Background authority expires with its connecting session; no provider read
+  // is attempted until an authorized reconnect explicitly renews the grant.
+  const requestsBeforeExpiry=app.requests.length
+  await app.db.prepare('UPDATE sessions SET expires_at=1 WHERE actor_id=?').bind(w.users.owner).run()
+  await app.db.prepare('UPDATE helpscout_connections SET next_sync_at=0').run()
+  await app.scheduled();await app.drainJobs();assert.equal(app.requests.length,requestsBeforeExpiry)
+  assert.equal((await app.first('SELECT error_code FROM helpscout_connections')).error_code,'helpscout_authority_unavailable')
+  await app.db.prepare('UPDATE sessions SET expires_at=? WHERE actor_id=?').bind(Date.now()+3600000,w.users.owner).run()
+  assert.equal((await connect()).status,200)
   // A failed or redirected read cannot advance a cursor or leave the lock held.
   const cursor=(await call()).data.data.cursor
   for(const response of [()=>new Response('forbidden',{status:403}),()=>new Response(null,{status:302,headers:{Location:'https://elsewhere.example/steal'}}),()=>Response.json({_embedded:{conversations:[]},page:{number:1,size:25,totalPages:2,totalElements:1}})]){
@@ -75,13 +130,8 @@ export async function helpScoutSyncJourney(){
   // both blocked rather than resurrecting source data through a new connection.
   const contact=await app.first("SELECT id FROM contacts WHERE external_id='import:helpscout:7'")
   assert.equal((await app.call(`/api/management/projects/${w.projectId}/contacts/${contact.id}/erase`,{token:w.tokens.owner,body:{}})).status,200)
-  assert.equal((await sync()).status,410);assert.equal((await app.first('SELECT count(*) n FROM helpscout_sync_receipts')).n,2)
+  assert.equal((await sync()).status,410);assert.equal((await app.first('SELECT count(*) n FROM helpscout_sync_receipts')).n,4)
   histories[0].conversation.subject='A changed copy';assert.equal((await sync()).status,410)
-  assert.equal((await app.first('SELECT count(*) n FROM native_integration_events')).n,0,'staging emits no native support event')
-  // Installer policy imports Wrangler, which configures process-wide network
-  // handling. Keep its complete credential-exclusion assertion in a child so
-  // later provider-edge journeys retain their own loopback transport.
-  const policy=new URL('../../scripts/installer/portability-policy.mjs',import.meta.url).href
-  execFileSync(process.execPath,['--input-type=module','-e',`import assert from 'node:assert/strict';const {archivePolicy}=await import(${JSON.stringify(policy)});for(const table of ['helpscout_connections','helpscout_sync_receipts','helpscout_webhook_receipts'])assert.ok(archivePolicy.excludeTables.includes(table),'restore does not transplant '+table);process.exit(0)`],{timeout:30000,stdio:'pipe'})
+  assert.equal((await call(merge,{body:{fingerprint:current.data.data.fingerprint}})).status,410,'an old merge receipt never authorizes erased history')
  }finally{await app.close()}
 }

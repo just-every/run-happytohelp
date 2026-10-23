@@ -12036,7 +12036,7 @@
       "executable": false
     },
     "tests/move-in/security.mjs": {
-      "sha256": "4b2676aa19d0ec7f034a136bfbb2c91bafd9424377aff5354112da1f4464dd13",
+      "sha256": "6e11023b3ddb1410cd0eedefd2fe457861b57cae9f684406ed2e95d046f8be35",
       "executable": false
     },
     "tests/move-in/shape-custody.mjs": {

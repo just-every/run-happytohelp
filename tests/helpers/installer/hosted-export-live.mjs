@@ -3,7 +3,7 @@ import {stat} from 'node:fs/promises';
 import {join} from 'node:path';
 import {getPlatformProxy,unstable_splitSqlQuery} from 'wrangler';
 import {prepareHostedSource,removeHostedSource,hostedSourceApi} from './hosted-export-resources.mjs';
-import {hostedSourceD1} from './hosted-source-d1.mjs';
+import {hostedD1} from '../../../scripts/installer/hosted-d1.mjs';
 import {createPortability} from '@runeditrun/rer/modules/portability';
 import {importArchive,fileRecords} from '@runeditrun/rer/modules/portability/files';
 import {migrationReplay} from '@runeditrun/rer/modules/portability/migration-history';
@@ -21,7 +21,7 @@ export async function hostedExportLive(root,scratch,input='exports/support.rer',
  const output='exports/hosted-live.rer';
  try{
   const bucket=async()=>{proxy??=await getPlatformProxy({configPath:config,envFiles:[],persist:false,remoteBindings:true});return proxy.env.FILES};
-  const DB=hostedSourceD1(source),FILES=Object.fromEntries(['list','get','put','delete','createMultipartUpload'].map(method=>[method,async(...args)=>(await bucket())[method](...args)]));
+  const DB=hostedD1({accountId:source.accountId,databaseId:source.databaseId,token}),FILES=Object.fromEntries(['list','get','put','delete','createMultipartUpload'].map(method=>[method,async(...args)=>(await bucket())[method](...args)]));
   const service=await createPortability({db:DB,buckets:{FILES},policy:archivePolicy,migrations:async()=>migrationReplay(await appliedMigrations(root,DB,'DB',{},unstable_splitSqlQuery),archivePolicy,{})});
   console.log('Hosted portability: copying the populated native archive into staging storage.');ownsObjects=true;await importArchive(service,join(root,input),[],undefined,progress=>{
    if(progress.phase==='staging'&&progress.parts%25===0)console.log(`Hosted portability: ${progress.parts}/${progress.total} parts staged.`);

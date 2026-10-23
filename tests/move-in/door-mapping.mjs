@@ -135,6 +135,12 @@ test('Zendesk macros translate placeholders and four actions into native preview
   assert.equal(preview.data.results[0].status,'ready',JSON.stringify(preview))
   assert.match(preview.data.results[0].draft.content,/Hello Ada, about Quoted/)
   assert.equal((await rows('SELECT COUNT(*) n FROM messages'))[0].n,2)
+  const repeated=await h.call(`${root}?vendor=zendesk`,{method:'POST',headers:{'X-Import-Filename':'repeat.ndjson'},body:'\n'+body})
+  await h.drain();const repeat=(await h.call(`${root}/${repeated.data.id}`)).data
+  assert.equal(repeat.plan.counts.rejected,0)
+  await h.call(`${root}/${repeat.id}/apply`,post({fingerprint:repeat.plan.fingerprint}));await h.drain()
+  assert.equal((await rows('SELECT count(*) n FROM macro_versions'))[0].n,1)
+  assert.deepEqual((await h.call(`${native}/macros/${macro.id}`)).data.actions,definition.actions)
   // A native edit must be visible to Move in, so undo cannot discard reviewed changes.
   const current=(await h.call(`${native}/macros/${macro.id}`)).data
   await h.call(`${native}/macros/${macro.id}`,{...post({...current,title:'Reviewed native macro',expected_version:1}),method:'PUT'})
@@ -157,4 +163,5 @@ test('Zendesk macros translate placeholders and four actions into native preview
   assert.ok(omissions('macro/82').includes('macro_action_unsupported:assignee_id'))
   assert.equal(JSON.parse((await rows('SELECT actions_json FROM macro_versions'))[0].actions_json).reply_type,'note')
  }})
+ await imported('zendesk',ndjson({macro:{id:83,title:'Dynamic link',restriction:null,created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',actions:[{field:'comment_value_html',value:'<a href="{{ticket.url}}">Open ticket</a>'}]}}),{apply:false,check:({rejection})=>assert.equal(rejection('macro/83'),'macro_attribute_placeholders_not_supported')})
 })

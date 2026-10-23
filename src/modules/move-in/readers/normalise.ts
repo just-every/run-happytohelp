@@ -94,9 +94,9 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
     // can discard dynamic attributes or the plain-text fallback expression.
     const representations=vendor==='intercom'?[p.body,p.body_text]:p.actions.filter((a:any)=>['comment_value','comment_value_html'].includes(a.field)).map((a:any)=>a.value)
     if(vendor!=='zendesk'&&representations.some((value:unknown)=>typeof value==='string'&&/\{\{|\{%|<\s*attribute\b/i.test(value)))throw new Error('macro_placeholders_not_supported')
+    if(vendor==='zendesk'){body=zendeskMacroBody(body,omissions);if(/<[^>]*\{\{/.test(body))throw new Error('macro_attribute_placeholders_not_supported')}
     if(/<[a-z][^>]*>/i.test(body))body=await htmlToMarkdown(body)
-    if(vendor==='zendesk')body=zendeskMacroBody(body,omissions)
-    else if(/\{\{|\{%/.test(body))throw new Error('macro_placeholders_not_supported')
+    if(vendor!=='zendesk'&&/\{\{|\{%/.test(body))throw new Error('macro_placeholders_not_supported')
     tables.macros=[{id:target,project_id:projectId,title,content:body,created_by:actorId,created_at:created,updated_at:updated}]
     if(vendor==='zendesk')tables.macro_versions=[{macro_id:target,project_id:projectId,version:1,title,content:body,actions_json:JSON.stringify(zendeskMacroActions(p.actions,new Map([...array(source.records).filter(r=>r.kind==='tag-name').map(r=>[r.sourceId,id('tag',r.sourceId)] as [string,string]),...tagIds]),omissions)),scope_json:JSON.stringify({visibility:'shared',roles:[],groups:[],brands:[]}),created_by:actorId,created_at:updated}]
    }else if(record.kind==='article'){

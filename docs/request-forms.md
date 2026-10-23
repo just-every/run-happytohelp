@@ -101,6 +101,18 @@ containing `fieldId`, `operator` and, except for `present`, `value`. Translation
 are keyed by locale; their `fields` entries are keyed by field ID, including
 `subject` and `message`, and contain `label`, `description` and choice `options`.
 
+Owners and admins with settings permission can inspect the latest 100 saved
+versions with `GET /api/forms/projects/:projectId/forms/:formId/versions`.
+Each version records its save time, actor, previous version, form configuration
+and the referenced field definitions, in the same transaction as the save.
+Updates that lose a permission or stale-definition check create no version.
+The history uses the existing portable audit store and its custody rules; it
+starts with saves made after this capability was installed. Deleted forms retain
+their recorded history. To reuse a prior configuration, read the current form,
+copy the saved `config` into an ordinary update and supply the current
+`updatedAt`; this makes a new version and still validates current fields.
+Existing tickets retain their original typed values when forms change.
+
 Order/account lookup fields and a form version-history management screen are not
 available. Form fields reuse the current ticket-field permissions and validation; they do not introduce a separate field
 catalogue or grant access to company requests.

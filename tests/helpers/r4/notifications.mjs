@@ -145,6 +145,7 @@ export async function notificationTriggersJourney(){
   const before=mail.sent.length
   const denied=await app.call(ticket(id)+'/notes',{headers:operator,method:'POST',body:{content:'No access @[Quiet](user:quiet)'}})
   assert.equal(denied.status,403);await settle();assert.equal(mail.sent.length,before)
+  await workflowNotices(m)
  }finally{await m.close()}
 }
 
@@ -249,5 +250,40 @@ async function noticeAddresses(m,call,notices,settle){
   const solvedBefore=notices('solved',email).length
   await call(ticket(receipt.conversation_id),{resolved:true});await settle();await settle()
   assert.equal(notices('solved',email).length-solvedBefore,1)
+ }
+}
+
+// Published workflow decisions use the same proven-address and durable-delivery
+// doors as native triggers. Capture only at the provider edge.
+async function workflowNotices(m){
+ const {app,mail}=m,base='/api/dashboard/projects/p',rules=base+'/workflow-rules'
+ const owner={headers:m.operator},request=async(path,body)=>app.ok(path,{...owner,...(body===undefined?{}:{body})})
+ const deliveries=marker=>mail.sent.filter(entry=>entry.body.text?.startsWith(marker))
+ for(const mode of ['confirmed','refused','uncertain']){
+  const marker=`Workflow ${mode}:`,subject=`Workflow notice ${mode}`
+  const definition={name:subject,kind:'event',event_kind:'customer_reply',conditions:{all:[{field:'subject',op:'eq',value:subject}]},actions:[{type:'assign',user_id:'op'},{type:'notify',kind:'assignee',message:marker+' {{ticket.id}}'},...(mode==='confirmed'?[{type:'notify',kind:'customer_update',message:'Customer '+marker+' {{ticket.id}}'}]:[]),{type:'priority',priority:'high'}]}
+  const {rule}=await request(rules,definition),before=mail.attempts
+  assert.equal((await request(`${rules}/${rule.id}/preview`,{})).side_effects,false)
+  assert.equal(mail.attempts,before,'workflow previews have no network effects')
+  await request(`${rules}/${rule.id}/publish`,{})
+  mail.respond=entry=>{if(!entry.body.text?.startsWith(marker))return undefined;if(mode==='uncertain')throw new Error('response lost after acceptance');if(mode==='refused')return new Response('refused',{status:422})}
+  const messageId=`synthetic-happytohelp-workflow-${mode}`,from=`workflow-${mode}@example.com`
+  assert.equal((await m.gateway({messageId,to:'inbound@example.com',from,cc:['cc@example.com','unproven@example.net'],subject,text:'Please review this order'})).status,201)
+  await app.scheduled();await app.scheduled()
+  const id=(await m.claim(messageId)).conversation_id,runs=async()=>(await request(`${base}/workflow-runs?conversation_id=${id}`)).runs.filter(run=>run.rule_id===rule.id)
+  const run=(await runs())[0];assert.ok(run)
+  assert.equal(run.state,mode==='confirmed'?'complete':mode==='refused'?'failed':'uncertain',run.reason)
+  assert.deepEqual(deliveries(marker).map(entry=>recipients(entry.body)),[['op@example.com']],'only the current assignee receives the teammate action')
+  for(const entry of deliveries(marker))assert.equal(entry.body.headers['X-Auto-Response-Suppress'],'All')
+  if(mode==='confirmed')assert.deepEqual(deliveries('Customer '+marker).flatMap(entry=>recipients(entry.body)).sort(),['cc@example.com',from].sort(),'customer actions reach the requester and independently proven CC only')
+  assert.equal((await app.first('SELECT priority FROM conversations WHERE id=?',id)).priority,mode==='confirmed'?'high':'normal','later actions require a confirmed delivery')
+  const counts=[deliveries(marker).length,deliveries('Customer '+marker).length]
+  await app.configure({});await app.scheduled();await app.scheduled()
+  assert.deepEqual([deliveries(marker).length,deliveries('Customer '+marker).length],counts,'restart never repeats a terminal or uncertain notification')
+  assert.equal((await runs()).length,1)
+  await request(`${rules}/${rule.id}/pause`,{})
+  await m.gateway({messageId:messageId+'-paused',to:'inbound@example.com',from,subject,text:'Another matching request'})
+  await app.scheduled();assert.deepEqual([deliveries(marker).length,deliveries('Customer '+marker).length],counts,'pause prevents subsequent effects')
+  mail.respond=null
  }
 }

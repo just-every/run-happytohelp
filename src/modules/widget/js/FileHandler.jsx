@@ -6,6 +6,7 @@ import ModalPreview from './ModalPreview';
 import Media from './Media';
 
 import {useDropzone} from "react-dropzone";
+import { tooltip } from '../../tooltip/tooltip';
 
 function markupFiles(files) {
     // Path is read only. Only name is provided in some cases, so map this to path for ease of use
@@ -140,7 +141,7 @@ export function FileHandlerList(props) {
     const fileList = props.files.map(file => (
         <li key={file.path+file.size}>
             <Media key={ file.path+file.size } upload={ true } media={ file } setPreview={ setPreviewFile } />
-            <button type="button" className="happytohelp-preview-close" aria-label={`Remove ${file.name || file.path || 'attachment'}`} onClick={removeFile(file)}>
+            <button type="button" className="happytohelp-preview-close" { ...tooltip('Remove attachment') } onClick={removeFile(file)}>
                 <FontAwesomeIcon icon={falTimes} aria-hidden="true" />
             </button>
         </li>

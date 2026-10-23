@@ -14,9 +14,12 @@ import { OverlayTrigger } from "react-bootstrap";
 import Tooltip from "react-bootstrap/Tooltip";
 
 import '../styles/components/ConversationItem.scss';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
 // One inbox row (H16): the name and time; the message on one line with the assignee's initial and the unread count;
 // then a quiet line for what is not the everyday default (ConversationItemMeta; a second only when its parts need it).
+export const conversationNameId = id => `conversation-${ id }-name`;
+
 function ConversationItem({ conversation }) {
     const {
         setIsMainVisible,
@@ -50,11 +53,12 @@ function ConversationItem({ conversation }) {
         resolveConversation(conversation, resolved).catch(() => {});
     }
 
-    const contactName = conversation.contact?.display_name || 'contact';
     const isResolved = Boolean(conversation.resolved_at);
     const isFinal = conversation.status_category === 'closed';
     const resolutionError = resolutionErrors?.[conversation.id];
-    const actionLabel = isResolved ? 'Reopen' : 'Close';
+    const actionLabel = isResolved ? 'Reopen conversation' : 'Close conversation';
+    // The row's Close and its Select tickets checkbox (ConversationsList) are described by the contact's name.
+    const nameId = conversationNameId(conversation.id);
     const subject = !isDemo && conversation.subject;
 
     // The action is a sibling of the row link (a button inside an anchor is invalid). It shows on hover and keyboard
@@ -72,7 +76,7 @@ function ConversationItem({ conversation }) {
                         </div>
                         <div className="col overflow-hidden">
                             <div className="conversation-item-heading">
-                                <h4>{ conversation.contact ? conversation.contact.display_name : '' }</h4>
+                                <h4 id={ nameId }>{ conversation.contact ? conversation.contact.display_name : '' }</h4>
                                 { lastMessageDate && <span className="conversation-item-time">
                                     <Moment format={ lastMessageIsToday ? "LT" : "D MMM" } date={ lastMessageDate } />
                                 </span> }
@@ -105,13 +109,9 @@ function ConversationItem({ conversation }) {
                 </div>
             </div>
         </Link>
-        { !isFinal && <OverlayTrigger
-            placement="left"
-            overlay={ <Tooltip id={ `${ conversation.id }-resolved` } className={(urlConversationId === conversation.id ? 'tooltip-light' : 'tooltip-dark')}>{ actionLabel }</Tooltip> }>
-            <button type="button" className="conversation-item-action btn btn-white" aria-label={ `${ actionLabel } conversation with ${ contactName }` } onClick={ event => handleResolve(event, !isResolved) }>
-                <i className={ `fe ${ isResolved ? 'fe-rotate-ccw' : 'fe-check-circle' }` } aria-hidden="true"></i>
-            </button>
-        </OverlayTrigger> }
+        { !isFinal && <button type="button" className="conversation-item-action btn btn-white" { ...tooltip(actionLabel, 'left') } aria-describedby={ nameId } onClick={ event => handleResolve(event, !isResolved) }>
+            <i className={ `fe ${ isResolved ? 'fe-rotate-ccw' : 'fe-check-circle' }` } aria-hidden="true"></i>
+        </button> }
         { resolutionError && urlConversationId !== conversation.id && <p className="conversation-item-error" role="alert">{ resolutionError }</p> }
         </div>
     );

@@ -8,6 +8,7 @@ import {ConnectContext} from "./context/ConnectContext";
 import AppContext from "./context/AppContext";
 import {faTimes as falTimes} from "@fortawesome/free-solid-svg-icons";
 import {backAt} from "../availability-text.js";
+import { tooltip } from '../../tooltip/tooltip';
 export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded, onHeightChange}) {
     const context = useContext(AppContext);
     const {
@@ -144,7 +145,7 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
     }
 
     return <div className={"happytohelp-chat-header-container " + (headerExpanded ? "happytohelp-chat-header-container-expanded" : "happytohelp-chat-header-container-collapsed")} style={style} onKeyDown={handleHeaderKeyDown}>
-        <button type="button" className="happytohelp-close" aria-label="Close chat" onClick={() => { setOpen(false) }}>
+        <button type="button" className="happytohelp-close" { ...tooltip('Close chat') } onClick={() => { setOpen(false) }}>
             <FontAwesomeIcon icon={falTimes} aria-hidden="true"/>
         </button>
         <div ref={contentEl}>

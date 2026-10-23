@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useMemo, useEffect, useState } from 'react';
 import TicketBulkActions from './tickets/TicketBulkActions';
 import CreateEmailTicket from './CreateEmailTicket';
-import ConversationItem from "./ConversationItem";
+import ConversationItem, { conversationNameId } from "./ConversationItem";
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import { ChatContext } from "../contexts/ChatContext";
 import { useNavigate } from '@tanstack/react-router';
@@ -14,6 +14,7 @@ import { inboxPlace, inboxViewFilter, inboxViewPhrase } from './inboxViewDefinit
 import useConversationList from '../hooks/useConversationList';
 import useScrollEdge from '../hooks/useScrollEdge';
 import useLiveInboxLocation from '../hooks/useLiveInboxLocation';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
 // `isFirstRun` is a new workspace's empty inbox. Its start block sits in this column on a phone (`startHere`) and in the
 // main pane otherwise, so only one of them is ever on the page.
@@ -108,7 +109,7 @@ function ConversationsList({ isFirstRun = false, startHere = false, hideBehindCo
             {creatingTicket && <CreateEmailTicket projectId={projectId} onHide={()=>setCreatingTicket(false)} onCreated={conversation=>{refreshInboxData();if(conversation?.id)navigate({to:`/projects/${projectId}/conversations/${conversation.id}`});}}/>}
             {ticketQueue && selecting && <TicketBulkActions key={projectId} projectId={projectId} loaded={conversations} selected={selected} onSelect={setSelected} onDone={() => { setSelecting(false); setSelected({}); }} onApplied={refreshInboxData}/>}
             <div className="conversation-list-items" ref={ setListRefs }>
-                { conversations.map(conversation => selecting && ticketQueue ? <div className="ticket-bulk-row" key={conversation.id}><input className="form-check-input" type="checkbox" aria-label={`Select ticket ${conversation.subject || conversation.contact?.display_name || conversation.id}`} checked={Boolean(selected[conversation.id])} disabled={!selected[conversation.id] && Object.keys(selected).length >= 100} onChange={event => { const checked = event.target.checked; setSelected(current => { const next = { ...current }; if (checked) next[conversation.id] = { id: conversation.id, subject: conversation.subject, ticket_version: conversation.ticket_version }; else delete next[conversation.id]; return next; }); }}/><ConversationItem conversation={conversation}/></div> : <ConversationItem key={conversation.id} conversation={conversation}/>) }
+                { conversations.map(conversation => selecting && ticketQueue ? <div className="ticket-bulk-row" key={conversation.id}><input className="form-check-input" type="checkbox" {...tooltip('Select ticket')} aria-describedby={conversationNameId(conversation.id)} checked={Boolean(selected[conversation.id])} disabled={!selected[conversation.id] && Object.keys(selected).length >= 100} onChange={event => { const checked = event.target.checked; setSelected(current => { const next = { ...current }; if (checked) next[conversation.id] = { id: conversation.id, subject: conversation.subject, ticket_version: conversation.ticket_version }; else delete next[conversation.id]; return next; }); }}/><ConversationItem conversation={conversation}/></div> : <ConversationItem key={conversation.id} conversation={conversation}/>) }
                 { isInitialLoading && conversations.length === 0 && <p className="text-center" role="status">Loading conversations...</p> }
                 { !isInitialLoading && !refreshError && !hasNextPage && conversations.length === 0 && (
                     searchQuery.trim()

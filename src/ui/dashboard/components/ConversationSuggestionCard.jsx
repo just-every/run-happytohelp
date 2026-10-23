@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import gfm from 'remark-gfm';
 import ReplyIcon, { hasReplyIcon } from './reply-icons/ReplyIcon';
 import { Sparks } from '../../homepage/drawings/Sparks';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
 // The selectable reply remains a button, so Markdown is rendered with phrasing
 // elements only. This keeps the expansion button a valid sibling control.
@@ -97,7 +98,7 @@ export default function ConversationSuggestionCard({ disabled, icon, label, onSe
         { isExpandable && <button
             type="button"
             className="conversation-suggestion-card__toggle"
-            aria-label={ `${ isExpanded ? 'Collapse' : 'Expand' } reply: ${ label }` }
+            { ...tooltip(isExpanded ? 'Collapse reply' : 'Expand reply') }
             aria-expanded={ isExpanded }
             aria-controls={ previewId }
             onClick={ event => {

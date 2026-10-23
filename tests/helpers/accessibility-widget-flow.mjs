@@ -101,7 +101,7 @@ export async function runWidgetAccessibility({browser, runtime, hostOrigin, widg
         return [...new Uint8Array(await blob.arrayBuffer())];
     });
     await fileInput.setInputFiles({name: 'accessibility.png', mimeType: 'image/png', buffer: Buffer.from(imageBytes)});
-    const previewTrigger = widgetPage.getByRole('button', {name: 'Preview accessibility.png', exact: true});
+    const previewTrigger = widgetPage.getByRole('button', {name: 'Preview image', exact: true});
     await previewTrigger.waitFor();
     assertAxeClean(await scan(widgetPage, 'widget-attachment-composer', {shadow: true}), 'widget attachment composer');
     await previewTrigger.focus();
@@ -142,7 +142,7 @@ export async function runWidgetAccessibility({browser, runtime, hostOrigin, widg
     });
     assert.equal(previewOpenFocus, 'Close preview');
     assert.equal(previewTabFocus, 'Close preview', 'preview dialog Tab escaped its focus boundary');
-    assert.equal(previewRestoredFocus, 'Preview accessibility.png', 'preview Escape did not restore focus to its trigger');
+    assert.equal(previewRestoredFocus, 'Preview image', 'preview Escape did not restore focus to its trigger');
     const previewAfterClose = await widgetPage.evaluate(() => {
         const root = document.querySelector('#happytohelp > div')?.shadowRoot;
         const background = root?.querySelector('#happytohelp-root');

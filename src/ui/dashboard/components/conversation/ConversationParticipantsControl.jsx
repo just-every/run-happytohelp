@@ -5,6 +5,7 @@ import address from './emailAddress';
 import ReplyIcon from '../reply-icons/ReplyIcon';
 import Api from '../../api';
 import { ChatContext } from '../../contexts/ChatContext';
+import { tooltip } from '../../../../modules/tooltip/tooltip';
 
 ConversationParticipantsControl.propTypes = {
     conversation: PropTypes.object.isRequired,
@@ -40,7 +41,7 @@ export default function ConversationParticipantsControl({ conversation }) {
                     const email = participant.provided_email || participant.email;
                     return <li key={ `participant-${participant.id}` }>
                         <span>{ address(email) }</span>
-                        <button type="button" className="btn btn-link" disabled={ removing !== null } aria-label={ `Remove ${email}` } onClick={ () => removeParticipant(participant.pivot.id) }>
+                        <button type="button" className="btn btn-link" disabled={ removing !== null } { ...tooltip('Remove participant') } onClick={ () => removeParticipant(participant.pivot.id) }>
                             <ReplyIcon name="x" />
                         </button>
                     </li>;

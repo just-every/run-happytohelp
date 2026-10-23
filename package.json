@@ -164,7 +164,6 @@
     "react-shadow": "^20.5.0",
     "react-textarea-autosize": "^8.3.2",
     "react-timeago": "^7.1.0",
-    "react-tooltip": "^5.28.0",
     "remark-external-links": "^8.0.0",
     "remark-gfm": "^1.0.0",
     "turndown": "^7.2.0",

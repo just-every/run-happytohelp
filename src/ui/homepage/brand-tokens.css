@@ -90,6 +90,14 @@ body.workspace-themed #sidebar {
   --card-shadow: var(--drawing-shadow);
   color-scheme: dark;
 }
+/* An icon-only control's tooltip (src/modules/tooltip) is the ink pill of the surface the control sits on: ink on the paper and
+   the canvas, the rail's light ink on the rail. Its type and padding are the workspace's other tooltips'. */
+[data-tooltip] {
+  --tooltip-bg: var(--ink);
+  --tooltip-fg: var(--on-ink);
+  --tooltip-font-size: 14.5px;
+  --tooltip-padding: 6px 12px;
+}
 /* The body holding a page in the homepage's language reads the paper. */
 body:has(.h2h-home), body:has(.h2h-setup), body:has(.h2h-identity) { margin: 0; padding: 0; background: var(--paper); }
 

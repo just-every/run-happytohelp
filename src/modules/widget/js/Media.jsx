@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import PropTypes from 'prop-types';
+import { tooltip } from '../../tooltip/tooltip';
 
 function humanFileSize (size) {
     if(size < 1) return "0 bytes";
@@ -23,7 +24,7 @@ function Media({ upload, media, setPreview }) {
         media.preview = media.preview_url ?? media.url;
     }
 
-    return media.isImage ? <button type="button" className="happytohelp-preview-trigger" aria-label={`Preview ${media.filename || 'image'}`} onClick={() => setPreview(media)}>
+    return media.isImage ? <button type="button" className="happytohelp-preview-trigger" { ...tooltip('Preview image') } onClick={() => setPreview(media)}>
             <img
                 src={media.preview}
                 className={ "happytohelp-preview " + (loaded ? "happytohelp-preview-loaded" : "happytohelp-preview-loading")}

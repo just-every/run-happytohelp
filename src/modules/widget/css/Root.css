@@ -1793,19 +1793,17 @@ html.wf-sacramento-n4-active .happytohelp-title {
   }
 }
 
-#happytohelp-root .happytohelp-tooltip {
-  z-index: 2147483621;
-  font-family: var(--happytohelp-font);
-  font-weight: 400;
-  font-style: normal;
-  padding: 8px 21px;
-  font-size: 13px;
-  margin: 0 10px 0 0;
-  color: #fff;
+/* The icon-only controls' tooltips (src/modules/tooltip) in the widget's own type, restated over the reset above, which
+   would otherwise take their padding, colour, type and display. */
+#happytohelp-root .ui-tooltip {
+  padding: var(--tooltip-padding, 5px 9px);
+  border-radius: var(--tooltip-radius, 6px);
+  color: var(--tooltip-fg, #ffffff);
+  font: 500 var(--tooltip-font-size, 13px)/1.35 var(--happytohelp-font);
+  letter-spacing: normal;
 }
-#happytohelp-root .happytohelp-tooltip.type-light {
-  border-radius: 25px;
-}
+#happytohelp-root .ui-tooltip:not([data-open]) { display: none; }
+#happytohelp-root .ui-tooltip[data-open] { display: block; }
 #happytohelp-root .happytohelp-text-muted {
   opacity: 0.4;
 }
@@ -1964,9 +1962,6 @@ html.wf-sacramento-n4-active .happytohelp-title {
   }
   #happytohelp-root .happytohelp-interact-container textarea::placeholder, #happytohelp-root .happytohelp-interact-container input::placeholder {
     font-size: 15px;
-  }
-  #happytohelp-root .happytohelp-interact-container .happytohelp-tooltip {
-    display: none;
   }
 }
 #happytohelp-root .happytohelp-interact {

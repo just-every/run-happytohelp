@@ -1,5 +1,6 @@
 import React, {Children, useSyncExternalStore} from 'react';
 import './stack-table.css';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
 // Matches the stack-table breakpoint: below it list rows are cards and row actions are shown, not folded into a menu.
 const stackedQuery = '(max-width: 767px)';
@@ -17,5 +18,5 @@ const useStackedRows = () => useSyncExternalStore(subscribe, () => window.matchM
 export default function RowMenu({label, className, children}) {
     const actions = Children.toArray(children);
     if (useStackedRows()) return <div className="row-actions-inline" role="group" aria-label={`Actions for ${label}`}>{actions.flatMap((action, index) => index ? [' ', action] : [action])}</div>;
-    return <details className={className}><summary aria-label={`Actions for ${label}`}>⋮</summary><div>{actions}</div></details>;
+    return <details className={className}><summary {...tooltip('More actions')}>⋮</summary><div>{actions}</div></details>;
 }

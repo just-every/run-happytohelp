@@ -1,6 +1,7 @@
 import React,{useState} from 'react';
 import {Alert,Button,Form,Modal} from 'react-bootstrap';
 import Api from '../../api';
+import DialogHeader from '../DialogHeader';
 
 export default function ForwardConversation({conversation,messages=[],onHide,onChanged}) {
     const [recipient,setRecipient]=useState(''),[subject,setSubject]=useState(conversation.subject||'Support question'),[note,setNote]=useState(''),[selected,setSelected]=useState([]),[preview,setPreview]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[command]=useState(()=>crypto.randomUUID());
@@ -11,7 +12,7 @@ export default function ForwardConversation({conversation,messages=[],onHide,onC
     const inspect=()=>run(async()=>setPreview((await Api.create(`${base}/preview`,{recipient,message_ids:selected})).data));
     const send=()=>run(async()=>{const response=await Api.create(base,{recipient,subject,note,message_ids:selected,expected_version:preview.expected_version,idempotencyKey:command});await onChanged?.(response.data);onHide()});
     return <Modal show size="lg" onHide={busy?undefined:onHide}>
-        <Modal.Header closeButton={!busy}><Modal.Title>Forward to an external partner</Modal.Title></Modal.Header>
+        <DialogHeader closeButton={!busy}><Modal.Title>Forward to an external partner</Modal.Title></DialogHeader>
         <Modal.Body>
             {error&&<Alert variant="danger" role="alert">{error}</Alert>}
             <p>Select customer-visible messages to share. Partner replies stay private to your team.</p>

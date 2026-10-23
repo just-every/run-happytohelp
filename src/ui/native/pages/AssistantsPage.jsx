@@ -10,6 +10,7 @@ import { nativeRequest } from '../transport';
 import { Field, Section, Feedback } from './forms';
 import { useConfirmation } from './ConfirmDialog';
 import { deleteCopy } from './delete-copy';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
 const requestBody = value => ({ headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(value) });
 export default function AssistantsPage({ projectId, recordId }) {
@@ -76,7 +77,7 @@ export default function AssistantsPage({ projectId, recordId }) {
         {!recordId && items && settings && <>
             <AiSpendCard projectId={projectId}/>
             <Section title="Assistants" description="Choose which assistants can respond in this project.">
-                {items.map(item => <section className="settings-section" key={item.id}><div className="row align-items-center g-3"><div className="col"><div className="settings-identity">{item.avatar_url ? <img src={item.avatar_url} className="avatar avatar-sm" alt=""/> : <i className="fe fe-cpu" aria-hidden="true"/>}<div><h3>{item.name}</h3><p className="settings-note mb-0">{item.role}</p></div></div></div><div className="col-auto"><Link className="btn btn-sm btn-white" to={`${href}/${item.id}`}>Customize</Link></div><div className="col-auto"><div className="form-check form-switch"><input className="form-check-input" type="checkbox" checked={Boolean(item.is_enabled)} disabled={busy} aria-label={`Enable ${item.name} assistant`} onChange={() => toggle(item)}/></div></div></div></section>)}
+                {items.map(item => <section className="settings-section" key={item.id}><div className="row align-items-center g-3"><div className="col"><div className="settings-identity">{item.avatar_url ? <img src={item.avatar_url} className="avatar avatar-sm" alt=""/> : <i className="fe fe-cpu" aria-hidden="true"/>}<div><h3 id={`assistant-${item.id}-name`}>{item.name}</h3><p className="settings-note mb-0">{item.role}</p></div></div></div><div className="col-auto"><Link className="btn btn-sm btn-white" to={`${href}/${item.id}`}>Customize</Link></div><div className="col-auto"><div className="form-check form-switch"><input className="form-check-input" type="checkbox" checked={Boolean(item.is_enabled)} disabled={busy} {...tooltip('Enable assistant', {describedBy: `assistant-${item.id}-name`})} onChange={() => toggle(item)}/></div></div></div></section>)}
                 {!items.length && <p className="settings-note">No assistants have been added to this project.</p>}
                 <Link className="btn btn-sm btn-white" to={`${href}/create`}>Add assistant</Link>
             </Section>

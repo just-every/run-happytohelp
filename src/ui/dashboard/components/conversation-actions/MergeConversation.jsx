@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {Alert,Button,Form,Modal} from 'react-bootstrap';
 import Api from '../../api';
+import DialogHeader from '../DialogHeader';
 
 export default function MergeConversation({conversation,onHide,onChanged}) {
     const [source,setSource]=useState(''),[preview,setPreview]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
@@ -14,7 +15,7 @@ export default function MergeConversation({conversation,onHide,onChanged}) {
     });
     const apply=()=>run(async()=>{const result=await Api.create(`${base}/merge`,preview);await onChanged?.(result.data);onHide()});
     return <Modal show onHide={busy?undefined:onHide}>
-        <Modal.Header closeButton={!busy}><Modal.Title>Merge duplicate tickets</Modal.Title></Modal.Header>
+        <DialogHeader closeButton={!busy}><Modal.Title>Merge duplicate tickets</Modal.Title></DialogHeader>
         <Modal.Body>
             {error&&<Alert variant="danger" role="alert">{error}</Alert>}
             <p>This ticket survives. The source becomes an alias with its history, files and private notes preserved.</p>

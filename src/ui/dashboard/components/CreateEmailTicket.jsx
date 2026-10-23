@@ -4,6 +4,7 @@ import {nativeRequest} from '../../native/transport';
 import EmailSender from '../../native/pages/email/EmailSender';
 import EmailRecipients, {emailRecipientsError, parseEmailRecipients} from './EmailRecipients';
 import './CreateEmailTicket.css';
+import DialogHeader from './DialogHeader';
 
 /** Operator-created email or call; requester and authenticated submitter remain distinct. */
 export default function CreateEmailTicket({projectId, onHide, onCreated}) {
@@ -40,7 +41,7 @@ export default function CreateEmailTicket({projectId, onHide, onCreated}) {
  };
  const input = (key,label,type='text',required=false) => <div className="form-group"><label className="form-label" htmlFor={`new-ticket-${key}`}>{label}</label><input className="form-control" id={`new-ticket-${key}`} type={type} required={required} value={draft[key]} onChange={event=>change(key,event.target.value)} maxLength={key==='subject'?998:320}/></div>;
  return <Modal show onHide={()=>!busy&&!uncertain&&onHide()} className="create-email-ticket" backdrop="static">
-  <Modal.Header closeButton={!busy&&!uncertain}><Modal.Title>New ticket</Modal.Title></Modal.Header>
+  <DialogHeader closeButton={!busy&&!uncertain}><Modal.Title>New ticket</Modal.Title></DialogHeader>
   <form onSubmit={submit}>
    <Modal.Body>
     {error && <p className="alert alert-danger" role="alert">{error}</p>}

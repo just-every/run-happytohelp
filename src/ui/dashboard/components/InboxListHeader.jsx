@@ -7,6 +7,7 @@ import InboxSearch from './InboxSearch';
 import InboxFilters, { assignmentLabels } from './InboxFilters';
 import { useInboxTags } from './InboxTagFilter';
 import { useInboxCompanies } from './InboxCompanyFilter';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
 /** The filters a chip names; removing a chip clears its keys. */
 function activeFilters({ search, place, queue, tags, companies }) {
@@ -59,10 +60,10 @@ export default function InboxListHeader({ projectId, companyProjectId, queue, cu
                 </button>
             </h2>
             <div className="inbox-list-actions">
-                { queue && <button type="button" className="inbox-head-icon" title="Select tickets" aria-label="Select tickets" aria-pressed={ selecting } onClick={ () => { setNotice(''); onSelecting(); } }><i className="fe fe-check-square" aria-hidden="true"/></button> }
+                { queue && <button type="button" className="inbox-head-icon" { ...tooltip('Select tickets') } aria-pressed={ selecting } onClick={ () => { setNotice(''); onSelecting(); } }><i className="fe fe-check-square" aria-hidden="true"/></button> }
                 <InboxFilters key={ projectId || 'global' } projectId={ projectId } queue={ queue } currentAgentId={ currentAgentId } assignment={ assignment } assignmentDisabled={ Boolean(query) && searchScope !== 'view' }
                     tags={ tags } companies={ companies } search={ search } savedView={ savedView } onChange={ change } onNotice={ setNotice }/>
-                { queue && <button type="button" className="inbox-head-icon" title="New ticket" aria-label="New ticket" onClick={ () => { setNotice(''); onNewTicket(); } }><i className="fe fe-edit" aria-hidden="true"/></button> }
+                { queue && <button type="button" className="inbox-head-icon" { ...tooltip('New ticket') } onClick={ () => { setNotice(''); onNewTicket(); } }><i className="fe fe-edit" aria-hidden="true"/></button> }
             </div>
         </div>
         <InboxSearch query={ liveQuery } scope={ searchScope } onSearch={ (text, scope) => { setNotice(''); onSearch(text, scope); } } />

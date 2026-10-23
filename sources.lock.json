@@ -10103,6 +10103,10 @@
       "sha256": "ec9308aac5e410596e6ae193bca14101cdbc4c53f763826059fd34716c1856bb",
       "executable": false
     },
+    "src/ui/native/pages/voice/VoiceTooltips.jsx": {
+      "sha256": "068fed8bf77ff0397eeb2809460802b8ef8dd5d090c7396ccdae26a3d791ff52",
+      "executable": false
+    },
     "src/ui/native/pages/WidgetSettingsPage.jsx": {
       "sha256": "26895a8a5c70dfda5aed54845adb97a7747f0464ac89934d8c849e181ddf70d7",
       "executable": false

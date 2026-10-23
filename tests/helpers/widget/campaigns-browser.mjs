@@ -51,6 +51,12 @@ export async function campaignsBrowser({browser,page,origin,projectId,owner,evid
     await visitor.getByRole('button',{name:'Close chat',exact:true}).first().click();
     await card.waitFor({timeout:20000});
     assert.match(await card.innerText(),/Alex from Support/);assert.match(await card.innerText(),/Synthetic shop/);
+    for(const button of await card.getByRole('button').all()){
+     const {foreground,background}=await button.evaluate(el=>({foreground:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));
+     const luminance=color=>color.match(/[\d.]+/g).slice(0,3).map(Number).map(c=>c/255).map(c=>c<=.04045?c/12.92:((c+.055)/1.055)**2.4).reduce((n,c,i)=>n+c*[.2126,.7152,.0722][i],0);
+     const [high,low]=[luminance(foreground),luminance(background)].sort((a,b)=>b-a);
+     assert.ok((high+.05)/(low+.05)>=4.5,'campaign action text remains readable against its real background');
+    }
     const session=await visitor.evaluate(key=>JSON.parse(localStorage.getItem(key)),`rer-widget:${origin}:${widgetKey}`);
     assert.ok(session?.conversationId);
     const transcript=()=>call(`/api/conversations/${session.conversationId}/messages`);

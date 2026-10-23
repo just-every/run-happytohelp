@@ -4036,7 +4036,7 @@
       "executable": false
     },
     "src/modules/conversations/routes.ts": {
-      "sha256": "af9823527d1619f27c801c1eae83c09e907bad753a1bf71613f2fa8589527509",
+      "sha256": "16f66d392d53c1c2aa3eb09e717fbc60831dba0d7c23e51770cab99e8d81fcff",
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
@@ -6859,6 +6859,10 @@
       "sha256": "6c1584b4dc8dc00b482cc13bed7764b7bff81a1de11c18a00844a04a1b42ce9c",
       "executable": false
     },
+    "src/modules/widget/conversation-state.ts": {
+      "sha256": "38c81255f569a1a463bf00205a41ec84b257a278a2989c73cdd68b2da568bbbf",
+      "executable": false
+    },
     "src/modules/widget/css/AgentAvatar.css": {
       "sha256": "c2b3b0518649c31237783e480cfca486c588a53acdab20193aec3bccea77ff34",
       "executable": false
@@ -6880,7 +6884,7 @@
       "executable": false
     },
     "src/modules/widget/css/CampaignOffer.css": {
-      "sha256": "cb8485b8493e5a9eaed70781eba50ecd238e8fea223d325175828bf7d2840dab",
+      "sha256": "b8ff23d220180f722ae6ddd0f0c9cf69fbafb5a599efbc03fcd9aed92ac3e354",
       "executable": false
     },
     "src/modules/widget/css/ChatHeader.css": {
@@ -7276,7 +7280,7 @@
       "executable": false
     },
     "src/modules/widget/transport.js": {
-      "sha256": "cac3bb1d470ac7b8fcbd518910e672da9d95f345195e09ed08dae92583f50e4f",
+      "sha256": "a056b47bf7b0972c8dff073abcc7f9057e214af4571e104f41eff8925fff6f38",
       "executable": false
     },
     "src/modules/workflows/actions-validation.ts": {
@@ -11556,7 +11560,7 @@
       "executable": false
     },
     "tests/helpers/widget/assistant-browser.mjs": {
-      "sha256": "3a69e39337988013700efc4a4549bef2418ff7ce8a2469cc5dc671d985bb6801",
+      "sha256": "3deeb4ea0caf8462eb76546dab987d5c78666557f851f6ca53d914b072bbe3e5",
       "executable": false
     },
     "tests/helpers/widget/assistant-network.mjs": {
@@ -11568,7 +11572,7 @@
       "executable": false
     },
     "tests/helpers/widget/campaigns-browser.mjs": {
-      "sha256": "5adc80aedbbdfbe29472d43b08a8d3ee69acdfd19f6d8c749a40abcddd7bff84",
+      "sha256": "1cb631c97fd2ce43ef90067dfeb6086a3631d7fe0bbdae32421558c24d6bc9d9",
       "executable": false
     },
     "tests/helpers/widget/campaigns.mjs": {

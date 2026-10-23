@@ -26,9 +26,10 @@ export async function assistantBrowser({browser,evidenceDir}){
     await page.getByText('I am the AI assistant. I can help with your checkout question.',{exact:true}).waitFor({timeout:45000});
     const session=await page.evaluate(()=>Object.entries(localStorage).filter(([key])=>key.startsWith('rer-widget:')).map(([,value])=>JSON.parse(value))[0]);
     const transcript=await call(`/api/conversations/${session.conversationId}/messages`);
+    assert.equal(transcript.widget.ai_id,aiId,'the public transcript identifies its assigned AI without operator-only state');
     assert.ok(transcript.messages.some(message=>message.actor_role==='ai'&&message.content.includes('I am the AI assistant.')),'the visible answer is an admitted AI message');
     await page.screenshot({path:join(evidenceDir,`assistant-disclosure-${width}.png`),fullPage:true});
-   }finally{await context.close();}
+   }catch(error){await page.screenshot({path:join(evidenceDir,`assistant-failure-${width}.png`),fullPage:true});throw error;}finally{await context.close();}
   }
   success=true;
  }finally{if(host)await new Promise(done=>host.close(done));await runtime.close(success);}

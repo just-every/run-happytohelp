@@ -13,10 +13,12 @@ function snapshotAttributes(column:string){return `EXISTS(SELECT 1 FROM json_eac
 const historyAffected=`project_id=?1 AND (EXISTS(SELECT 1 FROM json_tree(before_json) j WHERE j.type='text' AND ${matches('j.atom')}) OR EXISTS(SELECT 1 FROM json_tree(after_json) j WHERE j.type='text' AND ${matches('j.atom')}) OR EXISTS(SELECT 1 FROM json_tree(provenance_json) j WHERE j.type='text' AND ${matches('j.atom')}) OR ${snapshotAttributes('before_json')} OR ${snapshotAttributes('after_json')})`
 const attributesAffected=`EXISTS(SELECT 1 FROM json_each(attributes_json) a WHERE a.type='text' AND ${matches('a.atom')})`
 const companyAffected=`project_id=?1 AND (${matches('companies.name')} OR ${attributesAffected} OR id IN (SELECT company_id FROM contact_companies WHERE project_id=?1 AND contact_id IN (${subject})))`
-export const customerErasureCount=`(SELECT count(*) FROM contact_companies WHERE project_id=?1 AND contact_id IN (${subject}))+(SELECT count(*) FROM company_history WHERE ${historyAffected})+(SELECT count(*) FROM companies WHERE ${companyAffected})+(SELECT count(*) FROM company_domains WHERE project_id=?1 AND ${matches('company_domains.domain')})+(SELECT count(*) FROM company_attribute_definitions WHERE project_id=?1 AND (${matches('company_attribute_definitions.name')} OR EXISTS(SELECT 1 FROM json_each(options_json) o WHERE ${matches('o.value')})))`
+const identityLinkAffected=`project_id=?1 AND (contact_id IN (${subject}) OR linked_contact_id IN (${subject}) OR ${matches('customer_identity_links.provenance')})`
+export const customerErasureCount=`(SELECT count(*) FROM customer_identity_links WHERE ${identityLinkAffected})+(SELECT count(*) FROM contact_companies WHERE project_id=?1 AND contact_id IN (${subject}))+(SELECT count(*) FROM company_history WHERE ${historyAffected})+(SELECT count(*) FROM companies WHERE ${companyAffected})+(SELECT count(*) FROM company_domains WHERE project_id=?1 AND ${matches('company_domains.domain')})+(SELECT count(*) FROM company_attribute_definitions WHERE project_id=?1 AND (${matches('company_attribute_definitions.name')} OR EXISTS(SELECT 1 FROM json_each(options_json) o WHERE ${matches('o.value')})))`
 export function customerErasureStatements(env:Env,projectId:string,contactId:string){
  const bound=(sql:string)=>env.DB.prepare(sql).bind(projectId,contactId)
  return [
+  bound(`DELETE FROM customer_identity_links WHERE ${identityLinkAffected}`),
   // Remove complete affected undo records, including their provenance. Keeping a
   // partial snapshot would make restoration destructive or revive private data.
   bound(`DELETE FROM company_history WHERE ${historyAffected}`),

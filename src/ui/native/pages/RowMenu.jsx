@@ -14,8 +14,8 @@ const useStackedRows = () => useSyncExternalStore(subscribe, () => window.matchM
  * Row actions for list tables. On wide screens they sit behind a ⋮ disclosure; on phones every action is a visible
  * control on the row card, so nothing a row can do is hidden. `className` styles the wide-screen menu.
  */
-export default function RowMenu({label, className, children}) {
+export default function RowMenu({label, className, children, tooltip}) {
     const actions = Children.toArray(children);
     if (useStackedRows()) return <div className="row-actions-inline" role="group" aria-label={`Actions for ${label}`}>{actions.flatMap((action, index) => index ? [' ', action] : [action])}</div>;
-    return <details className={className}><summary aria-label={`Actions for ${label}`}>⋮</summary><div>{actions}</div></details>;
+    return <details className={className}><summary aria-label={`Actions for ${label}`}>⋮{tooltip&&<span className="knowledge-control-tooltip" role="tooltip">{tooltip}</span>}</summary><div>{actions}</div></details>;
 }

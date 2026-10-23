@@ -30,3 +30,5 @@ test('a solved native conversation emails one signed satisfaction survey, record
 test('a translated request form enforces typed conditional required fields on the server, protects anonymous submissions, and admits one ticket after email verification',async()=>{const {requestFormsJourney}=await import('../helpers/request-forms-journey.mjs');await requestFormsJourney()})
 
 test('customers sign into their own portal by email, reply with attachments, answer a signed survey, reopen a solved request and control notifications while other identities and erased sessions are denied',async()=>{const {customerPortalJourney}=await import('../helpers/customer-portal-journey.mjs');await customerPortalJourney()})
+
+test('verified support resolutions become cited redacted drafts that a named editor rejects or publishes privately, and reopened cases propose corrections without changing guidance',async()=>(await import('../helpers/knowledge/proposals.mjs')).proposalsJourney())

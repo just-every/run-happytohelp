@@ -24,3 +24,9 @@ test('daily AI reply and spend ceilings skip replies visibly to operators only, 
 test('training runs seed a confirmed synthetic workspace, check every reply, execute each evaluation family, and keep unreported, failed, expired or interrupted paid work uncertain rather than replaying it',async()=>(await import('../helpers/ai/training.mjs')).trainingJourney())
 
 test('repositories selected for operators are read as redacted, attributed evidence that suggestions cite, while secrets files, other repositories and visitor replies get nothing',async()=>(await import('../helpers/ai/repository.mjs')).repositoryJourney())
+
+test('operators inspect an allowlisted production answer trace with exact sources and measured usage, unknown prices remain unavailable, and customer, cross-workspace and revoked report access are refused',async()=>(await import('../helpers/ai/trace.mjs')).traceJourney())
+
+test('quoted follow-up proposals require human acceptance, preserve accepted responsibility through handoffs and restart, and never invent engineering progress',async()=>(await import('../helpers/ai/obligations.mjs')).obligationsJourney())
+
+test('immutable advice procedures require exact-version passing evaluations before bounded production cohorts, narrow tools on revocation and preserve failed evidence after stopping',async()=>(await import('../helpers/ai/procedures.mjs')).proceduresJourney())

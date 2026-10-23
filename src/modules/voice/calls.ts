@@ -7,7 +7,6 @@ import {object,named,invalid} from '../tickets/model'
 import {callAccess,voiceAccess,number,usableContact,phone,xml,response,say,credentials,type VoiceSettings} from './model'
 import {providerRequest} from './provider'
 import {linkedContext} from './privacy'
-import {mediaAllowed} from './media'
 import {privateReceipt} from './store'
 const base='/projects/:projectId/conversations/:conversationId'
 export const callRoutes=new Hono<AppEnv>()
@@ -22,6 +21,7 @@ callRoutes.post(base+'/commands',async c=>{
  if(!['callback','transfer'].includes(kind))invalid('Choose callback or human transfer')
  const requestId=named(b.request_id,100),n=await number(c.env,named(b.number_id),actor.projectId),s:VoiceSettings=JSON.parse(n.settings_json),call=await c.env.DB.prepare('SELECT * FROM voice_calls WHERE id=? AND project_id=? AND conversation_id=? AND number_id=? AND erased=0').bind(named(b.call_id),actor.projectId,conversation.id,n.id).first<any>()
  if(!call)throw new HTTPException(404)
+ if(kind==='transfer'&&!call.remote_cipher)throw new HTTPException(409,{message:'This restored call has no live provider reference'})
  if(kind==='transfer'&&(n.provider!=='twilio'||!['ringing','queued','answered','transfer_failed'].includes(call.state)))throw new HTTPException(409,{message:'Only an active Twilio call can transfer here. Aircall transfers remain in Aircall.'})
  if(n.provider==='aircall'&&!s.aircall_user_id)throw new HTTPException(409,{message:'Configure the Aircall teammate ID before calling back'})
  const intent=await hashToken(JSON.stringify([kind,n.id,call.id])),id='voice-command-'+await hashToken(JSON.stringify([actor.projectId,actor.id,requestId])),now=Date.now()

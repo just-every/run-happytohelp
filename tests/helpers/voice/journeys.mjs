@@ -7,7 +7,7 @@ export const account='synthetic-happytohelp-2'
 export const providerNumber='synthetic-happytohelp-3'
 export const numberPhone='+12025550101'
 export const callerPhone='+12025550102'
-export const settings={timezone:'America/Los_Angeles',hours:Array.from({length:7},(_,day)=>({day,start:'00:00',end:'23:59'})),human_phone:'+12025550103',aircall_user_id:'7',group_id:null,ivr:[{digit:'1',label:'Support',phone:'+12025550104'}],jurisdiction:'US-CA',recording_enabled:true}
+export const settings={timezone:'America/Los_Angeles',hours:Array.from({length:7},(_,day)=>({day,start:'00:00',end:'23:59'})),human_phone:'+12025550103',aircall_user_id:'7',group_id:null,ivr:[{digit:'1',label:'Support',phone:'+12025550104'}],jurisdiction:'US-CA',recording_enabled:true,staff_consent:true,retention_days:1}
 export function signature(url,form){let value=url;for(const key of Object.keys(form).sort())value+=key+form[key];return createHmac('sha1',secret).update(value).digest('base64')}
 export async function voiceHarness(){
  let reply=200,onRequest
@@ -42,6 +42,9 @@ export async function credentialsProof(){const h=await voiceHarness();try{
  assert.equal((await app.call(base+'/numbers',{token,body:{...body,provider_id:'../escape'}})).status,400)
  assert.equal((await app.call(base+'/numbers',{token,body:{...body,settings:{...settings,human_phone:'911'}}})).status,400)
  assert.equal((await app.call(base+'/numbers',{token,body:{...body,version:0}})).status,409)
+ const configured=await app.ok(base+'/numbers/'+h.number.id,{token,method:'PATCH',body:{version:h.number.version,settings:{...settings,retention_days:2}}});assert.equal(configured.data.version,2)
+ assert.equal((await app.call(base+'/numbers/'+h.number.id,{token,method:'PATCH',body:{version:1,settings}})).status,409)
+ assert.equal((await app.call(base+'/numbers/'+h.number.id,{token,method:'PATCH',body:{version:2,settings:{...settings,staff_consent:false}}})).status,400)
  const air=(await app.ok(base+'/numbers',{token,body:{...body,provider:'aircall',provider_id:'8'}})).data
  assert.ok(air.webhook_token);assert.equal(JSON.stringify(await app.ok(base+'/numbers',{token})).includes(air.webhook_token),false)
  const stored=await app.first('SELECT * FROM voice_numbers WHERE id=?',air.id);assert.notEqual(stored.webhook_hash,air.webhook_token)
@@ -88,7 +91,8 @@ export async function routingProof(){const h=await voiceHarness();try{
  const buckets=await app.ok(`/api/dashboard/projects/${h.ws.projectId}/conversations/${call.conversation_id}/buckets/${call.conversation_id}`,{token});assert.ok(JSON.stringify(buckets).includes('Telephone voicemail'))
  assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',call.conversation_id)).n,0,'voice metadata never masquerades as a public chat message')
  const report=await app.ok(base+'/report',{token});assert.equal(report.data.reduce((n,r)=>n+r.calls,0),2)
- assert.equal((await h.calls(call.conversation_id)).some(c=>c.transcript?.includes('<script>')),false)
+ await liveMediaProof(h,call)
+ await contextLinkProof(h,call)
 }finally{await h.close()}}
 export async function uncertaintyProof(){const h=await voiceHarness();try{
  const {app,token,base}=h,call=await h.open(),path=base+`/conversations/${call.conversation_id}/commands`,body={kind:'callback',number_id:h.number.id,call_id:call.id,request_id:'callback-one'}
@@ -134,3 +138,56 @@ export async function erasureProof(){const h=await voiceHarness();try{
  const before=(await app.first('SELECT count(*) n FROM contacts WHERE project_id=?',ws.projectId)).n;assert.equal((await h.hook({remote:'synthetic-happytohelp-17'})).status,409);assert.equal((await app.first('SELECT count(*) n FROM contacts WHERE project_id=?',ws.projectId)).n,before)
 }finally{await h.close()}}
 export const voiceProofs={credentials:credentialsProof,delivery:signedDeliveryProof,uncertainty:uncertaintyProof,erasure:erasureProof}
+
+async function liveMediaProof(h,first){
+ const {app,base,token}=h;await h.configure({});const remote='synthetic-happytohelp-30',call=await h.open({remote}),root=base+`/conversations/${call.conversation_id}`
+ await h.hook({remote,step:'consent',extra:{Digits:'1'}})
+ const dial=await h.hook({remote,step:'ivr',extra:{Digits:'1'}});assert.match(dial.data,/<Transcription /)
+ const utterance=(sequence,text,track='inbound_track')=>({remote,step:'live-transcript',extra:{TranscriptionEvent:'transcription-content',Final:'true',SequenceId:String(sequence),Track:track,TranscriptionData:JSON.stringify({transcript:text})}})
+ assert.equal((await h.hook(utterance(2,'I can help with that.','outbound_track'))).status,200)
+ assert.equal((await h.hook(utterance(1,'Please help with the export.'))).status,200)
+ assert.equal((await h.hook(utterance(1,'Please help with the export.'))).status,200)
+ assert.equal((await h.hook(utterance(1,'A conflicting utterance.'))).status,409)
+ let current=(await h.calls(call.conversation_id)).find(c=>c.id===call.id)
+ assert.equal(current.transcript,'Caller: Please help with the export.\nTeammate: I can help with that.')
+ assert.ok(current.summary.includes(current.transcript));assert.equal(current.consent,'granted')
+ const media=root+`/calls/${call.id}/recording`
+ await h.hook({remote,step:'recording',extra:{RecordingStatus:'completed',RecordingSid:'synthetic-happytohelp-31'}})
+ assert.equal((await app.call(root+`/calls/${call.id}/withdraw`,{token:h.foreign.tokens.owner,body:{}})).status,404)
+ h.setReply(503)
+ // Withdrawal racing an authenticated media read must win before bytes are disclosed.
+ h.duringRequest(async()=>{const r=await app.ok(root+`/calls/${call.id}/withdraw`,{token,body:{}});assert.equal(r.data.provider_stop_state,'uncertain')})
+ assert.equal((await app.request(media,{token})).status,404)
+ const sent=app.requests.length
+ assert.equal((await app.ok(root+`/calls/${call.id}/withdraw`,{token,body:{}})).data.provider_stop_state,'uncertain');assert.equal(app.requests.length,sent)
+ assert.equal((await h.hook(utterance(3,'Late content.'))).status,409)
+ assert.equal((await h.hook({remote,step:'recording',extra:{RecordingStatus:'completed',RecordingSid:'synthetic-happytohelp-32'}})).status,409)
+ assert.doesNotMatch((await h.hook({remote,step:'ivr',extra:{Digits:'1'}})).data,/<Transcription|<Dial /,'replayed routing cannot restart recording after withdrawal')
+ current=(await h.calls(call.conversation_id)).find(c=>c.id===call.id);assert.equal(current.transcript,null);assert.equal(current.summary,'');assert.equal(current.has_recording,0);assert.ok(current.media_withdrawn_at)
+ assert.equal((await app.first('SELECT count(*) n FROM voice_transcript_segments WHERE call_id=?',call.id)).n,0)
+ const expiredRemote='synthetic-happytohelp-33',expired=await h.open({remote:expiredRemote})
+ await h.hook({remote:expiredRemote,step:'consent',extra:{Digits:'1'}})
+ await h.hook({remote:expiredRemote,step:'transcript',extra:{TranscriptionStatus:'completed',TranscriptionText:'Expiring speech.'}})
+ await app.db.prepare('UPDATE voice_calls SET media_expires_at=? WHERE id=?').bind(Date.now()-1,expired.id).run()
+ current=(await h.calls(expired.conversation_id)).find(c=>c.id===expired.id);assert.equal(current.transcript,null);assert.equal(current.summary,'')
+ assert.equal((await h.hook({remote:expiredRemote,step:'transcript',extra:{TranscriptionStatus:'completed',TranscriptionText:'Late expired content.'}})).status,409)
+ await app.scheduled()
+ assert.equal((await app.first('SELECT transcript FROM voice_calls WHERE id=?',expired.id)).transcript,null)
+ assert.equal((await app.first('SELECT count(*) n FROM voice_transcript_segments WHERE call_id=?',expired.id)).n,0)
+ assert.equal((await h.calls(first.conversation_id)).find(c=>c.id===first.id).media_withdrawn_at,null,'other calls retain their consent state')
+}
+async function contextLinkProof(h,call){
+ const {app,ws,token,base}=h,root=base+`/conversations/${call.conversation_id}`
+ const contact=(await app.ok(`/api/management/projects/${ws.projectId}/contacts`,{token,body:{name:'Existing customer',email:'existing@example.test'}})).data
+ const foreign=(await app.ok(`/api/management/projects/${h.foreign.projectId}/contacts`,{token:h.foreign.tokens.owner,body:{name:'Foreign customer',email:'foreign@example.test'}})).data
+ assert.equal((await app.call(root+'/context-link',{token,method:'PUT',body:{contact_id:foreign.id}})).status,409)
+ assert.equal((await app.ok(root+'/context-candidates?email=existing%40example.test',{token})).data[0].id,contact.id)
+ await app.ok(root+'/context-link',{token,method:'PUT',body:{contact_id:contact.id}})
+ const r=await app.ok(root+'/calls',{token});assert.equal(r.linked_context.id,contact.id);assert.match(r.linked_context.authority,/Operator context only/)
+ assert.equal((await app.first('SELECT contact_id FROM conversations WHERE id=?',call.conversation_id)).contact_id,call.contact_id,'link does not merge identities or grant caller authority')
+ await app.ok(root+'/context-link',{token,method:'PUT',body:{contact_id:null}});assert.equal((await app.ok(root+'/calls',{token})).linked_context,null)
+ await app.ok(root+'/context-link',{token,method:'PUT',body:{contact_id:contact.id}})
+ await app.ok(`/api/management/projects/${ws.projectId}/contacts/${contact.id}/erase`,{token,body:{}})
+ assert.equal((await app.ok(root+'/calls',{token})).linked_context,null)
+ assert.ok((await app.first("SELECT count(*) n FROM audit_events WHERE action='voice.context_linked'")).n>=1)
+}

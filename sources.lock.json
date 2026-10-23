@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "e95c86fba0d920d22ced9368b3346586d6ea2960fd72d5253ae1b823e605ef88",
+      "sha256": "ab835b887ca66f971044c07655c02a1b7186cdec04b0da74ddc4854627401cac",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "16154c36b5c4bbd3545b78ee1b20652da4ddad9c2d4a06d9388f38284f14e5e9",
+      "sha256": "b6fa5a25574aec544aa6529b42e92e172c9ac17e7f984da6c4a02beadb89d853",
       "executable": false
     },
     "DEMO.md": {
@@ -11648,7 +11648,7 @@
       "executable": false
     },
     "tests/helpers/workflows/rules.mjs": {
-      "sha256": "9369735297f61c2a4327214d1a28dfdfaac8299c2dd6a1181d56ebd1f1e8082d",
+      "sha256": "b643063e4beab372ac0d13ee241184b51baf235f941ec1afd834e0201b595598",
       "executable": false
     },
     "tests/helpers/workflows/schedules.mjs": {

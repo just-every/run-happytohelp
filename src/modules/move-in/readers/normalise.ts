@@ -1,3 +1,4 @@
+import {zendeskMacroBody,zendeskMacroActions} from './zendesk-macro'
 import {importedEmailThreadKeys} from '../email-threading'
 import type { SourceBundle, SourceRecord } from '../../import-kit/src/types'
 import type { MappingInput, PreparedMapping, Vendor } from '../types'
@@ -15,7 +16,7 @@ const array=(value:unknown):any[]=>Array.isArray(value)?value:[]
 const tags=(record:SourceRecord):string[]=>record.namespace==='helpscout'?helpScoutTags(record):record.namespace==='freshdesk'?freshdeskTags(record):record.namespace==='zendesk'?array((record.payload as any)?.tags).filter(v=>typeof v==='string'&&v.trim()):array((record.payload as any)?.tags?.tags ?? (record.payload as any)?.tags?.data).filter(v=>object(v)&&typeof v.name==='string'&&v.name.trim()).map(v=>v.name)
 export function withTags(source:SourceBundle,vendor:Vendor):SourceBundle {
  const seen=new Set<string>(),added:SourceRecord[]=[]
- for(const record of source.records.filter(r=>['ticket','conversation'].includes(r.kind)||vendor==='helpscout'&&r.kind==='tag'))for(const name of tags(record)){if(name.trim().length>80){source.diagnostics.push({severity:'error',code:'tag_name_limit',message:'Tag names longer than 80 characters are not imported',location:record.location});continue}const key=tagKey(name);if(seen.has(key))continue;if(source.records.length+added.length>=LIMITS.records)throw new Error('export_record_limit');seen.add(key);added.push(sourceRecord(vendor,'tag-name',key,{name:name.trim()},record.location.artifact,record.artifactHash,record.location.row??1,`${record.location.pointer??''}/tags`))}
+ for(const record of source.records.filter(r=>['ticket','conversation'].includes(r.kind)||vendor==='helpscout'&&r.kind==='tag'||vendor==='zendesk'&&r.kind==='macro'))for(const name of vendor==='zendesk'&&record.kind==='macro'?array((record.payload as any)?.actions).filter(a=>['current_tags','remove_tags'].includes(a?.field)&&typeof a.value==='string').flatMap(a=>a.value.split(/\s+/).filter(Boolean)):tags(record)){if(name.trim().length>80){source.diagnostics.push({severity:'error',code:'tag_name_limit',message:'Tag names longer than 80 characters are not imported',location:record.location});continue}const key=tagKey(name);if(seen.has(key))continue;if(source.records.length+added.length>=LIMITS.records)throw new Error('export_record_limit');seen.add(key);added.push(sourceRecord(vendor,'tag-name',key,{name:name.trim()},record.location.artifact,record.artifactHash,record.location.row??1,`${record.location.pointer??''}/tags`))}
  return {...source,records:[...added,...source.records].sort((a,b)=>rank(a.kind)-rank(b.kind))}
 }
 const rank=(kind:string)=>kind==='tag-name'?0:kind==='user'||kind==='contact'||kind==='agent'?1:kind==='collection'?2:kind==='category'?3:4
@@ -82,8 +83,8 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
      if(p.restriction!=null)throw new Error('restricted_macro_not_imported')
      if(!Array.isArray(p.actions))throw new Error('macro_actions_required')
      const replies=p.actions.filter((a:any)=>['comment_value','comment_value_html'].includes(a.field));if(replies.length!==1)throw new Error('one_macro_reply_required')
-     if(p.actions.some((a:any)=>a.field==='comment_mode_is_public'&&a.value!==true&&a.value!=='true'))throw new Error('private_macro_not_imported')
-     body=text(replies[0].value,'macro_body_required');title=text(p.title,'macro_title_required');created=time(p.created_at,'iso');updated=time(p.updated_at,'iso');if(p.actions.length>1)omissions.push('macro_workflow_actions_not_activated')
+     // A private macro becomes an explicit native note, never a public reply.
+     body=text(replies[0].value,'macro_body_required');title=text(p.title,'macro_title_required');created=time(p.created_at,'iso');updated=time(p.updated_at,'iso');
     }else{
      if(p.visible_to!=='everyone')throw new Error('restricted_macro_not_imported')
      if(!Array.isArray(p.available_on)||!p.available_on.includes('inbox'))throw new Error('macro_channel_unsupported')
@@ -92,10 +93,12 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
     // Inspect every supported original representation before markup conversion
     // can discard dynamic attributes or the plain-text fallback expression.
     const representations=vendor==='intercom'?[p.body,p.body_text]:p.actions.filter((a:any)=>['comment_value','comment_value_html'].includes(a.field)).map((a:any)=>a.value)
-    if(representations.some((value:unknown)=>typeof value==='string'&&/\{\{|\{%|<\s*attribute\b/i.test(value)))throw new Error('macro_placeholders_not_supported')
+    if(vendor!=='zendesk'&&representations.some((value:unknown)=>typeof value==='string'&&/\{\{|\{%|<\s*attribute\b/i.test(value)))throw new Error('macro_placeholders_not_supported')
+    if(vendor==='zendesk'){body=zendeskMacroBody(body,omissions);if(/<[^>]*\{\{/.test(body))throw new Error('macro_attribute_placeholders_not_supported')}
     if(/<[a-z][^>]*>/i.test(body))body=await htmlToMarkdown(body)
-    if(/\{\{|\{%/.test(body))throw new Error('macro_placeholders_not_supported')
+    if(vendor!=='zendesk'&&/\{\{|\{%/.test(body))throw new Error('macro_placeholders_not_supported')
     tables.macros=[{id:target,project_id:projectId,title,content:body,created_by:actorId,created_at:created,updated_at:updated}]
+    if(vendor==='zendesk')tables.macro_versions=[{macro_id:target,project_id:projectId,version:1,title,content:body,actions_json:JSON.stringify(zendeskMacroActions(p.actions,new Map([...array(source.records).filter(r=>r.kind==='tag-name').map(r=>[r.sourceId,id('tag',r.sourceId)] as [string,string]),...tagIds]),omissions)),scope_json:JSON.stringify({visibility:'shared',roles:[],groups:[],brands:[]}),created_by:actorId,created_at:updated}]
    }else if(record.kind==='article'){
     kind='article';target=id(kind,record.sourceId);let status:string
     if(vendor==='zendesk'){

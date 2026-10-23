@@ -55,4 +55,9 @@ started outcomes as uncertain; it never resumes execution.
 
 `tests/connections/business.mjs` folds network-boundary scenarios into the
 existing credentials, API, erasure and uncertainty journeys. Provider fixtures
-prove local protocol behavior only; they are not live sandbox receipts.
+prove local protocol behavior only; they are not live sandbox receipts. The
+campaign separately exercised a held Stripe test key through verified account
+settings, a paid USD invoice, one refund with a deliberately lost response,
+provider reconciliation, a reviewed customer-visible confirmation and period-end
+cancellation. That receipt is kept outside product source. Shopify and CRM live
+sandbox receipts remain pending.

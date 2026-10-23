@@ -1621,7 +1621,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "46b0a57d7e24c46d353f0987530305f7404725c70610756040945ee90ccbb226",
+      "sha256": "8fe732f090d582e25477cfbf20efe9821328bbf1f4548173c6efd6663c9c8a71",
       "executable": false
     },
     "AGENTS.md": {
@@ -1641,7 +1641,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8c266ce94974b4156f63c971939b5f77c7faa67e1bdafece4e32b00566fff32d",
+      "sha256": "f400c2fad7729f5da4090735236695b89cd9566f00d006b54ccfd50ad0b737ed",
       "executable": false
     },
     "DEMO.md": {
@@ -3957,7 +3957,7 @@
       "executable": false
     },
     "src/modules/business-connectors/actions.ts": {
-      "sha256": "6c4e3fef565e1a1601fe1854cf34bbaa3ded70a14468edc0cc5481549d99686d",
+      "sha256": "a79b05ba0ede33b2abf0c5cde01c6d8c90e92a04b466d68bb2eb6cc66bb0910d",
       "executable": false
     },
     "src/modules/business-connectors/confirmation.ts": {
@@ -4005,7 +4005,7 @@
       "executable": false
     },
     "src/modules/business-connectors/README.md": {
-      "sha256": "61379818ab33b4bf01de84fe708c1482145a3d238fa0eafed9c2ebc818834e01",
+      "sha256": "60057eac9e3f71ceac8979eb50b7ebff7d64a99e894b10e0c317ec42cb4da914",
       "executable": false
     },
     "src/modules/business-connectors/routes.ts": {
@@ -9561,7 +9561,7 @@
       "executable": false
     },
     "src/ui/native/pages/business-connectors/Panel.jsx": {
-      "sha256": "2257fd13ab9d935b3e14a2e851ad34e22f9dfc09cf9d445c634d2fd9842cdd5e",
+      "sha256": "c880d2f6abac495c08b3e76a49b6a810960c524149a3e1ab9496d21cb31f7b01",
       "executable": false
     },
     "src/ui/native/pages/business-connectors/Settings.jsx": {
@@ -10885,11 +10885,11 @@
       "executable": false
     },
     "tests/helpers/business-connectors/browser.mjs": {
-      "sha256": "01c11e8a4b80b078b76a92e498f6ee3626fa3dd36a0d519480c70115a2c13a49",
+      "sha256": "9bad9032113a4b54884ab99cbfd4564cce6a516b369a7f3328815df0f453e1de",
       "executable": false
     },
     "tests/helpers/business-connectors/journeys.mjs": {
-      "sha256": "9e0c4461c912b368f57e731c32d6918b740216a98ed82a459d0b487f801662fa",
+      "sha256": "66d0322814b043dbdd7ffb78e5d8eb6521d2dee1e6c5bad51e7c309d25c06be0",
       "executable": false
     },
     "tests/helpers/business-connectors/network.mjs": {

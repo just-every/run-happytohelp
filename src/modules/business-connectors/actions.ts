@@ -39,9 +39,9 @@ actions.post(mapped+'/actions/:actionId/approve',async c=>{
 })
 actions.post(mapped+'/actions/:actionId/cancel',async c=>{const {actor,action}=await load(c);await access(c,'conversations.manage');await c.env.DB.batch([c.env.DB.prepare("UPDATE business_actions SET state='cancelled',updated_at=? WHERE id=? AND state IN ('prepared','approved')").bind(Date.now(),action.id),auditStatement(c.env.DB,{projectId:actor.projectId,category:'approval',action:'business.cancelled',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'business_action',id:action.id}})]);return c.json({cancelled:true})})
 for(const mode of ['execute','reconcile'] as const)actions.post(mapped+'/actions/:actionId/'+mode,async c=>{
- const {actor,row,mapped:l,action}=await load(c);await access(c,'refunds.approve');demand(row,'read');demand(row,'execute')
+ const {actor,row,mapped:l,action}=await load(c);await access(c,'refunds.approve');demand(row,'read');if(mode==='execute')demand(row,'execute')
  if(action.state==='succeeded'||action.state==='failed')return c.json({data:safe(action)})
- if(action.connection_version!==row.version||action.link_version!==l.version)throw new HTTPException(409,{message:'Connection or customer changed; action cannot execute or reconcile'})
+ if((mode==='execute'&&action.connection_version!==row.version)||action.link_version!==l.version||action.source_id!==l.source_id)throw new HTTPException(409,{message:'Connection or customer changed; action cannot execute or reconcile'})
  const token=await decryptToken(c.env,actor.projectId,row.token_cipher!),g=guard(c,row,l)
  let remoteId=action.remote_id
  if(mode==='execute'){
@@ -53,7 +53,7 @@ for(const mode of ['execute','reconcile'] as const)actions.post(mapped+'/actions
   const claimed=await c.env.DB.prepare(`UPDATE business_actions SET state='sending',updated_at=? WHERE id=? AND state='approved' AND amount_cents<=? AND ${g.sql} AND EXISTS(${authority.sql})`).bind(Date.now(),action.id,row.limit_cents,...g.params,...authority.params).run()
   if(!claimed.meta.changes)throw new HTTPException(409,{message:'Action already started or authority changed'})
   try{const result=await execute(row,token,action);remoteId=typeof result.id==='string'?result.id:typeof result.data?.id==='string'?result.data.id:null;await c.env.DB.prepare(`UPDATE business_actions SET remote_id=? WHERE id=? AND state='sending' AND ${g.sql}`).bind(remoteId,action.id,...g.params).run()}
-  catch(error){await c.env.DB.prepare("UPDATE business_actions SET state='uncertain',result_json=?,updated_at=? WHERE id=? AND state='sending'").bind(JSON.stringify({code:code(error),notice:'No automatic replay. Reconcile with the provider.'}),Date.now(),action.id).run();return c.json({state:'uncertain'},202)}
+  catch(error){await c.env.DB.batch([c.env.DB.prepare("UPDATE business_actions SET state='uncertain',result_json=?,updated_at=? WHERE id=? AND state='sending'").bind(JSON.stringify({code:code(error),notice:'No automatic replay. Reconcile with the provider.'}),Date.now(),action.id),auditStatement(c.env.DB,{projectId:actor.projectId,category:'integration',action:'business.uncertain',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'business_action',id:action.id},detail:{kind:action.kind,amount_cents:action.amount_cents,code:code(error)}})]);return c.json({state:'uncertain'},202)}
  }else if(!['sending','uncertain'].includes(action.state))throw new HTTPException(409,{message:'Only a started action can reconcile'})
  let result;try{result=await readback(row,token,action,remoteId)}catch(error){result={state:'uncertain',code:code(error),notice:'Provider result remains unconfirmed. No automatic replay.'}}
  await access(c)

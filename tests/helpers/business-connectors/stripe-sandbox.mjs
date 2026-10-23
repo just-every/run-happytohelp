@@ -24,6 +24,7 @@ try{
   const body=request.method==='GET'?undefined:await request.text();
   const response=await fetch(url,{method:request.method,headers:Object.fromEntries(request.headers),body,redirect:'manual',signal:AbortSignal.timeout(15000)});
   statuses[response.status]=(statuses[response.status]??0)+1;
+  if(!response.ok){const error=(await response.clone().json().catch(()=>({}))).error??{};process.stderr.write(JSON.stringify({stripeStatus:response.status,code:error.code,type:error.type,param:error.param})+'\n');}
   if(url.pathname==='/v1/refunds'&&request.method==='POST'){
    refundPosts++;assert.equal(new URLSearchParams(body).get('amount'),'125');
    if(loseRefund){loseRefund=false;assert.ok(response.ok,'Stripe accepted the bounded refund');await response.arrayBuffer();throw new Error('Synthetic lost response after Stripe commit');}
@@ -47,7 +48,7 @@ try{
  assert.equal((await app.call(base+refundRoot+'/approve',{token:ws.tokens.operator,body:{confirmed:true}})).status,403);checks.push('denied-approval');
  await call(refundRoot+'/approve',{confirmed:true});loseRefund=true;assert.equal((await call(refundRoot+'/execute',{})).state,'uncertain');
  assert.equal((await app.call(base+refundRoot+'/execute',{token:ws.tokens.owner,body:{}})).status,409);
- assert.equal((await call(refundRoot+'/reconcile',{})).data.state,'succeeded');
+ const reconciled=(await call(refundRoot+'/reconcile',{})).data;assert.equal(reconciled.state,'succeeded',JSON.stringify(reconciled.result));
  assert.equal((await call(refundRoot+'/execute',{})).data.state,'succeeded');assert.equal(refundPosts,1);
  const ledger=await stripe('/v1/refunds?payment_intent='+payment+'&limit=100');assert.equal(ledger.data.filter(row=>row.metadata?.h2h_action===refund.id&&row.amount===125).length,1);checks.push('lost-refund-response-reconciled-once');
  const frontier=await app.ok('/api/conversations/'+conversation.id,{token:ws.tokens.owner});

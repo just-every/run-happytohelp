@@ -67,6 +67,7 @@ export async function sharedEvent(env:Env,row:Connection,event:Inbound){
  if(!result.accepted){await discardMedia(env,staged);}
  if(!result.accepted)throw new HTTPException(409)
  await env.DB.prepare("INSERT OR IGNORE INTO support_channel_sends VALUES(?,?,?,?,'delivered',NULL,?,?,?)").bind(result.message.id,row.project_id,t.conversation_id,row.id,event.providerMessageId??event.id,Date.now(),Date.now()).run()
+ await env.DB.prepare('INSERT OR IGNORE INTO support_channel_events(connection_id,event_hash,thread_id,message_id,created_at,provider_message_id,sender_hash) SELECT ?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM messages WHERE id=? AND erased_at IS NULL) AND EXISTS(SELECT 1 FROM support_channel_threads WHERE id=?)').bind(row.id,await digest(event.id),t.id,result.message.id,Date.now(),event.providerMessageId??event.id,await digest(event.sender),result.message.id,t.id).run()
  await publishActivity(env,row.project_id,t.conversation_id,'message');return {conversation_id:t.conversation_id,message_id:result.message.id}
 }
 async function changeEvent(env:Env,row:Connection,event:Inbound){

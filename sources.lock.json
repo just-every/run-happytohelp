@@ -2483,6 +2483,10 @@
       "sha256": "5e48d7dfa957a6af2236a412c94f1695f31935679a20a7ba0a3aff1a33e97a0c",
       "executable": false
     },
+    "migrations/252_shared_channel_actions.sql": {
+      "sha256": "d4b34e49c64835354ffd28889d9e3e81663cc7f69778a86757188c259539c08e",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "0fa396b895e9098cc1db5070d1dc33ca732fae8287f84f69dc8afa3bc8afd1a6",
       "executable": false
@@ -6611,6 +6615,10 @@
       "sha256": "a3fbf563db68135532598d1ab3efbb699a93725592423197b64efa196f17f8e5",
       "executable": false
     },
+    "src/modules/support-channels/install.ts": {
+      "sha256": "79bc40493acb8c6e70c7bdad1de3dcbedcfe641de2d0bea5a59f801901969de5",
+      "executable": false
+    },
     "src/modules/support-channels/media.ts": {
       "sha256": "eac84b2232887fa7d4eedefbc841bde3142becbaf73c61293ddfa99947fb7610",
       "executable": false
@@ -6655,12 +6663,24 @@
       "sha256": "9fd8ee9db908347bb2784cac06c9fc3d6f7c3abac49b50a1c6bd049c6862e437",
       "executable": false
     },
+    "src/modules/support-channels/shared-sync.ts": {
+      "sha256": "c7e9c6c7f019f74c87d62d7218ebdca33699cfd68879504cff1108bc6b391f4f",
+      "executable": false
+    },
+    "src/modules/support-channels/shared.ts": {
+      "sha256": "e4c9ab1b34e2848be7420703a5ea45a342df6f0e2209ad2f4599f07e5c11fbf5",
+      "executable": false
+    },
+    "src/modules/support-channels/teams.ts": {
+      "sha256": "be4e7c4528edb732bc187a6ca990ac434ae66d0b74462ea334a5f740f92d9c77",
+      "executable": false
+    },
     "src/modules/support-channels/templates.ts": {
       "sha256": "5fbc1cac32f4e660fca416e3a0c938a53912e15798f223f5e433bdecdccb6e8b",
       "executable": false
     },
     "src/modules/support-channels/TicketChannel.jsx": {
-      "sha256": "62a7728a719535512b961efc643db85360658ceb74a30e758a07a5df4126a335",
+      "sha256": "ee07fce3e0306a3818c37baae3cde9b35fa93970cf2f5111d86a50f0925df9bb",
       "executable": false
     },
     "src/modules/tickets/batch-workflows.ts": {
@@ -8060,7 +8080,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationSidebar.jsx": {
-      "sha256": "f3396283f2b9069df7bb44dbc4c57d37571f179d4eae74ed8498bf454bb8fac3",
+      "sha256": "c724cc4715e36f17cf1d71de16ad999b0400a348a61f302337d4ed291dd4e02e",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationsList.jsx": {

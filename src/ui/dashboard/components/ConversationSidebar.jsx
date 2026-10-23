@@ -140,7 +140,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
         <div className="ticket-sections">
             { record && section('fields', 'Ticket fields', <TicketEditor conversation={ conversation } record={ record } />) }
             { workflows && section('schedules', 'Schedules', <WorkflowPanel conversation={ conversation } workflows={ workflows } onBadge={ badgeSetters.schedules } />, badges.schedules) }
-            { ['sms','whatsapp','instagram','messenger','slack'].includes(conversation.channel) && section('support-channel', 'Support channel', <TicketChannel projectId={conversation.project_id} conversationId={conversation.id} refreshKey={liveKey}/>) }
+            { ['sms','whatsapp','instagram','messenger','slack','teams'].includes(conversation.channel) && section('support-channel', 'Support channel', <TicketChannel projectId={conversation.project_id} conversationId={conversation.id} refreshKey={liveKey}/>) }
             { section('escalations', 'Escalations', <EscalationsPanel projectId={ conversation.project_id } conversationId={ conversation.id } refreshKey={ liveKey } reads={ reads } onDraft={ onReviewEscalationDraft } onBadge={ badgeSetters.escalations } onUpdates={ setEscalationUpdates } />, badges.escalations) }
             { section('merges', 'Merges and partner threads', <ConversationActions conversation={ conversation } refreshKey={ liveKey } reads={ reads } onChanged={ onTicketChanged } onBadge={ badgeSetters.merges } />, badges.merges) }
             { manage && section('problem', 'Problem and incidents', <ProblemPanel projectId={ conversation.project_id } conversationId={ conversation.id } ticket={ ticket } onChanged={ () => record.reload() } onBadge={ badgeSetters.problem } />, badges.problem) }

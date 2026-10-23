@@ -9984,7 +9984,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProjectSettings.jsx": {
-      "sha256": "0c1da99068a6a1e824bc9cd8af4615ab57b18fae0aabd6d6e1328e44ef2c418b",
+      "sha256": "1e058aa675c59ee7a81bf0a01f0a967d8606b45f9bf8fdeb2d1bb0be372b4638",
       "executable": false
     },
     "src/ui/native/pages/ProjectsPage.d.ts": {
@@ -11644,7 +11644,7 @@
       "executable": false
     },
     "tests/helpers/ui-parity.mjs": {
-      "sha256": "d90e6403135864e1bcd0bf12e5140588bd12cee653d6bd1a3680ff1e4b2d3ee3",
+      "sha256": "74e24400bdefb856d3f804bccfaf4006d50aac1e65199c76be3f2c3d03e01e0d",
       "executable": false
     },
     "tests/helpers/ui-readiness-editor.mjs": {

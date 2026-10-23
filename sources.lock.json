@@ -6620,7 +6620,7 @@
       "executable": false
     },
     "src/modules/support-channels/consent.ts": {
-      "sha256": "047dba0315f6d1b7f0e4b1b42ad5695c586d41f22084aa66b6e60f27b7af09d4",
+      "sha256": "d8c486b134e5b8820f07596ea2d11e1c9af483f79820c78325b920e734603e0f",
       "executable": false
     },
     "src/modules/support-channels/help.ts": {
@@ -11616,7 +11616,7 @@
       "executable": false
     },
     "tests/helpers/support-channels/restore.mjs": {
-      "sha256": "66e2e16ab048ff98a81b0da971931ead8f6d7e1e97deed0687e7dac3a4b7a39c",
+      "sha256": "7e2e9eeca8028b275f9a58b0221e03a8702720fed451cf4659e97e1376dc618c",
       "executable": false
     },
     "tests/helpers/training-readiness.mjs": {

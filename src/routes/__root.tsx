@@ -2,6 +2,7 @@ import { introGuardScript, introCss } from '../vendor/base/hydration/intro-guard
 import { CompiledVisualEdits } from '../editor/EditorLauncher';
 import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import NotFound from '../ui/homepage/NotFound'
+import { TooltipLayer } from '../modules/tooltip/TooltipLayer'
 
 // The HappyToHelp mark (src/ui/homepage/brand-mark.ts): the SVG for browsers that take one, the PNG rendered from it otherwise.
 const brands = '/homepage/media/brands'
@@ -25,5 +26,5 @@ export const Route = createRootRoute({
     };
   },
   notFoundComponent: NotFound,
-  component: () => <html lang="en"><head><script dangerouslySetInnerHTML={{ __html: introGuardScript }} /><style>{introCss}</style><HeadContent /></head><body><CompiledVisualEdits /><Outlet /><Scripts /></body></html>,
+  component: () => <html lang="en"><head><script dangerouslySetInnerHTML={{ __html: introGuardScript }} /><style>{introCss}</style><HeadContent /></head><body><CompiledVisualEdits /><TooltipLayer /><Outlet /><Scripts /></body></html>,
 })

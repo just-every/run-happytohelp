@@ -9,6 +9,7 @@ import { launcherWorkspaceBrand } from './workspaceBrand';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faComment as fasComment} from "@fortawesome/free-solid-svg-icons";
 import {faTimes as falTimes} from "@fortawesome/free-solid-svg-icons";
+import { tooltip } from '../../tooltip/tooltip';
 
 export default function Button(props) {
     const context = useContext(AppContext);
@@ -78,9 +79,8 @@ export default function Button(props) {
     if(transitioning) classes.push("happytohelp-button-transitioning");
 
     return (
-        <>
         <button type="button" className={classes.join(" ")} onMouseOver={props.onMouseOver} onClick={props.onClick}
-                aria-describedby="h2h-launcher-tooltip" aria-label={props.open ? 'Close chat' : 'Open chat'} aria-expanded={props.open}
+                { ...tooltip(props.open ? 'Close chat' : 'Open chat', 'left') } aria-expanded={props.open}
                 style={ props.open ? context.theme.button.open : context.theme.button.closed }>
             {!props.open && (workspaceBrand
                 ? <WorkspaceBrandAvatar brand={workspaceBrand} />
@@ -90,7 +90,5 @@ export default function Button(props) {
             <FontAwesomeIcon icon={fasComment} flip="horizontal" className="happytohelp-show-closed" />
             <FontAwesomeIcon icon={falTimes} className="happytohelp-show-opened" />
         </button>
-        <span id="h2h-launcher-tooltip" role="tooltip" className="happytohelp-launcher-tip">{props.open ? 'Close chat' : 'Open chat'}</span>
-        </>
     );
 };

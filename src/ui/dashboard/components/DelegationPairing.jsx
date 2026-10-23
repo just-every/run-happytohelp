@@ -4,6 +4,7 @@ import { Modal } from 'react-bootstrap';
 import DelegationCopyButton from './DelegationCopyButton';
 import DelegationDevices from './DelegationDevices';
 import { buildLocalAgentCommands, isWorkerReady, pairedDevice } from '../utils/localAgentSetup';
+import DialogHeader from './DialogHeader';
 
 const remainingSeconds = expiresAt => {
     const expiresAtTime = new Date(expiresAt).getTime();
@@ -165,9 +166,9 @@ export default function DelegationPairing({
         contentClassName="delegation-setup-modal__content"
         aria-labelledby="delegation-setup-title"
     >
-        <Modal.Header closeButton>
+        <DialogHeader closeButton>
             <Modal.Title id="delegation-setup-title">Set up a standalone worker</Modal.Title>
-        </Modal.Header>
+        </DialogHeader>
         <Modal.Body>
             <div ref={ dialogBodyRef } className="delegation-setup-modal__body">
             <p className="delegation-setup-modal__intro">This alternate path runs a direct worker on a computer you control.</p>

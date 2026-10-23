@@ -38,8 +38,8 @@ export async function campaignsBrowser({browser,page,origin,projectId,owner,evid
    try{
     await visitor.goto(site+'/checkout'+(width===390?'?custom=1':''));
     const launcher=visitor.getByRole('button',{name:'Open chat',exact:true}).first();
-    if(width===1440){await launcher.focus();await visitor.locator('.happytohelp-launcher-tip').waitFor({state:'visible'});
-    assert.equal(await visitor.locator('.happytohelp-launcher-tip').innerText(),'Open chat');}
+    if(width===1440){await launcher.focus();await visitor.getByRole('tooltip').waitFor({state:'visible'});
+    assert.equal(await visitor.getByRole('tooltip').innerText(),'Open chat');}
     await visitor.getByRole('button',{name:'Open chat',exact:true}).first().click();
     await visitor.getByRole('button',{name:'No thanks',exact:true}).click();
     await visitor.getByRole('button',{name:'Close chat',exact:true}).first().click();

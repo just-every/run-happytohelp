@@ -2,6 +2,7 @@ import React, { useEffect, useId, useRef } from 'react';
 import PropTypes from 'prop-types';
 import EmailRecipients from '../EmailRecipients';
 import EmailSender from '../../../native/pages/email/EmailSender';
+import { tooltip } from '../../../../modules/tooltip/tooltip';
 
 /**
  * "CC, BCC and sender…": the reply's Cc and Bcc and its sending mailbox, edited beside the card and sent with the same
@@ -28,7 +29,7 @@ export default function RecipientsPopover({ recipients, onRecipientsChange, send
     return <div ref={ ref } className="conversation-recipients-popover" role="dialog" aria-modal="false" aria-labelledby={ titleId } onKeyDown={ onKeyDown }>
         <div className="conversation-recipients-popover__head">
             <h2 id={ titleId }>CC, BCC and sender</h2>
-            <button type="button" className="btn-close" aria-label="Close CC, BCC and sender" onClick={ () => onClose(true) } />
+            <button type="button" className="btn-close" { ...tooltip('Close') } onClick={ () => onClose(true) } />
         </div>
         <EmailSender defaultLabel="Use this ticket’s mailbox" mailboxes={ mailboxes } { ...sender } onChange={ onSenderChange } disabled={ disabled } />
         <EmailRecipients { ...recipients } onChange={ onRecipientsChange } disabled={ disabled } />

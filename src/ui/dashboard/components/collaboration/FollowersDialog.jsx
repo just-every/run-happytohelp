@@ -2,6 +2,7 @@ import React, {useId, useState} from 'react';
 import {Alert, Button, Form, Modal} from 'react-bootstrap';
 import useCollaboration from './useCollaboration';
 import './followers-dialog.css';
+import DialogHeader from '../DialogHeader';
 
 /** Internal CC: choose the teammates who follow this ticket. Followers get its updates; the customer never sees them. */
 export default function FollowersDialog({onHide}) {
@@ -14,7 +15,7 @@ export default function FollowersDialog({onHide}) {
     const close = collaboration.busy ? undefined : onHide;
     const save = async () => { if (await collaboration.setFollowers(selected)) onHide(); };
     return <Modal show onHide={close} aria-labelledby={titleId} className="followers-dialog">
-        <Modal.Header closeButton={!collaboration.busy}><Modal.Title id={titleId}>Internal CC</Modal.Title></Modal.Header>
+        <DialogHeader closeButton={!collaboration.busy}><Modal.Title id={titleId}>Internal CC</Modal.Title></DialogHeader>
         <Modal.Body>
             {collaboration.error && <Alert variant="danger" role="alert">{collaboration.error}</Alert>}
             <p>Teammates who follow this ticket get its updates. They are internal CCs: the customer never sees them.</p>

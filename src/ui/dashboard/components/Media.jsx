@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal } from "react-bootstrap";
 
 import prettyBytes from 'pretty-bytes';
+import DialogHeader from './DialogHeader';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
 function Media({ media }) {
     const [showModal, setShowModal] = useState(false);
+    const imageId = useId();
 
     const handleCloseModal = () => setShowModal(false);
     const handleShowModal = (e) => {
@@ -17,11 +20,11 @@ function Media({ media }) {
 
     return media.aggregate_type === 'image'
         ? <>
-            <a href={ media.url } onClick={ handleShowModal }><img src={ media.preview_url ?? media.url } alt={ media.filename_original } /></a>
+            <a href={ media.url } { ...tooltip('Open image', { describedBy: imageId }) } onClick={ handleShowModal }><img id={ imageId } src={ media.preview_url ?? media.url } alt={ media.filename_original } /></a>
             <Modal show={showModal} onHide={handleCloseModal} dialogClassName="modal-fullscreen">
-                <Modal.Header closeButton>
+                <DialogHeader closeButton>
                     <h4 className="mb-0">{ media.filename_original }</h4>
-                </Modal.Header>
+                </DialogHeader>
                 <Modal.Body><img src={ media.url } alt={ media.filename_original } className="img-fluid" /></Modal.Body>
             </Modal>
         </>

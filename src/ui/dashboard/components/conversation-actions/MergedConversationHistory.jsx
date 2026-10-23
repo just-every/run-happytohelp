@@ -2,6 +2,7 @@ import React,{useCallback,useEffect,useId,useState} from 'react';
 import {Modal} from 'react-bootstrap';
 import {nativeRequest} from '../../../native/transport';
 import ConversationBody from '../ConversationBody';
+import DialogHeader from '../DialogHeader';
 
 /** The merged tickets' own transcripts, read for Ticket › Merges and partner threads (which shows how many). */
 export function useMergedHistory(conversation,refreshKey){
@@ -17,7 +18,7 @@ export function useMergedHistory(conversation,refreshKey){
 export default function MergedConversationHistory({conversation,history,onHide}){
  const titleId=useId();
  return <Modal show size="lg" onHide={onHide} aria-labelledby={titleId} className="merged-history-dialog">
-  <Modal.Header closeButton><Modal.Title id={titleId}>Merged ticket histories</Modal.Title></Modal.Header>
+  <DialogHeader closeButton><Modal.Title id={titleId}>Merged ticket histories</Modal.Title></DialogHeader>
   <Modal.Body>
    {history.error&&<p role="alert" className="text-danger">Couldn’t load merged history: {history.error}</p>}
    {history.sources.map(source=><details key={source.conversation_id} className="mb-3"><summary>{source.subject||`Ticket ${source.conversation_id}`} · <a href={source.source_link}>Source ticket</a></summary><ConversationBody conversation={{...conversation,id:source.conversation_id}} buckets={source.buckets} setAtTop={()=>{}}/></details>)}

@@ -7,6 +7,7 @@ import gfm from "h2h-widget-gfm";
 import AppContext from "./context/AppContext";
 import {faTimes} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import { tooltip } from '../../tooltip/tooltip';
 let lastInsight = null;
 
 export default function Insight({insightOpen, setOpen, setInsightOpen}) {
@@ -113,8 +114,8 @@ export default function Insight({insightOpen, setOpen, setInsightOpen}) {
     return (
         <div>
             <div className={containerClasses.join(" ")}>
-                <button type="button" aria-label="Dismiss offer" data-h2h-tip="Dismiss offer" className={"happytohelp-insight-close"} style={ context.theme.insight } onClick={handleClose}>
-                    <FontAwesomeIcon icon={faTimes} />
+                <button type="button" className="happytohelp-insight-close" style={ context.theme.insight } { ...tooltip('Close') } onClick={handleClose}>
+                    <FontAwesomeIcon icon={faTimes} aria-hidden="true" />
                 </button>
                 <div className={eventClasses.join(" ")} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
                     <div className={insightClasses.join(" ")}>

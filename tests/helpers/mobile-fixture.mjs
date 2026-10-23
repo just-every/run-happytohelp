@@ -1,6 +1,6 @@
 import {startApp} from '../journeys/kit/app.mjs'
 
-export const root='/api/mobile/v1',allScopes=['read','reply','notes','assign','attachments','knowledge','push']
+export const root='/api/mobile/v1',allScopes=['read','reply','notes','assign','attachments','knowledge','approval','push']
 export async function fixture(){
  const app=await startApp(),w=await app.seedWorkspace('mobile'),other=await app.seedWorkspace('mobile-other')
  await app.presenceAwayOff(w.projectId);await app.presenceAwayOff(other.projectId)

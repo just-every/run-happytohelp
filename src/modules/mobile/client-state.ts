@@ -1,4 +1,5 @@
 import type {MobileScope} from './authority'
+import type {Authoring} from '../outcomes/provenance'
 
 export interface MobileCredential {deviceId:string;projectId:string;token:string;scopes:MobileScope[];expiresAt:number}
 export interface MobileSession extends Omit<MobileCredential,'token'> {}
@@ -10,6 +11,7 @@ export interface DraftFile {filename:string;contentType:string;bytes:Uint8Array;
 export interface MobileDraft {
  localId:string;content:string;resolve:boolean;mediaIds:string[];files:DraftFile[];frontier:string
  reviewRequired:boolean;outcome:'unsent'|'sending'|'uncertain'|'refused'
+ authoring?:Authoring
 }
 export type ConnectionState='reconnect-required'|'reconnecting'|'online'|'offline'|'signed-out'
 export type PurgeReason='signout'|'revocation'|'authority-change'|'workspace-change'|'process-exit'

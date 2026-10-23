@@ -16,8 +16,8 @@ export async function prepareLocalDraft(env: LocalEnv, input: DraftInput) {
             AND g.user_id=j.operator_id AND (g.project_id IS NULL OR g.project_id=j.project_id) AND g.revoked_at IS NULL))
         AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=j.project_id
             AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)
-        AND c.revision=? AND c.last_message_id IS ?`;
-    const args = [jobId, projectId, conversationId, operatorId, expectedRevision, expectedLastMessageId];
+        AND c.revision=? AND c.last_message_id IS ?` + (input.guard ? ` AND (${input.guard.sql})` : '');
+    const args:unknown[] = [jobId, projectId, conversationId, operatorId, expectedRevision, expectedLastMessageId, ...(input.guard?.args??[])];
     const job = await env.DB.prepare(sql).bind(...args).first<any>();
     requireValue(job, 'Draft unavailable or conversation changed; review again', 409);
     const result = JSON.parse(job.result);

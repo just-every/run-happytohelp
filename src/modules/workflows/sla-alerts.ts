@@ -17,7 +17,7 @@ export function desiredSlaAlerts(ticket:{project_id:string;id:string;assigned_to
   const resolved=clock.completed_at!==null||['solved','closed'].includes(state.status)
   const kind=clock.metric==='unattended'?'unattended':clock.breached?'breach':!resolved&&!state.pause_reason&&clock.remaining_minutes<=policy.approaching_minutes?'approaching':null
   if(!kind)continue
-  const recipients=kind==='approaching'?[ticket.assigned_to??null]:[...new Set<string|null>([ticket.assigned_to??null,...policy.backup_user_ids])]
+  const recipients=[...new Set<string|null>([ticket.assigned_to??null,...policy.backup_user_ids])]
   for(const recipient of recipients)desired.push({id:JSON.stringify(['sla',ticket.project_id,ticket.id,policy.id,clock.metric,clock.cycle,kind,recipient]),metric:clock.metric,cycle:clock.cycle,kind,recipient,resolved_at:resolved?clock.completed_at??now:null})
  }
  return desired

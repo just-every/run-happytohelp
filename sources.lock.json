@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc5436bc531ba02c00c04f7a7ad1439aa465629c9b3780f32ff5e8ee8b198663",
+      "sha256": "3f109eeb1f014913b3a93e026380ccb55095eb496b2bce4bf1af64d00a4824c0",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "e38f8a346019e45125ec715584886cd60a0b711d19d681e5c9f09ed65bc1c226",
+      "sha256": "46478719cca4050992dd6388e51214f81f85f3ffd60e040209515efba1d4308f",
       "executable": false
     },
     "DEMO.md": {
@@ -7416,7 +7416,7 @@
       "executable": false
     },
     "src/modules/workflows/sla-alerts.ts": {
-      "sha256": "c8100ebc059f4e446471c12d8e3b9f172bf99ded21c929b6352afd589a8671e7",
+      "sha256": "5b282a8fa58772e83566027ae7b0ae54fb8a4a90e7d104ce7b436176a1c3b0eb",
       "executable": false
     },
     "src/modules/workflows/sla-backstop.ts": {
@@ -11616,7 +11616,7 @@
       "executable": false
     },
     "tests/helpers/workflows/sla.mjs": {
-      "sha256": "6141b33d9a930f0b6b70ad35eaa6793ceecdee8a8c9d48892383cd63eee78aab",
+      "sha256": "1696a64ca308ce5de182c9f41b6d4dcb8d95a354c77ac786d5b1d257e33d8289",
       "executable": false
     },
     "tests/homepage-browser.mjs": {

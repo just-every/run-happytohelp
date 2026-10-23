@@ -1572,7 +1572,7 @@
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "44294e763da713be8d625e9dadd0e73360d0178eba84fa185d8dce2c20851078",
+      "sha256": "4b3efbad338be34c38806f7fe2b56abd5976f80c5468ca795d7969689b218f4b",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -11264,7 +11264,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "52dc82b55e99b3e1dc9a9359dba8ad1769e56608b0a88d0e82c24d1ac2de3b4c",
+      "sha256": "697c4fff1026b0df963977a22a3331f360b18d6e72920f4d6c464194a3253352",
       "executable": false
     },
     "tests/helpers/installer/hosted-export.mjs": {

@@ -29,6 +29,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: native-public-verify
+            browser: true
+            command: pnpm exec rer verify
           - name: native-command-and-portability
             browser: false
             command: pnpm run test:installer-nightly --test-name-pattern=installs.with.the.rer

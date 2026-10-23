@@ -60,6 +60,7 @@ async function signIn(){
 
 try{
  await execute('git',['clone','--quiet','--no-local','--depth','1',source,root]);
+ await run(root,['describe']);
  await run(root,['check','--profile','first-party']);
  await run(root,['install']);
  await mkdir(join(root,'.seed'),{mode:0o700,recursive:true});

@@ -32,6 +32,12 @@ export async function slaFlow(f){
  const backup=sla.alerts.find(a=>a.kind==='breach'&&a.metric==='first_response'&&a.recipient_id===w.users.admin);assert.ok(backup,'a breach names the configured current backup')
  const report=await ok('/reports/team?period=custom&start=2026-01-01&end=2027-01-01');assert.equal(report.sla.first_response.breached,1);assert.equal(report.sla.first_response.total,1);assert.equal(report.sla.resolution.pending,1);assert.equal(report.backlog.total,1,'empty widgets are excluded from workload')
  const count=sla.alerts.length;await app.scheduled();assert.equal((await ok(`/conversations/${id}/sla`)).alerts.length,count)
+ await clock('2026-11-27T17:01:00Z');await app.scheduled();await app.scheduled()
+ sla=await ok(`/conversations/${id}/sla`)
+ assert.ok(sla.alerts.some(a=>a.kind==='unattended'&&a.recipient_id===w.users.admin),'an unattended ticket escalates to its named backup too')
+ const notices=async()=>(await app.ok(`/api/management/projects/${w.projectId}/notification-inbox`,{token:w.tokens.admin})).data.filter(n=>n.conversation_id===id).map(n=>n.id).sort()
+ const delivered=await notices();assert.ok(delivered.length>0,'the backup can read its SLA notice in its own inbox')
+ await app.configure({});await app.scheduled();assert.deepEqual(await notices(),delivered,'restart does not duplicate the backup inbox notice')
  await send(id,'We are arranging the replacement.',w.tokens.operator)
  await patch(id,{status_id:'pending'});await clock((await get(id)).updated_at);sla=await ok(`/conversations/${id}/sla`)
  const remaining=sla.clocks.find(c=>c.metric==='resolution'&&!c.completed_at).remaining_minutes

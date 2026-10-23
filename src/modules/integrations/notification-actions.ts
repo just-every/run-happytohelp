@@ -46,9 +46,11 @@ export async function sendTicketNotification(env:Env,event:TicketNotificationAct
   return {state:'template_error',error:message}
  }
  const eligible=users.results.filter(user=>user.email_preference&&user.email&&settings?.is_enabled!==0)
- if(eligible.length&&!emailConfigured(env))return {state:'not_configured'}
+ // Inbox delivery has its own preference and never depends on mail setup.
+ // Freeze unavailable email as terminal so later configuration cannot replay it.
+ const unavailable=eligible.length>0&&!emailConfigured(env)
  const emails=new Set<string>(),inputs:EmailInput[]=[]
- for(const user of eligible){if(emails.has(user.email.toLowerCase()))continue;emails.add(user.email.toLowerCase());inputs.push({projectId:event.projectId,to:user.email,subject,text,idempotencyKey:inputs.length?`${id}:user:${user.id}`:id,headers:loopSuppressionHeaders({}),replyTo:settings?.inbound_address?await recipientReplyAddress(env,settings.inbound_address,event.projectId,ticket.id,user.email):undefined})}
+ for(const user of unavailable?[]:eligible){if(emails.has(user.email.toLowerCase()))continue;emails.add(user.email.toLowerCase());inputs.push({projectId:event.projectId,to:user.email,subject,text,idempotencyKey:inputs.length?`${id}:user:${user.id}`:id,headers:loopSuppressionHeaders({}),replyTo:settings?.inbound_address?await recipientReplyAddress(env,settings.inbound_address,event.projectId,ticket.id,user.email):undefined})}
  const claimToken=crypto.randomUUID()
  const claim=env.DB.prepare(`INSERT OR IGNORE INTO notification_trigger_claims(id,project_id,conversation_id,event,claim_token,state,outcome_json,created_at)
  SELECT ?,?,?,?,?,'claimed',?,? WHERE EXISTS(SELECT 1 FROM (${notificationTicketSql}) eligible)
@@ -56,8 +58,10 @@ export async function sendTicketNotification(env:Env,event:TicketNotificationAct
  AND NOT EXISTS(SELECT 1 FROM json_each(?) selected WHERE NOT EXISTS(SELECT 1 FROM memberships m JOIN users u ON u.id=m.user_id JOIN conversations c ON c.project_id=m.project_id AND c.id=? LEFT JOIN member_roles mr ON mr.project_id=m.project_id AND mr.user_id=m.user_id LEFT JOIN project_roles pr ON pr.project_id=m.project_id AND pr.id=mr.role_key LEFT JOIN notification_preferences p ON p.project_id=m.project_id AND p.user_id=m.user_id AND p.kind=? WHERE m.project_id=? AND u.id=json_extract(selected.value,'$.id') AND u.email=json_extract(selected.value,'$.email') AND ${selector} AND m.role IS json_extract(selected.value,'$.role') AND mr.role_key IS json_extract(selected.value,'$.role_key') AND pr.name IS json_extract(selected.value,'$.role_name') AND pr.base IS json_extract(selected.value,'$.role_base') AND pr.permissions_json IS json_extract(selected.value,'$.role_permissions') AND coalesce(p.inbox,1)=json_extract(selected.value,'$.inbox') AND coalesce(p.email,1)=json_extract(selected.value,'$.email_preference')))`)
  .bind(id,event.projectId,ticket.id,claimEvent,claimToken,JSON.stringify({recipients:inputs.map(input=>input.to)}),Date.now(),ticket.id,event.projectId,...(event.guard?[ticket.id,event.projectId,...event.guard.params]:[]),JSON.stringify(users.results),ticket.id,kind,event.projectId,...selectorArgs)
  const inbox=users.results.map(user=>env.DB.prepare(`INSERT OR IGNORE INTO notification_inbox(id,project_id,conversation_id,user_id,kind,inbox,email,email_address,state,created_at) SELECT ?,?,?,?,?,?,?,?,'action',? WHERE EXISTS(SELECT 1 FROM notification_trigger_claims WHERE id=? AND claim_token=? AND state='claimed')`).bind(`${id}:inbox:${user.id}`,event.projectId,ticket.id,user.id,kind,user.inbox,user.email_preference,user.email,Date.now(),id,claimToken))
- const result=await env.DB.batch([claim,...inbox])
+ const unavailableOutcome=JSON.stringify({inbox:'recorded',email:'not_configured'})
+ const result=await env.DB.batch([claim,...inbox,...(unavailable?[env.DB.prepare("UPDATE notification_trigger_claims SET state='not_configured',outcome_json=? WHERE id=? AND claim_token=? AND state='claimed'").bind(unavailableOutcome,id,claimToken)]:[])])
  if(!result[0].meta.changes){const saved=await env.DB.prepare('SELECT state,outcome_json FROM notification_trigger_claims WHERE id=?').bind(id).first<any>();return saved?{state:saved.state,outcome:JSON.parse(saved.outcome_json)}:{state:'cancelled'}}
+ if(unavailable)return {state:'not_configured',outcome:{inbox:'recorded',email:'not_configured'}}
  try{
   const deliveries=await sendEmails(env,inputs),state=deliveries.some(d=>['uncertain','sending'].includes(d.state))?'uncertain':deliveries.some(d=>d.state==='failed')?'failed':'complete'
   await env.DB.prepare('UPDATE notification_trigger_claims SET state=?,outcome_json=? WHERE id=?').bind(state,JSON.stringify({deliveries}),id).run()

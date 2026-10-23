@@ -130,7 +130,7 @@ export async function ticketsBrowser({count=12,installation}={}){
   for(const [index,type] of ['route','tags','status','note','notify','notify'].entries()){
    await form.getByRole('button',{name:'Add action',exact:true}).click()
    await form.getByLabel(`Action ${index+1}`,{exact:true}).selectOption(type)
-   if(type==='tags')await form.getByLabel('Needs return label',{exact:true}).check()
+   if(type==='tags')await form.getByRole('group',{name:'Add tags',exact:true}).getByLabel('Needs return label',{exact:true}).check()
    if(type==='status')await form.getByLabel('Status',{exact:true}).selectOption('pending')
    if(type==='note')await form.getByLabel('Internal note',{exact:true}).fill('Review the replacement before the next reply.')
    if(type==='notify'){

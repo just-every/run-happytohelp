@@ -78,6 +78,11 @@ export async function companyRecordsJourney(){
   await apply(intent)
   assert.equal((await app.sql("SELECT action FROM audit_events WHERE project_id=? AND action IN ('customer.identity_linked','customer.identity_unlinked')",p)).length,3)
   assert.equal(app.requests.length,0,'identity review sends nothing')
+  await apply({...intent,action:'unlink'})
+  await apply({...intent,provenance:`Verified in support request from ${contacts[0].email}`})
+  await app.ok(`${B}/contacts/${contacts[0].id}/erase`,{...owner,body:{}})
+  assert.equal((await app.ok(linkPath,owner)).links.length,0,'erasure removes free-text provenance naming a third customer')
+  await apply(intent)
   await app.ok(`${B}/contacts/${social.contactId}/erase`,{...owner,body:{}})
   assert.equal((await app.ok(linkPath,owner)).links.length,0,'erasure removes associations from both sides')
   // Erasure clears active membership and every undo snapshot that could restore it.

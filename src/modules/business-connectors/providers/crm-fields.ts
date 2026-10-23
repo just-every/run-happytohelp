@@ -17,7 +17,7 @@ function fieldValue(meta:any,value:any,hub:boolean){
 export async function crmFieldPreview(row:Connection,token:string,source:string,target:string,reason:string,options:any){
  const input=options.input??options,object=input.object,recordId=target.slice(target.indexOf(':')+1),snapshot=await crmContext(row,token,source),hub=row.provider==='hubspot',config=JSON.parse(row.fields_json),allowed=config[object==='account'?'editable_account':'editable_contact']??[]
  if(target!==object+':'+recordId||object==='contact'&&recordId!==source)throw new ProviderFailure('identity_mismatch')
- const record=object==='contact'?snapshot:snapshot.accounts.find(x=>x.id===recordId)
+ const record=object==='contact'?snapshot:snapshot.accounts.find((x:any)=>x.id===recordId)
  if(!record||object==='account'&&!snapshot.relationships_complete||!record.source_revision||!snapshot.source_revision)throw new ProviderFailure('account_relationship_unavailable')
  const keys=Object.keys(input.changes)
  if(keys.some(key=>!allowed.includes(key)))throw new ProviderFailure('field_scope_refused')
@@ -33,7 +33,7 @@ export async function crmFieldExecute(row:Connection,token:string,action:Action)
  return {id:p.record_id}
 }
 export async function crmFieldReadback(row:Connection,token:string,action:Action){
- const p=JSON.parse(action.preview_json),snapshot=await crmContext(row,token,action.source_id),record=p.object==='contact'?snapshot:snapshot.accounts.find(x=>x.id===p.record_id)
+ const p=JSON.parse(action.preview_json),snapshot=await crmContext(row,token,action.source_id),record=p.object==='contact'?snapshot:snapshot.accounts.find((x:any)=>x.id===p.record_id)
  if(!record||p.object==='account'&&!snapshot.relationships_complete)throw new ProviderFailure('identity_mismatch')
  for(const [key,value] of Object.entries(p.after)){const actual=record.fields[key];if(value===null?actual!==null:String(actual??'')!==String(value))throw new ProviderFailure('source_conflict')}
  return {id:p.record_id,state:'succeeded',kind:action.kind,object:p.object,fields:p.after,source_revision:record.source_revision}

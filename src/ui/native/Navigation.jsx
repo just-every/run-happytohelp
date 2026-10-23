@@ -1,3 +1,4 @@
+import IconHints from './IconHints';
 import { useNavigationGuard } from './NavigationGuard';
 import { useMobileNavigation } from './MobileNavigation';
 import { invalidateDashboardSession, useDashboardLocation } from './dashboard-state';
@@ -69,7 +70,7 @@ export default function Navigation({ settings }) {
     const settingsActive = !settings.isGlobalInbox && onSettingsDestination(here,base);
     const switchWorkspace = async id=>{if(switching||!await confirmNavigation())return;setSwitching(true);setSwitchError('');try{if(id)await nativeRequest('/api/identity/switch-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId:id})});await navigate({to:id?`/projects/${id}/conversations`:'/conversations',ignoreBlocker:true});}catch(error){setSwitchError(error.message);}finally{setSwitching(false);}};
     if (settings.isPlatformAdmin && (pathname === '/admin' || pathname.startsWith('/admin/'))) return <AdminNavigation agent={settings.currentAgent} AccountMenu={AccountMenu}/>;
-    return <nav ref={nav} className="navbar navbar-vertical fixed-left navbar-expand-xl navbar-light navbar-refined native-shell" id="sidebar" aria-label="Main navigation"><div className="container-fluid">
+    return <nav ref={nav} className="navbar navbar-vertical fixed-left navbar-expand-xl navbar-light navbar-refined native-shell" id="sidebar" aria-label="Main navigation"><div className="container-fluid"><IconHints/>
         <button ref={navigationToggle} className="navbar-toggler" type="button" aria-controls="sidebarCollapse" aria-label="Toggle navigation" aria-expanded={open} onClick={()=>setOpen(!open)}><span className="navbar-toggler-icon" /></button>
         <div className="navbar-lockup"><BrandLockup home={settings.isGlobalInbox ? '/conversations' : `${base}/conversations`} as={Link} named/></div>
         <div className="navbar-workspace"><button ref={workspaceToggle} className="navbar-workspace-toggle" type="button" aria-label={`Switch workspace: ${workspaceName}`} aria-expanded={workspaceOpen} onClick={()=>setWorkspaceOpen(!workspaceOpen)}>{brand && <img className="navbar-workspace-brand" src={brand} alt=""/>}<span className="navbar-workspace-copy"><span className="navbar-workspace-name">{workspaceName}</span></span><i className="fe fe-chevron-down" aria-hidden="true"/></button>

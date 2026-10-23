@@ -7084,7 +7084,7 @@
       "executable": false
     },
     "src/modules/widget/js/App.jsx": {
-      "sha256": "32564c909b0cdbcd0130a8e1e5e24bf5ca793560ab5956d37122eead88a43592",
+      "sha256": "15e4618fd68798cf6317d019daec656bd7964aa99ec618484be5cb80b5d12e5f",
       "executable": false
     },
     "src/modules/widget/js/AwayNotice.jsx": {
@@ -7248,7 +7248,7 @@
       "executable": false
     },
     "src/modules/widget/js/SendMessage.jsx": {
-      "sha256": "741271d458918be94f7cabacc3cef4cd4bb5338a0be2afdbecc8ecb9e8d49f45",
+      "sha256": "4c0bc77b58ae0fe60112738eaeeca4c3f9050e0fe49413b74da1f2ec9e55b533",
       "executable": false
     },
     "src/modules/widget/js/Style.jsx": {
@@ -9456,7 +9456,7 @@
       "executable": false
     },
     "src/ui/native/Navigation.jsx": {
-      "sha256": "d7925e56b1f8a893be0ab2c46811102783bee33da6c5751ac1b725ca2cfaad29",
+      "sha256": "97879c3f719944ad2373575b8e810f02b7f3aac7886da926facc73868a5dd4de",
       "executable": false
     },
     "src/ui/native/NavigationGuard.tsx": {
@@ -11800,7 +11800,7 @@
       "executable": false
     },
     "tests/journeys/reports-browser.mjs": {
-      "sha256": "d3283954355fa09443965397185105ec506e828c14413c8a65ff157b01b901b2",
+      "sha256": "7cf843eae7de4c5a7c74852560ba9f1d8f19b1e5014a564e72067623eca09e0d",
       "executable": false
     },
     "tests/journeys/reports.mjs": {

@@ -39,6 +39,8 @@ async function configurableRatings(){
   assert.equal((await rate(-1)).status,400,'a thumbs value cannot bypass a five-point cycle')
   assert.equal((await rate(2,'Needs follow-up')).status,200);assert.equal((await rate(5,'Resolved clearly')).status,200)
   const current=await get();assert.equal(current.rating.score,5);assert.equal(current.rating.scale,'five');assert.equal(current.rating.value,1);assert.equal(current.rating.revision,2)
+  const operator=async()=>(await h.call('/api/dashboard/projects/p/conversations/'+c.id)).data
+  const shown=(await operator()).resolution.rating;assert.deepEqual([shown.scale,shown.score,shown.recovery],['five',5,'unknown'],'the operator receives the actual configured score')
   const results=await h.call('/api/outcomes/projects/p/results');assert.equal(results.summary.rated,1);assert.equal(results.summary.positive,1);assert.equal(results.results[0].response.channel,'widget');assert.equal(results.results[0].response.score,5)
   assert.equal((await h.raw(events,{...json({action:'optOutResolutionSurveys',data:{resolutionId:first.id}}),actor:'other'})).status,404)
   await h.db.prepare("UPDATE conversation_resolutions SET evidence_json=json_set(evidence_json,'$.widgetSurvey.expiresAt',1) WHERE id=?").bind(first.id).run()
@@ -47,6 +49,7 @@ async function configurableRatings(){
   assert.equal((await get()).survey.optedOut,true)
   await h.transition(c.id,{resolved:false});await h.send(c.id,'Follow-up',null,'visitor');await h.send(c.id,'New answer',{kind:'human'},'owner',true)
   const next=await get();assert.equal(next.survey.scale,'thumbs');assert.equal(next.survey.locale,'fr');assert.equal(next.survey.optedOut,true);assert.equal(next.rating,null)
+  const past=(await operator()).resolutionHistory.find(row=>row.id===first.id).rating;assert.deepEqual([past.scale,past.score,past.recovery],['five',5,'unknown'],'reopening preserves the prior cycle score for the operator')
   assert.equal((await h.raw(events,{...json({action:'rateResolution',data:{resolutionId:next.id,value:1}}),actor:'visitor'})).status,409,'opt-out persists across cycles')
   await configure({widgetEnabled:false});const other=await h.conversation('other');await h.send(other.id,'Answer',{kind:'human'},'owner',true)
   const disabled=(await h.call('/api/conversations/'+other.id+'/messages',{actor:'other'})).resolution

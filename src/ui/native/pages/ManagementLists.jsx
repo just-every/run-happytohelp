@@ -7,6 +7,7 @@ import './stack-table.css';
 import { Notepad } from '../drawings';
 import PluginHelp from './PluginHelp';
 import {useDashboardSettings} from '../dashboard-state';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 export function PersonAvatar({person}) {return person.avatar_url?<img className="management-avatar" src={person.avatar_url} alt=""/>:<span className="management-avatar">{(person.name||person.email||'?').slice(0,1).toUpperCase()}</span>}
 const date=value=>value?new Date(value).toLocaleDateString():'';
 const labels={macros:'Save a Reply',agents:'Invite Agent',plugins:'Add Custom Plugin'};
@@ -21,18 +22,18 @@ const columns={
   {label:'Created',cell:({item})=>date(item.created_at)},
  ],
  agents:[
-  {label:'Agent',cell:({item,href})=><div className="management-person">{item.pending?<i className="fe fe-mail"/>:<PersonAvatar person={item}/>} {item.pending?'Pending invite':<Link to={href}>{item.name||item.email}</Link>}</div>},
+  {label:'Agent',cell:({item,href})=><div className="management-person">{item.pending?<i className="fe fe-mail"/>:<PersonAvatar person={item}/>} {item.pending?'Pending invite':<Link id={`agent-${item.id}-name`} to={href}>{item.name||item.email}</Link>}</div>},
   {label:'Email',cell:({item})=>item.email},
   {label:'Role',cell:({item})=><span className="management-role">{item.access_name||(item.role==='operator'?'Agent':item.role?.replace(/^./,c=>c.toUpperCase()))}</span>},
-  {actions:'Actions',cell:({item,href,invitationProps})=>item.pending?<InvitationActions {...invitationProps} invitation={item}/>:<Link aria-label={`Edit ${item.name||item.email}`} to={href}>⋮</Link>},
+  {actions:'Actions',cell:({item,href,invitationProps})=>item.pending?<InvitationActions {...invitationProps} invitation={item}/>:<Link {...tooltip('Edit agent',{describedBy:`agent-${item.id}-name`})} to={href}>⋮</Link>},
  ],
  contacts:[
-  {actions:'Photo',cell:({item,href})=><Link to={href}><PersonAvatar person={item}/></Link>},
-  {label:'Name',cell:({item,href,metadata})=><Link to={href}>{metadata.provided_name||item.name||item.nickname||'Visitor'}</Link>},
+  {actions:'Photo',cell:({item,href})=><Link {...tooltip('View contact',{describedBy:`contact-${item.id}-name`})} to={href}><PersonAvatar person={item}/></Link>},
+  {label:'Name',cell:({item,href,metadata})=><Link id={`contact-${item.id}-name`} to={href}>{metadata.provided_name||item.name||item.nickname||'Visitor'}</Link>},
   {label:'Email',cell:({item,metadata})=>metadata.provided_email||item.email},
   {label:'Country',cell:({item,metadata})=>metadata.country_name||metadata.country_code||item.country_code},
   {label:'Last Seen',cell:({item,metadata})=>metadata.is_online?'Online':date(item.last_seen_at||metadata.last_seen_at)},
-  {actions:'Actions',cell:({href})=><Link aria-label="View contact" to={href}>⋮</Link>},
+  {actions:'Actions',cell:({item,href})=><Link {...tooltip('View contact',{describedBy:`contact-${item.id}-name`})} to={href}>⋮</Link>},
  ],
  plugins:[
   {label:'Name',cell:({item,href})=><Link to={href}>{item.name}</Link>},

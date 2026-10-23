@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Dropdown from 'react-bootstrap/Dropdown';
+import { tooltip } from '../../../../modules/tooltip/tooltip';
 
 const sheetQuery = '(max-width: 767.98px)';
 // Two columns are 30rem wide and open leftwards from the card's right edge.
@@ -57,7 +58,7 @@ export default function StartMenu({ id, disabled = false, lead, aside, trail, fo
     };
 
     return <Dropdown show={ show } onToggle={ onToggle } drop="up" align={ { md: 'end' } } className="start-menu">
-        <Dropdown.Toggle ref={ toggleRef } id={ id } variant="link" className="start-menu__toggle" disabled={ disabled } aria-label="Actions">
+        <Dropdown.Toggle ref={ toggleRef } id={ id } variant="link" className="start-menu__toggle" disabled={ disabled } { ...tooltip('Actions') }>
             <i className="fe fe-plus" aria-hidden="true" />
         </Dropdown.Toggle>
         <Dropdown.Menu ref={ menuRef } role="menu" aria-label="Actions" className={ `start-menu__menu is-${ layout }` }>

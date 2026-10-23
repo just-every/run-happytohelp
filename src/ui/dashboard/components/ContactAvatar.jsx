@@ -33,7 +33,7 @@ let stringToStableNumber = (str, min, max) => {
     return rotation;
 };
 
-function ContactAvatar({ contact, className, href, projectId, presentation = 'default' }) {
+function ContactAvatar({ contact, className, href, label, projectId, presentation = 'default' }) {
     const avatarClasses = [ className, contact.is_online && 'avatar-online' ].filter(Boolean);
 
     let icon, iconStyle = {}, style = {};
@@ -114,6 +114,7 @@ function ContactAvatar({ contact, className, href, projectId, presentation = 'de
         url={ contact.avatar_url }
         icon={ icon }
         href={ href }
+        label={ label }
         style={ style }
         projectId={ projectId }
         variant={ useProfileSymbol ? 'contact-symbol' : (icon ? 'contact-anonymous' : 'contact') }
@@ -124,6 +125,7 @@ ContactAvatar.propTypes = {
     contact: PropTypes.object,
     className: PropTypes.string,
     href: PropTypes.string,
+    label: PropTypes.string,
     projectId: PropTypes.string,
     presentation: PropTypes.oneOf(['default', 'conversation-profile']),
 };

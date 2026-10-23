@@ -3,7 +3,6 @@ import AppContext from './context/AppContext';
 import Connection from './Connection';
 import classNames from 'classnames/bind';
 import root from 'react-shadow';
-import IconHints from '../../../ui/native/IconHints';
 
 import { mergeAdvanced } from "object-merge-advanced";
 import Api from "./includes/api";
@@ -12,6 +11,7 @@ import { ConnectProvider } from "./context/ConnectContext";
 
 import { isPreviewMode, normalizePreviewUpdate } from "./preview/previewMode";
 import log from "./includes/log";
+import WidgetTooltips from "./WidgetTooltips";
 import { initHelpers, openMetaTags, closeMetaTags, updateViewportProperties } from "./includes/utils";
 
 const Button = React.lazy(() => import(/* webpackChunkName: "Button" */ './Button'));
@@ -23,7 +23,6 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
     const isPreview = isPreviewMode(config);
     const connectionRef = useRef(null);
     const shadowHostRef = useRef(null);
-    const iconHintScope = useRef(null);
     const previewOpenRef = useRef(false);
     const [open, setOpenState] = useState(false);
     const [insightOpen, setInsightOpenState] = useState(false);
@@ -260,7 +259,7 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
     return (
 
             ( settingsLoaded && <root.div ref={shadowHostRef}>
-                    <div ref={iconHintScope} id="happytohelp-root" className={classNames({
+                    <div id="happytohelp-root" className={classNames({
                         'happytohelp-opened': open,
                         'happytohelp-insight-opened': insightOpen,
                         'happytohelp-closed': !open && !insightOpen,
@@ -268,7 +267,7 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
                         'happytohelp-preview': isPreview,
                         'happytohelp-proxy': config.proxy
                     })}>
-                        <IconHints scopeRef={iconHintScope}/>
+                        <WidgetTooltips />
                         <AppContext.Provider value={contextValues}>
                             <ActiveConnectProvider open={open} setOpen={setOpen} setInsightOpen={setInsightOpen}
                                                    onSettingsUpdated={handleSettingsUpdated}>

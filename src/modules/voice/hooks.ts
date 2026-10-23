@@ -13,11 +13,11 @@ const gather=(url:string,text:string)=>`<Gather input="dtmf" numDigits="1" metho
 function route(c:any,n:VoiceNumber,call:any,s:VoiceSettings){
  if(!isOpen(s))return voicemail(c,n,call,s)
  if(s.ivr.length)return gather(hookUrl(c,n,'ivr'),s.ivr.map(v=>`Press ${v.digit} for ${v.label}.`).join(' '))
- return dial(c,n,s.human_phone,call.consent==='granted'&&s.recording_enabled)
+ return dial(c,n,s.human_phone,call.consent==='granted'&&(s.recording_enabled&&s.staff_consent===true))
 }
 const dial=(c:any,n:VoiceNumber,destination:string,record=false)=>(record?liveTranscription(hookUrl(c,n,'live-transcript')):'')+`<Dial ${record?'record="record-from-answer-dual" recordingStatusCallbackMethod="POST" recordingStatusCallback="'+xml(hookUrl(c,n,'recording'))+'" ':''}timeout="25" method="POST" action="${xml(hookUrl(c,n,'dial'))}"><Number>${xml(destination)}</Number></Dial>`
 function voicemail(c:any,n:VoiceNumber,call:any,s:VoiceSettings){
- if(call.consent!=='granted'||!s.recording_enabled||call.media_expires_at<=Date.now())return say('Our team is unavailable. Recording is off. Please contact us by chat or email, or call again during business hours.')+'<Hangup/>'
+ if(call.consent!=='granted'||!(s.recording_enabled&&s.staff_consent===true)||call.media_expires_at<=Date.now())return say('Our team is unavailable. Recording is off. Please contact us by chat or email, or call again during business hours.')+'<Hangup/>'
  return say('Our team is unavailable. After the tone, leave a voicemail. Your consented recording and transcript will be available to the support team.')+`<Record maxLength="120" playBeep="true" transcribe="true" recordingStatusCallbackMethod="POST" recordingStatusCallback="${xml(hookUrl(c,n,'recording'))}" transcribeCallback="${xml(hookUrl(c,n,'transcript'))}" action="${xml(hookUrl(c,n,'finish'))}" method="POST"/>`
 }
 hooks.post('/hooks/:numberId',async c=>{
@@ -33,7 +33,7 @@ hooks.post('/hooks/:numberId',async c=>{
  const alive=`EXISTS(SELECT 1 FROM voice_calls v JOIN conversations c ON c.id=v.conversation_id AND c.project_id=v.project_id JOIN voice_numbers vn ON vn.id=v.number_id AND vn.project_id=v.project_id WHERE v.id=? AND v.erased=0 AND vn.enabled=1 AND vn.version=? AND ${usableContact})`,args=[id,n.version]
  if(call.media_withdrawn_at){if(['recording','transcript','live-transcript'].includes(step))throw new HTTPException(409,{message:'Consent was withdrawn'});return c.body(response(say('Recording consent was withdrawn. This call will end. Please call again for unrecorded support.')+'<Hangup/>'),200,{'Content-Type':'application/xml'})}
  if(step==='recording'||step==='transcript'||step==='live-transcript'){
-  if(call.consent!=='granted'||!s.recording_enabled||call.media_expires_at<=Date.now())throw new HTTPException(409,{message:'Recording consent is unavailable'})
+  if(call.consent!=='granted'||!(s.recording_enabled&&s.staff_consent===true)||call.media_expires_at<=Date.now())throw new HTTPException(409,{message:'Recording consent is unavailable'})
   if(step==='recording'&&b.RecordingStatus==='completed'){
    const recording=await encryptToken(c.env,n.project_id,providerId(b.RecordingSid))
    await c.env.DB.prepare(`UPDATE voice_calls SET recording_cipher=coalesce(recording_cipher,?),state=CASE WHEN state='after_hours' THEN 'voicemail' ELSE state END,updated_at=? WHERE id=? AND media_withdrawn_at IS NULL AND consent='granted' AND media_expires_at>? AND ${alive}`).bind(recording,Date.now(),id,Date.now(),...args).run()
@@ -50,12 +50,12 @@ hooks.post('/hooks/:numberId',async c=>{
  const input=await hashToken(JSON.stringify([stepKey,b.Digits??'',b.DialCallStatus??'',b.QueueResult??''])),prior=await c.env.DB.prepare('SELECT * FROM voice_steps WHERE call_id=? AND step=?').bind(id,stepKey).first<any>()
  if(prior){if(prior.input_hash!==input)throw new HTTPException(409,{message:'This voice step already has a different result'});return c.body(prior.response_xml,200,{'Content-Type':'application/xml'})}
  let body='',state=call.state,consent=call.consent,follow=call.follow_up
- if(step==='entry')body=say(limitations)+(s.recording_enabled?gather(hookUrl(c,n,'consent'),'Recording and transcription are optional. Press 1 to consent, or press 2 to continue without recording.'):say('This call is not recorded.')+route(c,n,call,s))
+ if(step==='entry')body=say(limitations)+((s.recording_enabled&&s.staff_consent===true)?gather(hookUrl(c,n,'consent'),'Recording and transcription are optional. Press 1 to consent, or press 2 to continue without recording.'):say('This call is not recorded.')+route(c,n,call,s))
  if(step==='consent'){
   if(!['1','2'].includes(b.Digits))body=say('No valid consent choice. This call will end without recording.')+'<Hangup/>'
   else{consent=b.Digits==='1'?'granted':'declined';call={...call,consent};body=route(c,n,call,s)}
  }
- if(step==='ivr'){const choice=s.ivr.find(v=>v.digit===b.Digits);body=choice?dial(c,n,choice.phone,call.consent==='granted'&&s.recording_enabled):say('That selection is unavailable. Connecting you to the support team.')+dial(c,n,s.human_phone,call.consent==='granted'&&s.recording_enabled);state='queued'}
+ if(step==='ivr'){const choice=s.ivr.find(v=>v.digit===b.Digits);body=choice?dial(c,n,choice.phone,call.consent==='granted'&&(s.recording_enabled&&s.staff_consent===true)):say('That selection is unavailable. Connecting you to the support team.')+dial(c,n,s.human_phone,call.consent==='granted'&&(s.recording_enabled&&s.staff_consent===true));state='queued'}
  if(step==='dial'){
   if(b.DialCallStatus==='completed'){state='completed';body=say('Thank you for calling.')+'<Hangup/>'}
   else{state='transfer_failed';follow=1;body=say('The human transfer failed. The support queue will show a follow-up task.')+(isOpen(s)?`<Enqueue method="POST" action="${xml(hookUrl(c,n,'queue-finish'))}" waitUrlMethod="POST" waitUrl="${xml(hookUrl(c,n,'queue-wait'))}">${xml('h2h-'+n.id.slice(-30))}</Enqueue>`:voicemail(c,n,call,s))}

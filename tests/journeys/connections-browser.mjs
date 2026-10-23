@@ -72,4 +72,4 @@ test(`at 1440 and 390px selected engineering context reaches connected trackers,
 })
 
 import {voiceBrowserProof} from '../helpers/voice/browser.mjs'
-test('at 1440 and 390px signed consented telephone voicemail appears privately in the native inbox with guarded history and an uncertain callback that never replays',voiceBrowserProof)
+test('at 1440 and 390px telephone settings, private voicemail, callback and human transfer, consent withdrawal, customer context and call reports work through dashboard controls',voiceBrowserProof)

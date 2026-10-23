@@ -21,7 +21,7 @@ export async function attachmentBrowser({page,origin,base,project,token,request,
  await report();const run=(await request(`/api/move-in/projects/${project}/imports`,{token})).data.find(row=>row.filename===name);const ownership=await request(`/api/move-in/projects/${project}/imports/${run.id}/ownership`,{token});assert.equal(ownership.total,1,JSON.stringify(ownership));await page.getByText('Review imported ownership',{exact:true}).click();const identity=await request('/api/identity/session',{token})
  await page.getByLabel('Source agent 77',{exact:true}).selectOption(identity.id);await page.getByRole('button',{name:'Preview assignments',exact:true}).click();await page.getByRole('button',{name:'Apply assignments',exact:true}).waitFor();await inspect('imported-ownership-preview-'+width)
  await page.getByRole('button',{name:'Apply assignments',exact:true}).click();await page.getByText('1 assignments applied. 0 remain to review.',{exact:true}).waitFor();await inspect('imported-ownership-applied-'+width)
- await page.getByRole('link',{name:/^Open conversation /}).click()
+ await page.getByRole('link',{name:/^Open conversation /}).click();await page.getByText('Historical question',{exact:true}).waitFor();await inspect('imported-attachment-history-'+width)
  for(const [filename,bytes] of [['parcel.bin',publicBytes],['inspection.txt',privateBytes]]){
   const link=page.getByRole('link',{name:filename,exact:true});await link.waitFor();await link.scrollIntoViewIfNeeded()
   const pending=page.waitForEvent('download');await link.click();const download=await pending;assert.deepEqual(await readFile(await download.path()),bytes)

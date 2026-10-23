@@ -11,7 +11,16 @@ const app=await startApp({captureQueue:true,bindings:{EMAIL_PROVIDER:'sendgrid',
  const body=await request.clone().text(),payload=JSON.parse(body)
  assert.deepEqual(payload.personalizations.flatMap(value=>value.to.map(to=>to.email)),[recipient])
  if(payload.custom_args?.rer_delivery_id?.startsWith('csat:'))sent.push(payload)
- const response=await fetch(request.url,{method:request.method,headers:request.headers,body,signal:AbortSignal.timeout(15000)});console.log(JSON.stringify({diagnostic:'provider response',survey:payload.custom_args?.rer_delivery_id?.startsWith('csat:')??false,status:response.status}));return new Response(await response.arrayBuffer(),{status:response.status,headers:response.headers})
+ try{
+  // Rebuild the HTTP proxy boundary: Node owns hop headers and body length.
+  const hop=new Set(['connection','keep-alive','proxy-authenticate','proxy-authorization','te','trailer','transfer-encoding','upgrade','expect','content-length','host'])
+  const headers=Object.fromEntries([...request.headers].filter(([name])=>!hop.has(name.toLowerCase())))
+  const response=await fetch(request.url,{method:request.method,headers,body,signal:AbortSignal.timeout(15000)})
+  console.log(JSON.stringify({diagnostic:'provider response',survey:payload.custom_args?.rer_delivery_id?.startsWith('csat:')??false,status:response.status,hasReceipt:response.headers.has('x-message-id')}))
+  return response
+ }catch(error){
+  console.error(JSON.stringify({diagnostic:'provider transport',name:error.name,code:/^[A-Z0-9_]{1,80}$/.test(error.cause?.code??'')?error.cause.code:'other',stage:error.message==='fetch failed'?'fetch-failed':error.message?.includes('duplex')?'duplex':error.message?.includes('Header')?'headers':error.message?.includes('body')?'body':'request-construction'}));throw Error('Provider transport failed')
+ }
 }})
 try{
  const w=await app.seedWorkspace('live-csat-mail'),token=w.tokens.owner,p=w.projectId,endpoint=`/api/outcomes/projects/${p}`

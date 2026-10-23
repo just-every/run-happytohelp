@@ -2896,7 +2896,7 @@
       "executable": false
     },
     "scripts/independent/delegation-backup.py": {
-      "sha256": "a2bbd464db0e01fcdb0cc9036e453e48245238861c1f876a67e8444537daea9f",
+      "sha256": "9e15c3f10b8642d5100703e3bed79c3a1ee5c1f48420b20ec623c8098cd95193",
       "executable": false
     },
     "scripts/independent/setup-build.mjs": {
@@ -2948,7 +2948,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "d12e19002ddcc23c8de7190b6e287c4f558dfc618ace30507004416e0cc33b48",
+      "sha256": "d472e4db82ad1d332c512fe0aaa8873ab013fe95b2ff93695f5462b5a59764c0",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -3460,7 +3460,7 @@
       "executable": false
     },
     "src/modules/access/ticket-scope.ts": {
-      "sha256": "98dec8f86fcd6dd0f44dbb13be958cfd73907aa1e535a9f801f1387781d5235b",
+      "sha256": "d22d34e98e5298205e1ba3cf718a3e4c2cdc961a83f6c80678f1471ce37d93bf",
       "executable": false
     },
     "src/modules/ai-support/assist/historyCursor.js": {
@@ -11212,7 +11212,7 @@
       "executable": false
     },
     "tests/helpers/identity/scoped-access.mjs": {
-      "sha256": "7f896044a81f80cf00541644f19b8ab6ad2c48e035249c0f478b29955d9dfad7",
+      "sha256": "2005e8e7854c12219d7bdf5f06aefa06b9c1365cf3e252cd49f195f02e5e051a",
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {

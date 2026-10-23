@@ -59,5 +59,19 @@ export async function scopedAccessJourney(){
   await app.ok(P+'/roles/'+restricted.id,{token:owner,method:'PUT',body:{name:'Installer, no refunds',base:'admin',permissions:['refunds.approve']}})
   const revoked=await app.call(P+'/refund-approvals',{token:w.tokens.admin,body:{...request,requestKey:'synthetic-happytohelp-22'},headers:{'x-test-before-batch':`UPDATE sessions SET revoked_at=1 WHERE actor_id='${w.users.admin}'`}})
   assert.equal(revoked.status,403);assert.equal((await app.first('SELECT count(*) n FROM refund_approvals')).n,1,'revocation before commit refuses a pending approval')
+
+  // Restored principals retain membership history but cannot receive ticket data.
+  await app.db.prepare('INSERT INTO ticket_group_members(project_id,group_id,user_id) VALUES(?,?,?)').bind(w.projectId,groups[0],w.users.admin).run()
+  const assign=agent_id=>app.ok(D+'/conversations/team-conversation-0',{token:owner,method:'PUT',body:{agent_id}})
+  await assign(w.users.admin);await app.scheduled()
+  const notices=async()=>(await app.first('SELECT count(*) n FROM notification_inbox WHERE user_id=?',w.users.admin)).n
+  const beforeRestore=await notices();assert.ok(beforeRestore>0,'an active member receives the assignment')
+  await assign(null)
+  await app.db.batch([
+   app.db.prepare("INSERT INTO enterprise_connections(id,project_id,protocol,issuer,config_json,enabled,created_at,updated_at) VALUES('restored-idp',?,'oidc','https://synthetic-happytohelp.okta.com','{}',0,1,1)").bind(w.projectId),
+   app.db.prepare("INSERT INTO enterprise_principals(id,connection_id,project_id,external_id,user_id,user_name,display_name,active,created_at,updated_at) VALUES('restored-principal','restored-idp',?,'synthetic-happytohelp-23',?,'restored@example.test','Restored member',0,1,1)").bind(w.projectId,w.users.admin),
+  ])
+  await assign(w.users.admin);await app.scheduled()
+  assert.equal(await notices(),beforeRestore,'an inactive restored principal receives no new assignment or customer data')
  }finally{for(const socket of sockets)socket.close();await app.close()}
 }

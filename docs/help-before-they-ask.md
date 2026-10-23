@@ -97,4 +97,4 @@ erasure removes the visitor's history from these counts. Campaign event and visi
 expire from reports after 30 days. Scheduled cleanup deletes expired records in
 bounded pages using spare invocation capacity; report reads also clean their
 workspace. Revocation and erasure delete them immediately. The 30-day retention
-is a conservative default pending an installation-specific policy ruling.
+window and these cleanup rules are approved under HH-RETENTION-001.

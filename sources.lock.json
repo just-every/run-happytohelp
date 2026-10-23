@@ -5492,7 +5492,7 @@
       "executable": false
     },
     "src/modules/knowledge/feedback.ts": {
-      "sha256": "2028136ab9696a75d9bddefb78c5b2b8a46f4029dffea43aecf7f2477c598bd2",
+      "sha256": "ed0eb243b3ea1335be47959113e5b003dc20ce00ed76fd034d70c4e8a92f3be8",
       "executable": false
     },
     "src/modules/knowledge/help-auth.ts": {
@@ -5560,7 +5560,7 @@
       "executable": false
     },
     "src/modules/knowledge/ticket-attribution.ts": {
-      "sha256": "096bb9e277a69c12d279e9944ccf024e4f9f56676c2b1f478aed1b445aa3fc23",
+      "sha256": "fc1f5e365f0e9d3bcb5e9c9ccf892d0d3c82dcc67ec498a422dfd765c4c9da43",
       "executable": false
     },
     "src/modules/knowledge/website-reader.ts": {
@@ -10728,7 +10728,7 @@
       "executable": false
     },
     "tests/helpers/ai/trace.mjs": {
-      "sha256": "bc0142aa118db7dd49ff7f94bb0424d1bfa7a4320404be3db19183ecf996bc3e",
+      "sha256": "760c46631bd778fb98749e9d10db6f0ded777089fd27968992fa0df093b9e385",
       "executable": false
     },
     "tests/helpers/ai/training-browser.mjs": {
@@ -11436,7 +11436,7 @@
       "executable": false
     },
     "tests/helpers/request-forms-journey.mjs": {
-      "sha256": "e574be8ef198dc4fba025adcc237bb9356175314940294051492eb604a5dc670",
+      "sha256": "bb397d8f0508cc87ce57c166d7bfa28605ad010402151c4e6a40879dda790a5a",
       "executable": false
     },
     "tests/helpers/rer-archive.mjs": {

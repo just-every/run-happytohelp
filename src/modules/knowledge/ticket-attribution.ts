@@ -24,7 +24,7 @@ export async function attributeKnowledgeTicket(env:Env,input:{projectId:string;c
    AND (v.visitor_hash IN (?,?) OR v.contact_id=?) AND a.status='published'
    AND ${proof.sql} AND ${activeSourceProjectSql('a.project_id')} AND ${articleAccessSql('a','?','?')}
    AND EXISTS(SELECT 1 FROM conversations c JOIN messages m ON m.conversation_id=c.id AND m.project_id=c.project_id
-     WHERE c.id=? AND c.project_id=v.project_id AND c.contact_id=? AND m.actor_role='contact')`)
+     WHERE c.id=? AND c.project_id=v.project_id AND c.contact_id=? AND m.actor_role='contact' AND v.created_at<=c.created_at)`)
    .bind(`knowledge-ticket:${conversationId}`,contactId,now,viewId,projectId,now-1800000,now,anonymous,identified,contactId,...proof.args,...accessParams(access),conversationId,contactId).run()
  }catch{console.warn('Knowledge ticket attribution unavailable')}
 }

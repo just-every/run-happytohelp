@@ -32,7 +32,7 @@ export async function traceJourney(){
   const failed=await a.visitor();await failed.say('Please try my question');await a.run()
   const failure=(await app.call(`/api/ai-support/projects/${p}/conversations/${failed.conversationId}/trace`,{token:owner,status:200})).data.traces[0]
   assert.notEqual(failure.state,'completed');assert.equal(failure.result.customerMessageCommitted,false);assert.equal(failure.providerCostEstimateUsd,null)
-  await app.db.prepare("INSERT INTO member_roles(project_id,user_id,role_key) VALUES(?,?,'collaborator')").bind(p,a.workspace.users.operator).run()
+  await app.db.prepare("INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES(?,?,'collaborator',1)").bind(p,a.workspace.users.operator).run()
   assert.equal((await app.call(path,{token:a.workspace.tokens.operator})).status,403,'a collaborator cannot read usage traces')
   assert.equal((await app.call(path,{token:v.token})).status,403)
   const foreign=await app.seedWorkspace('trace-foreign');assert.equal((await app.call(path,{token:foreign.tokens.owner})).status,403)

@@ -33,6 +33,9 @@ export async function requestFormsJourney(){
   const staleView=(await app.call(`/api/knowledge/public/${p}/events`,{body:{kind:'view',slug:'refund-help'},status:200})).data.eventId
   await app.db.prepare('UPDATE knowledge_events SET created_at=? WHERE id=?').bind(Date.now()-1800001,staleView).run()
   await newRequest('synthetic-happytohelp-3',staleView)
+  await newRequest('synthetic-happytohelp-5',undefined)
+  const laterView=(await app.call(`/api/knowledge/public/${p}/events`,{body:{kind:'view',slug:'refund-help'},status:200})).data.eventId
+  await app.call(path,{...customer,body:{...valid,localId:'synthetic-happytohelp-5',afterReading:laterView},status:200})
   const restricted=(await app.call(`/api/knowledge/${p}/categories`,{...owner,body:{title:'Private',audience:'domains',allowedDomains:['private.test']},status:201})).data.id
   await app.call(`/api/knowledge/${p}/articles`,{...owner,body:{...article,title:'Refund help',slug:'refund-help',content:'Restricted now',status:'published',categoryIds:[restricted]},status:201})
   await newRequest('synthetic-happytohelp-4',view)
@@ -40,7 +43,7 @@ export async function requestFormsJourney(){
   const values=await app.sql('SELECT field_id,value_json FROM ticket_field_values WHERE conversation_id=?',id);assert.deepEqual(Object.fromEntries(values.map(v=>[v.field_id,JSON.parse(v.value_json)])),valid.fields)
   assert.equal((await app.call(path,{...customer,body:valid,status:200})).data.ticket.id,id)
   assert.equal((await app.call(path,{...customer,body:{...valid,message:'Changed command'},status:409})).status,409)
-  assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,before.n+5)
+  assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,before.n+6)
   assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='form.submitted'",p))
   const stale=await app.call(`${admin}/${form.id}`,{...owner,method:'PUT',body:{...form,title:'Order help'}});assert.equal(stale.status,200)
   assert.equal((await app.call(`${admin}/${form.id}`,{...owner,method:'PUT',body:form})).status,409)

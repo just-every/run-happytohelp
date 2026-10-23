@@ -5,6 +5,10 @@ import {emailKey} from './contact-keys'
 interface Table {name:string;key:string;columns:string[];order:string;generated?:string[];nativeOnly?:boolean}
 const table=(name:string,key:string,columns:string,order=key,generated?:string[]):Table=>({name,key,columns:columns.split(','),order,generated})
 const entities:Record<string,Table[]>={
+ group:[table('ticket_groups','id','project_id,id,name,updated_at'),table('ticket_group_members','group_id','project_id,group_id,user_id','user_id')],
+ calendar:[table('workflow_calendars','id','project_id,id,name,timezone,weekly_json,holidays,closures_json,active,updated_at')],
+ view:[table('ticket_views','id','id,project_id,owner_id,name,visibility,filters_json,sort_json,version,created_at,updated_at')],
+ rule:[table('workflow_rules','id','id,project_id,name,kind,position,state,draft_json,published_version,owner_id,created_at,updated_at'),table('workflow_rule_versions','rule_id','rule_id,project_id,version,definition_json,published_by,published_at,event_after_id','version')],
  category:[table('knowledge_categories','id','id,project_id,parent_id,name,slug,summary,is_published,position')],
  tag:[table('workspace_tags','id','id,project_id,name,normalized_name')],
  contact:[table('contacts','id','id,project_id,name,email,external_id,created_at,is_verified,metadata_json'),table('context_subjects','subject_id','project_id,subject_id,consent,revision,help_types,bot_enabled')],
@@ -42,6 +46,8 @@ function expected(t:Table,value:NativeValue){return JSON.stringify([...(value.ta
 function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sql {
  const defs=definitions(kind),clauses:string[]=[],bindings:any[]=[]
  for(const t of defs){clauses.push(`${select(t)}=?`);bindings.push(...params(t,destination,id),row?expected(t,row.value as unknown as NativeValue):'[]')}
+ if(row&&kind==='group'){clauses.push('NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND group_id=?)');bindings.push(destination,id)}
+ if(row&&kind==='calendar'){clauses.push('NOT EXISTS(SELECT 1 FROM sla_policies WHERE project_id=? AND calendar_id=?)');bindings.push(destination,id)}
  if(row){clauses.push('EXISTS(SELECT 1 FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=? AND revision=? AND source_json=?)');bindings.push(destination,kind,id,row.revision,JSON.stringify((row.value as unknown as NativeValue).source))}
  else {clauses.push('NOT EXISTS(SELECT 1 FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?)');bindings.push(destination,kind,id)}
  return {sql:`(${clauses.join(' AND ')})`,params:bindings}

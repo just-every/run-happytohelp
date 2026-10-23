@@ -19,8 +19,9 @@ export async function planningState(env:Env,run:Run,records:SourceRecord[],prepa
  // unrelated sources in the same workspace must not enter this bounded read.
  const claims=(await env.DB.prepare('SELECT s.identity,s.source_hash,s.mapping_version,s.effects_hash,s.job_id FROM json_each(?3) wanted CROSS JOIN ik_sources s ON s.identity=wanted.value CROSS JOIN ik_jobs j ON j.id=s.job_id WHERE j.destination=?1 AND j.namespace=?2').bind(run.project_id,run.vendor,JSON.stringify(identities)).all<SourceClaim>()).results
  const nativeIds=new Map<string,Set<string>>()
- for(const [kind,table] of [['contact','contacts'],['conversation','conversations'],['macro','macros'],['article','knowledge_articles'],['category','knowledge_categories'],['tag','workspace_tags']]){
+ for(const [kind,table] of [['group','ticket_groups'],['calendar','workflow_calendars'],['view','ticket_views'],['rule','workflow_rules'],['contact','contacts'],['conversation','conversations'],['macro','macros'],['article','knowledge_articles'],['category','knowledge_categories'],['tag','workspace_tags']]){
   const ids=candidates.filter(candidate=>candidate.kind===kind).map(candidate=>candidate.id)
+  if(!ids.length){nativeIds.set(kind,new Set());continue}
   nativeIds.set(kind,new Set((await env.DB.prepare(`SELECT n.id FROM json_each(?2) wanted CROSS JOIN ${table} n ON n.id=wanted.value AND n.project_id=?1`).bind(run.project_id,JSON.stringify(ids)).all<{id:string}>()).results.map(row=>row.id)))
  }
  // EXISTS returns one bit per candidate, even if old native data contains many

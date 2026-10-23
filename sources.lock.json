@@ -1621,7 +1621,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "484481d62862427127f657b491145bcaa4f86d7edc2dc1d95310cc05fb43c197",
+      "sha256": "1137f3200ad14c68835ad55f4b98fe3906385970932122e1a1d99d70fb5beebf",
       "executable": false
     },
     "AGENTS.md": {
@@ -1645,7 +1645,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "318c181d3a1bca045100887184d469bbeb7f5027c4ff56bc6d3739a0fefe6c8a",
+      "sha256": "0415432bc371ca76d17eeec408547728e86f379c9049eab0598521980f6bd62d",
       "executable": false
     },
     "DEMO.md": {
@@ -10993,7 +10993,7 @@
       "executable": false
     },
     "tests/helpers/business-connectors/stripe-sandbox.mjs": {
-      "sha256": "ad1c7149a1e93957a24e9a6d0b8ec0340d78e46c3e2330cc6bd3567d886c2856",
+      "sha256": "2c6997a6e4ddbf541ac70c7282ac1daa07ebe5c1169c6cc84984da27745f7f86",
       "executable": false
     },
     "tests/helpers/company-portal.mjs": {

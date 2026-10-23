@@ -14,7 +14,7 @@ const stripe=async(path,{method='GET',body,headers={}}={})=>{
  assert.ok(response.ok,'Stripe sandbox HTTP '+response.status);
  const result=await response.json();assert.notEqual(result.livemode,true,'Live Stripe records are refused');return result;
 };
-let app,resources;
+let app,resources,passed=false;
 try{
  resources=await provisionStripeSandbox(stripe);
  const {account,customer,subscription,payment,nextPrice}=resources;
@@ -68,8 +68,9 @@ try{
  const credit=await run(await prepare('credit',customer.id,{amount_cents:50}));assert.equal(credit.result.balance_after_cents,-50);checks.push('invoice-credit-readback');
  const paused=await run(await prepare('pause_subscription',subscription.id));assert.equal(paused.result.collection,'keep_as_draft');checks.push('collection-pause-readback');
  const cancelled=await run(await prepare('cancel_subscription',subscription.id));assert.equal(cancelled.result.cancel_at_period_end,true);checks.push('period-end-cancellation-readback');
- process.stdout.write(JSON.stringify({provider:'Stripe TEST',checkedAt:new Date().toISOString(),checks,statuses,refundPosts,result:'passed'})+'\n');
+ assert.equal(refundPosts,1);passed=true;
 }finally{
  await app?.close();
  await resources?.cleanup();
 }
+if(passed)process.stdout.write(JSON.stringify({provider:'Stripe TEST',checkedAt:new Date().toISOString(),checks,statuses,refundPosts:1,cleanedUp:true,result:'passed'})+'\n');

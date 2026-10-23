@@ -224,6 +224,11 @@
 #happytohelp-root time:not(svg), #happytohelp-root mark:not(svg), #happytohelp-root audio:not(svg), #happytohelp-root video:not(svg), #happytohelp-root button:not(svg), #happytohelp-root svg:not(svg), #happytohelp-root path:not(svg) {
   vertical-align: baseline;
 }
+/* The reset reverts display, which drops the hidden attribute's own display: none (Chrome maps it as a presentational
+   hint, not a user-agent rule), so a hidden element (a control's description) would be drawn. */
+#happytohelp-root [hidden] {
+  display: none !important;
+}
 #happytohelp-root article, #happytohelp-root aside, #happytohelp-root details, #happytohelp-root figcaption, #happytohelp-root figure,
 #happytohelp-root footer, #happytohelp-root header, #happytohelp-root hgroup, #happytohelp-root menu, #happytohelp-root nav, #happytohelp-root section {
   display: block;

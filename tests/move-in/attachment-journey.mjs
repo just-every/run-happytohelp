@@ -8,6 +8,7 @@ export async function attachmentJourney(){
  const app=await startApp({captureQueue:true})
  try{for(const fixture of attachmentFixtures()){
   console.log('Attachment import: '+fixture.vendor)
+  if(fixture.vendor==='zendesk'){const sourceTicket=fixture.rows.find(row=>row.ticket).ticket;sourceTicket.comments.find(comment=>comment.public===false).author_id=sourceTicket.requester_id}
   const w=await app.seedWorkspace('attachments-'+fixture.vendor),p=w.projectId,token=w.tokens.owner,imports=`/api/move-in/projects/${p}/imports`
   const upload=body=>app.ok(imports+'?vendor='+fixture.vendor,{token,body,raw:true,headers:{'Content-Type':'application/octet-stream','X-Import-Filename':'history.zip','X-Import-Schema':'2.16'}})
   const apply=async body=>{const uploaded=await upload(body);await app.drainJobs();const run=(await app.ok(imports+'/'+uploaded.data.id,{token})).data;assert.equal(run.state,'ready');assert.equal(run.plan.counts.rejected,0,JSON.stringify(run));await app.ok(imports+'/'+run.id+'/apply',{token,body:{fingerprint:run.plan.fingerprint}});await app.drainJobs();const done=(await app.ok(imports+'/'+run.id,{token})).data;assert.equal(done.state,'completed',JSON.stringify(done));return run}
@@ -22,6 +23,7 @@ export async function attachmentJourney(){
   await app.db.prepare("INSERT INTO sessions(token_hash,actor_id,project_id,role,contact_id,expires_at) VALUES(?,?,?,'contact',?,?)").bind(createHash('sha256').update(visitorToken).digest('hex'),ticket.contact_id,p,ticket.contact_id,Date.now()+3600000).run()
   const publicRead=await download(publicFile,visitorToken);assert.equal(publicRead.status,200);assert.deepEqual(Buffer.from(await publicRead.arrayBuffer()),publicBytes)
   const privateRead=await download(privateFile,visitorToken);assert.equal(privateRead.status,404,'private note bytes stay operator-only');await privateRead.arrayBuffer()
+  if(fixture.vendor==='zendesk'){const forwarded=await app.call(`/api/conversations/${ticket.id}/messages`,{token:visitorToken,body:{localId:'synthetic-happytohelp-21',content:'Please include this file',expectedRevision:ticket.revision,expectedLastMessageId:ticket.last_message_id,mediaIds:[privateFile.id]}});assert.equal(forwarded.data.accepted,false,'a requester cannot republish their own historical private-note file');assert.equal((await app.first('SELECT message_id FROM media WHERE id=?',privateFile.id)).message_id,null)}
   assert.equal((await app.first('SELECT count(*) n FROM move_in_note_media WHERE project_id=?',p)).n,1)
   const messages=await app.ok(`/api/conversations/${ticket.id}/messages`,{token:visitorToken})
   assert.equal(messages.messages.flatMap(message=>message.media).length,1,'public history contains only the public attachment')

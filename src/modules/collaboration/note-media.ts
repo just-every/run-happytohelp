@@ -7,7 +7,7 @@ export function noteMediaIds(value:unknown){
 }
 export async function prepareNoteMedia(env:Env,actor:Actor,conversationId:string,value:unknown){
  const ids=noteMediaIds(value)
- const sql=`SELECT 1 WHERE (SELECT count(*) FROM media m WHERE m.id IN (SELECT value FROM json_each(?)) AND m.project_id=? AND m.conversation_id=? AND m.uploaded_by=? AND m.message_id IS NULL AND NOT EXISTS(SELECT 1 FROM conversation_note_media nm WHERE nm.media_id=m.id))=?`
+ const sql=`SELECT 1 WHERE (SELECT count(*) FROM media m WHERE m.id IN (SELECT value FROM json_each(?)) AND m.project_id=? AND m.conversation_id=? AND m.uploaded_by=? AND m.message_id IS NULL AND NOT EXISTS(SELECT 1 FROM conversation_note_media nm WHERE nm.media_id=m.id) AND NOT EXISTS(SELECT 1 FROM move_in_note_media nm WHERE nm.media_id=m.id))=?`
  const params=[JSON.stringify(ids),actor.projectId,conversationId,actor.id,ids.length]
  if(!await env.DB.prepare(sql).bind(...params).first())throw new HTTPException(403,{message:'Attachments must be your unused uploads to this ticket.'})
  const media=(await env.DB.prepare('SELECT id,filename,content_type,size FROM media WHERE id IN (SELECT value FROM json_each(?))').bind(JSON.stringify(ids)).all<{id:string;filename:string;content_type:string;size:number}>()).results

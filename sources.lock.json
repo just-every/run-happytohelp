@@ -3972,7 +3972,7 @@
       "executable": false
     },
     "src/modules/collaboration/note-media.ts": {
-      "sha256": "1eb20c0708b91b92a633bca920e25bf5a21fc0284a8e0159caeca2918ec06290",
+      "sha256": "58b11705317c9b8a08b2611c1edc3e409821730b1260f6297dec268b7a8634c7",
       "executable": false
     },
     "src/modules/collaboration/notes.ts": {
@@ -4036,7 +4036,7 @@
       "executable": false
     },
     "src/modules/conversations/admission.ts": {
-      "sha256": "ffacaacf1745de630d9d2a2d6a8f996ff1f2f4fb9ec8e4b770ef182dc3849211",
+      "sha256": "06a696503935147661987bf175fa70cbb6ed4378a45d32a75cc5fd730988e9ec",
       "executable": false
     },
     "src/modules/conversations/citations.js": {
@@ -12052,7 +12052,7 @@
       "executable": false
     },
     "tests/move-in/attachment-journey.mjs": {
-      "sha256": "97dcd6c6c6e73939304a3ffe8737e0d6bf65dbb46c7c9dc9a9f9f5743e30cfd2",
+      "sha256": "61d6b9b950358c64b609088e151ee09a42a3c6fdf4b34f176d28b243606132ab",
       "executable": false
     },
     "tests/move-in/business-equality.mjs": {

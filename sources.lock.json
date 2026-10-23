@@ -12012,7 +12012,7 @@
       "executable": false
     },
     "tests/move-in/publication-correction.mjs": {
-      "sha256": "d65a05994d492a57742361e8d057e400b958ec0391777fed7d3f131d257e6730",
+      "sha256": "0baf954fa9940b905514c7830b88b99863b0dd8a4b7da94d1eb9e91d825bf82d",
       "executable": false
     },
     "tests/move-in/publication-fixture.ts": {

@@ -18,7 +18,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     # Only generated, public build output is shared; no local state or secrets.
     steps:
@@ -65,7 +65,7 @@ jobs:
   checks:
     needs: build
     name: Verify / ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -171,9 +171,10 @@ jobs:
           path: ${{ runner.temp }}/verify-build
       - name: Restore the build from this workflow's exact checkout
         run: tar -xzf "$RUNNER_TEMP/verify-build/happytohelp-build.tar.gz"
-      # Chromium only where a shard drives a browser.
+      # Ubuntu 24.04 already supplies Chromium runtime libraries. Use the pinned
+      # headless browser without apt upgrades or the unused headed browser download.
       - if: ${{ matrix.browser }}
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install --only-shell chromium
       # Every command in a shard runs even after another check fails.
       - name: Run shard checks
         env:
@@ -204,7 +205,7 @@ jobs:
 
   public-preview:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       H2H_PREVIEW_ORIGIN: http://127.0.0.1:5186
@@ -228,7 +229,7 @@ jobs:
           sudo rm -rf -- /usr/local/lib/android
           df -h "$RUNNER_TEMP" "$GITHUB_WORKSPACE"
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright install --only-shell chromium
       - name: Start local native preview
         id: preview
         run: |
@@ -276,7 +277,7 @@ jobs:
           retention-days: 7
 
   legacy-export:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     services:
       mysql:

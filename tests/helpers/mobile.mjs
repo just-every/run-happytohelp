@@ -1,25 +1,12 @@
 import assert from 'node:assert/strict'
-import {startApp} from '../journeys/kit/app.mjs'
 
-const root='/api/mobile/v1',allScopes=['read','reply','notes','assign','attachments','knowledge','push']
-async function fixture(){
- const app=await startApp(),w=await app.seedWorkspace('mobile'),other=await app.seedWorkspace('mobile-other')
- await app.presenceAwayOff(w.projectId);await app.presenceAwayOff(other.projectId)
- const ticket=async(workspace,suffix)=>{
-  const contact=await app.ok(`/api/management/projects/${workspace.projectId}/contacts`,{token:workspace.tokens.owner,body:{name:'Private customer '+suffix,email:`customer-${suffix}@example.test`}})
-  const id=contact.data?.id??contact.id
-  return app.ok('/api/conversations',{token:workspace.tokens.owner,body:{projectId:workspace.projectId,contactId:id}})
- }
- const t=await ticket(w,'one'),foreign=await ticket(other,'two')
- const pair=async({token=w.tokens.operator,scopes=allScopes,platform='ios'}={})=>app.ok(root+'/devices',{token,body:{platform,scopes}})
- const call=(path,{token,...options}={})=>app.call(root+path,{token,...options})
- const read=async(device,id=t.id)=>(await call(`/tickets/${id}`,{token:device.token,status:200})).data
- return {app,w,other,t,foreign,pair,call,read}
-}
+import {fixture,root,allScopes} from './mobile-fixture.mjs'
+import {offlineAdmission,offlineAuthority} from './mobile-offline.mjs'
 
 // Extends the native admission journey with the same business behavior through
 // the mobile door; no additional node:test registration or fixture-only engine.
 export async function mobileAdmission(){
+ await offlineAdmission()
  const f=await fixture(),{app,w,t,foreign,pair,call,read}=f
  try{
   for(const platform of ['ios','android']){
@@ -48,6 +35,7 @@ export async function mobileAdmission(){
 }
 
 export async function mobileAuthority(){
+ await offlineAuthority()
  const {app,w,other,t,foreign,pair,call,read}=await fixture()
  try{
   const device=await pair(),readonly=await pair({scopes:['read']}),snapshot=await read(device)

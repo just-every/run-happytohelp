@@ -11395,8 +11395,16 @@
       "sha256": "2b53b19577ce22b5ed84ce55c1e63b502d42c2ba84f266ba929bf9b9345d0104",
       "executable": false
     },
+    "tests/helpers/mobile-fixture.mjs": {
+      "sha256": "f0a1e09f009a601633b34de39ae4c5e70883368f2558e9b53e1e0c118a4d648d",
+      "executable": false
+    },
+    "tests/helpers/mobile-offline.mjs": {
+      "sha256": "062604321d34ae0f420642544d272afab6e54585d802f985317127db9e881b58",
+      "executable": false
+    },
     "tests/helpers/mobile.mjs": {
-      "sha256": "a556c4e9a155a51de93789e02f99df840eee564231a4ed6bc0461584d4605f5c",
+      "sha256": "f7a7bf959c927e1915359052dbb3b694fc6a19c9fbed60427d73a5d8e3a00db3",
       "executable": false
     },
     "tests/helpers/native-http.mjs": {

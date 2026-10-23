@@ -130,6 +130,7 @@ export async function helpScoutSyncJourney(){
    assert.equal(app.requests.length,requests+1,'no conversation, customer or private-thread read follows revoked authority')
    assert.equal((await app.first('SELECT count(*) n FROM move_in_runs')).n,runs)
    assert.equal((await app.first('SELECT cursor FROM helpscout_connections')).cursor,cursor)
+   assert.equal((await app.first('SELECT error_code FROM helpscout_connections')).error_code,'helpscout_authority_unavailable')
    await app.db.prepare('UPDATE project_roles SET permissions_json=? WHERE id=? AND project_id=?').bind(JSON.stringify(['data.import','integrations.install']),role,w.projectId).run()
    await app.db.prepare('UPDATE sessions SET revoked_at=NULL WHERE actor_id=?').bind(w.users.owner).run()
   }

@@ -48,7 +48,7 @@ export async function syncHelpScout(env:Env,row:Connection,grant:Awaited<ReturnT
   await batch([current(),env.DB.prepare('UPDATE helpscout_connections SET cursor=?,last_sync_at=?,error_code=NULL,sync_lock=NULL,sync_lock_until=NULL,updated_at=?,next_sync_at=? WHERE project_id=? AND sync_lock=?').bind(cutoff,Date.now(),Date.now(),Date.now()+300000,actor.project_id,lock),auditStatement(env.DB,{projectId:actor.project_id,category:'integration',action:'helpscout.synced',actor:{type:'user',id:actor.actor_id},source,detail:{staged:runs.length,unchanged}})])
   return {runs,unchanged}
  }catch(error){
-  const code=error instanceof HTTPException&&/^helpscout_[a-z_]+$/.test(error.message)?error.message:'helpscout_sync_interrupted'
+  const code=error instanceof HTTPException&&error.status===403?'helpscout_authority_unavailable':error instanceof HTTPException&&/^helpscout_[a-z_]+$/.test(error.message)?error.message:'helpscout_sync_interrupted'
   await env.DB.prepare('UPDATE helpscout_connections SET error_code=?,pending=1,sync_lock=NULL,sync_lock_until=NULL,updated_at=? WHERE project_id=? AND generation=? AND sync_lock=?').bind(code,Date.now(),actor.project_id,row.generation,lock).run()
   if(error instanceof HTTPException)throw error
   throw new HTTPException(502,{message:code})

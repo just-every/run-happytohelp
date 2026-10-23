@@ -13,7 +13,7 @@ before(async()=>{runtime=await createRuntime({outboundFixture:new URL('../helper
 after(async()=>{await writeFile(shot('connections-browser.json'),JSON.stringify({records},null,2)).catch(()=>{});await browser?.close();await runtime?.close(success)})
 async function audit(page,name){await page.addScriptTag({path:resolve('node_modules/axe-core/axe.min.js')});const violations=await page.evaluate(async()=>{const result=await axe.run();return result.violations.filter(x=>['serious','critical'].includes(x.impact)).map(x=>({id:x.id,impact:x.impact,targets:x.nodes.map(n=>n.target)}))});assert.deepEqual(violations,[],name);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' overflow');await page.screenshot({path:shot(name+'.png'),fullPage:true});records.push({name,violations})}
 
-for(const width of [1440,390])test(`at ${width}px an owner creates and revokes a token, connects a webhook and Slack with secrets shown once, reads the delivery log, and resends an uncertain delivery only after a duplicate warning`,async()=>{try{
+for(const width of [1440,390])test(`at ${width}px an owner manages API tokens and delivery attempts, connects business accounts and approves provider-confirmed ticket actions without duplicate customer replies`,async()=>{try{
 
   const owner=await runtime.seedTenant({name:'Connections workspace '+width,email:'connections-'+width+'@example.test'});
   const context=await browser.newContext({viewport:{width,height:1000}});await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}]);const page=await context.newPage();page.setDefaultTimeout(20000);

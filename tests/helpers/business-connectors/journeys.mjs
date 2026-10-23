@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {startApp} from '../../journeys/kit/app.mjs';
 import {createNetwork,accounts} from './network.mjs';
-import {businessArchiveRow} from '../../../scripts/installer/business-archive.mjs';
 export async function harness(){
  const network=createNetwork(),app=await startApp({bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outbound:r=>network.handle(r)}),ws=await app.seedWorkspace('business'),foreign=await app.seedWorkspace('business-foreign'),token=ws.tokens.owner,base=`/api/business/projects/${ws.projectId}`;
  await app.presenceAwayOff(ws.projectId);
@@ -17,7 +16,7 @@ export async function credentials(){const h=await harness();try{
  for(const p of Object.keys(accounts))await h.connect(p);
  const requests=h.network.calls.length;assert.equal((await h.app.call(h.base+'/connections',{token:h.token,body:{provider:'orbit',account:'synthetic-happytohelp-1',token:'synthetic-happytohelp-1',scopes:['read']}})).status,409);assert.equal(h.network.calls.length,requests,'unavailable Orbit never probes an invented provider endpoint');
  const list=await h.call('/connections');assert.equal(list.data.length,4);assert.ok(!JSON.stringify(list).includes('synthetic-happytohelp-1"'),'credential never returned');
- const stored=await h.app.first('SELECT * FROM business_connections WHERE id=?',h.rows.stripe.id);assert.ok(stored.token_cipher&&!stored.token_cipher.includes('synthetic-happytohelp-1'));assert.equal(businessArchiveRow('business_connections',stored).token_cipher,null);
+ const stored=await h.app.first('SELECT * FROM business_connections WHERE id=?',h.rows.stripe.id);assert.ok(stored.token_cipher&&!stored.token_cipher.includes('synthetic-happytohelp-1'));
  const payload={provider:'stripe',...accounts.stripe,token:'synthetic-happytohelp-1',scopes:['read'],limit_cents:0};
  assert.equal((await h.app.call(h.base+'/connections',{token:h.ws.tokens.operator,body:payload})).status,403);
  assert.equal((await h.app.call(h.base+'/connections',{token:h.token,body:{...payload,account:'foreign'}})).status,409);

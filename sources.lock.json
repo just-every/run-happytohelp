@@ -1621,7 +1621,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "239a1bdec2a778ad6e1cad9b6a116ffdff5ae0afaabb28dd7380f26bf6ed5592",
+      "sha256": "484481d62862427127f657b491145bcaa4f86d7edc2dc1d95310cc05fb43c197",
       "executable": false
     },
     "AGENTS.md": {
@@ -1645,7 +1645,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "9c0bdca31c36ff68a9d03daef3c5f8f4259e844d2890f3d2ec0daa936bb8eb3f",
+      "sha256": "318c181d3a1bca045100887184d469bbeb7f5027c4ff56bc6d3739a0fefe6c8a",
       "executable": false
     },
     "DEMO.md": {
@@ -3937,7 +3937,7 @@
       "executable": false
     },
     "src/modules/api-integrations/helpscout-sync.ts": {
-      "sha256": "38f6718145ca6610e44355d360b0e60dcdd6bdd304ab50527225f4c8e05bd69e",
+      "sha256": "89b1846de8011d69ad900d60e7c9556954ff050a92dc796e4ddd7decbd93ca66",
       "executable": false
     },
     "src/modules/api-integrations/helpscout.ts": {
@@ -4057,7 +4057,7 @@
       "executable": false
     },
     "src/modules/business-connectors/README.md": {
-      "sha256": "3d772451fc67b73d6b7c3f2917529e74f786d38a85772c587039d991e11e26ac",
+      "sha256": "2c7fb7f7b881eb473a5601b082dc0790f570af7f729b879ca49c11d19774f2ee",
       "executable": false
     },
     "src/modules/business-connectors/routes.ts": {
@@ -10981,7 +10981,7 @@
       "executable": false
     },
     "tests/helpers/business-connectors/journeys.mjs": {
-      "sha256": "743554f9c3ef25af0197904141bee1474e6bb9ce3778b7994a25f8978d82ff3d",
+      "sha256": "31afe845985d28e11aa3ebd5f1aceb2493d22fc568f7d035d97e093f6a248f97",
       "executable": false
     },
     "tests/helpers/business-connectors/network.mjs": {
@@ -11297,7 +11297,7 @@
       "executable": false
     },
     "tests/helpers/helpscout-sync.mjs": {
-      "sha256": "e1a15fb4b92a85f0b3ca187049ad8c97decd445bc7dd20582be8ed8a1e5c6a83",
+      "sha256": "6c460d812eb8dd5d13d58a86df6df0c8f18dccaa977d0255dfe3f5fddbf94c00",
       "executable": false
     },
     "tests/helpers/hero/article-capability.mjs": {
@@ -11865,7 +11865,7 @@
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {
-      "sha256": "08c30b8b5e7a284fa47eae91c0ef19e228a0ffd3864a63feb262d8664d3ee028",
+      "sha256": "afa01bbfd06485bd2829cba7065b96baa0e2ae4d22a5bd5740cd0cff0829de88",
       "executable": false
     },
     "tests/journeys/connections.mjs": {

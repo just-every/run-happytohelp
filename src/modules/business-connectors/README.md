@@ -67,3 +67,12 @@ sandbox receipts remain pending. Orbit means the fleet Sales CRM in
 credentials and a general public records API. Orbit is explicitly unavailable
 here until that prerequisite ships. No community service or native browser
 session stands in for that integration.
+
+Repeat the bounded held-key qualification with
+`python3 -I <fleet-root>/briefs/_od08-env.py STRIPE_SECRET_KEY=STRIPE_TEST_SECRET_KEY -- node tests/helpers/business-connectors/stripe-sandbox.mjs`.
+It refuses live keys, creates only marked synthetic provider records, forwards
+real Stripe requests without transport framing headers, and removes its own
+customer/subscription and archives its prices/product. It prints only check
+names and status counts; it never runs in Verify or writes credentials to disk.
+The 23 October 18:39Z run passed all eight checks, including one refund POST
+after a deliberately lost response and explicit read-only reconciliation.

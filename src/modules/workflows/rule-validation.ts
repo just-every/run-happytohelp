@@ -15,7 +15,7 @@ export async function validateRuleReferences(env:Env,projectId:string,d:RuleDefi
   case 'assign':if(a.user_id)members.add(a.user_id);if(a.group_id)groups.add(a.group_id);break
   case 'tags':for(const id of [...a.add??[],...a.remove??[]])tags.add(id);break
   case 'fields':for(const id of Object.keys(a.values))fields.set(id,true);break
-  case 'notify':if(a.recipient_id)members.add(a.recipient_id);break
+  case 'notify':if(a.recipient_id)(a.kind==='group'?groups:members).add(a.recipient_id);break
  }}
  const destinations=[...new Set(d.actions.flatMap(a=>a.type==='webhook'?[a.destination_id]:[]))]
  if(destinations.length){

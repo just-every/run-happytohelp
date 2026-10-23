@@ -8,7 +8,7 @@ export async function completeEmailJourney(){
  const sent=[]
  const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'provider-fixture',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'gateway-fixture'},outbound:async request=>{
   if(new URL(request.url).hostname==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]})
-  assert.equal(new URL(request.url).hostname,'api.resend.com');sent.push(await request.json());return Response.json({id:'mail-'+sent.length})
+  assert.equal(new URL(request.url).hostname,'api.resend.com');const copy=await request.json();sent.push(copy);if(copy.text?.includes('synthetic-happytohelp-41'))return Response.json({error:'Recipient refused'},{status:422});return Response.json({id:'mail-'+sent.length})
  }})
  try{
   const workspace=await app.seedWorkspace('r6'),projectId=workspace.projectId,owner=workspace.tokens.owner,agent=workspace.tokens.operator,base=`/api/management/projects/${projectId}`,gate=body=>app.call('/api/integrations/email/inbound',{token:'gateway-fixture',body})
@@ -112,6 +112,18 @@ export async function completeEmailJourney(){
   assert.ok(inbox.some(row=>row.id===call.conversation.id),'a logged call appears in the inbox')
   assert.ok(inbox.some(row=>row.id===newRecovery.conversationId),'a recovered private-note ticket appears in the inbox')
   await vendorReplies(app,{projectId,owner,gate})
+  // Selecting an existing requester never creates another contact. A refused
+  // first send stays visible and retrying its exact command never sends again.
+  const contactCount=(await app.first('SELECT count(*) n FROM contacts WHERE project_id=?',projectId)).n
+  const existingCommand={kind:'email',localId:'synthetic-happytohelp-40',requesterId:ticket.conversation.contact_id,mailboxId:mailbox.id,subject:'Replacement status',content:'synthetic-happytohelp-41: Your replacement status is ready.'}
+  const existing=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:existingCommand})
+  assert.equal(existing.conversation.contact_id,ticket.conversation.contact_id)
+  assert.equal(existing.conversation.requester_id,ticket.conversation.contact_id);assert.equal(existing.conversation.submitter_id,workspace.users.operator)
+  await app.until(async()=>(await app.ok(`/api/dashboard/projects/${projectId}/conversations/${existing.conversation.id}`,{token:agent})).data.last_message?.email_status?.state==='failed',{message:'refused outbound delivery recorded'})
+  const repeated=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:existingCommand})
+  assert.equal(repeated.conversation.id,existing.conversation.id)
+  assert.equal((await app.first('SELECT count(*) n FROM contacts WHERE project_id=?',projectId)).n,contactCount)
+  assert.equal(sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-41')).length,1)
   // Closed remains final: a real emailed reply creates a linked fresh ticket.
   const ticketState=(await app.ok(`/api/dashboard/projects/${projectId}/conversations/${ticket.conversation.id}/ticket`,{token:owner})).data
   await app.ok(`/api/dashboard/projects/${projectId}/conversations/${ticket.conversation.id}/ticket`,{token:owner,method:'PATCH',body:{status_id:'closed',expected_version:ticketState.ticket_version}})

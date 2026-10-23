@@ -1,6 +1,6 @@
 # Ratings and Reports
 
-A visitor sees **Did this answer your question?** after a conversation is resolved. The default is thumbs up or down. In **Satisfaction surveys → Survey settings**, a lead can choose thumbs or 1–5, English/Spanish/French, delay, lifetime and whether to show widget surveys. Each new resolution keeps its choices; later settings changes do not change an earlier cycle. A rating and optional comment (up to 1,000 characters) belong to that resolution. The server refuses responses before the delay or after expiry. **Stop widget surveys** is the visitor’s preference for this workspace and persists across cycles; it does not change email preferences. Only the conversation's current owning visitor session can submit a rating. A visitor can change the rating; each change remains in history. The usual widget action rate limit applies. Operators see the current rating and comment in the conversation panel's **Ticket → History**.
+A visitor sees **Did this answer your question?** after a conversation is resolved. The default is thumbs up or down. In **Settings → Project → Surveys**, a lead can choose thumbs or 1–5, English/Spanish/French, delay, lifetime and whether to show widget surveys. Each new resolution keeps its choices; later settings changes do not change an earlier cycle. A rating and optional comment (up to 1,000 characters) belong to that resolution. The server refuses responses before the delay or after expiry. **Stop widget surveys** is the visitor’s preference for this workspace and persists across cycles; it does not change email preferences. Only the conversation's current owning visitor session can submit a rating. A visitor can change the rating; each change remains in history. The usual widget action rate limit applies. Operators see the current rating and comment in the conversation panel's **Ticket → History**.
 
 A new visitor message reopens the conversation. Its next resolution has a separate outcome and rating. A rating for an earlier cycle cannot be submitted while the conversation is open or against a later resolution. Contact erasure removes comments from both the current rating and change history.
 
@@ -30,7 +30,7 @@ Conversations CSV contains the ID, creation timestamp, first-response duration, 
 
 ## Team report
 
-Open **Reports → Team report** to see workload by agent, team, channel, brand or tag. Choose a calendar range, team and brand, then apply the filters. **Include imported history** is off initially. Turning it on includes imported tickets in this panel and its export, with separate native and imported counts. It does not change the original daily-volume report above.
+Open **Reports → Team report** to see workload by agent, team, channel, brand, account or tag. Choose a calendar range, team and brand, then apply the filters. **Include imported history** is off initially. Turning it on includes imported tickets in this panel and its export, with separate native and imported counts. It does not change the original daily-volume report above.
 
 Incoming tickets were created in the selected range and have a message. Workload uses their current assignment and status. Resolved means currently Solved or Closed. A ticket with several tags counts under each tag; unassigned and untagged tickets have their own rows. Merged-away source tickets are excluded.
 

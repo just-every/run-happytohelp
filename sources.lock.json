@@ -11043,6 +11043,10 @@
       "sha256": "42d3af12e2d5faaea5d2f2238a608bf18ea74eb7ad3c3bf2f6c0b0e85fa34609",
       "executable": false
     },
+    "tests/helpers/email/notification-ambiguity.mjs": {
+      "sha256": "6bed5aad3367df6407c707f028702f9af7276d176aec9ec9845081f06301f773",
+      "executable": false
+    },
     "tests/helpers/email/notification-custody.mjs": {
       "sha256": "a1e5f4ba803f8e7215ac7a15ba13aa9ba119725faf2601f21793803fff088f30",
       "executable": false
@@ -11979,6 +11983,10 @@
       "sha256": "65de88298b2e183456e640343e28b7cbc932dd0089735e15401ebf1e5f34a05c",
       "executable": false
     },
+    "tests/live/csat-mail.mjs": {
+      "sha256": "767a9d7e75c7095200afb4d3ded0b513f5c0c7209b49ad455871dd044b0f972a",
+      "executable": false
+    },
     "tests/live/README.md": {
       "sha256": "2eb80ab76a1fe29072068abcea8335aca0260f9e20ad31a909dad4c6ec48358a",
       "executable": false
@@ -12032,7 +12040,7 @@
       "executable": false
     },
     "tests/move-in/attachment-browser.mjs": {
-      "sha256": "6a2e2e9e6cd1f6dfab60c914ea470f576ae0c6cc6bda7b366067d8c4907097ee",
+      "sha256": "4310ff7415522a5c4daf20bfa0e6afa1c012770ad5217783a5157ddfb8a8b0d0",
       "executable": false
     },
     "tests/move-in/attachment-fixtures.mjs": {
@@ -12040,7 +12048,7 @@
       "executable": false
     },
     "tests/move-in/attachment-journey.mjs": {
-      "sha256": "df2790cca576d3e305d1a758f9e2198d8d115735932c15e827529d2623918556",
+      "sha256": "2d85d32e6859e95d85680a653b71713c65e708424d0bfe7e7b701087d7015cf6",
       "executable": false
     },
     "tests/move-in/business-equality.mjs": {

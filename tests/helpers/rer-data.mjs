@@ -1,3 +1,4 @@
+import {seedPortableBusiness,verifyPortableBusiness} from './business-portable.mjs';
 import assert from 'node:assert/strict';
 import {WebSocket} from 'ws';
 import {generate} from '../move-in/generator.mjs';
@@ -58,9 +59,10 @@ export async function seedPortableData(origin,projectId,token,json){
  for(let attempt=0;attempt<40&&!await online();attempt++)await new Promise(resolve=>setTimeout(resolve,250));
  assert.equal(await online(),1,'the owner\'s open dashboard is online');stream.close();
  const reports=await seedReportsPortable(origin,projectId,kept.contactId,retained.id,kept.token,token);
+ const business=await seedPortableBusiness(origin,projectId,kept.contactId,token);
  const training=await seedPortableTraining(origin,projectId,token);
  const ticket=await seedRecoveryTicket({origin},{projectId,token},retained);
- return {projectId,erasedContactId:visitor.contactId,conversationId:retained.id,mediaId:media.id,bytes:[...bytes],imports,reports,training,ticket};
+ return {projectId,erasedContactId:visitor.contactId,conversationId:retained.id,mediaId:media.id,bytes:[...bytes],imports,reports,training,ticket,business};
 }
 export async function verifyPortableData(origin,state,token,json){
  const contact=(await json(`/api/management/projects/${state.projectId}/contacts/${state.erasedContactId}`,undefined,token)).data;
@@ -70,6 +72,7 @@ export async function verifyPortableData(origin,state,token,json){
  await verifyImportHistory(origin,state.projectId,state.imports,token,json);
  await verifyReportsPortable(origin,state.reports,token,json);
  await verifyPortableTraining(origin,state.training,token);
+ await verifyPortableBusiness(origin,state.business,token);
  await verifyRecoveryTicket({origin},{owner:{projectId:state.projectId,token},conversation:{id:state.conversationId},ticket:state.ticket});
  const matches=await json(`/api/dashboard/projects/${state.projectId}/conversations?q=retained%20cobalt%20parcel`,undefined,token);
  assert.ok(matches.data.some(row=>row.id===state.conversationId),'restored messages are searchable after the derived index rebuild');

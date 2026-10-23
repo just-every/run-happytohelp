@@ -2907,6 +2907,10 @@
       "sha256": "3bd7ec386859b8fa1608bd1bfb26c98603c2ff09c224c0bac6fdca84112d57f5",
       "executable": false
     },
+    "scripts/installer/async-work-archive.mjs": {
+      "sha256": "6c0f5ba5436115b7069f6b6f426305173fbbc58ad857f48c499976c218b97ab4",
+      "executable": false
+    },
     "scripts/installer/customer-archive-policy.mjs": {
       "sha256": "302a22455f3f6382a93288cb617c74c4cff7e89476eeeef51fe0df3810dc3575",
       "executable": false
@@ -2940,7 +2944,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "3b84e5ddf0a9e4933c5c8423579c8b63f09e4d3b56766cd8dea7b3b23023af9c",
+      "sha256": "e6f11e6b636061a2f0262ace01e8e18e836a4fa9c21fa812f62837286ce58cbc",
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {
@@ -2956,7 +2960,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "6f940d2aa30e46a4aaf8e53031cc719a1c0c349dd8582d7798f00e5676d84821",
+      "sha256": "eeaf2483d5c29a44fea99ff4c879d7a292fc12df4eaaaee8058387a8aba0d366",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -10879,6 +10883,10 @@
       "sha256": "58bf2512bb5e6fdc1afe2608439e1fe431f6465d1188d995f82200d13b0c1ef1",
       "executable": false
     },
+    "tests/helpers/business-portable.mjs": {
+      "sha256": "996af997c5610653f5f7c0f22a923a773ea3ac84acf459180d8e327a4dab833a",
+      "executable": false
+    },
     "tests/helpers/company-portal.mjs": {
       "sha256": "0a5da34f0d27498e8132f16166fec87c1a84af430ac4a8679e4cd63446b544aa",
       "executable": false
@@ -11364,15 +11372,19 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "3dd698301bffaf9c3694d47d01b1a136f511ecb9a999f0fba4bce0c3793cb0bd",
+      "sha256": "57474f1030db8fe7ff34a858a1ec270d1499b69545f1b4c49beeb971a11ba900",
+      "executable": false
+    },
+    "tests/helpers/installer/hosted-export-live.mjs": {
+      "sha256": "9c1b2c1f30efa5f009cbb7964c42e2267227c0f4dd7987d666c41ab395647b2a",
       "executable": false
     },
     "tests/helpers/installer/hosted-export.mjs": {
-      "sha256": "f152aa0875f998f253180b17333ad4bfcc94428d5463f57b4d546b6c69b43f56",
+      "sha256": "0cc364e4726a6b426023f0ad477b8d192892655190b6c585ef23dfd9493adcb4",
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {
-      "sha256": "cd2043633890689cd212e4cace4c5ff90e7cfb5a5d32da8d4758d80a741ce70f",
+      "sha256": "a881fdebb8f33a59202e75b690a540be3b3d605735c33ee302df36f8c62f6404",
       "executable": false
     },
     "tests/helpers/installer/reproducible.mjs": {
@@ -11556,7 +11568,7 @@
       "executable": false
     },
     "tests/helpers/rer-data.mjs": {
-      "sha256": "425336bedf1b7d613402afe02c34b105c938a9bae604f3cba48dcef6c9aff721",
+      "sha256": "bf6380dde0007c8c67ea5a0f45ca6b03df2f9b20b2d9c62ae6410e234cc3ed35",
       "executable": false
     },
     "tests/helpers/search-index.mjs": {
@@ -11601,6 +11613,10 @@
     },
     "tests/helpers/ui-readiness-transitions.mjs": {
       "sha256": "52fcad867d098268443c6d04b5997789af788d0450fd2ae7ab246168c43a73cc",
+      "executable": false
+    },
+    "tests/helpers/unfinished-portable.mjs": {
+      "sha256": "9b5f66d8465681c6b00958a897cc22486957e10e33d054ab186bdb6c6241a7ce",
       "executable": false
     },
     "tests/helpers/upgrade-baselines.mjs": {
@@ -11852,7 +11868,7 @@
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
-      "sha256": "dcd841228a049486ae371e0b3789ad7e76b3a65f3c6b4a63703fa7c836cc612a",
+      "sha256": "c8c069e77d7511e192c92981a979134e4a49ee0e98c8afec1c12cb9e42930283",
       "executable": false
     },
     "tests/journeys/move-in-capacity.mjs": {
@@ -12008,7 +12024,7 @@
       "executable": false
     },
     "tests/move-in/configuration-fields.mjs": {
-      "sha256": "9ed95bbfc4f40d9b9ec1d92e875730591cda1756fdc3696f639ddb4eb50722e3",
+      "sha256": "e1c62a75b8f1d0293ff44144c9d1336aae4904ece88c97f433986a3f1d5b9c5f",
       "executable": false
     },
     "tests/move-in/correction-fixtures.mjs": {
@@ -12125,6 +12141,10 @@
     },
     "tests/move-in/owned-workerd.mjs": {
       "sha256": "7d45e4ba0962f325e62087436d6c482f41dcf9dc72ef17f177880dc4321b831a",
+      "executable": false
+    },
+    "tests/move-in/ownership-browser-flow.mjs": {
+      "sha256": "65afba2ee5d295e0ce03c358c068aa3e5f839640845228fd787dd9d9ba0a7d96",
       "executable": false
     },
     "tests/move-in/parse-accounting.mjs": {

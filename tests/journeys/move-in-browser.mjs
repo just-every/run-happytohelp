@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {readFile,writeFile} from 'node:fs/promises'
 import {randomBytes} from 'node:crypto'
 import {createRuntime} from '../helpers/emitted-runtime.mjs'
+import {ownershipBrowserFlow} from '../move-in/ownership-browser-flow.mjs'
 import {helpScoutBrowserFlow} from '../move-in/helpscout-browser-flow.mjs'
 import {generate,generateDiagnostics} from '../move-in/generator.mjs'
 import {launchBrowser,evidence} from './kit/browser.mjs'
@@ -48,7 +49,7 @@ async function vendorJourney(width,vendor){
   const negativeName=`${label}-diagnostics.jsonl`,negative=generateDiagnostics(vendor,2,width+1).body.replace(vendor==='zendesk'?'\"draft\":false,\"user_segment_id\":null':'\"state\":\"published\"',vendor==='zendesk'?'\"draft\":false,\"user_segment_id\":7':'\"state\":\"published\",\"audience\":{\"type\":\"restricted\"}');await page.getByLabel('Export format',{exact:true}).selectOption(vendor);await page.getByLabel('Export file',{exact:true}).setInputFiles({name:negativeName,mimeType:'application/octet-stream',buffer:Buffer.from(negative)});await page.getByRole('button',{name:'Upload and review',exact:true}).click();await page.getByText('Upload refused:',{exact:false}).waitFor();assert.match(await page.locator('.move-in-page').innerText(),/No source files or import were saved/);await inspect(`${label}-upload-refused`);
   await page.getByLabel('Export file',{exact:true}).setInputFiles({name:negativeName,mimeType:'application/octet-stream',buffer:Buffer.from(negative.slice(0,negative.lastIndexOf('{malformed')))});await page.getByRole('button',{name:'Upload and review',exact:true}).click();await page.getByRole('heading',{name:`Ready for review: ${negativeName}`,exact:true}).waitFor({timeout:120000});await page.getByText('The export contains conflicting records for this ID.',{exact:false}).first().waitFor();await page.getByText('This article has a restricted audience that cannot be preserved.',{exact:false}).first().waitFor();assert.match(await page.locator('.move-in-page').innerText(),new RegExp(`${negativeName}, line (?:9|10|11)`));await inspect(`${label}-diagnostics`);
 }
-for(const width of [1440,390])test(`at ${width}px Zendesk and Intercom exports are reviewed, imported, reported, opened, tagged, filtered, repeated, undone, refused and diagnosed`,guarded(async()=>{for(const vendor of ['zendesk','intercom'])await vendorJourney(width,vendor);await configurationBrowser(width)}))
+for(const width of [1440,390])test(`at ${width}px Zendesk and Intercom exports are reviewed, imported, reported, opened, tagged, filtered, repeated, undone, refused and diagnosed`,guarded(async()=>{for(const vendor of ['zendesk','intercom'])await vendorJourney(width,vendor);await configurationBrowser(width);await ownershipBrowserFlow({page,request,origin:runtime.origin,token,width,inspect})}))
 
 test('a Help Scout export at 1440 and 390: its own guide, review, import, repeat, opened history and undo',guarded(()=>helpScoutBrowserFlow({page,origin:runtime.origin,base,inspect,request,project,token})))
 
@@ -71,7 +72,9 @@ test('entry points and limits: Settings and Setup lead to Move in, an oversized 
 async function configurationBrowser(width){
  await page.setViewportSize({width,height:900})
  const n=width*100,dates={created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z'},name=`configuration-${width}.jsonl`,ruleName=`Priority review ${width}`,calendarName=`Business hours ${width}`,groupName=`Billing ${width}`,viewName=`Open work ${width}`
- const records=[{user:{id:n+1,role:'end-user',name:'Configuration customer',email:`configuration-${width}@example.test`,created_at:dates.created_at}},{ticket:{id:n+2,requester_id:n+1,subject:`Configuration ticket ${width}`,status:'open',via:{channel:'email'},comments:[{id:n+3,author_id:n+1,body:'A historical configuration example',public:true,created_at:dates.created_at}],...dates}},
+ const formField={id:n+20,type:'text',title:'Order reference',title_in_portal:'Order reference',description:'Your order number',active:true,required:false,visible_in_portal:true,editable_in_portal:true,required_in_portal:true,agent_can_edit:true,...dates};
+ const form=id=>({ticket_form:{id,name:'Order request '+id,display_name:'Order request '+id,active:true,default:false,end_user_visible:true,in_all_brands:true,restricted_brand_ids:[],ticket_field_ids:[formField.id],agent_conditions:[],end_user_conditions:[],...dates}});
+ const records=[{ticket_field:formField},form(n+21),form(n+22),{user:{id:n+1,role:'end-user',name:'Configuration customer',email:`configuration-${width}@example.test`,created_at:dates.created_at}},{ticket:{id:n+2,requester_id:n+1,subject:`Configuration ticket ${width}`,status:'open',via:{channel:'email'},comments:[{id:n+3,author_id:n+1,body:'A historical configuration example',public:true,created_at:dates.created_at}],...dates}},
   {group:{id:n+4,name:groupName,deleted:false,default:false,...dates}},{group:{id:n+5,name:`Technical ${width}`,deleted:false,default:false,...dates}},
   {schedule:{id:n+6,name:calendarName,time_zone:'UTC',intervals:[{start_time:1980,end_time:2460}],holidays:[{id:n+7,name:'Holiday',start_date:'2024-12-25',end_date:'2024-12-25'}],...dates}},
   {view:{id:n+8,title:viewName,active:true,restriction:null,conditions:{all:[{field:'status',operator:'is',value:'open'}],any:[]},execution:{sort_by:'updated_at',sort_order:'desc'},...dates}},
@@ -84,5 +87,7 @@ async function configurationBrowser(width){
  await report();await page.getByRole('link',{name:`Review business calendar “${calendarName}”`,exact:true}).click();await page.getByRole('heading',{name:calendarName,exact:true}).waitFor();await page.getByText('UTC · Inactive',{exact:false}).waitFor();await page.getByText('Closed: 2024-12-25',{exact:false}).waitFor();await inspect(`configuration-calendar-${width}`)
  await report();await page.getByRole('link',{name:`Review group “${groupName}”`,exact:true}).click();await page.getByRole('heading',{name:groupName,exact:true}).waitFor();await inspect(`configuration-groups-${width}`)
  await report();await page.getByRole('link',{name:`Review saved view “${viewName}”`,exact:true}).click();await page.locator('.conversation-item').filter({hasText:`Configuration ticket ${width}`}).waitFor();await inspect(`configuration-view-${width}`)
+ await report();await page.getByRole('link',{name:'Review form “Order request '+(n+21)+'”',exact:true}).click();await page.getByRole('heading',{name:'Request forms',exact:true}).waitFor();await page.getByRole('heading',{name:'Order request '+(n+21),exact:true}).waitFor();await inspect(`configuration-forms-${width}`);
+ await report();await page.getByRole('link',{name:'Review field “Order reference”',exact:true}).click();await page.getByRole('heading',{name:'Order reference',exact:true}).waitFor();await inspect(`configuration-fields-${width}`);
  await report();await page.getByRole('button',{name:'Undo whole import',exact:true}).click();await page.getByRole('heading',{name:`Undone: ${name}`,exact:true}).waitFor({timeout:120000})
 }

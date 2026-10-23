@@ -46,6 +46,18 @@
       "buyerSteps": "Apply before serving the updated Worker. Adds optional read-only Help Scout connection and digest/Move in receipts; it changes no prior ticket or import. Configure an explicitly authorized mailbox read token, private webhook secret and existing integration encryption key through the native connection API. Sync stages ordinary Move in reviews; approval remains explicit. Provider credentials and active sync stores are excluded from export and require reconnecting after restore; native import history and erased-identity tombstones remain retained."
     },
     {
+      "id": "250_business_connectors.sql",
+      "buyerSteps": "Apply before serving business connector routes. Business credentials are excluded from exports; reconnect provider accounts after restore. Restore cancels unexecuted approvals and preserves unknown outcomes without replay."
+    },
+    {
+      "id": "251_business_source_fields.sql",
+      "buyerSteps": "Apply after 250. Source plan and support entitlement properties are opt-in; sales lifecycle and community level confer no support rights."
+    },
+    {
+      "id": "252_business_role_fences.sql",
+      "buyerSteps": "Apply after 251. Custom role and membership role changes invalidate in-flight business connector write authority."
+    },
+    {
       "id": "253_helpscout_continuous_merge.sql",
       "buyerSteps": "Apply after the existing Help Scout connection migration and before the updated Worker serves traffic. Existing connections keep continuous reads off. An explicit reconnect can authorize five-minute staging only while the connecting native session and data.import permission remain valid. Existing-ticket changes require a separately reviewed append-only merge. No native ticket is updated automatically; credentials and active sync receipts are excluded from export and require reconnecting after restore."
     }

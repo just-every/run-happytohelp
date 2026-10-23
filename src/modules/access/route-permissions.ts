@@ -1,3 +1,4 @@
+import {businessRouteRule} from '../business-connectors/permissions'
 import type {Permission} from './catalogue'
 import {selfServiceRules} from './self-service-routes'
 import {r4RouteRule} from './r4-route-permissions'
@@ -164,5 +165,5 @@ export function routeRule(method:string,path:string):Rule|undefined{
   return 'conversations.manage'
  }
  if(prefixes.some(prefix=>path.startsWith(prefix)))return 'none'
- return r4RouteRule(method,path)??rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]
+ return businessRouteRule(method,path)??r4RouteRule(method,path)??rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]
 }

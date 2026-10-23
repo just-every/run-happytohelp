@@ -60,7 +60,7 @@ export function preloadWorkspacePage(pathname, settings) {
     else if (['datasets', 'articles', 'categories'].includes(section)) name = 'KnowledgePage';
     else if (['ais', 'macros', 'contacts', 'plugins', 'agents'].includes(section)) name = 'ManagementPage';
     else if (['edit', 'settings', 'email-settings'].includes(section)) name = 'ProjectSettings';
-    else if (['api-settings', 'webhook-settings', 'slack-settings', 'delivery-log'].includes(section)) name = 'Connections';
+    else if (['business-settings','api-settings', 'webhook-settings', 'slack-settings', 'delivery-log'].includes(section)) name = 'Connections';
     else if (section === 'github-settings') name = 'GitHubSettings';
     else if (section === 'security') name = 'SecurityPage';
     else if (section === 'security-log') name = 'SecurityLog';

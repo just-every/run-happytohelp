@@ -17,6 +17,7 @@ import {updateViewportProperties} from "./includes/utils";
 
 export default function SendMessage({ mainView, setView, messages, localContact, contact, sendContact, onSend, displayError }) {
     const context = useContext(AppContext);
+    const [tooltipFocused,setTooltipFocused]=useState(false);
     const isPreview = context.preview?.enabled === true;
     const { open, getCurrentAgent, conversationSettings } = useContext(ConnectContext);
     const currentAgent = getCurrentAgent();
@@ -171,7 +172,7 @@ export default function SendMessage({ mainView, setView, messages, localContact,
                 <div className="happytohelp-send-message-row">
                 <TextareaAutosize forwardRef={textareaRef} name="content" value={message} onChange={e => setMessage(e.target.value)} onEnter={handleSend} aria-label={(mainView === 'conversation' ? context.text.message.placeholder_message_chat : context.text.message.placeholder_message)} placeholder={(mainView === 'conversation' ? context.text.message.placeholder_message_chat : context.text.message.placeholder_message)} style={ context.theme.input.message } />
                 </div>
-                <div className={"happytohelp-send-message-row happytohelp-send-message-row-buttons"+((contact.email || contact.name) ? " happytohelp-send-message-row-larger" : "")} onClick={event => { if (!event.target.closest('button')) focusText(event); }}>
+                <div className={"happytohelp-send-message-row happytohelp-send-message-row-buttons"+((contact.email || contact.name) ? " happytohelp-send-message-row-larger" : "")} onFocusCapture={()=>setTooltipFocused(true)} onBlurCapture={()=>setTooltipFocused(false)} onClick={event => { if (!event.target.closest('button')) focusText(event); }}>
                     { !showCollector && (contact.email || contact.name) && <div className="happytohelp-message-show-contact-container">
                         <button type="button" data-tooltip-id="h2h-tooltip-send"
                              data-tooltip-content={context.text.message.tooltip_contact}
@@ -215,7 +216,7 @@ export default function SendMessage({ mainView, setView, messages, localContact,
                             data-tooltip-id="h2h-tooltip-send" data-tooltip-content={context.text.message.tooltip_send}  style={ context.theme.input.send }>
                         <FontAwesomeIcon icon={fasArrowAltRight}/></button>
                 </div>
-                <Tooltip id="h2h-tooltip-send" effect="solid" place="top" delayShow={100} delayHide={100}
+                <Tooltip id="h2h-tooltip-send" effect="solid" place="top" delayShow={tooltipFocused?0:300} delayHide={100}
                          offset={{top: 0, right: 0, bottom: 0, left: 5}} className="happytohelp-tooltip"/>
             </FileHandler>
         );

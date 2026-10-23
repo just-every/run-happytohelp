@@ -1,4 +1,5 @@
 import {workflowNow,workflowEnvironment} from '../workflows/clock'
+import {widgetConversationState} from '../widget/conversation-state'
 import {trackingStatement,resolutionState,publishResolution} from '../outcomes/state'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
@@ -35,7 +36,7 @@ routes.get('/:id/messages',async c=>{const {actor,conversation}=await access(c);
  // Inbound email carries its origin, so an automatic notice that earned no reply is visible as such.
  await attachInboundOrigins(c.env,String(conversation.project_id),messages.results as any[])
  const mergedInto=actor.role==='contact'?await customerMergeTarget(c.env,actor.projectId,conversation.id,actor.contactId||actor.id):null
- return c.json({...(mergedInto?{mergedInto}:{}),messages:messages.results,revision:conversation.revision,lastMessageId:conversation.last_message_id,resolution:await resolutionState(c.env,String(conversation.project_id),String(conversation.id))})})
+ return c.json({...(actor.role==='contact'?{widget:await widgetConversationState(c.env,actor.projectId,String(conversation.id),actor.contactId!)}:{}),...(mergedInto?{mergedInto}:{}),messages:messages.results,revision:conversation.revision,lastMessageId:conversation.last_message_id,resolution:await resolutionState(c.env,String(conversation.project_id),String(conversation.id))})})
 routes.post('/:id/messages',async c=>{
  const started=performance.now(),{actor,conversation}=await access(c),accessed=performance.now(),b=await c.req.json()
  // `email:` local ids identify inbound email claims; a client may not mint one to

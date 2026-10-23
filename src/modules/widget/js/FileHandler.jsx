@@ -140,7 +140,7 @@ export function FileHandlerList(props) {
     const fileList = props.files.map(file => (
         <li key={file.path+file.size}>
             <Media key={ file.path+file.size } upload={ true } media={ file } setPreview={ setPreviewFile } />
-            <button type="button" className="happytohelp-preview-close" aria-label={`Remove ${file.name || file.path || 'attachment'}`} onClick={removeFile(file)}>
+            <button type="button" className="happytohelp-preview-close" data-h2h-tip="Remove attachment" aria-label={`Remove ${file.name || file.path || 'attachment'}`} onClick={removeFile(file)}>
                 <FontAwesomeIcon icon={falTimes} aria-hidden="true" />
             </button>
         </li>

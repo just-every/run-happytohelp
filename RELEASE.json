@@ -36,6 +36,10 @@
     {
       "id": "241_away_reply_not_a_reply.sql",
       "buyerSteps": "WIDGET-001: the workspace's away message is no longer a reply for automations or outcomes. Rules for an operator reply, and time since the last one, wait for a teammate or an assistant, and a conversation an assistant resolves after the away message records AI. Apply after 240 and before the updated Worker serves traffic; it redefines two triggers and changes no stored row, so earlier journal events and recorded outcomes stay as they were."
+    },
+    {
+      "id": "242_widget_campaigns.sql",
+      "buyerSteps": "Add configurable proactive widget campaigns, consented visit/impression attribution, a durable daily-cap fence and consent-revocation/erasure cleanup. Apply after 241 and before the updated Worker serves traffic. Existing workspaces start with no campaigns; new campaigns are disabled until a lead enables them. Both collector switches and visitor consent are required. Campaign identifiers expire from reports after 30 days and are deleted by bounded cleanup, or immediately on consent revocation or native erasure. No existing conversation or message is changed."
     }
   ]
 }

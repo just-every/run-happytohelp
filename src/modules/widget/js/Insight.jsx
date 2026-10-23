@@ -113,9 +113,9 @@ export default function Insight({insightOpen, setOpen, setInsightOpen}) {
     return (
         <div>
             <div className={containerClasses.join(" ")}>
-                <div className={"happytohelp-insight-close"} style={ context.theme.insight } onClick={handleClose}>
+                <button type="button" aria-label="Dismiss offer" data-h2h-tip="Dismiss offer" className={"happytohelp-insight-close"} style={ context.theme.insight } onClick={handleClose}>
                     <FontAwesomeIcon icon={faTimes} />
-                </div>
+                </button>
                 <div className={eventClasses.join(" ")} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
                     <div className={insightClasses.join(" ")}>
                         <div className={insightContentClasses.join(" ")} onClick={handleActivate} style={ context.theme.insight }>

@@ -64,7 +64,7 @@ const ModalPreview = ({ previewFile, hide, containerRef }) => {
         <div id="happytohelp-modal-preview" role="dialog" aria-modal="true" aria-label={`Preview ${fileName}`} tabIndex={-1} ref={dialogRef} onClick={event => {
             if(event.target === event.currentTarget) hide();
         }}>
-            <button type="button" className="happytohelp-modal-preview-close" aria-label="Close preview" ref={closeRef} onClick={hide}>
+            <button type="button" className="happytohelp-modal-preview-close" aria-label="Close preview" data-h2h-tip="Close preview" ref={closeRef} onClick={hide}>
                 <FontAwesomeIcon icon={falTimes} aria-hidden="true" />
             </button>
             {previewFile.isImage ?

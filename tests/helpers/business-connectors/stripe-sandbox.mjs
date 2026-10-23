@@ -48,7 +48,12 @@ try{
  assert.equal((await app.call(base+refundRoot+'/approve',{token:ws.tokens.operator,body:{confirmed:true}})).status,403);checks.push('denied-approval');
  await call(refundRoot+'/approve',{confirmed:true});loseRefund=true;assert.equal((await call(refundRoot+'/execute',{})).state,'uncertain');
  assert.equal((await app.call(base+refundRoot+'/execute',{token:ws.tokens.owner,body:{}})).status,409);
- const reconciled=(await call(refundRoot+'/reconcile',{})).data;assert.equal(reconciled.state,'succeeded',JSON.stringify(reconciled.result));
+ const reconciled=(await call(refundRoot+'/reconcile',{})).data;
+ if(reconciled.state!=='succeeded'){
+  const observed=await stripe('/v1/refunds?payment_intent='+payment+'&limit=100');
+  process.stderr.write(JSON.stringify({refundPosts,refunds:observed.data.map(row=>({paymentMatches:row.payment_intent===payment,amount:row.amount,currency:row.currency,status:row.status,actionMatches:row.metadata?.h2h_action===refund.id})),hasMore:observed.has_more})+'\n');
+ }
+ assert.equal(reconciled.state,'succeeded',JSON.stringify(reconciled.result));
  assert.equal((await call(refundRoot+'/execute',{})).data.state,'succeeded');assert.equal(refundPosts,1);
  const ledger=await stripe('/v1/refunds?payment_intent='+payment+'&limit=100');assert.equal(ledger.data.filter(row=>row.metadata?.h2h_action===refund.id&&row.amount===125).length,1);checks.push('lost-refund-response-reconciled-once');
  const frontier=await app.ok('/api/conversations/'+conversation.id,{token:ws.tokens.owner});

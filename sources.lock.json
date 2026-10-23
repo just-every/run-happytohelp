@@ -10993,7 +10993,7 @@
       "executable": false
     },
     "tests/helpers/business-connectors/stripe-sandbox.mjs": {
-      "sha256": "c521e9fa0067828aa59d42fe6f9f8bedef6f574dd83d385b703279bde7c9a556",
+      "sha256": "ef39a9722906f2fa4323279c3959e00e447b951f45a9f2c9ce52494de3899035",
       "executable": false
     },
     "tests/helpers/company-portal.mjs": {

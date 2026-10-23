@@ -1824,7 +1824,7 @@
       "executable": false
     },
     "docs/WORKSPACE-WORKFLOWS.md": {
-      "sha256": "dec56d3c24d39e159618fdf034fbaddc45c14dfef7d3a6ac6b9efec99f9231a4",
+      "sha256": "44e2dfd8777d67c797981eff26cd4ce446ba83d04c7e3076ab81fce3b18ee2dc",
       "executable": false
     },
     "edition.json": {
@@ -5835,6 +5835,10 @@
       "sha256": "8a2c788e58928171f3ea7cebd9e0286850642aefe3d84f864e1c64a25f5d0bce",
       "executable": false
     },
+    "src/modules/management/brands.ts": {
+      "sha256": "31ae867a8d26c015d00f298f5f31017e1af044a7f63498cd170ae8e7aad17bae",
+      "executable": false
+    },
     "src/modules/management/buckets.ts": {
       "sha256": "036c954ce0692c72e3dbb031300f2a83218284d704bf322320c643651f554d8a",
       "executable": false
@@ -6016,7 +6020,7 @@
       "executable": false
     },
     "src/modules/management/projects.ts": {
-      "sha256": "894131abd9882b9f44392c9d37645805b537d10278f9662bd73b281c77792cbb",
+      "sha256": "1e04209207df6346e7fec265c6605236c15e1c748e6c3a1db92d0e76c537ea74",
       "executable": false
     },
     "src/modules/management/provisioning/condition.ts": {
@@ -11171,6 +11175,14 @@
       "sha256": "a73cb9d178c14f0a143434df404361e98406aba2819c55f91d82a111936520d8",
       "executable": false
     },
+    "tests/helpers/inbox/brands-browser.mjs": {
+      "sha256": "f275ffec0b258a9ba9d57eb67b990c0fa2001aa65bd4d74007912b6cacfa745a",
+      "executable": false
+    },
+    "tests/helpers/inbox/brands.mjs": {
+      "sha256": "4444ec95128ae1f1d0f8d1f732a06fe71f9988686432b6d1e2a63e6463fc1621",
+      "executable": false
+    },
     "tests/helpers/inbox/conversation-panel-resize-browser.mjs": {
       "sha256": "e271602a704b462b98e4e61ca3e1e9801efa1e7aad330aa532f64e899e055080",
       "executable": false
@@ -11716,11 +11728,11 @@
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {
-      "sha256": "9ac10495fda3b4f4005c95143e8c363f841c88cc1f8405ddf96cada40f0efe9d",
+      "sha256": "d69a18876300e4e96d662c8795f79aa6b05e32320d7adf8a20d65b94106dc954",
       "executable": false
     },
     "tests/journeys/inbox.mjs": {
-      "sha256": "9d59818eadce313ea0cc6abf58db2ae633d1eabad663cf9aa32377e85b746b19",
+      "sha256": "3c807378aacf7a26889d2e915140556189a919d179c43b9aca6feb0c92507f15",
       "executable": false
     },
     "tests/journeys/installer-nightly.mjs": {

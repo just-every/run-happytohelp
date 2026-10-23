@@ -31,11 +31,15 @@
   "pendingMigrations": [
     {
       "id": "240_operator_presence.sql",
-      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings → Availability."
+      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings \u2192 Availability."
     },
     {
       "id": "241_away_reply_not_a_reply.sql",
       "buyerSteps": "WIDGET-001: the workspace's away message is no longer a reply for automations or outcomes. Rules for an operator reply, and time since the last one, wait for a teammate or an assistant, and a conversation an assistant resolves after the away message records AI. Apply after 240 and before the updated Worker serves traffic; it redefines two triggers and changes no stored row, so earlier journal events and recorded outcomes stay as they were."
+    },
+    {
+      "id": "250_voice.sql",
+      "buyerSteps": "VOICE-001 partial: apply the additive voice tables before the updated Worker. Back up D1 and private settings. Configure provider credentials again after restore; restored numbers stay disabled and unknown call commands never replay. Voice launch remains held for live provider, emergency-calling and consent qualification."
     }
   ]
 }

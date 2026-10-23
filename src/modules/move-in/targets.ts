@@ -6,6 +6,7 @@ import {emailKey} from './contact-keys'
 interface Table {name:string;key:string;columns:string[];order:string;generated?:string[];nativeOnly?:boolean}
 const table=(name:string,key:string,columns:string,order=key,generated?:string[]):Table=>({name,key,columns:columns.split(','),order,generated})
 const entities:Record<string,Table[]>={
+ company:[table('companies','id','id,project_id,name,attributes_json,portal_company_view,revision,created_at,updated_at,merged_into'),table('company_domains','company_id','project_id,company_id,domain','domain')],
  field:[table('ticket_fields','id','project_id,id,name,type,required,options_json,validation_json,read_roles_json,write_roles_json,updated_at')],
  form:[table('request_forms','id','project_id,id,config_json,enabled,updated_at')],
  group:[table('ticket_groups','id','project_id,id,name,updated_at'),table('ticket_group_members','group_id','project_id,group_id,user_id','user_id')],
@@ -14,7 +15,7 @@ const entities:Record<string,Table[]>={
  rule:[table('workflow_rules','id','id,project_id,name,kind,position,state,draft_json,published_version,owner_id,created_at,updated_at'),table('workflow_rule_versions','rule_id','rule_id,project_id,version,definition_json,published_by,published_at,event_after_id','version')],
  category:[table('knowledge_categories','id','id,project_id,parent_id,name,slug,summary,is_published,position')],
  tag:[table('workspace_tags','id','id,project_id,name,normalized_name')],
- contact:[table('contacts','id','id,project_id,name,email,external_id,created_at,is_verified,metadata_json'),table('context_subjects','subject_id','project_id,subject_id,consent,revision,help_types,bot_enabled')],
+ contact:[table('contacts','id','id,project_id,name,email,external_id,created_at,is_verified,metadata_json'),table('context_subjects','subject_id','project_id,subject_id,consent,revision,help_types,bot_enabled'),table('contact_companies','contact_id','project_id,contact_id,company_id')],
  macro:[table('macros','id','id,project_id,title,content,created_by,created_at,updated_at'),table('macro_heads','macro_id','macro_id,version,archived_at,archived_by'),table('macro_versions','macro_id','macro_id,project_id,version,title,content,actions_json,scope_json,created_by,created_at','version')],
  article:[table('knowledge_articles','id','id,project_id,category_id,slug,title,content,summary,status,updated_at,position,source_revision,source_incarnation,publication_version','id',['publication_version']),table('knowledge_article_categories','article_id','article_id,category_id','category_id')],
  conversation:[
@@ -69,12 +70,16 @@ export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
  }
 
  for(const t of definitions(kind))value.tables[t.name]=(value.tables[t.name]??[]).map(row=>Object.fromEntries(t.columns.map(column=>[column,column==='publication_version'?`${row.source_incarnation}:${row.source_revision}`:row[column]??null]))).sort((a,b)=>orderKey(t,a)<orderKey(t,b)?-1:orderKey(t,a)>orderKey(t,b)?1:0)
+ // An absent relationship has no new semantic content. Preserve the canonical
+ // value of earlier contact imports so their existing repeat/undo custody holds.
+ if(kind==='contact'&&!value.tables.contact_companies.length)delete value.tables.contact_companies
  return value
 }
 export const nativeTargets:D1TargetAdapter={
  async read(db,destination,kind,id){
   const defs=definitions(kind),row:any=await db.prepare(`SELECT ${defs.map((t,i)=>`${select(t)} AS t${i}`).join(',')},(SELECT source_json FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?) AS source,(SELECT revision FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?) AS revision`).bind(...defs.flatMap(t=>params(t,destination,id)),destination,kind,id,destination,kind,id).first()
   const tables:NativeValue['tables']={};for(let i=0;i<defs.length;i++){const t=defs[i];tables[t.name]=JSON.parse(row[`t${i}`]).map((values:any[])=>Object.fromEntries(t.columns.map((column,index)=>[column,values[index]])))}
+  if(kind==='contact'&&!tables.contact_companies.length)delete tables.contact_companies
   if(!row.source&&!Object.values(tables).some(rows=>rows.length))return undefined
   // An unowned native collision is visible to the kit and cannot be overwritten without review.
   return {destination,targetKind:kind,targetId:id,revision:row.revision??'native',value:{tables,source:row.source?JSON.parse(row.source):{}} as any}

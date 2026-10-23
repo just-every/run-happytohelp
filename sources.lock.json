@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "26b9187d32ce367ff1206b41a563be730eb6b04a053ee81904408da298134f17",
+      "sha256": "57df127fa210c4ac9631ceb6be9f9aff52e07547aeaae8b985565d2cc130b507",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b569163906754193e3310a95d83a6197f9bdd7c73d6090ca99abce0bc56a67ff",
+      "sha256": "594024c4e9b2fcd5c1daa012cae4825f5c01ed218f8e9266e665b4f170e00415",
       "executable": false
     },
     "DEMO.md": {
@@ -1692,7 +1692,7 @@
       "executable": false
     },
     "docs/help-before-they-ask.md": {
-      "sha256": "24c0e447cfceb6160c6041fc3437b981da3cb10b83b1c4ed28c6227e2f32a356",
+      "sha256": "f98d42ac0628d6b11b1b8e3624a5e5216ce6d36a859f66dd33f75123c386948c",
       "executable": false
     },
     "docs/help-center.md": {
@@ -6848,7 +6848,7 @@
       "executable": false
     },
     "src/modules/widget/campaigns/report.ts": {
-      "sha256": "1eca9daf38b24c0417625bf313ed53410b6ef6c24039ad111f13dd15c4775cf3",
+      "sha256": "16c366edd0d01748285802af0457174f8912457b55d0f07f28faf84652ff3454",
       "executable": false
     },
     "src/modules/widget/campaigns/retention.ts": {
@@ -11576,7 +11576,7 @@
       "executable": false
     },
     "tests/helpers/widget/campaigns.mjs": {
-      "sha256": "d1fd1b8530bdcac6796e35409c33f23b50c08331bffb8baa6e2ee0e7a3016426",
+      "sha256": "9a25ab61bad8265f96e4a0633381437cf96583e788e07e9f8373d4bcf20d6b34",
       "executable": false
     },
     "tests/helpers/widget/events.mjs": {

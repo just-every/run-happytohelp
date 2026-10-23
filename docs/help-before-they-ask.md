@@ -89,7 +89,8 @@ resulting conversations and resolutions for the selected impression date range.
 A reservation alone is not an impression. Opens and dismissals are deduplicated
 per card. A resulting conversation needs a real visitor message after opening;
 opening an empty composer is not a conversation. Each conversation counts once
-per campaign, and resolutions count those conversations currently resolved.
+per campaign, including the native linked follow-up when a visitor replies to a
+Closed ticket. Resolutions count those conversations currently resolved.
 Different campaigns may receive credit for the same conversation. Historical
 campaign rows remain after disabling a campaign. Consent revocation or contact
 erasure removes the visitor's history from these counts. Campaign event and visit records

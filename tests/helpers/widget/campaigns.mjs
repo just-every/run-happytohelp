@@ -69,6 +69,22 @@ export async function campaignsJourney(){
   await disable(first)
   await command('campaignEvent',{id:offer.id,event:'open'})
   assert.equal((await app.first('SELECT count(*) n FROM messages')).n,1)
+  // A campaign opened from a Closed ticket must attribute the real native follow-up, not the old ticket.
+  const previous=await app.ok(`/api/conversations/${conversation.id}`,{token:owner})
+  await app.ok(`/api/dashboard/projects/${p}/conversations/${conversation.id}/ticket`,{token:owner,method:'PATCH',body:{status_id:'closed',expected_version:previous.ticket_version}})
+  const closedCampaign=await save({...base,name:'Closed ticket follow-up'})
+  const closedOffer=(await command('campaignEvaluate',context)).data.offer;assert.ok(closedOffer)
+  await command('campaignEvent',{id:closedOffer.id,event:'show'})
+  await command('campaignEvent',{id:closedOffer.id,event:'open'})
+  assert.equal((await row(closedCampaign.id)).conversations,0,'old messages do not become a campaign conversation')
+  assert.equal((await app.ok('/api/conversations',{token:visitor.token})).conversations.length,1,'opening a Closed ticket creates no automatic follow-up')
+  const followed=await app.ok(`/api/conversations/${conversation.id}/messages`,{token:visitor.token,body:{localId:'synthetic-happytohelp-4',content:'I chose to ask a new checkout question',expectedRevision:previous.revision,expectedLastMessageId:previous.last_message_id}})
+  assert.ok(followed.followupConversationId);assert.notEqual(followed.followupConversationId,conversation.id)
+  assert.equal((await row(closedCampaign.id)).conversations,1,'the visitor-written follow-up is attributed')
+  await app.ok(`/api/dashboard/projects/${p}/conversations/${followed.followupConversationId}`,{token:owner,method:'PUT',body:{resolved:true}})
+  assert.equal((await row(closedCampaign.id)).resolutions,1,'the follow-up resolution is attributed')
+  assert.equal((await row(closedCampaign.id)).impressions,1,'following a linked ticket never multiplies impressions')
+  await disable(closedCampaign)
   // Each trigger and audience is configured through the lead route, evaluated through the visitor route,
   // with a negative boundary and a matching boundary. No new test registrations.
   await app.db.prepare('UPDATE contacts SET metadata_json=? WHERE id=?').bind(JSON.stringify({plan:'plus'}),visitor.contactId).run()

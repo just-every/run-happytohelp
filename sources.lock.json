@@ -11388,7 +11388,7 @@
       "executable": false
     },
     "tests/helpers/installer/hosted-export.mjs": {
-      "sha256": "b1e71bc2ba8f6c70002339e8ba4d3d80fdb688a11b41451bb23acab2fbc03ecc",
+      "sha256": "3222b0f5bc77cd0ca6f4b53b6b46eb438f10c12ce4b5fa03d9cde3183f0b95c3",
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {

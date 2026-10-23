@@ -12,7 +12,7 @@ export async function identity(row:Connection,token:string){
  if(row.provider==='stripe')return (await request(row,token,'/v1/account')).id
  if(row.provider==='hubspot')return String((await request(row,token,'/account-info/v3/details')).portalId)
  if(row.provider==='salesforce')return (await request(row,token,'/services/oauth2/userinfo')).organization_id
- const result=await request(row,token,`/api/v1/${encodeURIComponent(row.account)}`);return result.data?.attributes?.slug??result.data?.id
+ throw new ProviderFailure('orbit_scoped_api_unavailable')
 }
 export async function context(row:Connection,token:string,source:string){
  source=id(source);const fields=JSON.parse(row.fields_json||'{}'),selected=Object.values(fields) as string[]
@@ -38,7 +38,5 @@ export async function context(row:Connection,token:string,source:string){
   if(r.Id!==source)throw new ProviderFailure('identity_mismatch')
   return {source_id:source,customer:scalar(r.Name),company:scalar(r.AccountId),owner:scalar(r.OwnerId),plan:scalar(r[fields.plan]),entitlement:scalar(r[fields.entitlement]),source_revision:scalar(r.LastModifiedDate)}
  }
- const r=await request(row,token,`/api/v1/${encodeURIComponent(row.account)}/members/${source}`)
- if(String(r.data?.id)!==source)throw new ProviderFailure('identity_mismatch')
- const p=r.data.attributes??{};return {source_id:source,customer:scalar(p.name),company:scalar(p.company),owner:null,plan:scalar(p[fields.plan]),entitlement:scalar(p[fields.entitlement]),community_level:scalar(p.orbit_level),source_revision:scalar(p.updated_at)}
+ throw new ProviderFailure('orbit_scoped_api_unavailable')
 }

@@ -9,13 +9,14 @@ export async function harness(){
  const headers={Origin:ws.allowedOrigin,'CF-Connecting-IP':'198.51.100.81'},visitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:ws.widgetKey,name:'Synthetic customer',email:'synthetic-happytohelp-1@example.test'},headers});
  const conversation=await app.ok('/api/conversations',{token:visitor.token,headers,body:{projectId:ws.projectId}}),ticket=`/conversations/${conversation.id}`;
  const call=(path,body,options={})=>app.ok(base+path,{token,body,...options}),rows={};
- const connect=async(provider,scopes=['read','prepare','approve','execute'])=>{const r=await call('/connections',{provider,...accounts[provider],token:'synthetic-happytohelp-1',scopes,fields:provider==='salesforce'?{plan:'Plan__c',entitlement:'Support_Entitlement__c'}:['hubspot','orbit'].includes(provider)?{plan:'plan',entitlement:'support_entitlement'}:{},limit_cents:5000});rows[provider]=r.data;return r.data;};
+ const connect=async(provider,scopes=['read','prepare','approve','execute'])=>{const r=await call('/connections',{provider,...accounts[provider],token:'synthetic-happytohelp-1',scopes,fields:provider==='salesforce'?{plan:'Plan__c',entitlement:'Support_Entitlement__c'}:provider==='hubspot'?{plan:'plan',entitlement:'support_entitlement'}:{},limit_cents:5000});rows[provider]=r.data;return r.data;};
  const map=async provider=>{const path=ticket+'/connections/'+encodeURIComponent(rows[provider].id);await call(path+'/map',{source_id:network.customer,confirmed:true});await call(path+'/refresh',{});return path;};
  return {app,network,ws,foreign,token,base,call,rows,connect,map,conversation,visitor,ticket,async close(){await app.close();}};
 }
 export async function credentials(){const h=await harness();try{
  for(const p of Object.keys(accounts))await h.connect(p);
- const list=await h.call('/connections');assert.equal(list.data.length,5);assert.ok(!JSON.stringify(list).includes('synthetic-happytohelp-1"'),'credential never returned');
+ const requests=h.network.calls.length;assert.equal((await h.app.call(h.base+'/connections',{token:h.token,body:{provider:'orbit',account:'synthetic-happytohelp-1',token:'synthetic-happytohelp-1',scopes:['read']}})).status,409);assert.equal(h.network.calls.length,requests,'unavailable Orbit never probes an invented provider endpoint');
+ const list=await h.call('/connections');assert.equal(list.data.length,4);assert.ok(!JSON.stringify(list).includes('synthetic-happytohelp-1"'),'credential never returned');
  const stored=await h.app.first('SELECT * FROM business_connections WHERE id=?',h.rows.stripe.id);assert.ok(stored.token_cipher&&!stored.token_cipher.includes('synthetic-happytohelp-1'));assert.equal(businessArchiveRow('business_connections',stored).token_cipher,null);
  const payload={provider:'stripe',...accounts.stripe,token:'synthetic-happytohelp-1',scopes:['read'],limit_cents:0};
  assert.equal((await h.app.call(h.base+'/connections',{token:h.ws.tokens.operator,body:payload})).status,403);
@@ -25,13 +26,13 @@ export async function credentials(){const h=await harness();try{
 }finally{await h.close();}}
 export async function reads(){const h=await harness();try{
  for(const p of Object.keys(accounts)){await h.connect(p);await h.map(p);}
- let result=(await h.call(h.ticket)).data;assert.equal(result.connections.length,5);assert.ok(result.connections.every(x=>x.link&&!x.link.stale&&x.link.context.source_id===h.network.customer));
+ let result=(await h.call(h.ticket)).data;assert.equal(result.connections.length,4);assert.ok(result.connections.every(x=>x.link&&!x.link.stale&&x.link.context.source_id===h.network.customer));
  assert.equal(result.connections.find(x=>x.provider==='shopify').link.context.orders[0].total.amount,'100.00');assert.equal(result.connections.find(x=>x.provider==='stripe').link.context.invoices[0].total_cents,10000);
  h.network.changeSource();const hub=await h.map('hubspot');result=(await h.call(h.ticket)).data;assert.equal(result.connections.find(x=>x.provider==='hubspot').link.context.entitlement,'subscriber');
  const wrong=await h.app.call(h.base+hub+'/map',{token:h.token,body:{source_id:'foreign',confirmed:true}});assert.equal(wrong.status,409);
  assert.equal((await h.app.call(h.base+h.ticket,{token:h.foreign.tokens.owner})).status,403);
  await h.call('/connections/'+encodeURIComponent(h.rows.hubspot.id),undefined,{method:'DELETE'});result=(await h.call(h.ticket)).data;const disconnected=result.connections.find(x=>x.provider==='hubspot');assert.equal(disconnected.link.stale,true);assert.equal(disconnected.link.context,null);assert.equal((await h.app.call(h.base+hub+'/refresh',{token:h.token,body:{}})).status,403);
- for(const p of ['orbit','salesforce']){const path=h.ticket+'/connections/'+encodeURIComponent(h.rows[p].id);const prepare=await h.call(path+'/prepare',{kind:'support_outcome',target_id:h.network.customer,reason:'Confirmed support recovery',request_key:randomUUID()});await h.call(path+'/actions/'+prepare.data.id+'/approve',{confirmed:true});const done=await h.call(path+'/actions/'+prepare.data.id+'/execute',{});assert.equal(done.data.state,'succeeded');}
+ for(const p of ['salesforce']){const path=h.ticket+'/connections/'+encodeURIComponent(h.rows[p].id);const prepare=await h.call(path+'/prepare',{kind:'support_outcome',target_id:h.network.customer,reason:'Confirmed support recovery',request_key:randomUUID()});await h.call(path+'/actions/'+prepare.data.id+'/approve',{confirmed:true});const done=await h.call(path+'/actions/'+prepare.data.id+'/execute',{});assert.equal(done.data.state,'succeeded');}
 }finally{await h.close();}}
 export async function money(){const h=await harness();try{
  await h.connect('stripe');const path=await h.map('stripe');
@@ -47,6 +48,7 @@ export async function money(){const h=await harness();try{
  const subscription=(await h.call(path+'/prepare',{kind:'cancel_subscription',target_id:h.network.subscription,reason:'Customer requested end of period cancellation',request_key:randomUUID()})).data;
  assert.match(subscription.preview.proration,/No credit or proration/);await h.call(path+'/actions/'+subscription.id+'/approve',{confirmed:true});assert.equal((await h.call(path+'/actions/'+subscription.id+'/execute',{})).data.state,'succeeded');
  await h.connect('hubspot');const crm=await h.map('hubspot');const outcome=(await h.call(crm+'/prepare',{kind:'support_outcome',target_id:h.network.customer,reason:'Customer confirmed recovery',request_key:randomUUID()})).data;await h.call(crm+'/actions/'+outcome.id+'/approve',{confirmed:true});h.network.changeSource();assert.equal((await h.app.call(h.base+crm+'/actions/'+outcome.id+'/execute',{token:h.token,body:{}})).status,409);assert.equal(h.network.notes.size,0);await h.call(crm+'/actions/'+outcome.id+'/cancel',{});
+ const approvedOutcome=(await h.call(crm+'/prepare',{kind:'support_outcome',target_id:h.network.customer,reason:'Confirmed source-current recovery',request_key:randomUUID()})).data;await h.call(crm+'/actions/'+approvedOutcome.id+'/approve',{confirmed:true});assert.equal((await h.call(crm+'/actions/'+approvedOutcome.id+'/execute',{})).data.state,'succeeded');assert.equal(h.network.notes.size,1);
  await h.connect('hubspot',['read']);assert.equal((await h.app.call(h.base+crm+'/prepare',{token:h.token,body:{kind:'support_outcome',target_id:h.network.customer,reason:'Denied',request_key:randomUUID()}})).status,403);
  await h.connect('shopify');const shop=await h.map('shopify'),shopInput={kind:'refund',target_id:'901',amount_cents:1250,reason:'Approved Shopify partial refund',request_key:randomUUID()};
  assert.equal((await h.app.call(h.base+shop+'/prepare',{token:h.token,body:{...shopInput,target_id:'foreign-order'}})).status,409);

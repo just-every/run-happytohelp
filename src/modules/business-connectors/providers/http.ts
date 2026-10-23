@@ -1,7 +1,8 @@
 import {HTTPException} from 'hono/http-exception'
 import type {Connection,Provider} from '../model'
-const fixed={stripe:'api.stripe.com',orbit:'app.orbit.love',hubspot:'api.hubapi.com'}
+const fixed={stripe:'api.stripe.com',hubspot:'api.hubapi.com'}
 export function host(provider:Provider,input:unknown){
+ if(provider==='orbit')throw new HTTPException(409,{message:'Orbit scoped public API is not available'})
  const value=typeof input==='string'?input:provider in fixed?'https://'+fixed[provider as keyof typeof fixed]:''
  let url:URL;try{url=new URL(value)}catch{throw new HTTPException(400,{message:'Use the provider HTTPS origin'})}
  const valid=provider in fixed?url.hostname===fixed[provider as keyof typeof fixed]:provider==='shopify'?/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/.test(url.hostname):/^[a-z0-9][a-z0-9.-]*\.(my\.salesforce|salesforce)\.com$/.test(url.hostname)

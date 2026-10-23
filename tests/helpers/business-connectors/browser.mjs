@@ -6,9 +6,9 @@ export async function exerciseBusiness({page,context,origin,owner,width,audit}){
  await page.goto(origin+`/projects/${owner.projectId}/business-settings`);await page.getByRole('heading',{name:'Business connections',exact:true}).waitFor();
  for(const provider of Object.keys(accounts)){
   await page.getByLabel('Provider',{exact:true}).selectOption(provider);
-  await page.getByLabel('Provider account ID (Orbit workspace slug)',{exact:true}).fill(accounts[provider].account);
+  await page.getByLabel('Provider account ID',{exact:true}).fill(accounts[provider].account);
   await page.getByLabel('Provider HTTPS origin (required for Shopify and Salesforce)',{exact:true}).fill(accounts[provider].host||'');
-  if(['orbit','hubspot','salesforce'].includes(provider)){await page.getByLabel('CRM plan property (optional)',{exact:true}).fill(provider==='salesforce'?'Plan__c':'plan');await page.getByLabel('CRM support entitlement property (optional)',{exact:true}).fill(provider==='salesforce'?'Support_Entitlement__c':'support_entitlement');}
+  if(['hubspot','salesforce'].includes(provider)){await page.getByLabel('CRM plan property (optional)',{exact:true}).fill(provider==='salesforce'?'Plan__c':'plan');await page.getByLabel('CRM support entitlement property (optional)',{exact:true}).fill(provider==='salesforce'?'Support_Entitlement__c':'support_entitlement');}
   await page.getByLabel('Provider credential',{exact:true}).fill('synthetic-happytohelp-1');
   for(const scope of ['prepare','approve','execute'])await page.getByLabel(scope,{exact:true}).check();
   await page.getByLabel('Maximum per action (USD)',{exact:true}).fill('50');
@@ -16,7 +16,7 @@ export async function exerciseBusiness({page,context,origin,owner,width,audit}){
   await page.getByRole('heading',{name:names[provider]+' · '+accounts[provider].account,exact:true}).waitFor();
   assert.equal(await page.getByLabel('Provider credential',{exact:true}).inputValue(),'');
  }
- await audit(page,'business-settings-'+width);
+ await page.getByText('Orbit is the fleet Sales CRM.',{exact:false}).waitFor();assert.equal(await page.getByLabel('Provider',{exact:true}).locator('option[value=orbit]').isDisabled(),true);await audit(page,'business-settings-'+width);
  const person=(await req(`/api/management/projects/${owner.projectId}/contacts`,{name:'Synthetic business customer',email:`synthetic-happytohelp-${width}@example.test`})).data;
  const ticket=await req('/api/conversations',{projectId:owner.projectId,contactId:person.id});await req(`/api/conversations/${ticket.id}/messages`,{localId:'opening',content:'Please help with my invoice and account.',expectedRevision:0});
  await page.goto(origin+`/projects/${owner.projectId}/conversations/${ticket.id}`);await page.getByLabel('Reply to conversation',{exact:true}).waitFor();

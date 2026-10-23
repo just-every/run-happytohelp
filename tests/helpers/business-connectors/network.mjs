@@ -39,15 +39,9 @@ export function createNetwork(){
    if(path==='/services/data/v66.0/sobjects/Task'&&data){const r={Id:'synthetic-happytohelp-task-'+tasks.size,...data};tasks.set(r.Id,r);return writeResult({id:r.Id,success:true});}
    if(path.startsWith('/services/data/v66.0/sobjects/Task/'))return json(tasks.get(path.split('/').pop()));
   }
-  if(url.hostname==='app.orbit.love'){
-   if(path==='/api/v1/synthetic-happytohelp-601')return json({data:{id:'601',attributes:{slug:'synthetic-happytohelp-601'}}});
-   if(path==='/api/v1/synthetic-happytohelp-601/members/'+customer)return json({data:{id:customer,attributes:{name:'Synthetic customer',company:'Synthetic account',orbit_level:stage,support_entitlement:stage,plan:'Synthetic plan',updated_at:revision}}});
-   if(path==='/api/v1/synthetic-happytohelp-601/activities'&&data){const r={id:'synthetic-happytohelp-activity-'+activities.size,attributes:data.activity};activities.set(r.id,r);return writeResult({data:r});}
-   if(path.startsWith('/api/v1/synthetic-happytohelp-601/activities/'))return json({data:activities.get(path.split('/').pop())});
-  }
   return new Response('Unavailable',{status:404});
  };
  return {handle,calls,refunds,shopifyRefunds,notes,tasks,activities,customer,payment,subscription,timeoutAfterWrite(){failAfterWrite=true;},changeSource(){stage='subscriber';revision='2026-10-23T13:00:00Z';}};
 }
-export const accounts={shopify:{account:'101',host:'https://synthetic-happytohelp-1.myshopify.com'},stripe:{account:'synthetic-happytohelp-101'},hubspot:{account:'301'},salesforce:{account:'synthetic-happytohelp-501',host:'https://synthetic-happytohelp-1.my.salesforce.com'},orbit:{account:'synthetic-happytohelp-601'}};
+export const accounts={shopify:{account:'101',host:'https://synthetic-happytohelp-1.myshopify.com'},stripe:{account:'synthetic-happytohelp-101'},hubspot:{account:'301'},salesforce:{account:'synthetic-happytohelp-501',host:'https://synthetic-happytohelp-1.my.salesforce.com'}};
 const network=createNetwork();export default request=>network.handle(request);

@@ -5,7 +5,7 @@ import {command,names,money} from './api';
 import BusinessContext from './Context';
 function CustomerConnection({connection,root,act,busy}){
  const prefix=useId(),[source,setSource]=useState(''),[confirmed,setConfirmed]=useState(false),[kind,setKind]=useState(['shopify','stripe'].includes(connection.provider)?'refund':'support_outcome'),[target,setTarget]=useState(''),[amount,setAmount]=useState(''),[reason,setReason]=useState(''),[requestKey,setRequestKey]=useState(()=>crypto.randomUUID());
- const base=root+'/connections/'+encodeURIComponent(connection.id),isCrm=['orbit','hubspot','salesforce'].includes(connection.provider);
+ const base=root+'/connections/'+encodeURIComponent(connection.id),isCrm=['hubspot','salesforce'].includes(connection.provider);
  return <details><summary>{names[connection.provider]} · {connection.account} · {connection.connected?'Connected':'Disconnected'}</summary>
   <BusinessContext link={connection.link}/>
   {connection.connected&&<><form onSubmit={e=>{e.preventDefault();act(()=>command(base+'/map',{source_id:source,confirmed}));}}><fieldset disabled={busy}><legend className="h6">Map provider customer</legend><label htmlFor={prefix+'source'}>Provider customer ID</label><input className="form-control mb-2" id={prefix+'source'} required value={source} onChange={e=>setSource(e.target.value)}/><label className="d-block mb-2"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/> I verified this provider customer is the requester. Email alone is insufficient.</label><button className="btn btn-sm btn-outline-secondary" disabled={!confirmed}>Map customer</button></fieldset></form>

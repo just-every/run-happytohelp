@@ -19,7 +19,7 @@ export async function preview(row:Connection,token:string,source:string,kind:str
   if(!['active','trialing','past_due'].includes(subscription.status)||subscription.cancel_at_period_end||!Number.isSafeInteger(subscription.current_period_end))throw new ProviderFailure('unsupported_subscription')
   return {provider:'stripe',kind,target,source_id:source,currency:'USD',amount_cents:0,reason,proration:'No credit or proration; cancel at the end of the current period.',effective_at:subscription.current_period_end,tax:'No invoice or tax change.'}
  }
- if(['hubspot','salesforce','orbit'].includes(row.provider)&&kind==='support_outcome'){
+ if(['hubspot','salesforce'].includes(row.provider)&&kind==='support_outcome'){
   const snapshot=await context(row,token,source)
   return {provider:row.provider,kind,target:source,source_id:source,amount_cents:0,reason,source_revision:(snapshot as any).source_revision,notice:'Only this approved outcome is shared. No private notes, transcript or other CRM fields are sent.'}
  }
@@ -33,7 +33,7 @@ export async function execute(row:Connection,token:string,action:Action){
  }
  if(row.provider==='hubspot')return request(row,token,'/crm/v3/objects/notes',{method:'POST',body:{properties:{hs_timestamp:new Date().toISOString(),hs_note_body:action.reason.replace(/[<>&"']/g,char=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[char]!))},associations:[{to:{id:action.source_id},types:[{associationCategory:'HUBSPOT_DEFINED',associationTypeId:202}]}]}})
  if(row.provider==='salesforce')return request(row,token,'/services/data/v66.0/sobjects/Task',{method:'POST',body:{WhoId:action.source_id,Subject:'Support outcome',Description:action.reason,Status:'Completed'}})
- return request(row,token,`/api/v1/${encodeURIComponent(row.account)}/activities`,{method:'POST',body:{activity:{member_id:action.source_id,activity_type:'support:outcome',title:'Support outcome',description:action.reason,key:action.id}}})
+ throw new ProviderFailure('orbit_scoped_api_unavailable')
 }
 export async function readback(row:Connection,token:string,action:Action,remoteId:string|null){
  if(row.provider==='shopify')return shopifyReadback(row,token,action,remoteId)
@@ -56,7 +56,7 @@ export async function readback(row:Connection,token:string,action:Action,remoteI
  }else if(row.provider==='salesforce'){
   const r=await request(row,token,'/services/data/v66.0/sobjects/Task/'+encodeURIComponent(remoteId));if(r.Id!==remoteId||r.WhoId!==action.source_id||r.Description!==action.reason||r.Status!=='Completed')throw new ProviderFailure('result_unconfirmed')
  }else {
-  const r=await request(row,token,`/api/v1/${encodeURIComponent(row.account)}/activities/${encodeURIComponent(remoteId)}`);if(String(r.data?.id)!==remoteId||r.data?.attributes?.key!==action.id||String(r.data?.attributes?.member_id??r.data?.relationships?.member?.data?.id)!==action.source_id)throw new ProviderFailure('result_unconfirmed')
+  throw new ProviderFailure('orbit_scoped_api_unavailable')
  }
  return {id:remoteId,state:'succeeded',kind:action.kind}
 }

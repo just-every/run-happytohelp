@@ -34,12 +34,12 @@ Implemented provider paths:
   refunds and subscription cancellation at period end, with no proration.
   Credits, pause, plan changes, broader proration previews and broader
   proration previews remain gaps.
-- Orbit, HubSpot and Salesforce: independent account verification and contact
+- HubSpot and Salesforce: independent account verification and contact
   context, source freshness and approved outcome activities/notes. Provider
-  lifecycle/community level is not a support entitlement. Plan and support-entitlement properties are explicitly selected in Settings;
+  sales lifecycle is not a support entitlement. Plan and support-entitlement properties are explicitly selected in Settings;
   no lifecycle inference grants support rights. Complete company/account
   relationship mapping and approved arbitrary field edits remain gaps.
-  Orbit availability and every live provider protocol still need sandbox proof.
+  Both live provider protocols still need sandbox proof.
 
 The panel records results in the originating ticket for the operator. It sends
 nothing to a customer automatically. After a provider-confirmed commerce or
@@ -59,5 +59,9 @@ prove local protocol behavior only; they are not live sandbox receipts. The
 campaign separately exercised a held Stripe test key through verified account
 settings, a paid USD invoice, one refund with a deliberately lost response,
 provider reconciliation, a reviewed customer-visible confirmation and period-end
-cancellation. That receipt is kept outside product source. Shopify and CRM live
-sandbox receipts remain pending.
+cancellation. That receipt is kept outside product source. Shopify, HubSpot and Salesforce live
+sandbox receipts remain pending. Orbit means the fleet Sales CRM in
+`just-every/run-orbit`; its API-001 still lacks admin-issued scoped public
+credentials and a general public records API. Orbit is explicitly unavailable
+here until that prerequisite ships. No community service or native browser
+session stands in for that integration.

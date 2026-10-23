@@ -11,11 +11,11 @@ import {host,code} from './providers/http'
 import {identity} from './providers/context'
 export const root='/projects/:projectId'
 export const connections=new Hono<AppEnv>()
-export const publicConnection=({token_cipher,authority_epoch,...row}:Connection)=>({...row,connected:!!token_cipher,scopes:JSON.parse(row.scopes_json)})
+export const publicConnection=({token_cipher,authority_epoch,...row}:Connection)=>({...row,connected:row.provider!=='orbit'&&!!token_cipher,unavailable_reason:row.provider==='orbit'?'Orbit scoped public API is not available':null,scopes:JSON.parse(row.scopes_json)})
 connections.get(root+'/connections',async c=>{const {actor}=await access(c);const result=await c.env.DB.prepare('SELECT * FROM business_connections WHERE project_id=? ORDER BY provider,account').bind(actor.projectId).all<Connection>();return c.json({data:result.results.map(publicConnection)})})
 connections.post(root+'/connections',async c=>{
  const {actor}=await access(c,'integrations.install');await requireStepUp(c,actor,'business.install')
- const body=await c.req.json(),p=provider(body.provider),account=id(body.account),origin=host(p,body.host),token=text(body.token,'credential',10000),limit=cents(body.limit_cents??0)
+ const body=await c.req.json(),p=provider(body.provider);if(p==='orbit')throw new HTTPException(409,{message:'Orbit connection is unavailable: the fleet CRM has not shipped its admin-issued scoped public API (run-orbit API-001). Browser sessions are not integration credentials.'});const account=id(body.account),origin=host(p,body.host),token=text(body.token,'credential',10000),limit=cents(body.limit_cents??0)
  if(!Array.isArray(body.scopes)||!body.scopes.includes('read')||body.scopes.some((s:string)=>!(SCOPES as readonly string[]).includes(s)))throw new HTTPException(400,{message:'Select explicit supported scopes including read'})
  const expires=body.expires_at==null?null:Number(body.expires_at);if(expires!==null&&(!Number.isSafeInteger(expires)||expires<=Date.now()))throw new HTTPException(400,{message:'Expiry must be in the future'})
  const fields=body.fields??{};if(!fields||typeof fields!=='object'||Array.isArray(fields)||Object.keys(fields).some(k=>!['plan','entitlement'].includes(k))||Object.values(fields).some(v=>typeof v!=='string'||!(/^[A-Za-z_][A-Za-z0-9_]{0,79}$/).test(v)))throw new HTTPException(400,{message:'Use explicit CRM property names for plan and support entitlement'});

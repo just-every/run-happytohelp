@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "a389a3d7e89084f457f87ef3b2fe986f2e9485095d3a6f766f9c97ab61d731c4",
+      "sha256": "151fe949822bb5d8bed86f4b7fdec71631613986a4beb874dece438b7c337346",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "12ea2f41ca21b70736423f2ff77a3a4352bedc9c1478a8f80f549ac425dafd55",
+      "sha256": "a28a368579937d62a275d851c466717e0550240e062e04cb46bbebc574945aa2",
       "executable": false
     },
     "DEMO.md": {
@@ -1780,7 +1780,7 @@
       "executable": false
     },
     "docs/request-forms.md": {
-      "sha256": "a74d5e7259f9505c910275aa3f3c1bd1ba50027f494db1a3cace528fd58346cc",
+      "sha256": "39a1332437a50b6f25996f8f89d218862894044efb7b948d71f740590a33a1bf",
       "executable": false
     },
     "docs/SETUP-WORKFLOW.md": {
@@ -1816,7 +1816,7 @@
       "executable": false
     },
     "docs/workflows.md": {
-      "sha256": "a422c3c9e277779b541ee2ed9c6f79ff557bfdf38296e36921840548edbe4773",
+      "sha256": "b978af40265b853988d07443dbddc7a84782b9920757d1b0f9b0ba211be30c00",
       "executable": false
     },
     "docs/WORKSPACE-WORKFLOWS.md": {
@@ -3424,7 +3424,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "a7198e796d6aab578c1bad98395a6f98b65c7755a1f562068c49b6bafa3e9fc8",
+      "sha256": "fb05a9c9c0d2cc0f43103eac81018f0feb40d6c93b039d928e9a8f0a2e17d5fb",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -6684,7 +6684,7 @@
       "executable": false
     },
     "src/modules/tickets/routes-settings.ts": {
-      "sha256": "b9a1f848431d2fd849789a9deff75753260421db96bd0f4c9ba07f9845ced0c4",
+      "sha256": "0df0c8234bbf70d389226329bf5f7048735007ba004445f464330c4d49a18ea3",
       "executable": false
     },
     "src/modules/tickets/routes.ts": {
@@ -7316,7 +7316,7 @@
       "executable": false
     },
     "src/modules/workflows/routes-rules.ts": {
-      "sha256": "fa60ad1aef4b0087300512051aa7a91a8aeb040d8e6ab81a89514536d1004fc6",
+      "sha256": "6b7eb0889eb733c00135068d5793e4b923e118323060c7772bf262d5fa50ba67",
       "executable": false
     },
     "src/modules/workflows/routes-schedules.ts": {
@@ -7352,7 +7352,7 @@
       "executable": false
     },
     "src/modules/workflows/rule-admin.ts": {
-      "sha256": "a2e6e97cacc153a29d38e56ffdd7f2db79a6870905e50d4d708ffa710afd499a",
+      "sha256": "67fe0fb92b12fe81dd9f973da4a3c54ba79c6d769ca077d853d8321e0f1e5d79",
       "executable": false
     },
     "src/modules/workflows/rule-engine.ts": {
@@ -11380,7 +11380,7 @@
       "executable": false
     },
     "tests/helpers/r4/notifications.mjs": {
-      "sha256": "c1edcaf4b59f9067e17937d94ec4d715d6d0414df0ad68eb62df8b6833da20f0",
+      "sha256": "12f0193fed188cb393f5a3c897a6e370503c20cb9c700dd223e8acfe5916648d",
       "executable": false
     },
     "tests/helpers/recovery/comparison.mjs": {
@@ -11432,7 +11432,7 @@
       "executable": false
     },
     "tests/helpers/request-forms-journey.mjs": {
-      "sha256": "47e0cfe04329ed95248f2dbc00e1705196ec37ab25b0ceedc299b78dab30e559",
+      "sha256": "990ab0b2a5027b7552ce1c44673a9e7dc1f44f4cc9a8483c951897db2303e6e3",
       "executable": false
     },
     "tests/helpers/rer-archive.mjs": {

@@ -1,5 +1,5 @@
 export type Tracker = 'github' | 'linear' | 'jira'
-export type Provider = Tracker | 'slack'
+export type Provider = Tracker | 'slack' | 'teams'
 
 export interface Connection {
   provider: Provider

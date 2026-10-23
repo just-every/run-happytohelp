@@ -4,6 +4,7 @@ const origins = {
   github: 'https://api.github.com',
   linear: 'https://api.linear.app',
   slack: 'https://slack.com',
+  teams: 'https://graph.microsoft.com',
 }
 
 export function baseUrl(connection: Connection): string {

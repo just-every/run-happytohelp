@@ -11,7 +11,7 @@ export async function ticketEscalations(env:Env,projectId:string,conversationId:
  const [links,drafts,handoffs,messages,files,operations]=await env.DB.batch<any>([
   env.DB.prepare(`SELECT l.id,i.provider,i.issue_key key,i.url,i.status,i.assignee,l.dependency,l.recovery,l.observation FROM escalation_links l JOIN escalation_issues i ON i.id=l.issue_id WHERE l.project_id=? AND l.conversation_id=? ORDER BY l.created_at,l.id`).bind(projectId,conversationId),
   env.DB.prepare('SELECT id,content,state,message_id FROM escalation_drafts WHERE project_id=? AND conversation_id=? ORDER BY created_at,id').bind(projectId,conversationId),
-  env.DB.prepare('SELECT id,channel,url FROM escalation_handoffs WHERE project_id=? AND conversation_id=? ORDER BY created_at').bind(projectId,conversationId),
+  env.DB.prepare('SELECT h.id,h.channel,h.url,o.provider FROM escalation_handoffs h JOIN escalation_operations o ON o.id=h.id WHERE h.project_id=? AND h.conversation_id=? ORDER BY h.created_at').bind(projectId,conversationId),
   env.DB.prepare('SELECT id,content,created_at FROM messages WHERE project_id=? AND conversation_id=? AND erased_at IS NULL ORDER BY revision').bind(projectId,conversationId),
   env.DB.prepare(`SELECT id,message_id,filename,size FROM media WHERE project_id=? AND conversation_id=? AND message_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM conversation_note_media n WHERE n.media_id=media.id)`).bind(projectId,conversationId),
   env.DB.prepare(`SELECT id,provider,state,remote_url FROM escalation_operations WHERE project_id=? AND conversation_id=? AND state<>'complete' ORDER BY created_at`).bind(projectId,conversationId)

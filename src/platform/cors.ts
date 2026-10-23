@@ -4,6 +4,8 @@ import { hashToken } from './auth'
 import { rejectedResponse } from '../base/rejected-response'
 /** Widget origins are project data. Never reflect arbitrary origins or grant cookies cross-site. */
 export const projectCors:MiddlewareHandler<AppEnv>=async(c,next)=>{
+ // SAML POST binding uses signed assertions plus a browser-bound, single-use request.
+ if(/^\/api\/identity\/sso\/[^/]+\/callback$/.test(c.req.path))return next()
  const origin=c.req.header('Origin');if(!origin||origin===new URL(c.req.url).origin)return next()
  let projectId:string|undefined
  const token=c.req.header('Authorization')?.replace(/^Bearer /,'')

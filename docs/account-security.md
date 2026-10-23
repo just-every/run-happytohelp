@@ -149,3 +149,74 @@ installation, never by email alone:
   factors and recovery codes are removed, every session ends, and you are signed
   in to set up a new factor. Each key value works once; set a new one for another
   recovery. The recovery is logged in every workspace the owner belongs to.
+
+Notes-only collaborators cannot open native knowledge management, source text,
+search, draft or translation/history endpoints. These reads require knowledge
+editing permission for a custom role. Existing connected-application grants
+lose article evidence, check and audience reads when that permission is withdrawn.
+Published help remains available through
+its ordinary audience-controlled help-center doors. This conservative default
+keeps restricted knowledge out of notes-only seats while separate knowledge
+reading permissions remain undefined. A separate read-only knowledge permission remains unimplemented.
+
+
+## Enterprise sign-in and provisioning
+
+Native owner/password access and installation-level recovery remain available.
+An identity connection cannot provision, remove or replace a native owner.
+Enterprise connections currently use the owner API; there is no provider setup
+wizard and no qualified Google Workspace, Entra ID or Okta tenant yet.
+
+An owner with recent step-up creates a connection at
+`POST /api/management/projects/:projectId/identity-connections`. For OIDC, supply
+`protocol: "oidc"`, `issuer`, `clientId`, `clientSecret`, `authorizationEndpoint`,
+`tokenEndpoint` and `jwksUri`. For SAML, supply `protocol: "saml"`, `issuer`,
+`entryPoint` and the pinned PEM `certificate`. Endpoints must be HTTPS on the
+supported Google, Microsoft or Okta hosts. Provider discovery and redirects are
+not followed. OIDC uses authorization code, PKCE, nonce and signed ID-token
+validation; SAML requires signed responses and assertions, request binding,
+audience, recipient and expiry validation. The returned URLs identify the
+callback, sign-in and SCIM doors. Configure those exact URLs at the provider.
+Keep client secrets and the one-time SCIM bearer token in private configuration.
+
+SCIM is available at `/api/identity/scim/:connectionId/v2`. It supports Users
+creation, listing, lookup, replacement, patching and deactivation, with limited
+userName/externalId filtering and pagination. `externalId` must equal the OIDC
+subject or persistent SAML NameID. Provisioning never links an existing native
+account just because its email matches. New and reactivated users receive only
+a collaborator membership; owners assign permissions separately. SCIM Groups,
+group-to-role synchronization and just-in-time sign-up are not supported.
+
+Sign in through `/api/identity/sso/:connectionId/start`. The configured provider
+owns its MFA policy; tenant-specific MFA assurance remains to be qualified.
+Deactivation ends the user's workspace sessions, pending sign-ins and delegated
+authority. Reactivation does not resurrect old grants or privileged roles.
+`POST /api/management/projects/:projectId/identity-connections/:id/token` rotates
+the SCIM token; DELETE of the connection disables sign-in and deprovisions its
+managed seats. Native owner recovery remains independent. Export/import disables
+connections, removes secrets and live sessions, and leaves managed seats inactive;
+PUT the original connection URL with its complete configuration and unchanged
+protocol/issuer to reconfigure it. This returns a new SCIM token and leaves all
+managed seats inactive until fresh provisioning. Old sessions and grants remain
+revoked.
+
+## Team restrictions and refund approval
+
+Custom-role API definitions accept `teamIds`: omitted or null permits all teams,
+an array selects ticket groups, and an empty array permits none. Editing through
+an older client preserves the existing restriction. Lists, counts, ticket reads,
+notes, field changes, attachments, notifications and live streams enforce the
+current scope. Team-restricted seats cannot use broad customer, report, export
+or bulk-operation doors that cannot yet return a scoped result. Workspace
+membership remains the brand boundary; independently scoped brands within one
+workspace are not implemented. Configure team restrictions through the role API;
+the Roles page does not yet provide a team selector.
+
+`POST /api/management/projects/:projectId/refund-approvals` accepts
+`conversationId`, `paymentReference`, positive `amountMinor`, three-letter
+`currency` and a stable `requestKey`. It requires `refunds.approve` and recent
+step-up independently of integration-installation permission. A successful
+response records an audited, idempotent approval expiring after 15 minutes and
+explicitly says `approved_not_submitted`. It never submits a payment. Any future
+payment consumer must recheck the approver's current authority and expiry before
+submission; restored approvals expire immediately.

@@ -41,7 +41,7 @@ Under **Email signature**, save a mailbox default or an agent-specific signature
 
 Expand a mailbox to see its connection status, saved cursor, last successful sync and error. **Sync now** fetches the next bounded batch. The first sync starts with existing Inbox mail, so review the mailbox contents before starting it. **Backfill history** resets the scan to the beginning of the Inbox; use subsequent **Sync now** requests to continue its saved cursor rather than repeatedly restarting backfill. The saved provider cursor records progress, and incoming messages retain stable identities to detect repeated delivery. Gmail stores history/page progress, Microsoft stores a delta link, and IMAP stores UID validity and the last scanned UID.
 
-A rejected or revoked credential shows **Reconnect required**. Use **Reconnect** and authorize the original mailbox account. A mailbox whose saved provider history has expired or whose IMAP UID state changed needs an explicit backfill decision. Do not treat a cursor error as proof that all mail was received.
+A rejected IMAP login or revoked OAuth credential shows **Reconnect required**. Use **Reconnect** and authorize the original mailbox account. A mailbox whose saved provider history has expired or whose IMAP UID state changed needs an explicit backfill decision. Do not treat a cursor error as proof that all mail was received.
 
 One message delivered to several connected mailboxes in the same workspace creates one customer message. Each mailbox records its own progress. A permanently refused message is recorded in the audit and skipped so later mail can arrive; temporary failures retain the cursor and back off while healthy mailboxes sync first.
 
@@ -76,3 +76,16 @@ After you repoint the live email channel, a matching reply can find the imported
 A reply to a Closed ticket creates a linked follow-up; the original ticket stays Closed.
 
 Imports do not activate the old vendor's reply addresses or send notifications. Test replies to real pre-cutover notifications from each vendor before relying on the cutover. See [Move in your history](moving-in.md) for the broader migration boundary.
+
+
+An SMTP permanent refusal is recorded as a failed delivery. If the connection
+ends before the server confirms acceptance, delivery remains uncertain. Neither
+outcome is automatically resent; reconcile the original attempt before choosing
+any new send. Protocol-edge journeys under `tests/helpers/email/imap-provider.mjs`
+exercise IMAP/SMTP through native connection, sync and ticket routes with a
+local TLS IMAP and SMTP servers with fragmented protocol writes. A test-only
+platform adapter connects workerd streams to certificate-validating Node TLS;
+the production MailSocket opener and parser execute unchanged. Untrusted
+certificates and wrong hostnames are refused before a connection is saved. This
+proves that boundary, not a live Cloudflare socket or provider tenant. It is separate from the still-required real
+provider-account UI qualification for forwarding, IMAP, Gmail and Microsoft 365.

@@ -8,7 +8,7 @@ import re
 import sqlite3
 from pathlib import Path
 
-CREDENTIAL_TABLES = ('edition_codes', 'edition_consents', 'edition_grants', 'edition_effect_guards')
+CREDENTIAL_TABLES = ('edition_codes', 'edition_consents', 'edition_grants', 'edition_effect_guards', 'enterprise_states', 'enterprise_sessions')
 
 def punctuated_end(statement):
     # Wrangler's splitter recognizes END followed by whitespace or a semicolon,
@@ -37,9 +37,19 @@ def sanitize(sql):
         db.executescript(sql)
         db.execute('PRAGMA foreign_keys=OFF')
         tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        # Switched-workspace SSO sessions still depend on their original IdP.
+        # Remove them before dropping the binding; native password sessions stay.
+        if 'sessions' in tables and 'enterprise_sessions' in tables:
+            db.execute('DELETE FROM sessions WHERE token_hash IN (SELECT token_hash FROM enterprise_sessions)')
         for table in CREDENTIAL_TABLES:
             if table in tables:
                 db.execute(f'DELETE FROM "{table}"')
+        if 'enterprise_connections' in tables:
+            db.execute('UPDATE enterprise_connections SET enabled=0,scim_hash=NULL,secret_cipher=NULL')
+        if 'enterprise_principals' in tables:
+            db.execute('UPDATE enterprise_principals SET active=0')
+        if 'refund_approvals' in tables:
+            db.execute('UPDATE refund_approvals SET expires_at=created_at')
         search = search_definition(db)
         if search:
             # iterdump represents virtual tables with writable_schema and raw

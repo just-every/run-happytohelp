@@ -1,5 +1,7 @@
+import {activeEnterpriseMember} from '../identity/enterprise/authority'
+import {enforceTicketScope} from './ticket-scope'
 import type {Context} from 'hono'
-import {matchedRoutes} from 'hono/route'
+import {matchedRoutes,routePath} from 'hono/route'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Actor} from '../../platform/env'
 import {BASE_PERMISSIONS,PERMISSIONS,ROLE_LABELS,customPermissions,type Permission} from './catalogue'
@@ -7,16 +9,16 @@ import {routeRule} from './route-permissions'
 import {auditStatement,requestSource} from '../audit/record'
 import {jsonResponse} from '../../platform/json-response'
 
-export interface MemberAccess {key:string;name:string;base:'owner'|'admin'|'operator'|'collaborator';permissions:Set<Permission>;custom:boolean}
+export interface MemberAccess {key:string;name:string;base:'owner'|'admin'|'operator'|'collaborator';permissions:Set<Permission>;custom:boolean;teamIds?:string[]|null}
 
 /** A member's effective role in one workspace: built-in, the collaborator role, or a custom role over a base. */
 export async function memberAccess(db:D1Database,projectId:string,userId:string):Promise<MemberAccess|null>{
- const row=await db.prepare('SELECT m.role,mr.role_key,pr.name,pr.base,pr.permissions_json FROM memberships m LEFT JOIN member_roles mr ON mr.project_id=m.project_id AND mr.user_id=m.user_id LEFT JOIN project_roles pr ON pr.project_id=m.project_id AND pr.id=mr.role_key WHERE m.project_id=? AND m.user_id=?').bind(projectId,userId).first<{role:'owner'|'admin'|'operator';role_key:string|null;name:string|null;base:'admin'|'operator'|'collaborator'|null;permissions_json:string|null}>()
+ const row=await db.prepare(`SELECT m.role,mr.role_key,pr.name,pr.base,pr.permissions_json,pr.team_ids_json FROM memberships m LEFT JOIN member_roles mr ON mr.project_id=m.project_id AND mr.user_id=m.user_id LEFT JOIN project_roles pr ON pr.project_id=m.project_id AND pr.id=mr.role_key WHERE m.project_id=? AND m.user_id=? AND ${activeEnterpriseMember('m.user_id','m.project_id')}`).bind(projectId,userId).first<{role:'owner'|'admin'|'operator';role_key:string|null;name:string|null;base:'admin'|'operator'|'collaborator'|null;permissions_json:string|null;team_ids_json:string|null}>()
  if(!row)return null
  if(row.role_key==='collaborator'&&row.role==='operator')return {key:'collaborator',name:ROLE_LABELS.collaborator,base:'collaborator',permissions:new Set(BASE_PERMISSIONS.collaborator),custom:false}
  if(row.base&&row.name&&row.role!=='owner'){
   let requested:unknown=[];try{requested=JSON.parse(row.permissions_json||'[]')}catch{}
-  return {key:row.role_key!,name:row.name,base:row.base,permissions:new Set(customPermissions(row.base,requested)),custom:true}
+  return {key:row.role_key!,name:row.name,base:row.base,permissions:new Set(customPermissions(row.base,requested)),custom:true,teamIds:row.team_ids_json===null?null:JSON.parse(row.team_ids_json)}
  }
  return {key:row.role,name:ROLE_LABELS[row.role],base:row.role,permissions:new Set(BASE_PERMISSIONS[row.role]),custom:false}
 }
@@ -24,6 +26,8 @@ export async function memberAccess(db:D1Database,projectId:string,userId:string)
 /** The registered route that will answer this request (middleware calls see the final handler too). */
 export function answeringRoute(c:Context<AppEnv>){
  const method=c.req.method==='HEAD'?'GET':c.req.method
+ const current=routePath(c)
+ if(current&&!current.includes('*'))return {method,path:current}
  let routes:{method:string;path:string}[]=[]
  try{routes=matchedRoutes(c)}catch{}
  const route=[...routes].reverse().find(route=>route.method===method)
@@ -50,8 +54,13 @@ export async function enforceRole(c:Context<AppEnv>,actor:Actor){
  const projectId=await targetProject(c,actor,route.path)
  if(!projectId)return
  const access=await memberAccess(c.env.DB,projectId,actor.id)
- if(!access||(!access.custom&&access.base!=='collaborator'))return
+ if(access?.teamIds)await enforceTicketScope(c,actor,projectId,access.teamIds,route.path)
+ if(!access)throw new HTTPException(403,{message:'Workspace access was withdrawn'})
+ if(!access.custom&&access.base!=='collaborator')return
  let rule=route.path?routeRule(route.method,route.path):undefined
+ // Native knowledge management exposes drafts, source text and restricted content.
+ // Notes-only seats use the ordinary published help-center doors instead.
+ if(route.method==='GET'&&route.path.startsWith('/api/knowledge/:projectId/'))rule='knowledge.edit'
  if(rule==='members.manage'&&/\/agents\/:userId$/.test(route.path)&&c.req.param('userId')===actor.id)rule='self'
  // A report downloaded as CSV is an export.
  if(((route.path.endsWith('/reports')||route.path.endsWith('/reports/team'))||route.path==='/api/outcomes/projects/:projectId/results')&&c.req.query('format'))rule='data.export'

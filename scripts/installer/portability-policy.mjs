@@ -6,14 +6,18 @@ import {escalationArchiveRow,escalationArchiveSafety} from './escalation-archive
 // Native identities and password hashes move with their referenced domain rows.
 // Live bearer grants, provider credentials and pending outbound deliveries do not.
 export const archivePolicy={
- product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);return reportArchiveStagedSafety(input)},
+ product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await enterpriseArchiveSafety(input);await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);return reportArchiveStagedSafety(input)},
  // Keep invitation history, but restored archives never restore a live survey link or queued send.
- exportRow:(table,row)=>triageArchiveRow(table,escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
+ exportRow:(table,row)=>triageArchiveRow(table,escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='refund_approvals'?{...row,expires_at:row.created_at}:table==='enterprise_connections'?{...row,enabled:0,scim_hash:null,secret_cipher:null}:table==='enterprise_principals'?{...row,active:0}:table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
   :table==='mailbox_connections'?{...row,credential_cipher:null,status:'disconnected',cursor_json:null,sync_lock:null,sync_lock_until:null}
   :table==='mailbox_sends'&&row.state==='sending'?{...row,state:'uncertain',error_code:'restored_pending_send'}:row))))),
  // Reconstruct the full-text index from retained messages after restore.
  derivedTables:['inbox_message_search'],
  excludeTables:[
+  // Provider credentials and active sync state are reconfigured after restore;
+  // ordinary Move in history and its erased-identity tombstones remain native.
+  'helpscout_connections','helpscout_sync_receipts','helpscout_webhook_receipts',
+  'enterprise_states','enterprise_sessions',
   'escalation_attachment_grants',
   'workflow_clock',
   'operator_notification_activity','operator_notifications',
@@ -33,3 +37,12 @@ export const archivePolicy={
 };
 
 export default archivePolicy;
+
+// Import also sanitizes archives made by older clients or edited outside export.
+async function enterpriseArchiveSafety({db,tables}){
+ const q=name=>'"'+tables[name].replaceAll('"','""')+'"',statements=[];
+ if(tables.enterprise_connections)statements.push(`UPDATE ${q('enterprise_connections')} SET enabled=0,secret_cipher=NULL,scim_hash=NULL`);
+ if(tables.enterprise_principals)statements.push(`UPDATE ${q('enterprise_principals')} SET active=0`);
+ if(tables.refund_approvals)statements.push(`UPDATE ${q('refund_approvals')} SET expires_at=created_at`);
+ if(statements.length)await db.batch(statements.map(sql=>db.prepare(sql)));
+}

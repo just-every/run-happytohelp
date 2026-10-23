@@ -7,6 +7,9 @@ message admission, resolution transitions, contact erasure and knowledge rules.
 
 `http.ts` owns credential verification, scopes, request limits and cursors.
 `api-conversations.ts` and `api-resources.ts` own the HTTP resources.
+`managed-tools.ts` exposes the stateless MCP catalog and dispatches fixed tools
+through these same native API routes. `connectors/zapier/index.mjs` is the
+owner-deployed Zapier Platform definition. Neither bypasses native authority.
 `settings.ts` owns management operations. `destinations.ts` uses the native
 server encryption custody. `dispatch.ts` prepares durable native event intents
 and delegates send classification, signatures, claims and retry timing to Base.

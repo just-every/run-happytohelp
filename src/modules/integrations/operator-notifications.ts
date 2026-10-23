@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {dispatchPendingTeammateNotifications} from './notification-teammate-delivery'
 import {teammateTicketNotification} from './notification-teammates'
 import type {Env} from '../../platform/env'
@@ -38,7 +39,7 @@ async function recipient(env:Env,row:Notification){
  FROM conversations c JOIN users u ON u.id=? JOIN memberships m ON m.user_id=u.id AND m.project_id=c.project_id
  LEFT JOIN user_settings s ON s.user_id=u.id LEFT JOIN user_project_preferences p ON p.project_id=m.project_id AND p.user_id=u.id
  LEFT JOIN conversation_reads r ON r.conversation_id=c.id AND r.user_id=u.id LEFT JOIN email_settings e ON e.project_id=c.project_id
- WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND (?='assignment' OR c.resolved_at IS NULL)
+ WHERE c.id=? AND c.project_id=? AND ${ticketScopeSql('m.user_id')} AND ${contactAvailableSql()} AND (?='assignment' OR c.resolved_at IS NULL)
  AND NOT EXISTS(SELECT 1 FROM notification_preferences np WHERE np.project_id=c.project_id AND np.user_id=u.id AND np.kind='customer_updated' AND np.email=0)
  AND (c.assigned_to=u.id OR (?='unread' AND c.assigned_to IS NULL AND p.is_notified_on_unassigned_activity=1
  AND NOT EXISTS(SELECT 1 FROM conversation_ai ai WHERE ai.conversation_id=c.id AND ai.ai_id IS NOT NULL)))`)

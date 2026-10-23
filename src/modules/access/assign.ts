@@ -25,6 +25,7 @@ async function resolveRole(db:D1Database,projectId:string,value:unknown):Promise
  */
 export async function assignRole(c:Context<AppEnv>,actor:{id:string;projectId:string;role:string;security?:ActorSecurity},userId:string,value:unknown){
  const db=c.env.DB,target=await resolveRole(db,actor.projectId,value)
+ if(target.membership==='owner'&&await db.prepare('SELECT 1 FROM enterprise_principals WHERE project_id=? AND user_id=?').bind(actor.projectId,userId).first())throw new HTTPException(409,{message:'Keep native owner recovery independent of enterprise provisioning.'})
  const current=await memberAccess(db,actor.projectId,userId)
  if(!current)throw new HTTPException(409,{message:'Membership missing'})
  const currentKey=current.custom||current.key==='collaborator'?current.key:current.base

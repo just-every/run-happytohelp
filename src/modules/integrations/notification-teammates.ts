@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import type {Env} from '../../platform/env'
 import type {TicketNotificationEvent} from './triggers'
 import {notificationTicket,notificationTicketSql} from './triggers/eligibility'
@@ -26,7 +27,7 @@ export async function teammateTicketNotification(env:Env,event:TicketNotificatio
   if(userId===event.actorId||kind==='assignment'&&ticket.assigned_to!==userId)continue
   const preference=await env.DB.prepare(`SELECT u.email email_address,coalesce(p.inbox,1) inbox,coalesce(p.email,CASE WHEN ?='assignment' THEN coalesce(s.is_notifiable_on_conversation_assignment,1) ELSE 1 END) email
    FROM memberships m JOIN users u ON u.id=m.user_id LEFT JOIN notification_preferences p ON p.project_id=m.project_id AND p.user_id=m.user_id AND p.kind=? LEFT JOIN user_settings s ON s.user_id=m.user_id
-   WHERE m.project_id=? AND m.user_id=?`).bind(kind,kind,event.projectId,userId).first<{inbox:number;email:number;email_address:string}>()
+   WHERE m.project_id=? AND m.user_id=? AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND ${ticketScopeSql('m.user_id')})`).bind(kind,kind,event.projectId,userId,ticket.id).first<{inbox:number;email:number;email_address:string}>()
   if(!preference)continue
   // Assigned-customer email remains in the existing coalesced digest.
   rows.push({id:event.event==='assignment'&&event.eventId.startsWith('assignment:')?event.eventId:`team-notice:${event.projectId}:${event.event}:${event.eventId}:${userId}`,project_id:event.projectId,conversation_id:ticket.id,user_id:userId,kind,inbox:preference.inbox,email:kind==='customer_updated'?0:preference.email,email_address:preference.email_address,preference_email:preference.email})
@@ -34,8 +35,8 @@ export async function teammateTicketNotification(env:Env,event:TicketNotificatio
  const claimToken=crypto.randomUUID(),now=Date.now()
  const claim=env.DB.prepare(`INSERT OR IGNORE INTO notification_trigger_claims(id,project_id,conversation_id,event,claim_token,state,outcome_json,created_at)
  SELECT ?,?,?,?,?,'complete',?,? WHERE EXISTS(SELECT 1 FROM (${notificationTicketSql}) eligible)
- AND NOT EXISTS(SELECT 1 FROM json_each(?) selected WHERE NOT EXISTS(SELECT 1 FROM memberships m JOIN users u ON u.id=m.user_id LEFT JOIN notification_preferences p ON p.project_id=m.project_id AND p.user_id=m.user_id AND p.kind=json_extract(selected.value,'$.kind') LEFT JOIN user_settings s ON s.user_id=m.user_id WHERE m.project_id=? AND m.user_id=json_extract(selected.value,'$.user_id') AND u.email IS json_extract(selected.value,'$.email_address') AND coalesce(p.inbox,1)=json_extract(selected.value,'$.inbox') AND coalesce(p.email,CASE WHEN json_extract(selected.value,'$.kind')='assignment' THEN coalesce(s.is_notifiable_on_conversation_assignment,1) ELSE 1 END)=json_extract(selected.value,'$.preference_email')))`)
- .bind(claimId,event.projectId,ticket.id,claimEvent,claimToken,JSON.stringify({recipients:rows.map(row=>row.user_id)}),now,ticket.id,event.projectId,JSON.stringify(rows),event.projectId)
+ AND NOT EXISTS(SELECT 1 FROM json_each(?) selected WHERE NOT EXISTS(SELECT 1 FROM memberships m JOIN users u ON u.id=m.user_id LEFT JOIN notification_preferences p ON p.project_id=m.project_id AND p.user_id=m.user_id AND p.kind=json_extract(selected.value,'$.kind') LEFT JOIN user_settings s ON s.user_id=m.user_id WHERE m.project_id=? AND m.user_id=json_extract(selected.value,'$.user_id') AND u.email IS json_extract(selected.value,'$.email_address') AND coalesce(p.inbox,1)=json_extract(selected.value,'$.inbox') AND coalesce(p.email,CASE WHEN json_extract(selected.value,'$.kind')='assignment' THEN coalesce(s.is_notifiable_on_conversation_assignment,1) ELSE 1 END)=json_extract(selected.value,'$.preference_email') AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND ${ticketScopeSql('m.user_id')})))`)
+ .bind(claimId,event.projectId,ticket.id,claimEvent,claimToken,JSON.stringify({recipients:rows.map(row=>row.user_id)}),now,ticket.id,event.projectId,JSON.stringify(rows),event.projectId,ticket.id)
  const result=await env.DB.batch([claim,...rows.map(row=>env.DB.prepare(`INSERT OR IGNORE INTO notification_inbox(id,project_id,conversation_id,user_id,kind,inbox,email,email_address,created_at)
  SELECT ?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM notification_trigger_claims WHERE id=? AND claim_token=?)`).bind(row.id,row.project_id,row.conversation_id,row.user_id,row.kind,row.inbox,row.email,row.email_address,now,claimId,claimToken))])
  if(!result[0].meta.changes)return {state:'recorded'}

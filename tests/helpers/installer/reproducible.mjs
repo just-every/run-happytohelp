@@ -17,8 +17,10 @@ import {fileURLToPath} from 'node:url';
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const pnpm = process.env.npm_execpath;
 const artifactFile = 'delivery-artifact/happytohelp-worker-artifact.json';
-// Absolute filesystem locations a builder could leak (macOS, Linux and CI).
-const absolutePath = /(?<![\w.@~-])\/(?:Users|home|private|tmp|var\/folders|root)\/[^\s"'`\\]*/g;
+// Concrete filesystem locations a builder could leak (macOS, Linux and CI).
+// Route parameters and template expressions do not name a host location. Actual
+// checkout, home and temporary roots are also checked literally below.
+const absolutePath = /(?<![\w.@~-])\/(?:Users|home|private|tmp|var\/folders|root)\/(?![:$])[^\s"'`\\]*/g;
 
 function run(cwd, log, args) {
   return new Promise((resolve, reject) => {

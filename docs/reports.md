@@ -49,3 +49,16 @@ A lead with report and export permission can open **Create a report schedule** i
 Recipients must be current workspace members with both report and data export permission. Customer addresses, including imported customers, cannot be selected. Each recipient's current role is checked again when the report is prepared and sent. Removing access prevents delivery; removing the creator's access pauses the schedule. Reports use each recipient's field visibility. Pause, resume or delete a schedule from its list.
 
 Each recipient gets at most one send attempt for each schedule window. A rejected or uncertain send is recorded and is never automatically replayed. Local development suppresses external mail. Installation export/import preserves report settings, timers, links and history; restored schedules are paused and pending sends cannot restart. Contact erasure removes the contact's timers and problem preview data.
+
+## Reports across separate brands
+
+The native API `GET /api/management/projects/:projectId/brands/reports` accepts
+an explicit comma-separated `projects` selection containing this workspace and
+up to 19 others, plus the ordinary report period/start/end parameters. Every
+selected brand requires current membership and report viewing permission. The
+response includes each brand's metrics and timezone, additive volume/resolution
+counts and correctly weighted AI/CSAT rates. It excludes customer identities and
+comments, does not combine medians or percentiles, and explains the selected
+scope. Revoked or inaccessible brands refuse the entire request rather than
+silently omitting data. Use the individual brand report door for CSV exports.
+This API does not grant shared administration or move customers between brands.

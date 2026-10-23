@@ -3,6 +3,7 @@ import {DatabaseSync} from 'node:sqlite';
 // Prior schema definitions a migration deliberately replaces. 0110 adds only the
 // native import fence to the two context message triggers' bodies.
 export const schemaExceptions = [
+  {migration: '245_scoped_access.sql', names: ['project_roles'], change: 'Adds nullable team_ids_json TEXT; every prior column and unrestricted role retained'},
   {migration: '0105_edition_delegation.sql', names: ['knowledge_articles'], change: 'Adds source_revision and source_incarnation; original columns retained'},
   {migration: '0108_public_answer_citations.sql', names: ['knowledge_articles', 'messages'], change: 'Adds generated publication_version and citations_json; original definitions retained'},
   {migration: '122_email_content.sql', names: ['messages'], change: 'Adds nullable content_raw TEXT'},
@@ -75,6 +76,7 @@ END`;
 // Expected additions/replacements are explicit, independent of the migration
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
+  {migration: '245_scoped_access.sql', table: 'project_roles', sql: 'ALTER TABLE project_roles ADD COLUMN team_ids_json TEXT'},
   {migration: '0105_edition_delegation.sql', table: 'knowledge_articles', sql: "ALTER TABLE knowledge_articles ADD COLUMN source_revision INTEGER NOT NULL DEFAULT 1; ALTER TABLE knowledge_articles ADD COLUMN source_incarnation TEXT NOT NULL DEFAULT ''"},
   {migration: '0108_public_answer_citations.sql', table: 'knowledge_articles', sql: "ALTER TABLE knowledge_articles ADD COLUMN publication_version TEXT GENERATED ALWAYS AS (source_incarnation || ':' || source_revision) VIRTUAL"},
   {migration: '0108_public_answer_citations.sql', table: 'messages', sql: "ALTER TABLE messages ADD COLUMN citations_json TEXT NOT NULL DEFAULT '[]'"},

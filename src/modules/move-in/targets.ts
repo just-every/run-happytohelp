@@ -104,7 +104,8 @@ function snapshotQuery(t:Table){
  // CROSS JOIN fixes the bounded candidate list as the outer loop. Otherwise
  // SQLite can choose a project index and visit every unrelated workspace row.
  const ids='json_each(?2) wanted'
- return t.name==='message_authorship'?`SELECT c.*,m.conversation_id AS bundle_id FROM ${ids} CROSS JOIN messages m ON m.project_id=?1 AND m.conversation_id=wanted.value CROSS JOIN message_authorship c ON c.message_id=m.id AND c.project_id=?1`:
+ return t.name==='macro_heads'?`SELECT c.*,c.macro_id AS bundle_id FROM ${ids} CROSS JOIN macros m ON m.id=wanted.value AND m.project_id=?1 CROSS JOIN macro_heads c ON c.macro_id=m.id`:
+    t.name==='message_authorship'?`SELECT c.*,m.conversation_id AS bundle_id FROM ${ids} CROSS JOIN messages m ON m.project_id=?1 AND m.conversation_id=wanted.value CROSS JOIN message_authorship c ON c.message_id=m.id AND c.project_id=?1`:
     t.name==='conversation_ratings'||t.name==='conversation_rating_history'?`SELECT c.*,r.conversation_id AS bundle_id FROM ${ids} CROSS JOIN conversation_resolutions r ON r.project_id=?1 AND r.conversation_id=wanted.value CROSS JOIN ${t.name} c ON c.resolution_id=r.id`:
     t.name==='move_in_message_sources'?`SELECT c.*,m.conversation_id AS bundle_id FROM ${ids} CROSS JOIN messages m ON m.project_id=?1 AND m.conversation_id=wanted.value CROSS JOIN move_in_message_sources c ON c.message_id=m.id AND c.project_id=?1`:
     t.nativeOnly?`SELECT c.*,c.conversation_id AS bundle_id FROM ${ids} CROSS JOIN conversations v ON v.id=wanted.value AND v.project_id=?1 CROSS JOIN ${t.name} c ON c.conversation_id=v.id`:

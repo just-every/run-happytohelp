@@ -10968,7 +10968,7 @@
       "executable": false
     },
     "tests/helpers/email/vendor-replies.mjs": {
-      "sha256": "606523d59d3b7fa25d22f949ff66d6da79529daa182094ec64360d7108833b23",
+      "sha256": "ede8260b0dc83875b5d1a4282a7e76950ba13a21852a0354106fd50262cd6bd6",
       "executable": false
     },
     "tests/helpers/email/worker-mail.mjs": {
@@ -11948,7 +11948,7 @@
       "executable": false
     },
     "tests/move-in/door-mapping.mjs": {
-      "sha256": "7a591520711f4e5e1dd0ade2a5ef98b862130a6104319739a0590bc3f8fbc7e3",
+      "sha256": "df5fef821e4424b790e0bdbe7760c46af2bc9795b7014a2940860854f2fb43da",
       "executable": false
     },
     "tests/move-in/door-readers.mjs": {

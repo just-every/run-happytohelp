@@ -101,11 +101,12 @@ test('Help Scout responses and Docs map only documented, complete and public con
 
 test('Freshdesk tickets keep the description first, private notes, staff as authors and the resolved time; signed download links are refused',async()=>{
  const {contact:person,agent,ticket:freshTicket,cannedResponse}=await import('./freshdesk-fixtures.mjs')
- await imported('freshdesk',ndjson(person,agent,freshTicket(5001,4),freshTicket(5002,2),cannedResponse),{check:async({plan,omissions,rows})=>{
+ await imported('freshdesk',ndjson(person,agent,freshTicket(5001,4),freshTicket(5002,2),freshTicket(5003,5),freshTicket(5004,3),cannedResponse),{check:async({plan,omissions,rows})=>{
   assert.equal(plan.counts.rejected,0);const solved=(await rows("SELECT c.id,c.resolved_at,c.assigned_to FROM conversations c JOIN move_in_origins o ON o.target_id=c.id WHERE o.source_id='5001'"))[0]
   assert.deepEqual((await rows(`SELECT content,actor_role FROM messages WHERE conversation_id='${solved.id}' ORDER BY revision`)).map(row=>[row.content,row.actor_role]),[['Where is my refund?','contact'],['Refund sent.','operator'],['Thanks!','contact']])
   assert.deepEqual((await rows(`SELECT content FROM move_in_notes WHERE conversation_id='${solved.id}'`)).map(row=>row.content),['Private triage']);assert.equal(solved.resolved_at,Date.UTC(2024,0,2,9,30));assert.equal(solved.assigned_to,null)
   assert.equal((await rows("SELECT c.resolved_at FROM conversations c JOIN move_in_origins o ON o.target_id=c.id WHERE o.source_id='5002'"))[0].resolved_at,null)
+  const categories=await rows("SELECT o.source_id,c.status_category,c.channel FROM conversations c JOIN move_in_origins o ON o.target_id=c.id AND o.target_kind='conversation' ORDER BY o.source_id");assert.deepEqual(categories.map(row=>[row.source_id,row.status_category,row.channel]),[['5001','solved','email'],['5002','open','email'],['5003','closed','email'],['5004','pending','email']])
   assert.deepEqual(await rows('SELECT content FROM macros'),[{content:'Refunds take 5 days.'}]);assert.equal(plan.decisions.find(row=>row.kind==='agent').targets.length,0);assert.ok(omissions('ticket/5001').includes('attachments_metadata_retained_bytes_not_imported'))
  }})
  await refusedUpload('freshdesk',JSON.stringify({contact:{...person.contact,avatar:{avatar_url:'https://s3.example.test/a.png?X-Amz-Signature=abc'}}}),'signed.ndjson',{code:'signed_download_link_not_accepted'})

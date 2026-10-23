@@ -44,3 +44,6 @@ test(`at 1440 and 390px selected engineering context reaches connected trackers 
  for(const width of [1440,390]){const providers=await startProviders();let runtime,passed=false;
  try{runtime=await createRuntime({outboundFixture:new URL('../helpers/escalations/outbound.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}});const owner=await runtime.seedTenant({name:'Engineering escalations '+width,email:`engineering-${width}@example.test`});const result=await exerciseEscalations({browser,origin:runtime.origin,owner,providers,width,directory:shot('escalations')});await result.context.close();passed=true}finally{await runtime?.close(passed);await providers.close()}}
 })
+
+import {voiceBrowserProof} from '../helpers/voice/browser.mjs'
+test('at 1440 and 390px signed consented telephone voicemail appears privately in the native inbox with guarded history and an uncertain callback that never replays',voiceBrowserProof)

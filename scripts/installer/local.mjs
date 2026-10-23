@@ -1,3 +1,4 @@
+import {asyncWorkRestoreSql} from './async-work-archive.mjs';
 import {refuse} from '@runeditrun/rer/errors';
 import {PortabilityError} from '@runeditrun/rer/modules/portability';
 import {triageRestoreSql} from './triage-archive.mjs';
@@ -97,6 +98,7 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
   await d1(context,'Fencing archived workflow actions',workflowRestoreSql);
   await d1(context,'Fencing restored report schedules and bulk replies',reportRestoreSql);
   await d1(context,'Fencing restored evaluations',trainingRestoreSql);
+  await d1(context,'Fencing restored background work',asyncWorkRestoreSql);
   await d1(context,'Rebuilding conversation search',"INSERT INTO inbox_message_search(inbox_message_search) VALUES('rebuild')");
  }
  // The receipt names the Durable Object storage the archive carries (exported) or carried (restored).

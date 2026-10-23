@@ -12,7 +12,7 @@ export async function configurationFieldsJourney(imported){
  const source=records.map(JSON.stringify).join('\n');
  await imported('zendesk',source,{before:h=>h.snapshot(),check:async({h,initial,review,plan,rows,omissions})=>{
   assert.equal(plan.counts.rejected,0,JSON.stringify(plan.decisions));
-  const forms=(await h.call(dashboard+'/forms')).data,definitions=(await h.call(dashboard+'/ticket-fields')).data;
+  const forms=(await h.call('/api/forms/projects/p/forms')).data,definitions=(await h.call(dashboard+'/ticket-fields')).data;
   assert.equal(forms.length,2);assert.ok(forms.every(form=>form.enabled===false));
   assert.equal(definitions.length,4);assert.equal(definitions.find(field=>field.name==='Order number').required,false,'import cannot make unrelated tickets unsolvable');
   assert.ok(omissions('ticket_field/301').includes('field_solve_requirement_requires_native_review'));
@@ -24,8 +24,8 @@ export async function configurationFieldsJourney(imported){
   await h.call(root+'/'+review.id+'/undo',post({}));await h.drain();assertBusinessEquality(initial,await h.snapshot());
  }});
  await imported('zendesk',source,{check:async({h,review,rows})=>{
-  const form=(await h.call(dashboard+'/forms')).data.find(form=>form.title==='Order question');
-  await h.call(dashboard+'/forms/'+form.id,{...post({...form,enabled:true}),method:'PATCH'});
+  const form=(await h.call('/api/forms/projects/p/forms')).data.find(form=>form.title==='Order question');
+  await h.call('/api/forms/projects/p/forms/'+form.id,{...post({...form,enabled:true}),method:'PATCH'});
   const visible=(await h.call('/api/forms/p/'+form.id)).data;
   assert.deepEqual(visible.fields.filter(field=>!['subject','message'].includes(field.id)).map(field=>[field.label,field.required]),[['Order number',true],['Items',true],['Replacement requested',true],['Reason',true]]);
   assert.deepEqual(visible.fields.find(field=>field.label==='Reason').options,[{value:'refund',label:'Refund requested'},{value:'shipping',label:'Shipment question'}]);

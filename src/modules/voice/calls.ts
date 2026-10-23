@@ -34,7 +34,7 @@ callRoutes.post(base+'/commands',async c=>{
  const customer=phone(await decryptToken(c.env,actor.projectId,identity.phone_cipher)),remote=call.remote_cipher?await decryptToken(c.env,actor.projectId,call.remote_cipher):null
  let state='uncertain'
  try{
-  const transfer=`<Dial timeout="25" action="${xml(new URL('/api/voice/hooks/'+n.id+'?step=dial',c.req.url).href)}" method="POST"><Number>${xml(s.human_phone)}</Number></Dial>`
+  const transfer=`<Dial timeout="25" action="${xml(new URL('/api/voice/hooks/'+n.id+'?step=dial&command='+encodeURIComponent(id),c.req.url).href)}" method="POST"><Number>${xml(s.human_phone)}</Number></Dial>`
   const body:Record<string,string>=n.provider==='aircall'?{number_id:n.provider_id,to:customer}:kind==='transfer'?{Twiml:response(say('Connecting you to a human support teammate.')+transfer)}:{From:n.phone,To:s.human_phone,Twiml:response(say('Support callback. Recording is off.')+`<Dial callerId="${xml(n.phone)}"><Number>${xml(customer)}</Number></Dial>`),Record:'false'}
   const path=n.provider==='aircall'?`/users/${encodeURIComponent(s.aircall_user_id)}/calls`:kind==='transfer'?`/Calls/${encodeURIComponent(remote!)}.json`:'/Calls.json'
   const answered=await providerRequest(c.env,n,path,body,async()=>{

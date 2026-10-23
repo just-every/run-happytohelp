@@ -93,6 +93,8 @@ export async function brandsJourney(){
   assert.equal((await app.call(`/api/dashboard/projects/${b.projectId}/conversations/${b.widget.id}`,{token:shared})).status,404)
   assert.equal((await app.call(`/api/conversations/${a.widget.id}/messages`,{token:shared})).status,200)
   assert.ok(!(await app.ok(selection,{token:owner})).data.sharedTeam.some(p=>p.id===alpha.users.operator))
+  const raced=await app.call(selection,{token:owner,headers:{'x-test-statement':'SELECT id,provider,address','x-test-before-statement':`DELETE FROM memberships WHERE project_id='${b.projectId}' AND user_id='${alpha.users.owner}'`}})
+  assert.equal(raced.status,403,'a brand removed during the combined read is never returned')
   for(const ids of ['',a.projectId+',unavailable',b.projectId])assert.ok((await app.call(selection.split('?')[0]+'?projects='+ids,{token:owner})).status>=400)
  }finally{await app.close()}
 }

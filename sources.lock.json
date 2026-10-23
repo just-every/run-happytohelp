@@ -5836,7 +5836,7 @@
       "executable": false
     },
     "src/modules/management/brands.ts": {
-      "sha256": "31ae867a8d26c015d00f298f5f31017e1af044a7f63498cd170ae8e7aad17bae",
+      "sha256": "df88317ed45d1377d239c702fb9e067218ccbd1c01a2a55d9f99feebecc669ba",
       "executable": false
     },
     "src/modules/management/buckets.ts": {
@@ -11180,7 +11180,7 @@
       "executable": false
     },
     "tests/helpers/inbox/brands.mjs": {
-      "sha256": "4444ec95128ae1f1d0f8d1f732a06fe71f9988686432b6d1e2a63e6463fc1621",
+      "sha256": "14b7868437f170dfcd97d178412ae6bde1982376aab654133e8af63968127d4e",
       "executable": false
     },
     "tests/helpers/inbox/conversation-panel-resize-browser.mjs": {

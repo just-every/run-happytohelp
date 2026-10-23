@@ -2931,12 +2931,16 @@
       "sha256": "15966432c1daf93d755c6912da32afd8b407b2ffc4b77b76d887158ba06d01bc",
       "executable": false
     },
+    "scripts/installer/hosted-d1.mjs": {
+      "sha256": "27e51d539fe67628d5e1cbb06ddca2433f983a8916fbccc6c6ad76d96ed683f2",
+      "executable": false
+    },
     "scripts/installer/hosted-deploy.mjs": {
       "sha256": "53d87ced2506469a4a83d3b4141031ff1981f223924a2e86487a4d2e0daa7fa4",
       "executable": false
     },
     "scripts/installer/hosted-export.mjs": {
-      "sha256": "a167acd26e4eeeeb3fbd0ba9b95217f3e53237f9cbb2c7365971da0873e0aeee",
+      "sha256": "cd8c61b503b6f3eefa044da27abba8d5efbea6c39c28864509e53fb697a7f1da",
       "executable": false
     },
     "scripts/installer/hosted-origin.mjs": {
@@ -11376,7 +11380,7 @@
       "executable": false
     },
     "tests/helpers/installer/hosted-export-live.mjs": {
-      "sha256": "931f0043fe37ced380f22e8f5cda6083c0d2cf5fd84c6adc56e8f1bfcf733f92",
+      "sha256": "2df1536691c46b7e2b4df9e481dd39795a9aece2fd0d62ea67d70cf462110d27",
       "executable": false
     },
     "tests/helpers/installer/hosted-export-resources.mjs": {
@@ -11384,11 +11388,7 @@
       "executable": false
     },
     "tests/helpers/installer/hosted-export.mjs": {
-      "sha256": "0cc364e4726a6b426023f0ad477b8d192892655190b6c585ef23dfd9493adcb4",
-      "executable": false
-    },
-    "tests/helpers/installer/hosted-source-d1.mjs": {
-      "sha256": "197822b2dd08bace4e255c5d215de060562205c7c8c914360e77574d25a68b46",
+      "sha256": "b1e71bc2ba8f6c70002339e8ba4d3d80fdb688a11b41451bb23acab2fbc03ecc",
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {

@@ -11588,7 +11588,7 @@
       "executable": false
     },
     "tests/helpers/widget/lost-response.mjs": {
-      "sha256": "b2687503c3e42a5b13372df345de86a7218b21331f8d5de3f712d3837cf3a649",
+      "sha256": "0bbab19b240252d0fdfd3791687c3cd109e7796eb08681b42eaaa1333ef29060",
       "executable": false
     },
     "tests/helpers/widget/opening.mjs": {
@@ -11804,7 +11804,7 @@
       "executable": false
     },
     "tests/journeys/reports-browser.mjs": {
-      "sha256": "494227b33fbdf6cb3a792eb4730d76c0073b11748012345963814a1557839a24",
+      "sha256": "fe04d5fe1c4ccf27cd923a5602061c7f811e9b57ef34d3af4eb9c00d96d8a853",
       "executable": false
     },
     "tests/journeys/reports.mjs": {
@@ -12084,7 +12084,7 @@
       "executable": false
     },
     "tests/move-in/security.mjs": {
-      "sha256": "4b2676aa19d0ec7f034a136bfbb2c91bafd9424377aff5354112da1f4464dd13",
+      "sha256": "8fbda4047a016f056fa16928aafdfe5eeae140a57442d5125fe498235510d5a9",
       "executable": false
     },
     "tests/move-in/shape-custody.mjs": {

@@ -11172,7 +11172,7 @@
       "executable": false
     },
     "tests/helpers/inbox/management-library-browser.mjs": {
-      "sha256": "ea1d5f3035aedb239238205ebfb67b7ae2dfc87d2b0c2a0f5bdd592716a458ae",
+      "sha256": "14b9faeee33836036854c79adc7cb3d0c4c8a1d7ac9d258e410bf8c1c0683329",
       "executable": false
     },
     "tests/helpers/inbox/management.mjs": {

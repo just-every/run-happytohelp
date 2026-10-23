@@ -78,6 +78,8 @@ try{
   await request(path,{token,body:unlink});await page.reload();await page.getByText('No reviewed identity associations.',{exact:true}).waitFor();
   assert.equal(await page.getByRole('link',{name:'Maya at Northstar',exact:true}).count(),0,'reversible associations disappear after unlink');
  });
+ // Restore the desktop fixture after the identity check's phone viewport.
+ await page.setViewportSize({width:1440,height:1000});
  // 1. One shared in-app confirmation for every destructive delete.
  const deleteCases=[
   {name:'saved reply',url:`${base}/macros/${macro.id}`,list:`${base}/macros`,subject:'Greeting reply',gone:()=>remaining('macros',macro.id)},

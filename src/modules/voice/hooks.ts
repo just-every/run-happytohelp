@@ -28,6 +28,7 @@ hooks.post('/hooks/:numberId',async c=>{
  const id=await callId(n,remote),s:VoiceSettings=JSON.parse(n.settings_json)
  let call=step==='entry'?await admitCall(c.env,n,remote,phone(b.From)):await c.env.DB.prepare(`SELECT v.* FROM voice_calls v JOIN conversations c ON c.id=v.conversation_id AND c.project_id=v.project_id WHERE v.id=? AND v.number_id=? AND v.erased=0 AND ${usableContact}`).bind(id,n.id).first<any>()
  if(!call)throw new HTTPException(404)
+ if(!call.remote_cipher)throw new HTTPException(409,{message:'An archived call cannot resume after reconnect. Start a new call.'})
  const commandId=c.req.query('command'),stepKey=commandId?step+':'+commandId:step
  if(commandId&&(step!=='dial'||!await c.env.DB.prepare("SELECT id FROM voice_commands WHERE id=? AND call_id=? AND number_id=? AND project_id=? AND kind='transfer' AND state<>'erased'").bind(commandId,id,n.id,n.project_id).first()))throw new HTTPException(404)
  const alive=`EXISTS(SELECT 1 FROM voice_calls v JOIN conversations c ON c.id=v.conversation_id AND c.project_id=v.project_id JOIN voice_numbers vn ON vn.id=v.number_id AND vn.project_id=v.project_id WHERE v.id=? AND v.erased=0 AND vn.enabled=1 AND vn.version=? AND ${usableContact})`,args=[id,n.version]

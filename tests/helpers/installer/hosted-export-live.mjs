@@ -20,14 +20,14 @@ export async function hostedExportLive(root,scratch,input='exports/support.rer',
  let ownsObjects=false,proxy;
  const output='exports/hosted-live.rer';
  try{
-  proxy=await getPlatformProxy({configPath:config,envFiles:[],persist:false,remoteBindings:true});
-  const DB=hostedSourceD1(source),FILES=proxy.env.FILES;
+  const bucket=async()=>{proxy??=await getPlatformProxy({configPath:config,envFiles:[],persist:false,remoteBindings:true});return proxy.env.FILES};
+  const DB=hostedSourceD1(source),FILES=Object.fromEntries(['list','get','put','delete','createMultipartUpload'].map(method=>[method,async(...args)=>(await bucket())[method](...args)]));
   const service=await createPortability({db:DB,buckets:{FILES},policy:archivePolicy,migrations:async()=>migrationReplay(await appliedMigrations(root,DB,'DB',{},unstable_splitSqlQuery),archivePolicy,{})});
   console.log('Hosted portability: copying the populated native archive into staging storage.');ownsObjects=true;await importArchive(service,join(root,input),[],undefined,progress=>{
    if(progress.phase==='staging'&&progress.parts%25===0)console.log(`Hosted portability: ${progress.parts}/${progress.total} parts staged.`);
   });
-  await proxy.dispose();proxy=undefined;
-  await run(root,['export','--target','remote','--output',output],0,{env:{H2H_EXPORT_CONFIG:config,H2H_EXPORT_WRITERS_STOPPED:'yes',CLOUDFLARE_API_TOKEN:token}});
+  await proxy?.dispose();proxy=undefined;
+  console.log('Hosted portability: exporting through the public rer remote command.');await run(root,['export','--target','remote','--output',output],0,{env:{H2H_EXPORT_CONFIG:config,H2H_EXPORT_WRITERS_STOPPED:'yes',CLOUDFLARE_API_TOKEN:token}});
   const closing=async path=>{let found;for await(const record of fileRecords(path))if(record.kind==='closing')found=record;assert.ok(found);return found};
   assert.equal((await closing(join(root,output))).contentHash,(await closing(join(root,input))).contentHash,'real hosted D1 rows and R2 bytes match the complete native source archive');
   assert.equal((await stat(join(root,output))).mode&0o777,0o600);

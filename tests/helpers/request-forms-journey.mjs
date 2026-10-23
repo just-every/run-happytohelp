@@ -15,6 +15,18 @@ export async function requestFormsJourney(){
   const forbidden=await app.call(admin,{...owner,body:{...f.config,fields:[{fieldId:internal.id}]},status:400});assert.match(forbidden.data.error,/internal/)
   assert.equal((await app.call(admin,{token:f.workspace.tokens.operator,body:f.config})).status,403)
   assert.equal((await app.call(`${api}/${form.id}`,{headers:{Cookie:'h2h_portal=not-a-proof'}})).status,200)
+  // Configure both consumers through the same settings doors leads use. The
+  // selected form and typed answer must survive admission into routing and SLA.
+  const dashboard=`/api/dashboard/projects/${p}`,manage=async(path,body)=>{const result=await app.ok(dashboard+path,{...owner,body});return result.data??result}
+  const calendar=await manage('/workflow-calendars',{name:'Always available',timezone:'America/New_York',weekly:Array.from({length:7},(_,day)=>({day,start:'00:00',end:'24:00'})),holidays:'none',closures:[]})
+  const policyInput={name:'Refund form response',calendar_id:calendar.id,conditions:{form_ids:[form.id],fields:{[reason.id]:'refund'}},first_response_minutes:60}
+  const policy=await manage('/sla-policies',policyInput)
+  for(const conditions of [{fields:{[reason.id]:42}},{fields:{[internal.id]:7}},{fields:{unknown:'refund'}},{form_ids:[f.foreign.projectId]}]){
+   assert.equal((await app.call(dashboard+'/sla-policies',{...owner,body:{...policyInput,conditions}})).status,400,'invalid, restricted and foreign references cannot select a policy')
+  }
+  await app.ok(dashboard+'/routing-operators',{...owner,method:'PUT',body:{operators:[{user_id:f.workspace.users.operator,available:true,capacity:10,skills:[]}]}})
+  const routing=await manage('/workflow-rules',{name:'Route refund form',kind:'routing',position:0,conditions:{all:[{field:'form_id',op:'eq',value:form.id},{field:`field:${reason.id}`,op:'eq',value:'refund'}]},actions:[],routing:{strategy:'named',user_id:f.workspace.users.operator,skills:[]}})
+  await manage(`/workflow-rules/${routing.rule.id}/publish`,{})
   const customer=await signin('rosa@example.com',`/help/${p}/requests/${form.id}`)
   assert.equal(customer.location,`/help/${p}/requests/${form.id}`);assert.equal((await app.call(customer.path)).status,400)
   const created=await app.call(path,{...customer,body:{...valid,locale:'es'},status:201}),id=created.data.ticket.id;assert.equal(created.data.ticket.status,'open')
@@ -22,6 +34,21 @@ export async function requestFormsJourney(){
   assert.equal((await app.call(path,{...customer,body:valid,status:200})).data.ticket.id,id)
   assert.equal((await app.call(path,{...customer,body:{...valid,message:'Changed command'},status:409})).status,409)
   assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,before.n+1)
+  const ticket=(await app.ok(`${dashboard}/conversations/${id}/ticket`,owner)).data
+  assert.equal(ticket.assigned_to,f.workspace.users.operator,'the selected form and typed field route the ticket')
+  const sla=(await app.ok(`${dashboard}/conversations/${id}/sla`,owner)).data
+  assert.equal(sla.policy.id,policy.id,'the selected form and typed field select its SLA')
+  const response=sla.clocks.find(clock=>clock.metric==='first_response')
+  assert.equal(response.due_at,response.started_at+60*60000,'the form request has a one-hour response commitment')
+  const question=await app.ok(path,{...customer,body:{...valid,localId:'question-not-refund',fields:{[reason.id]:'question'}}}),questionId=question.ticket.id
+  assert.equal((await app.ok(`${dashboard}/conversations/${questionId}/ticket`,owner)).data.assigned_to,null,'a nonmatching answer does not route')
+  assert.equal((await app.ok(`${dashboard}/conversations/${questionId}/sla`,owner)).data.policy,null,'a nonmatching answer does not select the refund SLA')
+  const technical=(await app.ok(admin,{...owner,body:{...f.config,title:'Technical',translations:{},fields:[{fieldId:reason.id,required:true}]}})).data
+  const technicalTicket=await app.ok(`${api}/${technical.id}/submissions`,{...customer,body:{...valid,localId:'technical-refund',fields:{[reason.id]:'refund'}}})
+  assert.equal((await app.ok(`${dashboard}/conversations/${technicalTicket.ticket.id}/sla`,owner)).data.policy,null,'a matching answer on another form does not select the refund SLA')
+  assert.equal((await app.ok(`${dashboard}/conversations/${technicalTicket.ticket.id}/ticket`,owner)).data.assigned_to,null,'another form does not use the refund route')
+  await app.configure({})
+  assert.equal((await app.ok(`${dashboard}/conversations/${id}/sla`,owner)).data.policy.id,policy.id,'form-based commitments survive worker restart')
   assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='form.submitted'",p))
   const stale=await app.call(`${admin}/${form.id}`,{...owner,method:'PUT',body:{...form,title:'Order help'}});assert.equal(stale.status,200)
   assert.equal((await app.call(`${admin}/${form.id}`,{...owner,method:'PUT',body:form})).status,409)

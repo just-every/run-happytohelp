@@ -11177,7 +11177,7 @@
       "executable": false
     },
     "tests/helpers/escalations/browser.mjs": {
-      "sha256": "581243ae3b62c75531064ba41a8b534d1ebce33c042e477d4723abd2a85501f3",
+      "sha256": "f61828ea93175c040722eed7bef141730a51079d0426e177f80582a4797b4c4c",
       "executable": false
     },
     "tests/helpers/escalations/dev-proof.mjs": {

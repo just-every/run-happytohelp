@@ -4,6 +4,8 @@ const affected=`project_id=?1 AND (contact_id=?2 OR message_id IN (SELECT id FRO
 export const feedbackErasureCount=`(SELECT count(*) FROM feedback_sources WHERE ${affected})`
 export function feedbackErasureStatements(env:Env,projectId:string,contactId:string){return [
  env.DB.prepare(`INSERT OR IGNORE INTO erasure_requests(id,project_id,contact_id,store,destination_id,state,detail,requested_at,settled_at) SELECT lower(hex(randomblob(16))),?1,?2,'feedback:linked_records','','unsupported','Linked Penny and engineering records are not recalled. Review and request deletion with those providers.',?3,?3 WHERE EXISTS(SELECT 1 FROM feedback_sources WHERE ${affected})`).bind(projectId,contactId,Date.now()),
+ env.DB.prepare(`DELETE FROM feedback_handoffs WHERE source_id IN (SELECT id FROM feedback_sources WHERE ${affected})`).bind(projectId,contactId),
+ env.DB.prepare(`DELETE FROM feedback_penny_requesters WHERE project_id=?1 AND contact_id=?2`).bind(projectId,contactId),
  env.DB.prepare(`DELETE FROM feedback_updates WHERE source_id IN (SELECT id FROM feedback_sources WHERE ${affected})`).bind(projectId,contactId),
  env.DB.prepare(`DELETE FROM feedback_sources WHERE ${affected}`).bind(projectId,contactId),
 ]}

@@ -11,3 +11,5 @@
 .feedback-panel .btn { white-space:normal; margin:6px 0; }
 .feedback-update { border:1px solid #a8d0cd; border-radius:6px; background:var(--bs-tertiary-bg,#f2faf9); padding:10px; margin-top:12px; }
 .feedback-panel :is(button,summary,a,input,textarea,select):focus-visible { outline:2px solid #087c8c; outline-offset:3px; }
+
+.feedback-handoff pre { max-height:280px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; padding:10px; background:var(--bs-tertiary-bg,#f2faf9); color:inherit; font-size:13px; }

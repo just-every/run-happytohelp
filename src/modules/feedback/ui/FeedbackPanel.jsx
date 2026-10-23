@@ -1,3 +1,5 @@
+import PennyConnection from './PennyConnection';
+import PennyHandoff from './PennyHandoff';
 import React,{useEffect,useState} from 'react';
 import {nativeRequest} from '../../../ui/native/transport';
 import {useCan} from '../../../ui/dashboard/components/ConversationAccess';
@@ -23,6 +25,7 @@ function FeedbackBody({projectId,conversationId,refreshKey,active}){
   {data.data.map(source=><article key={source.id} className="feedback-source" aria-label="Linked customer feedback">
    <blockquote>{source.quote}</blockquote>{source.account_name&&<p>Account: {source.account_name}</p>}
    <p><a href={source.penny_url} target="_blank" rel="noopener noreferrer">Penny request</a> · <a href={source.issue_url} target="_blank" rel="noopener noreferrer">Engineering delivery</a></p>
+   {manage&&<PennyHandoff path={path} source={source} messages={messages} onChanged={load}/>}
    <p>Service updates: {source.subscribed?'Subscribed':'Off'}. Recovery is unconfirmed.</p>
    {manage&&<>{!source.subscribed&&<Field name={`feedback-consent-${source.id}`} label="Requester consent message" options={choices} value={consent[source.id]||''} onChange={(_,value)=>setConsent(old=>({...old,[source.id]:value}))} hint="Select the requester's explicit permission to receive this service update. A quote alone is not consent."/>}
     <button type="button" className="btn btn-sm btn-white" disabled={busy||!source.subscribed&&!consent[source.id]} onClick={()=>run(()=>nativeRequest(path+`/sources/${source.id}/preference`,json('PUT',{subscribed:!source.subscribed,preference_message_id:consent[source.id]})),source.subscribed?'Requester opted out.':'Requester subscribed.')}>{source.subscribed?'Opt out of service updates':'Subscribe requester'}</button></>}
@@ -39,6 +42,7 @@ function FeedbackBody({projectId,conversationId,refreshKey,active}){
     <Field name="feedback-issue" label="Vector or issue tracker URL" type="url" value={form.issue_url} onChange={(_,value)=>change('issue_url',value)} required/>
     <button className="btn btn-primary">Save feedback link</button>
    </fieldset></form></details>}
+  {install&&<PennyConnection base={base}/>}
   {install&&<details className="feedback-connection"><summary>Release connection</summary><p>Use a trusted release sender. Configure its signing secret separately; only the signature is accepted here.</p>
    {settings&&<><p>{settings.connected?'Release sender connected.':'No release sender connected.'}</p><p>Release receiver: <code>{settings.release_url}</code></p></>}
    <form onSubmit={event=>{event.preventDefault();run(async()=>{await nativeRequest(base+'/settings',json('PUT',{secret}));setSecret('')},'Release signing secret saved.')}}><Field name="feedback-secret" label="Release signing secret" type="password" value={secret} onChange={(_,value)=>setSecret(value)} required/><button className="btn btn-white" disabled={busy}>Save release connection</button></form>

@@ -3,7 +3,8 @@ import {createHmac,randomBytes} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
 const penny='https://penny.example.test/requests/export-progress',issue='https://vector.example.test/issues/export-progress',secret='synthetic-happytohelp-1-release-signing-secret'
 export async function feedbackHarness(){
- const app=await startApp({bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}})
+ const pennyCalls=[],failures=[]
+ const app=await startApp({outbound:async(request,entry)=>{if(new URL(request.url).origin!=='https://penny.example.com')throw Error('Unexpected provider');pennyCalls.push(entry);if(failures.shift())throw Error('Provider receipt lost');return Response.json({requesterId:String(pennyCalls.length).padStart(26,'0'),created:true})},bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}})
  try{
  const ws=await app.seedWorkspace('feedback'),foreign=await app.seedWorkspace('feedback-foreign'),token=ws.tokens.owner,base=`/api/feedback/projects/${ws.projectId}`,records=[]
  await app.presenceAwayOff(ws.projectId)
@@ -12,7 +13,7 @@ export async function feedbackHarness(){
   const visitor=await app.ok('/api/identity/widget/session',{headers,body:{widgetKey:ws.widgetKey,name:`Requester ${i}`,email:`feedback-${i}@example.test`}})
   const conversation=await app.ok('/api/conversations',{token:visitor.token,headers,body:{projectId:ws.projectId}})
   const send=async(content,localId)=>{const current=await app.ok('/api/conversations/'+conversation.id,{token});return app.ok(`/api/conversations/${conversation.id}/messages`,{token:visitor.token,headers,body:{content,localId,expectedRevision:current.revision,expectedLastMessageId:current.last_message_id}})}
-  const opening=await send(`Export ${i} hangs. Please keep me informed about this fix.`,'opening'),consent=await send('Yes, send me a service update here when the export fix ships.','consent')
+  const opening=await send(`Export ${i} hangs. Please keep me informed about this fix.`,'opening'),consent=await send('Yes, share my quote and name with Penny and send me a service update here when the export fix ships.','consent')
   records.push({visitor,conversation,message:opening.message,consent:consent.message,send})
  }
  const call=(path,body,options={})=>app.ok(base+path,{token,body,...options})
@@ -23,7 +24,7 @@ export async function feedbackHarness(){
  const event=(id='release-1',extra={})=>({id,issue_url:issue,release_url:'https://releases.example.test/export-fixed',released_at:new Date().toISOString(),...extra})
  const release=async body=>{const raw=JSON.stringify(body),signature=createHmac('sha256',secret).update(raw).digest('hex');return app.call('/api/feedback/releases/'+ws.projectId,{raw:true,body:raw,headers:{'Content-Type':'application/json','X-HappyToHelp-Signature':signature}})}
  const connect=()=>call('/settings',{secret},{method:'PUT'})
- return {app,ws,foreign,token,base,records,root,call,capture,subscribe,snapshot,event,release,connect,async close(){await app.close()}}
+ return {pennyCalls,failures,app,ws,foreign,token,base,records,root,call,capture,subscribe,snapshot,event,release,connect,async close(){await app.close()}}
  }catch(e){await app.close();throw e}
 }
 export async function feedbackCaptureJourney(){const h=await feedbackHarness();try{
@@ -82,4 +83,35 @@ export async function feedbackCustodyJourney(){const h=await feedbackHarness();t
  assert.equal((await h.release(h.event('after-erasure'))).data.updates,1)
  const report=await app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${records[0].visitor.contactId}/erasure`,{token:h.token});assert.ok(report.data.providers.requests.some(r=>r.store==='feedback:linked_records'&&r.state==='unsupported'))
  const all=JSON.stringify(await app.sql('SELECT * FROM feedback_sources'));assert.ok(!all.includes(records[0].message.content))
+}finally{await h.close()}}
+
+export async function feedbackHandoffJourney(){const h=await feedbackHarness();try{
+ const key='synthetic-happytohelp-2-penny-api-key',origin='https://penny.example.com',pennyUrl=origin+'/portal/feedback/export-progress'
+ const {app,records}=h
+ await h.call('/penny-connection',{origin,token:key},{method:'PUT'})
+ assert.ok(!JSON.stringify(await h.call('/penny-connection')).includes(key))
+ const sources=[]
+ for(const r of records)sources.push((await h.capture(r,{penny_url:pennyUrl})).data)
+ assert.equal(h.pennyCalls.length,0,'linking alone shares no customer data')
+ for(let i=0;i<2;i++){
+  const r=records[i],path=h.root(r)+`/sources/${sources[i].id}`,preview=await h.call(path+'/handoff-preview')
+  assert.ok(preview.data.source.includes(r.message.content));assert.ok(!JSON.stringify(preview.data).includes(r.visitor.email||'@example.test'))
+  assert.equal((await app.call(h.base+path+'/handoff',{token:h.token,body:{approve:false,sharing_message_id:r.consent.id}})).status,400)
+  assert.equal((await app.call(h.base+path+'/handoff',{token:h.token,body:{approve:true,sharing_message_id:records[1-i].consent.id}})).status,400)
+  const accepted=await h.call(path+'/handoff',{approve:true,sharing_message_id:r.consent.id});assert.equal(accepted.accepted,true)
+  const duplicate=await h.call(path+'/handoff',{approve:true,sharing_message_id:r.consent.id});assert.equal(duplicate.duplicate,true)
+ }
+ assert.equal(h.pennyCalls.length,2)
+ for(const call of h.pennyCalls){assert.equal(new URL(call.url).pathname,'/api/v1/requests/export-progress/proxy-votes');const payload=JSON.parse(call.body);assert.ok(payload.sourceUrl.includes('/conversations/'));assert.ok(payload.source.includes('HappyToHelp support feedback'));assert.ok(payload.contact.displayName);assert.equal(payload.contact.email,undefined)}
+ const extra=(await h.capture(records[0],{penny_url:pennyUrl,message_id:records[0].consent.id})).data,path=h.root(records[0])+`/sources/${extra.id}`
+ h.failures.push(true);assert.equal((await app.call(h.base+path+'/handoff',{token:h.token,body:{approve:true,sharing_message_id:records[0].consent.id}})).status,409)
+ assert.equal((await app.call(h.base+path+'/handoff',{token:h.token,body:{approve:true,sharing_message_id:records[0].consent.id}})).status,409)
+ assert.equal(h.pennyCalls.length,3,'an uncertain external write is never replayed')
+ assert.ok(JSON.parse(h.pennyCalls[2].body).requesterId,'subsequent tickets reuse the mapped Penny requester')
+ await app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${records[0].visitor.contactId}/erase`,{token:h.token,body:{}})
+ assert.equal((await app.sql('SELECT * FROM feedback_penny_requesters WHERE contact_id=?',records[0].visitor.contactId)).length,0)
+ assert.equal((await app.sql('SELECT * FROM feedback_handoffs WHERE source_id IN (?,?)',sources[0].id,extra.id)).length,0)
+ assert.equal((await h.snapshot(records[1])).data[0].handoff_state,'accepted')
+ await h.call('/penny-connection',{revoke:true},{method:'PUT'})
+ assert.equal((await app.call(h.base+h.root(records[1])+`/sources/${sources[1].id}/handoff-preview`,{token:h.token})).status,409)
 }finally{await h.close()}}

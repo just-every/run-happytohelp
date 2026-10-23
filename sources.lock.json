@@ -11804,7 +11804,7 @@
       "executable": false
     },
     "tests/journeys/reports-browser.mjs": {
-      "sha256": "f3e01025c4521cb4d95c73ef55bd0a2706d3c4042c91878aabe0ad75a383b38f",
+      "sha256": "ea7563273f5c384c4096551023fddb93b2c5eab0f40c40310797c4bd0bc790d4",
       "executable": false
     },
     "tests/journeys/reports.mjs": {

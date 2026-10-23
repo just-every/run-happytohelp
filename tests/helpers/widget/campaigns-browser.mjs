@@ -37,6 +37,9 @@ export async function campaignsBrowser({browser,page,origin,projectId,owner,evid
    const card=visitor.getByRole('region',{name:'Help before you ask'});
    try{
     await visitor.goto(site+'/checkout');
+    const launcher=visitor.getByRole('button',{name:'Open chat',exact:true}).first();
+    await launcher.focus();await visitor.locator('.happytohelp-launcher-tip').waitFor({state:'visible'});
+    assert.equal(await visitor.locator('.happytohelp-launcher-tip').innerText(),'Open chat');
     await visitor.getByRole('button',{name:'Open chat',exact:true}).first().click();
     await visitor.getByRole('button',{name:'No thanks',exact:true}).click();
     await visitor.getByRole('button',{name:'Close chat',exact:true}).first().click();
@@ -79,5 +82,5 @@ export async function campaignsBrowser({browser,page,origin,projectId,owner,evid
    const {id,revision,...config}=campaign;
    await call(endpoint+'/'+id,{...config,revision,enabled:false},'PUT');
   }
- }finally{await new Promise(done=>host.close(done));}
+ }catch(error){await page.screenshot({path:join(evidenceDir,'campaign-failure.png'),fullPage:true});throw error;}finally{await new Promise(done=>host.close(done));}
 }

@@ -78,8 +78,9 @@ export default function Button(props) {
     if(transitioning) classes.push("happytohelp-button-transitioning");
 
     return (
+        <>
         <button type="button" className={classes.join(" ")} onMouseOver={props.onMouseOver} onClick={props.onClick}
-                data-h2h-tip={props.open ? 'Close chat' : 'Open chat'} aria-label={props.open ? 'Close chat' : 'Open chat'} aria-expanded={props.open}
+                aria-describedby="h2h-launcher-tooltip" aria-label={props.open ? 'Close chat' : 'Open chat'} aria-expanded={props.open}
                 style={ props.open ? context.theme.button.open : context.theme.button.closed }>
             {!props.open && (workspaceBrand
                 ? <WorkspaceBrandAvatar brand={workspaceBrand} />
@@ -89,5 +90,7 @@ export default function Button(props) {
             <FontAwesomeIcon icon={fasComment} flip="horizontal" className="happytohelp-show-closed" />
             <FontAwesomeIcon icon={falTimes} className="happytohelp-show-opened" />
         </button>
+        <span id="h2h-launcher-tooltip" role="tooltip" className="happytohelp-launcher-tip">{props.open ? 'Close chat' : 'Open chat'}</span>
+        </>
     );
 };

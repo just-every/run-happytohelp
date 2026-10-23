@@ -6880,7 +6880,7 @@
       "executable": false
     },
     "src/modules/widget/css/CampaignOffer.css": {
-      "sha256": "7ef4b5b3207b6e81d2fd3d93ccf45fa37c9de559d8b0868a8b6b4fe403af4167",
+      "sha256": "cb8485b8493e5a9eaed70781eba50ecd238e8fea223d325175828bf7d2840dab",
       "executable": false
     },
     "src/modules/widget/css/ChatHeader.css": {
@@ -7080,7 +7080,7 @@
       "executable": false
     },
     "src/modules/widget/js/Button.jsx": {
-      "sha256": "fb3c6e22f087111ed9eb69dfb2bdea97ddd516044f93969c14825b7a457ba8c7",
+      "sha256": "6e8b09230958fbea859cd3c422e3b0250bd794f917c3fea2d357c818fe805d65",
       "executable": false
     },
     "src/modules/widget/js/CampaignOffer.jsx": {
@@ -8392,7 +8392,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/widget-settings/CampaignSettings.jsx": {
-      "sha256": "fddcc752496dcd66844ffc47553e26f5ba6427aa6385b750653ac1cc05efa233",
+      "sha256": "f6c118518bedc6df6887b788d7779a65f752c0c220df0d963c03224e35cf4a18",
       "executable": false
     },
     "src/ui/dashboard/components/widget-settings/code/aiIntegrationBrief.jsx": {
@@ -11568,7 +11568,7 @@
       "executable": false
     },
     "tests/helpers/widget/campaigns-browser.mjs": {
-      "sha256": "3cfb055724e8f3cb37f24df6c4d3c57bf2518b27af0dee0516f77855df293c15",
+      "sha256": "5adc80aedbbdfbe29472d43b08a8d3ee69acdfd19f6d8c749a40abcddd7bff84",
       "executable": false
     },
     "tests/helpers/widget/campaigns.mjs": {

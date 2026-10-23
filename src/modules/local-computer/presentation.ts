@@ -1,7 +1,9 @@
+import {timeAuthority} from './time-authority';
 import {present} from './contracts';
 export async function presentJob(db:D1Database,row:any){
  if(!row)return row;
  const value=present(row);
+ const authority=await timeAuthority(db,row.id);value.authority=authority?{...authority,expired:authority.expires_at<=Date.now()}:null;
  const events=await db.prepare('SELECT event_id,kind,payload,created_at FROM local_events WHERE job_id=? ORDER BY created_at').bind(row.id).all();
  value.progress=events.results.filter(e=>e.kind==='progress').map(e=>({id:e.event_id,created_at:e.created_at,...JSON.parse(String(e.payload))}));
  value.input_messages=events.results.filter(e=>e.kind==='input').map(e=>({id:e.event_id,created_at:e.created_at,...JSON.parse(String(e.payload))}));

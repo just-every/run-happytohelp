@@ -405,3 +405,13 @@ task yourself.
   be read by other users on this computer. Make it readable only by you.
 - **A task "has an uncertain in-flight local runtime"**: the AI process stopped
   mid-task. Cancel the task in HappyToHelp before delegating a replacement.
+
+
+Task time authority is selected by the operator (1–15 minutes, including queue
+time). The server records the named grant and never renews it on reconnect,
+heartbeat or additional input. The direct runner requests a stop at the recorded
+deadline and drops withdrawn work rather than replaying it. Expiry cannot prove
+that a customer system or child process stopped, and never asserts recovery or
+cancellation of an unknown external effect. A new task needs a new approval.
+Mapped folders remain launch locations, not filesystem or production boundaries;
+this deadline does not enforce data access, allowed production operations or fees.

@@ -194,3 +194,56 @@ text, and shares conservative durable delivery. Local recorded responses do not
 establish live Slack acceptance: **live Slack: not-supplied**.
 
 Slack posts one durable notification for a new native conversation once its first visitor message is committed. The notification includes up to 500 characters of that native visitor message, escaped through Base's Slack renderer. Empty widget conversations wait for that context. Erasure suppresses pending delivery and removes retained payloads; it cannot remove messages already accepted by Slack.
+
+
+## Managed MCP tools
+
+Connect a Streamable HTTP MCP client to `/api/v1/mcp` with a workspace bearer
+token. This stateless endpoint accepts JSON-RPC over POST, with protocol versions
+`2025-03-26` and `2025-06-18`; it uses no cookies, browser session, SSE stream or
+server session ID. A newer client proposal negotiates down to `2025-06-18`.
+Initialize, then use `tools/list` and `tools/call`. The catalog
+shows only tools the current token scopes permit. Revocation and expiry apply to
+every request, including discovery. Tool results carry native JSON in a text
+content block; a native refusal has `isError: true`. Authentication failures use
+HTTP 401 and the normal API error body.
+
+Read tools are `list_conversations`, `get_conversation`, `list_messages`,
+`list_contacts` and `list_articles`. Lists accept native `limit`/`cursor` paging.
+Conversation lists also accept `status`, `updated_since` and `tag`.
+`get_conversation` and `list_messages` require `id`. The `reply` tool requires
+`messages:write`, `id`, `localId`, `content`, `expectedRevision` and, when present,
+`expectedLastMessageId`. Read the current frontier first and retain the exact
+command when reconciling an uncertain request. `resolve_conversation` requires
+`conversations:write` and `id`. Tool calls use the same native route guards,
+erasure fences and idempotency as REST. They cannot select another workspace or
+an arbitrary URL. A tool call consumes both an MCP authentication request and a
+native operation against the per-token rate limit.
+
+## Zapier Platform connector
+
+`connectors/zapier/index.mjs` exports an app definition for an owner-controlled
+Zapier Platform project using platform version 17.0.0. Use it as the project's
+entry export, install the matching Zapier Platform CLI/core in that project,
+validate and deploy it there, then authorize the HTTPS HappyToHelp origin and a
+workspace token in Zapier's private connection fields. Never put a token in the
+definition or a Zap field. No hosted Zapier catalog deployment or live-account
+qualification is claimed by this source definition.
+
+The connection test and **Updated Conversation** polling trigger need
+`conversations:read`. **Find Conversation** reads its current revision and last
+message ID. **Reply to Conversation** additionally needs `messages:write` and an
+explicit stable reply ID, content and current revision. Carry the last message ID
+from the read when present. Retries retain the same reply ID and command; a stale
+frontier is refused and must be reviewed before creating a new command.
+
+Polling pages at most 1000 current conversations per invocation. A larger result
+refuses the whole poll instead of silently truncating it; use native signed
+webhooks for larger workspaces. Poll IDs include the conversation's update time,
+revision and status, while `conversation_id` remains its native ID for actions.
+This trigger reports current state rather than an event-history replay. Workspace
+scope, erasure and token revocation apply on every page and action.
+
+Help Scout export ingestion remains the reviewed Move in path. Continuous Inbox
+API/webhook synchronization, its reconnect cursors and erased-identity replay
+proof are not implemented by these connectors.

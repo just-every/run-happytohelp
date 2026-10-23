@@ -56,3 +56,39 @@ conversation. Each effect is swept independently, so one failing row cannot abor
 recoveries after it. Legacy imports use the same vocabulary: started delegations arrive
 `revoked`/`authority_revoked`, queued ones `cancelled`/`held`. Tests inject a post-delivery/pre-note failure and
 prove one message plus one note after recovery. Verification: node tests/journeys/delegation-computers.mjs.
+
+A new customer message invalidates earlier local reply evidence. Even when a
+caller supplies the current composer revision, both draft adoption and final
+message admission refuse the older proposal. Internal notes and teammate edits
+do not invalidate it. A later customer recurrence reopens the original solved
+thread with its accountable owner; the packaged-connector journey restarts the
+application, reproduces the recurrence with a fresh read-only investigation and
+proves that neither the earlier repair nor its reply is replayed automatically.
+These disposable-system observations do not qualify a live customer environment
+or enforce production environment, operation, data and spending limits required by PUSH-001.
+The fixture reads the affected storefront independently of its setting: a successful
+setting write with a still-failing customer path leaves the observation needing
+operator input, the conversation open and owned, and sends no recovery reply.
+Another customer’s healthy storefront cannot substitute for that observation.
+
+
+New tasks carry an immutable time grant in `local_events` (`authority`): the
+current operator's ID, grant time and deadline, with an explicit 1–15 minute
+limit (15 by default). Queue time counts. Request replay, claim replay, heartbeat
+and additional input never renew it. A separately approved follow-up receives a
+new named grant. Expired queued tasks are cancelled without execution; expired
+started work is withdrawn as `revoked` / `authority_expired`, with its local
+outcome unconfirmed. Claim transitions, context/progress/result/upload doors,
+draft adoption and final message admission enforce the deadline. Pending result
+effects are blocked after expiry. The packaged direct connector requests a stop
+at its deadline even without a successful heartbeat; this does not establish that
+an external effect or descendant process stopped. Desktop MCP sessions retain
+that same unconfirmed-outcome boundary. Historical jobs without a recorded time
+grant remain historical authority; they are not qualified bounded repairs.
+
+The time grant does not sandbox a filesystem, restrict a production account's
+operations or data, or meter provider spending. Those limits need a separately
+enforced customer-controlled environment and credential boundary before PUSH-001
+can be qualified. Tests: `tests/journeys/delegation.mjs`, “named task time grants
+survive restart, never renew on replay, prevent expired queue claims and late
+publication, and stop the owned connector with running outcomes unconfirmed”.

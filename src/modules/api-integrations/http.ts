@@ -4,26 +4,27 @@ import type {AppEnv} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
 import {enforceRateLimits} from '../../platform/rate-limits'
 import {tokens,verifiedToken,type ApiScope,type TokenAuthority} from '../../platform/integration-authority'
-export type ApiEnv={Bindings:AppEnv['Bindings'];Variables:{authority:TokenAuthority}}
+export type ApiEnv={Bindings:AppEnv['Bindings'];Variables:{authority:TokenAuthority;tokenScopes:string[]}}
 export function apiRouter(){const app=new Hono<ApiEnv>();app.onError((e,c)=>{
  const status=e instanceof HTTPException?e.status:500
  const codes:Record<number,string>={400:'invalid_request',401:'unauthorized',403:'insufficient_scope',404:'not_found',409:'conflict',429:'rate_limited',503:'unavailable'}
  if(status===429&&e instanceof HTTPException){const retry=e.getResponse().headers.get('Retry-After');if(retry)c.header('Retry-After',retry)}
  return c.json({error:{code:codes[status]||'internal_error',message:status===500?'Request failed':e.message||codes[status]||'Request refused'}},status)
  });app.notFound(c=>c.json({error:{code:'not_found',message:'Not found'}},404));return app}
-export const requireScope=(scope:ApiScope)=>async(c:any,next:()=>Promise<void>)=>{
+export const requireBearer=(scope?:ApiScope)=>async(c:any,next:()=>Promise<void>)=>{
  const auth=c.req.header('Authorization'),match=typeof auth==='string'?/^Bearer (int_[a-f0-9]{64})$/.exec(auth):null
  if(!match)throw new HTTPException(401,{message:'Valid bearer token required'})
  const hash=await hashToken(match[1]);const row=await c.env.DB.prepare('SELECT namespace,id FROM integration_tokens WHERE token_hash=?').bind(hash).first()
  if(!row)throw new HTTPException(401,{message:'Invalid or expired bearer token'})
  await enforceRateLimits(c.env,[['apiRequestsPerTokenMinute',row.id]])
- const service=tokens(c.env,row.namespace),context={requestId:crypto.randomUUID(),resource:scope}
- const credential=await service.authorize(match[1],[scope],context)
+ const service=tokens(c.env,row.namespace),context={requestId:crypto.randomUUID(),resource:scope||'mcp'}
+ const credential=await service.authorize(match[1],scope?[scope]:[],context)
  if(!credential){const live=await c.env.DB.prepare('SELECT 1 FROM integration_tokens WHERE token_hash=? AND revoked_at IS NULL AND (expires_at IS NULL OR expires_at>?)').bind(hash,Date.now()).first();throw new HTTPException(live?403:401,{message:live?'Token does not grant this scope':'Invalid or expired bearer token'})}
  const active=await c.env.DB.prepare("SELECT p.id FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)").bind(row.namespace).first()
  if(!active)throw new HTTPException(401,{message:'Invalid or expired bearer token'})
- c.set('authority',verifiedToken(row.namespace,credential.id,scope));c.header('Cache-Control','no-store');await next()
+ c.set('tokenScopes',credential.scopes);if(scope)c.set('authority',verifiedToken(row.namespace,credential.id,scope));c.header('Cache-Control','no-store');await next()
 }
+export const requireScope=(scope:ApiScope)=>requireBearer(scope)
 export function iso(row:any){if(!row)return row;return Object.fromEntries(Object.entries(row).map(([k,v])=>[k,typeof v==='number'&&/(?:_at|At)$/.test(k)?new Date(v).toISOString():v]))}
 export function page(query:Record<string,string>,binding:unknown){
  const size=query.limit===undefined?50:Number(query.limit);if(!Number.isInteger(size)||size<1||size>100)throw new HTTPException(400,{message:'Limit must be between 1 and 100'})

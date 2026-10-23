@@ -5,6 +5,7 @@ import { providerError, type Connection, type Issue, type IssueInput, type Ticke
 
 export type { Tracker, Provider, Connection, Issue } from './types'
 export { postSlack } from './slack'
+export { postTeams } from './teams'
 export { verifyWebhook, parseWebhook } from './webhooks'
 
 export async function createIssue(connection: Connection, input: IssueInput): Promise<Issue> {

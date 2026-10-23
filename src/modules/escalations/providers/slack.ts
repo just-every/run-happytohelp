@@ -3,10 +3,9 @@ import { providerError, record, text, type Connection } from './types'
 
 export async function postSlack(connection: Connection, input: { channel: string; body: string }): Promise<{ id: string; url: string }> {
   if (connection.provider !== 'slack' || !/^[A-Z0-9]+$/.test(input.channel)) throw providerError()
-  if (typeof input.body !== 'string' || !input.body.trim()) throw providerError()
-  const body = input.body.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  if (!validSlackBody(input.body)) throw providerError()
+  const body = escapeBody(input.body)
   // Slack otherwise truncates the selected context and can interpret mentions.
-  if (body.length > 40_000) throw providerError()
   const message = record(await request(connection, '/api/chat.postMessage', {
     channel: input.channel, text: body, mrkdwn: false, parse: 'none',
     link_names: false, unfurl_links: false, unfurl_media: false,
@@ -21,4 +20,9 @@ export async function postSlack(connection: Connection, input: { channel: string
   try { url = new URL(text(result.permalink)) } catch { throw providerError() }
   if (url.protocol !== 'https:' || !/^(?:[a-z0-9-]+\.)?slack\.com$/.test(url.hostname) || url.port || url.username || url.password) throw providerError()
   return { id, url: url.href }
+}
+
+const escapeBody = (body: string) => body.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+export function validSlackBody(body: string): boolean {
+  return typeof body === 'string' && !!body.trim() && escapeBody(body).length <= 40_000
 }

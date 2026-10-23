@@ -44,6 +44,13 @@ export async function rolesAuditJourney(){
   assert.ok((await app.first("SELECT count(*) n FROM audit_events WHERE action='permission.denied' AND actor_id=?",collaborator.actor.id)).n>=5)
   assert.equal((await call(`${P}/agents`,undefined,w.tokens.owner)).data.data.some(row=>row.id===collaborator.actor.id&&row.role==='operator'),true,'the collaborator joins on the agent base')
 
+  // Every internal knowledge read door rejects a notes-only seat, including search
+  // and article/source detail, rather than disclosing a restricted article body.
+  for(const path of ['articles','categories','datasets','search?q=private','datasets/private','datasets/private/pages','articles/private/history','articles/private/translations/es','imports/private','website-reader','import/zendesk','experience','analytics','conversations/conv-r/articles']){
+   const denied=await call(`/api/knowledge/${w.projectId}/${path}`,undefined,collaborator.token);
+   assert.equal(denied.status,403,path);assert.equal(denied.data.permission,'knowledge.edit',path);
+  }
+
   // While still an Agent, the agent connects an application that may edit and publish one article.
   await app.db.prepare("INSERT INTO knowledge_articles(id,project_id,slug,title,content,summary,status,updated_at) VALUES('art-r',?,'returns','Returns','Original','','draft',1)").bind(w.projectId).run()
   const browser=(path,{cookie,body}={})=>app.request(path,{method:body?'POST':'GET',raw:true,headers:{Cookie:'h2h_session='+cookie,...(body?{'Content-Type':'application/x-www-form-urlencoded',Origin:app.origin}:{})},body:body&&new URLSearchParams(body).toString()})
@@ -56,7 +63,12 @@ export async function rolesAuditJourney(){
   // Each edit names the audience it expects; one the grant may no longer read for is the one seen while it could.
   const audience=async status=>(await (await delegated('/audience?'+new URLSearchParams({target:article,operation:'happytohelp.article.update',intendedStatus:status}))).json()).audienceRevision
   const seen={draft:await audience('draft'),published:await audience('published')}
-  const edit=async(key,status)=>delegated('/effects',{operationKey:key,operation:'happytohelp.article.update',target:article,expectedRevision:(await (await delegated('/evidence?target='+article)).json()).revision,expectedAudienceRevision:await audience(status)??seen[status],content:{title:'Returns',content:'Edited '+key,summary:'',status}})
+  let lastSeenRevision
+  const edit=async(key,status)=>{
+   const read=await delegated('/evidence?target='+article)
+   if(read.ok)lastSeenRevision=(await read.json()).revision
+   return delegated('/effects',{operationKey:key,operation:'happytohelp.article.update',target:article,expectedRevision:lastSeenRevision,expectedAudienceRevision:await audience(status)??seen[status],content:{title:'Returns',content:'Edited '+key,summary:'',status}})
+  }
   assert.equal((await edit('agent-draft','draft')).status,200,'the Agent edits through the grant')
 
   // A custom role over Agent without publishing or exporting: the agent keeps replying but cannot publish.
@@ -101,6 +113,10 @@ export async function rolesAuditJourney(){
   assert.equal((await call(`${P}/roles/${created.data.data.id}`,undefined,w.tokens.owner,'DELETE')).status,409,'a role in use stays')
   // As a Collaborator the same grant edits nothing; each refusal is in the security log.
   assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:'collaborator'},w.tokens.owner,'PUT')).status,200)
+  for(const door of ['evidence','check','audience']){
+   const denied=await delegated('/'+door+'?'+new URLSearchParams({target:article}));assert.equal(denied.status,403,'collaborator cannot read private article through '+door);assert.equal((await denied.json()).error.code,'SCOPE_DENIED')
+  }
+  assert.ok(!(await(await delegated('/identity')).json()).scopes.includes('knowledge.article.read'),'the managed catalog cannot advertise withdrawn read authority')
   for(const status of ['draft','published'])assert.equal((await edit('collaborator-'+status,status)).status,403,status)
   assert.deepEqual(await app.first("SELECT status,content FROM knowledge_articles WHERE id='art-r'"),{status:'draft',content:'Edited narrowed-draft'})
   assert.ok((await app.first("SELECT count(*) n FROM audit_events WHERE action='permission.denied' AND actor_id=? AND target_type='grant'",w.users.operator)).n>=2)

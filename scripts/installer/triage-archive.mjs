@@ -1,3 +1,4 @@
+import {outboundArchiveUpgradeRow} from './outbound-archive.mjs';
 import {DatabaseSync} from 'node:sqlite';
 import {readFile,readdir} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -20,7 +21,7 @@ export async function beforeTriagePolicy(root,input){
  const db={prepare(sql){return {bind(...args){this.args=args;return this},async all(){return {results:scratch.prepare(sql).all(...(this.args??[]))}}}}};
  try{
   const names=(await readdir(join(root,'migrations'))).filter(n=>n.endsWith('.sql')&&!/^22[0-9]_/.test(n)).sort(),acceptedSchemas={};
-  const remember=async()=>{acceptedSchemas[await schemaIdentity(db,policy(result))]={upgradeRow:(_table,row)=>row}};
+  const remember=async()=>{acceptedSchemas[await schemaIdentity(db,policy(result))]={upgradeRow:outboundArchiveUpgradeRow}};
   for(const name of names){if(name>='230_'&&!Object.keys(acceptedSchemas).length)await remember();for(const sql of unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8')))scratch.exec(sql);if(name>='230_')await remember();}
   await remember();return {...result,acceptedSchemas};
  }finally{scratch.close()}

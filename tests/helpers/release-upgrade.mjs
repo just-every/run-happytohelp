@@ -76,6 +76,13 @@ async function upgrade(label) {
       assert.equal(column.dflt_value, null);
       assert.equal(ledger.prepare('SELECT count(*) AS count FROM activation_receipts WHERE observation_json IS NOT NULL').get().count, 0, '120 does not backfill prior observations');
     }
+    if (!applied.includes('243_outbound_ticket_configuration.sql') && headMigrations.files.includes('243_outbound_ticket_configuration.sql')) {
+      for (const [table,column] of [['conversations','request_form_id'],['operator_ticket_commands','service_notice_id']]) {
+        const definition=ledger.prepare(`PRAGMA table_info(${table})`).all().find(field=>field.name===column);
+        assert.equal(definition?.type,'TEXT');assert.equal(definition.notnull,0);assert.equal(definition.dflt_value,null);
+        assert.equal(ledger.prepare(`SELECT count(*) n FROM ${table} WHERE ${column} IS NOT NULL`).get().n,0,'243 adds only null cells to existing rows');
+      }
+    }
     ledger.close();
     const after = snapshot(database, before), afterFiles = await bucketSnapshot(join(state, 'v3/r2'));
     const {expected, added, exceptions} = expectedMigrationRows(before, after, headMigrations.files, beforeSchema);

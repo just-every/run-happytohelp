@@ -2,7 +2,7 @@ import React from 'react';
 import { Field } from '../forms';
 import { categories, label } from '../../../dashboard/components/tickets/ticket-model';
 
-const types = ['text', 'number', 'decimal', 'date', 'dropdown', 'multiselect', 'checkbox', 'regex'];
+const types = ['text', 'number', 'decimal', 'date', 'dropdown', 'multiselect', 'checkbox', 'regex', 'account_lookup'];
 export default function TicketSettingsForm({ kind, draft, setDraft, busy, onSubmit, onCancel, roles, agents }) {
     const change = (key, value) => setDraft(current => ({ ...current, [key]: value }));
     const rolePicker = (key, title) => <fieldset className="form-group"><legend className="form-label">{title}</legend>{roles.map(role => <label key={role.value} className="form-check"><input type="checkbox" className="form-check-input" checked={draft[key]?.includes(role.value) || false} onChange={event => change(key, event.target.checked ? [...(draft[key] || []), role.value] : draft[key].filter(value => value !== role.value))}/><span className="form-check-label">{role.label}</span></label>)}</fieldset>;

@@ -134,3 +134,28 @@ and rule runs are cancelled on restore; a send that was already claimed remains
 uncertain. Pending SLA notifications are stopped. Their recorded identities stay
 so restoring a backup cannot replay the same queued action. Local clock overrides
 are excluded. Restoring does not establish delivery of any archived message.
+
+
+## Review a stopped workflow run
+
+An owner or admin with settings permission can review a failed, not-delivered or
+uncertain run through `POST /api/dashboard/projects/:projectId/workflow-runs/:runId/reconcile`.
+Inspect the current run first, then submit its `expected_updated_at`, a `note`
+(up to 2,000 characters) and an evidence `reference` (up to 500 characters).
+The guarded command records who reviewed it and cancels its remaining actions.
+It never sends, retries or resumes work, and it preserves every existing provider
+outcome, including uncertainty. A receipt or review note does not itself prove
+that a customer received a message. Repeated or stale reviews are refused.
+The review stays in the portable audit store under its existing custody rules.
+
+A named group notification is limited to the ticket's current group while the
+ticket is unassigned. It uses each current member's group preferences; followers
+use their own preferences. A group from another workspace is refused. Changing
+the group or membership before delivery cancels the old authority. Customer and
+follower notices use the ticket audience and cannot be redirected to a named
+person. Terminal delivery claims remain terminal across restart.
+
+Workflow and SLA inbox notices remain available when email delivery is not
+configured. Their frozen delivery record says email was not configured; installing
+a mail provider later does not replay that action. The workflow run or SLA alert
+keeps the explicit not-delivered email outcome for review.

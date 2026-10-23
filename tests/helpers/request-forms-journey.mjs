@@ -15,16 +15,139 @@ export async function requestFormsJourney(){
   const forbidden=await app.call(admin,{...owner,body:{...f.config,fields:[{fieldId:internal.id}]},status:400});assert.match(forbidden.data.error,/internal/)
   assert.equal((await app.call(admin,{token:f.workspace.tokens.operator,body:f.config})).status,403)
   assert.equal((await app.call(`${api}/${form.id}`,{headers:{Cookie:'h2h_portal=not-a-proof'}})).status,200)
+  // Configure both consumers through the same settings doors leads use. The
+  // selected form and typed answer must survive admission into routing and SLA.
+  const dashboard=`/api/dashboard/projects/${p}`,manage=async(path,body)=>{const result=await app.ok(dashboard+path,{...owner,body});return result.data??result}
+  const calendar=await manage('/workflow-calendars',{name:'Always available',timezone:'America/New_York',weekly:Array.from({length:7},(_,day)=>({day,start:'00:00',end:'24:00'})),holidays:'none',closures:[]})
+  const policyInput={name:'Refund form response',calendar_id:calendar.id,conditions:{form_ids:[form.id],fields:{[reason.id]:'refund'}},first_response_minutes:60}
+  const policy=await manage('/sla-policies',policyInput)
+  for(const conditions of [{fields:{[reason.id]:42}},{fields:{[internal.id]:7}},{fields:{unknown:'refund'}},{form_ids:[f.foreign.projectId]}]){
+   assert.equal((await app.call(dashboard+'/sla-policies',{...owner,body:{...policyInput,conditions}})).status,400,'invalid, restricted and foreign references cannot select a policy')
+  }
+  await app.ok(dashboard+'/routing-operators',{...owner,method:'PUT',body:{operators:[{user_id:f.workspace.users.operator,available:true,capacity:10,skills:[]}]}})
+  const routing=await manage('/workflow-rules',{name:'Route refund form',kind:'routing',position:0,conditions:{all:[{field:'form_id',op:'eq',value:form.id},{field:`field:${reason.id}`,op:'eq',value:'refund'}]},actions:[],routing:{strategy:'named',user_id:f.workspace.users.operator,skills:[]}})
+  await manage(`/workflow-rules/${routing.rule.id}/publish`,{})
   const customer=await signin('rosa@example.com',`/help/${p}/requests/${form.id}`)
   assert.equal(customer.location,`/help/${p}/requests/${form.id}`);assert.equal((await app.call(customer.path)).status,400)
-  const created=await app.call(path,{...customer,body:{...valid,locale:'es'},status:201}),id=created.data.ticket.id;assert.equal(created.data.ticket.status,'open')
+  // A signed customer may name a CC only under the same independent proof
+  // policy as inbound mail. An arbitrary typed address never earns a send.
+  const cc='verified-cc@example.test'
+  await app.ok('/api/identity/widget/session',{body:{widgetKey:f.workspace.widgetKey,identifier:cc,email:cc,contact_hash:await f.app.first('SELECT verification_secret FROM projects WHERE id=?',p).then(async row=>{const {createHmac}=await import('node:crypto');return createHmac('sha256',row.verification_secret).update(cc).digest('hex')})},headers:{Origin:f.workspace.allowedOrigin}})
+  assert.equal((await app.call(path,{...customer,body:{...valid,localId:'unproven-cc',cc:['unknown@example.test']},status:422})).data.field,'cc')
+  const withCc={...valid,cc:[cc]}
+  const created=await app.call(path,{...customer,body:{...withCc,locale:'es'},status:201}),id=created.data.ticket.id;assert.equal(created.data.ticket.status,'open')
   const values=await app.sql('SELECT field_id,value_json FROM ticket_field_values WHERE conversation_id=?',id);assert.deepEqual(Object.fromEntries(values.map(v=>[v.field_id,JSON.parse(v.value_json)])),valid.fields)
-  assert.equal((await app.call(path,{...customer,body:valid,status:200})).data.ticket.id,id)
-  assert.equal((await app.call(path,{...customer,body:{...valid,message:'Changed command'},status:409})).status,409)
+  assert.equal((await app.call(path,{...customer,body:withCc,status:200})).data.ticket.id,id)
+  assert.equal((await app.call(path,{...customer,body:{...withCc,message:'Changed command'},status:409})).status,409)
   assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,before.n+1)
+  const acknowledgments=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&[].concat(mail.to).includes('rosa@example.com'))
+  assert.equal(acknowledgments().length,1,'a verified request-form submission acknowledges the requester once, including on exact-command replay')
+  assert.equal(acknowledgments()[0].headers['X-Auto-Response-Suppress'],'All')
+  const ccAcks=f.mail.filter(mail=>mail.subject?.includes('received')&&[].concat(mail.to).includes(cc))
+  assert.equal(ccAcks.length,1,'the independently proven CC receives exactly one acknowledgment on form replay')
+  assert.equal(ccAcks[0].headers['X-Auto-Response-Suppress'],'All')
+  assert.equal((await app.call(path,{...customer,body:{...withCc,cc:[]},status:409})).status,409,'CCs belong to the immutable submission intent')
+  const ticket=(await app.ok(`${dashboard}/conversations/${id}/ticket`,owner)).data
+  assert.equal(ticket.assigned_to,f.workspace.users.operator,'the selected form and typed field route the ticket')
+  const sla=(await app.ok(`${dashboard}/conversations/${id}/sla`,owner)).data
+  assert.equal(sla.policy.id,policy.id,'the selected form and typed field select its SLA')
+  const response=sla.clocks.find(clock=>clock.metric==='first_response')
+  assert.equal(response.due_at,response.started_at+60*60000,'the form request has a one-hour response commitment')
+  const question=await app.ok(path,{...customer,body:{...valid,localId:'question-not-refund',fields:{[reason.id]:'question'}}}),questionId=question.ticket.id
+  assert.equal((await app.ok(`${dashboard}/conversations/${questionId}/ticket`,owner)).data.assigned_to,null,'a nonmatching answer does not route')
+  assert.equal((await app.ok(`${dashboard}/conversations/${questionId}/sla`,owner)).data.policy,null,'a nonmatching answer does not select the refund SLA')
+  const technical=(await app.ok(admin,{...owner,body:{...f.config,title:'Technical',translations:{},fields:f.config.fields}})).data
+  const technicalTicket=await app.ok(`${api}/${technical.id}/submissions`,{...customer,body:{...valid,localId:'technical-refund',fields:valid.fields}})
+  assert.equal((await app.ok(`${dashboard}/conversations/${technicalTicket.ticket.id}/sla`,owner)).data.policy,null,'a matching answer on another form does not select the refund SLA')
+  assert.equal((await app.ok(`${dashboard}/conversations/${technicalTicket.ticket.id}/ticket`,owner)).data.assigned_to,null,'another form does not use the refund route')
+  const techPolicy=await manage('/sla-policies',{...policyInput,name:'Technical form response',conditions:{form_ids:[technical.id],fields:{[reason.id]:'refund'}},first_response_minutes:30})
+  await app.ok(dashboard+'/routing-operators',{...owner,method:'PUT',body:{operators:[{user_id:f.workspace.users.operator,available:true,capacity:10,skills:[]},{user_id:f.workspace.users.owner,available:true,capacity:10,skills:[]}]}})
+  const techRoute=await manage('/workflow-rules',{name:'Route technical form',kind:'routing',position:0,conditions:{all:[{field:'form_id',op:'eq',value:technical.id},{field:`field:${reason.id}`,op:'eq',value:'refund'}]},actions:[],routing:{strategy:'named',user_id:f.workspace.users.owner,skills:[]}})
+  await manage(`/workflow-rules/${techRoute.rule.id}/publish`,{})
+  assert.equal((await app.call(`${api}/${technical.id}/submissions`,{...customer,body:{...valid,localId:'technical-missing-condition',fields:{[reason.id]:'refund'}},status:422})).data.field,order.id)
+  const routedTechnical=(await app.ok(`${api}/${technical.id}/submissions`,{...customer,body:{...valid,localId:'technical-routed'}})).ticket
+  assert.equal((await app.ok(`${dashboard}/conversations/${routedTechnical.id}/ticket`,owner)).data.assigned_to,f.workspace.users.owner,'the signed-in Technical form routes on its typed conditional answer')
+  assert.equal((await app.ok(`${dashboard}/conversations/${routedTechnical.id}/sla`,owner)).data.policy.id,techPolicy.id,'the Technical form also selects its own SLA policy')
+  await app.configure({})
+  assert.equal((await app.ok(`${dashboard}/conversations/${id}/sla`,owner)).data.policy.id,policy.id,'form-based commitments survive worker restart')
   assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='form.submitted'",p))
   const stale=await app.call(`${admin}/${form.id}`,{...owner,method:'PUT',body:{...form,title:'Order help'}});assert.equal(stale.status,200)
+  const versions=await app.ok(`${admin}/${form.id}/versions`,owner)
+  assert.equal(versions.data.length,2,'create and update have immutable definition versions')
+  assert.equal(versions.data[0].config.title,'Order help');assert.equal(versions.data[0].previousVersion,form.updatedAt)
+  assert.equal(versions.data[1].config.title,f.config.title)
+  assert.equal(versions.data[1].fields.find(field=>field.id===order.id).type,'regex','a version retains the field validator in force when saved')
+  assert.equal((await app.call(`${admin}/${form.id}/versions`,{token:f.workspace.tokens.operator})).status,403)
+  const originalValues=Object.fromEntries((await app.sql('SELECT field_id,value_json FROM ticket_field_values WHERE conversation_id=?',id)).map(value=>[value.field_id,JSON.parse(value.value_json)]))
+  assert.deepEqual(originalValues,valid.fields,'editing a form preserves the typed values of existing requests')
+  await app.configure({})
+  assert.deepEqual((await app.ok(`${admin}/${form.id}/versions`,owner)).data,versions.data,'version history survives a Worker restart')
+
   assert.equal((await app.call(`${admin}/${form.id}`,{...owner,method:'PUT',body:form})).status,409)
+  assert.deepEqual((await app.ok(`${admin}/${form.id}/versions`,owner)).data,versions.data,'refused stale updates cannot create history')
+  assert.equal((await app.call(`${admin.replace(p,f.foreign.projectId)}/${form.id}/versions`,{token:f.foreign.tokens.owner})).data.data.length,0,'another workspace cannot read a form history')
+  const fieldPath=`/api/management/projects/${p}/ticket-fields/${order.id}`
+  await app.ok(fieldPath,{...owner,method:'PATCH',body:{name:'Order reference'}})
+  const fieldVersions=(await app.ok(fieldPath+'/versions',owner)).data
+  assert.equal(fieldVersions.length,2);assert.equal(fieldVersions[0].definition.name,'Order reference');assert.equal(fieldVersions[1].definition.name,'Order number')
+  assert.equal(fieldVersions[0].previousVersion,fieldVersions[1].version)
+  assert.equal((await app.call(fieldPath+'/versions',{token:f.workspace.tokens.operator})).status,403)
+  assert.equal((await app.call(`/api/management/projects/${p}/ticket-fields/${internal.id}/versions`,{token:f.workspace.tokens.admin})).status,403,'settings authority does not reveal a field restricted to the owner')
+  assert.equal((await app.call(fieldPath,{...owner,method:'DELETE'})).status,400,'deleting a used field cannot erase old ticket values')
+  assert.deepEqual((await app.ok(fieldPath+'/versions',owner)).data,fieldVersions,'refused deletes add no field version')
+  assert.deepEqual(Object.fromEntries((await app.sql('SELECT field_id,value_json FROM ticket_field_values WHERE conversation_id=?',id)).map(row=>[row.field_id,JSON.parse(row.value_json)])),valid.fields)
+  await app.configure({})
+  assert.deepEqual((await app.ok(fieldPath+'/versions',owner)).data,fieldVersions,'field versions survive restart')
+  const late=(await app.ok(`/api/management/projects/${p}/ticket-fields`,{...owner,body:{name:'Late request detail',type:'text'}})).data
+  const raced=await app.call(`/api/management/projects/${p}/ticket-fields/${late.id}`,{...owner,method:'DELETE',headers:{'x-test-statement':'INSERT INTO audit_events','x-test-before-statement':`INSERT INTO ticket_field_values(project_id,conversation_id,field_id,value_json) VALUES('${p}','${id}','${late.id}','"synthetic-happytohelp-6"')`}})
+  assert.equal(raced.status,409,'a value arriving after the deletion preflight still protects the field')
+  const afterRace=(await app.ok(`${dashboard}/conversations/${id}/ticket`,owner)).data
+  assert.equal(afterRace.fields[late.id],'synthetic-happytohelp-6')
+  assert.equal((await app.ok(`/api/management/projects/${p}/ticket-fields/${late.id}/versions`,owner)).data.length,1,'a refused deletion adds no version')
+  await app.ok(fieldPath,{...owner,method:'PATCH',body:{read_roles:['owner'],write_roles:['owner']}})
+  assert.equal((await app.call(`${admin}/${form.id}/versions`,{token:f.workspace.tokens.admin})).status,403,'form history honors a later field-read restriction')
+  assert.equal((await app.ok(`${admin}/${form.id}/versions`,owner)).data.length,2,'the permitted owner retains access to the same history')
+  await app.ok(fieldPath,{...owner,method:'PATCH',body:{read_roles:[],write_roles:[]}})
+
+
+  // Account lookups list only the verified customer's current memberships.
+  const accountField=(await app.ok(`/api/management/projects/${p}/ticket-fields`,{...owner,body:{name:'Support account',type:'account_lookup'}})).data
+  const accountForm=(await app.ok(admin,{...owner,body:{...f.config,title:'Account support',fields:[{fieldId:accountField.id,required:true}],translations:{es:{fields:{[accountField.id]:{label:'Cuenta'}}}}}})).data
+  const customerId=(await app.first('SELECT contact_id FROM portal_identities WHERE project_id=? AND email=?',p,'rosa@example.com')).contact_id
+  const accounts=`/api/management/projects/${p}/companies`
+  const account=(await app.ok(accounts,{...owner,body:{name:'Rosa Books',domains:[],portalCompanyView:false}})).company
+  const other=(await app.ok(accounts,{...owner,body:{name:'Other customer account',domains:[]}})).company
+  await app.ok(`${accounts}/${account.id}/members/${customerId}`,{...owner,method:'PUT'})
+  const lookup=`${api}/${accountForm.id}/lookups/${accountField.id}`
+  assert.equal((await app.call(lookup)).status,401,'anonymous callers cannot enumerate accounts')
+  assert.deepEqual((await app.ok(lookup,customer)).data,[{value:account.id,label:'Rosa Books'}])
+  assert.equal((await app.ok(lookup+'?query=Other',customer)).data.length,0,'search cannot discover another customer account')
+  const accountPath=`${api}/${accountForm.id}/submissions`,accountInput={...valid,localId:'synthetic-happytohelp-70',fields:{[accountField.id]:account.id}}
+  assert.equal((await app.call(accountPath,{...customer,body:{...accountInput,fields:{[accountField.id]:other.id}},status:422})).data.field,accountField.id,'a forged account id is refused by the shared submission door')
+  const accountTicket=(await app.ok(accountPath,{...customer,body:accountInput})).ticket
+  assert.equal((await app.ok(`${dashboard}/conversations/${accountTicket.id}/ticket`,owner)).data.fields[accountField.id],account.id,'lookup values retain typed account references')
+  const fieldValues=()=>app.first('SELECT value_json FROM ticket_field_values WHERE conversation_id=? AND field_id=?',accountTicket.id,accountField.id)
+  await app.ok(`${accounts}/${account.id}`,{...owner,method:'PATCH',body:{name:'Rosa Books renamed'}})
+  assert.equal((await fieldValues()).value_json,JSON.stringify(account.id),'renaming the lookup target preserves the ticket reference')
+  await app.ok(`${accounts}/${account.id}/members/${customerId}`,{...owner,method:'DELETE'})
+  assert.deepEqual((await app.ok(lookup,customer)).data,[],'revocation removes lookup choices immediately')
+  assert.equal((await app.call(accountPath,{...customer,body:{...accountInput,localId:'synthetic-happytohelp-71'},status:422})).data.field,accountField.id)
+  await app.ok(`${accounts}/${account.id}/members/${customerId}`,{...owner,method:'PUT'})
+  const race=await app.call(accountPath,{...customer,body:{...accountInput,localId:'synthetic-happytohelp-72'},headers:{...customer.headers,'x-test-statement':'INSERT OR IGNORE INTO conversations','x-test-before-statement':`DELETE FROM contact_companies WHERE project_id='${p}' AND company_id='${account.id}' AND contact_id='${customerId}'`}})
+  assert.equal(race.status,409,'membership lost during admission cannot create a ticket')
+  assert.equal((await app.first('SELECT count(*) n FROM request_form_submissions WHERE project_id=? AND local_id=?',p,'synthetic-happytohelp-72')).n,0)
+  assert.equal((await fieldValues()).value_json,JSON.stringify(account.id),'revocation does not erase a historical reference')
+  const merge=(await app.ok(`${accounts}/${other.id}/merge/preview`,{...owner,body:{sourceId:account.id}})).preview
+  await app.ok(`${accounts}/${other.id}/merge`,{...owner,body:{sourceId:account.id,preview:merge.token}})
+  const oldTicket=(await app.ok(`${dashboard}/conversations/${accountTicket.id}/ticket`,owner)).data
+  await app.ok(`${dashboard}/conversations/${accountTicket.id}/ticket`,{...owner,method:'PATCH',body:{subject:'A later support update',fields:{[accountField.id]:account.id},expected_version:oldTicket.ticket_version}})
+  assert.equal((await fieldValues()).value_json,JSON.stringify(account.id),'a merged account remains a retained reference when unrelated ticket details are saved')
+  await app.ok(`/api/management/projects/${p}/ticket-fields/${accountField.id}`,{...owner,method:'PATCH',body:{read_roles:['owner'],write_roles:['owner']}})
+  assert.equal((await app.call(lookup,customer)).status,404,'later field restrictions hide the entire public form and its lookup')
+  const restricted=(await app.ok(`${dashboard}/conversations/${accountTicket.id}/ticket`,{token:f.workspace.tokens.operator})).data
+  assert.ok(!Object.hasOwn(restricted.fields,accountField.id),'the agent cannot read an owner-restricted lookup field')
+  assert.equal((await app.call(`${dashboard}/conversations/${accountTicket.id}/ticket`,{token:f.workspace.tokens.operator,method:'PATCH',body:{fields:{[accountField.id]:null},expected_version:restricted.ticket_version}})).status,403,'the agent cannot edit that same restricted field')
+
   await app.configure({FORMS_TURNSTILE_SECRET_KEY:undefined})
   assert.equal((await app.call(path,{body:{...valid,localId:'not-configured'},status:503})).data.code,'verification_unavailable')
   // A verified mailbox can still use the portal when anonymous submissions are disabled.

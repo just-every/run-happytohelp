@@ -8,7 +8,7 @@ export async function completeEmailJourney(){
  const sent=[]
  const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'provider-fixture',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'gateway-fixture'},outbound:async request=>{
   if(new URL(request.url).hostname==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]})
-  assert.equal(new URL(request.url).hostname,'api.resend.com');sent.push(await request.json());return Response.json({id:'mail-'+sent.length})
+  assert.equal(new URL(request.url).hostname,'api.resend.com');const copy=await request.json();sent.push(copy);if(copy.text?.includes('synthetic-happytohelp-41')||copy.text?.includes('synthetic-happytohelp-62')&&[].concat(copy.to).includes('notice-fail@example.test'))return Response.json({error:'Recipient refused'},{status:422});return Response.json({id:'mail-'+sent.length})
  }})
  try{
   const workspace=await app.seedWorkspace('r6'),projectId=workspace.projectId,owner=workspace.tokens.owner,agent=workspace.tokens.operator,base=`/api/management/projects/${projectId}`,gate=body=>app.call('/api/integrations/email/inbound',{token:'gateway-fixture',body})
@@ -35,6 +35,16 @@ export async function completeEmailJourney(){
   assert.deepEqual(sent[0].cc,command.cc);assert.deepEqual(sent[0].bcc,command.bcc);assert.match(sent[0].from,/Parcel Support/)
   assert.ok(sent[0].headers['Message-ID']);assert.match(sent[0].subject,/\[H2H:/)
   assert.equal((await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:command})).conversation.id,ticket.conversation.id);assert.equal(sent.length,1)
+  // Losing create/reply authority after route entry must also fence the durable
+  // reservation, including its first email. The race is a real role write at D1.
+  const deniedCommand={...command,localId:'synthetic-happytohelp-4',requesterEmail:'denied@customer.example'}
+  const revoked=await app.call(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:deniedCommand,headers:{'x-test-statement':'INSERT OR IGNORE INTO conversations','x-test-before-statement':`INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES('${projectId}','${workspace.users.operator}','collaborator',1)`}})
+  assert.equal(revoked.status,409,JSON.stringify(revoked.data))
+  assert.equal((await app.first('SELECT count(*) n FROM operator_ticket_commands WHERE project_id=? AND local_id=?',projectId,deniedCommand.localId)).n,0)
+  assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=? AND subject=?',projectId,command.subject)).n,1,'revoked authority cannot create a second ticket')
+  assert.equal(sent.length,1,'revoked authority cannot send a first comment')
+  assert.equal((await app.call(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:command})).status,403,'replaying an existing command still requires current authority')
+  await app.db.prepare('DELETE FROM member_roles WHERE project_id=? AND user_id=?').bind(projectId,workspace.users.operator).run()
   const call=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{kind:'call',localId:'logged-call',requesterEmail:'maya@customer.example',subject:'Customer called about delivery',content:'Confirmed the replacement address over the phone.'}})
   assert.equal(call.conversation.channel,'phone');assert.equal(sent.length,1)
   assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='ticket.created' AND target_id=?",projectId,call.conversation.id))
@@ -102,6 +112,83 @@ export async function completeEmailJourney(){
   assert.ok(inbox.some(row=>row.id===call.conversation.id),'a logged call appears in the inbox')
   assert.ok(inbox.some(row=>row.id===newRecovery.conversationId),'a recovered private-note ticket appears in the inbox')
   await vendorReplies(app,{projectId,owner,gate})
+  // Selecting an existing requester never creates another contact. A refused
+  // first send stays visible and retrying its exact command never sends again.
+  const contactCount=(await app.first('SELECT count(*) n FROM contacts WHERE project_id=?',projectId)).n
+  const existingCommand={kind:'email',localId:'synthetic-happytohelp-40',requesterId:ticket.conversation.contact_id,mailboxId:mailbox.id,subject:'Replacement status',content:'synthetic-happytohelp-41: Your replacement status is ready.'}
+  const existing=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:existingCommand})
+  assert.equal(existing.conversation.contact_id,ticket.conversation.contact_id)
+  assert.equal(existing.conversation.requester_id,ticket.conversation.contact_id);assert.equal(existing.conversation.submitter_id,workspace.users.operator)
+  await app.until(async()=>(await app.ok(`/api/dashboard/projects/${projectId}/conversations/${existing.conversation.id}`,{token:agent})).data.last_message?.email_status?.state==='failed',{message:'refused outbound delivery recorded'})
+  const repeated=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:existingCommand})
+  assert.equal(repeated.conversation.id,existing.conversation.id)
+  assert.equal((await app.first('SELECT count(*) n FROM contacts WHERE project_id=?',projectId)).n,contactCount)
+  assert.equal(sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-41')).length,1)
+  // Configuration is admitted atomically before the first public message.
+  const field=(await app.ok(base+'/ticket-fields',{token:owner,body:{name:'Service category',type:'dropdown',options:['delivery','refund']}})).data
+  const form=(await app.ok(`/api/forms/projects/${projectId}/forms`,{token:owner,body:{title:'Service follow-up',enabled:true,fields:[{fieldId:field.id,required:true}]}})).data
+  const group=(await app.ok(base+'/ticket-groups',{token:owner,body:{name:'Service desk',members:[workspace.users.owner]}})).data
+  const configured={kind:'email',localId:'synthetic-happytohelp-50',requesterId:ticket.conversation.contact_id,mailboxId:mailbox.id,subject:'Internal service record',content:'Staff-only replacement details.',configuration:{brandId:projectId,formId:form.id,groupId:group.id,assigneeId:workspace.users.owner,fields:{[field.id]:'delivery'},internal:true}}
+  const beforeInternal=sent.length,internal=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:configured})
+  assert.equal(sent.length,beforeInternal,'an internal first comment sends nothing')
+  assert.equal(internal.conversation.request_form_id,form.id);assert.equal(internal.conversation.group_id,group.id);assert.equal(internal.conversation.assigned_to,workspace.users.owner)
+  assert.equal((await app.first('SELECT value_json FROM ticket_field_values WHERE conversation_id=? AND field_id=?',internal.conversation.id,field.id)).value_json,'"delivery"')
+  assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',internal.conversation.id)).n,0)
+  assert.ok(internal.note.content.includes('Staff-only'))
+  const noMailbox=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...configured,localId:'synthetic-happytohelp-52',mailboxId:undefined}})
+  assert.ok(noMailbox.note);assert.equal(sent.length,beforeInternal,'internal-only tickets need no connected mailbox')
+  const walkin=await app.ok(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...configured,kind:'call',localId:'synthetic-happytohelp-51',configuration:{...configured.configuration,channel:'walk_in'}}})
+  assert.equal(walkin.conversation.channel,'walk_in');assert.equal(sent.length,beforeInternal)
+  for(const configuration of [{...configured.configuration,brandId:'foreign'},{...configured.configuration,fields:{}},{...configured.configuration,assigneeId:workspace.users.operator}])assert.ok([400,422].includes((await app.call(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...configured,localId:crypto.randomUUID(),configuration}})).status))
+  // Three separately consenting customers get three independently tracked tickets.
+  const portalProofs=new Map()
+  const portal=async(email,updateEmails=true)=>{
+   await app.ok(`/api/portal/${projectId}/access/request`,{body:{email},headers:{Origin:'https://app.example'}})
+   const mail=sent.findLast(copy=>copy.subject==='Sign in to your support requests'&&[].concat(copy.to).includes(email)),url=new URL(mail.text.match(/https:\/\/app\.example\/api\/portal\/\S+/)[0]),response=await app.request(url.pathname+url.search),cookie=response.headers.get('set-cookie').split(';')[0]
+   await app.ok(`/api/portal/${projectId}/preferences`,{method:'PUT',headers:{Cookie:cookie,Origin:'https://app.example'},body:{locale:'en',surveyEmails:false,updateEmails}})
+   const id=(await app.first('SELECT contact_id FROM portal_identities WHERE project_id=? AND email=?',projectId,email)).contact_id;portalProofs.set(id,cookie);return id
+  }
+  const requesterIds=[]
+  for(const email of ['notice-one@example.test','notice-fail@example.test','notice-three@example.test'])requesterIds.push(await portal(email))
+  const optedOut=await portal('notice-out@example.test',false),noticeBase=`/api/dashboard/projects/${projectId}/service-notices`,noticeCommand={localId:'synthetic-happytohelp-60',purpose:'service',requesterIds:[...requesterIds,optedOut],ticket:{mailboxId:mailbox.id,subject:'Replacement delivery delay',content:'synthetic-happytohelp-62: Your existing replacement shipment is delayed.'}}
+  const notice=(await app.ok(noticeBase+'/preview',{token:agent,body:noticeCommand})).data,beforeNotice=sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length
+  assert.equal(beforeNotice,0,'preview sends nothing');assert.equal(notice.recipients.filter(r=>r.status==='ready').length,3);assert.equal(notice.recipients.find(r=>r.id===optedOut).status,'blocked')
+  assert.equal((await app.ok(noticeBase+'/preview',{token:agent,body:noticeCommand})).data.id,notice.id)
+  assert.equal((await app.call(noticeBase+'/preview',{token:agent,body:{...noticeCommand,ticket:{...noticeCommand.ticket,content:'Changed notice'}}})).status,409)
+  const applied=(await app.ok(noticeBase+'/'+notice.id+'/apply',{token:agent,body:{}})).data
+  assert.equal(new Set(applied.results.filter(r=>r.ticketId).map(r=>r.ticketId)).size,3)
+  await app.until(()=>sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length===3,{message:'three service notice delivery attempts'})
+  await app.until(async()=>(await app.first("SELECT count(*) n FROM email_deliveries WHERE id IN (SELECT 'message:'||id||':notification' FROM messages WHERE content LIKE 'synthetic-happytohelp-62:%') AND state IN ('sent','failed')")).n===3,{message:'service notice outcomes settled before restart'})
+  await app.configure({})
+  const retried=(await app.ok(noticeBase+'/'+notice.id+'/apply',{token:agent,body:{}})).data
+  assert.equal(retried.results.find(r=>r.requesterId===requesterIds[1]).state,'failed')
+  assert.equal(retried.results.filter(r=>r.state==='sent').length,2)
+  assert.equal(sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length,3,'retry after restart cannot resend a failed or successful notice')
+  const next=(await app.ok(noticeBase+'/preview',{token:agent,body:{...noticeCommand,localId:'synthetic-happytohelp-63',requesterIds:[requesterIds[0]]}})).data
+  const savePreference=updateEmails=>app.ok(`/api/portal/${projectId}/preferences`,{method:'PUT',headers:{Cookie:portalProofs.get(requesterIds[0]),Origin:'https://app.example'},body:{locale:'en',surveyEmails:false,updateEmails}})
+  await savePreference(false)
+  assert.equal((await app.ok(noticeBase+'/'+next.id+'/apply',{token:agent,body:{}})).data.results[0].state,'blocked','revocation after preview prevents creation')
+  await savePreference(true)
+  assert.equal((await app.ok(noticeBase+'/'+next.id+'/apply',{token:agent,body:{}})).data.results[0].state,'blocked','re-enabling consent does not revive an earlier preview; review is required again')
+  const limited=(await app.ok(noticeBase+'/preview',{token:agent,body:{...noticeCommand,localId:'synthetic-happytohelp-64',requesterIds:[requesterIds[2]]}})).data
+  await app.configure({RATE_LIMITS:JSON.stringify({conversationsPerProjectHour:1})})
+  assert.equal((await app.ok(noticeBase+'/'+limited.id+'/apply',{token:agent,body:{}})).data.results[0].state,'blocked','rate limits apply before a new service ticket')
+  await app.configure({RATE_LIMITS:undefined})
+  const raceCustomer=await portal('notice-race@example.test'),raceNotice=(await app.ok(noticeBase+'/preview',{token:agent,body:{...noticeCommand,localId:'synthetic-happytohelp-65',requesterIds:[raceCustomer]}})).data
+  const countBeforeRace=sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length
+  const raceResult=(await app.ok(noticeBase+'/'+raceNotice.id+'/apply',{token:agent,body:{},headers:{'x-test-statement':'INSERT INTO email_deliveries','x-test-before-statement':`UPDATE contacts SET metadata_json=json_set(metadata_json,'$.portal_notification_emails',0) WHERE id='${raceCustomer}'`}})).data
+  assert.equal(raceResult.results[0].state,'blocked','consent revoked at the sending claim prevents provider submission')
+  assert.equal(sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length,countBeforeRace)
+  assert.equal((await app.ok(noticeBase+'/'+raceNotice.id+'/apply',{token:agent,body:{}})).data.results[0].state,'blocked','refresh retains the known blocked outcome instead of calling it pending')
+  // Preview expiry fences only its first proactive send, not future support replies.
+  await app.db.prepare('UPDATE operator_service_notices SET created_at=1 WHERE id=?').bind(notice.id).run()
+  const normalTicket=retried.results.find(result=>result.requesterId===requesterIds[2]).ticketId,current=await app.first('SELECT revision,last_message_id FROM conversations WHERE id=?',normalTicket)
+  await app.ok(`/api/conversations/${normalTicket}/messages`,{token:agent,body:{localId:'synthetic-happytohelp-66',content:'A normal support follow-up after the preview expired.',expectedRevision:current.revision,expectedLastMessageId:current.last_message_id}})
+  await app.until(()=>sent.some(copy=>copy.text?.includes('A normal support follow-up after the preview expired.')),{message:'ordinary reply remains available'})
+  await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.phone','+12025550123') WHERE id=?").bind(ticket.conversation.contact_id).run()
+  for(const search of ['Maya','maya@customer.example','+12025550123'])assert.ok((await app.ok(`/api/dashboard/projects/${projectId}/tickets/requesters?`+new URLSearchParams({search}),{token:agent})).data.some(row=>row.id===ticket.conversation.contact_id),'requester search by '+search)
+  await app.ok(base+`/contacts/${raceCustomer}/erase`,{token:owner,body:{}})
+  assert.equal((await app.call(noticeBase+'/'+raceNotice.id+'/apply',{token:agent,body:{}})).status,404,'erasure removes recipient previews and cannot unlock another send')
   // Closed remains final: a real emailed reply creates a linked fresh ticket.
   const ticketState=(await app.ok(`/api/dashboard/projects/${projectId}/conversations/${ticket.conversation.id}/ticket`,{token:owner})).data
   await app.ok(`/api/dashboard/projects/${projectId}/conversations/${ticket.conversation.id}/ticket`,{token:owner,method:'PATCH',body:{status_id:'closed',expected_version:ticketState.ticket_version}})
@@ -115,6 +202,8 @@ export async function completeEmailJourney(){
   assert.equal((await app.ok(counts,{token:agent})).data.suspended,(await app.ok(base+'/suspended',{token:agent})).count)
   // A collaborator cannot review, recover, send, or change policy.
   await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(projectId,workspace.users.operator,Date.now()).run()
+  assert.equal((await app.call(noticeBase+'/preview',{token:agent,body:noticeCommand})).status,403)
+  assert.equal((await app.call(noticeBase+'/'+notice.id+'/apply',{token:agent,body:{}})).status,403)
   assert.equal((await app.call(base+'/suspended',{token:agent})).status,403)
   assert.equal('suspended' in (await app.ok(counts,{token:agent})).data,false)
   assert.equal((await app.call(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...command,localId:'collaborator-denied'}})).status,403)

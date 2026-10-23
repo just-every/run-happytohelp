@@ -1,3 +1,4 @@
+import {formLookupChoices} from './lookups'
 import {Hono} from 'hono'
 import {bodyLimit} from 'hono/body-limit'
 import {HTTPException} from 'hono/http-exception'
@@ -16,6 +17,7 @@ async function requestedLocale(c:any){
 }
 publicForms.get('/:projectId',async c=>c.json({data:await listForms(c.env,c.req.param('projectId'),await requestedLocale(c))}))
 publicForms.get('/:projectId/:formId',async c=>c.json({data:await readForm(c.env,c.req.param('projectId'),c.req.param('formId'),await requestedLocale(c))}))
+publicForms.get('/:projectId/:formId/lookups/:fieldId',async c=>c.json({data:await formLookupChoices(c.env,c.req.param('projectId'),c.req.param('formId'),c.req.param('fieldId'),c.req.raw)}))
 publicForms.post('/:projectId/:formId/submissions',async c=>{
  const origin=c.req.header('Origin');if(origin&&origin!==new URL(c.req.url).origin)throw new HTTPException(403,{message:'Cross-origin request denied'})
  const result=await submitRequest(c.env,{projectId:c.req.param('projectId'),formId:c.req.param('formId'),body:await c.req.json(),request:c.req.raw,channel:'form',defer:delivery=>c.executionCtx.waitUntil(delivery)})

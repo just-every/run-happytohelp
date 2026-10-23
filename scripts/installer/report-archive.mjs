@@ -1,3 +1,4 @@
+import {outboundArchiveUpgradeRow} from './outbound-archive.mjs';
 import {DatabaseSync} from 'node:sqlite';
 import {readFile,readdir} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -34,6 +35,6 @@ export async function beforeReportPolicy(root,input){
  try{
   const names=(await readdir(join(root,'migrations'))).filter(n=>n.endsWith('.sql')&&n<'200_').sort();
   for(const name of names)for(const sql of unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8')))scratch.exec(sql);
-  return {...result,acceptedSchemas:{[await schemaIdentity(db,policy(result))]:{upgradeRow:(_table,row)=>row}}};
+  return {...result,acceptedSchemas:{[await schemaIdentity(db,policy(result))]:{upgradeRow:outboundArchiveUpgradeRow}}};
  }finally{scratch.close()}
 }

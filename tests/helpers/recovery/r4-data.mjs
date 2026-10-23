@@ -22,7 +22,7 @@ export async function seedRecoveryR4(runtime, {owner, visitor, conversation, med
   const request = api(runtime, owner.token, owner.projectId);
   const bootstrap = await request('/api/management/bootstrap', undefined, 'GET', true);
   const actorId = bootstrap.currentAgent.id, now = Date.now();
-  const ids = Object.fromEntries(['teammate', 'forward', 'reply', 'file'].map(kind => [kind, `recovery-r4-${kind}`]));
+  const ids = Object.fromEntries(['teammate', 'forward', 'reply', 'file', 'identity'].map(kind => [kind, `recovery-r4-${kind}`]));
   const teammateToken = 'synthetic-recovery-r4-teammate-session';
   const partnerBytes = [...Buffer.from('Private supplier analysis: retain café and 日本語 bytes.\n')];
   const partnerKey = `${owner.projectId}/partner-replies/${ids.reply}/${ids.file}`;
@@ -35,6 +35,11 @@ export async function seedRecoveryR4(runtime, {owner, visitor, conversation, med
   await runtime.close();
   await runtime.withStorage(async storage => {
     const write = (sql, values = []) => storage.inspect({sql, values});
+    // Retained, informational identity history is portable; it conveys no
+    // session or combined customer-history access in the restored install.
+    await write('INSERT INTO contacts(id,project_id,name,external_id,created_at) VALUES(?,?,?,?,?)',[ids.identity,owner.projectId,'Recovery identity','synthetic-happytohelp-50',now]);
+    const linked=[visitor.contactId,ids.identity].sort();
+    await write('INSERT INTO customer_identity_links VALUES(?,?,?,?,?,?)',[owner.projectId,...linked,'synthetic-happytohelp-51',actorId,now]);
     await write('INSERT INTO users(id,email,name,created_at) VALUES(?,?,?,?)', [ids.teammate, 'recovery-teammate@example.test', 'Recovery teammate', now]);
     await write('INSERT INTO memberships(project_id,user_id,role) VALUES(?,?,?)', [owner.projectId, ids.teammate, 'operator']);
     await write('INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,?,?,?,?)', [digest(teammateToken), ids.teammate, owner.projectId, 'operator', now + 3_600_000]);
@@ -89,7 +94,7 @@ export async function seedRecoveryR4(runtime, {owner, visitor, conversation, med
   const mention = notices.find(row => row.kind === 'mention' && row.conversation_id === conversation.id);
   assert.ok(mention, 'The native mention must create the persisted teammate notification');
   await teammateRequest(`/notification-inbox/${mention.id}/read`, {}, 'PUT');
-  const r4 = {readNoticeId: mention.id, actorId, teammateToken, teammateId: ids.teammate, macroId: macro.id, draft: draft.draft, noteId: note.id, mergeId: merged.id, mergeTarget: target.id, mergeSource: source.id, partner: {...ids, bytes: partnerBytes}};
+  const r4 = {identity:{contactId:visitor.contactId,linkedId:ids.identity},readNoticeId: mention.id, actorId, teammateToken, teammateId: ids.teammate, macroId: macro.id, draft: draft.draft, noteId: note.id, mergeId: merged.id, mergeTarget: target.id, mergeSource: source.id, partner: {...ids, bytes: partnerBytes}};
   await verifyRecoveryR4(runtime, {owner, conversation, r4}, owner.token);
   return r4;
 }
@@ -98,6 +103,8 @@ export async function seedRecoveryR4(runtime, {owner, visitor, conversation, med
  * a usable draft, private notes/partner bytes, notification audience and merge links. */
 export async function verifyRecoveryR4(runtime, state, token) {
   const {owner, conversation, r4} = state, request = api(runtime, token, owner.projectId);
+  const identity=await request(`/contacts/${r4.identity.contactId}/identity-links`);
+  assert.equal(identity.grants_customer_access,false);assert.equal(identity.links[0].contact.id,r4.identity.linkedId);assert.equal(identity.links[0].provenance,'synthetic-happytohelp-51');
   const versions = await request(`/macros/${r4.macroId}/versions`);
   assert.equal(versions.length, 2);
   const usage = await request(`/macros/${r4.macroId}/usage`);

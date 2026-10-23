@@ -4,14 +4,15 @@ import type {MemberAccess} from '../access/gate'
 export const fieldTypes=['text','number','decimal','date','dropdown','multiselect','checkbox','regex'] as const
 export function checkedPattern(value:unknown){if(typeof value!=='string'||!value||value.length>200||/[()|]/.test(value)||/\\[1-9]/.test(value))invalid('Pattern must be at most 200 characters without groups, alternatives or backreferences');const operators=value.replace(/\[(?:\\.|[^\]\\])*\]/g,'X').replace(/\\./g,'X');if((operators.match(/[*+?]|\{\d+,/g)??[]).length>1)invalid('Pattern may have at most one variable-length repetition');try{return new RegExp(value,'u')}catch{invalid('Invalid field pattern')}}
 export function fieldDefinition(body:unknown){
- const b=object(body),name=named(b.name),type=b.type
+ const b=object(body),name=named(b.name),type=b.type==='account_lookup'?'text':b.type
  if(!fieldTypes.includes(type))invalid('Unknown custom field type')
  if(b.required!==undefined&&typeof b.required!=='boolean')invalid('Required must be boolean')
- const options=b.options??[],validation=object(b.validation??{}),read=b.read_roles??[],write=b.write_roles??[]
+ const options=b.type==='account_lookup'?[]:b.options??[],validation:Record<string,any>={...object(b.validation??{}),...(b.type==='account_lookup'?{lookup:'account'}:{})},read=b.read_roles??[],write=b.write_roles??[]
  if(!Array.isArray(options)||options.length>100||options.some(x=>typeof x!=='string'||!x.trim()||x.length>120)||new Set(options).size!==options.length)invalid('Field options must be unique text values')
  if(['dropdown','multiselect'].includes(type)&&!options.length)invalid('Choice fields need options')
  for(const roles of [read,write])if(!Array.isArray(roles)||roles.length>100||roles.some(x=>typeof x!=='string'||!x||x.length>200))invalid('Field roles must be role IDs')
- if(Object.keys(validation).some(k=>!['min','max','pattern'].includes(k)))invalid('Unknown field validation')
+ if(Object.keys(validation).some(k=>!['min','max','pattern','lookup'].includes(k)))invalid('Unknown field validation')
+ if(validation.lookup!==undefined&&(validation.lookup!=='account'||type!=='text'))invalid('Lookup fields must reference a workspace account')
  for(const key of ['min','max'])if(validation[key]!==undefined&&(typeof validation[key]!=='number'||!Number.isFinite(validation[key])))invalid('Bounds must be finite numbers')
  if(validation.min!==undefined&&validation.max!==undefined&&validation.min>validation.max)invalid('Minimum exceeds maximum')
  if(type==='regex'&&!validation.pattern)invalid('Regex fields require a pattern')

@@ -15,15 +15,22 @@ export async function vendorReplies(app,{projectId,owner,agent,gate,sent}){
   {vendor:'intercom',email:'intercom@customer.example',sourceId:'v91',subject:'Re: Shipment',to:'helpdesk+intercom-v91@example.test',schema:'2.16',rows:[{type:'contact',id:'c91',name:'Intercom Customer',email:'intercom@customer.example',created_at:1704067200},{type:'conversation',id:'v91',admin_assignee_id:77,team_assignee_id:88,channel:{initial:'email'},state:'closed',created_at:1704153600,updated_at:1704153600,contacts:{type:'contact.list',contacts:[{id:'c91'}]},source:{id:'s91',body:'Historical question',reply_to:'helpdesk+intercom-v91@example.test',author:{id:'c91',type:'contact'}},conversation_parts:{type:'conversation_part.list',conversation_parts:[]}}]}
  ]
  const imports=`/api/move-in/projects/${projectId}/imports`
+ const erased=[]
  for(const fixture of fixtures){
   const payload=fixture.vendor==='zendesk'||fixture.vendor==='freshdesk'?fixture.rows.find(row=>row.ticket).ticket:fixture.vendor==='helpscout'?fixture.rows[1]:fixture.rows[1].source
   const notificationId=`<old-${fixture.vendor}-notification@notify.example.test>`
   payload.headers={'Message-ID':notificationId}
   if(fixture.vendor==='freshdesk')fixture.rows.push({ticket:{...structuredClone(payload),id:821,status:5,reply_to:'helpdesk+freshdesk-821@example.test',headers:{'Message-ID':'<old-freshdesk-final@notify.example.test>'}}})
   const upload=await app.ok(imports+'?vendor='+fixture.vendor,{token:owner,raw:true,headers:{'X-Import-Filename':fixture.vendor+'.jsonl','Content-Type':'application/octet-stream',...(fixture.schema?{'X-Import-Schema':fixture.schema}:{})},body:fixture.rows.map(JSON.stringify).join('\n')})
-  await app.drainJobs();const ready=(await app.ok(imports+'/'+upload.data.id,{token:owner})).data
+  await app.drainJobs();let ready=(await app.ok(imports+'/'+upload.data.id,{token:owner})).data
   assert.equal(ready.state,'ready',fixture.vendor);assert.equal(ready.plan.counts.rejected,0,JSON.stringify(ready.plan))
   await app.ok(imports+'/'+ready.id+'/apply',{token:owner,body:{fingerprint:ready.plan.fingerprint}});await app.drainJobs()
+  const sourceTargets=(await app.sql("SELECT target_id FROM move_in_origins WHERE project_id=? AND vendor=? AND target_kind='conversation' AND source_id IN (?,?)",projectId,fixture.vendor,fixture.sourceId,fixture.vendor==='freshdesk'?'821':fixture.sourceId)).map(row=>row.target_id)
+  const keys=async()=>app.sql('SELECT conversation_id,key_kind,key_value FROM email_threading_keys WHERE project_id=? AND conversation_id IN (SELECT value FROM json_each(?)) ORDER BY conversation_id,key_kind,key_value',projectId,JSON.stringify(sourceTargets))
+  const originalKeys=await keys();assert.ok(originalKeys.length>0)
+  const repeated=await app.ok(imports+'?vendor='+fixture.vendor,{token:owner,raw:true,headers:{'X-Import-Filename':fixture.vendor+'.jsonl','Content-Type':'application/octet-stream',...(fixture.schema?{'X-Import-Schema':fixture.schema}:{})},body:fixture.rows.map(JSON.stringify).join('\n')});assert.equal(repeated.alreadyImported,true);assert.equal(repeated.writes,0);assert.deepEqual(await keys(),originalKeys)
+  await app.ok(imports+'/'+ready.id+'/undo',{token:owner,body:{}});await app.drainJobs();assert.deepEqual(await keys(),[])
+  const again=await app.ok(imports+'?vendor='+fixture.vendor,{token:owner,raw:true,headers:{'X-Import-Filename':fixture.vendor+'-reimport.jsonl','Content-Type':'application/octet-stream',...(fixture.schema?{'X-Import-Schema':fixture.schema}:{})},body:fixture.rows.map(JSON.stringify).join('\n')+'\n'});await app.drainJobs();ready=(await app.ok(imports+'/'+again.data.id,{token:owner})).data;assert.equal(ready.plan.counts.rejected,0);await app.ok(imports+'/'+ready.id+'/apply',{token:owner,body:{fingerprint:ready.plan.fingerprint}});await app.drainJobs();assert.deepEqual(await keys(),originalKeys)
   const ownership=imports+'/'+ready.id+'/ownership',identity=await app.ok('/api/identity/session',{token:owner}),nativeOwner=identity.id
   const group=(await app.ok(`/api/dashboard/projects/${projectId}/ticket-groups`,{token:owner,body:{name:fixture.vendor+' migrated team',members:[nativeOwner]}})).data
   const bindings={owners:{'77':nativeOwner},groups:fixture.vendor==='helpscout'?{}:{'88':group.id}},beforeSends=sent.length
@@ -48,6 +55,8 @@ export async function vendorReplies(app,{projectId,owner,agent,gate,sent}){
    assert.ok(JSON.stringify(await app.ok(`/api/management/projects/${projectId}/conversations/${linked.data.conversationId}/email-followups`,{token:owner})).includes(final.conversation_id))
   }
   const ticketPath=`/api/dashboard/projects/${projectId}/conversations/${imported.conversation_id}/ticket`
+  const solveAgain=async()=>{const current=(await app.ok(ticketPath,{token:owner})).data;await app.ok(ticketPath,{token:owner,method:'PATCH',body:{status_id:'solved',expected_version:current.ticket_version}})}
+  const reopenedWithOwner=async()=>{const current=(await app.ok(ticketPath,{token:owner})).data;assert.equal(current.status_category,'open');assert.equal(current.assigned_to,nativeOwner);assert.equal(current.group_id,fixture.vendor==='helpscout'?null:group.id)}
   const beforeReply=(await app.ok(ticketPath,{token:owner})).data
   assert.equal(beforeReply.assigned_to,nativeOwner,fixture.vendor+' owner is explicitly migrated');assert.equal(beforeReply.group_id,fixture.vendor==='helpscout'?null:group.id,fixture.vendor+' group is explicitly migrated');assert.equal(beforeReply.status_category,'solved',fixture.vendor+' reopenable source resolution is retained')
   assert.equal(beforeReply.channel,'email',fixture.vendor+' source channel is retained')
@@ -56,11 +65,15 @@ export async function vendorReplies(app,{projectId,owner,agent,gate,sent}){
   const reopened=(await app.ok(ticketPath,{token:owner})).data
   assert.equal(reopened.status_category,'open');assert.equal(reopened.assigned_to,beforeReply.assigned_to);assert.equal(reopened.group_id,beforeReply.group_id);assert.equal(reopened.contact_id,beforeReply.contact_id)
   if(fixture.vendor!=='intercom'){
+   await solveAgain()
    const bySubject=await gate({messageId:fixture.vendor+'-subject-only',from:fixture.email,to:'helpdesk@example.test',subject:fixture.vendor==='helpscout'?'Shipment [#1901]':fixture.subject,text:'Reply using only the source subject token.'})
    assert.equal(bySubject.data.state,'delivered');assert.equal(bySubject.data.conversationId,imported.conversation_id,fixture.vendor+' subject-only threading')
+   await reopenedWithOwner()
   }
+  await solveAgain()
   const byAddress=await gate({messageId:fixture.vendor+'-address-only',from:fixture.email,to:fixture.to,subject:'No source subject token',text:'Reply using only the old reply address.'})
   assert.equal(byAddress.data.state,'delivered');assert.equal(byAddress.data.conversationId,imported.conversation_id,fixture.vendor+' reply-address-only threading')
+  await reopenedWithOwner()
   const reply={messageId:fixture.vendor+'-cutover',from:fixture.email,to:fixture.to,subject:fixture.subject,text:'Reply to the old notification after cutover.'}
   const received=await gate(reply);assert.equal(received.data.state,'delivered',fixture.vendor);assert.equal(received.data.conversationId,imported.conversation_id)
   if(fixture.vendor==='helpscout'){
@@ -79,11 +92,16 @@ export async function vendorReplies(app,{projectId,owner,agent,gate,sent}){
   // to a Closed ticket; the customer gets its linked native follow-up.
   const current=(await app.ok(ticketPath,{token:owner})).data
   await app.ok(ticketPath,{token:owner,method:'PATCH',body:{status_id:'closed',expected_version:current.ticket_version}})
-  const followup=await gate({messageId:fixture.vendor+'-closed-followup',from:fixture.email,to:'helpdesk@example.test',headers:{'In-Reply-To':notificationId},text:'A new question after final closure.'})
-  assert.equal(followup.data.state,'delivered');assert.notEqual(followup.data.conversationId,imported.conversation_id)
-  assert.equal((await app.ok(ticketPath,{token:owner})).data.status_category,'closed')
-  const links=await app.ok(`/api/management/projects/${projectId}/conversations/${followup.data.conversationId}/email-followups`,{token:owner})
-  assert.ok(JSON.stringify(links).includes(imported.conversation_id),fixture.vendor+' follow-up keeps its original link')
+  const methods=[{name:'headers',to:'helpdesk@example.test',headers:{'In-Reply-To':notificationId}},{name:'address',to:fixture.to},...(fixture.vendor==='intercom'?[]:[{name:'subject',to:'helpdesk@example.test',subject:fixture.vendor==='helpscout'?'Shipment [#1901]':fixture.subject}])]
+  for(const method of methods){
+   const {name,...fields}=method
+   const followup=await gate({messageId:fixture.vendor+'-closed-followup-'+name,from:fixture.email,text:'A new question after final closure.',...fields})
+   assert.equal(followup.data.state,'delivered');assert.notEqual(followup.data.conversationId,imported.conversation_id)
+   const parent=(await app.ok(ticketPath,{token:owner})).data;assert.equal(parent.status_category,'closed');assert.equal(parent.assigned_to,nativeOwner);assert.equal(parent.group_id,beforeReply.group_id)
+   const links=await app.ok(`/api/management/projects/${projectId}/conversations/${followup.data.conversationId}/email-followups`,{token:owner});assert.ok(JSON.stringify(links).includes(imported.conversation_id),fixture.vendor+' '+method.name+' follow-up keeps its original link')
+  }
+  erased.push({contactId:beforeReply.contact_id,keys})
 
  }
+ for(const item of erased){await app.ok(`/api/management/projects/${projectId}/contacts/${item.contactId}/erase`,{token:owner,body:{}});await app.drainJobs();assert.deepEqual(await item.keys(),[],'erasure withdraws every vendor notification key after activation and real native replies')}
 }

@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "1db1d94f117de0737f6a570b0e5d80c87a813ce5c1882defb8140ba4f1e60bc8",
+      "sha256": "c07bb4d00a6c1ebd8a71f0932afed60e7ab9af5ff5b4499f08bbe937c0f687c5",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "7708f898e0451cf152d9096e05b0330dd6e757cae18611dab651490e60bccec9",
+      "sha256": "ecb0d3e0bc615a76498d0fc07f576bfd293f62f2a2fe873888c0a936ac1f3002",
       "executable": false
     },
     "DEMO.md": {
@@ -1776,7 +1776,7 @@
       "executable": false
     },
     "docs/reports.md": {
-      "sha256": "4acbf78f13b1c123fc461d3c265ef0156867aab9bb03d3a5f00676692c516368",
+      "sha256": "bcd58f548106a67139093dbbf3338e352d0eba50b75c02c5ba05c2535ba06f10",
       "executable": false
     },
     "docs/request-forms.md": {
@@ -2496,7 +2496,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "831d9e6eb2d517eb2958c07485cc7b794b296d43b1b5891527e11befa7269d41",
+      "sha256": "fe58c325630e2df466eb2bbfe622eaa7505f5ed4af9d9a9397a7d302f6c11068",
       "executable": false
     },
     "package.json": {
@@ -2948,7 +2948,7 @@
       "executable": false
     },
     "scripts/installer/hosted-r2.mjs": {
-      "sha256": "c9b5507bbf0f48c7b602b7dd71a837705d04b261d21a7e8ab8d1f821ddfca715",
+      "sha256": "6c5456550782013a23c96d38f18594834cebb82dd721309fc5304776538726ba",
       "executable": false
     },
     "scripts/installer/local.mjs": {

@@ -1,4 +1,4 @@
-import {phases} from '../journeys/kit/scenarios.mjs';
+import {phases,matrix} from '../journeys/kit/scenarios.mjs';
 const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {unchanged} from './admission-equality.mjs';
@@ -11,13 +11,13 @@ const cases=[
  ['intercom','{"type":"contact","id":"duplicate","name":{"email":"syntax-private@example.test"},"na\\u006de":"Safe","email":"other@example.test","created_at":1704067200}','/name'],
  ['intercom','{"type":"conversation","id":"duplicate","source":{"body":{"email":"syntax-private@example.test"},"body":"Safe"}}','/source/body']
 ];
-for(const [vendor,body,pointer] of cases)test(`${vendor} duplicate source members at ${pointer} cannot hide erased original identities`,async()=>{const h=await nativeHarness();try{
+test("duplicate source members cannot hide erased original identities",matrix(cases,async ([vendor,body,pointer])=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,created_at) VALUES('native','p','syntax-private@example.test',1)").run();
  const options={method:'POST',headers:{'X-Import-Filename':'duplicates.jsonl','X-Import-Schema':'2.16'},body:'\n'+body};
  const before=await h.snapshot(),result=await h.raw(`${root}?vendor=${vendor}`,options);assert.equal(result.response.status,422);assert.deepEqual(result.data.diagnostic,{code:'duplicate_json_field',location:{artifact:'duplicates.jsonl',row:2,pointer}});assert.equal(h.lastWrites,0);assert.equal(h.queued.length,0);
  await unchanged(h,before,'duplicate-member-refusal');assert.equal((await (await h.files).list()).objects.length,0);
  await h.call('/api/management/projects/p/contacts/native/erase',post({}));assert.equal((await h.raw(`${root}?vendor=${vendor}`,{...options,body:'\n\n'+body.replace('Safe','Changed')})).response.status,422);assert.equal(h.outbound,0);
- }finally{await h.close()}});
+ }finally{await h.close()}}));
 
 test('a malformed record discriminator is a located rejection without object-to-string coercion',async()=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,created_at) VALUES('native','p','kind-private@example.test',1)").run();

@@ -76,6 +76,9 @@ async function upgrade(label) {
       assert.equal(column.dflt_value, null);
       assert.equal(ledger.prepare('SELECT count(*) AS count FROM activation_receipts WHERE observation_json IS NOT NULL').get().count, 0, '120 does not backfill prior observations');
     }
+    if (order.includes('245_scoped_access.sql')) {
+      assert.equal(ledger.prepare('SELECT count(*) AS count FROM project_roles WHERE team_ids_json IS NOT NULL').get().count, 0, 'Existing roles retain unrestricted team access until the owner scopes them');
+    }
     ledger.close();
     const after = snapshot(database, before), afterFiles = await bucketSnapshot(join(state, 'v3/r2'));
     const {expected, added, exceptions} = expectedMigrationRows(before, after, headMigrations.files, beforeSchema);

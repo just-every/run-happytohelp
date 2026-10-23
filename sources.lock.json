@@ -2572,7 +2572,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "1cdca0b5adb752659368a5cbb3b37d8db710b82cb5347fd404a327536a2b0456",
+      "sha256": "fbe09681d70f256afbbf2ed81b6d299a538a58628cd98f3f0964438e0ad365ed",
       "executable": false
     },
     "rer-project.json": {
@@ -11364,7 +11364,7 @@
       "executable": false
     },
     "tests/helpers/installer/reproducible.mjs": {
-      "sha256": "60e48fc6c2e85f5b5f0110e7ee8c4d49c140f9aad1d700d7864944bc60ba1ffc",
+      "sha256": "ddbfad80ef153097532605300338c6c4b75c4ffe4befa6157d7dff3da7cc8a11",
       "executable": false
     },
     "tests/helpers/installer/stage-fixtures.mjs": {
@@ -11520,7 +11520,7 @@
       "executable": false
     },
     "tests/helpers/release-upgrade.mjs": {
-      "sha256": "c6e5f2bdcdb2b0a0999d234ce9c46210b671cd07f54bb172083c3e4de477f7c6",
+      "sha256": "faaec4f8623baa0328b5483e39e7c088a31bacff33cba732ddbb3ca593480971",
       "executable": false
     },
     "tests/helpers/reports-portable.mjs": {
@@ -11608,7 +11608,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "717efed0457a4f95794cfc5ce88d5538a8b607de150479ab4bc9ffece758d8e7",
+      "sha256": "c60f98da957a73ffb242eea312f27b1ba0c76731d3705446d91a15e7c93929dc",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

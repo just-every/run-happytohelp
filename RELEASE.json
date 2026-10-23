@@ -44,6 +44,14 @@
     {
       "id": "243_helpscout_sync.sql",
       "buyerSteps": "Apply before serving the updated Worker. Adds optional read-only Help Scout connection and digest/Move in receipts; it changes no prior ticket or import. Configure an explicitly authorized mailbox read token, private webhook secret and existing integration encryption key through the native connection API. Sync stages ordinary Move in reviews; approval remains explicit. Provider credentials and active sync stores are excluded from export and require reconnecting after restore; native import history and erased-identity tombstones remain retained."
+    },
+    {
+      "id": "244_enterprise_identity.sql",
+      "buyerSteps": "Apply before the updated Worker serves traffic. Adds optional enterprise identity connections, explicitly provisioned memberships and revocable SSO sessions without linking existing native identities or changing native owner recovery. Only the owner can configure a pinned SAML or OIDC identity provider and issue a SCIM token. Export excludes credentials, callback state and enterprise sessions; restore disables connections and provisioned access until the owner reconnects and reprovisions."
+    },
+    {
+      "id": "245_scoped_access.sql",
+      "buyerSteps": "Apply after 244 and before the updated Worker serves traffic. Adds optional team scope to custom roles and short-lived, audited refund approvals; no payment is submitted. Existing roles retain their current unrestricted team scope until the owner assigns a restriction. Prior tickets and permissions remain intact; restored refund approvals are expired."
     }
   ]
 }

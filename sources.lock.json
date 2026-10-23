@@ -11548,7 +11548,7 @@
       "executable": false
     },
     "tests/helpers/reports-portable.mjs": {
-      "sha256": "2bb3bc68b0933b60099769c0e84c1a78185f3168e97301e74094182b3eb2f432",
+      "sha256": "9fb1d85dbed6bae4c885b756c8a552fc1a65fe8fc79361e88677e4032b420e7d",
       "executable": false
     },
     "tests/helpers/reports-team-fixture.mjs": {
@@ -12144,7 +12144,7 @@
       "executable": false
     },
     "tests/move-in/ownership-browser-flow.mjs": {
-      "sha256": "65afba2ee5d295e0ce03c358c068aa3e5f839640845228fd787dd9d9ba0a7d96",
+      "sha256": "90877cba4cee55954611320a755a33b3e3cbd05c3d4f3a7c5ca8e9752d9fbd5e",
       "executable": false
     },
     "tests/move-in/parse-accounting.mjs": {

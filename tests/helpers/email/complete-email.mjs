@@ -115,7 +115,7 @@ export async function completeEmailJourney(){
   const inbox=(await app.ok(`/api/dashboard/projects/${projectId}/conversations?view=all`,{token:agent})).data
   assert.ok(inbox.some(row=>row.id===call.conversation.id),'a logged call appears in the inbox')
   assert.ok(inbox.some(row=>row.id===newRecovery.conversationId),'a recovered private-note ticket appears in the inbox')
-  await vendorReplies(app,{projectId,owner,gate})
+  await vendorReplies(app,{projectId,owner,agent,gate,sent})
   // Selecting an existing requester never creates another contact. A refused
   // first send stays visible and retrying its exact command never sends again.
   const contactCount=(await app.first('SELECT count(*) n FROM contacts WHERE project_id=?',projectId)).n

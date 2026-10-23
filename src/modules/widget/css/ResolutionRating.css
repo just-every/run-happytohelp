@@ -6,6 +6,8 @@
 #happytohelp-root .happytohelp-resolution-rating button:focus-visible, #happytohelp-root .happytohelp-resolution-rating textarea:focus-visible { outline: 3px solid #2364be; outline-offset: 2px; }
 #happytohelp-root .happytohelp-resolution-rating button:disabled { cursor: default; opacity: .65; }
 #happytohelp-root .happytohelp-resolution-rating label { display: block; margin: 8px 0 5px; }
+#happytohelp-root .happytohelp-resolution-rating select { width: 100%; min-height: 42px; font: inherit; color: #202936; background: #fff; border: 1px solid #65748b; border-radius: 6px; padding: 8px; }
+#happytohelp-root .happytohelp-resolution-rating select:focus-visible { outline: 3px solid #2364be; outline-offset: 2px; }
 #happytohelp-root .happytohelp-resolution-rating textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 65px; font: inherit; color: #202936; background: #fff; border: 1px solid #65748b; border-radius: 6px; padding: 8px; }
 #happytohelp-root .happytohelp-rating-count { display: block; text-align: right; margin: 3px 0 8px; }
 #happytohelp-root .happytohelp-resolution-rating [role=status], #happytohelp-root .happytohelp-resolution-rating [role=alert] { margin: 10px 0 0; overflow-wrap: anywhere; }

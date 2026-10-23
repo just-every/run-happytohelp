@@ -42,7 +42,7 @@ export const activeSurveySql=`${liveCycleSql} AND s.revoked_at IS NULL AND s.exp
 /** Root erasure runner batches these with its existing contact erasure statements. */
 export function eraseSurveyStatements(env:Env,projectId:string,contactId:string){return [
  env.DB.prepare("UPDATE csat_surveys SET recipient='',revoked_at=?,state=CASE WHEN state='pending' THEN 'cancelled' ELSE state END,updated_at=? WHERE project_id=? AND contact_id=?").bind(Date.now(),Date.now(),projectId,contactId),
- env.DB.prepare("UPDATE csat_responses SET comment='',reason='' WHERE project_id=? AND contact_id=?").bind(projectId,contactId),
- env.DB.prepare("UPDATE csat_response_history SET comment='',reason='' WHERE project_id=? AND contact_id=?").bind(projectId,contactId),
+ env.DB.prepare("UPDATE csat_responses SET comment='',reason='',recovery='unknown' WHERE project_id=? AND contact_id=?").bind(projectId,contactId),
+ env.DB.prepare("UPDATE csat_response_history SET comment='',reason='',recovery='unknown' WHERE project_id=? AND contact_id=?").bind(projectId,contactId),
  env.DB.prepare('DELETE FROM csat_optouts WHERE project_id=? AND contact_id=?').bind(projectId,contactId)
 ]}

@@ -3,6 +3,7 @@ import {nativeRequest} from '../transport';
 import {Feedback,Section} from './forms';
 import './move-in.css';
 import MoveInReview from './MoveInReview';
+import MoveInOwnership from './MoveInOwnership';
 import MoveInReport from './MoveInReport';
 import {reasonLabel} from './move-in-presentation';
 import {vendorGuides} from './MoveInGuide';
@@ -31,6 +32,6 @@ function MoveInWorkspace({projectId}){
  {plan?.decisions?<MoveInReview key={selected.id} plan={plan} vendor={selected.vendor} state={selected.state}/>:plan&&<p role="status">Loading the review…</p>}
  {selected.state==='ready'&&plan?.decisions&&!importable&&<p role="alert">Nothing in this file can be imported yet. Fix the records listed under Needs fixing, then upload the corrected file.</p>}
  <div className="move-in-actions">{selected.state==='ready'&&plan?.decisions&&importable&&<button className="btn btn-primary" disabled={busy} onClick={()=>action('apply')}>Approve and import</button>}{active.includes(selected.state)&&<button className="btn btn-white" disabled={busy} onClick={()=>action('resume')}>Resume import</button>}{(selected.state==='completed'||selected.state==='applying'&&selected.error)&&<button className="btn btn-outline-danger" disabled={busy} onClick={()=>action('undo')}>Undo whole import</button>}</div>
- {selected.state==='completed'&&<MoveInReport projectId={projectId} links={links}/>}{selected.state==='erased'&&<p>Contact erasure removed this import’s source custody. This export cannot be resumed, replayed, or undone.</p>}</Section>}
+ {selected.state==='completed'&&<><MoveInReport projectId={projectId} links={links}/><MoveInOwnership key={selected.id} projectId={projectId} runId={selected.id}/></>}{selected.state==='erased'&&<p>Contact erasure removed this import’s source custody. This export cannot be resumed, replayed, or undone.</p>}</Section>}
  <Section title="Your imports">{runs.length?<ul>{runs.map(run=><li key={run.id}><button className="btn btn-link" onClick={()=>open(run)}>{run.filename} — {label[run.state]||run.state}</button></li>)}</ul>:<p>No imports yet.</p>}</Section></div>
 }

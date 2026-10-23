@@ -2,16 +2,17 @@ import assert from 'node:assert/strict'
 import {customer,history} from '../../move-in/helpscout-fixtures.mjs'
 
 /** Explicit export fields, imported through upload/review/apply, then real mail intake. */
-export async function vendorReplies(app,{projectId,owner,gate}){
+export async function vendorReplies(app,{projectId,owner,agent,gate,sent}){
  const scout=history(901,87),scoutEmail='scout@customer.example'
  scout.conversation.number=1901;scout.conversation.status='closed';scout.conversation.primaryCustomer.email=scoutEmail
+ scout.conversation.assignee={id:77,type:'user',first:'Source',last:'Owner',email:'source-owner@example.test'}
  scout.conversation.reply_to='helpdesk+scout_901@example.test'
  for(const thread of scout.page._embedded.threads)for(const field of ['customer','createdBy'])if(thread[field]?.id===87)thread[field].email=scoutEmail
  const fixtures=[
-  {vendor:'zendesk',email:'zendesk@customer.example',sourceId:'921',subject:'Re: Shipment [BEEF-C0DE]',to:'helpdesk+zendesk-921@example.test',rows:[{user:{id:92,role:'end-user',name:'Zendesk Customer',email:'zendesk@customer.example',created_at:'2024-01-01T00:00:00Z'}},{ticket:{id:921,requester_id:92,subject:'Shipment [BEEF-C0DE]',status:'solved',via:{channel:'email'},reply_to:'helpdesk+zendesk-921@example.test',created_at:'2024-01-02T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',comments:[{id:922,author_id:92,body:'Historical question',public:true,created_at:'2024-01-02T00:00:00Z'}]}}]},
-  {vendor:'freshdesk',email:'fresh@customer.example',sourceId:'820',subject:'Re: Shipment [#820]',to:'helpdesk+freshdesk-820@example.test',rows:[{contact:{id:81,name:'Fresh Customer',email:'fresh@customer.example',created_at:'2024-01-01T00:00:00Z'}},{ticket:{id:820,requester_id:81,subject:'Shipment',description_text:'Historical question',reply_to:'helpdesk+freshdesk-820@example.test',status:4,priority:1,source:1,created_at:'2024-01-02T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',conversations:[]}}]},
+  {vendor:'zendesk',email:'zendesk@customer.example',sourceId:'921',subject:'Re: Shipment [BEEF-C0DE]',to:'helpdesk+zendesk-921@example.test',rows:[{user:{id:92,role:'end-user',name:'Zendesk Customer',email:'zendesk@customer.example',created_at:'2024-01-01T00:00:00Z'}},{ticket:{id:921,requester_id:92,subject:'Shipment [BEEF-C0DE]',status:'solved',assignee_id:77,group_id:88,via:{channel:'email'},reply_to:'helpdesk+zendesk-921@example.test',created_at:'2024-01-02T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',comments:[{id:922,author_id:92,body:'Historical question',public:true,created_at:'2024-01-02T00:00:00Z'}]}}]},
+  {vendor:'freshdesk',email:'fresh@customer.example',sourceId:'820',subject:'Re: Shipment [#820]',to:'helpdesk+freshdesk-820@example.test',rows:[{contact:{id:81,name:'Fresh Customer',email:'fresh@customer.example',created_at:'2024-01-01T00:00:00Z'}},{ticket:{id:820,requester_id:81,subject:'Shipment',description_text:'Historical question',reply_to:'helpdesk+freshdesk-820@example.test',status:4,responder_id:77,group_id:88,priority:1,source:1,created_at:'2024-01-02T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',conversations:[]}}]},
   {vendor:'helpscout',email:scoutEmail,sourceId:'901',subject:'Re: Shipment',to:scout.conversation.reply_to,rows:[customer(87,scoutEmail),scout.conversation,scout.page]},
-  {vendor:'intercom',email:'intercom@customer.example',sourceId:'v91',subject:'Re: Shipment',to:'helpdesk+intercom-v91@example.test',schema:'2.16',rows:[{type:'contact',id:'c91',name:'Intercom Customer',email:'intercom@customer.example',created_at:1704067200},{type:'conversation',id:'v91',channel:{initial:'email'},state:'closed',created_at:1704153600,updated_at:1704153600,contacts:{type:'contact.list',contacts:[{id:'c91'}]},source:{id:'s91',body:'Historical question',reply_to:'helpdesk+intercom-v91@example.test',author:{id:'c91',type:'contact'}},conversation_parts:{type:'conversation_part.list',conversation_parts:[]}}]}
+  {vendor:'intercom',email:'intercom@customer.example',sourceId:'v91',subject:'Re: Shipment',to:'helpdesk+intercom-v91@example.test',schema:'2.16',rows:[{type:'contact',id:'c91',name:'Intercom Customer',email:'intercom@customer.example',created_at:1704067200},{type:'conversation',id:'v91',admin_assignee_id:77,team_assignee_id:88,channel:{initial:'email'},state:'closed',created_at:1704153600,updated_at:1704153600,contacts:{type:'contact.list',contacts:[{id:'c91'}]},source:{id:'s91',body:'Historical question',reply_to:'helpdesk+intercom-v91@example.test',author:{id:'c91',type:'contact'}},conversation_parts:{type:'conversation_part.list',conversation_parts:[]}}]}
  ]
  const imports=`/api/move-in/projects/${projectId}/imports`
  for(const fixture of fixtures){
@@ -23,6 +24,20 @@ export async function vendorReplies(app,{projectId,owner,gate}){
   await app.drainJobs();const ready=(await app.ok(imports+'/'+upload.data.id,{token:owner})).data
   assert.equal(ready.state,'ready',fixture.vendor);assert.equal(ready.plan.counts.rejected,0,JSON.stringify(ready.plan))
   await app.ok(imports+'/'+ready.id+'/apply',{token:owner,body:{fingerprint:ready.plan.fingerprint}});await app.drainJobs()
+  const ownership=imports+'/'+ready.id+'/ownership',identity=await app.ok('/api/identity/session',{token:owner}),nativeOwner=identity.id
+  const group=(await app.ok(`/api/dashboard/projects/${projectId}/ticket-groups`,{token:owner,body:{name:fixture.vendor+' migrated team',members:[nativeOwner]}})).data
+  const bindings={owners:{'77':nativeOwner},groups:fixture.vendor==='helpscout'?{}:{'88':group.id}},beforeSends=sent.length
+  const preview=await app.ok(ownership+'/preview',{token:owner,body:bindings});assert.ok(preview.tickets.length>0);assert.equal(sent.length,beforeSends)
+  assert.equal((await app.call(ownership+'/apply',{token:agent,body:{bindings,fingerprint:preview.fingerprint}})).status,403,'an operator cannot activate historical ownership')
+  if(fixture.vendor==='zendesk'){
+   await app.ok(`/api/dashboard/projects/${projectId}/ticket-groups/${group.id}`,{token:owner,method:'PATCH',body:{name:group.name,members:[]}})
+   assert.ok([400,409].includes((await app.call(ownership+'/apply',{token:owner,body:{bindings,fingerprint:preview.fingerprint}})).status))
+   assert.equal((await app.first('SELECT count(*) n FROM conversations c JOIN move_in_origins o ON o.target_id=c.id WHERE o.vendor=? AND c.assigned_to IS NOT NULL',fixture.vendor)).n,0)
+   await app.ok(`/api/dashboard/projects/${projectId}/ticket-groups/${group.id}`,{token:owner,method:'PATCH',body:{name:group.name,members:[nativeOwner]}})
+  }
+  const currentPreview=await app.ok(ownership+'/preview',{token:owner,body:bindings})
+  const activated=await app.ok(ownership+'/apply',{token:owner,body:{bindings,fingerprint:currentPreview.fingerprint}})
+  assert.equal(activated.applied,currentPreview.tickets.length);assert.equal(activated.remaining,0);assert.equal(sent.length,beforeSends,'ownership activation sends no mail')
   const imported=await app.first('SELECT conversation_id FROM email_threading_keys WHERE project_id=? AND source=? AND key_value=?',projectId,fixture.vendor,fixture.vendor==='freshdesk'?'freshdesk:820':fixture.to)
   assert.ok(imported,fixture.vendor+' imported its explicit threading key')
   if(fixture.vendor==='freshdesk'){
@@ -34,12 +49,12 @@ export async function vendorReplies(app,{projectId,owner,gate}){
   }
   const ticketPath=`/api/dashboard/projects/${projectId}/conversations/${imported.conversation_id}/ticket`
   const beforeReply=(await app.ok(ticketPath,{token:owner})).data
-  assert.equal(beforeReply.status_category,'solved',fixture.vendor+' reopenable source resolution is retained')
+  assert.equal(beforeReply.assigned_to,nativeOwner,fixture.vendor+' owner is explicitly migrated');assert.equal(beforeReply.group_id,fixture.vendor==='helpscout'?null:group.id,fixture.vendor+' group is explicitly migrated');assert.equal(beforeReply.status_category,'solved',fixture.vendor+' reopenable source resolution is retained')
   assert.equal(beforeReply.channel,'email',fixture.vendor+' source channel is retained')
   const byHeaders=await gate({messageId:fixture.vendor+'-headers-only',from:fixture.email,to:'helpdesk@example.test',subject:'An entirely changed subject',headers:{'In-Reply-To':notificationId,References:notificationId},text:'Reply using only the old notification headers.'})
   assert.equal(byHeaders.data.state,'delivered');assert.equal(byHeaders.data.conversationId,imported.conversation_id,fixture.vendor+' Message-ID threading')
   const reopened=(await app.ok(ticketPath,{token:owner})).data
-  assert.equal(reopened.status_category,'open');assert.equal(reopened.assigned_to,beforeReply.assigned_to);assert.equal(reopened.contact_id,beforeReply.contact_id)
+  assert.equal(reopened.status_category,'open');assert.equal(reopened.assigned_to,beforeReply.assigned_to);assert.equal(reopened.group_id,beforeReply.group_id);assert.equal(reopened.contact_id,beforeReply.contact_id)
   if(fixture.vendor!=='intercom'){
    const bySubject=await gate({messageId:fixture.vendor+'-subject-only',from:fixture.email,to:'helpdesk@example.test',subject:fixture.vendor==='helpscout'?'Shipment [#1901]':fixture.subject,text:'Reply using only the source subject token.'})
    assert.equal(bySubject.data.state,'delivered');assert.equal(bySubject.data.conversationId,imported.conversation_id,fixture.vendor+' subject-only threading')

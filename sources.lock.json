@@ -12048,7 +12048,7 @@
       "executable": false
     },
     "tests/move-in/shape-syntax.mjs": {
-      "sha256": "f1d7b818c7bddefb364eccfbf99d10d0cf349fd19a4936a78fda689770073381",
+      "sha256": "4743177a78c9929fcd8ad2f2d85f773cfd63fb767c571d232c19eba793ddb0ac",
       "executable": false
     },
     "tests/move-in/shape-upgrade.mjs": {

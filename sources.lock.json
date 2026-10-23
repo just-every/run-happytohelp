@@ -2952,7 +2952,7 @@
       "executable": false
     },
     "scripts/installer/hosted-r2.mjs": {
-      "sha256": "6c5456550782013a23c96d38f18594834cebb82dd721309fc5304776538726ba",
+      "sha256": "a29a1f19181d43e4bc4fdfd4cabd67ce49da4f27e948b9a32d6afd37b752c6b8",
       "executable": false
     },
     "scripts/installer/local.mjs": {

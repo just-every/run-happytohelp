@@ -10,6 +10,7 @@ import FollowersDialog from '../collaboration/FollowersDialog';
 import EscalationDialog from '../escalations/EscalationDialog';
 import ScheduleForm from '../workflows/ScheduleForm';
 import './ticket-action-dialogs.css';
+import DialogHeader from '../DialogHeader';
 
 /** Snooze… and Schedule reply…: today's schedule form, in a dialog. */
 function ScheduleDialog({ kind, conversation, onHide, onSaved }) {
@@ -20,7 +21,7 @@ function ScheduleDialog({ kind, conversation, onHide, onSaved }) {
     const agents = (agentsFor(conversation.project_id) || []).filter(row => row.access_role !== 'collaborator');
     const close = () => { markSaved(); onHide(); };
     return <Modal show onHide={ close } aria-labelledby={ titleId } className="schedule-dialog">
-        <Modal.Header closeButton><Modal.Title id={ titleId }>{ kind === 'reply' ? 'Schedule a reply' : 'Snooze ticket' }</Modal.Title></Modal.Header>
+        <DialogHeader closeButton><Modal.Title id={ titleId }>{ kind === 'reply' ? 'Schedule a reply' : 'Snooze ticket' }</Modal.Title></DialogHeader>
         <Modal.Body>
             <ScheduleForm schedule={ { kind } } conversation={ conversation } agents={ agents } currentAgentId={ settings.currentAgent?.id }
                 changed={ markDirty } clean={ markSaved } onCancel={ close } onSaved={ async () => { onHide(); await onSaved(); } } />

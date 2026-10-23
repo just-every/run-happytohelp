@@ -4,8 +4,9 @@ import initialsFromName from 'initials';
 import { ChatContext } from "../contexts/ChatContext";
 
 import '../styles/components/Avatar.scss';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
-function Avatar({ name, initials, className, url, icon, href, style, projectId, variant }) {
+function Avatar({ name, initials, className, url, icon, href, label, style, projectId, variant }) {
     // The avatar background is a per-project widget setting. Prefer an explicitly passed
     // project (conversation lists mix projects), then the open conversation's project,
     // then the single-project page's global settings.
@@ -49,7 +50,7 @@ function Avatar({ name, initials, className, url, icon, href, style, projectId, 
         : <span className={"avatar-title rounded-circle"+(icon ? " has-icon" : "")} style={ style }>{ icon ? React.cloneElement(icon, { 'aria-hidden': true }) : <span>{ initials } </span> }</span>;
 
     return href
-        ? <a href={ href } className={ classes.join(' ') } aria-label={ name }>{ avatar }</a>
+        ? <a href={ href } className={ classes.join(' ') } { ...tooltip(label || name) }>{ avatar }</a>
         : <div className={ classes.join(' ') } role={ icon ? 'img' : undefined } aria-label={ icon ? name : undefined }>{ avatar }</div>;
 }
 

@@ -4,6 +4,7 @@ import EscalationForm from './EscalationForm';
 import {escalationRead} from './api';
 import './escalations.css';
 import './escalation-dialog.css';
+import DialogHeader from '../DialogHeader';
 
 const customerVisible = message => !message.private && !message.is_private && !message.is_note && message.type !== 'note' && message.actor_role !== 'note';
 
@@ -32,7 +33,7 @@ export default function EscalationDialog({projectId, conversationId, onHide, onC
         return () => { active = false; };
     }, [base, conversationBase]);
     return <Modal show size="lg" onHide={busy ? undefined : onHide} aria-labelledby={titleId} className="escalation-dialog">
-        <Modal.Header closeButton={!busy}><Modal.Title id={titleId}>Escalate to engineering</Modal.Title></Modal.Header>
+        <DialogHeader closeButton={!busy}><Modal.Title id={titleId}>Escalate to engineering</Modal.Title></DialogHeader>
         <Modal.Body>
             {state.loading && <p className="escalation-hint" role="status">Loading escalation context…</p>}
             {state.error && <p className="escalation-error" role="alert">{state.error}</p>}

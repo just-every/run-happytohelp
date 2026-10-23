@@ -52,7 +52,7 @@ export async function proactiveWidgetBrowser({operatorJourney=true}={}) {
                 }
                 await page.screenshot({path: `${evidence}/insight-${width}.png`, fullPage: true});
                 if (mode === 'dismiss') {
-                    if(width===390)await page.locator('.happytohelp-insight-close').tap();
+                    if(width===390)await page.getByRole('button', {name: 'Close', exact: true}).tap();
                     else await page.getByText('No thanks', {exact: true}).click();
                     await offer.waitFor({state: 'hidden'});
                     await page.reload();

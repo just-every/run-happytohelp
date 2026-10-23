@@ -6,6 +6,7 @@ import ReplyIcon from '../reply-icons/ReplyIcon';
 import ConversationDetailField from './ConversationDetailField';
 import ConversationDetailSection from './ConversationDetailSection';
 import address from './emailAddress';
+import { tooltip } from '../../../../modules/tooltip/tooltip';
 
 const contactPath = (conversation, contact) => `/projects/${ conversation.project_id }/contacts/${ contact.id }`;
 
@@ -53,8 +54,7 @@ export default function ConversationContactDetails({ conversation, onEdit, onEma
             <button type="button" className="btn btn-white" onClick={ onEdit }>
                 <ReplyIcon name="pencil" /> Edit contact
             </button>
-            <button type="button" className="btn btn-white dropdown-toggle dropdown-toggle-split" ref={ actionsButtonRef } aria-haspopup="menu" aria-expanded={ actionsOpen } onClick={ () => setActionsOpen(open => !open) }>
-                <span className="visually-hidden">Contact actions</span>
+            <button type="button" className="btn btn-white dropdown-toggle dropdown-toggle-split" ref={ actionsButtonRef } { ...tooltip('Contact actions') } aria-haspopup="menu" aria-expanded={ actionsOpen } onClick={ () => setActionsOpen(open => !open) }>
                 <ReplyIcon name="chevron-down" />
             </button>
             { actionsOpen && <ul className="dropdown-menu show" role="menu">

@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "bf00481d34025cefc833c022e8bf1d4ddcc44bbb5e3265b19db5f24864edac2f",
+      "sha256": "a1e49aa6ff4c9c2924b39daddb7aabfbe27332fc50e78fe6724fde912936a97d",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "df8de88bf9b1804bf4ecbe251e862477a70deef2e3b9a117f1a14af1913c4f61",
+      "sha256": "bcab41aaeef7df64cb2b88bfe95f8d7d8df81aea086890bf5dcecbeaa682cfd3",
       "executable": false
     },
     "DEMO.md": {
@@ -2924,7 +2924,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "3951f6add4a40f0079022688cc693057d45474f7f2cb93e25dbbe1abe6f5edd2",
+      "sha256": "70fad6aa38e3148593436a4084003762db87eebfb127951f0a30dbce43e83f20",
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {
@@ -11264,7 +11264,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "b496808fe84bdb218dbdf7cb8e2dc5a76a3220a85d5a2ed7e50566ff4b0c6552",
+      "sha256": "a33296adc895bb20116e09d1b1b051a1423d29b54d4ecda0639001bacd775634",
       "executable": false
     },
     "tests/helpers/installer/hosted-export.mjs": {

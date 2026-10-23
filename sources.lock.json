@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "e1d90886f9699bcdfdd24435b8cd9b64f33bd6b98a596fd10e463d457344fe52",
+      "sha256": "b8ec1c9400ab62b298965c61e0888c396ce7162f0c908952ae9059a059759667",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "485bff41d6b4987557cdd29bf04e9dc8e898fae7225167ec4ee2176460905bd7",
+      "sha256": "3f8b4dfd1acc9eea70232c9e420b564bc77e12cdf8f672a7e0a27f7157299120",
       "executable": false
     },
     "DEMO.md": {
@@ -1692,7 +1692,7 @@
       "executable": false
     },
     "docs/help-before-they-ask.md": {
-      "sha256": "f98d42ac0628d6b11b1b8e3624a5e5216ce6d36a859f66dd33f75123c386948c",
+      "sha256": "118913f5da06f5fa91a240143f645283ab56992d9b335f22580e4aab4db674ab",
       "executable": false
     },
     "docs/help-center.md": {

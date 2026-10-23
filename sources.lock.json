@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "508d0ed40129a9e4675367a765d4748e5c3e997c2f97c35469ee06f1c18a1f7e",
+      "sha256": "9736ffc83160f7d74d79ffd8a8bc900640b0849a0e59835bd05189b3edd4ee4f",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d468581f47515f2c86c58bb708a1c466c327674b39158609fac9be2f28a96711",
+      "sha256": "a3f1cc9f1162e8cd8b572e7453eff88e151a32f847383ba3ce7d1a33abc40478",
       "executable": false
     },
     "DEMO.md": {
@@ -1748,7 +1748,7 @@
       "executable": false
     },
     "docs/moving-in.md": {
-      "sha256": "bf5f4fabb1acb80d393cbdd4f29662b6ccc666c5dad0eaf2da85c73fc98b7acf",
+      "sha256": "6fa9f539d5e991cc1d7094ee36d9efc90e4ed70136066fcde16b209000adf661",
       "executable": false
     },
     "docs/NAVIGATION.md": {
@@ -9940,7 +9940,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInOwnership.jsx": {
-      "sha256": "7cc09c1beb87ad9f6d95be727003daebc3b2a2bfc9c1eb60d4da515056053b1e",
+      "sha256": "d2b4826b84bb17d738d7929b6afbad6b1381e81f6dc1d7485c2af29566109b5f",
       "executable": false
     },
     "src/ui/native/pages/MoveInReport.jsx": {
@@ -11984,7 +11984,7 @@
       "executable": false
     },
     "tests/live/csat-mail.mjs": {
-      "sha256": "767a9d7e75c7095200afb4d3ded0b513f5c0c7209b49ad455871dd044b0f972a",
+      "sha256": "04e7d0d71bc52f7ef72d6b4187281fb1109e595c4e909e098b40e7af18fa234f",
       "executable": false
     },
     "tests/live/README.md": {
@@ -12041,6 +12041,10 @@
     },
     "tests/move-in/attachment-browser.mjs": {
       "sha256": "4310ff7415522a5c4daf20bfa0e6afa1c012770ad5217783a5157ddfb8a8b0d0",
+      "executable": false
+    },
+    "tests/move-in/attachment-erasure.mjs": {
+      "sha256": "12c2036971ea27c1b3e3734de2e127140295e9ea8572c35e79262cfcb30a0e1a",
       "executable": false
     },
     "tests/move-in/attachment-fixtures.mjs": {

@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "19f2a9641b4fd6e4a7ee0aa25fb0bff853cf54623cd3aba60e13207b4bcb4780",
+      "sha256": "9660a742f82f844c57c360562bba7fc17ec019f48971bf4ec8c4d9ea794ab0a1",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "65b55d410f29cc5bc201371a8c93bc8402c81ef60c3f57aae930fa36f8d64d05",
+      "sha256": "3fa75d12f88465ab5d05bb1eaf0c1add924e50850effd4a021a7fa9de82c9c2a",
       "executable": false
     },
     "DEMO.md": {
@@ -1796,7 +1796,7 @@
       "executable": false
     },
     "docs/tickets.md": {
-      "sha256": "f6cd663157f75a27fd83bb345c84459ef3c27c5408f9194a401399c4d4c0e826",
+      "sha256": "ed225268c904bc260743be375ce1c049847f0474b602fdd08117fbcaee372f60",
       "executable": false
     },
     "docs/triage.md": {

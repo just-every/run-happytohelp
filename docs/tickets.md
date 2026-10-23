@@ -82,6 +82,8 @@ default requires the customer to explicitly enable update emails in their portal
 preferences. Missing consent and opt-outs are blocked. New tickets use the
 workspace's and contact's conversation rate limits. Previews expire after fifteen
 minutes, and requester changes or permission revocation require a fresh review.
+Re-enabling customer update emails never revives an earlier preview; review a new
+notice after the preference changes.
 **Refresh outcomes** checks the same command: it never resends a failed or
 uncertain delivery. Pending or sending means the outcome has not been confirmed.
 Email provider receipt, customer-mailbox delivery and messaging-provider sandbox

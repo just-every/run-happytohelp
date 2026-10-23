@@ -91,7 +91,7 @@ export const commandAdapter=createCommandAdapter(adapter,{
  generatedOutputs:['.generated','migrations/core','delivery-artifact','management/integration/deployment-spec.json','public/downloads','public/widget.js'],
  site:{entry:'src/site/pages.ts',config:'vite.site.config.ts',output:'.rer/site',declaration:'deploy-site.json'},
  product:model.product.name,dev,preview,signInPath:'/login',devIdentity:{entry:'src/dev/server.ts',output:['dist','delivery-artifact'],emailLinkTest:'tests/first-run/cli-sign-in.mjs'},verify:['pnpm',['run','verify:app']],deploy:hostedDeploy('deploy.json',hostedLifecycle),
- portability,
+ portability:{...portability,hostedExport:['node','scripts/installer/hosted-export.mjs']},
  setup:{manifestFile:'rer-setup.json'},browserModule:'scripts/installer/ui/seed.mjs',input:{names:{email:'OWNER_EMAIL',name:'OWNER_NAME'},defaults:localInputDefaults},
  localPrerequisites:async({vars})=>vars.H2H_LOCAL==='true'&&vars.EMAIL_PROVIDER==='development',
 });

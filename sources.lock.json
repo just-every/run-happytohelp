@@ -10965,7 +10965,7 @@
       "executable": false
     },
     "tests/helpers/business-connectors/network.mjs": {
-      "sha256": "e73b6ababd70ab51d913694cb4522899f670de90d8513aabea47622d243b00e4",
+      "sha256": "dea6699a37dd108f37d07b1ea5cb464a384ad72354d1bb5c97d58f1becf2f28a",
       "executable": false
     },
     "tests/helpers/business-connectors/shopify-journeys.mjs": {

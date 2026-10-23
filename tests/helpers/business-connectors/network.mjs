@@ -9,7 +9,7 @@ export function createNetwork(){
   const url=new URL(request.url),path=url.pathname,body=request.method==='GET'?null:await request.text(),data=body?(request.headers.get('content-type')?.includes('application/x-www-form-urlencoded')?Object.fromEntries(new URLSearchParams(body)):JSON.parse(body)):null;
   calls.push({host:url.hostname,path,method:request.method,data,headers:Object.fromEntries(request.headers)});
   const writeResult=value=>{if(failAfterWrite){failAfterWrite=false;throw Error('synthetic network timeout after provider commit');}return json(value);};
-  if(url.hostname==='synthetic-happytohelp-1.myshopify.com')return json(await shopify.handle(url,data));
+  if(url.hostname==='synthetic-happytohelp-1.myshopify.com')return json({data:await shopify.handle(url,data)});
   if(url.hostname==='api.stripe.com'){
    if(path==='/v1/account')return json({id:'synthetic-happytohelp-101'});
    if(path==='/v1/customers/'+customer)return json({id:customer,name:'Synthetic customer',currency:'usd',balance});

@@ -204,14 +204,21 @@ Worker already holds and sends only ones it lacks.
 The declaration maps the same `EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`
 inputs to rer's shared `MAIL_PROVIDER`, `MAIL_FROM` and `MAIL_API_KEY` preflight
 bindings as well as HappyToHelp's native bindings. Real deployment requires these
-mail inputs. `rer deploy --dry-run` validates their shape when you supply them. It
-needs the Cloudflare account credentials: without them it refuses before any
-provider request and lists what the real deploy needs. With them it builds locally
-and makes only read-only Cloudflare GET requests: the account's Workers subdomain
-and the Worker's settings and secret names (three requests against an existing
-Worker in `tests/helpers/installer/fresh-install.mjs`). It refuses when a required
-secret, such as a mail input, is neither held by the Worker nor supplied. Dry run
-sends no mail and changes no provider resources.
+mail inputs. NATIVE-001 requires a **zero-outbound dry-run** that explicitly
+reports no outbound requests and needs no provider credentials. A separate,
+explicitly started **read-only provider preflight** requires owner consent and
+the owner's scoped Cloudflare token. Its own acceptance permits only three GETs
+for an existing Worker: the account's Workers subdomain and the Worker's settings
+and secret names, with no mail or mutations. Neither step is a mock of the other.
+
+The split is not yet implemented or proved. Today's `rer deploy --dry-run`
+combines local validation/build with those credentialed read-only provider reads
+(`tests/helpers/installer/fresh-install.mjs` expects three GETs). It validates mail
+inputs when supplied, refuses without Cloudflare credentials before a provider
+request, and refuses a required secret neither held by the Worker nor supplied.
+It sends no mail and changes no resources, but it is not the contract's
+zero-outbound dry-run. A real owner-consented provider preflight and remote
+provisioning still need separate qualification.
 
 Cloudflare Email Sending additionally needs `EMAIL_ACCOUNT_ID`. Add
 `{"binding":"EMAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}` to the

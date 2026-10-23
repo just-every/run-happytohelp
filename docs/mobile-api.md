@@ -103,10 +103,12 @@ of bytes on a disconnected device. Native cache-erasure acceptance remains open.
 opts out and deletes its old links. It accepts no provider registration token.
 The device must hold `push` scope. Existing native teammate notification
 selection, per-kind inbox preference and current ticket permission determine the
-audience. The new hook prepares only committed notices. Imports, machine mail,
+audience. Preparation reads only committed notices created since device pairing.
+Imports, machine mail,
 self-notices and revoked devices retain their native suppression rules.
 
-`GET /push/prepared` exposes that device's prepared envelopes, marked
+`GET /push/prepared` prepares up to 100 recent notices on demand and exposes
+that device's envelopes, marked
 `delivery: "not-configured"`. Each contains a generic HappyToHelp title, a generic
 support notice and `h2h://open/<opaque-link-id>`. No customer text, names,
 addresses, attachment names, workspace IDs or ticket IDs enter the payload.

@@ -51,7 +51,8 @@ test('with sign-up and mail configured: registration waits for setup, then regis
 })
 
 // A magic link: neutral request receipt, a scanner-safe GET, one explicit POST into a session, and replay refused.
-for(const [name,viewport] of Object.entries(viewports))test(`magic sign-in in a ${viewport.width}px browser: neutral request, scanner-safe link, one explicit sign-in and refused replay`,async()=>{
+test('magic sign-in at 1440 and 390: neutral request, scanner-safe link, one explicit sign-in and refused replay',async()=>{
+ for(const [name,viewport] of Object.entries(viewports)){
  const shot=await evidence('magic-link')
  await withRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',EMAIL_PROVIDER:'sendgrid',EMAIL_API_KEY:'test-never-sent',EMAIL_FROM:'support@example.test'}},async runtime=>{
   const tenant=await runtime.seedTenant({name:'Magic browser',email:'owner@magic-browser.test',allowedOrigin:runtime.origin})
@@ -76,6 +77,7 @@ for(const [name,viewport] of Object.entries(viewports))test(`magic sign-in in a 
    await writeFile(shot(name+'-proof.json'),JSON.stringify({viewport,requestStatus:202,explicitConsumePosts:1,actorId:tenant.userId,replayDenied:true},null,2))
   }finally{await context.close()}
  })
+ }
 })
 
 test('account security in a 1440 and 390px browser: an authenticator app and a passkey, two-factor sign-in, the step-up dialog on an export, Settings → Security, Security log and Roles, a collaborator\'s notes-only conversation, and scoped native sign-out',{timeout:10*60_000},async()=>{await securityBrowserJourney(browser);await emailStepUpBrowserJourney(browser)})

@@ -8,7 +8,8 @@ import {launchBrowser,viewports,evidence} from './kit/browser.mjs'
 let browser
 before(async()=>{browser=await launchBrowser()})
 after(async()=>{await browser?.close()})
-for(const viewport of Object.values(viewports))test(`at ${viewport.width}px an owner erases a contact only after typing ERASE; identity, content and attachment are gone, the session is revoked and other visitors are untouched`,async()=>{
+test('at 1440 and 390 an owner erases a contact only after typing ERASE; identity, content and attachment are gone, the session is revoked and other visitors are untouched',async()=>{
+ for(const viewport of Object.values(viewports)){
  const shot=await evidence('contact-erasure'),runtime=await createRuntime(),origin=runtime.origin;let success=false
  const request=async(path,{token,body,method=body===undefined?'GET':'POST',headers={},raw=false}={})=>{const response=await fetch(origin+path,{method,headers:{...(body!==undefined&&!(body instanceof Uint8Array)?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{}),...headers},body:body===undefined?undefined:body instanceof Uint8Array?body:JSON.stringify(body)});if(raw)return response;assert.ok(response.ok,`${method} ${path}: ${response.status} ${await response.clone().text()}`);return response.json();};
  try{
@@ -58,4 +59,5 @@ for(const viewport of Object.values(viewports))test(`at ${viewport.width}px an o
  await writeFile(shot(`${viewport.width}-result.json`),JSON.stringify({checks},null,2));
  console.log(`Contact erasure browser passed: ${checks.length} checks.\n- ${checks.join('\n- ')}`);success=true;
 }finally{await runtime.close(success)}
+ }
 })

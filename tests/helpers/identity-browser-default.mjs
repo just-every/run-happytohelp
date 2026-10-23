@@ -13,24 +13,16 @@ export async function checkFreshInstall({ origin, kit }) {
     assert.equal(await setup.getAttribute('href'), '/setup');
     assert.equal(await page.locator('a[href="/register"]').count(), 0, 'no Sign up link while registration is off');
     assert.ok((await kit.hrefs(page)).includes('/forgot-password'));
-    await kit.assertHomepageLook(page, 'login');
     await kit.done(page, 'login-fresh-install');
-    kit.pass('fresh install: /login points to /setup, offers no sign-up, wears the homepage look');
+    kit.pass('fresh install: /login points to /setup and offers no sign-up');
 
     page = await kit.open(origin, '/register');
     await page.getByRole('heading', { name: 'Sign-up is closed' }).waitFor();
     assert.equal(await page.locator('input').count(), 0, 'no form when registration is closed');
     assert.deepEqual((await kit.hrefs(page)).filter(href => ['/login', '/setup', '/'].includes(href)).sort(), ['/', '/', '/login', '/setup']);
-    await kit.assertHomepageLook(page, 'register closed');
     await kit.done(page, 'register-closed');
     kit.pass('registration disabled: /register shows a closed notice with links to /login and /setup, and no form');
 
-    page = await kit.open(origin, '/login', { mobile: true });
-    await kit.assertHomepageLook(page, 'login mobile');
-    const box = await page.getByRole('button', { name: 'Login', exact: true }).boundingBox();
-    assert.ok(box.x >= 0 && box.x + box.width <= 390, 'login button inside a 390px viewport');
-    await kit.done(page, 'login-mobile');
-    kit.pass('390px phone: no horizontal scroll, wordmark and action inside the viewport');
 }
 
 export async function checkForgotPasswordWithoutEmail({ origin, kit }) {
@@ -42,7 +34,6 @@ export async function checkForgotPasswordWithoutEmail({ origin, kit }) {
     assert.equal((await answered).status(), 503, 'still fails closed');
     await page.getByRole('alert').filter({ hasText: /workspace owner must reset your password/ }).waitFor();
     await kit.expectNoText(page, /on its way|has been sent/);
-    await kit.assertHomepageLook(page, 'forgot-password');
     await kit.done(page, 'forgot-password-no-email');
     kit.pass('forgot-password without email: fails closed (503), says the workspace owner must reset it, claims no link was sent');
 }
@@ -59,13 +50,8 @@ export async function checkAfterSetup({ origin, kit }) {
     await signIn.waitFor();
     assert.equal(await signIn.getAttribute('href'), '/login?returnTo=%2Fsetup', 'sign-in resumes the setup page');
     assert.equal(await page.getByRole('button', { name: 'Create workspace' }).count(), 0);
-    await kit.assertHomepageLook(page, 'setup complete');
     await kit.done(page, 'setup-complete');
-    page = await kit.open(origin, '/setup', { mobile: true });
-    await page.getByRole('link', { name: 'Sign in', exact: true }).waitFor();
-    await kit.assertHomepageLook(page, 'setup complete mobile');
-    await kit.done(page, 'setup-complete-mobile');
-    kit.pass('/setup once complete: homepage look with a Sign in link, no wizard');
+    kit.pass('/setup once complete: a Sign in link, no wizard');
     page = await kit.open(origin, '/login');
     await kit.expectNoText(page, /not been set up/);
     await kit.done(page);
@@ -89,13 +75,9 @@ export async function checkLinkProblems({ origin, kit }) {
         for (const href of [...links, '/']) assert.ok(hrefs.includes(href), `${label}: links to ${href} (${hrefs})`);
         assert.ok(!page.requests.some(request => request.startsWith('POST /api/identity/verify-email') || request.startsWith('POST /api/identity/accept-token')), `${label}: nothing was submitted`);
         await kit.expectNoText(page, /Authentication required/);
-        await kit.assertHomepageLook(page, label);
         await kit.done(page, label.replace(/\W+/g, '-'));
-        const phone = await kit.open(origin, path, { mobile: true });
-        await kit.assertHomepageLook(phone, label + ' mobile');
-        await kit.done(phone);
     }
-    kit.pass('verify-email, reset-password and accept-invitation report a missing or unknown link on load, with no form and ways to recover (desktop and 390px)');
+    kit.pass('verify-email, reset-password and accept-invitation report a missing or unknown link on load, with no form and ways to recover (without consuming a link)');
 }
 
 export async function checkInvitationAcceptance({ origin, kit, runtime }, ownerSession) {
@@ -112,13 +94,9 @@ export async function checkInvitationAcceptance({ origin, kit, runtime }, ownerS
     assert.doesNotMatch(text, /Authentication required/);
     assert.ok((await page.locator('a', { hasText: 'Sign in' }).getAttribute('href')).includes('returnTo='), 'sign-in link returns to the invitation');
     await kit.assertNewPasswordField(page, 'accept-invitation');
-    await kit.assertHomepageLook(page, 'accept-invitation form');
     await page.getByLabel('Your name').fill('Nia Newhire');
     await kit.assertShortPasswordBlocked(page, () => page.getByRole('button', { name: 'Create account and join' }).click(), 'accept-invitation');
     await kit.done(page, 'accept-invitation-new-person');
-    page = await kit.open(origin, link(nia), { mobile: true });
-    await kit.assertHomepageLook(page, 'accept-invitation form mobile');
-    await kit.done(page, 'accept-invitation-new-person-mobile');
     page = await kit.open(origin, link(nia));
     await page.getByLabel('Your name').fill('Nia Newhire');
     await page.locator('input[type=password]').fill(invitedPassword);

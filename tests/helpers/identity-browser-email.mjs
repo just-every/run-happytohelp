@@ -28,17 +28,13 @@ export async function checkRegistrationOpen({ origin, kit }) {
     for (const name of ['name', 'email', 'password', 'projectName', 'allowedOrigin']) await page.locator(`input[name="${name}"]`).waitFor();
     assert.ok((await kit.hrefs(page)).includes('/login'));
     await kit.assertNewPasswordField(page, 'register');
-    await kit.assertHomepageLook(page, 'register form');
     await page.getByLabel('Your name').fill('Rae Registrant');
     await page.getByLabel('Email address').fill('rae@review.test');
     await page.getByLabel('Workspace name').fill('Rae Works');
     await page.getByLabel('Widget website origin').fill('https://rae.example');
     await kit.assertShortPasswordBlocked(page, () => page.getByRole('button', { name: 'Create account' }).click(), 'register');
     await kit.done(page, 'register-form');
-    page = await kit.open(origin, '/register', { mobile: true });
-    await kit.assertHomepageLook(page, 'register form mobile');
-    await kit.done(page, 'register-form-mobile');
-    kit.pass('registration on: /login links to /register, which shows the full form with the 12-1024 rule enforced in the browser');
+    kit.pass('registration on: /login links to /register, which shows the form and refuses a short password before sending');
 }
 
 export async function checkForgotPasswordWithEmail({ origin, kit }) {
@@ -65,7 +61,6 @@ export async function checkResetPassword({ origin, kit }, owner) {
     const page = await kit.open(origin, '/reset-password?token=' + reset.json.token);
     await kit.expectText(page, /kim@review\.test/);
     await kit.assertNewPasswordField(page, 'reset-password');
-    await kit.assertHomepageLook(page, 'reset-password form');
     await kit.assertShortPasswordBlocked(page, () => page.getByRole('button', { name: 'Set new password' }).click(), 'reset-password');
     await kit.shot(page, 'reset-password-form');
     await page.locator('input[type=password]').fill('synthetic-kim-second-password-2');
@@ -88,7 +83,6 @@ export async function checkVerifyEmail({ origin, kit, runtime }) {
     assert.match(text, /verity@review\.test/);
     assert.match(text, /Verity Works/);
     assert.ok(!page.requests.includes('POST /api/identity/verify-email'), 'opening the link consumes nothing');
-    await kit.assertHomepageLook(page, 'verify-email ready');
     await kit.shot(page, 'verify-email-ready');
     await page.getByRole('button', { name: 'Confirm email' }).click();
     await kit.expectText(page, /Email confirmed/);

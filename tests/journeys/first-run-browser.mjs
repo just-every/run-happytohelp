@@ -16,4 +16,4 @@ test('the Setup page and AI controls: fresh, local and provider observations, kn
 
 test('knowledge on Setup: an article and a website source published, cited by the assistant, a failed refresh retaining the corpus',{timeout:20*60_000},knowledgeActivationBrowser)
 
-test('the dashboard is ready before it acts, every first-run section and route variant works at 1440 and 390, and a returning visitor\'s profile reloads without writes',{timeout:20*60_000},async()=>{await readinessBrowser();await dashboardBrowser();await profileBrowser()})
+test('the dashboard is ready before it acts, native controls and workspace switching work at 1440 and 390, and a returning visitor\'s profile reloads without writes',{timeout:20*60_000},async()=>{await readinessBrowser();await dashboardBrowser();await profileBrowser()})

@@ -146,13 +146,11 @@ async function erasedScope(){
 }
 
 let tokens,before
-step('seeded contact data is present in real local D1 and R2',async()=>{
+step('only owners and admins of the contact project can erase it',async()=>{
+ // Establish the populated D1/R2 preconditions before attempting unauthorized erasure.
  tokens=await seed();before=await outsideScope()
  assert.equal((await erasedScope()).objects.every(Boolean),true)
  assert.equal((await call(conversationRoutes,'/conv1/messages',tokens.contact)).status,200)
-})
-
-step('only owners and admins of the contact project can erase it',async()=>{
  assert.equal((await erase(tokens.operator)).status,403,'operator refused')
  assert.equal((await erase(tokens.contact)).status,403,'contact session refused')
  assert.equal((await erase(tokens.qOwner)).status,403,'owner of another project refused')
@@ -361,6 +359,6 @@ step('inbound email evidence for the erased contact is redacted to classifier re
 })
 
 
-test('only owners and admins of the contact\'s own workspace can erase; erasure removes every personal row and object in D1 and R2 while other contacts, workspaces and the operator transcript stay coherent',async()=>{for(const run of steps.slice(0,5))await run()})
-test('repeating an erasure is idempotent and records the run, an erasure interrupted after R2 deletion completes on retry, and erased command ids can never be replayed or collided',async()=>{for(const run of steps.slice(5,8))await run()})
-test('inbound email evidence of the erased contact is reduced to classifier reasons in every claim form, and other senders keep theirs',async()=>{for(const run of steps.slice(8))await run()})
+test('only owners and admins of the contact\'s own workspace can erase; erasure removes every personal row and object in D1 and R2 while other contacts, workspaces and the operator transcript stay coherent',async()=>{for(const run of steps.slice(0,4))await run()})
+test('repeating an erasure is idempotent and records the run, an erasure interrupted after R2 deletion completes on retry, and erased command ids can never be replayed or collided',async()=>{for(const run of steps.slice(4,7))await run()})
+test('inbound email evidence of the erased contact is reduced to classifier reasons in every claim form, and other senders keep theirs',async()=>{for(const run of steps.slice(7))await run()})

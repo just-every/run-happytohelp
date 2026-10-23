@@ -38,7 +38,7 @@ source revision without its own checks.
 - The settled Add Note dialog previously let forward Tab escape through BODY and could strand reverse navigation on the dialog container. A dialog-level boundary now resolves current native tab stops on each Tab, wraps in both directions, and focuses the dialog when all controls are disabled. The close icon follows the same busy state as Note, Close and Add. The audit waits beyond the entrance transition, verifies container entry in both directions and three complete forward and reverse four-control loops (24 presses), Escape and Reply tools restoration. It also delays then forwards an unchanged real note request to prove all four controls are disabled while busy, Tab/Shift+Tab remain contained, Escape does not cancel the in-flight save, and the resulting note persists.
 - Additional branding previously used `rgba(113,62,224,.4)` on white: the composited ratio is about 1.90:1, not the opaque RGB value 6.06:1. Native summaries now receive the existing opaque focus ring and halo. Eight pixels of spacing prevent the ring overlapping the adjacent brand image. The corrected oracle also exposed a fading, initially transparent halo over the mobile navigation surface; focus styles now apply immediately, and that control has a separate rendered-pixel check. The widget Send button also inherited a white outside ring that blended into its light surrounding surface; removing that override restores the existing blue ring, verified against the outside surface rather than its blue button fill. Both computed alpha compositing and independent screenshot pixels are checked against 3:1 at desktop and 320 pixels; Enter and Space toggle the disclosure and Tab reaches Logo URL.
 
-The six independent checks in `node tests/accessibility-corrections.mjs` exercise repeated forward/reverse Tab, disabled fieldsets/inert/hidden/negative-tabindex controls, entry from the container, busy/no-control containment, dynamic single-control containment, and the contrast oracle. A deliberately translucent test ring is measured near 1.90:1 by both compositing and screenshot sampling, and an opaque ring passes both. These are isolated component test fixtures; the application audit uses real Worker/D1/R2 behavior.
+The one-off component and contrast-oracle correction fixtures were removed from the permanent suite in the October test-budget prune. Public-door focus, busy-dialog and rendered-contrast coverage remains in `tests/accessibility-browser.mjs`, using `tests/helpers/accessibility-correction-flow.mjs` against the real Worker/D1/R2 runtime.
 
 ## Rendered audit scope
 
@@ -74,7 +74,6 @@ Build, typecheck, the six independent correction checks and `git diff --check` p
 pnpm install --frozen-lockfile
 pnpm run build
 pnpm run typecheck
-H2H_EVIDENCE_DIR=.local-evidence/accessibility node tests/accessibility-corrections.mjs
 H2H_EVIDENCE_DIR=.local-evidence/accessibility node tests/accessibility-browser.mjs
 ```
 

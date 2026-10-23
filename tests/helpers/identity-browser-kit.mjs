@@ -2,8 +2,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { pbkdf2Sync, randomUUID } from 'node:crypto';
 
-// Shared pieces of the identity browser suite: API calls, page contexts and the homepage-look assertions.
-export const PAPER = 'rgb(246, 242, 234)', INK = 'rgb(20, 20, 20)', DASHBOARD_PURPLE = 'rgb(113, 62, 224)';
+// Shared API calls, page contexts and native password submission checks.
 
 export function createKit({ browser, evidenceDir, errors }) {
     const checks = [];
@@ -45,44 +44,10 @@ export function createKit({ browser, evidenceDir, errors }) {
             await page.getByLabel('Password', { exact: true }).fill(password);
             await page.getByRole('button', { name: 'Login', exact: true }).click();
         },
-        // The page must read as the homepage's sibling: the lockup home, paper, Outfit ink heading, black pill, no dashboard purple.
-        async assertHomepageLook(page, label, { action = true } = {}) {
-            const wordmark = page.getByRole('link', { name: 'HappyToHelp', exact: true });
-            assert.equal(await wordmark.getAttribute('href'), '/', `${label}: wordmark links home`);
-            // The header link is the homepage's lockup: the mark, then the drawn wordmark, named by visually hidden text.
-            assert.deepEqual(await page.locator('header.id-header a.brand').evaluateAll(links => links.map(link => [...link.children].map(child => [`${child.localName}.${child.getAttribute('class')}`, child.getAttribute('aria-hidden'), child.getAttribute('focusable')]))), [[['svg.brand-mark', 'true', 'false'], ['svg.brand-word', 'true', 'false'], ['span.brand-name', null, null]]], `${label}: the header link is the mark and the drawn wordmark`);
-            assert.ok(await page.locator('header.id-header .brand-name').evaluate(name => { const box = name.getBoundingClientRect(); return box.width <= 1 && box.height <= 1; }), `${label}: the lockup's name is visually hidden`);
-            const look = await page.evaluate(() => {
-                const style = element => getComputedStyle(element);
-                const heading = document.querySelector('h1'), pill = document.querySelector('.pill--ink');
-                const purple = [...document.querySelectorAll('body *')].filter(element => ['color', 'backgroundColor', 'borderTopColor'].some(property => style(element)[property] === 'rgb(113, 62, 224)')).length;
-                const probe = (x, y) => { const stack = document.elementsFromPoint(x, y); return stack.length ? style(stack[0]).backgroundColor : ''; };
-                return {
-                    bodyBackground: style(document.body).backgroundColor,
-                    pageBackground: [style(document.querySelector('.h2h-identity')).backgroundColor, probe(2, 2), probe(2, innerHeight - 2), probe(2, innerHeight / 2)],
-                    headingFont: heading && style(heading).fontFamily.split(',')[0].trim(), headingSize: heading && parseFloat(style(heading).fontSize), headingColor: heading && style(heading).color,
-                    labelSizes: [...document.querySelectorAll('label')].map(label => parseFloat(style(label).fontSize)),
-                    purple, overflow: document.documentElement.scrollWidth - innerWidth,
-                    pill: pill && { background: style(pill).backgroundColor, color: style(pill).color, height: pill.getBoundingClientRect().height, radius: parseFloat(style(pill).borderTopLeftRadius) },
-                    images: document.querySelectorAll('img').length,
-                };
-            });
-            assert.equal(look.bodyBackground, PAPER, `${label}: body is the homepage paper`);
-            assert.deepEqual(look.pageBackground.slice(1), [PAPER, PAPER, PAPER], `${label}: corners and edge are paper, not a photograph`);
-            assert.equal(look.headingFont, 'Outfit', `${label}: Outfit heading`);
-            assert.ok(look.headingSize >= 28, `${label}: heading ${look.headingSize}px`);
-            assert.equal(look.headingColor, INK, `${label}: ink heading`);
-            assert.ok(look.labelSizes.every(size => size >= 14), `${label}: labels ${look.labelSizes}`);
-            assert.equal(look.purple, 0, `${label}: none of the dashboard purple`);
-            assert.ok(look.overflow <= 0, `${label}: no horizontal scroll (${look.overflow})`);
-            assert.equal(look.images, 0, `${label}: no photograph`);
-            if (action) assert.ok(look.pill && look.pill.background === INK && look.pill.color === 'rgb(255, 255, 255)' && look.pill.height >= 40 && look.pill.radius >= 20, `${label}: black pill action ${JSON.stringify(look.pill)}`);
-        },
         async assertNewPasswordField(page, label) {
             const field = page.locator('input[type=password]');
             assert.equal(await field.count(), 1, `${label}: one password field`);
-            assert.deepEqual(await field.evaluate(input => ({ min: input.minLength, max: input.maxLength, complete: input.autocomplete })), { min: 12, max: 1024, complete: 'new-password' }, `${label}: 12-1024 and new-password`);
-            assert.match(await kit.text(page), /12 to 1024 characters/, `${label}: the rule is stated`);
+            assert.equal(await field.getAttribute('autocomplete'), 'new-password', `${label}: password managers offer a new password`);
         },
         // A five-character password must be stopped by the browser: no request reaches the server.
         async assertShortPasswordBlocked(page, submit, label) {

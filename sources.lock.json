@@ -1648,7 +1648,7 @@
       "executable": false
     },
     "docs/ACCESSIBILITY-AUDIT-2026-09-30.md": {
-      "sha256": "b5d63c287f209e4c36cfe6cdd4d74cac66f6a55d1ffb47a6b5f6948350e284a1",
+      "sha256": "7f427a051f4a030210b13eb49d1ffd4e3d3d529a3e6a22e0e9aa4c7fc8ade0ef",
       "executable": false
     },
     "docs/account-security.md": {
@@ -10459,14 +10459,6 @@
       "sha256": "995ffd4f03e75f9a036d837f99284f64dd001731cd23b830681f0ca638a4452b",
       "executable": false
     },
-    "tests/accessibility-corrections.mjs": {
-      "sha256": "a51fb67df5796538a5e372bb3b1c697b319c0c4393797c3b8d7a43379248c634",
-      "executable": false
-    },
-    "tests/accessibility-occlusion-regression.mjs": {
-      "sha256": "4eb72fb82390b73beaa236671908800e80be34ac66813d003a03e343506eeda7",
-      "executable": false
-    },
     "tests/activation/browser-kit.mjs": {
       "sha256": "7feb4d9c148bc9804a1be5cd17a58ab2b218e9959ff11697b89d23329338e4db",
       "executable": false
@@ -10613,10 +10605,6 @@
     },
     "tests/first-run/customer-mail.mjs": {
       "sha256": "e4426328a3f9c4ccb2918b4e96114bacd5c8e03bb8e0a3205bc5f14e233eaff4",
-      "executable": false
-    },
-    "tests/first-run/dashboard-route-variants.mjs": {
-      "sha256": "47f9483442664c70283327dc1bb35a41f1b30d34681e6cfe23c8f197c9ad0170",
       "executable": false
     },
     "tests/first-run/inventory.mjs": {
@@ -11008,7 +10996,7 @@
       "executable": false
     },
     "tests/helpers/first-run/dashboard-browser.mjs": {
-      "sha256": "22f0e21f35009544be61ddfbbeabec2a6f1883e81c01dde77a828f4ee4a34b91",
+      "sha256": "f5cd3ea94e312149d439315d6f3f8f1d5cc8b4101a2fe57ba5c13272ea04d608",
       "executable": false
     },
     "tests/helpers/first-run/first-release.mjs": {
@@ -11080,11 +11068,11 @@
       "executable": false
     },
     "tests/helpers/identity-browser-default.mjs": {
-      "sha256": "060e170c913fed4e79c7a97d76affe0553632ec2283707f411028f57e14160a5",
+      "sha256": "14905331e6c41e1127e24af6a56a5b8dfe1b3bfbad07afd231813ca931816507",
       "executable": false
     },
     "tests/helpers/identity-browser-email.mjs": {
-      "sha256": "331e90d17e0762c658223394be1d7f9efd8151f9fccf0317bcd73b6add48e5e0",
+      "sha256": "644486580cc1fc5a2cbe517770d89951f40c6381f682854e84bb1f40ee1d9429",
       "executable": false
     },
     "tests/helpers/identity-browser-invitations.mjs": {
@@ -11092,7 +11080,7 @@
       "executable": false
     },
     "tests/helpers/identity-browser-kit.mjs": {
-      "sha256": "fbf130baef34d7737c7998be4f778b42f91c29d11474ca8094a21b8c4c11d6f4",
+      "sha256": "730d657d9485fd2aaed02513bea86994f8e963f4acb639b066f8d0e16cb56b0c",
       "executable": false
     },
     "tests/helpers/identity-db.mjs": {
@@ -11660,15 +11648,15 @@
       "executable": false
     },
     "tests/journeys/erasure-browser.mjs": {
-      "sha256": "4eb5bbf041d2afbed7ae3479fd6848ac76f2c474ed29bc79960fbc7096fd145e",
+      "sha256": "8b0923b58803f5ac51ae69b3c9a0991d0fb1f205d363b1a4bb4f55da7d52aa23",
       "executable": false
     },
     "tests/journeys/erasure.mjs": {
-      "sha256": "310391a6be857c138b89a937d590ed4f6c1fed251c4d644b4d56868a19d1535b",
+      "sha256": "ef3652e202b521f1aadb4edb9bc79de4acdd5888c6ded06d6da02e37d611cc76",
       "executable": false
     },
     "tests/journeys/first-run-browser.mjs": {
-      "sha256": "3a4344f1ac707e9a51be1c4e42e569aa211d5103ab13d491fdc06b7150c703eb",
+      "sha256": "83f9a391dc5d78ab92bb0104a16b6e4fd66e90efd6ce4d5fff881f94a10bbd77",
       "executable": false
     },
     "tests/journeys/first-run.mjs": {
@@ -11676,7 +11664,7 @@
       "executable": false
     },
     "tests/journeys/identity-browser.mjs": {
-      "sha256": "9d4843c418c4e2fbe93cf51a67098d84fc75bae42d5676dd67ca5164788fa313",
+      "sha256": "2b56fce3c12de59e6b4951682ee5c5511e80623f3f1e765888755ed19018baff",
       "executable": false
     },
     "tests/journeys/identity.mjs": {

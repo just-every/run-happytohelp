@@ -562,7 +562,7 @@ The platform admission index's `move_in_contact_keys.email_digest` remains lazy 
 
 ## Status
 
-Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). R5 additionally updates SLA-001, AUTOMATION-001/002, QUEUE-001/004 and STATUS-001 from the workflow, inbox and packaged recovery journeys on 17 October 2026. WIDGET-001 and AUTOMATION-002 are re-judged at `473a30dab0c6458e5250a55cbebeef999e1e3063` (22 October 2026), with workspace presence and the away-reply correction (migrations 240 and 241). AUTOMATION-001 is re-judged DONE at `2adc6f5b3c209d84eacc420b186a60b1cd07b335` (23 October 2026; carried from `eaffcb11f0bbea7f1ed6ae283311fb1eba87156b`).
+Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). R5 additionally updates SLA-001, AUTOMATION-001/002, QUEUE-001/004 and STATUS-001 from the workflow, inbox and packaged recovery journeys on 17 October 2026. WIDGET-001 and AUTOMATION-002 are re-judged at `473a30dab0c6458e5250a55cbebeef999e1e3063` (22 October 2026), with workspace presence and the away-reply correction (migrations 240 and 241). AUTOMATION-001 is re-judged DONE at `a01d18cafb12c4bf39a5689646552d93aa0cc23a` (23 October 2026; carried from `eaffcb11f0bbea7f1ed6ae283311fb1eba87156b`).
 
 The 23 October 2026 contract-text clarification separates local implementation/fixture evidence from unobserved live qualification and records the interim knowledge permission default. It changes no clause status; all existing build and qualification obligations remain.
 

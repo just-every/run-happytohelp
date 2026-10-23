@@ -11940,7 +11940,7 @@
       "executable": false
     },
     "tests/move-in/formats.mjs": {
-      "sha256": "ef5c3c061ed9f358c5f0424cb49be44e7c034bfbbdaf7c8dae3e70494a236a31",
+      "sha256": "a7712d5db00a2ae49b92dd66e7001ee46c42d5793aba5df142a4ed7883604f75",
       "executable": false
     },
     "tests/move-in/freshdesk-fixtures.mjs": {

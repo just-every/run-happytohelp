@@ -11392,7 +11392,7 @@
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {
-      "sha256": "a881fdebb8f33a59202e75b690a540be3b3d605735c33ee302df36f8c62f6404",
+      "sha256": "56571d25173f13b1d0db6ab9e63b9861b85bce0939d611bc72137abf1abbbe7d",
       "executable": false
     },
     "tests/helpers/installer/reproducible.mjs": {

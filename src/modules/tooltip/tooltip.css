@@ -1,0 +1,44 @@
+/* The tooltip of an icon-only control (./tooltip.tsx). One quiet label: the control's name on a filled pill, no arrow and no
+   fade, so it never passes through a lower-contrast colour on its way in. A page themes it through custom properties set
+   on its controls (the layer reads them on the control it is showing for), with neutral ink defaults. */
+.ui-tooltip {
+  position: fixed;
+  inset: auto;
+  top: 0;
+  left: 0;
+  z-index: 2147483647;
+  display: none;
+  box-sizing: border-box;
+  max-width: calc(100vw - 16px);
+  margin: 0;
+  padding: var(--tooltip-padding, 5px 9px);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--tooltip-radius, 6px);
+  color: var(--tooltip-fg, #ffffff);
+  background: var(--tooltip-bg, #141414);
+  /* A hairline in its own text colour keeps its edge on a surface of its own colour (an ink pill over an ink bar). */
+  box-shadow: var(--tooltip-shadow, 0 0 0 1px color-mix(in srgb, var(--tooltip-fg, #ffffff) 30%, transparent));
+  font-family: inherit;
+  font-size: var(--tooltip-font-size, 13px);
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.35;
+  text-align: left;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+.ui-tooltip[data-open] { display: block; }
+/* A long press shows the tooltip, so the browser's own long-press callout and text selection stay off the control. */
+[data-tooltip] {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+@media (forced-colors: active) {
+  .ui-tooltip { border: 1px solid CanvasText; color: CanvasText; background: Canvas; }
+}

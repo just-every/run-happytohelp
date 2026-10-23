@@ -35,17 +35,6 @@
     }
 }
 
-.tooltip-light {
-    .tooltip-inner {
-        background-color: var(--paper-deep);
-    }
-    .arrow {
-        &::before {
-            border-left-color: var(--paper-deep);
-        }
-    }
-}
-
 .conversation-item-error {
     margin: 4px 12px 8px;
     color: var(--danger);

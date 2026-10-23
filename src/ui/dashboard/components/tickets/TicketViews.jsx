@@ -7,6 +7,7 @@ import { ChatContext } from '../../contexts/ChatContext';
 import TicketViewRules from './TicketViewRules';
 import { json, queueFields, ticketPath } from './ticket-model';
 import './tickets.css';
+import DialogHeader from '../DialogHeader';
 
 const empty = { name: '', visibility: 'personal', filters: [], sort: [] };
 const readRules = value => { try { const result = typeof value === 'string' ? JSON.parse(value) : value; return Array.isArray(result) ? result : []; } catch { return []; } };
@@ -53,7 +54,7 @@ export default function TicketViews({ projectId, currentAgentId, view, editing, 
     };
     const apply = () => { navigate({ search: { ...search, saved_view: undefined, filters: JSON.stringify(draft.filters), sort: JSON.stringify(draft.sort) } }); onClose(); };
     return <Modal show onHide={ () => !busy && onClose() } className="ticket-view-dialog" aria-labelledby="ticket-view-dialog-title">
-        <Modal.Header closeButton={ !busy }><Modal.Title id="ticket-view-dialog-title">{ editing ? 'Edit view' : 'Save as view' }</Modal.Title></Modal.Header>
+        <DialogHeader closeButton={ !busy }><Modal.Title id="ticket-view-dialog-title">{ editing ? 'Edit view' : 'Save as view' }</Modal.Title></DialogHeader>
         <form onSubmit={ save }>
             <Modal.Body className="ticket-queue-tools">
                 { error && <p role="alert" className="text-danger">{ error }</p> }

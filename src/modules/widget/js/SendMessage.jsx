@@ -10,10 +10,10 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faArrowRight as fasArrowAltRight} from "@fortawesome/free-solid-svg-icons";
 import {faPaperclip as falPaperclip, faExpand as falExpand, faEnvelope as faUser} from "@fortawesome/free-solid-svg-icons";
 
-import { Tooltip } from 'react-tooltip'
 import {formatRelative, parseISO} from "date-fns";
 import {ConnectContext} from "./context/ConnectContext";
 import {updateViewportProperties} from "./includes/utils";
+import { tooltip } from '../../tooltip/tooltip';
 
 export default function SendMessage({ mainView, setView, messages, localContact, contact, sendContact, onSend, displayError }) {
     const context = useContext(AppContext);
@@ -173,10 +173,9 @@ export default function SendMessage({ mainView, setView, messages, localContact,
                 </div>
                 <div className={"happytohelp-send-message-row happytohelp-send-message-row-buttons"+((contact.email || contact.name) ? " happytohelp-send-message-row-larger" : "")} onClick={event => { if (!event.target.closest('button')) focusText(event); }}>
                     { !showCollector && (contact.email || contact.name) && <div className="happytohelp-message-show-contact-container">
-                        <button type="button" data-tooltip-id="h2h-tooltip-send"
-                             data-tooltip-content={context.text.message.tooltip_contact}
+                        <button type="button"
                              className="happytohelp-message-show-contact"
-                            aria-label={context.text.message.tooltip_contact}
+                            { ...tooltip(context.text.message.tooltip_contact) }
                             onClick={() => setShowCollector(true)}>
                             <FontAwesomeIcon icon={faUser}/>
                             <span>{contact.email || contact.name}</span>
@@ -184,11 +183,9 @@ export default function SendMessage({ mainView, setView, messages, localContact,
                     </div>}
                     {
                         context.settings.message.collect_screenshot && canTakeScreenshot ?
-                            <button data-tooltip-id="h2h-tooltip-send"
-                                    data-tooltip-content={isPreview ? 'Screenshots are disabled in preview' : context.text.message.tooltip_screenshot} name="screenshot"
+                            <button name="screenshot"
                                     className="happytohelp-btn" disabled={isPreview}
-                                    aria-label={isPreview ? 'Screenshots are disabled in preview' : context.text.message.tooltip_screenshot}
-                                    title={isPreview ? 'Screenshots are disabled in preview' : undefined}
+                                    { ...tooltip(isPreview ? 'Screenshot disabled in preview' : context.text.message.tooltip_screenshot) }
                                     onClick={isPreview ? undefined : () => takeScreenshot(files, setFiles)} style={ context.theme.input.button }>
                                 <FontAwesomeIcon icon={falExpand}/></button>
                             : null
@@ -196,27 +193,21 @@ export default function SendMessage({ mainView, setView, messages, localContact,
                     {
                         context.settings.message.collect_attachments ?
                             isPreview ?
-                                <button data-tooltip-id="h2h-tooltip-send"
-                                        data-tooltip-content="Attachments are disabled in preview" name="attach"
-                                        className="happytohelp-btn" disabled aria-label="Attachments are disabled in preview"
-                                        title="Attachments are disabled in preview" style={ context.theme.input.button }>
+                                <button name="attach"
+                                        className="happytohelp-btn" disabled { ...tooltip('Attachments disabled in preview') } style={ context.theme.input.button }>
                                     <FontAwesomeIcon icon={falPaperclip}/></button>
                                 : <FileHandlerButton>
-                                <button data-tooltip-id="h2h-tooltip-send"
-                                        data-tooltip-content={context.text.message.tooltip_attach} name="attach"
-                                        aria-label={context.text.message.tooltip_attach}
+                                <button name="attach"
+                                        { ...tooltip(context.text.message.tooltip_attach) }
                                         className="happytohelp-btn"><FontAwesomeIcon icon={falPaperclip} style={ context.theme.input.button }/></button>
                             </FileHandlerButton>
                             : null
                     }
                     <button type="submit" name="submit" className="happytohelp-btn"
                             onClick={handleSend}
-                            aria-label={context.text.message.tooltip_send}
-                            data-tooltip-id="h2h-tooltip-send" data-tooltip-content={context.text.message.tooltip_send}  style={ context.theme.input.send }>
+                            { ...tooltip(context.text.message.tooltip_send) } style={ context.theme.input.send }>
                         <FontAwesomeIcon icon={fasArrowAltRight}/></button>
                 </div>
-                <Tooltip id="h2h-tooltip-send" effect="solid" place="top" delayShow={100} delayHide={100}
-                         offset={{top: 0, right: 0, bottom: 0, left: 5}} className="happytohelp-tooltip"/>
             </FileHandler>
         );
     }

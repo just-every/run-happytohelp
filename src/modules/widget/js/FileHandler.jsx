@@ -1,4 +1,4 @@
-import React, {useCallback, useContext, useEffect, useState} from "react";
+import React, {useCallback, useContext, useEffect, useId, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faTimes as falTimes} from "@fortawesome/free-solid-svg-icons";
 import AppContext from "./context/AppContext";
@@ -6,6 +6,7 @@ import ModalPreview from './ModalPreview';
 import Media from './Media';
 
 import {useDropzone} from "react-dropzone";
+import { tooltip } from '../../tooltip/tooltip';
 
 function markupFiles(files) {
     // Path is read only. Only name is provided in some cases, so map this to path for ease of use
@@ -137,14 +138,7 @@ export function FileHandlerList(props) {
         props.setFiles(newFiles)
     }
 
-    const fileList = props.files.map(file => (
-        <li key={file.path+file.size}>
-            <Media key={ file.path+file.size } upload={ true } media={ file } setPreview={ setPreviewFile } />
-            <button type="button" className="happytohelp-preview-close" aria-label={`Remove ${file.name || file.path || 'attachment'}`} onClick={removeFile(file)}>
-                <FontAwesomeIcon icon={falTimes} aria-hidden="true" />
-            </button>
-        </li>
-    ))
+    const fileList = props.files.map(file => <AttachedFile key={ file.path+file.size } file={ file } onRemove={ removeFile(file) } setPreview={ setPreviewFile } />)
 
     return (<>
         <ModalPreview
@@ -163,6 +157,19 @@ export function FileHandlerList(props) {
             </div>
         ): null}
     </>)
+}
+
+// One attached file: its preview and its remove button, both described by the file's name.
+function AttachedFile({ file, onRemove, setPreview }) {
+    const nameId = useId();
+    return (
+        <li>
+            <Media upload={ true } media={ file } setPreview={ setPreview } nameId={ nameId } />
+            <button type="button" className="happytohelp-preview-close" { ...tooltip('Remove attachment', { describedBy: nameId }) } onClick={ onRemove }>
+                <FontAwesomeIcon icon={falTimes} aria-hidden="true" />
+            </button>
+        </li>
+    )
 }
 
 export function FileHandlerButton(props) {

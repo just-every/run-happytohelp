@@ -16,6 +16,7 @@ import {archiveSnapshot,archiveStorage,retainHistoricalLedger,assertHistoricalLe
 import {seedPortableData,verifyPortableData} from '../rer-data.mjs';
 import {seedReportClaimedRecovery} from '../reports-portable.mjs';
 import {interruptPortableTraining} from '../training-portable.mjs';
+import {interruptPortableWork,verifyPortableWork} from '../unfinished-portable.mjs';
 import {safeDiagnostic} from '../delegation-journey/diagnostics.mjs';
 import {readDurableObjects} from '../../../scripts/installer/durable-objects.mjs';
 
@@ -88,6 +89,7 @@ try{
  assert.ok(await presenceRows()>0,'the owner\'s dashboard presence was recorded');
  await seedReportClaimedRecovery(root,portable.reports);
  await interruptPortableTraining(root,portable.training);
+ await interruptPortableWork(root,portable,actor.id);
  const historical=await retainHistoricalLedger(root);
  const beforeExport=await archiveSnapshot(root);
  assert.ok(beforeExport.rows.move_in_runs.length>0 && beforeExport.rows.contact_erasures.length>0 && beforeExport.objects.length>0);
@@ -107,7 +109,7 @@ try{
  const expectedExport=structuredClone(beforeExport);expectedExport.rows.durable_object_snapshots=before.rows.durable_object_snapshots;
  compareArchive(expectedExport,before);
  assert.equal((await stat(join(root,'exports/support.rer'))).mode&0o777,0o600);
- await hostedExportJourney(root,scratch);
+ const hostedArchive=await hostedExportJourney(root,scratch);
  await assertHistoricalLedger(root,historical);
  await run(root,['import','--input','exports/support.rer','--yes'],4);
  compareArchive(before,await archiveSnapshot(root));
@@ -135,8 +137,9 @@ try{
  }
 
  await writeFile(additive,'CREATE TABLE rer_journey_additive(id TEXT PRIMARY KEY, value TEXT);\n');
- await run(root,['import','--input','exports/hosted.rer','--yes']);
+ await run(root,['import','--input',hostedArchive,'--yes']);
  compareArchive(before,await archiveSnapshot(root),['rer_journey_additive']);
+ await verifyPortableWork(root,portable);
  assert.equal(await presenceRows(),0,'who had the dashboard open never travels in an archive');
  const migrationCount=()=>archiveStorage(root,async({DB})=>(await DB.prepare("SELECT count(*) n FROM d1_migrations WHERE name='9999_rer_journey.sql'").first()).n);
  assert.equal(await migrationCount(),1);

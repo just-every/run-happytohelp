@@ -7,6 +7,10 @@ import {processRun,command,serve} from '../../first-run/cli-kit.mjs';
 import {signIn,beforeHydration} from '../../first-run/cli-sign-in.mjs';
 import {freePort,post} from '../../first-run/browser-kit.mjs';
 import {launchBrowser} from '../../journeys/kit/browser.mjs';
+import {seedPortableData,verifyPortableData} from '../rer-data.mjs';
+import {interruptPortableTraining} from '../training-portable.mjs';
+import {interruptPortableWork,verifyPortableWork} from '../unfinished-portable.mjs';
+import {seedReportClaimedRecovery} from '../reports-portable.mjs';
 
 // The README clone-and-restore journey: setup twice, owner entry at 1440/390, D1/R2/Durable Object round trip into a fresh clone, reset.
 export async function readmeRestoreJourney(){
@@ -49,19 +53,26 @@ try{
  await post(origin,`/api/conversations/${conversation.id}/messages`,{localId:randomUUID(),content:'Retained conversation',expectedRevision:0},visitor.token);
  const bytes=Buffer.from('Real FILES attachment for archive round trip');
  const uploaded=await fetch(origin+`/api/conversations/${conversation.id}/media`,{method:'POST',headers:{Authorization:'Bearer '+logged.token,Origin:origin,'X-Filename':'proof.txt','Content-Type':'text/plain'},body:bytes});assert.equal(uploaded.status,201);const media=await uploaded.json();
+ const json=async(path,body,token)=>{const response=await fetch(origin+path,{method:body===undefined?'GET':'POST',headers:{Origin:origin,...(token?{Authorization:'Bearer '+token}:{}),...(body===undefined?{}:{'Content-Type':'application/json'})},...(body===undefined?{}:{body:JSON.stringify(body)})});assert.ok(response.ok,`Native ${path} returned HTTP ${response.status}`);return response.json()};
+ const portable=await seedPortableData(origin,project.id,logged.token,json);
  await command(root,['reset','--yes','--non-interactive'],env,4);await runtime.close();runtime=null;
- await command(root,['export','--output','exports/support.jsonl','--non-interactive'],env);const records=(await readFile(join(root,'exports/support.jsonl'),'utf8')).trim().split('\n').map(JSON.parse);const manifest=records[0];assert.equal(manifest.objects.length,1);assert.ok(!JSON.stringify(records).includes(password),'entered private password is not archived');assert.ok(!JSON.stringify(records).includes(grant.token)&&!JSON.stringify(records).includes(destination.secret),'external grants and receiver credentials are not archived');
+ await seedReportClaimedRecovery(root,portable.reports);await interruptPortableTraining(root,portable.training);await interruptPortableWork(root,portable,logged.actor.id);
+ await command(root,['export','--output','exports/support.jsonl','--non-interactive'],env);const records=(await readFile(join(root,'exports/support.jsonl'),'utf8')).trim().split('\n').map(JSON.parse);assert.ok(!JSON.stringify(records).includes(password),'entered private password is not archived');assert.ok(!JSON.stringify(records).includes(grant.token)&&!JSON.stringify(records).includes(destination.secret),'external grants and receiver credentials are not archived');
  // Durable Object storage travels in the archive with its schema and digest: the socket class keeps no records.
  const durable=records.flatMap(record=>record.items??[]).filter(item=>item.kind==='row'&&item.table==='durable_object_snapshots').map(item=>item.row);
  assert.deepEqual(durable.map(row=>[row.namespace,row.class_name,row.schema,row.records,row.digest]),[['CONVERSATIONS','ConversationSocket','happytohelp.durable-objects/1',0,createHash('sha256').update('{"className":"ConversationSocket","namespace":"CONVERSATIONS","records":[]}').digest('hex')]]);
- const target=await fresh('restored');await mkdir(join(target,'exports'));await copyFile(join(root,'exports/support.jsonl'),join(target,'exports/support.jsonl'));
+ const retainedArchive=join(directory,'support.jsonl');await copyFile(join(root,'exports/support.jsonl'),retainedArchive);await rm(root,{recursive:true,force:true});
+ await assert.rejects(stat(root),{code:'ENOENT'},'the disposable source and its native state are destroyed before restore');
+ const target=await fresh('restored');await mkdir(join(target,'exports'));await copyFile(retainedArchive,join(target,'exports/support.jsonl'));
  await command(target,['import','--input','exports/support.jsonl','--non-interactive'],env,4);
  await command(target,['import','--input','exports/support.jsonl','--yes','--non-interactive'],env);
  await command(target,['export','--output','exports/restored.jsonl','--non-interactive'],env);
  const restored=(await readFile(join(target,'exports/restored.jsonl'),'utf8')).trim().split('\n').map(JSON.parse);assert.equal(restored.at(-1).contentHash,records.at(-1).contentHash,'complete D1 and R2 round trip retains semantic content');
+ await verifyPortableWork(target,portable);
  await mkdir(join(target,'.seed'),{mode:0o700,recursive:true});await writeFile(join(target,'.seed/local-answers.json'),JSON.stringify(answer),{mode:0o600});
  await command(target,['setup','--answers','.seed/local-answers.json','--port',String(port),'--non-interactive'],env);runtime=await serve(target,env);
  const retained=await post(origin,'/api/identity/login',{email:answer.OWNER_EMAIL,password});assert.equal(retained.actor.id,logged.actor.id,'restored native owner identity is preserved');
+ await verifyPortableData(origin,portable,retained.token,json);
  assert.equal((await fetch(origin+'/api/v1/contacts',{headers:{Authorization:'Bearer '+grant.token}})).status,401,'restored install rejects old API grant');
  const configured=await (await fetch(origin+connections+'/webhooks',{headers:{Authorization:'Bearer '+retained.token}})).json();assert.deepEqual(configured.data,[],'restored install requires receiver reconfiguration');
  const attachment=await fetch(origin+`/api/conversations/${conversation.id}/media/${media.id}`,{headers:{Authorization:'Bearer '+retained.token}});assert.equal(attachment.status,200);assert.ok(Buffer.from(await attachment.arrayBuffer()).equals(bytes));

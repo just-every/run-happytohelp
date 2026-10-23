@@ -38,4 +38,6 @@ export async function hostedExportJourney(root,scratch){
  assert.equal((await closing('hosted.rer')).contentHash,(await closing('support.rer')).contentHash,'remote boundary exports every portable row and exact object byte of the stopped source');
  await run(root,['export','--target','remote','--output','exports/hosted.rer'],1,{env});
  console.log('Hosted export through rer: stopped-writer refusal, complete archive equality, private custody and existing-output refusal passed at a local remote-binding edge; no hosted provider receipt claimed.');
+ if(process.env.H2H_LIVE_HOSTED_PORTABILITY==='yes')return (await import('./hosted-export-live.mjs')).hostedExportLive(root,scratch);
+ return 'exports/hosted.rer';
 }

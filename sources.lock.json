@@ -3436,7 +3436,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "a7198e796d6aab578c1bad98395a6f98b65c7755a1f562068c49b6bafa3e9fc8",
+      "sha256": "671fb2bf70a5215efca2199be796d38aa79d7c4d971fcd3bd96df02128cb18b8",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -4044,7 +4044,7 @@
       "executable": false
     },
     "src/modules/conversations/routes.ts": {
-      "sha256": "af9823527d1619f27c801c1eae83c09e907bad753a1bf71613f2fa8589527509",
+      "sha256": "d82cf650a529290c25fa358d76c40c59c72d47510d19de678f321f8b129d0e51",
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
@@ -4224,7 +4224,7 @@
       "executable": false
     },
     "src/modules/escalations/drafts.ts": {
-      "sha256": "c2997d595cb9118ec273842aebda4747f078d2364d68f0f5c71c04e255ca8e75",
+      "sha256": "40596460e8ef6191a7fae564454bb0c29f4af95726d4d3a13be6584ca1071e0d",
       "executable": false
     },
     "src/modules/escalations/erasure.ts": {
@@ -5824,7 +5824,7 @@
       "executable": false
     },
     "src/modules/management/buckets.ts": {
-      "sha256": "036c954ce0692c72e3dbb031300f2a83218284d704bf322320c643651f554d8a",
+      "sha256": "e222093364494f2e1e022ff1e60e7ac383c11ed4f72b2eae02efbbc71b76cdd8",
       "executable": false
     },
     "src/modules/management/ceiling-transcript.ts": {
@@ -5904,7 +5904,7 @@
       "executable": false
     },
     "src/modules/management/dashboard-data.ts": {
-      "sha256": "3800269608797f439c84d0c4e9f536d55069d2c6f6520ad9d77e5bac6e8cf2da",
+      "sha256": "bfb5f4b7002a2e1bc9afa858c1ea4b365cb466e546525d73e536fb5127a2c7e1",
       "executable": false
     },
     "src/modules/management/dashboard-media.ts": {
@@ -5912,7 +5912,7 @@
       "executable": false
     },
     "src/modules/management/dashboard-messages.ts": {
-      "sha256": "02f6b87d1713c374f2736a591cf14ffe0770e9e352df7b45b820821fd5e3bfc8",
+      "sha256": "cc57866ff4aa4bfc3b06444d303dd2221108091735c370d19b901cb9b1b4fa97",
       "executable": false
     },
     "src/modules/management/dashboard.ts": {
@@ -6619,8 +6619,12 @@
       "sha256": "b8f7a92ad92d59ebe7ffcde4fb717600a1ebbc5353842cb42fd3d729dded2044",
       "executable": false
     },
+    "src/modules/support-channels/permissions.ts": {
+      "sha256": "2ce21249fdbe33438e1fa1658fe8c9bddd95f96744fd90f81cb3b481933834b3",
+      "executable": false
+    },
     "src/modules/support-channels/presentation.ts": {
-      "sha256": "3d84a0eb2f02f84f1300ebbe7c274a85815fdc760950bb750eb238f40de5d361",
+      "sha256": "d3d1c2c5b235ed5d780dc0a777e01fd43995d4553d501cf66a1e7c7b53a2836c",
       "executable": false
     },
     "src/modules/support-channels/protocol.ts": {
@@ -11520,7 +11524,7 @@
       "executable": false
     },
     "tests/helpers/support-channels/journeys.mjs": {
-      "sha256": "243aa17ca1304af29ecf633a46a7b82f12ae7f4b80e0cdedaa7741a75b465aae",
+      "sha256": "1243d28d395fb569c78c0f58d67e937373436c81eefee3d620cb0ca03a48be86",
       "executable": false
     },
     "tests/helpers/training-readiness.mjs": {

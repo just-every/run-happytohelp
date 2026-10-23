@@ -11,7 +11,7 @@ export const person=(p:any)=>{
  const metadata=JSON.parse(p.metadata_json||'{}'),blocked=metadata.is_blocked===false||metadata.is_blocked===0?false:Boolean(metadata.is_blocked||metadata.blocked_at)
  return {...p,...metadata,is_blocked:blocked,blocked_at:blocked?metadata.blocked_at||null:null,is_online:Date.now()-Number(metadata.last_seen_at||0)<90000,display_name:p.name||p.email||(p.is_erased||metadata.is_erased?'Erased contact':'Visitor'),initials:(p.name||p.email||'V').split(/\s+/).map((s:string)=>s[0]).slice(0,2).join('').toUpperCase()}
 }
-export async function messageData(env:Env,row:any){return (await messagesData(env,[row]))[0]}
+export async function messageData(env:Env,row:any,channel?:string){return (await messagesData(env,[row],new Map([[String(row.conversation_id),channel]])))[0]}
 
 /** `joined_via`: how the participant joined (`cc_header`, `operator` or `self`; integrations/participant-proof.ts). */
 export function participantData(contact:any,participant:any){const {participant_id,participant_joined_via,conversation_id,...profile}=contact;return {...person(profile),contact_id:contact.id,pivot:{id:participant.id,conversation_id:participant.conversation_id,contact_id:contact.id,joined_via:participant.joined_via}}}
@@ -44,7 +44,7 @@ export async function conversationsData(env:Env,rows:any[],userId:string,withHis
  const relation=(values:any[],many=false)=>{const map=new Map<string,any>();for(const {hydration_conversation_id,...row} of values){const key=String(hydration_conversation_id);if(many){if(!map.has(key))map.set(key,[]);map.get(key).push(row)}else if(!map.has(key))map.set(key,row)}return map}
  const contacts=byId(data[0].results),agents=byId(data[1].results),unread=new Map(data[3].results.map(row=>[String(row.conversation_id),row.total])),ais=relation(data[4].results),imported=relation(data[5].results),tags=relation(data[6].results,true),resolutions=relation(data[7].results),generation=relation(data[8].results),participants=relation(data[9].results,true)
  const [messages,histories,tickets,aliases,workflows]=await Promise.all([
-  messagesData(env,data[2].results),
+  messagesData(env,data[2].results,new Map(rows.map(row=>[String(row.id),row.channel]))),
   withHistory?Promise.all(rows.map(row=>pastResolutionFeedback(env,row.project_id,row.id,userId))):Promise.resolve([]),
   ticketPresentation(env,rows,userId),
   Promise.all(rows.map(row=>mergedAlias(env,row.project_id,row.id))),workflowPresentation(env,rows)

@@ -99,6 +99,15 @@ export async function enterpriseJourney(){
    assert.equal((await app.call(base+'/Users',{token})).status,401);assert.equal((await app.call(base+'/Users',{token:rotated.scimToken})).status,200)
    await app.ok(P+'/identity-connections/'+connection.id,{token:owner,method:'DELETE'})
    assert.equal((await app.call('/api/identity/session',{token:owner})).status,200,'native owner remains usable after provider removal')
+   assert.equal((await app.call(P+'/identity-connections/'+connection.id,{token:owner,method:'PUT',body:{...input,issuer:'https://foreign.okta.com'}})).status,409)
+   const restored=await app.ok(P+'/identity-connections/'+connection.id,{token:owner,method:'PUT',body:input})
+   assert.equal(restored.provisioningRequired,true)
+   assert.equal((await app.call(base+'/Users',{token:rotated.scimToken})).status,401)
+   assert.equal((await submit(await begin())).status,403,'reconfiguration never reactivates provisioned identities')
+   await app.ok(base+'/Users/'+principal.id,{token:restored.scimToken,method:'PATCH',body:{Operations:[{op:'replace',path:'active',value:true}]}})
+   assert.equal((await submit(await begin())).status,302,'owner reconfiguration and fresh provisioning restore sign-in')
+   assert.equal((await app.call('/api/identity/session',{token:session})).status,401)
+   assert.ok([401,403].includes((await delegated('/evidence?target='+article)).status))
    assert.ok((await app.first("SELECT count(*) n FROM audit_events WHERE project_id=? AND action='identity.deprovisioned'",w.projectId)).n)
   }
  }finally{await app.close()}

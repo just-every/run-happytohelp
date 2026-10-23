@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "15c4768d4672eb2859dc8e084c7761fa594f1f3da1deb59bf7af729cdea9e415",
+      "sha256": "5e7b9d85c58814af2ab29abdf6a0e93450d8e50e51cc089dd71e1bb65f8c78a1",
       "executable": false
     },
     "AGENTS.md": {
@@ -1632,7 +1632,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "62bffae966e396cd7633ed81d5191a263996cde9a60c6efa4d1002d72c3cbdb6",
+      "sha256": "332404d86a9c47ec5837cb0b24a8b9732d6426a5251a07f368401679c96d8253",
       "executable": false
     },
     "DEMO.md": {
@@ -1656,7 +1656,7 @@
       "executable": false
     },
     "docs/account-security.md": {
-      "sha256": "f08b618cf7b233c580e838781a6b2d8d36f8e058351f50a7f46b6281619202e2",
+      "sha256": "da347e5b3c7b10525cf599edf51405c2295816d7deaaabca0ee3562b7c16e5b6",
       "executable": false
     },
     "docs/AGENT-FIX.md": {
@@ -4388,7 +4388,7 @@
       "executable": false
     },
     "src/modules/identity/enterprise/settings.ts": {
-      "sha256": "857d3e14d08b8f4b39b9d1be9538fbd3b5313d961b5a523ef1dcebde09aa33cf",
+      "sha256": "1c24401dbcb2ed1a4183c830224f90ee6c22fbd1008af801459a498270273f60",
       "executable": false
     },
     "src/modules/identity/enterprise/sso.ts": {
@@ -5888,7 +5888,7 @@
       "executable": false
     },
     "src/modules/management/brand-reports.ts": {
-      "sha256": "8a2c788e58928171f3ea7cebd9e0286850642aefe3d84f864e1c64a25f5d0bce",
+      "sha256": "b7c9e82ce5709c27020a40adaf05be681f07439e017b56faad42d474156b9bf9",
       "executable": false
     },
     "src/modules/management/buckets.ts": {
@@ -11204,7 +11204,7 @@
       "executable": false
     },
     "tests/helpers/identity/enterprise.mjs": {
-      "sha256": "69766eb794006d829036bebe00baddd5ac97daad09c7b3c7468e322e96fe486f",
+      "sha256": "75f8cfdbc293363eff49868f9921560419b0dd010d45fc2e2a2ac2833e9b0bf2",
       "executable": false
     },
     "tests/helpers/identity/roles-audit.mjs": {
@@ -11212,7 +11212,7 @@
       "executable": false
     },
     "tests/helpers/identity/scoped-access.mjs": {
-      "sha256": "cf7e136f13062d1834fd0f4d90fb8e10f2a42ff083cbedca539eeff3f9e9b67d",
+      "sha256": "7f896044a81f80cf00541644f19b8ab6ad2c48e035249c0f478b29955d9dfad7",
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {

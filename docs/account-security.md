@@ -195,7 +195,10 @@ authority. Reactivation does not resurrect old grants or privileged roles.
 the SCIM token; DELETE of the connection disables sign-in and deprovisions its
 managed seats. Native owner recovery remains independent. Export/import disables
 connections, removes secrets and live sessions, and leaves managed seats inactive;
-reconfigure the provider before provisioning them again.
+PUT the original connection URL with its complete configuration and unchanged
+protocol/issuer to reconfigure it. This returns a new SCIM token and leaves all
+managed seats inactive until fresh provisioning. Old sessions and grants remain
+revoked.
 
 ## Team restrictions and refund approval
 

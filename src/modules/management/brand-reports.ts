@@ -18,7 +18,8 @@ brandReports.get('/projects/:projectId/brands/reports',async c=>{
    JOIN memberships m ON m.project_id=p.id AND m.user_id=? LEFT JOIN project_settings s ON s.project_id=p.id
    WHERE p.id=? AND json_extract(COALESCE(s.settings_json,'{}'),'$.deleted_at') IS NULL`).bind(actor.id,id).first<{id:string;name:string;role:string;settings_json:string|null}>()
   if(!row)throw new HTTPException(403,{message:'Every selected brand requires explicit membership and report permission'})
-  await requireReportPermission(c,{id:actor.id,projectId:id,role:row.role},'reports.view')
+  const access=await requireReportPermission(c,{id:actor.id,projectId:id,role:row.role},'reports.view')
+  if('teamIds' in access&&access.teamIds)throw new HTTPException(403,{message:'Brand-wide reports are unavailable to team-restricted roles'})
   return row
  }
  const brands=[]

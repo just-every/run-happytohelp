@@ -12,7 +12,7 @@ export async function scopedAccessJourney(){
    app.db.prepare('INSERT INTO conversations(id,project_id,contact_id,group_id,revision,last_message_id,created_at,updated_at) VALUES(?,?,?,?,1,?,1,1)').bind('team-conversation-'+i,w.projectId,'team-contact-'+i,group,'team-message-'+i),
    app.db.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,?,?,?,?,'contact',?,1,1)").bind('team-message-'+i,w.projectId,'team-conversation-'+i,'team-local-'+i,'team-contact-'+i,'Private team '+i),
   ])
-  const definition={name:'Returns support',base:'operator',permissions:['conversations.notes','conversations.follow','conversations.manage','conversations.reply'],teamIds:[groups[0]]}
+  const definition={name:'Returns support',base:'operator',permissions:['conversations.notes','conversations.follow','conversations.manage','conversations.reply','reports.view'],teamIds:[groups[0]]}
   const role=(await app.ok(P+'/roles',{token:owner,body:definition})).data
   await app.ok(P+'/agents/'+w.users.operator,{token:owner,method:'PUT',body:{role:role.id}})
   for(const path of [D+'/conversations','/api/dashboard/conversations']){
@@ -29,6 +29,8 @@ export async function scopedAccessJourney(){
   assert.equal((await app.call(D+'/conversations/team-conversation-1/notes',{token:agent,body:{content:'Must not be saved'}})).status,403)
   assert.equal((await app.call(D+'/conversations/team-conversation-0/ticket',{token:agent,method:'PATCH',body:{group_id:groups[1]}})).status,403)
   for(const path of [P+'/contacts',D+'/reports',D+'/tickets/bulk/preview',`/api/dashboard/projects/${other.projectId}/conversations`])assert.equal((await app.call(path,{token:agent,...(path.endsWith('/preview')?{body:{}}:{})})).status,403)
+  await app.db.prepare("INSERT INTO memberships(user_id,project_id,role) VALUES(?,?,'admin')").bind(w.users.operator,other.projectId).run()
+  assert.equal((await app.call(`/api/management/projects/${other.projectId}/brands/reports?projects=${other.projectId},${w.projectId}`,{token:agent})).status,403,'an unrestricted brand cannot expose a different brand with team restrictions')
   // A live per-conversation stream ends when the owner withdraws the team.
   const connect=async id=>app.request(`/api/conversations/${id}/socket?token=${agent}`,{headers:{Upgrade:'websocket'}})
   assert.equal((await connect('team-conversation-1')).status,403)

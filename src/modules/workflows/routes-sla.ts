@@ -8,6 +8,8 @@ import {ticketAuthority,ticketReadAccess,object,invalid,availableTicketSql} from
 import {workflowNow} from './clock'
 import {calendarData,calendarDefinition} from './calendars'
 import {policyData,policyDefinition} from './sla-policy'
+import {validateFieldValue} from '../tickets/fields'
+import {publicField} from '../forms/definition'
 import {ticketSla,liveSlaTicketSql} from './sla'
 
 export const workflowSlaRoutes=new Hono<AppEnv>()
@@ -31,6 +33,19 @@ for(const kind of ['workflow-calendars','sla-policies'] as const){
   if(existing){extra.push(`EXISTS(SELECT 1 FROM ${table} WHERE project_id=? AND id=? AND updated_at=?)`);args.push(actor.projectId,id,existing.updated_at)}
   if(!calendar){
    const policy=definition as ReturnType<typeof policyDefinition>
+   const conditions=JSON.parse(policy.conditions_json),fieldIds=Object.keys(conditions.fields??{})
+   if(fieldIds.length){
+    const fields=(await c.env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id IN (SELECT value FROM json_each(?))').bind(actor.projectId,JSON.stringify(fieldIds)).all<any>()).results
+    if(fields.length!==fieldIds.length||fields.some(f=>!publicField(f)))invalid('SLA conditions require customer-visible workspace fields')
+    for(const field of fields){if(validateFieldValue(field,conditions.fields[field.id])===null)invalid('SLA field conditions require a typed value')}
+    extra.push("NOT EXISTS(SELECT 1 FROM json_each(?) ref WHERE NOT EXISTS(SELECT 1 FROM ticket_fields f WHERE f.project_id=? AND f.id=json_extract(ref.value,'$[0]') AND f.updated_at=json_extract(ref.value,'$[1]')))");args.push(JSON.stringify(fields.map(f=>[f.id,f.updated_at])),actor.projectId)
+   }
+   const formIds=conditions.form_ids??[]
+   if(formIds.length){
+    const found=await c.env.DB.prepare('SELECT count(*) n FROM request_forms WHERE project_id=? AND id IN (SELECT value FROM json_each(?))').bind(actor.projectId,JSON.stringify(formIds)).first<{n:number}>()
+    if(found?.n!==formIds.length)invalid('Choose workspace request forms')
+    extra.push('NOT EXISTS(SELECT 1 FROM json_each(?) ref WHERE NOT EXISTS(SELECT 1 FROM request_forms f WHERE f.project_id=? AND f.id=ref.value))');args.push(JSON.stringify(formIds),actor.projectId)
+   }
    const schedule=await c.env.DB.prepare('SELECT active,updated_at FROM workflow_calendars WHERE project_id=? AND id=?').bind(actor.projectId,policy.calendar_id).first<any>()
    if(!schedule)invalid('Choose a workspace business calendar')
    if(policy.active&&!schedule.active)invalid('An active SLA policy needs an active calendar')

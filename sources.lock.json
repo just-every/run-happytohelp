@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d05065bae99d6e0363c7c1ccf775a6a6c5dba9b816573548542bd5ad2864719e",
+      "sha256": "c28fb80cd6974b885bb2a5502cb82d39931f2ee5179aeeecc4f8ce9a348077cc",
       "executable": false
     },
     "AGENTS.md": {
@@ -1632,7 +1632,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "223625c381b6b0ecc62787ad4669ea68d79e5bec49cc212ee8021b5837db2647",
+      "sha256": "2e71f8c230b54deb116f47011d554fc1c8ac9bdc73101e90247f7b44bf519c1e",
       "executable": false
     },
     "DEMO.md": {
@@ -11180,7 +11180,7 @@
       "executable": false
     },
     "tests/helpers/inbox/brands.mjs": {
-      "sha256": "fba499bd322ddc079cca8dfc3d1bd835657c910c6b0fb2a43b4d330959a7e5e8",
+      "sha256": "3c8eb14df8f4f3abe9e8f2de30e18d942e3ebea8f9e83a7ae61e16557e787d7a",
       "executable": false
     },
     "tests/helpers/inbox/conversation-panel-resize-browser.mjs": {

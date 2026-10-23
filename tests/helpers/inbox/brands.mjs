@@ -71,6 +71,9 @@ export async function brandsJourney(){
   assert.notEqual(a.visitor.contactId,b.visitor.contactId,'same email is a separate brand identity')
   for(const [own,foreign] of [[a,b],[b,a]]){
    assert.equal((await app.call(`/api/conversations/${foreign.widget.id}/messages`,{token:own.visitor.token})).status,404)
+   const ownTicket=(await app.ok(`/api/dashboard/projects/${own.projectId}/conversations/${own.widget.id}/ticket`,{token:own.brandOwner})).data
+   const moved=await app.call(`/api/dashboard/projects/${own.projectId}/conversations/${own.widget.id}/ticket`,{token:own.brandOwner,method:'PATCH',body:{expected_version:ownTicket.ticket_version,brand_id:foreign.projectId}})
+   assert.equal(moved.status,400);assert.match(moved.data.error,/Brand must be this workspace/)
    const privateArticles=await app.ok(`/api/knowledge/${own.projectId}/articles`,{token:own.brandOwner})
    assert.ok(privateArticles.some(article=>article.id===own.draft.id))
    assert.ok(!privateArticles.some(article=>article.id===foreign.draft.id))

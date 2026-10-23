@@ -10885,11 +10885,11 @@
       "executable": false
     },
     "tests/helpers/business-connectors/browser-network.mjs": {
-      "sha256": "49fc4bbc677e4cc4759ba15d7f1980d3e2b3c0919396d4f02bd329de94c52a46",
+      "sha256": "eb2be9956522b493b0f62444f02c57e24edcf6734be631f585dc55bbc0116d88",
       "executable": false
     },
     "tests/helpers/business-connectors/browser.mjs": {
-      "sha256": "7fb9fbdd3f13bc3cdbb6340e977a97b576fc280b796a4bbef21d35944fcb1865",
+      "sha256": "24e77b2d62a7701f0084d416d85b6a87e3223fd6349b92cddf5ae0d6b9935951",
       "executable": false
     },
     "tests/helpers/business-connectors/journeys.mjs": {

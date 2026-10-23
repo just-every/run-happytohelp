@@ -9,7 +9,7 @@ export async function exerciseBusiness({page,context,origin,owner,width,audit}){
   await page.getByLabel('Provider account ID',{exact:true}).fill(accounts[provider].account);
   await page.getByLabel('Provider HTTPS origin (required for Shopify and Salesforce)',{exact:true}).fill(accounts[provider].host||'');
   if(['hubspot','salesforce'].includes(provider)){await page.getByLabel('CRM plan property (optional)',{exact:true}).fill(provider==='salesforce'?'Plan__c':'plan');await page.getByLabel('CRM support entitlement property (optional)',{exact:true}).fill(provider==='salesforce'?'Support_Entitlement__c':'support_entitlement');}
-  await page.getByLabel('Provider credential',{exact:true}).fill('synthetic-happytohelp-1');
+  await page.getByLabel('Provider credential',{exact:true}).fill('synthetic-happytohelp-'+width);
   for(const scope of ['prepare','approve','execute'])await page.getByLabel(scope,{exact:true}).check();
   await page.getByLabel('Maximum per action (USD)',{exact:true}).fill('50');
   await page.getByRole('button',{name:'Verify and connect',exact:true}).click();await page.getByText('Account verified and connected.',{exact:true}).waitFor();

@@ -14,6 +14,7 @@ export async function attachmentJourney(){
   const run=await apply(fixture.archive()),ticket=await app.first('SELECT * FROM conversations WHERE project_id=?',p)
   console.log('Attachment publication: '+fixture.vendor)
   const media=await app.sql('SELECT * FROM media WHERE project_id=? ORDER BY filename',p);assert.equal(media.length,2)
+  const buckets=(await app.ok(`/api/dashboard/projects/${p}/conversations/${ticket.id}/buckets`,{token})).data;assert.equal(buckets.flatMap(bucket=>bucket.messages.flatMap(message=>message.media)).length,1);assert.equal(buckets.flatMap(bucket=>bucket.events.flatMap(event=>event.media??[])).length,1)
   const publicFile=media.find(row=>row.message_id),privateFile=media.find(row=>!row.message_id)
   const download=(file,credential=token)=>app.request(`/api/conversations/${ticket.id}/media/${file.id}`,{token:credential})
   for(const [file,bytes] of [[publicFile,publicBytes],[privateFile,privateBytes]]){const response=await download(file);assert.equal(response.status,200);assert.deepEqual(Buffer.from(await response.arrayBuffer()),bytes)}

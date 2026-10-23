@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "9736ffc83160f7d74d79ffd8a8bc900640b0849a0e59835bd05189b3edd4ee4f",
+      "sha256": "d50070f39907b658ea50f782f3ef604aeb309e041d1bde01f44cc31e40943719",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a3f1cc9f1162e8cd8b572e7453eff88e151a32f847383ba3ce7d1a33abc40478",
+      "sha256": "b550340eccafa20c409fcd8abb3d05accc6d11a99e0f789d3328bc79978f8bb2",
       "executable": false
     },
     "DEMO.md": {
@@ -3972,7 +3972,7 @@
       "executable": false
     },
     "src/modules/collaboration/note-media.ts": {
-      "sha256": "06b84b755aa04f3eda7bda5218355596f6bea2c815ee32a1fca7d240e4a95a75",
+      "sha256": "1eb20c0708b91b92a633bca920e25bf5a21fc0284a8e0159caeca2918ec06290",
       "executable": false
     },
     "src/modules/collaboration/notes.ts": {
@@ -11984,7 +11984,7 @@
       "executable": false
     },
     "tests/live/csat-mail.mjs": {
-      "sha256": "04e7d0d71bc52f7ef72d6b4187281fb1109e595c4e909e098b40e7af18fa234f",
+      "sha256": "934f5efac8e9a398270eb345276365b31b34a4ee2fb5864cb9706d682592984d",
       "executable": false
     },
     "tests/live/README.md": {
@@ -12040,7 +12040,7 @@
       "executable": false
     },
     "tests/move-in/attachment-browser.mjs": {
-      "sha256": "4310ff7415522a5c4daf20bfa0e6afa1c012770ad5217783a5157ddfb8a8b0d0",
+      "sha256": "7d51ce5ceb86790c2fa82d9a90719135d07d7db897b4a122f5208c0200dd988d",
       "executable": false
     },
     "tests/move-in/attachment-erasure.mjs": {
@@ -12052,7 +12052,7 @@
       "executable": false
     },
     "tests/move-in/attachment-journey.mjs": {
-      "sha256": "2d85d32e6859e95d85680a653b71713c65e708424d0bfe7e7b701087d7015cf6",
+      "sha256": "97dcd6c6c6e73939304a3ffe8737e0d6bf65dbb46c7c9dc9a9f9f5743e30cfd2",
       "executable": false
     },
     "tests/move-in/business-equality.mjs": {

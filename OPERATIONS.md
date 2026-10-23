@@ -139,6 +139,9 @@ and the `r2_buckets` entry bound as `FILES` (including `bucket_name`). Resource
 identities must come from that installation, never from this checkout's local
 placeholder configuration. No application vars or secrets are loaded from it.
 
+D1 queries and R2 reads use Cloudflare's API directly. The exporter temporarily
+spools one object at a time in its private output directory, then removes it.
+
 The command refuses missing or incompatible migration history, existing outputs,
 changed attachment inventory and changed erasure fences. It checks the complete
 archive before publishing a new 0600 file. Base writes and removes transfer

@@ -79,9 +79,16 @@ export async function companyRecordsJourney(){
   assert.equal((await app.sql("SELECT action FROM audit_events WHERE project_id=? AND action IN ('customer.identity_linked','customer.identity_unlinked')",p)).length,3)
   assert.equal(app.requests.length,0,'identity review sends nothing')
   await apply({...intent,action:'unlink'})
-  await apply({...intent,provenance:`Verified in support request from ${contacts[0].email}`})
+  const provenanceIntent={...intent,provenance:`Verified in support request from ${contacts[0].email}`}
+  const priorErasureReview=(await app.ok(linkPath+'/preview',{...owner,body:provenanceIntent})).preview
+  await app.ok(linkPath,{...owner,body:priorErasureReview})
   await app.ok(`${B}/contacts/${contacts[0].id}/erase`,{...owner,body:{}})
   assert.equal((await app.ok(linkPath,owner)).links.length,0,'erasure removes free-text provenance naming a third customer')
+  assert.equal((await app.call(linkPath,{...owner,body:priorErasureReview})).status,409,'a pre-erasure preview cannot reinstall removed provenance')
+  const reviewedAgain=(await app.ok(linkPath+'/preview',{...owner,body:intent})).preview
+  const erasedAtCommit=await app.call(linkPath,{...owner,body:reviewedAgain,headers:{'x-test-before-batch':`UPDATE contact_erasures SET runs=runs+1 WHERE project_id='${p}' AND contact_id='${contacts[0].id}'`}})
+  assert.equal(erasedAtCommit.status,409,'erasure winning the write transaction also invalidates the preview')
+  assert.equal((await app.ok(linkPath,owner)).links.length,0)
   await apply(intent)
   await app.ok(`${B}/contacts/${social.contactId}/erase`,{...owner,body:{}})
   assert.equal((await app.ok(linkPath,owner)).links.length,0,'erasure removes associations from both sides')

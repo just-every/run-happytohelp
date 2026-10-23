@@ -217,7 +217,8 @@ The management API exposes `GET contacts/:contactId/identity-links`,
 `provenance`; apply the returned preview including its `signature`.
 Both records must have independently proven mailbox or signed widget identity
 before linking. A typed email or imported identifier supplies no proof.
-Changed identities, permissions or relationships require another preview.
+Changed identities, permissions, relationships or workspace erasure require
+another preview; a pre-erasure preview cannot reinstall removed provenance.
 Links are symmetric, audited and retained across restart. Erasure removes links
 for either identity and links whose source text names the erased customer.
 They are operator context only: customer sessions, ticket ownership, company

@@ -2479,6 +2479,10 @@
       "sha256": "039709eec3144d0e42d253d5e06e778be7a84420f98d05d1496dc0fee1546d44",
       "executable": false
     },
+    "migrations/243_escalation_handoff_dependency.sql": {
+      "sha256": "8b1007f3357dcf1f504f786645e841619fda23e8eb0d2c9ca415119be1e3de9c",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "0fa396b895e9098cc1db5070d1dc33ca732fae8287f84f69dc8afa3bc8afd1a6",
       "executable": false
@@ -11001,6 +11005,10 @@
     },
     "tests/helpers/escalations/github.mjs": {
       "sha256": "0817195e82b2b53e4fe66827512555ffab562be96495d1d52d1cb606b8a2b4ca",
+      "executable": false
+    },
+    "tests/helpers/escalations/handoffs.mjs": {
+      "sha256": "fb7466c2cdf68815f4d2c9e289de3464741965f2666e4acd60cb1557541ba0c2",
       "executable": false
     },
     "tests/helpers/escalations/jira.mjs": {

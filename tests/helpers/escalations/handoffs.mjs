@@ -31,7 +31,7 @@ export async function handoffBoundaries(h) {
  const messageIds=[];
  for(let n=0;n<4;n++){
   const current=await app.ok(`/api/conversations/${record.ticket.id}`,{token:h.token});
-  const message=await app.ok(`/api/conversations/${record.ticket.id}/messages`,{token:h.token,body:{localId:crypto.randomUUID(),content:'Export diagnostic & '.repeat(400),expectedRevision:current.revision,expectedLastMessageId:current.last_message_id}});
+  const message=await app.ok(`/api/conversations/${record.ticket.id}/messages`,{token:h.token,body:{localId:crypto.randomUUID(),content:'Export diagnostic & '.repeat(450),expectedRevision:current.revision,expectedLastMessageId:current.last_message_id}});
   messageIds.push(message.message.id);
  }
  for(const provider of ['teams','slack']){

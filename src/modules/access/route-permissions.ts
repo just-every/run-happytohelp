@@ -133,6 +133,8 @@ for(const base of [P,D]){
   rules[`GET ${base}/${kind}`]=rule
   rules[`POST ${base}/${kind}`]=rule
  }
+ for(const tail of ['', '/preview'])rules[`POST ${base}/contacts/:contactId/identity-links${tail}`]='contacts.manage'
+ rules[`GET ${base}/contacts/:contactId/identity-links`]='contacts.manage'
  rules[`GET ${base}/companies/:companyId`]='contacts.manage'
  rules[`PATCH ${base}/companies/:companyId`]='contacts.manage'
  for(const method of ['PUT','DELETE'])rules[`${method} ${base}/companies/:companyId/members/:contactId`]='contacts.manage'

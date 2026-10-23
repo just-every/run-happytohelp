@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "8f5e1af72a327667fbb4a78614839f9f29893d824adffd231b6ca9d477cbee76",
+      "sha256": "66d998e0bfd02e5c0935ab23a222fc0effcab3e573cb3de4f33cf17da3d56886",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a53f30a5b250a660253d0f32dda59b91bb52417a23199b81eec71fbd6063cc1b",
+      "sha256": "3fea2a7906ef7991dafebf57444c3fd7260b4b09f1ad32635532c9774b619983",
       "executable": false
     },
     "DEMO.md": {
@@ -2477,6 +2477,10 @@
     },
     "migrations/250_support_channels.sql": {
       "sha256": "5944fcf419b5e552bccea8dcb5f033f29386db7f92ead1a090f24fd912a2dc38",
+      "executable": false
+    },
+    "migrations/251_support_channel_media.sql": {
+      "sha256": "5e48d7dfa957a6af2236a412c94f1695f31935679a20a7ba0a3aff1a33e97a0c",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -6607,12 +6611,20 @@
       "sha256": "c00c65e49b574243aef250ef6becae001feb2869176c05e5c051a9b711c574e1",
       "executable": false
     },
+    "src/modules/support-channels/media.ts": {
+      "sha256": "f6856a4f15e1ede405f4ecabfc161b930fb6b912c1f144c76cf19d1f333a51ba",
+      "executable": false
+    },
     "src/modules/support-channels/MessageChannelStatus.jsx": {
       "sha256": "76f4b4fb7ff9903589dfe46c1de44d53379a2e9cb978060dadf89e47a0c1213f",
       "executable": false
     },
     "src/modules/support-channels/model.ts": {
       "sha256": "522f839c5907587439fdf1dfef25f5c409def5af50bc9d21d69d4623c3cb93a4",
+      "executable": false
+    },
+    "src/modules/support-channels/network.ts": {
+      "sha256": "15e528d2cb041b98053875e78a4be7a510208f8904593e51838668e437b1d457",
       "executable": false
     },
     "src/modules/support-channels/outbound.ts": {
@@ -6641,6 +6653,10 @@
     },
     "src/modules/support-channels/settings.ts": {
       "sha256": "37367819545b07e21d290b436dd4a31c631efb694cfb554a729e5d6b34205a88",
+      "executable": false
+    },
+    "src/modules/support-channels/templates.ts": {
+      "sha256": "5fbc1cac32f4e660fca416e3a0c938a53912e15798f223f5e433bdecdccb6e8b",
       "executable": false
     },
     "src/modules/support-channels/TicketChannel.jsx": {

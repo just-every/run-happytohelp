@@ -10,6 +10,8 @@ export async function campaignsJourney(){
   const endpoint=`/api/management/projects/${p}/widget-campaigns`
   const visitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey},headers:{Origin:w.allowedOrigin}})
   const conversation=await app.ok('/api/conversations',{token:visitor.token,body:{projectId:p}})
+  assert.deepEqual((await app.ok(`/api/conversations/${conversation.id}/messages`,{token:visitor.token})).widget,{ai_id:null});
+  assert.equal('widget' in await app.ok(`/api/conversations/${conversation.id}/messages`,{token:owner}),false,'operator transcript does not gain visitor state');
   const command=(action,data={},status=200,token=visitor.token,id=conversation.id)=>app.call(`/api/conversations/${id}/widget-events`,{token,body:{action,data},status})
   const context={path:'/checkout',elapsedSeconds:20,scrollPercent:50,exitIntent:true,visitId:randomUUID(),cartValue:100}
   let serial=0

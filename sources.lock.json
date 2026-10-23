@@ -11560,7 +11560,7 @@
       "executable": false
     },
     "tests/helpers/widget/assistant-browser.mjs": {
-      "sha256": "3deeb4ea0caf8462eb76546dab987d5c78666557f851f6ca53d914b072bbe3e5",
+      "sha256": "43ad9cb414613be1347bb4e2bfd390905615376a34557215dad6ff34050eb04e",
       "executable": false
     },
     "tests/helpers/widget/assistant-network.mjs": {
@@ -11576,7 +11576,7 @@
       "executable": false
     },
     "tests/helpers/widget/campaigns.mjs": {
-      "sha256": "0ded4847914dce5b2f553ac2baa58a8ad29bcd9073fcba682eb16752f0a1a9ac",
+      "sha256": "d1fd1b8530bdcac6796e35409c33f23b50c08331bffb8baa6e2ee0e7a3016426",
       "executable": false
     },
     "tests/helpers/widget/events.mjs": {

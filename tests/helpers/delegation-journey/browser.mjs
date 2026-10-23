@@ -7,7 +7,7 @@ import {join,resolve} from 'node:path';
 import {createServer} from 'node:net';
 import {randomBytes} from 'node:crypto';
 import {launchBrowser} from '../../journeys/kit/browser.mjs';
-import {command,run} from '../rer-command.mjs';
+import {command,run,stopOwnedServer} from '../rer-command.mjs';
 import {waitForServingCapacity} from '../serving-capacity.mjs';
 import {customerFixture} from './fixture.mjs';
 import {report,client,runCase,until} from './case.mjs';
@@ -79,7 +79,7 @@ export async function browserJourney(evidence){
  }catch(error){
   await failureDiagnostics({evidence,stage,error,server,scratch,secrets:[password]});throw error;
  }finally{
-  const cleanup=await Promise.allSettled([browser?.close(),fixture.close(),(async()=>{if(server){try{await run(checkout,['dev','--stop'])}finally{await server.stop()}}})()]);
+  const cleanup=await Promise.allSettled([browser?.close(),fixture.close(),(async()=>{if(server){try{await stopOwnedServer(server.child)}finally{await server.stop()}}})()]);
   const cleanupFailed=cleanup.some(result=>result.status==='rejected');
   await writeFile(join(evidence,'browser-result.json'),JSON.stringify({success:success&&!cleanupFailed,stage,cleanupSucceeded:!cleanupFailed,layer:'LOCAL TEST',provider:'scripted Codex CLI boundary',liveProvider:false,customerSystem:'loopback fixture only',freshInstalledRer,automaticOwnerEntry,checks},null,2));
   await writeFile(join(evidence,'SCREENSHOTS.md'),captions.join('\n')+'\n');

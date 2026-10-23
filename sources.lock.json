@@ -1632,7 +1632,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d61ff2315aa7045c5f3809d209278d5fae57163e9adb756a79deda5777a725c8",
+      "sha256": "eeb0b1e18e6b22c6aa8f21a699d973bbc307cbdb13f5720edf5dc95ab2156d60",
       "executable": false
     },
     "DEMO.md": {
@@ -10844,7 +10844,7 @@
       "executable": false
     },
     "tests/helpers/delegation-journey/browser.mjs": {
-      "sha256": "0597cbd667afc7e0139827f5de4495c118b4e807e730ff2a8d24737eba4f81c8",
+      "sha256": "6c6cca9a09ccd9deadd2b14fbab3e2f8d5b579df7c478a30ce8afd0ec0e5b6e6",
       "executable": false
     },
     "tests/helpers/delegation-journey/case.mjs": {

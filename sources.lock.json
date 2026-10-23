@@ -10949,7 +10949,7 @@
       "executable": false
     },
     "tests/helpers/business-connectors/browser.mjs": {
-      "sha256": "d619a47e9ccdd59aaabac25c48a1c51de61f1024fcd73c4c892904fa40fe2bdd",
+      "sha256": "6809057c061227f4aa87f5de121b3d7763e8cfb680ddddf12ae95575e9666b83",
       "executable": false
     },
     "tests/helpers/business-connectors/crm-journeys.mjs": {

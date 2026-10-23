@@ -26,7 +26,7 @@ const saveStates=`INSERT INTO ticket_sla_state(project_id,conversation_id,policy
  * journal, policy and calendar it was computed from, so a race loses only that save. */
 export async function syncSlaTickets(env:Env,ids:string[],now=workflowNow(env)){
  if(!ids.length)return
- const tickets=(await env.DB.prepare(`SELECT c.*,ct.metadata_json FROM conversations c JOIN contacts ct ON ct.project_id=c.project_id AND ct.id=c.contact_id WHERE c.id IN (SELECT value FROM json_each(?)) AND ${liveSlaTicketSql()}`).bind(JSON.stringify(ids)).all<any>()).results
+ const tickets=(await env.DB.prepare(`SELECT c.*,ct.metadata_json,(SELECT form_id FROM request_form_submissions r WHERE r.project_id=c.project_id AND r.conversation_id=c.id LIMIT 1) form_id,(SELECT json_group_object(v.field_id,json(v.value_json)) FROM ticket_field_values v JOIN ticket_fields f ON f.project_id=v.project_id AND f.id=v.field_id WHERE v.project_id=c.project_id AND v.conversation_id=c.id AND json_array_length(f.read_roles_json)=0 AND json_array_length(f.write_roles_json)=0) fields_json FROM conversations c JOIN contacts ct ON ct.project_id=c.project_id AND ct.id=c.contact_id WHERE c.id IN (SELECT value FROM json_each(?)) AND ${liveSlaTicketSql()}`).bind(JSON.stringify(ids)).all<any>()).results
  if(!tickets.length)return
  const projects=JSON.stringify([...new Set(tickets.map(t=>t.project_id))])
  const [policyRows,calendarRows]=await Promise.all([
@@ -35,7 +35,7 @@ export async function syncSlaTickets(env:Env,ids:string[],now=workflowNow(env)){
  ])
  const policies=policyRows.results.map(policyData),calendars=new Map(calendarRows.results.map(row=>[`${row.project_id}\n${row.id}`,calendarData(row)]))
  const matched:{ticket:any;policy:SlaPolicy;calendar:WorkflowCalendar}[]=[],unmatched:any[]=[]
- for(const ticket of tickets){const policy=policies.find(p=>p.project_id===ticket.project_id&&policyMatches(p,ticket,JSON.parse(ticket.metadata_json)));if(policy)matched.push({ticket,policy,calendar:calendars.get(`${policy.project_id}\n${policy.calendar_id}`)!});else unmatched.push(ticket)}
+ for(const ticket of tickets){const policy=policies.find(p=>p.project_id===ticket.project_id&&policyMatches(p,{...ticket,fields:JSON.parse(ticket.fields_json)},JSON.parse(ticket.metadata_json)));if(policy)matched.push({ticket,policy,calendar:calendars.get(`${policy.project_id}\n${policy.calendar_id}`)!});else unmatched.push(ticket)}
  const statements:D1PreparedStatement[]=[]
  if(unmatched.length)statements.push(
   env.DB.prepare(`DELETE FROM ticket_sla_state WHERE ${keyed('ticket_sla_state')}`).bind(keyJson(unmatched)),

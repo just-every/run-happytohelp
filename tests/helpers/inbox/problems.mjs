@@ -23,6 +23,15 @@ export async function problemJourney(){
   const linked=await call(problem,'/incidents/apply',{action:'link',tickets})
   assert.equal(linked.results.filter(r=>r.status==='applied').length,25)
   assert.equal((await call(problem)).incident_count,25)
+  // Link another incident, then unlink it before previewing the resolution.
+  // Its independently owned ticket and delivery history must remain untouched.
+  const unlinked=fixture.tickets[26].id,unchanged=await frontier(unlinked)
+  await call(problem,'/incidents/apply',{action:'link',tickets:[unchanged]})
+  assert.equal((await call(problem)).incident_count,26)
+  await call(problem,'/incidents/apply',{action:'unlink',tickets:[await frontier(unlinked)]})
+  assert.equal((await call(problem)).incident_count,25)
+  const unlinkedBefore=await frontier(unlinked)
+  const unlinkedHistory=await app.ok(`${base}/conversations/${unlinked}/ticket`,{token:w.tokens.owner})
   await app.db.prepare("UPDATE contacts SET metadata_json='{\"portal_notification_emails\":0}' WHERE id=?").bind(fixture.tickets[4].contact_id).run()
   const plan=await call(problem,'/solve/preview',{reply:'Hi {{contact.name}}, checkout is working again. — {{agent.name}}',solve_incidents:true})
   assert.equal(plan.results.length,25)
@@ -37,6 +46,9 @@ export async function problemJourney(){
   assert.equal(result.problem.status,'solved',JSON.stringify(result.problem))
   assert.equal((await call(problem)).recent_preview_id,plan.preview_id)
   assert.equal((await call(problem,'/solve/'+plan.preview_id)).results.filter(r=>r.status==='solved').length,23)
+  assert.deepEqual(await frontier(unlinked),unlinkedBefore,'an incident unlinked before solve retains its own state')
+  assert.deepEqual(await app.ok(`${base}/conversations/${unlinked}/ticket`,{token:w.tokens.owner}),unlinkedHistory,'problem resolution does not rewrite the unlinked incident history')
+  assert.ok(!sent.some(mail=>mail.to.includes('customer26@customer.example.test')))
   const sends=sent.length
   await call(problem,'/solve/apply',{preview_id:plan.preview_id})
   assert.equal(sent.length,sends)

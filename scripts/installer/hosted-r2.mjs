@@ -26,6 +26,7 @@ export function hostedR2({accountId,bucket,token,directory}){
    const query=new URLSearchParams({per_page:'1000'});if(cursor)query.set('cursor',cursor);if(prefix)query.set('prefix',prefix);
    const page=await api.envelope('/r2/buckets/'+bucket+'/objects?'+query);
    assert.ok(Array.isArray(page.result)&&page.result.length<=1000,'Invalid hosted object inventory');
+   assert.ok(!page.result_info?.is_truncated||(typeof page.result_info.cursor==='string'&&page.result_info.cursor&&page.result_info.cursor!==cursor),'Invalid hosted object cursor');
    return {objects:page.result.map(row=>({key:row.key,size:row.size,etag:row.etag.replace(/^"|"$/g,''),httpMetadata:row.http_metadata??{},customMetadata:row.custom_metadata??{}})),truncated:page.result_info?.is_truncated===true,cursor:page.result_info?.cursor};
   },
   async get(key,{range}={}){

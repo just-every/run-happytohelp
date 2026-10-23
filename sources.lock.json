@@ -2948,7 +2948,7 @@
       "executable": false
     },
     "scripts/installer/hosted-r2.mjs": {
-      "sha256": "21072a722b9b97d269812bd38de81084072acd3599950a6e4588d3da0ab0f304",
+      "sha256": "c9b5507bbf0f48c7b602b7dd71a837705d04b261d21a7e8ab8d1f821ddfca715",
       "executable": false
     },
     "scripts/installer/local.mjs": {
@@ -11400,11 +11400,11 @@
       "executable": false
     },
     "tests/helpers/installer/hosted-export-live.mjs": {
-      "sha256": "2df1536691c46b7e2b4df9e481dd39795a9aece2fd0d62ea67d70cf462110d27",
+      "sha256": "1657cb0ae9a1f31af6e5f53b91e00b1e27b630ffeaa16f303523cbd8211d93e8",
       "executable": false
     },
     "tests/helpers/installer/hosted-export-resources.mjs": {
-      "sha256": "26890ac569c96ac9109a4118de248d0eab125ca19396176f8c579067a3dc492f",
+      "sha256": "05a64ebcde7899eeb5444b1dec77e0e8b27c1bb285583c7a4f6824b08820df69",
       "executable": false
     },
     "tests/helpers/installer/hosted-export.mjs": {

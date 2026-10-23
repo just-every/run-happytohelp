@@ -267,7 +267,7 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
                         'happytohelp-preview': isPreview,
                         'happytohelp-proxy': config.proxy
                     })}>
-                        <AppContext.Provider value={{...contextValues,openCampaign:()=>{initiate();setOpen(true);}}}>
+                        <AppContext.Provider value={{...contextValues,prepareCampaign:initiate,openCampaign:()=>{initiate();setOpen(true);}}}>
                             <ActiveConnectProvider open={open} setOpen={setOpen} setInsightOpen={setInsightOpen}
                                                    onSettingsUpdated={handleSettingsUpdated}>
                                 {!isPreview && <><Connection ref={connectionRef} /><CampaignOffer /></>}

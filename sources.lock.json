@@ -7076,7 +7076,7 @@
       "executable": false
     },
     "src/modules/widget/js/App.jsx": {
-      "sha256": "0f85abdd046c00d497e56f5ca6d949373395796b4b7a5797f1f9262b52aec088",
+      "sha256": "fc330baa02826dde5bacb335ef4a58acef278c821a8ed2c38e5b73941ed2f391",
       "executable": false
     },
     "src/modules/widget/js/AwayNotice.jsx": {
@@ -7088,7 +7088,7 @@
       "executable": false
     },
     "src/modules/widget/js/CampaignOffer.jsx": {
-      "sha256": "9f119baf679bdc1f8aa2ac6bc303f1913fa90c625fc623012aa6983ac989b7af",
+      "sha256": "108746005f5a04cdf5eb23397fc503e476b7bbeaf99f0330e91e7d231eb32a15",
       "executable": false
     },
     "src/modules/widget/js/ChatHeader.jsx": {
@@ -11572,7 +11572,7 @@
       "executable": false
     },
     "tests/helpers/widget/campaigns-browser.mjs": {
-      "sha256": "f5098c2eec7981ea0740c16395e5e017b0704ff01216a9e25816e53cbb6a52a2",
+      "sha256": "3edce34d864019a7ef75aae1013238ba9c2666e314f00234705bf2ec2aa1240b",
       "executable": false
     },
     "tests/helpers/widget/campaigns.mjs": {

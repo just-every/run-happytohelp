@@ -7,7 +7,7 @@ export async function campaignsBrowser({browser,page,origin,projectId,owner,evid
  const headers={Authorization:`Bearer ${owner.token}`,'Content-Type':'application/json'};
  const call=async(path,body,method=body===undefined?'GET':'POST')=>{const response=await fetch(origin+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body)});assert.ok(response.ok,`${path}: ${response.status} ${await response.clone().text()}`);return response.json();};
  const settings=await call(`/api/management/projects/${projectId}/widget-settings`),widgetKey=settings.widgetKey;
- const host=createServer((_req,res)=>{res.setHeader('Content-Type','text/html');res.end(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><h1>Synthetic checkout</h1><p>Your checkout stays here while support offers help.</p><script src="${origin}/widget.js" data-api-origin="${origin}" data-widget-key="${widgetKey}"></script></body></html>`);});
+ const host=createServer((req,res)=>{const custom=new URL(req.url,'http://localhost').searchParams.has('custom');const setup=custom?`<button type="button" onclick="h2h('open')">Open chat</button><script>window.h2hQueue=[['init',${JSON.stringify({apiOrigin:origin,widgetKey,settings:{button:{enabled:false}}})}]];</script>`:'';res.setHeader('Content-Type','text/html');res.end(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><h1>Synthetic checkout</h1><p>Your checkout stays here while support offers help.</p>${setup}<script src="${origin}/widget.js" data-api-origin="${origin}" data-widget-key="${widgetKey}"></script></body></html>`);});
  await new Promise(done=>host.listen(0,'127.0.0.1',done));const site=`http://127.0.0.1:${host.address().port}`;
  await call(`/api/management/projects/${projectId}/widget-settings`,{...settings.settings,allowed_origin:site},'PUT');
  await call(`/api/management/projects/${projectId}/settings`,{is_contact_tracking_enabled:true,proactive_help_enabled:true},'PUT');
@@ -36,10 +36,10 @@ export async function campaignsBrowser({browser,page,origin,projectId,owner,evid
    visitor.on('request',request=>{if(request.method()==='POST')writes.push({url:request.url(),body:request.postData()});});
    const card=visitor.getByRole('region',{name:'Help before you ask'});
    try{
-    await visitor.goto(site+'/checkout');
+    await visitor.goto(site+'/checkout'+(width===390?'?custom=1':''));
     const launcher=visitor.getByRole('button',{name:'Open chat',exact:true}).first();
-    await launcher.focus();await visitor.locator('.happytohelp-launcher-tip').waitFor({state:'visible'});
-    assert.equal(await visitor.locator('.happytohelp-launcher-tip').innerText(),'Open chat');
+    if(width===1440){await launcher.focus();await visitor.locator('.happytohelp-launcher-tip').waitFor({state:'visible'});
+    assert.equal(await visitor.locator('.happytohelp-launcher-tip').innerText(),'Open chat');}
     await visitor.getByRole('button',{name:'Open chat',exact:true}).first().click();
     await visitor.getByRole('button',{name:'No thanks',exact:true}).click();
     await visitor.getByRole('button',{name:'Close chat',exact:true}).first().click();
@@ -50,6 +50,7 @@ export async function campaignsBrowser({browser,page,origin,projectId,owner,evid
     await visitor.getByRole('button',{name:'Allow proactive help',exact:true}).click();
     await visitor.reload();
     await visitor.waitForTimeout(10000);assert.equal(await card.count(),0,'a consenting visit still waits for the 20-second page trigger');
+    if(width===390)assert.equal(await visitor.locator('.happytohelp-button').count(),0,'custom host launcher keeps the native launcher disabled');
     await visitor.evaluate(()=>window.dispatchEvent(new Event('scroll')));
     await card.waitFor({timeout:15000});
     assert.match(await card.innerText(),/Alex from Support/);assert.match(await card.innerText(),/Synthetic shop/);

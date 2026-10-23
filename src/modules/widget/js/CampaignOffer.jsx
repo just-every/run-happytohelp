@@ -4,6 +4,7 @@ import AppContext from './context/AppContext';
 export default function CampaignOffer(){
  const {monitoring,open,sendMessage,conversationSettings}=useContext(ConnectContext),context=useContext(AppContext);
  const [offer,setOffer]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const prepare=useRef(context.prepareCampaign);prepare.current=context.prepareCampaign;
  const entered=useRef(Date.now()),exitIntent=useRef(false),offered=useRef(false),path=useRef(location.pathname);
  const enabled=monitoring?.enabled===true&&conversationSettings.campaignsEnabled===true;
  useEffect(()=>{if(!enabled){setOffer(null);}},[enabled]);
@@ -21,7 +22,7 @@ export default function CampaignOffer(){
    try{
     const height=document.documentElement.scrollHeight-window.innerHeight;
     const result=await sendMessage('campaignEvaluate',{visitId,path:location.pathname.slice(0,500),elapsedSeconds,scrollPercent:height>0?Math.min(100,Math.max(0,window.scrollY/height*100)):0,exitIntent:exitIntent.current,...(Number.isFinite(context.campaignContext?.cartValue)?{cartValue:context.campaignContext.cartValue}:{})});
-    if(active&&result?.offer){offered.current=true;setOffer(result.offer);}
+    if(active&&result?.offer){prepare.current?.();offered.current=true;setOffer(result.offer);}
    }catch{}finally{pending=false;}
   };
   const schedule=()=>{clearTimeout(timer);timer=setTimeout(evaluate,300);};

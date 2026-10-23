@@ -461,7 +461,10 @@ attachments cannot be selected or shared. The ticket link is always included.
 Shared attachments use download links that expire after seven days; anyone with
 one of those links can download that chosen file until expiry or customer erasure.
 An unchecked attachment stays private even if its message is checked. Select a
-Slack channel explicitly or use the connection's default channel.
+Slack channel explicitly or use the connection's default channel. The entered
+dependency stays beside the Slack or Teams handoff after reopening the ticket.
+Selections too large for the destination are refused before any provider request
+or shared attachment grant; narrow the selection and preview again.
 
 Configure each tracker's issue webhooks at the endpoint displayed beside the
 saved connection. Use the same signing secret in the provider and HappyToHelp.
@@ -497,7 +500,7 @@ or Slack yourself. Local erasure cannot recall external copies.
 
 These paths are qualified locally against provider-shaped HTTP servers. Live
 GitHub, Linear, Jira and Slack accounts have not been qualified by this evidence.
-Teams handoffs belong to the separate business channels work.
+Teams escalation handoffs have the same local qualification boundary described below.
 
 ### Teams escalation handoffs
 

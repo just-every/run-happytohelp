@@ -3,6 +3,7 @@ import {randomBytes} from 'node:crypto';
 import {startApp} from '../../journeys/kit/app.mjs';
 import {startProviders} from './providers.mjs';
 import {handoffBoundaries} from './handoffs.mjs';
+import {privateContext} from './private-context.mjs';
 export async function escalationHarness({tickets=8}={}){
  const providers=await startProviders();let app;
  try{
@@ -33,6 +34,7 @@ export async function escalationHarness({tickets=8}={}){
 }
 export async function sharingJourney(){const h=await escalationHarness({tickets:40});try{
  const {app,providers,records,share,call,root}=h;
+ const assertPrivate=await privateContext(h,records[0]);
  for(const [index,p] of ['github','linear','jira'].entries())for(let n=0;n<4;n++)await share(records[index*4+n],p);
  for(let n=1;n<5;n++)await share(records[n],'github',{mode:'link',key:'1'});
  for(const [offset,p] of ['linear','jira'].entries()){const existing=[...providers[p].issues.values()][0],key=p==='linear'?existing.identifier:existing.key;const linked=await share(records[20+offset],p,{mode:'link',key});assert.equal(linked.data.links[0].key,key);await share(records[20+offset],p,{mode:'link',key});assert.equal((await h.snapshot(records[20+offset])).links.length,1);}
@@ -53,6 +55,7 @@ export async function sharingJourney(){const h=await escalationHarness({tickets:
   const writes=providers[name].received.filter(r=>r.method==='POST');assert.ok(writes.length);
   const text=JSON.stringify(writes.map(x=>x.json));assert.ok(!text.includes('Private engineering note'));assert.ok(!text.includes('Unchosen sensitive account'));assert.ok(text.includes('/projects/'));assert.ok(text.includes('/api/escalations/attachments/'));
  }
+ await assertPrivate();
  await handoffBoundaries(h);
  const preview=await call(root(records[0])+'/preview',{message_ids:[records[0].message.id],attachment_ids:[]});assert.ok(preview.data.body.includes(records[0].message.content));assert.ok(!preview.data.body.includes(records[0].omitted.content));
  assert.equal((await app.call(h.base+root(records[0])+'/links',{token:h.token,body:{provider:'github',mode:'create',title:'Denied',message_ids:[records[1].message.id],attachment_ids:[]}})).status,400);

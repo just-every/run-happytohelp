@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "5b7863833ddb73191e9645867f1cfa9362556adaba121123692aaf786938b9a8",
+      "sha256": "e7b4eebe26a7c5d628649e2306fae63fa33b28d4a770a7be8cba10ef68e6a19a",
       "executable": false
     },
     "AGENTS.md": {
@@ -1632,7 +1632,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "9c27e85a274202697d2969262f50ac5b7b2fd90f37b21ad11ec540dbb8f23051",
+      "sha256": "52ad8f0e6ce8eae96138680cc9880b701cf2743474a1bc97d819007d7ad0c840",
       "executable": false
     },
     "DEMO.md": {
@@ -5380,7 +5380,7 @@
       "executable": false
     },
     "src/modules/integrations/README.md": {
-      "sha256": "9d418f1da09d4e2abae510b093cbbcd60052dbe4d184e9f9f557061fbf48695b",
+      "sha256": "f3c38605af88bdd7a2d165aac88be0a75aa585145f48aa9c9c81edc6fff64064",
       "executable": false
     },
     "src/modules/integrations/refused-email.ts": {
@@ -11016,7 +11016,7 @@
       "executable": false
     },
     "tests/helpers/escalations/journeys.mjs": {
-      "sha256": "e5104dc997e4f92f4266a3c14b374549b7be756dd6e93bbe2142f6b5eb8ebad0",
+      "sha256": "ae6386e4f833817e1a8466a2369ea217254cd165643f89094e6c28f9bc5e0a08",
       "executable": false
     },
     "tests/helpers/escalations/linear.mjs": {

@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d50070f39907b658ea50f782f3ef604aeb309e041d1bde01f44cc31e40943719",
+      "sha256": "c81d3b8e450295fd2bf3056174a8ada619149f15ee3105e3b25d09a02fb26f31",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b550340eccafa20c409fcd8abb3d05accc6d11a99e0f789d3328bc79978f8bb2",
+      "sha256": "e5b16e8e6ba3a8ace223ae08c7d519a25fcb42f23ee918f0b95270c9f0917987",
       "executable": false
     },
     "DEMO.md": {
@@ -12072,7 +12072,7 @@
       "executable": false
     },
     "tests/move-in/configuration-fields.mjs": {
-      "sha256": "9ed95bbfc4f40d9b9ec1d92e875730591cda1756fdc3696f639ddb4eb50722e3",
+      "sha256": "c228ed3aa7289904825d377d8d3c5fdde087582d84a6a2b0fb1cfe73ec9dab4b",
       "executable": false
     },
     "tests/move-in/correction-fixtures.mjs": {
@@ -12088,7 +12088,7 @@
       "executable": false
     },
     "tests/move-in/door-mapping.mjs": {
-      "sha256": "f77abd87f671803c7855572d03e08ed6fd1c9013f43feb25b59f7a69ab8a97be",
+      "sha256": "6161f6972dec99972148ec51a9e7e90712c1c1f73d391c0d366530981fff4ebc",
       "executable": false
     },
     "tests/move-in/door-readers.mjs": {

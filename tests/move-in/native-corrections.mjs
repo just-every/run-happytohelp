@@ -1,4 +1,4 @@
-import {phases} from '../journeys/kit/scenarios.mjs';
+import {phases,matrix} from '../journeys/kit/scenarios.mjs';
 const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {unchanged} from './admission-equality.mjs';
@@ -10,7 +10,7 @@ const state=async(h,run)=>(await h.call(`${base}/${run.id}`)).data;
 async function apply(h,run){run=await state(h,run);await h.call(`${base}/${run.id}/apply`,json({fingerprint:run.plan.fingerprint}));await h.drain();return state(h,run)}
 const rows=(vendor,count=1)=>generate(vendor,count).trim().split('\n').map(JSON.parse);
 const serial=rows=>rows.map(JSON.stringify).join('\n');
-for(const vendor of ['zendesk','intercom'])test(`${vendor} native contact erasure fences rejected, raw and aliased source custody and changed replay`,async()=>{const h=await nativeHarness();try{
+test("native contact erasure fences rejected, raw and aliased source custody and changed replay",matrix(['zendesk','intercom'],async (vendor)=>{const h=await nativeHarness();try{
  const sample=rows(vendor),person=vendor==='zendesk'?sample.find(x=>x.user?.role==='end-user').user:sample.find(x=>x.type==='contact'),sid=String(person.id);
  await h.db.batch([h.db.prepare("INSERT INTO contacts(id,project_id,name,email,external_id,created_at) VALUES('native','p','Native person',?,'external-person',1)").bind(person.email),h.db.prepare("INSERT INTO contacts(id,project_id,name,email,created_at) VALUES('unrelated','p','Keep me','keep@example.test',1)")]);
  const rejected=(await upload(h,vendor,serial(sample))).data;await h.drain();assert.equal((await state(h,rejected)).plan.decisions.find(d=>d.kind===(vendor==='zendesk'?'user':'contact')&&d.sourceId===sid).rejection,'native_contact_email_conflict');
@@ -26,7 +26,7 @@ for(const vendor of ['zendesk','intercom'])test(`${vendor} native contact erasur
   const response=await h.raw(`${base}?vendor=${vendor}`,{method:'POST',headers:{'X-Import-Filename':'replay.jsonl','X-Import-Schema':'2.16'},body:serial(replay)});assert.equal(response.response.status,410)
  }
  assert.equal((await files.list({prefix:'move-in/p/'})).objects.length,0);assert.equal((await h.db.prepare("SELECT email FROM contacts WHERE id='native'").first()).email,null);assert.equal(h.outbound,0)
- }finally{await h.close()}});
+ }finally{await h.close()}}));
 test('native macro HTML placeholders, malformed counts and unknown envelope collections are explicit review decisions',async()=>{const h=await nativeHarness();try{
  const sample=rows('intercom'),macro=sample.find(row=>row.type==='macro'),conversation=sample.find(row=>row.type==='conversation');macro.body='<p>Hi <attribute key="company.custom" default="there"/></p>';macro.body_text='Hi {{company.custom|fallback:"there"}}';conversation.conversation_parts.total_count='2';
  const run=(await upload(h,'intercom',JSON.stringify({contacts:sample.filter(x=>x.type==='contact'),conversations:[conversation],macros:[macro],companies:[{type:'company',id:'co'}]}),'source.json')).data;await h.drain();const plan=(await state(h,run)).plan;

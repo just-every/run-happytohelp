@@ -22,7 +22,11 @@ try{
  app=await startApp({bindings:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outbound:async request=>{
   const url=new URL(request.url);assert.equal(url.origin,'https://api.stripe.com');
   const body=request.method==='GET'?undefined:await request.text();
-  const response=await fetch(url,{method:request.method,headers:Object.fromEntries(request.headers),body,redirect:'manual',signal:AbortSignal.timeout(15000)});
+  // workerd's outbound transport supplies hop-by-hop framing headers. Node
+  // must frame the consumed body itself when forwarding to the real provider.
+  const headers=new Headers(request.headers);
+  for(const name of ['connection','keep-alive','proxy-authenticate','proxy-authorization','te','trailer','transfer-encoding','upgrade','host','content-length'])headers.delete(name);
+  const response=await fetch(url,{method:request.method,headers,body,redirect:'manual',signal:AbortSignal.timeout(15000)});
   statuses[response.status]=(statuses[response.status]??0)+1;
   if(!response.ok){const error=(await response.clone().json().catch(()=>({}))).error??{};process.stderr.write(JSON.stringify({stripeStatus:response.status,code:error.code,type:error.type,param:error.param})+'\n');}
   if(url.pathname==='/v1/refunds'&&request.method==='POST'){

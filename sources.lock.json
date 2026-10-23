@@ -12020,7 +12020,7 @@
       "executable": false
     },
     "tests/move-in/publication-resume.mjs": {
-      "sha256": "cdb216c7bf9f0585eacb11e534899a17bf583053084d3547af41797eb62b6550",
+      "sha256": "c0caf9885c311a7f5b3b3df60f2a1f469d999fbb00319d6bb4ff07123f3ee063",
       "executable": false
     },
     "tests/move-in/record-inputs.mjs": {

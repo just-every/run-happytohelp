@@ -13,8 +13,8 @@ export async function channelHarness(){
  const event=(p,options={})=>{const n=options.id??randomUUID(),sender=options.sender??(p==='sms'?'+12025550124':'synthetic-happytohelp-customer'),text=options.text??'Please help with my order';
   if(p==='sms')return new URLSearchParams({AccountSid:input(p).account,To:input(p).sender,From:sender,MessageSid:n,Body:text,NumMedia:options.media?'1':'0'}).toString();
   if(p==='slack')return JSON.stringify({team_id:input(p).account,event_id:n,event:{type:'message',channel:options.channel??'C12345678',user:sender,ts:options.thread??'1710000000.1',text,...(options.media?{files:[{id:'synthetic-happytohelp-file'}]}:{}),...(options.subtype?{subtype:options.subtype}:{})}});
-  if(p==='whatsapp')return JSON.stringify({entry:[{id:input(p).account,changes:[{value:{metadata:{phone_number_id:input(p).sender},messages:[{id:n,from:sender,type:options.media?'image':'text',text:{body:text}}]}}]}]});
-  return JSON.stringify({entry:[{id:input(p).account,messaging:[{sender:{id:sender},recipient:{id:input(p).sender},message:{mid:n,text,...(options.media?{attachments:[{type:'image'}]}:{})}}]}]});
+  if(p==='whatsapp')return JSON.stringify({entry:[{id:input(p).account,changes:[{value:{metadata:{phone_number_id:input(p).sender},messages:[{timestamp:String(Math.floor((options.at??Date.now())/1000)),id:n,from:sender,type:options.media?'image':'text',text:{body:text}}]}}]}]});
+  return JSON.stringify({entry:[{id:input(p).account,messaging:[{timestamp:options.at??Date.now(),sender:{id:sender},recipient:{id:input(p).sender},message:{mid:n,text,...(options.media?{attachments:[{type:'image'}]}:{})}}]}]});
  };
  const signed=(c,p,raw,now=String(Math.floor(Date.now()/1000)))=>{
   const url=app.origin+'/api/support-channels/webhooks/'+c.id;
@@ -45,10 +45,13 @@ export async function exchange(providers=['sms','whatsapp','instagram','messenge
   await h.app.ok(`/api/dashboard/projects/${h.ws.projectId}/conversations/${t.conversation_id}/notes`,{token:h.token,body:{content:'Private note must stay private'}});assert.equal(h.sends.length,providers.indexOf(p));
   const message=await h.reply(t);assert.equal(message.accepted,true);assert.equal(h.sends.length,providers.indexOf(p)+1);const sent=h.sends.at(-1);assert.ok(!sent.body.includes('Private note'));assert.ok(sent.body.includes('We+can+help.')||sent.body.includes('We can help.'));
   const status=await h.call('/conversations/'+t.conversation_id);assert.equal(status.data.sends[0].state,'accepted');assert.equal((await h.app.call(h.root+'/conversations/'+t.conversation_id,{token:h.other.tokens.owner})).status,403);
+  if(p==='sms'){const receipt=await h.app.first('SELECT provider_id FROM support_channel_sends WHERE message_id=?',message.message.id);const status=state=>new URLSearchParams({AccountSid:h.input(p).account,From:h.input(p).sender,To:'+12025550124',MessageSid:receipt.provider_id,MessageStatus:state}).toString();assert.equal((await h.deliver(c,p,status('delivered'))).status,200);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].state,'delivered');await h.deliver(c,p,status('failed'));assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].state,'delivered');}
+  if(p==='whatsapp'){await h.app.db.prepare('UPDATE support_channel_threads SET last_inbound_at=0 WHERE id=?').bind(t.id).run();await h.reply(t);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].error_code,'reply_window_expired');}
   if(p==='sms'||p==='whatsapp'){await h.deliver(c,p,h.event(p,{text:'STOP'}));await h.reply(t);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].error_code,'customer_opted_out');assert.equal(h.sends.length,providers.indexOf(p)+1);}
   else{await h.app.db.prepare('UPDATE support_channel_threads SET last_inbound_at=0 WHERE id=?').bind(t.id).run();await h.reply(t);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].error_code,'reply_window_expired');}
  }
- assert.equal((await h.call('/report')).data.reduce((n,r)=>n+r.count,0),providers.length*2);
+ for(const p of providers.filter(p=>p!=='sms')){const c=await h.connect(p);await h.deliver(c,p,h.event(p,{sender:'synthetic-happytohelp-late',at:Date.now()-25*3600000}));const t=await h.app.first('SELECT * FROM support_channel_threads WHERE connection_id=? AND recipient=?',c.id,'synthetic-happytohelp-late');await h.reply(t);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].error_code,'reply_window_expired');}
+ assert.equal((await h.call('/report')).data.reduce((n,r)=>n+r.count,0),providers.length*2+(providers.includes('whatsapp')?1:0)+providers.filter(p=>p!=='sms').length);
  }finally{await h.close();}}
 export async function slack(){const h=await channelHarness();try{
  const c=await h.connect('slack'),raw=h.event('slack');assert.equal((await h.deliver(c,'slack',raw)).status,200);const t=await h.ticket(c);await h.reply(t);assert.equal(JSON.parse(h.sends[0].body).thread_ts,'1710000000.1');assert.equal(JSON.parse(h.sends[0].body).mrkdwn,false);

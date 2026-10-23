@@ -21,6 +21,8 @@ export async function channelsBrowser({page,context,runtime,owner,width,audit}){
  const sent=await context.request.post(runtime.origin+`/api/conversations/${ticket.id}/messages`,{data:{localId:'browser-channel-reply',content:'We will check that for you.',expectedRevision:ticket.revision,authoring:{kind:'human'}}});assert.equal(sent.status(),200);
  await page.goto(runtime.origin+`/projects/${owner.projectId}/conversations/${ticket.id}`);
  await page.locator('.conversation-header').waitFor();
+ await page.getByText('sms message accepted by provider · delivery not confirmed',{exact:true}).waitFor();
+ assert.equal(await page.getByText('Email not sent · configure an email provider',{exact:true}).count(),0);
  const tab=page.getByRole('tab',{name:'Ticket',exact:true});if(!await tab.isVisible())await page.getByRole('button',{name:'Show conversation panel',exact:true}).click();await tab.click();
  await page.locator('#ticket-section-support-channel-heading').click();
  await page.getByText('Channel send: accepted',{exact:true}).waitFor();await audit(page,'support-channel-inbox-'+width);

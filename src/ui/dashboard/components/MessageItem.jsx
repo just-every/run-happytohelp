@@ -1,3 +1,4 @@
+import MessageChannelStatus from '../../../modules/support-channels/MessageChannelStatus';
 import React from 'react';
 import MessageCitations from '../../native/MessageCitations';
 import PropTypes from 'prop-types';
@@ -41,6 +42,7 @@ function MessageItem({ message, conversation, showActor = true, grouped = false,
             </details> }
             <MessageCitations message={message} />
             <MessageMailStatus status={message.email_status} />
+            <MessageChannelStatus status={message.channel_status} />
             { message.media && message.media.map(media => (
                 <Media key={ media.id } media={ media }/>
             )) }

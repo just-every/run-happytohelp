@@ -1,0 +1,3 @@
+import React from 'react';
+const labels={accepted:'accepted by provider · delivery not confirmed',delivered:'delivered by provider',failed:'failed · provider rejected delivery',blocked:'blocked',sending:'outcome not yet confirmed · never retried automatically',uncertain:'outcome unknown · check provider before any new send',not_recorded:'no send attempt recorded'};
+export default function MessageChannelStatus({status}){if(!status)return null;return <small className="d-block text-muted mt-1" role="status">{status.channel} message {labels[status.state]||'outcome unknown'}{status.reason&&` · ${status.reason.replaceAll('_',' ')}`}</small>;}

@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "dff0cd510d9f6392743e85ad3db5463f50863e5de3f5c3f2eedbccb0ae6598c9",
+      "sha256": "8f5e1af72a327667fbb4a78614839f9f29893d824adffd231b6ca9d477cbee76",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b0ef3168628f330d0f186a66ffec148469c777f4b1769eb63eab0c00795dda26",
+      "sha256": "a53f30a5b250a660253d0f32dda59b91bb52417a23199b81eec71fbd6063cc1b",
       "executable": false
     },
     "DEMO.md": {
@@ -1788,11 +1788,15 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "74766162aad951933bf72426e801371991fbdb785b280374c65351cf6c7e5581",
+      "sha256": "3d145d2aaf691f3773ed340f95a706d2505b2a820bf1b450c31de2da92134b9b",
       "executable": false
     },
     "docs/SOURCE-PROVENANCE.md": {
       "sha256": "93589452bafd51b8f5c4edd8d07c5bd351a6b3fae505935faeaccb509ec0f556",
+      "executable": false
+    },
+    "docs/support-channels.md": {
+      "sha256": "57b3eb1324dc32817cbb9f8a89b9bbab523244e6ca04d343358ebd820ae4fbf2",
       "executable": false
     },
     "docs/tickets.md": {
@@ -1996,7 +2000,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "9dc9fe1942ce1ff146a698a3bb3c6a6b274d800cc9904f505bdfb32a5ecda877",
+      "sha256": "76f4ab9d5fb42b2a474d87e64d87c889a53ecd417185d7d5e170e9bb1ace10b6",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2471,6 +2475,10 @@
       "sha256": "e0b666f7007df585dcefca23a5e3567fca5b3f6c283f55f5295658297ae28175",
       "executable": false
     },
+    "migrations/250_support_channels.sql": {
+      "sha256": "5944fcf419b5e552bccea8dcb5f033f29386db7f92ead1a090f24fd912a2dc38",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "0fa396b895e9098cc1db5070d1dc33ca732fae8287f84f69dc8afa3bc8afd1a6",
       "executable": false
@@ -2552,7 +2560,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "626f58d891fe0b9ea2a1bed3a966d75d24598974de3ce85c70d71fdeb81e7dd5",
+      "sha256": "0c107195419ebc5c96a695cd8b13121c160f0ede96d87bc3d8e6d12cccddc20b",
       "executable": false
     },
     "rer-project.json": {
@@ -2957,6 +2965,10 @@
     },
     "scripts/installer/sql-trigger-order.mjs": {
       "sha256": "890758219153cc3fe76355af139f944cb050b811e59780f975c39edb65fc08aa",
+      "executable": false
+    },
+    "scripts/installer/support-channel-archive.mjs": {
+      "sha256": "f8a07ed2a9ccbc5fe0099bf2b172b567feb44a888860b00f2125d93b839ca52a",
       "executable": false
     },
     "scripts/installer/ticket-archive-policy.mjs": {
@@ -5900,7 +5912,7 @@
       "executable": false
     },
     "src/modules/management/dashboard-messages.ts": {
-      "sha256": "f895354ecdfcd0c17b92ccc41f65438d28ff9e41a996256234a491c34ccb1968",
+      "sha256": "02f6b87d1713c374f2736a591cf14ffe0770e9e352df7b45b820821fd5e3bfc8",
       "executable": false
     },
     "src/modules/management/dashboard.ts": {
@@ -6416,7 +6428,7 @@
       "executable": false
     },
     "src/modules/public-site/help-host.ts": {
-      "sha256": "2f2743736f231217056eb7e5e0ff4749c29cc9aaa1f3cb7ada3662a8a2b12f91",
+      "sha256": "33a24b9e9781c554ebbf02879c50f876a816c2636e30213253a4890b0d2e8814",
       "executable": false
     },
     "src/modules/public-site/help-template.ts": {
@@ -6589,6 +6601,46 @@
     },
     "src/modules/site-preview/routes.ts": {
       "sha256": "3206228e474c3d8b0a886e97b627f07c80013974f547afa1b7f0c66cc6ec1aef",
+      "executable": false
+    },
+    "src/modules/support-channels/inbound.ts": {
+      "sha256": "2eca2eb289c8524d1bb2b9d7afa311b4acf5ca0ebcf91977944da7f7fe79a0cd",
+      "executable": false
+    },
+    "src/modules/support-channels/MessageChannelStatus.jsx": {
+      "sha256": "76f4b4fb7ff9903589dfe46c1de44d53379a2e9cb978060dadf89e47a0c1213f",
+      "executable": false
+    },
+    "src/modules/support-channels/model.ts": {
+      "sha256": "522f839c5907587439fdf1dfef25f5c409def5af50bc9d21d69d4623c3cb93a4",
+      "executable": false
+    },
+    "src/modules/support-channels/outbound.ts": {
+      "sha256": "b8f7a92ad92d59ebe7ffcde4fb717600a1ebbc5353842cb42fd3d729dded2044",
+      "executable": false
+    },
+    "src/modules/support-channels/presentation.ts": {
+      "sha256": "3d84a0eb2f02f84f1300ebbe7c274a85815fdc760950bb750eb238f40de5d361",
+      "executable": false
+    },
+    "src/modules/support-channels/protocol.ts": {
+      "sha256": "43dca85da58fed9652d26c2b660fa5eee364708ae76e7600a18c8f863f0473de",
+      "executable": false
+    },
+    "src/modules/support-channels/routes.ts": {
+      "sha256": "bfdb56f30f5bb76519f5eebf7f3f9ee639f959f255570feefaeb419258382cbe",
+      "executable": false
+    },
+    "src/modules/support-channels/Settings.jsx": {
+      "sha256": "1072122c8b149fce32b5cb390ab1c50ec455835676a20719e8a3b050ab2219c2",
+      "executable": false
+    },
+    "src/modules/support-channels/settings.ts": {
+      "sha256": "eb5c2cdbe0951cc16154ba231e7e604c84267e6d990cde9620eda3facda5fd32",
+      "executable": false
+    },
+    "src/modules/support-channels/TicketChannel.jsx": {
+      "sha256": "c53c96ddbb21e646cab6a9e66969f4407ffd7995d266dd603fe1c957a5fb05e5",
       "executable": false
     },
     "src/modules/tickets/batch-workflows.ts": {
@@ -7476,7 +7528,7 @@
       "executable": false
     },
     "src/platform/dashboard-path.js": {
-      "sha256": "d4fe17889786d2c5dcfe8ed62ee462d5ef6d2d0745e075904c596521c4fba732",
+      "sha256": "bae52f3c4864469b087677356e13b196fafe71914d32a8acf2a89b432f80294f",
       "executable": false
     },
     "src/platform/db.ts": {
@@ -8196,7 +8248,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/MessageItem.jsx": {
-      "sha256": "bd871878d808ba9ad759064af98d9a65d28f82be55e0c7579d6643971596447b",
+      "sha256": "2e1f8997d4a6d19bdce65decd556f0817a34c383b1d43e04474fb115b46d020f",
       "executable": false
     },
     "src/ui/dashboard/components/MessageMailStatus.jsx": {
@@ -10180,7 +10232,7 @@
       "executable": false
     },
     "src/ui/native/WorkspacePages.jsx": {
-      "sha256": "9e84ea77882c9b1feb3e71680c49d375d8e09df7e18633e99f8eb8a596b7baf9",
+      "sha256": "e0cc9676960d72abd86280dab05ce7457218a90b42cacd390e8c65255378163a",
       "executable": false
     },
     "src/ui/native/WorkspaceSidebarArtwork.jsx": {
@@ -11461,6 +11513,14 @@
     },
     "tests/helpers/streamed-rejection.mjs": {
       "sha256": "13d9da70881be1b57811d2dd1e6d370fe4a4d7881ccfdb74b97031f716700ec0",
+      "executable": false
+    },
+    "tests/helpers/support-channels/browser.mjs": {
+      "sha256": "c85503a524c493acc3bf33c337be0950402b7a0828aa916f41b0b915704a94a9",
+      "executable": false
+    },
+    "tests/helpers/support-channels/journeys.mjs": {
+      "sha256": "243aa17ca1304af29ecf633a46a7b82f12ae7f4b80e0cdedaa7741a75b465aae",
       "executable": false
     },
     "tests/helpers/training-readiness.mjs": {

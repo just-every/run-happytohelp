@@ -73,7 +73,9 @@ export async function ticketLifecycle(f){
  await patch(unsolved,{fields:{[required.id]:'DAMAGED-SEAM'}})
  const solved=await app.ok(`/api/conversations/${unsolved}/messages`,{token:w.tokens.owner,body:{localId:'solve-with-reason',content:'Your replacement is on its way.',expectedRevision:(await get(unsolved)).revision,resolve:true}})
  assert.equal(solved.accepted,true);assert.equal((await get(unsolved)).status_category,'solved')
- await ok(`/ticket-fields/${required.id}`,undefined,'owner','DELETE')
+ assert.equal((await call(`/ticket-fields/${required.id}`,undefined,'owner','DELETE')).status,400,'a used definition cannot delete the solved ticket value')
+ await ok(`/ticket-fields/${required.id}`,{required:false},'owner','PATCH')
+ assert.equal((await get(unsolved)).fields[required.id],'DAMAGED-SEAM','making the field optional preserves its historical value')
  const log=await app.sql("SELECT * FROM audit_events WHERE project_id=? AND action='ticket.updated'",w.projectId)
  assert.ok(log.length>0)
 }

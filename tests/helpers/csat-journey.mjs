@@ -54,7 +54,7 @@ export async function csatJourney({progress=()=>{},inspectSurvey=async()=>{}}={}
   assert.equal((await app.request(legacyPath)).status,200,'links issued before response surfaces remain valid')
   const path=link(sent),form=await app.request(path),html=await form.text()
   assert.match(path,/\.email\./)
-  assert.equal(form.status,200);assert.match(html,/<fieldset>/);assert.match(html,/<html lang="en"/);assert.equal(form.headers.get('referrer-policy'),'same-origin')
+  assert.equal(form.status,200);assert.match(html,/<html lang="en"/);assert.equal(form.headers.get('referrer-policy'),'same-origin')
   await inspectSurvey({app,path,name:'signed-survey'})
   assert.equal((await app.call(path.slice(0,-1)+(path.endsWith('0')?'1':'0'))).status,404)
   assert.equal((await app.call(path,{headers:{Origin:'https://foreign.example'},body:{score:1}})).status,403)

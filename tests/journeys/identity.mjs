@@ -1,3 +1,4 @@
+import {assuranceJourney} from '../helpers/assurance/journeys.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {spawnSync} from 'node:child_process'
@@ -373,6 +374,6 @@ test('magic sign-in refuses removed members, deleted workspaces, changed emails,
 })
 
 test('two-factor sign-in: TOTP with recovery codes, a role policy that forces enrolment and ends unproven sessions, refused and rate-limited answers, step-up for exports, owner reset and installation-key owner recovery, all audited',twoFactorJourney)
-test('roles and the security log: a collaborator notes and follows but cannot reply, assign, erase or export; a restricted custom role cannot publish or export; role changes step up; the log is append-only with retention and legal holds',rolesAuditJourney)
+test('roles and the security log: a collaborator notes and follows but cannot reply, assign, erase or export; a restricted custom role cannot publish or export; role changes step up; the log is append-only with retention and legal holds',async()=>{await rolesAuditJourney();await assuranceJourney()})
 
 test('no-password step-up proves the account mailbox, never the held session; links expire, bind the account, consume once, and rate-limit atomically with audit',emailStepUpJourney)

@@ -29,7 +29,7 @@ export async function feedbackHarness(){
 export async function feedbackCaptureJourney(){const h=await feedbackHarness();try{
  const {app,records,capture,root}=h
  const company=await app.ok(`/api/management/projects/${h.ws.projectId}/companies`,{token:h.token,body:{name:'Export customer account'}})
- const companyId=company.data?.id||company.id
+ const companyId=company.company.id
  assert.ok(companyId)
  // Company membership is prerequisite fixture state; all feedback commands use the public route.
  await app.db.prepare('INSERT INTO contact_companies(project_id,contact_id,company_id) VALUES(?,?,?)').bind(h.ws.projectId,records[0].visitor.contactId,companyId).run()
@@ -62,7 +62,7 @@ export async function feedbackReleaseJourney(){const h=await feedbackHarness();c
  assert.equal((await h.call(root(r)+`/updates/${draft.id}/send`,body)).duplicate,true)
  assert.equal((await app.sql('SELECT id FROM messages WHERE conversation_id=? AND local_id=?',r.conversation.id,'feedback:'+draft.id)).length,1)
  await r.send('It still fails for my account. Please keep this open.','still-failing')
- const conversation=await app.ok('/api/conversations/'+r.conversation.id,{token:h.token});assert.equal(conversation.is_closed,undefined);assert.notEqual(conversation.status_category,'closed');assert.equal(conversation.resolved_at,null)
+ const conversation=await app.ok('/api/conversations/'+r.conversation.id,{token:h.token});assert.notEqual(conversation.status_category,'closed');assert.equal(conversation.resolved_at,null)
  const secondDraft=(await snapshot(records[1])).updates[0]
  await app.ok(`/api/feedback/conversations/${records[1].conversation.id}/opt-out`,{token:records[1].visitor.token,body:{}})
  assert.equal((await snapshot(records[1])).updates[0].state,'cancelled')

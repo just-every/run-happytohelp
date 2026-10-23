@@ -40,6 +40,10 @@
     {
       "id": "250_feedback.sql",
       "buyerSteps": "FEEDBACK-001: add source-linked feedback, signed release receipts and reviewed service updates. Apply before the updated Worker serves traffic. New links default to service updates off; explicit requester consent is required. Reconfigure release sender secrets after restore; source history restores with subscriptions off and pending sends cancelled."
+    },
+    {
+      "id": "251_assurance.sql",
+      "buyerSteps": "ASSURANCE-001: add regulated-deployment qualification profiles and expiring agreement/control evidence. Standard workspaces are unchanged. Requesting qualification places that workspace on a data-access hold; there is deliberately no health-data activation or remove-hold action until independent provider/partner deployment acceptance exists. Keep an isolated deployment and export/backup before requesting qualification."
     }
   ]
 }

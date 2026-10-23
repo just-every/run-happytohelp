@@ -126,7 +126,7 @@ try{
  assert.equal(records.at(-1).kind,'closing');records.at(-1).contentHash='0'.repeat(64);
  await writeFile(join(root,'exports/damaged.rer'),records.map(record=>JSON.stringify(record)).join('\n')+'\n',{mode:0o600});
  await writeFile(join(root,'exports/oversized.rer'),Buffer.alloc(MAX_LINE_BYTES+1,0x20),{mode:0o600});
- for(const [name,reason] of [['damaged.rer',/content_checksum/],['oversized.rer',/exceeds the supported size/]]){
+ for(const [name,reason] of [['damaged.rer',/archive integrity check failed/],['oversized.rer',/exceeds the supported size/]]){
   const refusal=await run(root,['import','--input','exports/'+name,'--yes'],4);
   assert.match(refusal.events.filter(event=>event.event==='error').map(event=>event.message).join('\n'),reason);
   compareArchive(empty,await archiveSnapshot(root));

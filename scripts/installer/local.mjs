@@ -1,3 +1,5 @@
+import {refuse} from '@runeditrun/rer/errors';
+import {PortabilityError} from '@runeditrun/rer/modules/portability';
 import {triageRestoreSql} from './triage-archive.mjs';
 import {localInstaller} from '@runeditrun/rer/local-installer';
 import {developmentTarget,previewTarget} from '@runeditrun/rer/operator-installer';
@@ -47,6 +49,20 @@ export const adapter=localInstaller({
 export const install=(root,input,store,onApp,signal)=>installOperator(root,input,store,onApp,signal,adapter.hooks);
 const transfer=localPortability({database:'DB',buckets:{FILES:'FILES'},policyModule:'scripts/installer/portability-policy.mjs',transient:['ConversationSocket connections (messages are in D1)','live teammate presence (who has the dashboard open)','queue execution leases','active sessions and one-use sign-in links','GitHub and integration credentials','local computer pairing, grants and job execution records','local workflow clock overrides; queued workflow sends are cancelled and claimed sends remain uncertain']});
 const d1=(context,label,sql)=>context.store.run(label,'pnpm',['exec','wrangler','d1','execute','DB','--local','--persist-to','.wrangler/state','--config','wrangler.jsonc','--command',sql],{cwd:context.root,signal:context.signal});
+async function archiveInput(path){
+ try{return await checkArchiveSnapshot(path)}catch(error){
+  // Only validator failures become public refusals. Never echo archive values,
+  // filesystem errors or private captures in the command's safe diagnostic.
+  const message=error instanceof Error?error.message:'';
+  const reason=error instanceof PortabilityError
+   ? new Set(['content_checksum','part_checksum','archive_checksum','payload_checksum']).has(error.code)?'archive integrity check failed':'invalid archive structure'
+   : message==='An archive line exceeds the supported size.'?'an archive record exceeds the supported size'
+   : message.startsWith('Restore refused:')?'unsupported or damaged Durable Object snapshot':null;
+  if(reason)throw refuse('Import refused before restore: '+reason+'.');
+  throw error;
+ }
+}
+
 const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async context=>{
  await context.store.run('Collecting local migrations',process.execPath,['scripts/migrations.mjs'],{cwd:context.root,signal:context.signal,heavy:false});
  let snapshots;
@@ -55,7 +71,7 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
   if(!await platformMigrationLedger(context))await context.store.run('Applying local data migrations','pnpm',['exec','wrangler','d1','migrations','apply','DB','--local','--persist-to','.wrangler/state','--config','wrangler.jsonc'],{cwd:context.root,signal:context.signal});
   snapshots=await readDurableObjects(context.root);
   await d1(context,'Recording Durable Object storage',snapshotSql(snapshots));
- }else snapshots=await checkArchiveSnapshot(context.path);
+ }else snapshots=await archiveInput(context.path);
  let selected=transfer,upgradeWorkflows=false;
  if(verb==='import'){
   const historical=await Promise.all(['./triage-archive-policy.mjs','./triage-historical-report-policy.mjs','./ticket-archive-policy.mjs','./r4-archive-policy.mjs','./email-archive-policy.mjs','./workflow-archive-policy.mjs','./workflow-archive-ticket-policy.mjs'].map(async module=>({module,policy:(await import(module)).default})));

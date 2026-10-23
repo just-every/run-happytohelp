@@ -7,6 +7,7 @@ import {mailboxProofSql} from '../identity/mailbox'
 import {contactWritable} from '../../platform/contact-state'
 import {fingerprint} from './model'
 import {object} from './validation'
+import {auditStatement} from '../audit/record'
 
 export const identityLinkRoutes=new Hono<AppEnv>()
 const prefix='/projects/:projectId/contacts/:contactId/identity-links'
@@ -35,8 +36,10 @@ async function preview(env:Env,p:string,id:string,input:any){
 async function access(c:any){const actor=await scope(c) as Actor;const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'contacts.manage');return {actor,guard}}
 identityLinkRoutes.get(prefix,async c=>{
  const {actor,guard}=await access(c),id=c.req.param('contactId');await contact(c.env,actor.projectId,id)
- const links=await c.env.DB.prepare(`SELECT l.*,contacts.id,contacts.name,contacts.email,contacts.external_id,${proof} proof FROM customer_identity_links l JOIN contacts ON contacts.project_id=l.project_id AND contacts.id=CASE WHEN l.contact_id=? THEN l.linked_contact_id ELSE l.contact_id END WHERE l.project_id=? AND (l.contact_id=? OR l.linked_contact_id=?) AND ${available.replaceAll('metadata_json','contacts.metadata_json')} AND EXISTS(${guard.sql}) ORDER BY l.created_at,l.contact_id,l.linked_contact_id`).bind(id,actor.projectId,id,id,...guard.params).all<any>()
- return c.json({links:links.results.map(row=>({contact:display(row),provenance:row.provenance,actor_id:row.actor_id,created_at:row.created_at})),grants_customer_access:false})
+ const [links]=await c.env.DB.batch<any>([c.env.DB.prepare(`SELECT l.*,contacts.id,contacts.name,contacts.email,contacts.external_id,reviewer.name actor_name,${proof} proof FROM customer_identity_links l LEFT JOIN users reviewer ON reviewer.id=l.actor_id JOIN contacts ON contacts.project_id=l.project_id AND contacts.id=CASE WHEN l.contact_id=? THEN l.linked_contact_id ELSE l.contact_id END WHERE l.project_id=? AND (l.contact_id=? OR l.linked_contact_id=?) AND ${available.replaceAll('metadata_json','contacts.metadata_json')} AND EXISTS(${guard.sql}) ORDER BY l.created_at,l.contact_id,l.linked_contact_id`).bind(id,actor.projectId,id,id,...guard.params),
+  auditStatement(c.env.DB,{projectId:actor.projectId,category:'access',action:'customer.identity_links_viewed',actor:{type:'user',id:actor.id},source:'dashboard',target:{type:'contact',id}},Date.now(),{sql:`EXISTS(${guard.sql})`,params:guard.params})
+ ])
+ return c.json({links:links.results.map(row=>({contact:display(row),provenance:row.provenance,actor_id:row.actor_id,actor_name:row.actor_name,created_at:row.created_at})),grants_customer_access:false})
 })
 identityLinkRoutes.post(prefix+'/preview',async c=>{
  const {actor}=await access(c),body=object(await c.req.json()),plan=await preview(c.env,actor.projectId,c.req.param('contactId')!,body)

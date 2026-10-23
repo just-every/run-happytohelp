@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "0a2bbe71e7bfe9c36f8b9705efaa8eb103b1416f1093e49ed2e9ad3a4e1ac4b8",
+      "sha256": "d6252906c027a3186b65942373d22c777a293480798e8d572c9c6b470d414ad9",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5e740acd5a9cbb93305045ac6e30b6c2b6db8dd4b5c944649d63e569df58e6e5",
+      "sha256": "af19da2110265116ecfdad83943d5306425aa3f31be893149ea8b537e4a03f55",
       "executable": false
     },
     "DEMO.md": {
@@ -4168,7 +4168,7 @@
       "executable": false
     },
     "src/modules/customers/identity-links.ts": {
-      "sha256": "aab49fc117a55c7f9e196227ebfb60ea866f544b4d1e5d78b5dd12e167412f70",
+      "sha256": "0697b8be8491f7ba5803e13204abbaa3dd3d17a9358d08a2245d56b34efa756e",
       "executable": false
     },
     "src/modules/customers/index.ts": {
@@ -9576,7 +9576,7 @@
       "executable": false
     },
     "src/ui/native/pages/ContactDetails.jsx": {
-      "sha256": "f79ed0cf3f3a7a5a2d1d5c56c861ef5cb0b07145d633bd74b6e84328914f5f21",
+      "sha256": "20b6c72ecd344c08f1928b4f3e50473296dc549bba2e8499c902fa08ddfb0b68",
       "executable": false
     },
     "src/ui/native/pages/ContactErasure.jsx": {
@@ -10788,7 +10788,7 @@
       "executable": false
     },
     "tests/helpers/company-records.mjs": {
-      "sha256": "96066e5913d8d7283e6f798847e0cc0c6b051b4469ea74613fe3067b462a8be1",
+      "sha256": "7f13e1237924dd620820a441fd51fa4a38f3dc49d403bc71f5581ec971b83bd7",
       "executable": false
     },
     "tests/helpers/configured-mail-runtime.mjs": {
@@ -11168,7 +11168,7 @@
       "executable": false
     },
     "tests/helpers/inbox/management-library-browser.mjs": {
-      "sha256": "a140031f1916fcd5bf5093e76a50685773d20215e32debff0ab99d2a52971cfb",
+      "sha256": "ea1d5f3035aedb239238205ebfb67b7ae2dfc87d2b0c2a0f5bdd592716a458ae",
       "executable": false
     },
     "tests/helpers/inbox/management.mjs": {

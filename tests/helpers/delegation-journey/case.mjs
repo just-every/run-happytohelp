@@ -22,7 +22,7 @@ export async function newVisitor({origin,api,projectId}){
  const say=async content=>{const current=await transcript();return visitor('/api/conversations/'+conversation.id+'/messages',{localId:randomUUID(),content,expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId})};
  await say(report);return {session,transcript,say};
 }
-export async function runCase({origin,api,actor,fixture,directory,ui}){
+export async function runCase({origin,api,actor,fixture,directory,ui,restart}){
  const projectId=actor.projectId;
  fixture.reset();
  const visitor=ui?await ui.visitor():await newVisitor({origin,api,projectId});
@@ -54,6 +54,7 @@ export async function runCase({origin,api,actor,fixture,directory,ui}){
   const approvedAt=Date.now();
   const approval=ui?await ui.approve(path,investigation.id):(await api(path+'/'+investigation.id+'/result/follow-up-actions/enable',{})).data;
   const child=await lookup(approval.child_delegation_id);assert.ok(child);assert.equal(child.parent_delegation_id,investigation.id);assert.equal(child.source_proposal_id,'enable');assert.equal(child.mode,'resolve');assert.equal(child.operator_id,actor.id);assert.equal(child.status,'queued');
+  assert.equal(child.authority.granted_by,actor.id);assert.equal(child.authority.expires_at-child.authority.granted_at,15*60000);assert.ok(child.authority.granted_at>=finding.authority.granted_at,'approving a repair grants its own bounded task, separate from the read-only investigation');
   assert.ok(Date.parse(child.created_at)>=approvedAt-1000);assert.equal(fixture.enabled,false);
   const replayApproval=(await api(path+'/'+investigation.id+'/result/follow-up-actions/enable',{})).data;assert.equal(replayApproval.child_delegation_id,child.id);assert.equal((await jobs()).length,2);
   await ui?.refresh();await screenshot('d','Owner approves Enable Spanish; only now does the resolve child exist, linked to its proposal.');
@@ -88,6 +89,28 @@ export async function runCase({origin,api,actor,fixture,directory,ui}){
   const bucket=(await api(`/api/dashboard/projects/${projectId}/conversations/${conversationId}/buckets/${conversationId}`)).data;
   const notes=bucket.events.filter(event=>event.type==='INTERNAL_NOTE');assert.equal(notes.length,3);
   for(const job of final){const note=notes.find(n=>n.id==='delegation:'+job.id);assert.ok(note);assert.equal(note.agent_id,actor.id);assert.ok(Date.parse(note.created_at)>=Date.parse(job.started_at));assert.ok(note.content.includes(job.result.summary));assert.ok(note.content.includes(job.result.actions[0].evidence))}
-  return {projectId,conversationId,deviceId:worker.deviceId,investigationId:investigation.id,childId:child.id,observationId:observation.id,messageId:sent.message.id,jobs:final,notes,fixtureEvents:[...fixture.events],operatorId:actor.id};
+  // Recovery is scoped to the customer path and must survive a later recurrence.
+  // Keep the successful evidence immutable; a new report needs a new investigation.
+  const resolved=await api(`/api/dashboard/projects/${projectId}/conversations/${conversationId}`,{resolved:true},{method:'PUT'});
+  assert.ok(resolved.data.resolved_at);assert.equal(resolved.data.agent_id,actor.id);
+  if(restart)await restart();
+  assert.equal((await lookup(observation.id)).result.summary,observed.result.summary,'independent observation survives application restart');
+  const repairEvents=[...fixture.events];
+  fixture.reset();
+  const recurrence=await visitor.say('Spanish stopped working again after the earlier fix. Please reopen this same request.');
+  assert.equal(recurrence.accepted,true);
+  const reopened=await api('/api/conversations/'+conversationId);
+  assert.equal(reopened.id,conversationId);assert.equal(reopened.resolved_at,null);
+  assert.equal(reopened.assigned_to,actor.id,'recurrence retains accountable ownership');
+  const beforeNew=await transcript();
+  await api(`${path}/${observation.id}/result/draft`,{proposal_id:reply.id,expected_revision:beforeNew.revision,expected_last_message_id:beforeNew.lastMessageId},{status:409});
+  await api(`/api/conversations/${conversationId}/messages`,{localId:randomUUID(),content:reply.body,expectedRevision:beforeNew.revision,expectedLastMessageId:beforeNew.lastMessageId,authoring:{kind:'local',jobId:observation.id,proposalId:reply.id}},{status:409});
+  const fresh=await delegate('investigate','Reproduce the customer recurrence on the disposable Spanish setting fixture. Read only; do not repeat the previous repair or publish a reply.');
+  const failedReceipt=await worker.run(task('investigate'));const failed=await lookup(fresh.id);
+  assert.equal(failedReceipt.before.enabled,false);assert.equal(failed.mode,'investigate');
+  assert.match(failed.result.summary,/disabled/);assert.equal(fixture.events.filter(e=>e.method==='POST').length,0);
+  assert.equal((await transcript()).messages.filter(m=>m.actor_role!=='contact').length,1,'recurrence creates no automatic reply');
+  assert.equal((await api('/api/conversations/'+conversationId)).resolved_at,null,'read-only reproduction never resolves the failed path');
+  return {projectId,conversationId,deviceId:worker.deviceId,investigationId:investigation.id,childId:child.id,observationId:observation.id,messageId:sent.message.id,jobs:final,notes,fixtureEvents:repairEvents,recurrence:{jobId:fresh.id,fixtureEvents:[...fixture.events]},operatorId:actor.id};
  }finally{await worker.close();await visitor.close?.()}
 }

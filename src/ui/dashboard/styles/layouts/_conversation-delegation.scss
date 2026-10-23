@@ -138,6 +138,7 @@ body.conversation-workspace {
             font-weight: 650;
         }
         .delegation-field select,
+        .delegation-field input[type=number],
         .delegation-field textarea {
             width: 100%;
             color: var(--ink);
@@ -148,9 +149,11 @@ body.conversation-workspace {
             font: inherit;
             outline: 0;
         }
-        .delegation-field select { height: 2.4rem; padding-block: .45rem; padding-left: .6rem; font-size: 0.875rem; font-weight: 500; }
+        .delegation-field select,
+        .delegation-field input[type=number] { height: 2.4rem; padding-block: .45rem; padding-left: .6rem; font-size: 0.875rem; font-weight: 500; }
         .delegation-field textarea { min-height: 6rem; padding: .65rem; font-size: 0.875rem; font-weight: 400; line-height: 1.45; resize: vertical; }
         .delegation-field select:focus,
+        .delegation-field input[type=number]:focus,
         .delegation-field textarea:focus { border-color: var(--ink); box-shadow: 0 0 0 2px rgba(var(--ink-rgb), .11); }
         .delegation-field--instructions > small { justify-self: end; margin-top: -.15rem; color: var(--ink-soft); font-size: 0.8125rem; font-weight: 500; }
         .delegation-task-form__worker-state {

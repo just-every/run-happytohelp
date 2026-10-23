@@ -98,7 +98,13 @@ export async function runCodex({ prompt, identity, onIdentity, onProgress, signa
       }
     }
   };
-  signal?.addEventListener('abort', interrupt, { once: true });
+  const abort = () => {
+    void interrupt();
+    // A deadline can arrive before turn/start returns its ID. End only this
+    // owned provider process; the server still records an unconfirmed outcome.
+    if (signal?.reason?.code === 'JOB_TERMINAL') { rpc.child.kill('SIGTERM'); void rpc.close(); }
+  };
+  signal?.addEventListener('abort', abort, { once: true });
 
   try {
     await rpc.request('initialize', {
@@ -174,7 +180,7 @@ export async function runCodex({ prompt, identity, onIdentity, onProgress, signa
     runtimeFailure('Codex', 'The local runtime failed before returning a usable result. Inspect the local runtime privately.');
   } finally {
     unsubscribe();
-    signal?.removeEventListener('abort', interrupt);
+    signal?.removeEventListener('abort', abort);
     await rpc.close();
   }
 }

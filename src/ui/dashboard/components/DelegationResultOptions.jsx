@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import DelegationAttachments from './DelegationAttachments';
 
-function ResultOption({ option, kind, isDraftDisabled, onAction, onUse, verified }) {
+function ResultOption({ option, kind, isDraftDisabled, isActionDisabled, onAction, onUse, verified }) {
     const [ pending, setPending ] = useState(false);
     const inFlight = useRef(false);
     const isReply = kind === 'reply';
@@ -10,7 +10,7 @@ function ResultOption({ option, kind, isDraftDisabled, onAction, onUse, verified
         : Boolean(option.child_delegation_id) || option.status === 'started';
     const uncertain = option.status === 'uncertain' || option.status === 'sending';
     const needsReview = option.status === 'needs_review';
-    const blocked = uncertain || needsReview;
+    const blocked = uncertain || needsReview || isActionDisabled;
 
     const action = async () => {
         if (inFlight.current || used || blocked) return;
@@ -72,13 +72,15 @@ export default function DelegationResultOptions({ job, isDraftDisabled, onInsert
         </section> }
         { followUps.length > 0 && <section aria-label="Follow-up actions">
             <h3><i className="fe fe-zap" aria-hidden="true" /> Follow-up actions</h3>
-            { followUps.map(action => <ResultOption key={ action.id } option={ action } kind="follow-up" onAction={ id => onRunFollowUp(job.id, id) } />) }
+            <p>Approving a follow-up grants a new 15-minute task. Customer reply permission stays separate.</p>
+            { followUps.map(action => <ResultOption key={ action.id } option={ action } kind="follow-up" isActionDisabled={Boolean(job.authority?.expired)} onAction={ id => onRunFollowUp(job.id, id) } />) }
         </section> }
     </div>;
 }
 
 ResultOption.propTypes = {
     isDraftDisabled: PropTypes.bool,
+    isActionDisabled: PropTypes.bool,
     option: PropTypes.object.isRequired,
     kind: PropTypes.string.isRequired,
     onAction: PropTypes.func,

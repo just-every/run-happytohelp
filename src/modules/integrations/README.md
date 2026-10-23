@@ -498,3 +498,17 @@ or Slack yourself. Local erasure cannot recall external copies.
 These paths are qualified locally against provider-shaped HTTP servers. Live
 GitHub, Linear, Jira and Slack accounts have not been qualified by this evidence.
 Teams handoffs belong to the separate business channels work.
+
+### Teams escalation handoffs
+
+Ticket → Escalations → Workspace connections accepts a Microsoft Graph delegated
+`ChannelMessage.Send` token. Specify the team UUID followed by `/` and the channel
+ID, for example `19:…@thread.tacv2`. The API host is fixed to
+`https://graph.microsoft.com` (loopback provider servers are available for local
+protocol proof). Only explicitly selected public messages and attachments are sent,
+as plain text. A Graph handoff returns a Teams permalink to the ticket; it never
+sends a customer reply or establishes recovery. Unknown outcomes require manual
+provider inspection and never automatically replay. Export retains connection
+metadata with credentials removed; reconnect after restore. Tokens are manually
+rotated by an authorized administrator. Live Microsoft tenant qualification is
+pending; local protocol and browser proof do not establish it.

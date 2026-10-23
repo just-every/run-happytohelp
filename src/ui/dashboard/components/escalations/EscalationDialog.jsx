@@ -1,9 +1,22 @@
-import React, {useEffect, useId, useState} from 'react';
-import {Modal} from 'react-bootstrap';
+import React, {useEffect, useId, useState, useRef} from 'react';
+import {Modal, Overlay, Tooltip} from 'react-bootstrap';
 import EscalationForm from './EscalationForm';
 import {escalationRead} from './api';
 import './escalations.css';
 import './escalation-dialog.css';
+
+function CloseEscalation({onClick}) {
+    const target = useRef(null), timer = useRef(null), focused = useRef(false);
+    const [show, setShow] = useState(false), id = useId();
+    const clear = () => clearTimeout(timer.current);
+    useEffect(() => () => clearTimeout(timer.current), []);
+    return <><button ref={target} type="button" className="btn-close" aria-label="Close escalation" onClick={onClick}
+        onMouseEnter={() => {clear(); timer.current = setTimeout(() => setShow(true), 300);}}
+        onMouseLeave={() => {clear(); if (!focused.current) setShow(false);}}
+        onFocus={() => {focused.current = true; clear(); setShow(true);}}
+        onBlur={() => {focused.current = false; clear(); setShow(false);}}/>
+        <Overlay target={target.current} show={show} placement="bottom" transition={false}><Tooltip id={id}>Close escalation</Tooltip></Overlay></>;
+}
 
 const customerVisible = message => !message.private && !message.is_private && !message.is_note && message.type !== 'note' && message.actor_role !== 'note';
 
@@ -32,7 +45,7 @@ export default function EscalationDialog({projectId, conversationId, onHide, onC
         return () => { active = false; };
     }, [base, conversationBase]);
     return <Modal show size="lg" onHide={busy ? undefined : onHide} aria-labelledby={titleId} className="escalation-dialog">
-        <Modal.Header closeButton={!busy}><Modal.Title id={titleId}>Escalate to engineering</Modal.Title></Modal.Header>
+        <Modal.Header><Modal.Title id={titleId}>Escalate to engineering</Modal.Title>{!busy && <CloseEscalation onClick={onHide}/>}</Modal.Header>
         <Modal.Body>
             {state.loading && <p className="escalation-hint" role="status">Loading escalation context…</p>}
             {state.error && <p className="escalation-error" role="alert">{state.error}</p>}

@@ -16,6 +16,7 @@ export default function DelegationTaskForm({ devices, isSubmitting, onSubmit, pr
     const [ deviceId, setDeviceId ] = useState('');
     const [ mode, setMode ] = useState('investigate');
     const [ instructions, setInstructions ] = useState('');
+    const [ timeLimit, setTimeLimit ] = useState(15);
     const appliedPreferredDeviceId = useRef(null);
     const usableDevices = useMemo(() => devices.filter(usableDevice), [ devices ]);
     const selectedDevice = usableDevices.find(device => device.id === deviceId) || null;
@@ -42,7 +43,7 @@ export default function DelegationTaskForm({ devices, isSubmitting, onSubmit, pr
         if (!deviceId || !scope || isSubmitting) return;
 
         try {
-            await onSubmit({ deviceId, mode, instructions: scope });
+            await onSubmit({ deviceId, mode, instructions: scope, timeLimitMinutes: timeLimit });
             setInstructions('');
         } catch (error) {
             // The panel owns the server error message so it stays beside every state.
@@ -95,6 +96,11 @@ export default function DelegationTaskForm({ devices, isSubmitting, onSubmit, pr
                 disabled={ isSubmitting || !usableDevices.length }
             />
             <small>{ instructions.length.toLocaleString() } / 12,000</small>
+        </label>
+        <label className="delegation-field" htmlFor="delegation-time-limit">
+            <span id="delegation-time-label">Task authority (minutes)</span>
+            <input id="delegation-time-limit" aria-labelledby="delegation-time-label" type="number" min={1} max={15} step={1} required value={timeLimit} onChange={event => setTimeLimit(Number(event.target.value))} disabled={isSubmitting} aria-describedby="delegation-time-help"/>
+            <small id="delegation-time-help">Starts when you send the task, including queue time. Up to 15 minutes; retries and additional input never extend it. Expiry withdraws authority and requests a stop; the local outcome remains unconfirmed.</small>
         </label>
         { mode === 'resolve_reply' && <p className="delegation-delivery-notice">
             <i className="fe fe-shield" aria-hidden="true" /> A customer reply is sent only after the worker reports verified work.

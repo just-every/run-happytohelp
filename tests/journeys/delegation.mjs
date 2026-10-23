@@ -23,8 +23,8 @@ before(async()=>{
 })
 after(async()=>{await fixture?.close();await app?.close();if(scratch)await rm(scratch,{recursive:true,force:true})})
 
-test('a visitor\'s report is investigated read-only, an approved resolve child changes the customer system once, a separate investigation confirms it, and the person\'s Send reaches the visitor exactly once',async()=>{
- const seven=await runCase({origin:app.url,api,actor,fixture,directory:join(scratch,'case')})
+test('a visitor\'s report is investigated read-only, an approved resolve child changes the customer system once, a separate investigation confirms it, the person\'s Send reaches the visitor exactly once, and restart plus customer recurrence reopens the same owned thread for a fresh read-only investigation',async()=>{
+ const seven=await runCase({origin:app.url,api,actor,fixture,directory:join(scratch,'case'),restart:()=>app.configure({})})
  assert.equal(seven.jobs.length,3);assert.equal(seven.fixtureEvents.filter(event=>event.method==='POST').length,1)
 })
 
@@ -39,3 +39,6 @@ test('a connected application gets selected access only through native consent w
 test('delegated authority holds under concurrency and loss: identical writes share one hash-only receipt, conflicting writes split 200/409, a recreated article is stale, and expiry, a disabled client, lost membership, a deleted project or a narrowed scope end access; receipts survive a restart',authorityJourney)
 
 test('Connected applications data and the consent screen re-check session, project and role; registration is owner-only, approval lands at the exact callback, cancel returns to settings, a project deleted mid-approval issues nothing, and without an installation consent is unavailable',pagesJourney)
+
+import {timeAuthorityJourney} from '../helpers/delegation-journey/time-authority.mjs'
+test('named task time grants survive restart, never renew on replay, prevent expired queue claims and late publication, and stop the owned connector with running outcomes unconfirmed',async()=>timeAuthorityJourney({origin:app.url,api,actor,fixture,directory:join(scratch,'time-authority'),setExpiry:(job,expires)=>app.db.prepare("UPDATE local_events SET payload=json_set(payload,'$.expires_at',CAST(? AS INTEGER)) WHERE job_id=? AND event_id='authority'").bind(expires,job).run(),restart:()=>app.configure({})}))

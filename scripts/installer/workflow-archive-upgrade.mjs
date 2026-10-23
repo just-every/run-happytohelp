@@ -1,3 +1,4 @@
+import {outboundArchiveUpgradeRow} from './outbound-archive.mjs';
 import {triageTables} from './triage-archive.mjs';
 import {DatabaseSync} from 'node:sqlite';
 import {readFile,readdir} from 'node:fs/promises';
@@ -14,6 +15,7 @@ export const ticketTables=['ticket_statuses','ticket_groups','ticket_group_membe
 // The exact R3 row transition remains supported, including old erasure receipts.
 // No invented customer data: these are the cells migration 130/132 introduced.
 export function workflowArchiveUpgradeRow(table,row){
+ row=outboundArchiveUpgradeRow(table,row);
  if(table==='conversations'&&row.status_id===undefined){
   const category=row.resolved_at!==null?'solved':row.revision>0?'open':'new';
   row={...row,status_id:category,status_category:category,subject:'',priority:'normal',channel:'widget',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'rer'};
@@ -42,7 +44,9 @@ export async function workflowArchivePolicy(root,input,{beforeTickets=false,befo
   // Later replacements of its trigger must stay omitted too. Keep the other
   // statements in mixed migrations, including 241's resolution correction.
   const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))
-   .filter(sql=>!/^\s*(?:CREATE|DROP)\s+TRIGGER\s+workflow_changed\b/i.test(sql))));
+   .filter(sql=>!/^\s*(?:CREATE|DROP)\s+TRIGGER\s+workflow_changed\b/i.test(sql))
+   // Later column additions cannot run against stores this historical inventory omits.
+   .filter(sql=>{const table=/^\s*ALTER\s+TABLE\s+(\w+)\b/i.exec(sql)?.[1];return !table||!omitted.includes(table)})));
   for(let index=0;index<plan.length;index++){
    for(const sql of plan[index])scratch.exec(sql);
    const tables=scratch.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row=>row.name).filter(name=>!excludedTable(name,result)&&!(result.derivedTables??[]).some(derived=>name===derived||name.startsWith(derived+'_')));

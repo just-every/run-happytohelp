@@ -3,6 +3,7 @@ import {DatabaseSync} from 'node:sqlite';
 // Prior schema definitions a migration deliberately replaces. 0110 adds only the
 // native import fence to the two context message triggers' bodies.
 export const schemaExceptions = [
+  {migration: '243_outbound_ticket_configuration.sql', names: ['conversations','operator_ticket_commands'], change: 'Adds only nullable request_form_id TEXT and service_notice_id TEXT; every prior column definition and value is retained'},
   {migration: '0105_edition_delegation.sql', names: ['knowledge_articles'], change: 'Adds source_revision and source_incarnation; original columns retained'},
   {migration: '0108_public_answer_citations.sql', names: ['knowledge_articles', 'messages'], change: 'Adds generated publication_version and citations_json; original definitions retained'},
   {migration: '122_email_content.sql', names: ['messages'], change: 'Adds nullable content_raw TEXT'},
@@ -75,6 +76,7 @@ END`;
 // Expected additions/replacements are explicit, independent of the migration
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
+  {migration: '243_outbound_ticket_configuration.sql', table: 'operator_ticket_commands', sql: 'ALTER TABLE operator_ticket_commands ADD COLUMN service_notice_id TEXT'},
   {migration: '0105_edition_delegation.sql', table: 'knowledge_articles', sql: "ALTER TABLE knowledge_articles ADD COLUMN source_revision INTEGER NOT NULL DEFAULT 1; ALTER TABLE knowledge_articles ADD COLUMN source_incarnation TEXT NOT NULL DEFAULT ''"},
   {migration: '0108_public_answer_citations.sql', table: 'knowledge_articles', sql: "ALTER TABLE knowledge_articles ADD COLUMN publication_version TEXT GENERATED ALWAYS AS (source_incarnation || ':' || source_revision) VIRTUAL"},
   {migration: '0108_public_answer_citations.sql', table: 'messages', sql: "ALTER TABLE messages ADD COLUMN citations_json TEXT NOT NULL DEFAULT '[]'"},
@@ -91,6 +93,7 @@ const tableChanges = [
   ].map(column => `ALTER TABLE conversations ADD COLUMN ${column};`).join('\n')},
   {migration: '146_participant_provenance.sql', table: 'conversation_participants', sql: "ALTER TABLE conversation_participants ADD COLUMN joined_via TEXT NOT NULL DEFAULT 'cc_header' CHECK(joined_via IN ('cc_header','operator','self'));"},
   {migration: '160_mailboxes.sql', table: 'conversations', sql: 'ALTER TABLE conversations ADD COLUMN mailbox_id TEXT'},
+  {migration: '243_outbound_ticket_configuration.sql', table: 'conversations', sql: 'ALTER TABLE conversations ADD COLUMN request_form_id TEXT'},
   {migration: '132_ticket_erasure.sql', table: 'contact_erasures', sql: 'ALTER TABLE contact_erasures ADD COLUMN ticket_records INTEGER NOT NULL DEFAULT 0'},
   {migration: '170_knowledge_experience.sql', table: 'knowledge_categories', sql: `ALTER TABLE knowledge_categories ADD COLUMN audience TEXT NOT NULL DEFAULT 'public' CHECK(audience IN ('public','signed-in','domains')); ALTER TABLE knowledge_categories ADD COLUMN allowed_domains TEXT NOT NULL DEFAULT '[]'`},
   {migration: '170_knowledge_experience.sql', table: 'knowledge_articles', sql: 'ALTER TABLE knowledge_articles ADD COLUMN editor_id TEXT'},

@@ -2956,7 +2956,7 @@
       "executable": false
     },
     "scripts/installer/report-archive.mjs": {
-      "sha256": "4b8cd7829c46394d7cc131f99294dff6a3b517cb914159d6abf3d9095bbb941a",
+      "sha256": "813a5f7411df82d4b0e49dd6d20d6061a5b291c7bbd2510282dd0c3af31ed813",
       "executable": false
     },
     "scripts/installer/search-index-sql.mjs": {
@@ -2980,7 +2980,7 @@
       "executable": false
     },
     "scripts/installer/triage-archive.mjs": {
-      "sha256": "83342944b077158cde29ed1cfcf6c78ac8333e3d4137ea0fdb29e14c01d84ac7",
+      "sha256": "edf0737a953aa0b278cd37c64c757068565114e83e98bcfd2a47c0b4ad30adf1",
       "executable": false
     },
     "scripts/installer/triage-historical-report-policy.mjs": {
@@ -3008,7 +3008,7 @@
       "executable": false
     },
     "scripts/installer/workflow-archive-upgrade.mjs": {
-      "sha256": "e1458eb71b9bbec32f2b55ac36f64eb7e8158976eb50770f475611ca1aee0aa5",
+      "sha256": "835a77ecb24a96c7d5eed419f7ba65fd60dc01529988a4a3f5161d0356155c65",
       "executable": false
     },
     "scripts/legacy-export/attachments.mjs": {
@@ -10596,7 +10596,7 @@
       "executable": false
     },
     "tests/connections/migration.mjs": {
-      "sha256": "ada9645853dd609eec8fcf88d8374084601b75b32a04047fffaf00e677f8fe24",
+      "sha256": "4fedf2f80f45abe227610dc1df063ba35d2615dd2db08fb75695f0a622f36dfc",
       "executable": false
     },
     "tests/connections/native-boundary.mjs": {
@@ -11472,7 +11472,7 @@
       "executable": false
     },
     "tests/helpers/release-upgrade.mjs": {
-      "sha256": "c6e5f2bdcdb2b0a0999d234ce9c46210b671cd07f54bb172083c3e4de477f7c6",
+      "sha256": "5c954942f741f18a8cb138e2ca05d06829e42c70176f2dc3f08518d25cd7da5f",
       "executable": false
     },
     "tests/helpers/reports-portable.mjs": {
@@ -11560,7 +11560,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "717efed0457a4f95794cfc5ce88d5538a8b607de150479ab4bc9ffece758d8e7",
+      "sha256": "8f5571ebf53f4ddcceff50d3690b9b66532bdeac27f1d1bd718aadc4ee5cc316",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {
@@ -12168,7 +12168,7 @@
       "executable": false
     },
     "tests/reports/history-upgrade.mjs": {
-      "sha256": "c567aa098664aec6045e896736b347a4969040500f90a22388ff94081d261869",
+      "sha256": "1057f56efbdfb277cb9b161119b4cd7a71f84360849e57e76a2248b17482cd26",
       "executable": false
     },
     "tests/reports/import-inertness.mjs": {
@@ -12184,7 +12184,7 @@
       "executable": false
     },
     "tests/reports/prior-schema-upgrade.mjs": {
-      "sha256": "c7d526a1414deb292f8a4371c10c1314ecc925a085649d9477356a548cd1db65",
+      "sha256": "ed2ba7f340652bbe5c8e89f84a204bdb74ec52f5108b73813caab5f956c4e2d8",
       "executable": false
     },
     "tests/reports/ratings.mjs": {

@@ -16,7 +16,7 @@ test('fresh lexical ledger and populated upgrade preserve all prior rows and con
   if(name==='contact_erasures')row.ticket_records=0;
   if(name==='conversations'){
    const status=row.resolved_at!==null?'solved':row.revision>0?'open':'new';
-   Object.assign(row,{status_id:status,status_category:status,subject:'',priority:'normal',channel:before.inbound_emails.some(email=>email.conversation_id===row.id)?'email':'widget',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'system',mailbox_id:null});
+   Object.assign(row,{status_id:status,status_category:status,subject:'',priority:'normal',channel:before.inbound_emails.some(email=>email.conversation_id===row.id)?'email':'widget',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'system',mailbox_id:null,request_form_id:null});
   }
   return row;
  });

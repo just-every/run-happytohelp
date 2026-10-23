@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d32c2b34bc84d4683c5102a6e3d305c0712aac4bc1292812a3cc2bc00944767e",
+      "sha256": "a8ad053123986ddbe591c4c74b8ed4020c40d5b673979583672b89d7d8796374",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "1819998b941c394c2e531f28adeef8d3ec9b30c07a5ffdb78c6ff91b1fddf745",
+      "sha256": "4cabc811315a1601f547d475eecf5a79a100b16fc5698f7c914c6d7ab42e2db5",
       "executable": false
     },
     "DEMO.md": {
@@ -2480,7 +2480,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "ae5657014fb0570e6366b635db29dbf5c4026c3e6d2da0527464c42d5ed137f2",
+      "sha256": "690d43d72e64224179111ab5d4a41fa69efaf6fcc3018cf123c9ba800caf9121",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -11601,6 +11601,10 @@
     },
     "tests/helpers/workflows/sla.mjs": {
       "sha256": "78a4c5eafa5db702225f29c37806dc085a818948546ed144f39d2bea119be6ee",
+      "executable": false
+    },
+    "tests/homepage-browser.mjs": {
+      "sha256": "a53c8f95f25d4c8264c3ccdcfc8e78c4d4788df56fcefb3536443efb80401453",
       "executable": false
     },
     "tests/journeys/ai-browser.mjs": {

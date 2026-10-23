@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {campaignsBrowser} from './campaigns-browser.mjs';
 import {mkdir,mkdtemp} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {assertLauncherAvatarFits} from '../widget-launcher-geometry.mjs';
@@ -163,6 +164,7 @@ try{
   }
  }
  checks.push('real responder initials and image fill all four launcher edges within half a pixel with a round clip at 1440 and 390, with image coverage on default and themed backgrounds');
+ await campaignsBrowser({browser,page,origin,projectId:setup.projectId,owner,evidenceDir});
  assert.deepEqual(errors,[]);success=true;
 }finally{await browser.close();await runtime.close(success)}
 

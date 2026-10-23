@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "9dc9fe1942ce1ff146a698a3bb3c6a6b274d800cc9904f505bdfb32a5ecda877",
+      "sha256": "5ac7e407aa3603077e27e1373700f4fb952ca466fddee8e2b758b7cde9b6d05d",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -11555,6 +11555,10 @@
       "sha256": "4ea9d6bae72eff9bf9dba348d507b78b2dc39440286a5a418ff164721c5b289b",
       "executable": false
     },
+    "tests/helpers/widget/campaigns-browser.mjs": {
+      "sha256": "d28931edc23974aeee9c8db3022e709a2208643468cda4ef94bb3c3a8136fdb6",
+      "executable": false
+    },
     "tests/helpers/widget/campaigns.mjs": {
       "sha256": "5896e58cf7512e35b087915a6a920f8fde0f7146a8b2ede7a3f2b6a4f57f28d1",
       "executable": false
@@ -11596,7 +11600,7 @@
       "executable": false
     },
     "tests/helpers/widget/settings.mjs": {
-      "sha256": "2a08a6bcd6e69fb186782677dc3d55998154734927cadf73b29431858a73bf50",
+      "sha256": "4de2081fe39c466dca2fd5ac1a632ee9afa7dbbfcaf8f28b37571c3be118577e",
       "executable": false
     },
     "tests/helpers/widget/socket.mjs": {

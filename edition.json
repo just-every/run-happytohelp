@@ -1579,6 +1579,22 @@
           "tests/journeys/connections-browser.mjs"
         ]
       }
+    },
+    {
+      "id": "happytohelp/business-connectors",
+      "role": "module",
+      "requires": [
+        "happytohelp/api-integrations"
+      ],
+      "source": {
+        "kind": "local",
+        "paths": [
+          "src/modules/business-connectors",
+          "migrations/250_business_connectors.sql",
+          "migrations/251_business_source_fields.sql",
+          "migrations/252_business_role_fences.sql"
+        ]
+      }
     }
   ]
 }

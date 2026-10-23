@@ -1,3 +1,4 @@
+import {businessErasureStatements,businessErasureCount} from '../../business-connectors/erasure'
 import {triageErasureCount,triageErasureStatements} from '../../triage/erasure'
 import {customerErasureStatements,customerErasureCount} from '../../customers/index'
 import {escalationErasureStatements,escalationErasureCount} from '../../escalations/erasure'
@@ -60,7 +61,7 @@ SELECT ?1,?2,?3,?4,?4,1,
  ${sum(trackedTables.map(table => count(table, subject)))},
  ${sum(contextTables.map(table => count(table, subject)))},
  ${count('sessions', 'project_id=?1 AND contact_id=?2')},
- ${triageErasureCount}+${customerErasureCount}+${ticketErasureCount}+(${collaborationRecordsCount})+${workflowErasureCount}+${problemErasureCount}+${reportTimerErasureCount}+${escalationErasureCount}
+ ${triageErasureCount}+${customerErasureCount}+${ticketErasureCount}+(${collaborationRecordsCount})+${workflowErasureCount}+${problemErasureCount}+${reportTimerErasureCount}+${escalationErasureCount}+${businessErasureCount}
 WHERE EXISTS(SELECT 1 FROM contacts WHERE project_id=?1 AND id=?2)
 ON CONFLICT(project_id,contact_id) DO UPDATE SET last_erased_at=excluded.last_erased_at,runs=runs+1,conversations=excluded.conversations,
  messages=messages+excluded.messages,attachments=attachments+excluded.attachments,tracked_events=tracked_events+excluded.tracked_events,
@@ -82,6 +83,7 @@ export function erasureStatements(env: Env, request: ErasureRequest) {
   return [
     env.DB.prepare(tombstone).bind(projectId, contactId, actorId, now),
     ...escalationErasureStatements(env,projectId,contactId),
+    ...businessErasureStatements(env,projectId,contactId),
     ...collaborationRecordsStatements(env,projectId,contactId),
     ...workflowErasureStatements(env,projectId,contactId),
     ...problemErasureStatements(env,projectId,contactId),

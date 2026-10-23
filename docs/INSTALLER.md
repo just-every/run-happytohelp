@@ -182,17 +182,31 @@ restore. Re-enter private configuration before setup/dev. See
 
 ## Deploy and inspect
 
-Real deployment requires private mail inputs: `EMAIL_PROVIDER`, `EMAIL_FROM` and
-`EMAIL_API_KEY`. With rer 0.2.42 a dry run validates them when supplied and
-otherwise lists them as needed. The declaration maps
-these to both rer's `MAIL_*` preflight bindings and HappyToHelp's native `EMAIL_*`
-bindings. For Cloudflare mail, supply the additional account ID described in
-[Operations](../OPERATIONS.md#deploy-to-your-cloudflare-account).
+NATIVE-001 requires two independent steps: a **zero-outbound dry-run** that
+explicitly reports no outbound requests and needs no provider credentials, then a
+separately started **read-only provider preflight** with owner consent and the
+owner's scoped Cloudflare token. The preflight has its own acceptance: only the
+account's Workers subdomain and the Worker's settings and secret names (three
+GETs for an existing Worker), no mail and no mutations. Neither step is a mock of
+the other. This split is not yet built or proved.
 
-`rer deploy --dry-run` validates the input shape and builds locally. It makes no
-provider requests, sends no mail and makes no deployment. `rer deploy --environment
-production` requires owner authorization and the private credentials/declaration
-in Operations. Local development still needs no email account.
+Today's pinned rer 0.2.77 `rer deploy --dry-run` combines local validation/build
+with those credentialed Cloudflare reads. It refuses without Cloudflare
+credentials before any provider request, validates supplied private mail inputs,
+and refuses a required secret neither held by the Worker nor supplied. It sends
+no mail and changes no provider resources. It is not the required zero-outbound
+dry-run or a separately qualified provider preflight.
+
+Real deployment requires private `EMAIL_PROVIDER`, `EMAIL_FROM` and
+`EMAIL_API_KEY` inputs. The declaration maps them to both rer's `MAIL_*`
+preflight bindings and HappyToHelp's native `EMAIL_*` bindings. For a new
+installation, also supply a real `OWNER_EMAIL` that can receive sign-in mail in
+an owned 0600 `--env-file`. Existing installations retain held secrets. For
+Cloudflare mail, supply the additional account ID described in
+[Operations](../OPERATIONS.md#deploy-to-your-cloudflare-account).
+`rer deploy --environment production` requires owner authorization and the
+private credentials/declaration in Operations. Local development needs no email
+account. Live preflight and remote provisioning need separate qualification.
 Stop `rer dev` first (`rer dev --stop`): while it runs it owns the checkout's local
 state, and `rer deploy`, including `--dry-run`, refuses with "An active local
 operation owns the state".

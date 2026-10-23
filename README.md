@@ -138,13 +138,22 @@ rer deploy --dry-run
 rer deploy --environment production
 ```
 
-Dry run needs the Cloudflare account credentials described in the prerequisites.
-It checks the target's held secrets read-only and refuses when required secrets
-are neither held nor supplied. For a new installation, also supply real
-`EMAIL_PROVIDER`, `EMAIL_FROM`, `EMAIL_API_KEY` and `OWNER_EMAIL` inputs in an
-owned 0600 `--env-file`; the owner email must receive sign-in mail. Existing
-installations retain held secrets. The seven optional mailbox settings can stay
-unset. Dry run builds locally, sends no mail and changes no provider resources.
+The contract requires two independent steps: a **zero-outbound dry-run** that
+explicitly reports no outbound requests, and a separately started **read-only
+provider preflight** with owner consent and the owner's scoped Cloudflare token.
+The preflight has its own acceptance: only the account's Workers subdomain and
+the Worker's settings and secret names (three GETs for an existing Worker), no
+mail and no mutations. Neither step is a mock of the other.
+
+That split is not yet built or proved. Today's `rer deploy --dry-run` still needs
+the Cloudflare credentials described in the prerequisites and performs those
+read-only GETs; it refuses without credentials and when required secrets are
+neither held nor supplied. It builds locally, sends no mail and changes no
+resources. For a new installation also supply real `EMAIL_PROVIDER`, `EMAIL_FROM`,
+`EMAIL_API_KEY` and `OWNER_EMAIL` inputs in an owned 0600 `--env-file`; the owner
+email must receive sign-in mail. Existing installations retain held secrets.
+The seven optional mailbox settings can stay unset. Live preflight and remote
+provisioning remain separately unqualified.
 
 ```sh
 rer deploy --dry-run --env-file ~/happytohelp-production.env

@@ -48,9 +48,25 @@ remote's main instead. Resolve conflicts while retaining your customizations.
 The current package-mode instructions require current public source; the
 older `v0.4.1` tag does not contain this command-package conversion.
 
-The build and deployment dry run preserve local data and private settings and
-make no deployment. Rer 0.2.42's dry run validates the private mail inputs real
-deployment needs when they are supplied, and lists them otherwise; see [deployment prerequisites](../OPERATIONS.md#deploy-to-your-cloudflare-account). Do not reset or replace `.wrangler/state` during an update.
+The build and today's deployment dry run preserve local data and private
+settings and make no deployment. Today's pinned rer 0.2.77 dry run combines
+local validation/build with credentialed read-only Cloudflare requests: the
+account's Workers subdomain and the Worker's settings and secret names (three
+GETs for an existing Worker). It refuses without Cloudflare credentials before
+any provider request, validates supplied private mail inputs, and refuses a
+required secret neither held by the Worker nor supplied. It sends no mail and
+changes no provider resources. See
+[deployment prerequisites](../OPERATIONS.md#deploy-to-your-cloudflare-account).
+
+NATIVE-001 requires a **zero-outbound dry-run** that explicitly reports no
+outbound requests and needs no provider credentials. A separately started
+**read-only provider preflight** requires owner consent and the owner's scoped
+Cloudflare token, with its own acceptance limited to those three GETs, no mail
+and no mutations. Neither step is a mock of the other. This split is not yet
+built or proved; today's command is not the required zero-outbound dry-run or a
+separately qualified provider preflight. Live preflight and remote provisioning
+need separate qualification. Do not reset or replace `.wrangler/state` during an
+update.
 Run setup with your existing owner and private answers to apply local migrations,
 then start `pnpm exec rer dev --foreground`. For a hosted installation, apply the
 reviewed update only through the owner-authorized deployment path.
@@ -263,10 +279,17 @@ To hand support work to your own computer, use the local agent's pairing steps
 Use `pnpm exec rer deploy --environment production` with the real
 `deploy.json` declaration and private owner-account credentials.
 [Deploy to your Cloudflare account](../OPERATIONS.md#deploy-to-your-cloudflare-account)
-covers prerequisites, secret custody and health boundaries. Local
-`pnpm exec rer deploy --dry-run` with rer 0.2.42 validates the private mail inputs
-real deployment needs when supplied, and otherwise lists them as needed. It builds
-locally without provider requests or sending mail.
+covers prerequisites, secret custody and health boundaries. Today's
+pinned rer 0.2.77 `pnpm exec rer deploy --dry-run` combines local validation/build
+with credentialed read-only Cloudflare GETs for the account's Workers subdomain
+and the Worker's settings and secret names (three GETs for an existing Worker).
+It refuses without Cloudflare credentials, validates supplied private mail inputs
+and refuses a required secret neither held nor supplied; it sends no mail and
+changes no provider resources. The required zero-outbound dry-run with an explicit
+no-outbound report and the separately started, owner-consented read-only preflight
+using the owner's scoped token remain an unbuilt, unproved split. The preflight's
+own acceptance permits only those three GETs, no mail and no mutations; live
+qualification remains separate.
 
 **Website preview** lets owners and admins see their website with the chat
 widget on it. It needs its own custom-domain origin (`PREVIEW_ORIGIN`), pointed

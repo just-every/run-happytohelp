@@ -12,6 +12,7 @@ import {root,ticket,access,text} from './access'
 
 const sourcePath=ticket+'/sources/:sourceId'
 export const pennyRoutes=new Hono<AppEnv>()
+pennyRoutes.use('*',async(c,next)=>{c.header('Cache-Control','no-store');await next()})
 pennyRoutes.get(root+'/penny-connection',async c=>{const {actor}=await access(c,'integrations.install'),row=await c.env.DB.prepare('SELECT origin,token_cipher IS NOT NULL connected FROM feedback_penny_connections WHERE project_id=?').bind(actor.projectId).first<any>();return c.json({data:{origin:row?.origin||'',connected:!!row?.connected}})})
 pennyRoutes.put(root+'/penny-connection',async c=>{
  const {actor}=await access(c,'integrations.install');await requireStepUp(c,actor,'feedback.penny.install');const body=await c.req.json(),now=Date.now()

@@ -1691,6 +1691,10 @@
       "sha256": "159ca043bb50578502651aaa2472ced22463cd5f1a76acba3166e6ccdb3c6881",
       "executable": false
     },
+    "docs/feedback-and-assurance.md": {
+      "sha256": "04f1f7bdbde0f7e2c42da188863108288f265e2c1c5a5647a7abe4f9ce32fcfe",
+      "executable": false
+    },
     "docs/help-before-they-ask.md": {
       "sha256": "67fe53b426df56d2f7e47ab97b89be8dd246a7edab4877efabe50e231654b312",
       "executable": false
@@ -2920,7 +2924,7 @@
       "executable": false
     },
     "scripts/installer/feedback-archive.mjs": {
-      "sha256": "5ce2a85c4df85250329fcd917fddeb600cc4b1ce6c89694172254e9e04b82827",
+      "sha256": "1254a9e3b5538dfd81e4a66a19f9a377578e854e9f438fea969ec28cf660bfb4",
       "executable": false
     },
     "scripts/installer/hosted-deploy.mjs": {
@@ -3928,7 +3932,7 @@
       "executable": false
     },
     "src/modules/assurance/routes.ts": {
-      "sha256": "751144c0ced41576b7cd13e51cfe094cb5c5080e92b1eef5ac2d2b95ccd594d3",
+      "sha256": "5aaf3dfc0947505352ce8548b017a32f1a350c221caf0412f93f6e219f651b98",
       "executable": false
     },
     "src/modules/assurance/ui/assurance.css": {
@@ -4312,11 +4316,11 @@
       "executable": false
     },
     "src/modules/feedback/penny.ts": {
-      "sha256": "310e552d2225349795890d90e4010e22e10491bac8ce14a2b437628b22c226d0",
+      "sha256": "aa7c7c2dc2d622c744f55ca34b5b4b5e18f0a1595ccb6f6050fc58f681a7eb1d",
       "executable": false
     },
     "src/modules/feedback/routes.ts": {
-      "sha256": "f6706bc1a6e6197c3eb921fc179dbd47ebcdb7384a51f0e043e20e19a695f69d",
+      "sha256": "2d9bb7fd731bf84ba15c1958bc10855e426d18ce8625ff965cdf6ef09ad852c1",
       "executable": false
     },
     "src/modules/feedback/ui/feedback.css": {
@@ -11057,6 +11061,10 @@
     },
     "tests/helpers/escalations/slack.mjs": {
       "sha256": "66a53c0e81bd2bcabc0bac46267323bdd831a7dace706f9338d27c210600ca9e",
+      "executable": false
+    },
+    "tests/helpers/feedback/archive.mjs": {
+      "sha256": "be16224b9021cc5f5d0a0680998da7ffb15c1a5584f55a89923e3f8d70b8170b",
       "executable": false
     },
     "tests/helpers/feedback/browser.mjs": {

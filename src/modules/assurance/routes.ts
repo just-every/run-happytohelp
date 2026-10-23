@@ -12,6 +12,7 @@ async function administrator(c:any){const actor=await scope(c,true) as Actor,acc
 const stamp=(value:unknown)=>{const n=typeof value==='string'?Date.parse(value):NaN;if(!Number.isSafeInteger(n))throw new HTTPException(400,{message:'Use a valid ISO date and time'});return n}
 function timezone(value:unknown){const zone=text(value,'IANA timezone',100);try{if(zone!=='UTC'&&!zone.includes('/'))throw Error();new Intl.DateTimeFormat('en-US',{timeZone:zone}).format()}catch{throw new HTTPException(400,{message:'Use an IANA timezone such as America/New_York'})}return zone}
 export const assuranceRoutes=new Hono<AppEnv>()
+assuranceRoutes.use('*',async(c,next)=>{c.header('Cache-Control','no-store');await next()})
 assuranceRoutes.get(root,async c=>{const actor=await administrator(c);return c.json({data:await qualification(c.env,actor.projectId)})})
 assuranceRoutes.put(root,async c=>{
  const actor=await administrator(c);await requireStepUp(c,actor,'assurance.configure');const body=await c.req.json()

@@ -221,7 +221,8 @@ export function installTooltips(root: Document | ShadowRoot, container?: Element
     const onFocusOut = (event: FocusEvent) => {
         if (shown && reason === 'focus' && controlOf(origin(event)) === shown && controlOf(event.relatedTarget) !== shown) hide();
     };
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') { quiet = shown ?? pending; hide(); } };
+    // Escape dismisses a hover tooltip until the pointer leaves its control; a focus one stays away until focus moves.
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') { quiet = (reason === 'hover' ? shown : pending) ?? quiet; hide(); } };
     const onScroll = (event: Event) => {
         const control = shown ?? pending;
         if (!control) return;

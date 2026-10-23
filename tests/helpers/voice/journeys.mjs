@@ -24,7 +24,7 @@ export async function voiceHarness(){
  const connect=async(options={})=>(await app.ok(base+'/numbers',{token,body:{provider:'twilio',provider_id:providerNumber,account_id:account,token:secret,settings,...options}})).data
  let number=await connect()
  const hook=async({step,remote='synthetic-happytohelp-5',extra={},signed=true,options={}}={})=>{
-  const path='/api/voice/hooks/'+number.id+(step?'?step='+step:''),form={AccountSid:account,CallSid:remote,From:callerPhone,To:numberPhone,...extra},raw=new URLSearchParams(form).toString()
+  const path='/api/voice/hooks/'+number.id+(step?'?step='+step:''),form={AccountSid:account,CallSid:remote,...(step==='recording'?{}:{From:callerPhone,To:numberPhone}),...extra},raw=new URLSearchParams(form).toString()
   return app.call(path,{body:raw,raw:true,headers:{'Content-Type':'application/x-www-form-urlencoded',...(signed?{'X-Twilio-Signature':signature(app.origin+path,form)}:{})},...options})
  }
  const open=async(options)=>{const result=await hook(options);assert.equal(result.status,200,JSON.stringify(result.data));return app.first('SELECT * FROM voice_calls ORDER BY created_at DESC,id DESC LIMIT 1')}
@@ -57,6 +57,7 @@ export async function signedDeliveryProof(){const h=await voiceHarness();try{
  const call=await h.open(),first=await h.hook(),repeat=await h.hook();assert.equal(first.data,repeat.data)
  assert.equal((await h.app.first('SELECT count(*) n FROM voice_calls')).n,1);assert.equal((await h.app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',call.conversation_id)).n,1)
  assert.equal((await h.app.first('SELECT count(*) n FROM contacts WHERE project_id=?',h.ws.projectId)).n,1)
+ assert.equal((await h.hook({extra:{From:'+12025550888'}})).status,409);assert.equal((await h.app.first('SELECT count(*) n FROM contacts WHERE project_id=?',h.ws.projectId)).n,1,'a conflicting replay creates no caller identity')
  const {data:air}=await h.app.ok(h.base+'/numbers',{token:h.token,body:{provider:'aircall',provider_id:'8',account_id:account,token:secret,settings}})
  const path='/api/voice/hooks/'+air.id,event={token:air.webhook_token,event:'call.ended',data:{id:8,number:{id:8},direction:'inbound',raw_digits:callerPhone,answered_at:null,recording:'https://example.test/never-import-without-consent'}}
  assert.equal((await h.app.call(path,{body:{...event,token:'synthetic-happytohelp-10'}})).status,401)
@@ -101,12 +102,18 @@ export async function uncertaintyProof(){const h=await voiceHarness();try{
  const n=await app.first('SELECT * FROM voice_numbers');assert.equal(voiceArchiveRow('voice_numbers',n).token_cipher,null);assert.equal(voiceArchiveRow('voice_numbers',n).enabled,0)
  await voiceArchiveSafety({db:app.db,tables:Object.fromEntries(['voice_calls','voice_numbers','conversations','voice_identities','contacts','voice_commands'].map(n=>[n,n]))});assert.equal((await app.first('SELECT token_cipher FROM voice_numbers')).token_cipher,null);assert.equal((await app.first('SELECT phone_cipher FROM voice_identities')).phone_cipher,null)
  assert.equal((await h.hook()).status,404,'restored voice connections need explicit credentials')
+ await h.configure({});const restored=await h.open({remote:'synthetic-happytohelp-19'});h.setReply(201);assert.equal((await app.ok(base+`/conversations/${restored.conversation_id}/commands`,{token,body:{...body,call_id:restored.id,request_id:'restored-current-call'}})).data.state,'accepted','a newly signed caller supplies fresh callback identity after reconnect')
 }finally{await h.close()}}
 export async function erasureProof(){const h=await voiceHarness();try{
  const {app,base,token,ws}=h,call=await h.open(),root=base+`/conversations/${call.conversation_id}`
  await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(ws.projectId,ws.users.operator,Date.now()).run()
  assert.equal((await app.call(root+'/calls',{token:ws.tokens.operator})).status,403)
  assert.equal((await app.call(root+'/commands',{token:ws.tokens.operator,body:{kind:'callback',number_id:h.number.id,call_id:call.id,request_id:'denied'}})).status,403)
+ await app.db.prepare('DELETE FROM member_roles WHERE project_id=? AND user_id=?').bind(ws.projectId,ws.users.operator).run()
+ await h.hook({step:'consent',extra:{Digits:'1'}});await h.hook({step:'ivr',extra:{Digits:'1'}})
+ await h.hook({step:'recording',extra:{RecordingStatus:'completed',RecordingSid:'synthetic-happytohelp-18'}})
+ h.duringRequest(async()=>{await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(ws.projectId,ws.users.operator,Date.now()).run()})
+ assert.equal((await app.call(root+`/calls/${call.id}/recording`,{token:ws.tokens.operator})).status,403,'current role is rechecked after the recording provider returns')
  const other=await h.open({remote:'synthetic-happytohelp-15',extra:{From:'+12025550106'}})
  h.duringRequest(async()=>{await app.ok(`/api/management/projects/${ws.projectId}/contacts/${call.contact_id}/erase`,{token,body:{}})})
  const result=await app.ok(root+'/commands',{token,body:{kind:'callback',number_id:h.number.id,call_id:call.id,request_id:'erase-during-provider'}});assert.equal(result.data.state,'erased')

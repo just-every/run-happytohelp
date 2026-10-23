@@ -60,7 +60,7 @@ callRoutes.get(base+'/calls/:callId/recording',async c=>{
  const result=await fetch(`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(n.account_id)}/Recordings/${encodeURIComponent(recording)}.mp3`,{headers:{Authorization:'Basic '+btoa(n.account_id+':'+token)},redirect:'manual',signal:AbortSignal.timeout(10000)})
  if(!result.ok){await result.body?.cancel();throw new HTTPException(502,{message:'Recording unavailable from the provider'})}
  // Do not start disclosing media if erasure or role revocation completed during the provider read.
- await callAccess(c)
+ try{await callAccess(c)}catch(error){await result.body?.cancel();throw error}
  if(!await c.env.DB.prepare('SELECT id FROM voice_calls WHERE id=? AND erased=0 AND recording_cipher=?').bind(id,call.recording_cipher).first()){await result.body?.cancel();throw new HTTPException(404)}
  return new Response(result.body,{headers:{'Content-Type':'audio/mpeg','Cache-Control':'no-store','Content-Disposition':'attachment; filename="support-call.mp3"','X-Content-Type-Options':'nosniff'}})
 })

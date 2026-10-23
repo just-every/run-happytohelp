@@ -30,7 +30,7 @@ export async function voiceAccess(c:any,permission:'integrations.install'|'setti
 }
 export async function callAccess(c:any,write=false){
  const {actor,conversation}=await dashboardAccess(c),guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},write?'conversations.reply':'conversations.manage')
- if(!await c.env.DB.prepare(`SELECT id FROM conversations c WHERE c.id=? AND c.project_id=? AND ${usableContact}`).bind(conversation.id,actor.projectId).first())throw new HTTPException(404)
+ if(!await c.env.DB.prepare(`SELECT id FROM conversations c WHERE c.id=? AND c.project_id=? AND ${usableContact} AND EXISTS(${guard.sql})`).bind(conversation.id,actor.projectId,...guard.params).first())throw new HTTPException(404)
  return {actor,conversation,guard}
 }
 export async function callId(n:VoiceNumber,remote:string){return 'voice-'+await hashToken(JSON.stringify([n.project_id,n.id,remote]))}

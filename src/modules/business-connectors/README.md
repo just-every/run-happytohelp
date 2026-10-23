@@ -26,22 +26,37 @@ record prevents a second browser request key from bypassing reconciliation.
 Implemented provider paths:
 
 - Shopify: verified store and customer order, fulfillment, delivery, return and
-  refund context. Bounded USD amount-only partial/full refunds on single-gateway orders use
-  the 2026-10 `refundCreate @idempotent` mutation and ledger readback. Return,
-  cancellation, multi-tender and tax/shipping allocation remain gaps, along
-  with live Shopify sandbox receipts.
+  refund context. USD amount refunds allocate explicitly across original tenders.
+  Selected-item and full-item refunds use Shopify's suggested tax, shipping and
+  tender amounts; every transaction and line allocation is checked on readback.
+  Refunds use `refundCreate @idempotent` with the durable action ID. Duty-bearing
+  allocations are refused. A return creates approved reverse fulfillment work;
+  receipt, restocking and refund are separate. Cancellation is asynchronous and
+  deliberately does not refund captured payments; it previews inventory restocking
+  and authorized-payment voiding. Both use a send-once claim and marked provider
+  readback: Shopify offers no provider idempotency key for these two mutations.
+  A lost cancellation job ID with requested restocking stays uncertain.
+  Live Shopify sandbox receipts remain pending.
 - Stripe: customer, invoice and subscription context; bounded USD payment-intent
   refunds, future-invoice credits, collection pause and cancellation at period
   end. Single-item plan changes preserve quantity and billing interval, preview
   the provider invoice, tax and proration at a fixed date, and verify the paid
   invoice after execution. Quotes expire after five minutes. Broader multi-item
   and billing-interval changes are refused.
-- HubSpot and Salesforce: independent account verification and contact
-  context, source freshness and approved outcome activities/notes. Provider
-  sales lifecycle is not a support entitlement. Plan and support-entitlement properties are explicitly selected in Settings;
-  no lifecycle inference grants support rights. Complete company/account
-  relationship mapping and approved arbitrary field edits remain gaps.
-  Both live provider protocols still need sandbox proof.
+- HubSpot and Salesforce: independent account verification, contact and related
+  company/account context with source IDs, relationship labels, owner, plan,
+  entitlement and freshness. Contact and account property mappings stay separate;
+  sales lifecycle never grants support entitlement. Settings explicitly lists
+  editable contact/account properties. A field edit previews exact old/new values,
+  validates provider metadata, requires approval, rechecks the source revision and
+  relationship, and PATCHes only approved properties. Salesforce uses
+  `If-Unmodified-Since`. HubSpot has no documented conditional update, so the UI
+  states that limitation; observed conflicts refuse execution or remain uncertain.
+  Related-account writes refuse incomplete relationships. Approved outcomes remain
+  notes/activities and require exact content and association readback. Lost field
+  writes reconcile by reading the approved values without replaying the PATCH.
+  Live provider receipts remain pending. Orbit remains unavailable on run-orbit
+  API-001's missing scoped public records API.
 
 The panel records results in the originating ticket for the operator. It sends
 nothing to a customer automatically. After a provider-confirmed commerce or

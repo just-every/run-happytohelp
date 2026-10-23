@@ -4033,7 +4033,7 @@
       "executable": false
     },
     "src/modules/business-connectors/README.md": {
-      "sha256": "3d772451fc67b73d6b7c3f2917529e74f786d38a85772c587039d991e11e26ac",
+      "sha256": "0f3bb00662879cd838c1598f788d52a1d1f3c7455183f4abf0240d602c9f4c36",
       "executable": false
     },
     "src/modules/business-connectors/routes.ts": {

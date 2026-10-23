@@ -110,6 +110,9 @@ export async function answersJourney(){
   assert.equal(changed.answers.length,0,'a translated publication changed mid-answer admits no stale customer draft')
   const uncited=await localized(await privateVisitor('uncited-fr@trusted.test'),{cite:false,before:()=>translate('Guidemarqueur: troisième publication.')})
   assert.equal(uncited.answers.length,0,'uncited translated evidence has the same atomic fence')
+  const localeChanged=await localized(await privateVisitor('locale-race@trusted.test'),{before:()=>management('/experience',{defaultLocale:'fr',locales:['en','fr'],templates:{}})})
+  assert.equal(localeChanged.answers.length,0,'changing the configured source language withdraws old locale evidence')
+  await management('/experience',{defaultLocale:'en',locales:['en','fr'],templates:{}})
   for(const visitor of [await privateVisitor('french@other.test'),await privateVisitor('typed-fr@trusted.test',false),await a.visitor()]){
    const denied=await localized(visitor);assert.doesNotMatch(denied.observed,/Guidemarqueur|nouvelle publication|troisième publication/)
   }

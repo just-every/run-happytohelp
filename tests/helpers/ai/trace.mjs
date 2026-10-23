@@ -28,6 +28,12 @@ export async function traceJourney(){
   await app.db.prepare("UPDATE ai_attempts SET error='synthetic-happytohelp-4' WHERE generation_id=?").bind(generation.id).run()
   trace=(await read()).traces[0];assert.equal(trace.providerCostEstimateUsd,null);assert.equal(trace.priceData,'unavailable');assert.equal(trace.rounds[0].usage.input_tokens,null)
   assert.doesNotMatch(JSON.stringify(trace),/synthetic-happytohelp-/)
+  let deniedTurn=0
+  ai.respond=()=>++deniedTurn===1?openaiToolCall('read_knowledge_source',{evidence_id:'synthetic-happytohelp-47',sourceVersion:'synthetic-happytohelp-48',start_offset:0},'unissued-source'):'Approved source unavailable; a teammate can help.'
+  const deniedVisitor=await a.visitor();await deniedVisitor.say('Please inspect an unavailable source');await a.run()
+  const deniedTrace=(await app.call(`/api/ai-support/projects/${p}/conversations/${deniedVisitor.conversationId}/trace`,{token:owner,status:200})).data.traces[0]
+  assert.equal(deniedTrace.toolTrace.calls[0].state,'denied');assert.equal(deniedTrace.toolTrace.calls[0].failureCategory,'unavailable-or-denied');assert.equal(deniedTrace.toolTrace.calls[0].businessActionExecuted,false)
+  assert.doesNotMatch(JSON.stringify(deniedTrace),/synthetic-happytohelp-47|synthetic-happytohelp-48/,'denied tool arguments never appear in the trace')
   ai.reject=true
   const failed=await a.visitor();await failed.say('Please try my question');await a.run()
   const failure=(await app.call(`/api/ai-support/projects/${p}/conversations/${failed.conversationId}/trace`,{token:owner,status:200})).data.traces[0]

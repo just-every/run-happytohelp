@@ -66,7 +66,7 @@ export async function searchKnowledge(env:Env,projectId:string,query:string,mode
  if(requestedLocale&&(!settings!.locales.includes(validLocale(requestedLocale))))throw new Error('Choose a configured knowledge locale')
  for(const a of articles.results){
   const tr=requestedLocale&&requestedLocale!==settings!.defaultLocale?await env.DB.prepare('SELECT publication_version FROM knowledge_translations WHERE article_id=? AND locale=? AND published_source_version=? AND published_json IS NOT NULL').bind(a.id,requestedLocale,a.sourceVersion).first<any>():null
-  const ref={id:`article:${a.id}`,sourceVersion:requestedLocale?`${a.sourceVersion}~${requestedLocale}~${tr?.publication_version||'base'}`:a.sourceVersion}
+  const ref={id:`article:${a.id}`,sourceVersion:requestedLocale?`${a.sourceVersion}~${requestedLocale}~${tr?.publication_version||'base'}~${settings!.defaultLocale}`:a.sourceVersion}
   const row=await readKnowledgeSource(env,projectId,ref,access)
   if(row)native.push({...row,...ref,score:0})
  }

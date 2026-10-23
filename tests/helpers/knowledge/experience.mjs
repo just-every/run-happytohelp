@@ -45,6 +45,13 @@ try{
  const inserted=(await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles/${aid}/insert`,{body:{mode:'text'},status:200})).data
  assert.equal(inserted.text,'Restricted instructions')
  assert.equal((await call(`/api/knowledge/${p}/conversations/${badConversation}/articles/${aid}/insert`,{body:{mode:'text'}})).status,404)
+ const articleLink=(await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles/${aid}/insert`,{body:{mode:'link'},status:200})).data
+ const ticket=(await app.call(`/api/conversations/${goodConversation}/messages`,{token:good.token,status:200})).data
+ const sent=(await app.call(`/api/conversations/${goodConversation}/messages`,{token:k.token,body:{localId:crypto.randomUUID(),content:articleLink.text,expectedRevision:ticket.revision,expectedLastMessageId:ticket.lastMessageId},status:200})).data
+ assert.equal(sent.accepted,true)
+ const receivedLink=(await app.call(`/api/conversations/${goodConversation}/messages`,{token:good.token,status:200})).data.messages.find(m=>m.id===sent.message.id)
+ assert.equal(receivedLink.content,articleLink.text);assert.equal(new URL(articleLink.url).origin,'https://app.example','the inserted native article link is sent through the permitted conversation')
+
 
  await call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{article:'{{title}}\n{{content}}'}},status:200})
  assert.equal((await call(`/api/knowledge/${p}/experience`,{status:200})).data.templates.article,'{{title}}\n{{content}}')

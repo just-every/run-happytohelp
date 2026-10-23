@@ -5,10 +5,10 @@ import {isProjectActive} from '../../platform/project-status.ts'
 
 export interface PublicReference {id:string;sourceVersion:string}
 export interface PublicCitation extends PublicReference {title:string;url:string;locale?:string;requestedLocale?:string;localeFallback?:boolean}
-const publicationParts=(version:string)=>{const [base,locale,translation]=version.split('~');return {base,locale,translation}}
+const publicationParts=(version:string)=>{const [base,locale,translation,defaultLocale]=version.split('~');return {base,locale,translation,defaultLocale}}
 /** The requested locale stays in the reference even on fallback. This prevents a
  * translation arriving or changing mid-turn from silently changing the evidence. */
-export function articlePublicationSql(alias='a',version='issued.source_version'){return `((${alias}.publication_version=${version}) OR EXISTS(SELECT 1 FROM knowledge_translations t WHERE t.article_id=${alias}.id AND t.published_source_version=${alias}.publication_version AND t.published_json IS NOT NULL AND ${alias}.publication_version||'~'||t.locale||'~'||t.publication_version=${version}) OR (${version} LIKE ${alias}.publication_version||'~%~base' AND NOT EXISTS(SELECT 1 FROM knowledge_translations t WHERE t.article_id=${alias}.id AND t.published_source_version=${alias}.publication_version AND t.published_json IS NOT NULL AND ${alias}.publication_version||'~'||t.locale||'~base'=${version})))`}
+export function articlePublicationSql(alias='a',version='issued.source_version'){return `(${alias}.publication_version=${version} OR EXISTS(SELECT 1 FROM knowledge_experience ke,json_each(ke.locales_json) locale WHERE ke.project_id=${alias}.project_id AND ((EXISTS(SELECT 1 FROM knowledge_translations t WHERE t.article_id=${alias}.id AND t.locale=locale.value AND t.published_source_version=${alias}.publication_version AND t.published_json IS NOT NULL AND ${alias}.publication_version||'~'||t.locale||'~'||t.publication_version||'~'||ke.default_locale=${version})) OR (${alias}.publication_version||'~'||locale.value||'~base~'||ke.default_locale=${version} AND NOT EXISTS(SELECT 1 FROM knowledge_translations t WHERE t.article_id=${alias}.id AND t.locale=locale.value AND t.locale<>ke.default_locale AND t.published_source_version=${alias}.publication_version AND t.published_json IS NOT NULL)))))`}
 
 export const activeSourceProjectSql = (project:string) => `EXISTS(SELECT 1 FROM projects p WHERE p.id=${project} AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL))`
 export const articleEligibilitySql = (alias='a',authenticated='0',domain="''") => `${alias}.status='published' AND ${articleAccessSql(alias,authenticated,domain)} AND ${activeSourceProjectSql(`${alias}.project_id`)}`
@@ -35,7 +35,7 @@ export async function readKnowledgeSource(env:Env,projectId:string,ref:PublicRef
   if(!row)return null
   if(!parts.locale)return {...row,id:ref.id,url:articleCanonicalUrl(env,projectId,row.slug)}
   const settings=await getKnowledgeExperience(env,projectId)
-  if(!settings.locales.includes(parts.locale))return null
+  if(!settings.locales.includes(parts.locale)||parts.defaultLocale!==settings.defaultLocale)return null
   const tr=parts.locale!==settings.defaultLocale?await env.DB.prepare('SELECT published_json,publication_version FROM knowledge_translations WHERE article_id=? AND locale=? AND published_source_version=? AND published_json IS NOT NULL').bind(id,parts.locale,parts.base).first<any>():null
   if((tr?.publication_version||'base')!==parts.translation)return null
   const locale=tr?parts.locale:settings.defaultLocale,url=new URL(articleCanonicalUrl(env,projectId,row.slug));url.searchParams.set('locale',parts.locale)

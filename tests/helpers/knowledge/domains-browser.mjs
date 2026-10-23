@@ -69,10 +69,16 @@ export async function domainsBrowserJourney({runtime,browser,fixture,viewport,sh
   const reader=await browser.newContext({viewport});await reader.addCookies([{name:'h2h_session',value:member.token,url:publicHost.origin}]);const readerPage=await reader.newPage()
   try{
    await readerPage.goto(privateUrl);await readerPage.getByText('Utilisez la file approuvée.',{exact:true}).waitFor()
-   await call(`/api/knowledge/${fixture.projectId}/articles`,{status:201,body:{id:article.id,title:'Private export guide',slug:`private-export-${width}`,content:'Use the newly reviewed export queue.',status:'published'}})
-   await readerPage.reload();await readerPage.getByText('Use the newly reviewed export queue.',{exact:true}).waitFor();await readerPage.locator('.help-center-translation-note').waitFor()
+   const history=await call(`/api/knowledge/${fixture.projectId}/articles/${article.id}/history`)
+   const original=history.versions.find(v=>v.snapshot.content==='Use the approved export queue.')
+   assert.ok(original)
+   await call(`/api/knowledge/${fixture.projectId}/articles`,{status:201,body:{id:article.id,title:'Private export guide',slug:`private-export-${width}-reviewed`,content:'Use the newly reviewed export queue.',status:'published'}})
+   await readerPage.reload();assert.equal(new URL(readerPage.url()).pathname,`/private-export-${width}-reviewed`);await readerPage.getByText('Use the newly reviewed export queue.',{exact:true}).waitFor();await readerPage.locator('.help-center-translation-note').waitFor()
    assert.match(await readerPage.locator('.help-center-translation-note').innerText(),/available in en/)
    await readerPage.screenshot({path:shot(`knowledge-source-fallback-${width}.png`),fullPage:true})
+   await call(`/api/knowledge/${fixture.projectId}/articles/${article.id}/rollback`,{body:{versionId:original.id}})
+   await readerPage.reload();await readerPage.getByText('Use the approved export queue.',{exact:true}).waitFor();assert.equal(new URL(readerPage.url()).pathname,`/private-export-${width}`)
+   await readerPage.screenshot({path:shot(`knowledge-restored-version-${width}.png`),fullPage:true})
   }finally{await reader.close()}
   assert.deepEqual(errors,[])
  }finally{await context.close()}

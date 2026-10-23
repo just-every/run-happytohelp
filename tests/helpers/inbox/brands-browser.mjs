@@ -7,7 +7,7 @@ import {launchBrowser} from '../../journeys/kit/browser.mjs'
 /** Existing native configuration screens are the brand configuration doors. */
 export async function brandsBrowser(){
  const directory=resolve(process.env.H2H_EVIDENCE_DIR||'test-results','brands');await mkdir(directory,{recursive:true})
- const runtime=await createRuntime(),origin=runtime.origin,errors=[],records=[];let browser,passed=false
+ const runtime=await createRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',PUBLIC_HELP_HOSTS:JSON.stringify({'alpha.localhost':'brand-alpha-help','beta.localhost':'brand-beta-help'})}}),origin=runtime.origin,errors=[],records=[];let browser,passed=false
  try{
   const req=async(path,body,token,method=body===undefined?'GET':'POST')=>{
    const response=await fetch(origin+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})})
@@ -23,6 +23,8 @@ export async function brandsBrowser(){
    await req(`/api/management/projects/${id}/settings`,{website:`https://${label.toLowerCase()}.example.test`,brand_name:label+' Care',help_center_domain:`https://help.${label.toLowerCase()}.example.test`,primary_color:color,timezone:'UTC'},scoped.token,'PUT')
    await req(`/api/management/projects/${id}/availability`,{is_availability_schedule_enabled:false,is_presence_away_enabled:false},scoped.token,'PUT')
    await req(`/api/management/projects/${id}/email-settings`,{from_name:label+' Care',from_address:`support@${label.toLowerCase()}.example.test`,inbound_address:`inbound@${label.toLowerCase()}.example.test`,is_enabled:true},scoped.token,'PUT')
+   await req(`/api/public-site/projects/${id}/alias`,{slug:`brand-${label.toLowerCase()}-help`},scoped.token,'PUT')
+   await req(`/api/knowledge/${id}/articles`,{title:label+' public guide',slug:'guide',content:label+' help center content',is_published:true},scoped.token)
    const project=await req('/api/identity/projects/'+id,undefined,scoped.token)
    const visitor=await req('/api/identity/widget/session',{widgetKey:project.widget_key,name:label+' customer'},undefined)
    const ticket=await req('/api/conversations',{projectId:id},visitor.token)
@@ -53,11 +55,16 @@ export async function brandsBrowser(){
      await page.goto(`${origin}/projects/${brand.id}/reports`);await page.getByRole('heading',{name:'Reports',exact:true}).waitFor()
      await page.screenshot({path:`${directory}/${brand.label.toLowerCase()}-reports-${width}.png`,fullPage:true})
      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'brand screens fit the viewport')
-     records.push({width,brand:brand.label,screens:['settings','identity','sender','inbox','reports']})
+     const helpOrigin=new URL(origin);helpOrigin.hostname=brand.label.toLowerCase()+'.localhost'
+     await page.goto(helpOrigin.href);await page.getByText(brand.label+' public guide',{exact:true}).waitFor()
+     assert.equal(await page.getByText((brand.label==='Alpha'?'Beta':'Alpha')+' public guide',{exact:true}).count(),0)
+     await page.getByText(brand.label+' public guide',{exact:true}).click();await page.getByText(brand.label+' help center content',{exact:true}).waitFor()
+     await page.screenshot({path:`${directory}/${brand.label.toLowerCase()}-help-host-${width}.png`,fullPage:true})
+     records.push({width,brand:brand.label,screens:['settings','identity','sender','inbox','reports','help-host']})
     }
     const selected=brands.map(b=>b.id).join(',')
     const config=await req(`/api/management/projects/${brands[0].id}/brands?projects=${selected}`,undefined,brands[0].token)
-    assert.equal(config.data.brands.length,2);assert.match(config.data.explanation,/never copied/)
+    assert.equal(config.data.brands.length,2);assert.deepEqual(config.data.brands.map(b=>b.helpHosts),[['alpha.localhost'],['beta.localhost']]);assert.match(config.data.explanation,/never copied/)
     const report=await req(`/api/management/projects/${brands[0].id}/brands/reports?projects=${selected}&period=7`,undefined,brands[0].token)
     assert.equal(report.data.aggregate.volume,2)
    }finally{await context.close()}

@@ -81,7 +81,7 @@ export async function brandsJourney(){
   assert.equal((await app.ok(`/api/management/projects/${b.projectId}/settings`,{token:owner})).data.collect_email,true)
   const manifest=(await app.ok(selection,{token:owner})).data
   assert.deepEqual(manifest.brands.map(r=>r.policy.collectEmail),[false,true]);assert.notEqual(manifest.brands[0].widgetKey,manifest.brands[1].widgetKey)
-  assert.deepEqual(manifest.brands.map(r=>r.helpCenterUrl),['https://help.alpha.example.test/','https://help.beta.example.test/'])
+  assert.deepEqual(manifest.brands.map(r=>r.helpCenterContextUrl),['https://help.alpha.example.test/','https://help.beta.example.test/'])
   assert.ok(!JSON.stringify(manifest).includes('synthetic-happytohelp-1'),'configuration never projects installation credentials')
   const reports=`/api/management/projects/${a.projectId}/brands/reports?projects=${a.projectId},${b.projectId}&period=7`
   const report=(await app.ok(reports,{token:shared})).data

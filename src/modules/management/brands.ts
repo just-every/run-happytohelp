@@ -20,11 +20,15 @@ brands.get('/projects/:projectId/brands',async c=>{
  const data=[],members=new Map<string,{id:string;name:string;roles:Record<string,string>}>()
  for(const id of ids){
   const row=await permitted(id),settings=JSON.parse(row.settings_json||'{}')
-  const [mail,team]=await c.env.DB.batch<any>([
+  const [mail,team,aliases]=await c.env.DB.batch<any>([
    c.env.DB.prepare('SELECT id,provider,address,display_name,sender_address,status FROM mailbox_connections WHERE project_id=? ORDER BY created_at,id').bind(id),
    c.env.DB.prepare('SELECT u.id,u.name,m.role FROM users u JOIN memberships m ON m.user_id=u.id WHERE m.project_id=? ORDER BY u.id').bind(id),
+   c.env.DB.prepare('SELECT slug FROM public_project_aliases WHERE project_id=?').bind(id),
   ])
-  data.push({id:row.id,name:row.name,origin:row.allowed_origin,widgetKey:row.widget_key,helpCenterUrl:settings.help_center_domain||null,mailboxes:mail.results,
+  let hosts:Record<string,unknown>={}
+  try{const value=JSON.parse(c.env.PUBLIC_HELP_HOSTS||'{}');if(value&&typeof value==='object'&&!Array.isArray(value))hosts=value}catch{}
+  const helpKeys=new Set([id,...aliases.results.map(alias=>alias.slug)])
+  data.push({id:row.id,name:row.name,origin:row.allowed_origin,widgetKey:row.widget_key,helpCenterContextUrl:settings.help_center_domain||null,helpCenterPath:`/help/${id}`,helpHosts:Object.entries(hosts).filter(([,key])=>typeof key==='string'&&helpKeys.has(key)).map(([host])=>host),mailboxes:mail.results,
    policy:{timezone:settings.timezone||'UTC',collectEmail:settings.collect_email!==false,acceptNewConversations:settings.is_enabled!==false},
    settingsUrl:`/projects/${id}/edit`,membersUrl:`/projects/${id}/agents`})
   for(const person of team.results){const member=members.get(person.id)||{id:person.id,name:person.name,roles:{} as Record<string,string>};member.roles[id]=person.role;members.set(person.id,member)}

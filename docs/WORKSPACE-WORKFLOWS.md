@@ -3,10 +3,11 @@
 ## Operate multiple brands
 
 Use one workspace per brand. Create each from the Projects list, then set its
-website, widget identity and help-center domain in Project settings and its
+website, widget identity and help-center context URL in Project settings and its
 sender, mailboxes and signatures in Email settings. Invite each shared teammate
 to each brand separately; creating a brand never copies memberships. Publish
 routing rules and change availability or collection policies within that brand.
+Use deployment configuration `PUBLIC_HELP_HOSTS` to map each owned help-center hostname to that brand's project ID or public alias; DNS and TLS remain deployment prerequisites. The Project settings context URL alone never installs a host alias.
 Switch workspaces before configuring or answering its tickets. A customer's
 same email in two brands remains two identities; private knowledge and mailbox
 credentials stay with their own workspace. Customer handoffs do not transfer
@@ -14,7 +15,7 @@ records or grant access to the destination.
 
 An owner or admin can review an explicit selection through
 `GET /api/management/projects/:id/brands?projects=:id,:otherId`. It lists the
-selected brands' public identities, mailbox names, policies and currently shared
+selected brands' public identities, configured help hosts, mailbox names, policies and currently shared
 teammates, with links to each brand's settings and members. Every selected brand
 requires current administration access; it returns no credentials or customer
 records. Invite staff using the ordinary Members screen in each brand.

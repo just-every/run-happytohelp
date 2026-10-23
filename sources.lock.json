@@ -11928,7 +11928,7 @@
       "executable": false
     },
     "tests/move-in/envelope-upgrade.mjs": {
-      "sha256": "2b62f36b320d76ec952eaf57e6743698de7a4150b3c8d51bc1718ed4a2e89dc6",
+      "sha256": "2a9561afe7418f0a17c5106441c0ce0700b80669326af4c68366fd8838b6ab0b",
       "executable": false
     },
     "tests/move-in/equality.mjs": {

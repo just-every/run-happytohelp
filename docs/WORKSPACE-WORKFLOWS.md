@@ -218,7 +218,8 @@ The management API exposes `GET contacts/:contactId/identity-links`,
 Both records must have independently proven mailbox or signed widget identity
 before linking. A typed email or imported identifier supplies no proof.
 Changed identities, permissions or relationships require another preview.
-Links are symmetric, audited, retained across restart and removed on erasure.
+Links are symmetric, audited and retained across restart. Erasure removes links
+for either identity and links whose source text names the erased customer.
 They are operator context only: customer sessions, ticket ownership, company
 visibility and sending authority do not change. Social-provider identity proof
 and live business-system context still need their configured providers.

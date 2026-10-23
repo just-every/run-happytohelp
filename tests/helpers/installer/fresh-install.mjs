@@ -1,6 +1,7 @@
 import { fileURLToPath as __rerTestEntryPath } from 'node:url';
 import assert from 'node:assert/strict';
 import {hostedExportJourney} from './hosted-export.mjs';
+import {MAX_LINE_BYTES} from '@runeditrun/rer/modules/portability';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {mkdtemp,mkdir,readFile,writeFile,rm,stat,access} from 'node:fs/promises';
@@ -119,6 +120,18 @@ try{
  await run(root,['reset','--yes']);
  await run(root,['import','--input','exports/later.rer','--yes'],4);
  const empty=await archiveSnapshot(root);assert.equal(empty.rows.users.length,0);assert.equal(empty.objects.length,0);
+ // These are public import refusals on an empty destination, not only parser
+ // unit checks: neither damaged integrity nor an oversized record may stage data.
+ const records=(await readFile(join(root,'exports/support.rer'),'utf8')).trimEnd().split('\n').map(line=>JSON.parse(line));
+ assert.equal(records.at(-1).kind,'closing');records.at(-1).contentHash='0'.repeat(64);
+ await writeFile(join(root,'exports/damaged.rer'),records.map(record=>JSON.stringify(record)).join('\n')+'\n',{mode:0o600});
+ await writeFile(join(root,'exports/oversized.rer'),Buffer.alloc(MAX_LINE_BYTES+1,0x20),{mode:0o600});
+ for(const [name,reason] of [['damaged.rer',/content_checksum/],['oversized.rer',/exceeds the supported size/]]){
+  const refusal=await run(root,['import','--input','exports/'+name,'--yes'],4);
+  assert.match(refusal.events.filter(event=>event.event==='error').map(event=>event.message).join('\n'),reason);
+  compareArchive(empty,await archiveSnapshot(root));
+ }
+
  await writeFile(additive,'CREATE TABLE rer_journey_additive(id TEXT PRIMARY KEY, value TEXT);\n');
  await run(root,['import','--input','exports/hosted.rer','--yes']);
  compareArchive(before,await archiveSnapshot(root),['rer_journey_additive']);

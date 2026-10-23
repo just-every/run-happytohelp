@@ -1780,7 +1780,7 @@
       "executable": false
     },
     "docs/request-forms.md": {
-      "sha256": "39a1332437a50b6f25996f8f89d218862894044efb7b948d71f740590a33a1bf",
+      "sha256": "423655236632b270df5672626e568efbed9391409917d9ea816ce6314c588eb8",
       "executable": false
     },
     "docs/SETUP-WORKFLOW.md": {
@@ -4288,7 +4288,7 @@
       "executable": false
     },
     "src/modules/forms/settings.ts": {
-      "sha256": "3677e88bda22ccbe4edfb442cd0b309f748dfb482dd4ad2256b19f0f49bcb480",
+      "sha256": "f455b96d819768fab5ed31a9a349edc3020de6a466dc1414c66ed3f4b14750d8",
       "executable": false
     },
     "src/modules/forms/store.ts": {
@@ -11432,7 +11432,7 @@
       "executable": false
     },
     "tests/helpers/request-forms-journey.mjs": {
-      "sha256": "990ab0b2a5027b7552ce1c44673a9e7dc1f44f4cc9a8483c951897db2303e6e3",
+      "sha256": "2291189ee9c533c0d46420765e5c811ccca709155e889ce664b985a4f57f2244",
       "executable": false
     },
     "tests/helpers/rer-archive.mjs": {

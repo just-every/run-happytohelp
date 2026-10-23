@@ -3,10 +3,11 @@ import {bodyLimit} from 'hono/body-limit'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,AppEnv} from '../../platform/env'
 import {scope} from '../management/common'
-import {ticketAuthority,object} from '../tickets/model'
+import {ticketAuthority,object,fieldAllowed} from '../tickets/model'
 import {formDefinition,publicField} from './definition'
 import {formFieldGuard} from './field-guard'
 import {decodeForm,fieldCatalogue,storedForm} from './store'
+import type {StoredField} from './types'
 export const formSettings=new Hono<AppEnv>()
 formSettings.use('*',bodyLimit({maxSize:2000000,onError:c=>c.json({error:'Request exceeds the form size limit'},413)}))
 const path='/projects/:projectId/forms'
@@ -20,9 +21,12 @@ formSettings.get(`${path}/:formId`,async c=>{const actor=await scope(c) as Actor
 // published definitions. Old values remain on their original tickets.
 formSettings.get(`${path}/:formId/versions`,async c=>{
  const actor=await scope(c,true) as Actor
- await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash'),source:'dashboard'},'settings.manage')
+ const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash'),source:'dashboard'},'settings.manage')
+ const catalogue=await fieldCatalogue(c.env,actor.projectId)
  const rows=await c.env.DB.prepare("SELECT at,actor_id,action,detail_json FROM audit_events WHERE project_id=? AND target_type='request_form' AND target_id=? AND action IN ('form.post','form.put','form.patch','form.delete') ORDER BY at DESC,id DESC LIMIT 100").bind(actor.projectId,c.req.param('formId')).all<any>()
- return c.json({data:rows.results.filter(row=>JSON.parse(row.detail_json).version!==undefined).map(({detail_json,...row})=>({...row,...JSON.parse(detail_json)}))})
+ const versions=rows.results.filter(row=>JSON.parse(row.detail_json).version!==undefined).map(({detail_json,...row})=>({...row,...JSON.parse(detail_json)}))
+ if(versions.some(version=>version.fields?.some((field:StoredField)=>{const current=catalogue.find(f=>f.id===field.id);return !fieldAllowed(current??field,guard.access)})))throw new HTTPException(403,{message:'Your role cannot read a field in this form history'})
+ return c.json({data:versions})
 })
 for(const method of ['post','put','patch','delete'] as const)formSettings[method](method==='post'?path:`${path}/:formId`,async c=>{
  const actor=await scope(c,true) as Actor,guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash'),source:'dashboard'},'settings.manage'),formId=method==='post'?crypto.randomUUID():c.req.param('formId')!,previous=method==='post'?null:await storedForm(c.env,actor.projectId,formId),body=method==='delete'?{}:object(await c.req.json())

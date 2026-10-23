@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "ab835b887ca66f971044c07655c02a1b7186cdec04b0da74ddc4854627401cac",
+      "sha256": "c0e614a15713096165b0283b29680fcce057fd121b279111ba642670a383999d",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b6fa5a25574aec544aa6529b42e92e172c9ac17e7f984da6c4a02beadb89d853",
+      "sha256": "cd48ef9be907e229a2a9ec24d1ab4fa1312df596d41973a33890403713842fae",
       "executable": false
     },
     "DEMO.md": {
@@ -1820,7 +1820,7 @@
       "executable": false
     },
     "docs/WORKSPACE-WORKFLOWS.md": {
-      "sha256": "b357a0b80b933aac83c10c53547057c386638890d7415ba69334665ffec8d5aa",
+      "sha256": "8a59460c551e7f20c9734e5e27ab1630cc55ebe098c834f791634858d2217662",
       "executable": false
     },
     "edition.json": {
@@ -4160,7 +4160,7 @@
       "executable": false
     },
     "src/modules/customers/erasure.ts": {
-      "sha256": "5bb67450fcd5bbed88c39cd5a7795398c30e60448f8bd6782dba8321015dd2ab",
+      "sha256": "93b3d56f3c1eca2b347c49fb1a5e2aaa55f7ec9f687a1f6506d2ac7b6dc88c21",
       "executable": false
     },
     "src/modules/customers/field-routes.ts": {
@@ -10820,7 +10820,7 @@
       "executable": false
     },
     "tests/helpers/company-records.mjs": {
-      "sha256": "d7d906ba11c1da57c98fd8d5b8828e9de4a1c4d218e5992eab1b40b00760ab6d",
+      "sha256": "92e1d72df43366db45ae7ac049c86fbde9f511277980b48ebaa9cae8c636c3d2",
       "executable": false
     },
     "tests/helpers/configured-mail-runtime.mjs": {

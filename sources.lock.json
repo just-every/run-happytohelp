@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "a1e49aa6ff4c9c2924b39daddb7aabfbe27332fc50e78fe6724fde912936a97d",
+      "sha256": "009a9108618b4e2f770e93b3f92964a18d76296fe8b7b6246716fe6ad2249fe8",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "bcab41aaeef7df64cb2b88bfe95f8d7d8df81aea086890bf5dcecbeaa682cfd3",
+      "sha256": "34132fef280bb50f0f553951f7ab9d953670541ca9dc1fa5d8d70eddbe3a3858",
       "executable": false
     },
     "DEMO.md": {
@@ -1776,7 +1776,7 @@
       "executable": false
     },
     "docs/reports.md": {
-      "sha256": "c30617852f2871478acb32e48623749277f36d277578f1d946fedd4be50ced9d",
+      "sha256": "9942b250d6841fde8e2e412055e161adba77678368db3ace0eb118fabd5f94e4",
       "executable": false
     },
     "docs/request-forms.md": {
@@ -6539,6 +6539,10 @@
       "sha256": "3a29ea8ade473105c904041e702286e55c2a2a085a95d3816232180fe23d7530",
       "executable": false
     },
+    "src/modules/reports/team-breakdowns.ts": {
+      "sha256": "a9782fee5c4f3cac3f9b6718909e2468a43adabf5ab0137f7b015afc25f41acc",
+      "executable": false
+    },
     "src/modules/reports/team-csv.ts": {
       "sha256": "7d96f2953a9d62b0d2b25f6f1649e1d8e74b6cc2704ed2a799751e52c74793a4",
       "executable": false
@@ -6548,7 +6552,7 @@
       "executable": false
     },
     "src/modules/reports/team-read.ts": {
-      "sha256": "c842853a1a8b254a7452ee8e7ef2f1d7c2a96288d589f9dcd357858f9e262f42",
+      "sha256": "360054299703f90fb7af232a8db0623392ac1c6f7da1e8acc62344c04258334c",
       "executable": false
     },
     "src/modules/reports/team-routes.ts": {
@@ -6564,7 +6568,7 @@
       "executable": false
     },
     "src/modules/reports/team-workload.ts": {
-      "sha256": "082a23a8df8a9359ed99973cc508c38e45e2552bfb97da68224c33bf6ad7a5aa",
+      "sha256": "fc4fcbfbb4d08a83b168e895df60706df4a7bbf6cfcf95ece3f227257b95cb38",
       "executable": false
     },
     "src/modules/reports/timers.ts": {
@@ -12156,7 +12160,7 @@
       "executable": false
     },
     "tests/reports/team-journey.mjs": {
-      "sha256": "29923051e902a2e6c6b4dd800704c038e38c099205760cefbd3d60471013082c",
+      "sha256": "a0990db2628fd9ae00268c271a29cc328340b6df9a92631869d8a10c1fbf3e6d",
       "executable": false
     },
     "tests/reports/upgrade-categories.mjs": {

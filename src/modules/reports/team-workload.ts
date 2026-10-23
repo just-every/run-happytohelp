@@ -1,9 +1,7 @@
 import {statement,type TeamReportContext} from './team-scope'
 
 export type WorkloadRow={id:string|null;label:string;incoming:number;resolved:number;backlog:number}
-const active="status_category NOT IN ('solved','closed')"
-export async function teamWorkload(context:TeamReportContext){
- const {results}=await statement(context,`, dimensions AS (
+export const teamDimensionsSQL=`, dimensions AS (
  SELECT c.id conversation_id,c.created_at,c.status_category,d.value dimension,
  CASE d.value WHEN 'agent' THEN c.assigned_to WHEN 'team' THEN c.group_id WHEN 'channel' THEN c.channel WHEN 'brand' THEN COALESCE(c.brand_id,c.project_id) WHEN 'account' THEN a.id ELSE t.id END key,
  CASE d.value WHEN 'agent' THEN COALESCE(u.name,c.assigned_to,'Unassigned') WHEN 'team' THEN COALESCE(g.name,c.group_id,'No team') WHEN 'channel' THEN c.channel WHEN 'brand' THEN CASE WHEN COALESCE(c.brand_id,c.project_id)=p.id THEN p.name ELSE c.brand_id END WHEN 'account' THEN COALESCE(a.name,'No account') ELSE COALESCE(t.name,'Untagged') END label
@@ -15,7 +13,10 @@ export async function teamWorkload(context:TeamReportContext){
  LEFT JOIN companies a ON a.project_id=cc.project_id AND a.id=cc.company_id AND a.merged_into IS NULL
  LEFT JOIN conversation_tags ct ON d.value='tag' AND ct.project_id=c.project_id AND ct.conversation_id=c.id
  LEFT JOIN workspace_tags t ON t.project_id=ct.project_id AND t.id=ct.tag_id
- ) SELECT dimension,key id,label,SUM(created_at>=?2) incoming,SUM(created_at>=?2 AND status_category IN ('solved','closed')) resolved,SUM(${active}) backlog FROM dimensions GROUP BY dimension,key,label ORDER BY dimension,incoming DESC,backlog DESC,label,key`).all<WorkloadRow&{dimension:'agent'|'team'|'channel'|'brand'|'tag'|'account'}>()
+ )`
+const active="status_category NOT IN ('solved','closed')"
+export async function teamWorkload(context:TeamReportContext){
+ const {results}=await statement(context,`${teamDimensionsSQL} SELECT dimension,key id,label,SUM(created_at>=?2) incoming,SUM(created_at>=?2 AND status_category IN ('solved','closed')) resolved,SUM(${active}) backlog FROM dimensions GROUP BY dimension,key,label ORDER BY dimension,incoming DESC,backlog DESC,label,key`).all<WorkloadRow&{dimension:'agent'|'team'|'channel'|'brand'|'tag'|'account'}>()
  const workload:{agent:WorkloadRow[];team:WorkloadRow[];channel:WorkloadRow[];brand:WorkloadRow[];tag:WorkloadRow[];account:WorkloadRow[]}={agent:[],team:[],channel:[],brand:[],tag:[],account:[]}
  for(const {dimension,...row} of results)workload[dimension].push(row)
  return workload

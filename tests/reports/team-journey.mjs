@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import {startApp} from '../journeys/kit/app.mjs'
-import {seedReportFixture,reportDates,reportStart,reportEnd} from '../helpers/reports-team-fixture.mjs'
+import {seedReportFixture,reportDates,reportStart,reportEnd,insert} from '../helpers/reports-team-fixture.mjs'
 
 export async function teamReportsJourney(){
  const sent=[]
@@ -8,6 +8,7 @@ export async function teamReportsJourney(){
  try{
   const w=await app.seedWorkspace('team-reports'),p=w.projectId,base=`/api/dashboard/projects/${p}`
   const fixture=await seedReportFixture(app.db,p)
+  await seedBreakdownEvidence(app,p,fixture)
   const query=new URLSearchParams({period:'custom',...reportDates});query.delete('timezone')
   const url=`${base}/reports/team?${query}`
   const get=async suffix=>app.ok(url+(suffix||''),{token:w.tokens.owner})
@@ -22,6 +23,7 @@ export async function teamReportsJourney(){
   assert.equal(accountRows.reduce((n,row)=>n+row.incoming,0),fixture.tickets.length)
   assert.equal(accountRows.find(row=>row.id===null).label,'No account')
   assert.equal(report.denominators.cohort,fixture.tickets.length)
+  assertBreakdowns(report,fixture,company.id,accountTickets)
   assert.equal(report.range.startAt,reportStart);assert.equal(report.range.endAt,reportEnd)
   const raw=await app.sql('SELECT c.*,EXISTS(SELECT 1 FROM ticket_history h WHERE h.conversation_id=c.id AND json_extract(h.changes_json,\'$.status_category.from\')=\'solved\' AND json_extract(h.changes_json,\'$.status_category.to\')=\'open\') reopened FROM conversations c WHERE c.project_id=?',p)
   for(const [group,column] of [['agent','assigned_to'],['team','group_id'],['channel','channel'],['brand','brand_id']]){
@@ -78,6 +80,10 @@ export async function teamReportsJourney(){
   const expected=await app.ok(`${base}/reports/team?period=custom&start=2026-10-13&end=2026-10-20&includeImported=true`,{token:w.tokens.owner})
   assert.ok(csv.includes(`"denominators.cohort","${expected.denominators.cohort}"`))
   for(const dimension of ['agent','team','channel','brand','tag','account'])for(let i=0;i<expected.workload[dimension].length;i++)for(const key of ['incoming','resolved','backlog'])assert.ok(csv.includes(`"workload.${dimension}.${i}.${key}","${expected.workload[dimension][i][key]}"`))
+  for(const dimension of Object.keys(expected.breakdowns))for(let i=0;i<expected.breakdowns[dimension].length;i++){
+   const row=expected.breakdowns[dimension][i]
+   for(const path of ['tickets','firstResponse.count','firstResponse.median','firstResolution.count','csat.positive','csat.rated','ai.failed','ai.uncertain','sla.resolution.denominator']){const value=path.split('.').reduce((value,key)=>value[key],row);assert.ok(csv.includes(`"breakdowns.${dimension}.${i}.${path}","${value===null?'null':value}"`),'scheduled CSV includes '+dimension+' '+path)}
+  }
   for(const metric of ['first_response','next_response','resolution'])for(const key of ['met','breached','pending','total','denominator','rate'])assert.ok(csv.includes(`\"sla.${metric}.${key}\",\"${expected.sla[metric][key]===null?'null':expected.sla[metric][key]}\"`))
   for(const key of ['resolved','denominator','reopened','events','rate'])assert.ok(csv.includes(`\"reopens.${key}\",\"${expected.reopens[key]===null?'null':expected.reopens[key]}\"`))
   for(const key of ['total_ms','session_count'])assert.ok(csv.includes(`\"handleTime.${key}\",\"${expected.handleTime[key]}\"`))
@@ -140,4 +146,43 @@ async function timerCustody(app){
  await app.ok(`/api/management/projects/${p}/agents/${w.users.admin}`,{token:w.tokens.owner,method:'DELETE'})
  const removed=await frozen(w.users.admin,second)
  return {agentGrowingMs:growing,downgradedMs:downgraded,removedMs:removed}
+}
+
+
+// Historical observation timestamps cannot be produced by today's clock. The
+// independent fixture records known durations, cycles and provider attempts;
+// every reduction and scheduled export is read through the public report door.
+async function seedBreakdownEvidence(app,p,fixture){
+ const statements=[]
+ for(const [i,t] of fixture.tickets.entries()){
+  const response=(i%4+1)*1000,resolved=t.wasResolved?(i%5+1)*60000:null
+  statements.push(insert('messages',{id:t.id+'-answer',project_id:p,conversation_id:t.id,local_id:t.id+'-answer',actor_id:t.assigned_to,actor_role:'operator',content:'Historical answer',revision:2,created_at:t.created_at+response}))
+  statements.push(insert('conversation_tracking',{conversation_id:t.id,project_id:p,initial_history_complete:1,cycle_history_complete:1,cycle_start_at:t.created_at,first_resolved_at:resolved===null?null:t.created_at+resolved}))
+  if(t.wasResolved){
+   const outcome=i%8===0?'ai':i%4===0?'human':'unknown',rating=i%8===0?1:-1
+   statements.push(insert('conversation_resolutions',{id:t.id+'-cycle',project_id:p,conversation_id:t.id,contact_id:t.contact_id,ordinal:1,resolved_at:t.created_at+resolved,resolved_revision:2,cycle_start_revision:0,outcome,evidence_json:'{}',reopened_at:t.reopened?t.created_at+resolved+1000:null}))
+   if(i%4===0)statements.push(insert('conversation_ratings',{resolution_id:t.id+'-cycle',value:rating,comment:'',updated_at:t.created_at+resolved+100,revision:1}))
+  }
+  if(i%9===0)statements.push(insert('conversation_handoffs',{id:t.id+'-handoff',project_id:p,conversation_id:t.id,agent_id:t.assigned_to,revision:2,created_at:t.created_at+1000,cycle_epoch:0}))
+  if(i%7===0)for(const state of ['failed','uncertain'])statements.push(insert('ai_generations',{id:t.id+'-'+state,project_id:p,conversation_id:t.id,state,source_revision:1,actor_json:'{}',model:'synthetic-happytohelp-1',ai_id:'synthetic-happytohelp-2',ai_profile_json:'{}',created_at:new Date(t.created_at).toISOString(),updated_at:new Date(t.created_at).toISOString()}))
+ }
+ for(let i=0;i<statements.length;i+=80)await app.db.batch(statements.slice(i,i+80).map(sql=>app.db.prepare(sql)))
+}
+function assertBreakdowns(report,fixture,companyId,accountTickets){
+ const oracle=values=>{const sorted=values.sort((a,b)=>a-b),n=sorted.length;return {count:n,median:n?(sorted[Math.floor((n-1)/2)]+sorted[Math.floor(n/2)])/2:null,p90:n?sorted[Math.ceil(.9*n)-1]:null}}
+ for(const [dimension,column] of [['agent','assigned_to'],['team','group_id'],['channel','channel'],['brand','brand_id'],['tag',null],['account',null]])for(const row of report.breakdowns[dimension]){
+  const indices=fixture.tickets.flatMap((t,i)=>(dimension==='account'?(row.id===companyId?accountTickets.includes(t):!accountTickets.includes(t)):dimension==='tag'?row.id===`${t.project_id}-tag-${['billing','delivery','login'][i%3]}`:t[column]===row.id)?[i]:[])
+  assert.equal(row.tickets,indices.length,dimension+' complete ticket count')
+  assert.deepEqual(row.firstResponse,oracle(indices.map(i=>(i%4+1)*1000)),dimension+' first responses')
+  assert.deepEqual(row.firstResolution,oracle(indices.filter(i=>fixture.tickets[i].wasResolved).map(i=>(i%5+1)*60000)),dimension+' first resolutions')
+  const rated=indices.filter(i=>i%4===0).length,positive=indices.filter(i=>i%8===0).length
+  assert.deepEqual(row.csat,{rated,positive,rate:rated?positive/rated:null},dimension+' latest-cycle CSAT')
+  assert.equal(row.ai.closed,positive);assert.equal(row.ai.assignmentHandoffs,indices.filter(i=>i%9===0).length)
+  assert.equal(row.ai.failed,indices.filter(i=>i%7===0).length);assert.equal(row.ai.uncertain,row.ai.failed)
+  assert.equal(row.ai.outcomeUnknown,indices.filter(i=>!['solved','closed'].includes(fixture.tickets[i].status_category)).length)
+  for(const metric of ['first_response','next_response','resolution']){
+   const clocks=indices.flatMap(i=>JSON.parse(fixture.slaRows[i].state_json).clocks).filter(c=>c.metric===metric),denominator=clocks.length,breached=clocks.filter(c=>c.breached).length,met=denominator-breached
+   assert.deepEqual(row.sla[metric],{met,breached,pending:0,denominator,rate:denominator?met/denominator:null},dimension+' SLA '+metric)
+  }
+ }
 }

@@ -71,7 +71,7 @@ try{
  await verifyPortableWork(target,portable);
  await mkdir(join(target,'.seed'),{mode:0o700,recursive:true});await writeFile(join(target,'.seed/local-answers.json'),JSON.stringify(answer),{mode:0o600});
  await command(target,['setup','--answers','.seed/local-answers.json','--port',String(port),'--non-interactive'],env);runtime=await serve(target,env);
- const retained=await post(origin,'/api/identity/login',{email:answer.OWNER_EMAIL,password});assert.equal(retained.actor.id,logged.actor.id,'restored native owner identity is preserved');
+ const retained=await post(origin,'/api/identity/login',{email:answer.OWNER_EMAIL,password,projectId:project.id});assert.equal(retained.actor.id,logged.actor.id,'restored native owner identity is preserved');assert.equal(retained.actor.projectId,project.id,'the owner selects the restored support workspace');
  await verifyPortableData(origin,portable,retained.token,json);
  assert.equal((await fetch(origin+'/api/v1/contacts',{headers:{Authorization:'Bearer '+grant.token}})).status,401,'restored install rejects old API grant');
  const configured=await (await fetch(origin+connections+'/webhooks',{headers:{Authorization:'Bearer '+retained.token}})).json();assert.deepEqual(configured.data,[],'restored install requires receiver reconfiguration');

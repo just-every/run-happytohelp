@@ -179,6 +179,7 @@ export async function completeEmailJourney(){
   const raceResult=(await app.ok(noticeBase+'/'+raceNotice.id+'/apply',{token:agent,body:{},headers:{'x-test-statement':'INSERT INTO email_deliveries','x-test-before-statement':`UPDATE contacts SET metadata_json=json_set(metadata_json,'$.portal_notification_emails',0) WHERE id='${raceCustomer}'`}})).data
   assert.equal(raceResult.results[0].state,'blocked','consent revoked at the sending claim prevents provider submission')
   assert.equal(sent.filter(copy=>copy.text?.includes('synthetic-happytohelp-62')).length,countBeforeRace)
+  assert.equal((await app.ok(noticeBase+'/'+raceNotice.id+'/apply',{token:agent,body:{}})).data.results[0].state,'blocked','refresh retains the known blocked outcome instead of calling it pending')
   // Preview expiry fences only its first proactive send, not future support replies.
   await app.db.prepare('UPDATE operator_service_notices SET created_at=1 WHERE id=?').bind(notice.id).run()
   const normalTicket=retried.results.find(result=>result.requesterId===requesterIds[2]).ticketId,current=await app.first('SELECT revision,last_message_id FROM conversations WHERE id=?',normalTicket)

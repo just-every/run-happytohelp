@@ -53,7 +53,8 @@ export function serviceNoticeRoutes(onCommittedMessage?:OutboundTicketCommitted)
     const created=await createOutboundTicket(c.env,actor,c.get('sessionHash'),input,onCommittedMessage,delivery=>c.executionCtx.waitUntil(delivery),extra)
     const conversation=created.conversation as {id:string}
     const delivery=await c.env.DB.prepare("SELECT state,error FROM email_deliveries WHERE id IN (SELECT 'message:'||id||':notification' FROM messages WHERE conversation_id=? AND local_id=?)").bind(conversation.id,localId).first<{state:string;error:string|null}>()
-    results.push({requesterId:contact.id,ticketId:conversation.id,state:delivery?.state??('generationError' in created?'blocked':'pending'),...(delivery?.error?{reason:delivery.error}:'generationError' in created?{reason:created.generationError}:{})})
+    const permitted=delivery?true:!!await c.env.DB.prepare(`SELECT 1 WHERE ${extra.sql}`).bind(...extra.params).first()
+    results.push({requesterId:contact.id,ticketId:conversation.id,state:delivery?.state??(!permitted||'generationError' in created?'blocked':'pending'),...(delivery?.error?{reason:delivery.error}:!permitted?{reason:'Requester, consent or preview changed; no delivery is authorized'}:'generationError' in created?{reason:created.generationError}:{})})
    }catch(error){results.push({requesterId:contact.id,...(existing?{ticketId:existing.conversation_id}:{}),state:'blocked',reason:error instanceof Error?error.message:'Ticket creation could not be confirmed; check this same notice'})}
   }
   return c.json({data:{id,results}})

@@ -6064,7 +6064,7 @@
       "executable": false
     },
     "src/modules/management/service-notices.ts": {
-      "sha256": "c96708904a1a8f35a58723cb69f1b158504d178872f55830ec2c3e8c65f4f343",
+      "sha256": "48ce0fa75954c91d681449cad13c1a1f9d992f3a144759bd907d06cc90ebd1ae",
       "executable": false
     },
     "src/modules/management/site-read/fetch.ts": {
@@ -10944,7 +10944,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "d9712bfb5d27e77a7e9a0adfa00b5e0d5b0f2efb0fd25b4d1860ba16b630cf9b",
+      "sha256": "4e10a0694d15127f73fbfeeb5dcc826a67632de026ed0b1217c7cedbe03cad21",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {

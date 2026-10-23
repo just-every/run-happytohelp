@@ -13,6 +13,11 @@ export async function slaFlow(f){
  assert.deepEqual((await ok(`/conversations/${empty.id}/sla`)).alerts,[])
  await clock(initial)
  const id=await create();f.slaId=id
+ // The original schema permits an empty condition object. A stored policy
+ // using that default still matches, without requiring a settings rewrite.
+ await app.db.prepare("UPDATE sla_policies SET conditions_json='{}' WHERE project_id=? AND id=?").bind(w.projectId,policy.id).run()
+ assert.equal((await ok(`/conversations/${id}/sla`)).policy.id,policy.id,'legacy empty conditions retain match-any behavior')
+ await ok(`/sla-policies/${policy.id}`,{conditions:policy.conditions},'PATCH')
  let sla=await ok(`/conversations/${id}/sla`)
  assert.equal(sla.clocks.find(c=>c.metric==='first_response').due_at,Date.parse('2026-11-27T15:00:00Z'),'Thanksgiving consumes no business time')
  await clock('2026-11-26T20:00:00Z');await app.scheduled()

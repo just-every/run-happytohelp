@@ -20,7 +20,10 @@ export async function proposalsBrowserJourney({runtime,browser,shot}){
   await context.addCookies([{name:'h2h_session',value:tenant.token,url:origin}]);page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());page.setDefaultTimeout(20000)
   try{
    await page.goto(`${origin}/projects/${pid}/articles`);await page.getByRole('button',{name:'Review proposals',exact:true}).click();await page.getByRole('button',{name:'Load proposals and gaps',exact:true}).click()
-   for(const [label,value] of [['Source conversation ID',conversation.id],['Source resolution cycle ID',cycle.id],['Source message ID',answer.id],['Proposed article title','Export recovery'],['Exact resolution quote',quote]])await page.getByLabel(label,{exact:true}).fill(value)
+   await page.getByLabel('Verified source case',{exact:true}).selectOption(cycle.id)
+   await page.getByLabel('Resolution evidence',{exact:true}).selectOption(answer.id)
+   await page.getByLabel('Proposed article title',{exact:true}).fill('Export recovery')
+   assert.doesNotMatch(await page.locator('.knowledge-proposals blockquote').innerText(),/Avery|reader-|synthetic-happytohelp-41/,'the evidence picker shows a masked source preview')
    await page.getByLabel('Private destination collection',{exact:true}).selectOption(category.id)
    await page.getByRole('button',{name:'Prepare private draft',exact:true}).click();await page.getByText('Private draft prepared.',{exact:false}).waitFor()
    const content=page.getByLabel('Reviewed article content',{exact:true});assert.doesNotMatch(await content.inputValue(),/Avery|reader-|synthetic-happytohelp-41/)

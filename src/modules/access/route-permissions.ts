@@ -53,6 +53,7 @@ const rules:Record<string,Rule>={
  'GET /api/ai-support/projects/:projectId/procedures/:key/versions/:versionId/reviews':'settings.manage',
  'GET /api/knowledge/:projectId/gaps':'knowledge.edit',
  'GET /api/knowledge/:projectId/proposals':'knowledge.edit',
+ 'GET /api/knowledge/:projectId/proposals/sources':'knowledge.edit',
  'POST /api/knowledge/:projectId/proposals':'knowledge.edit',
  'POST /api/knowledge/:projectId/proposals/:id/reject':'knowledge.publish',
  'POST /api/knowledge/:projectId/proposals/:id/publish':'knowledge.publish',

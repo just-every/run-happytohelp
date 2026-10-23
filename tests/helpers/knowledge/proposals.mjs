@@ -21,6 +21,10 @@ export async function proposalsJourney(){
  const category=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Trusted private guidance',audience:'domains',allowedDomains:['trusted.test']},status:201})).data.id
  const publicCategory=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Public'},status:201})).data.id
  const body={conversationId:cid,resolutionId:r.id,messageId:reply.id,categoryId:category,title:'Export repair',quote}
+ assert.equal((await call(`/api/knowledge/${p}/proposals`,{body:{sourceMessageOnly:true},status:400})).status,400)
+ const sources=(await call(`/api/knowledge/${p}/proposals/sources`,{status:200})).data
+ const picked=sources.cases.find(c=>c.resolutionId===r.id);assert.equal(picked.conversationId,cid);assert.ok(picked.privateCollectionIds.includes(category));assert.doesNotMatch(picked.messages.find(m=>m.id===reply.id).preview,/Alice|alice@|synthetic-happytohelp-17/)
+ assert.equal((await app.call(`/api/knowledge/${p}/proposals/sources`,{token:customer.token})).status,403)
  await app.call(`/api/knowledge/public/${p}/search?q=encoding&locale=en`,{status:200})
  assert.ok((await call(`/api/knowledge/${p}/gaps`,{status:200})).data.searchTopics.some(g=>g.topic==='encoding'&&g.occurrences===1))
  assert.equal((await call(`/api/knowledge/${p}/proposals`,{body:{...body,categoryId:publicCategory}})).status,409,'customer-derived drafts cannot silently become public knowledge')

@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "6ea6d95bd4efbe6ea302b89d0c71d4bec9f5ae7f2e848cd2a231e6264e005c4d",
+      "sha256": "dc5c26da6238fc74462f0a1f26b516ad60e6989a84bd4283b7cdcbd6dcde01fa",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "f61636b25931b2fb0c2ffff4119a47132159fa770cddb5a82a1c9807bd0ffed8",
+      "sha256": "45b0a354ca09ab0ebaa54b86eea62af9f513450dc7aa048d72f3756cf12d58da",
       "executable": false
     },
     "DEMO.md": {
@@ -3460,7 +3460,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "30236fbbeda15256fae674cbad5227f82b24f22e55b9a6eabc21168853eeb5be",
+      "sha256": "859ce24ff159cc3be550743f08eeef48d85a9d7fd5c0e4c197ab8dee3527d35e",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -5596,7 +5596,7 @@
       "executable": false
     },
     "src/modules/knowledge/proposals.ts": {
-      "sha256": "d58e3976a4dc8459849ceed15615fda62fa32b4652bb9442ab964df9752a4050",
+      "sha256": "108ab17508b91ed54d47ccc38ed6a19dd45b81302d8ac0162051e1c589ddedfa",
       "executable": false
     },
     "src/modules/knowledge/providers.ts": {
@@ -9800,7 +9800,7 @@
       "executable": false
     },
     "src/ui/native/pages/knowledge/KnowledgeProposals.jsx": {
-      "sha256": "c64fe5c16009d69b892a4c1aaed53bbbc001ce894d14269467bd76670129f99d",
+      "sha256": "d216050515c05f5a9125d02ef312e24ad488d4b81d700ef6d99d72e985bf4992",
       "executable": false
     },
     "src/ui/native/pages/knowledge/KnowledgeTabs.jsx": {
@@ -11404,11 +11404,11 @@
       "executable": false
     },
     "tests/helpers/knowledge/proposals-browser.mjs": {
-      "sha256": "a13146e515c8616f6201c85a53f6b588d89f0cd24527d74812b77518931f897d",
+      "sha256": "eab703b0101eff237d0936ce93e06d4ddab12b0556122f053bf328e763307a29",
       "executable": false
     },
     "tests/helpers/knowledge/proposals.mjs": {
-      "sha256": "0217429a807cca55ccf14f0b459d86fd5ff9ab9c8f6ff583220d6726aceba0a3",
+      "sha256": "1dd4b530da825475213069407b94650fbd44e6f57451fb81006de84366c9bbc6",
       "executable": false
     },
     "tests/helpers/knowledge/recovery.mjs": {

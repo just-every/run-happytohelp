@@ -93,13 +93,14 @@ export default function useConversationDelegations({ conversationId, projectId, 
         }
     }, [ devicesPath, scopeKey ]);
 
-    const createDelegation = useCallback(async ({ deviceId, instructions, mode }) => {
+    const createDelegation = useCallback(async ({ deviceId, instructions, mode, timeLimitMinutes = 15 }) => {
         if (!basePath) return null;
 
         const requestScope = scopeKey;
         try {
             const response = await Api.create(basePath, {
                 device_id: deviceId,
+                time_limit_minutes: timeLimitMinutes,
                 mode,
                 instructions,
                 request_id: uuidv4(),
@@ -192,7 +193,7 @@ export default function useConversationDelegations({ conversationId, projectId, 
 
     const clearPairing = useCallback(() => setPairing(null), []);
 
-    const activeDelegation = delegations.find(job => activeStatuses.has(job.status)) || null;
+    const activeDelegation = delegations.find(job => activeStatuses.has(job.status) && !job.authority?.expired) || null;
     const latestDelegation = delegations[0] || null;
 
     return {

@@ -1,8 +1,8 @@
 import React from 'react';
-import {GitHubConnectionForm, JiraConnectionForm, LinearConnectionForm, SlackConnectionForm} from './ConnectionForms';
+import {GitHubConnectionForm, JiraConnectionForm, LinearConnectionForm, SlackConnectionForm, TeamsConnectionForm} from './ConnectionForms';
 import {providerNames} from './api';
 
-const forms = {github: GitHubConnectionForm, linear: LinearConnectionForm, jira: JiraConnectionForm, slack: SlackConnectionForm};
+const forms = {github: GitHubConnectionForm, linear: LinearConnectionForm, jira: JiraConnectionForm, slack: SlackConnectionForm, teams: TeamsConnectionForm};
 
 export default function Connections({base, connections, onSaved}) {
     return <details className="escalation-connections">

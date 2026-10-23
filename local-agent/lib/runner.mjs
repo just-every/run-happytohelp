@@ -391,7 +391,12 @@ async function execute(config, api, save, {
   signal?.addEventListener('abort', bridgeAbort, { once: true });
   const stopMonitor = await startCancellationMonitor(config, api, save, runtimeAbort, log, active, runtimeCapabilitiesFn, monitorIntervalMs);
   const report = createProgressReporter(config, api, save, log, active);
+  const expiresAt = active.job.context?.authority?.expires_at;
+  const expire = () => runtimeAbort.abort(new ConnectorError('Task time authority expired; the local outcome is unconfirmed. Review it before authorizing another task.', { code: 'JOB_TERMINAL' }));
+  const deadline = Number.isSafeInteger(expiresAt) ? setTimeout(expire, Math.max(0, expiresAt - Date.now())) : null;
+  if (Number.isSafeInteger(expiresAt) && expiresAt <= Date.now()) expire();
   try {
+    if (runtimeAbort.signal.aborted) throw runtimeAbort.signal.reason;
     await report(`${config.provider} is starting the delegated session.`);
     const providerResult = await providerRunner(config.provider, {
       prompt: buildDelegationPrompt(active.job, {
@@ -441,6 +446,7 @@ async function execute(config, api, save, {
     await save();
     throw error;
   } finally {
+    if (deadline) clearTimeout(deadline);
     stopMonitor();
     signal?.removeEventListener('abort', bridgeAbort);
   }

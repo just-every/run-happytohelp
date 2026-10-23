@@ -1,7 +1,7 @@
 import type {connect} from 'cloudflare:sockets'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../../platform/env'
-import {base64,MIME_LIMIT,MailboxResponseTooLarge} from './http'
+import {base64,MIME_LIMIT,MailboxResponseTooLarge,MailboxProviderError} from './http'
 import type {ImapCredential} from './types'
 type Socket=ReturnType<typeof connect>
 
@@ -60,7 +60,7 @@ export class ImapSession {
   const lines:string[]=[],literals:Uint8Array[]=[]
   for(let i=0;i<10000;i++){
    const line=await this.wire.line();lines.push(line)
-   if(line.startsWith(`${tag} `)){if(!line.startsWith(`${tag} OK`))throw new Error('IMAP command rejected');return {lines,literals}}
+   if(line.startsWith(`${tag} `)){if(!line.startsWith(`${tag} OK`)){if(value.startsWith('LOGIN ')&&line.startsWith(`${tag} NO`))throw new MailboxProviderError(401);throw new Error('IMAP command rejected')}return {lines,literals}}
    if(line.startsWith('* BYE'))throw new Error('IMAP session ended')
    const literal=line.match(/\{(\d+)\}$/);if(literal)literals.push(await this.wire.literal(Number(literal[1])))
   }
@@ -80,7 +80,7 @@ export async function openImap(env:Env,credential:ImapCredential){
 async function smtpReply(wire:MailSocket,expected:number[]){
  let code=0;for(let i=0;i<100;i++){
   const line=await wire.line();if(!/^\d{3}[- ]/.test(line))throw new Error('Invalid SMTP response')
-  code=Number(line.slice(0,3));if(line[3]===' '){if(!expected.includes(code))throw new Error(`SMTP rejected command (${code})`);return code}
+  code=Number(line.slice(0,3));if(line[3]===' '){if(!expected.includes(code)){if(code>=500&&code<=599)throw new MailboxProviderError(code===535?401:code);throw new Error(`SMTP rejected command (${code})`)}return code}
  }throw new Error('SMTP response exceeds line limit')
 }
 export async function openSmtp(env:Env,credential:ImapCredential){

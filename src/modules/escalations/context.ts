@@ -15,10 +15,10 @@ export async function selectedContext(env:Env,projectId:string,conversationId:st
  if(data[0].results.length!==messageIds.length||data[1].results.length!==attachmentIds.length)throw new HTTPException(400,{message:'A chosen message or attachment is unavailable. Private notes cannot be shared.'})
  return {messageIds,attachmentIds,messages:data[0].results,attachments:data[1].results,body:data[0].results.map(row=>`Message (${new Date(row.created_at).toISOString()}):\n${row.content}`).join('\n\n')}
 }
-export async function shareContext(env:Env,projectId:string,conversationId:string,operationId:string,context:Awaited<ReturnType<typeof selectedContext>>,origin:string){
- const files=[]
- for(const file of context.attachments){const token=crypto.randomUUID()+crypto.randomUUID();await env.DB.prepare('INSERT INTO escalation_attachment_grants VALUES(?,?,?,?,?,?)').bind(await hashToken(token),projectId,conversationId,file.id,operationId,Date.now()+7*86400000).run();files.push(`${file.filename} (${file.size} bytes; download expires in 7 days): ${new URL('/api/escalations/attachments/'+token,origin).href}`)}
- return [context.body,...files].filter(Boolean).join('\n\n')
+export async function prepareSharedContext(env:Env,projectId:string,conversationId:string,operationId:string,context:Awaited<ReturnType<typeof selectedContext>>,origin:string){
+ const files=[],grants:D1PreparedStatement[]=[]
+ for(const file of context.attachments){const token=crypto.randomUUID()+crypto.randomUUID();grants.push(env.DB.prepare('INSERT INTO escalation_attachment_grants VALUES(?,?,?,?,?,?)').bind(await hashToken(token),projectId,conversationId,file.id,operationId,Date.now()+7*86400000));files.push(`${file.filename} (${file.size} bytes; download expires in 7 days): ${new URL('/api/escalations/attachments/'+token,origin).href}`)}
+ return {body:[context.body,...files].filter(Boolean).join('\n\n'),grants}
 }
 export const attachmentRoutes=new Hono<AppEnv>()
 attachmentRoutes.get('/attachments/:token',async c=>{

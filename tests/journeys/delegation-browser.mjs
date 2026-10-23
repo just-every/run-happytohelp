@@ -19,3 +19,6 @@ test('Local computers at 1440 and 390: the Connect computer dialog, authorizatio
 test('at 1440 and 1280 a paired connector resolves a visitor\'s request, and Use hands its reply and files to the composer only once history is ready; the person edits and Sends exactly once, and the visitor sees the same message live and after reload',recorded(context=>useBrowserJourney({...context,widths:[1440,1280]})))
 
 test('at 390 and 1279 the same Use and Send journey in the compact sheet, where a late Use response, navigation away or revoked authority never inserts a draft, files or focus',recorded(context=>useBrowserJourney({...context,widths:[390,1279]})))
+
+import {timeAuthorityBrowser} from '../helpers/delegation/time-authority-browser.mjs'
+test('task time authority is explicitly granted by its named operator and expires without a reply in the native Delegate panel at 1440 and 390',recorded(timeAuthorityBrowser))

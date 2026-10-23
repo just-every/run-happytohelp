@@ -6260,11 +6260,11 @@
       "executable": false
     },
     "src/modules/move-in/readers/shapes.ts": {
-      "sha256": "07553d27282667c0835dfab0d89be329b13541ba28dbb2f69289dd0283e5840d",
+      "sha256": "6a35fa254072a3c18d990128eeadd39059923c4f7d41c946eb6f46cda9376d02",
       "executable": false
     },
     "src/modules/move-in/readers/zendesk-configuration.ts": {
-      "sha256": "f3292a6f4ee0d70b33269c05091ec07e8a08bc61d9e2fa2b948239554f483270",
+      "sha256": "683760c76d318355b64cd090123a8100370b11259f5cbb9e16f54625037c20e5",
       "executable": false
     },
     "src/modules/move-in/readers/zendesk-macro.ts": {
@@ -9832,7 +9832,7 @@
       "executable": false
     },
     "src/ui/native/pages/move-in-reasons.js": {
-      "sha256": "030417fd4302c382e30330f241ec45ae9dfd9ac030842ca36811d51ad261de52",
+      "sha256": "6c0c54f98673b9c1cdfc5a5d0a313a37d19174764a3d1aa9832631254195e5d6",
       "executable": false
     },
     "src/ui/native/pages/move-in.css": {
@@ -9852,7 +9852,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInReview.jsx": {
-      "sha256": "c60aaa034304f14ee3c9e02c4d8e76c4c355f6cc29b0dd6d9f03ebd591178ad7",
+      "sha256": "ded2fe6725938d0874c1f473c59da8c0520aab6c443843e593937804b12b2df9",
       "executable": false
     },
     "src/ui/native/pages/notifications/NotificationInbox.jsx": {
@@ -11772,7 +11772,7 @@
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
-      "sha256": "86b66232850e765f1e9ba75fd51ce695e2a9b8de16b901d0863c8610d908f718",
+      "sha256": "dcd841228a049486ae371e0b3789ad7e76b3a65f3c6b4a63703fa7c836cc612a",
       "executable": false
     },
     "tests/journeys/move-in-capacity.mjs": {

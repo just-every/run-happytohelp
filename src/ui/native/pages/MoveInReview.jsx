@@ -15,7 +15,7 @@ export default function MoveInReview({plan,vendor,state}){
  const [page,setPage]=useState(0),decisions=plan.decisions||[],rejected=decisions.filter(d=>d.rejection),importing=decisions.filter(d=>d.targets.length).length,targets=decisions.flatMap(d=>d.targets),kept=keptBehind(decisions),fileNotes=(plan.diagnostics||[]).filter(d=>d.sourceId==null&&d.kind==null);
  // A conflicting duplicate is reported where it repeats; show those lines beside the rejected record.
  const repeats=new Map();for(const d of plan.diagnostics||[])if(d.code==='conflicting_duplicate_id'&&d.sourceId!=null){const k=`${d.kind}/${d.sourceId}`;repeats.set(k,[...(repeats.get(k)||[]),d.location])}
- const published=targets.filter(t=>t.status==='published').length,drafts=targets.filter(t=>t.status==='draft').length,ready=state==='ready';
+ const published=targets.filter(t=>t.kind==='article'&&t.status==='published').length,drafts=targets.filter(t=>t.kind==='article'&&t.status==='draft').length,ready=state==='ready';
  return <>
   <h3>{ready?'Review before importing':'Import summary'}</h3>
   <ul>{Object.entries(plan.counts.byKind||{}).map(([kind,count])=><li key={kind}>{kindLabel(kind)}: {count}</li>)}</ul>

@@ -11,6 +11,7 @@ import { ConnectProvider } from "./context/ConnectContext";
 
 import { isPreviewMode, normalizePreviewUpdate } from "./preview/previewMode";
 import log from "./includes/log";
+import WidgetTooltips from "./WidgetTooltips";
 import { initHelpers, openMetaTags, closeMetaTags, updateViewportProperties } from "./includes/utils";
 
 const Button = React.lazy(() => import(/* webpackChunkName: "Button" */ './Button'));
@@ -266,6 +267,7 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
                         'happytohelp-preview': isPreview,
                         'happytohelp-proxy': config.proxy
                     })}>
+                        <WidgetTooltips />
                         <AppContext.Provider value={contextValues}>
                             <ActiveConnectProvider open={open} setOpen={setOpen} setInsightOpen={setInsightOpen}
                                                    onSettingsUpdated={handleSettingsUpdated}>

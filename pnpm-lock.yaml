@@ -139,9 +139,6 @@ importers:
       react-timeago:
         specifier: ^7.1.0
         version: 7.2.0(react@19.2.8)
-      react-tooltip:
-        specifier: ^5.28.0
-        version: 5.30.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       remark-external-links:
         specifier: ^8.0.0
         version: 8.0.0
@@ -2349,12 +2346,6 @@ packages:
     resolution: {integrity: sha512-2KsBEEs+qRhKx/kekUVNSTIpop3Jwd7SRBm0R4Eiq3mPeswRGSsftY9FpKsE/lXLdURyQFiHeHFrIUxLYskG5g==}
     peerDependencies:
       react: ^16.0.0 || ^17.0.0 || ^18.0.0
-
-  react-tooltip@5.30.1:
-    resolution: {integrity: sha512-1lSPLQXuVooePxadUpmcwLgOsF1mIty7UZTJ9XnyfX4drOzStYs4JMXnazcDLguQr41W5OUZddOp9kfvArdpEQ==}
-    peerDependencies:
-      react: '>=16.14.0'
-      react-dom: '>=16.14.0'
 
   react-transition-group@4.4.5:
     resolution: {integrity: sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g==}
@@ -5214,13 +5205,6 @@ snapshots:
   react-timeago@7.2.0(react@19.2.8):
     dependencies:
       react: 19.2.8
-
-  react-tooltip@5.30.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
-    dependencies:
-      '@floating-ui/dom': 1.8.0
-      classnames: 2.5.1
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
 
   react-transition-group@4.4.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:

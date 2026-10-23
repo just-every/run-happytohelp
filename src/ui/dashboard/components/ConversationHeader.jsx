@@ -11,6 +11,7 @@ import { contactTimezone } from '../utils/contactTimezone';
 
 import { useCan } from './ConversationAccess';
 import '../styles/components/ConversationHeader.scss';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
 ConversationHeader.propTypes = {
     conversation: PropTypes.object,
@@ -60,10 +61,10 @@ export default function ConversationHeader({
         <div className={ `chat-header conversation-header${atTop ? '' : ' is-scrolled'}` }>
             <div className="conversation-header-panel">
                 <div className="conversation-header-identity">
-                    <button type="button" className="conversation-header-back nav-link d-xl-none" title="Show Conversations" aria-label="Show conversations" onClick={ () => setIsMainVisible(false) }>
+                    <button type="button" className="conversation-header-back nav-link d-xl-none" { ...tooltip('Show conversations', 'right') } onClick={ () => setIsMainVisible(false) }>
                         <i className="icon-md fe fe-chevron-left" aria-hidden="true"></i>
                     </button>
-                    <ContactAvatar contact={ conversation.contact } href={ `/projects/${conversation.project_id}/contacts/${conversation.contact_id}` } className="avatar avatar-sm" presentation="conversation-profile" />
+                    <ContactAvatar contact={ conversation.contact } href={ `/projects/${conversation.project_id}/contacts/${conversation.contact_id}` } label="View contact" className="avatar avatar-sm" presentation="conversation-profile" />
                     <div className="conversation-header-identity-copy">
                         <div className="conversation-header-name-row">
                             <a className="chat-header-title" href={ `/projects/${conversation.project_id}/contacts/${conversation.contact_id}` } title={ contactName }>{ contactName }</a>
@@ -93,8 +94,7 @@ export default function ConversationHeader({
                         type="button"
                         className={ `btn btn-white conversation-assistant-toggle${ showAlert ? ' has-alert' : '' }` }
                         ref={ panelToggleRef }
-                        title={ panelLabel }
-                        aria-label={ panelLabel }
+                        { ...tooltip(panelLabel) }
                         aria-description={ `Suggest, Delegate and Ticket.${ showAlert ? ' The ticket summary has an alert.' : '' }` }
                         aria-controls="conversation-assistant"
                         aria-expanded={ Boolean(isPanelVisible) }

@@ -5,6 +5,7 @@ import TicketViews, { canEditView } from './tickets/TicketViews';
 import InboxTagFilter from './InboxTagFilter';
 import InboxCompanyFilter from './InboxCompanyFilter';
 import WorkflowQueueFilter from './workflows/WorkflowQueueFilter';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
 export const assignmentLabels = { anyone: 'Anyone', myself: 'Me', none: 'Unassigned' };
 
@@ -46,7 +47,7 @@ export default function InboxFilters({ projectId, queue, currentAgentId, assignm
     const openDialog = mode => { setOpen(false); setDialog(mode); };
 
     return <div className="inbox-filters">
-        <button ref={ toggle } type="button" className="inbox-head-icon" title="Filters" aria-label="Filters" aria-expanded={ open } aria-controls="inbox-filters-panel" onClick={ () => { if (!open) onNotice(''); setOpen(!open); } }>
+        <button ref={ toggle } type="button" className="inbox-head-icon" { ...tooltip('Filters') } aria-expanded={ open } aria-controls="inbox-filters-panel" onClick={ () => { if (!open) onNotice(''); setOpen(!open); } }>
             <i className="fe fe-sliders" aria-hidden="true"/>
         </button>
         { open && <div ref={ panel } id="inbox-filters-panel" className="inbox-filters-panel" role="dialog" aria-label="Filters" tabIndex={ -1 }>

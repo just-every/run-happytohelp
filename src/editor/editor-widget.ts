@@ -4,6 +4,8 @@ import { connectLiveEdits } from './live-edit-runtime';
 import { validSurface, surfaceClip } from './editor-surface';
 import { editorIconPaths, editorIconViewBox, editorIconStrokeWidth } from './editor-icons';
 import { renderedText } from './live-edit-dom';
+import { installTooltips } from '../modules/tooltip/tooltip';
+import tooltipStyles from '../modules/tooltip/tooltip.css?inline';
 export type EditorConfig = { enabled: boolean; managementOrigin: string; installationId: string };
 export const protocol = 'rer-editor-v1';
 export function validOrigin(value: string) {
@@ -43,9 +45,11 @@ export function mountEditor(config: EditorConfig, authorized: boolean): () => vo
   host.dataset.rerEditor = 'v1';
   Object.assign(host.style, {position:'fixed',bottom:'20px',right:'20px',zIndex:'2147483647'});
   const root = host.attachShadow({mode:'open'});
-  const launcher = document.createElement('button'); launcher.setAttribute('aria-label','Open Run Edit Run'); launcher.title = 'Open Run Edit Run — send a draft with Cmd/Ctrl+Shift+Enter'; launcher.type = 'button';
+  const launcher = document.createElement('button'); launcher.setAttribute('aria-label','Open Run Edit Run'); launcher.dataset.tooltip = ''; launcher.dataset.tooltipPlacement = 'left'; launcher.type = 'button';
   Object.assign(launcher.style,{position:'relative',zIndex:'1',width:'48px',height:'48px',padding:'0',display:'grid',placeItems:'center',borderRadius:'50%',background:'#3979ed',color:'white',border:'1px solid white',cursor:'pointer'});
-  root.append(launcher); document.body.appendChild(host);
+  const styles = document.createElement('style'); styles.textContent = tooltipStyles;
+  root.append(styles, launcher); document.body.appendChild(host);
+  const removeTooltips = installTooltips(root, root);
   let frame: HTMLIFrameElement | null = null;
   let isOpen = false;
   const send = (type: string, payload: Record<string,unknown>) => frame?.contentWindow?.postMessage({protocol,type,installationId:config.installationId,...payload},config.managementOrigin);
@@ -63,7 +67,7 @@ export function mountEditor(config: EditorConfig, authorized: boolean): () => vo
     for(const d of editorIconPaths[open?'close':'open']) { const path=document.createElementNS('http://www.w3.org/2000/svg','path'); path.setAttribute('d',d); svg.appendChild(path); }
     well.appendChild(svg); launcher.replaceChildren(well);
   };
-  const updateToggle = () => { Object.assign(launcher.style,{background:isOpen?'transparent':'#3979ed',color:isOpen?'#324a7d':'white',border:isOpen?'1px solid transparent':'1px solid white',boxShadow:'none'}); toggleIcon(isOpen); launcher.setAttribute('aria-label',isOpen ? 'Close Run Edit Run' : 'Open Run Edit Run'); launcher.setAttribute('aria-expanded',String(isOpen)); launcher.title = isOpen ? 'Close Run Edit Run' : 'Open Run Edit Run — send a draft with Cmd/Ctrl+Shift+Enter'; };
+  const updateToggle = () => { Object.assign(launcher.style,{background:isOpen?'transparent':'#3979ed',color:isOpen?'#324a7d':'white',border:isOpen?'1px solid transparent':'1px solid white',boxShadow:'none'}); toggleIcon(isOpen); launcher.setAttribute('aria-label',isOpen ? 'Close Run Edit Run' : 'Open Run Edit Run'); launcher.setAttribute('aria-expanded',String(isOpen)); };
   const close = () => { isOpen = false; updateToggle(); send('editor-visibility',{open:false}); if (frame) frame.hidden = true; launcher.hidden = false; };
   const receive = (event: MessageEvent) => {
     if (!acceptsMessage(event,config.managementOrigin,frame?.contentWindow || null,config.installationId)) return;
@@ -105,5 +109,5 @@ export function mountEditor(config: EditorConfig, authorized: boolean): () => vo
   window.addEventListener('resize',resize);
   window.addEventListener('message',receive);
   open(false);
-  return () => { close(); frame?.remove(); live.disconnect(); observer.disconnect(); window.removeEventListener('popstate',locationChanged); window.removeEventListener('message',receive); window.removeEventListener('resize',resize); window.removeEventListener('keydown',submitShortcut,true); host.remove(); };
+  return () => { close(); frame?.remove(); live.disconnect(); observer.disconnect(); window.removeEventListener('popstate',locationChanged); window.removeEventListener('message',receive); window.removeEventListener('resize',resize); window.removeEventListener('keydown',submitShortcut,true); removeTooltips(); host.remove(); };
 }

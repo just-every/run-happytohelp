@@ -13,6 +13,7 @@ import {
     replaceSelection,
     wrapSelection,
 } from '../article-markdown-editor-utils';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
 function selectEditorFile() {
     return new Promise(resolve => {
@@ -113,8 +114,7 @@ export default function ArticleMarkdownEditor({ initialMarkdown, inputId, onMark
                     key={ tool.label }
                     type="button"
                     className="article-markdown-tool"
-                    aria-label={ tool.label }
-                    title={ tool.label }
+                    { ...tooltip(tool.label) }
                     onMouseDown={ event => event.preventDefault() }
                     onClick={ tool.action }
                 >

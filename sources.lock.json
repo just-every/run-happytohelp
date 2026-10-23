@@ -10705,7 +10705,7 @@
       "executable": false
     },
     "tests/connections/browser-network.mjs": {
-      "sha256": "3a255a9fd665d3ec620dedb695861e3fd1a832057afc48885cc84f4bafcbc338",
+      "sha256": "d73f4ef87c56de47d33fbbb9ab76a595b641c6abe381edc9c0285b380bab11b6",
       "executable": false
     },
     "tests/connections/business.mjs": {
@@ -11177,7 +11177,7 @@
       "executable": false
     },
     "tests/helpers/escalations/browser.mjs": {
-      "sha256": "2f047fde72a8197dd3559d92ef014def32ac17dec17f722b4177519cdcc628fa",
+      "sha256": "581243ae3b62c75531064ba41a8b534d1ebce33c042e477d4723abd2a85501f3",
       "executable": false
     },
     "tests/helpers/escalations/dev-proof.mjs": {
@@ -11865,7 +11865,7 @@
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {
-      "sha256": "afa01bbfd06485bd2829cba7065b96baa0e2ae4d22a5bd5740cd0cff0829de88",
+      "sha256": "d1ebcad05668d442e736bc5f79c6e7751b606a68ae901865bcc69e02a2409797",
       "executable": false
     },
     "tests/journeys/connections.mjs": {

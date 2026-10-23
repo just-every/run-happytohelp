@@ -3472,7 +3472,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "ebd84aa79276ca09dc7eaf3617460d8f95cc700b0f28e8cb676353ec1c354fd6",
+      "sha256": "167418f1e31b4358c3a81e752c2b07c3f9161b6cdd663b931d62d28a51c3a2ae",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -9984,7 +9984,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProjectSettings.jsx": {
-      "sha256": "1cf19d4707cf4da334306ccab4b68b68611ca07fa3de2b20b4c990bd6f7ae889",
+      "sha256": "0c1da99068a6a1e824bc9cd8af4615ab57b18fae0aabd6d6e1328e44ef2c418b",
       "executable": false
     },
     "src/ui/native/pages/ProjectsPage.d.ts": {
@@ -10120,7 +10120,7 @@
       "executable": false
     },
     "src/ui/native/pages/surveys/SurveySettings.jsx": {
-      "sha256": "cbced0a72201b4dd6b8b038f8b3546813abf69ae1b60bb70641a1f5714bd28bd",
+      "sha256": "3e4d171b9ef0f39c696208017cb295dd961f6f29898bec03c96723b1f7f315d1",
       "executable": false
     },
     "src/ui/native/pages/SuspendedMail.jsx": {
@@ -11932,7 +11932,7 @@
       "executable": false
     },
     "tests/journeys/reports-browser.mjs": {
-      "sha256": "0622ae70da4fd5804ff6cadd1e1118fdea6a4432b5c1f63c51720fcaf89fc2bb",
+      "sha256": "5b7e459e758c143ab35714ce052bcfd881c1dc98b574b14b91df7a7704d21c21",
       "executable": false
     },
     "tests/journeys/reports.mjs": {
@@ -12092,11 +12092,11 @@
       "executable": false
     },
     "tests/move-in/empty-inputs.mjs": {
-      "sha256": "e690988b5f3f5015a2718047fee9a19ee00e393ee98caf3d02eb20a7888cadb9",
+      "sha256": "75c8b1523511f42a0aa8542be6101299a4e3d5559dfe00a7cc96f989d3b48bc2",
       "executable": false
     },
     "tests/move-in/empty-native.mjs": {
-      "sha256": "789f653589a87c9930d153059397292b3f05dd2b94fd6673d25b3b02482268ec",
+      "sha256": "e4a27212f52380af1782e58992db88425c105a0f649e916944ba138d1961c4c7",
       "executable": false
     },
     "tests/move-in/empty-upgrade.mjs": {

@@ -4,7 +4,7 @@ import {useUnsavedChanges} from '../../NavigationGuard';
 import {Field,Section} from '../forms';
 import './surveys.css';
 
-export default function SurveySettings({projectId,role}){
+export default function SurveySettings({projectId,role,onDirtyChange}){
  const path=`/api/outcomes/projects/${projectId}/settings`,{markDirty,markSaved}=useUnsavedChanges();
  const [settings,setSettings]=useState(null),[error,setError]=useState(''),[state,setState]=useState('');
  const latest=useRef(null),version=useRef(0),queue=useRef(Promise.resolve());
@@ -13,11 +13,11 @@ export default function SurveySettings({projectId,role}){
   const revision=++version.current;setError('');
   nativeRequest(path).then(value=>{if(revision===version.current){latest.current=value;setSettings(value)}}).catch(failure=>{if(revision===version.current)setError(failure.message)});
  };
- useEffect(()=>{latest.current=null;setSettings(null);setState('');load();return()=>{version.current++}},[path]);
+ useEffect(()=>{latest.current=null;setSettings(null);setState('');load();return()=>{version.current++;onDirtyChange?.(false)}},[path,onDirtyChange]);
  const persist=value=>{
-  const revision=++version.current;latest.current=value;setSettings(value);markDirty();setState('Saving…');setError('');
+  const revision=++version.current;latest.current=value;setSettings(value);markDirty();onDirtyChange?.(true);setState('Saving…');setError('');
   queue.current=queue.current.catch(()=>{}).then(()=>nativeRequest(path,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(value)})).then(saved=>{
-   if(revision===version.current){latest.current=saved;setSettings(saved);setState('Saved');markSaved()}
+   if(revision===version.current){latest.current=saved;setSettings(saved);setState('Saved');markSaved();onDirtyChange?.(false)}
   }).catch(failure=>{if(revision===version.current){setError(failure.message);setState('')}});
  };
  const change=(key,value)=>persist({...latest.current,[key]:value});

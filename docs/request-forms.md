@@ -123,3 +123,11 @@ old ticket values from disappearing when a lead changes their forms.
 Order/account lookup fields and a form version-history management screen are not
 available. Form fields reuse the current ticket-field permissions and validation; they do not introduce a separate field
 catalogue or grant access to company requests.
+
+Verified form submissions may include a `cc` array of up to ten addresses through
+the submission API. Each address must already be a unique, available workspace
+contact with the same independent mailbox proof required by customer notification
+triggers. Unknown or ambiguous addresses are refused without creating contacts or
+sending invitations. A CC joins only this ticket; it gains no portal access.
+The recipient list is part of the immutable submission ID, so changing CCs on a
+retry is refused and exact replay cannot send another acknowledgment.

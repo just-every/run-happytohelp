@@ -1,3 +1,4 @@
+import {emailAddress} from '../integrations/inbound-routing'
 import {HTTPException} from 'hono/http-exception'
 import {validateFieldValue} from '../tickets/fields'
 import {reservedLocalId} from '../conversations/admission'
@@ -26,6 +27,8 @@ export function validateSubmission(form:PublicForm,body:unknown):Submission{
   if(f.required&&(value===null||value===undefined||value===''||typeof value==='string'&&!value.trim()||Array.isArray(value)&&!value.length))fieldError(f.id,'required',`${f.label} is required`)
   try{accepted[f.id]=validateFieldValue({name:f.label,type:f.type,required:f.required?1:0,options_json:JSON.stringify(f.options.map(o=>o.value)),validation_json:JSON.stringify(f.validation)},value)}catch(error){fieldError(f.id,'invalid',error instanceof Error?error.message:`Invalid ${f.label}`)}
  }
+ const cc=b.cc??[]
+ if(!Array.isArray(cc)||cc.length>10||cc.some(address=>typeof address!=='string'||emailAddress(address)!==address.trim().toLowerCase()))fieldError('cc','invalid','Enter up to ten valid CC email addresses')
  const localId=b.localId??crypto.randomUUID();if(typeof localId!=='string'||!localId.trim()||localId.length>200||reservedLocalId(localId))fieldError('localId','invalid','Enter a unique command ID up to 200 characters without a reserved prefix')
- return {subject:(b.subject as string).trim(),message:(b.message as string).trim(),fields:accepted,localId:localId as string}
+ return {subject:(b.subject as string).trim(),message:(b.message as string).trim(),fields:accepted,cc:[...new Set((cc as string[]).map(address=>address.trim().toLowerCase()))].sort(),localId:localId as string}
 }

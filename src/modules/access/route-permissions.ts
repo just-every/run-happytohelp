@@ -1,3 +1,4 @@
+import {businessRouteRule} from '../business-connectors/permissions'
 import type {Permission} from './catalogue'
 import {selfServiceRules} from './self-service-routes'
 import {r4RouteRule} from './r4-route-permissions'
@@ -153,6 +154,9 @@ rules[`POST ${P}/suspended/:id/recover`]='conversations.manage'
 rules[`DELETE ${P}/suspended/:id`]='conversations.manage'
 rules[`POST ${P}/sender-rules`]='settings.manage'
 export function routeRule(method:string,path:string):Rule|undefined{
+ if(path==='/api/helpscout/:projectId/events')return 'none'
+ if(path==='/api/management/projects/:projectId/connections/helpscout/sync'||path==='/api/management/projects/:projectId/connections/helpscout/runs/:runId/merge')return 'data.import'
+ if(path==='/api/management/projects/:projectId/connections/helpscout')return method==='GET'?'data.import':'integrations.install'
  if(path==='/api/escalations/webhooks/:connectionId'||path==='/api/escalations/attachments/:token')return 'none'
  if(path.startsWith('/api/escalations/projects/:projectId/')){
   if(method==='GET')return 'self'
@@ -161,5 +165,5 @@ export function routeRule(method:string,path:string):Rule|undefined{
   return 'conversations.manage'
  }
  if(prefixes.some(prefix=>path.startsWith(prefix)))return 'none'
- return r4RouteRule(method,path)??rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]
+ return businessRouteRule(method,path)??r4RouteRule(method,path)??rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]
 }

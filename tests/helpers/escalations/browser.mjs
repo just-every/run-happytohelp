@@ -33,7 +33,7 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  const panel=()=>page.locator('.escalations-panel');
  const dialog=()=>page.getByRole('dialog',{name:'Escalate to engineering'});
  // Below 1280px the panel is an overlay over the reply card: it steps aside for the "+".
- const escalate=async()=>{if(compact&&await assistant.getAttribute('aria-hidden')==='false'){await page.locator('.conversation-assistant__hide').click();await page.locator('#conversation-assistant[aria-hidden=true]').waitFor({state:'attached'});}await page.locator('#conversation-composer-tools').click();await page.getByRole('menuitem',{name:'Escalate to engineering…',exact:true}).click();await dialog().getByLabel('Destination',{exact:true}).waitFor();};
+ const escalate=async()=>{if(compact&&await assistant.getAttribute('aria-hidden')==='false'){await page.locator('.conversation-assistant__hide').click();await page.locator('#conversation-assistant[aria-hidden=true]').waitFor({state:'attached'});}await page.locator('#conversation-composer-tools').click();await page.getByRole('menuitem',{name:'Escalate to engineering…',exact:true}).click();await dialog().getByLabel('Destination',{exact:true}).waitFor();const close=dialog().locator('button.btn-close'),label=await close.getAttribute('aria-label');assert.ok(label,'dialog close has an accessible name');await dialog().getByLabel('Destination',{exact:true}).focus();await page.keyboard.press('Shift+Tab');assert.ok(await close.evaluate(element=>element===document.activeElement),'keyboard reaches the dialog close control');const tip=page.locator('.ui-tooltip[data-open]');await tip.waitFor({state:'visible'});assert.equal(await tip.textContent(),label,'the visible tooltip matches the control name');await dialog().getByLabel('Destination',{exact:true}).focus();};
  const shot=async name=>{
   const target=name.startsWith('connection-')?panel().locator('.escalation-provider[open]').last():name.startsWith('preview-')?dialog().locator('.escalation-preview'):name==='closure-drafts'?panel().locator('.escalation-drafts'):panel().locator('.escalation-linked');
   const controls=target.locator('input:visible,button:visible,textarea:visible');
@@ -43,12 +43,12 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
   await page.screenshot({path:join(directory,`${width}-${name}.png`)});
  };
  await open(records[0]);await panel().locator('.escalation-connections > summary').click();
- for(const name of ['github','linear','jira','slack']){
-  const form=panel().locator('.escalation-provider').filter({has:page.locator(`button`).filter({hasText:`Save ${name==='github'?'GitHub':name==='jira'?'Jira':name==='slack'?'Slack':'Linear'} connection`})});
+ for(const name of ['github','linear','jira','slack','teams']){
+  const form=panel().locator('.escalation-provider').filter({has:page.locator(`button`).filter({hasText:`Save ${name==='github'?'GitHub':name==='jira'?'Jira':name==='slack'?'Slack':name==='teams'?'Teams':'Linear'} connection`})});
   await form.locator('summary').click();const p=providers[name];await form.locator('[name=target]').fill(p.target);await form.locator('[name=base_url]').fill(p.baseUrl);
   await form.locator('[name=token]').fill(name==='jira'?'synthetic-jira-token':p.token);
   if(name==='jira')await form.locator('[name=email]').fill('engineer@example.test');
-  if(name!=='slack')await form.locator('[name=webhook_secret]').fill(p.secret);
+  if(!['slack','teams'].includes(name))await form.locator('[name=webhook_secret]').fill(p.secret);
   // The local Jira fake accepts OAuth as well as the form's standard Basic token.
   if(name==='jira')p.authorizations.add('Basic '+Buffer.from('engineer@example.test:synthetic-jira-token').toString('base64'));
   await form.getByRole('button',{name:/Save .* connection/}).click();if(password&&name==='github'){const dialog=page.getByRole('dialog');await dialog.getByLabel('Your password',{exact:true}).waitFor();await page.screenshot({path:join(directory,`${width}-credential-step-up.png`)});await dialog.getByLabel('Your password',{exact:true}).fill(password);await dialog.getByRole('button',{name:'Confirm',exact:true}).click();}await form.getByText('Connected to',{exact:false}).waitFor();assert.equal(await form.locator('[name=token]').inputValue(),'');await shot('connection-'+name);await form.locator('summary').click();
@@ -67,6 +67,10 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  await panel().getByRole('button',{name:'Refresh status',exact:true}).click();await page.waitForTimeout(200);
  await escalate();await dialog().getByLabel('Destination',{exact:true}).selectOption('slack');await dialog().getByLabel('Slack channel ID',{exact:true}).fill('C12345678');await dialog().locator('.escalation-context input[type=checkbox]').first().check();await dialog().getByRole('button',{name:'Preview selected context',exact:true}).click();await shot('preview-slack');const postedResponse=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname===base+`/conversations/${records[0].ticket.id}/slack`);await dialog().getByRole('button',{name:'Share selected context to Slack',exact:true}).click();assert.equal((await postedResponse).status(),201);await dialog().waitFor({state:'detached'});await panel().getByRole('link',{name:'Handoff to C12345678',exact:true}).waitFor();
  for(let n=1;n<3;n++)await req(base+`/conversations/${records[n].ticket.id}/slack`,{channel:'C12345678',message_ids:[records[n].message.id],attachment_ids:[],request_id:crypto.randomUUID()});
+ await escalate();await dialog().getByLabel('Destination',{exact:true}).selectOption('teams');await dialog().locator('.escalation-context input[type=checkbox]').first().check();await dialog().getByRole('button',{name:'Preview selected context',exact:true}).click();await shot('preview-teams');
+ const teamsResponse=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname===base+`/conversations/${records[0].ticket.id}/teams`);
+ await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();assert.equal((await teamsResponse).status(),201);await dialog().waitFor({state:'detached'});await panel().getByRole('link',{name:'Handoff to '+providers.teams.target,exact:true}).waitFor();assert.match(await panel().locator('.escalation-handoff').filter({hasText:providers.teams.target}).innerText(),/^Teams/);
+
  await panel().getByRole('button',{name:'Refresh status',exact:true}).click();await page.waitForTimeout(250);await shot('linked-issues-and-handoff');
  const t=Date.now()+20000;
  for(const [i,name] of ['github','linear','jira'].entries()){
@@ -82,7 +86,7 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
   state=(await req(base+`/conversations/${r.ticket.id}`)).data;assert.ok(state.drafts.every(d=>d.state==='sent'));assert.ok(state.links.every(l=>l.recovery==='unconfirmed'));
  }
  await section();await panel().getByRole('button',{name:'Refresh status',exact:true}).click();await page.waitForTimeout(250);await shot('approved-update-sent');
- await writeFile(join(directory,`${width}-journey.json`),JSON.stringify({width,tickets:records.length,trackerIssues:12,slackHandoffs:3,sharedIssueTicketCount:5,signatureRefusals:6,approvedDrafts:7,recovery:'unconfirmed'},null,2));
+ await writeFile(join(directory,`${width}-journey.json`),JSON.stringify({width,tickets:records.length,trackerIssues:12,slackHandoffs:3,teamsHandoffs:1,sharedIssueTicketCount:5,signatureRefusals:6,approvedDrafts:7,recovery:'unconfirmed'},null,2));
  await panel().locator('.escalation-recovery > summary').first().click();await panel().getByLabel('What did you observe for this customer?',{exact:true}).first().fill('The customer confirmed their next export completed.');await page.screenshot({path:join(directory,`${width}-recovery-observation.png`)});await panel().getByRole('button',{name:'Record recovery observation',exact:true}).first().click();await panel().getByText('Observed',{exact:true}).first().waitFor();await shot('recovery-observed');
  await page.addScriptTag({path:resolve('node_modules/axe-core/axe.min.js')});const violations=await page.evaluate(async()=>{const r=await axe.run(document.querySelector('.escalations-panel'));return r.violations.filter(v=>['serious','critical'].includes(v.impact)).map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)}))});assert.deepEqual(violations,[]);
  return {projectId,records,links,context,req,page};

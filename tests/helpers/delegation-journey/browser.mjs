@@ -7,7 +7,7 @@ import {join,resolve} from 'node:path';
 import {createServer} from 'node:net';
 import {randomBytes} from 'node:crypto';
 import {launchBrowser} from '../../journeys/kit/browser.mjs';
-import {command,run} from '../rer-command.mjs';
+import {command,run,stopOwnedServer} from '../rer-command.mjs';
 import {waitForServingCapacity} from '../serving-capacity.mjs';
 import {customerFixture} from './fixture.mjs';
 import {report,client,runCase,until} from './case.mjs';
@@ -66,7 +66,12 @@ export async function browserJourney(evidence){
      assert.equal(await visitor.getByText(body,{exact:true}).count(),1);assert.equal(frames.filter(f=>f.message?.id===messageId).length,1);
      await visitor.reload();await mount();await visitor.getByText(body,{exact:true}).waitFor();assert.equal(await visitor.getByText(body,{exact:true}).count(),1);
     };
-    return {session:visitorSession,transcript,close:()=>visitorContext.close()};
+    const say=async content=>{
+     const submitted=visitor.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname===`/api/conversations/${visitorSession.conversationId}/messages`);
+     await visitor.locator('textarea[name=content]').fill(content);await visitor.locator('button[name=submit]').click();
+     const response=await submitted;assert.equal(response.status(),200);return response.json();
+    };
+    return {session:visitorSession,transcript,say,close:()=>visitorContext.close()};
    };
    try{checks.push({width,...await runCase({origin,api,actor,fixture,directory,ui})});assert.deepEqual(errors,[])}finally{await visitorContext?.close();await context.close()}
   }
@@ -74,7 +79,7 @@ export async function browserJourney(evidence){
  }catch(error){
   await failureDiagnostics({evidence,stage,error,server,scratch,secrets:[password]});throw error;
  }finally{
-  const cleanup=await Promise.allSettled([browser?.close(),fixture.close(),(async()=>{if(server){try{await run(checkout,['dev','--stop'])}finally{await server.stop()}}})()]);
+  const cleanup=await Promise.allSettled([browser?.close(),fixture.close(),(async()=>{if(server){try{await stopOwnedServer(server.child)}finally{await server.stop()}}})()]);
   const cleanupFailed=cleanup.some(result=>result.status==='rejected');
   await writeFile(join(evidence,'browser-result.json'),JSON.stringify({success:success&&!cleanupFailed,stage,cleanupSucceeded:!cleanupFailed,layer:'LOCAL TEST',provider:'scripted Codex CLI boundary',liveProvider:false,customerSystem:'loopback fixture only',freshInstalledRer,automaticOwnerEntry,checks},null,2));
   await writeFile(join(evidence,'SCREENSHOTS.md'),captions.join('\n')+'\n');

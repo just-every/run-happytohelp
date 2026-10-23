@@ -23,8 +23,8 @@ before(async()=>{
 })
 after(async()=>{await fixture?.close();await app?.close();if(scratch)await rm(scratch,{recursive:true,force:true})})
 
-test('a visitor\'s report is investigated read-only, an approved resolve child changes the customer system once, a separate investigation confirms it, and the person\'s Send reaches the visitor exactly once',async()=>{
- const seven=await runCase({origin:app.url,api,actor,fixture,directory:join(scratch,'case')})
+test('a visitor\'s report is investigated read-only, an approved resolve child changes the customer system once, a separate investigation confirms it, the person\'s Send reaches the visitor exactly once, and restart plus customer recurrence reopens the same owned thread for a fresh read-only investigation',async()=>{
+ const seven=await runCase({origin:app.url,api,actor,fixture,directory:join(scratch,'case'),restart:()=>app.configure({})})
  assert.equal(seven.jobs.length,3);assert.equal(seven.fixtureEvents.filter(event=>event.method==='POST').length,1)
 })
 

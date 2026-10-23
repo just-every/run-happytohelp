@@ -1588,7 +1588,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "688ded31a270bb98f86ec13d4072855e57ca25356bb3501a76429915d7a8cedb",
+      "sha256": "fe033751ce439539407521dd129f272b85e7138dc35d9f516bd2bd684f87761d",
       "executable": false
     },
     ".gitignore": {
@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "5e126d4e02fff552c19d25be242b52ae6a74d505a7368f675a417ef438fb83fc",
+      "sha256": "87831515c7a1f652d81c51b200cc3f61aea5e4be6bfb1ae214005a5d511ea91e",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "e925159aa50384f5800282ccccb21293124d8430b2332b318ad3e68fd7a9d410",
+      "sha256": "59374dee65b1b85cde81dfc2279fc2b8dee0e39c668d752fac73d278a23cbf95",
       "executable": false
     },
     "DEMO.md": {
@@ -1660,7 +1660,7 @@
       "executable": false
     },
     "docs/api.md": {
-      "sha256": "fa9fc73cd47a695f61331f978626eb1f57a10191ee18b26186b9be70c90549e0",
+      "sha256": "0a53fee2f610c140451d24f0a81888813c0d75d2fd9116076a9b199b70ec4dbb",
       "executable": false
     },
     "docs/AUTHORING.md": {
@@ -3412,7 +3412,7 @@
       "executable": false
     },
     "src/jobs.ts": {
-      "sha256": "6eff7e152675e22bcf94e314d4b6bb762f8059ae63354d3747ebba3dbb1ab681",
+      "sha256": "7945779486118c2382bace5914d0c8fdcdc2510a215f394602e63c8c394f8993",
       "executable": false
     },
     "src/message-effects.ts": {
@@ -3572,7 +3572,7 @@
       "executable": false
     },
     "src/modules/ai-support/obligations.ts": {
-      "sha256": "be0d34995d167bfcb81056b33bca459a1812e334f511f4cc33ca41ac6a6dd38d",
+      "sha256": "f3356f6e238925cd8b4f7422f6253d40708d714eb15934cc22669191c2d892d1",
       "executable": false
     },
     "src/modules/ai-support/presentation.ts": {
@@ -3584,7 +3584,7 @@
       "executable": false
     },
     "src/modules/ai-support/procedures.ts": {
-      "sha256": "91fc6c9bece0f96a14fb2685bb5bba6c3bccc7619b44e6faf61fd9413d9f8a51",
+      "sha256": "a9fdb6af0ff1f7f493a60fa8e8c840bc8a649d970ac67ea7ebdbcb6969771f5b",
       "executable": false
     },
     "src/modules/ai-support/README.md": {
@@ -3632,7 +3632,7 @@
       "executable": false
     },
     "src/modules/ai-support/tools.ts": {
-      "sha256": "86b5baaf700e5475c8fa5dbb3e0283fec1932fae82d5520d04f83794293c9611",
+      "sha256": "de4325f39431ff6989dd9d04eb3b849d8a44f18286d552544dfa403473e1cb40",
       "executable": false
     },
     "src/modules/ai-support/trace.ts": {
@@ -10743,8 +10743,12 @@
       "sha256": "880f269d80b849e41f2dbb03b8282db589a234807fd2f9ff91f8ab871419403f",
       "executable": false
     },
+    "tests/helpers/ai/obligations-browser.mjs": {
+      "sha256": "5bd3c795b30402985832d5272887967db7b028e5394b4286d941e45325c9e15f",
+      "executable": false
+    },
     "tests/helpers/ai/obligations.mjs": {
-      "sha256": "1329671a8066c30371a987d9c24896dbc3bad17a931f89f9eb1dc65e2c0e5ead",
+      "sha256": "1f645f464d98d787e4644380661e64a963653406cdef1279aed169c67f6cc9da",
       "executable": false
     },
     "tests/helpers/ai/procedures.mjs": {
@@ -11664,7 +11668,7 @@
       "executable": false
     },
     "tests/journeys/ai-browser.mjs": {
-      "sha256": "d48411d0bef98af75b720c7a0bf3d8319d1a89ec957d16e8998eb75cc6fae3e9",
+      "sha256": "26364622f60a6a43b016a09c9a7c76fdca16c388c5689ea331d81de908fc0869",
       "executable": false
     },
     "tests/journeys/ai-live.mjs": {

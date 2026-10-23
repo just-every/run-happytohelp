@@ -45,7 +45,7 @@ function present(row:any){
  const stale=!!row.dependency_id&&(!row.readback_at||row.readback_at<Date.now()-86400000)
  const observed=!!row.dependency_id&&!stale&&row.closed===1&&row.recovery==='observed'
  return {...row,dependency:{id:row.dependency_id,stale,readbackAt:row.readback_at||null,progress:observed?'recovery observed':'unconfirmed'},
-  reminderDue:row.state==='open'&&row.due_at<=Date.now()+86400000,
+  reminderDue:row.state==='open'&&(row.due_at<=Date.now()+86400000||stale),
   draft:row.state==='open'&&row.due_at<=Date.now()+86400000?{content:observed?'We have observed recovery on the linked work. Please let us know if the problem continues.':'Your follow-up is due. We do not yet have current evidence confirming progress or recovery; we are checking with the responsible teammate.',requiresHumanSend:true}:null}
 }
 export const obligationRoutes=new Hono<AppEnv>()
@@ -95,6 +95,6 @@ export async function remindObligations(env:Env){
  SELECT 'followup:'||o.id||':'||o.version,o.project_id,o.conversation_id,o.owner_id,'follower',1,0,?
  FROM followup_obligations o JOIN conversations c ON c.id=o.conversation_id AND c.project_id=o.project_id
  JOIN memberships m ON m.project_id=o.project_id AND m.user_id=o.owner_id
- WHERE o.state='open' AND o.due_at<=? AND ${live} AND NOT EXISTS(SELECT 1 FROM notification_inbox n WHERE n.id='followup:'||o.id||':'||o.version)
- ORDER BY o.due_at,o.id LIMIT 25`).bind(now,now+86400000).run()
+ WHERE o.state='open' AND (o.due_at<=? OR (o.dependency_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM escalation_issues i JOIN escalation_deliveries d ON d.issue_id=i.id AND d.provider_updated_at=i.provider_updated_at WHERE i.id=o.dependency_id AND i.project_id=o.project_id AND d.received_at>=?-86400000))) AND ${live} AND NOT EXISTS(SELECT 1 FROM notification_inbox n WHERE n.id='followup:'||o.id||':'||o.version)
+ ORDER BY o.due_at,o.id LIMIT 25`).bind(now,now+86400000,now).run()
 }

@@ -14,7 +14,7 @@ function settingsGuard(c:Context<AppEnv>){
 
 // Procedures can narrow the existing read-only tool surface. They cannot confer
 // business-action authority that the application does not implement.
-export const procedureTools=['search_knowledge','read_knowledge_source','cite_knowledge','read_conversation_entry','read_conversation_history','search_conversation_history','propose_followup']
+export const procedureTools=['search_knowledge','read_knowledge_source','cite_knowledge','read_conversation_entry','read_conversation_history','search_conversation_history','propose_followup','list_followup_dependencies']
 const validText=(value:unknown,max:number)=>typeof value==='string'&&!!value.trim()&&value.length<=max
 export const procedureRoutes=new Hono<AppEnv>()
 procedureRoutes.use(root+'*',async(c,next)=>{

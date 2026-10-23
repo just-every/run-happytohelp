@@ -236,7 +236,7 @@ and optional linked `dependencyId`. POST `/:id/accept` requires the current
 `version`, accepted `ownerId` and `dueAt`; it can explicitly set a linked
 `dependencyId`. Only a human with conversation-management permission accepts
 material changes. A handoff does not silently change that accepted responsibility.
-POST `/:id/complete` requires a current `version`, `stopConditionMet: true`, a fresh human/customer `confirmationMessageId` and its exact `quote`; the original promise is not completion evidence. The reviewer and evidence ID remain inspectable. Completing the follow-up does not establish engineering progress. Internal reminders and pre-due drafts are permission scoped; a closed engineering
+POST `/:id/complete` requires a current `version`, `stopConditionMet: true`, a fresh human/customer `confirmationMessageId` and its exact `quote`; the original promise is not completion evidence. The reviewer and evidence ID remain inspectable. Completing the follow-up does not establish engineering progress. Model extraction can use `list_followup_dependencies` and `propose_followup`; the latter accepts a linked `dependencyId` or null and may propose `ownerId: "human"` for review. Internal reminders also chase missing or stale dependency readback before the pre-due drafting window. Reminders and pre-due drafts are permission scoped; a closed engineering
 issue without current readback and observed recovery remains unconfirmed.
 
 Leads manage advice procedures at `/api/ai-support/projects/:projectId/procedures`.

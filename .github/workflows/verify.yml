@@ -136,7 +136,11 @@ jobs:
           - name: widget-browsers
             browser: true
             commands: |
-              node --test --test-concurrency=1 tests/journeys/widget-browser.mjs tests/journeys/ai-browser.mjs
+              node --test --test-concurrency=1 tests/journeys/widget-browser.mjs
+          - name: ai-browsers
+            browser: true
+            commands: |
+              node --test --test-concurrency=1 tests/journeys/ai-browser.mjs
           - name: reports-and-first-run
             browser: false
             commands: |

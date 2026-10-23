@@ -5,7 +5,9 @@ export async function obligationsJourney(){
  const a=await assistantApp({bindings:{OPENAI_API_KEY:undefined}}),{app,p,owner,workspace}=a
  try{
  const v=await a.visitor();await v.say('🧭 Please follow up on the broken export tomorrow.')
- const message=(await v.transcript()).messages.find(m=>m.actor_role==='contact'),base=`/api/ai-support/projects/${p}/conversations/${v.conversationId}/obligations`
+ const initial=await v.transcript()
+ const message=(await app.call(`/api/conversations/${v.conversationId}/messages`,{token:owner,body:{localId:crypto.randomUUID(),content:'🧭 I will follow up on the broken export tomorrow.',expectedRevision:initial.revision,expectedLastMessageId:initial.lastMessageId},status:200})).data.message
+ const base=`/api/ai-support/projects/${p}/conversations/${v.conversationId}/obligations`
  const call=(path='',options={})=>app.call(base+path,{token:owner,...options})
  const due=Date.now()+3600000,body={messageId:message.id,quote:'follow up on the broken export tomorrow',ownerId:workspace.users.owner,dueAt:due,stopCondition:'Customer confirms export recovery'}
  assert.equal((await call('',{body:{...body,quote:'Invented promise'}})).status,400)
@@ -58,13 +60,23 @@ export async function obligationsJourney(){
  assert.equal(row.completion.confirmationMessageId,confirmation.id);assert.equal(row.completion.reviewerId,workspace.users.owner)
  // A real generation can extract a quoted candidate, but it cannot accept it.
  await app.configure({OPENAI_API_KEY:'synthetic-happytohelp-19'})
- const proposedVisitor=await a.visitor();await proposedVisitor.say('I was promised a follow-up tomorrow.')
- const promised=(await proposedVisitor.transcript()).messages.find(m=>m.actor_role==='contact')
+ const proposedVisitor=await a.visitor();await proposedVisitor.say('Please follow up tomorrow.')
+ const current=await proposedVisitor.transcript()
+ const promised=(await app.call(`/api/conversations/${proposedVisitor.conversationId}/messages`,{token:owner,body:{localId:crypto.randomUUID(),content:'I will follow up tomorrow.',expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})).data.message
+ await app.db.prepare("INSERT INTO escalation_links(id,project_id,conversation_id,issue_id,created_at) VALUES('model-link',?,?,'issue',1)").bind(p,proposedVisitor.conversationId).run()
+ await a.action(proposedVisitor.conversationId,'assignAi',{ai_id:'ai'})
+ await proposedVisitor.say('Please track that promise.')
  let turn=0
- a.ai.respond=()=>++turn===1?openaiToolCall('propose_followup',{messageId:promised.id,quote:'promised a follow-up tomorrow',ownerId:'human',dueAt:Date.now()+86400000,stopCondition:'A teammate supplies the follow-up.'},'propose-followup'):'A teammate can review the follow-up.'
+ a.ai.respond=body=>{if(++turn===1)return openaiToolCall('list_followup_dependencies',{},'followup-dependencies');if(turn===2){assert.match(JSON.stringify(body.input),/EX-1/);return openaiToolCall('propose_followup',{messageId:promised.id,quote:'follow up tomorrow',ownerId:'human',dueAt:Date.now()+86400000,stopCondition:'A teammate supplies the follow-up.',dependencyId:'issue'},'propose-followup')}return 'A teammate can review the follow-up.'}
  await a.run()
  const extracted=(await app.call(`/api/ai-support/projects/${p}/conversations/${proposedVisitor.conversationId}/obligations`,{token:owner,status:200})).data.obligations[0]
- assert.equal(extracted.state,'proposed');assert.equal(extracted.accepted_by,null);assert.equal(extracted.quote,'promised a follow-up tomorrow')
+ assert.equal(extracted.state,'proposed');assert.equal(extracted.accepted_by,null);assert.equal(extracted.quote,'follow up tomorrow');assert.equal(extracted.dependency_id,'issue')
+ await app.call(`/api/ai-support/projects/${p}/conversations/${proposedVisitor.conversationId}/obligations/${extracted.id}/accept`,{token:owner,body:{version:1,ownerId:workspace.users.owner,dueAt:Date.now()+7*86400000},status:200})
+ await app.db.prepare('UPDATE escalation_deliveries SET received_at=? WHERE issue_id=?').bind(Date.now()-2*86400000,'issue').run()
+ const stale=(await app.call(`/api/ai-support/projects/${p}/conversations/${proposedVisitor.conversationId}/obligations`,{token:owner,status:200})).data.obligations[0]
+ assert.equal(stale.reminderDue,true);assert.equal(stale.dependency.stale,true);assert.equal(stale.dependency.progress,'unconfirmed');assert.equal(stale.draft,null)
+ await app.scheduled()
+ assert.equal((await app.first('SELECT count(*) n FROM notification_inbox WHERE id=?',`followup:${extracted.id}:2`)).n,1,'stale evidence is chased internally even before the pre-due drafting window')
  await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erasing',1) WHERE id=?").bind(proposedVisitor.contactId).run()
 
  await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erasing',1) WHERE id=?").bind(v.contactId).run()

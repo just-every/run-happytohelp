@@ -12040,7 +12040,7 @@
       "executable": false
     },
     "tests/move-in/shape-custody.mjs": {
-      "sha256": "d66ad14d46b1db5f4bf43607b15741cefbd8e644bb40bdeedc8069bc9a90beed",
+      "sha256": "09374662f67376f58d6f3f6b3f6e725d3210c127019bb95b56d0d60535c980e1",
       "executable": false
     },
     "tests/move-in/shape-inputs.mjs": {

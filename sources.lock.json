@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "9c170e65676f405b762ab038684094a9a8e55728db4102417baeb4fe5627de77",
+      "sha256": "827ab419bdde8aea4df0bed3e204517615820e1b5c715a5234b74eb1d3f57c73",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "3234cc28299850b9c9d96a9ccccb4c9d9f7630f77a483069a3de82469bea73f8",
+      "sha256": "7bcec4433525d8779112b2b9e91c679fb484f68bca66c9ece100ecef5a96aeaa",
       "executable": false
     },
     "DEMO.md": {
@@ -1776,7 +1776,7 @@
       "executable": false
     },
     "docs/reports.md": {
-      "sha256": "65e069f3a72c247e7e75d2e440905952c34a0e426011da02d44629554897c098",
+      "sha256": "102c9dd34ae483cd0db6e9dad024f69e7af8302b1aff3e237ffc87e5676b60c9",
       "executable": false
     },
     "docs/request-forms.md": {
@@ -9944,7 +9944,7 @@
       "executable": false
     },
     "src/ui/native/pages/reports/TeamReports.jsx": {
-      "sha256": "257cd056f5aac0f9d310ff764445b460f20a4de0884979307eae80741aef2208",
+      "sha256": "a2b61216fd832c0ef10fc7a50634b328472996502264a494d5372473951dd365",
       "executable": false
     },
     "src/ui/native/pages/reports/useReportSchedules.js": {
@@ -9956,7 +9956,7 @@
       "executable": false
     },
     "src/ui/native/pages/reports/WorkloadPanel.jsx": {
-      "sha256": "eb16db4eb374203ee6b3070fb8570b4e7fb29c746db3719eec12e282ad93a882",
+      "sha256": "76b5e69823ad9cbcb1e1f81e4da9545a498dda4ca3aef9f03597937051d8dcf9",
       "executable": false
     },
     "src/ui/native/pages/request-forms/ConditionEditor.jsx": {
@@ -11804,7 +11804,7 @@
       "executable": false
     },
     "tests/journeys/reports-browser.mjs": {
-      "sha256": "ea7563273f5c384c4096551023fddb93b2c5eab0f40c40310797c4bd0bc790d4",
+      "sha256": "ac35acd084a6afd4265018dd371db5b96c6b6049fe2c8f2216dc4ff485116855",
       "executable": false
     },
     "tests/journeys/reports.mjs": {

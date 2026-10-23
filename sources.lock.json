@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "ccef3c04419d3d4368e91abe1743b1d870444f4bc6087fc460edc15cccebe94c",
+      "sha256": "1a20785ee72da784fe9255662346f58011d6e64b73015029eba95a66ebf1e02b",
       "executable": false
     },
     "AGENTS.md": {
@@ -1632,7 +1632,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "86bb1192bb9ca39677db339864636fc321b0b0707a5e7bd4a28f47eb4d1c3903",
+      "sha256": "9f9ac58db43dd6fad26e381e824ddf8d583497085c708bc2beb277356819b8f5",
       "executable": false
     },
     "DEMO.md": {
@@ -2000,7 +2000,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "03559d0fce8b729416b176fe2bc3187e295206f263aa88f34243da40352c0889",
+      "sha256": "7e261ea96d40e74736f2f67ed22f164ee99e61057cd4f66f40ede8bde1d4aed6",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -5640,7 +5640,7 @@
       "executable": false
     },
     "src/modules/local-computer/jobs.ts": {
-      "sha256": "1f4bfc8798382a002576ab8ec1fb7220870997574a1f4c9a30fe2e818f72b437",
+      "sha256": "f814f9d54ebef3a856d6742efa36bb34c433ed602cf9f8fdb32151578ba4899b",
       "executable": false
     },
     "src/modules/local-computer/module.json": {
@@ -5660,7 +5660,7 @@
       "executable": false
     },
     "src/modules/local-computer/README.md": {
-      "sha256": "c2dc3da7f64a0ae22fa1a9164fd097f664b9cdaa9a0649802c2833aef01c1155",
+      "sha256": "5fdd566bc6c16d9c6366aa0662800bf5116021c9a88a4f3a33fe4b6e78816df1",
       "executable": false
     },
     "src/modules/local-computer/result-frontier.ts": {
@@ -10884,7 +10884,7 @@
       "executable": false
     },
     "tests/helpers/delegation-journey/time-authority.mjs": {
-      "sha256": "b53fef29a3729c046e3c04c6f1fda95de7d913cc5e0b205a4fc65305c384c767",
+      "sha256": "10dc5e483441026e97e34213aa5d106185a6bbc07bea3e2453d911829ccb9563",
       "executable": false
     },
     "tests/helpers/delegation/adoption.mjs": {
@@ -11720,7 +11720,7 @@
       "executable": false
     },
     "tests/journeys/delegation.mjs": {
-      "sha256": "7cb53b7ed53c0b81d60e0f3dab73c91e41cfca5ad2eab8c1619520118bdc045a",
+      "sha256": "6cd6492b95f235659005cc9090f8b301b5ebe88e02fee9d2802dd0853660bf21",
       "executable": false
     },
     "tests/journeys/email.mjs": {

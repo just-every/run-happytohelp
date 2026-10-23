@@ -678,6 +678,12 @@
       "name": "242_escalation_teams.sql",
       "sha256": "039709eec3144d0e42d253d5e06e778be7a84420f98d05d1496dc0fee1546d44",
       "sql": "CREATE TABLE escalation_team_connections(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),provider TEXT NOT NULL CHECK(provider='teams'),target TEXT NOT NULL,base_url TEXT,token_cipher TEXT,webhook_cipher TEXT,updated_at INTEGER NOT NULL,UNIQUE(project_id,provider));\n"
+    },
+    {
+      "binding": "DB",
+      "name": "243_escalation_handoff_dependency.sql",
+      "sha256": "8b1007f3357dcf1f504f786645e841619fda23e8eb0d2c9ca415119be1e3de9c",
+      "sql": "ALTER TABLE escalation_handoffs ADD COLUMN dependency TEXT NOT NULL DEFAULT '';\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

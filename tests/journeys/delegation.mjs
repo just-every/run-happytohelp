@@ -13,10 +13,10 @@ import {authorityJourney} from '../helpers/delegation/authority.mjs'
 // The agent-fix journey runs the real packaged connector, paired to the real
 // application on loopback; only the paid Codex CLI is scripted, against a
 // disposable customer system.
-let app,fixture,scratch,api,actor
+let app,fixture,scratch,api,actor,otherApi
 before(async()=>{
  app=await startApp({listen:true,bindings:{RER_INSTALLATION_ID:'journey-installation'}});fixture=await customerFixture();scratch=await mkdtemp(join(await realpath(tmpdir()),'h2h-delegation-journey-'))
- const workspace=await app.seedWorkspace('fix',{name:'Agent fix journey',allowedOrigin:app.url});api=client(app.url,workspace.tokens.owner);actor={id:workspace.users.owner,projectId:workspace.projectId}
+ const workspace=await app.seedWorkspace('fix',{name:'Agent fix journey',allowedOrigin:app.url});api=client(app.url,workspace.tokens.owner);otherApi=client(app.url,workspace.tokens.admin);actor={id:workspace.users.owner,projectId:workspace.projectId}
  await app.presenceAwayOff(workspace.projectId)
  // Work in another conversation never enters a delegated job's evidence.
  await (await newVisitor({origin:app.url,api,projectId:actor.projectId})).say('OUTSIDE SCOPED CONVERSATION')
@@ -41,4 +41,4 @@ test('delegated authority holds under concurrency and loss: identical writes sha
 test('Connected applications data and the consent screen re-check session, project and role; registration is owner-only, approval lands at the exact callback, cancel returns to settings, a project deleted mid-approval issues nothing, and without an installation consent is unavailable',pagesJourney)
 
 import {timeAuthorityJourney} from '../helpers/delegation-journey/time-authority.mjs'
-test('named task time grants survive restart, never renew on replay, prevent expired queue claims and late publication, and stop the owned connector with running outcomes unconfirmed',async()=>timeAuthorityJourney({origin:app.url,api,actor,fixture,directory:join(scratch,'time-authority'),setExpiry:(job,expires)=>app.db.prepare("UPDATE local_events SET payload=json_set(payload,'$.expires_at',CAST(? AS INTEGER)) WHERE job_id=? AND event_id='authority'").bind(expires,job).run(),restart:()=>app.configure({})}))
+test('named task time grants survive restart, never renew on replay, prevent expired queue claims and late publication, and stop the owned connector with running outcomes unconfirmed',async()=>timeAuthorityJourney({origin:app.url,api,otherApi,actor,fixture,directory:join(scratch,'time-authority'),setExpiry:(job,expires)=>app.db.prepare("UPDATE local_events SET payload=json_set(payload,'$.expires_at',CAST(? AS INTEGER)) WHERE job_id=? AND event_id='authority'").bind(expires,job).run(),restart:()=>app.configure({})}))

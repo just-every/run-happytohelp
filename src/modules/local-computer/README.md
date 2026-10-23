@@ -75,7 +75,9 @@ Another customer’s healthy storefront cannot substitute for that observation.
 New tasks carry an immutable time grant in `local_events` (`authority`): the
 current operator's ID, grant time and deadline, with an explicit 1–15 minute
 limit (15 by default). Queue time counts. Request replay, claim replay, heartbeat
-and additional input never renew it. A separately approved follow-up receives a
+and additional input never renew it. A creation retry returns the original named
+grant, including its expired state; reusing that request ID for another conversation
+or another operator is refused. A separately approved follow-up receives a
 new named grant. Expired queued tasks are cancelled without execution; expired
 started work is withdrawn as `revoked` / `authority_expired`, with its local
 outcome unconfirmed. Claim transitions, context/progress/result/upload doors,

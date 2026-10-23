@@ -5,7 +5,7 @@ import {join} from 'node:path'
 import {client,newVisitor,until} from './case.mjs'
 import {connector} from './connector.mjs'
 
-export async function timeAuthorityJourney({origin,api,actor,fixture,directory,setExpiry,restart}){
+export async function timeAuthorityJourney({origin,api,otherApi,actor,fixture,directory,setExpiry,restart}){
  const projectId=actor.projectId,code=(await api(`/api/projects/${projectId}/local-agents/pairings`,{})).data.code
  const worker=await connector({origin,directory,code}),device=client(origin,worker.token)
  const create=async(mode='investigate',minutes=1)=>{
@@ -22,11 +22,20 @@ export async function timeAuthorityJourney({origin,api,actor,fixture,directory,s
   for(const invalid of [0,16,1.5,'1'])await api(queued.path,{...queued.command,request_id:randomUUID(),time_limit_minutes:invalid},{status:422})
   const repeated=(await api(queued.path,{...queued.command,time_limit_minutes:15})).data
   assert.equal(repeated.id,queued.job.id)
-  assert.equal((await queued.read()).authority.expires_at,queued.job.authority.expires_at,'request replay never extends a grant')
+  assert.deepEqual(repeated.authority,queued.job.authority,'a retry returns the original named grant, not a new time allowance')
+  const otherVisitor=await newVisitor({origin,api,projectId}),otherPath=`/api/projects/${projectId}/conversations/${otherVisitor.session.conversationId}/delegations`
+  await api(otherPath,queued.command,{status:409})
+  assert.deepEqual((await api(otherPath)).data,[],'a request from another conversation cannot adopt this task')
+  await otherApi(queued.path,queued.command,{status:409})
+  await device('/api/local-agents/heartbeat',{})
+  assert.deepEqual((await queued.read()).authority,queued.job.authority,'replay and heartbeat preserve the original operator and deadline')
   await setExpiry(queued.job.id,Date.now()-1000)
   assert.equal((await device('/api/local-agents/claim',{claim_id:randomUUID()})).data,null)
   const neverStarted=await queued.read();assert.equal(neverStarted.status,'cancelled');assert.equal(neverStarted.started_at,null);assert.equal(neverStarted.delivery_state,'authority_expired')
   assert.equal(fixture.events.length,0)
+  const expiredReplay=(await api(queued.path,{...queued.command,time_limit_minutes:15})).data
+  assert.equal(expiredReplay.status,'cancelled');assert.equal(expiredReplay.authority.expired,true)
+  assert.equal(expiredReplay.authority.expires_at,neverStarted.authority.expires_at,'retrying expired work reports its withdrawn grant and cannot renew it')
 
   const running=await create('resolve')
   // The test-only storage edge shortens this real granted deadline so the owned

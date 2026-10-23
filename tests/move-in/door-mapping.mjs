@@ -2,14 +2,16 @@ import assert from 'node:assert/strict';
 import {phases} from '../journeys/kit/scenarios.mjs';
 import {nativeHarness} from './harness.mjs';
 import {zip} from './zip.mjs';
+import {assertBusinessEquality} from './business-equality.mjs';
 const test=phases(import.meta.url);
 const root='/api/move-in/projects/p/imports',post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const ndjson=(...records)=>records.map(record=>JSON.stringify(record)).join('\n');
 let unique=0;
 
 // Each source goes through the real upload, review and approved apply; outcomes are read from native rows.
-async function imported(vendor,body,{name='export.jsonl',apply=true,check}={}){
- const h=await nativeHarness();try{
+async function imported(vendor,body,{name='export.jsonl',apply=true,check,before,withConversations=false,expectedPostReviewRequests=[]}={}){
+ const h=await nativeHarness({withConversations});try{
+  const initial=await before?.(h)
   const sent=await h.raw(`${root}?vendor=${vendor}`,{method:'POST',headers:{'X-Import-Filename':name,'X-Import-Schema':'2.16'},body:typeof body==='string'?body+'\n'.repeat(++unique):body})
   assert.equal(sent.response.status,201,JSON.stringify(sent.data).slice(0,400));await h.drain();const review=(await h.call(`${root}/${sent.data.data.id}`)).data
   assert.ok(review.plan,`${name} reached no review: ${review.state} ${review.error}`)
@@ -17,7 +19,8 @@ async function imported(vendor,body,{name='export.jsonl',apply=true,check}={}){
   let done
   if(apply&&review.plan.counts.effects>0){await h.call(`${root}/${review.id}/apply`,post({fingerprint:review.plan.fingerprint}));await h.drain();done=(await h.call(`${root}/${review.id}`)).data;assert.equal(done.state,'completed');assert.equal(done.error,null)}
   const rows=async sql=>(await h.db.prepare(sql).all()).results
-  await check({review,plan:review.plan,rejection,omissions,done,rows,h});assert.equal(h.outbound,0)
+  assert.equal(h.outbound,0,'import makes no external request before review or activation')
+  await check({review,plan:review.plan,rejection,omissions,done,rows,h,initial});assert.deepEqual(h.outboundRequests,expectedPostReviewRequests,'only explicitly exercised native behavior may attempt the named provider request')
  }finally{await h.close()}
 }
 async function refusedUpload(vendor,body,name,expected){const h=await nativeHarness();try{const result=await h.raw(`${root}?vendor=${vendor}`,{method:'POST',headers:{'X-Import-Filename':name,'X-Import-Schema':'2.16'},body});assert.equal(result.response.status,422);for(const [key,value] of Object.entries(expected))assert.deepEqual(key==='code'?result.data.diagnostic.code:result.data.diagnostic.location[key],value,`${name} ${key}`);assert.equal(h.lastWrites,0)}finally{await h.close()}}
@@ -27,6 +30,7 @@ const staff={user:{id:2,role:'agent',name:'Teammate',email:'staff@example.test',
 const ticket={ticket:{id:42,requester_id:1,subject:'Quoted "subject" مرحبا',created_at:'2024-01-02T00:00:00Z',updated_at:'2024-01-02T00:02:00Z',status:'open',tags:[' Billing ','billing'],comments:[{id:9,author_id:1,body:'Customer <script>inert</script>',public:true,created_at:'2024-01-02T00:00:00Z'},{id:10,author_id:2,body:'Private note',public:false,created_at:'2024-01-02T00:01:00Z'},{id:11,author_id:2,body:'Public reply',public:true,created_at:'2024-01-02T00:02:00Z'}]}};
 
 test('Zendesk history lands with roles, original times, private notes, one tag, contact-only tags and plain bodies; incomplete or restricted sources are review rejections',async()=>{
+ await lifecycleJourney()
  await imported('zendesk','\n'+ndjson(user,staff,ticket),{check:async({plan,omissions,rows})=>{
   assert.equal(plan.counts.rejected,0);assert.deepEqual(omissions('user/2'),['historical_staff_retained_as_authors_no_access_created'])
   assert.deepEqual(plan.decisions.find(row=>row.kind==='user').location,{artifact:'export.jsonl',row:2})
@@ -97,11 +101,12 @@ test('Help Scout responses and Docs map only documented, complete and public con
 
 test('Freshdesk tickets keep the description first, private notes, staff as authors and the resolved time; signed download links are refused',async()=>{
  const {contact:person,agent,ticket:freshTicket,cannedResponse}=await import('./freshdesk-fixtures.mjs')
- await imported('freshdesk',ndjson(person,agent,freshTicket(5001,4),freshTicket(5002,2),cannedResponse),{check:async({plan,omissions,rows})=>{
+ await imported('freshdesk',ndjson(person,agent,freshTicket(5001,4),freshTicket(5002,2),freshTicket(5003,5),freshTicket(5004,3),cannedResponse),{check:async({plan,omissions,rows})=>{
   assert.equal(plan.counts.rejected,0);const solved=(await rows("SELECT c.id,c.resolved_at,c.assigned_to FROM conversations c JOIN move_in_origins o ON o.target_id=c.id WHERE o.source_id='5001'"))[0]
   assert.deepEqual((await rows(`SELECT content,actor_role FROM messages WHERE conversation_id='${solved.id}' ORDER BY revision`)).map(row=>[row.content,row.actor_role]),[['Where is my refund?','contact'],['Refund sent.','operator'],['Thanks!','contact']])
   assert.deepEqual((await rows(`SELECT content FROM move_in_notes WHERE conversation_id='${solved.id}'`)).map(row=>row.content),['Private triage']);assert.equal(solved.resolved_at,Date.UTC(2024,0,2,9,30));assert.equal(solved.assigned_to,null)
   assert.equal((await rows("SELECT c.resolved_at FROM conversations c JOIN move_in_origins o ON o.target_id=c.id WHERE o.source_id='5002'"))[0].resolved_at,null)
+  const categories=await rows("SELECT o.source_id,c.status_category,c.channel FROM conversations c JOIN move_in_origins o ON o.target_id=c.id AND o.target_kind='conversation' ORDER BY o.source_id");assert.deepEqual(categories.map(row=>[row.source_id,row.status_category,row.channel]),[['5001','solved','email'],['5002','open','email'],['5003','closed','email'],['5004','pending','email']])
   assert.deepEqual(await rows('SELECT content FROM macros'),[{content:'Refunds take 5 days.'}]);assert.equal(plan.decisions.find(row=>row.kind==='agent').targets.length,0);assert.ok(omissions('ticket/5001').includes('attachments_metadata_retained_bytes_not_imported'))
  }})
  await refusedUpload('freshdesk',JSON.stringify({contact:{...person.contact,avatar:{avatar_url:'https://s3.example.test/a.png?X-Amz-Signature=abc'}}}),'signed.ndjson',{code:'signed_download_link_not_accepted'})
@@ -116,3 +121,132 @@ test('one Intercom source in four packagings and a ZIP of all of them map the sa
  }})
  await imported('intercom',zip(packages.map(([name,body])=>({name:'nested/'+name,body}))),{name:'multi.zip',check:async({plan,rows})=>{assert.equal(plan.counts.unique,5);assert.equal(plan.counts.duplicates,plan.counts.input-plan.counts.unique);assert.ok(plan.counts.duplicates>0);assert.deepEqual([...new Set(plan.decisions.map(row=>`${row.kind}/${row.sourceId}`))].sort(),['article/article-39','contact/person-31','conversation/conversation-32','macro/macro-38','tag-name/returns'])}})
 });
+
+// Imported macros are manual commands: preview is pure and apply creates a
+// composer draft, never a sent message. Repeat and undo cover their full version.
+test('Zendesk macros translate placeholders and four actions into native preview and guarded manual apply',async()=>{
+ await configurationJourney()
+ const body=ndjson(user,staff,ticket,{macro:{id:81,title:'Refund follow-up',restriction:null,created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',actions:[
+  {field:'comment_value',value:'Hello {{ticket.requester.first_name}}, about {{ticket.title}}.'},
+  {field:'priority',value:'high'},{field:'status',value:'pending'},{field:'current_tags',value:'refund-followup'},
+ ]}})
+ await imported('zendesk',body,{check:async({h,plan,review,rows})=>{
+  assert.equal(plan.counts.rejected,0)
+  const macro=(await rows('SELECT id FROM macros'))[0],conversation=(await rows('SELECT id,ticket_version,priority,status_id FROM conversations'))[0]
+  const native='/api/dashboard/projects/p',definition=(await h.call(`${native}/macros/${macro.id}`)).data
+  assert.equal(definition.content,'Hello {{requester.first_name}}, about {{ticket.subject}}.')
+  assert.equal(definition.actions.priority,'high');assert.equal(definition.actions.status_id,'pending');assert.equal(definition.actions.tags_add.length,1)
+  assert.equal(conversation.priority,'normal');assert.notEqual(conversation.status_id,'pending')
+  const preview=await h.call(`${native}/macros/${macro.id}/preview`,post({version:1,conversation_id:conversation.id,expected_ticket_version:conversation.ticket_version}))
+  assert.equal(preview.data.results[0].status,'ready',JSON.stringify(preview))
+  assert.match(preview.data.results[0].draft.content,/Hello Ada, about Quoted/)
+  assert.equal((await rows('SELECT COUNT(*) n FROM messages'))[0].n,2)
+  const repeated=await h.call(`${root}?vendor=zendesk`,{method:'POST',headers:{'X-Import-Filename':'repeat.ndjson'},body:'\n'+body})
+  await h.drain();const repeat=(await h.call(`${root}/${repeated.data.id}`)).data
+  assert.equal(repeat.plan.counts.rejected,0)
+  await h.call(`${root}/${repeat.id}/apply`,post({fingerprint:repeat.plan.fingerprint}));await h.drain()
+  assert.equal((await rows('SELECT count(*) n FROM macro_versions'))[0].n,1)
+  assert.deepEqual((await h.call(`${native}/macros/${macro.id}`)).data.actions,definition.actions)
+  // A native edit must be visible to Move in, so undo cannot discard reviewed changes.
+  const current=(await h.call(`${native}/macros/${macro.id}`)).data
+  await h.call(`${native}/macros/${macro.id}`,{...post({...current,title:'Reviewed native macro',expected_version:1}),method:'PUT'})
+  await h.call(`${root}/${review.id}/undo`,post({}))
+  await h.drain()
+  assert.equal((await rows('SELECT title FROM macros'))[0].title,'Reviewed native macro')
+ }})
+ await imported('zendesk',body,{withConversations:true,check:async({h,rows})=>{
+  const macro=(await rows('SELECT id FROM macros'))[0],conversation=(await rows('SELECT id,ticket_version FROM conversations'))[0],native='/api/dashboard/projects/p'
+  const result=await h.call(`${native}/macros/${macro.id}/apply`,post({version:1,conversation_id:conversation.id,expected_ticket_version:conversation.ticket_version,command_id:'synthetic-happytohelp-1'}))
+  assert.equal(result.data.results[0].status,'applied',JSON.stringify(result))
+  const changed=(await rows('SELECT status_id,priority FROM conversations'))[0]
+  assert.deepEqual(changed,{status_id:'pending',priority:'high'})
+  assert.equal((await rows("SELECT count(*) n FROM conversation_tags ct JOIN workspace_tags t ON t.id=ct.tag_id WHERE t.name='refund-followup'"))[0].n,1)
+  assert.match((await h.call(`${native}/conversations/${conversation.id}/macro-draft`)).data.content,/Hello Ada, about Quoted/)
+  assert.equal((await rows('SELECT count(*) n FROM messages'))[0].n,2,'manual macro use drafts the reply; it never sends it')
+ }})
+ await imported('zendesk',ndjson({macro:{id:82,title:'Private reply',restriction:null,created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',actions:[{field:'comment_value',value:'Note {{ticket.unknown}}'},{field:'comment_mode_is_public',value:false},{field:'assignee_id',value:2}]}}),{check:async({omissions,rows})=>{
+  assert.ok(omissions('macro/82').includes('macro_placeholder_unsupported:ticket.unknown'))
+  assert.ok(omissions('macro/82').includes('macro_action_unsupported:assignee_id'))
+  assert.equal(JSON.parse((await rows('SELECT actions_json FROM macro_versions'))[0].actions_json).reply_type,'note')
+ }})
+ await imported('zendesk',ndjson({macro:{id:83,title:'Dynamic link',restriction:null,created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',actions:[{field:'comment_value_html',value:'<a href="{{ticket.url}}">Open ticket</a>'}]}}),{apply:false,check:({rejection})=>assert.equal(rejection('macro/83'),'macro_attribute_placeholders_not_supported')})
+})
+
+
+async function configurationJourney(){
+ const dates={created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z'},condition={all:[{field:'priority',operator:'is',value:'normal'}],any:[]}
+ const records=[user,staff,ticket,
+  {group:{id:71,name:'Billing',deleted:false,default:true,...dates}},{group:{id:72,name:'Technical',deleted:false,default:false,...dates}},
+  {schedule:{id:73,name:'Eastern business hours',time_zone:'Eastern Time (US & Canada)',intervals:[{start_time:1980,end_time:2460}],holidays:[{id:74,name:'Winter holiday',start_date:'2024-12-25',end_date:'2024-12-26'}],...dates}},
+  {view:{id:75,title:'Open work',active:true,restriction:null,conditions:{all:[{field:'status',operator:'is',value:'open'}],any:[]},execution:{sort_by:'updated_at',sort_order:'desc'},...dates}},
+  {trigger:{id:76,title:'Escalate normal work',active:true,position:1,conditions:condition,actions:[{field:'priority',value:'high'},{field:'current_tags',value:'reviewed-import'},{field:'group_id',value:'71'}],...dates}},
+  {automation:{id:77,title:'Pending after one hour',active:true,position:2,conditions:{all:[{field:'status',operator:'is',value:'pending'},{field:'hours_since_created',operator:'greater_than',value:'1'}],any:[]},actions:[{field:'priority',value:'urgent'}],...dates}},
+  {trigger:{id:78,title:'Unsupported recipient send',active:true,conditions:condition,actions:[{field:'notification_user',value:['2','Subject','Private email']}],...dates}},
+ ]
+ const source=ndjson(...records)
+ console.log('configuration proof: starting inert import')
+ await imported('zendesk',source,{before:h=>h.snapshot(),check:async({h,initial,review,plan,rejection,omissions,rows})=>{
+  console.log('configuration proof: imported draft configuration');
+  assert.equal(plan.counts.rejected,1);assert.equal(rejection('trigger/78'),'configuration_action_unsupported:notification_user')
+  assert.ok(omissions('automation/77').includes('automation_native_hour_boundary_once_per_eligibility_episode'))
+  assert.ok((await rows("SELECT state,published_version FROM workflow_rules WHERE id IN (SELECT target_id FROM move_in_origins WHERE target_kind='rule')")).every(row=>row.state==='draft'&&row.published_version===0))
+  assert.deepEqual((await rows('SELECT name FROM ticket_groups ORDER BY name')).map(row=>row.name),['Billing','Technical'])
+  assert.equal((await rows('SELECT COUNT(*) n FROM ticket_group_members'))[0].n,0)
+  const calendar=(await rows('SELECT * FROM workflow_calendars'))[0]
+  assert.equal(calendar.active,0);assert.equal(calendar.timezone,'America/New_York');assert.deepEqual(JSON.parse(calendar.weekly_json),[{day:1,start:'09:00',end:'17:00'}]);assert.deepEqual(JSON.parse(calendar.closures_json),['2024-12-25','2024-12-26'])
+  const importedRules=(await rows("SELECT target_id FROM move_in_origins WHERE target_kind='rule'")).map(row=>row.target_id),rules=(await h.call('/api/dashboard/projects/p/workflow-rules')).rules.filter(row=>importedRules.includes(row.id))
+  assert.equal(rules.length,2)
+  const trigger=rules.find(row=>row.kind==='event'),preview=await h.call(`/api/dashboard/projects/p/workflow-rules/${trigger.id}/preview`,post({}))
+  assert.equal(preview.side_effects,false);assert.ok(preview.matched>=1)
+  assert.ok((await rows('SELECT priority FROM conversations')).every(row=>row.priority==='normal'))
+  assert.equal((await rows('SELECT COUNT(*) n FROM workflow_runs'))[0].n,0)
+  const views=(await h.call('/api/dashboard/projects/p/ticket-views')).data
+  assert.equal(views.length,1);assert.equal(views[0].visibility,'personal');assert.deepEqual(views[0].filters,[{field:'status_id',operator:'eq',value:'open'}])
+  assert.equal((await h.call('/api/dashboard/projects/p/ticket-views',{actor:'operator'})).data.length,0)
+  console.log('configuration proof: preview passed; checking repeat')
+  const snapshot=await h.snapshot(),repeat=(await h.call(`${root}?vendor=zendesk`,{method:'POST',headers:{'X-Import-Filename':'config-repeat.jsonl'},body:source+'\n\n'})).data
+  await h.drain();const ready=(await h.call(`${root}/${repeat.id}`)).data
+  await h.call(`${root}/${repeat.id}/apply`,post({fingerprint:ready.plan.fingerprint}));await h.drain();assertBusinessEquality(snapshot,await h.snapshot())
+  await h.call(`${root}/${review.id}/undo`,post({}));await h.drain();assertBusinessEquality(initial,await h.snapshot())
+  console.log('configuration proof: exact repeat and undo passed')
+ }})
+ await imported('zendesk',source,{withConversations:true,expectedPostReviewRequests:[{hostname:'api.sendgrid.com',method:'POST'}],check:async({h,review,rows})=>{
+  console.log('configuration proof: checking explicit activation')
+  const rule=(await h.call('/api/dashboard/projects/p/workflow-rules')).rules.find(row=>row.kind==='event'&&row.name==='Escalate normal work')
+  const contact=(await rows('SELECT id FROM contacts'))[0];await h.contactSession('native-visitor','p',contact.id)
+  const conversation=await h.call('/api/conversations',{...post({projectId:'p'}),actor:'native-visitor'})
+  await h.call(`/api/conversations/${conversation.id}/messages`,{...post({content:'A native request',localId:'synthetic-happytohelp-1',expectedRevision:0}),actor:'native-visitor'})
+  const settle=async()=>{let steps=0;while(h.queued.length){assert.ok(++steps<1000);const result=await h.step();assert.deepEqual(result.retried,[])}}
+  await settle()
+  await h.call(`/api/dashboard/projects/p/workflow-rules/${rule.id}/preview`,post({}))
+  assert.equal((await rows(`SELECT priority FROM conversations WHERE id='${conversation.id}'`))[0].priority,'normal')
+  await h.call(`/api/dashboard/projects/p/workflow-rules/${rule.id}/publish`,post({}))
+  const frontier=await h.call(`/api/conversations/${conversation.id}`,{actor:'native-visitor'})
+  await h.call(`/api/conversations/${conversation.id}/messages`,{...post({content:'Please escalate',localId:'synthetic-happytohelp-2',expectedRevision:frontier.revision}),actor:'native-visitor'});await settle()
+  const changed=(await rows(`SELECT priority,group_id FROM conversations WHERE id='${conversation.id}'`))[0]
+  assert.equal(changed.priority,'high');assert.ok(changed.group_id)
+  assert.ok((await rows(`SELECT t.name FROM conversation_tags ct JOIN workspace_tags t ON t.id=ct.tag_id WHERE ct.conversation_id='${conversation.id}'`)).some(t=>t.name==='reviewed-import'))
+  await h.call(`${root}/${review.id}/undo`,post({}));await h.drain()
+  assert.equal((await rows(`SELECT state FROM workflow_rules WHERE id='${rule.id}'`))[0].state,'published','undo preserves a natively activated rule')
+  assert.ok((await rows(`SELECT id FROM ticket_groups WHERE id='${changed.group_id}'`)).length,'undo preserves a group that later native work uses')
+ }})
+}
+
+async function lifecycleJourney(){
+ const states=['new','open','pending','hold','solved','closed']
+ const records=[user,staff,...states.map((state,index)=>({ticket:{...ticket.ticket,id:1000+index,status:state,via:{channel:index%2?'email':'web'},comments:ticket.ticket.comments.map(comment=>({...comment,id:comment.id+index*100}))}}))]
+ await imported('zendesk',ndjson(...records),{before:h=>h.snapshot(),check:async({h,initial,review,rows})=>{
+  const landed=await rows("SELECT o.source_id,c.id,c.status_id,c.status_category,c.channel,c.resolved_at FROM conversations c JOIN move_in_origins o ON o.target_id=c.id AND o.target_kind='conversation' ORDER BY o.source_id")
+  assert.equal(landed.length,states.length)
+  for(const [index,row] of landed.entries()){
+   const expected=states[index]==='hold'?'on_hold':states[index]
+   assert.equal(row.status_id,expected);assert.equal(row.status_category,expected);assert.equal(row.channel,index%2?'email':'widget')
+   assert.equal(row.resolved_at!==null,['solved','closed'].includes(expected))
+  }
+  assert.equal((await rows("SELECT count(*) n FROM email_threading_keys WHERE key_kind='subject_token'"))[0].n,states.length,'source ticket-number keys were imported inertly')
+  assert.equal((await rows("SELECT count(*) n FROM email_threading_keys WHERE key_kind='vendor_header'"))[0].n,states.length,'source header keys were imported inertly')
+  await h.call(`${root}/${review.id}/undo`,post({}));await h.drain()
+  assert.equal((await rows('SELECT count(*) n FROM email_threading_keys'))[0].n,0,'undo removes the inert source keys')
+  assertBusinessEquality(initial,await h.snapshot())
+ }})
+}

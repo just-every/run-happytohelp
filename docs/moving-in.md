@@ -22,7 +22,7 @@ Use the documented [account JSON export](https://support.zendesk.com/hc/en-us/ar
 
 Saved replies and Help Center articles are separate API supplements, not part of a claim that the account export contains every supported kind:
 
-- Upload [Macros API](https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/) records as `{"macro":{...}}`. One reply action is supported. Restricted/private macros and unsupported placeholders are rejected. Workflow actions are reported and not executed.
+- Upload [Macros API](https://developer.zendesk.com/api-reference/ticketing/business-rules/macros/) records as `{"macro":{...}}`. One reply action, priority, built-in status and add/remove tags translate to native macros. Requester, assignee, current-user, ticket-title/link and organization-name placeholders translate to native placeholders; unknown expressions stay visible in review and block sending until resolved. Private replies become native notes. Restricted macros, template logic and placeholders inside HTML attributes are refused before markup conversion can discard them. Unsupported actions are listed individually. Import runs no actions: review the native macro preview before manually applying it; reply text becomes a composer draft and is never sent automatically. Repeat/undo also compare the macro action version and retain later native edits.
 - Upload [Articles API](https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/) records as `{"article":{...}}`. The `draft` flag and audience fields must be explicit. Public published articles stay published; drafts stay drafts. Restricted or unknown-audience articles are rejected.
 
 A minimal file with one saved reply and one article, one record per line. The reply text is the `comment_value` action's `value`, as plain text or HTML:
@@ -202,3 +202,10 @@ reviewed snapshot inside the transaction, so an intervening native privacy edit
 stops remaining articles. Later native articles or child categories referencing
 an imported category block whole-import
 undo rather than losing those edits.
+
+
+### Configuration and lifecycle mapping
+
+A Zendesk file can also contain singular `group`, `view`, `schedule`, `trigger` and `automation` records. Include complete original timestamps. Groups import without members or a new default. Views with supported all-conditions import privately for the importing admin. Schedules retain supported weekly intervals, timezone and explicit holiday date ranges but start inactive. Supported triggers and hourly automations become native drafts: review the per-item changes, open their native settings from the import report, preview, then publish explicitly. Unsupported rule conditions or actions set the whole rule aside; a missing condition is never dropped to broaden a rule. Native rules process new journal events, and hourly automations run once per matching ticket episode. SLA policies, forms, memberships, brands and other vendors’ configuration equivalents are still incomplete.
+
+New imports retain their explicit lifecycle and channel. Zendesk/Freshdesk distinguish final Closed from Solved; Help Scout/Intercom use a reopenable Closed state, which maps to native Solved. Historical owners are not granted native access or activated. Existing imported records are not rewritten when this mapping changes: a changed mapping meeting earlier native state remains a review conflict.

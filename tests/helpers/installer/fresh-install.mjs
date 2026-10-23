@@ -1,5 +1,7 @@
 import { fileURLToPath as __rerTestEntryPath } from 'node:url';
 import assert from 'node:assert/strict';
+import {hostedExportJourney} from './hosted-export.mjs';
+import {MAX_LINE_BYTES} from '@runeditrun/rer/modules/portability';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {mkdtemp,mkdir,readFile,writeFile,rm,stat,access} from 'node:fs/promises';
@@ -59,6 +61,7 @@ async function signIn(){
 
 try{
  await execute('git',['clone','--quiet','--no-local','--depth','1',source,root]);
+ await run(root,['describe']);
  await run(root,['check','--profile','first-party']);
  await run(root,['install']);
  await mkdir(join(root,'.seed'),{mode:0o700,recursive:true});
@@ -102,6 +105,7 @@ try{
  const expectedExport=structuredClone(beforeExport);expectedExport.rows.durable_object_snapshots=before.rows.durable_object_snapshots;
  compareArchive(expectedExport,before);
  assert.equal((await stat(join(root,'exports/support.rer'))).mode&0o777,0o600);
+ await hostedExportJourney(root,scratch);
  await assertHistoricalLedger(root,historical);
  await run(root,['import','--input','exports/support.rer','--yes'],4);
  compareArchive(before,await archiveSnapshot(root));
@@ -116,8 +120,20 @@ try{
  await run(root,['reset','--yes']);
  await run(root,['import','--input','exports/later.rer','--yes'],4);
  const empty=await archiveSnapshot(root);assert.equal(empty.rows.users.length,0);assert.equal(empty.objects.length,0);
+ // These are public import refusals on an empty destination, not only parser
+ // unit checks: neither damaged integrity nor an oversized record may stage data.
+ const records=(await readFile(join(root,'exports/support.rer'),'utf8')).trimEnd().split('\n').map(line=>JSON.parse(line));
+ assert.equal(records.at(-1).kind,'closing');records.at(-1).contentHash='0'.repeat(64);
+ await writeFile(join(root,'exports/damaged.rer'),records.map(record=>JSON.stringify(record)).join('\n')+'\n',{mode:0o600});
+ await writeFile(join(root,'exports/oversized.rer'),Buffer.alloc(MAX_LINE_BYTES+1,0x20),{mode:0o600});
+ for(const [name,reason] of [['damaged.rer',/archive integrity check failed/],['oversized.rer',/exceeds the supported size/]]){
+  const refusal=await run(root,['import','--input','exports/'+name,'--yes'],4);
+  assert.match(refusal.events.filter(event=>event.event==='error').map(event=>event.message).join('\n'),reason);
+  compareArchive(empty,await archiveSnapshot(root));
+ }
+
  await writeFile(additive,'CREATE TABLE rer_journey_additive(id TEXT PRIMARY KEY, value TEXT);\n');
- await run(root,['import','--input','exports/support.rer','--yes']);
+ await run(root,['import','--input','exports/hosted.rer','--yes']);
  compareArchive(before,await archiveSnapshot(root),['rer_journey_additive']);
  assert.equal(await presenceRows(),0,'who had the dashboard open never travels in an archive');
  const migrationCount=()=>archiveStorage(root,async({DB})=>(await DB.prepare("SELECT count(*) n FROM d1_migrations WHERE name='9999_rer_journey.sql'").first()).n);
@@ -153,46 +169,27 @@ try{
  await stop();assert.equal(await migrationCount(),1);
  compareDevEntryArchive(beforeRestoredReads,await archiveSnapshot(root));
  assert.deepEqual(await ledgerSnapshot(),restoredLedgers,'post-restore reads and refused replays preserve migration history');
- // Like Base's reference journey, missing credentials refuse the target-secret
- // check. Only Cloudflare's fetch edge is faked for the configured success path;
- // the real CLI still builds, resolves the target and validates its secrets.
+ // Every dry-run invocation uses the real command/build with the network edge
+ // refusing every request, including read-only provider inspection.
  const network=join(scratch,'deploy-network.mjs'),calls=join(scratch,'deploy-requests.jsonl');
- const requiredSecrets=JSON.parse(await readFile(join(root,'deploy.json'),'utf8')).secrets.filter(item=>!item.optional).map(item=>({name:item.binding,type:'secret_text'}));
  await writeFile(calls,'');
  await writeFile(network,`
 import {appendFileSync} from 'node:fs';
-globalThis.fetch=async(input,init)=>{
- const request=new Request(input,init),url=new URL(request.url);
- appendFileSync(${JSON.stringify(calls)},JSON.stringify({method:request.method,url:request.url})+'\\n');
- if(url.origin!=='https://api.cloudflare.com'||request.method!=='GET')throw Error('Unexpected dry-run network request');
- const prefix='/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID;
- const worker=prefix+'/workers/scripts/happytohelp-production';
- let result;
- if(url.pathname===prefix+'/workers/subdomain')result={subdomain:'installer-journey'};
- else if(url.pathname===worker+'/settings')result={bindings:[]};
- else if(url.pathname===worker+'/secrets')result=${JSON.stringify(requiredSecrets)};
- else throw Error('Unexpected dry-run Cloudflare endpoint');
- return Response.json({success:true,errors:[],messages:[],result});
+globalThis.fetch=async()=>{
+ appendFileSync(${JSON.stringify(calls)},'unexpected request\\n');
+ throw Error('Offline deployment dry-run must make no provider requests');
 };
 `);
- const dryEnv={OWNER_EMAIL:'owner@dry-run.example.com',EMAIL_PROVIDER:'sendgrid',EMAIL_FROM:'support@dry-run.example.test',EMAIL_API_KEY:'test-only-dry-run-sendgrid-key',CLOUDFLARE_ACCOUNT_ID:'',CLOUDFLARE_API_TOKEN:'',NODE_OPTIONS:[process.env.NODE_OPTIONS,`--import=${pathToFileURL(network).href}`].filter(Boolean).join(' ')};
- const refused=await run(root,['deploy','--dry-run'],3,{env:dryEnv});
- assert.equal(refused.events.at(-1).ok,false);
- const refusal=refused.events.find(event=>event.event==='error').message;
- assert.match(refusal,/cannot read the target secret bindings/);
- assert.match(refusal,/CLOUDFLARE_ACCOUNT_ID/);assert.match(refusal,/CLOUDFLARE_API_TOKEN/);
- assert.match(refusal,/Nothing was deployed/);
- assert.equal(await readFile(calls,'utf8'),'','missing credentials make no provider request');
- await assert.rejects(access(join(root,'.rer/deploy/production.json')),{code:'ENOENT'});
- const accountId='a'.repeat(32);
- const dry=await run(root,['deploy','--dry-run'],0,{env:{...dryEnv,CLOUDFLARE_ACCOUNT_ID:accountId,CLOUDFLARE_API_TOKEN:'test-only-cloudflare-token'}});
- assert.equal(dry.events.at(-1).ok,true);
- assert.equal(dry.events.at(-1).dryRun,true);assert.equal(dry.events.at(-1).deployed,false);
- const requests=(await readFile(calls,'utf8')).trim().split('\n').map(JSON.parse);
- assert.ok(requests.every(request=>request.method==='GET'),'dry run never writes to the target');
- assert.deepEqual(requests.map(request=>request.url),['workers/subdomain','workers/scripts/happytohelp-production/settings','workers/scripts/happytohelp-production/secrets'].map(path=>`https://api.cloudflare.com/client/v4/accounts/${accountId}/${path}`),'configured dry run reads the target secret bindings');
- await assert.rejects(access(join(root,'.rer/deploy/production.json')),{code:'ENOENT'});
- assert.ok(restoredPrivate.equals(await readFile(join(root,'.dev.vars'))),'both dry runs preserve the local owner settings');
+ const dryEnv={OWNER_EMAIL:'owner@dry-run.example.com',EMAIL_PROVIDER:'sendgrid',EMAIL_FROM:'support@dry-run.example.test',EMAIL_API_KEY:'synthetic-happytohelp-1',CLOUDFLARE_ACCOUNT_ID:'',CLOUDFLARE_API_TOKEN:'',NODE_OPTIONS:[process.env.NODE_OPTIONS,`--import=${pathToFileURL(network).href}`].filter(Boolean).join(' ')};
+ for(const credentials of [{},{CLOUDFLARE_ACCOUNT_ID:'a'.repeat(32),CLOUDFLARE_API_TOKEN:'synthetic-happytohelp-2'}]){
+  const dry=await run(root,['deploy','--dry-run'],0,{env:{...dryEnv,...credentials}});
+  assert.equal(dry.events.at(-1).ok,true);
+  assert.equal(dry.events.at(-1).dryRun,true);assert.equal(dry.events.at(-1).deployed,false);
+  assert.equal(dry.events.at(-1).providerChecked,false,'offline validation never claims target readiness');
+  assert.equal(await readFile(calls,'utf8'),'','dry run makes zero provider requests with or without credentials');
+  await assert.rejects(access(join(root,'.rer/deploy/production.json')),{code:'ENOENT'});
+  assert.ok(restoredPrivate.equals(await readFile(join(root,'.dev.vars'))),'dry run preserves the local owner settings');
+ }
  await run(root,['reset','--yes']);await rm(additive);await run(root,setup);await start();
  const fresh=await json('/api/identity/login',{email,password});assert.notEqual(fresh.actor.id,actor.id);
  assert.equal((await json('/api/management/projects',undefined,fresh.token)).data.length,1);

@@ -3,6 +3,7 @@ import AppContext from './context/AppContext';
 import Connection from './Connection';
 import classNames from 'classnames/bind';
 import root from 'react-shadow';
+import IconHints from '../../../ui/native/IconHints';
 
 import { mergeAdvanced } from "object-merge-advanced";
 import Api from "./includes/api";
@@ -22,6 +23,7 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
     const isPreview = isPreviewMode(config);
     const connectionRef = useRef(null);
     const shadowHostRef = useRef(null);
+    const iconHintScope = useRef(null);
     const previewOpenRef = useRef(false);
     const [open, setOpenState] = useState(false);
     const [insightOpen, setInsightOpenState] = useState(false);
@@ -258,7 +260,7 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
     return (
 
             ( settingsLoaded && <root.div ref={shadowHostRef}>
-                    <div id="happytohelp-root" className={classNames({
+                    <div ref={iconHintScope} id="happytohelp-root" className={classNames({
                         'happytohelp-opened': open,
                         'happytohelp-insight-opened': insightOpen,
                         'happytohelp-closed': !open && !insightOpen,
@@ -266,6 +268,7 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
                         'happytohelp-preview': isPreview,
                         'happytohelp-proxy': config.proxy
                     })}>
+                        <IconHints scopeRef={iconHintScope}/>
                         <AppContext.Provider value={contextValues}>
                             <ActiveConnectProvider open={open} setOpen={setOpen} setInsightOpen={setInsightOpen}
                                                    onSettingsUpdated={handleSettingsUpdated}>

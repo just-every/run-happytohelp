@@ -4,7 +4,7 @@ const labels={ai:'AI',assisted:'Assisted',human:'Human',unknown:'Unknown'};
 function Feedback({resolution}) {
     return <>
         <div><strong>Outcome</strong><p>{labels[resolution.outcome]||'Unknown'}</p></div>
-        <div><strong>Visitor rating</strong><p>{resolution.rating?(resolution.rating.value===1?'Thumbs up':'Thumbs down'):'Not rated'}</p></div>
+        <div><strong>Visitor rating</strong><p>{resolution.rating?(resolution.rating.scale==='five'?`${resolution.rating.score} / 5`:resolution.rating.value===1?'Thumbs up':'Thumbs down'):'Not rated'}</p></div>
         {resolution.rating?.comment&&<p style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{resolution.rating.comment}</p>}
     </>;
 }

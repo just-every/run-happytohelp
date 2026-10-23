@@ -30,8 +30,10 @@ export function importedEmailThreadKeys(projectId:string,conversationId:string,v
  const identifiers=before()
  const header=vendor==='zendesk'?'x-zendesk-ticket-id':vendor==='freshdesk'?'x-freshdesk-ticket-id':vendor==='helpscout'?'x-hs-conversation-id':'x-intercom-conversation-id'
  keys.push({kind:'vendor_header',value:`${header}:${record.sourceId}`,source:vendor,sourceRef:'/id'})
+ if(vendor==='helpscout'&&Number.isSafeInteger(p.number)&&p.number>0)keys.push({kind:'subject_token',value:`helpscout:number:${p.number}`,source:vendor,sourceRef:'/number'})
  if(vendor==='helpscout')keys.push({kind:'vendor_header',value:`x-helpscout-conversation-id:${record.sourceId}`,source:vendor,sourceRef:'/id'})
  if(vendor==='intercom')keys.push({kind:'vendor_header',value:`x-intercom-conversation:${record.sourceId}`,source:vendor,sourceRef:'/id'})
+ if(vendor==='zendesk'&&/^[1-9][0-9]{0,19}$/.test(record.sourceId))keys.push({kind:'subject_token',value:`zendesk:ticket:${record.sourceId}`,source:vendor,sourceRef:'/id'})
  if(vendor==='freshdesk'&&/^[1-9][0-9]{0,19}$/.test(record.sourceId))keys.push({kind:'subject_token',value:`freshdesk:${record.sourceId}`,source:vendor,sourceRef:'/id'})
  locate(identifiers,record)
  const unique=[...new Map(keys.map(key=>[`${key.kind}:${key.value}`,key])).values()]

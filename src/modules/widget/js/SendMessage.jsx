@@ -10,7 +10,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faArrowRight as fasArrowAltRight} from "@fortawesome/free-solid-svg-icons";
 import {faPaperclip as falPaperclip, faExpand as falExpand, faEnvelope as faUser} from "@fortawesome/free-solid-svg-icons";
 
-import { Tooltip } from 'react-tooltip'
+
 import {formatRelative, parseISO} from "date-fns";
 import {ConnectContext} from "./context/ConnectContext";
 import {updateViewportProperties} from "./includes/utils";
@@ -215,8 +215,7 @@ export default function SendMessage({ mainView, setView, messages, localContact,
                             data-tooltip-id="h2h-tooltip-send" data-tooltip-content={context.text.message.tooltip_send}  style={ context.theme.input.send }>
                         <FontAwesomeIcon icon={fasArrowAltRight}/></button>
                 </div>
-                <Tooltip id="h2h-tooltip-send" effect="solid" place="top" delayShow={100} delayHide={100}
-                         offset={{top: 0, right: 0, bottom: 0, left: 5}} className="happytohelp-tooltip"/>
+
             </FileHandler>
         );
     }

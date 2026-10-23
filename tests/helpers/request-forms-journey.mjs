@@ -144,6 +144,9 @@ export async function requestFormsJourney(){
   assert.equal((await fieldValues()).value_json,JSON.stringify(account.id),'a merged account remains a retained reference when unrelated ticket details are saved')
   await app.ok(`/api/management/projects/${p}/ticket-fields/${accountField.id}`,{...owner,method:'PATCH',body:{read_roles:['owner'],write_roles:['owner']}})
   assert.equal((await app.call(lookup,customer)).status,404,'later field restrictions hide the entire public form and its lookup')
+  const restricted=(await app.ok(`${dashboard}/conversations/${accountTicket.id}/ticket`,{token:f.workspace.tokens.operator})).data
+  assert.ok(!Object.hasOwn(restricted.fields,accountField.id),'the agent cannot read an owner-restricted lookup field')
+  assert.equal((await app.call(`${dashboard}/conversations/${accountTicket.id}/ticket`,{token:f.workspace.tokens.operator,method:'PATCH',body:{fields:{[accountField.id]:null},expected_version:restricted.ticket_version}})).status,403,'the agent cannot edit that same restricted field')
 
   await app.configure({FORMS_TURNSTILE_SECRET_KEY:undefined})
   assert.equal((await app.call(path,{body:{...valid,localId:'not-configured'},status:503})).data.code,'verification_unavailable')

@@ -112,6 +112,12 @@ their recorded history. To reuse a prior configuration, read the current form,
 copy the saved `config` into an ordinary update and supply the current
 `updatedAt`; this makes a new version and still validates current fields.
 Existing tickets retain their original typed values when forms change.
+The corresponding ticket-field definitions have a history API at
+`GET /api/management/projects/:projectId/ticket-fields/:id/versions`, with the same
+settings authority and the field's read permissions. Accepted edits retain their
+prior definitions and must validate every existing value. A field with stored
+ticket values cannot be deleted; make it optional or edit it instead. This keeps
+old ticket values from disappearing when a lead changes their forms.
 
 Order/account lookup fields and a form version-history management screen are not
 available. Form fields reuse the current ticket-field permissions and validation; they do not introduce a separate field

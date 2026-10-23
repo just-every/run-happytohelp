@@ -11,7 +11,7 @@ import {workflowTemplates} from './rule-time'
 import {workflowNow} from './clock'
 import {commitWorkflowSettings,andWorkflowGuards} from './rule-admin'
 import {definitionVisible,workflowVisibleFields} from './rule-access'
-import {availableTicketSql,fieldAllowed} from '../tickets/model'
+import {availableTicketSql,fieldAllowed,object,named} from '../tickets/model'
 export const workflowRuleRoutes=new Hono<AppEnv>()
 const base='/projects/:projectId/workflow-rules'
 export async function workflowScope(c:Context<AppEnv>,write=false){const actor=await scope(c,write),access=await memberAccess(c.env.DB,actor.projectId,actor.id);if(!access?.permissions.has(write?'settings.manage':'conversations.manage'))throw new HTTPException(403,{message:'Your current role cannot access workflow settings'});return actor as Actor}
@@ -75,4 +75,21 @@ workflowRuleRoutes.get('/projects/:projectId/workflow-runs',async c=>{
  ])
  const allowed=new Set(visible.fields.filter(f=>fieldAllowed(f,visible.access)).map(f=>f.id))
  return c.json({runs:rows.results.filter(row=>!row.definition_json||definitionVisible(JSON.parse(row.definition_json),visible.fields,visible.access)).map(({actions_json,frontier_json,definition_json,lease_token,lease_until,...row})=>({...row,...(!definition_json?{explanation:{reason:'The immutable workflow version is missing'}}:{}),actions:(definition_json?JSON.parse(actions_json):[]).map((a:any)=>a.type==='fields'?{...a,values:Object.fromEntries(Object.entries(a.values).filter(([id])=>allowed.has(id)))}:a),frontier:JSON.parse(frontier_json)}))})
+})
+
+// A human can close reviewed work, but cannot turn an unknown provider result
+// into success or resume the remaining actions on a run that crossed a send.
+workflowRuleRoutes.post('/projects/:projectId/workflow-runs/:runId/reconcile',async c=>{
+ const actor=await workflowScope(c,true),body=object(await c.req.json()),note=named(body.note,2000),reference=named(body.reference,500)
+ if(!Number.isSafeInteger(body.expected_updated_at))throw new HTTPException(400,{message:'Provide the last inspected run timestamp'})
+ const run=await c.env.DB.prepare(`SELECT r.*,v.definition_json FROM workflow_runs r JOIN conversations c ON c.project_id=r.project_id AND c.id=r.conversation_id LEFT JOIN workflow_rule_versions v ON v.rule_id=r.rule_id AND v.version=r.version WHERE r.id=? AND r.project_id=? AND ${availableTicketSql()}`).bind(c.req.param('runId'),actor.projectId).first<any>()
+ if(!run)throw new HTTPException(404)
+ const visible=await workflowVisibleFields(c.env,actor.projectId,actor.id)
+ if(run.definition_json&&!definitionVisible(JSON.parse(run.definition_json),visible.fields,visible.access))throw new HTTPException(403,{message:'Your role cannot inspect fields used by this workflow'})
+ if(!['uncertain','failed','not_delivered'].includes(run.state)||run.updated_at!==body.expected_updated_at)throw new HTTPException(409,{message:'Inspect the current terminal run before reconciling it'})
+ const at=Math.max(workflowNow(c.env),run.updated_at+1),detail={run_id:run.id,previous_state:run.state,cursor:run.cursor,note,reference,disposition:'remaining_actions_cancelled',provider_outcome:'unchanged'}
+ await commitWorkflowSettings(c,actor,'workflow.run.reconciled',run.id,(accepted,args)=>[
+  c.env.DB.prepare(`UPDATE workflow_runs SET state='cancelled',reason='Manually reviewed; remaining actions cancelled. Existing delivery outcomes are unchanged.',next_attempt_at=NULL,updated_at=? WHERE id=? AND project_id=? AND ${accepted}`).bind(at,run.id,actor.projectId,...args),
+ ],{sql:`EXISTS(SELECT 1 FROM workflow_runs r JOIN conversations c ON c.project_id=r.project_id AND c.id=r.conversation_id WHERE r.id=? AND r.project_id=? AND r.state=? AND r.updated_at=? AND ${availableTicketSql()})`,params:[run.id,actor.projectId,run.state,run.updated_at]},detail)
+ return c.json({run_id:run.id,state:'cancelled',provider_outcome:'unchanged',updated_at:at})
 })

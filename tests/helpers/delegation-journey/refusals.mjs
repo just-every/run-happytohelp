@@ -7,13 +7,13 @@ import {connector} from './connector.mjs';
 
 export async function refusals({origin,api,actor,fixture,directory,deliveryFault}){
  const results=[];
- for(const scenario of ['stale','revoked','offline','unverified']){
+ for(const scenario of ['stale','revoked','offline','unverified','failed_recovery']){
   fixture.reset();const visitor=await newVisitor({origin,api,projectId:actor.projectId}),conversationId=visitor.session.conversationId;
   const path=`/api/projects/${actor.projectId}/conversations/${conversationId}/delegations`;
   const jobs=async()=>(await api(path)).data,job=async id=>(await jobs()).find(j=>j.id===id);
   const code=(await api(`/api/projects/${actor.projectId}/local-agents/pairings`,{})).data.code;
   const worker=await connector({origin,directory:join(directory,scenario),code});
-  const task=phase=>({phase,fixture:fixture.origin,conversationId,projectId:actor.projectId});
+  const task=phase=>({phase,fixture:fixture.origin,customerPath:fixture.customerPath,conversationId,projectId:actor.projectId});
   const delegate=async(mode='investigate')=>(await api(path,{device_id:worker.deviceId,mode,instructions:'Inspect only the disposable Spanish setting fixture; do not send any reply.',request_id:randomUUID()})).data;
   try{
    const initial=await delegate(['revoked','unverified'].includes(scenario)?'resolve':'investigate');assert.equal(initial.status,'queued');
@@ -45,6 +45,28 @@ export async function refusals({origin,api,actor,fixture,directory,deliveryFault
     await worker.run(task('investigate'),{expected:1});
     assert.equal((await job(initial.id)).started_at,null);assert.equal(fixture.events.length,0);
     results.push({scenario,conversationId,job:await job(initial.id),reconnect:'revoked credential refused before provider execution'});
+   }else if(scenario==='failed_recovery'){
+    await worker.run(task('investigate'));
+    const approval=(await api(`${path}/${initial.id}/result/follow-up-actions/enable`,{})).data;
+    fixture.failCustomerPath();
+    await worker.run(task('resolve'));
+    const repair=await job(approval.child_delegation_id);assert.equal(repair.status,'completed');assert.equal(fixture.enabled,true);
+    const healthy=await fetch(fixture.origin+'/stores/synthetic-happytohelp-2/es');assert.equal(healthy.status,200,'another customer succeeding is not recovery evidence for this customer');
+    const observation=await delegate();const receipt=await worker.run(task('observe_failed'));
+    assert.equal(receipt.customer.status,503);assert.equal(receipt.customer.available,false);
+    assert.notEqual(observation.id,repair.id);
+    const failed=await job(observation.id);assert.equal(failed.status,'needs_input');assert.equal(failed.result.verified,false);
+    assert.ok(failed.result.actions.some(action=>action.evidence.includes(fixture.customerPath)));
+    const conversation=await api('/api/conversations/'+conversationId);
+    assert.equal(conversation.resolved_at,null);assert.equal(conversation.assigned_to,actor.id);
+    const before=await visitor.transcript();
+    await api(`${path}/${failed.id}/result/draft`,{proposal_id:'confirmed',expected_revision:before.revision,expected_last_message_id:before.lastMessageId},{status:409});
+    await api(`${path}/${failed.id}/result/replies/confirmed/send`,{},{status:409});
+    const writes=fixture.events.filter(event=>event.method==='POST');assert.equal(writes.length,1);
+    await api(`${path}/${initial.id}/result/follow-up-actions/enable`,{});
+    assert.equal((await jobs()).length,3,'an approved command replay creates no second repair after failed observation');
+    assert.equal(fixture.events.filter(event=>event.method==='POST').length,1);
+    results.push({scenario,conversationId,repair,observation:failed});
    }else{
     const submitted=await worker.unverified(task('unverified'));assert.equal(submitted.status,'needs_input');const uncertain=await job(initial.id);assert.equal(uncertain.status,'needs_input');assert.equal(uncertain.result.verified,false);
     await api(`${path}/${initial.id}/result/replies/unsafe/send`,{},{status:409});
@@ -63,7 +85,7 @@ export async function refusals({origin,api,actor,fixture,directory,deliveryFault
     const visible=(await visitor.transcript()).messages;assert.equal(visible.filter(m=>m.content===inspectable.result.replies[0].body).length,1,'admitted message survives uncertain receipt acknowledgement exactly once');assert.equal(visible.filter(m=>m.content===uncertain.result.replies[0].body).length,0);
     results.push({scenario,conversationId,job:uncertain,deliveryJobId:review.id,uncertainReceipt:receipt,afterFaultRemoved:repeated});
    }
-   assert.equal((await visitor.transcript()).messages.filter(m=>m.actor_role!=='contact').length,scenario==='unverified'?1:0);assert.equal(fixture.events.filter(e=>e.method==='POST').length,0);
+   assert.equal((await visitor.transcript()).messages.filter(m=>m.actor_role!=='contact').length,scenario==='unverified'?1:0);assert.equal(fixture.events.filter(e=>e.method==='POST').length,scenario==='failed_recovery'?1:0);
   }finally{await worker.close()}
  }
  return results;

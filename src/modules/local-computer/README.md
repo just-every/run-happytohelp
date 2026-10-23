@@ -65,7 +65,11 @@ thread with its accountable owner; the packaged-connector journey restarts the
 application, reproduces the recurrence with a fresh read-only investigation and
 proves that neither the earlier repair nor its reply is replayed automatically.
 These disposable-system observations do not qualify a live customer environment
-or enforce all production, data, spending and time constraints required by PUSH-001.
+or enforce production environment, operation, data and spending limits required by PUSH-001.
+The fixture reads the affected storefront independently of its setting: a successful
+setting write with a still-failing customer path leaves the observation needing
+operator input, the conversation open and owned, and sends no recovery reply.
+Another customer’s healthy storefront cannot substitute for that observation.
 
 
 New tasks carry an immutable time grant in `local_events` (`authority`): the

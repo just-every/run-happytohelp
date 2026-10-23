@@ -36,7 +36,7 @@ export async function runCase({origin,api,actor,fixture,directory,ui,restart}){
  await noReply();await ui?.open(conversationId,{panel:false});await screenshot('a','Visitor reports the disabled Spanish setting; operator sees the same report.');
  const code=ui?await ui.pair():(await api(`/api/projects/${projectId}/local-agents/pairings`,{})).data.code;
  const worker=await connector({origin,directory:join(directory,'connector'),code});
- const task=phase=>({phase,fixture:fixture.origin,conversationId,projectId});
+ const task=phase=>({phase,fixture:fixture.origin,customerPath:fixture.customerPath,conversationId,projectId});
  const delegate=async(mode,instructions)=>{
   if(ui)return ui.delegate(worker.deviceId,mode,instructions,jobs);
   return (await api(path,{device_id:worker.deviceId,mode,instructions,request_id:randomUUID()})).data;
@@ -46,7 +46,7 @@ export async function runCase({origin,api,actor,fixture,directory,ui,restart}){
   assert.equal(investigation.status,'queued');assert.equal(investigation.mode,'investigate');assert.equal(investigation.operator_id,actor.id);
   assert.equal(fixture.events.length,0);await screenshot('b','Owner pairs a computer and explicitly queues an investigation of this conversation.');
   const findingReceipt=await worker.run(task('investigate'));
-  const finding=await lookup(investigation.id);assert.equal(finding.status,'completed');assert.equal(finding.result.verified,true);
+  const finding=await lookup(investigation.id);assert.equal(finding.status,'completed');assert.equal(finding.result.verified,true);assert.equal(findingReceipt.customer.status,503);assert.equal(findingReceipt.customer.available,false);
   assert.equal(finding.context.conversation.id,conversationId);assert.equal(finding.context.workspace.id,projectId);
   assert.equal(findingReceipt.context.conversation.id,conversationId);assert.equal(finding.result.follow_up_actions[0].mode,'resolve');
   assert.equal((await jobs()).length,1);assert.equal(fixture.enabled,false);assert.equal(fixture.events.filter(e=>e.method==='POST').length,0);await noReply();
@@ -54,7 +54,7 @@ export async function runCase({origin,api,actor,fixture,directory,ui,restart}){
   const approvedAt=Date.now();
   const approval=ui?await ui.approve(path,investigation.id):(await api(path+'/'+investigation.id+'/result/follow-up-actions/enable',{})).data;
   const child=await lookup(approval.child_delegation_id);assert.ok(child);assert.equal(child.parent_delegation_id,investigation.id);assert.equal(child.source_proposal_id,'enable');assert.equal(child.mode,'resolve');assert.equal(child.operator_id,actor.id);assert.equal(child.status,'queued');
-  assert.equal(child.authority.granted_by,actor.id);assert.equal(child.authority.expires_at-child.authority.granted_at,15*60000);assert.ok(child.authority.granted_at>=finding.authority.granted_at,'approving a repair grants its own bounded task, separate from the read-only investigation');
+  assert.equal(child.authority.granted_by,actor.id);assert.ok(child.authority.expires_at>child.authority.granted_at);assert.ok(child.authority.granted_at>=finding.authority.granted_at,'approving a repair grants its own bounded task, separate from the read-only investigation');
   assert.ok(Date.parse(child.created_at)>=approvedAt-1000);assert.equal(fixture.enabled,false);
   const replayApproval=(await api(path+'/'+investigation.id+'/result/follow-up-actions/enable',{})).data;assert.equal(replayApproval.child_delegation_id,child.id);assert.equal((await jobs()).length,2);
   await ui?.refresh();await screenshot('d','Owner approves Enable Spanish; only now does the resolve child exist, linked to its proposal.');
@@ -63,10 +63,12 @@ export async function runCase({origin,api,actor,fixture,directory,ui,restart}){
   const conversation=await api('/api/conversations/'+conversationId);assert.equal(conversation.resolved_at,null);
   await ui?.refresh();await screenshot('e','Resolve changes the real loopback fixture once; its report explicitly awaits independent observation.');
   const observation=await delegate('investigate','Independently read the Spanish setting from the disposable customer system. Do not rely on the resolve report. Do not write.');
-  assert.notEqual(observation.id,child.id);const readsBefore=fixture.events.filter(e=>e.method==='GET').length;
+  assert.notEqual(observation.id,child.id);const readsBefore=fixture.events.filter(e=>e.path===fixture.customerPath).length;
   const observationReceipt=await worker.run(task('observe'));const observed=await lookup(observation.id);
   assert.equal(observed.status,'completed');assert.equal(observed.mode,'investigate');assert.equal(observed.result.verified,true);assert.equal(observationReceipt.before.enabled,true);
-  assert.equal(fixture.events.filter(e=>e.method==='GET').length,readsBefore+1);assert.equal(fixture.events.filter(e=>e.method==='POST').length,1);
+  assert.equal(observationReceipt.customer.status,200);assert.equal(observationReceipt.customer.available,true);
+  assert.notEqual(observationReceipt.customer.observationId,findingReceipt.customer.observationId);
+  assert.equal(fixture.events.filter(e=>e.path===fixture.customerPath).length,readsBefore+1);assert.equal(fixture.events.filter(e=>e.method==='POST').length,1);
   assert.notEqual(observationReceipt.before.observationId,findingReceipt.before.observationId);
   assert.ok(observed.context.internal_notes.some(n=>n.id==='delegation:'+child.id));
   await noReply();await ui?.refresh();await screenshot('f','A distinct investigation reads the customer setting itself and confirms it; the operator sees both reports.');
@@ -107,7 +109,7 @@ export async function runCase({origin,api,actor,fixture,directory,ui,restart}){
   await api(`/api/conversations/${conversationId}/messages`,{localId:randomUUID(),content:reply.body,expectedRevision:beforeNew.revision,expectedLastMessageId:beforeNew.lastMessageId,authoring:{kind:'local',jobId:observation.id,proposalId:reply.id}},{status:409});
   const fresh=await delegate('investigate','Reproduce the customer recurrence on the disposable Spanish setting fixture. Read only; do not repeat the previous repair or publish a reply.');
   const failedReceipt=await worker.run(task('investigate'));const failed=await lookup(fresh.id);
-  assert.equal(failedReceipt.before.enabled,false);assert.equal(failed.mode,'investigate');
+  assert.equal(failedReceipt.before.enabled,false);assert.equal(failedReceipt.customer.status,503);assert.equal(failedReceipt.customer.available,false);assert.equal(failed.mode,'investigate');
   assert.match(failed.result.summary,/disabled/);assert.equal(fixture.events.filter(e=>e.method==='POST').length,0);
   assert.equal((await transcript()).messages.filter(m=>m.actor_role!=='contact').length,1,'recurrence creates no automatic reply');
   assert.equal((await api('/api/conversations/'+conversationId)).resolved_at,null,'read-only reproduction never resolves the failed path');

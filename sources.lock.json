@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "8cf1ce1d6636197d141f13fb35356111e88d3a53b27c02933c10e8e3fd5efee8",
+      "sha256": "4a74aa844814b8777fe826d55ef6f515fb86e7e74dbe1e4f5b4647d5127a35d5",
       "executable": false
     },
     "AGENTS.md": {
@@ -1632,7 +1632,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "bb84b4e4f85b58bd9a12cb3f1d7f31a836795d36f9d23ee16e294132c2e17872",
+      "sha256": "42ccee8c28bc1f68f80485dbd1facb08f187c6c8af515455f5b9a32f3f13cd10",
       "executable": false
     },
     "DEMO.md": {
@@ -5656,7 +5656,7 @@
       "executable": false
     },
     "src/modules/local-computer/README.md": {
-      "sha256": "e4caafc3f1637aebf375c98b2e307f8a4a846102715132644e132985e1cc3002",
+      "sha256": "c2dc3da7f64a0ae22fa1a9164fd097f664b9cdaa9a0649802c2833aef01c1155",
       "executable": false
     },
     "src/modules/local-computer/result-frontier.ts": {
@@ -10856,7 +10856,7 @@
       "executable": false
     },
     "tests/helpers/delegation-journey/case.mjs": {
-      "sha256": "6818b11fd1730059316ead90e0db790ee57041ca82995e887d22d0d13e224a9d",
+      "sha256": "f743708e1d86cc491b82f7276a0f7223be5cfe6f1c3d20759ea63097cc4a8c0f",
       "executable": false
     },
     "tests/helpers/delegation-journey/connector.mjs": {
@@ -10868,19 +10868,19 @@
       "executable": false
     },
     "tests/helpers/delegation-journey/fixture.mjs": {
-      "sha256": "752b140e4e644b41227b1df7ff9dbc55afbe21a4470228812325d5a3a565f761",
+      "sha256": "828f8f8bc1a0c4d3106c265e47f7418b7aff992772904e2ad798dd80c7360ab3",
       "executable": false
     },
     "tests/helpers/delegation-journey/provider.mjs": {
-      "sha256": "8778366bb7e0cf1fca8d6fa79ecbdd637aadb30ee5bb4dacc476e4cc2bf367e1",
+      "sha256": "cfab0a67f3ec0dd8b29f58c54526ebae86b6ab8406bac7498197ebfa4099cd22",
       "executable": true
     },
     "tests/helpers/delegation-journey/refusals.mjs": {
-      "sha256": "2d325c37bab3317d0eff1839b1790a659eecd52e03cc0759d214da6577d82f8e",
+      "sha256": "9a5e806e3fcd4dc33fa571e3c977a7748a2980c3e84064e0121d848129d14ae9",
       "executable": false
     },
     "tests/helpers/delegation-journey/time-authority.mjs": {
-      "sha256": "e653d6af6ed15ba1f7f4990a645334aa9c5789d7d6878a09af4d9b10a30f35c7",
+      "sha256": "b53fef29a3729c046e3c04c6f1fda95de7d913cc5e0b205a4fc65305c384c767",
       "executable": false
     },
     "tests/helpers/delegation/adoption.mjs": {
@@ -11708,7 +11708,7 @@
       "executable": false
     },
     "tests/journeys/delegation.mjs": {
-      "sha256": "833d9bcabb592c4ff77dbba4cac3a358f723eb30b90991fa4a44121bf0ca485f",
+      "sha256": "7cb53b7ed53c0b81d60e0f3dab73c91e41cfca5ad2eab8c1619520118bdc045a",
       "executable": false
     },
     "tests/journeys/email.mjs": {

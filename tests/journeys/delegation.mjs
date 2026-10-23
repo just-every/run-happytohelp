@@ -28,10 +28,10 @@ test('a visitor\'s report is investigated read-only, an approved resolve child c
  assert.equal(seven.jobs.length,3);assert.equal(seven.fixtureEvents.filter(event=>event.method==='POST').length,1)
 })
 
-test('stale, revoked, offline and unverified work is refused through the same connector, and a reply whose delivery is unconfirmed is held for review and never replayed',async()=>{
+test('stale, revoked, offline, unverified and failed customer recovery work is refused through the same connector, and a reply whose delivery is unconfirmed is held for review and never replayed',async()=>{
  const deliveryFault=enabled=>app.db.prepare(enabled?"CREATE TRIGGER journey_delivery_fault BEFORE UPDATE OF status ON local_receipts WHEN NEW.status='sent' BEGIN SELECT RAISE(ABORT,'Journey simulated receipt acknowledgement outage: delivery unconfirmed'); END":'DROP TRIGGER journey_delivery_fault').run()
  const refused=await refusals({origin:app.url,api,actor,fixture,directory:join(scratch,'refusals'),deliveryFault})
- assert.deepEqual(refused.map(result=>result.scenario),['stale','revoked','offline','unverified'])
+ assert.deepEqual(refused.map(result=>result.scenario),['stale','revoked','offline','unverified','failed_recovery'])
 })
 
 test('a connected application gets selected access only through native consent with an exact callback, a single-use code and PKCE; it repairs and publishes an article atomically with exact replay, meets stale, category and audience revisions as conflicts, loses erased evidence, and ends with membership loss or revocation',consentJourney)

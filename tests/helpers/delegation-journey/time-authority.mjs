@@ -12,7 +12,7 @@ export async function timeAuthorityJourney({origin,api,actor,fixture,directory,s
   const visitor=await newVisitor({origin,api,projectId}),conversationId=visitor.session.conversationId,path=`/api/projects/${projectId}/conversations/${conversationId}/delegations`,requestId=randomUUID()
   const command={device_id:worker.deviceId,mode,instructions:'Inspect only the disposable Spanish fixture within the granted time. No customer reply is authorized.',time_limit_minutes:minutes,request_id:requestId}
   const job=(await api(path,command)).data,jobs=async()=>(await api(path)).data
-  return {visitor,conversationId,path,job,command,read:async()=>(await jobs()).find(row=>row.id===job.id),task:phase=>({phase,fixture:fixture.origin,conversationId,projectId})}
+  return {visitor,conversationId,path,job,command,read:async()=>(await jobs()).find(row=>row.id===job.id),task:phase=>({phase,fixture:fixture.origin,customerPath:fixture.customerPath,conversationId,projectId})}
  }
  try{
   fixture.reset()

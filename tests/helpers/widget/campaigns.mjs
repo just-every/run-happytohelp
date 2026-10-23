@@ -123,12 +123,51 @@ export async function campaignsJourney(){
   assert.ok((await command('campaignEvaluate',context)).data.offer)
   await app.db.prepare("UPDATE widget_campaign_impressions SET day='2000-01-01' WHERE campaign_id=?").bind(daily.id).run()
   assert.ok((await command('campaignEvaluate',context)).data.offer)
+  await disable(daily)
+  const retained=await save({...base,name:'Retention cohort'})
+  const retainedOffers=[]
+  for(const [token,id] of [[visitor.token,conversation.id],[foreignVisitor.token,foreignConversation.id]]){
+   const reservation=(await command('campaignEvaluate',{...context,visitId:randomUUID()},200,token,id)).data.offer
+   assert.ok(reservation)
+   for(const event of ['show','open','dismiss'])await command('campaignEvent',{id:reservation.id,event},200,token,id)
+   retainedOffers.push(reservation)
+  }
+  assert.equal((await row(retained.id)).impressions,2,'current consented cohorts are reported')
+  // Historical storage is a fixture; all reporting, cleanup, revocation and erasure use public doors.
+  const expiredAt=Date.now()-31*86400000,expiredOffer=retainedOffers[1]
+  await app.db.prepare('UPDATE widget_campaign_impressions SET created_at=?,shown_at=?,opened_at=?,dismissed_at=? WHERE id=?').bind(expiredAt,expiredAt,expiredAt,expiredAt,expiredOffer.id).run()
+  await app.db.prepare('UPDATE widget_campaign_visits SET created_at=? WHERE contact_id=?').bind(expiredAt,foreignVisitor.contactId).run()
+  // More than one cleanup page: reads must exclude expired attribution even while a backlog remains.
+  await app.db.prepare(`WITH RECURSIVE backlog(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM backlog WHERE n<2005)
+   INSERT INTO widget_campaign_impressions(id,project_id,contact_id,campaign_id,campaign_revision,day,slot,created_at,shown_at,opened_at,dismissed_at,conversation_id)
+   SELECT 'synthetic-happytohelp-'||n,i.project_id,i.contact_id,i.campaign_id,i.campaign_revision,'2000-01-01',n,i.created_at,i.shown_at,i.opened_at,i.dismissed_at,i.conversation_id FROM backlog CROSS JOIN widget_campaign_impressions i WHERE i.id=?`).bind(expiredOffer.id).run()
+  await app.db.prepare(`WITH RECURSIVE backlog(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM backlog WHERE n<2005)
+   INSERT INTO widget_campaign_visits SELECT ?,?,'synthetic-happytohelp-'||n,? FROM backlog`).bind(p,foreignVisitor.contactId,expiredAt).run()
+  const expired=async table=>(await app.first(`SELECT count(*) n FROM ${table} WHERE created_at<?`,expiredAt+1)).n
+  const beforeCleanup=await expired('widget_campaign_impressions')
+  const broadReport=await app.ok(`/api/dashboard/projects/${p}/reports?period=90`,{token:owner})
+  assert.deepEqual(broadReport.campaigns.find(c=>c.id===retained.id),{id:retained.id,name:'Retention cohort',impressions:1,opens:1,dismissals:1,conversations:0,resolutions:0},'a broad report excludes identifiers older than the approved window')
+  assert.ok(!JSON.stringify(broadReport).includes(expiredOffer.id),'the expired identifier is absent from the report response')
+  for(const table of ['widget_campaign_impressions','widget_campaign_visits']){
+   const remaining=await expired(table)
+   assert.ok(remaining>0&&remaining<beforeCleanup,'read cleanup advances a bounded page without draining the backlog')
+  }
+  await app.scheduled({})
+  const afterScheduled=await expired('widget_campaign_impressions')
+  assert.ok(afterScheduled>0&&afterScheduled<beforeCleanup,'scheduled cleanup also advances a bounded page')
+  assert.equal((await row(retained.id)).impressions,1,'the retained cohort survives subsequent cleanup')
+  for(const table of ['widget_campaign_impressions','widget_campaign_visits'])assert.equal(await expired(table),0,'subsequent reads drain expired identifiers')
   await command('contextConsent',{consent:false})
   assert.equal((await command('campaignEvaluate',context)).data.offer,null)
-  assert.equal((await app.first('SELECT count(*) n FROM widget_campaign_impressions WHERE contact_id=?',visitor.contactId)).n,0,'revocation erases campaign attribution')
-  assert.ok((await app.first('SELECT count(*) n FROM widget_campaign_impressions')).n>0)
-  await app.scheduled({}, {after:31*86400000})
-  assert.equal((await app.first('SELECT count(*) n FROM widget_campaign_impressions')).n,0,'scheduled expiry removes campaign identifiers after 30 days')
-  assert.equal((await app.first('SELECT count(*) n FROM widget_campaign_visits')).n,0)
+  for(const table of ['widget_campaign_impressions','widget_campaign_visits'])assert.equal((await app.first(`SELECT count(*) n FROM ${table} WHERE contact_id=?`,visitor.contactId)).n,0,'revocation immediately erases campaign identifiers')
+  assert.equal((await row(retained.id)).impressions,0,'revoked attribution immediately disappears from reports')
+  // Erasure independently removes a still-consented visitor's campaign history.
+  const fresh=(await command('campaignEvaluate',{...context,visitId:randomUUID()},200,foreignVisitor.token,foreignConversation.id)).data.offer
+  assert.ok(fresh)
+  await command('campaignEvent',{id:fresh.id,event:'show'},200,foreignVisitor.token,foreignConversation.id)
+  assert.equal((await row(retained.id)).impressions,1)
+  await app.ok(`/api/management/projects/${p}/contacts/${foreignVisitor.contactId}/erase`,{token:owner,body:{}})
+  for(const table of ['widget_campaign_impressions','widget_campaign_visits'])assert.equal((await app.first(`SELECT count(*) n FROM ${table} WHERE contact_id=?`,foreignVisitor.contactId)).n,0,'native erasure immediately removes campaign identifiers')
+  assert.equal((await row(retained.id)).impressions,0,'erased attribution immediately disappears from reports')
  }finally{await app.close()}
 }

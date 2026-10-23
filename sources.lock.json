@@ -11576,7 +11576,7 @@
       "executable": false
     },
     "tests/helpers/widget/campaigns.mjs": {
-      "sha256": "9a25ab61bad8265f96e4a0633381437cf96583e788e07e9f8373d4bcf20d6b34",
+      "sha256": "932b3c12852ab7c3a32f1a21fedd634ebd5a58b917156d186d1d3637f566782b",
       "executable": false
     },
     "tests/helpers/widget/events.mjs": {

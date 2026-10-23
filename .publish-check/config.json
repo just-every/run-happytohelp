@@ -1,4 +1,8 @@
 {
   "schemaVersion": 1,
-  "publicEmails": []
+  "publicEmails": [
+    "support@native-mail.happytohelp.com",
+    "qa-inbox@runeditrun.com",
+    "qa-inbox-2@runeditrun.com"
+  ]
 }

@@ -1600,7 +1600,7 @@
       "executable": false
     },
     ".publish-check/config.json": {
-      "sha256": "635a183defae043d92181a1cd5191321529bf49ec73b89ca388e831ed61ff539",
+      "sha256": "0441921c1780c4fac8c93ad6b789a2c3e04166782029294c5f6651385327d128",
       "executable": false
     },
     ".publish-check/reviewed.json": {

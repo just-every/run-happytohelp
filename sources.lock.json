@@ -11376,7 +11376,7 @@
       "executable": false
     },
     "tests/helpers/installer/hosted-export-live.mjs": {
-      "sha256": "2d411b6987bc1b1072be1fb8aa6a843d4020b9d5125a73198dd3b5ca07386d61",
+      "sha256": "931f0043fe37ced380f22e8f5cda6083c0d2cf5fd84c6adc56e8f1bfcf733f92",
       "executable": false
     },
     "tests/helpers/installer/hosted-export-resources.mjs": {

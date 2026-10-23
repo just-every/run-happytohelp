@@ -24,6 +24,7 @@ import { applyMessageEffects } from './message-effects'
 import { modelReady } from './modules/management/provisioning/index'
 import { routes as sitePreview,brandMediaRoutes } from './modules/site-preview/routes'
 import {moveInRoutes} from './modules/move-in/routes'
+import {helpScoutSettings,helpScoutEvents} from './modules/api-integrations/helpscout'
 import {tags} from './modules/management/tags'
 import { previewRoutes } from './modules/site-preview/proxy'
 import {AiConfigurationError} from './modules/ai-support/configuration'
@@ -87,6 +88,8 @@ app.route('/api/outcomes/surveys',publicSurveys)
 app.route('/api/customer-context',context)
 app.route('/api/training',trainingRoutes)
 app.route('/api/management',integrationSettings)
+app.route('/api/management',helpScoutSettings)
+app.route('/api/helpscout',helpScoutEvents)
 app.route('/api/management',management)
 app.route('/api/management',brandMediaRoutes)
 app.route('/api/site-preview',sitePreview)

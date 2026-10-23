@@ -1,5 +1,7 @@
 import {phases} from '../journeys/kit/scenarios.mjs';const test=phases(import.meta.url);import assert from 'node:assert/strict';
 import {harness,body,sha,allScopes} from './harness.mjs';
+import {helpScoutSyncJourney} from '../helpers/helpscout-sync.mjs';
+test('Help Scout incremental ingestion stages reviewed history once, preserves reconnect cursors and refuses erased identities and revoked connections',helpScoutSyncJourney);
 const settings='/api/management/projects/p/connections';
 test('current native admins manage workspace credentials while operators cannot create or inspect them',async()=>{
  const h=await harness();try{

@@ -244,6 +244,58 @@ revision and status, while `conversation_id` remains its native ID for actions.
 This trigger reports current state rather than an event-history replay. Workspace
 scope, erasure and token revocation apply on every page and action.
 
-Help Scout export ingestion remains the reviewed Move in path. Continuous Inbox
-API/webhook synchronization, its reconnect cursors and erased-identity replay
-proof are not implemented by these connectors.
+## Help Scout read synchronization
+
+An owner or admin can connect one Help Scout Inbox mailbox per workspace through
+`POST /api/management/projects/:projectId/connections/helpscout`, using their
+native session and a recent step-up. The JSON fields are `mailboxId`,
+`accessToken`, `webhookSecret` and `startFrom` (an ISO timestamp in the past).
+Supply these from a private answers file or client secret fields; keep provider
+credentials out of command arguments, logs and source. The installation needs
+`INTEGRATION_ENCRYPTION_KEY`. Credentials are encrypted for this workspace and
+never returned by the read endpoint. The connector makes only GET requests to
+`https://api.helpscout.net/v2`; use a dedicated provider authorization with only
+the mailbox read access you need. It never writes to Help Scout.
+
+`POST .../connections/helpscout/sync` fetches conversations modified since the
+retained cursor, with a five-minute overlap, complete customer details and every
+thread page, including private notes. Every changed conversation becomes an
+ordinary **Move in** review. Open that review and approve its fingerprint before
+any native record changes. Import warnings and unsupported fields stay visible
+there. Imported history never sends replies, notifications or support events.
+An unchanged snapshot is not staged again; a new snapshot of an already imported
+source is reviewed under Move in's conflict rules and cannot overwrite native
+edits or silently replay old messages. This is staged coexistence, not automatic
+live ticket mirroring: applying incremental changes to existing imported tickets
+still needs an explicit merge/reconciliation implementation. Attachment metadata
+is retained in the review; Help Scout attachment bytes are not fetched here.
+
+`GET .../connections/helpscout` shows read scope, connection state, pending work,
+cursor, last successful sync, safe error code and recent import run IDs/states.
+A failed or incomplete read keeps its prior cursor. A sync refuses more than
+20 conversations, 200 threads per conversation, ten pages per list, 60 provider
+requests or 2 MiB of provider responses; it never treats a truncated read as a
+complete sync. Each request has a ten-second deadline and refuses redirects.
+Choose a later reviewed start date or a smaller provider mailbox if a first
+snapshot exceeds these bounds. No automatic cursor skipping is offered.
+
+Configure Help Scout's conversation webhook to
+`/api/helpscout/:projectId/events`, with the same private webhook secret. The
+original body is verified against `X-HelpScout-Signature` using Help Scout's
+base64 HMAC-SHA1 protocol. The event and mailbox must match the supported
+conversation notification and connection. Duplicate signed notifications are
+deduplicated; the receipt retains only a digest. A notification marks pending
+work and never imports its body or authorizes a native write. An owner/admin
+performs sync explicitly; notifications do not start background polling.
+
+`DELETE .../connections/helpscout` disconnects and removes both credentials;
+native import history stays. Repeating POST with renewed provider credentials
+reconnects the original mailbox, preserving its cursor and content receipts.
+Concurrent syncs, changed connections and revoked native authority are refused.
+Move in's erased-identity fences apply before new source custody is admitted:
+redelivered or changed copies cannot restore an erased customer. Restored exports
+carry native import history and erasure tombstones; reconnect the provider after
+restore because its credentials and active sync state are excluded.
+
+Provider-edge journeys qualify these local boundaries. No held-key Help Scout
+test-account receipt or live Zapier deployment is claimed.

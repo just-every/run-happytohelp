@@ -1,4 +1,4 @@
-import {phases} from '../journeys/kit/scenarios.mjs';
+import {phases,matrix} from '../journeys/kit/scenarios.mjs';
 const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {unchanged} from './admission-equality.mjs';
@@ -8,7 +8,7 @@ const root='/api/move-in/projects/p/imports',json=body=>({method:'POST',headers:
 const body=records=>records.map(JSON.stringify).join('\n');
 const request=(vendor,records,name)=>({method:'POST',headers:{'X-Import-Filename':name,'X-Import-Schema':'2.16'},body:'\n'+body(records)});
 const state=async(h,run)=>(await h.call(`${root}/${run.id}`)).data;
-for(const vendor of ['intercom','zendesk'])test(`${vendor} all supported nested shapes fence native erasure and changed replay`,async()=>{const h=await nativeHarness();try{
+test("all supported nested shapes fence native erasure and changed replay",matrix(['intercom','zendesk'],async (vendor)=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,name,created_at) VALUES('native','p',?,'Erase me',1)").bind(privateEmail).run();
  const runs=[];
  for(const [index,[kind,path,value,pointer,reason]] of cases[vendor].entries()){
@@ -32,9 +32,9 @@ for(const vendor of ['intercom','zendesk'])test(`${vendor} all supported nested 
   assert.equal((await h.raw(`${root}?vendor=${vendor}`,request(vendor,replay,'replay.jsonl'))).response.status,410,pointer);
  }
  for(const {run,holds} of runs)if(holds)assert.deepEqual(await custody(run),[0,0]);assert.equal(h.outbound,0);
- }finally{await h.close()}});
+ }finally{await h.close()}}));
 
-for(const vendor of ['intercom','zendesk'])test(`${vendor} understood primitives and nullable fields remain complete through native erasure and admission`,async()=>{const h=await nativeHarness();try{
+test("understood primitives and nullable fields remain complete through native erasure and admission",matrix(['intercom','zendesk'],async (vendor)=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,created_at) VALUES('native','p',?,1)").bind(privateEmail).run();
  const input=documents(vendor),person=vendor==='zendesk'?input.person.user:input.person,conversation=vendor==='zendesk'?input.conversation.ticket:input.conversation;
  person.custom_attributes=null;person.user_fields=null;person.external_id=null;
@@ -50,7 +50,7 @@ for(const vendor of ['intercom','zendesk'])test(`${vendor} understood primitives
  // identity, independently of the mapper's tie-breaking transcript order.
  assert.deepEqual((await h.db.prepare('SELECT s.source_id,m.content FROM messages m JOIN move_in_message_sources s ON s.message_id=m.id ORDER BY s.source_id').all()).results,vendor==='zendesk'?[{source_id:'73',content:privateEmail}]:[{source_id:'reply',content:'Reply'},{source_id:'source:first',content:privateEmail}]);
  assert.equal(h.outbound,0);
- }finally{await h.close()}});
+ }finally{await h.close()}}));
 
 test('all recorded Intercom participants and staff authors retain known email, external and source aliases',async()=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,external_id,created_at) VALUES('native','p',?,'private-external',1)").bind(privateEmail).run();

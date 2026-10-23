@@ -1,4 +1,4 @@
-import {phases} from '../journeys/kit/scenarios.mjs';
+import {phases,matrix} from '../journeys/kit/scenarios.mjs';
 const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
@@ -7,7 +7,7 @@ import {unchanged} from './admission-equality.mjs';
 import {archive} from './archive-inputs.mjs';
 import {person,sourceName,upload} from './empty-inputs.mjs';
 const root='/api/move-in/projects/p/imports',post={method:'POST',headers:{'Content-Type':'application/json'},body:'{}'};
-for(const vendor of ['zendesk','intercom'])for(const savedIndex of [false,true])test(`${vendor}: legacy ${savedIndex?'saved empty index':'empty archive'} cannot authorize processing or escape its vendor erasure fence`,async()=>{
+test("legacy empty originals cannot authorize processing or escape their vendor erasure fence",matrix([['zendesk',false],['zendesk',true],['intercom',false],['intercom',true]],async ([vendor,savedIndex])=>{
  const source=Buffer.from(vendor==='zendesk'?'\uFEFF \r\n':'\n{"type":"list","data":[]}'),body=savedIndex?source:archive([{name:'empty/'}]),filename=savedIndex?sourceName(vendor):'old.zip',originalKey='move-in/p/old/original',fileKey='move-in/p/old/files/0',hash=createHash('sha256').update(body).digest('hex'),descriptors=savedIndex?[{name:filename,key:fileKey,sha256:hash,size:body.length,index:[]}]:[];
  const h=await nativeHarness({async beforeIdentityAudit(db,directory,files){
   await db.batch([db.prepare("INSERT INTO contacts(id,project_id,email,created_at) VALUES('native','p','erase@example.test',1)"),db.prepare("INSERT INTO contacts(id,project_id,email,name,created_at) VALUES('keeper','p','keeper@example.test','Keep',2)")]);
@@ -25,4 +25,4 @@ for(const vendor of ['zendesk','intercom'])for(const savedIndex of [false,true])
   const beforeReplay=await h.snapshot(),replay=await h.raw(`${root}?vendor=${vendor}`,upload(JSON.stringify(person(vendor)),sourceName(vendor)));assert.equal(replay.response.status,410);assert.match(replay.data.error,/older export/);assert.equal(h.lastWrites,0);assert.equal(h.queued.length,0);await unchanged(h,beforeReplay,`${vendor}-legacy-empty-fenced`);
   const other=vendor==='zendesk'?'intercom':'zendesk',different=await h.raw(`${root}?vendor=${other}`,upload(JSON.stringify(person(other)),sourceName(other)));assert.equal(different.response.status,201);await h.drain();assert.equal((await h.call(`${root}/${different.data.data.id}`)).data.state,'ready');assert.equal(h.outbound,0);
  }finally{await h.close()}
-});
+}));

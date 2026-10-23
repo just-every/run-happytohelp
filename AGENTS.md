@@ -62,3 +62,27 @@ New workspaces are provisioned only through `src/modules/management/provisioning
 on the designated remote runner; keep local, hosted and configured-provider
 results distinct. After tracked edits, run `pnpm run source:lock`, then
 `pnpm run source:check`. Preserve the selected byte-exact Base sources.
+
+## Test budget
+
+The owner cap is **200 effective tests**. There is no established JSON budget
+schema in this edition; this section records the cap until one is adopted.
+Run `node scripts/count-tests.mjs` for the counts, `--json` for every counted
+location, or `--check` to fail when the cap is exceeded or a registration loop
+cannot be resolved. The inventory includes nightly and live tests even when they
+are not run on every push; package-script aliases do not add tests.
+
+The counter parses source without importing tests. It expands registration loops
+and replaces the Move-in, Connections, Reports, historical-upgrade and erasure
+group wrappers with their registered scenarios/steps. A data-driven matrix
+inside one registration counts once only when all inputs prove the same behavior.
+Standalone assertion scripts count their named `checks.push` checkpoints, or one
+flow when no checkpoints are declared. Assertions inside a flow are not separate
+tests. Helper calls do not excuse combining unrelated behaviors: review their
+meaning as well as the mechanical inventory, and split unrelated behaviors.
+
+Keep public-door integration checks for high-stakes or user-visible behavior.
+Delete copy, hash, version, file/environment-list, threshold, static-page and
+configuration-shape pins; do not weaken security, custody, erasure, restore or
+money assertions to meet the cap. A count over 200 remains over budget, never a
+claim of compliance. Do not run tests as part of build or deployment.

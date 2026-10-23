@@ -17,3 +17,18 @@ export function journeys(claims,scope=()=>true){
  for(const phase of registry.filter(scope)){const owners=Object.entries(claims).filter(([,[,select]])=>select(phase)).map(([key])=>key);assert.equal(owners.length,1,`${phase.file}: ${phase.name} is owned by ${owners.join(', ')||'no journey'}`)}
  return key=>{const [title,select]=claims[key];return [title,()=>runPhases(registry.filter(phase=>scope(phase)&&select(phase)))]}
 }
+
+// One behavior, several inputs. Keep a fresh fixture inside check for each input;
+// a failure names its input and still fails the owning journey.
+export function matrix(inputs,check){
+ assert.ok(inputs.length,'a matrix has at least one input');
+ assert.equal(typeof check,'function');
+ return async()=>{
+  for(const input of inputs){
+   try{await check(input)}catch(error){
+    if(error&&typeof error==='object')error.message=`${JSON.stringify(input)}: ${error.message}`;
+    throw error;
+   }
+  }
+ };
+}

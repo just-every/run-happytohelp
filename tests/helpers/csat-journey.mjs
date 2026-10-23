@@ -3,7 +3,7 @@ import {createHmac,randomUUID} from 'node:crypto'
 import {mailApp} from './email/app.mjs'
 
 // Real application, scheduler and providers; only the paid mail-provider edge is faked.
-export async function csatJourney({progress=()=>{}}={}){
+export async function csatJourney({progress=()=>{},inspectSurvey=async()=>{}}={}){
  progress("Starting real application")
  const secret='synthetic-fixture-csat-gateway-signing-secret',m=await mailApp({bindings:{INBOUND_EMAIL_TOKEN:secret}}),{app,mail}=m
  try{
@@ -55,6 +55,7 @@ export async function csatJourney({progress=()=>{}}={}){
   const path=link(sent),form=await app.request(path),html=await form.text()
   assert.match(path,/\.email\./)
   assert.equal(form.status,200);assert.match(html,/<fieldset>/);assert.match(html,/<html lang="en"/);assert.equal(form.headers.get('referrer-policy'),'same-origin')
+  await inspectSurvey({app,path,name:'signed-survey'})
   assert.equal((await app.call(path.slice(0,-1)+(path.endsWith('0')?'1':'0'))).status,404)
   assert.equal((await app.call(path,{headers:{Origin:'https://foreign.example'},body:{score:1}})).status,403)
   assert.equal((await app.call(path,{body:{score:5,recovery:'inferred'}})).status,400)
@@ -70,6 +71,7 @@ export async function csatJourney({progress=()=>{}}={}){
   assert.equal(results.results[0].response.recovery,'not_recovered');assert.equal((await app.first('SELECT status_category FROM conversations WHERE id=?',firstId)).status_category,'solved','negative recovery feedback never changes ticket status');assert.equal(results.summary.rated,1);assert.equal(results.summary.lowScore,1);assert.equal(results.results[0].response.reason,'clarity');assert.equal(results.results[0].response.score,2);assert.equal(results.results[0].response.channel,'email');assert.equal(results.results[0].response.invitationChannel,'email')
   const csv=await app.request(endpoint+'/results?format=csv',owner);assert.equal(csv.status,200);assert.match(await csv.text(),/"'=Private feedback/)
   assert.equal((await app.request(edit,{raw:true,headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'score=5&reason=outcome&comment=Solved&recovery=recovered'})).status,200)
+  await inspectSurvey({app,path:edit,name:'signed-survey-rerating'})
   results=await app.ok(endpoint+'/results',owner);assert.equal(results.results[0].response.recovery,'recovered');assert.equal(results.summary.positive,1);assert.equal(results.results[0].response.revision,2)
   assert.equal((await app.first('SELECT COUNT(*) n FROM csat_response_history WHERE resolution_id=?',resolution.id)).n,2)
   await app.ok(`/api/dashboard/projects/${a.projectId}/conversations/${firstId}`,{...owner,method:'PUT',body:{resolved:false}})

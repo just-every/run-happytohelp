@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "0b36ced66438335e6f7954d75e649d95655f59be72dce3805ac7a5176dfb4fc7",
+      "sha256": "d05065bae99d6e0363c7c1ccf775a6a6c5dba9b816573548542bd5ad2864719e",
       "executable": false
     },
     "AGENTS.md": {
@@ -1632,7 +1632,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "eeb0b1e18e6b22c6aa8f21a699d973bbc307cbdb13f5720edf5dc95ab2156d60",
+      "sha256": "223625c381b6b0ecc62787ad4669ea68d79e5bec49cc212ee8021b5837db2647",
       "executable": false
     },
     "DEMO.md": {
@@ -1656,7 +1656,7 @@
       "executable": false
     },
     "docs/account-security.md": {
-      "sha256": "8d03c3f63de86b13f6c3dfe2a3ae56913bbf8e7c4c1bea91d3514d35c62e3a66",
+      "sha256": "129f3eb3796856ed4af740ea8c5bd74db92026e893a9db103660f97553214996",
       "executable": false
     },
     "docs/AGENT-FIX.md": {
@@ -3288,7 +3288,7 @@
       "executable": false
     },
     "src/edition/delegation/common.ts": {
-      "sha256": "52af7fed372ed1f51a7353bd556a2f8f5c6561beddcef53867f7c26fe1523075",
+      "sha256": "e1a667e3d4b8c07664de85763dc29378680e2e99f3bec8135573a967ae4f1f0f",
       "executable": false
     },
     "src/edition/delegation/consent-data.ts": {
@@ -11140,7 +11140,7 @@
       "executable": false
     },
     "tests/helpers/identity/roles-audit.mjs": {
-      "sha256": "def72f36bfa91b40f0353d42dddde7a30b21696025a7d73efc25cd76addabaaa",
+      "sha256": "b08e521013c70d269105536cb9d604f9c56d1d4eff1cc20815a9086cdcd2a758",
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {

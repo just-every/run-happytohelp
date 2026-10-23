@@ -152,7 +152,9 @@ installation, never by email alone:
 
 Notes-only collaborators cannot open native knowledge management, source text,
 search, draft or translation/history endpoints. These reads require knowledge
-editing permission for a custom role. Published help remains available through
+editing permission for a custom role. Existing connected-application grants
+lose article evidence, check and audience reads when that permission is withdrawn.
+Published help remains available through
 its ordinary audience-controlled help-center doors. This conservative default
 keeps restricted knowledge out of notes-only seats while separate knowledge
 reading permissions remain undefined. It does not supply enterprise SSO or SCIM.

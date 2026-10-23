@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 
 export async function ownershipBrowserFlow({page,request,origin,token,width,inspect}){
  const project=(await request('/api/management/projects',{token,body:{name:'Migrated ownership '+width,allowedOrigin:origin}})).id;
+ const previous=await request('/api/identity/session',{token});
+ token=(await request('/api/identity/switch-project',{token,body:{projectId:project}})).token;
+ const switched=await page.request.post(origin+'/api/identity/switch-project',{headers:{Origin:origin},data:{projectId:project}});assert.equal(switched.status(),200);
+ try{
  const owner=await request('/api/identity/session',{token}),base=`/projects/${project}`,native=`/api/dashboard/projects/${project}`;
  const group=(await request(native+'/ticket-groups',{token,body:{name:'Parcel support',members:[owner.id]}})).data;
  const dates={created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z'},name='ownership-'+width+'.jsonl';
@@ -12,4 +16,5 @@ export async function ownershipBrowserFlow({page,request,origin,token,width,insp
  await page.getByRole('button',{name:'Apply assignments',exact:true}).click();await page.getByText('2 assignments applied. 0 remain to review.',{exact:true}).waitFor();await inspect('ownership-applied-'+width);
  const tickets=(await request(native+'/conversations?view=all',{token})).data;assert.equal(tickets.length,2);
  for(const ticket of tickets){const stored=(await request(`${native}/conversations/${ticket.id}/ticket`,{token})).data;assert.equal(stored.assigned_to,owner.id);assert.equal(stored.group_id,group.id);assert.equal(stored.status_category,ticket.subject.endsWith('closed')?'closed':'solved')}
+ }finally{const restored=await page.request.post(origin+'/api/identity/switch-project',{headers:{Origin:origin},data:{projectId:previous.projectId}});assert.equal(restored.status(),200)}
 }

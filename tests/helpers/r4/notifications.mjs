@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {mailApp,recipients,replyTo} from '../email/app.mjs'
+import {createHmac} from 'node:crypto'
 import {sha} from '../../journeys/kit/app.mjs'
 
 // One public-door journey. Only mail provider/DNS are network fixtures; persistence,
@@ -146,6 +147,7 @@ export async function notificationTriggersJourney(){
   const denied=await app.call(ticket(id)+'/notes',{headers:operator,method:'POST',body:{content:'No access @[Quiet](user:quiet)'}})
   assert.equal(denied.status,403);await settle();assert.equal(mail.sent.length,before)
   await workflowNotices(m)
+  await workflowGroupNotices(m)
  }finally{await m.close()}
 }
 
@@ -302,4 +304,33 @@ async function workflowNotices(m){
   await app.scheduled();assert.deepEqual([deliveries(marker).length,deliveries('Customer '+marker).length],counts,'pause prevents subsequent effects')
   mail.respond=null
  }
+}
+
+// The workflow editor's named-group option identifies a group, never a user.
+// Both audiences retain their current membership and personal delivery choices.
+async function workflowGroupNotices(m){
+ const {app,DB,mail}=m,base='/api/dashboard/projects/p',owner={headers:m.operator},req=(path,body,method)=>app.ok(base+path,{...owner,...(body===undefined?{}:{body}),...(method?{method}:{})})
+ const group=(await req('/ticket-groups',{name:'Workflow review',members:['op','watch']})).data
+ const incoming={messageId:'synthetic-happytohelp-30',to:'inbound@example.com',from:'group-workflow@example.com',subject:'Workflow group review',text:'Please review this order'}
+ await m.gateway(incoming);const id=(await m.claim(incoming.messageId)).conversation_id
+ await req(`/conversations/${id}/followers`,{user_ids:['op','watch']},'PUT')
+ const definition={name:'Explicit group and follower workflow',kind:'event',event_kind:'customer_reply',conditions:{all:[{field:'subject',op:'eq',value:incoming.subject}]},actions:[{type:'assign',user_id:null,group_id:group.id},{type:'notify',kind:'group',recipient_id:group.id,message:'Group workflow: {{ticket.id}}'},{type:'notify',kind:'followers',message:'Follower workflow: {{ticket.id}}'}]}
+ const {rule}=await req('/workflow-rules',definition)
+ const foreign=await app.seedWorkspace('foreign-notify-group')
+ const foreignGroup=(await app.ok(`/api/dashboard/projects/${foreign.projectId}/ticket-groups`,{token:foreign.tokens.owner,body:{name:'Foreign team',members:[]}})).data
+ assert.equal((await app.call(base+'/workflow-rules',{...owner,body:{...definition,actions:[{type:'notify',kind:'group',recipient_id:foreignGroup.id}]}})).status,400,'a workflow cannot name another workspace group')
+ assert.equal((await app.call(base+'/workflow-rules',{...owner,body:{...definition,actions:[{type:'notify',kind:'followers',recipient_id:'op'}]}})).status,400,'a follower action cannot redirect to a chosen member')
+ assert.equal((await req(`/workflow-rules/${rule.id}/preview`,{})).side_effects,false)
+ await req(`/workflow-rules/${rule.id}/publish`,{})
+ const secret=(await DB.prepare("SELECT verification_secret FROM projects WHERE id='p'").first()).verification_secret
+ const signed=(await app.ok('/api/identity/widget/session',{body:{widgetKey:'w',identifier:incoming.from,email:incoming.from,contact_hash:createHmac('sha256',secret).update(incoming.from).digest('hex')},headers:{Origin:'https://example.com'}}))
+ const ticket=(await req(`/conversations/${id}/ticket`)).data
+ await app.ok(`/api/conversations/${id}/messages`,{token:signed.token,body:{localId:'synthetic-happytohelp-31',content:'Here is the order reference',expectedRevision:ticket.revision,expectedLastMessageId:ticket.last_message_id}})
+ await app.scheduled();await app.scheduled()
+ const run=(await req(`/workflow-runs?conversation_id=${id}`)).runs.find(r=>r.rule_id===rule.id);assert.equal(run.state,'complete',run.reason)
+ for(const marker of ['Group workflow:','Follower workflow:'])assert.deepEqual(mail.sent.filter(e=>e.body.text?.startsWith(marker)).flatMap(e=>recipients(e.body)),['op@example.com'],'watch opted out of email; only the current permitted recipient is emailed')
+ const inbox=(await app.ok('/api/management/projects/p/notification-inbox',{headers:{Authorization:'Bearer watch-token'}})).data
+ for(const kind of ['group','follower'])assert.ok(inbox.some(n=>n.conversation_id===id&&n.kind===kind),'watch retains the preferred inbox notice')
+ const before=mail.attempts;await app.configure({});await app.scheduled();assert.equal(mail.attempts,before,'completed audience claims are not replayed after restart')
+ await req(`/workflow-rules/${rule.id}/pause`,{})
 }

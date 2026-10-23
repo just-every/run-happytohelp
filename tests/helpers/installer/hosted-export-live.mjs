@@ -3,6 +3,7 @@ import {stat} from 'node:fs/promises';
 import {join} from 'node:path';
 import {getPlatformProxy,unstable_splitSqlQuery} from 'wrangler';
 import {prepareHostedSource,removeHostedSource,hostedSourceApi} from './hosted-export-resources.mjs';
+import {hostedSourceD1} from './hosted-source-d1.mjs';
 import {createPortability} from '@runeditrun/rer/modules/portability';
 import {importArchive,fileRecords} from '@runeditrun/rer/modules/portability/files';
 import {migrationReplay} from '@runeditrun/rer/modules/portability/migration-history';
@@ -20,9 +21,11 @@ export async function hostedExportLive(root,scratch,input='exports/support.rer',
  const output='exports/hosted-live.rer';
  try{
   proxy=await getPlatformProxy({configPath:config,envFiles:[],persist:false,remoteBindings:true});
-  const {DB,FILES}=proxy.env;
+  const DB=hostedSourceD1(source),FILES=proxy.env.FILES;
   const service=await createPortability({db:DB,buckets:{FILES},policy:archivePolicy,migrations:async()=>migrationReplay(await appliedMigrations(root,DB,'DB',{},unstable_splitSqlQuery),archivePolicy,{})});
-  console.log('Hosted portability: copying the populated native archive into staging storage.');ownsObjects=true;await importArchive(service,join(root,input),[]);
+  console.log('Hosted portability: copying the populated native archive into staging storage.');ownsObjects=true;await importArchive(service,join(root,input),[],undefined,progress=>{
+   if(progress.phase==='staging'&&progress.parts%25===0)console.log(`Hosted portability: ${progress.parts}/${progress.total} parts staged.`);
+  });
   await proxy.dispose();proxy=undefined;
   console.log('Hosted portability: exporting through the public rer remote command.');await run(root,['export','--target','remote','--output',output],0,{env:{H2H_EXPORT_CONFIG:config,H2H_EXPORT_WRITERS_STOPPED:'yes',CLOUDFLARE_API_TOKEN:token}});
   const closing=async path=>{let found;for await(const record of fileRecords(path))if(record.kind==='closing')found=record;assert.ok(found);return found};

@@ -11376,11 +11376,11 @@
       "executable": false
     },
     "tests/helpers/installer/hosted-export-live.mjs": {
-      "sha256": "54cc17850db5e654eaf3115f5a6ea6ec2b467db2ff87fd39de3b62b17725592c",
+      "sha256": "2d411b6987bc1b1072be1fb8aa6a843d4020b9d5125a73198dd3b5ca07386d61",
       "executable": false
     },
     "tests/helpers/installer/hosted-export-resources.mjs": {
-      "sha256": "c77181f7161e1de34c8cc09554fc7baec8875cae3701034bf819cdd11a9adbf9",
+      "sha256": "26890ac569c96ac9109a4118de248d0eab125ca19396176f8c579067a3dc492f",
       "executable": false
     },
     "tests/helpers/installer/hosted-export.mjs": {

@@ -8,7 +8,7 @@ import {migrate} from '@runeditrun/rer/internal/modules/deploy-kit/migrations.mj
 export function hostedSourceApi(source){
  assert.match(source.name,/^h2h-portability-[a-f0-9-]{12}$/);assert.equal(source.bucket,source.name+'-files');
  assert.equal(source.accountId,process.env.CLOUDFLARE_ACCOUNT_ID);
- return cloudflare({accountId:source.accountId,token:process.env.CLOUDFLARE_API_TOKEN,budgetMigrations:true});
+ return cloudflare({accountId:source.accountId,token:process.env.CLOUDFLARE_API_TOKEN,budgetMigrations:true,maxRequests:5000});
 }
 export async function removeHostedSource(source){
  const api=hostedSourceApi(source);

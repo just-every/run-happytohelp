@@ -11276,7 +11276,7 @@
       "executable": false
     },
     "tests/helpers/inbox/plugin-frame-browser.mjs": {
-      "sha256": "cf342b355d2ed24bcab5621069d1cd15a3c9a380ba787a545b8bf97260bbed70",
+      "sha256": "fc03029d7bbae454e8f5b47123153d375ed841d0e2c97dd34ad495411e304bc8",
       "executable": false
     },
     "tests/helpers/inbox/problems.mjs": {

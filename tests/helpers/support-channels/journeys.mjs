@@ -36,7 +36,7 @@ export async function credentials(){const h=await channelHarness();try{
  assert.equal((await h.app.call(h.root+'/connections',{token:h.token,body:{provider:'unsupported'}})).status,409);h.install.a2p=false;assert.equal((await h.app.call(h.root+'/connections',{token:h.token,body:h.input('sms')})).status,409);h.install.a2p=true;h.install.slack=false;assert.equal((await h.app.call(h.root+'/connections',{token:h.token,body:h.input('slack')})).status,409);h.install.slack=true;
  await h.call('/connections/'+c.id,undefined,{method:'DELETE'});const raw=h.event('sms');assert.equal((await h.deliver(c,'sms',raw)).status,410);assert.equal(h.sends.length,0);
  const next=await h.connect('sms');assert.equal(next.id,c.id);assert.equal((await h.deliver(next,'sms',raw)).status,200);
- assert.ok((await h.app.sql("SELECT action FROM audit_events WHERE action LIKE 'support_channel.%'")).length>=3);
+ assert.ok((await h.app.sql("SELECT action FROM audit_events WHERE action='support_channel.revoked'")).length,'revocation is audited');
  }finally{await h.close();}}
 export async function exchange(providers=['sms','whatsapp','instagram','messenger']){await consentExchange();await mediaExchange();await templateExchange();const h=await channelHarness();try{
  for(const p of providers){const c=await h.connect(p),raw=h.event(p);
@@ -80,7 +80,14 @@ async function mediaExchange(){const h=await channelHarness();try{
   await h.reply(t,{content:'',mediaIds:[file.id]});assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].state,'accepted');
   const sent=h.sends.at(-1),grant=p==='sms'?new URLSearchParams(sent.body).get('MediaUrl'):p==='whatsapp'?JSON.parse(sent.body).document.link:p==='slack'?JSON.parse(sent.body).attachments[0].title_link:p==='teams'?JSON.parse(sent.body).attachments[0].contentUrl:JSON.parse(sent.body).message.attachment.payload.url;
   assert.ok(grant.startsWith('https://app.example/api/support-channels/attachments/'));assert.equal((await h.app.call(new URL(grant).pathname)).data,'synthetic outbound attachment');
+  if(['slack','teams'].includes(p)){
+   const b=JSON.parse(raw),at=new Date().toISOString(),changed=p==='slack'?{team_id:h.input(p).account,event_id:'synthetic-happytohelp-media-edit',event:{type:'message',subtype:'message_changed',channel:h.input(p).channels[0],event_ts:String(Date.now()/1000),message:{ts:b.event.ts,user:b.event.user,text:'Changed attachment caption'}}}:{...b,type:'messageUpdate',timestamp:at,attachments:[],text:'Changed attachment caption'};
+   const result=await h.deliver(c,p,JSON.stringify(changed));assert.equal(result.data.data[0].reason,'attachment_change_requires_review');
+   const preserved=await h.app.ok('/api/conversations/'+t.conversation_id+'/messages',{token:h.token});assert.equal(preserved.messages[0].media[0].id,f.id);assert.equal((await h.app.call(download,{token:h.token})).data,'synthetic attachment');
+  }
   await h.call('/connections/'+c.id,undefined,{method:'DELETE'});assert.equal((await h.app.call(new URL(grant).pathname)).status,404);
+  if(['slack','teams'].includes(p)){await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${t.contact_id}/erase`,{token:h.token,body:{}});assert.equal((await h.app.call(download,{token:h.token})).status,404);}
+
  }
  const c=await h.connect('sms');h.mediaResponses.push({status:302,headers:{location:'https://untrusted.example/private'}});assert.equal((await h.deliver(c,'sms',h.event('sms',{sender:'+12025550128',media:true,validMedia:true}))).status,422);assert.ok(!h.app.requests.some(r=>r.url.includes('untrusted.example')));
  h.mediaResponses.push({headers:{'content-length':'10000001'}});assert.equal((await h.deliver(c,'sms',h.event('sms',{sender:'+12025550129',media:true,validMedia:true}))).status,413);

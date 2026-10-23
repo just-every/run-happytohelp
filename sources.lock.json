@@ -11984,7 +11984,7 @@
       "executable": false
     },
     "tests/move-in/native-corrections.mjs": {
-      "sha256": "33b38b38540ecb1a5f5a471dc8d4769422ecd44ee88ebe6196ec44a6b7f2c239",
+      "sha256": "c043b171caa657f40e61fc23770fac01542c2890da6222ece86e8ebba50ba79d",
       "executable": false
     },
     "tests/move-in/nested-inputs.mjs": {

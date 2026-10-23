@@ -2471,6 +2471,10 @@
       "sha256": "e0b666f7007df585dcefca23a5e3567fca5b3f6c283f55f5295658297ae28175",
       "executable": false
     },
+    "migrations/242_widget_campaigns.sql": {
+      "sha256": "f97e48b53d6c84f0d01e0feaa87e3b6371e64d2a540f5f9d2b9f8eec88748ac4",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "0fa396b895e9098cc1db5070d1dc33ca732fae8287f84f69dc8afa3bc8afd1a6",
       "executable": false
@@ -6076,7 +6080,7 @@
       "executable": false
     },
     "src/modules/management/widget-events.ts": {
-      "sha256": "63d7dc375f50ffbb46046647f63e9547b3b0d66f1a2c531b1ee5e11c8bbb8131",
+      "sha256": "7d06f41e693d7417eb980ec5da4a27bd1096eace353ec07954a054a31aab490f",
       "executable": false
     },
     "src/modules/management/widget-events/contact.ts": {
@@ -6100,7 +6104,7 @@
       "executable": false
     },
     "src/modules/management/widget-settings.ts": {
-      "sha256": "7a8b27bcce207edaad2c981353f4002f1bfa7d6cb442e0173d5c710ac40e7d75",
+      "sha256": "822939f520c16992f04c4ef61fca2be41c00c5c2f25a03da1c8064731f558765",
       "executable": false
     },
     "src/modules/management/workspace-artwork.ts": {
@@ -6496,7 +6500,7 @@
       "executable": false
     },
     "src/modules/reports/routes.ts": {
-      "sha256": "b6c91f68d979e93deb0ed03935e041116ca321352f29c6b250167ea802735429",
+      "sha256": "9912ea379b09363c90a7471d887da6cf1ae0d78cbaa4f7d8f734ccb656fc29b9",
       "executable": false
     },
     "src/modules/reports/schedule-calendar.ts": {
@@ -6835,6 +6839,22 @@
       "sha256": "a2c5b999de1091049a6dd198d78172781a5877c59aaf831b0fa612b1c7d117c4",
       "executable": false
     },
+    "src/modules/widget/campaigns/events.ts": {
+      "sha256": "47beb60258168a845b693925ee3809dbbb81c0a7ea13d688702ab44137c36425",
+      "executable": false
+    },
+    "src/modules/widget/campaigns/model.ts": {
+      "sha256": "dd35330aba821e0a7fb39a75010c59614ab2015cb01a27981a45433114c486fa",
+      "executable": false
+    },
+    "src/modules/widget/campaigns/report.ts": {
+      "sha256": "a4e694c281af4dbef3cbf228979a8b3faf3e1cfeb51baceecb37377c22422188",
+      "executable": false
+    },
+    "src/modules/widget/campaigns/routes.ts": {
+      "sha256": "6c1584b4dc8dc00b482cc13bed7764b7bff81a1de11c18a00844a04a1b42ce9c",
+      "executable": false
+    },
     "src/modules/widget/css/AgentAvatar.css": {
       "sha256": "c2b3b0518649c31237783e480cfca486c588a53acdab20193aec3bccea77ff34",
       "executable": false
@@ -6853,6 +6873,10 @@
     },
     "src/modules/widget/css/Button.css": {
       "sha256": "fdfd10407c9282b35e77df2b8ff941a467245adb0453822624478846b2df5179",
+      "executable": false
+    },
+    "src/modules/widget/css/CampaignOffer.css": {
+      "sha256": "ec0d60a280046cfbcdcf8e246feba68773cb548b86489948388b232bb86e406f",
       "executable": false
     },
     "src/modules/widget/css/ChatHeader.css": {
@@ -7044,7 +7068,7 @@
       "executable": false
     },
     "src/modules/widget/js/App.jsx": {
-      "sha256": "32564c909b0cdbcd0130a8e1e5e24bf5ca793560ab5956d37122eead88a43592",
+      "sha256": "0f85abdd046c00d497e56f5ca6d949373395796b4b7a5797f1f9262b52aec088",
       "executable": false
     },
     "src/modules/widget/js/AwayNotice.jsx": {
@@ -7053,6 +7077,10 @@
     },
     "src/modules/widget/js/Button.jsx": {
       "sha256": "9861aea8e856ba15de42d4ad88ad5d59547cd3420104cfdb1735e707125bfc17",
+      "executable": false
+    },
+    "src/modules/widget/js/CampaignOffer.jsx": {
+      "sha256": "6f936384509ec846a3e455b97d824d1de50a856565573a455752e02973dc117e",
       "executable": false
     },
     "src/modules/widget/js/ChatHeader.jsx": {
@@ -7112,7 +7140,7 @@
       "executable": false
     },
     "src/modules/widget/js/context/ConnectContext.jsx": {
-      "sha256": "68166a56e8a68cc10bbd07910820743d06cef0e94280377ec848471cdbf4d897",
+      "sha256": "8d871ad13554c502614529326ba51274db188cfece99490888e41bfc7b611119",
       "executable": false
     },
     "src/modules/widget/js/context/defaults.js": {
@@ -7208,7 +7236,7 @@
       "executable": false
     },
     "src/modules/widget/js/Style.jsx": {
-      "sha256": "55ec605a40b3e3f51a79673527b6f8d55537a0bb7ca6c4c4e9dd2305f386b9d2",
+      "sha256": "fedb88971264294180000923a97a4379b417d9ad6d6923561303eb40e71f6eb3",
       "executable": false
     },
     "src/modules/widget/js/TypingIndicator.jsx": {
@@ -8359,6 +8387,10 @@
       "sha256": "d1a76d081fb1999de03b2e0b636c3e65113a41e46029c4e12b1a665a220c7ff4",
       "executable": false
     },
+    "src/ui/dashboard/components/widget-settings/CampaignSettings.jsx": {
+      "sha256": "fddcc752496dcd66844ffc47553e26f5ba6427aa6385b750653ac1cc05efa233",
+      "executable": false
+    },
     "src/ui/dashboard/components/widget-settings/code/aiIntegrationBrief.jsx": {
       "sha256": "e17a6caaaddffd4ea8b73840c39071bf257b3444779cce2bdc13f2451676d904",
       "executable": false
@@ -8452,7 +8484,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/WidgetSettings.jsx": {
-      "sha256": "7643b38949a1d728463f7a7ed73aa5c8b97ecdc93d7024978c16cd652143fdd5",
+      "sha256": "7613ddbce50ab9536db43cedabef4f30983a0f3033426cc711ea375545b9ae06",
       "executable": false
     },
     "src/ui/dashboard/components/workflows/schedule-time.js": {
@@ -9860,7 +9892,7 @@
       "executable": false
     },
     "src/ui/native/pages/Reports.jsx": {
-      "sha256": "7f6a601c12ee636df48d49a89bdfb6a025dcd28f5328be8f949f11e328d23fb2",
+      "sha256": "f98b3d7447c6a10ea56d2e9cea584510bb2a1b4d3b6237d8566ec9f13676fd9f",
       "executable": false
     },
     "src/ui/native/pages/reports/BacklogPanel.jsx": {
@@ -11523,8 +11555,12 @@
       "sha256": "4ea9d6bae72eff9bf9dba348d507b78b2dc39440286a5a418ff164721c5b289b",
       "executable": false
     },
+    "tests/helpers/widget/campaigns.mjs": {
+      "sha256": "5896e58cf7512e35b087915a6a920f8fde0f7146a8b2ede7a3f2b6a4f57f28d1",
+      "executable": false
+    },
     "tests/helpers/widget/events.mjs": {
-      "sha256": "d09af51af0b348470655b1823aa5e961acf2dd39836d00fd887835f31772155a",
+      "sha256": "dcf523cabb404cdae176bc6d58c2ee2fad833b386ad9847bd20292becfe4d6a9",
       "executable": false
     },
     "tests/helpers/widget/installed.mjs": {

@@ -1,6 +1,7 @@
 import React, { Suspense, useCallback, useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import AppContext from './context/AppContext';
 import Connection from './Connection';
+import CampaignOffer from './CampaignOffer';
 import classNames from 'classnames/bind';
 import root from 'react-shadow';
 
@@ -266,10 +267,10 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
                         'happytohelp-preview': isPreview,
                         'happytohelp-proxy': config.proxy
                     })}>
-                        <AppContext.Provider value={contextValues}>
+                        <AppContext.Provider value={{...contextValues,openCampaign:()=>{initiate();setOpen(true);}}}>
                             <ActiveConnectProvider open={open} setOpen={setOpen} setInsightOpen={setInsightOpen}
                                                    onSettingsUpdated={handleSettingsUpdated}>
-                                {!isPreview && <Connection ref={connectionRef} />}
+                                {!isPreview && <><Connection ref={connectionRef} /><CampaignOffer /></>}
                                 <Suspense fallback={<div/>}>
                                     {initiated ?
                                         <Interact setOpen={setOpen}/>

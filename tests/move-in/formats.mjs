@@ -1,10 +1,10 @@
-import {phases} from '../journeys/kit/scenarios.mjs';
+import {phases,matrix} from '../journeys/kit/scenarios.mjs';
 const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {nativeHarness} from './harness.mjs';
 import {zip} from './zip.mjs';
 const post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-for(const vendor of ['zendesk','intercom'])test(`${vendor} private ZIP upload maps all kinds with handwritten publication, content, author and time expectations`,async()=>{
+test("private ZIP upload maps all kinds with handwritten publication, content, author and time expectations",matrix(['zendesk','intercom'],async (vendor)=>{
  const h=await nativeHarness(),base='/api/move-in/projects/p/imports';try{
  const zendesk=[
   {user:{id:7,role:'end-user',name:'Ada',email:'ada@example.test',created_at:'2024-01-01T00:00:00Z',tags:['Customer only']}},
@@ -32,7 +32,7 @@ for(const vendor of ['zendesk','intercom'])test(`${vendor} private ZIP upload ma
  const articles=(await h.db.prepare('SELECT title,content,status,updated_at FROM knowledge_articles ORDER BY title').all()).results;assert.deepEqual(articles,[{title:'Guide',content:'# Guide\n\n**Hello**',status:'published',updated_at:1704153600000},{title:'Unpublished',content:'Draft',status:'draft',updated_at:1704153600000}]);
  assert.deepEqual((await h.db.prepare('SELECT title,content,created_at,updated_at FROM macros').all()).results,[{title:'Greeting',content:'Hello',created_at:1704067200000,updated_at:1704153600000}]);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM users').first()).n,3,'no staff access created');assert.equal(h.outbound,0);
  }finally{await h.close()}
-});
+}));
 
 test('Help Scout reviewed public upload reaches native history and knowledge, with inert reads, exact repeat/repackage equality and undo',async()=>{
  const {responses}=await import('./helpscout-fixtures.mjs'),{assertBusinessEquality}=await import('./business-equality.mjs'),h=await nativeHarness(),base='/api/move-in/projects/p/imports',input=responses(),body=JSON.stringify({responses:input});

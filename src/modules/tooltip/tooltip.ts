@@ -62,6 +62,8 @@ export function installTooltips(root: Document | ShadowRoot, container?: Element
     let press: { control: HTMLElement; id: number; x: number; y: number; timer: number } | null = null;
     // A long press shows the tooltip instead of acting: the click it ends in goes nowhere.
     let swallow: HTMLElement | null = null;
+    // A control the pointer pressed, or whose tooltip Escape dismissed, stays quiet until the pointer leaves it.
+    let quiet: HTMLElement | null = null;
 
     // The event's own target, inside shadow roots too.
     const origin = (event: Event) => event.composedPath()[0] ?? event.target;
@@ -159,27 +161,30 @@ export function installTooltips(root: Document | ShadowRoot, container?: Element
     };
     const endPress = () => { if (press) view.clearTimeout(press.timer); press = null; };
 
+    // Entering a control, or moving on one (after a scroll moved it under a resting pointer), starts its delay.
     const onPointerOver = (event: PointerEvent) => {
         if (event.pointerType === 'touch') return;
         pointer = { x: event.clientX, y: event.clientY };
         const control = controlOf(origin(event));
-        if (control && control !== shown && control !== pending) schedule(control);
+        if (control && control !== shown && control !== pending && control !== quiet) schedule(control);
     };
     const onPointerOut = (event: PointerEvent) => {
         if (event.pointerType === 'touch') return;
         const control = controlOf(origin(event));
         if (!control || controlOf(event.relatedTarget) === control) return;
+        if (quiet === control) quiet = null;
         if (pending === control) { view.clearTimeout(showTimer); pending = null; }
         if (shown === control && reason === 'hover') hide();
     };
     const onPointerMove = (event: PointerEvent) => {
-        if (event.pointerType !== 'touch') { pointer = { x: event.clientX, y: event.clientY }; return; }
+        if (event.pointerType !== 'touch') { onPointerOver(event); return; }
         if (press && press.id === event.pointerId && Math.hypot(event.clientX - press.x, event.clientY - press.y) > TOUCH_SLOP) endPress();
     };
     const onPointerDown = (event: PointerEvent) => {
         swallow = null;
         if (event.pointerType !== 'touch') {
             // A press acts: the tooltip gets out of the way and returns only after the pointer leaves and rests again.
+            quiet = controlOf(origin(event));
             hide();
             return;
         }
@@ -216,7 +221,7 @@ export function installTooltips(root: Document | ShadowRoot, container?: Element
     const onFocusOut = (event: FocusEvent) => {
         if (shown && reason === 'focus' && controlOf(origin(event)) === shown && controlOf(event.relatedTarget) !== shown) hide();
     };
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') hide(); };
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') { quiet = shown ?? pending; hide(); } };
     const onScroll = (event: Event) => {
         const control = shown ?? pending;
         if (!control) return;
@@ -225,7 +230,8 @@ export function installTooltips(root: Document | ShadowRoot, container?: Element
         if (!moves) return;
         // Focus scrolls a control into view just after it shows its tooltip: follow that one instead of hiding.
         if (shown && reason === 'focus' && view.performance.now() - shownAt < 250) { place(); return; }
-        hide();
+        // Once the scroll stops, the control under a resting pointer waits out the whole delay.
+        hide(); hiddenAt = -Infinity;
     };
     const onResize = () => hide();
 

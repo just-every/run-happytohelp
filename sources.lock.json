@@ -6707,6 +6707,26 @@
       "sha256": "3764fc4d20c96c0f97f0e2572fae73883c50bab7aca459089930dff5a6b66180",
       "executable": false
     },
+    "src/modules/tooltip/README.md": {
+      "sha256": "6ee707656faf81a35a5bb49db004cb5e3b4b1a6bd47ef39d6122c56fca3516ad",
+      "executable": false
+    },
+    "src/modules/tooltip/tooltip-css.d.ts": {
+      "sha256": "0535aee87c904e56fe608390429f23a3530f604a79b6f1e1986ffcca99d1c8d4",
+      "executable": false
+    },
+    "src/modules/tooltip/tooltip.css": {
+      "sha256": "c3d6fb51ef434350d10c37a76af5fee8137769513a231e6c4bdd29f54a4fffd9",
+      "executable": false
+    },
+    "src/modules/tooltip/tooltip.ts": {
+      "sha256": "d9c4b200bd1f24ee53370cf0f844cc7381f5e4e2100da58986d5a76600ea1c1e",
+      "executable": false
+    },
+    "src/modules/tooltip/TooltipLayer.tsx": {
+      "sha256": "7858d309d34a9374a2b11b00c3c06d85d2386ac9959c14676ef6273490e0f449",
+      "executable": false
+    },
     "src/modules/training-runs/baseline.js": {
       "sha256": "cf3b54d120db66eceabd33226de8d5badaf3bec8abcb1aefaef8bda4e840382d",
       "executable": false
@@ -7213,6 +7233,10 @@
     },
     "src/modules/widget/js/TypingIndicator.jsx": {
       "sha256": "8fa91aafc8dd000e2ec281e317865a649a7cce6427804610c29502824eb023dc",
+      "executable": false
+    },
+    "src/modules/widget/js/WidgetTooltips.jsx": {
+      "sha256": "c356441f1be9d0064404e1e6d3ab422624fe09b93c32c386d0cdcd2ad60661ec",
       "executable": false
     },
     "src/modules/widget/js/workspaceBrand.jsx": {
@@ -8053,6 +8077,10 @@
     },
     "src/ui/dashboard/components/DemoInboxInvitation.jsx": {
       "sha256": "3e73121d8c1b39bd969b7297ea460593f91a36aa024f9ba4e0b611a867b293ba",
+      "executable": false
+    },
+    "src/ui/dashboard/components/DialogHeader.jsx": {
+      "sha256": "b42a1adb216c88d9a43f28e3dcb0c91cb7f72f153ba128229dcd48c629add704",
       "executable": false
     },
     "src/ui/dashboard/components/dialogTabBoundary.js": {
@@ -11217,6 +11245,10 @@
     },
     "tests/helpers/inbox/tickets.mjs": {
       "sha256": "610b9e90ae3f48695540c75397f1a07a4dc73e6a931f174d7acc1be79e71eb37",
+      "executable": false
+    },
+    "tests/helpers/inbox/tooltip-browser.mjs": {
+      "sha256": "12c9d766e9b5a70962e6383c60353d21eb9fab4d0f9336f67eedba816ee38327",
       "executable": false
     },
     "tests/helpers/inbox/ui-browser.mjs": {

@@ -17,7 +17,8 @@
   border-radius: var(--tooltip-radius, 6px);
   color: var(--tooltip-fg, #ffffff);
   background: var(--tooltip-bg, #141414);
-  box-shadow: var(--tooltip-shadow, none);
+  /* A hairline in its own text colour keeps its edge on a surface of its own colour (an ink pill over an ink bar). */
+  box-shadow: var(--tooltip-shadow, 0 0 0 1px color-mix(in srgb, var(--tooltip-fg, #ffffff) 30%, transparent));
   font-family: inherit;
   font-size: var(--tooltip-font-size, 13px);
   font-style: normal;

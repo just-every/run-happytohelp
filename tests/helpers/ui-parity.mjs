@@ -20,6 +20,7 @@ export async function verifySettingsParity(page, {origin,projectId,checks}) {
     await page.getByLabel('Workspace color hex').fill('#327654');
     await page.getByRole('button',{name:'Dark',exact:true}).click();
     await page.getByRole('button',{name:'Availability',exact:true}).click();
+    assert.equal(await page.getByRole('button',{name:'Availability',exact:true}).getAttribute('aria-current'),'page');
     await page.getByLabel('Use opening hours',{exact:true}).check();
     await page.getByLabel(openDay,{exact:true}).check();
     await page.getByLabel('Opening time').fill('09:30');
@@ -32,6 +33,7 @@ export async function verifySettingsParity(page, {origin,projectId,checks}) {
     await save(page);
     assert.deepEqual(mutations,['PUT'],'Appearance Update performs one durable write');
     await page.getByRole('button',{name:'Availability',exact:true}).click();
+    assert.equal(await page.getByRole('button',{name:'Availability',exact:true}).getAttribute('aria-current'),'page');
     await save(page);
   } finally {page.off('request',observe);}
   await page.reload();
@@ -39,6 +41,7 @@ export async function verifySettingsParity(page, {origin,projectId,checks}) {
   assert.equal(await page.getByLabel('Workspace color hex').inputValue(),'#327654');
   assert.equal(await page.getByRole('button',{name:'Dark',exact:true}).getAttribute('aria-pressed'),'true');
   await page.getByRole('button',{name:'Availability',exact:true}).click();
+    assert.equal(await page.getByRole('button',{name:'Availability',exact:true}).getAttribute('aria-current'),'page');
   assert.equal(await page.getByLabel('Use opening hours',{exact:true}).isChecked(),true);
   assert.equal(await page.getByLabel('Opening time').inputValue(),'09:30');
   assert.equal(await page.getByLabel('Closing time').inputValue(),'17:15');

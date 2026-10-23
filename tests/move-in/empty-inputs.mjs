@@ -25,7 +25,7 @@ export function emptyCases(vendor){const files=emptyFiles(vendor);return [
  ['later-empty.zip',archive([...Array.from({length:21},(_,i)=>({name:`empty-${i}/`})),...files.map(([name,body])=>({name,body}))])],
 ]}
 export function laterSource(vendor,{unsupported=false,offset=25}={}){
- const record=unsupported?vendor==='zendesk'?{organization:{id:91,name:'Source-only organization'}}:{type:'company',id:'company-91',name:'Source-only company'}:person(vendor);
+ const record=unsupported?vendor==='zendesk'?{brand:{id:91,name:'Source-only brand'}}:{type:'segment',id:'segment-91',name:'Source-only segment'}:person(vendor);
  const entries=[...Array.from({length:offset},(_,i)=>({name:`empty-${i}/`,method:i%2?0:8})),...emptyFiles(vendor).map(([name,body])=>({name,body})),{name:sourceName(vendor),body:'\r\n'+JSON.stringify(record)}];
  return {entries,body:archive(entries),record};
 }

@@ -37,9 +37,9 @@ for(const vendor of ['zendesk','intercom']){
    const stored=await h.db.prepare('SELECT object_key,files_json,identity_complete FROM move_in_runs WHERE id=?').bind(run.id).first(),files=JSON.parse(stored.files_json),original=await (await h.files).get(stored.object_key);assert.deepEqual(Buffer.from(await original.arrayBuffer()),body);assert.equal(stored.identity_complete,1);
    const expected=entries.filter(entry=>!entry.name.endsWith('/'));assert.deepEqual(files.map(file=>file.name),expected.map(entry=>entry.name));for(let i=0;i<files.length;i++){assert.equal(await (await (await h.files).get(files[i].key)).text(),expected[i].body);assert.equal(files[i].index.length,i===files.length-1?1:0)}
    await h.call(`${root}/${run.id}/apply`,post({fingerprint:ready.plan.fingerprint}));await h.drain();assert.equal((await h.call(`${root}/${run.id}`)).data.state,'completed');assert.deepEqual((await h.db.prepare('SELECT name,email,created_at FROM contacts').all()).results,[{name:'Keira',email:'keira@example.test',created_at:1711929600000}]);
-   const unsupported=laterSource(vendor,{unsupported:true}),omitted=(await h.call(`${root}?vendor=${vendor}`,upload(unsupported.body,'unsupported.zip'))).data;await h.drain();const plan=(await h.call(`${root}/${omitted.id}`)).data.plan,kind=vendor==='zendesk'?'organization':'company';
+   const unsupported=laterSource(vendor,{unsupported:true}),omitted=(await h.call(`${root}?vendor=${vendor}`,upload(unsupported.body,'unsupported.zip'))).data;await h.drain();const plan=(await h.call(`${root}/${omitted.id}`)).data.plan,kind=vendor==='zendesk'?'brand':'segment';
    assert.equal(plan.counts.input,1);assert.equal(plan.counts.unique,1);assert.equal(plan.counts.effects,0);assert.equal(plan.counts.rejected,0);assert.equal(plan.decisions.length,1);
-   assert.deepEqual(plan.decisions.map(d=>[d.kind,d.sourceId,d.omissions,d.targets]),[[kind,vendor==='zendesk'?'91':'company-91',[{reason:`unsupported_record_kind:${kind}`}],[]]]);
+   assert.deepEqual(plan.decisions.map(d=>[d.kind,d.sourceId,d.omissions,d.targets]),[[kind,vendor==='zendesk'?'91':'segment-91',[{reason:`unsupported_record_kind:${kind}`}],[]]]);
    assert.equal(h.queued.length,0);assert.equal(h.outbound,0);
   }finally{await h.close()}
  });

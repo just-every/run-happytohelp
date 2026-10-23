@@ -50,11 +50,12 @@ export async function fenceImportErasure(env:Env,projectId:string,contactId:stri
  // inventory is accumulated in JS, even after many historical imports.
  let after=''
  for(;;){const runs=(await env.DB.prepare('SELECT r.id,r.object_key,r.files_json FROM move_in_runs r JOIN move_in_erasure_runs e ON e.run_id=r.id WHERE e.project_id=? AND e.contact_id=? AND r.id>? ORDER BY r.id LIMIT 10').bind(projectId,contactId,after).all<any>()).results;if(!runs.length)break
+  await env.DB.prepare(`INSERT OR IGNORE INTO move_in_erasure_objects(project_id,contact_id,run_id,object_key)
+   SELECT ?1,?2,a.run_id,a.object_key FROM move_in_attachment_objects a
+   WHERE a.run_id IN (SELECT value FROM json_each(?3)) AND NOT EXISTS(SELECT 1 FROM media m WHERE m.id=a.media_id)`).bind(projectId,contactId,JSON.stringify(runs.map(run=>run.id))).run()
   for(const run of runs){let cursor:string|undefined
    const retain=async(keys:string[])=>{if(keys.length)await env.DB.batch([env.DB.prepare("INSERT OR IGNORE INTO move_in_erasure_objects(project_id,contact_id,run_id,object_key) SELECT ?1,?2,?3,value FROM json_each(?4)").bind(projectId,contactId,run.id,JSON.stringify(keys))])}
    await retain([...new Set<string>([run.object_key,...JSON.parse(run.files_json).map((f:any)=>f.key)].filter(Boolean))])
-   const pending=(await env.DB.prepare('SELECT object_key FROM move_in_attachment_objects a WHERE a.run_id=? AND NOT EXISTS(SELECT 1 FROM media m WHERE m.id=a.media_id)').bind(run.id).all<{object_key:string}>()).results
-   await retain(pending.map(row=>row.object_key))
    do{const listed=await env.FILES.list({prefix:`move-in/${projectId}/${run.id}/`,cursor,limit:100});await retain(listed.objects.map(object=>object.key));cursor=listed.truncated?listed.cursor:undefined}while(cursor)
    after=run.id
   }

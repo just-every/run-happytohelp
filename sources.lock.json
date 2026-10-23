@@ -1600,7 +1600,7 @@
       "executable": false
     },
     ".publish-check/config.json": {
-      "sha256": "635a183defae043d92181a1cd5191321529bf49ec73b89ca388e831ed61ff539",
+      "sha256": "296ef44adccf21601fb741dea8d1c273376f87f1c3fad08e7737e7bbb21f3d73",
       "executable": false
     },
     ".publish-check/reviewed.json": {
@@ -1796,7 +1796,7 @@
       "executable": false
     },
     "docs/support-channels.md": {
-      "sha256": "b3a1890813839bcea9a052b3d264be96a5aa5548629cdc32f85c1c4123d44a0d",
+      "sha256": "e408fc45749e3a678bb15fff20c94e4c50818a660b2e38d8acc8502552c92eed",
       "executable": false
     },
     "docs/tickets.md": {

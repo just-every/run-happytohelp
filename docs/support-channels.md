@@ -130,3 +130,9 @@ and a prior STOP continuation fence remains; in-flight message/status
 sends become uncertain. Reconfigure credentials explicitly. Back up D1, R2 and
 private configuration and apply migrations 250, 251, 252 and 253 in order before serving
 the updated Worker, without resetting or editing the existing migration ledger.
+
+The channel tests use the synthetic Teams channel ID
+`19:synthetic-happytohelp-channel@thread.tacv2`. Publication hygiene recognizes its
+email-shaped substring through the exact declaration in `.publish-check/config.json`;
+this is a protocol fixture, not a mailbox or credential. Credential checks and
+full-history scanning remain enabled.

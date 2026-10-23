@@ -103,6 +103,7 @@ are keyed by locale; their `fields` entries are keyed by field ID, including
 
 Owners and admins with settings permission can inspect the latest 100 saved
 versions with `GET /api/forms/projects/:projectId/forms/:formId/versions`.
+History also respects the current read permissions of its referenced fields.
 Each version records its save time, actor, previous version, form configuration
 and the referenced field definitions, in the same transaction as the save.
 Updates that lose a permission or stale-definition check create no version.

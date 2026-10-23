@@ -1,4 +1,4 @@
-import {phases} from '../journeys/kit/scenarios.mjs';
+import {phases,matrix} from '../journeys/kit/scenarios.mjs';
 const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {nativeHarness} from './harness.mjs';
@@ -7,7 +7,7 @@ import {intercomRecords,zendeskRecords,recordPackages,ambiguousRecords} from './
 import {zip} from './zip.mjs';
 const root='/api/move-in/projects/p/imports',post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const upload=(body,name='record.json',actor='owner')=>({method:'POST',actor,headers:{'X-Import-Filename':name,'X-Import-Schema':'2.16'},body});
-for(const slot of ['contact','source','participant'])test(`${slot}: root JSON retains known aliases and correct decisions through ordinary native erasure and changed replay`,async()=>{
+test("root JSON retains known aliases and correct decisions through ordinary native erasure and changed replay",matrix(['contact','source','participant'],async (slot)=>{
  const h=await nativeHarness();try{
   await h.db.batch([h.db.prepare("INSERT INTO contacts(id,project_id,email,external_id,created_at) VALUES('erase','p','record-private@example.test','native-external',1)"),h.db.prepare("INSERT INTO contacts(id,project_id,email,name,created_at) VALUES('keeper','p','keep@example.test','Keep',2)")]);
   const keeper=await h.db.prepare("SELECT * FROM contacts WHERE id='keeper'").first(),runs=[];let toApply;
@@ -30,7 +30,7 @@ for(const slot of ['contact','source','participant'])test(`${slot}: root JSON re
   const before=await h.snapshot();for(const changed of [{type:'contact',id,email:'changed@example.test',created_at:1704067200},{type:'contact',id:'changed-source',email:'changed-again@example.test',external_id:`${slot}-original-external`,created_at:1704067200}])for(const [name,body] of recordPackages(changed)){assert.equal((await h.raw(`${root}?vendor=intercom`,upload(body,name))).response.status,410);assert.equal(h.lastWrites,0);assert.equal(h.queued.length,0)}
   await unchanged(h,before,`record-${slot}-erased-replay`);assert.equal((await (await h.files).list()).objects.length,0);assert.equal(h.outbound,0);
  }finally{await h.close()}
-});
+}));
 test('ambiguous documents and mixed wrappers refuse every packaging before D1/R2 custody, with authority and inertness intact',async()=>{
  const h=await nativeHarness();try{const before=await h.snapshot();
   for(const [record,code,pointer] of ambiguousRecords())for(const [name,body,prefix] of recordPackages(record).slice(0,4)){

@@ -12028,7 +12028,7 @@
       "executable": false
     },
     "tests/move-in/record-native.mjs": {
-      "sha256": "e13afe1802ed72be7b077d296a5c151bc7af44a45e3e519450ca39e5d7d674e2",
+      "sha256": "2df1e888d65179d3f9762f4239976d5ce1d57921ecc6fdb17a5fba5bfd9b30e9",
       "executable": false
     },
     "tests/move-in/record-upgrade.mjs": {

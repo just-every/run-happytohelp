@@ -9880,7 +9880,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProjectsPage.jsx": {
-      "sha256": "32dee33ad0fa500334a04698507e7107309d27a363b589aa9be9a48014f107e5",
+      "sha256": "1a3990ec9205239621f8d11a334252c7058978bfa6a4d162698a3959e2181e79",
       "executable": false
     },
     "src/ui/native/pages/Reports.css": {
@@ -9968,7 +9968,7 @@
       "executable": false
     },
     "src/ui/native/pages/RowMenu.jsx": {
-      "sha256": "c5de66df07fba0a7b92f98109282bd4c14ae6092c9e288e100176a282b46652e",
+      "sha256": "0991898077c72e20c54923c42423831dc288782c15e3b52ce3abc377bc902bd8",
       "executable": false
     },
     "src/ui/native/pages/security/RolesPage.jsx": {

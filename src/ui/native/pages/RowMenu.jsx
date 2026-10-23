@@ -18,5 +18,5 @@ const useStackedRows = () => useSyncExternalStore(subscribe, () => window.matchM
 export default function RowMenu({label, className, children}) {
     const actions = Children.toArray(children);
     if (useStackedRows()) return <div className="row-actions-inline" role="group" aria-label={`Actions for ${label}`}>{actions.flatMap((action, index) => index ? [' ', action] : [action])}</div>;
-    return <details className={className}><summary {...tooltip('More actions')}>⋮</summary><div>{actions}</div></details>;
+    return <details className={className}><summary {...tooltip('More actions')}><span aria-hidden="true">⋮</span></summary><div>{actions}</div></details>;
 }

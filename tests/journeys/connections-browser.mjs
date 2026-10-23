@@ -1,3 +1,4 @@
+import {feedbackBrowserJourney} from '../helpers/feedback/browser.mjs'
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
 import {writeFile} from 'node:fs/promises'
@@ -42,5 +43,5 @@ import {startProviders} from '../helpers/escalations/providers.mjs'
 import {exerciseEscalations} from '../helpers/escalations/browser.mjs'
 for(const width of [1440,390])test(`at ${width}px selected engineering context reaches connected trackers and Slack, signed closure updates return as drafts, and an operator edits and sends the approved customer update`,async()=>{
  const providers=await startProviders();let runtime,passed=false;
- try{runtime=await createRuntime({outboundFixture:new URL('../helpers/escalations/outbound.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}});const owner=await runtime.seedTenant({name:'Engineering escalations '+width,email:`engineering-${width}@example.test`});const result=await exerciseEscalations({browser,origin:runtime.origin,owner,providers,width,directory:shot('escalations')});await result.context.close();passed=true}finally{await runtime?.close(passed);await providers.close()}
+ try{runtime=await createRuntime({outboundFixture:new URL('../helpers/feedback/outbound.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}});const owner=await runtime.seedTenant({name:'Engineering escalations '+width,email:`engineering-${width}@example.test`});const result=await exerciseEscalations({browser,origin:runtime.origin,owner,providers,width,directory:shot('escalations')});await result.context.close();await feedbackBrowserJourney({browser,origin:runtime.origin,owner,width,directory:shot('feedback')});passed=true}finally{await runtime?.close(passed);await providers.close()}
 })

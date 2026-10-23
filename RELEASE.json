@@ -31,11 +31,23 @@
   "pendingMigrations": [
     {
       "id": "240_operator_presence.sql",
-      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings → Availability."
+      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings \u2192 Availability."
     },
     {
       "id": "241_away_reply_not_a_reply.sql",
       "buyerSteps": "WIDGET-001: the workspace's away message is no longer a reply for automations or outcomes. Rules for an operator reply, and time since the last one, wait for a teammate or an assistant, and a conversation an assistant resolves after the away message records AI. Apply after 240 and before the updated Worker serves traffic; it redefines two triggers and changes no stored row, so earlier journal events and recorded outcomes stay as they were."
+    },
+    {
+      "id": "250_feedback.sql",
+      "buyerSteps": "FEEDBACK-001: add source-linked feedback, signed release receipts and reviewed service updates. Apply before the updated Worker serves traffic. New links default to service updates off; explicit requester consent is required. Reconfigure release sender secrets after restore; source history restores with subscriptions off and pending sends cancelled."
+    },
+    {
+      "id": "251_assurance.sql",
+      "buyerSteps": "ASSURANCE-001: add regulated-deployment preflight profiles and expiring agreement/control evidence. Standard support access is unchanged. Recorded references prepare independent review; they never authorize health-data activation or supply compliance. Use an isolated deployment with health-data processing disabled until provider/partner acceptance and shared-runtime activation/withdrawal are implemented."
+    },
+    {
+      "id": "252_feedback_penny.sql",
+      "buyerSteps": "FEEDBACK-001: add a Penny API connection and durable source handoff receipts. A requester-authored sharing permission and explicit operator approval are required. Penny owns its requesters and votes; pending/uncertain external writes never replay. Reconfigure the Penny API key after restore; sending handoffs restore as uncertain."
     }
   ]
 }

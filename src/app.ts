@@ -1,3 +1,4 @@
+import {assuranceRoutes} from './modules/assurance/routes'
 import {api as scopedApi} from './modules/api-integrations/routes'
 import {integrationSettings} from './modules/api-integrations/settings'
 import { notFoundResponse, rejectedResponse } from './base/rejected-response'
@@ -38,6 +39,7 @@ import {delegation} from './edition/delegation/routes'
 import {consent} from './edition/delegation/consent'
 import {nativeDelegation} from './edition/delegation/launch'
 import {createOutboundTicketRoutes} from './modules/management/outbound-tickets'
+import {feedbackRoutes} from './modules/feedback/routes'
 import {createEscalationRoutes} from './modules/escalations/routes'
 
 export const app = new Hono<AppEnv>()
@@ -48,6 +50,7 @@ app.use('/api/*',async(c,next)=>{
  if(!c.env.APP_ORIGIN)c.env={...c.env,APP_ORIGIN:origin.origin,H2H_LOCAL:undefined};
  await next();
 })
+app.route('/api/assurance',assuranceRoutes)
 // The bearer-only API never enters native cookie/project CORS, including errors.
 app.route('/api/v1',scopedApi)
 app.use('/api/identity/widget/profile',visitorProfileCredential)
@@ -92,6 +95,7 @@ app.route('/api/management',brandMediaRoutes)
 app.route('/api/site-preview',sitePreview)
 app.route('/preview',previewRoutes)
 app.route('/api/integrations',inboundEmail)
+app.route('/api/feedback',feedbackRoutes(applyMessageEffects))
 app.route('/api/escalations',createEscalationRoutes(applyMessageEffects))
 app.route('/api/dashboard',dashboardRoutes)
 app.route('/api/dashboard',tags)

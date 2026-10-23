@@ -18,6 +18,7 @@ export const settingsGroups = [
         { label: 'Roles', path: 'roles' },
         { label: 'Security', path: 'security' },
         { label: 'Security log', path: 'security-log' },
+        { label: 'Regulated deployment', path: 'assurance' },
     ] },
     { label: 'Support', destinations: [
         { label: 'Tickets', path: 'ticket-settings' },

@@ -1,6 +1,7 @@
 import { lazyPageCode } from './lazy-page-code';
 
 const pages = {
+    AssurancePage: lazyPageCode(() => import('../../modules/assurance/ui/AssurancePage')),
     Connections: lazyPageCode(() => import('./pages/Connections')),
     Reports: lazyPageCode(() => import('./pages/surveys/ReportsWithSurveys')),
     Companies: lazyPageCode(() => import('./pages/Companies')),
@@ -47,7 +48,8 @@ export function preloadWorkspacePage(pathname, settings) {
     if (settings?.projectUnavailable) return Promise.resolve();
     const { section, recordId } = workspacePageRoute(pathname, settings);
     let name;
-    if (section === 'projects') name = 'ProjectsPage';
+    if (section === 'assurance') name = 'AssurancePage';
+    else if (section === 'projects') name = 'ProjectsPage';
     else if (section === 'reports') name = 'Reports';
     else if (section === 'companies') name = 'Companies';
     else if (section === 'move-in') name = 'MoveIn';

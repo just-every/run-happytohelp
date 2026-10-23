@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {reportCount} from './report-format';
 
-const groupings = [['agent', 'Agent'], ['team', 'Team'], ['channel', 'Channel'], ['brand', 'Brand'], ['tag', 'Tag']];
+const groupings = [['agent', 'Agent'], ['team', 'Team'], ['channel', 'Channel'], ['brand', 'Brand'], ['account', 'Account'], ['tag', 'Tag']];
 
 export default function WorkloadPanel({workload}) {
     const [group, setGroup] = useState('team');

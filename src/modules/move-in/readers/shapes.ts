@@ -66,7 +66,7 @@ export function auditShape(vendor:Vendor,kind:string,payload:unknown):ShapeAudit
   if(value===null&&schema.nullable)return
   if(schema.type==='opaque'){issue('opaque_source_field',path,'retained_value_not_identity_indexed');result.uninterpreted.push(value);return}
   if(schema.type==='action'){
-   const field=object(value)?value.field:undefined,valueShape:Shape=['comment_value','comment_value_html'].includes(field)?string:field==='comment_mode_is_public'?{type:'visibility'}:opaque
+   const field=object(value)?value.field:undefined,valueShape:Shape=['comment_value','comment_value_html','priority','status','current_tags','remove_tags'].includes(field)?string:field==='comment_mode_is_public'?{type:'visibility'}:opaque
    visit(value,record({field:string,value:valueShape},['field','value']),path);return
   }
   if(schema.type==='object'){

@@ -126,6 +126,31 @@ complete procedure, interruption recovery and restore checks. For a local SQL
 backup, stop dev/preview and use `--local`; `rer export` above remains the local
 portable archive command.
 
+## Portable archive from a hosted installation
+
+`rer export --target remote --output exports/hosted-support.rer` produces the same
+versioned D1/R2 archive that local `rer import` validates. First stop the source
+application, queue and cron writers. Set `H2H_EXPORT_WRITERS_STOPPED=yes` only
+once they are stopped; the exporter cannot stop them for you. Supply the owning
+account's `CLOUDFLARE_API_TOKEN` privately. Select the actual deployed resources
+with `H2H_EXPORT_CONFIG`, an owned regular 0600 JSON/JSONC file containing
+`account_id`, the `d1_databases` entry bound as `DB` (including `database_id`)
+and the `r2_buckets` entry bound as `FILES` (including `bucket_name`). Resource
+identities must come from that installation, never from this checkout's local
+placeholder configuration. No application vars or secrets are loaded from it.
+
+The command refuses missing or incompatible migration history, existing outputs,
+changed attachment inventory and changed erasure fences. It checks the complete
+archive before publishing a new 0600 file. Base writes and removes transfer
+bookkeeping and snapshot copies in the source D1 database; it does not change
+product rows, send mail, run jobs or write R2 objects. Restore remains a separate
+explicit command into a clean local installation and keeps actions inactive.
+Current ConversationSocket business state is reconstructible from D1; live
+sockets, presence and alarms are excluded. Nonempty unsupported Durable Object
+snapshots refuse. Keep the archive private and re-enter excluded credentials
+and connector authority on the receiving installation. Local remote-binding
+fixtures establish the command boundary, not a live hosted-provider receipt.
+
 ## Deploy to your Cloudflare account
 
 Use the real `deploy.json` declaration with Base deploy-kit. The command derives

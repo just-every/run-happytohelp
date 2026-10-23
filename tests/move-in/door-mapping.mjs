@@ -116,3 +116,45 @@ test('one Intercom source in four packagings and a ZIP of all of them map the sa
  }})
  await imported('intercom',zip(packages.map(([name,body])=>({name:'nested/'+name,body}))),{name:'multi.zip',check:async({plan,rows})=>{assert.equal(plan.counts.unique,5);assert.equal(plan.counts.duplicates,plan.counts.input-plan.counts.unique);assert.ok(plan.counts.duplicates>0);assert.deepEqual([...new Set(plan.decisions.map(row=>`${row.kind}/${row.sourceId}`))].sort(),['article/article-39','contact/person-31','conversation/conversation-32','macro/macro-38','tag-name/returns'])}})
 });
+
+// Imported macros are manual commands: preview is pure and apply creates a
+// composer draft, never a sent message. Repeat and undo cover their full version.
+test('Zendesk macros translate placeholders and four actions into native preview and guarded manual apply',async()=>{
+ const body=ndjson(user,staff,ticket,{macro:{id:81,title:'Refund follow-up',restriction:null,created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',actions:[
+  {field:'comment_value',value:'Hello {{ticket.requester.first_name}}, about {{ticket.title}}.'},
+  {field:'priority',value:'high'},{field:'status',value:'pending'},{field:'current_tags',value:'refund-followup'},
+ ]}})
+ await imported('zendesk',body,{check:async({h,plan,review,rows})=>{
+  assert.equal(plan.counts.rejected,0)
+  const macro=(await rows('SELECT id FROM macros'))[0],conversation=(await rows('SELECT id,ticket_version,priority,status_id FROM conversations'))[0]
+  const native='/api/dashboard/projects/p',definition=(await h.call(`${native}/macros/${macro.id}`)).data
+  assert.equal(definition.content,'Hello {{requester.first_name}}, about {{ticket.subject}}.')
+  assert.equal(definition.actions.priority,'high');assert.equal(definition.actions.status_id,'pending');assert.equal(definition.actions.tags_add.length,1)
+  assert.equal(conversation.priority,'normal');assert.notEqual(conversation.status_id,'pending')
+  const preview=await h.call(`${native}/macros/${macro.id}/preview`,post({version:1,conversation_id:conversation.id,expected_ticket_version:conversation.ticket_version}))
+  assert.equal(preview.data.results[0].status,'ready',JSON.stringify(preview))
+  assert.match(preview.data.results[0].draft.content,/Hello Ada, about Quoted/)
+  assert.equal((await rows('SELECT COUNT(*) n FROM messages'))[0].n,2)
+  // A native edit must be visible to Move in, so undo cannot discard reviewed changes.
+  const current=(await h.call(`${native}/macros/${macro.id}`)).data
+  await h.call(`${native}/macros/${macro.id}`,{...post({...current,title:'Reviewed native macro',expected_version:1}),method:'PUT'})
+  await h.call(`${root}/${review.id}/undo`,post({}))
+  await h.drain()
+  assert.equal((await rows('SELECT title FROM macros'))[0].title,'Reviewed native macro')
+ }})
+ await imported('zendesk',body,{check:async({h,rows})=>{
+  const macro=(await rows('SELECT id FROM macros'))[0],conversation=(await rows('SELECT id,ticket_version FROM conversations'))[0],native='/api/dashboard/projects/p'
+  const result=await h.call(`${native}/macros/${macro.id}/apply`,post({version:1,conversation_id:conversation.id,expected_ticket_version:conversation.ticket_version,command_id:'synthetic-happytohelp-1'}))
+  assert.equal(result.data.results[0].status,'applied',JSON.stringify(result))
+  const changed=(await rows('SELECT status_id,priority FROM conversations'))[0]
+  assert.deepEqual(changed,{status_id:'pending',priority:'high'})
+  assert.equal((await rows("SELECT count(*) n FROM conversation_tags ct JOIN workspace_tags t ON t.id=ct.tag_id WHERE t.name='refund-followup'"))[0].n,1)
+  assert.match((await h.call(`${native}/conversations/${conversation.id}/macro-draft`)).data.content,/Hello Ada, about Quoted/)
+  assert.equal((await rows('SELECT count(*) n FROM messages'))[0].n,2,'manual macro use drafts the reply; it never sends it')
+ }})
+ await imported('zendesk',ndjson({macro:{id:82,title:'Private reply',restriction:null,created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',actions:[{field:'comment_value',value:'Note {{ticket.unknown}}'},{field:'comment_mode_is_public',value:false},{field:'assignee_id',value:2}]}}),{check:async({omissions,rows})=>{
+  assert.ok(omissions('macro/82').includes('macro_placeholder_unsupported:ticket.unknown'))
+  assert.ok(omissions('macro/82').includes('macro_action_unsupported:assignee_id'))
+  assert.equal(JSON.parse((await rows('SELECT actions_json FROM macro_versions'))[0].actions_json).reply_type,'note')
+ }})
+})

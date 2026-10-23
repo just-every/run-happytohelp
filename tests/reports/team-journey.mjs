@@ -11,7 +11,16 @@ export async function teamReportsJourney(){
   const query=new URLSearchParams({period:'custom',...reportDates});query.delete('timezone')
   const url=`${base}/reports/team?${query}`
   const get=async suffix=>app.ok(url+(suffix||''),{token:w.tokens.owner})
+  const company=(await app.ok(`/api/dashboard/projects/${p}/companies`,{token:w.tokens.owner,body:{name:'Ridgeline account'}})).company
+  const accountTickets=fixture.tickets.slice(0,3)
+  for(const t of accountTickets)await app.ok(`/api/dashboard/projects/${p}/companies/${company.id}/members/${t.contact_id}`,{token:w.tokens.owner,method:'PUT',body:{}})
   const report=await get()
+  const accountRows=report.workload.account
+  const linked=accountRows.find(row=>row.id===company.id)
+  assert.equal(linked.incoming,accountTickets.length)
+  assert.equal(linked.resolved,accountTickets.filter(t=>['solved','closed'].includes(t.status_category)).length)
+  assert.equal(accountRows.reduce((n,row)=>n+row.incoming,0),fixture.tickets.length)
+  assert.equal(accountRows.find(row=>row.id===null).label,'No account')
   assert.equal(report.denominators.cohort,fixture.tickets.length)
   assert.equal(report.range.startAt,reportStart);assert.equal(report.range.endAt,reportEnd)
   const raw=await app.sql('SELECT c.*,EXISTS(SELECT 1 FROM ticket_history h WHERE h.conversation_id=c.id AND json_extract(h.changes_json,\'$.status_category.from\')=\'solved\' AND json_extract(h.changes_json,\'$.status_category.to\')=\'open\') reopened FROM conversations c WHERE c.project_id=?',p)
@@ -68,7 +77,7 @@ export async function teamReportsJourney(){
   const csv=Buffer.from(reportMail[0].attachments[0].content,'base64').toString('utf8')
   const expected=await app.ok(`${base}/reports/team?period=custom&start=2026-10-13&end=2026-10-20&includeImported=true`,{token:w.tokens.owner})
   assert.ok(csv.includes(`"denominators.cohort","${expected.denominators.cohort}"`))
-  for(const dimension of ['agent','team','channel','brand','tag'])for(let i=0;i<expected.workload[dimension].length;i++)for(const key of ['incoming','resolved','backlog'])assert.ok(csv.includes(`"workload.${dimension}.${i}.${key}","${expected.workload[dimension][i][key]}"`))
+  for(const dimension of ['agent','team','channel','brand','tag','account'])for(let i=0;i<expected.workload[dimension].length;i++)for(const key of ['incoming','resolved','backlog'])assert.ok(csv.includes(`"workload.${dimension}.${i}.${key}","${expected.workload[dimension][i][key]}"`))
   for(const metric of ['first_response','next_response','resolution'])for(const key of ['met','breached','pending','total','denominator','rate'])assert.ok(csv.includes(`\"sla.${metric}.${key}\",\"${expected.sla[metric][key]===null?'null':expected.sla[metric][key]}\"`))
   for(const key of ['resolved','denominator','reopened','events','rate'])assert.ok(csv.includes(`\"reopens.${key}\",\"${expected.reopens[key]===null?'null':expected.reopens[key]}\"`))
   for(const key of ['total_ms','session_count'])assert.ok(csv.includes(`\"handleTime.${key}\",\"${expected.handleTime[key]}\"`))

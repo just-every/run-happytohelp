@@ -2911,6 +2911,10 @@
       "sha256": "53d87ced2506469a4a83d3b4141031ff1981f223924a2e86487a4d2e0daa7fa4",
       "executable": false
     },
+    "scripts/installer/hosted-export.mjs": {
+      "sha256": "a167acd26e4eeeeb3fbd0ba9b95217f3e53237f9cbb2c7365971da0873e0aeee",
+      "executable": false
+    },
     "scripts/installer/hosted-origin.mjs": {
       "sha256": "cbc949c501c08708a753f6305ca37e316d8b126b2d30ee6137356c3e8435d94b",
       "executable": false
@@ -6247,6 +6251,10 @@
       "sha256": "7e1a646ed03359a6a0eea0dde461bb20f133f4ea96d2cb0efc1e6e1057dff4c6",
       "executable": false
     },
+    "src/modules/move-in/readers/zendesk-macro.ts": {
+      "sha256": "0168ffd471cc2349c59a08186ceed4503760c525d9e150dbbd7fec504474e8d4",
+      "executable": false
+    },
     "src/modules/move-in/retained-sources.ts": {
       "sha256": "0416085b5dcbca81ea7d17b60fb27edb812dff018169feac119794c2ed5e0c3d",
       "executable": false
@@ -6552,7 +6560,7 @@
       "executable": false
     },
     "src/modules/reports/team-workload.ts": {
-      "sha256": "b894b702dc9c4773324110e2b517b35ee18b2d144bf2162022a3a659c8df2f5f",
+      "sha256": "082a23a8df8a9359ed99973cc508c38e45e2552bfb97da68224c33bf6ad7a5aa",
       "executable": false
     },
     "src/modules/reports/timers.ts": {
@@ -11253,6 +11261,10 @@
     },
     "tests/helpers/installer/fresh-install.mjs": {
       "sha256": "52dc82b55e99b3e1dc9a9359dba8ad1769e56608b0a88d0e82c24d1ac2de3b4c",
+      "executable": false
+    },
+    "tests/helpers/installer/hosted-export.mjs": {
+      "sha256": "f152aa0875f998f253180b17333ad4bfcc94428d5463f57b4d546b6c69b43f56",
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {

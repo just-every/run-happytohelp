@@ -207,3 +207,18 @@ entry. Visitor and teammate email is suppressed without storage or external
 sending by the rer dev v2 development transport. Without configured hosted mail,
 email links are unavailable with a plain explanation and the widget promises no email reply.
 Stop the installer or dev terminal with Ctrl+C; closing a browser leaves it running.
+
+### Review linked customer identities
+
+The management API exposes `GET contacts/:contactId/identity-links`,
+`POST contacts/:contactId/identity-links/preview` and
+`POST contacts/:contactId/identity-links` under a workspace. Submit `action`
+(`link` or `unlink`), the other `contact_id`, and a source/reference in
+`provenance`; apply the returned preview including its `signature`.
+Both records must have independently proven mailbox or signed widget identity
+before linking. A typed email or imported identifier supplies no proof.
+Changed identities, permissions or relationships require another preview.
+Links are symmetric, audited, retained across restart and removed on erasure.
+They are operator context only: customer sessions, ticket ownership, company
+visibility and sending authority do not change. Social-provider identity proof
+and live business-system context still need their configured providers.

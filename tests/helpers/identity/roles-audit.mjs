@@ -44,6 +44,13 @@ export async function rolesAuditJourney(){
   assert.ok((await app.first("SELECT count(*) n FROM audit_events WHERE action='permission.denied' AND actor_id=?",collaborator.actor.id)).n>=5)
   assert.equal((await call(`${P}/agents`,undefined,w.tokens.owner)).data.data.some(row=>row.id===collaborator.actor.id&&row.role==='operator'),true,'the collaborator joins on the agent base')
 
+  // Every internal knowledge read door rejects a notes-only seat, including search
+  // and article/source detail, rather than disclosing a restricted article body.
+  for(const path of ['articles','categories','datasets','search?q=private','datasets/private','datasets/private/pages','articles/private/history','articles/private/translations/es','imports/private','website-reader','import/zendesk','experience','analytics','conversations/conv-r/articles']){
+   const denied=await call(`/api/knowledge/${w.projectId}/${path}`,undefined,collaborator.token);
+   assert.equal(denied.status,403,path);assert.equal(denied.data.permission,'knowledge.edit',path);
+  }
+
   // While still an Agent, the agent connects an application that may edit and publish one article.
   await app.db.prepare("INSERT INTO knowledge_articles(id,project_id,slug,title,content,summary,status,updated_at) VALUES('art-r',?,'returns','Returns','Original','','draft',1)").bind(w.projectId).run()
   const browser=(path,{cookie,body}={})=>app.request(path,{method:body?'POST':'GET',raw:true,headers:{Cookie:'h2h_session='+cookie,...(body?{'Content-Type':'application/x-www-form-urlencoded',Origin:app.origin}:{})},body:body&&new URLSearchParams(body).toString()})

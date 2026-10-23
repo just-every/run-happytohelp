@@ -149,3 +149,10 @@ installation, never by email alone:
   factors and recovery codes are removed, every session ends, and you are signed
   in to set up a new factor. Each key value works once; set a new one for another
   recovery. The recovery is logged in every workspace the owner belongs to.
+
+Notes-only collaborators cannot open native knowledge management, source text,
+search, draft or translation/history endpoints. These reads require knowledge
+editing permission for a custom role. Published help remains available through
+its ordinary audience-controlled help-center doors. This conservative default
+keeps restricted knowledge out of notes-only seats while separate knowledge
+reading permissions remain undefined. It does not supply enterprise SSO or SCIM.

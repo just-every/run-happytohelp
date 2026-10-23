@@ -66,7 +66,12 @@ export async function browserJourney(evidence){
      assert.equal(await visitor.getByText(body,{exact:true}).count(),1);assert.equal(frames.filter(f=>f.message?.id===messageId).length,1);
      await visitor.reload();await mount();await visitor.getByText(body,{exact:true}).waitFor();assert.equal(await visitor.getByText(body,{exact:true}).count(),1);
     };
-    return {session:visitorSession,transcript,close:()=>visitorContext.close()};
+    const say=async content=>{
+     const submitted=visitor.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname===`/api/conversations/${visitorSession.conversationId}/messages`);
+     await visitor.locator('textarea[name=content]').fill(content);await visitor.locator('button[name=submit]').click();
+     const response=await submitted;assert.equal(response.status(),200);return response.json();
+    };
+    return {session:visitorSession,transcript,say,close:()=>visitorContext.close()};
    };
    try{checks.push({width,...await runCase({origin,api,actor,fixture,directory,ui})});assert.deepEqual(errors,[])}finally{await visitorContext?.close();await context.close()}
   }

@@ -1,3 +1,4 @@
+import {localResultFrontier} from '../local-computer/result-frontier'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 export type Authoring = {kind:'human'}|{kind:'ai';generationId:string;selection?:number}|{kind:'local';jobId:string;proposalId:string|null}
@@ -19,8 +20,9 @@ export async function authoringSource(env:Env,actor:Actor,conversationId:string,
  if(source.kind==='local'){
   if(typeof source.jobId!=='string'||source.jobId.length>200||source.proposalId!==null&&(typeof source.proposalId!=='string'||source.proposalId.length>200))throw new HTTPException(400,{message:'Invalid draft source'})
   const sql="SELECT j.result FROM local_jobs j JOIN local_devices d ON d.id=j.device_id AND d.user_id=j.operator_id WHERE j.id=? AND j.project_id=? AND j.conversation_id=? AND j.operator_id=? AND j.status='completed' AND j.cancel_requested=0 AND d.revoked_at IS NULL AND (d.project_id IS NULL OR d.project_id=j.project_id) AND (d.grant_id IS NULL OR EXISTS(SELECT 1 FROM local_grants g WHERE g.id=d.grant_id AND g.user_id=j.operator_id AND (g.project_id IS NULL OR g.project_id=j.project_id) AND g.revoked_at IS NULL))"
-  const params=[source.jobId,actor.projectId,conversationId,actor.id],row=await env.DB.prepare(sql).bind(...params).first<{result:string}>();if(!row)throw new HTTPException(409,{message:'Draft source unavailable'});const result=JSON.parse(row.result),proposal=source.proposalId===null?result.reply_draft:result.replies?.find((p:any)=>p.id===source.proposalId)?.body;if(typeof proposal!=='string'||!proposal.trim())throw new HTTPException(409,{message:'Draft proposal unavailable'})
-  return {kind:'assisted',sourceKind:'local-draft',sourceId:source.jobId,sourcePart:source.proposalId??'legacy',guard:{sql:`EXISTS(${sql} AND j.result=?)`,params:[...params,row.result]}}
+  const liveSql=sql+` AND ${localResultFrontier}`
+  const params=[source.jobId,actor.projectId,conversationId,actor.id],row=await env.DB.prepare(liveSql).bind(...params).first<{result:string}>();if(!row)throw new HTTPException(409,{message:'Draft source unavailable'});const result=JSON.parse(row.result),proposal=source.proposalId===null?result.reply_draft:result.replies?.find((p:any)=>p.id===source.proposalId)?.body;if(typeof proposal!=='string'||!proposal.trim())throw new HTTPException(409,{message:'Draft proposal unavailable'})
+  return {kind:'assisted',sourceKind:'local-draft',sourceId:source.jobId,sourcePart:source.proposalId??'legacy',guard:{sql:`EXISTS(${liveSql} AND j.result=?)`,params:[...params,row.result]}}
  }
  throw new HTTPException(400,{message:'Invalid reply authorship'})
 }

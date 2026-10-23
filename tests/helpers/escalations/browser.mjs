@@ -33,7 +33,7 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  const panel=()=>page.locator('.escalations-panel');
  const dialog=()=>page.getByRole('dialog',{name:'Escalate to engineering'});
  // Below 1280px the panel is an overlay over the reply card: it steps aside for the "+".
- const escalate=async()=>{if(compact&&await assistant.getAttribute('aria-hidden')==='false'){await page.locator('.conversation-assistant__hide').click();await page.locator('#conversation-assistant[aria-hidden=true]').waitFor({state:'attached'});}await page.locator('#conversation-composer-tools').click();await page.getByRole('menuitem',{name:'Escalate to engineering…',exact:true}).click();await dialog().getByLabel('Destination',{exact:true}).waitFor();};
+ const escalate=async()=>{if(compact&&await assistant.getAttribute('aria-hidden')==='false'){await page.locator('.conversation-assistant__hide').click();await page.locator('#conversation-assistant[aria-hidden=true]').waitFor({state:'attached'});}await page.locator('#conversation-composer-tools').click();await page.getByRole('menuitem',{name:'Escalate to engineering…',exact:true}).click();await dialog().getByLabel('Destination',{exact:true}).waitFor();const close=dialog().getByRole('button',{name:'Close escalation',exact:true});await close.focus();await page.getByRole('tooltip',{name:'Close escalation',exact:true}).waitFor();await dialog().getByLabel('Destination',{exact:true}).focus();};
  const shot=async name=>{
   const target=name.startsWith('connection-')?panel().locator('.escalation-provider[open]').last():name.startsWith('preview-')?dialog().locator('.escalation-preview'):name==='closure-drafts'?panel().locator('.escalation-drafts'):panel().locator('.escalation-linked');
   const controls=target.locator('input:visible,button:visible,textarea:visible');
@@ -69,7 +69,7 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  for(let n=1;n<3;n++)await req(base+`/conversations/${records[n].ticket.id}/slack`,{channel:'C12345678',message_ids:[records[n].message.id],attachment_ids:[],request_id:crypto.randomUUID()});
  await escalate();await dialog().getByLabel('Destination',{exact:true}).selectOption('teams');await dialog().locator('.escalation-context input[type=checkbox]').first().check();await dialog().getByRole('button',{name:'Preview selected context',exact:true}).click();await shot('preview-teams');
  const teamsResponse=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname===base+`/conversations/${records[0].ticket.id}/teams`);
- await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();assert.equal((await teamsResponse).status(),201);await dialog().waitFor({state:'detached'});await panel().getByRole('link',{name:'Handoff to '+providers.teams.target,exact:true}).waitFor();
+ await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();assert.equal((await teamsResponse).status(),201);await dialog().waitFor({state:'detached'});await panel().getByRole('link',{name:'Handoff to '+providers.teams.target,exact:true}).waitFor();assert.match(await panel().locator('.escalation-handoff').filter({hasText:providers.teams.target}).innerText(),/^Teams/);
 
  await panel().getByRole('button',{name:'Refresh status',exact:true}).click();await page.waitForTimeout(250);await shot('linked-issues-and-handoff');
  const t=Date.now()+20000;

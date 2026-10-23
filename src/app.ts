@@ -43,6 +43,8 @@ import {createOutboundTicketRoutes} from './modules/management/outbound-tickets'
 import {feedbackRoutes} from './modules/feedback/routes'
 import {createEscalationRoutes} from './modules/escalations/routes'
 
+import {voiceRoutes} from './modules/voice/routes'
+
 export const app = new Hono<AppEnv>()
 app.use('/api/*',async(c,next)=>{
  c.env=notificationRequestEnvironment(c.env)
@@ -98,6 +100,7 @@ app.route('/api/site-preview',sitePreview)
 app.route('/preview',previewRoutes)
 app.route('/api/integrations',inboundEmail)
 app.route('/api/feedback',feedbackRoutes(applyMessageEffects))
+app.route('/api/voice',voiceRoutes)
 app.route('/api/escalations',createEscalationRoutes(applyMessageEffects))
 app.route('/api/dashboard',dashboardRoutes)
 app.route('/api/dashboard',tags)

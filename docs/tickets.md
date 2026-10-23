@@ -49,3 +49,15 @@ In the problem, compose a public update and preview it before sending. Placehold
 Email replies go only to each incident's requester, through that incident's connected mailbox when present. Widget replies appear in that incident's own conversation and do not send an extra email. Opted-out email recipients, unavailable requesters, disconnected mailboxes, unsupported channels and changed tickets are reported with a reason. Unsupported channels wait for their own transport; an email address does not turn another channel into email.
 
 Each ticket has a separate result. A failed or uncertain send leaves the incident open. The result remains readable after reloading; repeating the same operation does not resend its replies. A new customer message, changed requester, changed link or permission loss invalidates the reviewed ticket before delivery. For more than 100 incidents, review and send explicit batches from the incident pages. Ticket history and the security log record links, admitted replies and confirmed bulk solves. Export/import preserves the relationship history while preventing old previews or uncertain sends from restarting.
+
+### Engineering context on a problem
+
+A Problem keeps the ticket's existing engineering links. Use Engineering to
+preview chosen messages and files, then create or link the issue. The Problem
+API also returns `engineering_issues` with provider status, assignee, last
+observed time, provider update time and connection state. Disconnected context
+is marked stale and never presented as a fresh provider read. A signed shipped
+fix creates a draft for operator approval; it does not prove customer recovery
+or send to the linked incidents. Preview an incident update separately to
+render and approve each requester's reply. SMS and expired messaging windows
+remain unavailable until a supported, consented channel is connected.

@@ -4,6 +4,7 @@ import { invalidateDashboardSession, useDashboardLocation } from './dashboard-st
 import { Link, useLocation, useNavigate, useRouter } from '@tanstack/react-router';
 import { nativeRequest } from './transport';
 import AdminNavigation from './AdminNavigation';
+import IconHint from './IconHint';
 import WorkspaceSidebarArtwork from './WorkspaceSidebarArtwork';
 import InboxNavigation from './InboxNavigation';
 import SettingsNavigation from './SettingsNavigation';
@@ -23,10 +24,10 @@ function AccountMenu({ agent, desktop = false, showAdmin = false }) {
     const toggle = useRef(null);
     useEffect(()=>{const close=e=>{if(e.type==='keydown'&&e.key==='Escape'){if(open){e.preventDefault();setOpen(false);toggle.current?.focus();}}else if(!menu.current?.contains(e.target))setOpen(false);};document.addEventListener('click',close);document.addEventListener('keydown',close);return()=>{document.removeEventListener('click',close);document.removeEventListener('keydown',close);};},[open]);
     return <div ref={menu} className={`navbar-account-menu ${desktop ? 'dropup' : ''}`}>
-        <button ref={toggle} type="button" className="native-profile-toggle" aria-label="Account menu" aria-expanded={open} onClick={()=>setOpen(!open)}>
+        <IconHint label="Account menu"><button ref={toggle} type="button" className="native-profile-toggle" aria-label="Account menu" aria-expanded={open} onClick={()=>setOpen(!open)}>
             <span className="native-profile-avatar">{agent.avatar_url ? <img src={agent.avatar_url} alt=""/> : agent.name?.slice(0,1)}</span>
             {desktop && <><span className="navbar-profile-name">{agent.name}</span><i className="fe fe-chevron-up" aria-hidden="true"/></>}
-        </button>
+        </button></IconHint>
         {open && <div className="dropdown-menu show native-account-dropdown"><Link className="dropdown-item" to="/users/profile">Profile</Link>{showAdmin&&<Link className="dropdown-item" to="/admin">Admin</Link>}<button className="dropdown-item" onClick={async()=>{if(!await confirmNavigation())return;try {setError('');await nativeRequest('/auth/signout',{method:'POST'});await invalidateDashboardSession(router);await navigate({to:'/login',replace:true,ignoreBlocker:true});} catch(failure) {setError(failure.message);}}}>Sign out</button>{error && <p className="px-3 mb-1 text-danger" role="alert">{error}</p>}</div>}
     </div>;
 }
@@ -70,7 +71,7 @@ export default function Navigation({ settings }) {
     const switchWorkspace = async id=>{if(switching||!await confirmNavigation())return;setSwitching(true);setSwitchError('');try{if(id)await nativeRequest('/api/identity/switch-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId:id})});await navigate({to:id?`/projects/${id}/conversations`:'/conversations',ignoreBlocker:true});}catch(error){setSwitchError(error.message);}finally{setSwitching(false);}};
     if (settings.isPlatformAdmin && (pathname === '/admin' || pathname.startsWith('/admin/'))) return <AdminNavigation agent={settings.currentAgent} AccountMenu={AccountMenu}/>;
     return <nav ref={nav} className="navbar navbar-vertical fixed-left navbar-expand-xl navbar-light navbar-refined native-shell" id="sidebar" aria-label="Main navigation"><div className="container-fluid">
-        <button ref={navigationToggle} className="navbar-toggler" type="button" aria-controls="sidebarCollapse" aria-label="Toggle navigation" aria-expanded={open} onClick={()=>setOpen(!open)}><span className="navbar-toggler-icon" /></button>
+        <IconHint label="Navigation menu"><button ref={navigationToggle} className="navbar-toggler" type="button" aria-controls="sidebarCollapse" aria-label="Toggle navigation" aria-expanded={open} onClick={()=>setOpen(!open)}><span className="navbar-toggler-icon" /></button></IconHint>
         <div className="navbar-lockup"><BrandLockup home={settings.isGlobalInbox ? '/conversations' : `${base}/conversations`} as={Link} named/></div>
         <div className="navbar-workspace"><button ref={workspaceToggle} className="navbar-workspace-toggle" type="button" aria-label={`Switch workspace: ${workspaceName}`} aria-expanded={workspaceOpen} onClick={()=>setWorkspaceOpen(!workspaceOpen)}>{brand && <img className="navbar-workspace-brand" src={brand} alt=""/>}<span className="navbar-workspace-copy"><span className="navbar-workspace-name">{workspaceName}</span></span><i className="fe fe-chevron-down" aria-hidden="true"/></button>
         {workspaceOpen && <ul className="dropdown-menu navbar-workspace-menu show"><li><h6 className="dropdown-header">Your workspaces</h6></li>{Object.values(settings.projects || {}).map(p=><li key={p.id}><button className={`dropdown-item ${!settings.isGlobalInbox && p.id === project ? 'active' : ''}`} disabled={switching} onClick={()=>switchWorkspace(p.id)}><span>{p.name}</span><span className="navbar-workspace-swatch" style={{background:p.primary_color||DEFAULT_WORKSPACE_COLOUR}} aria-hidden="true"/></button></li>)}<li><hr className="dropdown-divider"/></li><li><button className={`dropdown-item ${settings.isGlobalInbox && !settings.projectUnavailable ? 'active' : ''}`} disabled={switching} onClick={()=>switchWorkspace('')}>Global Inbox</button></li></ul>}{switchError&&<p className="text-danger" role="alert">{switchError}</p>}</div>
@@ -79,7 +80,7 @@ export default function Navigation({ settings }) {
             {/* On the inbox the current view, saved view or Snoozed row carries the highlight; Inbox reads as its section. On a
                 Settings page the same row leads back to the inbox, so focus stays on it when the rail turns back. */}
             <li className={`nav-item ${settingsActive ? '' : 'nav-item-inbox'}`}><Link className={`nav-link ${inboxActive ? 'is-section' : ''}`} aria-current={current(inboxActive)} activeProps={{}} to={settings.isGlobalInbox ? '/conversations' : `${base}/conversations`}><i className={`fe fe-${settingsActive ? 'arrow-left' : 'inbox'}`} aria-hidden="true"/><span className="navbar-link-label">Inbox</span><span id="navigation-inbox-unread" hidden><span className="navbar-unread-count" data-testid="count-disc"/></span></Link>
-                {!settingsActive && <><button type="button" className="nav-inbox-toggle" aria-label="Inbox views" aria-controls="navigation-inbox-views" aria-expanded={inboxOpen} onClick={()=>setExpanded(!inboxOpen)}><i className="fe fe-chevron-down" aria-hidden="true"/></button>
+                {!settingsActive && <><IconHint label="Inbox views"><button type="button" className="nav-inbox-toggle" aria-label="Inbox views" aria-controls="navigation-inbox-views" aria-expanded={inboxOpen} onClick={()=>setExpanded(!inboxOpen)}><i className="fe fe-chevron-down" aria-hidden="true"/></button></IconHint>
                 <InboxNavigation id="navigation-inbox-views" settings={settings} inboxActive={inboxActive} open={inboxOpen}/></>}</li>
             {settingsActive ? <SettingsNavigation base={base} projectId={project} here={here} countSetup={['owner','admin'].includes(settings.project?.role)}/> : <>
             {settings.isGlobalInbox && <li className="nav-item"><details className="native-global-contacts"><summary><i className="fe fe-users" aria-hidden="true"/><span>Contacts</span><i className="fe fe-chevron-down" aria-hidden="true"/></summary><ul className="nav flex-column">{Object.values(settings.projects || {}).map(p=><li className="nav-item" key={p.id}><Link className="nav-link" to={`/projects/${p.id}/contacts`}>Contacts in {p.name}</Link></li>)}</ul></details></li>}

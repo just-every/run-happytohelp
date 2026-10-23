@@ -36,6 +36,7 @@ export async function shopifyOrderReadback(row:Connection,token:string,action:Ac
   const data=await graph(row,token,`query BusinessCancelReadback($id:ID!){order(id:$id){${orderFields}}}`,{id:gid('Order',action.target_id)})
   const order=ownedOrder(data.order,action.source_id,action.target_id)
   if(remoteId){const job=await graph(row,token,'query BusinessCancelJob($id:ID!){node(id:$id){... on OrderCancelJobResult{id done status errors{field message code}}}}',{id:remoteId});if(job.node?.status==='FAILED')return {id:remoteId,state:'failed',kind:action.kind,provider_status:'FAILED'};if(!job.node?.done||job.node.status!=='SUCCEEDED'||job.node.errors?.length)throw new ProviderFailure('result_unconfirmed')}
+  if(!remoteId&&p.input.restock)throw new ProviderFailure('result_unconfirmed')
   if(!order.cancelledAt||order.cancelReason!==p.input.cancellation_reason||order.cancellation?.staffNote!==note(action)||JSON.stringify(order.totalRefundedSet)!==JSON.stringify(p.refund_before))throw new ProviderFailure('result_unconfirmed')
   return {id:gid('Order',action.target_id),kind:action.kind,state:'succeeded',provider_status:'CANCELLED',cancelled_at:order.cancelledAt,notice:'Captured payments were not refunded.'}
  }

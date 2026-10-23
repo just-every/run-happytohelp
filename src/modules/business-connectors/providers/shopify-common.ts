@@ -4,8 +4,8 @@ export const endpoint='/admin/api/2026-10/graphql.json'
 export const gid=(type:string,value:string)=>`gid://shopify/${type}/${value}`
 export const amount=(cents:number)=>(cents/100).toFixed(2)
 export function usd(value:any){
- if(value?.currencyCode!=='USD'||typeof value.amount!=='string'||!/^\d+\.\d{2}$/.test(value.amount))throw new ProviderFailure('usd_required')
- const result=Number(value.amount.replace('.',''));if(!Number.isSafeInteger(result))throw new ProviderFailure('invalid_amount');return result
+ if(value?.currencyCode!=='USD'||typeof value.amount!=='string'||!/^\d+(?:\.\d{1,2})?$/.test(value.amount))throw new ProviderFailure('usd_required')
+ const [whole,fraction='']=value.amount.split('.'),result=Number(whole)*100+Number(fraction.padEnd(2,'0'));if(!Number.isSafeInteger(result))throw new ProviderFailure('invalid_amount');return result
 }
 export async function graph(row:Connection,token:string,query:string,variables:any={}){
  const response=await request(row,token,endpoint,{method:'POST',body:{query,variables}})

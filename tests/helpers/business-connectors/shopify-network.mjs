@@ -1,7 +1,7 @@
 // Shopify-shaped data exists only at the network boundary.
 export function shopifyNetwork({customer,writeResult}){
  const refunds=[],returns=[],cancellations=[];let scopes=['read_orders','write_orders','read_customers','read_returns','write_returns'],multi=false,jobDone=false;
- const bag=cents=>({presentmentMoney:{amount:(cents/100).toFixed(2),currencyCode:'USD'}}),shop=cents=>({shopMoney:{amount:(cents/100).toFixed(2),currencyCode:'USD'}}),page=nodes=>({nodes,pageInfo:{hasNextPage:false}}),gid=(type,id)=>'gid://shopify/'+type+'/'+id;
+ const bag=cents=>({presentmentMoney:{amount:String(cents/100),currencyCode:'USD'}}),shop=cents=>({shopMoney:{amount:String(cents/100),currencyCode:'USD'}}),page=nodes=>({nodes,pageInfo:{hasNextPage:false}}),gid=(type,id)=>'gid://shopify/'+type+'/'+id;
  const order=id=>({id,name:'#'+id,customer:{id:gid('Customer',customer)},currencyCode:'USD',presentmentCurrencyCode:'USD',cancelledAt:cancellations.length?'2026-10-24T00:00:00Z':null,cancelReason:cancellations[0]?.reason??null,cancellation:cancellations.length?{staffNote:cancellations[0].note}:null,totalRefundedSet:bag(refunds.reduce((n,r)=>n+Number(r.totalRefundedSet.presentmentMoney.amount)*100,0))});
  const handle=async(url,data)=>{
   if(data.query.includes('currentAppInstallation'))return {shop:{id:gid('Shop','101'),myshopifyDomain:url.hostname},currentAppInstallation:{accessScopes:scopes.map(handle=>({handle}))}};

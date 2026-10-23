@@ -3976,6 +3976,10 @@
       "sha256": "8eee4111b778397f3a5b5a859012321b1538e329b3488c44a918ceb9b2901a45",
       "executable": false
     },
+    "src/modules/business-connectors/fields.ts": {
+      "sha256": "895caa5102c83f266fde24bb0991b04cd090e9784274a26574818e4f7b6a22ba",
+      "executable": false
+    },
     "src/modules/business-connectors/model.ts": {
       "sha256": "e1bd0f1e95a115c6d606488da3e272a55483b257eb6b83ace535f171933df7e8",
       "executable": false
@@ -4000,16 +4004,24 @@
       "sha256": "3a78bdd12be57b4ccd66f5fa1d856d8cbc52d137bde34847c839b65a17ec6797",
       "executable": false
     },
+    "src/modules/business-connectors/providers/crm-context.ts": {
+      "sha256": "aabeac97b789c50996a6fdc4e4c4b7a1671a688e3ccbbb545be9853aa01c9848",
+      "executable": false
+    },
+    "src/modules/business-connectors/providers/crm-fields.ts": {
+      "sha256": "be2763bfd8470a13c6163ae78aa0453a307ecfdd5ef53b1d3af1998a8f58c661",
+      "executable": false
+    },
     "src/modules/business-connectors/providers/http.ts": {
       "sha256": "1c92458676dbca4bc6a32a4cb9be451f8308d1596392e6f20166d56e815a6240",
       "executable": false
     },
     "src/modules/business-connectors/providers/shopify-common.ts": {
-      "sha256": "22f06b53d623979888801327e1f72025a9225e5cd5fd1278a5fb71629254aedf",
+      "sha256": "fa859ce8a226f2c0d987e7557e63f908c0af0942bbc4ad4629591da682b00d21",
       "executable": false
     },
     "src/modules/business-connectors/providers/shopify-orders.ts": {
-      "sha256": "23be0d5f62a138f160f259b59b64720a26bcb234eff28334dbe9a2537990653d",
+      "sha256": "324424b846cd3a09a1245dc36460eb0755479273394ee628db7506bb51f70780",
       "executable": false
     },
     "src/modules/business-connectors/providers/shopify.ts": {
@@ -9604,6 +9616,10 @@
       "sha256": "214c149c0a6b221016b228025ca4d6b15d4f5ac57f40895f4b11f912db3be972",
       "executable": false
     },
+    "src/ui/native/pages/business-connectors/CrmOptions.jsx": {
+      "sha256": "b8fb5f72555968d884ad7419aabc097a327e0b447aaeb17476b740274796890f",
+      "executable": false
+    },
     "src/ui/native/pages/business-connectors/Panel.jsx": {
       "sha256": "e421e44ce0c69e53f8f117377846a3a2ce8e13664a2db9a276846f59d3f587b9",
       "executable": false
@@ -10933,7 +10949,15 @@
       "executable": false
     },
     "tests/helpers/business-connectors/browser.mjs": {
-      "sha256": "24e77b2d62a7701f0084d416d85b6a87e3223fd6349b92cddf5ae0d6b9935951",
+      "sha256": "bd61e641f77e3e46ae6d77cea863ca68e61c48740f5c7a7b199062d72c688b01",
+      "executable": false
+    },
+    "tests/helpers/business-connectors/crm-journeys.mjs": {
+      "sha256": "5ef71b7a812fbd024850e4843dbd8e519ad2fa1b78e21adb357035de19b77fe4",
+      "executable": false
+    },
+    "tests/helpers/business-connectors/crm-network.mjs": {
+      "sha256": "86231e07fb9179c2a743dccda2c1ec4eb464324afd6780bcfcb5bd9265f2c647",
       "executable": false
     },
     "tests/helpers/business-connectors/journeys.mjs": {
@@ -10949,7 +10973,7 @@
       "executable": false
     },
     "tests/helpers/business-connectors/shopify-network.mjs": {
-      "sha256": "2c5211fe3d10dd73f751c7354b758a6f1548751ebcbb5235364ade8b70c80799",
+      "sha256": "7c1a34355645d27446fcfd117028e0aff62404d45da42ff88aca121184433d07",
       "executable": false
     },
     "tests/helpers/company-portal.mjs": {

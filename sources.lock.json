@@ -6136,7 +6136,7 @@
       "executable": false
     },
     "src/modules/mobile/client-transport.ts": {
-      "sha256": "05c66fd546f5e756a3d39f2a3e8e76664572dc66f10297003c3d89f80ee101ed",
+      "sha256": "bd28fba167734a60c6ac5dcdd498bf13b3dbad8241ebce160c6cbde381248704",
       "executable": false
     },
     "src/modules/mobile/client.ts": {
@@ -11412,7 +11412,7 @@
       "executable": false
     },
     "tests/helpers/mobile-offline.mjs": {
-      "sha256": "3d6d7d6c43d38690934220b389958646d9937aa668305b7a7a5dbc9a48aa41dc",
+      "sha256": "29cbc44c2c11aded856ed22a82700bc3f8ffedb8cc8794141446fc7196dbe0da",
       "executable": false
     },
     "tests/helpers/mobile.mjs": {

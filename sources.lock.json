@@ -6123,6 +6123,18 @@
       "sha256": "613fa49e3425a2862f6eb38a70a1fd07a5288c620e32f4c6721e5041cad1e758",
       "executable": false
     },
+    "src/modules/mobile/client-state.ts": {
+      "sha256": "202b6da19ee6aaaee2cd46fb1ffe749c761984a0a8ff2bb616ae07efbce61064",
+      "executable": false
+    },
+    "src/modules/mobile/client-transport.ts": {
+      "sha256": "05c66fd546f5e756a3d39f2a3e8e76664572dc66f10297003c3d89f80ee101ed",
+      "executable": false
+    },
+    "src/modules/mobile/client.ts": {
+      "sha256": "6c7ce4e83fa78e078faeddf3e2bb338749a9117b358b4b94e5252a5bb87f79a7",
+      "executable": false
+    },
     "src/modules/mobile/commands.ts": {
       "sha256": "cbfc9b69daed33ad5f6f5171e1e1e070ee5e0b3794fa65a1753e8097addbcfa0",
       "executable": false

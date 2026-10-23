@@ -18,7 +18,7 @@ export async function applyWorkflowActions(env:Env,input:WorkflowActionInput){
  const previous=await env.DB.prepare('SELECT id FROM workflow_action_receipts WHERE id=? AND project_id=? AND conversation_id=?').bind(id,projectId,conversationId).first()
  if(previous)return {state:'complete' as const,replayed:true}
  const actions=checkedActions(input.actions)
- if(actions.some(a=>a.type==='notify'||a.type==='route'))invalid('Notification and routing actions use their durable executors')
+ if(actions.some(a=>a.type==='notify'||a.type==='route'||a.type==='webhook'))invalid('Notification, webhook and routing actions use their durable executors')
  const current=await env.DB.prepare(`SELECT c.*,(SELECT ai_id FROM conversation_ai WHERE conversation_id=c.id) current_ai_id FROM conversations c WHERE c.project_id=? AND c.id=? AND ${availableTicketSql()}`).bind(projectId,conversationId).first<any>()
  if(!current||current.status_category==='closed')return {state:'stale' as const}
  if(input.expectedVersion!==undefined&&input.expectedVersion!==current.ticket_version||input.expectedRevision!==undefined&&input.expectedRevision!==current.revision||input.expectedLastMessageId!==undefined&&input.expectedLastMessageId!==current.last_message_id)return {state:'stale' as const}

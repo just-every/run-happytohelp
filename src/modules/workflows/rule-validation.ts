@@ -17,6 +17,12 @@ export async function validateRuleReferences(env:Env,projectId:string,d:RuleDefi
   case 'fields':for(const id of Object.keys(a.values))fields.set(id,true);break
   case 'notify':if(a.recipient_id)members.add(a.recipient_id);break
  }}
+ const destinations=[...new Set(d.actions.flatMap(a=>a.type==='webhook'?[a.destination_id]:[]))]
+ if(destinations.length){
+  const ids=JSON.stringify(destinations),rows=(await env.DB.prepare("SELECT id,secret_ciphertext FROM native_integration_destinations WHERE project_id=? AND kind='webhook' AND enabled=1 AND id IN (SELECT value FROM json_each(?))").bind(projectId,ids).all<any>()).results
+  if(rows.length!==destinations.length)invalid('Choose enabled workspace webhook destinations')
+  predicates.push("NOT EXISTS(SELECT 1 FROM json_each(?) ref WHERE NOT EXISTS(SELECT 1 FROM native_integration_destinations d WHERE d.project_id=? AND d.id=json_extract(ref.value,'$[0]') AND d.secret_ciphertext=json_extract(ref.value,'$[1]') AND d.kind='webhook' AND d.enabled=1))");params.push(JSON.stringify(rows.map(row=>[row.id,row.secret_ciphertext])),projectId)
+ }
  if(d.routing){if(d.routing.user_id)members.add(d.routing.user_id);for(const id of [d.routing.group_id,d.routing.overflow_group_id])if(id)groups.add(id)}
  if(fields.size){
   const rows=(await env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id IN (SELECT value FROM json_each(?))').bind(projectId,JSON.stringify([...fields.keys()])).all<any>()).results

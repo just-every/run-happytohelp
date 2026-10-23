@@ -3444,7 +3444,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "a7198e796d6aab578c1bad98395a6f98b65c7755a1f562068c49b6bafa3e9fc8",
+      "sha256": "315f1529f1cab83998242bf0cfd749d6024b2e817bcd72bbcab7e03e6408f878",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -3931,8 +3931,12 @@
       "sha256": "8807038fbba939793d06f94893d5cb3cb4d609df38d8dd002f89813f16c111e0",
       "executable": false
     },
+    "src/modules/assurance/README.md": {
+      "sha256": "81cee47c7c1fab158cb973575b691dc08cdfc4f46eb63b0d6205f210d2346444",
+      "executable": false
+    },
     "src/modules/assurance/routes.ts": {
-      "sha256": "5aaf3dfc0947505352ce8548b017a32f1a350c221caf0412f93f6e219f651b98",
+      "sha256": "1d42bb1a8a9997358005545ee582f252317f388a77a804884667cce2e36a65e3",
       "executable": false
     },
     "src/modules/assurance/ui/assurance.css": {
@@ -4317,6 +4321,10 @@
     },
     "src/modules/feedback/penny.ts": {
       "sha256": "aa7c7c2dc2d622c744f55ca34b5b4b5e18f0a1595ccb6f6050fc58f681a7eb1d",
+      "executable": false
+    },
+    "src/modules/feedback/README.md": {
+      "sha256": "8eb7123280d0f23583d52a41bfed556286f1444e90277e840e111be7a06b6291",
       "executable": false
     },
     "src/modules/feedback/routes.ts": {

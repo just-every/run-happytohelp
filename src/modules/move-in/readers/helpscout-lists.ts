@@ -1,6 +1,6 @@
 import type {SourceRecord} from '../../import-kit/src/types'
 import {object,sourceId} from './common'
-const singular:Record<string,string>={conversations:'conversation',customers:'contact',tags:'tag',collections:'collection',categories:'category',articles:'article-ref'}
+const singular:Record<string,string>={organizations:'organization',conversations:'conversation',customers:'contact',tags:'tag',collections:'collection',categories:'category',articles:'article-ref'}
 /** Reconcile documented list receipts. A list cannot borrow a terminal receipt
  * from another mailbox/filter or claim completeness from an invented flag. */
 export function helpScoutListIssues(records:SourceRecord[]){

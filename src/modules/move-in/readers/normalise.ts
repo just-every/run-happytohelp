@@ -1,4 +1,5 @@
 import {sourceOwnership} from '../source-ownership'
+import {mapCompanies} from './companies'
 import {zendeskFields,zendeskTicketFields} from './zendesk-fields'
 import {zendeskConfiguration,configurationTags} from './zendesk-configuration'
 import {zendeskMacroBody,zendeskMacroActions} from './zendesk-macro'
@@ -22,10 +23,12 @@ export function withTags(source:SourceBundle,vendor:Vendor):SourceBundle {
  for(const record of source.records.filter(r=>['ticket','conversation'].includes(r.kind)||vendor==='helpscout'&&r.kind==='tag'||vendor==='zendesk'&&['macro','trigger','automation'].includes(r.kind)))for(const name of vendor==='zendesk'&&['macro','trigger','automation'].includes(record.kind)?configurationTags(record):tags(record)){if(name.trim().length>80){source.diagnostics.push({severity:'error',code:'tag_name_limit',message:'Tag names longer than 80 characters are not imported',location:record.location});continue}const key=tagKey(name);if(seen.has(key))continue;if(source.records.length+added.length>=LIMITS.records)throw new Error('export_record_limit');seen.add(key);added.push(sourceRecord(vendor,'tag-name',key,{name:name.trim()},record.location.artifact,record.artifactHash,record.location.row??1,`${record.location.pointer??''}/tags`))}
  return {...source,records:[...added,...source.records].sort((a,b)=>rank(a.kind)-rank(b.kind))}
 }
-const rank=(kind:string)=>kind==='tag-name'?0:['group','schedule','ticket_field'].includes(kind)?1:kind==='user'||kind==='contact'||kind==='agent'?1:kind==='collection'?2:kind==='category'?3:4
+const rank=(kind:string)=>kind==='tag-name'?0:['company','organization'].includes(kind)?0.5:['group','schedule','ticket_field'].includes(kind)?1:kind==='user'||kind==='contact'||kind==='agent'?1:kind==='collection'?2:kind==='category'?3:4
 export async function prepareMapping(input:MappingInput):Promise<PreparedMapping> {
- if(input.vendor==='helpscout')return prepareHelpScout(input)
- if(input.vendor==='freshdesk')return prepareFreshdesk(input)
+ const result=await (input.vendor==='helpscout'?prepareHelpScout(input):input.vendor==='freshdesk'?prepareFreshdesk(input):prepareStandard(input))
+ mapCompanies(input,result);return result
+}
+async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
  const {projectId,actorId,vendor,source,tagIds}=input,result:PreparedMapping={known:new Set(),effects:new Map(),rejections:new Map(),omissions:new Map()}
  const records=new Map(source.records.map(r=>[recordKey(r),r])),id=(kind:string,source:string)=>nativeId(projectId,vendor,kind,source)
  const author=(value:any)=>{if(vendor==='zendesk'){const sid=sourceId(value,vendor),user=records.get(`user/${sid}`)?.payload as any;if(!user||!['end-user','agent','admin'].includes(user.role))throw new Error('comment_author_role_missing');return {id:sid,name:typeof user.name==='string'?user.name:null,role:user.role==='end-user'?'contact':'operator'}}

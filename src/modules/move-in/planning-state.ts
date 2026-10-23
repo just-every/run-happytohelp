@@ -19,11 +19,13 @@ export async function planningState(env:Env,run:Run,records:SourceRecord[],prepa
  // unrelated sources in the same workspace must not enter this bounded read.
  const claims=(await env.DB.prepare('SELECT s.identity,s.source_hash,s.mapping_version,s.effects_hash,s.job_id FROM json_each(?3) wanted CROSS JOIN ik_sources s ON s.identity=wanted.value CROSS JOIN ik_jobs j ON j.id=s.job_id WHERE j.destination=?1 AND j.namespace=?2').bind(run.project_id,run.vendor,JSON.stringify(identities)).all<SourceClaim>()).results
  const nativeIds=new Map<string,Set<string>>()
- for(const [kind,table] of [['field','ticket_fields'],['form','request_forms'],['group','ticket_groups'],['calendar','workflow_calendars'],['view','ticket_views'],['rule','workflow_rules'],['contact','contacts'],['conversation','conversations'],['macro','macros'],['article','knowledge_articles'],['category','knowledge_categories'],['tag','workspace_tags']]){
+ for(const [kind,table] of [['company','companies'],['field','ticket_fields'],['form','request_forms'],['group','ticket_groups'],['calendar','workflow_calendars'],['view','ticket_views'],['rule','workflow_rules'],['contact','contacts'],['conversation','conversations'],['macro','macros'],['article','knowledge_articles'],['category','knowledge_categories'],['tag','workspace_tags']]){
   const ids=candidates.filter(candidate=>candidate.kind===kind).map(candidate=>candidate.id)
   if(!ids.length){nativeIds.set(kind,new Set());continue}
   nativeIds.set(kind,new Set((await env.DB.prepare(`SELECT n.id FROM json_each(?2) wanted CROSS JOIN ${table} n ON n.id=wanted.value AND n.project_id=?1`).bind(run.project_id,JSON.stringify(ids)).all<{id:string}>()).results.map(row=>row.id)))
  }
+ const companyDomains=effects.filter(effect=>effect.targetKind==='company').flatMap(effect=>(effect.value as any).tables.company_domains)
+ if(companyDomains.length){const conflicts=(await env.DB.prepare("SELECT DISTINCT json_extract(candidate.value,'$.company_id') id FROM json_each(?2) candidate JOIN company_domains native ON native.project_id=?1 AND native.domain=json_extract(candidate.value,'$.domain') AND native.company_id<>json_extract(candidate.value,'$.company_id')").bind(run.project_id,JSON.stringify(companyDomains)).all<{id:string}>()).results;for(const record of records)if((prepared.effects.get(`${record.kind}/${record.sourceId}`)??[]).some(effect=>effect.targetKind==='company'&&conflicts.some(row=>row.id===effect.targetId)))prepared.rejections.set(`${record.kind}/${record.sourceId}`,'company_domain_conflict')}
  // EXISTS returns one bit per candidate, even if old native data contains many
  // duplicate addresses. The persisted index supplies JavaScript Unicode normalization semantics.
  const contacts=effects.filter(effect=>effect.targetKind==='contact').map(effect=>{const contact=(effect.value as any).tables.contacts[0];return {id:effect.targetId,email:emailKey(run.project_id,contact.email),external:contact.external_id}})

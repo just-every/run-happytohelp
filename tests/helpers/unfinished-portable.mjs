@@ -10,7 +10,7 @@ export async function interruptPortableWork(root,state,actorId){
    const id='synthetic-happytohelp-'+status;
    await DB.prepare('INSERT INTO ai_generations(id,project_id,conversation_id,state,source_revision,actor_json,model,ai_id,ai_profile_json,created_at,updated_at) VALUES(?,?,?,?,0,?,?,?,?,?,?)').bind(id,state.projectId,state.conversationId,status,JSON.stringify({id:actorId,role:'owner'}),'synthetic-happytohelp-1','synthetic-happytohelp-2','{}',now,now).run();
    if(status==='running')await DB.prepare("INSERT INTO ai_attempts(id,generation_id,state,started_at) VALUES(?,?,'running',?)").bind(id,id,now).run();
-   await DB.prepare('INSERT INTO context_jobs(id,project_id,subject_id,kind,state,source_revision,packet_json,model,created_at) VALUES(?,?,?,?,?,0,?,?,?)').bind(id,state.projectId,state.conversationId,'summary',status,'{}','synthetic-happytohelp-1',Date.now()).run();
+   await DB.prepare('INSERT INTO context_jobs(id,project_id,subject_id,kind,state,source_revision,packet_json,model,created_at) VALUES(?,?,?,?,?,0,?,?,?)').bind(id,state.projectId,state.business.contactId,status==='queued'?'project':'agent',status,'{}','synthetic-happytohelp-1',Date.now()).run();
    await DB.prepare('INSERT INTO brand_generations(id,project_id,actor_id,request_id,prompt,model,size,quality,state,created_at,expires_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)').bind(id,state.projectId,actorId,id,'Retained interrupted illustration','synthetic-happytohelp-1','1024x1024','low',status,Date.now(),Date.now()+900000).run();
   }
   await DB.prepare("INSERT INTO knowledge_imports(id,project_id,platform,status,created_at,processing_started_at) VALUES('synthetic-happytohelp-1',?,'zendesk','processing',?,?)").bind(state.projectId,Date.now(),Date.now()).run();

@@ -93,6 +93,7 @@ export async function ticketsBrowser({count=12,installation}={}){
   await page.getByRole('button',{name:'SLA policies',exact:true}).click()
   await page.getByRole('heading',{name:'SLA policies',exact:true}).waitFor()
   await page.getByText('Plan tier = "business"',{exact:false}).waitFor()
+  await page.getByText('Request forms: Account help',{exact:false}).waitFor()
   await capture('18-sla-policy')
   await page.getByRole('button',{name:'Edit policy',exact:true}).click()
   await page.getByLabel('Name',{exact:true}).fill('Business account response')

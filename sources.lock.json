@@ -9616,7 +9616,7 @@
       "executable": false
     },
     "src/ui/native/pages/Connections.jsx": {
-      "sha256": "0ed9058b72d2079c378ba9f0006c7673189a446f0de96f77b17245cd294b896e",
+      "sha256": "bcef4fff6ad5a2553a42ed8f3db8277f50c332126a8c8c042201d5a385df7d06",
       "executable": false
     },
     "src/ui/native/pages/connections/ConnectionHelp.jsx": {
@@ -9632,7 +9632,7 @@
       "executable": false
     },
     "src/ui/native/pages/connections/Destinations.jsx": {
-      "sha256": "2b56f243721e29bb79c9655dd5c2e1a56fcd934830f2f05e749579abef9abfea",
+      "sha256": "332b0fcd0bbd0331d55aef47daa64826a437229566e3916a073bbbeafc79ee4f",
       "executable": false
     },
     "src/ui/native/pages/connections/Tokens.jsx": {
@@ -9796,7 +9796,7 @@
       "executable": false
     },
     "src/ui/native/pages/knowledge/KnowledgeLists.jsx": {
-      "sha256": "f7848db9e09ec2ae43c360f4f39c1cb99ad4f36e3ef69f1a9a623e37f0fabb44",
+      "sha256": "0644fe482a3e76e5290d4f7028d92864a2115d40dcaea5483acc2fb423629c2e",
       "executable": false
     },
     "src/ui/native/pages/knowledge/KnowledgeProposals.jsx": {
@@ -11884,7 +11884,7 @@
       "executable": false
     },
     "tests/journeys/runtime.mjs": {
-      "sha256": "bd7133102520a921680309617de1d3e712738c256cad1097acf1c1f2273150c9",
+      "sha256": "c470c0462c03288e03840a5c8038284b971fce515546fc3d2a15c564024de80d",
       "executable": false
     },
     "tests/journeys/upgrade-nightly.mjs": {

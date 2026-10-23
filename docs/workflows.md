@@ -154,3 +154,8 @@ use their own preferences. A group from another workspace is refused. Changing
 the group or membership before delivery cancels the old authority. Customer and
 follower notices use the ticket audience and cannot be redirected to a named
 person. Terminal delivery claims remain terminal across restart.
+
+Workflow and SLA inbox notices remain available when email delivery is not
+configured. Their frozen delivery record says email was not configured; installing
+a mail provider later does not replay that action. The workflow run or SLA alert
+keeps the explicit not-delivered email outcome for review.

@@ -1,3 +1,4 @@
+import {brandReports} from './brand-reports'
 import {recentMailboxProof} from '../identity/two-factor/state'
 import {inboxCounts} from './inbox-counts'
 import {validTimezone} from '../reports/calendar'
@@ -20,6 +21,7 @@ import {auditStatement,requestSource} from '../audit/record'
 import {accountAudit} from '../identity/two-factor/factors'
 import {projectAccess} from '../access/catalogue'
 export const projects=new Hono<AppEnv>()
+projects.route('/',brandReports)
 projects.get('/bootstrap',async c=>{
  const actor=await requireActor(c)
  if(actor.role==='contact')throw new HTTPException(403)

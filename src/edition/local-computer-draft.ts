@@ -1,3 +1,4 @@
+import { localResultFrontier } from '../modules/local-computer/result-frontier';
 import { requireValue, type DraftInput, type LocalEnv } from '../modules/local-computer/contracts';
 import { copyLocalAttachments, type LocalAttachment } from './local-computer-media';
 
@@ -16,7 +17,7 @@ export async function prepareLocalDraft(env: LocalEnv, input: DraftInput) {
             AND g.user_id=j.operator_id AND (g.project_id IS NULL OR g.project_id=j.project_id) AND g.revoked_at IS NULL))
         AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=j.project_id
             AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)
-        AND c.revision=? AND c.last_message_id IS ?`;
+        AND c.revision=? AND c.last_message_id IS ? AND ${localResultFrontier}`;
     const args = [jobId, projectId, conversationId, operatorId, expectedRevision, expectedLastMessageId];
     const job = await env.DB.prepare(sql).bind(...args).first<any>();
     requireValue(job, 'Draft unavailable or conversation changed; review again', 409);

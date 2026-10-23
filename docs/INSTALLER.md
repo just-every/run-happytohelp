@@ -190,7 +190,9 @@ bindings. For Cloudflare mail, supply the additional account ID described in
 [Operations](../OPERATIONS.md#deploy-to-your-cloudflare-account).
 
 `rer deploy --dry-run` validates the input shape and builds locally. It makes no
-provider requests, sends no mail and makes no deployment. `rer deploy --environment
+provider requests, sends no mail and makes no deployment. Cloudflare credentials
+are not required. Remote resources, credential validity and existing secret
+bindings remain unchecked until a real deployment. `rer deploy --environment
 production` requires owner authorization and the private credentials/declaration
 in Operations. Local development still needs no email account.
 Stop `rer dev` first (`rer dev --stop`): while it runs it owns the checkout's local

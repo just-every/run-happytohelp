@@ -4,7 +4,7 @@ import {customer,history} from '../../move-in/helpscout-fixtures.mjs'
 /** Explicit export fields, imported through upload/review/apply, then real mail intake. */
 export async function vendorReplies(app,{projectId,owner,gate}){
  const scout=history(901,87),scoutEmail='scout@customer.example'
- scout.conversation.status='active';scout.conversation.primaryCustomer.email=scoutEmail
+ scout.conversation.number=1901;scout.conversation.status='active';scout.conversation.primaryCustomer.email=scoutEmail
  scout.conversation.reply_to='helpdesk+scout_901@example.test'
  for(const thread of scout.page._embedded.threads)for(const field of ['customer','createdBy'])if(thread[field]?.id===87)thread[field].email=scoutEmail
  const fixtures=[
@@ -22,6 +22,12 @@ export async function vendorReplies(app,{projectId,owner,gate}){
   assert.ok(imported,fixture.vendor+' imported its explicit threading key')
   const reply={messageId:fixture.vendor+'-cutover',from:fixture.email,to:fixture.to,subject:fixture.subject,text:'Reply to the old notification after cutover.'}
   const received=await gate(reply);assert.equal(received.data.state,'delivered',fixture.vendor);assert.equal(received.data.conversationId,imported.conversation_id)
+  if(fixture.vendor==='helpscout'){
+   const numbered=await gate({...reply,messageId:'helpscout-conversation-number',to:'helpdesk@example.test',subject:'Re: Shipment [#1901]'})
+   assert.equal(numbered.data.state,'delivered');assert.equal(numbered.data.conversationId,imported.conversation_id,'the exported conversation number is distinct from its API id')
+   const wrongNumber=await gate({...reply,messageId:'helpscout-api-id-is-not-number',to:'helpdesk@example.test',subject:'Re: Shipment [#901]'})
+   assert.notEqual(wrongNumber.data.conversationId,imported.conversation_id,'an API id is never guessed to be a notification number')
+  }
   const mismatch=await gate({...reply,messageId:fixture.vendor+'-wrong-customer',from:'stranger@customer.example'})
   assert.equal(mismatch.data.state,'suspended',fixture.vendor+' identity mismatch');assert.equal(mismatch.data.conversationId,null)
   const header=fixture.vendor==='freshdesk'?'X-Freshdesk-Ticket-Id':fixture.vendor==='helpscout'?'X-HS-Conversation-Id':'X-Intercom-Conversation-Id'

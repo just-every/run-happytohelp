@@ -83,6 +83,10 @@ export async function completeEmailJourney(){
   const imported=await app.first("SELECT conversation_id FROM email_threading_keys WHERE project_id=? AND key_value='zendesk:ABCD-1234'",projectId);assert.ok(imported)
   const vendorReply=await gate({messageId:'zendesk-followup',to:'helpdesk@example.test',from:'imported@customer.example',subject:'Re: Original shipment [ABCD-1234]',text:'Reply after the cutover.'})
   assert.equal(vendorReply.data.conversationId,imported.conversation_id)
+  for(const [index,subject] of ['Re: Shipment [Ticket #72]','Re: Shipment [Request #72]'].entries()){
+   const numbered=await gate({messageId:'zendesk-number-'+index,to:'helpdesk@example.test',from:'imported@customer.example',subject,text:'Reply by the original ticket number.'})
+   assert.equal(numbered.data.state,'delivered');assert.equal(numbered.data.conversationId,imported.conversation_id)
+  }
   for(const [index,subject] of ['Return label [AB12-CD34] not working','Invoice [2026-1017] question'].entries()){
    const unknown=await gate({messageId:'unmatched-zendesk-'+index,to:'helpdesk@example.test',from:'imported@customer.example',subject,text:'An older reply after moving our support.'})
    assert.equal(unknown.data.state,'delivered');assert.notEqual(unknown.data.conversationId,imported.conversation_id)

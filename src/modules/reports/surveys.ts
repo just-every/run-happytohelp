@@ -17,13 +17,13 @@ function readCursor(raw:string|undefined):Cursor|null{
  throw new HTTPException(400,{message:'Invalid results cursor'})
 }
 async function page(env:Env,projectId:string,lowOnly:boolean,limit:number,cursor:Cursor|null){
- const rows=await env.DB.prepare(`SELECT r.id resolution_id,r.conversation_id,r.ordinal,r.resolved_at,r.reopened_at,s.id survey_id,s.state delivery_state,s.revoked_at,s.expires_at,v.channel,v.scale,v.score,CASE WHEN ${erased} THEN '' ELSE v.reason END reason,CASE WHEN ${erased} THEN '' ELSE v.comment END comment,v.revision,v.updated_at ${joins} WHERE ${eligible} ${lowOnly?`AND ${low}`:''} ${cursor?'AND (r.resolved_at<? OR r.resolved_at=? AND r.id<?)':''} ORDER BY r.resolved_at DESC,r.id DESC LIMIT ?`)
+ const rows=await env.DB.prepare(`SELECT r.id resolution_id,r.conversation_id,r.ordinal,r.resolved_at,r.reopened_at,s.id survey_id,s.state delivery_state,s.revoked_at,s.expires_at,CASE WHEN v.channel='widget' THEN 'widget' ELSE v.response_surface END channel,v.channel invitation_channel,v.scale,v.score,CASE WHEN ${erased} THEN '' ELSE v.reason END reason,CASE WHEN ${erased} THEN '' ELSE v.comment END comment,v.revision,v.updated_at ${joins} WHERE ${eligible} ${lowOnly?`AND ${low}`:''} ${cursor?'AND (r.resolved_at<? OR r.resolved_at=? AND r.id<?)':''} ORDER BY r.resolved_at DESC,r.id DESC LIMIT ?`)
  .bind(projectId,...(cursor?[cursor.at,cursor.at,cursor.id]:[]),limit).all<any>()
  return rows.results
 }
 const encodeCursor=(row:any)=>btoa(JSON.stringify({at:row.resolved_at,id:row.resolution_id}))
 const iso=(at:number|null)=>at===null?null:new Date(at).toISOString()
-const present=(row:any)=>({resolutionId:row.resolution_id,conversationId:row.conversation_id,ordinal:row.ordinal,resolvedAt:iso(row.resolved_at),reopenedAt:iso(row.reopened_at),surveyId:row.survey_id,deliveryState:row.delivery_state,revokedAt:iso(row.revoked_at),expiresAt:iso(row.expires_at),response:row.score===null?null:{channel:row.channel,scale:row.scale,score:row.score,reason:row.reason,comment:row.comment,revision:row.revision,updatedAt:iso(row.updated_at)}})
+const present=(row:any)=>({resolutionId:row.resolution_id,conversationId:row.conversation_id,ordinal:row.ordinal,resolvedAt:iso(row.resolved_at),reopenedAt:iso(row.reopened_at),surveyId:row.survey_id,deliveryState:row.delivery_state,revokedAt:iso(row.revoked_at),expiresAt:iso(row.expires_at),response:row.score===null?null:{channel:row.channel,invitationChannel:row.invitation_channel,scale:row.scale,score:row.score,reason:row.reason,comment:row.comment,revision:row.revision,updatedAt:iso(row.updated_at)}})
 export const surveyReports=new Hono<AppEnv>()
 surveyReports.get('/projects/:projectId/results',async c=>{
  const actor=await scope(c),lowOnly=c.req.query('lowScore')==='true',rawLimit=c.req.query('limit'),limit=rawLimit===undefined?50:Number(rawLimit),cursor=readCursor(c.req.query('cursor'))

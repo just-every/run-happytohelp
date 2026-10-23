@@ -20,7 +20,7 @@ password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
 real local owner and reach **Setup**. No private answers, email service or AI
 account are needed. Use `rer dev --stop` from the checkout to stop the managed app.
 
-The checkout pins **`@runeditrun/rer` 0.2.42** in `package.json` and
+The checkout pins **`@runeditrun/rer` 0.2.77** in `package.json` and
 `pnpm-lock.yaml`. The launcher you run (npx or a global install) may have a different
 version; inside the checkout it provisions the tools and delegates to the pinned
 local package. Updating the launcher does not change the project's pin.
@@ -224,7 +224,7 @@ Cloudflare Email Sending additionally needs `EMAIL_ACCOUNT_ID`. Add
 `{"binding":"EMAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}` to the
 declaration's `secrets` array, plus
 `{"binding":"MAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}`, and supply that account ID privately before deploying
-with Cloudflare mail. It is not required for Resend or SendGrid; rer 0.2.42 requires
+with Cloudflare mail. It is not required for Resend or SendGrid; rer 0.2.77 requires
 every declared secret not marked `optional` on a new Worker.
 
 Preserve existing keys and owner data. Configure other optional mail/model inputs

@@ -3,6 +3,7 @@ import type {Env} from '../../platform/env'
 import {applyWorkflowActions,type WorkflowGuard} from './actions'
 import type {WorkflowAction} from './actions-validation'
 import {notifyWorkflow} from './notify'
+import {sendWorkflowWebhook} from './webhook'
 import {routeTicket} from './routing'
 import {ruleTicket,type RuleDefinition} from './rule-model'
 import {workflowNow} from './clock'
@@ -50,7 +51,11 @@ export async function executeRuleRun(env:Env,runId:string,spent?:Spent){
   if(triageGuard?.sql==='0'){await setState('cancelled','Triage assignment is below confidence or has not been approved');break}
   const actionId=`${runId}:action:${i}`,guard:WorkflowGuard={sql:`${rule.sql} AND c.ticket_version=? AND c.revision=? AND c.last_message_id IS ? AND EXISTS(SELECT 1 FROM workflow_runs WHERE id=? AND lease_token=? AND state IN ('running','pending') AND cursor=?)`,params:[...rule.params,frontier.ticket_version,frontier.revision,frontier.last_message_id,runId,lease,i]}
   if(triageGuard){guard.sql+=` AND (${triageGuard.sql})`;guard.params.push(...triageGuard.params)}
-   if(action.type==='notify'){
+   if(action.type==='webhook'){
+    const result=await sendWorkflowWebhook(env,{projectId:run.project_id,conversationId:run.conversation_id,id:actionId,destinationId:action.destination_id,guard})
+    if(result.state!=='complete'){await setState(result.state==='pending'?'failed':result.state,result.detail??'Webhook did not complete');break}
+    await env.DB.prepare("UPDATE workflow_runs SET cursor=max(cursor,?),state='running',updated_at=? WHERE id=? AND cursor=? AND state IN ('running','pending') AND lease_token=?").bind(i+1,workflowNow(env),runId,i,lease).run()
+   }else if(action.type==='notify'){
     const result=await notifyWorkflow(env,{projectId:run.project_id,conversationId:run.conversation_id,id:actionId,kind:action.kind,recipientId:action.recipient_id,message:action.message,guard})
     if(result.state==='pending'){if(attempt>=RUN_ATTEMPTS)await env.DB.prepare("UPDATE workflow_notifications SET state='not_delivered',detail=?,updated_at=? WHERE id=? AND state='pending'").bind(`${result.detail??'Notification delivery is waiting'}. Stopped after ${RUN_ATTEMPTS} attempts.`,workflowNow(env),actionId).run();await defer('not_delivered',result.detail??'Notification delivery is waiting');break}
     if(result.state!=='complete'){await setState(result.state,result.detail??`Notification ${result.state.replace('_',' ')}`);break}

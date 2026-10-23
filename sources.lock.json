@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "49f2129012e3e387d659c3d27769b0da19bc0e2381e80521b86c62b6eb32b7ef",
+      "sha256": "3da86a17dd69dbe566703df40384d1a0cb81daab7e7ff51aa70499e30ebd7c89",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "7cb1d55f8fbdf624347a2efd82e2ff843cdfe1c76e5b0a51910ee0488a742b26",
+      "sha256": "38c0fd0aced1c92546bced4e9428fb714be0b24e3d6f38e8720c382fa8fd1890",
       "executable": false
     },
     "DEMO.md": {
@@ -1820,7 +1820,7 @@
       "executable": false
     },
     "docs/WORKSPACE-WORKFLOWS.md": {
-      "sha256": "dec56d3c24d39e159618fdf034fbaddc45c14dfef7d3a6ac6b9efec99f9231a4",
+      "sha256": "098cd732516caaf1edd126eb808a2d0ca0c398987a7f73e5f78dc71972abde8e",
       "executable": false
     },
     "edition.json": {
@@ -7248,11 +7248,11 @@
       "executable": false
     },
     "src/modules/workflows/actions-validation.ts": {
-      "sha256": "a887a6b44c49f7181a8fd316050425193498555c8407a1d33171bb76ef6ba80f",
+      "sha256": "408262c464200c7aed54b84df52693ef98ec01802b272fe22429a432323bfcc1",
       "executable": false
     },
     "src/modules/workflows/actions.ts": {
-      "sha256": "cca2b2b2fcd95827161df4a983d56b750da085cfcadfe39b36f06671bed3a1f7",
+      "sha256": "50997ccac30e6ad665b835b2c668772ed8e67a76bbb0e69cc5e5ecff5d4e9a0b",
       "executable": false
     },
     "src/modules/workflows/budget.ts": {
@@ -7368,7 +7368,7 @@
       "executable": false
     },
     "src/modules/workflows/rule-run.ts": {
-      "sha256": "3f203f513a170fb578163d5b1cab927f710f836d737b8dd4b9f7836bb46c662b",
+      "sha256": "fd9397a569dcb0227ed2c51c713b8b448b33872ca973aa28b4defc70f3329bd5",
       "executable": false
     },
     "src/modules/workflows/rule-time.ts": {
@@ -7376,7 +7376,7 @@
       "executable": false
     },
     "src/modules/workflows/rule-validation.ts": {
-      "sha256": "67a38350e925e86fff37d8121c53ea6c113740d37bd72bc5c33968beced99e78",
+      "sha256": "52d99e66a02fc194a85e15d04efb5d99d7c560bfcae4199b67e8d8fece1a6485",
       "executable": false
     },
     "src/modules/workflows/rules.ts": {
@@ -11576,7 +11576,7 @@
       "executable": false
     },
     "tests/helpers/workflows/fixture.mjs": {
-      "sha256": "8227f6d4cc77a987bce25c2ba1edd82d38113251ba40e5eb2c8f3c83b812e69d",
+      "sha256": "f8051ac82a145b0f0adcf9c9969d7db5756b9be35762b110ede644f689bc6d16",
       "executable": false
     },
     "tests/helpers/workflows/journey.mjs": {
@@ -11588,7 +11588,7 @@
       "executable": false
     },
     "tests/helpers/workflows/rules.mjs": {
-      "sha256": "541424089088bdf807ad97f0deb70891198470eaaa9fb208cdef2082882bc2bf",
+      "sha256": "9369735297f61c2a4327214d1a28dfdfaac8299c2dd6a1181d56ebd1f1e8082d",
       "executable": false
     },
     "tests/helpers/workflows/schedules.mjs": {

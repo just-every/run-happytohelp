@@ -153,46 +153,27 @@ try{
  await stop();assert.equal(await migrationCount(),1);
  compareDevEntryArchive(beforeRestoredReads,await archiveSnapshot(root));
  assert.deepEqual(await ledgerSnapshot(),restoredLedgers,'post-restore reads and refused replays preserve migration history');
- // Like Base's reference journey, missing credentials refuse the target-secret
- // check. Only Cloudflare's fetch edge is faked for the configured success path;
- // the real CLI still builds, resolves the target and validates its secrets.
+ // Every dry-run invocation uses the real command/build with the network edge
+ // refusing every request, including read-only provider inspection.
  const network=join(scratch,'deploy-network.mjs'),calls=join(scratch,'deploy-requests.jsonl');
- const requiredSecrets=JSON.parse(await readFile(join(root,'deploy.json'),'utf8')).secrets.filter(item=>!item.optional).map(item=>({name:item.binding,type:'secret_text'}));
  await writeFile(calls,'');
  await writeFile(network,`
 import {appendFileSync} from 'node:fs';
-globalThis.fetch=async(input,init)=>{
- const request=new Request(input,init),url=new URL(request.url);
- appendFileSync(${JSON.stringify(calls)},JSON.stringify({method:request.method,url:request.url})+'\\n');
- if(url.origin!=='https://api.cloudflare.com'||request.method!=='GET')throw Error('Unexpected dry-run network request');
- const prefix='/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID;
- const worker=prefix+'/workers/scripts/happytohelp-production';
- let result;
- if(url.pathname===prefix+'/workers/subdomain')result={subdomain:'installer-journey'};
- else if(url.pathname===worker+'/settings')result={bindings:[]};
- else if(url.pathname===worker+'/secrets')result=${JSON.stringify(requiredSecrets)};
- else throw Error('Unexpected dry-run Cloudflare endpoint');
- return Response.json({success:true,errors:[],messages:[],result});
+globalThis.fetch=async()=>{
+ appendFileSync(${JSON.stringify(calls)},'unexpected request\\n');
+ throw Error('Offline deployment dry-run must make no provider requests');
 };
 `);
- const dryEnv={OWNER_EMAIL:'owner@dry-run.example.com',EMAIL_PROVIDER:'sendgrid',EMAIL_FROM:'support@dry-run.example.test',EMAIL_API_KEY:'test-only-dry-run-sendgrid-key',CLOUDFLARE_ACCOUNT_ID:'',CLOUDFLARE_API_TOKEN:'',NODE_OPTIONS:[process.env.NODE_OPTIONS,`--import=${pathToFileURL(network).href}`].filter(Boolean).join(' ')};
- const refused=await run(root,['deploy','--dry-run'],3,{env:dryEnv});
- assert.equal(refused.events.at(-1).ok,false);
- const refusal=refused.events.find(event=>event.event==='error').message;
- assert.match(refusal,/cannot read the target secret bindings/);
- assert.match(refusal,/CLOUDFLARE_ACCOUNT_ID/);assert.match(refusal,/CLOUDFLARE_API_TOKEN/);
- assert.match(refusal,/Nothing was deployed/);
- assert.equal(await readFile(calls,'utf8'),'','missing credentials make no provider request');
- await assert.rejects(access(join(root,'.rer/deploy/production.json')),{code:'ENOENT'});
- const accountId='a'.repeat(32);
- const dry=await run(root,['deploy','--dry-run'],0,{env:{...dryEnv,CLOUDFLARE_ACCOUNT_ID:accountId,CLOUDFLARE_API_TOKEN:'test-only-cloudflare-token'}});
- assert.equal(dry.events.at(-1).ok,true);
- assert.equal(dry.events.at(-1).dryRun,true);assert.equal(dry.events.at(-1).deployed,false);
- const requests=(await readFile(calls,'utf8')).trim().split('\n').map(JSON.parse);
- assert.ok(requests.every(request=>request.method==='GET'),'dry run never writes to the target');
- assert.deepEqual(requests.map(request=>request.url),['workers/subdomain','workers/scripts/happytohelp-production/settings','workers/scripts/happytohelp-production/secrets'].map(path=>`https://api.cloudflare.com/client/v4/accounts/${accountId}/${path}`),'configured dry run reads the target secret bindings');
- await assert.rejects(access(join(root,'.rer/deploy/production.json')),{code:'ENOENT'});
- assert.ok(restoredPrivate.equals(await readFile(join(root,'.dev.vars'))),'both dry runs preserve the local owner settings');
+ const dryEnv={OWNER_EMAIL:'owner@dry-run.example.com',EMAIL_PROVIDER:'sendgrid',EMAIL_FROM:'support@dry-run.example.test',EMAIL_API_KEY:'synthetic-happytohelp-1',CLOUDFLARE_ACCOUNT_ID:'',CLOUDFLARE_API_TOKEN:'',NODE_OPTIONS:[process.env.NODE_OPTIONS,`--import=${pathToFileURL(network).href}`].filter(Boolean).join(' ')};
+ for(const credentials of [{},{CLOUDFLARE_ACCOUNT_ID:'a'.repeat(32),CLOUDFLARE_API_TOKEN:'synthetic-happytohelp-2'}]){
+  const dry=await run(root,['deploy','--dry-run'],0,{env:{...dryEnv,...credentials}});
+  assert.equal(dry.events.at(-1).ok,true);
+  assert.equal(dry.events.at(-1).dryRun,true);assert.equal(dry.events.at(-1).deployed,false);
+  assert.equal(dry.events.at(-1).providerChecked,false,'offline validation never claims target readiness');
+  assert.equal(await readFile(calls,'utf8'),'','dry run makes zero provider requests with or without credentials');
+  await assert.rejects(access(join(root,'.rer/deploy/production.json')),{code:'ENOENT'});
+  assert.ok(restoredPrivate.equals(await readFile(join(root,'.dev.vars'))),'dry run preserves the local owner settings');
+ }
  await run(root,['reset','--yes']);await rm(additive);await run(root,setup);await start();
  const fresh=await json('/api/identity/login',{email,password});assert.notEqual(fresh.actor.id,actor.id);
  assert.equal((await json('/api/management/projects',undefined,fresh.token)).data.length,1);

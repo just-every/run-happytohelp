@@ -1608,11 +1608,11 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "dff0cd510d9f6392743e85ad3db5463f50863e5de3f5c3f2eedbccb0ae6598c9",
+      "sha256": "bf78f0dd87449b76b036c6cb35c3a8a12b8c4ed1ad5c579c18c7a03d0beb88e5",
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "7dd81920a3340ee4f90006a05e52659bcf6fc689ebc974f385041428277524ac",
+      "sha256": "5a3f03262634c1771e0885cfa4d543b291434c5c9683b55aef9618e74cfed506",
       "executable": false
     },
     "base-copies.json": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b0ef3168628f330d0f186a66ffec148469c777f4b1769eb63eab0c00795dda26",
+      "sha256": "e5de35213e5ba83f228d6e04230817bf8731915fbdca567467753ea487eb18d3",
       "executable": false
     },
     "DEMO.md": {
@@ -1688,7 +1688,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "159ca043bb50578502651aaa2472ced22463cd5f1a76acba3166e6ccdb3c6881",
+      "sha256": "23fdf9bf2ce021e9b38ce2dc66956d2ebc39083b4d47fffd8f967d8ed5408931",
       "executable": false
     },
     "docs/help-before-they-ask.md": {
@@ -1708,7 +1708,7 @@
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "f317edcfc80125091ffdb162bca202eff0d248e5830c9fbc6c1c20ac15e62f1c",
+      "sha256": "503e0f395fe6c0dbb412d4f0e3f3dbd20248cd8cedc244f8e64d33406b3fef29",
       "executable": false
     },
     "docs/legacy-entry-points.md": {
@@ -2908,7 +2908,7 @@
       "executable": false
     },
     "scripts/installer/hosted-deploy.mjs": {
-      "sha256": "107057fba1ce2ea31d764a8d27b291beff3f2734f19ec12a1aca7b26355e37a9",
+      "sha256": "53d87ced2506469a4a83d3b4141031ff1981f223924a2e86487a4d2e0daa7fa4",
       "executable": false
     },
     "scripts/installer/hosted-origin.mjs": {
@@ -2925,6 +2925,10 @@
     },
     "scripts/installer/native-local.mjs": {
       "sha256": "df742425e82f608e1bf66a566d64bc4dc0d8edda04a1722dd1abe089d5598bb2",
+      "executable": false
+    },
+    "scripts/installer/offline-deploy.mjs": {
+      "sha256": "178ef95db55aac74be1acbd46f835ff275fe88f58f25684eb96167ff13cdda4a",
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
@@ -5148,7 +5152,7 @@
       "executable": false
     },
     "src/modules/integrations/email-threading-keys.ts": {
-      "sha256": "86e855dfd5e83ae35378f6f94c5289e1573c8819c3742f237981ba0adf323ae0",
+      "sha256": "3d5ddba4a8e38ac2487d351d6931ea09f20121d36473af376df52f7fb937917a",
       "executable": false
     },
     "src/modules/integrations/email-threading.ts": {
@@ -6132,7 +6136,7 @@
       "executable": false
     },
     "src/modules/move-in/email-threading.ts": {
-      "sha256": "aeb5165b2ed86e61099308c2c7f93a501d12aa269010f2f5cea5446f32b93e00",
+      "sha256": "17605c1048000b88c1325421c7262d4b2d443c2d7028b0e77c47c220d059fd8a",
       "executable": false
     },
     "src/modules/move-in/erasure.ts": {
@@ -10888,7 +10892,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "6dd34208acd5dd75a10cec41a37cd8f0531f0e15c0eb9a0c741c1a5439dd8b30",
+      "sha256": "28839b977ed6b3e408800ac66d787ea41c9b5edd0defa49aa43b6ca64825d30b",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {
@@ -11248,7 +11252,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "6ae9782b3235e4a2348bbec35532dfba66bd1ab7711daee2c0b66de2f82f363d",
+      "sha256": "1f2cd19d786283029c9b89682cf5ab27520610cffa474e8bea293a418d1140e2",
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {

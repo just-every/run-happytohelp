@@ -1,3 +1,4 @@
+import {offlineDeploy} from './offline-deploy.mjs';
 import {ownerDeploy} from '@runeditrun/rer/deploy';
 import {missing} from '@runeditrun/rer/errors';
 import {deployEnvironment} from '@runeditrun/rer/internal/cli/deploy-inputs.mjs';
@@ -17,6 +18,7 @@ export function hostedDeploy(path,lifecycle){
    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||/@(?:[^@]+\.)?(?:test|invalid|localhost|example)$/i.test(email)||/@(?:example\.(?:com|net|org))$/i.test(email))
     throw missing('Deploy needs a real OWNER_EMAIL that can receive sign-in mail. The local trial owner (owner@run-happytohelp.test) has no mailbox and cannot own a hosted workspace. Set OWNER_EMAIL privately in your environment or an owned 0600 --env-file, then run the same deploy command again. Nothing was deployed.');
    const custom=await hostedDeclaration(context.root,declaration,env.H2H_PUBLIC_ORIGIN);
+   if(context.options.dryRun)return offlineDeploy(custom||path,lifecycle,context);
    if(custom)return ownerDeploy(custom,lifecycle)(context);
   }
   return deploy(context);

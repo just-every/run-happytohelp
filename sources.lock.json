@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "dff0cd510d9f6392743e85ad3db5463f50863e5de3f5c3f2eedbccb0ae6598c9",
+      "sha256": "df13efd1916d29a997b787d6db0003a09b5e6c37665d1f567bb69dcbf0f02322",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b0ef3168628f330d0f186a66ffec148469c777f4b1769eb63eab0c00795dda26",
+      "sha256": "853256e9d99bbfd33f070312936e047090c6bb94cd74538a5201e857b6238a87",
       "executable": false
     },
     "DEMO.md": {
@@ -1788,7 +1788,7 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "74766162aad951933bf72426e801371991fbdb785b280374c65351cf6c7e5581",
+      "sha256": "b4293e288a2563c09c382637d0c252a295703e0396813fc6cb848fcf7e3a68b1",
       "executable": false
     },
     "docs/SOURCE-PROVENANCE.md": {
@@ -2920,7 +2920,7 @@
       "executable": false
     },
     "scripts/installer/feedback-archive.mjs": {
-      "sha256": "74d197bc1fea0c570164dd459471adcd75f246aaf53068d58d85013dea15d4b8",
+      "sha256": "5ce2a85c4df85250329fcd917fddeb600cc4b1ce6c89694172254e9e04b82827",
       "executable": false
     },
     "scripts/installer/hosted-deploy.mjs": {
@@ -2944,7 +2944,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "7343138bef8fc7ebddf7187bc0d4c2aab3581c1992ba885c52fac7f1c95c2e03",
+      "sha256": "0eeb52347a9eacf3649910e5d3b56675305c5a5198c91b078d8f7cf9975d77fa",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -3936,7 +3936,7 @@
       "executable": false
     },
     "src/modules/assurance/ui/AssurancePage.jsx": {
-      "sha256": "772edb390b2ce4f4a3190e6b861ae5f084e21750baaf2fce6c8447e90ce6c6c9",
+      "sha256": "b201881d7945a9a6e1cd2f18a6fb726c790c08f7f219f2890ab8d94291f15f8e",
       "executable": false
     },
     "src/modules/audit/read.ts": {
@@ -4304,7 +4304,7 @@
       "executable": false
     },
     "src/modules/feedback/erasure.ts": {
-      "sha256": "2d14a491c3367ac91cc14b591e96781448e9c79015edeed1514499b5ee7bc964",
+      "sha256": "e76faf7ff187416cf7c454ada86d89c70dba36289a9e7f2f862fdfc23c0842f3",
       "executable": false
     },
     "src/modules/feedback/events.ts": {
@@ -4312,7 +4312,7 @@
       "executable": false
     },
     "src/modules/feedback/penny.ts": {
-      "sha256": "45e9a8484fd99ccc62dffc5c3edab2d050b5a919d77d155b2f977f97fb7ad60a",
+      "sha256": "310e552d2225349795890d90e4010e22e10491bac8ce14a2b437628b22c226d0",
       "executable": false
     },
     "src/modules/feedback/routes.ts": {
@@ -4332,7 +4332,7 @@
       "executable": false
     },
     "src/modules/feedback/ui/PennyHandoff.jsx": {
-      "sha256": "7cf9e1d02cdf82063e34917b3729e58bf936a60d03f3fb34539aa6db8c7adf4e",
+      "sha256": "0dbc6bb1c699f520eba661b02eb4335ae17ed03b65d5abd131094fb1cb073686",
       "executable": false
     },
     "src/modules/forms/challenge.ts": {
@@ -10835,6 +10835,10 @@
       "sha256": "8dbb6e573be5cf2da5cb2ab66076e54b5993d6f09fe870fccba702dac47d867b",
       "executable": false
     },
+    "tests/helpers/assurance/browser.mjs": {
+      "sha256": "59d175e983031ae8e3e63362c2ff987f3c1ae000d700a7a9c05270ec51cb6089",
+      "executable": false
+    },
     "tests/helpers/assurance/journeys.mjs": {
       "sha256": "cc49a0875fb4a52e5a1e51c2c8af99c4e25fcdeda2e53bb315b23f2da25fc2c9",
       "executable": false
@@ -11055,8 +11059,16 @@
       "sha256": "66a53c0e81bd2bcabc0bac46267323bdd831a7dace706f9338d27c210600ca9e",
       "executable": false
     },
+    "tests/helpers/feedback/browser.mjs": {
+      "sha256": "9f6b1feee347c55fff9747457d64883b723813d55186a0afa6288c7edadf8a1b",
+      "executable": false
+    },
     "tests/helpers/feedback/journeys.mjs": {
-      "sha256": "dde83ce036eaa25a4421364e98ef8c37f04e44ecda1feaded796cdd40237adb3",
+      "sha256": "a9da758b5efc70d30a1f2da2802e08f176661e679b851ec2836c970618c90cb0",
+      "executable": false
+    },
+    "tests/helpers/feedback/outbound.mjs": {
+      "sha256": "a516f39f5e8ede1df85cfebeb7f52c98e6ac87e7166cce1fbf3f2c3f0d3facd2",
       "executable": false
     },
     "tests/helpers/first-run/activation-app.mjs": {
@@ -11428,7 +11440,7 @@
       "executable": false
     },
     "tests/helpers/platform-archive.mjs": {
-      "sha256": "cd094991197ed1c3d2dfabe18886bcfad63584a345c760729114d9e9cfa092d2",
+      "sha256": "4076ee96ff93ab27ad91ed13100787c082a4d2fcfd3641c45e0602b873c6198b",
       "executable": false
     },
     "tests/helpers/proactive-provider-network.mjs": {

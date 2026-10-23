@@ -35,7 +35,7 @@ async function sourceContext(c:Context<AppEnv>){
  const payload={source:[`HappyToHelp support feedback${row.account_name?' · Account: '+row.account_name:''}`,row.quote].join('\n\n').slice(0,2000),sourceUrl:new URL(`/projects/${actor.projectId}/conversations/${conversation.id}`,c.req.url).href,...(requester?.requester_id?{requesterId:requester.requester_id}:{contact:{displayName:(row.contact_name||'Support requester').slice(0,160)}})}
  return {actor,conversation,row,connection,slug,payload}
 }
-pennyRoutes.get(sourcePath+'/handoff-preview',async c=>{const {payload}=await sourceContext(c);return c.json({data:payload,notice:'Only this selected quote, account label, requester name or previously linked Penny id and source URL are shared. No email, private notes or attachments are sent.'})})
+pennyRoutes.get(sourcePath+'/handoff-preview',async c=>{const {payload,connection,slug}=await sourceContext(c);const previewHash=await hashToken(JSON.stringify({origin:connection.origin,slug,payload}));return c.json({data:payload,preview_hash:previewHash,notice:'Only this selected quote, account label, requester name or previously linked Penny id and source URL are shared. No email, private notes or attachments are sent.'})})
 pennyRoutes.post(sourcePath+'/handoff',async c=>{
  const {actor,conversation,row,connection,slug,payload}=await sourceContext(c),body=await c.req.json(),db=c.env.DB,now=Date.now()
  if(body.approve!==true)throw new HTTPException(400,{message:'Preview and explicitly approve the Penny handoff'})
@@ -44,6 +44,8 @@ pennyRoutes.post(sourcePath+'/handoff',async c=>{
  if(!proof)throw new HTTPException(400,{message:'Select the requester’s sharing permission from this conversation'})
  const existing=await db.prepare('SELECT state FROM feedback_handoffs WHERE source_id=? AND project_id=?').bind(row.id,actor.projectId).first<any>()
  if(existing){if(existing.state==='accepted')return c.json({accepted:true,duplicate:true});throw new HTTPException(409,{message:'The Penny outcome is unknown or still in progress. Check Penny before taking another action; this handoff is never replayed.'})}
+ const previewHash=await hashToken(JSON.stringify({origin:connection.origin,slug,payload}))
+ if(body.preview_hash!==previewHash)throw new HTTPException(409,{message:'Penny sharing context changed. Preview it again before approving.'})
  const intent=await hashToken(JSON.stringify({origin:connection.origin,slug,payload,consent})),guard=`EXISTS(SELECT 1 FROM feedback_sources s JOIN conversations c ON c.id=s.conversation_id WHERE s.id=? AND s.project_id=? AND ${contactAvailableSql()})`,args=[row.id,actor.projectId]
  const claim=await db.batch([
  db.prepare(`INSERT OR IGNORE INTO feedback_penny_requesters(project_id,contact_id,claim_source_id) SELECT ?,?,? WHERE ${guard}`).bind(actor.projectId,row.contact_id,row.id,...args),

@@ -8,4 +8,5 @@ export function feedbackErasureStatements(env:Env,projectId:string,contactId:str
  env.DB.prepare(`DELETE FROM feedback_penny_requesters WHERE project_id=?1 AND contact_id=?2`).bind(projectId,contactId),
  env.DB.prepare(`DELETE FROM feedback_updates WHERE source_id IN (SELECT id FROM feedback_sources WHERE ${affected})`).bind(projectId,contactId),
  env.DB.prepare(`DELETE FROM feedback_sources WHERE ${affected}`).bind(projectId,contactId),
+ env.DB.prepare(`DELETE FROM feedback_release_events WHERE project_id=?1 AND NOT EXISTS(SELECT 1 FROM feedback_sources s WHERE s.project_id=?1 AND s.issue_url=feedback_release_events.issue_url) AND NOT EXISTS(SELECT 1 FROM feedback_updates u WHERE u.release_id=feedback_release_events.id) AND ?2 IS NOT NULL`).bind(projectId,contactId),
 ]}

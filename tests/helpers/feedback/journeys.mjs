@@ -94,18 +94,20 @@ export async function feedbackHandoffJourney(){const h=await feedbackHarness();t
  for(const r of records)sources.push((await h.capture(r,{penny_url:pennyUrl})).data)
  assert.equal(h.pennyCalls.length,0,'linking alone shares no customer data')
  for(let i=0;i<2;i++){
-  const r=records[i],path=h.root(r)+`/sources/${sources[i].id}`,preview=await h.call(path+'/handoff-preview')
+  const r=records[i],path=h.root(r)+`/sources/${sources[i].id}`;let preview=await h.call(path+'/handoff-preview')
   assert.ok(preview.data.source.includes(r.message.content));assert.ok(!JSON.stringify(preview.data).includes(r.visitor.email||'@example.test'))
   assert.equal((await app.call(h.base+path+'/handoff',{token:h.token,body:{approve:false,sharing_message_id:r.consent.id}})).status,400)
-  assert.equal((await app.call(h.base+path+'/handoff',{token:h.token,body:{approve:true,sharing_message_id:records[1-i].consent.id}})).status,400)
-  const accepted=await h.call(path+'/handoff',{approve:true,sharing_message_id:r.consent.id});assert.equal(accepted.accepted,true)
-  const duplicate=await h.call(path+'/handoff',{approve:true,sharing_message_id:r.consent.id});assert.equal(duplicate.duplicate,true)
+  assert.equal((await app.call(h.base+path+'/handoff',{token:h.token,body:{approve:true,sharing_message_id:records[1-i].consent.id,preview_hash:preview.preview_hash}})).status,400)
+  if(i===0){await app.db.prepare('UPDATE contacts SET name=? WHERE id=?').bind('Updated requester name',r.visitor.contactId).run();assert.equal((await app.call(h.base+path+'/handoff',{token:h.token,body:{approve:true,sharing_message_id:r.consent.id,preview_hash:preview.preview_hash}})).status,409,'a changed sharing preview requires a new approval');assert.equal(h.pennyCalls.length,0);preview=await h.call(path+'/handoff-preview')}
+  const accepted=await h.call(path+'/handoff',{approve:true,sharing_message_id:r.consent.id,preview_hash:preview.preview_hash});assert.equal(accepted.accepted,true)
+  const duplicate=await h.call(path+'/handoff',{approve:true,sharing_message_id:r.consent.id,preview_hash:preview.preview_hash});assert.equal(duplicate.duplicate,true)
  }
  assert.equal(h.pennyCalls.length,2)
  for(const call of h.pennyCalls){assert.equal(new URL(call.url).pathname,'/api/v1/requests/export-progress/proxy-votes');const payload=JSON.parse(call.body);assert.ok(payload.sourceUrl.includes('/conversations/'));assert.ok(payload.source.includes('HappyToHelp support feedback'));assert.ok(payload.contact.displayName);assert.equal(payload.contact.email,undefined)}
  const extra=(await h.capture(records[0],{penny_url:pennyUrl,message_id:records[0].consent.id})).data,path=h.root(records[0])+`/sources/${extra.id}`
- h.failures.push(true);assert.equal((await app.call(h.base+path+'/handoff',{token:h.token,body:{approve:true,sharing_message_id:records[0].consent.id}})).status,409)
- assert.equal((await app.call(h.base+path+'/handoff',{token:h.token,body:{approve:true,sharing_message_id:records[0].consent.id}})).status,409)
+ const retryPreview=await h.call(path+'/handoff-preview')
+ h.failures.push(true);assert.equal((await app.call(h.base+path+'/handoff',{token:h.token,body:{approve:true,sharing_message_id:records[0].consent.id,preview_hash:retryPreview.preview_hash}})).status,409)
+ assert.equal((await app.call(h.base+path+'/handoff',{token:h.token,body:{approve:true,sharing_message_id:records[0].consent.id,preview_hash:retryPreview.preview_hash}})).status,409)
  assert.equal(h.pennyCalls.length,3,'an uncertain external write is never replayed')
  assert.ok(JSON.parse(h.pennyCalls[2].body).requesterId,'subsequent tickets reuse the mapped Penny requester')
  await app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${records[0].visitor.contactId}/erase`,{token:h.token,body:{}})

@@ -105,7 +105,7 @@ export async function completeEmailJourney(){
   const inbox=(await app.ok(`/api/dashboard/projects/${projectId}/conversations?view=all`,{token:agent})).data
   assert.ok(inbox.some(row=>row.id===call.conversation.id),'a logged call appears in the inbox')
   assert.ok(inbox.some(row=>row.id===newRecovery.conversationId),'a recovered private-note ticket appears in the inbox')
-  await vendorReplies(app,{projectId,owner,gate})
+  await vendorReplies(app,{projectId,owner,agent,gate,sent})
   // Closed remains final: a real emailed reply creates a linked fresh ticket.
   const ticketState=(await app.ok(`/api/dashboard/projects/${projectId}/conversations/${ticket.conversation.id}/ticket`,{token:owner})).data
   await app.ok(`/api/dashboard/projects/${projectId}/conversations/${ticket.conversation.id}/ticket`,{token:owner,method:'PATCH',body:{status_id:'closed',expected_version:ticketState.ticket_version}})

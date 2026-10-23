@@ -7,6 +7,7 @@ import {activeSurveySql,liveCycleSql,readSurveySettings,surveyJoins,type SurveyS
 import {surveySigningConfigured,surveyToken,verifySurveyToken} from './survey-links'
 import {surveyForm,surveyThanks,surveyOptout,surveyUnavailable} from './survey-html'
 import {publishResolution} from './state'
+import {customerRecovery} from './recovery'
 export const surveySettings=new Hono<AppEnv>()
 surveySettings.get('/projects/:projectId/settings',async c=>{const actor=await scope(c);return c.json(await readSurveySettings(c.env,actor.projectId))})
 surveySettings.put('/projects/:projectId/settings',async c=>{
@@ -46,18 +47,18 @@ async function available(c:any,token:string,optout=false){
  return verified
 }
 publicSurveys.get('/:token',async c=>{
- const {row}=await available(c,c.req.param('token')),response=await c.env.DB.prepare('SELECT score,reason,comment FROM csat_responses WHERE resolution_id=?').bind(row.resolution_id).first<any>()
+ const {row}=await available(c,c.req.param('token')),response=await c.env.DB.prepare('SELECT score,reason,comment,recovery FROM csat_responses WHERE resolution_id=?').bind(row.resolution_id).first<any>()
  return c.html(surveyForm(row,c.req.param('token'),response))
 })
 publicSurveys.post('/:token',async c=>{
  const {row,revision,surface}=await available(c,c.req.param('token')),body=c.req.header('Content-Type')?.includes('application/json')?await c.req.json():await c.req.parseBody(),score=Number(body.score),comment=body.comment??'',reason=body.reason??''
  if(!(row.scale==='thumbs'?[-1,1]:[1,2,3,4,5]).includes(score)||typeof comment!=='string'||comment.length>1000||typeof reason!=='string'||!['','speed','clarity','outcome','other'].includes(reason))throw new HTTPException(400,{message:'Choose a rating, an optional reason and a comment of up to 1,000 characters'})
- const now=Date.now(),receipt=crypto.randomUUID(),normalized=row.scale==='thumbs'?score:score>=4?1:-1
+ const recovery=customerRecovery(body.recovery),now=Date.now(),receipt=crypto.randomUUID(),normalized=row.scale==='thumbs'?score:score>=4?1:-1
  const result=await c.env.DB.batch([
-  c.env.DB.prepare(`INSERT INTO csat_response_history(id,resolution_id,project_id,contact_id,channel,scale,score,reason,comment,revision,created_at,response_surface)
-   SELECT ?,r.id,r.project_id,r.contact_id,'email',s.scale,?,?,?,COALESCE((SELECT revision FROM conversation_ratings WHERE resolution_id=r.id),0)+1,?,? ${surveyJoins} WHERE s.id=? AND s.token_revision=? AND ${activeSurveySql}`).bind(receipt,score,reason,comment,now,surface,row.id,revision,now),
+  c.env.DB.prepare(`INSERT INTO csat_response_history(id,resolution_id,project_id,contact_id,channel,scale,score,reason,comment,revision,created_at,response_surface,recovery)
+   SELECT ?,r.id,r.project_id,r.contact_id,'email',s.scale,?,?,?,COALESCE((SELECT revision FROM conversation_ratings WHERE resolution_id=r.id),0)+1,?,?,? ${surveyJoins} WHERE s.id=? AND s.token_revision=? AND ${activeSurveySql}`).bind(receipt,score,reason,comment,now,surface,recovery,row.id,revision,now),
   c.env.DB.prepare('UPDATE csat_surveys SET token_revision=token_revision+1,updated_at=? WHERE id=? AND token_revision=? AND EXISTS(SELECT 1 FROM csat_response_history WHERE id=?)').bind(now,row.id,revision,receipt),
-  c.env.DB.prepare(`INSERT INTO csat_responses(resolution_id,project_id,contact_id,channel,scale,score,reason,comment,revision,updated_at,response_surface) SELECT resolution_id,project_id,contact_id,channel,scale,score,reason,comment,revision,created_at,response_surface FROM csat_response_history WHERE id=? ON CONFLICT(resolution_id) DO UPDATE SET channel=excluded.channel,scale=excluded.scale,score=excluded.score,reason=excluded.reason,comment=excluded.comment,revision=excluded.revision,updated_at=excluded.updated_at,response_surface=excluded.response_surface`).bind(receipt),
+  c.env.DB.prepare(`INSERT INTO csat_responses(resolution_id,project_id,contact_id,channel,scale,score,reason,comment,revision,updated_at,response_surface,recovery) SELECT resolution_id,project_id,contact_id,channel,scale,score,reason,comment,revision,created_at,response_surface,recovery FROM csat_response_history WHERE id=? ON CONFLICT(resolution_id) DO UPDATE SET channel=excluded.channel,scale=excluded.scale,score=excluded.score,reason=excluded.reason,comment=excluded.comment,revision=excluded.revision,updated_at=excluded.updated_at,response_surface=excluded.response_surface,recovery=excluded.recovery`).bind(receipt),
   c.env.DB.prepare('INSERT INTO conversation_rating_history SELECT id,resolution_id,?,comment,created_at,revision FROM csat_response_history WHERE id=?').bind(normalized,receipt),
   c.env.DB.prepare('INSERT INTO conversation_ratings SELECT resolution_id,?,comment,created_at,revision FROM csat_response_history WHERE id=? ON CONFLICT(resolution_id) DO UPDATE SET value=excluded.value,comment=excluded.comment,updated_at=excluded.updated_at,revision=excluded.revision').bind(normalized,receipt)
  ])

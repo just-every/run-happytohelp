@@ -27,13 +27,15 @@ function common(timestamp:'iso'|'unix'){return {id,type:string,kind:string,creat
  * read by mappings. Opaque retained fields are explicit leaves, never traversed or
  * guessed from arbitrary text. Missing mapping requirements remain mapper errors. */
 export const recordShapes:Record<string,Shape>={
+ 'zendesk/ticket_field':record({...common('iso'),title:string,title_in_portal:string,description:nullable(string),active:boolean,required:boolean,visible_in_portal:boolean,editable_in_portal:boolean,required_in_portal:boolean,agent_can_edit:boolean,regexp_for_validation:nullable(string),default_value:nullable(opaque),tag:nullable(string),custom_field_options:array(record({id,name:string,raw_name:string,value:string,default:boolean},['name','value']))},['id','type','title','updated_at']),
+ 'zendesk/ticket_form':record({...common('iso'),name:string,display_name:string,raw_name:string,raw_display_name:string,active:boolean,default:boolean,end_user_visible:boolean,in_all_brands:boolean,restricted_brand_ids:array(id),ticket_field_ids:array(id),agent_conditions:array(opaque),end_user_conditions:array(opaque)},['id','name','ticket_field_ids','updated_at']),
  'zendesk/group':record({...common('iso'),name:string,deleted:boolean,default:boolean,description:nullable(string)},['id','name','created_at','updated_at']),
  'zendesk/schedule':record({...common('iso'),name:string,time_zone:string,intervals:array(record({start_time:integer,end_time:integer},['start_time','end_time'])),holidays:array(record({id,name:string,start_date:string,end_date:string},['start_date','end_date']))},['id','name','time_zone','intervals']),
  'zendesk/view':record({...common('iso'),title:string,active:boolean,restriction:nullable(opaque),conditions:configurationConditions,execution:record({sort_by:string,sort_order:string,columns:opaque,group_by:nullable(opaque),group_order:nullable(opaque)})},['id','title','conditions']),
  'zendesk/trigger':record({...common('iso'),title:string,active:boolean,position:integer,conditions:configurationConditions,actions:array({type:'action'})},['id','title','conditions','actions']),
  'zendesk/automation':record({...common('iso'),title:string,active:boolean,position:integer,conditions:configurationConditions,actions:array({type:'action'})},['id','title','conditions','actions']),
  'zendesk/user':{...record({...common('iso'),...contactFields,role:oneOf('end-user','agent','admin'),tags:nullable(array(string))},['id']),person:true},
- 'zendesk/ticket':record({...common('iso'),subject:nullable(string),requester_id:reference,status:oneOf('new','open','pending','hold','solved','closed'),tags:nullable(array(string)),comments:array(comment),attachments:nullable(opaque),assignee_id:nullable(reference),via},['requester_id','comments']),
+ 'zendesk/ticket':record({...common('iso'),subject:nullable(string),requester_id:reference,status:oneOf('new','open','pending','hold','solved','closed'),tags:nullable(array(string)),comments:array(comment),attachments:nullable(opaque),assignee_id:nullable(reference),group_id:nullable(id),custom_fields:array(record({id,value:nullable(opaque)},['id','value'])),via},['requester_id','comments']),
  'zendesk/macro':record({...common('iso'),title:string,restriction:nullable(opaque),actions:array({type:'action'})}),
  'zendesk/article':record({...common('iso'),title:string,body:string,draft:boolean,user_segment_id:nullable(id),user_segment_ids:array(id),...articleStructure}),
  'intercom/contact':{...record({...common('unix'),...contactFields,tags:tagList},['id']),person:true},
@@ -52,6 +54,7 @@ for(const [plural,singular] of Object.entries({collections:'collection',categori
 for(const [key,schema] of Object.entries(recordShapes)){const kind=key.split('/')[1];if(!key.startsWith('helpscout/')&&!key.startsWith('freshdesk/')&&!kind.startsWith('$')){schema.fields!.type=oneOf(kind);schema.fields!.kind=oneOf(kind)}}
 // The wrapper determines Zendesk record kind. Ticket type is a nullable
 // business classification, not the Intercom document discriminator.
+recordShapes['zendesk/ticket_field'].fields!.type=string
 recordShapes['zendesk/ticket'].fields!.type=nullable(oneOf('problem','incident','question','task'))
 export interface ShapeIssue {code:'unsupported_source_field'|'malformed_source_field'|'opaque_source_field'|'source_shape_limit';path:string;reason:string}
 /** uninterpreted: every retained value the schema does not read, for whole-value erasure. */

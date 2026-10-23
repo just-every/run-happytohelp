@@ -6,6 +6,7 @@ interface Breakdown {
  id:string|null;label:string;tickets:number
  firstResponse:{count:number;median:number|null;p90:number|null}
  firstResolution:{count:number;median:number|null;p90:number|null}
+ recovery:{recovered:number;notRecovered:number;answered:number;unknown:number;rate:number|null}
  csat:{rated:number;positive:number;rate:number|null}
  reopens:{resolved:number;denominator:number;reopened:number;events:number;historyUnknown:number;rate:number|null}
  ai:{closed:number;handedOff:number;assignmentHandoffs:number;failed:number;uncertain:number;outcomeUnknown:number}
@@ -30,8 +31,9 @@ export async function teamBreakdowns(context:TeamReportContext){
  (SELECT COUNT(*) FROM ai_generations g WHERE g.project_id=c.project_id AND g.conversation_id=c.id AND g.state='failed') failed,
  (SELECT COUNT(*) FROM ai_generations g WHERE g.project_id=c.project_id AND g.conversation_id=c.id AND g.state IN ('uncertain','running')) uncertain,
  CASE WHEN c.status_category IN ('solved','closed') THEN r.outcome END outcome,
+ CASE WHEN r.reopened_at IS NULL AND c.status_category IN ('solved','closed') AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 THEN COALESCE(v.recovery,'unknown') ELSE 'unknown' END recovery,
  COALESCE(v.scale,'thumbs') scale,COALESCE(v.score,legacy.value) score
- FROM cohort c LEFT JOIN visitors q ON q.conversation_id=c.id LEFT JOIN messages question ON question.project_id=c.project_id AND question.conversation_id=c.id AND question.revision=q.revision
+ FROM cohort c LEFT JOIN contacts ct ON ct.project_id=c.project_id AND ct.id=c.contact_id LEFT JOIN visitors q ON q.conversation_id=c.id LEFT JOIN messages question ON question.project_id=c.project_id AND question.conversation_id=c.id AND question.revision=q.revision
  LEFT JOIN replies a ON a.conversation_id=c.id LEFT JOIN messages answer ON answer.project_id=c.project_id AND answer.conversation_id=c.id AND answer.revision=a.revision
  LEFT JOIN conversation_tracking t ON t.project_id=c.project_id AND t.conversation_id=c.id
  LEFT JOIN conversation_resolutions r ON r.project_id=c.project_id AND r.conversation_id=c.id AND r.ordinal=(SELECT MAX(ordinal) FROM conversation_resolutions WHERE project_id=c.project_id AND conversation_id=c.id)
@@ -49,6 +51,7 @@ export async function teamBreakdowns(context:TeamReportContext){
  ), service AS (SELECT dimension,key,metric,SUM(completed_at IS NOT NULL AND breached=0) met,SUM(breached) breached,SUM(completed_at IS NULL AND breached=0) pending FROM clocks GROUP BY dimension,key,metric)
  SELECT d.dimension,d.key id,d.label,COUNT(*) tickets,
  SUM(e.was_resolved) resolved,COALESCE(SUM(e.was_resolved=1 AND e.history_unknown=0),0) reopenDenominator,SUM(e.reopen_events>0 AND e.history_unknown=0) reopened,SUM(e.reopen_events) reopenEvents,SUM(e.history_unknown) historyUnknown,
+ SUM(e.recovery='recovered') recovered,SUM(e.recovery='not_recovered') notRecovered,SUM(e.recovery='unknown') recoveryUnknown,
  SUM(e.score IS NOT NULL) rated,COALESCE(SUM(e.scale='thumbs' AND e.score=1 OR e.scale='five' AND e.score>=4),0) positive,
  COALESCE(SUM(e.outcome='ai'),0) closed,COALESCE(SUM(e.handoff),0) assignmentHandoffs,COALESCE(SUM(e.ai_handoff),0) handedOff,COALESCE(SUM(e.failed),0) failed,COALESCE(SUM(e.uncertain),0) uncertain,COALESCE(SUM(e.outcome IS NULL OR e.outcome='unknown'),0) outcomeUnknown,
  (SELECT json_group_array(json_object('metric',metric,'count',count,'median',median,'p90',p90)) FROM distributions s WHERE s.dimension=d.dimension AND s.key IS d.key) durations,
@@ -60,7 +63,7 @@ export async function teamBreakdowns(context:TeamReportContext){
   const durations=JSON.parse(row.durations),sla=JSON.parse(row.sla)
   const distribution=(metric:string)=>{const r=durations.find((r:any)=>r.metric===metric);return r?{count:r.count,median:r.median,p90:r.p90}:{count:0,median:null,p90:null}}
   const service=Object.fromEntries(['first_response','next_response','resolution'].map(metric=>{const r=sla.find((r:any)=>r.metric===metric)??{met:0,breached:0,pending:0},denominator=r.met+r.breached;return [metric,{met:r.met,breached:r.breached,pending:r.pending,denominator,rate:denominator?r.met/denominator:null}]}))
-  breakdowns[row.dimension as Dimension].push({id:row.id,label:row.label,tickets:row.tickets,firstResponse:distribution('response'),firstResolution:distribution('resolution'),reopens:{resolved:row.resolved,denominator:row.reopenDenominator,reopened:row.reopened,events:row.reopenEvents,historyUnknown:row.historyUnknown,rate:row.reopenDenominator?row.reopened/row.reopenDenominator:null},csat:{rated:row.rated,positive:row.positive,rate:row.rated?row.positive/row.rated:null},ai:{closed:row.closed,handedOff:row.handedOff,assignmentHandoffs:row.assignmentHandoffs,failed:row.failed,uncertain:row.uncertain,outcomeUnknown:row.outcomeUnknown},sla:service})
+  breakdowns[row.dimension as Dimension].push({id:row.id,label:row.label,tickets:row.tickets,firstResponse:distribution('response'),firstResolution:distribution('resolution'),reopens:{resolved:row.resolved,denominator:row.reopenDenominator,reopened:row.reopened,events:row.reopenEvents,historyUnknown:row.historyUnknown,rate:row.reopenDenominator?row.reopened/row.reopenDenominator:null},recovery:{recovered:row.recovered,notRecovered:row.notRecovered,answered:row.recovered+row.notRecovered,unknown:row.recoveryUnknown,rate:row.recovered+row.notRecovered?row.recovered/(row.recovered+row.notRecovered):null},csat:{rated:row.rated,positive:row.positive,rate:row.rated?row.positive/row.rated:null},ai:{closed:row.closed,handedOff:row.handedOff,assignmentHandoffs:row.assignmentHandoffs,failed:row.failed,uncertain:row.uncertain,outcomeUnknown:row.outcomeUnknown},sla:service})
  }
  return breakdowns
 }

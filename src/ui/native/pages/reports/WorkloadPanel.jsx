@@ -11,6 +11,7 @@ const metrics={
  age:{label:'Backlog age',columns:[['Oldest',row=>row.oldest_age_ms,reportDuration],...[['under_1d','Under 1 day'],['days_1_3','1–3 days'],['days_3_7','3–7 days'],['days_7_30','7–30 days'],['days_30_plus','30+ days']].map(([id,label])=>[label,row=>row.ageBuckets.find(bucket=>bucket.id===id)?.count,reportCount])]},
  response:{label:'First response time',columns:distribution('firstResponse')},
  resolution:{label:'First resolution time',columns:distribution('firstResolution')},
+ recovery:{label:'Customer-confirmed recovery',columns:[count('Recovered','recovery.recovered'),count('Still needs help','recovery.notRecovered'),count('Answered','recovery.answered'),percent('Recovered rate','recovery.rate'),count('Unknown','recovery.unknown')]},
  csat:{label:'Satisfaction',columns:[count('Positive','csat.positive'),count('Rated','csat.rated'),percent('Positive rate','csat.rate')]},
  firstSla:{label:'First response SLA',columns:sla('first_response')},
  nextSla:{label:'Next response SLA',columns:sla('next_response')},
@@ -26,6 +27,7 @@ export default function WorkloadPanel({workload,breakdowns}){
   <p className="team-report-muted">Incoming and service figures use the selected creation cohort. Backlog includes older unresolved tickets. Timing samples omit missing measurements; p90 uses the nearest rank. Pending SLA clocks are excluded from the met-rate denominator.</p>
   {rows.length?<div className="team-report-table-wrap" tabIndex={0} role="region" aria-label="Scrollable report table"><table className="team-report-table"><caption className="visually-hidden">{selected.label} grouped by {group}</caption><thead><tr><th scope="col">{groupings.find(([id])=>id===group)[1]}</th>{selected.columns.map(([label])=><th scope="col" key={label}>{label}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.id??'unassigned'}><th scope="row"><span className="team-report-dot" aria-hidden="true"/>{row.label}</th>{selected.columns.map(([label,value,format])=><td key={label}>{value(row)==null?'—':format(value(row))}</td>)}</tr>)}</tbody></table></div>:<p role="status">No data for this selection.</p>}
   {metric==='ai'&&<p className="team-report-muted">AI handoffs count confirmed transfers requested by the assistant. Assignments include ordinary native reassignment. Recorded AI closure does not verify customer recovery or containment. Failed and uncertain values count generation attempts; unknown outcomes stay unknown.</p>}
+  {metric==='recovery'&&<p>Explicit customer answers for the latest cycle. Reopened cycles are unknown for current recovery. Satisfaction and AI closure do not establish recovery.</p>}
   {metric==='csat'&&<p className="team-report-muted">Latest-cycle feedback includes reopened cycles. Unrated cycles are excluded; thumbs up or 4–5 out of 5 is positive.</p>}
   {group==='tag'&&<p className="team-report-muted">A ticket with multiple tags appears in each tag group. Tag rows are not additive.</p>}
  </section>;

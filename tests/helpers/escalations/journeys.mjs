@@ -10,7 +10,7 @@ export async function escalationHarness({tickets=8}={}){
  // Customers write while nobody has the dashboard open and this team answers anyway, so presence-based away is off.
  await app.presenceAwayOff(ws.projectId);
  const call=(path,body,options={})=>app.ok(base+path,{token,body,...options});
- for(const name of ['github','linear','jira','slack']){const p=providers[name];await call('/connections',{provider:name,target:p.target,base_url:p.baseUrl,token:p.token,webhook_secret:p.secret})}
+ for(const name of ['github','linear','jira','slack','teams']){const p=providers[name];await call('/connections',{provider:name,target:p.target,base_url:p.baseUrl,token:p.token,webhook_secret:p.secret})}
  const records=[];
  for(let n=0;n<tickets;n++){
   const visitorHeaders={Origin:ws.allowedOrigin,'CF-Connecting-IP':`198.51.100.${n+1}`};
@@ -39,7 +39,16 @@ export async function sharingJourney(){const h=await escalationHarness({tickets:
  await share(records[0],'github',{mode:'link',key:'1'});assert.equal((await h.snapshot(records[0])).links.length,1);assert.equal(providers.github.received.length,prior+1,'duplicate link reads issue but posts no comment');
  assert.equal((await app.first('SELECT count(*) n FROM escalation_links WHERE issue_id=(SELECT issue_id FROM escalation_links WHERE id=?)',first.id)).n,5);
  for(let n=0;n<3;n++)await call(root(records[n])+'/slack',{channel:'C12345678',message_ids:[records[n].message.id],attachment_ids:[records[n].file.id],request_id:crypto.randomUUID()});
- for(const name of ['github','linear','jira','slack']){
+ const teamsBody={message_ids:[records[0].message.id],attachment_ids:[records[0].file.id],request_id:crypto.randomUUID()};
+ const posted=await call(root(records[0])+'/teams',teamsBody);assert.equal(posted.data.handoffs.length,2);
+ const countBefore=providers.teams.received.length;
+ await call(root(records[0])+'/teams',teamsBody);assert.equal(providers.teams.received.length,countBefore,'exact Teams replay does not post twice');
+ const handoffs=(await h.snapshot(records[0])).handoffs;assert.ok(handoffs.some(h=>h.url.startsWith('https://teams.microsoft.com/l/message/')));
+ providers.teams.responses.push({disconnect:true});const uncertain={...teamsBody,request_id:crypto.randomUUID()};await assert.rejects(()=>call(root(records[0])+'/teams',uncertain));
+ const uncertainCount=providers.teams.received.length;await assert.rejects(()=>call(root(records[0])+'/teams',uncertain));assert.equal(providers.teams.received.length,uncertainCount);
+ assert.equal((await app.call(h.base+root(records[0])+'/teams',{token:h.token,body:{...teamsBody,request_id:crypto.randomUUID(),channel:'https://attacker.example/channel'}})).status,400);
+ assert.equal(providers.teams.received.length,uncertainCount,'invalid target never reaches Graph');
+ for(const name of ['github','linear','jira','slack','teams']){
   const writes=providers[name].received.filter(r=>r.method==='POST');assert.ok(writes.length);
   const text=JSON.stringify(writes.map(x=>x.json));assert.ok(!text.includes('Private engineering note'));assert.ok(!text.includes('Unchosen sensitive account'));assert.ok(text.includes('/projects/'));assert.ok(text.includes('/api/escalations/attachments/'));
  }
@@ -78,13 +87,14 @@ export async function updatesJourney(){const h=await escalationHarness(),sockets
  const audits=await app.sql("SELECT action FROM audit_events WHERE action LIKE 'escalation.%'");assert.ok(audits.some(x=>x.action==='escalation.customer_update_approved'));assert.ok(audits.some(x=>x.action==='escalation.webhook_refused'));
 }finally{for(const socket of sockets)socket.close();await h.close()}}
 export async function custodyJourney(){const h=await escalationHarness();try{
- const {app,records,share}=h,r=records[0];await share(r);await share(records[1],'github',{mode:'link',key:'1'});
+ const {app,records,share}=h,r=records[0];await share(r);await h.call(h.root(r)+'/teams',{message_ids:[r.message.id],attachment_ids:[]});await share(records[1],'github',{mode:'link',key:'1'});
  await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(h.ws.projectId,h.ws.users.operator,Date.now()).run();
- for(const path of ['/links','/slack','/drafts/unknown/send'])assert.equal((await app.call(h.base+h.root(r)+path,{token:h.ws.tokens.operator,body:{provider:'github',mode:'link',key:'1',message_ids:[],attachment_ids:[]}})).status,403);
+ for(const path of ['/links','/slack','/teams','/drafts/unknown/send'])assert.equal((await app.call(h.base+h.root(r)+path,{token:h.ws.tokens.operator,body:{provider:'github',mode:'link',key:'1',message_ids:[],attachment_ids:[]}})).status,403);
  assert.equal((await app.call(h.base+h.root(r),{token:h.foreign.tokens.owner})).status,403);
  await app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${r.contact.id}/erase`,{token:h.token,body:{}});
  assert.equal((await app.first('SELECT count(*) n FROM escalation_links WHERE conversation_id=?',r.ticket.id)).n,0);assert.equal((await app.first('SELECT count(*) n FROM escalation_operations WHERE conversation_id=?',r.ticket.id)).n,0);assert.equal((await app.first('SELECT count(*) n FROM escalation_attachment_grants WHERE conversation_id=?',r.ticket.id)).n,0);assert.equal((await h.snapshot(records[1])).links.length,1);
- const erasure=await app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${r.contact.id}/erasure`,{token:h.token});assert.ok(erasure.data.providers.requests.some(x=>x.store==='escalation:github'&&x.state==='unsupported'));
+ assert.equal((await app.first('SELECT count(*) n FROM escalation_handoffs WHERE conversation_id=?',r.ticket.id)).n,0);
+ const erasure=await app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${r.contact.id}/erasure`,{token:h.token});assert.ok(erasure.data.providers.requests.some(x=>x.store==='escalation:github'&&x.state==='unsupported'));assert.ok(erasure.data.providers.requests.some(x=>x.store==='escalation:teams'));
  // A participant's incoming mail can own an attachment in another requester's ticket.
  const primary=records[2],participant=records[3];
  await app.ok(`/api/dashboard/projects/${h.ws.projectId}/conversations/${primary.ticket.id}/participants`,{token:h.token,body:{email:'customer-4@example.test'}});

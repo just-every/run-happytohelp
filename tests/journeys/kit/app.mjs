@@ -12,7 +12,7 @@ const require=createRequire(import.meta.url)
 const {Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[require.resolve('wrangler')]}))
 const root=resolve(new URL('../../..',import.meta.url).pathname)
 const bundles=new Map()
-const bundle=(entry='tests/journeys/kit/app-worker.ts')=>bundles.get(entry)??bundles.set(entry,build({entryPoints:[join(root,entry)],bundle:true,write:false,format:'esm',platform:'node',target:'es2022',external:['node:*','cloudflare:*'],loader:{'.sql':'text'},logLevel:'silent'}).then(result=>result.outputFiles[0].text)).get(entry)
+const bundle=(entry='tests/journeys/kit/app-worker.ts')=>bundles.get(entry)??bundles.set(entry,build({entryPoints:[join(root,entry)],bundle:true,write:false,format:'esm',platform:'node',banner:{js:"import {createRequire as nodeRequire} from 'node:module'; const require=nodeRequire('file:///worker.mjs');"},target:'es2022',external:['node:*','cloudflare:*'],loader:{'.sql':'text'},logLevel:'silent'}).then(result=>result.outputFiles[0].text)).get(entry)
 let migrationSql
 const migrations=()=>migrationSql??=(async()=>{const files=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')).sort();return Promise.all(files.map(async name=>{const source=(await readFile(join(root,'migrations',name),'utf8')).replace(/^\s*--[^\n]*$/gm,'');return {name,statements:[...source.matchAll(/\s*(CREATE TRIGGER[\s\S]*?END;|[^;]+;)/g)].map(match=>match[1]).filter(sql=>sql.trim()!==';')}}))})()
 export const sha=value=>createHash('sha256').update(value).digest('hex')

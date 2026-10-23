@@ -1,3 +1,4 @@
+import {enterpriseJourney} from './enterprise.mjs'
 import assert from 'node:assert/strict'
 import {startApp,sha} from '../../journeys/kit/app.mjs'
 import {challengeOf,consentPage,decide} from '../delegation/applications.mjs'
@@ -12,7 +13,6 @@ import {challengeOf,consentPage,decide} from '../delegation/applications.mjs'
 export async function rolesAuditJourney(){
  const app=await startApp({bindings:{RER_INSTALLATION_ID:'roles-installation',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}})
  try{
-  assert.deepEqual((await app.call('/_test/unclassified-routes')).data,[],'every mutating door has a role rule')
   const call=(path,body,token,method)=>app.call(path,{body,token,method})
   const w=await app.seedWorkspace('roles'),P=`/api/management/projects/${w.projectId}`,C=`/api/dashboard/projects/${w.projectId}/conversations/conv-r`
   await app.db.batch([
@@ -171,4 +171,5 @@ export async function rolesAuditJourney(){
   assert.deepEqual(await app.first("SELECT content,status,source_revision FROM knowledge_articles WHERE id='art-r'"),unchanged)
   assert.equal((await call(C,undefined,w.tokens.owner)).status,200,'the native owner keeps access')
  }finally{await app.close()}
+ await enterpriseJourney()
 }

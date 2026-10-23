@@ -153,6 +153,8 @@ rules[`POST ${P}/suspended/:id/recover`]='conversations.manage'
 rules[`DELETE ${P}/suspended/:id`]='conversations.manage'
 rules[`POST ${P}/sender-rules`]='settings.manage'
 export function routeRule(method:string,path:string):Rule|undefined{
+ if(path.startsWith('/api/identity/scim/')||path.startsWith('/api/identity/sso/'))return 'none'
+ if(path.startsWith('/api/management/projects/:projectId/identity-connections'))return 'integrations.install'
  if(path==='/api/helpscout/:projectId/events')return 'none'
  if(path==='/api/management/projects/:projectId/connections/helpscout/sync')return 'data.import'
  if(path==='/api/management/projects/:projectId/connections/helpscout')return method==='GET'?'data.import':'integrations.install'

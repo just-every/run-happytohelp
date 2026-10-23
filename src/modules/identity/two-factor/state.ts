@@ -1,6 +1,6 @@
 /** How long a proven factor counts as a recent step-up for sensitive actions. */
 export const STEP_UP_MS=15*60*1000
-export type FactorMethod='password'|'email_link'|'totp'|'webauthn'|'recovery'|'installation'
+export type FactorMethod='password'|'email_link'|'totp'|'webauthn'|'recovery'|'installation'|'sso'
 export const SECOND_FACTORS:FactorMethod[]=['totp','webauthn','recovery','installation']
 export const POLICY_ROLES=['owner','admin','operator','collaborator'] as const
 
@@ -18,7 +18,7 @@ export function policyRoles(value:unknown):string[]{
 export interface FactorState {factorAt:number|null;factorMethod:FactorMethod|null;hasFactor:boolean;required:boolean;installation:boolean}
 /** 'verify': the account has a factor this session has not proven. 'enrol': the workspace requires one the account lacks. */
 export function pendingFactor(state:FactorState):'verify'|'enrol'|null{
- if(state.installation)return null
+ if(state.installation||state.factorMethod==='sso')return null
  if(state.hasFactor)return state.factorMethod&&SECOND_FACTORS.includes(state.factorMethod)?null:'verify'
  return state.required?'enrol':null
 }

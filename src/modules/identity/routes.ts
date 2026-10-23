@@ -1,3 +1,5 @@
+import {sso} from './enterprise/sso'
+import {scim} from './enterprise/scim'
 import { Hono } from 'hono'
 import type { AppEnv } from '../../platform/env'
 import { requireActor,requireProject } from '../../platform/auth'
@@ -16,6 +18,8 @@ import { emailStepUp } from './two-factor/email-step-up'
 import { ownerRecovery } from './two-factor/owner-recovery'
 import { pendingFactor } from './two-factor/state'
 export const routes=new Hono<AppEnv>()
+routes.route('/',scim)
+routes.route('/',sso)
 routes.route('/',accounts)
 routes.route('/',recovery)
 routes.route('/',widget)

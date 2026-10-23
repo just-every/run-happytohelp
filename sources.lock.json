@@ -2552,7 +2552,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "626f58d891fe0b9ea2a1bed3a966d75d24598974de3ce85c70d71fdeb81e7dd5",
+      "sha256": "910bb6db4cc2f412f3c03de4f323c3e69bcddf9020edf42981bffec697b13ed4",
       "executable": false
     },
     "rer-project.json": {
@@ -2928,7 +2928,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "0612be94f8e8c6c86b95b49fc8f05c0686ee2fa51f485e2716ad16e5b0db6671",
+      "sha256": "7343138bef8fc7ebddf7187bc0d4c2aab3581c1992ba885c52fac7f1c95c2e03",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -3160,7 +3160,7 @@
       "executable": false
     },
     "src/app.ts": {
-      "sha256": "c0ad373f9f772b3229a8be2d2213ad05c351e0ca8671ec6bdb1876b188f534a0",
+      "sha256": "9327d42bd14a8dc84c4adefc995ad05876f6cfd41caad5aaaca8a3fc0b6aac9d",
       "executable": false
     },
     "src/base/deployment-health.ts": {
@@ -5868,7 +5868,7 @@
       "executable": false
     },
     "src/modules/management/contact-erasure/statements.ts": {
-      "sha256": "8a6e6a2e390a340e057730038c4a9f6219dc1afcb5c4657de560402e60b75114",
+      "sha256": "8210996da197b448f8ef544fb869df9ee1946c7432dc8f7096084eecf97f583f",
       "executable": false
     },
     "src/modules/management/contact-identity.ts": {
@@ -7988,7 +7988,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationSidebar.jsx": {
-      "sha256": "199d294b784b7dfd6b1808b0fe73a636abd3978af6b850d4356f077c3f6aae1f",
+      "sha256": "756bae40815bda18a514ea4669767a739c40981fcc2904913b662a1948e450ef",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationsList.jsx": {
@@ -11620,7 +11620,7 @@
       "executable": false
     },
     "tests/journeys/connections.mjs": {
-      "sha256": "17936c8ce8ba6dabe89c4a7e16648e7a1b84caac3384fe4f516acfcae01ec171",
+      "sha256": "bbadf191a345b561ecd760743b49466b85df4f89f58dfc6ec0be46ba9752aa18",
       "executable": false
     },
     "tests/journeys/connector-browser.mjs": {

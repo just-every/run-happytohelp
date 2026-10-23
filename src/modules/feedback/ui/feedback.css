@@ -1,0 +1,13 @@
+.feedback-panel { min-width:0; font-size:14px; overflow-wrap:anywhere; }
+.feedback-panel p { margin:8px 0; line-height:1.5; }
+.feedback-source { border-top:1px solid var(--bs-border-color,#d8e0e4); padding:14px 0; }
+.feedback-source blockquote { white-space:pre-wrap; border-left:3px solid #087c8c; margin:8px 0; padding-left:10px; }
+.feedback-panel details { border-top:1px solid var(--bs-border-color,#d8e0e4); padding-top:12px; margin-top:12px; }
+.feedback-panel summary { cursor:pointer; font-weight:600; }
+.feedback-panel form { margin-top:12px; }
+.feedback-panel fieldset { min-width:0; }
+.feedback-panel .form-group { margin-bottom:12px; }
+.feedback-panel textarea,.feedback-panel input,.feedback-panel select { min-width:0; width:100%; }
+.feedback-panel .btn { white-space:normal; margin:6px 0; }
+.feedback-update { border:1px solid #a8d0cd; border-radius:6px; background:var(--bs-tertiary-bg,#f2faf9); padding:10px; margin-top:12px; }
+.feedback-panel :is(button,summary,a,input,textarea,select):focus-visible { outline:2px solid #087c8c; outline-offset:3px; }

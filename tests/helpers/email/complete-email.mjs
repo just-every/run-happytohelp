@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {vendorReplies} from './vendor-replies.mjs'
+import {notificationCustody} from './notification-custody.mjs'
 import {message} from './app.mjs'
 
 /** R6's operator, mail gateway, review, imported-history and privacy doors. */
@@ -132,5 +133,6 @@ export async function completeEmailJourney(){
   await app.ok(base+`/contacts/${ticket.conversation.contact_id}/erase`,{token:owner,body:{}})
   assert.equal((await app.first('SELECT count(*) n FROM email_message_options WHERE project_id=? AND conversation_id=?',projectId,ticket.conversation.id)).n,0)
   assert.equal((await app.first('SELECT count(*) n FROM email_sender_rules WHERE project_id=? AND address=?',projectId,command.requesterEmail)).n,0)
+  await notificationCustody(app)
  }finally{await app.close()}
 }

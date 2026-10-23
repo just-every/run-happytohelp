@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {vendorNotifications} from './vendor-notifications.mjs'
+import {notificationAmbiguity} from './notification-ambiguity.mjs'
 
 /** Public import and inbound doors keep threading keys subject to the import's
  * exact repeat, undo, ambiguity and customer-erasure boundaries. */
@@ -11,6 +12,7 @@ export async function notificationCustody(app){
   await app.ok(base+'/email-settings',{token,method:'PUT',body:{from_address:'support@example.test',from_name:'Historical support',inbound_address:address,is_enabled:true}})
   const mailbox=(await app.ok(base+'/mailboxes',{token,body:{provider:'forwarding',address,displayName:'Historical support'}})).data
   await app.ok(base+'/mailboxes/'+mailbox.id+'/reconnect',{token,body:{}})
+  await app.ok(base+'/mailboxes/'+mailbox.id+'/aliases',{token,body:{address:replyTo}})
   const original=fixture.rows.map(JSON.stringify).join('\n').replaceAll(fixture.to,replyTo)
   const apply=async body=>{
    const upload=await app.ok(imports+'?vendor='+fixture.vendor,{token,raw:true,headers:{'X-Import-Filename':'history.jsonl','Content-Type':'application/octet-stream',...(fixture.schema?{'X-Import-Schema':fixture.schema}:{})},body})
@@ -23,11 +25,13 @@ export async function notificationCustody(app){
   const run=await apply(original),keys=await app.sql('SELECT * FROM email_threading_keys WHERE project_id=? ORDER BY conversation_id,key_kind,key_value',p)
   assert.ok(keys.length>0)
   const before=await app.sql('SELECT * FROM conversations WHERE project_id=? ORDER BY id',p)
-  await apply('\n'+original)
+  const repeat=await apply('\n'+original)
   assert.deepEqual(await app.sql('SELECT * FROM email_threading_keys WHERE project_id=? ORDER BY conversation_id,key_kind,key_value',p),keys,'repackaged history preserves every key exactly')
   assert.deepEqual(await app.sql('SELECT * FROM conversations WHERE project_id=? ORDER BY id',p),before,'a repeat changes no ticket')
+  await app.ok(imports+'/'+repeat.id+'/undo',{token,body:{}});await app.drainJobs()
   const imported=before[0],receive=body=>app.call('/api/integrations/email/inbound',{token:'gateway-fixture',body:{messageId:`${fixture.vendor}-${operation}-${body.messageId}`,from:fixture.email,to:replyTo,subject:fixture.subject,text:'A reply to an old notification',...body}})
   if(operation==='undo'){
+   await notificationAmbiguity({app,fixture,original,apply,receive,imports,token})
    await app.ok(imports+'/'+run.id+'/undo',{token,body:{}});await app.drainJobs()
    assert.equal((await app.ok(imports+'/'+run.id,{token})).data.state,'undone')
    assert.equal((await app.first('SELECT count(*) n FROM email_threading_keys WHERE project_id=?',p)).n,0)
@@ -42,7 +46,8 @@ export async function notificationCustody(app){
    assert.equal(replay.status,410,'source erasure fences a repackaged notification import')
    const reply=await receive({messageId:'after-erasure'})
    assert.notEqual(reply.data.conversationId,imported.id,'an erased key cannot resurrect its old customer or ticket')
-   assert.equal((await app.first('SELECT count(*) n FROM contacts WHERE project_id=? AND email=?',p,fixture.email)).n,0,'the old email identity is not recreated')
+   assert.equal(JSON.parse((await app.first('SELECT metadata_json FROM contacts WHERE project_id=? AND id=?',p,imported.contact_id)).metadata_json).is_erased,1,'fresh inbound mail never restores the erased imported identity')
+   if(reply.data.conversationId)assert.notEqual((await app.first('SELECT contact_id FROM conversations WHERE id=?',reply.data.conversationId)).contact_id,imported.contact_id)
   }
  }
 }

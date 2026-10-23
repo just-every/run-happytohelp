@@ -11028,7 +11028,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "bf6b9905613b3e9f099f7a86072ca8ad4ef357ce55b0e95a17826184afd15ed4",
+      "sha256": "363ec7d8cde73377f179c86e5a40664b148d1c1b99fb5b7475f90ddb18f88deb",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {
@@ -11044,7 +11044,7 @@
       "executable": false
     },
     "tests/helpers/email/notification-custody.mjs": {
-      "sha256": "b19d5bec1b6d63cb2dfc95b2128eac3576cc72e12e5ec48f7b10be29ea1c49c7",
+      "sha256": "a1e5f4ba803f8e7215ac7a15ba13aa9ba119725faf2601f21793803fff088f30",
       "executable": false
     },
     "tests/helpers/email/recovery.mjs": {
@@ -11068,7 +11068,7 @@
       "executable": false
     },
     "tests/helpers/email/vendor-replies.mjs": {
-      "sha256": "a1d3a2486c8bc74b31f93dea231bf129e52c349f8b0436fff2c28261226155b2",
+      "sha256": "a6dde561664697679e1f263c8d12a625a52933c2e6c7fd18a4776eddb5ebfebc",
       "executable": false
     },
     "tests/helpers/email/worker-mail.mjs": {

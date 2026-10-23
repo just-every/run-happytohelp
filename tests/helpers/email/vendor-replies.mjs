@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
 import {vendorNotifications} from './vendor-notifications.mjs'
-import {notificationCustody} from './notification-custody.mjs'
 
 /** Explicit export fields, imported through upload/review/apply, then real mail intake. */
 export async function vendorReplies(app,{projectId,owner,agent,gate,sent}){
@@ -47,11 +46,17 @@ export async function vendorReplies(app,{projectId,owner,agent,gate,sent}){
   const reopened=(await app.ok(ticketPath,{token:owner})).data
   assert.equal(reopened.status_category,'open');assert.equal(reopened.assigned_to,beforeReply.assigned_to);assert.equal(reopened.group_id,beforeReply.group_id);assert.equal(reopened.contact_id,beforeReply.contact_id)
   if(fixture.vendor!=='intercom'){
+   const current=(await app.ok(ticketPath,{token:owner})).data
+   await app.ok(ticketPath,{token:owner,method:'PATCH',body:{status_id:'solved',expected_version:current.ticket_version}})
    const bySubject=await gate({messageId:fixture.vendor+'-subject-only',from:fixture.email,to:'helpdesk@example.test',subject:fixture.vendor==='helpscout'?'Shipment [#1901]':fixture.subject,text:'Reply using only the source subject token.'})
    assert.equal(bySubject.data.state,'delivered');assert.equal(bySubject.data.conversationId,imported.conversation_id,fixture.vendor+' subject-only threading')
+   const reopened=(await app.ok(ticketPath,{token:owner})).data;assert.equal(reopened.status_category,'open');assert.equal(reopened.assigned_to,nativeOwner);assert.equal(reopened.group_id,beforeReply.group_id)
   }
+  const beforeAddress=(await app.ok(ticketPath,{token:owner})).data
+  await app.ok(ticketPath,{token:owner,method:'PATCH',body:{status_id:'solved',expected_version:beforeAddress.ticket_version}})
   const byAddress=await gate({messageId:fixture.vendor+'-address-only',from:fixture.email,to:fixture.to,subject:'No source subject token',text:'Reply using only the old reply address.'})
   assert.equal(byAddress.data.state,'delivered');assert.equal(byAddress.data.conversationId,imported.conversation_id,fixture.vendor+' reply-address-only threading')
+  const addressReopened=(await app.ok(ticketPath,{token:owner})).data;assert.equal(addressReopened.status_category,'open');assert.equal(addressReopened.assigned_to,nativeOwner);assert.equal(addressReopened.group_id,beforeReply.group_id)
   const reply={messageId:fixture.vendor+'-cutover',from:fixture.email,to:fixture.to,subject:fixture.subject,text:'Reply to the old notification after cutover.'}
   const received=await gate(reply);assert.equal(received.data.state,'delivered',fixture.vendor);assert.equal(received.data.conversationId,imported.conversation_id)
   if(fixture.vendor==='helpscout'){
@@ -75,7 +80,14 @@ export async function vendorReplies(app,{projectId,owner,agent,gate,sent}){
   assert.equal((await app.ok(ticketPath,{token:owner})).data.status_category,'closed')
   const links=await app.ok(`/api/management/projects/${projectId}/conversations/${followup.data.conversationId}/email-followups`,{token:owner})
   assert.ok(JSON.stringify(links).includes(imported.conversation_id),fixture.vendor+' follow-up keeps its original link')
+  const finalMethods=[{to:fixture.to,subject:'No subject token'},...(fixture.vendor==='intercom'?[]:[{to:'helpdesk@example.test',subject:fixture.vendor==='helpscout'?'Shipment [#1901]':fixture.subject}])]
+  for(const [index,method] of finalMethods.entries()){
+   const received=await gate({messageId:fixture.vendor+'-final-method-'+index,from:fixture.email,text:'A further question after final closure',...method})
+   assert.equal(received.data.state,'delivered');assert.notEqual(received.data.conversationId,imported.conversation_id)
+   const linked=await app.ok(`/api/management/projects/${projectId}/conversations/${received.data.conversationId}/email-followups`,{token:owner})
+   assert.ok(JSON.stringify(linked).includes(imported.conversation_id))
+   const original=(await app.ok(ticketPath,{token:owner})).data;assert.equal(original.status_category,'closed');assert.equal(original.assigned_to,nativeOwner);assert.equal(original.group_id,beforeReply.group_id)
+  }
 
  }
- await notificationCustody(app)
 }

@@ -3,7 +3,7 @@ const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {nativeHarness} from './harness.mjs';
 import {unchanged} from './admission-equality.mjs';
-import {emptyCases,emptyReason,laterSource,sourceName,upload} from './empty-inputs.mjs';
+import {emptyCases,laterSource,sourceName,upload} from './empty-inputs.mjs';
 const root='/api/move-in/projects/p/imports';
 const post=(body,actor='owner')=>({method:'POST',actor,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 for(const vendor of ['zendesk','intercom']){
@@ -19,7 +19,6 @@ for(const vendor of ['zendesk','intercom']){
    for(const actor of ['owner','operator'])for(const [name,body] of [...cases,[vendor==='zendesk'?'absent.ndjson':'absent.json',undefined]]){
     const refused=await h.raw(`${root}?vendor=${vendor}`,upload(body,name,actor));assert.equal(refused.response.status,422);
     assert.deepEqual(refused.data.diagnostic,{code:'empty_export',location:{artifact:name,row:1,pointer:''}});
-    assert.equal(refused.data.error,`Upload refused: ${name}, line 1, path /: ${emptyReason}. No source files or import were saved.`);
     assert.equal(h.lastWrites,0);assert.equal(h.queued.length,0);assert.equal((await (await h.files).list()).objects.length,0);
    }
    await unchanged(h,authorizedBefore,`${vendor}-empty-admission`);

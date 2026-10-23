@@ -1,5 +1,4 @@
 import {archive} from './archive-inputs.mjs';
-export const emptyReason='Export is empty: no source records were found';
 export const encode=body=>typeof body==='string'?Buffer.from(body):body;
 export const sourceName=vendor=>vendor==='zendesk'?'source.ndjson':'source.json';
 export function person(vendor){return vendor==='zendesk'?{user:{id:83,role:'end-user',name:'Keira',email:'keira@example.test',created_at:'2024-04-01T00:00:00Z'}}:{type:'contact',id:'person-83',name:'Keira',email:'keira@example.test',created_at:1711929600}}

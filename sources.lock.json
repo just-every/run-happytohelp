@@ -12248,7 +12248,7 @@
       "executable": false
     },
     "tests/move-in/shape-inputs.mjs": {
-      "sha256": "f7077f678fdadb78e8009ded8f4e60ade74b65ade7bd65f6d9673a911f9f2675",
+      "sha256": "93774c26da49b062ead9777163f200b404f7d711aa6846549834f39a04507b56",
       "executable": false
     },
     "tests/move-in/shape-syntax.mjs": {

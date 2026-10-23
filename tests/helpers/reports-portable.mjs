@@ -18,6 +18,9 @@ export async function seedReportsPortable(origin,projectId,contactId,incidentId,
  const linked=await api(path+'/incidents/apply',{action:'link',tickets:[incident]});assert.equal(linked.results[0].status,'applied');
  const preview=await api(path+'/solve/preview',{reply:'The retained parcel is ready.',solve_incidents:true});
  const solved=await api(path+'/solve/apply',{preview_id:preview.preview_id});assert.equal(solved.results[0].status,'solved');
+ const resolution=(await api(`/api/conversations/${incidentId}/messages`,undefined,'GET',visitorToken)).resolution;
+ assert.ok(resolution);
+ await api(`/api/conversations/${incidentId}/widget-events`,{action:'rateResolution',data:{resolutionId:resolution.id,value:-1,recovery:'not_recovered',comment:'Retain the customer recovery outcome'}},'POST',visitorToken);
  const owner=await api('/api/identity/session');
  const schedule=await api(base+'/report-schedules',{name:'Retained leadership report',frequency:'weekly',hour:9,weekday:1,recipients:[owner.id]});
  return {projectId,incidentId,problemId:problem.id,previewId:preview.preview_id,scheduleId:schedule.id,recipientId:owner.id};
@@ -34,4 +37,6 @@ export async function verifyReportsPortable(origin,state,token,json){
  const problem=(await json(`${base}/conversations/${state.problemId}/ticket/problem`,undefined,token)).data;assert.equal(problem.incident_count,1);assert.equal(problem.recent_preview_id,state.previewId);
  const result=(await json(`${base}/conversations/${state.problemId}/ticket/problem/solve/${state.previewId}`,undefined,token)).data;assert.equal(result.results[0].status,'solved');
  const schedules=await json(base+'/report-schedules',undefined,token);assert.equal(schedules.schedules.find(s=>s.id===state.scheduleId).paused,true);
+ const outcomes=await json(`/api/outcomes/projects/${state.projectId}/results`,undefined,token),response=outcomes.results.find(row=>row.conversationId===state.incidentId).response;
+ assert.equal(response.recovery,'not_recovered');assert.equal(response.comment,'Retain the customer recovery outcome');
 }

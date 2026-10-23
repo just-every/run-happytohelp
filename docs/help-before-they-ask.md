@@ -11,8 +11,8 @@ as a chat or dismiss it. It is off until you turn it on.
   shows the code.
 - **An AI key.** An AI assistant reads the visitor's recent activity to decide
   whether to offer help, and each check is one request to your AI service. Add a
-  key in **Setup → Connect an AI service**. Without one nothing is offered, even
-  with the setting on.
+  key in **Setup → Connect an AI service**. Without one AI activity-based offers stay off, even
+  with the setting on. The configured campaigns below need no AI key.
 - **A default visitor assistant.** New workspaces already have one, the starter
   assistant; it is set on the **AI** page.
 

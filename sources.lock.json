@@ -4005,7 +4005,7 @@
       "executable": false
     },
     "src/modules/business-connectors/providers/stripe-billing.ts": {
-      "sha256": "3591827c89cecb592b82361847896316d19d113fa51ead041230c497f3f9ac7d",
+      "sha256": "20972536ca1e130b4fda2af594020955768b6896fd15a10c4b3f80bf2e3697a7",
       "executable": false
     },
     "src/modules/business-connectors/README.md": {
@@ -10893,11 +10893,11 @@
       "executable": false
     },
     "tests/helpers/business-connectors/journeys.mjs": {
-      "sha256": "06b83afc5343afc16c5bfeb05330a302bb5c9aaccca1739796371ef6a71d0c88",
+      "sha256": "72dc25558074fce07b9cb4de978cb5f12bd08800bee708ced244316985fef936",
       "executable": false
     },
     "tests/helpers/business-connectors/network.mjs": {
-      "sha256": "146b3d95e61133e75b39086a035b00a2dc55446a54bdd482bcba7cf485196d74",
+      "sha256": "7fd3d012fa35d4bbedf0a05e753760b1bccb893676f6204ca37a1660701ce0ad",
       "executable": false
     },
     "tests/helpers/company-portal.mjs": {

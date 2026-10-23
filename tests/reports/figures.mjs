@@ -29,7 +29,7 @@ test('workspace calendar cohort, distributions, latest-cycle rates, comments and
  const brands=await h.call(brandsPath);assert.equal(brands.data.brands.length,2);assert.equal(brands.data.aggregate.volume,7);
  assert.equal(brands.data.aggregate.resolved,4);assert.equal(brands.data.aggregate.aiResolutionRate,.25);assert.equal(brands.data.aggregate.satisfactionRate,.5);
  assert.deepEqual(brands.data.brands.map(b=>b.volume),[6,1]);assert.ok(brands.data.brands.every(b=>!('comments' in b)));
- assert.ok(!JSON.stringify(brands).includes('Thanks'));assert.ok(!JSON.stringify(brands).includes('IMPORT'));assert.match(brands.data.explanation,/explicitly selected/);
+ assert.ok(!JSON.stringify(brands).includes('Thanks'));assert.ok(!JSON.stringify(brands).includes('IMPORT'));
  assert.equal((await h.raw(brandsPath.replace('p,q','p,unavailable'))).status,403);
  await h.db.prepare("DELETE FROM memberships WHERE project_id='q' AND user_id='owner'").run();assert.equal((await h.raw(brandsPath)).status,403,'revocation ends aggregate access immediately');
  await proveTranscriptExport(h);

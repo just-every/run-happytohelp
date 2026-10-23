@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 export async function ticketApiPrivacy(f){
  const {app,w,get,patch,ok,visitor}=f,id=f.queueIds[0]
  const issued=await app.ok(`/api/management/projects/${w.projectId}/connections/tokens`,{token:w.tokens.owner,body:{name:'Ticket operations',scopes:['conversations:read','conversations:write']}})
- const definitions=await app.ok('/api/v1/ticket-fields',{token:issued.token});assert.equal(definitions.data.length,f.fields.length);assert.ok(!definitions.data.some(field=>field.id===f.privateField.id))
+ const definitions=await app.ok('/api/v1/ticket-fields',{token:issued.token});assert.deepEqual(definitions.data.map(field=>field.id).sort(),[...f.fields.map(field=>field.id),f.retainedField.id].sort(),'the API lists the exact public catalogue, including the retained optional definition');assert.ok(!definitions.data.some(field=>field.id===f.privateField.id))
  assert.ok((await app.ok('/api/v1/ticket-groups',{token:issued.token})).data.some(group=>group.id===f.group.id))
  assert.ok((await app.ok('/api/v1/ticket-statuses',{token:issued.token})).data.some(status=>status.category==='pending'))
  const read=await app.ok('/api/v1/conversations/'+id,{token:issued.token})

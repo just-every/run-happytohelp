@@ -2947,6 +2947,10 @@
       "sha256": "cbc949c501c08708a753f6305ca37e316d8b126b2d30ee6137356c3e8435d94b",
       "executable": false
     },
+    "scripts/installer/hosted-r2.mjs": {
+      "sha256": "21072a722b9b97d269812bd38de81084072acd3599950a6e4588d3da0ab0f304",
+      "executable": false
+    },
     "scripts/installer/local.mjs": {
       "sha256": "e6f11e6b636061a2f0262ace01e8e18e836a4fa9c21fa812f62837286ce58cbc",
       "executable": false

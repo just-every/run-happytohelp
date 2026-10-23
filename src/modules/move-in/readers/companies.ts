@@ -12,10 +12,11 @@ export function mapCompanies({projectId,vendor,source}:MappingInput,result:Prepa
  for(const record of companies){
   const key=recordKey(record),p=record.payload as any
   if(result.rejections.has(key))continue
+  result.omissions.set(key,(result.omissions.get(key)??[]).filter(reason=>!reason.startsWith('unsupported_record_kind:')&&!reason.startsWith('source_metadata_only:')))
   try{
    const target=nativeId(projectId,vendor,'company',record.sourceId),knownTimes=vendor!=='helpscout',at=knownTimes?time(p.created_at,vendor==='intercom'?'unix':'iso'):Date.now(),updated=knownTimes?time(p.updated_at,vendor==='intercom'?'unix':'iso'):at
    const claimed=domains(vendor==='zendesk'?p.domain_names??[]:vendor==='intercom'?[]:p.domains??[])
-   const omissions=(result.omissions.get(key)??[]).filter(reason=>!reason.startsWith('unsupported_record_kind:')&&!reason.startsWith('source_metadata_only:'))
+   const omissions=result.omissions.get(key)??[]
    const used=new Set(['id','type','kind','name','created_at','updated_at',vendor==='zendesk'?'domain_names':vendor==='intercom'?'':'domains'])
    for(const field of Object.keys(p))if(!used.has(field))omissions.push('company_metadata_retained_in_original_only:'+field)
    omissions.push('company_portal_access_not_activated')

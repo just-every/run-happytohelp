@@ -11192,7 +11192,7 @@
       "executable": false
     },
     "tests/helpers/inbox/campaign-entry-browser.mjs": {
-      "sha256": "77516628c6a346fc325b95f480a03711f632e8f5abccfc6b63acad099ab1a614",
+      "sha256": "4cd7923da0353b9464ea5a024e3beb88bfbced627cfd09ef4e07d9e9c82dcb13",
       "executable": false
     },
     "tests/helpers/inbox/conversation-panel-resize-browser.mjs": {

@@ -17,8 +17,12 @@ export async function campaignEntryBrowser(){
  let success=false
  try{
   const setup=await fetch(runtime.origin+'/api/identity/bootstrap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...ticketOwner,allowedOrigin:runtime.origin,setupToken:'synthetic-happytohelp-82'})});assert.equal(setup.status,201);const initial=await setup.json()
-  const f=await seedTicketBrowser(runtime.origin,1,{owner:ticketOwner,projectId:initial.projectId}),{projectId,base,api,owner}=f,management=`/api/management/projects/${projectId}`,context=await browser.newContext({viewport:{width:1440,height:900}}),page=await context.newPage()
+  const f=await seedTicketBrowser(runtime.origin,1,{owner:ticketOwner,projectId:initial.projectId}),{projectId,base,owner}=f,management=`/api/management/projects/${projectId}`,context=await browser.newContext({viewport:{width:1440,height:900}}),page=await context.newPage()
   page.setDefaultTimeout(15000)
+  // This long journey alternates browser work with HTTP commands. Do not reuse
+  // an idle Node socket after workerd has closed it; mutations are never retried.
+  const login=await fetch(runtime.origin+'/api/identity/login',{method:'POST',headers:{'Content-Type':'application/json',Connection:'close'},body:JSON.stringify({email:owner.email,password:owner.password})});assert.equal(login.status,200);const identity=await login.json()
+  const api=async(path,body,method=body===undefined?'GET':'POST')=>{const response=await fetch(runtime.origin+path,{method,headers:{'Content-Type':'application/json',Authorization:`Bearer ${identity.token}`,Connection:'close'},body:body===undefined?undefined:JSON.stringify(body)});const result=await response.json();assert.ok(response.ok,`${method} ${path}: ${response.status} ${JSON.stringify(result)}`);return result}
   await api(management+'/email-settings',{from_address:'support@example.test',from_name:'Trailhead support',inbound_address:'help@example.test',is_enabled:true},'PUT')
   const mailbox=(await api(management+'/mailboxes',{provider:'forwarding',address:'helpdesk@example.test',displayName:'Trailhead support'})).data
   await api(management+`/mailboxes/${mailbox.id}/reconnect`,{})

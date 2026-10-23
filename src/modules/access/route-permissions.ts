@@ -155,7 +155,7 @@ rules[`DELETE ${P}/suspended/:id`]='conversations.manage'
 rules[`POST ${P}/sender-rules`]='settings.manage'
 export function routeRule(method:string,path:string):Rule|undefined{
  if(path==='/api/helpscout/:projectId/events')return 'none'
- if(path==='/api/management/projects/:projectId/connections/helpscout/sync')return 'data.import'
+ if(path==='/api/management/projects/:projectId/connections/helpscout/sync'||path==='/api/management/projects/:projectId/connections/helpscout/runs/:runId/merge')return 'data.import'
  if(path==='/api/management/projects/:projectId/connections/helpscout')return method==='GET'?'data.import':'integrations.install'
  if(path==='/api/escalations/webhooks/:connectionId'||path==='/api/escalations/attachments/:token')return 'none'
  if(path.startsWith('/api/escalations/projects/:projectId/')){

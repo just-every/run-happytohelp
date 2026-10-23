@@ -19,6 +19,7 @@ async function contact(env:Env,p:string,id:string){
  if(!row)throw new HTTPException(404,{message:'Contact unavailable'})
  return row
 }
+const erasureVersionSql='SELECT json_array(count(*),coalesce(sum(runs),0),coalesce(max(last_erased_at),0)) version FROM contact_erasures WHERE project_id=?'
 const display=(row:any)=>({id:row.id,name:row.name,email:row.email,external_id:row.external_id,proof:row.proof})
 async function preview(env:Env,p:string,id:string,input:any){
  if(!['link','unlink'].includes(input.action)||typeof input.contact_id!=='string'||input.contact_id===id)throw new HTTPException(400,{message:'Choose link or unlink and a different contact'})
@@ -27,7 +28,8 @@ async function preview(env:Env,p:string,id:string,input:any){
  if(input.action==='link'&&contacts.some(row=>!row.proof))throw new HTTPException(409,{message:'Both identities require independent verification; typed email alone is insufficient'})
  const link=await env.DB.prepare('SELECT * FROM customer_identity_links WHERE project_id=? AND contact_id=? AND linked_contact_id=?').bind(p,...ids).first<any>()
  if(input.action==='link'&&link||input.action==='unlink'&&!link)throw new HTTPException(409,{message:link?'Identities are already linked':'Identities are not linked'})
- const state={project_id:p,contacts,link,action:input.action,provenance:input.provenance.trim()}
+ const erasure_version=(await env.DB.prepare(erasureVersionSql).bind(p).first<{version:string}>())!.version
+ const state={project_id:p,contacts,link,action:input.action,provenance:input.provenance.trim(),erasure_version}
  return {...state,signature:await fingerprint(state)}
 }
 async function access(c:any){const actor=await scope(c) as Actor;const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'contacts.manage');return {actor,guard}}
@@ -46,7 +48,8 @@ identityLinkRoutes.post(prefix,async c=>{
  const receipt=crypto.randomUUID(),now=Date.now(),ids=plan.contacts.map(row=>row.id),accepted='EXISTS(SELECT 1 FROM audit_events WHERE id=?)'
  const snapshots=plan.contacts.map(row=>({sql:`EXISTS(SELECT 1 FROM contacts WHERE project_id=? AND id=? AND name IS ? AND email IS ? AND external_id IS ? AND is_verified=? AND metadata_json=? AND ${available} AND (${proof}) IS ?)`,params:[actor.projectId,row.id,row.name,row.email,row.external_id,row.is_verified,row.metadata_json,row.proof]}))
  const relationship=plan.action==='link'?{sql:'NOT EXISTS(SELECT 1 FROM customer_identity_links WHERE project_id=? AND contact_id=? AND linked_contact_id=?)',params:[actor.projectId,...ids]}:{sql:'EXISTS(SELECT 1 FROM customer_identity_links WHERE project_id=? AND contact_id=? AND linked_contact_id=? AND provenance=? AND actor_id=? AND created_at=?)',params:[actor.projectId,...ids,plan.link.provenance,plan.link.actor_id,plan.link.created_at]}
- const claim={sql:[`EXISTS(${guard.sql})`,...snapshots.map(s=>s.sql),relationship.sql].map(s=>`(${s})`).join(' AND '),params:[...guard.params,...snapshots.flatMap(s=>s.params),...relationship.params]}
+ const privacy={sql:`(${erasureVersionSql})=?`,params:[actor.projectId,plan.erasure_version]}
+ const claim={sql:[`EXISTS(${guard.sql})`,...snapshots.map(s=>s.sql),relationship.sql,privacy.sql].map(s=>`(${s})`).join(' AND '),params:[...guard.params,...snapshots.flatMap(s=>s.params),...relationship.params,...privacy.params]}
  const results=await c.env.DB.batch([
   c.env.DB.prepare(`INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json) SELECT ?,?,?,'data',?,'succeeded','user',?,'dashboard','contact',?,? WHERE ${claim.sql}`).bind(receipt,actor.projectId,now,`customer.identity_${plan.action}ed`,actor.id,ids[0],JSON.stringify({linked_contact_id:ids[1],grants_customer_access:false}),...claim.params),
   plan.action==='link'?c.env.DB.prepare(`INSERT INTO customer_identity_links SELECT ?,?,?,?,?,? WHERE ${accepted}`).bind(actor.projectId,...ids,plan.provenance,actor.id,now,receipt):c.env.DB.prepare(`DELETE FROM customer_identity_links WHERE project_id=? AND contact_id=? AND linked_contact_id=? AND ${accepted}`).bind(actor.projectId,...ids,receipt)

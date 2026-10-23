@@ -15,6 +15,7 @@ import {waitForServingCapacity} from '../serving-capacity.mjs';
 import {archiveSnapshot,archiveStorage,retainHistoricalLedger,assertHistoricalLedger,compareArchive,compareDevEntryArchive} from '../rer-archive.mjs';
 import {seedPortableData,verifyPortableData} from '../rer-data.mjs';
 import {seedReportClaimedRecovery} from '../reports-portable.mjs';
+import {interruptPortableTraining} from '../training-portable.mjs';
 import {safeDiagnostic} from '../delegation-journey/diagnostics.mjs';
 import {readDurableObjects} from '../../../scripts/installer/durable-objects.mjs';
 
@@ -86,6 +87,7 @@ try{
  const presenceRows=()=>archiveStorage(root,async({DB})=>(await DB.prepare('SELECT count(*) n FROM operator_presence').first()).n);
  assert.ok(await presenceRows()>0,'the owner\'s dashboard presence was recorded');
  await seedReportClaimedRecovery(root,portable.reports);
+ await interruptPortableTraining(root,portable.training);
  const historical=await retainHistoricalLedger(root);
  const beforeExport=await archiveSnapshot(root);
  assert.ok(beforeExport.rows.move_in_runs.length>0 && beforeExport.rows.contact_erasures.length>0 && beforeExport.objects.length>0);

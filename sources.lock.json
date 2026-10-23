@@ -2936,7 +2936,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "70fad6aa38e3148593436a4084003762db87eebfb127951f0a30dbce43e83f20",
+      "sha256": "3b84e5ddf0a9e4933c5c8423579c8b63f09e4d3b56766cd8dea7b3b23023af9c",
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {
@@ -2952,7 +2952,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "0612be94f8e8c6c86b95b49fc8f05c0686ee2fa51f485e2716ad16e5b0db6671",
+      "sha256": "6f940d2aa30e46a4aaf8e53031cc719a1c0c349dd8582d7798f00e5676d84821",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -2989,6 +2989,10 @@
     },
     "scripts/installer/ticket-archive-upgrade.mjs": {
       "sha256": "0d504cd66e6db063d62d1f949d8918f75b9d4dac9107f0c7a5f5893a005b8dda",
+      "executable": false
+    },
+    "scripts/installer/training-archive.mjs": {
+      "sha256": "7c9c17e247af71da9683b09b6d36636067683373398219d84c09fe72c8bcde8c",
       "executable": false
     },
     "scripts/installer/triage-archive-policy.mjs": {
@@ -11296,7 +11300,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "a33296adc895bb20116e09d1b1b051a1423d29b54d4ecda0639001bacd775634",
+      "sha256": "3dd698301bffaf9c3694d47d01b1a136f511ecb9a999f0fba4bce0c3793cb0bd",
       "executable": false
     },
     "tests/helpers/installer/hosted-export.mjs": {
@@ -11488,7 +11492,7 @@
       "executable": false
     },
     "tests/helpers/rer-data.mjs": {
-      "sha256": "47504f6224164e3274745b81601ab026db9ede5d72a2359e77a66fc78da5a61a",
+      "sha256": "425336bedf1b7d613402afe02c34b105c938a9bae604f3cba48dcef6c9aff721",
       "executable": false
     },
     "tests/helpers/search-index.mjs": {
@@ -11513,6 +11517,10 @@
     },
     "tests/helpers/streamed-rejection.mjs": {
       "sha256": "13d9da70881be1b57811d2dd1e6d370fe4a4d7881ccfdb74b97031f716700ec0",
+      "executable": false
+    },
+    "tests/helpers/training-portable.mjs": {
+      "sha256": "4bcdea90dac0285a4ee1a16c40ac07476addae2f3aad3f48e514d2e09b934f54",
       "executable": false
     },
     "tests/helpers/training-readiness.mjs": {

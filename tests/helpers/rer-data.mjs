@@ -3,6 +3,8 @@ import {WebSocket} from 'ws';
 import {generate} from '../move-in/generator.mjs';
 import {customer,history} from '../move-in/helpscout-fixtures.mjs';
 import {seedReportsPortable,verifyReportsPortable} from './reports-portable.mjs';
+import {seedPortableTraining,verifyPortableTraining} from './training-portable.mjs';
+import {seedRecoveryTicket,verifyRecoveryTicket} from './recovery/tickets.mjs';
 
 export async function seedImportHistory(origin,projectId,token,json){
  const base=`/api/move-in/projects/${projectId}/imports`;
@@ -56,7 +58,9 @@ export async function seedPortableData(origin,projectId,token,json){
  for(let attempt=0;attempt<40&&!await online();attempt++)await new Promise(resolve=>setTimeout(resolve,250));
  assert.equal(await online(),1,'the owner\'s open dashboard is online');stream.close();
  const reports=await seedReportsPortable(origin,projectId,kept.contactId,retained.id,kept.token,token);
- return {projectId,erasedContactId:visitor.contactId,conversationId:retained.id,mediaId:media.id,bytes:[...bytes],imports,reports};
+ const training=await seedPortableTraining(origin,projectId,token);
+ const ticket=await seedRecoveryTicket({origin},{projectId,token},retained);
+ return {projectId,erasedContactId:visitor.contactId,conversationId:retained.id,mediaId:media.id,bytes:[...bytes],imports,reports,training,ticket};
 }
 export async function verifyPortableData(origin,state,token,json){
  const contact=(await json(`/api/management/projects/${state.projectId}/contacts/${state.erasedContactId}`,undefined,token)).data;
@@ -65,6 +69,8 @@ export async function verifyPortableData(origin,state,token,json){
  assert.deepEqual([settings.presence_idle_minutes,settings.presence_away_message],[30,'Back soon from the workshop.'],'presence-based away settings are restored');
  await verifyImportHistory(origin,state.projectId,state.imports,token,json);
  await verifyReportsPortable(origin,state.reports,token,json);
+ await verifyPortableTraining(origin,state.training,token);
+ await verifyRecoveryTicket({origin},{owner:{projectId:state.projectId,token},conversation:{id:state.conversationId},ticket:state.ticket});
  const matches=await json(`/api/dashboard/projects/${state.projectId}/conversations?q=retained%20cobalt%20parcel`,undefined,token);
  assert.ok(matches.data.some(row=>row.id===state.conversationId),'restored messages are searchable after the derived index rebuild');
  const response=await fetch(origin+`/api/conversations/${state.conversationId}/media/${state.mediaId}`,{headers:{Authorization:`Bearer ${token}`}});assert.equal(response.status,200);assert.deepEqual([...new Uint8Array(await response.arrayBuffer())],state.bytes);

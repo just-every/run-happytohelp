@@ -12,6 +12,7 @@ import {localInputDefaults,localOwner,nativeOwner,prepareNativeLocal} from './na
 import {ticketRestoreSql} from './ticket-archive-upgrade.mjs';
 import {r4RestoreSql} from './r4-tables.mjs';
 import {reportRestoreSql} from './report-archive.mjs';
+import {trainingRestoreSql} from './training-archive.mjs';
 import {workflowRestoreSql} from './workflow-archive-safety.mjs';
 import {workflowLegacyRestoreSql} from './workflow-archive-defaults.mjs';
 import {fileRecords} from '@runeditrun/rer/modules/portability/files';
@@ -95,6 +96,7 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
   await d1(context,'Fencing archived triage work',triageRestoreSql);
   await d1(context,'Fencing archived workflow actions',workflowRestoreSql);
   await d1(context,'Fencing restored report schedules and bulk replies',reportRestoreSql);
+  await d1(context,'Fencing restored evaluations',trainingRestoreSql);
   await d1(context,'Rebuilding conversation search',"INSERT INTO inbox_message_search(inbox_message_search) VALUES('rebuild')");
  }
  // The receipt names the Durable Object storage the archive carries (exported) or carried (restored).

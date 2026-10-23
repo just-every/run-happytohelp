@@ -31,7 +31,7 @@
   "pendingMigrations": [
     {
       "id": "240_operator_presence.sql",
-      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings \u2192 Availability."
+      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings → Availability."
     },
     {
       "id": "241_away_reply_not_a_reply.sql",
@@ -44,6 +44,14 @@
     {
       "id": "243_widget_campaigns.sql",
       "buyerSteps": "Add configurable proactive widget campaigns, consented visit/impression attribution, a durable daily-cap fence and consent-revocation/erasure cleanup. Apply after 242 and before the updated Worker serves traffic. Existing workspaces start with no campaigns; new campaigns are disabled until a lead enables them. Both collector switches and visitor consent are required. Campaign identifiers expire from reports after 30 days and are deleted by bounded cleanup, or immediately on consent revocation or native erasure. No existing conversation or message is changed."
+    },
+    {
+      "id": "242_csat_response_surface.sql",
+      "buyerSteps": "Preserve the signed response surface separately from survey invitation transport. Apply before the updated Worker serves traffic; existing feedback and links remain intact."
+    },
+    {
+      "id": "243_widget_survey_cycles.sql",
+      "buyerSteps": "Snapshot widget scale, language and timing on new resolution cycles. Apply after 242 and before the updated Worker serves traffic. Existing cycles retain immediate English thumbs feedback; visitors can stop widget surveys without changing mail preferences. No prior feedback is rewritten and this migration sends nothing."
     }
   ]
 }

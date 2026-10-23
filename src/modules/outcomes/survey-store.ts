@@ -2,11 +2,11 @@ import type {Env} from '../../platform/env'
 import {provenAddressSql} from '../integrations/inbound-authority'
 export type SurveyScale='thumbs'|'five'
 export type SurveyLocale='en'|'es'|'fr'
-export interface SurveySettings {enabled:boolean;scale:SurveyScale;delayMinutes:number;expiresDays:number;locale:SurveyLocale}
-export const defaultSurveySettings:SurveySettings={enabled:false,scale:'thumbs',delayMinutes:0,expiresDays:14,locale:'en'}
+export interface SurveySettings {enabled:boolean;widgetEnabled:boolean;scale:SurveyScale;delayMinutes:number;expiresDays:number;locale:SurveyLocale}
+export const defaultSurveySettings:SurveySettings={enabled:false,widgetEnabled:true,scale:'thumbs',delayMinutes:0,expiresDays:14,locale:'en'}
 export async function readSurveySettings(env:Env,projectId:string):Promise<SurveySettings>{
- const row=await env.DB.prepare('SELECT * FROM csat_settings WHERE project_id=?').bind(projectId).first<any>()
- return row?{enabled:row.enabled===1,scale:row.scale,delayMinutes:row.delay_minutes,expiresDays:row.expires_days,locale:row.locale}:{...defaultSurveySettings}
+ const row=await env.DB.prepare("SELECT s.*,COALESCE(json_extract(p.settings_json,'$.csat_widget_enabled'),1) widget_enabled FROM (SELECT ? project_id) selected LEFT JOIN csat_settings s ON s.project_id=selected.project_id LEFT JOIN project_settings p ON p.project_id=selected.project_id").bind(projectId).first<any>()
+ return {...defaultSurveySettings,...(row?.scale?{enabled:row.enabled===1,scale:row.scale,delayMinutes:row.delay_minutes,expiresDays:row.expires_days,locale:row.locale}:{}),widgetEnabled:row?.widget_enabled!==0}
 }
 export interface Survey {id:string;project_id:string;resolution_id:string;conversation_id:string;contact_id:string;recipient:string;channel:string;scale:SurveyScale;locale:SurveyLocale;due_at:number;expires_at:number;state:string;token_revision:number;revoked_at:number|null;created_at:number;updated_at:number}
 /** Shared by scheduling, sending and response commit; c,r,ct are scoped joins. */

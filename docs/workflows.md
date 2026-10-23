@@ -147,3 +147,10 @@ It never sends, retries or resumes work, and it preserves every existing provide
 outcome, including uncertainty. A receipt or review note does not itself prove
 that a customer received a message. Repeated or stale reviews are refused.
 The review stays in the portable audit store under its existing custody rules.
+
+A named group notification is limited to the ticket's current group while the
+ticket is unassigned. It uses each current member's group preferences; followers
+use their own preferences. A group from another workspace is refused. Changing
+the group or membership before delivery cancels the old authority. Customer and
+follower notices use the ticket audience and cannot be redirected to a named
+person. Terminal delivery claims remain terminal across restart.

@@ -35,7 +35,7 @@ export function policyDefinition(input:unknown,projectId:string){
 export function policyMatches(policy:SlaPolicy,ticket:any,metadata:Record<string,unknown>){
  const values:Record<string,unknown>={priorities:ticket.priority,plans:metadata.plan??metadata.customer_plan??null,channels:ticket.channel,brands:ticket.brand_id??ticket.project_id}
  const {form_ids=[],fields={}}=policy.conditions
- return Object.entries(values).every(([key,value])=>!policy.conditions[key as 'priorities'|'plans'|'channels'|'brands'].length||policy.conditions[key as 'priorities'|'plans'|'channels'|'brands'].includes(String(value??'')))
+ return Object.entries(values).every(([key,value])=>{const allowed=policy.conditions[key as 'priorities'|'plans'|'channels'|'brands']??[];return !allowed.length||allowed.includes(String(value??''))})
   &&(!form_ids.length||form_ids.includes(ticket.form_id))
   &&Object.entries(fields).every(([id,value])=>Object.hasOwn(ticket.fields??{},id)&&JSON.stringify(ticket.fields[id])===JSON.stringify(value))
 }

@@ -1,3 +1,4 @@
+import {seedVoicePortable,verifyVoicePortable} from '../voice/portable.mjs';
 import { fileURLToPath as __rerTestEntryPath } from 'node:url';
 import assert from 'node:assert/strict';
 import {hostedExportJourney} from './hosted-export.mjs';
@@ -90,12 +91,15 @@ try{
  await seedReportClaimedRecovery(root,portable.reports);
  await interruptPortableTraining(root,portable.training);
  await interruptPortableWork(root,portable,actor.id);
+ await seedVoicePortable(root,portable);
  const historical=await retainHistoricalLedger(root);
  const beforeExport=await archiveSnapshot(root);
  assert.ok(beforeExport.rows.move_in_runs.length>0 && beforeExport.rows.contact_erasures.length>0 && beforeExport.objects.length>0);
  assert.deepEqual(beforeExport.rows.durable_object_snapshots,[],'first export has no prior Durable Object capture');
  const exportStarted=Date.now();
  await run(root,['export','--output','exports/support.rer']);
+ const voiceArchive=await readFile(join(root,'exports/support.rer'),'utf8');
+ for(const marker of ['synthetic-happytohelp-43','synthetic-happytohelp-46','synthetic-happytohelp-48','synthetic-happytohelp-49','synthetic-happytohelp-50','synthetic-happytohelp-51','synthetic-happytohelp-52'])assert.equal(voiceArchive.includes(marker),false,'voice media and provider credentials stay out of the archive');
  // Export records declared Durable Object namespaces in D1 before archiving.
  // Validate that exact addition, then compare restore with what was exported.
  const before=await archiveSnapshot(root),snapshots=await readDurableObjects(root);
@@ -170,6 +174,7 @@ try{
  // Snapshot after login so replay/read checks still compare every portable row.
  await stop();const beforeRestoredReads=await archiveSnapshot(root),readStart=Date.now();await start();
  await verifyPortableData(origin,portable,restored.token,json);
+ await verifyVoicePortable(origin,portable,restored.token,json);
  await signIn();
  await stop();assert.equal(await migrationCount(),1);
  compareDevEntryArchive(beforeRestoredReads,await archiveSnapshot(root));

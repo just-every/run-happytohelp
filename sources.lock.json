@@ -2004,7 +2004,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "9a9bde964504c26c1fd28e8fe17ba7940e6cfc8e78ec0e3972dd033f2ba2633c",
+      "sha256": "caffc4749313a1f4b2e4582264c20986fc2fe2a559230d3c75e50c7c3b49b8b6",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -3164,7 +3164,7 @@
       "executable": false
     },
     "scripts/installer/voice-archive.mjs": {
-      "sha256": "15ff7071e988a86adbb694a9efcba0d0b8ac86068a803b2c00bd6ec3a3ade472",
+      "sha256": "8e8d09594686b6e241035812e18d1311302b8f7c82f090a8257b8e5da7a462eb",
       "executable": false
     },
     "scripts/installer/workflow-archive-defaults.mjs": {
@@ -7316,7 +7316,7 @@
       "executable": false
     },
     "src/modules/voice/calls.ts": {
-      "sha256": "081b38f03c1b8e3753814723014eb1c109697aae0572496335f7327e5fd71627",
+      "sha256": "b23f12876f85491b018dfd7caf2efad97126fbadab795a56a3ea01a418c4ab0e",
       "executable": false
     },
     "src/modules/voice/erasure.ts": {
@@ -10736,7 +10736,7 @@
       "executable": false
     },
     "src/ui/native/pages/voice/VoiceSettings.jsx": {
-      "sha256": "eba8c8d307ec882363f477276b1c0f785538edbbe87694786502e7657332e774",
+      "sha256": "9b9e6bcb1ea05f4733ab98c0740557e10bea563a6411a136ee50886b7a5d303e",
       "executable": false
     },
     "src/ui/native/pages/WidgetSettingsPage.jsx": {
@@ -12096,7 +12096,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "57474f1030db8fe7ff34a858a1ec270d1499b69545f1b4c49beeb971a11ba900",
+      "sha256": "9a80c3cce785996e0db4fc505d3add02dfb3930141ff8c6437d8235da0cb463f",
       "executable": false
     },
     "tests/helpers/installer/hosted-export-live.mjs": {
@@ -12380,11 +12380,15 @@
       "executable": false
     },
     "tests/helpers/voice/browser.mjs": {
-      "sha256": "a4f99ea314df01ee1769c830e7c55699c8f017146df2ec66ba8dec5ea354d6d0",
+      "sha256": "bee6ff0ab3ffb9c9b2d46ce1711c27b3b2c22ad4312d9f95a8d52cec1b99bca6",
       "executable": false
     },
     "tests/helpers/voice/journeys.mjs": {
-      "sha256": "b1dd2acea79cc9cf404d4fb4112704b9a61ac2b46311e948c8689fb8abf2049f",
+      "sha256": "7d5ebe6599b4dfb571c91adaede6374e758051edfc35b63baf5ed5f8928101e4",
+      "executable": false
+    },
+    "tests/helpers/voice/portable.mjs": {
+      "sha256": "547e574523dc673ce042639c34079e267870702e56124ae5e4ca140dc28a4ccb",
       "executable": false
     },
     "tests/helpers/widget-failed-send-browser.mjs": {

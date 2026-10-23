@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {startApp} from '../../journeys/kit/app.mjs'
 export async function slaFlow(f){
  const {app,w,ok,call,create,get,patch,clock,send,initial}=f
  const calendar=await ok('/workflow-calendars',{name:'New York support',timezone:'America/New_York',weekly:[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})),holidays:'us_federal',closures:[]})
@@ -13,8 +14,14 @@ export async function slaFlow(f){
  assert.deepEqual((await ok(`/conversations/${empty.id}/sla`)).alerts,[])
  await clock(initial)
  const id=await create();f.slaId=id
+ // The original schema permits an empty condition object. A stored policy
+ // using that default still matches, without requiring a settings rewrite.
+ await app.db.prepare("UPDATE sla_policies SET conditions_json='{}' WHERE project_id=? AND id=?").bind(w.projectId,policy.id).run()
+ assert.equal((await ok(`/conversations/${id}/sla`)).policy.id,policy.id,'legacy empty conditions retain match-any behavior')
+ await ok(`/sla-policies/${policy.id}`,{conditions:policy.conditions},'PATCH')
  let sla=await ok(`/conversations/${id}/sla`)
  assert.equal(sla.clocks.find(c=>c.metric==='first_response').due_at,Date.parse('2026-11-27T15:00:00Z'),'Thanksgiving consumes no business time')
+ const queue=await ok('/conversations?view=open');assert.equal(queue.find(ticket=>ticket.id===id).workflow_sla.due_at,Date.parse('2026-11-27T15:00:00Z'),'the inbox shows the hand-calculated holiday due time')
  await clock('2026-11-26T20:00:00Z');await app.scheduled()
  sla=await ok(`/conversations/${id}/sla`);assert.equal(sla.clocks.find(c=>c.metric==='first_response').breached,false)
  await clock('2026-11-27T14:45:00Z');await app.scheduled()
@@ -23,14 +30,40 @@ export async function slaFlow(f){
  const acknowledged=await ok(`/sla-alerts/${encodeURIComponent(approaching.id)}/ack`,{},'PATCH');assert.equal(acknowledged.state,'acknowledged')
  await app.configure({H2H_WORKFLOW_NOW:String(Date.parse('2026-11-27T15:01:00Z'))});await app.scheduled()
  sla=await ok(`/conversations/${id}/sla`);assert.ok(sla.alerts.some(a=>a.kind==='breach'&&a.metric==='first_response'));assert.equal(sla.alerts.find(a=>a.id===approaching.id).state,'acknowledged')
+ const backup=sla.alerts.find(a=>a.kind==='breach'&&a.metric==='first_response'&&a.recipient_id===w.users.admin);assert.ok(backup,'a breach names the configured current backup')
+ const report=await ok('/reports/team?period=custom&start=2026-01-01&end=2027-01-01');assert.equal(report.sla.first_response.breached,1);assert.equal(report.sla.first_response.total,1);assert.equal(report.sla.resolution.pending,1);assert.equal(report.backlog.total,1,'empty widgets are excluded from workload')
  const count=sla.alerts.length;await app.scheduled();assert.equal((await ok(`/conversations/${id}/sla`)).alerts.length,count)
+ await clock('2026-11-27T17:01:00Z');await app.scheduled();await app.scheduled()
+ sla=await ok(`/conversations/${id}/sla`)
+ assert.ok(sla.alerts.some(a=>a.kind==='unattended'&&a.recipient_id===w.users.admin),'an unattended ticket escalates to its named backup too')
+ const notices=async()=>(await app.ok(`/api/management/projects/${w.projectId}/notification-inbox`,{token:w.tokens.admin})).data.filter(n=>n.conversation_id===id).map(n=>n.id).sort()
+ const delivered=await notices();assert.ok(delivered.length>0,'the backup can read its SLA notice in its own inbox')
+ await app.configure({});await app.scheduled();assert.deepEqual(await notices(),delivered,'restart does not duplicate the backup inbox notice')
  await send(id,'We are arranging the replacement.',w.tokens.operator)
  await patch(id,{status_id:'pending'});await clock((await get(id)).updated_at);sla=await ok(`/conversations/${id}/sla`)
  const remaining=sla.clocks.find(c=>c.metric==='resolution'&&!c.completed_at).remaining_minutes
  await clock('2026-11-30T15:00:00Z');await app.scheduled();sla=await ok(`/conversations/${id}/sla`)
+ assert.equal((await ok('/conversations?view=open')).find(ticket=>ticket.id===id).workflow_sla.pause_reason,'pending','the queue explains the paused commitment')
  assert.equal(sla.pause_reason,'pending');assert.equal(sla.clocks.find(c=>c.metric==='resolution'&&!c.completed_at).remaining_minutes,remaining)
  await send(id);sla=await ok(`/conversations/${id}/sla`);assert.equal(sla.pause_reason,null);assert.ok(sla.clocks.some(c=>c.metric==='next_response'&&!c.completed_at))
  await patch(id,{status_id:'on_hold'});await clock('2026-11-30T17:00:00Z');assert.equal((await ok(`/conversations/${id}/sla`)).pause_reason,'on_hold')
+ // The opposite On-hold policy must keep spending business time too; merely
+ // testing the paused choice would not prove the lead's configurable choice.
+ const held=(await ok(`/conversations/${id}/sla`)).clocks.find(c=>c.metric==='resolution'&&!c.completed_at)
+ await ok(`/sla-policies/${policy.id}`,{pause_on_hold:false},'PATCH')
+ const running=await ok(`/conversations/${id}/sla`)
+ assert.equal(running.pause_reason,null)
+ assert.ok(running.clocks.find(c=>c.metric==='resolution'&&!c.completed_at).remaining_minutes<held.remaining_minutes,'On-hold consumes business minutes when the policy does not pause')
+ await ok(`/sla-policies/${policy.id}`,{pause_on_hold:true},'PATCH')
+ // Solving ends the old clocks. A real customer reply creates a new next
+ // response cycle with one business hour from Monday 12:30 New York time.
+ const previousCycle=Math.max(...(await ok(`/conversations/${id}/sla`)).clocks.filter(c=>c.metric==='next_response').map(c=>c.cycle))
+ await patch(id,{status_id:'solved'})
+ await clock('2026-11-30T17:30:00Z');await send(id,'The replacement also needs attention.')
+ const reopened=await ok(`/conversations/${id}/sla`),next=reopened.clocks.find(c=>c.metric==='next_response'&&!c.completed_at)
+ assert.equal((await get(id)).status_category,'open');assert.equal(next.cycle,previousCycle+1)
+ assert.equal(next.due_at,Date.parse('2026-11-30T18:30:00Z'),'reopen starts the next-response clock at the new request')
+ await app.configure({});assert.equal((await ok(`/conversations/${id}/sla`)).clocks.find(c=>c.metric==='next_response'&&!c.completed_at).due_at,next.due_at)
  // A separate policy and Sunday window exercise both copies of the fall-back hour.
  await ok(`/sla-policies/${policy.id}`,{active:false},'PATCH')
  const weekendPolicy=await ok('/sla-policies',{name:'Weekend response',calendar_id:pacific.id,position:0,conditions:{},first_response_minutes:180,next_response_minutes:null,resolution_minutes:null,pause_on_hold:false,approaching_minutes:15,backup_user_ids:[]})
@@ -43,4 +76,43 @@ export async function slaFlow(f){
  await ok(`/sla-policies/${policy.id}`,{active:true,conditions:{plans:['enterprise'],priorities:['urgent'],channels:['email'],brands:[w.projectId]}},'PATCH')
  await patch(id,{priority:'urgent',channel:'email'});await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.plan','enterprise') WHERE id=?").bind(f.customer.contactId).run()
  assert.equal((await ok(`/conversations/${id}/sla`)).policy.id,policy.id)
+ await slaEmailAlertJourney()
+}
+
+// One real scheduled alert per kind reaches the named backup at the email
+// boundary as well as the inbox. No external account is represented by this fake.
+async function slaEmailAlertJourney(){
+ const sent=[],app=await startApp({captureQueue:true,bindings:{H2H_LOCAL:'true',APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-11',EMAIL_FROM:'support@example.test'},outbound:async request=>{assert.equal(new URL(request.url).hostname,'api.resend.com');sent.push({key:request.headers.get('idempotency-key'),body:await request.json()});return Response.json({id:'synthetic-happytohelp-'+(sent.length+11)})}});
+ try{
+  const w=await app.seedWorkspace('sla-email'),p=w.projectId,owner={token:w.tokens.owner},base=`/api/dashboard/projects/${p}`;
+  const api=async(path,body,method,token=w.tokens.owner)=>(await app.ok(base+path,{token,...(body===undefined?{}:{body}),...(method?{method}:{})})).data;
+  const calendar=await api('/workflow-calendars',{name:'Everyday backup coverage',timezone:'America/New_York',weekly:[0,1,2,3,4,5,6].map(day=>({day,start:'00:00',end:'23:59'})),holidays:'none',closures:[]});
+  await api('/sla-policies',{name:'Named backup alerts',calendar_id:calendar.id,position:0,conditions:{},first_response_minutes:30,next_response_minutes:null,resolution_minutes:null,pause_on_hold:true,approaching_minutes:10,unattended_minutes:45,backup_user_ids:[w.users.admin]});
+  const customer=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey,name:'Requester'},headers:{Origin:w.allowedOrigin}});
+  const ticket=await app.ok('/api/conversations',{token:customer.token,body:{projectId:p}}),id=ticket.id;
+  await app.ok(`/api/conversations/${id}/messages`,{token:customer.token,body:{localId:'synthetic-happytohelp-12',content:'My order needs attention.',expectedRevision:0}});
+  const current=await api(`/conversations/${id}/ticket`);
+  await api(`/conversations/${id}/ticket`,{expected_version:current.ticket_version,assigned_to:w.users.owner},'PATCH');
+  const sla=()=>api(`/conversations/${id}/sla`),initial=await sla(),clock=initial.clocks.find(row=>row.metric==='first_response');
+  assert.ok(clock);const backupMail='admin-sla-email@example.test';
+  const alertMail=()=>sent.filter(mail=>/SLA (approaching|breach|unattended)/.test(mail.body.text));
+  const priorInbox=new Set((await app.ok(`/api/management/projects/${p}/notification-inbox`,{token:w.tokens.admin})).data.map(row=>row.id));
+  const tick=async at=>{await app.configure({H2H_WORKFLOW_NOW:String(at)});for(let i=0;i<3;i++)await app.scheduled();};
+  await tick(clock.due_at-5*60000);
+  let state=await sla(),approaching=state.alerts.find(row=>row.kind==='approaching'&&row.recipient_id===w.users.admin);assert.ok(approaching,JSON.stringify(state));assert.equal(approaching.state,'open');assert.equal(approaching.recipient_id,w.users.admin);
+  assert.equal(alertMail().length,2);assert.equal(alertMail().filter(mail=>JSON.stringify(mail.body.to)===JSON.stringify([backupMail])).length,1,'approaching alerts reach a backup who is not the assignee');assert.ok(alertMail().every(mail=>/first response SLA approaching/.test(mail.body.text)));
+  const ack=await api(`/sla-alerts/${encodeURIComponent(approaching.id)}/ack`,{},'PATCH',w.tokens.admin);assert.equal(ack.state,'acknowledged');assert.equal(ack.acknowledged_by,w.users.admin);
+  await tick(clock.due_at+1);
+  state=await sla();const breach=state.alerts.find(row=>row.kind==='breach'&&row.recipient_id===w.users.admin);assert.ok(breach);assert.equal(breach.state,'open');assert.equal(breach.recipient_id,w.users.admin);
+  await tick(clock.due_at+16*60000);
+  state=await sla();const unattended=state.alerts.find(row=>row.kind==='unattended'&&row.recipient_id===w.users.admin);assert.ok(unattended);assert.equal(unattended.recipient_id,w.users.admin);assert.equal(unattended.state,'open');
+  assert.equal(alertMail().length,6);assert.equal(alertMail().filter(mail=>JSON.stringify(mail.body.to)===JSON.stringify([backupMail])).length,3);assert.equal(alertMail().filter(mail=>JSON.stringify(mail.body.to)===JSON.stringify(['owner-sla-email@example.test'])).length,3);assert.ok(alertMail().every(mail=>mail.body.to.length===1));assert.equal(new Set(alertMail().map(mail=>mail.key)).size,6);
+  const notices=await app.ok(`/api/management/projects/${p}/notification-inbox`,{token:w.tokens.admin});assert.equal(notices.data.filter(row=>row.conversation_id===id&&!priorInbox.has(row.id)).length,3);
+  await app.configure({});await app.scheduled();state=await sla();
+  assert.equal(state.alerts.find(row=>row.id===approaching.id).state,'acknowledged');assert.equal(state.alerts.find(row=>row.id===breach.id).state,'open');assert.equal(state.alerts.find(row=>row.id===unattended.id).state,'open');assert.equal(alertMail().length,6,'restart does not resend any alert');
+  await api(`/sla-alerts/${encodeURIComponent(breach.id)}/ack`,{},'PATCH',w.tokens.admin);
+  const latest=await api(`/conversations/${id}/ticket`);await api(`/conversations/${id}/ticket`,{expected_version:latest.ticket_version,status_id:'solved'},'PATCH');
+  state=await sla();assert.ok(state.alerts.every(row=>row.state==='resolved'),'resolution ends every still-persisted alert');await app.scheduled();assert.equal(alertMail().length,6);
+  console.log(JSON.stringify({proof:'SLA named backup email',approaching:1,breach:1,unattended:1,backupInbox:3,backupEmail:3,assigneeEmail:3,restartDuplicates:0,acknowledgedByBackup:true,resolved:true}));
+ }finally{await app.close()}
 }

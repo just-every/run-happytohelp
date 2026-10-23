@@ -34,8 +34,28 @@ export async function triageJourney(){
  assert.equal((await app.call(base+'/triage-settings',{token:owner,method:'PUT',body:{...await settings(),routing_enabled:true}})).status,400)
  await save({routing_enabled:true,accuracy_reviewed:true})
  const routed=await a.visitor('Taylor Chen');await routed.say('I need a refund. I am disappointed.');await run();assert.equal((await ticket(routed.conversationId)).assigned_to,w.users.operator)
+ // A triage suggestion is read-only until an operator previews and confirms
+ // the ordinary incident link. Old settings, low confidence and field scope
+ // cannot lend an apparently matching intent to this suggestion list.
+ const root=routed.conversationId,problemPath=target=>`/conversations/${target}/ticket/problem`,frontier=async target=>(await get(problemPath(target))).ticket;
+ await call(problemPath(root),{...await frontier(root),is_problem:true},'PATCH');
+ const candidate=await a.visitor('Incident candidate');await candidate.say('I need a refund. I am disappointed.');await run();
+ const suggested=()=>app.ok(base+'/ticket-problem-search?suggest_for='+encodeURIComponent(root),{token:owner});
+ const matches=await suggested();assert.equal(matches.suggestion.source,'triage');assert.equal(matches.suggestion.confirmation_required,true);
+ assert.ok(matches.data.some(row=>row.id===candidate.conversationId));assert.ok(!matches.data.some(row=>row.id===id),'predictions from an old settings version are not suggestions');
+ assert.equal((await get(problemPath(root))).incident_count,0,'requesting a suggestion never links a ticket');
+ const link={action:'link',tickets:[await frontier(candidate.conversationId)]};
+ assert.equal((await call(problemPath(root)+'/incidents/preview',link)).results[0].status,'ready');
+ assert.equal((await get(problemPath(root))).incident_count,0,'preview still requires explicit confirmation');
+ assert.equal((await call(problemPath(root)+'/incidents/apply',link)).results[0].status,'applied');
+ assert.ok(!(await suggested()).data.some(row=>row.id===candidate.conversationId),'already-linked incidents leave the suggestion list');
+ await call(problemPath(root)+'/incidents/apply',{action:'unlink',tickets:[await frontier(candidate.conversationId)]});
+ await call('/ticket-fields/triage_intent',{read_roles:['owner'],write_roles:['owner']},'PATCH');
+ const restricted=await app.ok(base+'/ticket-problem-search?suggest_for='+encodeURIComponent(root),{token:w.tokens.operator});assert.deepEqual(restricted.data,[]);assert.match(restricted.message,/available to your role/);
+ await call('/ticket-fields/triage_intent',{read_roles:[],write_roles:['owner']},'PATCH');
  answer={...answer,intent:{...answer.intent,confidence:.25}}
  const vague=await a.visitor('Morgan Lane');await vague.say('I need a refund? I am disappointed but I am not sure.');await run();assert.equal((await ticket(vague.conversationId)).assigned_to,null);assert.equal((await ticket(vague.conversationId)).group_id,group.id)
+ assert.ok(!(await suggested()).data.some(row=>row.id===vague.conversationId),'low-confidence predictions never suggest an incident')
  // The same fields feed ordinary filters and event rules, without an alternative triage engine.
  const priority=await call('/workflow-rules',{name:'Negative sentiment',kind:'event',event_kind:'changed',position:1,conditions:{all:[{field:'field:triage_sentiment',op:'eq',value:'negative'}]},actions:[{type:'priority',priority:'high'}]})
  await call(`/workflow-rules/${priority.rule.id}/publish`,{})
@@ -62,6 +82,9 @@ export async function triageJourney(){
  const collaborator=await app.seedWorkspace('triage-collab');await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(collaborator.projectId,collaborator.users.operator,Date.now()).run()
  assert.equal((await app.call(`/api/dashboard/projects/${collaborator.projectId}/triage-settings`,{token:collaborator.tokens.operator,method:'PUT',body:{}})).status,403)
  assert.equal((await app.call(base+`/conversations/${id}/triage`,{token:collaborator.tokens.owner})).status,404)
+ assert.equal((await app.call(base+'/ticket-problem-search?suggest_for='+encodeURIComponent(root),{token:collaborator.tokens.owner})).status,403,'another workspace cannot ask for the problem context');
+ await routed.say('A new customer turn needs a fresh prediction.');
+ assert.deepEqual((await suggested()).data,[],'a new customer turn invalidates old suggestion evidence');
  const erased=await app.ok(`/api/management/projects/${p}/contacts/${visitor.contactId}/erase`,{token:owner,body:{}});assert.ok(erased.data.providers.requests.some(r=>r.store==='ai_provider'))
  for(const table of ['triage_jobs','triage_labels'])assert.equal((await app.first(`SELECT count(*) n FROM ${table} WHERE conversation_id=?`,id)).n,0)
  const taxonomy=(await settings()).taxonomy.map(t=>({...t,name:t.id==='refund'?'Returns and refunds':t.name,active:t.id!=='how_to'}));taxonomy.push({id:'cancel_subscription',name:'Cancel subscription',active:true});await save({routing_enabled:false,taxonomy});assert.deepEqual((await settings()).taxonomy,taxonomy)

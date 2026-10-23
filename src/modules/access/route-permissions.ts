@@ -100,6 +100,7 @@ for(const base of [P,D]){
  for(const action of ['start','stop','adjust'])rules[`POST ${base}/conversations/:conversationId/timer/${action}`]='conversations.manage'
  for(const kind of ['statuses','fields','groups']){
   rules[`GET ${base}/ticket-${kind}`]='self'
+  if(kind==='fields')rules[`GET ${base}/ticket-fields/:id/versions`]='settings.manage'
   rules[`POST ${base}/ticket-${kind}`]='settings.manage'
   rules[`PATCH ${base}/ticket-${kind}/:id`]='settings.manage'
   rules[`DELETE ${base}/ticket-${kind}/:id`]='settings.manage'
@@ -117,6 +118,7 @@ for(const base of [P,D]){
  for(const path of ['workflow-calendars','sla-policies','workflow-rules']){
   rules[`POST ${base}/${path}`]='settings.manage';rules[`PATCH ${base}/${path}/:id`]='settings.manage';
  }
+ rules[`POST ${base}/workflow-runs/:runId/reconcile`]='settings.manage'
  for(const action of ['preview','publish','pause','cancel'])rules[`POST ${base}/workflow-rules/:id/${action}`]='settings.manage'
  rules[`PUT ${base}/routing-operators`]='settings.manage'
  rules[`PATCH ${base}/sla-alerts/:id/ack`]='conversations.manage'
@@ -131,6 +133,8 @@ for(const base of [P,D]){
   rules[`GET ${base}/${kind}`]=rule
   rules[`POST ${base}/${kind}`]=rule
  }
+ for(const tail of ['', '/preview'])rules[`POST ${base}/contacts/:contactId/identity-links${tail}`]='contacts.manage'
+ rules[`GET ${base}/contacts/:contactId/identity-links`]='contacts.manage'
  rules[`GET ${base}/companies/:companyId`]='contacts.manage'
  rules[`PATCH ${base}/companies/:companyId`]='contacts.manage'
  for(const method of ['PUT','DELETE'])rules[`${method} ${base}/companies/:companyId/members/:contactId`]='contacts.manage'

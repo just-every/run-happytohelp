@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {createHmac} from 'node:crypto';
 import {mkdir,mkdtemp,readFile,writeFile} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
@@ -53,6 +54,32 @@ try{
 
  await check('notification preferences: sole owner saves, reloads and receives unassigned activity',()=>notificationPreferencesJourney({page,request,runtime,token,owner,projectId,project:project.project||project,evidenceDir}),page);
  await request(`${api}/agents/${second.id}`,{token,method:'PUT',body:{role:'owner'}});
+ await check('reviewed identity context: labelled staff associations retain reviewer, time and source at desktop and phone',async()=>{
+  // Known synthetic identity proof belongs only to this isolated installation.
+  const quote=value=>"'"+String(value).replaceAll("'","''")+"'";
+  const secret='synthetic-happytohelp-6';
+  await runtime.execute(`UPDATE projects SET verification_secret=${quote(secret)} WHERE id=${quote(projectId)}`);
+  const signed=async(identifier,name)=>request('/api/identity/widget/session',{body:{widgetKey:(project.project||project).widget_key,identifier,name,contact_hash:createHmac('sha256',secret).update(identifier).digest('hex')}});
+  const primary=await signed('synthetic-happytohelp-7','Maya Chen'),secondary=await signed('synthetic-happytohelp-8','Maya at Northstar');
+  const path=`${api}/contacts/${primary.contactId}/identity-links`,intent={action:'link',contact_id:secondary.contactId,provenance:'Customer reviewed support request synthetic-happytohelp-9'};
+  const preview=(await request(path+'/preview',{token,body:intent})).preview;
+  await request(path,{token,body:preview});
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:900});await page.goto(`${base}/contacts/${primary.contactId}`);
+   const section=page.locator('section').filter({has:page.getByRole('heading',{name:'Possibly the same customer',exact:true})});
+   await section.getByRole('link',{name:'Maya at Northstar',exact:true}).waitFor();
+   assert.match(await section.innerText(),/Each customer keeps their own access and conversation history/);
+   assert.match(await section.innerText(),/Reviewed by Library Owner/);assert.ok(await section.locator('time').getAttribute('datetime'));
+   assert.ok((await section.innerText()).includes(intent.provenance));
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'identity context fits the viewport');
+   await section.scrollIntoViewIfNeeded();await shot(`reviewed-identity-context-${width}.png`);
+  }
+  const unlink=(await request(path+'/preview',{token,body:{...intent,action:'unlink'}})).preview;
+  await request(path,{token,body:unlink});await page.reload();await page.getByText('No reviewed identity associations.',{exact:true}).waitFor();
+  assert.equal(await page.getByRole('link',{name:'Maya at Northstar',exact:true}).count(),0,'reversible associations disappear after unlink');
+ });
+ // Restore the desktop fixture after the identity check's phone viewport.
+ await page.setViewportSize({width:1440,height:1000});
  // 1. One shared in-app confirmation for every destructive delete.
  const deleteCases=[
   {name:'saved reply',url:`${base}/macros/${macro.id}`,list:`${base}/macros`,subject:'Greeting reply',gone:()=>remaining('macros',macro.id)},

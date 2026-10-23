@@ -152,9 +152,10 @@ export async function campaignsJourney(){
    const remaining=await expired(table)
    assert.ok(remaining>0&&remaining<beforeCleanup,'read cleanup advances a bounded page without draining the backlog')
   }
+  const beforeScheduled=await expired('widget_campaign_impressions')
   await app.scheduled({})
   const afterScheduled=await expired('widget_campaign_impressions')
-  assert.ok(afterScheduled>0&&afterScheduled<beforeCleanup,'scheduled cleanup also advances a bounded page')
+  assert.ok(afterScheduled>0&&afterScheduled<beforeScheduled,'scheduled cleanup also advances a bounded page')
   assert.equal((await row(retained.id)).impressions,1,'the retained cohort survives subsequent cleanup')
   for(const table of ['widget_campaign_impressions','widget_campaign_visits'])assert.equal(await expired(table),0,'subsequent reads drain expired identifiers')
   await command('contextConsent',{consent:false})

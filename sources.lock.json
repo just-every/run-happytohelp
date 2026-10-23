@@ -11608,7 +11608,7 @@
       "executable": false
     },
     "tests/helpers/widget/campaigns.mjs": {
-      "sha256": "932b3c12852ab7c3a32f1a21fedd634ebd5a58b917156d186d1d3637f566782b",
+      "sha256": "19bb1f772bfaf0f762de8c99b093d62879ed2f1a7d8af9e443547051787c02fa",
       "executable": false
     },
     "tests/helpers/widget/events.mjs": {
@@ -11628,7 +11628,7 @@
       "executable": false
     },
     "tests/helpers/widget/mailbox-live.mjs": {
-      "sha256": "c237ac9cb3c2afe05df75619ff58881fbe559c62aaef2145dd4b4c8b29d08062",
+      "sha256": "9424ad16465f45b3ac3ecb0bf2ff530ad2ea6e6015b44d750d9c2fc4b5f82bd1",
       "executable": false
     },
     "tests/helpers/widget/opening.mjs": {

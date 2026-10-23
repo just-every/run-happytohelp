@@ -23,7 +23,7 @@ hooks.post('/hooks/:numberId',async c=>{
  const n=await number(c.env,c.req.param('numberId')),b=await verifyWebhook(c,n)
  if(n.provider==='aircall')return aircall(c,n,b)
  const step=c.req.query('step')??'entry',remote=providerId(b.CallSid)
- if(b.To!==n.phone)throw new HTTPException(400,{message:'Webhook number does not match this connection'})
+ if((step==='entry'||b.To!==undefined)&&b.To!==n.phone)throw new HTTPException(400,{message:'Webhook number does not match this connection'})
  const id=await callId(n,remote),s:VoiceSettings=JSON.parse(n.settings_json)
  let call=step==='entry'?await admitCall(c.env,n,remote,phone(b.From)):await c.env.DB.prepare(`SELECT v.* FROM voice_calls v JOIN conversations c ON c.id=v.conversation_id AND c.project_id=v.project_id WHERE v.id=? AND v.number_id=? AND v.erased=0 AND ${usableContact}`).bind(id,n.id).first<any>()
  if(!call)throw new HTTPException(404)

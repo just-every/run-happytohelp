@@ -24,7 +24,7 @@ export async function timeAuthorityBrowser({runtime,browser,shot}){
    await open()
    const limit=page.getByLabel('Task authority (minutes)',{exact:true});await limit.waitFor();assert.equal(await limit.inputValue(),'15')
    assert.equal(await limit.getAttribute('min'),'1');assert.equal(await limit.getAttribute('max'),'15')
-   await limit.fill('1');await page.getByLabel('Instructions',{exact:true}).fill('Read only; report evidence and propose any change for approval.')
+   await limit.fill('1');await page.locator('#delegation-instructions').fill('Read only; report evidence and propose any change for approval.')
    await page.screenshot({path:shot(`time-authority-form-${viewport.width}.png`),fullPage:true})
    const path=`/api/projects/${tenant.projectId}/conversations/${conversation.id}/delegations`
    const [response]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname===path&&r.request().method()==='POST'),page.getByRole('button',{name:/^(Send|Queue) task$/}).click()])

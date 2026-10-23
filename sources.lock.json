@@ -8080,7 +8080,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/DelegationTaskForm.jsx": {
-      "sha256": "56d504ae5338ac342ecc19aa29c3e650ce575f6059668d33162207a1c4e01df3",
+      "sha256": "17397763f805c962e8f79ecebdd4c91b0bcb7359e5399f1ad77c5f33f114d1bf",
       "executable": false
     },
     "src/ui/dashboard/components/DemoInboxInvitation.jsx": {
@@ -10856,7 +10856,7 @@
       "executable": false
     },
     "tests/helpers/delegation-journey/case.mjs": {
-      "sha256": "248cc4ec02191c5a3b7484d597e53ca71b157101ae19068b23ff1d04bf85cf4b",
+      "sha256": "6818b11fd1730059316ead90e0db790ee57041ca82995e887d22d0d13e224a9d",
       "executable": false
     },
     "tests/helpers/delegation-journey/connector.mjs": {
@@ -10916,7 +10916,7 @@
       "executable": false
     },
     "tests/helpers/delegation/time-authority-browser.mjs": {
-      "sha256": "8b70e1cdb6c44f51a731357799682df29b20bbb946fd3110a4e015c82d3cc2fb",
+      "sha256": "ec9374d5b84f2eedbad3082c67b5f0713a6e6159e40726a94dc56d292ba519d0",
       "executable": false
     },
     "tests/helpers/email-conversation-browser.mjs": {

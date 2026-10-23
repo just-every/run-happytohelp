@@ -54,6 +54,7 @@ export async function runCase({origin,api,actor,fixture,directory,ui,restart}){
   const approvedAt=Date.now();
   const approval=ui?await ui.approve(path,investigation.id):(await api(path+'/'+investigation.id+'/result/follow-up-actions/enable',{})).data;
   const child=await lookup(approval.child_delegation_id);assert.ok(child);assert.equal(child.parent_delegation_id,investigation.id);assert.equal(child.source_proposal_id,'enable');assert.equal(child.mode,'resolve');assert.equal(child.operator_id,actor.id);assert.equal(child.status,'queued');
+  assert.equal(child.authority.granted_by,actor.id);assert.equal(child.authority.expires_at-child.authority.granted_at,15*60000);assert.ok(child.authority.granted_at>=finding.authority.granted_at,'approving a repair grants its own bounded task, separate from the read-only investigation');
   assert.ok(Date.parse(child.created_at)>=approvedAt-1000);assert.equal(fixture.enabled,false);
   const replayApproval=(await api(path+'/'+investigation.id+'/result/follow-up-actions/enable',{})).data;assert.equal(replayApproval.child_delegation_id,child.id);assert.equal((await jobs()).length,2);
   await ui?.refresh();await screenshot('d','Owner approves Enable Spanish; only now does the resolve child exist, linked to its proposal.');

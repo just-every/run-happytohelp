@@ -98,8 +98,8 @@ export default function DelegationTaskForm({ devices, isSubmitting, onSubmit, pr
             <small>{ instructions.length.toLocaleString() } / 12,000</small>
         </label>
         <label className="delegation-field" htmlFor="delegation-time-limit">
-            <span>Task authority (minutes)</span>
-            <input id="delegation-time-limit" type="number" min={1} max={15} step={1} required value={timeLimit} onChange={event => setTimeLimit(Number(event.target.value))} disabled={isSubmitting} aria-describedby="delegation-time-help"/>
+            <span id="delegation-time-label">Task authority (minutes)</span>
+            <input id="delegation-time-limit" aria-labelledby="delegation-time-label" type="number" min={1} max={15} step={1} required value={timeLimit} onChange={event => setTimeLimit(Number(event.target.value))} disabled={isSubmitting} aria-describedby="delegation-time-help"/>
             <small id="delegation-time-help">Starts when you send the task, including queue time. Up to 15 minutes; retries and additional input never extend it. Expiry withdraws authority and requests a stop; the local outcome remains unconfirmed.</small>
         </label>
         { mode === 'resolve_reply' && <p className="delegation-delivery-notice">

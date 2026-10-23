@@ -2480,11 +2480,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "ef4288a71c58334db4ac27d0da2514d52724651dc5cc39d2956ad4deb5cf015a",
+      "sha256": "c923aae22d6e41ee70077f65a83e1725696869b52cccc3afe1a91f4fdb7e8631",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "f82ed7bd1a55cebbcfcf5daf62ade5c688cf5cd917a953dbf9fda28e0d0be1bd",
+      "sha256": "76badd57b74aded06591c7f5a9ff2814f4cdc6ef49183b3e3f670842420240ec",
       "executable": false
     },
     "public/fonts/outfit/LICENSE.txt": {

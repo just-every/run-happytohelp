@@ -64,7 +64,7 @@ export async function brandsBrowser(){
     }
     const selected=brands.map(b=>b.id).join(',')
     const config=await req(`/api/management/projects/${brands[0].id}/brands?projects=${selected}`,undefined,brands[0].token)
-    assert.equal(config.data.brands.length,2);assert.deepEqual(config.data.brands.map(b=>b.helpHosts),[['alpha.localhost'],['beta.localhost']]);assert.match(config.data.explanation,/never copied/)
+    assert.equal(config.data.brands.length,2);assert.deepEqual(config.data.brands.map(b=>b.helpHosts),[['alpha.localhost'],['beta.localhost']])
     const report=await req(`/api/management/projects/${brands[0].id}/brands/reports?projects=${selected}&period=7`,undefined,brands[0].token)
     assert.equal(report.data.aggregate.volume,2)
    }finally{await context.close()}

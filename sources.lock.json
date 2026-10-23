@@ -11144,11 +11144,11 @@
       "executable": false
     },
     "tests/helpers/inbox/brands-browser.mjs": {
-      "sha256": "547efb9428a858f59b9d805edc50d8856ed867abebe419853e88476c8480ec26",
+      "sha256": "342f8c0449b71083b9488c8ee9b611d7e39c694c667e39f4500428d98412834d",
       "executable": false
     },
     "tests/helpers/inbox/brands.mjs": {
-      "sha256": "3c8eb14df8f4f3abe9e8f2de30e18d942e3ebea8f9e83a7ae61e16557e787d7a",
+      "sha256": "11e6cb17c923ab06cce84ea7b89b25d70f9eb6a56c72b7fd6339ac1d5345bd6d",
       "executable": false
     },
     "tests/helpers/inbox/conversation-panel-resize-browser.mjs": {
@@ -12116,7 +12116,7 @@
       "executable": false
     },
     "tests/reports/figures.mjs": {
-      "sha256": "de2b1793dead3c28891e47a1c9d5e1ed4032216474594a1c4f25727da81ba022",
+      "sha256": "b6b2ca61861c961c0af778950a5e8ec1ba7d185de96b375dd03e9937ac59fab4",
       "executable": false
     },
     "tests/reports/harness.mjs": {

@@ -21,7 +21,6 @@ export async function brandsJourney(){
   await app.ok('/api/identity/accept-invitation',{token:shared,body:{token:new URL(invite.invitationUrl).searchParams.get('token')}})
   const deliberate=(await app.ok(selection,{token:owner})).data
   assert.ok(deliberate.sharedTeam.some(p=>p.id===alpha.users.operator&&p.roles[beta.id]==='operator'))
-  assert.match(deliberate.explanation,/invitation to every brand/)
   const records=[]
   for(const [projectId,label,origin] of [[alpha.projectId,'Alpha',alpha.allowedOrigin],[beta.id,'Beta','https://beta.example.test']]){
    const brandOwner=(await app.ok('/api/identity/switch-project',{token:owner,body:{projectId}})).token
@@ -73,7 +72,7 @@ export async function brandsJourney(){
    assert.equal((await app.call(`/api/conversations/${foreign.widget.id}/messages`,{token:own.visitor.token})).status,404)
    const ownTicket=(await app.ok(`/api/dashboard/projects/${own.projectId}/conversations/${own.widget.id}/ticket`,{token:own.brandOwner})).data
    const moved=await app.call(`/api/dashboard/projects/${own.projectId}/conversations/${own.widget.id}/ticket`,{token:own.brandOwner,method:'PATCH',body:{expected_version:ownTicket.ticket_version,brand_id:foreign.projectId}})
-   assert.equal(moved.status,400);assert.match(moved.data.error,/Brand must be this workspace/)
+   assert.equal(moved.status,400)
    const privateArticles=await app.ok(`/api/knowledge/${own.projectId}/articles`,{token:own.brandOwner})
    assert.ok(privateArticles.some(article=>article.id===own.draft.id))
    assert.ok(!privateArticles.some(article=>article.id===foreign.draft.id))

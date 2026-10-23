@@ -1,3 +1,4 @@
+import VoicePanel from './voice/VoicePanel';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDashboardSettings } from '../../native/dashboard-state';
@@ -137,6 +138,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
     return <div className="conversation-details">
         <TicketSummary conversation={ conversation } record={ record } workflows={ workflows } escalationUpdates={ escalationUpdates } onOpenSection={ openSection } />
         <div className="ticket-sections">
+            { conversation.channel==='phone' && section('voice', 'Telephone calls', <VoicePanel key={conversation.id} conversation={conversation}/>) }
             { record && section('fields', 'Ticket fields', <TicketEditor conversation={ conversation } record={ record } />) }
             { workflows && section('schedules', 'Schedules', <WorkflowPanel conversation={ conversation } workflows={ workflows } onBadge={ badgeSetters.schedules } />, badges.schedules) }
             { section('escalations', 'Escalations', <EscalationsPanel projectId={ conversation.project_id } conversationId={ conversation.id } refreshKey={ liveKey } reads={ reads } onDraft={ onReviewEscalationDraft } onBadge={ badgeSetters.escalations } onUpdates={ setEscalationUpdates } />, badges.escalations) }

@@ -11968,7 +11968,7 @@
       "executable": false
     },
     "tests/move-in/identity-correction.mjs": {
-      "sha256": "1bfda3f5413bef8efceb21140850deecb0ca5afd57e8c98b6acee1afd5d9d82d",
+      "sha256": "9943a2030e48b33877bb525a5af7a9be9f092f863bb89a7e18f398a3c1d90081",
       "executable": false
     },
     "tests/move-in/inspector.mjs": {

@@ -1,4 +1,4 @@
-import {phases} from '../journeys/kit/scenarios.mjs';
+import {phases,matrix} from '../journeys/kit/scenarios.mjs';
 const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {randomBytes,createHmac} from 'node:crypto';
@@ -11,13 +11,13 @@ const cases=[
  ['unrecognized contact identity',id=>({...person(id,'other@example.test'),alternate_identity:{email:'private@example.test'}}),'unsupported_source_field:alternate_identity'],
  ['malformed contact collection',id=>({...conversation(id),contacts:{type:'contact.list',contacts:{id:'hidden',email:'private@example.test'}}}),'exactly_one_conversation_contact_required']
 ];
-for(const [label,shape,reason] of cases)test(`private original erasure covers ${label} and changed source IDs`,async()=>{const h=await nativeHarness();try{
+test("private original erasure covers unsupported identities and changed source IDs",matrix(cases,async ([label,shape,reason])=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,created_at) VALUES('native','p','private@example.test',1)").run();
  const run=await upload(h,[shape('first')]);await h.drain();const ready=await state(h,run);assert.equal(ready.state,'ready');assert.equal(ready.error,null);assert.ok(ready.plan.decisions.some(d=>d.rejection===reason||d.omissions.some(o=>o.reason===reason)),label+' is accounted for');
  await h.call('/api/management/projects/p/contacts/native/erase',json({}));
  assert.equal((await state(h,run)).state,'erased');assert.equal((await (await h.files).list({prefix:'move-in/p/'})).objects.length,0);
  assert.equal((await replay(h,[shape('different-source')])).response.status,410);assert.equal(h.outbound,0);
- }finally{await h.close()}});
+ }finally{await h.close()}}));
 
 test('the first durable fence retains imported source aliases even after native identity fields were cleared',async()=>{const h=await nativeHarness();try{
  const run=await upload(h,[person('source','original@example.test')]);await h.drain();assert.equal((await apply(h,run)).state,'completed');const target=await h.db.prepare('SELECT id FROM contacts').first();await h.db.prepare('UPDATE contacts SET email=NULL,external_id=NULL').run();
@@ -26,11 +26,11 @@ test('the first durable fence retains imported source aliases even after native 
  await h.call(`/api/management/projects/p/contacts/${target.id}/erase`,json({}));assert.equal((await state(h,run)).state,'erased');assert.equal((await (await h.files).list({prefix:'move-in/p/'})).objects.length,0);
  }finally{await h.close()}});
 
-for(const body of [{email:'concurrent@example.test'},{provided_email:'concurrent@example.test',is_blocked:false}])test(`native contact ${'email' in body?'email':'metadata'} update admitted before erasure cannot overwrite its fence`,async()=>{const h=await nativeHarness();try{
+test("native contact updates admitted before erasure cannot overwrite its fence",matrix([{email:'concurrent@example.test'},{provided_email:'concurrent@example.test',is_blocked:false}],async (body)=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,created_at) VALUES('native','p','old@example.test',1)").run();
  const result=await h.call('/_test/native-update-erasure',json(body));assert.equal(result.fired,true);assert.equal(result.status,409);
  const row=await h.db.prepare("SELECT email,metadata_json FROM contacts WHERE id='native'").first();assert.equal(row.email,null);const metadata=JSON.parse(row.metadata_json);assert.equal(metadata.is_erased,1);assert.equal(metadata.is_blocked,1);assert.equal(metadata.provided_email,undefined);
- }finally{await h.close()}});
+ }finally{await h.close()}}));
 
 test('first erasure fence retains original aliases, concurrent identity and resumable closure',async()=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,name,email,external_id,created_at) VALUES('native','p','Original name','old@example.test','old-external',1)").run();
@@ -48,13 +48,13 @@ test('first erasure fence retains original aliases, concurrent identity and resu
  const erased=await h.db.prepare("SELECT name,email,external_id FROM contacts WHERE id='native'").first();assert.deepEqual(erased,{name:null,email:null,external_id:null});assert.equal(h.outbound,0);
  }finally{await h.close()}});
 
-for(const action of ['contact','instruction'])test(`native widget ${action} admitted before erasure cannot revive contact data`,async()=>{const h=await nativeHarness();try{
+test("native widget writes admitted before erasure cannot revive contact data",matrix(['contact','instruction'],async (action)=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,metadata_json,created_at) VALUES('native','p','widget@example.test','{\"provided_email\":\"provided@example.test\"}',1)").run();
  await h.db.prepare("INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at) VALUES('own','p','native',1,1)").run();await h.contactSession('visitor','p','native');
  const result=await h.call('/_test/native-update-erasure?route=widget',{...json({action,data:{email:'new@example.test',opened:true}}),actor:'visitor'});assert.deepEqual(result,{status:409,fired:true});
  const row=await h.db.prepare("SELECT email,metadata_json FROM contacts WHERE id='native'").first();assert.equal(row.email,null);assert.equal(JSON.parse(row.metadata_json).is_erased,1);assert.equal(JSON.parse(row.metadata_json).provided_email,undefined);
  for(const email of ['widget@example.test','provided@example.test'])assert.equal((await replay(h,[person('new',email)])).response.status,410);assert.equal(h.outbound,0);
- }finally{await h.close()}});
+ }finally{await h.close()}}));
 
 test('a signed widget metadata write admitted before erasure cannot restore identity or create a live session',async()=>{const h=await nativeHarness();try{
  const secret=randomBytes(32).toString('hex'),identifier='signed-customer',metadata={provided_email:'restored@example.test'};const sign=value=>createHmac('sha256',secret).update(value).digest('hex');

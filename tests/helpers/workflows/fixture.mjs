@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
+import {createHash} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
 export async function workflowFixture(){
- const initial=Date.parse('2026-11-25T21:00:00Z'),app=await startApp({captureQueue:true,outbound:async request=>{if(new URL(request.url).hostname==='api.resend.com')throw new TypeError('Connection reset after request body was received');throw new Error('Unexpected external call '+request.url)},bindings:{APP_ORIGIN:'https://app.example',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',INBOUND_EMAIL_TOKEN:'workflow-gateway',H2H_WORKFLOW_NOW:String(initial)}})
+ const initial=Date.parse('2026-11-25T21:00:00Z'),app=await startApp({captureQueue:true,outbound:async request=>{if(new URL(request.url).hostname==='hooks.example.com'){const path=new URL(request.url).pathname;if(path==='/lost')throw new TypeError('Connection reset after request body');return new Response('',{status:path==='/reject'?422:200})}if(new URL(request.url).hostname==='api.resend.com')throw new TypeError('Connection reset after request body was received');throw new Error('Unexpected external call '+request.url)},bindings:{APP_ORIGIN:'https://app.example',INTEGRATION_ENCRYPTION_KEY:createHash('sha256').update('synthetic-happytohelp-1').digest('base64'),H2H_LOCAL:'true',EMAIL_PROVIDER:'development',INBOUND_EMAIL_TOKEN:'workflow-gateway',H2H_WORKFLOW_NOW:String(initial)}})
  if(process.env.H2H_WORKFLOW_TRACE)console.log('fixture started')
  const w=await app.seedWorkspace('workflow'),other=await app.seedWorkspace('other-workflow'),base=`/api/dashboard/projects/${w.projectId}`
  const call=(path,body,method,role='owner',headers={})=>{if(process.env.H2H_WORKFLOW_TRACE)console.log('workflow',method??(body===undefined?'GET':'POST'),path);return app.call(base+path,{token:w.tokens[role],...(body===undefined?{}:{body}),...(method?{method}:{}),headers})}

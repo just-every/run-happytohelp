@@ -10092,7 +10092,7 @@
       "executable": false
     },
     "src/ui/native/pages/surveys/SurveySettings.jsx": {
-      "sha256": "609086e98a43958fe7ec4a4fc77291a1dda4b1338ec88096a189bb9244ee6fa8",
+      "sha256": "cbced0a72201b4dd6b8b038f8b3546813abf69ae1b60bb70641a1f5714bd28bd",
       "executable": false
     },
     "src/ui/native/pages/SuspendedMail.jsx": {
@@ -11896,7 +11896,7 @@
       "executable": false
     },
     "tests/journeys/reports-browser.mjs": {
-      "sha256": "c2d30f82f7475a9ec58094c9e09eb1d70f9da65455c415dfbec5f4c80d482f85",
+      "sha256": "1919962d384fd082114005e82223526426125119fb3a3785cfbfe363de9e8f89",
       "executable": false
     },
     "tests/journeys/reports.mjs": {

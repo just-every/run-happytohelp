@@ -4,7 +4,7 @@ import {lowerPosition,RecordStructureError} from './classification'
 import {auditShape} from './shapes'
 import {AdmissionError,IndexLimitError} from './admission-error'
 import {LIMITS,type Vendor} from '../types'
-import {attachmentReferences,attachmentMember,isAttachmentMember} from './attachment-references'
+import {AttachmentReferenceError,attachmentReferences,attachmentMember,isAttachmentMember} from './attachment-references'
 export interface IdentityIndexIssue {code:string;location:{artifact:string;row:number;pointer:string};reason?:string}
 /** Full syntax validation and bounded schema traversal precede any D1/R2 writes.
  * Diagnostic presentation never controls this traversal. Unknown semantic leaves
@@ -28,7 +28,12 @@ export async function indexUpload(vendor:Vendor,name:string,bytes:Uint8Array,acc
     let classification;try{classification=lowerPosition(record,vendor,position.unsupported,position.sourceKind)}catch(error){if(error instanceof RecordStructureError)refuse(error.message,position.pointer+error.pointer);throw error}
     if('field' in classification){opaqueNodes+=classification.nodes;if(opaqueNodes>LIMITS.opaqueUploadNodes)refuse('upload_opaque_structure_node_limit');accept([],[],location,[classification.payload]);continue}
     const {kind,payload,prefix}=classification
-    for(const ref of attachmentReferences(vendor,kind,payload))referenced.add(attachmentMember(ref.conversation,ref.occurrence))
+    try{for(const ref of attachmentReferences(vendor,kind,payload))referenced.add(attachmentMember(ref.conversation,ref.occurrence))}catch(error){
+     if(!(error instanceof AttachmentReferenceError))throw error
+     // Retain malformed source metadata for the normal per-record review and
+     // uninterpreted-identity erasure index; it cannot authorize binary custody.
+     complete=false;incomplete?.({code:error.message,location});accept([],[],location,[payload])
+    }
     const shape=auditShape(vendor,['user','lead'].includes(kind)&&vendor==='intercom'?'contact':kind,payload);nodes+=shape.nodes
     if(shape.exhausted!==undefined)refuse('source_identity_node_limit',position.pointer+prefix+shape.exhausted)
     if(nodes>LIMITS.identityNodes)refuse('upload_identity_node_limit',position.pointer+prefix)

@@ -6160,7 +6160,7 @@
       "executable": false
     },
     "src/modules/move-in/attachments.ts": {
-      "sha256": "b2317b827f26ee1a3d50fb6fd65baa289cd00733c8f5f931706abd2df1a6fe9d",
+      "sha256": "1e47f2ab92e21d2a1f494cfe96e4cbad8f512e012e2a4adcceab3fc5d2318d35",
       "executable": false
     },
     "src/modules/move-in/batches.ts": {
@@ -6244,7 +6244,7 @@
       "executable": false
     },
     "src/modules/move-in/readers/attachment-references.ts": {
-      "sha256": "0566152f892b6b5addc928861e6edf39a65f0c2bac7fd65d563d2cfa2aacbcef",
+      "sha256": "e656684bfb74b36d8a90ce0858c51ca4e1539f29ebb879efa7f9540b46d5b286",
       "executable": false
     },
     "src/modules/move-in/readers/classification.ts": {
@@ -6296,7 +6296,7 @@
       "executable": false
     },
     "src/modules/move-in/readers/identity-index.ts": {
-      "sha256": "b62ee0c30865fe37a5f7b8d183d69d4fb7b81f0c0e9b522e75afc51d8914cd53",
+      "sha256": "cb74351a04cec43de7920e9c44c960779810418f292991100dad9ade9a677396",
       "executable": false
     },
     "src/modules/move-in/readers/json-index.ts": {

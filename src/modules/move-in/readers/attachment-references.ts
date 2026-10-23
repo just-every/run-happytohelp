@@ -1,6 +1,7 @@
 import type {Vendor} from '../types'
 import {object,sourceId} from './common'
 
+export class AttachmentReferenceError extends Error {}
 export interface AttachmentReference {conversation:string;message:string;private:boolean;occurrence:string;sourceAttachmentId:string|null;filename:unknown;contentType:unknown;sizes:unknown[];unavailable:boolean}
 export const attachmentMember=(conversation:string,occurrence:string)=>`attachments/${encodeURIComponent(conversation)}/${encodeURIComponent(occurrence)}`
 export const isAttachmentMember=(name:string)=>/^attachments\/[^/]+\/[^/]+$/.test(name)
@@ -10,15 +11,16 @@ export const isAttachmentMember=(name:string)=>/^attachments\/[^/]+\/[^/]+$/.tes
  * remain distinct from customer-visible messages. */
 export function attachmentReferences(vendor:Vendor,kind:string,p:any):AttachmentReference[]{
  const result:AttachmentReference[]=[]
+ const id=(value:unknown)=>{try{return sourceId(value,vendor)}catch{throw new AttachmentReferenceError('attachment_source_id_invalid')}}
  const add=(conversation:unknown,message:unknown,privateNote:boolean,values:unknown)=>{
   if(values==null)return
-  if(!Array.isArray(values))throw Error('attachment_list_required')
+  if(!Array.isArray(values))throw new AttachmentReferenceError('attachment_list_required')
   for(const [position,value] of values.entries()){
-   if(!object(value))throw Error('attachment_metadata_required')
+   if(!object(value))throw new AttachmentReferenceError('attachment_metadata_required')
    const parent=String(message)
    // Intercom documents no attachment ID. Parent + array position identifies a
    // source occurrence, not a fabricated provider identity or a shared file.
-   result.push({conversation:sourceId(conversation,vendor),message:parent,private:privateNote,occurrence:`${parent}:${position}`,sourceAttachmentId:vendor==='intercom'?null:sourceId(value.id,vendor),filename:value.file_name??value.filename??value.name,contentType:value.content_type??value.contentType??value.mimeType,sizes:[value.size,value.file_size,value.filesize].filter(size=>size!==undefined),unavailable:value.deleted===true||value.state==='virus'||value.malware_scan_result==='malware_found'})
+   result.push({conversation:id(conversation),message:parent,private:privateNote,occurrence:`${parent}:${position}`,sourceAttachmentId:vendor==='intercom'?null:id(value.id),filename:value.file_name??value.filename??value.name,contentType:value.content_type??value.contentType??value.mimeType,sizes:[value.size,value.file_size,value.filesize].filter(size=>size!==undefined),unavailable:value.deleted===true||value.state==='virus'||value.malware_scan_result==='malware_found'})
   }
  }
  if(vendor==='zendesk'&&kind==='ticket')for(const part of Array.isArray(p.comments)?p.comments:[])add(p.id,part.id,part.public===false,part.attachments)

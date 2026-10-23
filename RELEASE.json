@@ -40,6 +40,10 @@
     {
       "id": "242_escalation_teams.sql",
       "buyerSteps": "Adds isolated Teams handoff credentials without rebuilding existing escalation connections or changing issue history. Apply before the updated Worker serves traffic; connect an explicitly authorized Graph delegated ChannelMessage.Send token and team/channel target. Export excludes credentials and restore requires reconnecting."
+    },
+    {
+      "id": "243_escalation_handoff_dependency.sql",
+      "buyerSteps": "Preserve the operator-entered dependency on Slack and Teams handoffs. Add the column after 242 and before the updated Worker serves traffic. Existing handoffs and their links remain intact with no recorded dependency; no provider send is replayed."
     }
   ]
 }

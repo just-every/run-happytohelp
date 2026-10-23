@@ -4,9 +4,10 @@ import type {AppEnv} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
 import {auditStatement,requestSource} from '../audit/record'
 import {escalationAccess,string} from './access'
-import {validTeamsTarget} from './providers/teams'
+import {validTeamsTarget,validTeamsBody} from './providers/teams'
+import {validSlackBody} from './providers/slack'
 import {prefix,loadConnection,provider} from './connections'
-import {selectedContext,shareContext} from './context'
+import {selectedContext,prepareSharedContext} from './context'
 import {saveIssue,ticketEscalations} from './issues'
 import {createIssue,getIssue,addTicketLink,postSlack,postTeams} from './providers'
 export const ticketPrefix=prefix+'/conversations/:conversationId'
@@ -32,16 +33,18 @@ async function perform(c:any,handoff:'slack'|'teams'|null=null){
  // Resolve a link before claiming an outbound write, so an existing many-to-many link is a read.
  const linked=mode==='link'?await getIssue(connection,key):null
  if(linked){const prior=await c.env.DB.prepare('SELECT l.id FROM escalation_links l JOIN escalation_issues i ON i.id=l.issue_id WHERE l.conversation_id=? AND i.connection_id=? AND i.provider_id=?').bind(conversation.id,row.id,linked.id).first();if(prior)return c.json({data:await ticketEscalations(c.env,actor.projectId,conversation.id)})}
+ const url=new URL(`/projects/${encodeURIComponent(actor.projectId)}/conversations/${encodeURIComponent(conversation.id)}`,c.req.url).href
+ const shared=await prepareSharedContext(c.env,actor.projectId,conversation.id,operationId,context,c.req.url)
+ const outgoing=[`Support ticket: ${url}`,shared.body].filter(Boolean).join('\n\n')
+ if(handoff&&!(handoff==='teams'?validTeamsBody(outgoing):validSlackBody(outgoing)))throw new HTTPException(413,{message:'The selected context is too large for this handoff. Select fewer messages or attachments; nothing was sent.'})
  await escalationAccess(c,'conversations.manage')
- await c.env.DB.batch([c.env.DB.prepare("INSERT INTO escalation_operations VALUES(?,?,?,?,?,'sending',NULL,?)").bind(operationId,actor.projectId,conversation.id,p,intent,Date.now()),auditStatement(c.env.DB,{projectId:actor.projectId,category:'integration',action:'escalation.share_started',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'escalation_operation',id:operationId},detail:{provider:p,messages:context.messageIds.length,attachments:context.attachmentIds.length,mode}})])
+ await c.env.DB.batch([c.env.DB.prepare("INSERT INTO escalation_operations VALUES(?,?,?,?,?,'sending',NULL,?)").bind(operationId,actor.projectId,conversation.id,p,intent,Date.now()),auditStatement(c.env.DB,{projectId:actor.projectId,category:'integration',action:'escalation.share_started',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'escalation_operation',id:operationId},detail:{provider:p,messages:context.messageIds.length,attachments:context.attachmentIds.length,mode}}),...shared.grants])
  let remoteUrl:string|null=null
  try{
-  const url=new URL(`/projects/${encodeURIComponent(actor.projectId)}/conversations/${encodeURIComponent(conversation.id)}`,c.req.url).href
-  const shared=await shareContext(c.env,actor.projectId,conversation.id,operationId,context,c.req.url),outgoing=[`Support ticket: ${url}`,shared].filter(Boolean).join('\n\n')
-  if(handoff){const posted=await (handoff==='slack'?postSlack:postTeams)(connection,{channel,body:outgoing});remoteUrl=posted.url;await escalationAccess(c,'conversations.manage');await c.env.DB.prepare('INSERT INTO escalation_handoffs VALUES(?,?,?,?,?,?)').bind(operationId,actor.projectId,conversation.id,channel,posted.url,Date.now()).run()}
+  if(handoff){const posted=await (handoff==='slack'?postSlack:postTeams)(connection,{channel,body:outgoing});remoteUrl=posted.url;await escalationAccess(c,'conversations.manage');await c.env.DB.prepare('INSERT INTO escalation_handoffs(id,project_id,conversation_id,channel,url,created_at,dependency) VALUES(?,?,?,?,?,?,?)').bind(operationId,actor.projectId,conversation.id,channel,posted.url,Date.now(),dependency).run()}
   else{
    const issue=linked??await createIssue(connection,{title,body:outgoing});remoteUrl=issue.url
-   if(linked)await addTicketLink(connection,issue,{url,body:shared})
+   if(linked)await addTicketLink(connection,issue,{url,body:shared.body})
    const issueId=await saveIssue(c.env,actor.projectId,row.id,p,issue)
    await escalationAccess(c,'conversations.manage')
    await c.env.DB.prepare('INSERT OR IGNORE INTO escalation_links(id,project_id,conversation_id,issue_id,dependency,created_at) VALUES(?,?,?,?,?,?)').bind(crypto.randomUUID(),actor.projectId,conversation.id,issueId,dependency,Date.now()).run()

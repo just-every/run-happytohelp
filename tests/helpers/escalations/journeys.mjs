@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
 import {startApp} from '../../journeys/kit/app.mjs';
 import {startProviders} from './providers.mjs';
+import {handoffBoundaries} from './handoffs.mjs';
 export async function escalationHarness({tickets=8}={}){
  const providers=await startProviders();let app;
  try{
@@ -38,12 +39,12 @@ export async function sharingJourney(){const h=await escalationHarness({tickets:
  const first=(await h.snapshot(records[0])).links[0],prior=providers.github.received.length;
  await share(records[0],'github',{mode:'link',key:'1'});assert.equal((await h.snapshot(records[0])).links.length,1);assert.equal(providers.github.received.length,prior+1,'duplicate link reads issue but posts no comment');
  assert.equal((await app.first('SELECT count(*) n FROM escalation_links WHERE issue_id=(SELECT issue_id FROM escalation_links WHERE id=?)',first.id)).n,5);
- for(let n=0;n<3;n++)await call(root(records[n])+'/slack',{channel:'C12345678',message_ids:[records[n].message.id],attachment_ids:[records[n].file.id],request_id:crypto.randomUUID()});
- const teamsBody={message_ids:[records[0].message.id],attachment_ids:[records[0].file.id],request_id:crypto.randomUUID()};
+ for(let n=0;n<3;n++)await call(root(records[n])+'/slack',{channel:'C12345678',dependency:'Waiting for the export owner',message_ids:[records[n].message.id],attachment_ids:[records[n].file.id],request_id:crypto.randomUUID()});
+ const teamsBody={dependency:'Waiting for the Teams engineering triage',message_ids:[records[0].message.id],attachment_ids:[records[0].file.id],request_id:crypto.randomUUID()};
  const posted=await call(root(records[0])+'/teams',teamsBody);assert.equal(posted.data.handoffs.length,2);
  const countBefore=providers.teams.received.length;
  await call(root(records[0])+'/teams',teamsBody);assert.equal(providers.teams.received.length,countBefore,'exact Teams replay does not post twice');
- const handoffs=(await h.snapshot(records[0])).handoffs;assert.ok(handoffs.some(h=>h.url.startsWith('https://teams.microsoft.com/l/message/')));
+ const handoffs=(await h.snapshot(records[0])).handoffs;assert.equal(handoffs.find(x=>x.provider==='teams').dependency,teamsBody.dependency);assert.equal(handoffs.find(x=>x.provider==='slack').dependency,'Waiting for the export owner');assert.ok(handoffs.some(h=>h.url.startsWith('https://teams.microsoft.com/l/message/')));
  providers.teams.responses.push({disconnect:true});const uncertain={...teamsBody,request_id:crypto.randomUUID()};await assert.rejects(()=>call(root(records[0])+'/teams',uncertain));
  const uncertainCount=providers.teams.received.length;await assert.rejects(()=>call(root(records[0])+'/teams',uncertain));assert.equal(providers.teams.received.length,uncertainCount);
  assert.equal((await app.call(h.base+root(records[0])+'/teams',{token:h.token,body:{...teamsBody,request_id:crypto.randomUUID(),channel:'https://attacker.example/channel'}})).status,400);
@@ -52,6 +53,7 @@ export async function sharingJourney(){const h=await escalationHarness({tickets:
   const writes=providers[name].received.filter(r=>r.method==='POST');assert.ok(writes.length);
   const text=JSON.stringify(writes.map(x=>x.json));assert.ok(!text.includes('Private engineering note'));assert.ok(!text.includes('Unchosen sensitive account'));assert.ok(text.includes('/projects/'));assert.ok(text.includes('/api/escalations/attachments/'));
  }
+ await handoffBoundaries(h);
  const preview=await call(root(records[0])+'/preview',{message_ids:[records[0].message.id],attachment_ids:[]});assert.ok(preview.data.body.includes(records[0].message.content));assert.ok(!preview.data.body.includes(records[0].omitted.content));
  assert.equal((await app.call(h.base+root(records[0])+'/links',{token:h.token,body:{provider:'github',mode:'create',title:'Denied',message_ids:[records[1].message.id],attachment_ids:[]}})).status,400);
  const note=await app.first('SELECT id FROM conversation_notes WHERE conversation_id=?',records[0].ticket.id);
@@ -76,11 +78,21 @@ export async function updatesJourney(){const h=await escalationHarness(),sockets
   const state=await h.snapshot(r);assert.equal(state.links[0].assignee,'Avery Engineer');assert.equal(state.links[0].recovery,'unconfirmed');assert.equal(state.drafts.length,1);assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',r.ticket.id)).n,3,'closure sends no message');
   assert.ok(await app.first('SELECT id FROM notification_inbox WHERE conversation_id=? AND user_id=?',r.ticket.id,h.ws.users.owner));
   const inbox=(await app.ok(`/api/management/projects/${h.ws.projectId}/notification-inbox`,{token:h.token})).data;assert.ok(inbox.some(x=>x.conversation_id===r.ticket.id&&!beforeNotices.has(x.id)),'the owner sees a new notice through the inbox API');
+  // A newer reopening withdraws the unsent closure update, even with a fresh
+  // composer frontier; closing again creates one new approval opportunity.
+  const cancelledDraft=state.drafts[0];
+  const reopened=await webhook(p,key,{closed:false,updatedAt:now+1000});assert.equal(reopened.result.data.advanced,true);
+  const openState=await h.snapshot(r);assert.equal(openState.drafts.find(d=>d.id===cancelledDraft.id).state,'cancelled');assert.equal(openState.links[0].recovery,'unconfirmed');
+  const current=await app.ok(`/api/conversations/${r.ticket.id}`,{token:h.token});
+  const refused=await app.call(h.base+h.root(r)+`/drafts/${cancelledDraft.id}/send`,{token:h.token,body:{content:cancelledDraft.content,expectedRevision:current.revision,expectedLastMessageId:current.last_message_id}});assert.equal(refused.status,409);
+  const reclosed=await webhook(p,key,{closed:true,assignee:'Avery Engineer',updatedAt:now+2000});assert.equal(reclosed.result.data.advanced,true);
+  await app.call(path,{method:'POST',raw:true,body:reclosed.event.body,headers:reclosed.event.headers});
+  const eligible=(await h.snapshot(r)).drafts.filter(d=>d.state==='draft');assert.equal(eligible.length,1);assert.notEqual(eligible[0].id,cancelledDraft.id);
   const upgrade=await app.request(`/api/conversations/${r.ticket.id}/socket?token=${r.visitorToken}`,{headers:{Upgrade:'websocket',Origin:h.ws.allowedOrigin}});assert.equal(upgrade.status,101);const socket=upgrade.webSocket,frames=[];sockets.push(socket);socket.accept();socket.addEventListener('message',event=>frames.push(JSON.parse(event.data)));
   const frontier=await app.ok(`/api/conversations/${r.ticket.id}`,{token:h.token}),text='The export fix is available. Please try your next export and tell us how it goes.';
-  const sent=await h.call(h.root(r)+`/drafts/${state.drafts[0].id}/send`,{content:text,expectedRevision:frontier.revision,expectedLastMessageId:frontier.last_message_id});assert.equal(sent.accepted,true);
+  const sent=await h.call(h.root(r)+`/drafts/${eligible[0].id}/send`,{content:text,expectedRevision:frontier.revision,expectedLastMessageId:frontier.last_message_id});assert.equal(sent.accepted,true);
   await app.until(()=>frames.find(f=>f.type==='message'&&f.message.id===sent.message.id),{timeout:3000,message:'approved customer update on its live visitor channel'});const transcript=await app.ok(`/api/conversations/${r.ticket.id}/messages`,{token:r.visitorToken});assert.equal(transcript.messages.filter(m=>m.id===sent.message.id).length,1);
-  assert.equal((await h.snapshot(r)).drafts[0].state,'sent');assert.equal((await h.snapshot(r)).links[0].recovery,'unconfirmed');
+  assert.equal((await h.snapshot(r)).drafts.find(d=>d.id===eligible[0].id).state,'sent');assert.equal((await h.snapshot(r)).links[0].recovery,'unconfirmed');
   assert.equal((await app.first('SELECT content FROM messages WHERE id=?',sent.message.id)).content,text);
   await h.call(h.root(r)+`/links/${state.links[0].id}/recovery`,{observation:'Customer confirmed the next export completed.'});assert.equal((await h.snapshot(r)).links[0].recovery,'observed');
  }

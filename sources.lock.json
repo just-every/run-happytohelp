@@ -2560,7 +2560,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "a9e074944f1d1b609a6e9614a42c6b6c0311c47f02fcfeac303053a02e2b5b73",
+      "sha256": "7b6f9a88da67af74cd385889adc9457e34541bd6b37864dae1cd07e81e2f2701",
       "executable": false
     },
     "rer-project.json": {
@@ -4212,7 +4212,7 @@
       "executable": false
     },
     "src/modules/escalations/actions.ts": {
-      "sha256": "c53585be9b810b4574343abcdee46e573547a202feac730df94a21a2a2eceba9",
+      "sha256": "8a2fa361d13cb1824c68d2e65b64333914c9faa6c0e7d8d5e4d8aee4db4f984b",
       "executable": false
     },
     "src/modules/escalations/connections.ts": {
@@ -4220,7 +4220,7 @@
       "executable": false
     },
     "src/modules/escalations/context.ts": {
-      "sha256": "92efb1c462ad3abf429bbf3e9db510dffa5ebb266c290a2f4a1cff9a3fb15ce6",
+      "sha256": "f21c95553a9c69257e7410e7de7c0637ff979d2269309fc2562f433301c9a7e9",
       "executable": false
     },
     "src/modules/escalations/drafts.ts": {
@@ -4232,7 +4232,7 @@
       "executable": false
     },
     "src/modules/escalations/issues.ts": {
-      "sha256": "8e1ba0c086683f0cf72f4855551eee5491e59ec57777067153ebf614bad17940",
+      "sha256": "a94d070b60d2dd2226e374c559b5247dc8647615cd15128a753f523f550f98b4",
       "executable": false
     },
     "src/modules/escalations/providers/github.ts": {
@@ -4256,11 +4256,11 @@
       "executable": false
     },
     "src/modules/escalations/providers/slack.ts": {
-      "sha256": "1545bc3e219512d77471230b99d0740bd0630151a6564603046057711dfcd9dc",
+      "sha256": "4226678284c5b342f41d16eb39f6adc4b28420264ca7616988952e7ca6863d54",
       "executable": false
     },
     "src/modules/escalations/providers/teams.ts": {
-      "sha256": "e0c7783d0e3e114de41c4cb1ccb150ade9faddcffb319f0a671f8d947d74fe33",
+      "sha256": "6075eaa3590aca1b53bd3475269d7eb26a881286533fabe02dcea31635aecf46",
       "executable": false
     },
     "src/modules/escalations/providers/types.ts": {
@@ -8136,7 +8136,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/escalations/EscalationLinks.jsx": {
-      "sha256": "168f79dc56f7fc8f5ac13339bb3513eb94d2705bd75db45dc3e8d57e81e2b034",
+      "sha256": "5b2eb29fbcf36d4c8e0986dcf2f7943766b91611d58b1eea5a0a298a7be8beb5",
       "executable": false
     },
     "src/ui/dashboard/components/escalations/escalations.css": {
@@ -10876,7 +10876,7 @@
       "executable": true
     },
     "tests/helpers/delegation-journey/refusals.mjs": {
-      "sha256": "9a5e806e3fcd4dc33fa571e3c977a7748a2980c3e84064e0121d848129d14ae9",
+      "sha256": "260b2772cca5e0aa1559e688198a40bf230c2d58f3488a0b5588dbc665a712de",
       "executable": false
     },
     "tests/helpers/delegation-journey/time-authority.mjs": {
@@ -10988,7 +10988,7 @@
       "executable": false
     },
     "tests/helpers/escalations/browser.mjs": {
-      "sha256": "4e69f30cfb62c445f6563834e78532797b8fa5b7932ea49454feb5a97d51ad34",
+      "sha256": "092624d30ff722c6457f437f3c0d94478d11b3325d7e4b758d65c339c2641b66",
       "executable": false
     },
     "tests/helpers/escalations/dev-proof.mjs": {
@@ -11008,7 +11008,7 @@
       "executable": false
     },
     "tests/helpers/escalations/journeys.mjs": {
-      "sha256": "3ee4c79e5ef3857b27e307ba2b158c95e92b7464afe1b9b3452e12f1baff72bb",
+      "sha256": "e5104dc997e4f92f4266a3c14b374549b7be756dd6e93bbe2142f6b5eb8ebad0",
       "executable": false
     },
     "tests/helpers/escalations/linear.mjs": {

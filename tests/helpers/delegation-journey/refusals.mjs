@@ -46,6 +46,7 @@ export async function refusals({origin,api,actor,fixture,directory,deliveryFault
     assert.equal((await job(initial.id)).started_at,null);assert.equal(fixture.events.length,0);
     results.push({scenario,conversationId,job:await job(initial.id),reconnect:'revoked credential refused before provider execution'});
    }else if(scenario==='failed_recovery'){
+    await api(`/api/dashboard/projects/${actor.projectId}/conversations/${conversationId}`,{agent_id:actor.id},{method:'PUT'});
     await worker.run(task('investigate'));
     const approval=(await api(`${path}/${initial.id}/result/follow-up-actions/enable`,{})).data;
     fixture.failCustomerPath();

@@ -5659,6 +5659,10 @@
       "sha256": "065450f6be506e73669527e3fa4f60a1b2b1832084d840391659cec1dc5c5613",
       "executable": false
     },
+    "src/modules/local-computer/result-frontier.ts": {
+      "sha256": "704fb7382aaa539934ebbb249ba2cb11f00d30c62fa3fe92444539bea9176886",
+      "executable": false
+    },
     "src/modules/local-computer/result-validation.ts": {
       "sha256": "278b6946598e7f6bb78afaaa0d376a6c22e8da8c46dded52e83572e52c04d684",
       "executable": false
@@ -5825,6 +5829,10 @@
     },
     "src/modules/management/away-reply.ts": {
       "sha256": "ff958632972e76549e8046248af8a94192c2372bbb6e3cd0fdbb547730b167a5",
+      "executable": false
+    },
+    "src/modules/management/brand-reports.ts": {
+      "sha256": "8a2c788e58928171f3ea7cebd9e0286850642aefe3d84f864e1c64a25f5d0bce",
       "executable": false
     },
     "src/modules/management/buckets.ts": {

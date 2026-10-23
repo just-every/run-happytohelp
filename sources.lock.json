@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "0a2bbe71e7bfe9c36f8b9705efaa8eb103b1416f1093e49ed2e9ad3a4e1ac4b8",
+      "sha256": "8dffa0127bb4afc3935085160782c410c153871c93c7c517aeaa47579b98074a",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5e740acd5a9cbb93305045ac6e30b6c2b6db8dd4b5c944649d63e569df58e6e5",
+      "sha256": "be0d8a077719367f48fe20de23e4c88228fde4ee548a70187a94711d036306a0",
       "executable": false
     },
     "DEMO.md": {

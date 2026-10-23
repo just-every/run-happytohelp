@@ -6236,7 +6236,7 @@
       "executable": false
     },
     "src/modules/move-in/readers/companies.ts": {
-      "sha256": "5aba5e529115ba81b2fc904ffd55df2b5e85551963a0941363f38910bd3ec09c",
+      "sha256": "c907eb3cd45d4576a7232c7d1d2e178a2f05466e89fd68c5f67a9528a08266e8",
       "executable": false
     },
     "src/modules/move-in/readers/freshdesk-mapping.ts": {
@@ -11376,7 +11376,11 @@
       "executable": false
     },
     "tests/helpers/installer/hosted-export-live.mjs": {
-      "sha256": "2b264e6815c3370d140c921e2c998a197ac9881fa01339b081672d5e53666a11",
+      "sha256": "f930b6a58134f10ba45c92b558626fee3d2841f326069d4633dfe5150d7f2129",
+      "executable": false
+    },
+    "tests/helpers/installer/hosted-export-resources.mjs": {
+      "sha256": "c77181f7161e1de34c8cc09554fc7baec8875cae3701034bf819cdd11a9adbf9",
       "executable": false
     },
     "tests/helpers/installer/hosted-export.mjs": {
@@ -12024,7 +12028,7 @@
       "executable": false
     },
     "tests/move-in/companies.mjs": {
-      "sha256": "9ab02e5580c23b4a960b0100be19f97e25b9d5719917b6e14b9daa0cc4ba069d",
+      "sha256": "ce337c4c6b684cd97f27fa7eca98bcabcbecaa40ca82844f61a2d6eb4936cd6d",
       "executable": false
     },
     "tests/move-in/configuration-fields.mjs": {

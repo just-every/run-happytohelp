@@ -116,6 +116,48 @@ export async function ticketsBrowser({count=12,installation}={}){
   const savedPolicy=(await fixture.api(base+'/sla-policies')).data.find(row=>row.id===policy.id)
   assert.deepEqual(savedPolicy.conditions.fields,{[tier.id]:'business'})
   assert.deepEqual(savedPolicy.conditions.form_ids,[requestForm.id])
+  // The lead's normal settings screen configures and publishes the same
+  // versioned actions that the provider-edge workflow journeys execute.
+  await page.getByRole('button',{name:'Rules',exact:true}).click()
+  await page.getByRole('heading',{name:'Event and hourly rules',exact:true}).waitFor()
+  await page.getByRole('button',{name:'New rule',exact:true}).click()
+  const form=page.locator('.workflow-form')
+  await form.getByLabel('Name',{exact:true}).fill('Warranty review workflow')
+  await form.getByLabel('When',{exact:true}).selectOption('changed')
+  await form.getByRole('button',{name:'Add required condition',exact:true}).click()
+  await form.getByLabel('Ticket field',{exact:true}).selectOption('priority')
+  await form.getByLabel('Value',{exact:true}).selectOption('high')
+  for(const [index,type] of ['route','tags','status','note','notify','notify'].entries()){
+   await form.getByRole('button',{name:'Add action',exact:true}).click()
+   await form.getByLabel(`Action ${index+1}`,{exact:true}).selectOption(type)
+   if(type==='tags')await form.getByLabel('Needs return label',{exact:true}).check()
+   if(type==='status')await form.getByLabel('Status',{exact:true}).selectOption('pending')
+   if(type==='note')await form.getByLabel('Internal note',{exact:true}).fill('Review the replacement before the next reply.')
+   if(type==='notify'){
+    const notify=form.getByLabel('Notify',{exact:true}).nth(index===4?0:1)
+    await notify.selectOption(index===4?'assignee':'customer_update')
+    await form.getByLabel('Notification message',{exact:true}).nth(index===4?0:1).fill(index===4?'Review request {{ticket.id}}.':'We are reviewing request {{ticket.id}}.')
+   }
+  }
+  await capture('21-rule-draft')
+  await form.getByRole('button',{name:'Save draft',exact:true}).click()
+  const rule=page.locator('article.workflow-item').filter({has:page.getByRole('heading',{name:'0. Warranty review workflow',exact:true})})
+  await rule.getByRole('button',{name:'Preview draft',exact:true}).click()
+  await page.getByRole('heading',{name:'Preview: Warranty review workflow',exact:true}).waitFor()
+  await page.getByText(/No messages sent and no tickets changed/).waitFor()
+  await capture('22-rule-preview')
+  page.once('dialog',dialog=>dialog.accept())
+  await rule.getByRole('button',{name:'Publish draft',exact:true}).click()
+  await rule.getByText('Event · Published · Published version 1',{exact:true}).waitFor()
+  await rule.getByText('Published version history',{exact:true}).click()
+  await rule.getByRole('heading',{name:'Version 1',exact:true}).waitFor()
+  await capture('23-rule-published')
+  await rule.getByRole('button',{name:'Pause',exact:true}).click()
+  await rule.getByText('Event · Paused · Published version 1',{exact:true}).waitFor()
+  await capture('24-rule-paused')
+  await page.goto(runtime.origin+'/docs/workflows')
+  await page.getByRole('heading',{level:1,name:'Business hours and ticket workflows',exact:true}).waitFor()
+  await capture('25-workflow-docs')
   await fixture.api(`/api/management/projects/${projectId}/contacts/${fixture.tickets[0].visitor.contactId}/erase`,{},'POST');
   await page.goto(`${runtime.origin}/projects/${projectId}/contacts/${fixture.tickets[0].visitor.contactId}`);await page.getByText('Personal data erased.',{exact:true}).waitFor();await capture('15-erasure');
   assert.deepEqual(errors,[]);success=true

@@ -1,5 +1,6 @@
 import { fileURLToPath as __rerTestEntryPath } from 'node:url';
 import assert from 'node:assert/strict';
+import {hostedExportJourney} from './hosted-export.mjs';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {mkdtemp,mkdir,readFile,writeFile,rm,stat,access} from 'node:fs/promises';
@@ -102,6 +103,7 @@ try{
  const expectedExport=structuredClone(beforeExport);expectedExport.rows.durable_object_snapshots=before.rows.durable_object_snapshots;
  compareArchive(expectedExport,before);
  assert.equal((await stat(join(root,'exports/support.rer'))).mode&0o777,0o600);
+ await hostedExportJourney(root,scratch);
  await assertHistoricalLedger(root,historical);
  await run(root,['import','--input','exports/support.rer','--yes'],4);
  compareArchive(before,await archiveSnapshot(root));
@@ -117,7 +119,7 @@ try{
  await run(root,['import','--input','exports/later.rer','--yes'],4);
  const empty=await archiveSnapshot(root);assert.equal(empty.rows.users.length,0);assert.equal(empty.objects.length,0);
  await writeFile(additive,'CREATE TABLE rer_journey_additive(id TEXT PRIMARY KEY, value TEXT);\n');
- await run(root,['import','--input','exports/support.rer','--yes']);
+ await run(root,['import','--input','exports/hosted.rer','--yes']);
  compareArchive(before,await archiveSnapshot(root),['rer_journey_additive']);
  assert.equal(await presenceRows(),0,'who had the dashboard open never travels in an archive');
  const migrationCount=()=>archiveStorage(root,async({DB})=>(await DB.prepare("SELECT count(*) n FROM d1_migrations WHERE name='9999_rer_journey.sql'").first()).n);

@@ -8,9 +8,10 @@ export async function teamWorkload(context:TeamReportContext){
  UNION ALL SELECT c.id,c.created_at,c.status_category,'team',c.group_id,COALESCE(g.name,c.group_id,'No team') FROM scoped c LEFT JOIN ticket_groups g ON g.project_id=c.project_id AND g.id=c.group_id
  UNION ALL SELECT c.id,c.created_at,c.status_category,'channel',c.channel,c.channel FROM scoped c
  UNION ALL SELECT c.id,c.created_at,c.status_category,'brand',COALESCE(c.brand_id,c.project_id),CASE WHEN COALESCE(c.brand_id,c.project_id)=p.id THEN p.name ELSE c.brand_id END FROM scoped c JOIN projects p ON p.id=c.project_id
+ UNION ALL SELECT c.id,c.created_at,c.status_category,'account',a.id,COALESCE(a.name,'No account') FROM scoped c LEFT JOIN contact_companies cc ON cc.project_id=c.project_id AND cc.contact_id=c.contact_id LEFT JOIN companies a ON a.project_id=cc.project_id AND a.id=cc.company_id AND a.merged_into IS NULL
  UNION ALL SELECT c.id,c.created_at,c.status_category,'tag',t.id,COALESCE(t.name,'Untagged') FROM scoped c LEFT JOIN conversation_tags ct ON ct.project_id=c.project_id AND ct.conversation_id=c.id LEFT JOIN workspace_tags t ON t.project_id=ct.project_id AND t.id=ct.tag_id
- ) SELECT dimension,key id,label,SUM(created_at>=?2) incoming,SUM(created_at>=?2 AND status_category IN ('solved','closed')) resolved,SUM(${active}) backlog FROM dimensions GROUP BY dimension,key,label ORDER BY dimension,incoming DESC,backlog DESC,label,key`).all<WorkloadRow&{dimension:'agent'|'team'|'channel'|'brand'|'tag'}>()
- const workload:{agent:WorkloadRow[];team:WorkloadRow[];channel:WorkloadRow[];brand:WorkloadRow[];tag:WorkloadRow[]}={agent:[],team:[],channel:[],brand:[],tag:[]}
+ ) SELECT dimension,key id,label,SUM(created_at>=?2) incoming,SUM(created_at>=?2 AND status_category IN ('solved','closed')) resolved,SUM(${active}) backlog FROM dimensions GROUP BY dimension,key,label ORDER BY dimension,incoming DESC,backlog DESC,label,key`).all<WorkloadRow&{dimension:'agent'|'team'|'channel'|'brand'|'tag'|'account'}>()
+ const workload:{agent:WorkloadRow[];team:WorkloadRow[];channel:WorkloadRow[];brand:WorkloadRow[];tag:WorkloadRow[];account:WorkloadRow[]}={agent:[],team:[],channel:[],brand:[],tag:[],account:[]}
  for(const {dimension,...row} of results)workload[dimension].push(row)
  return workload
 }

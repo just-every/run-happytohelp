@@ -1,3 +1,4 @@
+import {tracedTools} from './tool-trace';
 import {handoffTool} from './handoff';
 import type { Env } from '../../platform/env';
 import type { Generation } from './repository';
@@ -27,6 +28,7 @@ export async function executeGenerationProvider(
   let usageResult: unknown = null;
   const context = await replyContext(env, row.project_id, row.conversation_id, row.kind === 'suggestions' ? 'agent' : 'contact', row.id);
   if (row.kind === 'reply') context.tools.push(handoffTool(env,row,effects));
+  context.tools=tracedTools(env,row,context.tools,checkCurrent);
   if (row.instruction) {
     Object.assign(context.assistPacket, { operator_guidance: { content: row.instruction, visibility: 'private-to-operators' } });
     context.packet.trigger.server_instructions.push({ visibility: 'server-trigger', content: row.instruction });
@@ -95,7 +97,7 @@ export async function executeGenerationProvider(
   }), () => demoGeneration(env, row, clientOptions));
   if(row.kind==='reply'&&context.followupReview.required){
     await checkCurrent();
-    await handoffTool(env,row,effects).function('human');
+    await tracedTools(env,row,[handoffTool(env,row,effects)],checkCurrent)[0].function('human');
   }
   return { result: row.kind === 'reply' ? {...result, requiresHumanReview:context.followupReview.required,citations: context.selectedCitations} : result, usage: usageResult };
 }

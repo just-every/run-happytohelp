@@ -1,3 +1,4 @@
+import {redactKnowledgeDraft} from '../knowledge/proposals'
 import {validateProcedureProposal,procedureCycles} from './procedure-reports'
 import {Hono,type Context} from 'hono'
 import {HTTPException} from 'hono/http-exception'
@@ -25,6 +26,19 @@ procedureRoutes.use(root+'*',async(c,next)=>{
 procedureRoutes.get(root,async c=>{
  const pid=c.req.param('projectId')!,[versions,releases]=await Promise.all([c.env.DB.prepare('SELECT * FROM procedure_versions WHERE project_id=? ORDER BY procedure_key,version').bind(pid).all<any>(),c.env.DB.prepare('SELECT * FROM procedure_releases WHERE project_id=? ORDER BY created_at,id').bind(pid).all()])
  return c.json({versions:versions.results.map(v=>({...v,config:JSON.parse(v.config_json),proposal:JSON.parse(v.proposal_json),config_json:undefined,proposal_json:undefined})),releases:releases.results,businessActionsAvailable:false})
+})
+procedureRoutes.get(root+'/:key/versions/:versionId/replay-preview',async c=>{
+ const pid=c.req.param('projectId')!,key=c.req.param('key')!,version=await c.env.DB.prepare('SELECT proposal_json FROM procedure_versions WHERE id=? AND project_id=? AND procedure_key=?').bind(c.req.param('versionId')!,pid,key).first<{proposal_json:string}>()
+ if(!version)throw new HTTPException(404)
+ const proposal=JSON.parse(version.proposal_json),cases=[]
+ for(const resolutionId of proposal.resolutionIds||[]){
+  const cycle=await c.env.DB.prepare(`${procedureCycles} SELECT cases.*,c.contact_id,ct.name,r.cycle_start_revision,r.resolved_revision FROM cases JOIN conversations c ON c.id=cases.conversationId AND c.project_id=? JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id JOIN conversation_resolutions r ON r.id=cases.resolutionId WHERE cases.resolutionId=? AND cases.versionId=? AND ${contactAvailableSql()}`).bind(pid,pid,key,pid,resolutionId,proposal.fromVersionId).first<any>()
+  if(!cycle)continue
+  const messages=await c.env.DB.prepare("SELECT id,actor_role,content,revision FROM messages WHERE project_id=? AND conversation_id=? AND revision>=? AND revision<=? AND actor_role='contact' AND erased_at IS NULL ORDER BY revision LIMIT 51").bind(pid,cycle.conversationId,cycle.cycle_start_revision,cycle.resolved_revision).all<any>()
+  if(messages.results.length>50)throw new HTTPException(409,{message:'This case exceeds the bounded replay preview; choose a smaller cited cycle'})
+  cases.push({resolutionId,conversationId:cycle.conversationId,sourceVersionId:cycle.versionId,reopened:!!cycle.reopenedAt,negativeCsat:!!cycle.negativeCsat,messages:messages.results.map(m=>({evidenceId:'message:'+m.id,role:'contact',content:redactKnowledgeDraft(m.content,cycle.name)}))})
+ }
+ return c.json({cases,expectedEffect:proposal.expectedEffect||null,executionAvailable:false,privacyDefault:'Historical customer text stays in the support workspace. Automatic transfer into model replay evaluations is held pending an explicit privacy/retention ruling; this masked preview sends no provider request.'})
 })
 procedureRoutes.post(root+'/:key/versions',async c=>{
  const pid=c.req.param('projectId')!,key=c.req.param('key')!,b=await c.req.json(),id=crypto.randomUUID(),now=Date.now()

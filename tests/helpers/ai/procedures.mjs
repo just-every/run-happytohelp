@@ -52,6 +52,11 @@ export async function proceduresJourney(){
  assert.equal((await app.call(reportPath,{token:customer.token})).status,403)
  const proposal={fromVersionId:v2.id,resolutionIds:[cycle.id],expectedEffect:'Reduce reopened refund-advice cases with clearer human escalation.'}
  const v3=(await call(`/${key}/versions`,{body:{...definition,proposal},status:201})).data
+ const callsBeforePreview=a.providerCalls()
+ const replayPreview=(await call(`/${key}/versions/${v3.id}/replay-preview`,{status:200})).data
+ assert.equal(replayPreview.cases[0].resolutionId,cycle.id);assert.equal(replayPreview.cases[0].sourceVersionId,v2.id)
+ assert.ok(replayPreview.cases[0].messages.length>0);assert.equal(replayPreview.executionAvailable,false);assert.equal(a.providerCalls(),callsBeforePreview,'previewing historical cases never sends customer text to a provider')
+ assert.equal((await call(`/${key}/versions/${v3.id}/replay-preview`,{token:customer.token})).status,403)
  const replay=await evaluate(v3.id,'human can review')
  await call(`/${key}/versions/${v3.id}/review`,{body:{state:'rejected',reason:'The first draft does not address this failure.'},status:200})
  assert.equal((await call(`/${key}/releases`,{body:{versionId:v3.id,evaluationId:replay.id,cohortLimit:1}})).status,409)

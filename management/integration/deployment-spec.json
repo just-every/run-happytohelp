@@ -702,6 +702,18 @@
       "name": "246_translated_ai_publications.sql",
       "sha256": "4a72a5a31187a73e91619a22114e58ebee32fd94077aecc98eb286dd65d5558d",
       "sql": "-- Give each reviewed translation an independent immutable retrieval identity.\nALTER TABLE knowledge_translations ADD COLUMN publication_version TEXT;\nUPDATE knowledge_translations SET publication_version=lower(hex(randomblob(16))) WHERE published_json IS NOT NULL;\nCREATE TRIGGER knowledge_translation_publication_insert AFTER INSERT ON knowledge_translations WHEN NEW.published_json IS NOT NULL BEGIN\n UPDATE knowledge_translations SET publication_version=lower(hex(randomblob(16))) WHERE article_id=NEW.article_id AND locale=NEW.locale;\nEND;\nCREATE TRIGGER knowledge_translation_publication_update AFTER UPDATE OF published_json,published_source_version ON knowledge_translations WHEN NEW.published_json IS NOT OLD.published_json OR NEW.published_source_version IS NOT OLD.published_source_version BEGIN\n UPDATE knowledge_translations SET publication_version=CASE WHEN NEW.published_json IS NULL THEN NULL ELSE lower(hex(randomblob(16))) END WHERE article_id=NEW.article_id AND locale=NEW.locale;\nEND;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "247_help_domain_publication.sql",
+      "sha256": "68a1dab996b74a28e0239ad35c12e3dddc7b517afba2d4a99081472f061761db",
+      "sql": "-- NULL preserves an administrator's existing deployed help-host mapping.\n-- Empty text explicitly selects built-in paths; a hostname selects one approved host.\nALTER TABLE knowledge_experience ADD COLUMN published_host TEXT;\nALTER TABLE knowledge_experience ADD COLUMN link_color TEXT NOT NULL DEFAULT '';\n"
+    },
+    {
+      "binding": "DB",
+      "name": "248_ai_tool_trace.sql",
+      "sha256": "e80ec97c5a4a36241f9f8cd770b408366741273e6e72b5e13e95442a68b0b487",
+      "sql": "-- Allowlisted metadata only. Arguments, output text and provider errors stay out.\nCREATE TABLE ai_tool_traces(id TEXT PRIMARY KEY,generation_id TEXT NOT NULL REFERENCES ai_generations(id) ON DELETE CASCADE,tool_name TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN ('started','completed','denied','failed','handoff')),started_at INTEGER NOT NULL,finished_at INTEGER,approval TEXT NOT NULL,authority_scope TEXT NOT NULL,error_category TEXT,responsible_user_id TEXT);\nCREATE INDEX ai_tool_traces_generation ON ai_tool_traces(generation_id,started_at,id);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

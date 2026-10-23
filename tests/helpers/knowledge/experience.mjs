@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {knowledgeApp} from './app.mjs'
 export async function experienceJourney(){
-const k=await knowledgeApp({bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'fixture-native-knowledge'}}),{app,p,call}=k
+const k=await knowledgeApp({bindings:{APP_ORIGIN:'https://app.example',PUBLIC_HELP_HOSTS:JSON.stringify({'alpha-help.example':'p-p','alpha-old.example':'p-p','beta-help.example':'p-other','app.example':'p-p'}),EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'fixture-native-knowledge'}}),{app,p,call}=k
 try{
  const mail=[];k.provider=async (request,entry)=>{assert.equal(new URL(request.url).host,'api.resend.com');mail.push(JSON.parse(entry.body));return Response.json({id:'mail-'+mail.length})}
  const category=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Members',audience:'domains',allowedDomains:['trusted.test']},status:201})).data.id
@@ -48,6 +48,20 @@ try{
 
  await call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{article:'{{title}}\n{{content}}'}},status:200})
  assert.equal((await call(`/api/knowledge/${p}/experience`,{status:200})).data.templates.article,'{{title}}\n{{content}}')
+ const domainSettings=(await call(`/api/knowledge/${p}/experience`,{status:200})).data
+ assert.deepEqual(domainSettings.approvedHosts,['alpha-help.example','alpha-old.example'])
+ const domainWrite=(publishedHost)=>call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{article:'Branded {{title}}\n{{content}}'},publishedHost}})
+ assert.equal((await domainWrite('beta-help.example')).status,409,'another workspace’s host is never claimable')
+ assert.equal((await domainWrite('unconfigured.example')).status,409,'a typed URL cannot create hosting authority')
+ assert.equal((await domainWrite('app.example')).status,409,'the installation homepage is never a help host')
+ await app.call(`/api/management/projects/${p}/settings`,{token:k.token,method:'PUT',body:{name:'Alpha brand',brand_name:'Alpha Support',primary_color:'#204b3a'},status:200})
+ assert.equal((await call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{},publishedHost:'alpha-help.example',linkColor:'#ffffff'}})).status,400,'unreadable custom links are refused before publication')
+ await domainWrite('alpha-help.example')
+ await app.call(`/api/knowledge/${k.other}/experience`,{token:k.owner.tokens.owner,method:'PUT',body:{defaultLocale:'en',locales:['en'],templates:{},publishedHost:'alpha-help.example'}}).then(r=>assert.equal(r.status,403))
+ await domainWrite('')
+ assert.equal((await call(`/api/knowledge/${p}/experience`,{status:200})).data.publishedHost,'')
+ await domainWrite('alpha-help.example')
+
  await call(`/api/knowledge/${p}/articles/${aid}/translations/fr`,{method:'PUT',body:{title:'Secret FR',content:'Reviewed French',summary:'',reviewStatus:'reviewed'},status:200})
  let article=await app.call(`/api/knowledge/public/${p}/articles/secret?locale=fr`,{token:good.token,status:200});assert.equal(article.data.content,'Reviewed French')
  await call(`/api/knowledge/${p}/articles/${aid}/translations/fr`,{method:'PUT',body:{title:'Draft FR',content:'Unreviewed French',reviewStatus:'draft'},status:200})

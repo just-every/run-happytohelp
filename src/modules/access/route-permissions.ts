@@ -40,6 +40,7 @@ const rules:Record<string,Rule>={
  'POST /api/ai-support/projects/:projectId/conversations/:conversationId/obligations':'conversations.manage',
  'POST /api/ai-support/projects/:projectId/conversations/:conversationId/obligations/:id/accept':'conversations.manage',
  'GET /api/ai-support/projects/:projectId/procedures':'settings.manage',
+ 'GET /api/ai-support/projects/:projectId/procedures/:key/versions/:versionId/replay-preview':'settings.manage',
  'POST /api/ai-support/projects/:projectId/procedures/:key/versions':'settings.manage',
  'POST /api/ai-support/projects/:projectId/procedures/:key/releases':'settings.manage',
  'POST /api/ai-support/projects/:projectId/procedures/:key/releases/:releaseId/cohort':'settings.manage',

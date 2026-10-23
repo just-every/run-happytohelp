@@ -1,3 +1,4 @@
+import {domainsBrowserJourney} from '../helpers/knowledge/domains-browser.mjs'
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
 import {createRequire} from 'node:module'
@@ -13,7 +14,7 @@ const axePath=createRequire(import.meta.url).resolve('axe-core/axe.min.js')
 const retainedSlug='retained-browser-help'
 let runtime,browser,success=true,fixture,requestForm,accents=[]
 before(async()=>{
- runtime=await createRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',PUBLIC_HELP_HOSTS:JSON.stringify({localhost:retainedSlug})}});browser=await launchBrowser()
+ runtime=await createRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',PUBLIC_HELP_HOSTS:JSON.stringify({localhost:retainedSlug,'second.localhost':'second-browser-help'})}});browser=await launchBrowser()
  fixture=await runtime.seedTenant({name:'Help Center Fixture',email:'help-center-fixture@example.test',allowedOrigin:runtime.origin})
  await runtime.execute(`INSERT INTO public_project_aliases(slug,project_id) VALUES('${retainedSlug}','${fixture.projectId}')`)
  const write=async(tenant,path,body)=>{const response=await fetch(runtime.origin+path,{method:'POST',headers:{Authorization:`Bearer ${tenant.token}`,'Content-Type':'application/json'},body:JSON.stringify(body)});const text=await response.text();assert.equal(response.status,201,`${path}: ${text}`);return JSON.parse(text)}
@@ -74,6 +75,7 @@ for(const [label,viewport] of Object.entries(viewports))test(`a published help c
   }
   assert.equal(pages['unpublished draft'],pages['missing article'],'a draft is indistinguishable from a missing article')
   await page.screenshot({path:shot(label+'-404.png'),fullPage:true})
+  await domainsBrowserJourney({runtime,browser,fixture,viewport,shot})
  }finally{await context.close()}
 }))
 

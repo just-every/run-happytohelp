@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import type { AppEnv, Env } from '../../platform/env'
-import { renderHelpCenter, reserved } from './help-center'
+import { renderHelpCenter, reserved, resolvePublicProject } from './help-center'
 
 /** Deployment configuration only: no suffix inference, workspace domain setting or forwarded header lookup. */
 function configuredProject(request: Request, env: Env): string | null {
@@ -28,6 +28,8 @@ hostRoutes.get('/:article', c => renderHelpCenter(c, configuredProject(c.req.raw
 /** Call after static assets, before application routing. Null leaves the ordinary application route in charge. */
 export async function publicHelpHostResponse(request: Request, env: Env): Promise<Response | null> {
  if (!['GET', 'HEAD'].includes(request.method) || !configuredProject(request, env)) return null
+ const mapped=configuredProject(request,env)!,project=await resolvePublicProject(env,mapped)
+ if(project){const chosen=await env.DB.prepare('SELECT published_host FROM knowledge_experience WHERE project_id=?').bind(project.id).first<{published_host:string|null}>();if(chosen?.published_host!==null&&chosen?.published_host!==undefined&&chosen.published_host!==new URL(request.url).hostname)return new Response('Help Center not published at this address',{status:404,headers:{'Cache-Control':'private, no-store'}})}
  const path = new URL(request.url).pathname
  if (path !== '/') {
   if (!/^\/[^/]+$/.test(path)) return null

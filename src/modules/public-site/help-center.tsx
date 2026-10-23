@@ -30,6 +30,7 @@ export async function renderHelpCenter(c:any,key:string,base:string,tail?:string
  c.header('Cache-Control','private, no-store');c.header('Vary','Cookie, Authorization');c.header('Referrer-Policy','same-origin')
  const access=await resolveHelpAccess(c.env,project.id,c.req.raw)
  const settings=await getKnowledgeExperience(c.env,project.id)
+ if(settings.linkColor&&project.brand)Object.assign(project.brand,{linkColor:settings.linkColor})
  const locale=await selectKnowledgeLocale(c.env,project.id,c.req.query('locale'))
  const suffix=localeQuery(locale,settings.defaultLocale)
  const keyword=String(c.req.query('keyword')||c.req.query('q')||'').trim().slice(0,200)

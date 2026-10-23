@@ -22,7 +22,7 @@ export async function traceJourney(){
   const raw=await app.sql('SELECT r.* FROM ai_round_usage r JOIN ai_attempts a ON a.id=r.attempt_id WHERE a.generation_id=?',generation.id)
   assert.deepEqual(trace.rounds.map(r=>r.usage.input_tokens),raw.map(r=>JSON.parse(r.usage_json).input_tokens))
   assert.equal(trace.providerCostEstimateUsd,raw.reduce((n,r)=>n+JSON.parse(r.usage_json).cost,0))
-  assert.equal(trace.toolTrace.available,false);assert.equal(trace.procedure.available,false)
+  assert.equal(trace.toolTrace.available,true);assert.deepEqual(trace.toolTrace.calls.map(t=>t.toolName),['search_knowledge','cite_knowledge']);assert.ok(trace.toolTrace.calls.every(t=>t.state==='completed'&&t.durationMs>=0&&t.requestedScope==='conversation-recipient'&&t.businessActionExecuted===false&&t.verifiedBusinessResult===false));assert.equal(trace.procedure.available,false)
   // Opaque metadata and free text can carry credentials; the public trace never serializes them.
   await app.db.prepare("UPDATE ai_round_usage SET usage_json=json_set(usage_json,'$.cost',NULL,'$.authorization','synthetic-happytohelp-2','$.input_tokens','synthetic-happytohelp-3') WHERE attempt_id=?").bind(raw[0].attempt_id).run()
   await app.db.prepare("UPDATE ai_attempts SET error='synthetic-happytohelp-4' WHERE generation_id=?").bind(generation.id).run()
@@ -32,6 +32,15 @@ export async function traceJourney(){
   const failed=await a.visitor();await failed.say('Please try my question');await a.run()
   const failure=(await app.call(`/api/ai-support/projects/${p}/conversations/${failed.conversationId}/trace`,{token:owner,status:200})).data.traces[0]
   assert.notEqual(failure.state,'completed');assert.equal(failure.result.customerMessageCommitted,false);assert.equal(failure.providerCostEstimateUsd,null)
+  ai.reject=false
+  ai.respond=()=>{throw new Error('TimeoutError: synthetic-happytohelp-99')}
+  const timed=await a.visitor();await timed.say('A request that times out');await a.run()
+  const timedTrace=(await app.call(`/api/ai-support/projects/${p}/conversations/${timed.conversationId}/trace`,{token:owner,status:200})).data.traces[0]
+  assert.equal(timedTrace.failureCategory,'timeout');assert.equal(timedTrace.result.customerMessageCommitted,false);assert.doesNotMatch(JSON.stringify(timedTrace),/synthetic-happytohelp-99/)
+  ai.respond=()=>openaiToolCall('switch_agent',{agent_id:'human'},'handoff')
+  const handed=await a.visitor();await handed.say('Please connect me to a person');await a.run()
+  const handoffTrace=(await app.call(`/api/ai-support/projects/${p}/conversations/${handed.conversationId}/trace`,{token:owner,status:200})).data.traces[0]
+  assert.equal(handoffTrace.toolTrace.calls[0].state,'handoff');assert.equal(handoffTrace.toolTrace.calls[0].responsibleHumanId,a.workspace.users.owner);assert.equal(handoffTrace.result.customerMessageCommitted,false)
   await app.db.prepare("INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES(?,?,'collaborator',1)").bind(p,a.workspace.users.operator).run()
   assert.equal((await app.call(path,{token:a.workspace.tokens.operator})).status,403,'a collaborator cannot read usage traces')
   assert.equal((await app.call(path,{token:v.token})).status,403)

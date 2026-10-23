@@ -56,6 +56,14 @@
     {
       "id": "246_translated_ai_publications.sql",
       "buyerSteps": "Apply before the updated Worker serves traffic. Gives reviewed translations their own publication identity, preserving existing drafts and reviewed text. AI retrieval and admission now fence the exact translated publication and disclose source-language fallback."
+    },
+    {
+      "id": "247_help_domain_publication.sql",
+      "buyerSteps": "Apply before serving the updated Worker. Lets knowledge publishers select one exact help host already mapped to their workspace by PUBLIC_HELP_HOSTS, or select built-in paths. DNS and TLS remain the hosting administrator\u2019s prerequisite; existing mapped hosts keep working until a lead makes a choice."
+    },
+    {
+      "id": "248_ai_tool_trace.sql",
+      "buyerSteps": "Apply before the updated Worker serves traffic. Records allowlisted per-tool timing, scoped read/proposal authority, denial and human handoff metadata. No arguments, response text, credentials or external business-action authority are added. Started calls without a terminal receipt remain unknown."
     }
   ]
 }

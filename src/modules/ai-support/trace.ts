@@ -1,3 +1,4 @@
+import {failureCategory} from './tool-trace'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -18,14 +19,17 @@ traceRoutes.get('/projects/:projectId/conversations/:conversationId/trace',async
  const pid=c.req.param('projectId'),cid=c.req.param('conversationId'),actor=await requireProject(c,pid,true)
  if(!(await memberAccess(c.env.DB,pid,actor.id))?.permissions.has('reports.view'))throw new HTTPException(403,{message:'Report permission required'})
  if(!await c.env.DB.prepare('SELECT 1 FROM conversations WHERE id=? AND project_id=?').bind(cid,pid).first())throw new HTTPException(404,{message:'Conversation not found'})
- const generations=await c.env.DB.prepare(`SELECT g.id,g.state,g.kind,g.source_revision,g.source_context_revision,g.source_last_message_id,g.ai_id,g.ai_profile_json,g.created_at,g.updated_at,
+ const offset=Number(c.req.query('offset')||0)
+ if(!Number.isSafeInteger(offset)||offset<0)throw new HTTPException(400,{message:'Invalid trace offset'})
+ const generations=await c.env.DB.prepare(`SELECT g.id,g.state,g.kind,g.source_revision,g.source_context_revision,g.source_last_message_id,g.ai_id,g.ai_profile_json,g.error,g.created_at,g.updated_at,
   (SELECT id FROM messages WHERE project_id=g.project_id AND conversation_id=g.conversation_id AND local_id='generation:'||g.id AND actor_role='ai') message_id
-  FROM ai_generations g WHERE g.project_id=? AND g.conversation_id=? ORDER BY g.created_at,g.id LIMIT 100`).bind(pid,cid).all<any>()
+  FROM ai_generations g WHERE g.project_id=? AND g.conversation_id=? ORDER BY g.created_at,g.id LIMIT 101 OFFSET ?`).bind(pid,cid,offset).all<any>()
  const traces=[]
- for(const g of generations.results){
-  const [attempts,sources]=await Promise.all([
+ for(const g of generations.results.slice(0,100)){
+  const [attempts,sources,tools]=await Promise.all([
    c.env.DB.prepare('SELECT id,state,started_at,finished_at FROM ai_attempts WHERE generation_id=? ORDER BY started_at,id').bind(g.id).all<any>(),
-   c.env.DB.prepare('SELECT source_id id,source_version sourceVersion FROM ai_generation_sources WHERE generation_id=? AND project_id=? ORDER BY source_id,source_version').bind(g.id,pid).all<any>()])
+   c.env.DB.prepare('SELECT source_id id,source_version sourceVersion FROM ai_generation_sources WHERE generation_id=? AND project_id=? ORDER BY source_id,source_version').bind(g.id,pid).all<any>(),
+   c.env.DB.prepare('SELECT id,tool_name toolName,state,started_at startedAt,finished_at finishedAt,approval,authority_scope requestedScope,error_category failureCategory,responsible_user_id responsibleHumanId FROM ai_tool_traces WHERE generation_id=? ORDER BY started_at,rowid').bind(g.id).all<any>()])
   const rounds=[]
   for(const attempt of attempts.results){
    const rows=await c.env.DB.prepare('SELECT request_id,usage_json,observed FROM ai_round_usage WHERE attempt_id=? ORDER BY request_id').bind(attempt.id).all<any>()
@@ -38,8 +42,9 @@ traceRoutes.get('/projects/:projectId/conversations/:conversationId/trace',async
    attempts:attempts.results.map(a=>({attemptId:a.id,state:a.state,startedAt:a.started_at,finishedAt:a.finished_at,durationMs:duration(a.started_at,a.finished_at)})),rounds,
    providerCostEstimateUsd:completeCost?rounds.reduce((sum,r)=>sum+r.usage.cost!,0):null,priceData:completeCost?'available':'unavailable',
    result:{customerMessageCommitted:!!g.message_id,messageId:g.message_id||null},
-   toolTrace:{available:false,reason:'Per-tool scope, approval and verified outcomes are not recorded by this generation store.'},
+   failureCategory:failureCategory(g.error),
+   toolTrace:{available:true,calls:tools.results.map(t=>({...t,durationMs:t.finishedAt===null?null:t.finishedAt-t.startedAt,outcomeKnown:t.state!=='started',businessActionExecuted:false,verifiedBusinessResult:false})),redaction:'Server-selected tool names, scope and timing only; arguments, output text and provider errors are excluded. A completed read or proposal is not an executed business action.'},
    procedure:(await c.env.DB.prepare('SELECT pg.version_id versionId,pg.release_id releaseId,v.procedure_key procedureKey,v.version,r.state releaseState,r.regression_resolution_id regressionResolutionId FROM procedure_generation pg JOIN procedure_versions v ON v.id=pg.version_id AND v.project_id=? JOIN procedure_releases r ON r.id=pg.release_id AND r.project_id=v.project_id WHERE pg.generation_id=?').bind(pid,g.id).first())||{available:false,reason:'No versioned procedure is linked to this generation.'}})
  }
- return c.json({conversationId:cid,traces,limit:100,accounting:'Provider cost estimates describe recorded usage, not a customer balance or savings.'})
+ return c.json({conversationId:cid,traces,limit:100,nextOffset:generations.results.length>100?offset+100:null,accounting:'Provider cost estimates describe recorded usage, not a customer balance or savings.'})
 })

@@ -55,6 +55,17 @@ export async function awayWidget({browser,origin,api,ownerToken,projectId,eviden
   const calendar=await manage('workflow-calendars',{name:'synthetic-happytohelp-4',timezone:'UTC',weekly:[0,1,2,3,4,5,6].map(day=>({day,start:'00:00',end:'24:00'})),holidays:'none',closures:[today]});
   const policy=await manage('sla-policies',{name:'synthetic-happytohelp-5',calendar_id:calendar.id,conditions:{channels:['widget']},first_response_minutes:60});
   const closed=await availability();assert.equal(closed.available,false,'the SLA closure overrides open widget hours');assert.equal(closed.opensAt,Date.parse(tomorrow));
+  const leadContext=await browser.newContext({viewport:{width:1440,height:900}});
+  try{
+   await leadContext.addCookies([{name:'h2h_session',value:ownerToken,url:api}]);
+   const lead=await leadContext.newPage();await lead.goto(`${api}/projects/${projectId}/settings`);
+   await lead.getByRole('button',{name:'Availability',exact:true}).click();
+   const rightNow=lead.getByRole('status').filter({hasText:'Right now:'});
+   await rightNow.filter({hasText:'Away. Back'}).waitFor();
+   assert.ok((await rightNow.innerText()).includes(calendar.name),'the lead sees which SLA calendar governs the visitor status');
+   assert.ok(await lead.getByLabel('Accept new conversations',{exact:true}).isVisible(),'the acceptance switch is available independently of opening hours');
+   for(const width of [1440,390]){await lead.setViewportSize({width,height:900});assert.ok(await lead.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await lead.screenshot({path:`${evidence}/calendar-settings-${width}.png`,fullPage:true});}
+  }finally{await leadContext.close();}
   await page.evaluate(()=>localStorage.clear());await page.reload();await notice.waitFor();
   assert.match(await notice.innerText(),/We're back .+ at/);
   await page.locator('.happytohelp-insight-agent-info').filter({hasText:'Away until'}).first().waitFor();

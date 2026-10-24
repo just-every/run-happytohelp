@@ -2,7 +2,7 @@
  * switch can make the team away; otherwise the optional weekly schedule uses the workspace timezone. `opensAt` is when a scheduled team is next back (the visitor's expected reply time) and `changesAt` when
  * the schedule next changes this answer, so a widget left open can ask again. `live` says the answer also follows
  * live presence (presence-based away), so an open widget keeps asking. Times are epoch milliseconds. */
-export interface Availability {available:boolean;message:string;scheduled:boolean;timezone:string;opensAt:number|null;changesAt:number|null;live:boolean}
+export interface Availability {available:boolean;message:string;scheduled:boolean;timezone:string;opensAt:number|null;changesAt:number|null;live:boolean;calendar?:{id:string;name:string}}
 
 /** Presence-based away: on unless a lead turns it off, a teammate counts as away after this many idle minutes, and
  * the away message posted while nobody is online. */

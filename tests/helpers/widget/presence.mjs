@@ -131,17 +131,27 @@ export async function presenceJourney(){
   await app.call(`/api/management/projects/${p}/ai`,{token:owner,method:'PUT',body:{default_visitor_ai_id:null},status:200})
   await availabilityPut(owner,{is_presence_away_enabled:false,is_availability_schedule_enabled:true,availability_schedule:{days:[1,2,3,4,5,6,7],time_from:'00:00',time_to:'23:59',message:''}})
   const manage=(path,body,method='POST')=>app.call(`/api/management/projects/${p}${path}`,{token:owner,body,method,status:method==='POST'?201:200}).then(result=>result.data.data)
-  const calendar=await manage('/workflow-calendars',{name:'synthetic-happytohelp-1',timezone:'UTC',weekly:[0,1,2,3,4,5,6].map(day=>({day,start:'00:00',end:'24:00'})),holidays:'us_federal',closures:['2026-11-27']})
+  const calendar=await manage('/workflow-calendars',{name:'Northwind support hours',timezone:'America/New_York',weekly:[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})),holidays:'us_federal',closures:[]})
   const ignored=await manage('/sla-policies',{name:'synthetic-happytohelp-2',calendar_id:calendar.id,position:0,conditions:{channels:['email']},first_response_minutes:60})
   const policy=await manage('/sla-policies',{name:'synthetic-happytohelp-3',calendar_id:calendar.id,position:1,conditions:{channels:['widget']},first_response_minutes:60})
+  const pausedMessage='New conversations are paused while our team is at the annual planning day.'
+  await app.call(`/api/management/projects/${p}/settings`,{token:owner,method:'PUT',body:{is_available:false,unavailable_message:pausedMessage},status:200})
+  await app.call(`/api/management/projects/${p}/settings`,{token:owner,method:'PUT',body:{is_available:true},status:200})
   for(const date of ['2026-11-26','2026-11-27']){
-   await app.configure({H2H_LOCAL:'true',APP_ORIGIN:'https://app.example',H2H_WORKFLOW_NOW:String(Date.parse(`${date}T12:00:00Z`))})
+   const holiday=date==='2026-11-26'
+   await availabilityPut(owner,{is_presence_away_enabled:false,is_availability_schedule_enabled:!holiday,availability_schedule:{days:[1,2,3,4,5,6,7],time_from:'00:00',time_to:'23:59',message:''}})
+   await manage(`/workflow-calendars/${calendar.id}`,{closures:holiday?[]:[date]},'PATCH')
+   await app.configure({H2H_LOCAL:'true',APP_ORIGIN:'https://app.example',H2H_WORKFLOW_NOW:String(Date.parse(`${date}T17:00:00Z`))})
    const settings=(await app.call(`/api/widget/settings?widgetKey=${workspace.widgetKey}`,{headers:{Origin:'https://widget.example'},status:200})).data
-   assert.equal(settings.availability.available,false,`${date}: a holiday or closure overrides opening hours that say open`)
-   assert.equal(settings.availability.opensAt,Date.parse('2026-11-28T00:00:00Z'),'the next opening skips both Thanksgiving and the closure')
+   assert.equal(settings.availability.available,false,`${date}: the SLA holiday or closure governs with widget hours off or open`)
+   assert.equal(settings.availability.opensAt,Date.parse(holiday?'2026-11-27T14:00:00Z':'2026-11-30T14:00:00Z'),'the next opening follows the calendar holidays, closures and timezone')
+   const lead=(await app.call(`/api/management/projects/${p}/presence`,{token:owner,status:200})).data.data
+   assert.deepEqual(lead.availability,settings.availability,'the lead and visitor doors share the same calendar-aware availability')
    const contact=await visitor(),ticket=await conversation(contact)
    await write(contact,ticket.id,`calendar-${date}`,'When will someone reply?',0)
-   assert.ok((await transcript(ticket.id))[1].content.includes(`back ${date==='2026-11-26'?'Saturday':'tomorrow'} at 12:00 AM UTC`),'the public conversation uses the same calendar as the widget')
+   const reply=(await transcript(ticket.id))[1].content
+   assert.ok(reply.includes(`back ${holiday?'tomorrow':'Monday'} at 9:00 AM EST`),'the public conversation names the calendar reopening as the expected reply time')
+   assert.ok(!reply.includes(pausedMessage),'acceptance is on: the calendar reply never uses the paused-conversations message')
   }
   await manage(`/workflow-calendars/${calendar.id}`,{closures:[],holidays:'none'},'PATCH')
   assert.equal((await state()).available,true,'removing the calendar exceptions restores availability')

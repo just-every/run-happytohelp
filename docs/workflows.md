@@ -17,6 +17,25 @@ For example, a two-hour commitment starting at 4 pm on a day ending at 5 pm
 uses one hour that afternoon and the next hour when business hours resume.
 Closed dates and holidays contribute no working time.
 
+The widget also uses these calendars for availability. **Accept new
+conversations** off always wins, independently of hours or presence. With
+acceptance on, the first active matching ordinary widget SLA policy with an
+active calendar supplies business hours, holidays, closed dates and timezone.
+If no matching policy has an active calendar, the widget's own opening hours
+and workspace timezone are the fallback. During open hours, live presence
+then decides availability when its away setting is on; an enabled visitor
+assistant with its provider key installed keeps the widget available when
+nobody is online.
+
+**Settings → Project → Availability → Right now** uses the same availability
+as the server and widget and identifies the governing SLA calendar. Away
+notices, headers and replies show the next reopening when known, otherwise
+**Human response time** from **Settings → Widget**. With acceptance on, a
+calendar closure uses the widget's **Away message outside hours**, or the
+standard message if that field is empty; it never uses the message for paused
+new conversations. See [When your team is away](away.md) for visitor behavior
+and away-message settings.
+
 ## SLA policies and alerts
 
 In **SLA policies**, choose a calendar and the commitments you need: first

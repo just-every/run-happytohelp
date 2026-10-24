@@ -18,7 +18,7 @@ async function businessHours(env:Env,projectId:string,settings:any,at:number):Pr
  const row=await env.DB.prepare('SELECT * FROM workflow_calendars WHERE project_id=? AND id=? AND active=1').bind(projectId,policy.calendar_id).first<any>()
  if(!row)return fallback
  const calendar=calendarData(row)
- return {...fallback,...businessWindow(calendar,at),scheduled:true,timezone:calendar.timezone,live:false}
+ return {...businessWindow(calendar,at),message:settings.availability_schedule?.message||'',scheduled:true,timezone:calendar.timezone,live:false,calendar:{id:calendar.id,name:calendar.name}}
 }
 
 /** The workspace's default visitor assistant, when it is enabled. */

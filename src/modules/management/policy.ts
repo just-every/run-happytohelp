@@ -4,7 +4,7 @@ import type {AppEnv,Env} from '../../platform/env'
 import {scope,text} from './common'
 import {modelReadiness} from './provisioning/index'
 import {PRESENCE_IDLE_MINUTES,presenceSettings} from './availability'
-import {visitorAssistant} from './live-availability'
+import {teamAvailability,visitorAssistant} from './live-availability'
 import {onlineTeammates} from '../collaboration/presence-store'
 import {auditStatement,requestSource} from '../audit/record'
 export const projectPolicy=new Hono<AppEnv>()
@@ -32,7 +32,8 @@ projectPolicy.get('/projects/:projectId/ai',async c=>{
 projectPolicy.get('/projects/:projectId/presence',async c=>{
  const a=await scope(c),row=await c.env.DB.prepare('SELECT settings_json FROM project_settings WHERE project_id=?').bind(a.projectId).first<{settings_json:string}>()
  const settings=JSON.parse(row?.settings_json||'{}'),assistant=await visitorAssistant(c.env,a.projectId)
- return c.json({data:{online:await onlineTeammates(c.env,a.projectId,presenceSettings(settings).idleMinutes),assistant:assistant&&modelReadiness(c.env,assistant.model).ready?{id:assistant.id,name:assistant.name}:null}})
+ const [online,availability]=await Promise.all([onlineTeammates(c.env,a.projectId,presenceSettings(settings).idleMinutes),teamAvailability(c.env,a.projectId,settings)])
+ return c.json({data:{online,availability,assistant:assistant&&modelReadiness(c.env,assistant.model).ready?{id:assistant.id,name:assistant.name}:null}})
 })
 projectPolicy.put('/projects/:projectId/ai',async c=>{const a=await scope(c,true),b=await c.req.json(),patch:Record<string,unknown>={};for(const key of ['default_visitor_ai_id','default_verified_user_ai_id'])if(key in b){const ai=b[key]==='-'?null:b[key];if(ai&&!await c.env.DB.prepare('SELECT id FROM ai_profiles WHERE id=? AND project_id=? AND is_enabled=1').bind(ai,a.projectId).first())throw new HTTPException(400);patch[key]=ai}if('is_human_response_enabled' in b)patch.is_human_response_enabled=Boolean(b.is_human_response_enabled);if('default_visitor_ai_id' in patch)patch.default_responder=patch.default_visitor_ai_id;return c.json({data:await save(c.env,a.projectId,patch)})})
 projectPolicy.put('/projects/:projectId/agents/:userId/primary',async c=>{const a=await scope(c);if(c.req.param('userId')!==a.id)throw new HTTPException(403);const b=await c.req.json();await c.env.DB.batch([c.env.DB.prepare('UPDATE user_project_preferences SET is_primary=0 WHERE user_id=?').bind(a.id),c.env.DB.prepare('INSERT INTO user_project_preferences(project_id,user_id,is_primary) VALUES(?,?,?) ON CONFLICT(project_id,user_id) DO UPDATE SET is_primary=excluded.is_primary').bind(a.projectId,a.id,b.is_primary?1:0)]);return c.json({updated:true})})

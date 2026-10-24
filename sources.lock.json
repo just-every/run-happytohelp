@@ -1668,7 +1668,7 @@
       "executable": false
     },
     "docs/away.md": {
-      "sha256": "315ea774b9e01a4860315410bae539d17c2e4c86e6c7a36daee4a1be75ee6abb",
+      "sha256": "545a580fcbf0c03026111a1fc2e3701f9f44a867af79eba4ebdd62c897ce07bf",
       "executable": false
     },
     "docs/companies-and-csv.md": {
@@ -1816,7 +1816,7 @@
       "executable": false
     },
     "docs/workflows.md": {
-      "sha256": "e15cd8acd370654b1c868c51242c9c1f5fb92f9781beda9761cd362f545acb36",
+      "sha256": "9ef834ce75e12b4cdeb56d8daf6c0662eab3aadf45bbc0008a5f14edd36d10d7",
       "executable": false
     },
     "docs/WORKSPACE-WORKFLOWS.md": {
@@ -5816,7 +5816,7 @@
       "executable": false
     },
     "src/modules/management/availability.ts": {
-      "sha256": "314ae67c9f1c9548c0de90629ad41d31a65c5b4666b91580e932cd73beb5e9be",
+      "sha256": "5d401399b76f84d8e1ca6c0a6ca200665228773edc5445b16362b0fabac82066",
       "executable": false
     },
     "src/modules/management/away-reply.ts": {
@@ -5988,7 +5988,7 @@
       "executable": false
     },
     "src/modules/management/live-availability.ts": {
-      "sha256": "1f559054fd479ae2cf00ca5cf6a42daaa32498e8e9c4f11622a43955bd23a0c9",
+      "sha256": "79086a39eea896c6b6ea5e4827aa400e2b718dcff062cce5c83a5a468671791b",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {
@@ -6008,7 +6008,7 @@
       "executable": false
     },
     "src/modules/management/policy.ts": {
-      "sha256": "04725a039aab057b3cf6c4eca255f5e8fd911940e825f476612b803c1db86761",
+      "sha256": "507bc14bb78ca79579acfe3c2d4dac999ba2f62209ec23bd7380ea8ffe948937",
       "executable": false
     },
     "src/modules/management/projects.ts": {
@@ -9536,7 +9536,7 @@
       "executable": false
     },
     "src/ui/native/pages/AvailabilitySettings.jsx": {
-      "sha256": "e53f396081cf95264f29ceb074d37308c61bec02ad15a4fe59bfc505f814ce6d",
+      "sha256": "23b29ca2ed1bb7288d1eb4abf12659f2d94f0e9fc22d1b5ae00d2b27e684fbe2",
       "executable": false
     },
     "src/ui/native/pages/AvatarUpload.jsx": {
@@ -9932,7 +9932,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProjectSettings.jsx": {
-      "sha256": "b7b1168f1c35f6ef1af17913ae1ce00107d91e3e79a8b364594f3cd85368e014",
+      "sha256": "02ad58fdc38bd51d88461db967693dcb928db1ef6cda63f4537fefa642925ca6",
       "executable": false
     },
     "src/ui/native/pages/ProjectsPage.d.ts": {
@@ -11628,7 +11628,7 @@
       "executable": false
     },
     "tests/helpers/widget/away.mjs": {
-      "sha256": "44c01213dd75c0b1f180616533aad0aee43e6b69eb66d0b6e25848d413c82365",
+      "sha256": "bfbd7e2ba8e84ad3378c012f85308f1a7832420777cb046d4511dd8e6b2c2bc5",
       "executable": false
     },
     "tests/helpers/widget/campaigns-browser.mjs": {
@@ -11672,7 +11672,7 @@
       "executable": false
     },
     "tests/helpers/widget/presence.mjs": {
-      "sha256": "e62462e5b18bae2e968d550eb441383e00c01fb2fd533d8be4404d0a4099df01",
+      "sha256": "8ea71349411c25c116e0e27c1a24567181a7c327a9e79b38e8aff1c47f671156",
       "executable": false
     },
     "tests/helpers/widget/runtime.mjs": {

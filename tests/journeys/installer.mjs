@@ -35,7 +35,7 @@ test('the release artifact carries every built module, migration and asset with 
  const root=await scratch('h2h-artifact-')
  try{
   await mkdir(join(root,'dist/server'),{recursive:true});await mkdir(join(root,'dist/client/assets'),{recursive:true})
-  await writeFile(join(root,'dist/server/index.js'),'export default {};');await writeFile(join(root,'dist/server/wrangler.json'),JSON.stringify({compatibility_date:'2026-09-08'}))
+  await writeFile(join(root,'dist/server/index.js'),'export default {};');await writeFile(join(root,'dist/server/wrangler.json'),JSON.stringify({compatibility_date:'2026-09-08',vars:wrangler.vars}))
   const types={'hero.mp4':'video/mp4','heading.woff':'font/woff','body.ttf':'font/ttf','body.woff2':'font/woff2'}
   for(const name of Object.keys(types))await writeFile(join(root,'dist/client/assets',name),Buffer.from([0,1,2,255]))
   const fixture=await readArtifact(await produceArtifact({root,config:{...config,edition:undefined}}))

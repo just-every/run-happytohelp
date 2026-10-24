@@ -2960,7 +2960,7 @@
       "executable": false
     },
     "scripts/installer/hosted-deploy.mjs": {
-      "sha256": "fc8415af999a779ab8f0eecf1767bfd5f57409b6f103bf18d9665603a2c0d1bb",
+      "sha256": "3bd3349272fb0d4be27c1d8505d9db39943e35fc777d6ba8db43be5f101cccc1",
       "executable": false
     },
     "scripts/installer/hosted-export.mjs": {

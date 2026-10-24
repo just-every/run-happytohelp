@@ -7188,7 +7188,7 @@
       "executable": false
     },
     "src/modules/widget/js/context/defaults.js": {
-      "sha256": "abd0a0775980c3aae92f596bf78bc6dd094f1b57a649fd17b00e66155b8b9e43",
+      "sha256": "2ed94757c190529c9f681397bd5e5b27a1f3fe315daeec01c1fa7e93b59772ae",
       "executable": false
     },
     "src/modules/widget/js/context/replyStream.jsx": {
@@ -8532,7 +8532,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/widget-settings/WidgetTextFields.jsx": {
-      "sha256": "cb603e482d924ff09b9f94e2109b90660bd8e5bc22f29fdfd347a2c2ebaae50e",
+      "sha256": "a0cf3e185b87aa3f93e23141d23dd36a9b5de9fbec2d6114eb250a18c479f0a6",
       "executable": false
     },
     "src/ui/dashboard/components/WidgetImagesModal.jsx": {

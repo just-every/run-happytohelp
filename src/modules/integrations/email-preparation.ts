@@ -1,3 +1,4 @@
+import {rerMail} from './rer-mail-contract'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
 import type {EmailInput} from './email'
@@ -19,9 +20,11 @@ export async function prepareConversationEmail(env:Env,input:EmailInput):Promise
  const primary=input.idempotencyKey===`message:${match[1]}:notification`
  const selectedMailbox=row.mailbox_id||row.conversation_mailbox||undefined,to=primary&&row.to_address?row.to_address:input.to
  const mailbox=selectedMailbox?await env.DB.prepare("SELECT address FROM mailbox_connections WHERE id=? AND project_id=? AND status='connected'").bind(selectedMailbox,input.projectId).first<{address:string}>():null
- const replyTo=mailbox?await recipientReplyAddress(env,mailbox.address,input.projectId,row.conversation_id,to):input.replyTo
- const headers={...input.headers,'Message-ID':messageId,...(prior?{'In-Reply-To':prior.key_value,References:prior.key_value}:{})}
- await env.DB.batch(emailThreadingStatements(env,{projectId:input.projectId,conversationId:row.conversation_id,keys:[{kind:'message_id',value:messageId,source:'native',sourceRef:match[1]},{kind:'subject_token',value:`h2h:${row.conversation_id}`,source:'native',sourceRef:match[1]}],createdAt:Date.now()}))
+ const managed=rerMail(env)&&!selectedMailbox
+ const receiving=managed?await env.DB.prepare('SELECT inbound_address FROM email_settings WHERE project_id=? AND is_enabled=1').bind(input.projectId).first<{inbound_address:string}>():null
+ const replyTo=mailbox?await recipientReplyAddress(env,mailbox.address,input.projectId,row.conversation_id,to):managed?await recipientReplyAddress(env,receiving?.inbound_address,input.projectId,row.conversation_id,to):input.replyTo
+ const headers={...input.headers,...(!managed?{'Message-ID':messageId}:{}),...(prior?{'In-Reply-To':prior.key_value,References:prior.key_value}:{})}
+ await env.DB.batch(emailThreadingStatements(env,{projectId:input.projectId,conversationId:row.conversation_id,keys:[...(!managed?[{kind:'message_id' as const,value:messageId,source:'native',sourceRef:match[1]}]:[]),{kind:'subject_token',value:`h2h:${row.conversation_id}`,source:'native',sourceRef:match[1]}],createdAt:Date.now()}))
  // Customer-authored fan-out keeps its generic subject: an arbitrary incoming
  // subject must not be propagated to unproven CC participants (R4's notices).
  return {...input,to,replyTo,subject:row.actor_role==='contact'?input.subject:nativeThreadSubject(row.subject||input.subject,row.conversation_id),headers,

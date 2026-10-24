@@ -1,3 +1,5 @@
+import {rerMail} from './rer-mail-contract'
+import {rerConfigured} from './rer-mail'
 import type {Env} from '../../platform/env'
 import {demoMode} from '../../demo/mode'
 import {localMailOrigin} from '../../edition/local-mail/configuration'
@@ -8,15 +10,17 @@ import {SendGridSendError} from '../../vendor/base/modules/sendgrid-email/src/se
 // @ts-expect-error The shared Base validator is JavaScript without declarations.
 import {validateMessage} from '../../vendor/base/modules/mail/src/core/validation.mjs'
 
-export type EmailProvider = 'resend'|'cloudflare'|'sendgrid'
+export type EmailProvider = 'resend'|'cloudflare'|'sendgrid'|'rer'
 const providers:readonly EmailProvider[]=['resend','cloudflare','sendgrid']
 
 /** The selected provider is explicit when supplied; the legacy default remains Resend. */
 export function selectedEmailProvider(env:Env):EmailProvider|null{
+ if(rerMail(env))return 'rer'
  const value=String(env.EMAIL_PROVIDER||'resend') as EmailProvider
  return providers.includes(value)?value:null
 }
 export function emailConfigured(env:Env){
+ if(rerMail(env))return rerConfigured(env)
  if(typeof env.H2H_CONNECTED_MESSAGE_MAILBOX==='string')return true
  if(localMailOrigin(env)||demoMode(env))return typeof env.EMAIL_FROM==='string'&&Boolean(env.EMAIL_FROM.trim())
  const provider=selectedEmailProvider(env)
@@ -36,7 +40,7 @@ export function validateEmailInput(input:EmailInput,from:string){
 }
 export function providerRequest(env:Env,input:EmailInput,from:string):[string,RequestInit]{
  const provider=selectedEmailProvider(env)
- if(!provider||provider==='sendgrid')throw new Error('The selected provider has no Resend or Cloudflare request adapter')
+ if(!provider||provider==='sendgrid'||provider==='rer')throw new Error('The selected provider has no Resend or Cloudflare request adapter')
  const cloudflare=provider==='cloudflare'
  return [cloudflare?`https://api.cloudflare.com/client/v4/accounts/${env.EMAIL_ACCOUNT_ID}/email/sending/send`:'https://api.resend.com/emails',{
   method:'POST',headers:{Authorization:`Bearer ${env.EMAIL_API_KEY}`,'Content-Type':'application/json',...(!cloudflare?{'Idempotency-Key':input.idempotencyKey}:{})},

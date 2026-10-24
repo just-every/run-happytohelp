@@ -9,6 +9,7 @@ import {workflowNow} from './clock'
 import type {Spent} from './budget'
 import {boundedDatabase} from '../../platform/d1-budget'
 import {liveScheduleTicketSql,wakeDueSnoozes} from './schedules-snoozes'
+import {openRerMailHold,rerMailHeld} from '../integrations/rer-mail-hold'
 const liveScheduleSql=`EXISTS(SELECT 1 FROM workflow_schedules ws JOIN memberships wm ON wm.project_id=ws.project_id AND wm.user_id=ws.sender_id WHERE ws.id=? AND ws.conversation_id=c.id AND ws.state='sending' AND ws.expected_revision=c.revision AND ws.expected_last_message_id IS c.last_message_id AND ws.expected_assignee IS c.assigned_to AND ws.expected_group_id IS c.group_id AND wm.role=ws.sender_role AND (SELECT role_key FROM member_roles WHERE project_id=wm.project_id AND user_id=wm.user_id) IS ws.sender_role_key AND (SELECT pr.updated_at FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=wm.project_id AND mr.user_id=wm.user_id) IS ws.sender_role_updated_at AND EXISTS(SELECT 1 FROM memberships owner WHERE owner.project_id=ws.project_id AND owner.user_id=ws.owner_id))`
 async function settle(env:Env,id:string,state:string,reason:string|null,now:number,messageId?:string,pendingVersion?:number){await env.DB.prepare(`UPDATE workflow_schedules SET state=?,reason=?,message_id=coalesce(?,message_id),updated_at=?,version=version+1 WHERE id=? AND ${pendingVersion===undefined?"state IN ('pending','sending')":"state='pending' AND version=?"}`).bind(state,reason,messageId??null,now,id,...(pendingVersion===undefined?[]:[pendingVersion])).run()}
 /** The sending claim precedes message admission and mail. A lost process never
@@ -35,10 +36,11 @@ async function sendScheduledReply(env:Env,row:any,now:number,refresh:Set<string>
   refresh.add(row.conversation_id)
   await applyMessageEffects(env,result.message!,actor,undefined,{workflow:false})
   const broadcasts=await Promise.all([row.conversation_id,`project:${row.project_id}`].map(key=>env.CONVERSATIONS.get(env.CONVERSATIONS.idFromName(key)).fetch('https://conversation.internal/broadcast',{method:'POST'})))
-  if(broadcasts.every(response=>response.ok))await env.DB.prepare('UPDATE conversation_outbox SET delivered_at=? WHERE message_id=? AND delivered_at IS NULL').bind(Date.now(),messageId).run()
-  const deliveries=(await env.DB.prepare("SELECT state FROM email_deliveries WHERE id=? OR substr(id,1,?)=?").bind(`message:${messageId}:notification`,`message:${messageId}:notification:`.length,`message:${messageId}:notification:`).all<{state:string}>()).results
-  const uncertain=deliveries.some(d=>['uncertain','sending'].includes(d.state)),failed=deliveries.some(d=>d.state==='failed')
-  await settle(env,row.id,uncertain?'uncertain':failed?'failed':'sent',uncertain?'Mail delivery is uncertain; this reply will not be replayed':failed?'The reply was saved but its mail delivery failed':null,now,messageId)
+  if(broadcasts.every(response=>response.ok))await env.DB.prepare(`UPDATE conversation_outbox SET delivered_at=? WHERE message_id=? AND delivered_at IS NULL AND NOT ${openRerMailHold}`).bind(Date.now(),messageId).run()
+  const deliveries=(await env.DB.prepare("SELECT state,error FROM email_deliveries WHERE id=? OR substr(id,1,?)=?").bind(`message:${messageId}:notification`,`message:${messageId}:notification:`.length,`message:${messageId}:notification:`).all<{state:string;error:string|null}>()).results
+  // A held managed send is pending and resent by the outbox, never an unknown outcome.
+  const held=deliveries.some(d=>d.state==='sending'&&d.error===rerMailHeld),uncertain=deliveries.some(d=>d.state==='uncertain'||d.state==='sending'&&d.error!==rerMailHeld),failed=deliveries.some(d=>d.state==='failed')
+  await settle(env,row.id,uncertain?'uncertain':failed?'failed':'sent',uncertain?'Mail delivery is uncertain; this reply will not be replayed':failed?'The reply was saved but its mail delivery failed':held?rerMailHeld:null,now,messageId)
  }catch(error){
   // Even a DB exception can hide a successful commit. No automatic replay.
   const limited=error instanceof Error&&error.message==='WORKER_D1_STATEMENT_LIMIT'

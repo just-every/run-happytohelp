@@ -8,6 +8,7 @@ import {senderDomainJourney} from '../helpers/email/domain.mjs'
 import {completeEmailJourney} from '../helpers/email/complete-email.mjs'
 import {unreadableMailJourney} from '../helpers/email/unreadable-mail.mjs'
 import {rerMailJourney} from '../helpers/email/rer-mail.mjs'
+import {rerMailHoldJourney} from '../helpers/email/rer-mail-hold.mjs'
 
 // Email on the real application: inbound through the Worker's email entry, the JSON gateway and SendGrid
 // Inbound Parse; outbound through the conversation, schedule and operator routes. Fixtures only at the
@@ -36,6 +37,8 @@ test('replies reach the conversation\'s customers by email with safe rendering, 
 test('SendGrid, Resend, Cloudflare and Managed mail each carry the reply with its files and an authenticated reply address, settle acceptance, refusal, bounce or a lost response once, and never submit twice while a send is pending',async()=>{
  for(const journey of [transportsJourney,rerMailJourney])await journey()
 })
+
+test('a Managed reply refused at authenticate after a key rotation is held, survives a restart at its first refusal instant, is sent once by the outbox from the rebuilt release and fails after about an hour, while other refusals fail at once',rerMailHoldJourney)
 
 test('the sender-domain check names missing SPF, DKIM and DMARC records, keeps resolver errors unknown and is scoped to the workspace\'s members',senderDomainJourney)
 

@@ -1688,7 +1688,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "3d64a1f91233ed2ab1fdf2b975a05d083e72a0ccf14d5c1c2f8ff3e42c8cf77b",
+      "sha256": "f898f72f69e82ce373e6b62ab050348ec06c1c37bb7cf4df3fbd3eddafccf351",
       "executable": false
     },
     "docs/help-before-they-ask.md": {
@@ -2520,7 +2520,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "5bcc631d11d9e2a4ea524df63c77fd459b15f9809c0d8cbc6b5db1f64d389c4d",
+      "sha256": "230b63779fe3002b25cb1e409b5799bf12132660edfaefd284210bfc1c4a6127",
       "executable": false
     },
     "package.json": {
@@ -5240,7 +5240,7 @@
       "executable": false
     },
     "src/modules/integrations/email.ts": {
-      "sha256": "51229eecf35a6789e81543990ee656add4048cc9ebb3e27e4fdcce4443b85628",
+      "sha256": "07c37e1c7e09bf59b5f2b0c4d3e892a7617ab842ac54a4c7b5b3e6ec17cc23e9",
       "executable": false
     },
     "src/modules/integrations/github-discovery.ts": {
@@ -5424,7 +5424,7 @@
       "executable": false
     },
     "src/modules/integrations/notifications.ts": {
-      "sha256": "a9c467a870b38a550ff03219d105840fd4b876116f0589302ccb379447c5d93f",
+      "sha256": "331c62ca76011eae4d24394b915bd05149984112d5a8cebaebee8e91265ed2cf",
       "executable": false
     },
     "src/modules/integrations/operator-activity.ts": {
@@ -5467,6 +5467,10 @@
       "sha256": "62fc04ef2609e5e702c8018aa8d284a78a4cf50980d4cc100228f75ab5f57c5d",
       "executable": false
     },
+    "src/modules/integrations/rer-mail-hold.ts": {
+      "sha256": "096d820c779f757d1d8c764625869271d55d8d7ff865c30c8f81a672d619c81e",
+      "executable": false
+    },
     "src/modules/integrations/rer-mail-raw.ts": {
       "sha256": "ea61699f17ce07a7fc7570ae6a69988c1144eaa3792e92f7addcb800916caf04",
       "executable": false
@@ -5480,7 +5484,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mail.ts": {
-      "sha256": "08efa3de939bcfefe1301f94ffd04a0da6efe1bac64cb86a31a06bec8435a02e",
+      "sha256": "ef4fd477372721fe31e07da4d7a55c6b0e8446b59655854761fc84ae97b28326",
       "executable": false
     },
     "src/modules/integrations/rer-mailbox-adoption.ts": {
@@ -7640,7 +7644,7 @@
       "executable": false
     },
     "src/modules/workflows/schedules.ts": {
-      "sha256": "5bee85c17f5960ef41a203ab38cd20751030ad49e0174ed68bf0e55f23e75bd3",
+      "sha256": "89d32fd96df7f3c8db5389eb89c167ba7e352e8a6ea7911a43811a807caa768e",
       "executable": false
     },
     "src/modules/workflows/sla-alerts.ts": {
@@ -7680,7 +7684,7 @@
       "executable": false
     },
     "src/outbox-recovery.ts": {
-      "sha256": "758f87c6f0520f03b59aec2e6e64b747fc8ffcf3f5161e5d99f0475fa49bc6e0",
+      "sha256": "03227bcabfbee0ab50701b0dc4f8ff99755aa570bb0c37ae3f5eadb24a91834f",
       "executable": false
     },
     "src/platform/auth.ts": {
@@ -11191,6 +11195,10 @@
       "sha256": "9388f1ed039c72df57b2c5b08d26d12925d1879fa8f158711159bf5ffe67abdd",
       "executable": false
     },
+    "tests/helpers/email/rer-mail-hold.mjs": {
+      "sha256": "91b52cc05bfdf3ac2e36e64aacc0d70e3f99926e73541e2c1dfa5817d09b5969",
+      "executable": false
+    },
     "tests/helpers/email/rer-mail.mjs": {
       "sha256": "ea218fd9e48a190cd96e83af67c0a47791d904d73d5206f1748f0a7d53bc3884",
       "executable": false
@@ -12008,7 +12016,7 @@
       "executable": false
     },
     "tests/journeys/email.mjs": {
-      "sha256": "ca1b7a9ad648aec33235c7a926e91397bd96efc0317f8ff26be05d8e036c75f5",
+      "sha256": "b00db40d22a7bc5344c188e7774715da55bbd2106eda4f13c58065541c14b327",
       "executable": false
     },
     "tests/journeys/erasure-browser.mjs": {

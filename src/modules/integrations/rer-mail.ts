@@ -4,10 +4,11 @@ import {hashToken} from '../../platform/auth'
 import {mailService,mailJson,managedMailbox,maxMailBytes,managedMailAddress} from './rer-mail-contract'
 import {emailThreadingStatements,messageIds} from './email-threading'
 import {auditStatement} from '../audit/record'
+import {rerMailHeld,authorityUnavailable,rerMailCredentialRefused} from './rer-mail-hold'
 
 export class RerMailFailure extends Error {
- readonly state:'failed'|'uncertain'
- constructor(state:'failed'|'uncertain',message:string){super(message);this.state=state}
+ readonly state:'failed'|'uncertain'|'held'
+ constructor(state:'failed'|'uncertain'|'held',message:string){super(message);this.state=state}
 }
 export function rerConfigured(env:Env){return env.H2H_RER_MAIL_VERSION==='1'&&Boolean(env.MAIL_API_KEY&&env.MAIL_RELAY_URL&&env.RER_MAILBOX_ID&&env.RER_MAIL_ADDRESS&&env.RER_MAIL_INGRESS_KEY&&env.RER_MAIL_CONTROL_URL&&env.INBOUND_EMAIL_TOKEN&&env.INTEGRATION_ENCRYPTION_KEY)&&managedMailAddress(env.MAIL_FROM)===managedMailAddress(env.RER_MAIL_ADDRESS)}
 const header=(input:EmailInput,name:string)=>Object.entries(input.headers||{}).find(([key])=>key.toLowerCase()===name)?.[1]
@@ -22,8 +23,9 @@ function attachments(input:EmailInput){
  })
 }
 /** The native delivery claim is already durable. A request is issued at most once;
- * timeouts and malformed/lost responses remain uncertain. Polling never sends. */
-export async function sendRerMail(env:Env,input:EmailInput){
+ * timeouts and malformed/lost responses remain uncertain. Polling never sends. A
+ * `holdable` command refused at authenticate is held for the outbox to resend. */
+export async function sendRerMail(env:Env,input:EmailInput,holdable=false){
  const mailbox=await managedMailbox(env,input.projectId)
  if(!mailbox?.mailbox_id||!mailbox.address||mailbox.state!=='active')throw new RerMailFailure('failed','Managed mailbox is not active')
  if(input.replyTo&&(!mailbox.route_active||!replyAllowed(mailbox.address,input.replyTo)))throw new RerMailFailure('failed','Managed reply routing is not active for this address')
@@ -40,14 +42,17 @@ export async function sendRerMail(env:Env,input:EmailInput){
  ])
  try{
  const response=await fetch(mailService(env.MAIL_RELAY_URL),{method:'POST',redirect:'manual',headers:{Authorization:`Bearer ${env.MAIL_API_KEY}`,'Content-Type':'application/json'},body,signal:AbortSignal.timeout(20000)})
- if(!response.ok)throw new RerMailFailure(response.status>=500||response.status>=300&&response.status<400?'uncertain':'failed',response.status>=500?'The mail service did not return a confirmed acceptance':response.status===401||response.status===403?'Sending authority is unavailable; Run Edit Run needs to restore it':response.status===409?'This send conflicts with a retained mail command':'The mail service refused this message before acceptance')
+ if(!response.ok){
+  if(holdable&&response.status===401&&rerMailCredentialRefused.includes((await mailJson(response).catch(()=>null))?.code))throw new RerMailFailure('held',rerMailHeld)
+  throw new RerMailFailure(response.status>=500||response.status>=300&&response.status<400?'uncertain':'failed',response.status>=500?'The mail service did not return a confirmed acceptance':response.status===401||response.status===403?authorityUnavailable:response.status===409?'This send conflicts with a retained mail command':'The mail service refused this message before acceptance')
+ }
  const receipt=await mailJson(response)
  if(response.status!==202||receipt.state!=='accepted'||receipt.accepted!==true||messageIds(receipt.messageId).length!==1||messageIds(receipt.messageId)[0]!==receipt.messageId)throw new RerMailFailure(receipt.state==='failed'?'failed':'uncertain',receipt.state==='failed'?'Managed email was refused before acceptance':'Managed email acceptance is unknown')
  await recordRerAcceptance(env,input,receipt.messageId)
  return receipt.messageId as string
  }catch(error){
   const state=error instanceof RerMailFailure?error.state:'uncertain'
-  await auditStatement(env.DB,{projectId:mailbox.project_id,category:'integration',action:state==='failed'?'managed_mail.send_rejected':'managed_mail.send_uncertain',outcome:'failed',actor:{type:'system'},source:'system',target:{type:'email_delivery',id:input.idempotencyKey}}).run()
+  await auditStatement(env.DB,{projectId:mailbox.project_id,category:'integration',action:state==='failed'?'managed_mail.send_rejected':state==='held'?'managed_mail.send_held':'managed_mail.send_uncertain',outcome:state==='held'?'refused':'failed',actor:{type:'system'},source:'system',target:{type:'email_delivery',id:input.idempotencyKey}}).run()
   throw error
  }
 }

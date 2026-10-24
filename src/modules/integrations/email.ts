@@ -1,5 +1,6 @@
 import {rerMail,managedMailbox} from './rer-mail-contract'
 import {sendRerMail,RerMailFailure} from './rer-mail'
+import {holdRerMail,claimRerMailHold} from './rer-mail-hold'
 import {hashToken} from '../../platform/auth'
 import {localMailOrigin} from '../../edition/local-mail/configuration'
 import {sendDevelopment} from '../../edition/local-mail/sender.mjs'
@@ -40,7 +41,7 @@ async function senderFor(env:Env,input:EmailInput){
 async function updateDelivery(env:Env,id:string,state:'sent'|'failed'|'uncertain',error:string|null,providerId:string|null=null){
  await env.DB.prepare('UPDATE email_deliveries SET state=?,provider_id=coalesce(?,provider_id),error=?,updated_at=? WHERE id=?').bind(state,providerId,error,Date.now(),id).run()
 }
-async function sendThroughSelectedProvider(env:Env,input:EmailInput,from:string):Promise<string|null>{
+async function sendThroughSelectedProvider(env:Env,input:EmailInput,from:string,holdable:boolean):Promise<string|null>{
  if(input.mailboxId&&input.projectId){
   const selected=await mailboxForDelivery(env,input.projectId,input.mailboxId)
   if(!selected)throw new HTTPException(409,{message:'Mailbox is no longer connected'})
@@ -49,7 +50,7 @@ async function sendThroughSelectedProvider(env:Env,input:EmailInput,from:string)
   const sender=await mailboxSender(env,mailboxInput)
   input={...input,text:sender.text,html:sender.html}
  }
- if(rerMail(env))return sendRerMail(env,input)
+ if(rerMail(env))return sendRerMail(env,input,holdable)
  if(selectedEmailProvider(env)==='sendgrid'){
   const receipt=await sendGridDelivery(env,input,from)
   return receipt.providerMessageId
@@ -65,10 +66,12 @@ function sendGridFailure(error:unknown){
  const failed=error.outcome==='rejected'||error.outcome==='rate_limited'
  return {state:failed?'failed' as const:'uncertain' as const,message:error.outcome==='rate_limited'?'Email provider rate limited delivery':failed?'Email provider rejected delivery':'Email delivery outcome unknown; reconcile before retrying'}
 }
-async function submitClaimed(env:Env,input:EmailInput,from:string):Promise<EmailOutcome>{
+/** `hold` marks a command the conversation outbox resends; `since` is the first
+ * refusal instant of a held command being sent again. */
+async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:number}):Promise<EmailOutcome>{
  try{
   // In a demo copy the send is mocked: it completes with a provider id and nothing leaves.
-  const providerId=await demoEffect(()=>sendThroughSelectedProvider(env,input,from),()=>`demo_${crypto.randomUUID()}`)
+  const providerId=await demoEffect(()=>sendThroughSelectedProvider(env,input,from,Boolean(hold)),()=>`demo_${crypto.randomUUID()}`)
   await updateDelivery(env,input.idempotencyKey,'sent',null,providerId)
   return {id:providerId,state:'sent',...(emailMode(env)==='local'?{mode:'local' as const}:{})}
  }catch(error){
@@ -76,7 +79,11 @@ async function submitClaimed(env:Env,input:EmailInput,from:string):Promise<Email
    const mailbox=await env.DB.prepare('SELECT state FROM mailbox_sends WHERE id=? AND project_id=? AND mailbox_id=?').bind(input.idempotencyKey,input.projectId??null,input.mailboxId).first<{state:string}>()
    if(mailbox?.state==='failed'){await updateDelivery(env,input.idempotencyKey,'failed','Connected mailbox rejected delivery');throw error}
   }
-  const classified=error instanceof RerMailFailure?{state:error.state,message:error.message}:sendGridFailure(error)
+  if(error instanceof RerMailFailure&&error.state==='held'){
+   await holdRerMail(env,input,hold?.since??Date.now())
+   throw new HTTPException(503,{message:error.message})
+  }
+  const classified=error instanceof RerMailFailure&&error.state!=='held'?{state:error.state,message:error.message}:sendGridFailure(error)
   if(classified){
    await updateDelivery(env,input.idempotencyKey,classified.state,classified.message)
    throw new HTTPException(classified.state==='failed'?502:503,{message:classified.message})
@@ -110,7 +117,7 @@ export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelive
 /** Freeze the complete notification recipient set before any network effect. A
  * process lost after this transaction leaves sending outcomes for reconciliation,
  * never a partially reconstructed recipient list on automatic outbox replay. */
-export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:DeferEmailDelivery):Promise<EmailOutcome[]>{
+export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:DeferEmailDelivery,holdable=false):Promise<EmailOutcome[]>{
  if(!inputs.length)return []
  inputs=await Promise.all(inputs.map(input=>prepareConversationEmail(env,input)))
  if(inputs.some(input=>!input.mailboxId)&&!emailConfigured(env))throw new HTTPException(503,{message:'Email provider is not configured'})
@@ -121,7 +128,7 @@ export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:Def
  // participant claim; only the process that owns the whole set may submit it.
  await env.DB.batch(prepared.map(({input,intentHash})=>env.DB.prepare("INSERT INTO email_deliveries VALUES(?,?,?,?,?,'sending',NULL,NULL,?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now)))
  const delivery=Promise.all(prepared.map(async({input,from})=>{
-  try{return {...await submitClaimed(env,input,from),recipient:input.to}}
+  try{return {...await submitClaimed(env,input,from,holdable?{}:undefined),recipient:input.to}}
   catch(error){
    const row=await env.DB.prepare('SELECT state,provider_id,recipient FROM email_deliveries WHERE id=?').bind(input.idempotencyKey).first<{state:string;provider_id:string|null;recipient:string}>()
    if(!row)throw error
@@ -132,4 +139,17 @@ export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:Def
  // No provider request starts until the all-or-nothing claim above commits.
  if(defer){defer(delivery);return prepared.map(({input})=>({id:null,state:'sending',recipient:input.to}))}
  return delivery
+}
+/** Replay resends each held command among `inputs` once: the same identity, and so
+ * the same messageKey, to its recorded recipient. Nothing else is ever sent again. */
+export async function resendHeldEmails(env:Env,inputs:readonly EmailInput[]){
+ await Promise.all(inputs.map(async input=>{
+  try{
+   input=await prepareConversationEmail(env,input)
+   const from=await senderFor(env,input)
+   validateEmailInput(input,from)
+   const since=await claimRerMailHold(env,input)
+   if(since!==null)await submitClaimed(env,input,from,{since})
+  }catch{console.error('Held managed mail remains pending')}
+ }))
 }

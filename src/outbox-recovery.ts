@@ -2,6 +2,7 @@ import type {Actor,Env,Job} from './platform/env'
 import {cronRoom,CronDeferred} from './platform/cron-budget'
 import {notificationContactsSql} from './modules/integrations/notification-contacts'
 import {applyMessageEffects} from './message-effects'
+import {openRerMailHold} from './modules/integrations/rer-mail-hold'
 const RETRY_MS=60*60*1000
 const liveProject="EXISTS(SELECT 1 FROM projects p WHERE p.id=o.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=o.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)"
 // The estimate selects the same proven audience as R4. Human replies may honour
@@ -27,7 +28,8 @@ async function complete(env:Env,projectId:string,conversationId:string,done:Mess
  if(!done.length)return true
  const sent=await Promise.all([conversationId,`project:${projectId}`].map(key=>env.CONVERSATIONS.get(env.CONVERSATIONS.idFromName(key)).fetch('https://conversation.internal/broadcast',{method:'POST'})))
  if(!sent.every(result=>result.ok))return false
- await env.DB.prepare(`UPDATE conversation_outbox SET delivered_at=? WHERE project_id=? AND conversation_id=? AND id IN (${done.map(()=>'?').join(',')}) AND delivered_at IS NULL`).bind(Date.now(),projectId,conversationId,...done.map(m=>m.outbox_id)).run()
+ // A held managed notification keeps its message here until replay resends it.
+ await env.DB.prepare(`UPDATE conversation_outbox SET delivered_at=? WHERE project_id=? AND conversation_id=? AND id IN (${done.map(()=>'?').join(',')}) AND delivered_at IS NULL AND NOT ${openRerMailHold}`).bind(Date.now(),projectId,conversationId,...done.map(m=>m.outbox_id)).run()
  return true
 }
 /** Small effects finish in cron. Every deferred message has its own durable job,

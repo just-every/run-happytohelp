@@ -1,7 +1,8 @@
 import {problemMessageDelivery} from '../tickets/problem-delivery'
 import {notifyTicketEvent} from './triggers'
 import type {Actor,Env} from '../../platform/env'
-import {sendEmails,emailConfigured,type EmailInput,type EmailOutcome,type DeferEmailDelivery} from './email'
+import {sendEmails,resendHeldEmails,emailConfigured,type EmailInput,type EmailOutcome,type DeferEmailDelivery} from './email'
+import {openRerMailHolds} from './rer-mail-hold'
 import {renderConversationEmail} from './email-content'
 import {recipientReplyAddress} from './email-reply-address'
 import {withChatReplyNotice} from './reply-notice'
@@ -26,7 +27,8 @@ async function recorded(env:Env,id:string,observed?:Recorded){
  return outcome([first,...others.results].map(row=>({state:row.state,id:row.provider_id,recipient:row.recipient})))
 }
 /** Called after commit. The historical primary ID fences the entire fan-out;
- * edited addresses or newly added participants cannot turn replay into new mail. */
+ * edited addresses or newly added participants cannot turn replay into new mail.
+ * Replay only resends a held managed command, to the recipient it recorded. */
 export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:DeferEmailDelivery){
  const problem=await problemMessageDelivery(env,message,actor);if(problem)return problem
  const deliveryId=`message:${message.id}:notification`,configured=emailConfigured(env)
@@ -47,15 +49,15 @@ export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:Defer
   ]:[])
  ])
  const prior=data[0].results[0]
- if(prior)return recorded(env,deliveryId,prior)
+ if(prior&&!await openRerMailHolds(env,deliveryId))return recorded(env,deliveryId,prior)
  if(!data[1].results[0])return {state:'project_deleted'}
- const operatorActivity=message.actor_role==='contact'?await queueOperatorActivity(env,message,actor.projectId):null
+ const operatorActivity=!prior&&message.actor_role==='contact'?await queueOperatorActivity(env,message,actor.projectId):null
  if(operatorActivity?.state==='automatic')return operatorActivity
- if(message.actor_role==='contact'){
+ if(!prior&&message.actor_role==='contact'){
   await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'request_received',eventId:String(message.id),actorId:senderId})
   await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'customer_updated',eventId:String(message.id),actorId:senderId})
  }
- if(message.actor_role!=='contact')await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'ticket_updated',eventId:String(message.id),actorId:senderId})
+ if(!prior&&message.actor_role!=='contact')await notifyTicketEvent(env,{projectId:actor.projectId,conversationId:message.conversation_id,event:'ticket_updated',eventId:String(message.id),actorId:senderId})
  if(!configured)return {state:'not_configured'}
  const conversation=data[2].results[0]
  if(!conversation)return {state:'not_found'}
@@ -69,6 +71,7 @@ export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:Defer
  if(!recipients.length)return operatorActivity||{state}
  const {omitted,...content}=await renderConversationEmail(env,{projectId:actor.projectId,conversationId:conversation.id,messages:[message]})
  const inputs:EmailInput[]=await Promise.all(recipients.map(async(recipient,index)=>{const replyTo=settings?await recipientReplyAddress(env,settings.inbound_address,actor.projectId,conversation.id,recipient.email):undefined;return {...(replyTo?content:await withChatReplyNotice(env,actor.projectId,content)),replyTo,projectId:actor.projectId,to:recipient.email,subject:'Reply to your support conversation',headers:loopSuppressionHeaders(message),idempotencyKey:index===0?deliveryId:`${deliveryId}:contact:${recipient.id}`}}))
- try{return outcome(await sendEmails(env,inputs,defer))}
+ if(prior){await resendHeldEmails(env,inputs);return recorded(env,deliveryId)}
+ try{return outcome(await sendEmails(env,inputs,defer,true))}
  catch(error){const existing=await recorded(env,deliveryId);if(existing)return existing;throw error}
 }

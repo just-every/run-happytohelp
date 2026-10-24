@@ -2,13 +2,14 @@ import PostalMime from 'postal-mime'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {receivingMailbox} from './inbound-receiving'
+import type {HeldEmailCustody} from './suspended-store'
 import {suspendRefusedEmail} from './refused-email'
 import type {IncomingEmail} from './inbound-service'
 
 type RawEmail=ArrayBuffer|Uint8Array
 interface HoldContext {
  reviewRaw?:RawEmail;recipients:string[];projectId?:string;identity?:string;description?:string
- reason?:string;attachments?:IncomingEmail['attachments'];senderAddress?:string;candidateId?:string|null
+ reason?:string;attachments?:IncomingEmail['attachments'];senderAddress?:string;candidateId?:string|null;custody?:HeldEmailCustody
 }
 /** Unreadable bytes establish neither an author nor a thread. Only the receiving
  * envelope or an already authenticated mailbox may select their workspace.
@@ -22,7 +23,7 @@ export async function holdRawEmail(env:Env,raw:RawEmail|null,context:HoldContext
  await suspendRefusedEmail(env,{messageId:identity,from:context.senderAddress||'unknown@invalid.example',to:context.recipients,
   text:context.description||'This email could not be read. Its original bytes are retained as original.eml.',senderAuthenticated:false,
   attachments:[...(content?[{filename:'original.eml',contentType:'message/rfc822',content}]:[]),...(context.attachments||[])]},
-  {projectId,identity,reason:context.reason||'message_unreadable',candidateId:context.candidateId})
+  {projectId,identity,reason:context.reason||'message_unreadable',candidateId:context.candidateId,custody:context.custody})
 }
 /** Catch only the MIME parser. A failed durable hold must still fail delivery. */
 export async function parseInboundMime(env:Env,raw:RawEmail,context:HoldContext){

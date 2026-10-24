@@ -63,8 +63,7 @@ export async function recoverRerMailboxes(env:Env){
 }
 export async function rerMailboxStatus(env:Env,projectId:string){
  if(!rerMail(env))return null
- await seedMissingRerMailbox(env,projectId)
- await processRerMailbox(env,projectId)
+ // Observations never seed, bind or retry. Provisioning, Retry and the cron own effects.
  const row=await env.DB.prepare('SELECT * FROM rer_mailboxes WHERE project_id=?').bind(projectId).first<ManagedMailbox>()
  const latest=await env.DB.prepare('SELECT id,state,error,updated_at FROM email_deliveries WHERE project_id=? ORDER BY created_at DESC LIMIT 1').bind(projectId).first<{id:string;state:string;error:string|null;updated_at:number}>()
  const inbound=await env.DB.prepare("SELECT state,json_extract(result_json,'$.state') outcome,error,updated_at FROM rer_mail_ingress WHERE project_id=? ORDER BY updated_at DESC LIMIT 1").bind(projectId).first<{state:string;outcome:string|null;error:string|null;updated_at:number}>()

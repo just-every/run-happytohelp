@@ -56,10 +56,10 @@ export async function managedFirstRunJourney(){
  await managedUpgradeJourney()
 }
 
-// The same capability adoption works through a settings read, an explicit retry,
-// and the scheduled reconciler; none needs a fresh workspace or repeated reserve.
+// Mutating Retry and the scheduled reconciler adopt existing workspaces.
+// Reads remain observations (covered by the Setup pure-GET journey).
 export async function managedUpgradeJourney(){
- for(const door of ['settings','retry','schedule']){
+ for(const door of ['retry','schedule']){
   const i=await managedInstallation('upgrade-'+door,{bindings:{MAIL_PROVIDER:''}}),{app,owner,edge,assigned}=i
   try{
    assert.equal((await i.settings()).managed,null)

@@ -1,6 +1,8 @@
 import type {Env} from '../../platform/env'
 import {HTTPException} from 'hono/http-exception'
 import {canonical} from './rer-mail-contract'
+import {headerBlockEntries} from './email-classification'
+import {headerFromAddress} from './inbound-sender'
 import type {RerInboundMetadata} from './rer-inbound-signature'
 
 /** Original MIME can contain a live reply recipient. Keep it encrypted with the
@@ -22,4 +24,11 @@ export function redactedMime(raw:Uint8Array){
   if(token.every(v=>v>=48&&v<=57||v>=97&&v<=102))safe.fill(120,index+3,index+35)
  }
  return safe
+}
+
+/** Capture custody before the admission claim, including interrupted originals.
+ * This is erasure metadata only; it never establishes sender authentication. */
+export function mimeHeaderFrom(raw:Uint8Array){
+ const headers=new TextDecoder().decode(raw.subarray(0,65536)).split(/\r?\n\r?\n/,1)[0]
+ return headerFromAddress(headerBlockEntries(headers))
 }

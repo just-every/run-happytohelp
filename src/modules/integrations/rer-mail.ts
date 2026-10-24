@@ -3,6 +3,7 @@ import type {EmailInput} from './email'
 import {hashToken} from '../../platform/auth'
 import {mailService,mailJson,managedMailbox,maxMailBytes} from './rer-mail-contract'
 import {emailThreadingStatements,messageIds} from './email-threading'
+import {auditStatement} from '../audit/record'
 
 export class RerMailFailure extends Error {
  readonly state:'failed'|'uncertain'
@@ -33,18 +34,28 @@ export async function sendRerMail(env:Env,input:EmailInput){
  if(new TextEncoder().encode(body).length>maxMailBytes)throw new RerMailFailure('failed','Email content exceeds the total size limit')
  const match=/^message:([^:]+):notification(?::|$)/.exec(input.idempotencyKey),replyToken=input.replyTo?.match(/\+r\.([a-f0-9]{32})@/)?.[1]
  const thread=match?await env.DB.prepare('SELECT conversation_id FROM messages WHERE id=? AND project_id=?').bind(match[1],mailbox.project_id).first<{conversation_id:string}>():replyToken?await env.DB.prepare('SELECT conversation_id FROM email_reply_grants WHERE project_id=? AND token_hash=?').bind(mailbox.project_id,await hashToken(replyToken)).first<{conversation_id:string}>():null
- await env.DB.prepare('INSERT OR IGNORE INTO rer_mail_commands(command_id,project_id,mailbox_id,generation,message_key,conversation_id) VALUES(?,?,?,?,?,?)').bind(input.idempotencyKey,mailbox.project_id,mailbox.mailbox_id,mailbox.generation,payload.messageKey,thread?.conversation_id||null).run()
+ await env.DB.batch([
+  auditStatement(env.DB,{projectId:mailbox.project_id,category:'integration',action:'managed_mail.send_started',actor:{type:'system'},source:'system',target:{type:'email_delivery',id:input.idempotencyKey}},Date.now(),{sql:'NOT EXISTS(SELECT 1 FROM rer_mail_commands WHERE command_id=?)',params:[input.idempotencyKey]}),
+  env.DB.prepare('INSERT OR IGNORE INTO rer_mail_commands(command_id,project_id,mailbox_id,generation,message_key,conversation_id) VALUES(?,?,?,?,?,?)').bind(input.idempotencyKey,mailbox.project_id,mailbox.mailbox_id,mailbox.generation,payload.messageKey,thread?.conversation_id||null),
+ ])
+ try{
  const response=await fetch(mailService(env.MAIL_RELAY_URL),{method:'POST',redirect:'manual',headers:{Authorization:`Bearer ${env.MAIL_API_KEY}`,'Content-Type':'application/json'},body,signal:AbortSignal.timeout(20000)})
  if(!response.ok)throw new RerMailFailure(response.status>=500||response.status>=300&&response.status<400?'uncertain':'failed',response.status>=500?'The mail service did not return a confirmed acceptance':response.status===401||response.status===403?'Sending authority is unavailable; Run Edit Run needs to restore it':response.status===409?'This send conflicts with a retained mail command':'The mail service refused this message before acceptance')
  const receipt=await mailJson(response)
  if(response.status!==202||receipt.state!=='accepted'||receipt.accepted!==true||messageIds(receipt.messageId).length!==1||messageIds(receipt.messageId)[0]!==receipt.messageId)throw new RerMailFailure(receipt.state==='failed'?'failed':'uncertain',receipt.state==='failed'?'Managed email was refused before acceptance':'Managed email acceptance is unknown')
  await recordRerAcceptance(env,input,receipt.messageId)
  return receipt.messageId as string
+ }catch(error){
+  const state=error instanceof RerMailFailure?error.state:'uncertain'
+  await auditStatement(env.DB,{projectId:mailbox.project_id,category:'integration',action:state==='failed'?'managed_mail.send_rejected':'managed_mail.send_uncertain',outcome:'failed',actor:{type:'system'},source:'system',target:{type:'email_delivery',id:input.idempotencyKey}}).run()
+  throw error
+ }
 }
 export async function recordRerAcceptance(env:Env,input:Pick<EmailInput,'projectId'|'idempotencyKey'>,messageId:string){
  const match=/^message:([^:]+):notification(?::|$)/.exec(input.idempotencyKey)
  const row=await env.DB.prepare('SELECT conversation_id,project_id FROM rer_mail_commands WHERE command_id=?').bind(input.idempotencyKey).first<{conversation_id:string|null;project_id:string}>()
  await env.DB.batch([
+  ...(row?[auditStatement(env.DB,{projectId:row.project_id,category:'integration',action:'managed_mail.send_accepted',actor:{type:'system'},source:'system',target:{type:'email_delivery',id:input.idempotencyKey}},Date.now(),{sql:'EXISTS(SELECT 1 FROM rer_mail_commands WHERE command_id=? AND accepted_at IS NULL)',params:[input.idempotencyKey]})]:[]),
   env.DB.prepare('UPDATE rer_mailboxes SET last_outbound_at=?,updated_at=? WHERE project_id=?').bind(Date.now(),Date.now(),input.projectId??(await managedMailbox(env))?.project_id??null),
   env.DB.prepare('UPDATE rer_mail_commands SET message_id=?,accepted_at=? WHERE command_id=?').bind(messageId,Date.now(),input.idempotencyKey),
   ...(row?.conversation_id?emailThreadingStatements(env,{projectId:row.project_id,conversationId:row.conversation_id,keys:[{kind:'message_id',value:messageId,source:'native',sourceRef:match?.[1]||input.idempotencyKey}],createdAt:Date.now()}):[]),

@@ -56,6 +56,17 @@ export async function managedMailBrowser(){
   for(const [name,viewport] of Object.entries(viewports)){
    await page.setViewportSize(viewport);await screenshot(name+'-email-observed');await page.goto(runtime.origin+`/projects/${projectId}/conversations/${inbound.conversationId}`);await page.getByText('My Northstar order arrived without its rain cover. Can you send a replacement?',{exact:false}).first().waitFor();await screenshot(name+'-thread');await page.goto(runtime.origin+emailPath);await page.getByRole('heading',{name:'Managed email',exact:true}).waitFor()
   }
+  edge.statusFailures=1
+  await runtime.execute(`UPDATE rer_mailboxes SET route_check_next_at=0 WHERE project_id='${projectId}'`)
+  assert.equal((await fetch(runtime.origin+'/cdn-cgi/local/scheduled')).status,200)
+  const deadline=Date.now()+20000
+  while(!(await api(`/api/management/projects/${projectId}/email-settings`)).managed.routeUncertain){if(Date.now()>deadline)throw new Error('Route check did not expose the failed read');await new Promise(done=>setTimeout(done,100))}
+  await page.reload();await page.getByText('Active at last check',{exact:true}).waitFor();await page.getByText('Uncertain · retrying',{exact:true}).waitFor()
+  for(const [name,viewport] of Object.entries(viewports)){await page.setViewportSize(viewport);await screenshot(name+'-email-route-uncertain')}
+  await runtime.execute(`UPDATE rer_mailboxes SET route_check_next_at=0 WHERE project_id='${projectId}'`)
+  assert.equal((await fetch(runtime.origin+'/cdn-cgi/local/scheduled')).status,200)
+  while((await api(`/api/management/projects/${projectId}/email-settings`)).managed.routeUncertain){if(Date.now()>deadline)throw new Error('Route check did not recover');await new Promise(done=>setTimeout(done,100))}
+  await page.reload();await page.getByText('Active',{exact:true}).waitFor();await page.getByText('Checked',{exact:true}).waitFor()
   edge.conflict=true
   const failed=await api('/api/management/projects',{name:'Northstar Warehouse',allowed_origin:'https://warehouse.example.test'})
   await page.goto(runtime.origin+`/projects/${failed.id}/email-settings`);await page.getByRole('button',{name:'Retry connection',exact:true}).waitFor()

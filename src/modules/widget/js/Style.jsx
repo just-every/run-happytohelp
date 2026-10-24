@@ -1,4 +1,5 @@
 import React from 'react';
+import campaignStyles from '../css/CampaignOffer.css?inline';
 
 /* eslint import/no-webpack-loader-syntax: off */
 import styles from '../css/Root.css?inline';
@@ -17,6 +18,7 @@ export default function Style(props) {
     return (
         <>
             <style type="text/css">{styles}</style>
+            <style type="text/css">{campaignStyles}</style>
             <style type="text/css">{ratingStyles}</style>
             <style type="text/css">{requestFormStyles}</style>
             <style type="text/css">{monitoringStyles}</style>

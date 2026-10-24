@@ -1,3 +1,4 @@
+import {purgeCampaignData} from '../modules/widget/campaigns/retention'
 import {enqueueScheduledReports} from '../modules/reports/schedule-queue'
 import type {Env} from './env'
 import {boundedDatabase} from './d1-budget'
@@ -20,6 +21,8 @@ export async function runScheduledInvocation(env:Env,options:{now?:number;consum
  await run('notifications',input=>dispatchOperatorNotifications(input,{now:options.now,statementLimit:scheduledStatementLimit-budget.statements-scheduledReservations.audit-scheduledReservations.reports}))
  await run('reports',input=>enqueueScheduledReports(input,options.now))
  await run('audit',input=>purgeExpiredAudit(input,options.now,scheduledStatementLimit-budget.statements))
+ // Use settled spare credit only; campaign expiry never takes another consumer’s reservation.
+ if(scheduledStatementLimit-budget.statements>=2){try{await purgeCampaignData({...env,DB:budget.database},options.now)}catch(error){errors.push(error)}}
  if(errors.length)throw new AggregateError(errors,'Scheduled consumers failed')
  return budget.metrics
 }

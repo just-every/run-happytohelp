@@ -46,6 +46,10 @@
       "buyerSteps": "CUSTOMER-001: add operator-reviewed associations between independently proven identities. Apply after 241 and before the updated Worker serves traffic. Existing contacts, sessions and conversations are unchanged; links grant no customer access or sending authority. Back up and restore with the rest of customer data; erasure removes either side of a link."
     },
     {
+      "id": "243_widget_campaigns.sql",
+      "buyerSteps": "Add configurable proactive widget campaigns, consented visit/impression attribution, a durable daily-cap fence and consent-revocation/erasure cleanup. Apply after 242 and before the updated Worker serves traffic. Existing workspaces start with no campaigns; new campaigns are disabled until a lead enables them. Both collector switches and visitor consent are required. Campaign identifiers expire from reports after 30 days and are deleted by bounded cleanup, or immediately on consent revocation or native erasure. No existing conversation or message is changed."
+    },
+    {
       "id": "243_widget_survey_cycles.sql",
       "buyerSteps": "Snapshot widget scale, language and timing on new resolution cycles. Apply after 242 and before the updated Worker serves traffic. Existing cycles retain immediate English thumbs feedback; visitors can stop widget surveys without changing mail preferences. No prior feedback is rewritten and this migration sends nothing."
     },

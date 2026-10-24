@@ -55,7 +55,7 @@ const rules:Record<string,Rule>={
  [`DELETE ${D}/report-schedules/:scheduleId`]:'data.export',
  // Workspace settings
  'POST /api/management/projects':'settings.manage',[`PUT ${P}/settings`]:'settings.manage',[`DELETE ${P}`]:'data.erase',
- [`PUT ${P}/appearance`]:'settings.manage',[`PUT ${P}/artwork`]:'settings.manage',[`PUT ${P}/widget-settings`]:'settings.manage',[`PUT ${P}/availability`]:'settings.manage',[`PUT ${P}/ai`]:'settings.manage',
+ [`PUT ${P}/appearance`]:'settings.manage',[`PUT ${P}/artwork`]:'settings.manage',[`PUT ${P}/widget-settings`]:'settings.manage',[`PUT ${P}/widget-campaigns/:campaignId`]:'settings.manage',[`PUT ${P}/availability`]:'settings.manage',[`PUT ${P}/ai`]:'settings.manage',
  [`POST ${P}/brand-media`]:'settings.manage',[`POST ${P}/activation/check`]:'settings.manage',[`POST ${P}/activation/skip`]:'settings.manage',[`POST ${P}/activation/test-mail`]:'settings.manage',
  [`PUT ${P}/email-settings`]:'settings.manage',[`POST ${P}/email-settings/test`]:'settings.manage',[`POST ${P}/inbound-emails/:messageId/reconcile`]:'conversations.manage',
  'POST /api/site-preview/projects/:projectId/brand-image-generations':'settings.manage','POST /api/site-preview/projects/:projectId/brand-assets':'settings.manage','PUT /api/site-preview/projects/:projectId/brand-assets/:id/publish':'settings.manage','POST /api/site-preview/projects/:projectId/preview':'settings.manage',

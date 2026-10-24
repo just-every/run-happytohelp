@@ -1,3 +1,4 @@
+import {rerMail} from '../../integrations/rer-mail-contract'
 import type {Env} from '../../../platform/env'
 import {emailAddress} from '../../integrations/inbound-routing'
 import type {Configuration} from './configuration'
@@ -23,6 +24,7 @@ export const senderDnsDomain=(config:Parameters<typeof senderDnsAddress>[0]):str
  * mailbox version (`updated_at`) is untouched: receiving is not affected. No mail is sent.
  */
 export async function adoptProposedSender(env:Env,config:Configuration):Promise<boolean> {
+ if(rerMail(env))return false
  const proposed=config.proposedSender,saved=config.email?.from_address
  if(!proposed||config.senderOverridden||typeof saved!=='string'||emailAddress(saved)===proposed)return false
  const record=JSON.stringify({from:emailAddress(saved),to:proposed,at:Date.now()})

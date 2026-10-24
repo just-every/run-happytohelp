@@ -1,3 +1,4 @@
+import {rerMail} from '../../integrations/rer-mail-contract'
 import type {Env} from '../../../platform/env'
 import {localMailOrigin} from '../../../edition/local-mail/configuration'
 import {emailConfigured} from '../../integrations/email-provider'
@@ -28,6 +29,7 @@ export function siteDomain(website: string): string | null {
  * checks that domain's DNS and switches the sender over once it is confirmed.
  */
 export function proposedSender(env: Env, seed: {projectId: string; website: string}, now: number, when: Condition): D1PreparedStatement[] {
+ if(rerMail(env))return []
  const site = siteDomain(seed.website)
  if (!site) return []
  const address = `support@${site}`

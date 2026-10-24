@@ -26,3 +26,6 @@ test('a visitor\'s saved profile is read under current authority only, and signe
 test('the installer\'s answers: local mail suppressed, only given answers sent, a chosen AI key in its own secret, the inbound token generated once, saved providers never replaced',setupAnswersJourney)
 
 test('the first release on the emitted Worker: owner setup, tenant isolation, a customer conversation with an attachment, operator handling, no AI without a key, replay and deletion',{timeout:10*60_000},firstReleaseJourney)
+
+import {managedFirstRunJourney} from '../helpers/first-run/managed-mail.mjs'
+test('fresh Managed setup reaches owner recovery and customer intake without mail answers, keeps allocations through rename and rotation, retires deleted workspaces and exposes binding conflicts',managedFirstRunJourney)

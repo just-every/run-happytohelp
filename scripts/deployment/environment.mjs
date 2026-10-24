@@ -3,12 +3,13 @@ export const secretNames = [
  'OPENAI_API_KEY','ANTHROPIC_API_KEY','GOOGLE_API_KEY','GEMINI_API_KEY',
  'DEEPSEEK_API_KEY','XAI_API_KEY','OPENROUTER_API_KEY','APIFY_TOKEN','QDRANT_API_KEY',
  'INTERCOM_TOKEN','FRESHDESK_TOKEN','ZENDESK_TOKEN','ZENDESK_EMAIL',
- 'EMAIL_API_KEY','EMAIL_FROM','INBOUND_EMAIL_TOKEN',
+ 'EMAIL_API_KEY','EMAIL_FROM','INBOUND_EMAIL_TOKEN','MAIL_API_KEY','RER_MAIL_INGRESS_KEY',
  'INTEGRATION_ENCRYPTION_KEY','H2H_SETUP_TOKEN','OWNER_EMAIL',
  'GITHUB_CLIENT_SECRET','GITHUB_TOKEN','GITHUB_TOKENS','TURNSTILE_SECRET','FORMS_TURNSTILE_SECRET_KEY',
 ]
 export const variableNames = [
  'EMAIL_PROVIDER','EMAIL_ACCOUNT_ID','INBOUND_EMAIL_DOMAIN',
+ 'MAIL_PROVIDER','MAIL_FROM','MAIL_RELAY_URL','H2H_RER_MAIL_VERSION','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL',
  'RER_INSTALLATION_ID','RER_MANAGEMENT_ORIGIN','H2H_SETUP_OWNER_EMAIL','WIDGET_ORIGIN','REGISTRATION_ENABLED','LEAD_MODEL','CONTEXT_MODEL','KNOWLEDGE_EMBEDDING_MODEL','QDRANT_URL',
  'APIFY_CRAWLER_ACTOR_ID','GITHUB_CLIENT_ID','GITHUB_PROJECT_ID','PREVIEW_ORIGIN',
  'BRAND_IMAGE_MODEL','BRAND_IMAGE_SIZE',
@@ -29,6 +30,13 @@ const configured=(env,name)=>typeof env[name]==='string'&&env[name].trim()!==''
 export function runtimeVariables(env){validateRuntimeEnvironment(env);return Object.fromEntries(variableNames.filter(name=>configured(env,name)).map(name=>[name,env[name]]))}
 export function runtimeSecrets(env){return Object.fromEntries(secretNames.filter(name=>configured(env,name)).map(name=>[name,env[name]]))}
 function validateRemoteMailSelection(env){
+ if(env.MAIL_PROVIDER==='rer'){
+  for(const name of ['MAIL_FROM','MAIL_RELAY_URL','MAIL_API_KEY','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL','RER_MAIL_INGRESS_KEY','INBOUND_EMAIL_TOKEN','INTEGRATION_ENCRYPTION_KEY'])if(!configured(env,name))throw new Error(`Managed email requires ${name}`)
+  if(env.H2H_RER_MAIL_VERSION!=='1'||env.MAIL_FROM!==env.RER_MAIL_ADDRESS)throw new Error('Managed conversation mail requires version 1 and the assigned address')
+  for(const name of ['MAIL_RELAY_URL','RER_MAIL_CONTROL_URL']){const url=runtimeUrl(env[name],name);if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash)throw new Error(`${name} must be HTTPS without credentials or query parameters`)}
+  return
+ }
+ if(configured(env,'MAIL_PROVIDER')&&env.MAIL_PROVIDER!=='direct')throw new Error('MAIL_PROVIDER must be direct or rer')
  if(configured(env,'EMAIL_PROVIDER')&&!['resend','cloudflare','sendgrid'].includes(env.EMAIL_PROVIDER))throw new Error('EMAIL_PROVIDER must be resend, cloudflare or sendgrid')
  if(env.EMAIL_PROVIDER==='cloudflare'&&!/^[a-f0-9]{32}$/i.test(env.EMAIL_ACCOUNT_ID||''))throw new Error('Cloudflare email requires EMAIL_ACCOUNT_ID')
  if(configured(env,'EMAIL_PROVIDER'))for(const name of ['EMAIL_API_KEY','EMAIL_FROM'])if(!configured(env,name))throw new Error(`${env.EMAIL_PROVIDER} email requires ${name}`)

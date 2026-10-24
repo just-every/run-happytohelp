@@ -1,3 +1,4 @@
+import {rerMailArchiveRow,rerMailArchiveSafety} from './rer-mail-archive.mjs';
 import {asyncWorkArchiveRow,asyncWorkArchiveStagedSafety} from './async-work-archive.mjs';
 import {triageArchiveRow,triageArchiveStagedSafety} from './triage-archive.mjs';
 import {reportArchiveRow,reportArchiveStagedSafety} from './report-archive.mjs';
@@ -8,11 +9,11 @@ import {trainingArchiveRow,trainingArchiveStagedSafety} from './training-archive
 // Native identities and password hashes move with their referenced domain rows.
 // Live bearer grants, provider credentials and pending outbound deliveries do not.
 export const archivePolicy={
- product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);await trainingArchiveStagedSafety(input);await asyncWorkArchiveStagedSafety(input);return reportArchiveStagedSafety(input)},
+ product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await rerMailArchiveSafety(input);await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);await trainingArchiveStagedSafety(input);await asyncWorkArchiveStagedSafety(input);return reportArchiveStagedSafety(input)},
  // Keep invitation history, but restored archives never restore a live survey link or queued send.
- exportRow:(table,row)=>asyncWorkArchiveRow(table,trainingArchiveRow(table,triageArchiveRow(table,escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
+ exportRow:(table,row)=>rerMailArchiveRow(table,asyncWorkArchiveRow(table,trainingArchiveRow(table,triageArchiveRow(table,escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
   :table==='mailbox_connections'?{...row,credential_cipher:null,status:'disconnected',cursor_json:null,sync_lock:null,sync_lock_until:null}
-  :table==='mailbox_sends'&&row.state==='sending'?{...row,state:'uncertain',error_code:'restored_pending_send'}:row))))))),
+  :table==='mailbox_sends'&&row.state==='sending'?{...row,state:'uncertain',error_code:'restored_pending_send'}:row)))))))),
  // Reconstruct the full-text index from retained messages after restore.
  derivedTables:['inbox_message_search'],
  excludeTables:[

@@ -104,6 +104,7 @@ function rowFor(data, id) {
    return {...withObservation('set', !facts.website ? sentence(own?.detail || '') : testing ? `${facts.website}. This is HappyToHelp’s own address, so the widget answers only here, which suits a test. Enter your website’s address to use it there.` : `${facts.website}. Your widget works only here.`), change: [...pages.widget, 'settings']};
   }
   case 'owner_mail': {
+   if(facts.mail?.managed&&!observed)return {...base,state:facts.mail.managed.error?'problem':'set',value:facts.mail.managed.error|| (facts.mail.managed.lastOutboundAcceptanceAt?'The provider accepted an email for you. Use an emailed sign-in link to confirm it arrived.':'Your assigned address sends account and support email once Run Edit Run activates it.')};
    if (facts.mail?.mode === 'unavailable') {
     const names = own?.state === 'unavailable' ? requiredNames(own.detail) : '';
     return {...base, state: 'unavailable', value: `Email isn’t configured, so we can’t email you.${names ? ` It needs ${names}.` : ''}`};
@@ -111,6 +112,7 @@ function rowFor(data, id) {
    return withObservation('set', facts.mail?.mode === 'local' ? 'Email is suppressed during local development. No email is sent.' : observed ? `${/delivered/i.test(own.receiptRef || '') ? 'Delivered' : 'Received'}. ${own.checkedAt ? `Confirmed ${utc(own.checkedAt)}.` : ''}`.trim() : 'Not confirmed yet. Signing in with an emailed link, or the test on the Email page, confirms it.');
   }
   case 'inbound_address': {
+   if(facts.mail?.managed){const m=facts.mail.managed;return {...base,state:m.error?'problem':m.observed?'confirmed':'set',value:`${m.address||'Your managed address'}. ${m.error|| (m.observed?'Email has arrived here.':m.routeActive?'Route active; waiting for the first email.':'Run Edit Run is activating the route. No email setup is needed.')}`};}
    // Replies by email: customers answer an emailed reply by pressing Reply. Each reason says what is true and where to act.
    const mailbox = facts.inboundAddress, lead = mailbox ? `${mailbox}. ` : '', reason = facts.inbound?.receiving;
    if (reason === 'workers_dev' || facts.inbound?.customDomainRequired) return {...base, state: 'unavailable', value: `${lead}This address can’t receive email: workers.dev addresses have no mail server. Customers answer in the chat for now. To let them reply by email, use an address on your own domain; the Email page shows how.`};
@@ -131,7 +133,7 @@ function rowFor(data, id) {
    return withObservation('set', observed ? `Connected. ${facts.starterAssistant?.model ? `Your starter assistant uses ${facts.starterAssistant.model}.` : ''}`.trim() : sentence(own?.detail || ''));
   }
   case 'widget_seen': return withObservation('set', observed ? `Seen on ${hostOf(facts.website)}${own.checkedAt ? `, ${utc(own.checkedAt)}` : ''}.` : sentence(own?.detail || ''));
-  case 'sender_dns': return withObservation('set', observed ? 'Your sending address is verified.' : own?.state === 'unavailable' ? 'Cannot be checked automatically for this provider.' : sentence(own?.detail || ''));
+  case 'sender_dns': if(facts.mail?.managed)return {...base,state:facts.mail.managed.configured?'set':'waiting',value:facts.mail.managed.address?`${facts.mail.managed.address}. Provided by Run Edit Run.`:'Run Edit Run is assigning your email address.'};return withObservation('set', observed ? 'Your sending address is verified.' : own?.state === 'unavailable' ? 'Cannot be checked automatically for this provider.' : sentence(own?.detail || ''));
   default: return null;
  }
 }

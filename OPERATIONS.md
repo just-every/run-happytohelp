@@ -896,3 +896,13 @@ a source lock is not product or provider acceptance.
 ### Operating description before installation
 
 The operating declaration is available in `OPERATIONS.json`. The current pinned global `rer` launcher bootstraps the checkout’s locked dependencies before it dispatches `rer describe`, including in a fresh clone. NATIVE-001’s before-dependency inspection point remains blocked on a Base launcher change. Published rer 0.2.79 has the same ordering. A successful description after bootstrap does not establish dependency-free inspection.
+
+## Managed conversation mail v1
+
+The application declares `mail.providers: ["rer"]` and `H2H_RER_MAIL_VERSION=1`. Managed routing is assigned by the platform through `MAIL_PROVIDER`, `MAIL_FROM`, `MAIL_RELAY_URL`, `RER_MAILBOX_ID`, `RER_MAIL_ADDRESS` and `RER_MAIL_CONTROL_URL`. Keep `MAIL_API_KEY`, `RER_MAIL_INGRESS_KEY`, `INBOUND_EMAIL_TOKEN` and the existing `INTEGRATION_ENCRYPTION_KEY` private. They are application authority/data keys; no provider credential is requested from a Managed customer. Native and Assisted direct-provider configuration still uses `EMAIL_*`.
+
+Migration 244 retains mailbox bindings, an idempotent control outbox, encrypted MIME object references and redacted command/thread receipts. Provisioning seeds the reserved default in the workspace transaction and binds it after commit. The native queue/schedule retries control work with bounded backoff, surfaces conflicts, refreshes route status and retires deleted workspaces. A new installation cannot choose a mailbox owned by another installation; platform enforcement and live qualification remain required.
+
+The frozen transport signs `POST`, the ingress path, canonical metadata and the exact MIME bytes with HMAC-SHA256. Metadata includes protocol version, delivery/mailbox/workspace identities, generation, envelope, provider verdict, timestamp and body SHA-256. The app rejects stale, tampered or foreign requests and stores content before acknowledgment. Retrying a delivery keeps its identity. Never route this through the bearer JSON gateway as a substitute for sender authentication.
+
+HTTP 202 records provider acceptance only. Native outbound commands never replay failed, sending or uncertain attempts. An authorized reconciliation reads `send/:messageKey`; it never posts another send. During disconnect/leave, platform revocation remains responsible for its durable authority boundary. Hosted complete export and the real-mail gate remain pending; this change does not promote PORTABILITY-001 or MAIL-001. See [support email](docs/email.md#managed-email).

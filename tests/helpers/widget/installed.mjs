@@ -96,18 +96,23 @@ try{
     await legacyPage.setViewportSize({width:1440,height:900});
    }
   }
-  const requests=[];legacyPage.on('request',request=>{if(request.url().startsWith(api+'/api/'))requests.push(request.url())});
-  await legacyPage.goto(`${origin}/?legacy=consent#launch-chat`);await legacyPage.waitForTimeout(150);
+  // Finish the already-consented document before observing the consent-gated one;
+  // its live conversation poll may otherwise fire while navigation is starting.
+  await legacyPage.close();
+  const consentPage=await legacyContext.newPage();
+  consentPage.on('pageerror',error=>errors.push(error.message));
+  const requests=[];consentPage.on('request',request=>{if(request.url().startsWith(api+'/api/'))requests.push(request.url())});
+  await consentPage.goto(`${origin}/?legacy=consent#launch-chat`);await consentPage.waitForTimeout(150);
   assert.deepEqual(requests,[],'consent gate starts no native network activity');
-  await legacyPage.evaluate(()=>h2h('consent',{provided:true}));
-  await legacyPage.locator('textarea[name=content]').waitFor({state:'visible'});
+  await consentPage.evaluate(()=>h2h('consent',{provided:true}));
+  await consentPage.locator('textarea[name=content]').waitFor({state:'visible'});
   assert.ok(requests.some(url=>url.includes('/api/widget/legacy-project')));
-  await legacyPage.evaluate(()=>h2h('consent',{provided:false}));
-  await legacyPage.locator('#happytohelp-root').waitFor({state:'detached'});
-  await legacyPage.evaluate(()=>h2h('consent',{provided:true}));
-  await legacyPage.locator('textarea[name=content]').waitFor({state:'visible'});
-  await legacyPage.reload();await legacyPage.evaluate(()=>h2h('consent',{provided:true}));
-  await legacyPage.getByText('Can I keep my existing ChargeDesk support link?',{exact:true}).waitFor();
+  await consentPage.evaluate(()=>h2h('consent',{provided:false}));
+  await consentPage.locator('#happytohelp-root').waitFor({state:'detached'});
+  await consentPage.evaluate(()=>h2h('consent',{provided:true}));
+  await consentPage.locator('textarea[name=content]').waitFor({state:'visible'});
+  await consentPage.reload();await consentPage.evaluate(()=>h2h('consent',{provided:true}));
+  await consentPage.getByText('Can I keep my existing ChargeDesk support link?',{exact:true}).waitFor();
   await legacyContext.close();assert.deepEqual(errors,[]);
  }
  const proof={checks:[...recoveryChecks,...failedSendChecks,...awayChecks,...(projectId?['legacy project resolver and queued init/open/close/settings/update','three legacy script attribute spellings and data-config','launch-chat initial fragment and repeated link opening','consent makes no requests before grant; revoke/remount resumes native conversation','legacy signatures never become verified native authority']:[]),'cross-origin settings/session CORS','Shadow DOM host isolation','widget message durable','operator socket delivery','attachment upload/authenticated download','reload identity/transcript resume','offline reconnect no duplicate','untrusted origin denied','cross-project transcript denied','contact form update','browser timezone/language and observed device context survive reload with collector disabled','mobile panel within viewport'],errors,failed,conversationId:session.conversationId,messages:after.messages.length};

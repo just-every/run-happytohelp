@@ -564,7 +564,7 @@ The platform admission index's `move_in_contact_keys.email_digest` remains lazy 
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). R5 additionally updates SLA-001, AUTOMATION-001/002, QUEUE-001/004 and STATUS-001 from the workflow, inbox and packaged recovery journeys on 17 October 2026. WIDGET-001 and AUTOMATION-002 are re-judged at `473a30dab0c6458e5250a55cbebeef999e1e3063` (22 October 2026), with workspace presence and the away-reply correction (migrations 240 and 241). AUTOMATION-001 is re-judged DONE at `c36c8cf01a3b8770427e78bed07d71159a0fb872` (23 October 2026).
 
-WIDGET-001 is re-judged DONE by the replayed mailbox qualification commit `b7c3168` (23 October 2026); this carry retains its named live-model/independent-domain qualification gap. The original candidate's retained fleet artifacts widget-mailbox-live/P1-mailbox.json and widget-mailbox-live/P2-mailbox.json contain the real-mailbox observations; they are outside this checkout, and their receiver IDs appear in the row.
+WIDGET-001 is re-judged DONE by the replayed mailbox qualification commit `ecd9c1a` (23 October 2026); this carry retains its named live-model/independent-domain qualification gap. The original candidate's retained fleet artifacts widget-mailbox-live/P1-mailbox.json and widget-mailbox-live/P2-mailbox.json contain the real-mailbox observations; they are outside this checkout, and their receiver IDs appear in the row.
 
 The 23 October 2026 contract-text clarification separates local implementation/fixture evidence from unobserved live qualification and records the interim knowledge permission default. It changes no clause status; all existing build and qualification obligations remain.
 

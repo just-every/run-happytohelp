@@ -1644,7 +1644,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "24046d9a03c4ca9bf1587febebd06c3acc65f63c9586ab5750eab869eb3116d0",
+      "sha256": "f8e15b01d70e231ac285d6b6315055cda03d8a2224d2200e7ebb769d3b33fe4a",
       "executable": false
     },
     "docs/ACCESSIBILITY-AUDIT-2026-09-30.md": {
@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "20fe78a17fbe9599738c4d23f5549d5ccf645800d8f3277de5e7a118d1eccffc",
+      "sha256": "fe2180965914755d7d9408f8ea577709a9e9a743d8ab21ded6df449f08489a97",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2924,11 +2924,11 @@
       "executable": false
     },
     "scripts/installer/hosted-deploy.mjs": {
-      "sha256": "c683bba32d8d40e9aaf7e39fe495f7a7dedf1c428eda62988772c1f279602f02",
+      "sha256": "059e6716a5a1aa1a716b217dea8854cb231f3cde804f53c520a77cc4ce1c6522",
       "executable": false
     },
     "scripts/installer/hosted-origin.mjs": {
-      "sha256": "58e398bdb2802f5679fd2e9f90f20c06ca9e285ce20f8c988f8ff2672548eab3",
+      "sha256": "ed05907c89bdd08a8c9a57f52d24831b8484c2cc2582a3c642563d5f69889fd5",
       "executable": false
     },
     "scripts/installer/local.mjs": {
@@ -5136,7 +5136,7 @@
       "executable": false
     },
     "src/modules/integrations/email-erasure.ts": {
-      "sha256": "c7e0ad41442753a1c517f9a50dc7534c17b1756719a9e25552e8c6598c9a2a84",
+      "sha256": "748317b3925bbec16ec1cdef4e80088bbf88f8e7991bebde7c8858fd3e9933a8",
       "executable": false
     },
     "src/modules/integrations/email-file-links.ts": {
@@ -5388,7 +5388,7 @@
       "executable": false
     },
     "src/modules/integrations/refused-email.ts": {
-      "sha256": "23fac106b602e12fe87548fb8177509915ddcc279e1f0a5991bfab5cc7776a0f",
+      "sha256": "a4e8260ef367f264f1566cfe3bcf586a4a8832238c87078ef3998dd1e24c89a5",
       "executable": false
     },
     "src/modules/integrations/reply-notice.ts": {
@@ -5404,7 +5404,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-inbound.ts": {
-      "sha256": "eade30a0ce9f711e8ea69c29175db32818bc2d10243466550f2d6bfb307270f9",
+      "sha256": "1fb623f9aaa73007dce43977b59e68ba8e86d6abdbb841123af17156aa76992d",
       "executable": false
     },
     "src/modules/integrations/rer-mail-contract.ts": {
@@ -5412,7 +5412,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mail-raw.ts": {
-      "sha256": "e246156b43c60be337ac2f90872fdde15abc6c359457c3f38fc4f24750994690",
+      "sha256": "ea61699f17ce07a7fc7570ae6a69988c1144eaa3792e92f7addcb800916caf04",
       "executable": false
     },
     "src/modules/integrations/rer-mail-retention.ts": {
@@ -5440,7 +5440,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mailbox.ts": {
-      "sha256": "bb1e5095386d85d4533335e9b4074d7f68edd79721814c330f1146a840fa8033",
+      "sha256": "53587ab5c4a8ec20abb096bda07fa61cc843a0be29a9c0e5c964bc634834e28c",
       "executable": false
     },
     "src/modules/integrations/routes.ts": {
@@ -5472,7 +5472,7 @@
       "executable": false
     },
     "src/modules/integrations/suspended-store.ts": {
-      "sha256": "f76a72707ef64b7256ab874aa6dd7bcfd6059ac82ffb896e853872bc4e79446b",
+      "sha256": "f40b3301f3395b0900dfe2b3e19749546b085c51c23e1f470e490846b60a27ba",
       "executable": false
     },
     "src/modules/integrations/suspended.ts": {
@@ -5512,7 +5512,7 @@
       "executable": false
     },
     "src/modules/integrations/unreadable-email.ts": {
-      "sha256": "2ee3bb0176369bcb9d151c911519fba616fb5f7982ad91def78b96a40aa49e36",
+      "sha256": "99245e728befd2eafca8f979623bcdf5a8031472989767a1badc2bc437092545",
       "executable": false
     },
     "src/modules/knowledge/access.ts": {
@@ -11072,7 +11072,7 @@
       "executable": false
     },
     "tests/helpers/email/rer-erasure.mjs": {
-      "sha256": "ddd5620344184d6d3f3b49d5a47d75ee0632ac33b764c3ca68e617368ea42f13",
+      "sha256": "9388f1ed039c72df57b2c5b08d26d12925d1879fa8f158711159bf5ffe67abdd",
       "executable": false
     },
     "tests/helpers/email/rer-mail.mjs": {
@@ -11168,7 +11168,7 @@
       "executable": false
     },
     "tests/helpers/first-run/activation-observation.mjs": {
-      "sha256": "73642130074c607a5e911edcaef87b79bafc73187f01065fb0759f9fbf822fb7",
+      "sha256": "ece21010ba72024f7a284c5751c6ba3cd2cf6827a8f5cc0b4d14cb54ecc626e1",
       "executable": false
     },
     "tests/helpers/first-run/ai-controls-browser.mjs": {
@@ -11195,8 +11195,12 @@
       "sha256": "5c6b0b05dae9ce7b479474dc51f7553eb5c27f69b1bc4d68ad4a6c00263a1d79",
       "executable": false
     },
+    "tests/helpers/first-run/managed-mail-observation.mjs": {
+      "sha256": "a871c3e5224c3d16f66b4156a85b19a7227bbb9a64ad346fa1481409db5178cc",
+      "executable": false
+    },
     "tests/helpers/first-run/managed-mail.mjs": {
-      "sha256": "cb146c8d232b216d5775fd9c5e3f6fc26037018b1973ab3f654f355d38f79c14",
+      "sha256": "28eacbfb3947502b11cf3f3947b92ec8b1caca3d73e292576109b35ba4f6410e",
       "executable": false
     },
     "tests/helpers/first-run/native-setup-browser.mjs": {
@@ -12388,7 +12392,7 @@
       "executable": false
     },
     "wrangler.jsonc": {
-      "sha256": "d636bf81317756eadde85432f868d346d7fa639b2fcf250c0349cc3036089672",
+      "sha256": "f5f332204457848aad7ee2127bc40e7146735d4068615b5fed4dd5855bebdb78",
       "executable": false
     }
   }

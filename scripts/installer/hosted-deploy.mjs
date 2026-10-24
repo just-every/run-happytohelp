@@ -21,7 +21,10 @@ export function hostedDeploy(path,lifecycle){
    const env=deploymentMailEnvironment(inputs);
    // Native credentials must be real inputs, never the managed key generator's
    // output. Managed generated keys are resolved later by ownerDeploy.
-   if(env.MAIL_PROVIDER!=='rer')validateRuntimeEnvironment(env);
+   if(env.MAIL_PROVIDER!=='rer'){
+    validateRuntimeEnvironment(env);
+    if(!context.options.dryRun&&!env.EMAIL_PROVIDER?.trim())throw missing('Production sign-in needs native outbound email: EMAIL_PROVIDER (resend, sendgrid or cloudflare), EMAIL_FROM, EMAIL_API_KEY. Cloudflare also requires EMAIL_ACCOUNT_ID. Set these privately in your environment or an owned 0600 --env-file, then run the same deploy command again. Nothing was built or uploaded.');
+   }
    const email=String(env.OWNER_EMAIL||'').trim();
    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||/@(?:[^@]+\.)?(?:test|invalid|localhost|example)$/i.test(email)||/@(?:example\.(?:com|net|org))$/i.test(email))
     throw missing('Deploy needs a real OWNER_EMAIL that can receive sign-in mail. The local trial owner (owner@run-happytohelp.test) has no mailbox and cannot own a hosted workspace. Set OWNER_EMAIL privately in your environment or an owned 0600 --env-file, then run the same deploy command again. Nothing was deployed.');

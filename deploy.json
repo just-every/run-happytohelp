@@ -167,7 +167,7 @@
     },
     {
       "binding": "MAIL_API_KEY",
-      "environment": "MAIL_API_KEY",
+      "environment": "EMAIL_API_KEY",
       "optional": true
     },
     {

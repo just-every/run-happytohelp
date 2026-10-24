@@ -1,11 +1,19 @@
 import type {Env} from '../../platform/env'
 import {emailThreadErasureStatements} from './email-threading'
 
-const managedReceipt=`i.project_id=?1 AND (lower(i.sender_address) IN (SELECT value FROM json_each(?3)) OR lower(json_extract(i.metadata_json,'$.envelopeFrom')) IN (SELECT value FROM json_each(?3)) OR json_extract(i.result_json,'$.conversationId') IN (SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2))`
-const held=`s.project_id=?1 AND (s.candidate_conversation_id IN (SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2)
- OR lower(s.from_address) IN (SELECT value FROM json_each(?3))
- OR EXISTS(SELECT 1 FROM json_each(s.to_json) a WHERE lower(a.value) IN (SELECT value FROM json_each(?3)))
- OR EXISTS(SELECT 1 FROM json_each(s.input_json,'$.cc') a WHERE lower(a.value) IN (SELECT value FROM json_each(?3))))`
+// A held copy has its own sender identities and remains in the original delivery's
+// custody even before that receipt acquires a conversation. None grants admission.
+const addresses=`SELECT value FROM json_each(?3)`
+const identifiedHeld=`(s.candidate_conversation_id IN (SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2)
+ OR lower(s.from_address) IN (${addresses})
+ OR lower(json_extract(s.input_json,'$.custody.headerFrom')) IN (${addresses})
+ OR lower(json_extract(s.input_json,'$.custody.envelopeFrom')) IN (${addresses})
+ OR EXISTS(SELECT 1 FROM json_each(s.to_json) a WHERE lower(a.value) IN (${addresses}))
+ OR EXISTS(SELECT 1 FROM json_each(s.input_json,'$.cc') a WHERE lower(a.value) IN (${addresses})))`
+const managedReceipt=`i.project_id=?1 AND (lower(i.sender_address) IN (${addresses}) OR lower(json_extract(i.metadata_json,'$.envelopeFrom')) IN (${addresses}) OR json_extract(i.result_json,'$.conversationId') IN (SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2)
+ OR EXISTS(SELECT 1 FROM suspended_emails s WHERE s.project_id=i.project_id AND json_extract(s.input_json,'$.custody.deliveryId')=i.delivery_id AND ${identifiedHeld}))`
+const held=`s.project_id=?1 AND (${identifiedHeld}
+ OR EXISTS(SELECT 1 FROM rer_mail_ingress i WHERE i.project_id=s.project_id AND i.delivery_id=json_extract(s.input_json,'$.custody.deliveryId') AND (i.state='erased' OR ${managedReceipt})))`
 /** Enter suspended objects into the existing resumable erasure delete stage;
  * every object is removed before its identifying D1 row can disappear. */
 export function emailErasureObjectStatements(env:Env,projectId:string,contactId:string,emails:readonly string[]){

@@ -11680,7 +11680,7 @@
       "executable": false
     },
     "tests/helpers/widget/settings.mjs": {
-      "sha256": "6e6e1c823fcffdfab1a371c971cbbcab9d523f61cd2901bd565d9bbd6278151b",
+      "sha256": "e7a36fc356ec253e732e59767a6f8bc01fa01ee1f790b133892de935255b4a2b",
       "executable": false
     },
     "tests/helpers/widget/socket.mjs": {

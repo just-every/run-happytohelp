@@ -5420,7 +5420,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mail.ts": {
-      "sha256": "7d48cb6d4e8f968fe82e420fdd85909470a9eb3a57c5d3bc14d9e11ff89cd03f",
+      "sha256": "417b25001022a850717f797132150036734014805c465bf7cb6a038c9c5c32db",
       "executable": false
     },
     "src/modules/integrations/rer-mailbox.ts": {
@@ -11884,7 +11884,7 @@
       "executable": false
     },
     "tests/journeys/installer.mjs": {
-      "sha256": "e05398d76282c4b5d640227312ff9be0556e87e181e51ae9b3d5a6ef5376cd2e",
+      "sha256": "843c6b08a2d3f979b836199fcccf78322ba29aba81d89804859519671705219a",
       "executable": false
     },
     "tests/journeys/kit/app-worker.ts": {

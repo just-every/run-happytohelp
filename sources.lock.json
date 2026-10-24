@@ -11708,7 +11708,7 @@
       "executable": false
     },
     "tests/helpers/widget/installed.mjs": {
-      "sha256": "0ab21ed55699bf4ea2888a94d373476d6ec55d61efca56db3ad41b40b3e4c5b7",
+      "sha256": "7d183043c767ea3a35f8e384e26e7d508cfbe155d835c9ad4da716056bd2984a",
       "executable": false
     },
     "tests/helpers/widget/lifecycle.mjs": {

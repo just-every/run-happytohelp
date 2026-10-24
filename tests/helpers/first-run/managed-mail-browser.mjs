@@ -20,7 +20,7 @@ export async function managedMailBrowser(){
  let runtime,browser,success=false
  const errors=[]
  try{
-  runtime=await createRuntime({providerFixtureOrigin:fixtureOrigin,providerHosts:['mail-service.example.test','northstar.example.test'],vars:assigned})
+  runtime=await createRuntime({providerFixtureOrigin:fixtureOrigin,providerHosts:['mail-service.example.test','northstar.example.test'],vars:assigned,queueConsumers:true})
   browser=await launchBrowser();const context=await browser.newContext({viewport:viewports.desktop}),page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message))
   await page.goto(runtime.origin+'/setup');await page.getByLabel('Your email',{exact:true}).fill('owner-browser@example.test');await page.getByLabel('Password',{exact:true}).fill('synthetic-managed-browser-password');await page.getByLabel('Setup token',{exact:true}).fill(assigned.H2H_SETUP_TOKEN);await page.getByLabel('Your website',{exact:true}).fill('https://northstar.example.test')
   assert.equal(await page.locator('input[name*=MAIL],select[name*=MAIL]').count(),0,'first owner has no mail fields')

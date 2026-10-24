@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "6a3bcd3a1c9632d55107670ad677d08cfc990b3cafc3ca42abe83732aeb9136c",
+      "sha256": "20fe78a17fbe9599738c4d23f5549d5ccf645800d8f3277de5e7a118d1eccffc",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2481,6 +2481,10 @@
     },
     "migrations/244_rer_conversation_mail.sql": {
       "sha256": "c266726c4aab8483792919427a1962e6da3f44f293ac0093f1bef124a1316572",
+      "executable": false
+    },
+    "migrations/245_rer_mail_route_observation.sql": {
+      "sha256": "8376815e0f79757f1ff58d380f587c6201b380c112a0e098167923400e75d489",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -5421,6 +5425,18 @@
     },
     "src/modules/integrations/rer-mail.ts": {
       "sha256": "ff6058b416634143319d72743b02370bf53536f1da46c612d1dcd0ab0763b947",
+      "executable": false
+    },
+    "src/modules/integrations/rer-mailbox-adoption.ts": {
+      "sha256": "6bcb58f5a26958d115e653c90dc6b08e0594e9987518d8c35e8959a58d89c03c",
+      "executable": false
+    },
+    "src/modules/integrations/rer-mailbox-control.ts": {
+      "sha256": "abe74445eddf9f0d25cf273284f2d386bb7c6611880ecfb17ca517bb6b7dd0e6",
+      "executable": false
+    },
+    "src/modules/integrations/rer-mailbox-observation.ts": {
+      "sha256": "d78c8bdab05db65d899a0242623bc45806219f09c63b99841bdb7a402a4674e8",
       "executable": false
     },
     "src/modules/integrations/rer-mailbox.ts": {
@@ -11055,6 +11071,10 @@
       "sha256": "9e69a000dab28c6bede8c37499a0315feffdda6c96a6252fd1a7a40ae45fd0f2",
       "executable": false
     },
+    "tests/helpers/email/rer-erasure.mjs": {
+      "sha256": "ddd5620344184d6d3f3b49d5a47d75ee0632ac33b764c3ca68e617368ea42f13",
+      "executable": false
+    },
     "tests/helpers/email/rer-mail.mjs": {
       "sha256": "cb4598fc38c9d2307d8a79a1596aa29619929afda00ec12b57e855e0b3bf0c24",
       "executable": false
@@ -11172,7 +11192,7 @@
       "executable": false
     },
     "tests/helpers/first-run/managed-mail-browser.mjs": {
-      "sha256": "8cdbf455dbb1ea28f358e39eb61dc6fe4223d416aaa1b5bce6d4343d510debe8",
+      "sha256": "5c6b0b05dae9ce7b479474dc51f7553eb5c27f69b1bc4d68ad4a6c00263a1d79",
       "executable": false
     },
     "tests/helpers/first-run/managed-mail.mjs": {

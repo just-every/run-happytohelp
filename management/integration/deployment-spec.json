@@ -687,31 +687,31 @@
     },
     {
       "binding": "DB",
-      "name": "242_csat_response_surface.sql",
+      "name": "244_csat_response_surface.sql",
       "sha256": "ac04f0b9547f266723aca30fd0855bced2417297fdaaa561b76126b424e5e1e8",
       "sql": "-- Keep the invitation transport separate from the signed response surface.\n-- Existing email links remain valid; widget surface is derived from its channel.\nALTER TABLE csat_responses ADD COLUMN response_surface TEXT NOT NULL DEFAULT 'unknown' CHECK(response_surface IN ('email','portal','widget','unknown'));\nALTER TABLE csat_response_history ADD COLUMN response_surface TEXT NOT NULL DEFAULT 'unknown' CHECK(response_surface IN ('email','portal','widget','unknown'));\n"
     },
     {
       "binding": "DB",
-      "name": "243_widget_survey_cycles.sql",
+      "name": "245_widget_survey_cycles.sql",
       "sha256": "24cef079571722429dc4c14156b3ca546c7b959a3fa60fc11462e6500dfe1ef9",
       "sql": "-- Keep each widget survey's scale, locale and timing with its exact resolution.\n-- Old cycles retain the original immediate thumbs behavior. Settings changes do\n-- not reinterpret old feedback; widget opt-out is a visitor-owned preference.\nCREATE TRIGGER csat_widget_cycle AFTER INSERT ON conversation_resolutions BEGIN\n UPDATE conversation_resolutions SET evidence_json=json_set(evidence_json,'$.widgetSurvey',json_object(\n 'enabled',COALESCE((SELECT json_extract(settings_json,'$.csat_widget_enabled') FROM project_settings WHERE project_id=NEW.project_id),1),\n 'scale',COALESCE((SELECT scale FROM csat_settings WHERE project_id=NEW.project_id),'thumbs'),\n 'locale',COALESCE((SELECT locale FROM csat_settings WHERE project_id=NEW.project_id),'en'),\n 'availableAt',NEW.resolved_at+COALESCE((SELECT delay_minutes FROM csat_settings WHERE project_id=NEW.project_id),0)*60000,\n 'expiresAt',NEW.resolved_at+(COALESCE((SELECT delay_minutes FROM csat_settings WHERE project_id=NEW.project_id),0)*60000)+(COALESCE((SELECT expires_days FROM csat_settings WHERE project_id=NEW.project_id),14)*86400000)\n )) WHERE id=NEW.id;\nEND;\n"
     },
     {
       "binding": "DB",
-      "name": "244_imported_ticket_lifecycle.sql",
+      "name": "246_imported_ticket_lifecycle.sql",
       "sha256": "7ad2137095bd2234fc1eac7e3017217fd9351e15b8368b268c2c3f4f532c7524",
       "sql": "-- Import publication carries reviewed lifecycle categories. A final Closed\n-- ticket must stay final; ordinary legacy/native writers retain their defaults.\nDROP TRIGGER ticket_conversation_defaults;\nCREATE TRIGGER ticket_conversation_defaults AFTER INSERT ON conversations BEGIN\n UPDATE conversations SET brand_id=NEW.project_id,requester_id=NEW.contact_id,submitter_id=COALESCE(NEW.submitter_id,NEW.contact_id),status_id= CASE WHEN EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=NEW.project_id AND f.conversation_id=NEW.id) THEN NEW.status_id WHEN NEW.resolved_at IS NOT NULL THEN 'solved' ELSE NEW.status_id END ,status_category= CASE WHEN EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=NEW.project_id AND f.conversation_id=NEW.id) THEN NEW.status_category WHEN NEW.resolved_at IS NOT NULL THEN 'solved' ELSE NEW.status_category END WHERE id=NEW.id;\nEND;\n"
     },
     {
       "binding": "DB",
-      "name": "245_ai_handoff_receipts.sql",
+      "name": "247_ai_handoff_receipts.sql",
       "sha256": "3c16dd6197e9887b840ae6c50278d44859e85836a103c3ca5f7a68094025ea68",
       "sql": "-- A causal receipt, committed in the same batch as a successful model-requested\n-- assignment. Historical generic assignments are deliberately not backfilled.\n-- No prompt, customer text, credential or replay authority is retained here.\nCREATE TABLE ai_handoff_receipts(\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL,\n conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,\n generation_id TEXT NOT NULL UNIQUE,\n agent_id TEXT NOT NULL,\n revision INTEGER NOT NULL,\n created_at INTEGER NOT NULL\n);\nCREATE INDEX ai_handoff_receipts_conversation ON ai_handoff_receipts(project_id,conversation_id);\n"
     },
     {
       "binding": "DB",
-      "name": "246_customer_recovery.sql",
+      "name": "248_customer_recovery.sql",
       "sha256": "b77c64c20ea6c2a1046c1a46641059f567f759f74a5348cf7279a389435afd6c",
       "sql": "-- A customer's explicit recovery answer is distinct from satisfaction.\n-- Existing positive ratings establish no recovery claim.\nALTER TABLE csat_responses ADD COLUMN recovery TEXT NOT NULL DEFAULT 'unknown' CHECK(recovery IN ('unknown','recovered','not_recovered'));\nALTER TABLE csat_response_history ADD COLUMN recovery TEXT NOT NULL DEFAULT 'unknown' CHECK(recovery IN ('unknown','recovered','not_recovered'));\n"
     }

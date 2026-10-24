@@ -62,9 +62,11 @@ export async function seedPortableData(origin,projectId,token,json){
  const business=await seedPortableBusiness(origin,projectId,kept.contactId,token);
  const training=await seedPortableTraining(origin,projectId,token);
  const ticket=await seedRecoveryTicket({origin},{projectId,token},retained);
- return {projectId,erasedContactId:visitor.contactId,conversationId:retained.id,mediaId:media.id,bytes:[...bytes],imports,reports,training,ticket,business};
+ const workProjectId=(await json('/api/management/projects',{name:'Archived work workspace',allowedOrigin:origin},token)).id;
+ return {projectId,workProjectId,erasedContactId:visitor.contactId,conversationId:retained.id,mediaId:media.id,bytes:[...bytes],imports,reports,training,ticket,business};
 }
 export async function verifyPortableData(origin,state,token,json){
+ assert.ok((await json('/api/management/projects',undefined,token)).data.some(project=>project.id===state.workProjectId),'the restored owner retains both workspaces');
  const contact=(await json(`/api/management/projects/${state.projectId}/contacts/${state.erasedContactId}`,undefined,token)).data;
  assert.equal(contact.email,null);assert.equal(JSON.parse(contact.metadata_json).is_erased,1);
  const settings=(await json(`/api/management/projects/${state.projectId}/settings`,undefined,token)).data;

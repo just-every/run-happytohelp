@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {createHmac} from 'node:crypto';
+import {seedPortableCampaign,verifyPortableCampaign} from './campaigns-portable.mjs';
 
 export async function seedPortableBusiness(origin,projectId,contactId,token){
  const call=async(path,body,method=body===undefined?'GET':'POST')=>{
@@ -7,6 +8,7 @@ export async function seedPortableBusiness(origin,projectId,contactId,token){
  };
  const native=`/api/management/projects/${projectId}`,knowledge=`/api/knowledge/${projectId}`;
  const widget=await call(native+'/widget-settings');
+ const campaign=await seedPortableCampaign(origin,projectId,token,widget);
  const identities=await Promise.all(['synthetic-happytohelp-81','synthetic-happytohelp-82'].map(identifier=>call('/api/identity/widget/session',{widgetKey:widget.widgetKey,identifier,contact_hash:createHmac('sha256',widget.verificationSecret).update(identifier).digest('hex'),name:'Northstar verified '+identifier.slice(-2)})));
  const identityPath=native+`/contacts/${identities[0].contactId}/identity-links`,intent={action:'link',contact_id:identities[1].contactId,provenance:'Customer confirmed the two Northstar support identities'};
  const review=(await call(identityPath+'/preview',intent)).preview;
@@ -23,12 +25,13 @@ export async function seedPortableBusiness(origin,projectId,contactId,token){
  const article=await call(knowledge+'/articles',{title:'Parcel returns',slug:'portable-parcel-returns',content:'Keep the parcel label.',status:'published'});
  const macro=(await call(native+'/macros',{title:'Parcel follow-up',content:'Hello {{requester.first_name | there}}, keep your parcel label.',actions:{reply_type:'note'},scope:{visibility:'shared',roles:[],groups:[],brands:[]}})).data;
  const updatedMacro=(await call(native+`/macros/${macro.id}`,{title:macro.title,content:'Hello {{requester.first_name | there}}, your parcel is ready.',actions:{reply_type:'note'},scope:macro.scope,expected_version:macro.version},'PUT')).data;
- return {projectId,companyId:company.id,fieldId:field.id,contactId,datasetId:dataset.id,articleId:article.id,macroId:updatedMacro.id,identityContacts:identities.map(row=>row.contactId),identityProvenance:intent.provenance};
+ return {projectId,campaign,companyId:company.id,fieldId:field.id,contactId,datasetId:dataset.id,articleId:article.id,macroId:updatedMacro.id,identityContacts:identities.map(row=>row.contactId),identityProvenance:intent.provenance};
 }
 
 export async function verifyPortableBusiness(origin,state,token){
  const get=async path=>{const response=await fetch(origin+path,{headers:{Authorization:'Bearer '+token}});assert.equal(response.status,200);return response.json()};
  const native=`/api/management/projects/${state.projectId}`,knowledge=`/api/knowledge/${state.projectId}`;
+ await verifyPortableCampaign(origin,state.projectId,state.campaign,token);
  const linked=await get(native+`/contacts/${state.identityContacts[0]}/identity-links`);
  assert.equal(linked.grants_customer_access,false);
  assert.deepEqual(linked.links.map(row=>[row.contact.id,row.provenance]),[[state.identityContacts[1],state.identityProvenance]],'reviewed identity provenance survives without transferring customer access');

@@ -10864,7 +10864,7 @@
       "executable": false
     },
     "tests/helpers/configured-mail-runtime.mjs": {
-      "sha256": "fddda0e81f418e7a4ec5b66a26d9ddc8edb79707743f27c26882e3ff2bc10c7b",
+      "sha256": "ef7a5690d51f4777d036578db44b79e3de9d7b3f08c785d3d8beec53773815ec",
       "executable": false
     },
     "tests/helpers/configured-support-browser.mjs": {
@@ -11412,7 +11412,7 @@
       "executable": false
     },
     "tests/helpers/mail-provider-network.mjs": {
-      "sha256": "114545aa22f7acb73fc3d50387e5ef794e72574a8ed9f78569bfbd06a3760a0b",
+      "sha256": "cb8d41906aa4cf84679547435b16771afb9adfff52d1312a26f532670a1d1f08",
       "executable": false
     },
     "tests/helpers/migration-statements.mjs": {
@@ -11628,7 +11628,7 @@
       "executable": false
     },
     "tests/helpers/widget/away.mjs": {
-      "sha256": "6235f91488fc67f6e2154b5612fa6d75e7f96bb00178aadb149062d23a07b4f5",
+      "sha256": "b9f83daf56ca228af46c5cd4ca54523c2d710e9332b49b89e9564d2134c99289",
       "executable": false
     },
     "tests/helpers/widget/campaigns-browser.mjs": {
@@ -11644,7 +11644,7 @@
       "executable": false
     },
     "tests/helpers/widget/installed.mjs": {
-      "sha256": "0ab21ed55699bf4ea2888a94d373476d6ec55d61efca56db3ad41b40b3e4c5b7",
+      "sha256": "58810c75c9b4a2572d5d5db7a3eec628e02f69e517e478f987e99eb9fbbe2a4e",
       "executable": false
     },
     "tests/helpers/widget/lifecycle.mjs": {
@@ -11668,7 +11668,7 @@
       "executable": false
     },
     "tests/helpers/widget/presence-browser.mjs": {
-      "sha256": "603cb2f82195cf4c595218435e391f78ea1827eb06cc38dfef7b2613ed0bc5d1",
+      "sha256": "b277310f74b5c27dbfdcb83c4dc10674307d4422d54f16ffb7d7fe4421fd8b63",
       "executable": false
     },
     "tests/helpers/widget/presence.mjs": {
@@ -11676,7 +11676,7 @@
       "executable": false
     },
     "tests/helpers/widget/runtime.mjs": {
-      "sha256": "5f7831fd07fa31e12fd817560170195b240ef2e560bcf0194e50c1b95e9c333c",
+      "sha256": "636d194247e33e96309b222d1bf42ff308fcae72672efc81a2eb6a589b702b9c",
       "executable": false
     },
     "tests/helpers/widget/settings.mjs": {

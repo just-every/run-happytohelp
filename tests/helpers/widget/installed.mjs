@@ -8,7 +8,7 @@ import {launchBrowser} from '../../journeys/kit/browser.mjs'
 
 // The installed widget on a separate site origin against the emitted Worker: current and legacy installs and
 // open modes, a failed send and its recovery, after hours (away.mjs), and a foreign conversation refused.
-export async function installedWidget({api,origin,widgetKey,ownerToken,projectId,foreignConversation,evidence}){
+export async function installedWidget({api,origin,widgetKey,ownerToken,projectId,foreignConversation,evidence,mailReceipts}){
 
 if(!api||!origin||!widgetKey||!ownerToken)throw new Error('WIDGET_TEST_API, WIDGET_TEST_ORIGIN, WIDGET_TEST_KEY, WIDGET_TEST_OWNER_TOKEN required');
 if(!['localhost','127.0.0.1'].includes(new URL(origin).hostname))throw new Error('Browser fixture host must be local');
@@ -65,7 +65,7 @@ try{
  assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
  const recoveryChecks=await widgetRecoveryBrowser({browser,origin,api,widgetKey,ownerToken});
  const failedSendChecks=await widgetFailedSendBrowser({browser,origin,api,widgetKey,ownerToken,evidence});
- const awayChecks=projectId?await awayWidget({browser,origin,api,ownerToken,projectId,evidence}):[];
+ const awayChecks=projectId?await awayWidget({browser,origin,api,ownerToken,projectId,evidence,mailReceipts}):[];
  if(projectId){
   const legacyContext=await browser.newContext({viewport:{width:1440,height:900}}),legacyPage=await legacyContext.newPage();
   legacyPage.on('pageerror',error=>errors.push(error.message));

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {createServer} from 'node:net'
 import {createHash} from 'node:crypto'
-import {createConfiguredMailRuntime} from '../configured-mail-runtime.mjs'
+import {createConfiguredMailRuntime,mailReceipts} from '../configured-mail-runtime.mjs'
 import {evidence} from '../../journeys/kit/browser.mjs'
 import {installedWidget} from './installed.mjs'
 
@@ -30,7 +30,7 @@ export async function installedJourney(){
   const foreignOwner=await runtime.seedTenant({name:'Other tenant',email:'foreign-widget@example.test',allowedOrigin:origin})
   const foreignProject=await call(`/api/identity/projects/${foreignOwner.projectId}`,undefined,foreignOwner.token),foreignContact=await call('/api/identity/widget/session',{widgetKey:foreignProject.widget_key},undefined,{Origin:origin})
   const foreignConversation=await call('/api/conversations',{projectId:foreignOwner.projectId},foreignContact.token)
-  await installedWidget({api:runtime.origin,origin,widgetKey:project.widget_key,ownerToken:owner.token,projectId:owner.projectId,foreignConversation:foreignConversation.id,evidence:(await evidence('widget'))('')})
+  await installedWidget({mailReceipts:()=>mailReceipts(runtime),api:runtime.origin,origin,widgetKey:project.widget_key,ownerToken:owner.token,projectId:owner.projectId,foreignConversation:foreignConversation.id,evidence:(await evidence('widget'))('')})
   success=true
  }finally{await runtime.close(success)}
 }

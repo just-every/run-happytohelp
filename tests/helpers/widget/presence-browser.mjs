@@ -3,7 +3,7 @@ import {createServer} from 'node:net'
 import {createServer as createHttpServer} from 'node:http'
 import {createHash,randomUUID} from 'node:crypto'
 import {writeFile} from 'node:fs/promises'
-import {createConfiguredMailRuntime} from '../configured-mail-runtime.mjs'
+import {createConfiguredMailRuntime,mailReceipts} from '../configured-mail-runtime.mjs'
 import {evidence,launchBrowser,viewports} from '../../journeys/kit/browser.mjs'
 
 const freePort=async()=>{const socket=createServer();await new Promise(done=>socket.listen(0,'127.0.0.1',done));const port=socket.address().port;await new Promise(done=>socket.close(done));return port}
@@ -89,8 +89,10 @@ export async function presenceBrowserJourney(){
   const answer=await json(`/api/conversations/${session.conversationId}/messages`,{token:agent.token,body:{localId:'presence-answer',content:'Yes, we ship tents to Norway within five days.',expectedRevision:transcript.revision,expectedLastMessageId:transcript.lastMessageId}})
   assert.equal(answer.accepted,true);await visitor.getByText('Yes, we ship tents to Norway within five days.',{exact:true}).waitFor()
   const mailed=async()=>(await json(`/api/dashboard/projects/${p}/conversations/${session.conversationId}/buckets`,{token:owner.token})).data.flatMap(bucket=>bucket.messages).find(message=>message.id===answer.message.id)?.email_status?.state==='sent'
-  await until(mailed,10_000,'the answer is emailed');await both('widget-back-online')
-  checks.push('back online: the agent\'s answer reached the widget and the visitor\'s email')
+  await until(mailed,10_000,'the answer is accepted by the mail provider fake')
+  assert.ok(mailReceipts(runtime).some(receipt=>[].concat(receipt.to).includes('night-owl@example.test')&&receipt.text?.includes('Yes, we ship tents to Norway within five days.')),'the mail boundary receives the answer text addressed to the captured visitor email')
+  await both('widget-back-online')
+  checks.push('back online: the answer reached the widget; the mail provider fake observed the captured email recipient and exact answer text')
 
   await json(`/api/management/projects/${p}/settings`,{token:owner.token,method:'PUT',body:{is_available:false}})
   await visitorContext.clearCookies();await visitor.evaluate(()=>localStorage.clear());await visitor.reload()

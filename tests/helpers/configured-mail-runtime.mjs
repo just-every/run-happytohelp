@@ -15,3 +15,6 @@ export function createConfiguredMailRuntime(options = {}) {
         outboundFixture: new URL('./mail-provider-network.mjs', import.meta.url).href,
     });
 }
+
+// Observed requests at the provider boundary, never a real-mail delivery receipt.
+export const mailReceipts = runtime => [...runtime.logs.matchAll(/MAIL_FIXTURE_RECEIPT (\{[^\n]*\})/g)].map(match => JSON.parse(match[1]));

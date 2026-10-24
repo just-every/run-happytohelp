@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 // After hours on the installed widget: a workspace in New York opens three days from now, and a visitor in Chicago
 // is told the team is away and when it is back in their own time, leaves an email before writing, and gets the
 // away reply once in the conversation the team then answers by email.
-export async function awayWidget({browser,origin,api,ownerToken,projectId,evidence}){
+export async function awayWidget({browser,origin,api,ownerToken,projectId,evidence,mailReceipts}){
  const headers={Authorization:`Bearer ${ownerToken}`,'Content-Type':'application/json'};
  const put=async(path,body)=>{const response=await fetch(`${api}/api/management/projects/${projectId}/${path}`,{method:'PUT',headers,body:JSON.stringify(body)});assert.equal(response.status,200,await response.text())};
  const zone='America/New_York',weekday=new Intl.DateTimeFormat('en-US',{timeZone:zone,weekday:'long'}).format(new Date());
@@ -41,7 +41,8 @@ export async function awayWidget({browser,origin,api,ownerToken,projectId,eviden
   assert.equal(answer.accepted,true);
   const mailed=async()=>{const buckets=await(await fetch(`${api}/api/dashboard/projects/${projectId}/conversations/${session.conversationId}/buckets`,{headers})).json();return buckets.data.flatMap(bucket=>bucket.messages).find(message=>message.id===answer.message.id)?.email_status?.state};
   let state;for(const deadline=Date.now()+10000;Date.now()<deadline&&(state=await mailed())!=='sent';)await new Promise(resolve=>setTimeout(resolve,200));
-  assert.equal(state,'sent','the answer is emailed');
+  assert.equal(state,'sent','the answer is accepted by the mail provider fake');
+  assert.ok(mailReceipts().some(receipt=>[].concat(receipt.to).includes('night-owl@example.test')&&receipt.text?.includes('Sorry about that. A replacement ships today.')),'the mail boundary receives the answer text addressed to the email left in the widget');
   const contact=await(await fetch(`${api}/api/management/projects/${projectId}/contacts/${session.contactId}`,{headers})).json();assert.equal(contact.data.email,'night-owl@example.test');
   await page.getByText('Sorry about that. A replacement ships today.',{exact:true}).waitFor();
   // The same installed widget respects an explicit SLA closure even with opening hours saying open.

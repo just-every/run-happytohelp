@@ -29,8 +29,8 @@ integrations.route('/',createMailboxRoutes(receiveMailboxMessage))
 integrations.route('/',emailFollowupRoutes)
 // Sending and receiving are reported as they are, so the page never asks for a key that is set
 // or offers a receiving address that no mail can reach.
-integrations.get('/projects/:projectId/email-settings',async c=>{const a=await scope(c,true),row=await c.env.DB.prepare('SELECT * FROM email_settings WHERE project_id=?').bind(a.projectId).first<any>(),configured=Boolean(emailConfigured(c.env))
- return c.json({managed:await rerMailboxStatus(c.env,a.projectId),data:row?{...row,email_to_address:row.inbound_address||null}:{email_to_address:null},configured,
+integrations.get('/projects/:projectId/email-settings',async c=>{const a=await scope(c,true),managed=await rerMailboxStatus(c.env,a.projectId),row=await c.env.DB.prepare('SELECT * FROM email_settings WHERE project_id=?').bind(a.projectId).first<any>(),configured=Boolean(emailConfigured(c.env))
+ return c.json({managed,data:row?{...row,email_to_address:row.inbound_address||null}:{email_to_address:null},configured,
   sending:{mode:emailMode(c.env),provider:configured?selectedEmailProvider(c.env):null,from:configured?mailbox(rerMail(c.env)?row?.from_address||c.env.MAIL_FROM:c.env.EMAIL_FROM):null},
   receiving:await receivingState(c.env,row?.inbound_address),installation:installation(c.env,c.req.url)})})
 integrations.put('/projects/:projectId/email-settings',async c=>{

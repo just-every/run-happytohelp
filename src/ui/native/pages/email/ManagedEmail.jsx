@@ -17,14 +17,17 @@ export default function ManagedEmail({managed,field,role,projectId,onRefresh}){
    <p className="sh-state"><b style={{overflowWrap:'anywhere'}}>{managed.address||(managed.state==='failed'?'Support address unavailable':'Assigning your support address…')}</b></p>
    <dl className="settings-grid" aria-label="Managed email status">
     <div><dt>Configuration</dt><dd>{managed.configured?'Configured':'Waiting for Run Edit Run'}</dd></div>
-    <div><dt>Receiving route</dt><dd>{managed.routeActive?'Active':'Not active'}</dd></div>
+    <div><dt>Receiving route</dt><dd>{managed.routeActive?(managed.routeUncertain?'Active at last check':'Active'):'Not active'}</dd></div>
+    <div><dt>Route check</dt><dd>{managed.routeUncertain?'Uncertain · retrying':managed.checkedAt?'Checked':'Waiting for confirmation'}</dd></div>
     <div><dt>Inbound email</dt><dd>{managed.observed?'Observed':'Waiting for the first email'}</dd></div>
    </dl>
    <p>Last inbound observation: {at(managed.lastInboundAt)}</p>
+   <p>Last successful route check: {at(managed.checkedAt)}</p>
    <p>Last outbound provider acceptance: {at(managed.lastOutboundAcceptanceAt)}</p>
    <p className="settings-note">Provider acceptance means the sending service accepted a message. It does not confirm arrival in the recipient’s inbox.</p>
    {(managed.inbound?.reason||['held','suspended'].includes(managed.inbound?.state))&&<p role="status">{managed.inbound.reason||'The last inbound email is held for review'}. {managed.inbound.state!=='failed'&&<Link to={`/projects/${projectId}/suspended`}>Review Suspended mail</Link>}</p>}
    {managed.error&&<div role="alert" className="alert alert-danger">{managed.error}</div>}
+   {managed.routeCheckError&&<p role="status">{managed.routeCheckError}</p>}
    {managed.outbound&&['failed','uncertain','sending'].includes(managed.outbound.state)&&<p role="status">{managed.outbound.reason|| (managed.outbound.state==='failed'?'The last send failed':managed.outbound.state==='sending'?'The last send is awaiting a provider response':'The last send outcome is uncertain')}. It will not be sent again automatically.</p>}
    {['failed','pending','reserved'].includes(managed.state)&&<button type="button" className="btn btn-white" disabled={busy} onClick={retry}>{busy?'Retrying…':'Retry connection'}</button>}
    {error&&<p role="alert">{error}</p>}

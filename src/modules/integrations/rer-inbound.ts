@@ -14,7 +14,7 @@ import {receiveEmail} from './inbound-service'
 import {scheduleInboundEffects} from './inbound-effects'
 import {ClosedTicketRefusal,noticeMember} from './closed-ticket-mail'
 const addresses=(list:any[]|undefined):string[]=>(list||[]).flatMap(value=>value.group?addresses(value.group):value.address?[value.address]:[])
-type Receipt={body_sha256:string;metadata_json:string;state:string;result_json:string|null;updated_at:number}
+type Receipt={body_sha256:string;metadata_json:string;sender_address:string|null;state:string;result_json:string|null;updated_at:number}
 export const rerInbound=new Hono<AppEnv>()
 rerInbound.post('/email/rer/v1/inbound',async c=>{
  c.header('Cache-Control','no-store')
@@ -32,8 +32,11 @@ rerInbound.post('/email/rer/v1/inbound',async c=>{
  // A retry may refresh its timestamp, but never its authenticated sender/verdict,
  // workspace, generation or envelope, even when its MIME is unchanged.
  const identity=(metadata:any)=>canonical({...metadata,timestamp:0})
- if(prior.body_sha256!==m.bodySha256||identity(JSON.parse(prior.metadata_json))!==identity(m)){
-  await holdRawEmail(c.env,redactedMime(raw),{description:'This review copy has private reply recipients redacted. The exact original MIME is retained in encrypted storage.',projectId:m.workspaceId,recipients:[m.envelopeTo],identity:await hashToken(m.deliveryId+':'+m.bodySha256+':'+canonical(m)),reason:'message_identity_conflict'})
+ const original=JSON.parse(prior.metadata_json)
+ if(prior.body_sha256!==m.bodySha256||identity(original)!==identity(m)){
+  // Custody follows the immutable receipt, even if this copy changes its sender.
+  // This is an erasure link only: conflicting bytes still have no admission authority.
+  await holdRawEmail(c.env,redactedMime(raw),{description:'This review copy has private reply recipients redacted. The exact original MIME is retained in encrypted storage.',projectId:m.workspaceId,recipients:[m.envelopeTo],identity:await hashToken(m.deliveryId+':'+m.bodySha256+':'+canonical(m)),reason:'message_identity_conflict',senderAddress:prior.sender_address||emailAddress(original.envelopeFrom)||undefined,candidateId:prior.result_json?JSON.parse(prior.result_json).conversationId:null})
   await c.env.DB.prepare("UPDATE rer_mail_ingress SET error='Changed content held for review' WHERE delivery_id=?").bind(m.deliveryId).run()
   return c.json({state:'held',reason:'delivery_identity_conflict'},200)
  }

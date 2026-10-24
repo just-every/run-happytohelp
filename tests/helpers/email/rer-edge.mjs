@@ -8,7 +8,7 @@ export function managedEdge(){
   const mailbox={mailboxId:bindings.RER_MAILBOX_ID,address:bindings.RER_MAIL_ADDRESS,workspaceId:null,state:'reserved',generation:1,configured:true,routeActive:true,observed:false,lastInboundAt:null}
   installations.set(bindings.MAIL_API_KEY,{bindings,allocations:new Map([['default',mailbox]])});return bindings
  }
- const edge={sends,controls,ledger,loseResponse:false,conflict:false,routeActive:true,add,installations,
+ const edge={sends,controls,ledger,loseResponse:false,conflict:false,routeActive:true,statusFailures:0,add,installations,
   async outbound(request,{url,body}){
    const target=new URL(url)
    if(target.hostname!=='mail-service.example.test')return new Response('Unreachable test network',{status:503})
@@ -18,7 +18,7 @@ export function managedEdge(){
    if(target.pathname.includes('/mailboxes')){
     controls.push({authority,payload,method:request.method})
     if(edge.conflict)return Response.json({code:'mailbox_binding_conflict'},{status:409})
-    if(request.method==='GET'){const mailbox=all.find(row=>row.mailboxId===target.pathname.split('/').pop());return mailbox?Response.json({...mailbox,routeActive:edge.routeActive}):new Response(null,{status:404})}
+    if(request.method==='GET'){if(edge.statusFailures>0){edge.statusFailures--;return new Response('Temporary status outage',{status:503})}const mailbox=all.find(row=>row.mailboxId===target.pathname.split('/').pop());return mailbox?Response.json({...mailbox,routeActive:edge.routeActive}):new Response(null,{status:404})}
     if(payload.action==='reserve'){
      let mailbox=installation.allocations.get(payload.allocationKey)
      if(!mailbox){const suffix=installation.allocations.size,base=installation.bindings;mailbox={mailboxId:base.RER_MAILBOX_ID+'-'+suffix,address:base.RER_MAIL_ADDRESS.replace('@','-'+suffix+'@'),workspaceId:null,state:'reserved',generation:1,configured:true,routeActive:true,observed:false,lastInboundAt:null};installation.allocations.set(payload.allocationKey,mailbox)}

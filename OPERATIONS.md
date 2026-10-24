@@ -229,10 +229,14 @@ Back up both with the installation; to deploy from another checkout, copy both
 there. Without the secrets file, a redeploy still keeps every secret the live
 Worker already holds and sends only ones it lacks.
 
-The declaration maps the same `EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`
-inputs to rer's shared `MAIL_PROVIDER`, `MAIL_FROM` and `MAIL_API_KEY` preflight
-bindings as well as HappyToHelp's native bindings. Real deployment requires these
-mail inputs. NATIVE-001 requires a **zero-outbound dry-run** that explicitly
+The declaration maps native `EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`
+inputs to rer's shared `MAIL_PROVIDER`, `MAIL_FROM` and `MAIL_PROVIDER_API_KEY`
+preflight bindings as well as HappyToHelp's native bindings. The deploy adapter
+resolves the setup choice `MAIL_PROVIDER=direct` to the selected native provider
+before preflight. Cloudflare also uses `EMAIL_ACCOUNT_ID`; the adapter supplies
+its native token to the shared `MAIL_API_KEY` binding. Managed deployments use
+their assigned `MAIL_*` inputs, independently of native credentials. Real
+deployment requires the selected transport's mail inputs. NATIVE-001 requires a **zero-outbound dry-run** that explicitly
 reports no outbound requests and needs no provider credentials. A separate,
 explicitly started **read-only provider preflight** requires owner consent and
 the owner's scoped Cloudflare token. Its own acceptance permits only three GETs

@@ -12328,7 +12328,7 @@
       "executable": false
     },
     "tests/reports/team-journey.mjs": {
-      "sha256": "ff02351b9b66bc2a1428d104e81e95c5cbf7e664ca9b98ea38235741f84489bb",
+      "sha256": "dd3073b6310600ae98285ca45daf8e9f7263892954ac56e130d43a950a1ea2e6",
       "executable": false
     },
     "tests/reports/upgrade-categories.mjs": {

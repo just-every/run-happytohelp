@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
+import {browserRequest} from './browser-request.mjs';
 
 export async function exerciseEscalations({browser,origin,owner,entryUrl,providers,width,directory,password,seedCount=40}){
  await mkdir(directory,{recursive:true});const context=await browser.newContext({viewport:{width,height:1000}});
@@ -8,9 +9,7 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  const page=await context.newPage();page.setDefaultTimeout(25000);let failure;
  try{
  if(entryUrl){const signed=page.waitForResponse(r=>new URL(r.url()).pathname==='/auth/dev/enter'&&r.status()>=300&&r.status()<400,{timeout:120000});await page.goto(entryUrl,{waitUntil:'domcontentloaded',timeout:120000});await (await signed).finished();await page.goto(origin+'/health',{waitUntil:'domcontentloaded'});console.log(`Escalation browser ${width}: owner entry complete`);}else await page.goto(origin+'/projects');
- // Fixture API calls can sit idle while the browser operates the UI. Close each
- // fixture connection so a later mutation cannot reuse an expired preview socket.
- const req=async(path,body,method=body===undefined?'GET':'POST')=>{const r=await context.request.fetch(origin+path,{method,headers:{Connection:'close'},...(body===undefined?{}:{data:body})});const data=await r.json();assert.ok(r.ok(),`${path}: ${r.status()} ${JSON.stringify(data).slice(0,200)}`);return data};
+ const req=async(path,body,method=body===undefined?'GET':'POST')=>{const r=await browserRequest(page,origin+path,{method,json:body});assert.ok(r.ok,`${path}: ${r.status} ${JSON.stringify(r.data).slice(0,200)}`);return r.data};
  const session=await req('/api/identity/session');let projectId=owner?.projectId||session.projectId;
  if(entryUrl){const fresh=await req('/api/management/projects',{name:`Engineering escalation proof ${width}`,allowedOrigin:origin});projectId=fresh.id;await req('/api/identity/switch-project',{projectId});}
  const base=`/api/escalations/projects/${projectId}`,records=[];
@@ -22,7 +21,7 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
   if(n===0){
   await req(`/api/conversations/${ticket.id}/messages`,{localId:'excluded',content:'Unchosen account detail. Please keep this here.',expectedRevision:1});
   await req(`/api/dashboard/projects/${projectId}/conversations/${ticket.id}/notes`,{content:'Private note: internal investigation and customer account details.'});
-  const upload=await context.request.post(origin+`/api/conversations/${ticket.id}/media`,{data:Buffer.from('Export progress: stopped at 82%; no customer records in this diagnostic.'),headers:{'Content-Type':'text/plain','X-Filename':'export-diagnostic.txt'}});assert.equal(upload.status(),201);file=await upload.json();
+  const upload=await browserRequest(page,origin+`/api/conversations/${ticket.id}/media`,{method:'POST',bytes:[...Buffer.from('Export progress: stopped at 82%; no customer records in this diagnostic.')],headers:{'Content-Type':'text/plain','X-Filename':'export-diagnostic.txt'}});assert.equal(upload.status,201);file=upload.data;
   await req(`/api/conversations/${ticket.id}/messages`,{localId:'file',content:'Diagnostic file for the export problem.',mediaIds:[file.id],expectedRevision:2});
   }
   records[n]={ticket,message:first.message,file,person};
@@ -73,7 +72,7 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  const t=Date.now()+20000;
  for(const [i,name] of ['github','linear','jira'].entries()){
   const p=providers[name],key=name==='linear'?[...p.issues.values()].find(x=>x.identifier===links[i].key).id:links[i].key,event=p.webhook(key,{closed:true,assignee:'Avery Engineer',updatedAt:t}),payload=JSON.parse(event.body);p.issues.set(String(name==='github'?payload.issue.number:name==='linear'?payload.data.id:payload.issue.key),payload.data??payload.issue);
-  const webhookPath=origin+`/api/escalations/webhooks/${projectId}:${name}`,send=e=>context.request.post(webhookPath,{data:e.body,headers:e.headers});assert.equal((await send(event)).status(),200);assert.equal((await send(event)).status(),200);assert.equal((await send(p.webhook(key,{closed:false,updatedAt:t-1000}))).status(),200);assert.equal((await context.request.post(webhookPath,{data:event.body})).status(),401);assert.equal((await send({...event,body:event.body+' '})).status(),401);
+  const webhookPath=origin+`/api/escalations/webhooks/${projectId}:${name}`,send=e=>browserRequest(page,webhookPath,{method:'POST',text:e.body,headers:e.headers});assert.equal((await send(event)).status,200);assert.equal((await send(event)).status,200);assert.equal((await send(p.webhook(key,{closed:false,updatedAt:t-1000}))).status,200);assert.equal((await browserRequest(page,webhookPath,{method:'POST',text:event.body})).status,401);assert.equal((await send({...event,body:event.body+' '})).status,401);
  }
  await panel().getByRole('button',{name:'Refresh status',exact:true}).click();await panel().getByRole('button',{name:'Review customer update',exact:true}).first().waitFor();await shot('closure-drafts');
  await panel().getByRole('button',{name:'Review customer update',exact:true}).first().click();const composer=page.getByLabel('Reply to conversation',{exact:true});await composer.fill('The export fix is ready. Please try again and tell us whether your export completes.');await page.screenshot({path:join(directory,`${width}-edited-customer-update.png`),fullPage:true});const sending=page.waitForResponse(r=>r.request().method()==='POST'&&/\/drafts\/[^/]+\/send$/.test(new URL(r.url()).pathname));await page.getByRole('button',{name:'Send',exact:true}).click();const sent=await sending;assert.equal(sent.status(),200);assert.equal((await sent.json()).accepted,true);await page.waitForFunction(()=>document.querySelector('textarea[aria-label="Reply to conversation"]')?.value==='');

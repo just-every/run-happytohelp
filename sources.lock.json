@@ -11127,8 +11127,12 @@
       "sha256": "3d849af3907fe3ebd287422755ea675c23ef85ba82a101fb51392428df2203cd",
       "executable": false
     },
+    "tests/helpers/escalations/browser-request.mjs": {
+      "sha256": "90cc261e7c8cd97aeb00bab75c23792119635b9093711b08d0bd7499325d1164",
+      "executable": false
+    },
     "tests/helpers/escalations/browser.mjs": {
-      "sha256": "a31b12ae3581d80cebecc3c0a784120a8aaf93a8a7a1e45b819b07c9df74c4fc",
+      "sha256": "eee0edc7e5b7ea38f2a6304c8288d0540c5b4ebcc38c8683b5da808ef8a3ae03",
       "executable": false
     },
     "tests/helpers/escalations/dev-proof.mjs": {

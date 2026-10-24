@@ -39,9 +39,11 @@ export async function managedMailBrowser(){
    await page.getByText('Use your own email domain later',{exact:true}).click()
   }
   const raw=mime({id:'synthetic-browser-intake',text:'My Northstar order arrived without its rain cover. Can you send a replacement?'}),response=await fetch(runtime.origin+inboundPath,ingressOptions(assigned,raw,{workspaceId:projectId}));assert.equal(response.status,200);const inbound=await response.json();assert.ok(inbound.conversationId)
+  const changed=mime({id:'synthetic-browser-intake',text:'Changed bytes under the same delivery identity'}),held=await fetch(runtime.origin+inboundPath,ingressOptions(assigned,changed,{workspaceId:projectId}));assert.equal(held.status,200);assert.equal((await held.json()).state,'held')
   edge.loseResponse=true
   await page.getByRole('button',{name:'Send me a test',exact:true}).click();await page.getByRole('button',{name:'Check retained send receipt',exact:true}).waitFor()
   for(const [name,viewport] of Object.entries(viewports)){await page.setViewportSize(viewport);await screenshot(name+'-email-uncertain')}
+  await page.getByRole('link',{name:'Review Suspended mail',exact:true}).click();await page.waitForURL(/\/suspended$/);await page.getByRole('heading',{name:'Suspended email',exact:true}).waitFor();await page.goto(runtime.origin+emailPath);await page.getByRole('button',{name:'Check retained send receipt',exact:true}).waitFor()
   const attempts=edge.sends.length;await page.getByRole('button',{name:'Check retained send receipt',exact:true}).click();await page.getByRole('button',{name:'Check retained send receipt',exact:true}).waitFor({state:'hidden'});assert.equal(edge.sends.length,attempts,'reconciliation never sends');edge.loseResponse=false
   await page.goto(runtime.origin+`/projects/${projectId}/conversations/${inbound.conversationId}`)
   await page.getByPlaceholder('Type your reply…').fill('We will send the missing rain cover today.')

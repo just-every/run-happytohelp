@@ -24,7 +24,9 @@ jobs:
   journeys:
     name: Installer / ${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # The public command includes the complete route and browser wall. Keep its
+    # execution budget separate from the bounded fresh-install journeys.
+    timeout-minutes: ${{ matrix.name == 'native-public-verify' && 180 || 90 }}
     strategy:
       fail-fast: false
       matrix:

@@ -1,3 +1,4 @@
+import {Link} from '@tanstack/react-router';
 import React,{useState} from 'react';
 import {Section} from '../forms';
 import OwnerTestMail from '../../activation/OwnerTestMail';
@@ -22,6 +23,7 @@ export default function ManagedEmail({managed,field,role,projectId,onRefresh}){
    <p>Last inbound observation: {at(managed.lastInboundAt)}</p>
    <p>Last outbound provider acceptance: {at(managed.lastOutboundAcceptanceAt)}</p>
    <p className="settings-note">Provider acceptance means the sending service accepted a message. It does not confirm arrival in the recipient’s inbox.</p>
+   {(managed.inbound?.reason||['held','suspended'].includes(managed.inbound?.state))&&<p role="status">{managed.inbound.reason||'The last inbound email is held for review'}. {managed.inbound.state!=='failed'&&<Link to={`/projects/${projectId}/suspended`}>Review Suspended mail</Link>}</p>}
    {managed.error&&<div role="alert" className="alert alert-danger">{managed.error}</div>}
    {managed.outbound&&['failed','uncertain','sending'].includes(managed.outbound.state)&&<p role="status">{managed.outbound.reason|| (managed.outbound.state==='failed'?'The last send failed':managed.outbound.state==='sending'?'The last send is awaiting a provider response':'The last send outcome is uncertain')}. It will not be sent again automatically.</p>}
    {['failed','pending','reserved'].includes(managed.state)&&<button type="button" className="btn btn-white" disabled={busy} onClick={retry}>{busy?'Retrying…':'Retry connection'}</button>}

@@ -5424,7 +5424,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mailbox.ts": {
-      "sha256": "1a2da5f8d9301d091b80bbdc1c656c2c38b331e02522efb2ebdf1d171ea9e09c",
+      "sha256": "4b708e783ab2ff567cd7c37f1a650822e7f78e9f726121dc4749b36ef4e73d22",
       "executable": false
     },
     "src/modules/integrations/routes.ts": {
@@ -9752,7 +9752,7 @@
       "executable": false
     },
     "src/ui/native/pages/email/ManagedEmail.jsx": {
-      "sha256": "b1688775e8b4f040f427f378fcc2236a86dc244f4a482b756f385e18ef4fe5c8",
+      "sha256": "1d02557f06dc34b1d6c8b0ef3cba4df31b9290e8b11942e2a0632480cec24002",
       "executable": false
     },
     "src/ui/native/pages/email/SenderRules.jsx": {
@@ -11056,7 +11056,7 @@
       "executable": false
     },
     "tests/helpers/email/rer-mail.mjs": {
-      "sha256": "5579f8c2f52c51caa8cfe29ff1ff77706364f30869639547ad0b2029fb40de34",
+      "sha256": "bdb90a9bc09e6857b95895ba130a00b355848da4f7392752d9ae6beb824604e8",
       "executable": false
     },
     "tests/helpers/email/sendgrid-inbound.mjs": {
@@ -11172,7 +11172,7 @@
       "executable": false
     },
     "tests/helpers/first-run/managed-mail-browser.mjs": {
-      "sha256": "799acee7163d0203d9191871a50506357c061a0a61d2e9f6d12186ba7fa497e8",
+      "sha256": "ac3107b27ad0b9e62802c649d167828754ed08119e1bd49d6dfed42dc83c5ccb",
       "executable": false
     },
     "tests/helpers/first-run/managed-mail.mjs": {

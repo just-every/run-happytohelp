@@ -2007,6 +2007,10 @@
       "sha256": "690528f8d17e4837d6ba76cc1e030d6829739e8ae2c72bbd19ed2634204b729e",
       "executable": false
     },
+    "management/integration/managed-deploy.json": {
+      "sha256": "85c2cd14f786ed28f91add3563b9c61dfeda79ab35ae8eb9954a3ef9be7f40ab",
+      "executable": false
+    },
     "management/integration/plan.ts": {
       "sha256": "e62c5848d925a3834d90d539145bdf522f4fadbf3420e6292ab1daa64f950548",
       "executable": false
@@ -2708,7 +2712,7 @@
       "executable": false
     },
     "scripts/delivery/generate-spec.mjs": {
-      "sha256": "29f8918ad4b2308a5efba32e652a3062b67a6458ed2a0c60b4451a457a960190",
+      "sha256": "1df7d90c3a789284c42ae46892a0656036506291d21f1e34aab543ce9ddbd641",
       "executable": false
     },
     "scripts/delivery/module-preloads.ts": {
@@ -2729,6 +2733,10 @@
     },
     "scripts/deployment/environment.mjs": {
       "sha256": "3ebf9ce532bb5ce465e0098913234ff1436c56e77f23cf381e13bca57bcddba0",
+      "executable": false
+    },
+    "scripts/deployment/mail-declaration.mjs": {
+      "sha256": "b7e37fa1e1f82c6a391d6fa92fdfd696658d5a82e0cc700942c8f7a6e21da8b3",
       "executable": false
     },
     "scripts/edition-authoring/base-copies.mjs": {
@@ -2924,15 +2932,15 @@
       "executable": false
     },
     "scripts/installer/hosted-deploy.mjs": {
-      "sha256": "059e6716a5a1aa1a716b217dea8854cb231f3cde804f53c520a77cc4ce1c6522",
+      "sha256": "62ddd5025ce36f98195ed0b739b5020c768f1a334f651b2b3194e80c72548995",
       "executable": false
     },
     "scripts/installer/hosted-origin.mjs": {
-      "sha256": "ed05907c89bdd08a8c9a57f52d24831b8484c2cc2582a3c642563d5f69889fd5",
+      "sha256": "054b658b4a8be882a1cc726947fc77da9ac7ac2af350934d5c40c1325d99477c",
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "ed923a2a698d85dbcd826a049a85604fb831d18e156791af86fc647bf47e87e3",
+      "sha256": "daceb997ac3c74fde6aad4c10aa8f48126984019911d41e860c90f9af2c14a9e",
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {

@@ -1704,7 +1704,7 @@
       "executable": false
     },
     "docs/INDEPENDENT-RELEASE.md": {
-      "sha256": "f94e3b6aa8599aff3ad06b1c9e810207666203d205e4d14ff9cfbf847b8de5c2",
+      "sha256": "1c9b0bdeda773b757eef2d1809525780613067ec32394a00d620f0c907cef0e2",
       "executable": false
     },
     "docs/INSTALLER.md": {
@@ -2592,7 +2592,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "c5d3fa9f934a0d462f73ce492d73a75ca9a08fc695cac9435d831656312967bd",
+      "sha256": "a44ac69b169524a6edf7994fefbe696c91f4055d15c36bb3e8f1d71bb5ae5b1a",
       "executable": false
     },
     "scripts/build-local-agent.cjs": {

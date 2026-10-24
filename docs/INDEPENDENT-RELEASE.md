@@ -49,23 +49,22 @@ The current package-mode instructions require current public source; the
 older `v0.4.1` tag does not contain this command-package conversion.
 
 The build and today's deployment dry run preserve local data and private
-settings and make no deployment. Today's pinned rer 0.2.77 dry run combines
-local validation/build with credentialed read-only Cloudflare requests: the
-account's Workers subdomain and the Worker's settings and secret names (three
-GETs for an existing Worker). It refuses without Cloudflare credentials before
-any provider request, validates supplied private mail inputs, and refuses a
-required secret neither held by the Worker nor supplied. It sends no mail and
-changes no provider resources. See
+settings and make no deployment. The dry run validates and builds locally with
+zero provider requests, with or without Cloudflare credentials. It explicitly
+reports no provider requests, mail or deployment and returns
+`providerChecked: false`. Remote resources, credential validity and existing
+secret bindings remain unchecked; the dry-run does not establish target
+readiness or qualify real provisioning. See
 [deployment prerequisites](../OPERATIONS.md#deploy-to-your-cloudflare-account).
 
 NATIVE-001 requires a **zero-outbound dry-run** that explicitly reports no
 outbound requests and needs no provider credentials. A separately started
 **read-only provider preflight** requires owner consent and the owner's scoped
-Cloudflare token, with its own acceptance limited to those three GETs, no mail
-and no mutations. Neither step is a mock of the other. This split is not yet
-built or proved; today's command is not the required zero-outbound dry-run or a
-separately qualified provider preflight. Live preflight and remote provisioning
-need separate qualification. Do not reset or replace `.wrangler/state` during an
+Cloudflare token, with its own acceptance limited to the account's Workers
+subdomain and the Worker's settings and secret names (three GETs for an existing
+Worker), no mail and no mutations. Neither step is a mock of the other. The
+separate preflight remains unimplemented and unqualified. Remote provisioning
+needs separate qualification. Do not reset or replace `.wrangler/state` during an
 update.
 Run setup with your existing owner and private answers to apply local migrations,
 then start `pnpm exec rer dev --foreground`. For a hosted installation, apply the

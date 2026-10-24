@@ -4,6 +4,22 @@ Use **Settings → Email** to configure sending, forwarding and connected mailbo
 
 Forwarding uses the installation's email provider. Connected mailboxes receive and send through the account you authorize. Disconnecting stops intake and sending while keeping ticket history.
 
+## Managed email
+
+A compatible Managed installation receives an address from Run Edit Run before its first workspace is created. Setup shows it under **What we’ve set**. There is no customer mail key, provider account or DNS task. Independent and Assisted installations keep their direct Resend, SendGrid or Cloudflare setup.
+
+**Settings → Email** shows configuration, receiving-route activity and actual inbound observations separately. An active route is not proof that mail arrived. The last outbound timestamp means **provider acceptance**, not inbox delivery. Password recovery and sign-in links use this same sending service. A failed binding stays visible; **Retry connection** repeats the original allocation rather than inventing another address.
+
+Customer replies use a private recipient-specific Reply-To address and retain the relay’s RFC Message-ID for threading. CC, BCC, inline images and attachments use the same native permissions and frozen recipient snapshot as other transports. Files over the included-file limit are linked through the existing authorized file route. A timeout or lost response stays uncertain and is never sent again automatically. **Check retained send receipt** reads the relay’s existing result without sending.
+
+Additional workspaces receive distinct allocations. Renaming a workspace or rotating relay/ingress credentials keeps its address and history. Deletion stops local intake immediately and durably queues retirement of the platform mapping. Custom mailboxes remain an optional later connection; checking a website’s DNS never replaces the managed sender.
+
+Signed MIME enters through `/api/integrations/email/rer/v1/inbound`. The edge’s verified, failed or unproven authentication verdict is passed to native admission; message-supplied authentication headers do not establish sender authority. Failed and unproven senders follow the existing Suspended policy, unless an existing recipient grant independently proves possession. Duplicate delivery identities cannot create another ticket; changed bytes are held for review.
+
+Original managed MIME is encrypted with the installation’s stable integration data key before acknowledgment. Acknowledged transport buffers expire after one minute; failed intake is retained for at most seven days of scheduled cleanup, while digest tombstones remain. Conversation history and attachments have their existing retention. Relay and ingress keys are separate from that data key. Preserve the data key privately when rotating transport keys; never include it in an archive. Exports retain conversations, attachments, RFC thread identities, routing history and redacted receipts. Restored routes are revoked, reply-grant metadata is unusable, and mailbox-control effects are excluded. This does not qualify the complete hosted export or live mail path: those gates remain pending with their owners.
+
+The Managed journeys replace only the external relay/edge network boundary. They establish application engineering behavior, not delivery through a real mail domain, provider account or deployed platform.
+
 ## Connect Gmail or Microsoft 365
 
 The person running the installation first registers an OAuth application with Google or Microsoft for this installation. Use your own application credentials and your own HappyToHelp origin; a connection on another installation does not authorize this one.

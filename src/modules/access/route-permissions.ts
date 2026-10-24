@@ -57,6 +57,7 @@ const rules:Record<string,Rule>={
  'POST /api/management/projects':'settings.manage',[`PUT ${P}/settings`]:'settings.manage',[`DELETE ${P}`]:'data.erase',
  [`PUT ${P}/appearance`]:'settings.manage',[`PUT ${P}/artwork`]:'settings.manage',[`PUT ${P}/widget-settings`]:'settings.manage',[`PUT ${P}/widget-campaigns/:campaignId`]:'settings.manage',[`PUT ${P}/availability`]:'settings.manage',[`PUT ${P}/ai`]:'settings.manage',
  [`POST ${P}/brand-media`]:'settings.manage',[`POST ${P}/activation/check`]:'settings.manage',[`POST ${P}/activation/skip`]:'settings.manage',[`POST ${P}/activation/test-mail`]:'settings.manage',
+ [`POST ${P}/email-settings/managed/reconcile`]:'settings.manage',[`POST ${P}/email-settings/managed/retry`]:'settings.manage',
  [`PUT ${P}/email-settings`]:'settings.manage',[`POST ${P}/email-settings/test`]:'settings.manage',[`POST ${P}/inbound-emails/:messageId/reconcile`]:'conversations.manage',
  'POST /api/site-preview/projects/:projectId/brand-image-generations':'settings.manage','POST /api/site-preview/projects/:projectId/brand-assets':'settings.manage','PUT /api/site-preview/projects/:projectId/brand-assets/:id/publish':'settings.manage','POST /api/site-preview/projects/:projectId/preview':'settings.manage',
  'POST /api/training/projects/:project/runs':'settings.manage','POST /api/training/projects/:project/runs/:run/cancel':'settings.manage','POST /api/training/synthetic-workspace':'settings.manage',
@@ -73,7 +74,7 @@ const rules:Record<string,Rule>={
  'POST /api/move-in/projects/:projectId/imports':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/apply':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/resume':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/undo':'data.import',
  // Doors with their own authority
  'POST /auth/bootstrap':'none','POST /auth/owner-claim':'none','POST /api/identity/login':'none','POST /api/identity/accept-token':'none','POST /api/identity/forgot-password':'none','POST /api/identity/widget/session':'none','POST /api/identity/register':'none','POST /api/identity/verify-email':'none','POST /api/identity/bootstrap':'none','POST /api/identity/link-status':'none','POST /api/identity/magic-link':'none','POST /api/identity/magic-link/consume':'none','POST /api/identity/owner-recovery':'none',
- 'POST /api/conversations/:id/widget-events':'none','POST /api/integrations/email/inbound':'none','POST /api/integrations/email/sendgrid/inbound':'none','POST /api/dashboard/demo-inbox':'none',
+ 'POST /api/conversations/:id/widget-events':'none','POST /api/integrations/email/rer/v1/inbound':'none','POST /api/integrations/email/inbound':'none','POST /api/integrations/email/sendgrid/inbound':'none','POST /api/dashboard/demo-inbox':'none',
  'POST /api/delegation/v1/token':'none','POST /api/delegation/v1/effects':'none','POST /api/delegation/v1/revoke':'none',
  'POST /api/local-agents/pair':'none','POST /api/local-agents/heartbeat':'none','POST /api/local-agents/device-authorizations':'none','POST /api/local-agents/device-authorizations/token':'none','POST /api/local-agents/task-sessions':'none','POST /api/local-agents/claim':'none','POST /api/local-agents/jobs/:job/progress':'none','POST /api/local-agents/jobs/:job/result':'none','POST /api/local-agents/jobs/:job/attachments':'none',
 }

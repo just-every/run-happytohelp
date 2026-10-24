@@ -1,3 +1,5 @@
+import {rerMail,managedMailbox} from './rer-mail-contract'
+import {sendRerMail,RerMailFailure} from './rer-mail'
 import {hashToken} from '../../platform/auth'
 import {localMailOrigin} from '../../edition/local-mail/configuration'
 import {sendDevelopment} from '../../edition/local-mail/sender.mjs'
@@ -32,7 +34,7 @@ async function senderFor(env:Env,input:EmailInput){
  // workspace with email off (such as one moved in from legacy with its sender
  // unverified) comes from the installation's sender.
  const sender=input.projectId?await env.DB.prepare('SELECT from_name,from_address FROM email_settings WHERE project_id=? AND is_enabled=1').bind(input.projectId).first<{from_name:string;from_address:string}>():null
- const senderAddress=sender?.from_address||String(env.EMAIL_FROM||'')
+ const senderAddress=rerMail(env)?(await managedMailbox(env,input.projectId))?.address||String(env.MAIL_FROM||''):sender?.from_address||String(env.EMAIL_FROM||'')
  return sender?.from_name?`${sender.from_name.replace(/[\r\n"<>]/g,'')} <${String(senderAddress).match(/<([^>]+)>/)?.[1]||senderAddress}>`:senderAddress
 }
 async function updateDelivery(env:Env,id:string,state:'sent'|'failed'|'uncertain',error:string|null,providerId:string|null=null){
@@ -47,6 +49,7 @@ async function sendThroughSelectedProvider(env:Env,input:EmailInput,from:string)
   const sender=await mailboxSender(env,mailboxInput)
   input={...input,text:sender.text,html:sender.html}
  }
+ if(rerMail(env))return sendRerMail(env,input)
  if(selectedEmailProvider(env)==='sendgrid'){
   const receipt=await sendGridDelivery(env,input,from)
   return receipt.providerMessageId
@@ -73,7 +76,7 @@ async function submitClaimed(env:Env,input:EmailInput,from:string):Promise<Email
    const mailbox=await env.DB.prepare('SELECT state FROM mailbox_sends WHERE id=? AND project_id=? AND mailbox_id=?').bind(input.idempotencyKey,input.projectId??null,input.mailboxId).first<{state:string}>()
    if(mailbox?.state==='failed'){await updateDelivery(env,input.idempotencyKey,'failed','Connected mailbox rejected delivery');throw error}
   }
-  const classified=sendGridFailure(error)
+  const classified=error instanceof RerMailFailure?{state:error.state,message:error.message}:sendGridFailure(error)
   if(classified){
    await updateDelivery(env,input.idempotencyKey,classified.state,classified.message)
    throw new HTTPException(classified.state==='failed'?502:503,{message:classified.message})

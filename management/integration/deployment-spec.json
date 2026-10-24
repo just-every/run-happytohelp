@@ -684,6 +684,12 @@
       "name": "243_widget_campaigns.sql",
       "sha256": "431531c17902e5dcc6eeae3cabe46694c6f2e991445ed73eb0e8b88dcc00ec8c",
       "sql": "-- Campaign configuration and consented, minimal attribution. No page contents or query strings.\nCREATE TABLE widget_campaigns(project_id TEXT NOT NULL REFERENCES projects(id),id TEXT NOT NULL,revision INTEGER NOT NULL,config_json TEXT NOT NULL,updated_at INTEGER NOT NULL,PRIMARY KEY(project_id,id));\nCREATE TABLE widget_campaign_visits(project_id TEXT NOT NULL REFERENCES projects(id),contact_id TEXT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,visit_id TEXT NOT NULL,created_at INTEGER NOT NULL,PRIMARY KEY(project_id,contact_id,visit_id));\nCREATE TABLE widget_campaign_impressions(id TEXT PRIMARY KEY,project_id TEXT NOT NULL,contact_id TEXT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,campaign_id TEXT NOT NULL,campaign_revision INTEGER NOT NULL,day TEXT NOT NULL,slot INTEGER NOT NULL,created_at INTEGER NOT NULL,shown_at INTEGER,opened_at INTEGER,dismissed_at INTEGER,conversation_id TEXT REFERENCES conversations(id) ON DELETE SET NULL,FOREIGN KEY(project_id,campaign_id) REFERENCES widget_campaigns(project_id,id),UNIQUE(project_id,contact_id,campaign_id,day,slot));\nCREATE INDEX widget_campaign_report ON widget_campaign_impressions(project_id,created_at);\n-- Revocation or native erasure of the consent subject removes identifiable campaign history.\nCREATE TRIGGER widget_campaign_consent_revoked AFTER UPDATE OF consent ON context_subjects WHEN NEW.consent=0 BEGIN\n DELETE FROM widget_campaign_impressions WHERE project_id=NEW.project_id AND contact_id=NEW.subject_id;\n DELETE FROM widget_campaign_visits WHERE project_id=NEW.project_id AND contact_id=NEW.subject_id;\nEND;\nCREATE TRIGGER widget_campaign_subject_erased AFTER DELETE ON context_subjects BEGIN\n DELETE FROM widget_campaign_impressions WHERE project_id=OLD.project_id AND contact_id=OLD.subject_id;\n DELETE FROM widget_campaign_visits WHERE project_id=OLD.project_id AND contact_id=OLD.subject_id;\nEND;\n\nCREATE INDEX widget_campaign_impressions_expiry ON widget_campaign_impressions(created_at);\nCREATE INDEX widget_campaign_visits_expiry ON widget_campaign_visits(created_at);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "244_rer_conversation_mail.sql",
+      "sha256": "c266726c4aab8483792919427a1962e6da3f44f293ac0093f1bef124a1316572",
+      "sql": "-- Routing history survives renames, rotation and workspace retirement. No live keys.\nCREATE TABLE rer_mailboxes (\n project_id TEXT PRIMARY KEY REFERENCES projects(id), allocation_key TEXT NOT NULL UNIQUE,\n mailbox_id TEXT UNIQUE, address TEXT UNIQUE, generation INTEGER NOT NULL DEFAULT 0,\n state TEXT NOT NULL DEFAULT 'pending', configured INTEGER NOT NULL DEFAULT 0,\n route_active INTEGER NOT NULL DEFAULT 0, last_inbound_at INTEGER, last_outbound_at INTEGER,\n error TEXT, updated_at INTEGER NOT NULL\n);\nCREATE TABLE rer_mailbox_outbox (\n project_id TEXT PRIMARY KEY REFERENCES projects(id), action TEXT NOT NULL DEFAULT 'bind',\n state TEXT NOT NULL DEFAULT 'pending', attempts INTEGER NOT NULL DEFAULT 0,\n next_at INTEGER NOT NULL DEFAULT 0, claim_token TEXT, claimed_at INTEGER, error TEXT\n);\nCREATE TABLE rer_mail_ingress (\n delivery_id TEXT PRIMARY KEY, project_id TEXT NOT NULL REFERENCES projects(id),\n mailbox_id TEXT NOT NULL, generation INTEGER NOT NULL, body_sha256 TEXT NOT NULL,\n raw_key TEXT NOT NULL, metadata_json TEXT NOT NULL, state TEXT NOT NULL DEFAULT 'stored',\n result_json TEXT, sender_address TEXT, error TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL\n);\nCREATE INDEX rer_mail_ingress_workspace ON rer_mail_ingress(project_id,updated_at);\nCREATE TRIGGER rer_mail_retire_workspace AFTER UPDATE OF settings_json ON project_settings\n WHEN json_extract(NEW.settings_json,'$.deleted_at') IS NOT NULL AND EXISTS(SELECT 1 FROM rer_mailboxes WHERE project_id=NEW.project_id)\n BEGIN\n UPDATE rer_mailboxes SET state='revoked',route_active=0,updated_at=NEW.updated_at WHERE project_id=NEW.project_id;\n INSERT INTO rer_mailbox_outbox(project_id,action) VALUES(NEW.project_id,'retire')\n ON CONFLICT(project_id) DO UPDATE SET action='retire',state='pending',attempts=0,next_at=0,claim_token=NULL,error=NULL;\n END;\n\nCREATE TABLE rer_mail_raw_objects (\n delivery_id TEXT NOT NULL REFERENCES rer_mail_ingress(delivery_id),\n body_sha256 TEXT NOT NULL, project_id TEXT NOT NULL REFERENCES projects(id), object_key TEXT NOT NULL,\n PRIMARY KEY(delivery_id,body_sha256)\n);\n-- Redacted command/thread routing metadata, never a runnable effect or payload.\nCREATE TABLE rer_mail_commands (\n command_id TEXT PRIMARY KEY REFERENCES email_deliveries(id), project_id TEXT NOT NULL REFERENCES projects(id),\n mailbox_id TEXT NOT NULL, generation INTEGER NOT NULL, message_key TEXT NOT NULL UNIQUE,\n conversation_id TEXT, message_id TEXT, accepted_at INTEGER\n);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
@@ -704,7 +710,15 @@
       ]
     }
   ],
-  "publicVariables": {},
+  "publicVariables": {
+    "MAIL_PROVIDER": "",
+    "MAIL_FROM": "",
+    "MAIL_RELAY_URL": "",
+    "H2H_RER_MAIL_VERSION": "1",
+    "RER_MAILBOX_ID": "",
+    "RER_MAIL_ADDRESS": "",
+    "RER_MAIL_CONTROL_URL": ""
+  },
   "secretNames": [
     "H2H_SETUP_TOKEN"
   ],
@@ -738,7 +752,9 @@
     "MAILBOX_SOCKET_HOSTS",
     "MAILBOX_SOCKET_PORTS",
     "MAILBOX_IMAP_AUTHSERV",
-    "FORMS_TURNSTILE_SECRET_KEY"
+    "FORMS_TURNSTILE_SECRET_KEY",
+    "MAIL_API_KEY",
+    "RER_MAIL_INGRESS_KEY"
   ],
   "schedules": [
     "* * * * *"
@@ -790,5 +806,10 @@
     "path": "/api/identity/setup-status",
     "pendingStatus": 409,
     "completeStatus": 200
+  },
+  "mail": {
+    "providers": [
+      "rer"
+    ]
   }
 }

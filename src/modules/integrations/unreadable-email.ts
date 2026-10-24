@@ -7,7 +7,7 @@ import type {IncomingEmail} from './inbound-service'
 
 type RawEmail=ArrayBuffer|Uint8Array
 interface HoldContext {
- recipients:string[];projectId?:string;identity?:string;description?:string
+ reviewRaw?:RawEmail;recipients:string[];projectId?:string;identity?:string;description?:string
  reason?:string;attachments?:IncomingEmail['attachments']
 }
 /** Unreadable bytes establish neither an author nor a thread. Only the receiving
@@ -27,7 +27,7 @@ export async function holdRawEmail(env:Env,raw:RawEmail|null,context:HoldContext
 export async function parseInboundMime(env:Env,raw:RawEmail,context:HoldContext){
  let parsed
  try{parsed=await PostalMime.parse(raw,{attachmentEncoding:'arraybuffer'})}catch{
-  await holdRawEmail(env,raw,context)
+  await holdRawEmail(env,context.reviewRaw||raw,context)
   return null
  }
  return parsed

@@ -38,3 +38,9 @@ import {notificationTriggersJourney} from '../helpers/r4/notifications.mjs'
 test('editable requester triggers send received and solved once, suppress historical and machine mail, and teammate notices follow current authority and preferences',notificationTriggersJourney)
 test('operators start email and call tickets, header and imported vendor replies preserve identity, suspicious mail stays in Suspended for safe audited recovery or expiry, and erasure removes its new stores',completeEmailJourney)
 test('unreadable nested MIME and oversized headers are held with original bytes while following mail arrives through sync, and repeated message failures survive restart then release the mailbox',unreadableMailJourney)
+
+import {rerMailJourney} from '../helpers/email/rer-mail.mjs'
+test('Managed conversation mail verifies signed raw ingress, holds changed identities and unproven senders, threads real relay identities with attachments, and never replays uncertain sends',rerMailJourney)
+
+import {rerMailArchiveJourney} from '../helpers/email/rer-archive.mjs'
+test('Managed mail export retains conversations, files, thread and redacted route receipts, restores inertly without mail authority, and erases private MIME without replay',rerMailArchiveJourney)

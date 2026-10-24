@@ -1,6 +1,5 @@
-/** Whether the team is taking conversations now, from the workspace's settings. With the schedule on, the team is
- * available inside its weekly hours in the workspace timezone; with it off, the "Accept new conversations" switch
- * decides. `opensAt` is when a scheduled team is next back (the visitor's expected reply time) and `changesAt` when
+/** Whether the team is taking conversations now, from the workspace's settings. The "Accept new conversations"
+ * switch can make the team away; otherwise the optional weekly schedule uses the workspace timezone. `opensAt` is when a scheduled team is next back (the visitor's expected reply time) and `changesAt` when
  * the schedule next changes this answer, so a widget left open can ask again. `live` says the answer also follows
  * live presence (presence-based away), so an open widget keeps asking. Times are epoch milliseconds. */
 export interface Availability {available:boolean;message:string;scheduled:boolean;timezone:string;opensAt:number|null;changesAt:number|null;live:boolean}

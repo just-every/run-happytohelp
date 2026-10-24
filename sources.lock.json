@@ -5816,7 +5816,7 @@
       "executable": false
     },
     "src/modules/management/availability.ts": {
-      "sha256": "b1cb2838d03f438e5db947e1d58afe0011297f8581b3548067ae5d64c3046091",
+      "sha256": "314ae67c9f1c9548c0de90629ad41d31a65c5b4666b91580e932cd73beb5e9be",
       "executable": false
     },
     "src/modules/management/away-reply.ts": {
@@ -11668,7 +11668,7 @@
       "executable": false
     },
     "tests/helpers/widget/presence-browser.mjs": {
-      "sha256": "b277310f74b5c27dbfdcb83c4dc10674307d4422d54f16ffb7d7fe4421fd8b63",
+      "sha256": "a32960148dc086709dc4edb1c143e9c7c54645437024434d73e5dceaa964725f",
       "executable": false
     },
     "tests/helpers/widget/presence.mjs": {
@@ -11684,7 +11684,7 @@
       "executable": false
     },
     "tests/helpers/widget/socket.mjs": {
-      "sha256": "5b5f8f52937f231d98caf5cd41ceb59d36352d4e1d66ce6d0c556c1e1bd8f23e",
+      "sha256": "ba2d985b05c43907f46489591a06c9c6917776fb073d732bb9b7ff443896afed",
       "executable": false
     },
     "tests/helpers/widget/sockets.mjs": {

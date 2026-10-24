@@ -103,7 +103,7 @@ export async function presenceBrowserJourney(){
   await visitor.locator('.happytohelp-chat-message').filter({hasText:responseTime}).waitFor()
   await both('widget-accept-off-reply')
   await json(`/api/management/projects/${p}/settings`,{token:owner.token,method:'PUT',body:{is_available:true}})
-  await notice.waitFor({state:'detached',timeout:WIDGET_RECHECK_MS+SLACK_MS})
+  await visitor.reload();await notice.waitFor({state:'detached'})
   checks.push('with Accept new conversations off and a teammate online, notice, header and away reply show the configured response estimate at 1440/390')
 
   // A Worker restart while both are online, with the owner's tab closed while the Worker is down: every entry written

@@ -59,7 +59,7 @@ export async function socketJourney(){
   const nightSocket=await socketTo(`/api/conversations/${late.id}/socket?token=${night.token}`,{Origin:'https://widget.example'});assert.equal(nightSocket.status,101)
   const asked=(await app.call(`/api/conversations/${late.id}/messages`,{token:night.token,body:{localId:'late-1',content:'Is anyone there?',expectedRevision:0},status:200})).data
   const away=await nightSocket.next(frame=>frame.type==='message'&&frame.message.actor_role==='system')
-  assert.match(away.message.content,/^Thanks for your message\. .+ is away right now\. We'll reply here\.$/)
+  assert.match(away.message.content,/^Thanks for your message\. .+ is away right now\. We'll reply here\. Responds within 24 hours$/)
   await app.call(`/api/conversations/${late.id}/messages`,{token:night.token,body:{localId:'late-2',content:'Order 4471 arrived damaged.',expectedRevision:2},status:200})
   await app.db.prepare('UPDATE conversation_outbox SET delivered_at=NULL WHERE message_id=?').bind(asked.message.id).run();await app.scheduled()
   assert.deepEqual((await app.sql('SELECT actor_role,revision FROM messages WHERE conversation_id=? ORDER BY revision',late.id)).map(row=>row.actor_role),['contact','system','contact'])

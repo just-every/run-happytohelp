@@ -1,3 +1,10 @@
+import {defaultText} from './js/context/defaults.js';
+
+// One lead-configured estimate for the notice, header and durable away reply.
+export function humanResponseTime(text) {
+  return String(text?.ai?.human_response || defaultText.ai.human_response);
+}
+
 // When an away team is back, in words: "today at 9:00 AM", "tomorrow at 9:00 AM" or "Monday at 9:00 AM".
 // The widget says it in the visitor's own timezone; the away reply says it in the workspace's, with the zone named.
 export function backAt(opensAt, {timeZone, now = Date.now(), locale = 'en-US', withZone = false} = {}) {

@@ -5820,7 +5820,7 @@
       "executable": false
     },
     "src/modules/management/away-reply.ts": {
-      "sha256": "ff958632972e76549e8046248af8a94192c2372bbb6e3cd0fdbb547730b167a5",
+      "sha256": "82a94a38d1170c081bc84d9c22caf6c7731bc4b4c17fb3b99534c5aa3728445d",
       "executable": false
     },
     "src/modules/management/brand-reports.ts": {
@@ -6868,11 +6868,11 @@
       "executable": false
     },
     "src/modules/widget/availability-text.d.ts": {
-      "sha256": "f71ff31e1af6aa9a3842d5243861f24e5d1f6075fa5d7a7201eb00dc265b51b8",
+      "sha256": "f95fec519b77b7e0147730576f67ceed2bce8d7c1145efd1b002ef5be285ef94",
       "executable": false
     },
     "src/modules/widget/availability-text.js": {
-      "sha256": "a2c5b999de1091049a6dd198d78172781a5877c59aaf831b0fa612b1c7d117c4",
+      "sha256": "9779c5764eb4a867ddbcf390fd9eb46a06cdf12e53f083784ba99aa7a9b92dcc",
       "executable": false
     },
     "src/modules/widget/campaigns/events.ts": {
@@ -7116,7 +7116,7 @@
       "executable": false
     },
     "src/modules/widget/js/AwayNotice.jsx": {
-      "sha256": "4839aff8d8a421a1740befdf7a5b6d755920e0ea4bc97079b5dcba0f855e1a05",
+      "sha256": "974c114da1faaa0c247b412a8e2fb1a462a2fbd39cdcead5800e8da05ae93ea8",
       "executable": false
     },
     "src/modules/widget/js/Button.jsx": {
@@ -7128,7 +7128,7 @@
       "executable": false
     },
     "src/modules/widget/js/ChatHeader.jsx": {
-      "sha256": "1233799b5921880ee0111ff33afa59f86013ddaf6a8261f167d94101e7bc845b",
+      "sha256": "5ee58579b711c83a962e915483df327045b88ef067f895766e0944ac738790df",
       "executable": false
     },
     "src/modules/widget/js/ChatList.jsx": {
@@ -11656,7 +11656,7 @@
       "executable": false
     },
     "tests/helpers/widget/mailbox-live.mjs": {
-      "sha256": "527a0360f849e51adbf07da226ebb638fdb2ff3862f391f48a285e2ced461950",
+      "sha256": "e7ed662cb0b3cc9bb8001c94d96ffa3ea149cdd7c7e0cbbc8b081411d33dc8d7",
       "executable": false
     },
     "tests/helpers/widget/opening.mjs": {
@@ -11668,11 +11668,11 @@
       "executable": false
     },
     "tests/helpers/widget/presence-browser.mjs": {
-      "sha256": "54a3c7f480a75486f67c5f3da1cc71aedc87bd9db0a81d6cff9b944b5fffa8a0",
+      "sha256": "603cb2f82195cf4c595218435e391f78ea1827eb06cc38dfef7b2613ed0bc5d1",
       "executable": false
     },
     "tests/helpers/widget/presence.mjs": {
-      "sha256": "f89bbda3cd1bb9a9b0dbe6e7bc4a980aae3be7eca7ae826edc87d04bd8366c03",
+      "sha256": "1b005d583ece03d646aca7de67bb2f4cc968a7ee42cf3831d26ee458030f5c2d",
       "executable": false
     },
     "tests/helpers/widget/runtime.mjs": {

@@ -82,8 +82,9 @@ export async function mailboxLiveJourney(){
     const notice=page.locator('.happytohelp-away-notice')
     await notice.waitFor()
     assert.match(await notice.innerText(),/We're away right now/)
-    assert.match(await notice.innerText(),point==='P1'?/We're back .+ at/:/We'll reply as soon as we're back/)
+    assert.match(await notice.innerText(),point==='P1'?/We're back .+ at/:/Responds within 24 hours/)
     const both=async phase=>{for(const [size,viewport] of Object.entries(viewports)){await page.setViewportSize(viewport);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:join(output,`${point}-${phase}-${size}.png`),fullPage:true})}}
+    await page.locator('.happytohelp-insight-agent-info').filter({hasText:point==='P1'?'Away until':'Responds within 24 hours'}).first().waitFor()
     await both('email-ask')
     await page.locator('input[name=email]').fill(process.env.WIDGET_LIVE_MAIL_TO)
     await page.locator('input[name=email]').press('Enter')
@@ -100,6 +101,7 @@ export async function mailboxLiveJourney(){
      await new Promise(done=>setTimeout(done,200))
     }
     assert.deepEqual(transcript.messages.map(message=>message.actor_role),['contact','system'],'the inbox receives the visitor question and one away reply')
+    if(point==='P2')assert.ok(transcript.messages[1].content.includes('Responds within 24 hours'),'the away reply includes the expected response time')
     const contact=await call(`/api/management/projects/${p}/contacts/${session.contactId}`)
     assert.equal(contact.data.email,process.env.WIDGET_LIVE_MAIL_TO)
     const answer=`${point==='P1'?'Your replacement ships today.':'Your order arrives tomorrow.'} HH widget reference ${marker}.`

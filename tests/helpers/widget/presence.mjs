@@ -32,7 +32,7 @@ export async function presenceJourney(){
   const transcript=id=>app.sql('SELECT actor_role,content FROM messages WHERE conversation_id=? ORDER BY revision',id)
 
   // Open hours (no schedule, accepting conversations) and nobody online: visitors are told the team is away, with no
-  // return time, and an open widget keeps asking.
+  // reopening time, but with the configured response estimate; an open widget keeps asking.
   assert.deepEqual(await state(),away,'nobody online during open hours is away')
   const notes=await stream(collaborator);report(notes,0)
   await app.until(()=>row('collaborator-presence'),{message:'the collaborator stream reported'})
@@ -76,16 +76,24 @@ export async function presenceJourney(){
   await write(night,first.id,'presence-1','Is anyone there?',0);await write(night,first.id,'presence-2','My parcel is late.',2)
   const quiet=await transcript(first.id)
   assert.deepEqual(quiet.map(message=>message.actor_role),['contact','system','contact'])
-  assert.equal(quiet[1].content,"Thanks for your message. Workspace presence is away right now. We'll reply here.")
+  assert.equal(quiet[1].content,"Thanks for your message. Workspace presence is away right now. We'll reply here. Responds within 24 hours")
   const front=await stream(owner);report(front,0);await becomes(online,'the owner is online')
   const day=await visitor(),second=await conversation(day)
   await write(day,second.id,'presence-day','Hello?',0)
   assert.deepEqual((await transcript(second.id)).map(message=>message.actor_role),['contact'],'no away message while a teammate is online')
+  const responseTime='Responds within two business days'
+  await app.call(`/api/management/projects/${p}/widget-settings`,{token:owner,method:'PUT',body:{text:{ai:{human_response:responseTime}}},status:200})
+  await app.call(`/api/management/projects/${p}/settings`,{token:owner,method:'PUT',body:{is_available:false},status:200})
+  assert.equal((await state()).available,false,'Accept new conversations off is away even with the owner online')
+  const paused=await visitor(),pausedChat=await conversation(paused)
+  await write(paused,pausedChat.id,'presence-paused','Can you help?',0)
+  assert.ok((await transcript(pausedChat.id))[1].content.includes(responseTime),'the switched-off away reply includes the configured estimate')
+  await app.call(`/api/management/projects/${p}/settings`,{token:owner,method:'PUT',body:{is_available:true},status:200})
   await availabilityPut(owner,{presence_away_message:'Our team is with other customers. We will email you shortly.'})
   front.socket.close();await becomes(away,'the owner left')
   const later=await visitor(),third=await conversation(later)
   await write(later,third.id,'presence-later','Still there?',0)
-  assert.deepEqual((await transcript(third.id)).map(message=>message.content),['Still there?','Our team is with other customers. We will email you shortly.'])
+  assert.deepEqual((await transcript(third.id)).map(message=>message.content),['Still there?',`Our team is with other customers. We will email you shortly. ${responseTime}`])
 
   // Outside the schedule's hours nothing changes: the team is away with its return time, whoever is online.
   const back=await stream(owner);report(back,0);await becomes(online,'the owner is back')

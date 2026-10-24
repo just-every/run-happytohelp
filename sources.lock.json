@@ -2007,6 +2007,10 @@
       "sha256": "690528f8d17e4837d6ba76cc1e030d6829739e8ae2c72bbd19ed2634204b729e",
       "executable": false
     },
+    "management/integration/managed-deploy.json": {
+      "sha256": "85c2cd14f786ed28f91add3563b9c61dfeda79ab35ae8eb9954a3ef9be7f40ab",
+      "executable": false
+    },
     "management/integration/plan.ts": {
       "sha256": "e62c5848d925a3834d90d539145bdf522f4fadbf3420e6292ab1daa64f950548",
       "executable": false
@@ -2728,7 +2732,7 @@
       "executable": false
     },
     "scripts/delivery/generate-spec.mjs": {
-      "sha256": "29f8918ad4b2308a5efba32e652a3062b67a6458ed2a0c60b4451a457a960190",
+      "sha256": "1df7d90c3a789284c42ae46892a0656036506291d21f1e34aab543ce9ddbd641",
       "executable": false
     },
     "scripts/delivery/module-preloads.ts": {
@@ -2749,6 +2753,10 @@
     },
     "scripts/deployment/environment.mjs": {
       "sha256": "3ebf9ce532bb5ce465e0098913234ff1436c56e77f23cf381e13bca57bcddba0",
+      "executable": false
+    },
+    "scripts/deployment/mail-declaration.mjs": {
+      "sha256": "b7e37fa1e1f82c6a391d6fa92fdfd696658d5a82e0cc700942c8f7a6e21da8b3",
       "executable": false
     },
     "scripts/edition-authoring/base-copies.mjs": {
@@ -2952,7 +2960,7 @@
       "executable": false
     },
     "scripts/installer/hosted-deploy.mjs": {
-      "sha256": "e31919f7a12b6e19240fdba1397bcf6ef590791bfbcaa9102a874844dca255fe",
+      "sha256": "fc8415af999a779ab8f0eecf1767bfd5f57409b6f103bf18d9665603a2c0d1bb",
       "executable": false
     },
     "scripts/installer/hosted-export.mjs": {
@@ -2960,7 +2968,7 @@
       "executable": false
     },
     "scripts/installer/hosted-origin.mjs": {
-      "sha256": "ed05907c89bdd08a8c9a57f52d24831b8484c2cc2582a3c642563d5f69889fd5",
+      "sha256": "054b658b4a8be882a1cc726947fc77da9ac7ac2af350934d5c40c1325d99477c",
       "executable": false
     },
     "scripts/installer/hosted-r2.mjs": {
@@ -2968,7 +2976,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "e6f11e6b636061a2f0262ace01e8e18e836a4fa9c21fa812f62837286ce58cbc",
+      "sha256": "1b6e4a6168a4e9f3726363d07e9c3dd07e35834a62af7a11cd5f3f9aff4c3aa9",
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {

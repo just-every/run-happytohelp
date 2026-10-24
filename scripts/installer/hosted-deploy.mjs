@@ -1,4 +1,5 @@
 import {offlineDeploy} from './offline-deploy.mjs';
+import {managedDeployPath} from '../deployment/mail-declaration.mjs';
 import {ownerDeploy} from '@runeditrun/rer/deploy';
 import {missing} from '@runeditrun/rer/errors';
 import {deployEnvironment} from '@runeditrun/rer/internal/cli/deploy-inputs.mjs';
@@ -11,7 +12,7 @@ import {deploymentMailEnvironment,validateRuntimeEnvironment} from '../deploymen
 // retained real setup owner. Local trial addresses cannot receive hosted login mail.
 export function hostedDeploy(path,lifecycle){
  const deploy=ownerDeploy(path,lifecycle);
- return Object.assign(async context=>{
+ return Object.defineProperty(Object.assign(async context=>{
   if(!context.options.remove&&!context.options.setSecret&&!context.options.unsetSecret){
    const declaration=JSON.parse(await readFile(join(context.root,path),'utf8'));
    // Resolve private inputs without generating keys ahead of ownerDeploy's
@@ -40,5 +41,5 @@ export function hostedDeploy(path,lifecycle){
    if(custom)return ownerDeploy(custom,lifecycle)(context);
   }
   return deploy(context);
- },{declaration:deploy.declaration,managesHostedOwner:true});
+ },{managesHostedOwner:true}),'declaration',{get:()=>process.env.MAIL_PROVIDER==='rer'?managedDeployPath:deploy.declaration});
 }

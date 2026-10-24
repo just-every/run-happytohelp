@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "4c2c4b226b8f806dfc10d955fdddd9b9436fa6355101a735098d682cf8fe9f6b",
+      "sha256": "9f2e0d70d7dd6cae8c23ea2b4c5386d5caa2d04d6c31639161d47337367e353c",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2996,7 +2996,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "9527b9cbca5f65a48ad4a5d08a315a9876f2042790e3fbc43d711167557c32fb",
+      "sha256": "217123c2f4896f42e8b39153dbad4cb7bfa53f08fbf900c925aa6d28e451771f",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -10104,7 +10104,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProjectSettings.jsx": {
-      "sha256": "b8f33a847ef35e973d43320227d884d92d130207766fc65ecbff40737ad542ec",
+      "sha256": "d822a514323154209f2d45ea9105f3d3a9bead2aadc6f47b35d6e8dc4ad5fa08",
       "executable": false
     },
     "src/ui/native/pages/ProjectsPage.d.ts": {
@@ -11676,7 +11676,7 @@
       "executable": false
     },
     "tests/helpers/platform-archive.mjs": {
-      "sha256": "cd094991197ed1c3d2dfabe18886bcfad63584a345c760729114d9e9cfa092d2",
+      "sha256": "4dde64dec86d3cb77b131ae81742b4f4adc9daea1667a71ad09b8c3eb8ee452b",
       "executable": false
     },
     "tests/helpers/proactive-provider-network.mjs": {

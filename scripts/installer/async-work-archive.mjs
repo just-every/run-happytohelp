@@ -3,6 +3,7 @@
 // the source installation's queued or interrupted work.
 const error='Archived work is never replayed';
 export function asyncWorkArchiveRow(table,row){
+ if(table==='widget_campaigns')return {...row,config_json:JSON.stringify({...JSON.parse(row.config_json),enabled:false})};
  if(table==='ai_generations'&&['queued','running'].includes(row.state))return {...row,state:row.state==='running'?'uncertain':'cancelled',error};
  if(table==='ai_attempts'&&row.state==='running')return {...row,state:'uncertain',error};
  if(table==='context_jobs'&&['queued','running'].includes(row.state))return {...row,state:row.state==='running'?'uncertain':'superseded',error};
@@ -20,6 +21,7 @@ export function asyncWorkArchiveRow(table,row){
  return row;
 }
 export const asyncWorkRestoreSql=`
+UPDATE widget_campaigns SET config_json=json_set(config_json,'$.enabled',json('false'));
 UPDATE ai_generations SET state=CASE WHEN state='running' THEN 'uncertain' ELSE 'cancelled' END,error='Archived work is never replayed' WHERE state IN ('queued','running');
 UPDATE ai_attempts SET state='uncertain',error='Archived work is never replayed' WHERE state='running';
 UPDATE context_jobs SET state=CASE WHEN state='running' THEN 'uncertain' ELSE 'superseded' END,error='Archived work is never replayed' WHERE state IN ('queued','running');

@@ -40,8 +40,6 @@ for(const vendor of ['zendesk','intercom'])test(`a killed ${vendor} Worker resum
 
 test('one D1 budget covers a mixed Queue invocation and excess messages are left for retry',async()=>{const h=await nativeHarness();try{await upload(h,'zendesk',2);const job=h.queued.shift(),result=await h.step([job,job,...Array.from({length:350},(_,i)=>({type:'knowledge.ingest',id:`missing-${i}`,projectId:'p',datasetId:'absent'}))]);assert.ok(result.statements<=1000);assert.ok(result.statements>900);assert.ok(result.retried.length>0);assert.deepEqual(result.effects,{widget:0});await h.drain();assert.equal(h.outbound,0)}finally{await h.close()}});
 
-test('malformed line and conflicting IDs reach the reviewed report with source path and no guessed ticket history',async()=>{const h=await nativeHarness();try{const lines=generate('zendesk',1).trim().split('\n'),ticket=JSON.parse(lines.find(line=>line.startsWith('{"ticket"')));ticket.ticket.subject='Conflicting subject';const body=lines.join('\n')+'\n'+JSON.stringify(ticket)+'\n{malformed\n',run=await negativeReview(h,'zendesk',{body,malformedLine:lines.length+2},1);await h.drain();const ready=await state(h,run);assert.equal(ready.state,'ready');assert.ok(ready.plan.diagnostics.some(d=>d.code==='conflicting_duplicate_id'&&d.location.artifact==='zendesk.jsonl'&&d.location.row===lines.length+1));assert.equal((await state(h,run)).plan.diagnostics.some(d=>d.code==='invalid_json'),false);assert.equal(ready.plan.decisions.find(d=>d.kind==='ticket').rejection,'conflicting_duplicate_id');await apply(h,run);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,0);assert.equal(h.outbound,0)}finally{await h.close()}});
-
 test('a differently packaged identical source reuses existing decisions without duplicating native rows',async()=>{const h=await nativeHarness();try{const first=await upload(h);await h.drain();await apply(h,first);const second=await upload(h,'zendesk',2,'\n'+generate('zendesk',2));await h.drain();const plan=await state(h,second);assert.equal(plan.plan.counts.rejected,0);const completed=await apply(h,second);assert.equal(completed.error,null);assert.equal(completed.state,'completed');assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,2);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM contacts').first()).n,2);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM workspace_tags').first()).n,3)}finally{await h.close()}});
 
 test('authority lost inside the native publication batch rolls the entire batch back',async()=>{const h=await nativeHarness();try{const run=await upload(h,'zendesk',2);await h.drain();const ready=await state(h,run);await h.db.prepare("CREATE TRIGGER test_revoke_during_import AFTER INSERT ON messages BEGIN UPDATE memberships SET role='operator' WHERE project_id='p' AND user_id='owner'; END;").run();await h.call(`${base}/${run.id}/apply`,json({fingerprint:ready.plan.fingerprint}));await h.drain();const stopped=await state(h,run);assert.ok(stopped.error);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,0);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM messages').first()).n,0);assert.equal((await h.db.prepare("SELECT role FROM memberships WHERE project_id='p' AND user_id='owner'").first()).role,'owner','revocation inside the rejected transaction also rolls back');await h.db.prepare('DROP TRIGGER test_revoke_during_import').run();await h.call(`${base}/${run.id}/resume`,json({}));await h.drain();assert.equal((await state(h,run)).state,'completed');assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,2)}finally{await h.close()}});
@@ -76,9 +74,22 @@ for(const reference of ['contact','tag','author'])test(`native ${reference} refe
  }finally{await h.close()}});
 
 
-for(const vendor of ['zendesk','intercom'])test(`${vendor} generated diagnostics retain physical malformed and duplicate line locations`,async()=>{const h=await nativeHarness();try{
- const sample=generateDiagnostics(vendor),run=await negativeReview(h,vendor,sample);await h.drain();const ready=await state(h,run);assert.ok(ready.plan.diagnostics.some(d=>d.code==='conflicting_duplicate_id'&&d.location.artifact===`${vendor}.jsonl`&&d.location.row===sample.duplicateLine));assert.equal(ready.plan.diagnostics.some(d=>d.code==='invalid_json'),false);await apply(h,run);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,1);assert.equal(h.outbound,0)
- }finally{await h.close()}});
+for(const vendor of ['zendesk','intercom'])test(`${vendor} generated diagnostics retain physical malformed and duplicate line locations`,async()=>{
+ const samples=[{...generateDiagnostics(vendor),count:2,remaining:1}];
+ if(vendor==='zendesk'){
+  const lines=generate(vendor,1).trim().split('\n'),ticket=JSON.parse(lines.find(line=>line.startsWith('{"ticket"')));
+  ticket.ticket.subject='Conflicting subject';
+  samples.push({body:lines.join('\n')+'\n'+JSON.stringify(ticket)+'\n{malformed\n',malformedLine:lines.length+2,duplicateLine:lines.length+1,count:1,remaining:0});
+ }
+ for(const sample of samples){const h=await nativeHarness();try{
+  const run=await negativeReview(h,vendor,sample,sample.count);await h.drain();const ready=await state(h,run);
+  assert.equal(ready.state,'ready');
+  assert.ok(ready.plan.diagnostics.some(d=>d.code==='conflicting_duplicate_id'&&d.location.artifact===`${vendor}.jsonl`&&d.location.row===sample.duplicateLine));
+  assert.equal(ready.plan.diagnostics.some(d=>d.code==='invalid_json'),false);
+  assert.equal(ready.plan.decisions.find(d=>d.kind===(vendor==='zendesk'?'ticket':'conversation')).rejection,'conflicting_duplicate_id');
+  await apply(h,run);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,sample.remaining);assert.equal(h.outbound,0);
+ }finally{await h.close()}}
+});
 
 for(const vendor of ['zendesk','intercom'])test(`${vendor} seeded 1,000-conversation negative corpus reports exact duplicate and malformed source lines`,async()=>{const h=await nativeHarness();try{
  const sample=generateDiagnostics(vendor,1000),run=await negativeReview(h,vendor,sample,1000);assert.equal(sample.body,generateDiagnostics(vendor,1000).body,'fixed seed is reproducible');await h.drain();const ready=await state(h,run),duplicateLine=vendor==='zendesk'?1106:1105,malformedLine=vendor==='zendesk'?1107:1106;

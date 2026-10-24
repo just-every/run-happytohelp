@@ -188,24 +188,14 @@ separately started **read-only provider preflight** with owner consent and the
 owner's scoped Cloudflare token. The preflight has its own acceptance: only the
 account's Workers subdomain and the Worker's settings and secret names (three
 GETs for an existing Worker), no mail and no mutations. Neither step is a mock of
-the other.
+the other. The zero-outbound dry-run is implemented in this candidate. The separately started preflight still needs implementation and live qualification.
 
 `rer deploy --dry-run` validates the input shape and builds locally. It makes no
 provider requests, sends no mail and makes no deployment. Cloudflare credentials
 are not required. Remote resources, credential validity and existing secret
-bindings remain unchecked. The separately started read-only preflight is not yet
-implemented or qualified.
-
-Real deployment requires private `EMAIL_PROVIDER`, `EMAIL_FROM` and
-`EMAIL_API_KEY` inputs. The declaration maps them to both rer's `MAIL_*`
-preflight bindings and HappyToHelp's native `EMAIL_*` bindings. For a new
-installation, also supply a real `OWNER_EMAIL` that can receive sign-in mail in
-an owned 0600 `--env-file`. Existing installations retain held secrets. For
-Cloudflare mail, supply the additional account ID described in
-[Operations](../OPERATIONS.md#deploy-to-your-cloudflare-account).
-`rer deploy --environment production` requires owner authorization and the
-private credentials/declaration in Operations. Local development needs no email
-account. Live preflight and remote provisioning need separate qualification.
+bindings remain unchecked until a real deployment. `rer deploy --environment
+production` requires owner authorization and the private credentials/declaration
+in Operations. Local development still needs no email account.
 Stop `rer dev` first (`rer dev --stop`): while it runs it owns the checkout's local
 state, and `rer deploy`, including `--dry-run`, refuses with "An active local
 operation owns the state".

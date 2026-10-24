@@ -239,14 +239,11 @@ the owner's scoped Cloudflare token. Its own acceptance permits only three GETs
 for an existing Worker: the account's Workers subdomain and the Worker's settings
 and secret names, with no mail or mutations. Neither step is a mock of the other.
 
-The split is not yet implemented or proved. Today's `rer deploy --dry-run`
-combines local validation/build with those credentialed read-only provider reads
-(`tests/helpers/installer/fresh-install.mjs` expects three GETs). It validates mail
-inputs when supplied, refuses without Cloudflare credentials before a provider
-request, and refuses a required secret neither held by the Worker nor supplied.
-It sends no mail and changes no resources, but it is not the contract's
-zero-outbound dry-run. A real owner-consented provider preflight and remote
-provisioning still need separate qualification.
+The candidate implements the zero-outbound dry-run: it validates and builds without
+provider credentials, sends no mail and changes no resources. Its report leaves
+remote resources, credential validity and existing secret bindings unchecked.
+The separately started owner-consented preflight and remote provisioning still
+need implementation or qualification, respectively.
 
 Cloudflare Email Sending additionally needs `EMAIL_ACCOUNT_ID`. Add
 `{"binding":"EMAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}` to the
@@ -266,8 +263,7 @@ rer deploy --environment production
 ```
 
 Default environment is production. Dry run validates the declaration and real
-build locally; its only provider requests are the read-only Cloudflare GET
-requests above, and without Cloudflare credentials it makes none. Real deploy
+build locally without provider requests or credentials. Real deploy
 builds, provisions, applies migrations, publishes and checks health in the owner
 account. It is an external change requiring owner authorization. Release produces
 source/artifacts with its existing `--repo` and `--output` arguments and never

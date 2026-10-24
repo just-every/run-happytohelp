@@ -11300,7 +11300,7 @@
       "executable": false
     },
     "tests/helpers/first-run/managed-mail-browser.mjs": {
-      "sha256": "8cdbf455dbb1ea28f358e39eb61dc6fe4223d416aaa1b5bce6d4343d510debe8",
+      "sha256": "5c6b0b05dae9ce7b479474dc51f7553eb5c27f69b1bc4d68ad4a6c00263a1d79",
       "executable": false
     },
     "tests/helpers/first-run/managed-mail.mjs": {

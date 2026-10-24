@@ -64,6 +64,14 @@
     {
       "id": "248_customer_recovery.sql",
       "buyerSteps": "Preserve explicit optional customer recovery separately from satisfaction. Apply before the updated Worker serves traffic. Existing ratings remain unknown for recovery; no historical positive rating becomes a recovery claim and no action is replayed."
+    },
+    {
+      "id": "249_rer_conversation_mail.sql",
+      "buyerSteps": "Apply after 248 and before the updated Worker serves traffic. Retain Managed mailbox routing history, encrypted ingress references and redacted delivery receipts with the rest of the installation. No provider credentials are stored in these tables; restored routes stay revoked until fresh authority is configured."
+    },
+    {
+      "id": "250_rer_mail_route_observation.sql",
+      "buyerSteps": "Apply after 249 and before the updated Worker serves traffic. Add route observation times and bounded status-read backoff without changing existing route authority or replaying mail."
     }
   ]
 }

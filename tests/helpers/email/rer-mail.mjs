@@ -10,9 +10,11 @@ export async function managedInstallation(name='a',{edge=managedEdge(),bindings=
  return {app,edge,assigned,owner,settings,close:()=>app.close(),ingress:(raw,metadata={},overrides={})=>app.call(inboundPath,ingressOptions(assigned,raw,{workspaceId:owner.projectId,...metadata},overrides))}
 }
 export async function rerMailJourney(){
- const i=await managedInstallation(),{app,edge,owner,assigned}=i
+ const edge=managedEdge(),add=edge.add;edge.add=name=>{const bindings=add(name),address='hth-Synthetic-Case-8@Mail.Example.Test';bindings.MAIL_FROM=bindings.RER_MAIL_ADDRESS=address;edge.installations.get(bindings.MAIL_API_KEY).allocations.get('default').address=address;return bindings}
+ const i=await managedInstallation('a',{edge}),{app,owner,assigned}=i
  try{
   const state=await i.settings();assert.equal(state.managed.routeActive,true);assert.equal(state.managed.observed,false)
+  assert.equal(state.data.inbound_address,assigned.RER_MAIL_ADDRESS.toLowerCase(),'mixed-case Managed assignments are stored and shown as the same address')
   assert.equal((await i.ingress(mime(),{}, {key:'synthetic-foreign-signing-authority'})).status,403)
   assert.equal((await i.ingress(mime(),{timestamp:Date.now()-600000})).status,403)
   assert.equal((await i.ingress(mime(),{workspaceId:'foreign-workspace'})).status,403)

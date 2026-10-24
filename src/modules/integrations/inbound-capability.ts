@@ -27,7 +27,7 @@ export async function receivingState(env:Env,address:unknown,resolver:MxResolver
  if(!base)return {address:null,ready:false,reason:'no_address'}
  const result=(reason:Receiving['reason'])=>({address:base,ready:reason==='ready',reason})
  if(rerMail(env)){
-  const bound=await env.DB.prepare("SELECT state,route_active FROM rer_mailboxes WHERE address=? AND state<>'revoked' AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=rer_mailboxes.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)").bind(base).first<{state:string;route_active:number}>()
+  const bound=await env.DB.prepare("SELECT state,route_active FROM rer_mailboxes WHERE lower(address)=? AND state<>'revoked' AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=rer_mailboxes.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)").bind(base).first<{state:string;route_active:number}>()
   return result(bound?.state==='active'&&bound.route_active?'ready':bound?.state==='failed'?'managed_failed':'managed_pending')
  }
  if(localMailOrigin(env))return result('local')

@@ -2011,6 +2011,10 @@
       "sha256": "85c2cd14f786ed28f91add3563b9c61dfeda79ab35ae8eb9954a3ef9be7f40ab",
       "executable": false
     },
+    "management/integration/native-setup.json": {
+      "sha256": "5ccce6ba3ec70989a027027863fda5a7c010abcfb8b6d759a37612db99434684",
+      "executable": false
+    },
     "management/integration/plan.ts": {
       "sha256": "e62c5848d925a3834d90d539145bdf522f4fadbf3420e6292ab1daa64f950548",
       "executable": false
@@ -2487,14 +2491,6 @@
       "sha256": "ac04f0b9547f266723aca30fd0855bced2417297fdaaa561b76126b424e5e1e8",
       "executable": false
     },
-    "migrations/244_rer_conversation_mail.sql": {
-      "sha256": "c266726c4aab8483792919427a1962e6da3f44f293ac0093f1bef124a1316572",
-      "executable": false
-    },
-    "migrations/245_rer_mail_route_observation.sql": {
-      "sha256": "8376815e0f79757f1ff58d380f587c6201b380c112a0e098167923400e75d489",
-      "executable": false
-    },
     "migrations/245_widget_survey_cycles.sql": {
       "sha256": "24cef079571722429dc4c14156b3ca546c7b959a3fa60fc11462e6500dfe1ef9",
       "executable": false
@@ -2511,12 +2507,20 @@
       "sha256": "b77c64c20ea6c2a1046c1a46641059f567f759f74a5348cf7279a389435afd6c",
       "executable": false
     },
+    "migrations/249_rer_conversation_mail.sql": {
+      "sha256": "c266726c4aab8483792919427a1962e6da3f44f293ac0093f1bef124a1316572",
+      "executable": false
+    },
+    "migrations/250_rer_mail_route_observation.sql": {
+      "sha256": "8376815e0f79757f1ff58d380f587c6201b380c112a0e098167923400e75d489",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "59587aeae1829314c0cdda5913529f198a5e2702bd16c376d7b87a0b3365ccf4",
+      "sha256": "5bcc631d11d9e2a4ea524df63c77fd459b15f9809c0d8cbc6b5db1f64d389c4d",
       "executable": false
     },
     "package.json": {
@@ -2592,7 +2596,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "b022cf40c6b0169936805a9f0e1b6305e6c0a8ff397b36d11caedc244067f4f9",
+      "sha256": "1e9263362cdfd041ce2c670158887546ef4901da2b1e168b222e72886e85e650",
       "executable": false
     },
     "rer-project.json": {
@@ -2732,7 +2736,7 @@
       "executable": false
     },
     "scripts/delivery/generate-spec.mjs": {
-      "sha256": "1df7d90c3a789284c42ae46892a0656036506291d21f1e34aab543ce9ddbd641",
+      "sha256": "dbf664c6445d54f3091e307e8a063b525d5b079a8883f5902b5fc46a9093b66a",
       "executable": false
     },
     "scripts/delivery/module-preloads.ts": {
@@ -2752,11 +2756,11 @@
       "executable": false
     },
     "scripts/deployment/environment.mjs": {
-      "sha256": "3ebf9ce532bb5ce465e0098913234ff1436c56e77f23cf381e13bca57bcddba0",
+      "sha256": "3b8abea6ecb55c0365f7f1212d7991a0007892234785966632a85dbbed8c2161",
       "executable": false
     },
     "scripts/deployment/mail-declaration.mjs": {
-      "sha256": "b7e37fa1e1f82c6a391d6fa92fdfd696658d5a82e0cc700942c8f7a6e21da8b3",
+      "sha256": "db841dc87352f758751ca2a332af7ee273943c08f909a11b7298f2d258dc6fae",
       "executable": false
     },
     "scripts/edition-authoring/base-copies.mjs": {
@@ -2976,7 +2980,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "1b6e4a6168a4e9f3726363d07e9c3dd07e35834a62af7a11cd5f3f9aff4c3aa9",
+      "sha256": "92eebcf8ec0419824f9835c968c3b41827b14d6926151501b73161a686012dbb",
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {
@@ -5256,7 +5260,7 @@
       "executable": false
     },
     "src/modules/integrations/inbound-capability.ts": {
-      "sha256": "074a524cbc7f7e142a7cc17759ecb99d37424f4b0612f739724a4a5a7abfff4a",
+      "sha256": "43f978a9114f46897eb9a70a2b44e94abfe97aa43423aa121fec4408b9261b76",
       "executable": false
     },
     "src/modules/integrations/inbound-effects.ts": {
@@ -5452,7 +5456,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-inbound-signature.ts": {
-      "sha256": "3d150aae3dfe3e93569a610fd073af40a45ae753be14bceb2f0d700c21c366c2",
+      "sha256": "54bcb10e5bed461650c0e683e5623d821be41eb8f553a7e6481db302d3bf1d2d",
       "executable": false
     },
     "src/modules/integrations/rer-inbound.ts": {
@@ -5460,7 +5464,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mail-contract.ts": {
-      "sha256": "ab905c3445c1bb5ef336afb3d7504eda3ad8415ee61f41c11a60f5d4ac871e73",
+      "sha256": "62fc04ef2609e5e702c8018aa8d284a78a4cf50980d4cc100228f75ab5f57c5d",
       "executable": false
     },
     "src/modules/integrations/rer-mail-raw.ts": {
@@ -5476,7 +5480,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mail.ts": {
-      "sha256": "ff6058b416634143319d72743b02370bf53536f1da46c612d1dcd0ab0763b947",
+      "sha256": "08efa3de939bcfefe1301f94ffd04a0da6efe1bac64cb86a31a06bec8435a02e",
       "executable": false
     },
     "src/modules/integrations/rer-mailbox-adoption.ts": {
@@ -5484,7 +5488,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mailbox-control.ts": {
-      "sha256": "abe74445eddf9f0d25cf273284f2d386bb7c6611880ecfb17ca517bb6b7dd0e6",
+      "sha256": "ea846de5ba09c31e9025c13e6e02ef3e6a2447ceab1a191f5f3860bfbd8c85b1",
       "executable": false
     },
     "src/modules/integrations/rer-mailbox-observation.ts": {
@@ -5492,11 +5496,11 @@
       "executable": false
     },
     "src/modules/integrations/rer-mailbox.ts": {
-      "sha256": "53587ab5c4a8ec20abb096bda07fa61cc843a0be29a9c0e5c964bc634834e28c",
+      "sha256": "9a750d87f61a478334ad93b1665583e5f9f27ac3611edae27aad9a5c8f91184a",
       "executable": false
     },
     "src/modules/integrations/routes.ts": {
-      "sha256": "e29991ac22cbd5c405ae345dfbe6b847a1cb2d33b0146697ed834838ef615eca",
+      "sha256": "f384413288b992de4e6f7bd0e8c5007ca7ee9aa30744892ec18486642c1abcd9",
       "executable": false
     },
     "src/modules/integrations/secrets.ts": {
@@ -6144,7 +6148,7 @@
       "executable": false
     },
     "src/modules/management/provisioning/rer-mailbox.ts": {
-      "sha256": "78fb6bba007137b8c218bb61e3cb5c1ab44cbb93a191a125c8e27402ae797607",
+      "sha256": "71300c4d5b477416649a4441ee44cfbddd50b7ab933c9e0212d0af8efc6a8204",
       "executable": false
     },
     "src/modules/management/provisioning/starter-assistant.ts": {
@@ -11188,7 +11192,7 @@
       "executable": false
     },
     "tests/helpers/email/rer-mail.mjs": {
-      "sha256": "cb4598fc38c9d2307d8a79a1596aa29619929afda00ec12b57e855e0b3bf0c24",
+      "sha256": "ea218fd9e48a190cd96e83af67c0a47791d904d73d5206f1748f0a7d53bc3884",
       "executable": false
     },
     "tests/helpers/email/sendgrid-inbound.mjs": {

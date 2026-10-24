@@ -41,7 +41,7 @@ export function runtimeSecrets(env){return Object.fromEntries(secretNames.filter
 function validateRemoteMailSelection(env){
  if(env.MAIL_PROVIDER==='rer'){
   for(const name of ['MAIL_FROM','MAIL_RELAY_URL','MAIL_API_KEY','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL','RER_MAIL_INGRESS_KEY','INBOUND_EMAIL_TOKEN','INTEGRATION_ENCRYPTION_KEY'])if(!configured(env,name))throw new Error(`Managed email requires ${name}`)
-  if(env.H2H_RER_MAIL_VERSION!=='1'||env.MAIL_FROM!==env.RER_MAIL_ADDRESS)throw new Error('Managed conversation mail requires version 1 and the assigned address')
+  if(env.H2H_RER_MAIL_VERSION!=='1'||env.MAIL_FROM.toLowerCase()!==env.RER_MAIL_ADDRESS.toLowerCase())throw new Error('Managed conversation mail requires version 1 and the assigned address')
   for(const name of ['MAIL_RELAY_URL','RER_MAIL_CONTROL_URL']){const url=runtimeUrl(env[name],name);if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash)throw new Error(`${name} must be HTTPS without credentials or query parameters`)}
   return
  }

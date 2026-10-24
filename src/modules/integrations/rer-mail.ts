@@ -1,7 +1,7 @@
 import type {Env} from '../../platform/env'
 import type {EmailInput} from './email'
 import {hashToken} from '../../platform/auth'
-import {mailService,mailJson,managedMailbox,maxMailBytes} from './rer-mail-contract'
+import {mailService,mailJson,managedMailbox,maxMailBytes,managedMailAddress} from './rer-mail-contract'
 import {emailThreadingStatements,messageIds} from './email-threading'
 import {auditStatement} from '../audit/record'
 
@@ -9,7 +9,7 @@ export class RerMailFailure extends Error {
  readonly state:'failed'|'uncertain'
  constructor(state:'failed'|'uncertain',message:string){super(message);this.state=state}
 }
-export function rerConfigured(env:Env){return env.H2H_RER_MAIL_VERSION==='1'&&Boolean(env.MAIL_API_KEY&&env.MAIL_RELAY_URL&&env.RER_MAILBOX_ID&&env.RER_MAIL_ADDRESS&&env.RER_MAIL_INGRESS_KEY&&env.RER_MAIL_CONTROL_URL&&env.INBOUND_EMAIL_TOKEN&&env.INTEGRATION_ENCRYPTION_KEY)&&env.MAIL_FROM===env.RER_MAIL_ADDRESS}
+export function rerConfigured(env:Env){return env.H2H_RER_MAIL_VERSION==='1'&&Boolean(env.MAIL_API_KEY&&env.MAIL_RELAY_URL&&env.RER_MAILBOX_ID&&env.RER_MAIL_ADDRESS&&env.RER_MAIL_INGRESS_KEY&&env.RER_MAIL_CONTROL_URL&&env.INBOUND_EMAIL_TOKEN&&env.INTEGRATION_ENCRYPTION_KEY)&&managedMailAddress(env.MAIL_FROM)===managedMailAddress(env.RER_MAIL_ADDRESS)}
 const header=(input:EmailInput,name:string)=>Object.entries(input.headers||{}).find(([key])=>key.toLowerCase()===name)?.[1]
 function replyAllowed(base:string,reply:string){const [local,domain]=base.split('@'),suffix=reply.slice(local.length);return reply===base||reply.startsWith(local)&&new RegExp('^\\+r\\.[a-f0-9]{32}@'+domain.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'$').test(suffix)}
 function attachments(input:EmailInput){

@@ -4,10 +4,10 @@ import {Hono} from 'hono'
 import type {AppEnv} from '../../platform/env'
 import {scope} from '../management/common'
 import {HTTPException} from 'hono/http-exception'
-import {rerMail,managedMailbox,type ManagedMailbox} from './rer-mail-contract'
+import {rerMail,managedMailbox,managedMailAddress,type ManagedMailbox} from './rer-mail-contract'
 import {cronRoom} from '../../platform/cron-budget'
 
-import {mailboxControlStatus as status,mailboxControl as control} from './rer-mailbox-control'
+import {mailboxControlStatus as status,mailboxControl as control,retainMailboxAssignment} from './rer-mailbox-control'
 import {seedMissingRerMailbox} from './rer-mailbox-adoption'
 import {auditStatement,requestSource} from '../audit/record'
 export {refreshRerMailbox} from './rer-mailbox-observation'
@@ -25,7 +25,7 @@ export async function processRerMailbox(env:Env,projectId:string){
   if(!row)throw new Error('Mailbox history is unavailable')
   if(!row.mailbox_id){
    const reserved=status(await control(env,{action:'reserve',allocationKey:row.allocation_key}),row,'reserve')
-   await env.DB.prepare('UPDATE rer_mailboxes SET mailbox_id=?,address=? WHERE project_id=? AND mailbox_id IS NULL').bind(reserved.mailboxId,reserved.address,projectId).run()
+   await retainMailboxAssignment(env,row,reserved)
    row={...row,mailbox_id:reserved.mailboxId,address:reserved.address}
   }
   // Deletion may have replaced the outbox while reserve was in flight. Retire
@@ -33,6 +33,7 @@ export async function processRerMailbox(env:Env,projectId:string){
   const current=await env.DB.prepare('SELECT action,claim_token FROM rer_mailbox_outbox WHERE project_id=?').bind(projectId).first<{action:string;claim_token:string}>()
   if(current?.claim_token!==token)return
   const outcome=status(await control(env,{action:current.action,mailboxId:row.mailbox_id!,...(current.action==='bind'?{workspaceId:projectId}:{})}),row,current.action)
+  await retainMailboxAssignment(env,row,outcome)
   await env.DB.batch([
    env.DB.prepare(`UPDATE rer_mailboxes SET state=?,generation=?,configured=?,route_active=?,last_inbound_at=coalesce(last_inbound_at,?),error=NULL,route_checked_at=?,route_check_next_at=?,route_check_failures=0,route_check_error=NULL,updated_at=? WHERE project_id=? AND EXISTS(SELECT 1 FROM rer_mailbox_outbox WHERE project_id=? AND claim_token=?) AND (state<>'revoked' OR ?='retire')`).bind(outcome.state,outcome.generation,outcome.configured?1:0,outcome.routeActive?1:0,outcome.lastInboundAt,Date.now(),Date.now()+300000,Date.now(),projectId,projectId,token,current.action),
    env.DB.prepare(`UPDATE email_settings SET from_address=?,inbound_address=?,is_enabled=1 WHERE project_id=? AND EXISTS(SELECT 1 FROM rer_mailboxes b WHERE b.project_id=? AND b.state='active') AND EXISTS(SELECT 1 FROM rer_mailbox_outbox WHERE project_id=? AND claim_token=? AND action='bind')`).bind(outcome.address,outcome.address,projectId,projectId,projectId,token),
@@ -67,7 +68,7 @@ export async function rerMailboxStatus(env:Env,projectId:string){
  const row=await env.DB.prepare('SELECT * FROM rer_mailboxes WHERE project_id=?').bind(projectId).first<ManagedMailbox>()
  const latest=await env.DB.prepare('SELECT id,state,error,updated_at FROM email_deliveries WHERE project_id=? ORDER BY created_at DESC LIMIT 1').bind(projectId).first<{id:string;state:string;error:string|null;updated_at:number}>()
  const inbound=await env.DB.prepare("SELECT state,json_extract(result_json,'$.state') outcome,error,updated_at FROM rer_mail_ingress WHERE project_id=? ORDER BY updated_at DESC LIMIT 1").bind(projectId).first<{state:string;outcome:string|null;error:string|null;updated_at:number}>()
- return {inbound:inbound?{state:inbound.outcome||inbound.state,reason:inbound.error,at:inbound.updated_at}:null,address:row?.address||null,state:row?.state||'pending',generation:row?.generation||0,configured:Boolean(row?.configured),routeActive:row?.state==='active'&&Boolean(row?.route_active),observed:Boolean(row?.last_inbound_at),lastInboundAt:row?.last_inbound_at||null,lastOutboundAcceptanceAt:row?.last_outbound_at||null,error:row?.error||null,routeUncertain:Boolean(row?.route_check_error),routeCheckError:row?.route_check_error||null,checkedAt:row?.route_checked_at||null,nextCheckAt:row?.route_check_next_at||null,outbound:latest?{id:latest.id,state:latest.state==='sent'?'accepted':latest.state,reason:latest.error,at:latest.updated_at}:null}
+ return {inbound:inbound?{state:inbound.outcome||inbound.state,reason:inbound.error,at:inbound.updated_at}:null,address:managedMailAddress(row?.address)||null,state:row?.state||'pending',generation:row?.generation||0,configured:Boolean(row?.configured),routeActive:row?.state==='active'&&Boolean(row?.route_active),observed:Boolean(row?.last_inbound_at),lastInboundAt:row?.last_inbound_at||null,lastOutboundAcceptanceAt:row?.last_outbound_at||null,error:row?.error||null,routeUncertain:Boolean(row?.route_check_error),routeCheckError:row?.route_check_error||null,checkedAt:row?.route_checked_at||null,nextCheckAt:row?.route_check_next_at||null,outbound:latest?{id:latest.id,state:latest.state==='sent'?'accepted':latest.state,reason:latest.error,at:latest.updated_at}:null}
 }
 export const rerMailboxRoutes=new Hono<AppEnv>()
 rerMailboxRoutes.post('/projects/:projectId/email-settings/managed/retry',async c=>{

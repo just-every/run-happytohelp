@@ -1,6 +1,6 @@
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
-import {canonical,rawDigest,rerMail} from './rer-mail-contract'
+import {canonical,rawDigest,rerMail,managedMailAddress} from './rer-mail-contract'
 import {inboundTarget} from './inbound-routing'
 
 export const rerInboundPath='/api/integrations/email/rer/v1/inbound'
@@ -23,7 +23,7 @@ export async function authenticateRerInbound(env:Env,request:Request,raw:Uint8Ar
  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(env.RER_MAIL_INGRESS_KEY),{name:'HMAC',hash:'SHA-256'},false,['verify'])
  const signature=decode(request.headers.get('X-RER-Mail-Signature'),100)
  if(signature.byteLength!==32||!await crypto.subtle.verify('HMAC',key,Uint8Array.from(signature).buffer,signed.buffer))throw refuse()
- const bound=await env.DB.prepare(`SELECT b.address FROM rer_mailboxes b JOIN email_settings e ON e.project_id=b.project_id WHERE b.project_id=? AND b.mailbox_id=? AND b.generation=? AND b.state='active' AND b.route_active=1 AND e.is_enabled=1 AND e.inbound_address=b.address AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=b.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`).bind(m.workspaceId,m.mailboxId,m.generation).first<{address:string}>()
- if(!bound||inboundTarget(m.envelopeTo)?.mailbox!==bound.address)throw refuse()
+ const bound=await env.DB.prepare(`SELECT b.address FROM rer_mailboxes b JOIN email_settings e ON e.project_id=b.project_id WHERE b.project_id=? AND b.mailbox_id=? AND b.generation=? AND b.state='active' AND b.route_active=1 AND e.is_enabled=1 AND lower(e.inbound_address)=lower(b.address) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=b.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`).bind(m.workspaceId,m.mailboxId,m.generation).first<{address:string}>()
+ if(!bound||inboundTarget(m.envelopeTo)?.mailbox!==managedMailAddress(bound.address))throw refuse()
  return m
 }

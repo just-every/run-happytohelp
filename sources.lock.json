@@ -2508,7 +2508,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "c923aae22d6e41ee70077f65a83e1725696869b52cccc3afe1a91f4fdb7e8631",
+      "sha256": "6ee6dcf4a7cee6a5d3ce3540b7fe8b27ac42d3027e8a30bb494ec531b6a82c87",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -11128,7 +11128,7 @@
       "executable": false
     },
     "tests/helpers/escalations/browser.mjs": {
-      "sha256": "fec182ee6b0cb3793e1ecd97831a9ab0fbf3f2432df7ad8159bcc442f0556629",
+      "sha256": "a31b12ae3581d80cebecc3c0a784120a8aaf93a8a7a1e45b819b07c9df74c4fc",
       "executable": false
     },
     "tests/helpers/escalations/dev-proof.mjs": {
@@ -11720,7 +11720,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "717efed0457a4f95794cfc5ce88d5538a8b607de150479ab4bc9ffece758d8e7",
+      "sha256": "24383804590857c8a1eaadd90f39f27c2eb42ac21cd0756f1701148f33121e4f",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

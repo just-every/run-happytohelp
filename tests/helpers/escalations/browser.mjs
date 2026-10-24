@@ -8,7 +8,9 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  const page=await context.newPage();page.setDefaultTimeout(25000);let failure;
  try{
  if(entryUrl){const signed=page.waitForResponse(r=>new URL(r.url()).pathname==='/auth/dev/enter'&&r.status()>=300&&r.status()<400,{timeout:120000});await page.goto(entryUrl,{waitUntil:'domcontentloaded',timeout:120000});await (await signed).finished();await page.goto(origin+'/health',{waitUntil:'domcontentloaded'});console.log(`Escalation browser ${width}: owner entry complete`);}else await page.goto(origin+'/projects');
- const req=async(path,body,method=body===undefined?'GET':'POST')=>{const r=await context.request.fetch(origin+path,{method,...(body===undefined?{}:{data:body})});const data=await r.json();assert.ok(r.ok(),`${path}: ${r.status()} ${JSON.stringify(data).slice(0,200)}`);return data};
+ // Fixture API calls can sit idle while the browser operates the UI. Close each
+ // fixture connection so a later mutation cannot reuse an expired preview socket.
+ const req=async(path,body,method=body===undefined?'GET':'POST')=>{const r=await context.request.fetch(origin+path,{method,headers:{Connection:'close'},...(body===undefined?{}:{data:body})});const data=await r.json();assert.ok(r.ok(),`${path}: ${r.status()} ${JSON.stringify(data).slice(0,200)}`);return data};
  const session=await req('/api/identity/session');let projectId=owner?.projectId||session.projectId;
  if(entryUrl){const fresh=await req('/api/management/projects',{name:`Engineering escalation proof ${width}`,allowedOrigin:origin});projectId=fresh.id;await req('/api/identity/switch-project',{projectId});}
  const base=`/api/escalations/projects/${projectId}`,records=[];

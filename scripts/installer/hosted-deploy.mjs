@@ -8,6 +8,10 @@ import {join} from 'node:path';
 import {hostedDeclaration} from './hosted-origin.mjs';
 import {deploymentMailEnvironment,validateRuntimeEnvironment} from '../deployment/environment.mjs';
 
+// Rer prints only its own errors, since another message may quote a private value.
+// These deployment checks name the input, never its value, so the owner sees it.
+const refusal=check=>{try{return check();}catch(error){throw error?.constructor===Error?missing(`${error.message}. Nothing was built or uploaded.`):error;}};
+
 // Use the same input precedence as rer, including a private --env-file and a
 // retained real setup owner. Local trial addresses cannot receive hosted login mail.
 export function hostedDeploy(path,lifecycle){
@@ -20,10 +24,11 @@ export function hostedDeploy(path,lifecycle){
    // command environment after both deployment and its final dry-run report.
    const setupManifest=context.setupManifest?{...context.setupManifest,fields:[]}:undefined;
    const {env:inputs}=await deployEnvironment({...context,setupManifest,declaration,settings:lifecycle.settings});
-   const env=deploymentMailEnvironment(inputs);
+   const env=refusal(()=>deploymentMailEnvironment(inputs));
    // Native credentials must be real inputs, never the managed key generator's
-   // output. Managed generated keys are resolved later by ownerDeploy.
-   if(env.MAIL_PROVIDER!=='rer')validateRuntimeEnvironment(env);
+   // output. Managed generated keys are resolved later by ownerDeploy. A dry run
+   // goes ahead without them and lists what a real deploy needs.
+   if(env.MAIL_PROVIDER!=='rer'&&!context.options.dryRun)refusal(()=>validateRuntimeEnvironment(inputs));
    const email=String(env.OWNER_EMAIL||'').trim();
    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||/@(?:[^@]+\.)?(?:test|invalid|localhost|example)$/i.test(email)||/@(?:example\.(?:com|net|org))$/i.test(email))
     throw missing('Deploy needs a real OWNER_EMAIL that can receive sign-in mail. The local trial owner (owner@run-happytohelp.test) has no mailbox and cannot own a hosted workspace. Set OWNER_EMAIL privately in your environment or an owned 0600 --env-file, then run the same deploy command again. Nothing was deployed.');

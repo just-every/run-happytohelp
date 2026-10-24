@@ -2964,7 +2964,7 @@
       "executable": false
     },
     "scripts/installer/hosted-deploy.mjs": {
-      "sha256": "3bd3349272fb0d4be27c1d8505d9db39943e35fc777d6ba8db43be5f101cccc1",
+      "sha256": "8adeb0e6327bb6ac559988f915e6fd101ef7bfc80acc47cf1e0d499246a9e7fc",
       "executable": false
     },
     "scripts/installer/hosted-export.mjs": {
@@ -12048,7 +12048,7 @@
       "executable": false
     },
     "tests/journeys/installer.mjs": {
-      "sha256": "843c6b08a2d3f979b836199fcccf78322ba29aba81d89804859519671705219a",
+      "sha256": "03ed4e538faae4297f37bd3ed5e1d80232e4f5e4f27a9d41c781a9e146b6fee3",
       "executable": false
     },
     "tests/journeys/kit/app-worker.ts": {

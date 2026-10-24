@@ -2932,7 +2932,7 @@
       "executable": false
     },
     "scripts/installer/hosted-deploy.mjs": {
-      "sha256": "62ddd5025ce36f98195ed0b739b5020c768f1a334f651b2b3194e80c72548995",
+      "sha256": "516f93d5eee04a81291076c5234734828cd999e1550b4e9f0eb5bd763f37418f",
       "executable": false
     },
     "scripts/installer/hosted-origin.mjs": {

@@ -32,13 +32,15 @@ function instant(year:number,month:number,day:number,hour:number,minute:number,t
  * answers visitors); without it the schedule and switch alone decide. While they say the team is open, nobody online
  * makes the team away with no known return, so the visitor sees the away notice and is asked for an email. */
 export function availability(settings:any,now=new Date(),presence?:{online:number}|null):Availability{
- const base=hours(settings,now)
+ return withPresence(hours(settings,now),settings,presence)
+}
+export function withPresence(base:Availability,settings:any,presence?:{online:number}|null):Availability{
  if(!base.available||!presence||!presenceSettings(settings).enabled)return base
  return presence.online>0?{...base,live:true}:{...base,available:false,message:presenceSettings(settings).message,opensAt:null,live:true}
 }
 function hours(settings:any,now:Date):Availability{
  const timezone=zone(settings.timezone),at=now.getTime(),live=false
- if(!settings.is_availability_schedule_enabled)return {available:settings.is_available!==false,message:settings.unavailable_message||'',scheduled:false,timezone,opensAt:null,changesAt:null,live}
+ if(settings.is_available===false||!settings.is_availability_schedule_enabled)return {available:settings.is_available!==false,message:settings.unavailable_message||'',scheduled:false,timezone,opensAt:null,changesAt:null,live}
  // Days are 1 (Monday) to 7 (Sunday); an imported legacy schedule may name Sunday 0.
  const schedule=settings.availability_schedule||{},days:number[]=Array.isArray(schedule.days)?schedule.days.map((day:unknown)=>Number(day)===0?7:Number(day)):[]
  const message=schedule.message||''

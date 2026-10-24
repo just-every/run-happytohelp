@@ -5816,7 +5816,7 @@
       "executable": false
     },
     "src/modules/management/availability.ts": {
-      "sha256": "27a9ea682de744bb958ebf13f45ab7af87a7487ba2d90c07a872d3560dd667e8",
+      "sha256": "b1cb2838d03f438e5db947e1d58afe0011297f8581b3548067ae5d64c3046091",
       "executable": false
     },
     "src/modules/management/away-reply.ts": {
@@ -5988,7 +5988,7 @@
       "executable": false
     },
     "src/modules/management/live-availability.ts": {
-      "sha256": "fb0b3b8411a45ac2b6961bbfe65fc87f34412ea524d11a700298d204b1b72d61",
+      "sha256": "1f559054fd479ae2cf00ca5cf6a42daaa32498e8e9c4f11622a43955bd23a0c9",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {
@@ -6040,7 +6040,7 @@
       "executable": false
     },
     "src/modules/management/README.md": {
-      "sha256": "7dbc074d78258b3f2e85c611e72d40d6165173d39167222e5c10fdb68655d2a9",
+      "sha256": "b2d55419ef04cacc1ca3999ea4792043cfaa5b6d353a97901db85b7deeb6d552",
       "executable": false
     },
     "src/modules/management/resource-list.ts": {
@@ -7336,7 +7336,7 @@
       "executable": false
     },
     "src/modules/workflows/calendars-time.ts": {
-      "sha256": "baab63fc080ed33b6590e1775043fbf861dd597f7d9838d75b0ed85960ae3b79",
+      "sha256": "7c1ad422fc7901acd1f4a5faf78678ece9901dec642f912de55c5c5cc7d9e6bb",
       "executable": false
     },
     "src/modules/workflows/calendars.ts": {
@@ -11628,7 +11628,7 @@
       "executable": false
     },
     "tests/helpers/widget/away.mjs": {
-      "sha256": "4ea9d6bae72eff9bf9dba348d507b78b2dc39440286a5a418ff164721c5b289b",
+      "sha256": "6235f91488fc67f6e2154b5612fa6d75e7f96bb00178aadb149062d23a07b4f5",
       "executable": false
     },
     "tests/helpers/widget/campaigns-browser.mjs": {
@@ -11672,7 +11672,7 @@
       "executable": false
     },
     "tests/helpers/widget/presence.mjs": {
-      "sha256": "1b005d583ece03d646aca7de67bb2f4cc968a7ee42cf3831d26ee458030f5c2d",
+      "sha256": "07f497d10163fe3ce1268a3dd79fd8f0a75ae7931685c14744acabb1ec3daccf",
       "executable": false
     },
     "tests/helpers/widget/runtime.mjs": {

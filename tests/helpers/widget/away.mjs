@@ -44,6 +44,25 @@ export async function awayWidget({browser,origin,api,ownerToken,projectId,eviden
   assert.equal(state,'sent','the answer is emailed');
   const contact=await(await fetch(`${api}/api/management/projects/${projectId}/contacts/${session.contactId}`,{headers})).json();assert.equal(contact.data.email,'night-owl@example.test');
   await page.getByText('Sorry about that. A replacement ships today.',{exact:true}).waitFor();
+  // The same installed widget respects an explicit SLA closure even with opening hours saying open.
+  await put('availability',{is_availability_schedule_enabled:true,availability_schedule:{days:[1,2,3,4,5,6,7],time_from:'00:00',time_to:'23:59',message:''}});
+  const manage=async(path,body,method='POST')=>{const response=await fetch(`${api}/api/management/projects/${projectId}/${path}`,{method,headers,body:JSON.stringify(body)});assert.equal(response.status,method==='POST'?201:200,await response.clone().text());return (await response.json()).data};
+  const widgetKey=(await(await fetch(`${api}/api/management/projects/${projectId}/widget-settings`,{headers})).json()).widgetKey;
+  const availability=async()=>(await(await fetch(`${api}/api/widget/settings?widgetKey=${widgetKey}`,{headers:{Origin:origin}})).json()).availability;
+  assert.equal((await availability()).available,true,'opening hours say open before the SLA calendar applies');
+  const today=new Date().toISOString().slice(0,10),tomorrow=new Date(Date.parse(today)+86400000).toISOString().slice(0,10);
+  const calendar=await manage('workflow-calendars',{name:'synthetic-happytohelp-4',timezone:'UTC',weekly:[0,1,2,3,4,5,6].map(day=>({day,start:'00:00',end:'24:00'})),holidays:'none',closures:[today]});
+  const policy=await manage('sla-policies',{name:'synthetic-happytohelp-5',calendar_id:calendar.id,conditions:{channels:['widget']},first_response_minutes:60});
+  const closed=await availability();assert.equal(closed.available,false,'the SLA closure overrides open widget hours');assert.equal(closed.opensAt,Date.parse(tomorrow));
+  await page.evaluate(()=>localStorage.clear());await page.reload();await notice.waitFor();
+  assert.match(await notice.innerText(),/We're back .+ at/);
+  await page.locator('.happytohelp-insight-agent-info').filter({hasText:'Away until'}).first().waitFor();
+  for(const width of [1440,390]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:`${evidence}/calendar-closure-${width}.png`});}
+  await page.locator('textarea[name=content]').fill('Can you help during the closure?');await page.locator('button[name=submit]').click();
+  await page.locator('.happytohelp-chat-message').filter({hasText:/is away right now and back/}).waitFor();
+  for(const width of [1440,390]){await page.setViewportSize({width,height:900});await page.screenshot({path:`${evidence}/calendar-closure-reply-${width}.png`});}
+  await manage(`sla-policies/${policy.id}`,{active:false},'PATCH');
+  assert.equal((await availability()).available,true,'no matching calendar falls back to widget hours');
   assert.deepEqual(errors,[]);
   return ['after hours the installed widget says the team is away, when it is back in the visitor\'s time, and asks for an email before the first message; the conversation reaches the inbox with one away reply, and the answer is emailed'];
  }finally{

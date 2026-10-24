@@ -125,5 +125,30 @@ export async function presenceJourney(){
   assert.deepEqual(await state(),away,'an assistant without its provider key answers nobody')
   await app.configure({OPENAI_API_KEY:'synthetic-presence-provider-key'})
   assert.deepEqual(await state(),{available:true,live:false,opensAt:null},'an answering assistant keeps the widget available')
+
+  // SLA calendars, not the legacy opening-hours setting, own matching widget intake.
+  // Both the holiday and explicit closure are exercised through the public settings door.
+  await app.call(`/api/management/projects/${p}/ai`,{token:owner,method:'PUT',body:{default_visitor_ai_id:null},status:200})
+  await availabilityPut(owner,{is_presence_away_enabled:false,is_availability_schedule_enabled:true,availability_schedule:{days:[1,2,3,4,5,6,7],time_from:'00:00',time_to:'23:59',message:''}})
+  const manage=(path,body,method='POST')=>app.call(`/api/management/projects/${p}${path}`,{token:owner,body,method,status:method==='POST'?201:200}).then(result=>result.data.data)
+  const calendar=await manage('/workflow-calendars',{name:'synthetic-happytohelp-1',timezone:'UTC',weekly:[0,1,2,3,4,5,6].map(day=>({day,start:'00:00',end:'24:00'})),holidays:'us_federal',closures:['2026-11-27']})
+  const ignored=await manage('/sla-policies',{name:'synthetic-happytohelp-2',calendar_id:calendar.id,position:0,conditions:{channels:['email']},first_response_minutes:60})
+  const policy=await manage('/sla-policies',{name:'synthetic-happytohelp-3',calendar_id:calendar.id,position:1,conditions:{channels:['widget']},first_response_minutes:60})
+  for(const date of ['2026-11-26','2026-11-27']){
+   await app.configure({H2H_WORKFLOW_NOW:String(Date.parse(`${date}T12:00:00Z`))})
+   const settings=(await app.call(`/api/widget/settings?widgetKey=${workspace.widgetKey}`,{headers:{Origin:'https://widget.example'},status:200})).data
+   assert.equal(settings.availability.available,false,`${date}: a holiday or closure overrides opening hours that say open`)
+   assert.equal(settings.availability.opensAt,Date.parse('2026-11-28T00:00:00Z'),'the next opening skips both Thanksgiving and the closure')
+   const contact=await visitor(),ticket=await conversation(contact)
+   await write(contact,ticket.id,`calendar-${date}`,'When will someone reply?',0)
+   assert.match((await transcript(ticket.id))[1].content,/back Saturday at 12:00 AM UTC/,'the public conversation uses the same calendar as the widget')
+  }
+  await manage(`/workflow-calendars/${calendar.id}`,{closures:[],holidays:'none'},'PATCH')
+  assert.equal((await state()).available,true,'removing the calendar exceptions restores availability')
+  await manage(`/sla-policies/${policy.id}`,{active:false},'PATCH')
+  assert.equal((await state()).available,true,'a nonmatching email policy leaves the widget opening hours in force')
+  await availabilityPut(owner,{is_presence_away_enabled:false,is_availability_schedule_enabled:true,availability_schedule:{days:[1],time_from:'09:00',time_to:'17:00',message:''}})
+  assert.equal((await state()).available,false,'without a matching SLA calendar, the legacy schedule still closes the widget')
+
  }finally{await app.close()}
 }

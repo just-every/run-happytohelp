@@ -135,7 +135,7 @@ export async function presenceJourney(){
   const ignored=await manage('/sla-policies',{name:'synthetic-happytohelp-2',calendar_id:calendar.id,position:0,conditions:{channels:['email']},first_response_minutes:60})
   const policy=await manage('/sla-policies',{name:'synthetic-happytohelp-3',calendar_id:calendar.id,position:1,conditions:{channels:['widget']},first_response_minutes:60})
   for(const date of ['2026-11-26','2026-11-27']){
-   await app.configure({H2H_WORKFLOW_NOW:String(Date.parse(`${date}T12:00:00Z`))})
+   await app.configure({H2H_LOCAL:'true',APP_ORIGIN:'https://app.example',H2H_WORKFLOW_NOW:String(Date.parse(`${date}T12:00:00Z`))})
    const settings=(await app.call(`/api/widget/settings?widgetKey=${workspace.widgetKey}`,{headers:{Origin:'https://widget.example'},status:200})).data
    assert.equal(settings.availability.available,false,`${date}: a holiday or closure overrides opening hours that say open`)
    assert.equal(settings.availability.opensAt,Date.parse('2026-11-28T00:00:00Z'),'the next opening skips both Thanksgiving and the closure')

@@ -11672,7 +11672,7 @@
       "executable": false
     },
     "tests/helpers/widget/presence.mjs": {
-      "sha256": "07f497d10163fe3ce1268a3dd79fd8f0a75ae7931685c14744acabb1ec3daccf",
+      "sha256": "5a6978313100c3e862e5ce7c86f2ffe99254bfdf2b3a7d5d796b00d0b298764e",
       "executable": false
     },
     "tests/helpers/widget/runtime.mjs": {

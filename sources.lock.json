@@ -6924,7 +6924,7 @@
       "executable": false
     },
     "src/modules/widget/css/ChatHeader.css": {
-      "sha256": "a0288f0ad098bfb540466dfa0d3ef40155fbbbb516408a93e067bc96afe61a9f",
+      "sha256": "846e0bc223fa9150c5b7dbd10542566bf053b33ef83990f49b771a7dce5b9d8d",
       "executable": false
     },
     "src/modules/widget/css/ChatList.css": {
@@ -6972,7 +6972,7 @@
       "executable": false
     },
     "src/modules/widget/css/Root.css": {
-      "sha256": "d96118c35d26001af332358e35ab368c61ac11ad87a07594275aad4e88bebeed",
+      "sha256": "10a82d61ca7bfeaf01ae721d5ee0a4e44e224c6443d5aa6c521f876a9ba6401a",
       "executable": false
     },
     "src/modules/widget/css/SendMessage.css": {
@@ -11412,7 +11412,7 @@
       "executable": false
     },
     "tests/helpers/mail-provider-network.mjs": {
-      "sha256": "cb8d41906aa4cf84679547435b16771afb9adfff52d1312a26f532670a1d1f08",
+      "sha256": "8e777793837351594bc08dd7279e64b51af7fd1e0c4337b840558492e971ae95",
       "executable": false
     },
     "tests/helpers/migration-statements.mjs": {

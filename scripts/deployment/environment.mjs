@@ -27,7 +27,16 @@ function validateLimitMap(env,name,keys,fractional=[]){
  for(const [key,value]of Object.entries(values)){if(!keys.includes(key))throw new Error(`${name} has unknown limit ${key}`);if(typeof value!=='number'||!Number.isFinite(value)||value<=0||!fractional.includes(key)&&!Number.isSafeInteger(value))throw new Error(`${name}.${key} must be a positive ${fractional.includes(key)?'number':'integer'}`)}
 }
 const configured=(env,name)=>typeof env[name]==='string'&&env[name].trim()!==''
-export function runtimeVariables(env){validateRuntimeEnvironment(env);return Object.fromEntries(variableNames.filter(name=>configured(env,name)).map(name=>[name,env[name]]))}
+/** The setup's direct choice selects the native adapter, not a mail provider. */
+export function deploymentMailEnvironment(env){
+ if(env.MAIL_PROVIDER==='rer')return {...env}
+ const nativeProviders=['resend','cloudflare','sendgrid']
+ if(configured(env,'MAIL_PROVIDER')&&env.MAIL_PROVIDER!=='direct'&&!nativeProviders.includes(env.MAIL_PROVIDER))throw new Error('MAIL_PROVIDER must be direct, resend, cloudflare, sendgrid or rer')
+ if(nativeProviders.includes(env.MAIL_PROVIDER)&&env.MAIL_PROVIDER!==env.EMAIL_PROVIDER)throw new Error('Native MAIL_PROVIDER must match EMAIL_PROVIDER')
+ if(!configured(env,'EMAIL_PROVIDER'))return {...env,MAIL_PROVIDER:env.MAIL_PROVIDER==='direct'?'':env.MAIL_PROVIDER}
+ return {...env,MAIL_PROVIDER:env.EMAIL_PROVIDER,MAIL_FROM:env.EMAIL_FROM,MAIL_API_KEY:env.EMAIL_API_KEY}
+}
+export function runtimeVariables(env){validateRuntimeEnvironment(env);env=deploymentMailEnvironment(env);return Object.fromEntries(variableNames.filter(name=>configured(env,name)).map(name=>[name,env[name]]))}
 export function runtimeSecrets(env){return Object.fromEntries(secretNames.filter(name=>configured(env,name)).map(name=>[name,env[name]]))}
 function validateRemoteMailSelection(env){
  if(env.MAIL_PROVIDER==='rer'){
@@ -36,7 +45,7 @@ function validateRemoteMailSelection(env){
   for(const name of ['MAIL_RELAY_URL','RER_MAIL_CONTROL_URL']){const url=runtimeUrl(env[name],name);if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash)throw new Error(`${name} must be HTTPS without credentials or query parameters`)}
   return
  }
- if(configured(env,'MAIL_PROVIDER')&&env.MAIL_PROVIDER!=='direct')throw new Error('MAIL_PROVIDER must be direct or rer')
+ deploymentMailEnvironment(env)
  if(configured(env,'EMAIL_PROVIDER')&&!['resend','cloudflare','sendgrid'].includes(env.EMAIL_PROVIDER))throw new Error('EMAIL_PROVIDER must be resend, cloudflare or sendgrid')
  if(env.EMAIL_PROVIDER==='cloudflare'&&!/^[a-f0-9]{32}$/i.test(env.EMAIL_ACCOUNT_ID||''))throw new Error('Cloudflare email requires EMAIL_ACCOUNT_ID')
  if(configured(env,'EMAIL_PROVIDER'))for(const name of ['EMAIL_API_KEY','EMAIL_FROM'])if(!configured(env,name))throw new Error(`${env.EMAIL_PROVIDER} email requires ${name}`)

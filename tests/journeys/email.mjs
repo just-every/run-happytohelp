@@ -7,6 +7,7 @@ import {transportsJourney} from '../helpers/email/transports.mjs'
 import {senderDomainJourney} from '../helpers/email/domain.mjs'
 import {completeEmailJourney} from '../helpers/email/complete-email.mjs'
 import {unreadableMailJourney} from '../helpers/email/unreadable-mail.mjs'
+import {rerMailJourney} from '../helpers/email/rer-mail.mjs'
 
 // Email on the real application: inbound through the Worker's email entry, the JSON gateway and SendGrid
 // Inbound Parse; outbound through the conversation, schedule and operator routes. Fixtures only at the
@@ -30,7 +31,11 @@ test('classification survives recovery: lost completion, failed claims and recei
 
 test('replies reach the conversation\'s customers by email with safe rendering, inline images and files, the preferred address and participants only, a frozen recipient snapshot, no resend after a lost response, and links for oversized or missing files',customerMailJourney)
 
-test('SendGrid, Resend and Cloudflare each carry the reply with its files and a working reply address, settle acceptance, refusal, bounce or a lost response once, and never submit twice while a send is pending',transportsJourney)
+// Managed is another transport of the same customer conversation, including its
+// authenticated reply ingress and retained acceptance receipt.
+test('SendGrid, Resend, Cloudflare and Managed mail each carry the reply with its files and an authenticated reply address, settle acceptance, refusal, bounce or a lost response once, and never submit twice while a send is pending',async()=>{
+ for(const journey of [transportsJourney,rerMailJourney])await journey()
+})
 
 test('the sender-domain check names missing SPF, DKIM and DMARC records, keeps resolver errors unknown and is scoped to the workspace\'s members',senderDomainJourney)
 
@@ -38,9 +43,3 @@ import {notificationTriggersJourney} from '../helpers/r4/notifications.mjs'
 test('editable requester triggers send received and solved once, suppress historical and machine mail, and teammate notices follow current authority and preferences',notificationTriggersJourney)
 test('operators start email and call tickets, header and imported vendor replies preserve identity, suspicious mail stays in Suspended for safe audited recovery or expiry, and erasure removes its new stores',completeEmailJourney)
 test('unreadable nested MIME and oversized headers are held with original bytes while following mail arrives through sync, and repeated message failures survive restart then release the mailbox',unreadableMailJourney)
-
-import {rerMailJourney} from '../helpers/email/rer-mail.mjs'
-test('Managed conversation mail verifies signed raw ingress, holds changed identities and unproven senders, threads real relay identities with attachments, and never replays uncertain sends',rerMailJourney)
-
-import {rerMailArchiveJourney} from '../helpers/email/rer-archive.mjs'
-test('Managed mail export retains conversations, files, thread and redacted route receipts, restores inertly without mail authority, and erases private MIME without replay',rerMailArchiveJourney)

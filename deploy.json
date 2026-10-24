@@ -62,15 +62,18 @@
     },
     {
       "binding": "EMAIL_PROVIDER",
-      "environment": "EMAIL_PROVIDER"
+      "environment": "EMAIL_PROVIDER",
+      "optional": true
     },
     {
       "binding": "EMAIL_FROM",
-      "environment": "EMAIL_FROM"
+      "environment": "EMAIL_FROM",
+      "optional": true
     },
     {
       "binding": "EMAIL_API_KEY",
-      "environment": "EMAIL_API_KEY"
+      "environment": "EMAIL_API_KEY",
+      "optional": true
     },
     {
       "binding": "GOOGLE_MAIL_CLIENT_ID",
@@ -119,12 +122,12 @@
     },
     {
       "binding": "MAIL_PROVIDER",
-      "environment": "MAIL_PROVIDER",
+      "environment": "EMAIL_PROVIDER",
       "optional": true
     },
     {
       "binding": "MAIL_FROM",
-      "environment": "MAIL_FROM",
+      "environment": "EMAIL_FROM",
       "optional": true
     },
     {
@@ -150,6 +153,16 @@
     {
       "binding": "RER_MAIL_CONTROL_URL",
       "environment": "RER_MAIL_CONTROL_URL",
+      "optional": true
+    },
+    {
+      "binding": "MAIL_PROVIDER_API_KEY",
+      "environment": "EMAIL_API_KEY",
+      "optional": true
+    },
+    {
+      "binding": "MAIL_ACCOUNT_ID",
+      "environment": "EMAIL_ACCOUNT_ID",
       "optional": true
     },
     {

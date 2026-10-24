@@ -69,5 +69,10 @@ export async function rerMailJourney(){
   const count=edge.sends.length;await app.db.prepare('UPDATE conversation_outbox SET delivered_at=NULL WHERE message_id=?').bind(lost.id).run();await app.scheduled();assert.equal(edge.sends.length,count,'uncertain commands never redispatch')
   const observed=await i.settings();assert.equal(observed.managed.observed,true);assert.ok(observed.managed.lastInboundAt);assert.ok(observed.managed.lastOutboundAcceptanceAt);assert.equal(observed.managed.outbound.state,'uncertain')
   await app.ok(`/api/management/projects/${owner.projectId}/email-settings/managed/reconcile`,{token:owner.token,body:{deliveryId:`message:${lost.id}:notification`}});assert.equal(edge.sends.length,count);assert.equal((await i.settings()).managed.outbound.state,'accepted')
+  const auditOwner=await app.first('SELECT id FROM users WHERE email=?','owner-a@example.test')
+  const audit=await app.sql("SELECT action,actor_type,actor_id,target_id,detail_json FROM audit_events WHERE project_id=? AND action LIKE 'managed_mail.%'",owner.projectId)
+  for(const action of ['managed_mail.send_started','managed_mail.send_accepted','managed_mail.send_uncertain','managed_mail.reconciled'])assert.ok(audit.some(row=>row.action===action),action)
+  assert.ok(audit.some(row=>row.action==='managed_mail.reconciled'&&row.actor_type==='user'&&row.actor_id===auditOwner.id&&row.target_id===`message:${lost.id}:notification`))
+  assert.ok(!JSON.stringify(audit).includes(assigned.MAIL_API_KEY));assert.ok(!JSON.stringify(audit).includes('customer@example.test'))
  }finally{await i.close()}
 }

@@ -141,7 +141,7 @@ export async function presenceJourney(){
    assert.equal(settings.availability.opensAt,Date.parse('2026-11-28T00:00:00Z'),'the next opening skips both Thanksgiving and the closure')
    const contact=await visitor(),ticket=await conversation(contact)
    await write(contact,ticket.id,`calendar-${date}`,'When will someone reply?',0)
-   assert.match((await transcript(ticket.id))[1].content,/back Saturday at 12:00 AM UTC/,'the public conversation uses the same calendar as the widget')
+   assert.ok((await transcript(ticket.id))[1].content.includes(`back ${date==='2026-11-26'?'Saturday':'tomorrow'} at 12:00 AM UTC`),'the public conversation uses the same calendar as the widget')
   }
   await manage(`/workflow-calendars/${calendar.id}`,{closures:[],holidays:'none'},'PATCH')
   assert.equal((await state()).available,true,'removing the calendar exceptions restores availability')

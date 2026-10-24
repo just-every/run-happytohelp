@@ -46,7 +46,7 @@ export async function awayWidget({browser,origin,api,ownerToken,projectId,eviden
   const contact=await(await fetch(`${api}/api/management/projects/${projectId}/contacts/${session.contactId}`,{headers})).json();assert.equal(contact.data.email,'night-owl@example.test');
   await page.getByText('Sorry about that. A replacement ships today.',{exact:true}).waitFor();
   // The same installed widget respects an explicit SLA closure even with opening hours saying open.
-  await put('availability',{is_availability_schedule_enabled:true,availability_schedule:{days:[1,2,3,4,5,6,7],time_from:'00:00',time_to:'23:59',message:''}});
+  await put('availability',{is_presence_away_enabled:false,is_availability_schedule_enabled:true,availability_schedule:{days:[1,2,3,4,5,6,7],time_from:'00:00',time_to:'23:59',message:''}});
   const manage=async(path,body,method='POST')=>{const response=await fetch(`${api}/api/management/projects/${projectId}/${path}`,{method,headers,body:JSON.stringify(body)});assert.equal(response.status,method==='POST'?201:200,await response.clone().text());return (await response.json()).data};
   const widgetKey=(await(await fetch(`${api}/api/management/projects/${projectId}/widget-settings`,{headers})).json()).widgetKey;
   const availability=async()=>(await(await fetch(`${api}/api/widget/settings?widgetKey=${widgetKey}`,{headers:{Origin:origin}})).json()).availability;
@@ -68,6 +68,6 @@ export async function awayWidget({browser,origin,api,ownerToken,projectId,eviden
   return ['after hours the installed widget says the team is away, when it is back in the visitor\'s time, and asks for an email before the first message; the conversation reaches the inbox with one away reply, and the answer is emailed'];
  }finally{
   await context.close();
-  await put('availability',{is_availability_schedule_enabled:false,availability_schedule:{}});
+  await put('availability',{is_presence_away_enabled:true,is_availability_schedule_enabled:false,availability_schedule:{}});
  }
 }

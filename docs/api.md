@@ -64,7 +64,7 @@ EOF_CURL
 Resolve (`conversations:write`):
 
 ```sh
-curl --silent --show-error --config - --request POST "$H2H_URL/api/v1/conversations/$CONVERSATION_ID/resolve" <<EOF_CURL
+curl --silent --show-error --config - --request POST --header "Content-Type: application/json" --data '{}' "$H2H_URL/api/v1/conversations/$CONVERSATION_ID/resolve" <<EOF_CURL
 header = "Authorization: Bearer $H2H_TOKEN"
 EOF_CURL
 ```
@@ -201,7 +201,7 @@ An owner or admin can issue a machine credential through the existing token
 management endpoint with `source_product`, `scopes` and `bindings`. The source
 label is a lowercase product identifier. `conversations:create`,
 `messages:append` and `conversations:read` are independent scopes. Machine reads
-are restricted to that credential's rotation family unless an administrator
+are restricted to tickets originating from that credential unless an administrator
 explicitly supplies creator IDs in `bindings.credentials`. Bindings also accept
 `brands`, `mailboxes`, `groups`, `forms`, `priorities` and existing tag IDs in
 `tags`; unknown tags are refused rather than created.
@@ -244,7 +244,7 @@ data = "{\"kind\":\"customer\",\"localId\":\"synthetic-hh-docs-append-1\",\"cont
 CURL
 ```
 
-Create and append attachments accept an `upload_id` belonging to the same credential family,
+Create and append attachments accept an `upload_id` belonging to the same credential,
 or a public HTTPS `url`, `filename` and lowercase hexadecimal `sha256`. URL
 fetches refuse redirects, have a ten-second deadline and a 20 MB per-file limit;
 unsupported types return 415 and oversized files return 413. All attachments
@@ -324,11 +324,51 @@ Consent-gated SMS/WhatsApp qualification remains pending CHANNELS-001.
 
 Customer appends honor both blocked sender addresses/domains and blocked contacts.
 They return 403 `blocked_sender` without adding a message or reopening a Solved
-ticket. Credential bindings and webhook credential filters follow the rotation
-family, including tickets created using the new secret.
+ticket. Credential bindings and webhook credential filters follow the credential, including tickets created using the new secret.
 
 If a source reference was claimed by a clean request while another request waited
 in Suspended, releasing the held request returns 409 `source_ref_exists` with
 the surviving `conversation_id`. The held request remains available for review.
 The request-limit response reports the installation's configured
 `apiRequestsPerTokenMinute` in `RateLimit-Limit`.
+
+
+A machine credential can hold only `conversations:create`, `conversations:read`
+and `messages:append`. Operator, contact and article scopes remain available to
+legacy workspace tokens. Credential policy belongs to one entity; rotation adds
+secrets to that entity. Settings shows one card with each secret's prefix,
+expiry and last use. PATCH, rotate and revoke accept either the credential ID
+or any of its secret IDs. Scope, binding and quota edits apply to every secret.
+Expired or revoked credentials cannot be rotated (409).
+
+Reach combines the origin credential with the ticket's current brand, mailbox
+and group, plus its origin form. Moving a ticket out of a credential's reach
+removes that credential's access. Lists omit it and named-resource operations
+return 404. Priority and tag bindings are create-time value restrictions.
+A policy change or ticket move during an append is checked again at commit.
+Legacy workspace tokens retain workspace-wide reach.
+
+Requester admission recognizes normalized email, provided email, phone, external
+ID and API external ID. A block on any contact sharing a key applies to customer
+appends and held-request release as well as create. Address and domain rules
+apply to email keys. Erasure fences return `identity_erased`; internal notes
+are machine content and are unaffected by requester blocks.
+
+An API hold retains the complete ticket plan, including tags, placement, form,
+source reference and attachments. Release rechecks current credential policy,
+requester admission, tags and reference uniqueness. It may override requester-cap
+and content-abuse holds, but never a standing block or erasure fence. Release
+records the operator and machine source and sends no retroactive acknowledgment.
+The original idempotency key continues to replay its original 202 receipt.
+
+Consuming an upload removes its row and original object after the ticket copy
+commits. Scheduled cleanup removes expired unused uploads and retries object
+deletions. Each credential may hold 50 outstanding uploads by default; installation
+configuration `API_UPLOAD_LIMITS` can set a positive integer `outstanding` limit.
+Excess uploads return 429 `credential` with retry and rate-limit headers.
+All JSON write doors require `application/json` (415 otherwise) and reject
+oversized bodies or content with 413 `payload_too_large`.
+
+Exports carry the credential entity as metadata, without bearer hashes or
+secrets. Restore revokes every credential and every secret; imported requests
+remain inert and do not replay.

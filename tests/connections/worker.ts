@@ -3,9 +3,13 @@ import {runScheduled} from '../../src/jobs'
 import {raceDatabase} from './race-db'
 import {Hono} from 'hono'
 import {app} from '../../src/app'
+import {api} from '../../src/modules/api-integrations/routes'
+import {unclassifiedMemberTables} from '../../src/modules/management/member-erasure'
 import {dispatchIntegrations} from '../../src/modules/api-integrations/dispatch'
 export {ConversationSocket} from '../../src/modules/conversations/socket'
 const tests=new Hono<any>()
+tests.get('/_test/api-routes',c=>c.json(api.routes.map(({method,path})=>({method,path}))))
+tests.get('/_test/member-inventory',async c=>c.json(await unclassifiedMemberTables(c.env.DB)))
 tests.post('/_test/scheduled-metered',async c=>{const budget=boundedDatabase(c.env.DB);await runScheduled({...c.env,DB:budget.database});return c.json(budget.metrics)})
 tests.post('/_test/scheduled',async c=>{await runScheduled(c.env);return c.json({scheduled:true})})
 tests.post('/_test/dispatch',async c=>{await dispatchIntegrations(c.env,(await c.req.json()).projectId);return c.json({dispatched:true})})

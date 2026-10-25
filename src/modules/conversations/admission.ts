@@ -4,7 +4,7 @@ import {followupId,createFollowupStatement,carryFollowupStatements} from '../wor
 import {scheduledAdmission,type ScheduledAdmission} from '../workflows/schedule-authority'
 import {assignmentHistoryStatement} from '../outcomes/assignment-history.ts'
 import {inboundAuthority,provenAddressSql,type InboundAuthority} from '../integrations/inbound-authority.ts'
-import {contactAvailableSql,customerUnblockedSql} from './contact-privacy.ts'
+import {contactAvailableSql} from './contact-privacy.ts'
 import {tokenGuard,type TokenAuthority} from '../../platform/integration-authority.ts'
 import {authoringSource,authorshipStatement,type Authoring} from '../outcomes/provenance.ts'
 import {trackingStatement} from '../outcomes/tracking.ts'
@@ -71,7 +71,6 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
   const [definitions,stored]=await env.DB.batch<any>([env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=?').bind(projectId),env.DB.prepare('SELECT field_id,value_json FROM ticket_field_values WHERE project_id=? AND conversation_id=?').bind(projectId,conversationId)])
   for(const field of requiredToSolve(definitions.results,Object.fromEntries(stored.results.map((v:any)=>[v.field_id,JSON.parse(v.value_json)])),{},input.tokenAuthority?null:await memberAccess(env.DB,projectId,actor.id))){predicates.push('EXISTS(SELECT 1 FROM ticket_field_values WHERE project_id=c.project_id AND conversation_id=c.id AND field_id=?)');args.push(field)}
  }
- if(input.tokenAuthority&&actor.role==='contact')predicates.push(customerUnblockedSql())
  if(input.tokenAuthority){const guard=tokenGuard(input.tokenAuthority,projectId,input.tokenAuthority.scope==='messages:append'?'messages:append':'messages:write');predicates.push(`EXISTS(${guard.sql})`,contactAvailableSql());args.push(...guard.params)}else if(input.generationId){predicates.push(`c.assigned_to IS NULL AND ${activeSourceProjectSql('c.project_id')}`)}else if(companyReply){const visible=portalTicketScope({actor,sessionHash:input.sessionHash!});predicates.push(visible.sql);args.push(...visible.args)}else if(actor.role==='contact'&&!email){predicates.push("c.contact_id=? AND EXISTS(SELECT 1 FROM contacts contact WHERE contact.id=c.contact_id AND COALESCE(json_extract(contact.metadata_json,'$.is_blocked'),0)!=1)");args.push(actor.contactId||actor.id)}else if(actor.role!=='contact'){predicates.push('EXISTS(SELECT 1 FROM memberships WHERE project_id=c.project_id AND user_id=? AND role=?)');args.push(actor.id,actor.role)}
  if(email){
   predicates.push(`EXISTS(SELECT 1 FROM inbound_emails receipt WHERE receipt.id=? AND receipt.project_id=c.project_id AND receipt.conversation_id=c.id AND receipt.claim_token=? AND receipt.state='processing' AND (EXISTS(SELECT 1 FROM email_settings mailbox WHERE mailbox.project_id=receipt.project_id AND mailbox.is_enabled=1 AND ? IS NULL) OR EXISTS(SELECT 1 FROM mailbox_connections mailbox JOIN mailbox_addresses address ON address.mailbox_id=mailbox.id AND address.project_id=mailbox.project_id WHERE mailbox.id=? AND mailbox.project_id=receipt.project_id AND mailbox.status='connected' AND address.address=?)))`,activeSourceProjectSql('c.project_id'),contactAvailableSql())

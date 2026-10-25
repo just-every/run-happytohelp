@@ -2,7 +2,7 @@ import type {Env} from '../../platform/env'
 import {validateDestination} from '../../vendor/base/modules/integrations/core/destination'
 import {ApiError} from './errors'
 export const attachmentTypes=new Set(['text/plain','application/pdf','image/png','image/jpeg','image/gif','image/webp','image/avif','image/bmp','image/x-icon','image/vnd.microsoft.icon','audio/mpeg','audio/ogg','audio/wav','audio/webm','audio/mp4','video/mp4','video/ogg','video/webm','video/quicktime'])
-export async function attachments(env:Env,project:string,family:string,input:unknown){
+export async function attachments(env:Env,project:string,credential:string,input:unknown){
  if(input===undefined)return []
  if(!Array.isArray(input)||input.length>20)throw new ApiError(400,'invalid_attachments')
  const files:{id:string;filename:string;type:string;bytes:Uint8Array;uploadId?:string}[]=[]
@@ -11,7 +11,7 @@ export async function attachments(env:Env,project:string,family:string,input:unk
   let bytes:Uint8Array,type:string,filename=reference.filename??'attachment'
   if(typeof filename!=='string'||filename.length>200||/[\r\n\x00]/.test(filename))throw new ApiError(400,'invalid_attachment')
   if(reference.upload_id){
-   const row=await env.DB.prepare('SELECT * FROM api_uploads WHERE project_id=? AND family_id=? AND id=? AND expires_at>?').bind(project,family,reference.upload_id,Date.now()).first<any>()
+   const row=await env.DB.prepare('SELECT * FROM api_uploads WHERE project_id=? AND credential_id=? AND id=? AND expires_at>?').bind(project,credential,reference.upload_id,Date.now()).first<any>()
    if(!row)throw new ApiError(404,'not_found')
    const object=await env.FILES.get(row.object_key);if(!object)throw new ApiError(404,'not_found')
    bytes=new Uint8Array(await object.arrayBuffer());type=row.content_type;filename=row.filename

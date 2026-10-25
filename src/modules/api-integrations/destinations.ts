@@ -1,3 +1,4 @@
+import {credentialById} from './credentials'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {validateDestination,resolveSlackWebhook,resolveSlackBot} from '../../vendor/base/modules/integrations/index.ts'
@@ -25,7 +26,7 @@ export async function saveDestination(env:Env,issuer:Issuer,kind:'webhook'|'slac
    else throw Error()
   }
  }catch{throw new HTTPException(400,{message:kind==='webhook'?'Choose a public HTTPS URL and supported events':'Invalid Slack configuration'})}
- if(body.credential_id!==undefined&&!await env.DB.prepare('SELECT 1 FROM integration_tokens WHERE namespace=? AND id=?').bind(issuer.actor.projectId,body.credential_id).first())throw new HTTPException(404)
+ if(body.credential_id!==undefined){const credential=await credentialById(env,issuer.actor.projectId,body.credential_id);if(!credential)throw new HTTPException(404);body={...body,credential_id:credential.id}}
  if(body.source_product!==undefined&&(typeof body.source_product!=='string'||! /^[a-z][a-z0-9_-]{0,63}$/.test(body.source_product)))throw new HTTPException(400)
  const id=crypto.randomUUID(),now=Date.now(),cipher=await encryptToken(env,issuer.actor.projectId,JSON.stringify(secret)),guard=await issuerGuard(env,issuer)
  const results=await env.DB.batch([

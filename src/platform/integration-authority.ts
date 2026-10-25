@@ -1,3 +1,4 @@
+import {conversationReach} from '../modules/api-integrations/reach'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from './env'
 import {D1SqlDatabase,IntegrationsRepository,TokenService} from '../vendor/base/modules/integrations/index.ts'
@@ -5,7 +6,7 @@ export const SCOPES=['conversations:create','messages:append','conversations:rea
 export type ApiScope=typeof SCOPES[number]
 export interface SqlGuard {sql:string;params:(string|number|null)[]}
 const trusted=Symbol('native workspace token authority')
-export interface TokenAuthority {readonly kind:'workspace-token';readonly projectId:string;readonly tokenId:string;readonly scope:ApiScope;readonly policy?:string;readonly [trusted]:true}
+export interface TokenAuthority {readonly kind:'workspace-token';readonly projectId:string;readonly tokenId:string;readonly scope:ApiScope;readonly credentialId:string;readonly revision:number;readonly conversationId?:string;readonly [trusted]:true}
 export const repository=(env:Env,projectId:string)=>new IntegrationsRepository(new D1SqlDatabase(env.DB),projectId)
 export interface Issuer {actor:Actor;sessionHash:string}
 const activeProject=(alias:string)=>`EXISTS(SELECT 1 FROM projects p WHERE p.id=${alias}) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=${alias} AND (json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL OR json_extract(ps.settings_json,'$.suspended_at') IS NOT NULL))`
@@ -17,37 +18,47 @@ export async function issuerGuard(env:Env,issuer:Issuer):Promise<SqlGuard>{
  if(!row)throw new HTTPException(403,{message:'Current workspace owner or admin required'})
  return {sql:`${sql} AND e.revision=?`,params:[...params,row.revision]}
 }
-export function tokens(env:Env,projectId:string,extension?:{source:string;bindings:string;minute:number;day:number;family?:string;rotate?:{id:string;overlap:number;expires:number|null;policy:string}}){
+export interface CredentialPolicy {source:string|null;reach:string;values:string;minute:number;day:number;rotate?:{id:string;overlap:number;revision:number}}
+export function tokens(env:Env,projectId:string,extension?:CredentialPolicy){
  const sql=new D1SqlDatabase(env.DB)
  let administration:{issuer:Issuer;guard:SqlGuard;action:string;resource:string}|null=null
  const repo=new IntegrationsRepository({async batch(statements){
   if(!administration)return sql.batch(statements)
-  const {issuer,guard,action,resource}=administration
-  const auditResource=action==='token.issued'?JSON.stringify({credential_id:String(statements[0]!.params![1]),credential_name:String(statements[0]!.params![3]),source_product:extension?.source??null}):resource
-  // Native actor audit and current authority assertion join Base's transaction.
-  // A failed assertion violates actor_id NOT NULL and rolls back every effect.
-  const audit={sql:`INSERT INTO native_integration_audit(id,project_id,actor_id,action,resource_id,created_at) VALUES(?,?,CASE WHEN EXISTS(${guard.sql}) THEN ? ELSE NULL END,?,?,?)`,params:[crypto.randomUUID(),projectId,...guard.params,issuer.actor.id,action,auditResource,Date.now()]}
-  const extra=[]
-  if(action==='token.revoke')extra.push({sql:'UPDATE integration_tokens SET revoked_at=COALESCE(revoked_at,?) WHERE namespace=? AND family_id IS NOT NULL AND family_id=(SELECT family_id FROM integration_tokens WHERE namespace=? AND id=?)',params:[Date.now(),projectId,projectId,resource]})
-  if(extension&&action==='token.issued'){
-   const id=String(statements[0]!.params![1])
-   extra.push({sql:'UPDATE integration_tokens SET source_product=?,bindings_json=?,issuer_id=?,family_id=?,create_minute=?,create_day=?,display_prefix=? WHERE namespace=? AND id=?',params:[extension.source,extension.bindings,issuer.actor.id,extension.family??id,extension.minute,extension.day,id.slice(0,8),projectId,id]})
-   if(extension.rotate){extra.push({sql:"INSERT INTO native_integration_audit VALUES(?,?,?,'token.rotated',?,?)",params:[crypto.randomUUID(),projectId,issuer.actor.id,extension.rotate.id,Date.now()]},{sql:'UPDATE integration_tokens SET expires_at=min(COALESCE(expires_at,?),?) WHERE namespace=? AND id=?',params:[Date.now()+extension.rotate.overlap,Date.now()+extension.rotate.overlap,projectId,extension.rotate.id]})}
+  const {issuer,guard,action,resource}=administration,now=Date.now(),before:any[]=[],after:any[]=[]
+  let id=resource,auditAction=action
+  if(action==='token.issued'){
+   const params=statements[0]!.params!,secretId=String(params[1]);id=extension?.rotate?.id??secretId
+   if(extension?.rotate){
+    auditAction='token.rotated'
+    const live=credentialGuard(projectId,id,extension.rotate.revision)
+    before.push({sql:`INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(${live.sql}) THEN 1 ELSE 0 END`,params:live.params})
+    after.push({sql:'UPDATE integration_tokens SET expires_at=min(coalesce(expires_at,?),?) WHERE namespace=? AND credential_id=? AND id<>? AND revoked_at IS NULL',params:[now+extension.rotate.overlap,now+extension.rotate.overlap,projectId,id,secretId]})
+   }else before.push({sql:'INSERT INTO api_credentials(namespace,id,name,scopes,created_at,expires_at,source_product,reach_json,values_json,create_minute,create_day,issuer_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',params:[projectId,id,params[3],params[4],params[5],params[6],extension?.source??null,extension?.reach??'{}',extension?.values??'{}',extension?.minute??20,extension?.day??1000,issuer.actor.id]})
+   // Extend Base's secret INSERT in its transaction, keeping Base hash generation
+   // and bearer verification intact. Policy is stored only on the parent.
+   statements=statements.map((statement,index)=>index?statement:{...statement,sql:statement.sql.replace('expires_at) SELECT','expires_at,credential_id,display_prefix) SELECT').replace('?,?,?,?,?,?,? WHERE','?,?,?,?,?,?,?,?,? WHERE'),params:[...params.slice(0,7),id,secretId.slice(0,8),...params.slice(7)]})
   }
-  const rotationGuard=extension?.rotate?[{sql:'INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(SELECT 1 FROM integration_tokens WHERE namespace=? AND id=? AND revoked_at IS NULL AND expires_at IS ? AND (expires_at IS NULL OR expires_at>?) AND json_array(scopes,bindings_json,create_minute,create_day)=?) THEN 1 ELSE 0 END',params:[projectId,extension.rotate.id,extension.rotate.expires,Date.now(),extension.rotate.policy]}]:[]
-  try{return (await sql.batch([...rotationGuard,audit,...statements,...extra,...(rotationGuard.length?[{sql:'DELETE FROM ik_d1_assertions',params:[]}]:[])])).slice(rotationGuard.length+1,rotationGuard.length+1+statements.length)}catch(error){
+  if(action==='token.revoke')after.push({sql:'UPDATE api_credentials SET revoked_at=coalesce(revoked_at,?) WHERE namespace=? AND id=(SELECT credential_id FROM integration_tokens WHERE namespace=? AND id=?)',params:[now,projectId,projectId,resource]},{sql:'UPDATE integration_tokens SET revoked_at=coalesce(revoked_at,?) WHERE namespace=? AND credential_id=(SELECT credential_id FROM integration_tokens WHERE namespace=? AND id=?)',params:[now,projectId,projectId,resource]})
+  const detail=auditAction==='token.issued'?JSON.stringify({credential_id:id,credential_name:String(statements[0]!.params![3]),source_product:extension?.source??null}):id
+  const audit={sql:`INSERT INTO native_integration_audit(id,project_id,actor_id,action,resource_id,created_at) VALUES(?,?,CASE WHEN EXISTS(${guard.sql}) THEN ? ELSE NULL END,?,?,?)`,params:[crypto.randomUUID(),projectId,...guard.params,issuer.actor.id,auditAction,detail,now]}
+  const prefix=[audit,...before]
+  try{return (await sql.batch([...prefix,...statements,...after,{sql:'DELETE FROM ik_d1_assertions',params:[]}])).slice(prefix.length,prefix.length+statements.length)}catch(error){
    if(!await env.DB.prepare(guard.sql).bind(...guard.params).first())throw new HTTPException(409,{message:'Authority changed'})
    throw error
   }
  }},projectId)
  return new TokenService<Issuer>(repo,{
-  grant:async issuer=>{if(issuer.actor.projectId!==projectId)throw new HTTPException(403);const guard=await issuerGuard(env,issuer);administration={issuer,guard,action:'token.issued',resource:'tokens'};return {scopes:SCOPES,commitGuard:guard}},
+  grant:async issuer=>{if(issuer.actor.projectId!==projectId)throw new HTTPException(403);const guard=await issuerGuard(env,issuer);administration={issuer,guard,action:'token.issued',resource:'tokens'};return {scopes:extension?.source?MACHINE_SCOPES:SCOPES,commitGuard:guard}},
   administer:async(issuer,action,id)=>{if(issuer.actor.projectId!==projectId)throw new HTTPException(403);administration={issuer,guard:await issuerGuard(env,issuer),action:'token.'+action,resource:id||'tokens'}}
  })
 }
-/** Only the bearer verifier can mint this context; no synthetic native session. */
-export function verifiedToken(projectId:string,tokenId:string,scope:ApiScope,policy?:string):TokenAuthority{return Object.freeze({kind:'workspace-token',projectId,tokenId,scope,policy,[trusted]:true as const})}
+export const MACHINE_SCOPES=['conversations:create','conversations:read','messages:append'] as const
+export function verifiedToken(projectId:string,tokenId:string,scope:ApiScope,credentialId:string,revision:number,conversationId?:string):TokenAuthority{return Object.freeze({kind:'workspace-token',projectId,tokenId,scope,credentialId,revision,conversationId,[trusted]:true as const})}
+export function credentialGuard(projectId:string,id:string,revision:number):SqlGuard{
+ return {sql:`SELECT 1 FROM api_credentials credential WHERE credential.namespace=? AND credential.id=? AND credential.policy_revision=? AND credential.revoked_at IS NULL AND (credential.expires_at IS NULL OR credential.expires_at>max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER))) AND ${activeProject('credential.namespace')}`,params:[projectId,id,revision,Date.now()]}
+}
 export function tokenGuard(authority:TokenAuthority,projectId:string,scope:ApiScope):SqlGuard{
  if(authority?.[trusted]!==true||authority.projectId!==projectId||authority.scope!==scope)throw new HTTPException(403)
- return {sql:`SELECT 1 FROM integration_tokens t WHERE t.namespace=? AND t.id=? AND t.revoked_at IS NULL AND (t.expires_at IS NULL OR t.expires_at>max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER))) AND EXISTS(SELECT 1 FROM json_each(t.scopes) WHERE value=?) AND ${activeProject('t.namespace')} ${authority.policy===undefined?'':'AND json_array(t.source_product,t.bindings_json,t.family_id,t.create_minute,t.create_day)=?'}`,params:[projectId,authority.tokenId,Date.now(),scope,...(authority.policy===undefined?[]:[authority.policy])]}
+ const parent=credentialGuard(projectId,authority.credentialId,authority.revision)
+ return {sql:`SELECT 1 FROM integration_tokens t JOIN api_credentials credential ON credential.namespace=t.namespace AND credential.id=t.credential_id WHERE t.namespace=? AND t.id=? AND t.revoked_at IS NULL AND (t.expires_at IS NULL OR t.expires_at>max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER))) AND EXISTS(SELECT 1 FROM json_each(credential.scopes) WHERE value=?) AND EXISTS(${parent.sql}) ${authority.conversationId?`AND EXISTS(SELECT 1 FROM conversations c WHERE c.project_id=t.namespace AND c.id=? AND ${conversationReach('t.credential_id')})`:''}`,params:[projectId,authority.tokenId,Date.now(),scope,...parent.params,...(authority.conversationId?[authority.conversationId]:[])]}
 }

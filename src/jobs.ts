@@ -1,3 +1,4 @@
+import {sweepUploads} from './modules/api-integrations/upload-lifecycle'
 import {processRerMailbox,recoverRerMailboxes,refreshRerMailbox} from './modules/integrations/rer-mailbox'
 import {consumeTriage,dispatchTriage} from './modules/triage/worker'
 import {dispatchScheduledReports} from './modules/reports/schedule-dispatch'
@@ -66,7 +67,7 @@ export async function runScheduled(env:Env) {
  }
  await visit('Workflow',720,runWorkflows)
  await visit('Survey',70,dispatchSurveys)
- await visit('Integration',60,async env=>{await dispatchIntegrations(env);await recoverRerMailboxes(env)})
+ await visit('Integration',60,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env)})
  // Hand larger message effects to the queue near the history-load target.
  // The hard consumer allocation still reserves every later recovery and prune.
  await visit('Outbox',3,dispatchOutbox,700)

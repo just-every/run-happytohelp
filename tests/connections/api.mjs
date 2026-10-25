@@ -42,7 +42,7 @@ test('native API replies and resolve keep frontiers and reject revoked-token wri
   await h.contact();const c=await h.conversation(),issued=await h.issue(),token=issued.token;
   const command={content:'First reply',localId:'api-reply',expectedRevision:0,expectedLastMessageId:null};const first=await h.call('/api/v1/conversations/'+c.id+'/messages',{token,...body(command)});assert.equal(first.data.revision,1);assert.equal(first.data.content,'First reply');const again=await h.call('/api/v1/conversations/'+c.id+'/messages',{token,...body(command)});assert.equal(again.duplicate,true);assert.equal((await h.db.prepare('SELECT count(*) n FROM conversation_outbox WHERE conversation_id=?').bind(c.id).first()).n,1);
   const authored=await h.db.prepare('SELECT kind FROM message_authorship WHERE message_id=?').bind(first.data.id).first();assert.equal(authored.kind,'unknown');
-  await h.call('/api/v1/conversations/'+c.id+'/resolve',{token,method:'POST'});const state=await h.db.prepare('SELECT resolved_at,revision,assigned_to FROM conversations WHERE id=?').bind(c.id).first();assert.ok(state.resolved_at);assert.equal(state.revision,1);assert.equal(state.assigned_to,null);
+  await h.call('/api/v1/conversations/'+c.id+'/resolve',{token,...body({})});const state=await h.db.prepare('SELECT resolved_at,revision,assigned_to FROM conversations WHERE id=?').bind(c.id).first();assert.ok(state.resolved_at);assert.equal(state.revision,1);assert.equal(state.assigned_to,null);
   const race=await h.raw('/_test/race',{token,...body({skipBatches:1,path:'/api/v1/conversations/'+c.id+'/messages',body:{...command,localId:'revoked-reply',expectedRevision:1},race:[{sql:'UPDATE integration_tokens SET revoked_at=1 WHERE id=?',params:[issued.data.id]}]})});assert.equal(race.status,409);assert.deepEqual(await h.db.prepare('SELECT resolved_at,revision,assigned_to FROM conversations WHERE id=?').bind(c.id).first(),state);
  }finally{await h.close()}
 });
@@ -62,7 +62,7 @@ test('every API mutation rechecks its live token at the actual D1 write boundary
   ];
   const snapshot=async()=>{const state={};for(const table of ['contacts','messages','conversations','conversation_resolutions','knowledge_articles','knowledge_article_categories','native_integration_events','native_integration_intents'])state[table]=(await h.db.prepare('SELECT * FROM '+table+' ORDER BY rowid').all()).results;return state};
   for(const command of cases)for(const change of ['revoked_at=1','expires_at=1',"scopes='[]'"]){
-   const issued=await h.issue(),before=await snapshot();const response=await h.raw('/_test/race',{token:issued.token,...body({path:'/api/v1'+command.path,method:command.method,body:command.body,match:command.match,race:[{sql:'UPDATE integration_tokens SET '+change+' WHERE id=?',params:[issued.data.id]}]})});assert.equal(response.status,409,command.path+' '+change);assert.deepEqual(await snapshot(),before,command.path+' makes no partial mutation');
+   const issued=await h.issue(),before=await snapshot();const response=await h.raw('/_test/race',{token:issued.token,...body({path:'/api/v1'+command.path,method:command.method,body:command.body,match:command.match,race:[{sql:'UPDATE '+(change.startsWith('scopes')?'api_credentials':'integration_tokens')+' SET '+change+' WHERE id=?',params:[issued.data.id]}]})});assert.equal(response.status,409,command.path+' '+change);assert.deepEqual(await snapshot(),before,command.path+' makes no partial mutation');
   }
  }finally{await h.close()}
 });

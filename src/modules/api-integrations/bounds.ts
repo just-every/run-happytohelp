@@ -1,3 +1,0 @@
-/** Legacy operator credentials retain their old workspace scope. Machine credentials
- * default to their own rotation family; an admin can explicitly bind other creators. */
-export const conversationBounds=(token='?',conversation='c')=>`EXISTS(SELECT 1 FROM integration_tokens bound_token WHERE bound_token.namespace=${conversation}.project_id AND bound_token.id=${token} AND (bound_token.source_product IS NULL OR EXISTS(SELECT 1 FROM api_conversations origin WHERE origin.conversation_id=${conversation}.id AND (origin.family_id=bound_token.family_id OR origin.family_id IN (SELECT family_id FROM integration_tokens WHERE namespace=bound_token.namespace AND id IN (SELECT value FROM json_each(bound_token.bindings_json,'$.credentials')))))))`

@@ -70,9 +70,10 @@ try {
   assert.equal(sanitized.status, 0, sanitized.stderr);
   const backup = await readFile(backupFile, 'utf8');
   assert.doesNotMatch(backup, /private-grant-hash|private-code-hash/, 'the backup carries no delegated credential');
-  for (const table of ['edition_grants', 'edition_codes','integration_deliveries','native_integration_intents','native_integration_destinations','api_uploads']) before.rows[table] = [];
-  for(const table of ['integration_tokens','api_requests','api_appends'])before.rows[table]=before.rows[table].map(value=>{
+  for (const table of ['edition_grants', 'edition_codes','integration_deliveries','native_integration_intents','native_integration_destinations','api_uploads','api_upload_disposals']) before.rows[table] = [];
+  for(const table of ['integration_tokens','api_credentials','api_requests','api_appends'])before.rows[table]=before.rows[table].map(value=>{
    const row=JSON.parse(value);
+   if(table==='api_credentials')row.revoked_at??=Math.max(1,row.created_at);
    if(table==='integration_tokens'){assert.ok(!backup.includes(row.token_hash));row.token_hash='revoked:'+row.id;row.revoked_at??=Math.max(1,row.created_at)}
    else{row.response_json=null;if(table==='api_requests')row.erased=1}
    return JSON.stringify(row);
@@ -80,7 +81,7 @@ try {
   assert.ok(!backup.includes(journey.api.machine.token));
   for(const privateValue of ['synthetic-hh-recovery-issuer@example.test','Synthetic recovery issuer',journey.api.erasedIssuer.token])assert.ok(!backup.includes(privateValue));
   assert.ok(backup.includes('Synthetic retained recovery machine'));
-  const exportedIssuer=before.rows.integration_tokens.map(JSON.parse).find(row=>row.id===journey.api.erasedIssuer.data.id);assert.equal(exportedIssuer.issuer_id,null);assert.ok(exportedIssuer.revoked_at);
+  const exportedIssuer=before.rows.api_credentials.map(JSON.parse).find(row=>row.id===journey.api.erasedIssuer.data.id);assert.equal(exportedIssuer.issuer_id,null);assert.ok(exportedIssuer.revoked_at);
   assert.ok(before.rows.users.map(JSON.parse).some(row=>row.id===issuerId&&row.email==='erased:'+issuerId&&row.name==='Former teammate'));
 
   restored = await recoveryRuntime(artifact, {directory: join(output, 'restored-runtime'), port: port + 2, inspectorPort: port + 3, variables, restoreFile: backupFile});

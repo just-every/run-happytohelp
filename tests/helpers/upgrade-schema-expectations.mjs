@@ -21,7 +21,7 @@ export const schemaExceptions = [
   {migration: '244_csat_response_surface.sql', names: ['csat_responses', 'csat_response_history'], change: 'Adds only the signed response surface with unknown for existing feedback; every prior column and row is retained'},
   {migration: '246_imported_ticket_lifecycle.sql', names: ['ticket_conversation_defaults'], change: 'Adds only the reviewed import fence to status defaults; every other trigger clause is retained'},
   {migration: '248_customer_recovery.sql', names: ['csat_responses', 'csat_response_history'], change: 'Adds only explicit customer recovery with unknown for existing feedback; every prior column and row is retained'},
-  {migration: '253_api_requests.sql', names: ['integration_tokens','native_integration_destinations'], change: 'Adds only source, bounds, issuer, prefix, family, create quotas and destination filters; existing columns and rows retained'},
+  {migration: '253_api_requests.sql', names: ['integration_tokens','native_integration_destinations'], change: 'Adds credential reference, display prefix and destination filters; legacy secret columns retained and every secret backfilled to its own credential'},
   {migration: '251_knowledge_read_selection.sql', names: ['project_roles'], change: 'Adds only nullable knowledge_article_ids TEXT constrained to a valid JSON array; every prior column and row is retained'},
   {migration: '0110_move_in.sql', names: ['context_message_added', 'context_message_removed'], change: 'WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences ...) inserted before BEGIN'},
 ];
@@ -83,7 +83,7 @@ END`;
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
   {migration:'253_api_requests.sql',table:'integration_tokens',sql:[
-    'source_product TEXT','bindings_json TEXT NOT NULL DEFAULT \'{}\'','issuer_id TEXT','display_prefix TEXT','family_id TEXT','create_minute INTEGER NOT NULL DEFAULT 20','create_day INTEGER NOT NULL DEFAULT 1000',
+    'credential_id TEXT','display_prefix TEXT',
   ].map(column=>`ALTER TABLE integration_tokens ADD COLUMN ${column};`).join('\n')},
   {migration:'253_api_requests.sql',table:'native_integration_destinations',sql:'ALTER TABLE native_integration_destinations ADD COLUMN credential_id TEXT; ALTER TABLE native_integration_destinations ADD COLUMN source_product TEXT;'},
 

@@ -20,12 +20,12 @@ async function existingCredentialLifecycle(){
   await h.db.prepare("DELETE FROM memberships WHERE project_id='p' AND user_id='owner'").run();assert.equal((await h.raw('/api/v1/contacts',{token})).status,200,'workspace grant outlives issuer membership');
   await h.db.prepare("INSERT INTO memberships VALUES('p','owner','owner')").run();
   await h.call(settings+'/tokens/'+issued.data.id,{method:'DELETE'});assert.equal((await h.raw('/api/v1/contacts',{token})).status,401);
-  const expiring=await h.issue(['contacts:read'], 'p',{expires_at:new Date(Date.now()+60000).toISOString()});await h.db.prepare('UPDATE integration_tokens SET expires_at=1 WHERE id=?').bind(expiring.data.id).run();assert.equal((await h.raw('/api/v1/contacts',{token:expiring.token})).status,401);
+  const expiring=await h.issue(['contacts:read'], 'p',{expires_at:new Date(Date.now()+60000).toISOString()});await h.db.prepare('UPDATE api_credentials SET expires_at=1 WHERE id=?').bind(expiring.data.id).run();assert.equal((await h.raw('/api/v1/contacts',{token:expiring.token})).status,401);
   assert.equal((await h.db.prepare("SELECT count(*) n FROM integration_token_events WHERE token_id=? AND action='issued'").bind(issued.data.id).first()).n,1);assert.equal((await h.db.prepare("SELECT count(*) n FROM integration_token_events WHERE token_id=? AND action='revoked'").bind(issued.data.id).first()).n,1);
  }finally{console.log('machine API: lifecycle cleanup');await h.close();console.log('machine API: lifecycle cleanup complete')}
 }
 test('machine create credentials admit one atomic ticket and replay across rotation without granting other scopes',async()=>{
- await apiRepairRegressions();
+ await apiInvariantSweeps();
  console.log('machine API: credential lifecycle'); await existingCredentialLifecycle(); console.log('machine API: create and append');
  const h=await harness();try{
   const issued=await h.issue(['conversations:create'], 'p',{name:'Synthetic support',source_product:'synthetic-hh-1',create_per_minute:60}),token=issued.token;
@@ -133,6 +133,8 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const review=await h.call('/api/management/projects/p/suspended');assert.ok(review.data.some(row=>row.id===heldData.data.id));
   for(const kind of ['customer','note'])assert.equal((await h.raw('/api/v1/conversations/'+heldData.data.id+'/append',{token:appender.token,...body({kind,localId:'synthetic-hh-held-'+kind,content:'Not a ticket'})})).status,404);
   assert.equal((await h.db.prepare('SELECT count(*) n FROM native_integration_events WHERE conversation_id=?').bind(heldData.data.id).first()).n,0);
+  const stillBlocked=await h.raw('/api/management/projects/p/suspended/'+heldData.data.id+'/recover',body({}));assert.equal(stillBlocked.status,403);
+  await h.call('/api/management/projects/p/sender-rules',body({address:'synthetic-blocked@example.test',action:'remove'}));
   const released=await h.call('/api/management/projects/p/suspended/'+heldData.data.id+'/recover',body({}));assert.ok(released.conversationId);
   console.log('machine API: content holds and triage');
   const projectSettings='/api/management/projects/p/settings';
@@ -302,7 +304,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   assert.equal(revocation.status,200);assert.ok([201,404,409].includes(rotation.status));
   if(rotation.status===201){const next=await rotation.json();assert.equal((await send(limitedBody,'synthetic-hh-after-race',next.token)).status,401)}
   assert.equal((await send(limitedBody,'synthetic-hh-after-race',concurrentToken.token)).status,401);
-  assert.equal((await h.db.prepare('SELECT count(*) n FROM integration_tokens WHERE family_id=? AND revoked_at IS NULL').bind(concurrentToken.data.id).first()).n,0);
+  assert.equal((await h.db.prepare('SELECT count(*) n FROM integration_tokens WHERE credential_id=? AND revoked_at IS NULL').bind(concurrentToken.data.id).first()).n,0);
   // Issue as a real admin, then erase that member through the owner door.
   console.log('machine API: issuer erasure');
   const issuerId='synthetic-hh-issuer';
@@ -372,93 +374,107 @@ test('machine create credentials admit one atomic ticket and replay across rotat
 
 // Regression cases remain in the existing machine API journey. Each starts from
 // independent public grants so a failure cannot hide the other authority checks.
-export async function apiRepairRegressions(){
- const failures=[];
- const cases={
-  async F1(h){
-   const x='synthetic-hh-cross-issuer';
-   await h.db.prepare("INSERT INTO users VALUES(?,'synthetic-hh-cross@example.test','Synthetic cross issuer',1)").bind(x).run();
-   for(const p of ['p','q'])await h.db.prepare("INSERT INTO memberships VALUES(?,?,'admin')").bind(p,x).run();
-   await h.session(x,'q',x,'admin');
-   const grant=await h.call('/api/management/projects/q/connections/tokens',{actor:x,...body({name:'Synthetic retained q',source_product:'synthetic-hh-q',scopes:['conversations:read']})});
-   await h.call('/api/management/projects/q/agents/'+x,{actor:'foreign',method:'DELETE'});
-   assert.equal((await h.raw('/api/v1/conversations',{token:grant.token})).status,200);
-   const before=(await h.call('/api/management/projects/q/audit',{actor:'foreign'})).data;
-   await h.call('/api/management/projects/p/agents/'+x+'/erase',body({}));
-   assert.equal((await h.raw('/api/v1/conversations',{token:grant.token})).status,200,'another workspace must retain its grant');
-   const after=(await h.call('/api/management/projects/q/audit',{actor:'foreign'})).data;
-   assert.deepEqual(after.map(({actor,...event})=>event),before.map(({actor,...event})=>event),'erasure must not write another workspace audit');
-  },
-  async F2(h,kind){
-   const grant=await h.issue(['conversations:create','messages:append'],'p',{source_product:'synthetic-hh-blocks'});
-   {
-    const address='synthetic-hh-'+kind+'@example.test';
-    const created=await h.call('/api/v1/conversations',{token:grant.token,...body({requester:{email:address},subject:'Block check',body:'Initial message'}),headers:{'Content-Type':'application/json','Idempotency-Key':kind}});
-    const id=created.data.id,path='/api/management/projects/p/conversations/'+id+'/ticket',ticket=(await h.call(path)).data;
-    await h.call(path,{...body({expected_version:ticket.ticket_version,status_id:'solved'}),method:'PATCH'});
-    const contact=(await h.db.prepare('SELECT contact_id FROM conversations WHERE id=?').bind(id).first()).contact_id;
-    if(kind==='sender')await h.call('/api/management/projects/p/sender-rules',body({address,action:'block'}));
-    else await h.call('/api/management/projects/p/contacts/'+contact,{...body({is_blocked:true}),method:'PUT'});
-    const before=await h.db.prepare('SELECT (SELECT count(*) FROM messages) messages,(SELECT count(*) FROM native_integration_events) events,(SELECT count(*) FROM conversation_outbox) outbox').first();
-    const denied=await h.raw('/api/v1/conversations/'+id+'/append',{token:grant.token,...body({kind:'customer',localId:'synthetic-blocked',content:'Must not enter'})});
-    assert.equal(denied.status,403,kind+' block');assert.equal((await denied.json()).error.code,'blocked_sender');
-    assert.equal((await h.call(path)).data.status_category,'solved');
-    assert.deepEqual(await h.db.prepare('SELECT (SELECT count(*) FROM messages) messages,(SELECT count(*) FROM native_integration_events) events,(SELECT count(*) FROM conversation_outbox) outbox').first(),before);
-   }
-  },
-  async F3(h){
-   // Historical native rows have no copy in audit_events.
-   await h.db.prepare("INSERT INTO native_integration_audit VALUES('synthetic-hh-old-audit','p','owner','token.list','tokens',1)").run();
-   const grant=await h.issue(['contacts:read']);
-   await h.call(settings+'/tokens');await h.call(settings+'/tokens/'+grant.data.id,{method:'DELETE'});
-   const exported=(await h.call('/api/management/projects/p/audit/export?format=json')).events;
-   const native=(await h.db.prepare("SELECT * FROM native_integration_audit WHERE project_id='p'").all()).results;
-   for(const row of native)assert.equal(exported.filter(e=>e.id===row.id||e.id==='integration:'+row.id).length,1,'one audit representation for '+row.action);
-   const read=await h.call('/api/management/projects/p/audit');
-   assert.equal(read.data.filter(e=>e.id==='synthetic-hh-old-audit').length,1);
-  },
-  async F4(h){
-   const grant=await h.issue(['conversations:create'],'p',{source_product:'synthetic-hh-family'});
-   const bound=await h.issue(['messages:append'],'p',{source_product:'synthetic-hh-family',bindings:{credentials:[grant.data.id]}});
-   await h.call(settings+'/webhooks',body({name:'Synthetic family hook',url:'https://receiver.example.com/family',events:['conversation.created','message.created'],credential_id:grant.data.id}));
-   const rotated=await h.call(settings+'/tokens/'+grant.data.id+'/rotate',body({overlap_seconds:60}));
-   const created=await h.call('/api/v1/conversations',{token:rotated.token,...body({requester:{external_id:'synthetic-family'},subject:'Rotated ticket',body:'Family event'}),headers:{'Content-Type':'application/json','Idempotency-Key':'synthetic-family'}});
-   await h.dispatch();
-   const events=h.received.filter(r=>r.path.endsWith('/family')).map(r=>JSON.parse(r.body));
-   assert.deepEqual(new Set(events.map(e=>e.event)),new Set(['conversation.created','message.created']));
-   assert.ok(events.every(e=>e.data.conversation_id===created.data.id));
-   await h.call('/api/v1/conversations/'+created.data.id+'/append',{token:bound.token,...body({kind:'customer',localId:'synthetic-family-append',content:'Bound across rotation'})});
-  },
-  async F5(h){
-   const grant=await h.issue(['conversations:create'],'p',{source_product:'synthetic-hh-hold-ref'});
-   await h.call('/api/management/projects/p/settings',{...body({api_abuse_terms:['synthetic held phrase']}),method:'PUT'});
-   const input={requester:{external_id:'synthetic-hold-ref'},subject:'Reference conflict',body:'synthetic held phrase',source_ref:{product:'synthetic-hh-hold-ref',ref:'synthetic-ref'}};
-   const send=(value,key)=>h.raw('/api/v1/conversations',{token:grant.token,...body(value),headers:{'Content-Type':'application/json','Idempotency-Key':key}});
-   const held=await send(input,'synthetic-held-ref');assert.equal(held.status,202);const heldId=(await held.json()).data.id;
-   const clean=await send({...input,body:'Clean request'},'synthetic-clean-ref');assert.equal(clean.status,201);const survivor=(await clean.json()).data.id;
-   const release=await h.raw('/api/management/projects/p/suspended/'+heldId+'/recover',body({}));
-   assert.equal(release.status,409);const error=(await release.json()).error;
-   assert.equal(error.code,'source_ref_exists');assert.equal(error.conversation_id,survivor);
-   assert.ok((await h.call('/api/management/projects/p/suspended')).data.some(row=>row.id===heldId));
-  },
-  async F6(h){
-   const grant=await h.issue(['conversations:create'],'p',{name:'Synthetic issuance',source_product:'synthetic-hh-issue'});
-   const exported=await h.call('/api/management/projects/p/audit/export?format=json');
-   const event=exported.events.find(e=>e.action==='token.issued');
-   assert.equal(event.target_id,grant.data.id);assert.equal(event.detail.credential_name,'Synthetic issuance');assert.equal(event.detail.source_product,'synthetic-hh-issue');
-   assert.ok(!JSON.stringify(exported).includes(grant.token));assert.ok(!JSON.stringify(exported).includes(sha(grant.token)));
-  },
-  async F7(h){
-   const grant=await h.issue(['conversations:read'],'p',{source_product:'synthetic-hh-rate'});
-   for(let i=0;i<6;i++)assert.equal((await h.raw('/api/v1/conversations',{token:grant.token})).status,200);
-   const denied=await h.raw('/api/v1/conversations',{token:grant.token});
-   assert.equal(denied.status,429);assert.equal((await denied.json()).error.code,'credential');
-   assert.equal(denied.headers.get('RateLimit-Limit'),'6');assert.ok(Number(denied.headers.get('Retry-After'))>0);
+const fresh=()=> 'synthetic-hh-'+crypto.randomUUID();
+const machineScopes=['conversations:create','conversations:read','messages:append'];
+const createRequest=(h,token,input,key=fresh())=>h.raw('/api/v1/conversations',{token,...body(input),headers:{'Content-Type':'application/json','Idempotency-Key':key}});
+const createTicket=async(h,token,input)=>{const r=await createRequest(h,token,input);assert.equal(r.status,201,JSON.stringify(await r.clone().json()));return (await r.json()).data.id};
+const requestInput=()=>({requester:{external_id:fresh()},subject:'Synthetic invariant',body:'Synthetic content'});
+async function placement(h){
+ const mailbox=fresh(),group=fresh(),form=fresh(),tag=fresh();
+ await h.db.prepare("INSERT INTO mailbox_connections(id,project_id,provider,address,status,connected_by,created_at,updated_at) VALUES(?,'p','forwarding',?,'connected','owner',1,1)").bind(mailbox,fresh()+'@example.test').run();
+ await h.db.prepare("INSERT INTO ticket_groups VALUES('p',?,'Synthetic group',1)").bind(group).run();
+ await h.db.prepare("INSERT INTO request_forms VALUES('p',?,'{}',1,1)").bind(form).run();
+ await h.db.prepare("INSERT INTO workspace_tags VALUES(?,'p',?,?)").bind(tag,tag,tag).run();
+ return {mailbox_id:mailbox,group_id:group,form_id:form,tags:[tag],brand_id:'p'};
+}
+export const invariantSweeps={
+ async doors(h){
+  const selected=await placement(h),other=await placement(h),issuer=await h.issue(machineScopes,'p',{source_product:fresh()});
+  const scoped=await h.issue(machineScopes,'p',{source_product:fresh(),bindings:{credentials:[issuer.data.id],mailboxes:[selected.mailbox_id],groups:[selected.group_id],forms:[selected.form_id],brands:['p']}});
+  const inside=await createTicket(h,issuer.token,{...requestInput(),...selected}),outside=[];
+  for(const key of ['mailbox_id','group_id','form_id'])outside.push(await createTicket(h,issuer.token,{...requestInput(),...selected,[key]:other[key]}));
+  const moved=await createTicket(h,issuer.token,{...requestInput(),...selected});await h.db.prepare("UPDATE conversations SET brand_id='q' WHERE id=?").bind(moved).run();outside.push(moved);
+  // Derive coverage from the actual mounted Hono router, including legacy writes.
+  const routes=await h.call('/_test/api-routes'),named=[...new Map(routes.filter(r=>r.path.includes('/conversations/:id')).map(r=>[r.method+' '+r.path,r])).values()];assert.ok(named.length);
+  for(const id of outside)for(const route of named){const response=await h.raw('/api/v1'+route.path.replace(':id',id),{token:scoped.token,method:route.method,...(['GET','HEAD'].includes(route.method)?{}:{headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'customer',localId:fresh(),content:'Synthetic',expectedRevision:1})})});assert.equal(response.status,404,route.method+' '+route.path)}
+  for(const query of ['', '?limit=1','?status=all&channel=api:'+issuer.data.source_product]){if(query.includes('undefined'))continue;const list=await h.call('/api/v1/conversations'+query,{token:scoped.token});assert.ok(list.data.every(c=>!outside.includes(c.id)));}
+  assert.deepEqual((await h.call('/api/v1/conversations',{token:scoped.token})).data.map(c=>c.id),[inside]);
+  assert.deepEqual((await h.call('/api/v1/ticket-groups',{token:scoped.token})).data.map(g=>g.id),[selected.group_id]);
+  for(const key of ['mailbox_id','group_id','form_id'])assert.equal((await createRequest(h,scoped.token,{...requestInput(),...selected,[key]:other[key]})).status,403);
+  for(const kind of ['customer','note']){
+   const localId=fresh(),response=await h.raw('/_test/race',{token:scoped.token,...body({path:'/api/v1/conversations/'+inside+'/append',body:{kind,localId,content:'Race'},match:kind==='note'?'INSERT INTO api_notes':'INSERT INTO messages',race:[{sql:'UPDATE conversations SET mailbox_id=? WHERE id=?',params:[other.mailbox_id,inside]}]})});assert.ok(response.status>=400);assert.equal((await h.db.prepare('SELECT count(*) n FROM api_appends WHERE local_id=?').bind(localId).first()).n,0);await h.db.prepare('UPDATE conversations SET mailbox_id=? WHERE id=?').bind(selected.mailbox_id,inside).run();
   }
- };
- for(const [finding,run,kind] of Object.entries(cases).flatMap(([name,run])=>name==='F2'?[['F2-sender',run,'sender'],['F2-contact',run,'contact']]:[[name,run]])){
-  const h=await harness(finding==='F7'?{rateLimits:{apiRequestsPerTokenMinute:6}}:{});
-  try{await run(h,kind);console.log(finding+' PASS')}catch(error){console.error(finding+' FAIL: '+error.message);failures.push(error)}finally{await h.close()}
+ },
+ async requesters(h){
+  for(const door of ['create','append','closed','release'])for(const spelling of ['email','provided_email','phone','external_id','api_external_id'])for(const location of ['sibling','address','domain']){
+   const product=fresh(),grant=await h.issue(machineScopes,'p',{source_product:product,create_per_minute:60,create_per_day:10000});
+   const marker=fresh(),email=marker+'@'+fresh()+'.test',external=product+':'+marker,phone='+1'+String(Math.floor(Math.random()*9e9)+1e9),sibling=fresh();
+   const key=spelling==='phone'?{phone}:['external_id','api_external_id'].includes(spelling)?{external_id:marker}:{email};
+   const input={...requestInput(),requester:{...key,...(location==='sibling'?{}:{email})}},metadata={is_blocked:location==='sibling'?1:0};
+   if(spelling==='external_id'&&door!=='create')metadata.api_external_id=external;
+   if(['provided_email','phone','api_external_id'].includes(spelling))metadata[spelling]=spelling==='provided_email'?email:spelling==='phone'?phone:external;
+   const insertSibling=()=>h.db.prepare("INSERT INTO contacts(id,project_id,email,external_id,metadata_json,created_at) VALUES(?,'p',?,?,?,1)").bind(sibling,spelling==='email'?email:null,spelling==='external_id'&&door==='create'?external:null,JSON.stringify(metadata)).run();
+   let id,hold;
+   if(door==='release'){
+    await h.call('/api/management/projects/p/settings',{...body({api_abuse_terms:[marker]}),method:'PUT'});input.body=marker;const response=await createRequest(h,grant.token,input);assert.equal(response.status,202);hold=(await response.json()).data.id;
+   }else if(door!=='create')id=await createTicket(h,grant.token,input);
+   if(location==='sibling')await insertSibling();else await h.call('/api/management/projects/p/sender-rules',body({address:location==='address'?email:'@'+email.split('@')[1],action:'block'}));
+   const keyedContact=id?await h.db.prepare('SELECT contact_id FROM conversations WHERE id=?').bind(id).first():hold?await h.db.prepare('SELECT contact_id FROM api_requests WHERE held_id=?').bind(hold).first():null;
+   if(keyedContact&&spelling==='provided_email'){const contact=keyedContact;await h.db.prepare("UPDATE contacts SET email=NULL,metadata_json=json_set(metadata_json,'$.provided_email',?) WHERE id=?").bind(email,contact.contact_id).run()}
+   if(keyedContact&&spelling==='external_id'){const contact=keyedContact;await h.db.prepare("UPDATE contacts SET external_id=?,metadata_json=json_remove(metadata_json,'$.api_external_id') WHERE id=?").bind(external,contact.contact_id).run()}
+   if(door==='closed')await h.db.prepare("UPDATE conversations SET status_id='closed',status_category='closed' WHERE id=?").bind(id).run();
+   const counts=()=>h.db.prepare('SELECT (SELECT count(*) FROM conversations) tickets,(SELECT count(*) FROM messages) messages').first(),before=await counts();
+   const response=door==='create'?await createRequest(h,grant.token,input):door==='release'?await h.raw('/api/management/projects/p/suspended/'+hold+'/recover',body({})):await h.raw('/api/v1/conversations/'+id+'/append',{token:grant.token,...body({kind:'customer',localId:fresh(),content:'Blocked append'})});
+   assert.equal(response.status,door==='create'?202:403,[door,spelling,location].join('/'));const result=await response.json();assert.equal(door==='create'?result.data.reason:result.error.code,'blocked_sender');assert.deepEqual(await counts(),before);
+   if(hold)assert.ok(await h.db.prepare('SELECT 1 FROM suspended_emails WHERE id=?').bind(hold).first());
+  }
+  const grant=await h.issue(machineScopes,'p',{source_product:fresh()});
+  const email=fresh()+'@example.test',input={...requestInput(),requester:{email}},one=await createTicket(h,grant.token,input),two=await createTicket(h,grant.token,input);
+  const ct=await h.db.prepare('SELECT contact_id FROM conversations WHERE id=?').bind(two).first();await h.call('/api/management/projects/p/contacts/'+ct.contact_id+'/erase',body({}));
+  const erased=await h.raw('/api/v1/conversations/'+one+'/append',{token:grant.token,...body({kind:'customer',localId:fresh(),content:'No resurrection'})});assert.equal(erased.status,409);assert.equal((await erased.json()).error.code,'identity_erased');
+ },
+ async credentials(h){
+  const product=fresh(),grant=await h.issue(machineScopes,'p',{source_product:product}),rotated=await h.call(settings+'/tokens/'+grant.data.id+'/rotate',body({overlap_seconds:600}));
+  for(const id of [grant.data.id,rotated.data.id,rotated.data.credential_id]){
+   await h.call(settings+'/tokens/'+id,{...body({scopes:['conversations:read'],bindings:{priorities:['low']},create_per_minute:3,create_per_day:9}),method:'PATCH'});
+   for(const token of [grant.token,rotated.token]){assert.equal((await createRequest(h,token,requestInput())).status,403);assert.equal((await h.raw('/api/v1/conversations',{token})).status,200)}
+   const secrets=(await h.db.prepare('SELECT scopes FROM integration_tokens WHERE credential_id=?').bind(grant.data.id).all()).results;assert.ok(secrets.every(s=>JSON.stringify(JSON.parse(s.scopes))===JSON.stringify(['conversations:read'])));
+   await assert.rejects(h.db.prepare("UPDATE integration_tokens SET scopes='[\"messages:append\"]' WHERE id=?").bind(rotated.data.id).run());
+  }
+  const third=await h.call(settings+'/tokens/'+grant.data.id+'/rotate',body({overlap_seconds:600}));assert.equal((await createRequest(h,third.token,requestInput())).status,403);
+  const cards=(await h.call(settings+'/tokens')).data.filter(r=>r.id===grant.data.id);assert.equal(cards.length,1);assert.equal(cards[0].secrets.length,3);assert.deepEqual(JSON.parse(cards[0].bindings_json),{priorities:['low']});assert.equal(cards[0].create_minute,3);assert.equal(cards[0].create_day,9);
+  const audit=(await h.call('/api/management/projects/p/audit/export?format=json')).events;assert.equal(audit.filter(e=>e.action==='credential.first_used'&&e.target_id===grant.data.id).length,1);assert.equal(audit.filter(e=>e.action==='token.issued'&&e.target_id===grant.data.id).length,1);
+  for(const scope of ['conversations:write','messages:write','contacts:read','articles:write']){assert.equal((await h.raw(settings+'/tokens',{...body({name:fresh(),source_product:fresh(),scopes:[scope]})})).status,400);assert.equal((await h.raw(settings+'/tokens/'+grant.data.id,{...body({scopes:[scope]}),method:'PATCH'})).status,400)}
+  const limited=await harness({rateLimits:{apiRequestsPerTokenMinute:4}});try{const g=await limited.issue(['conversations:read'],'p',{source_product:fresh()}),r=await limited.call(settings+'/tokens/'+g.data.id+'/rotate',body({overlap_seconds:60}));for(let i=0;i<4;i++)assert.equal((await limited.raw('/api/v1/conversations',{token:i%2?g.token:r.token})).status,200);for(const token of [g.token,r.token]){const response=await limited.raw('/api/v1/conversations',{token});assert.equal(response.status,429);assert.equal(response.headers.get('RateLimit-Limit'),'4')}}finally{await limited.close()}
+ },
+ async foreignWorkspace(h){
+  const user=fresh(),address=fresh()+'@example.test';await h.db.prepare('INSERT INTO users VALUES(?,?,?,1)').bind(user,address,'Synthetic member').run();for(const p of ['p','q'])await h.db.prepare("INSERT INTO memberships VALUES(?,?,'admin')").bind(p,user).run();
+  await h.session(user,'q',user,'admin');const qGrant=await h.call('/api/management/projects/q/connections/tokens',{actor:user,...body({name:fresh(),source_product:fresh(),scopes:['conversations:read']})});
+  await h.call('/api/management/projects/q/agents/'+user,{actor:'foreign',method:'DELETE'});
+  const qContact=await h.contact(fresh(),'q'),qTicket=(await h.conversation(qContact,'q')).id;
+  await h.db.prepare("INSERT INTO identity_tokens(token_hash,user_id,project_id,email,role,kind,expires_at) VALUES(?,?,'q',?,'operator','invite',?)").bind(fresh(),user,address,Date.now()+60000).run();
+  await h.db.prepare("INSERT INTO member_roles VALUES('q',?,'operator',1)").bind(user).run();await h.db.prepare("INSERT INTO user_project_preferences VALUES('q',?,0,0)").bind(user).run();await h.db.prepare("INSERT INTO operator_presence VALUES('q',?,1,1)").bind(user).run();await h.db.prepare('INSERT INTO conversation_followers VALUES(?,?,1)').bind(qTicket,user).run();
+  const snapshot=async()=>{const out={};for(const {name} of (await h.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").all()).results){const quoted='"'+name.replaceAll('"','""')+'"',cols=(await h.db.prepare('PRAGMA table_info('+quoted+')').all()).results.map(c=>c.name),pred=[];if(cols.includes('project_id'))pred.push("project_id='q'");if(cols.includes('namespace'))pred.push("namespace='q'");if(cols.includes('conversation_id'))pred.push("conversation_id IN (SELECT id FROM conversations WHERE project_id='q')");if(pred.length)out[name]=(await h.db.prepare('SELECT * FROM '+quoted+' WHERE '+pred.join(' OR ')).all()).results.map(r=>JSON.stringify(r)).sort()}return out};
+  const before=await snapshot();await h.call('/api/management/projects/p/agents/'+user+'/erase',body({}));assert.deepEqual(await snapshot(),before);assert.equal((await h.raw('/api/v1/conversations',{token:qGrant.token})).status,200);
+  const pContact=await h.contact(fresh(),'p');const prior=await snapshot();await h.call('/api/management/projects/p/contacts/'+pContact+'/erase',body({}));assert.deepEqual(await snapshot(),prior);
+  assert.deepEqual(await h.call('/_test/member-inventory'),[]);
+  const unknown=fresh().replaceAll('-','_');await h.db.prepare('CREATE TABLE '+unknown+'(user_id TEXT REFERENCES users(id))').run();assert.deepEqual(await h.call('/_test/member-inventory'),[unknown]);
+ },
+ async releaseParity(h){
+  const place=await placement(h),product=fresh(),grant=await h.issue(machineScopes,'p',{source_product:product}),marker=fresh(),reference=fresh();
+  await h.call('/api/management/projects/p/settings',{...body({api_abuse_terms:[marker]}),method:'PUT'});
+  const upload=await h.call('/api/v1/uploads',{token:grant.token,method:'POST',headers:{'Content-Type':'text/plain'},body:'Synthetic parity bytes'}),input={...requestInput(),...place,body:marker,source_ref:{product,ref:reference,url:'https://example.test/source'},attachments:[{upload_id:upload.data.id}]},key=fresh();
+  const held=await createRequest(h,grant.token,input,key);assert.equal(held.status,202);const receipt=await held.json(),hold=receipt.data.id;
+  const releases=await Promise.all([h.raw('/api/management/projects/p/suspended/'+hold+'/recover',body({})),h.raw('/api/management/projects/p/suspended/'+hold+'/recover',body({}))]);assert.equal(releases.filter(r=>r.status===200).length,1);const id=(await releases.find(r=>r.status===200).json()).conversationId;
+  await h.call('/api/management/projects/p/settings',{...body({api_abuse_terms:[]}),method:'PUT'});const file=await h.call('/api/v1/uploads',{token:grant.token,method:'POST',headers:{'Content-Type':'text/plain'},body:'Synthetic parity bytes'}),direct=await createTicket(h,grant.token,{...input,source_ref:{...input.source_ref,ref:fresh()},attachments:[{upload_id:file.data.id}]});
+  for(const table of ['conversations','messages','media','conversation_tags','api_conversations']){
+   const keyColumn=table==='conversations'?'id':'conversation_id',rows=[];for(const ticket of [id,direct])rows.push((await h.db.prepare('SELECT * FROM '+table+' WHERE '+keyColumn+'=?').bind(ticket).all()).results.map(row=>Object.fromEntries(Object.entries(row).filter(([k])=>!['id','conversation_id','created_at','updated_at','last_message_id','contact_id','actor_id','ticket_actor_id','ticket_actor_type','object_key','message_id','uploaded_by','local_id','source_ref','public_id','ticket_number','requester_id'].includes(k)))));assert.deepEqual(rows[0],rows[1],table)
+  }
+  const history=await h.db.prepare("SELECT actor_id,actor_type,changes_json FROM ticket_history WHERE conversation_id=? AND json_extract(changes_json,'$.action')='released'").bind(id).first();assert.equal(history.actor_id,'owner');assert.equal(history.actor_type,'user');assert.equal(JSON.parse(history.changes_json).credential_id,grant.data.id);
+  const audit=(await h.call('/api/management/projects/p/audit/export?format=json')).events.find(e=>e.action==='api.suspended_recovered');assert.equal(audit.detail.hold_id,hold);assert.equal(audit.detail.conversation_id,id);
+  const replay=await createRequest(h,grant.token,input,key);assert.equal(replay.status,202);assert.equal(replay.headers.get('Idempotency-Replayed'),'true');assert.deepEqual(await replay.json(),receipt);
  }
- assert.equal(failures.length,0,failures.map(e=>e.message).join('\n'));
+};
+export async function apiInvariantSweeps(){
+ for(const [name,run] of Object.entries(invariantSweeps)){console.log('API invariant '+name+' START');const h=await harness();try{await run(h);console.log('API invariant '+name+' PASS')}finally{await h.close()}}
 }

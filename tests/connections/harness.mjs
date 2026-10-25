@@ -10,7 +10,7 @@ const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOption
 export const allScopes=['conversations:read','conversations:write','messages:write','contacts:read','contacts:write','articles:read','articles:write'];
 export const body=data=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
 export const sha=value=>createHash('sha256').update(value).digest('hex');
-export async function harness({beforeIntegrations,rateLimits}={}){
+export async function harness({beforeIntegrations,beforeMigration,rateLimits}={}){
  const directory=await mkdtemp(join(tmpdir(),'connections-'));let mf,server,external=0,receiverVerifier=null;const sessions={},received=[],responses=[],inboundToken=randomBytes(32).toString('hex');
  try{
  server=createServer(async(req,res)=>{const chunks=[];for await(const chunk of req)chunks.push(chunk);const receipt={path:req.url,headers:req.headers,body:Buffer.concat(chunks)};received.push(receipt);const response=receiverVerifier&&!receiverVerifier(receipt)?{status:401,body:''}:responses.shift()||{status:204,body:''};if(response.delay)await new Promise(resolve=>setTimeout(resolve,response.delay));if(res.destroyed)return;res.writeHead(response.status,response.headers||{});if(response.chunks){for(const chunk of response.chunks)res.write(chunk);res.end()}else res.end(response.body||'')});await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -22,6 +22,7 @@ export async function harness({beforeIntegrations,rateLimits}={}){
  }});mf=new Miniflare(options);
  let db=await mf.getD1Database('DB');
  for(const file of (await readdir('migrations')).filter(f=>f.endsWith('.sql')).sort()){
+  await beforeMigration?.(db,file);
   if(file==='114_integrations_core.sql'&&beforeIntegrations)await beforeIntegrations(db)
   const sql=(await readFile(join('migrations',file),'utf8')).replace(/^\s*--[^\n]*$/gm,'');await db.batch([...sql.matchAll(/\s*(CREATE TRIGGER[\s\S]*?END;|[^;]+;)/g)].map(([,statement])=>db.prepare(statement)))
  }

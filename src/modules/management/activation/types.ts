@@ -63,7 +63,7 @@ export type ActivationFacts = {
  widget:{key:string; scriptUrl:string; apiOrigin:string}
 }
 
-/** `GET /api/management/projects/:id/activation` and every `POST .../check` / `.../test-mail` / `.../skip` response (`{data}`). */
+/** `GET /api/management/projects/:id/activation` and every `POST .../check` / `.../test-mail` / `.../skip` / `.../local-trial` response (`{data}`). */
 export type ActivationSnapshot = {
  projectId:string
  total:8

@@ -11424,7 +11424,7 @@
       "executable": false
     },
     "tests/helpers/identity/roles-audit.mjs": {
-      "sha256": "b367fcc70002e3af8fb14629db30f15b014a5f88abf6e4f643ddd9e85f222653",
+      "sha256": "cfb72f19b5c212fac11d3eae34b882f161dc5699383f356705141917a62cf043",
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {

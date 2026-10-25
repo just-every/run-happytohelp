@@ -20,7 +20,7 @@ export async function messagesData(env:Env,rows:any[]){
   env.DB.prepare(`SELECT id,message_id,filename,content_type,size FROM media WHERE message_id IN (${selected})`).bind(ids),
   env.DB.prepare(`SELECT m.id message_id,json_extract(e.payload,'$.reader_id') reader_id,json_extract(e.payload,'$.reader_role') reader_role,e.created_at read_at FROM messages m JOIN context_tracked_events e ON e.project_id=m.project_id AND json_valid(e.payload) AND json_extract(e.payload,'$.message_id')=m.id WHERE m.id IN (${selected}) AND e.type='MESSAGE_READ' ORDER BY e.rowid`).bind(ids),
   ...(mailRows.length?[
-   env.DB.prepare(`SELECT m.id,d.state,d.updated_at,s.is_enabled,u.email sender_email FROM messages m LEFT JOIN email_deliveries d ON d.id>='message:'||m.id||':notification' AND d.id<'message:'||m.id||':notification;' AND (d.id='message:'||m.id||':notification' OR substr(d.id,1,length('message:'||m.id||':notification:'))='message:'||m.id||':notification:') AND d.project_id=m.project_id LEFT JOIN email_settings s ON s.project_id=m.project_id LEFT JOIN users u ON u.id=m.actor_id WHERE m.id IN (${selected})`).bind(mailIds),
+   env.DB.prepare(`SELECT m.id,d.state,d.error,d.updated_at,s.is_enabled,u.email sender_email FROM messages m LEFT JOIN email_deliveries d ON d.id>='message:'||m.id||':notification' AND d.id<'message:'||m.id||':notification;' AND (d.id='message:'||m.id||':notification' OR substr(d.id,1,length('message:'||m.id||':notification:'))='message:'||m.id||':notification:') AND d.project_id=m.project_id LEFT JOIN email_settings s ON s.project_id=m.project_id LEFT JOIN users u ON u.id=m.actor_id WHERE m.id IN (${selected})`).bind(mailIds),
    ...(resolveRecipients?[env.DB.prepare(`SELECT m.id message_id,ct.* FROM messages m JOIN (${notificationContactsSql}) ct ON ct.conversation_id=m.conversation_id AND ct.notification_project_id=m.project_id WHERE m.id IN (${selected})`).bind(mailIds)]:[])
   ]:[]),
  ])
@@ -29,8 +29,9 @@ export async function messagesData(env:Env,rows:any[]){
  const mail=new Map<string,any>(),reads=new Map<string,{read_by_contacts:Record<string,string>;read_by_agents:Record<string,string>}>()
  const recipients=new Map<string,NotificationContact[]>()
  for(const {message_id,...contact} of resolveRecipients?data[6].results:[]){const key=String(message_id);if(!recipients.has(key))recipients.set(key,[]);recipients.get(key)!.push(contact)}
- const precedence=['uncertain','sending','failed']
+ const precedence=['uncertain','sending','rate_limited','failed']
  for(const attempt of mailRows.length?data[5].results:[]){
+  if(attempt.state==='failed'&&attempt.error?.startsWith('Outbound notice rate limit'))attempt.state='rate_limited'
   const key=String(attempt.id),prior=mail.get(key)
   if(!prior)mail.set(key,attempt)
   else{

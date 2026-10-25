@@ -22,7 +22,7 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
    return {accepted:true,duplicate:reservation.duplicate,conversation,note}
   }
   const result=await admitMessage(c.env,{requireAvailableRequester:true,projectId:actor.projectId,conversationId:reservation.conversationId,actor,sessionHash,localId:input.localId,content:input.content,expectedRevision:0,expectedLastMessageId:null})
-  if(!result.accepted)throw new HTTPException(409,{message:'First message admission refused'})
+  if(!result.accepted)return {...result,conversation}
   let generationError:string|undefined
   if(!result.duplicate){
    const defer:DeferEmailDelivery=delivery=>c.executionCtx.waitUntil(delivery.catch(()=>{console.error('Outbound ticket email failed; durable delivery status retained')}))
@@ -35,7 +35,7 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
   const actor=await requireProject(c,c.req.param('projectId'),true),body=await c.req.json()
   if(body.requesters!==undefined)throw new HTTPException(400,{message:'Use the service notice preview before sending to several requesters'})
   const result=await create(c,actor,outboundTicketInput(body))
-  return c.json(result,result.duplicate?200:201)
+  return c.json(result,!result.accepted?409:result.duplicate?200:201)
  })
  routes.post('/projects/:projectId/tickets/notices/preview',async c=>{
   const actor=await requireProject(c,c.req.param('projectId'),true),preview=await previewOutboundNotices(c.env,actor,c.get('sessionHash'),await c.req.json())

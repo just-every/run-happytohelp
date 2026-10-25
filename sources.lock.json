@@ -6036,7 +6036,7 @@
       "executable": false
     },
     "src/modules/management/dashboard-messages.ts": {
-      "sha256": "f895354ecdfcd0c17b92ccc41f65438d28ff9e41a996256234a491c34ccb1968",
+      "sha256": "5a49d66d145b8d8696eda7f7126e2814ff38d2124da4e95c521b8a3f5587166d",
       "executable": false
     },
     "src/modules/management/dashboard.ts": {
@@ -6111,6 +6111,10 @@
       "sha256": "5a377ef75580f537b943a23c9a5c16d9c0eb8bd9f16e62212a3b6d1f5c119b88",
       "executable": false
     },
+    "src/modules/management/outbound-notices.ts": {
+      "sha256": "afbdf949dca5d04d02ddf1da2ae480f38374cb59c13f8880f3fd6cc5898c7977",
+      "executable": false
+    },
     "src/modules/management/outbound-ticket-input.ts": {
       "sha256": "b03cea8be088078311be92344861325c220839fe49ffcd2e3a32752d69287fc6",
       "executable": false
@@ -6120,7 +6124,7 @@
       "executable": false
     },
     "src/modules/management/outbound-tickets.ts": {
-      "sha256": "abf794696c18aef4532b2b2bb863eb01fe708f309fcbc70a5c982277b13284cd",
+      "sha256": "81ed010324a55094632c32212b440e52baee6f4f3a60747f8e107b4a04fb4a66",
       "executable": false
     },
     "src/modules/management/policy.ts": {

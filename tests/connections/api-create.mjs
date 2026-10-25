@@ -173,7 +173,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const scheduled=await h.db.prepare("SELECT max(next_at) next_at FROM integration_deliveries WHERE state='queued'").first();assert.ok(scheduled.next_at);
   await new Promise(resolve=>setTimeout(resolve,Math.max(0,scheduled.next_at-Date.now())+25));await h.dispatch();
   const retried=h.received.filter(r=>r.path.endsWith('/machine-hook'));assert.equal(retried.length,8);
-  for(const receipt of receipts){const attempts=retried.filter(r=>r.headers['webhook-id']===receipt.headers['webhook-id']);assert.equal(attempts.length,2);assert.ok(attempts[0].body.equals(attempts[1].body));assert.equal(attempts[0].headers['webhook-signature'],attempts[1].headers['webhook-signature'])}
+  for(const receipt of receipts){const attempts=retried.filter(r=>r.headers['webhook-id']===receipt.headers['webhook-id']);assert.equal(attempts.length,2);assert.ok(attempts[0].body.equals(attempts[1].body));for(const attempt of attempts){const event=JSON.parse(attempt.body),signature=createHmac('sha256',Buffer.from(hook.secret,'hex')).update(JSON.stringify(['integrations.webhook.v1','p',hook.id,event.event,event.id,attempt.headers['webhook-timestamp'],attempt.body.toString('utf8')])).digest('hex');assert.equal(attempt.headers['webhook-signature'],'v1='+signature)}}
   assert.equal((await send({...boundInput,requester:{external_id:'synthetic-hh-other-hook'}},'synthetic-hh-other-hook',bound.token)).status,201);
   await h.dispatch();assert.equal(h.received.filter(r=>r.path.endsWith('/machine-hook')).length,8);
   const rotated=await h.call('/api/management/projects/p/connections/tokens/'+issued.data.id+'/rotate',body({overlap_seconds:1}));

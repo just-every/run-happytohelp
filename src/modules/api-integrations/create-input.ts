@@ -11,7 +11,7 @@ export async function createInput(env:Env,p:string,credential:any,b:any){
  if(b.channel!==undefined&&b.channel!==channel)throw new ApiError(403,'outside_credential_bounds')
  if(!['low','normal','high','urgent'].includes(priority))throw new ApiError(400,'invalid_request')
  const values={brands:b.brand_id??p,mailboxes:b.mailbox_id,groups:b.group_id,forms:b.form_id,priorities:priority}
- for(const [key,value] of Object.entries(values))if(bindings[key]&&value!==undefined&&!bindings[key].includes(value))throw new ApiError(403,'outside_credential_bounds')
+ for(const [key,value] of Object.entries(values))if(bindings[key]&&(value===undefined||!bindings[key].includes(value)))throw new ApiError(403,'outside_credential_bounds')
  if(b.brand_id&&b.brand_id!==p)throw new ApiError(403,'outside_credential_bounds')
  for(const [field,table] of [['mailbox_id','mailbox_connections'],['group_id','ticket_groups'],['form_id','request_forms']])if(b[field]&&!await env.DB.prepare(`SELECT 1 FROM ${table} WHERE project_id=? AND id=?`).bind(p,b[field]).first())throw new ApiError(404,'not_found')
  const tags=b.tags??[]

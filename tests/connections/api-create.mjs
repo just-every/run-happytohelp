@@ -134,7 +134,12 @@ test('machine create credentials admit one atomic ticket and replay across rotat
    assert.deepEqual(Object.keys(freshData).sort(),Object.keys(matchedData).sort());
   }
   const bound=await h.issue(['conversations:create'],'p',{source_product:'synthetic-hh-bound',bindings:{brands:['p'],mailboxes:['synthetic-hh-mailbox']}});
-  for(const extra of [{brand_id:'q',mailbox_id:'synthetic-hh-mailbox'},{brand_id:'p',mailbox_id:'synthetic-hh-other'}]){
+  await h.db.prepare("INSERT INTO mailbox_connections(id,project_id,provider,address,status,connected_by,created_at,updated_at) VALUES('synthetic-hh-mailbox','p','forwarding','synthetic-hh-mailbox@example.test','connected','owner',1,1)").run();
+  const boundInput={requester:{external_id:'synthetic-hh-bound'},subject:'Bound request',body:'No adjustment',brand_id:'p',mailbox_id:'synthetic-hh-mailbox'};
+  const boundCreated=await send(boundInput,'synthetic-hh-bound-valid',bound.token);assert.equal(boundCreated.status,201);
+  const boundTicket=(await h.call('/api/management/projects/p/conversations/'+(await boundCreated.json()).data.id+'/ticket')).data;
+  assert.equal(boundTicket.mailbox_id,'synthetic-hh-mailbox');assert.equal(boundTicket.brand_id,'p');
+  for(const extra of [{brand_id:'q',mailbox_id:'synthetic-hh-mailbox'},{brand_id:'p',mailbox_id:'synthetic-hh-other'},{brand_id:'p'}]){
    const before=await count();const refused=await send({requester:{external_id:'synthetic-hh-bound'},subject:'Bound request',body:'No adjustment',...extra},'synthetic-hh-bound-'+Object.values(extra).join('-'),bound.token);
    assert.equal(refused.status,403);assert.equal((await refused.json()).error.code,'outside_credential_bounds');assert.equal(await count(),before);
   }

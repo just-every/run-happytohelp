@@ -1,3 +1,4 @@
+import {editionAuthoringJourney} from '../helpers/installer/edition-authoring.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {execFileSync,spawnSync} from 'node:child_process'
@@ -27,6 +28,7 @@ const {localAgentArchive,FIXED_MTIME}=createRequire(import.meta.url)('../../scri
 const scratch=async name=>mkdtemp(join(tmpdir(),name))
 
 test('the release artifact carries every built module, migration and asset with browser types, never credential files or symlinks, ships a deterministic connector archive, and starts natively behind its private setup token',async()=>{
+ await editionAuthoringJourney()
  const recipe=JSON.parse(await readFile('management/integration/recipe.json','utf8')).plan
  const spec=JSON.parse(await readFile('management/integration/deployment-spec.json','utf8'))
  const wrangler=JSON.parse(await readFile('wrangler.jsonc','utf8'))

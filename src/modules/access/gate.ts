@@ -58,7 +58,10 @@ export async function enforceRole(c:Context<AppEnv>,actor:Actor){
  if(route.path.endsWith('/conversations/:conversationId/actions')){const body=await c.req.json().catch(()=>null);if(body?.action==='markAsRead')rule='self'}
  if(rule==='self'||rule==='none')return
  if(rule===undefined){if(route.method==='GET'||access.base!=='collaborator')return}
- else if(access.permissions.has(rule))return
+ else if(access.permissions.has(rule)){
+  if(rule==='knowledge.read')await auditStatement(c.env.DB,{projectId,category:'access',action:'knowledge.read',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'route',id:`${route.method} ${route.path}`},detail:{role:access.name,permission:rule}}).run()
+  return
+ }
  await auditStatement(c.env.DB,{projectId,category:'access',action:'permission.denied',outcome:'refused',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'route',id:`${route.method} ${route.path}`},detail:{role:access.name,...(rule?{permission:rule}:{})}}).run()
  const what=rule?PERMISSIONS[rule].toLowerCase():'do this'
  throw new HTTPException(403,{res:jsonResponse({error:`Your role (${access.name}) does not allow you to ${what}.`,code:'permission_denied',...(rule?{permission:rule}:{})},403)})

@@ -1,3 +1,5 @@
+import {memberAccess} from '../access/gate'
+import {HTTPException} from 'hono/http-exception'
 import {helpAuth} from './help-auth'
 import {publicKnowledgeRoutes} from './public-routes'
 import {experienceRoutes} from './experience-routes'
@@ -39,6 +41,8 @@ routes.get('/:projectId/categories',async c=>c.json((await c.env.DB.prepare('SEL
 routes.post('/:projectId/categories',async c=>c.json(await writeCategory(c.env,c.req.param('projectId'),id(),await c.req.json(),await knowledgeEditorGuard(c),true),201))
 routes.get('/:projectId/articles',async c=>{
  const projectId=c.req.param('projectId')
+ const access=await memberAccess(c.env.DB,projectId,c.get('actor').id)
+ if(!access?.permissions.has('knowledge.read'))throw new HTTPException(403,{message:'Knowledge read permission required'})
  const query=c.req.query('q')?.trim()||''
  if(query)requiredString(query,'query',200)
  const filter=query?' AND (a.title LIKE ? OR a.summary LIKE ? OR a.content LIKE ?)':''

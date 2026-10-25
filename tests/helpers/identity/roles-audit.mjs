@@ -60,7 +60,7 @@ export async function rolesAuditJourney(){
   assert.equal((await edit('agent-draft','draft')).status,200,'the Agent edits through the grant')
 
   // A custom role over Agent without publishing or exporting: the agent keeps replying but cannot publish.
-  const created=await call(`${P}/roles`,{name:'Support, no publishing',base:'operator',permissions:['conversations.reply','conversations.notes','conversations.follow','conversations.manage','contacts.manage','knowledge.edit','reports.view','members.manage']},w.tokens.owner)
+  const created=await call(`${P}/roles`,{name:'Support, no publishing',base:'operator',permissions:['conversations.reply','conversations.notes','conversations.follow','conversations.manage','contacts.manage','knowledge.read','knowledge.edit','reports.view','members.manage']},w.tokens.owner)
   assert.equal(created.status,201);assert.ok(!created.data.data.permissions.includes('members.manage'),'a custom role never exceeds its base')
   for(const [email,role] of [['pending-admin@example.com','admin'],['pending-agent@example.com','operator']])assert.equal((await call(`${P}/agents`,{email,role},w.tokens.owner)).status,201)
   await app.db.prepare('UPDATE session_factors SET verified_at=verified_at-? WHERE token_hash IN (SELECT token_hash FROM sessions WHERE actor_id=?)').bind(20*60*1000,w.users.owner).run()
@@ -99,6 +99,27 @@ export async function rolesAuditJourney(){
   const changed=await app.first("SELECT detail_json FROM audit_events WHERE action='member.role_changed' AND target_id=?",w.users.operator)
   assert.deepEqual(JSON.parse(changed.detail_json),{from:'operator',to:created.data.data.id,fromName:'Agent',toName:'Support, no publishing'})
   assert.equal((await call(`${P}/roles/${created.data.data.id}`,undefined,w.tokens.owner,'DELETE')).status,409,'a role in use stays')
+  // Read-only custom authority keeps the selected internal article through the existing grant.
+  const K=`/api/knowledge/${w.projectId}`
+  const reader=await call(`${P}/roles`,{name:'Knowledge reader',base:'operator',permissions:['knowledge.read']},w.tokens.owner)
+  assert.equal(reader.status,201)
+  assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:reader.data.data.id},w.tokens.owner,'PUT')).status,200)
+  const read=await delegated('/evidence?target='+article);assert.equal(read.status,200);assert.match((await read.json()).text,/Edited narrowed-draft/)
+  const internal=await call(`${K}/articles`,undefined,w.tokens.operator);assert.equal(internal.status,200);assert.equal(internal.data.find(row=>row.id==='art-r').content,'Edited narrowed-draft')
+  for(const path of [`${K}/articles/art-r/history`,`${K}/articles/art-r/translations/fr`])assert.equal((await call(path,undefined,w.tokens.operator)).status,200,path)
+  for(const path of [`${K}/datasets`,`${K}/search?q=Returns`,`${K}/categories`,`${K}/experience`])assert.equal((await call(path,undefined,collaborator.token)).status,403,path)
+  await app.db.prepare("INSERT INTO knowledge_articles(id,project_id,slug,title,content,summary,status,updated_at) VALUES('art-other',?,'private','Private','Unselected internal article','','draft',1)").bind(w.projectId).run()
+  assert.equal((await delegated('/evidence?target='+`projects/${w.projectId}/articles/art-other`)).status,403,'the grant cannot read an unselected article')
+  for(const status of ['draft','published'])assert.equal((await edit('reader-'+status,status)).status,403,'read alone never edits or publishes')
+  assert.equal((await call(`${K}/articles`,{title:'Forbidden',content:'No write'},w.tokens.operator)).status,403)
+  assert.deepEqual(await app.first("SELECT status,content FROM knowledge_articles WHERE id='art-r'"),{status:'draft',content:'Edited narrowed-draft'})
+  const revoke=await call(`${P}/roles/${reader.data.data.id}`,{name:'Knowledge reader',base:'operator',permissions:[]},w.tokens.owner,'PUT');assert.equal(revoke.status,200)
+  assert.equal((await call(`${K}/articles`,undefined,w.tokens.operator)).status,403,'the next native request sees revocation')
+  assert.equal((await delegated('/evidence?target='+article)).status,403,'the next grant request sees revocation')
+  const audit=(await call(`${P}/audit?category=access&limit=200`,undefined,w.tokens.owner)).data.data
+  assert.ok(audit.some(row=>row.action==='knowledge.read'&&row.actor_id===w.users.operator),'read access is audited')
+  assert.ok(audit.some(row=>row.action==='permission.denied'&&row.actor_id===w.users.operator&&JSON.parse(row.detail_json).permission==='knowledge.read'),'read refusal is audited')
+  assert.ok(audit.some(row=>row.action==='role.updated'&&row.target_id===reader.data.data.id&&JSON.parse(row.detail_json).permissions.length===0),'read revocation is audited')
   // As a Collaborator the same grant edits nothing; each refusal is in the security log.
   assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:'collaborator'},w.tokens.owner,'PUT')).status,200)
   for(const status of ['draft','published'])assert.equal((await edit('collaborator-'+status,status)).status,403,status)

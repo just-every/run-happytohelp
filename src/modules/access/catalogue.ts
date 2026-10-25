@@ -5,6 +5,7 @@ export const PERMISSIONS={
  'conversations.follow':'Follow conversations',
  'conversations.manage':'Assign, resolve, tag and change conversations',
  'contacts.manage':'Create and edit contacts',
+ 'knowledge.read':'Read internal help articles',
  'knowledge.edit':'Write and edit help articles and sources',
  'knowledge.publish':'Publish help articles',
  'reports.view':'View reports',
@@ -20,7 +21,7 @@ export const PERMISSIONS={
 export type Permission=keyof typeof PERMISSIONS
 export const ALL_PERMISSIONS=Object.keys(PERMISSIONS) as Permission[]
 
-const AGENT:Permission[]=['conversations.reply','conversations.notes','conversations.follow','conversations.manage','contacts.manage','knowledge.edit','knowledge.publish','reports.view']
+const AGENT:Permission[]=['conversations.reply','conversations.notes','conversations.follow','conversations.manage','contacts.manage','knowledge.read','knowledge.edit','knowledge.publish','reports.view']
 /** Built-in roles. A collaborator (light agent) views permitted tickets, adds internal notes and follows. */
 export const BASE_PERMISSIONS:Record<'owner'|'admin'|'operator'|'collaborator',Permission[]>={
  owner:ALL_PERMISSIONS,

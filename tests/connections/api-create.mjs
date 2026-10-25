@@ -326,6 +326,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
    if(['revoke','rotate','expire','suspend','workspace'].includes(change))assert.equal((await send(raceBody,'synthetic-hh-race-'+change,racing.token)).status,401);
    if(change==='suspend'){
     await h.call('/api/management/admin/projects/p/suspension',{...body({suspended:false}),method:'PUT'});
+    h.responses.push({status:200,body:'synthetic-hh-race',headers:{'Content-Type':'text/plain'}});
     assert.equal((await send(raceBody,'synthetic-hh-resumed',racing.token)).status,201);
    }
   }

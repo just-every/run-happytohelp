@@ -12516,7 +12516,7 @@
       "executable": false
     },
     "tests/reports/ratings.mjs": {
-      "sha256": "865e03a7d12a22d086692a85a3b3fa94eadc89838e4f32a3de33c51601671c9b",
+      "sha256": "7319313f0e961ccaae9a2af2f0d213df74a2698efb04d13f67ff9836273db796",
       "executable": false
     },
     "tests/reports/status-categories.mjs": {

@@ -389,16 +389,19 @@ async function placement(h){
 }
 export const invariantSweeps={
  async doors(h){
-  const selected=await placement(h),other=await placement(h),issuer=await h.issue(machineScopes,'p',{source_product:fresh()});
+  const selected=await placement(h),other=await placement(h),product=fresh(),issuer=await h.issue(machineScopes,'p',{source_product:product});
   const scoped=await h.issue(machineScopes,'p',{source_product:fresh(),bindings:{credentials:[issuer.data.id],mailboxes:[selected.mailbox_id],groups:[selected.group_id],forms:[selected.form_id],brands:['p']}});
-  const inside=await createTicket(h,issuer.token,{...requestInput(),...selected}),outside=[];
+  const inside=await createTicket(h,issuer.token,{...requestInput(),...selected}),second=await createTicket(h,issuer.token,{...requestInput(),...selected}),outside=[];
   for(const key of ['mailbox_id','group_id','form_id'])outside.push(await createTicket(h,issuer.token,{...requestInput(),...selected,[key]:other[key]}));
   const moved=await createTicket(h,issuer.token,{...requestInput(),...selected});await h.db.prepare("UPDATE conversations SET brand_id='q' WHERE id=?").bind(moved).run();outside.push(moved);
   // Derive coverage from the actual mounted Hono router, including legacy writes.
   const routes=await h.call('/_test/api-routes'),named=[...new Map(routes.filter(r=>r.path.includes('/conversations/:id')).map(r=>[r.method+' '+r.path,r])).values()];assert.ok(named.length);
   for(const id of outside)for(const route of named){const response=await h.raw('/api/v1'+route.path.replace(':id',id),{token:scoped.token,method:route.method,...(['GET','HEAD'].includes(route.method)?{}:{headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'customer',localId:fresh(),content:'Synthetic',expectedRevision:1})})});assert.equal(response.status,404,route.method+' '+route.path)}
-  for(const query of ['', '?limit=1','?status=all&channel=api:'+issuer.data.source_product]){if(query.includes('undefined'))continue;const list=await h.call('/api/v1/conversations'+query,{token:scoped.token});assert.ok(list.data.every(c=>!outside.includes(c.id)));}
-  assert.deepEqual((await h.call('/api/v1/conversations',{token:scoped.token})).data.map(c=>c.id),[inside]);
+  for(const query of ['', '?limit=1','?limit=1&status=all&channel=api:'+product]){
+   const seen=[];let cursor=null;
+   do{const list=await h.call('/api/v1/conversations'+query+(cursor?(query?'&':'?')+'cursor='+encodeURIComponent(cursor):''),{token:scoped.token});assert.ok(list.data.every(c=>!outside.includes(c.id)));seen.push(...list.data.map(c=>c.id));cursor=list.next_cursor}while(cursor);
+   assert.deepEqual(seen.sort(),[inside,second].sort(),'reach is applied before filters and cursor pagination');
+  }
   assert.deepEqual((await h.call('/api/v1/ticket-groups',{token:scoped.token})).data.map(g=>g.id),[selected.group_id]);
   for(const key of ['mailbox_id','group_id','form_id'])assert.equal((await createRequest(h,scoped.token,{...requestInput(),...selected,[key]:other[key]})).status,403);
   for(const kind of ['customer','note']){
@@ -473,7 +476,7 @@ export const invariantSweeps={
    const keyColumn=table==='conversations'?'id':'conversation_id',rows=[];for(const ticket of [id,direct])rows.push((await h.db.prepare('SELECT * FROM '+table+' WHERE '+keyColumn+'=?').bind(ticket).all()).results.map(row=>Object.fromEntries(Object.entries(row).filter(([k])=>!['id','conversation_id','created_at','updated_at','last_message_id','contact_id','actor_id','ticket_actor_id','ticket_actor_type','object_key','message_id','uploaded_by','local_id','source_ref','public_id','ticket_number','requester_id'].includes(k)))));assert.deepEqual(rows[0],rows[1],table)
   }
   const history=await h.db.prepare("SELECT actor_id,actor_type,changes_json FROM ticket_history WHERE conversation_id=? AND json_extract(changes_json,'$.action')='released'").bind(id).first();assert.equal(history.actor_id,'owner');assert.equal(history.actor_type,'user');assert.equal(JSON.parse(history.changes_json).credential_id,grant.data.id);
-  const audit=(await h.call('/api/management/projects/p/audit/export?format=json')).events.find(e=>e.action==='api.suspended_recovered');assert.equal(audit.detail.hold_id,hold);assert.equal(audit.detail.conversation_id,id);
+  const audit=(await h.call('/api/management/projects/p/audit/export?format=json')).events.find(e=>e.action==='api.suspended_recovered');assert.equal(audit.detail.hold_id,hold);assert.equal(audit.detail.conversation_id,id);assert.equal(audit.actor_id,'owner');assert.equal(audit.actor_type,'user');
   const replay=await createRequest(h,grant.token,input,key);assert.equal(replay.status,202);assert.equal(replay.headers.get('Idempotency-Replayed'),'true');assert.deepEqual(await replay.json(),receipt);
  }
 };

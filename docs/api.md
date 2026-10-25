@@ -286,3 +286,37 @@ Webhook envelopes include a signed `sequence` describing insertion order within
 this installation. Delivery may arrive out of order. Deduplicate by event `id`;
 apply state updates only when their sequence is newer than the last applied update.
 Retries retain the same ID, sequence and payload. Restore does not resume deliveries. Do not treat these endpoints as complete API-002 acceptance.
+
+### API admission, suspension and issuer erasure
+
+Owners and admins may set `api_abuse_terms` through
+`PUT /api/management/projects/:projectId/settings` with recent step-up.
+The default is an empty list. Up to 50 literal terms, each 1–200 characters,
+are matched without case sensitivity in the subject, body and source reference.
+A match returns `202 held_for_review` with reason `content_abuse`; Suspended
+retains the request for an operator to review and release. Held requests create
+no ticket, triage job, ticket-created event or outbound message. This deterministic
+policy does not establish live AI content-abuse or prompt-injection qualification.
+
+An installation administrator with recent step-up can suspend or resume a
+workspace using `PUT /api/management/admin/projects/:id/suspension` with
+`{"suspended":true}` or `{"suspended":false}`. Suspension preserves data and
+refuses all bearer API operations with 401 on the next request. Creates recheck
+workspace authority in their atomic commit; an interrupted create is whole or
+absent. Installation administration and the owner's review access remain available.
+
+An owner with recent step-up can erase a non-owner teammate using
+`POST /api/management/projects/:projectId/agents/:userId/erase`. Transfer ownership
+first. Accounts shared with another workspace and installation administrators
+require installation review and are refused. Erasure replaces the account's name
+and email with opaque former-teammate metadata, removes sign-in credentials,
+sessions and profile settings, and revokes the machine credentials it issued,
+removing their hashes and issuer links. Audit events and ticket history retain
+opaque actor IDs, machine credential names, source references and request IDs;
+audit exports label the erased human as Former teammate. Archives carry the
+redacted account and inert credential metadata. Customer content is erased
+separately through the requester-erasure door.
+
+Gaps: Live AI content-abuse and prompt-injection qualification of API-created
+requests is not proven. No live cross-product handoff (Handset HND-038) is proven.
+Consent-gated SMS/WhatsApp qualification remains pending CHANNELS-001.

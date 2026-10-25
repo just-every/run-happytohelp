@@ -1660,7 +1660,7 @@
       "executable": false
     },
     "docs/api.md": {
-      "sha256": "21acc6f6e2db56fdd2edc6f75dc647056a6e4c15571c5c7054cf62475c73c8a6",
+      "sha256": "87ea6a39703d5d0480134bffabb0354e6f6d4939b19375968dfef53017d3a816",
       "executable": false
     },
     "docs/AUTHORING.md": {
@@ -6157,6 +6157,10 @@
     },
     "src/modules/management/live-availability.ts": {
       "sha256": "79086a39eea896c6b6ea5e4827aa400e2b718dcff062cce5c83a5a468671791b",
+      "executable": false
+    },
+    "src/modules/management/member-erasure.ts": {
+      "sha256": "cb59a75ffc9944c4a8193b79c0dd309327fba8607855f7b4c3aeb973723d898a",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {

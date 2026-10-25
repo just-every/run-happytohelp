@@ -16,7 +16,7 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  const actor=await scope(c,true),userId=c.req.param('userId')
  if(actor.role!=='owner'||actor.id===userId)throw new HTTPException(403)
  await requireStepUp(c,actor,'member.erase')
- const guard=await issuerGuard(c.env,{actor,sessionHash:c.get('sessionHash')}),now=Date.now()
+ const guard=await issuerGuard(c.env,{actor:{...actor,role:'owner'},sessionHash:c.get('sessionHash')}),now=Date.now()
  const eligible="EXISTS(SELECT 1 FROM memberships WHERE user_id=? AND project_id=? AND role<>'owner') AND (SELECT count(*) FROM memberships WHERE user_id=?)=1 AND NOT EXISTS(SELECT 1 FROM platform_admins WHERE user_id=?)"
  const args=[userId,actor.projectId,userId,userId]
  if(!await c.env.DB.prepare('SELECT 1 WHERE '+eligible).bind(...args).first())throw new HTTPException(409,{message:'Transfer ownership first; accounts shared with other workspaces or installation administrators require installation review'})

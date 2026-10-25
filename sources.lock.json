@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "7461bf0d714086b8248a6f35ee3b8c6cfe852e70e848a57a4f906254f54d0511",
+      "sha256": "097b9a6d562cc155e41b99d48924896db1cb850dabcfb9f7abe99867483b33a8",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "f4bb88891ba3bc7e59c1068c685da0ecafa66ef80c949cdaf549e9ccd3c47382",
+      "sha256": "005d8d5bc614d3e5cfe10e247b97e78d2f641b2bf69df1f914c45fa12252dde0",
       "executable": false
     },
     "DEMO.md": {
@@ -1820,7 +1820,7 @@
       "executable": false
     },
     "docs/WORKSPACE-WORKFLOWS.md": {
-      "sha256": "deb35618dc9e02c262b1491d593e7b690bbbaa5ee0be715fd60dc10e815ec13d",
+      "sha256": "2d9fbe2a8889ee781b1ef9fe2937e6702062baf3ad4b0bda5e4d52bd0e933984",
       "executable": false
     },
     "edition.json": {
@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "9f2e0d70d7dd6cae8c23ea2b4c5386d5caa2d04d6c31639161d47337367e353c",
+      "sha256": "f3e69e345d471bfef91ae8ae10828d453321cd2d3556e3083720825fc4702f17",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2515,6 +2515,10 @@
       "sha256": "8376815e0f79757f1ff58d380f587c6201b380c112a0e098167923400e75d489",
       "executable": false
     },
+    "migrations/251_customer_identity_link_history.sql": {
+      "sha256": "69cd8a54d7760086924916bc741ce9ffd483c3948221a0334e00be9fd15145de",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2940,7 +2944,7 @@
       "executable": false
     },
     "scripts/installer/customer-archive-policy.mjs": {
-      "sha256": "b1ea47bc9ff7b886c2c1a26ef31a3f569a2926f9068edd5e05e9772ef463b4cd",
+      "sha256": "f4c84442dc2b10c7add521b7fe5e228a64fce15d92f06f0d00cee43fdc96182d",
       "executable": false
     },
     "scripts/installer/durable-objects.mjs": {
@@ -4232,7 +4236,7 @@
       "executable": false
     },
     "src/modules/customers/erasure.ts": {
-      "sha256": "93b3d56f3c1eca2b347c49fb1a5e2aaa55f7ec9f687a1f6506d2ac7b6dc88c21",
+      "sha256": "9cf712953e506383b93ec9ee40f1663580ee9e00c4deb44b78d5c83d393a1ca8",
       "executable": false
     },
     "src/modules/customers/field-routes.ts": {
@@ -4240,7 +4244,7 @@
       "executable": false
     },
     "src/modules/customers/identity-links.ts": {
-      "sha256": "aab49fc117a55c7f9e196227ebfb60ea866f544b4d1e5d78b5dd12e167412f70",
+      "sha256": "6d0bbb23481bd20b11ee758ad695d8a16770dff36214a49e43a8ac24600bd001",
       "executable": false
     },
     "src/modules/customers/index.ts": {
@@ -4252,7 +4256,7 @@
       "executable": false
     },
     "src/modules/customers/model.ts": {
-      "sha256": "40563982d0319a26851cc1967b1f48878bcb5814c98a768017bdcaf4310dd8ca",
+      "sha256": "91ee3445dbbaefc9cb41787339558e811a19fb5b54031c03572eaac1e8a8d226",
       "executable": false
     },
     "src/modules/customers/mutations.ts": {
@@ -9771,12 +9775,32 @@
       "sha256": "1422c1f26e783dc18c46b04aaf403d9ebb1690db9d2c8a95cee91816910f003f",
       "executable": false
     },
+    "src/ui/native/pages/companies/CustomerIdentityLinks.jsx": {
+      "sha256": "27fb9758cf85760a44260c19bf5c7969843524c7f6997b3ed7418ddb8ccfe728",
+      "executable": false
+    },
     "src/ui/native/pages/companies/CustomerImport.jsx": {
       "sha256": "064fbcb091c205217dcd220141bcf4552c0ed705566e421179f8f77508e16a20",
       "executable": false
     },
+    "src/ui/native/pages/companies/identity-link-api.js": {
+      "sha256": "2b0501a5144f7e3dce56a3d690d9fa3261ec195d14ba1d477ca953d52406f732",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/identity-links.css": {
+      "sha256": "5407766a01a89faebc0d06e8ba9573a431813c3499152b01985577bade15871d",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/IdentityLinkReview.jsx": {
+      "sha256": "792699c64bb17bd0d7fab4a92c7a83465a1253f657697b5bf2771db39c3b7b70",
+      "executable": false
+    },
     "src/ui/native/pages/companies/ImportRows.jsx": {
       "sha256": "c5e4fcd88f83f607db45315795f2208651de2cad74f028312a5e52a3220caacd",
+      "executable": false
+    },
+    "src/ui/native/pages/companies/LinkedIdentities.jsx": {
+      "sha256": "a17410a7423e283eefcb83e298f979ea1ec276817c8fa5d6ab4091f24de64737",
       "executable": false
     },
     "src/ui/native/pages/ComputersPage.jsx": {
@@ -9816,7 +9840,7 @@
       "executable": false
     },
     "src/ui/native/pages/ContactDetails.jsx": {
-      "sha256": "f79ed0cf3f3a7a5a2d1d5c56c861ef5cb0b07145d633bd74b6e84328914f5f21",
+      "sha256": "108c8701ae4a2609934091195c6356396e2dfbb1fc5f398bacc00d4eecaa84be",
       "executable": false
     },
     "src/ui/native/pages/ContactErasure.jsx": {
@@ -11052,7 +11076,7 @@
       "executable": false
     },
     "tests/helpers/company-records.mjs": {
-      "sha256": "96066e5913d8d7283e6f798847e0cc0c6b051b4469ea74613fe3067b462a8be1",
+      "sha256": "123041124f59fa1f03f42c38d52f673e3402452e6fb98b54831e39cd98cba394",
       "executable": false
     },
     "tests/helpers/configured-mail-runtime.mjs": {
@@ -11069,6 +11093,10 @@
     },
     "tests/helpers/context/collection-privacy-browser.mjs": {
       "sha256": "662c10db28dcaf6df5f98f1638c751d2e8ade3bbcc1ab794f38d20423f32dc1f",
+      "executable": false
+    },
+    "tests/helpers/context/identity-links-browser.mjs": {
+      "sha256": "60ff462de338e0c39106e1676905a34d5321fb3d9e411f6bd06f807ef0f2edee",
       "executable": false
     },
     "tests/helpers/context/leads.mjs": {
@@ -11500,7 +11528,7 @@
       "executable": false
     },
     "tests/helpers/inbox/problems.mjs": {
-      "sha256": "abd7f8fa471213e6ba653d52eb7c32a5aec816c099a86cec74e41856e133615d",
+      "sha256": "86aebac764e83383490ad2e805c089e5f2aa0cde740f719681c5aed0feb2e975",
       "executable": false
     },
     "tests/helpers/inbox/search.mjs": {
@@ -12000,7 +12028,7 @@
       "executable": false
     },
     "tests/journeys/context-browser.mjs": {
-      "sha256": "32776278c6fb5729365a4710ea1d932960a1de29b69ee0bce674f91a38dcc945",
+      "sha256": "25fd743f80cf7fd15bf515b19b916c078275150496b262f14c1237b1a24ac4e9",
       "executable": false
     },
     "tests/journeys/context.mjs": {

@@ -340,9 +340,11 @@ async function outboundNoticesJourney(){
   assert.equal((await crashState()).state,'sending');assert.equal(sent.length,beforeCrash)
   await app.runJobs([crashJob]);await app.scheduled()
   assert.equal((await crashState()).state,'sending','a young claim is not reconciled')
-  // Move the edge clock, without editing any delivery state or timestamp. The
-  // hook's day-sized jump also exercises later-minute recovery through cron.
-  await app.scheduled(undefined,{after:86400000})
+  // Move only the edge clock, without editing a claim or receipt. A claim
+  // below the 120-second bound stays sending; a later-minute tick retires it.
+  await app.scheduled({'x-test-clock':'advance'},{after:110000})
+  assert.equal((await crashState()).state,'sending','claims younger than the bound are untouched')
+  await app.scheduled({'x-test-clock':'advance'},{after:121000})
   assert.equal((await crashState()).state,'uncertain')
   assert.match(JSON.stringify(await crashState()),/the worker stopped during a send; check the provider before resending/)
   await app.ok(path,{token,body:crashCommand});await app.runJobs([crashJob])

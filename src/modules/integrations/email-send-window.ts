@@ -26,6 +26,6 @@ export async function withNotificationSendWindow<T>(ids:readonly string[],starte
    const error=new Error('Notification send execution expired');controller.abort(error);reject(error)
   },Math.max(0,deadline-Date.now()))})
   try{notificationSendSignal();return await Promise.race([run(),ended])}
-  finally{clearTimeout(timer)}
+  finally{clearTimeout(timer);controller.abort(new Error('Notification send execution ended'))}
  })
 }

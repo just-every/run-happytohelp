@@ -5235,6 +5235,10 @@
       "sha256": "c574fd038a5a6d3ec01dce80b7c575bd42e423bba67a566d3b1df8b30d7b25dc",
       "executable": false
     },
+    "src/modules/integrations/email-send-window.ts": {
+      "sha256": "2bb369cd37a002bc817d61bf573000c5cb901016438d289df72856abdafedf20",
+      "executable": false
+    },
     "src/modules/integrations/email-threading-keys.ts": {
       "sha256": "e514cf23e68615ecdb9b31bc79e060109797a4dad6d76deb85a0cb7e76f6b5e9",
       "executable": false
@@ -11180,7 +11184,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "4eed7d13590185c67a8c942d2f70e49fde01c98e5e90cf2afd781ae5a47b1357",
+      "sha256": "5cddd8a410812cb19d63aa4f6856e21fcd4c2b9cec282d9c3a5af968ea847c27",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {
@@ -12076,7 +12080,7 @@
       "executable": false
     },
     "tests/journeys/kit/app-worker.ts": {
-      "sha256": "eb6f1154dc7a373c60182085943a2eb6f79a3440cb5073d1f75cb3adaa4f3c56",
+      "sha256": "f13c5401f5a09de94a55e08543b691e000e841ad88b4d863c5da21e4bfd92a9b",
       "executable": false
     },
     "tests/journeys/kit/app.mjs": {

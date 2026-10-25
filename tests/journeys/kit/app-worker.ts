@@ -101,7 +101,7 @@ const worker={
   if(path==='/_test/scheduled'){const {after=0}=await request.json<{after?:number}>().catch(()=>({after:0}));const originalNow=Date.now
    // Long retention journeys move the runtime clock, so the actual scheduled
    // integration sees the same time as the edge; application policy is untouched.
-   const moved=after>=86400000;if(moved)Date.now=()=>originalNow()+after
+   const moved=after>=86400000||request.headers.get('x-test-clock')==='advance';if(moved)Date.now=()=>originalNow()+after
    const meter=scheduledMeter(env.DB)
    try{await runScheduledInvocation({...env,DB:meter.database('invocation')},{now:Date.now()+(moved?0:after),consumerEnv:(name,input)=>({...input,DB:meter.database(name,input.DB)})});for(const consumer of Object.values(meter.consumers))consumer.completed=true;delete meter.consumers.invocation;return Response.json({ran:true,...meter.counts,consumers:meter.consumers})}finally{Date.now=originalNow}}
   return app.fetch(request,env,context)

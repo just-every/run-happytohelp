@@ -442,10 +442,15 @@ async function noticeRetentionJourney(){
   assert.equal(tickets.length,2)
   const blocked=reserved?tickets.find(row=>!original.results.some(result=>result.conversation?.id===row.id)):original.results[0].conversation
   await app.drainJobs();assert.equal(sent.length,reserved?1:2)
+  const refusedBody={...body,localId:'synthetic-happytohelp-retained-refusal'},refusedPreview=await app.ok(path+'/preview',{token,body:refusedBody}),refusedCommand={...refusedBody,confirmation:refusedPreview.confirmation}
+  await app.ok(base+'/contacts/'+blocked.contact_id,{token,method:'PUT',body:{is_blocked:true}})
+  assert.equal((await app.call(path,{token,body:refusedCommand,status:409})).data.code,'notice_not_created')
+  await app.ok(base+'/contacts/'+blocked.contact_id,{token,method:'PUT',body:{is_blocked:false}})
   await app.scheduled(undefined,{after:91*86400000})
   assert.equal((await app.first("SELECT count(*) n FROM audit_events WHERE project_id=? AND action='ticket.notice_confirmed'",w.projectId)).n,0,'supported retention really removes the confirmation audit')
   token=(await app.ok('/api/identity/login',{body:{email:'owner-synthetic-happytohelp-retention@example.test',password}})).token
   await app.ok(base+'/contacts/'+blocked.contact_id,{token,method:'PUT',body:{is_blocked:true}})
+  assert.equal((await app.call(path,{token,body:refusedCommand,status:409})).data.code,'notice_not_created','only a durable refusal retains its no-creation certificate after retention')
   const replay=await app.call(path,{token,body:command})
   assert.equal(replay.status,200,'accepted notice survives audit retention and a new session')
   assert.equal(replay.data.results.filter(row=>row.accepted&&row.duplicate).length,reserved?1:2,'blocking cannot hide already accepted work')

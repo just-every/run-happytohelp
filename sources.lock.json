@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "90404b9193e713d065fc77dddc5c31acf2dd897c6634ebbf544d7008d6cd420c",
+      "sha256": "0824bcb0ef3f9b18e4e590d9825144ff946100349b222804da5f6db1c1eeddb9",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "dd60b38c9af1984a5e2b14f6caf0a87d6e7f05725dd646fd679e0acc4f174ff7",
+      "sha256": "017eb7f85ad379b9c48b0e937b1fbc085c1c53c9c9dbbeac55fb49cfbe5b77b5",
       "executable": false
     },
     "DEMO.md": {
@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "6cd9cef10400fe4d55279eced76993bc0fdb8496ed0eda45bd65f096ba1edb11",
+      "sha256": "ea772220fc226becfc6d41cd19ddabe5f0b82e04a690b810b1562d7329cf4c49",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -11220,7 +11220,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "762386a8674c8ff56d044cd885e71b509000a2963250659d1e3ab5abe48a6618",
+      "sha256": "7cdd399d60c4df13c0479ac2ef9536dc567d3555c61a1eb06a1af44e1acb9b7e",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {

@@ -11184,7 +11184,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "9e02ed15e2c410dc2e6d36c02feed42102da247a712b14f9566fcaf92f17526e",
+      "sha256": "ef4280e57db50fb0faa3b8b9697052d6ccfc30aeffb4d176d3833a3d2285a0ba",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {

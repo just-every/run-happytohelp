@@ -315,7 +315,7 @@ async function outboundNoticesJourney(){
   const liveProject=await app.seedWorkspace('synthetic-happytohelp-live'),liveToken=liveProject.tokens.owner,liveBase=`/api/management/projects/${liveProject.projectId}`
   const liveMailbox=(await app.ok(liveBase+'/mailboxes',{token:liveToken,body:{provider:'forwarding',address:'synthetic-happytohelp-live@support.example',displayName:''}})).data
   const liveBody={...body,localId:'synthetic-happytohelp-live',mailboxId:liveMailbox.id,requesters:['synthetic-happytohelp-live@customer.example','synthetic-happytohelp-live-other@customer.example'],content:'synthetic-happytohelp-live-send'}
-  const livePreview=await app.ok(liveBase+'/tickets/notices/preview',{token:liveToken,body:liveBody}),liveBatch=await app.ok(liveBase+'/tickets/notices',{token:liveToken,body:{...liveBody,confirmation:livePreview.confirmation}}),liveTicket=liveBatch.results[0],liveJobs=await app.takeJobs(),liveJob=liveJobs.find(job=>job.type==='outbox.recover'&&job.conversationId===liveTicket.conversation.id)
+  const livePreview=await app.ok(liveBase+'/tickets/notices/preview',{token:liveToken,body:liveBody}),liveBatch=await app.ok(liveBase+'/tickets/notices',{token:liveToken,body:{...liveBody,confirmation:livePreview.confirmation}}),liveTicket=liveBatch.results.find(row=>row.recipient==='synthetic-happytohelp-live@customer.example'),liveJobs=await app.takeJobs(),liveJob=liveJobs.find(job=>job.type==='outbox.recover'&&job.conversationId===liveTicket.conversation.id)
   assert.ok(liveJob)
   const running=app.runJobs([liveJob])
   try{

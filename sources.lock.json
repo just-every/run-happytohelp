@@ -3360,7 +3360,7 @@
       "executable": false
     },
     "src/edition/delegation/common.ts": {
-      "sha256": "d0ca2a2054bf144b71e61e019e79149a4c9d27d426cc50930e46799aae7dd597",
+      "sha256": "6fbeb2f5409f29083cb9be9dc1d18395b7a1345a8718b800236ec2233ec462f4",
       "executable": false
     },
     "src/edition/delegation/consent-data.ts": {
@@ -3380,7 +3380,7 @@
       "executable": false
     },
     "src/edition/delegation/effects.ts": {
-      "sha256": "50039487024eb9b6a52690c73ca613c1ccd397e5745a3f97a371a05b5ccdae31",
+      "sha256": "ed567ff8b8f8418eaaa5e95aaa5cefdc6e9b4edc98eea9fcc0b10dd05fc04937",
       "executable": false
     },
     "src/edition/delegation/evidence.ts": {
@@ -3488,7 +3488,7 @@
       "executable": false
     },
     "src/modules/access/gate.ts": {
-      "sha256": "8629fa4656aadc521859760c05e862b498f404384a8c2694a871bbee0af47da8",
+      "sha256": "f316b27a36768a9c6cdfd6c8a4efbf515c6a78444554e52f1b688fb273d3483d",
       "executable": false
     },
     "src/modules/access/r4-route-permissions.ts": {
@@ -3504,11 +3504,11 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "7186726396c7853b4824aa60cb9e69cb0ccc629fbfa119b20c2ac2278ee657d4",
+      "sha256": "2d45613e07beca03e3853c57514940fac1ced229c13b2c088634bb38a520191f",
       "executable": false
     },
     "src/modules/access/routes.ts": {
-      "sha256": "9e13c4799c0a7eaa68c74c71c4be787b1c357a18ad757fbfeb7c466a0289952e",
+      "sha256": "6176acee589eafacaf6604932e6ce870c7ad2694c373a06929e8d144075cee44",
       "executable": false
     },
     "src/modules/access/self-service-routes.ts": {
@@ -5680,7 +5680,7 @@
       "executable": false
     },
     "src/modules/knowledge/routes.ts": {
-      "sha256": "4a2762cd3cf2b5e28a0cdc372cb69c7eb20866d0ee206ff55987e194b87a414f",
+      "sha256": "06b3899b991f2afba22eeddb0e9aa59cbe37dc20001908bd95300839b743a062",
       "executable": false
     },
     "src/modules/knowledge/service.ts": {
@@ -11424,7 +11424,7 @@
       "executable": false
     },
     "tests/helpers/identity/roles-audit.mjs": {
-      "sha256": "cfb72f19b5c212fac11d3eae34b882f161dc5699383f356705141917a62cf043",
+      "sha256": "ecc7daa7f7117e666e7ffbf1e28c84db4c566ec6aa73ca9c306ef2e40f3a215b",
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {
@@ -11580,7 +11580,7 @@
       "executable": false
     },
     "tests/helpers/installer/edition-authoring.mjs": {
-      "sha256": "b36f2d360a36a932543d90c35f52e1e8279b120b1b9c0845241cd3682edc8652",
+      "sha256": "0c17a3cc6e4cad37940d8cc25677842dcd5f7979a74152a8daa889a3920a02c2",
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
@@ -12516,7 +12516,7 @@
       "executable": false
     },
     "tests/reports/ratings.mjs": {
-      "sha256": "557e2302377109553327d258e3d5860279e6f161423dc1fbe48aabdbbea177cf",
+      "sha256": "865e03a7d12a22d086692a85a3b3fa94eadc89838e4f32a3de33c51601671c9b",
       "executable": false
     },
     "tests/reports/status-categories.mjs": {
@@ -12524,7 +12524,7 @@
       "executable": false
     },
     "tests/reports/team-journey.mjs": {
-      "sha256": "8d1822f0a4674a8d0a295b46f12af67a36b4c3961aca0f7c9217af74025f6afe",
+      "sha256": "7cbcb1ccaa40080a2f6dd33c89ed085a44f3b4c3b55c77bab0c9bbc05457bbef",
       "executable": false
     },
     "tests/reports/upgrade-categories.mjs": {

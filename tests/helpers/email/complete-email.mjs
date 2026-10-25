@@ -239,7 +239,7 @@ async function outboundNoticesJourney(){
   assert.equal(new URL(request.url).hostname,'api.resend.com')
   const copy=await request.json()
   if(copy.subject==='Sign in to your support requests'){accessMail.push(copy);return Response.json({id:'synthetic-happytohelp-access'})}
-  sent.push(copy)
+  sent.push({...copy,attemptedAt:Date.now()})
   return sent.length===2?Response.json({error:'Recipient refused'},{status:422}):Response.json({id:'synthetic-happytohelp-1'})
  }})
  try{
@@ -350,6 +350,8 @@ async function outboundNoticesJourney(){
   assert.ok(states.every(state=>['sent','rate_limited'].includes(state)),JSON.stringify(states))
   const copies=sent.filter(copy=>[].concat(copy.to).some(to=>selection.includes(to)))
   assert.ok(copies.length>=10&&copies.length<=50)
+  const minutes=new Map();for(const copy of copies){const minute=Math.floor(copy.attemptedAt/60000);minutes.set(minute,(minutes.get(minute)||0)+1)}
+  assert.ok([...minutes.values()].every(count=>count<=10),'default cap stays ten per workspace per fixed UTC minute')
   assert.equal(new Set(copies.flatMap(copy=>[].concat(copy.to))).size,copies.length,'one network attempt per requester')
   for(const copy of copies)assert.ok(!copy.cc?.length&&!copy.bcc?.length)
   await app.configure({})
@@ -358,7 +360,7 @@ async function outboundNoticesJourney(){
   assert.equal((await app.first("SELECT count(*) n FROM email_deliveries WHERE project_id=? AND state='sending'",capacityId)).n,0)
   const foreign=await app.seedWorkspace('synthetic-happytohelp-capacity-foreign')
   assert.equal((await app.call(capacityPath,{token:foreign.tokens.owner,body:frozen})).status,403)
-  console.log('NOTICE_CAPACITY',JSON.stringify({requesters:50,terminal:states.length,sent:copies.length,rateLimited:states.filter(s=>s==='rate_limited').length,maxStatements:Math.max(...meters.map(m=>m.statements)),maxCalls:Math.max(...meters.map(m=>m.calls)),invocations:meters.length,cronStatements:cron.statements}))
+  console.log('NOTICE_CAPACITY',JSON.stringify({requesters:50,terminal:states.length,sent:copies.length,perMinute:[...minutes.values()],rateLimited:states.filter(s=>s==='rate_limited').length,maxStatements:Math.max(...meters.map(m=>m.statements)),maxCalls:Math.max(...meters.map(m=>m.calls)),invocations:meters.length,cronStatements:cron.statements}))
 
  }finally{await app.close()}
 }

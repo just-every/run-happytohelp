@@ -18,7 +18,7 @@ export async function harness({beforeIntegrations}={}){
  await build({entryPoints:['tests/connections/worker.ts'],bundle:true,format:'esm',platform:'node',external:['node:*','cloudflare:*'],outfile:join(directory,'worker.mjs'),logLevel:'silent'});
  const options=convertV4MiniflareOptions({name:'connections-check',port:0,modules:true,script:await readFile(join(directory,'worker.mjs'),'utf8'),compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{INBOUND_EMAIL_TOKEN:inboundToken,INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},d1Databases:{DB:'connections-check'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async req=>{
   const url=new URL(req.url);if(url.origin!=='https://receiver.example.com'&&url.origin!=='https://hooks.slack.com'&&url.href!=='https://slack.com/api/chat.postMessage'){external++;throw Error('Test transport refused destination')}
-  return fetch(endpoint+'/'+url.hostname+url.pathname,{method:'POST',headers:req.headers,body:await req.arrayBuffer(),redirect:'manual'})
+  return fetch(endpoint+'/'+url.hostname+url.pathname,{method:req.method,headers:req.headers,...(['GET','HEAD'].includes(req.method)?{}:{body:await req.arrayBuffer()}),redirect:'manual'})
  }});mf=new Miniflare(options);
  let db=await mf.getD1Database('DB');
  for(const file of (await readdir('migrations')).filter(f=>f.endsWith('.sql')).sort()){

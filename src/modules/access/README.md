@@ -20,3 +20,13 @@ presence-based away (`reply-sql.ts` is the shared rule),
 and a delegated reply needs the operator's reply permission at send time
 (`src/edition/local-computer.ts`). Tests: `tests/journeys/identity.mjs`,
 `tests/journeys/identity-browser.mjs`.
+
+`knowledge.read` grants internal article reads independently of editing or
+publication. Role create/update accepts `knowledgeArticleIds`: `null` selects
+all workspace articles, an array selects only those workspace article IDs, and
+`[]` selects none. Omitting it on update preserves the existing selection.
+Native lists/search, history/translations and connected-application evidence
+recheck the current permission and selection on every request. A grant also
+retains its own target restriction. Source/dataset management still requires
+`knowledge.edit`; published help retains its independent audience checks.
+Reads, refusals and role changes appear in the security log.

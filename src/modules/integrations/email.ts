@@ -1,3 +1,4 @@
+import {notificationFetch,notificationSendSignal,withNotificationSendWindow} from './email-send-window'
 import {enforceRateLimit,RateLimitExceeded} from '../../platform/rate-limits'
 import {rerMail,managedMailbox} from './rer-mail-contract'
 import {sendRerMail,RerMailFailure} from './rer-mail'
@@ -56,7 +57,7 @@ async function sendThroughSelectedProvider(env:Env,input:EmailInput,from:string,
   const receipt=await sendGridDelivery(env,input,from)
   return receipt.providerMessageId
  }
- const response=await fetch(...providerRequest(env,input,from))
+ const response=await notificationFetch(...providerRequest(env,input,from))
  if(!response.ok){await updateDelivery(env,input.idempotencyKey,response.status>=500?'uncertain':'failed',`Provider HTTP ${response.status}`);throw new HTTPException(502,{message:'Email provider rejected delivery'})}
  const receipt=providerReceipt(env,await response.json(),input.to)
  if(!receipt.accepted){await updateDelivery(env,input.idempotencyKey,'failed','Recipient permanently rejected');throw new HTTPException(502,{message:'Email recipient permanently rejected'})}
@@ -107,6 +108,7 @@ async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:
    if(mailbox?.state==='failed'){await updateDelivery(env,input.idempotencyKey,'failed','Connected mailbox rejected delivery');throw error}
   }
   if(error instanceof RerMailFailure&&error.state==='held'){
+   notificationSendSignal()
    await holdRerMail(env,input,hold?.since??Date.now())
    throw new HTTPException(503,{message:error.message})
   }
@@ -137,7 +139,7 @@ export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelive
  }
  const now=Date.now(),claimed=await env.DB.prepare("INSERT OR IGNORE INTO email_deliveries VALUES(?,?,?,?,?,'sending',NULL,NULL,?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now).run()
  if(!claimed.meta.changes)throw new HTTPException(409)
- const delivery=submitClaimed(env,input,from,holdable?{}:undefined)
+ const delivery=withNotificationSendWindow([input.idempotencyKey],now,()=>submitClaimed(env,input,from,holdable?{}:undefined))
  if(defer){defer(delivery);return {id:null,state:'sending'}}
  return delivery
 }
@@ -154,14 +156,14 @@ export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:Def
  // D1 batch is one transaction. A duplicate primary claim rolls back every
  // participant claim; only the process that owns the whole set may submit it.
  await env.DB.batch(prepared.map(({input,intentHash})=>env.DB.prepare("INSERT INTO email_deliveries VALUES(?,?,?,?,?,'sending',NULL,NULL,?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now)))
- const delivery=Promise.all(prepared.map(async({input,from})=>{
+ const delivery=withNotificationSendWindow(prepared.map(({input})=>input.idempotencyKey),now,()=>Promise.all(prepared.map(async({input,from})=>{
   try{return {...await submitClaimed(env,input,from,holdable?{}:undefined),recipient:input.to}}
   catch(error){
    const row=await env.DB.prepare('SELECT state,provider_id,recipient FROM email_deliveries WHERE id=?').bind(input.idempotencyKey).first<{state:string;provider_id:string|null;recipient:string}>()
    if(!row)throw error
    return {state:row.state,id:row.provider_id,recipient:row.recipient}
   }
- }))
+ })))
  // A deferred acknowledgement represents the entire immutable recipient set.
  // No provider request starts until the all-or-nothing claim above commits.
  if(defer){defer(delivery);return prepared.map(({input})=>({id:null,state:'sending',recipient:input.to}))}
@@ -175,8 +177,8 @@ export async function resendHeldEmails(env:Env,inputs:readonly EmailInput[]){
    input=await prepareConversationEmail(env,input)
    const from=await senderFor(env,input)
    validateEmailInput(input,from)
-   const since=await claimRerMailHold(env,input)
-   if(since!==null)await submitClaimed(env,input,from,{since})
+   const started=Date.now(),since=await claimRerMailHold(env,input)
+   if(since!==null)await withNotificationSendWindow([input.idempotencyKey],started,()=>submitClaimed(env,input,from,{since}))
   }catch{console.error('Held managed mail remains pending')}
  }))
 }

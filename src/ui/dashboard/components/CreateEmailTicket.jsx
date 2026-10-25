@@ -49,9 +49,9 @@ export default function CreateEmailTicket({projectId, onHide, onCreated}) {
    setUncertain(false);onCreated?.(result.conversation,result);onHide();
   } catch(failure) {
    setError(failure.message);
-   // Once a batch was confirmed, even a later refusal may follow a lost partial
-   // response. Retain its exact identity instead of creating a new batch on retry.
-   if((failure.data?.code!=='notice_not_created'||uncertain||results) && (preview || !failure.status || failure.status >= 500))setUncertain(true);
+   // The durable refusal fence guarantees no ticket was created, including
+   // recovery after a lost response. Every other unknown keeps its exact command.
+   if(failure.data?.code!=='notice_not_created' && (preview || !failure.status || failure.status >= 500))setUncertain(true);
    else {intent.current=null;setPreview(null);setResults(null);setUncertain(false);}
   } finally {setBusy(false);}
  };

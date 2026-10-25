@@ -227,20 +227,42 @@ export async function outboundTicketBrowser(){
     else await dialog.getByRole('button',{name:dismissal,exact:true}).click()
     await dialog.waitFor({state:'hidden'})
    }
-   // Lose only the response at the browser network edge, after the real server
-   // committed it. Recovery must keep the same command and never resend.
+   // Exercise both kinds of 5xx, a lost successful response, and a genuine
+   // capacity-limited response from the real Worker. Recovery never changes the
+   // immutable command or duplicates any already admitted ticket.
    await preference(true)
-   await page.getByRole('button',{name:'New ticket',exact:true}).click();await dialog.getByLabel('Ticket type',{exact:true}).selectOption('notice')
-   await dialog.getByLabel('Requester emails',{exact:true}).fill(`${refusing}, synthetic-happytohelp-lost-${width}@customer.example`);await dialog.getByLabel('Subject',{exact:true}).fill('Lost response');await dialog.getByLabel('Message',{exact:true}).fill('Recover this exact notice.')
-   await dialog.getByRole('button',{name:'Preview recipients',exact:true}).click();await dialog.getByRole('region',{name:'Notice recipients'}).waitFor()
-   let lostCommand,lostResult
-   await page.route('**'+noticeBase+'/tickets/notices',async route=>{lostCommand=route.request().postDataJSON();const response=await route.fetch();assert.equal(response.status(),200);lostResult=await response.json();await route.abort('failed')},{times:1})
-   await dialog.getByRole('button',{name:'Confirm and email',exact:true}).click();await dialog.getByRole('button',{name:'Check same request',exact:true}).waitFor()
-   assert.ok(await dialog.getByRole('button',{name:'Cancel',exact:true}).isDisabled())
-   const resumedResponse=page.waitForResponse(r=>new URL(r.url()).pathname===noticeBase+'/tickets/notices'&&r.request().method()==='POST')
-   await dialog.getByRole('button',{name:'Check same request',exact:true}).click();const resumed=await resumedResponse
-   assert.deepEqual(resumed.request().postDataJSON(),lostCommand);assert.deepEqual((await resumed.json()).results.map(row=>row.conversation.id),lostResult.results.map(row=>row.conversation.id))
-   await dialog.locator('.modal-footer').getByRole('button',{name:'Close',exact:true}).waitFor();await page.screenshot({path:join(evidenceDir,`${width}-notice-lost-recovered.png`),fullPage:true})
+   for(const mode of ['lost-success','after-commit','before-server','partial']){
+    await page.getByRole('button',{name:'New ticket',exact:true}).click();await dialog.getByLabel('Ticket type',{exact:true}).selectOption('notice')
+    const recoveryRecipients=mode==='partial'?Array.from({length:50},(_,i)=>`synthetic-happytohelp-partial-${width}-${i}@customer.example`):[refusing,`synthetic-happytohelp-${mode}-${width}@customer.example`]
+    await dialog.getByLabel('Requester emails',{exact:true}).fill(recoveryRecipients.join(', '));await dialog.getByLabel('Subject',{exact:true}).fill(`Recovery ${mode}`);await dialog.getByLabel('Message',{exact:true}).fill(`Recover this exact notice ${mode}.`)
+    await dialog.getByRole('button',{name:'Preview recipients',exact:true}).click();await dialog.getByRole('region',{name:'Notice recipients'}).waitFor()
+    let lostCommand,lostResult
+    await page.route('**'+noticeBase+'/tickets/notices',async route=>{
+     lostCommand=route.request().postDataJSON()
+     if(mode==='before-server'){await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Synthetic network-edge unavailability'})});return}
+     const response=await route.fetch();assert.equal(response.status(),200);lostResult=await response.json()
+     if(mode==='lost-success')await route.abort('failed')
+     else if(mode==='after-commit')await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Synthetic lost acceptance response'})})
+     else {assert.ok(lostResult.results.some(row=>row.accepted));assert.ok(lostResult.results.some(row=>!row.accepted));await route.fulfill({response})}
+    },{times:1})
+    await dialog.getByRole('button',{name:'Confirm and email',exact:true}).click();await dialog.getByRole('button',{name:'Check same request',exact:true}).waitFor()
+    assert.ok(await dialog.getByRole('button',{name:'Cancel',exact:true}).isDisabled())
+    assert.equal(await dialog.locator('.modal-header').getByRole('button',{name:'Close',exact:true}).count(),0)
+    await page.keyboard.press('Escape');assert.ok(await dialog.isVisible())
+    let recovered
+    for(let attempt=0;attempt<10;attempt++){
+     const resumedResponse=page.waitForResponse(r=>new URL(r.url()).pathname===noticeBase+'/tickets/notices'&&r.request().method()==='POST')
+     await dialog.getByRole('button',{name:'Check same request',exact:true}).click();const resumed=await resumedResponse
+     assert.deepEqual(resumed.request().postDataJSON(),lostCommand);recovered=await resumed.json()
+     if(lostResult)for(const row of lostResult.results.filter(row=>row.accepted))assert.equal(recovered.results.find(next=>next.recipient===row.recipient).conversation.id,row.conversation.id)
+     if(recovered.results.every(row=>row.accepted))break
+    }
+    assert.ok(recovered.results.every(row=>row.accepted));assert.equal(new Set(recovered.results.map(row=>row.conversation.id)).size,recoveryRecipients.length)
+    const replay=await request(lostCommand,noticeBase+'/tickets/notices');assert.equal(replay.status,200)
+    assert.deepEqual(replay.body.results.map(row=>row.conversation.id),recovered.results.map(row=>row.conversation.id))
+    await dialog.locator('.modal-footer').getByRole('button',{name:'Close',exact:true}).waitFor();await page.screenshot({path:join(evidenceDir,`${width}-notice-${mode}-recovered.png`),fullPage:true})
+    await dialog.locator('.modal-footer').getByRole('button',{name:'Close',exact:true}).click();await dialog.waitFor({state:'hidden'})
+   }
    await context.close()
   }
   assert.deepEqual(errors,[]);success=true

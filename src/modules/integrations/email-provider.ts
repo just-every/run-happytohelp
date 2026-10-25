@@ -1,3 +1,4 @@
+import {notificationFetch} from './email-send-window'
 import {rerMail} from './rer-mail-contract'
 import {rerConfigured} from './rer-mail'
 import type {Env} from '../../platform/env'
@@ -50,7 +51,7 @@ export function providerRequest(env:Env,input:EmailInput,from:string):[string,Re
  }]
 }
 export async function sendGridDelivery(env:Env,input:EmailInput,from:string){
- const result=await sendSendGrid({provider:'sendgrid',mode:'production',apiKey:String(env.EMAIL_API_KEY)},providerMessage(input,from),{timeoutMilliseconds:20000})
+ const result=await sendSendGrid({provider:'sendgrid',mode:'production',apiKey:String(env.EMAIL_API_KEY)},providerMessage(input,from),{timeoutMilliseconds:20000,fetch:notificationFetch})
  if(result.status==='accepted')return {providerMessageId:result.providerMessageId as string|null}
  throw new SendGridSendError(result.status==='rejected'?'rejected':result.status==='rate_limited'?'rate_limited':'ambiguous','Email provider did not accept delivery')
 }

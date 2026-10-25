@@ -235,11 +235,13 @@ export async function imapSmtpJourney(){
 
 async function outboundNoticesJourney(){
  const sent=[],accessMail=[]
+ let releaseLive,liveEntered=false
  const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-1',EMAIL_FROM:'synthetic-happytohelp-1@support.example',RATE_LIMITS:JSON.stringify({outboundNoticesPerProjectMinute:2})},outbound:async request=>{
   assert.equal(new URL(request.url).hostname,'api.resend.com')
   const copy=await request.json()
   if(copy.subject==='Sign in to your support requests'){accessMail.push(copy);return Response.json({id:'synthetic-happytohelp-access'})}
   sent.push({...copy,attemptedAt:Date.now()})
+  if(copy.text.includes('synthetic-happytohelp-live-send')){liveEntered=true;return new Promise(resolve=>{releaseLive=()=>resolve(Response.json({id:'synthetic-happytohelp-live'}))})}
   return sent.length===2?Response.json({error:'Recipient refused'},{status:422}):Response.json({id:'synthetic-happytohelp-1'})
  }})
  try{
@@ -307,6 +309,24 @@ async function outboundNoticesJourney(){
   assert.ok(!sent.some(copy=>[].concat(copy.to).includes(optedOut)))
 
 
+
+  // A slow-but-live provider send stays sending through a scheduled pass and
+  // queue redelivery. Only the original invocation can settle its receipt.
+  const liveProject=await app.seedWorkspace('synthetic-happytohelp-live'),liveToken=liveProject.tokens.owner,liveBase=`/api/management/projects/${liveProject.projectId}`
+  const liveMailbox=(await app.ok(liveBase+'/mailboxes',{token:liveToken,body:{provider:'forwarding',address:'synthetic-happytohelp-live@support.example',displayName:''}})).data
+  const liveBody={...body,localId:'synthetic-happytohelp-live',mailboxId:liveMailbox.id,requesterEmail:'synthetic-happytohelp-live@customer.example',requesters:undefined,content:'synthetic-happytohelp-live-send'}
+  const liveTicket=await app.ok(liveBase+'/tickets',{token:liveToken,body:liveBody}),liveJobs=await app.takeJobs(),liveJob=liveJobs.find(job=>job.type==='outbox.recover'&&job.conversationId===liveTicket.conversation.id)
+  assert.ok(liveJob)
+  const running=app.runJobs([liveJob])
+  try{
+   await app.until(()=>liveEntered,{message:'live provider request'})
+   await app.scheduled();await app.runJobs([liveJob])
+   assert.equal((await app.ok(`/api/dashboard/projects/${liveProject.projectId}/conversations/${liveTicket.conversation.id}`,{token:liveToken})).data.last_message.email_status.state,'sending')
+  }finally{releaseLive?.();await running}
+  assert.equal((await app.ok(`/api/dashboard/projects/${liveProject.projectId}/conversations/${liveTicket.conversation.id}`,{token:liveToken})).data.last_message.email_status.state,'sent')
+  assert.equal(sent.filter(copy=>copy.text.includes('synthetic-happytohelp-live-send')).length,1)
+  for(const job of liveJobs.filter(job=>job!==liveJob))await app.runJobs([job])
+
   // Terminate a real queue invocation immediately after the complete send claim
   // commits. Replay cannot send it; the scheduled door must retire the orphan.
   const crashBody={...body,localId:'synthetic-happytohelp-crash',requesters:[1,2,3].map(i=>`synthetic-happytohelp-crash-${i}@customer.example`)}
@@ -345,7 +365,7 @@ async function outboundNoticesJourney(){
   const selection=Array.from({length:50},(_,i)=>`synthetic-happytohelp-capacity-${i}@customer.example`),capacityBody={...body,localId:'synthetic-happytohelp-capacity',requesters:selection,mailboxId:capacityMailbox.id},capacityPath=capacityBase+'/tickets/notices',meters=[]
   const metered=async(path,options)=>{
    const result=await app.call(path,{...options,headers:{...options?.headers,'x-test-meter-d1':'1'}})
-   const stats={statements:Number(result.headers.get('x-test-d1-statements')),calls:Number(result.headers.get('x-test-d1-calls')),refused:Number(result.headers.get('x-test-d1-refused'))}
+   const stats={kind:path==='/_test/queue/run'?'queue':'http',statements:Number(result.headers.get('x-test-d1-statements')),calls:Number(result.headers.get('x-test-d1-calls')),refused:Number(result.headers.get('x-test-d1-refused'))}
    assert.equal(stats.refused,0,JSON.stringify(stats));assert.ok(stats.statements<=1000&&stats.calls<=1000);meters.push(stats);return result
   }
   const capacityPreview=(await metered(capacityPath+'/preview',{token:signed.token,body:capacityBody,status:200})).data
@@ -388,7 +408,7 @@ async function outboundNoticesJourney(){
   assert.equal((await app.first("SELECT count(*) n FROM email_deliveries WHERE project_id=? AND state='sending'",capacityId)).n,0)
   const foreign=await app.seedWorkspace('synthetic-happytohelp-capacity-foreign')
   assert.equal((await app.call(capacityPath,{token:foreign.tokens.owner,body:frozen})).status,403)
-  console.log('NOTICE_CAPACITY',JSON.stringify({requesters:50,terminal:states.length,sent:copies.length,perMinute:[...minutes.values()],rateLimited:states.filter(s=>s==='rate_limited').length,maxStatements:Math.max(...meters.map(m=>m.statements)),maxCalls:Math.max(...meters.map(m=>m.calls)),invocations:meters.length,cronStatements:cron.statements,cronCalls:cron.calls}))
+  console.log('NOTICE_CAPACITY',JSON.stringify({requesters:50,terminal:states.length,sent:copies.length,perMinute:[...minutes.values()],rateLimited:states.filter(s=>s==='rate_limited').length,maxStatements:Math.max(...meters.map(m=>m.statements)),maxCalls:Math.max(...meters.map(m=>m.calls)),invocations:meters.length,cronStatements:cron.statements,cronCalls:cron.calls,queueMaxStatements:Math.max(...meters.filter(m=>m.kind==='queue').map(m=>m.statements)),queueMaxCalls:Math.max(...meters.filter(m=>m.kind==='queue').map(m=>m.calls))}))
 
  }finally{await app.close()}
 }

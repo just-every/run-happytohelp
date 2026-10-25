@@ -15,5 +15,5 @@ const labels = {
 };
 export default function MessageMailStatus({status}) {
  if (!status) return null;
- return <small className="d-block text-muted mt-1" role="status">{labels[status.state] || 'Email status unknown'}</small>;
+ return <small className="d-block text-muted mt-1" role="status">{status.state==='uncertain'&&status.reason?`Email outcome unknown · ${status.reason}`:labels[status.state] || 'Email status unknown'}</small>;
 }

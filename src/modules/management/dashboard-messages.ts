@@ -1,3 +1,4 @@
+import {abandonedNotificationReason} from '../integrations/email-send-window'
 import type {Env} from '../../platform/env'
 import {emailConfigured} from '../integrations/email-provider'
 import {localMailOrigin} from '../../edition/local-mail/configuration'
@@ -34,10 +35,11 @@ export async function messagesData(env:Env,rows:any[]){
   if(attempt.state==='failed'&&attempt.error?.startsWith('Outbound notice rate limit'))attempt.state='rate_limited'
   if(attempt.state==='failed'&&attempt.error==='Requester unavailable or email notices disabled')attempt.state='consent_refused'
   const key=String(attempt.id),prior=mail.get(key)
+  if(attempt.state==='uncertain'&&attempt.error===abandonedNotificationReason)attempt.reason=abandonedNotificationReason
   if(!prior)mail.set(key,attempt)
   else{
    const states=[prior.state,attempt.state]
-   mail.set(key,{...prior,state:precedence.find(state=>states.includes(state))||prior.state||attempt.state,updated_at:Math.max(prior.updated_at||0,attempt.updated_at||0)})
+   mail.set(key,{...prior,...(attempt.reason?{reason:attempt.reason}:{}),state:precedence.find(state=>states.includes(state))||prior.state||attempt.state,updated_at:Math.max(prior.updated_at||0,attempt.updated_at||0)})
   }
  }
  for(const receipt of data[4].results){
@@ -55,7 +57,7 @@ export async function messagesData(env:Env,rows:any[]){
   const attempt:any=mail.get(String(row.id))
   // Keep the durable mail-status precedence, including suppressed development
   // mail and unknown delivery. Reads never ask the provider to do work.
-  const emailStatus=origin||row.actor_role==='contact'||row.actor_role==='system'||row.erased_at?null:suppressed?{state:'suppressed'}:attempt?.state?{state:attempt.state,updatedAt:attempt.updated_at}:!configured?{state:'not_configured'}:attempt?.is_enabled===0?{state:'disabled'}:{state:messageNotificationRecipients(recipients.get(String(row.id))||[],attempt?.sender_email?{id:row.actor_id,email:attempt.sender_email}:undefined,row.actor_role).state}
+  const emailStatus=origin||row.actor_role==='contact'||row.actor_role==='system'||row.erased_at?null:suppressed?{state:'suppressed'}:attempt?.state?{state:attempt.state,updatedAt:attempt.updated_at,...(attempt.reason?{reason:attempt.reason}:{})}:!configured?{state:'not_configured'}:attempt?.is_enabled===0?{state:'disabled'}:{state:messageNotificationRecipients(recipients.get(String(row.id))||[],attempt?.sender_email?{id:row.actor_id,email:attempt.sender_email}:undefined,row.actor_role).state}
   return {...row,...(reads.get(String(row.id))||{read_by_contacts:{},read_by_agents:{}}),email_status:emailStatus,created_at:iso(row.created_at),source_time_provenance:origin?.time_provenance,source_author:sourceAuthor,bucket_id:row.bucket_id||row.conversation_id,agent:sourceAuthor&&sourceAuthor.role!=='contact'?person({id:row.actor_id,name:sourceAuthor.name||'Imported author'}):agent,agent_id:sourceAuthor&&sourceAuthor.role!=='contact'?row.actor_id:agent?.id,contact_id:row.actor_role==='contact'?row.actor_id:null,contact:row.actor_role==='contact'?person(contacts.get(String(row.actor_id))):null,media:(media.get(String(row.id))||[]).map(m=>({...m,filename_original:m.filename,url:`/api/conversations/${row.conversation_id}/media/${m.id}`,preview_url:`/api/conversations/${row.conversation_id}/media/${m.id}`,aggregate_type:m.content_type.startsWith('image/')?'image':'file'}))}
  })
 }

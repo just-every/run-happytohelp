@@ -37,7 +37,7 @@ export async function holdRerMail(env:Env,input:Pick<EmailInput,'idempotencyKey'
 export async function claimRerMailHold(env:Env,input:Pick<EmailInput,'idempotencyKey'|'to'>){
  const row=await env.DB.prepare("SELECT updated_at FROM email_deliveries WHERE id=? AND recipient=? AND state='sending' AND error=? AND updated_at>?").bind(input.idempotencyKey,input.to,rerMailHeld,Date.now()-holdMs).first<{updated_at:number}>()
  if(!row)return null
- const claimed=await env.DB.prepare("UPDATE email_deliveries SET error=NULL WHERE id=? AND state='sending' AND error=? AND updated_at=?").bind(input.idempotencyKey,rerMailHeld,row.updated_at).run()
+ const claimed=await env.DB.prepare("UPDATE email_deliveries SET error=NULL,updated_at=? WHERE id=? AND state='sending' AND error=? AND updated_at=?").bind(Date.now(),input.idempotencyKey,rerMailHeld,row.updated_at).run()
  return claimed.meta.changes?row.updated_at:null
 }
 

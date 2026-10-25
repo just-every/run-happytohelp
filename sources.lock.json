@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "f903bda624107bb61f887cebaa17f1ebc500d2b9680cd1f89119fba9bc6a10d5",
+      "sha256": "3566a0e247cadbb1c0bd35ee35be31ec76d4c0f505c91f53691919896f9e23ce",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2520,7 +2520,7 @@
       "executable": false
     },
     "migrations/253_api_requests.sql": {
-      "sha256": "f51351425b0379188443dac01ebaae06fd9d548750635c79a70888b163ee0cf0",
+      "sha256": "c8f9b7a41887864bffb3c65bb8ac90daf291d0940e3b2d6d87284becdb51490e",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -2604,7 +2604,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "7bba716ba19998a779ad9449559229b18119e2278c4aaf4c2acbb4fbc324263b",
+      "sha256": "6ef4692918b86a318425b2caa0456c609bd7716ddcdb9adbbb9c57400d775e9a",
       "executable": false
     },
     "rer-project.json": {
@@ -4028,7 +4028,7 @@
       "executable": false
     },
     "src/modules/audit/read.ts": {
-      "sha256": "3e108186da441731dd04fb41fec7e0e2a974d06f5a48d2771cd36459a62e3c22",
+      "sha256": "df5e3b6ebdda3c4aee742eb0b64351c87e9c7ce8b32320066832d1e1d574c439",
       "executable": false
     },
     "src/modules/audit/README.md": {
@@ -10820,7 +10820,7 @@
       "executable": false
     },
     "tests/connections/api-create.mjs": {
-      "sha256": "6dd495e8b2d402c54214e15d2df84fbd8866af550669461eadc9fc7626ad32c2",
+      "sha256": "faf90c21fa515857da903685f417a8e363a4df58cf566128553d3c1af6ae9794",
       "executable": false
     },
     "tests/connections/api.mjs": {

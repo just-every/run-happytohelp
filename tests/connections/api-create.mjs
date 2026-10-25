@@ -25,7 +25,7 @@ async function existingCredentialLifecycle(){
 test('machine create credentials admit one atomic ticket and replay across rotation without granting other scopes',async()=>{
  await existingCredentialLifecycle();
  const h=await harness();try{
-  const issued=await h.issue(['conversations:create'], 'p',{name:'Synthetic support',source_product:'synthetic-hh-1'}),token=issued.token;
+  const issued=await h.issue(['conversations:create'], 'p',{name:'Synthetic support',source_product:'synthetic-hh-1',create_per_minute:60}),token=issued.token;
   const metadata=(await h.call(settings+'/tokens')).data.find(row=>row.id===issued.data.id);
   assert.equal(metadata.source_product,'synthetic-hh-1');assert.equal(metadata.issuer_id,'owner');assert.ok(metadata.display_prefix);
   assert.deepEqual(metadata.scopes,['conversations:create']);assert.deepEqual(JSON.parse(metadata.bindings_json),{});
@@ -144,11 +144,25 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   await h.call(hookManagement,{...body({expected_version:hookState.ticket_version,status_id:'pending',assigned_to:'owner'}),method:'PATCH'});
   await h.dispatch();const receipts=h.received.filter(r=>r.path.endsWith('/machine-hook'));assert.deepEqual(new Set(receipts.map(r=>JSON.parse(r.body).event)),new Set(['conversation.created','message.created','conversation.status_changed','conversation.assigned']));
   for(const receipt of receipts){const event=JSON.parse(receipt.body);assert.equal(event.data.conversation_id,hookId);const headers=receipt.headers;const signature=createHmac('sha256',Buffer.from(hook.secret,'hex')).update(JSON.stringify(['integrations.webhook.v1','p',hook.id,event.event,event.id,headers['webhook-timestamp'],receipt.body.toString('utf8')])).digest('hex');assert.equal(headers['webhook-signature'],'v1='+signature);assert.ok(!receipt.body.toString().includes('Private body'));assert.ok(!receipt.body.toString().includes('@'))}
-  const rotated=await h.call('/api/management/projects/p/connections/tokens/'+issued.data.id+'/rotate',body({overlap_seconds:60}));
+  const rotated=await h.call('/api/management/projects/p/connections/tokens/'+issued.data.id+'/rotate',body({overlap_seconds:1}));
   const after=await send(input,'synthetic-hh-1',rotated.token);assert.equal(after.status,201);assert.deepEqual(await after.json(),created);
   const old=await send();assert.equal(old.status,201);
   await h.call('/api/management/projects/p/contacts/'+stored.id+'/erase',body({}));
   for(const key of ['synthetic-hh-1','synthetic-hh-3']){const erased=await send(input,key,rotated.token);assert.equal(erased.status,409);assert.equal((await erased.json()).error.code,'identity_erased')}
-  assert.equal((await h.db.prepare('SELECT response_json FROM api_requests').first()).response_json,null);
+  assert.equal((await h.db.prepare('SELECT response_json FROM api_requests WHERE key_digest=?').bind(sha('synthetic-hh-1')).first()).response_json,null);
+  await new Promise(resolve=>setTimeout(resolve,1100));assert.equal((await send()).status,401);
+  await h.call(settings+'/tokens/'+rotated.data.id,{method:'DELETE'});
+  assert.equal((await send(input,'synthetic-hh-1',rotated.token)).status,401);
+  // Hold only the attachment network response while revocation crosses admission.
+  const racing=await h.issue(['conversations:create'],'p',{source_product:'synthetic-hh-race'});
+  const raceBody={requester:{external_id:'synthetic-hh-race'},subject:'Atomic authority',body:'No partial request',attachments:[{url:'https://receiver.example.com/race-file',sha256:sha('synthetic-hh-race'),filename:'race.txt'}]};
+  h.responses.push({status:200,body:'synthetic-hh-race',headers:{'Content-Type':'text/plain'},delay:1000});
+  const beforeRace=await count(),pending=send(raceBody,'synthetic-hh-race',racing.token);
+  const deadline=Date.now()+10000;while(!h.received.some(r=>r.path.endsWith('/race-file'))&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,10));
+  assert.ok(h.received.some(r=>r.path.endsWith('/race-file')));
+  await h.call(settings+'/tokens/'+racing.data.id,{method:'DELETE'});
+  const raced=await pending;assert.equal(raced.status,503);assert.equal(await count(),beforeRace);
+  assert.equal((await h.db.prepare('SELECT count(*) n FROM api_requests WHERE source_product=?').bind('synthetic-hh-race').first()).n,0);
+  assert.equal((await send(raceBody,'synthetic-hh-race',racing.token)).status,401);
  }finally{await h.close()}
 });

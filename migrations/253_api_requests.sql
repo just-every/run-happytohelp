@@ -50,10 +50,12 @@ END;
 CREATE TRIGGER api_credential_audit AFTER INSERT ON native_integration_audit BEGIN
  INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json) VALUES('integration:'||NEW.id,NEW.project_id,NEW.created_at,'access',NEW.action,'succeeded','user',NEW.actor_id,'api','credential',NEW.resource_id,'{}');
 END;
+CREATE TABLE api_denial_counts(project_id TEXT NOT NULL,token_id TEXT NOT NULL,window INTEGER NOT NULL,count INTEGER NOT NULL,PRIMARY KEY(project_id,token_id,window));
 CREATE TRIGGER api_token_usage_audit AFTER INSERT ON integration_token_usage WHEN NEW.token_id IS NOT NULL BEGIN
+ INSERT INTO api_denial_counts SELECT NEW.namespace,NEW.token_id,CAST(NEW.at/60000 AS INTEGER),1 FROM integration_tokens WHERE namespace=NEW.namespace AND id=NEW.token_id AND source_product IS NOT NULL AND NEW.allowed=0
+ ON CONFLICT(project_id,token_id,window) DO UPDATE SET count=count+1;
  INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json)
  SELECT 'api:first:'||NEW.namespace||':'||NEW.token_id,NEW.namespace,NEW.at,'access','credential.first_used','succeeded','api',NEW.token_id,'api','credential',NEW.token_id,json_object('credential_name',name,'source_product',source_product) FROM integration_tokens WHERE namespace=NEW.namespace AND id=NEW.token_id AND source_product IS NOT NULL AND NEW.allowed=1;
  INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json)
- SELECT 'api:denied:'||NEW.namespace||':'||NEW.token_id||':'||CAST(NEW.at/60000 AS INTEGER),NEW.namespace,NEW.at,'access','credential.denied','refused','api',NEW.token_id,'api','credential',NEW.token_id,json_object('count',1,'credential_name',name,'source_product',source_product) FROM integration_tokens WHERE namespace=NEW.namespace AND id=NEW.token_id AND source_product IS NOT NULL AND NEW.allowed=0
- ON CONFLICT(id) DO UPDATE SET detail_json=json_set(audit_events.detail_json,'$.count',json_extract(audit_events.detail_json,'$.count')+1);
+ SELECT 'api:denied:'||NEW.namespace||':'||NEW.token_id||':'||CAST(NEW.at/60000 AS INTEGER),NEW.namespace,NEW.at,'access','credential.denied','refused','api',NEW.token_id,'api','credential',NEW.token_id,json_object('count',1,'credential_name',name,'source_product',source_product) FROM integration_tokens WHERE namespace=NEW.namespace AND id=NEW.token_id AND source_product IS NOT NULL AND NEW.allowed=0;
 END;

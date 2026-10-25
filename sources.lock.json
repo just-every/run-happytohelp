@@ -11780,7 +11780,7 @@
       "executable": false
     },
     "tests/helpers/recovery/comparison.mjs": {
-      "sha256": "119e4585d958b75a07b65359f828836ed9c9b2880b3027fd67c5a78598a986ef",
+      "sha256": "ffb3b6d8ec826a04ed308f38828abf326afb750352654e3125adbe3ced1558ae",
       "executable": false
     },
     "tests/helpers/recovery/independent-journey.mjs": {
@@ -11788,7 +11788,7 @@
       "executable": false
     },
     "tests/helpers/recovery/journey.mjs": {
-      "sha256": "e3e5d391c0f1981b06062085e82a984f79ef42e1ed98a63644cb1594d86b2930",
+      "sha256": "85494d42d5057c26a448948b9b2c08ce2720748b3c26c67320848a6c242c51dc",
       "executable": false
     },
     "tests/helpers/recovery/m9-inventory.mjs": {
@@ -11912,7 +11912,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "f08903ad8c2624a74d1f518cbc895cdd4f147892dd523a2fd1a7ff13f1a8f528",
+      "sha256": "7d3386c423fc643db410818a8fe49b906c0d0bbec2fdcd7d115a67081cb649d0",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

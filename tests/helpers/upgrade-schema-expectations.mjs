@@ -21,6 +21,7 @@ export const schemaExceptions = [
   {migration: '244_csat_response_surface.sql', names: ['csat_responses', 'csat_response_history'], change: 'Adds only the signed response surface with unknown for existing feedback; every prior column and row is retained'},
   {migration: '246_imported_ticket_lifecycle.sql', names: ['ticket_conversation_defaults'], change: 'Adds only the reviewed import fence to status defaults; every other trigger clause is retained'},
   {migration: '248_customer_recovery.sql', names: ['csat_responses', 'csat_response_history'], change: 'Adds only explicit customer recovery with unknown for existing feedback; every prior column and row is retained'},
+  {migration: '253_api_requests.sql', names: ['integration_tokens','native_integration_destinations'], change: 'Adds only source, bounds, issuer, prefix, family, create quotas and destination filters; existing columns and rows retained'},
   {migration: '251_knowledge_read_selection.sql', names: ['project_roles'], change: 'Adds only nullable knowledge_article_ids TEXT constrained to a valid JSON array; every prior column and row is retained'},
   {migration: '0110_move_in.sql', names: ['context_message_added', 'context_message_removed'], change: 'WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences ...) inserted before BEGIN'},
 ];
@@ -81,6 +82,11 @@ END`;
 // Expected additions/replacements are explicit, independent of the migration
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
+  {migration:'253_api_requests.sql',table:'integration_tokens',sql:[
+    'source_product TEXT','bindings_json TEXT NOT NULL DEFAULT \'{}\'','issuer_id TEXT','display_prefix TEXT','family_id TEXT','create_minute INTEGER NOT NULL DEFAULT 20','create_day INTEGER NOT NULL DEFAULT 1000',
+  ].map(column=>`ALTER TABLE integration_tokens ADD COLUMN ${column};`).join('\n')},
+  {migration:'253_api_requests.sql',table:'native_integration_destinations',sql:'ALTER TABLE native_integration_destinations ADD COLUMN credential_id TEXT; ALTER TABLE native_integration_destinations ADD COLUMN source_product TEXT;'},
+
   {migration: '0105_edition_delegation.sql', table: 'knowledge_articles', sql: "ALTER TABLE knowledge_articles ADD COLUMN source_revision INTEGER NOT NULL DEFAULT 1; ALTER TABLE knowledge_articles ADD COLUMN source_incarnation TEXT NOT NULL DEFAULT ''"},
   {migration: '0108_public_answer_citations.sql', table: 'knowledge_articles', sql: "ALTER TABLE knowledge_articles ADD COLUMN publication_version TEXT GENERATED ALWAYS AS (source_incarnation || ':' || source_revision) VIRTUAL"},
   {migration: '0108_public_answer_citations.sql', table: 'messages', sql: "ALTER TABLE messages ADD COLUMN citations_json TEXT NOT NULL DEFAULT '[]'"},

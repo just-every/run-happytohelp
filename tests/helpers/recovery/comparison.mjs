@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import {readArtifact} from '../artifact-payloads.mjs';
 import {exportD1Sql} from '../../../scripts/installer/search-index-sql.mjs';
 import assert from 'node:assert/strict';
@@ -6,7 +7,7 @@ import {readFile, writeFile, mkdir, rm, copyFile} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {recoveryRuntime} from './runtime.mjs';
 import {snapshot, compareSnapshots, summarize, sha256} from './snapshot.mjs';
-import {seedJourney, verifyAccess, verifyFreshLogin, verifyRestoredApi, setupToken} from './journey.mjs';
+import {seedJourney, verifyAccess, verifyFreshLogin, verifyRestoredApi, eraseRecoveryIssuer, setupToken} from './journey.mjs';
 
 // Native export of a populated packaged install, restored into a fresh destination and compared row by row and object by object.
 export async function recoveryComparison(buildDirectory, outputDirectory, profile='first-run'){
@@ -29,6 +30,19 @@ try {
   original = await recoveryRuntime(artifact, {directory: join(output, 'source-runtime'), port, inspectorPort: port + 1, variables});
   await original.start();
   const journey = await seedJourney(original);
+  await original.close();
+  // Prior member fixture; issuance, use and erasure cross only the real public doors.
+  const issuerId='synthetic-hh-recovery-issuer',issuerSession='synthetic-hh-recovery-issuer-session';
+  await original.withStorage(async storage=>{
+   const write=(sql,values=[])=>storage.inspect({sql,values});
+   await write("INSERT INTO users VALUES(?,'synthetic-hh-recovery-issuer@example.test','Synthetic recovery issuer',1)",[issuerId]);
+   await write("INSERT INTO memberships VALUES(?,?,'admin')",[journey.owner.projectId,issuerId]);
+   const hash=createHash('sha256').update(issuerSession).digest('hex');
+   await write("INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,?,?,'admin',?)",[hash,issuerId,journey.owner.projectId,Date.now()+3600000]);
+   await write("INSERT INTO session_factors VALUES(?,?,'password',?)",[hash,issuerId,Date.now()]);
+  });
+  await original.start();
+  await eraseRecoveryIssuer(original,journey,issuerId,issuerSession);
   await original.close();
   let before;
   await original.withStorage(async storage => {
@@ -64,6 +78,11 @@ try {
    return JSON.stringify(row);
   }).sort();
   assert.ok(!backup.includes(journey.api.machine.token));
+  for(const privateValue of ['synthetic-hh-recovery-issuer@example.test','Synthetic recovery issuer',journey.api.erasedIssuer.token])assert.ok(!backup.includes(privateValue));
+  assert.ok(backup.includes('Synthetic retained recovery machine'));
+  const exportedIssuer=before.rows.integration_tokens.map(JSON.parse).find(row=>row.id===journey.api.erasedIssuer.data.id);assert.equal(exportedIssuer.issuer_id,null);assert.ok(exportedIssuer.revoked_at);
+  assert.ok(before.rows.users.map(JSON.parse).some(row=>row.id===issuerId&&row.email==='erased:'+issuerId&&row.name==='Former teammate'));
+
   restored = await recoveryRuntime(artifact, {directory: join(output, 'restored-runtime'), port: port + 2, inspectorPort: port + 3, variables, restoreFile: backupFile});
   let after;
   await restored.withStorage(async storage => {

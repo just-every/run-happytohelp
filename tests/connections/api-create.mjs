@@ -148,6 +148,15 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const limitedBody={requester:{external_id:'synthetic-limit'},subject:'Quota test',body:'One request'};
   assert.equal((await send(limitedBody,'synthetic-limit-1',limited.token)).status,201);
   const over=await send(limitedBody,'synthetic-limit-2',limited.token);assert.equal(over.status,429);assert.equal((await over.json()).error.code,'credential');for(const header of ['Retry-After','RateLimit-Limit','RateLimit-Remaining','RateLimit-Reset'])assert.ok(over.headers.get(header));
+  const daily=await h.issue(['conversations:create'],'p',{source_product:'synthetic-hh-daily',create_per_minute:60,create_per_day:1});
+  assert.equal((await send(limitedBody,'synthetic-hh-daily-1',daily.token)).status,201);
+  const dailyDenied=await send(limitedBody,'synthetic-hh-daily-2',daily.token);assert.equal(dailyDenied.status,429);assert.equal((await dailyDenied.json()).error.code,'credential');
+  for(const header of ['Retry-After','RateLimit-Limit','RateLimit-Remaining','RateLimit-Reset'])assert.ok(dailyDenied.headers.get(header));assert.equal(dailyDenied.headers.get('RateLimit-Limit'),'1');
+  const requestLimited=await h.issue(['conversations:read'],'p',{source_product:'synthetic-hh-minute'});
+  for(let index=0;index<120;index++)assert.equal((await h.raw('/api/v1/conversations',{token:requestLimited.token})).status,200);
+  const requestDenied=await h.raw('/api/v1/conversations',{token:requestLimited.token});assert.equal(requestDenied.status,429);assert.equal((await requestDenied.json()).error.code,'credential');
+  for(const header of ['Retry-After','RateLimit-Limit','RateLimit-Remaining','RateLimit-Reset'])assert.ok(requestDenied.headers.get(header));assert.equal(requestDenied.headers.get('RateLimit-Limit'),'120');
+  await h.call(settings+'/tokens/'+requestLimited.data.id,{method:'DELETE'});assert.equal((await h.raw('/api/v1/conversations',{token:requestLimited.token})).status,401);
   await h.contact('synthetic-verified-email');await h.contact('synthetic-verified-external');
   await h.db.prepare("UPDATE contacts SET email='synthetic-verified@example.test',external_id='synthetic-verified@example.test',is_verified=1 WHERE id='synthetic-verified-email'").run();
   await h.db.prepare("UPDATE contacts SET external_id='synthetic-hh-1:synthetic-verified-external',is_verified=1 WHERE id='synthetic-verified-external'").run();
@@ -278,5 +287,9 @@ test('machine create credentials admit one atomic ticket and replay across rotat
    const receipt=await h.db.prepare('SELECT count(*) n FROM api_requests WHERE source_product=?').bind('synthetic-hh-race-'+change).first();assert.equal(receipt.n,change==='overlap'?1:0);
    if(['revoke','rotate','expire','workspace'].includes(change))assert.equal((await send(raceBody,'synthetic-hh-race-'+change,racing.token)).status,401);
   }
+  const audit=await h.call('/api/management/projects/p/audit/export?format=json'),actions=new Set(audit.events.map(event=>event.action));
+  for(const action of ['token.issued','token.rotated','token.bounds_changed','token.revoke','credential.first_used','credential.denied'])assert.ok(actions.has(action),action);
+  const auditText=JSON.stringify(audit);
+  for(const secret of [token,rotated.token,appender.token,reader.token,hook.secret,pendingHook.secret,concurrentToken.token])assert.ok(!auditText.includes(secret));
  }finally{await h.close()}
 });

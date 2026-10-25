@@ -48,8 +48,9 @@ export default function CreateEmailTicket({projectId, onHide, onCreated}) {
    setUncertain(false);onCreated?.(result.conversation,result);onHide();
   } catch(failure) {
    setError(failure.message);
-   // A missing response retains the exact command; checking cannot create another ticket.
-   if(!failure.status || failure.status >= 500)setUncertain(true);
+   // Once a batch was confirmed, even a later refusal may follow a lost partial
+   // response. Retain its exact identity instead of creating a new batch on retry.
+   if(preview || !failure.status || failure.status >= 500)setUncertain(true);
    else {intent.current=null;setPreview(null);setUncertain(false);}
   } finally {setBusy(false);}
  };

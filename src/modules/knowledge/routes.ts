@@ -45,9 +45,10 @@ routes.get('/:projectId/articles',async c=>{
  if(!access?.permissions.has('knowledge.read'))throw new HTTPException(403,{message:'Knowledge read permission required'})
  const query=c.req.query('q')?.trim()||''
  if(query)requiredString(query,'query',200)
+ const selection=access.knowledgeArticleIds===null?'':' AND a.id IN (SELECT value FROM json_each(?))'
  const filter=query?' AND (a.title LIKE ? OR a.summary LIKE ? OR a.content LIKE ?)':''
- const bindings=query?[projectId,...Array(3).fill(`%${query}%`)]:[projectId]
- const rows=await c.env.DB.prepare(`SELECT a.*,category_id categoryId,(SELECT json_group_array(category_id) FROM knowledge_article_categories WHERE article_id=a.id) categories FROM knowledge_articles a WHERE project_id=?${filter} ORDER BY position,updated_at DESC`).bind(...bindings).all<any>()
+ const bindings=[projectId,...(query?Array(3).fill(`%${query}%`):[]),...(access.knowledgeArticleIds===null?[]:[JSON.stringify(access.knowledgeArticleIds)])]
+ const rows=await c.env.DB.prepare(`SELECT a.*,category_id categoryId,(SELECT json_group_array(category_id) FROM knowledge_article_categories WHERE article_id=a.id) categories FROM knowledge_articles a WHERE project_id=?${filter}${selection} ORDER BY position,updated_at DESC`).bind(...bindings).all<any>()
  return c.json(await Promise.all(rows.results.map(row=>presentArticle(c.env,projectId,row))))
 })
 routes.post('/:projectId/articles',async c=>c.json(await writeArticle(c.env,c.req.param('projectId'),await c.req.json(),await knowledgeEditorGuard(c),false,c.get('actor').id),201))

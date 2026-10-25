@@ -38,6 +38,9 @@ export async function editionAuthoringJourney(){
   // A forged record may match local bytes and still disagree with its claimed origin.
   const wrong=JSON.parse(record);wrong.copies[0].originPath='private-fixtures';await writeFile(join(edition,'base-copies.json'),JSON.stringify(wrong))
   assert.ok(JSON.parse(refused(edition,'verify-base','--base',origin).stdout).drift.some(row=>row.kind==='origin-missing'))
+  await writeFile(join(origin,'capability/run.mjs'),'#!/usr/bin/env node\nconsole.log(8)\n');git(origin,'add','.');commit(origin)
+  const wrongBytes=JSON.parse(record);wrongBytes.copies[0].revision=git(origin,'rev-parse','HEAD');await writeFile(join(edition,'base-copies.json'),JSON.stringify(wrongBytes))
+  assert.ok(JSON.parse(refused(edition,'verify-base','--base',origin).stdout).drift.some(row=>row.kind==='origin-mismatch'))
   const wrongMode=JSON.parse(record);wrongMode.copies[0].modes['app/run.mjs']='100644';await writeFile(join(edition,'base-copies.json'),JSON.stringify(wrongMode));await chmod(join(edition,'app/run.mjs'),0o644)
   assert.ok(JSON.parse(refused(edition,'verify-base','--base',origin).stdout).drift.some(row=>row.kind==='origin-mode'))
   await chmod(join(edition,'app/run.mjs'),0o755);await writeFile(join(edition,'base-copies.json'),record)

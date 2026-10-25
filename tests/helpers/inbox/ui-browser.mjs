@@ -226,7 +226,7 @@ export async function outboundTicketBrowser(){
    const resumedResponse=page.waitForResponse(r=>new URL(r.url()).pathname===noticeBase+'/tickets/notices'&&r.request().method()==='POST')
    await dialog.getByRole('button',{name:'Check same request',exact:true}).click();const resumed=await resumedResponse
    assert.deepEqual(resumed.request().postDataJSON(),lostCommand);assert.deepEqual((await resumed.json()).results.map(row=>row.conversation.id),lostResult.results.map(row=>row.conversation.id))
-   await dialog.getByRole('button',{name:'Close',exact:true}).waitFor();await page.screenshot({path:join(evidenceDir,`${width}-notice-lost-recovered.png`),fullPage:true})
+   await dialog.locator('.modal-footer').getByRole('button',{name:'Close',exact:true}).waitFor();await page.screenshot({path:join(evidenceDir,`${width}-notice-lost-recovered.png`),fullPage:true})
    await context.close()
   }
   assert.deepEqual(errors,[]);success=true

@@ -29,9 +29,10 @@ export async function messagesData(env:Env,rows:any[]){
  const mail=new Map<string,any>(),reads=new Map<string,{read_by_contacts:Record<string,string>;read_by_agents:Record<string,string>}>()
  const recipients=new Map<string,NotificationContact[]>()
  for(const {message_id,...contact} of resolveRecipients?data[6].results:[]){const key=String(message_id);if(!recipients.has(key))recipients.set(key,[]);recipients.get(key)!.push(contact)}
- const precedence=['uncertain','sending','rate_limited','failed']
+ const precedence=['uncertain','sending','rate_limited','consent_refused','failed']
  for(const attempt of mailRows.length?data[5].results:[]){
   if(attempt.state==='failed'&&attempt.error?.startsWith('Outbound notice rate limit'))attempt.state='rate_limited'
+  if(attempt.state==='failed'&&attempt.error==='Requester unavailable or email notices disabled')attempt.state='consent_refused'
   const key=String(attempt.id),prior=mail.get(key)
   if(!prior)mail.set(key,attempt)
   else{

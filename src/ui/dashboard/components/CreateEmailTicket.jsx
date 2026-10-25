@@ -51,8 +51,8 @@ export default function CreateEmailTicket({projectId, onHide, onCreated}) {
    setError(failure.message);
    // Once a batch was confirmed, even a later refusal may follow a lost partial
    // response. Retain its exact identity instead of creating a new batch on retry.
-   if(preview || !failure.status || failure.status >= 500)setUncertain(true);
-   else {intent.current=null;setPreview(null);setUncertain(false);}
+   if((failure.data?.code!=='notice_not_created'||uncertain||results) && (preview || !failure.status || failure.status >= 500))setUncertain(true);
+   else {intent.current=null;setPreview(null);setResults(null);setUncertain(false);}
   } finally {setBusy(false);}
  };
  const input = (key,label,type='text',required=false) => <div className="form-group"><label className="form-label" htmlFor={`new-ticket-${key}`}>{label}</label><input className="form-control" id={`new-ticket-${key}`} type={type} required={required} value={draft[key]} onChange={event=>change(key,event.target.value)} maxLength={key==='subject'?500:key==='requesterEmail'&&draft.kind==='notice'?16000:320}/></div>;
@@ -61,7 +61,7 @@ export default function CreateEmailTicket({projectId, onHide, onCreated}) {
   <form onSubmit={submit}>
    <Modal.Body>
     {error && <p className="alert alert-danger" role="alert">{error}</p>}
-    {uncertain && <p className="alert alert-warning" role="status">The result is unknown. Check this same request before creating another ticket.</p>}
+    {uncertain && <p className="alert alert-warning" role="status">Some tickets are unfinished or their result is unknown. Continue this same request before creating another ticket.</p>}
     <fieldset hidden={!!preview} disabled={busy||uncertain||!!preview}>
      <div className="form-group"><label className="form-label" htmlFor="new-ticket-kind">Ticket type</label><select id="new-ticket-kind" className="form-select" value={draft.kind} onChange={event=>change('kind',event.target.value)}><option value="email">Email requester</option><option value="call">Log a call</option><option value="notice">Service notice to several requesters</option></select></div>
      <div className="settings-grid">{input('requesterEmail',draft.kind==='notice'?'Requester emails':'Requester email',draft.kind==='notice'?'text':'email',true)}{draft.kind!=='notice'&&input('requesterName','Requester name')}</div>

@@ -146,7 +146,13 @@ test('native passwords: sign-in, change and owner reset revoke sessions, an invi
   assert.equal((await call('/session',undefined,owner.token)).status,401,'a password change revokes the setup session')
   assert.equal((await call('/login',{email:'owner@example.com',password:'synthetic-invalid-password'})).status,401)
   const login=await call('/login',{email:'owner@example.com',password:'test-correct-horse-battery'});assert.equal(login.status,200);assert.match(login.headers.get('Set-Cookie'),/HttpOnly/);const session=login.data
+  const cookieSession=await app.call('/api/identity/session',{headers:{Cookie:login.headers.get('Set-Cookie').split(';')[0]},status:200});assert.equal(cookieSession.data.id,owner.userId);assert.equal(cookieSession.data.projectId,owner.projectId);assert.equal(session.actor.role,'owner');assert.equal(session.accountOnly,false)
+  const second=(await app.call('/api/management/projects',{token:session.token,body:{name:'Second native project',allowedOrigin:'https://widget.example'},status:201})).data
+  const switched=(await call('/switch-project',{projectId:second.id},session.token)).data;assert.equal(switched.actor.projectId,second.id)
   const other=await app.seedWorkspace('foreign');assert.equal((await call('/switch-project',{projectId:other.projectId},session.token)).status,403)
+  assert.equal((await call('/switch-project',{projectId:other.projectId},switched.token)).status,403)
+  await app.call('/api/management/projects/'+second.id,{token:session.token,method:'DELETE',status:200});assert.equal((await call('/session',undefined,switched.token)).status,401)
+  const survivor=(await call('/login',{email:'owner@example.com',password:'test-correct-horse-battery'})).data;assert.equal(survivor.memberships.length,1);assert.equal(survivor.actor.projectId,owner.projectId)
   const invitation={token:new URL((await app.call(`/api/management/projects/${owner.projectId}/agents`,{body:{email:'new@example.com'},token:session.token})).data.data.invitationUrl).searchParams.get('token')}
   assert.equal((await call('/accept-token',{token:invitation.token,name:'New',password:'new-correct-horse-battery'})).status,200);assert.equal((await call('/accept-token',{token:invitation.token,name:'New',password:'new-correct-horse-battery'})).status,400)
   const invited=(await call('/login',{email:'new@example.com',password:'new-correct-horse-battery'})).data;assert.equal(invited.actor.projectId,owner.projectId)
@@ -155,7 +161,10 @@ test('native passwords: sign-in, change and owner reset revoke sessions, an invi
   const reset=(await call('/password-reset',{userId:invited.actor.id},session.token)).data
   assert.equal((await call('/accept-token',{token:reset.token,password:'reset-correct-horse-battery'})).status,200);assert.equal((await call('/session',undefined,invited.token)).status,401,'an owner reset revokes the member session')
   assert.equal((await call('/login',{email:'new@example.com',password:'reset-correct-horse-battery'})).status,200)
-  await app.db.prepare('DELETE FROM memberships WHERE user_id=?').bind(owner.userId).run()
+  await app.call('/api/management/projects/'+owner.projectId,{token:session.token,method:'DELETE',status:200})
+  const removed=(await call('/login',{email:'new@example.com',password:'reset-correct-horse-battery'})).data;assert.equal(removed.accountOnly,true)
+  const recreated=(await app.call('/api/management/projects',{token:removed.token,body:{name:'Recreated native workspace',allowedOrigin:'https://widget.example'},status:201})).data
+  assert.equal((await call('/switch-project',{projectId:recreated.id},removed.token)).status,200)
   const account=(await call('/login',{email:'owner@example.com',password:'test-correct-horse-battery'})).data;assert.equal(account.accountOnly,true);assert.equal(account.actor.projectId,null);assert.equal((await call('/session',undefined,account.token)).status,200)
  }finally{await app.close()}
 })

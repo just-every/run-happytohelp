@@ -5,7 +5,7 @@ import {recoveryJourney,classificationRecoveryJourney} from '../helpers/email/re
 import {customerMailJourney} from '../helpers/email/customer-mail.mjs'
 import {transportsJourney} from '../helpers/email/transports.mjs'
 import {senderDomainJourney} from '../helpers/email/domain.mjs'
-import {completeEmailJourney} from '../helpers/email/complete-email.mjs'
+import {completeEmailJourney,imapSmtpJourney} from '../helpers/email/complete-email.mjs'
 import {unreadableMailJourney} from '../helpers/email/unreadable-mail.mjs'
 import {rerMailJourney} from '../helpers/email/rer-mail.mjs'
 import {rerMailHoldJourney} from '../helpers/email/rer-mail-hold.mjs'
@@ -44,5 +44,6 @@ test('the sender-domain check names missing SPF, DKIM and DMARC records, keeps r
 
 import {notificationTriggersJourney} from '../helpers/r4/notifications.mjs'
 test('editable requester triggers send received and solved once, suppress historical and machine mail, and teammate notices follow current authority and preferences',notificationTriggersJourney)
-test('an IMAP/SMTP TLS edge connects, syncs, sends and redelivers without duplicate tickets or auto-reply loops; operators start email and call tickets, header and imported vendor replies preserve identity, suspicious mail stays in Suspended for safe audited recovery or expiry, and erasure removes its new stores',completeEmailJourney)
+test('an IMAP/SMTP TLS edge connects, syncs, sends and redelivers without duplicate tickets or auto-reply loops',imapSmtpJourney)
+test('operators start email and call tickets, header and imported vendor replies preserve identity, suspicious mail stays in Suspended for safe audited recovery or expiry, and erasure removes its new stores',completeEmailJourney)
 test('unreadable nested MIME and oversized headers are held with original bytes while following mail arrives through sync, and repeated message failures survive restart then release the mailbox',unreadableMailJourney)

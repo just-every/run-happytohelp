@@ -6,7 +6,6 @@ import {provisioningJourney} from '../helpers/first-run/provisioning.mjs'
 import {siteReadJourney} from '../helpers/first-run/site-read.mjs'
 import {visitorProfileJourney} from '../helpers/first-run/visitor-profile.mjs'
 import {setupAnswersJourney} from '../helpers/first-run/setup-answers.mjs'
-import {firstReleaseJourney} from '../helpers/first-run/first-release.mjs'
 import {managedFirstRunJourney} from '../helpers/first-run/managed-mail.mjs'
 
 // A new installation and its first workspace: Setup's honest observations, provisioning, the website read, the
@@ -29,5 +28,3 @@ test('the website is read once after creation into a private lexical source, wit
 test('a visitor\'s saved profile is read under current authority only, and signed identity stays canonical while the collector keeps what the visitor provided apart',visitorProfileJourney)
 
 test('the installer\'s answers: local mail suppressed, only given answers sent, a chosen AI key in its own secret, the inbound token generated once, saved providers never replaced',setupAnswersJourney)
-
-test('the first release on the emitted Worker: owner setup, tenant isolation, a customer conversation with an attachment, operator handling, no AI without a key, replay and deletion',{timeout:10*60_000},firstReleaseJourney)

@@ -5,7 +5,6 @@ import {message} from './app.mjs'
 
 /** R6's operator, mail gateway, review, imported-history and privacy doors. */
 export async function completeEmailJourney(){
- await imapSmtpJourney()
  await outboundNoticesJourney()
  const sent=[]
  const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'provider-fixture',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'gateway-fixture'},outbound:async request=>{
@@ -177,7 +176,7 @@ function fakeTlsConnect(address,options){
  return {readable,writable:new WritableStream({async write(bytes){await opened;await receive({data:Array.from(bytes)})}}),opened,closed,
   async close(){if(!ended){ended=true;await opened;controller.close();resolveClosed()}}}
 }
-async function imapSmtpJourney(){
+export async function imapSmtpJourney(){
  const sessions=new Map(),commands=[],sent=[],messages=[]
  const raw=(id,automatic=false)=>`From: synthetic-happytohelp-1 <synthetic-happytohelp-1@customer.example>\r\nTo: synthetic-happytohelp-2@support.example\r\nMessage-ID: <${id}@customer.example>\r\nSubject: Damaged café parcel\r\nAuthentication-Results: mx.customer.example; dkim=pass header.d=customer.example; dmarc=pass header.from=customer.example\r\n${automatic?'Auto-Submitted: auto-replied\r\n':''}Content-Type: text/plain; charset=utf-8\r\n\r\nPlease replace the café parcel.\r\n`
  const app=await startApp({captureQueue:true,socketModule:`export const connect=${fakeTlsConnect.toString()}`,bindings:{APP_ORIGIN:'https://app.example',INTEGRATION_ENCRYPTION_KEY:Buffer.alloc(32,7).toString('base64'),MAILBOX_SOCKET_HOSTS:'imap.synthetic.example,smtp.synthetic.example',MAILBOX_IMAP_AUTHSERV:'mx.customer.example',EMAIL_FROM:'synthetic-happytohelp-2@support.example'},outbound:async request=>{
@@ -257,6 +256,7 @@ async function outboundNoticesJourney(){
   assert.equal(batch.results.length,3);assert.ok(batch.results.every(row=>row.accepted))
   assert.equal(new Set(batch.results.map(row=>row.conversation.id)).size,3,'one ticket per unique requester')
   for(const attempt of concurrent)for(const row of attempt.results)if(row.conversation)assert.equal(row.conversation.id,batch.results.find(saved=>saved.recipient===row.recipient).conversation.id)
+  await app.drainJobs()
   const statuses=[]
   for(const row of batch.results){
    const view=async()=>(await app.ok(`/api/dashboard/projects/${projectId}/conversations/${row.conversation.id}`,{token})).data
@@ -283,5 +283,75 @@ async function outboundNoticesJourney(){
   assert.equal((await app.call(path,{token,body:{...consentBody,confirmation:consentPreview.confirmation}})).status,409,'changed consent invalidates a preview before any send')
   assert.equal((await app.call(path+'/preview',{token,body:consentBody})).status,409)
   assert.equal(sent.length,2,'an opted-out requester cannot receive a proactive notice')
+  assert.equal((await app.first('SELECT count(*) n FROM operator_ticket_commands WHERE project_id=? AND local_id LIKE ?',projectId,'notice-%')).n,3,'definitive preview refusal creates nothing')
+  // Consent can change after durable admission but before the queued send. It
+  // must remain a refusal even if the requester later opts back in.
+  await app.ok(portal+'/preferences',{headers,method:'PUT',body:{locale:'en',surveyEmails:true,updateEmails:true}})
+  const reviewedAgain=await app.ok(path+'/preview',{token,body:consentBody}),admitted=await app.ok(path,{token,body:{...consentBody,confirmation:reviewedAgain.confirmation}})
+  await app.ok(portal+'/preferences',{headers,method:'PUT',body:{locale:'en',surveyEmails:true,updateEmails:false}})
+  await app.drainJobs()
+  const refused=admitted.results.find(row=>row.recipient===optedOut),refusedPath=`/api/dashboard/projects/${projectId}/conversations/${refused.conversation.id}`
+  assert.equal((await app.ok(refusedPath,{token})).data.last_message.email_status.state,'consent_refused')
+  await app.ok(portal+'/preferences',{headers,method:'PUT',body:{locale:'en',surveyEmails:true,updateEmails:true}})
+  await app.configure({})
+  await app.ok(path,{token,body:{...consentBody,confirmation:reviewedAgain.confirmation}});await app.drainJobs()
+  assert.equal((await app.ok(refusedPath,{token})).data.last_message.email_status.state,'consent_refused')
+  assert.ok(!sent.some(copy=>[].concat(copy.to).includes(optedOut)))
+
+  // The accepted selection remains fifty. Every HTTP, queue and cron invocation
+  // has the platform's enforced statement AND call cap, including deferred tails.
+  await app.ok('/api/identity/password',{token,body:{password:'synthetic-happytohelp-password-capacity'}})
+  const login=()=>app.ok('/api/identity/login',{body:{email:`owner-synthetic-happytohelp-notices@example.test`,password:'synthetic-happytohelp-password-capacity'}})
+  let signed=await login()
+  const capacityProject=await app.ok('/api/management/projects',{token:signed.token,body:{name:'Synthetic capacity',allowedOrigin:'https://app.example'}}),capacityId=capacityProject.id,capacityBase=`/api/management/projects/${capacityId}`
+  signed=await app.ok('/api/identity/switch-project',{token:signed.token,body:{projectId:capacityId}})
+  await app.configure({RATE_LIMITS:undefined})
+  const capacityMailbox=(await app.ok(capacityBase+'/mailboxes',{token:signed.token,body:{provider:'forwarding',address:'synthetic-happytohelp-capacity@support.example',displayName:''}})).data
+  const selection=Array.from({length:50},(_,i)=>`synthetic-happytohelp-capacity-${i}@customer.example`),capacityBody={...body,localId:'synthetic-happytohelp-capacity',requesters:selection,mailboxId:capacityMailbox.id},capacityPath=capacityBase+'/tickets/notices',meters=[]
+  const metered=async(path,options)=>{
+   const result=await app.call(path,{...options,headers:{...options?.headers,'x-test-meter-d1':'1'}})
+   const stats={statements:Number(result.headers.get('x-test-d1-statements')),calls:Number(result.headers.get('x-test-d1-calls')),refused:Number(result.headers.get('x-test-d1-refused'))}
+   assert.equal(stats.refused,0,JSON.stringify(stats));assert.ok(stats.statements<=1000&&stats.calls<=1000);meters.push(stats);return result
+  }
+  const capacityPreview=(await metered(capacityPath+'/preview',{token:signed.token,body:capacityBody,status:200})).data
+  assert.equal(capacityPreview.recipients.length,50)
+  const frozen={...capacityBody,confirmation:capacityPreview.confirmation}
+  let remaining=(await metered(capacityPath,{token:signed.token,body:frozen,status:200})).data
+  assert.ok(remaining.results.some(row=>row.code==='request_capacity'),'remaining rows are explicitly recoverable without any send claim')
+  signed=await login() // old preview resumes under the same actor after real password sign-in
+  signed=await app.ok('/api/identity/switch-project',{token:signed.token,body:{projectId:capacityId}})
+  for(let iteration=0;iteration<10&&remaining.results.some(row=>!row.accepted);iteration++){
+   const attempts=await Promise.all([1,2].map(()=>metered(capacityPath,{token:signed.token,body:frozen,status:200})))
+   remaining=attempts[1].data
+  }
+  assert.equal(remaining.results.length,50);assert.ok(remaining.results.every(row=>row.accepted))
+  assert.equal(new Set(remaining.results.map(row=>row.conversation.id)).size,50)
+  assert.equal((await app.first('SELECT count(*) n FROM operator_ticket_commands WHERE project_id=?',capacityId)).n,50)
+  assert.equal((await app.first("SELECT count(*) n FROM email_deliveries WHERE project_id=? AND state='sending'",capacityId)).n,0,'HTTP admissions start no deferred provider claim')
+  // Drop dispatch copies: the durable outbox and real scheduled door recover them.
+  await app.takeJobs()
+  const cron=await app.scheduled();assert.equal(cron.refused,0);assert.ok(cron.statements<=1000)
+  for(let round=0;round<10;round++){
+   const jobs=await app.takeJobs();if(!jobs.length)break
+   for(const job of jobs){const ran=(await metered('/_test/queue/run',{body:[job],status:200})).data;assert.deepEqual(ran.retried,[])}
+  }
+  const states=[]
+  for(const row of remaining.results){
+   const view=(await app.ok(`/api/dashboard/projects/${capacityId}/conversations/${row.conversation.id}`,{token:signed.token})).data
+   states.push(view.last_message.email_status.state)
+  }
+  assert.ok(states.every(state=>['sent','rate_limited'].includes(state)),JSON.stringify(states))
+  const copies=sent.filter(copy=>[].concat(copy.to).some(to=>selection.includes(to)))
+  assert.ok(copies.length>=10&&copies.length<=50)
+  assert.equal(new Set(copies.flatMap(copy=>[].concat(copy.to))).size,copies.length,'one network attempt per requester')
+  for(const copy of copies)assert.ok(!copy.cc?.length&&!copy.bcc?.length)
+  await app.configure({})
+  await metered(capacityPath,{token:signed.token,body:frozen,status:200});await app.drainJobs()
+  assert.equal(sent.filter(copy=>[].concat(copy.to).some(to=>selection.includes(to))).length,copies.length,'relogin, concurrent retries, cron and jobs do not resend')
+  assert.equal((await app.first("SELECT count(*) n FROM email_deliveries WHERE project_id=? AND state='sending'",capacityId)).n,0)
+  const foreign=await app.seedWorkspace('synthetic-happytohelp-capacity-foreign')
+  assert.equal((await app.call(capacityPath,{token:foreign.tokens.owner,body:frozen})).status,403)
+  console.log('NOTICE_CAPACITY',JSON.stringify({requesters:50,terminal:states.length,sent:copies.length,rateLimited:states.filter(s=>s==='rate_limited').length,maxStatements:Math.max(...meters.map(m=>m.statements)),maxCalls:Math.max(...meters.map(m=>m.calls)),invocations:meters.length,cronStatements:cron.statements}))
+
  }finally{await app.close()}
 }

@@ -4,6 +4,7 @@ const labels = {
  suppressed: 'Email not sent · suppressed during local development',
  sending: 'Email send in progress',
  rate_limited: 'Email not sent · outbound notice rate limit reached; no automatic retry',
+ consent_refused: 'Email not sent · requester unavailable or email notices disabled; no automatic retry',
  failed: 'Email failed · provider rejected the send',
  uncertain: 'Email outcome unknown · check your provider before resending',
  not_configured: 'Email not sent · configure an email provider',

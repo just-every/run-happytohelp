@@ -146,6 +146,7 @@ export async function completeEmailJourney(){
   assert.equal((await app.call(base+'/suspended',{token:agent})).status,403)
   assert.equal('suspended' in (await app.ok(counts,{token:agent})).data,false)
   assert.equal((await app.call(`/api/dashboard/projects/${projectId}/tickets`,{token:agent,body:{...command,localId:'collaborator-denied'}})).status,403)
+  assert.equal((await app.call(base+'/tickets/notices/preview',{token:agent,body:{kind:'email',localId:'synthetic-happytohelp-denied',requesters:['synthetic-happytohelp-1@customer.example','synthetic-happytohelp-2@customer.example'],mailboxId:mailbox.id,subject:'Delivery update',content:'Your parcel is delayed.'}})).status,403)
   assert.equal((await app.call(base+'/sender-rules',{token:agent,body:{address:'@example.test',action:'block'}})).status,403)
   await app.db.prepare('DELETE FROM member_roles WHERE project_id=? AND user_id=?').bind(projectId,workspace.users.operator).run()
   // Expiry is explicit and audited, through the real scheduled runtime door.
@@ -234,10 +235,12 @@ async function imapSmtpJourney(){
 }
 
 async function outboundNoticesJourney(){
- const sent=[]
+ const sent=[],accessMail=[]
  const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-1',EMAIL_FROM:'synthetic-happytohelp-1@support.example',RATE_LIMITS:JSON.stringify({outboundNoticesPerProjectMinute:2})},outbound:async request=>{
   assert.equal(new URL(request.url).hostname,'api.resend.com')
-  const copy=await request.json();sent.push(copy)
+  const copy=await request.json()
+  if(copy.subject==='Sign in to your support requests'){accessMail.push(copy);return Response.json({id:'synthetic-happytohelp-access'})}
+  sent.push(copy)
   return sent.length===2?Response.json({error:'Recipient refused'},{status:422}):Response.json({id:'synthetic-happytohelp-1'})
  }})
  try{
@@ -269,5 +272,16 @@ async function outboundNoticesJourney(){
   const changed={...body,requesters:[...requesters,'synthetic-happytohelp-4@customer.example']},reviewed=await app.ok(path+'/preview',{token,body:changed})
   assert.equal((await app.call(path,{token,body:{...changed,confirmation:reviewed.confirmation}})).status,409,'same batch identity cannot grow a new recipient set')
   assert.equal(sent.length,2)
+  // The recipient changes their own email preference through the verified portal.
+  const optedOut='synthetic-happytohelp-5@customer.example',portal=`/api/portal/${projectId}`
+  await app.ok(portal+'/access/request',{body:{email:optedOut},headers:{Origin:'https://app.example'}})
+  const link=new URL(accessMail[0].text.match(/https:\/\/app\.example\/api\/portal\/\S+/)[0]),verified=await app.request(link.pathname+link.search)
+  assert.equal(verified.status,303)
+  const headers={Cookie:verified.headers.get('set-cookie').split(';')[0],Origin:'https://app.example'}
+  const consentBody={...body,localId:'synthetic-happytohelp-consent',requesters:[optedOut,'synthetic-happytohelp-6@customer.example']},consentPreview=await app.ok(path+'/preview',{token,body:consentBody})
+  await app.ok(portal+'/preferences',{headers,method:'PUT',body:{locale:'en',surveyEmails:true,updateEmails:false}})
+  assert.equal((await app.call(path,{token,body:{...consentBody,confirmation:consentPreview.confirmation}})).status,409,'changed consent invalidates a preview before any send')
+  assert.equal((await app.call(path+'/preview',{token,body:consentBody})).status,409)
+  assert.equal(sent.length,2,'an opted-out requester cannot receive a proactive notice')
  }finally{await app.close()}
 }

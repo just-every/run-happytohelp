@@ -90,7 +90,7 @@ export async function outboundTicketBrowser(){
    const context=await browser.newContext({viewport:{width,height:width===390?844:1000}})
    await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
    const page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message))
-   const request=async body=>page.evaluate(async({path,body})=>{const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:response.status,body:await response.json()}},{path:base+'/tickets',body})
+   const request=async(body,path=base+'/tickets')=>page.evaluate(async({path,body})=>{const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:response.status,body:await response.json()}},{path,body})
    const open=async()=>{await page.goto(`${runtime.origin}/projects/${projectId}/conversations`);await page.getByRole('button',{name:'New ticket',exact:true}).click();await page.getByRole('dialog',{name:'New ticket',exact:true}).waitFor()}
    await open()
    const dialog=page.getByRole('dialog',{name:'New ticket',exact:true}),requester=`synthetic-happytohelp-${width}@customer.example`,subject=`Replacement parcel ${width}`,content=`Your replacement parcel ships today (${width}).`
@@ -172,8 +172,8 @@ export async function outboundTicketBrowser(){
    }
    assert.deepEqual([...states].sort(),['rate_limited','sent','sent'])
    for(const row of batch.results.filter((_,index)=>states[index]==='sent'))assert.equal(copies().filter(copy=>[copy.to].flat().includes(row.recipient)&&copy.text.includes(noticeText)).length,1)
-   const repeated=await call(noticeBase+'/tickets/notices',batchCommand,owner.token)
-   assert.deepEqual(repeated.results.map(row=>row.conversation.id),batch.results.map(row=>row.conversation.id))
+   const repeated=await request(batchCommand,noticeBase+'/tickets/notices');assert.equal(repeated.status,200)
+   assert.deepEqual(repeated.body.results.map(row=>row.conversation.id),batch.results.map(row=>row.conversation.id))
    assert.equal(copies().length,beforeNotices+2,'repeat has no additional provider attempts')
    for(const copy of copies().slice(beforeNotices))assert.equal(copy.from,`synthetic-happytohelp-notice-${width}@support.example`)
    const refused=batch.results[states.indexOf('rate_limited')]

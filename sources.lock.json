@@ -11552,7 +11552,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ui-browser.mjs": {
-      "sha256": "70d26ed1761cc362e361a4ccd0a8fcd6dd3660a18960e847c3f31c779a2969d4",
+      "sha256": "1638c8a55984616b153be2f573f716a96f3f68f52e00ae7267ed23832089a29b",
       "executable": false
     },
     "tests/helpers/inbox/visual-edit-browser.mjs": {

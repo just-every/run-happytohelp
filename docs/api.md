@@ -275,8 +275,14 @@ idempotency records cannot replay a response.
 
 ### Current machine API limits
 
-Acknowledgment/consent options are not yet accepted. SMS and WhatsApp acknowledgment delivery is not implemented. Requester
-holds currently use a fixed five-create hourly cap; configurable caps and a
-separate requester 429 policy remain pending. Source back-links and machine
-credential metadata are stored, but their complete Settings and inbox display
-is pending. Do not treat these endpoints as complete API-002 acceptance.
+Acknowledgment/consent options are not yet accepted. SMS and WhatsApp acknowledgment delivery is not implemented. Owners can configure `api_requester_hourly_cap` (1–100, default 5) through
+`PUT /api/management/projects/:projectId/settings`. Each supplied requester identity
+shares an atomic UTC hourly budget across credentials. The first request above the
+cap is held for review; further requests return 429 `requester` with `Retry-After`
+and `RateLimit-Limit`, `RateLimit-Remaining`, and `RateLimit-Reset`. Replays do not
+consume capacity. Failed admissions refund reserved capacity.
+
+Webhook envelopes include a signed `sequence` describing insertion order within
+this installation. Delivery may arrive out of order. Deduplicate by event `id`;
+apply state updates only when their sequence is newer than the last applied update.
+Retries retain the same ID, sequence and payload. Restore does not resume deliveries. Do not treat these endpoints as complete API-002 acceptance.

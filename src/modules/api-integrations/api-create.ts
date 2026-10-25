@@ -1,5 +1,5 @@
 import {senderRule} from '../integrations/suspended-store'
-import {reserveCreates} from './create-quota'
+import {reserveCreates,reserveRequester} from './create-quota'
 import type {Hono} from 'hono'
 import {hashToken} from '../../platform/auth'
 import {tokenGuard} from '../../platform/integration-authority'
@@ -31,11 +31,13 @@ export function createApi(app:Hono<ApiEnv>){
   const claimed=await c.env.DB.prepare(`INSERT OR IGNORE INTO api_requests(project_id,source_product,key_digest,body_digest,claim,created_at) SELECT ?,?,?,?,?,? WHERE EXISTS(${guard.sql})`).bind(p,product,digest,bodyDigest,claim,now,...guard.params).run()
   if(!claimed.meta.changes)throw new ApiError(409,'in_progress','Request is in progress',{}, {'Retry-After':'1'})
   const privacy=input.contact?{sql:"EXISTS(SELECT 1 FROM contacts WHERE project_id=? AND id=? AND email IS ? AND external_id IS ? AND metadata_json=? AND is_verified=? AND coalesce(json_extract(metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(metadata_json,'$.is_erased'),0)!=1)",params:[p,input.contact.id,input.contact.email,input.contact.external_id,input.contact.metadata_json,input.contact.is_verified]}:{sql:'1',params:[]}
-  const requesterCount=await c.env.DB.prepare('SELECT count(DISTINCT r.key_digest) n FROM api_requests r JOIN api_requester_keys k ON k.project_id=r.project_id AND k.contact_id=r.contact_id WHERE r.project_id=? AND r.created_at>? AND k.digest IN (SELECT value FROM json_each(?))').bind(p,now-3600000,JSON.stringify(input.digests)).first<{n:number}>()
-  const heldReason=input.flags.is_blocked||input.email&&(await senderRule(c.env,p,input.email))?.action==='block'?'blocked_sender':(requesterCount?.n??0)>=5?'requester_cap':null
+  const blocked=input.flags.is_blocked||input.email&&(await senderRule(c.env,p,input.email))?.action==='block'
   const objects:string[]=[]
   let refund:(()=>Promise<void>)|undefined
+  let requester:Awaited<ReturnType<typeof reserveRequester>>|undefined
   try{
+   requester=await reserveRequester(c.env,p,input.digests)
+   const heldReason=blocked?'blocked_sender':requester.held?'requester_cap':null
    refund=await reserveCreates(c.env,p,credential)
    const files=await attachments(c.env,p,credential.family_id,b.attachments)
    for(const file of files){const objectKey=`${p}/${id}/${file.id}`;objects.push(objectKey);await c.env.FILES.put(objectKey,file.bytes,{httpMetadata:{contentType:file.type}})}
@@ -80,6 +82,7 @@ export function createApi(app:Hono<ApiEnv>){
    if(settled?.response_json)return c.json(JSON.parse(settled.response_json),settled.status)
    if(objects.length)await c.env.FILES.delete(objects)
    await refund?.()
+   await requester?.refund()
    await c.env.DB.prepare('DELETE FROM api_requests WHERE project_id=? AND source_product=? AND key_digest=? AND claim=? AND response_json IS NULL').bind(p,product,digest,claim).run()
    if(error instanceof ApiError)throw error
    if(input.ref){const existing=await c.env.DB.prepare('SELECT conversation_id FROM api_conversations WHERE project_id=? AND source_product=? AND source_ref=?').bind(p,product,input.ref).first<any>();if(existing)throw new ApiError(409,'source_ref_exists','Append to the existing conversation',{conversation_id:existing.conversation_id})}

@@ -76,6 +76,10 @@
     {
       "id": "253_api_requests.sql",
       "buyerSteps": "Apply after 251 and any reserved 252 migration before serving the updated Worker. Adds machine credential metadata, API request idempotency and source links; existing bearer credentials retain their scopes. Exported credentials are revoked and their token hashes replaced with inert identifiers. Retain API request and erasure fences with installation data."
+    },
+    {
+      "id": "254_api_erasure_inventory.sql",
+      "buyerSteps": "Apply after 253 before serving the updated Worker. Retains non-personal API erasure counts across retries and exports."
     }
   ]
 }

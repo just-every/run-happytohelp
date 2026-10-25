@@ -77,17 +77,26 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   }
   const isolated=await h.issue(['conversations:read'],'p',{source_product:'synthetic-hh-2'});assert.equal((await h.call('/api/v1/conversations',{token:isolated.token})).data.length,0);
   const management='/api/management/projects/p/conversations/'+created.data.id+'/ticket';
+  assert.deepEqual((await h.call(management)).data.api,{credential_name:'Synthetic support',source_product:'synthetic-hh-1',source_ref:input.source_ref.ref,source_url:input.source_ref.url});
+
   const mergeSource=await send({requester:{external_id:'synthetic-hh-merge'},subject:'Duplicate request',body:'Merge this request'},'synthetic-hh-merge');assert.equal(mergeSource.status,201);
   const mergeId=(await mergeSource.json()).data.id,mergePath='/api/management/projects/p/conversations/'+mergeId;
   const sourceTicket=(await h.call(mergePath+'/ticket')).data,targetTicket=(await h.call(management)).data;
   await h.call('/api/dashboard/projects/p/conversations/'+created.data.id+'/merge',body({source_id:mergeId,source_version:sourceTicket.ticket_version,target_version:targetTicket.ticket_version}));
   for(const kind of ['customer','note']){const merged=await h.raw('/api/v1/conversations/'+mergeId+'/append',{token:appender.token,...body({kind,localId:'synthetic-hh-merged-'+kind,content:'Must use the survivor'})});assert.equal(merged.status,409);const error=(await merged.json()).error;assert.equal(error.code,'merged_into');assert.equal(error.conversation_id,created.data.id)}
   for(const category of ['solved','closed']){
-   const ticket=(await h.call(management)).data;
-   await h.call(management,{...body({expected_version:ticket.ticket_version,status_id:category}),method:'PATCH'});
-   const continued=await h.call(appendPath,{token:appender.token,...body({kind:'customer',localId:'synthetic-hh-'+category,content:'Customer follows up'})});
-   if(category==='solved')assert.equal((await h.call(management)).data.status_category,'open');
-   else{assert.notEqual(continued.data.conversation_id,created.data.id);assert.equal((await h.call(management)).data.status_category,'closed')}
+   for(const kind of ['note','customer']){
+    const ticket=(await h.call(management)).data;
+    if(ticket.status_category!==category)await h.call(management,{...body({expected_version:ticket.ticket_version,status_id:category}),method:'PATCH'});
+    const upload=await h.call('/api/v1/uploads',{token:appender.token,method:'POST',headers:{'Content-Type':'text/plain','X-Filename':'status.txt'},body:'synthetic-hh-status-file'});
+    const continued=await h.call(appendPath,{token:appender.token,...body({kind,localId:'synthetic-hh-'+category+'-'+kind,content:'Customer follows up',attachments:[{upload_id:upload.data.id}]})});
+    const target=continued.data.conversation_id;
+    const file=await h.db.prepare(kind==='customer'?'SELECT * FROM media WHERE message_id=?':'SELECT m.* FROM media m JOIN api_note_media n ON n.media_id=m.id WHERE n.note_id=?').bind(continued.data.id).first();
+    assert.equal(file.conversation_id,target);assert.equal(await(await h.raw('/api/conversations/'+target+'/media/'+file.id)).text(),'synthetic-hh-status-file');
+    if(kind==='note')assert.equal((await h.call(management)).data.status_category,category);
+    else if(category==='solved')assert.equal((await h.call(management)).data.status_category,'open');
+    else{assert.notEqual(target,created.data.id);assert.equal((await h.call(management)).data.status_category,'closed')}
+   }
   }
   const count=async()=>(await h.db.prepare('SELECT count(*) n FROM conversations').first()).n;
   const beforeBad=await count();
@@ -112,7 +121,23 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   await h.call('/api/management/projects/p/sender-rules',body({address:'synthetic-blocked@example.test',action:'block'}));
   const held=await send({requester:{email:'synthetic-blocked@example.test'},subject:'Held request',body:'Review this'},'synthetic-held');assert.equal(held.status,202);const heldData=await held.json();assert.equal(heldData.data.state,'held_for_review');
   const review=await h.call('/api/management/projects/p/suspended');assert.ok(review.data.some(row=>row.id===heldData.data.id));
+  for(const kind of ['customer','note'])assert.equal((await h.raw('/api/v1/conversations/'+heldData.data.id+'/append',{token:appender.token,...body({kind,localId:'synthetic-hh-held-'+kind,content:'Not a ticket'})})).status,404);
+  assert.equal((await h.db.prepare('SELECT count(*) n FROM native_integration_events WHERE conversation_id=?').bind(heldData.data.id).first()).n,0);
   const released=await h.call('/api/management/projects/p/suspended/'+heldData.data.id+'/recover',body({}));assert.ok(released.conversationId);
+  const projectSettings='/api/management/projects/p/settings';
+  for(const cap of [0,101,1.5])assert.equal((await h.raw(projectSettings,{...body({api_requester_hourly_cap:cap}),method:'PUT'})).status,400);
+  await h.call(projectSettings,{...body({api_requester_hourly_cap:1}),method:'PUT'});
+  assert.equal((await h.call(projectSettings)).data.api_requester_hourly_cap,1);
+  const cappedBody={requester:{external_id:'synthetic-hh-cap'},subject:'Requester cap',body:'Bounded review queue'};
+  assert.equal((await send(cappedBody,'synthetic-hh-cap-1')).status,201);
+  const capped=await send(cappedBody,'synthetic-hh-cap-2');assert.equal(capped.status,202);const capHeld=await capped.json();assert.equal(capHeld.data.reason,'requester_cap');
+  const beforeCap=await count(),pendingBefore=(await h.call('/api/management/projects/p/suspended')).data.length;
+  const capDenied=await send(cappedBody,'synthetic-hh-cap-3');assert.equal(capDenied.status,429);assert.equal((await capDenied.json()).error.code,'requester');
+  for(const header of ['Retry-After','RateLimit-Limit','RateLimit-Remaining','RateLimit-Reset'])assert.ok(capDenied.headers.get(header));
+  assert.equal(capDenied.headers.get('RateLimit-Limit'),'1');assert.equal(await count(),beforeCap);assert.equal((await h.call('/api/management/projects/p/suspended')).data.length,pendingBefore);
+  const capReplay=await send(cappedBody,'synthetic-hh-cap-2');assert.equal(capReplay.status,202);assert.deepEqual(await capReplay.json(),capHeld);
+  await h.call(projectSettings,{...body({api_requester_hourly_cap:5}),method:'PUT'});
+
   const limited=await h.issue(['conversations:create'],'p',{source_product:'synthetic-limit',create_per_minute:1});
   const limitedBody={requester:{external_id:'synthetic-limit'},subject:'Quota test',body:'One request'};
   assert.equal((await send(limitedBody,'synthetic-limit-1',limited.token)).status,201);
@@ -174,6 +199,17 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   await new Promise(resolve=>setTimeout(resolve,Math.max(0,scheduled.next_at-Date.now())+25));await h.dispatch();
   const retried=h.received.filter(r=>r.path.endsWith('/machine-hook'));assert.equal(retried.length,8);
   for(const receipt of receipts){const attempts=retried.filter(r=>r.headers['webhook-id']===receipt.headers['webhook-id']);assert.equal(attempts.length,2);assert.ok(attempts[0].body.equals(attempts[1].body));for(const attempt of attempts){const event=JSON.parse(attempt.body),signature=createHmac('sha256',Buffer.from(hook.secret,'hex')).update(JSON.stringify(['integrations.webhook.v1','p',hook.id,event.event,event.id,attempt.headers['webhook-timestamp'],attempt.body.toString('utf8')])).digest('hex');assert.equal(attempt.headers['webhook-signature'],'v1='+signature)}}
+  const ordered=receipts.map(receipt=>JSON.parse(receipt.body)).sort((a,b)=>a.sequence-b.sequence);
+  assert.ok(ordered.every(event=>Number.isSafeInteger(event.sequence)&&event.sequence>0));
+  assert.equal(new Set(ordered.map(event=>event.sequence)).size,4);
+  assert.ok(ordered.findIndex(event=>event.event==='message.created')>ordered.findIndex(event=>event.event==='conversation.created'));
+  // A receiver can apply newest state once even when the network reorders retries.
+  const seen=new Set();let newest=0,state=null;
+  for(const receipt of [...retried].reverse()){
+   const event=JSON.parse(receipt.body);if(seen.has(event.id))continue;seen.add(event.id);
+   if(event.sequence>newest){newest=event.sequence;state=event.event}
+  }
+  assert.equal(seen.size,4);assert.equal(state,ordered.at(-1).event);
   assert.equal((await send({...boundInput,requester:{external_id:'synthetic-hh-other-hook'}},'synthetic-hh-other-hook',bound.token)).status,201);
   await h.dispatch();assert.equal(h.received.filter(r=>r.path.endsWith('/machine-hook')).length,8);
   const rotated=await h.call('/api/management/projects/p/connections/tokens/'+issued.data.id+'/rotate',body({overlap_seconds:1}));
@@ -182,7 +218,25 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const erasedObjects=(await h.db.prepare('SELECT m.object_key FROM media m JOIN conversations c ON c.id=m.conversation_id WHERE c.contact_id=? UNION SELECT object_key FROM api_uploads WHERE contact_id=?').bind(stored.id,stored.id).all()).results;
   assert.ok(erasedObjects.length>=4);
   for(const object of erasedObjects)assert.ok(await h.file(object.object_key));
+  const pendingHook=await h.call(settings+'/webhooks',body({name:'Synthetic pending erasure',url:'https://receiver.example.com/erasure',events:['message.created'],credential_id:issued.data.id}));
+  // Leave an actual signed delivery queued, then erase before its retry.
+  const pendingAppend=await h.call('/api/v1/conversations/'+created.data.id+'/append',{token:appender.token,...body({kind:'customer',localId:'synthetic-hh-pending-erasure',content:'Private pending payload'})});
+  h.responses.push({status:429,headers:{'Retry-After':'60'}});await h.dispatch();
+  const pendingIds=(await h.db.prepare('SELECT i.id FROM native_integration_intents i JOIN native_integration_events e ON e.id=i.event_id WHERE e.contact_id=?').bind(stored.id).all()).results.map(row=>row.id);
+  assert.ok(pendingIds.length);
+  const apiBefore=await h.db.prepare(`SELECT
+   (SELECT count(*) FROM api_requests WHERE contact_id=?1 AND response_json IS NOT NULL) requests,
+   (SELECT count(*) FROM api_appends WHERE contact_id=?1) appends,
+   (SELECT count(*) FROM api_notes WHERE conversation_id IN (SELECT id FROM conversations WHERE contact_id=?1)) notes,
+   (SELECT count(*) FROM integration_deliveries WHERE id IN (SELECT value FROM json_each(?2))) pending_payloads,
+   (SELECT count(*) FROM api_requests WHERE contact_id=?1 AND held_id IS NOT NULL AND erased=0) held_requests`).bind(stored.id,JSON.stringify(pendingIds)).first();
   const erasure=await h.call('/api/management/projects/p/contacts/'+stored.id+'/erase',body({}));
+  assert.deepEqual(erasure.data.api,apiBefore);
+  assert.deepEqual((await h.call('/api/management/projects/p/contacts/'+stored.id+'/erasure')).data.api,apiBefore);
+  assert.equal((await h.db.prepare('SELECT count(*) n FROM integration_deliveries WHERE id IN (SELECT value FROM json_each(?))').bind(JSON.stringify(pendingIds)).first()).n,0);
+  const erasedEvents=(await h.db.prepare('SELECT e.body,e.erased_at FROM native_integration_events e JOIN native_integration_intents i ON i.event_id=e.id WHERE i.id IN (SELECT value FROM json_each(?))').bind(JSON.stringify(pendingIds)).all()).results;assert.ok(erasedEvents.length);assert.ok(erasedEvents.every(event=>event.erased_at&&event.body==='{}'));
+  assert.equal((await h.db.prepare('SELECT count(*) n FROM api_requests WHERE contact_id=? AND (response_json IS NOT NULL OR erased=0)').bind(stored.id).first()).n,0);
+
   assert.equal(erasure.data.attachments,erasedObjects.length);
   for(const object of erasedObjects)assert.equal(await h.file(object.object_key),null);
   assert.equal((await h.db.prepare('SELECT count(*) n FROM api_notes').first()).n,0);
@@ -192,16 +246,22 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   await new Promise(resolve=>setTimeout(resolve,1100));assert.equal((await send()).status,401);
   await h.call(settings+'/tokens/'+rotated.data.id,{method:'DELETE'});
   assert.equal((await send(input,'synthetic-hh-1',rotated.token)).status,401);
-  // Hold only the attachment network response while revocation crosses admission.
-  const racing=await h.issue(['conversations:create'],'p',{source_product:'synthetic-hh-race'});
-  const raceBody={requester:{external_id:'synthetic-hh-race'},subject:'Atomic authority',body:'No partial request',attachments:[{url:'https://receiver.example.com/race-file',sha256:sha('synthetic-hh-race'),filename:'race.txt'}]};
-  h.responses.push({status:200,body:'synthetic-hh-race',headers:{'Content-Type':'text/plain'},delay:1000});
-  const beforeRace=await count(),pending=send(raceBody,'synthetic-hh-race',racing.token);
-  const deadline=Date.now()+10000;while(!h.received.some(r=>r.path.endsWith('/race-file'))&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,10));
-  assert.ok(h.received.some(r=>r.path.endsWith('/race-file')));
-  await h.call(settings+'/tokens/'+racing.data.id,{method:'DELETE'});
-  const raced=await pending;assert.equal(raced.status,503);assert.equal(await count(),beforeRace);
-  assert.equal((await h.db.prepare('SELECT count(*) n FROM api_requests WHERE source_product=?').bind('synthetic-hh-race').first()).n,0);
-  assert.equal((await send(raceBody,'synthetic-hh-race',racing.token)).status,401);
+  // Only the attachment network response is delayed; real administration crosses admission.
+  for(const change of ['revoke','rotate','overlap','bounds','expire','workspace']){
+   const project=change==='workspace'?'q':'p',base='/api/management/projects/'+project+'/connections',actor=project==='q'?'foreign':'owner';
+   const racing=await h.issue(['conversations:create'],project,{source_product:'synthetic-hh-race-'+change,...(change==='expire'?{expires_at:new Date(Date.now()+700).toISOString()}:{})});
+   const raceBody={requester:{external_id:'synthetic-hh-race'},subject:'Atomic authority',body:'No partial request',attachments:[{url:'https://receiver.example.com/race-'+change,sha256:sha('synthetic-hh-race'),filename:'race.txt'}]};
+   h.responses.push({status:200,body:'synthetic-hh-race',headers:{'Content-Type':'text/plain'},delay:1100});
+   const beforeRace=await count(),pending=send(raceBody,'synthetic-hh-race-'+change,racing.token);
+   const deadline=Date.now()+10000;while(!h.received.some(r=>r.path.endsWith('/race-'+change))&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,10));
+   assert.ok(h.received.some(r=>r.path.endsWith('/race-'+change)));
+   if(change==='revoke')await h.call(base+'/tokens/'+racing.data.id,{actor,method:'DELETE'});
+   if(change==='rotate'||change==='overlap')await h.call(base+'/tokens/'+racing.data.id+'/rotate',{actor,...body({overlap_seconds:change==='overlap'?60:0})});
+   if(change==='bounds')await h.call(base+'/tokens/'+racing.data.id,{actor,...body({bindings:{priorities:['low']}}),method:'PATCH'});
+   if(change==='workspace')await h.call('/api/management/projects/q',{actor,method:'DELETE'});
+   const raced=await pending;assert.equal(raced.status,change==='overlap'?201:503,change);assert.equal(await count(),beforeRace+(change==='overlap'?1:0));
+   const receipt=await h.db.prepare('SELECT count(*) n FROM api_requests WHERE source_product=?').bind('synthetic-hh-race-'+change).first();assert.equal(receipt.n,change==='overlap'?1:0);
+   if(['revoke','rotate','expire','workspace'].includes(change))assert.equal((await send(raceBody,'synthetic-hh-race-'+change,racing.token)).status,401);
+  }
  }finally{await h.close()}
 });

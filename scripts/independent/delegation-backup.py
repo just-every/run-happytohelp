@@ -40,6 +40,15 @@ def sanitize(sql):
         for table in CREDENTIAL_TABLES:
             if table in tables:
                 db.execute(f'DELETE FROM "{table}"')
+        if 'integration_tokens' in tables:
+            db.execute("UPDATE integration_tokens SET token_hash='revoked:'||id,revoked_at=coalesce(revoked_at,max(1,created_at))")
+        if 'api_requests' in tables:
+            db.execute('UPDATE api_requests SET response_json=NULL,erased=1')
+        if 'api_appends' in tables:
+            db.execute('UPDATE api_appends SET response_json=NULL')
+        for table in ('integration_deliveries', 'native_integration_intents', 'native_integration_destinations', 'api_uploads'):
+            if table in tables:
+                db.execute(f'DELETE FROM "{table}"')
         search = search_definition(db)
         if search:
             # iterdump represents virtual tables with writable_schema and raw

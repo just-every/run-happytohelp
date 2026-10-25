@@ -6,7 +6,7 @@ import {readFile, writeFile, mkdir, rm, copyFile} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {recoveryRuntime} from './runtime.mjs';
 import {snapshot, compareSnapshots, summarize, sha256} from './snapshot.mjs';
-import {seedJourney, verifyAccess, verifyFreshLogin, setupToken} from './journey.mjs';
+import {seedJourney, verifyAccess, verifyFreshLogin, verifyRestoredApi, setupToken} from './journey.mjs';
 
 // Native export of a populated packaged install, restored into a fresh destination and compared row by row and object by object.
 export async function recoveryComparison(buildDirectory, outputDirectory, profile='first-run'){
@@ -56,7 +56,14 @@ try {
   assert.equal(sanitized.status, 0, sanitized.stderr);
   const backup = await readFile(backupFile, 'utf8');
   assert.doesNotMatch(backup, /private-grant-hash|private-code-hash/, 'the backup carries no delegated credential');
-  for (const table of ['edition_grants', 'edition_codes']) before.rows[table] = [];
+  for (const table of ['edition_grants', 'edition_codes','integration_deliveries','native_integration_intents','native_integration_destinations','api_uploads']) before.rows[table] = [];
+  for(const table of ['integration_tokens','api_requests','api_appends'])before.rows[table]=before.rows[table].map(value=>{
+   const row=JSON.parse(value);
+   if(table==='integration_tokens'){assert.ok(!backup.includes(row.token_hash));row.token_hash='revoked:'+row.id;row.revoked_at??=Math.max(1,row.created_at)}
+   else{row.response_json=null;if(table==='api_requests')row.erased=1}
+   return JSON.stringify(row);
+  }).sort();
+  assert.ok(!backup.includes(journey.api.machine.token));
   restored = await recoveryRuntime(artifact, {directory: join(output, 'restored-runtime'), port: port + 2, inspectorPort: port + 3, variables, restoreFile: backupFile});
   let after;
   await restored.withStorage(async storage => {
@@ -73,6 +80,7 @@ try {
   await restored.start();
   await verifyAccess(restored, journey, journey.owner.token);
   await verifyFreshLogin(restored, journey);
+  await verifyRestoredApi(restored, journey);
   await restored.close();
   const receipt = {
     profile, sourceSha: build.sourceSha, artifactSha256: build.artifactSha256, startedAt, finishedAt: new Date().toISOString(), node: process.version,

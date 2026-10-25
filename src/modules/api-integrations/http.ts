@@ -18,12 +18,13 @@ export const requireScope=(scope:ApiScope)=>async(c:any,next:()=>Promise<void>)=
  if(!match)throw new HTTPException(401,{message:'Valid bearer token required'})
  const hash=await hashToken(match[1]);const row=await c.env.DB.prepare('SELECT namespace,id,source_product,bindings_json,family_id,create_minute,create_day FROM integration_tokens WHERE token_hash=?').bind(hash).first()
  if(!row)throw new HTTPException(401,{message:'Invalid or expired bearer token'})
- try{await enforceRateLimits(c.env,[['apiRequestsPerTokenMinute',row.id]])}catch(error){if(row.source_product&&error instanceof HTTPException&&error.status===429)throw new ApiError(429,'credential','Credential request quota exceeded',{}, {'Retry-After':error.getResponse().headers.get('Retry-After')??'60','RateLimit-Limit':'120','RateLimit-Remaining':'0','RateLimit-Reset':String((Math.floor(Date.now()/60000)+1)*60)});throw error}
+
  const service=tokens(c.env,row.namespace),context={requestId:crypto.randomUUID(),resource:scope}
  const credential=await service.authorize(match[1],[scope],context)
  if(!credential){const live=await c.env.DB.prepare('SELECT 1 FROM integration_tokens WHERE token_hash=? AND revoked_at IS NULL AND (expires_at IS NULL OR expires_at>?)').bind(hash,Date.now()).first();throw new HTTPException(live?403:401,{message:live?'Token does not grant this scope':'Invalid or expired bearer token'})}
  const active=await c.env.DB.prepare("SELECT p.id FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)").bind(row.namespace).first()
  if(!active)throw new HTTPException(401,{message:'Invalid or expired bearer token'})
+ try{await enforceRateLimits(c.env,[['apiRequestsPerTokenMinute',row.id]])}catch(error){if(row.source_product&&error instanceof HTTPException&&error.status===429)throw new ApiError(429,'credential','Credential request quota exceeded',{}, {'Retry-After':error.getResponse().headers.get('Retry-After')??'60','RateLimit-Limit':'120','RateLimit-Remaining':'0','RateLimit-Reset':String((Math.floor(Date.now()/60000)+1)*60)});throw error}
  c.set('authority',verifiedToken(row.namespace,credential.id,scope,JSON.stringify([row.source_product,row.bindings_json,row.family_id,row.create_minute,row.create_day])));c.header('Cache-Control','no-store');await next()
 }
 export function iso(row:any){if(!row)return row;return Object.fromEntries(Object.entries(row).map(([k,v])=>[k,typeof v==='number'&&/(?:_at|At)$/.test(k)?new Date(v).toISOString():v]))}

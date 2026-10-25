@@ -15,5 +15,5 @@ export async function rotateMachine(env:Env,who:Issuer,id:string,body:any){
  if(!old)throw new HTTPException(404)
  const overlap=body.overlap_seconds??0
  if(!Number.isInteger(overlap)||overlap<0||overlap>604800)throw new HTTPException(400,{message:'Overlap must be between zero and seven days'})
- return tokens(env,who.actor.projectId,{source:old.source_product,bindings:old.bindings_json,minute:old.create_minute,day:old.create_day,family:old.family_id,rotate:{id,overlap:overlap*1000}}).issue(who,{name:old.name,scopes:JSON.parse(old.scopes),...(old.expires_at?{expiresAt:old.expires_at}:{})})
+ return tokens(env,who.actor.projectId,{source:old.source_product,bindings:old.bindings_json,minute:old.create_minute,day:old.create_day,family:old.family_id,rotate:{id,overlap:overlap*1000,expires:old.expires_at}}).issue(who,{name:old.name,scopes:JSON.parse(old.scopes),...(old.expires_at?{expiresAt:old.expires_at}:{})})
 }

@@ -12,6 +12,7 @@ export async function releaseApiHold(env:Env,actor:Actor,sessionHash:string,row:
   env.DB.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) SELECT ?,project_id,id,?,contact_id,'contact',?,1,? FROM conversations WHERE id=?").bind(message,'api:release:'+row.id,row.text,now,id),
   ...input.attachments.map((file:any)=>env.DB.prepare('INSERT INTO media SELECT ?,project_id,id,contact_id,?,?,?,?,?,? FROM conversations WHERE id=?').bind(file.id,file.objectKey,file.filename,file.contentType,file.size,message,now,id)),
   trackingStatement(env,id,true),
+  env.DB.prepare('INSERT INTO conversation_outbox(project_id,conversation_id,message_id,created_at) SELECT project_id,conversation_id,id,created_at FROM messages WHERE id=?').bind(message),
   env.DB.prepare("INSERT INTO ticket_history SELECT ?,project_id,id,?,'api','api',?,? FROM conversations WHERE id=?").bind(crypto.randomUUID(),api.credential_id,now,JSON.stringify({action:'released',credential_name:api.name,source_product:api.product,source_ref:api.ref}),id),
   env.DB.prepare('UPDATE api_requests SET conversation_id=?,held_id=NULL WHERE project_id=? AND held_id=? AND EXISTS(SELECT 1 FROM conversations WHERE id=?)').bind(id,actor.projectId,row.id,id),
   env.DB.prepare('DELETE FROM suspended_emails WHERE id=? AND EXISTS(SELECT 1 FROM conversations WHERE id=?)').bind(row.id,id)

@@ -111,7 +111,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
    const identity=kind==='email'?{email:'synthetic-hh-matrix@example.test'}:kind==='phone'?{phone:'+12025550129'}:{external_id:'synthetic-hh-matrix'};
    const fixture='synthetic-hh-matrix-'+kind;
    await h.contact(fixture);
-   await h.db.prepare('UPDATE contacts SET email=?,external_id=?,is_verified=1,metadata_json=? WHERE id=?').bind(identity.email??null,identity.external_id?'synthetic-hh-1:'+identity.external_id:null,JSON.stringify(identity.phone?{phone:identity.phone,phone_verified:1}:{}),fixture).run();
+   await h.db.prepare('UPDATE contacts SET email=?,external_id=?,is_verified=1,metadata_json=? WHERE id=?').bind(identity.email??null,identity.external_id?'synthetic-hh-1:'+identity.external_id:identity.email??null,JSON.stringify(identity.phone?{phone:identity.phone,phone_verified:1}:{}),fixture).run();
    const oldTicket=await h.conversation(fixture);
    const before=(await h.db.prepare('SELECT count(*) n FROM contacts').first()).n;
    const matched=await send({subject:'Verified requester',body:'New request only',requester:identity},'synthetic-hh-match-'+kind);

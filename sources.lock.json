@@ -10820,7 +10820,7 @@
       "executable": false
     },
     "tests/connections/api-create.mjs": {
-      "sha256": "d8cded127c02a2418bd0a3a321c89a41a405b6abe40f9cffd0fbbae4cce8207b",
+      "sha256": "e5638a8ed000fa81972b48181b7fcd9845773662f25e94472ae18387d72f6328",
       "executable": false
     },
     "tests/connections/api.mjs": {
@@ -10856,7 +10856,7 @@
       "executable": false
     },
     "tests/connections/harness.mjs": {
-      "sha256": "0518ea88d4a92eb89080211077765efb4f316c64dc57c04df65f92d84ca9df4e",
+      "sha256": "f37bf3e8cb6d75e652e2c6b62a66ab1e8a762bd8c857274d6747f0f5ea73a974",
       "executable": false
     },
     "tests/connections/inventory.mjs": {

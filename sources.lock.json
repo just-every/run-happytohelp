@@ -10832,7 +10832,7 @@
       "executable": false
     },
     "tests/connections/api.mjs": {
-      "sha256": "ff59a18dd656f81f7ee4ec3a2cfae9cac3756cc8db38ab91ac4c8ca3cc27f2e0",
+      "sha256": "a5c7d805a77844e4c29e4fd79bfdce3d15c195d8df4879ca21a3adc939a30130",
       "executable": false
     },
     "tests/connections/browser-network.mjs": {

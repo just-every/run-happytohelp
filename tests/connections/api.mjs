@@ -169,8 +169,11 @@ test('malformed JSON is a client error and denied scope attempts consume the tok
   const beforeChoice=Date.now(),chosen=await h.call(contactPath,{token:full.token,...body({provided_email:'chosen@example.test'}),method:'PUT'}),flags=JSON.parse(chosen.data.metadata_json);
   assert.equal(flags.provided_email_source,'operator');assert.deepEqual(flags.provided_email_set_by,{type:'api',id:full.data.id});assert.ok(flags.provided_email_set_at>=beforeChoice);
   const readOnly=await h.raw(contactPath,{token:(await h.issue(['contacts:read'])).token,...body({provided_email:'forbidden@example.test'}),method:'PUT'});assert.equal(readOnly.status,403);
-  const key='rate:apiRequestsPerTokenMinute:'+sha(read.data.id),row=await h.db.prepare('SELECT used FROM abuse_counters WHERE key=?').bind(key).first();assert.equal(row.used,1);
-  await h.db.prepare('UPDATE abuse_counters SET used=120 WHERE key=?').bind(key).run();assert.equal((await h.raw('/api/v1/articles',{token:read.token})).status,429);
+  const quota=await h.issue(['contacts:read']);
+  // Exercise the public quota in one real clock window, never seed its counter.
+  const remaining=60000-Date.now()%60000;if(remaining<10000)await new Promise(resolve=>setTimeout(resolve,remaining+25));
+  for(let index=0;index<120;index++)assert.equal((await h.raw('/api/v1/articles',{token:quota.token})).status,403);
+  assert.equal((await h.raw('/api/v1/articles',{token:quota.token})).status,429);
  }finally{await h.close()}
 });
 test('API replies and resolve cannot revive erased contacts at preflight, commit or readback',async()=>{

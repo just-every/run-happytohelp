@@ -324,7 +324,7 @@ async function outboundNoticesJourney(){
    assert.equal((await app.ok(`/api/dashboard/projects/${liveProject.projectId}/conversations/${liveTicket.conversation.id}`,{token:liveToken})).data.last_message.email_status.state,'sending')
   }finally{releaseLive?.();await running}
   assert.equal((await app.ok(`/api/dashboard/projects/${liveProject.projectId}/conversations/${liveTicket.conversation.id}`,{token:liveToken})).data.last_message.email_status.state,'sent')
-  assert.equal(sent.filter(copy=>copy.text.includes('synthetic-happytohelp-live-send')).length,1)
+  assert.equal(sent.filter(copy=>copy.text.includes('synthetic-happytohelp-live-send')&&[].concat(copy.to).includes('synthetic-happytohelp-live@customer.example')).length,1)
   for(const job of liveJobs.filter(job=>job!==liveJob))await app.runJobs([job])
 
   // Terminate a real queue invocation immediately after the complete send claim

@@ -83,7 +83,7 @@ export async function eraseRecoveryIssuer(runtime,state,issuerId,issuerSession){
  const created=await json(await call(runtime,'/api/v1/conversations',{requester:{external_id:'synthetic-hh-issuer-restore'},subject:'Retained issuer ticket',body:'Customer request'},api.erasedIssuer.token,{'Idempotency-Key':'synthetic-hh-issuer-restore'}),201);
  api.issuerTicketId=created.data.id;
  await json(await call(runtime,`/api/v1/conversations/${created.data.id}/append`,{kind:'customer',localId:'synthetic-hh-issuer-restore-append',content:'Retained followup'},api.erasedIssuer.token),200);
- await json(await call(runtime,`/api/management/projects/${owner.projectId}/agents/${issuerId}/erase`,{},owner.token),200);
+ await json(await call(runtime,`/api/dashboard/projects/${owner.projectId}/agents/${issuerId}/erase`,{},owner.token),200);
  const audit=await json(await call(runtime,`/api/management/projects/${owner.projectId}/audit/export?format=json`,undefined,owner.token),200);
  api.issuerEvents=audit.events.filter(event=>event.actor_id===issuerId).map(event=>event.id);assert.ok(api.issuerEvents.length);
  assert.ok(audit.events.filter(event=>api.issuerEvents.includes(event.id)).every(event=>event.actor==='Former teammate'));

@@ -83,7 +83,7 @@ const rules:Record<string,Rule>={
 for(const [kind,rule] of [['ais','settings.manage'],['macros','settings.manage'],['plugins','settings.manage'],['contacts','contacts.manage']] as const)for(const base of [P,D]){
  rules[`POST ${base}/${kind}`]=rule;rules[`PUT ${base}/${kind}/:resourceId`]=rule;rules[`DELETE ${base}/${kind}/:resourceId`]=kind==='contacts'?'data.erase':rule
 }
-for(const base of [P,D]){rules[`PUT ${base}/agents/:userId`]='members.manage';rules[`DELETE ${base}/agents/:userId`]='members.manage';rules[`POST ${base}/plugins/:pluginId/:direction`]='settings.manage'}
+for(const base of [P,D]){rules[`PUT ${base}/agents/:userId`]='members.manage';rules[`DELETE ${base}/agents/:userId`]='members.manage';rules[`POST ${base}/agents/:userId/erase`]='data.erase';rules[`POST ${base}/plugins/:pluginId/:direction`]='settings.manage'}
 // Ticket configuration follows existing settings authority; personal views are
 // self-owned and their handlers separately guard shared definitions.
 for(const base of [P,D]){

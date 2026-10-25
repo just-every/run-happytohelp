@@ -3512,7 +3512,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "cbe435adff74d0d683fa7aa60dcd070801d7c60a083cc3a1f9b5190198057ca5",
+      "sha256": "c17eaf3b94464759fae6eb4591ae79da093744447248175fafe9e7b806815284",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -11480,7 +11480,7 @@
       "executable": false
     },
     "tests/helpers/identity/roles-audit.mjs": {
-      "sha256": "cfb72f19b5c212fac11d3eae34b882f161dc5699383f356705141917a62cf043",
+      "sha256": "7f05fcdec28ab1051529d61f937b2d8e0c5fa75132f35dfe9520ae7711d49ecc",
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {
@@ -11788,7 +11788,7 @@
       "executable": false
     },
     "tests/helpers/recovery/journey.mjs": {
-      "sha256": "85494d42d5057c26a448948b9b2c08ce2720748b3c26c67320848a6c242c51dc",
+      "sha256": "0dc9a850d8346490bf2db332f9f0cd8a05dd0978b2635711f75044d6b215a0d7",
       "executable": false
     },
     "tests/helpers/recovery/m9-inventory.mjs": {

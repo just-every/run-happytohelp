@@ -2535,6 +2535,10 @@
       "sha256": "76badd57b74aded06591c7f5a9ff2814f4cdc6ef49183b3e3f670842420240ec",
       "executable": false
     },
+    "public/fonts/fonts.css": {
+      "sha256": "ba5dc229a564cb474e220fe18ea4fe2903b7b3fd47d9ecd1a16f55488378eccb",
+      "executable": false
+    },
     "public/fonts/outfit/LICENSE.txt": {
       "sha256": "0e5fcef5d93bfcae273c11c00f0bb453d3b5491860e1ac8b658767b7577c938f",
       "executable": false
@@ -2564,7 +2568,7 @@
       "executable": false
     },
     "public/rer-theme.css": {
-      "sha256": "d2219f969cb7f6b1bd38e8c6c216c8c34a2111b03b90b92fef3053d2670d2234",
+      "sha256": "909819e581d4a4d3b0bf651d480db08b1dde66303764a26eae812e9a3409b821",
       "executable": false
     },
     "public/setup/installer-ocean.png": {
@@ -7972,11 +7976,11 @@
       "executable": false
     },
     "src/site/identity.ts": {
-      "sha256": "da04de3b4a79f957adc05c5791f95e79e9d7f41edd6a5253e43c8b30943fe434",
+      "sha256": "a1938a4863342dc0b51f131a5820bd0bb8b1cbffadd7461e4d5df12b0bd11d25",
       "executable": false
     },
     "src/site/pages.ts": {
-      "sha256": "d8b4a62905046a628e68482987f000d05979d15cf162a18f72d57670f496ac50",
+      "sha256": "5a88f0b5be9c044a0c8060a43d15927890d13d262e56bf9b9cb24f380af4716d",
       "executable": false
     },
     "src/site/run.json": {

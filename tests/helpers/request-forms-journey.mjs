@@ -46,14 +46,14 @@ export async function requestFormsJourney(){
   const acknowledgments=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&[].concat(mail.to).includes('rosa@example.com'))
   assert.equal(acknowledgments().length,1,'a verified request-form submission acknowledges the requester once, including on exact-command replay')
   assert.equal(acknowledgments()[0].headers['X-Auto-Response-Suppress'],'All')
-  const ccNotices=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&[].concat(mail.to).includes(cc))
-  assert.equal(ccNotices().length,2,'one notice for the CC own ticket and one for the form, with no replay send')
-  assert.equal(ccNotices()[1].headers['X-Auto-Response-Suppress'],'All')
+  const ccNotices=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&mail.text?.includes(id)&&[].concat(mail.to).includes(cc))
+  assert.equal(ccNotices().length,1,'the form acknowledges its independently proven CC once, including replay')
+  assert.equal(ccNotices()[0].headers['X-Auto-Response-Suppress'],'All')
   assert.equal((await app.first('SELECT count(*) n FROM conversation_participants cp JOIN contacts ct ON ct.id=cp.contact_id WHERE cp.conversation_id=? AND ct.email=?',id,cc)).n,1)
   assert.equal((await app.call(path,{...customer,body:valid,status:409})).status,409,'removing CC changes the durable intent')
   await app.configure({})
   assert.equal((await app.call(path,{...customer,body:submitted,status:200})).data.ticket.id,id)
-  assert.equal(ccNotices().length,2,'restart and replay preserve the frozen acknowledgment')
+  assert.equal(ccNotices().length,1,'restart and replay preserve the frozen acknowledgment')
   const ticket=(await app.ok(`${dashboard}/conversations/${id}/ticket`,owner)).data
   assert.equal(ticket.assigned_to,f.workspace.users.operator,'the selected form and typed field route the ticket')
   const sla=(await app.ok(`${dashboard}/conversations/${id}/sla`,owner)).data

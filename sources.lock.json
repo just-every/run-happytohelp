@@ -3944,7 +3944,7 @@
       "executable": false
     },
     "src/modules/api-integrations/api-create.ts": {
-      "sha256": "0bfaed43a07ae20c53c5e39d979540c370f714eac6d8b3dde241f2b222841c42",
+      "sha256": "2ddc049e892379d9b9230fdd4de79fe70ae1d7dbcb10f46e9f60ce9d84449e6d",
       "executable": false
     },
     "src/modules/api-integrations/api-resources.ts": {
@@ -3992,7 +3992,7 @@
       "executable": false
     },
     "src/modules/api-integrations/holds.ts": {
-      "sha256": "3cd490c517f0cc609e77ffe107edc9a3b9cc90794f46e35ff1de7db467d239e3",
+      "sha256": "bb27b7236a30851dfeb0776a7a52840b03499e2b7024591e26c57f9da832e72f",
       "executable": false
     },
     "src/modules/api-integrations/http.ts": {

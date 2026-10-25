@@ -63,7 +63,7 @@ export function createApi(app:Hono<ApiEnv>){
    await c.env.DB.batch([
     assert,
     ...(!input.contact?[c.env.DB.prepare('INSERT INTO contacts(id,project_id,name,email,external_id,is_verified,metadata_json,created_at) VALUES(?,?,?,?,?,0,?,?)').bind(contactId,p,input.name,input.email,null,metadata,now)]:[]),
-    c.env.DB.prepare('INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at,subject,channel,priority,mailbox_id,group_id,submitter_id,submitter_type,ticket_actor_id,ticket_actor_type,ticket_source,revision,last_message_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,\'api\',?,\'api\',\'api\',1,?)').bind(id,p,contactId,now,now,input.subject,input.channel,input.priority,b.mailbox_id??null,b.group_id??null,a.tokenId,a.tokenId,messageId),
+    c.env.DB.prepare('INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at,subject,channel,priority,mailbox_id,group_id,submitter_id,submitter_type,ticket_actor_id,ticket_actor_type,ticket_source,revision,last_message_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,\'api\',?,\'api\',\'api\',0,NULL)').bind(id,p,contactId,now,now,input.subject,input.channel,input.priority,b.mailbox_id??null,b.group_id??null,a.tokenId,a.tokenId),
     c.env.DB.prepare('INSERT INTO api_conversations VALUES(?,?,?,?,?,?,?,?)').bind(id,p,a.tokenId,credential.family_id,credential.name,product,input.ref,input.url),
     c.env.DB.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,?,?,?,?,'contact',?,1,?)").bind(messageId,p,id,'api:'+digest,contactId,input.content,now),
     ...files.filter(file=>file.uploadId).map(file=>c.env.DB.prepare('UPDATE api_uploads SET contact_id=?,expires_at=0 WHERE id=? AND project_id=?').bind(contactId,file.uploadId!,p)),
@@ -71,6 +71,7 @@ export function createApi(app:Hono<ApiEnv>){
     ...input.tags.map(tag=>c.env.DB.prepare('INSERT INTO conversation_tags VALUES(?,?,?)').bind(p,id,tag)),
     ...files.map(file=>c.env.DB.prepare('INSERT INTO media VALUES(?,?,?,?,?,?,?,?,?,?)').bind(file.id,p,id,contactId,`${p}/${id}/${file.id}`,file.filename,file.type,file.bytes.length,messageId,now)),
     trackingStatement(c.env,id,true),
+    c.env.DB.prepare('UPDATE conversations SET revision=1,last_message_id=? WHERE id=? AND project_id=?').bind(messageId,id,p),
     c.env.DB.prepare('INSERT INTO conversation_outbox(project_id,conversation_id,message_id,created_at) VALUES(?,?,?,?)').bind(p,id,messageId,now),
     c.env.DB.prepare("INSERT INTO ticket_history VALUES(?,?,?,?,'api','api',?,?)").bind(crypto.randomUUID(),p,id,a.tokenId,now,history),
     c.env.DB.prepare('UPDATE api_requests SET conversation_id=?,contact_id=?,status=201,response_json=? WHERE project_id=? AND source_product=? AND key_digest=? AND claim=?').bind(id,contactId,JSON.stringify(response),p,product,digest,claim),

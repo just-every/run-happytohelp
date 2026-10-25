@@ -35,6 +35,6 @@ export async function harness({beforeIntegrations}={}){
  const dispatch=(projectId='p')=>call('/_test/dispatch',body({projectId}));
  let url=await mf.ready;
  async function restart(){await mf.dispose();mf=new Miniflare(options);db=await mf.getD1Database('DB');url=await mf.ready}
- return {get db(){return db},raw,call,issue,session,contact,conversation,dispatch,received,responses,restart,setReceiverVerifier:verify=>{receiverVerifier=verify},inbound:data=>call('/api/integrations/email/inbound',{token:inboundToken,...body(data)}),get url(){return String(url)},sessionToken:name=>sessions[name],get external(){return external},async close(){await mf.dispose();await new Promise(resolve=>server.close(resolve));await rm(directory,{recursive:true,force:true})}}
+ return {get db(){return db},raw,call,issue,session,contact,conversation,dispatch,file:async key=>(await mf.getR2Bucket('FILES')).get(key),received,responses,restart,setReceiverVerifier:verify=>{receiverVerifier=verify},inbound:data=>call('/api/integrations/email/inbound',{token:inboundToken,...body(data)}),get url(){return String(url)},sessionToken:name=>sessions[name],get external(){return external},async close(){await mf.dispose();await new Promise(resolve=>server.close(resolve));await rm(directory,{recursive:true,force:true})}}
  }catch(e){if(mf)await mf.dispose();if(server)await new Promise(resolve=>server.close(resolve));await rm(directory,{recursive:true,force:true});throw e}
 }

@@ -244,11 +244,12 @@ data = "{\"kind\":\"customer\",\"localId\":\"synthetic-hh-docs-append-1\",\"cont
 CURL
 ```
 
-Create attachments accept an `upload_id` belonging to the same credential family,
+Create and append attachments accept an `upload_id` belonging to the same credential family,
 or a public HTTPS `url`, `filename` and lowercase hexadecimal `sha256`. URL
 fetches refuse redirects, have a ten-second deadline and a 20 MB per-file limit;
 unsupported types return 415 and oversized files return 413. All attachments
-must validate before any ticket is committed.
+must validate before a ticket, message or note is committed. Append-only credentials
+can use the same bounded upload endpoint; private note files remain operator-only.
 
 Machine issuance accepts `create_per_minute` (default 20, maximum 60) and
 `create_per_day` (default 1000, maximum 10000). Installation workspace ceilings
@@ -274,8 +275,7 @@ idempotency records cannot replay a response.
 
 ### Current machine API limits
 
-Append attachment references and acknowledgment/consent options are not yet
-accepted. SMS and WhatsApp acknowledgment delivery is not implemented. Requester
+Acknowledgment/consent options are not yet accepted. SMS and WhatsApp acknowledgment delivery is not implemented. Requester
 holds currently use a fixed five-create hourly cap; configurable caps and a
 separate requester 429 policy remain pending. Source back-links and machine
 credential metadata are stored, but their complete Settings and inbox display

@@ -80,7 +80,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const mergeSource=await send({requester:{external_id:'synthetic-hh-merge'},subject:'Duplicate request',body:'Merge this request'},'synthetic-hh-merge');assert.equal(mergeSource.status,201);
   const mergeId=(await mergeSource.json()).data.id,mergePath='/api/management/projects/p/conversations/'+mergeId;
   const sourceTicket=(await h.call(mergePath+'/ticket')).data,targetTicket=(await h.call(management)).data;
-  await h.call('/api/management/projects/p/conversations/'+created.data.id+'/merge',body({source_id:mergeId,source_version:sourceTicket.ticket_version,target_version:targetTicket.ticket_version}));
+  await h.call('/api/dashboard/projects/p/conversations/'+created.data.id+'/merge',body({source_id:mergeId,source_version:sourceTicket.ticket_version,target_version:targetTicket.ticket_version}));
   for(const kind of ['customer','note']){const merged=await h.raw('/api/v1/conversations/'+mergeId+'/append',{token:appender.token,...body({kind,localId:'synthetic-hh-merged-'+kind,content:'Must use the survivor'})});assert.equal(merged.status,409);const error=(await merged.json()).error;assert.equal(error.code,'merged_into');assert.equal(error.conversation_id,created.data.id)}
   for(const category of ['solved','closed']){
    const ticket=(await h.call(management)).data;
@@ -179,7 +179,14 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const rotated=await h.call('/api/management/projects/p/connections/tokens/'+issued.data.id+'/rotate',body({overlap_seconds:1}));
   const after=await send(input,'synthetic-hh-1',rotated.token);assert.equal(after.status,201);assert.deepEqual(await after.json(),created);
   const old=await send();assert.equal(old.status,201);
-  await h.call('/api/management/projects/p/contacts/'+stored.id+'/erase',body({}));
+  const erasedObjects=(await h.db.prepare('SELECT m.object_key FROM media m JOIN conversations c ON c.id=m.conversation_id WHERE c.contact_id=? UNION SELECT object_key FROM api_uploads WHERE contact_id=?').bind(stored.id,stored.id).all()).results;
+  assert.ok(erasedObjects.length>=4);
+  for(const object of erasedObjects)assert.ok(await h.file(object.object_key));
+  const erasure=await h.call('/api/management/projects/p/contacts/'+stored.id+'/erase',body({}));
+  assert.equal(erasure.data.attachments,erasedObjects.length);
+  for(const object of erasedObjects)assert.equal(await h.file(object.object_key),null);
+  assert.equal((await h.db.prepare('SELECT count(*) n FROM api_notes').first()).n,0);
+  assert.equal((await h.db.prepare('SELECT count(*) n FROM api_note_media').first()).n,0);
   for(const key of ['synthetic-hh-1','synthetic-hh-3']){const erased=await send(input,key,rotated.token);assert.equal(erased.status,409);assert.equal((await erased.json()).error.code,'identity_erased')}
   assert.equal((await h.db.prepare('SELECT response_json FROM api_requests WHERE key_digest=?').bind(sha('synthetic-hh-1')).first()).response_json,null);
   await new Promise(resolve=>setTimeout(resolve,1100));assert.equal((await send()).status,401);

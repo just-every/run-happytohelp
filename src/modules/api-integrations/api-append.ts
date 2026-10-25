@@ -14,7 +14,7 @@ export function appendApi(app:Hono<ApiEnv>){
   const a=c.get('authority'),p=a.projectId,b=await jsonBody(c),id=c.req.param('id'),localId=text(b.localId,200),content=text(b.content,100000)
   if(!['customer','note'].includes(b.kind)||reservedLocalId(localId)||Object.keys(b).some(k=>!['kind','localId','content','attachments'].includes(k)))throw new ApiError(400,'invalid_request')
   const credential=await c.env.DB.prepare('SELECT * FROM integration_tokens WHERE namespace=? AND id=?').bind(p,a.tokenId).first<any>()
-  const current=await c.env.DB.prepare(`SELECT c.* FROM conversations c JOIN api_conversations api ON api.conversation_id=c.id WHERE c.project_id=? AND c.id=? AND ${conversationBounds()} AND ${contactAvailableSql()}`).bind(p,id,a.tokenId).first<any>()
+  const current=await c.env.DB.prepare(`SELECT c.*,api.source_ref FROM conversations c JOIN api_conversations api ON api.conversation_id=c.id WHERE c.project_id=? AND c.id=? AND ${conversationBounds()} AND ${contactAvailableSql()}`).bind(p,id,a.tokenId).first<any>()
   if(!current)throw new ApiError(404,'not_found')
   const merged=await mergedAlias(c.env,p,id);if(merged)throw new ApiError(409,'merged_into','Conversation was merged',{conversation_id:merged.target_id})
   const digest=await hashToken(canonicalJson(b)),prior=await c.env.DB.prepare('SELECT * FROM api_appends WHERE project_id=? AND conversation_id=? AND family_id=? AND local_id=?').bind(p,id,credential.family_id,localId).first<any>()
@@ -34,7 +34,7 @@ export function appendApi(app:Hono<ApiEnv>){
    ...fileStatements(targetId,messageId),
    c.env.DB.prepare('INSERT OR IGNORE INTO api_conversations SELECT ?,project_id,credential_id,family_id,credential_name,source_product,NULL,NULL FROM api_conversations WHERE conversation_id=? AND EXISTS(SELECT 1 FROM messages WHERE id=?)').bind(targetId,id,messageId),
    c.env.DB.prepare("INSERT INTO api_appends SELECT ?,?,?,?,?,json_object('data',json_object('id',m.id,'conversation_id',m.conversation_id),'duplicate',json('false')),? FROM messages m WHERE m.id=?").bind(p,id,credential.family_id,localId,digest,current.contact_id,messageId),
-   c.env.DB.prepare("INSERT INTO ticket_history SELECT ?,?,m.conversation_id,?,'api','api',?,? FROM messages m WHERE m.id=?").bind(crypto.randomUUID(),p,a.tokenId,at,JSON.stringify({action:'append',credential_name:credential.name,source_product:credential.source_product,request_id:noteId}),messageId)
+   c.env.DB.prepare("INSERT INTO ticket_history SELECT ?,?,m.conversation_id,?,'api','api',?,? FROM messages m WHERE m.id=?").bind(crypto.randomUUID(),p,a.tokenId,at,JSON.stringify({action:'append',credential_name:credential.name,source_product:credential.source_product,source_ref:current.source_ref,request_id:noteId,idempotency_digest:digest,outcome:'committed'}),messageId)
   ]
   if(b.kind==='customer'){
    const actor={id:current.contact_id,contactId:current.contact_id,projectId:p,role:'contact' as const}
@@ -44,7 +44,7 @@ export function appendApi(app:Hono<ApiEnv>){
    await c.env.DB.batch([
     c.env.DB.prepare(`INSERT INTO api_notes SELECT ?,c.id,?,?,?,? FROM conversations c WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND ${writableConversationSql()} AND EXISTS(${guard.sql}) AND NOT EXISTS(SELECT 1 FROM api_appends WHERE project_id=? AND conversation_id=? AND family_id=? AND local_id=?)`).bind(noteId,'api:'+a.tokenId,credential.name,content,now,id,p,...guard.params,p,id,credential.family_id,localId),
     ...fileStatements(id,noteId,true),
-    c.env.DB.prepare("INSERT INTO ticket_history SELECT ?,?,conversation_id,?,'api','api',?,? FROM api_notes WHERE id=?").bind(crypto.randomUUID(),p,a.tokenId,now,JSON.stringify({action:'note',credential_name:credential.name,source_product:credential.source_product,request_id:noteId}),noteId),
+    c.env.DB.prepare("INSERT INTO ticket_history SELECT ?,?,conversation_id,?,'api','api',?,? FROM api_notes WHERE id=?").bind(crypto.randomUUID(),p,a.tokenId,now,JSON.stringify({action:'note',credential_name:credential.name,source_product:credential.source_product,source_ref:current.source_ref,request_id:noteId,idempotency_digest:digest,outcome:'committed'}),noteId),
     c.env.DB.prepare("INSERT INTO api_appends SELECT ?,?,?,?,?,json_object('data',json_object('id',id,'conversation_id',conversation_id),'duplicate',json('false')),? FROM api_notes WHERE id=?").bind(p,id,credential.family_id,localId,digest,current.contact_id,noteId)
    ])
   }

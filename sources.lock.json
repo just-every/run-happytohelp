@@ -3932,7 +3932,7 @@
       "executable": false
     },
     "src/modules/api-integrations/api-append.ts": {
-      "sha256": "a988c3bcf1316fa649977c1a0721f8f8d91998d3c146221ae665128b37199709",
+      "sha256": "59e3b47ed755f84a063b38b97876fecbed2f371a647ed61557de4a84ebaf3c1d",
       "executable": false
     },
     "src/modules/api-integrations/api-conversations.ts": {
@@ -10820,7 +10820,7 @@
       "executable": false
     },
     "tests/connections/api-create.mjs": {
-      "sha256": "ada986f5d8b4a388f62ca4aa2ccca334dd149bbe9f46119201fed47f387ffc8b",
+      "sha256": "8cc01358b7bb8eab74ff9bab9e659f9a7e9bec5d2776c089cd84e911f867df36",
       "executable": false
     },
     "tests/connections/api.mjs": {

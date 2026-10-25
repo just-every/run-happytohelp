@@ -1,3 +1,5 @@
+import {notificationFetch,notificationSendSignal,withNotificationSendWindow} from './email-send-window'
+import {enforceRateLimit,RateLimitExceeded} from '../../platform/rate-limits'
 import {rerMail,managedMailbox} from './rer-mail-contract'
 import {sendRerMail,RerMailFailure} from './rer-mail'
 import {holdRerMail,claimRerMailHold} from './rer-mail-hold'
@@ -11,14 +13,14 @@ import {SendGridSendError} from '../../vendor/base/modules/sendgrid-email/src/se
 export {emailConfigured} from './email-provider'
 import {HTTPException} from 'hono/http-exception'
 import {demoEffect} from '../../vendor/base/modules/demo/index.mjs'
-import {prepareConversationEmail} from './email-preparation'
+import {prepareConversationEmail,operatorTicketMessage} from './email-preparation'
 import {sendViaMailbox,mailboxSender} from './mailboxes/send'
 import {mailboxForDelivery} from './mailboxes/store'
 
 /** `headers` are extra message headers (loop suppression on notifications); like every
  * other field they are part of the delivery identity. */
 export interface EmailAttachment {filename:string;content:string;contentType:string;contentId?:string}
-export interface EmailInput {to:string;cc?:readonly string[];bcc?:readonly string[];mailboxId?:string;agentId?:string;fromAddress?:string;subject:string;text:string;html?:string;attachments?:readonly EmailAttachment[];projectId?:string;idempotencyKey:string;replyTo?:string;headers?:Readonly<Record<string,string>>}
+export interface EmailInput {[operatorTicketMessage]?:boolean;to:string;cc?:readonly string[];bcc?:readonly string[];mailboxId?:string;agentId?:string;fromAddress?:string;subject:string;text:string;html?:string;attachments?:readonly EmailAttachment[];projectId?:string;idempotencyKey:string;replyTo?:string;headers?:Readonly<Record<string,string>>}
 /** The host retains provider execution only after every sending claim is durable. */
 export type DeferEmailDelivery=(delivery:Promise<unknown>)=>void
 type DeliveryRow={state:string;provider_id:string|null;intent_hash:string}
@@ -55,7 +57,7 @@ async function sendThroughSelectedProvider(env:Env,input:EmailInput,from:string,
   const receipt=await sendGridDelivery(env,input,from)
   return receipt.providerMessageId
  }
- const response=await fetch(...providerRequest(env,input,from))
+ const response=await notificationFetch(...providerRequest(env,input,from))
  if(!response.ok){await updateDelivery(env,input.idempotencyKey,response.status>=500?'uncertain':'failed',`Provider HTTP ${response.status}`);throw new HTTPException(502,{message:'Email provider rejected delivery'})}
  const receipt=providerReceipt(env,await response.json(),input.to)
  if(!receipt.accepted){await updateDelivery(env,input.idempotencyKey,'failed','Recipient permanently rejected');throw new HTTPException(502,{message:'Email recipient permanently rejected'})}
@@ -70,6 +72,32 @@ function sendGridFailure(error:unknown){
  * refusal instant of a held command being sent again. */
 async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:number}):Promise<EmailOutcome>{
  try{
+  // Only the durable delivery claimant takes rate capacity. Queue replay and
+  // concurrent retries cannot charge or send the same first notice again.
+  const first=/^message:([^:]+):notification$/.exec(input.idempotencyKey)
+  // Preparation already identifies ordinary replies in its existing message read.
+  // Only operator-created first messages need the live consent/rate lookup;
+  // unrelated problem batches must retain their D1 request budget.
+  if(first&&input.projectId&&input[operatorTicketMessage]!==false){
+   const command=await env.DB.prepare(`SELECT ct.metadata_json FROM messages m
+    JOIN operator_ticket_commands cmd ON cmd.project_id=m.project_id AND cmd.conversation_id=m.conversation_id AND cmd.local_id=m.local_id
+    JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id
+    JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id
+    WHERE m.id=? AND m.project_id=?`).bind(first[1],input.projectId).first<{metadata_json:string}>()
+   if(command){
+    const flags=JSON.parse(command.metadata_json)
+    if(['is_erasing','is_erased','is_deleted','is_blocked'].some(key=>flags[key])||flags.portal_notification_emails===0){
+     await updateDelivery(env,input.idempotencyKey,'failed','Requester unavailable or email notices disabled')
+     return {id:null,state:'failed'}
+    }
+    try{await enforceRateLimit(env,'outboundNoticesPerProjectMinute',input.projectId)}
+    catch(error){
+     if(!(error instanceof RateLimitExceeded))throw error
+     await updateDelivery(env,input.idempotencyKey,'failed','Outbound notice rate limit reached; this notice was not sent. No automatic retry.')
+     return {id:null,state:'failed'}
+    }
+   }
+  }
   // In a demo copy the send is mocked: it completes with a provider id and nothing leaves.
   const providerId=await demoEffect(()=>sendThroughSelectedProvider(env,input,from,Boolean(hold)),()=>`demo_${crypto.randomUUID()}`)
   await updateDelivery(env,input.idempotencyKey,'sent',null,providerId)
@@ -80,6 +108,7 @@ async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:
    if(mailbox?.state==='failed'){await updateDelivery(env,input.idempotencyKey,'failed','Connected mailbox rejected delivery');throw error}
   }
   if(error instanceof RerMailFailure&&error.state==='held'){
+   notificationSendSignal()
    await holdRerMail(env,input,hold?.since??Date.now())
    throw new HTTPException(503,{message:error.message})
   }
@@ -110,7 +139,7 @@ export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelive
  }
  const now=Date.now(),claimed=await env.DB.prepare("INSERT OR IGNORE INTO email_deliveries VALUES(?,?,?,?,?,'sending',NULL,NULL,?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now).run()
  if(!claimed.meta.changes)throw new HTTPException(409)
- const delivery=submitClaimed(env,input,from,holdable?{}:undefined)
+ const delivery=withNotificationSendWindow([input.idempotencyKey],now,()=>submitClaimed(env,input,from,holdable?{}:undefined))
  if(defer){defer(delivery);return {id:null,state:'sending'}}
  return delivery
 }
@@ -127,14 +156,14 @@ export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:Def
  // D1 batch is one transaction. A duplicate primary claim rolls back every
  // participant claim; only the process that owns the whole set may submit it.
  await env.DB.batch(prepared.map(({input,intentHash})=>env.DB.prepare("INSERT INTO email_deliveries VALUES(?,?,?,?,?,'sending',NULL,NULL,?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now)))
- const delivery=Promise.all(prepared.map(async({input,from})=>{
+ const delivery=withNotificationSendWindow(prepared.map(({input})=>input.idempotencyKey),now,()=>Promise.all(prepared.map(async({input,from})=>{
   try{return {...await submitClaimed(env,input,from,holdable?{}:undefined),recipient:input.to}}
   catch(error){
    const row=await env.DB.prepare('SELECT state,provider_id,recipient FROM email_deliveries WHERE id=?').bind(input.idempotencyKey).first<{state:string;provider_id:string|null;recipient:string}>()
    if(!row)throw error
    return {state:row.state,id:row.provider_id,recipient:row.recipient}
   }
- }))
+ })))
  // A deferred acknowledgement represents the entire immutable recipient set.
  // No provider request starts until the all-or-nothing claim above commits.
  if(defer){defer(delivery);return prepared.map(({input})=>({id:null,state:'sending',recipient:input.to}))}
@@ -148,8 +177,8 @@ export async function resendHeldEmails(env:Env,inputs:readonly EmailInput[]){
    input=await prepareConversationEmail(env,input)
    const from=await senderFor(env,input)
    validateEmailInput(input,from)
-   const since=await claimRerMailHold(env,input)
-   if(since!==null)await submitClaimed(env,input,from,{since})
+   const started=Date.now(),since=await claimRerMailHold(env,input)
+   if(since!==null)await withNotificationSendWindow([input.idempotencyKey],started,()=>submitClaimed(env,input,from,{since}))
   }catch{console.error('Held managed mail remains pending')}
  }))
 }

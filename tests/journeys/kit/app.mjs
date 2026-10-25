@@ -12,15 +12,15 @@ const require=createRequire(import.meta.url)
 const {Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[require.resolve('wrangler')]}))
 const root=resolve(new URL('../../..',import.meta.url).pathname)
 const bundles=new Map()
-const bundle=(entry='tests/journeys/kit/app-worker.ts')=>bundles.get(entry)??bundles.set(entry,build({entryPoints:[join(root,entry)],bundle:true,write:false,format:'esm',platform:'node',target:'es2022',external:['node:*','cloudflare:*'],loader:{'.sql':'text'},logLevel:'silent'}).then(result=>result.outputFiles[0].text)).get(entry)
+const bundle=(entry='tests/journeys/kit/app-worker.ts',socketModule)=>{const key=entry+(socketModule||'');return bundles.get(key)??bundles.set(key,build({entryPoints:[join(root,entry)],bundle:true,write:false,format:'esm',platform:'node',target:'es2022',external:['node:*','cloudflare:*'],loader:{'.sql':'text'},logLevel:'silent',...(socketModule?{plugins:[{name:'mail-tls-edge',setup(build){build.onResolve({filter:/^cloudflare:sockets$/},()=>({path:'socket',namespace:'mail-tls-edge'}));build.onLoad({filter:/.*/,namespace:'mail-tls-edge'},()=>({contents:socketModule,loader:'js'}))}}]}:{})}).then(result=>result.outputFiles[0].text)).get(key)}
 let migrationSql
 const migrations=()=>migrationSql??=(async()=>{const files=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')).sort();return Promise.all(files.map(async name=>{const source=(await readFile(join(root,'migrations',name),'utf8')).replace(/^\s*--[^\n]*$/gm,'');return {name,statements:[...source.matchAll(/\s*(CREATE TRIGGER[\s\S]*?END;|[^;]+;)/g)].map(match=>match[1]).filter(sql=>sql.trim()!==';')}}))})()
 export const sha=value=>createHash('sha256').update(value).digest('hex')
 // Every migration whose file name `select` accepts, in one atomic batch (a single D1 round trip).
 export const applyMigrations=async(db,select=()=>true)=>db.batch((await migrations()).filter(migration=>select(migration.name)).flatMap(migration=>migration.statements).map(sql=>db.prepare(sql)))
 
-export async function startApp({bindings={},outbound,origin='https://app.example',captureQueue=false,migrate=true,listen=false,entry,cf}={}){
- const directory=await mkdtemp(join(tmpdir(),'h2h-app-')),script=await bundle(entry),requests=[]
+export async function startApp({bindings={},outbound,origin='https://app.example',captureQueue=false,migrate=true,listen=false,entry,cf,socketModule}={}){
+ const directory=await mkdtemp(join(tmpdir(),'h2h-app-')),script=await bundle(entry,socketModule),requests=[]
  let current={...bindings},mf,db,url,port=0
  const outboundService=async request=>{const body=request.method==='GET'||request.method==='HEAD'?'':await request.clone().text();const entry={url:request.url,method:request.method,headers:Object.fromEntries(request.headers),body};requests.push(entry);if(!outbound)throw new Error('External calls prohibited: '+request.url);return outbound(request,entry)}
  const start=async()=>{

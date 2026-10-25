@@ -81,6 +81,15 @@ choice values, required flags, conditions, validation and available locales.
 
 Submit with `POST /api/forms/:projectId/:formId/submissions`. The request has
 `subject`, `message`, `fields` keyed by ticket-field ID, and a unique `localId`.
+An optional `cc` array admits up to 50 unique email addresses already independently
+proven to this workspace by signed customer identity or authenticated customer mail.
+Valid unknown, ambiguous, unavailable, unproven or other-workspace addresses are
+silently omitted. The public response never reports which CCs qualified. Malformed
+addresses still return a `422` validation error. A normalized duplicate of the
+requester is skipped. Typing an address creates no contact and proves no identity.
+The CC set is part of the immutable command. The requester and admitted CCs receive
+one separately addressed acknowledgment, including when the same command is
+replayed after a restart. No recipient sees another recipient’s address.
 Anonymous requests supply `turnstileToken` from the bot check, but a successful
 bot check alone does not create a request: the customer must still verify their
 email. Signed-in submissions use the portal cookie established by email

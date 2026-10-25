@@ -5,6 +5,7 @@ import { consumeCounter, refundCounter, type CounterPosition } from './usage-cou
 
 const windows: Record<RateLimitName, number> = {
  apiRequestsPerTokenMinute: 60,
+ outboundNoticesPerProjectMinute: 60,
  widgetSessionsPerIpHour: 3600,
  widgetSessionsPerProjectHour: 3600,
  conversationsPerContactHour: 3600,
@@ -23,6 +24,7 @@ const windows: Record<RateLimitName, number> = {
 }
 
 const messages: Record<RateLimitName, string> = {
+ outboundNoticesPerProjectMinute: 'Outbound notice rate limit reached; this notice was not sent.',
  apiRequestsPerTokenMinute: 'API token request limit exceeded. Try again shortly.',
  widgetSessionsPerIpHour: 'Too many chat sessions were started from this network. Please try again later.',
  widgetSessionsPerProjectHour: 'This chat is very busy right now. Please try again later.',

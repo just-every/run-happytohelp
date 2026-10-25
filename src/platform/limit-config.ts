@@ -8,6 +8,7 @@ import type { Env } from './env'
  */
 export const rateLimitDefaults = {
  apiRequestsPerTokenMinute: 120,
+ outboundNoticesPerProjectMinute: 10,
  widgetSessionsPerIpHour: 30,
  widgetSessionsPerProjectHour: 5000,
  conversationsPerContactHour: 10,

@@ -12,6 +12,8 @@ export async function rerMailHoldJourney(){
  const edge=managedEdge(),relay=edge.outbound,answers=[]
  edge.outbound=async(request,entry)=>request.method==='POST'&&new URL(entry.url).pathname.endsWith('/send')&&answers.length?answers.shift()():relay(request,entry)
  const i=await managedInstallation('hold',{edge}),{app,owner}=i
+ const scheduledDoor=app.scheduled.bind(app);let scheduledPass=0
+ app.scheduled=async(...args)=>{const result=await scheduledDoor(...args);console.log('MAIL_HOLD_BUDGET',JSON.stringify({pass:++scheduledPass,statements:result.statements,calls:result.calls,refused:result.refused}));assert.equal(result.refused,0);assert.ok(result.statements<=1000&&result.calls<=1000);return result}
  try{
   assert.equal((await i.settings()).managed.routeActive,true)
   const received=await i.ingress(mime());assert.equal(received.status,200,JSON.stringify(received.data))
@@ -135,7 +137,7 @@ export async function rerMailHoldJourney(){
   // The later doors settle each from its delivery (sent, or uncertain for the unknown send), never twice.
   await app.configure({MAIL_API_KEY:next})
   const stopped=[]
-  for(const [fault,statement,accepted] of [['db-once','workflow_schedules SET state=CASE',1],['db-interrupt','email_deliveries SET state=.,provider_id=coalesce',1],['db-interrupt','SET error=NULL WHERE',0]])stopped.push({fault,statement,accepted,ticket:await open(`stopped-${stopped.length}@example.test`)})
+  for(const [fault,statement,accepted] of [['db-once','workflow_schedules SET state=CASE',1],['db-interrupt','email_deliveries SET state=.,provider_id=coalesce',1],['db-interrupt','SET error=NULL,updated_at=.',0]])stopped.push({fault,statement,accepted,ticket:await open(`stopped-${stopped.length}@example.test`)})
   await app.scheduled()
   for(const [index,entry] of stopped.entries())entry.scheduled=await schedule(entry.ticket,`Your exchange ${index} is confirmed.`)
   next=rotate()

@@ -20,7 +20,9 @@ import {writableConversationSql} from '../conversation-actions/merge-read'
 export const reservedLocalId=(localId:unknown)=>typeof localId==='string'&&/^(?:email|erased|away|schedule|problem):/.test(localId)
 /** An internal authority may add a transaction predicate; JSON callers cannot mint this symbol. */
 export const messageAuthority=Symbol('messageAuthority')
-export interface MessageInput {[companyPortalReply]?:true;[messageAuthority]?:{sql:string;args:unknown[]};requireAvailableRequester?:true;[scheduledAdmission]?:ScheduledAdmission;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
+/** Internal atomic receipt updates; never populated from request JSON. */
+export const messageCommitStatements=Symbol('messageCommitStatements')
+export interface MessageInput {[messageCommitStatements]?:(messageId:string)=>D1PreparedStatement[];[companyPortalReply]?:true;[messageAuthority]?:{sql:string;args:unknown[]};requireAvailableRequester?:true;[scheduledAdmission]?:ScheduledAdmission;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
 export interface MessageResult {accepted:boolean;duplicate?:boolean;message?:any;reason?:string;followupConversationId?:string}
 export async function admitMessage(env:Env,input:MessageInput):Promise<MessageResult>{
  const {projectId,conversationId,actor,localId,content,expectedRevision}=input,email=input[inboundAuthority]
@@ -107,6 +109,7 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  // transaction. This preserves their authoritative predicates and avoids a
  // separate D1 round trip after the guarded write.
  if(actor.role!=='contact')statements.push(env.DB.prepare('DELETE FROM macro_drafts WHERE project_id=? AND conversation_id=? AND actor_id=? AND EXISTS(SELECT 1 FROM messages WHERE id=?)').bind(projectId,conversationId,actor.id,messageId))
+ if(input[messageCommitStatements])statements.push(...input[messageCommitStatements]!(messageId))
  const committedIndex=statements.length
  statements.push(
   env.DB.prepare(`SELECT * FROM messages WHERE id=? ${replayPredicate}`).bind(messageId,...replayArgs),

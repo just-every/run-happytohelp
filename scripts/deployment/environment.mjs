@@ -19,7 +19,7 @@ export const variableNames = [
 /** Native bindings other than the standard database, storage and queue bindings. */
 export const serviceBindingNames = []
 /** Overridable limit names; defaults live in src/platform/limit-config.ts (tests keep both lists equal). */
-export const rateLimitNames=['apiRequestsPerTokenMinute','widgetSessionsPerIpHour','widgetSessionsPerProjectHour','conversationsPerContactHour','conversationsPerIpHour','conversationsPerProjectHour','messagesPerContactHour','messagesPerConversationMinute','widgetEventsPerContactMinute','uploadsPerContactDay','uploadBytesPerContactDay','uploadsPerProjectDay','uploadBytesPerProjectDay','registrationsPerIpDay','projectsPerIpDay','projectsPerAccountDay']
+export const rateLimitNames=['apiRequestsPerTokenMinute','outboundNoticesPerProjectMinute','widgetSessionsPerIpHour','widgetSessionsPerProjectHour','conversationsPerContactHour','conversationsPerIpHour','conversationsPerProjectHour','messagesPerContactHour','messagesPerConversationMinute','widgetEventsPerContactMinute','uploadsPerContactDay','uploadBytesPerContactDay','uploadsPerProjectDay','uploadBytesPerProjectDay','registrationsPerIpDay','projectsPerIpDay','projectsPerAccountDay']
 export const aiCeilingNames=['repliesPerProject','spendUsdPerProject','repliesPerInstallation','contextRunsPerProject']
 function validateLimitMap(env,name,keys,fractional=[]){
  if(!configured(env,name))return

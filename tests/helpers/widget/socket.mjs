@@ -69,8 +69,16 @@ export async function socketJourney(){
   await app.db.batch([app.db.prepare("INSERT INTO ai_profiles(id,project_id,name,role,prompt,model,is_enabled,created_at) VALUES('night-assistant',?,'Night assistant','Support','Answer visitors.','gpt-5-mini',1,1)").bind(p),app.db.prepare("INSERT INTO conversation_ai VALUES(?,'night-assistant')").bind(answered.id)])
   await app.call(`/api/conversations/${answered.id}/messages`,{token:helped.token,body:{localId:'helped-1',content:'Is anyone there?',expectedRevision:0},status:200})
   assert.deepEqual((await app.sql('SELECT actor_role FROM messages WHERE conversation_id=?',answered.id)).map(row=>row.actor_role),['contact'])
+  // Full replay and cursor-only catch-up belong to this socket journey, not a
+  // second broad first-release installation.
+  const full=await socketTo(`${path}?token=${contact.token}`,{Origin:'https://widget.example'}),frames=[await full.next(frame=>frame.type==='message'),await full.next(frame=>frame.type==='message')]
+  assert.deepEqual(frames.map(frame=>frame.message.id),[first.message.id,reply.message.id]);assert.deepEqual(frames.map(frame=>frame.message.revision),[1,2]);assert.ok(Number(frames[1].eventId)>Number(frames[0].eventId));assert.equal(frames[1].conversationId,conversation.id);full.socket.close()
+  const offline=(await app.call(`/api/conversations/${conversation.id}/messages`,{token:owner,body:{localId:'offline-reply',content:'Corrected invoice sent while offline.',expectedRevision:2,expectedLastMessageId:reply.message.id},status:200})).data
+  const resumed=await socketTo(`${path}?token=${contact.token}&after=${frames[1].eventId}`,{Origin:'https://widget.example'}),caught=await resumed.next(frame=>frame.type==='message');assert.equal(caught.message.id,offline.message.id);assert.equal(caught.message.revision,3);assert.ok(Number(caught.eventId)>Number(frames[1].eventId));assert.equal(resumed.frames.filter(frame=>frame.type==='message').length,0);resumed.socket.close()
+  const transcript=(await app.call(`/api/conversations/${conversation.id}/messages`,{token:contact.token,status:200})).data;assert.deepEqual(transcript.messages.map(message=>message.revision),[1,2,3]);assert.equal(transcript.lastMessageId,offline.message.id)
   // A revoked visitor session closes its socket and cannot open another.
-  await app.db.prepare('UPDATE sessions SET revoked_at=? WHERE token_hash=?').bind(Date.now(),sha(contact.token)).run()
+  await app.call('/api/identity/session',{token:contact.token,method:'DELETE',status:200})
+  assert.equal((await app.call(`/api/conversations/${conversation.id}/messages`,{token:contact.token})).status,401)
   const closed=new Promise(resolve=>visitor.socket.addEventListener('close',resolve,{once:true}));visitor.socket.send(JSON.stringify({type:'ping'}));await closed
   assert.equal((await socketTo(`${path}?token=${contact.token}`,{Origin:'https://widget.example'})).status,401)
  }finally{await app.close()}

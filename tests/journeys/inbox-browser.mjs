@@ -13,7 +13,7 @@ import {visualEdit} from '../helpers/inbox/visual-edit-browser.mjs'
 import {visualHydration} from '../helpers/inbox/visual-hydration-browser.mjs'
 import {noteBusyFocus} from '../helpers/inbox/note-busy-focus-browser.mjs'
 import {panelResize} from '../helpers/inbox/conversation-panel-resize-browser.mjs'
-import {uiBrowser} from '../helpers/inbox/ui-browser.mjs'
+import {uiBrowser,outboundTicketBrowser} from '../helpers/inbox/ui-browser.mjs'
 import {startMenu} from '../helpers/inbox/start-menu-browser.mjs'
 import {tooltipBrowser} from '../helpers/inbox/tooltip-browser.mjs'
 
@@ -31,7 +31,8 @@ test('appearance settings save, reload, preview and publish into the widget and 
 
 test('a busy internal note keeps focus and its draft, and the conversation panel resizes and remembers its width',async()=>{await noteBusyFocus();await panelResize()})
 
-test('the dashboard reads and writes through the native transport with readiness, reply tools and dialogs at desktop and phone widths',uiBrowser)
+test('the dashboard reads and writes through the native transport with readiness, reply tools and dialogs',uiBrowser)
+test('New ticket creates email and call tickets with recoverable previewed service notices at 1440 and 390',outboundTicketBrowser)
 
 test('ticket settings and ticket fields save through the dashboard at desktop and phone widths',()=>ticketsBrowser())
 

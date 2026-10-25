@@ -9,6 +9,8 @@ import type {DeferEmailDelivery} from '../integrations/email'
 import {resolvePortalActor,portalSessionGuard} from '../portal/index'
 import {loadPublicForm} from './store'
 import {validateSubmission,fieldError} from './validation'
+import {provenAddressSql} from '../integrations/inbound-authority'
+import {noticeParticipantSql} from '../integrations/participant-proof'
 import {formFieldGuard} from './field-guard'
 import {verifyFormChallenge} from './challenge'
 import type {FormIdentity} from './types'
@@ -25,7 +27,7 @@ export async function submitRequest(env:Env,input:SubmitRequestInput){
  await enforceRateLimits(env,[['conversationsPerIpHour',`${projectId}|${address}`]])
  const identity=input.identity??await resolvePortalActor(env,projectId,request)
  if(identity&&(identity.actor.projectId!==projectId||identity.actor.role!=='contact'))throw verificationRequired()
- const contactId=identity?.actor.contactId??identity?.actor.id,intent=await hashToken(JSON.stringify({formId,subject:submission.subject,message:submission.message,fields:Object.entries(submission.fields).sort(([a],[b])=>a.localeCompare(b))})),guard=identity?portalSessionGuard(identity):undefined
+ const contactId=identity?.actor.contactId??identity?.actor.id,intent=await hashToken(JSON.stringify({formId,subject:submission.subject,message:submission.message,...(submission.cc.length?{cc:submission.cc}:{}),fields:Object.entries(submission.fields).sort(([a],[b])=>a.localeCompare(b))})),guard=identity?portalSessionGuard(identity):undefined
  const existing=identity?await env.DB.prepare(`SELECT r.* FROM request_form_submissions r WHERE r.project_id=? AND r.contact_id=? AND r.local_id=? AND ${guard!.sql}`).bind(projectId,contactId!,submission.localId,...guard!.args).first<any>():null
  if(existing&&existing.intent_hash!==intent)throw new HTTPException(409,{message:'This submission ID was already used for a different request'})
  // A successful admitted command can be replayed with its live proof without reusing a single-use challenge.
@@ -35,9 +37,22 @@ export async function submitRequest(env:Env,input:SubmitRequestInput){
  if(!contactId||!guard)throw verificationRequired()
  if(!await env.DB.prepare(`SELECT 1 WHERE ${guard.sql}`).bind(...guard.args).first())throw verificationRequired()
  await enforceRateLimits(env,[['conversationsPerContactHour',contactId],['conversationsPerProjectHour',projectId]])
+ // Admit only independently proven workspace contacts, without disclosing which
+ // supplied addresses exist or qualify in the public result.
+ // A typed address never creates an identity or proves another person's mailbox.
+ const ccContacts:{id:string;email:string;metadata_json:string}[]=[]
+ const requester=await env.DB.prepare('SELECT email FROM contacts WHERE id=? AND project_id=?').bind(contactId,projectId).first<{email:string|null}>()
+ const ccProof=`${provenAddressSql('ct')} AND ${noticeParticipantSql('ct','cp')}`
+ for(const email of submission.cc){
+  if(email===requester?.email?.trim().toLowerCase())continue
+  const matches=(await env.DB.prepare(`SELECT ct.id,ct.email,ct.metadata_json FROM contacts ct CROSS JOIN (SELECT 'cc_header' joined_via) cp WHERE ct.project_id=? AND lower(ct.email)=? AND ${ccProof} AND coalesce(json_extract(ct.metadata_json,'$.unverified_sender'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1 AND coalesce(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1 LIMIT 2`).bind(projectId,email).all<{id:string;email:string;metadata_json:string}>()).results
+  if(matches.length!==1)continue
+  if(matches[0].id!==contactId)ccContacts.push(matches[0])
+ }
  const commandHash=await hashToken(JSON.stringify([projectId,contactId,submission.localId])),conversationId=existing?.conversation_id??`${commandHash.slice(0,8)}-${commandHash.slice(8,12)}-${commandHash.slice(12,16)}-${commandHash.slice(16,20)}-${commandHash.slice(20,32)}`,now=Date.now(),conditions=[guard.sql,'EXISTS(SELECT 1 FROM request_forms WHERE project_id=? AND id=? AND enabled=1 AND updated_at=?)'],params:unknown[]=[...guard.args,projectId,formId,form.updatedAt]
  const fieldsGuard=formFieldGuard(projectId,catalogue.filter(f=>form.fields.some(ref=>ref.id===f.id)));conditions.push(fieldsGuard.sql);params.push(...fieldsGuard.args)
  const statements=[env.DB.prepare(`INSERT OR IGNORE INTO conversations(id,project_id,contact_id,subject,channel,created_at,updated_at,submitter_id,submitter_type,ticket_actor_id,ticket_actor_type,ticket_source) SELECT ?,?,?,?,?,?,?,?,'contact',?,'contact','form' WHERE ${conditions.join(' AND ')} AND NOT EXISTS(SELECT 1 FROM request_form_submissions WHERE project_id=? AND contact_id=? AND local_id=?)`).bind(conversationId,projectId,contactId,submission.subject,input.channel??'form',now,now,identity.actor.id,identity.actor.id,...params,projectId,contactId,submission.localId),env.DB.prepare(`INSERT OR IGNORE INTO request_form_submissions(project_id,contact_id,local_id,form_id,conversation_id,intent_hash,created_at) SELECT ?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND id=? AND contact_id=?) AND ${guard.sql}`).bind(projectId,contactId,submission.localId,formId,conversationId,intent,now,projectId,conversationId,contactId,...guard.args),trackingStatement(env,conversationId,true)]
+ for(const cc of ccContacts)statements.push(env.DB.prepare(`INSERT OR IGNORE INTO conversation_participants(id,conversation_id,contact_id,created_at,joined_via) SELECT ?,?,?,?,'cc_header' WHERE EXISTS(SELECT 1 FROM request_form_submissions WHERE project_id=? AND conversation_id=? AND intent_hash=?) AND ${conditions.join(' AND ')} AND EXISTS(SELECT 1 FROM contacts ct CROSS JOIN (SELECT 'cc_header' joined_via) cp WHERE ct.id=? AND ct.project_id=? AND ct.email IS ? AND ct.metadata_json IS ? AND ${ccProof})`).bind(`form-cc:${conversationId}:${cc.id}`,conversationId,cc.id,now,projectId,conversationId,intent,...params,cc.id,projectId,cc.email,cc.metadata_json))
  for(const [fieldId,value] of Object.entries(submission.fields))if(value!==null)statements.push(env.DB.prepare(`INSERT OR IGNORE INTO ticket_field_values(project_id,conversation_id,field_id,value_json) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM request_form_submissions WHERE project_id=? AND conversation_id=? AND intent_hash=?) AND ${guard.sql}`).bind(projectId,conversationId,fieldId,JSON.stringify(value),projectId,conversationId,intent,...guard.args))
  statements.push(env.DB.prepare(`INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json) SELECT ?,?,?,'data','form.started','succeeded','system',?,'api','conversation',?,? WHERE EXISTS(SELECT 1 FROM request_form_submissions WHERE project_id=? AND conversation_id=? AND intent_hash=?) AND ${guard.sql}`).bind(`form-start:${conversationId}`,projectId,now,identity.actor.id,conversationId,JSON.stringify({formId}),projectId,conversationId,intent,...guard.args))
  await env.DB.batch(statements)

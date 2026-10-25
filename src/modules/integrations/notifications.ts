@@ -41,7 +41,7 @@ export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:Defer
   env.DB.prepare('SELECT state,provider_id,recipient FROM email_deliveries WHERE id=?').bind(deliveryId),
   env.DB.prepare("SELECT p.id FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)").bind(actor.projectId),
   ...(configured?[
-   env.DB.prepare('SELECT c.*,ct.email,ct.metadata_json FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE c.id=? AND c.project_id=?').bind(message.conversation_id,actor.projectId),
+   env.DB.prepare('SELECT c.*,ct.email,ct.metadata_json,EXISTS(SELECT 1 FROM operator_ticket_commands cmd WHERE cmd.project_id=c.project_id AND cmd.conversation_id=c.id AND cmd.local_id=(SELECT local_id FROM messages WHERE id=?)) operator_ticket_message FROM conversations c JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id WHERE c.id=? AND c.project_id=?').bind(message.id,message.conversation_id,actor.projectId),
    env.DB.prepare('SELECT * FROM email_settings WHERE project_id=?').bind(actor.projectId),
    env.DB.prepare(`${notificationContactsSql} WHERE c.id=? AND c.project_id=? ORDER BY ct.id=c.contact_id DESC,ct.id`).bind(message.conversation_id,actor.projectId),
    ...(senderId?[message.actor_role==='contact'
@@ -62,6 +62,14 @@ export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:Defer
  if(!configured)return {state:'not_configured'}
  const conversation=data[2].results[0]
  if(!conversation)return {state:'not_found'}
+ // A refusal before recipient preparation is also terminal. Persist it so a
+ // later opt-in cannot silently release an already refused operator notice.
+ const flags=JSON.parse(conversation.metadata_json||'{}')
+ if(!prior&&conversation.operator_ticket_message&&(['is_erasing','is_erased','is_deleted','is_blocked'].some(key=>flags[key])||flags.portal_notification_emails===0)){
+  const now=Date.now()
+  await env.DB.prepare("INSERT OR IGNORE INTO email_deliveries VALUES(?,?,?,?,?,'failed',NULL,?,?,?)").bind(deliveryId,actor.projectId,conversation.email||'',conversation.subject||'','consent-refused','Requester unavailable or email notices disabled',now,now).run()
+  return {id:null,state:'consent_refused'}
+ }
  const settings=data[3].results[0]
  if(settings?.is_enabled===0)return {state:'disabled'}
  const contacts=data[4].results as NotificationContact[]

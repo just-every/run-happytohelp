@@ -26,3 +26,12 @@ export function outboundTicketInput(body:Record<string,unknown>):OutboundTicketI
  if(kind==='call'&&(cc.length||bcc.length||fromAddress))throw new HTTPException(400,{message:'Call logs cannot send email copies'})
  return {kind,localId,requesterId,requesterEmail,requesterName,subject,content,mailboxId,fromAddress,cc,bcc}
 }
+
+/** A proactive batch contains isolated requester tickets, never a shared CC list. */
+export function outboundNoticeInputs(body:Record<string,unknown>):OutboundTicketInput[]{
+ if(!Array.isArray(body.requesters)||body.requesters.length<2||body.requesters.length>50)throw new HTTPException(400,{message:'Choose 2–50 requester emails'})
+ const requesters=addresses(body.requesters,'requester')
+ if(requesters.length<2)throw new HTTPException(400,{message:'Choose at least two distinct requesters'})
+ if(body.kind!=='email'||body.requesterId!==undefined||body.requesterEmail!==undefined||addresses(body.cc,'CC').length||addresses(body.bcc,'BCC').length)throw new HTTPException(400,{message:'Service notices use one email ticket per requester, without CC or BCC'})
+ return requesters.map(requesterEmail=>outboundTicketInput({...body,requesterEmail}))
+}

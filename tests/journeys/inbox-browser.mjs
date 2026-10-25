@@ -30,7 +30,7 @@ test('appearance settings save, reload, preview and publish into the widget and 
 
 test('a busy internal note keeps focus and its draft, and the conversation panel resizes and remembers its width',async()=>{await noteBusyFocus();await panelResize()})
 
-test('the dashboard reads and writes through the native transport with readiness, reply tools and dialogs, and creates email and call tickets through the New ticket dialog and API at 1440 and 390',async()=>{await uiBrowser();await outboundTicketBrowser()})
+test('the dashboard reads and writes through the native transport with readiness, reply tools and dialogs, and creates email and call tickets through the New ticket dialog and API with previewed, rate-limited service notices at 1440 and 390',async()=>{await uiBrowser();await outboundTicketBrowser()})
 
 test('ticket settings and ticket fields save through the dashboard at desktop and phone widths',()=>ticketsBrowser())
 

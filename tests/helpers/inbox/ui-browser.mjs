@@ -65,7 +65,7 @@ try{
 export async function outboundTicketBrowser(){
  const evidenceDir=join(process.env.H2H_EVIDENCE_DIR?resolve(process.env.H2H_EVIDENCE_DIR):tmpdir(),'outbound-tickets')
  await mkdir(evidenceDir,{recursive:true})
- const runtime=await createRuntime({vars:{EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-fixture-mail-provider',EMAIL_FROM:'support@example.test'},outboundFixture:new URL('../mail-provider-network.mjs',import.meta.url).href})
+ const runtime=await createRuntime({vars:{RATE_LIMITS:JSON.stringify({outboundNoticesPerProjectMinute:2}),EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-fixture-mail-provider',EMAIL_FROM:'support@example.test'},outboundFixture:new URL('../mail-provider-network.mjs',import.meta.url).href})
  const browser=await launchBrowser(),errors=[];let success=false
  try{
   const call=async(path,body,token)=>{
@@ -73,10 +73,9 @@ export async function outboundTicketBrowser(){
    const result=await response.json();assert.ok(response.ok,`${path}: ${response.status} ${JSON.stringify(result)}`);return result
   }
   const email='synthetic-happytohelp-owner@example.test',password='synthetic-happytohelp-password-1'
-  const setup=await call('/api/identity/bootstrap',{email,password,name:'Synthetic parcel support',allowedOrigin:runtime.origin}),owner=await call('/api/identity/login',{email,password}),projectId=setup.projectId,base=`/api/dashboard/projects/${projectId}`,management=`/api/management/projects/${projectId}`
-  const mailbox=(await call(management+'/mailboxes',{provider:'forwarding',address:'support@example.test',displayName:''},owner.token)).data
+  const setup=await call('/api/identity/bootstrap',{email,password,name:'Synthetic parcel support',allowedOrigin:runtime.origin}),owner=await call('/api/identity/login',{email,password})
   const copies=()=>[...runtime.logs.matchAll(/MAIL_FIXTURE_RECEIPT (\{[^\n]+\})/g)].map(match=>JSON.parse(match[1]))
-  const delivered=async(id,content)=>{
+  const delivered=async(base,id,content)=>{
    for(let attempt=0;attempt<100;attempt++){
     const state=(await call(`${base}/conversations/${id}`,undefined,owner.token)).data.last_message?.email_status?.state
     if(state==='sent'){assert.equal(copies().filter(copy=>copy.text?.includes(content)).length,1,'one provider acceptance for this first comment');return}
@@ -86,6 +85,8 @@ export async function outboundTicketBrowser(){
    assert.fail('first comment did not settle as provider accepted')
   }
   for(const width of [1440,390]){
+   const project=await call('/api/management/projects',{name:`Synthetic parcel support ${width}`,allowedOrigin:runtime.origin},owner.token),projectId=project.id,base=`/api/dashboard/projects/${projectId}`,management=`/api/management/projects/${projectId}`
+   const mailbox=(await call(management+'/mailboxes',{provider:'forwarding',address:'support@example.test',displayName:''},owner.token)).data
    const context=await browser.newContext({viewport:{width,height:width===390?844:1000}})
    await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
    const page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message))
@@ -104,14 +105,14 @@ export async function outboundTicketBrowser(){
    const response=await createdResponse;assert.equal(response.status(),201);const created=await response.json(),command=response.request().postDataJSON()
    assert.equal(created.conversation.submitter_id,owner.actor.id);assert.equal(created.conversation.requester_id,created.conversation.contact_id)
    await page.waitForURL(`**/conversations/${created.conversation.id}`);await page.locator('.transcript-message-content').getByText(content,{exact:true}).waitFor()
-   await delivered(created.conversation.id,content)
+   await delivered(base,created.conversation.id,content)
    await page.reload();await page.locator('.transcript-message-content').getByText(content,{exact:true}).waitFor()
-   const replay=await request(command);assert.equal(replay.status,200);assert.equal(replay.body.conversation.id,created.conversation.id);assert.equal(replay.body.duplicate,true);await delivered(created.conversation.id,content)
+   const replay=await request(command);assert.equal(replay.status,200);assert.equal(replay.body.conversation.id,created.conversation.id);assert.equal(replay.body.duplicate,true);await delivered(base,created.conversation.id,content)
    // The API door selects the existing requester rather than making another.
    const apiCommand={kind:'email',localId:`synthetic-happytohelp-api-${width}`,requesterId:created.conversation.contact_id,mailboxId:mailbox.id,subject:`Delivery update ${width}`,content:`Your parcel is ready for collection (${width}).`}
    const api=await request(apiCommand);assert.equal(api.status,201);assert.equal(api.body.conversation.contact_id,created.conversation.contact_id);assert.equal(api.body.conversation.submitter_id,owner.actor.id)
-   await delivered(api.body.conversation.id,apiCommand.content)
-   assert.equal((await request(apiCommand)).body.conversation.id,api.body.conversation.id);await delivered(api.body.conversation.id,apiCommand.content)
+   await delivered(base,api.body.conversation.id,apiCommand.content)
+   assert.equal((await request(apiCommand)).body.conversation.id,api.body.conversation.id);await delivered(base,api.body.conversation.id,apiCommand.content)
    assert.equal((await request({...apiCommand,subject:'Changed intent'})).status,409)
    assert.equal((await request({...apiCommand,localId:`synthetic-happytohelp-invalid-${width}`,subject:'Header\r\nBcc: forged@example.test'})).status,400)
    await page.goto(`${runtime.origin}/projects/${projectId}/conversations/${api.body.conversation.id}`)
@@ -133,6 +134,49 @@ export async function outboundTicketBrowser(){
    assert.equal((await request(apiCall)).body.note.id,loggedApi.body.note.id)
    assert.equal((await request({...apiCall,localId:`synthetic-happytohelp-call-cc-${width}`,cc:['synthetic-happytohelp-1@customer.example']})).status,400)
    assert.equal(copies().length,beforeCalls,'dialog/API call logs send no mail, including retries')
+   // A separate workspace gives each viewport a fresh real rate-limit window.
+   const noticeProject=await call('/api/management/projects',{name:`Synthetic notices ${width}`,allowedOrigin:runtime.origin},owner.token),noticeBase=`/api/dashboard/projects/${noticeProject.id}`
+   await call(`/api/management/projects/${noticeProject.id}/mailboxes`,{provider:'forwarding',address:'support@example.test',displayName:''},owner.token)
+   await page.goto(`${runtime.origin}/projects/${noticeProject.id}/conversations`)
+   await page.getByRole('button',{name:'New ticket',exact:true}).click()
+   await dialog.getByLabel('Ticket type',{exact:true}).selectOption('notice')
+   const recipients=[1,2,3].map(n=>`synthetic-happytohelp-${width}-${n}@customer.example`),noticeText=`Your delivery is delayed (${width}).`,beforeNotices=copies().length
+   await dialog.getByLabel('Requester emails',{exact:true}).fill([...recipients,recipients[0]].join(', '))
+   await dialog.getByLabel('Subject',{exact:true}).fill(`Delivery delay ${width}`)
+   await dialog.getByLabel('Message',{exact:true}).fill(noticeText)
+   await dialog.getByRole('button',{name:'Preview recipients',exact:true}).click()
+   const previewList=dialog.getByRole('region',{name:'Notice recipients'})
+   for(const recipient of recipients)await previewList.getByText(recipient,{exact:true}).waitFor()
+   assert.equal(await previewList.getByRole('listitem').count(),3)
+   assert.equal(copies().length,beforeNotices,'all requesters previewed before any send')
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1))
+   await page.screenshot({path:join(evidenceDir,`${width}-notice-preview.png`),fullPage:true})
+   const batchResponse=page.waitForResponse(response=>new URL(response.url()).pathname===noticeBase+'/tickets/notices'&&response.request().method()==='POST')
+   await dialog.getByRole('button',{name:'Confirm and email',exact:true}).click()
+   const batchReply=await batchResponse;assert.equal(batchReply.status(),200)
+   const batch=await batchReply.json(),batchCommand=batchReply.request().postDataJSON()
+   assert.equal(batch.results.length,3);assert.ok(batch.results.every(row=>row.accepted));assert.equal(new Set(batch.results.map(row=>row.conversation.id)).size,3)
+   const states=[]
+   for(const row of batch.results){
+    let state
+    for(let attempt=0;attempt<100;attempt++){
+     state=(await call(`${noticeBase}/conversations/${row.conversation.id}`,undefined,owner.token)).data.last_message?.email_status?.state
+     if(['sent','rate_limited'].includes(state))break
+     await new Promise(resolve=>setTimeout(resolve,100))
+    }
+    states.push(state)
+   }
+   assert.deepEqual([...states].sort(),['rate_limited','sent','sent'])
+   for(const row of batch.results.filter((_,index)=>states[index]==='sent'))assert.equal(copies().filter(copy=>[copy.to].flat().includes(row.recipient)&&copy.text.includes(noticeText)).length,1)
+   const repeated=await call(noticeBase+'/tickets/notices',batchCommand,owner.token)
+   assert.deepEqual(repeated.results.map(row=>row.conversation.id),batch.results.map(row=>row.conversation.id))
+   assert.equal(copies().length,beforeNotices+2,'repeat has no additional provider attempts')
+   const refused=batch.results[states.indexOf('rate_limited')]
+   await dialog.getByRole('link',{name:refused.recipient,exact:true}).click()
+   await page.locator('.transcript-message-content').getByText(noticeText,{exact:true}).waitFor()
+   await page.getByRole('status').filter({hasText:'outbound notice rate limit reached'}).waitFor()
+   await page.reload();await page.getByRole('status').filter({hasText:'outbound notice rate limit reached'}).waitFor()
+   await page.screenshot({path:join(evidenceDir,`${width}-notice-rate-limited.png`),fullPage:true})
    await context.close()
   }
   assert.deepEqual(errors,[]);success=true

@@ -6,6 +6,7 @@ import {message} from './app.mjs'
 /** R6's operator, mail gateway, review, imported-history and privacy doors. */
 export async function completeEmailJourney(){
  await imapSmtpJourney()
+ await outboundNoticesJourney()
  const sent=[]
  const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'provider-fixture',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'gateway-fixture'},outbound:async request=>{
   if(new URL(request.url).hostname==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]})
@@ -229,5 +230,44 @@ async function imapSmtpJourney(){
   assert.deepEqual(await app.takeJobs(),[],'automatic-mail redelivery remains inert')
   assert.equal(sent.length,1,'automatic incoming mail cannot start an SMTP auto-reply loop')
   assert.equal((await app.first('SELECT count(*) n FROM inbound_emails WHERE id=?','<synthetic-happytohelp-3@customer.example>')).n,1)
+ }finally{await app.close()}
+}
+
+async function outboundNoticesJourney(){
+ const sent=[]
+ const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-1',EMAIL_FROM:'synthetic-happytohelp-1@support.example',RATE_LIMITS:JSON.stringify({outboundNoticesPerProjectMinute:2})},outbound:async request=>{
+  assert.equal(new URL(request.url).hostname,'api.resend.com')
+  const copy=await request.json();sent.push(copy)
+  return sent.length===2?Response.json({error:'Recipient refused'},{status:422}):Response.json({id:'synthetic-happytohelp-1'})
+ }})
+ try{
+  const workspace=await app.seedWorkspace('synthetic-happytohelp-notices'),token=workspace.tokens.owner,projectId=workspace.projectId,base=`/api/management/projects/${projectId}`
+  const mailbox=(await app.ok(base+'/mailboxes',{token,body:{provider:'forwarding',address:'synthetic-happytohelp-1@support.example',displayName:''}})).data
+  const requesters=[1,2,3].map(n=>`synthetic-happytohelp-${n}@customer.example`),body={kind:'email',localId:'synthetic-happytohelp-notice-1',requesters:[...requesters,requesters[0]],mailboxId:mailbox.id,subject:'Delayed parcel',content:'Your parcel will arrive tomorrow.'},path=base+'/tickets/notices'
+  assert.equal((await app.call(path,{token,body})).status,409,'API cannot send without preview confirmation')
+  const preview=await app.ok(path+'/preview',{token,body})
+  assert.deepEqual(preview.recipients,requesters);assert.equal(sent.length,0,'preview has no network effect')
+  assert.equal((await app.call(path,{token,body:{...body,content:'Unreviewed message',confirmation:preview.confirmation}})).status,409)
+  const command={...body,confirmation:preview.confirmation}
+  const concurrent=await Promise.all([app.ok(path,{token,body:command}),app.ok(path,{token,body:command})])
+  const batch=await app.ok(path,{token,body:command})
+  assert.equal(batch.results.length,3);assert.ok(batch.results.every(row=>row.accepted))
+  assert.equal(new Set(batch.results.map(row=>row.conversation.id)).size,3,'one ticket per unique requester')
+  for(const attempt of concurrent)for(const row of attempt.results)if(row.conversation)assert.equal(row.conversation.id,batch.results.find(saved=>saved.recipient===row.recipient).conversation.id)
+  const statuses=[]
+  for(const row of batch.results){
+   const view=async()=>(await app.ok(`/api/dashboard/projects/${projectId}/conversations/${row.conversation.id}`,{token})).data
+   await app.until(async()=>['sent','failed','rate_limited'].includes((await view()).last_message?.email_status?.state),{message:'notice outcome visible on ticket'})
+   const ticket=await view();statuses.push(ticket.last_message.email_status.state)
+   assert.equal(ticket.submitter_id,workspace.users.owner)
+  }
+  assert.deepEqual(statuses.sort(),['failed','rate_limited','sent'])
+  assert.equal(sent.length,2,'the third notice never reaches the provider')
+  for(const address of requesters)assert.ok(sent.filter(copy=>[copy.to].flat().includes(address)).length<=1,'at most one network attempt per requester')
+  await app.runJobs(await app.takeJobs());await app.drainJobs()
+  await app.ok(path,{token,body:command});assert.equal(sent.length,2,'retries and outbox replay neither resend nor silently release refused notices')
+  const changed={...body,requesters:[...requesters,'synthetic-happytohelp-4@customer.example']},reviewed=await app.ok(path+'/preview',{token,body:changed})
+  assert.equal((await app.call(path,{token,body:{...changed,confirmation:reviewed.confirmation}})).status,409,'same batch identity cannot grow a new recipient set')
+  assert.equal(sent.length,2)
  }finally{await app.close()}
 }

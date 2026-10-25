@@ -1,3 +1,4 @@
+import {enforceRateLimit,RateLimitExceeded} from '../../platform/rate-limits'
 import {rerMail,managedMailbox} from './rer-mail-contract'
 import {sendRerMail,RerMailFailure} from './rer-mail'
 import {holdRerMail,claimRerMailHold} from './rer-mail-hold'
@@ -70,6 +71,29 @@ function sendGridFailure(error:unknown){
  * refusal instant of a held command being sent again. */
 async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:number}):Promise<EmailOutcome>{
  try{
+  // Only the durable delivery claimant takes rate capacity. Queue replay and
+  // concurrent retries cannot charge or send the same first notice again.
+  const first=/^message:([^:]+):notification$/.exec(input.idempotencyKey)
+  if(first&&input.projectId){
+   const command=await env.DB.prepare(`SELECT ct.metadata_json FROM messages m
+    JOIN operator_ticket_commands cmd ON cmd.project_id=m.project_id AND cmd.conversation_id=m.conversation_id AND cmd.local_id=m.local_id
+    JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id
+    JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id
+    WHERE m.id=? AND m.project_id=?`).bind(first[1],input.projectId).first<{metadata_json:string}>()
+   if(command){
+    const flags=JSON.parse(command.metadata_json)
+    if(['is_erasing','is_erased','is_deleted','is_blocked'].some(key=>flags[key])||flags.portal_notification_emails===0){
+     await updateDelivery(env,input.idempotencyKey,'failed','Requester unavailable or email notices disabled')
+     return {id:null,state:'failed'}
+    }
+    try{await enforceRateLimit(env,'outboundNoticesPerProjectMinute',input.projectId)}
+    catch(error){
+     if(!(error instanceof RateLimitExceeded))throw error
+     await updateDelivery(env,input.idempotencyKey,'failed','Outbound notice rate limit reached; this notice was not sent. No automatic retry.')
+     return {id:null,state:'failed'}
+    }
+   }
+  }
   // In a demo copy the send is mocked: it completes with a provider id and nothing leaves.
   const providerId=await demoEffect(()=>sendThroughSelectedProvider(env,input,from,Boolean(hold)),()=>`demo_${crypto.randomUUID()}`)
   await updateDelivery(env,input.idempotencyKey,'sent',null,providerId)

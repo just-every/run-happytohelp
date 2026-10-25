@@ -17,7 +17,7 @@ export async function issuerGuard(env:Env,issuer:Issuer):Promise<SqlGuard>{
  if(!row)throw new HTTPException(403,{message:'Current workspace owner or admin required'})
  return {sql:`${sql} AND e.revision=?`,params:[...params,row.revision]}
 }
-export function tokens(env:Env,projectId:string,extension?:{source:string;bindings:string;minute:number;day:number;family?:string;rotate?:{id:string;overlap:number;expires:number|null}}){
+export function tokens(env:Env,projectId:string,extension?:{source:string;bindings:string;minute:number;day:number;family?:string;rotate?:{id:string;overlap:number;expires:number|null;policy:string}}){
  const sql=new D1SqlDatabase(env.DB)
  let administration:{issuer:Issuer;guard:SqlGuard;action:string;resource:string}|null=null
  const repo=new IntegrationsRepository({async batch(statements){
@@ -33,7 +33,7 @@ export function tokens(env:Env,projectId:string,extension?:{source:string;bindin
    extra.push({sql:'UPDATE integration_tokens SET source_product=?,bindings_json=?,issuer_id=?,family_id=?,create_minute=?,create_day=?,display_prefix=? WHERE namespace=? AND id=?',params:[extension.source,extension.bindings,issuer.actor.id,extension.family??id,extension.minute,extension.day,id.slice(0,8),projectId,id]})
    if(extension.rotate){extra.push({sql:"INSERT INTO native_integration_audit VALUES(?,?,?,'token.rotated',?,?)",params:[crypto.randomUUID(),projectId,issuer.actor.id,extension.rotate.id,Date.now()]},{sql:'UPDATE integration_tokens SET expires_at=min(COALESCE(expires_at,?),?) WHERE namespace=? AND id=?',params:[Date.now()+extension.rotate.overlap,Date.now()+extension.rotate.overlap,projectId,extension.rotate.id]})}
   }
-  const rotationGuard=extension?.rotate?[{sql:'INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(SELECT 1 FROM integration_tokens WHERE namespace=? AND id=? AND revoked_at IS NULL AND expires_at IS ? AND (expires_at IS NULL OR expires_at>?)) THEN 1 ELSE 0 END',params:[projectId,extension.rotate.id,extension.rotate.expires,Date.now()]}]:[]
+  const rotationGuard=extension?.rotate?[{sql:'INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(SELECT 1 FROM integration_tokens WHERE namespace=? AND id=? AND revoked_at IS NULL AND expires_at IS ? AND (expires_at IS NULL OR expires_at>?) AND json_array(scopes,bindings_json,create_minute,create_day)=?) THEN 1 ELSE 0 END',params:[projectId,extension.rotate.id,extension.rotate.expires,Date.now(),extension.rotate.policy]}]:[]
   try{return (await sql.batch([...rotationGuard,audit,...statements,...extra,...(rotationGuard.length?[{sql:'DELETE FROM ik_d1_assertions',params:[]}]:[])])).slice(rotationGuard.length+1,rotationGuard.length+1+statements.length)}catch(error){
    if(!await env.DB.prepare(guard.sql).bind(...guard.params).first())throw new HTTPException(409,{message:'Authority changed'})
    throw error

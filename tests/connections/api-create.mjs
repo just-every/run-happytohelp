@@ -71,9 +71,11 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   assert.equal((await h.call('/api/v1/conversations',{token:reader.token})).data.length,1);
   const stranger=await h.issue(['messages:append'],'p',{source_product:'synthetic-hh-other'});
   const foreignAppender=await h.issue(['messages:append'],'q',{source_product:'synthetic-hh-1',bindings:{credentials:[issued.data.id]}});
-  for(const secret of [stranger.token,foreignAppender.token]){
-   const denied=await h.raw(appendPath,{token:secret,...body({...command,localId:'synthetic-denied'})});assert.equal(denied.status,404);
-   assert.equal((await denied.json()).error.code,'not_found');
+  const refusedUpload=await h.call('/api/v1/uploads',{token:appender.token,method:'POST',headers:{'Content-Type':'text/plain','X-Filename':'refused.txt'},body:'Synthetic refused attachment'});
+  const beforeRefusedMedia=(await h.db.prepare('SELECT count(*) n FROM media').first()).n;
+  for(const secret of [stranger.token,foreignAppender.token])for(const kind of ['customer','note']){
+   const denied=await h.raw(appendPath,{token:secret,...body({...command,kind,localId:'synthetic-denied-'+kind,attachments:[{upload_id:refusedUpload.data.id}]})});assert.equal(denied.status,404);
+   assert.equal((await denied.json()).error.code,'not_found');assert.equal((await h.db.prepare('SELECT count(*) n FROM media').first()).n,beforeRefusedMedia);
   }
   const isolated=await h.issue(['conversations:read'],'p',{source_product:'synthetic-hh-2'});assert.equal((await h.call('/api/v1/conversations',{token:isolated.token})).data.length,0);
   const management='/api/management/projects/p/conversations/'+created.data.id+'/ticket';
@@ -83,11 +85,15 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const mergeId=(await mergeSource.json()).data.id,mergePath='/api/management/projects/p/conversations/'+mergeId;
   const sourceTicket=(await h.call(mergePath+'/ticket')).data,targetTicket=(await h.call(management)).data;
   await h.call('/api/dashboard/projects/p/conversations/'+created.data.id+'/merge',body({source_id:mergeId,source_version:sourceTicket.ticket_version,target_version:targetTicket.ticket_version}));
-  for(const kind of ['customer','note']){const merged=await h.raw('/api/v1/conversations/'+mergeId+'/append',{token:appender.token,...body({kind,localId:'synthetic-hh-merged-'+kind,content:'Must use the survivor'})});assert.equal(merged.status,409);const error=(await merged.json()).error;assert.equal(error.code,'merged_into');assert.equal(error.conversation_id,created.data.id)}
+  for(const kind of ['customer','note']){const merged=await h.raw('/api/v1/conversations/'+mergeId+'/append',{token:appender.token,...body({kind,localId:'synthetic-hh-merged-'+kind,content:'Must use the survivor',attachments:[{upload_id:refusedUpload.data.id}]})});assert.equal(merged.status,409);const error=(await merged.json()).error;assert.equal(error.code,'merged_into');assert.equal(error.conversation_id,created.data.id)}
   for(const category of ['solved','closed']){
    for(const kind of ['note','customer']){
     const ticket=(await h.call(management)).data;
     if(ticket.status_category!==category)await h.call(management,{...body({expected_version:ticket.ticket_version,status_id:category}),method:'PATCH'});
+    const beforeFiles=(await h.db.prepare('SELECT count(*) n FROM media').first()).n;
+    h.responses.push({status:200,body:'Different bytes',headers:{'Content-Type':'text/plain'}});
+    const invalidAttachment=await h.raw(appendPath,{token:appender.token,...body({kind,localId:'synthetic-hh-invalid-'+category+'-'+kind,content:'Refused attachment',attachments:[{url:'https://receiver.example.com/status-file',sha256:sha('Expected bytes')}]})});
+    assert.equal(invalidAttachment.status,400);assert.equal((await h.call(management)).data.status_category,category);assert.equal((await h.db.prepare('SELECT count(*) n FROM media').first()).n,beforeFiles);
     const upload=await h.call('/api/v1/uploads',{token:appender.token,method:'POST',headers:{'Content-Type':'text/plain','X-Filename':'status.txt'},body:'synthetic-hh-status-file'});
     const continued=await h.call(appendPath,{token:appender.token,...body({kind,localId:'synthetic-hh-'+category+'-'+kind,content:'Customer follows up',attachments:[{upload_id:upload.data.id}]})});
     const target=continued.data.conversation_id;
@@ -246,6 +252,15 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   await new Promise(resolve=>setTimeout(resolve,1100));assert.equal((await send()).status,401);
   await h.call(settings+'/tokens/'+rotated.data.id,{method:'DELETE'});
   assert.equal((await send(input,'synthetic-hh-1',rotated.token)).status,401);
+  const concurrentToken=await h.issue(['conversations:create'],'p',{source_product:'synthetic-hh-rotate-revoke'});
+  const [rotation,revocation]=await Promise.all([
+   h.raw(settings+'/tokens/'+concurrentToken.data.id+'/rotate',body({overlap_seconds:60})),
+   h.raw(settings+'/tokens/'+concurrentToken.data.id,{method:'DELETE'})
+  ]);
+  assert.equal(revocation.status,200);assert.ok([201,404,409].includes(rotation.status));
+  if(rotation.status===201){const next=await rotation.json();assert.equal((await send(limitedBody,'synthetic-hh-after-race',next.token)).status,401)}
+  assert.equal((await send(limitedBody,'synthetic-hh-after-race',concurrentToken.token)).status,401);
+  assert.equal((await h.db.prepare('SELECT count(*) n FROM integration_tokens WHERE family_id=? AND revoked_at IS NULL').bind(concurrentToken.data.id).first()).n,0);
   // Only the attachment network response is delayed; real administration crosses admission.
   for(const change of ['revoke','rotate','overlap','bounds','expire','workspace']){
    const project=change==='workspace'?'q':'p',base='/api/management/projects/'+project+'/connections',actor=project==='q'?'foreign':'owner';

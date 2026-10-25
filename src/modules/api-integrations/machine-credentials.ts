@@ -15,5 +15,9 @@ export async function rotateMachine(env:Env,who:Issuer,id:string,body:any){
  if(!old)throw new HTTPException(404)
  const overlap=body.overlap_seconds??0
  if(!Number.isInteger(overlap)||overlap<0||overlap>604800)throw new HTTPException(400,{message:'Overlap must be between zero and seven days'})
- return tokens(env,who.actor.projectId,{source:old.source_product,bindings:old.bindings_json,minute:old.create_minute,day:old.create_day,family:old.family_id,rotate:{id,overlap:overlap*1000,expires:old.expires_at}}).issue(who,{name:old.name,scopes:JSON.parse(old.scopes),...(old.expires_at?{expiresAt:old.expires_at}:{})})
+ try{return await tokens(env,who.actor.projectId,{source:old.source_product,bindings:old.bindings_json,minute:old.create_minute,day:old.create_day,family:old.family_id,rotate:{id,overlap:overlap*1000,expires:old.expires_at,policy:JSON.stringify([old.scopes,old.bindings_json,old.create_minute,old.create_day])}}).issue(who,{name:old.name,scopes:JSON.parse(old.scopes),...(old.expires_at?{expiresAt:old.expires_at}:{})})}catch(error){
+  const current=await env.DB.prepare('SELECT * FROM integration_tokens WHERE namespace=? AND id=?').bind(who.actor.projectId,id).first<any>()
+  if(!current||current.revoked_at!==null||current.expires_at!==old.expires_at||current.scopes!==old.scopes||current.bindings_json!==old.bindings_json||current.create_minute!==old.create_minute||current.create_day!==old.create_day)throw new HTTPException(409,{message:'Credential changed; reload before rotating'})
+  throw error
+ }
 }

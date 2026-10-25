@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "10015796ce5cee40705774fe8b5ef415a91411c91c08fb4a105bec2a841d3453",
+      "sha256": "78f7301598046e8272379eff39898a02fd45a1188756f5d511c362e543945b62",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "23ca85cb9b9d108acd0c4beb4dc6d84afd0b5cf2524d9569c78b7ba66d60b169",
+      "sha256": "eaeb73ab691cb9b6682faa090902bf5d09bacdfcb88c4d61701b897c8cc1862f",
       "executable": false
     },
     "DEMO.md": {
@@ -2521,6 +2521,10 @@
     },
     "migrations/253_api_requests.sql": {
       "sha256": "e90905dfdb4b678fab7bfe84dfc60d970119a1f96353bcf089316745fe2757d3",
+      "executable": false
+    },
+    "migrations/254_api_erasure_inventory.sql": {
+      "sha256": "5c20a09f92e8e8bd03c81ce0b611d0739e654eba2f7acaf6492b7745181b6766",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -3992,11 +3996,11 @@
       "executable": false
     },
     "src/modules/api-integrations/http.ts": {
-      "sha256": "f57df586e23835beafa911cd0c408431b7b78b243c984ab7750ece0666c7431f",
+      "sha256": "8e490f41fa4f6854d54a6d28a3637dfcef8b20d2a589d758012c5af3e73899a7",
       "executable": false
     },
     "src/modules/api-integrations/machine-credentials.ts": {
-      "sha256": "ed9d6f8d95418a52ba6cb57bc220212e0952b6017901d1fea65c5f2ae162c5a2",
+      "sha256": "7674b0e0b6f44450ed12cba1aede25e392e4fec0966fec2727259f669ef2d902",
       "executable": false
     },
     "src/modules/api-integrations/module.json": {
@@ -4020,7 +4024,7 @@
       "executable": false
     },
     "src/modules/api-integrations/settings.ts": {
-      "sha256": "7c4b2ae6e69685824f2c349849e1c91eae6e5e0f5a35622e83fcd70ef248476a",
+      "sha256": "b9846db5272e25ccccc2af6e6cf63e83e243bef80eb9afcb5947accdd9dec0b4",
       "executable": false
     },
     "src/modules/api-integrations/transport.ts": {
@@ -7788,7 +7792,7 @@
       "executable": false
     },
     "src/platform/integration-authority.ts": {
-      "sha256": "becc1a3731bd9258fb7d9ba348d71eec302608ffd2758b048dcb1f97fc28956f",
+      "sha256": "ca78768f3778a88f7119e98aca224a6fb15bb897f475c2ad0c3d1d1d22517058",
       "executable": false
     },
     "src/platform/json-response.ts": {
@@ -8544,7 +8548,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/TicketSummary.jsx": {
-      "sha256": "3ed21ac03ae30e87f3a07f7e5c0dbaf0d87309a2dc80f9b28ea85eb3ef357ac8",
+      "sha256": "1cf528aed652a57d17247d34686caf5d76578201d66e286e47771c658d1e8c70",
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/useTicketRecord.js": {
@@ -9860,7 +9864,7 @@
       "executable": false
     },
     "src/ui/native/pages/connections/Tokens.jsx": {
-      "sha256": "87b0a9276dd2f7d48da735ce87de933f532ad918bc857eec2dd60f3a6f857563",
+      "sha256": "f45add3a58b2730c5617e32117c3f74ff2a3ed7b183bc4674505ef2f32fff74c",
       "executable": false
     },
     "src/ui/native/pages/ContactDetails.jsx": {
@@ -10820,7 +10824,7 @@
       "executable": false
     },
     "tests/connections/api-create.mjs": {
-      "sha256": "d4d40f70f2fd09be3c5d726a6fbf0f6f48c0b08ec7179b6ed82f9e4390d193b9",
+      "sha256": "a1962475f74e240fa80e507eeb9e9d568c2e32f6c0725b8b060203f2f23503ff",
       "executable": false
     },
     "tests/connections/api.mjs": {

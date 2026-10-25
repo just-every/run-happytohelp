@@ -99,7 +99,8 @@ export default function TicketSummary({ conversation, record, workflows, escalat
                 { emailFollowups.links.length > 0 && <ul className="workflow-followups">{ emailFollowups.links.map(link => <li key={ link.conversation_id }><EmailFollowupLink projectId={ conversation.project_id } conversationId={ conversation.id } link={ link } /></li>) }</ul> }
                 { workflowFollowups && <FollowupLinks conversation={ conversation } schedules={ workflows.schedules } /> }
             </Row> }
-            { ticket?.api && <Row label="Source"><span>Created via { ticket.api.source_product } by { ticket.api.credential_name }</span>{ ticket.api.source_url && <a href={ ticket.api.source_url } target="_blank" rel="noopener noreferrer">Open in { ticket.api.source_product }</a> }</Row> }
+            { ticket?.api && <Row label="Channel">{ ticket.channel }</Row> }
+            { ticket?.api && <Row label="Source"><span>Created via { ticket.api.source_product } by { ticket.api.credential_name }</span>{ ticket.api.source_url && <a className="d-block text-decoration-underline" href={ ticket.api.source_url } target="_blank" rel="noopener noreferrer">Open in { ticket.api.source_product }</a> }</Row> }
             <SlateInquiryLink conversation={ conversation } />
             { conversation.imported && <Row label="Imported">
                 { conversation.imported.subject && <p className="import-source-note">Source subject: { conversation.imported.subject }</p> }

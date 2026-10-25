@@ -1660,7 +1660,7 @@
       "executable": false
     },
     "docs/api.md": {
-      "sha256": "87ea6a39703d5d0480134bffabb0354e6f6d4939b19375968dfef53017d3a816",
+      "sha256": "0345491473a60e23c43d02feec1b7a3b90d799c8eb4daeb0832840c41cde2253",
       "executable": false
     },
     "docs/AUTHORING.md": {
@@ -6160,7 +6160,7 @@
       "executable": false
     },
     "src/modules/management/member-erasure.ts": {
-      "sha256": "cb59a75ffc9944c4a8193b79c0dd309327fba8607855f7b4c3aeb973723d898a",
+      "sha256": "09a97f4027b25019875f37ae1bbefa3adcd4f63922be4620166d5cbf439940e4",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {

@@ -22,6 +22,8 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  if(!await c.env.DB.prepare('SELECT 1 WHERE '+eligible).bind(...args).first())throw new HTTPException(409,{message:'Transfer ownership first; accounts shared with other workspaces or installation administrators require installation review'})
  await c.env.DB.batch([
   c.env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(${guard.sql}) AND ${eligible} THEN 1 ELSE 0 END`).bind(...guard.params,...args),
+  c.env.DB.prepare('DELETE FROM registrations WHERE lower(email)=(SELECT lower(email) FROM users WHERE id=?)').bind(userId),
+  c.env.DB.prepare('DELETE FROM identity_tokens WHERE user_id=? OR lower(email)=(SELECT lower(email) FROM users WHERE id=?)').bind(userId,userId),
   // Retain opaque ids for referential integrity and machine names for ticket history.
   c.env.DB.prepare("UPDATE users SET name='Former teammate',email='erased:'||id WHERE id=?").bind(userId),
   c.env.DB.prepare("UPDATE integration_tokens SET issuer_id=NULL,revoked_at=coalesce(revoked_at,?),token_hash='erased:'||id WHERE issuer_id=?").bind(now,userId),

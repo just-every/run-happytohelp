@@ -318,5 +318,5 @@ redacted account and inert credential metadata. Customer content is erased
 separately through the requester-erasure door.
 
 Gaps: Live AI content-abuse and prompt-injection qualification of API-created
-requests is not proven. No live cross-product handoff (Handset HND-038) is proven.
+requests is not proven. Live qualification remains for: "body text, subject and source fields can never instruct the agent or open an external effect." No live cross-product handoff (Handset HND-038) is proven.
 Consent-gated SMS/WhatsApp qualification remains pending CHANNELS-001.

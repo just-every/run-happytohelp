@@ -25,14 +25,12 @@ CREATE TRIGGER api_append_erasure AFTER UPDATE OF metadata_json ON contacts WHEN
 END;
 ALTER TABLE native_integration_destinations ADD COLUMN credential_id TEXT;
 ALTER TABLE native_integration_destinations ADD COLUMN source_product TEXT;
-DROP TRIGGER native_integration_fanout;
-CREATE TRIGGER native_integration_fanout AFTER INSERT ON native_integration_events BEGIN
- INSERT INTO native_integration_intents(id,project_id,event_id,destination_id)
- SELECT lower(hex(randomblob(16))),NEW.project_id,NEW.id,d.id FROM native_integration_destinations d
- WHERE d.project_id=NEW.project_id AND d.enabled=1 AND EXISTS(SELECT 1 FROM json_each(d.events_json) WHERE value=NEW.event)
- AND (d.credential_id IS NULL OR EXISTS(SELECT 1 FROM api_conversations a WHERE a.conversation_id=NEW.conversation_id AND a.credential_id=d.credential_id))
- AND (d.source_product IS NULL OR EXISTS(SELECT 1 FROM api_conversations a WHERE a.conversation_id=NEW.conversation_id AND a.source_product=d.source_product));
-END;
+CREATE TRIGGER api_destination_filter BEFORE INSERT ON native_integration_intents
+WHEN EXISTS(SELECT 1 FROM native_integration_destinations d JOIN native_integration_events e ON e.id=NEW.event_id
+ WHERE d.id=NEW.destination_id AND (
+ (d.credential_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM api_conversations a WHERE a.conversation_id=e.conversation_id AND a.credential_id=d.credential_id))
+ OR (d.source_product IS NOT NULL AND NOT EXISTS(SELECT 1 FROM api_conversations a WHERE a.conversation_id=e.conversation_id AND a.source_product=d.source_product))))
+BEGIN SELECT RAISE(IGNORE); END;
 CREATE TRIGGER api_status_event AFTER UPDATE OF status_id,status_category ON conversations WHEN NEW.status_id<>OLD.status_id OR NEW.status_category<>OLD.status_category BEGIN
  INSERT INTO native_integration_events SELECT lower(hex(randomblob(16))),NEW.project_id,NEW.id,NEW.contact_id,'conversation.status_changed',json_object('conversation_id',NEW.id,'previous_status_id',OLD.status_id,'previous_status_category',OLD.status_category,'status_id',NEW.status_id,'status_category',NEW.status_category,'source_product',a.source_product,'source_ref',a.source_ref),NEW.updated_at,NULL FROM (SELECT 1) LEFT JOIN api_conversations a ON a.conversation_id=NEW.id;
 END;

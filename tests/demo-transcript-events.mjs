@@ -1,3 +1,4 @@
+import {migrationStatements} from './helpers/migration-statements.mjs';
 import {registerHooks} from 'node:module';
 import {existsSync} from 'node:fs';
 import {readFile} from 'node:fs/promises';
@@ -16,6 +17,8 @@ try{
  for(const file of ['0001_identity.sql','0002_conversations.sql','0005_widget_identity.sql','0007_conversation_history.sql','0070_management.sql','0050_knowledge.sql','0060_customer_context.sql','0060_customer_context_engine.sql','020_ai_support.sql','0110_move_in.sql','180_account_security.sql','142_collaboration.sql']){
   for(const [,sql] of (await readFile(new URL('../migrations/'+file,import.meta.url),'utf8')).matchAll(/\s*(CREATE TRIGGER[\s\S]*?END;|[^;]+;)/g))await db.prepare(sql).run();
  }
+ // This transcript fixture uses only the additive machine-note table from the API migration.
+ for (const sql of migrationStatements(await readFile(new URL('../migrations/251_api_requests.sql',import.meta.url),'utf8')).filter(sql=>sql.startsWith('CREATE TABLE api_notes('))) await db.prepare(sql).run();
  await db.batch([
   db.prepare("INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES('p','P','p','https://p.test',1),('q','Q','q','https://q.test',1)"),
   db.prepare("INSERT INTO users VALUES('agent','a@example.test','Agent',1),('foreign','f@example.test','Foreign',1)"),

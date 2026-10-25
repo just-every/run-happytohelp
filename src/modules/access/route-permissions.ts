@@ -62,7 +62,7 @@ const rules:Record<string,Rule>={
  'POST /api/site-preview/projects/:projectId/brand-image-generations':'settings.manage','POST /api/site-preview/projects/:projectId/brand-assets':'settings.manage','PUT /api/site-preview/projects/:projectId/brand-assets/:id/publish':'settings.manage','POST /api/site-preview/projects/:projectId/preview':'settings.manage',
  'POST /api/training/projects/:project/runs':'settings.manage','POST /api/training/projects/:project/runs/:run/cancel':'settings.manage','POST /api/training/synthetic-workspace':'settings.manage',
  // Integrations and credentials
- [`POST ${P}/connections/tokens`]:'integrations.install',[`DELETE ${P}/connections/tokens/:id`]:'integrations.install',
+ [`POST ${P}/connections/tokens`]:'integrations.install',[`PATCH ${P}/connections/tokens/:id`]:'integrations.install',[`POST ${P}/connections/tokens/:id/rotate`]:'integrations.install',[`DELETE ${P}/connections/tokens/:id`]:'integrations.install',
  [`POST ${P}/connections/webhooks`]:'integrations.install',[`DELETE ${P}/connections/webhooks/:id`]:'integrations.install',[`POST ${P}/connections/webhooks/:id/test`]:'integrations.install',
  [`POST ${P}/connections/slack`]:'integrations.install',[`DELETE ${P}/connections/slack/:id`]:'integrations.install',[`POST ${P}/connections/slack/:id/test`]:'integrations.install',
  [`POST ${P}/connections/deliveries/:id/resend`]:'integrations.install',

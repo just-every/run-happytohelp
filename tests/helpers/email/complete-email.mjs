@@ -287,6 +287,8 @@ async function outboundNoticesJourney(){
   // Consent can change after durable admission but before the queued send. It
   // must remain a refusal even if the requester later opts back in.
   await app.ok(portal+'/preferences',{headers,method:'PUT',body:{locale:'en',surveyEmails:true,updateEmails:true}})
+  const stillRefused=await app.call(path,{token,body:{...consentBody,confirmation:consentPreview.confirmation},status:409});assert.equal(stillRefused.data.code,'notice_not_created','a definitive refusal cannot race a later send under the same command')
+  consentBody.localId='synthetic-happytohelp-consent-reviewed-again'
   const reviewedAgain=await app.ok(path+'/preview',{token,body:consentBody}),admitted=await app.ok(path,{token,body:{...consentBody,confirmation:reviewedAgain.confirmation}})
   await app.ok(portal+'/preferences',{headers,method:'PUT',body:{locale:'en',surveyEmails:true,updateEmails:false}})
   await app.drainJobs()

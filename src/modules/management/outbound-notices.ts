@@ -24,23 +24,33 @@ export async function confirmOutboundNotices(env:Env,actor:Actor,sessionHash:str
  const inputs=outboundNoticeInputs(body),fingerprint=await hashToken(JSON.stringify(inputs))
  const guard=await ticketAuthority(env,actor,{sessionHash,source:'dashboard'},'conversations.reply')
  const id=`outbound-notice:${await hashToken(JSON.stringify([actor.projectId,actor.id,inputs[0].localId]))}`
- const recorded=await env.DB.prepare('SELECT detail_json FROM audit_events WHERE id=? AND project_id=?').bind(id,actor.projectId).first<{detail_json:string}>()
+ const notCreated=(message:string)=>new HTTPException(409,{res:Response.json({error:message,code:'notice_not_created'},{status:409})})
+ const recorded=await env.DB.prepare('SELECT detail_json,outcome FROM audit_events WHERE id=? AND project_id=?').bind(id,actor.projectId).first<{detail_json:string;outcome:string}>()
  if(recorded){
   if(JSON.parse(recorded.detail_json).fingerprint!==fingerprint)throw new HTTPException(409,{message:'Notice command conflicts with its earlier confirmation'})
+  if(recorded.outcome==='refused')throw notCreated(JSON.parse(recorded.detail_json).error||'This notice was refused before any tickets were created')
  }else{
-  // Only this pre-commit refusal certifies no creation. A lost response from a
-  // previously confirmed batch must keep its immutable identity, even on relogin.
+  // Invalid/missing review tokens do not freeze a command. A valid confirmation
+  // that loses eligibility records an immutable refusal against this same key.
+  // Concurrent confirmation can win OR refusal can win, never both.
+  const confirmation=await hashToken(JSON.stringify([sessionHash,actor.projectId,actor.id,fingerprint]))
+  if(body.confirmation!==confirmation)throw new HTTPException(409,{message:'Preview these exact recipients and message before sending'})
   try{
-   const preview=await previewOutboundNotices(env,actor,sessionHash,body)
-   if(body.confirmation!==preview.confirmation)throw new HTTPException(409,{message:'Preview these exact recipients and message before sending'})
+   await previewOutboundNotices(env,actor,sessionHash,body)
   }catch(error){
-   if(error instanceof HTTPException&&error.status<500)throw new HTTPException(error.status,{res:Response.json({error:error.message,code:'notice_not_created'},{status:error.status})})
+   if(error instanceof HTTPException&&error.status<500){
+    await env.DB.prepare(`INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json)
+     SELECT ?,?,?,'data','ticket.notice_refused','refused','user',?,'dashboard','notice_batch',?,? WHERE EXISTS(${guard.sql})`).bind(id,actor.projectId,Date.now(),actor.id,id,JSON.stringify({fingerprint,error:error.message}),...guard.params).run()
+    const refused=await env.DB.prepare('SELECT detail_json,outcome FROM audit_events WHERE id=? AND project_id=?').bind(id,actor.projectId).first<{detail_json:string;outcome:string}>()
+    if(refused?.outcome==='refused'&&JSON.parse(refused.detail_json).fingerprint===fingerprint)throw notCreated(error.message)
+   }
    throw error
   }
   await env.DB.prepare(`INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json)
    SELECT ?,?,?,'data','ticket.notice_confirmed','succeeded','user',?,'dashboard','notice_batch',?,? WHERE EXISTS(${guard.sql})`).bind(id,actor.projectId,Date.now(),actor.id,id,JSON.stringify({fingerprint}),...guard.params).run()
-  const saved=await env.DB.prepare('SELECT detail_json FROM audit_events WHERE id=? AND project_id=?').bind(id,actor.projectId).first<{detail_json:string}>()
+  const saved=await env.DB.prepare('SELECT detail_json,outcome FROM audit_events WHERE id=? AND project_id=?').bind(id,actor.projectId).first<{detail_json:string;outcome:string}>()
   if(!saved||JSON.parse(saved.detail_json).fingerprint!==fingerprint)throw new HTTPException(409,{message:'Notice command conflicts with its earlier confirmation'})
+  if(saved.outcome==='refused')throw notCreated(JSON.parse(saved.detail_json).error||'This notice was refused before any tickets were created')
  }
  return Promise.all(inputs.map(async input=>({...input,localId:`notice-${await hashToken(JSON.stringify([id,input.requesterEmail]))}`})))
 }

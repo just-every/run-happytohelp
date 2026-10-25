@@ -241,7 +241,7 @@ async function outboundNoticesJourney(){
   const copy=await request.json()
   if(copy.subject==='Sign in to your support requests'){accessMail.push(copy);return Response.json({id:'synthetic-happytohelp-access'})}
   sent.push({...copy,attemptedAt:Date.now()})
-  if(copy.text.includes('synthetic-happytohelp-live-send')){liveEntered=true;return new Promise(resolve=>{releaseLive=()=>resolve(Response.json({id:'synthetic-happytohelp-live'}))})}
+  if(copy.text.includes('synthetic-happytohelp-live-send')&&[].concat(copy.to).includes('synthetic-happytohelp-live@customer.example')){liveEntered=true;return new Promise(resolve=>{releaseLive=()=>resolve(Response.json({id:'synthetic-happytohelp-live'}))})}
   return sent.length===2?Response.json({error:'Recipient refused'},{status:422}):Response.json({id:'synthetic-happytohelp-1'})
  }})
  try{
@@ -314,8 +314,8 @@ async function outboundNoticesJourney(){
   // queue redelivery. Only the original invocation can settle its receipt.
   const liveProject=await app.seedWorkspace('synthetic-happytohelp-live'),liveToken=liveProject.tokens.owner,liveBase=`/api/management/projects/${liveProject.projectId}`
   const liveMailbox=(await app.ok(liveBase+'/mailboxes',{token:liveToken,body:{provider:'forwarding',address:'synthetic-happytohelp-live@support.example',displayName:''}})).data
-  const liveBody={...body,localId:'synthetic-happytohelp-live',mailboxId:liveMailbox.id,requesterEmail:'synthetic-happytohelp-live@customer.example',requesters:undefined,content:'synthetic-happytohelp-live-send'}
-  const liveTicket=await app.ok(liveBase+'/tickets',{token:liveToken,body:liveBody}),liveJobs=await app.takeJobs(),liveJob=liveJobs.find(job=>job.type==='outbox.recover'&&job.conversationId===liveTicket.conversation.id)
+  const liveBody={...body,localId:'synthetic-happytohelp-live',mailboxId:liveMailbox.id,requesters:['synthetic-happytohelp-live@customer.example','synthetic-happytohelp-live-other@customer.example'],content:'synthetic-happytohelp-live-send'}
+  const livePreview=await app.ok(liveBase+'/tickets/notices/preview',{token:liveToken,body:liveBody}),liveBatch=await app.ok(liveBase+'/tickets/notices',{token:liveToken,body:{...liveBody,confirmation:livePreview.confirmation}}),liveTicket=liveBatch.results[0],liveJobs=await app.takeJobs(),liveJob=liveJobs.find(job=>job.type==='outbox.recover'&&job.conversationId===liveTicket.conversation.id)
   assert.ok(liveJob)
   const running=app.runJobs([liveJob])
   try{

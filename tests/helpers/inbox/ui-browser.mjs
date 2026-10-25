@@ -199,7 +199,7 @@ export async function outboundTicketBrowser(){
     await dialog.getByLabel('Requester emails',{exact:true}).fill(draftRecipients);await dialog.getByLabel('Subject',{exact:true}).fill(draftSubject);await dialog.getByLabel('Message',{exact:true}).fill(draftText)
     await dialog.getByRole('button',{name:'Preview recipients',exact:true}).click();await dialog.getByRole('region',{name:'Notice recipients'}).waitFor()
     await preference(false)
-    const beforeRefusal=copies().length
+    const beforeRefusal=copies().length,beforeTicketCount=(await call(noticeBase+'/conversations',undefined,owner.token)).meta.pagination.total
     let refusedCommand
     if(lostRefusal){
      await page.route('**'+noticeBase+'/tickets/notices',async route=>{
@@ -221,6 +221,7 @@ export async function outboundTicketBrowser(){
     assert.ok(await dialog.getByLabel('Message',{exact:true}).isEnabled());assert.ok(await dialog.getByRole('button',{name:'Cancel',exact:true}).isEnabled())
     assert.equal(await dialog.getByRole('button',{name:'Check same request',exact:true}).count(),0)
     assert.equal(copies().length,beforeRefusal)
+    assert.equal((await call(noticeBase+'/conversations',undefined,owner.token)).meta.pagination.total,beforeTicketCount,'a definitive refusal creates no ticket')
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1))
     await page.screenshot({path:join(evidenceDir,`${width}-notice-${lostRefusal?'lost-':''}refusal-${dismissal.toLowerCase()}.png`),fullPage:true})
     if(dismissal==='Escape')await page.keyboard.press('Escape')
@@ -258,8 +259,18 @@ export async function outboundTicketBrowser(){
      if(recovered.results.every(row=>row.accepted))break
     }
     assert.ok(recovered.results.every(row=>row.accepted));assert.equal(new Set(recovered.results.map(row=>row.conversation.id)).size,recoveryRecipients.length)
-    const replay=await request(lostCommand,noticeBase+'/tickets/notices');assert.equal(replay.status,200)
-    assert.deepEqual(replay.body.results.map(row=>row.conversation.id),recovered.results.map(row=>row.conversation.id))
+    for(const row of recovered.results){
+     let state
+     for(let attempt=0;attempt<100;attempt++){
+      state=(await call(`${noticeBase}/conversations/${row.conversation.id}`,undefined,owner.token)).data.last_message.email_status.state
+      if(['sent','rate_limited'].includes(state))break
+      await new Promise(resolve=>setTimeout(resolve,100))
+     }
+     assert.ok(['sent','rate_limited'].includes(state),`${mode}: delivery settled as ${state}`)
+     assert.ok(copies().filter(copy=>[].concat(copy.to).includes(row.recipient)&&copy.text.includes(`Recover this exact notice ${mode}.`)).length<=1,'recovery never duplicates a provider copy')
+    }
+    const beforeReplay=copies().length,replay=await request(lostCommand,noticeBase+'/tickets/notices');assert.equal(replay.status,200)
+    assert.deepEqual(replay.body.results.map(row=>row.conversation.id),recovered.results.map(row=>row.conversation.id));assert.equal(copies().length,beforeReplay)
     await dialog.locator('.modal-footer').getByRole('button',{name:'Close',exact:true}).waitFor();await page.screenshot({path:join(evidenceDir,`${width}-notice-${mode}-recovered.png`),fullPage:true})
     await dialog.locator('.modal-footer').getByRole('button',{name:'Close',exact:true}).click();await dialog.waitFor({state:'hidden'})
    }

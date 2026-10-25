@@ -40,8 +40,8 @@ export default function CreateEmailTicket({projectId, onHide, onCreated}) {
   } finally {setBusy(false);}
  };
  const input = (key,label,type='text',required=false) => <div className="form-group"><label className="form-label" htmlFor={`new-ticket-${key}`}>{label}</label><input className="form-control" id={`new-ticket-${key}`} type={type} required={required} value={draft[key]} onChange={event=>change(key,event.target.value)} maxLength={key==='subject'?998:320}/></div>;
- return <Modal show onHide={()=>!busy&&!uncertain&&onHide()} className="create-email-ticket" backdrop="static">
-  <DialogHeader closeButton={!busy&&!uncertain}><Modal.Title>New ticket</Modal.Title></DialogHeader>
+ return <Modal show onHide={()=>!busy&&!uncertain&&onHide()} className="create-email-ticket" backdrop="static" aria-labelledby="new-ticket-title">
+  <DialogHeader closeButton={!busy&&!uncertain}><Modal.Title id="new-ticket-title">New ticket</Modal.Title></DialogHeader>
   <form onSubmit={submit}>
    <Modal.Body>
     {error && <p className="alert alert-danger" role="alert">{error}</p>}

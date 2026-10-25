@@ -12,14 +12,14 @@ import {SendGridSendError} from '../../vendor/base/modules/sendgrid-email/src/se
 export {emailConfigured} from './email-provider'
 import {HTTPException} from 'hono/http-exception'
 import {demoEffect} from '../../vendor/base/modules/demo/index.mjs'
-import {prepareConversationEmail} from './email-preparation'
+import {prepareConversationEmail,operatorTicketMessage} from './email-preparation'
 import {sendViaMailbox,mailboxSender} from './mailboxes/send'
 import {mailboxForDelivery} from './mailboxes/store'
 
 /** `headers` are extra message headers (loop suppression on notifications); like every
  * other field they are part of the delivery identity. */
 export interface EmailAttachment {filename:string;content:string;contentType:string;contentId?:string}
-export interface EmailInput {to:string;cc?:readonly string[];bcc?:readonly string[];mailboxId?:string;agentId?:string;fromAddress?:string;subject:string;text:string;html?:string;attachments?:readonly EmailAttachment[];projectId?:string;idempotencyKey:string;replyTo?:string;headers?:Readonly<Record<string,string>>}
+export interface EmailInput {[operatorTicketMessage]?:boolean;to:string;cc?:readonly string[];bcc?:readonly string[];mailboxId?:string;agentId?:string;fromAddress?:string;subject:string;text:string;html?:string;attachments?:readonly EmailAttachment[];projectId?:string;idempotencyKey:string;replyTo?:string;headers?:Readonly<Record<string,string>>}
 /** The host retains provider execution only after every sending claim is durable. */
 export type DeferEmailDelivery=(delivery:Promise<unknown>)=>void
 type DeliveryRow={state:string;provider_id:string|null;intent_hash:string}
@@ -74,7 +74,10 @@ async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:
   // Only the durable delivery claimant takes rate capacity. Queue replay and
   // concurrent retries cannot charge or send the same first notice again.
   const first=/^message:([^:]+):notification$/.exec(input.idempotencyKey)
-  if(first&&input.projectId){
+  // Preparation already identifies ordinary replies in its existing message read.
+  // Only operator-created first messages need the live consent/rate lookup;
+  // unrelated problem batches must retain their D1 request budget.
+  if(first&&input.projectId&&input[operatorTicketMessage]!==false){
    const command=await env.DB.prepare(`SELECT ct.metadata_json FROM messages m
     JOIN operator_ticket_commands cmd ON cmd.project_id=m.project_id AND cmd.conversation_id=m.conversation_id AND cmd.local_id=m.local_id
     JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id

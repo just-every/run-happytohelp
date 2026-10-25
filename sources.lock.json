@@ -3504,7 +3504,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "7186726396c7853b4824aa60cb9e69cb0ccc629fbfa119b20c2ac2278ee657d4",
+      "sha256": "1e36fc7635cd86f6f1175beab1ab7ca85e3a6c1ca72e043641c36c46d7afbc76",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -5216,7 +5216,7 @@
       "executable": false
     },
     "src/modules/integrations/email-preparation.ts": {
-      "sha256": "67a6d45b8363871d5d3d71bc015e9c647c3e3ab97a511f3c7b423d7d0265caf4",
+      "sha256": "d27cee1f81a0a062fc54512c1c8fddf5e2d67a7db3ac9ed1088235d0812ec5e8",
       "executable": false
     },
     "src/modules/integrations/email-provider.ts": {
@@ -5244,7 +5244,7 @@
       "executable": false
     },
     "src/modules/integrations/email.ts": {
-      "sha256": "142918b6756a08e941c956b5e1d8e27e8a57242a7e3be8b86f5877c5d59329b8",
+      "sha256": "54dc2cb69b67edf15454f16e789bc160973b6222f06c6ac4c643fdbf356d2b2a",
       "executable": false
     },
     "src/modules/integrations/github-discovery.ts": {
@@ -11428,7 +11428,7 @@
       "executable": false
     },
     "tests/helpers/identity/roles-audit.mjs": {
-      "sha256": "cfb72f19b5c212fac11d3eae34b882f161dc5699383f356705141917a62cf043",
+      "sha256": "03b83476792247113efd0beeadbee810265d0c1a954ffc66f68d3f570573ad16",
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {

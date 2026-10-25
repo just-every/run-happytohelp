@@ -19,6 +19,7 @@ END;
 CREATE TABLE api_uploads(id TEXT PRIMARY KEY,project_id TEXT NOT NULL,family_id TEXT NOT NULL,object_key TEXT NOT NULL,filename TEXT NOT NULL,content_type TEXT NOT NULL,size INTEGER NOT NULL,expires_at INTEGER NOT NULL,contact_id TEXT);
 CREATE TABLE api_appends(project_id TEXT NOT NULL,conversation_id TEXT NOT NULL,family_id TEXT NOT NULL,local_id TEXT NOT NULL,body_digest TEXT NOT NULL,response_json TEXT,contact_id TEXT NOT NULL,PRIMARY KEY(project_id,conversation_id,family_id,local_id));
 CREATE TABLE api_notes(id TEXT PRIMARY KEY,conversation_id TEXT NOT NULL REFERENCES conversations(id),user_id TEXT NOT NULL,name TEXT NOT NULL,content TEXT NOT NULL,created_at INTEGER NOT NULL);
+CREATE TABLE api_note_media(note_id TEXT NOT NULL REFERENCES api_notes(id) ON DELETE CASCADE,media_id TEXT NOT NULL REFERENCES media(id) ON DELETE CASCADE,PRIMARY KEY(note_id,media_id));
 CREATE TRIGGER api_append_erasure AFTER UPDATE OF metadata_json ON contacts WHEN json_extract(NEW.metadata_json,'$.is_erasing')=1 OR json_extract(NEW.metadata_json,'$.is_erased')=1 BEGIN
  DELETE FROM api_appends WHERE project_id=NEW.project_id AND contact_id=NEW.id;
  DELETE FROM api_notes WHERE conversation_id IN (SELECT id FROM conversations WHERE project_id=NEW.project_id AND contact_id=NEW.id);

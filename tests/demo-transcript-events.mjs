@@ -18,7 +18,7 @@ try{
   for(const [,sql] of (await readFile(new URL('../migrations/'+file,import.meta.url),'utf8')).matchAll(/\s*(CREATE TRIGGER[\s\S]*?END;|[^;]+;)/g))await db.prepare(sql).run();
  }
  // This transcript fixture uses only the additive machine-note table from the API migration.
- for (const sql of migrationStatements(await readFile(new URL('../migrations/253_api_requests.sql',import.meta.url),'utf8')).filter(sql=>sql.startsWith('CREATE TABLE api_notes('))) await db.prepare(sql).run();
+ for (const sql of migrationStatements(await readFile(new URL('../migrations/253_api_requests.sql',import.meta.url),'utf8')).filter(sql=>sql.startsWith('CREATE TABLE api_notes(')||sql.startsWith('CREATE TABLE api_note_media('))) await db.prepare(sql).run();
  await db.batch([
   db.prepare("INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES('p','P','p','https://p.test',1),('q','Q','q','https://q.test',1)"),
   db.prepare("INSERT INTO users VALUES('agent','a@example.test','Agent',1),('foreign','f@example.test','Foreign',1)"),

@@ -52,6 +52,21 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const appendReplay=await h.call(appendPath,{token:appender.token,...body(command)});assert.equal(appendReplay.duplicate,true);assert.equal(appendReplay.data.id,appended.data.id);
   const note=await h.call(appendPath,{token:appender.token,...body({kind:'note',localId:'synthetic-hh-note-1',content:'Machine context'})});assert.ok(note.data.id);
   assert.equal((await h.db.prepare('SELECT count(*) n FROM api_notes WHERE conversation_id=?').bind(created.data.id).first()).n,1);
+  const appendBytes='synthetic-hh-append-attachment';
+  await h.session('synthetic-hh-requester','p',stored.id);
+  for(const kind of ['customer','note']){
+   const upload=await h.call('/api/v1/uploads',{token:appender.token,method:'POST',headers:{'Content-Type':'text/plain','X-Filename':'append.txt'},body:appendBytes});
+   const value={kind,localId:'synthetic-hh-file-'+kind,content:'Attached context',attachments:[{upload_id:upload.data.id}]};
+   const attached=await h.call(appendPath,{token:appender.token,...body(value)});
+   const file=await h.db.prepare(kind==='customer'?'SELECT * FROM media WHERE message_id=?':'SELECT m.* FROM media m JOIN api_note_media n ON n.media_id=m.id WHERE n.note_id=?').bind(attached.data.id).first();
+   assert.ok(file);assert.equal(await (await h.raw('/api/conversations/'+created.data.id+'/media/'+file.id)).text(),appendBytes);
+   assert.equal((await h.raw('/api/conversations/'+created.data.id+'/media/'+file.id,{actor:'synthetic-hh-requester'})).status,kind==='note'?404:200);
+   assert.equal((await h.call(appendPath,{token:appender.token,...body(value)})).data.id,attached.data.id);
+  }
+  const beforeAppendFailure=await h.db.prepare('SELECT (SELECT count(*) FROM messages) messages,(SELECT count(*) FROM media) media,(SELECT count(*) FROM api_notes) notes').first();
+  h.responses.push({status:200,body:'changed',headers:{'Content-Type':'text/plain'}});
+  const badAppend=await h.raw(appendPath,{token:appender.token,...body({kind:'customer',localId:'synthetic-hh-bad-append',content:'Atomic refusal',attachments:[{url:'https://receiver.example.com/append-file',sha256:sha(appendBytes)}]})});
+  assert.equal(badAppend.status,400);assert.deepEqual(await h.db.prepare('SELECT (SELECT count(*) FROM messages) messages,(SELECT count(*) FROM media) media,(SELECT count(*) FROM api_notes) notes').first(),beforeAppendFailure);
   const reader=await h.issue(['conversations:read'],'p',{source_product:'synthetic-hh-1',bindings:{credentials:[issued.data.id]}});
   assert.equal((await h.call('/api/v1/conversations',{token:reader.token})).data.length,1);
   const stranger=await h.issue(['messages:append'],'p',{source_product:'synthetic-hh-other'});

@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "3566a0e247cadbb1c0bd35ee35be31ec76d4c0f505c91f53691919896f9e23ce",
+      "sha256": "539a42586ae542a0858d1fbe71ffc19c4bf8b233ed4cb614c26e6564946db016",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2520,7 +2520,7 @@
       "executable": false
     },
     "migrations/253_api_requests.sql": {
-      "sha256": "c8f9b7a41887864bffb3c65bb8ac90daf291d0940e3b2d6d87284becdb51490e",
+      "sha256": "e90905dfdb4b678fab7bfe84dfc60d970119a1f96353bcf089316745fe2757d3",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -3932,7 +3932,7 @@
       "executable": false
     },
     "src/modules/api-integrations/api-append.ts": {
-      "sha256": "ba5e18233bf2f6e760cde3db0658bd817e9e138fcdd380924178edb6304ed1c3",
+      "sha256": "a988c3bcf1316fa649977c1a0721f8f8d91998d3c146221ae665128b37199709",
       "executable": false
     },
     "src/modules/api-integrations/api-conversations.ts": {
@@ -3948,7 +3948,7 @@
       "executable": false
     },
     "src/modules/api-integrations/api-upload.ts": {
-      "sha256": "adce277255fb9a199033fad029a47277ed9fcff909a5e7230f77500dc640d127",
+      "sha256": "6be3cb72a33e45be46cd37c298a302342c073e463bb5565dd0cfc93a15fc0b35",
       "executable": false
     },
     "src/modules/api-integrations/bounds.ts": {
@@ -4060,7 +4060,7 @@
       "executable": false
     },
     "src/modules/collaboration/note-media.ts": {
-      "sha256": "9f6fd3ce7971169ad05905651887a850da3365e94d13a0637338af4b29bc7e5b",
+      "sha256": "948285cef1208ec62db14316aeafb9172b5b58c740230504a0617cb588b86632",
       "executable": false
     },
     "src/modules/collaboration/notes.ts": {
@@ -10820,7 +10820,7 @@
       "executable": false
     },
     "tests/connections/api-create.mjs": {
-      "sha256": "e5638a8ed000fa81972b48181b7fcd9845773662f25e94472ae18387d72f6328",
+      "sha256": "ada986f5d8b4a388f62ca4aa2ccca334dd149bbe9f46119201fed47f387ffc8b",
       "executable": false
     },
     "tests/connections/api.mjs": {
@@ -10900,7 +10900,7 @@
       "executable": false
     },
     "tests/demo-inbox.mjs": {
-      "sha256": "0da3027236240db3f9a9d2b091428e208e18d3a36d7d0671545f77f8451744cd",
+      "sha256": "1052e9da712715a9aea7e2867d006f180b2221b1a1481f9f0e37c725ac7a8492",
       "executable": false
     },
     "tests/demo-knowledge-activation.mjs": {
@@ -10908,7 +10908,7 @@
       "executable": false
     },
     "tests/demo-transcript-events.mjs": {
-      "sha256": "4e3749d9a79875599121916111f8a5e951e3671fe8a6c23521f910e88e8d5310",
+      "sha256": "51877329ce603c1b031912d4fead0534a7d084ad0f391559989a129e214563d4",
       "executable": false
     },
     "tests/eval-harness/fixtures/assist-human-voice.json": {

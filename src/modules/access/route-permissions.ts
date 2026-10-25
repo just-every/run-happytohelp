@@ -166,6 +166,11 @@ export function routeRule(method:string,path:string):Rule|undefined{
   if(path.endsWith('/send'))return 'conversations.reply'
   return 'conversations.manage'
  }
+ // Internal knowledge GETs never inherit the permissive unclassified-read default.
+ if(method==='GET'&&path.startsWith('/api/knowledge/:projectId/')){
+  if(path.endsWith('/articles')||/\/articles\/:articleId\/(history|translations\/:locale)$/.test(path))return 'knowledge.read'
+  return rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]??'knowledge.edit'
+ }
  if(prefixes.some(prefix=>path.startsWith(prefix)))return 'none'
  return r4RouteRule(method,path)??rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]
 }

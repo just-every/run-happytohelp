@@ -21,13 +21,13 @@ export async function previewOutboundNotices(env:Env,actor:Actor,sessionHash:str
 /** Reserve an immutable command independently of the disposable audit history.
  * Ticket and outbox admission update its recovery identities in their own batches. */
 export async function confirmOutboundNotices(env:Env,actor:Actor,sessionHash:string,body:Record<string,unknown>){
- const inputs=outboundNoticeInputs(body),fingerprint=await hashToken(JSON.stringify(inputs))
+ const inputs=outboundNoticeInputs(body),fingerprint=await hashToken(JSON.stringify(inputs)),intentKey=await hashToken(inputs[0].localId)
  const guard=await ticketAuthority(env,actor,{sessionHash,source:'dashboard'},'conversations.reply')
  const id=`outbound-notice:${await hashToken(JSON.stringify([actor.projectId,actor.id,inputs[0].localId]))}`
  const notCreated=(message:string)=>new HTTPException(409,{res:Response.json({error:message,code:'notice_not_created'},{status:409})})
- const recorded=await env.DB.prepare('SELECT detail_json,outcome FROM outbound_notice_commands WHERE id=? AND project_id=?').bind(id,actor.projectId).first<{detail_json:string;outcome:string}>()
+ const recorded=await env.DB.prepare('SELECT detail_json,outcome,actor_id FROM outbound_notice_commands WHERE project_id=? AND (id=? OR intent_key=?)').bind(actor.projectId,id,intentKey).first<{detail_json:string;outcome:string;actor_id:string}>()
  if(recorded){
-  if(JSON.parse(recorded.detail_json).fingerprint!==fingerprint)throw new HTTPException(409,{message:'Notice command conflicts with its earlier confirmation'})
+  if(recorded.actor_id!==actor.id||JSON.parse(recorded.detail_json).fingerprint!==fingerprint)throw new HTTPException(409,{message:'Notice command conflicts with its earlier confirmation'})
   if(recorded.outcome==='refused')throw notCreated(JSON.parse(recorded.detail_json).error||'This notice was refused before any tickets were created')
  }else{
   // Invalid/missing review tokens do not freeze a command. A valid confirmation
@@ -39,17 +39,17 @@ export async function confirmOutboundNotices(env:Env,actor:Actor,sessionHash:str
    await previewOutboundNotices(env,actor,sessionHash,body)
   }catch(error){
    if(error instanceof HTTPException&&error.status<500){
-    await env.DB.prepare(`INSERT OR IGNORE INTO outbound_notice_commands(id,project_id,created_at,outcome,actor_id,detail_json)
-     SELECT ?,?,?,'refused',?,? WHERE EXISTS(${guard.sql})`).bind(id,actor.projectId,Date.now(),actor.id,JSON.stringify({fingerprint,error:'This notice was refused before any tickets were created'}),...guard.params).run()
-    const refused=await env.DB.prepare('SELECT detail_json,outcome FROM outbound_notice_commands WHERE id=? AND project_id=?').bind(id,actor.projectId).first<{detail_json:string;outcome:string}>()
-    if(refused?.outcome==='refused'&&JSON.parse(refused.detail_json).fingerprint===fingerprint)throw notCreated(error.message)
+    await env.DB.prepare(`INSERT OR IGNORE INTO outbound_notice_commands(id,project_id,created_at,outcome,actor_id,intent_key,detail_json)
+     SELECT ?,?,?,'refused',?,?,? WHERE EXISTS(${guard.sql})`).bind(id,actor.projectId,Date.now(),actor.id,intentKey,JSON.stringify({fingerprint,error:'This notice was refused before any tickets were created'}),...guard.params).run()
+    const refused=await env.DB.prepare('SELECT detail_json,outcome,actor_id FROM outbound_notice_commands WHERE project_id=? AND (id=? OR intent_key=?)').bind(actor.projectId,id,intentKey).first<{detail_json:string;outcome:string;actor_id:string}>()
+    if(refused?.actor_id===actor.id&&refused.outcome==='refused'&&JSON.parse(refused.detail_json).fingerprint===fingerprint)throw notCreated(error.message)
    }
    throw error
   }
-  await env.DB.prepare(`INSERT OR IGNORE INTO outbound_notice_commands(id,project_id,created_at,outcome,actor_id,detail_json)
-   SELECT ?,?,?,'succeeded',?,? WHERE EXISTS(${guard.sql})`).bind(id,actor.projectId,Date.now(),actor.id,JSON.stringify({fingerprint}),...guard.params).run()
-  const saved=await env.DB.prepare('SELECT detail_json,outcome FROM outbound_notice_commands WHERE id=? AND project_id=?').bind(id,actor.projectId).first<{detail_json:string;outcome:string}>()
-  if(!saved||JSON.parse(saved.detail_json).fingerprint!==fingerprint)throw new HTTPException(409,{message:'Notice command conflicts with its earlier confirmation'})
+  await env.DB.prepare(`INSERT OR IGNORE INTO outbound_notice_commands(id,project_id,created_at,outcome,actor_id,intent_key,detail_json)
+   SELECT ?,?,?,'succeeded',?,?,? WHERE EXISTS(${guard.sql})`).bind(id,actor.projectId,Date.now(),actor.id,intentKey,JSON.stringify({fingerprint}),...guard.params).run()
+  const saved=await env.DB.prepare('SELECT detail_json,outcome,actor_id FROM outbound_notice_commands WHERE project_id=? AND (id=? OR intent_key=?)').bind(actor.projectId,id,intentKey).first<{detail_json:string;outcome:string;actor_id:string}>()
+  if(!saved||saved.actor_id!==actor.id||JSON.parse(saved.detail_json).fingerprint!==fingerprint)throw new HTTPException(409,{message:'Notice command conflicts with its earlier confirmation'})
   if(saved.outcome==='refused')throw notCreated(JSON.parse(saved.detail_json).error||'This notice was refused before any tickets were created')
  }
  return Promise.all(inputs.map(async input=>({...input,[noticeCommand]:id,localId:`notice-${await hashToken(JSON.stringify([id,input.requesterEmail]))}`})))

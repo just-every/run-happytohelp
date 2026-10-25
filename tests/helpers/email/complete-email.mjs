@@ -440,6 +440,9 @@ async function noticeRetentionJourney(){
   assert.equal(original.results.filter(row=>row.accepted).length,reserved?1:2)
   const tickets=await app.sql('SELECT c.* FROM operator_ticket_commands cmd JOIN conversations c ON c.id=cmd.conversation_id WHERE cmd.project_id=? ORDER BY c.contact_id',w.projectId)
   assert.equal(tickets.length,2)
+  const otherPreview=await app.ok(path+'/preview',{token:w.tokens.operator,body})
+  const otherActor=await app.call(path,{token:w.tokens.operator,body:{...body,confirmation:otherPreview.confirmation},status:409})
+  assert.notEqual(otherActor.data.code,'notice_not_created','the workspace intent cannot be reused by another operator')
   const blocked=reserved?tickets.find(row=>!original.results.some(result=>result.conversation?.id===row.id)):original.results[0].conversation
   await app.drainJobs();assert.equal(sent.length,reserved?1:2)
   const refusedBody={...body,localId:'synthetic-happytohelp-retained-refusal'},refusedPreview=await app.ok(path+'/preview',{token,body:refusedBody}),refusedCommand={...refusedBody,confirmation:refusedPreview.confirmation}

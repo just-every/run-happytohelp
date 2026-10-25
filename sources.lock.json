@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "0824bcb0ef3f9b18e4e590d9825144ff946100349b222804da5f6db1c1eeddb9",
+      "sha256": "1d3ca87c5d243bd8d5fc136c7927d85beb127696d41ec85f05195cbcbbffcfac",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "017eb7f85ad379b9c48b0e937b1fbc085c1c53c9c9dbbeac55fb49cfbe5b77b5",
+      "sha256": "abd8687ef1e0cd5b9c9009a20e2ce140648003b9ab3a4dbddc2e57543ddf3b71",
       "executable": false
     },
     "DEMO.md": {
@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "ea772220fc226becfc6d41cd19ddabe5f0b82e04a690b810b1562d7329cf4c49",
+      "sha256": "0064210ce7a7bc1b76b266a19f5d7cdcc3d577c93db2150d54f41399ad03e70c",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2524,7 +2524,7 @@
       "executable": false
     },
     "migrations/255_outbound_notice_commands.sql": {
-      "sha256": "b6bffdebd18591833d366cf3210d9f1bc0f7738959b3683bbec88b977ec373b3",
+      "sha256": "32c20432952f7c817ebb530ed1057f23649c3df8c1b8bb0287e09b452e01b1d4",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -6132,7 +6132,7 @@
       "executable": false
     },
     "src/modules/management/outbound-notices.ts": {
-      "sha256": "b5e974ca9456b06c993f3f82dd3d641247daf628b38748b4867c7667fc2f0e52",
+      "sha256": "ff865e53305296af50abeb3618d9bb0a4c768322da6c407cbded15294275d9da",
       "executable": false
     },
     "src/modules/management/outbound-ticket-input.ts": {
@@ -11220,7 +11220,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "7cdd399d60c4df13c0479ac2ef9536dc567d3555c61a1eb06a1af44e1acb9b7e",
+      "sha256": "4f1e1ec006eec3b162f01d16fd74f3e420db167de1cb94961d7bef296d572b9f",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {

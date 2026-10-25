@@ -7,7 +7,8 @@ import {launchBrowser,evidence} from '../../journeys/kit/browser.mjs'
 import {client} from '../../journeys/kit/http.mjs'
 
 // "Possibly the same customer" in the emitted Worker and Chromium: an owner opens a customer from their company,
-// links a second verified identity with evidence, sees it labelled as context with its reviewer and time, unlinks it
+// links a second verified identity with evidence, sees it labelled as context with its reviewer and time on the
+// customer page and in the requester's ticket, unlinks it
 // with a reason, and reads both decisions in the link history; an unverified typed email is refused. Nothing is
 // merged or sent, the security log records each decision, and each customer's widget shows only their own session.
 export async function identityLinksBrowser(){
@@ -36,17 +37,18 @@ export async function identityLinksBrowser(){
   const company=(await api.ok(`${M}/companies`,{token,body:{name:'Northstar Supply',domains:['customer.example.test']}})).company
   await api.ok(`${M}/companies/${company.id}/members/${chat.contactId}`,{token,method:'PUT',body:{}})
   const links=()=>api.ok(`${M}/contacts/${chat.contactId}/identity-links`,{token})
-  const messageCounts=async()=>Promise.all([chat,mailbox,typed].map(async person=>(await api.ok(`/api/conversations/${person.conversationId}/messages`,{token:person.token})).messages.length))
+  const messageCounts=async()=>{const counts=[];for(const person of [chat,mailbox,typed])counts.push((await api.ok(`/api/conversations/${person.conversationId}/messages`,{token:person.token})).messages.length);return counts}
   const before=await messageCounts()
   browser=await launchBrowser()
   const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]
   page.on('pageerror',error=>errors.push(error.message));page.setDefaultTimeout(15000)
   // Each state at 1440 and 390: no horizontal overflow, no WCAG axe violation in the panel, and a screenshot artifact.
-  const capture=async(target,name,selector)=>{
+  const capture=async(target,name,selector,prepare)=>{
    if(selector&&!await target.evaluate(()=>Boolean(window.axe)))await target.addScriptTag({path:'node_modules/axe-core/axe.min.js'})
    const restore=target.viewportSize()
    for(const width of [1440,390]){
     await target.setViewportSize({width,height:width===390?844:1000});await target.waitForTimeout(400)
+    if(prepare)await prepare()
     assert.ok(await target.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${name} ${width} overflow`)
     if(selector){
      const violations=await target.evaluate(async selector=>{if(!document.querySelector(selector))return ['missing '+selector];const result=await window.axe.run({include:[selector]},{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']}});return result.violations.map(({id,nodes})=>({id,nodes:nodes.map(node=>node.target)}))},selector)
@@ -104,12 +106,29 @@ export async function identityLinksBrowser(){
    assert.equal((await api.call(`/api/conversations/${other.conversationId}/messages`,{token:person.token})).status,404,'a linked identity gains no other customer history')
    assert.deepEqual((await api.ok(`${M}/contacts/${person.contactId}/conversations`,{token})).data.map(row=>row.id),[person.conversationId],'the records stay separate')
   }
+  // The requester's ticket shows the same labelled context under Ticket › Customer.
+  await page.goto(`${runtime.origin}/projects/${p}/conversations/${chat.conversationId}`)
+  const ticketContext=page.locator('.conversation-details-identity-links')
+  const showTicketCustomer=async()=>{
+   if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click()
+   await page.getByRole('tab',{name:'Ticket',exact:true}).click()
+   const toggle=page.locator('#ticket-section-customer-heading')
+   if(await toggle.getAttribute('aria-expanded')!=='true')await toggle.click()
+   await ticketContext.getByRole('link',{name:'M. Lane',exact:true}).waitFor()
+   await ticketContext.scrollIntoViewIfNeeded()
+  }
+  await showTicketCustomer()
+  await ticketContext.getByText('Context only. Nothing is merged or sent.',{exact:true}).waitFor()
+  await ticketContext.getByText(/^Linked by Avery Reviewer · /).waitFor()
+  await capture(page,'05-ticket-customer','.conversation-details-identity-links',showTicketCustomer)
+  await page.goto(`${runtime.origin}/projects/${p}/contacts/${chat.contactId}`)
+  await panel.getByRole('button',{name:'Unlink M. Lane',exact:true}).waitFor()
   const customerPage=await context.newPage()
   await customerPage.goto(hostOrigin)
   await customerPage.evaluate(options=>window.h2h('init',options),{widgetKey,apiOrigin:runtime.origin,open:true,settings:{collector:{enabled:false}},contact:{name:'Morgan Lane',identifier:'synthetic-happytohelp-21',hash:sign('synthetic-happytohelp-21')}})
   await customerPage.getByText(chat.question,{exact:true}).waitFor()
   assert.equal(await customerPage.getByText(mailbox.question).count(),0,'the customer sees only their own session')
-  await capture(customerPage,'05-customer-own-session',null)
+  await capture(customerPage,'06-customer-own-session',null)
   await customerPage.close()
   // Unlink at phone width with a reason; both decisions stay in the history with reviewer, time and evidence.
   await page.setViewportSize({width:390,height:844})
@@ -118,14 +137,14 @@ export async function identityLinksBrowser(){
   await unlink.getByLabel('Reason for unlinking',{exact:true}).fill(reason)
   await unlink.getByRole('button',{name:'Preview unlink',exact:true}).click()
   await unlink.getByText('Preview — nothing changed yet',{exact:true}).waitFor()
-  await capture(page,'06-unlink-preview','.identity-links')
+  await capture(page,'07-unlink-preview','.identity-links')
   await unlink.getByRole('button',{name:'Confirm unlink',exact:true}).click()
   await panel.getByRole('status').filter({hasText:'Unlinked M. Lane.'}).waitFor()
   await panel.getByText(/^No linked identities\./).waitFor()
   const history=panel.locator('.identity-links__decisions li')
   await history.filter({hasText:/^Unlinked M\. Lane/}).filter({hasText:reason}).filter({hasText:'Avery Reviewer'}).waitFor()
   await history.filter({hasText:/^Linked M\. Lane/}).filter({hasText:evidenceText}).filter({hasText:'Avery Reviewer'}).waitFor()
-  await capture(page,'07-unlinked-history','.identity-links')
+  await capture(page,'08-unlinked-history','.identity-links')
   const after=await links()
   assert.equal(after.links.length,0)
   assert.deepEqual(after.history.map(entry=>[entry.action,entry.provenance,entry.actor_name]),[['unlinked',reason,owner.ownerName],['linked',evidenceText,owner.ownerName]])

@@ -220,7 +220,9 @@ identities and confirms that nothing is merged, no message is sent and customer
 access is unchanged before **Confirm link**. **Unlink** asks for a reason and
 previews the same way. **Link history** keeps every link and unlink with its
 reviewer, time and evidence, and the Security log records each decision.
-Roles without contact management do not see the section.
+In a ticket, **Ticket › Customer** shows the requester's linked identities
+under the same label, with links to their customer pages. Roles without contact
+management do not see either view.
 
 Both records must have independently proven mailbox or signed widget identity
 before linking. A typed email or imported identifier supplies no proof, and the

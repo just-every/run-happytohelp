@@ -106,6 +106,7 @@ export async function outboundTicketBrowser(){
    assert.equal(created.conversation.submitter_id,owner.actor.id);assert.equal(created.conversation.requester_id,created.conversation.contact_id)
    await page.waitForURL(`**/conversations/${created.conversation.id}`);await page.locator('.transcript-message-content').getByText(content,{exact:true}).waitFor()
    await delivered(base,created.conversation.id,content)
+   assert.equal(copies().find(copy=>copy.text?.includes(content)).from,mailbox.address)
    await page.reload();await page.locator('.transcript-message-content').getByText(content,{exact:true}).waitFor()
    const replay=await request(command);assert.equal(replay.status,200);assert.equal(replay.body.conversation.id,created.conversation.id);assert.equal(replay.body.duplicate,true);await delivered(base,created.conversation.id,content)
    // The API door selects the existing requester rather than making another.
@@ -156,6 +157,9 @@ export async function outboundTicketBrowser(){
    const batchReply=await batchResponse;assert.equal(batchReply.status(),200)
    const batch=await batchReply.json(),batchCommand=batchReply.request().postDataJSON()
    assert.equal(batch.results.length,3);assert.ok(batch.results.every(row=>row.accepted));assert.equal(new Set(batch.results.map(row=>row.conversation.id)).size,3)
+   const resultList=dialog.getByRole('region',{name:'Notice results'});await resultList.waitFor()
+   for(const recipient of recipients)await resultList.getByRole('link',{name:recipient,exact:true}).waitFor()
+   await page.screenshot({path:join(evidenceDir,`${width}-notice-results.png`),fullPage:true})
    const states=[]
    for(const row of batch.results){
     let state
@@ -171,6 +175,7 @@ export async function outboundTicketBrowser(){
    const repeated=await call(noticeBase+'/tickets/notices',batchCommand,owner.token)
    assert.deepEqual(repeated.results.map(row=>row.conversation.id),batch.results.map(row=>row.conversation.id))
    assert.equal(copies().length,beforeNotices+2,'repeat has no additional provider attempts')
+   for(const copy of copies().slice(beforeNotices))assert.equal(copy.from,`synthetic-happytohelp-notice-${width}@support.example`)
    const refused=batch.results[states.indexOf('rate_limited')]
    await dialog.getByRole('link',{name:refused.recipient,exact:true}).click()
    await page.locator('.transcript-message-content').getByText(noticeText,{exact:true}).waitFor()

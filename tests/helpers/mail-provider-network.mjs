@@ -11,6 +11,6 @@ export default async request => {
     assert.ok(message.to.length > 0);
     assert.ok(message.subject);
     assert.ok(message.text || message.html);
-    console.log('MAIL_FIXTURE_RECEIPT '+JSON.stringify({to:message.to,text:message.text}));
+    console.log('MAIL_FIXTURE_RECEIPT '+JSON.stringify({from:message.from,to:message.to,text:message.text}));
     return Response.json({id: crypto.randomUUID()});
 };

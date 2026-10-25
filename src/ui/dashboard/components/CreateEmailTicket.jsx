@@ -60,7 +60,7 @@ export default function CreateEmailTicket({projectId, onHide, onCreated}) {
    <Modal.Body>
     {error && <p className="alert alert-danger" role="alert">{error}</p>}
     {uncertain && <p className="alert alert-warning" role="status">The result is unknown. Check this same request before creating another ticket.</p>}
-    <fieldset disabled={busy||uncertain||!!preview}>
+    <fieldset hidden={!!preview} disabled={busy||uncertain||!!preview}>
      <div className="form-group"><label className="form-label" htmlFor="new-ticket-kind">Ticket type</label><select id="new-ticket-kind" className="form-select" value={draft.kind} onChange={event=>change('kind',event.target.value)}><option value="email">Email requester</option><option value="call">Log a call</option><option value="notice">Service notice to several requesters</option></select></div>
      <div className="settings-grid">{input('requesterEmail',draft.kind==='notice'?'Requester emails':'Requester email',draft.kind==='notice'?'text':'email',true)}{draft.kind!=='notice'&&input('requesterName','Requester name')}</div>
      <p className="settings-note">You are recorded as the submitter. The requester is the customer this ticket is for.</p>
@@ -70,7 +70,7 @@ export default function CreateEmailTicket({projectId, onHide, onCreated}) {
      {draft.kind==='call' && <p className="settings-note">Call notes are private. This action sends no email.</p>}
     </fieldset>
     {draft.kind==='notice'&&!preview&&<p>Separate email addresses with commas. Review every recipient before sending one ticket per requester. Existing email notice preferences apply.</p>}
-    {preview&&!results&&<section aria-label="Notice recipients"><h3>Review recipients</h3><ul>{preview.recipients.map(address=><li key={address}>{address}</li>)}</ul><p>Each requester gets a separate ticket and one email attempt. Workspace rate limits apply; refused notices remain visible on their tickets and are never retried automatically.</p></section>}
+    {preview&&!results&&<section aria-label="Notice recipients"><h3>Review recipients</h3><p><strong>{draft.subject}</strong></p><p className="notice-preview-message">{draft.content}</p><ul>{preview.recipients.map(address=><li key={address}>{address}</li>)}</ul><p>Each requester gets a separate ticket and one email attempt. Workspace rate limits apply; refused notices remain visible on their tickets and are never retried automatically.</p></section>}
     {results&&<section aria-label="Notice results"><h3>Notice tickets</h3><p>Open each ticket to check its email outcome.</p><ul>{results.map(row=><li key={row.recipient}>{row.conversation?<a href={`/projects/${encodeURIComponent(projectId)}/conversations/${encodeURIComponent(row.conversation.id)}`}>{row.recipient}</a>:row.recipient}{row.error&&<span role="alert"> — {row.error}</span>}</li>)}</ul></section>}
 
    </Modal.Body>

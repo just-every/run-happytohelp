@@ -308,7 +308,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   await h.db.prepare("INSERT INTO users VALUES(?,'synthetic-hh-issuer@example.test','Synthetic issuer',1)").bind(issuerId).run();
   await h.db.prepare("INSERT INTO memberships VALUES('p',?,'admin')").bind(issuerId).run();await h.session(issuerId,'p',issuerId,'admin');
   const machine=await h.call(settings+'/tokens',{actor:issuerId,...body({name:'Synthetic retained machine',source_product:'synthetic-hh-erasure',scopes:['conversations:create','messages:append']})});
-  const issuerTicket=await send({requester:{external_id:'synthetic-hh-issuer-request'},subject:'Retained request',body:'Customer content'},'synthetic-hh-issuer',machine.token);assert.equal(issuerTicket.status,201);const issuerTicketId=(await issuerTicket.json()).data.id;
+  const issuerTicket=await send({requester:{external_id:'synthetic-hh-issuer-request'},subject:'Retained request',body:'Customer content',source_ref:{product:'synthetic-hh-erasure',ref:'synthetic-hh-issuer-ref',url:'https://example.test/issuer'}},'synthetic-hh-issuer',machine.token);assert.equal(issuerTicket.status,201);const issuerTicketId=(await issuerTicket.json()).data.id;
   await h.call('/api/v1/conversations/'+issuerTicketId+'/append',{token:machine.token,...body({kind:'customer',localId:'synthetic-hh-issuer-append',content:'More customer content'})});
   const beforeErase=(await h.call('/api/management/projects/p/audit/export?format=json')).events.filter(event=>event.actor_id===issuerId);assert.ok(beforeErase.length);
   assert.equal((await h.raw('/api/management/projects/p/agents/owner/erase',body({}))).status,403);
@@ -326,7 +326,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const machineHistory=history.data.history.filter(event=>event.actor_type==='api');
   for(const action of ['created','append']){
    const event=machineHistory.find(event=>event.changes.action===action||event.changes.kind===action);
-   assert.ok(event,'retained '+action+' history');assert.equal(event.changes.credential_name,'Synthetic retained machine');assert.equal(event.changes.source_product,'synthetic-hh-erasure');assert.ok(event.changes.request_id);
+   assert.ok(event,'retained '+action+' history');assert.equal(event.changes.credential_name,'Synthetic retained machine');assert.equal(event.changes.source_product,'synthetic-hh-erasure');assert.equal(event.changes.source_ref,'synthetic-hh-issuer-ref');assert.ok(event.changes.request_id);assert.match(event.changes.idempotency_digest,/^[a-f0-9]{64}$/);
   }
   const redacted=JSON.stringify({history,events:afterErase,retained});
   for(const privateValue of ['synthetic-hh-issuer@example.test','Synthetic issuer',machine.token,sha(machine.token)])assert.ok(!redacted.includes(privateValue));

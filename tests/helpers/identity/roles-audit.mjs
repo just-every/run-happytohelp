@@ -62,8 +62,37 @@ export async function rolesAuditJourney(){
   const edit=async(key,status)=>delegated('/effects',{operationKey:key,operation:'happytohelp.article.update',target:article,expectedRevision:await revision(),expectedAudienceRevision:await audience(status)??seen[status],content:{title:'Returns',content:'Edited '+key,summary:'',status}})
   assert.equal((await edit('agent-draft','draft')).status,200,'the Agent edits through the grant')
 
+  // Regression matrix: collect independent observations before asserting so every refusal is visible.
+  const regressions=[]
+  const observe=(finding,actual,expected)=>regressions.push({finding,actual,expected})
+  const readsBefore=(await app.first("SELECT count(*) n FROM audit_events WHERE action='knowledge.read' AND source='api' AND actor_id=?",w.users.operator)).n
+  const receiptRead=await delegated('/effects/agent-draft?synthetic-query=must-not-be-audited')
+  observe('F4 receipt remains readable',receiptRead.status,200)
+  const receiptEvents=await app.sql("SELECT detail_json FROM audit_events WHERE action='knowledge.read' AND source='api' AND actor_id=? ORDER BY at",w.users.operator)
+  observe('F4 receipt read is audited',receiptEvents.length,readsBefore+1)
+  for(const row of receiptEvents)assert.doesNotMatch(row.detail_json,/must-not-be-audited|Edited agent-draft|@/)
+  const replyOnly=await call(`${P}/roles`,{name:'Synthetic reply only',base:'operator',permissions:['conversations.reply']},w.tokens.owner)
+  assert.equal(replyOnly.status,201)
+  assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:replyOnly.data.data.id},w.tokens.owner,'PUT')).status,200)
+  observe('F3 reply-only article picker',(await call(`/api/knowledge/${w.projectId}/conversations/conv-r/articles`,undefined,w.tokens.operator)).status,200)
+  assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:'operator'},w.tokens.owner,'PUT')).status,200)
+  await app.db.prepare("INSERT INTO knowledge_articles(id,project_id,slug,title,content,summary,status,updated_at) VALUES('art-deleted',?,'synthetic-deleted','Synthetic deleted','Synthetic','','draft',1)").bind(w.projectId).run()
+  const staleRole={name:'Synthetic stale selection',base:'operator',permissions:['knowledge.read'],knowledgeArticleIds:['art-deleted','art-r']}
+  const staleReader=await call(`${P}/roles`,staleRole,w.tokens.owner);assert.equal(staleReader.status,201)
+  assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:staleReader.data.data.id},w.tokens.owner,'PUT')).status,200)
+  await app.db.prepare("DELETE FROM knowledge_articles WHERE id='art-deleted'").run()
+  const stalePath=`${P}/roles/${staleReader.data.data.id}`
+  observe('F2 revocation with retained deleted selection',(await call(stalePath,{...staleRole,permissions:[]},w.tokens.owner,'PUT')).status,200)
+  observe('F2 revocation takes effect immediately',(await call(`/api/knowledge/${w.projectId}/articles`,undefined,w.tokens.operator)).status,403)
+  const {knowledgeArticleIds:omitted,...withoutSelection}=staleRole
+  observe('F2 omitted stored selection',(await call(stalePath,withoutSelection,w.tokens.owner,'PUT')).status,200)
+  observe('F2 removal of deleted selection',(await call(stalePath,{...staleRole,knowledgeArticleIds:['art-r']},w.tokens.owner,'PUT')).status,200)
+  assert.equal((await call(stalePath,{...staleRole,knowledgeArticleIds:['synthetic-missing']},w.tokens.owner,'PUT')).status,400,'new invalid IDs still fail')
+
+  assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:'operator'},w.tokens.owner,'PUT')).status,200)
+
   // A custom role over Agent without publishing or exporting: the agent keeps replying but cannot publish.
-  const created=await call(`${P}/roles`,{name:'Support, no publishing',base:'operator',permissions:['conversations.reply','conversations.notes','conversations.follow','conversations.manage','contacts.manage','knowledge.read','knowledge.edit','reports.view','members.manage']},w.tokens.owner)
+  const created=await call(`${P}/roles`,{name:'Support, no publishing',base:'operator',permissions:['conversations.reply','conversations.notes','conversations.follow','conversations.manage','contacts.manage','knowledge.edit','reports.view','members.manage']},w.tokens.owner)
   assert.equal(created.status,201);assert.ok(!created.data.data.permissions.includes('members.manage'),'a custom role never exceeds its base')
   for(const [email,role] of [['pending-admin@example.com','admin'],['pending-agent@example.com','operator']])assert.equal((await call(`${P}/agents`,{email,role},w.tokens.owner)).status,201)
   await app.db.prepare('UPDATE session_factors SET verified_at=verified_at-? WHERE token_hash IN (SELECT token_hash FROM sessions WHERE actor_id=?)').bind(20*60*1000,w.users.owner).run()
@@ -93,13 +122,18 @@ export async function rolesAuditJourney(){
   assert.deepEqual((await app.sql("SELECT detail_json FROM audit_events WHERE action='member.invitation_reissued' ORDER BY at")).map(row=>JSON.parse(row.detail_json).role),['operator','admin'])
   assert.equal((await decide(browser,ownerConsent,'approve',w.tokens.owner)).status,303,'stepped up, the same consent form approves')
   assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:created.data.data.id},w.tokens.owner,'PUT')).status,200)
+  assert.ok(!created.data.data.permissions.includes('knowledge.read'),'the edit-only fixture has no explicit read permission')
+  for(const tail of ['/articles','/articles/art-r/history','/articles/art-r/translations/fr'])observe('F1 edit-only native '+tail,(await call(`/api/knowledge/${w.projectId}`+tail,undefined,w.tokens.operator)).status,200)
+  observe('F1 edit-only grant evidence',(await delegated('/evidence?target='+article)).status,200)
+  observe('F1 edit-only delegated draft edit',(await edit('edit-only-proof','draft')).status,200)
+  assert.deepEqual(regressions.filter(row=>row.actual!==row.expected),[],'F1-F4 public-door regressions')
   const publish=await call(`/api/knowledge/${w.projectId}/articles`,{title:'Returns',content:'How returns work'},w.tokens.operator);assert.equal(publish.status,403);assert.equal(publish.data.permission,'knowledge.publish')
   // The grant the agent approved narrows with the role at once: no publishing through it, editing a draft still allowed.
   const viaGrant=await edit('narrowed-publish','published');assert.equal(viaGrant.status,403);assert.equal((await viaGrant.json()).error.code,'SCOPE_DENIED')
   assert.equal((await edit('narrowed-draft','draft')).status,200,'the role keeps knowledge.edit')
   assert.equal((await call(`/api/dashboard/projects/${w.projectId}/reports?period=30&format=summary.csv`,undefined,w.tokens.operator)).data.permission,'data.export')
   assert.equal((await call('/api/conversations/conv-r/messages',{content:'We are on it',localId:'agent-1',expectedRevision:1,expectedLastMessageId:'m-r',authoring:{kind:'human'}},w.tokens.operator)).status,200,'the custom role still replies')
-  const changed=await app.first("SELECT detail_json FROM audit_events WHERE action='member.role_changed' AND target_id=?",w.users.operator)
+  const changed=await app.first("SELECT detail_json FROM audit_events WHERE action='member.role_changed' AND target_id=? AND json_extract(detail_json,'$.to')=?",w.users.operator,created.data.data.id)
   assert.deepEqual(JSON.parse(changed.detail_json),{from:'operator',to:created.data.data.id,fromName:'Agent',toName:'Support, no publishing'})
   assert.equal((await call(`${P}/roles/${created.data.data.id}`,undefined,w.tokens.owner,'DELETE')).status,409,'a role in use stays')
   // Read-only custom authority keeps the selected internal article through the existing grant.
@@ -125,6 +159,7 @@ export async function rolesAuditJourney(){
   const revoke=await call(`${P}/roles/${reader.data.data.id}`,{name:'Knowledge reader',base:'operator',permissions:[],knowledgeArticleIds:['art-r']},w.tokens.owner,'PUT');assert.equal(revoke.status,200)
   assert.equal((await call(`${K}/articles`,undefined,w.tokens.operator)).status,403,'the next native request sees revocation')
   assert.equal((await delegated('/evidence?target='+article)).status,403,'the next grant request sees revocation')
+  assert.equal((await delegated('/effects/agent-draft')).status,403,'receipt reads also see permission revocation')
   const audit=(await call(`${P}/audit?category=access&limit=200`,undefined,w.tokens.owner)).data.data
   assert.ok(audit.some(row=>row.action==='knowledge.read'&&row.actor_id===w.users.operator),'read access is audited')
   assert.ok(audit.some(row=>row.action==='permission.denied'&&row.actor_id===w.users.operator&&JSON.parse(row.detail_json).permission==='knowledge.read'),'read refusal is audited')

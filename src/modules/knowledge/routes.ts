@@ -42,7 +42,7 @@ routes.post('/:projectId/categories',async c=>c.json(await writeCategory(c.env,c
 routes.get('/:projectId/articles',async c=>{
  const projectId=c.req.param('projectId')
  const access=await memberAccess(c.env.DB,projectId,c.get('actor').id)
- if(!access?.permissions.has('knowledge.read'))throw new HTTPException(403,{message:'Knowledge read permission required'})
+ if(!access?.permissions.has('knowledge.read')&&!access?.permissions.has('knowledge.edit'))throw new HTTPException(403,{message:'Knowledge read permission required'})
  const query=c.req.query('q')?.trim()||''
  if(query)requiredString(query,'query',200)
  const selection=access.knowledgeArticleIds===null?'':' AND a.id IN (SELECT value FROM json_each(?))'

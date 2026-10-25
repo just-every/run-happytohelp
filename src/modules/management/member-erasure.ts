@@ -26,9 +26,9 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
   c.env.DB.prepare('DELETE FROM identity_tokens WHERE user_id=? OR lower(email)=(SELECT lower(email) FROM users WHERE id=?)').bind(userId,userId),
   // Retain opaque ids for referential integrity and machine names for ticket history.
   c.env.DB.prepare("UPDATE users SET name='Former teammate',email='erased:'||id WHERE id=?").bind(userId),
-  c.env.DB.prepare("INSERT INTO integration_token_events(namespace,id,token_id,at,action,feature) SELECT namespace,lower(hex(randomblob(16))),id,?,'revoked','integrations.tokens' FROM integration_tokens WHERE issuer_id=? AND revoked_at IS NULL").bind(now,userId),
-  c.env.DB.prepare("INSERT INTO native_integration_audit(id,project_id,actor_id,action,resource_id,created_at) SELECT lower(hex(randomblob(16))),namespace,?,'token.revoke',id,? FROM integration_tokens WHERE issuer_id=? AND revoked_at IS NULL").bind(actor.id,now,userId),
-  c.env.DB.prepare("UPDATE integration_tokens SET issuer_id=NULL,revoked_at=coalesce(revoked_at,?),token_hash='erased:'||id WHERE issuer_id=?").bind(now,userId),
+  c.env.DB.prepare("INSERT INTO integration_token_events(namespace,id,token_id,at,action,feature) SELECT namespace,lower(hex(randomblob(16))),id,?,'revoked','integrations.tokens' FROM integration_tokens WHERE issuer_id=? AND namespace=? AND revoked_at IS NULL").bind(now,userId,actor.projectId),
+  c.env.DB.prepare("INSERT INTO native_integration_audit(id,project_id,actor_id,action,resource_id,created_at) SELECT lower(hex(randomblob(16))),namespace,?,'token.revoke',id,? FROM integration_tokens WHERE issuer_id=? AND namespace=? AND revoked_at IS NULL").bind(actor.id,now,userId,actor.projectId),
+  c.env.DB.prepare("UPDATE integration_tokens SET issuer_id=NULL,revoked_at=coalesce(revoked_at,?),token_hash='erased:'||id WHERE issuer_id=? AND namespace=?").bind(now,userId,actor.projectId),
   ...['credentials','user_settings','user_factors','recovery_codes','session_factors','webauthn_challenges','identity_tokens','magic_signins','user_project_preferences','member_roles','operator_presence'].map(table=>c.env.DB.prepare(`DELETE FROM ${table} WHERE user_id=?`).bind(userId)),
   c.env.DB.prepare('DELETE FROM sessions WHERE actor_id=? AND role<>\'contact\'').bind(userId),
   c.env.DB.prepare('DELETE FROM conversation_followers WHERE user_id=?').bind(userId),

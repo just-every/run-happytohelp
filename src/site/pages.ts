@@ -23,6 +23,6 @@ export function sitePages({ contract, styles = [] }: Partial<SiteContext> = {}):
       ...(contract ? [{ path: '/contract', html: contractPageHtml(identity, run, contract) }] : []),
       { path: '/404', html: siteNotFoundHtml(identity, run, contract) },
     ],
-    assets: ['rer-theme.css', 'fonts/outfit', 'homepage/media/brands'],
+    assets: ['rer-theme.css', 'fonts/fonts.css', 'fonts/outfit', 'homepage/media/brands'],
   }
 }

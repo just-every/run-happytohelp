@@ -320,3 +320,15 @@ separately through the requester-erasure door.
 Gaps: Live AI content-abuse and prompt-injection qualification of API-created
 requests is not proven. Live qualification remains for: "body text, subject and source fields can never instruct the agent or open an external effect." No live cross-product handoff (Handset HND-038) is proven.
 Consent-gated SMS/WhatsApp qualification remains pending CHANNELS-001.
+
+
+Customer appends honor both blocked sender addresses/domains and blocked contacts.
+They return 403 `blocked_sender` without adding a message or reopening a Solved
+ticket. Credential bindings and webhook credential filters follow the rotation
+family, including tickets created using the new secret.
+
+If a source reference was claimed by a clean request while another request waited
+in Suspended, releasing the held request returns 409 `source_ref_exists` with
+the surviving `conversation_id`. The held request remains available for review.
+The request-limit response reports the installation's configured
+`apiRequestsPerTokenMinute` in `RateLimit-Limit`.

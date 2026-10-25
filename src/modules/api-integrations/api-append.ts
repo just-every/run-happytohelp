@@ -4,7 +4,7 @@ import type {Hono} from 'hono'
 import {hashToken} from '../../platform/auth'
 import {tokenGuard} from '../../platform/integration-authority'
 import {admitMessage,reservedLocalId,messageCommit} from '../conversations/admission'
-import {contactAvailableSql} from '../conversations/contact-privacy'
+import {contactAvailableSql,customerUnblockedSql} from '../conversations/contact-privacy'
 import {mergedAlias,writableConversationSql} from '../conversation-actions/merge-read'
 import {ApiError} from './errors'
 import {type ApiEnv,requireScope,jsonBody,iso} from './http'
@@ -19,6 +19,7 @@ export function appendApi(app:Hono<ApiEnv>){
   const merged=await mergedAlias(c.env,p,id);if(merged)throw new ApiError(409,'merged_into','Conversation was merged',{conversation_id:merged.target_id})
   const digest=await hashToken(canonicalJson(b)),prior=await c.env.DB.prepare('SELECT * FROM api_appends WHERE project_id=? AND conversation_id=? AND family_id=? AND local_id=?').bind(p,id,credential.family_id,localId).first<any>()
   if(prior){if(prior.body_digest!==digest)throw new ApiError(409,'idempotency_conflict');if(!prior.response_json)throw new ApiError(409,'in_progress','Append is in progress',{}, {'Retry-After':'1'});return c.json({...JSON.parse(prior.response_json),duplicate:true})}
+  if(b.kind==='customer'&&!await c.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${customerUnblockedSql()}`).bind(id,p).first())throw new ApiError(403,'blocked_sender','Requester is blocked')
   const files=await attachments(c.env,p,credential.family_id,b.attachments),objects:string[]=[]
   try{
   for(const file of files){const key=`${p}/${id}/${file.id}`;objects.push(key);await c.env.FILES.put(key,file.bytes,{httpMetadata:{contentType:file.type}})}

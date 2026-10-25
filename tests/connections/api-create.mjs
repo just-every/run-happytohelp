@@ -25,6 +25,7 @@ async function existingCredentialLifecycle(){
  }finally{console.log('machine API: lifecycle cleanup');await h.close();console.log('machine API: lifecycle cleanup complete')}
 }
 test('machine create credentials admit one atomic ticket and replay across rotation without granting other scopes',async()=>{
+ await apiRepairRegressions();
  console.log('machine API: credential lifecycle'); await existingCredentialLifecycle(); console.log('machine API: create and append');
  const h=await harness();try{
   const issued=await h.issue(['conversations:create'], 'p',{name:'Synthetic support',source_product:'synthetic-hh-1',create_per_minute:60}),token=issued.token;
@@ -368,3 +369,96 @@ test('machine create credentials admit one atomic ticket and replay across rotat
 
  }finally{await h.close()}
 });
+
+// Regression cases remain in the existing machine API journey. Each starts from
+// independent public grants so a failure cannot hide the other authority checks.
+export async function apiRepairRegressions(){
+ const failures=[];
+ const cases={
+  async F1(h){
+   const x='synthetic-hh-cross-issuer';
+   await h.db.prepare("INSERT INTO users VALUES(?,'synthetic-hh-cross@example.test','Synthetic cross issuer',1)").bind(x).run();
+   for(const p of ['p','q'])await h.db.prepare("INSERT INTO memberships VALUES(?,?,'admin')").bind(p,x).run();
+   await h.session(x,'q',x,'admin');
+   const grant=await h.call('/api/management/projects/q/connections/tokens',{actor:x,...body({name:'Synthetic retained q',source_product:'synthetic-hh-q',scopes:['conversations:read']})});
+   await h.call('/api/management/projects/q/agents/'+x,{actor:'foreign',method:'DELETE'});
+   assert.equal((await h.raw('/api/v1/conversations',{token:grant.token})).status,200);
+   const before=(await h.call('/api/management/projects/q/audit',{actor:'foreign'})).data;
+   await h.call('/api/management/projects/p/agents/'+x+'/erase',body({}));
+   assert.equal((await h.raw('/api/v1/conversations',{token:grant.token})).status,200,'another workspace must retain its grant');
+   const after=(await h.call('/api/management/projects/q/audit',{actor:'foreign'})).data;
+   assert.deepEqual(after.map(({actor,...event})=>event),before.map(({actor,...event})=>event),'erasure must not write another workspace audit');
+  },
+  async F2(h,kind){
+   const grant=await h.issue(['conversations:create','messages:append'],'p',{source_product:'synthetic-hh-blocks'});
+   {
+    const address='synthetic-hh-'+kind+'@example.test';
+    const created=await h.call('/api/v1/conversations',{token:grant.token,...body({requester:{email:address},subject:'Block check',body:'Initial message'}),headers:{'Content-Type':'application/json','Idempotency-Key':kind}});
+    const id=created.data.id,path='/api/management/projects/p/conversations/'+id+'/ticket',ticket=(await h.call(path)).data;
+    await h.call(path,{...body({expected_version:ticket.ticket_version,status_id:'solved'}),method:'PATCH'});
+    const contact=(await h.db.prepare('SELECT contact_id FROM conversations WHERE id=?').bind(id).first()).contact_id;
+    if(kind==='sender')await h.call('/api/management/projects/p/sender-rules',body({address,action:'block'}));
+    else await h.call('/api/management/projects/p/contacts/'+contact,{...body({is_blocked:true}),method:'PUT'});
+    const before=await h.db.prepare('SELECT (SELECT count(*) FROM messages) messages,(SELECT count(*) FROM native_integration_events) events,(SELECT count(*) FROM conversation_outbox) outbox').first();
+    const denied=await h.raw('/api/v1/conversations/'+id+'/append',{token:grant.token,...body({kind:'customer',localId:'synthetic-blocked',content:'Must not enter'})});
+    assert.equal(denied.status,403,kind+' block');assert.equal((await denied.json()).error.code,'blocked_sender');
+    assert.equal((await h.call(path)).data.status_category,'solved');
+    assert.deepEqual(await h.db.prepare('SELECT (SELECT count(*) FROM messages) messages,(SELECT count(*) FROM native_integration_events) events,(SELECT count(*) FROM conversation_outbox) outbox').first(),before);
+   }
+  },
+  async F3(h){
+   // Historical native rows have no copy in audit_events.
+   await h.db.prepare("INSERT INTO native_integration_audit VALUES('synthetic-hh-old-audit','p','owner','token.list','tokens',1)").run();
+   const grant=await h.issue(['contacts:read']);
+   await h.call(settings+'/tokens');await h.call(settings+'/tokens/'+grant.data.id,{method:'DELETE'});
+   const exported=(await h.call('/api/management/projects/p/audit/export?format=json')).events;
+   const native=(await h.db.prepare("SELECT * FROM native_integration_audit WHERE project_id='p'").all()).results;
+   for(const row of native)assert.equal(exported.filter(e=>e.id===row.id||e.id==='integration:'+row.id).length,1,'one audit representation for '+row.action);
+   const read=await h.call('/api/management/projects/p/audit');
+   assert.equal(read.data.filter(e=>e.id==='synthetic-hh-old-audit').length,1);
+  },
+  async F4(h){
+   const grant=await h.issue(['conversations:create'],'p',{source_product:'synthetic-hh-family'});
+   const bound=await h.issue(['messages:append'],'p',{source_product:'synthetic-hh-family',bindings:{credentials:[grant.data.id]}});
+   await h.call(settings+'/webhooks',body({name:'Synthetic family hook',url:'https://receiver.example.com/family',events:['conversation.created','message.created'],credential_id:grant.data.id}));
+   const rotated=await h.call(settings+'/tokens/'+grant.data.id+'/rotate',body({overlap_seconds:60}));
+   const created=await h.call('/api/v1/conversations',{token:rotated.token,...body({requester:{external_id:'synthetic-family'},subject:'Rotated ticket',body:'Family event'}),headers:{'Content-Type':'application/json','Idempotency-Key':'synthetic-family'}});
+   await h.dispatch();
+   const events=h.received.filter(r=>r.path.endsWith('/family')).map(r=>JSON.parse(r.body));
+   assert.deepEqual(new Set(events.map(e=>e.event)),new Set(['conversation.created','message.created']));
+   assert.ok(events.every(e=>e.data.conversation_id===created.data.id));
+   await h.call('/api/v1/conversations/'+created.data.id+'/append',{token:bound.token,...body({kind:'customer',localId:'synthetic-family-append',content:'Bound across rotation'})});
+  },
+  async F5(h){
+   const grant=await h.issue(['conversations:create'],'p',{source_product:'synthetic-hh-hold-ref'});
+   await h.call('/api/management/projects/p/settings',{...body({api_abuse_terms:['synthetic held phrase']}),method:'PUT'});
+   const input={requester:{external_id:'synthetic-hold-ref'},subject:'Reference conflict',body:'synthetic held phrase',source_ref:{product:'synthetic-hh-hold-ref',ref:'synthetic-ref'}};
+   const send=(value,key)=>h.raw('/api/v1/conversations',{token:grant.token,...body(value),headers:{'Content-Type':'application/json','Idempotency-Key':key}});
+   const held=await send(input,'synthetic-held-ref');assert.equal(held.status,202);const heldId=(await held.json()).data.id;
+   const clean=await send({...input,body:'Clean request'},'synthetic-clean-ref');assert.equal(clean.status,201);const survivor=(await clean.json()).data.id;
+   const release=await h.raw('/api/management/projects/p/suspended/'+heldId+'/recover',body({}));
+   assert.equal(release.status,409);const error=(await release.json()).error;
+   assert.equal(error.code,'source_ref_exists');assert.equal(error.conversation_id,survivor);
+   assert.ok((await h.call('/api/management/projects/p/suspended')).data.some(row=>row.id===heldId));
+  },
+  async F6(h){
+   const grant=await h.issue(['conversations:create'],'p',{name:'Synthetic issuance',source_product:'synthetic-hh-issue'});
+   const exported=await h.call('/api/management/projects/p/audit/export?format=json');
+   const event=exported.events.find(e=>e.action==='token.issued');
+   assert.equal(event.target_id,grant.data.id);assert.equal(event.detail.credential_name,'Synthetic issuance');assert.equal(event.detail.source_product,'synthetic-hh-issue');
+   assert.ok(!JSON.stringify(exported).includes(grant.token));assert.ok(!JSON.stringify(exported).includes(sha(grant.token)));
+  },
+  async F7(h){
+   const grant=await h.issue(['conversations:read'],'p',{source_product:'synthetic-hh-rate'});
+   for(let i=0;i<6;i++)assert.equal((await h.raw('/api/v1/conversations',{token:grant.token})).status,200);
+   const denied=await h.raw('/api/v1/conversations',{token:grant.token});
+   assert.equal(denied.status,429);assert.equal((await denied.json()).error.code,'credential');
+   assert.equal(denied.headers.get('RateLimit-Limit'),'6');assert.ok(Number(denied.headers.get('Retry-After'))>0);
+  }
+ };
+ for(const [finding,run,kind] of Object.entries(cases).flatMap(([name,run])=>name==='F2'?[['F2-sender',run,'sender'],['F2-contact',run,'contact']]:[[name,run]])){
+  const h=await harness(finding==='F7'?{rateLimits:{apiRequestsPerTokenMinute:6}}:{});
+  try{await run(h,kind);console.log(finding+' PASS')}catch(error){console.error(finding+' FAIL: '+error.message);failures.push(error)}finally{await h.close()}
+ }
+ assert.equal(failures.length,0,failures.map(e=>e.message).join('\n'));
+}

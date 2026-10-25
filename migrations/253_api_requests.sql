@@ -29,7 +29,7 @@ ALTER TABLE native_integration_destinations ADD COLUMN source_product TEXT;
 CREATE TRIGGER api_destination_filter BEFORE INSERT ON native_integration_intents
 WHEN EXISTS(SELECT 1 FROM native_integration_destinations d JOIN native_integration_events e ON e.id=NEW.event_id
  WHERE d.id=NEW.destination_id AND (
- (d.credential_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM api_conversations a WHERE a.conversation_id=e.conversation_id AND a.credential_id=d.credential_id))
+ (d.credential_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM api_conversations a WHERE a.conversation_id=e.conversation_id AND a.family_id=(SELECT family_id FROM integration_tokens WHERE namespace=d.project_id AND id=d.credential_id)))
  OR (d.source_product IS NOT NULL AND NOT EXISTS(SELECT 1 FROM api_conversations a WHERE a.conversation_id=e.conversation_id AND a.source_product=d.source_product))))
 BEGIN SELECT RAISE(IGNORE); END;
 CREATE TRIGGER api_status_event AFTER UPDATE OF status_id,status_category ON conversations WHEN NEW.status_id<>OLD.status_id OR NEW.status_category<>OLD.status_category BEGIN
@@ -47,9 +47,6 @@ END;
 CREATE TRIGGER api_upload_erasure AFTER UPDATE OF metadata_json ON contacts WHEN json_extract(NEW.metadata_json,'$.is_erasing')=1 OR json_extract(NEW.metadata_json,'$.is_erased')=1 BEGIN
  INSERT OR IGNORE INTO contact_erasure_objects(project_id,contact_id,kind,source_id,object_key) SELECT project_id,NEW.id,'media',id,object_key FROM api_uploads WHERE project_id=NEW.project_id AND contact_id=NEW.id;
  DELETE FROM api_uploads WHERE project_id=NEW.project_id AND contact_id=NEW.id;
-END;
-CREATE TRIGGER api_credential_audit AFTER INSERT ON native_integration_audit BEGIN
- INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json) VALUES('integration:'||NEW.id,NEW.project_id,NEW.created_at,'access',NEW.action,'succeeded','user',NEW.actor_id,'api','credential',NEW.resource_id,'{}');
 END;
 CREATE TABLE api_denial_counts(project_id TEXT NOT NULL,token_id TEXT NOT NULL,window INTEGER NOT NULL,count INTEGER NOT NULL,PRIMARY KEY(project_id,token_id,window));
 CREATE TRIGGER api_token_usage_audit AFTER INSERT ON integration_token_usage WHEN NEW.token_id IS NOT NULL BEGIN

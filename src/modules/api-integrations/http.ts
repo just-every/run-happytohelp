@@ -3,6 +3,7 @@ import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
+import {rateLimits} from '../../platform/limit-config'
 import {enforceRateLimits} from '../../platform/rate-limits'
 import {tokens,verifiedToken,type ApiScope,type TokenAuthority} from '../../platform/integration-authority'
 export type ApiEnv={Bindings:AppEnv['Bindings'];Variables:{authority:TokenAuthority}}
@@ -21,7 +22,7 @@ export const requireScope=(scope:ApiScope)=>async(c:any,next:()=>Promise<void>)=
 
  const active=await c.env.DB.prepare("SELECT p.id FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND (json_extract(s.settings_json,'$.deleted_at') IS NOT NULL OR json_extract(s.settings_json,'$.suspended_at') IS NOT NULL))").bind(row.namespace).first()
  if(!active)throw new HTTPException(401,{message:'Invalid or expired bearer token'})
- try{await enforceRateLimits(c.env,[['apiRequestsPerTokenMinute',row.id]])}catch(error){if(row.source_product&&error instanceof HTTPException&&error.status===429)throw new ApiError(429,'credential','Credential request quota exceeded',{}, {'Retry-After':error.getResponse().headers.get('Retry-After')??'60','RateLimit-Limit':'120','RateLimit-Remaining':'0','RateLimit-Reset':String((Math.floor(Date.now()/60000)+1)*60)});throw error}
+ try{await enforceRateLimits(c.env,[['apiRequestsPerTokenMinute',row.id]])}catch(error){if(row.source_product&&error instanceof HTTPException&&error.status===429)throw new ApiError(429,'credential','Credential request quota exceeded',{}, {'Retry-After':error.getResponse().headers.get('Retry-After')??'60','RateLimit-Limit':String(rateLimits(c.env).apiRequestsPerTokenMinute),'RateLimit-Remaining':'0','RateLimit-Reset':String((Math.floor(Date.now()/60000)+1)*60)});throw error}
  const service=tokens(c.env,row.namespace),context={requestId:crypto.randomUUID(),resource:scope}
  const credential=await service.authorize(match[1],[scope],context)
  if(!credential){const live=await c.env.DB.prepare('SELECT 1 FROM integration_tokens WHERE token_hash=? AND revoked_at IS NULL AND (expires_at IS NULL OR expires_at>?)').bind(hash,Date.now()).first();throw new HTTPException(live?403:401,{message:live?'Token does not grant this scope':'Invalid or expired bearer token'})}

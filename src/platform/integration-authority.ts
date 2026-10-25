@@ -23,9 +23,10 @@ export function tokens(env:Env,projectId:string,extension?:{source:string;bindin
  const repo=new IntegrationsRepository({async batch(statements){
   if(!administration)return sql.batch(statements)
   const {issuer,guard,action,resource}=administration
+  const auditResource=action==='token.issued'?JSON.stringify({credential_id:String(statements[0]!.params![1]),credential_name:String(statements[0]!.params![3]),source_product:extension?.source??null}):resource
   // Native actor audit and current authority assertion join Base's transaction.
   // A failed assertion violates actor_id NOT NULL and rolls back every effect.
-  const audit={sql:`INSERT INTO native_integration_audit(id,project_id,actor_id,action,resource_id,created_at) VALUES(?,?,CASE WHEN EXISTS(${guard.sql}) THEN ? ELSE NULL END,?,?,?)`,params:[crypto.randomUUID(),projectId,...guard.params,issuer.actor.id,action,resource,Date.now()]}
+  const audit={sql:`INSERT INTO native_integration_audit(id,project_id,actor_id,action,resource_id,created_at) VALUES(?,?,CASE WHEN EXISTS(${guard.sql}) THEN ? ELSE NULL END,?,?,?)`,params:[crypto.randomUUID(),projectId,...guard.params,issuer.actor.id,action,auditResource,Date.now()]}
   const extra=[]
   if(action==='token.revoke')extra.push({sql:'UPDATE integration_tokens SET revoked_at=COALESCE(revoked_at,?) WHERE namespace=? AND family_id IS NOT NULL AND family_id=(SELECT family_id FROM integration_tokens WHERE namespace=? AND id=?)',params:[Date.now(),projectId,projectId,resource]})
   if(extension&&action==='token.issued'){

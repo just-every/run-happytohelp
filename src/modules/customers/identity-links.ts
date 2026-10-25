@@ -33,10 +33,15 @@ async function preview(env:Env,p:string,id:string,input:any){
  return {...state,signature:await fingerprint(state)}
 }
 async function access(c:any){const actor=await scope(c) as Actor;const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'contacts.manage');return {actor,guard}}
+// Links and decisions about the opened customer, each naming the other identity and its reviewer.
+const related=(table:string,columns:string,order:string)=>`SELECT ${columns},(SELECT name FROM users WHERE users.id=r.actor_id) actor_name,contacts.id,contacts.name,contacts.email,contacts.external_id,${proof} proof FROM ${table} r JOIN contacts ON contacts.project_id=r.project_id AND contacts.id=CASE WHEN r.contact_id=? THEN r.linked_contact_id ELSE r.contact_id END WHERE r.project_id=? AND (r.contact_id=? OR r.linked_contact_id=?) AND ${available.replaceAll('metadata_json','contacts.metadata_json')} AND EXISTS(%GUARD%) ORDER BY ${order}`
+const linksSql=related('customer_identity_links','r.provenance,r.actor_id,r.created_at','r.created_at,r.contact_id,r.linked_contact_id')
+const historySql=related('customer_identity_link_history','r.id history_id,r.action,r.provenance,r.actor_id,r.at','r.at DESC,r.rowid DESC LIMIT 100')
 identityLinkRoutes.get(prefix,async c=>{
  const {actor,guard}=await access(c),id=c.req.param('contactId');await contact(c.env,actor.projectId,id)
- const links=await c.env.DB.prepare(`SELECT l.*,contacts.id,contacts.name,contacts.email,contacts.external_id,${proof} proof FROM customer_identity_links l JOIN contacts ON contacts.project_id=l.project_id AND contacts.id=CASE WHEN l.contact_id=? THEN l.linked_contact_id ELSE l.contact_id END WHERE l.project_id=? AND (l.contact_id=? OR l.linked_contact_id=?) AND ${available.replaceAll('metadata_json','contacts.metadata_json')} AND EXISTS(${guard.sql}) ORDER BY l.created_at,l.contact_id,l.linked_contact_id`).bind(id,actor.projectId,id,id,...guard.params).all<any>()
- return c.json({links:links.results.map(row=>({contact:display(row),provenance:row.provenance,actor_id:row.actor_id,created_at:row.created_at})),grants_customer_access:false})
+ const read=(sql:string)=>c.env.DB.prepare(sql.replace('%GUARD%',()=>guard.sql)).bind(id,actor.projectId,id,id,...guard.params).all<any>()
+ const [links,history]=await Promise.all([read(linksSql),read(historySql)])
+ return c.json({links:links.results.map(row=>({contact:display(row),provenance:row.provenance,actor_id:row.actor_id,actor_name:row.actor_name,created_at:row.created_at})),history:history.results.map(row=>({id:row.history_id,action:row.action,contact:display(row),provenance:row.provenance,actor_id:row.actor_id,actor_name:row.actor_name,at:row.at})),grants_customer_access:false})
 })
 identityLinkRoutes.post(prefix+'/preview',async c=>{
  const {actor}=await access(c),body=object(await c.req.json()),plan=await preview(c.env,actor.projectId,c.req.param('contactId')!,body)
@@ -52,7 +57,8 @@ identityLinkRoutes.post(prefix,async c=>{
  const claim={sql:[`EXISTS(${guard.sql})`,...snapshots.map(s=>s.sql),relationship.sql,privacy.sql].map(s=>`(${s})`).join(' AND '),params:[...guard.params,...snapshots.flatMap(s=>s.params),...relationship.params,...privacy.params]}
  const results=await c.env.DB.batch([
   c.env.DB.prepare(`INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json) SELECT ?,?,?,'data',?,'succeeded','user',?,'dashboard','contact',?,? WHERE ${claim.sql}`).bind(receipt,actor.projectId,now,`customer.identity_${plan.action}ed`,actor.id,ids[0],JSON.stringify({linked_contact_id:ids[1],grants_customer_access:false}),...claim.params),
-  plan.action==='link'?c.env.DB.prepare(`INSERT INTO customer_identity_links SELECT ?,?,?,?,?,? WHERE ${accepted}`).bind(actor.projectId,...ids,plan.provenance,actor.id,now,receipt):c.env.DB.prepare(`DELETE FROM customer_identity_links WHERE project_id=? AND contact_id=? AND linked_contact_id=? AND ${accepted}`).bind(actor.projectId,...ids,receipt)
+  plan.action==='link'?c.env.DB.prepare(`INSERT INTO customer_identity_links SELECT ?,?,?,?,?,? WHERE ${accepted}`).bind(actor.projectId,...ids,plan.provenance,actor.id,now,receipt):c.env.DB.prepare(`DELETE FROM customer_identity_links WHERE project_id=? AND contact_id=? AND linked_contact_id=? AND ${accepted}`).bind(actor.projectId,...ids,receipt),
+  c.env.DB.prepare(`INSERT INTO customer_identity_link_history(id,project_id,contact_id,linked_contact_id,action,provenance,actor_id,at) SELECT ?,?,?,?,?,?,?,? WHERE ${accepted}`).bind(receipt,actor.projectId,...ids,`${plan.action}ed`,plan.provenance,actor.id,now,receipt)
  ])
  if(!results[0].meta.changes)throw new HTTPException(409,{message:'Identity or authority changed. Preview again before applying.'})
  return c.json({applied:true,grants_customer_access:false})

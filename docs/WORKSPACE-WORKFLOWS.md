@@ -210,17 +210,34 @@ Stop the installer or dev terminal with Ctrl+C; closing a browser leaves it runn
 
 ### Review linked customer identities
 
-The management API exposes `GET contacts/:contactId/identity-links`,
+Open a customer from **Contacts**, from a company's **Members & tickets** list or
+from a ticket's requester. **Possibly the same customer** (labelled **Context
+only**) lists the other verified identities a teammate linked to this customer,
+each with its proof, reviewer, time and evidence, and that identity's own
+recent conversations. Choose **Link a verified identity**, find the other
+customer, record the evidence and **Preview link**; the preview shows both
+identities and confirms that nothing is merged, no message is sent and customer
+access is unchanged before **Confirm link**. **Unlink** asks for a reason and
+previews the same way. **Link history** keeps every link and unlink with its
+reviewer, time and evidence, and the Security log records each decision.
+In a ticket, **Ticket › Customer** shows the requester's linked identities
+under the same label, with links to their customer pages. Roles without contact
+management do not see either view.
+
+Both records must have independently proven mailbox or signed widget identity
+before linking. A typed email or imported identifier supplies no proof, and the
+preview is refused. Changed identities, permissions, relationships or workspace
+erasure require another preview; a pre-erasure preview cannot reinstall removed
+provenance. Links are symmetric, audited and retained across restart. Erasure
+removes links and history entries for either identity and those whose evidence
+names the erased customer. Links are operator context only: customer sessions,
+ticket ownership, company visibility and sending authority do not change, and
+each customer still sees only their own conversations. Social-provider identity
+proof and live business-system context still need their configured providers.
+
+The same review is available through the management API:
+`GET contacts/:contactId/identity-links` (links and history),
 `POST contacts/:contactId/identity-links/preview` and
 `POST contacts/:contactId/identity-links` under a workspace. Submit `action`
-(`link` or `unlink`), the other `contact_id`, and a source/reference in
+(`link` or `unlink`), the other `contact_id`, and the evidence or reason in
 `provenance`; apply the returned preview including its `signature`.
-Both records must have independently proven mailbox or signed widget identity
-before linking. A typed email or imported identifier supplies no proof.
-Changed identities, permissions, relationships or workspace erasure require
-another preview; a pre-erasure preview cannot reinstall removed provenance.
-Links are symmetric, audited and retained across restart. Erasure removes links
-for either identity and links whose source text names the erased customer.
-They are operator context only: customer sessions, ticket ownership, company
-visibility and sending authority do not change. Social-provider identity proof
-and live business-system context still need their configured providers.

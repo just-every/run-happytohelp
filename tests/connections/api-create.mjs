@@ -1,5 +1,6 @@
 import {phases} from '../journeys/kit/scenarios.mjs';const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
+import {createHmac} from 'node:crypto';
 import {harness,body,sha} from './harness.mjs';
 const settings='/api/management/projects/p/connections';
 async function existingCredentialLifecycle(){
@@ -25,6 +26,10 @@ test('machine create credentials admit one atomic ticket and replay across rotat
  await existingCredentialLifecycle();
  const h=await harness();try{
   const issued=await h.issue(['conversations:create'], 'p',{name:'Synthetic support',source_product:'synthetic-hh-1'}),token=issued.token;
+  const metadata=(await h.call(settings+'/tokens')).data.find(row=>row.id===issued.data.id);
+  assert.equal(metadata.source_product,'synthetic-hh-1');assert.equal(metadata.issuer_id,'owner');assert.ok(metadata.display_prefix);
+  assert.deepEqual(metadata.scopes,['conversations:create']);assert.deepEqual(JSON.parse(metadata.bindings_json),{});
+  assert.ok(!JSON.stringify(metadata).includes(token));assert.ok(!JSON.stringify(metadata).includes(sha(token)));
   const input={requester:{email:'synthetic-hh-1@example.test'},subject:'Support request',body:'Please help',source_ref:{product:'synthetic-hh-1',ref:'synthetic-hh-1',url:'https://example.test/support/1'}};
   const send=(value=input,key='synthetic-hh-1',secret=token)=>h.raw('/api/v1/conversations',{token:secret,...body(value),headers:{'Content-Type':'application/json',...(key===null?{}:{'Idempotency-Key':key})}});
   assert.equal((await send(input,null)).status,400);
@@ -32,7 +37,10 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const replay=await send();assert.equal(replay.status,201);assert.equal(replay.headers.get('Idempotency-Replayed'),'true');assert.deepEqual(await replay.json(),created);
   const conflict=await send({...input,body:'Changed'});assert.equal(conflict.status,409);assert.equal((await conflict.json()).error.code,'idempotency_conflict');
   const reference=await send(input,'synthetic-hh-2');assert.equal(reference.status,409);assert.equal((await reference.json()).error.conversation_id,created.data.id);
-  assert.equal((await h.raw('/api/v1/conversations/'+created.data.id,{token})).status,403);
+  for(let i=0;i<3;i++)assert.equal((await h.raw('/api/v1/conversations/'+created.data.id,{token})).status,403);
+  const denials=(await h.call('/api/management/projects/p/audit/export?format=json')).events.filter(event=>event.action==='credential.denied'&&event.target_id===issued.data.id);
+  assert.equal(denials.reduce((sum,event)=>sum+event.detail.count,0),3);
+  assert.ok(!JSON.stringify(denials).includes(token));
   const stored=await h.db.prepare('SELECT * FROM contacts WHERE email=?').bind(input.requester.email).first();assert.equal(stored.is_verified,0);assert.equal(JSON.parse(stored.metadata_json).api_asserted_by,issued.data.id);
   assert.equal((await h.db.prepare('SELECT count(*) n FROM conversations').first()).n,1);
   assert.equal((await h.db.prepare('SELECT content FROM messages WHERE conversation_id=?').bind(created.data.id).first()).content,input.body);
@@ -46,6 +54,12 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   assert.equal((await h.db.prepare('SELECT count(*) n FROM api_notes WHERE conversation_id=?').bind(created.data.id).first()).n,1);
   const reader=await h.issue(['conversations:read'],'p',{source_product:'synthetic-hh-1',bindings:{credentials:[issued.data.id]}});
   assert.equal((await h.call('/api/v1/conversations',{token:reader.token})).data.length,1);
+  const stranger=await h.issue(['messages:append'],'p',{source_product:'synthetic-hh-other'});
+  const foreignAppender=await h.issue(['messages:append'],'q',{source_product:'synthetic-hh-1',bindings:{credentials:[issued.data.id]}});
+  for(const secret of [stranger.token,foreignAppender.token]){
+   const denied=await h.raw(appendPath,{token:secret,...body({...command,localId:'synthetic-denied'})});assert.equal(denied.status,404);
+   assert.equal((await denied.json()).error.code,'not_found');
+  }
   const isolated=await h.issue(['conversations:read'],'p',{source_product:'synthetic-hh-2'});assert.equal((await h.call('/api/v1/conversations',{token:isolated.token})).data.length,0);
   const management='/api/management/projects/p/conversations/'+created.data.id+'/ticket';
   for(const category of ['solved','closed']){
@@ -91,12 +105,45 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   for(const [kind,requester] of [['email',{email:'synthetic-verified@example.test'}],['external',{external_id:'synthetic-verified-external'}],['phone',{phone:'+12025550123'}]]){
    const response=await send({...identityBody,requester},'synthetic-identity-'+kind);assert.equal(response.status,201);assert.deepEqual(Object.keys((await response.json()).data).sort(),Object.keys(created.data).sort());
   }
+  // Every supported identity key has both a verified match and an unverified assertion.
+  // The setup rows are prior data; every match and erasure is exercised through public doors.
+  for(const kind of ['email','phone','external']){
+   const identity=kind==='email'?{email:'synthetic-hh-matrix@example.test'}:kind==='phone'?{phone:'+12025550129'}:{external_id:'synthetic-hh-matrix'};
+   const fixture='synthetic-hh-matrix-'+kind;
+   await h.contact(fixture);
+   await h.db.prepare('UPDATE contacts SET email=?,external_id=?,is_verified=1,metadata_json=? WHERE id=?').bind(identity.email??null,identity.external_id?'synthetic-hh-1:'+identity.external_id:null,JSON.stringify(identity.phone?{phone:identity.phone,phone_verified:1}:{}),fixture).run();
+   const oldTicket=await h.conversation(fixture);
+   const before=(await h.db.prepare('SELECT count(*) n FROM contacts').first()).n;
+   const matched=await send({subject:'Verified requester',body:'New request only',requester:identity},'synthetic-hh-match-'+kind);
+   assert.equal(matched.status,201);const matchedData=(await matched.json()).data;
+   assert.deepEqual(Object.keys(matchedData).sort(),Object.keys(created.data).sort());
+   assert.equal((await h.db.prepare('SELECT contact_id FROM conversations WHERE id=?').bind(matchedData.id).first()).contact_id,fixture);
+   assert.equal((await h.db.prepare('SELECT count(*) n FROM contacts').first()).n,before);
+   assert.equal((await h.raw('/api/v1/conversations/'+oldTicket.id,{token:reader.token})).status,404);
+   assert.equal((await h.raw('/api/v1/conversations/'+oldTicket.id+'/messages',{token:reader.token})).status,404);
+   await h.call('/api/management/projects/p/contacts/'+fixture+'/erase',body({}));
+   for(const key of ['synthetic-hh-match-'+kind,'synthetic-hh-erased-'+kind]){
+    const erased=await send({subject:'Verified requester',body:'New request only',requester:identity},key);
+    assert.equal(erased.status,409);assert.equal((await erased.json()).error.code,'identity_erased');
+   }
+   const fresh=kind==='email'?{email:'synthetic-hh-new@example.test'}:kind==='phone'?{phone:'+12025550128'}:{external_id:'synthetic-hh-new'};
+   const createdResponse=await send({subject:'Asserted requester',body:'No verification supplied',requester:fresh},'synthetic-hh-new-'+kind);
+   assert.equal(createdResponse.status,201);const freshData=(await createdResponse.json()).data;
+   const asserted=await h.db.prepare('SELECT ct.* FROM contacts ct JOIN conversations c ON c.contact_id=ct.id WHERE c.id=?').bind(freshData.id).first();
+   assert.equal(asserted.is_verified,0);assert.equal(JSON.parse(asserted.metadata_json).api_asserted_by,issued.data.id);
+   assert.deepEqual(Object.keys(freshData).sort(),Object.keys(matchedData).sort());
+  }
+  const bound=await h.issue(['conversations:create'],'p',{source_product:'synthetic-hh-bound',bindings:{brands:['p'],mailboxes:['synthetic-hh-mailbox']}});
+  for(const extra of [{brand_id:'q',mailbox_id:'synthetic-hh-mailbox'},{brand_id:'p',mailbox_id:'synthetic-hh-other'}]){
+   const before=await count();const refused=await send({requester:{external_id:'synthetic-hh-bound'},subject:'Bound request',body:'No adjustment',...extra},'synthetic-hh-bound-'+Object.values(extra).join('-'),bound.token);
+   assert.equal(refused.status,403);assert.equal((await refused.json()).error.code,'outside_credential_bounds');assert.equal(await count(),before);
+  }
   const hook=await h.call(settings+'/webhooks',body({name:'Synthetic machine hook',url:'https://receiver.example.com/machine-hook',events:['conversation.created','message.created','conversation.status_changed','conversation.assigned'],credential_id:issued.data.id}));
   const hookTicket=await send({requester:{external_id:'synthetic-hook'},subject:'Hook ticket',body:'Private body must not reach webhook'},'synthetic-hook');assert.equal(hookTicket.status,201);const hookId=(await hookTicket.json()).data.id;
   const hookManagement='/api/management/projects/p/conversations/'+hookId+'/ticket';const hookState=(await h.call(hookManagement)).data;
   await h.call(hookManagement,{...body({expected_version:hookState.ticket_version,status_id:'pending',assigned_to:'owner'}),method:'PATCH'});
   await h.dispatch();const receipts=h.received.filter(r=>r.path.endsWith('/machine-hook'));assert.deepEqual(new Set(receipts.map(r=>JSON.parse(r.body).event)),new Set(['conversation.created','message.created','conversation.status_changed','conversation.assigned']));
-  for(const receipt of receipts){const event=JSON.parse(receipt.body);assert.equal(event.data.conversation_id,hookId);assert.ok(receipt.headers['webhook-signature']);assert.ok(!receipt.body.toString().includes('Private body'));assert.ok(!receipt.body.toString().includes('@'))}
+  for(const receipt of receipts){const event=JSON.parse(receipt.body);assert.equal(event.data.conversation_id,hookId);const headers=receipt.headers;const signature=createHmac('sha256',Buffer.from(hook.secret,'hex')).update(JSON.stringify(['integrations.webhook.v1','p',hook.id,event.event,event.id,headers['webhook-timestamp'],receipt.body.toString('utf8')])).digest('hex');assert.equal(headers['webhook-signature'],'v1='+signature);assert.ok(!receipt.body.toString().includes('Private body'));assert.ok(!receipt.body.toString().includes('@'))}
   const rotated=await h.call('/api/management/projects/p/connections/tokens/'+issued.data.id+'/rotate',body({overlap_seconds:60}));
   const after=await send(input,'synthetic-hh-1',rotated.token);assert.equal(after.status,201);assert.deepEqual(await after.json(),created);
   const old=await send();assert.equal(old.status,201);

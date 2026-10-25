@@ -74,7 +74,7 @@
       "buyerSteps": "Apply after 249 and before the updated Worker serves traffic. Add route observation times and bounded status-read backoff without changing existing route authority or replaying mail."
     },
     {
-      "id": "251_api_requests.sql",
+      "id": "253_api_requests.sql",
       "buyerSteps": "Apply after 250 before serving the updated Worker. Adds machine credential metadata, API request idempotency and source links; existing bearer credentials retain their scopes. Exported credentials are revoked and their token hashes replaced with inert identifiers. Retain API request and erasure fences with installation data."
     }
   ]

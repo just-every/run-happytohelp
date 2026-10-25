@@ -18,7 +18,7 @@ try {
     for (const sql of migrationStatements(await readFile(new URL('../migrations/' + file, import.meta.url), 'utf8'))) await db.prepare(sql).run();
   }
  // This transcript fixture uses only the additive machine-note table from the API migration.
- for (const sql of migrationStatements(await readFile(new URL('../migrations/251_api_requests.sql',import.meta.url),'utf8')).filter(sql=>sql.startsWith('CREATE TABLE api_notes('))) await db.prepare(sql).run();
+ for (const sql of migrationStatements(await readFile(new URL('../migrations/253_api_requests.sql',import.meta.url),'utf8')).filter(sql=>sql.startsWith('CREATE TABLE api_notes('))) await db.prepare(sql).run();
   await db.prepare("INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES('original','Original','original-widget','https://original.test',1)").run();
   for (const [user, role] of [['owner','owner'],['other','owner'],['operator','operator'],['admin','admin']]) {
     await db.batch([

@@ -2516,7 +2516,7 @@
       "executable": false
     },
     "migrations/251_api_requests.sql": {
-      "sha256": "859ddb7e06fe59cba8050b2c0a60ed4347a42a4f8e264e13cd43b97bde78787b",
+      "sha256": "08bc2122ff27262e1d2b8bec4910d46d475cac96e966bef32d52a32ba19d5955",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -3504,7 +3504,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "ad0d78427e46b515c5eb9adbea0dbc88039fbb9d409903f94c2c33492ce43c7e",
+      "sha256": "65d7d9691f8cd33ce8e1511697ab6d407c8d675dcc27c9a27c906719f86b040c",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -10896,7 +10896,7 @@
       "executable": false
     },
     "tests/demo-inbox.mjs": {
-      "sha256": "3715e7bfc368b74a11f8582d8717bd50488c770e966dd540cc6ca6fad4f9c7d0",
+      "sha256": "64482d61f4e28ff3671b7c1bc796d39908da4c0f07340d71955fb9d7f0e6679b",
       "executable": false
     },
     "tests/demo-knowledge-activation.mjs": {
@@ -10904,7 +10904,7 @@
       "executable": false
     },
     "tests/demo-transcript-events.mjs": {
-      "sha256": "7bc7170b84d89e37d15c1efb0fda291eff979b422bdeb1c0d811c66955c369f3",
+      "sha256": "a3a98b9dc408933084ac670d8f47a39b23d187a9fbbf18bd2c516bd790e2fa26",
       "executable": false
     },
     "tests/eval-harness/fixtures/assist-human-voice.json": {

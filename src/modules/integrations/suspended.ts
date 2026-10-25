@@ -1,3 +1,4 @@
+import {releaseApiHold} from '../api-integrations/holds'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Actor} from '../../platform/env'
@@ -62,6 +63,7 @@ suspendedRoutes.post(`${base}/:id/recover`,async c=>{
  const row=await c.env.DB.prepare('SELECT * FROM suspended_emails WHERE project_id=? AND id=? AND expires_at>?').bind(actor.projectId,key,Date.now()).first<any>()
  if(!row)throw new HTTPException(404)
  const input=JSON.parse(row.input_json),auth=JSON.parse(row.auth_json)
+ if(input.api_request)return c.json(await releaseApiHold(c.env,actor,c.get('sessionHash'),row))
  if(body.asNote!==true&&(!auth.verified||auth.failed||auth.from_unusable))throw new HTTPException(409,{message:'Sender authority is unproven. Recover as a private note after reviewing the message.'})
  const chosen=text(body.conversationId===undefined?row.candidate_conversation_id||'':body.conversationId,200)
  const conversation=chosen?await c.env.DB.prepare('SELECT * FROM conversations WHERE project_id=? AND id=?').bind(actor.projectId,chosen).first<any>():await newRecoveryTicket(c.env,actor,row,body.asNote===true)

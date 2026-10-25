@@ -15,7 +15,7 @@ export async function bucketsData(env:Env,conversation:any,bucketIds:string[]){
    env.DB.prepare('SELECT * FROM conversation_buckets WHERE conversation_id=? AND id IN (SELECT value FROM json_each(?))').bind(conversation.id,ids),
    env.DB.prepare('SELECT * FROM messages WHERE project_id=? AND conversation_id=? AND coalesce(bucket_id,conversation_id) IN (SELECT value FROM json_each(?)) ORDER BY revision').bind(conversation.project_id,conversation.id,ids),
    ...(root?[
-    env.DB.prepare('SELECT n.*,u.name FROM conversation_notes n JOIN users u ON u.id=n.user_id WHERE n.conversation_id=? ORDER BY n.created_at').bind(conversation.id),
+    env.DB.prepare('SELECT n.*,u.name FROM conversation_notes n JOIN users u ON u.id=n.user_id WHERE n.conversation_id=?1 UNION ALL SELECT id,conversation_id,user_id,content,created_at,name FROM api_notes WHERE conversation_id=?1 ORDER BY created_at').bind(conversation.id),
     env.DB.prepare('SELECT * FROM move_in_notes WHERE conversation_id=? AND project_id=? ORDER BY created_at,id').bind(conversation.id,conversation.project_id)
    ]:[])
   ]),trackedTranscripts(env,conversation,bucketIds),ceilingTranscripts(env,conversation,bucketIds)

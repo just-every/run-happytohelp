@@ -17,6 +17,8 @@ try {
   for (const file of ['0001_identity.sql','0002_conversations.sql','0003_identity_credentials.sql','0004_message_intent.sql','0005_widget_identity.sql','0007_conversation_history.sql','0070_management.sql','0071_management_preferences.sql','0080_integrations.sql','0050_knowledge.sql','0060_customer_context.sql','0060_customer_context_engine.sql','020_ai_support.sql','0103_contact_erasure.sql','0110_move_in.sql','111_move_in_identity_audit.sql','112_conversation_outcomes.sql','180_account_security.sql','142_collaboration.sql','143_conversation_actions.sql','153_workflow_schedules.sql','161_suspended_email.sql','240_operator_presence.sql']) {
     for (const sql of migrationStatements(await readFile(new URL('../migrations/' + file, import.meta.url), 'utf8'))) await db.prepare(sql).run();
   }
+ // This transcript fixture uses only the additive machine-note table from the API migration.
+ for (const sql of migrationStatements(await readFile(new URL('../migrations/251_api_requests.sql',import.meta.url),'utf8')).filter(sql=>sql.startsWith('CREATE TABLE api_notes('))) await db.prepare(sql).run();
   await db.prepare("INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES('original','Original','original-widget','https://original.test',1)").run();
   for (const [user, role] of [['owner','owner'],['other','owner'],['operator','operator'],['admin','admin']]) {
     await db.batch([

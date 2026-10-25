@@ -4,7 +4,7 @@ import {validateDestination,resolveSlackWebhook,resolveSlackBot} from '../../ven
 import {encryptToken,decryptToken} from '../integrations/secrets'
 import {issuerGuard,type Issuer} from '../../platform/integration-authority'
 export class DestinationUnavailable extends Error {}
-export const EVENTS=['conversation.created','message.created','conversation.resolved','conversation.rated'] as const
+export const EVENTS=['conversation.status_changed','conversation.assigned','conversation.created','message.created','conversation.resolved','conversation.rated'] as const
 export async function destination(env:Env,projectId:string,id:string){
  const row=await env.DB.prepare("SELECT d.* FROM native_integration_destinations d WHERE d.project_id=? AND d.id=? AND d.enabled=1 AND EXISTS(SELECT 1 FROM projects p WHERE p.id=d.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings p WHERE p.project_id=d.project_id AND json_extract(p.settings_json,'$.deleted_at') IS NOT NULL)").bind(projectId,id).first<any>()
  if(!row)throw new DestinationUnavailable('Destination unavailable')
@@ -25,9 +25,11 @@ export async function saveDestination(env:Env,issuer:Issuer,kind:'webhook'|'slac
    else throw Error()
   }
  }catch{throw new HTTPException(400,{message:kind==='webhook'?'Choose a public HTTPS URL and supported events':'Invalid Slack configuration'})}
+ if(body.credential_id!==undefined&&!await env.DB.prepare('SELECT 1 FROM integration_tokens WHERE namespace=? AND id=?').bind(issuer.actor.projectId,body.credential_id).first())throw new HTTPException(404)
+ if(body.source_product!==undefined&&(typeof body.source_product!=='string'||! /^[a-z][a-z0-9_-]{0,63}$/.test(body.source_product)))throw new HTTPException(400)
  const id=crypto.randomUUID(),now=Date.now(),cipher=await encryptToken(env,issuer.actor.projectId,JSON.stringify(secret)),guard=await issuerGuard(env,issuer)
  const results=await env.DB.batch([
-  env.DB.prepare(`INSERT INTO native_integration_destinations(id,project_id,kind,name,mode,events_json,secret_ciphertext,created_at) SELECT ?,?,?,?,?,?,?,? WHERE EXISTS(${guard.sql})`).bind(id,issuer.actor.projectId,kind,body.name.trim(),mode,JSON.stringify(events),cipher,now,...guard.params),
+  env.DB.prepare(`INSERT INTO native_integration_destinations(id,project_id,kind,name,mode,events_json,secret_ciphertext,created_at,credential_id,source_product) SELECT ?,?,?,?,?,?,?,?,?,? WHERE EXISTS(${guard.sql})`).bind(id,issuer.actor.projectId,kind,body.name.trim(),mode,JSON.stringify(events),cipher,now,body.credential_id??null,body.source_product??null,...guard.params),
   env.DB.prepare("INSERT INTO native_integration_audit SELECT ?,project_id,?,'destination.created',id,? FROM native_integration_destinations WHERE id=?").bind(crypto.randomUUID(),issuer.actor.id,now,id)
  ])
  if(!results[0].meta.changes)throw new HTTPException(409,{message:'Authority changed'})

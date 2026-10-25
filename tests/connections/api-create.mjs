@@ -478,6 +478,16 @@ export const invariantSweeps={
   const history=await h.db.prepare("SELECT actor_id,actor_type,changes_json FROM ticket_history WHERE conversation_id=? AND json_extract(changes_json,'$.action')='released'").bind(id).first();assert.equal(history.actor_id,'owner');assert.equal(history.actor_type,'user');assert.equal(JSON.parse(history.changes_json).credential_id,grant.data.id);
   const audit=(await h.call('/api/management/projects/p/audit/export?format=json')).events.find(e=>e.action==='api.suspended_recovered');assert.equal(audit.detail.hold_id,hold);assert.equal(audit.detail.conversation_id,id);assert.equal(audit.actor_id,'owner');assert.equal(audit.actor_type,'user');
   const replay=await createRequest(h,grant.token,input,key);assert.equal(replay.status,202);assert.equal(replay.headers.get('Idempotency-Replayed'),'true');assert.deepEqual(await replay.json(),receipt);
+  // A selected assistant makes pending outbox work observable even without a
+  // provider key: the real scheduler records a generation request on the direct
+  // create, while operator recovery must not ask it to answer retroactively.
+  const assistant=fresh();await h.db.prepare("INSERT INTO ai_profiles(id,project_id,name,role,prompt,model,created_at) VALUES(?,'p','Synthetic assistant','support','Use evidence','gpt-5.6-luna',1)").bind(assistant).run();
+  for(const ticket of [id,direct])await h.db.prepare('INSERT INTO conversation_ai VALUES(?,?)').bind(ticket,assistant).run();
+  for(let i=0;i<2;i++)await h.call('/_test/scheduled',body({}));
+  const generations=async ticket=>(await h.db.prepare('SELECT count(*) n FROM ai_generations WHERE conversation_id=?').bind(ticket).first()).n;
+  assert.equal(await generations(id),0,'recovery never requests an AI answer');assert.equal(await generations(direct),1,'direct admission retains ordinary message effects');
+  assert.equal((await h.db.prepare('SELECT count(*) n FROM messages WHERE conversation_id=?').bind(id).first()).n,1,'recovery sends no acknowledgment');assert.equal(h.received.length,0);assert.equal(h.external,0);
+
  }
 };
 export async function apiInvariantSweeps(){

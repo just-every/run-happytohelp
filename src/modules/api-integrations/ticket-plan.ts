@@ -15,7 +15,7 @@ export function ticketStatements(env:Env,project:string,credential:any,plan:Tick
   ...plan.files.map(file=>env.DB.prepare('INSERT INTO media VALUES(?,?,?,?,?,?,?,?,?,?)').bind(file.id,project,id,plan.contactId,file.objectKey,file.filename,file.contentType,file.size,messageId,now)),
   trackingStatement(env,id,true),
   env.DB.prepare('UPDATE conversations SET revision=1,last_message_id=? WHERE id=? AND project_id=?').bind(messageId,id,project),
-  env.DB.prepare('INSERT INTO conversation_outbox(project_id,conversation_id,message_id,created_at) VALUES(?,?,?,?)').bind(project,id,messageId,now),
+  env.DB.prepare('INSERT INTO conversation_outbox(project_id,conversation_id,message_id,created_at,delivered_at) VALUES(?,?,?,?,?)').bind(project,id,messageId,now,actorType==='user'?now:null),
   env.DB.prepare("INSERT INTO ticket_history VALUES(?,?,?,?,?,'api',?,?)").bind(crypto.randomUUID(),project,id,actorId,actorType,now,JSON.stringify({...history,credential_id:credential.id,credential_name:credential.name,source_product:credential.source_product,source_ref:input.ref})),
  ]
 }

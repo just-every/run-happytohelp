@@ -307,6 +307,32 @@ async function outboundNoticesJourney(){
   assert.ok(!sent.some(copy=>[].concat(copy.to).includes(optedOut)))
 
 
+  // Terminate a real queue invocation immediately after the complete send claim
+  // commits. Replay cannot send it; the scheduled door must retire the orphan.
+  const crashBody={...body,localId:'synthetic-happytohelp-crash',requesters:[1,2,3].map(i=>`synthetic-happytohelp-crash-${i}@customer.example`)}
+  const crashPreview=await app.ok(path+'/preview',{token,body:crashBody}),crashCommand={...crashBody,confirmation:crashPreview.confirmation}
+  const crashed=await app.ok(path,{token,body:crashCommand}),crashJobs=await app.takeJobs(),beforeCrash=sent.length
+  const crashJob=crashJobs.find(job=>job.type==='outbox.recover'&&job.conversationId===crashed.results[0].conversation.id)
+  assert.ok(crashJob,'the accepted notice uses the real outbox queue job')
+  await app.runJobs([crashJob],{'x-test-fault':'db-interrupt','x-test-statement':'INSERT INTO email_deliveries'})
+  const crashPath=`/api/dashboard/projects/${projectId}/conversations/${crashed.results[0].conversation.id}`
+  const crashState=async()=>(await app.ok(crashPath,{token})).data.last_message.email_status
+  assert.equal((await crashState()).state,'sending');assert.equal(sent.length,beforeCrash)
+  await app.runJobs([crashJob]);await app.scheduled()
+  assert.equal((await crashState()).state,'sending','a young claim is not reconciled')
+  // Move the edge clock, without editing any delivery state or timestamp. The
+  // hook's day-sized jump also exercises later-minute recovery through cron.
+  await app.scheduled(undefined,{after:86400000})
+  assert.equal((await crashState()).state,'uncertain')
+  assert.match(JSON.stringify(await crashState()),/the worker stopped during a send; check the provider before resending/)
+  await app.ok(path,{token,body:crashCommand});await app.runJobs([crashJob])
+  assert.equal(sent.length,beforeCrash,'an orphan is never automatically retried')
+  for(const job of crashJobs.filter(job=>job!==crashJob))await app.runJobs([job])
+  await app.drainJobs()
+  for(const row of crashed.results.slice(1))assert.notEqual((await app.ok(`/api/dashboard/projects/${projectId}/conversations/${row.conversation.id}`,{token})).data.last_message.email_status.state,'uncertain','other notices are unaffected')
+  assert.equal((await app.first("SELECT count(*) n FROM email_deliveries WHERE project_id=? AND state='sending'",projectId)).n,0)
+
+
   // The accepted selection remains fifty. Every HTTP, queue and cron invocation
   // has the platform's enforced statement AND call cap, including deferred tails.
   await app.ok('/api/identity/password',{token,body:{password:'synthetic-happytohelp-password-capacity'}})
@@ -362,7 +388,7 @@ async function outboundNoticesJourney(){
   assert.equal((await app.first("SELECT count(*) n FROM email_deliveries WHERE project_id=? AND state='sending'",capacityId)).n,0)
   const foreign=await app.seedWorkspace('synthetic-happytohelp-capacity-foreign')
   assert.equal((await app.call(capacityPath,{token:foreign.tokens.owner,body:frozen})).status,403)
-  console.log('NOTICE_CAPACITY',JSON.stringify({requesters:50,terminal:states.length,sent:copies.length,perMinute:[...minutes.values()],rateLimited:states.filter(s=>s==='rate_limited').length,maxStatements:Math.max(...meters.map(m=>m.statements)),maxCalls:Math.max(...meters.map(m=>m.calls)),invocations:meters.length,cronStatements:cron.statements}))
+  console.log('NOTICE_CAPACITY',JSON.stringify({requesters:50,terminal:states.length,sent:copies.length,perMinute:[...minutes.values()],rateLimited:states.filter(s=>s==='rate_limited').length,maxStatements:Math.max(...meters.map(m=>m.statements)),maxCalls:Math.max(...meters.map(m=>m.calls)),invocations:meters.length,cronStatements:cron.statements,cronCalls:cron.calls}))
 
  }finally{await app.close()}
 }

@@ -191,7 +191,7 @@ export async function outboundTicketBrowser(){
    const accessUrl=new URL(accessCopy.text.match(/https?:\/\/\S+\/api\/portal\/\S+/)[0])
    const verified=await page.request.get(accessUrl.href,{maxRedirects:0});assert.equal(verified.status(),303)
    const preference=async enabled=>{const response=await page.request.put(runtime.origin+portalPath+'/preferences',{data:{locale:'en',surveyEmails:true,updateEmails:enabled},headers:{Origin:runtime.origin}});assert.equal(response.status(),200)}
-   for(const dismissal of ['Cancel','Close','Escape']){
+   for(const lostRefusal of [false,true])for(const dismissal of ['Cancel','Close','Escape']){
     await preference(true)
     await page.goto(`${runtime.origin}/projects/${noticeProject.id}/conversations`);await page.getByRole('button',{name:'New ticket',exact:true}).click()
     await dialog.getByLabel('Ticket type',{exact:true}).selectOption('notice')
@@ -199,16 +199,30 @@ export async function outboundTicketBrowser(){
     await dialog.getByLabel('Requester emails',{exact:true}).fill(draftRecipients);await dialog.getByLabel('Subject',{exact:true}).fill(draftSubject);await dialog.getByLabel('Message',{exact:true}).fill(draftText)
     await dialog.getByRole('button',{name:'Preview recipients',exact:true}).click();await dialog.getByRole('region',{name:'Notice recipients'}).waitFor()
     await preference(false)
-    const beforeRefusal=copies().length,rejectedResponse=page.waitForResponse(r=>new URL(r.url()).pathname===noticeBase+'/tickets/notices'&&r.request().method()==='POST')
-    await dialog.getByRole('button',{name:'Confirm and email',exact:true}).click()
+    const beforeRefusal=copies().length
+    let refusedCommand
+    if(lostRefusal){
+     await page.route('**'+noticeBase+'/tickets/notices',async route=>{
+      refusedCommand=route.request().postDataJSON();const response=await route.fetch()
+      assert.equal(response.status(),409);assert.equal((await response.json()).code,'notice_not_created')
+      await route.abort('failed')
+     },{times:1})
+     await dialog.getByRole('button',{name:'Confirm and email',exact:true}).click()
+     await dialog.getByRole('button',{name:'Check same request',exact:true}).waitFor()
+     assert.ok(await dialog.getByRole('button',{name:'Cancel',exact:true}).isDisabled())
+    }
+    const rejectedResponse=page.waitForResponse(r=>new URL(r.url()).pathname===noticeBase+'/tickets/notices'&&r.request().method()==='POST')
+    await dialog.getByRole('button',{name:lostRefusal?'Check same request':'Confirm and email',exact:true}).click()
     const rejected=await rejectedResponse;assert.equal(rejected.status(),409);assert.equal((await rejected.json()).code,'notice_not_created')
+    if(lostRefusal)assert.deepEqual(rejected.request().postDataJSON(),refusedCommand)
+
     await dialog.getByLabel('Message',{exact:true}).waitFor()
     assert.equal(await dialog.getByLabel('Requester emails',{exact:true}).inputValue(),draftRecipients);assert.equal(await dialog.getByLabel('Subject',{exact:true}).inputValue(),draftSubject);assert.equal(await dialog.getByLabel('Message',{exact:true}).inputValue(),draftText)
     assert.ok(await dialog.getByLabel('Message',{exact:true}).isEnabled());assert.ok(await dialog.getByRole('button',{name:'Cancel',exact:true}).isEnabled())
     assert.equal(await dialog.getByRole('button',{name:'Check same request',exact:true}).count(),0)
     assert.equal(copies().length,beforeRefusal)
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1))
-    await page.screenshot({path:join(evidenceDir,`${width}-notice-refusal-${dismissal.toLowerCase()}.png`),fullPage:true})
+    await page.screenshot({path:join(evidenceDir,`${width}-notice-${lostRefusal?'lost-':''}refusal-${dismissal.toLowerCase()}.png`),fullPage:true})
     if(dismissal==='Escape')await page.keyboard.press('Escape')
     else await dialog.getByRole('button',{name:dismissal,exact:true}).click()
     await dialog.waitFor({state:'hidden'})

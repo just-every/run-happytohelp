@@ -11548,7 +11548,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ui-browser.mjs": {
-      "sha256": "4c4d8ec8a4847a76c739bd63ea61e0fdc922142d6b72bb789402312f3bb92866",
+      "sha256": "65fb1a6a709f861894acf01107d10b01f168069d2051565761e7d9a4d1c8238d",
       "executable": false
     },
     "tests/helpers/inbox/visual-edit-browser.mjs": {

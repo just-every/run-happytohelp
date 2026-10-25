@@ -74,7 +74,17 @@ export async function outboundTicketBrowser(){
   }
   const email='synthetic-happytohelp-owner@example.test',password='synthetic-happytohelp-password-1'
   const setup=await call('/api/identity/bootstrap',{email,password,name:'Synthetic parcel support',allowedOrigin:runtime.origin}),owner=await call('/api/identity/login',{email,password}),projectId=setup.projectId,base=`/api/dashboard/projects/${projectId}`,management=`/api/management/projects/${projectId}`
-  const mailbox=(await call(management+'/mailboxes',{provider:'forwarding',address:'synthetic-happytohelp-support@example.test',displayName:'Synthetic parcel support'},owner.token)).data
+  const mailbox=(await call(management+'/mailboxes',{provider:'forwarding',address:'support@example.test',displayName:''},owner.token)).data
+  const copies=()=>[...runtime.logs.matchAll(/MAIL_FIXTURE_RECEIPT (\{[^\n]+\})/g)].map(match=>JSON.parse(match[1]))
+  const delivered=async(id,content)=>{
+   for(let attempt=0;attempt<100;attempt++){
+    const state=(await call(`${base}/conversations/${id}`,undefined,owner.token)).data.last_message?.email_status?.state
+    if(state==='sent'){assert.equal(copies().filter(copy=>copy.text?.includes(content)).length,1,'one provider acceptance for this first comment');return}
+    assert.ok(!['failed','uncertain'].includes(state),`first comment delivery is ${state}`)
+    await new Promise(resolve=>setTimeout(resolve,100))
+   }
+   assert.fail('first comment did not settle as provider accepted')
+  }
   for(const width of [1440,390]){
    const context=await browser.newContext({viewport:{width,height:width===390?844:1000}})
    await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
@@ -94,12 +104,14 @@ export async function outboundTicketBrowser(){
    const response=await createdResponse;assert.equal(response.status(),201);const created=await response.json(),command=response.request().postDataJSON()
    assert.equal(created.conversation.submitter_id,owner.actor.id);assert.equal(created.conversation.requester_id,created.conversation.contact_id)
    await page.waitForURL(`**/conversations/${created.conversation.id}`);await page.locator('.transcript-message-content').getByText(content,{exact:true}).waitFor()
+   await delivered(created.conversation.id,content)
    await page.reload();await page.locator('.transcript-message-content').getByText(content,{exact:true}).waitFor()
-   const replay=await request(command);assert.equal(replay.status,200);assert.equal(replay.body.conversation.id,created.conversation.id);assert.equal(replay.body.duplicate,true)
+   const replay=await request(command);assert.equal(replay.status,200);assert.equal(replay.body.conversation.id,created.conversation.id);assert.equal(replay.body.duplicate,true);await delivered(created.conversation.id,content)
    // The API door selects the existing requester rather than making another.
    const apiCommand={kind:'email',localId:`synthetic-happytohelp-api-${width}`,requesterId:created.conversation.contact_id,mailboxId:mailbox.id,subject:`Delivery update ${width}`,content:`Your parcel is ready for collection (${width}).`}
    const api=await request(apiCommand);assert.equal(api.status,201);assert.equal(api.body.conversation.contact_id,created.conversation.contact_id);assert.equal(api.body.conversation.submitter_id,owner.actor.id)
-   assert.equal((await request(apiCommand)).body.conversation.id,api.body.conversation.id)
+   await delivered(api.body.conversation.id,apiCommand.content)
+   assert.equal((await request(apiCommand)).body.conversation.id,api.body.conversation.id);await delivered(api.body.conversation.id,apiCommand.content)
    assert.equal((await request({...apiCommand,subject:'Changed intent'})).status,409)
    assert.equal((await request({...apiCommand,localId:`synthetic-happytohelp-invalid-${width}`,subject:'Header\r\nBcc: forged@example.test'})).status,400)
    await page.goto(`${runtime.origin}/projects/${projectId}/conversations/${api.body.conversation.id}`)
@@ -107,6 +119,7 @@ export async function outboundTicketBrowser(){
    await page.screenshot({path:join(evidenceDir,`${width}-api-email.png`),fullPage:true})
    // The dialog's call path records a private note; the API call path is the
    // same durable command with the existing requester and no mailbox/copies.
+   const beforeCalls=copies().length
    await open();await dialog.getByLabel('Ticket type',{exact:true}).selectOption('call')
    await dialog.getByLabel('Requester email',{exact:true}).fill(requester);await dialog.getByLabel('Subject',{exact:true}).fill(`Customer called ${width}`);await dialog.getByLabel('Call notes',{exact:true}).fill(`Confirmed collection time (${width}).`)
    assert.equal(await dialog.getByLabel('CC',{exact:true}).count(),0)
@@ -119,6 +132,7 @@ export async function outboundTicketBrowser(){
    const loggedApi=await request(apiCall);assert.equal(loggedApi.status,201);assert.equal(loggedApi.body.conversation.channel,'phone');assert.equal(loggedApi.body.note.content,apiCall.content)
    assert.equal((await request(apiCall)).body.note.id,loggedApi.body.note.id)
    assert.equal((await request({...apiCall,localId:`synthetic-happytohelp-call-cc-${width}`,cc:['synthetic-happytohelp-1@customer.example']})).status,400)
+   assert.equal(copies().length,beforeCalls,'dialog/API call logs send no mail, including retries')
    await context.close()
   }
   assert.deepEqual(errors,[]);success=true

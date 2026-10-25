@@ -729,15 +729,15 @@
     },
     {
       "binding": "DB",
-      "name": "251_customer_identity_link_history.sql",
-      "sha256": "69cd8a54d7760086924916bc741ce9ffd483c3948221a0334e00be9fd15145de",
-      "sql": "-- Each reviewed link or unlink keeps its reviewer, time and evidence after the\n-- association itself is removed. Erasure removes rows naming the erased customer.\nCREATE TABLE customer_identity_link_history (\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL REFERENCES projects(id),\n contact_id TEXT NOT NULL REFERENCES contacts(id),\n linked_contact_id TEXT NOT NULL REFERENCES contacts(id),\n action TEXT NOT NULL CHECK(action IN ('linked','unlinked')),\n provenance TEXT NOT NULL,\n actor_id TEXT NOT NULL REFERENCES users(id),\n at INTEGER NOT NULL,\n CHECK(contact_id<linked_contact_id)\n);\nCREATE INDEX customer_identity_link_history_contact ON customer_identity_link_history(project_id,contact_id,at);\nCREATE INDEX customer_identity_link_history_linked ON customer_identity_link_history(project_id,linked_contact_id,at);\n"
-    },
-    {
-      "binding": "DB",
       "name": "251_knowledge_read_selection.sql",
       "sha256": "3477a5982527a84b6f9a96cdf2b9d8d481f46d16b08e8eec50238ee21c20c21b",
       "sql": "-- NULL retains workspace-wide read authority; [] explicitly selects no articles.\nALTER TABLE project_roles ADD COLUMN knowledge_article_ids TEXT CHECK(knowledge_article_ids IS NULL OR (json_valid(knowledge_article_ids) AND json_type(knowledge_article_ids)='array'));\n"
+    },
+    {
+      "binding": "DB",
+      "name": "252_customer_identity_link_history.sql",
+      "sha256": "69cd8a54d7760086924916bc741ce9ffd483c3948221a0334e00be9fd15145de",
+      "sql": "-- Each reviewed link or unlink keeps its reviewer, time and evidence after the\n-- association itself is removed. Erasure removes rows naming the erased customer.\nCREATE TABLE customer_identity_link_history (\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL REFERENCES projects(id),\n contact_id TEXT NOT NULL REFERENCES contacts(id),\n linked_contact_id TEXT NOT NULL REFERENCES contacts(id),\n action TEXT NOT NULL CHECK(action IN ('linked','unlinked')),\n provenance TEXT NOT NULL,\n actor_id TEXT NOT NULL REFERENCES users(id),\n at INTEGER NOT NULL,\n CHECK(contact_id<linked_contact_id)\n);\nCREATE INDEX customer_identity_link_history_contact ON customer_identity_link_history(project_id,contact_id,at);\nCREATE INDEX customer_identity_link_history_linked ON customer_identity_link_history(project_id,linked_contact_id,at);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

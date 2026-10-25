@@ -76,6 +76,10 @@
     {
       "id": "251_knowledge_read_selection.sql",
       "buyerSteps": "Apply after 250 and before the updated Worker serves traffic. Add the knowledge_article_ids selection column to project_roles for knowledge.read authority. NULL retains workspace-wide read authority; an empty JSON array selects no articles. Existing roles retain NULL, so this migration does not narrow their existing read authority."
+    },
+    {
+      "id": "252_customer_identity_link_history.sql",
+      "buyerSteps": "CUSTOMER-001: keep each operator-reviewed identity link and unlink decision, with its reviewer, time and evidence, after the link itself is removed. Apply after 251 and before the updated Worker serves traffic. It adds one table and its two indexes: existing contacts, links, sessions and conversations are unchanged and earlier decisions are not backfilled, so the history starts with the first link or unlink on the updated Worker. Decisions grant no customer access, merge or sending authority. Back up and restore with the rest of customer data; erasure removes every decision naming the erased customer."
     }
   ]
 }

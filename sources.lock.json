@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "45190d4560c221422b13e47c501c22d624622fbd37681f0ac847e542ff4a6e13",
+      "sha256": "fe8c4d6bc5b787dae160a41f5a341e57cc28110f54f6f600dafc29cc99d287c7",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b45decee4b1691d16cb6b38db9dbcce5542d3f0156c01d5779d778fd4a29c944",
+      "sha256": "6e932bb3392be5a0225741b2f0c409c832f4fc000c6c0da8ef6de9b72aa17809",
       "executable": false
     },
     "DEMO.md": {
@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "d4270adba5a06eb8eb08aff0ca2ec99ff5011cb2746bca342f9faba489c3acc1",
+      "sha256": "6cd9cef10400fe4d55279eced76993bc0fdb8496ed0eda45bd65f096ba1edb11",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2515,12 +2515,12 @@
       "sha256": "8376815e0f79757f1ff58d380f587c6201b380c112a0e098167923400e75d489",
       "executable": false
     },
-    "migrations/251_customer_identity_link_history.sql": {
-      "sha256": "69cd8a54d7760086924916bc741ce9ffd483c3948221a0334e00be9fd15145de",
-      "executable": false
-    },
     "migrations/251_knowledge_read_selection.sql": {
       "sha256": "3477a5982527a84b6f9a96cdf2b9d8d481f46d16b08e8eec50238ee21c20c21b",
+      "executable": false
+    },
+    "migrations/252_customer_identity_link_history.sql": {
+      "sha256": "69cd8a54d7760086924916bc741ce9ffd483c3948221a0334e00be9fd15145de",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -2604,7 +2604,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "f325ec3cb89a979d998132539613090d44d42940ff77959e9f028594fe57279c",
+      "sha256": "e71a7abe44b1c6c127aca6504dcdcbeb79c235e99793ab0acb16e77fbbc7363a",
       "executable": false
     },
     "rer-project.json": {
@@ -12040,7 +12040,7 @@
       "executable": false
     },
     "tests/journeys/context-browser.mjs": {
-      "sha256": "25fd743f80cf7fd15bf515b19b916c078275150496b262f14c1237b1a24ac4e9",
+      "sha256": "32776278c6fb5729365a4710ea1d932960a1de29b69ee0bce674f91a38dcc945",
       "executable": false
     },
     "tests/journeys/context.mjs": {
@@ -12088,7 +12088,7 @@
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {
-      "sha256": "028b69f9898235ea18588d110606c501ed63b79102a9b1fdc0dc69e41a680f6a",
+      "sha256": "f5317d6451c57eee557d45112c81bd5e9c6cc864740745e2c531d221335eb864",
       "executable": false
     },
     "tests/journeys/inbox.mjs": {

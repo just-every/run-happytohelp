@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "9f2e0d70d7dd6cae8c23ea2b4c5386d5caa2d04d6c31639161d47337367e353c",
+      "sha256": "20548da9721e2bca77a1f595d9565b31390c2010bcb1ed1bde9bc34f6a6276d6",
       "executable": false
     },
     "management/integration/environment.ts": {

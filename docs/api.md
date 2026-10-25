@@ -194,3 +194,89 @@ text, and shares conservative durable delivery. Local recorded responses do not
 establish live Slack acceptance: **live Slack: not-supplied**.
 
 Slack posts one durable notification for a new native conversation once its first visitor message is committed. The notification includes up to 500 characters of that native visitor message, escaped through Base's Slack renderer. Empty widget conversations wait for that context. Erasure suppresses pending delivery and removes retained payloads; it cannot remove messages already accepted by Slack.
+
+## Machine-created support requests
+
+An owner or admin can issue a machine credential through the existing token
+management endpoint with `source_product`, `scopes` and `bindings`. The source
+label is a lowercase product identifier. `conversations:create`,
+`messages:append` and `conversations:read` are independent scopes. Machine reads
+are restricted to that credential's rotation family unless an administrator
+explicitly supplies creator IDs in `bindings.credentials`. Bindings also accept
+`brands`, `mailboxes`, `groups`, `forms`, `priorities` and existing tag IDs in
+`tags`; unknown tags are refused rather than created.
+
+`POST /api/v1/conversations` requires `Idempotency-Key` (1–200 characters).
+Keys belong to the workspace and source product, so rotating the bearer secret
+does not create another ticket. An identical canonical request returns the
+original status and body with `Idempotency-Replayed: true`. Changed bodies return
+`idempotency_conflict`; an outstanding claim returns `in_progress` and
+`Retry-After`. A reused source reference returns `source_ref_exists` with the
+existing conversation ID. Refused identities return `identity_conflict` or
+`identity_erased`.
+
+Keep `H2H_TOKEN` in the shell's private environment as in the examples above.
+The secret enters curl through standard input, never a command argument.
+
+```sh
+curl --silent --show-error --config - <<CURL
+url = "$H2H_URL/api/v1/conversations"
+header = "Authorization: Bearer $H2H_TOKEN"
+header = "Content-Type: application/json"
+header = "Idempotency-Key: synthetic-hh-docs-1"
+request = "POST"
+data = "{\"requester\":{\"external_id\":\"synthetic-hh-docs-1\"},\"subject\":\"Support request\",\"body\":\"Please help with this request\",\"source_ref\":{\"product\":\"synthetic-hh-docs\",\"ref\":\"synthetic-hh-docs-1\",\"url\":\"https://example.test/requests/1\"}}"
+CURL
+```
+
+`POST /api/v1/conversations/:id/append` accepts `kind: customer` or `kind: note`,
+`content` and a stable `localId`. A customer append reopens Solved tickets and
+creates a linked follow-up for Closed tickets. Merged tickets return
+`merged_into` with the surviving ID. Notes are machine-authored internal context.
+
+```sh
+curl --silent --show-error --config - <<CURL
+url = "$H2H_URL/api/v1/conversations/$API_CONVERSATION_ID/append"
+header = "Authorization: Bearer $H2H_TOKEN"
+header = "Content-Type: application/json"
+request = "POST"
+data = "{\"kind\":\"customer\",\"localId\":\"synthetic-hh-docs-append-1\",\"content\":\"Additional context\"}"
+CURL
+```
+
+Create attachments accept an `upload_id` belonging to the same credential family,
+or a public HTTPS `url`, `filename` and lowercase hexadecimal `sha256`. URL
+fetches refuse redirects, have a ten-second deadline and a 20 MB per-file limit;
+unsupported types return 415 and oversized files return 413. All attachments
+must validate before any ticket is committed.
+
+Machine issuance accepts `create_per_minute` (default 20, maximum 60) and
+`create_per_day` (default 1000, maximum 10000). Installation workspace ceilings
+are 120 per minute and 20000 per day. A refused create returns 429 with code
+`credential` or `workspace`, `Retry-After` and `RateLimit-Limit`,
+`RateLimit-Remaining`, `RateLimit-Reset`. Replays do not consume create quota.
+
+Owners and admins rotate through `POST /connections/tokens/:id/rotate` under the
+same project management prefix, with `overlap_seconds` (default zero, maximum
+604800). Rotation requires step-up. Old secrets retire at their overlap deadline;
+revocation requires step-up and takes effect on the next request.
+
+Webhook destinations may select `conversation.status_changed` and
+`conversation.assigned`, and restrict delivery with `credential_id` or
+`source_product`. Status and assignment payloads contain identifiers and status
+values, with source references for machine-created conversations. The existing
+signature and retry protocol applies.
+
+Exported credential metadata carries an inert `revoked:<id>` storage placeholder
+instead of the bearer hash and a revocation timestamp. Restore cannot use old
+secrets. Request replay bodies and append responses are not exported; restored
+idempotency records cannot replay a response.
+
+### Current machine API limits
+
+Append attachment references and acknowledgment/consent options are not yet
+accepted. SMS and WhatsApp acknowledgment delivery is not implemented. Requester
+holds currently use a fixed five-create hourly cap; configurable caps and a
+separate requester 429 policy remain pending. Source back-links and machine
+credential metadata are stored, but their complete Settings and inbox display
+is pending. Do not treat these endpoints as complete API-002 acceptance.

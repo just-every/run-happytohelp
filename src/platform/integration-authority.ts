@@ -1,11 +1,11 @@
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from './env'
 import {D1SqlDatabase,IntegrationsRepository,TokenService} from '../vendor/base/modules/integrations/index.ts'
-export const SCOPES=['conversations:read','conversations:write','messages:write','contacts:read','contacts:write','articles:read','articles:write'] as const
+export const SCOPES=['conversations:create','messages:append','conversations:read','conversations:write','messages:write','contacts:read','contacts:write','articles:read','articles:write'] as const
 export type ApiScope=typeof SCOPES[number]
 export interface SqlGuard {sql:string;params:(string|number|null)[]}
 const trusted=Symbol('native workspace token authority')
-export interface TokenAuthority {readonly kind:'workspace-token';readonly projectId:string;readonly tokenId:string;readonly scope:ApiScope;readonly [trusted]:true}
+export interface TokenAuthority {readonly kind:'workspace-token';readonly projectId:string;readonly tokenId:string;readonly scope:ApiScope;readonly policy?:string;readonly [trusted]:true}
 export const repository=(env:Env,projectId:string)=>new IntegrationsRepository(new D1SqlDatabase(env.DB),projectId)
 export interface Issuer {actor:Actor;sessionHash:string}
 const activeProject=(alias:string)=>`EXISTS(SELECT 1 FROM projects p WHERE p.id=${alias}) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=${alias} AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
@@ -17,7 +17,7 @@ export async function issuerGuard(env:Env,issuer:Issuer):Promise<SqlGuard>{
  if(!row)throw new HTTPException(403,{message:'Current workspace owner or admin required'})
  return {sql:`${sql} AND e.revision=?`,params:[...params,row.revision]}
 }
-export function tokens(env:Env,projectId:string){
+export function tokens(env:Env,projectId:string,extension?:{source:string;bindings:string;minute:number;day:number;family?:string;rotate?:{id:string;overlap:number}}){
  const sql=new D1SqlDatabase(env.DB)
  let administration:{issuer:Issuer;guard:SqlGuard;action:string;resource:string}|null=null
  const repo=new IntegrationsRepository({async batch(statements){
@@ -26,7 +26,14 @@ export function tokens(env:Env,projectId:string){
   // Native actor audit and current authority assertion join Base's transaction.
   // A failed assertion violates actor_id NOT NULL and rolls back every effect.
   const audit={sql:`INSERT INTO native_integration_audit(id,project_id,actor_id,action,resource_id,created_at) VALUES(?,?,CASE WHEN EXISTS(${guard.sql}) THEN ? ELSE NULL END,?,?,?)`,params:[crypto.randomUUID(),projectId,...guard.params,issuer.actor.id,action,resource,Date.now()]}
-  try{return (await sql.batch([audit,...statements])).slice(1)}catch(error){
+  const extra=[]
+  if(action==='token.revoke')extra.push({sql:'UPDATE integration_tokens SET revoked_at=COALESCE(revoked_at,?) WHERE namespace=? AND family_id IS NOT NULL AND family_id=(SELECT family_id FROM integration_tokens WHERE namespace=? AND id=?)',params:[Date.now(),projectId,projectId,resource]})
+  if(extension&&action==='token.issued'){
+   const id=String(statements[0]!.params![1])
+   extra.push({sql:'UPDATE integration_tokens SET source_product=?,bindings_json=?,issuer_id=?,family_id=?,create_minute=?,create_day=?,display_prefix=? WHERE namespace=? AND id=?',params:[extension.source,extension.bindings,issuer.actor.id,extension.family??id,extension.minute,extension.day,id.slice(0,8),projectId,id]})
+   if(extension.rotate){extra.push({sql:"INSERT INTO native_integration_audit VALUES(?,?,?,'token.rotated',?,?)",params:[crypto.randomUUID(),projectId,issuer.actor.id,extension.rotate.id,Date.now()]},{sql:'UPDATE integration_tokens SET expires_at=min(COALESCE(expires_at,?),?) WHERE namespace=? AND id=?',params:[Date.now()+extension.rotate.overlap,Date.now()+extension.rotate.overlap,projectId,extension.rotate.id]})}
+  }
+  try{return (await sql.batch([audit,...statements,...extra])).slice(1,1+statements.length)}catch(error){
    if(!await env.DB.prepare(guard.sql).bind(...guard.params).first())throw new HTTPException(409,{message:'Authority changed'})
    throw error
   }
@@ -37,8 +44,8 @@ export function tokens(env:Env,projectId:string){
  })
 }
 /** Only the bearer verifier can mint this context; no synthetic native session. */
-export function verifiedToken(projectId:string,tokenId:string,scope:ApiScope):TokenAuthority{return Object.freeze({kind:'workspace-token',projectId,tokenId,scope,[trusted]:true as const})}
+export function verifiedToken(projectId:string,tokenId:string,scope:ApiScope,policy?:string):TokenAuthority{return Object.freeze({kind:'workspace-token',projectId,tokenId,scope,policy,[trusted]:true as const})}
 export function tokenGuard(authority:TokenAuthority,projectId:string,scope:ApiScope):SqlGuard{
  if(authority?.[trusted]!==true||authority.projectId!==projectId||authority.scope!==scope)throw new HTTPException(403)
- return {sql:`SELECT 1 FROM integration_tokens t WHERE t.namespace=? AND t.id=? AND t.revoked_at IS NULL AND (t.expires_at IS NULL OR t.expires_at>max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER))) AND EXISTS(SELECT 1 FROM json_each(t.scopes) WHERE value=?) AND ${activeProject('t.namespace')}`,params:[projectId,authority.tokenId,Date.now(),scope]}
+ return {sql:`SELECT 1 FROM integration_tokens t WHERE t.namespace=? AND t.id=? AND t.revoked_at IS NULL AND (t.expires_at IS NULL OR t.expires_at>max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER))) AND EXISTS(SELECT 1 FROM json_each(t.scopes) WHERE value=?) AND ${activeProject('t.namespace')} ${authority.policy===undefined?'':'AND json_array(t.source_product,t.bindings_json,t.family_id,t.create_minute,t.create_day)=?'}`,params:[projectId,authority.tokenId,Date.now(),scope,...(authority.policy===undefined?[]:[authority.policy])]}
 }

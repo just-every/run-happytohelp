@@ -1,3 +1,7 @@
+import {uploadApi} from './api-upload'
+import {conversationBounds} from './bounds'
+import {appendApi} from './api-append'
+import {createApi} from './api-create'
 import {publishResolution} from '../outcomes/state'
 import {contactAvailableSql} from '../conversations/contact-privacy'
 import {HTTPException} from 'hono/http-exception'
@@ -10,16 +14,19 @@ import {getTicket,fieldAllowed,fieldData} from '../tickets/model'
 import {mutateTicket} from '../tickets/mutate'
 import {ticketPresentation} from '../tickets/presentation'
 export function conversationApi(app:Hono<ApiEnv>){
+ createApi(app)
+ uploadApi(app)
+ appendApi(app)
  const read=requireScope('conversations:read')
  app.get('/ticket-fields',read,async c=>{const a=c.get('authority'),rows=await c.env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? ORDER BY name,id').bind(a.projectId).all<any>();return c.json({data:rows.results.filter(field=>fieldAllowed(field,null)).map(field=>fieldData(field,null))})})
  app.get('/ticket-statuses',read,async c=>{const a=c.get('authority');return c.json({data:(await c.env.DB.prepare('SELECT id,name,category,active FROM ticket_statuses WHERE project_id=? ORDER BY category,name,id').bind(a.projectId).all()).results})})
  app.get('/ticket-groups',read,async c=>{const a=c.get('authority');return c.json({data:(await c.env.DB.prepare('SELECT id,name FROM ticket_groups WHERE project_id=? ORDER BY name,id').bind(a.projectId).all()).results})})
- async function conversation(c:any){const a=c.get('authority'),row=await c.env.DB.prepare(`SELECT c.* FROM conversations c WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()}`).bind(c.req.param('id'),a.projectId).first();if(!row)throw new HTTPException(404,{message:'Not found'});return row}
+ async function conversation(c:any){const a=c.get('authority'),row=await c.env.DB.prepare(`SELECT c.* FROM conversations c WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND ${conversationBounds()}`).bind(c.req.param('id'),a.projectId,a.tokenId).first();if(!row)throw new HTTPException(404,{message:'Not found'});return row}
  app.get('/conversations',read,async c=>{
   const a=c.get('authority'),q=c.req.query(),status=q.status||'all',since=q.updated_since?Date.parse(q.updated_since):null,tag=q.tag||null
   if(!['open','resolved','all'].includes(status)||since!==null&&!Number.isFinite(since)||tag&&tag.length>200)throw new HTTPException(400,{message:'Invalid conversation filter'})
   const ticketFilters=Object.fromEntries(['status_id','status_category','priority','subject','channel','brand_id','group_id','requester_id','submitter_id','submitter_type'].filter(key=>q[key]!==undefined).map(key=>[key,q[key]]))
-  const paging=page(q,{project:a.projectId,resource:'conversations',status,since,tag,ticketFilters}),pred=['c.project_id=?',contactAvailableSql()],params:any[]=[a.projectId]
+  const paging=page(q,{project:a.projectId,resource:'conversations',status,since,tag,ticketFilters}),pred=['c.project_id=?',contactAvailableSql(),conversationBounds()],params:any[]=[a.projectId,a.tokenId]
   if(status!=='all')pred.push(`c.status_category ${status==='open'?'NOT ':''}IN ('solved','closed')`)
   for(const [field,value] of Object.entries(ticketFilters)){if(value.length>500)throw new HTTPException(400,{message:'Invalid ticket filter'});pred.push(`c.${field}=?`);params.push(value)}
   if(since!==null){pred.push('c.updated_at>=?');params.push(since)}

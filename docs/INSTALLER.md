@@ -1,25 +1,33 @@
 # Install HappyToHelp
 
-Start it with one line. You need **Node.js 22 or later** (with npm) and Git; check
-with `node --version`.
+Start the free local app with this single copy-and-run command. You do not need
+Node.js or npm installed first; the installer brings its own. Git is required.
+
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
+```
+
+That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
+Node and pnpm, installs dependencies, sets up a local owner and starts the app.
+To start it again later, run `cd run-happytohelp && rer dev`.
+
+Normal setup and launch install the app's dependencies and build its local assets;
+they do not download Chromium. Dev uses its local
+address for the chat widget and generates a private owner password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
+real local owner and reach **Setup**. No private answers, email service or AI
+account are needed. Use `rer dev --stop` from the checkout to stop the managed app.
+
+## Expert / contributor alternatives
+
+If you already have **Node.js 22 or later** (with npm) and Git, check with
+`node --version`, then start the same app with:
 
 ```sh
 npx -y @runeditrun/rer dev just-every/run-happytohelp
 ```
 
-That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
-Node and pnpm, installs dependencies, sets up a local owner and starts the app. To
-set it up without starting it, use `npx -y @runeditrun/rer setup just-every/run-happytohelp`.
-Without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp`
-brings its own. To start it again later, run `cd run-happytohelp && rer dev`.
-
-The install also downloads Chromium (about 280 MB, into your user cache) the
-first time: `rer verify` and the browser checks run in it. Dev uses its local
-address for the chat widget and generates a private owner password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
-real local owner and reach **Setup**. No private answers, email service or AI
-account are needed. Use `rer dev --stop` from the checkout to stop the managed app.
-
-## Contributor setup
+To set it up without starting it, use
+`npx -y @runeditrun/rer setup just-every/run-happytohelp`.
 
 For source work, select Node **22.20.0** and pnpm **10.12.4**:
 
@@ -173,7 +181,20 @@ not confirmed inbox delivery. Inbound mail routing is configured separately.
 
 ## Verify, reset and move data
 
-Stop dev, then run `rer verify`. Export before destructive reset
+Stop dev, then run `rer verify`. Verification downloads the Chromium and headless
+shell pinned by the checkout's Playwright into your user cache the first time
+they are needed. To install them before running a browser journey directly, such
+as `pnpm run test:docs-browser`, run this from the checkout:
+
+```sh
+pnpm exec playwright install chromium
+```
+
+This command downloads Playwright's Chromium into your user cache if it is not
+already installed. On Linux, `pnpm exec playwright install --with-deps chromium`
+also installs the system libraries the browser needs.
+
+Export before destructive reset
 if you need the data. Reset requires `rer reset --yes` after
 reviewing its printed inventory. Export/import use `--output FILE` and
 `--input FILE --yes`; import requires an empty destination. Native owners survive

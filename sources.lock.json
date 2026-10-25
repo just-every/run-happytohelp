@@ -6160,7 +6160,7 @@
       "executable": false
     },
     "src/modules/management/member-erasure.ts": {
-      "sha256": "09a97f4027b25019875f37ae1bbefa3adcd4f63922be4620166d5cbf439940e4",
+      "sha256": "4a6d7ae00fe81f98985653c2e7f531eaab6bba62b9116210183a82df1b82fb0b",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {
@@ -10828,7 +10828,7 @@
       "executable": false
     },
     "tests/connections/api-create.mjs": {
-      "sha256": "7cebaa3ed663994eb15da88decd54c4afb5e5971466a781ef7c5797431f71c00",
+      "sha256": "fcee57f12a574269b3ca866c671c008837523ea89b0763efe48780b6fc406099",
       "executable": false
     },
     "tests/connections/api.mjs": {

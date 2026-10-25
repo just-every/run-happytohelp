@@ -2600,7 +2600,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "1e9263362cdfd041ce2c670158887546ef4901da2b1e168b222e72886e85e650",
+      "sha256": "f325ec3cb89a979d998132539613090d44d42940ff77959e9f028594fe57279c",
       "executable": false
     },
     "rer-project.json": {
@@ -11860,7 +11860,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "6fbdeba72a9bf2733f3a7d0f2f9ed79464c62082cc8c5322286a4558cfef4f0b",
+      "sha256": "f08903ad8c2624a74d1f518cbc895cdd4f147892dd523a2fd1a7ff13f1a8f528",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

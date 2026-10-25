@@ -10828,7 +10828,7 @@
       "executable": false
     },
     "tests/connections/api-create.mjs": {
-      "sha256": "cade37386c7ce2a4c03cdebbb01352b1d4faa8cf493c4cdf7aadcc2da9aba4df",
+      "sha256": "725cae43c252fdf026236318ace24d20dded75568abe711f44e60be9d5e44ce2",
       "executable": false
     },
     "tests/connections/api.mjs": {

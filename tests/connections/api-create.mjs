@@ -4,23 +4,25 @@ import {createHmac} from 'node:crypto';
 import {harness,body,sha} from './harness.mjs';
 const settings='/api/management/projects/p/connections';
 async function existingCredentialLifecycle(){
- const h=await harness();try{
+ console.log('machine API: booting lifecycle worker'); const h=await harness(); console.log('machine API: lifecycle worker ready');try{
   const issued=await h.issue(['contacts:read']),token=issued.token;assert.ok(/^int_[a-f0-9]{64}$/.test(token));
   const stored=await h.db.prepare('SELECT * FROM integration_tokens WHERE id=?').bind(issued.data.id).first();assert.ok(stored.token_hash===sha(token));assert.ok(!JSON.stringify(stored).includes(token));
   const list=await h.call(settings+'/tokens');assert.equal(list.data.length,1);assert.ok(!JSON.stringify(list).includes(token));assert.equal(list.data[0].last_used_at,null);
   for(const [headers,status] of [[{},401],[{Cookie:'h2h_session='+h.sessionToken('owner')},401],[{Authorization:'Bearer invalid',Cookie:'h2h_session='+h.sessionToken('owner')},401],[{Authorization:'Bearer '+token,Cookie:'h2h_session=invalid'},200]]){
    const result=await h.raw('/api/v1/contacts',{token:null,headers:{...headers,Origin:'https://app.example'}});assert.equal(result.status,status);assert.equal(result.headers.get('Access-Control-Allow-Origin'),null)
   }
+  console.log('machine API: lifecycle bearer admission');
   const wrong=await h.raw('/api/v1/conversations',{token});assert.equal(wrong.status,403);assert.equal((await wrong.json()).error.code,'insufficient_scope');
   for(const path of ['/api/v1/contacts','/api/v1/missing']){const r=await h.raw(path,{token,method:'OPTIONS',headers:{Origin:'https://app.example','Access-Control-Request-Headers':'Authorization'}});assert.equal(r.headers.get('Access-Control-Allow-Origin'),null);assert.equal(r.headers.get('Access-Control-Allow-Headers'),null)}
   assert.ok((await h.call(settings+'/tokens')).data[0].last_used_at);
   const usage=await h.call(settings+'/tokens/usage');assert.ok(usage.data.some(x=>x.allowed)&&usage.data.some(x=>!x.allowed));assert.ok(usage.data.every(x=>x.requestId&&x.resource));assert.ok(!JSON.stringify(usage).includes(token));
+  console.log('machine API: lifecycle membership and revocation');
   await h.db.prepare("DELETE FROM memberships WHERE project_id='p' AND user_id='owner'").run();assert.equal((await h.raw('/api/v1/contacts',{token})).status,200,'workspace grant outlives issuer membership');
   await h.db.prepare("INSERT INTO memberships VALUES('p','owner','owner')").run();
   await h.call(settings+'/tokens/'+issued.data.id,{method:'DELETE'});assert.equal((await h.raw('/api/v1/contacts',{token})).status,401);
   const expiring=await h.issue(['contacts:read'], 'p',{expires_at:new Date(Date.now()+60000).toISOString()});await h.db.prepare('UPDATE integration_tokens SET expires_at=1 WHERE id=?').bind(expiring.data.id).run();assert.equal((await h.raw('/api/v1/contacts',{token:expiring.token})).status,401);
   assert.equal((await h.db.prepare("SELECT count(*) n FROM integration_token_events WHERE token_id=? AND action='issued'").bind(issued.data.id).first()).n,1);assert.equal((await h.db.prepare("SELECT count(*) n FROM integration_token_events WHERE token_id=? AND action='revoked'").bind(issued.data.id).first()).n,1);
- }finally{await h.close()}
+ }finally{console.log('machine API: lifecycle cleanup');await h.close();console.log('machine API: lifecycle cleanup complete')}
 }
 test('machine create credentials admit one atomic ticket and replay across rotation without granting other scopes',async()=>{
  console.log('machine API: credential lifecycle'); await existingCredentialLifecycle(); console.log('machine API: create and append');

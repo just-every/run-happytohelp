@@ -23,13 +23,14 @@ export default function CreateEmailTicket({projectId, onHide, onCreated}) {
  },[projectId]);
  const submit = async event => {
   event.preventDefault();if(busy)return;setError('');
-  const invalid = emailRecipientsError(draft.requesterEmail) || (draft.kind==='notice' ? (parseEmailRecipients(draft.requesterEmail).length<2?'Enter at least two requester email addresses.':'') : (parseEmailRecipients(draft.requesterEmail).length !== 1 ? 'Enter one requester email address.' : '')) || (draft.kind === 'email' && (emailRecipientsError(draft.cc) || emailRecipientsError(draft.bcc)));
+  const requesterEmails=[...new Set(parseEmailRecipients(draft.requesterEmail).map(address=>address.toLowerCase()))];
+  const invalid = emailRecipientsError(draft.kind==='notice'?requesterEmails:draft.requesterEmail) || (draft.kind==='notice' ? (parseEmailRecipients(draft.requesterEmail).length<2?'Enter at least two requester email addresses.':'') : (parseEmailRecipients(draft.requesterEmail).length !== 1 ? 'Enter one requester email address.' : '')) || (draft.kind === 'email' && (emailRecipientsError(draft.cc) || emailRecipientsError(draft.bcc)));
   if(invalid){setError(invalid);return;}
   setBusy(true);
   try {
    intent.current ||= {...draft,localId:crypto.randomUUID(),
     kind:draft.kind==='notice'?'email':draft.kind,
-    ...(draft.kind==='notice'?{requesters:parseEmailRecipients(draft.requesterEmail),requesterEmail:undefined,requesterName:undefined}:{}),
+    ...(draft.kind==='notice'?{requesters:requesterEmails,requesterEmail:undefined,requesterName:undefined}:{}),
     fromAddress:draft.kind!=='call'&&draft.fromAddress?draft.fromAddress:undefined,
     cc:draft.kind==='email'?parseEmailRecipients(draft.cc):[],
     bcc:draft.kind==='email'?parseEmailRecipients(draft.bcc):[]};

@@ -1,5 +1,5 @@
 import {contactKeys,requesterAdmission,assertAdmission} from './requester-admission'
-import {consumeUploads,sweepUploads} from './upload-lifecycle'
+import {consumeUploads,finishUploads} from './upload-lifecycle'
 import {attachments} from './create-attachments'
 import {conversationReach} from './reach'
 import type {Hono} from 'hono'
@@ -31,10 +31,9 @@ export function appendApi(app:Hono<ApiEnv>){
   const fileStatements=(target:string,record:string,note=false)=>files.flatMap(file=>[
    c.env.DB.prepare(`INSERT INTO media SELECT ?,?, ?,?,?, ?,?,?,?,? WHERE EXISTS(SELECT 1 FROM ${note?'api_notes':'messages'} WHERE id=?)`).bind(file.id,p,target,note?'api:'+a.credentialId:current.contact_id,`${p}/${id}/${file.id}`,file.filename,file.type,file.bytes.length,note?null:record,Date.now(),record),
    ...(note?[c.env.DB.prepare('INSERT INTO api_note_media SELECT ?,id FROM media WHERE id=?').bind(record,file.id)]:[]),
-   ...[]
   ])
   const guard=tokenGuard(a,p,'messages:append'),now=Date.now(),noteId=crypto.randomUUID()
-  // Bind local IDs to the credential family so rotation preserves append identity.
+  // Bind local IDs to the credential so rotation preserves append identity.
   const messageLocal='api:'+await hashToken(credential.id+':'+localId)
   const receipt=(messageId:string,targetId:string,at:number)=>[
    c.env.DB.prepare('INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(SELECT 1 FROM messages WHERE id=?) THEN 1 ELSE 0 END').bind(messageId),
@@ -64,7 +63,7 @@ export function appendApi(app:Hono<ApiEnv>){
   const stored=await c.env.DB.prepare(`SELECT response_json FROM api_appends r JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id WHERE r.project_id=? AND r.conversation_id=? AND r.credential_id=? AND r.local_id=? AND r.body_digest=? AND ${contactAvailableSql()} AND EXISTS(${guard.sql})`).bind(p,id,credential.id,localId,digest,...guard.params).first<any>()
   if(!stored)throw new ApiError(409,'conflict')
   const response=JSON.parse(stored.response_json)
-  c.executionCtx.waitUntil(sweepUploads(c.env))
+  await finishUploads(c.env,p,files)
   return c.json(response)
   }catch(error){await assertAdmission(c.env,admission,b.kind==='note');if(!await c.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.project_id=? AND c.id=? AND ${conversationReach()}`).bind(p,id,a.credentialId).first())throw new ApiError(404,'not_found');if(error instanceof ApiError)throw error;throw new ApiError(409,'conflict','Conversation or credential changed')}finally{
    // Only remove staged bytes after the database proves they were not committed.

@@ -18,7 +18,7 @@ export async function issuerGuard(env:Env,issuer:Issuer):Promise<SqlGuard>{
  if(!row)throw new HTTPException(403,{message:'Current workspace owner or admin required'})
  return {sql:`${sql} AND e.revision=?`,params:[...params,row.revision]}
 }
-export interface CredentialPolicy {source:string|null;reach:string;values:string;minute:number;day:number;rotate?:{id:string;overlap:number;revision:number}}
+export interface CredentialPolicy {source?:string|null;reach?:string;values?:string;minute?:number;day?:number;rotate?:{id:string;overlap:number;revision:number}}
 export function tokens(env:Env,projectId:string,extension?:CredentialPolicy){
  const sql=new D1SqlDatabase(env.DB)
  let administration:{issuer:Issuer;guard:SqlGuard;action:string;resource:string}|null=null

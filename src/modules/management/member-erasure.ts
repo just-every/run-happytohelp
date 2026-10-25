@@ -4,7 +4,7 @@ import type {AppEnv} from '../../platform/env'
 import {scope} from './common'
 import {issuerGuard} from '../../platform/integration-authority'
 import {requireStepUp} from '../identity/two-factor/step-up'
-import {auditStatement,requestSource} from '../audit/record'
+import {auditStatement} from '../audit/record'
 import {endHandleTimers} from '../reports/timers'
 
 export const memberErasure=new Hono<AppEnv>()

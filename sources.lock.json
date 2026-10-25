@@ -3944,7 +3944,7 @@
       "executable": false
     },
     "src/modules/api-integrations/api-append.ts": {
-      "sha256": "231b685b930e22cdaab2ae2c89cc0c38d93a5e8630e33fc1c828270390e44d5b",
+      "sha256": "1979fbe13afade7b1b2f02bd0f567d93e4e49a06a34c9e09396e0c8b08c77af9",
       "executable": false
     },
     "src/modules/api-integrations/api-conversations.ts": {
@@ -3952,11 +3952,11 @@
       "executable": false
     },
     "src/modules/api-integrations/api-create.ts": {
-      "sha256": "4f7475b252d97539ac93e4fcf10f4c460a7d53bb14fe87770b2075c2b5f7218d",
+      "sha256": "36b39acd20c6f2ae5acb82f30d74e2f935c3e9c6319adcf5f04716893ff37637",
       "executable": false
     },
     "src/modules/api-integrations/api-resources.ts": {
-      "sha256": "c0f577b9a596bae8a8740828245bfc06b8907a7d77b3956314a811998cff156e",
+      "sha256": "c7f2e0a09181e4c33b89b8cf75884fc659275a03d2666bbdc9a5e781940410c7",
       "executable": false
     },
     "src/modules/api-integrations/api-upload.ts": {
@@ -3968,7 +3968,7 @@
       "executable": false
     },
     "src/modules/api-integrations/create-input.ts": {
-      "sha256": "a3b3ed37064f2f9ffcf3ab3377fc2a07243915886fe767433c6af3d037edae59",
+      "sha256": "e52002341c7b488176e1561270b53c38343137236e4f8ded9b0f8f3e186edd30",
       "executable": false
     },
     "src/modules/api-integrations/create-quota.ts": {
@@ -4004,7 +4004,7 @@
       "executable": false
     },
     "src/modules/api-integrations/http.ts": {
-      "sha256": "6fc63320eb6e1c924135207a70b9107ea0bbfe0016a7e61d9254ba7eb447699e",
+      "sha256": "c56ed1f48053da2a01c9a1317c2fa455020749f138a732e91adaeba5ca9d3f07",
       "executable": false
     },
     "src/modules/api-integrations/limit-config.ts": {
@@ -4012,7 +4012,7 @@
       "executable": false
     },
     "src/modules/api-integrations/machine-credentials.ts": {
-      "sha256": "f118a93a701e66178d741de848ad1e669860305353c3d1d4d797c190fad8ed49",
+      "sha256": "d18c3767c69d8d99a5c55e69a6847b39a40f81ed137a786e1a5206f61e7cc992",
       "executable": false
     },
     "src/modules/api-integrations/module.json": {
@@ -4056,7 +4056,7 @@
       "executable": false
     },
     "src/modules/api-integrations/upload-lifecycle.ts": {
-      "sha256": "22f83d5c5c6e1220d37ac4791320c0e8e602ac60a51e7b3892f7fcc5c4b02451",
+      "sha256": "e5d00951e4dae682844863326d6bf9746d1c70c74110ac30603768f3d6524d66",
       "executable": false
     },
     "src/modules/audit/read.ts": {
@@ -6188,7 +6188,7 @@
       "executable": false
     },
     "src/modules/management/member-erasure.ts": {
-      "sha256": "6de196086d75c71246610faabe13450a299c3d91dc8bec752f1af07d77c89211",
+      "sha256": "4a52d54080c0441c33fc456c352962a3256d00d69f37a6401d0cc3ccaf9205bc",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {
@@ -7824,7 +7824,7 @@
       "executable": false
     },
     "src/platform/integration-authority.ts": {
-      "sha256": "53d26de11671f59204f4ebd5c951331735f6ae661a9278d7a63285101d11fbcf",
+      "sha256": "cddc5434562e542cc21c992a320b9b02dbfb805c7ab7111bf926104e71ca976c",
       "executable": false
     },
     "src/platform/json-response.ts": {
@@ -10896,7 +10896,7 @@
       "executable": false
     },
     "tests/connections/delivery.mjs": {
-      "sha256": "d9a8ec673a10f02bee1ed280e4c02e59eace5a6a568c591359e0ee42a4d3ab1e",
+      "sha256": "2380f8d7cd7b7a8a8f71bbfb62c3d17b48a946ab9631c9cf45c935eb7eae0c9d",
       "executable": false
     },
     "tests/connections/docs.mjs": {
@@ -10928,7 +10928,7 @@
       "executable": false
     },
     "tests/connections/native-boundary.mjs": {
-      "sha256": "9d4aa8709475850663d819299c3d156b4975cb4291958ffcd744945bf3376d98",
+      "sha256": "1a696bba029de9e9eee5ec507ab834065a865d04a278d86d3606dd4eb783768d",
       "executable": false
     },
     "tests/connections/race-db.ts": {
@@ -11836,7 +11836,7 @@
       "executable": false
     },
     "tests/helpers/recovery/comparison.mjs": {
-      "sha256": "c06a5bd6a3e02dd601c02ea6a3d5530d42122802b2906ea0b2fd9b9337abc289",
+      "sha256": "74316ac59b8a3ed24e9c65f63e629f4750f20d3bee1de3b1b650c5bab8b9fe54",
       "executable": false
     },
     "tests/helpers/recovery/independent-journey.mjs": {

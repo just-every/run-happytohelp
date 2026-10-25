@@ -11,10 +11,10 @@ const config=kind=>kind==='webhooks'
 
 // Include audit, quotas, jobs, delivery state and every business table. D1's own
 // platform accounting is not business state; all row values remain unnormalized.
-async function snapshot(h,excluded=[]){
+async function snapshot(h,excluded=[],credentialId=null){
  const names=(await h.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name<>'_cf_METADATA' ORDER BY name").all()).results;
  const state={};
- for(const {name} of names)if(!excluded.includes(name))state[name]=(await h.db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"').all()).results.map(row=>JSON.stringify(row)).sort();
+ for(const {name} of names)if(!excluded.includes(name))state[name]=(await h.db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"').all()).results.filter(row=>!(credentialId&&(name==='api_denial_counts'&&row.credential_id===credentialId||name==='audit_events'&&row.target_id===credentialId&&row.actor_id===credentialId&&row.source==='api'&&['credential.first_used','credential.denied'].includes(row.action)))).map(row=>JSON.stringify(row)).sort();
  return sha(JSON.stringify(state));
 }
 
@@ -75,7 +75,7 @@ test('credential validity and API scopes never confer native administration or l
    const live=await h.issue(allScopes,project),wrongScope=await h.issue(['articles:read'],project);
    const revoked=await h.issue(allScopes,project),expired=await h.issue(allScopes,project,{expires_at:new Date(Date.now()+60000).toISOString()});
    await h.call(root(project)+'/tokens/'+revoked.data.id,{actor:actors[project],method:'DELETE'});
-   await h.db.prepare('UPDATE integration_tokens SET expires_at=1 WHERE id=?').bind(expired.data.id).run();
+   await h.db.prepare('UPDATE api_credentials SET expires_at=1 WHERE id=?').bind(expired.data.id).run();
    const unknown={token:'int_'+randomBytes(32).toString('hex')};
    const before=await snapshot(h);
    for(const credential of [live,wrongScope,revoked,expired,unknown])for(const target of ['p','q','nonexistent-workspace']){
@@ -152,13 +152,17 @@ test('both workspace tokens retain API foreign-resource concealment and cannot e
     ['contacts/visitor-'+target,{...body({name:'Denied edit'}),method:'PUT'}],
     ['articles/article-'+target,{}],['articles/article-'+target,{...body({title:'Denied edit',content:'Denied',status:'published'}),method:'PUT'}],
    ];
-   const accounting=['integration_token_usage','abuse_counters'],beforeApi=await snapshot(h,accounting);
+   const accounting=['integration_token_usage','abuse_counters'],beforeApi=await snapshot(h,accounting,credentials[source].data.id);
    for(const [path,options] of requests){
     const denied=await h.raw('/api/v1/'+path,{...options,token});
     const missing=await h.raw('/api/v1/'+path.replace(id,'missing').replace('visitor-'+target,'missing').replace('article-'+target,'missing'),{...options,token});
     assert.equal(denied.status,404,path);assert.equal(missing.status,404,path);assert.deepEqual(await denied.json(),await missing.json());
    }
-   assert.equal(await snapshot(h,accounting),beforeApi,'API foreign-resource denials preserve all business state apart from permitted token usage and quota accounting');
+   assert.equal(await snapshot(h,accounting,credentials[source].data.id),beforeApi,'API foreign-resource denials preserve all business state apart from permitted token usage and quota accounting');
+   const credentialId=credentials[source].data.id;
+   assert.equal((await h.db.prepare('SELECT sum(count) n FROM api_denial_counts WHERE project_id=? AND credential_id=?').bind(source,credentialId).first()).n,8,'each named-conversation refusal is counted against the credential');
+   const usageAudit=(await h.db.prepare("SELECT action,count(*) n FROM audit_events WHERE project_id=? AND target_id=? GROUP BY action ORDER BY action").bind(source,credentialId).all()).results;
+   assert.deepEqual(usageAudit,[{action:'credential.denied',n:1},{action:'credential.first_used',n:1}],'legacy credentials also audit one denial window and one first use');
    const nativePaths=[
     '/api/conversations/'+id,'/api/conversations/'+id+'/messages',
     '/api/knowledge/'+target+'/articles','/api/management/projects/'+target+'/contacts',

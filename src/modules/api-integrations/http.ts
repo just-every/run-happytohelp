@@ -48,7 +48,10 @@ export async function readBody(c:any,limit=200000,json=true){
  const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength}
  return bytes
 }
-export async function jsonBody(c:any){
+export async function jsonBody(c:any,limits:Record<string,number>={content:100000,body:100000,subject:500}){
  const bytes=await readBody(c)
- try{const body=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));if(!body||typeof body!=='object'||Array.isArray(body))throw Error();return body}catch{throw new ApiError(400,'invalid_request','JSON object required')}
+ let body:any
+ try{body=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));if(!body||typeof body!=='object'||Array.isArray(body))throw Error()}catch{throw new ApiError(400,'invalid_request','JSON object required')}
+ for(const [field,max] of Object.entries(limits))if(typeof body[field]==='string'&&body[field].length>max)throw new ApiError(413,'payload_too_large')
+ return body
 }

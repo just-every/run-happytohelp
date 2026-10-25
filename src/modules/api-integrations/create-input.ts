@@ -4,7 +4,6 @@ import {requesterKeys,requesterAdmission,assertAdmission} from './requester-admi
 import {mailboxProofSql} from '../identity/mailbox'
 import type {Env} from '../../platform/env'
 import {ApiError} from './errors'
-import {identityDigest,contactDigests} from '../move-in/identities'
 import {canonicalJson} from '../import-kit/src/provenance/identity'
 export {canonicalJson}
 export function text(value:unknown,max:number){if(typeof value==='string'&&value.length>max)throw new ApiError(413,'payload_too_large');if(typeof value!=='string'||!value.trim())throw new ApiError(400,'invalid_request');return value.trim()}

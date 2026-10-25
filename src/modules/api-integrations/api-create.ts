@@ -1,5 +1,5 @@
 import {ticketStatements,type TicketPlan} from './ticket-plan'
-import {consumeUploads,sweepUploads} from './upload-lifecycle'
+import {consumeUploads,finishUploads} from './upload-lifecycle'
 import {assertAdmission} from './requester-admission'
 import {reserveCreates,reserveRequester} from './create-quota'
 import type {Hono} from 'hono'
@@ -56,7 +56,7 @@ export function createApi(app:Hono<ApiEnv>){
      c.env.DB.prepare('UPDATE api_requests SET contact_id=?,held_id=?,status=202,response_json=? WHERE project_id=? AND source_product=? AND key_digest=? AND claim=?').bind(contactId,heldId,JSON.stringify(response),p,product,digest,claim),
      c.env.DB.prepare('DELETE FROM ik_d1_assertions')
     ])
-    await sweepUploads(c.env)
+    await finishUploads(c.env,p,files)
     return c.json(response,202)
    }
    const metadata=JSON.stringify({api_asserted_by:a.credentialId,api_source:product,api_external_id:input.external,...(input.phone?{phone:input.phone}:{})}),response={data:{id,subject:input.subject,channel:input.channel,status_category:'new',source_ref:input.ref?{product,ref:input.ref,url:input.url}:null}},history=JSON.stringify({action:'created',credential_name:credential.name,source_product:product,source_ref:input.ref,request_id:claim,idempotency_digest:digest})
@@ -70,7 +70,7 @@ export function createApi(app:Hono<ApiEnv>){
     c.env.DB.prepare('UPDATE api_requests SET conversation_id=?,contact_id=?,status=201,response_json=? WHERE project_id=? AND source_product=? AND key_digest=? AND claim=?').bind(id,contactId,JSON.stringify(response),p,product,digest,claim),
     c.env.DB.prepare('DELETE FROM ik_d1_assertions')
    ])
-   await sweepUploads(c.env)
+   await finishUploads(c.env,p,files)
    return c.json(response,201)
   }catch(error){
    // A lost batch response is an unknown outcome. Read the durable receipt before

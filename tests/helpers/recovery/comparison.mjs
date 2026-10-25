@@ -74,7 +74,7 @@ try {
   for(const table of ['integration_tokens','api_credentials','api_requests','api_appends'])before.rows[table]=before.rows[table].map(value=>{
    const row=JSON.parse(value);
    if(table==='api_credentials')row.revoked_at??=Math.max(1,row.created_at);
-   if(table==='integration_tokens'){assert.ok(!backup.includes(row.token_hash));row.token_hash='revoked:'+row.id;row.revoked_at??=Math.max(1,row.created_at)}
+   else if(table==='integration_tokens'){assert.ok(!backup.includes(row.token_hash));row.token_hash='revoked:'+row.id;row.revoked_at??=Math.max(1,row.created_at)}
    else{row.response_json=null;if(table==='api_requests')row.erased=1}
    return JSON.stringify(row);
   }).sort();

@@ -726,6 +726,12 @@
       "name": "250_rer_mail_route_observation.sql",
       "sha256": "8376815e0f79757f1ff58d380f587c6201b380c112a0e098167923400e75d489",
       "sql": "-- Route authority survives a failed observation. Retry reads independently of\n-- inbound/outbound activity and keep the last successful check visible.\nALTER TABLE rer_mailboxes ADD COLUMN route_checked_at INTEGER;\nALTER TABLE rer_mailboxes ADD COLUMN route_check_next_at INTEGER NOT NULL DEFAULT 0;\nALTER TABLE rer_mailboxes ADD COLUMN route_check_failures INTEGER NOT NULL DEFAULT 0;\nALTER TABLE rer_mailboxes ADD COLUMN route_check_error TEXT;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "251_knowledge_read_selection.sql",
+      "sha256": "3477a5982527a84b6f9a96cdf2b9d8d481f46d16b08e8eec50238ee21c20c21b",
+      "sql": "-- NULL retains workspace-wide read authority; [] explicitly selects no articles.\nALTER TABLE project_roles ADD COLUMN knowledge_article_ids TEXT CHECK(knowledge_article_ids IS NULL OR (json_valid(knowledge_article_ids) AND json_type(knowledge_article_ids)='array'));\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

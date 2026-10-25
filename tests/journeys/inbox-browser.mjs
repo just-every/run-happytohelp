@@ -6,6 +6,7 @@ import {mobileInbox} from '../helpers/inbox/mobile-inbox-browser.mjs'
 import {navigation} from '../helpers/inbox/navigation-browser.mjs'
 import {workspaceShell} from '../helpers/inbox/workspace-shell-browser.mjs'
 import {managementLibrary} from '../helpers/inbox/management-library-browser.mjs'
+import {identityLinksBrowser} from '../helpers/context/identity-links-browser.mjs'
 import {pluginFrame} from '../helpers/inbox/plugin-frame-browser.mjs'
 import {appearanceBrowser} from '../helpers/inbox/appearance-browser.mjs'
 import {visualEdit} from '../helpers/inbox/visual-edit-browser.mjs'
@@ -24,7 +25,7 @@ test('the inbox opens on the right default view with status and assignment filte
 
 test('navigation and the workspace shell: every destination, Settings menu and page heading, keyboard and phone navigation, and workspace switching',async()=>{await navigation();await workspaceShell()})
 
-test('the management libraries: contacts, saved replies, assistants, plugins and members are listed, edited, validated and removed, with notification preferences, accessibly; a configured plugin frame commands only its own conversation from its own origin',async()=>{await managementLibrary();await pluginFrame()})
+test('the management libraries: contacts, saved replies, assistants, plugins and members are listed, edited, validated and removed, with notification preferences, accessibly; a configured plugin frame commands only its own conversation from its own origin',async()=>{await managementLibrary();await identityLinksBrowser();await pluginFrame()})
 
 test('appearance settings save, reload, preview and publish into the widget and help center, and visual edits and hydration keep the application intact',async()=>{await appearanceBrowser();await visualEdit();await visualHydration()})
 

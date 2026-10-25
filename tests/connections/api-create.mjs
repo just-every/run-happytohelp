@@ -346,13 +346,21 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const beforeErase=(await h.call('/api/management/projects/p/audit/export?format=json')).events.filter(event=>event.actor_id===issuerId);assert.ok(beforeErase.length);
   assert.equal((await h.raw('/api/management/projects/p/agents/owner/erase',body({}))).status,403);
   assert.equal((await h.raw('/api/management/projects/p/agents/'+issuerId+'/erase',{actor:'foreign',...body({})})).status,403);
+  await h.db.prepare("INSERT INTO memberships VALUES('q',?,'operator')").bind(issuerId).run();
+  assert.equal((await h.raw('/api/management/projects/p/agents/'+issuerId+'/erase',body({}))).status,409,'a workspace owner cannot erase an account shared with another workspace');
+  await h.db.prepare("DELETE FROM memberships WHERE project_id='q' AND user_id=?").bind(issuerId).run();
   await h.call('/api/management/projects/p/agents/'+issuerId+'/erase',body({}));
   const retained=(await h.call(settings+'/tokens')).data.find(row=>row.id===machine.data.id);assert.equal(retained.issuer_id,null);assert.ok(retained.revokedAt||retained.revoked_at);assert.equal(retained.name,'Synthetic retained machine');
   assert.equal((await send(untrusted,'synthetic-hh-erased-issuer',machine.token)).status,401);
-  assert.equal((await h.raw('/api/v1/conversations',{actor:issuerId})).status,401);
+  assert.equal((await h.raw('/api/identity/session',{actor:issuerId})).status,401);
   const afterErase=(await h.call('/api/management/projects/p/audit/export?format=json')).events;
   for(const previous of beforeErase){const event=afterErase.find(event=>event.id===previous.id);assert.ok(event);assert.equal(event.actor,'Former teammate')}
   const history=await h.call('/api/management/projects/p/conversations/'+issuerTicketId+'/ticket');
+  const machineHistory=history.data.history.filter(event=>event.actor_type==='api');
+  for(const action of ['created','append']){
+   const event=machineHistory.find(event=>event.changes.action===action||event.changes.kind===action);
+   assert.ok(event,'retained '+action+' history');assert.equal(event.changes.credential_name,'Synthetic retained machine');assert.equal(event.changes.source_product,'synthetic-hh-erasure');assert.ok(event.changes.request_id);
+  }
   const redacted=JSON.stringify({history,events:afterErase,retained});
   for(const privateValue of ['synthetic-hh-issuer@example.test','Synthetic issuer',machine.token,sha(machine.token)])assert.ok(!redacted.includes(privateValue));
   assert.ok(redacted.includes('Synthetic retained machine'));

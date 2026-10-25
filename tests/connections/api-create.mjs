@@ -23,7 +23,7 @@ async function existingCredentialLifecycle(){
  }finally{await h.close()}
 }
 test('machine create credentials admit one atomic ticket and replay across rotation without granting other scopes',async()=>{
- await existingCredentialLifecycle();
+ console.log('machine API: credential lifecycle'); await existingCredentialLifecycle(); console.log('machine API: create and append');
  const h=await harness();try{
   const issued=await h.issue(['conversations:create'], 'p',{name:'Synthetic support',source_product:'synthetic-hh-1',create_per_minute:60}),token=issued.token;
   const metadata=(await h.call(settings+'/tokens')).data.find(row=>row.id===issued.data.id);
@@ -104,6 +104,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
     else{assert.notEqual(target,created.data.id);assert.equal((await h.call(management)).data.status_category,'closed')}
    }
   }
+  console.log('machine API: attachments');
   const count=async()=>(await h.db.prepare('SELECT count(*) n FROM conversations').first()).n;
   const beforeBad=await count();
   for(const extra of [{assigned_to:'owner'},{status_id:'solved'},{tags:['synthetic-missing']},{source_ref:{...input.source_ref,product:'spoofed'}},{brand_id:'q'}]){
@@ -130,6 +131,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   for(const kind of ['customer','note'])assert.equal((await h.raw('/api/v1/conversations/'+heldData.data.id+'/append',{token:appender.token,...body({kind,localId:'synthetic-hh-held-'+kind,content:'Not a ticket'})})).status,404);
   assert.equal((await h.db.prepare('SELECT count(*) n FROM native_integration_events WHERE conversation_id=?').bind(heldData.data.id).first()).n,0);
   const released=await h.call('/api/management/projects/p/suspended/'+heldData.data.id+'/recover',body({}));assert.ok(released.conversationId);
+  console.log('machine API: content holds and triage');
   const projectSettings='/api/management/projects/p/settings';
   const triagePath='/api/management/projects/p/triage-settings';
   const triage=(await h.call(triagePath)).data;
@@ -169,6 +171,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const capReplay=await send(cappedBody,'synthetic-hh-cap-2');assert.equal(capReplay.status,202);assert.deepEqual(await capReplay.json(),capHeld);
   await h.call(projectSettings,{...body({api_requester_hourly_cap:5}),method:'PUT'});
 
+  console.log('machine API: quotas and identity');
   const limited=await h.issue(['conversations:create'],'p',{source_product:'synthetic-limit',create_per_minute:1});
   const limitedBody={requester:{external_id:'synthetic-limit'},subject:'Quota test',body:'One request'};
   assert.equal((await send(limitedBody,'synthetic-limit-1',limited.token)).status,201);
@@ -228,6 +231,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
    const before=await count();const refused=await send({requester:{external_id:'synthetic-hh-bound'},subject:'Bound request',body:'No adjustment',...extra},'synthetic-hh-bound-'+Object.values(extra).join('-'),bound.token);
    assert.equal(refused.status,403);assert.equal((await refused.json()).error.code,'outside_credential_bounds');assert.equal(await count(),before);
   }
+  console.log('machine API: webhook delivery');
   const hook=await h.call(settings+'/webhooks',body({name:'Synthetic machine hook',url:'https://receiver.example.com/machine-hook',events:['conversation.created','message.created','conversation.status_changed','conversation.assigned'],credential_id:issued.data.id}));
   const hookTicket=await send({requester:{external_id:'synthetic-hook'},subject:'Hook ticket',body:'Private body must not reach webhook'},'synthetic-hook');assert.equal(hookTicket.status,201);const hookId=(await hookTicket.json()).data.id;
   const hookManagement='/api/management/projects/p/conversations/'+hookId+'/ticket';const hookState=(await h.call(hookManagement)).data;
@@ -252,6 +256,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   assert.equal(seen.size,4);assert.equal(state,ordered.at(-1).event);
   assert.equal((await send({...boundInput,requester:{external_id:'synthetic-hh-other-hook'}},'synthetic-hh-other-hook',bound.token)).status,201);
   await h.dispatch();assert.equal(h.received.filter(r=>r.path.endsWith('/machine-hook')).length,8);
+  console.log('machine API: requester erasure');
   const rotated=await h.call('/api/management/projects/p/connections/tokens/'+issued.data.id+'/rotate',body({overlap_seconds:1}));
   const after=await send(input,'synthetic-hh-1',rotated.token);assert.equal(after.status,201);assert.deepEqual(await after.json(),created);
   const old=await send();assert.equal(old.status,201);
@@ -295,6 +300,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   if(rotation.status===201){const next=await rotation.json();assert.equal((await send(limitedBody,'synthetic-hh-after-race',next.token)).status,401)}
   assert.equal((await send(limitedBody,'synthetic-hh-after-race',concurrentToken.token)).status,401);
   assert.equal((await h.db.prepare('SELECT count(*) n FROM integration_tokens WHERE family_id=? AND revoked_at IS NULL').bind(concurrentToken.data.id).first()).n,0);
+  console.log('machine API: authority races');
   await h.db.prepare("INSERT INTO platform_admins(user_id) VALUES('owner')").run();
   // Only the attachment network response is delayed; real administration crosses admission.
   for(const change of ['revoke','rotate','overlap','bounds','expire','suspend','workspace']){
@@ -321,11 +327,13 @@ test('machine create credentials admit one atomic ticket and replay across rotat
     assert.equal((await send(raceBody,'synthetic-hh-resumed',racing.token)).status,201);
    }
   }
+  console.log('machine API: audit');
   const audit=await h.call('/api/management/projects/p/audit/export?format=json'),actions=new Set(audit.events.map(event=>event.action));
   for(const action of ['token.issued','token.rotated','token.bounds_changed','token.revoke','credential.first_used','credential.denied'])assert.ok(actions.has(action),action);
   const auditText=JSON.stringify(audit);
   for(const secret of [token,rotated.token,appender.token,reader.token,hook.secret,pendingHook.secret,concurrentToken.token])assert.ok(!auditText.includes(secret));
   // Issue as a real admin, then erase that member through the owner door.
+  console.log('machine API: issuer erasure');
   const issuerId='synthetic-hh-issuer';
   await h.db.prepare("INSERT INTO users VALUES(?,'synthetic-hh-issuer@example.test','Synthetic issuer',1)").bind(issuerId).run();
   await h.db.prepare("INSERT INTO memberships VALUES('p',?,'admin')").bind(issuerId).run();await h.session(issuerId,'p',issuerId,'admin');

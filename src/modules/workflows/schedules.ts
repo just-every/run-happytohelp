@@ -9,8 +9,8 @@ import {workflowNow} from './clock'
 import type {Spent} from './budget'
 import {boundedDatabase} from '../../platform/d1-budget'
 import {liveScheduleTicketSql,wakeDueSnoozes} from './schedules-snoozes'
-import {openRerMailHold,rerMailHeld} from '../integrations/rer-mail-hold'
-import {scheduledMailHeld,scheduledMailFailed,scheduledMailUncertain} from './schedule-mail'
+import {openRerMailHold,rerMailHoldOpen,rerMailHeld} from '../integrations/rer-mail-hold'
+import {scheduledMailHeld,scheduledMailFailed,scheduledMailUncertain,scheduledMailOutcome} from './schedule-mail'
 const liveScheduleSql=`EXISTS(SELECT 1 FROM workflow_schedules ws JOIN memberships wm ON wm.project_id=ws.project_id AND wm.user_id=ws.sender_id WHERE ws.id=? AND ws.conversation_id=c.id AND ws.state='sending' AND ws.expected_revision=c.revision AND ws.expected_last_message_id IS c.last_message_id AND ws.expected_assignee IS c.assigned_to AND ws.expected_group_id IS c.group_id AND wm.role=ws.sender_role AND (SELECT role_key FROM member_roles WHERE project_id=wm.project_id AND user_id=wm.user_id) IS ws.sender_role_key AND (SELECT pr.updated_at FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=wm.project_id AND mr.user_id=wm.user_id) IS ws.sender_role_updated_at AND EXISTS(SELECT 1 FROM memberships owner WHERE owner.project_id=ws.project_id AND owner.user_id=ws.owner_id))`
 async function settle(env:Env,id:string,state:string,reason:string|null,now:number,messageId?:string,pendingVersion?:number){await env.DB.prepare(`UPDATE workflow_schedules SET state=?,reason=?,message_id=coalesce(?,message_id),updated_at=?,version=version+1 WHERE id=? AND ${pendingVersion===undefined?"state IN ('pending','sending')":"state='pending' AND version=?"}`).bind(state,reason,messageId??null,now,id,...(pendingVersion===undefined?[]:[pendingVersion])).run()}
 /** The sending claim precedes message admission and mail. A lost process never
@@ -53,7 +53,12 @@ async function sendScheduledReply(env:Env,row:any,now:number,refresh:Set<string>
 }
 
 export async function runWorkflowSchedules(env:Env,now=workflowNow(env),spent?:Spent){
- await env.DB.prepare("UPDATE workflow_schedules SET state='uncertain',reason='The worker stopped during a send. Check the transcript and delivery before composing a new reply.',updated_at=?,version=version+1 WHERE state='sending' AND attempted_at<=? AND reason IS NOT ?").bind(now,now-120000,scheduledMailHeld).run()
+ // A held reply waits only while its message has an open hold; once none is, a stopped
+ // resend's schedule settles from its deliveries (schedule-mail.ts).
+ await env.DB.batch([
+  env.DB.prepare(`UPDATE workflow_schedules SET updated_at=?,version=version+1,${scheduledMailOutcome} WHERE state='sending' AND attempted_at<=? AND reason=? AND NOT ${rerMailHoldOpen('workflow_schedules.message_id')}`).bind(now,now-120000,scheduledMailHeld),
+  env.DB.prepare("UPDATE workflow_schedules SET state='uncertain',reason='The worker stopped during a send. Check the transcript and delivery before composing a new reply.',updated_at=?,version=version+1 WHERE state='sending' AND attempted_at<=? AND reason IS NOT ?").bind(now,now-120000,scheduledMailHeld),
+ ])
  const refresh=new Set<string>()
  let processed=await wakeDueSnoozes(env,now,spent)
  try{

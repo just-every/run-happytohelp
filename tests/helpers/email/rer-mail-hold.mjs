@@ -6,8 +6,8 @@ import {managedInstallation} from './rer-mail.mjs'
 // with the new one. A conversation, problem or scheduled reply refused at
 // authenticate in between claimed no relay send row, so it is held and the
 // conversation outbox sends it once from the rebuilt release; its problem attempt or
-// schedule settles from that outcome. Only the relay is faked: queued `answers`
-// replace its next sends.
+// schedule settles from that outcome, even after its recovery stops. Only the relay is
+// faked: queued `answers` replace its next sends.
 export async function rerMailHoldJourney(){
  const edge=managedEdge(),relay=edge.outbound,answers=[]
  edge.outbound=async(request,entry)=>request.method==='POST'&&new URL(entry.url).pathname.endsWith('/send')&&answers.length?answers.shift()():relay(request,entry)
@@ -129,5 +129,34 @@ export async function rerMailHoldJourney(){
   assert.equal((await lapsed.result()).status,'failed')
   const lapsedSchedule=await lapsing.read();assert.equal(lapsedSchedule.state,'failed');assert.notEqual(lapsedSchedule.reason,pending.reason)
   assert.equal((await app.first('SELECT count(*) n FROM conversation_outbox WHERE delivered_at IS NULL')).n,0,'the outbox completes once no hold is open')
+
+  // A held scheduled reply's own recovery fails once on its settle after the accepted resend, stops
+  // right after the accepted resend is recorded, or stops between clearing the hold and the request.
+  // The later doors settle each from its delivery (sent, or uncertain for the unknown send), never twice.
+  await app.configure({MAIL_API_KEY:next})
+  const stopped=[]
+  for(const [fault,statement,accepted] of [['db-once','workflow_schedules SET state=CASE',1],['db-interrupt','email_deliveries SET state=.,provider_id=coalesce',1],['db-interrupt','SET error=NULL WHERE',0]])stopped.push({fault,statement,accepted,ticket:await open(`stopped-${stopped.length}@example.test`)})
+  await app.scheduled()
+  for(const [index,entry] of stopped.entries())entry.scheduled=await schedule(entry.ticket,`Your exchange ${index} is confirmed.`)
+  next=rotate()
+  for(const entry of stopped)await entry.scheduled.due()
+  for(let pass=0;pass<10&&(await Promise.all(stopped.map(entry=>entry.scheduled.read()))).some(row=>row.state==='pending');pass++)await app.scheduled()
+  await app.configure({MAIL_API_KEY:next})
+  for(const entry of stopped){
+   const row=await entry.scheduled.read(),outbox=await app.first('SELECT id FROM conversation_outbox WHERE message_id=?',row.message_id)
+   entry.id=`message:${row.message_id}:notification`;entry.job={type:'outbox.recover',id:row.message_id,projectId:owner.projectId,conversationId:entry.ticket,outboxId:outbox.id}
+   assert.equal(row.state,'sending');assert.equal(row.reason,pending.reason);assert.equal((await delivery(entry.id)).state,'sending')
+   entry.key=(await app.first('SELECT message_key FROM rer_mail_commands WHERE command_id=?',entry.id)).message_key
+   assert.deepEqual((await app.runJobs([entry.job],{'x-test-fault':entry.fault,'x-test-statement':entry.statement})).retried,[0])
+   assert.equal((await entry.scheduled.read()).state,'sending',entry.statement);assert.equal(edge.sends.filter(send=>send.payload.messageKey===entry.key).length,entry.accepted)
+  }
+  for(const entry of stopped)await app.runJobs([entry.job])
+  await app.scheduled();await app.scheduled();await app.configure({});await app.scheduled();await app.scheduled(undefined,{after:86400000})
+  for(const entry of stopped){
+   const row=await entry.scheduled.read(),cancel=await app.call(`/api/management/projects/${owner.projectId}/workflow-schedules/${row.id}`,{token:owner.token,method:'PATCH',body:{action:'cancel',version:row.version}})
+   assert.equal(row.state,entry.accepted?'sent':'uncertain',entry.statement);assert.notEqual(row.reason,pending.reason);assert.equal(cancel.status,409,'a settled schedule cannot be cancelled')
+   assert.equal(edge.sends.filter(send=>send.payload.messageKey===entry.key).length,entry.accepted,'never sent twice')
+   if(entry.accepted){assert.equal(row.reason,null);assert.equal((await delivery(entry.id)).state,'sent')}
+  }
  }finally{await i.close()}
 }

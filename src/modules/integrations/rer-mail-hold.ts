@@ -16,8 +16,10 @@ export const authorityUnavailable='Sending authority is unavailable; Run Edit Ru
 export const rerMailCredentialRefused=['mail_credential_revoked','mail_credential_required']
 const holdMs=60*60*1000
 
+/** A notification of the message named by the SQL expression `message` is held. */
+export const rerMailHoldOpen=(message:string)=>`EXISTS(SELECT 1 FROM email_deliveries held WHERE held.id>='message:'||${message}||':notification' AND held.id<'message:'||${message}||':notification;' AND held.state='sending' AND held.error='${rerMailHeld}')`
 /** A notification of this outbox row's message is held: completion waits for replay. */
-export const openRerMailHold=`EXISTS(SELECT 1 FROM email_deliveries held WHERE held.id>='message:'||conversation_outbox.message_id||':notification' AND held.id<'message:'||conversation_outbox.message_id||':notification;' AND held.state='sending' AND held.error='${rerMailHeld}')`
+export const openRerMailHold=rerMailHoldOpen('conversation_outbox.message_id')
 
 /** Records the hold at its first refusal instant and returns the message to the
  * outbox, which a deferred send may have completed before this refusal arrived. */

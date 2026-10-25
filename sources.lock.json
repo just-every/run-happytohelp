@@ -5424,7 +5424,7 @@
       "executable": false
     },
     "src/modules/integrations/notifications.ts": {
-      "sha256": "a538e42a9c7bddafb1799892cb3076b7e04f693de5b2fa651b3c2c4dce42e8b1",
+      "sha256": "b7dd5215e9eb051ddc42db2f0caccb6f5c1d9ec07fc9e37f2a4be68153992e4f",
       "executable": false
     },
     "src/modules/integrations/operator-activity.ts": {
@@ -5468,7 +5468,7 @@
       "executable": false
     },
     "src/modules/integrations/rer-mail-hold.ts": {
-      "sha256": "de4cf3771a7d7d815a8401139ed9b05e21228d0179d6def0c723b0256488f60e",
+      "sha256": "571f680dc0e53598e9aada314ac83133a194152007307630464331ac55779b91",
       "executable": false
     },
     "src/modules/integrations/rer-mail-raw.ts": {
@@ -7636,7 +7636,7 @@
       "executable": false
     },
     "src/modules/workflows/schedule-mail.ts": {
-      "sha256": "4866d2fcc13d6179d9634847fd5d183e53fc6b8d364082dbcbdae1046d4f3c25",
+      "sha256": "63a6129f2af03e6899afb34bc321ae37985c7514473e02b45f3e92a68cb0a00d",
       "executable": false
     },
     "src/modules/workflows/schedules-model.ts": {
@@ -7648,7 +7648,7 @@
       "executable": false
     },
     "src/modules/workflows/schedules.ts": {
-      "sha256": "7fafdff1bf071966e1ad5ee09c1d25ee1b99f6497a74e2388dfadf00302bf6e3",
+      "sha256": "df6b33573dc8dd7c3be1bf94105694d77135edfdfbe06cd02d70267bfcb96876",
       "executable": false
     },
     "src/modules/workflows/sla-alerts.ts": {
@@ -11200,7 +11200,7 @@
       "executable": false
     },
     "tests/helpers/email/rer-mail-hold.mjs": {
-      "sha256": "320e20933a0a6f29202e9e334753abc4b3945f38f13456e51b824eee06b57582",
+      "sha256": "e10e9ab927e2d877fce2ff5fe846708409603f032274743828e968c2bdc828a7",
       "executable": false
     },
     "tests/helpers/email/rer-mail.mjs": {

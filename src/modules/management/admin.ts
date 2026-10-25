@@ -1,3 +1,5 @@
+import {requireStepUp} from '../identity/two-factor/step-up'
+import {auditStatement,requestSource} from '../audit/record'
 import {sendLead,enqueueLead} from '../integrations/leads'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
@@ -17,3 +19,17 @@ admin.put('/admin/leads/:id/send',async c=>c.json(await sendLead(c.env,c.req.par
 admin.put('/admin/leads/:id/process',async c=>c.json(await enqueueLead(c.env,c.req.param('id')),202))
 
 admin.delete('/admin/leads/:id',async c=>{const id=c.req.param('id');if(await c.env.DB.prepare("SELECT id FROM lead_jobs WHERE lead_id=? AND state IN ('queued','running','uncertain')").bind(id).first())throw new HTTPException(409);await c.env.DB.batch([c.env.DB.prepare('DELETE FROM lead_jobs WHERE lead_id=?').bind(id),c.env.DB.prepare('DELETE FROM leads WHERE id=?').bind(id)]);return c.json({deleted:true})})
+
+/** Installation administration can suspend a workspace without deleting its data. */
+admin.put('/admin/projects/:id/suspension',async c=>{
+ const actor=await requireActor(c),projectId=c.req.param('id'),body=await c.req.json()
+ if(typeof body.suspended!=='boolean')throw new HTTPException(400)
+ await requireStepUp(c,actor,'project.suspend')
+ const now=Date.now()
+ const result=await c.env.DB.batch([
+  c.env.DB.prepare("INSERT INTO project_settings(project_id,settings_json,updated_at) SELECT id,json_object('suspended_at',?),? FROM projects WHERE id=? ON CONFLICT(project_id) DO UPDATE SET settings_json=json_set(settings_json,'$.suspended_at',?),updated_at=excluded.updated_at").bind(body.suspended?now:null,now,projectId,body.suspended?now:null),
+  auditStatement(c.env.DB,{projectId,category:'access',action:body.suspended?'project.suspended':'project.resumed',actor:{type:'user',id:actor.id},source:requestSource(c)},now)
+ ])
+ if(!result[0].meta.changes)throw new HTTPException(404)
+ return c.json({suspended:body.suspended})
+})

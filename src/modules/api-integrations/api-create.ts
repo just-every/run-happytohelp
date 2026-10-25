@@ -32,12 +32,15 @@ export function createApi(app:Hono<ApiEnv>){
   if(!claimed.meta.changes)throw new ApiError(409,'in_progress','Request is in progress',{}, {'Retry-After':'1'})
   const privacy=input.contact?{sql:"EXISTS(SELECT 1 FROM contacts WHERE project_id=? AND id=? AND email IS ? AND external_id IS ? AND metadata_json=? AND is_verified=? AND coalesce(json_extract(metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(metadata_json,'$.is_erased'),0)!=1)",params:[p,input.contact.id,input.contact.email,input.contact.external_id,input.contact.metadata_json,input.contact.is_verified]}:{sql:'1',params:[]}
   const blocked=input.flags.is_blocked||input.email&&(await senderRule(c.env,p,input.email))?.action==='block'
+  const policy=await c.env.DB.prepare("SELECT json_extract(settings_json,'$.api_abuse_terms') terms FROM project_settings WHERE project_id=?").bind(p).first<{terms:string|null}>()
+  const content=[input.subject,input.content,product,input.ref,input.url].join('\n').toLowerCase()
+  const abusive=(JSON.parse(policy?.terms||'[]') as string[]).some(term=>content.includes(term))
   const objects:string[]=[]
   let refund:(()=>Promise<void>)|undefined
   let requester:Awaited<ReturnType<typeof reserveRequester>>|undefined
   try{
    requester=await reserveRequester(c.env,p,input.digests)
-   const heldReason=blocked?'blocked_sender':requester.held?'requester_cap':null
+   const heldReason=blocked?'blocked_sender':requester.held?'requester_cap':abusive?'content_abuse':null
    refund=await reserveCreates(c.env,p,credential)
    const files=await attachments(c.env,p,credential.family_id,b.attachments)
    for(const file of files){const objectKey=`${p}/${id}/${file.id}`;objects.push(objectKey);await c.env.FILES.put(objectKey,file.bytes,{httpMetadata:{contentType:file.type}})}

@@ -19,7 +19,7 @@ export const requireScope=(scope:ApiScope)=>async(c:any,next:()=>Promise<void>)=
  const hash=await hashToken(match[1]);const row=await c.env.DB.prepare('SELECT namespace,id,source_product,bindings_json,family_id,create_minute,create_day,revoked_at,expires_at FROM integration_tokens WHERE token_hash=?').bind(hash).first()
  if(!row||row.revoked_at!==null||row.expires_at!==null&&Number(row.expires_at)<=Date.now())throw new HTTPException(401,{message:'Invalid or expired bearer token'})
 
- const active=await c.env.DB.prepare("SELECT p.id FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)").bind(row.namespace).first()
+ const active=await c.env.DB.prepare("SELECT p.id FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND (json_extract(s.settings_json,'$.deleted_at') IS NOT NULL OR json_extract(s.settings_json,'$.suspended_at') IS NOT NULL))").bind(row.namespace).first()
  if(!active)throw new HTTPException(401,{message:'Invalid or expired bearer token'})
  try{await enforceRateLimits(c.env,[['apiRequestsPerTokenMinute',row.id]])}catch(error){if(row.source_product&&error instanceof HTTPException&&error.status===429)throw new ApiError(429,'credential','Credential request quota exceeded',{}, {'Retry-After':error.getResponse().headers.get('Retry-After')??'60','RateLimit-Limit':'120','RateLimit-Remaining':'0','RateLimit-Reset':String((Math.floor(Date.now()/60000)+1)*60)});throw error}
  const service=tokens(c.env,row.namespace),context={requestId:crypto.randomUUID(),resource:scope}

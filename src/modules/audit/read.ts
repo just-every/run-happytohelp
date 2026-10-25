@@ -37,7 +37,7 @@ async function labelled(env:Env,projectId:string,rows:AuditRow[]){
  const holds=(await env.DB.prepare('SELECT starts_at,ends_at FROM audit_holds WHERE project_id=? AND released_at IS NULL').bind(projectId).all<{starts_at:number;ends_at:number|null}>()).results
  return rows.map(row=>{
   const person=row.actor_id?people.get(row.actor_id):undefined
-  const actor=row.actor_type==='installation'?'Installation owner (rer)':row.actor_type==='system'?'HappyToHelp':row.actor_type==='api'?'API token':person?`${person.name} <${person.email}>`:'Former teammate'
+  const actor=row.actor_type==='installation'?'Installation owner (rer)':row.actor_type==='system'?'HappyToHelp':row.actor_type==='api'?'API token':person&&!person.email.startsWith('erased:')?`${person.name} <${person.email}>`:'Former teammate'
   return {...row,detail:JSON.parse(row.detail_json||'{}'),actor,held:holds.some(hold=>row.at>=hold.starts_at&&(hold.ends_at===null||row.at<=hold.ends_at))}
  })
 }

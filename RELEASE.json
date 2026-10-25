@@ -74,6 +74,10 @@
       "buyerSteps": "Apply after 249 and before the updated Worker serves traffic. Add route observation times and bounded status-read backoff without changing existing route authority or replaying mail."
     },
     {
+      "id": "251_knowledge_read_selection.sql",
+      "buyerSteps": "Apply after 250 and before the updated Worker serves traffic. Add the knowledge_article_ids selection column to project_roles for knowledge.read authority. NULL retains workspace-wide read authority; an empty JSON array selects no articles. Existing roles retain NULL, so this migration does not narrow their existing read authority."
+    },
+    {
       "id": "253_api_requests.sql",
       "buyerSteps": "Apply after 251 and any reserved 252 migration before serving the updated Worker. Adds machine credential metadata, API request idempotency and source links; existing bearer credentials retain their scopes. Exported credentials are revoked and their token hashes replaced with inert identifiers. Retain API request and erasure fences with installation data."
     },

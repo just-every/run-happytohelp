@@ -8,7 +8,7 @@ const trusted=Symbol('native workspace token authority')
 export interface TokenAuthority {readonly kind:'workspace-token';readonly projectId:string;readonly tokenId:string;readonly scope:ApiScope;readonly policy?:string;readonly [trusted]:true}
 export const repository=(env:Env,projectId:string)=>new IntegrationsRepository(new D1SqlDatabase(env.DB),projectId)
 export interface Issuer {actor:Actor;sessionHash:string}
-const activeProject=(alias:string)=>`EXISTS(SELECT 1 FROM projects p WHERE p.id=${alias}) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=${alias} AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
+const activeProject=(alias:string)=>`EXISTS(SELECT 1 FROM projects p WHERE p.id=${alias}) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=${alias} AND (json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL OR json_extract(ps.settings_json,'$.suspended_at') IS NOT NULL))`
 export async function issuerGuard(env:Env,issuer:Issuer):Promise<SqlGuard>{
  const {actor,sessionHash}=issuer
  const sql=`SELECT e.revision FROM integration_authority_epoch e JOIN sessions s ON s.token_hash=? JOIN users u ON u.id=s.actor_id JOIN memberships m ON m.project_id=? AND m.user_id=s.actor_id WHERE e.id=1 AND s.actor_id=? AND s.role<>'contact' AND s.revoked_at IS NULL AND s.expires_at>max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)) AND m.role IN ('owner','admin') AND (s.project_id IS NULL AND s.role='operator' OR EXISTS(SELECT 1 FROM memberships sm WHERE sm.project_id=s.project_id AND sm.user_id=s.actor_id AND sm.role=s.role)) AND ${activeProject('m.project_id')} AND (s.project_id IS NULL OR ${activeProject('s.project_id')})`

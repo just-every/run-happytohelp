@@ -58,6 +58,7 @@ export async function editionAuthoringJourney(){
   for(const privatePath of ['.env','private-fixtures/local.txt','private-fixtures/customer.txt'])await assert.rejects(readFile(join(output,privatePath)),{code:'ENOENT'})
   assert.equal(ok(output,'check').ok,true);assert.equal(ok(output,'receipt',output+'.release.json').ok,true)
   await writeFile(join(edition,'app/run.mjs'),'console.log(7)\n')
+  refused(edition,'release',join(scratch,'stale-release'))
   // Refresh the lock so only the clean-committed-source guard can refuse this release.
   ok(edition,'lock');assert.equal(ok(edition,'check').ok,true)
   assert.match(refused(edition,'release',join(scratch,'dirty-release')).stderr,/clean committed edition/)

@@ -11580,7 +11580,7 @@
       "executable": false
     },
     "tests/helpers/installer/edition-authoring.mjs": {
-      "sha256": "0c17a3cc6e4cad37940d8cc25677842dcd5f7979a74152a8daa889a3920a02c2",
+      "sha256": "6c33fbf5df7d13019dbda76ff4a55540e3ce0a781a4d350975683968137b7f96",
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {

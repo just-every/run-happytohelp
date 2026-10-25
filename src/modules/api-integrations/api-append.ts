@@ -4,7 +4,7 @@ import {hashToken} from '../../platform/auth'
 import {tokenGuard} from '../../platform/integration-authority'
 import {admitMessage,reservedLocalId,messageCommit} from '../conversations/admission'
 import {contactAvailableSql} from '../conversations/contact-privacy'
-import {mergedAlias} from '../conversation-actions/merge-read'
+import {mergedAlias,writableConversationSql} from '../conversation-actions/merge-read'
 import {ApiError} from './errors'
 import {type ApiEnv,requireScope,jsonBody,iso} from './http'
 import {canonicalJson,text} from './create-input'
@@ -32,7 +32,7 @@ export function appendApi(app:Hono<ApiEnv>){
    if(!result.accepted)throw new ApiError(409,'conflict')
   }else{
    await c.env.DB.batch([
-    c.env.DB.prepare(`INSERT INTO api_notes SELECT ?,c.id,?,?,?,? FROM conversations c WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND EXISTS(${guard.sql}) AND NOT EXISTS(SELECT 1 FROM api_appends WHERE project_id=? AND conversation_id=? AND family_id=? AND local_id=?)`).bind(noteId,'api:'+a.tokenId,credential.name,content,now,id,p,...guard.params,p,id,credential.family_id,localId),
+    c.env.DB.prepare(`INSERT INTO api_notes SELECT ?,c.id,?,?,?,? FROM conversations c WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND ${writableConversationSql()} AND EXISTS(${guard.sql}) AND NOT EXISTS(SELECT 1 FROM api_appends WHERE project_id=? AND conversation_id=? AND family_id=? AND local_id=?)`).bind(noteId,'api:'+a.tokenId,credential.name,content,now,id,p,...guard.params,p,id,credential.family_id,localId),
     c.env.DB.prepare("INSERT INTO ticket_history SELECT ?,?,conversation_id,?,'api','api',?,? FROM api_notes WHERE id=?").bind(crypto.randomUUID(),p,a.tokenId,now,JSON.stringify({action:'note',credential_name:credential.name,source_product:credential.source_product,request_id:noteId}),noteId),
     c.env.DB.prepare("INSERT INTO api_appends SELECT ?,?,?,?,?,json_object('data',json_object('id',id,'conversation_id',conversation_id),'duplicate',json('false')),? FROM api_notes WHERE id=?").bind(p,id,credential.family_id,localId,digest,current.contact_id,noteId)
    ])

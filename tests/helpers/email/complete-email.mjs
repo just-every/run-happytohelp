@@ -212,9 +212,11 @@ async function imapSmtpJourney(){
   assert.equal(original.n,1);assert.match((await app.first('SELECT content FROM messages WHERE id=?',receipt.message_id)).content,/café parcel/)
   await app.takeJobs()
   // Same MIME arrives at a fresh UID, then again during a backfill.
+  const ticketsBefore=(await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',workspace.projectId)).n
   messages.push(messages[0]);assert.equal((await poll()).failed,0)
   await app.ok(`${base}/${box.id}/backfill`,{token,body:{}})
   assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',receipt.conversation_id)).n,1)
+  assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',workspace.projectId)).n,ticketsBefore,'redelivery creates no duplicate ticket')
   assert.deepEqual(await app.takeJobs(),[],'redelivery cannot repeat reply/notification effects')
   const ticket=await app.ok(`/api/dashboard/projects/${workspace.projectId}/tickets`,{token,body:{kind:'email',localId:'synthetic-happytohelp-4',requesterEmail:'synthetic-happytohelp-1@customer.example',mailboxId:box.id,subject:'Replacement parcel',content:'Your replacement café parcel ships today.'}})
   await app.until(()=>sent.length===1,{message:'SMTP first comment'})
@@ -223,6 +225,8 @@ async function imapSmtpJourney(){
   messages.push(raw('synthetic-happytohelp-5',true));assert.equal((await poll()).received,1)
   const automatic=await app.first('SELECT automatic,conversation_id FROM inbound_emails WHERE id=?','<synthetic-happytohelp-5@customer.example>');assert.equal(automatic.automatic,1)
   const jobs=await app.takeJobs();await app.runJobs(jobs);await app.drainJobs()
+  messages.push(messages.at(-1));assert.equal((await poll()).failed,0)
+  assert.deepEqual(await app.takeJobs(),[],'automatic-mail redelivery remains inert')
   assert.equal(sent.length,1,'automatic incoming mail cannot start an SMTP auto-reply loop')
   assert.equal((await app.first('SELECT count(*) n FROM inbound_emails WHERE id=?','<synthetic-happytohelp-3@customer.example>')).n,1)
  }finally{await app.close()}

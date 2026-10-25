@@ -297,6 +297,13 @@ async function outboundNoticesJourney(){
   await app.ok(path,{token,body:{...consentBody,confirmation:reviewedAgain.confirmation}});await app.drainJobs()
   assert.equal((await app.ok(refusedPath,{token})).data.last_message.email_status.state,'consent_refused')
   assert.ok(!sent.some(copy=>[].concat(copy.to).includes(optedOut)))
+  const raceBody={...consentBody,localId:'synthetic-happytohelp-send-time-consent'},racePreview=await app.ok(path+'/preview',{token,body:raceBody}),race=await app.ok(path,{token,body:{...raceBody,confirmation:racePreview.confirmation}})
+  const consentRace={'x-test-statement':'INSERT INTO email_deliveries','x-test-before-statement':`UPDATE contacts SET metadata_json=json_set(metadata_json,'$.portal_notification_emails',0) WHERE project_id='${projectId}' AND lower(email)='${optedOut}'`}
+  for(const job of await app.takeJobs())assert.deepEqual((await app.runJobs([job],consentRace)).retried,[])
+  const raceTicket=race.results.find(row=>row.recipient===optedOut)
+  assert.equal((await app.ok(`/api/dashboard/projects/${projectId}/conversations/${raceTicket.conversation.id}`,{token})).data.last_message.email_status.state,'consent_refused','consent is rechecked after the delivery claim and before the provider')
+  assert.ok(!sent.some(copy=>[].concat(copy.to).includes(optedOut)))
+
 
   // The accepted selection remains fifty. Every HTTP, queue and cron invocation
   // has the platform's enforced statement AND call cap, including deferred tails.

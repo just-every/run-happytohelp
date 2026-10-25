@@ -11176,7 +11176,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "a416a5ae755d6e191b9f13b5a596a9b014db6af554a99b7434422d19f4b8be29",
+      "sha256": "049432404e19681b867da7429654c247fb06914d31b2ff12207b763eb0d72b12",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {
@@ -11552,7 +11552,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ui-browser.mjs": {
-      "sha256": "0b9b1f38f423fb9fb3b2a21b389f8de80d04d9e137e39ed5d53e1420a81c8204",
+      "sha256": "0dfd798b3781822a8b244ca28c926dc39486928d9478fe2bfbfeca04b124d2e7",
       "executable": false
     },
     "tests/helpers/inbox/visual-edit-browser.mjs": {

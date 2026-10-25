@@ -86,7 +86,7 @@ export async function outboundTicketBrowser(){
   }
   for(const width of [1440,390]){
    const project=await call('/api/management/projects',{name:`Synthetic parcel support ${width}`,allowedOrigin:runtime.origin},owner.token),projectId=project.id,base=`/api/dashboard/projects/${projectId}`,management=`/api/management/projects/${projectId}`
-   const mailbox=(await call(management+'/mailboxes',{provider:'forwarding',address:'support@example.test',displayName:''},owner.token)).data
+   const mailbox=(await call(management+'/mailboxes',{provider:'forwarding',address:`synthetic-happytohelp-ticket-${width}@support.example`,displayName:''},owner.token)).data
    const context=await browser.newContext({viewport:{width,height:width===390?844:1000}})
    await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
    const page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message))
@@ -136,7 +136,7 @@ export async function outboundTicketBrowser(){
    assert.equal(copies().length,beforeCalls,'dialog/API call logs send no mail, including retries')
    // A separate workspace gives each viewport a fresh real rate-limit window.
    const noticeProject=await call('/api/management/projects',{name:`Synthetic notices ${width}`,allowedOrigin:runtime.origin},owner.token),noticeBase=`/api/dashboard/projects/${noticeProject.id}`
-   await call(`/api/management/projects/${noticeProject.id}/mailboxes`,{provider:'forwarding',address:'support@example.test',displayName:''},owner.token)
+   await call(`/api/management/projects/${noticeProject.id}/mailboxes`,{provider:'forwarding',address:`synthetic-happytohelp-notice-${width}@support.example`,displayName:''},owner.token)
    await page.goto(`${runtime.origin}/projects/${noticeProject.id}/conversations`)
    await page.getByRole('button',{name:'New ticket',exact:true}).click()
    await dialog.getByLabel('Ticket type',{exact:true}).selectOption('notice')

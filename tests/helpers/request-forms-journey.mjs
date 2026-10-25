@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {message} from './email/app.mjs'
 import {selfServiceFixture} from './self-service-fixture.mjs'
 export async function requestFormsJourney(){
  const f=await selfServiceFixture(),{app,p,owner,admin,api,reason,order,internal,form,valid,signin}=f,path=`${api}/${form.id}/submissions`
@@ -29,14 +30,30 @@ export async function requestFormsJourney(){
   await manage(`/workflow-rules/${routing.rule.id}/publish`,{})
   const customer=await signin('rosa@example.com',`/help/${p}/requests/${form.id}`)
   assert.equal(customer.location,`/help/${p}/requests/${form.id}`);assert.equal((await app.call(customer.path)).status,400)
-  const created=await app.call(path,{...customer,body:{...valid,locale:'es'},status:201}),id=created.data.ticket.id;assert.equal(created.data.ticket.status,'open')
+  // CC authority comes from independent authenticated mail, never a typed form address.
+  const cc='synthetic-happytohelp-1@customer.example'
+  await app.email(message({id:'synthetic-happytohelp-form-cc',from:cc,to:'help@example.com',text:'Please help with my own order.'}),{from:cc,to:'help@example.com',direct:true})
+  const unproven=await app.call(path,{...customer,body:{...valid,cc:['synthetic-happytohelp-2@customer.example']},status:422})
+  assert.equal(unproven.data.field,'cc');assert.equal(unproven.data.code,'unproven_address')
+  assert.equal((await app.call(path,{...customer,body:{...valid,cc:['not an address']},status:422})).data.field,'cc')
+  const submitted={...valid,cc:[cc]}
+  const formBefore=(await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n
+  const created=await app.call(path,{...customer,body:{...submitted,locale:'es'},status:201}),id=created.data.ticket.id;assert.equal(created.data.ticket.status,'open')
   const values=await app.sql('SELECT field_id,value_json FROM ticket_field_values WHERE conversation_id=?',id);assert.deepEqual(Object.fromEntries(values.map(v=>[v.field_id,JSON.parse(v.value_json)])),valid.fields)
-  assert.equal((await app.call(path,{...customer,body:valid,status:200})).data.ticket.id,id)
-  assert.equal((await app.call(path,{...customer,body:{...valid,message:'Changed command'},status:409})).status,409)
-  assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,before.n+1)
+  assert.equal((await app.call(path,{...customer,body:submitted,status:200})).data.ticket.id,id)
+  assert.equal((await app.call(path,{...customer,body:{...submitted,message:'Changed command'},status:409})).status,409)
+  assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,formBefore+1)
   const acknowledgments=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&[].concat(mail.to).includes('rosa@example.com'))
   assert.equal(acknowledgments().length,1,'a verified request-form submission acknowledges the requester once, including on exact-command replay')
   assert.equal(acknowledgments()[0].headers['X-Auto-Response-Suppress'],'All')
+  const ccNotices=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&[].concat(mail.to).includes(cc))
+  assert.equal(ccNotices().length,2,'one notice for the CC own ticket and one for the form, with no replay send')
+  assert.equal(ccNotices()[1].headers['X-Auto-Response-Suppress'],'All')
+  assert.equal((await app.first('SELECT count(*) n FROM conversation_participants cp JOIN contacts ct ON ct.id=cp.contact_id WHERE cp.conversation_id=? AND ct.email=?',id,cc)).n,1)
+  assert.equal((await app.call(path,{...customer,body:valid,status:409})).status,409,'removing CC changes the durable intent')
+  await app.configure({})
+  assert.equal((await app.call(path,{...customer,body:submitted,status:200})).data.ticket.id,id)
+  assert.equal(ccNotices().length,2,'restart and replay preserve the frozen acknowledgment')
   const ticket=(await app.ok(`${dashboard}/conversations/${id}/ticket`,owner)).data
   assert.equal(ticket.assigned_to,f.workspace.users.operator,'the selected form and typed field route the ticket')
   const sla=(await app.ok(`${dashboard}/conversations/${id}/sla`,owner)).data

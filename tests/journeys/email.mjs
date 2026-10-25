@@ -44,5 +44,5 @@ test('the sender-domain check names missing SPF, DKIM and DMARC records, keeps r
 
 import {notificationTriggersJourney} from '../helpers/r4/notifications.mjs'
 test('editable requester triggers send received and solved once, suppress historical and machine mail, and teammate notices follow current authority and preferences',notificationTriggersJourney)
-test('operators start email and call tickets, header and imported vendor replies preserve identity, suspicious mail stays in Suspended for safe audited recovery or expiry, and erasure removes its new stores',completeEmailJourney)
+test('an IMAP/SMTP TLS edge connects, syncs, sends and redelivers without duplicate tickets or auto-reply loops; operators start email and call tickets, header and imported vendor replies preserve identity, suspicious mail stays in Suspended for safe audited recovery or expiry, and erasure removes its new stores',completeEmailJourney)
 test('unreadable nested MIME and oversized headers are held with original bytes while following mail arrives through sync, and repeated message failures survive restart then release the mailbox',unreadableMailJourney)

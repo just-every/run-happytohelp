@@ -59,3 +59,68 @@ try{
 }finally{await writeFile(join(evidenceDir,'result.json'),JSON.stringify({checks,errors,failed},null,2));console.log(JSON.stringify({checks,errors,failed}));await browser.close();await runtime.close(success);}
 
 }
+
+// Both operator creation doors use the emitted Worker and its real native
+// session. The provider alone is a network fixture; no application API is routed.
+export async function outboundTicketBrowser(){
+ const evidenceDir=join(process.env.H2H_EVIDENCE_DIR?resolve(process.env.H2H_EVIDENCE_DIR):tmpdir(),'outbound-tickets')
+ await mkdir(evidenceDir,{recursive:true})
+ const runtime=await createRuntime({vars:{EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-fixture-mail-provider',EMAIL_FROM:'support@example.test'},outboundFixture:new URL('../mail-provider-network.mjs',import.meta.url).href})
+ const browser=await launchBrowser(),errors=[];let success=false
+ try{
+  const call=async(path,body,token)=>{
+   const response=await fetch(runtime.origin+path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:body===undefined?undefined:JSON.stringify(body)})
+   const result=await response.json();assert.ok(response.ok,`${path}: ${response.status} ${JSON.stringify(result)}`);return result
+  }
+  const email='synthetic-happytohelp-owner@example.test',password='synthetic-happytohelp-password-1'
+  const setup=await call('/api/identity/bootstrap',{email,password,name:'Synthetic parcel support',allowedOrigin:runtime.origin}),owner=await call('/api/identity/login',{email,password}),projectId=setup.projectId,base=`/api/dashboard/projects/${projectId}`,management=`/api/management/projects/${projectId}`
+  const mailbox=(await call(management+'/mailboxes',{provider:'forwarding',address:'synthetic-happytohelp-support@example.test',displayName:'Synthetic parcel support'},owner.token)).data
+  for(const width of [1440,390]){
+   const context=await browser.newContext({viewport:{width,height:width===390?844:1000}})
+   await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
+   const page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message))
+   const request=async body=>page.evaluate(async({path,body})=>{const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:response.status,body:await response.json()}},{path:base+'/tickets',body})
+   const open=async()=>{await page.goto(`${runtime.origin}/projects/${projectId}/conversations`);await page.getByRole('button',{name:'New ticket',exact:true}).click();await page.getByRole('dialog',{name:'New ticket',exact:true}).waitFor()}
+   await open()
+   const dialog=page.getByRole('dialog',{name:'New ticket',exact:true}),requester=`synthetic-happytohelp-${width}@customer.example`,subject=`Replacement parcel ${width}`,content=`Your replacement parcel ships today (${width}).`
+   await dialog.getByLabel('Requester email',{exact:true}).fill(requester);await dialog.getByLabel('Requester name',{exact:true}).fill('Synthetic parcel customer')
+   await dialog.getByLabel('CC',{exact:true}).fill(`synthetic-happytohelp-cc-${width}@customer.example`);await dialog.getByLabel('BCC',{exact:true}).fill(`synthetic-happytohelp-bcc-${width}@customer.example`)
+   await dialog.getByLabel('Subject',{exact:true}).fill(subject);await dialog.getByLabel('Message',{exact:true}).fill(content)
+   await dialog.getByRole('button',{name:'Create and email',exact:true}).waitFor({state:'visible'})
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${width}: New ticket fits`)
+   await page.screenshot({path:join(evidenceDir,`${width}-new-email.png`),fullPage:true})
+   const createdResponse=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
+   await dialog.getByRole('button',{name:'Create and email',exact:true}).click()
+   const response=await createdResponse;assert.equal(response.status(),201);const created=await response.json(),command=response.request().postDataJSON()
+   assert.equal(created.conversation.submitter_id,owner.actor.id);assert.equal(created.conversation.requester_id,created.conversation.contact_id)
+   await page.waitForURL(`**/conversations/${created.conversation.id}`);await page.locator('.transcript-message-content').getByText(content,{exact:true}).waitFor()
+   await page.reload();await page.locator('.transcript-message-content').getByText(content,{exact:true}).waitFor()
+   const replay=await request(command);assert.equal(replay.status,200);assert.equal(replay.body.conversation.id,created.conversation.id);assert.equal(replay.body.duplicate,true)
+   // The API door selects the existing requester rather than making another.
+   const apiCommand={kind:'email',localId:`synthetic-happytohelp-api-${width}`,requesterId:created.conversation.contact_id,mailboxId:mailbox.id,subject:`Delivery update ${width}`,content:`Your parcel is ready for collection (${width}).`}
+   const api=await request(apiCommand);assert.equal(api.status,201);assert.equal(api.body.conversation.contact_id,created.conversation.contact_id);assert.equal(api.body.conversation.submitter_id,owner.actor.id)
+   assert.equal((await request(apiCommand)).body.conversation.id,api.body.conversation.id)
+   assert.equal((await request({...apiCommand,subject:'Changed intent'})).status,409)
+   assert.equal((await request({...apiCommand,localId:`synthetic-happytohelp-invalid-${width}`,subject:'Header\r\nBcc: forged@example.test'})).status,400)
+   await page.goto(`${runtime.origin}/projects/${projectId}/conversations/${api.body.conversation.id}`)
+   await page.locator('.transcript-message-content').getByText(apiCommand.content,{exact:true}).waitFor()
+   await page.screenshot({path:join(evidenceDir,`${width}-api-email.png`),fullPage:true})
+   // The dialog's call path records a private note; the API call path is the
+   // same durable command with the existing requester and no mailbox/copies.
+   await open();await dialog.getByLabel('Ticket type',{exact:true}).selectOption('call')
+   await dialog.getByLabel('Requester email',{exact:true}).fill(requester);await dialog.getByLabel('Subject',{exact:true}).fill(`Customer called ${width}`);await dialog.getByLabel('Call notes',{exact:true}).fill(`Confirmed collection time (${width}).`)
+   assert.equal(await dialog.getByLabel('CC',{exact:true}).count(),0)
+   await page.screenshot({path:join(evidenceDir,`${width}-new-call.png`),fullPage:true})
+   const callResponse=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
+   await dialog.getByRole('button',{name:'Log call',exact:true}).click();const logged=await callResponse;assert.equal(logged.status(),201)
+   const callTicket=await logged.json();assert.equal(callTicket.conversation.channel,'phone');assert.equal(callTicket.conversation.contact_id,created.conversation.contact_id);assert.equal(callTicket.note.content,`Confirmed collection time (${width}).`)
+   assert.equal(callTicket.message,undefined)
+   const apiCall={kind:'call',localId:`synthetic-happytohelp-api-call-${width}`,requesterId:created.conversation.contact_id,subject:`Call follow-up ${width}`,content:'Synthetic private collection instructions.'}
+   const loggedApi=await request(apiCall);assert.equal(loggedApi.status,201);assert.equal(loggedApi.body.conversation.channel,'phone');assert.equal(loggedApi.body.note.content,apiCall.content)
+   assert.equal((await request(apiCall)).body.note.id,loggedApi.body.note.id)
+   assert.equal((await request({...apiCall,localId:`synthetic-happytohelp-call-cc-${width}`,cc:['synthetic-happytohelp-1@customer.example']})).status,400)
+   await context.close()
+  }
+  assert.deepEqual(errors,[]);success=true
+ }finally{await browser.close();await runtime.close(success)}
+}

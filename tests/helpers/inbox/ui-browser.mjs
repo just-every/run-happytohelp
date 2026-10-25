@@ -246,7 +246,7 @@ export async function outboundTicketBrowser(){
      else {assert.ok(lostResult.results.some(row=>row.accepted));assert.ok(lostResult.results.some(row=>!row.accepted));await route.fulfill({response})}
     },{times:1})
     await dialog.getByRole('button',{name:'Confirm and email',exact:true}).click();await dialog.getByRole('button',{name:'Check same request',exact:true}).waitFor()
-    assert.ok(await dialog.getByRole('button',{name:'Cancel',exact:true}).isDisabled())
+    assert.ok(await dialog.getByRole('button',{name:mode==='partial'?'Close':'Cancel',exact:true}).isDisabled())
     assert.equal(await dialog.locator('.modal-header').getByRole('button',{name:'Close',exact:true}).count(),0)
     await page.keyboard.press('Escape');assert.ok(await dialog.isVisible())
     let recovered

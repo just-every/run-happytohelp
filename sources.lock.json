@@ -11216,7 +11216,7 @@
       "executable": false
     },
     "tests/helpers/email/rer-mail-hold.mjs": {
-      "sha256": "e10e9ab927e2d877fce2ff5fe846708409603f032274743828e968c2bdc828a7",
+      "sha256": "470d1485be8912fb3faed05433ac8e9223f72456f9067b8300555b90bda5f020",
       "executable": false
     },
     "tests/helpers/email/rer-mail.mjs": {
@@ -11560,7 +11560,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ui-browser.mjs": {
-      "sha256": "19568655b413a2b5f34874b028cc25f39525d2a07c6526e290b7cb3075eaff82",
+      "sha256": "95b5af9bca622ec9b8fb1822a35e7e8f73a8e6918353729bdf8e39d32d338682",
       "executable": false
     },
     "tests/helpers/inbox/visual-edit-browser.mjs": {

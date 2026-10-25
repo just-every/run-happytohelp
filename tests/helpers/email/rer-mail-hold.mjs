@@ -135,7 +135,7 @@ export async function rerMailHoldJourney(){
   // The later doors settle each from its delivery (sent, or uncertain for the unknown send), never twice.
   await app.configure({MAIL_API_KEY:next})
   const stopped=[]
-  for(const [fault,statement,accepted] of [['db-once','workflow_schedules SET state=CASE',1],['db-interrupt','email_deliveries SET state=.,provider_id=coalesce',1],['db-interrupt','SET error=NULL WHERE',0]])stopped.push({fault,statement,accepted,ticket:await open(`stopped-${stopped.length}@example.test`)})
+  for(const [fault,statement,accepted] of [['db-once','workflow_schedules SET state=CASE',1],['db-interrupt','email_deliveries SET state=.,provider_id=coalesce',1],['db-interrupt','SET error=NULL,updated_at=.',0]])stopped.push({fault,statement,accepted,ticket:await open(`stopped-${stopped.length}@example.test`)})
   await app.scheduled()
   for(const [index,entry] of stopped.entries())entry.scheduled=await schedule(entry.ticket,`Your exchange ${index} is confirmed.`)
   next=rotate()

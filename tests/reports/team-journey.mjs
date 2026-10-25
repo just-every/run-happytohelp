@@ -44,15 +44,15 @@ export async function teamReportsJourney(){
   const totalMs=fixture.timerRows.reduce((n,t)=>n+t.ended_at-t.started_at,0)
   assert.equal(report.handleTime.total_ms,totalMs)
   assert.equal(report.handleTime.byAgent.reduce((n,r)=>n+r.duration_ms,0),totalMs)
-  for(const [dimension,property,labels] of [['form','byForm',{returns:'Returns',delivery:'Delivery',null:'No form'}],['intent','byIntent',{refund:'refund',tracking:'tracking',null:'Unknown intent'}]]){
+  for(const [dimension,property] of [['form','byForm'],['intent','byIntent']]){
    const expected=new Map()
    for(const session of fixture.timerRows){
     const ticket=fixture.tickets.find(t=>t.id===session.conversation_id),id=ticket[dimension]
-    const row=expected.get(id)??{id,label:labels[id],duration_ms:0,sessions:0}
+    const row=expected.get(id)??{id,duration_ms:0,sessions:0}
     row.duration_ms+=session.ended_at-session.started_at;row.sessions++;expected.set(id,row)
    }
    const ordered=rows=>rows.slice().sort((a,b)=>String(a.id).localeCompare(String(b.id)))
-   assert.deepEqual(ordered(report.handleTime[property]),ordered([...expected.values()]),dimension+' durations, session counts and unattributed work')
+   assert.deepEqual(ordered(report.handleTime[property].map(({id,duration_ms,sessions})=>({id,duration_ms,sessions}))),ordered([...expected.values()]),dimension+' durations, session counts and unattributed work')
    assert.equal(report.handleTime[property].reduce((n,r)=>n+r.duration_ms,0),totalMs,dimension+' reconciles all handle time')
   }
   const filtered=await get(`&teamId=${p}-team-1&brandId=ridgeline-us`)

@@ -16,6 +16,7 @@ import EscalationsPanel from './escalations/EscalationsPanel';
 import HandleTimer from './tickets/HandleTimer';
 import useHandleTimer, { handleDuration } from './tickets/useHandleTimer';
 import ProblemPanel from './tickets/ProblemPanel';
+import PossiblySameCustomer from './tickets/PossiblySameCustomer';
 import TicketEditor from './tickets/TicketEditor';
 import TicketHistory from './tickets/TicketHistory';
 import TicketSection from './ticket-panel/TicketSection';
@@ -154,6 +155,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
                     onEmailTranscript={ () => setIsEmailConversationTranscriptModalVisible(true) }
                     onToggleBlock={ handleBlock }
                 />
+                <PossiblySameCustomer projectId={ conversation.project_id } contact={ { ...conversation.contact, id: conversation.contact_id } } active={ open.has('customer') } />
                 <ConversationEnvironmentDetails contact={ conversation.contact } />
                 { conversation.contact.metadata && <ConversationDetailSection className="conversation-details-metadata" title="Metadata">
                     { Object.entries(conversation.contact.metadata).map(([ key, value ]) => <MetadataItem key={ key } name={ key } value={ value } />) }

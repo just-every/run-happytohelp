@@ -71,10 +71,17 @@ export async function companyRecordsJourney(){
   const linked=await app.ok(linkPath,owner),reverse=await app.ok(`${B}/contacts/${social.contactId}/identity-links`,owner)
   assert.equal(linked.links[0].contact.id,social.contactId);assert.equal(reverse.links[0].contact.id,alice.contactId)
   assert.equal(linked.links[0].provenance,intent.provenance)
+  assert.equal(linked.links[0].actor_id,w.users.owner,'the reviewer is kept with the link')
   const ticket=await app.ok('/api/conversations',{token:alice.token,body:{projectId:p}})
   assert.equal((await app.call(`/api/conversations/${ticket.id}/messages`,{token:social.token})).status,404,'linked identity gains no other customer history')
-  await apply({...intent,action:'unlink'})
-  assert.equal((await app.ok(linkPath,owner)).links.length,0)
+  const reason='Customer confirmed separate accounts synthetic-happytohelp-4'
+  await apply({...intent,action:'unlink',provenance:reason})
+  const unlinked=await app.ok(linkPath,owner)
+  assert.equal(unlinked.links.length,0)
+  // Unlinking keeps both decisions with reviewer, time and evidence, from either side.
+  assert.deepEqual(unlinked.history.map(entry=>[entry.action,entry.provenance,entry.actor_id,entry.contact.id]),[['unlinked',reason,w.users.owner,social.contactId],['linked',intent.provenance,w.users.owner,social.contactId]])
+  assert.ok(unlinked.history[0].at>=unlinked.history[1].at)
+  assert.deepEqual((await app.ok(`${B}/contacts/${social.contactId}/identity-links`,owner)).history.map(entry=>entry.contact.id),[alice.contactId,alice.contactId])
   await apply(intent)
   assert.equal((await app.sql("SELECT action FROM audit_events WHERE project_id=? AND action IN ('customer.identity_linked','customer.identity_unlinked')",p)).length,3)
   assert.equal(app.requests.length,0,'identity review sends nothing')
@@ -84,6 +91,7 @@ export async function companyRecordsJourney(){
   await app.ok(linkPath,{...owner,body:priorErasureReview})
   await app.ok(`${B}/contacts/${contacts[0].id}/erase`,{...owner,body:{}})
   assert.equal((await app.ok(linkPath,owner)).links.length,0,'erasure removes free-text provenance naming a third customer')
+  assert.ok(!(await app.ok(linkPath,owner)).history.some(entry=>entry.provenance.includes(contacts[0].email)),'erasure removes decisions whose evidence names the erased customer')
   assert.equal((await app.call(linkPath,{...owner,body:priorErasureReview})).status,409,'a pre-erasure preview cannot reinstall removed provenance')
   const reviewedAgain=(await app.ok(linkPath+'/preview',{...owner,body:intent})).preview
   const erasedAtCommit=await app.call(linkPath,{...owner,body:reviewedAgain,headers:{'x-test-before-batch':`UPDATE contact_erasures SET runs=runs+1 WHERE project_id='${p}' AND contact_id='${contacts[0].id}'`}})
@@ -92,6 +100,7 @@ export async function companyRecordsJourney(){
   await apply(intent)
   await app.ok(`${B}/contacts/${social.contactId}/erase`,{...owner,body:{}})
   assert.equal((await app.ok(linkPath,owner)).links.length,0,'erasure removes associations from both sides')
+  assert.equal((await app.first('SELECT count(*) n FROM customer_identity_link_history WHERE project_id=?',p)).n,0,'erasure removes every decision naming the erased identity')
   // Erasure clears active membership and every undo snapshot that could restore it.
   await app.ok(`${B}/contacts/${contacts[0].id}/erase`,{...owner,body:{}})
   assert.equal(await app.first('SELECT * FROM contact_companies WHERE project_id=? AND contact_id=?',p,contacts[0].id),null)

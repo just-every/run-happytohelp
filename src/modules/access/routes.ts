@@ -32,7 +32,9 @@ async function readRole(c:any,actor:{projectId:string;role:string},previousSelec
  const selection=body.knowledgeArticleIds===undefined?(previousSelection===null?null:parse(previousSelection)):body.knowledgeArticleIds
  if(selection!==null&&(!Array.isArray(selection)||selection.length>1000||selection.some((id:unknown)=>typeof id!=='string'||!id||id.length>200)))throw new HTTPException(400,{message:'Select article IDs from this workspace.'})
  const knowledgeArticleIds=selection===null?null:[...new Set(selection)] as string[]
- if(knowledgeArticleIds)for(const id of knowledgeArticleIds)if(!await c.env.DB.prepare('SELECT 1 FROM knowledge_articles WHERE project_id=? AND id=?').bind(actor.projectId,id).first())throw new HTTPException(400,{message:'Select article IDs from this workspace.'})
+ const previousIds=new Set<string>(previousSelection===null?[]:parse(previousSelection))
+ // Retained IDs may have been deleted; only newly supplied IDs need current membership.
+ if(body.knowledgeArticleIds!==undefined&&knowledgeArticleIds)for(const id of knowledgeArticleIds)if(!previousIds.has(id)&&!await c.env.DB.prepare('SELECT 1 FROM knowledge_articles WHERE project_id=? AND id=?').bind(actor.projectId,id).first())throw new HTTPException(400,{message:'Select article IDs from this workspace.'})
  return {knowledgeArticleIds,name,base:body.base as 'admin'|'operator'|'collaborator',permissions:customPermissions(body.base,body.permissions)}
 }
 

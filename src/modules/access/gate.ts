@@ -62,7 +62,7 @@ export async function enforceRole(c:Context<AppEnv>,actor:Actor){
  if(route.path.endsWith('/conversations/:conversationId/actions')){const body=await c.req.json().catch(()=>null);if(body?.action==='markAsRead')rule='self'}
  if(rule==='self'||rule==='none')return
  if(rule===undefined){if(route.method==='GET'||access.base!=='collaborator')return}
- else if(access.permissions.has(rule)&&!(rule==='knowledge.read'&&access.knowledgeArticleIds!==null&&articleId!==undefined&&!access.knowledgeArticleIds.includes(articleId))){
+ else if((access.permissions.has(rule)||(rule==='knowledge.read'&&access.permissions.has('knowledge.edit')))&&!(rule==='knowledge.read'&&access.knowledgeArticleIds!==null&&articleId!==undefined&&!access.knowledgeArticleIds.includes(articleId))){
   if(rule==='knowledge.read')await auditStatement(c.env.DB,{projectId,category:'access',action:'knowledge.read',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'route',id:`${route.method} ${route.path}`},detail:{role:access.name,permission:rule}}).run()
   return
  }

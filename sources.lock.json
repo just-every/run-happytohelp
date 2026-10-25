@@ -3000,7 +3000,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "b4aeb1456f16f4ea97bfe6f687e596b61f2ec9e65dc0f0900f60c3e0f5a2248f",
+      "sha256": "55f04223339c9fd966392099237d5552f7b986108264f6db279f7607ac975cb1",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {

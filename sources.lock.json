@@ -10852,7 +10852,7 @@
       "executable": false
     },
     "tests/demo-inbox.mjs": {
-      "sha256": "3715e7bfc368b74a11f8582d8717bd50488c770e966dd540cc6ca6fad4f9c7d0",
+      "sha256": "e69c14f398ddd7cd60edcc5da40804171ff8684d10afbe95a9d1fef94093d96d",
       "executable": false
     },
     "tests/demo-knowledge-activation.mjs": {

@@ -8,12 +8,14 @@ import {auditStatement} from '../audit/record'
 import {problemTicket,sameFrontier,problemAvailableSql,problemError} from './problem-model'
 import {problemDestination,sameDestination,problemMessageDelivery} from './problem-delivery'
 import {solveProblemTicket} from './problem-solve-state'
+import {rerMailHeld} from '../integrations/rer-mail-hold'
 export async function problemSolveResults(env:Env,actor:Actor,id:string,previewId:string,authority:TicketAuthority){
  await problemTicket(env,actor,id,authority)
  const preview=await env.DB.prepare('SELECT id,state,plan_json FROM ticket_problem_previews WHERE id=? AND project_id=? AND problem_id=? AND actor_id=?').bind(previewId,actor.projectId,id,actor.id).first<any>()
  if(!preview)throw new HTTPException(404)
- const attempts=await env.DB.prepare('SELECT incident_id id,state status,reason,message_id FROM ticket_problem_attempts WHERE preview_id=? ORDER BY created_at,id').bind(preview.id).all<any>()
- const recorded=new Map(attempts.results.map((row:any)=>[row.id,['claimed','ready','sending'].includes(row.status)?{...row,status:'uncertain',reason:row.reason??'This reply attempt is running or was interrupted. Check its transcript and delivery; it will not be automatically replayed.'}:row]))
+ const attempts=await env.DB.prepare("SELECT a.incident_id id,a.state status,a.reason,a.message_id,d.error held FROM ticket_problem_attempts a LEFT JOIN email_deliveries d ON d.id='message:'||a.message_id||':notification' AND d.state='sending' AND d.error=? WHERE a.preview_id=? ORDER BY a.created_at,a.id").bind(rerMailHeld,preview.id).all<any>()
+ // A held reply is pending: replay resends it once or fails it after the hold's bound.
+ const recorded=new Map(attempts.results.map(({held,...row}:any)=>[row.id,held&&row.status==='sending'?{...row,reason:held}:['claimed','ready','sending'].includes(row.status)?{...row,status:'uncertain',reason:row.reason??'This reply attempt is running or was interrupted. Check its transcript and delivery; it will not be automatically replayed.'}:row]))
  const results=JSON.parse(preview.plan_json).tickets?.map((ticket:any)=>recorded.get(ticket.id)??{id:ticket.id,status:ticket.status==='blocked'?'blocked':preview.state==='preview'?'ready':'not_attempted',reason:ticket.reason??(preview.state==='preview'?undefined:'Execution has started; this reply will not be automatically replayed')})??[]
  return {preview_id:preview.id,state:preview.state,results}
 }

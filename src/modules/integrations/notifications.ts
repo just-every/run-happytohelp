@@ -3,6 +3,7 @@ import {notifyTicketEvent} from './triggers'
 import type {Actor,Env} from '../../platform/env'
 import {sendEmails,resendHeldEmails,emailConfigured,type EmailInput,type EmailOutcome,type DeferEmailDelivery} from './email'
 import {openRerMailHolds} from './rer-mail-hold'
+import {settleHeldSchedule} from '../workflows/schedule-mail'
 import {renderConversationEmail} from './email-content'
 import {recipientReplyAddress} from './email-reply-address'
 import {withChatReplyNotice} from './reply-notice'
@@ -71,7 +72,7 @@ export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:Defer
  if(!recipients.length)return operatorActivity||{state}
  const {omitted,...content}=await renderConversationEmail(env,{projectId:actor.projectId,conversationId:conversation.id,messages:[message]})
  const inputs:EmailInput[]=await Promise.all(recipients.map(async(recipient,index)=>{const replyTo=settings?await recipientReplyAddress(env,settings.inbound_address,actor.projectId,conversation.id,recipient.email):undefined;return {...(replyTo?content:await withChatReplyNotice(env,actor.projectId,content)),replyTo,projectId:actor.projectId,to:recipient.email,subject:'Reply to your support conversation',headers:loopSuppressionHeaders(message),idempotencyKey:index===0?deliveryId:`${deliveryId}:contact:${recipient.id}`}}))
- if(prior){await resendHeldEmails(env,inputs);return recorded(env,deliveryId)}
+ if(prior){await resendHeldEmails(env,inputs);await settleHeldSchedule(env,message.id).run();return recorded(env,deliveryId)}
  try{return outcome(await sendEmails(env,inputs,defer,true))}
  catch(error){const existing=await recorded(env,deliveryId);if(existing)return existing;throw error}
 }

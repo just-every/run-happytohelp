@@ -66,7 +66,7 @@ function sendGridFailure(error:unknown){
  const failed=error.outcome==='rejected'||error.outcome==='rate_limited'
  return {state:failed?'failed' as const:'uncertain' as const,message:error.outcome==='rate_limited'?'Email provider rate limited delivery':failed?'Email provider rejected delivery':'Email delivery outcome unknown; reconcile before retrying'}
 }
-/** `hold` marks a command the conversation outbox resends; `since` is the first
+/** `hold` marks a command that outbox replay resends; `since` is the first
  * refusal instant of a held command being sent again. */
 async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:number}):Promise<EmailOutcome>{
  try{
@@ -96,7 +96,7 @@ async function suppressDevelopment(env:Env,input:EmailInput,from:string):Promise
  await sendDevelopment({provider:'development',mode:'development'},providerMessage(input,from))
  return {id:null,state:'suppressed',mode:'local'}
 }
-export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelivery):Promise<EmailOutcome>{
+export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelivery,holdable=false):Promise<EmailOutcome>{
  input=await prepareConversationEmail(env,input)
  if(!input.mailboxId&&!emailConfigured(env))throw new HTTPException(503,{message:'Email provider is not configured'})
  const from=await senderFor(env,input)
@@ -110,7 +110,7 @@ export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelive
  }
  const now=Date.now(),claimed=await env.DB.prepare("INSERT OR IGNORE INTO email_deliveries VALUES(?,?,?,?,?,'sending',NULL,NULL,?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now).run()
  if(!claimed.meta.changes)throw new HTTPException(409)
- const delivery=submitClaimed(env,input,from)
+ const delivery=submitClaimed(env,input,from,holdable?{}:undefined)
  if(defer){defer(delivery);return {id:null,state:'sending'}}
  return delivery
 }

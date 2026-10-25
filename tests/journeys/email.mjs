@@ -38,7 +38,7 @@ test('SendGrid, Resend, Cloudflare and Managed mail each carry the reply with it
  for(const journey of [transportsJourney,rerMailJourney])await journey()
 })
 
-test('a Managed reply refused at authenticate after a key rotation is held, survives a restart at its first refusal instant, is sent once by the outbox from the rebuilt release and fails after about an hour, while other refusals fail at once',rerMailHoldJourney)
+test('a Managed conversation, problem or scheduled reply refused at authenticate after a key rotation is held, survives a restart at its first refusal instant, is sent once by the outbox from the rebuilt release or fails after about an hour, and its attempt or schedule records that outcome, while other refusals fail at once',rerMailHoldJourney)
 
 test('the sender-domain check names missing SPF, DKIM and DMARC records, keeps resolver errors unknown and is scoped to the workspace\'s members',senderDomainJourney)
 

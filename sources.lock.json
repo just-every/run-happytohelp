@@ -3516,7 +3516,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "7c09a00ea035410c4be818a9f72d2a9746eba1a355bdf65b9cfaa9acdaf04f4a",
+      "sha256": "051afb5419117cfe0d3c5fc396ed322362ed86691b0be9acf394fdbeadf604aa",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -5856,7 +5856,7 @@
       "executable": false
     },
     "src/modules/management/activation.ts": {
-      "sha256": "eab7699a6bdb4cd01986ef5bef06e3bee48649c4cda937f7084c293463b1b968",
+      "sha256": "a5d27d90aa1744f29c0fb9fe6507243b717037faa6e4ec3483564bbe43ccd71e",
       "executable": false
     },
     "src/modules/management/activation/checks.ts": {
@@ -5900,7 +5900,7 @@
       "executable": false
     },
     "src/modules/management/activation/README.md": {
-      "sha256": "d6a7ef5e59432ba9df88461919c7823e60f41b88eea86f141a256caa2cf88b2e",
+      "sha256": "989dcdd82f001553023a74e125bf83eeae4a05ea2e91378fb46697928b973261",
       "executable": false
     },
     "src/modules/management/activation/sender.ts": {
@@ -5908,7 +5908,7 @@
       "executable": false
     },
     "src/modules/management/activation/skips.ts": {
-      "sha256": "7fa94e3391d39d5846438257dc12c8b181da7a4fab2037545e7d855d8fe307e1",
+      "sha256": "988e20a7c7a8a63260744049cef1da13154d7e8310e0a2f6deee968e628ed9f0",
       "executable": false
     },
     "src/modules/management/activation/snapshot.ts": {
@@ -5924,7 +5924,7 @@
       "executable": false
     },
     "src/modules/management/activation/types.ts": {
-      "sha256": "7f789590f6466b79ea4ae2ddd23bdeb2f450c1a207ff2c190f7a3f272d2788fe",
+      "sha256": "8234027b0a3f51ff29cf272dcc903881bdf5554aaeb64dea04723bd0c03e1c62",
       "executable": false
     },
     "src/modules/management/admin.ts": {
@@ -9484,7 +9484,7 @@
       "executable": false
     },
     "src/ui/native/activation/NeedItem.jsx": {
-      "sha256": "7d7f95726da09c1f02ffe157fc8439f41ee85c3eda05d4e381a4eb07fcc8a330",
+      "sha256": "37503da32e23131b25c6b299b251686c7cee28250334dd3b13b32299e355dbe8",
       "executable": false
     },
     "src/ui/native/activation/OwnerTestMail.jsx": {
@@ -9504,23 +9504,23 @@
       "executable": false
     },
     "src/ui/native/activation/setup-list.css": {
-      "sha256": "43ab58641b366d15a8b0e58ea731d7c50ff83b04e00fe72874da7cd52776c49a",
+      "sha256": "b8323889a76c5d8c4753ef1644ac1d2a6a810266b1d9142c42674c5e444da998",
       "executable": false
     },
     "src/ui/native/activation/setup-model.js": {
-      "sha256": "5516d1bdc29d3b6efbd3b139b09fc27b3e83b61f12e7eb5822dc99f3e464b153",
+      "sha256": "9be73649b1001b434bf5e597b50c5f3d4dbb61abca8be73076d85a6d7471dcc9",
       "executable": false
     },
     "src/ui/native/activation/setup-store.js": {
-      "sha256": "303f1e2c105d9e7ac3ebf43f00ce88cdcffd46932241035f36cb0ccf03eb7ac2",
+      "sha256": "0283fad314df6c1c0301800bc73d28e0a229b5d10de79519a8a6fc7978f118e2",
       "executable": false
     },
     "src/ui/native/activation/SetupList.jsx": {
-      "sha256": "758103d725ee7d35ff70620af7731db498172b9967dcb38ee461ee4343207f47",
+      "sha256": "8e00e199c1dc5f1b8e639dc30222e2c85431ad4cff3bb42268e4ac7b518fdf26",
       "executable": false
     },
     "src/ui/native/activation/SetupTitle.jsx": {
-      "sha256": "179d8f80850bdf097a679eb977e41fa6bea23124e44542ccf66bbb3e3e62a9ad",
+      "sha256": "9d75786b6d1bae830bb98001d7a7b867aac36c896a78b35f6356889f650f03b5",
       "executable": false
     },
     "src/ui/native/activation/SkippedRow.jsx": {
@@ -9528,7 +9528,7 @@
       "executable": false
     },
     "src/ui/native/activation/useSetup.js": {
-      "sha256": "21ce4c36a98449988baea076ce8458bb35cf9ee35f71f8dc46cc837bcf2a9480",
+      "sha256": "e32bc002176934af88f9c26d335569dafd472540e6956af02a88d6283ee667a6",
       "executable": false
     },
     "src/ui/native/activation/useSetupNeeds.js": {
@@ -10948,7 +10948,7 @@
       "executable": false
     },
     "tests/first-run/setup-browser.mjs": {
-      "sha256": "461e2ba71f00a89a6c2e9fdb33eea4e998bef309d086da044565cc7502f8e067",
+      "sha256": "d05a4d277cad8f604c9a239f8a2b728c53138410e5a517a8a94d1f46c17eb595",
       "executable": false
     },
     "tests/first-run/sign-in-entry.mjs": {

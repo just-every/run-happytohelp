@@ -1,5 +1,5 @@
-/* Setup list (SetupList.jsx): one quiet page. Needs you in a white outlined tile, What we've set as plain rows on the paper.
-   Tokens only (brand-tokens.css); .h2h-chip, .h2h-count, .h2h-link and .btn come from the app. */
+/* Setup list (SetupList.jsx): one quiet page. Needs you and Optional in white outlined tiles, What we've set as plain rows
+   on the paper. Tokens only (brand-tokens.css); .h2h-chip, .h2h-count, .h2h-link and .btn come from the app. */
 .setup-list { min-width: 0; max-width: 1100px; color: var(--ink); text-align: left; }
 .setup-list p { margin: 0; }
 .setup-list code { padding: 0; color: inherit; font-size: 14.5px; background: none; overflow-wrap: anywhere; }
@@ -11,7 +11,8 @@
 .sl-dots { display: inline-flex; flex: none; gap: 4px; }
 .sl-dots i { width: 14px; height: 6px; border-radius: 999px; background: var(--muted-chip); }
 .sl-dots i.on { background: var(--d-cyan); }
-.sl-local { margin-top: 8px !important; color: var(--ink-soft); font-size: 15px; line-height: 1.45; }
+/* A local trial's one action: the page's only filled pill, closing the header above the first card. */
+.setup-list .sl-trial { margin-top: 20px; }
 .sl-error { margin-top: 8px !important; color: var(--danger); font-size: 15px; }
 
 .sl-section { margin: 0 0 40px; }
@@ -21,7 +22,8 @@
 .sl-needs { margin: 0; padding: 0; list-style: none; border: 1px solid var(--rule-strong); border-radius: 12px; background: var(--surface); }
 .sl-need { padding: 20px 24px 22px; }
 .sl-need + .sl-need { border-top: 1px solid var(--rule); }
-.sl-need h3 { margin: 0 0 4px; font-size: 17px; font-weight: 600; line-height: 1.3; }
+.sl-need-head { display: flex; align-items: center; gap: 4px 16px; margin: 0 0 4px; }
+.sl-need h3 { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 17px; font-weight: 600; line-height: 1.3; }
 .sl-need > p { max-width: 640px; color: var(--ink-soft); font-size: 15px; line-height: 1.5; }
 .sl-need > p b { color: var(--ink); font-weight: 500; }
 .sl-act { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
@@ -31,7 +33,7 @@
 .sl-wait[data-status="problem"] { color: var(--danger); }
 .sl-wait[data-status="problem"] i { border-color: var(--danger); background: var(--danger); }
 .sl-wait[data-status="review"] i, .sl-wait[data-status="checking"] i { background: var(--d-cyan); }
-.sl-act .sl-skip { margin-left: auto; padding: 0 2px; color: var(--ink-soft); font-size: 15px; font-weight: 400; text-decoration-thickness: 1px; }
+.sl-need-head .sl-skip { flex: none; padding: 0 2px; color: var(--ink-soft); font-size: 15px; font-weight: 400; text-decoration-thickness: 1px; }
 .sl-copied { color: var(--ink-soft); font-size: 15px; }
 .sl-how { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: var(--d-cyan-wash); }
 .sl-how[hidden] { display: none; }
@@ -72,7 +74,10 @@
   .sl-lede { font-size: 17px; }
   .sl-need { padding: 18px 16px 20px; }
   .sl-wait { flex-basis: 100%; margin: 2px 0 0; }
-  .sl-act .sl-skip { margin-left: 0; }
+  /* Every control here is a 44 px tap target on a phone. */
+  .setup-list .btn, .setup-list .activation-text-action, .setup-list .h2h-link { min-height: 44px; }
+  .setup-list .sl-trial { width: 100%; padding-block: 8px; line-height: 1.3; white-space: normal; text-align: center; }
+  .sl-skipped .sl-undo { min-width: 44px; justify-content: flex-end; }
   .sl-skipped li { grid-template-areas: "label chip undo"; gap: 4px 14px; }
   .sl-skipped .sl-label { grid-area: label; }
   .sl-skipped .h2h-chip { grid-area: chip; justify-self: end; }

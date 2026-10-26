@@ -1564,15 +1564,15 @@
       "executable": false
     },
     ".github/workflows/delivery.yml": {
-      "sha256": "10f35f361179f71be1a36bc202b3783afa9f96a1a1025ead01857d9047e62429",
+      "sha256": "28e6b2b61a47cdfaa75f34940ff25411e944dbc2601d99e8d477ff1693be9cce",
       "executable": false
     },
     ".github/workflows/deploy-stage.yml": {
-      "sha256": "522ca7463ec40e8dac751b8f10afd878f0d90d988e1d05b00adcc033897c95a5",
+      "sha256": "3e294a70ef9a9ba92735f36332c2add39a453f028a068b3453f44762ea5cc887",
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "d9414d1d67541897a30bca838702baad2008a46f29312ab0c349aa944e9c3243",
+      "sha256": "182956059a2b12e6095e4e303f8652756a27fa92a189e3ea6c2dc302f0ebb99e",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -1588,7 +1588,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "688ded31a270bb98f86ec13d4072855e57ca25356bb3501a76429915d7a8cedb",
+      "sha256": "dd606ccdffdd1f4a80e8d381e931d2937f2a2a8af3bfdc17d4fa43a9cdcdd7de",
       "executable": false
     },
     ".gitignore": {
@@ -2649,6 +2649,22 @@
     },
     "scripts/build.mjs": {
       "sha256": "b6057164f2cc0442f84bf73e6997895e5e8cae582f0cc0bea454016b74fe14df",
+      "executable": false
+    },
+    "scripts/chromium-probe.mjs": {
+      "sha256": "5b08ef78f0cc30ee1e625ac73175ed97879787783b5ac6b0e6ab55458eee3a06",
+      "executable": false
+    },
+    "scripts/ci/ensure-disk-space.sh": {
+      "sha256": "8ad90affb872e1bd4a62e763d7a1cc4aaa95c652703e27c13f54cc657bfc7521",
+      "executable": false
+    },
+    "scripts/ci/install-chromium-deps.py": {
+      "sha256": "1cdf078bf40b1d8a76a6f33223890a73121683d6ef614566f5e88d1228014e93",
+      "executable": false
+    },
+    "scripts/ci/public-preview.mjs": {
+      "sha256": "e7a524e8d84ad8b58aea8cf5517b31364a2267d6c2f202ba00686001a082819d",
       "executable": false
     },
     "scripts/ci/run-checks.mjs": {

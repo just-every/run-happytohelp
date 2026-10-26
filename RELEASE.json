@@ -92,6 +92,10 @@
     {
       "id": "255_outbound_notice_commands.sql",
       "buyerSteps": "Retain durable notice command fences independently of audit retention. Apply after 252 and before the updated Worker serves traffic. Backfill retained r6 ticket.notice_confirmed confirmations and ticket.notice_refused refusals; this migration changes no ticket or message row."
+    },
+    {
+      "id": "256_inbound_lookup_indexes.sql",
+      "buyerSteps": "Apply after 255 and before the updated Worker serves traffic. Adds indexes on inbound-mail conversation/message lookups and API request hold lookups only; no stored row is changed. Apply once through the migration ledger and retain these indexes on restore."
     }
   ]
 }

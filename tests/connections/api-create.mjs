@@ -456,6 +456,11 @@ export const invariantSweeps={
     for(const table of ['api_erased_keys','move_in_erased_identities'])await h.db.prepare(`WITH RECURSIVE numbers(n) AS (SELECT ? UNION ALL SELECT n+1 FROM numbers WHERE n<?) INSERT INTO ${table}(project_id,digest) SELECT 'p','synthetic-hh-scale-'||n FROM numbers`).bind(start,count).run();
     await h.db.prepare("WITH RECURSIVE numbers(n) AS (SELECT ? UNION ALL SELECT n+1 FROM numbers WHERE n<?) INSERT INTO email_sender_rules(project_id,address,action,created_by,created_at) SELECT 'p','synthetic-hh-rule-'||n||'@example.test','block','owner',1 FROM numbers").bind(start/2+.5,count/2).run();
    }
+   if(count){
+    const start=count===100000?1:100001;
+    await h.db.prepare("WITH RECURSIVE numbers(n) AS (SELECT ? UNION ALL SELECT n+1 FROM numbers WHERE n<?) INSERT INTO inbound_emails(id,project_id,conversation_id,intent_hash,state,created_at,automatic,message_id,evidence_json) SELECT 'synthetic-hh-mail-'||n,'p','synthetic-hh-mail-conversation-'||n,'synthetic-hh-intent-'||n,'done',1,n%2,'synthetic-hh-mail-message-'||n,'{}' FROM numbers").bind(start,count).run();
+    await h.db.prepare("WITH RECURSIVE numbers(n) AS (SELECT ? UNION ALL SELECT n+1 FROM numbers WHERE n<?) INSERT INTO api_requests(project_id,source_product,key_digest,body_digest,claim,created_at,held_id) SELECT 'p','synthetic-hh-history','synthetic-hh-key-'||n,'synthetic-hh-body-'||n,'synthetic-hh-claim-'||n,1,'synthetic-hh-hold-'||n FROM numbers").bind(start,count).run();
+   }
    const measured=await h.call('/_test/admission-plan');assert.ok(measured.result.meta.rows_read<100,JSON.stringify(measured));
    const fences=measured.plan.filter(row=>/SEARCH f /.test(row.detail));assert.equal(fences.length,2);assert.ok(fences.every(row=>/project_id=\? AND digest=\?/.test(row.detail)),JSON.stringify(measured.plan));
    assert.ok(measured.plan.some(row=>/SEARCH sibling USING INDEX/.test(row.detail)),JSON.stringify(measured.plan));
@@ -463,6 +468,10 @@ export const invariantSweeps={
    const doors=[];
    doors.push(await measure('append',()=>h.raw('/api/v1/conversations/'+ticket+'/append',{token:grant.token,...body({kind:'customer',localId:fresh(),content:'Synthetic timing'}),headers:{'Content-Type':'application/json','X-Test-Meter':'1'}}),200));
    for(const requester of [{email:fresh()+'@example.test'},{external_id:fresh()},{phone:'+1415555'+String(1000+samples.length).padStart(4,'0')}])doors.push(await measure('create',()=>h.raw('/api/v1/conversations',{token:grant.token,...body({...requestInput(),requester}),headers:{'Content-Type':'application/json','Idempotency-Key':fresh(),'X-Test-Meter':'1'}}),201));
+   doors.push(await measure('returning-email',()=>h.raw('/api/v1/conversations',{token:grant.token,...body(input),headers:{'Content-Type':'application/json','Idempotency-Key':fresh(),'X-Test-Meter':'1'}}),201));
+   const visitorSession=await h.call('/api/identity/widget/session',{token:null,...body({widgetKey:'widget-p'})}),visitor=visitorSession.contactId;
+   doors.push(await measure('widget',()=>h.raw('/api/conversations',{token:visitorSession.token,...body({projectId:'p'}),headers:{'Content-Type':'application/json','X-Test-Meter':'1'}}),201));
+   doors.push(await measure('native',()=>h.raw('/api/conversations',{...body({projectId:'p',contactId:visitor}),headers:{'Content-Type':'application/json','X-Test-Meter':'1'}}),201));
    const marker=fresh();await h.call('/api/management/projects/p/settings',{...body({api_abuse_terms:[marker]}),method:'PUT'});
    const held=await createRequest(h,grant.token,{...requestInput(),body:marker});assert.equal(held.status,202);const hold=(await held.json()).data.id;
    doors.push(await measure('release',()=>h.raw('/api/management/projects/p/suspended/'+hold+'/recover',{...body({}),headers:{'Content-Type':'application/json','X-Test-Meter':'1'}}),200));
@@ -470,7 +479,7 @@ export const invariantSweeps={
    await h.db.prepare("INSERT INTO email_sender_rules(project_id,address,action,created_by,created_at) VALUES('p',?,'block','owner',1)").bind(input.requester.email).run();
    const refused=await h.raw('/api/v1/conversations/'+ticket+'/append',{token:grant.token,...body({kind:'customer',localId:fresh(),content:'Blocked control'})});assert.equal(refused.status,403);assert.equal((await refused.json()).error.code,'blocked_sender');
    await h.db.prepare("DELETE FROM email_sender_rules WHERE project_id='p' AND address=?").bind(input.requester.email).run();
-   samples.push({contacts:count,rules:count/2,fence_digests:count*2,predicate_rows:measured.result.meta.rows_read,doors,plan:measured.plan});
+   samples.push({receipts:count,request_history:count,contacts:count,rules:count/2,fence_digests:count*2,predicate_rows:measured.result.meta.rows_read,doors,plan:measured.plan});
    console.log('API admission scale '+JSON.stringify(samples.at(-1)));
    for(const [i,result] of doors.entries())assert.ok(result.rows_read<=samples[0].doors[i].rows_read+100,JSON.stringify({count,...result}));
   }

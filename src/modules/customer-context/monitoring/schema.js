@@ -1,9 +1,9 @@
 
-import { z } from '../../validation/zod.js';
+import { z, stringMax } from '../../validation/zod.js';
 import { evidenceIdsAreEligible, evidenceIdsAreNew } from './context.js';
 
 const text = z.string().trim();
-const optionalText = text.max(360).nullable();
+const optionalText = stringMax(text, 360).nullable();
 const evidenceIds = z.array(text.min(1)).min(1).max(4);
 
 const helpTypesFrom = (availableAis) => [...new Set((availableAis || [])
@@ -55,9 +55,9 @@ const monitoringAnalysisSchema = ({ packet, helpTypes }) => {
 };
 
 const monitoringInsightSchema = ({ packet, analysis }) => z.object({
-    content: text.min(1).max(360),
+    content: stringMax(text.min(1), 360),
     buttons: z.array(z.object({
-        text: text.min(1).max(90),
+        text: stringMax(text.min(1), 90),
         action: z.enum(['send', 'close']),
     }).strict()).min(1).max(3),
     loading: optionalText,

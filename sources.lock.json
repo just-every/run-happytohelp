@@ -3576,7 +3576,7 @@
       "executable": false
     },
     "src/modules/ai-support/assist/schema.js": {
-      "sha256": "b52abf5a55996ce1ac8ff1261c8e0a29369e4cf38739e14af60d371f946b46e6",
+      "sha256": "98d249d89568b67865661c83a5d4410c8210592a9f5ce34662457740aa710072",
       "executable": false
     },
     "src/modules/ai-support/assist/twoPassSuggestions.js": {
@@ -4216,7 +4216,7 @@
       "executable": false
     },
     "src/modules/customer-context/engine.ts": {
-      "sha256": "0988df4f6c94f5945d97542fd499b9a40de41e94c37cae35aa61144f514f5c81",
+      "sha256": "305de5c084431ea6f054a96ac0ab9b73fdf78d72d91a0a3d57ae23d357ed8534",
       "executable": false
     },
     "src/modules/customer-context/evidence.ts": {
@@ -4248,7 +4248,7 @@
       "executable": false
     },
     "src/modules/customer-context/monitoring/schema.js": {
-      "sha256": "4d4618fcada7d933c7199f49c1725cce80674511dae38c045fd4ea12e4870db0",
+      "sha256": "2b2399cef2be577e8ef5bfe6969c6a65dc4042460e0a71562934725b301cedfe",
       "executable": false
     },
     "src/modules/customer-context/monitoring/summary.js": {
@@ -7088,7 +7088,7 @@
       "executable": false
     },
     "src/modules/triage/provider.ts": {
-      "sha256": "5b2022e6b46709132bdd007a6354cf90a2b1ea35829df9aee5b7ca11d749d8f2",
+      "sha256": "a22b5d70c55e390dfb1eed32ffcb91af249d92a7ad53a039b2ed3f1df8c76bef",
       "executable": false
     },
     "src/modules/triage/read.ts": {
@@ -7108,11 +7108,11 @@
       "executable": false
     },
     "src/modules/validation/zod.d.ts": {
-      "sha256": "571d66c7a649b18827a94576dae655dc7309b5be9691b8d93996b2d53b8fabbd",
+      "sha256": "06ee89e8250b04a1884b95ebcefb9df46612514bc54595740eba0cb126ba00ea",
       "executable": false
     },
     "src/modules/validation/zod.js": {
-      "sha256": "02e216434cb6d328e06e76b8bbcf08780d6ed6f21a9b5db56de96ea420e3d85c",
+      "sha256": "60f39319bf9ef9984bea4ca0030fd4cad3c726d38b5b54952269b6671a3369d1",
       "executable": false
     },
     "src/modules/widget/appearance-values.d.ts": {
@@ -7148,7 +7148,7 @@
       "executable": false
     },
     "src/modules/widget/campaigns/model.ts": {
-      "sha256": "9c2de173fb4efd303cafc2467a367ea8113e13e9553b957348a7425cfe96d65f",
+      "sha256": "0f6270de14c291a8287e52967994e6217a9ec6436373a7a652480f1f6a6b6e81",
       "executable": false
     },
     "src/modules/widget/campaigns/report.ts": {

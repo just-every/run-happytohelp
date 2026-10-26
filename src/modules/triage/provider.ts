@@ -1,4 +1,4 @@
-import {z,boundedNumber} from '../validation/zod.js'
+import {z,boundedNumber,stringMax} from '../validation/zod.js'
 import type {Env} from '../../platform/env'
 import {assertModelConfigured} from '../ai-support/configuration'
 import {admitAutomaticReply,replySpendWindow} from '../ai-support/reply-ceiling'
@@ -8,7 +8,7 @@ import {assistanceProfileSql} from '../ai-support/selection'
 import {runStream} from '../ai-support/llm/orchestrator.js'
 // @ts-ignore Request-local provider runtime.
 import {withWorkerRuntime} from '../ai-support/vendor/ensemble/worker-runtime.js'
-const prediction=z.object({value:z.string().min(1).max(80),confidence:boundedNumber(0,1),quote:z.string().min(1).max(1000)}).strict()
+const prediction=z.object({value:stringMax(z.string().min(1),80),confidence:boundedNumber(0,1),quote:stringMax(z.string().min(1),1000)}).strict()
 const schema=z.object({intent:prediction,sentiment:prediction,language:prediction}).strict()
 export async function classify(env:Env,job:any,taxonomy:any[]){
  const profile=await env.DB.prepare(`SELECT a.model FROM conversations c JOIN ai_profiles a ON a.project_id=c.project_id AND a.id=${assistanceProfileSql} AND a.is_enabled=1 WHERE c.id=? AND c.project_id=?`).bind(job.conversation_id,job.project_id).first<{model:string}>()

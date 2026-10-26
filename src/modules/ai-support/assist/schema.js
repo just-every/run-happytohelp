@@ -1,14 +1,14 @@
 
 
-import { z } from '../../validation/zod.js';
+import { z, stringMax } from '../../validation/zod.js';
 import { replyIconNames } from '../llm/schemas/reply-icons.js';
 
 const responseSchema = z.object({
-    button: z.string().trim().min(1).max(80).describe('A short, specific heading, up to four words. Conditional completed-action alternatives must start with the verified prerequisite, such as “After cancelling” or “After refund completion”.'),
+    button: stringMax(z.string().trim().min(1), 80).describe('A short, specific heading, up to four words. Conditional completed-action alternatives must start with the verified prerequisite, such as “After cancelling” or “After refund completion”.'),
     icon: z.string().refine(name => replyIconNames.has(name), 'Use a canonical Lucide icon name.')
         .describe('Canonical Lucide name. Use find_reply_icons if needed.'),
     response: z.string().trim().min(1).describe('The complete customer-facing reply, ready for human review and sending.'),
-    use_when: z.string().trim().max(280).describe('Private operator-only prerequisite. Leave empty for a grounded current-state reply. A conditional completed-action draft requires a specific operator-verifiable prerequisite, never a vague phrase such as “if appropriate”.'),
+    use_when: stringMax(z.string().trim(), 280).describe('Private operator-only prerequisite. Leave empty for a grounded current-state reply. A conditional completed-action draft requires a specific operator-verifiable prerequisite, never a vague phrase such as “if appropriate”.'),
     evidence_ids: z.array(z.string()).describe('IDs of evidence actually supplied or retrieved that support this reply. These are private and never part of the reply text.'),
 });
 

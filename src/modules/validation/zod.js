@@ -36,6 +36,12 @@ z.config({ customError: issue => {
     }
 } });
 
+// Zod 3 bounded strings in UTF-16 units. Keep that public limit and leave
+// later checks running, including refinements that add another issue.
+export const stringMax = (schema, maximum) => schema.superRefine((value, context) => {
+    if (value.length > maximum) context.addIssue({ code: 'too_big', origin: 'string', maximum, inclusive: true });
+}).meta({ ...schema.meta(), maxLength: maximum });
+
 // JSON numeric literals can overflow to infinity. Validate the number type
 // first, then report every configured check in its original order. Zod 4's
 // number/int primitives abort on infinity/fractions and add a safe-integer limit.

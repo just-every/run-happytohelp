@@ -10,10 +10,10 @@ import {launchBrowser,viewports,evidence} from './kit/browser.mjs'
 
 const root=fileURLToPath(new URL('../..',import.meta.url))
 const axePath=createRequire(import.meta.url).resolve('axe-core/axe.min.js')
-const retainedSlug='retained-browser-help'
-let runtime,browser,success=true,fixture,accents=[]
+const retainedSlug='retained-browser-help',secondSlug='second-brand-help'
+let runtime,browser,success=true,fixture,secondBrand,requestForm,accents=[]
 before(async()=>{
- runtime=await createRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',PUBLIC_HELP_HOSTS:JSON.stringify({localhost:retainedSlug})}});browser=await launchBrowser()
+ runtime=await createRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',PUBLIC_HELP_HOSTS:JSON.stringify({localhost:retainedSlug,'second.localhost':secondSlug})}});browser=await launchBrowser()
  fixture=await runtime.seedTenant({name:'Help Center Fixture',email:'help-center-fixture@example.test',allowedOrigin:runtime.origin})
  await runtime.execute(`INSERT INTO public_project_aliases(slug,project_id) VALUES('${retainedSlug}','${fixture.projectId}')`)
  const write=async(tenant,path,body)=>{const response=await fetch(runtime.origin+path,{method:'POST',headers:{Authorization:`Bearer ${tenant.token}`,'Content-Type':'application/json'},body:JSON.stringify(body)});const text=await response.text();assert.equal(response.status,201,`${path}: ${text}`);return JSON.parse(text)}
@@ -23,6 +23,17 @@ before(async()=>{
  await write(fixture,`/api/knowledge/${fixture.projectId}/articles`,{slug:'sign-in',title:'Sign in',summary:'Recover access to your account.',content:'Use the sign-in page to access your account.',status:'published',categoryIds:[nested.id]})
  await write(fixture,`/api/knowledge/${fixture.projectId}/articles`,{slug:'uncategorized',title:'Contact support',summary:'Get help from the team.',content:'Send the team a message when you need more help.',status:'published'})
  await write(fixture,`/api/knowledge/${fixture.projectId}/articles`,{slug:'webhooks-draft',title:'Webhooks and the API',summary:'Draft',content:'Draft',status:'draft'})
+ secondBrand=await runtime.seedTenant({name:'Second Brand',email:'synthetic-hh-brand@example.test',allowedOrigin:runtime.origin})
+ await runtime.execute(`INSERT INTO public_project_aliases(slug,project_id) VALUES('${secondSlug}','${secondBrand.projectId}')`)
+ const put=async(tenant,path,body)=>{const response=await fetch(runtime.origin+path,{method:'PUT',headers:{Authorization:`Bearer ${tenant.token}`,'Content-Type':'application/json'},body:JSON.stringify(body)});assert.equal(response.status,200,await response.clone().text());return response.json()}
+ for(const [tenant,name,color,logo] of [[fixture,'First support','#204b3a','/homepage/media/brands/happytohelp-favicon.png'],[secondBrand,'Second support','#532f79','/homepage/media/brands/happytohelp-apple-touch-icon.png']]){
+  await put(tenant,`/api/management/projects/${tenant.projectId}/settings`,{brand_name:name,primary_color:color,logo_url:logo})
+ }
+ await write(secondBrand,`/api/knowledge/${secondBrand.projectId}/articles`,{title:'Second guide',slug:'second-guide',content:'Only the second brand guide.',status:'published'})
+ await put(fixture,`/api/knowledge/${fixture.projectId}/experience`,{defaultLocale:'en',locales:['en','fr'],templates:{article:'Edited article template\n{{content}}',request:'Request template proof\n{{content}}'}})
+ await write(fixture,`/api/knowledge/${fixture.projectId}/articles`,{title:'Next article',slug:'next-article',content:'Created after editing the template.',status:'published'})
+ const formResponse=await fetch(`${runtime.origin}/api/forms/projects/${fixture.projectId}/forms`,{method:'POST',headers:{Authorization:`Bearer ${fixture.token}`,'Content-Type':'application/json'},body:JSON.stringify({title:'Ask our team',enabled:true,locale:'en',fields:[]})})
+ assert.equal(formResponse.status,201,await formResponse.clone().text());requestForm=(await formResponse.json()).data
  // Light, mid and dark configured brand colours: help links must stay readable on white whatever the brand.
  for(const color of ['#ffffff','#fff3a3','#777777','#204b3a']){const tenant=await runtime.seedTenant({name:'Accent '+color,email:`accent-${color.slice(1)}@example.test`,allowedOrigin:runtime.origin});await runtime.execute(`INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES('${tenant.projectId}','{"primary_color":"${color}"}',1) ON CONFLICT(project_id) DO UPDATE SET settings_json=excluded.settings_json`);await write(tenant,`/api/knowledge/${tenant.projectId}/articles`,{slug:'guide',title:'Guide',summary:'A guide.',content:'Read the [guide](https://example.test/guide).',status:'published'});accents.push({color,projectId:tenant.projectId})}
 })
@@ -53,6 +64,25 @@ for(const [label,viewport] of Object.entries(viewports))test(`a published help c
   }
   await page.goto(`${runtime.origin}/${fixture.projectId}/quick-start`);await assertHelpLinksReadable(page)
   for(const accent of accents){await page.goto(`${runtime.origin}/${accent.projectId}/guide`);await assertHelpLinksReadable(page)}
+  for(const [host,brand,title,color,logo] of [['localhost','First support','Next article','rgb(32, 75, 58)','/homepage/media/brands/happytohelp-favicon.png'],['second.localhost','Second support','Second guide','rgb(83, 47, 121)','/homepage/media/brands/happytohelp-apple-touch-icon.png']]){
+   const address=new URL(runtime.origin);address.hostname=host
+   await page.goto(address.href,{waitUntil:'domcontentloaded'});await page.getByRole('link',{name:title,exact:true}).waitFor()
+   assert.equal(await page.locator('.help-center-brand strong').innerText(),brand)
+   assert.equal(await page.locator('.help-center-nav').evaluate(el=>getComputedStyle(el).backgroundColor),color)
+   assert.equal(await page.locator('.help-center-logo').getAttribute('src'),logo)
+   assert.ok(!await page.getByRole('link',{name:host==='localhost'?'Second guide':'Next article',exact:true}).count(),'brands keep their own knowledge')
+   await page.getByRole('link',{name:title,exact:true}).click()
+   if(host==='localhost'){
+    await page.goto(page.url()+'?locale=fr')
+    await page.getByText('This article is available in en while its translation is being reviewed.',{exact:true}).waitFor()
+    await page.getByText('Edited article template',{exact:true}).waitFor()
+    await page.screenshot({path:shot(label+'-article-template.png'),fullPage:true})
+    await page.getByRole('link',{name:'Contact support about this article',exact:true}).click()
+    await page.getByText('Request template proof',{exact:true}).waitFor()
+    assert.equal(await page.locator('input[name="knowledgeRead"]').count(),1)
+    assert.ok(await noOverflow(page));await page.screenshot({path:shot(label+'-request-template.png'),fullPage:true})
+   }else await page.screenshot({path:shot(label+'-second-brand.png'),fullPage:true})
+  }
   // Help Center 404s: HTML in the help frame; a draft looks exactly like a missing article.
   const pages={}
   for(const [id,path,known] of [['missing article',`/help/${fixture.projectId}/nope`,true],['unpublished draft',`/help/${fixture.projectId}/webhooks-draft`,true],['unknown project','/help/does-not-exist',false],['unroutable','/help/a/b/c',false]]){

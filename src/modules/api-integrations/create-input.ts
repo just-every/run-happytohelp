@@ -28,7 +28,7 @@ export async function createInput(env:Env,p:string,credential:any,b:any){
  if(!email&&!phone&&!external||email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||phone&&!/^\+[1-9][0-9]{6,14}$/.test(phone))throw new ApiError(400,'invalid_requester')
  const keys=requesterKeys(p,[...(email?[{kind:'email',value:email}]:[]),...(phone?[{kind:'phone',value:phone}]:[]),...(external?[{kind:'external',value:external}]:[])]),digests=keys.map(k=>k.digest),admission=requesterAdmission(p,keys)
  const state=await assertAdmission(env,admission,true)
- const matches=await env.DB.prepare(`SELECT * FROM contacts WHERE project_id=? AND ((? IS NOT NULL AND lower(email)=? AND ${mailboxProofSql('contacts')}) OR (? IS NOT NULL AND external_id=? AND is_verified=1) OR (? IS NOT NULL AND json_extract(metadata_json,'$.phone')=? AND json_extract(metadata_json,'$.phone_verified')=1))`).bind(p,email,email,external,external,phone,phone).all<any>()
+ const matches=await env.DB.prepare(`SELECT * FROM contacts WHERE project_id=?1 AND lower(trim(email))=?2 AND lower(email)=?2 AND ${mailboxProofSql('contacts')} UNION SELECT * FROM contacts WHERE project_id=?1 AND external_id=?3 AND is_verified=1 UNION SELECT * FROM contacts WHERE project_id=?1 AND json_extract(metadata_json,'$.phone')=?4 AND json_extract(metadata_json,'$.phone_verified')=1`).bind(p,email,external,phone).all<any>()
  if(matches.results.length>1)throw new ApiError(409,'identity_conflict')
  const contact=matches.results[0],flags=JSON.parse(contact?.metadata_json??'{}')
  flags.is_blocked=state.blocked

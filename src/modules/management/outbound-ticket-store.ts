@@ -6,7 +6,7 @@ import {apiContactIdentityGuard} from './contact-identity'
 import {trackingStatement} from '../outcomes/state'
 import {emailThreadingStatements} from '../integrations/email-threading'
 import {emailAddress} from '../integrations/inbound-routing'
-import type {OutboundTicketInput} from './outbound-ticket-input'
+import {noticeCommand,type OutboundTicketInput} from './outbound-ticket-input'
 const writableContact=`COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1`
 async function outboundTicketAuthority(env:Env,actor:Actor,sessionHash:string){
  return ticketAuthority(env,actor,{sessionHash,source:'dashboard'},'conversations.reply')
@@ -38,6 +38,7 @@ export async function reserveOutboundTicket(env:Env,actor:Actor,sessionHash:stri
  if(input.kind==='email')statements.push(env.DB.prepare(`INSERT OR IGNORE INTO email_message_options(project_id,conversation_id,local_id,mailbox_id,agent_id,from_address,to_address,cc_json,bcc_json,created_at) SELECT project_id,conversation_id,?,?,?,?,?,?,?,? FROM operator_ticket_commands WHERE project_id=? AND conversation_id=? AND intent_hash=?`).bind(input.localId,input.mailboxId,actor.id,input.fromAddress,toAddress,JSON.stringify(input.cc),JSON.stringify(input.bcc),now,actor.projectId,conversationId,intentHash))
  statements.push(trackingStatement(env,conversationId,true))
  if(input.kind==='email')statements.push(...emailThreadingStatements(env,{projectId:actor.projectId,conversationId,createdAt:now,keys:[{kind:'subject_token',value:`h2h:${conversationId}`,source:'native',sourceRef:'operator_ticket'}]}))
+ if(input[noticeCommand])statements.push(env.DB.prepare(`UPDATE outbound_notice_commands SET receipts_json=json_insert(receipts_json,?,json_object('conversationId',?)) WHERE project_id=? AND id=? AND outcome='succeeded' AND EXISTS(SELECT 1 FROM operator_ticket_commands WHERE project_id=? AND conversation_id=? AND intent_hash=?)`).bind(`$."${input.localId}"`,conversationId,actor.projectId,input[noticeCommand],actor.projectId,conversationId,intentHash))
  const results=await env.DB.batch(statements)
  const command=await env.DB.prepare('SELECT intent_hash FROM operator_ticket_commands WHERE project_id=? AND actor_id=? AND local_id=?').bind(actor.projectId,actor.id,input.localId).first<{intent_hash:string}>()
  if(!command)throw new HTTPException(409,{message:'Requester, mailbox or operator authority changed; reload before creating the ticket'})

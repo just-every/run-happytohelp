@@ -5,7 +5,6 @@ import {scope} from './common'
 import {issuerGuard} from '../../platform/integration-authority'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement} from '../audit/record'
-import {endHandleTimers} from '../reports/timers'
 
 export const memberErasure=new Hono<AppEnv>()
 /** Erase an installation account only when this workspace owns its sole membership.
@@ -21,37 +20,37 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  const args=[userId,actor.projectId,userId,userId]
  if(!await c.env.DB.prepare('SELECT 1 WHERE '+eligible).bind(...args).first())throw new HTTPException(409,{message:'Transfer ownership first; accounts shared with other workspaces or installation administrators require installation review'})
  const context:ErasureContext={env:c.env,project:actor.projectId,user:userId,actor:actor.id,now,guard:{sql:`EXISTS(${guard.sql}) AND ${eligible}`,params:[...guard.params,...args]}}
- const registry=await memberErasureRegistry(c.env.DB)
+ const registry=await (isolateRegistry??=memberErasureRegistry(c.env.DB))
  if(registry.errors.length)throw new HTTPException(503,{message:'Member erasure schema requires review'})
  await c.env.DB.batch(Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]))
  return c.json({erased:true,credentialsRevoked:true,eventsRetained:true})
 })
 
+let isolateRegistry:ReturnType<typeof memberErasureRegistry>|undefined
 interface ErasureContext {env:AppEnv['Bindings'];project:string;user:string;actor:string;now:number;guard:{sql:string;params:unknown[]}}
-type RegistryEntry={accountOnly?:boolean;statements?:(context:ErasureContext)=>D1PreparedStatement[]}
+type ErasePlan={column:string;nullable?:boolean;through?:string;predicate?:string;args?:(c:ErasureContext)=>unknown[]}
+type ScopedEffect={prefix:string;source?:string;where:string;before?:(c:ErasureContext)=>unknown[];after:(c:ErasureContext)=>unknown[]}
+type RegistryEntry={effects?:ScopedEffect[];audit?:true;reset?:true;erase?:ErasePlan;accountOnly?:boolean;statements?:(context:ErasureContext)=>D1PreparedStatement[]}
 const accountDelete=(table:string):RegistryEntry=>({accountOnly:true,statements:c=>[c.env.DB.prepare(`DELETE FROM ${table} WHERE user_id=?`).bind(c.user)]})
-const workspaceDelete=(table:string):RegistryEntry=>({statements:c=>[c.env.DB.prepare(`DELETE FROM ${table} WHERE project_id=? AND user_id=?`).bind(c.project,c.user)]})
+const workspaceDelete=():RegistryEntry=>({erase:{column:'user_id'}})
 /** This is the complete member-reference inventory. Historical workspace rows
  * retain opaque ids. No account-keyed deletion can select a workspace table. */
 const memberPolicies:Record<string,RegistryEntry>={
  ik_d1_assertions:{statements:c=>[c.env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN ${c.guard.sql} THEN 1 ELSE 0 END`).bind(...c.guard.params)]},
  registrations:{accountOnly:true,statements:c=>[c.env.DB.prepare('DELETE FROM registrations WHERE lower(email)=(SELECT lower(email) FROM users WHERE id=?)').bind(c.user)]},
- identity_tokens:{statements:c=>[
-  c.env.DB.prepare("DELETE FROM identity_tokens WHERE kind='reset' AND user_id=?").bind(c.user),
-  c.env.DB.prepare("DELETE FROM identity_tokens WHERE kind='invite' AND project_id=? AND (user_id=? OR lower(email)=(SELECT lower(email) FROM users WHERE id=?))").bind(c.project,c.user,c.user)
- ]},
- native_integration_audit:{statements:c=>[c.env.DB.prepare("INSERT INTO native_integration_audit(id,project_id,actor_id,action,resource_id,created_at) SELECT lower(hex(randomblob(16))),namespace,?,'token.revoke',id,? FROM api_credentials WHERE namespace=? AND issuer_id=? AND revoked_at IS NULL").bind(c.actor,c.now,c.project,c.user)]},
- integration_token_events:{statements:c=>[c.env.DB.prepare("INSERT INTO integration_token_events(namespace,id,token_id,at,action,feature) SELECT namespace,lower(hex(randomblob(16))),id,?,'revoked','integrations.tokens' FROM api_credentials WHERE namespace=? AND issuer_id=? AND revoked_at IS NULL").bind(c.now,c.project,c.user)]},
- integration_tokens:{statements:c=>[c.env.DB.prepare("UPDATE integration_tokens SET revoked_at=coalesce(revoked_at,?),token_hash='erased:'||id WHERE namespace=? AND credential_id IN (SELECT id FROM api_credentials WHERE namespace=? AND issuer_id=?)").bind(c.now,c.project,c.project,c.user)]},
- api_credentials:{statements:c=>[c.env.DB.prepare('UPDATE api_credentials SET issuer_id=NULL,revoked_at=coalesce(revoked_at,?) WHERE namespace=? AND issuer_id=?').bind(c.now,c.project,c.user)]},
+ identity_tokens:{reset:true,erase:{column:'user_id',predicate:"kind='invite' AND (user_id=? OR lower(email)=(SELECT lower(email) FROM users WHERE id=?))",args:c=>[c.user,c.user]}},
+ native_integration_audit:{effects:[{prefix:"INSERT INTO native_integration_audit(id,project_id,actor_id,action,resource_id,created_at) SELECT lower(hex(randomblob(16))),namespace,?,'token.revoke',id,? FROM api_credentials",source:'api_credentials',where:'issuer_id=? AND revoked_at IS NULL',before:c=>[c.actor,c.now],after:c=>[c.user]}]},
+ integration_token_events:{effects:[{prefix:"INSERT INTO integration_token_events(namespace,id,token_id,at,action,feature) SELECT namespace,lower(hex(randomblob(16))),id,?,'revoked','integrations.tokens' FROM api_credentials",source:'api_credentials',where:'issuer_id=? AND revoked_at IS NULL',before:c=>[c.now],after:c=>[c.user]}]},
+ integration_tokens:{effects:[{prefix:"UPDATE integration_tokens SET revoked_at=coalesce(revoked_at,?),token_hash='erased:'||id",where:'credential_id IN (SELECT id FROM api_credentials WHERE namespace=? AND issuer_id=?)',before:c=>[c.now],after:c=>[c.project,c.user]}]},
+ api_credentials:{effects:[{prefix:'UPDATE api_credentials SET issuer_id=NULL,revoked_at=coalesce(revoked_at,?)',where:'issuer_id=?',before:c=>[c.now],after:c=>[c.user]}]},
  users:{accountOnly:true,statements:c=>[c.env.DB.prepare("UPDATE users SET name='Former teammate',email='erased:'||id WHERE id=?").bind(c.user)]},
  ...Object.fromEntries(['credentials','user_settings','user_factors','recovery_codes','session_factors','webauthn_challenges'].map(table=>[table,accountDelete(table)])),
- ...Object.fromEntries(['user_project_preferences','member_roles','operator_presence','memberships'].map(table=>[table,workspaceDelete(table)])),
- magic_signins:{statements:c=>[c.env.DB.prepare('DELETE FROM magic_signins WHERE user_id=? AND (project_id IS NULL OR project_id=?)').bind(c.user,c.project)]},
- sessions:{statements:c=>[c.env.DB.prepare("DELETE FROM sessions WHERE actor_id=? AND role<>'contact' AND (project_id IS NULL OR project_id=?)").bind(c.user,c.project)]},
- conversation_followers:{statements:c=>[c.env.DB.prepare('DELETE FROM conversation_followers WHERE user_id=? AND conversation_id IN (SELECT id FROM conversations WHERE project_id=?)').bind(c.user,c.project)]},
- ticket_handle_sessions:{statements:c=>[endHandleTimers(c.env.DB,c.project,c.user,c.now)]},
- audit_events:{statements:c=>[auditStatement(c.env.DB,{projectId:c.project,category:'erasure',action:'member.erased',actor:{type:'user',id:c.actor},source:'dashboard',target:{type:'member',id:c.user}},c.now)]},
+ ...Object.fromEntries(['user_project_preferences','member_roles','operator_presence','memberships'].map(table=>[table,workspaceDelete()])),
+ magic_signins:{erase:{column:'user_id',nullable:true}},
+ sessions:{erase:{column:'actor_id',nullable:true,predicate:"actor_id=? AND role<>'contact'",args:c=>[c.user]}},
+ conversation_followers:{erase:{column:'user_id',through:'conversation_id'}},
+ ticket_handle_sessions:{effects:[{prefix:'UPDATE ticket_handle_sessions SET ended_at=max(started_at,?)',where:'user_id=? AND ended_at IS NULL',before:c=>[c.now],after:c=>[c.user]}]},
+ audit_events:{audit:true},
  ...Object.fromEntries(['macros','conversation_reads','conversation_notes','github_oauth_states','move_in_runs','local_pairings','local_grants','local_authorizations','local_devices','operator_notifications','ticket_group_members','ticket_views','notification_preferences','notification_inbox','conversation_note_mentions','routing_operators','mailbox_oauth_states','email_sender_rules','email_message_options','operator_ticket_commands','report_schedules','report_schedule_recipients','report_schedule_deliveries','customer_identity_links','customer_identity_link_history','api_notes'].map(table=>[table,{}])),
  platform_admins:{accountOnly:true},owner_recoveries:{accountOnly:true},
  assertion_cleanup:{statements:c=>[c.env.DB.prepare('DELETE FROM ik_d1_assertions')]},
@@ -62,10 +61,10 @@ const memberPolicies:Record<string,RegistryEntry>={
  * split by kind: reset is an account capability; invites belong to a workspace. */
 export async function memberErasureRegistry(db:D1Database){
  const tables=await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").all<{name:string}>()
- const schema=new Map<string,{workspace:boolean;member:boolean;parents:string[]}>()
+ const schema=new Map<string,{workspace:boolean;member:boolean;scope?:string;parents:string[]}>()
  for(const {name} of tables.results){
   const quoted='"'+name.replaceAll('"','""')+'"',columns=await db.prepare(`PRAGMA table_info(${quoted})`).all<any>(),refs=await db.prepare(`PRAGMA foreign_key_list(${quoted})`).all<any>()
-  schema.set(name,{workspace:columns.results.some(column=>['project_id','namespace'].includes(column.name)),member:columns.results.some(column=>['user_id','issuer_id'].includes(column.name))||refs.results.some(ref=>ref.table==='users'),parents:refs.results.map(ref=>ref.table)})
+  schema.set(name,{scope:columns.results.find(column=>['project_id','namespace'].includes(column.name))?.name,workspace:columns.results.some(column=>['project_id','namespace'].includes(column.name)),member:columns.results.some(column=>['user_id','issuer_id'].includes(column.name))||refs.results.some(ref=>ref.table==='users'),parents:refs.results.map(ref=>ref.table)})
  }
  let changed=true
  while(changed){changed=false;for(const row of schema.values())if(!row.workspace&&row.parents.some(parent=>schema.get(parent)?.workspace)){row.workspace=true;changed=true}}
@@ -75,12 +74,39 @@ export async function memberErasureRegistry(db:D1Database){
  for(const [name,policy] of Object.entries(memberPolicies)){
   const table=schema.get(name)
   if(policy.accountOnly&&table?.workspace)errors.push(name)
-  entries[name]={...policy,level:table?(table.workspace?'workspace':'account'):'internal'}
+  const erase=policy.erase
+  let generated:((c:ErasureContext)=>D1PreparedStatement[])|undefined
+  if(erase){
+   if(!table?.workspace||(!table.scope&&!erase.through))errors.push(name)
+   else {
+    const scope=table.scope?`${table.scope}=?`: `${erase.through} IN (SELECT id FROM conversations WHERE project_id=?)`
+    const scoped=erase.nullable?`(${table.scope} IS NULL OR ${scope})`:scope
+    generated=c=>[c.env.DB.prepare(`DELETE FROM ${name} WHERE ${scoped} AND (${erase.predicate??`${erase.column}=?`})`).bind(c.project,...(erase.args?.(c)??[c.user]))]
+   }
+  }
+  // A workspace policy cannot supply handwritten D1 statements, even for
+  // retained tables absent from the fixture. All its effects bind derived scope.
+  if(table?.workspace&&policy.statements)errors.push(name)
+  const effects:((c:ErasureContext)=>D1PreparedStatement)[]=[]
+  for(const effect of policy.effects??[]){
+   const source=schema.get(effect.source??name)
+   if(!table?.workspace||!source?.scope)errors.push(name)
+   else effects.push(c=>c.env.DB.prepare(`${effect.prefix} WHERE ${source.scope}=? AND (${effect.where})`).bind(...(effect.before?.(c)??[]),c.project,...effect.after(c)))
+  }
+  if(policy.audit){
+   if(!table?.workspace)errors.push(name)
+   effects.push(c=>auditStatement(c.env.DB,{projectId:c.project,category:'erasure',action:'member.erased',actor:{type:'user',id:c.actor},source:'dashboard',target:{type:'member',id:c.user}},c.now))
+  }
+  // Reset links are account capabilities even when they name a workspace.
+  if(policy.reset){
+   if(name!=='identity_tokens')errors.push(name)
+   effects.push(c=>c.env.DB.prepare("DELETE FROM identity_tokens WHERE kind='reset' AND user_id=?").bind(c.user))
+  }
+  entries[name]={...policy,statements:c=>[...(policy.statements?.(c)??[]),...effects.map(effect=>effect(c)),...(generated?.(c)??[])],level:table?(table.workspace?'workspace':'account'):'internal'}
  }
  for(const [name,table] of schema){
   if(table.member&&!memberPolicies[name])errors.push(name)
   entries[name]??={level:table.workspace?'workspace':'account'}
  }
- return {entries,errors}
+ return {entries,errors:[...new Set(errors)]}
 }
-export async function unclassifiedMemberTables(db:D1Database){return (await memberErasureRegistry(db)).errors}

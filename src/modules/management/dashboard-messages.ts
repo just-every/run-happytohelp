@@ -1,3 +1,4 @@
+import {abandonedNotificationReason} from '../integrations/email-send-window'
 import type {Env} from '../../platform/env'
 import {emailConfigured} from '../integrations/email-provider'
 import {localMailOrigin} from '../../edition/local-mail/configuration'
@@ -20,7 +21,7 @@ export async function messagesData(env:Env,rows:any[]){
   env.DB.prepare(`SELECT id,message_id,filename,content_type,size FROM media WHERE message_id IN (${selected})`).bind(ids),
   env.DB.prepare(`SELECT m.id message_id,json_extract(e.payload,'$.reader_id') reader_id,json_extract(e.payload,'$.reader_role') reader_role,e.created_at read_at FROM messages m JOIN context_tracked_events e ON e.project_id=m.project_id AND json_valid(e.payload) AND json_extract(e.payload,'$.message_id')=m.id WHERE m.id IN (${selected}) AND e.type='MESSAGE_READ' ORDER BY e.rowid`).bind(ids),
   ...(mailRows.length?[
-   env.DB.prepare(`SELECT m.id,d.state,d.updated_at,s.is_enabled,u.email sender_email FROM messages m LEFT JOIN email_deliveries d ON d.id>='message:'||m.id||':notification' AND d.id<'message:'||m.id||':notification;' AND (d.id='message:'||m.id||':notification' OR substr(d.id,1,length('message:'||m.id||':notification:'))='message:'||m.id||':notification:') AND d.project_id=m.project_id LEFT JOIN email_settings s ON s.project_id=m.project_id LEFT JOIN users u ON u.id=m.actor_id WHERE m.id IN (${selected})`).bind(mailIds),
+   env.DB.prepare(`SELECT m.id,d.state,d.error,d.updated_at,s.is_enabled,u.email sender_email FROM messages m LEFT JOIN email_deliveries d ON d.id>='message:'||m.id||':notification' AND d.id<'message:'||m.id||':notification;' AND (d.id='message:'||m.id||':notification' OR substr(d.id,1,length('message:'||m.id||':notification:'))='message:'||m.id||':notification:') AND d.project_id=m.project_id LEFT JOIN email_settings s ON s.project_id=m.project_id LEFT JOIN users u ON u.id=m.actor_id WHERE m.id IN (${selected})`).bind(mailIds),
    ...(resolveRecipients?[env.DB.prepare(`SELECT m.id message_id,ct.* FROM messages m JOIN (${notificationContactsSql}) ct ON ct.conversation_id=m.conversation_id AND ct.notification_project_id=m.project_id WHERE m.id IN (${selected})`).bind(mailIds)]:[])
   ]:[]),
  ])
@@ -29,13 +30,16 @@ export async function messagesData(env:Env,rows:any[]){
  const mail=new Map<string,any>(),reads=new Map<string,{read_by_contacts:Record<string,string>;read_by_agents:Record<string,string>}>()
  const recipients=new Map<string,NotificationContact[]>()
  for(const {message_id,...contact} of resolveRecipients?data[6].results:[]){const key=String(message_id);if(!recipients.has(key))recipients.set(key,[]);recipients.get(key)!.push(contact)}
- const precedence=['uncertain','sending','failed']
+ const precedence=['uncertain','sending','rate_limited','consent_refused','failed']
  for(const attempt of mailRows.length?data[5].results:[]){
+  if(attempt.state==='failed'&&attempt.error?.startsWith('Outbound notice rate limit'))attempt.state='rate_limited'
+  if(attempt.state==='failed'&&attempt.error==='Requester unavailable or email notices disabled')attempt.state='consent_refused'
   const key=String(attempt.id),prior=mail.get(key)
+  if(attempt.state==='uncertain'&&attempt.error===abandonedNotificationReason)attempt.reason=abandonedNotificationReason
   if(!prior)mail.set(key,attempt)
   else{
    const states=[prior.state,attempt.state]
-   mail.set(key,{...prior,state:precedence.find(state=>states.includes(state))||prior.state||attempt.state,updated_at:Math.max(prior.updated_at||0,attempt.updated_at||0)})
+   mail.set(key,{...prior,...(attempt.reason?{reason:attempt.reason}:{}),state:precedence.find(state=>states.includes(state))||prior.state||attempt.state,updated_at:Math.max(prior.updated_at||0,attempt.updated_at||0)})
   }
  }
  for(const receipt of data[4].results){
@@ -53,7 +57,7 @@ export async function messagesData(env:Env,rows:any[]){
   const attempt:any=mail.get(String(row.id))
   // Keep the durable mail-status precedence, including suppressed development
   // mail and unknown delivery. Reads never ask the provider to do work.
-  const emailStatus=origin||row.actor_role==='contact'||row.actor_role==='system'||row.erased_at?null:suppressed?{state:'suppressed'}:attempt?.state?{state:attempt.state,updatedAt:attempt.updated_at}:!configured?{state:'not_configured'}:attempt?.is_enabled===0?{state:'disabled'}:{state:messageNotificationRecipients(recipients.get(String(row.id))||[],attempt?.sender_email?{id:row.actor_id,email:attempt.sender_email}:undefined,row.actor_role).state}
+  const emailStatus=origin||row.actor_role==='contact'||row.actor_role==='system'||row.erased_at?null:suppressed?{state:'suppressed'}:attempt?.state?{state:attempt.state,updatedAt:attempt.updated_at,...(attempt.reason?{reason:attempt.reason}:{})}:!configured?{state:'not_configured'}:attempt?.is_enabled===0?{state:'disabled'}:{state:messageNotificationRecipients(recipients.get(String(row.id))||[],attempt?.sender_email?{id:row.actor_id,email:attempt.sender_email}:undefined,row.actor_role).state}
   return {...row,...(reads.get(String(row.id))||{read_by_contacts:{},read_by_agents:{}}),email_status:emailStatus,created_at:iso(row.created_at),source_time_provenance:origin?.time_provenance,source_author:sourceAuthor,bucket_id:row.bucket_id||row.conversation_id,agent:sourceAuthor&&sourceAuthor.role!=='contact'?person({id:row.actor_id,name:sourceAuthor.name||'Imported author'}):agent,agent_id:sourceAuthor&&sourceAuthor.role!=='contact'?row.actor_id:agent?.id,contact_id:row.actor_role==='contact'?row.actor_id:null,contact:row.actor_role==='contact'?person(contacts.get(String(row.actor_id))):null,media:(media.get(String(row.id))||[]).map(m=>({...m,filename_original:m.filename,url:`/api/conversations/${row.conversation_id}/media/${m.id}`,preview_url:`/api/conversations/${row.conversation_id}/media/${m.id}`,aggregate_type:m.content_type.startsWith('image/')?'image':'file'}))}
  })
 }

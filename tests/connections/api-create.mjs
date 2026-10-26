@@ -448,13 +448,32 @@ export const invariantSweeps={
  async scale(h){
   const grant=await h.issue(machineScopes,'p',{source_product:fresh(),create_per_minute:60}),samples=[];
   const input={...requestInput(),requester:{email:'synthetic-hh-scale@example.test'}},ticket=await createTicket(h,grant.token,input);
+  const measure=async(door,run,status)=>{const start=performance.now(),response=await run();assert.equal(response.status,status,await response.clone().text());const metrics=JSON.parse(response.headers.get('X-Test-D1'));return {door,...metrics,ms:performance.now()-start}};
   for(const count of [0,100000,400000]){
-   if(count)await h.db.prepare("WITH RECURSIVE numbers(n) AS (SELECT ? UNION ALL SELECT n+1 FROM numbers WHERE n<?) INSERT INTO contacts(id,project_id,email,metadata_json,created_at) SELECT 'synthetic-hh-scale-'||n,'p','synthetic-hh-scale-'||n||'@example.test','{}',1 FROM numbers").bind(count===100000?1:100001,count).run();
-   const measured=await h.call('/_test/admission-plan');assert.ok(measured.plan.some(row=>/SEARCH sibling USING INDEX sqlite_autoindex_contacts/.test(row.detail)),JSON.stringify(measured.plan));assert.ok(measured.result.meta.rows_read<100,JSON.stringify(measured.result.meta));
-   const timings={};if(count<400000)for(const door of ['append','create']){const values=[];for(let i=0;i<3;i++){const start=performance.now();const response=door==='create'?await createRequest(h,grant.token,{...requestInput(),requester:{external_id:fresh()}}):await h.raw('/api/v1/conversations/'+ticket+'/append',{token:grant.token,...body({kind:'customer',localId:fresh(),content:'Synthetic timing'})});assert.equal(response.status,door==='create'?201:200);values.push(performance.now()-start)}timings[door]=values}
-   samples.push({contacts:count,rows_read:measured.result.meta.rows_read,timings,plan:measured.plan});
+   if(count){
+    const start=count===100000?1:100001;
+    await h.db.prepare("WITH RECURSIVE numbers(n) AS (SELECT ? UNION ALL SELECT n+1 FROM numbers WHERE n<?) INSERT INTO contacts(id,project_id,email,metadata_json,created_at) SELECT 'synthetic-hh-scale-'||n,'p','synthetic-hh-scale-'||n||'@example.test','{}',1 FROM numbers").bind(start,count).run();
+    for(const table of ['api_erased_keys','move_in_erased_identities'])await h.db.prepare(`WITH RECURSIVE numbers(n) AS (SELECT ? UNION ALL SELECT n+1 FROM numbers WHERE n<?) INSERT INTO ${table}(project_id,digest) SELECT 'p','synthetic-hh-scale-'||n FROM numbers`).bind(start,count).run();
+    await h.db.prepare("WITH RECURSIVE numbers(n) AS (SELECT ? UNION ALL SELECT n+1 FROM numbers WHERE n<?) INSERT INTO email_sender_rules(project_id,address,action,created_by,created_at) SELECT 'p','synthetic-hh-rule-'||n||'@example.test','block','owner',1 FROM numbers").bind(start/2+.5,count/2).run();
+   }
+   const measured=await h.call('/_test/admission-plan');assert.ok(measured.result.meta.rows_read<100,JSON.stringify(measured));
+   const fences=measured.plan.filter(row=>/SEARCH f /.test(row.detail));assert.equal(fences.length,2);assert.ok(fences.every(row=>/project_id=\? AND digest=\?/.test(row.detail)),JSON.stringify(measured.plan));
+   assert.ok(measured.plan.some(row=>/SEARCH sibling USING INDEX/.test(row.detail)),JSON.stringify(measured.plan));
+   assert.ok(measured.plan.some(row=>/SEARCH rule .*project_id=\? AND address=\?/.test(row.detail)),JSON.stringify(measured.plan));
+   const doors=[];
+   doors.push(await measure('append',()=>h.raw('/api/v1/conversations/'+ticket+'/append',{token:grant.token,...body({kind:'customer',localId:fresh(),content:'Synthetic timing'}),headers:{'Content-Type':'application/json','X-Test-Meter':'1'}}),200));
+   for(const requester of [{email:fresh()+'@example.test'},{external_id:fresh()},{phone:'+1415555'+String(1000+samples.length).padStart(4,'0')}])doors.push(await measure('create',()=>h.raw('/api/v1/conversations',{token:grant.token,...body({...requestInput(),requester}),headers:{'Content-Type':'application/json','Idempotency-Key':fresh(),'X-Test-Meter':'1'}}),201));
+   const marker=fresh();await h.call('/api/management/projects/p/settings',{...body({api_abuse_terms:[marker]}),method:'PUT'});
+   const held=await createRequest(h,grant.token,{...requestInput(),body:marker});assert.equal(held.status,202);const hold=(await held.json()).data.id;
+   doors.push(await measure('release',()=>h.raw('/api/management/projects/p/suspended/'+hold+'/recover',{...body({}),headers:{'Content-Type':'application/json','X-Test-Meter':'1'}}),200));
+   await h.call('/api/management/projects/p/settings',{...body({api_abuse_terms:[]}),method:'PUT'});
+   await h.db.prepare("INSERT INTO email_sender_rules(project_id,address,action,created_by,created_at) VALUES('p',?,'block','owner',1)").bind(input.requester.email).run();
+   const refused=await h.raw('/api/v1/conversations/'+ticket+'/append',{token:grant.token,...body({kind:'customer',localId:fresh(),content:'Blocked control'})});assert.equal(refused.status,403);assert.equal((await refused.json()).error.code,'blocked_sender');
+   await h.db.prepare("DELETE FROM email_sender_rules WHERE project_id='p' AND address=?").bind(input.requester.email).run();
+   samples.push({contacts:count,rules:count/2,fence_digests:count*2,predicate_rows:measured.result.meta.rows_read,doors,plan:measured.plan});
+   console.log('API admission scale '+JSON.stringify(samples.at(-1)));
+   for(const [i,result] of doors.entries())assert.ok(result.rows_read<=samples[0].doors[i].rows_read+100,JSON.stringify({count,...result}));
   }
-  console.log('API admission scale '+JSON.stringify(samples));
  },
  async credentials(h){
   const doors=(await h.call('/_test/credential-routes')).filter(r=>r.path.includes('/tokens')&&['POST','PATCH','DELETE'].includes(r.method)).map(r=>r.method+' '+r.path).sort();
@@ -496,20 +515,20 @@ export const invariantSweeps={
   await h.db.prepare("INSERT INTO magic_signins(token_hash,user_id,project_id,email,expires_at) VALUES(?,?,'q',?,?)").bind(fresh(),user,address,Date.now()+60000).run();
   const reset=fresh();await h.db.prepare("INSERT INTO identity_tokens(token_hash,user_id,project_id,email,role,kind,expires_at) VALUES(?,?,'q',?,'operator','reset',?)").bind(sha(reset),user,address,Date.now()+60000).run();
   const before=await snapshot();before.identity_tokens=before.identity_tokens.filter(value=>JSON.parse(value).kind!=='reset');
-  await h.call('/api/management/projects/p/agents/'+user+'/erase',body({}));assert.deepEqual(await snapshot(),before);
+  const warm=fresh();await h.db.prepare('INSERT INTO users VALUES(?,?,?,1)').bind(warm,warm+'@example.test','Synthetic warm member').run();await h.db.prepare("INSERT INTO memberships VALUES('p',?,'operator')").bind(warm).run();await h.call('/api/management/projects/p/agents/'+warm+'/erase',body({}));
+  const erased=await h.raw('/api/management/projects/p/agents/'+user+'/erase',{...body({}),headers:{'Content-Type':'application/json','X-Test-Meter':'1'}});assert.equal(erased.status,200,await erased.clone().text());const budget=JSON.parse(erased.headers.get('X-Test-D1'));console.log('Member erasure budget '+JSON.stringify(budget));assert.ok(budget.statements<50,JSON.stringify(budget));assert.deepEqual(await snapshot(),before);
   assert.equal((await h.db.prepare("SELECT count(*) n FROM identity_tokens WHERE user_id=? AND kind='reset'").bind(user).first()).n,0);
   assert.ok((await h.raw('/api/identity/accept-token',body({token:reset,password:'synthetic-hh-new-password'}))).status>=400);
 assert.equal((await h.raw('/api/v1/conversations',{token:qGrant.token})).status,200);
   const pContact=await h.contact(fresh(),'p');const prior=await snapshot();await h.call('/api/management/projects/p/contacts/'+pContact+'/erase',body({}));assert.deepEqual(await snapshot(),prior);
-  assert.deepEqual(await h.call('/_test/member-inventory'),[]);
   const schema=await h.call('/_test/member-schema');assert.deepEqual(schema.errors,[]);
   const tables=(await h.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").all()).results;
   for(const {name} of tables){assert.ok(schema.entries[name],name);assert.ok(!schema.entries[name].accountOnly||schema.entries[name].level==='account',name)}
   for(const name of ['magic_signins','identity_tokens','sessions','conversation_followers'])assert.equal(schema.entries[name].level,'workspace',name);
 
-  const unknown=fresh().replaceAll('-','_');await h.db.prepare('CREATE TABLE '+unknown+'(user_id TEXT REFERENCES users(id))').run();assert.deepEqual(await h.call('/_test/member-inventory'),[unknown]);
+  const unknown=fresh().replaceAll('-','_');await h.db.prepare('CREATE TABLE '+unknown+'(user_id TEXT REFERENCES users(id))').run();assert.deepEqual((await h.call('/_test/member-schema')).errors,[unknown]);
   await h.db.prepare('ALTER TABLE '+unknown+' ADD COLUMN conversation_id TEXT REFERENCES conversations(id)').run();assert.equal((await h.call('/_test/member-schema')).entries[unknown].level,'workspace');
-  await h.db.prepare('ALTER TABLE user_settings ADD COLUMN namespace TEXT').run();assert.deepEqual((await h.call('/_test/member-inventory')).sort(),[unknown,'user_settings'].sort(),'account-wide statements fail closed when schema gains workspace scope');
+  await h.db.prepare('ALTER TABLE user_settings ADD COLUMN namespace TEXT').run();assert.deepEqual(((await h.call('/_test/member-schema')).errors).sort(),[unknown,'user_settings'].sort(),'account-wide statements fail closed when schema gains workspace scope');
  },
  async releaseParity(h){
   const place=await placement(h),product=fresh(),grant=await h.issue(machineScopes,'p',{source_product:product}),marker=fresh(),reference=fresh();
@@ -535,6 +554,16 @@ assert.equal((await h.raw('/api/v1/conversations',{token:qGrant.token})).status,
   const generations=async ticket=>(await h.db.prepare('SELECT count(*) n FROM ai_generations WHERE conversation_id=?').bind(ticket).first()).n;
   assert.equal(await generations(id),0,'recovery never requests an AI answer');assert.equal(await generations(direct),1,'direct admission retains ordinary message effects');
   assert.equal((await h.db.prepare('SELECT count(*) n FROM messages WHERE conversation_id=?').bind(id).first()).n,1,'recovery sends no acknowledgment');assert.equal(h.received.length,0);assert.equal(h.external,0);
+  const collisionRef=fresh(),collisionInput={...requestInput(),body:marker,source_ref:{product,ref:collisionRef}};
+  await h.call('/api/management/projects/p/settings',{...body({api_abuse_terms:[marker]}),method:'PUT'});
+  const pending=await createRequest(h,grant.token,collisionInput);assert.equal(pending.status,202);const pendingId=(await pending.json()).data.id;
+  await h.call('/api/management/projects/p/settings',{...body({api_abuse_terms:[]}),method:'PUT'});
+  const other=await h.issue(machineScopes,'p',{source_product:product}),survivor=await createTicket(h,other.token,collisionInput);
+  assert.equal((await h.raw('/api/v1/conversations/'+survivor,{token:grant.token})).status,404);
+  const collision=await h.raw('/api/management/projects/p/suspended/'+pendingId+'/recover',body({}));assert.equal(collision.status,409);
+  const error=(await collision.json()).error;assert.equal(error.code,'source_ref_exists');assert.equal(error.conversation_id,survivor);
+  assert.ok(await h.db.prepare('SELECT 1 FROM suspended_emails WHERE id=?').bind(pendingId).first());
+
 
  }
 };

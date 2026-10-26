@@ -88,6 +88,10 @@
     {
       "id": "254_api_erasure_inventory.sql",
       "buyerSteps": "Apply after 253 before serving the updated Worker. Retains non-personal API erasure counts across retries and exports."
+    },
+    {
+      "id": "255_outbound_notice_commands.sql",
+      "buyerSteps": "Retain durable notice command fences independently of audit retention. Apply after 252 and before the updated Worker serves traffic. Backfill retained r6 ticket.notice_confirmed confirmations and ticket.notice_refused refusals; this migration changes no ticket or message row."
     }
   ]
 }

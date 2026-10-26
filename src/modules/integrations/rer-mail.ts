@@ -1,3 +1,4 @@
+import {notificationFetch} from './email-send-window'
 import type {Env} from '../../platform/env'
 import type {EmailInput} from './email'
 import {hashToken} from '../../platform/auth'
@@ -41,7 +42,7 @@ export async function sendRerMail(env:Env,input:EmailInput,holdable=false){
   env.DB.prepare('INSERT OR IGNORE INTO rer_mail_commands(command_id,project_id,mailbox_id,generation,message_key,conversation_id) VALUES(?,?,?,?,?,?)').bind(input.idempotencyKey,mailbox.project_id,mailbox.mailbox_id,mailbox.generation,payload.messageKey,thread?.conversation_id||null),
  ])
  try{
- const response=await fetch(mailService(env.MAIL_RELAY_URL),{method:'POST',redirect:'manual',headers:{Authorization:`Bearer ${env.MAIL_API_KEY}`,'Content-Type':'application/json'},body,signal:AbortSignal.timeout(20000)})
+ const response=await notificationFetch(mailService(env.MAIL_RELAY_URL),{method:'POST',redirect:'manual',headers:{Authorization:`Bearer ${env.MAIL_API_KEY}`,'Content-Type':'application/json'},body,signal:AbortSignal.timeout(20000)})
  if(!response.ok){
   if(holdable&&response.status===401&&rerMailCredentialRefused.includes((await mailJson(response).catch(()=>null))?.code))throw new RerMailFailure('held',rerMailHeld)
   throw new RerMailFailure(response.status>=500||response.status>=300&&response.status<400?'uncertain':'failed',response.status>=500?'The mail service did not return a confirmed acceptance':response.status===401||response.status===403?authorityUnavailable:response.status===409?'This send conflicts with a retained mail command':'The mail service refused this message before acceptance')

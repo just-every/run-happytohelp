@@ -39,6 +39,11 @@ export async function rolesAuditJourney(){
   for(const [path,body,method] of [[C,{assigned_to:collaborator.actor.id},'PUT'],[`${C}/tags`,{tagId:'vip'},'POST'],[`${P}/contacts/ct-r/erase`,{},'POST'],[`${P}/agents/${collaborator.actor.id}/erase`,{},'POST'],[`/api/dashboard/projects/${w.projectId}/agents/${collaborator.actor.id}/erase`,{},'POST'],[`/api/knowledge/${w.projectId}/articles`,{title:'x',content:'y'},'POST']]){
    const refused=await call(path,body,collaborator.token,method);assert.equal(refused.status,403,path);assert.equal(refused.data.code,'permission_denied',path)
   }
+  // Preview and confirmation require the same reply authority as single-ticket creation.
+  for(const area of ['management','dashboard'])for(const suffix of ['notices/preview','notices']){
+   const refused=await call(`/api/${area}/projects/${w.projectId}/tickets/${suffix}`,{},collaborator.token)
+   assert.equal(refused.status,403);assert.equal(refused.data.code,'permission_denied');assert.equal(refused.data.permission,'conversations.reply')
+  }
   assert.equal((await call(`${P}/audit/export`,undefined,collaborator.token)).status,403)
   assert.equal((await app.first("SELECT count(*) n FROM messages WHERE conversation_id='conv-r'")).n,1,'no public reply was admitted')
   assert.ok((await app.first("SELECT count(*) n FROM audit_events WHERE action='permission.denied' AND actor_id=?",collaborator.actor.id)).n>=5)

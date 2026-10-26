@@ -750,6 +750,12 @@
       "name": "254_api_erasure_inventory.sql",
       "sha256": "5c20a09f92e8e8bd03c81ce0b611d0739e654eba2f7acaf6492b7745181b6766",
       "sql": "-- Capture API erasure counts before privacy triggers redact the source rows.\nCREATE TABLE api_erasure_inventory(project_id TEXT NOT NULL,contact_id TEXT NOT NULL,requests INTEGER NOT NULL,appends INTEGER NOT NULL,notes INTEGER NOT NULL,pending_payloads INTEGER NOT NULL,held_requests INTEGER NOT NULL,PRIMARY KEY(project_id,contact_id));\n"
+    },
+    {
+      "binding": "DB",
+      "name": "255_outbound_notice_commands.sql",
+      "sha256": "32c20432952f7c817ebb530ed1057f23649c3df8c1b8bb0287e09b452e01b1d4",
+      "sql": "-- Durable command fences are retained for the workspace lifetime, independently\n-- of security-log retention. Only hashes and recovery IDs are retained here.\nCREATE TABLE outbound_notice_commands(\n id TEXT NOT NULL,\n project_id TEXT NOT NULL REFERENCES projects(id),\n actor_id TEXT NOT NULL,\n intent_key TEXT,\n created_at INTEGER NOT NULL,\n outcome TEXT NOT NULL CHECK(outcome IN ('succeeded','refused')),\n detail_json TEXT NOT NULL,\n receipts_json TEXT NOT NULL DEFAULT '{}',\n PRIMARY KEY(project_id,id),\n UNIQUE(project_id,intent_key)\n);\n-- Upgrade retained r6 confirmations/refusals without changing send identities.\nINSERT INTO outbound_notice_commands(id,project_id,actor_id,created_at,outcome,detail_json)\n SELECT id,project_id,actor_id,at,outcome,json_object('fingerprint',json_extract(detail_json,'$.fingerprint'),'error',CASE WHEN outcome='refused' THEN 'This notice was refused before any tickets were created' ELSE NULL END)\n FROM audit_events WHERE action IN ('ticket.notice_confirmed','ticket.notice_refused') AND target_type='notice_batch';\nCREATE TRIGGER outbound_notice_command_identity BEFORE UPDATE OF id,project_id,actor_id,intent_key,created_at,outcome,detail_json ON outbound_notice_commands\nBEGIN\n SELECT RAISE(ABORT,'notice_command_immutable');\nEND;\nCREATE TRIGGER outbound_notice_command_audit AFTER INSERT ON outbound_notice_commands\nBEGIN\n INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json)\n VALUES(NEW.id,NEW.project_id,NEW.created_at,'data',CASE WHEN NEW.outcome='refused' THEN 'ticket.notice_refused' ELSE 'ticket.notice_confirmed' END,NEW.outcome,'user',NEW.actor_id,'dashboard','notice_batch',NEW.id,NEW.detail_json);\nEND;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

@@ -209,10 +209,10 @@ explicitly supplies creator IDs in `bindings.credentials`. Bindings also accept
 `POST /api/v1/conversations` requires `Idempotency-Key` (1–200 characters).
 Keys belong to the workspace and source product, so rotating the bearer secret
 does not create another ticket. An identical canonical request returns the
-original status and body with `Idempotency-Replayed: true`. Changed bodies return
+original status and body with `Idempotency-Replayed: true` while the ticket is inside the credential’s reach. A replay of an out-of-reach ticket answers 404. Changed bodies return
 `idempotency_conflict`; an outstanding claim returns `in_progress` and
 `Retry-After`. A reused source reference returns `source_ref_exists` with the
-existing conversation ID. Refused identities return `identity_conflict` or
+existing conversation ID only for tickets inside the credential’s reach. Refused identities return `identity_conflict` or
 `identity_erased`.
 
 Keep `H2H_TOKEN` in the shell's private environment as in the examples above.
@@ -232,7 +232,7 @@ CURL
 `POST /api/v1/conversations/:id/append` accepts `kind: customer` or `kind: note`,
 `content` and a stable `localId`. A customer append reopens Solved tickets and
 creates a linked follow-up for Closed tickets. Merged tickets return
-`merged_into` with the surviving ID. Notes are machine-authored internal context.
+`merged_into` with the surviving ID only when it is inside the credential’s reach. Notes are machine-authored internal context.
 
 ```sh
 curl --silent --show-error --config - <<CURL

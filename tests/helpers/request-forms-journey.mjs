@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {message} from './email/app.mjs'
 import {selfServiceFixture} from './self-service-fixture.mjs'
 export async function requestFormsJourney(){
  const f=await selfServiceFixture(),{app,p,owner,admin,api,reason,order,internal,form,valid,signin}=f,path=`${api}/${form.id}/submissions`
@@ -29,14 +30,43 @@ export async function requestFormsJourney(){
   await manage(`/workflow-rules/${routing.rule.id}/publish`,{})
   const customer=await signin('rosa@example.com',`/help/${p}/requests/${form.id}`)
   assert.equal(customer.location,`/help/${p}/requests/${form.id}`);assert.equal((await app.call(customer.path)).status,400)
-  const created=await app.call(path,{...customer,body:{...valid,locale:'es'},status:201}),id=created.data.ticket.id;assert.equal(created.data.ticket.status,'open')
+  // CC authority comes from independent authenticated mail, never a typed form address.
+  const cc='synthetic-happytohelp-1@customer.example'
+  await app.email(message({id:'synthetic-happytohelp-form-cc',from:cc,to:'help@example.com',text:'Please help with my own order.'}),{from:cc,to:'help@example.com',direct:true})
+  assert.equal((await app.call(path,{...customer,body:{...valid,cc:['not an address']},status:422})).data.field,'cc')
+  const ignored='synthetic-happytohelp-2@customer.example'
+  const submitted={...valid,cc:[cc,ignored,'  ROSA@EXAMPLE.COM  ','rosa@example.com']}
+  const formBefore=(await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n
+  const created=await app.call(path,{...customer,body:{...submitted,locale:'es'},status:201}),id=created.data.ticket.id;assert.equal(created.data.ticket.status,'open')
   const values=await app.sql('SELECT field_id,value_json FROM ticket_field_values WHERE conversation_id=?',id);assert.deepEqual(Object.fromEntries(values.map(v=>[v.field_id,JSON.parse(v.value_json)])),valid.fields)
-  assert.equal((await app.call(path,{...customer,body:valid,status:200})).data.ticket.id,id)
-  assert.equal((await app.call(path,{...customer,body:{...valid,message:'Changed command'},status:409})).status,409)
-  assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,before.n+1)
+  assert.equal((await app.call(path,{...customer,body:submitted,status:200})).data.ticket.id,id)
+  assert.equal((await app.call(path,{...customer,body:{...submitted,message:'Changed command'},status:409})).status,409)
+  assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,formBefore+1)
   const acknowledgments=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&[].concat(mail.to).includes('rosa@example.com'))
   assert.equal(acknowledgments().length,1,'a verified request-form submission acknowledges the requester once, including on exact-command replay')
   assert.equal(acknowledgments()[0].headers['X-Auto-Response-Suppress'],'All')
+  const ccNotices=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&mail.text?.includes(id)&&[].concat(mail.to).includes(cc))
+  assert.equal(ccNotices().length,1,'the form acknowledges its independently proven CC once, including replay')
+  assert.equal(ccNotices()[0].headers['X-Auto-Response-Suppress'],'All')
+  for(const copy of [...ccNotices(),...acknowledgments()]){assert.equal([].concat(copy.to).length,1);assert.ok(!copy.cc?.length&&!copy.bcc?.length)}
+  assert.equal(f.mail.filter(copy=>[].concat(copy.to).includes(ignored)).length,0)
+  assert.equal((await app.first('SELECT count(*) n FROM conversation_participants WHERE conversation_id=?',id)).n,1,'self and unknown CC add no participant')
+  assert.equal((await app.first('SELECT count(*) n FROM conversation_participants cp JOIN contacts ct ON ct.id=cp.contact_id WHERE cp.conversation_id=? AND ct.email=?',id,cc)).n,1)
+  assert.equal((await app.call(path,{...customer,body:valid,status:409})).status,409,'removing CC changes the durable intent')
+  await app.configure({})
+  assert.equal((await app.call(path,{...customer,body:submitted,status:200})).data.ticket.id,id)
+  assert.equal(ccNotices().length,1,'restart and replay preserve the frozen acknowledgment')
+  const foreignEmail='synthetic-happytohelp-foreign@customer.example'
+  await app.db.prepare('INSERT INTO contacts(id,project_id,email,created_at,is_verified,external_id) VALUES(?,?,?,?,1,?)').bind('synthetic-happytohelp-foreign',f.foreign.projectId,foreignEmail,Date.now(),foreignEmail).run()
+  const shapes=[]
+  for(const [index,addresses] of [[cc],[ignored],[foreignEmail],['  ROSA@EXAMPLE.COM  ']].entries()){
+   const next=await app.call(path,{...customer,body:{...valid,localId:`synthetic-happytohelp-cc-${index}`,cc:addresses},status:201})
+   shapes.push([Object.keys(next.data).sort(),Object.keys(next.data.ticket).sort(),Object.keys(next.data.message).sort()])
+   assert.ok(!JSON.stringify(next.data).includes(addresses[0]),'response reveals no CC admission or contact data')
+   assert.equal((await app.call(path,{...customer,body:{...valid,localId:`synthetic-happytohelp-cc-${index}`,cc:addresses},status:200})).data.ticket.id,next.data.ticket.id)
+  }
+  assert.ok(shapes.every(shape=>JSON.stringify(shape)===JSON.stringify(shapes[0])))
+  assert.equal(f.mail.filter(copy=>[].concat(copy.to).some(address=>[ignored,foreignEmail].includes(address))).length,0)
   const ticket=(await app.ok(`${dashboard}/conversations/${id}/ticket`,owner)).data
   assert.equal(ticket.assigned_to,f.workspace.users.operator,'the selected form and typed field route the ticket')
   const sla=(await app.ok(`${dashboard}/conversations/${id}/sla`,owner)).data

@@ -1,3 +1,4 @@
+import {notificationFetch} from '../email-send-window'
 import {HTTPException} from 'hono/http-exception'
 export const MIME_LIMIT=24*1024*1024
 export class MailboxResponseTooLarge extends Error {}
@@ -23,7 +24,7 @@ export function graphPageUrl(value:string){
 export async function providerBytes(url:string,init:RequestInit={},limit=MIME_LIMIT):Promise<{bytes:Uint8Array;status:number}>{
  providerUrl(url)
  if(typeof init.body==='string'&&new TextEncoder().encode(init.body).length>36*1024*1024)throw new HTTPException(413)
- const response=await fetch(url,{...init,redirect:'manual',signal:AbortSignal.timeout(20000)})
+ const response=await notificationFetch(url,{...init,redirect:'manual',signal:AbortSignal.timeout(20000)})
  if(!response.ok){await response.body?.cancel();throw new MailboxProviderError(response.status)}
  if(Number(response.headers.get('content-length'))>limit){await response.body?.cancel();throw new MailboxResponseTooLarge('Mailbox response exceeds size limit')}
  const reader=response.body?.getReader(),parts:Uint8Array[]=[];let length=0

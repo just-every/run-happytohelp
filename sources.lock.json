@@ -2535,6 +2535,10 @@
       "sha256": "32c20432952f7c817ebb530ed1057f23649c3df8c1b8bb0287e09b452e01b1d4",
       "executable": false
     },
+    "migrations/256_inbound_lookup_indexes.sql": {
+      "sha256": "b6d2ee4f32e77e9a7a392a62c6f0226302455b1c996d9dea74f465258e5e3356",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false

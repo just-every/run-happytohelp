@@ -11,12 +11,14 @@ const cases=[
  ['unrecognized contact identity',id=>({...person(id,'other@example.test'),alternate_identity:{email:'private@example.test'}}),'unsupported_source_field:alternate_identity'],
  ['malformed contact collection',id=>({...conversation(id),contacts:{type:'contact.list',contacts:{id:'hidden',email:'private@example.test'}}}),'exactly_one_conversation_contact_required']
 ];
-for(const [label,shape,reason] of cases)test(`private original erasure covers ${label} and changed source IDs`,async()=>{const h=await nativeHarness();try{
+test('private original erasure covers malformed and embedded identities and changed source IDs',async()=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,created_at) VALUES('native','p','private@example.test',1)").run();
- const run=await upload(h,[shape('first')]);await h.drain();const ready=await state(h,run);assert.equal(ready.state,'ready');assert.equal(ready.error,null);assert.ok(ready.plan.decisions.some(d=>d.rejection===reason||d.omissions.some(o=>o.reason===reason)),label+' is accounted for');
+ const runs=[];for(const [label,shape,reason] of cases){
+ const run=await upload(h,[shape('first')]);runs.push(run);await h.drain();const ready=await state(h,run);assert.equal(ready.state,'ready');assert.equal(ready.error,null);assert.ok(ready.plan.decisions.some(d=>d.rejection===reason||d.omissions.some(o=>o.reason===reason)),label+' is accounted for');
+ }
  await h.call('/api/management/projects/p/contacts/native/erase',json({}));
- assert.equal((await state(h,run)).state,'erased');assert.equal((await (await h.files).list({prefix:'move-in/p/'})).objects.length,0);
- assert.equal((await replay(h,[shape('different-source')])).response.status,410);assert.equal(h.outbound,0);
+ for(const run of runs){assert.equal((await state(h,run)).state,'erased');assert.equal((await (await h.files).list({prefix:'move-in/p/'})).objects.length,0)}
+ for(const [label,shape] of cases){assert.equal((await replay(h,[shape('different-source')])).response.status,410,label);assert.equal(h.outbound,0)}
  }finally{await h.close()}});
 
 test('the first durable fence retains imported source aliases even after native identity fields were cleared',async()=>{const h=await nativeHarness();try{

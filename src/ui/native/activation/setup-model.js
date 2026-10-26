@@ -1,9 +1,11 @@
 // Turns the activation snapshot into what the Setup list shows. Pure: no requests, no wording decided by the server.
-// Needs you = steps the server places in `needs_you`, less the AI service once a key is installed, unless the provider
-// rejected the key or refused to let us check it (see modelKeyState). Skipped = the same steps once the owner chose to
-// leave them for now (placement `skipped`); an observation always wins, so a skipped step later seen is just a row;
-// What we've set = every other visible step plus the facts that have no observation of their own (workspace, colour,
-// starter assistant). Every row says what is true of its state: installed is not confirmed, off is not waiting.
+// Open = steps the server places in `needs_you`, less the AI service once a key is installed, unless the provider
+// rejected the key or refused to let us check it (see modelKeyState). An open step is Needs you, or Optional: the AI
+// service while it has no key, and the widget until the owner gives a website of their own. Skipped = the same steps
+// once the owner chose to leave them for now (placement `skipped`); an observation always wins, so a skipped step later
+// seen is just a row; What we've set = every other visible step plus the facts that have no observation of their own
+// (workspace, colour, starter assistant). Every row says what is true of its state: installed is not confirmed, off is
+// not waiting.
 export const needOrder = ['widget_seen', 'model_key', 'sender_dns'];
 
 // The settings page each row's Change link opens, and how that page is named in the link's accessible label.
@@ -77,9 +79,20 @@ const ownerStep = (data, item) => item.id !== 'model_key' || ['missing', 'proble
 const asksOwner = (data, item) => item.placement === 'needs_you' && ownerStep(data, item);
 const leftForNow = (data, item) => item.placement === 'skipped' && ownerStep(data, item);
 const inNeedOrder = (a, b) => needOrder.indexOf(a.id) - needOrder.indexOf(b.id);
-export const needs = data => data.steps.filter(item => asksOwner(data, item)).sort(inNeedOrder);
+/** Whether the widget answers on a website of the owner's own, rather than nowhere yet or only on this app's address. */
+const siteGiven = data => Boolean(data.facts?.website) && hostOf(data.facts.website) !== hostOf(data.facts?.widget?.apiOrigin);
+// AI is optional, so the AI service waits under Optional while it has no key (a rejected or refused key is a problem,
+// which needs the owner); so does the widget, until there is a website of the owner's own to put it on.
+const optionalStep = (data, item) => item.id === 'model_key' ? modelKeyState(data) === 'missing' : item.id === 'widget_seen' && !siteGiven(data);
+/** Every step still open to the owner, needed or optional, in need order: the heading stays at "Nearly ready" while any is. */
+export const open = data => data.steps.filter(item => asksOwner(data, item)).sort(inNeedOrder);
+export const needs = data => open(data).filter(item => !optionalStep(data, item));
+/** What the owner can do whenever they want: shown apart from Needs you and never counted as needing them. */
+export const optional = data => open(data).filter(item => optionalStep(data, item));
 /** What the owner chose to leave for now, in need order. Never counted and never shown as confirmed. */
 export const skipped = data => data.steps.filter(item => leftForNow(data, item)).sort(inNeedOrder);
+/** A local trial whose widget and AI key are both still open, with no key yet: one action leaves both for now. */
+export const localTrial = data => data.environment === 'local' && modelKeyState(data) === 'missing' && ['widget_seen', 'model_key'].every(id => open(data).some(item => item.id === id));
 
 function ceilingsValue(data) {
  const limits = data.facts?.ceilings;

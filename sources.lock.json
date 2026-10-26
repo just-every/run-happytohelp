@@ -12480,7 +12480,7 @@
       "executable": false
     },
     "tests/move-in/identity-correction.mjs": {
-      "sha256": "1bfda3f5413bef8efceb21140850deecb0ca5afd57e8c98b6acee1afd5d9d82d",
+      "sha256": "ebf83f62d35df002182c35f18c6c32b8ab84c04a89a8d692182d2a26f7186cd0",
       "executable": false
     },
     "tests/move-in/inspector.mjs": {
@@ -12564,7 +12564,7 @@
       "executable": false
     },
     "tests/move-in/shape-syntax.mjs": {
-      "sha256": "f1d7b818c7bddefb364eccfbf99d10d0cf349fd19a4936a78fda689770073381",
+      "sha256": "a7744292e72dd446a4a865c61010de8bcd433137a3b9fe419c11d0eca0ccae49",
       "executable": false
     },
     "tests/move-in/shape-upgrade.mjs": {

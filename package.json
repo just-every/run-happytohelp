@@ -149,7 +149,7 @@
     "moment-timezone": "^0.5.33",
     "object-merge-advanced": "^14.0.18",
     "openai": "6.46.0",
-    "postal-mime": "3.0.0",
+    "postal-mime": "4.0.8",
     "pretty-bytes": "^5.5.0",
     "prop-types": "^15.7.2",
     "react": "19.2.8",
@@ -197,7 +197,7 @@
   "pnpm": {
     "overrides": {
       "sharp": "^0.35.5",
-      "undici@>=7.0.0 <7.29.1": "7.29.1",
+      "undici@>=7.0.0 <7.30.1": "7.30.1",
       "source-map-js@>=1.0.0 <1.2.2": "^1.2.2"
     },
     "onlyBuiltDependencies": [

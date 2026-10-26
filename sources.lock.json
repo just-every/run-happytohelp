@@ -1876,11 +1876,11 @@
       "executable": false
     },
     "live-proofs/toolchain/package-lock.json": {
-      "sha256": "da8fbff3a90c0e1724fa3f9da3603b2ce768b548a2e2c5ae4acf52fffaa3518f",
+      "sha256": "7cc1c011850c337fc65431dbb8b44fc1977da3671518ed55e2bf364fbb0d580f",
       "executable": false
     },
     "live-proofs/toolchain/package.json": {
-      "sha256": "34b76901dea7dee64357e6b627227619afa1a20081d293badedab8a2cc9b4101",
+      "sha256": "3bdb00cf126af11b86451184269caf2888520d3b73565699793a9262ed9c8a0e",
       "executable": false
     },
     "live-proofs/validate-source.mjs": {
@@ -2548,11 +2548,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "63c259d4eee7502035d9a3194a5575e9798c722b26c0624b34ad12ad0fa9344e",
+      "sha256": "5f4569df3eac73f8185ea4265b7aa2e9143554fac1bdc8dc197ad95d633c6f53",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "76badd57b74aded06591c7f5a9ff2814f4cdc6ef49183b3e3f670842420240ec",
+      "sha256": "31052b615ff8320c6aa4f0da4de22a8a3b0702887632ac342a461a7454bea976",
       "executable": false
     },
     "public/fonts/fonts.css": {

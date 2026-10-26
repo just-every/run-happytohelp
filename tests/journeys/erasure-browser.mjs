@@ -71,8 +71,8 @@ test('at 390px the main workspace screens render without horizontal scrolling',a
   for(const screen of ['conversations','contacts','reports','activation','api-settings','webhook-settings','slack-settings','delivery-log']){
    const response=await page.goto(`${runtime.origin}/projects/${owner.projectId}/${screen}`)
    assert.equal(response.status(),200,screen+' renders')
-   await page.locator('main').waitFor();await page.evaluate(()=>document.fonts.ready)
-   assert.ok((await page.locator('main').innerText()).trim().length,screen+' has content')
+   await page.locator('#workspace-main').waitFor();await page.locator('#workspace-main h1').first().waitFor({state:'attached'});await page.evaluate(()=>document.fonts.ready)
+   assert.ok((await page.locator('#workspace-main').innerText()).trim().length,screen+' has content')
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),screen+' has no horizontal scroll')
    await page.screenshot({path:shot(screen+'-390.png'),fullPage:true})
   }

@@ -12124,7 +12124,7 @@
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {
-      "sha256": "5e7d5f26513ceb74cfdaef6d9399395766c18588b7a0f3cca518d5b4f4a2104e",
+      "sha256": "72af5c0298b16a38923e6f2a9e3166824ea8b085f3de97b8f5351101e0240a6c",
       "executable": false
     },
     "tests/journeys/connections.mjs": {
@@ -12164,7 +12164,7 @@
       "executable": false
     },
     "tests/journeys/erasure-browser.mjs": {
-      "sha256": "4eb5bbf041d2afbed7ae3479fd6848ac76f2c474ed29bc79960fbc7096fd145e",
+      "sha256": "39d50361bc13bf8fb320e2cde4c3fdabf3a84e8b193e3f0f02dcab7de43a33d4",
       "executable": false
     },
     "tests/journeys/erasure.mjs": {
@@ -12180,7 +12180,7 @@
       "executable": false
     },
     "tests/journeys/identity-browser.mjs": {
-      "sha256": "9d4843c418c4e2fbe93cf51a67098d84fc75bae42d5676dd67ca5164788fa313",
+      "sha256": "a738e07de1710ed4de00832172c99ce1e0dfad8593b92667c192410285b40455",
       "executable": false
     },
     "tests/journeys/identity.mjs": {

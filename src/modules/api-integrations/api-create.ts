@@ -20,8 +20,8 @@ export function createApi(app:Hono<ApiEnv>){
   const product=credential.source_product,digest=await hashToken(key),bodyDigest=await hashToken(canonicalJson(b)),guard=tokenGuard(a,p,'conversations:create')
   const prior=await c.env.DB.prepare('SELECT * FROM api_requests WHERE project_id=? AND source_product=? AND key_digest=?').bind(p,product,digest).first<any>()
   if(prior){
-   if(prior.conversation_id&&!await reachableConversation(c.env,p,a.credentialId,prior.conversation_id))throw new ApiError(404,'not_found')
    if(prior.erased)throw new ApiError(409,'identity_erased')
+   if(prior.conversation_id&&!await reachableConversation(c.env,p,a.credentialId,prior.conversation_id))throw new ApiError(404,'not_found')
    if(prior.body_digest!==bodyDigest)throw new ApiError(409,'idempotency_conflict')
    if(!prior.response_json)throw new ApiError(409,'in_progress','Request is in progress',{}, {'Retry-After':'1'})
    c.header('Idempotency-Replayed','true');return c.json(JSON.parse(prior.response_json),prior.status)

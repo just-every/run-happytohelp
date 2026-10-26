@@ -3952,7 +3952,7 @@
       "executable": false
     },
     "src/modules/api-integrations/api-create.ts": {
-      "sha256": "b76a73b6ffca70fa07b0efa67345e6a119fb33e00eb22cffa8814b914cae6595",
+      "sha256": "e0a619df22b0ea680fdfe42a77d3801e3fc149291d1fd2e8f50d8f21f0e43fde",
       "executable": false
     },
     "src/modules/api-integrations/api-resources.ts": {
@@ -4012,7 +4012,7 @@
       "executable": false
     },
     "src/modules/api-integrations/machine-credentials.ts": {
-      "sha256": "d9e64a98f66660b602036e393593629af202a69e102a5975ab0a36628139033e",
+      "sha256": "22ae0825927272537580eb832684dae0196712f3a1780c071b88edf9e8af7f55",
       "executable": false
     },
     "src/modules/api-integrations/module.json": {
@@ -10880,7 +10880,7 @@
       "executable": false
     },
     "tests/connections/api-create.mjs": {
-      "sha256": "08fa59088994ca1d3aa2c8d9948e2653908f03e6e027e5f57dcfbf8d965824f5",
+      "sha256": "7c62d00ed043b8db4a40b7bc8d97e5fbcb9208e065660bb448e81dbc4f40dc86",
       "executable": false
     },
     "tests/connections/api.mjs": {

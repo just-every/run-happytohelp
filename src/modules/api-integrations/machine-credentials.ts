@@ -3,6 +3,7 @@ import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {tokens,credentialScopes,type Issuer} from '../../platform/integration-authority'
 export function machineInput(body:any){
+ if(body.source_product==null)throw new HTTPException(400,{message:'A source product label is required'})
  credentialScopes(body.scopes,body.source_product)
  const bindings=body.bindings??{}
  if(!bindings||Array.isArray(bindings)||typeof bindings!=='object')throw new HTTPException(400,{message:'Bindings must be an object'})
@@ -13,6 +14,7 @@ export function machineInput(body:any){
  return {source:body.source_product,reach:JSON.stringify(reach),values:JSON.stringify(values),minute,day}
 }
 export async function rotateMachine(env:Env,who:Issuer,id:string,body:any){
+ if(Object.keys(body).some(key=>key!=='overlap_seconds'))throw new HTTPException(400,{message:'Rotation only accepts an overlap interval'})
  const old=await credentialById(env,who.actor.projectId,id)
  if(!old)throw new HTTPException(404)
  if(old.revoked_at!==null||old.expires_at!==null&&old.expires_at<=Date.now())throw new HTTPException(409,{message:'Credential is expired or revoked'})

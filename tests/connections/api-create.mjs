@@ -463,6 +463,7 @@ export const invariantSweeps={
   for(const scope of ['conversations:create','messages:append']){
    const response=await h.raw(settings+'/tokens/'+legacy.data.id,{...body({scopes:['contacts:read',scope]}),method:'PATCH'});assert.equal(response.status,400);
    assert.deepEqual(await h.db.prepare('SELECT * FROM api_credentials WHERE id=?').bind(legacy.data.id).first(),before);
+   assert.equal((await h.raw(settings+'/tokens/'+legacy.data.id+'/rotate',body({scopes:[scope]}))).status,400);assert.equal((await h.db.prepare('SELECT count(*) n FROM integration_tokens WHERE credential_id=?').bind(legacy.data.id).first()).n,1);
   }
   await h.call(settings+'/tokens/'+legacy.data.id,{...body({create_per_minute:3,bindings:{}}),method:'PATCH'});
   const rotatedLegacy=await h.call(settings+'/tokens/'+legacy.data.id+'/rotate',body({overlap_seconds:60}));

@@ -1,7 +1,7 @@
 import {contactKeys,requesterAdmission,assertAdmission} from './requester-admission'
 import {consumeUploads,finishUploads} from './upload-lifecycle'
 import {attachments} from './create-attachments'
-import {conversationReach,reachableReference} from './reach'
+import {conversationReach,reachableReference,reachableConversation} from './reach'
 import type {Hono} from 'hono'
 import {hashToken} from '../../platform/auth'
 import {tokenGuard} from '../../platform/integration-authority'
@@ -20,7 +20,7 @@ export function appendApi(app:Hono<ApiEnv>){
   if(!current)throw new ApiError(404,'not_found')
   const merged=await mergedAlias(c.env,p,id);if(merged)throw new ApiError(409,'merged_into','Conversation was merged',await reachableReference(c.env,p,a.credentialId,merged.target_id))
   const digest=await hashToken(canonicalJson(b)),prior=await c.env.DB.prepare('SELECT * FROM api_appends WHERE project_id=? AND conversation_id=? AND credential_id=? AND local_id=?').bind(p,id,credential.id,localId).first<any>()
-  if(prior){if(prior.body_digest!==digest)throw new ApiError(409,'idempotency_conflict');if(!prior.response_json)throw new ApiError(409,'in_progress','Append is in progress',{}, {'Retry-After':'1'});return c.json({...JSON.parse(prior.response_json),duplicate:true})}
+  if(prior){if(prior.body_digest!==digest)throw new ApiError(409,'idempotency_conflict');if(!prior.response_json)throw new ApiError(409,'in_progress','Append is in progress',{}, {'Retry-After':'1'});const response=JSON.parse(prior.response_json);if(response.data?.conversation_id&&!await reachableConversation(c.env,p,a.credentialId,response.data.conversation_id))throw new ApiError(404,'not_found');return c.json({...response,duplicate:true})}
   const admission=requesterAdmission(p,await contactKeys(c.env,p,current.contact_id),current.contact_id)
   await assertAdmission(c.env,admission,b.kind==='note')
   const allowed=admission.guard(b.kind==='note'),commit={sql:`EXISTS(SELECT 1 FROM conversations c WHERE c.project_id=? AND c.id=? AND ${conversationReach()}) AND (${allowed.sql})`,args:[p,id,a.credentialId,...allowed.params]}
@@ -63,6 +63,7 @@ export function appendApi(app:Hono<ApiEnv>){
   const stored=await c.env.DB.prepare(`SELECT response_json FROM api_appends r JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id WHERE r.project_id=? AND r.conversation_id=? AND r.credential_id=? AND r.local_id=? AND r.body_digest=? AND ${contactAvailableSql()} AND EXISTS(${guard.sql})`).bind(p,id,credential.id,localId,digest,...guard.params).first<any>()
   if(!stored)throw new ApiError(409,'conflict')
   const response=JSON.parse(stored.response_json)
+  if(response.data?.conversation_id&&!await reachableConversation(c.env,p,a.credentialId,response.data.conversation_id))throw new ApiError(404,'not_found')
   await finishUploads(c.env,p,files)
   return c.json(response)
   }catch(error){await assertAdmission(c.env,admission,b.kind==='note');if(!await c.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.project_id=? AND c.id=? AND ${conversationReach()}`).bind(p,id,a.credentialId).first())throw new ApiError(404,'not_found');if(error instanceof ApiError)throw error;throw new ApiError(409,'conflict','Conversation or credential changed')}finally{

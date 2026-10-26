@@ -3632,7 +3632,7 @@
       "executable": false
     },
     "src/modules/ai-support/llm/orchestrator.js": {
-      "sha256": "c36a22f720e60ff9fb90915cc51fd489802aa83866f324582a8dd85096b8ad3e",
+      "sha256": "85a35107adea0a828b77472f8b50ac9499e00c2f0fbdbfecf71e45f3ede45432",
       "executable": false
     },
     "src/modules/ai-support/llm/partialJson.js": {
@@ -7108,11 +7108,11 @@
       "executable": false
     },
     "src/modules/validation/zod.d.ts": {
-      "sha256": "6b1304e26d653fd7426ba0ace10dc1f6fe8eea6944adc94d2f58ecc1f7e67859",
+      "sha256": "571d66c7a649b18827a94576dae655dc7309b5be9691b8d93996b2d53b8fabbd",
       "executable": false
     },
     "src/modules/validation/zod.js": {
-      "sha256": "6f049dabc2edd8df4fd5921a7af6a4dd5bea01a2a384930bf9bfbddfce3f2c16",
+      "sha256": "02e216434cb6d328e06e76b8bbcf08780d6ed6f21a9b5db56de96ea420e3d85c",
       "executable": false
     },
     "src/modules/widget/appearance-values.d.ts": {

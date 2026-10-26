@@ -274,9 +274,9 @@ const runStream = async ({
             response = validation.data;
         }
         else {
-            log.warn(`Schema validation failed for '${response_name}' (task='${task}')`, validationMessage(validation?.error));
+            log.warn(`Schema validation failed for '${response_name}' (task='${task}')`, validationMessage(validation?.error, schema));
             response = null;
-            generationError = generationError || new Error(`Invalid ${response_name} result: ${validationMessage(validation?.error) || 'schema validation failed'}`);
+            generationError = generationError || new Error(`Invalid ${response_name} result: ${validationMessage(validation?.error, schema) || 'schema validation failed'}`);
         }
     } else {
         response = { response: responseText };

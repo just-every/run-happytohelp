@@ -1,8 +1,8 @@
-import { z } from 'zod';
+import { z, boundedNumber } from '../../validation/zod.js';
 
 const string = z.string().nullable();
 const array = z.array(z.string()).nullable();
-const percent = z.number().int().min(0).max(100).nullable();
+const percent = boundedNumber(0,100,'integer').nullable();
 const evidenceIds = z.array(z.string().min(1)).max(12);
 const profileClaim = (value) => z.object({
     value,

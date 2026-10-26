@@ -1,6 +1,6 @@
 import {requireActiveProject,isProjectActive} from '../../platform/project-status'
 import type {Env,Job} from '../../platform/env'
-import {z} from 'zod'
+import {z} from '../validation/zod.js'
 import {currentGuard,publishProfile,finishContextJob} from './outcomes'
 // @ts-ignore Retained profile schemas.
 import * as schemas from './profiles/schemas.js'

@@ -1,5 +1,5 @@
 import * as ensemble from '../vendor/ensemble/worker.js';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z, validationMessage } from '../../validation/zod.js';
 import { taskModelSettings, calculateTaskCost } from './taskModels.js';
 import { TASKS, DEFAULT_MAX_RETRIES, modelForTask, modelLabelForTask } from './modelPolicy.js';
 import { openAiMessagesToEnsembleInput, ensembleContentToString, normalizeThinkingOutput, isThinkingCompatibleWithModel } from './normalization.js';
@@ -54,11 +54,8 @@ const buildAgent = async ({ task, tools, jsonSchema, options }) => {
 };
 
 const zodSchemaToEnsembleJsonSchema = (schema, responseName) => {
-    const jsonSchema = zodToJsonSchema(schema, {
-        name: responseName,
-        nameStrategy: 'title',
-        $refStrategy: 'none',
-    });
+    const jsonSchema = z.toJSONSchema(schema, { target: 'draft-7', unrepresentable: 'any' });
+    jsonSchema.title = responseName;
 
     return {
         type: 'json_schema',
@@ -75,7 +72,7 @@ const validateWithZod = (schema, value) => {
         return { success: true, data: value };
     }
     try {
-        return schema.safeParse(value);
+        return schema.safeParse(value, { reportInput: true });
     } catch (e) {
         return { success: false, error: e };
     }
@@ -277,9 +274,9 @@ const runStream = async ({
             response = validation.data;
         }
         else {
-            log.warn(`Schema validation failed for '${response_name}' (task='${task}')`, validation?.error);
+            log.warn(`Schema validation failed for '${response_name}' (task='${task}')`, validationMessage(validation?.error));
             response = null;
-            generationError = generationError || new Error(`Invalid ${response_name} result: ${validation?.error?.message || 'schema validation failed'}`);
+            generationError = generationError || new Error(`Invalid ${response_name} result: ${validationMessage(validation?.error) || 'schema validation failed'}`);
         }
     } else {
         response = { response: responseText };

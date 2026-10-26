@@ -1,5 +1,5 @@
 
-import { z } from 'zod';
+import { z } from '../../validation/zod.js';
 import { evidenceIdsAreEligible, evidenceIdsAreNew } from './context.js';
 
 const text = z.string().trim();

@@ -2548,11 +2548,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "5f4569df3eac73f8185ea4265b7aa2e9143554fac1bdc8dc197ad95d633c6f53",
+      "sha256": "87c0bb5762a688dfc7d5709efa86043571a58c12b4bda01f660d37d70c6b6062",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "31052b615ff8320c6aa4f0da4de22a8a3b0702887632ac342a461a7454bea976",
+      "sha256": "2001dd4915928e30d0b24d87a051fef2b7cb93f9fde0444c4cf3648ca76648a1",
       "executable": false
     },
     "public/fonts/fonts.css": {
@@ -3576,7 +3576,7 @@
       "executable": false
     },
     "src/modules/ai-support/assist/schema.js": {
-      "sha256": "bd92e258285acaa718f03fa63e064c9eff80e518b3cea18ae9fd8d40356d1894",
+      "sha256": "b52abf5a55996ce1ac8ff1261c8e0a29369e4cf38739e14af60d371f946b46e6",
       "executable": false
     },
     "src/modules/ai-support/assist/twoPassSuggestions.js": {
@@ -3632,7 +3632,7 @@
       "executable": false
     },
     "src/modules/ai-support/llm/orchestrator.js": {
-      "sha256": "6b874d4c8c6bca9a9d3f0b91418e31294782f596849fb51f1d00b7fbd01a10af",
+      "sha256": "c36a22f720e60ff9fb90915cc51fd489802aa83866f324582a8dd85096b8ad3e",
       "executable": false
     },
     "src/modules/ai-support/llm/partialJson.js": {
@@ -4216,7 +4216,7 @@
       "executable": false
     },
     "src/modules/customer-context/engine.ts": {
-      "sha256": "2dc1762ed81d98d017b8ae2d299e80669e21801078f2d55627675b67c56d95d0",
+      "sha256": "0988df4f6c94f5945d97542fd499b9a40de41e94c37cae35aa61144f514f5c81",
       "executable": false
     },
     "src/modules/customer-context/evidence.ts": {
@@ -4248,7 +4248,7 @@
       "executable": false
     },
     "src/modules/customer-context/monitoring/schema.js": {
-      "sha256": "c036441ba3cda70fa4ae1cab894db5ab9345f3e1fc15fdf54b725e2fdc5daef1",
+      "sha256": "4d4618fcada7d933c7199f49c1725cce80674511dae38c045fd4ea12e4870db0",
       "executable": false
     },
     "src/modules/customer-context/monitoring/summary.js": {
@@ -4280,7 +4280,7 @@
       "executable": false
     },
     "src/modules/customer-context/profiles/schemas.js": {
-      "sha256": "70dd0a5e03f67325756fc0ddd5e3f3e9fdfa0332b4efcbee9a6f9c0802185a3c",
+      "sha256": "d595b126cd42aa89150b2938d6a2046d4992bca148142c852db7992ca20b1a6c",
       "executable": false
     },
     "src/modules/customer-context/profiles/validation.js": {
@@ -7008,7 +7008,7 @@
       "executable": false
     },
     "src/modules/training-runs/baseline.js": {
-      "sha256": "cf3b54d120db66eceabd33226de8d5badaf3bec8abcb1aefaef8bda4e840382d",
+      "sha256": "7ab1a52b29b27ca39663b305c3ec4268359b41b046ffae447611450567c83b04",
       "executable": false
     },
     "src/modules/training-runs/case-details.ts": {
@@ -7088,7 +7088,7 @@
       "executable": false
     },
     "src/modules/triage/provider.ts": {
-      "sha256": "7e818c883b73ec3dbdf0c5ad2a1cabef5ed73351295e1fb78044cecef8918d06",
+      "sha256": "5b2022e6b46709132bdd007a6354cf90a2b1ea35829df9aee5b7ca11d749d8f2",
       "executable": false
     },
     "src/modules/triage/read.ts": {
@@ -7105,6 +7105,14 @@
     },
     "src/modules/triage/worker.ts": {
       "sha256": "12bbbdc1de58b79a143071f1a74ee05ab12591e0461eadb911ac48a966a29d8f",
+      "executable": false
+    },
+    "src/modules/validation/zod.d.ts": {
+      "sha256": "6b1304e26d653fd7426ba0ace10dc1f6fe8eea6944adc94d2f58ecc1f7e67859",
+      "executable": false
+    },
+    "src/modules/validation/zod.js": {
+      "sha256": "6f049dabc2edd8df4fd5921a7af6a4dd5bea01a2a384930bf9bfbddfce3f2c16",
       "executable": false
     },
     "src/modules/widget/appearance-values.d.ts": {
@@ -7140,7 +7148,7 @@
       "executable": false
     },
     "src/modules/widget/campaigns/model.ts": {
-      "sha256": "dd35330aba821e0a7fb39a75010c59614ab2015cb01a27981a45433114c486fa",
+      "sha256": "9c2de173fb4efd303cafc2467a367ea8113e13e9553b957348a7425cfe96d65f",
       "executable": false
     },
     "src/modules/widget/campaigns/report.ts": {

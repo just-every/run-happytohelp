@@ -1,6 +1,6 @@
 
 
-import { z } from 'zod';
+import { z } from '../../validation/zod.js';
 import { replyIconNames } from '../llm/schemas/reply-icons.js';
 
 const responseSchema = z.object({

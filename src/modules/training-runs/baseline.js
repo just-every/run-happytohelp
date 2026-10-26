@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from '../validation/zod.js';
 // Frozen baseline prompt/schema; context storage is native, not the historical MySQL adapter.
 const instruction=[
             "You draft suggested replies for a human support agent. These appear as clickable \"send\" options in the human agent's UI.",

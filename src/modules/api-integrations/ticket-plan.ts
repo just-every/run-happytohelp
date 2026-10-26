@@ -19,3 +19,8 @@ export function ticketStatements(env:Env,project:string,credential:any,plan:Tick
   env.DB.prepare("INSERT INTO ticket_history VALUES(?,?,?,?,?,'api',?,?)").bind(crypto.randomUUID(),project,id,actorId,actorType,now,JSON.stringify({...history,credential_id:credential.id,credential_name:credential.name,source_product:credential.source_product,source_ref:input.ref})),
  ]
 }
+
+/** The requester row is identical whether admission is immediate or held. */
+export function requesterStatements(env:Env,project:string,credential:any,plan:TicketPlan,input:any,now:number){
+ return input.contact?[]:[env.DB.prepare('INSERT INTO contacts(id,project_id,name,email,external_id,is_verified,metadata_json,created_at) VALUES(?,?,?,?,?,0,?,?)').bind(plan.contactId,project,input.name,input.email,null,JSON.stringify({api_asserted_by:credential.id,api_source:credential.source_product,api_external_id:input.external,...(input.phone?{phone:input.phone}:{})}),now)]
+}

@@ -407,6 +407,15 @@ export const invariantSweeps={
   for(const kind of ['customer','note']){
    const localId=fresh(),response=await h.raw('/_test/race',{token:scoped.token,...body({path:'/api/v1/conversations/'+inside+'/append',body:{kind,localId,content:'Race'},match:kind==='note'?'INSERT INTO api_notes':'INSERT INTO messages',race:[{sql:'UPDATE conversations SET mailbox_id=? WHERE id=?',params:[other.mailbox_id,inside]}]})});assert.ok(response.status>=400);assert.equal((await h.db.prepare('SELECT count(*) n FROM api_appends WHERE local_id=?').bind(localId).first()).n,0);await h.db.prepare('UPDATE conversations SET mailbox_id=? WHERE id=?').bind(selected.mailbox_id,inside).run();
   }
+  const reference=fresh(),replayKey=fresh(),replayInput={...requestInput(),...selected,source_ref:{product,ref:reference,url:'https://example.test/reference'}};
+  const original=await createRequest(h,issuer.token,replayInput,replayKey);assert.equal(original.status,201);const replayId=(await original.json()).data.id;
+  const excluded=await h.issue(machineScopes,'p',{source_product:product,bindings:{credentials:[issuer.data.id],mailboxes:[other.mailbox_id]}});
+  const hiddenReplay=await createRequest(h,excluded.token,replayInput,replayKey);assert.equal(hiddenReplay.status,404);assert.ok(!(await hiddenReplay.text()).includes(replayId));
+  const collision=await createRequest(h,excluded.token,{...replayInput,mailbox_id:other.mailbox_id});assert.equal(collision.status,409);assert.equal((await collision.clone().json()).error.code,'source_ref_exists');assert.ok(!(await collision.text()).includes(replayId));
+  const visibleReplay=await createRequest(h,issuer.token,replayInput,replayKey);assert.equal(visibleReplay.status,201);assert.equal((await visibleReplay.json()).data.id,replayId);
+  const sourceTicket=(await h.call('/api/management/projects/p/conversations/'+inside+'/ticket')).data,targetTicket=(await h.call('/api/management/projects/p/conversations/'+outside[0]+'/ticket')).data;
+  await h.call('/api/dashboard/projects/p/conversations/'+outside[0]+'/merge',body({source_id:inside,source_version:sourceTicket.ticket_version,target_version:targetTicket.ticket_version}));
+  for(const kind of ['customer','note']){const response=await h.raw('/api/v1/conversations/'+inside+'/append',{token:scoped.token,...body({kind,localId:fresh(),content:'Synthetic merged response'})});assert.equal(response.status,409);const result=await response.json();assert.equal(result.error.code,'merged_into');assert.equal(result.error.conversation_id,undefined)}
  },
  async requesters(h){
   for(const door of ['create','append','closed','release'])for(const spelling of ['email','provided_email','phone','external_id','api_external_id'])for(const location of ['sibling','address','domain']){
@@ -436,7 +445,30 @@ export const invariantSweeps={
   const ct=await h.db.prepare('SELECT contact_id FROM conversations WHERE id=?').bind(two).first();await h.call('/api/management/projects/p/contacts/'+ct.contact_id+'/erase',body({}));
   const erased=await h.raw('/api/v1/conversations/'+one+'/append',{token:grant.token,...body({kind:'customer',localId:fresh(),content:'No resurrection'})});assert.equal(erased.status,409);assert.equal((await erased.json()).error.code,'identity_erased');
  },
+ async scale(h){
+  const grant=await h.issue(machineScopes,'p',{source_product:fresh(),create_per_minute:60}),samples=[];
+  const input={...requestInput(),requester:{email:'synthetic-hh-scale@example.test'}},ticket=await createTicket(h,grant.token,input);
+  for(const count of [0,100000,400000]){
+   if(count)await h.db.prepare("WITH RECURSIVE numbers(n) AS (SELECT ? UNION ALL SELECT n+1 FROM numbers WHERE n<?) INSERT INTO contacts(id,project_id,email,metadata_json,created_at) SELECT 'synthetic-hh-scale-'||n,'p','synthetic-hh-scale-'||n||'@example.test','{}',1 FROM numbers").bind(count===100000?1:100001,count).run();
+   const measured=await h.call('/_test/admission-plan');assert.ok(measured.plan.some(row=>/SEARCH sibling USING INDEX sqlite_autoindex_contacts/.test(row.detail)),JSON.stringify(measured.plan));assert.ok(measured.result.meta.rows_read<100,JSON.stringify(measured.result.meta));
+   const timings={};if(count<400000)for(const door of ['append','create']){const values=[];for(let i=0;i<3;i++){const start=performance.now();const response=door==='create'?await createRequest(h,grant.token,{...requestInput(),requester:{external_id:fresh()}}):await h.raw('/api/v1/conversations/'+ticket+'/append',{token:grant.token,...body({kind:'customer',localId:fresh(),content:'Synthetic timing'})});assert.equal(response.status,door==='create'?201:200);values.push(performance.now()-start)}timings[door]=values}
+   samples.push({contacts:count,rows_read:measured.result.meta.rows_read,timings,plan:measured.plan});
+  }
+  console.log('API admission scale '+JSON.stringify(samples));
+ },
  async credentials(h){
+  const doors=(await h.call('/_test/credential-routes')).filter(r=>r.path.includes('/tokens')&&['POST','PATCH','DELETE'].includes(r.method)).map(r=>r.method+' '+r.path).sort();
+  assert.deepEqual(doors,['DELETE /projects/:projectId/connections/tokens/:id','PATCH /projects/:projectId/connections/tokens/:id','POST /projects/:projectId/connections/tokens','POST /projects/:projectId/connections/tokens/:id/rotate']);
+  const legacy=await h.issue(['contacts:read']),before=await h.db.prepare('SELECT * FROM api_credentials WHERE id=?').bind(legacy.data.id).first();
+  for(const scope of ['conversations:create','messages:append']){
+   const response=await h.raw(settings+'/tokens/'+legacy.data.id,{...body({scopes:['contacts:read',scope]}),method:'PATCH'});assert.equal(response.status,400);
+   assert.deepEqual(await h.db.prepare('SELECT * FROM api_credentials WHERE id=?').bind(legacy.data.id).first(),before);
+  }
+  await h.call(settings+'/tokens/'+legacy.data.id,{...body({create_per_minute:3,bindings:{}}),method:'PATCH'});
+  const rotatedLegacy=await h.call(settings+'/tokens/'+legacy.data.id+'/rotate',body({overlap_seconds:60}));
+  assert.deepEqual(JSON.parse((await h.db.prepare('SELECT scopes FROM api_credentials WHERE id=?').bind(legacy.data.id).first()).scopes),['contacts:read']);
+  assert.equal((await h.raw('/api/v1/contacts',{token:rotatedLegacy.token})).status,200);
+
   const product=fresh(),place=await placement(h),grant=await h.issue(machineScopes,'p',{source_product:product}),origin=await createTicket(h,grant.token,requestInput()),rotated=await h.call(settings+'/tokens/'+grant.data.id+'/rotate',body({overlap_seconds:600}));
   for(const id of [grant.data.id,rotated.data.id,rotated.data.credential_id]){
    await h.call(settings+'/tokens/'+id,{...body({scopes:['conversations:read'],bindings:{mailboxes:[place.mailbox_id],priorities:['low']},create_per_minute:3,create_per_day:9}),method:'PATCH'});
@@ -460,9 +492,20 @@ export const invariantSweeps={
   await h.db.prepare("INSERT INTO identity_tokens(token_hash,user_id,project_id,email,role,kind,expires_at) VALUES(?,?,'q',?,'operator','invite',?)").bind(fresh(),user,address,Date.now()+60000).run();
   await h.db.prepare("INSERT INTO member_roles VALUES('q',?,'operator',1)").bind(user).run();await h.db.prepare("INSERT INTO user_project_preferences VALUES('q',?,0,0)").bind(user).run();await h.db.prepare("INSERT INTO operator_presence VALUES('q',?,1,1)").bind(user).run();await h.db.prepare('INSERT INTO conversation_followers VALUES(?,?,1)').bind(qTicket,user).run();
   const snapshot=async()=>{const out={};for(const {name} of (await h.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").all()).results){const quoted='"'+name.replaceAll('"','""')+'"',cols=(await h.db.prepare('PRAGMA table_info('+quoted+')').all()).results.map(c=>c.name),pred=[];if(cols.includes('project_id'))pred.push("project_id='q'");if(cols.includes('namespace'))pred.push("namespace='q'");if(cols.includes('conversation_id'))pred.push("conversation_id IN (SELECT id FROM conversations WHERE project_id='q')");if(pred.length)out[name]=(await h.db.prepare('SELECT * FROM '+quoted+' WHERE '+pred.join(' OR ')).all()).results.map(r=>JSON.stringify(r)).sort()}return out};
-  const before=await snapshot();await h.call('/api/management/projects/p/agents/'+user+'/erase',body({}));assert.deepEqual(await snapshot(),before);assert.equal((await h.raw('/api/v1/conversations',{token:qGrant.token})).status,200);
+  await h.db.prepare("INSERT INTO magic_signins(token_hash,user_id,project_id,email,expires_at) VALUES(?,?,'q',?,?)").bind(fresh(),user,address,Date.now()+60000).run();
+  const reset=fresh();await h.db.prepare("INSERT INTO identity_tokens(token_hash,user_id,project_id,email,role,kind,expires_at) VALUES(?,?,'q',?,'operator','reset',?)").bind(sha(reset),user,address,Date.now()+60000).run();
+  const before=await snapshot();before.identity_tokens=before.identity_tokens.filter(value=>JSON.parse(value).kind!=='reset');
+  await h.call('/api/management/projects/p/agents/'+user+'/erase',body({}));assert.deepEqual(await snapshot(),before);
+  assert.equal((await h.db.prepare("SELECT count(*) n FROM identity_tokens WHERE user_id=? AND kind='reset'").bind(user).first()).n,0);
+  assert.ok((await h.raw('/api/identity/accept-token',body({token:reset,password:'synthetic-hh-new-password'}))).status>=400);
+assert.equal((await h.raw('/api/v1/conversations',{token:qGrant.token})).status,200);
   const pContact=await h.contact(fresh(),'p');const prior=await snapshot();await h.call('/api/management/projects/p/contacts/'+pContact+'/erase',body({}));assert.deepEqual(await snapshot(),prior);
   assert.deepEqual(await h.call('/_test/member-inventory'),[]);
+  const schema=await h.call('/_test/member-schema');assert.deepEqual(schema.errors,[]);
+  const tables=(await h.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").all()).results;
+  for(const {name} of tables){assert.ok(schema.entries[name],name);assert.ok(!schema.entries[name].accountOnly||schema.entries[name].level==='account',name)}
+  for(const name of ['magic_signins','identity_tokens','sessions','conversation_followers'])assert.equal(schema.entries[name].level,'workspace',name);
+
   const unknown=fresh().replaceAll('-','_');await h.db.prepare('CREATE TABLE '+unknown+'(user_id TEXT REFERENCES users(id))').run();assert.deepEqual(await h.call('/_test/member-inventory'),[unknown]);
  },
  async releaseParity(h){
@@ -475,6 +518,8 @@ export const invariantSweeps={
   for(const table of ['conversations','messages','media','conversation_tags','api_conversations']){
    const keyColumn=table==='conversations'?'id':'conversation_id',rows=[];for(const ticket of [id,direct])rows.push((await h.db.prepare('SELECT * FROM '+table+' WHERE '+keyColumn+'=?').bind(ticket).all()).results.map(row=>Object.fromEntries(Object.entries(row).filter(([k])=>!['id','conversation_id','created_at','updated_at','last_message_id','contact_id','actor_id','ticket_actor_id','ticket_actor_type','object_key','message_id','uploaded_by','local_id','source_ref','public_id','ticket_number','requester_id'].includes(k)))));assert.deepEqual(rows[0],rows[1],table)
   }
+  const contactRows=[];for(const ticket of [id,direct]){const row=await h.db.prepare('SELECT ct.metadata_json FROM contacts ct JOIN conversations c ON c.contact_id=ct.id WHERE c.id=?').bind(ticket).first();contactRows.push(JSON.parse(row.metadata_json));}
+  assert.deepEqual(contactRows[0],contactRows[1]);assert.equal(contactRows[0].api_source,product);
   const history=await h.db.prepare("SELECT actor_id,actor_type,changes_json FROM ticket_history WHERE conversation_id=? AND json_extract(changes_json,'$.action')='released'").bind(id).first();assert.equal(history.actor_id,'owner');assert.equal(history.actor_type,'user');assert.equal(JSON.parse(history.changes_json).credential_id,grant.data.id);
   const audit=(await h.call('/api/management/projects/p/audit/export?format=json')).events.find(e=>e.action==='api.suspended_recovered');assert.equal(audit.detail.hold_id,hold);assert.equal(audit.detail.conversation_id,id);assert.equal(audit.actor_id,'owner');assert.equal(audit.actor_type,'user');
   const replay=await createRequest(h,grant.token,input,key);assert.equal(replay.status,202);assert.equal(replay.headers.get('Idempotency-Replayed'),'true');assert.deepEqual(await replay.json(),receipt);

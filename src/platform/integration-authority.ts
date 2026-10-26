@@ -3,6 +3,13 @@ import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from './env'
 import {D1SqlDatabase,IntegrationsRepository,TokenService} from '../vendor/base/modules/integrations/index.ts'
 export const SCOPES=['conversations:create','messages:append','conversations:read','conversations:write','messages:write','contacts:read','contacts:write','articles:read','articles:write'] as const
+/** Shared scope eligibility for issue, policy updates and rotation. */
+export function credentialScopes(scopes:unknown,source:unknown){
+ if(!Array.isArray(scopes)||!scopes.length||scopes.some(value=>!(SCOPES as readonly unknown[]).includes(value)))throw new HTTPException(400,{message:'Select supported scopes'})
+ const machine=source!==null&&source!==undefined
+ if(machine?(typeof source!=='string'||! /^[a-z][a-z0-9_-]{0,63}$/.test(source)||scopes.some(value=>!(MACHINE_SCOPES as readonly unknown[]).includes(value))):scopes.some(value=>['conversations:create','messages:append'].includes(value)))throw new HTTPException(400,{message:'Scopes require an eligible source product'})
+ return [...new Set(scopes as string[])].sort()
+}
 export type ApiScope=typeof SCOPES[number]
 export interface SqlGuard {sql:string;params:(string|number|null)[]}
 const trusted=Symbol('native workspace token authority')
@@ -28,6 +35,8 @@ export function tokens(env:Env,projectId:string,extension?:CredentialPolicy){
   let id=resource,auditAction=action
   if(action==='token.issued'){
    const params=statements[0]!.params!,secretId=String(params[1]);id=extension?.rotate?.id??secretId
+   const policy=extension?.rotate?await env.DB.prepare('SELECT source_product FROM api_credentials WHERE namespace=? AND id=?').bind(projectId,id).first<{source_product:string|null}>():null
+   credentialScopes(JSON.parse(String(params[4])),extension?.rotate?policy?.source_product:extension?.source)
    if(extension?.rotate){
     auditAction='token.rotated'
     const live=credentialGuard(projectId,id,extension.rotate.revision)

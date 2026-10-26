@@ -1,7 +1,7 @@
 import {contactKeys,requesterAdmission,assertAdmission} from './requester-admission'
 import {consumeUploads,finishUploads} from './upload-lifecycle'
 import {attachments} from './create-attachments'
-import {conversationReach} from './reach'
+import {conversationReach,reachableReference} from './reach'
 import type {Hono} from 'hono'
 import {hashToken} from '../../platform/auth'
 import {tokenGuard} from '../../platform/integration-authority'
@@ -18,7 +18,7 @@ export function appendApi(app:Hono<ApiEnv>){
   const credential=await c.env.DB.prepare('SELECT * FROM api_credentials WHERE namespace=? AND id=?').bind(p,a.credentialId).first<any>()
   const current=await c.env.DB.prepare(`SELECT c.*,api.source_ref FROM conversations c JOIN api_conversations api ON api.conversation_id=c.id WHERE c.project_id=? AND c.id=? AND ${conversationReach()}`).bind(p,id,a.credentialId).first<any>()
   if(!current)throw new ApiError(404,'not_found')
-  const merged=await mergedAlias(c.env,p,id);if(merged)throw new ApiError(409,'merged_into','Conversation was merged',{conversation_id:merged.target_id})
+  const merged=await mergedAlias(c.env,p,id);if(merged)throw new ApiError(409,'merged_into','Conversation was merged',await reachableReference(c.env,p,a.credentialId,merged.target_id))
   const digest=await hashToken(canonicalJson(b)),prior=await c.env.DB.prepare('SELECT * FROM api_appends WHERE project_id=? AND conversation_id=? AND credential_id=? AND local_id=?').bind(p,id,credential.id,localId).first<any>()
   if(prior){if(prior.body_digest!==digest)throw new ApiError(409,'idempotency_conflict');if(!prior.response_json)throw new ApiError(409,'in_progress','Append is in progress',{}, {'Retry-After':'1'});return c.json({...JSON.parse(prior.response_json),duplicate:true})}
   const admission=requesterAdmission(p,await contactKeys(c.env,p,current.contact_id),current.contact_id)

@@ -1,3 +1,4 @@
+import {reachableReference} from './reach'
 import type {Env,Actor} from '../../platform/env'
 import {credentialGuard} from '../../platform/integration-authority'
 import {ticketAuthority} from '../tickets/model'
@@ -16,7 +17,7 @@ export async function releaseApiHold(env:Env,actor:Actor,sessionHash:string,row:
  const current=credentialGuard(p,credential.id,credential.policy_revision),input=await createInput(env,p,credential,plan.body),admission=requesterAdmission(p,await contactKeys(env,p,plan.contactId),plan.contactId)
  await assertAdmission(env,admission)
  const allowed=admission.guard(),id=crypto.randomUUID(),messageId=crypto.randomUUID(),now=Date.now()
- const collision=async()=>{if(input.ref){const existing=await env.DB.prepare('SELECT conversation_id FROM api_conversations WHERE project_id=? AND source_product=? AND source_ref=?').bind(p,credential.source_product,input.ref).first<any>();if(existing)throw new ApiError(409,'source_ref_exists','Append to the existing conversation',{conversation_id:existing.conversation_id})}}
+ const collision=async()=>{if(input.ref){const existing=await env.DB.prepare('SELECT conversation_id FROM api_conversations WHERE project_id=? AND source_product=? AND source_ref=?').bind(p,credential.source_product,input.ref).first<any>();if(existing)throw new ApiError(409,'source_ref_exists','Append to the existing conversation',await reachableReference(env,p,credential.id,existing.conversation_id))}}
  await collision()
  try{await env.DB.batch([
   env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(${guard.sql}) AND EXISTS(${current.sql}) AND (${allowed.sql}) AND EXISTS(SELECT 1 FROM suspended_emails WHERE project_id=? AND id=? AND expires_at>?) THEN 1 ELSE 0 END`).bind(...guard.params,...current.params,...allowed.params,p,row.id,now),

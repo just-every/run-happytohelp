@@ -12,8 +12,8 @@ export async function contactKeys(env:Env,project:string,contact:string){
  * pinned too: changing a spelling during I/O refuses the pending admission. */
 export function requesterAdmission(project:string,keys:RequesterKey[],contact:string|null=null){
  const params=[project,JSON.stringify(keys),contact,...keys.flatMap(key=>[key.kind,key.value])]
- const shared=keys.length?keys.map((_,i)=>`SELECT contact_id FROM api_contact_keys WHERE project_id=?1 AND kind=?${4+i*2} AND value=?${5+i*2}`).join(' UNION '):'SELECT NULL WHERE 0'
- const flag=(name:string)=>`EXISTS(SELECT 1 FROM contacts sibling WHERE sibling.project_id=?1 AND sibling.id IN (${shared} UNION SELECT ?3 WHERE ?3 IS NOT NULL) AND coalesce(json_extract(sibling.metadata_json,'$.${name}'),0)=1)`
+ const shared=keys.length?keys.map((_,i)=>`SELECT contact_id FROM api_contact_keys WHERE project_id=?1 AND kind=?${4+i*2} AND value=?${5+i*2}`).join(' UNION '):'SELECT NULL AS contact_id WHERE 0'
+ const flag=(name:string)=>`EXISTS(SELECT 1 FROM (${shared} UNION SELECT ?3 WHERE ?3 IS NOT NULL) ids CROSS JOIN contacts sibling ON sibling.id=ids.contact_id WHERE sibling.project_id=?1 AND coalesce(json_extract(sibling.metadata_json,'$.${name}'),0)=1)`
  const erased=`(${flag('is_erasing')} OR ${flag('is_erased')} OR EXISTS(SELECT 1 FROM api_erased_keys f JOIN json_each(?2) k ON f.digest=json_extract(k.value,'$.digest') WHERE f.project_id=?1) OR EXISTS(SELECT 1 FROM move_in_erased_identities f JOIN json_each(?2) k ON f.digest=json_extract(k.value,'$.digest') WHERE f.project_id=?1))`
  const blocked=`(${flag('is_blocked')} OR EXISTS(SELECT 1 FROM email_sender_rules rule JOIN json_each(?2) k ON json_extract(k.value,'$.kind')='email' AND rule.address IN (json_extract(k.value,'$.value'),substr(json_extract(k.value,'$.value'),instr(json_extract(k.value,'$.value'),'@'))) WHERE rule.project_id=?1 AND rule.action='block'))`
  const unchanged=`(?3 IS NULL OR NOT EXISTS(SELECT kind,value FROM api_contact_keys WHERE project_id=?1 AND contact_id=?3 EXCEPT SELECT json_extract(value,'$.kind'),json_extract(value,'$.value') FROM json_each(?2)))`

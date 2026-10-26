@@ -507,6 +507,8 @@ assert.equal((await h.raw('/api/v1/conversations',{token:qGrant.token})).status,
   for(const name of ['magic_signins','identity_tokens','sessions','conversation_followers'])assert.equal(schema.entries[name].level,'workspace',name);
 
   const unknown=fresh().replaceAll('-','_');await h.db.prepare('CREATE TABLE '+unknown+'(user_id TEXT REFERENCES users(id))').run();assert.deepEqual(await h.call('/_test/member-inventory'),[unknown]);
+  await h.db.prepare('ALTER TABLE '+unknown+' ADD COLUMN conversation_id TEXT REFERENCES conversations(id)').run();assert.equal((await h.call('/_test/member-schema')).entries[unknown].level,'workspace');
+  await h.db.prepare('ALTER TABLE user_settings ADD COLUMN namespace TEXT').run();assert.deepEqual((await h.call('/_test/member-inventory')).sort(),[unknown,'user_settings'].sort(),'account-wide statements fail closed when schema gains workspace scope');
  },
  async releaseParity(h){
   const place=await placement(h),product=fresh(),grant=await h.issue(machineScopes,'p',{source_product:product}),marker=fresh(),reference=fresh();

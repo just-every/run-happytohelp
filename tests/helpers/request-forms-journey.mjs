@@ -37,12 +37,28 @@ export async function requestFormsJourney(){
   const ignored='synthetic-happytohelp-2@customer.example'
   const submitted={...valid,cc:[cc,ignored,'  ROSA@EXAMPLE.COM  ','rosa@example.com']}
   const formBefore=(await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n
+  // A deliberate request link preserves the article and brand through the
+  // public form; opaque read receipts cannot be forged or counted twice.
+  const article=(await app.call(`/api/knowledge/${p}/articles`,{...owner,body:{title:'Request guide',slug:'request-guide',content:'Read before asking for support.',status:'published'},status:201})).data
+  await app.call(`/api/knowledge/${p}/experience`,{...owner,method:'PUT',body:{defaultLocale:'en',locales:['en','es'],templates:{request:'Request template proof\n{{content}}'}},status:200})
+  const guide=(await app.call(`/help/${p}/request-guide`,{status:200})).data
+  const receipt=guide.match(/requests\?read=([a-f0-9-]{72})/)[1]
+  const formPage=(await app.call(`/help/${p}/requests/${form.id}?read=${receipt}`,{...customer,status:200})).data
+  assert.match(formPage,/Request template proof/);assert.ok(formPage.includes(`name="knowledgeRead" value="${receipt}"`))
+  await app.call(`/api/knowledge/public/${p}/search?q=synthetic-no-results`,{status:200})
+  submitted.knowledgeRead=receipt
   const created=await app.call(path,{...customer,body:{...submitted,locale:'es'},status:201}),id=created.data.ticket.id;assert.equal(created.data.ticket.status,'open')
+  const stats=async()=>(await app.call(`/api/knowledge/${p}/analytics`,{...owner,status:200})).data
+  assert.equal((await stats()).totals.tickets,1)
+  assert.equal((await stats()).articles.find(row=>row.articleId===article.id).tickets,1)
+  assert.ok((await stats()).searches.some(row=>row.query==='synthetic-no-results'&&row.withoutResults===1))
   const values=await app.sql('SELECT field_id,value_json FROM ticket_field_values WHERE conversation_id=?',id);assert.deepEqual(Object.fromEntries(values.map(v=>[v.field_id,JSON.parse(v.value_json)])),valid.fields)
   assert.equal((await app.call(path,{...customer,body:submitted,status:200})).data.ticket.id,id)
   assert.equal((await app.call(path,{...customer,body:{...submitted,message:'Changed command'},status:409})).status,409)
   assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,formBefore+1)
   const acknowledgments=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&[].concat(mail.to).includes('rosa@example.com'))
+  assert.equal((await stats()).totals.tickets,1,'exact submission replay does not recount the read')
+  assert.equal((await app.call(`/api/knowledge/${p}/analytics?brand=app.example&locale=en`,{...owner,status:200})).data.totals.tickets,1)
   assert.equal(acknowledgments().length,1,'a verified request-form submission acknowledges the requester once, including on exact-command replay')
   assert.equal(acknowledgments()[0].headers['X-Auto-Response-Suppress'],'All')
   const ccNotices=()=>f.mail.filter(mail=>mail.subject?.includes('received')&&mail.text?.includes(id)&&[].concat(mail.to).includes(cc))
@@ -126,6 +142,9 @@ export async function requestFormsJourney(){
   assert.equal((await app.call(path,{body:{...valid,localId:'not-configured'},status:503})).data.code,'verification_unavailable')
   // A verified mailbox can still use the portal when anonymous submissions are disabled.
   assert.equal((await app.call(path,{...customer,body:{...valid,localId:'verified-second'},status:201})).data.ticket.status,'open')
+  await app.call(path,{...customer,headers:{...customer.headers,'CF-Connecting-IP':'192.0.2.45'},body:{...submitted,localId:'synthetic-hh-second-read-ticket'},status:201})
+  await app.call(path,{...customer,headers:{...customer.headers,'CF-Connecting-IP':'192.0.2.45'},body:{...submitted,localId:'synthetic-hh-forged-read-ticket',knowledgeRead:'synthetic-hh-invalid'},status:201})
+  assert.equal((await stats()).totals.tickets,1,'one receipt cannot count a second ticket and invalid receipts never count')
   // Abusive anonymous sends and sign-in mail are limited at their public doors.
   await app.configure({RATE_LIMITS:JSON.stringify({conversationsPerIpHour:1})})
   await app.call(path,{body:{...valid,localId:'limited-request'},status:429})
@@ -136,5 +155,6 @@ export async function requestFormsJourney(){
    assert.equal(limited.status,202)
   }
   assert.equal(limited.status,429,'email-link requests are rate limited')
+
  }finally{await app.close()}
 }

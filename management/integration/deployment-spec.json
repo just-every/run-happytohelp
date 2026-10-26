@@ -760,8 +760,8 @@
     {
       "binding": "DB",
       "name": "256_inbound_lookup_indexes.sql",
-      "sha256": "b6d2ee4f32e77e9a7a392a62c6f0226302455b1c996d9dea74f465258e5e3356",
-      "sql": "-- Bound native ticket admission, authenticated mailbox proof and API hold lookup.\n-- Indexes only: no stored row changes. Apply before the updated Worker serves traffic.\nCREATE INDEX inbound_emails_conversation ON inbound_emails(project_id,conversation_id);\nCREATE INDEX inbound_emails_message ON inbound_emails(project_id,message_id);\nCREATE INDEX api_requests_hold ON api_requests(project_id,held_id);\n"
+      "sha256": "3c9b045f40e04ae9e632182d8e1a6168bedbf30961daec0c217b0fe89a33fb8c",
+      "sql": "-- Bound native ticket admission, authenticated mailbox proof and API hold lookup.\n-- Indexes only: no stored row changes. Apply before the updated Worker serves traffic.\nCREATE INDEX inbound_emails_conversation ON inbound_emails(project_id,conversation_id,automatic,local_id);\nCREATE INDEX inbound_emails_message ON inbound_emails(project_id,message_id);\nCREATE INDEX api_requests_hold ON api_requests(project_id,held_id);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

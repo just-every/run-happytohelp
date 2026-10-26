@@ -459,6 +459,7 @@ export const invariantSweeps={
    if(count){
     const start=count===100000?1:100001;
     await h.db.prepare("WITH RECURSIVE numbers(n) AS (SELECT ? UNION ALL SELECT n+1 FROM numbers WHERE n<?) INSERT INTO inbound_emails(id,project_id,conversation_id,intent_hash,state,created_at,automatic,message_id,evidence_json) SELECT 'synthetic-hh-mail-'||n,'p','synthetic-hh-mail-conversation-'||n,'synthetic-hh-intent-'||n,'done',1,n%2,'synthetic-hh-mail-message-'||n,'{}' FROM numbers").bind(start,count).run();
+    await h.db.prepare("WITH RECURSIVE numbers(n) AS (SELECT ? UNION ALL SELECT n+1 FROM numbers WHERE n<?) INSERT INTO inbound_emails(id,project_id,conversation_id,intent_hash,state,created_at,automatic,local_id,message_id,evidence_json) SELECT 'synthetic-hh-hot-mail-'||n,'p',?,'synthetic-hh-hot-intent-'||n,'done',1,n%2,'synthetic-hh-hot-local-'||n,'synthetic-hh-hot-message-'||n,'{}' FROM numbers").bind(start,count,ticket).run();
     await h.db.prepare("WITH RECURSIVE numbers(n) AS (SELECT ? UNION ALL SELECT n+1 FROM numbers WHERE n<?) INSERT INTO api_requests(project_id,source_product,key_digest,body_digest,claim,created_at,held_id) SELECT 'p','synthetic-hh-history','synthetic-hh-key-'||n,'synthetic-hh-body-'||n,'synthetic-hh-claim-'||n,1,'synthetic-hh-hold-'||n FROM numbers").bind(start,count).run();
    }
    const measured=await h.call('/_test/admission-plan');assert.ok(measured.result.meta.rows_read<100,JSON.stringify(measured));
@@ -466,7 +467,7 @@ export const invariantSweeps={
    assert.ok(measured.plan.some(row=>/SEARCH sibling USING INDEX/.test(row.detail)),JSON.stringify(measured.plan));
    assert.ok(measured.plan.some(row=>/SEARCH rule .*project_id=\? AND address=\?/.test(row.detail)),JSON.stringify(measured.plan));
    const doors=[];
-   doors.push(await measure('append',()=>h.raw('/api/v1/conversations/'+ticket+'/append',{token:grant.token,...body({kind:'customer',localId:fresh(),content:'Synthetic timing'}),headers:{'Content-Type':'application/json','X-Test-Meter':'1'}}),200));
+   for(let repeat=0;repeat<3;repeat++)doors.push(await measure('append',()=>h.raw('/api/v1/conversations/'+ticket+'/append',{token:grant.token,...body({kind:'customer',localId:fresh(),content:'Synthetic timing'}),headers:{'Content-Type':'application/json','X-Test-Meter':'1'}}),200));
    for(const requester of [{email:fresh()+'@example.test'},{external_id:fresh()},{phone:'+1415555'+String(1000+samples.length).padStart(4,'0')}])doors.push(await measure('create',()=>h.raw('/api/v1/conversations',{token:grant.token,...body({...requestInput(),requester}),headers:{'Content-Type':'application/json','Idempotency-Key':fresh(),'X-Test-Meter':'1'}}),201));
    doors.push(await measure('returning-email',()=>h.raw('/api/v1/conversations',{token:grant.token,...body(input),headers:{'Content-Type':'application/json','Idempotency-Key':fresh(),'X-Test-Meter':'1'}}),201));
    const visitorSession=await h.call('/api/identity/widget/session',{token:null,...body({widgetKey:'widget-p'})}),visitor=visitorSession.contactId;

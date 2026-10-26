@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "12c24a0926a939828ad265f4a1ead8b8ad6e8ebb01df80c547fe0b7d0b6a03b4",
+      "sha256": "574d82ce46c682f6beba3134dd014854604a4abbaf7544d58979259c696a8304",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2536,7 +2536,7 @@
       "executable": false
     },
     "migrations/256_inbound_lookup_indexes.sql": {
-      "sha256": "b6d2ee4f32e77e9a7a392a62c6f0226302455b1c996d9dea74f465258e5e3356",
+      "sha256": "3c9b045f40e04ae9e632182d8e1a6168bedbf30961daec0c217b0fe89a33fb8c",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -10896,7 +10896,7 @@
       "executable": false
     },
     "tests/connections/api-create.mjs": {
-      "sha256": "363d5ed841e45ef59242f4be28bef61a161a0f7856b6c9ea74c4e045ace3ecee",
+      "sha256": "e19417dec1527336b5da515a798c2a57b32bf6b19a08ba2e50e19e4f3a2ad7e9",
       "executable": false
     },
     "tests/connections/api.mjs": {

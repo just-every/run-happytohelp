@@ -45,6 +45,28 @@ try{
  assert.equal(inserted.text,'Restricted instructions')
  assert.equal((await call(`/api/knowledge/${p}/conversations/${badConversation}/articles/${aid}/insert`,{body:{mode:'text'}})).status,404)
 
+ // Explicit account entitlement is additional to the domain audience. Both
+ // customers prove the same email domain; only one receives a named grant.
+ const peer=await widget('peer@trusted.test','peer@trusted.test')
+ const peerConversation=(await app.call('/api/conversations',{token:peer.token,body:{projectId:p},status:201})).data.id
+ const customer=(await app.first('SELECT contact_id FROM conversations WHERE id=?',goodConversation)).contact_id
+ const grants=`/api/knowledge/${p}/categories/${category}/entitlements`
+ assert.equal((await app.call(grants,{token:k.owner.tokens.operator,method:'PUT',body:{contactIds:[customer]}})).status,403)
+ await call(grants,{method:'PUT',body:{contactIds:[customer]},status:200})
+ assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:peer.token})).status,404)
+ assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:good.token,status:200})).data.content,'Restricted instructions')
+ assert.deepEqual((await app.call(`/api/knowledge/public/${p}/search?q=Restricted`,{token:peer.token,status:200})).data,[])
+ assert.equal((await app.call(`/api/knowledge/public/${p}/articles/nested-secret`,{token:peer.token})).status,404)
+ const retrieval=async conversationId=>(await call(`/api/knowledge/${p}/search?`+new URLSearchParams({q:'Restricted',conversationId}),{status:200})).data.citations
+ assert.ok((await retrieval(goodConversation)).some(row=>row.id===`article:${aid}`))
+ assert.deepEqual(await retrieval(peerConversation),[])
+ assert.equal((await call(`/api/knowledge/${p}/conversations/${peerConversation}/articles/${aid}/insert`,{body:{mode:'text'}})).status,404)
+ await call(grants,{method:'PUT',body:{contactIds:[]},status:200})
+ assert.deepEqual(await retrieval(goodConversation),[],'revocation applies immediately to retrieval')
+ assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:good.token})).status,404)
+ await call(grants,{method:'PUT',body:{contactIds:[customer]},status:200})
+ assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='knowledge.entitlements.updated'",p))
+
  await call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{article:'{{title}}\n{{content}}'}},status:200})
  assert.equal((await call(`/api/knowledge/${p}/experience`,{status:200})).data.templates.article,'{{title}}\n{{content}}')
  await call(`/api/knowledge/${p}/articles/${aid}/translations/fr`,{method:'PUT',body:{title:'Secret FR',content:'Reviewed French',summary:'',reviewStatus:'reviewed'},status:200})
@@ -53,6 +75,8 @@ try{
  article=await app.call(`/api/knowledge/public/${p}/articles/secret?locale=fr`,{token:good.token,status:200});assert.equal(article.data.content,'Reviewed French')
  await call(`/api/knowledge/${p}/articles`,{body:{id:aid,title:'Secret edited',content:'New instructions',slug:'secret-new',categoryIds:[category],status:'published'},status:201})
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:good.token,status:200})).data.redirectSlug,'secret-new')
+ const fallback=(await app.call(`/api/knowledge/public/${p}/articles/secret-new?locale=fr`,{token:good.token,status:200})).data
+ assert.equal(fallback.locale,'en');assert.equal(fallback.requestedLocale,'fr');assert.equal(fallback.content,'New instructions')
  assert.equal((await call(`/api/knowledge/${p}/articles`,{body:{title:'Steal redirect',content:'No',slug:'secret',status:'published'}})).status,409)
  const history=(await call(`/api/knowledge/${p}/articles/${aid}/history`,{status:200})).data
  assert.ok(history.versions.length>=2);assert.equal(history.redirects[0].slug,'secret')

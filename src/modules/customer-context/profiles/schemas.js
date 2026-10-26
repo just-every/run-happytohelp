@@ -1,9 +1,9 @@
-import { z, boundedNumber } from '../../validation/zod.js';
+import { z, boundedNumber, lengthBounds } from '../../validation/zod.js';
 
 const string = z.string().nullable();
 const array = z.array(z.string()).nullable();
 const percent = boundedNumber(0,100,'integer').nullable();
-const evidenceIds = z.array(z.string().min(1)).max(12);
+const evidenceIds = lengthBounds(z.array(lengthBounds(z.string(), { min: 1 })), { max: 12 });
 const profileClaim = (value) => z.object({
     value,
     confidence: percent,
@@ -36,22 +36,22 @@ export const projectSchema = () => z.object({
 });
 
 export const projectContentOptimizeSchema = () => z.object({
-    pages: z.array(z.object({
-        url: z.string().min(1).describe('Page URL'),
-        text: z.string().min(1).describe('Exact original text from the cited approved knowledge document'),
-        selector: z.string().min(1).describe('CSS selector of that text'),
-        evidence_id: z.string().min(1).describe('ID of the approved knowledge document containing the exact text'),
-    })).max(10).describe('Pick only safe, high-value page content. Avoid legal, security, contractual, pricing, and factual-commitment text.'),
+    pages: lengthBounds(z.array(z.object({
+        url: lengthBounds(z.string(), { min: 1 }).describe('Page URL'),
+        text: lengthBounds(z.string(), { min: 1 }).describe('Exact original text from the cited approved knowledge document'),
+        selector: lengthBounds(z.string(), { min: 1 }).describe('CSS selector of that text'),
+        evidence_id: lengthBounds(z.string(), { min: 1 }).describe('ID of the approved knowledge document containing the exact text'),
+    })), { max: 10 }).describe('Pick only safe, high-value page content. Avoid legal, security, contractual, pricing, and factual-commitment text.'),
 });
 
 export const optimizeContentSchema = () => z.object({
-    pages: z.array(z.object({
-        url: z.string().min(1).describe('Page URL'),
-        text: z.string().min(1).describe('Optimized text'),
-        selector: z.string().min(1).describe('CSS selector of that text'),
-        content_id: z.string().min(1).describe('ID of the approved site-content item being rewritten'),
-        evidence_ids: z.array(z.string().min(1)).max(2).describe('Optional broad personalization signal IDs used for this rewrite; never cite private records.'),
-    })).max(10),
+    pages: lengthBounds(z.array(z.object({
+        url: lengthBounds(z.string(), { min: 1 }).describe('Page URL'),
+        text: lengthBounds(z.string(), { min: 1 }).describe('Optimized text'),
+        selector: lengthBounds(z.string(), { min: 1 }).describe('CSS selector of that text'),
+        content_id: lengthBounds(z.string(), { min: 1 }).describe('ID of the approved site-content item being rewritten'),
+        evidence_ids: lengthBounds(z.array(lengthBounds(z.string(), { min: 1 })), { max: 2 }).describe('Optional broad personalization signal IDs used for this rewrite; never cite private records.'),
+    })), { max: 10 }),
 });
 
 export const agentSchema = () => z.object({

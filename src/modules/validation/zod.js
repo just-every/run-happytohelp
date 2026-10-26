@@ -42,6 +42,19 @@ export const stringMax = (schema, maximum) => schema.superRefine((value, context
     if (value.length > maximum) context.addIssue({ code: 'too_big', origin: 'string', maximum, inclusive: true });
 }).meta({ ...schema.meta(), maxLength: maximum });
 
+// Native length checks run on any value with a length property, even after a
+// type failure, and can coerce an object's length or throw. Zod 3 checks bounds
+// only after the string/array type succeeds. Keep native checks and JSON Schema
+// bounds, with that same type prerequisite and continuing issue behavior.
+export const lengthBounds = (schema, { min, max, length }) => {
+    const when = ({ value }) => schema instanceof z.ZodString ? typeof value === 'string' : Array.isArray(value);
+    return schema.check(
+        ...(min === undefined ? [] : [z.minLength(min, { when })]),
+        ...(max === undefined ? [] : [z.maxLength(max, { when })]),
+        ...(length === undefined ? [] : [z.length(length, { when })]),
+    );
+};
+
 // JSON numeric literals can overflow to infinity. Validate the number type
 // first, then report every configured check in its original order. Zod 4's
 // number/int primitives abort on infinity/fractions and add a safe-integer limit.
@@ -70,11 +83,22 @@ const schemaAt = (schema, path) => {
 };
 export function validationMessage(error, schema) {
     if (!error?.issues) return error?.message;
-    // Zod 4 can run an array length check on a wrong-type string. Zod 3
-    // aborts that node at invalid_type, so its serialized list stops there.
+    // Zod 3 stops a wrong-type node at invalid_type, for strings and arrays.
     const issues = error.issues.filter(issue => !(['too_small', 'too_big'].includes(issue.code)
         && error.issues.some(other => other.code === 'invalid_type'
             && JSON.stringify(other.path) === JSON.stringify(issue.path))));
+    // Zod 3 reports array bounds before element errors. Move only those
+    // bounds ahead of their descendants, preserving sibling issue order.
+    for (const issue of [...issues]) {
+        if (issue.origin !== 'array' || !['too_small', 'too_big'].includes(issue.code)) continue;
+        const index = issues.indexOf(issue);
+        const child = issues.findIndex(other => other.path.length > issue.path.length
+            && issue.path.every((key, part) => other.path[part] === key));
+        if (child >= 0 && child < index) {
+            issues.splice(index, 1);
+            issues.splice(child, 0, issue);
+        }
+    }
     return JSON.stringify(issues.map(issue => {
         const { input, ...publicIssue } = issue;
         const leaf = schemaAt(schema, issue.path);

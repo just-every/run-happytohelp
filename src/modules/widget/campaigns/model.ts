@@ -1,8 +1,8 @@
-import {z,boundedNumber,stringMax} from '../../validation/zod.js'
-const short=stringMax(z.string().trim().min(1),120)
+import {z,boundedNumber,stringMax,lengthBounds} from '../../validation/zod.js'
+const short=stringMax(lengthBounds(z.string().trim(),{min:1}),120)
 const attribute=z.object({key:z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/),value:stringMax(z.string(),200)}).strict()
 export const campaignSchema=z.object({
- name:short,enabled:z.boolean(),sender:short,brand:short,message:stringMax(z.string().trim().min(1),1000),
+ name:short,enabled:z.boolean(),sender:short,brand:short,message:stringMax(lengthBounds(z.string().trim(),{min:1}),1000),
  pathPrefix:stringMax(z.string(),500).refine(value=>value.startsWith('/')&&!value.startsWith('//')&&!/[?#\r\n]/.test(value),'Use a URL path without a query or fragment'),
  trigger:z.discriminatedUnion('type',[
   z.object({type:z.literal('page')}).strict(),z.object({type:z.literal('time'),seconds:boundedNumber(1,86400,'integer')}).strict(),

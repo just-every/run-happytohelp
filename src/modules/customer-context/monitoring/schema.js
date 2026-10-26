@@ -1,10 +1,10 @@
 
-import { z, stringMax } from '../../validation/zod.js';
+import { z, stringMax, lengthBounds } from '../../validation/zod.js';
 import { evidenceIdsAreEligible, evidenceIdsAreNew } from './context.js';
 
 const text = z.string().trim();
 const optionalText = stringMax(text, 360).nullable();
-const evidenceIds = z.array(text.min(1)).min(1).max(4);
+const evidenceIds = lengthBounds(z.array(lengthBounds(text, { min: 1 })), { min: 1, max: 4 });
 
 const helpTypesFrom = (availableAis) => [...new Set((availableAis || [])
     .map((ai) => (typeof ai?.get === 'function' ? ai.get('type') : ai?.type))
@@ -17,7 +17,7 @@ const monitoringAnalysisSchema = ({ packet, helpTypes }) => {
     return z.object({
         decision: z.enum(['no_insight', 'insight']).describe('Use no_insight for ordinary, ambiguous, or already-covered activity. Use insight only for a concrete, attributable help offer.'),
         help_type: helpType.nullable().describe('For insight, choose one value from available_help_types. For no_insight, return null.'),
-        evidence_ids: z.array(text.min(1)).max(4).describe('For insight, cite one to four eligible_evidence_ids. For no_insight, return an empty array.'),
+        evidence_ids: lengthBounds(z.array(lengthBounds(text, { min: 1 })), { max: 4 }).describe('For insight, cite one to four eligible_evidence_ids. For no_insight, return an empty array.'),
         help: optionalText.describe('For insight, describe the concrete help offered. For no_insight, return null.'),
     }).strict().superRefine((result, context) => {
         if (result.decision === 'no_insight') {
@@ -55,11 +55,11 @@ const monitoringAnalysisSchema = ({ packet, helpTypes }) => {
 };
 
 const monitoringInsightSchema = ({ packet, analysis }) => z.object({
-    content: stringMax(text.min(1), 360),
-    buttons: z.array(z.object({
-        text: stringMax(text.min(1), 90),
+    content: stringMax(lengthBounds(text, { min: 1 }), 360),
+    buttons: lengthBounds(z.array(z.object({
+        text: stringMax(lengthBounds(text, { min: 1 }), 90),
         action: z.enum(['send', 'close']),
-    }).strict()).min(1).max(3),
+    }).strict()), { min: 1, max: 3 }),
     loading: optionalText,
     evidence_ids: evidenceIds,
 }).strict().superRefine((result, context) => {

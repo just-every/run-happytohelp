@@ -527,6 +527,8 @@ assert.equal((await h.raw('/api/v1/conversations',{token:qGrant.token})).status,
   for(const name of ['magic_signins','identity_tokens','sessions','conversation_followers'])assert.equal(schema.entries[name].level,'workspace',name);
 
   const unknown=fresh().replaceAll('-','_');await h.db.prepare('CREATE TABLE '+unknown+'(user_id TEXT REFERENCES users(id))').run();assert.deepEqual((await h.call('/_test/member-schema')).errors,[unknown]);
+  const probeMember=async()=>{const id=fresh();await h.db.prepare('INSERT INTO users VALUES(?,?,?,1)').bind(id,id+'@example.test','Synthetic member').run();await h.db.prepare("INSERT INTO memberships VALUES('p',?,'operator')").bind(id).run();return id};
+  assert.equal((await h.raw('/api/management/projects/p/agents/'+await probeMember()+'/erase',body({}))).status,503,'the warm erase route fails closed once the live schema gains an unclassified member table');
   await h.db.prepare('ALTER TABLE '+unknown+' ADD COLUMN conversation_id TEXT REFERENCES conversations(id)').run();assert.equal((await h.call('/_test/member-schema')).entries[unknown].level,'workspace');
   await h.db.prepare('ALTER TABLE user_settings ADD COLUMN namespace TEXT').run();assert.deepEqual(((await h.call('/_test/member-schema')).errors).sort(),[unknown,'user_settings'].sort(),'account-wide statements fail closed when schema gains workspace scope');
  },

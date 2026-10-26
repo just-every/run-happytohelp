@@ -20,13 +20,22 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  const args=[userId,actor.projectId,userId,userId]
  if(!await c.env.DB.prepare('SELECT 1 WHERE '+eligible).bind(...args).first())throw new HTTPException(409,{message:'Transfer ownership first; accounts shared with other workspaces or installation administrators require installation review'})
  const context:ErasureContext={env:c.env,project:actor.projectId,user:userId,actor:actor.id,now,guard:{sql:`EXISTS(${guard.sql}) AND ${eligible}`,params:[...guard.params,...args]}}
- const registry=await (isolateRegistry??=memberErasureRegistry(c.env.DB))
+ const registry=await currentRegistry(c.env.DB)
  if(registry.errors.length)throw new HTTPException(503,{message:'Member erasure schema requires review'})
  await c.env.DB.batch(Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]))
  return c.json({erased:true,credentialsRevoked:true,eventsRetained:true})
 })
 
-let isolateRegistry:ReturnType<typeof memberErasureRegistry>|undefined
+// The isolate keeps the registry only for the schema it was derived from, and never keeps a failed derivation.
+const schemaFingerprint="SELECT group_concat(name||char(31)||coalesce(sql,''),char(30)) fingerprint FROM (SELECT name,sql FROM sqlite_master WHERE type='table' ORDER BY name)"
+let isolateRegistry:{fingerprint:string;registry:Awaited<ReturnType<typeof memberErasureRegistry>>}|undefined
+async function currentRegistry(db:D1Database){
+ const fingerprint=(await db.prepare(schemaFingerprint).first<{fingerprint:string}>())?.fingerprint??''
+ if(isolateRegistry?.fingerprint===fingerprint)return isolateRegistry.registry
+ const registry=await memberErasureRegistry(db)
+ isolateRegistry=registry.errors.length?undefined:{fingerprint,registry}
+ return registry
+}
 interface ErasureContext {env:AppEnv['Bindings'];project:string;user:string;actor:string;now:number;guard:{sql:string;params:unknown[]}}
 type ErasePlan={column:string;nullable?:boolean;through?:string;predicate?:string;args?:(c:ErasureContext)=>unknown[]}
 type ScopedEffect={prefix:string;source?:string;where:string;before?:(c:ErasureContext)=>unknown[];after:(c:ErasureContext)=>unknown[]}

@@ -12164,7 +12164,7 @@
       "executable": false
     },
     "tests/journeys/erasure-browser.mjs": {
-      "sha256": "39d50361bc13bf8fb320e2cde4c3fdabf3a84e8b193e3f0f02dcab7de43a33d4",
+      "sha256": "eddd6027c3e1c9a6b7c761b916da59c704ffbfac2158c3001413d0552a3d4684",
       "executable": false
     },
     "tests/journeys/erasure.mjs": {

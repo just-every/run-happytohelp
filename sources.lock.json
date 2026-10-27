@@ -3508,7 +3508,7 @@
       "executable": false
     },
     "src/editor/visual-edits.json": {
-      "sha256": "c5030c20866b46049d86b9eb59d5cd1457dbc552899cb5a5897c2c75dae10ed8",
+      "sha256": "ea22cbab26d5d294b50f1f878e58f265224bd62f81d9db2f2e413323eed84bbb",
       "executable": false
     },
     "src/editor/visual-style.ts": {

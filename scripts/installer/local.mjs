@@ -1,7 +1,6 @@
-import {asyncWorkRestoreSql} from './async-work-archive.mjs';
+import {finishArchiveRestore} from './archive-restore.mjs';
 import {refuse} from '@runeditrun/rer/errors';
 import {PortabilityError} from '@runeditrun/rer/modules/portability';
-import {triageRestoreSql} from './triage-archive.mjs';
 import {localInstaller} from '@runeditrun/rer/local-installer';
 import {developmentTarget,previewTarget} from '@runeditrun/rer/operator-installer';
 import {installOperator} from '@runeditrun/rer/operator-install';
@@ -11,12 +10,6 @@ import {hostedDeploy} from './hosted-deploy.mjs';
 import {nativeSetupPath} from '../deployment/mail-declaration.mjs';
 import {localPortability} from '@runeditrun/rer/portability';
 import {localInputDefaults,localOwner,nativeOwner,prepareNativeLocal} from './native-local.mjs';
-import {ticketRestoreSql} from './ticket-archive-upgrade.mjs';
-import {r4RestoreSql} from './r4-tables.mjs';
-import {reportRestoreSql} from './report-archive.mjs';
-import {trainingRestoreSql} from './training-archive.mjs';
-import {workflowRestoreSql} from './workflow-archive-safety.mjs';
-import {workflowLegacyRestoreSql} from './workflow-archive-defaults.mjs';
 import {fileRecords} from '@runeditrun/rer/modules/portability/files';
 import {checkArchiveSnapshot,readDurableObjects,snapshotSql} from './durable-objects.mjs';
 import {platformMigrationLedger} from './migration-ledger.mjs';
@@ -90,17 +83,7 @@ const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async c
  // Restore deliberately suspends business triggers. Rebuild derived search
  // before reporting a completed import, including a resumed import.
  if(verb==='import'){
-  if(upgradeWorkflows)await d1(context,'Preparing restored workflow defaults',workflowLegacyRestoreSql);
-  await d1(context,'Preparing restored ticket statuses',ticketRestoreSql);
-  await d1(context,'Preparing restored saved replies',r4RestoreSql);
-  // Ticket normalization can journal a restored conversation through live
-  // triggers. Fence that work as well as the archived commands before completion.
-  await d1(context,'Fencing archived triage work',triageRestoreSql);
-  await d1(context,'Fencing archived workflow actions',workflowRestoreSql);
-  await d1(context,'Fencing restored report schedules and bulk replies',reportRestoreSql);
-  await d1(context,'Fencing restored evaluations',trainingRestoreSql);
-  await d1(context,'Fencing restored background work',asyncWorkRestoreSql);
-  await d1(context,'Rebuilding conversation search',"INSERT INTO inbox_message_search(inbox_message_search) VALUES('rebuild')");
+  await finishArchiveRestore((label,sql)=>d1(context,label,sql),{upgradeWorkflows});
  }
  // The receipt names the Durable Object storage the archive carries (exported) or carried (restored).
  return {...result,durableObjects:snapshots.map(({namespace,className,records,digest})=>({namespace,className,records:Array.isArray(records)?records.length:records,digest}))};

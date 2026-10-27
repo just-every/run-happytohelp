@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict'
+import {unstable_splitSqlQuery} from 'wrangler'
+import {finishArchiveRestore} from '../../../scripts/installer/archive-restore.mjs'
 import {createPortability} from '@runeditrun/rer/modules/portability'
 import {archivePolicy} from '../../../scripts/installer/portability-policy.mjs'
 import {startApp,applyMigrations,sha} from '../../journeys/kit/app.mjs'
 
 export async function followupRecoveryJourney() {
+ const finish=app=>finishArchiveRestore((_label,sql)=>app.db.batch(unstable_splitSqlQuery(sql).map(statement=>app.db.prepare(statement))))
  const source=await startApp({captureQueue:true,migrate:name=>name<'257_'});let destination,legacyDestination,refused
  try {
   const workspace=await source.seedWorkspace('followup-upgrade'),p=workspace.projectId,token=workspace.tokens.owner
@@ -32,6 +35,7 @@ export async function followupRecoveryJourney() {
   for(const part of parts)await restore.imports.uploadPart(importId,part.index,part)
   const closing=records.at(-1)
   assert.equal((await restore.imports.finalize(importId,{archiveHash:closing.archiveHash,contentHash:closing.contentHash})).phase,'complete')
+  await finish(destination)
   assert.equal((await destination.call(base,{token})).status,401,'archive carries no live session')
   const fresh='synthetic-hh-restored-followup-session',now=Date.now()
   await destination.db.batch([
@@ -54,6 +58,7 @@ export async function followupRecoveryJourney() {
   const legacyRestore=await portable(legacyDestination),legacyImport=await legacyRestore.imports.create(legacyRecords[0])
   for(const part of legacyRecords.filter(r=>r.kind==='part'))await legacyRestore.imports.uploadPart(legacyImport,part.index,part)
   await legacyRestore.imports.finalize(legacyImport,{archiveHash:legacyRecords.at(-1).archiveHash,contentHash:legacyRecords.at(-1).contentHash})
+  await finish(legacyDestination)
   assert.equal((await legacyDestination.first('SELECT stop_condition FROM followup_obligations WHERE id=?',created.id)).stop_condition,'','restore removes private text from an older valid archive')
   await legacyDestination.db.batch([
    legacyDestination.db.prepare("INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,?,?,'owner',?)").bind(sha(fresh),workspace.users.owner,p,now+3600000),

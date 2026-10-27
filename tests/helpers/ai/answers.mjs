@@ -50,6 +50,31 @@ export async function answersJourney(){
    const raced=await ask('One more time?',answering(()=>current,{before:()=>app.db.prepare(change).run()}));assert.equal(raced.answers.length,0,change)
    await app.db.prepare("UPDATE knowledge_articles SET status='published' WHERE id='a'").run();await app.db.prepare("UPDATE knowledge_datasets SET published_version='v' WHERE id='ds'").run()
   }
+  // Both accounts prove the same email domain through the signed widget door.
+  // The model may retrieve and cite only the explicitly entitled account's article.
+  const category=(await app.call(`/api/knowledge/${p}/categories`,{token:a.owner,body:{title:'Account policies',audience:'domains',allowedDomains:['trusted.test']},status:201})).data.id
+  const restricted=(await app.call(`/api/knowledge/${p}/articles`,{token:a.owner,body:{title:'Refund entitlement',slug:'entitled-refund',content:'Refund entitlement for this account only.',categoryIds:[category],status:'published'},status:201})).data.id
+  const verifiedVisitor=async email=>{
+   const {createHmac}=await import('node:crypto'),secret=(await app.first('SELECT verification_secret FROM projects WHERE id=?',p)).verification_secret
+   const session=(await app.call('/api/identity/widget/session',{body:{widgetKey:a.workspace.widgetKey,identifier:email,email,contact_hash:createHmac('sha256',secret).update(email).digest('hex')},headers:{Origin:'https://widget.example'},status:201})).data
+   const conversation=(await app.call('/api/conversations',{token:session.token,body:{projectId:p},status:201})).data
+   const path=`/api/conversations/${conversation.id}/messages`,transcript=async()=>(await app.call(path,{token:session.token,status:200})).data
+   return {id:conversation.id,contact:(await app.first('SELECT contact_id FROM conversations WHERE id=?',conversation.id)).contact_id,transcript,say:async()=>{const current=await transcript();await app.call(path,{token:session.token,body:{localId:crypto.randomUUID(),content:'Explain my refund entitlement',expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})}}
+  }
+  const permitted=await verifiedVisitor('synthetic-hh-1@trusted.test'),forbidden=await verifiedVisitor('synthetic-hh-2@trusted.test'),grantPath=`/api/knowledge/${p}/categories/${category}/entitlements`
+  const grant=ids=>app.call(grantPath,{token:a.owner,method:'PUT',body:{contactIds:ids},status:200})
+  await grant([permitted.contact])
+  const restrictedVersion=(await app.first('SELECT publication_version FROM knowledge_articles WHERE id=?',restricted)).publication_version
+  const restrictedRefs=[{id:`article:${restricted}`,sourceVersion:restrictedVersion}]
+  ai.respond=answering(()=>restrictedRefs);await permitted.say();await a.run()
+  assert.ok(searched.includes(`article:${restricted}`))
+  const permittedAnswer=(await permitted.transcript()).messages.find(m=>m.actor_role==='ai');assert.ok(permittedAnswer)
+  assert.equal(JSON.parse(permittedAnswer.citations_json)[0].id,`article:${restricted}`)
+  ai.respond=answering(()=>[]);await forbidden.say();await a.run()
+  assert.ok(!searched.includes(`article:${restricted}`),'same-domain customer without entitlement never exposes the article to the model')
+  ai.respond=answering(()=>restrictedRefs,{before:()=>grant([])});await permitted.say();await a.run()
+  assert.equal((await permitted.transcript()).messages.filter(m=>m.actor_role==='ai').length,1,'revocation between citation and message admission blocks the next answer')
+
   // Asking for a person hands the conversation to a human; the assistant writes nothing more and a person can reply.
   ai.respond=async()=>openaiToolCall('switch_agent',{agent_id:'human'},'handoff')
   const handoff=await a.visitor();await handoff.say('I need a human');await a.run()

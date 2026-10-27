@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 
-// R7 adds metadata to existing rows. Every original field remains byte-exact.
+// R7 adds metadata; migration 257 deliberately defaults existing collections
+// to requires_entitlement=0. Every original and unexpected field stays checked.
 export function knowledgeUpgradeDefaults(table, row) {
  if(table==='knowledge_articles')return {...row,editor_id:null};
- if(table==='knowledge_categories')return {...row,audience:'public',allowed_domains:'[]'};
+ if(table==='knowledge_categories')return {...row,audience:'public',allowed_domains:'[]',requires_entitlement:0};
  return row;
 }
 

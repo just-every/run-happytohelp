@@ -37,6 +37,19 @@ try {
    const write=(sql,values=[])=>storage.inspect({sql,values});
    await write("INSERT INTO users VALUES(?,'synthetic-hh-recovery-issuer@example.test','Synthetic recovery issuer',1)",[issuerId]);
    await write("INSERT INTO memberships VALUES(?,?,'admin')",[journey.owner.projectId,issuerId]);
+   // A named entitlement is durable workspace history even after its grantor
+   // is erased; native backup must retain both provenance and restriction.
+   await write("INSERT INTO contacts(id,project_id,email,external_id,is_verified,created_at) VALUES('synthetic-knowledge-recovery',?,'knowledge@example.test','knowledge@example.test',1,1)",[journey.owner.projectId]);
+   await write("INSERT INTO knowledge_categories(id,project_id,name,slug,requires_entitlement) VALUES('synthetic-knowledge-recovery',?,'Recovery restricted','recovery-restricted',1)",[journey.owner.projectId]);
+   await write("INSERT INTO knowledge_articles(id,project_id,category_id,slug,title,content,status,updated_at) VALUES('synthetic-knowledge-recovery',?,'synthetic-knowledge-recovery','recovery-restricted','Recovery restricted','Explicit grant only','published',1)",[journey.owner.projectId]);
+   await write("INSERT INTO knowledge_collection_entitlements VALUES(?,'synthetic-knowledge-recovery','synthetic-knowledge-recovery',?,1)",[journey.owner.projectId,issuerId]);
+   // Exercise both anonymous and identified request-link receipts, including
+   // a future personal column: sanitization must drop the entire receipt row.
+   await write("ALTER TABLE knowledge_read_receipts ADD COLUMN personal_note TEXT");
+   await write("INSERT INTO knowledge_read_receipts(token,project_id,article_id,locale,brand,contact_id,expires_at,personal_note) VALUES('synthetic-private-receipt',?,'synthetic-knowledge-recovery','fr','private-brand','synthetic-knowledge-recovery',9999999999999,'synthetic-private-note')",[journey.owner.projectId]);
+   await write("INSERT INTO knowledge_read_receipts(token,project_id,article_id,locale,brand,expires_at) VALUES('synthetic-anonymous-receipt',?,'synthetic-knowledge-recovery','en','private-brand',9999999999999)",[journey.owner.projectId]);
+   await write("INSERT INTO knowledge_help_links VALUES('synthetic-help-link',?,'synthetic-help@example.test',9999999999999,NULL)",[journey.owner.projectId]);
+   await write("INSERT INTO knowledge_help_sessions VALUES('synthetic-help-session',?,'synthetic-knowledge-recovery','synthetic-help@example.test',9999999999999)",[journey.owner.projectId]);
    const hash=createHash('sha256').update(issuerSession).digest('hex');
    await write("INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,?,?,'admin',?)",[hash,issuerId,journey.owner.projectId,Date.now()+3600000]);
    await write("INSERT INTO session_factors VALUES(?,?,'password',?)",[hash,issuerId,Date.now()]);
@@ -70,7 +83,9 @@ try {
   assert.equal(sanitized.status, 0, sanitized.stderr);
   const backup = await readFile(backupFile, 'utf8');
   assert.doesNotMatch(backup, /private-grant-hash|private-code-hash/, 'the backup carries no delegated credential');
-  for (const table of ['edition_grants', 'edition_codes','integration_deliveries','native_integration_intents','native_integration_destinations','api_uploads','api_upload_disposals']) before.rows[table] = [];
+  assert.doesNotMatch(backup, /synthetic-private-receipt|synthetic-anonymous-receipt|synthetic-private-note|synthetic-help-link|synthetic-help-session|synthetic-help@example.test/, 'native SQL backup carries no knowledge receipt or help authentication content');
+  assert.equal(before.rows.knowledge_read_receipts.length,2,'the source contains both receipt identity forms');
+  for (const table of ['knowledge_read_receipts','knowledge_help_links','knowledge_help_sessions','edition_grants', 'edition_codes','integration_deliveries','native_integration_intents','native_integration_destinations','api_uploads','api_upload_disposals']) before.rows[table] = [];
   for(const table of ['integration_tokens','api_credentials','api_requests','api_appends'])before.rows[table]=before.rows[table].map(value=>{
    const row=JSON.parse(value);
    if(table==='api_credentials')row.revoked_at??=Math.max(1,row.created_at);
@@ -91,6 +106,9 @@ try {
     for (const object of before.objects) await storage.inspect({key: object.key, bytes: object.bytes, options: {httpMetadata: object.httpMetadata, customMetadata: object.customMetadata}});
     after = await snapshot(storage);
     compareSnapshots(before, after);
+    const grant=after.rows.knowledge_collection_entitlements.map(JSON.parse).find(row=>row.category_id==='synthetic-knowledge-recovery');
+    assert.deepEqual(grant,{project_id:journey.owner.projectId,category_id:'synthetic-knowledge-recovery',contact_id:'synthetic-knowledge-recovery',granted_by:issuerId,created_at:1});
+    assert.equal(after.rows.knowledge_categories.map(JSON.parse).find(row=>row.id===grant.category_id).requires_entitlement,1);
   });
   const repeatExport = join(output, 'restored-export.sql');
   await exportD1Sql({inspect:input=>restored.withStorage(storage=>storage.inspect(input)),runExport:()=>restored.run(['d1','export','DB','--local','--output',repeatExport]),output:repeatExport});
@@ -98,6 +116,7 @@ try {
   assert.equal(spawnSync('python3', [resolve('scripts/independent/delegation-backup.py'), repeatExport, repeatBackup]).status, 0);
   assert.equal(await readFile(repeatBackup, 'utf8'), backup, 'a backup of the restored install is identical to the backup it came from');
   await restored.start();
+  assert.equal((await fetch(restored.origin+`/api/knowledge/public/${journey.owner.projectId}/articles/recovery-restricted`)).status,404,'native restore never makes a restricted collection public');
   await verifyAccess(restored, journey, journey.owner.token);
   await verifyFreshLogin(restored, journey);
   await verifyRestoredApi(restored, journey);

@@ -4,19 +4,19 @@ import {activeSourceProjectSql} from './public-sources'
 export interface HelpAccess {contactId?:string;email?:string;verified:true;helpSessionHash?:string;nativeEmail?:true}
 export const publicAccess:HelpAccess|undefined=undefined
 export async function hasRestrictedCollections(env:Env,projectId:string){
- return Boolean(await env.DB.prepare("SELECT 1 FROM knowledge_categories WHERE project_id=? AND audience<>'public' LIMIT 1").bind(projectId).first())
+ return Boolean(await env.DB.prepare("SELECT 1 FROM knowledge_categories WHERE project_id=? AND (audience<>'public' OR requires_entitlement=1) LIMIT 1").bind(projectId).first())
 }
 /** Every attached collection and its ancestors must admit the customer. A second
  * public category never bypasses a restricted category. UNION also bounds cycles.
  * Category publication controls navigation, independently of article publication. */
-export function collectionAccessSql(seed:string,authenticated='0',domain="''",publishedOnly=false){
- return `NOT EXISTS(WITH RECURSIVE lineage(id) AS (${seed} UNION SELECT c.parent_id FROM knowledge_categories c JOIN lineage l ON c.id=l.id WHERE c.parent_id IS NOT NULL) SELECT 1 FROM knowledge_categories k JOIN lineage l ON l.id=k.id WHERE ${publishedOnly?'k.is_published<>1 OR ':''}(k.audience<>'public' AND (${authenticated}=0 OR (k.audience='domains' AND NOT EXISTS(SELECT 1 FROM json_each(k.allowed_domains) WHERE lower(value)=${domain})))))`
+export function collectionAccessSql(seed:string,authenticated='0',domain="''",publishedOnly=false,contact="''"){
+ return `NOT EXISTS(WITH RECURSIVE lineage(id) AS (${seed} UNION SELECT c.parent_id FROM knowledge_categories c JOIN lineage l ON c.id=l.id WHERE c.parent_id IS NOT NULL) SELECT 1 FROM knowledge_categories k JOIN lineage l ON l.id=k.id WHERE ${publishedOnly?'k.is_published<>1 OR ':''}(k.audience<>'public' AND (${authenticated}=0 OR (k.audience='domains' AND NOT EXISTS(SELECT 1 FROM json_each(k.allowed_domains) WHERE lower(value)=${domain})))) OR (k.requires_entitlement=1 AND NOT EXISTS(SELECT 1 FROM knowledge_collection_entitlements grant_row WHERE grant_row.project_id=k.project_id AND grant_row.category_id=k.id AND grant_row.contact_id=${contact})))`
 }
-export function articleAccessSql(alias='a',authenticated='0',domain="''"){
- return collectionAccessSql(`SELECT ${alias}.category_id WHERE ${alias}.category_id IS NOT NULL UNION SELECT category_id FROM knowledge_article_categories WHERE article_id=${alias}.id`,authenticated,domain)
+export function articleAccessSql(alias='a',authenticated='0',domain="''",contact="''"){
+ return collectionAccessSql(`SELECT ${alias}.category_id WHERE ${alias}.category_id IS NOT NULL UNION SELECT category_id FROM knowledge_article_categories WHERE article_id=${alias}.id`,authenticated,domain,false,contact)
 }
-export const categoryAccessSql=(alias='k',authenticated='0',domain="''")=>collectionAccessSql(`SELECT ${alias}.id`,authenticated,domain,true)
-export function accessParams(access?:HelpAccess){return [access?.verified?1:0,access?.email?.split('@')[1]?.toLowerCase()||''] as const}
+export const categoryAccessSql=(alias='k',authenticated='0',domain="''",contact="''")=>collectionAccessSql(`SELECT ${alias}.id`,authenticated,domain,true,contact)
+export function accessParams(access?:HelpAccess){return [access?.verified?1:0,access?.email?.split('@')[1]?.toLowerCase()||'',access?.verified?access.contactId||'':''] as const}
 // Only a mail-native contact qualifies here. A receipt in a widget thread must
 // never turn that widget's typed address into authority for private knowledge.
 const nativeEmailProofSql=`c.is_verified=0 AND c.external_id IS NULL
@@ -58,4 +58,10 @@ export function helpAccessWriteGuard(projectId:string,access?:HelpAccess):{sql:s
  if(access?.helpSessionHash)return {sql:`EXISTS(SELECT 1 FROM knowledge_help_sessions h WHERE h.token_hash=? AND h.project_id=? AND h.email=? AND h.expires_at>max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)) AND (h.contact_id IS NULL OR EXISTS(SELECT 1 FROM contacts c WHERE c.id=h.contact_id AND c.project_id=h.project_id AND coalesce(json_extract(c.metadata_json,'$.is_erasing'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_erased'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_blocked'),0)<>1)))`,args:[access.helpSessionHash,projectId,access.email||'',Date.now()]}
  if(access?.contactId)return {sql:`EXISTS(SELECT 1 FROM contacts c WHERE c.id=? AND c.project_id=? AND c.is_verified=1 AND coalesce(json_extract(c.metadata_json,'$.is_erasing'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_erased'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_blocked'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_deleted'),0)<>1 AND NOT EXISTS(SELECT 1 FROM contact_erasures e WHERE e.project_id=c.project_id AND e.contact_id=c.id) AND (?='' OR (lower(trim(c.email))=? AND lower(trim(c.external_id))=? AND coalesce(json_extract(c.metadata_json,'$.email_unproven'),0)<>1)))`,args:[access.contactId,projectId,access.email||'',access.email||'',access.email||'']}
  return {sql:access?'0=1':'1=1',args:[]}
+}
+
+/** Retrieval scope is always derived from the ticket, never a model argument. */
+export async function accessForKnowledgeConversation(env:Env,projectId:string,conversationId:string){
+ const row=await env.DB.prepare('SELECT contact_id FROM conversations c WHERE id=? AND project_id=? AND NOT EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=c.id)').bind(conversationId,projectId).first<{contact_id:string}>()
+ return row?accessForContact(env,projectId,row.contact_id):undefined
 }

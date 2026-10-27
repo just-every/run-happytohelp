@@ -7788,7 +7788,7 @@
       "executable": false
     },
     "src/modules/workflows/sla-slack.ts": {
-      "sha256": "db7e6ced100511e5d8b1caaf5f459cd280f4a8b5b1d0d77672b5e62c1dd7b433",
+      "sha256": "abb3007361d65b1cd432a0b717d6372e3876006788cb4129feccef410594a7cb",
       "executable": false
     },
     "src/modules/workflows/sla.ts": {
@@ -8856,7 +8856,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/workflows/workflows.css": {
-      "sha256": "8200decc5bdc14e2cbde7fd54a3734f0c96974301823aa9b44bc44d17fe2761c",
+      "sha256": "1d46ffa6e64fa344e8fd7c80f31e9679b1aaa245b267a0839b251a04ff926ba4",
       "executable": false
     },
     "src/ui/dashboard/contexts/ChatContext.jsx": {
@@ -12116,7 +12116,7 @@
       "executable": false
     },
     "tests/helpers/workflows/sla-slack-browser.mjs": {
-      "sha256": "dff14fdd0eee8f7d155c3ebc0148b5f6a8da09b566caee49b7eb5751a398d685",
+      "sha256": "170b61909ae15ee927d4fbee27f66d3edfc6109461776269bb40344e1d73895f",
       "executable": false
     },
     "tests/helpers/workflows/sla-slack.mjs": {

@@ -35,7 +35,8 @@ export async function deliverSlaSlack(env:Env,now:number,spent?:Spent){
   const state=retry?'pending':result.kind==='accepted'?'accepted':result.kind==='uncertain'?'uncertain':'failed'
   const delay=Math.max([60000,300000,900000,3600000][attempt-1]??3600000,result.retryAfterMs??0)
   const next=retry&&Number.isSafeInteger(now+delay)?now+delay:null
-  await env.DB.prepare("UPDATE sla_alerts SET slack_state=?,slack_next_attempt_at=?,slack_error=? WHERE id=? AND slack_state='sending'").bind(retry&&next===null?'failed':state,next,result.kind==='accepted'?null:result.code,alert.id).run()
+  const detail=result.kind==='accepted'?null:result.kind==='uncertain'?'Slack did not confirm delivery; reconcile before further action':result.kind==='retryable'?(retry&&next!==null?'Slack asked us to wait before retrying':'Slack rate limits stopped delivery; no further automatic attempts'):'Slack refused the alert; check the connection'
+  await env.DB.prepare("UPDATE sla_alerts SET slack_state=?,slack_next_attempt_at=?,slack_error=? WHERE id=? AND slack_state='sending'").bind(retry&&next===null?'failed':state,next,detail,alert.id).run()
  }catch{
   await env.DB.prepare("UPDATE sla_alerts SET slack_state=?,slack_next_attempt_at=NULL,slack_error=? WHERE id=? AND slack_state='sending'").bind(crossed?'uncertain':'failed',crossed?'Delivery outcome unknown; no automatic replay':'Slack configuration unavailable; no send attempted',alert.id).run()
  }

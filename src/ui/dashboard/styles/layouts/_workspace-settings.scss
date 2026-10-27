@@ -47,7 +47,7 @@ body.workspace-page {
     .workspace-settings table tbody tr + tr { border-top: 1px solid var(--rule); }
     .workspace-settings .settings-empty { padding: 32px 12px; color: var(--ink-soft); font-size: 15px; }
     .settings-empty p { margin: 0 0 4px; color: var(--ink); font-size: 16px; font-weight: 600; }
-    .workspace-settings details > summary { width: fit-content; margin-top: 8px; color: var(--ink); cursor: pointer; font-size: 16px; font-weight: 500; text-decoration: underline 1.5px var(--d-cyan-deep); text-underline-offset: 5px; }
+    .workspace-settings details > summary { min-width: 44px; min-height: 44px; padding-block: 10px; width: fit-content; margin-top: 8px; color: var(--ink); cursor: pointer; font-size: 16px; font-weight: 500; text-decoration: underline 1.5px var(--d-cyan-deep); text-underline-offset: 5px; }
 
     @media (max-width: 991.98px) {
         .settings-cards { grid-template-columns: minmax(0, 1fr); }

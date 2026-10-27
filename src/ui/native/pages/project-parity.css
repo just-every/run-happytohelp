@@ -7,14 +7,20 @@
 .project-color-control { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
 .project-color-control input[type=text] { width: 140px; }
 .project-mode-control { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--rule-strong); border-radius: 999px; background: var(--surface); }
-.project-mode-control button { min-height: 36px; padding: 0 18px; border: 0; border-radius: 999px; color: var(--ink); background: none; font: inherit; font-size: 16px; }
+.project-mode-control button { min-width: 44px; min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px; color: var(--ink); background: none; font: inherit; font-size: 16px; }
 .project-mode-control button:hover { background: var(--hover); }
 .project-mode-control button.active { background: var(--d-cyan-tint); font-weight: 500; }
 .project-appearance .workspace-brand { margin-top: 32px; }
 .project-appearance details { margin-top: 16px; }
+.project-parity-narrow .btn-link { min-width: 44px; min-height: 44px; }
+.project-parity-narrow .form-switch > .form-check-label { display: inline-flex; align-items: center; min-width: 44px; min-height: 44px; }
+.project-mode-control button:focus-visible,
+.project-parity-narrow .btn-link:focus-visible,
+.project-parity-narrow summary:focus-visible,
+.project-days label:has(input:focus-visible) { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .project-days { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
-.project-days label { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; margin: 0; padding: 0 14px; border: 1px solid var(--rule-strong); border-radius: 999px; background: var(--surface); font-size: 16px; }
+.project-days label { display: inline-flex; align-items: center; gap: 8px; min-width: 44px; min-height: 44px; margin: 0; padding: 0 14px; border: 1px solid var(--rule-strong); border-radius: 999px; background: var(--surface); font-size: 16px; }
 .project-days label:has(input:checked) { background: var(--d-cyan-tint); }
 .project-hours { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
 .project-hours input { width: 160px; }

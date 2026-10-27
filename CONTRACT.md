@@ -585,7 +585,7 @@ The 23 October 2026 contract-text clarification separates local implementation/f
 | `LOCAL-MAIL-001` | Rer dev mail | published | done | `src/modules/integrations/email.ts`; `tests/journeys/first-run.mjs` |  |
 | `CONVERSATION-001` | Durable transcript | published | done | `src/modules/conversations/admission.ts`; `tests/journeys/runtime.mjs`; `tests/journeys/erasure.mjs` |  |
 | `DELIVERY-001` | Live delivery and recovery | published | done | `src/modules/conversations/socket.ts`; `tests/journeys/widget.mjs`; `tests/journeys/first-run.mjs` |  |
-| `UI-001` | Existing editable experience | published | done | `src/ui/dashboard`; `src/modules/widget`; `tests/journeys/inbox-browser.mjs` |  |
+| `UI-001` | Existing editable experience | published | done | `src/ui/dashboard`; `src/modules/widget`; `tests/journeys/inbox-browser.mjs` (appearance settings journey); `tests/helpers/inbox/settings-targets-browser.mjs` (settingsTargetsBrowser: Settings target rectangles, one switch focus ring, Notifications checkbox alignment, saving and reload at both widths) |  |
 | `MOVE-IN-001` | Reviewed history import | published | done | `src/modules/move-in/plan.ts`; `tests/journeys/move-in-capacity.mjs`; `tests/journeys/move-in-browser.mjs`; `tests/move-in/native-corrections.mjs` |  |
 | `OUTCOMES-001` | Resolution feedback and provenance | published | done | `src/modules/outcomes/rating.ts`; `src/modules/outcomes/operator-feedback.ts`; `tests/reports/ratings.mjs`; `tests/reports/outcomes.mjs` |  |
 | `REPORTS-001` | Workspace calendar reports | published | done | `src/modules/reports/routes.ts`; `src/modules/reports/metrics.ts`; `tests/reports/figures.mjs`; `tests/journeys/reports.mjs` |  |

@@ -5824,7 +5824,7 @@
       "executable": false
     },
     "src/modules/knowledge/http-door.ts": {
-      "sha256": "b8f316e30bde402bb8806a9da97ae0ec138fa27d5e860d0c7c8f780187dd69ee",
+      "sha256": "8cc5a7e8ca6670ba93b72946324f8b0fdc47aa6a88f145a6864bd80b0793cafd",
       "executable": false
     },
     "src/modules/knowledge/import-jobs.ts": {
@@ -12039,6 +12039,10 @@
       "sha256": "8717cfadcedce176244e636d5d845cc3f17aa1343307f608ba0b47f5a4903b00",
       "executable": false
     },
+    "tests/helpers/knowledge/reference-upgrade.mjs": {
+      "sha256": "c1c66dc49f449ea1028cad0231749f7f55cd3464b2c7c9c52327dc5e62499efd",
+      "executable": false
+    },
     "tests/helpers/knowledge/references.mjs": {
       "sha256": "7f29d176d91841cce36f5941c231bbd408d06a3b6674570c6709efb05cf8d2a9",
       "executable": false
@@ -12048,7 +12052,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/upgrade.mjs": {
-      "sha256": "d622b39dc9fcdc433b10128baf1da15e77def15280166dc0646584dac9554456",
+      "sha256": "70aee778f9c340fdf55cd99cfd65b2a19ed69aeb761e6be5f0fb0c37601885cb",
       "executable": false
     },
     "tests/helpers/legacy-bundle.mjs": {
@@ -12932,7 +12936,7 @@
       "executable": false
     },
     "tests/reports/prior-schema-upgrade.mjs": {
-      "sha256": "cbd90a6fe6c7c357b22040d965a4c44293243b61bc5d90a98bf7fede043cb655",
+      "sha256": "1ec09d7d5113813a5c576d3a841e5a82cc4752b9390cb97ec4a9b9e7f7da5e73",
       "executable": false
     },
     "tests/reports/ratings.mjs": {

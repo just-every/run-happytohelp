@@ -102,6 +102,7 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
   if(width===390)assert.ok(outcome.focused,`${kind} outcome must receive focus immediately after Share`);
   if(width===390)assert.ok(outcome.visible>=outcome.height-1,`${kind} outcome must be fully visible immediately after Share: ${JSON.stringify(outcome)}`);
   await page.screenshot({path:join(directory,`${width}-teams-${kind}.png`)});
+  if(width===390){await page.keyboard.press('Tab');assert.equal(await share.evaluate(node=>document.activeElement===node),true,`${kind} outcome continues by keyboard to Share within the dialog`)}
   await dialog().getByRole('button',{name:'Close dialog',exact:true}).click();await section();await panel().getByRole('button',{name:'Refresh status',exact:true}).click();await panel().getByText(kind==='uncertain'?/Teams outcome is unknown/:/Teams outcome was refused/).first().waitFor();await shot('teams-'+kind+'-outcome');await measureTargets(panel(),'outcome '+kind);
  };
  await teamsFailure('refused',{status:403,body:{error:{code:'Forbidden'}}});await teamsFailure('uncertain',{disconnect:true});

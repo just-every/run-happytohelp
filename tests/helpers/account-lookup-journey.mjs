@@ -116,6 +116,10 @@ export async function accountLookupJourney(f,customer){
  const eligibleRead=`${api}/${conditional.id}?`+new URLSearchParams({fields:JSON.stringify({[field.id]:company.id})})
  assert.equal((await app.ok(eligibleRead,customer)).data.fields.find(f=>f.id===detail.id).visible,true)
  await app.ok(member,{...owner,method:'DELETE'})
+ for(const dependent of [undefined,'Draft account detail']){
+  const refusal=await app.call(`${api}/${conditional.id}/submissions`,{...customer,body:{...command,localId:'synthetic-hh-revoked-dependent',fields:{...command.fields,...(dependent===undefined?{}:{[detail.id]:dependent})}},status:422})
+  assert.equal(refusal.data.field,field.id);assert.equal(refusal.data.code,'invalid_account')
+ }
  await probe(customer,[company.id,company.name,privateAccount.id,privateAccount.name])
  await app.ok(member,{...owner,method:'PUT',body:{}})
  // A private not-equals predicate is evaluated against an eligible selection only.
@@ -140,6 +144,19 @@ export async function accountLookupJourney(f,customer){
  assert.equal(settings.fields.find(f=>f.id===field.id).accountOptions.find(o=>o.value===company.id).label,'Northstar account')
  const created=await app.call(path,{...customer,body:command,status:201}),id=created.data.ticket.id,ticketPath=`/api/dashboard/projects/${p}/conversations/${id}/ticket`
  assert.equal((await app.ok(ticketPath,owner)).data.fields[field.id],company.id)
+ const macros=base+'/macros',macroBody=value=>({title:'Choose support account',content:'We will help with your account.',actions:{fields:{[field.id]:value}}})
+ for(const value of ['Northstar account','synthetic-hh-forged',foreign.id,merged.id])await app.call(macros,{...owner,body:macroBody(value),status:400})
+ const other=(await app.ok(base+'/companies',{...owner,body:{name:'Harbor account'}})).company
+ const macro=(await app.ok(macros,{...owner,body:macroBody(other.id)})).data
+ await app.ok(base+`/companies/${other.id}/members/${contact}`,{...owner,method:'PUT',body:{}})
+ const ticket=(await app.ok(ticketPath,owner)).data
+ const macroPreview=(await app.ok(macros+`/${macro.id}/preview`,{...owner,body:{version:macro.version,tickets:[{id,expected_version:ticket.ticket_version}]}})).data.results[0]
+ assert.equal(macroPreview.status,'ready',JSON.stringify(macroPreview))
+ const change=macroPreview.changes.find(change=>change.field===`custom.${field.id}`)
+ assert.equal(change.from_label,'Northstar account');assert.equal(change.to_label,'Harbor account')
+ assert.equal(change.from,company.id);assert.equal(change.to,other.id,'preview retains canonical IDs for admission')
+ await app.ok(member,{...owner,method:'PUT',body:{}})
+
  await app.call(ticketPath,{...owner,method:'PATCH',body:{fields:{[field.id]:foreign.id}},status:422})
  await app.ok(ticketPath,{...owner,method:'PATCH',body:{fields:{[field.id]:company.id}}})
  await app.ok(member,{...owner,method:'DELETE'})
@@ -160,12 +177,12 @@ export async function accountLookupJourney(f,customer){
 }
 
 async function accountLookupUpgrade(){
- const f=await selfServiceFixture({migrate:name=>name<'257_account_lookup_fields.sql'}),{app,p,owner,signin,api,form,valid}=f
+ const f=await selfServiceFixture({migrate:name=>name<'258_account_lookup_fields.sql'}),{app,p,owner,signin,api,form,valid}=f
  try{
   const customer=await signin('synthetic-hh-upgrade@example.com'),ticket=(await app.call(`${api}/${form.id}/submissions`,{...customer,body:valid,status:201})).data.ticket
   const snapshot=async()=>({fields:await app.sql('SELECT * FROM ticket_fields ORDER BY project_id,id'),values:await app.sql('SELECT * FROM ticket_field_values ORDER BY project_id,conversation_id,field_id'),events:await app.sql('SELECT * FROM workflow_events ORDER BY id')})
   const before=await snapshot()
-  await applyMigrations(app.db,name=>name==='257_account_lookup_fields.sql')
+  await applyMigrations(app.db,name=>name==='258_account_lookup_fields.sql')
   assert.deepEqual(await snapshot(),before,'extending the field type retains definitions, typed values and the workflow journal byte for byte')
   await app.ok(`/api/dashboard/projects/${p}/conversations/${ticket.id}/ticket`,{...owner,method:'PATCH',body:{fields:{[f.order.id]:'NS-10483'}}})
   assert.equal((await app.first('SELECT value_json FROM ticket_field_values WHERE conversation_id=? AND field_id=?',ticket.id,f.order.id)).value_json,'"NS-10483"')

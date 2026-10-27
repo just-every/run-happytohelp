@@ -1,4 +1,4 @@
-import {withAccountChoices,validateAccountChoices,validateAccountPublication} from './account-lookup'
+import {withAccountChoices,validateAccountChoices,validateAccountPublication,validateAccountMembership} from './account-lookup'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
@@ -38,7 +38,11 @@ export async function submitRequest(env:Env,input:SubmitRequestInput){
  let submission:ReturnType<typeof validateSubmission>
  if(existing){
   try{submission=validateSubmission(form,input.body)}catch{throw new HTTPException(409,{message:'This submission ID was already used for a different request'})}
- }else submission=validateSubmission(await withAccountChoices(env,form,identity,values),input.body)
+ }else{
+  // Refuse a stale account before its current offer hides dependent questions.
+  if(identity&&contactId)await validateAccountMembership(env,projectId,contactId,form.fields,values)
+  submission=validateSubmission(await withAccountChoices(env,form,identity,values),input.body)
+ }
  const intent=await submissionIntent(submission)
  if(existing&&existing.intent_hash!==intent)throw new HTTPException(409,{message:'This submission ID was already used for a different request'})
  // A successful admitted command can be replayed with its live proof without reusing a single-use challenge.

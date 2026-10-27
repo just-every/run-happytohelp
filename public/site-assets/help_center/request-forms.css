@@ -27,5 +27,7 @@
 .help-center-language {margin:0 0 1.5rem;}
 .help-center-language select,.help-center-language button {font:inherit;min-height:44px;padding:.5rem .75rem;max-width:100%;border:1px solid #9ba6a2;border-radius:4px;background:#fff;color:#263b32;}
 @media(max-width:650px){
- .help-center-controls>a,.customer-request .request-identity a,#request-result a{display:inline-flex;align-items:center;min-height:44px}
+ .request-choose-form,.help-center-controls>a,.customer-request .request-identity a,#request-result a{display:inline-flex;align-items:center;min-height:44px}
 }
+
+#customer-request button[type=submit]:disabled {opacity:.55;cursor:not-allowed;}

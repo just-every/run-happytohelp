@@ -42,7 +42,10 @@ function door(h){
 async function withDoor(body){const h=await nativeHarness();try{await body(door(h),h);assert.equal(h.outbound,0)}finally{await h.close()}}
 const decision=(plan,kind)=>plan.decisions.find(row=>row.kind===kind);
 
-test('size, depth, count, node, link and hash bounds refuse at their exact place; values at each bound are accepted with their aliases',()=>withDoor(async d=>{
+import {step} from './steps.mjs';
+
+test("refusals: refused uploads are located at their exact source place before any custody, queue, native write or outbound call",async()=>{
+await step('size, depth, count, node, link and hash bounds refuse at their exact place; values at each bound are accepted with their aliases',()=>withDoor(async d=>{
  for(const format of ['jsonl','json','zip']){
   const cases=[['[{"type":"contact","id":"first","i\\u0064":"second"}]','duplicate_json_field'],['[{"type":"contact","id":"deep","unknown":'+'['.repeat(129)+'0'+']'.repeat(129)+'}]','source_structure_depth_limit'],[JSON.stringify([{type:'contact',id:'big',name:'x'.repeat(128*1024)}]),'record_size_limit'],['['+Array(5001).fill('{"type":"contact","id":"one"}').join(',')+']','export_record_limit']]
   for(const [array,code] of cases){const body=format==='jsonl'?array.slice(1,-1).replaceAll('},{','}\n{'):array,name=format==='jsonl'?'source.jsonl':'source.json',diagnostic=await d.refused('intercom',format==='zip'?'source.zip':name,format==='zip'?zip([{name:'nested/'+name,body}]):body);assert.equal(diagnostic.code,code);assert.equal(diagnostic.location.artifact,format==='zip'?'nested/'+name:name);assert.ok(diagnostic.location.row>=1)}
@@ -65,8 +68,7 @@ test('size, depth, count, node, link and hash bounds refuse at their exact place
   const article=documents(vendor).article,body=vendor==='zendesk'?article.article:article;body.body='ordinary@example.test';body.translated_content=null;const text=await d.review(vendor,'text.jsonl',JSON.stringify(article));assert.equal(text.complete,true);assert.equal(text.links.size,0)
  }
 }));
-
-test('empty-looking, malformed and late-failing uploads keep their precise first refusal; records after blank chunks keep identity, payload and location',()=>withDoor(async d=>{
+await step('empty-looking, malformed and late-failing uploads keep their precise first refusal; records after blank chunks keep identity, payload and location',()=>withDoor(async d=>{
  for(const vendor of ['zendesk','intercom']){
   for(const offset of [0,20,40]){const {body,record}=laterSource(vendor,{offset}),reviewed=await d.review(vendor,'later.zip',body),expected=vendor==='zendesk'?['user','83']:['contact','person-83'];assert.deepEqual(reviewed.plan.decisions.map(row=>[row.kind,row.sourceId,row.location]),[[...expected,{artifact:sourceName(vendor),row:2}]]);assert.deepEqual(reviewed.stored[0].payload,vendor==='zendesk'?record.user:record);assert.ok(reviewed.has('email','keira@example.test'));assert.equal(reviewed.complete,true)}
   const empty=Array.from({length:21},(_,i)=>({name:`empty-${i}/`}))
@@ -79,8 +81,29 @@ test('empty-looking, malformed and late-failing uploads keep their precise first
  for(const [options,code] of [[{prefix:'unclaimed'},'archive_unclaimed_bytes'],[{comment:'metadata'},'archive_unsupported_metadata'],[{suffix:'unclaimed'},'archive_footer']])assert.equal((await d.refused('intercom','empty.zip',archive([],options))).code,code)
  const opaque=await d.review('intercom','opaque.json','{"type":"list","unknown":[]}');assert.equal(opaque.complete,false);assert.equal(opaque.plan.decisions[0].kind,'unsupported-field:unknown');assert.equal(opaque.links.size,0)
 }));
+await step('ZIP members in every storage form are read in bounded physical slices; unclaimed, overlapping and corrupted bytes, unsafe paths and expansion are refused',()=>withDoor(async d=>{
+ const contact=envelopeRecords().contact
+ for(const method of [0,8])for(const descriptor of [false,true,'unsigned']){
+  const entries=Array.from({length:44},(_,i)=>i%3?{name:`empty-${i}/`,method,descriptor,flags:descriptor?8:0}:{name:`record-${i}.json`,body:JSON.stringify({...contact,id:`${method}-${descriptor}-${i}`}),method,descriptor,flags:descriptor?8:0})
+  const reviewed=await d.review('intercom','valid.zip',archive(entries));assert.equal(reviewed.plan.counts.input,15);assert.equal(reviewed.complete,true)
+  assert.deepEqual(reviewed.plan.decisions.map(row=>row.location.artifact),entries.filter(entry=>!entry.name.endsWith('/')).map(entry=>entry.name))
+ }
+ // CRC 0x08074b50 equals the optional descriptor signature; the member is still read as itself.
+ for(const method of [0,8])for(const descriptor of [true,'unsigned']){const diagnostic=await d.refused('intercom','descriptor.zip',archive([{name:'source.json',body:Buffer.from([172,10,122,213]),method,flags:8,descriptor}]));assert.equal(diagnostic.location.artifact,'source.json');assert.doesNotMatch(diagnostic.code,/^archive_/)}
+ const entry={name:'safe.json',body:JSON.stringify(contact)}
+ for(const options of [{prefix:'private'},{gap:'private'},{comment:'private'}])assert.ok(['archive_unclaimed_bytes','archive_unsupported_metadata'].includes((await d.refused('intercom','opaque.zip',archive([entry],options))).code))
+ for(const name of ['empty/','safe.json'])assert.ok(['archive_entry_overlap','archive_name_mismatch'].includes((await d.refused('intercom','overlap.zip',archive([{name:'first/',method:0},{name,method:0,central:header=>header.writeUInt32LE(0,42)}]))).code))
+ assert.equal((await d.refused('intercom','bad.zip',new Uint8Array([80,75,3,4]))).code,'archive_footer')
+ for(const name of ['../contacts.json','/contacts.json','C:/contacts.json','a\\b.json','a//b.json'])assert.equal((await d.refused('intercom','export.zip',zip([{name,body:'{}'}]))).code,'archive_unsafe_path',name)
+ assert.equal((await d.refused('intercom','export.zip',zip([{name:'same.json',body:'{}'},{name:'same.json',body:'{}'}]))).code,'archive_duplicate_path')
+ const good=zip([{name:'nested/contacts.jsonl',body:'{"type":"contact","id":"one"}\n'}]),corrupt=Buffer.from(good),central=corrupt.indexOf(Buffer.from([0x50,0x4b,0x01,0x02]));corrupt.writeUInt32LE(0,central+16);assert.equal((await d.refused('intercom','export.zip',corrupt)).code,'archive_integrity')
+ assert.equal((await d.refused('intercom','export.zip',zip([{name:'large.json',body:' '.repeat(2*1024*1024+1)}]))).code,'archive_expansion_limit')
+ const read=await d.review('intercom','export.zip',good);assert.equal(read.plan.decisions[0].location.artifact,'nested/contacts.jsonl')
+}));
+});
 
-test('every supported envelope position keeps the record kind, ID, payload and exact location; foreign positions are counted warnings with incomplete custody',()=>withDoor(async d=>{
+test("review: an accepted export is reviewed with each record's kind, ID, payload, exact location, duplicates, conflicts and reasons before anything is approved",async()=>{
+await step('every supported envelope position keeps the record kind, ID, payload and exact location; foreign positions are counted warnings with incomplete custody',()=>withDoor(async d=>{
  for(const original of Object.values(envelopeRecords()))for(const [name,body,pointer] of positions(original)){
   const reviewed=await d.review('intercom',name,body),row=decision(reviewed.plan,original.type);assert.ok(row,name);assert.equal(row.sourceId,original.id);assert.deepEqual(row.location,{artifact:name,row:2,...(pointer?{pointer}:{})});assert.deepEqual(reviewed.stored.find(item=>item.kind===original.type).payload,original)
   assert.equal(reviewed.complete,!name.startsWith('foreign'),name);if(name.startsWith('foreign'))assert.ok(reviewed.plan.diagnostics.some(item=>item.code==='unsupported_source_field'&&item.location.pointer===pointer))
@@ -107,28 +130,7 @@ test('every supported envelope position keeps the record kind, ID, payload and e
  await d.refused('intercom','opaque.json',JSON.stringify({type:'list',unknown:{wrapper:envelopeRecords().contact}}),'unsupported_nested_envelope',1,'/unknown')
  await d.refused('intercom','hidden.zip',archive([{name:'hidden/',body:'private bytes'},{name:'contact.json',body:JSON.stringify(envelopeRecords().contact)}]),'archive_directory_not_empty',1,'','hidden/')
 }));
-
-test('ZIP members in every storage form are read in bounded physical slices; unclaimed, overlapping and corrupted bytes, unsafe paths and expansion are refused',()=>withDoor(async d=>{
- const contact=envelopeRecords().contact
- for(const method of [0,8])for(const descriptor of [false,true,'unsigned']){
-  const entries=Array.from({length:44},(_,i)=>i%3?{name:`empty-${i}/`,method,descriptor,flags:descriptor?8:0}:{name:`record-${i}.json`,body:JSON.stringify({...contact,id:`${method}-${descriptor}-${i}`}),method,descriptor,flags:descriptor?8:0})
-  const reviewed=await d.review('intercom','valid.zip',archive(entries));assert.equal(reviewed.plan.counts.input,15);assert.equal(reviewed.complete,true)
-  assert.deepEqual(reviewed.plan.decisions.map(row=>row.location.artifact),entries.filter(entry=>!entry.name.endsWith('/')).map(entry=>entry.name))
- }
- // CRC 0x08074b50 equals the optional descriptor signature; the member is still read as itself.
- for(const method of [0,8])for(const descriptor of [true,'unsigned']){const diagnostic=await d.refused('intercom','descriptor.zip',archive([{name:'source.json',body:Buffer.from([172,10,122,213]),method,flags:8,descriptor}]));assert.equal(diagnostic.location.artifact,'source.json');assert.doesNotMatch(diagnostic.code,/^archive_/)}
- const entry={name:'safe.json',body:JSON.stringify(contact)}
- for(const options of [{prefix:'private'},{gap:'private'},{comment:'private'}])assert.ok(['archive_unclaimed_bytes','archive_unsupported_metadata'].includes((await d.refused('intercom','opaque.zip',archive([entry],options))).code))
- for(const name of ['empty/','safe.json'])assert.ok(['archive_entry_overlap','archive_name_mismatch'].includes((await d.refused('intercom','overlap.zip',archive([{name:'first/',method:0},{name,method:0,central:header=>header.writeUInt32LE(0,42)}]))).code))
- assert.equal((await d.refused('intercom','bad.zip',new Uint8Array([80,75,3,4]))).code,'archive_footer')
- for(const name of ['../contacts.json','/contacts.json','C:/contacts.json','a\\b.json','a//b.json'])assert.equal((await d.refused('intercom','export.zip',zip([{name,body:'{}'}]))).code,'archive_unsafe_path',name)
- assert.equal((await d.refused('intercom','export.zip',zip([{name:'same.json',body:'{}'},{name:'same.json',body:'{}'}]))).code,'archive_duplicate_path')
- const good=zip([{name:'nested/contacts.jsonl',body:'{"type":"contact","id":"one"}\n'}]),corrupt=Buffer.from(good),central=corrupt.indexOf(Buffer.from([0x50,0x4b,0x01,0x02]));corrupt.writeUInt32LE(0,central+16);assert.equal((await d.refused('intercom','export.zip',corrupt)).code,'archive_integrity')
- assert.equal((await d.refused('intercom','export.zip',zip([{name:'large.json',body:' '.repeat(2*1024*1024+1)}]))).code,'archive_expansion_limit')
- const read=await d.review('intercom','export.zip',good);assert.equal(read.plan.decisions[0].location.artifact,'nested/contacts.jsonl')
-}));
-
-test('untyped nested containers are refused at their exact place at every depth and packaging; identified records keep their payload boundary and only real aliases',()=>withDoor(async d=>{
+await step('untyped nested containers are refused at their exact place at every depth and packaging; identified records keep their payload boundary and only real aliases',()=>withDoor(async d=>{
  for(const kind of ['contact','conversation','macro','article','user','lead','tag','tag-name','company','admin','unknown'])for(const discriminator of [{type:kind},{kind},{type:kind,kind}]){
   const record={id:'nested-81',...discriminator,email:'imani@example.test'};for(const [name,body,row,pointer] of nestedCases(record))await d.refused('intercom',name,body,'unsupported_nested_envelope',row,pointer)
  }
@@ -152,8 +154,7 @@ test('untyped nested containers are refused at their exact place at every depth 
  await d.refused('intercom','excess.json',JSON.stringify({type:'list',unknown:Array(49).fill(leaf)}),'upload_opaque_structure_node_limit',1,'/unknown/48')
  const metadata=await d.review('intercom','metadata.json',JSON.stringify({type:'list',pages:{next:{email:'ordinary@example.test'}},contacts:[nestedRecord]}));assert.deepEqual(metadata.stored.map(row=>row.kind),['unsupported-field:pages','contact']);assert.equal(metadata.complete,false);assert.ok(!metadata.has('email','ordinary@example.test'))
 }));
-
-test('record discrimination keeps every typed payload, ID, location and alias across collection-named fields, orders and packagings; ambiguous or malformed discriminators are refused',()=>withDoor(async d=>{
+await step('record discrimination keeps every typed payload, ID, location and alias across collection-named fields, orders and packagings; ambiguous or malformed discriminators are refused',()=>withDoor(async d=>{
  const expected={contact:[['source:intercom','person-31'],['email','person31@example.test'],['external','external-31']],conversation:[['source:intercom','person-31'],['email','participant@example.test'],['external','participant-external'],['source:intercom','staff-34'],['email','staff34@example.test'],['external','staff-external'],['source:intercom','staff-36'],['email','staff36@example.test'],['external','note-external']],macro:[],article:[]}
  const aliases=(reviewed,kind)=>{for(const [category,value] of expected[kind])assert.ok(reviewed.has(category,value),`${kind} ${category} ${value}`)}
  for(const kind of ['contact','conversation','macro','article'])for(const key of collectionNames)for(const [index,value] of collisionValues.entries())for(const order of ['before','after']){
@@ -183,8 +184,7 @@ test('record discrimination keeps every typed payload, ID, location and alias ac
  for(const [kind,record] of Object.entries(intercomRecords())){const [name,body]=recordPackages(record)[0],reviewed=await d.review('intercom','boundary.zip',zip([{name:'first.jsonl',body:prefix},{name:`last-${kind}/`+name,body}]));assert.equal(reviewed.complete,true,kind);aliases(reviewed,'contact');aliases(reviewed,kind)}
  for(const [name,body,pointer,row] of [['last.json',JSON.stringify([contact,contact]),'/1',1],['last.jsonl',[contact,contact].map(JSON.stringify).join('\n'),'',2]])await d.refused('intercom','over.zip',zip([{name:'first.jsonl',body:prefix},{name,body}]),'export_record_limit',row,pointer,name)
 }));
-
-test('Zendesk singular wrappers keep typed payloads for every kind and form; plural, mixed or untyped wrappers are refused before custody',()=>withDoor(async d=>{
+await step('Zendesk singular wrappers keep typed payloads for every kind and form; plural, mixed or untyped wrappers are refused before custody',()=>withDoor(async d=>{
  for(const [kind,record] of Object.entries(zendeskRecords())){
   for(const extension of ['ndjson','jsonl','json']){const name='source.'+extension,reviewed=await d.review('zendesk',name,'\n'+JSON.stringify(record));assert.equal(reviewed.stored[0].kind,kind);assert.deepEqual(reviewed.stored[0].payload,record[kind]);assert.deepEqual(reviewed.stored[0].location,{artifact:name,row:2});assert.equal(reviewed.complete,true);if(kind==='user')assert.ok(reviewed.has('email','person31@example.test'))}
   for(const name of collectionNames)for(const order of ['before','after']){const value=collisionValues[(collectionNames.indexOf(name)+(order==='after'?1:0))%collisionValues.length],payload=order==='before'?{[name]:value,...record[kind]}:{...record[kind],[name]:value},reviewed=await d.review('zendesk','source.ndjson','\n'+JSON.stringify({[kind]:payload}));assert.equal(reviewed.stored[0].kind,kind);assert.deepEqual(reviewed.stored[0].payload,payload)}
@@ -194,3 +194,4 @@ test('Zendesk singular wrappers keep typed payloads for every kind and form; plu
  for(const record of [{user:zendeskRecords().user.user,ticket:zendeskRecords().ticket.ticket},{users:[zendeskRecords().user.user]},{user:null},[zendeskRecords().user],{User:zendeskRecords().user.user}]){const diagnostic=await d.refused('zendesk','bad.ndjson','\n'+JSON.stringify(record));assert.ok(['singular_wrapper_required','record_must_be_object'].includes(diagnostic.code));assert.equal(diagnostic.location.row,2)}
  for(const type of ['problem','incident','question','task',null]){const records=zendeskRecords(),ticket={ticket:{...records.ticket.ticket,type}},reviewed=await d.review('zendesk','typed.ndjson',[records.user,ticket].map(JSON.stringify).join('\n'));assert.equal(reviewed.complete,true);assert.ok(reviewed.hasSource('zendesk','31'));assert.equal(reviewed.plan.counts.rejected,0);assert.equal(reviewed.plan.counts.unique,3)}
 }));
+});

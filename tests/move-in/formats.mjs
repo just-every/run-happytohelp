@@ -4,7 +4,11 @@ import assert from 'node:assert/strict';
 import {nativeHarness} from './harness.mjs';
 import {zip} from './zip.mjs';
 const post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-for(const vendor of ['zendesk','intercom'])test(`${vendor} private ZIP upload maps all kinds with handwritten publication, content, author and time expectations`,async()=>{
+
+import {step} from './steps.mjs';
+
+test("landing: an approved import lands each vendor's history, people, replies, notes, tags and knowledge exactly, keeps notes private, and repeats or repackages as a no-op",async()=>{
+for(const vendor of ['zendesk','intercom'])await step(`${vendor} private ZIP upload maps all kinds with handwritten publication, content, author and time expectations`,async()=>{
  const h=await nativeHarness(),base='/api/move-in/projects/p/imports';try{
  const zendesk=[
   {user:{id:7,role:'end-user',name:'Ada',email:'ada@example.test',created_at:'2024-01-01T00:00:00Z',tags:['Customer only']}},
@@ -33,8 +37,10 @@ for(const vendor of ['zendesk','intercom'])test(`${vendor} private ZIP upload ma
  assert.deepEqual((await h.db.prepare('SELECT title,content,created_at,updated_at FROM macros').all()).results,[{title:'Greeting',content:'Hello',created_at:1704067200000,updated_at:1704153600000}]);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM users').first()).n,3,'no staff access created');assert.equal(h.outbound,0);
  }finally{await h.close()}
 });
+});
 
-test('Help Scout reviewed public upload reaches native history and knowledge, with inert reads, exact repeat/repackage equality and undo',async()=>{
+test("helpscout: Help Scout conversations and Docs publish only complete public content, recheck category privacy, and keep undo and erasure safe",async()=>{
+await step('Help Scout reviewed public upload reaches native history and knowledge, with inert reads, exact repeat/repackage equality and undo',async()=>{
  const {responses}=await import('./helpscout-fixtures.mjs'),{assertBusinessEquality}=await import('./business-equality.mjs'),h=await nativeHarness(),base='/api/move-in/projects/p/imports',input=responses(),body=JSON.stringify({responses:input});
  try{
   await h.db.prepare("INSERT INTO knowledge_articles(id,project_id,slug,title,content,status,updated_at) VALUES('native-guide','p','native-guide','Existing guide','Existing native body','published',1)").run();
@@ -48,4 +54,5 @@ test('Help Scout reviewed public upload reaches native history and knowledge, wi
   await h.call(`${base}/${second.id}/undo`,post({}));await h.drain();await h.call(`${base}/${run.id}/undo`,post({}));await h.drain();assert.equal((await h.call(`${base}/${run.id}`)).data.state,'undone',JSON.stringify((await h.call(`${base}/${run.id}`)).data));
   assertBusinessEquality(before,await h.snapshot());assert.equal(h.outbound,0);assert.ok(h.maxStatements<=1000);
  }finally{await h.close()}
+});
 });

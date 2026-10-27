@@ -35,4 +35,9 @@ export const claims={
   any('helpscout-security'),any('door-mapping',/^Help Scout/),any('formats',/^Help Scout/))],
 };
 
+// Consolidated modules register the flow name; limits retains its distinct
+// accept/refuse boundary registrations. Each original assertion is a named step.
+for(const [key,claim] of Object.entries(claims)){
+ const original=claim[1];claim[1]=phase=>phase.name.startsWith(key+': ')||original(phase);
+}
 export const journey=journeys(claims);

@@ -104,6 +104,10 @@
     {
       "id": "257_sla_slack.sql",
       "buyerSteps": "Apply after 256 and before serving the updated Worker. Adds explicit Slack escalation destination consent and durable delivery outcomes to SLA policies and alerts. Existing policies stay unconfigured and existing alerts never gain a send. Retain terminal and uncertain outcomes across upgrades; archived pending sends must not replay."
+    },
+    {
+      "id": "258_hubspot_context.sql",
+      "buyerSteps": "Apply after 257_move_in_attachment_bytes.sql and 257_sla_slack.sql, before serving the updated Worker. Adds encrypted read-only HubSpot connection, explicit customer mappings and transaction claims. Retain mappings with customer data; archives remove credentials and cached context, and require a fresh connection after restore. CRM context grants no customer access."
     }
   ]
 }

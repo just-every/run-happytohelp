@@ -7,6 +7,7 @@ export async function lifecycleJourney(){
  const a=await assistantApp(),{app,ai,p,owner}=a
  // A new visitor turn and its queued generation job (other captured work, such as schedule recovery, is set aside).
  const ask=async(text='Question')=>{const v=await a.visitor();await v.say(text);const id=(await a.generations(v.conversationId)).at(-1).id,job=(await app.takeJobs()).find(job=>job.id===id);assert.equal(job?.type,'ai.generate');return {v,job}}
+ const trace=async v=>(await app.call(`/api/ai-support/projects/${p}/conversations/${v.conversationId}/trace`,{token:owner,status:200})).data.generations[0]
  const latest=async v=>(await a.generations(v.conversationId)).at(-1)
  const replies=async v=>(await v.transcript()).messages.filter(message=>message.actor_role==='ai')
  const trigger=(name,table,when,timing='BEFORE INSERT')=>app.db.prepare(`CREATE TRIGGER ${name} ${timing} ON ${table} WHEN ${when} BEGIN SELECT RAISE(ABORT,'Injected ${name}'); END`).run()
@@ -56,11 +57,18 @@ export async function lifecycleJourney(){
   // An attempt whose process died before any admission is uncertain and never replayed.
   const ambiguous=await ask();await app.db.prepare("UPDATE ai_generations SET state='running' WHERE id=?").bind(ambiguous.job.id).run();calls=a.providerCalls()
   await app.runJobs([ambiguous.job]);await app.runJobs([ambiguous.job]);assert.equal((await latest(ambiguous.v)).state,'uncertain');assert.equal(a.providerCalls(),calls)
+  assert.equal((await trace(ambiguous.v)).result,'unknown');assert.equal((await trace(ambiguous.v)).committedAnswer,null)
   // A notification failing after admission cannot undo the answer or replay the provider.
   const effect=await ask();await trigger('notify_outage','operator_notifications','1=1');calls=a.providerCalls()
   await app.runJobs([effect.job]);await drop('notify_outage')
   assert.equal((await latest(effect.v)).state,'completed');assert.equal((await replies(effect.v)).length,1);assert.equal(a.providerCalls(),calls+1)
   await app.runJobs([effect.job]);assert.equal(a.providerCalls(),calls+1,'a post-commit failure never replays the provider')
+  // A timed-out provider edge remains uncertain and never replays; only the safe outcome crosses the trace door.
+  const timeout=await ask();ai.respond=()=>{throw new DOMException('synthetic-hh-private-timeout','TimeoutError')};calls=a.providerCalls()
+  await app.runJobs([timeout.job]);const timeoutTrace=await trace(timeout.v)
+  assert.equal(timeoutTrace.providerOutcome,'timeout');assert.equal(timeoutTrace.result,'unknown');assert.equal(timeoutTrace.providerCostUsd,null)
+  assert.doesNotMatch(JSON.stringify(timeoutTrace),/synthetic-hh-private-timeout/)
+  await app.runJobs([timeout.job]);assert.equal(a.providerCalls(),calls+1);ai.respond=()=>'Reply'
   // A key removed after the assistant took the conversation: the visitor's message is kept and the missing
   // configuration is visible. (New conversations are not given an assistant without a key.)
   const unconfigured=await a.visitor();await app.configure({OPENAI_API_KEY:undefined});calls=a.providerCalls()

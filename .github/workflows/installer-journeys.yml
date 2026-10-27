@@ -7,7 +7,7 @@ on:
   push:
     tags: ['v*']
   schedule:
-    - cron: '17 16 * * *'
+    - cron: '37 18 * * *'
   workflow_dispatch:
 
 permissions:
@@ -23,7 +23,7 @@ env:
 jobs:
   journeys:
     name: Installer / ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
     strategy:
       fail-fast: false

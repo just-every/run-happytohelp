@@ -96,6 +96,10 @@
     {
       "id": "256_inbound_lookup_indexes.sql",
       "buyerSteps": "Apply after 255 and before the updated Worker serves traffic. Adds indexes on inbound-mail conversation/message lookups and API request hold lookups only; no stored row is changed. Apply once through the migration ledger and retain these indexes on restore."
+    },
+    {
+      "id": "257_sla_slack.sql",
+      "buyerSteps": "Apply after 256 and before serving the updated Worker. Adds explicit Slack escalation destination consent and durable delivery outcomes to SLA policies and alerts. Existing policies stay unconfigured and existing alerts never gain a send. Retain terminal and uncertain outcomes across upgrades; archived pending sends must not replay."
     }
   ]
 }

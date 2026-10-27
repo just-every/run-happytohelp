@@ -5,3 +5,7 @@
 .workflow-settings button:is(:not([class]),.workflow-secondary){font:inherit;font-size:0.9375rem;line-height:1.3;padding:.4rem .8rem;border:1px solid var(--bs-border-color);border-radius:999px;background:var(--bs-body-bg);color:var(--bs-body-color)}.workflow-settings button:is(:not([class]),.workflow-secondary):hover:not(:disabled){border-color:var(--bs-body-color)}.workflow-settings button:is(:not([class]),.workflow-secondary):focus-visible{outline:2px solid var(--bs-body-color);outline-offset:2px}.workflow-settings button:is(:not([class]),.workflow-secondary):disabled{opacity:.6;cursor:not-allowed}
 
 .workflow-settings .workflow-outcome{margin:4px 0;font-size:14.5px}.workflow-settings .workflow-outcome-not_delivered,.workflow-settings .workflow-outcome-failed{color:var(--bs-danger-text-emphasis,var(--bs-danger))}
+
+@media(max-width:600px){.workflow-settings .sla-policy-settings :is(button,select,input:not([type=checkbox])){min-height:44px}}
+@media(max-width:600px){.workflow-settings .sla-policy-settings .workflow-checks>.form-check{min-height:44px;display:flex;align-items:center;gap:8px}.workflow-settings .sla-policy-settings .form-switch .form-check-label{min-height:44px;min-width:44px;display:inline-flex;align-items:center}.workflow-settings .sla-policy-settings .form-switch .form-check-input{margin-top:14px}}
+@media(max-width:600px){.workflow-settings .workflow-explanation{grid-template-columns:minmax(0,1fr);overflow-wrap:anywhere}}

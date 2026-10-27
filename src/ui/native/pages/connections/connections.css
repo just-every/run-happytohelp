@@ -5,3 +5,5 @@
 .connections-page .alert-danger { color: var(--danger); background: var(--surface); border-color: var(--danger); }
 .connections-page .btn-outline-danger { color: var(--danger); border-color: var(--danger); }
 .connections-page .btn-outline-danger:hover, .connections-page .btn-outline-danger:focus-visible { color: var(--danger); background: var(--hover); }
+
+@media(max-width:600px){.connections-page :is(button,select,input:not([type=checkbox])){min-height:44px}.connections-page label:has(input[type=checkbox]){min-height:44px;display:flex;align-items:center;gap:8px}}

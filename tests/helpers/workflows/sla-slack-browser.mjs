@@ -5,7 +5,15 @@ export async function slaSlackBrowser({page,runtime,fixture,policy}){
  const shot=await evidence('sla-slack')
  const capture=async name=>{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${name}: desktop overflow`)
-  for(const width of [1440,390]){await page.setViewportSize({width,height:width===390?844:1000});await page.waitForTimeout(350);if(['pending','failed','uncertain','acknowledged'].some(state=>name.endsWith(state))){if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click();await page.getByRole('tab',{name:'Ticket',exact:true}).click();await page.locator('.workflow-panel').scrollIntoViewIfNeeded()}await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true})}
+  for(const width of [1440,390]){await page.setViewportSize({width,height:width===390?844:1000});await page.waitForTimeout(350);if(['pending','failed','uncertain','acknowledged'].some(state=>name.endsWith(state))){if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click();await page.getByRole('tab',{name:'Ticket',exact:true}).click();await page.locator('.workflow-panel').scrollIntoViewIfNeeded()}if(width===390){
+   const controls=await page.locator('button,a[href],input:not([type=hidden]),select,textarea,summary,[role=button],[role=tab],[role=checkbox],[role=switch]').evaluateAll(nodes=>nodes.filter(node=>node.getClientRects().length&&getComputedStyle(node).visibility!=='hidden'&&!node.closest('[inert],[aria-hidden="true"]')).map(node=>{
+    const target=node.matches('input[type=checkbox],input[type=radio]')?(node.labels?.[0]||node):node
+    const box=target.getBoundingClientRect()
+    return {name:node.getAttribute('aria-label')||node.textContent?.trim()||node.id,width:box.width,height:box.height}
+   }))
+   console.log(name+' phone targets: '+JSON.stringify(controls))
+   assert.deepEqual(controls.filter(({width,height})=>width<44||height<44),[],name+': every phone control is at least 44 by 44')
+  }await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true})}
   await page.setViewportSize({width:1440,height:1000})
  }
  await page.goto(`${runtime.origin}/projects/${projectId}/slack-settings`)

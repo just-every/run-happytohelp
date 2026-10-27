@@ -194,7 +194,7 @@ identifiers, the metric and alert kind. Customer text, names, email addresses an
 private notes are excluded. The configured Slack channel is an explicitly chosen
 external audience; the app does not infer its members. Current backup membership,
 policy authority, destination availability and ticket state are checked before
-sending. Removing a backup or destination consent cancels unsent work.
+sending. The destination installer must still be a workspace owner or admin, as for Teams handoffs. Removing that authority, a backup or destination consent cancels unsent work. Saving a connection sends no test message; use the separate **Send test** action to consent to a test post.
 
 Ticket → Schedules shows Slack delivery separately from the persistent alert:
 pending, accepted, failed, uncertain or cancelled, with attempts and any next retry.

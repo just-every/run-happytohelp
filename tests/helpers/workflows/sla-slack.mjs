@@ -5,9 +5,11 @@ export async function slaSlackFlow(f,original,calendar){
  const path=`/api/management/projects/${w.projectId}/connections/slack`
  const config={name:'Synthetic SLA channel',mode:'incoming-webhook',events:[],url:'https://hooks.slack.com/services/synthetic-hh-1/synthetic-hh-2/synthetic-hh-3'}
  assert.equal((await app.call(path,{token:w.tokens.operator,body:config})).status,403)
- const target=await app.ok(path,{token:w.tokens.owner,body:config})
+ const target=await app.ok(path,{token:w.tokens.admin,body:config})
+ assert.equal(slack.requests.length,0,'saving a connection never implies test-post consent')
  const foreign=await app.ok(`/api/management/projects/${other.projectId}/connections/slack`,{token:other.tokens.owner,body:config})
  assert.equal((await call(`/sla-policies/${original.id}`,{slack_destination_id:foreign.id},'PATCH')).status,400)
+ assert.equal((await call(`/sla-policies/${original.id}`,{slack_destination_id:target.id},'PATCH','operator')).status,403)
  await ok(`/sla-policies/${original.id}`,{active:false},'PATCH')
  const policy=await ok('/sla-policies',{name:'Slack commitments',calendar_id:calendar.id,position:0,conditions:{},first_response_minutes:120,approaching_minutes:30,unattended_minutes:180,backup_user_ids:[w.users.admin],slack_destination_id:target.id})
  assert.equal(JSON.parse((await app.first("SELECT detail_json FROM audit_events WHERE target_id=? AND action='sla-policies.post'",policy.id)).detail_json).slack_destination_id,target.id,'outbound consent records the selected destination in the audit')
@@ -58,6 +60,26 @@ export async function slaSlackFlow(f,original,calendar){
  assert.equal((await alerts(revoked)).find(a=>a.kind==='approaching').slack_state,'cancelled')
  assert.equal(slack.requests.length,prior)
  await patch(revoked,{status_id:'solved'})
+ // Missing consent creates no Slack effect; revocation fences a queued effect.
+ await ok(`/sla-policies/${policy.id}`,{backup_user_ids:[w.users.admin],slack_destination_id:null},'PATCH')
+ await clock(start);const noConsent=await create();await clock(start+90*60000)
+ assert.equal((await alerts(noConsent)).find(a=>a.kind==='approaching').slack_state,'not_configured')
+ await settle();assert.equal(slack.requests.length,prior)
+ await patch(noConsent,{status_id:'solved'})
+ await ok(`/sla-policies/${policy.id}`,{slack_destination_id:target.id},'PATCH')
+ await clock(start);const revokedConsent=await create();await clock(start+90*60000);await alerts(revokedConsent)
+ await ok(`/sla-policies/${policy.id}`,{slack_destination_id:null},'PATCH')
+ await settle();assert.equal(slack.requests.length,prior)
+ assert.equal((await alerts(revokedConsent)).find(a=>a.kind==='approaching').slack_state,'cancelled')
+ await patch(revokedConsent,{status_id:'solved'})
+ await ok(`/sla-policies/${policy.id}`,{slack_destination_id:target.id},'PATCH')
+ // A role change at the installation boundary revokes the destination's authority.
+ await clock(start);const installerRevoked=await create();await clock(start+90*60000);await alerts(installerRevoked)
+ await app.db.prepare("UPDATE memberships SET role='operator' WHERE project_id=? AND user_id=?").bind(w.projectId,w.users.admin).run()
+ await settle();assert.equal(slack.requests.length,prior)
+ assert.equal((await alerts(installerRevoked)).find(a=>a.kind==='approaching').slack_state,'cancelled')
+ await app.db.prepare("UPDATE memberships SET role='admin' WHERE project_id=? AND user_id=?").bind(w.projectId,w.users.admin).run()
+ await patch(installerRevoked,{status_id:'solved'})
  // An acknowledged pending alert never crosses the provider boundary.
  await ok(`/sla-policies/${policy.id}`,{backup_user_ids:[w.users.admin]},'PATCH')
  await clock(start);const ackId=await create();await clock(start+90*60000)
@@ -84,4 +106,11 @@ export async function slaSlackFlow(f,original,calendar){
  await patch(disabled,{status_id:'solved'})
  await ok(`/sla-policies/${policy.id}`,{active:false,slack_destination_id:null},'PATCH')
  await ok(`/sla-policies/${original.id}`,{active:true},'PATCH');await clock(initial)
+ const testTarget=await app.ok(path,{token:w.tokens.owner,body:config})
+ const testCount=slack.requests.length
+ assert.equal((await app.call(path+'/'+testTarget.id+'/test',{token:w.tokens.operator,body:{}})).status,403)
+ assert.equal((await app.call(`/api/management/projects/${other.projectId}/connections/slack/${testTarget.id}/test`,{token:other.tokens.owner,body:{}})).status,404)
+ assert.equal(slack.requests.length,testCount)
+ await app.ok(path+'/'+testTarget.id+'/test',{token:w.tokens.owner,body:{}})
+ assert.equal(slack.requests.length,testCount+1,'only the explicit owner test action posts a test')
 }

@@ -17,9 +17,9 @@ export async function obligationsBrowserJourney({runtime,browser,shot}) {
   const sent=await call(messages,{localId:randomUUID(),content:promise,expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId})
   const before=(await call(messages)).messages.length
   const base=`/api/ai-support/projects/${tenant.projectId}/conversations/${conversation.id}/obligations`
-  await runtime.execute(`INSERT INTO escalation_connections(id,project_id,provider,target,updated_at) VALUES('synthetic-hh-connection-${width}','${tenant.projectId}','github','just-every/run-happytohelp',1);
- INSERT INTO escalation_issues VALUES('synthetic-hh-issue-${width}','${tenant.projectId}','synthetic-hh-connection-${width}','github','${width}','HH-${width}','https://github.com/just-every/run-happytohelp/issues/1','closed',NULL,1,1);
- INSERT INTO escalation_links(id,project_id,conversation_id,issue_id,created_at) VALUES('synthetic-hh-link-${width}','${tenant.projectId}','${conversation.id}','synthetic-hh-issue-${width}',1);`)
+  await runtime.execute(`INSERT INTO escalation_connections(id,project_id,provider,target,updated_at) VALUES('synthetic-hh-connection-${tenant.projectId}','${tenant.projectId}','github','just-every/run-happytohelp',1);
+ INSERT INTO escalation_issues VALUES('synthetic-hh-issue-${tenant.projectId}','${tenant.projectId}','synthetic-hh-connection-${tenant.projectId}','github','${width}','HH-${width}','https://github.com/just-every/run-happytohelp/issues/1','closed',NULL,1,1);
+ INSERT INTO escalation_links(id,project_id,conversation_id,issue_id,created_at) VALUES('synthetic-hh-link-${tenant.projectId}','${tenant.projectId}','${conversation.id}','synthetic-hh-issue-${tenant.projectId}',1);`)
   const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage(),errors=[]
   page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(20000)
   try {
@@ -42,7 +42,7 @@ export async function obligationsBrowserJourney({runtime,browser,shot}) {
    const form=panel.locator('form').first(),due=new Date(Date.now()+3600000);due.setSeconds(0,0)
    const local=new Date(due.getTime()-due.getTimezoneOffset()*60000).toISOString().slice(0,16)
    await form.getByLabel('Responsible teammate',{exact:true}).selectOption(tenant.userId)
-   await form.getByLabel('Engineering dependency',{exact:true}).selectOption(`synthetic-hh-issue-${width}`)
+   await form.getByLabel('Engineering dependency',{exact:true}).selectOption(`synthetic-hh-issue-${tenant.projectId}`)
    await form.getByLabel('Due time',{exact:true}).fill(local)
    await form.getByLabel('Stop condition',{exact:true}).fill('The customer receives an honest update.')
    await panel.getByLabel('Exact promise quote',{exact:true}).scrollIntoViewIfNeeded()

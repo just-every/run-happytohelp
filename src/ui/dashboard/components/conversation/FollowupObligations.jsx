@@ -41,10 +41,10 @@ export default function FollowupObligations({conversation, reads, liveKey}) {
                     write('', {messageId, quote, ownerId:fields.get('ownerId'), dueAt:new Date(fields.get('dueAt')).getTime(), stopCondition:fields.get('stopCondition'), dependencyId:fields.get('dependencyId') || null});
                 }}>
                     <label>Promise message<select aria-label="Promise message" required value={messageId} onChange={e => {setMessageId(e.target.value); setQuote('');}}><option value="">Choose a message</option>{data.sources.map(m => <option key={m.id} value={m.id}>{m.content.slice(0,100)}</option>)}</select></label>
-                    {sourceMessage && <><label>Source message<textarea ref={source} readOnly value={sourceMessage.content} rows={5}/></label><button className="btn btn-sm btn-outline-secondary" type="button" onClick={() => setQuote(sourceMessage.content.slice(source.current.selectionStart,source.current.selectionEnd))}>Use selected quote</button></>}
-                    <label>Exact promise quote<textarea required maxLength={2000} value={quote} onChange={e => setQuote(e.target.value)} rows={3}/></label>
+                    {sourceMessage && <><label>Source message<textarea aria-label="Source message" ref={source} readOnly value={sourceMessage.content} rows={5}/></label><button className="btn btn-sm btn-outline-secondary" type="button" onClick={() => setQuote(sourceMessage.content.slice(source.current.selectionStart,source.current.selectionEnd))}>Use selected quote</button></>}
+                    <label>Exact promise quote<textarea aria-label="Exact promise quote" required maxLength={2000} value={quote} onChange={e => setQuote(e.target.value)} rows={3}/></label>
                     <Terms data={data}/>
-                    <label>Stop condition<textarea name="stopCondition" required maxLength={500} rows={2}/></label>
+                    <label>Stop condition<textarea aria-label="Stop condition" name="stopCondition" required maxLength={500} rows={2}/></label>
                     <button className="btn btn-sm btn-primary" disabled={busy} type="submit">Propose promise</button>
                 </form>
             </details>
@@ -67,7 +67,7 @@ export default function FollowupObligations({conversation, reads, liveKey}) {
 function Terms({data, row}) {
     return <>
         <label>Responsible teammate<select aria-label="Responsible teammate" required name="ownerId" defaultValue={row?.owner_id || ''}><option value="">Choose a teammate</option>{data.owners.map(owner => <option key={owner.id} value={owner.id}>{owner.name}</option>)}</select></label>
-        <label>Due time<input required type="datetime-local" name="dueAt" defaultValue={row ? localTime(row.due_at) : ''}/></label>
+        <label>Due time<input aria-label="Due time" required type="datetime-local" name="dueAt" defaultValue={row ? localTime(row.due_at) : ''}/></label>
         <label>Engineering dependency<select aria-label="Engineering dependency" name="dependencyId" defaultValue={row?.dependency_id || ''}><option value="">No dependency</option>{data.dependencies.map(issue => <option key={issue.id} value={issue.id}>{issue.issue_key}</option>)}</select></label>
     </>;
 }

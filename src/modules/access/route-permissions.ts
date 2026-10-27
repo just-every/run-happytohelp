@@ -35,8 +35,9 @@ const rules:Record<string,Rule>={
  [`PUT ${X}/consent`]:'contacts.manage',[`POST ${X}/evidence`]:'contacts.manage',[`PUT ${X}/profiles/:type`]:'contacts.manage',[`POST ${X}/insights`]:'contacts.manage',[`POST ${X}/insights/:insightId/dismiss`]:'contacts.manage',[`PUT ${X}/monitoring`]:'contacts.manage',[`POST ${X}/generate/:kind`]:'contacts.manage',[`POST ${X}/jobs/:jobId/abandon`]:'contacts.manage',
  [`POST ${P}/contacts/:contactId/erase`]:'data.erase',
  // Knowledge
+ [`POST ${K}/references/insert`]:'knowledge.read',[`POST ${K}/references/preview`]:'knowledge.read',
  [`POST ${K}/articles`]:'knowledge.publish',[`DELETE ${K}/articles/:articleId`]:'knowledge.publish',[`PUT ${K}/articles/:articleId/categories`]:'knowledge.edit',[`PUT ${K}/articles/:articleId/order`]:'knowledge.edit',
- [`POST ${K}/categories`]:'knowledge.edit',[`PUT ${K}/categories/:categoryId`]:'knowledge.edit',[`DELETE ${K}/categories/:categoryId`]:'knowledge.edit',
+ [`GET ${K}/categories/:categoryId/entitlements`]:'knowledge.publish',[`PUT ${K}/categories/:categoryId/entitlements`]:'knowledge.publish',[`POST ${K}/categories`]:'knowledge.edit',[`PUT ${K}/categories/:categoryId`]:'knowledge.edit',[`DELETE ${K}/categories/:categoryId`]:'knowledge.edit',
  [`POST ${K}/datasets`]:'knowledge.publish',[`PUT ${K}/datasets/:datasetId`]:'knowledge.publish',[`POST ${K}/datasets/:datasetId/crawl`]:'knowledge.publish',[`POST ${K}/datasets/:datasetId/refresh`]:'knowledge.publish',[`DELETE ${K}/datasets/:datasetId`]:'knowledge.publish',
  [`POST ${K}/import/:platform`]:'data.import',
  // Members and roles

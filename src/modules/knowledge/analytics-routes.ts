@@ -3,7 +3,11 @@ import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
 import {memberAccess} from '../access/gate'
 import {requireProject} from '../../platform/auth'
-import {accessForContact} from './access'
+import {canonicaliseKnowledge} from './canonicaliser'
+import {referenceVisibility} from './reference-store'
+import {currentTicketReaders} from './readers'
+import {memberReaders} from './door'
+import {pickerArticles,insertArticleReference} from './insertion'
 import {listAccessibleArticles} from './experience'
 import {articleCanonicalUrl} from './public-sources'
 import {auditStatement,requestSource} from '../audit/record'
@@ -21,20 +25,28 @@ analyticsRoutes.get('/:projectId/analytics',async c=>{
  const rows=await c.env.DB.prepare('SELECT id articleId,title FROM knowledge_articles WHERE project_id=?').bind(pid).all<any>()
  const articles=rows.results.map(a=>({views:0,clicks:0,tickets:0,helpful:0,unhelpful:0,...a,...events.results.find(e=>e.articleId===a.articleId),...votes.results.find(e=>e.articleId===a.articleId)}))
  const totals=articles.reduce((r,a)=>({views:r.views+a.views,clicks:r.clicks+a.clicks,tickets:r.tickets+a.tickets,helpful:r.helpful+a.helpful,unhelpful:r.unhelpful+a.unhelpful}),{views:0,clicks:0,tickets:0,helpful:0,unhelpful:0})
- return c.json({articles,searches:searches.results.map(row=>({...row,clicks:clicks.results.find(click=>click.query===row.query&&click.locale===row.locale&&click.brand===row.brand)?.clicks||0})),comments:comments.results,totals})
+ return c.json({articles,searches:searches.results.map(row=>({...row,clicks:clicks.results.find(click=>click.query===row.query&&click.locale===row.locale&&click.brand===row.brand)?.clicks||0})),comments:comments.results,totals,labels:{tickets:'Tickets from article request links'}})
 })
-async function conversationAccess(c:any){
- const pid=c.req.param('projectId'),row=await c.env.DB.prepare('SELECT contact_id FROM conversations WHERE id=? AND project_id=?').bind(c.req.param('conversationId'),pid).first()
- if(!row)throw new HTTPException(404,{message:'Conversation not found'})
- return accessForContact(c.env,pid,row.contact_id)
+function envelope(c:any,body:any={}){let cc=body.cc,bcc=body.bcc;try{cc=cc??JSON.parse(c.req.query('cc')||'[]');bcc=bcc??JSON.parse(c.req.query('bcc')||'[]')}catch{throw new HTTPException(400,{message:'Invalid recipients'})}if(!Array.isArray(cc)||!Array.isArray(bcc)||[...cc,...bcc].some(address=>typeof address!=='string'))throw new HTTPException(400,{message:'Invalid recipients'});return [...cc,...bcc]}
+async function conversationAudience(c:any,body:any={}){
+ const pid=c.req.param('projectId'),cid=c.req.param('conversationId');if(!await c.env.DB.prepare('SELECT 1 FROM conversations WHERE project_id=? AND id=?').bind(pid,cid).first())throw new HTTPException(404,{message:'Not found'})
+ return currentTicketReaders(pid,cid,{addresses:envelope(c,body)})
 }
-analyticsRoutes.get('/:projectId/conversations/:conversationId/articles',async c=>c.json(await listAccessibleArticles(c.env,c.req.param('projectId'),{access:await conversationAccess(c),query:(c.req.query('q')||'').slice(0,200),locale:c.req.query('locale')})))
+analyticsRoutes.get('/:projectId/conversations/:conversationId/articles',async c=>c.json(await pickerArticles(c.env,c.req.param('projectId'),c.get('actor').id,await conversationAudience(c),(c.req.query('q')||'').slice(0,200),c.req.query('locale'))))
 analyticsRoutes.post('/:projectId/conversations/:conversationId/articles/:articleId/insert',async c=>{
- if(!(await memberAccess(c.env.DB,c.req.param('projectId'),c.get('actor').id))?.permissions.has('conversations.reply'))throw new HTTPException(403,{message:'Reply permission required'})
- const pid=c.req.param('projectId'),body=await c.req.json();if(!['text','link'].includes(body.mode))throw new HTTPException(400,{message:'Invalid insertion mode'})
- const articles=await listAccessibleArticles(c.env,pid,{access:await conversationAccess(c),locale:body.locale}),article=articles.find(a=>a.id===c.req.param('articleId'))
- if(!article)throw new HTTPException(404,{message:'Article not available to this customer'})
- const url=new URL(articleCanonicalUrl({...c.env,APP_ORIGIN:c.env.APP_ORIGIN||new URL(c.req.url).origin},pid,article.slug));if(article.locale!=='en')url.searchParams.set('locale',article.locale)
- await auditStatement(c.env.DB,{projectId:pid,category:'data',action:'knowledge.article.insert_prepared',actor:{type:'user',id:c.get('actor').id},source:requestSource(c),target:{type:'article',id:article.id},detail:{conversationId:c.req.param('conversationId'),mode:body.mode,locale:article.locale}}).run()
- return c.json({text:body.mode==='text'?article.content:`[${article.title.replace(/[\[\]\\]/g,'')}](${url.href})`,url:url.href,title:article.title})
+ const body=await c.req.json();if(!['text','link'].includes(body.mode))throw new HTTPException(400,{message:'Invalid insertion mode'})
+ return c.json(await insertArticleReference({...c.env,APP_ORIGIN:c.env.APP_ORIGIN||new URL(c.req.url).origin},c.req.param('projectId'),c.req.param('articleId'),c.get('actor').id,await conversationAudience(c,body),body.mode,body.locale))
+})
+analyticsRoutes.post('/:projectId/references/insert',async c=>{
+ const body=await c.req.json();if(typeof body.articleId!=='string'||!['text','link'].includes(body.mode))throw new HTTPException(400,{message:'Invalid insertion'})
+ return c.json(await insertArticleReference({...c.env,APP_ORIGIN:c.env.APP_ORIGIN||new URL(c.req.url).origin},c.req.param('projectId'),body.articleId,c.get('actor').id,memberReaders(c.get('actor').id),body.mode,body.locale))
+})
+
+analyticsRoutes.post('/:projectId/references/preview',async c=>{
+ const body=await c.req.json(),pid=c.req.param('projectId'),actor=c.get('actor')
+ if(typeof body.content!=='string'||body.content.length>100000||body.conversationId!==undefined&&typeof body.conversationId!=='string')throw new HTTPException(400,{message:'Invalid reference preview'})
+ let readers=memberReaders(actor.id)
+ if(body.conversationId){if(!await c.env.DB.prepare('SELECT 1 FROM conversations WHERE project_id=? AND id=?').bind(pid,body.conversationId).first())throw new HTTPException(404,{message:'Not found'});readers=currentTicketReaders(pid,body.conversationId,{addresses:envelope(c,body)})}
+ const content=await canonicaliseKnowledge(c.env,pid,body.content)
+ return c.json({content,references:await referenceVisibility(c.env,pid,content,actor.id,readers)})
 })

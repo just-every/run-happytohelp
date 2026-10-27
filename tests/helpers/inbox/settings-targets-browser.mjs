@@ -40,8 +40,17 @@ export async function settingsTargetsBrowser({page,origin,tenant,audit}) {
   await page.setViewportSize({width,height:900});
   await page.goto(origin+`/projects/${tenant.projectId}/edit`);
   await page.getByRole('button',{name:'Appearance',exact:true}).click();
+  await page.locator('.workspace-brand input[type=file]').setInputFiles('public/homepage/media/brands/happytohelp-favicon.png');
+  await page.getByRole('button',{name:'Remove',exact:true}).waitFor();
   const appearance=[];
   await targets(page,'.project-mode-control button,.project-appearance .btn-link,.project-appearance summary',appearance);
+  await page.getByRole('button',{name:'Undo',exact:true}).click();
+  assert.equal(await page.locator('.workspace-brand__preview img').count(),0,'Undo restores the original brand image');
+  const mode=width===1440?'Light':'Balanced';
+  await page.getByRole('button',{name:mode,exact:true}).focus();await page.keyboard.press('Space');
+  await page.getByRole('button',{name:'Update',exact:true}).click();await page.getByRole('status').filter({hasText:'Saved.'}).waitFor();
+  await page.reload();await page.getByRole('button',{name:'Appearance',exact:true}).click();
+  assert.equal(await page.getByRole('button',{name:mode,exact:true}).getAttribute('aria-pressed'),'true','display mode survives saving and reload');
   const disclosure=page.locator('.project-appearance summary');
   await disclosure.focus();await page.keyboard.press('Enter');
   assert.equal(await page.locator('.project-appearance details').getAttribute('open'),'');

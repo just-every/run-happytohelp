@@ -14,6 +14,11 @@ export async function proceduresJourney(){
   assert.equal(versions.find(v=>v.id===v1.id).definition.instructions,d.instructions)
   await assert.rejects(app.db.prepare('UPDATE procedure_versions SET definition=? WHERE id=?').bind('{}',v1.id).run(),/immutable/)
   await call(`${root}/refund/versions`,{body:{...d,tools:['issue_refund']},status:400})
+  await call(`${root}/refund/versions`,{body:{...d,tools:[['search_knowledge']]},status:400})
+  for(const path of [`${root}/refund/versions`,`/api/training/projects/${p}/runs`]){
+   await call(path,{body:null,status:400})
+   await call(path,{body:'{',raw:true,headers:{'Content-Type':'application/json'},status:400})
+  }
   await call(`${root}/refund/versions`,{body:{...d,conversationId:'historical-customer'},status:400})
   await call(`${root}/refund/versions`,{body:{...d,cases:d.cases.slice(0,3)},status:400})
   for(const token of [a.workspace.tokens.operator])await call(root,{token,status:403})
@@ -37,6 +42,15 @@ export async function proceduresJourney(){
   await call(`/api/training/projects/${p}/runs/${good.id}/cases/${good.cases[0].id}/artifact`,{token:a.workspace.tokens.operator,status:403})
   const operatorRuns=(await call(`/api/training/projects/${p}/runs`,{token:a.workspace.tokens.operator,status:200})).data.data
   assert.ok(!operatorRuns.some(r=>r.id===good.id))
+  const requestId=(await app.first('SELECT request_id FROM training_runs WHERE id=?',good.id)).request_id
+  await call(`/api/training/projects/${p}/runs`,{token:a.workspace.tokens.operator,body:{request_id:requestId},status:403})
+  const admin=a.workspace.tokens.admin,adminId=a.workspace.users.admin
+  assert.ok((await call(`/api/training/projects/${p}/runs`,{token:admin,status:200})).data.data.some(r=>r.id===good.id))
+  const role=(await call(`/api/management/projects/${p}/roles`,{body:{name:'Synthetic narrowed admin',base:'admin',permissions:[]},status:201})).data.data
+  await call(`/api/management/projects/${p}/agents/${adminId}`,{method:'PUT',body:{role:role.id},status:200})
+  assert.ok(!(await call(`/api/training/projects/${p}/runs`,{token:admin,status:200})).data.data.some(r=>r.id===good.id))
+  await call(`/api/training/projects/${p}/runs/${good.id}`,{token:admin,status:403})
+  await call(`/api/training/projects/${p}/runs`,{token:admin,body:{request_id:requestId},status:403})
   await call(`${root}/refund/versions/${v2.id}/release`,{body:{evaluationId:good.id,passed:true},status:409})
   const qualified=(await call(`${root}/refund/versions/${v1.id}/release`,{body:{evaluationId:good.id},status:200})).data
   assert.equal(qualified.productionExecutionAvailable,false)

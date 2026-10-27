@@ -27,6 +27,8 @@ const entities:Record<string,Table[]>={
   table('move_in_notes','conversation_id','id,project_id,conversation_id,author_json,content,created_at,source_time','id'),
   table('ticket_field_values','conversation_id','project_id,conversation_id,field_id,value_json','field_id'),
   table('conversation_tags','conversation_id','project_id,conversation_id,tag_id','tag_id'),
+  table('media','conversation_id','id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at','id'),
+  table('move_in_attachment_bytes','conversation_id','media_id,project_id,conversation_id,note_id,sha256,base64','media_id'),
   ...[
    table('message_authorship','message_id','message_id,project_id,kind,source_kind,source_id,source_part,recorded_at','message_id'),
    table('conversation_ratings','resolution_id','resolution_id,value,comment,updated_at,revision','resolution_id'),
@@ -39,8 +41,7 @@ const entities:Record<string,Table[]>={
    table('conversation_notes','conversation_id','id,conversation_id,user_id,content,created_at','id'),
    table('conversation_ai','conversation_id','conversation_id,ai_id'),
    table('conversation_participants','conversation_id','id,conversation_id,contact_id,created_at','id'),
-   table('conversation_buckets','conversation_id','id,conversation_id,created_at,metadata_json','id'),
-   table('media','conversation_id','id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at','id')
+   table('conversation_buckets','conversation_id','id,conversation_id,created_at,metadata_json','id')
   ].map(t=>({...t,nativeOnly:true}))]
 }
 function definitions(kind:string){const value=entities[kind];if(!value)throw new Error('unsupported_native_target');return value}
@@ -73,6 +74,7 @@ export function completeNativeValue(kind:string,value:NativeValue):NativeValue {
  // An absent relationship has no new semantic content. Preserve the canonical
  // value of earlier contact imports so their existing repeat/undo custody holds.
  if(kind==='contact'&&!value.tables.contact_companies.length)delete value.tables.contact_companies
+ if(kind==='conversation'&&!value.tables.move_in_attachment_bytes.length)delete value.tables.move_in_attachment_bytes
  return value
 }
 export const nativeTargets:D1TargetAdapter={
@@ -80,6 +82,7 @@ export const nativeTargets:D1TargetAdapter={
   const defs=definitions(kind),row:any=await db.prepare(`SELECT ${defs.map((t,i)=>`${select(t)} AS t${i}`).join(',')},(SELECT source_json FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?) AS source,(SELECT revision FROM move_in_origins WHERE project_id=? AND target_kind=? AND target_id=?) AS revision`).bind(...defs.flatMap(t=>params(t,destination,id)),destination,kind,id,destination,kind,id).first()
   const tables:NativeValue['tables']={};for(let i=0;i<defs.length;i++){const t=defs[i];tables[t.name]=JSON.parse(row[`t${i}`]).map((values:any[])=>Object.fromEntries(t.columns.map((column,index)=>[column,values[index]])))}
   if(kind==='contact'&&!tables.contact_companies.length)delete tables.contact_companies
+  if(kind==='conversation'&&!tables.move_in_attachment_bytes.length)delete tables.move_in_attachment_bytes
   if(!row.source&&!Object.values(tables).some(rows=>rows.length))return undefined
   // An unowned native collision is visible to the kit and cannot be overwritten without review.
   return {destination,targetKind:kind,targetId:id,revision:row.revision??'native',value:{tables,source:row.source?JSON.parse(row.source):{}} as any}

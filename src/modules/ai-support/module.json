@@ -10,7 +10,8 @@
     "tests/journeys/ai-live.mjs",
     "migrations/257_followup_obligations.sql",
     "tests/helpers/ai/obligations.mjs",
-    "tests/helpers/ai/obligations-browser.mjs"
+    "tests/helpers/ai/obligations-browser.mjs",
+    "tests/helpers/recovery/followup.mjs"
   ],
   "selectedEditionDependencies": [
     "runeditrun/base",

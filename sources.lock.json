@@ -5828,7 +5828,7 @@
       "executable": false
     },
     "src/modules/knowledge/http-door.ts": {
-      "sha256": "8cc5a7e8ca6670ba93b72946324f8b0fdc47aa6a88f145a6864bd80b0793cafd",
+      "sha256": "11022447bd933dfed1cc647cfb59081ebcf32bf23033fdaee3b5fa167b72d9ce",
       "executable": false
     },
     "src/modules/knowledge/import-jobs.ts": {
@@ -8544,7 +8544,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationForm.jsx": {
-      "sha256": "ae4f29e9f1a65843d0c8707c7ef08bbee31d5145e3b043fd4f7dc17ecfea78bd",
+      "sha256": "75aca0247547dfb3ab687337acf3484f2b82f0c3894daa2a9d409aea1e9dc389",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationHeader.jsx": {
@@ -12816,7 +12816,7 @@
       "executable": false
     },
     "tests/move-in/migration.mjs": {
-      "sha256": "096a47035154c9f563f0501b092dfa044573e32f3d6c7c5ad09d51ab50dcc9b0",
+      "sha256": "25e35e1c5a3c66b3a295544cd755c92b6766610acef010e3309e567c3d136f82",
       "executable": false
     },
     "tests/move-in/native-corrections.mjs": {

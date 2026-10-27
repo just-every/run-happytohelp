@@ -50,7 +50,7 @@ export const vendorGuides = {
    <li>Copy this script and run it. {tools} It asks for your Freshdesk address and API key.<CopyCommand text={freshdeskScript}/></li>
    <li>It writes <code>freshdesk-move-in-1.ndjson</code>, <code>-2</code> and so on: 50 tickets each, with every reply and note and the people in them. It also writes <code>freshdesk-move-in-saved-replies.ndjson</code> with your canned responses. Upload them one at a time below.</li>
   </ol>
-  <p className="sh-note">Attachments stay in Freshdesk: their names are kept, not the files. Help articles come across with Knowledge, Import, Freshdesk. Details: <a href="/docs/moving-in#freshdesk">Freshdesk in the Move in guide</a>.</p>
+  <p className="sh-note">This script keeps attachment metadata only. You can explicitly supply bounded attachment bytes as described in the guide. Help articles come across with Knowledge, Import, Freshdesk. Details: <a href="/docs/moving-in#freshdesk">Freshdesk in the Move in guide</a>.</p>
  </>},
  happytohelp: {label: 'HappyToHelp (the original service)', guide: <>
   <p>History from the original HappyToHelp service moves in with a command run on your computer, not an upload here. Follow <a href="/docs/operations#import-data-from-the-original-happytohelp-service">Import data from the original HappyToHelp service</a>.</p>

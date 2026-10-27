@@ -1,3 +1,4 @@
+import {attachmentSchemaUpgrade} from './upgrade-attachments.mjs';
 import {validateStoredSearch} from '../helpers/search-index.mjs';
 import {localMailMigrations,localMailTables} from '../first-run/inventory.mjs';
 import {integrationMigrations,integrationTables} from '../connections/inventory.mjs';
@@ -248,6 +249,7 @@ try {
   });
   await assertCategoryUpgrade(runtime.directory);
   artifact.deploymentSpec.migrations=completeMigrations;
+  await attachmentSchemaUpgrade(runtime,completeMigrations.find(m=>m.name==='257_move_in_attachment_bytes.sql'));
   await runtime.start();const health=await fetch(runtime.origin+'/health');assert.equal(health.status,200);await runtime.close();
   const receipt={oldTables:Object.keys(before.rows).length,newTables:Object.keys(after.rows).length,oldMigrations:original.length,newMigrations:migrations.length,finalTables:Object.keys(final.rows).length,finalMigrations:final.rows.d1_migrations.length,added:completeMigrations.filter(m=>!original.some(old=>old.name===m.name)).map(m=>m.name),checks:['real native Wrangler prior ledger and append-only apply','every original row retained','SQLite ledger sequence growth only','prior schema exact except two specified A110 trigger fences','historical unknown outcome','unknown first resolution retained','Base strict defaults and exact prior original bytes retained','additional stages retain every row and prior schema except added columns and category insert/delete trigger evolution','upgraded category create/delete preserves unrelated article state','upgraded linked and ancestor deletion invalidates primary and additional category article revisions','actual emitted Worker health after upgrade']};
   if(process.env.H2H_EVIDENCE_DIR){await mkdir(resolve(process.env.H2H_EVIDENCE_DIR),{recursive:true});await writeFile(join(resolve(process.env.H2H_EVIDENCE_DIR),'upgrade.json'),JSON.stringify(receipt,null,2)+'\n')}

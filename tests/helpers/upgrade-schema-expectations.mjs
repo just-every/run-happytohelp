@@ -3,6 +3,7 @@ import {DatabaseSync} from 'node:sqlite';
 // Prior schema definitions a migration deliberately replaces. 0110 adds only the
 // native import fence to the two context message triggers' bodies.
 export const schemaExceptions = [
+  {migration: '258_account_lookup_fields.sql', names: ['ticket_fields'], change: 'Adds only account to the field type constraint; every prior column, definition and value is retained'},
   {migration: '0105_edition_delegation.sql', names: ['knowledge_articles'], change: 'Adds source_revision and source_incarnation; original columns retained'},
   {migration: '0108_public_answer_citations.sql', names: ['knowledge_articles', 'messages'], change: 'Adds generated publication_version and citations_json; original definitions retained'},
   {migration: '122_email_content.sql', names: ['messages'], change: 'Adds nullable content_raw TEXT'},
@@ -44,6 +45,7 @@ export function expectedSchema(before, after, added) {
         } finally { db.close(); }
       }
     }
+    if (added.includes('258_account_lookup_fields.sql') && name === 'ticket_fields') wanted = {...wanted, sql: wanted.sql.replace("'checkbox','regex')", "'checkbox','regex','account')")};
     if (added.includes('195_restore_trigger_boundaries.sql') && name === 'conversation_record_resolution') wanted = {...entry, sql: entry.sql.replace(/\bEND,/g, 'END ,').replace('first_resolved_at=CASE', 'first_resolved_at= CASE')};
     if (added.includes('241_away_reply_not_a_reply.sql') && awayReplyExclusions[name]) wanted = {...wanted, sql: awayReplyExclusions[name](wanted.sql)};
     if (added.includes('246_imported_ticket_lifecycle.sql') && name === 'ticket_conversation_defaults') wanted = {...wanted, sql: importedStatusDefaults(wanted.sql)};

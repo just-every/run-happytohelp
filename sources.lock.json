@@ -4208,7 +4208,7 @@
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {
-      "sha256": "4f7fb7b8da306906f74bf58fdc660c21ce5fed56d103542de9e5b7cbbb4f9ab7",
+      "sha256": "4152c5416e7cddf18b6365c966ab1232d187c80bd2ee40e7e31211dc2bc84797",
       "executable": false
     },
     "src/modules/crm/routes.ts": {

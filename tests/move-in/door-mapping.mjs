@@ -1,3 +1,4 @@
+import {configurationSlaJourney} from './configuration-sla.mjs';
 import {configurationFieldsJourney} from './configuration-fields.mjs';
 import {companyJourney} from './companies.mjs';
 import assert from 'node:assert/strict';
@@ -19,7 +20,7 @@ async function imported(vendor,body,{name='export.jsonl',apply=true,check,before
   assert.ok(review.plan,`${name} reached no review: ${review.state} ${review.error}`)
   const rejection=key=>review.plan.decisions.find(row=>`${row.kind}/${row.sourceId}`===key)?.rejection,omissions=key=>review.plan.decisions.find(row=>`${row.kind}/${row.sourceId}`===key)?.omissions.map(item=>item.reason)
   let done
-  if(apply&&review.plan.counts.effects>0){await h.call(`${root}/${review.id}/apply`,post({fingerprint:review.plan.fingerprint}));await h.drain();done=(await h.call(`${root}/${review.id}`)).data;assert.equal(done.state,'completed');assert.equal(done.error,null)}
+  if(apply&&review.plan.counts.effects>0){await h.call(`${root}/${review.id}/apply`,post({fingerprint:review.plan.fingerprint}));await h.drain();done=(await h.call(`${root}/${review.id}`)).data;assert.equal(done.state,'completed',JSON.stringify(done));assert.equal(done.error,null)}
   const rows=async sql=>(await h.db.prepare(sql).all()).results
   assert.equal(h.outbound,0,'import makes no external request before review or activation')
   await check({review,plan:review.plan,rejection,omissions,done,rows,h,initial});assert.deepEqual(h.outboundRequests,expectedPostReviewRequests,'only explicitly exercised native behavior may attempt the named provider request')
@@ -131,6 +132,7 @@ test('one Intercom source in four packagings and a ZIP of all of them map the sa
 // Imported macros are manual commands: preview is pure and apply creates a
 // composer draft, never a sent message. Repeat and undo cover their full version.
 test('Zendesk macros translate placeholders and four actions into native preview and guarded manual apply',async()=>{
+ await configurationSlaJourney(imported)
  await configurationJourney()
  await configurationFieldsJourney(imported)
  const body=ndjson(user,staff,ticket,{macro:{id:81,title:'Refund follow-up',restriction:null,created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',actions:[

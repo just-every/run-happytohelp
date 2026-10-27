@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "119e7e23e43b2e37233d56562122689c8f84179a7c6611a019b0b73be100211e",
+      "sha256": "096e080abf1f686cfca118e4efca33f38898cbe7ce999cbf5e90e0b2695bbe5c",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "0aa87b3180b780a32e5353792ee3a9cbd1c9173b1aaf6f7e9b87e0bce389afb2",
+      "sha256": "0cab12ce2fa345524f558b2f87ab8a2190921ebeb6cbe2ac256665d646e0f097",
       "executable": false
     },
     "DEMO.md": {
@@ -1748,7 +1748,7 @@
       "executable": false
     },
     "docs/moving-in.md": {
-      "sha256": "bf5f4fabb1acb80d393cbdd4f29662b6ccc666c5dad0eaf2da85c73fc98b7acf",
+      "sha256": "d9e0c795cbcb515a47a2ec4bddf2439b17eca2e42cacc97b0af2d50fd45748d7",
       "executable": false
     },
     "docs/NAVIGATION.md": {
@@ -6396,15 +6396,15 @@
       "executable": false
     },
     "src/modules/move-in/plan.ts": {
-      "sha256": "d1f56c61c84e88eb6538c1076a27d0bf6c2ae2fcb61eda4b4d339d0d4f37d786",
+      "sha256": "fc63f7caf75f896cf4c914baac06be0b35cb7eab15c10338018c772af812039d",
       "executable": false
     },
     "src/modules/move-in/planning-state.ts": {
-      "sha256": "35cb4e2a8df25ea282ac4c9fafc3fe2c856161c377592800ed59473558562df4",
+      "sha256": "2351196f0fcec91b64c52647f4f987315db5fe9ec1ed35a1058985485d61b718",
       "executable": false
     },
     "src/modules/move-in/plans.ts": {
-      "sha256": "66ebb668f136f7d239b5f01b2bdd5a2a4afabfc0abe1261fbf6683dab00c62e0",
+      "sha256": "7d4f3cb2ef902c6f35e3ff6fa3978e3e2d83013ee9c5abea9bb666b9c2f056f0",
       "executable": false
     },
     "src/modules/move-in/private-custody.ts": {
@@ -6488,11 +6488,11 @@
       "executable": false
     },
     "src/modules/move-in/readers/shapes.ts": {
-      "sha256": "ec7f5ba12dd9fa2cadac41f34e7f306415f27455e7e56b5644e8474e9aaf2c62",
+      "sha256": "03b03ce72b84a007e1287f08153189002764e70a31ff90e0f62c4b0ab8714d8b",
       "executable": false
     },
     "src/modules/move-in/readers/zendesk-configuration.ts": {
-      "sha256": "683760c76d318355b64cd090123a8100370b11259f5cbb9e16f54625037c20e5",
+      "sha256": "721c3cc7053cfb2afc4f2f9012d9d11c611bbc2fb15a97890895bd6c4c408233",
       "executable": false
     },
     "src/modules/move-in/readers/zendesk-fields.ts": {
@@ -6528,7 +6528,7 @@
       "executable": false
     },
     "src/modules/move-in/targets.ts": {
-      "sha256": "91cacc388745d755bf063d8931f27c30a814eb363af85e2742240b0341f732e2",
+      "sha256": "d29e25cbc5b80ce4fa231190cfaffbfdabbf4c766ec68e07abc7d8bf85e45137",
       "executable": false
     },
     "src/modules/move-in/ticket-state.ts": {
@@ -10184,11 +10184,11 @@
       "executable": false
     },
     "src/ui/native/pages/move-in-presentation.js": {
-      "sha256": "640ee8055f711d50a52605e1d4f55c97479720899710f600652ec42ad66e01b4",
+      "sha256": "c5f792b69f1beba12c17f080e67ada30bf7450cae49abab6b9f0db5a1b0bf2cf",
       "executable": false
     },
     "src/ui/native/pages/move-in-reasons.js": {
-      "sha256": "66ac5ca092f585c333c1fb1fb363cbcf84aa73e4083015287d1e4e9105e15a9c",
+      "sha256": "d52f23bd5d3a0dfd0a3e505b4786a4b55ece7c9df2e02a927ec8c8ef06b8ddec",
       "executable": false
     },
     "src/ui/native/pages/move-in.css": {
@@ -10196,7 +10196,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveIn.jsx": {
-      "sha256": "2522e86b0e06d158720e9ed32212caf8e6dde336c251b1b2aa8847adf04a1afe",
+      "sha256": "4126f720f0e2cd76e3fdf3d7bde2862197b5d0d4a1bb97894a647400850f4fb7",
       "executable": false
     },
     "src/ui/native/pages/MoveInGuide.jsx": {
@@ -10208,11 +10208,11 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInReport.jsx": {
-      "sha256": "3863021360a68e07b755ef676a81443928f2f8019df991d402635cc8319f32dc",
+      "sha256": "0bfa9a8743c42801499f9947521ee1378b124479b7cede5851a4a92a703f4967",
       "executable": false
     },
     "src/ui/native/pages/MoveInReview.jsx": {
-      "sha256": "ded2fe6725938d0874c1f473c59da8c0520aab6c443843e593937804b12b2df9",
+      "sha256": "49e564eee1d2d660f4b5bf2015b0ed0b3b5a0884d9c9eefba1db0ba3429a7ef4",
       "executable": false
     },
     "src/ui/native/pages/notifications/NotificationInbox.jsx": {
@@ -12236,7 +12236,7 @@
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
-      "sha256": "0f5426dcb3825558706e20dfc72ffa25ffc8e91d74012c74d715faac390ae7b7",
+      "sha256": "6e78092985ae8ea017d004dbeecbc499fbf999afb8709afea3a789b39d985aa5",
       "executable": false
     },
     "tests/journeys/move-in-capacity.mjs": {
@@ -12399,6 +12399,10 @@
       "sha256": "e1c62a75b8f1d0293ff44144c9d1336aae4904ece88c97f433986a3f1d5b9c5f",
       "executable": false
     },
+    "tests/move-in/configuration-sla.mjs": {
+      "sha256": "13bd4d327fb37ce21dd536a74405334cb4b1223525916d9519ddaa96597e33b8",
+      "executable": false
+    },
     "tests/move-in/correction-fixtures.mjs": {
       "sha256": "c4665499eecf3eb5fdbd4c289b8b309236e7ee6fde350659f686dfdab0b1aade",
       "executable": false
@@ -12412,7 +12416,7 @@
       "executable": false
     },
     "tests/move-in/door-mapping.mjs": {
-      "sha256": "cad1d9d3f8aa09686483b878a57cc2d4d7f539c6d61670600259e029cd11b150",
+      "sha256": "dba7a28dbab14dec2d6179bf7ac607fa9daa345e9d2d48db94d705d79ebfddaa",
       "executable": false
     },
     "tests/move-in/door-readers.mjs": {

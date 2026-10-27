@@ -1,3 +1,4 @@
+import {attachmentBrowserFlow} from '../move-in/attachment-browser-flow.mjs'
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile,writeFile} from 'node:fs/promises'
@@ -51,7 +52,7 @@ async function vendorJourney(width,vendor){
 }
 for(const width of [1440,390])test(`at ${width}px Zendesk and Intercom exports are reviewed, imported, reported, opened, tagged, filtered, repeated, undone, refused and diagnosed`,guarded(async()=>{for(const vendor of ['zendesk','intercom'])await vendorJourney(width,vendor);await configurationBrowser(width);await ownershipBrowserFlow({page,request,origin:runtime.origin,token,width,inspect})}))
 
-test('a Help Scout export at 1440 and 390: its own guide, review, import, repeat, opened history and undo',guarded(()=>helpScoutBrowserFlow({page,origin:runtime.origin,base,inspect,request,project,token})))
+test('a Help Scout export at 1440 and 390: its own guide, review, import, repeat, opened history and undo',guarded(async()=>{await helpScoutBrowserFlow({page,origin:runtime.origin,base,inspect,request,project,token});await attachmentBrowserFlow({page,origin:runtime.origin,base,inspect})}))
 
 test('entry points and limits: Settings and Setup lead to Move in, an oversized file never uploads, a late native conflict stops and undoes cleanly, and an operator cannot move in history',guarded(async()=>{
  await page.goto(runtime.origin+base+'/settings');await page.getByRole('link',{name:'Move in existing support history',exact:true}).click();await page.getByRole('heading',{name:'Move in',exact:true}).waitFor();

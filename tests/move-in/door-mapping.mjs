@@ -1,3 +1,4 @@
+import {attachmentJourney} from './supplied-attachments.mjs';
 import {configurationFieldsJourney} from './configuration-fields.mjs';
 import {companyJourney} from './companies.mjs';
 import assert from 'node:assert/strict';
@@ -106,6 +107,7 @@ test('Help Scout responses and Docs map only documented, complete and public con
 
 test('Freshdesk tickets keep the description first, private notes, staff as authors and the resolved time; signed download links are refused',async()=>{
  await companyJourney(imported,'freshdesk')
+ await attachmentJourney(imported)
  const {contact:person,agent,ticket:freshTicket,cannedResponse}=await import('./freshdesk-fixtures.mjs')
  await imported('freshdesk',ndjson(person,agent,freshTicket(5001,4),freshTicket(5002,2),freshTicket(5003,5),freshTicket(5004,3),cannedResponse),{check:async({plan,omissions,rows})=>{
   assert.equal(plan.counts.rejected,0);const solved=(await rows("SELECT c.id,c.resolved_at,c.assigned_to FROM conversations c JOIN move_in_origins o ON o.target_id=c.id WHERE o.source_id='5001'"))[0]

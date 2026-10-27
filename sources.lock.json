@@ -1564,15 +1564,15 @@
       "executable": false
     },
     ".github/workflows/delivery.yml": {
-      "sha256": "10f35f361179f71be1a36bc202b3783afa9f96a1a1025ead01857d9047e62429",
+      "sha256": "28e6b2b61a47cdfaa75f34940ff25411e944dbc2601d99e8d477ff1693be9cce",
       "executable": false
     },
     ".github/workflows/deploy-stage.yml": {
-      "sha256": "522ca7463ec40e8dac751b8f10afd878f0d90d988e1d05b00adcc033897c95a5",
+      "sha256": "3e294a70ef9a9ba92735f36332c2add39a453f028a068b3453f44762ea5cc887",
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "44294e763da713be8d625e9dadd0e73360d0178eba84fa185d8dce2c20851078",
+      "sha256": "f39ae85aea2f531b94aaaf88d1d67ee61e19df2fb844af5079da3b90a2f2af3e",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -1588,7 +1588,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "688ded31a270bb98f86ec13d4072855e57ca25356bb3501a76429915d7a8cedb",
+      "sha256": "5f5f8ed0f6ea6c6af955e1a0e88795fdfc66f3911713de88bca3d10427072842",
       "executable": false
     },
     ".gitignore": {
@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "f5b3a8d1a5743aa05c336748cbf4e6383626da82c107568ba74e73076e81364f",
+      "sha256": "64817312a89577ca6e7d8b089296accdb340dcb1050dd381bc41350bebd468a1",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "e57d25142e0bb4dfa891e2ab6ff838dcbcf53163ee0f48394813eb895d4a79a0",
+      "sha256": "8f8ffb9d3d6afa3db33b210e48192ce7d6abf4508759c3f4186572a66ecfe154",
       "executable": false
     },
     "DEMO.md": {
@@ -2655,8 +2655,28 @@
       "sha256": "b6057164f2cc0442f84bf73e6997895e5e8cae582f0cc0bea454016b74fe14df",
       "executable": false
     },
+    "scripts/chromium-probe.mjs": {
+      "sha256": "5b08ef78f0cc30ee1e625ac73175ed97879787783b5ac6b0e6ab55458eee3a06",
+      "executable": false
+    },
+    "scripts/ci/ensure-disk-space.sh": {
+      "sha256": "8ad90affb872e1bd4a62e763d7a1cc4aaa95c652703e27c13f54cc657bfc7521",
+      "executable": false
+    },
+    "scripts/ci/install-chromium-deps.py": {
+      "sha256": "1cdf078bf40b1d8a76a6f33223890a73121683d6ef614566f5e88d1228014e93",
+      "executable": false
+    },
+    "scripts/ci/public-preview.mjs": {
+      "sha256": "e7a524e8d84ad8b58aea8cf5517b31364a2267d6c2f202ba00686001a082819d",
+      "executable": false
+    },
     "scripts/ci/run-checks.mjs": {
       "sha256": "0b060966dedf9ecedcb02be565a289059925b0726342c140bdfaeaabe8f605f8",
+      "executable": false
+    },
+    "scripts/ci/verify-evidence.sh": {
+      "sha256": "d9cde77c939f9cf19529df1e51c8e762f55e6a40d211faa0cfc15751019f0452",
       "executable": false
     },
     "scripts/delivery/base/artifact.mjs": {
@@ -10244,7 +10264,7 @@
       "executable": false
     },
     "src/ui/native/pages/project-parity.css": {
-      "sha256": "2dc97f692ee06f485c9678268a54f060a30e8ad22f4b61e0a4414364cdf8da9f",
+      "sha256": "b84f71d11f9a847f79611b219dd34a795ccd20ca40fd8b8a3340832211cf9351",
       "executable": false
     },
     "src/ui/native/pages/ProjectControls.jsx": {
@@ -11584,7 +11604,7 @@
       "executable": false
     },
     "tests/helpers/inbox/appearance-browser.mjs": {
-      "sha256": "9fe6f41d4c51c260a1e975c87e86f4528767502766f986129276837a78f2b42f",
+      "sha256": "0c63e1260b27f118b37d3d45e662e3665ae4873fd369df795342d846c11f8137",
       "executable": false
     },
     "tests/helpers/inbox/appearance.mjs": {
@@ -11649,6 +11669,10 @@
     },
     "tests/helpers/inbox/search.mjs": {
       "sha256": "28e32e9ec3eacd2429d4944557717ddb0d681c4a48ed6ac7bc9bf3aaa0badfb3",
+      "executable": false
+    },
+    "tests/helpers/inbox/settings-targets-browser.mjs": {
+      "sha256": "0543a8a0a4e9e1cf707d2f585cf0e5b6e8c311d9616a817979d7d856fbd23586",
       "executable": false
     },
     "tests/helpers/inbox/start-menu-browser.mjs": {

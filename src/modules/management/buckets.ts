@@ -22,7 +22,7 @@ export async function bucketsData(env:Env,conversation:any,bucketIds:string[]){
  ])
  const buckets=new Map(data[0].results.map(row=>[String(row.id),row])),byBucket=new Map<string,any[]>(),hydrated=new Map<string,any[]>()
  for(const row of data[1].results){const key=String(row.bucket_id||row.conversation_id);if(!byBucket.has(key))byBucket.set(key,[]);byBucket.get(key)!.push(row)}
- const noteMedia = await noteMediaData(env,conversation.project_id,(data[2]?.results || []).map((row:any)=>String(row.id)));
+ const noteMedia = await noteMediaData(env,conversation.project_id,[...(data[2]?.results || []),...(data[3]?.results || [])].map((row:any)=>String(row.id)));
  const allMessages=await attachInboundOrigins(env,String(conversation.project_id),await messagesData(env,data[1].results))
  for(const message of allMessages){const key=String(message.bucket_id);if(!hydrated.has(key))hydrated.set(key,[]);hydrated.get(key)!.push(message)}
  return bucketIds.map(bucketId=>{

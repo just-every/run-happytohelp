@@ -50,7 +50,7 @@ procedureRoutes.post(root+'/:key/versions/:versionId/simulations',async c=>{
  return c.json({id,procedureVersionId:v.id,status:'queued'},201)
 })
 procedureRoutes.get(root+'/:key/versions/:versionId/simulations',async c=>{
- const runs=await c.env.DB.prepare("SELECT id,status,case_count,created_at,json_extract(config,'$.procedureVersionId') AS procedureVersionId FROM training_runs WHERE project_id=? AND json_extract(config,'$.procedureVersionId')=? AND EXISTS(SELECT 1 FROM procedure_versions WHERE id=? AND project_id=? AND procedure_key=?) ORDER BY created_at DESC").bind(c.req.param('projectId')!,c.req.param('versionId')!,c.req.param('versionId')!,c.req.param('projectId')!,c.req.param('key')!).all()
+ const runs=await c.env.DB.prepare("SELECT id,status,case_count,created_at,(SELECT count(*) FROM training_cases c WHERE c.run_id=training_runs.id AND c.status='completed' AND json_extract(c.checks,'$.passed')=1) AS passed_count,json_extract(config,'$.procedureVersionId') AS procedureVersionId FROM training_runs WHERE project_id=? AND json_extract(config,'$.procedureVersionId')=? AND EXISTS(SELECT 1 FROM procedure_versions WHERE id=? AND project_id=? AND procedure_key=?) ORDER BY created_at DESC").bind(c.req.param('projectId')!,c.req.param('versionId')!,c.req.param('versionId')!,c.req.param('projectId')!,c.req.param('key')!).all()
  return c.json({runs:runs.results})
 })
 procedureRoutes.post(root+'/:key/versions/:versionId/release',async c=>{

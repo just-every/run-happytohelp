@@ -71,6 +71,9 @@ export async function proceduresJourney(){
   await call(`${root}/refund/versions/${v2.id}/release`,{body:{evaluationId:failed.id},status:409})
   const receipts=(await call(`${root}/refund/versions/${v1.id}/simulations`,{status:200})).data.runs
   assert.equal(receipts[0].procedureVersionId,v1.id)
+  assert.equal(receipts[0].passed_count,4)
+  const failedReceipts=(await call(`${root}/refund/versions/${v2.id}/simulations`,{status:200})).data.runs
+  assert.ok(failedReceipts.length>=3&&failedReceipts.every(receipt=>receipt.passed_count===0))
   assert.equal((await app.first('SELECT count(*) n FROM messages')).n,0,'sandbox writes no customer messages')
   assert.equal((await app.first('SELECT count(*) n FROM email_deliveries')).n,0,'sandbox sends no mail')
   assert.ok(ai.calls.every(c=>c.host==='api.openai.com'),'only the configured model network edge is reachable')

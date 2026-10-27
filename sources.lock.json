@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "79ce1c299b6256a9e906ea95edf0d23c8ed44e6c9c5b0cb7157d8bc36d8649be",
+      "sha256": "4a9ff066ce61652b87f270e490b5ac19e404c1a5d50d0976a1cc665f645bc46c",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "cccdccd300c871a6336234c88031e4e7ba1ede9ac3b307c4a0fd040f58bf5f10",
+      "sha256": "1549292f2568aaa79385a24e1b77d42e0052d4140e2922601046ac0f3fa7ea7b",
       "executable": false
     },
     "DEMO.md": {
@@ -3696,7 +3696,7 @@
       "executable": false
     },
     "src/modules/ai-support/procedures.ts": {
-      "sha256": "76d1292a2f09da44c2b9b2ef91ac97bb9cf398913a2ddf1e634e8f69af91d113",
+      "sha256": "280850a98768d7e1b64f77533fe3a41ebd21ea2dc9dc6e143924e03cfb920099",
       "executable": false
     },
     "src/modules/ai-support/README.md": {
@@ -10287,8 +10287,16 @@
       "sha256": "d674d47c8e04f6458374f42297f279d57c9354a76dad897a6f5b3cb3b3f98df4",
       "executable": false
     },
+    "src/ui/native/pages/procedure-settings.css": {
+      "sha256": "8fd97b208605fcf6404a5482e0487bd5d17cc9952aeb3cd97721862c6f9895c5",
+      "executable": false
+    },
+    "src/ui/native/pages/ProcedureReceipt.jsx": {
+      "sha256": "4070e6a08954be6cca4f9a7bdc0af2b514675f1015d98d66d798786aedb526e0",
+      "executable": false
+    },
     "src/ui/native/pages/ProcedureSettings.jsx": {
-      "sha256": "ac7ca4fa54761c01852da8de69851a0532804a2362b40ca92e9e5b276f22211a",
+      "sha256": "73efed2f92285bcc0719d6137204636c8e676aab3325d902bef0b3d48212b555",
       "executable": false
     },
     "src/ui/native/pages/project-parity.css": {
@@ -10640,7 +10648,7 @@
       "executable": false
     },
     "src/ui/native/WorkspacePages.jsx": {
-      "sha256": "e849ce04ef333e79eae697aef765e4fc49fd3f2a213670c37f898ba5b39cd045",
+      "sha256": "945bc95afde371e0d660c22e17c1d63b4119e4dcdfb0a1087779854774319b6c",
       "executable": false
     },
     "src/ui/native/WorkspaceSidebarArtwork.jsx": {
@@ -11168,11 +11176,11 @@
       "executable": false
     },
     "tests/helpers/ai/procedures-browser.mjs": {
-      "sha256": "3f5ee957976f528278c3f1fb9c09533843675720767982c99e8ae2a3215b0cf6",
+      "sha256": "a0f01871f93c9cf1c6460f46688048d69784a1104e76cdaa0d47db54a04aa35c",
       "executable": false
     },
     "tests/helpers/ai/procedures.mjs": {
-      "sha256": "0342ab873b57f08924b0821e7c187379ddbd640eb98179cae1b0c8584a977f38",
+      "sha256": "0bb17ef226a8497ea7c50a3661a0a143a600029caf326733180ac0407a49347e",
       "executable": false
     },
     "tests/helpers/ai/provider-fixtures.mjs": {
@@ -11188,7 +11196,7 @@
       "executable": false
     },
     "tests/helpers/ai/suggestion-network.mjs": {
-      "sha256": "e8afc1c76403ae83f0ea539f23b80ff5b0ed0e66d66dbeb7e74b49a4da4afb0c",
+      "sha256": "832274a0ebb8dffba7bd8cd60d2e0f0accbe86a5a7c3703511d2bbf76739a0ab",
       "executable": false
     },
     "tests/helpers/ai/suggestions-browser.mjs": {

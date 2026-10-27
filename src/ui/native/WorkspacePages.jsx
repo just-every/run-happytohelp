@@ -39,7 +39,7 @@ export default function WorkspacePages({ settings, pages = {} }) {
     else if(section==='local-agent')page=<ComputersPage {...{projectId}} projectName={settings.projects[projectId]?.name}/>;
     else if(section==='delegation'&&recordId==='authorize')page=<DelegationAuthorize projectId={settings.isGlobalInbox?undefined:settings.project?.id}/>;
     else if(section==='delegation')page=<DelegationSettings projectId={settings.isGlobalInbox?undefined:settings.project?.id} projects={settings.projects}/>;
-    else if(section==='procedures')page=<ProcedureSettings {...{projectId}}/>;
+    else if(section==='procedures')page=<ProcedureSettings {...{projectId}} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='training-runs')page=<TrainingRuns {...{projectId}}/>;
     else if(foreignUser)page=<PageNotFound action={<Link className="btn btn-primary" to="/users/profile">Go to your profile</Link>}/>;
     else if(section==='users')page=<AccountPage {...{projectId,section}}/>;

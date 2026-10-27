@@ -1,9 +1,11 @@
+import {runSteps} from '../journeys/kit/steps.mjs';
 import {phases} from '../journeys/kit/scenarios.mjs';
 const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {harness,json} from './harness.mjs';
 
-test('operator retains latest feedback for every prior resolution while visitor eligibility stays current',async()=>{
+test("operator feedback lifecycle: retain prior cycles only under current workspace authority",()=>runSteps([
+  ['operator retains latest feedback for every prior resolution while visitor eligibility stays current',async()=>{
  const h=await harness();try{
   await h.contact();const c=await h.conversation(),path='/api/dashboard/projects/p/conversations/'+c.id;
   const operator=async()=>(await h.call(path)).data;
@@ -23,9 +25,8 @@ test('operator retains latest feedback for every prior resolution while visitor 
   await h.call('/api/management/projects/p/contacts/visitor/erase',json({}));view=await operator();assert.deepEqual(view.resolutionHistory.map(r=>r.rating.comment),['','']);assert.equal((await h.db.prepare("SELECT COUNT(*) n FROM conversation_rating_history WHERE comment<>''").first()).n,0);
   assert.equal(h.external,0);
  }finally{await h.close()}
-});
-
-test('operator feedback reads require current native workspace authority',async()=>{
+}],
+  ['operator feedback reads require current native workspace authority',async()=>{
  const h=await harness();try{
   await h.contact();const c=await h.conversation();await h.send(c.id,'Answer',{kind:'human'},'owner',true);await h.send(c.id,'Reopen',null,'visitor');
   const path='/api/dashboard/projects/p/conversations/'+c.id;
@@ -36,4 +37,5 @@ test('operator feedback reads require current native workspace authority',async(
   await h.db.prepare('UPDATE sessions SET revoked_at=1 WHERE token_hash=?').bind(h.tokenHash('owner')).run();assert.equal((await h.raw(path)).status,401);await h.session('owner','p','owner','owner');
   await h.db.prepare("INSERT INTO memberships VALUES('p','foreign','operator')").run();await h.db.prepare("INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES('p','{\"deleted_at\":1}',1) ON CONFLICT(project_id) DO UPDATE SET settings_json=excluded.settings_json").run();assert.equal((await h.raw(path,{actor:'foreign'})).status,404,'retained membership does not authorize a deleted target');
  }finally{await h.close()}
-});
+}]
+]));

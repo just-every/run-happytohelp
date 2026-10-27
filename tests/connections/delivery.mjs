@@ -1,9 +1,17 @@
+import {runSteps} from '../journeys/kit/steps.mjs';
 import {phases} from '../journeys/kit/scenarios.mjs';const test=phases(import.meta.url);import assert from 'node:assert/strict';import {createHmac,randomBytes} from 'node:crypto';
 import {harness,body} from './harness.mjs';
 import {assertResendPreparationRaces} from './resend-races.mjs';
 const root='/api/management/projects/p/connections';const events=['conversation.created','message.created','conversation.resolved','conversation.rated'];
 const webhook=(h,path='/all',project='p')=>h.call(`/api/management/projects/${project}/connections/webhooks`,{actor:project==='p'?'owner':'foreign',...body({name:'Receiver',url:'https://receiver.example.com'+path,events})});
-test('bounded scheduling bypasses historical workspaces and empty Slack conversations without starving ready work',async()=>{
+
+function verifyIndependent(receipt,key,{tenant,destination,event,id},now=Date.now()){
+ const h=receipt.headers,timestamp=h['webhook-timestamp'];if(h['webhook-tenant']!==tenant||h['webhook-destination']!==destination||h['webhook-event']!==event||h['webhook-id']!==id||!/^\d+$/.test(timestamp)||Math.abs(now-Number(timestamp)*1000)>300000)return false;
+ const digest=createHmac('sha256',Buffer.from(key,'hex')).update(JSON.stringify(['integrations.webhook.v1',tenant,destination,event,id,timestamp,receipt.body.toString('utf8')])).digest('hex');return h['webhook-signature']==='v1='+digest
+}
+
+test("delivery lifecycle: prepare, sign, dispatch, recover bounded work and require fresh approval for uncertain resend",()=>runSteps([
+  ['bounded scheduling bypasses historical workspaces and empty Slack conversations without starving ready work',async()=>{
  const h=await harness();try{
   // Durable completed history must not consume the global page forever.
   const statements=[];for(let i=0;i<101;i++){const p='history-'+String(i).padStart(3,'0'),d='dest-'+p,e='event-'+p;statements.push(h.db.prepare('INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES(?,?,?,?,1)').bind(p,p,p,'https://app.example'),h.db.prepare("INSERT INTO native_integration_destinations(id,project_id,kind,name,mode,events_json,secret_ciphertext,enabled,created_at) VALUES(?,?,'webhook','Past',NULL,'[]','unused-completed-fixture',1,1)").bind(d,p),h.db.prepare("INSERT INTO native_integration_events VALUES(?,?,NULL,NULL,'integration.test','{}',1,NULL)").bind(e,p),h.db.prepare('INSERT INTO native_integration_intents VALUES(?,?,?,?,1,NULL)').bind('intent-'+p,p,e,d))}await h.db.batch(statements);
@@ -12,12 +20,8 @@ test('bounded scheduling bypasses historical workspaces and empty Slack conversa
   h.responses.push({status:200,body:'ok'});await h.call('/_test/scheduled',body({}));assert.equal(h.received.length,1);assert.ok(h.received[0].body.toString().includes('Ready after one hundred empty conversations'));assert.equal((await h.db.prepare("SELECT count(*) n FROM native_integration_intents WHERE project_id='p' AND prepared_at IS NULL").first()).n,100);
   await h.restart();await h.call('/_test/scheduled',body({}));assert.equal(h.received.length,1,'completed and empty work is not reposted');
  }finally{await h.close()}
-});
-function verifyIndependent(receipt,key,{tenant,destination,event,id},now=Date.now()){
- const h=receipt.headers,timestamp=h['webhook-timestamp'];if(h['webhook-tenant']!==tenant||h['webhook-destination']!==destination||h['webhook-event']!==event||h['webhook-id']!==id||!/^\d+$/.test(timestamp)||Math.abs(now-Number(timestamp)*1000)>300000)return false;
- const digest=createHmac('sha256',Buffer.from(key,'hex')).update(JSON.stringify(['integrations.webhook.v1',tenant,destination,event,id,timestamp,receipt.body.toString('utf8')])).digest('hex');return h['webhook-signature']==='v1='+digest
-}
-test('all four native events persist, sign exact bytes, stay tenant scoped and dispatch once after repeated scheduler runs',async()=>{
+}],
+  ['all four native events persist, sign exact bytes, stay tenant scoped and dispatch once after repeated scheduler runs',async()=>{
  const h=await harness();try{
   const a=await webhook(h),b=await webhook(h,'/foreign','q');await h.contact();await h.contact('other','q');const conversation=await h.conversation(),foreign=await h.conversation('other','q');const {token}=await h.issue();
   await h.call('/api/v1/conversations/'+conversation.id+'/messages',{token,...body({content:'API reply',localId:'reply',expectedRevision:0})});await h.call('/api/v1/conversations/'+conversation.id+'/resolve',{token,...body({})});
@@ -26,16 +30,16 @@ test('all four native events persist, sign exact bytes, stay tenant scoped and d
   assert.deepEqual(h.received.map(x=>JSON.parse(x.body).event).sort(),events.slice().sort());await h.dispatch();assert.equal(h.received.length,4);await h.dispatch('q');assert.equal(h.received.length,5);assert.equal(h.received[4].headers['webhook-tenant'],'q');assert.equal(h.received[4].headers['webhook-destination'],b.id);assert.equal(JSON.parse(h.received[4].body).data.conversation_id,foreign.id);
   const logs=await h.call(root+'/deliveries');assert.equal(logs.data.length,4);assert.ok(logs.data.every(x=>x.state==='accepted'&&x.status===204&&x.duration_ms>=0));assert.ok(!JSON.stringify(logs).includes(a.secret));assert.ok(!JSON.stringify(await h.call(root+'/webhooks')).includes(a.secret));
  }finally{await h.close()}
-});
-test('response timeout remains uncertain across dispatch and Worker restart',async()=>{
+}],
+  ['response timeout remains uncertain across dispatch and Worker restart',async()=>{
  const h=await harness();try{
   const a=await webhook(h);h.responses.push({status:204,delay:11000});
   const job=await h.call(root+'/webhooks/'+a.id+'/test',body({})),sent=h.received.length;
   await h.dispatch();await h.restart();await h.dispatch();assert.equal(h.received.length,sent);
   const row=(await h.call(root+'/deliveries')).data.find(x=>x.id===job.id);assert.equal(row.state,'uncertain');assert.equal(row.status,null);assert.equal(row.error_class,'response_unknown');
  }finally{await h.close()}
-});
-test('all server errors and after-send timeout remain uncertain without replay while rate limits retry exact signed delivery within the bounded policy',async()=>{
+}],
+  ['all server errors and after-send timeout remain uncertain without replay while rate limits retry exact signed delivery within the bounded policy',async()=>{
  const h=await harness();try{
   const a=await webhook(h),uncertain=[];
   // Exercise the management action and actual receiver for the entire 5xx
@@ -82,8 +86,8 @@ test('all server errors and after-send timeout remain uncertain without replay w
   const terminalReceipts=h.received.length;await h.restart();await h.dispatch();await h.call('/_test/scheduled',body({}));assert.equal(h.received.length,terminalReceipts,'terminal failure never resumes sending');assert.equal(h.external,0);
   console.log(JSON.stringify({proof:'webhook-uncertain-and-bounded-retry',serverStatuses:uncertain.length-1,afterSendTimeouts:1,uncertainReceipts:uncertain.length,rateLimitSuccessReceipts:retries.length,rateLimitExhaustedReceipts:row.attempts,externalRequests:h.external}));
  }finally{await h.close()}
-});
-test('destination policy, disabled configuration and contact erasure refuse pending work without leaking secrets',async()=>{
+}],
+  ['destination policy, disabled configuration and contact erasure refuse pending work without leaking secrets',async()=>{
  const h=await harness();try{
   for(const url of ['https://receiver.example.test','http://receiver.example.com','https://127.0.0.1','https://169.254.169.254/latest','https://user:secret@example.com','https://example.com:444/path','https://[::1]/'])assert.equal((await h.raw(root+'/webhooks',body({name:'Unsafe',url,events}))).status,400);
   const a=await webhook(h);await h.contact();await h.conversation();await h.call(root+'/webhooks/'+a.id,{method:'DELETE'});await h.dispatch();assert.equal(h.received.length,0);assert.equal((await h.call(root+'/deliveries')).data[0].error_class,'configuration_unavailable');
@@ -93,8 +97,8 @@ test('destination policy, disabled configuration and contact erasure refuse pend
   await h.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erasing',1) WHERE id='visitor'").run();await h.dispatch();assert.equal(h.received.length,0);const rows=(await h.db.prepare("SELECT body,conversation_id,contact_id,erased_at FROM native_integration_events WHERE project_id='p'").all()).results;assert.ok(rows.every(x=>x.body==='{}'&&x.conversation_id===null&&x.contact_id===null&&x.erased_at!==null));assert.equal((await h.db.prepare('SELECT count(*) n FROM integration_deliveries').first()).n,0);const api=await h.issue(['contacts:write']);assert.equal((await h.raw('/api/v1/contacts/visitor',{token:api.token,method:'PUT',headers:{'Content-Type':'application/json'},body:'{"name":"Cannot restore"}'})).status,409);
   const ciphertext=await h.db.prepare('SELECT secret_ciphertext FROM native_integration_destinations WHERE id=?').bind(next.id).first();assert.ok(!ciphertext.secret_ciphertext.includes(next.secret));
  }finally{await h.close()}
-});
-test('erasure during protocol preparation cannot recreate a retained delivery payload',async()=>{
+}],
+  ['erasure during protocol preparation cannot recreate a retained delivery payload',async()=>{
  const h=await harness();try{
   await webhook(h);await h.contact();await h.conversation();
   await h.call('/_test/dispatch-race',body({match:'INSERT INTO integration_deliveries',race:[{sql:"UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erasing',1) WHERE id='visitor'"}]}));
@@ -102,8 +106,8 @@ test('erasure during protocol preparation cannot recreate a retained delivery pa
   assert.ok((await h.db.prepare('SELECT body,erased_at FROM native_integration_events').all()).results.every(row=>row.body==='{}'&&row.erased_at!==null));
   await h.dispatch();assert.equal(h.received.length,0);
  }finally{await h.close()}
-});
-test('native automatic inbound mail is inert while human inbound mail emits created and message once',async()=>{
+}],
+  ['native automatic inbound mail is inert while human inbound mail emits created and message once',async()=>{
  const h=await harness();try{
   await webhook(h);await h.call(root+'/slack',body({name:'Inbound Slack',mode:'incoming-webhook',url:'https://hooks.slack.com/services/T123/B123/inbound-fixture'}));
   await h.db.prepare("INSERT INTO email_settings VALUES('p','Support','help@example.test','support@reply.example.test',1,1)").run();
@@ -114,30 +118,29 @@ test('native automatic inbound mail is inert while human inbound mail emits crea
   const webhooks=h.received.filter(r=>r.headers['webhook-event']);assert.deepEqual(webhooks.map(r=>r.headers['webhook-event']).sort(),['conversation.created','message.created']);assert.ok(webhooks.every(r=>JSON.parse(r.body).data.conversation_id===result.conversationId));
   const slack=h.received.find(r=>!r.headers['webhook-event']);assert.equal(JSON.parse(slack.body).blocks[0].text.text,'Please help &lt;!channel&gt; &amp; me');await h.restart();await h.call('/_test/scheduled',body({}));assert.equal(h.received.length,3);assert.equal(h.external,0);
  }finally{await h.close()}
-});
-test('storage failure before durable enqueue stays retryable as preparation work and is never labelled configuration failure',async()=>{
+}],
+  ['storage failure before durable enqueue stays retryable as preparation work and is never labelled configuration failure',async()=>{
  const h=await harness();try{
   await webhook(h);await h.contact();await h.conversation();
   await h.db.prepare("CREATE TRIGGER test_storage_failure BEFORE INSERT ON integration_deliveries BEGIN SELECT RAISE(ABORT,'test_storage_failure'); END").run();
   const response=await h.raw('/_test/dispatch',body({projectId:'p'}));assert.equal(response.status,500);assert.equal(h.received.length,0);const pending=(await h.db.prepare('SELECT prepared_at,error_code FROM native_integration_intents').all()).results;assert.ok(pending.every(r=>r.prepared_at===null&&r.error_code===null));
   await h.db.prepare('DROP TRIGGER test_storage_failure').run();await h.dispatch();assert.equal(h.received.length,1);assert.equal((await h.db.prepare('SELECT state FROM integration_deliveries').first()).state,'accepted');
  }finally{await h.close()}
-});
-test('real receiver accepts the correct signature and rejects a changed expected secret with visible401',async()=>{
+}],
+  ['real receiver accepts the correct signature and rejects a changed expected secret with visible401',async()=>{
  const h=await harness();try{
   const a=await webhook(h);let expected=a.secret;h.setReceiverVerifier(receipt=>{const event=JSON.parse(receipt.body);return verifyIndependent(receipt,expected,{tenant:'p',destination:a.id,event:event.event,id:event.id})});
   await h.call(root+'/webhooks/'+a.id+'/test',body({}));assert.equal((await h.call(root+'/deliveries')).data[0].status,204);
   expected=randomBytes(32).toString('hex');const refused=await h.call(root+'/webhooks/'+a.id+'/test',body({}));const entry=(await h.call(root+'/deliveries')).data.find(row=>row.id===refused.id);assert.equal(entry.status,401);assert.equal(entry.state,'rejected');assert.equal(h.received.length,2);await h.dispatch();assert.equal(h.received.length,2);
  }finally{await h.close()}
-});
-test('queued delivery refuses configuration version drift before sending to a changed URL',async()=>{
+}],
+  ['queued delivery refuses configuration version drift before sending to a changed URL',async()=>{
  const h=await harness();try{
   const a=await webhook(h,'/original');h.responses.push({status:429});const job=await h.call(root+'/webhooks/'+a.id+'/test',body({}));assert.equal(h.received.length,1);
   const b=await webhook(h,'/changed');await h.db.prepare('UPDATE native_integration_destinations SET secret_ciphertext=(SELECT secret_ciphertext FROM native_integration_destinations WHERE id=?) WHERE id=?').bind(b.id,a.id).run();await h.db.prepare('UPDATE integration_deliveries SET next_at=0 WHERE id=?').bind(job.id).run();await h.dispatch();assert.equal(h.received.length,1);const row=(await h.call(root+'/deliveries')).data.find(row=>row.id===job.id&&row.number===2);assert.equal(row.state,'rejected');assert.equal(row.error_class,'preflight_failed');
  }finally{await h.close()}
-});
-
-test('one cron invocation bounds all ready workspaces together and resumes every native delivery',async()=>{
+}],
+  ['one cron invocation bounds all ready workspaces together and resumes every native delivery',async()=>{
  const h=await harness();try{
   for(const [project,actor,contact] of [['p','owner','visitor'],['q','foreign','other']]){
    await h.call(`/api/management/projects/${project}/connections/webhooks`,{actor,...body({name:'Budget receiver',url:'https://receiver.example.com/'+project,events:['conversation.created']})});await h.contact(contact,project);
@@ -151,16 +154,15 @@ test('one cron invocation bounds all ready workspaces together and resumes every
   assert.equal(h.received.length,48);assert.equal(new Set(h.received.map(r=>r.headers['webhook-id'])).size,48);for(const project of ['p','q'])assert.equal(h.received.filter(r=>r.headers['webhook-tenant']===project).length,24);
   await h.call('/_test/scheduled-metered',body({}));assert.equal(h.received.length,48);assert.equal((await h.db.prepare("SELECT count(*) n FROM integration_deliveries WHERE state='accepted'").first()).n,48);assert.equal(h.external,0);console.log(JSON.stringify({proof:'global-integration-cron-budget',invocations:metrics.length,maxD1Statements:Math.max(...metrics.map(x=>x.statements)),recipients:h.received.length}));
  }finally{await h.close()}
-});
-
-test('HTTPS delivery refuses every redirect status without requesting its Location',async()=>{
+}],
+  ['HTTPS delivery refuses every redirect status without requesting its Location',async()=>{
  const h=await harness();try{
   const a=await webhook(h);for(const status of [300,301,302,303,304,305,306,307,308,399]){
    h.responses.push({status,headers:{Location:'https://receiver.example.com/redirect-target'}});const count=h.received.length,job=await h.call(root+'/webhooks/'+a.id+'/test',body({}));assert.equal(h.received.length,count+1);assert.ok(h.received.every(r=>!r.path.endsWith('/redirect-target')));const row=(await h.call(root+'/deliveries')).data.find(r=>r.id===job.id);assert.equal(row.state,'uncertain');assert.equal(row.error_class,'response_unknown');
   }await h.restart();await h.dispatch();assert.equal(h.received.length,10);assert.equal(h.external,0);
  }finally{await h.close()}
-});
-test('HTTPS delivery bounds outgoing bytes and both declared and streamed response bytes',async()=>{
+}],
+  ['HTTPS delivery bounds outgoing bytes and both declared and streamed response bytes',async()=>{
  const h=await harness();try{
   const a=await webhook(h);h.responses.push({status:429});const job=await h.call(root+'/webhooks/'+a.id+'/test',body({}));
   await h.db.prepare("UPDATE integration_deliveries SET envelope=json_set(envelope,'$.body',?),next_at=0 WHERE id=?").bind('x'.repeat(1048577),job.id).run();await h.dispatch();assert.equal(h.received.length,1);let row=(await h.call(root+'/deliveries')).data.find(r=>r.id===job.id&&r.number===2);assert.equal(row.state,'rejected');assert.equal(row.error_class,'preflight_failed');
@@ -168,9 +170,8 @@ test('HTTPS delivery bounds outgoing bytes and both declared and streamed respon
    h.responses.push(response);const next=await h.call(root+'/webhooks/'+a.id+'/test',body({}));row=(await h.call(root+'/deliveries')).data.find(r=>r.id===next.id);assert.equal(row.state,'uncertain');assert.equal(row.error_class,'response_unknown');
   }await h.restart();await h.dispatch();assert.equal(h.received.length,3);assert.equal(h.external,0);
  }finally{await h.close()}
-});
-
-test('deliberate uncertain resend preserves exact delivery and history, serializes approvals, and never renews the automatic retry budget',async()=>{
+}],
+  ['deliberate uncertain resend preserves exact delivery and history, serializes approvals, and never renews the automatic retry budget',async()=>{
  const h=await harness();try{
   const a=await webhook(h);h.responses.push({status:429});const job=await h.call(root+'/webhooks/'+a.id+'/test',body({}));
   for(const status of [429,429,500]){h.responses.push({status});await h.db.prepare('UPDATE integration_deliveries SET next_at=0 WHERE id=?').bind(job.id).run();await h.dispatch()}
@@ -192,9 +193,8 @@ test('deliberate uncertain resend preserves exact delivery and history, serializ
   for(const status of [429,429,429]){h.responses.push({status});await h.db.prepare('UPDATE integration_deliveries SET next_at=0 WHERE id=?').bind(early.id).run();await h.dispatch()}
   const exhausted=await h.db.prepare('SELECT * FROM integration_deliveries WHERE id=?').bind(early.id).first();assert.equal(exhausted.state,'rejected');assert.equal(exhausted.attempts,exhausted.max_attempts);assert.equal((await h.db.prepare("SELECT count(*) n FROM native_integration_audit WHERE resource_id=? AND action LIKE 'delivery.resend.%'").bind(early.id).first()).n,1);
  }finally{await h.close()}
-});
-
-test('resend refuses anonymous, operator, foreign, stale state, destination and erasure authority including commit races',async()=>{
+}],
+  ['resend refuses anonymous, operator, foreign, stale state, destination and erasure authority including commit races',async()=>{
  const h=await harness();try{
   const a=await webhook(h);await h.contact();await h.conversation();h.responses.push({status:500});await h.dispatch();
   const job=await h.db.prepare('SELECT id FROM integration_deliveries').first(),path=root+'/deliveries/'+job.id+'/resend';
@@ -219,4 +219,5 @@ test('resend refuses anonymous, operator, foreign, stale state, destination and 
   const erased=await h.raw('/_test/race',body({path,body:{attempt:1},match:'INSERT INTO native_integration_audit(id,project_id,actor_id,action',race:[{sql:"UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erasing',1) WHERE id='visitor'"}]}));assert.equal(erased.status,409);assert.equal((await h.raw(path,body({attempt:1}))).status,404);await h.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erased',1) WHERE id='visitor'").run();assert.equal((await h.raw(path,body({attempt:1}))).status,404);await h.dispatch();assert.equal(h.received.length,2);assert.equal((await h.db.prepare("SELECT count(*) n FROM native_integration_audit WHERE action LIKE 'delivery.resend.%'").first()).n,0);assert.equal(h.external,0);
  }finally{await h.close()}
  await assertResendPreparationRaces();
-});
+}]
+]));

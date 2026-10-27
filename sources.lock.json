@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cd3dd6565ecdd74fd3116c1bc9af41830c8c55f68a660759aaf266d9b07a759c",
+      "sha256": "e2d050b4381fadcd6a8a80644755ed32b870f5db40fdd4ac90672c9f4267fd8b",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "25d2d9544a350b20324dceac0b27217706051f5efcc710985a8b25eca6a1fdb0",
+      "sha256": "5837a70c9ce2424758eb6ac2559e267035ac6691a43335dad350c6e2e8d0c680",
       "executable": false
     },
     "DEMO.md": {
@@ -4104,7 +4104,7 @@
       "executable": false
     },
     "src/modules/collaboration/note-media.ts": {
-      "sha256": "51dafe03a1873dff224c5b016ac8bc60c553656526feae410c932fae5a266bc1",
+      "sha256": "9d572e98c317ef44b4aed4fc1e347cefd35e584a223dc3d78d3b5719130fcbe0",
       "executable": false
     },
     "src/modules/collaboration/notes.ts": {
@@ -4200,7 +4200,7 @@
       "executable": false
     },
     "src/modules/conversations/routes.ts": {
-      "sha256": "77ef8ba8e7856bd8265c643f248a389fb10bcbd55c54774c242f033d5a0ed9bb",
+      "sha256": "9884541bdd84991c1c32390d14aac89151bfe082eb7c9cfab3a9fb805bdeb05c",
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
@@ -6353,6 +6353,10 @@
     },
     "src/modules/management/workspace-colour.ts": {
       "sha256": "5278a633e9d3cc697b1cf0bc1e82fbb3d8d02bd2498b1a6bfa0b0f6478f7e9b4",
+      "executable": false
+    },
+    "src/modules/move-in/attachment-schema.ts": {
+      "sha256": "53959d1a2669d635f71cfd69497fdfbeede4f5ce9a394f34b43cac7be7d430e0",
       "executable": false
     },
     "src/modules/move-in/batches.ts": {
@@ -12664,7 +12668,7 @@
       "executable": false
     },
     "tests/reports/prior-schema-upgrade.mjs": {
-      "sha256": "c7d526a1414deb292f8a4371c10c1314ecc925a085649d9477356a548cd1db65",
+      "sha256": "cbd90a6fe6c7c357b22040d965a4c44293243b61bc5d90a98bf7fede043cb655",
       "executable": false
     },
     "tests/reports/ratings.mjs": {
@@ -12677,6 +12681,10 @@
     },
     "tests/reports/team-journey.mjs": {
       "sha256": "7cbcb1ccaa40080a2f6dd33c89ed085a44f3b4c3b55c77bab0c9bbc05457bbef",
+      "executable": false
+    },
+    "tests/reports/upgrade-attachments.mjs": {
+      "sha256": "b15b9722e85b5c10ffca2a5a72d48d2ec9069b0898ea0212471a9310c3f0f89d",
       "executable": false
     },
     "tests/reports/upgrade-categories.mjs": {

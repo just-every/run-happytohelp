@@ -9,6 +9,7 @@ import {api} from '../../src/modules/api-integrations/routes'
 import {memberErasureRegistry} from '../../src/modules/management/member-erasure'
 import {dispatchIntegrations} from '../../src/modules/api-integrations/dispatch'
 export {ConversationSocket} from '../../src/modules/conversations/socket'
+const realNow=Date.now
 const tests=new Hono<any>()
 tests.get('/_test/credential-routes',c=>c.json(integrationSettings.routes.map(({method,path})=>({method,path}))))
 tests.get('/_test/member-schema',async c=>{const registry=await memberErasureRegistry(c.env.DB);return c.json({errors:registry.errors,entries:Object.fromEntries(Object.entries(registry.entries).map(([name,entry])=>[name,{level:entry.level,accountOnly:!!entry.accountOnly}]))})})
@@ -26,6 +27,9 @@ function meteredDatabase(db:D1Database){
  return {metrics,database:{prepare:(sql:string)=>wrap(db.prepare(sql)),batch:async(statements:D1PreparedStatement[])=>(await db.batch(statements.map(s=>raw.get(s)??s))).map(record)} as D1Database}
 }
 export default {async fetch(request:Request,env:any,ctx:ExecutionContext){
+ // Only isolated fixture Workers can pin time; the production app has no clock header or binding.
+ const now=request.headers.get('X-Test-Now')
+ Date.now=now===null?realNow:()=>Number(now)
  if(request.headers.get('X-Test-Meter')==='1'){
   const meter=meteredDatabase(env.DB),response=await app.fetch(request,{...env,DB:meter.database},ctx),out=new Response(response.body,response)
   out.headers.set('X-Test-D1',JSON.stringify(meter.metrics));return out

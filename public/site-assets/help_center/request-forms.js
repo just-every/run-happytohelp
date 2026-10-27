@@ -56,7 +56,7 @@
     result.textContent=data.error||'Your request could not be sent.';
     if(data.field){const f=model.fields.find(f=>f.id===data.field);if(f){const el=control(f),err=form.querySelector(`#${CSS.escape(`request-${f.id}-error`)}`);if(f.type==='account'&&data.code==='invalid_account')el.value='';el.setAttribute('aria-invalid','true');err.textContent=data.error;err.hidden=false;update();el.focus();}}
     if(response.status===428){const a=document.createElement('a');a.href=form.dataset.signin;a.target='_blank';a.rel='noopener';a.textContent=' Verify your email, then return here to submit.';result.append(a);}
-    await refreshAccounts();if(window.turnstile)window.turnstile.reset();return;
+    await refreshAccounts();if(!form.contains(document.activeElement)||document.activeElement.disabled||document.activeElement.closest('[hidden]'))result.focus();if(window.turnstile)window.turnstile.reset();return;
    }
    sessionStorage.removeItem(key);const ticket=data.ticket||data;const a=document.createElement('a');a.href=`/portal/${encodeURIComponent(model.projectId)}/requests/${encodeURIComponent(ticket.id)}`;a.textContent='View your request';result.append(document.createTextNode('Your request was sent. '),a);form.hidden=true;result.focus();
   }catch {result.textContent='The connection was interrupted. Your form is still here. Submit again to check the same request.';}

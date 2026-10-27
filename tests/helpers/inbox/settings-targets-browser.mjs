@@ -8,12 +8,13 @@ async function targets(page, selector, records) {
   records.push({name,width:rectangle.width,height:rectangle.height});
   assert.ok(rectangle.width>=44 && rectangle.height>=44,`${name}: target is ${rectangle.width} by ${rectangle.height}`);
   const focusable=control.locator('input');
-  const keyboard=await focusable.count()?focusable:control;
+  const associated=await control.getAttribute('for');
+  const keyboard=associated?page.locator(`[id="${associated}"]`):await focusable.count()?focusable:control;
   // Reach each control from the preceding tab stop, rather than programmatic focus alone.
   await keyboard.focus();await page.keyboard.press('Shift+Tab');await page.keyboard.press('Tab');
   assert.equal(await keyboard.evaluate(el=>el===document.activeElement),true,`${name}: reachable with Tab`);
   assert.equal(await control.evaluate(el=>{
-   const focused=el.matches(':focus-visible')?el:el.querySelector(':focus-visible');
+   const focused=el.matches(':focus-visible')?el:el.control?.matches(':focus-visible')?el.control:el.querySelector(':focus-visible');
    const style=getComputedStyle(el.matches('label')?el:focused||el);
    return Boolean(focused) && (style.outlineStyle!=='none' || style.boxShadow!=='none');
   }),true,`${name}: visible keyboard focus`);
@@ -23,7 +24,7 @@ async function targets(page, selector, records) {
 
 async function tooltips(page) {
  for (const control of await page.locator('[data-tooltip]').all()) {
-  if (!await control.isVisible() || (await control.innerText()).trim()) continue;
+  if (!await control.isVisible() || ((await control.innerText()).trim() && !await control.evaluate(el=>el.matches('.native-profile-toggle')))) continue;
   const label=await control.getAttribute('aria-label');
   assert.ok(label?.trim().split(/\s+/).length>=2,'icon control has a short tooltip');
   await page.mouse.move(0,0);await page.keyboard.press('Escape');

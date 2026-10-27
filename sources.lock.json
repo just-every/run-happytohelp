@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "10f0b9e4650efe799f17de9523dda45cdcc890441117491761f1193a9f2bdc41",
+      "sha256": "eea099fec1dfec9911be9b892335102a5055a116baed59082074efe994bb2051",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "0647830f18efb724654bb2ebbee17ded47bf63ee17a8d76179e706aaf4b92ef2",
+      "sha256": "a4306a7630e75a470c4ffd95a928ffbe8696554dd823bf02e9f9c7c9e1bed0f4",
       "executable": false
     },
     "DEMO.md": {
@@ -8476,7 +8476,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/escalations/escalations.css": {
-      "sha256": "10010f28fc32caff613d8b5d7f3ae723c0f61a912abe9b9efbfabf79e53f26eb",
+      "sha256": "64fd996f1d0874398fc4f70829767602f30748553ee614cae4caa160f3931a82",
       "executable": false
     },
     "src/ui/dashboard/components/escalations/EscalationsPanel.jsx": {
@@ -11392,7 +11392,7 @@
       "executable": false
     },
     "tests/helpers/escalations/browser.mjs": {
-      "sha256": "876f754891e1fb4c90295ff901b7622dd9cae93ce5550f32b47c1dd18c675843",
+      "sha256": "38776142c8e169549f0acd184ae9a2b1da61d21231fd1ac01fc629e6d95bcc0e",
       "executable": false
     },
     "tests/helpers/escalations/dev-proof.mjs": {

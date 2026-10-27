@@ -35,6 +35,16 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  const dialog=()=>page.getByRole('dialog',{name:'Escalate to engineering'});
  // Below 1280px the panel is an overlay over the reply card: it steps aside for the "+".
  const escalate=async()=>{if(compact&&await assistant.getAttribute('aria-hidden')==='false'){await page.locator('.conversation-assistant__hide').click();await page.locator('#conversation-assistant[aria-hidden=true]').waitFor({state:'attached'});}await page.locator('#conversation-composer-tools').click();await page.getByRole('menuitem',{name:'Escalate to engineering…',exact:true}).click();await dialog().getByLabel('Destination',{exact:true}).waitFor();};
+ const targets=[];
+ const measureTargets=async(scope,stage)=>{
+  const rows=await scope.locator('button:visible,input:not([type="checkbox"]):visible,select:visible,textarea:visible,summary:visible,a:visible,.escalation-choice:visible').evaluateAll((nodes,stage)=>nodes.map(node=>{
+   const box=node.getBoundingClientRect(),style=getComputedStyle(node);
+   return {stage,name:node.getAttribute('aria-label')||node.labels?.[0]?.textContent?.trim()||node.textContent.trim().replace(/\s+/g,' ').slice(0,80),width:box.width,height:box.height,outline:style.outline,shadow:style.boxShadow};
+  }),stage);
+  targets.push(...rows);console.log('Teams targets '+width+' '+JSON.stringify(rows));
+  await writeFile(join(directory,`${width}-teams-targets.json`),JSON.stringify(targets,null,2));
+  if(width===390)for(const row of rows)assert.ok(row.width>=44&&row.height>=44,`${stage}: ${row.name} target is ${row.width} by ${row.height}; phone controls need at least 44 pixels`);
+ };
  const shot=async name=>{
   const target=name.startsWith('connection-')?panel().locator('.escalation-provider[open]').last():name.startsWith('preview-')?dialog().locator('.escalation-preview'):name==='closure-drafts'?panel().locator('.escalation-drafts'):panel().locator('.escalation-linked');
   const controls=target.locator('input:visible,button:visible,textarea:visible');
@@ -52,7 +62,7 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
   if(!['slack','teams'].includes(name))await form.locator('[name=webhook_secret]').fill(p.secret);
   // The local Jira fake accepts OAuth as well as the form's standard Basic token.
   if(name==='jira')p.authorizations.add('Basic '+Buffer.from('engineer@example.test:synthetic-jira-token').toString('base64'));
-  await form.getByRole('button',{name:/Save .* connection/}).click();if(password&&name==='github'){const dialog=page.getByRole('dialog');await dialog.getByLabel('Your password',{exact:true}).waitFor();await page.screenshot({path:join(directory,`${width}-credential-step-up.png`)});await dialog.getByLabel('Your password',{exact:true}).fill(password);await dialog.getByRole('button',{name:'Confirm',exact:true}).click();}await form.getByText('Connected to',{exact:false}).waitFor();assert.equal(await form.locator('[name=token]').inputValue(),'');await shot('connection-'+name);await form.locator('summary').click();
+  await form.getByRole('button',{name:/Save .* connection/}).click();if(password&&name==='github'){const dialog=page.getByRole('dialog');await dialog.getByLabel('Your password',{exact:true}).waitFor();await page.screenshot({path:join(directory,`${width}-credential-step-up.png`)});await dialog.getByLabel('Your password',{exact:true}).fill(password);await dialog.getByRole('button',{name:'Confirm',exact:true}).click();}await form.getByText('Connected to',{exact:false}).waitFor();assert.equal(await form.locator('[name=token]').inputValue(),'');await shot('connection-'+name);if(name==='teams')await measureTargets(panel(),'connection');await form.locator('summary').click();
  }
  await panel().locator('.escalation-connections > summary').click();
  const links=[];
@@ -71,12 +81,12 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  await panel().getByRole('button',{name:'Refresh status',exact:true}).click();await page.waitForTimeout(250);await shot('linked-issues-and-handoff');
  await escalate();await dialog().getByLabel('Destination',{exact:true}).selectOption('teams');
  await dialog().locator('.escalation-context input[type=checkbox]').first().check();await dialog().getByRole('button',{name:'Preview selected context',exact:true}).click();await shot('preview-teams');
- const close=dialog().getByRole('button',{name:'Close dialog',exact:true});await page.keyboard.press('Tab');await close.focus();await page.locator('[role=tooltip]').filter({hasText:/^Close dialog$/}).waitFor();await page.screenshot({path:join(directory,`${width}-teams-close-tooltip.png`)});
- if(width===390){for(const control of [close,dialog().getByRole('button',{name:'Share selected context to Teams',exact:true})]){const box=await control.boundingBox();assert.ok(box&&box.width>=44&&box.height>=44,'phone confirmation and close targets are at least 44 pixels');}}
+ const close=dialog().getByRole('button',{name:'Close dialog',exact:true});await close.scrollIntoViewIfNeeded();await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await close.hover();await page.locator('[role=tooltip]').filter({hasText:/^Close dialog$/}).waitFor();await page.keyboard.press('Tab');await close.focus();await page.locator('[role=tooltip]').filter({hasText:/^Close dialog$/}).waitFor();await page.screenshot({path:join(directory,`${width}-teams-close-tooltip.png`)});
+ await measureTargets(dialog(),'confirmation');
 
  const teamsResponse=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname===base+`/conversations/${records[0].ticket.id}/teams`);
  await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();assert.equal((await teamsResponse).status(),201);await dialog().waitFor({state:'detached'});
- await panel().getByRole('link',{name:`Handoff to ${providers.teams.target}`,exact:true}).waitFor();await shot('teams-shared');
+ await panel().getByRole('link',{name:`Handoff to ${providers.teams.target}`,exact:true}).waitFor();await shot('teams-shared');await measureTargets(panel().locator('.escalation-handoff').filter({has:page.getByRole('link',{name:`Handoff to ${providers.teams.target}`,exact:true})}),'handoff');
  const teamsFailure=async(kind,response)=>{
   providers.teams.responses.push(response);await escalate();await dialog().getByLabel('Destination',{exact:true}).selectOption('teams');await dialog().locator('.escalation-context input[type=checkbox]').first().check();await dialog().getByRole('button',{name:'Preview selected context',exact:true}).click();
   await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();await dialog().getByRole('alert').waitFor();await page.screenshot({path:join(directory,`${width}-teams-${kind}.png`)});

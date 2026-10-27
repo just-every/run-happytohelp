@@ -1,3 +1,4 @@
+import {suppliedAttachments} from '../supplied-attachments'
 import {sourceOwnership} from '../source-ownership'
 import {importedEmailThreadKeys} from '../email-threading'
 import type {SourceRecord} from '../../import-kit/src/types'
@@ -46,9 +47,10 @@ export async function prepareFreshdesk({projectId,actorId,source,tagIds}:Mapping
     if(!Array.isArray(p.conversations))throw new Error('ticket_conversations_required')
     const created=time(p.created_at,'iso'),updated=time(p.updated_at,'iso'),contactSource=sourceId(p.requester_id,'freshdesk'),contact=records.get(`contact/${contactSource}`)
     if(!contact||!email((contact.payload as any).email))throw new Error('conversation_contact_unavailable')
-    const rows:any[]=[],notes:any[]=[],sources:any[]=[],seen=new Set<string>()
-    const add=(sid:string,content:string,visible:boolean,when:number,author:Record<string,unknown>,actor:string,original:unknown)=>{
+    const rows:any[]=[],notes:any[]=[],sources:any[]=[],seen=new Set<string>();tables.media=[];tables.move_in_attachment_bytes=[]
+    const add=(sid:string,content:string,visible:boolean,when:number,author:Record<string,unknown>,actor:string,original:unknown,attachments:unknown)=>{
      if(seen.has(sid))throw new Error('duplicate_message_id');seen.add(sid);const messageId=id('message',`${record.sourceId}:${sid}`)
+     suppliedAttachments({attachments,projectId,conversationId:target,messageId,visible,when,tables,omissions})
      if(!visible){notes.push({id:messageId,project_id:projectId,conversation_id:target,author_json:JSON.stringify(author),content,created_at:when,source_time:JSON.stringify(original)});return}
      rows.push({id:messageId,project_id:projectId,conversation_id:target,local_id:`import:${sid}`,actor_id:actor,actor_role:author.role,content,revision:rows.length+1,created_at:when,intent_hash:null,bucket_id:null,erased_at:null,citations_json:'[]'})
      sources.push({message_id:messageId,project_id:projectId,author_json:JSON.stringify(author),source_id:sid,source_time:JSON.stringify(original),time_provenance:'source'})
@@ -56,14 +58,13 @@ export async function prepareFreshdesk({projectId,actorId,source,tagIds}:Mapping
     // The description is the ticket's opening message, written when the ticket was created. An outbound
     // email is written by an agent Freshdesk does not record, so its author stays unknown.
     const outbound=p.source===10,opening=outbound?{id:null,name:null,role:'operator',unrecorded:true}:{...person(p.requester_id),role:'contact'}
-    add(`description:${record.sourceId}`,await body(p.description,p.description_text,'ticket_description_required'),true,created,opening,outbound?'import:freshdesk:unrecorded-agent':id('contact',contactSource),p.created_at)
+    add(`description:${record.sourceId}`,await body(p.description,p.description_text,'ticket_description_required'),true,created,opening,outbound?'import:freshdesk:unrecorded-agent':id('contact',contactSource),p.created_at,p.attachments)
     if(outbound)omissions.push('outbound_first_message_author_unrecorded')
     for(const part of p.conversations){
      if(!object(part)||typeof part.private!=='boolean')throw new Error('conversation_visibility_required')
      const author=person(part.user_id),sid=sourceId(part.id,'freshdesk')
-     add(sid,await body(part.body,part.body_text,'message_body_missing'),!part.private,time(part.created_at,'iso'),author,author.role==='contact'?id('contact',author.id):`import:freshdesk:${author.id}`,part.created_at)
+     add(sid,await body(part.body,part.body_text,'message_body_missing'),!part.private,time(part.created_at,'iso'),author,author.role==='contact'?id('contact',author.id):`import:freshdesk:${author.id}`,part.created_at,part.attachments)
     }
-    if(array(p.attachments).length||p.conversations.some((part:any)=>array(part.attachments).length))omissions.push('attachments_metadata_retained_bytes_not_imported')
     rows.sort((a,b)=>a.created_at-b.created_at||a.local_id.localeCompare(b.local_id));rows.forEach((row,index)=>{row.revision=index+1})
     const state=statuses[p.status]??`custom_status:${p.status}`,closed=p.status===4||p.status===5||p.spam===true
     const resolved=closed?closedAt([p.stats?.closed_at,p.stats?.resolved_at],p.updated_at,omissions):null

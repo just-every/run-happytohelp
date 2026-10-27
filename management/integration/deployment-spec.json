@@ -762,6 +762,18 @@
       "name": "256_inbound_lookup_indexes.sql",
       "sha256": "3c9b045f40e04ae9e632182d8e1a6168bedbf30961daec0c217b0fe89a33fb8c",
       "sql": "-- Bound native ticket admission, authenticated mailbox proof and API hold lookup.\n-- Indexes only: no stored row changes. Apply before the updated Worker serves traffic.\nCREATE INDEX inbound_emails_conversation ON inbound_emails(project_id,conversation_id,automatic,local_id);\nCREATE INDEX inbound_emails_message ON inbound_emails(project_id,message_id);\nCREATE INDEX api_requests_hold ON api_requests(project_id,held_id);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "257_move_in_attachment_bytes.sql",
+      "sha256": "a6157774bba88eb231945c253f952cb9c9db2eb677ee6ed97e2c680ec0d5354e",
+      "sql": "-- Explicit small export payloads share the native media lifetime and authorization.\nCREATE TABLE move_in_attachment_bytes (\n media_id TEXT PRIMARY KEY REFERENCES media(id) ON DELETE CASCADE,\n project_id TEXT NOT NULL,\n conversation_id TEXT NOT NULL REFERENCES conversations(id),\n note_id TEXT REFERENCES move_in_notes(id) ON DELETE CASCADE,\n sha256 TEXT NOT NULL,\n base64 TEXT NOT NULL\n);\nCREATE INDEX move_in_attachment_conversation ON move_in_attachment_bytes(project_id,conversation_id);\nCREATE INDEX move_in_attachment_note ON move_in_attachment_bytes(note_id);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "257_sla_slack.sql",
+      "sha256": "e3ba183c93594309ab8f1381d912080955bc02017f7cd810c834a5689933ccdd",
+      "sql": "-- Explicit opt-in destination; existing alerts never acquire a new outbound effect.\nALTER TABLE sla_policies ADD COLUMN slack_destination_id TEXT;\nALTER TABLE sla_alerts ADD COLUMN slack_destination_id TEXT;\nALTER TABLE sla_alerts ADD COLUMN slack_state TEXT NOT NULL DEFAULT 'not_configured';\nALTER TABLE sla_alerts ADD COLUMN slack_attempts INTEGER NOT NULL DEFAULT 0;\nALTER TABLE sla_alerts ADD COLUMN slack_started_at INTEGER;\nALTER TABLE sla_alerts ADD COLUMN slack_next_attempt_at INTEGER;\nALTER TABLE sla_alerts ADD COLUMN slack_error TEXT;\nCREATE INDEX sla_slack_due ON sla_alerts(slack_state,slack_next_attempt_at);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

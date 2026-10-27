@@ -20,7 +20,8 @@ export async function saveDestination(env:Env,issuer:Issuer,kind:'webhook'|'slac
    if(!Array.isArray(events)||!events.length||events.some((e:string)=>!(EVENTS as readonly string[]).includes(e))||new Set(events).size!==events.length)throw Error()
    shown=Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');secret={url:body.url,key:shown}
   }else{
-   mode=body.mode;events=['conversation.created']
+   mode=body.mode;events=body.events??['conversation.created']
+   if(!Array.isArray(events)||events.some((event:string)=>event!=='conversation.created')||events.length>1)throw Error()
    if(mode==='incoming-webhook'){await resolveSlackWebhook(async()=>body.url,'validation');secret={url:body.url}}
    else if(mode==='bot'){await resolveSlackBot(async()=>({token:body.token,channel:body.channel}),'validation');secret={token:body.token,channel:body.channel}}
    else throw Error()

@@ -4,7 +4,7 @@
  * response raises no diagnostic; free-form or address fields stay opaque and are reported. */
 export function freshdeskShapes(s:any){
  const {record:r,array:a,nullable:n,string:t,integer:i,id,reference:ref,opaque:o,boolean:b}=s,iso={type:'iso'}
- const attachment=r({id,name:t,content_type:t,size:i,created_at:iso,updated_at:iso})
+ const attachment=r({id,name:t,content_type:t,size:i,base64:n(t),sha256:n(t),created_at:iso,updated_at:iso})
  const stats=r({agent_responded_at:n(iso),requester_responded_at:n(iso),first_responded_at:n(iso),status_updated_at:n(iso),reopened_at:n(iso),resolved_at:n(iso),closed_at:n(iso),pending_since:n(iso)})
  const conversation=r({id,body:n(t),body_text:n(t),incoming:b,private:b,user_id:ref,source:i,category:n(i),ticket_id:id,attachments:a(attachment),created_at:iso,updated_at:iso,last_edited_at:n(iso),last_edited_user_id:n(ref),auto_response:n(b),automation_id:n(id),automation_type_id:n(i),thread_id:n(id),thread_message_id:n(id),email_failure_count:n(i),outgoing_failures:n(o),source_additional_info:n(o),support_email:n(o),from_email:n(o),to_emails:n(o),cc_emails:n(o),bcc_emails:n(o)},['id','user_id'])
  const requester={...r({id:ref,name:n(t),email:n(t),mobile:n(t),phone:n(t)},['id']),person:true}

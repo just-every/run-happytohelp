@@ -765,7 +765,13 @@
     },
     {
       "binding": "DB",
-      "name": "257_procedure_versions.sql",
+      "name": "257_move_in_attachment_bytes.sql",
+      "sha256": "a6157774bba88eb231945c253f952cb9c9db2eb677ee6ed97e2c680ec0d5354e",
+      "sql": "-- Explicit small export payloads share the native media lifetime and authorization.\nCREATE TABLE move_in_attachment_bytes (\n media_id TEXT PRIMARY KEY REFERENCES media(id) ON DELETE CASCADE,\n project_id TEXT NOT NULL,\n conversation_id TEXT NOT NULL REFERENCES conversations(id),\n note_id TEXT REFERENCES move_in_notes(id) ON DELETE CASCADE,\n sha256 TEXT NOT NULL,\n base64 TEXT NOT NULL\n);\nCREATE INDEX move_in_attachment_conversation ON move_in_attachment_bytes(project_id,conversation_id);\nCREATE INDEX move_in_attachment_note ON move_in_attachment_bytes(note_id);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "258_procedure_versions.sql",
       "sha256": "5e24d62e0356311eeb6092bf59f0a6b8eab26fa6c1b8e752850386619a40b547",
       "sql": "CREATE TABLE procedure_versions (\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL REFERENCES projects(id),\n procedure_key TEXT NOT NULL,\n version INTEGER NOT NULL CHECK(version>0),\n definition TEXT NOT NULL CHECK(json_valid(definition)),\n created_by TEXT NOT NULL,\n created_at INTEGER NOT NULL,\n UNIQUE(project_id,procedure_key,version)\n);\nCREATE TRIGGER procedure_versions_immutable BEFORE UPDATE ON procedure_versions\nBEGIN SELECT RAISE(ABORT,'Procedure versions are immutable'); END;\n"
     }

@@ -11,7 +11,7 @@ export async function hasRestrictedCollections(env:Env,projectId:string){
  * public category never bypasses a restricted category. UNION also bounds cycles.
  * Category publication controls navigation, independently of article publication. */
 export function collectionAccessSql(seed:string,authenticated='0',domain="''",publishedOnly=false,contact="''"){
- return `NOT EXISTS(WITH RECURSIVE lineage(id) AS (${seed} UNION SELECT c.parent_id FROM knowledge_categories c JOIN lineage l ON c.id=l.id WHERE c.parent_id IS NOT NULL) SELECT 1 FROM knowledge_categories k JOIN lineage l ON l.id=k.id WHERE ${publishedOnly?'k.is_published<>1 OR ':''}(k.audience<>'public' AND (${authenticated}=0 OR (k.audience='domains' AND NOT EXISTS(SELECT 1 FROM json_each(k.allowed_domains) WHERE lower(value)=${domain})))) OR (k.requires_entitlement=1 AND NOT EXISTS(SELECT 1 FROM knowledge_collection_entitlements grant_row WHERE grant_row.project_id=k.project_id AND grant_row.category_id=k.id AND grant_row.contact_id=${contact})))`
+ return `NOT EXISTS(WITH RECURSIVE lineage(id) AS (${seed} UNION SELECT c.parent_id FROM knowledge_categories c JOIN lineage l ON c.id=l.id WHERE c.parent_id IS NOT NULL) SELECT 1 FROM knowledge_categories k JOIN lineage l ON l.id=k.id WHERE ${publishedOnly?'k.is_published<>1 OR ':''}(k.audience<>'public' AND (${authenticated}=0 OR (k.audience='domains' AND NOT EXISTS(SELECT 1 FROM json_each(k.allowed_domains) WHERE lower(value)=${domain})))) OR ((k.audience<>'public' OR k.requires_entitlement=1) AND NOT EXISTS(SELECT 1 FROM knowledge_collection_entitlements grant_row WHERE grant_row.project_id=k.project_id AND grant_row.category_id=k.id AND grant_row.contact_id=${contact})))`
 }
 export function articleAccessSql(alias='a',authenticated='0',domain="''",contact="''"){
  return collectionAccessSql(`SELECT ${alias}.category_id WHERE ${alias}.category_id IS NOT NULL UNION SELECT category_id FROM knowledge_article_categories WHERE article_id=${alias}.id`,authenticated,domain,false,contact)
@@ -20,7 +20,7 @@ export const categoryAccessSql=(alias='k',authenticated='0',domain="''",contact=
 export function accessParams(access?:HelpAccess){return [access?.verified?1:0,access?.email?.split('@')[1]?.toLowerCase()||'',access?.verified?access.contactId||'':''] as const}
 // Only a mail-native contact qualifies here. A receipt in a widget thread must
 // never turn that widget's typed address into authority for private knowledge.
-const nativeEmailProofSql=`c.is_verified=0 AND c.external_id IS NULL
+export const nativeEmailProofSql=`c.is_verified=0 AND c.external_id IS NULL
  AND coalesce(json_extract(c.metadata_json,'$.email_unproven'),0)<>1
  AND coalesce(json_extract(c.metadata_json,'$.unverified_sender'),0)<>1
  AND coalesce(json_extract(c.metadata_json,'$.is_blocked'),0)<>1

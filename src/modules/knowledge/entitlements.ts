@@ -1,3 +1,4 @@
+import {nativeEmailProofSql} from './access'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -6,7 +7,7 @@ import {auditStatement,requestSource} from '../audit/record'
 import {livePortalContact} from '../portal/identity'
 
 export const entitlementRoutes=new Hono<AppEnv>()
-const eligible=`${livePortalContact('ct')} AND (ct.is_verified=1 OR EXISTS(SELECT 1 FROM portal_identities pi WHERE pi.project_id=ct.project_id AND pi.contact_id=ct.id AND pi.email=lower(trim(ct.email))))`
+const eligible=`${livePortalContact('ct')} AND (ct.is_verified=1 OR (${nativeEmailProofSql.replaceAll('c.','ct.')}) OR EXISTS(SELECT 1 FROM portal_identities pi WHERE pi.project_id=ct.project_id AND pi.contact_id=ct.id AND pi.email=lower(trim(ct.email))))`
 entitlementRoutes.use('/:projectId/categories/:categoryId/entitlements',async(c,next)=>{
  const actor=await requireProject(c,c.req.param('projectId'),true)
  if(!['owner','admin'].includes(actor.role))throw new HTTPException(403,{message:'Project administration required'})
@@ -16,11 +17,11 @@ entitlementRoutes.use('/:projectId/categories/:categoryId/entitlements',async(c,
 entitlementRoutes.get('/:projectId/categories/:categoryId/entitlements',async c=>{
  const projectId=c.req.param('projectId'),categoryId=c.req.param('categoryId'),q=(c.req.query('q')||'').trim().slice(0,200)
  const [category,accounts,candidates]=await c.env.DB.batch<any>([
-  c.env.DB.prepare('SELECT requires_entitlement FROM knowledge_categories WHERE project_id=? AND id=?').bind(projectId,categoryId),
+  c.env.DB.prepare('SELECT audience,requires_entitlement FROM knowledge_categories WHERE project_id=? AND id=?').bind(projectId,categoryId),
   c.env.DB.prepare('SELECT ct.id,ct.name,ct.email FROM knowledge_collection_entitlements g JOIN contacts ct ON ct.id=g.contact_id AND ct.project_id=g.project_id WHERE g.project_id=? AND g.category_id=? ORDER BY ct.name,ct.email,ct.id').bind(projectId,categoryId),
   c.env.DB.prepare(`SELECT ct.id,ct.name,ct.email FROM contacts ct WHERE ct.project_id=? AND ?<>'' AND ${eligible} AND (lower(coalesce(ct.name,'')) LIKE ? OR lower(coalesce(ct.email,'')) LIKE ?) ORDER BY ct.name,ct.email,ct.id LIMIT 20`).bind(projectId,q,`%${q.toLowerCase()}%`,`%${q.toLowerCase()}%`)
  ])
- return c.json({required:!!category.results[0]?.requires_entitlement,accounts:accounts.results,candidates:candidates.results})
+ return c.json({required:(category.results[0]?.audience!=='public'||!!category.results[0]?.requires_entitlement),accounts:accounts.results,candidates:candidates.results})
 })
 // Grants name verified workspace accounts. A domain or company never creates a grant.
 entitlementRoutes.put('/:projectId/categories/:categoryId/entitlements',async c=>{

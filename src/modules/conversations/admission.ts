@@ -1,4 +1,4 @@
-import {generationKnowledgeSql} from '../knowledge/delivery'
+import {generationKnowledgeSql,replyKnowledgeSql} from '../knowledge/delivery'
 import {accessForKnowledgeConversation} from '../knowledge/access'
 import {companyPortalReply,portalTicketScope} from '../portal/company-visibility'
 import {workflowNow,workflowEnvironment} from '../workflows/clock'
@@ -40,7 +40,8 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  const replayGuard=input.tokenAuthority?tokenGuard(input.tokenAuthority,projectId,input.tokenAuthority.scope==='messages:append'?'messages:append':'messages:write'):null
  const companyReply=input[companyPortalReply]===true&&actor.role==='contact'&&!!input.sessionHash&&!!input[messageAuthority]
  const authority=input[messageAuthority]
- const replayPredicate=(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')+(input.generationId?` AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${generationKnowledgeSql('?')})`:'')
+ const knowledgeReply=actor.role!=='contact'?` AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${replyKnowledgeSql('c',undefined,!!email?.cc.length)})`:''
+ const replayPredicate=knowledgeReply+(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')+(input.generationId?` AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${generationKnowledgeSql('?')})`:'')
  const replayArgs=[...(replayGuard?.params||[]),...(authority?.args||[]),...(input.generationId?[input.generationId]:[])]
  const checkMembership=!input.tokenAuthority&&!input.generationId&&actor.role!=='contact'
  // These observations are independent. Keep denial/replay precedence below,
@@ -68,6 +69,7 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  const citations=refs.length?await resolvePublicCitations(env,projectId,input.generationId!,refs,knowledgeAccess):[]
  env=await workflowEnvironment(env)
  const messageId=crypto.randomUUID(),now=workflowNow(env);const predicates=[writableConversationSql('c'),'c.id=?','c.project_id=?','c.revision=?','c.contact_id=?','c.ticket_version=?',followup?"c.status_category='closed'":"c.status_category<>'closed'"];const args:unknown[]=[conversationId,projectId,expectedRevision,scope.contact_id,scope.ticket_version]
+ if(actor.role!=='contact')predicates.push(replyKnowledgeSql('c',undefined,!!email?.cc.length))
  if(input.requireAvailableRequester===true)predicates.push(contactAvailableSql())
  if(autoAssign&&scope.group_id){predicates.push('EXISTS(SELECT 1 FROM ticket_group_members WHERE project_id=c.project_id AND group_id=c.group_id AND user_id=?)');args.push(actor.id)}
  if(input.resolve&&!input.generationId){predicates.push('c.resolved_at IS ?','(SELECT MAX(ordinal) FROM conversation_resolutions WHERE conversation_id=c.id) IS ?');args.push(scope.resolved_at,scope.ordinal)}
@@ -120,6 +122,11 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
   env.DB.prepare(`SELECT * FROM messages WHERE conversation_id=? AND project_id=? AND local_id=? ${replayPredicate}`).bind(conversationId,projectId,localId,...replayArgs)
  )
  const committed=await env.DB.batch<any>(statements),message=committed[committedIndex].results[0]
- if(!message){const duplicate=committed[committedIndex+1].results[0];if(duplicate&&duplicate.actor_id===writerId&&duplicate.intent_hash===intentHash)return {accepted:true,duplicate:true,message:duplicate};return {accepted:false,reason:'conversation_changed_or_admission_denied'}}
+ if(!message){
+  const duplicate=committed[committedIndex+1].results[0]
+  if(duplicate&&duplicate.actor_id===writerId&&duplicate.intent_hash===intentHash)return {accepted:true,duplicate:true,message:duplicate}
+  if(actor.role!=='contact'&&!await env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${replyKnowledgeSql('c',undefined,!!email?.cc.length)}`).bind(conversationId,projectId).first())return {accepted:false,reason:'knowledge_access_changed'}
+  return {accepted:false,reason:'conversation_changed_or_admission_denied'}
+ }
  return {accepted:true,duplicate:false,message,...(followup?{followupConversationId:targetId}:{})}
 }

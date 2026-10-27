@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {knowledgeApp} from './app.mjs'
+import {preparedReplyJourney} from './reply-admission.mjs'
 import {knowledgeErasureJourney} from './erasure.mjs'
 export async function experienceJourney(){
 const k=await knowledgeApp({bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'fixture-native-knowledge'}}),{app,p,call}=k
@@ -19,6 +20,9 @@ try{
  await app.db.prepare("INSERT INTO email_settings VALUES(?,'Support','support@example.test','native-help@example.test',1,1)").bind(p).run()
  const received=(await app.call('/api/integrations/email/inbound',{headers:{Authorization:'Bearer fixture-native-knowledge'},body:{messageId:'native-knowledge@example.test',to:'native-help@example.test',from:'native@trusted.test',subject:'Account question',text:'Please explain my business account.'},status:201})).data
  const emailConversation=received.conversationId||received.conversation_id
+ const nativeContact=(await app.first('SELECT contact_id FROM conversations WHERE id=?',emailConversation)).contact_id
+ assert.ok(!(await call(`/api/knowledge/${p}/conversations/${emailConversation}/articles`,{status:200})).data.some(a=>a.id===aid),'a matching native domain alone grants no access')
+ await call(`/api/knowledge/${p}/categories/${category}/entitlements`,{method:'PUT',body:{contactIds:[nativeContact]},status:200})
  assert.ok((await call(`/api/knowledge/${p}/conversations/${emailConversation}/articles`,{status:200})).data.some(a=>a.id===aid),'a proven native email customer can receive their permitted article')
 
 
@@ -26,12 +30,16 @@ try{
  const {createHmac}=await import('node:crypto')
  const widget=async(identifier,email)=>{const contact_hash=createHmac('sha256',signed.verification_secret).update(identifier).digest('hex');return (await app.call('/api/identity/widget/session',{body:{widgetKey:'widget-p',identifier,email,contact_hash},status:201})).data}
  const good=await widget('customer@trusted.test','customer@trusted.test')
+ await app.db.prepare('UPDATE knowledge_categories SET requires_entitlement=0 WHERE id=?').bind(category).run()
+ assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:good.token})).status,404,'domain match requires a deliberate grant even with requires_entitlement=0')
+ const verifiedCustomer=(await app.first("SELECT contact_id FROM sessions WHERE token_hash=?",(await import('../../journeys/kit/app.mjs')).sha(good.token))).contact_id
+ await call(`/api/knowledge/${p}/categories/${category}/entitlements`,{method:'PUT',body:{contactIds:[nativeContact,verifiedCustomer]},status:200})
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:good.token})).status,200)
  const bad=await widget('customer-id','customer@trusted.test')
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:bad.token})).status,404)
  const typed=(await app.call('/api/identity/widget/session',{body:{widgetKey:'widget-p',email:'reader@trusted.test'},status:201})).data
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:typed.token})).status,404)
- await app.call(`/api/knowledge/public/${p}/access/request`,{body:{email:'reader@trusted.test'},status:202})
+ await app.call(`/api/knowledge/public/${p}/access/request`,{body:{email:'customer@trusted.test'},status:202})
  const link=new URL(mail.at(-1).text.match(/https:\/\/[^\s]+/)[0]),verify=await app.call(link.pathname+link.search,{status:303}),cookie=verify.headers.get('Set-Cookie').split(';')[0]
  assert.ok(cookie.startsWith('h2h_help='));assert.equal((await app.call(link.pathname+link.search)).status,400,'a possession link is single-use')
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{headers:{Cookie:cookie},status:200})).data.content,'Restricted instructions')
@@ -67,6 +75,9 @@ try{
  assert.ok(entitlementList.required)
  const participants=`/api/dashboard/projects/${p}/conversations/${goodConversation}/participants`
  const participant=(await call(participants,{body:{email:'peer@trusted.test'},status:201})).data.data
+ const preparedCommands=new Map()
+ const sendPrepared=async(localId,options={})=>{const current=await app.first('SELECT revision,last_message_id FROM conversations WHERE id=?',goodConversation);if(!preparedCommands.has(localId))preparedCommands.set(localId,{localId,content:inserted.text,expectedRevision:current.revision,expectedLastMessageId:current.last_message_id,knowledgeSources:[]});return call(`/api/conversations/${goodConversation}/messages`,{body:preparedCommands.get(localId),...options})}
+ assert.equal((await sendPrepared('prepared-with-participant')).status,409,'ordinary reply cannot drop server-held source provenance after a participant change')
  assert.deepEqual(await retrieval(goodConversation),[],'additional participants deny restricted agent retrieval')
  assert.ok(!(await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles`,{status:200})).data.some(row=>row.id===aid),'ticket picker checks every intended recipient')
  assert.equal((await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles/${aid}/insert`,{body:{mode:'text'}})).status,404)
@@ -79,10 +90,18 @@ try{
  await call(`${participants}/knowledge-participant-race`,{method:'DELETE',status:200})
 
  await call(grants,{method:'PUT',body:{contactIds:[]},status:200})
+ assert.equal((await sendPrepared('prepared-after-revocation')).status,409,'ordinary reply rechecks current requester grant without trusting citation JSON')
  assert.deepEqual(await retrieval(goodConversation),[],'revocation applies immediately to retrieval')
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:good.token})).status,404)
  await call(grants,{method:'PUT',body:{contactIds:[customer]},status:200})
+ const admitted=await sendPrepared('prepared-authorized');assert.equal(admitted.status,200)
+ assert.equal((await sendPrepared('prepared-authorized')).data.duplicate,true,'authorized exact-command replay remains idempotent')
+ await call(grants,{method:'PUT',body:{contactIds:[]},status:200})
+ assert.equal((await sendPrepared('prepared-authorized')).status,409,'replay cannot return restricted text after revocation')
+ await call(grants,{method:'PUT',body:{contactIds:[customer]},status:200})
  assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='knowledge.entitlements.updated'",p))
+
+ await preparedReplyJourney(k,{category,article:aid,customer,token:good.token})
 
  await call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{article:'{{title}}\n{{content}}'}},status:200})
  assert.equal((await call(`/api/knowledge/${p}/experience`,{status:200})).data.templates.article,'{{title}}\n{{content}}')

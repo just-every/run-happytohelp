@@ -141,13 +141,13 @@ export async function rolesAuditJourney(){
   const changed=await app.first("SELECT detail_json FROM audit_events WHERE action='member.role_changed' AND target_id=? AND json_extract(detail_json,'$.to')=?",w.users.operator,created.data.data.id)
   assert.deepEqual(JSON.parse(changed.detail_json),{from:'operator',to:created.data.data.id,fromName:'Agent',toName:'Support, no publishing'})
   assert.equal((await call(`${P}/roles/${created.data.data.id}`,undefined,w.tokens.owner,'DELETE')).status,409,'a role in use stays')
-  // Read-only custom authority keeps the selected internal article through the existing grant.
+  // Native read authority keeps its selection; connected editor evidence requires edit authority.
   assert.equal((await delegated('/evidence?target='+`projects/${w.projectId}/articles/art-other`)).status,200,'the original grant covers both articles')
   const K=`/api/knowledge/${w.projectId}`
   const reader=await call(`${P}/roles`,{name:'Knowledge reader',base:'operator',permissions:['knowledge.read'],knowledgeArticleIds:['art-r']},w.tokens.owner)
   assert.equal(reader.status,201)
   assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:reader.data.data.id},w.tokens.owner,'PUT')).status,200)
-  const read=await delegated('/evidence?target='+article);assert.equal(read.status,200);assert.match((await read.json()).text,/Edited narrowed-draft/)
+  const read=await delegated('/evidence?target='+article);assert.equal(read.status,403,'connected editor evidence requires knowledge.edit even for a selected article')
   const internal=await call(`${K}/articles`,undefined,w.tokens.operator);assert.equal(internal.status,200);assert.deepEqual(internal.data.map(row=>row.id),['art-r']);assert.equal(internal.data[0].content,'Edited narrowed-draft')
   for(const path of [`${K}/articles/art-r/history`,`${K}/articles/art-r/translations/fr`])assert.equal((await call(path,undefined,w.tokens.operator)).status,200,path)
   for(const path of [`${K}/datasets`,`${K}/search?q=Returns`,`${K}/categories`,`${K}/experience`])assert.equal((await call(path,undefined,collaborator.token)).status,403,path)

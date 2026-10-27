@@ -17,6 +17,11 @@ export function boundedDatabase(db:D1Database,limit=1000,reserve=0){
   const result={bind(...values:unknown[]){return wrap(statement.bind(...values),query,values)},first(...args:any[]){return execute(()=>(statement.first as any)(...args))},all(){return execute(()=>statement.all())},run(){return execute(()=>statement.run())},raw(...args:any[]){return execute(()=>(statement.raw as any)(...args))}} as D1PreparedStatement
   raw.set(result,statement);queries.set(result,query);return result
  }
- const database={prepare(sql:string){return wrap(db.prepare(sql),sql)},async batch(statements:D1PreparedStatement[]){consume(statements.length);metrics.writes+=statements.filter(s=>!readOnly(queries.get(s)||'')).length;return measured(()=>db.batch(statements.map(s=>raw.get(s)??s)))},async exec(){throw new Error('Unbounded D1 exec is unavailable in request handlers')},dump:()=>db.dump()} as unknown as D1Database
+ const instrument=(input:D1Database):D1Database=>{
+  const rebase=(input as any)[Symbol.for('happytohelp.d1.layer')]
+  if(rebase)return rebase(instrument)
+  return {prepare(sql:string){return wrap(input.prepare(sql),sql)},async batch(statements:D1PreparedStatement[]){consume(statements.length);metrics.writes+=statements.filter(s=>!readOnly(queries.get(s)||'')).length;return measured(()=>input.batch(statements.map(s=>raw.get(s)??s)))},async exec(){throw new Error('Unbounded D1 exec is unavailable in request handlers')},dump:()=>input.dump()} as unknown as D1Database
+ }
+ const database=instrument(db)
  return {database,get metrics(){return {...metrics}},get statements(){return metrics.statements},get writes(){return metrics.writes}}
 }

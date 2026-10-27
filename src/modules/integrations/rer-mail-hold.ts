@@ -1,3 +1,4 @@
+import {mailClaimSql} from '../knowledge/mail-door'
 import type {Env} from '../../platform/env'
 import type {EmailInput} from './email'
 import {auditStatement} from '../audit/record'
@@ -34,10 +35,11 @@ export async function holdRerMail(env:Env,input:Pick<EmailInput,'idempotencyKey'
 /** Claims one held command for a single resend to its recorded recipient. The hold
  * is cleared before the request, so a lost process leaves an unknown outcome that
  * is never sent again; a refused resend restores the same first refusal instant. */
-export async function claimRerMailHold(env:Env,input:Pick<EmailInput,'idempotencyKey'|'to'>){
+export async function claimRerMailHold(env:Env,input:EmailInput){
  const row=await env.DB.prepare("SELECT updated_at FROM email_deliveries WHERE id=? AND recipient=? AND state='sending' AND error=? AND updated_at>?").bind(input.idempotencyKey,input.to,rerMailHeld,Date.now()-holdMs).first<{updated_at:number}>()
  if(!row)return null
- const claimed=await env.DB.prepare("UPDATE email_deliveries SET error=NULL,updated_at=? WHERE id=? AND state='sending' AND error=? AND updated_at=?").bind(Date.now(),input.idempotencyKey,rerMailHeld,row.updated_at).run()
+ const guard=await mailClaimSql(env,input),claimed=await env.DB.prepare(`${guard.prefix}UPDATE email_deliveries SET error=NULL,updated_at=? WHERE id=? AND state='sending' AND error=? AND updated_at=? AND ${guard.sql}`).bind(...guard.params,Date.now(),input.idempotencyKey,rerMailHeld,row.updated_at).run()
+ if(!claimed.meta.changes)await env.DB.prepare("UPDATE email_deliveries SET state='failed',error='Knowledge access changed; edit and resend for the current recipients',updated_at=? WHERE id=? AND state='sending' AND error=? AND updated_at=?").bind(Date.now(),input.idempotencyKey,rerMailHeld,row.updated_at).run()
  return claimed.meta.changes?row.updated_at:null
 }
 

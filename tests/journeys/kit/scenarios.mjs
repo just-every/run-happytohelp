@@ -1,3 +1,4 @@
+import {runSteps} from './steps.mjs';
 import assert from 'node:assert/strict';
 import {basename} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -8,7 +9,7 @@ export const registry=[];
 export function phases(url){const file=basename(fileURLToPath(url),'.mjs');return (name,fn)=>{assert.equal(typeof fn,'function',name);registry.push({file,name,fn})}}
 export async function runPhases(selected){
  assert.ok(selected.length,'a journey owns scenarios');
- for(const phase of selected){try{await phase.fn()}catch(error){if(error&&typeof error==='object')error.message=`${phase.file}: ${phase.name}: ${error.message}${error.cause?` (${error.cause.code||''} ${error.cause.message||error.cause})`:''}`;throw error}}
+ await runSteps(selected.map(phase=>[`${phase.file}: ${phase.name}`,phase.fn]));
 }
 export const any=(file,...patterns)=>phase=>phase.file===file&&(!patterns.length||patterns.some(pattern=>pattern.test(phase.name)));
 export const either=(...selectors)=>phase=>selectors.some(select=>select(phase));

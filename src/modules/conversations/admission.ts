@@ -1,3 +1,5 @@
+import {generationKnowledgeSql} from '../knowledge/delivery'
+import {accessForKnowledgeConversation} from '../knowledge/access'
 import {companyPortalReply,portalTicketScope} from '../portal/company-visibility'
 import {workflowNow,workflowEnvironment} from '../workflows/clock'
 import {followupId,createFollowupStatement,carryFollowupStatements} from '../workflows/followups'
@@ -38,8 +40,8 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  const replayGuard=input.tokenAuthority?tokenGuard(input.tokenAuthority,projectId,input.tokenAuthority.scope==='messages:append'?'messages:append':'messages:write'):null
  const companyReply=input[companyPortalReply]===true&&actor.role==='contact'&&!!input.sessionHash&&!!input[messageAuthority]
  const authority=input[messageAuthority]
- const replayPredicate=(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')
- const replayArgs=[...(replayGuard?.params||[]),...(authority?.args||[])]
+ const replayPredicate=(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')+(input.generationId?` AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${generationKnowledgeSql('?')})`:'')
+ const replayArgs=[...(replayGuard?.params||[]),...(authority?.args||[]),...(input.generationId?[input.generationId]:[])]
  const checkMembership=!input.tokenAuthority&&!input.generationId&&actor.role!=='contact'
  // These observations are independent. Keep denial/replay precedence below,
  // and keep every live-authority and frontier predicate in the write itself.
@@ -62,7 +64,8 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  if(followup){const replay=await env.DB.prepare('SELECT * FROM messages WHERE project_id=? AND conversation_id=? AND local_id=?').bind(projectId,targetId,localId).first<any>();if(replay){if(replay.actor_id!==writerId||replay.intent_hash!==intentHash)return {accepted:false,reason:'local_id_conflict'};return {accepted:true,duplicate:true,message:replay,followupConversationId:targetId}}}
  const autoAssign=actor.role!=='contact'&&!input.generationId&&!input.tokenAuthority&&(!scope.group_id||!!await env.DB.prepare('SELECT 1 FROM ticket_group_members WHERE project_id=? AND group_id=? AND user_id=?').bind(projectId,scope.group_id,actor.id).first())
  const authorship=await authoringSource(env,actor,conversationId,input.authoring,input.generationId)
- const citations=refs.length?await resolvePublicCitations(env,projectId,input.generationId!,refs):[]
+ const knowledgeAccess=refs.length?await accessForKnowledgeConversation(env,projectId,conversationId):undefined
+ const citations=refs.length?await resolvePublicCitations(env,projectId,input.generationId!,refs,knowledgeAccess):[]
  env=await workflowEnvironment(env)
  const messageId=crypto.randomUUID(),now=workflowNow(env);const predicates=[writableConversationSql('c'),'c.id=?','c.project_id=?','c.revision=?','c.contact_id=?','c.ticket_version=?',followup?"c.status_category='closed'":"c.status_category<>'closed'"];const args:unknown[]=[conversationId,projectId,expectedRevision,scope.contact_id,scope.ticket_version]
  if(input.requireAvailableRequester===true)predicates.push(contactAvailableSql())
@@ -91,9 +94,9 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  if(authority){predicates.push(`(${authority.sql})`);args.push(...authority.args)}
  if(input.expectedLastMessageId!==undefined){predicates.push('c.last_message_id IS ?');args.push(input.expectedLastMessageId)}
  if(mediaIds.length){predicates.push(`(SELECT COUNT(*) FROM media WHERE id IN (${mediaIds.map(()=>'?').join(',')}) AND project_id=c.project_id AND conversation_id=c.id AND message_id IS NULL AND NOT EXISTS(SELECT 1 FROM conversation_note_media nm WHERE nm.media_id=media.id) AND uploaded_by=?)=?`);args.push(...mediaIds,actor.id,mediaIds.length)}
- if(input.generationId){predicates.push("EXISTS(SELECT 1 FROM ai_generations g WHERE g.id=? AND g.project_id=c.project_id AND g.conversation_id=c.id AND g.state='running' AND g.source_revision=c.revision AND (SELECT revision FROM context_subjects WHERE project_id=c.project_id AND subject_id=c.contact_id)=g.source_context_revision AND c.resolved_at IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id WHERE ca.conversation_id=c.id AND a.id=g.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 AND a.model=json_extract(g.ai_profile_json,'$.model') AND a.prompt=json_extract(g.ai_profile_json,'$.prompt')))");args.push(input.generationId)}
+ if(input.generationId){predicates.push(generationKnowledgeSql('?'));args.push(input.generationId);predicates.push("EXISTS(SELECT 1 FROM ai_generations g WHERE g.id=? AND g.project_id=c.project_id AND g.conversation_id=c.id AND g.state='running' AND g.source_revision=c.revision AND (SELECT revision FROM context_subjects WHERE project_id=c.project_id AND subject_id=c.contact_id)=g.source_context_revision AND c.resolved_at IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id WHERE ca.conversation_id=c.id AND a.id=g.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 AND a.model=json_extract(g.ai_profile_json,'$.model') AND a.prompt=json_extract(g.ai_profile_json,'$.prompt')))");args.push(input.generationId)}
  if(authorship.guard){predicates.push(authorship.guard.sql);args.push(...authorship.guard.params)}
- for(const citation of citations){const guard=citationAdmissionGuard(citation);predicates.push(guard.sql);args.push(...guard.args)}
+ for(const citation of citations){const guard=citationAdmissionGuard(citation,projectId,knowledgeAccess);predicates.push(guard.sql);args.push(...guard.args)}
  const citationColumns=(citations.length?',citations_json':'')+(email?',content_raw':''),citationValues=(citations.length?',?':'')+(email?',?':'')
  const nextCategory=followup?'open':actor.role!=='contact'&&input.resolve?'solved':actor.role==='contact'?['pending','on_hold','solved'].includes(scope.status_category)?'open':scope.status_category:['solved','new'].includes(scope.status_category)?'open':scope.status_category
  const nextStatusId=!followup&&nextCategory===scope.status_category?scope.status_id:nextCategory

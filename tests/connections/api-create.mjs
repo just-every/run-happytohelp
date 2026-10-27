@@ -27,7 +27,7 @@ async function existingCredentialLifecycle(){
 test('machine create credentials admit one atomic ticket and replay across rotation without granting other scopes',async()=>{
  await apiInvariantSweeps();
  console.log('machine API: credential lifecycle'); await existingCredentialLifecycle(); console.log('machine API: create and append');
- const h=await harness();try{
+ const h=await harness({now:Date.now()});try{
   const issued=await h.issue(['conversations:create'], 'p',{name:'Synthetic support',source_product:'synthetic-hh-1',create_per_minute:60}),token=issued.token;
   const metadata=(await h.call(settings+'/tokens')).data.find(row=>row.id===issued.data.id);
   assert.equal(metadata.source_product,'synthetic-hh-1');assert.equal(metadata.issuer_id,'owner');assert.ok(metadata.display_prefix);

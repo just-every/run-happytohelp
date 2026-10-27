@@ -762,6 +762,12 @@
       "name": "256_inbound_lookup_indexes.sql",
       "sha256": "3c9b045f40e04ae9e632182d8e1a6168bedbf30961daec0c217b0fe89a33fb8c",
       "sql": "-- Bound native ticket admission, authenticated mailbox proof and API hold lookup.\n-- Indexes only: no stored row changes. Apply before the updated Worker serves traffic.\nCREATE INDEX inbound_emails_conversation ON inbound_emails(project_id,conversation_id,automatic,local_id);\nCREATE INDEX inbound_emails_message ON inbound_emails(project_id,message_id);\nCREATE INDEX api_requests_hold ON api_requests(project_id,held_id);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "257_teams_escalations.sql",
+      "sha256": "0473ffbbc02115b1b541897cb51d1eafd4a443e28c91512322115b96cba735c8",
+      "sql": "-- Preserve the original tracker connection table and all its foreign references.\nALTER TABLE escalation_connections ADD COLUMN installed_by TEXT;\nCREATE TABLE escalation_teams_connections(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),provider TEXT NOT NULL CHECK(provider='teams'),target TEXT NOT NULL,base_url TEXT,token_cipher TEXT,webhook_cipher TEXT,updated_at INTEGER NOT NULL,installed_by TEXT NOT NULL,UNIQUE(project_id,provider));\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

@@ -13,7 +13,7 @@ export default function EscalationForm({base, connections, messages, onChanged, 
     const [preview, setPreview] = useState(null), [requestId, setRequestId] = useState(null);
     const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
     const connection = available.find(item => item.provider === provider);
-    const slack = provider === 'slack';
+    const slack = ['slack', 'teams'].includes(provider);
     const selection = {message_ids: messageIds, attachment_ids: attachmentIds};
     const edit = setter => event => { setter(event.target.value); setPreview(null); setNotice(''); };
     const selectContext = (kind, values) => {
@@ -36,15 +36,15 @@ export default function EscalationForm({base, connections, messages, onChanged, 
     const share = () => run(async () => {
         if (preview === null || !connection) return;
         const fields = {...selection, dependency: dependency.trim(), request_id: requestId};
-        if (slack) await escalationWrite(`${base}/slack`, {...fields, channel: channel.trim() || connection.target});
+        if (slack) await escalationWrite(`${base}/${provider}`, {...fields, channel: channel.trim() || connection.target});
         else await escalationWrite(`${base}/links`, {...fields, provider, mode, ...(mode === 'link' ? {key: key.trim()} : {title: title.trim()})});
         setPreview(null); setMessageIds([]); setAttachmentIds([]); setTitle(''); setKey(''); setDependency('');
-        setNotice(slack ? 'Selected context shared to Slack.' : 'Engineering issue linked to this ticket.');
+        setNotice(slack ? `Selected context shared to ${providerNames[provider]}.` : 'Engineering issue linked to this ticket.');
         await onChanged();
     });
-    if (available.length === 0) return <p className="escalation-hint">An administrator needs to connect GitHub, Linear, Jira or Slack before you can share an escalation. Connections are in Ticket › Escalations.</p>;
+    if (available.length === 0) return <p className="escalation-hint">An administrator needs to connect GitHub, Linear, Jira, Slack or Teams before you can share an escalation. Connections are in Ticket › Escalations.</p>;
     return <div className="escalation-new">
-        <p className="escalation-hint">Create or link an issue, or hand off to Slack, with only the context you select.</p>
+        <p className="escalation-hint">Create or link an issue, or hand off to Slack or Teams, with only the context you select.</p>
         <form className="escalation-form" onSubmit={inspect}>
             <fieldset disabled={busy}>
                 <legend className="visually-hidden">Share an escalation</legend>
@@ -52,7 +52,7 @@ export default function EscalationForm({base, connections, messages, onChanged, 
                 <select id={`${id}-provider`} className="form-select form-select-sm" value={provider} onChange={event => {setProvider(event.target.value); setPreview(null); setChannel(''); setKey(''); setNotice('');}}>
                     {available.map(item => <option key={item.provider} value={item.provider}>{providerNames[item.provider]} · {item.target}</option>)}
                 </select>
-                {slack ? <><label htmlFor={`${id}-channel`}>Slack channel ID</label>
+                {slack ? provider === 'teams' ? <p className="escalation-hint">Teams destination: {connection?.target}. An administrator selects the allowed channel.</p> : <><label htmlFor={`${id}-channel`}>Slack channel ID</label>
                     <input id={`${id}-channel`} className="form-control form-control-sm" value={channel} placeholder={connection?.target} onChange={edit(setChannel)}/>
                     <p className="escalation-hint">Leave blank to use {connection?.target}.</p></> : <>
                     <label htmlFor={`${id}-mode`}>Issue action</label>
@@ -71,7 +71,7 @@ export default function EscalationForm({base, connections, messages, onChanged, 
                     {dependency.trim() && <p>Dependency: {dependency}</p>}
                     <pre>{preview}</pre>
                     <p className="escalation-hint">Only this selected context will be shared. Attachment links expire after seven days.</p>
-                    <button className="btn btn-sm btn-primary" type="button" onClick={share}>{slack ? 'Share selected context to Slack' : mode === 'create' ? 'Create issue with selected context' : 'Link issue with selected context'}</button>
+                    <button className="btn btn-sm btn-primary" type="button" onClick={share}>{slack ? `Share selected context to ${providerNames[provider]}` : mode === 'create' ? 'Create issue with selected context' : 'Link issue with selected context'}</button>
                 </section>}
             </fieldset>
         </form>

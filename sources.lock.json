@@ -2956,7 +2956,7 @@
       "executable": false
     },
     "scripts/independent/delegation-backup.py": {
-      "sha256": "5f39eec0ab4f37bdd4e44a2d339af125639648292c2fda39fb097d89e537b468",
+      "sha256": "cae448d65bfafe6116c664d3571fb59e787298c53f7388c043f38d3d7b47bfb3",
       "executable": false
     },
     "scripts/independent/setup-build.mjs": {
@@ -11771,6 +11771,10 @@
       "sha256": "ee3ebed1ce6d479361c616ed75e220562b7cfa5a188b9d34d273522c4c39faae",
       "executable": false
     },
+    "tests/helpers/knowledge/erasure.mjs": {
+      "sha256": "b6ac6ed3dca26ec8a642e1574477ce88f491bff273d854e00a0819b814016122",
+      "executable": false
+    },
     "tests/helpers/knowledge/experience.mjs": {
       "sha256": "6a52d208d1ef6d229f102dacd5d1522990c7d5bd3344997cd8316099344609b3",
       "executable": false
@@ -11868,7 +11872,7 @@
       "executable": false
     },
     "tests/helpers/recovery/comparison.mjs": {
-      "sha256": "3d444f041d195aaa337ad8c4a6f57633846d74bd4257dbf6a51521820b7ed4f7",
+      "sha256": "38d51e5a50198702b594f21e79822b1f5ee958126755bdf52fe20259c5757bef",
       "executable": false
     },
     "tests/helpers/recovery/independent-journey.mjs": {

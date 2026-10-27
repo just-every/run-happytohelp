@@ -81,6 +81,15 @@ export async function accountLookupJourney(f,customer){
  for(const value of ['Northstar account','synthetic-hh-forged',foreign.id,merged.id]){
   await app.call(admin,{...owner,body:{title:'Invalid account condition',fields:[{fieldId:field.id},{fieldId:detail.id,condition:{fieldId:field.id,operator:'equals',value}}]},status:400})
  }
+ const unsetFields=[{fieldId:field.id,required:true},{fieldId:detail.id,required:true,condition:{fieldId:field.id,operator:'not_equals',value:''}}]
+ let unset=(await app.ok(admin,{...owner,body:{title:'Unset account condition',enabled:true,fields:unsetFields}})).data
+ unset=(await app.ok(admin+'/'+unset.id,{...owner,method:'PATCH',body:{updatedAt:unset.updatedAt,title:'Still unset'}})).data
+ assert.equal(unset.fields[1].condition.value,'','an empty account condition survives save and reload')
+ assert.equal((await app.ok(api+'/'+unset.id,customer)).data.fields.find(row=>row.id===detail.id).visible,false,'an unset account predicate remains inactive')
+ const unsetCommand={...command,localId:'synthetic-hh-unset-account',fields:{[field.id]:company.id}}
+ await app.ok(api+'/'+unset.id+'/submissions',{...customer,body:unsetCommand})
+ await app.ok(api+'/'+unset.id+'/submissions',{...customer,body:unsetCommand})
+ assert.equal((await app.call(api+'/'+unset.id+'/submissions',{...customer,body:{...unsetCommand,localId:'synthetic-hh-unset-hidden',fields:{...unsetCommand.fields,[detail.id]:'injected'}},status:422})).data.field,detail.id)
  const conditional=(await app.ok(admin,{...owner,body:{title:'Account condition',enabled:true,fields:[{fieldId:field.id,required:true},{fieldId:detail.id,required:true,condition:{fieldId:field.id,operator:'equals',value:company.id}}]}})).data
  // Inspect raw customer responses, including HTML and the open form's refresh door.
  const privateAccount=(await app.ok(base+'/companies',{...owner,body:{name:'Private unrelated account'}})).company

@@ -41,7 +41,7 @@ export async function withAccountChoices(env:Env,form:PublicForm,identity?:Porta
  for(const field of fields){
   const condition=field.condition,source=condition&&fields.find(f=>f.id===condition.fieldId)
   if(source?.type==='account'){
-   const active=visibleField(field,accepted)
+   const active=condition!.operator!=='present'&&condition!.value===''?false:visibleField(field,accepted)
    delete field.condition
    field.visible=active
   }

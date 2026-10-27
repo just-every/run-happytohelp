@@ -49,12 +49,12 @@
  }
  form.addEventListener('submit',async event=>{
   event.preventDefault();result.replaceChildren();for(const f of model.fields){control(f).removeAttribute('aria-invalid');form.querySelector(`#${CSS.escape(`request-${f.id}-error`)}`).hidden=true;}
-  const v=values(),fields=Object.fromEntries(Object.entries(v).filter(([id])=>model.fields.some(f=>f.id===id&&f.type==='account'))),button=form.querySelector('button[type=submit]');button.disabled=true;button.textContent='Sending…';
+  const v=values(),fields=Object.fromEntries(Object.entries(v).filter(([id])=>!['subject','message'].includes(id))),button=form.querySelector('button[type=submit]');button.disabled=true;button.textContent='Sending…';
   try{
    const response=await fetch(form.action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:v.subject,message:v.message,fields,localId:command,turnstileToken:form.elements.namedItem('cf-turnstile-response')?.value,locale:model.locale})});
    const data=await response.json();if(!response.ok){
     result.textContent=data.error||'Your request could not be sent.';
-    if(data.field){const f=model.fields.find(f=>f.id===data.field);if(f){const el=control(f),err=form.querySelector(`#${CSS.escape(`request-${f.id}-error`)}`);el.setAttribute('aria-invalid','true');err.textContent=data.error;err.hidden=false;el.focus();}}
+    if(data.field){const f=model.fields.find(f=>f.id===data.field);if(f){const el=control(f),err=form.querySelector(`#${CSS.escape(`request-${f.id}-error`)}`);if(f.type==='account'&&data.code==='invalid_account')el.value='';el.setAttribute('aria-invalid','true');err.textContent=data.error;err.hidden=false;el.focus();}}
     if(response.status===428){const a=document.createElement('a');a.href=form.dataset.signin;a.target='_blank';a.rel='noopener';a.textContent=' Verify your email, then return here to submit.';result.append(a);}
     await refreshAccounts();if(window.turnstile)window.turnstile.reset();return;
    }

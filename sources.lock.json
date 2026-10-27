@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cebe6e02243fa1262014faa70dc9961ecb1df8c36a2ad49b4f95b21b4eb26298",
+      "sha256": "3ddd780a583c87d7ff2cd8b4c346506aa22952cb43471294f593d7d4e71084db",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "44ecb305ead16d12d6418bd850069983ccc992c4733bb59f61e942516c721f5f",
+      "sha256": "f04eb12576f0d2d1069ac40d71372e401c76b2136415e83a6cac4a9217d2e3ef",
       "executable": false
     },
     "DEMO.md": {
@@ -2616,7 +2616,7 @@
       "executable": false
     },
     "public/site-assets/help_center/request-forms.js": {
-      "sha256": "c734968f68536d5f8dff5b6b26424ed644949ab8a09e2eff3de50208f14e4cd4",
+      "sha256": "1082050c198ffd126d1b03a834cc1e51357778a6f8947afd39fb593a223498ce",
       "executable": false
     },
     "public/site-assets/help_center/surveys.css": {
@@ -4456,7 +4456,7 @@
       "executable": false
     },
     "src/modules/forms/account-lookup.ts": {
-      "sha256": "08b3d56d372397c35783c898da59e6e2960dca4cc68ce59d3b856995d14fcfb5",
+      "sha256": "9a5511cc1f2d9baaa78e25e3b5b5b0152021eefc7a415a6debecf34c0d803857",
       "executable": false
     },
     "src/modules/forms/challenge.ts": {
@@ -4464,7 +4464,7 @@
       "executable": false
     },
     "src/modules/forms/definition.ts": {
-      "sha256": "bcc3187155bbe6d07a3ba1be9407404681ec5fc13b835e802a59e74800a8a718",
+      "sha256": "bf22242daf6d78eb7e3e1df83aadd80996dda30e62d74284c15803ac88b5b02e",
       "executable": false
     },
     "src/modules/forms/erasure.ts": {
@@ -4484,7 +4484,7 @@
       "executable": false
     },
     "src/modules/forms/settings.ts": {
-      "sha256": "57af93d012783e8b65ec573dea5283cd1ca97ba47c01e131a9dcb3c215b91ba3",
+      "sha256": "18fb836e07937a8dc7562b0f9439ddc58cf7da82fdd68d8a87512b8d1932f5f0",
       "executable": false
     },
     "src/modules/forms/store.ts": {
@@ -4500,7 +4500,7 @@
       "executable": false
     },
     "src/modules/forms/validation.ts": {
-      "sha256": "d5ac0b6ce7510617b1cf961a0a3b8a74d783f9b6ad47a19b094371c95e97767d",
+      "sha256": "992ca2d19b3b2efa9d9172d39568f9c01a0892a49b40429d682002545c8c7ce1",
       "executable": false
     },
     "src/modules/identity/accounts.ts": {
@@ -10344,7 +10344,7 @@
       "executable": false
     },
     "src/ui/native/pages/request-forms/ConditionEditor.jsx": {
-      "sha256": "a0e3e73892e50866b2ddb96eb65c1d0696ee74cac059194257d712fac1cde352",
+      "sha256": "16732f7767f45a415b13b90a1edaae321bdcfc5f1864e4526d9bd447dde5fd6a",
       "executable": false
     },
     "src/ui/native/pages/request-forms/form-model.js": {
@@ -11116,11 +11116,11 @@
       "executable": false
     },
     "tests/helpers/account-lookup-browser.mjs": {
-      "sha256": "8114f26204f9042d517b1a0bd49e09c1bf2788243a4f1ff85d6f675f44ac72aa",
+      "sha256": "59c677856cea7a89d6c499fdf83e5508a34878de90484d1ca68e641bafdec868",
       "executable": false
     },
     "tests/helpers/account-lookup-journey.mjs": {
-      "sha256": "02a9ddc2e58e7a60d8fc83395864a6582870875eefac324a5cef7ff195e2ef51",
+      "sha256": "66416520e12901cd0a83ca77c6dcb45169689a878d5aa8c4567f784fb5afcdfb",
       "executable": false
     },
     "tests/helpers/ai/answers.mjs": {

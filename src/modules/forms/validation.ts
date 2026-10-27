@@ -24,7 +24,8 @@ export function validateSubmission(form:PublicForm,body:unknown):Submission{
  const accepted:Record<string,unknown>=Object.create(null)
  for(const f of form.fields){if(['subject','message'].includes(f.id))continue
   const value=values[f.id]
-  if(!visibleField(f,accepted)){if(value!==undefined&&value!==null&&value!=='')fieldError(f.id,'inactive_field','This field is not active for your choices');continue}
+  const unsetAccountCondition=f.condition?.operator!=='present'&&f.condition?.value===''&&form.fields.some(source=>source.id===f.condition?.fieldId&&source.type==='account')
+  if(unsetAccountCondition||!visibleField(f,accepted)){if(value!==undefined&&value!==null&&value!=='')fieldError(f.id,'inactive_field','This field is not active for your choices');continue}
   if(f.required&&(value===null||value===undefined||value===''||typeof value==='string'&&!value.trim()||Array.isArray(value)&&!value.length))fieldError(f.id,'required',`${f.label} is required`)
   try{accepted[f.id]=validateFieldValue({name:f.label,type:f.type,required:f.required?1:0,options_json:JSON.stringify(f.options.map(o=>o.value)),validation_json:JSON.stringify(f.validation)},value)}catch(error){fieldError(f.id,'invalid',error instanceof Error?error.message:`Invalid ${f.label}`)}
  }

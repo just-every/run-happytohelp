@@ -6,6 +6,7 @@ import {spawnSync} from 'node:child_process';
 import {readFile, writeFile, mkdir, rm, copyFile} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {recoveryRuntime} from './runtime.mjs';
+import {restoredKnowledgeReady} from './knowledge-ready.mjs';
 import {snapshot, compareSnapshots, summarize, sha256} from './snapshot.mjs';
 import {seedJourney, verifyAccess, verifyFreshLogin, verifyRestoredApi, eraseRecoveryIssuer, setupToken} from './journey.mjs';
 
@@ -102,6 +103,7 @@ try {
   assert.equal(spawnSync('python3', [resolve('scripts/independent/delegation-backup.py'), repeatExport, repeatBackup]).status, 0);
   assert.equal(await readFile(repeatBackup, 'utf8'), backup, 'a backup of the restored install is identical to the backup it came from');
   await restored.start();
+  await restoredKnowledgeReady(restored,journey.owner.projectId);
   await verifyAccess(restored, journey, journey.owner.token);
   await verifyFreshLogin(restored, journey);
   await verifyRestoredApi(restored, journey);

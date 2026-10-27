@@ -14,7 +14,10 @@ export default function EscalationForm({base, connections, messages, onChanged, 
     const [preview, setPreview] = useState(null), [requestId, setRequestId] = useState(null);
     const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
     useEffect(() => {
-        if (error) errorRef.current?.scrollIntoView({block: 'nearest'});
+        if (error) {
+            errorRef.current?.scrollIntoView({block: 'nearest'});
+            errorRef.current?.focus({preventScroll: true});
+        }
     }, [error]);
     const connection = available.find(item => item.provider === provider);
     const slack = ['slack', 'teams'].includes(provider);
@@ -75,12 +78,12 @@ export default function EscalationForm({base, connections, messages, onChanged, 
                     {dependency.trim() && <p>Dependency: {dependency}</p>}
                     <pre>{preview}</pre>
                     <p className="escalation-hint">Only this selected context will be shared. Attachment links expire after seven days.</p>
-                    {error && <p ref={errorRef} className="escalation-error" role="alert">{error}</p>}
+                    {error && <p ref={errorRef} className="escalation-error" role="alert" tabIndex={-1}>{error}</p>}
                     <button className="btn btn-sm btn-primary" type="button" onClick={share}>{slack ? `Share selected context to ${providerNames[provider]}` : mode === 'create' ? 'Create issue with selected context' : 'Link issue with selected context'}</button>
                 </section>}
             </fieldset>
         </form>
-        {error && preview === null && <p ref={errorRef} className="escalation-error" role="alert">{error}</p>}
+        {error && preview === null && <p ref={errorRef} className="escalation-error" role="alert" tabIndex={-1}>{error}</p>}
         {notice && <p className="escalation-hint" role="status">{notice}</p>}
     </div>;
 }

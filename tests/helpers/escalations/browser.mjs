@@ -56,7 +56,7 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  await open(records[0]);await panel().locator('.escalation-connections > summary').click();
  for(const name of ['github','linear','jira','slack','teams']){
   const form=panel().locator('.escalation-provider').filter({has:page.locator(`button`).filter({hasText:`Save ${name==='github'?'GitHub':name==='jira'?'Jira':name==='slack'?'Slack':name==='teams'?'Teams':'Linear'} connection`})});
-  await form.locator('summary').click();const p=providers[name];await form.locator('[name=target]').fill(p.target);await form.locator('[name=base_url]').fill(p.baseUrl);
+  await form.locator('summary').click();const p=providers[name];if(name==='teams'&&width===390){const [team,channel]=p.target.split('/');const example=(await form.locator('[name=target]').getAttribute('placeholder')).replace('Team UUID',team).replace('channel ID',channel).replaceAll(' ','');await form.locator('[name=target]').fill(example)}else await form.locator('[name=target]').fill(p.target);await form.locator('[name=base_url]').fill(p.baseUrl);
   await form.locator('[name=token]').fill(name==='jira'?'synthetic-jira-token':p.token);
   if(name==='jira')await form.locator('[name=email]').fill('engineer@example.test');
   if(!['slack','teams'].includes(name))await form.locator('[name=webhook_secret]').fill(p.secret);
@@ -87,16 +87,19 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  const teamsResponse=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname===base+`/conversations/${records[0].ticket.id}/teams`);
  await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();assert.equal((await teamsResponse).status(),201);await dialog().waitFor({state:'detached'});
  await panel().getByRole('link',{name:`Handoff to ${providers.teams.target}`,exact:true}).waitFor();await shot('teams-shared');await panel().locator('.escalation-handoff').last().scrollIntoViewIfNeeded();await page.screenshot({path:join(directory,`${width}-teams-handoff-rows.png`)});await measureTargets(panel(),'linked issues and handoffs');
+ if(width===390)for(const row of await panel().locator('.escalation-handoff').all()){const layout=await row.evaluate(node=>{const link=node.querySelector('a').getBoundingClientRect(),status=node.lastElementChild.getBoundingClientRect();return {linkBottom:link.bottom,statusTop:status.top}});assert.ok(layout.statusTop>=layout.linkBottom-1,'handoff status has its own line below the link')}
  const teamsFailure=async(kind,response)=>{
   if(response)providers.teams.responses.push(response);await escalate();await dialog().getByLabel('Destination',{exact:true}).selectOption('teams');await dialog().locator('.escalation-context input[type=checkbox]').first().check();await dialog().getByRole('button',{name:'Preview selected context',exact:true}).click();
-  await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();await dialog().getByRole('alert').waitFor();
+  const share=dialog().getByRole('button',{name:'Share selected context to Teams',exact:true});
+  if(kind==='refused'){await share.focus();await page.keyboard.press('Enter')}else await share.click();await dialog().getByRole('alert').waitFor();
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   const outcome=await dialog().getByRole('alert').evaluate(node=>{
    const box=node.getBoundingClientRect();let top=0,bottom=innerHeight;
    for(let parent=node.parentElement;parent;parent=parent.parentElement){if(/auto|scroll|hidden|clip/.test(getComputedStyle(parent).overflowY)){const rect=parent.getBoundingClientRect();top=Math.max(top,rect.top);bottom=Math.min(bottom,rect.bottom)}}
-   return {top:box.top,height:box.height,visible:Math.max(0,Math.min(bottom,box.bottom)-Math.max(top,box.top))};
+   return {focused:document.activeElement===node,top:box.top,height:box.height,visible:Math.max(0,Math.min(bottom,box.bottom)-Math.max(top,box.top))};
   });
   await writeFile(join(directory,`${width}-teams-${kind}-visibility.json`),JSON.stringify(outcome,null,2));
+  if(width===390)assert.ok(outcome.focused,`${kind} outcome must receive focus immediately after Share`);
   if(width===390)assert.ok(outcome.visible>=outcome.height-1,`${kind} outcome must be fully visible immediately after Share: ${JSON.stringify(outcome)}`);
   await page.screenshot({path:join(directory,`${width}-teams-${kind}.png`)});
   await dialog().getByRole('button',{name:'Close dialog',exact:true}).click();await section();await panel().getByRole('button',{name:'Refresh status',exact:true}).click();await panel().getByText(kind==='uncertain'?/Teams outcome is unknown/:/Teams outcome was refused/).first().waitFor();await shot('teams-'+kind+'-outcome');await measureTargets(panel(),'outcome '+kind);

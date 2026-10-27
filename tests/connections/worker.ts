@@ -28,7 +28,8 @@ function meteredDatabase(db:D1Database){
 }
 export default {async fetch(request:Request,env:any,ctx:ExecutionContext){
  // Only isolated fixture Workers can pin time; the production app has no clock header or binding.
- Date.now=env.TEST_NOW===undefined?realNow:()=>Number(env.TEST_NOW)
+ const now=request.headers.get('X-Test-Now')
+ Date.now=now===null?realNow:()=>Number(now)
  if(request.headers.get('X-Test-Meter')==='1'){
   const meter=meteredDatabase(env.DB),response=await app.fetch(request,{...env,DB:meter.database},ctx),out=new Response(response.body,response)
   out.headers.set('X-Test-D1',JSON.stringify(meter.metrics));return out

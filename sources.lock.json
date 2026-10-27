@@ -10924,7 +10924,7 @@
       "executable": false
     },
     "tests/connections/api-create.mjs": {
-      "sha256": "2d2bdd1aa558d79e56e7d67142d782f73b8dc8e3a0032cf1bdf5dc6a5b91eb46",
+      "sha256": "cf55a6c1a6a3667dd45c755c50c0b2f108ff8043ac1ca0106032bfb80aedf889",
       "executable": false
     },
     "tests/connections/api.mjs": {
@@ -10960,7 +10960,7 @@
       "executable": false
     },
     "tests/connections/harness.mjs": {
-      "sha256": "d8e99b8a17b7ce89fc85bf3fd7dd5be10df85c2e3446c86b612118084118b244",
+      "sha256": "225ebf4d7472be843ca3e70b054288167bcd713240bfedd7a0b7297834a2b92f",
       "executable": false
     },
     "tests/connections/inventory.mjs": {
@@ -10988,7 +10988,7 @@
       "executable": false
     },
     "tests/connections/worker.ts": {
-      "sha256": "a532dcdd3e71de62514aa4b63e099e15b61b930750d4b6cb600398323616d0e9",
+      "sha256": "c391fb7046e347c94b9a3e69b7dcdc2a63351d60cfbd0a2a83cba762b8c40def",
       "executable": false
     },
     "tests/deleted-background-worker.ts": {

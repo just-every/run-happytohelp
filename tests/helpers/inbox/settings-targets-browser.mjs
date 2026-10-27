@@ -96,7 +96,7 @@ export async function settingsTargetsBrowser({page,origin,tenant,audit}) {
   await audit(page,`${width}-notifications-alignment`);
   measurements.push({width,appearance,availability,notifications});
  }
- const directory=resolve(process.env.H2H_EVIDENCE_DIR||'test-results/appearance');await mkdir(directory,{recursive:true});
+ const directory=resolve(process.env.H2H_EVIDENCE_DIR||'./test-results/appearance');await mkdir(directory,{recursive:true});
  await writeFile(join(directory,'settings-targets.json'),JSON.stringify(measurements,null,2));
  console.log('Settings targets:',JSON.stringify(measurements));
 }

@@ -1572,7 +1572,7 @@
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "182956059a2b12e6095e4e303f8652756a27fa92a189e3ea6c2dc302f0ebb99e",
+      "sha256": "f39ae85aea2f531b94aaaf88d1d67ee61e19df2fb844af5079da3b90a2f2af3e",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "0fe92ebe4784e3d133d339f62000b129c6de8ba46b6935d9fd81c1a898e44650",
+      "sha256": "53c3a02f652dc89262a8712fbacdb53c9ac2a836f0f90c5ed95bbd17413b4dd9",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a6a58899701cddfdcd6f76e836318b113e6c5976e886b7d9e5017d76e03e595d",
+      "sha256": "53505756b1702469d4e6970133ef1f4e5d342d2d0dfbe0fd8253aff6a118b21e",
       "executable": false
     },
     "DEMO.md": {
@@ -9148,7 +9148,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_workspace-settings.scss": {
-      "sha256": "1917ec9f6a56ace3cdf3c880a51f714fb62d77cc23e18d436814ccca4d9cc898",
+      "sha256": "435e1f991f231a9aa0cc89d9b9c6bf4f9d5dc609175d2ed0fa813237a00f5bbe",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_workspace-surfaces.scss": {
@@ -10256,7 +10256,7 @@
       "executable": false
     },
     "src/ui/native/pages/project-parity.css": {
-      "sha256": "2d9e6be3d107921aeade746fa08eefd8dd7d6ac99c75ba4ea6ba380790db071d",
+      "sha256": "b84f71d11f9a847f79611b219dd34a795ccd20ca40fd8b8a3340832211cf9351",
       "executable": false
     },
     "src/ui/native/pages/ProjectControls.jsx": {
@@ -11664,7 +11664,7 @@
       "executable": false
     },
     "tests/helpers/inbox/settings-targets-browser.mjs": {
-      "sha256": "382cb8500f700ceb9b921bb20250a2ad31711e8f3f45fb7b73bf7e518b7d91b0",
+      "sha256": "0543a8a0a4e9e1cf707d2f585cf0e5b6e8c311d9616a817979d7d856fbd23586",
       "executable": false
     },
     "tests/helpers/inbox/start-menu-browser.mjs": {

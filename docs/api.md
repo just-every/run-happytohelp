@@ -372,3 +372,28 @@ oversized bodies or content with 413 `payload_too_large`.
 Exports carry the credential entity as metadata, without bearer hashes or
 secrets. Restore revokes every credential and every secret; imported requests
 remain inert and do not replay.
+
+
+### Teams ticket handoffs
+
+The selected-context escalation dialog supports a Teams channel configured by a
+workspace owner or administrator. Use a Microsoft Graph delegated token with
+`ChannelMessage.Send` permission and a target consisting of the team UUID, a slash,
+and the channel ID. The configured Graph origin is fixed; provider redirects are
+refused. Tokens remain encrypted workspace credentials and exports strip them.
+An expired token requires deliberate reconnection; there is no automatic refresh.
+
+`POST /api/escalations/projects/:projectId/conversations/:conversationId/teams`
+uses the existing selected `message_ids`, `attachment_ids` and `request_id` fields.
+Only the configured channel is eligible. Preview does not send; confirmation sends
+plain text containing the ticket reference and chosen context. A successful result
+retains the Teams message link. An explicit authentication or permission refusal
+is recorded as failed. Other delivery failures remain uncertain and neither state
+is automatically replayed. Repeating the same completed request returns its stored
+result; concurrent claims send at most once. The installing administrator must
+still have integration installation authority when the send starts.
+
+Sharing a handoff never publishes a customer reply or confirms recovery. An
+operator writes and explicitly sends any customer update in the ordinary reply
+composer. Teams inbound status and automatic fix-shipped drafts are not implemented.
+The ESCALATION-001 clause remains partial pending policy and live qualification.

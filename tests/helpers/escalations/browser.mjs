@@ -44,12 +44,12 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
   await page.screenshot({path:join(directory,`${width}-${name}.png`)});
  };
  await open(records[0]);await panel().locator('.escalation-connections > summary').click();
- for(const name of ['github','linear','jira','slack']){
-  const form=panel().locator('.escalation-provider').filter({has:page.locator(`button`).filter({hasText:`Save ${name==='github'?'GitHub':name==='jira'?'Jira':name==='slack'?'Slack':'Linear'} connection`})});
+ for(const name of ['github','linear','jira','slack','teams']){
+  const form=panel().locator('.escalation-provider').filter({has:page.locator(`button`).filter({hasText:`Save ${name==='github'?'GitHub':name==='jira'?'Jira':name==='slack'?'Slack':name==='teams'?'Teams':'Linear'} connection`})});
   await form.locator('summary').click();const p=providers[name];await form.locator('[name=target]').fill(p.target);await form.locator('[name=base_url]').fill(p.baseUrl);
   await form.locator('[name=token]').fill(name==='jira'?'synthetic-jira-token':p.token);
   if(name==='jira')await form.locator('[name=email]').fill('engineer@example.test');
-  if(name!=='slack')await form.locator('[name=webhook_secret]').fill(p.secret);
+  if(!['slack','teams'].includes(name))await form.locator('[name=webhook_secret]').fill(p.secret);
   // The local Jira fake accepts OAuth as well as the form's standard Basic token.
   if(name==='jira')p.authorizations.add('Basic '+Buffer.from('engineer@example.test:synthetic-jira-token').toString('base64'));
   await form.getByRole('button',{name:/Save .* connection/}).click();if(password&&name==='github'){const dialog=page.getByRole('dialog');await dialog.getByLabel('Your password',{exact:true}).waitFor();await page.screenshot({path:join(directory,`${width}-credential-step-up.png`)});await dialog.getByLabel('Your password',{exact:true}).fill(password);await dialog.getByRole('button',{name:'Confirm',exact:true}).click();}await form.getByText('Connected to',{exact:false}).waitFor();assert.equal(await form.locator('[name=token]').inputValue(),'');await shot('connection-'+name);await form.locator('summary').click();
@@ -69,6 +69,20 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  await escalate();await dialog().getByLabel('Destination',{exact:true}).selectOption('slack');await dialog().getByLabel('Slack channel ID',{exact:true}).fill('C12345678');await dialog().locator('.escalation-context input[type=checkbox]').first().check();await dialog().getByRole('button',{name:'Preview selected context',exact:true}).click();await shot('preview-slack');const postedResponse=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname===base+`/conversations/${records[0].ticket.id}/slack`);await dialog().getByRole('button',{name:'Share selected context to Slack',exact:true}).click();assert.equal((await postedResponse).status(),201);await dialog().waitFor({state:'detached'});await panel().getByRole('link',{name:'Handoff to C12345678',exact:true}).waitFor();
  for(let n=1;n<3;n++)await req(base+`/conversations/${records[n].ticket.id}/slack`,{channel:'C12345678',message_ids:[records[n].message.id],attachment_ids:[],request_id:crypto.randomUUID()});
  await panel().getByRole('button',{name:'Refresh status',exact:true}).click();await page.waitForTimeout(250);await shot('linked-issues-and-handoff');
+ await escalate();await dialog().getByLabel('Destination',{exact:true}).selectOption('teams');
+ await dialog().locator('.escalation-context input[type=checkbox]').first().check();await dialog().getByRole('button',{name:'Preview selected context',exact:true}).click();await shot('preview-teams');
+ const close=dialog().getByRole('button',{name:'Close dialog',exact:true});await page.keyboard.press('Tab');await close.focus();await page.locator('[role=tooltip]').filter({hasText:/^Close dialog$/}).waitFor();await page.screenshot({path:join(directory,`${width}-teams-close-tooltip.png`)});
+ if(width===390){for(const control of [close,dialog().getByRole('button',{name:'Share selected context to Teams',exact:true})]){const box=await control.boundingBox();assert.ok(box&&box.width>=44&&box.height>=44,'phone confirmation and close targets are at least 44 pixels');}}
+
+ const teamsResponse=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname===base+`/conversations/${records[0].ticket.id}/teams`);
+ await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();assert.equal((await teamsResponse).status(),201);await dialog().waitFor({state:'detached'});
+ await panel().getByRole('link',{name:`Handoff to ${providers.teams.target}`,exact:true}).waitFor();await shot('teams-shared');
+ const teamsFailure=async(kind,response)=>{
+  providers.teams.responses.push(response);await escalate();await dialog().getByLabel('Destination',{exact:true}).selectOption('teams');await dialog().locator('.escalation-context input[type=checkbox]').first().check();await dialog().getByRole('button',{name:'Preview selected context',exact:true}).click();
+  await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();await dialog().getByRole('alert').waitFor();await page.screenshot({path:join(directory,`${width}-teams-${kind}.png`)});
+  await dialog().getByRole('button',{name:'Close dialog',exact:true}).click();await section();await panel().getByRole('button',{name:'Refresh status',exact:true}).click();await panel().getByText(kind==='refused'?/Teams outcome was refused/:/Teams outcome is unknown/).first().waitFor();await shot('teams-'+kind+'-outcome');
+ };
+ await teamsFailure('refused',{status:403,body:{error:{code:'Forbidden'}}});await teamsFailure('uncertain',{disconnect:true});
  const t=Date.now()+20000;
  for(const [i,name] of ['github','linear','jira'].entries()){
   const p=providers[name],key=name==='linear'?[...p.issues.values()].find(x=>x.identifier===links[i].key).id:links[i].key,event=p.webhook(key,{closed:true,assignee:'Avery Engineer',updatedAt:t}),payload=JSON.parse(event.body);p.issues.set(String(name==='github'?payload.issue.number:name==='linear'?payload.data.id:payload.issue.key),payload.data??payload.issue);

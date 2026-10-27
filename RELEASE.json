@@ -102,6 +102,10 @@
       "buyerSteps": "MOVE-IN-002: apply after 256 before serving the updated Worker. Adds bounded explicitly supplied Freshdesk attachment payloads with native media and private-note ownership. Existing messages and attachments remain unchanged. Back up and restore the new table with native data; erasure and guarded undo remove payloads with their media. No source URL is retrieved and this migration sends nothing. During an upgrade, existing private-note transcripts remain readable before this migration: the reader checks table presence explicitly and includes imported payloads only after the table exists. Database query failures still propagate; attachment imports require this migration."
     },
     {
+      "id": "257_sla_slack.sql",
+      "buyerSteps": "Apply after 256 and before serving the updated Worker. Adds explicit Slack escalation destination consent and durable delivery outcomes to SLA policies and alerts. Existing policies stay unconfigured and existing alerts never gain a send. Retain terminal and uncertain outcomes across upgrades; archived pending sends must not replay."
+    },
+    {
       "id": "258_account_lookup_fields.sql",
       "buyerSteps": "FORMS-001: apply after 257 before serving the updated Worker. Extend native ticket fields with account lookups while retaining existing definitions, historical typed values and workflow journaling. Back up and restore with the native data. Account choices require verified current explicit membership and a deliberately published field; company ticket visibility grants no lookup eligibility."
     }

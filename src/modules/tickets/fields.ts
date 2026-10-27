@@ -1,7 +1,7 @@
 import {HTTPException} from 'hono/http-exception'
 import {invalid,named,object,fieldAllowed} from './model'
 import type {MemberAccess} from '../access/gate'
-export const fieldTypes=['text','number','decimal','date','dropdown','multiselect','checkbox','regex'] as const
+export const fieldTypes=['text','number','decimal','date','dropdown','multiselect','checkbox','regex','account'] as const
 export function checkedPattern(value:unknown){if(typeof value!=='string'||!value||value.length>200||/[()|]/.test(value)||/\\[1-9]/.test(value))invalid('Pattern must be at most 200 characters without groups, alternatives or backreferences');const operators=value.replace(/\[(?:\\.|[^\]\\])*\]/g,'X').replace(/\\./g,'X');if((operators.match(/[*+?]|\{\d+,/g)??[]).length>1)invalid('Pattern may have at most one variable-length repetition');try{return new RegExp(value,'u')}catch{invalid('Invalid field pattern')}}
 export function fieldDefinition(body:unknown){
  const b=object(body),name=named(b.name),type=b.type
@@ -9,6 +9,7 @@ export function fieldDefinition(body:unknown){
  if(b.required!==undefined&&typeof b.required!=='boolean')invalid('Required must be boolean')
  const options=b.options??[],validation=object(b.validation??{}),read=b.read_roles??[],write=b.write_roles??[]
  if(!Array.isArray(options)||options.length>100||options.some(x=>typeof x!=='string'||!x.trim()||x.length>120)||new Set(options).size!==options.length)invalid('Field options must be unique text values')
+ if(type==='account'&&(options.length||Object.keys(validation).length))invalid('Account choices come from current customer membership')
  if(['dropdown','multiselect'].includes(type)&&!options.length)invalid('Choice fields need options')
  for(const roles of [read,write])if(!Array.isArray(roles)||roles.length>100||roles.some(x=>typeof x!=='string'||!x||x.length>200))invalid('Field roles must be role IDs')
  if(Object.keys(validation).some(k=>!['min','max','pattern'].includes(k)))invalid('Unknown field validation')
@@ -27,6 +28,7 @@ export function validateFieldValue(field:any,value:unknown){
   case 'number':case 'decimal':if(typeof value!=='number'||!Number.isFinite(value)||field.type==='number'&&!Number.isSafeInteger(value))bad(field.type==='number'?'Enter a whole number':'Enter a decimal number');if(v.min!==undefined&&(value as number)<v.min||v.max!==undefined&&(value as number)>v.max)bad('Number outside allowed range');break
   case 'checkbox':if(typeof value!=='boolean')bad('Enter true or false');break
   case 'date':if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value)||!Number.isFinite(Date.parse(value))||new Date(value).toISOString().slice(0,10)!==value)bad('Enter a valid YYYY-MM-DD date');break
+  case 'account':if(typeof value!=='string'||!value.trim()||value.length>200)bad('Choose an available account');break
   case 'dropdown':if(typeof value!=='string'||!options.includes(value))bad('Choose an available option');break
   case 'multiselect':if(!Array.isArray(value)||value.length>100||value.some(x=>typeof x!=='string'||!options.includes(x))||new Set(value).size!==value.length)bad('Choose unique available options');if(field.required&&!(value as unknown[]).length)bad('Required');break
   default:bad('Unknown field type')

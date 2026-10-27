@@ -1,3 +1,4 @@
+import {withAccountChoices} from './account-lookup'
 import {Hono} from 'hono'
 import {bodyLimit} from 'hono/body-limit'
 import {HTTPException} from 'hono/http-exception'
@@ -9,13 +10,19 @@ import {readPortalPreferences} from '../portal/preferences'
 export const publicForms=new Hono<AppEnv>()
 publicForms.use('*',bodyLimit({maxSize:2000000,onError:c=>c.json({error:'Request exceeds the form size limit'},413)}))
 publicForms.use('*',async(c,next)=>{c.header('Cache-Control','no-store');await next()})
-async function requestedLocale(c:any){
- if(c.req.query('locale'))return c.req.query('locale')
+async function requestedContext(c:any){
  const identity=await resolvePortalActor(c.env,c.req.param('projectId'),c.req.raw)
- return identity?(await readPortalPreferences(c.env,identity)).locale:undefined
+ const locale=c.req.query('locale')||(identity?(await readPortalPreferences(c.env,identity)).locale:undefined)
+ return {locale,contactId:identity?.actor.contactId??identity?.actor.id}
 }
-publicForms.get('/:projectId',async c=>c.json({data:await listForms(c.env,c.req.param('projectId'),await requestedLocale(c))}))
-publicForms.get('/:projectId/:formId',async c=>c.json({data:await readForm(c.env,c.req.param('projectId'),c.req.param('formId'),await requestedLocale(c))}))
+publicForms.get('/:projectId',async c=>{
+ const {locale,contactId}=await requestedContext(c),forms=await listForms(c.env,c.req.param('projectId'),locale)
+ return c.json({data:await Promise.all(forms.map(form=>withAccountChoices(c.env,form,contactId)))})
+})
+publicForms.get('/:projectId/:formId',async c=>{
+ const {locale,contactId}=await requestedContext(c),form=await readForm(c.env,c.req.param('projectId'),c.req.param('formId'),locale)
+ return c.json({data:await withAccountChoices(c.env,form,contactId)})
+})
 publicForms.post('/:projectId/:formId/submissions',async c=>{
  const origin=c.req.header('Origin');if(origin&&origin!==new URL(c.req.url).origin)throw new HTTPException(403,{message:'Cross-origin request denied'})
  const result=await submitRequest(c.env,{projectId:c.req.param('projectId'),formId:c.req.param('formId'),body:await c.req.json(),request:c.req.raw,channel:'form',defer:delivery=>c.executionCtx.waitUntil(delivery)})

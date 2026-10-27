@@ -28,6 +28,7 @@
 .request-form-wording { min-width: 0; border: 0; border-top: 1px solid var(--rule); margin: 0; padding: 20px 0 0; }
 .request-form-wording legend { float: none; width: auto; font-size: 15px; font-weight: 600; margin-bottom: 16px; padding-right: 8px; }
 @media (max-width: 650px) {
+    .request-form-field__actions button { min-width: 44px; min-height: 44px; }
     .request-form-basics, .request-form-condition__controls { grid-template-columns: 1fr; gap: 0; }
     .request-forms-list__item, .request-form-field__heading { flex-direction: column; gap: 12px; }
     .request-form-field { padding: 16px; }

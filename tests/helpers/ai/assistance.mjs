@@ -30,6 +30,10 @@ export async function assistanceJourney(){
   const responses=JSON.parse(suggested.output_json).result.responses;assert.equal(responses.length,3);assert.ok(responses.every(response=>/^message:/.test(response.evidence_ids[0])))
   assert.equal((await app.first('SELECT COUNT(*) n FROM ai_round_usage u JOIN ai_attempts t ON t.id=u.attempt_id WHERE t.generation_id=?',first.data.id)).n,2)
   assert.equal((await v.transcript()).messages.length,1,'suggestions never send')
+  const trace=(await app.call(`/api/ai-support/projects/${p}/conversations/${v.conversationId}/trace`,{token:a.owner,status:200})).data.generations[0]
+  assert.equal(trace.approval,'explicit operator request');assert.equal(trace.requestedScope,'operator suggestions')
+  assert.equal(trace.committedAnswer,null);assert.equal(trace.result,'no committed answer');assert.equal(trace.usage.length,2)
+  assert.equal(trace.usage[0].inputTokens,5);assert.equal(trace.providerCostUsd,null)
   // A failing or repeated alternative fails the whole suggestion: no primary card alone.
   for(const alternatives of [()=>new Response(JSON.stringify({error:{message:'second stage rejected'}}),{status:503}),body=>({alternatives:[card('Cancel','Open Orders and choose Cancel.',body)],missing_information:[]})]){
    ai.respond=body=>body.text?.format?.name==='agent_suggestion_alternatives'?alternatives(body):{user_goal:'Cancel an order',responses:[card('Cancel','Open Orders and choose Cancel.',body)],missing_information:[]}

@@ -41,13 +41,17 @@ export async function knowledgeErasureJourney(k,{category,article,customer,peer,
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:peer.token})).status,404,'issuer erasure never makes a collection public')
  const inventory=await catalogue(app.db,policy(archivePolicy))
  assert.ok(inventory.excludedTables.includes('knowledge_read_receipts'),'portable backup excludes live receipt content')
+ assert.ok(inventory.tables.some(row=>row.name==='knowledge_reply_sources'),'portable backup retains compose fences')
  assert.ok(inventory.tables.some(row=>row.name==='knowledge_collection_entitlements'),'portable backup retains explicit grants')
  assert.ok(inventory.tables.find(row=>row.name==='knowledge_categories').columns.some(column=>column.name==='requires_entitlement'),'portable backup retains the restriction flag')
  await knowledgeArchiveRoundtrip(app,{project:p,category,grant:before,outside})
+ const fences=await app.sql('SELECT * FROM knowledge_reply_sources WHERE project_id=?',p)
+ assert.ok(fences.length,'composition provenance survives sends')
  const erase=`/api/management/projects/${p}/contacts/${customer}/erase`
  assert.equal((await app.call(erase,{token:k.owner.tokens.operator,body:{}})).status,403)
  await call(erase,{body:{},status:200})
  assert.equal(await grant(),null)
+ assert.deepEqual(await app.sql('SELECT * FROM knowledge_reply_sources WHERE project_id=?',p),[],'contact erasure removes ticket provenance')
  assert.deepEqual(await app.sql('SELECT token FROM knowledge_read_receipts WHERE project_id=?',p),[],'personal and conversation-linked receipts are erased')
  assert.ok(await app.first("SELECT token FROM knowledge_read_receipts WHERE token='knowledge-other-receipt'"))
  assert.equal((await app.first('SELECT requires_entitlement FROM knowledge_categories WHERE id=?',category)).requires_entitlement,1,'erasing the last entitled contact keeps the collection restricted')
@@ -57,6 +61,7 @@ export async function knowledgeErasureJourney(k,{category,article,customer,peer,
 }
 
 async function knowledgeArchiveRoundtrip(app,{project,category,grant,outside}){
+ const fences=await app.sql('SELECT * FROM knowledge_reply_sources ORDER BY project_id,conversation_id,source_id,source_version')
  const portable=async app=>createPortability({db:app.db,buckets:{FILES:await app.files},policy:archivePolicy})
  const transfer=await portable(app),id=await transfer.exports.create()
  let status
@@ -70,6 +75,7 @@ async function knowledgeArchiveRoundtrip(app,{project,category,grant,outside}){
   const closing=records.at(-1)
   assert.equal((await restored.imports.finalize(importId,{archiveHash:closing.archiveHash,contentHash:closing.contentHash})).phase,'complete')
   assert.equal((await destination.first('SELECT count(*) n FROM knowledge_read_receipts')).n,0)
+  assert.deepEqual(await destination.sql('SELECT * FROM knowledge_reply_sources ORDER BY project_id,conversation_id,source_id,source_version'),fences,'restored compose fences cannot widen access')
   assert.deepEqual(await destination.first('SELECT * FROM knowledge_collection_entitlements WHERE project_id=? AND category_id=?',project,category),grant,'portable restore retains explicit entitlement provenance')
   assert.deepEqual(await destination.sql('SELECT * FROM knowledge_collection_entitlements WHERE project_id<>?',project),outside)
   assert.equal((await destination.first('SELECT requires_entitlement FROM knowledge_categories WHERE id=?',category)).requires_entitlement,1)

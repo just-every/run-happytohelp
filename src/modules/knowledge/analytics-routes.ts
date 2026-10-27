@@ -1,3 +1,4 @@
+import {preparedArticleSql} from './delivery'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -35,6 +36,13 @@ analyticsRoutes.post('/:projectId/conversations/:conversationId/articles/:articl
  const articles=await listAccessibleArticles(c.env,pid,{conversationId:c.req.param('conversationId'),access:await conversationAccess(c),locale:body.locale}),article=articles.find(a=>a.id===c.req.param('articleId'))
  if(!article)throw new HTTPException(404,{message:'Article not available to this customer'})
  const url=new URL(articleCanonicalUrl({...c.env,APP_ORIGIN:c.env.APP_ORIGIN||new URL(c.req.url).origin},pid,article.slug));if(article.locale!=='en')url.searchParams.set('locale',article.locale)
+ // Persist before returning any composer bytes. This guard rechecks authority
+ // in the same statement that records the source; clients cannot omit it later.
+ const prepared=await c.env.DB.prepare(`INSERT OR IGNORE INTO knowledge_reply_sources(project_id,conversation_id,source_id,source_version) SELECT c.project_id,c.id,?,? FROM conversations c WHERE c.project_id=? AND c.id=? AND ${preparedArticleSql()} RETURNING source_id`).bind(`article:${article.id}`,article.publication_version,pid,c.req.param('conversationId'),article.id,article.publication_version).all()
+ if(!prepared.results.length){
+  // An already recorded source is still subject to the live predicate.
+  if(!await c.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.project_id=? AND c.id=? AND EXISTS(SELECT 1 FROM knowledge_reply_sources ks WHERE ks.project_id=c.project_id AND ks.conversation_id=c.id AND ks.source_id='article:'||? AND ks.source_version=?) AND ${preparedArticleSql()}`).bind(pid,c.req.param('conversationId'),article.id,article.publication_version,article.id,article.publication_version).first())throw new HTTPException(409,{message:'Knowledge authority changed; prepare the reply again'})
+ }
  await auditStatement(c.env.DB,{projectId:pid,category:'data',action:'knowledge.article.insert_prepared',actor:{type:'user',id:c.get('actor').id},source:requestSource(c),target:{type:'article',id:article.id},detail:{conversationId:c.req.param('conversationId'),mode:body.mode,locale:article.locale}}).run()
  return c.json({text:body.mode==='text'?article.content:`[${article.title.replace(/[\[\]\\]/g,'')}](${url.href})`,url:url.href,title:article.title})
 })

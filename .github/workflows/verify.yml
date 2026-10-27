@@ -2,7 +2,7 @@ name: Verify
 
 on:
   push:
-    branches: [main, release/0.3.x, release/0.4.x, cloud/hh-know-c1-r4]
+    branches: [main, release/0.3.x, release/0.4.x]
   pull_request:
   workflow_dispatch:
 

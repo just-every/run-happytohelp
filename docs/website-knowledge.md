@@ -112,3 +112,16 @@ from older archives. Customer erasure removes their grants, receipts and linked
 events. Member erasure retains scoped pseudonymous grant provenance without
 making a collection public. Back up the installation and apply missing migrations
 once, in ledger order, before serving the updated Worker; never reset to upgrade.
+
+Unreleased migration `258_knowledge_reply_sources.sql`, after 257, adds
+`knowledge_reply_sources` for durable ticket composition provenance. Before article
+text or a link leaves the insertion door, the server records its source and
+publication version. All operator, API, email, saved-reply and AI-draft sends use
+the same atomic admission fence, including replay. The fence accumulates across
+edits and sends: clients cannot prove previously retrieved material was removed.
+A changed grant, publication or additional participant refuses the send; prepare
+new content only after authority is restored. Backups retain these identifier-only
+fences, independently of audit retention. Contact erasure removes its ticket
+fences. Non-public collections always require a current explicit named-account
+grant, including legacy rows with `requires_entitlement=0`; domain membership is
+only an additional constraint. No additional company entitlement is implemented.

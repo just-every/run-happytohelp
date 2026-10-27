@@ -187,7 +187,7 @@ export default function KnowledgePage({ projectId, section, recordId, project })
                 body: JSON.stringify(body),
             });
             if(section === 'categories' && draft.entitlementContactIds !== undefined) {
-                await nativeRequest(`/api/knowledge/${projectId}/categories/${draft.id || result.id}/entitlements`, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({required:!!draft.requires_entitlement,contactIds:draft.requires_entitlement?draft.entitlementContactIds:[]})});
+                await nativeRequest(`/api/knowledge/${projectId}/categories/${draft.id || result.id}/entitlements`, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({required:(draft.audience||'public')!=='public'||!!draft.requires_entitlement,contactIds:((draft.audience||'public')!=='public'||draft.requires_entitlement)?draft.entitlementContactIds:[]})});
             }
             markSaved();
             if (!draft.id) {

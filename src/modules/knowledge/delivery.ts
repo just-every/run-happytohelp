@@ -4,23 +4,35 @@ import {knowledgeAccountCte} from './access'
 
 /** All material seen by a generation matters, including sources it did not cite.
  * Evaluate against live recipients and publications in the admitting statement. */
-export function generationKnowledgeSql(generation:string,conversation='c',reader?:string){
- const denied=(account:string)=>`(k.audience<>'public' AND (${account}.id IS NULL OR (k.audience='domains' AND NOT EXISTS(SELECT 1 FROM json_each(k.allowed_domains) WHERE lower(value)=${account}.domain)))) OR (k.requires_entitlement=1 AND NOT EXISTS(SELECT 1 FROM knowledge_collection_entitlements gr WHERE gr.project_id=k.project_id AND gr.category_id=k.id AND gr.contact_id=${account}.id))`
+function sourcesKnowledgeSql(issued:string,conversation='c',reader?:string,pendingRecipients=false){
+ const denied=(account:string)=>`(k.audience<>'public' AND (${account}.id IS NULL OR (k.audience='domains' AND NOT EXISTS(SELECT 1 FROM json_each(k.allowed_domains) WHERE lower(value)=${account}.domain)))) OR ((k.audience<>'public' OR k.requires_entitlement=1) AND NOT EXISTS(SELECT 1 FROM knowledge_collection_entitlements gr WHERE gr.project_id=k.project_id AND gr.category_id=k.id AND gr.contact_id=${account}.id))`
  // Separate materialized relations keep this predicate within D1's expression
  // depth bound even inside the message admission statement's other guards.
  return `EXISTS(WITH RECURSIVE
  ${knowledgeAccountCte('requester',`${conversation}.contact_id`,`${conversation}.project_id`)}${reader?`,${knowledgeAccountCte('reader',reader,`${conversation}.project_id`)}`:''},
- issued AS MATERIALIZED (SELECT source_id,source_version FROM ai_generation_sources WHERE project_id=${conversation}.project_id AND generation_id=${generation}),
+ issued AS MATERIALIZED (${issued}),
  articles AS MATERIALIZED (SELECT i.source_id,i.source_version,a.id,a.category_id,a.status,a.publication_version FROM issued i LEFT JOIN knowledge_articles a ON a.id=substr(i.source_id,9) AND a.project_id=${conversation}.project_id WHERE substr(i.source_id,1,8)='article:'),
  lineage(source_id,id) AS (SELECT source_id,category_id FROM articles WHERE category_id IS NOT NULL UNION SELECT a.source_id,ac.category_id FROM articles a JOIN knowledge_article_categories ac ON ac.article_id=a.id UNION SELECT l.source_id,k.parent_id FROM lineage l JOIN knowledge_categories k ON k.id=l.id WHERE k.parent_id IS NOT NULL),
  invalid_articles AS MATERIALIZED (SELECT 1 FROM articles WHERE id IS NULL OR status<>'published' OR publication_version<>source_version),
- invalid_categories AS MATERIALIZED (SELECT 1 FROM lineage l JOIN knowledge_categories k ON k.id=l.id LEFT JOIN requester ON 1=1 ${reader?'LEFT JOIN reader ON 1=1':''} WHERE (${denied('requester')}) ${reader?`OR (${denied('reader')})`:''} OR ((k.audience<>'public' OR k.requires_entitlement=1) AND EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=${conversation}.id))),
+ invalid_categories AS MATERIALIZED (SELECT 1 FROM lineage l JOIN knowledge_categories k ON k.id=l.id LEFT JOIN requester ON 1=1 ${reader?'LEFT JOIN reader ON 1=1':''} WHERE (${denied('requester')}) ${reader?`OR (${denied('reader')})`:''} OR ((k.audience<>'public' OR k.requires_entitlement=1) AND (${pendingRecipients?'1=1':'0=1'} OR EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=${conversation}.id)))),
  invalid_datasets AS MATERIALIZED (SELECT 1 FROM issued i LEFT JOIN knowledge_documents kd ON kd.id=substr(i.source_id,11) AND kd.version_id=i.source_version LEFT JOIN knowledge_datasets ds ON ds.published_version=kd.version_id AND ds.project_id=${conversation}.project_id WHERE substr(i.source_id,1,10)='knowledge:' AND ds.id IS NULL),
  invalid_ids AS MATERIALIZED (SELECT 1 FROM issued WHERE substr(source_id,1,8)<>'article:' AND substr(source_id,1,10)<>'knowledge:')
  SELECT 1 WHERE ${activeSourceProjectSql(`${conversation}.project_id`)} AND NOT EXISTS(SELECT 1 FROM invalid_articles) AND NOT EXISTS(SELECT 1 FROM invalid_categories) AND NOT EXISTS(SELECT 1 FROM invalid_datasets) AND NOT EXISTS(SELECT 1 FROM invalid_ids))`
 }
+export function generationKnowledgeSql(generation:string,conversation='c',reader?:string){
+ return sourcesKnowledgeSql(`SELECT source_id,source_version FROM ai_generation_sources WHERE project_id=${conversation}.project_id AND generation_id=${generation}`,conversation,reader)
+}
+/** Composition provenance is server held and deliberately cumulative: an edited,
+ * saved or replayed draft cannot attest that previously retrieved text is gone.
+ * Keep the fence with the ticket, independently of audit retention and clients. */
+export function replyKnowledgeSql(conversation='c',reader?:string,pendingRecipients=false){
+ return sourcesKnowledgeSql(`SELECT source_id,source_version FROM knowledge_reply_sources WHERE project_id=${conversation}.project_id AND conversation_id=${conversation}.id UNION SELECT ks.source_id,ks.source_version FROM ai_generation_sources ks JOIN ai_generations g ON g.id=ks.generation_id AND g.project_id=ks.project_id WHERE g.project_id=${conversation}.project_id AND g.conversation_id=${conversation}.id`,conversation,reader,pendingRecipients)
+}
+export function preparedArticleSql(conversation='c'){
+ return sourcesKnowledgeSql("SELECT 'article:'||? source_id,? source_version",conversation)
+}
 export function messageKnowledgeSql(message='m',conversation='c',reader?:string){
- return `(${message}.actor_role<>'ai' OR ${generationKnowledgeSql(`substr(${message}.local_id,12)`,conversation,reader)})`
+ return `(${message}.actor_role='contact' OR ${replyKnowledgeSql(conversation,reader)})`
 }
 export async function messageKnowledgeAvailable(env:Env,messageId:string,readerId?:string){
  return Boolean(await env.DB.prepare(`SELECT 1 FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE m.id=? AND ${messageKnowledgeSql('m','c',readerId?'?':undefined)}`).bind(messageId,...(readerId?[readerId]:[])).first())

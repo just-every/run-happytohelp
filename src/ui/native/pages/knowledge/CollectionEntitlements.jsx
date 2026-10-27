@@ -16,10 +16,10 @@ export default function CollectionEntitlements({projectId,draft,change}) {
         return ()=>{active=false;clearTimeout(timer)};
     },[path,query]);
     const update=next=>{setAccounts(next);change('entitlementContactIds',next.map(account=>account.id))};
-    const required=!!draft.requires_entitlement;
+    const required=(draft.audience||'public')!=='public'||!!draft.requires_entitlement;
     return <section className="knowledge-entitlements" aria-label="Named customer accounts">
         <h3>Named customer accounts</h3>
-        <label className="knowledge-entitlement-toggle"><input type="checkbox" checked={required} onChange={event=>{change('requires_entitlement',event.target.checked);change('entitlementContactIds',event.target.checked?accounts.map(account=>account.id):[])}}/> Require named customer accounts</label>
+        <label className="knowledge-entitlement-toggle"><input type="checkbox" checked={required} disabled={(draft.audience||'public')!=='public'} onChange={event=>{change('requires_entitlement',event.target.checked);change('entitlementContactIds',event.target.checked?accounts.map(account=>account.id):[])}}/> Require named customer accounts</label>
         {error&&<p className="alert alert-danger" role="alert">{error}</p>}
         {required&&<>
             <p className="settings-note">Only the verified accounts listed here can read this collection, subject to its sign-in rules. Accounts never gain access just by sharing an email domain. Save to apply changes.</p>

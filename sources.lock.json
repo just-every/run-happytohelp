@@ -11700,7 +11700,7 @@
       "executable": false
     },
     "tests/helpers/inbox/note-busy-focus-browser.mjs": {
-      "sha256": "ed686169fb37e1335ea471aa20da604ca69b9c41f7282e45499351f3efe8119c",
+      "sha256": "6b58aa8b7964a8502dfb819bdd09e41a3cb6373ee9458a9cc10ae380a8148ab5",
       "executable": false
     },
     "tests/helpers/inbox/plugin-frame-browser.mjs": {

@@ -12172,7 +12172,7 @@
       "executable": false
     },
     "tests/helpers/widget/installed.mjs": {
-      "sha256": "20bb39763bc81a5946a2990c17b71ceaab3d6a405103daf342ccc20a47c2364f",
+      "sha256": "5337c77644622a1989b9a127987af303d0230405672573e50851312836bd9a6c",
       "executable": false
     },
     "tests/helpers/widget/lifecycle.mjs": {

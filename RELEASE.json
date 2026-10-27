@@ -104,6 +104,10 @@
     {
       "id": "257_sla_slack.sql",
       "buyerSteps": "Apply after 256 and before serving the updated Worker. Adds explicit Slack escalation destination consent and durable delivery outcomes to SLA policies and alerts. Existing policies stay unconfigured and existing alerts never gain a send. Retain terminal and uncertain outcomes across upgrades; archived pending sends must not replay."
+    },
+    {
+      "id": "258_procedure_versions.sql",
+      "buyerSteps": "Apply after the existing 257 migrations and before serving the updated Worker. Adds immutable numbered procedure definitions with their required synthetic cases and budgets. Existing workspaces, customer records and applied migration history remain unchanged. Back up and restore this table with native data. Simulation qualification enables no production execution."
     }
   ]
 }

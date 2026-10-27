@@ -1,3 +1,5 @@
+import {policyDefinition} from '../../workflows/sla-policy'
+import {auditShape} from './shapes'
 import {calendarDefinition} from '../../workflows/calendars'
 import {checkedRule,type RuleDefinition} from '../../workflows/rule-model'
 import type {Condition} from '../../workflows/conditions'
@@ -8,7 +10,7 @@ import type {SourceRecord} from '../../import-kit/src/types'
 import type {NativeValue} from './normalise'
 import {nativeId,object,sourceId,tagKey,text,time} from './common'
 
-const kinds=new Set(['group','view','schedule','trigger','automation'])
+const kinds=new Set(['group','view','schedule','trigger','automation','sla_policy'])
 const timezoneAliases:Record<string,string>={'Eastern Time (US & Canada)':'America/New_York','Central Time (US & Canada)':'America/Chicago','Mountain Time (US & Canada)':'America/Denver','Pacific Time (US & Canada)':'America/Los_Angeles','UTC':'UTC'}
 const tagNames=(value:unknown)=>text(value,'configuration_tags_required',8000).split(/\s+/).filter(Boolean)
 export function configurationTags(record:SourceRecord){
@@ -61,7 +63,25 @@ export function zendeskConfiguration(record:SourceRecord,projectId:string,actorI
   omissions.push('calendar_imported_inactive_explicit_activation_required')
   return {kind:'calendar',target:id('calendar',record.sourceId),tables:{workflow_calendars:[{project_id:projectId,id:id('calendar',record.sourceId),...definition,updated_at:updated}]}}
  }
- if(!object(p.conditions)||!Array.isArray(p.conditions.all)||!Array.isArray(p.conditions.any))throw Error('configuration_conditions_required')
+ if(record.kind!=='sla_policy'&&(!object(p.conditions)||!Array.isArray(p.conditions.all)||!Array.isArray(p.conditions.any)))throw Error('configuration_conditions_required')
+ if(record.kind==='sla_policy'){
+  // Refuse unknown semantics for the entire policy, including nested metrics.
+  if(auditShape('zendesk','sla_policy',p).issues.length)throw Error('sla_policy_structure_unsupported')
+  if(p.filter.any.length||p.filter.all.some((c:any)=>c.field!=='priority'||c.operator!=='is'||!['low','normal','high','urgent'].includes(c.value)))throw Error('sla_policy_conditions_unsupported')
+  if(!Array.isArray(p.policy_metrics)||p.policy_metrics.length!==1)throw Error('sla_policy_single_metric_required')
+  const metric=p.policy_metrics[0]
+  if(metric.metric!=='first_reply_time'||metric.business_hours!==true)throw Error('sla_policy_metric_unsupported')
+  if(!['low','normal','high','urgent'].includes(metric.priority)||p.filter.all.some((c:any)=>c.value!==metric.priority))throw Error('sla_policy_priority_unsupported')
+  // This annotation is supplied by the reviewing admin, never inferred from an
+  // account default or another policy. The referenced schedule must map intact.
+  if(p.move_in_schedule_id==null)throw Error('sla_policy_calendar_review_required')
+  const sid=sourceId(p.move_in_schedule_id,'zendesk'),schedule=records.get('schedule/'+sid)
+  if(!schedule||auditShape('zendesk','schedule',schedule.payload).issues.length)throw Error('sla_policy_calendar_unavailable')
+  zendeskConfiguration(schedule,projectId,actorId,records,tagIds,[])
+  const definition=policyDefinition({name:p.title,calendar_id:id('calendar',sid),position:p.position,conditions:{priorities:[metric.priority]},first_response_minutes:metric.target,active:false,pause_on_hold:false,approaching_minutes:0},projectId)
+  omissions.push(`sla_policy_commitment_reviewed:${metric.priority}:${metric.target}`,'sla_policy_imported_inactive_explicit_activation_required',`sla_policy_calendar_reviewed:${sid}:${(schedule.payload as any).name}`,'sla_policy_native_pause_and_order_review_required')
+  return {kind:'sla_policy',target,tables:{sla_policies:[{project_id:projectId,id:target,...definition,updated_at:updated}]}}
+ }
  if(record.kind==='view'){
   if(p.conditions.any.length)throw Error('view_any_conditions_not_supported')
   if(p.restriction!=null)throw Error('restricted_view_requires_native_review')

@@ -1,3 +1,5 @@
+import {remindObligations} from '../modules/ai-support/obligations'
+import {cronConsumer} from './cron-budget'
 import {purgeCampaignData} from '../modules/widget/campaigns/retention'
 import {enqueueScheduledReports} from '../modules/reports/schedule-queue'
 import type {Env} from './env'
@@ -23,6 +25,10 @@ export async function runScheduledInvocation(env:Env,options:{now?:number;consum
  await run('audit',input=>purgeExpiredAudit(input,options.now,scheduledStatementLimit-budget.statements))
  // Use settled spare credit only; campaign expiry never takes another consumer’s reservation.
  if(scheduledStatementLimit-budget.statements>=2){try{await purgeCampaignData({...env,DB:budget.database},options.now)}catch(error){errors.push(error)}}
+ // Follow-ups use a separate bounded turn after every existing consumer. A
+ // saturated invocation leaves them for the next tick without changing mail
+ // recovery admission or any earlier consumer's allocation.
+ if(scheduledStatementLimit-budget.statements>=1){try{await remindObligations(cronConsumer({...env,DB:budget.database},1))}catch(error){errors.push(error)}}
  if(errors.length)throw new AggregateError(errors,'Scheduled consumers failed')
  return budget.metrics
 }

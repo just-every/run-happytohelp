@@ -1,4 +1,5 @@
 import test from 'node:test'
+import {followupRecoveryJourney} from '../helpers/recovery/followup.mjs'
 import {mkdtemp,mkdir,cp,readFile,writeFile,rm} from 'node:fs/promises'
 import {join,resolve} from 'node:path'
 import {tmpdir} from 'node:os'
@@ -25,7 +26,7 @@ test('a populated packaged install restores from its documented credential-free 
 // Both archive variants retain business history and files while revoking live
 // delegated authority; Managed mail also retains its delivery tombstones.
 test('an independent packaged install opens setup only with its token, keeps media through the app, recovers search after a failed export, and restores native and Managed mail history without live mail authority or erased private MIME',{timeout:15*60_000},async()=>{
- for(const journey of [independentRestoreJourney,rerMailArchiveJourney])await journey()
+ for(const journey of [independentRestoreJourney,rerMailArchiveJourney,followupRecoveryJourney])await journey()
 })
 
 test('a Platform-applied install exports an older archive into Platform and native destinations, and incomplete or multiple migration ledgers refuse without writes',{timeout:10*60_000},platformArchiveJourney)

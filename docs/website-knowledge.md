@@ -139,19 +139,19 @@ this page does not claim passing route, browser, mutation or performance checks.
 Keep main's `257_move_in_attachment_bytes.sql` unchanged. Apply the additive
 unreleased migrations in file-name order, once through the existing ledger:
 
-- `258_knowledge_entitlements.sql` adds
+- `259_knowledge_entitlements.sql` adds
   `knowledge_categories.requires_entitlement` (default 0), contact grants and
   deliberate article-read receipts.
-- `259_knowledge_references.sql` adds company grants, pinned reference bodies,
+- `260_knowledge_references.sql` adds company grants, pinned reference bodies,
   generation source sets, copied-text indexes, transactional guards and upgrade
   bookkeeping. Existing domain collections become selected collections with no
   grants. The upgrade report identifies articles in unpublished lineages.
-- `260_knowledge_publication_history.sql` retains published translation snapshots
+- `261_knowledge_publication_history.sql` retains published translation snapshots
   and marks website documents for indexing when a dataset publication changes.
-- `261_knowledge_source_identity.sql` pins exact article publications and retires
+- `262_knowledge_source_identity.sql` pins exact article publications and retires
   deleted article IDs permanently. Article-create requests cannot recycle a
   retired ID into a different source with new access rules.
-- `262_knowledge_upgrade_progress.sql` adds durable table/row upgrade cursors,
+- `263_knowledge_upgrade_progress.sql` adds durable table/row upgrade cursors,
   counters and leases for bounded queue work. Existing incomplete reports stay
   pending; a new empty workspace starts with a completed empty report because
   subsequent writes already pass through the knowledge boundary.
@@ -222,4 +222,4 @@ Both knowledge clauses remain partial. The binding riders and retained named gap
 are in [the contract](../CONTRACT.md#knowledge-policy-riders-and-round-7-design)
 and [acceptance map](../ACCEPTANCE.md#knowledge-policy-riders-and-round-7-design).
 
-`263_knowledge_indexable_sources.sql` keeps never-published drafts out of the detector dirty queue while retaining every indexed or published source. Strict undo removes an unused import’s own publication and index rows only after checking retained references, generation sources and later native activity. New reference and tool-source writes check the incarnation observed with source bytes inside their insert, so delayed writes cannot borrow a replacement article’s authority. Ordinary article deletion retains history and retired identity.
+`264_knowledge_indexable_sources.sql` keeps never-published drafts out of the detector dirty queue while retaining every indexed or published source. Strict undo removes an unused import’s own publication and index rows only after checking retained references, generation sources and later native activity. New reference and tool-source writes check the incarnation observed with source bytes inside their insert, so delayed writes cannot borrow a replacement article’s authority. Ordinary article deletion retains history and retired identity.

@@ -71,5 +71,5 @@
     .escalations-panel summary { min-height: 44px; }
     body.conversation-workspace #chat .conversation-details .escalations-panel button,
     .escalation-dialog button { min-width: 44px; }
-    .escalation-handoff a { display: inline-flex; align-items: center; min-height: 44px; }
+    .escalations-panel a { display: inline-flex; align-items: center; min-width: 44px; min-height: 44px; }
 }

@@ -86,7 +86,7 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
 
  const teamsResponse=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname===base+`/conversations/${records[0].ticket.id}/teams`);
  await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();assert.equal((await teamsResponse).status(),201);await dialog().waitFor({state:'detached'});
- await panel().getByRole('link',{name:`Handoff to ${providers.teams.target}`,exact:true}).waitFor();await shot('teams-shared');await measureTargets(panel().locator('.escalation-handoff').filter({has:page.getByRole('link',{name:`Handoff to ${providers.teams.target}`,exact:true})}),'handoff');
+ await panel().getByRole('link',{name:`Handoff to ${providers.teams.target}`,exact:true}).waitFor();await shot('teams-shared');assert.equal(await panel().locator('.escalation-link-heading a').count(),3,'all three tracker links are included in the phone audit');await measureTargets(panel(),'linked-trackers-and-handoffs');
  const teamsFailure=async(kind,response)=>{
   providers.teams.responses.push(response);await escalate();await dialog().getByLabel('Destination',{exact:true}).selectOption('teams');await dialog().locator('.escalation-context input[type=checkbox]').first().check();await dialog().getByRole('button',{name:'Preview selected context',exact:true}).click();
   await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();await dialog().getByRole('alert').waitFor();await page.screenshot({path:join(directory,`${width}-teams-${kind}.png`)});

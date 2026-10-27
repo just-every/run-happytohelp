@@ -7,7 +7,11 @@
     "migrations/020_ai_support.sql",
     "tests/journeys/ai.mjs",
     "tests/journeys/ai-browser.mjs",
-    "tests/journeys/ai-live.mjs"
+    "tests/journeys/ai-live.mjs",
+    "migrations/257_followup_obligations.sql",
+    "tests/helpers/ai/obligations.mjs",
+    "tests/helpers/ai/obligations-browser.mjs",
+    "tests/helpers/recovery/followup.mjs"
   ],
   "selectedEditionDependencies": [
     "runeditrun/base",

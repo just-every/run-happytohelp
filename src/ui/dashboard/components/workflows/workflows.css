@@ -5,3 +5,5 @@
 @media(max-width:600px){.workflow-panel :is(button,input,select,textarea,summary){min-height:44px;min-width:44px}}
 
 @media(max-width:600px){.ticket-summary__alert button{min-height:44px}}
+
+@media(max-width:600px){body:has(:is(.connections-page,.sla-policy-settings,.workflow-panel)) :is(button,a[href],input:not([type=checkbox]):not([type=radio]),select,textarea,summary,[role=button],[role=tab]){min-height:44px;min-width:44px}body:has(:is(.connections-page,.sla-policy-settings,.workflow-panel)) a[href]{display:inline-flex;align-items:center}}

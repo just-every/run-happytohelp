@@ -2539,6 +2539,10 @@
       "sha256": "3c9b045f40e04ae9e632182d8e1a6168bedbf30961daec0c217b0fe89a33fb8c",
       "executable": false
     },
+    "migrations/257_sla_slack.sql": {
+      "sha256": "e3ba183c93594309ab8f1381d912080955bc02017f7cd810c834a5689933ccdd",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -7783,6 +7787,10 @@
       "sha256": "fc7284715d90b67f94f792eae6b2f045939a947bff4fa5b8e0b1c9d9796f9f80",
       "executable": false
     },
+    "src/modules/workflows/sla-slack.ts": {
+      "sha256": "db7e6ced100511e5d8b1caaf5f459cd280f4a8b5b1d0d77672b5e62c1dd7b433",
+      "executable": false
+    },
     "src/modules/workflows/sla.ts": {
       "sha256": "da3125403ef27f3581b6cb183fa92e05efd7215e95f4fe6be24264f3c7936271",
       "executable": false
@@ -11047,6 +11055,10 @@
       "sha256": "8f7a93589fd571756db5a2d226c24b6d4daa88e90373cd58f110f026093b5630",
       "executable": false
     },
+    "tests/fixtures/sla-slack-edge.mjs": {
+      "sha256": "d965c1b57cc964d687c81c9c819a52e4e387c646a82a6d842a6073ea95f560a4",
+      "executable": false
+    },
     "tests/fixtures/usage/local-workload.json": {
       "sha256": "5b35b9c9e3b3d01d9cf3ea07d80adde1d741829cc824bf201784834c0699e5b5",
       "executable": false
@@ -11672,7 +11684,7 @@
       "executable": false
     },
     "tests/helpers/inbox/tickets-browser.mjs": {
-      "sha256": "387b149da624338c7ef930929a489a94d6a93ebd8e85d7c4e9ba560158874cd9",
+      "sha256": "edd28d1e575f2fc22c4e6cfee1d49ceedc25f97a29e3d9ac5000459b89d44881",
       "executable": false
     },
     "tests/helpers/inbox/tickets.mjs": {
@@ -12101,6 +12113,14 @@
     },
     "tests/helpers/workflows/schedules.mjs": {
       "sha256": "4fbb15a10227d0313aececeb7c9f850f7f8568d7f62d0311c55fd8860850ad23",
+      "executable": false
+    },
+    "tests/helpers/workflows/sla-slack-browser.mjs": {
+      "sha256": "3bad216c716f70b222553a3bb0dff56b3d031d1159134706d6cc0b323854c104",
+      "executable": false
+    },
+    "tests/helpers/workflows/sla-slack.mjs": {
+      "sha256": "b29cd9238b0f457c1623bf59244e789011acc99cef8cf8d562a666e0f1ee3646",
       "executable": false
     },
     "tests/helpers/workflows/sla.mjs": {

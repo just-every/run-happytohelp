@@ -1,12 +1,17 @@
 import {createHash} from 'node:crypto'
+import {createServer} from 'node:net'
 import {slaSlackBrowser} from '../workflows/sla-slack-browser.mjs'
 import assert from 'node:assert/strict'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {launchBrowser,evidence} from '../../journeys/kit/browser.mjs'
 import {seedTicketBrowser} from './ticket-browser-fixture.mjs'
 
+async function ticketRuntime(){
+ const reservation=createServer();await new Promise(resolve=>reservation.listen(0,'127.0.0.1',resolve));const port=reservation.address().port;await new Promise(resolve=>reservation.close(resolve))
+ return createRuntime({port,outboundFixture:new URL('../../fixtures/sla-slack-edge.mjs',import.meta.url).href,vars:{APP_ORIGIN:`http://127.0.0.1:${port}`,INTEGRATION_ENCRYPTION_KEY:createHash('sha256').update('synthetic-hh-1').digest('base64'),H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}})
+}
 export async function ticketsBrowser({count=12,installation}={}){
- const runtime=installation?{origin:installation.origin,close:async()=>{}}:await createRuntime({outboundFixture:new URL('../../fixtures/sla-slack-edge.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:createHash('sha256').update('synthetic-hh-1').digest('base64'),H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}}),browser=await launchBrowser(),shot=await evidence('tickets')
+ const runtime=installation?{origin:installation.origin,close:async()=>{}}:await ticketRuntime(),browser=await launchBrowser(),shot=await evidence('tickets')
  let success=false
  try{
   const fixture=await seedTicketBrowser(runtime.origin,count,installation),{projectId,base,owner}=fixture,context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]

@@ -61,3 +61,9 @@ fix creates a draft for operator approval; it does not prove customer recovery
 or send to the linked incidents. Preview an incident update separately to
 render and approve each requester's reply. SMS and expired messaging windows
 remain unavailable until a supported, consented channel is connected.
+
+### Suggested problems
+
+On an unlinked ticket, open **Ticket → Problem and incidents → Find suggested problems**. Local triage compares up to eight subject terms with active Problems in the current workspace and offers up to five matches from the newest 100 candidates. Shared terms explain each hint; they do not establish that the tickets have the same cause. No model or external provider is called.
+
+Choose **Inspect suggestion** to review the Problem and incident. **Reject suggestion** dismisses that preview without changing either ticket; a later search can offer the same Problem again. **Confirm incident link** links only after the preview, once, for the operator who reviewed it. The preview expires after fifteen minutes. A changed incident, Problem, relationship or current permission requires a fresh preview. Finding, inspecting, rejecting and confirming send no replies. The Problem lists the linked incident, and its existing **Preview unlink** action removes the relationship with an audit record. Each incident keeps its own ticket state and history.

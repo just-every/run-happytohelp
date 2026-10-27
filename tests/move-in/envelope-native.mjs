@@ -7,7 +7,11 @@ import {assertUnchangedTable} from './equality.mjs';
 import {records,positions} from './envelope-inputs.mjs';
 import {archive,invalidMembers} from './archive-inputs.mjs';
 const root='/api/move-in/projects/p/imports',post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),upload=(body,name)=>({method:'POST',headers:{'X-Import-Filename':name,'X-Import-Schema':'2.16'},body});
-test('every invalid directory is refused in native Worker with no custody, queue, native or outbound mutation',async()=>{
+
+import {step} from './steps.mjs';
+
+test("refusals: refused uploads are located at their exact source place before any custody, queue, native write or outbound call",async()=>{
+await step('every invalid directory is refused in native Worker with no custody, queue, native or outbound mutation',async()=>{
  const h=await nativeHarness();try{const before=await h.snapshot();
   for(const [label,change,code] of invalidMembers())for(const offset of [0,21]){
    const body=archive([...Array.from({length:offset},(_,i)=>({name:`empty-${i}/`})),{name:'bad/',...change},{name:'safe.json',body:JSON.stringify(records().contact)}]),result=await h.raw(`${root}?vendor=intercom`,upload(body,'malformed.zip'));
@@ -16,7 +20,10 @@ test('every invalid directory is refused in native Worker with no custody, queue
   await unchanged(h,before,'all-archive-member-refusals');assert.equal(h.outbound,0);
  }finally{await h.close()}
 });
-test('unknown parent records map exact native history, reasoned siblings, repeat and undo without losing counts',async()=>{
+});
+
+test("landing: an approved import lands each vendor's history, people, replies, notes, tags and knowledge exactly, keeps notes private, and repeats or repackages as a no-op",async()=>{
+await step('unknown parent records map exact native history, reasoned siblings, repeat and undo without losing counts',async()=>{
  const h=await nativeHarness();try{
   await h.db.prepare("INSERT INTO contacts(id,project_id,name,email,created_at) VALUES('keeper','p','Existing','existing@example.test',5)").run();const before=await h.snapshot(),r=records();
   const body=archive([{name:'empty/'},{name:'people.json',body:JSON.stringify({type:'list',customers:[r.contact]})},{name:'thread.jsonl',body:'\n'+JSON.stringify({kind:'list',history:r.conversation})},{name:'supplements.json',body:JSON.stringify({type:'list',extras:[r.macro,r.article],unknown_metadata:null})}]);
@@ -34,7 +41,10 @@ test('unknown parent records map exact native history, reasoned siblings, repeat
   assert.deepEqual([...new Set((await h.db.prepare("SELECT action FROM audit_events WHERE target_id=? ORDER BY rowid").bind(run.id).all()).results.map(row=>row.action).filter(action=>action!=='import.resume'))],['import.started','import.apply','import.undo']);assert.equal(h.outbound,0);
  }finally{await h.close()}
 });
-test('unknown parents retain known aliases for ordinary native erasure and changed replay in every admitted package',async()=>{
+});
+
+test("erasure: erasing a contact removes every import custody that holds them and refuses any later upload carrying their aliases, while other people's data stays",async()=>{
+await step('unknown parents retain known aliases for ordinary native erasure and changed replay in every admitted package',async()=>{
  const h=await nativeHarness();try{
   await h.db.prepare("INSERT INTO contacts(id,project_id,email,created_at) VALUES('ordinary','p','courier@example.test',1)").run();const runs=[];
   for(const [name,body] of positions(records().conversation).filter(([name])=>name.startsWith('foreign'))){const run=(await h.call(`${root}?vendor=intercom`,upload(body,name))).data;await h.drain();const ready=(await h.call(`${root}/${run.id}`)).data;assert.ok(ready.plan.decisions.some(d=>d.kind==='conversation'&&d.sourceId==='envelope-thread'));runs.push(run)}
@@ -42,7 +52,10 @@ test('unknown parents retain known aliases for ordinary native erasure and chang
   const before=await h.snapshot();for(const record of [{type:'contact',id:'courier-agent',email:'changed@example.test',created_at:1711929600},{type:'contact',id:'changed',external_id:'agent-archive',email:'changed@example.test',created_at:1711929600}]){const response=await h.raw(`${root}?vendor=intercom`,upload(JSON.stringify(record),'repackaged.json'));assert.equal(response.response.status,410);assert.equal(h.lastWrites,0);assert.equal(h.queued.length,0)}await unchanged(h,before,'unknown-parent-alias-fences');assert.equal(h.outbound,0);
  }finally{await h.close()}
 });
-test('directory-heavy extraction resumes after actual SIGKILL with physical cursor and exact file custody',async()=>{
+});
+
+test("recovery: interrupted work resumes from durable state after a killed Worker, a broken checkpoint or tampered originals, without duplicating history",async()=>{
+await step('directory-heavy extraction resumes after actual SIGKILL with physical cursor and exact file custody',async()=>{
  const h=await nativeHarness();try{
   const r=records(),entries=[...Array.from({length:25},(_,i)=>({name:`empty-${i}/`,method:i%2?0:8})),{name:'person.json',body:JSON.stringify({type:'list',unknown:r.contact})},{name:'thread.json',body:JSON.stringify({type:'list',unknown:r.conversation})}],body=archive(entries),run=(await h.call(`${root}?vendor=intercom`,upload(body,'resume.zip'))).data;
   await h.step();const first=await h.db.prepare('SELECT state,cursor,files_json FROM move_in_runs WHERE id=?').bind(run.id).first();assert.equal(first.state,'uploaded');assert.equal(first.cursor,20);assert.deepEqual(JSON.parse(first.files_json),[]);
@@ -50,4 +63,5 @@ test('directory-heavy extraction resumes after actual SIGKILL with physical curs
   const files=JSON.parse((await h.db.prepare('SELECT files_json FROM move_in_runs WHERE id=?').bind(run.id).first()).files_json);assert.deepEqual(files.map(f=>f.name),['person.json','thread.json']);assert.equal(new Set(files.map(f=>f.key)).size,2);for(let i=0;i<2;i++)assert.equal(await (await (await h.files).get(files[i].key)).text(),entries[i+25].body);
   await h.call(`${root}/${run.id}/apply`,post({fingerprint:ready.plan.fingerprint}));await h.drain();assert.equal((await h.call(`${root}/${run.id}`)).data.state,'completed');assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM conversations').first()).n,1);assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM messages').first()).n,2);assert.equal(h.outbound,0);
  }finally{await h.close()}
+});
 });

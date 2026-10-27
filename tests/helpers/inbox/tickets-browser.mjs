@@ -1,3 +1,4 @@
+import {problemSuggestionsBrowser} from './problem-suggestions-browser.mjs'
 import {createHash} from 'node:crypto'
 import {createServer} from 'node:net'
 import {slaSlackBrowser} from '../workflows/sla-slack-browser.mjs'
@@ -89,6 +90,7 @@ export async function ticketsBrowser({count=12,installation}={}){
   assert.equal((await fixture.api(`${base}/conversations/${open.id}/ticket`)).data.status_category,unchanged)
   await capture('17-refused-close')
   await fixture.api(`${base}/ticket-fields/${required.id}`,undefined,'DELETE')
+  await problemSuggestionsBrowser(page,fixture,runtime.origin)
   await page.goto(runtime.origin+'/docs/tickets');await page.getByRole('heading',{name:'Tickets',level:1,exact:true}).waitFor();await capture('14-ticket-docs');
   // Policies configured through the public API remain readable and editable in
   // settings, including object-shaped typed conditions and form restrictions.

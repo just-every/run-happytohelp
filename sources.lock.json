@@ -10288,7 +10288,7 @@
       "executable": false
     },
     "src/ui/native/pages/procedure-settings.css": {
-      "sha256": "03b83eb0f987f1e466b5ea8c9ece7987560041df6045619140fe8ffcecbd35bd",
+      "sha256": "798b55463c2c389df9cb83de1a82d7f7bc16b7ce2b2d34992e5e37ee6c4054af",
       "executable": false
     },
     "src/ui/native/pages/ProcedureReceipt.jsx": {

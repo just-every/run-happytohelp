@@ -5,6 +5,7 @@ import {message} from './app.mjs'
 
 /** R6's operator, mail gateway, review, imported-history and privacy doors. */
 export async function completeEmailJourney(){
+ await queuedNoticeRecovery()
  await noticeRetentionJourney()
  await outboundNoticesJourney()
  const sent=[]
@@ -231,6 +232,37 @@ export async function imapSmtpJourney(){
   assert.deepEqual(await app.takeJobs(),[],'automatic-mail redelivery remains inert')
   assert.equal(sent.length,1,'automatic incoming mail cannot start an SMTP auto-reply loop')
   assert.equal((await app.first('SELECT count(*) n FROM inbound_emails WHERE id=?','<synthetic-happytohelp-3@customer.example>')).n,1)
+ }finally{await app.close()}
+}
+
+// A fresh workspace has rate capacity, so a limiter cannot hide cron sending
+// sibling notices while it reconciles an interrupted first-message claim.
+async function queuedNoticeRecovery(){
+ const sent=[]
+ const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-hh-1',EMAIL_FROM:'synthetic-hh-1@support.example',RATE_LIMITS:JSON.stringify({outboundNoticesPerProjectMinute:2})},outbound:async request=>{const mail=await request.json();sent.push(...[].concat(mail.to));return Response.json({id:`synthetic-hh-${sent.length}`})}})
+ try{
+  const workspace=await app.seedWorkspace('synthetic-hh-queue-recovery'),token=workspace.tokens.owner,base=`/api/management/projects/${workspace.projectId}`
+  const mailbox=(await app.ok(base+'/mailboxes',{token,body:{provider:'forwarding',address:'synthetic-hh-1@support.example',displayName:''}})).data
+  const requesters=[1,2,3].map(n=>`synthetic-hh-${n}@customer.example`),body={kind:'email',localId:'synthetic-hh-1',requesters,mailboxId:mailbox.id,subject:'Parcel update',content:'Your parcel will arrive tomorrow.'}
+  const preview=await app.ok(base+'/tickets/notices/preview',{token,body}),batch=await app.ok(base+'/tickets/notices',{token,body:{...body,confirmation:preview.confirmation}})
+  const jobs=await app.takeJobs(),first=batch.results[0],job=jobs.find(job=>job.type==='outbox.recover'&&job.conversationId===first.conversation.id)
+  assert.ok(job)
+  await app.runJobs([job],{'x-test-fault':'db-interrupt','x-test-statement':'INSERT INTO email_deliveries'})
+  await app.runJobs([job]);await app.scheduled()
+  assert.deepEqual(sent,[],'cron queues sibling first messages even when their workspace has send capacity')
+  await app.scheduled({'x-test-clock':'advance'},{after:121000})
+  const path=`/api/dashboard/projects/${workspace.projectId}/conversations/${first.conversation.id}`
+  assert.equal((await app.ok(path,{token})).data.last_message.email_status.state,'uncertain')
+  assert.deepEqual(sent,[],'retiring an orphan starts no sibling provider calls')
+  // Lose every dispatch copy and restart. Durable discovery recovers the two
+  // siblings through the queue while the uncertain claim remains fenced.
+  await app.takeJobs();await app.configure({});await app.scheduled()
+  assert.deepEqual(sent,[])
+  await app.drainJobs()
+  assert.deepEqual([...sent].sort(),requesters.slice(1).sort())
+  await app.scheduled();await app.drainJobs()
+  assert.equal(sent.length,2,'recovery and redelivery send each sibling only once')
+  assert.equal((await app.ok(path,{token})).data.last_message.email_status.state,'uncertain')
  }finally{await app.close()}
 }
 

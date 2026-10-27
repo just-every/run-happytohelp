@@ -108,6 +108,10 @@
     {
       "id": "257_hubspot_context.sql",
       "buyerSteps": "Apply after 256 before serving the updated Worker. Adds encrypted read-only HubSpot connection, explicit customer mappings and transaction claims. Retain mappings with customer data; archives remove credentials and cached context, and require a fresh connection after restore. CRM context grants no customer access."
+    },
+    {
+      "id": "258_teams_escalations.sql",
+      "buyerSteps": "ESCALATION-001: retain all existing escalation connection identities and links while permitting a Teams connection with its installing administrator. Apply before the updated Worker serves traffic. Existing trackers and Slack retain their credentials; Teams starts disconnected. Teams sends require the installing member to retain integration installation permission; restoring an export requires reconnection. Back up native data before upgrade."
     }
   ]
 }

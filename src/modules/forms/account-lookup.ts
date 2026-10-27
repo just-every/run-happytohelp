@@ -11,8 +11,9 @@ export function accountChoiceGuard(projectId:string,contactId:string,accountId:s
  return {sql:`EXISTS(SELECT 1 FROM contact_companies member JOIN companies account ON account.id=member.company_id AND account.project_id=member.project_id JOIN contacts customer ON customer.id=member.contact_id AND customer.project_id=member.project_id WHERE member.project_id=? AND member.contact_id=? AND account.id=? AND account.merged_into IS NULL AND ${mailboxProofSql('customer')} AND ${livePortalContact('customer')})`,args:[projectId,contactId,accountId]}
 }
 // Publication grants disclosure of the eligible identifier and label only.
-function publicationGuard(form:PublicForm,fieldId:string){
- return {sql:`EXISTS(SELECT 1 FROM request_forms published JOIN json_each(published.config_json,'$.fields') ref JOIN ticket_fields field ON field.project_id=published.project_id AND field.id=json_extract(ref.value,'$.fieldId') WHERE published.project_id=? AND published.id=? AND published.enabled=1 AND published.updated_at=? AND field.id=? AND field.type='account' AND field.read_roles_json='[]' AND field.write_roles_json='[]')`,args:[form.projectId,form.id,form.updatedAt,fieldId]}
+function publicationGuard(form:PublicForm,fieldIds:string[]){
+ // One JSON parameter preserves the form's 50-field capacity under D1's bind limit.
+ return {sql:`EXISTS(SELECT 1 FROM request_forms published WHERE published.project_id=? AND published.id=? AND published.enabled=1 AND published.updated_at=? AND NOT EXISTS(SELECT 1 FROM json_each(?) expected LEFT JOIN ticket_fields field ON field.project_id=published.project_id AND field.id=expected.value WHERE field.id IS NULL OR field.type<>'account' OR field.read_roles_json<>'[]' OR field.write_roles_json<>'[]' OR NOT EXISTS(SELECT 1 FROM json_each(published.config_json,'$.fields') ref WHERE json_extract(ref.value,'$.fieldId')=expected.value)))`,args:[form.projectId,form.id,form.updatedAt,JSON.stringify(fieldIds)]}
 }
 export async function validateAccountPublication(env:Env,projectId:string,formId:string,body:unknown){
  const values=body&&typeof body==='object'?(body as any).fields:null
@@ -26,7 +27,7 @@ export async function validateAccountPublication(env:Env,projectId:string,formId
 export async function accountChoices(env:Env,form:PublicForm,fieldId:string,identity?:PortalIdentity){
  if(!identity)return []
  const session=portalSessionGuard(identity),contactId=identity.actor.contactId??identity.actor.id
- const publication=publicationGuard(form,fieldId)
+ const publication=publicationGuard(form,[fieldId])
  const membership=accountChoiceGuard(form.projectId,contactId,'')
  // The membership predicate is correlated to the candidate account; no domain lookup.
  const sql=membership.sql.replace('account.id=?','account.id=candidate.id')
@@ -44,15 +45,16 @@ export async function validateAccountMembership(env:Env,projectId:string,contact
   if(!await env.DB.prepare(`SELECT 1 WHERE ${guard.sql}`).bind(...guard.args).first())fieldError(field.id,'invalid_account',`${field.label??field.name}: Choose an available account`)
   guards.push(guard)
  }
- return guards
+ return [...new Map(guards.map(guard=>[JSON.stringify(guard.args),guard])).values()]
 }
 export async function validateAccountChoices(env:Env,form:PublicForm,contactId:string,values:Record<string,unknown>){
- const guards=await validateAccountMembership(env,form.projectId,contactId,form.fields,values)
+ const guards=await validateAccountMembership(env,form.projectId,contactId,form.fields,values),published:string[]=[]
  for(const field of form.fields){
   const value=values[field.id];if(field.type!=='account'||value===null||value===undefined||value==='')continue
-  const publication=publicationGuard(form,field.id)
+  const publication=publicationGuard(form,[field.id])
   if(!await env.DB.prepare(`SELECT 1 WHERE ${publication.sql}`).bind(...publication.args).first())fieldError(field.id,'unavailable_field','This account field changed or is no longer published for customers')
-  guards.push(publication)
+  published.push(field.id)
  }
+ if(published.length)guards.push(publicationGuard(form,published))
  return [...new Map(guards.map(guard=>[JSON.stringify(guard.args),guard])).values()]
 }

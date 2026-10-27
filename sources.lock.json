@@ -4436,7 +4436,7 @@
       "executable": false
     },
     "src/modules/forms/account-lookup.ts": {
-      "sha256": "ef3c299e85d4d9d202103d0bf8040da419e951439fc09df47c6b316bc6c8e7d3",
+      "sha256": "2bd6e7ef9dd657e4ed8113e0e8136bf6aa24b433faf05d39df3fcd3d57deaadd",
       "executable": false
     },
     "src/modules/forms/challenge.ts": {
@@ -11092,11 +11092,11 @@
       "executable": false
     },
     "tests/helpers/account-lookup-browser.mjs": {
-      "sha256": "b870290372bb0781d66222d1daa35288f5c3f3a8c7d483f8c5b807cb044318ec",
+      "sha256": "c8d3944333bd2a78fab302f33466e5ecc47372a01af90f00663650f015988870",
       "executable": false
     },
     "tests/helpers/account-lookup-journey.mjs": {
-      "sha256": "47236003ae9879017c3dd21168b1ef02b7642da64ce96188ca6595396bd8d555",
+      "sha256": "7d2262a5904a600baf08e649a9e3d1591270885f644eebabb5baf0b1aab8d68f",
       "executable": false
     },
     "tests/helpers/ai/answers.mjs": {

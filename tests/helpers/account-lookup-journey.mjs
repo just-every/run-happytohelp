@@ -34,6 +34,20 @@ export async function accountLookupJourney(f,customer){
  await app.ok(companyPath,{...owner,method:'PATCH',body:{portalCompanyView:false}})
 
  assert.deepEqual((await app.ok(read)).data.fields.find(row=>row.id===field.id).options,[],'anonymous definitions expose no account names')
+ assert.deepEqual((await app.ok(api,customer)).data.find(row=>row.id===form.id).fields.find(row=>row.id===field.id).options,expected,'the list door applies the same scope')
+ // Revoke between loading the public definition and selecting offered choices.
+ for(const sql of [
+  `DELETE FROM contact_companies WHERE project_id='${p}' AND contact_id='${contact}'`,
+  `UPDATE request_forms SET enabled=0 WHERE project_id='${p}' AND id='${form.id}'`,
+  `UPDATE ticket_fields SET write_roles_json='["owner"]' WHERE project_id='${p}' AND id='${field.id}'`
+ ]){
+  const offered=await app.ok(read,{...customer,headers:{...customer.headers,'x-test-statement':'SELECT candidate.id','x-test-before-statement':sql}})
+  assert.deepEqual(offered.data.fields.find(row=>row.id===field.id).options,[],'offer rechecks current membership, publication and field permissions')
+  await app.ok(member,{...owner,method:'PUT',body:{}})
+  await app.db.prepare('UPDATE ticket_fields SET write_roles_json=? WHERE project_id=? AND id=?').bind('[]',p,field.id).run()
+  await save({enabled:true})
+ }
+
  const outsider=await signin('outsider@example.com')
  assert.deepEqual((await app.ok(read,outsider)).data.fields.find(row=>row.id===field.id).options,[])
  const foreign=(await app.ok(`/api/management/projects/${f.foreign.projectId}/companies`,{token:f.foreign.tokens.owner,body:{name:'Foreign account',portalCompanyView:true}})).company

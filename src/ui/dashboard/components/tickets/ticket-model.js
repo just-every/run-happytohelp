@@ -3,7 +3,7 @@ export const priorities = ['low', 'normal', 'high', 'urgent'];
 export const label = value => String(value || '').replaceAll('_', ' ').replace(/^./, char => char.toUpperCase());
 export const ticketPath = projectId => `/api/dashboard/projects/${encodeURIComponent(projectId)}`;
 export const json = (method, body) => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-export const fieldOptions = field => (field.options || []).map(option => typeof option === 'string' ? { value: option, label: option } : { value: option.value, label: option.label || option.value });
+export const fieldOptions = field => (field.type === 'account' ? field.accountOptions || [] : field.options || []).map(option => typeof option === 'string' ? { value: option, label: option } : { value: option.value, label: option.label || option.value, disabled: option.disabled });
 export function typedValue(field, value) {
     if (value === '' && ['number', 'decimal', 'date'].includes(field.type)) return null;
     if (['number', 'decimal'].includes(field.type)) return Number(value);

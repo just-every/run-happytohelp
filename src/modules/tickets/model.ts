@@ -1,3 +1,4 @@
+import {workspaceAccountOptions} from './account-options'
 import {batchRead} from './request-batch'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
@@ -56,13 +57,14 @@ export async function getTicket(env:Env,actor:Actor,id:string,tokenAuthority?:To
 }
 export async function ticketSettings(env:Env,actor:Actor){
  const access=await ticketReadAccess(env,actor)
- const [statuses,fields,groups,members,brand,roles]=await Promise.all([
+ const [statuses,fields,groups,members,brand,roles,accounts]=await Promise.all([
   env.DB.prepare('SELECT * FROM ticket_statuses WHERE project_id=? ORDER BY is_default DESC,category,name').bind(actor.projectId).all<any>(),
   env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? ORDER BY name').bind(actor.projectId).all<any>(),
   env.DB.prepare('SELECT * FROM ticket_groups WHERE project_id=? ORDER BY name').bind(actor.projectId).all<any>(),
   env.DB.prepare('SELECT group_id,user_id FROM ticket_group_members WHERE project_id=?').bind(actor.projectId).all<any>(),
   env.DB.prepare('SELECT id,name FROM projects WHERE id=?').bind(actor.projectId).first(),
   env.DB.prepare('SELECT id,name FROM project_roles WHERE project_id=?').bind(actor.projectId).all<any>(),
+  workspaceAccountOptions(env,actor.projectId,true),
  ])
- return {statuses:statuses.results,fields:fields.results.filter(f=>fieldAllowed(f,access)).map(f=>fieldData(f,access)),groups:groups.results.map(g=>({...g,members:members.results.filter(m=>m.group_id===g.id).map(m=>m.user_id)})),brands:[brand],permissions:{manage:access.permissions.has('conversations.manage'),settings:['owner','admin'].includes(actor.role)&&access.permissions.has('settings.manage')},role:access.key,roles:[...['owner','admin','operator','collaborator'].map(id=>({id,name:id})),{id:'api',name:'Workspace API'},...roles.results]}
+ return {statuses:statuses.results,fields:fields.results.filter(f=>fieldAllowed(f,access)).map(f=>({...fieldData(f,access),...(f.type==='account'?{accountOptions:accounts}:{})})),groups:groups.results.map(g=>({...g,members:members.results.filter(m=>m.group_id===g.id).map(m=>m.user_id)})),brands:[brand],permissions:{manage:access.permissions.has('conversations.manage'),settings:['owner','admin'].includes(actor.role)&&access.permissions.has('settings.manage')},role:access.key,roles:[...['owner','admin','operator','collaborator'].map(id=>({id,name:id})),{id:'api',name:'Workspace API'},...roles.results]}
 }

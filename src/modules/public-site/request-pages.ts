@@ -1,3 +1,4 @@
+import {withAccountChoices} from '../forms/account-lookup'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -17,7 +18,7 @@ const safeJson=(value:unknown)=>JSON.stringify(value).replaceAll('<','\\u003c').
 function input(f:PublicField){
  const name=['subject','message'].includes(f.id)?f.id:`field:${f.id}`,id=`request-${f.id}`,required=f.required?' required':'',hint=f.description?` aria-describedby="${e(id)}-hint"`:''
  let control=''
- if(f.type==='dropdown'||f.type==='multiselect')control=`<select id="${e(id)}" name="${e(name)}"${f.type==='multiselect'?' multiple':''}${required}${hint}>${f.type==='dropdown'?'<option value="">Choose an option</option>':''}${f.options.map(o=>`<option value="${e(o.value)}">${e(o.label)}</option>`).join('')}</select>`
+ if(f.type==='dropdown'||f.type==='multiselect'||f.type==='account')control=`<select id="${e(id)}" name="${e(name)}"${f.type==='multiselect'?' multiple':''}${required}${hint}>${f.type!=='multiselect'?'<option value="">Choose an option</option>':''}${f.options.map(o=>`<option value="${e(o.value)}">${e(o.label)}</option>`).join('')}</select>`
  else if(f.id==='message')control=`<textarea id="${e(id)}" name="${e(name)}" rows="7" maxlength="100000"${required}${hint}></textarea>`
  else if(f.type==='checkbox')control=`<input id="${e(id)}" name="${e(name)}" type="checkbox"${hint}>`
  else control=`<input id="${e(id)}" name="${e(name)}" type="${['number','decimal'].includes(f.type)?'number':f.type==='date'?'date':'text'}"${f.type==='decimal'?' step="any"':''}${f.type==='number'?' step="1"':''}${['text','regex'].includes(f.type)?` maxlength="${f.validation.max??4000}"`:''}${required}${hint}>`
@@ -30,7 +31,7 @@ async function render(c:any){
  c.header('Content-Security-Policy',"default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; form-action 'self'; frame-ancestors 'self'; base-uri 'self'")
  const identity=await resolvePortalActor(c.env,project.id,c.req.raw)
  const portal=c.req.path.startsWith('/portal/'),base=`/help/${enc(key)}`,locale=c.req.query('locale')||(identity?(await readPortalPreferences(c.env,identity)).locale:undefined),forms=await listForms(c.env,project.id,locale)
- const selected=c.req.param('formId')||c.req.query('form'),form=selected?await readForm(c.env,project.id,selected,locale):forms.length===1?forms[0]:null
+ const selected=c.req.param('formId')||c.req.query('form'),selectedForm=selected?await readForm(c.env,project.id,selected,locale):forms.length===1?forms[0]:null,form=selectedForm?await withAccountChoices(c.env,selectedForm,identity?.actor.id):null
  const formBase=portal?`/portal/${enc(key)}/requests/new`:`${base}/requests`,link=(id:string)=>portal?`${formBase}?${new URLSearchParams({form:id,...(locale?{locale}:{})})}`:`${formBase}/${enc(id)}${locale?`?locale=${enc(locale)}`:''}`
  const tools=`<nav class="help-center-controls" aria-label="Customer support"><a href="${base}">Help Center</a><a href="/portal/${enc(key)}/requests">My requests</a><a href="/portal/${enc(key)}/preferences">Notification preferences</a></nav>`
  let content=`<h1>Submit a request</h1><p>Choose the form that fits your question. Our support team will reply to your verified email address.</p>`

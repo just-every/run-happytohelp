@@ -2,7 +2,11 @@ import assert from 'node:assert/strict'
 import {assistantApp} from './app.mjs'
 import {openaiToolCall} from '../openai-stream.mjs'
 
-const trace=async(a,v)=>(await a.app.call(`/api/ai-support/projects/${a.p}/conversations/${v.conversationId}/trace`,{token:a.owner,status:200})).data.generations[0]
+const trace=async(a,v)=>{
+ const response=await a.app.call(`/api/ai-support/projects/${a.p}/conversations/${v.conversationId}/trace`,{token:a.owner,status:200})
+ assert.match(response.headers.get('cache-control')||'',/(?:^|,)\s*no-store(?:,|$)/,'private execution evidence must never enter a response cache')
+ return response.data.generations[0]
+}
 const toolNames=body=>(body.tools||[]).map(tool=>tool.name)
 
 // The visitor's assistant answers from published knowledge with exact citations, through the queue.

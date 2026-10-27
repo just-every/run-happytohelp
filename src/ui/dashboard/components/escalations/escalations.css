@@ -67,9 +67,11 @@
     body.conversation-workspace #chat .conversation-details .escalations-panel button,
     .escalation-dialog button,
     .escalation-form input:not([type="checkbox"]), .escalation-form select,
-    .escalation-form .escalation-choice,
-    .escalations-panel summary { min-height: 44px; }
+    .escalation-form .escalation-choice { min-height: 44px; }
+    .escalations-panel summary { padding-block: 11px; line-height: 22px; }
     body.conversation-workspace #chat .conversation-details .escalations-panel button,
     .escalation-dialog button { min-width: 44px; }
-    .escalation-handoff a { display: inline-flex; align-items: center; min-height: 44px; }
+    .escalation-handoff { display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; }
+    .escalation-handoff a, .escalation-link-heading a { display: inline-flex; align-items: center; min-width: 44px; min-height: 44px; }
+    .escalation-error a { display: flex; align-items: center; width: fit-content; min-width: 44px; min-height: 44px; }
 }

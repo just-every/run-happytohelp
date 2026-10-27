@@ -33,6 +33,6 @@ export default function EscalationLinks({base, links, handoffs, canManage, onCha
             {link.recovery === 'observed' && link.observation && <p className="escalation-hint">Observation: {link.observation}</p>}
             {canManage && link.recovery !== 'observed' && <RecoveryForm base={base} link={link} onChanged={onChanged}/>}
         </article>)}
-        {handoffs.map(handoff => <p className="escalation-handoff" key={handoff.id}><span className="escalation-provider-name">{providerNames[handoff.provider] || 'Slack'}</span> <a href={handoff.url} target="_blank" rel="noopener noreferrer">Handoff to {handoff.channel}</a> · Shared; customer recovery unconfirmed</p>)}
+        {handoffs.map(handoff => <p className="escalation-handoff" key={handoff.id}><span className="escalation-provider-name">{providerNames[handoff.provider] || 'Slack'}</span> <a href={handoff.url} target="_blank" rel="noopener noreferrer">Handoff to {handoff.channel}</a> <span>Shared; customer recovery unconfirmed</span></p>)}
     </div>;
 }

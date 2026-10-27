@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "1dee7f8d79aad7c199df944876b5cce0740c4ceb99e395fff80f686b90d30fc3",
+      "sha256": "5cd5234b18deb4ab23610be801a5393cad5e025d2949319a22ebfc1d338cc270",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "579a94ab5a6c0007b24702b895cc707261594d797c005c56fb95506caa9e6a12",
+      "sha256": "7e1aa20eb12476b574d8bf24f602bb2a2d190c470897f06876ee7ca4c542cd69",
       "executable": false
     },
     "DEMO.md": {
@@ -8468,7 +8468,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/escalations/ConnectionForms.jsx": {
-      "sha256": "668f9e8872b0249b806c8c321d88347ef52a5eb44e105d9fba9aea5292dd217e",
+      "sha256": "879aab78e9e85d43a63dba9dbde542d5518ccd40831d4fb604183da051807efc",
       "executable": false
     },
     "src/ui/dashboard/components/escalations/Connections.jsx": {
@@ -8488,15 +8488,15 @@
       "executable": false
     },
     "src/ui/dashboard/components/escalations/EscalationForm.jsx": {
-      "sha256": "5dc39514878b7967f82543cc53166c48eaa13709983db3cfa994a045557267cb",
+      "sha256": "297e8e305b2c14268558d4a52359fc9818c39e8684a3d26cdb4ec20715639afe",
       "executable": false
     },
     "src/ui/dashboard/components/escalations/EscalationLinks.jsx": {
-      "sha256": "d915c37245ee15477d155f9c4c617943451919dfbe9c91ed2c55737e1061e08a",
+      "sha256": "db16ac2a0f0139ec1f4f0a0c6459717ece4d0c6885373a90b8a1b5f107ce21ec",
       "executable": false
     },
     "src/ui/dashboard/components/escalations/escalations.css": {
-      "sha256": "64fd996f1d0874398fc4f70829767602f30748553ee614cae4caa160f3931a82",
+      "sha256": "66490bb3ff48a0625734eef9cdcca3d4110e4938fd0afff121ead11e0e91bb0c",
       "executable": false
     },
     "src/ui/dashboard/components/escalations/EscalationsPanel.jsx": {
@@ -11412,7 +11412,7 @@
       "executable": false
     },
     "tests/helpers/escalations/browser.mjs": {
-      "sha256": "38776142c8e169549f0acd184ae9a2b1da61d21231fd1ac01fc629e6d95bcc0e",
+      "sha256": "ade41e870f99023dc0d2027b1e995a776c65f64d72a1998ac298a1e44cfef8e8",
       "executable": false
     },
     "tests/helpers/escalations/dev-proof.mjs": {

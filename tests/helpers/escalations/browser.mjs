@@ -86,13 +86,23 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
 
  const teamsResponse=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname===base+`/conversations/${records[0].ticket.id}/teams`);
  await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();assert.equal((await teamsResponse).status(),201);await dialog().waitFor({state:'detached'});
- await panel().getByRole('link',{name:`Handoff to ${providers.teams.target}`,exact:true}).waitFor();await shot('teams-shared');await measureTargets(panel().locator('.escalation-handoff').filter({has:page.getByRole('link',{name:`Handoff to ${providers.teams.target}`,exact:true})}),'handoff');
+ await panel().getByRole('link',{name:`Handoff to ${providers.teams.target}`,exact:true}).waitFor();await shot('teams-shared');await measureTargets(panel(),'linked issues and handoffs');
  const teamsFailure=async(kind,response)=>{
-  providers.teams.responses.push(response);await escalate();await dialog().getByLabel('Destination',{exact:true}).selectOption('teams');await dialog().locator('.escalation-context input[type=checkbox]').first().check();await dialog().getByRole('button',{name:'Preview selected context',exact:true}).click();
-  await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();await dialog().getByRole('alert').waitFor();await page.screenshot({path:join(directory,`${width}-teams-${kind}.png`)});
-  await dialog().getByRole('button',{name:'Close dialog',exact:true}).click();await section();await panel().getByRole('button',{name:'Refresh status',exact:true}).click();await panel().getByText(kind==='refused'?/Teams outcome was refused/:/Teams outcome is unknown/).first().waitFor();await shot('teams-'+kind+'-outcome');
+  if(response)providers.teams.responses.push(response);await escalate();await dialog().getByLabel('Destination',{exact:true}).selectOption('teams');await dialog().locator('.escalation-context input[type=checkbox]').first().check();await dialog().getByRole('button',{name:'Preview selected context',exact:true}).click();
+  await dialog().getByRole('button',{name:'Share selected context to Teams',exact:true}).click();await dialog().getByRole('alert').waitFor();
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const outcome=await dialog().getByRole('alert').evaluate(node=>{
+   const box=node.getBoundingClientRect();let top=0,bottom=innerHeight;
+   for(let parent=node.parentElement;parent;parent=parent.parentElement){if(/auto|scroll|hidden|clip/.test(getComputedStyle(parent).overflowY)){const rect=parent.getBoundingClientRect();top=Math.max(top,rect.top);bottom=Math.min(bottom,rect.bottom)}}
+   return {top:box.top,height:box.height,visible:Math.max(0,Math.min(bottom,box.bottom)-Math.max(top,box.top))};
+  });
+  await writeFile(join(directory,`${width}-teams-${kind}-visibility.json`),JSON.stringify(outcome,null,2));
+  if(width===390)assert.ok(outcome.visible>=outcome.height-1,`${kind} outcome must be fully visible immediately after Share: ${JSON.stringify(outcome)}`);
+  await page.screenshot({path:join(directory,`${width}-teams-${kind}.png`)});
+  await dialog().getByRole('button',{name:'Close dialog',exact:true}).click();await section();await panel().getByRole('button',{name:'Refresh status',exact:true}).click();await panel().getByText(kind==='uncertain'?/Teams outcome is unknown/:/Teams outcome was refused/).first().waitFor();await shot('teams-'+kind+'-outcome');await measureTargets(panel(),'outcome '+kind);
  };
  await teamsFailure('refused',{status:403,body:{error:{code:'Forbidden'}}});await teamsFailure('uncertain',{disconnect:true});
+ providers.teams.authorizations.clear();try{await teamsFailure('revoked')}finally{providers.teams.authorizations.add(`Bearer ${providers.teams.token}`)}
  const t=Date.now()+20000;
  for(const [i,name] of ['github','linear','jira'].entries()){
   const p=providers[name],key=name==='linear'?[...p.issues.values()].find(x=>x.identifier===links[i].key).id:links[i].key,event=p.webhook(key,{closed:true,assignee:'Avery Engineer',updatedAt:t}),payload=JSON.parse(event.body);p.issues.set(String(name==='github'?payload.issue.number:name==='linear'?payload.data.id:payload.issue.key),payload.data??payload.issue);

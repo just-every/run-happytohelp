@@ -4,6 +4,7 @@ import {processGeneratedEvents} from './event-batch'
 import {runTimeRules} from './time-rules'
 import {resumeRuleRuns} from './run-resume'
 import {runDueSla} from './sla-due'
+import {deliverSlaSlack} from './sla-slack'
 import {deliverSlaAlerts} from './sla-alerts'
 import {runSlaBackstop} from './sla-backstop'
 import {runWorkflowSchedules} from './schedules'
@@ -16,13 +17,14 @@ export {workflowEnvironment} from './clock'
  * batch finish: <=711. Time rules admit at 580 with an 80-statement run plus
  * their bounded planning/cursor writes. Cron reserves a 720-statement envelope. */
 // Event work owns its recovery credit; it must not depend on spare outbox room.
-const shares={events:100,ruleEvents:50,slaDue:30,slaDelivery:10,slaBackstop:10,resume:65,schedules:275,time:40}
+const shares={events:100,ruleEvents:50,slaDue:30,slaDelivery:10,slaSlack:10,slaBackstop:10,resume:65,schedules:265,time:40}
 export async function runWorkflows(input:Env){
  const {env,phase,complete}=workflowBudget(withWorkflowInvocation(await workflowEnvironment(input))),now=workflowNow(env)
  let failed=false
  const visit=async(share:number,run:(spent:()=>boolean)=>Promise<unknown>,rolling=false)=>{const spent=phase(share,rolling);try{if(!spent())await run(spent)}catch(error){failed=true;console.error('Workflow phase failed',error)}spent()}
  await visit(shares.slaDue,spent=>runDueSla(env,now,spent))
  await visit(shares.slaDelivery,spent=>deliverSlaAlerts(env,now,spent))
+ await visit(shares.slaSlack,spent=>deliverSlaSlack(env,now,spent))
  await visit(shares.slaBackstop,spent=>runSlaBackstop(env,now,spent),true)
  await visit(shares.events,spent=>processWorkflowEvents(env,undefined,20,spent))
  await visit(shares.ruleEvents,async spent=>{await processWorkflowEvents(env,undefined,20,spent,true);if(!spent())await processGeneratedEvents(env,now)})

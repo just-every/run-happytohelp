@@ -33,6 +33,12 @@ for(const kind of ['workflow-calendars','sla-policies'] as const){
   if(existing){extra.push(`EXISTS(SELECT 1 FROM ${table} WHERE project_id=? AND id=? AND updated_at=?)`);args.push(actor.projectId,id,existing.updated_at)}
   if(!calendar){
    const policy=definition as ReturnType<typeof policyDefinition>
+   if(policy.slack_destination_id!==(existing?.slack_destination_id??null)&&!['owner','admin'].includes(actor.role))throw new HTTPException(403,{message:'Only an owner or admin can change Slack escalation consent'})
+   if(policy.slack_destination_id){
+    const destination="SELECT 1 FROM native_integration_destinations WHERE project_id=? AND id=? AND kind='slack' AND enabled=1"
+    if(!await c.env.DB.prepare(destination).bind(actor.projectId,policy.slack_destination_id).first())invalid('Choose an enabled workspace Slack destination')
+    extra.push(`EXISTS(${destination})`);args.push(actor.projectId,policy.slack_destination_id)
+   }
    const conditions=JSON.parse(policy.conditions_json),fieldIds=Object.keys(conditions.fields??{})
    if(fieldIds.length){
     const fields=(await c.env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id IN (SELECT value FROM json_each(?))').bind(actor.projectId,JSON.stringify(fieldIds)).all<any>()).results

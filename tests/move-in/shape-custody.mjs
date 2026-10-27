@@ -8,7 +8,11 @@ const root='/api/move-in/projects/p/imports',json=body=>({method:'POST',headers:
 const body=records=>records.map(JSON.stringify).join('\n');
 const request=(vendor,records,name)=>({method:'POST',headers:{'X-Import-Filename':name,'X-Import-Schema':'2.16'},body:'\n'+body(records)});
 const state=async(h,run)=>(await h.call(`${root}/${run.id}`)).data;
-for(const vendor of ['intercom','zendesk'])test(`${vendor} all supported nested shapes fence native erasure and changed replay`,async()=>{const h=await nativeHarness();try{
+
+import {step} from './steps.mjs';
+
+test("erasure: erasing a contact removes every import custody that holds them and refuses any later upload carrying their aliases, while other people's data stays",async()=>{
+for(const vendor of ['intercom','zendesk'])await step(`${vendor} all supported nested shapes fence native erasure and changed replay`,async()=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,name,created_at) VALUES('native','p',?,'Erase me',1)").bind(privateEmail).run();
  const runs=[];
  for(const [index,[kind,path,value,pointer,reason]] of cases[vendor].entries()){
@@ -33,8 +37,7 @@ for(const vendor of ['intercom','zendesk'])test(`${vendor} all supported nested 
  }
  for(const {run,holds} of runs)if(holds)assert.deepEqual(await custody(run),[0,0]);assert.equal(h.outbound,0);
  }finally{await h.close()}});
-
-for(const vendor of ['intercom','zendesk'])test(`${vendor} understood primitives and nullable fields remain complete through native erasure and admission`,async()=>{const h=await nativeHarness();try{
+for(const vendor of ['intercom','zendesk'])await step(`${vendor} understood primitives and nullable fields remain complete through native erasure and admission`,async()=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,created_at) VALUES('native','p',?,1)").bind(privateEmail).run();
  const input=documents(vendor),person=vendor==='zendesk'?input.person.user:input.person,conversation=vendor==='zendesk'?input.conversation.ticket:input.conversation;
  person.custom_attributes=null;person.user_fields=null;person.external_id=null;
@@ -51,8 +54,7 @@ for(const vendor of ['intercom','zendesk'])test(`${vendor} understood primitives
  assert.deepEqual((await h.db.prepare('SELECT s.source_id,m.content FROM messages m JOIN move_in_message_sources s ON s.message_id=m.id ORDER BY s.source_id').all()).results,vendor==='zendesk'?[{source_id:'73',content:privateEmail}]:[{source_id:'reply',content:'Reply'},{source_id:'source:first',content:privateEmail}]);
  assert.equal(h.outbound,0);
  }finally{await h.close()}});
-
-test('all recorded Intercom participants and staff authors retain known email, external and source aliases',async()=>{const h=await nativeHarness();try{
+await step('all recorded Intercom participants and staff authors retain known email, external and source aliases',async()=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,external_id,created_at) VALUES('native','p',?,'private-external',1)").bind(privateEmail).run();
  const records=[];
  for(const [index,path] of [['participant',['contacts','contacts',0]],['source',['source','author']],['part',['conversation_parts','conversation_parts',0,'author']]]){
@@ -63,8 +65,7 @@ test('all recorded Intercom participants and staff authors retain known email, e
  for(const id of ['identity-participant','identity-source','identity-part']){const person={type:'contact',id,email:'changed@example.test',created_at:1704067200};assert.equal((await h.raw(`${root}?vendor=intercom`,request('intercom',[person],'alias-replay.jsonl'))).response.status,410)}
  assert.equal((await (await h.files).list({prefix:'move-in/p/'})).objects.length,0);assert.equal(h.outbound,0);
  }finally{await h.close()}});
-
-test('bounded shape exhaustion and opaque envelope metadata retain conservative native erasure',async()=>{const h=await nativeHarness();try{
+await step('bounded shape exhaustion and opaque envelope metadata retain conservative native erasure',async()=>{const h=await nativeHarness();try{
  await h.db.prepare("INSERT INTO contacts(id,project_id,email,created_at) VALUES('native','p',?,1)").bind(privateEmail).run();
  const records=[{user:{id:81,role:'end-user',name:'Other',email:'other@example.test',created_at:'2024-01-01T00:00:00Z',tags:Array(5000).fill('ordinary text')}}];
  const before=await h.snapshot(),bounded=await h.raw(`${root}?vendor=zendesk`,request('zendesk',records,'bounded.jsonl'));assert.equal(bounded.response.status,422);assert.deepEqual(bounded.data.diagnostic,{code:'source_identity_node_limit',location:{artifact:'bounded.jsonl',row:2,pointer:'/user/tags/4089'}});assert.equal(h.lastWrites,0);await unchanged(h,before,'bounded-shape-refusal');assert.equal((await (await h.files).list()).objects.length,0);
@@ -88,3 +89,4 @@ test('bounded shape exhaustion and opaque envelope metadata retain conservative 
  for(const [i,input] of inputs.entries()){input.contacts[0].id='changed';const replay=await h.raw(`${root}?vendor=intercom`,{method:'POST',headers:{'X-Import-Filename':'changed-envelope.json','X-Import-Schema':'2.16'},body:JSON.stringify(input)});assert.equal(replay.response.status,i===2?422:410);assert.equal(h.lastWrites,0);if(i===2)assert.deepEqual(replay.data.diagnostic,{code:'invalid_record_discriminator',location:{artifact:'changed-envelope.json',row:1,pointer:'/type'}})}
  records[0].user.id=82;assert.equal((await h.raw(`${root}?vendor=zendesk`,request('zendesk',records,'changed-bounded.jsonl'))).response.status,422);manyFields.id='changed-fields';assert.equal((await h.raw(`${root}?vendor=intercom`,request('intercom',[manyFields],'changed-fields.jsonl'))).response.status,410);assert.equal(h.outbound,0);
  }finally{await h.close()}});
+});

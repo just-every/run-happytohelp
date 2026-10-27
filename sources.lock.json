@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "119e7e23e43b2e37233d56562122689c8f84179a7c6611a019b0b73be100211e",
+      "sha256": "b2c5916d7c496ad7b8cc691ee2c043ee3169aaa3a2fd2fa872af33f1a93a0783",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "0aa87b3180b780a32e5353792ee3a9cbd1c9173b1aaf6f7e9b87e0bce389afb2",
+      "sha256": "4614a6e327b0053ee54536519a5326d09d987497c72bfb2c4e651b08ed6ccb60",
       "executable": false
     },
     "DEMO.md": {
@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "574d82ce46c682f6beba3134dd014854604a4abbaf7544d58979259c696a8304",
+      "sha256": "6c116d88ec825a7e590cf96a9d5f5cfcef6736a64c45841a68ed04732dc150b8",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2537,6 +2537,10 @@
     },
     "migrations/256_inbound_lookup_indexes.sql": {
       "sha256": "3c9b045f40e04ae9e632182d8e1a6168bedbf30961daec0c217b0fe89a33fb8c",
+      "executable": false
+    },
+    "migrations/257_procedure_versions.sql": {
+      "sha256": "5e24d62e0356311eeb6092bf59f0a6b8eab26fa6c1b8e752850386619a40b547",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -3264,7 +3268,7 @@
       "executable": false
     },
     "src/app.ts": {
-      "sha256": "c0ad373f9f772b3229a8be2d2213ad05c351e0ca8671ec6bdb1876b188f534a0",
+      "sha256": "782a941301581f7ddd34148f7f53a84a429dc3634b46cf9936dde4dc7ea3d000",
       "executable": false
     },
     "src/base/deployment-health.ts": {
@@ -3363,6 +3367,10 @@
       "sha256": "54504773b241aba61ab37f8205bff4636539be0d000091163ad4d2db511f73c1",
       "executable": false
     },
+    "src/edition/ai/procedure-sandbox.ts": {
+      "sha256": "730a174352d70322e3a3eec3aa565a380140f9cafb6806800430f8e070b3aa99",
+      "executable": false
+    },
     "src/edition/ai/training-budget.ts": {
       "sha256": "8ec48ebf66ab956a01a42712a6a5e5f9dced2b0e1bb13f091b0bec3d0bcdc567",
       "executable": false
@@ -3376,7 +3384,7 @@
       "executable": false
     },
     "src/edition/ai/training.ts": {
-      "sha256": "23ea8b28944cfe3f8f71ce4093da5c785c6e6df9da2bfb191a428357681cff3d",
+      "sha256": "041000611177235097480472d137a55d425fbd796c2c08eed21c3ccc9c0dd212",
       "executable": false
     },
     "src/edition/asset-cache.ts": {
@@ -3528,7 +3536,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "0a9ae0f0c0d637162dd0bbbb752242209745db4f9197f4b1d11b80540aa6ee73",
+      "sha256": "0150201a034e622ef3fe8c138c002ac790efe5a2dc718e4bd7325d38326e23f3",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -3657,6 +3665,10 @@
     },
     "src/modules/ai-support/presentation.ts": {
       "sha256": "7264affcad23e151cb0e2d1df00bc21d5ebfc1f537784e2e28cae04dd3fe562d",
+      "executable": false
+    },
+    "src/modules/ai-support/procedures.ts": {
+      "sha256": "76d1292a2f09da44c2b9b2ef91ac97bb9cf398913a2ddf1e634e8f69af91d113",
       "executable": false
     },
     "src/modules/ai-support/README.md": {
@@ -7036,7 +7048,7 @@
       "executable": false
     },
     "src/modules/training-runs/evaluate.ts": {
-      "sha256": "648347924f370246da7f5a7e2bcdebcbf616ce1bd9652c3d8dceb64e85022eda",
+      "sha256": "534fcf3c25c340d9c7b0ea8d93910b45f334f3a4b50126afad0fcea02a07be99",
       "executable": false
     },
     "src/modules/training-runs/index.ts": {
@@ -7064,7 +7076,7 @@
       "executable": false
     },
     "src/modules/training-runs/routes.ts": {
-      "sha256": "2c924699643f419380e3305f56f7c3b986b6ea50ac965cc942a40010ea9b0c8d",
+      "sha256": "69ac3493b05659266175a0ec88d4dc616c8099a5f4261dda56c8020a8c89c740",
       "executable": false
     },
     "src/modules/training-runs/runner.ts": {
@@ -7076,7 +7088,7 @@
       "executable": false
     },
     "src/modules/training-runs/validation.ts": {
-      "sha256": "011d4224831f0553e8c3bc4dbae91e8c94381b622e3e5f1b89d66cd82123a748",
+      "sha256": "550bd66312ef18303acbcf6fa160a2ccff249212f9feeaf422ae7105d0f880b5",
       "executable": false
     },
     "src/modules/triage/erasure.ts": {
@@ -7832,7 +7844,7 @@
       "executable": false
     },
     "src/platform/dashboard-path.js": {
-      "sha256": "d4fe17889786d2c5dcfe8ed62ee462d5ef6d2d0745e075904c596521c4fba732",
+      "sha256": "251e5fc9b2c33717e72ef10ec5b1d7bd5be0cffae590ff2c7c07114b4f2b6b61",
       "executable": false
     },
     "src/platform/db.ts": {
@@ -10235,6 +10247,10 @@
       "sha256": "d674d47c8e04f6458374f42297f279d57c9354a76dad897a6f5b3cb3b3f98df4",
       "executable": false
     },
+    "src/ui/native/pages/ProcedureSettings.jsx": {
+      "sha256": "ac7ca4fa54761c01852da8de69851a0532804a2362b40ca92e9e5b276f22211a",
+      "executable": false
+    },
     "src/ui/native/pages/project-parity.css": {
       "sha256": "2dc97f692ee06f485c9678268a54f060a30e8ad22f4b61e0a4414364cdf8da9f",
       "executable": false
@@ -10508,7 +10524,7 @@
       "executable": false
     },
     "src/ui/native/settings-destinations.js": {
-      "sha256": "96858c4daed0207ac8a1d75d89034e900617946ccaf43b44503f90c1e47d8d30",
+      "sha256": "e5adbffc02fca04bb18c984fba2c2d1a23b1bda2803b41f99e69d2fb75f65a15",
       "executable": false
     },
     "src/ui/native/SettingsNavigation.jsx": {
@@ -10572,7 +10588,7 @@
       "executable": false
     },
     "src/ui/native/workspace-page-code.js": {
-      "sha256": "6b2bad1b0bc8456bce0feb8db8a58c0d9b0301d000513082414a496744d9d766",
+      "sha256": "fe8d277fcaf59e57f2defcbb91a056d379967122cee5147d3762d194fc0a5fa3",
       "executable": false
     },
     "src/ui/native/workspace-scope.ts": {
@@ -10584,7 +10600,7 @@
       "executable": false
     },
     "src/ui/native/WorkspacePages.jsx": {
-      "sha256": "0cb61f56ea2f1c25a809d4abc15e8d95abf5bc2c360121c1a125d98e2794dfb6",
+      "sha256": "e849ce04ef333e79eae697aef765e4fc49fd3f2a213670c37f898ba5b39cd045",
       "executable": false
     },
     "src/ui/native/WorkspaceSidebarArtwork.jsx": {
@@ -11107,6 +11123,14 @@
       "sha256": "880f269d80b849e41f2dbb03b8282db589a234807fd2f9ff91f8ab871419403f",
       "executable": false
     },
+    "tests/helpers/ai/procedures-browser.mjs": {
+      "sha256": "3f5ee957976f528278c3f1fb9c09533843675720767982c99e8ae2a3215b0cf6",
+      "executable": false
+    },
+    "tests/helpers/ai/procedures.mjs": {
+      "sha256": "2838bf0bbd2da2cb76d70cc61cc59ac73874ce1bb333225c63befa4d05bd492f",
+      "executable": false
+    },
     "tests/helpers/ai/provider-fixtures.mjs": {
       "sha256": "2ea81b6f8c59ba3a18a909aafe8fdd1f7d7e0250dff7fa4f629e381cc6ef2583",
       "executable": false
@@ -11120,7 +11144,7 @@
       "executable": false
     },
     "tests/helpers/ai/suggestion-network.mjs": {
-      "sha256": "8b7ac6bebae1606aaca0367da3858696264a84483b2a5bc83c8126483b87a686",
+      "sha256": "e8afc1c76403ae83f0ea539f23b80ff5b0ed0e66d66dbeb7e74b49a4da4afb0c",
       "executable": false
     },
     "tests/helpers/ai/suggestions-browser.mjs": {
@@ -12112,7 +12136,7 @@
       "executable": false
     },
     "tests/journeys/ai-browser.mjs": {
-      "sha256": "d48411d0bef98af75b720c7a0bf3d8319d1a89ec957d16e8998eb75cc6fae3e9",
+      "sha256": "3176ded7fabb60af593866e1240a1797f7f2f2b66ebd1cdbbcb30560fc89533f",
       "executable": false
     },
     "tests/journeys/ai-live.mjs": {
@@ -12120,7 +12144,7 @@
       "executable": false
     },
     "tests/journeys/ai.mjs": {
-      "sha256": "0b9148799d636a365613f8cd06bee70a3d0f49209fe90c10c48dfcb187f002c4",
+      "sha256": "70c2c9e6b95c3d87f0d963313621a7b9df8a5f45d852f74191ec39d47cd56e07",
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {
@@ -12212,7 +12236,7 @@
       "executable": false
     },
     "tests/journeys/kit/browser.mjs": {
-      "sha256": "9bffdc55c3989fd7fdf225f2f61048603f6a11895699c9b87a511ca624c79542",
+      "sha256": "bff95b70a2f1b7bbb4f7c8528293be0dde7d97a482dd6836fe8fba9f42987387",
       "executable": false
     },
     "tests/journeys/kit/http.mjs": {

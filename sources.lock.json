@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "a154b36c401a4e79b20da49a8f68bb3a84e619f7c216f209af5ac8d764520902",
+      "sha256": "0fe92ebe4784e3d133d339f62000b129c6de8ba46b6935d9fd81c1a898e44650",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "640b5a6d2064ceb677b074b02062114a712320a2834efa61c01f5389601c1eed",
+      "sha256": "a6a58899701cddfdcd6f76e836318b113e6c5976e886b7d9e5017d76e03e595d",
       "executable": false
     },
     "DEMO.md": {
@@ -10256,7 +10256,7 @@
       "executable": false
     },
     "src/ui/native/pages/project-parity.css": {
-      "sha256": "37ac53cb06f9b65fa0e383a04c149d10ac8adb8e88df9b96caf4496216d65610",
+      "sha256": "2d9e6be3d107921aeade746fa08eefd8dd7d6ac99c75ba4ea6ba380790db071d",
       "executable": false
     },
     "src/ui/native/pages/ProjectControls.jsx": {
@@ -11664,7 +11664,7 @@
       "executable": false
     },
     "tests/helpers/inbox/settings-targets-browser.mjs": {
-      "sha256": "f681212815fa8c982a398a3ba156618eecff71214f121901a88b895a2ead5056",
+      "sha256": "382cb8500f700ceb9b921bb20250a2ad31711e8f3f45fb7b73bf7e518b7d91b0",
       "executable": false
     },
     "tests/helpers/inbox/start-menu-browser.mjs": {

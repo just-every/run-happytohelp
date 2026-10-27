@@ -7,7 +7,7 @@ import {suggestionsAtWidth} from '../helpers/ai/suggestions-browser.mjs'
 
 // The assistant's operator pages in the emitted Worker and Chromium; only the model provider is a fixture.
 let runtime,browser,shot,passed=true
-before(async()=>{runtime=await createRuntime({queueConsumers:true,vars:{OPENAI_API_KEY:'sk-test'},outboundFixture:new URL('../helpers/ai/suggestion-network.mjs',import.meta.url).href});browser=await launchBrowser();shot=await evidence('ai')})
+before(async()=>{runtime=await createRuntime({queueConsumers:true,vars:{OPENAI_API_KEY:'synthetic-hh-1'},outboundFixture:new URL('../helpers/ai/suggestion-network.mjs',import.meta.url).href});browser=await launchBrowser();shot=await evidence('ai')})
 after(async()=>{await browser?.close();await runtime?.close(passed)})
 const recorded=work=>async()=>{try{await work()}catch(error){passed=false;throw error}}
 

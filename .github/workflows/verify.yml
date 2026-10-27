@@ -2,7 +2,7 @@ name: Verify
 
 on:
   push:
-    branches: [main, release/0.3.x, release/0.4.x]
+    branches: [main, release/0.3.x, release/0.4.x, cloud/hh-conv003-incident-suggest-r2]
   pull_request:
   workflow_dispatch:
 

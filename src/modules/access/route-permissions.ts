@@ -96,7 +96,7 @@ for(const base of [P,D]){
  rules[`GET ${base}/conversations/:conversationId/ticket`]='self'
  rules[`PATCH ${base}/conversations/:conversationId/ticket`]='conversations.manage'
  for(const method of ['GET','PATCH'])rules[`${method} ${base}/conversations/:conversationId/ticket/problem`]='conversations.manage'
- for(const action of ['incidents/preview','incidents/apply','solve/preview','solve/apply'])rules[`POST ${base}/conversations/:conversationId/ticket/problem/${action}`]='conversations.manage'
+ for(const action of ['incidents/preview','incidents/apply','solve/preview','solve/apply','suggestions/preview','suggestions/confirm','suggestions/reject'])rules[`POST ${base}/conversations/:conversationId/ticket/problem/${action}`]='conversations.manage'
  rules[`GET ${base}/conversations/:conversationId/ticket/problem/solve/:previewId`]='conversations.manage'
  rules[`GET ${base}/conversations/:conversationId/timer`]='conversations.manage'
  for(const action of ['start','stop','adjust'])rules[`POST ${base}/conversations/:conversationId/timer/${action}`]='conversations.manage'

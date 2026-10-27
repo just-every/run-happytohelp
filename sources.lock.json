@@ -12219,6 +12219,10 @@
       "sha256": "a6b045e163c1447dff08a462f3f301a1f836cf161304ef00489a0051e18ed3bb",
       "executable": false
     },
+    "tests/journeys/kit/steps.mjs": {
+      "sha256": "ae90b22b90143fb1173f6ba2433a04342e3ecaa6c8c051abd68a7588ffbb921d",
+      "executable": false
+    },
     "tests/journeys/knowledge.mjs": {
       "sha256": "051bd709b5d1e6a867150760de06723c369badb66e4bf027f8cdfe48b7242aa6",
       "executable": false

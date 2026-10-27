@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {knowledgeApp} from './app.mjs'
+import {knowledgeErasureJourney} from './erasure.mjs'
 export async function experienceJourney(){
 const k=await knowledgeApp({bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'fixture-native-knowledge'}}),{app,p,call}=k
 try{
@@ -90,5 +91,6 @@ try{
  const stats=(await call(`/api/knowledge/${p}/analytics`,{status:200})).data;assert.equal(stats.totals.helpful,1);assert.equal(stats.comments[0].comment,'Worked');assert.equal(stats.totals.views,1);assert.equal(stats.totals.clicks,1);assert.ok(stats.searches.some(row=>row.query==='Restricted'&&row.withResults>0&&row.clicks===1));assert.ok(stats.searches.some(row=>row.query==='absent'&&row.withoutResults>0))
  assert.equal((await k.search('Restricted')).length,0,'private articles remain excluded from AI even after human access')
 
+ await knowledgeErasureJourney(k,{category,article:aid,customer,peer,conversation:goodConversation})
 }finally{await k.close()}
 }

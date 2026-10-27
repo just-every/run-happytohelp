@@ -13,11 +13,15 @@ export async function optIntoProactiveHelp(h,conversationId){
  await h.db.prepare(`INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES('p','{"is_contact_tracking_enabled":true,"proactive_help_enabled":true}',?) ON CONFLICT(project_id) DO UPDATE SET settings_json=json_set(settings_json,'$.is_contact_tracking_enabled',json('true'),'$.proactive_help_enabled',json('true')),updated_at=excluded.updated_at`).bind(Date.now()).run();
  await h.call('/api/conversations/'+conversationId+'/widget-events',{...json({action:'contextConsent',data:{consent:true}}),actor:'visitor'});
 }
+// Compile the same public-door Worker once per test process; each case still
+// owns fresh isolated D1/R2 state and its own network edge.
+let workerBundle;
+const compiledWorker=()=>workerBundle??=build({entryPoints:['tests/reports/worker.ts'],bundle:true,write:false,format:'esm',platform:'node',external:['node:*','cloudflare:*'],logLevel:'silent'}).then(result=>result.outputFiles[0].text);
 export async function harness({beforeOutcomes,bindings={}}={}){
  const directory=await mkdtemp(join(tmpdir(),'reports-'));let mf,external=0;const tokens={};
  try{
- await build({entryPoints:['tests/reports/worker.ts'],bundle:true,format:'esm',platform:'node',external:['node:*','cloudflare:*'],outfile:join(directory,'worker.mjs'),logLevel:'silent'});
- mf=new Miniflare(convertV4MiniflareOptions({name:'reports-check',modules:true,script:await readFile(join(directory,'worker.mjs'),'utf8'),compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings,d1Databases:{DB:'reports-check'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},queueProducers:{JOBS:'reports-jobs'},queueConsumers:{'reports-jobs':{maxBatchSize:1,maxRetries:0}},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async()=>{external++;throw Error('External requests prohibited')}}));
+
+ mf=new Miniflare(convertV4MiniflareOptions({name:'reports-check',modules:true,script:await compiledWorker(),compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings,d1Databases:{DB:'reports-check'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},queueProducers:{JOBS:'reports-jobs'},queueConsumers:{'reports-jobs':{maxBatchSize:1,maxRetries:0}},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async()=>{external++;throw Error('External requests prohibited')}}));
  const db=await mf.getD1Database('DB');
  for(const file of (await readdir('migrations')).filter(x=>x.endsWith('.sql')).sort()){
   if(file==='112_conversation_outcomes.sql'&&beforeOutcomes)await beforeOutcomes(db)

@@ -11,13 +11,17 @@ const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOption
 export const allScopes=['conversations:read','conversations:write','messages:write','contacts:read','contacts:write','articles:read','articles:write'];
 export const body=data=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
 export const sha=value=>createHash('sha256').update(value).digest('hex');
+// Compile the same public-door Worker once per test process; each case still
+// owns fresh isolated D1/R2 state and its own network edge.
+let workerBundle;
+const compiledWorker=()=>workerBundle??=build({entryPoints:['tests/connections/worker.ts'],bundle:true,write:false,format:'esm',platform:'node',external:['node:*','cloudflare:*'],logLevel:'silent'}).then(result=>result.outputFiles[0].text);
 export async function harness({beforeIntegrations,beforeMigration,rateLimits}={}){
  const directory=await mkdtemp(join(tmpdir(),'connections-'));let mf,server,external=0,receiverVerifier=null;const sessions={},received=[],responses=[],inboundToken=randomBytes(32).toString('hex');
  try{
  server=createServer(async(req,res)=>{const chunks=[];for await(const chunk of req)chunks.push(chunk);const receipt={path:req.url,headers:req.headers,body:Buffer.concat(chunks)};received.push(receipt);const response=receiverVerifier&&!receiverVerifier(receipt)?{status:401,body:''}:responses.shift()||{status:204,body:''};if(response.delay)await new Promise(resolve=>setTimeout(resolve,response.delay));if(res.destroyed)return;res.writeHead(response.status,response.headers||{});if(response.chunks){for(const chunk of response.chunks)res.write(chunk);res.end()}else res.end(response.body||'')});await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const endpoint='http://127.0.0.1:'+server.address().port;
- await build({entryPoints:['tests/connections/worker.ts'],bundle:true,format:'esm',platform:'node',external:['node:*','cloudflare:*'],outfile:join(directory,'worker.mjs'),logLevel:'silent'});
- const options=convertV4MiniflareOptions({name:'connections-check',port:0,modules:true,script:await readFile(join(directory,'worker.mjs'),'utf8'),compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{...(rateLimits?{RATE_LIMITS:JSON.stringify(rateLimits)}:{}),INBOUND_EMAIL_TOKEN:inboundToken,INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},d1Databases:{DB:'connections-check'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},queueProducers:{JOBS:'connections-jobs'},queueConsumers:{'connections-jobs':{maxBatchSize:1,maxRetries:0}},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async req=>{
+
+ const options=convertV4MiniflareOptions({name:'connections-check',port:0,modules:true,script:await compiledWorker(),compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{...(rateLimits?{RATE_LIMITS:JSON.stringify(rateLimits)}:{}),INBOUND_EMAIL_TOKEN:inboundToken,INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},d1Databases:{DB:'connections-check'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},queueProducers:{JOBS:'connections-jobs'},queueConsumers:{'connections-jobs':{maxBatchSize:1,maxRetries:0}},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async req=>{
   const url=new URL(req.url);if(url.origin!=='https://receiver.example.com'&&url.origin!=='https://hooks.slack.com'&&url.href!=='https://slack.com/api/chat.postMessage'){external++;throw Error('Test transport refused destination')}
   return fetch(endpoint+'/'+url.hostname+url.pathname,{method:req.method,headers:req.headers,...(['GET','HEAD'].includes(req.method)?{}:{body:await req.arrayBuffer()}),redirect:'manual'})
  }});mf=new Miniflare(options);

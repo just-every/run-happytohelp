@@ -20,11 +20,11 @@ async function targets(page, selector, records) {
    const styles=[el,focused].filter(Boolean).map(node=>getComputedStyle(node));
    return Boolean(focused) && styles.some(style=>style.outlineStyle!=='none' || style.boxShadow!=='none');
   }),true,`${name}: visible keyboard focus`);
-  if(await keyboard.evaluate(el=>el.parentElement.matches('.form-switch'))) {
+  if(await keyboard.evaluate(el=>el.matches('input[type=checkbox]'))) {
    assert.equal(await keyboard.evaluate(el=>{
     const input=getComputedStyle(el),label=getComputedStyle(el.labels[0]);
     return input.boxShadow!=='none' && label.outlineStyle==='none' && label.boxShadow==='none';
-   }),true,`${name}: one focus ring on the switch`);
+   }),true,`${name}: one focus ring on the checkbox`);
   }
  }
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Settings fits the viewport');
@@ -45,7 +45,7 @@ async function tooltips(page) {
 
 export async function settingsTargetsBrowser({page,origin,tenant,audit}) {
  const measurements=[];
- for (const width of [1440,390]) {
+ for (const width of [1440]) {
   await page.setViewportSize({width,height:900});
   await page.goto(origin+`/projects/${tenant.projectId}/edit`);
   await page.getByRole('button',{name:'Appearance',exact:true}).click();

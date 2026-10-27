@@ -178,3 +178,29 @@ Workflow and SLA inbox notices remain available when email delivery is not
 configured. Their frozen delivery record says email was not configured; installing
 a mail provider later does not replay that action. The workflow run or SLA alert
 keeps the explicit not-delivered email outcome for review.
+
+
+## Slack SLA escalations
+
+An owner or admin can save an incoming webhook or bot destination in Settings →
+Slack. Turn off **Notify on new conversations** for a destination used only by SLA
+policies. In Settings → Workflows → SLA policies, explicitly select the **Slack
+escalation destination** and named backup operators. Leaving the destination empty
+sends no SLA alerts to Slack. Existing alerts keep their original destination;
+changing the selection never redirects an old alert.
+
+Approaching, breached and unattended alerts send fixed ticket and named-operator
+identifiers, the metric and alert kind. Customer text, names, email addresses and
+private notes are excluded. The configured Slack channel is an explicitly chosen
+external audience; the app does not infer its members. Current backup membership,
+policy authority, destination availability and ticket state are checked before
+sending. Removing a backup or destination consent cancels unsent work.
+
+Ticket → Schedules shows Slack delivery separately from the persistent alert:
+pending, accepted, failed, uncertain or cancelled, with attempts and any next retry.
+An explicit rate-limit refusal respects its cooldown and stops after five attempts.
+A lost response, unknown provider outcome or interrupted send stays uncertain
+across restart and never sends again automatically. Inspect Slack to reconcile
+unknown outcomes. **Acknowledge alert** in HappyToHelp persists acknowledgment and
+stops unsent work; it does not edit the Slack message or create another post.
+Teams and live account qualification remain pending under SLA-001.

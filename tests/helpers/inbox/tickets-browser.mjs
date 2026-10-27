@@ -1,10 +1,12 @@
+import {createHash} from 'node:crypto'
+import {slaSlackBrowser} from '../workflows/sla-slack-browser.mjs'
 import assert from 'node:assert/strict'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {launchBrowser,evidence} from '../../journeys/kit/browser.mjs'
 import {seedTicketBrowser} from './ticket-browser-fixture.mjs'
 
 export async function ticketsBrowser({count=12,installation}={}){
- const runtime=installation?{origin:installation.origin,close:async()=>{}}:await createRuntime({vars:{H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}}),browser=await launchBrowser(),shot=await evidence('tickets')
+ const runtime=installation?{origin:installation.origin,close:async()=>{}}:await createRuntime({outboundFixture:new URL('../../fixtures/sla-slack-edge.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:createHash('sha256').update('synthetic-hh-1').digest('base64'),H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}}),browser=await launchBrowser(),shot=await evidence('tickets')
  let success=false
  try{
   const fixture=await seedTicketBrowser(runtime.origin,count,installation),{projectId,base,owner}=fixture,context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]
@@ -103,6 +105,8 @@ export async function ticketsBrowser({count=12,installation}={}){
   const savedPolicy=(await fixture.api(base+'/sla-policies')).data.find(row=>row.id===policy.id)
   assert.deepEqual(savedPolicy.conditions.fields,{[tier.id]:'business'})
   assert.deepEqual(savedPolicy.conditions.form_ids,[requestForm.id])
+  await slaSlackBrowser({page,runtime,fixture,capture,policy})
+  await page.goto(`${runtime.origin}/projects/${projectId}/workflow-settings?tab=rules`)
   // The lead's normal settings screen configures and publishes the same
   // versioned actions that the provider-edge workflow journeys execute.
   await page.getByRole('button',{name:'Rules',exact:true}).click()

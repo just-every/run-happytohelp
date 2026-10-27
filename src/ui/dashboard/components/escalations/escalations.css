@@ -61,3 +61,15 @@
     .escalation-toolbar .escalation-hint { flex-basis: 100%; }
     .escalation-link dl > div { grid-template-columns: 88px minmax(0, 1fr); }
 }
+
+.escalation-handoff, .escalation-hint { overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+    body.conversation-workspace #chat .conversation-details .escalations-panel button,
+    .escalation-dialog button,
+    .escalation-form input:not([type="checkbox"]), .escalation-form select,
+    .escalation-form .escalation-choice,
+    .escalations-panel summary { min-height: 44px; }
+    body.conversation-workspace #chat .conversation-details .escalations-panel button,
+    .escalation-dialog button { min-width: 44px; }
+    .escalations-panel a { display: inline-flex; align-items: center; min-width: 44px; min-height: 44px; }
+}

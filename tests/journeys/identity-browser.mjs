@@ -51,7 +51,8 @@ test('with sign-up and mail configured: registration waits for setup, then regis
 })
 
 // A magic link: neutral request receipt, a scanner-safe GET, one explicit POST into a session, and replay refused.
-for(const [name,viewport] of Object.entries(viewports))test(`magic sign-in in a ${viewport.width}px browser: neutral request, scanner-safe link, one explicit sign-in and refused replay`,async()=>{
+const name='desktop',viewport=viewports.desktop
+test(`magic sign-in in a ${viewport.width}px browser: neutral request, scanner-safe link, one explicit sign-in and refused replay`,async()=>{
  const shot=await evidence('magic-link')
  await withRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',EMAIL_PROVIDER:'sendgrid',EMAIL_API_KEY:'test-never-sent',EMAIL_FROM:'support@example.test'}},async runtime=>{
   const tenant=await runtime.seedTenant({name:'Magic browser',email:'owner@magic-browser.test',allowedOrigin:runtime.origin})

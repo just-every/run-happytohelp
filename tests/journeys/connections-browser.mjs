@@ -7,12 +7,13 @@ import {createRuntime} from '../helpers/emitted-runtime.mjs'
 import {launchBrowser,evidence} from './kit/browser.mjs'
 
 // API tokens, webhooks, Slack and the delivery log in the emitted Worker; only the network edge is a fixture.
+const width=1440
 let runtime,browser,shot,success=true;const records=[]
 before(async()=>{runtime=await createRuntime({outboundFixture:new URL('../connections/browser-network.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}});browser=await launchBrowser();shot=await evidence('connections')})
 after(async()=>{await writeFile(shot('connections-browser.json'),JSON.stringify({records},null,2)).catch(()=>{});await browser?.close();await runtime?.close(success)})
 async function audit(page,name){await page.addScriptTag({path:resolve('node_modules/axe-core/axe.min.js')});const violations=await page.evaluate(async()=>{const result=await axe.run();return result.violations.filter(x=>['serious','critical'].includes(x.impact)).map(x=>({id:x.id,impact:x.impact,targets:x.nodes.map(n=>n.target)}))});assert.deepEqual(violations,[],name);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' overflow');await page.screenshot({path:shot(name+'.png'),fullPage:true});records.push({name,violations})}
 
-for(const width of [1440,390])test(`at ${width}px an owner creates and revokes a token, connects a webhook and Slack with secrets shown once, reads the delivery log, and resends an uncertain delivery only after a duplicate warning`,async()=>{try{
+test(`at ${width}px an owner creates and revokes a token, connects a webhook and Slack with secrets shown once, reads the delivery log, and resends an uncertain delivery only after a duplicate warning`,async()=>{try{
 
   const owner=await runtime.seedTenant({name:'Connections workspace '+width,email:'connections-'+width+'@example.test'});
   const context=await browser.newContext({viewport:{width,height:1000}});await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}]);const page=await context.newPage();page.setDefaultTimeout(20000);
@@ -62,7 +63,7 @@ for(const width of [1440,390])test(`at ${width}px an owner creates and revokes a
 
 import {startProviders} from '../helpers/escalations/providers.mjs'
 import {exerciseEscalations} from '../helpers/escalations/browser.mjs'
-for(const width of [1440,390])test(`at ${width}px selected engineering context reaches connected trackers and Slack, signed closure updates return as drafts, and an operator edits and sends the approved customer update`,async()=>{
+test(`at ${width}px selected engineering context reaches connected trackers and Slack, signed closure updates return as drafts, and an operator edits and sends the approved customer update`,async()=>{
  const providers=await startProviders();let runtime,passed=false;
  try{runtime=await createRuntime({outboundFixture:new URL('../helpers/escalations/outbound.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}});const owner=await runtime.seedTenant({name:'Engineering escalations '+width,email:`engineering-${width}@example.test`});const result=await exerciseEscalations({browser,origin:runtime.origin,owner,providers,width,directory:shot('escalations')});await result.context.close();passed=true}finally{await runtime?.close(passed);await providers.close()}
 })

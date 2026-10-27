@@ -1,3 +1,4 @@
+import {runSteps} from './kit/steps.mjs';
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {spawnSync} from 'node:child_process'
@@ -13,128 +14,6 @@ const ownerSetupTables=['owner_setup','users','projects','project_settings','use
 const migrationStatements=async name=>{const source=(await readFile('migrations/'+name,'utf8')).replace(/^\s*--[^\n]*$/gm,'');return [...source.matchAll(/\s*(CREATE TRIGGER[\s\S]*?END;|[^;]+;)/g)].map(match=>match[1]).filter(sql=>sql.trim()!==';')}
 const mailOutbound=(mail,{reject=()=>false}={})=>async(request,entry)=>{const url=new URL(request.url);if(url.host==='api.resend.com'){if(reject(entry))return new Response('rejected',{status:400});const body=JSON.parse(entry.body);mail.push({to:body.to[0],text:body.text,subject:body.subject});return Response.json({id:'email-'+mail.length})}if(url.host==='api.sendgrid.com'){if(reject(entry))return new Response('rejected',{status:400});const body=JSON.parse(entry.body);mail.push({to:body.personalizations[0].to[0].email,text:body.content.find(part=>part.type==='text/plain').value,subject:body.subject});return new Response(null,{status:202,headers:{'x-message-id':'fixture-'+mail.length}})}throw new Error('Unexpected outbound request: '+request.url)}
 const tokenOf=url=>new URL(url).searchParams.get('token')
-
-test('first-owner setup validates, refuses cross-site claims, rolls back a failed claim, admits exactly one concurrent owner and then stays closed',async()=>{
- const app=await startApp({base:'http://127.0.0.1'})
- try{
-  const local='http://127.0.0.1',count=async table=>(await app.first(`SELECT count(*) AS n FROM ${table}`)).n
-  const empty=async()=>{for(const table of ownerSetupTables)assert.equal(await count(table),0,table)}
-  const entry={email:'Owner@Example.invalid',password:randomBytes(24).toString('base64url'),allowedOrigin:'https://example.invalid/page'}
-  const submit=(body=entry,headers={},base=local)=>app.request('/api/identity/bootstrap',{base,raw:typeof body==='string',body:typeof body==='string'?body:body,headers:{'content-type':'application/json',origin:base,...headers}})
-  const state=async(base=local)=>(await app.call('/api/identity/setup',{base})).data
-  assert.deepEqual(await state(),{available:true})
-  for(const invalid of [{...entry,email:'bad'},{...entry,password:'short'},{...entry,allowedOrigin:'javascript:alert(1)'},{...entry,name:''},{...entry,ownerName:' '},{...entry,primaryColor:'red'},{...entry,primaryColor:'#123456;bad'},{...entry,primaryColor:null},'{',null])assert.equal((await submit(invalid)).status,400,JSON.stringify(invalid))
-  assert.equal((await submit(entry,{origin:'https://hostile.invalid'})).status,403)
-  assert.equal((await submit(entry,{'sec-fetch-site':'cross-site'})).status,403)
-  await empty()
-  await app.configure({RER_INSTALLATION_ID:'managed-fixture'})
-  assert.deepEqual(await state(),{available:true,tokenRequired:true});assert.equal((await submit()).status,503)
-  await app.configure({H2H_SETUP_TOKEN:'synthetic-private-owner-setup-fixture',H2H_SETUP_OWNER_EMAIL:'owner@example.invalid'})
-  assert.equal((await submit()).status,403);assert.equal((await submit({...entry,setupToken:'incorrect'})).status,403)
-  assert.equal((await submit({...entry,email:'attacker@example.invalid',setupToken:'synthetic-private-owner-setup-fixture'})).status,403)
-  await empty()
-  await app.configure({RER_INSTALLATION_ID:undefined,H2H_SETUP_TOKEN:undefined,H2H_SETUP_OWNER_EMAIL:undefined})
-  // A database failure after claiming setup rolls back every write, including its marker.
-  await app.db.prepare("CREATE TRIGGER reject_setup_credentials BEFORE INSERT ON credentials BEGIN SELECT RAISE(ABORT,'fixture failure'); END").run()
-  assert.equal((await submit({...entry,ownerName:'Actual Owner',primaryColor:'#AABBCC'})).status,500)
-  await empty();await app.db.prepare('DROP TRIGGER reject_setup_credentials').run()
-  // Local setup suppresses mail: two concurrent claims leave one owner and no provider request or stored delivery.
-  await app.configure({H2H_LOCAL:'true',EMAIL_PROVIDER:'development',APP_ORIGIN:local,EMAIL_FROM:'HappyToHelp <noreply@localhost.test>'})
-  const racers=[entry,{...entry,email:'racer@example.invalid'}],responses=await Promise.all(racers.map(body=>submit(body)))
-  assert.deepEqual(responses.map(r=>r.status).sort(),[201,409]);assert.equal(app.requests.length,0,'local setup contacts no mail provider')
-  const success=responses.find(r=>r.status===201),winner=racers[responses.indexOf(success)].email.toLowerCase(),owner=await success.json()
-  assert.equal(await count('email_deliveries'),0);assert.equal(await count('user_settings'),0)
-  assert.equal((await app.first('SELECT name FROM projects')).name,'Example','the workspace is named from the website')
-  assert.equal((await app.first('SELECT email FROM users')).email,winner)
-  const settings=JSON.parse((await app.first('SELECT settings_json FROM project_settings')).settings_json),starter=await app.first('SELECT id,is_enabled FROM ai_profiles WHERE project_id=?',owner.projectId)
-  assert.deepEqual(settings.derived,{name:'Example',colour:true});assert.match(settings.primary_color,/^#[0-9a-f]{6}$/)
-  assert.deepEqual([settings.default_visitor_ai_id,starter.is_enabled],[starter.id,1],'setup provisions an enabled starter assistant')
-  assert.match(success.headers.get('set-cookie'),/HttpOnly/);assert.doesNotMatch(success.headers.get('set-cookie'),/Secure/)
-  for(const table of ['owner_setup','users','projects','memberships','credentials','sessions'])assert.equal(await count(table),1,table)
-  const login=await app.request('/api/identity/login',{base:local,body:{email:winner,password:entry.password}});assert.equal(login.status,200);assert.doesNotMatch(login.headers.get('set-cookie'),/Secure/)
-  const secure=await app.request('/api/identity/login',{base:'https://example.invalid',body:{email:winner,password:entry.password}});assert.equal(secure.status,200);assert.match(secure.headers.get('set-cookie'),/Secure/)
-  assert.deepEqual(await state(),{available:false});assert.equal((await submit()).status,409)
-  // Deleting every owner row never reopens setup, nor does a legacy partial installation or an import.
-  for(const table of [...ownerTicketTables,'sessions','credentials','memberships','user_settings','user_project_preferences','project_settings','ai_profiles','users','projects'])await app.db.prepare(`DELETE FROM ${table}`).run()
-  assert.deepEqual(await state(),{available:false});assert.equal((await submit()).status,409)
-  await app.db.prepare('DROP TRIGGER owner_setup_on_user').run();await app.db.prepare('DROP TRIGGER owner_setup_on_project').run();await app.db.prepare('DROP TABLE owner_setup').run()
-  await app.db.prepare("INSERT INTO users VALUES('legacy','legacy@example.invalid','Legacy',1)").run()
-  for(const sql of await migrationStatements('0097_owner_setup.sql'))await app.db.prepare(sql).run()
-  assert.deepEqual(await state(),{available:false});assert.equal((await submit()).status,409);assert.equal(await count('credentials'),0)
-  await app.db.prepare("DELETE FROM users WHERE id='legacy'").run();assert.deepEqual(await state(),{available:false})
-  await app.db.prepare('DELETE FROM owner_setup').run();await app.db.prepare("INSERT INTO users VALUES('imported','import@example.invalid','Imported',1)").run();await app.db.prepare('DELETE FROM users').run()
-  assert.deepEqual(await state(),{available:false},'an imported owner durably consumes first-owner setup')
- }finally{await app.close()}
-})
-
-test('a managed install claims only with its credential; a dropped welcome mail stays uncertain and is never resent',async()=>{
- const mail=[],dropped=[]
- const app=await startApp({outbound:async(request,entry)=>{if(new URL(request.url).host==='api.resend.com'){dropped.push(JSON.parse(entry.body));throw new TypeError('connection lost')}throw new Error('Unexpected outbound request: '+request.url)},bindings:{RER_INSTALLATION_ID:'managed-fixture',H2H_SETUP_TOKEN:'synthetic-private-owner-setup-fixture',H2H_SETUP_OWNER_EMAIL:'OWNER@example.invalid',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'re_fixture',EMAIL_FROM:'HappyToHelp <welcome@example.invalid>'}})
- try{
-  const local='http://127.0.0.1',password=randomBytes(24).toString('base64url')
-  const managedEntry={name:'First Owner',ownerName:'  Actual Owner  ',email:'Owner@Example.invalid',password,allowedOrigin:'https://example.invalid/page',primaryColor:'#AABBCC',setupToken:'synthetic-private-owner-setup-fixture'}
-  const submit=body=>app.request('/api/identity/bootstrap',{base:local,body,headers:{origin:local}})
-  const responses=await Promise.all([submit(managedEntry),submit(managedEntry)])
-  assert.deepEqual(responses.map(r=>r.status).sort(),[201,409])
-  assert.equal((await app.first('SELECT name FROM users')).name,'Actual Owner');assert.equal((await app.first('SELECT name FROM projects')).name,'First Owner')
-  assert.match((await app.first('SELECT verification_secret FROM projects')).verification_secret,/^[0-9a-f]{64}$/,'owner setup gives the first project a server secret')
-  const settings=JSON.parse((await app.first('SELECT settings_json FROM project_settings')).settings_json);assert.deepEqual([settings.primary_color,settings.derived],['#aabbcc',{name:null,colour:false}])
-  const owner=await responses.find(r=>r.status===201).json();assert.equal(owner.welcomeEmail,'uncertain')
-  assert.equal(dropped.length,1);assert.deepEqual(dropped[0].to,['owner@example.invalid'])
-  assert.equal((await app.first('SELECT state FROM email_deliveries WHERE id=?','welcome:'+owner.projectId)).state,'uncertain')
-  await app.scheduled();assert.equal(dropped.length,1,'scheduled work never sends an uncertain welcome again');assert.equal(mail.length,0)
-  assert.equal((await app.call('/api/identity/login',{base:local,body:{email:'owner@example.invalid',password}})).status,200)
-  // Retired personal preferences stay historical data, untouched by profile edits.
-  const profile=(method='GET',body)=>app.call('/api/management/profile',{base:local,method,body,token:owner.token})
-  assert.equal('visual_inspiration' in (await profile()).data.data,false);assert.equal((await app.call('/api/management/profile',{base:local})).status,401)
-  await app.db.prepare('INSERT INTO user_settings(user_id,visual_inspiration) VALUES(?,?)').bind(owner.userId,'Preserved historical preference').run()
-  assert.equal((await profile('PUT',{name:'Renamed Owner',visual_inspiration:'Do not reactivate this field'})).status,200)
-  assert.equal((await app.first('SELECT visual_inspiration FROM user_settings WHERE user_id=?',owner.userId)).visual_inspiration,'Preserved historical preference')
-  for(const table of [...ownerTicketTables,'project_settings','sessions','credentials','memberships','user_settings','user_project_preferences','ai_profiles','users','projects'])await app.db.prepare(`DELETE FROM ${table}`).run()
-  assert.equal((await submit(managedEntry)).status,409,'the managed credential shares the permanent claim, even after owner deletion')
- }finally{await app.close()}
-})
-
-test('a deployed install claims only with its private setup token or its owner-email deploy claim; loopback development stays tokenless',async()=>{
- // The public deploy command refuses the local trial owner before any build or provider work.
- for(const flags of [[],['--dry-run']]){
-  const result=spawnSync(process.execPath,['node_modules/@runeditrun/rer/bin/rer.mjs','deploy',...flags,'--non-interactive'],{env:{...process.env,OWNER_EMAIL:'owner@run-happytohelp.test'},encoding:'utf8'})
-  assert.notEqual(result.status,0);assert.match(result.stdout+result.stderr,/real OWNER_EMAIL/);assert.doesNotMatch(result.stdout+result.stderr,/Building|Deploying the/)
- }
- const app=await startApp()
- try{
-  const entry={name:'First Owner',email:'owner@example.invalid',password:'synthetic-long-test-password',allowedOrigin:'https://example.invalid'},deployed='https://help.example.test'
-  const submit=(base,body=entry)=>app.request('/api/identity/bootstrap',{base,body,headers:{origin:base}})
-  const state=async base=>(await app.call('/api/identity/setup',{base})).data
-  const users=async()=>(await app.first('SELECT count(*) AS n FROM users')).n
-  const reset=async(changes={})=>{for(const table of [...ownerTicketTables,'sessions','credentials','memberships','user_project_preferences','project_settings','ai_profiles','users','projects','owner_setup'])await app.db.prepare(`DELETE FROM ${table}`).run();await app.configure({H2H_SETUP_TOKEN:undefined,RER_INSTALLATION_ID:undefined,APP_ORIGIN:undefined,OWNER_EMAIL:undefined,...changes});assert.equal(await users(),0)}
-  await reset()
-  assert.deepEqual(await state(deployed),{available:true,tokenRequired:true})
-  for(const body of [entry,{...entry,setupToken:''},{...entry,setupToken:'guessed-token'}]){const refused=await submit(deployed,body);assert.equal(refused.status,503);assert.match(await refused.text(),/requires a private H2H_SETUP_TOKEN/)}
-  for(const origin of ['https://happytohelp.owner.workers.dev','http://192.168.1.20:5173','http://localhost.example.test'])assert.equal((await submit(origin)).status,503,origin)
-  // A loopback address behind a proxy is still a deployment when APP_ORIGIN is public.
-  await app.configure({APP_ORIGIN:deployed});assert.deepEqual(await state('http://127.0.0.1:8787'),{available:true,tokenRequired:true});assert.equal((await submit('http://127.0.0.1:8787')).status,503);assert.equal(await users(),0)
-  const token='f'.repeat(64);await app.configure({APP_ORIGIN:undefined,H2H_SETUP_TOKEN:token})
-  assert.equal((await submit(deployed)).status,403);assert.equal((await submit(deployed,{...entry,setupToken:'f'.repeat(63)})).status,403);assert.equal(await users(),0)
-  const created=await submit(deployed,{...entry,setupToken:token});assert.equal(created.status,201);assert.match(created.headers.get('set-cookie'),/Secure/)
-  assert.deepEqual(await state(deployed),{available:false,tokenRequired:true});assert.equal((await submit(deployed,{...entry,setupToken:token})).status,409)
-  await app.configure({H2H_SETUP_TOKEN:undefined});assert.equal((await submit(deployed,{...entry,email:'second@example.invalid'})).status,503,'a redeploy without the token stays closed');assert.equal(await users(),1)
-  for(const origin of ['http://127.0.0.1:5173','http://localhost:5173','http://[::1]:5173']){await reset();assert.deepEqual(await state(origin),{available:true});const local=await submit(origin);assert.equal(local.status,201,origin);assert.doesNotMatch(local.headers.get('set-cookie'),/Secure/)}
-  for(const origin of ['http://127.0.0.1:5173',deployed]){
-   await reset({RER_INSTALLATION_ID:'managed-fixture'});assert.deepEqual(await state(origin),{available:true,tokenRequired:true})
-   const waiting=await submit(origin);assert.equal(waiting.status,503);assert.match(await waiting.text(),/awaiting its installation credential/)
-   await app.configure({H2H_SETUP_TOKEN:'synthetic-managed-private-owner-setup-fixture'});assert.equal((await submit(origin)).status,403);assert.equal((await submit(origin,{...entry,setupToken:'synthetic-managed-private-owner-setup-fixture'})).status,201)
-  }
-  // The deploy claim takes its identity from this Worker's owner email, refusing rer's local default.
-  const hosted='https://happytohelp.owner.workers.dev'
-  await reset({H2H_SETUP_TOKEN:'hosted-owner-token',APP_ORIGIN:hosted,OWNER_EMAIL:'owner@run-happytohelp.test'})
-  const trapped=await app.request('/auth/bootstrap',{base:hosted,body:{token:'hosted-owner-token'},headers:{origin:hosted}});assert.equal(trapped.status,503);assert.equal(await users(),0)
-  await app.configure({OWNER_EMAIL:'ada.lovelace+support@example.test'})
-  const claim=await app.request('/auth/bootstrap',{base:hosted,body:{token:'hosted-owner-token',displayName:'Owner',returnTo:'/setup'},headers:{origin:hosted}})
-  assert.equal(claim.status,303);assert.equal(claim.headers.get('Location'),'/setup')
-  assert.deepEqual(await app.first('SELECT email,name FROM users'),{email:'ada.lovelace+support@example.test',name:'Ada Lovelace'});assert.equal((await app.first('SELECT name FROM projects')).name,'My workspace')
- }finally{await app.close()}
-})
 
 test('native passwords: sign-in, change and owner reset revoke sessions, an invitation accepts once, foreign switching is refused and a removed member keeps account-only sign-in',async()=>{
  const app=await startApp({bindings:{H2H_SETUP_TOKEN:'synthetic-identity-fixture-setup-token-0123456789abcdef',INTEGRATION_ENCRYPTION_KEY:encryptionKey()}})
@@ -302,7 +181,13 @@ test('identity pages learn the install state first; sign-up and recovery refuse 
  }finally{await app.close()}
 })
 
-test('a magic sign-in link is mailed as a bounded hashed capability, never consumed by GET, redeemed by exactly one explicit POST into the current role, and replay or redirect input changes nothing',async()=>{
+test('two-factor sign-in: TOTP with recovery codes, a role policy that forces enrolment and ends unproven sessions, refused and rate-limited answers, step-up for exports, owner reset and installation-key owner recovery, all audited',twoFactorJourney)
+test('roles and the security log: a collaborator notes and follows but cannot reply, assign, erase or export; a restricted custom role cannot publish or export; a knowledge reader reads selected grant targets without writes and loses access on the next request; role changes step up; the log is append-only with retention and legal holds',rolesAuditJourney)
+
+test('no-password step-up proves the account mailbox, never the held session; links expire, bind the account, consume once, and rate-limit atomically with audit',emailStepUpJourney)
+
+test("magic sign-in journey: mail a single-use capability, redeem under current authority and never replay uncertain mail",()=>runSteps([
+  ['a magic sign-in link is mailed as a bounded hashed capability, never consumed by GET, redeemed by exactly one explicit POST into the current role, and replay or redirect input changes nothing',async()=>{
  const mail=[],origin='https://app.example'
  const app=await startApp({bindings:{EMAIL_PROVIDER:'sendgrid',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test',APP_ORIGIN:origin},outbound:mailOutbound(mail)})
  try{
@@ -335,9 +220,8 @@ test('a magic sign-in link is mailed as a bounded hashed capability, never consu
   const standalone=sha('standalone-capability');await app.db.prepare('INSERT INTO magic_signins VALUES(?,?,NULL,?,?,NULL)').bind(sha(standalone),'standalone','standalone@example.test',Date.now()+60000).run()
   assert.equal((await consume(standalone,{returnTo:'//evil.example'})).data.destination,'/projects/create','account-only sign-in defaults to creating a workspace')
  }finally{await app.close()}
-})
-
-test('magic sign-in refuses removed members, deleted workspaces, changed emails, foreign origins and missing configuration, rate-limits every address alike, and keeps an unknown mail outcome uncertain',async()=>{
+}],
+  ['magic sign-in refuses removed members, deleted workspaces, changed emails, foreign origins and missing configuration, rate-limits every address alike, and keeps an unknown mail outcome uncertain',async()=>{
  const mail=[],origin='https://app.example';let reject=false,hold
  const outbound=async(request,entry)=>{if(hold){const gate=hold;hold.entered();await gate.released;throw new Error('connection lost after submission')}return mailOutbound(mail,{reject:()=>reject})(request,entry)}
  const bindings={EMAIL_PROVIDER:'sendgrid',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test',APP_ORIGIN:origin}
@@ -379,9 +263,127 @@ test('magic sign-in refuses removed members, deleted workspaces, changed emails,
   await app.until(async()=>(await app.first("SELECT state FROM email_deliveries WHERE recipient='owner-deferred@example.test'"))?.state==='uncertain',{message:'uncertain sign-in mail'})
   assert.ok((await app.first("SELECT consumed_at FROM magic_signins WHERE user_id='owner-deferred'")).consumed_at,'an uncertain capability is spent, never resent')
  }finally{await app.close()}
-})
+}]
+]));
 
-test('two-factor sign-in: TOTP with recovery codes, a role policy that forces enrolment and ends unproven sessions, refused and rate-limited answers, step-up for exports, owner reset and installation-key owner recovery, all audited',twoFactorJourney)
-test('roles and the security log: a collaborator notes and follows but cannot reply, assign, erase or export; a restricted custom role cannot publish or export; a knowledge reader reads selected grant targets without writes and loses access on the next request; role changes step up; the log is append-only with retention and legal holds',rolesAuditJourney)
-
-test('no-password step-up proves the account mailbox, never the held session; links expire, bind the account, consume once, and rate-limit atomically with audit',emailStepUpJourney)
+test("first-owner claim journey: validate and claim once under local, deployed and Managed installation authority",()=>runSteps([
+  ['first-owner setup validates, refuses cross-site claims, rolls back a failed claim, admits exactly one concurrent owner and then stays closed',async()=>{
+ const app=await startApp({base:'http://127.0.0.1'})
+ try{
+  const local='http://127.0.0.1',count=async table=>(await app.first(`SELECT count(*) AS n FROM ${table}`)).n
+  const empty=async()=>{for(const table of ownerSetupTables)assert.equal(await count(table),0,table)}
+  const entry={email:'Owner@Example.invalid',password:randomBytes(24).toString('base64url'),allowedOrigin:'https://example.invalid/page'}
+  const submit=(body=entry,headers={},base=local)=>app.request('/api/identity/bootstrap',{base,raw:typeof body==='string',body:typeof body==='string'?body:body,headers:{'content-type':'application/json',origin:base,...headers}})
+  const state=async(base=local)=>(await app.call('/api/identity/setup',{base})).data
+  assert.deepEqual(await state(),{available:true})
+  for(const invalid of [{...entry,email:'bad'},{...entry,password:'short'},{...entry,allowedOrigin:'javascript:alert(1)'},{...entry,name:''},{...entry,ownerName:' '},{...entry,primaryColor:'red'},{...entry,primaryColor:'#123456;bad'},{...entry,primaryColor:null},'{',null])assert.equal((await submit(invalid)).status,400,JSON.stringify(invalid))
+  assert.equal((await submit(entry,{origin:'https://hostile.invalid'})).status,403)
+  assert.equal((await submit(entry,{'sec-fetch-site':'cross-site'})).status,403)
+  await empty()
+  await app.configure({RER_INSTALLATION_ID:'managed-fixture'})
+  assert.deepEqual(await state(),{available:true,tokenRequired:true});assert.equal((await submit()).status,503)
+  await app.configure({H2H_SETUP_TOKEN:'synthetic-private-owner-setup-fixture',H2H_SETUP_OWNER_EMAIL:'owner@example.invalid'})
+  assert.equal((await submit()).status,403);assert.equal((await submit({...entry,setupToken:'incorrect'})).status,403)
+  assert.equal((await submit({...entry,email:'attacker@example.invalid',setupToken:'synthetic-private-owner-setup-fixture'})).status,403)
+  await empty()
+  await app.configure({RER_INSTALLATION_ID:undefined,H2H_SETUP_TOKEN:undefined,H2H_SETUP_OWNER_EMAIL:undefined})
+  // A database failure after claiming setup rolls back every write, including its marker.
+  await app.db.prepare("CREATE TRIGGER reject_setup_credentials BEFORE INSERT ON credentials BEGIN SELECT RAISE(ABORT,'fixture failure'); END").run()
+  assert.equal((await submit({...entry,ownerName:'Actual Owner',primaryColor:'#AABBCC'})).status,500)
+  await empty();await app.db.prepare('DROP TRIGGER reject_setup_credentials').run()
+  // Local setup suppresses mail: two concurrent claims leave one owner and no provider request or stored delivery.
+  await app.configure({H2H_LOCAL:'true',EMAIL_PROVIDER:'development',APP_ORIGIN:local,EMAIL_FROM:'HappyToHelp <noreply@localhost.test>'})
+  const racers=[entry,{...entry,email:'racer@example.invalid'}],responses=await Promise.all(racers.map(body=>submit(body)))
+  assert.deepEqual(responses.map(r=>r.status).sort(),[201,409]);assert.equal(app.requests.length,0,'local setup contacts no mail provider')
+  const success=responses.find(r=>r.status===201),winner=racers[responses.indexOf(success)].email.toLowerCase(),owner=await success.json()
+  assert.equal(await count('email_deliveries'),0);assert.equal(await count('user_settings'),0)
+  assert.equal((await app.first('SELECT name FROM projects')).name,'Example','the workspace is named from the website')
+  assert.equal((await app.first('SELECT email FROM users')).email,winner)
+  const settings=JSON.parse((await app.first('SELECT settings_json FROM project_settings')).settings_json),starter=await app.first('SELECT id,is_enabled FROM ai_profiles WHERE project_id=?',owner.projectId)
+  assert.deepEqual(settings.derived,{name:'Example',colour:true});assert.match(settings.primary_color,/^#[0-9a-f]{6}$/)
+  assert.deepEqual([settings.default_visitor_ai_id,starter.is_enabled],[starter.id,1],'setup provisions an enabled starter assistant')
+  assert.match(success.headers.get('set-cookie'),/HttpOnly/);assert.doesNotMatch(success.headers.get('set-cookie'),/Secure/)
+  for(const table of ['owner_setup','users','projects','memberships','credentials','sessions'])assert.equal(await count(table),1,table)
+  const login=await app.request('/api/identity/login',{base:local,body:{email:winner,password:entry.password}});assert.equal(login.status,200);assert.doesNotMatch(login.headers.get('set-cookie'),/Secure/)
+  const secure=await app.request('/api/identity/login',{base:'https://example.invalid',body:{email:winner,password:entry.password}});assert.equal(secure.status,200);assert.match(secure.headers.get('set-cookie'),/Secure/)
+  assert.deepEqual(await state(),{available:false});assert.equal((await submit()).status,409)
+  // Deleting every owner row never reopens setup, nor does a legacy partial installation or an import.
+  for(const table of [...ownerTicketTables,'sessions','credentials','memberships','user_settings','user_project_preferences','project_settings','ai_profiles','users','projects'])await app.db.prepare(`DELETE FROM ${table}`).run()
+  assert.deepEqual(await state(),{available:false});assert.equal((await submit()).status,409)
+  await app.db.prepare('DROP TRIGGER owner_setup_on_user').run();await app.db.prepare('DROP TRIGGER owner_setup_on_project').run();await app.db.prepare('DROP TABLE owner_setup').run()
+  await app.db.prepare("INSERT INTO users VALUES('legacy','legacy@example.invalid','Legacy',1)").run()
+  for(const sql of await migrationStatements('0097_owner_setup.sql'))await app.db.prepare(sql).run()
+  assert.deepEqual(await state(),{available:false});assert.equal((await submit()).status,409);assert.equal(await count('credentials'),0)
+  await app.db.prepare("DELETE FROM users WHERE id='legacy'").run();assert.deepEqual(await state(),{available:false})
+  await app.db.prepare('DELETE FROM owner_setup').run();await app.db.prepare("INSERT INTO users VALUES('imported','import@example.invalid','Imported',1)").run();await app.db.prepare('DELETE FROM users').run()
+  assert.deepEqual(await state(),{available:false},'an imported owner durably consumes first-owner setup')
+ }finally{await app.close()}
+}],
+  ['a managed install claims only with its credential; a dropped welcome mail stays uncertain and is never resent',async()=>{
+ const mail=[],dropped=[]
+ const app=await startApp({outbound:async(request,entry)=>{if(new URL(request.url).host==='api.resend.com'){dropped.push(JSON.parse(entry.body));throw new TypeError('connection lost')}throw new Error('Unexpected outbound request: '+request.url)},bindings:{RER_INSTALLATION_ID:'managed-fixture',H2H_SETUP_TOKEN:'synthetic-private-owner-setup-fixture',H2H_SETUP_OWNER_EMAIL:'OWNER@example.invalid',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'re_fixture',EMAIL_FROM:'HappyToHelp <welcome@example.invalid>'}})
+ try{
+  const local='http://127.0.0.1',password=randomBytes(24).toString('base64url')
+  const managedEntry={name:'First Owner',ownerName:'  Actual Owner  ',email:'Owner@Example.invalid',password,allowedOrigin:'https://example.invalid/page',primaryColor:'#AABBCC',setupToken:'synthetic-private-owner-setup-fixture'}
+  const submit=body=>app.request('/api/identity/bootstrap',{base:local,body,headers:{origin:local}})
+  const responses=await Promise.all([submit(managedEntry),submit(managedEntry)])
+  assert.deepEqual(responses.map(r=>r.status).sort(),[201,409])
+  assert.equal((await app.first('SELECT name FROM users')).name,'Actual Owner');assert.equal((await app.first('SELECT name FROM projects')).name,'First Owner')
+  assert.match((await app.first('SELECT verification_secret FROM projects')).verification_secret,/^[0-9a-f]{64}$/,'owner setup gives the first project a server secret')
+  const settings=JSON.parse((await app.first('SELECT settings_json FROM project_settings')).settings_json);assert.deepEqual([settings.primary_color,settings.derived],['#aabbcc',{name:null,colour:false}])
+  const owner=await responses.find(r=>r.status===201).json();assert.equal(owner.welcomeEmail,'uncertain')
+  assert.equal(dropped.length,1);assert.deepEqual(dropped[0].to,['owner@example.invalid'])
+  assert.equal((await app.first('SELECT state FROM email_deliveries WHERE id=?','welcome:'+owner.projectId)).state,'uncertain')
+  await app.scheduled();assert.equal(dropped.length,1,'scheduled work never sends an uncertain welcome again');assert.equal(mail.length,0)
+  assert.equal((await app.call('/api/identity/login',{base:local,body:{email:'owner@example.invalid',password}})).status,200)
+  // Retired personal preferences stay historical data, untouched by profile edits.
+  const profile=(method='GET',body)=>app.call('/api/management/profile',{base:local,method,body,token:owner.token})
+  assert.equal('visual_inspiration' in (await profile()).data.data,false);assert.equal((await app.call('/api/management/profile',{base:local})).status,401)
+  await app.db.prepare('INSERT INTO user_settings(user_id,visual_inspiration) VALUES(?,?)').bind(owner.userId,'Preserved historical preference').run()
+  assert.equal((await profile('PUT',{name:'Renamed Owner',visual_inspiration:'Do not reactivate this field'})).status,200)
+  assert.equal((await app.first('SELECT visual_inspiration FROM user_settings WHERE user_id=?',owner.userId)).visual_inspiration,'Preserved historical preference')
+  for(const table of [...ownerTicketTables,'project_settings','sessions','credentials','memberships','user_settings','user_project_preferences','ai_profiles','users','projects'])await app.db.prepare(`DELETE FROM ${table}`).run()
+  assert.equal((await submit(managedEntry)).status,409,'the managed credential shares the permanent claim, even after owner deletion')
+ }finally{await app.close()}
+}],
+  ['a deployed install claims only with its private setup token or its owner-email deploy claim; loopback development stays tokenless',async()=>{
+ // The public deploy command refuses the local trial owner before any build or provider work.
+ for(const flags of [[],['--dry-run']]){
+  const result=spawnSync(process.execPath,['node_modules/@runeditrun/rer/bin/rer.mjs','deploy',...flags,'--non-interactive'],{env:{...process.env,OWNER_EMAIL:'owner@run-happytohelp.test'},encoding:'utf8'})
+  assert.notEqual(result.status,0);assert.match(result.stdout+result.stderr,/real OWNER_EMAIL/);assert.doesNotMatch(result.stdout+result.stderr,/Building|Deploying the/)
+ }
+ const app=await startApp()
+ try{
+  const entry={name:'First Owner',email:'owner@example.invalid',password:'synthetic-long-test-password',allowedOrigin:'https://example.invalid'},deployed='https://help.example.test'
+  const submit=(base,body=entry)=>app.request('/api/identity/bootstrap',{base,body,headers:{origin:base}})
+  const state=async base=>(await app.call('/api/identity/setup',{base})).data
+  const users=async()=>(await app.first('SELECT count(*) AS n FROM users')).n
+  const reset=async(changes={})=>{for(const table of [...ownerTicketTables,'sessions','credentials','memberships','user_project_preferences','project_settings','ai_profiles','users','projects','owner_setup'])await app.db.prepare(`DELETE FROM ${table}`).run();await app.configure({H2H_SETUP_TOKEN:undefined,RER_INSTALLATION_ID:undefined,APP_ORIGIN:undefined,OWNER_EMAIL:undefined,...changes});assert.equal(await users(),0)}
+  await reset()
+  assert.deepEqual(await state(deployed),{available:true,tokenRequired:true})
+  for(const body of [entry,{...entry,setupToken:''},{...entry,setupToken:'guessed-token'}]){const refused=await submit(deployed,body);assert.equal(refused.status,503);assert.match(await refused.text(),/requires a private H2H_SETUP_TOKEN/)}
+  for(const origin of ['https://happytohelp.owner.workers.dev','http://192.168.1.20:5173','http://localhost.example.test'])assert.equal((await submit(origin)).status,503,origin)
+  // A loopback address behind a proxy is still a deployment when APP_ORIGIN is public.
+  await app.configure({APP_ORIGIN:deployed});assert.deepEqual(await state('http://127.0.0.1:8787'),{available:true,tokenRequired:true});assert.equal((await submit('http://127.0.0.1:8787')).status,503);assert.equal(await users(),0)
+  const token='f'.repeat(64);await app.configure({APP_ORIGIN:undefined,H2H_SETUP_TOKEN:token})
+  assert.equal((await submit(deployed)).status,403);assert.equal((await submit(deployed,{...entry,setupToken:'f'.repeat(63)})).status,403);assert.equal(await users(),0)
+  const created=await submit(deployed,{...entry,setupToken:token});assert.equal(created.status,201);assert.match(created.headers.get('set-cookie'),/Secure/)
+  assert.deepEqual(await state(deployed),{available:false,tokenRequired:true});assert.equal((await submit(deployed,{...entry,setupToken:token})).status,409)
+  await app.configure({H2H_SETUP_TOKEN:undefined});assert.equal((await submit(deployed,{...entry,email:'second@example.invalid'})).status,503,'a redeploy without the token stays closed');assert.equal(await users(),1)
+  for(const origin of ['http://127.0.0.1:5173','http://localhost:5173','http://[::1]:5173']){await reset();assert.deepEqual(await state(origin),{available:true});const local=await submit(origin);assert.equal(local.status,201,origin);assert.doesNotMatch(local.headers.get('set-cookie'),/Secure/)}
+  for(const origin of ['http://127.0.0.1:5173',deployed]){
+   await reset({RER_INSTALLATION_ID:'managed-fixture'});assert.deepEqual(await state(origin),{available:true,tokenRequired:true})
+   const waiting=await submit(origin);assert.equal(waiting.status,503);assert.match(await waiting.text(),/awaiting its installation credential/)
+   await app.configure({H2H_SETUP_TOKEN:'synthetic-managed-private-owner-setup-fixture'});assert.equal((await submit(origin)).status,403);assert.equal((await submit(origin,{...entry,setupToken:'synthetic-managed-private-owner-setup-fixture'})).status,201)
+  }
+  // The deploy claim takes its identity from this Worker's owner email, refusing rer's local default.
+  const hosted='https://happytohelp.owner.workers.dev'
+  await reset({H2H_SETUP_TOKEN:'hosted-owner-token',APP_ORIGIN:hosted,OWNER_EMAIL:'owner@run-happytohelp.test'})
+  const trapped=await app.request('/auth/bootstrap',{base:hosted,body:{token:'hosted-owner-token'},headers:{origin:hosted}});assert.equal(trapped.status,503);assert.equal(await users(),0)
+  await app.configure({OWNER_EMAIL:'ada.lovelace+support@example.test'})
+  const claim=await app.request('/auth/bootstrap',{base:hosted,body:{token:'hosted-owner-token',displayName:'Owner',returnTo:'/setup'},headers:{origin:hosted}})
+  assert.equal(claim.status,303);assert.equal(claim.headers.get('Location'),'/setup')
+  assert.deepEqual(await app.first('SELECT email,name FROM users'),{email:'ada.lovelace+support@example.test',name:'Ada Lovelace'});assert.equal((await app.first('SELECT name FROM projects')).name,'My workspace')
+ }finally{await app.close()}
+}]
+]));

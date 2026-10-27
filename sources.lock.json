@@ -3411,6 +3411,10 @@
       "sha256": "ed567ff8b8f8418eaaa5e95aaa5cefdc6e9b4edc98eea9fcc0b10dd05fc04937",
       "executable": false
     },
+    "src/edition/delegation/evidence-audience.ts": {
+      "sha256": "728d060f78e6e3772247f9dbdf27cc7de3c892e67706ef52335c323e03ea7b45",
+      "executable": false
+    },
     "src/edition/delegation/evidence.ts": {
       "sha256": "173c549f62e330faed7db67401129166ec2fa4c81a18ddcc6ce4514fcdde5177",
       "executable": false
@@ -5701,6 +5705,10 @@
     },
     "src/modules/knowledge/crawl.ts": {
       "sha256": "ccc2701d144cdf2b0b9e020b225fd3955302f824c448721cd540a21bfaf65e7b",
+      "executable": false
+    },
+    "src/modules/knowledge/delivery.ts": {
+      "sha256": "ea7f586fbc9d51112db1c96591fe5cc706c3f7a9e87ff1981d5e61cb31cced00",
       "executable": false
     },
     "src/modules/knowledge/entitlements.ts": {
@@ -10095,6 +10103,10 @@
       "sha256": "19847c6ec407d0449edb7b535ac3009ef616edff181e3dd3c3ecac93397ab50d",
       "executable": false
     },
+    "src/ui/native/pages/knowledge/CollectionEntitlements.jsx": {
+      "sha256": "7a67bd3fabe454fb612b00ef1aef0e3867e57c6f11c876fb9ad5565782f6c369",
+      "executable": false
+    },
     "src/ui/native/pages/knowledge/dataset-validation.js": {
       "sha256": "7d04a9447c3a6f2d6ec07f8addf21f23a4a1fdb5b52f349f02832a81014f8506",
       "executable": false
@@ -11761,6 +11773,10 @@
     },
     "tests/helpers/knowledge/app.mjs": {
       "sha256": "747867ae0a7b5300a3d254fd48f60d65b82477d5e430753908b44e02d197009b",
+      "executable": false
+    },
+    "tests/helpers/knowledge/attribution.mjs": {
+      "sha256": "f8080f05e0059b33a25f186f0203fe0c027ae234675cf9db08dcc0a3e0d012b7",
       "executable": false
     },
     "tests/helpers/knowledge/authoring.mjs": {

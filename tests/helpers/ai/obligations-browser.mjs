@@ -65,6 +65,10 @@ export async function obligationsBrowserJourney({runtime,browser,shot}) {
    const violations=await page.evaluate(async()=>(await window.axe.run('.followup-obligations',{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})))
    assert.deepEqual(violations,[]);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1))
    await page.screenshot({path:shot(`followup-accepted-${width}.png`),fullPage:true})
+   const draft=panel.getByRole('region',{name:'Unsent follow-up draft'})
+   assert.match(await draft.innerText(),/do not yet have current evidence/)
+   await draft.scrollIntoViewIfNeeded()
+   await page.screenshot({path:shot(`followup-draft-${width}.png`),fullPage:true})
    assert.ok((await panel.locator('button').allTextContents()).every(text=>text.trim()),'all new controls have visible text labels')
    for(const control of await page.locator('button[data-tooltip]').all()) {
     if(!await control.isVisible() || (await control.innerText()).trim())continue

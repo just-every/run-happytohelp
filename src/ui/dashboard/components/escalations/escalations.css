@@ -73,5 +73,6 @@
     .escalation-dialog button { min-width: 44px; }
     .escalation-handoff { display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; }
     .escalation-handoff a, .escalation-link-heading a { display: inline-flex; align-items: center; min-width: 44px; min-height: 44px; }
+    .escalation-handoff a { flex: 1 1 12rem; }
     .escalation-error a { display: flex; align-items: center; width: fit-content; min-width: 44px; min-height: 44px; }
 }

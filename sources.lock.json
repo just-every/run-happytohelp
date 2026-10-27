@@ -3508,7 +3508,7 @@
       "executable": false
     },
     "src/editor/visual-edits.json": {
-      "sha256": "ea22cbab26d5d294b50f1f878e58f265224bd62f81d9db2f2e413323eed84bbb",
+      "sha256": "c5030c20866b46049d86b9eb59d5cd1457dbc552899cb5a5897c2c75dae10ed8",
       "executable": false
     },
     "src/editor/visual-style.ts": {
@@ -8496,7 +8496,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/escalations/escalations.css": {
-      "sha256": "66490bb3ff48a0625734eef9cdcca3d4110e4938fd0afff121ead11e0e91bb0c",
+      "sha256": "0fe93bc18b57d9c47752fee5b072846e1690a8ec13956d2d742e2c8895ebbf32",
       "executable": false
     },
     "src/ui/dashboard/components/escalations/EscalationsPanel.jsx": {
@@ -11412,7 +11412,7 @@
       "executable": false
     },
     "tests/helpers/escalations/browser.mjs": {
-      "sha256": "ade41e870f99023dc0d2027b1e995a776c65f64d72a1998ac298a1e44cfef8e8",
+      "sha256": "f394f14beee4663847933cff2d46ef47f1f99185d3908cbcdb5afbf22f8b1196",
       "executable": false
     },
     "tests/helpers/escalations/dev-proof.mjs": {

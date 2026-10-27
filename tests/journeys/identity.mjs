@@ -179,7 +179,7 @@ test("first-owner claim journey: validate and claim once under local, deployed a
 }]
 ]));
 
-test("native account membership journey: password sessions and invitations remain scoped and retire with current authority",()=>runSteps([
+test("native passwords and membership: scoped sessions, owner resets and invitations retire with current authority",()=>runSteps([
 ['native passwords: sign-in, change and owner reset revoke sessions, an invitation accepts once, foreign switching is refused and a removed member keeps account-only sign-in',async()=>{
  const app=await startApp({bindings:{H2H_SETUP_TOKEN:'synthetic-identity-fixture-setup-token-0123456789abcdef',INTEGRATION_ENCRYPTION_KEY:encryptionKey()}})
  try{

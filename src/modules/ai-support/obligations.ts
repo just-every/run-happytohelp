@@ -72,7 +72,7 @@ obligationRoutes.get(path,async c=>{
  ])
  return c.json({obligations,sources:sources.results,owners:owners.results,dependencies:dependencies.results})
 })
-obligationRoutes.post(path,async c=>c.json(await proposeObligation(c.env,c.req.param('projectId')!,c.req.param('conversationId')!,await c.req.json(),{id:c.get('actor').id,sessionHash:c.get('sessionHash')}),201))
+obligationRoutes.post(path,async c=>{const result=await proposeObligation(c.env,c.req.param('projectId')!,c.req.param('conversationId')!,await c.req.json(),{id:c.get('actor').id,sessionHash:c.get('sessionHash')});return c.json(result,'duplicate' in result?200:201)})
 obligationRoutes.post(path+'/:id/accept',async c=>{
  const pid=c.req.param('projectId')!,cid=c.req.param('conversationId')!,id=c.req.param('id')!,b=await c.req.json(),actor=c.get('actor'),now=Date.now()
  await terms(c.env,pid,cid,b)

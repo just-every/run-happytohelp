@@ -52,7 +52,7 @@ export default function FollowupObligations({conversation, reads, liveKey}) {
             {data.obligations.map(row => <article key={`${row.id}:${row.version}`} aria-label="Follow-up promise">
                 <blockquote>{row.quote}</blockquote><p>{row.state === 'proposed' ? 'Awaiting acceptance' : row.state === 'open' ? 'Accepted promise' : 'Completed'} · Version {row.version}</p>
                 <p>Stop when: {row.stop_condition || 'Re-enter the stop condition after restore.'}</p>
-                {row.pendingTerms && <section aria-label="Pending promise changes"><strong>Pending changes · not accepted</strong><p>Responsible teammate: {data.owners.find(o => o.id === row.pendingTerms.ownerId)?.name || 'Former teammate'}. Due {new Date(row.pendingTerms.dueAt).toLocaleString()}. Stop when: {row.pendingTerms.stopCondition}</p></section>}
+                {row.pendingTerms && <section aria-label="Pending promise changes"><strong>Pending changes · not accepted</strong><p>Responsible teammate: {data.owners.find(o => o.id === row.pendingTerms.ownerId)?.name || 'Former teammate'}. Due {new Date(row.pendingTerms.dueAt).toLocaleString()}. Stop when: {row.pendingTerms.stopCondition || 'Re-enter the stop condition after restore.'}</p></section>}
                 {row.dependency.id && <p role="status">Dependency {row.issue_key}: {row.dependency.stale ? 'Stale · ' : ''}{row.dependency.progress}. {row.dependency.readbackAt ? `Read back ${new Date(row.dependency.readbackAt).toLocaleString()}.` : 'No current readback.'}</p>}
                 {['proposed','open'].includes(row.state) && <form onSubmit={event => {
                     event.preventDefault(); const fields = new FormData(event.currentTarget);

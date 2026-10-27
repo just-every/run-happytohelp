@@ -3000,7 +3000,7 @@
       "executable": false
     },
     "scripts/installer/followup-archive.mjs": {
-      "sha256": "9b5d005d0c592c17a5df074b71ddf824feddf901d123292e1054b7965872dfc2",
+      "sha256": "70f15866d9fdb9c33f1b04fb238ccff1f8b5dc4a58cb1dfabc9497da7adf7736",
       "executable": false
     },
     "scripts/installer/hosted-d1.mjs": {
@@ -3040,7 +3040,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "1f09f11a5c06ccfcc209f787c189f2a74f9c528a972f06f7bce758acaea56f1f",
+      "sha256": "1ba9727139c968c195b35777b3a4bdcc4c1490e4bfe30f2f956a9e889766cab1",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -3672,7 +3672,7 @@
       "executable": false
     },
     "src/modules/ai-support/obligations.ts": {
-      "sha256": "ce6a5a9a4f98a1c9b2b022e58e893f5f6edc02ba3affcc9f58996bb158b6cbf8",
+      "sha256": "9dcd7fdd3b560ccadb998fc0fe057c8cec28017e6b9a4f5feb7eaeee1ae0f6f5",
       "executable": false
     },
     "src/modules/ai-support/presentation.ts": {
@@ -8316,7 +8316,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/conversation/FollowupObligations.jsx": {
-      "sha256": "e613066ada50e2def24e5db97376a7fd184feb9f85586a1796f3b4011742eb1f",
+      "sha256": "740b1e3050d7b571b9a9e823e05f378bdebbb68b7bbc2e77eebdce258f882bee",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ResolutionSummary.jsx": {
@@ -11136,11 +11136,11 @@
       "executable": false
     },
     "tests/helpers/ai/obligations-browser.mjs": {
-      "sha256": "4a298b5aea3323440d4d3e2419e1545b6a65f0bf7bb17104b45fc84b5e33eb74",
+      "sha256": "7f05951c9bb4dac0c2b3b7fa9d5daaeaeb7416d4c64cc1941a6dc828e2912b06",
       "executable": false
     },
     "tests/helpers/ai/obligations.mjs": {
-      "sha256": "8eabbf060d187ecc8295eee4a98dbb947dbb6f0f7ea9539dffeffcbf8312acbc",
+      "sha256": "21df094d52f5bf2dff1a2c188b8c6b50d017e0e4b81023c0f73b9b19a189ed34",
       "executable": false
     },
     "tests/helpers/ai/provider-fixtures.mjs": {
@@ -11900,7 +11900,7 @@
       "executable": false
     },
     "tests/helpers/recovery/followup.mjs": {
-      "sha256": "56e0c29dd94a2685bf7e01f3a91359577148936e63aca3ee7e9c5884ca807e9a",
+      "sha256": "efa5813df3bb6d8ce28e7d1eb7835dba2b85216abdb5017c2bf8a65a123b517d",
       "executable": false
     },
     "tests/helpers/recovery/independent-journey.mjs": {

@@ -11688,7 +11688,7 @@
       "executable": false
     },
     "tests/helpers/inbox/problem-suggestions-browser.mjs": {
-      "sha256": "96d36211dec391dff9b8f17468db41b6a9b2e130f6190b31c02a6ea09ba44517",
+      "sha256": "7a0675776adb1b750a036262b9dedb04d1463a4393f25917ade6f288a0b5cc23",
       "executable": false
     },
     "tests/helpers/inbox/problems.mjs": {

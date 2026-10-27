@@ -22,7 +22,12 @@ export async function problemSuggestionsBrowser(page,fixture,origin){
    if(width===390)await page.getByRole('button',{name:'Show conversation panel',exact:true}).click()
    await page.getByRole('tab',{name:'Ticket',exact:true}).click()
    await page.locator('.problem-panel').scrollIntoViewIfNeeded();await page.waitForTimeout(350)
-   if(width===390)console.log(JSON.stringify({screen:name,width,targets:await page.locator('.problem-panel button:visible').evaluateAll(buttons=>buttons.map(button=>({name:button.textContent.trim(),height:button.getBoundingClientRect().height,width:button.getBoundingClientRect().width})))}))
+   if(width===390){
+    const targets=await page.locator('.problem-panel button:visible').evaluateAll(buttons=>buttons.map(button=>({name:button.textContent.trim(),height:button.getBoundingClientRect().height,width:button.getBoundingClientRect().width})))
+    assert.ok(targets.length>0,`${name}: problem controls are visible`)
+    for(const target of targets)assert.ok(target.height>=44&&target.width>=44,`${name}: ${target.name} has a usable phone target`)
+    console.log(JSON.stringify({screen:name,width,targets}))
+   }
    await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true})
   }
   await page.setViewportSize({width:1440,height:1000})

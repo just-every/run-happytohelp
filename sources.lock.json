@@ -1572,7 +1572,7 @@
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "10d4fc9c530dd16d2327758d86d95e9e3961547ffe6dfb0f8f549e823f9f4bd5",
+      "sha256": "44294e763da713be8d625e9dadd0e73360d0178eba84fa185d8dce2c20851078",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -1588,7 +1588,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "ede6b03957da449ca1f2236b59390ef7f8d764c4c10baec0625a4ae2aaa7f56f",
+      "sha256": "688ded31a270bb98f86ec13d4072855e57ca25356bb3501a76429915d7a8cedb",
       "executable": false
     },
     ".gitignore": {
@@ -2628,7 +2628,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "d0a6c697dc065cad5f7e8e63402a27b4f78e88f653509b2e63b98701d8cec81e",
+      "sha256": "b7966ac28c0c5afb633ac905e84e33799900c2b0f911bed3318537068bb7fd6a",
       "executable": false
     },
     "rer-project.json": {
@@ -4104,7 +4104,7 @@
       "executable": false
     },
     "src/modules/collaboration/note-media.ts": {
-      "sha256": "090e2439017c03b169f4477572fbc7d34a9226fc24d7ab6e48f21c4a82807f3a",
+      "sha256": "51dafe03a1873dff224c5b016ac8bc60c553656526feae410c932fae5a266bc1",
       "executable": false
     },
     "src/modules/collaboration/notes.ts": {

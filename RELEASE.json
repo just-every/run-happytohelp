@@ -99,7 +99,7 @@
     },
     {
       "id": "257_move_in_attachment_bytes.sql",
-      "buyerSteps": "MOVE-IN-002: apply after 256 before serving the updated Worker. Adds bounded explicitly supplied Freshdesk attachment payloads with native media and private-note ownership. Existing messages and attachments remain unchanged. Back up and restore the new table with native data; erasure and guarded undo remove payloads with their media. No source URL is retrieved and this migration sends nothing."
+      "buyerSteps": "MOVE-IN-002: apply after 256 before serving the updated Worker. Adds bounded explicitly supplied Freshdesk attachment payloads with native media and private-note ownership. Existing messages and attachments remain unchanged. Back up and restore the new table with native data; erasure and guarded undo remove payloads with their media. No source URL is retrieved and this migration sends nothing. During an upgrade, existing private-note transcripts remain readable before this migration: the reader checks table presence explicitly and includes imported payloads only after the table exists. Database query failures still propagate; attachment imports require this migration."
     }
   ]
 }

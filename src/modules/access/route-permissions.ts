@@ -146,6 +146,16 @@ for(const base of [P,D]){
  rules[`GET ${base}/customer-imports/:runId`]='data.import'
 }
 
+for(const base of [P,D]){
+ for(const method of ['PUT','DELETE'])rules[`${method} ${base}/crm/hubspot`]='integrations.install'
+ for(const method of ['PUT','DELETE'])rules[`${method} ${base}/crm/hubspot/contacts/:contactId`]='integrations.install'
+ rules[`POST ${base}/crm/hubspot/contacts/:contactId/refresh`]='integrations.install'
+ rules[`GET ${base}/crm/hubspot`]='contacts.manage'
+ rules[`GET ${base}/crm/hubspot/contacts/:contactId`]='contacts.manage'
+ rules[`GET ${base}/conversations/:conversationId/crm`]='contacts.manage'
+ rules[`POST ${base}/conversations/:conversationId/crm/refresh`]='integrations.install'
+}
+
 const prefixes=['/api/v1/','/api/management/admin/']
 for(const base of [P,D]){
  rules[`POST ${base}/tickets`]='conversations.reply'

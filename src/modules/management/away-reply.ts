@@ -1,3 +1,4 @@
+import {customerReplyAdmissionSql} from '../knowledge/delivery'
 import type {Actor,Env} from '../../platform/env'
 import {teamAvailability} from './live-availability'
 import {emailMode} from '../integrations/email-provider'
@@ -33,7 +34,7 @@ export async function postAwayReply(env:Env,message:Record<string,unknown>,actor
  const id=crypto.randomUUID(),now=workflowNow(env)
  const [inserted]=await env.DB.batch([
   env.DB.prepare(`INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) SELECT ?,c.project_id,c.id,?,?,'system',?,c.revision+1,? FROM conversations c
-   WHERE c.id=? AND c.project_id=? AND c.revision=? AND c.last_message_id=? AND NOT EXISTS(SELECT 1 FROM messages WHERE conversation_id=c.id AND local_id=?)`)
+   WHERE c.id=? AND c.project_id=? AND c.revision=? AND c.last_message_id=? AND NOT EXISTS(SELECT 1 FROM messages WHERE conversation_id=c.id AND local_id=?) AND ${customerReplyAdmissionSql()}`)
    .bind(id,AWAY_REPLY,AWAY_AUTHOR,content,now,message.conversation_id,actor.projectId,row.revision,message.id,AWAY_REPLY),
   env.DB.prepare('UPDATE conversations SET revision=revision+1,last_message_id=?,updated_at=? WHERE id=? AND EXISTS(SELECT 1 FROM messages WHERE id=?)').bind(id,now,message.conversation_id,id),
   // Delivered on insert: open widgets and inboxes receive it through the socket, and no follow-up ever runs for it.

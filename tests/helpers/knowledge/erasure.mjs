@@ -47,11 +47,12 @@ export async function knowledgeErasureJourney(k,{category,article,customer,peer,
  await knowledgeArchiveRoundtrip(app,{project:p,category,grant:before,outside})
  const fences=await app.sql('SELECT * FROM knowledge_reply_sources WHERE project_id=?',p)
  assert.ok(fences.length,'composition provenance survives sends')
+ const otherFences=await app.sql('SELECT ks.* FROM knowledge_reply_sources ks JOIN conversations c ON c.id=ks.conversation_id AND c.project_id=ks.project_id WHERE ks.project_id=? AND c.contact_id<>? ORDER BY ks.conversation_id,ks.source_id,ks.source_version',p,customer)
  const erase=`/api/management/projects/${p}/contacts/${customer}/erase`
  assert.equal((await app.call(erase,{token:k.owner.tokens.operator,body:{}})).status,403)
  await call(erase,{body:{},status:200})
  assert.equal(await grant(),null)
- assert.deepEqual(await app.sql('SELECT * FROM knowledge_reply_sources WHERE project_id=?',p),[],'contact erasure removes ticket provenance')
+ assert.deepEqual(await app.sql('SELECT ks.* FROM knowledge_reply_sources ks JOIN conversations c ON c.id=ks.conversation_id AND c.project_id=ks.project_id WHERE ks.project_id=? ORDER BY ks.conversation_id,ks.source_id,ks.source_version',p),otherFences,'contact erasure removes only the erased requester’s ticket provenance and preserves every other contact’s fence')
  assert.deepEqual(await app.sql('SELECT token FROM knowledge_read_receipts WHERE project_id=?',p),[],'personal and conversation-linked receipts are erased')
  assert.ok(await app.first("SELECT token FROM knowledge_read_receipts WHERE token='knowledge-other-receipt'"))
  assert.equal((await app.first('SELECT requires_entitlement FROM knowledge_categories WHERE id=?',category)).requires_entitlement,1,'erasing the last entitled contact keeps the collection restricted')

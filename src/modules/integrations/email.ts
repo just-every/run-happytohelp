@@ -1,3 +1,4 @@
+import {assertCustomerReplyDelivery,customerReplyMailSql,KnowledgeDeliveryRefused,customerReplyScope,type CustomerReplyScope} from '../knowledge/delivery'
 import {notificationFetch,notificationSendSignal,withNotificationSendWindow} from './email-send-window'
 import {enforceRateLimit,RateLimitExceeded} from '../../platform/rate-limits'
 import {rerMail,managedMailbox} from './rer-mail-contract'
@@ -20,7 +21,7 @@ import {mailboxForDelivery} from './mailboxes/store'
 /** `headers` are extra message headers (loop suppression on notifications); like every
  * other field they are part of the delivery identity. */
 export interface EmailAttachment {filename:string;content:string;contentType:string;contentId?:string}
-export interface EmailInput {[operatorTicketMessage]?:boolean;to:string;cc?:readonly string[];bcc?:readonly string[];mailboxId?:string;agentId?:string;fromAddress?:string;subject:string;text:string;html?:string;attachments?:readonly EmailAttachment[];projectId?:string;idempotencyKey:string;replyTo?:string;headers?:Readonly<Record<string,string>>}
+export interface EmailInput {[customerReplyScope]?:CustomerReplyScope;[operatorTicketMessage]?:boolean;to:string;cc?:readonly string[];bcc?:readonly string[];mailboxId?:string;agentId?:string;fromAddress?:string;subject:string;text:string;html?:string;attachments?:readonly EmailAttachment[];projectId?:string;idempotencyKey:string;replyTo?:string;headers?:Readonly<Record<string,string>>}
 /** The host retains provider execution only after every sending claim is durable. */
 export type DeferEmailDelivery=(delivery:Promise<unknown>)=>void
 type DeliveryRow={state:string;provider_id:string|null;intent_hash:string}
@@ -70,8 +71,9 @@ function sendGridFailure(error:unknown){
 }
 /** `hold` marks a command that outbox replay resends; `since` is the first
  * refusal instant of a held command being sent again. */
-async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:number}):Promise<EmailOutcome>{
+async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:number},freshAdmission=false):Promise<EmailOutcome>{
  try{
+  let requiresRecheck=!freshAdmission
   // Only the durable delivery claimant takes rate capacity. Queue replay and
   // concurrent retries cannot charge or send the same first notice again.
   const first=/^message:([^:]+):notification$/.exec(input.idempotencyKey)
@@ -79,6 +81,7 @@ async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:
   // Only operator-created first messages need the live consent/rate lookup;
   // unrelated problem batches must retain their D1 request budget.
   if(first&&input.projectId&&input[operatorTicketMessage]!==false){
+   requiresRecheck=true
    const command=await env.DB.prepare(`SELECT ct.metadata_json FROM messages m
     JOIN operator_ticket_commands cmd ON cmd.project_id=m.project_id AND cmd.conversation_id=m.conversation_id AND cmd.local_id=m.local_id
     JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id
@@ -99,10 +102,14 @@ async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:
    }
   }
   // In a demo copy the send is mocked: it completes with a provider id and nothing leaves.
+  // An ordinary first send follows its guarded claim without another await.
+  // Held replay and consent/rate preparation must re-admit after their reads.
+  if(requiresRecheck)await assertCustomerReplyDelivery(env,input)
   const providerId=await demoEffect(()=>sendThroughSelectedProvider(env,input,from,Boolean(hold)),()=>`demo_${crypto.randomUUID()}`)
   await updateDelivery(env,input.idempotencyKey,'sent',null,providerId)
   return {id:providerId,state:'sent',...(emailMode(env)==='local'?{mode:'local' as const}:{})}
  }catch(error){
+  if(error instanceof KnowledgeDeliveryRefused){await updateDelivery(env,input.idempotencyKey,'failed',error.message);throw error}
   if(input.mailboxId){
    const mailbox=await env.DB.prepare('SELECT state FROM mailbox_sends WHERE id=? AND project_id=? AND mailbox_id=?').bind(input.idempotencyKey,input.projectId??null,input.mailboxId).first<{state:string}>()
    if(mailbox?.state==='failed'){await updateDelivery(env,input.idempotencyKey,'failed','Connected mailbox rejected delivery');throw error}
@@ -130,16 +137,16 @@ export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelive
  if(!input.mailboxId&&!emailConfigured(env))throw new HTTPException(503,{message:'Email provider is not configured'})
  const from=await senderFor(env,input)
  validateEmailInput(input,from)
- if(localMailOrigin(env))return suppressDevelopment(env,input,from)
+ if(localMailOrigin(env)){await assertCustomerReplyDelivery(env,input);return suppressDevelopment(env,input,from)}
  const intentHash=await hashToken(JSON.stringify({...input,from})),existing=await env.DB.prepare('SELECT state,provider_id,intent_hash FROM email_deliveries WHERE id=?').bind(input.idempotencyKey).first<DeliveryRow>()
  if(existing){
   if(existing.intent_hash!==intentHash)throw new HTTPException(409,{message:'Email command identity conflict'})
   if(existing.state==='sent')return {id:existing.provider_id,state:'sent',...(emailMode(env)==='local'?{mode:'local' as const}:{})}
   throw new HTTPException(409,{message:`Email delivery ${existing.state}; reconcile before retrying`})
  }
- const now=Date.now(),claimed=await env.DB.prepare("INSERT OR IGNORE INTO email_deliveries VALUES(?,?,?,?,?,'sending',NULL,NULL,?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now).run()
- if(!claimed.meta.changes)throw new HTTPException(409)
- const delivery=withNotificationSendWindow([input.idempotencyKey],now,()=>submitClaimed(env,input,from,holdable?{}:undefined))
+ const now=Date.now(),claimed=await env.DB.prepare(`INSERT OR IGNORE INTO email_deliveries SELECT ?,?,?,?,?,'sending',NULL,NULL,?,? WHERE ${customerReplyMailSql(input)}`).bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now).run()
+ if(!claimed.meta.changes){await assertCustomerReplyDelivery(env,input);throw new HTTPException(409)}
+ const delivery=withNotificationSendWindow([input.idempotencyKey],now,()=>submitClaimed(env,input,from,holdable?{}:undefined,true))
  if(defer){defer(delivery);return {id:null,state:'sending'}}
  return delivery
 }
@@ -151,11 +158,17 @@ export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:Def
  inputs=await Promise.all(inputs.map(input=>prepareConversationEmail(env,input)))
  if(inputs.some(input=>!input.mailboxId)&&!emailConfigured(env))throw new HTTPException(503,{message:'Email provider is not configured'})
  const prepared=await Promise.all(inputs.map(async input=>{const from=await senderFor(env,input);validateEmailInput(input,from);return {input,from,intentHash:await hashToken(JSON.stringify({...input,from}))}}))
- if(localMailOrigin(env))return Promise.all(prepared.map(({input,from})=>suppressDevelopment(env,input,from)))
+ if(localMailOrigin(env)){for(const {input} of prepared)await assertCustomerReplyDelivery(env,input);return Promise.all(prepared.map(({input,from})=>suppressDevelopment(env,input,from)))}
  const now=Date.now()
  // D1 batch is one transaction. A duplicate primary claim rolls back every
  // participant claim; only the process that owns the whole set may submit it.
- await env.DB.batch(prepared.map(({input,intentHash})=>env.DB.prepare("INSERT INTO email_deliveries VALUES(?,?,?,?,?,'sending',NULL,NULL,?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now)))
+ const claims=await env.DB.batch(prepared.map(({input,intentHash})=>env.DB.prepare(`INSERT INTO email_deliveries SELECT ?,?,?,?,?,'sending',NULL,NULL,?,? WHERE ${customerReplyMailSql(input)}`).bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now)))
+ if(claims.some(claim=>!claim.meta.changes)){
+  // No recipient is submitted if even one final destination is unauthorized.
+  const refused=prepared.filter((_,index)=>claims[index].meta.changes).map(({input})=>env.DB.prepare("UPDATE email_deliveries SET state='failed',error='Knowledge access changed',updated_at=? WHERE id=? AND state='sending'").bind(Date.now(),input.idempotencyKey))
+  if(refused.length)await env.DB.batch(refused)
+  throw new KnowledgeDeliveryRefused()
+ }
  const delivery=withNotificationSendWindow(prepared.map(({input})=>input.idempotencyKey),now,()=>Promise.all(prepared.map(async({input,from})=>{
   try{return {...await submitClaimed(env,input,from,holdable?{}:undefined),recipient:input.to}}
   catch(error){

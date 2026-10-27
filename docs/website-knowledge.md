@@ -115,12 +115,29 @@ once, in ledger order, before serving the updated Worker; never reset to upgrade
 
 Unreleased migration `258_knowledge_reply_sources.sql`, after 257, adds
 `knowledge_reply_sources` for durable ticket composition provenance. Before article
-text or a link leaves the insertion door, the server records its source and
-publication version. All operator, API, email, saved-reply and AI-draft sends use
-the same atomic admission fence, including replay. The fence accumulates across
-edits and sends: clients cannot prove previously retrieved material was removed.
-A changed grant, publication or additional participant refuses the send; prepare
-new content only after authority is restored. Backups retain these identifier-only
+text or a link leaves a ticket search, preview or insertion door, the server records
+its source and publication version. The single `customerReplyAdmissionSql`
+predicate in `src/modules/knowledge/delivery.ts` is the authority boundary for
+native composer, widget, email, API, AI auto-send, replay, scheduled and saved
+replies, article links and attachments, proactive insights, away replies, transcript email and partner forwarding.
+Each writer evaluates it inside its admitting statement. Previews, drafts and
+AI output carry provenance, never authority. Current requester and participant
+identities (including pending email CCs) must each have a current explicit grant
+for every restricted collection and ancestor. Company ticket visibility and a
+matching email domain confer no knowledge grant. Restricted agent retrieval
+still refuses tickets with additional participants; independently entitled help
+access is preserved.
+
+The fence accumulates across edits and sends: clients cannot prove previously
+retrieved material was removed. A changed grant or publication refuses the send
+with a knowledge-access message. Removing an unauthorized participant restores
+send access when every remaining recipient is entitled. Revocation also withholds
+stored/replayed replies and attachment downloads; download admission is rechecked
+after reading storage. Email rendering carries source identity into the common mail
+sender, which checks the final To, CC and BCC addresses in its durable send claim
+immediately before provider submission. Held resends and additional asynchronous
+consent/rate preparation recheck current authority before submission. A signed attachment URL never grants
+restricted knowledge access: the reader must authenticate and remain entitled. Backups retain these identifier-only
 fences, independently of audit retention. Contact erasure removes its ticket
 fences. Non-public collections always require a current explicit named-account
 grant, including legacy rows with `requires_entitlement=0`; domain membership is

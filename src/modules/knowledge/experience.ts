@@ -1,3 +1,4 @@
+import {rememberReplySources} from './delivery'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {articleAccessSql,categoryAccessSql,accessParams,type HelpAccess} from './access'
@@ -20,7 +21,9 @@ async function localize(env:Env,projectId:string,rows:any[],requested?:string){
 }
 export async function listAccessibleArticles(env:Env,projectId:string,options:ArticleOptions={}){
  const rows=await env.DB.prepare(`SELECT ${articleFields} FROM knowledge_articles a WHERE a.project_id=? AND a.status='published' AND ${activeSourceProjectSql('a.project_id')} AND ${articleAccessSql('a','?', '?','?')} ${options.conversationId?`AND (${articleAccessSql('a')} OR NOT EXISTS(SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id=?))`:''} ${options.categoryId?'AND (a.category_id=? OR EXISTS(SELECT 1 FROM knowledge_article_categories ac WHERE ac.article_id=a.id AND ac.category_id=?))':''} ORDER BY a.position,a.title`).bind(projectId,...accessParams(options.access),...(options.conversationId?[options.conversationId]:[]),...(options.categoryId?[options.categoryId,options.categoryId]:[])).all<any>()
- const localized=await localize(env,projectId,rows.results,options.locale),query=options.query?.trim().toLowerCase();return query?localized.filter(a=>`${a.title} ${a.summary} ${a.content}`.toLowerCase().includes(query)):localized
+ const localized=await localize(env,projectId,rows.results,options.locale),query=options.query?.trim().toLowerCase(),articles=query?localized.filter(a=>`${a.title} ${a.summary} ${a.content}`.toLowerCase().includes(query)):localized
+ if(options.conversationId)await rememberReplySources(env,projectId,options.conversationId,articles.map(a=>({id:`article:${a.id}`,sourceVersion:a.publication_version})))
+ return articles
 }
 export async function lookupAccessibleArticle(env:Env,projectId:string,slug:string,options:ArticleOptions={}){
  const row=await env.DB.prepare(`SELECT ${articleFields} FROM knowledge_articles a WHERE a.project_id=? AND (a.slug=? OR a.id=(SELECT article_id FROM knowledge_slug_redirects WHERE project_id=? AND slug=?)) AND a.status='published' AND ${activeSourceProjectSql('a.project_id')} AND ${articleAccessSql('a','?', '?','?')} ORDER BY (a.slug=?) DESC LIMIT 1`).bind(projectId,slug,projectId,slug,...accessParams(options.access),slug).first<any>()

@@ -1,4 +1,4 @@
-import {generationKnowledgeSql,replyKnowledgeSql} from '../knowledge/delivery'
+import {customerReplyAdmissionSql} from '../knowledge/delivery'
 import {accessForKnowledgeConversation} from '../knowledge/access'
 import {companyPortalReply,portalTicketScope} from '../portal/company-visibility'
 import {workflowNow,workflowEnvironment} from '../workflows/clock'
@@ -26,7 +26,7 @@ export const messageCommit=Symbol('messageCommit')
 /** Internal atomic receipt updates; never populated from request JSON. */
 export const messageCommitStatements=Symbol('messageCommitStatements')
 export interface MessageInput {[messageCommitStatements]?:(messageId:string)=>D1PreparedStatement[];[messageCommit]?:(messageId:string,conversationId:string,now:number)=>D1PreparedStatement[];[companyPortalReply]?:true;[messageAuthority]?:{sql:string;args:unknown[]};requireAvailableRequester?:true;[scheduledAdmission]?:ScheduledAdmission;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
-export interface MessageResult {accepted:boolean;duplicate?:boolean;message?:any;reason?:string;followupConversationId?:string}
+export interface MessageResult {accepted:boolean;duplicate?:boolean;message?:any;reason?:string;error?:string;followupConversationId?:string}
 export async function admitMessage(env:Env,input:MessageInput):Promise<MessageResult>{
  const {projectId,conversationId,actor,localId,content,expectedRevision}=input,email=input[inboundAuthority]
  if(actor.projectId!==projectId)throw new Error('Project access denied')
@@ -40,9 +40,9 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  const replayGuard=input.tokenAuthority?tokenGuard(input.tokenAuthority,projectId,input.tokenAuthority.scope==='messages:append'?'messages:append':'messages:write'):null
  const companyReply=input[companyPortalReply]===true&&actor.role==='contact'&&!!input.sessionHash&&!!input[messageAuthority]
  const authority=input[messageAuthority]
- const knowledgeReply=actor.role!=='contact'?` AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${replyKnowledgeSql('c',undefined,!!email?.cc.length)})`:''
- const replayPredicate=knowledgeReply+(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')+(input.generationId?` AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${generationKnowledgeSql('?')})`:'')
- const replayArgs=[...(replayGuard?.params||[]),...(authority?.args||[]),...(input.generationId?[input.generationId]:[])]
+ const knowledgeReply=` AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${customerReplyAdmissionSql('c',undefined,email?.cc??[],{localId})})`
+ const replayPredicate=knowledgeReply+(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')
+ const replayArgs=[...(replayGuard?.params||[]),...(authority?.args||[])]
  const checkMembership=!input.tokenAuthority&&!input.generationId&&actor.role!=='contact'
  // These observations are independent. Keep denial/replay precedence below,
  // and keep every live-authority and frontier predicate in the write itself.
@@ -69,7 +69,7 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  const citations=refs.length?await resolvePublicCitations(env,projectId,input.generationId!,refs,knowledgeAccess):[]
  env=await workflowEnvironment(env)
  const messageId=crypto.randomUUID(),now=workflowNow(env);const predicates=[writableConversationSql('c'),'c.id=?','c.project_id=?','c.revision=?','c.contact_id=?','c.ticket_version=?',followup?"c.status_category='closed'":"c.status_category<>'closed'"];const args:unknown[]=[conversationId,projectId,expectedRevision,scope.contact_id,scope.ticket_version]
- if(actor.role!=='contact')predicates.push(replyKnowledgeSql('c',undefined,!!email?.cc.length))
+ predicates.push(customerReplyAdmissionSql('c',undefined,email?.cc??[],{localId}))
  if(input.requireAvailableRequester===true)predicates.push(contactAvailableSql())
  if(autoAssign&&scope.group_id){predicates.push('EXISTS(SELECT 1 FROM ticket_group_members WHERE project_id=c.project_id AND group_id=c.group_id AND user_id=?)');args.push(actor.id)}
  if(input.resolve&&!input.generationId){predicates.push('c.resolved_at IS ?','(SELECT MAX(ordinal) FROM conversation_resolutions WHERE conversation_id=c.id) IS ?');args.push(scope.resolved_at,scope.ordinal)}
@@ -96,7 +96,7 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  if(authority){predicates.push(`(${authority.sql})`);args.push(...authority.args)}
  if(input.expectedLastMessageId!==undefined){predicates.push('c.last_message_id IS ?');args.push(input.expectedLastMessageId)}
  if(mediaIds.length){predicates.push(`(SELECT COUNT(*) FROM media WHERE id IN (${mediaIds.map(()=>'?').join(',')}) AND project_id=c.project_id AND conversation_id=c.id AND message_id IS NULL AND NOT EXISTS(SELECT 1 FROM conversation_note_media nm WHERE nm.media_id=media.id) AND uploaded_by=?)=?`);args.push(...mediaIds,actor.id,mediaIds.length)}
- if(input.generationId){predicates.push(generationKnowledgeSql('?'));args.push(input.generationId);predicates.push("EXISTS(SELECT 1 FROM ai_generations g WHERE g.id=? AND g.project_id=c.project_id AND g.conversation_id=c.id AND g.state='running' AND g.source_revision=c.revision AND (SELECT revision FROM context_subjects WHERE project_id=c.project_id AND subject_id=c.contact_id)=g.source_context_revision AND c.resolved_at IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id WHERE ca.conversation_id=c.id AND a.id=g.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 AND a.model=json_extract(g.ai_profile_json,'$.model') AND a.prompt=json_extract(g.ai_profile_json,'$.prompt')))");args.push(input.generationId)}
+ if(input.generationId){predicates.push("EXISTS(SELECT 1 FROM ai_generations g WHERE g.id=? AND g.project_id=c.project_id AND g.conversation_id=c.id AND g.state='running' AND g.source_revision=c.revision AND (SELECT revision FROM context_subjects WHERE project_id=c.project_id AND subject_id=c.contact_id)=g.source_context_revision AND c.resolved_at IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id WHERE ca.conversation_id=c.id AND a.id=g.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 AND a.model=json_extract(g.ai_profile_json,'$.model') AND a.prompt=json_extract(g.ai_profile_json,'$.prompt')))");args.push(input.generationId)}
  if(authorship.guard){predicates.push(authorship.guard.sql);args.push(...authorship.guard.params)}
  for(const citation of citations){const guard=citationAdmissionGuard(citation,projectId,knowledgeAccess);predicates.push(guard.sql);args.push(...guard.args)}
  const citationColumns=(citations.length?',citations_json':'')+(email?',content_raw':''),citationValues=(citations.length?',?':'')+(email?',?':'')
@@ -125,7 +125,7 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  if(!message){
   const duplicate=committed[committedIndex+1].results[0]
   if(duplicate&&duplicate.actor_id===writerId&&duplicate.intent_hash===intentHash)return {accepted:true,duplicate:true,message:duplicate}
-  if(actor.role!=='contact'&&!await env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${replyKnowledgeSql('c',undefined,!!email?.cc.length)}`).bind(conversationId,projectId).first())return {accepted:false,reason:'knowledge_access_changed'}
+  if(!await env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${customerReplyAdmissionSql('c',undefined,email?.cc??[],{localId})}`).bind(conversationId,projectId).first())return {accepted:false,reason:'knowledge_access_changed',error:'Knowledge access changed; review the current recipients and grants before replying'}
   return {accepted:false,reason:'conversation_changed_or_admission_denied'}
  }
  return {accepted:true,duplicate:false,message,...(followup?{followupConversationId:targetId}:{})}

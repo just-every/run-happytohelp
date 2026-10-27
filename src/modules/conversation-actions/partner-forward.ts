@@ -1,3 +1,4 @@
+import {customerReplyScope} from '../knowledge/delivery'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
@@ -53,7 +54,7 @@ export async function forwardToPartner(env:Env,actor:Actor,conversation:any,inpu
  // The durable prepared row is a send claim. A crash never automatically replays it.
  await env.DB.prepare("UPDATE partner_forwards SET state='sending' WHERE id=?").bind(id).run()
  try{
-  const result=await sendEmail(env,{to:recipient,subject,text,attachments:rendered.attachments,replyTo,projectId:actor.projectId,idempotencyKey:`partner:${id}`,headers:{'Auto-Submitted':'auto-generated','X-Auto-Response-Suppress':'All'}})
+  const result=await sendEmail(env,{[customerReplyScope]:rendered[customerReplyScope],to:recipient,subject,text,attachments:rendered.attachments,replyTo,projectId:actor.projectId,idempotencyKey:`partner:${id}`,headers:{'Auto-Submitted':'auto-generated','X-Auto-Response-Suppress':'All'}})
   await env.DB.prepare('UPDATE partner_forwards SET state=? WHERE id=?').bind(result.state,id).run()
   await publishConversationAction(env,actor.projectId,[conversation.id],'partner_forward')
   return {id,state:result.state}

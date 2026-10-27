@@ -1,4 +1,3 @@
-import {messageKnowledgeAvailable} from '../knowledge/delivery'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
@@ -33,8 +32,7 @@ export async function emailConversationTranscript(env:Env,conversation:any,actor
  const revision=body.transcript_revision??Number(conversation.revision)
  if(!Number.isSafeInteger(revision)||revision<0||revision>Number(conversation.revision))throw new HTTPException(400,{message:'Invalid transcript revision'})
  const messages=await transcriptMessages(env,conversation,revision)
- const recipient=await env.DB.prepare('SELECT id FROM contacts WHERE project_id=? AND lower(trim(email))=?').bind(conversation.project_id,to).first<{id:string}>()
- for(const message of messages)if(!await messageKnowledgeAvailable(env,message.id,recipient?.id||''))throw new HTTPException(409,{message:'Knowledge access changed or recipient is not authorized'})
+ // Rendering carries source identity into the common final mail admission.
  const {omitted,...content}=await renderConversationEmail(env,{projectId:conversation.project_id,conversationId:conversation.id,messages})
  const settings=await env.DB.prepare('SELECT inbound_address FROM email_settings WHERE project_id=? AND is_enabled=1').bind(conversation.project_id).first<{inbound_address:string|null}>()
  const replyTo=await recipientReplyAddress(env,settings?.inbound_address,conversation.project_id,conversation.id,to,true)

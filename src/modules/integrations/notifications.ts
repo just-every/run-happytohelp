@@ -1,4 +1,3 @@
-import {messageKnowledgeAvailable} from '../knowledge/delivery'
 import {problemMessageDelivery} from '../tickets/problem-delivery'
 import {notifyTicketEvent} from './triggers'
 import type {Actor,Env} from '../../platform/env'
@@ -32,7 +31,6 @@ async function recorded(env:Env,id:string,observed?:Recorded){
  * edited addresses or newly added participants cannot turn replay into new mail.
  * Replay only resends a held managed command, to the recipient it recorded. */
 export async function notifyMessage(env:Env,message:any,actor:Actor,defer?:DeferEmailDelivery){
- if(!await messageKnowledgeAvailable(env,message.id))return {state:'knowledge_access_changed'}
  const problem=await problemMessageDelivery(env,message,actor);if(problem)return problem
  const deliveryId=`message:${message.id}:notification`,configured=emailConfigured(env)
  const senderId=message.actor_id||(message.actor_role==='contact'?actor.contactId||actor.id:message.actor_role==='ai'?null:actor.id)

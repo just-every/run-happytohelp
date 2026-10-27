@@ -1,3 +1,4 @@
+import {customerReplyScope} from '../knowledge/delivery'
 import {rerMail} from './rer-mail-contract'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
@@ -31,7 +32,7 @@ export async function prepareConversationEmail(env:Env,input:EmailInput):Promise
  await env.DB.batch(emailThreadingStatements(env,{projectId:input.projectId,conversationId:row.conversation_id,keys:[...(!managed?[{kind:'message_id' as const,value:messageId,source:'native',sourceRef:match[1]}]:[]),{kind:'subject_token',value:`h2h:${row.conversation_id}`,source:'native',sourceRef:match[1]}],createdAt:Date.now()}))
  // Customer-authored fan-out keeps its generic subject: an arbitrary incoming
  // subject must not be propagated to unproven CC participants (R4's notices).
- return {...input,[operatorTicketMessage]:Boolean(row.operator_ticket_message),to,replyTo,subject:row.actor_role==='contact'?input.subject:nativeThreadSubject(row.subject||input.subject,row.conversation_id),headers,
+ return {...input,[customerReplyScope]:{projectId:input.projectId,conversationId:row.conversation_id},[operatorTicketMessage]:Boolean(row.operator_ticket_message),to,replyTo,subject:row.actor_role==='contact'?input.subject:nativeThreadSubject(row.subject||input.subject,row.conversation_id),headers,
   mailboxId:row.mailbox_id||row.conversation_mailbox||undefined,agentId:row.agent_id||(row.actor_role!=='contact'&&row.actor_role!=='ai'?row.actor_id:undefined),fromAddress:row.from_address||undefined,
   ...(primary?{cc:row.cc_json?JSON.parse(row.cc_json):[],bcc:row.bcc_json?JSON.parse(row.bcc_json):[]}:{})}
 }

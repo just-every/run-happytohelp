@@ -3,9 +3,9 @@ import {knowledgeApp} from './app.mjs'
 import {preparedReplyJourney} from './reply-admission.mjs'
 import {knowledgeErasureJourney} from './erasure.mjs'
 export async function experienceJourney(){
-const k=await knowledgeApp({bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'fixture-native-knowledge'}}),{app,p,call}=k
+const k=await knowledgeApp({bindings:{OPENAI_API_KEY:'sk-test',APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test',INBOUND_EMAIL_TOKEN:'fixture-native-knowledge'}}),{app,p,call}=k
 try{
- const mail=[];k.provider=async (request,entry)=>{assert.equal(new URL(request.url).host,'api.resend.com');mail.push(JSON.parse(entry.body));return Response.json({id:'mail-'+mail.length})}
+ const mail=[];const provider=async (request,entry)=>{assert.equal(new URL(request.url).host,'api.resend.com');mail.push(JSON.parse(entry.body));return Response.json({id:'mail-'+mail.length})};k.provider=provider
  const category=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Members',audience:'domains',allowedDomains:['trusted.test']},status:201})).data.id
  const aid=(await call(`/api/knowledge/${p}/articles`,{body:{title:'Secret',content:'Restricted instructions',slug:'secret',categoryIds:[category],status:'published'},status:201})).data.id
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`)).status,404)
@@ -101,7 +101,7 @@ try{
  await call(grants,{method:'PUT',body:{contactIds:[customer]},status:200})
  assert.ok(await app.first("SELECT id FROM audit_events WHERE project_id=? AND action='knowledge.entitlements.updated'",p))
 
- await preparedReplyJourney(k,{category,article:aid,customer,token:good.token})
+ await preparedReplyJourney(k,{category,article:aid,customer,token:good.token,provider})
 
  await call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{article:'{{title}}\n{{content}}'}},status:200})
  assert.equal((await call(`/api/knowledge/${p}/experience`,{status:200})).data.templates.article,'{{title}}\n{{content}}')

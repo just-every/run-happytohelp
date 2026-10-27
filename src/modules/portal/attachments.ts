@@ -1,3 +1,4 @@
+import {customerReplyAdmissionSql} from '../knowledge/delivery'
 import {portalTicketScope} from './company-visibility'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
@@ -23,12 +24,12 @@ export async function attachPortalFile(env:Env,identity:PortalIdentity,ticketId:
 }
 export async function readPortalFile(env:Env,identity:PortalIdentity,ticketId:string,mediaId:string){
  const session=portalSessionGuard(identity),visibility=portalTicketScope(identity),guard={sql:`${session.sql} AND ${visibility.sql}`,args:[...session.args,...visibility.args]}
- const row=await env.DB.prepare(`SELECT m.object_key,m.content_type,m.filename FROM media m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE m.id=? AND c.id=? AND c.project_id=? AND m.message_id IS NOT NULL AND ${guard.sql}`).bind(mediaId,ticketId,identity.actor.projectId,...guard.args).first<{object_key:string;content_type:string;filename:string}>()
+ const row=await env.DB.prepare(`SELECT m.object_key,m.content_type,m.filename FROM media m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE m.id=? AND c.id=? AND c.project_id=? AND m.message_id IS NOT NULL AND ${customerReplyAdmissionSql('c','?')} AND ${guard.sql}`).bind(mediaId,ticketId,identity.actor.projectId,identity.actor.contactId||identity.actor.id,...guard.args).first<{object_key:string;content_type:string;filename:string}>()
  if(!row)throw new HTTPException(404)
  const object=await env.FILES.get(row.object_key)
  if(!object)throw new HTTPException(404)
  // Recheck after R2 so erasure or session revocation cannot release stale bytes.
  const liveSession=portalSessionGuard(identity),scope=portalTicketScope(identity),live={sql:`${liveSession.sql} AND ${scope.sql}`,args:[...liveSession.args,...scope.args]}
- if(!await env.DB.prepare(`SELECT 1 FROM media m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE m.id=? AND c.id=? AND c.project_id=? AND m.object_key=? AND m.message_id IS NOT NULL AND ${live.sql}`).bind(mediaId,ticketId,identity.actor.projectId,row.object_key,...live.args).first())throw new HTTPException(404)
+ if(!await env.DB.prepare(`SELECT 1 FROM media m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE m.id=? AND c.id=? AND c.project_id=? AND m.object_key=? AND m.message_id IS NOT NULL AND ${customerReplyAdmissionSql('c','?')} AND ${live.sql}`).bind(mediaId,ticketId,identity.actor.projectId,row.object_key,identity.actor.contactId||identity.actor.id,...live.args).first())throw new HTTPException(404)
  return new Response(object.body,{headers:{...mediaResponseHeaders(row.content_type,row.filename),'Cache-Control':'private, no-store'}})
 }

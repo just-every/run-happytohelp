@@ -107,7 +107,7 @@
     },
     {
       "id": "258_hubspot_context.sql",
-      "buyerSteps": "Apply after 257 before serving the updated Worker. Adds encrypted read-only HubSpot connection, explicit customer mappings and transaction claims. Retain mappings with customer data; archives remove credentials and cached context, and require a fresh connection after restore. CRM context grants no customer access."
+      "buyerSteps": "Apply after 257_move_in_attachment_bytes.sql and 257_sla_slack.sql, before serving the updated Worker. Adds encrypted read-only HubSpot connection, explicit customer mappings and transaction claims. Retain mappings with customer data; archives remove credentials and cached context, and require a fresh connection after restore. CRM context grants no customer access."
     }
   ]
 }

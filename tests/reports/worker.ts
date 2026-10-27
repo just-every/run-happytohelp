@@ -3,6 +3,7 @@ import {transitionConversation} from '../../src/modules/outcomes/resolve'
 import {requireActor} from '../../src/platform/auth'
 import {Hono} from 'hono'
 import {app} from '../../src/app'
+import {consumeQueue} from '../../src/queue'
 import {auditDatabase} from '../move-in/sql-audit'
 export {ConversationSocket} from '../../src/modules/conversations/socket'
 const probes=new Hono<any>()
@@ -12,7 +13,7 @@ probes.post('/_test/message-race',async c=>{const b=await c.req.json(),original=
 probes.post('/_test/rating-race',async c=>{const b=await c.req.json(),original=c.env.DB;let injected=false;const db=new Proxy(original,{get(target,key){if(key==='batch')return async(statements:any[])=>{if(!injected){injected=true;await target.prepare(b.sql).bind(...(b.args||[])).run()}return target.batch(statements)};const value=target[key];return typeof value==='function'?value.bind(target):value}});return app.fetch(new Request('https://app.example/api/conversations/'+b.id+'/widget-events',{method:'POST',headers:c.req.raw.headers,body:JSON.stringify({action:'rateResolution',data:b.data})}),{...c.env,DB:db},c.executionCtx)})
 probes.post('/_test/widget-race',async c=>{const b=await c.req.json(),original=c.env.DB;let injected=false;const db=new Proxy(original,{get(target,key){if(key==='batch')return async(statements:any[])=>{if(!injected){injected=true;await target.prepare(b.sql).bind(...(b.args||[])).run()}return target.batch(statements)};const value=target[key];return typeof value==='function'?value.bind(target):value}});return app.fetch(new Request('https://app.example/api/conversations/'+b.id+'/widget-events',{method:'POST',headers:c.req.raw.headers,body:JSON.stringify({action:b.action,data:b.data})}),{...c.env,DB:db},c.executionCtx)})
 probes.post('/_test/invitation-race',async c=>{const b=await c.req.json(),original=c.env.DB;let injected=false;const db=new Proxy(original,{get(target,key){if(key==='batch')return async(statements:any[])=>{if(!injected){injected=true;await target.prepare(b.sql).bind(...(b.args||[])).run()}return target.batch(statements)};const value=target[key];return typeof value==='function'?value.bind(target):value}});return app.fetch(new Request('https://app.example/api/identity/'+(b.newAccount?'accept-token':'accept-invitation'),{method:'POST',headers:c.req.raw.headers,body:JSON.stringify(b.command)}),{...c.env,DB:db},c.executionCtx)})
-export default {async fetch(request:Request,env:any,context:ExecutionContext){
+export default {queue:consumeQueue,async fetch(request:Request,env:any,context:ExecutionContext){
  if(new URL(request.url).pathname.startsWith('/_test/'))return probes.fetch(request,env,context)
  const audit=auditDatabase(env.DB),response=await app.fetch(request,{...env,DB:audit.database},context),body=await response.arrayBuffer(),headers=new Headers(response.headers)
  headers.set('X-Test-Statements',String(audit.reads.length));headers.set('X-Test-Max-Rows',String(Math.max(0,...audit.reads.map(x=>x.rows))))

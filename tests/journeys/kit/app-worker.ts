@@ -14,7 +14,8 @@ const bindings=(env:Env):Env=>env.H2H_TEST_CAPTURE_QUEUE?{...env,JOBS:{send:asyn
 // Count all three cron branches against the same enforced platform limit.
 function scheduledMeter(db:D1Database){
  const counts={statements:0,calls:0,refused:0,pruned:false},consumers:Record<string,{statements:number;completed:boolean}>={}
- const database=(name:string,input=db)=>{
+ const database=(name:string,input=db):D1Database=>{
+  const rebase=(input as any)[Symbol.for('happytohelp.d1.layer')];if(rebase)return rebase((inner:D1Database)=>database(name,inner))
   const own=consumers[name]={statements:0,completed:false},raw=new WeakMap<object,D1PreparedStatement>()
   const hit=(n:number,sql='')=>{if(counts.statements+n>1000){counts.refused++;throw new Error('D1 invocation statement limit')}if(name==='invocation'){counts.statements+=n;counts.calls++};own.statements+=n;if(sql.includes('DELETE FROM abuse_counters'))counts.pruned=true}
   const wrap=(statement:D1PreparedStatement,sql:string):D1PreparedStatement=>{
@@ -82,6 +83,7 @@ const worker={
  async fetch(request:Request,env:Env,context:ExecutionContext){
   env=faulted(request,bindings(env))
   const path=new URL(request.url).pathname
+  if(path==='/_test/routes')return Response.json([...new Map(app.routes.filter(route=>route.method==='GET').map(route=>[route.path,{method:route.method,path:route.path}])).values()])
   if(path==='/_test/queue/take')return Response.json(captured.splice(0))
   // Mutating routes no role rule classifies: a collaborator is refused them by default, and the roles journey expects none.
   if(path==='/_test/unclassified-routes')return Response.json([...new Set(app.routes.filter(route=>!['GET','HEAD','OPTIONS','ALL'].includes(route.method)&&routeRule(route.method,route.path)===undefined).map(route=>`${route.method} ${route.path}`))])

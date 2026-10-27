@@ -1,3 +1,4 @@
+import {knowledgeWriteEnvironment} from '../modules/knowledge/write-boundary'
 import {purgeCampaignData} from '../modules/widget/campaigns/retention'
 import {enqueueScheduledReports} from '../modules/reports/schedule-queue'
 import type {Env} from './env'
@@ -12,6 +13,7 @@ type Consumer='cron'|'notifications'|'reports'|'audit'
  * The outer meter also counts discovery and failures, even when a consumer throws.
  * Each later consumer still gets its turn after a failure in an earlier one. */
 export async function runScheduledInvocation(env:Env,options:{now?:number;consumerEnv?:(name:Consumer,env:Env)=>Env}={}){
+ env=knowledgeWriteEnvironment(env,()=>({}))
  const budget=boundedDatabase(env.DB,scheduledStatementLimit),errors:unknown[]=[]
  const run=async(name:Consumer,task:(input:Env)=>Promise<unknown>)=>{
   const input={...env,DB:budget.database}

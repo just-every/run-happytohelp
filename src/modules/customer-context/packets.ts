@@ -1,3 +1,5 @@
+import {knowledgeCatalog} from '../knowledge/public-sources'
+import {anonymousReaders} from '../knowledge/door'
 // @ts-ignore Broad public copy identity excludes private attribution/confidence changes.
 import {personalizationFingerprint} from './profiles/personalization.js'
 import type {Env} from '../../platform/env'
@@ -16,7 +18,7 @@ export async function readContextSource(env:Env,projectId:string,subjectId:strin
   env.DB.prepare('SELECT id,summary,created_at FROM context_summaries WHERE project_id=? AND subject_id=? ORDER BY created_at DESC,id DESC LIMIT 12').bind(projectId,subjectId).all<any>(),
   env.DB.prepare('SELECT *,dismissed_at AS closed_at,help_type AS ai_type FROM context_insights WHERE project_id=? AND subject_id=? ORDER BY created_at DESC,id DESC LIMIT 20').bind(projectId,subjectId).all<any>(),
   env.DB.prepare(`SELECT m.id,m.content,m.created_at,CASE WHEN m.actor_role='contact' THEN c.contact_id ELSE NULL END contact_id FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE m.project_id=? AND (c.contact_id=? OR m.actor_id=?) ORDER BY m.created_at DESC,m.id DESC LIMIT 40`).bind(projectId,subjectId,subjectId).all<any>(),
-  env.DB.prepare('SELECT f.id,f.url,f.title,f.content AS markdown FROM knowledge_documents f JOIN knowledge_datasets d ON d.published_version=f.version_id WHERE d.project_id=? ORDER BY f.id LIMIT 12').bind(projectId).all<any>(),
+  knowledgeCatalog(env,projectId,anonymousReaders).then(results=>({results})),
   env.DB.prepare('SELECT id,action,occurred_at AS created_at FROM context_actions WHERE project_id=? AND subject_id=? ORDER BY occurred_at,id LIMIT 60').bind(projectId,subjectId).all<any>(),
   env.DB.prepare('SELECT id,summary,created_at FROM context_summaries WHERE project_id=? AND subject_id=? ORDER BY created_at,id LIMIT 12').bind(projectId,subjectId).all<any>(),
  ])

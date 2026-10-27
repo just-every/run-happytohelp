@@ -765,6 +765,12 @@
     },
     {
       "binding": "DB",
+      "name": "257_hubspot_context.sql",
+      "sha256": "3f033ca7f7db8d7579e9876a75078e1f1b19efb589c8dcf4006fc683049d275d",
+      "sql": "-- Read-only CRM context never changes native customer identity or authority.\nCREATE TABLE crm_connections (\n project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,\n account_id TEXT NOT NULL,\n token_cipher TEXT,\n properties_json TEXT NOT NULL,\n revision TEXT NOT NULL,\n updated_at INTEGER NOT NULL\n);\nCREATE TABLE crm_mappings (\n project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,\n contact_id TEXT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,\n source_contact_id TEXT NOT NULL,\n company_id TEXT,\n source_company_id TEXT,\n revision TEXT NOT NULL,\n state TEXT NOT NULL DEFAULT 'stale',\n context_json TEXT,\n refreshed_at INTEGER,\n checked_at INTEGER,\n PRIMARY KEY(project_id,contact_id),\n UNIQUE(project_id,source_contact_id),\n CHECK ((company_id IS NULL) = (source_company_id IS NULL))\n);\nCREATE TABLE crm_changes (\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,\n at INTEGER NOT NULL\n);\n"
+    },
+    {
+      "binding": "DB",
       "name": "257_move_in_attachment_bytes.sql",
       "sha256": "a6157774bba88eb231945c253f952cb9c9db2eb677ee6ed97e2c680ec0d5354e",
       "sql": "-- Explicit small export payloads share the native media lifetime and authorization.\nCREATE TABLE move_in_attachment_bytes (\n media_id TEXT PRIMARY KEY REFERENCES media(id) ON DELETE CASCADE,\n project_id TEXT NOT NULL,\n conversation_id TEXT NOT NULL REFERENCES conversations(id),\n note_id TEXT REFERENCES move_in_notes(id) ON DELETE CASCADE,\n sha256 TEXT NOT NULL,\n base64 TEXT NOT NULL\n);\nCREATE INDEX move_in_attachment_conversation ON move_in_attachment_bytes(project_id,conversation_id);\nCREATE INDEX move_in_attachment_note ON move_in_attachment_bytes(note_id);\n"
@@ -774,12 +780,6 @@
       "name": "257_sla_slack.sql",
       "sha256": "e3ba183c93594309ab8f1381d912080955bc02017f7cd810c834a5689933ccdd",
       "sql": "-- Explicit opt-in destination; existing alerts never acquire a new outbound effect.\nALTER TABLE sla_policies ADD COLUMN slack_destination_id TEXT;\nALTER TABLE sla_alerts ADD COLUMN slack_destination_id TEXT;\nALTER TABLE sla_alerts ADD COLUMN slack_state TEXT NOT NULL DEFAULT 'not_configured';\nALTER TABLE sla_alerts ADD COLUMN slack_attempts INTEGER NOT NULL DEFAULT 0;\nALTER TABLE sla_alerts ADD COLUMN slack_started_at INTEGER;\nALTER TABLE sla_alerts ADD COLUMN slack_next_attempt_at INTEGER;\nALTER TABLE sla_alerts ADD COLUMN slack_error TEXT;\nCREATE INDEX sla_slack_due ON sla_alerts(slack_state,slack_next_attempt_at);\n"
-    },
-    {
-      "binding": "DB",
-      "name": "257_hubspot_context.sql",
-      "sha256": "3f033ca7f7db8d7579e9876a75078e1f1b19efb589c8dcf4006fc683049d275d",
-      "sql": "-- Read-only CRM context never changes native customer identity or authority.\nCREATE TABLE crm_connections (\n project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,\n account_id TEXT NOT NULL,\n token_cipher TEXT,\n properties_json TEXT NOT NULL,\n revision TEXT NOT NULL,\n updated_at INTEGER NOT NULL\n);\nCREATE TABLE crm_mappings (\n project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,\n contact_id TEXT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,\n source_contact_id TEXT NOT NULL,\n company_id TEXT,\n source_company_id TEXT,\n revision TEXT NOT NULL,\n state TEXT NOT NULL DEFAULT 'stale',\n context_json TEXT,\n refreshed_at INTEGER,\n checked_at INTEGER,\n PRIMARY KEY(project_id,contact_id),\n UNIQUE(project_id,source_contact_id),\n CHECK ((company_id IS NULL) = (source_company_id IS NULL))\n);\nCREATE TABLE crm_changes (\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,\n at INTEGER NOT NULL\n);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

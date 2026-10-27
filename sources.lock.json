@@ -1568,7 +1568,7 @@
       "executable": false
     },
     ".github/workflows/deploy-stage.yml": {
-      "sha256": "3e294a70ef9a9ba92735f36332c2add39a453f028a068b3453f44762ea5cc887",
+      "sha256": "e8d535c57eef3e00e0aafea1588c70de5786380e30ae7c2f508a0ad01cfa9e59",
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
@@ -1588,7 +1588,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "5f5f8ed0f6ea6c6af955e1a0e88795fdfc66f3911713de88bca3d10427072842",
+      "sha256": "77668406c9140a175662dd8eddae1afc01d3ff0394a1af303d75c3107375a211",
       "executable": false
     },
     ".gitignore": {
@@ -2636,7 +2636,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "72cd3440eee8a71fa6b4ac9bfc62fb84d142f1aab77ebe2123885bd9dc665e45",
+      "sha256": "a7bd8e5f081695495310f0e51474ee4d500caa11a6cf32945abfa0291fb90002",
       "executable": false
     },
     "rer-project.json": {

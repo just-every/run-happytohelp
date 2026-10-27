@@ -60,6 +60,9 @@ const rules:Record<string,Rule>={
  [`POST ${P}/email-settings/managed/reconcile`]:'settings.manage',[`POST ${P}/email-settings/managed/retry`]:'settings.manage',
  [`PUT ${P}/email-settings`]:'settings.manage',[`POST ${P}/email-settings/test`]:'settings.manage',[`POST ${P}/inbound-emails/:messageId/reconcile`]:'conversations.manage',
  'POST /api/site-preview/projects/:projectId/brand-image-generations':'settings.manage','POST /api/site-preview/projects/:projectId/brand-assets':'settings.manage','PUT /api/site-preview/projects/:projectId/brand-assets/:id/publish':'settings.manage','POST /api/site-preview/projects/:projectId/preview':'settings.manage',
+ 'POST /api/projects/:projectId/procedures/:key/versions':'settings.manage',
+ 'POST /api/projects/:projectId/procedures/:key/versions/:versionId/simulations':'settings.manage',
+ 'POST /api/projects/:projectId/procedures/:key/versions/:versionId/release':'settings.manage',
  'POST /api/training/projects/:project/runs':'settings.manage','POST /api/training/projects/:project/runs/:run/cancel':'settings.manage','POST /api/training/synthetic-workspace':'settings.manage',
  // Integrations and credentials
  [`POST ${P}/connections/tokens`]:'integrations.install',[`PATCH ${P}/connections/tokens/:id`]:'integrations.install',[`POST ${P}/connections/tokens/:id/rotate`]:'integrations.install',[`DELETE ${P}/connections/tokens/:id`]:'integrations.install',

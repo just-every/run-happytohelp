@@ -54,7 +54,7 @@ export async function workflowArchivePolicy(root,input,{beforeTickets=false,befo
   // Later replacements of its trigger must stay omitted too. Keep the other
   // statements in mixed migrations, including 241's resolution correction.
   const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))
-   .filter(sql=>!/^\s*(?:CREATE|DROP)\s+TRIGGER\s+workflow_changed\b/i.test(sql)&&!omittedSchemaChange(sql,omitted))));
+   .filter(sql=>!/^\s*(?:CREATE|DROP)\s+TRIGGER\s+(?:workflow_changed|workflow_version_immutable)\b/i.test(sql)&&!omittedSchemaChange(sql,omitted))));
   for(let index=0;index<plan.length;index++){
    for(const sql of plan[index])scratch.exec(sql);
    const tables=scratch.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row=>row.name).filter(name=>!excludedTable(name,result)&&!(result.derivedTables??[]).some(derived=>name===derived||name.startsWith(derived+'_')));

@@ -4,6 +4,7 @@ import {referenceIds,tokenPattern} from '../knowledge/reference-store'
 import {literal,readerSet} from '../knowledge/door'
 import {canonicaliseKnowledge} from '../knowledge/canonicaliser'
 import {createBlocks,referencesAdmittedSql,referenceVisibility} from '../knowledge/reference-store'
+import {articleSourceIdentities} from '../knowledge/source-identity'
 import {currentTicketReaders,combineReaders} from '../knowledge/readers'
 import {companyPortalReply,portalTicketScope} from '../portal/company-visibility'
 import {workflowNow,workflowEnvironment} from '../workflows/clock'
@@ -96,8 +97,8 @@ export async function admitMessage(env:Env,input:MessageInput|AtomicMessageInput
  const citations=refs.length?await resolvePublicCitations(env,projectId,input.generationId!,refs,currentTicketReaders(projectId,conversationId,{contacts:email?.cc,localId})):[]
  if(input.generationId){const sources=await env.DB.prepare('SELECT source_id FROM ai_generation_sources WHERE project_id=? AND generation_id=?').bind(projectId,input.generationId).all<{source_id:string}>();if(sources.results.length)[content]=await createBlocks(env,projectId,[{kind:'answer',text:content,sources:sources.results.map(row=>row.source_id),generationId:input.generationId}])}
  content=await canonicaliseKnowledge(env,projectId,content,actor.role==='contact'?actor.contactId||actor.id:undefined)
- for(const citation of citations){const [token]=await createBlocks(env,projectId,[{kind:'link',text:`[${citation.title}](${citation.url})`,title:citation.title,url:citation.url,sources:[citation.id]}]);content+='\n\n'+token}
- const citationRefs=await createBlocks(env,projectId,citations.map(citation=>({kind:'text' as const,text:JSON.stringify(citation),title:citation.title,url:citation.url,sources:[citation.id]})))
+ for(const citation of citations){const [token]=await createBlocks(env,projectId,[{kind:'link',text:`[${citation.title}](${citation.url})`,title:citation.title,url:citation.url,sources:[citation.id],sourceIdentities:articleSourceIdentities(projectId,[citation])}]);content+='\n\n'+token}
+ const citationRefs=await createBlocks(env,projectId,citations.map(citation=>({kind:'text' as const,text:JSON.stringify(citation),title:citation.title,url:citation.url,sources:[citation.id],sourceIdentities:articleSourceIdentities(projectId,[citation])})))
  const citationJson=JSON.stringify(citationRefs.map(token=>({knowledge_citation:token})))
  const raw=email?await canonicaliseKnowledge(env,projectId,email.raw,actor.role==='contact'?actor.contactId||actor.id:undefined):undefined
  env=await workflowEnvironment(env)

@@ -5,23 +5,30 @@ export {visibleBlockSql} from './reference-policy'
 import type {Env} from '../../platform/env'
 import {literal,type Readers,readerSet,memberReaders} from './door'
 import {describeReaders} from './readers'
+import {HTTPException} from 'hono/http-exception'
+import {observedArticleSourceSql,type ObservedArticleSource} from './source-identity'
 export const unavailableKnowledge='[Knowledge unavailable]'
 export const tokenPattern=/⟦k:([a-f0-9]{32})⟧/g
 export const referenceIds=(text:string)=>[...new Set([...text.matchAll(tokenPattern)].map(match=>match[1]))]
 export const referenceToken=(id:string)=>`⟦k:${id}⟧`
 export interface KnowledgeBlock {id:string;project_id:string;kind:'text'|'link'|'copy'|'answer';payload_json:string;sources_json:string;generation_id:string|null;author_contact_id:string|null}
-export async function createBlocks(env:Env,projectId:string,blocks:Array<{kind:KnowledgeBlock['kind'];text:string;title?:string;url?:string;sources:string[];generationId?:string;authorContactId?:string}>){
+interface BlockInput {kind:KnowledgeBlock['kind'];text:string;title?:string;url?:string;sources:string[];sourceIdentities?:ObservedArticleSource[];generationId?:string;authorContactId?:string}
+// Existing generation ledgers already retain their article dependencies. Direct
+// source reads instead prove the incarnation observed with their source bytes.
+const blockSourcesObservedSql=(requested:string)=>`NOT EXISTS(SELECT 1 FROM json_each(json_extract(${requested},'$.sources_json')) source WHERE source.value LIKE 'article:%' AND NOT EXISTS(SELECT 1 FROM json_each(json_extract(${requested},'$.sourceIdentities')) observed WHERE json_extract(observed.value,'$.id')=source.value AND ${observedArticleSourceSql('source.value',"json_extract(observed.value,'$.project')","json_extract(observed.value,'$.incarnation')")}) AND NOT EXISTS(SELECT 1 FROM knowledge_generation_sources generation_source WHERE generation_source.project_id=json_extract(${requested},'$.project_id') AND generation_source.generation_id=json_extract(${requested},'$.generation_id') AND generation_source.source_id=source.value) AND NOT EXISTS(SELECT 1 FROM ai_generation_sources generation_source WHERE generation_source.project_id=json_extract(${requested},'$.project_id') AND generation_source.generation_id=json_extract(${requested},'$.generation_id') AND generation_source.source_id=source.value))`
+export async function createBlocks(env:Env,projectId:string,blocks:BlockInput[]){
  const rows=await Promise.all(blocks.map(async block=>{const payload_json=JSON.stringify({text:block.text,title:block.title,url:block.url}),sources_json=JSON.stringify([...new Set(block.sources)].sort()),generation_id=block.generationId||null,author_contact_id=block.authorContactId||null;
  const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify([block.kind,payload_json,sources_json,generation_id,author_contact_id]))),fingerprint=Array.from(new Uint8Array(bytes),n=>n.toString(16).padStart(2,'0')).join('');
- return {id:crypto.randomUUID().replaceAll('-',''),project_id:projectId,kind:block.kind,payload_json,sources_json,generation_id,author_contact_id,created_at:Date.now(),fingerprint}}))
+ return {id:crypto.randomUUID().replaceAll('-',''),project_id:projectId,kind:block.kind,payload_json,sources_json,generation_id,author_contact_id,created_at:Date.now(),fingerprint,sourceIdentities:block.sourceIdentities||[]}}))
  if(!rows.length)return []
  const tokens:string[]=[]
  for(let offset=0;offset<rows.length;){
   const page:typeof rows=[];let size=2
   while(offset<rows.length){const item=rows[offset],bytes=new TextEncoder().encode(JSON.stringify(item)).length;if(bytes>1800000)throw new Error('Knowledge reference exceeds storage limit');if(page.length&&size+bytes>1800000)break;page.push(item);size+=bytes+1;offset++}
   const serialized=JSON.stringify(page),result=await env.DB.batch([
-   env.DB.prepare(`INSERT OR IGNORE INTO knowledge_reply_blocks SELECT json_extract(value,'$.id'),json_extract(value,'$.project_id'),json_extract(value,'$.kind'),json_extract(value,'$.payload_json'),json_extract(value,'$.sources_json'),json_extract(value,'$.generation_id'),json_extract(value,'$.author_contact_id'),json_extract(value,'$.created_at'),json_extract(value,'$.fingerprint') FROM json_each(?)`).bind(serialized),
-   env.DB.prepare(`SELECT b.id FROM json_each(?) requested JOIN knowledge_reply_blocks b ON b.project_id=? AND b.fingerprint=json_extract(requested.value,'$.fingerprint') ORDER BY CAST(requested.key AS INTEGER)`).bind(serialized,projectId)])
+   env.DB.prepare(`INSERT OR IGNORE INTO knowledge_reply_blocks SELECT json_extract(requested.value,'$.id'),json_extract(requested.value,'$.project_id'),json_extract(requested.value,'$.kind'),json_extract(requested.value,'$.payload_json'),json_extract(requested.value,'$.sources_json'),json_extract(requested.value,'$.generation_id'),json_extract(requested.value,'$.author_contact_id'),json_extract(requested.value,'$.created_at'),json_extract(requested.value,'$.fingerprint') FROM json_each(?) requested WHERE ${blockSourcesObservedSql('requested.value')}`).bind(serialized),
+   env.DB.prepare(`SELECT b.id FROM json_each(?) requested JOIN knowledge_reply_blocks b ON b.project_id=? AND b.fingerprint=json_extract(requested.value,'$.fingerprint') WHERE ${blockSourcesObservedSql('requested.value')} ORDER BY CAST(requested.key AS INTEGER)`).bind(serialized,projectId)])
+  if(result[1].results.length!==page.length)throw new HTTPException(409,{message:'Knowledge source identity changed'})
   tokens.push(...result[1].results.map((row:any)=>referenceToken(String(row.id))))
  }
  return tokens

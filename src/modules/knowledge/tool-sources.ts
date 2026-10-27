@@ -3,6 +3,7 @@ import type {Readers} from './door'
 import {searchKnowledge} from './service'
 import {readKnowledgeSource,safePublicUrl,type PublicReference} from './public-sources'
 import {createBlocks} from './reference-store'
+import {articleSourceIdentities} from './source-identity'
 // @ts-ignore Retained bounded history formatting; chunk source bytes before pinning.
 import {fullHistoryEntryChunk} from '../ai-support/assist/historyOutput.js'
 
@@ -16,7 +17,7 @@ async function pinSourceFields(env:Env,projectId:string,sources:SourceFields[]){
   const value=source[field]
   if(value===undefined)continue
   fields.push({index,field})
-  blocks.push({kind:'text',text:value,title:source.title,url:source.url,sources:[source.id]})
+  blocks.push({kind:'text',text:value,title:source.title,url:source.url,sources:[source.id],sourceIdentities:articleSourceIdentities(projectId,[source])})
  }
  const tokens=await createBlocks(env,projectId,blocks)
  for(const [index,{index:sourceIndex,field}] of fields.entries())output[sourceIndex][field]=tokens[index]

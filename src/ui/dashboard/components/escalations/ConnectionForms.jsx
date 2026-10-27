@@ -9,7 +9,7 @@ function CredentialForm({base, provider, name, targetLabel, targetPlaceholder, t
         const form = event.currentTarget;
         const fields = new FormData(form);
         const payload = {provider, target: fields.get('target').trim(), token: fields.get('token'), base_url: fields.get('base_url').trim()};
-        if (provider !== 'slack') payload.webhook_secret = fields.get('webhook_secret');
+        if (!['slack', 'teams'].includes(provider)) payload.webhook_secret = fields.get('webhook_secret');
         if (provider === 'jira') payload.email = fields.get('email').trim();
         // Credentials are uncontrolled inputs, cleared before waiting on the request.
         form.querySelectorAll('input[type="password"]').forEach(input => { input.value = ''; });
@@ -29,7 +29,7 @@ function CredentialForm({base, provider, name, targetLabel, targetPlaceholder, t
             {children && <div className="escalation-field">{React.cloneElement(children, {id: `${id}-email`})}</div>}
             <label htmlFor={`${id}-token`}>{tokenLabel}</label>
             <input className="form-control form-control-sm" id={`${id}-token`} name="token" type="password" required autoComplete="new-password"/>
-            {provider !== 'slack' && <><label htmlFor={`${id}-secret`}>{name} webhook signing secret</label>
+            {!['slack', 'teams'].includes(provider) && <><label htmlFor={`${id}-secret`}>{name} webhook signing secret</label>
                 <input className="form-control form-control-sm" id={`${id}-secret`} name="webhook_secret" type="password" required autoComplete="new-password"/></>}
             <label htmlFor={`${id}-url`}>{provider === 'jira' ? 'Jira site URL' : `${name} API base URL`}</label>
             <input className="form-control form-control-sm" id={`${id}-url`} name="base_url" type="url" defaultValue={defaultUrl} placeholder={provider === 'jira' ? 'https://your-team.atlassian.net' : undefined} required/>
@@ -59,4 +59,8 @@ export function JiraConnectionForm(props) {
 
 export function SlackConnectionForm(props) {
     return <CredentialForm {...props} provider="slack" name="Slack" targetLabel="Default Slack channel ID" targetPlaceholder="C0123456789" tokenLabel="Slack bot token with chat:write permission" defaultUrl="https://slack.com"/>;
+}
+
+export function TeamsConnectionForm(props) {
+    return <CredentialForm {...props} provider="teams" name="Teams" targetLabel="Team UUID and channel ID" targetPlaceholder="Team UUID, channel ID" tokenLabel="Microsoft Graph token with ChannelMessage.Send permission" defaultUrl="https://graph.microsoft.com"/>;
 }

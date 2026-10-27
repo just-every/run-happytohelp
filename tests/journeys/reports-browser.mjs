@@ -1,3 +1,4 @@
+import {runSteps} from './kit/steps.mjs';
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
 import {createServer} from 'node:http'
@@ -25,7 +26,7 @@ async function iconHint(page,control,label){
  await page.keyboard.press('Escape');await tip.waitFor({state:'hidden'});await control.evaluate(element=>element.blur());
  await control.hover();await tip.waitFor();await page.mouse.move(0,0);await tip.waitFor({state:'hidden'});
 }
-for(const width of [1440,390])test(`at ${width}px a widget rating reaches the operator live and on reload, Reports range and both CSVs include it, and reopening clears the prompt while keeping prior feedback`,async()=>{try{
+test(`at 1440 and 390px a widget rating reaches the operator live and on reload, Reports range and both CSVs include it, and reopening clears the prompt while keeping prior feedback`,async()=>runSteps([1440,390].map((width)=>[`${width}px`,async()=>{try{
  const visitor=await browser.newContext({viewport:{width,height:900}}),widget=await visitor.newPage();widget.setDefaultTimeout(20000);await widget.goto(origin);await iconHint(widget,widget.getByRole('button',{name:'Send message',exact:true}),'Send message');await widget.locator('textarea[name=content]').fill('Please help with this report');await widget.locator('button[name=submit]').click();const key=`rer-widget:${runtime.origin}:${widgetKey}`;await widget.waitForFunction(key=>JSON.parse(localStorage.getItem(key)||'null')?.conversationId,key);const conversationId=await widget.evaluate(key=>JSON.parse(localStorage.getItem(key)).conversationId,key);
  const history=async()=>{await dashboard.getByRole('tab',{name:'Ticket',exact:true}).click();const toggle=dashboard.locator('#conversation-details-panel .ticket-section__toggle').filter({hasText:/^History/});if(await toggle.getAttribute('aria-expanded')!=='true')await toggle.click()};
  const operator=await browser.newContext({viewport:{width,height:900},acceptDownloads:true});await operator.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}]);const dashboard=await operator.newPage();dashboard.setDefaultTimeout(20000);await dashboard.goto(runtime.origin+`/projects/${owner.projectId}/conversations/${conversationId}`);await dashboard.getByPlaceholder('Type your reply…').fill('Here is the answer for your report');if(width===390){await dashboard.getByRole('button',{name:'Actions',exact:true}).click();await dashboard.getByRole('menuitem',{name:'Send & close',exact:true}).click()}else await dashboard.getByRole('button',{name:'Send',exact:true}).click();await widget.getByText('Here is the answer for your report',{exact:true}).waitFor();
@@ -69,4 +70,4 @@ for(const width of [1440,390])test(`at ${width}px a widget rating reaches the op
  // Restore defaults for the next viewport's fresh visitor.
  await api(`/api/outcomes/projects/${owner.projectId}/settings`,{token:owner.token,method:'PUT',body:{enabled:false,widgetEnabled:true,scale:'thumbs',locale:'en',delayMinutes:0,expiresDays:14}});
  await operator.close();await visitor.close()
-}catch(error){success=false;throw error}})
+}catch(error){success=false;throw error}}])))

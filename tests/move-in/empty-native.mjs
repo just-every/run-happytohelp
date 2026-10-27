@@ -6,8 +6,12 @@ import {unchanged} from './admission-equality.mjs';
 import {emptyCases,laterSource,sourceName,upload} from './empty-inputs.mjs';
 const root='/api/move-in/projects/p/imports';
 const post=(body,actor='owner')=>({method:'POST',actor,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+
+import {step} from './steps.mjs';
+
+test("refusals: refused uploads are located at their exact source place before any custody, queue, native write or outbound call",async()=>{
 for(const vendor of ['zendesk','intercom']){
- test(`${vendor}: current owners and admins refuse all empty uploads before private custody or effects`,async()=>{
+ await step(`${vendor}: current owners and admins refuse all empty uploads before private custody or effects`,async()=>{
   const h=await nativeHarness();try{
    const before=await h.snapshot(),cases=emptyCases(vendor);
    for(const [actor,status] of [['operator',403],['foreign',404]])for(const [name,body] of cases){
@@ -26,7 +30,14 @@ for(const vendor of ['zendesk','intercom']){
    assert.equal(h.outbound,0);
   }finally{await h.close()}
  });
- test(`${vendor}: blank auxiliary members permit later records and unsupported records keep their reasoned plan`,async()=>{
+ ;
+}
+});
+
+test("review: an accepted export is reviewed with each record's kind, ID, payload, exact location, duplicates, conflicts and reasons before anything is approved",async()=>{
+for(const vendor of ['zendesk','intercom']){
+ ;
+ await step(`${vendor}: blank auxiliary members permit later records and unsupported records keep their reasoned plan`,async()=>{
   const h=await nativeHarness();try{
    const {body,entries}=laterSource(vendor),run=(await h.call(`${root}?vendor=${vendor}`,upload(body,'later.zip'))).data;
    await h.step();const first=await h.db.prepare('SELECT state,cursor,files_json FROM move_in_runs WHERE id=?').bind(run.id).first();assert.equal(first.state,'uploaded');assert.equal(first.cursor,20);assert.deepEqual(JSON.parse(first.files_json),[]);
@@ -43,3 +54,4 @@ for(const vendor of ['zendesk','intercom']){
   }finally{await h.close()}
  });
 }
+});

@@ -63,7 +63,7 @@ test(`at 1440 and 390px an owner creates and revokes a token, connects a webhook
 
 import {startProviders} from '../helpers/escalations/providers.mjs'
 import {exerciseEscalations} from '../helpers/escalations/browser.mjs'
-test(`at 1440 and 390px selected engineering context reaches connected trackers and Slack, signed closure updates return as drafts, and an operator edits and sends the approved customer update`,async()=>{await runSteps([1440,390].map(width=>[`${width}px`,async()=>{
+test(`at 1440 and 390px selected engineering context reaches connected trackers, Slack and Teams, refused and uncertain handoffs stay visible, signed closure updates return as drafts, and an operator edits and sends the approved customer update`,async()=>{await runSteps([1440,390].map(width=>[`${width}px`,async()=>{
  const providers=await startProviders();let runtime,passed=false;
  try{runtime=await createRuntime({outboundFixture:new URL('../helpers/escalations/outbound.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}});const owner=await runtime.seedTenant({name:'Engineering escalations '+width,email:`engineering-${width}@example.test`});const result=await exerciseEscalations({browser,origin:runtime.origin,owner,providers,width,directory:shot('escalations')});await result.context.close();passed=true}finally{await runtime?.close(passed);await providers.close()}
 }]))

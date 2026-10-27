@@ -786,6 +786,12 @@
       "name": "258_procedure_versions.sql",
       "sha256": "5e24d62e0356311eeb6092bf59f0a6b8eab26fa6c1b8e752850386619a40b547",
       "sql": "CREATE TABLE procedure_versions (\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL REFERENCES projects(id),\n procedure_key TEXT NOT NULL,\n version INTEGER NOT NULL CHECK(version>0),\n definition TEXT NOT NULL CHECK(json_valid(definition)),\n created_by TEXT NOT NULL,\n created_at INTEGER NOT NULL,\n UNIQUE(project_id,procedure_key,version)\n);\nCREATE TRIGGER procedure_versions_immutable BEFORE UPDATE ON procedure_versions\nBEGIN SELECT RAISE(ABORT,'Procedure versions are immutable'); END;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "258_teams_escalations.sql",
+      "sha256": "0473ffbbc02115b1b541897cb51d1eafd4a443e28c91512322115b96cba735c8",
+      "sql": "-- Preserve the original tracker connection table and all its foreign references.\nALTER TABLE escalation_connections ADD COLUMN installed_by TEXT;\nCREATE TABLE escalation_teams_connections(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),provider TEXT NOT NULL CHECK(provider='teams'),target TEXT NOT NULL,base_url TEXT,token_cipher TEXT,webhook_cipher TEXT,updated_at INTEGER NOT NULL,installed_by TEXT NOT NULL,UNIQUE(project_id,provider));\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

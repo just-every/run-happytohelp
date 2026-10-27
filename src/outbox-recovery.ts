@@ -9,7 +9,7 @@ const liveProject="EXISTS(SELECT 1 FROM projects p WHERE p.id=o.project_id) AND 
 // all collected participant addresses; arbitrary inbound Cc headers cannot.
 const audience=`(SELECT count(*) FROM (${notificationContactsSql} WHERE c.id=t.id AND c.project_id=t.project_id) recipient WHERE notice_eligible=1 OR (m.actor_role IN ('owner','admin','operator') AND EXISTS(SELECT 1 FROM users WHERE id=m.actor_id))) effect_contacts,
  (SELECT count(*) FROM conversation_followers WHERE conversation_id=t.id)+(SELECT count(*) FROM ticket_group_members WHERE project_id=t.project_id AND group_id=t.group_id)+CASE WHEN t.assigned_to IS NOT NULL THEN 1 ELSE 0 END effect_teammates`
-type Message=Record<string,unknown>&{outbox_id:number;id:string;conversation_id:string;effect_contacts:number;effect_teammates:number}
+type Message=Record<string,unknown>&{outbox_id:number;id:string;conversation_id:string;effect_contacts:number;effect_teammates:number;queue_only?:number}
 type Page={project_id:string;conversation_id:string;last_id:number}
 function job(projectId:string,message:Message):Job{return {type:'outbox.recover',id:message.id,projectId,conversationId:message.conversation_id,outboxId:message.outbox_id}}
 async function effects(env:Env,projectId:string,message:Message){
@@ -43,9 +43,14 @@ export async function dispatchOutbox(env:Env){
    try{await env.JOBS.send({type:'outbox.page',id:row.conversation_id,projectId:row.project_id,lastId:row.last_id})}catch{console.error('Outbox page dispatch pending')}
    continue
   }
-  const messages=(await env.DB.prepare(`SELECT o.id outbox_id,m.*,${audience} FROM conversation_outbox o JOIN messages m ON m.id=o.message_id JOIN conversations t ON t.id=o.conversation_id AND t.project_id=o.project_id WHERE o.project_id=? AND o.conversation_id=? AND o.id<=? AND o.delivered_at IS NULL AND ${liveProject} ORDER BY o.id LIMIT 90`).bind(row.project_id,row.conversation_id,row.last_id).all<Message>()).results
+  const messages=(await env.DB.prepare(`SELECT o.id outbox_id,m.*,${audience},
+   EXISTS(SELECT 1 FROM operator_ticket_commands command WHERE command.conversation_id=o.conversation_id AND command.project_id=o.project_id AND command.local_id=m.local_id) queue_only
+   FROM conversation_outbox o JOIN messages m ON m.id=o.message_id JOIN conversations t ON t.id=o.conversation_id AND t.project_id=o.project_id WHERE o.project_id=? AND o.conversation_id=? AND o.id<=? AND o.delivered_at IS NULL AND ${liveProject} ORDER BY o.id LIMIT 90`).bind(row.project_id,row.conversation_id,row.last_id).all<Message>()).results
   const done:Message[]=[],queued:Message[]=[]
   for(const message of messages){
+   // Operator-created first messages recover in their own queue invocations,
+   // including lost notice enqueues. Cron must not execute sibling sends inline.
+   if(message.queue_only){queued.push(message);continue}
    try{await effects(env,row.project_id,message);done.push(message)}catch(error){if(!(error instanceof CronDeferred))console.error('Message follow-up pending',message.id);queued.push(message)}
   }
   try{if(!await complete(env,row.project_id,row.conversation_id,done))queued.push(...done)}catch{queued.push(...done);console.error('Outbox completion pending')}

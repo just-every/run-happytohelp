@@ -1564,15 +1564,15 @@
       "executable": false
     },
     ".github/workflows/delivery.yml": {
-      "sha256": "10f35f361179f71be1a36bc202b3783afa9f96a1a1025ead01857d9047e62429",
+      "sha256": "28e6b2b61a47cdfaa75f34940ff25411e944dbc2601d99e8d477ff1693be9cce",
       "executable": false
     },
     ".github/workflows/deploy-stage.yml": {
-      "sha256": "522ca7463ec40e8dac751b8f10afd878f0d90d988e1d05b00adcc033897c95a5",
+      "sha256": "3e294a70ef9a9ba92735f36332c2add39a453f028a068b3453f44762ea5cc887",
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "1334550420d99902ee8e23034c4ef335e6c879feb6a0fb379d0a99ca03189a2a",
+      "sha256": "182956059a2b12e6095e4e303f8652756a27fa92a189e3ea6c2dc302f0ebb99e",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -1588,7 +1588,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "ede6b03957da449ca1f2236b59390ef7f8d764c4c10baec0625a4ae2aaa7f56f",
+      "sha256": "5f5f8ed0f6ea6c6af955e1a0e88795fdfc66f3911713de88bca3d10427072842",
       "executable": false
     },
     ".gitignore": {
@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "eea099fec1dfec9911be9b892335102a5055a116baed59082074efe994bb2051",
+      "sha256": "46213edd627bd61aa98737e598e819ceb17c53d220c8c54829e13b5b3622b233",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a4306a7630e75a470c4ffd95a928ffbe8696554dd823bf02e9f9c7c9e1bed0f4",
+      "sha256": "9bf1767636329c42785a84d727083f2d56db3ee81541404cf59fa2f17d0cc145",
       "executable": false
     },
     "DEMO.md": {
@@ -2655,8 +2655,28 @@
       "sha256": "b6057164f2cc0442f84bf73e6997895e5e8cae582f0cc0bea454016b74fe14df",
       "executable": false
     },
+    "scripts/chromium-probe.mjs": {
+      "sha256": "5b08ef78f0cc30ee1e625ac73175ed97879787783b5ac6b0e6ab55458eee3a06",
+      "executable": false
+    },
+    "scripts/ci/ensure-disk-space.sh": {
+      "sha256": "8ad90affb872e1bd4a62e763d7a1cc4aaa95c652703e27c13f54cc657bfc7521",
+      "executable": false
+    },
+    "scripts/ci/install-chromium-deps.py": {
+      "sha256": "1cdf078bf40b1d8a76a6f33223890a73121683d6ef614566f5e88d1228014e93",
+      "executable": false
+    },
+    "scripts/ci/public-preview.mjs": {
+      "sha256": "e7a524e8d84ad8b58aea8cf5517b31364a2267d6c2f202ba00686001a082819d",
+      "executable": false
+    },
     "scripts/ci/run-checks.mjs": {
       "sha256": "0b060966dedf9ecedcb02be565a289059925b0726342c140bdfaeaabe8f605f8",
+      "executable": false
+    },
+    "scripts/ci/verify-evidence.sh": {
+      "sha256": "d9cde77c939f9cf19529df1e51c8e762f55e6a40d211faa0cfc15751019f0452",
       "executable": false
     },
     "scripts/delivery/base/artifact.mjs": {
@@ -9136,7 +9156,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_workspace-settings.scss": {
-      "sha256": "435e1f991f231a9aa0cc89d9b9c6bf4f9d5dc609175d2ed0fa813237a00f5bbe",
+      "sha256": "1917ec9f6a56ace3cdf3c880a51f714fb62d77cc23e18d436814ccca4d9cc898",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_workspace-surfaces.scss": {
@@ -10244,7 +10264,7 @@
       "executable": false
     },
     "src/ui/native/pages/project-parity.css": {
-      "sha256": "2dc97f692ee06f485c9678268a54f060a30e8ad22f4b61e0a4414364cdf8da9f",
+      "sha256": "37ac53cb06f9b65fa0e383a04c149d10ac8adb8e88df9b96caf4496216d65610",
       "executable": false
     },
     "src/ui/native/pages/ProjectControls.jsx": {
@@ -11588,7 +11608,7 @@
       "executable": false
     },
     "tests/helpers/inbox/appearance-browser.mjs": {
-      "sha256": "9fe6f41d4c51c260a1e975c87e86f4528767502766f986129276837a78f2b42f",
+      "sha256": "0c63e1260b27f118b37d3d45e662e3665ae4873fd369df795342d846c11f8137",
       "executable": false
     },
     "tests/helpers/inbox/appearance.mjs": {
@@ -11653,6 +11673,10 @@
     },
     "tests/helpers/inbox/search.mjs": {
       "sha256": "28e32e9ec3eacd2429d4944557717ddb0d681c4a48ed6ac7bc9bf3aaa0badfb3",
+      "executable": false
+    },
+    "tests/helpers/inbox/settings-targets-browser.mjs": {
+      "sha256": "f681212815fa8c982a398a3ba156618eecff71214f121901a88b895a2ead5056",
       "executable": false
     },
     "tests/helpers/inbox/start-menu-browser.mjs": {

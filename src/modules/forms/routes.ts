@@ -13,15 +13,15 @@ publicForms.use('*',async(c,next)=>{c.header('Cache-Control','no-store');await n
 async function requestedContext(c:any){
  const identity=await resolvePortalActor(c.env,c.req.param('projectId'),c.req.raw)
  const locale=c.req.query('locale')||(identity?(await readPortalPreferences(c.env,identity)).locale:undefined)
- return {locale,contactId:identity?.actor.contactId??identity?.actor.id}
+ return {locale,identity}
 }
 publicForms.get('/:projectId',async c=>{
- const {locale,contactId}=await requestedContext(c),forms=await listForms(c.env,c.req.param('projectId'),locale)
- return c.json({data:await Promise.all(forms.map(form=>withAccountChoices(c.env,form,contactId)))})
+ const {locale,identity}=await requestedContext(c),forms=await listForms(c.env,c.req.param('projectId'),locale)
+ return c.json({data:await Promise.all(forms.map(form=>withAccountChoices(c.env,form,identity)))})
 })
 publicForms.get('/:projectId/:formId',async c=>{
- const {locale,contactId}=await requestedContext(c),form=await readForm(c.env,c.req.param('projectId'),c.req.param('formId'),locale)
- return c.json({data:await withAccountChoices(c.env,form,contactId)})
+ const {locale,identity}=await requestedContext(c),form=await readForm(c.env,c.req.param('projectId'),c.req.param('formId'),locale)
+ return c.json({data:await withAccountChoices(c.env,form,identity)})
 })
 publicForms.post('/:projectId/:formId/submissions',async c=>{
  const origin=c.req.header('Origin');if(origin&&origin!==new URL(c.req.url).origin)throw new HTTPException(403,{message:'Cross-origin request denied'})

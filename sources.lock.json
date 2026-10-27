@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "a154b36c401a4e79b20da49a8f68bb3a84e619f7c216f209af5ac8d764520902",
+      "sha256": "824c38de1a0705d4f59e5c56093af7add2fcded50ba926a4ddb1db47fb156661",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "640b5a6d2064ceb677b074b02062114a712320a2834efa61c01f5389601c1eed",
+      "sha256": "306b4be3c927a7a22d97c3ad3ac71752663366b2dce3bbee265e9d4f9137ce4a",
       "executable": false
     },
     "DEMO.md": {
@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "574d82ce46c682f6beba3134dd014854604a4abbaf7544d58979259c696a8304",
+      "sha256": "df22f1848fc212d8d11b9babcd0d031b69de3fa1b83bdbcb58450544960eb8a0",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2537,6 +2537,10 @@
     },
     "migrations/256_inbound_lookup_indexes.sql": {
       "sha256": "3c9b045f40e04ae9e632182d8e1a6168bedbf30961daec0c217b0fe89a33fb8c",
+      "executable": false
+    },
+    "migrations/257_account_lookup_fields.sql": {
+      "sha256": "433a6586f24b35bcb31e65e1262714e64021a0bd2923e3e611d0a484c1713511",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -4431,6 +4435,10 @@
       "sha256": "e9f33eef4122e1fb694cc8a56c8b4a24a37dcdd6ca4a90db12ef7d0eff6bd500",
       "executable": false
     },
+    "src/modules/forms/account-lookup.ts": {
+      "sha256": "ef3c299e85d4d9d202103d0bf8040da419e951439fc09df47c6b316bc6c8e7d3",
+      "executable": false
+    },
     "src/modules/forms/challenge.ts": {
       "sha256": "34ec2f93cd3eece6e26320d7926fff796c42c11c0140a5081f58788e4bd07842",
       "executable": false
@@ -4452,7 +4460,7 @@
       "executable": false
     },
     "src/modules/forms/routes.ts": {
-      "sha256": "3956f480c5b0d70c422c6ff6272b3efa54dab92eb1b9818f843cc9fcdc920c7f",
+      "sha256": "40b7640295e1ca81eac805513f2781ec56d4a9710a8d8f9b7cbef3448e8333d6",
       "executable": false
     },
     "src/modules/forms/settings.ts": {
@@ -4464,7 +4472,7 @@
       "executable": false
     },
     "src/modules/forms/submit.ts": {
-      "sha256": "766291f53c49cf40a1cce6f8a7ac1dc32c67e867a11662adde45d7ffb0a9ff34",
+      "sha256": "492817999cdd903b93260a81f1cc53edca05c5a19911ee55609bad99d1702fad",
       "executable": false
     },
     "src/modules/forms/types.ts": {
@@ -6736,7 +6744,7 @@
       "executable": false
     },
     "src/modules/public-site/request-pages.ts": {
-      "sha256": "2b33cc177bb3b72fe23f3537f086d9f2a6a91bba8eea12d6f29c067de974cb93",
+      "sha256": "8797911c46270a92ef899ba58831befa8bbf3e9c5e658f4fbf8254150946aca4",
       "executable": false
     },
     "src/modules/public-site/shell.ts": {
@@ -6896,7 +6904,7 @@
       "executable": false
     },
     "src/modules/tickets/fields.ts": {
-      "sha256": "a8d06d5247a637bbb619186d8bbfc7366f47a8b41204bb285d644daa49b5fa51",
+      "sha256": "12df48f93266970dfaeed574b2c91c822852b5b84923973310aaabefed67b9a0",
       "executable": false
     },
     "src/modules/tickets/filters.ts": {
@@ -6912,7 +6920,7 @@
       "executable": false
     },
     "src/modules/tickets/mutate-validation.ts": {
-      "sha256": "cbbaae99d7d260885fa46a70138c8ade275b964b4b55900ca2f7f435302acdf2",
+      "sha256": "32c2e23ff32dc2a52d1f3388af66b4d3b85b492f93ca3bffc60a3362a4f696af",
       "executable": false
     },
     "src/modules/tickets/mutate.ts": {
@@ -10320,7 +10328,7 @@
       "executable": false
     },
     "src/ui/native/pages/request-forms/request-forms.css": {
-      "sha256": "96ddac0828849ca6dae2e636b16505025fd6ba519621e61ad145a616ca94ec65",
+      "sha256": "c1022138623b5dbad835df2982cdccd227e523c45af444e4cb3ad20df4efa494",
       "executable": false
     },
     "src/ui/native/pages/request-forms/RequestFormEditor.jsx": {
@@ -10328,7 +10336,7 @@
       "executable": false
     },
     "src/ui/native/pages/request-forms/RequestFormFields.jsx": {
-      "sha256": "822d65f0ccf3f9eac025776cef1f90d9f45e15e078bcd683d48a0eae1798a838",
+      "sha256": "1e8e41ff6605518ff4045dfe64682cfc39b3062511bd8bbec7eb22a7fe38e70a",
       "executable": false
     },
     "src/ui/native/pages/request-forms/RequestFormsSettings.jsx": {
@@ -10396,7 +10404,7 @@
       "executable": false
     },
     "src/ui/native/pages/tickets/TicketSettingsForm.jsx": {
-      "sha256": "bc0aaf7ba629907b1c93e4387da726342e4807b530cb9f16a08e2aec1bcc7fb0",
+      "sha256": "27455d50c511cdd9c7537cce3fc8b13f07d7592e5755e064aaca2faf513d0780",
       "executable": false
     },
     "src/ui/native/pages/training-run-form.js": {
@@ -11083,6 +11091,14 @@
       "sha256": "f31b07aa67a0941281cce464bfe334e2758a66427687ebe78734f9438e4c0605",
       "executable": false
     },
+    "tests/helpers/account-lookup-browser.mjs": {
+      "sha256": "b870290372bb0781d66222d1daa35288f5c3f3a8c7d483f8c5b807cb044318ec",
+      "executable": false
+    },
+    "tests/helpers/account-lookup-journey.mjs": {
+      "sha256": "47236003ae9879017c3dd21168b1ef02b7642da64ce96188ca6595396bd8d555",
+      "executable": false
+    },
     "tests/helpers/ai/answers.mjs": {
       "sha256": "9e00babcd74d67f319a300d47603496e2c24ab30702ed3416e0cb1d5477ffb2b",
       "executable": false
@@ -11676,7 +11692,7 @@
       "executable": false
     },
     "tests/helpers/inbox/tickets-browser.mjs": {
-      "sha256": "25e46960844dd37b8a4cf380c5a8db4f3aa283ef20592a752fd01bdf78534a64",
+      "sha256": "65f0dcb172e39e2899ebeeccca7ff72fca81b9668559eed60a01d620b507989c",
       "executable": false
     },
     "tests/helpers/inbox/tickets.mjs": {
@@ -11908,7 +11924,7 @@
       "executable": false
     },
     "tests/helpers/request-forms-journey.mjs": {
-      "sha256": "97313cdc3562c3ac0d0103c606331a5cb58e49ebbe1d5964edc014d79a23e734",
+      "sha256": "12ce0b3577a799344b05e21048dc303034d02f0eafdd813be8129a8d575828a1",
       "executable": false
     },
     "tests/helpers/rer-archive.mjs": {
@@ -11928,7 +11944,7 @@
       "executable": false
     },
     "tests/helpers/self-service-fixture.mjs": {
-      "sha256": "40a9ba0da1954b0cdf88b4aee9e2ad4f8dc6fa3e9ad881cb1313e9ea30acefe5",
+      "sha256": "acc62dec6fb584d5db1794e43d8c6636a9c5bd7ea4ecfb421f8c2697a1055076",
       "executable": false
     },
     "tests/helpers/serving-capacity.mjs": {

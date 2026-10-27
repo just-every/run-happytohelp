@@ -31,7 +31,7 @@ async function render(c:any){
  c.header('Content-Security-Policy',"default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; form-action 'self'; frame-ancestors 'self'; base-uri 'self'")
  const identity=await resolvePortalActor(c.env,project.id,c.req.raw)
  const portal=c.req.path.startsWith('/portal/'),base=`/help/${enc(key)}`,locale=c.req.query('locale')||(identity?(await readPortalPreferences(c.env,identity)).locale:undefined),forms=await listForms(c.env,project.id,locale)
- const selected=c.req.param('formId')||c.req.query('form'),selectedForm=selected?await readForm(c.env,project.id,selected,locale):forms.length===1?forms[0]:null,form=selectedForm?await withAccountChoices(c.env,selectedForm,identity?.actor.id):null
+ const selected=c.req.param('formId')||c.req.query('form'),selectedForm=selected?await readForm(c.env,project.id,selected,locale):forms.length===1?forms[0]:null,form=selectedForm?await withAccountChoices(c.env,selectedForm,identity):null
  const formBase=portal?`/portal/${enc(key)}/requests/new`:`${base}/requests`,link=(id:string)=>portal?`${formBase}?${new URLSearchParams({form:id,...(locale?{locale}:{})})}`:`${formBase}/${enc(id)}${locale?`?locale=${enc(locale)}`:''}`
  const tools=`<nav class="help-center-controls" aria-label="Customer support"><a href="${base}">Help Center</a><a href="/portal/${enc(key)}/requests">My requests</a><a href="/portal/${enc(key)}/preferences">Notification preferences</a></nav>`
  let content=`<h1>Submit a request</h1><p>Choose the form that fits your question. Our support team will reply to your verified email address.</p>`

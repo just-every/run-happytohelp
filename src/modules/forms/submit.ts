@@ -1,4 +1,4 @@
-import {validateAccountChoices,validateAccountPublication} from './account-lookup'
+import {withAccountChoices,validateAccountChoices,validateAccountPublication} from './account-lookup'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
@@ -24,13 +24,22 @@ export async function submitRequest(env:Env,input:SubmitRequestInput){
  const {projectId,formId,request}=input
  if(typeof formId!=='string'||!formId||formId.length>200)fieldError('formId','required','Choose a request form')
  await validateAccountPublication(env,projectId,formId,input.body)
- const body=input.body as Record<string,unknown>|null,requestedLocale=body&&typeof body.locale==='string'?body.locale:undefined,{form,catalogue}=await loadPublicForm(env,projectId,formId,requestedLocale),submission=validateSubmission(form,input.body)
+ const body=input.body as Record<string,unknown>|null,requestedLocale=body&&typeof body.locale==='string'?body.locale:undefined,{form,catalogue}=await loadPublicForm(env,projectId,formId,requestedLocale)
  const address=clientAddress({header:name=>request.headers.get(name)??undefined})
  await enforceRateLimits(env,[['conversationsPerIpHour',`${projectId}|${address}`]])
  const identity=input.identity??await resolvePortalActor(env,projectId,request)
  if(identity&&(identity.actor.projectId!==projectId||identity.actor.role!=='contact'))throw verificationRequired()
- const contactId=identity?.actor.contactId??identity?.actor.id,intent=await hashToken(JSON.stringify({formId,subject:submission.subject,message:submission.message,...(submission.cc.length?{cc:submission.cc}:{}),fields:Object.entries(submission.fields).sort(([a],[b])=>a.localeCompare(b))})),guard=identity?portalSessionGuard(identity):undefined
- const existing=identity?await env.DB.prepare(`SELECT r.* FROM request_form_submissions r WHERE r.project_id=? AND r.contact_id=? AND r.local_id=? AND ${guard!.sql}`).bind(projectId,contactId!,submission.localId,...guard!.args).first<any>():null
+ const contactId=identity?.actor.contactId??identity?.actor.id,guard=identity?portalSessionGuard(identity):undefined
+ const existing=identity?await env.DB.prepare(`SELECT r.* FROM request_form_submissions r WHERE r.project_id=? AND r.contact_id=? AND r.local_id=? AND ${guard!.sql}`).bind(projectId,contactId!,typeof body?.localId==='string'?body.localId:'',...guard!.args).first<any>():null
+ const values=body?.fields&&typeof body.fields==='object'&&!Array.isArray(body.fields)?body.fields as Record<string,unknown>:{}
+ const submissionIntent=async(submission:ReturnType<typeof validateSubmission>)=>hashToken(JSON.stringify({formId,subject:submission.subject,message:submission.message,...(submission.cc.length?{cc:submission.cc}:{}),fields:Object.entries(submission.fields).sort(([a],[b])=>a.localeCompare(b))}))
+ // Historical replay may use revoked values, but never exposes current predicates
+ // through a changed command or a field-specific validation failure.
+ let submission:ReturnType<typeof validateSubmission>
+ if(existing){
+  try{submission=validateSubmission(form,input.body)}catch{throw new HTTPException(409,{message:'This submission ID was already used for a different request'})}
+ }else submission=validateSubmission(await withAccountChoices(env,form,identity,values),input.body)
+ const intent=await submissionIntent(submission)
  if(existing&&existing.intent_hash!==intent)throw new HTTPException(409,{message:'This submission ID was already used for a different request'})
  // A successful admitted command can be replayed with its live proof without reusing a single-use challenge.
  const admitted=existing?await env.DB.prepare(`SELECT * FROM messages WHERE project_id=? AND conversation_id=? AND local_id=? AND ${guard!.sql}`).bind(projectId,existing.conversation_id,submission.localId,...guard!.args).first<any>():null

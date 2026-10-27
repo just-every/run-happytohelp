@@ -4,20 +4,22 @@
  let command=crypto.randomUUID();
  const control=f=>form.elements.namedItem(['subject','message'].includes(f.id)?f.id:`field:${f.id}`);
  const value=f=>{const el=control(f);if(f.type==='checkbox')return el.checked;if(f.type==='multiselect')return [...el.selectedOptions].map(o=>o.value);if(['number','decimal'].includes(f.type))return el.value===''?null:Number(el.value);return el.value;};
- const condition=(field,values)=>{const c=field.condition;if(!c)return true;const v=values[c.fieldId];if(c.operator==='present')return v!==undefined&&v!==null&&v!==''&&(!Array.isArray(v)||v.length>0);if(c.operator==='includes')return Array.isArray(v)&&v.includes(c.value);return c.operator==='equals'?v===c.value:v!==c.value;};
+ const condition=(field,values)=>{if(field.visible!==undefined)return field.visible;const c=field.condition;if(!c)return true;const v=values[c.fieldId];if(c.operator==='present')return v!==undefined&&v!==null&&v!==''&&(!Array.isArray(v)||v.length>0);if(c.operator==='includes')return Array.isArray(v)&&v.includes(c.value);return c.operator==='equals'?v===c.value:v!==c.value;};
  const values=()=>{const out={};for(const f of model.fields){if(condition(f,out))out[f.id]=value(f);}return out;};
  function update(){const accepted={};for(const f of model.fields){const row=form.querySelector(`[data-field="${CSS.escape(f.id)}"]`),active=condition(f,accepted),el=control(f);row.hidden=!active;el.disabled=!active||(f.type==='account'&&!f.options.length);el.required=active&&f.required&&f.type!=='checkbox'&&(f.type!=='account'||f.options.length>0);if(active)accepted[f.id]=value(f);}
  const blocked=model.fields.some(f=>f.type==='account'&&f.required&&!f.options.length&&!form.querySelector(`[data-field="${CSS.escape(f.id)}"]`).hidden);form.querySelector('button[type=submit]').disabled=blocked;}
  try {const saved=JSON.parse(sessionStorage.getItem(key));if(saved&&Date.now()-saved.at<900000){command=saved.command;for(const f of model.fields){const el=control(f),v=saved.values[f.id];if(v===undefined)continue;if(f.type==='checkbox')el.checked=v;else if(f.type==='multiselect')for(const o of el.options)o.selected=v.includes(o.value);else el.value=v??'';}}}catch{}
  form.addEventListener('input',()=>{update();try{sessionStorage.setItem(key,JSON.stringify({at:Date.now(),command,values:values()}));}catch{}});update();
- let refreshing;
+ let refreshing,refreshAgain=false;
  async function refreshAccounts(){
-  if(refreshing||form.hidden)return refreshing;
+  if(form.hidden)return;
+  if(refreshing){refreshAgain=true;return refreshing;}
   refreshing=(async()=>{
    try{
-    const response=await fetch(`/api/forms/${encodeURIComponent(model.projectId)}/${encodeURIComponent(model.id)}?locale=${encodeURIComponent(model.locale)}`,{cache:'no-store'});
+    const response=await fetch(`/api/forms/${encodeURIComponent(model.projectId)}/${encodeURIComponent(model.id)}?${new URLSearchParams({locale:model.locale,fields:JSON.stringify(Object.fromEntries(Object.entries(values()).filter(([id])=>!['subject','message'].includes(id))))})}`,{cache:'no-store'});
     if(!response.ok&&![401,403,404].includes(response.status))return;
     const {data}=response.ok?await response.json():{data:{verified:false,fields:[]}};
+    for(const field of model.fields){const current=data.fields.find(f=>f.id===field.id);delete field.condition;delete field.visible;if(current?.condition)field.condition=current.condition;if(current?.visible!==undefined)field.visible=current.visible;else if(!current)field.visible=false;}
     model.verified=data.verified;form.dataset.verified=data.verified?'1':'0';
     for(const field of model.fields.filter(f=>f.type==='account')){
      const current=data.fields.find(f=>f.id===field.id),el=control(field),selected=el.value;
@@ -35,13 +37,15 @@
      const identity=form.querySelector('.request-identity'),link=document.createElement('a');link.href=form.dataset.signin;link.target='_blank';link.rel='noopener';link.textContent='verify your email';identity.replaceChildren(document.createTextNode('Before we send your request, '),link,document.createTextNode('. Keep this form open while you sign in.'));
     }
     update();
-   }catch{}finally{refreshing=null;}
+   }catch{}finally{refreshing=null;if(refreshAgain){refreshAgain=false;await refreshAccounts();}}
   })();return refreshing;
  }
  if(model.fields.some(f=>f.type==='account')){
+  form.addEventListener('change',event=>{if(model.fields.some(f=>control(f)===event.target))refreshAccounts();});
   window.addEventListener('focus',refreshAccounts);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAccounts();});
   setInterval(()=>{if(!document.hidden)refreshAccounts();},15000);
+  refreshAccounts();
  }
  form.addEventListener('submit',async event=>{
   event.preventDefault();result.replaceChildren();for(const f of model.fields){control(f).removeAttribute('aria-invalid');form.querySelector(`#${CSS.escape(`request-${f.id}-error`)}`).hidden=true;}

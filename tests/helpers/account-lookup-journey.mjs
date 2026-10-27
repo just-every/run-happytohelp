@@ -82,6 +82,42 @@ export async function accountLookupJourney(f,customer){
   await app.call(admin,{...owner,body:{title:'Invalid account condition',fields:[{fieldId:field.id},{fieldId:detail.id,condition:{fieldId:field.id,operator:'equals',value}}]},status:400})
  }
  const conditional=(await app.ok(admin,{...owner,body:{title:'Account condition',enabled:true,fields:[{fieldId:field.id,required:true},{fieldId:detail.id,required:true,condition:{fieldId:field.id,operator:'equals',value:company.id}}]}})).data
+ // Inspect raw customer responses, including HTML and the open form's refresh door.
+ const privateAccount=(await app.ok(base+'/companies',{...owner,body:{name:'Private unrelated account'}})).company
+ const privateForm=(await app.ok(admin,{...owner,body:{title:'Private predicate',enabled:true,fields:[{fieldId:field.id,required:true},{fieldId:detail.id,required:true,condition:{fieldId:field.id,operator:'equals',value:privateAccount.id}}]}})).data
+ const privateRead=`${api}/${privateForm.id}`
+ const rawSafe=async(path,options,forbidden)=>{
+  const response=await app.request(path,options),raw=await response.text()
+  for(const secret of forbidden)assert.ok(!raw.includes(secret),`customer response disclosed ${secret}: ${path}`)
+  return {status:response.status,raw}
+ }
+ const probe=async(viewer,forbidden)=>{
+  for(const url of [api,privateRead,privateRead+'?'+new URLSearchParams({fields:JSON.stringify({[field.id]:privateAccount.id})}),`/help/${p}/requests/${privateForm.id}`,`/portal/${p}/requests/new?form=${privateForm.id}`])await rawSafe(url,viewer,forbidden)
+  const denied=await rawSafe(privateRead+'/submissions',{...viewer,body:{...command,turnstileToken:'valid-challenge',localId:'synthetic-hh-private-refusal',fields:{[field.id]:privateAccount.id}}},forbidden)
+  assert.equal(denied.status,viewer?422:428)
+  if(viewer)assert.equal(JSON.parse(denied.raw).field,field.id)
+ }
+ await probe(undefined,[company.id,company.name,privateAccount.id,privateAccount.name])
+ await probe(outsider,[company.id,company.name,privateAccount.id,privateAccount.name])
+ await probe(customer,[privateAccount.id,privateAccount.name])
+ const privateOffer=(await app.ok(privateRead,customer)).data
+ assert.equal(privateOffer.fields.find(f=>f.id===detail.id).visible,false)
+ assert.equal(privateOffer.fields.find(f=>f.id===detail.id).condition,undefined)
+ assert.deepEqual(privateOffer.fields.find(f=>f.id===field.id).options,expected)
+ const eligibleRead=`${api}/${conditional.id}?`+new URLSearchParams({fields:JSON.stringify({[field.id]:company.id})})
+ assert.equal((await app.ok(eligibleRead,customer)).data.fields.find(f=>f.id===detail.id).visible,true)
+ await app.ok(member,{...owner,method:'DELETE'})
+ await probe(customer,[company.id,company.name,privateAccount.id,privateAccount.name])
+ await app.ok(member,{...owner,method:'PUT',body:{}})
+ // A private not-equals predicate is evaluated against an eligible selection only.
+ const negative=(await app.ok(admin,{...owner,body:{title:'Private negative predicate',enabled:true,fields:[{fieldId:field.id},{fieldId:detail.id,required:true,condition:{fieldId:field.id,operator:'not_equals',value:privateAccount.id}}]}})).data
+ const negativeRead=`${api}/${negative.id}`,negativeSelected=negativeRead+'?'+new URLSearchParams({fields:JSON.stringify({[field.id]:company.id})})
+ assert.equal((await app.ok(negativeRead,customer)).data.fields.find(f=>f.id===detail.id).visible,false)
+ assert.equal((await app.ok(negativeSelected,customer)).data.fields.find(f=>f.id===detail.id).visible,true)
+ await rawSafe(negativeSelected,customer,[privateAccount.id,privateAccount.name])
+ const negativeMissing=await app.call(negativeRead+'/submissions',{...customer,body:{...command,localId:'synthetic-hh-negative'},status:422})
+ assert.equal(negativeMissing.data.field,detail.id)
+ await app.call(negativeRead+'/submissions',{...customer,body:{...command,localId:'synthetic-hh-negative',fields:{...command.fields,[detail.id]:'Eligible different account'}},status:201})
  const conditionPath=`${api}/${conditional.id}/submissions`
  const missingDetail=await app.call(conditionPath,{...customer,body:{...command,localId:'synthetic-hh-condition-missing'},status:422});assert.equal(missingDetail.data.field,detail.id)
  await app.call(conditionPath,{...customer,body:{...command,localId:'synthetic-hh-condition-good',fields:{...command.fields,[detail.id]:'Account access'}},status:201})

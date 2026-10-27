@@ -5,6 +5,7 @@ import {reservedLocalId} from '../conversations/admission'
 import type {PublicField,PublicForm,Submission} from './types'
 export function fieldError(field:string,code:string,error:string):never{throw new HTTPException(422,{message:error,res:Response.json({error,field,code},{status:422})})}
 export function visibleField(field:PublicField,values:Record<string,unknown>){
+ if(field.visible!==undefined)return field.visible
  const c=field.condition;if(!c)return true
  const value=values[c.fieldId]
  if(c.operator==='present')return value!==undefined&&value!==null&&value!==''&&(!Array.isArray(value)||value.length>0)

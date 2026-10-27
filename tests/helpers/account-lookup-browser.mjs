@@ -42,17 +42,27 @@ export async function accountLookupBrowser(){
   await request(`/api/portal/${p}/access/request`,{email:customer,returnTo:`/help/${p}/requests/${form.id}`})
   const delivered=(await readFile(mail,'utf8')).trim().split('\n').map(JSON.parse).find(item=>[].concat(item.to).includes(customer));assert.ok(delivered)
   const link=delivered.text.match(/http:\/\/127\.0\.0\.1:18847\/api\/portal\/\S+/)[0],customerContext=await browser.newContext({viewport:{width:1440,height:1000}})
-  const customerPage=await customerContext.newPage();await customerPage.goto(origin+`/help/${p}/requests/${form.id}`);
+  const customerPage=await customerContext.newPage();
+  const assertPrivate=async forbidden=>{
+   for(const path of [`/api/forms/${p}`,`/api/forms/${p}/${form.id}`,`/help/${p}/requests/${form.id}`]){
+    const response=await customerContext.request.get(origin+path),raw=await response.text();assert.equal(response.status(),200)
+    for(const secret of forbidden)assert.ok(!raw.includes(secret),'raw browser response excludes unavailable account data')
+   }
+  }
+  await assertPrivate([company.id,company.name,secondary.id,secondary.name]);await customerPage.goto(origin+`/help/${p}/requests/${form.id}`);
   const customerCapture=async name=>{for(const width of [1440,390]){await customerPage.setViewportSize({width,height:width===390?844:1000});await measure(customerPage,name,width);await customerPage.screenshot({path:shot(`${name}-${width}.png`),fullPage:true})}await customerPage.setViewportSize({width:1440,height:1000})};
   await customerPage.getByText('Verify your email to see your accounts.',{exact:false}).waitFor();await customerCapture('03a-anonymous');
   await customerPage.getByLabel('Subject',{exact:false}).fill('Account access question');
   const verification=await customerContext.newPage();await verification.goto(link);await verification.close();await customerPage.bringToFront();await customerPage.evaluate(()=>window.dispatchEvent(new Event('focus')));
-  await customerPage.getByText('No accounts are available for your verified email.',{exact:false}).waitFor();assert.equal(await customerPage.getByLabel('Subject',{exact:false}).inputValue(),'Account access question');await customerCapture('03b-no-eligible-account');
+  await customerPage.getByText('No accounts are available for your verified email.',{exact:false}).waitFor();assert.equal(await customerPage.getByLabel('Subject',{exact:false}).inputValue(),'Account access question');await customerCapture('03b-no-eligible-account');await assertPrivate([company.id,company.name,secondary.id,secondary.name]);
   const contact=(await api(base+'/contacts?search='+encodeURIComponent(customer))).data.find(row=>row.email===customer)
   assert.ok(contact)
   await api(base+`/companies/${company.id}/members/${contact.id}`,{},'PUT')
   await customerPage.evaluate(()=>window.dispatchEvent(new Event('focus')));await customerPage.getByLabel('Support account',{exact:false}).locator('option').filter({hasText:'Northstar account'}).waitFor({state:'attached'});await customerPage.getByLabel('Subject',{exact:false}).fill('Account access question');await customerPage.getByLabel('Message',{exact:false}).fill('Please help with my account.');await customerPage.getByLabel('Support account',{exact:false}).selectOption(company.id)
+  await customerPage.reload();await customerPage.getByLabel('Request detail',{exact:false}).waitFor({state:'visible'});assert.equal(await customerPage.getByLabel('Support account',{exact:false}).inputValue(),company.id,'restored account drafts refresh dependent visibility immediately');
+  await assertPrivate([secondary.id,secondary.name]);
   await api(base+`/companies/${company.id}/members/${contact.id}`,undefined,'DELETE')
+  await assertPrivate([company.id,company.name,secondary.id,secondary.name]);
   await customerPage.getByRole('button',{name:'Submit request',exact:true}).click();await customerPage.locator('.request-field-error').filter({hasText:'Choose an available account'}).waitFor();assert.equal(await customerPage.getByLabel('Support account',{exact:false}).getAttribute('aria-invalid'),'true')
   assert.equal(await customerPage.getByLabel('Support account',{exact:false}).inputValue(),'');await customerCapture('03-refused-account');await api(base+`/companies/${company.id}/members/${contact.id}`,{},'PUT');await customerPage.evaluate(()=>window.dispatchEvent(new Event('focus')));await customerPage.getByLabel('Support account',{exact:false}).selectOption(company.id);await customerPage.getByLabel('Request detail',{exact:false}).fill('Please restore access.');await customerPage.getByRole('button',{name:'Submit request',exact:true}).click();await customerPage.getByRole('link',{name:'View your request',exact:true}).waitFor();await customerCapture('04-submitted')
   const ticketId=(await customerPage.getByRole('link',{name:'View your request'}).getAttribute('href')).split('/').at(-1)

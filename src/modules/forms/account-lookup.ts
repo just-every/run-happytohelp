@@ -4,7 +4,7 @@ import {fieldCatalogue,storedForm} from './store'
 import {publicField} from './definition'
 import {livePortalContact,portalSessionGuard,type PortalIdentity} from '../portal/identity'
 import {mailboxProofSql} from '../identity/mailbox'
-import {fieldError} from './validation'
+import {fieldError,visibleField} from './validation'
 
 /** Explicit current membership is independent of company ticket visibility. */
 export function accountChoiceGuard(projectId:string,contactId:string,accountId:string):{sql:string;args:Array<string|number>}{
@@ -34,8 +34,24 @@ export async function accountChoices(env:Env,form:PublicForm,fieldId:string,iden
  const accounts=await env.DB.prepare(`SELECT candidate.id,candidate.name FROM companies candidate WHERE candidate.project_id=? AND ${sql} AND ${publication.sql} AND ${session.sql} ORDER BY candidate.id`).bind(form.projectId,...membership.args.slice(0,2),...publication.args,...session.args).all<{id:string;name:string}>()
  return accounts.results.map(account=>({value:account.id,label:account.name}))
 }
-export async function withAccountChoices(env:Env,form:PublicForm,identity?:PortalIdentity){
- return {...form,verified:!!identity,fields:await Promise.all(form.fields.map(async field=>field.type==='account'?{...field,options:await accountChoices(env,form,field.id,identity)}:field))}
+/** Account predicates are evaluated here; their values never cross the customer boundary. */
+export async function withAccountChoices(env:Env,form:PublicForm,identity?:PortalIdentity,values:Record<string,unknown>={}){
+ const fields=await Promise.all(form.fields.map(async field=>field.type==='account'?{...field,options:await accountChoices(env,form,field.id,identity)}:{...field}))
+ const accepted:Record<string,unknown>=Object.create(null)
+ for(const field of fields){
+  const condition=field.condition,source=condition&&fields.find(f=>f.id===condition.fieldId)
+  const active=visibleField(field,accepted)
+  if(source?.type==='account'){
+   delete field.condition
+   field.visible=active
+  }
+  if(active){
+   const value=values[field.id]
+   // A supplied identifier is not authority to evaluate a private predicate.
+   if(field.type!=='account'||field.options.some(option=>option.value===value))accepted[field.id]=value
+  }
+ }
+ return {...form,verified:!!identity,fields}
 }
 export async function validateAccountMembership(env:Env,projectId:string,contactId:string,fields:Array<{id:string;type:string;label?:string;name?:string}>,values:Record<string,unknown>){
  const guards:Array<ReturnType<typeof accountChoiceGuard>>=[]

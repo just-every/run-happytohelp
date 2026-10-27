@@ -7,3 +7,4 @@
 .workflow-settings .workflow-outcome{margin:4px 0;font-size:14.5px}.workflow-settings .workflow-outcome-not_delivered,.workflow-settings .workflow-outcome-failed{color:var(--bs-danger-text-emphasis,var(--bs-danger))}
 
 @media(max-width:600px){.workflow-settings :is(button,select,input:not([type=checkbox])){min-height:44px}}
+@media(max-width:600px){.workflow-settings .workflow-checks>.form-check{min-height:44px;display:flex;align-items:center;gap:8px}.workflow-settings .form-switch .form-check-label{min-height:44px;min-width:44px;display:inline-flex;align-items:center}.workflow-settings .form-switch .form-check-input{margin-top:14px}}

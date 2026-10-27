@@ -27,14 +27,6 @@ test('all four native events persist, sign exact bytes, stay tenant scoped and d
   const logs=await h.call(root+'/deliveries');assert.equal(logs.data.length,4);assert.ok(logs.data.every(x=>x.state==='accepted'&&x.status===204&&x.duration_ms>=0));assert.ok(!JSON.stringify(logs).includes(a.secret));assert.ok(!JSON.stringify(await h.call(root+'/webhooks')).includes(a.secret));
  }finally{await h.close()}
 });
-test('response timeout remains uncertain across dispatch and Worker restart',async()=>{
- const h=await harness();try{
-  const a=await webhook(h);h.responses.push({status:204,delay:11000});
-  const job=await h.call(root+'/webhooks/'+a.id+'/test',body({})),sent=h.received.length;
-  await h.dispatch();await h.restart();await h.dispatch();assert.equal(h.received.length,sent);
-  const row=(await h.call(root+'/deliveries')).data.find(x=>x.id===job.id);assert.equal(row.state,'uncertain');assert.equal(row.status,null);assert.equal(row.error_class,'response_unknown');
- }finally{await h.close()}
-});
 test('all server errors and after-send timeout remain uncertain without replay while rate limits retry exact signed delivery within the bounded policy',async()=>{
  const h=await harness();try{
   const a=await webhook(h),uncertain=[];

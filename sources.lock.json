@@ -10452,7 +10452,7 @@
       "executable": false
     },
     "src/ui/native/pages/workflows/PolicySettings.jsx": {
-      "sha256": "738646c1e660ca4aa1a968617c4bcdeb56500da5348e69485d8d1ef9801114d2",
+      "sha256": "1aa2bd80b946bca6480e1829cd92935dab8cfe10f8e88bc21dd43b7ad4701cf0",
       "executable": false
     },
     "src/ui/native/pages/workflows/RoutingSettings.jsx": {
@@ -10500,7 +10500,7 @@
       "executable": false
     },
     "src/ui/native/pages/workflows/workflows.css": {
-      "sha256": "712afd83060d6555f11f2fe742a148cdb68d452bb3b604e1ee7e24dcb8fe4ffb",
+      "sha256": "34d227e6c9f887fe1fda74338719cab4e7edffc9d01a886e47e37fd30e0737e6",
       "executable": false
     },
     "src/ui/native/pages/workflows/WorkflowSettings.jsx": {

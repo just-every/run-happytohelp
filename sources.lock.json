@@ -11128,7 +11128,7 @@
       "executable": false
     },
     "tests/helpers/ai/obligations-browser.mjs": {
-      "sha256": "f3e7845aac47ad3bfe58ce9151c748d6eda41a1682fdad1840c9cc48a3d829b2",
+      "sha256": "84cf25e45d4366a301ee7bcf1c9828edeb8a5d580710e25738da8c925573765c",
       "executable": false
     },
     "tests/helpers/ai/obligations.mjs": {

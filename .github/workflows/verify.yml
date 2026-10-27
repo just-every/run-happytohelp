@@ -90,7 +90,8 @@ jobs:
           dist delivery-artifact .generated migrations/core public/widget.js public/downloads src/routeTree.gen.ts
       - uses: actions/upload-artifact@v4
         with:
-          name: verify-build-${{ github.run_id }}-${{ github.run_attempt }}
+          name: verify-build-${{ github.run_id }}
+          overwrite: true
           path: ${{ runner.temp }}/happytohelp-build.tar.gz
           if-no-files-found: error
           retention-days: 1
@@ -188,7 +189,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - uses: actions/download-artifact@v4
         with:
-          name: verify-build-${{ github.run_id }}-${{ github.run_attempt }}
+          name: verify-build-${{ github.run_id }}
           path: ${{ runner.temp }}/verify-build
       - name: Restore the build from this workflow's exact checkout
         run: tar -xzf "$RUNNER_TEMP/verify-build/happytohelp-build.tar.gz"
@@ -270,7 +271,7 @@ jobs:
             sudo env "PATH=$PATH" "APT_ARCHIVES=$RUNNER_TEMP/rer-apt/archives" python3 scripts/ci/install-chromium-deps.py
       - uses: actions/download-artifact@v4
         with:
-          name: verify-build-${{ github.run_id }}-${{ github.run_attempt }}
+          name: verify-build-${{ github.run_id }}
           path: ${{ runner.temp }}/verify-build
       - name: Restore the build from this workflow's exact checkout
         run: tar -xzf "$RUNNER_TEMP/verify-build/happytohelp-build.tar.gz"

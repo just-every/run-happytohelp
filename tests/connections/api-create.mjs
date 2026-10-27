@@ -27,7 +27,7 @@ async function existingCredentialLifecycle(){
 test('machine create credentials admit one atomic ticket and replay across rotation without granting other scopes',async()=>{
  await apiInvariantSweeps();
  console.log('machine API: credential lifecycle'); await existingCredentialLifecycle(); console.log('machine API: create and append');
- const h=await harness({now:Date.now()});try{
+ const h=await harness();try{
   const issued=await h.issue(['conversations:create'], 'p',{name:'Synthetic support',source_product:'synthetic-hh-1',create_per_minute:60}),token=issued.token;
   const metadata=(await h.call(settings+'/tokens')).data.find(row=>row.id===issued.data.id);
   assert.equal(metadata.source_product,'synthetic-hh-1');assert.equal(metadata.issuer_id,'owner');assert.ok(metadata.display_prefix);
@@ -177,6 +177,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   await h.call(projectSettings,{...body({api_requester_hourly_cap:5}),method:'PUT'});
 
   console.log('machine API: quotas and identity');
+  h.setNow(Date.now());
   const limited=await h.issue(['conversations:create'],'p',{source_product:'synthetic-limit',create_per_minute:1});
   const limitedBody={requester:{external_id:'synthetic-limit'},subject:'Quota test',body:'One request'};
   assert.equal((await send(limitedBody,'synthetic-limit-1',limited.token)).status,201);
@@ -190,6 +191,7 @@ test('machine create credentials admit one atomic ticket and replay across rotat
   const requestDenied=await h.raw('/api/v1/conversations',{token:requestLimited.token});assert.equal(requestDenied.status,429);assert.equal((await requestDenied.json()).error.code,'credential');
   for(const header of ['Retry-After','RateLimit-Limit','RateLimit-Remaining','RateLimit-Reset'])assert.ok(requestDenied.headers.get(header));assert.equal(requestDenied.headers.get('RateLimit-Limit'),'120');
   await h.call(settings+'/tokens/'+requestLimited.data.id,{method:'DELETE'});assert.equal((await h.raw('/api/v1/conversations',{token:requestLimited.token})).status,401);
+  h.setNow();
   await h.contact('synthetic-verified-email');await h.contact('synthetic-verified-external');
   await h.db.prepare("UPDATE contacts SET email='synthetic-verified@example.test',external_id='synthetic-verified@example.test',is_verified=1 WHERE id='synthetic-verified-email'").run();
   await h.db.prepare("UPDATE contacts SET external_id='synthetic-hh-1:synthetic-verified-external',is_verified=1 WHERE id='synthetic-verified-external'").run();

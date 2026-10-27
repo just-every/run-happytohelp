@@ -8308,7 +8308,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/conversation/FollowupObligations.jsx": {
-      "sha256": "379cc21f0b25b9a1deacb711d922b036e45840002bf73bf91a8cba3d4361dcd2",
+      "sha256": "9cb300b782a62925e4f9f60d41b08c903d1cb28cec07d0854ca3b7ccb1bdea9b",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ResolutionSummary.jsx": {
@@ -10924,7 +10924,7 @@
       "executable": false
     },
     "tests/connections/api-create.mjs": {
-      "sha256": "e19417dec1527336b5da515a798c2a57b32bf6b19a08ba2e50e19e4f3a2ad7e9",
+      "sha256": "2d2bdd1aa558d79e56e7d67142d782f73b8dc8e3a0032cf1bdf5dc6a5b91eb46",
       "executable": false
     },
     "tests/connections/api.mjs": {
@@ -10960,7 +10960,7 @@
       "executable": false
     },
     "tests/connections/harness.mjs": {
-      "sha256": "7b554511dd83a188365d1edad8d2fbc17db5609c86dc441062045b28ecee1e05",
+      "sha256": "d8e99b8a17b7ce89fc85bf3fd7dd5be10df85c2e3446c86b612118084118b244",
       "executable": false
     },
     "tests/connections/inventory.mjs": {
@@ -10988,7 +10988,7 @@
       "executable": false
     },
     "tests/connections/worker.ts": {
-      "sha256": "774dda1f9341b121de976ad5f845309049977ea68de6720002fbc50d88d26766",
+      "sha256": "a532dcdd3e71de62514aa4b63e099e15b61b930750d4b6cb600398323616d0e9",
       "executable": false
     },
     "tests/deleted-background-worker.ts": {
@@ -12144,7 +12144,7 @@
       "executable": false
     },
     "tests/journeys/ai-browser.mjs": {
-      "sha256": "d48411d0bef98af75b720c7a0bf3d8319d1a89ec957d16e8998eb75cc6fae3e9",
+      "sha256": "852fb187e4b0b37ffc897a7a200c7803520a3cd2da3de0288d062bf1f00e8cce",
       "executable": false
     },
     "tests/journeys/ai-live.mjs": {
@@ -12152,7 +12152,7 @@
       "executable": false
     },
     "tests/journeys/ai.mjs": {
-      "sha256": "0b9148799d636a365613f8cd06bee70a3d0f49209fe90c10c48dfcb187f002c4",
+      "sha256": "1bcaf40e8167375423a8380a178aa393d4ce9ae630fab6c662adbda22386ead6",
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {
@@ -12300,7 +12300,7 @@
       "executable": false
     },
     "tests/journeys/restore.mjs": {
-      "sha256": "e137c411168d222777b86906068c7308c4eb6a609c2dfe76c077e453b79492ae",
+      "sha256": "90d40cd81330646d10e07de56baa08e72c6186d4c0eec8fc298f8e9777c49764",
       "executable": false
     },
     "tests/journeys/runtime.mjs": {

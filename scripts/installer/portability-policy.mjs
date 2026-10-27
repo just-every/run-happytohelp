@@ -11,7 +11,11 @@ import {trainingArchiveRow,trainingArchiveStagedSafety} from './training-archive
 export const archivePolicy={
  // Enforce revocation at restore too, including an archive produced by an older
  // exporter or containing an unrevoked metadata row. Never revive bearer authority.
- importSafety:{integration_tokens:{revoked_at:[1]},api_credentials:{revoked_at:[1]}},
+ importSafety:{
+  integration_tokens:{revoked_at:[1]},api_credentials:{revoked_at:[1]},
+  crm_connections:{token_cipher:[null]},
+  crm_mappings:{context_json:[null],state:['stale'],refreshed_at:[null],checked_at:[null]},
+ },
  importRow:(table,row)=>table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:['integration_tokens','api_credentials'].includes(table)&&row.revoked_at==null?{...row,revoked_at:1}:row,
  product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await rerMailArchiveSafety(input);await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);await trainingArchiveStagedSafety(input);await asyncWorkArchiveStagedSafety(input);return reportArchiveStagedSafety(input)},
  // Keep invitation history, but restored archives never restore a live survey link or queued send.

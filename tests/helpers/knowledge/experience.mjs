@@ -37,7 +37,7 @@ try{
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:good.token})).status,200)
  const bad=await widget('customer-id','customer@trusted.test')
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:bad.token})).status,404)
- const typed=(await app.call('/api/identity/widget/session',{body:{widgetKey:'widget-p',email:'reader@trusted.test'},status:201})).data
+ const typed=(await app.call('/api/identity/widget/session',{body:{widgetKey:'widget-p',email:'customer@trusted.test'},status:201})).data
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:typed.token})).status,404)
  await app.call(`/api/knowledge/public/${p}/access/request`,{body:{email:'customer@trusted.test'},status:202})
  const link=new URL(mail.at(-1).text.match(/https:\/\/[^\s]+/)[0]),verify=await app.call(link.pathname+link.search,{status:303}),cookie=verify.headers.get('Set-Cookie').split(';')[0]

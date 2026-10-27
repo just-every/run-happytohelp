@@ -40,26 +40,21 @@ jobs:
           WF_REF: ${{ github.workflow_ref }}
         run: |
           set -euo pipefail
-          wf="${WF_REF%@*}"; wf="${wf##*/}"
-          # Only a push of this workflow from this repository can authorize reuse.
-          newest_push() {
-            gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$wf/runs?head_sha=$1&event=push&per_page=100" \
-              --jq "[.workflow_runs[] | select(.head_repository.full_name == \"$GITHUB_REPOSITORY\" and .id != $GITHUB_RUN_ID)] | max_by(.id) | select(. != null) | \"\(.status) \(.conclusion)\"" || true
-          }
-          green() { [ "$(newest_push "$1")" = "completed success" ]; }
+          source scripts/ci/verify-evidence.sh
           skip=false
           # C1: reuse a green branch push when main receives the identical SHA.
           if [ "$EVENT" = push ] && [ "$REF" = refs/heads/main ] && green "$GITHUB_SHA"; then skip=true; fi
-          # C3: an identical parent tree needs a green push of that parent.
+          # C3: reuse a green parent only without conflicting evidence on this SHA.
           if [ "$skip" = false ] && [ "$EVENT" = push ] && parent=$(git rev-parse -q --verify HEAD~1) \
-             && [ "$(git rev-parse 'HEAD^{tree}')" = "$(git rev-parse 'HEAD~1^{tree}')" ] && green "$parent"; then skip=true; fi
+             && [ "$(git rev-parse 'HEAD^{tree}')" = "$(git rev-parse 'HEAD~1^{tree}')" ] \
+             && pushes_clear "$GITHUB_SHA" && green "$parent"; then skip=true; fi
           # C2: a same-repository PR waits for its head's push, at most 25 minutes.
           if [ "$EVENT" = pull_request ] && [ "$SAME_REPO" = true ]; then
             for _ in $(seq 1 50); do
               state=$(newest_push "$PR_HEAD")
               case "$state" in
                 'completed success') skip=true; break ;;
-                ''|completed\ *) break ;;
+                ''|unavailable|completed\ *) break ;;
                 *) sleep 30 ;;
               esac
             done
@@ -347,13 +342,35 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 1
+    permissions:
+      contents: read
+      actions: read
     steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Require the plan and every check
         env:
           PLAN: ${{ needs.plan.result }}
           SKIP: ${{ needs.plan.outputs.skip }}
           RESULTS: ${{ join(needs.*.result, ' ') }}
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          WF_REF: ${{ github.workflow_ref }}
         run: |
+          set -euo pipefail
           test "$PLAN" = success
-          if [ "$SKIP" = true ]; then exit 0; fi
-          for result in $RESULTS; do test "$result" = success; done
+          if [ "$SKIP" != true ]; then
+            for result in $RESULTS; do test "$result" = success; done
+          fi
+          # A merge checkout cannot establish that the PR head passed its push.
+          # Re-read once at the end, even when the plan previously found green.
+          if [ "$EVENT" = pull_request ] && [ "$SAME_REPO" = true ]; then
+            source scripts/ci/verify-evidence.sh
+            if ! green "$PR_HEAD"; then
+              echo 'The newest push Verify on the PR head must succeed.' >&2
+              exit 1
+            fi
+          fi

@@ -1,6 +1,7 @@
 import { lazyPageCode } from './lazy-page-code';
 
 const pages = {
+    ProcedureSettings: lazyPageCode(() => import('./pages/ProcedureSettings')),
     Connections: lazyPageCode(() => import('./pages/Connections')),
     Reports: lazyPageCode(() => import('./pages/surveys/ReportsWithSurveys')),
     Companies: lazyPageCode(() => import('./pages/Companies')),
@@ -71,6 +72,7 @@ export function preloadWorkspacePage(pathname, settings) {
     else if (section === 'widget-settings') name = 'WidgetSettingsPage';
     else if (section === 'local-agent') name = 'ComputersPage';
     else if (section === 'delegation') name = recordId === 'authorize' ? 'DelegationAuthorize' : 'DelegationSettings';
+    else if (section === 'procedures') name = 'ProcedureSettings';
     else if (section === 'training-runs') name = 'TrainingRuns';
     else if (section === 'users' && (!settings || recordId === 'profile' || recordId === settings.currentAgent?.id)) name = 'AccountPage';
     else if (section === 'admin' && (!settings || settings.isPlatformAdmin)) name = 'AdminPage';

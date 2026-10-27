@@ -25,6 +25,7 @@ export const settingsGroups = [
     ] },
     { label: 'Automation', destinations: [
         { label: 'AI', path: 'ais' },
+        { label: 'Procedures', path: 'procedures' },
         { label: 'Workflows', path: 'workflow-settings' },
         { label: 'Local computers', path: 'local-agent', session: '/local-agent/authorize' },
     ] },

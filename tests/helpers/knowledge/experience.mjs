@@ -62,6 +62,22 @@ try{
  assert.ok((await retrieval(goodConversation)).some(row=>row.id===`article:${aid}`))
  assert.deepEqual(await retrieval(peerConversation),[])
  assert.equal((await call(`/api/knowledge/${p}/conversations/${peerConversation}/articles/${aid}/insert`,{body:{mode:'text'}})).status,404)
+ const entitlementList=(await call(grants,{status:200})).data
+ assert.deepEqual(entitlementList.accounts.map(account=>account.id),[customer])
+ assert.ok(entitlementList.required)
+ const participants=`/api/dashboard/projects/${p}/conversations/${goodConversation}/participants`
+ const participant=(await call(participants,{body:{email:'peer@trusted.test'},status:201})).data.data
+ assert.deepEqual(await retrieval(goodConversation),[],'additional participants deny restricted agent retrieval')
+ assert.ok(!(await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles`,{status:200})).data.some(row=>row.id===aid),'ticket picker checks every intended recipient')
+ assert.equal((await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles/${aid}/insert`,{body:{mode:'text'}})).status,404)
+ assert.equal((await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles/${aid}/insert`,{body:{mode:'link'}})).status,404)
+ assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:good.token})).status,200,'requester help access remains independent')
+ await call(`${participants}/${participant.pivot.id}`,{method:'DELETE',status:200})
+ assert.ok((await retrieval(goodConversation)).some(row=>row.id===`article:${aid}`),'removing the additional recipient restores independently entitled retrieval')
+ const racedInsertion=await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles/${aid}/insert`,{body:{mode:'text'},headers:{'x-test-statement':'SELECT a.id,a.slug','x-test-before-statement':`INSERT INTO conversation_participants(id,conversation_id,contact_id,created_at,joined_via) VALUES('knowledge-participant-race','${goodConversation}','${(await app.first('SELECT contact_id FROM conversations WHERE id=?',peerConversation)).contact_id}',1,'operator')`}})
+ assert.equal(racedInsertion.status,404,'a participant added between access resolution and insertion cannot receive restricted content')
+ await call(`${participants}/knowledge-participant-race`,{method:'DELETE',status:200})
+
  await call(grants,{method:'PUT',body:{contactIds:[]},status:200})
  assert.deepEqual(await retrieval(goodConversation),[],'revocation applies immediately to retrieval')
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:good.token})).status,404)

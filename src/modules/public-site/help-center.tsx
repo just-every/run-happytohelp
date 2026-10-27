@@ -1,3 +1,4 @@
+import {listForms} from '../forms/store'
 import {createReadReceipt} from '../knowledge/read-attribution'
 import { Hono } from 'hono'
 import React from 'react'
@@ -59,8 +60,10 @@ export async function renderHelpCenter(c:any,key:string,base:string,tail?:string
   await recordKnowledgeEvent(c.env,project.id,{kind:'view',slug:article.slug,locale,visitorHash,access})
   content=(article.locale!==locale?`<p class="help-center-translation-note">This article is available in ${e(article.locale)} while its translation is being reviewed.</p>`:'')+`<article lang="${e(article.locale)}"><h1>${e(article.title)}</h1>`+renderToStaticMarkup(<Markdown remarkPlugins={[remarkGfm]} components={articleComponents}>{String(article.content)}</Markdown>)+'</article>'
   content=helpTemplate(settings.templates.article,content,article.title,article.summary)
-  const read=await createReadReceipt(c.env,project.id,article.id,article.locale,new URL(c.req.url).hostname,access)
-  content+=`<p><a href="/help/${encodeURIComponent(project.id)}/requests?read=${encodeURIComponent(read)}">Contact support about this article</a></p>`
+  if((await listForms(c.env,project.id,article.locale)).length){
+   const read=await createReadReceipt(c.env,project.id,article.id,article.locale,new URL(c.req.url).hostname,access)
+   if(read)content+=`<p class="help-center-request-link"><a href="/help/${encodeURIComponent(project.id)}/requests?read=${encodeURIComponent(read)}&amp;locale=${encodeURIComponent(article.locale)}">Contact support about this article</a></p>`
+  }
   content+=helpfulContent(project.id,article.slug,article.locale,`${base}/${encodeURIComponent(article.slug)}${suffix}`,c.req.query('feedback')==='1')
  }else{
   const [categories,articles]=await Promise.all([listAccessibleCategories(c.env,project.id,access,locale),listAccessibleArticles(c.env,project.id,{access,locale})])

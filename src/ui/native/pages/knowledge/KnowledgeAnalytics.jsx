@@ -41,11 +41,11 @@ export default function KnowledgeAnalytics({ projectId }) {
         {loading && <p role="status">Loading analytics…</p>}
         {data && <>
             <dl className="knowledge-metrics">
-                {[[data.totals.views, 'Article views'], [totalSearches, 'Searches'], [withoutResults, 'Searches without results'], [data.totals.clicks, 'Article clicks'], [data.totals.helpful, 'Helpful votes'], [data.totals.unhelpful, 'Not helpful votes']].map(([value, label]) => <div key={label}><dt>{label}</dt><dd>{number(value)}</dd></div>)}
+                {[[data.totals.views, 'Article views'], [totalSearches, 'Searches'], [withoutResults, 'Searches without results'], [data.totals.clicks, 'Article clicks'], [data.totals.helpful, 'Helpful votes'], [data.totals.unhelpful, 'Not helpful votes'], [data.totals.tickets, 'Tickets from article request links']].map(([value, label]) => <div key={label}><dt>{label}</dt><dd>{number(value)}</dd></div>)}
             </dl>
             <h3>Articles and helpfulness</h3>
-            {data.articles.length === 0 ? <p>No article activity recorded for these filters.</p> : <div className="table-responsive"><table className="table knowledge-table stack-table"><thead><tr><th>Article</th><th>Views</th><th>Clicks</th><th>Helpful / not helpful</th></tr></thead><tbody>{data.articles.map(row => <tr key={row.articleId}>
-                <td data-label="Article"><Link to={`/projects/${projectId}/articles/${row.articleId}`}>{row.title}</Link></td><td data-label="Views">{number(row.views)}</td><td data-label="Clicks">{number(row.clicks)}</td><td data-label="Helpful / not helpful">{number(row.helpful)} / {number(row.unhelpful)}</td>
+            {data.articles.length === 0 ? <p>No article activity recorded for these filters.</p> : <div className="table-responsive"><table className="table knowledge-table stack-table"><thead><tr><th>Article</th><th>Views</th><th>Clicks</th><th>Helpful / not helpful</th><th>Tickets from article request links</th></tr></thead><tbody>{data.articles.map(row => <tr key={row.articleId}>
+                <td data-label="Article"><Link to={`/projects/${projectId}/articles/${row.articleId}`}>{row.title}</Link></td><td data-label="Views">{number(row.views)}</td><td data-label="Clicks">{number(row.clicks)}</td><td data-label="Helpful / not helpful">{number(row.helpful)} / {number(row.unhelpful)}</td><td data-label="Tickets from article request links">{number(row.tickets)}</td>
             </tr>)}</tbody></table></div>}
             <h3 className="mt-4">Search terms</h3>
             <p className="settings-note">Click-through counts article clicks attributed to each search term. Repeated clicks are counted separately.</p>

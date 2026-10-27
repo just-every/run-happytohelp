@@ -81,3 +81,34 @@ Semantic search over website content additionally needs `QDRANT_URL`,
 `QDRANT_API_KEY`, `OPENAI_API_KEY` and `KNOWLEDGE_EMBEDDING_MODEL`; keyword
 search needs none of them. See the settings table in
 [Operations](../OPERATIONS.md).
+
+## Collection access and article requests
+
+Owners and admins can open a collection's **Named customer accounts** section,
+search verified workspace customers, add or remove accounts, then save. A
+collection requiring grants is labelled **Named accounts only**, with its account
+count. Removing the last account keeps the collection restricted. To make it
+public, explicitly choose **Anyone (public)** and clear the named-account
+requirement. Collection ancestry still applies. Company membership and matching
+email domains never create a named-account grant.
+
+An article offers **Contact support about this article** only when a published
+request form is available. The link carries an opaque receipt valid for 30
+minutes. A receipt counts at most one admitted ticket, with the original
+workspace, brand, article and read locale and the authorized reader identity
+when known. Anonymous possession proves linkage only. Restricted access is
+checked again at admission. Article analytics shows the total and per-article
+**Tickets from article request links**. Unlinked, expired, consent-denied and
+otherwise unobservable journeys remain unknown; this count is neither all
+post-read tickets nor deflection. Full consent, bounded retention and measurement
+coverage remain required gaps.
+
+Unreleased migration `257_knowledge_entitlements.sql`, after migration 256, adds
+`knowledge_categories.requires_entitlement` (default 0) and the tables
+`knowledge_collection_entitlements` and `knowledge_read_receipts`. Existing
+collection fields remain unchanged. Portable backups retain explicit grants and
+provenance while excluding live receipts; the restore sanitizer removes receipts
+from older archives. Customer erasure removes their grants, receipts and linked
+events. Member erasure retains scoped pseudonymous grant provenance without
+making a collection public. Back up the installation and apply missing migrations
+once, in ledger order, before serving the updated Worker; never reset to upgrade.

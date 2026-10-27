@@ -36,7 +36,7 @@ const rules:Record<string,Rule>={
  [`POST ${P}/contacts/:contactId/erase`]:'data.erase',
  // Knowledge
  [`POST ${K}/articles`]:'knowledge.publish',[`DELETE ${K}/articles/:articleId`]:'knowledge.publish',[`PUT ${K}/articles/:articleId/categories`]:'knowledge.edit',[`PUT ${K}/articles/:articleId/order`]:'knowledge.edit',
- [`PUT ${K}/categories/:categoryId/entitlements`]:'knowledge.publish',[`POST ${K}/categories`]:'knowledge.edit',[`PUT ${K}/categories/:categoryId`]:'knowledge.edit',[`DELETE ${K}/categories/:categoryId`]:'knowledge.edit',
+ [`GET ${K}/categories/:categoryId/entitlements`]:'knowledge.publish',[`PUT ${K}/categories/:categoryId/entitlements`]:'knowledge.publish',[`POST ${K}/categories`]:'knowledge.edit',[`PUT ${K}/categories/:categoryId`]:'knowledge.edit',[`DELETE ${K}/categories/:categoryId`]:'knowledge.edit',
  [`POST ${K}/datasets`]:'knowledge.publish',[`PUT ${K}/datasets/:datasetId`]:'knowledge.publish',[`POST ${K}/datasets/:datasetId/crawl`]:'knowledge.publish',[`POST ${K}/datasets/:datasetId/refresh`]:'knowledge.publish',[`DELETE ${K}/datasets/:datasetId`]:'knowledge.publish',
  [`POST ${K}/import/:platform`]:'data.import',
  // Members and roles

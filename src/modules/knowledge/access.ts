@@ -1,7 +1,8 @@
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
+import {resolvePortalActor,portalSessionGuard,type PortalIdentity,livePortalContact} from '../portal/identity'
 import {activeSourceProjectSql} from './public-sources'
-export interface HelpAccess {contactId?:string;email?:string;verified:true;helpSessionHash?:string;nativeEmail?:true}
+export interface HelpAccess {contactId?:string;email?:string;verified:true;helpSessionHash?:string;nativeEmail?:true;portalIdentity?:PortalIdentity}
 export const publicAccess:HelpAccess|undefined=undefined
 export async function hasRestrictedCollections(env:Env,projectId:string){
  return Boolean(await env.DB.prepare("SELECT 1 FROM knowledge_categories WHERE project_id=? AND (audience<>'public' OR requires_entitlement=1) LIMIT 1").bind(projectId).first())
@@ -43,7 +44,15 @@ export async function accessForContact(env:Env,projectId:string,contactId:string
  const email=row.email?.trim().toLowerCase(),provenEmail=email&&row.external_id?.trim().toLowerCase()===email&&!JSON.parse(row.metadata_json||'{}').email_unproven
  return {verified:true,contactId:row.id,...(provenEmail?{email}:{})}
 }
+/** Current account proof for delivery; ticket visibility never implies knowledge access. */
+export function knowledgeAccountCte(name:string,contact:string,project:string){
+ const portal=`EXISTS(SELECT 1 FROM portal_identities pi WHERE pi.project_id=kr.project_id AND pi.contact_id=kr.id AND pi.email=lower(trim(kr.email)))`
+ const native=nativeEmailProofSql.replaceAll('c.','kr.')
+ return `${name}_proofs AS MATERIALIZED (SELECT kr.id,lower(trim(kr.email)) email,kr.is_verified,(${portal}) portal,(${native}) native,(lower(trim(kr.external_id))=lower(trim(kr.email)) AND coalesce(json_extract(kr.metadata_json,'$.email_unproven'),0)<>1) signed_email FROM contacts kr WHERE kr.id=${contact} AND kr.project_id=${project} AND ${livePortalContact('kr')}), ${name} AS MATERIALIZED (SELECT id,CASE WHEN portal OR native OR signed_email THEN substr(email,instr(email,'@')+1) ELSE '' END domain FROM ${name}_proofs WHERE is_verified=1 OR portal OR native)`
+}
 export async function resolveHelpAccess(env:Env,projectId:string,request:Request):Promise<HelpAccess|undefined>{
+ const portalIdentity=await resolvePortalActor(env,projectId,request)
+ if(portalIdentity){const contactId=portalIdentity.actor.contactId||portalIdentity.actor.id;const row=await env.DB.prepare('SELECT email FROM contacts WHERE id=? AND project_id=?').bind(contactId,projectId).first<{email:string}>();return {verified:true,contactId,email:row?.email,portalIdentity}}
  const cookie=request.headers.get('Cookie')||'',help=cookie.match(/(?:^|;\s*)h2h_help=([^;]+)/)?.[1]
  if(help){const helpSessionHash=await hashToken(help);const row=await env.DB.prepare(`SELECT email,contact_id FROM knowledge_help_sessions h WHERE token_hash=? AND project_id=? AND expires_at>? AND ${activeSourceProjectSql('h.project_id')} AND (contact_id IS NULL OR EXISTS(SELECT 1 FROM contacts c WHERE c.id=h.contact_id AND c.project_id=h.project_id AND coalesce(json_extract(c.metadata_json,'$.is_blocked'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_deleted'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_erasing'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_erased'),0)<>1 AND NOT EXISTS(SELECT 1 FROM contact_erasures e WHERE e.project_id=c.project_id AND e.contact_id=c.id)))`).bind(helpSessionHash,projectId,Date.now()).first<{email:string;contact_id:string|null}>();if(row)return {verified:true,helpSessionHash,email:row.email,...(row.contact_id?{contactId:row.contact_id}:{})}}
  const token=request.headers.get('Authorization')?.replace(/^Bearer /,'')||cookie.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]
@@ -54,6 +63,7 @@ export async function resolveHelpAccess(env:Env,projectId:string,request:Request
 
 /** The same proof must still exist at write admission, after an erasure fence. */
 export function helpAccessWriteGuard(projectId:string,access?:HelpAccess):{sql:string;args:(string|number|null)[]}{
+ if(access?.portalIdentity)return portalSessionGuard(access.portalIdentity)
  if(access?.nativeEmail)return {sql:`EXISTS(SELECT 1 FROM contacts c WHERE c.id=? AND c.project_id=? AND lower(trim(c.email))=? AND ${nativeEmailProofSql})`,args:[access.contactId!,projectId,access.email!]}
  if(access?.helpSessionHash)return {sql:`EXISTS(SELECT 1 FROM knowledge_help_sessions h WHERE h.token_hash=? AND h.project_id=? AND h.email=? AND h.expires_at>max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)) AND (h.contact_id IS NULL OR EXISTS(SELECT 1 FROM contacts c WHERE c.id=h.contact_id AND c.project_id=h.project_id AND coalesce(json_extract(c.metadata_json,'$.is_erasing'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_erased'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_blocked'),0)<>1)))`,args:[access.helpSessionHash,projectId,access.email||'',Date.now()]}
  if(access?.contactId)return {sql:`EXISTS(SELECT 1 FROM contacts c WHERE c.id=? AND c.project_id=? AND c.is_verified=1 AND coalesce(json_extract(c.metadata_json,'$.is_erasing'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_erased'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_blocked'),0)<>1 AND coalesce(json_extract(c.metadata_json,'$.is_deleted'),0)<>1 AND NOT EXISTS(SELECT 1 FROM contact_erasures e WHERE e.project_id=c.project_id AND e.contact_id=c.id) AND (?='' OR (lower(trim(c.email))=? AND lower(trim(c.external_id))=? AND coalesce(json_extract(c.metadata_json,'$.email_unproven'),0)<>1)))`,args:[access.contactId,projectId,access.email||'',access.email||'',access.email||'']}

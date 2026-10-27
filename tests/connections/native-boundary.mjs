@@ -1,3 +1,4 @@
+import {runSteps} from '../journeys/kit/steps.mjs';
 import {phases} from '../journeys/kit/scenarios.mjs';const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
@@ -53,7 +54,8 @@ async function concealed(h,path,options){
  assert.deepEqual(await response.json(),{error:'Not found'},path);
 }
 
-test('workspace API tokens conceal every native connection setting in both tenant directions without effects',async()=>{
+test("native settings authority: machine credentials never substitute for current native cookie sessions",()=>runSteps([
+  ['workspace API tokens conceal every native connection setting in both tenant directions without effects',async()=>{
  const h=await harness();try{
   const ids=await seedDestinations(h),credentials={p:await h.issue(),q:await h.issue(allScopes,'q')};
   for(const project of ['p','q'])ids[project].token=credentials[project].data.id;
@@ -66,9 +68,8 @@ test('workspace API tokens conceal every native connection setting in both tenan
   assert.equal(await snapshot(h),before,'native machine-token denials preserve every business row including audit and quota state');
   assert.equal(h.received.length,0);assert.equal(h.external,0);
  }finally{await h.close()}
-});
-
-test('credential validity and API scopes never confer native administration or leak through native settings',async()=>{
+}],
+  ['credential validity and API scopes never confer native administration or leak through native settings',async()=>{
  const h=await harness();try{
   const ids=await seedDestinations(h);
   for(const project of ['p','q']){
@@ -91,9 +92,8 @@ test('credential validity and API scopes never confer native administration or l
   }
   assert.equal(h.received.length,0);assert.equal(h.external,0);
  }finally{await h.close()}
-});
-
-test('native owner and admin cookie sessions retain settings access without machine-bearer fallback',async()=>{
+}],
+  ['native owner and admin cookie sessions retain settings access without machine-bearer fallback',async()=>{
  const h=await harness();try{
   for(const project of ['p','q']){
    const admin='admin-'+project;
@@ -130,9 +130,8 @@ test('native owner and admin cookie sessions retain settings access without mach
   assert.equal((await h.raw(root('q')+'/slack',{actor:'foreign'})).status,401);
   assert.equal(h.received.length,0);assert.equal(h.external,0);
  }finally{await h.close()}
-});
-
-test('both workspace tokens retain API foreign-resource concealment and cannot enter native resource routes',async()=>{
+}],
+  ['both workspace tokens retain API foreign-resource concealment and cannot enter native resource routes',async()=>{
  const h=await harness();try{
   const conversations={};
   for(const project of ['p','q']){
@@ -181,4 +180,5 @@ test('both workspace tokens retain API foreign-resource concealment and cannot e
   assert.deepEqual(await events(),seededEvents,'denied API and native requests added no event to the two fixture creation events');
   assert.equal(h.received.length,0);assert.equal(h.external,0);
  }finally{await h.close()}
-});
+}]
+]));

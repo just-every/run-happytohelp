@@ -83,6 +83,9 @@ export async function accountLookupBrowser(){
   await customerPage.getByRole('button',{name:'Submit request',exact:true}).focus();await customerPage.keyboard.press('Enter');
   await customerPage.waitForFunction(()=>{const select=document.querySelector('select[aria-invalid="true"]');return select?.disabled&&select.closest('[hidden]')});
   assert.equal(await customerPage.locator('#request-result').evaluate(node=>document.activeElement===node),true,'a question removed from the open form leaves refusal feedback focused');
+  const refreshed=customerPage.waitForResponse(response=>response.url().startsWith(origin+`/api/forms/${p}/${form.id}?`)&&response.request().method()==='GET');
+  await customerPage.evaluate(()=>window.dispatchEvent(new Event('focus')));await (await refreshed).finished();
+  assert.equal(await customerPage.locator('#request-result').evaluate(node=>document.activeElement===node),true,'later offer refreshes keep refusal feedback focused');
   await customerCapture('03c-removed-account-question');
   await api(`/api/forms/projects/${p}/forms/${form.id}`,{fields:published.fields,updatedAt:removed.updatedAt},'PATCH');
   await customerPage.reload();await customerPage.getByLabel('Support account',{exact:false}).selectOption(company.id);await customerPage.getByLabel('Request detail',{exact:false}).fill('Please restore access.');

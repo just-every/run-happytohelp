@@ -8308,7 +8308,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/conversation/FollowupObligations.jsx": {
-      "sha256": "46279082e7428e3c66181262f02eb696eae6ee204e15fdd5b8ec79256219dd45",
+      "sha256": "379cc21f0b25b9a1deacb711d922b036e45840002bf73bf91a8cba3d4361dcd2",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ResolutionSummary.jsx": {
@@ -11128,7 +11128,7 @@
       "executable": false
     },
     "tests/helpers/ai/obligations-browser.mjs": {
-      "sha256": "708cc5902f8a7cfd35dbafbbdaa5fe2b51f5db96f01af2e771b0c8826767b6e4",
+      "sha256": "e31c71f5f0cd939d719863b35220cf5c200eca8f599102eb5c58dcfce86a68ff",
       "executable": false
     },
     "tests/helpers/ai/obligations.mjs": {

@@ -62,6 +62,6 @@
    }
    sessionStorage.removeItem(key);const ticket=data.ticket||data;const a=document.createElement('a');a.href=`/portal/${encodeURIComponent(model.projectId)}/requests/${encodeURIComponent(ticket.id)}`;a.textContent='View your request';result.append(document.createTextNode('Your request was sent. '),a);form.hidden=true;result.focus();
   }catch {result.textContent='The connection was interrupted. Your form is still here. Submit again to check the same request.';}
-  finally{button.textContent=model.submitLabel;update();if(refused&&[document.body,result,refusedField&&control(refusedField)].includes(document.activeElement))focusRefusal();}
+  finally{button.textContent=model.submitLabel;update();const active=document.activeElement;if(refused&&([document.body,result,refusedField&&control(refusedField)].includes(active)||active.disabled||active.closest('[hidden]')))focusRefusal();}
  });
 })();

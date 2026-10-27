@@ -8856,7 +8856,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/workflows/workflows.css": {
-      "sha256": "a4c9852e9db557e17589653aacac5be286bdd319e2ee1898ccb6423786ac43ec",
+      "sha256": "54746d76dcfe0fcdefc63a6365dbdb1e50aaf6bacba45c4584637784e906025b",
       "executable": false
     },
     "src/ui/dashboard/contexts/ChatContext.jsx": {
@@ -9940,7 +9940,7 @@
       "executable": false
     },
     "src/ui/native/pages/connections/connections.css": {
-      "sha256": "cf6b1a93492716535ded50fcf02e694b02f80613e7303f0240f9afd1ae8f9c66",
+      "sha256": "efb06f580d74d7e72d26cc1481975c9566b173bbd41199792fd021d4fd8a161a",
       "executable": false
     },
     "src/ui/native/pages/connections/Deliveries.jsx": {
@@ -10500,7 +10500,7 @@
       "executable": false
     },
     "src/ui/native/pages/workflows/workflows.css": {
-      "sha256": "4765a9269904f2a5039eee236d560b1460c5012515f8e8049b4c67976cb29b74",
+      "sha256": "7e7f0ef4f03cc3a44d32f686e0b846e5cbd4727d5e290790fddb7351ad957fe7",
       "executable": false
     },
     "src/ui/native/pages/workflows/WorkflowSettings.jsx": {

@@ -11096,7 +11096,7 @@
       "executable": false
     },
     "tests/helpers/account-lookup-browser.mjs": {
-      "sha256": "ac022cd2eff8aa25fa6721afd2ea467917ba7f8cb3febde6264002fc094ed446",
+      "sha256": "d0a34b4a2cbcf01dc2a1bd93ad207681ae3ee3e4dce09606749b4bec75e709a9",
       "executable": false
     },
     "tests/helpers/account-lookup-journey.mjs": {

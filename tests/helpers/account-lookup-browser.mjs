@@ -103,7 +103,7 @@ export async function accountLookupBrowser(){
    await customerPage.getByRole('button',{name:'Submit request',exact:true}).focus();await customerPage.keyboard.press('Enter');await startedRefresh;
    await customerPage.waitForFunction(()=>document.activeElement?.matches('select[aria-invalid="true"]'));
    const subject=customerPage.getByLabel('Subject',{exact:false});
-   if(move==='subject'){await subject.focus();await customerPage.keyboard.type(' More context')}else{await customerPage.keyboard.press('Tab');await customerPage.waitForTimeout(1500)}
+   if(move==='subject'){await subject.focus();await customerPage.keyboard.type(' More context')}else{await customerPage.keyboard.press('Tab');assert.equal(await customerPage.getByLabel('Request detail',{exact:false}).evaluate(node=>document.activeElement===node),true,'Tab reaches the dependent answer while the refusal refresh is delayed');await customerPage.waitForTimeout(1500)}
    const refreshed=customerPage.waitForResponse(response=>response.url().startsWith(origin+`/api/forms/${p}/${form.id}?`)&&response.request().method()==='GET');
    releaseRefresh();await (await refreshed).finished();await customerPage.waitForFunction(()=>{const select=document.querySelector('select[aria-invalid="true"]');return select?.disabled&&select.closest('[hidden]')});
    await customerPage.waitForFunction(()=>document.querySelector('button[type=submit]').textContent!=='Sending…');

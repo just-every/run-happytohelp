@@ -15,3 +15,7 @@
  .ticket-view-dialog .ticket-rule-row>button{flex-basis:44px}
  .ticket-editor .ticket-field :is(input:not([type=checkbox]),select){min-height:44px}
 }
+
+@media(max-width:650px){
+ .saved-replies-picker .btn{min-width:44px;min-height:44px}
+}

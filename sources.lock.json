@@ -8720,7 +8720,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/tickets/tickets.css": {
-      "sha256": "86a16fc8523345219912602b32a73c121e4720c0c148b63ecb473b05d30ba784",
+      "sha256": "ddeb67073e062bb8e633d6a182453cd912a5216fa24aeb6b36a74ba9f6dca67d",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/TicketViewRules.jsx": {
@@ -10188,7 +10188,7 @@
       "executable": false
     },
     "src/ui/native/pages/macros/MacroActionsEditor.jsx": {
-      "sha256": "e24f5ce18b30653a9e60dddd2625b6f19700d5bb66497b5a38a9bbc84eb77fa6",
+      "sha256": "9bebb692718a3b0ae3f53000e35f32aebf2e6e91de81847b086e85425ab2854b",
       "executable": false
     },
     "src/ui/native/pages/macros/MacroHistory.jsx": {
@@ -10204,7 +10204,7 @@
       "executable": false
     },
     "src/ui/native/pages/management-parity.css": {
-      "sha256": "c8b894d212c3b40252ba132d62181869b315cfb36f6bbfde760c0fc0459d769a",
+      "sha256": "94b09a435c4a20052fd17d900c4ca6dac56772428dafc62a96d98e4f616e496a",
       "executable": false
     },
     "src/ui/native/pages/management-validation.js": {

@@ -41,3 +41,10 @@
 .management-empty { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding: 12px 0; }
 .management-empty strong { display: block; margin-bottom: 4px; font-size: 18px; font-weight: 500; }
 .management-empty p { margin: 0; color: var(--ink-soft); }
+
+@media (max-width: 650px) {
+  .macro-fields .form-check { display:flex;align-items:center;gap:8px;min-height:44px;padding-left:0; }
+  .macro-fields .form-check-input { float:none;flex:0 0 auto;margin:0; }
+  .macro-fields .form-check-label { display:inline-flex;align-items:center;min-height:44px; }
+  .macro-fields .btn { min-width:44px;min-height:44px; }
+}

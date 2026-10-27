@@ -16,7 +16,7 @@
   if(refreshing){refreshAgain=true;return refreshing;}
   refreshing=(async()=>{
    try{
-    const response=await fetch(`/api/forms/${encodeURIComponent(model.projectId)}/${encodeURIComponent(model.id)}?${new URLSearchParams({locale:model.locale,fields:JSON.stringify(Object.fromEntries(Object.entries(values()).filter(([id])=>!['subject','message'].includes(id))))})}`,{cache:'no-store'});
+    const response=await fetch(`/api/forms/${encodeURIComponent(model.projectId)}/${encodeURIComponent(model.id)}?${new URLSearchParams({locale:model.locale,fields:JSON.stringify(Object.fromEntries(Object.entries(values()).filter(([id])=>model.fields.some(f=>f.id===id&&f.type==='account'))))})}`,{cache:'no-store'});
     if(!response.ok&&![401,403,404].includes(response.status))return;
     const {data}=response.ok?await response.json():{data:{verified:false,fields:[]}};
     for(const field of model.fields){const current=data.fields.find(f=>f.id===field.id);delete field.condition;delete field.visible;if(current?.condition)field.condition=current.condition;if(current?.visible!==undefined)field.visible=current.visible;else if(!current)field.visible=false;}
@@ -49,7 +49,7 @@
  }
  form.addEventListener('submit',async event=>{
   event.preventDefault();result.replaceChildren();for(const f of model.fields){control(f).removeAttribute('aria-invalid');form.querySelector(`#${CSS.escape(`request-${f.id}-error`)}`).hidden=true;}
-  const v=values(),fields=Object.fromEntries(Object.entries(v).filter(([id])=>!['subject','message'].includes(id))),button=form.querySelector('button[type=submit]');button.disabled=true;button.textContent='Sending…';
+  const v=values(),fields=Object.fromEntries(Object.entries(v).filter(([id])=>model.fields.some(f=>f.id===id&&f.type==='account'))),button=form.querySelector('button[type=submit]');button.disabled=true;button.textContent='Sending…';
   try{
    const response=await fetch(form.action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:v.subject,message:v.message,fields,localId:command,turnstileToken:form.elements.namedItem('cf-turnstile-response')?.value,locale:model.locale})});
    const data=await response.json();if(!response.ok){

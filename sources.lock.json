@@ -2616,7 +2616,7 @@
       "executable": false
     },
     "public/site-assets/help_center/request-forms.js": {
-      "sha256": "329b2eea9140765cb4eed7ad1e2f1b615be32eeef527e5a8279b4cb9c15e2306",
+      "sha256": "c734968f68536d5f8dff5b6b26424ed644949ab8a09e2eff3de50208f14e4cd4",
       "executable": false
     },
     "public/site-assets/help_center/surveys.css": {
@@ -4456,7 +4456,7 @@
       "executable": false
     },
     "src/modules/forms/account-lookup.ts": {
-      "sha256": "d22287d5473309b61ec6820035c1fd4190fbc64ee71d04071c5c03f0907b1ef5",
+      "sha256": "08b3d56d372397c35783c898da59e6e2960dca4cc68ce59d3b856995d14fcfb5",
       "executable": false
     },
     "src/modules/forms/challenge.ts": {
@@ -11116,11 +11116,11 @@
       "executable": false
     },
     "tests/helpers/account-lookup-browser.mjs": {
-      "sha256": "a235b824f3bbdc81f3991242d231c254177ec69a004bf62b9f073d7c9c99c08c",
+      "sha256": "8114f26204f9042d517b1a0bd49e09c1bf2788243a4f1ff85d6f675f44ac72aa",
       "executable": false
     },
     "tests/helpers/account-lookup-journey.mjs": {
-      "sha256": "68cde82c9f524097c801ac703b678675787f72ffb34fa89db9d48b6ee71ea007",
+      "sha256": "02a9ddc2e58e7a60d8fc83395864a6582870875eefac324a5cef7ff195e2ef51",
       "executable": false
     },
     "tests/helpers/ai/answers.mjs": {

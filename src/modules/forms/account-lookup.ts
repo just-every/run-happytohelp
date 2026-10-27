@@ -40,16 +40,15 @@ export async function withAccountChoices(env:Env,form:PublicForm,identity?:Porta
  const accepted:Record<string,unknown>=Object.create(null)
  for(const field of fields){
   const condition=field.condition,source=condition&&fields.find(f=>f.id===condition.fieldId)
-  const active=visibleField(field,accepted)
   if(source?.type==='account'){
+   const active=visibleField(field,accepted)
    delete field.condition
    field.visible=active
   }
-  if(active){
-   const value=values[field.id]
-   // A supplied identifier is not authority to evaluate a private predicate.
-   if(field.type!=='account'||field.options.some(option=>option.value===value))accepted[field.id]=value
-  }
+  // Other predicates remain on the field and are checked by the renderer and
+  // canonical submission validator. Offers need only eligible account selections.
+  const value=values[field.id]
+  if(field.type==='account'&&field.visible!==false&&field.options.some(option=>option.value===value))accepted[field.id]=value
  }
  return {...form,verified:!!identity,fields}
 }

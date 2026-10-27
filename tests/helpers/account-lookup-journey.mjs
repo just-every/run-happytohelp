@@ -121,6 +121,12 @@ export async function accountLookupJourney(f,customer){
  const conditionPath=`${api}/${conditional.id}/submissions`
  const missingDetail=await app.call(conditionPath,{...customer,body:{...command,localId:'synthetic-hh-condition-missing'},status:422});assert.equal(missingDetail.data.field,detail.id)
  await app.call(conditionPath,{...customer,body:{...command,localId:'synthetic-hh-condition-good',fields:{...command.fields,[detail.id]:'Account access'}},status:201})
+ // Ordinary parent conditions still control a nested account question at admission.
+ const nested=(await app.ok(admin,{...owner,body:{title:'Conditional account question',enabled:true,fields:[{fieldId:f.reason.id},{fieldId:field.id,condition:{fieldId:f.reason.id,operator:'equals',value:'refund'}},{fieldId:detail.id,required:true,condition:{fieldId:field.id,operator:'equals',value:company.id}}]}})).data
+ const nestedPath=`${api}/${nested.id}/submissions`
+ const hiddenParent=await app.call(nestedPath,{...customer,body:{...command,localId:'synthetic-hh-nested-hidden',fields:{[f.reason.id]:'question',...command.fields}},status:422})
+ assert.equal(hiddenParent.data.field,field.id);assert.equal(hiddenParent.data.code,'inactive_field')
+ await app.call(nestedPath,{...customer,body:{...command,localId:'synthetic-hh-nested-accepted',fields:{[f.reason.id]:'refund',...command.fields,[detail.id]:'Account refund'}},status:201})
  const settings=(await app.ok(base+'/ticket-settings',owner)).data
  assert.equal(settings.fields.find(f=>f.id===field.id).accountOptions.find(o=>o.value===company.id).label,'Northstar account')
  const created=await app.call(path,{...customer,body:command,status:201}),id=created.data.ticket.id,ticketPath=`/api/dashboard/projects/${p}/conversations/${id}/ticket`

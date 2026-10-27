@@ -42,7 +42,8 @@ export async function accountLookupBrowser(){
   await request(`/api/portal/${p}/access/request`,{email:customer,returnTo:`/help/${p}/requests/${form.id}`})
   const delivered=(await readFile(mail,'utf8')).trim().split('\n').map(JSON.parse).find(item=>[].concat(item.to).includes(customer));assert.ok(delivered)
   const link=delivered.text.match(/http:\/\/127\.0\.0\.1:18847\/api\/portal\/\S+/)[0],customerContext=await browser.newContext({viewport:{width:1440,height:1000}})
-  const customerPage=await customerContext.newPage();
+  const customerPage=await customerContext.newPage(),offerInputs=[];
+  customerPage.on('request',request=>{const url=new URL(request.url());if(url.pathname===`/api/forms/${p}/${form.id}`&&url.searchParams.has('fields'))offerInputs.push(JSON.parse(url.searchParams.get('fields')))});
   const assertPrivate=async forbidden=>{
    for(const path of [`/api/forms/${p}`,`/api/forms/${p}/${form.id}`,`/help/${p}/requests/${form.id}`]){
     const response=await customerContext.request.get(origin+path),raw=await response.text();assert.equal(response.status(),200)
@@ -71,6 +72,7 @@ export async function accountLookupBrowser(){
   await page.locator('#ticket-section-history-heading').click();await page.locator('.ticket-history').getByText('Northstar account',{exact:false}).first().waitFor();await page.locator('.ticket-history').getByText('Harbor account',{exact:false}).first().waitFor();await capture('06-ticket-history');
   await page.goto(origin+`/projects/${p}/conversations`);await page.getByRole('button',{name:'Filters',exact:true}).click();await page.getByRole('button',{name:'Save as view…',exact:true}).click();await page.getByRole('button',{name:'Add filter',exact:true}).click();await page.getByLabel('Filter 1 field').selectOption(`custom:${field.id}`);await page.getByLabel('Value',{exact:true}).selectOption({label:'Northstar account'});assert.equal(await page.getByLabel('Value',{exact:true}).inputValue(),company.id);await capture('07-account-view-filter');
   await page.getByLabel('View name',{exact:true}).fill('Northstar account requests');await page.getByRole('button',{name:'Save new view',exact:true}).click();await page.getByText('View saved.',{exact:true}).waitFor();assert.equal((await api(base+'/ticket-views')).data.find(view=>view.name==='Northstar account requests').filters[0].value,company.id)
+  assert.ok(offerInputs.length>0);assert.ok(offerInputs.every(values=>Object.keys(values).every(id=>id===field.id)),'offer refresh never puts unrelated form contents in a URL');
   await customerContext.close();await context.close();success=true;console.log('Account lookup: configured, refused, submitted and inspected; browser proof at 1440 and 390.')
  }finally{await browser.close();await runtime.close(success);await rm(scratch,{recursive:true,force:true})}
 }

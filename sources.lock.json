@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "40c857e496a34181c7e8c3a2664f6de7c4983e28b82ac5ae7b9dff89cd7d3fff",
+      "sha256": "401fc74daf40d7104e4bb80910774eac66e53b0dc2e57e60ce208a754b6d7648",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8b90761057c1adac6facf1a9a0726ad65c3cb5502492f4ddd5726dd6ba1e649f",
+      "sha256": "c4ee394a6b3f7fa493da9be44cdaf6488813eb944c76cfd5fc233172e0b7a92a",
       "executable": false
     },
     "DEMO.md": {
@@ -7676,7 +7676,7 @@
       "executable": false
     },
     "src/modules/workflows/routes-sla.ts": {
-      "sha256": "6534c9311d3aa9b9a2eb25d26b0d6a34bf0526585ade4b9d9f5403a3e21f4ee2",
+      "sha256": "22bc6da1a7bf0ab90d07f5580b5878f155c80a21da8da0a1227c851cca7d28ce",
       "executable": false
     },
     "src/modules/workflows/routes.ts": {
@@ -10500,7 +10500,7 @@
       "executable": false
     },
     "src/ui/native/pages/workflows/workflows.css": {
-      "sha256": "d8100d63ac6b45905254a783d8c8b840bb45d9fbf51cf73617a29973187d7adc",
+      "sha256": "712afd83060d6555f11f2fe742a148cdb68d452bb3b604e1ee7e24dcb8fe4ffb",
       "executable": false
     },
     "src/ui/native/pages/workflows/WorkflowSettings.jsx": {
@@ -12120,7 +12120,7 @@
       "executable": false
     },
     "tests/helpers/workflows/sla-slack.mjs": {
-      "sha256": "b29cd9238b0f457c1623bf59244e789011acc99cef8cf8d562a666e0f1ee3646",
+      "sha256": "b26b29f64c40e3dbc6bc0123eead282e4b54a859505cbc1426a92cad3d133cd7",
       "executable": false
     },
     "tests/helpers/workflows/sla.mjs": {

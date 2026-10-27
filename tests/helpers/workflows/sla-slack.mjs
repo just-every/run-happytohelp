@@ -10,6 +10,7 @@ export async function slaSlackFlow(f,original,calendar){
  assert.equal((await call(`/sla-policies/${original.id}`,{slack_destination_id:foreign.id},'PATCH')).status,400)
  await ok(`/sla-policies/${original.id}`,{active:false},'PATCH')
  const policy=await ok('/sla-policies',{name:'Slack commitments',calendar_id:calendar.id,position:0,conditions:{},first_response_minutes:120,approaching_minutes:30,unattended_minutes:180,backup_user_ids:[w.users.admin],slack_destination_id:target.id})
+ assert.equal(JSON.parse((await app.first("SELECT detail_json FROM audit_events WHERE target_id=? AND action='sla-policies.post'",policy.id)).detail_json).slack_destination_id,target.id,'outbound consent records the selected destination in the audit')
  const start=Date.parse('2026-11-27T14:00:00Z')
  const alerts=async id=>(await ok(`/conversations/${id}/sla`)).alerts.filter(a=>a.recipient_id===w.users.admin)
  const settle=async()=>{for(let i=0;i<4;i++)await app.scheduled()}
@@ -57,6 +58,30 @@ export async function slaSlackFlow(f,original,calendar){
  assert.equal((await alerts(revoked)).find(a=>a.kind==='approaching').slack_state,'cancelled')
  assert.equal(slack.requests.length,prior)
  await patch(revoked,{status_id:'solved'})
- await ok(`/sla-policies/${policy.id}`,{active:false},'PATCH')
+ // An acknowledged pending alert never crosses the provider boundary.
+ await ok(`/sla-policies/${policy.id}`,{backup_user_ids:[w.users.admin]},'PATCH')
+ await clock(start);const ackId=await create();await clock(start+90*60000)
+ const ack=(await alerts(ackId)).find(a=>a.kind==='approaching')
+ await ok(`/sla-alerts/${encodeURIComponent(ack.id)}/ack`,{},'PATCH','admin')
+ const ackCount=slack.requests.length;await settle()
+ assert.equal(slack.requests.length,ackCount)
+ assert.equal((await alerts(ackId)).find(a=>a.id===ack.id).slack_state,'cancelled')
+ await patch(ackId,{status_id:'solved'})
+ // A persisted claim with no outcome is a process-boundary fixture: restart
+ // recovers it as unknown, without attempting to reconstruct the external effect.
+ await clock(start);const interrupted=await create();await clock(start+90*60000)
+ const claim=(await alerts(interrupted)).find(a=>a.kind==='approaching')
+ await app.db.prepare("UPDATE sla_alerts SET slack_state='sending',slack_started_at=? WHERE id=?").bind(start-3600001,claim.id).run()
+ await app.configure({});await settle()
+ assert.equal((await alerts(interrupted)).find(a=>a.id===claim.id).slack_state,'uncertain')
+ assert.equal(slack.requests.length,ackCount)
+ await patch(interrupted,{status_id:'solved'})
+ // Disabling the frozen destination fences already-pending alerts too.
+ await clock(start);const disabled=await create();await clock(start+90*60000);await alerts(disabled)
+ await app.ok(path+'/'+target.id,{token:w.tokens.owner,method:'DELETE'})
+ await settle();assert.equal(slack.requests.length,ackCount)
+ assert.equal((await alerts(disabled)).find(a=>a.kind==='approaching').slack_state,'cancelled')
+ await patch(disabled,{status_id:'solved'})
+ await ok(`/sla-policies/${policy.id}`,{active:false,slack_destination_id:null},'PATCH')
  await ok(`/sla-policies/${original.id}`,{active:true},'PATCH');await clock(initial)
 }

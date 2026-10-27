@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "5800df8ada88267bcc544e1267f1d61625ac30080a4415b7249be4bff8c20e97",
+      "sha256": "4bc2ba48d62401eeb5f6bdab24bbb03987f5b5548ede68bbdf44ab6c3e185928",
       "executable": false
     },
     "AGENTS.md": {
@@ -2967,6 +2967,10 @@
       "sha256": "3bd7ec386859b8fa1608bd1bfb26c98603c2ff09c224c0bac6fdca84112d57f5",
       "executable": false
     },
+    "scripts/installer/archive-restore.mjs": {
+      "sha256": "3e7cea4217dc88a4576ac8639e41886c2b5e19179fb2e8815b9fc80fd36c66ca",
+      "executable": false
+    },
     "scripts/installer/async-work-archive.mjs": {
       "sha256": "7e1c56fbc6a81e7cc1e04431b2915f7fa381a8e7433acbaa4b19e9b764fd73da",
       "executable": false
@@ -3016,7 +3020,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "92eebcf8ec0419824f9835c968c3b41827b14d6926151501b73161a686012dbb",
+      "sha256": "09805eaa67ab05283a24511332990f5c4766572d271206425cee5983a84cc880",
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {
@@ -11888,7 +11892,7 @@
       "executable": false
     },
     "tests/helpers/recovery/followup.mjs": {
-      "sha256": "758ea882fb152df1dd1573791ec7b2dea5750193afc02cf353553095600a0d65",
+      "sha256": "252db7817518c9666347ccfa6bd34dc0586b32aa63506fbca22bb6d23b5aa33d",
       "executable": false
     },
     "tests/helpers/recovery/independent-journey.mjs": {

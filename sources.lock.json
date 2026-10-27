@@ -1572,7 +1572,7 @@
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "44294e763da713be8d625e9dadd0e73360d0178eba84fa185d8dce2c20851078",
+      "sha256": "d9414d1d67541897a30bca838702baad2008a46f29312ab0c349aa944e9c3243",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "aadd8cd8e587c604de115c9706e883f5c001bc6ba74bb8d1f92565690d8b7fc5",
+      "sha256": "b7c421e9deda5d861a1ad5be57a99d7dff12a6e2c7941b119894b01aaea81283",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "09e7bc770b2f0c6854ca2f706c2989380557f128324027f3432c47d94281d297",
+      "sha256": "3348b54667173e833eace33e583d8f54a5fd75119c3217da511581df53768abb",
       "executable": false
     },
     "DEMO.md": {
@@ -9152,7 +9152,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_workspace-settings.scss": {
-      "sha256": "435e1f991f231a9aa0cc89d9b9c6bf4f9d5dc609175d2ed0fa813237a00f5bbe",
+      "sha256": "1917ec9f6a56ace3cdf3c880a51f714fb62d77cc23e18d436814ccca4d9cc898",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_workspace-surfaces.scss": {
@@ -10264,7 +10264,7 @@
       "executable": false
     },
     "src/ui/native/pages/project-parity.css": {
-      "sha256": "2dc97f692ee06f485c9678268a54f060a30e8ad22f4b61e0a4414364cdf8da9f",
+      "sha256": "37ac53cb06f9b65fa0e383a04c149d10ac8adb8e88df9b96caf4496216d65610",
       "executable": false
     },
     "src/ui/native/pages/ProjectControls.jsx": {
@@ -11604,7 +11604,7 @@
       "executable": false
     },
     "tests/helpers/inbox/appearance-browser.mjs": {
-      "sha256": "9fe6f41d4c51c260a1e975c87e86f4528767502766f986129276837a78f2b42f",
+      "sha256": "0c63e1260b27f118b37d3d45e662e3665ae4873fd369df795342d846c11f8137",
       "executable": false
     },
     "tests/helpers/inbox/appearance.mjs": {
@@ -11669,6 +11669,10 @@
     },
     "tests/helpers/inbox/search.mjs": {
       "sha256": "28e32e9ec3eacd2429d4944557717ddb0d681c4a48ed6ac7bc9bf3aaa0badfb3",
+      "executable": false
+    },
+    "tests/helpers/inbox/settings-targets-browser.mjs": {
+      "sha256": "f681212815fa8c982a398a3ba156618eecff71214f121901a88b895a2ead5056",
       "executable": false
     },
     "tests/helpers/inbox/start-menu-browser.mjs": {

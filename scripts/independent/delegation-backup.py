@@ -9,6 +9,11 @@ import sqlite3
 from pathlib import Path
 
 CREDENTIAL_TABLES = ('edition_codes', 'edition_consents', 'edition_grants', 'edition_effect_guards')
+# Match the portable archive boundary: request-link receipts and help sign-in
+# authority never travel in backups. Delete whole rows so additional personal
+# columns cannot survive. Collection restrictions and named grants are durable
+# business history and retain their explicit grantor provenance.
+KNOWLEDGE_PRIVATE_TABLES = ('knowledge_read_receipts', 'knowledge_help_links', 'knowledge_help_sessions')
 
 def punctuated_end(statement):
     # Wrangler's splitter recognizes END followed by whitespace or a semicolon,
@@ -37,7 +42,7 @@ def sanitize(sql):
         db.executescript(sql)
         db.execute('PRAGMA foreign_keys=OFF')
         tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        for table in CREDENTIAL_TABLES:
+        for table in CREDENTIAL_TABLES + KNOWLEDGE_PRIVATE_TABLES:
             if table in tables:
                 db.execute(f'DELETE FROM "{table}"')
         if 'api_credentials' in tables:

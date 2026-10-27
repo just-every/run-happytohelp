@@ -43,6 +43,13 @@ try {
    await write("INSERT INTO knowledge_categories(id,project_id,name,slug,requires_entitlement) VALUES('synthetic-knowledge-recovery',?,'Recovery restricted','recovery-restricted',1)",[journey.owner.projectId]);
    await write("INSERT INTO knowledge_articles(id,project_id,category_id,slug,title,content,status,updated_at) VALUES('synthetic-knowledge-recovery',?,'synthetic-knowledge-recovery','recovery-restricted','Recovery restricted','Explicit grant only','published',1)",[journey.owner.projectId]);
    await write("INSERT INTO knowledge_collection_entitlements VALUES(?,'synthetic-knowledge-recovery','synthetic-knowledge-recovery',?,1)",[journey.owner.projectId,issuerId]);
+   // Exercise both anonymous and identified request-link receipts, including
+   // a future personal column: sanitization must drop the entire receipt row.
+   await write("ALTER TABLE knowledge_read_receipts ADD COLUMN personal_note TEXT");
+   await write("INSERT INTO knowledge_read_receipts(token,project_id,article_id,locale,brand,contact_id,expires_at,personal_note) VALUES('synthetic-private-receipt',?,'synthetic-knowledge-recovery','fr','private-brand','synthetic-knowledge-recovery',9999999999999,'synthetic-private-note')",[journey.owner.projectId]);
+   await write("INSERT INTO knowledge_read_receipts(token,project_id,article_id,locale,brand,expires_at) VALUES('synthetic-anonymous-receipt',?,'synthetic-knowledge-recovery','en','private-brand',9999999999999)",[journey.owner.projectId]);
+   await write("INSERT INTO knowledge_help_links VALUES('synthetic-help-link',?,'synthetic-help@example.test',9999999999999,NULL)",[journey.owner.projectId]);
+   await write("INSERT INTO knowledge_help_sessions VALUES('synthetic-help-session',?,'synthetic-knowledge-recovery','synthetic-help@example.test',9999999999999)",[journey.owner.projectId]);
    const hash=createHash('sha256').update(issuerSession).digest('hex');
    await write("INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,?,?,'admin',?)",[hash,issuerId,journey.owner.projectId,Date.now()+3600000]);
    await write("INSERT INTO session_factors VALUES(?,?,'password',?)",[hash,issuerId,Date.now()]);
@@ -76,7 +83,9 @@ try {
   assert.equal(sanitized.status, 0, sanitized.stderr);
   const backup = await readFile(backupFile, 'utf8');
   assert.doesNotMatch(backup, /private-grant-hash|private-code-hash/, 'the backup carries no delegated credential');
-  for (const table of ['edition_grants', 'edition_codes','integration_deliveries','native_integration_intents','native_integration_destinations','api_uploads','api_upload_disposals']) before.rows[table] = [];
+  assert.doesNotMatch(backup, /synthetic-private-receipt|synthetic-anonymous-receipt|synthetic-private-note|synthetic-help-link|synthetic-help-session|synthetic-help@example.test/, 'native SQL backup carries no knowledge receipt or help authentication content');
+  assert.equal(before.rows.knowledge_read_receipts.length,2,'the source contains both receipt identity forms');
+  for (const table of ['knowledge_read_receipts','knowledge_help_links','knowledge_help_sessions','edition_grants', 'edition_codes','integration_deliveries','native_integration_intents','native_integration_destinations','api_uploads','api_upload_disposals']) before.rows[table] = [];
   for(const table of ['integration_tokens','api_credentials','api_requests','api_appends'])before.rows[table]=before.rows[table].map(value=>{
    const row=JSON.parse(value);
    if(table==='api_credentials')row.revoked_at??=Math.max(1,row.created_at);

@@ -47,7 +47,7 @@ function EscalationsBody({base, conversationBase, canInstall, canManage, canRepl
         {error && <p className="escalation-error" role="alert">{error}</p>}
         {loading && !data && <p className="escalation-hint" role="status">Loading escalations…</p>}
         {data && <>
-            {data.operations?.map(operation => <p className="escalation-error" role="status" key={operation.id}>{providerNames[operation.provider]} outcome {operation.state === 'sending' ? 'is not yet confirmed' : 'is unknown'}. Check the provider before posting again.{operation.remote_url && <> <a href={operation.remote_url} target="_blank" rel="noopener noreferrer">Check provider result</a></>}</p>)}
+            {data.operations?.map(operation => <p className="escalation-error" role="status" key={operation.id}>{providerNames[operation.provider]} outcome {operation.state === 'failed' ? 'was refused; reconnect before starting a new request' : operation.state === 'sending' ? 'is not yet confirmed' : 'is unknown'}. Check the provider before posting again.{operation.remote_url && <> <a href={operation.remote_url} target="_blank" rel="noopener noreferrer">Check provider result</a></>}</p>)}
             <EscalationLinks base={conversationBase} links={data.links} handoffs={data.handoffs} canManage={canManage} onChanged={reload}/>
             {drafts.length > 0 && <section className="escalation-drafts" aria-label="Draft customer updates">
                 <strong>Customer updates to review</strong>

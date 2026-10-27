@@ -768,6 +768,12 @@
       "name": "257_move_in_attachment_bytes.sql",
       "sha256": "a6157774bba88eb231945c253f952cb9c9db2eb677ee6ed97e2c680ec0d5354e",
       "sql": "-- Explicit small export payloads share the native media lifetime and authorization.\nCREATE TABLE move_in_attachment_bytes (\n media_id TEXT PRIMARY KEY REFERENCES media(id) ON DELETE CASCADE,\n project_id TEXT NOT NULL,\n conversation_id TEXT NOT NULL REFERENCES conversations(id),\n note_id TEXT REFERENCES move_in_notes(id) ON DELETE CASCADE,\n sha256 TEXT NOT NULL,\n base64 TEXT NOT NULL\n);\nCREATE INDEX move_in_attachment_conversation ON move_in_attachment_bytes(project_id,conversation_id);\nCREATE INDEX move_in_attachment_note ON move_in_attachment_bytes(note_id);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "258_teams_escalations.sql",
+      "sha256": "0473ffbbc02115b1b541897cb51d1eafd4a443e28c91512322115b96cba735c8",
+      "sql": "-- Preserve the original tracker connection table and all its foreign references.\nALTER TABLE escalation_connections ADD COLUMN installed_by TEXT;\nCREATE TABLE escalation_teams_connections(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),provider TEXT NOT NULL CHECK(provider='teams'),target TEXT NOT NULL,base_url TEXT,token_cipher TEXT,webhook_cipher TEXT,updated_at INTEGER NOT NULL,installed_by TEXT NOT NULL,UNIQUE(project_id,provider));\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

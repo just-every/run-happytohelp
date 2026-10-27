@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "76fde7662f46075e035e3b9140203d60048c68df46cd8cc3428a59ab995206ec",
+      "sha256": "cade44e0442c34d5d98798bb9e127dfbc3706021179a0284cc6175b2542d650a",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d0dbc870a408f05004a64f4b5d1014a609cc5a885beb0ed6f098909e5a67f55f",
+      "sha256": "742771660f6965e82f9eab87f122ec91234784444256c51b3b04d1dea4f2afc3",
       "executable": false
     },
     "DEMO.md": {
@@ -2624,7 +2624,7 @@
       "executable": false
     },
     "public/site-assets/help_center/request-forms.js": {
-      "sha256": "1082050c198ffd126d1b03a834cc1e51357778a6f8947afd39fb593a223498ce",
+      "sha256": "54da549730a96954a8ab111e8e2dbb3bfc240e6f7882ca72fae7c095504f6e13",
       "executable": false
     },
     "public/site-assets/help_center/surveys.css": {
@@ -8024,7 +8024,7 @@
       "executable": false
     },
     "src/routes/_dashboard.tsx": {
-      "sha256": "f93b67ab6f76cad7280a22839b4bced99c1df9b65d264530c81500d12cfde9c8",
+      "sha256": "1a8a88d9aa5bee65b3ce67d3fcbf571ea728b5d71137709f11046c41d1ba39b0",
       "executable": false
     },
     "src/routes/accept-invitation.tsx": {
@@ -11140,7 +11140,7 @@
       "executable": false
     },
     "tests/helpers/account-lookup-browser.mjs": {
-      "sha256": "f01597463310019ba1236b3174aa1e7bc88990798552b862ee003016eac0dddb",
+      "sha256": "773faf16f02278e23d99791e22a545b1332069d412c16a8a10f2bb2b714db488",
       "executable": false
     },
     "tests/helpers/account-lookup-journey.mjs": {

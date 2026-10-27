@@ -42,11 +42,21 @@ try {
         let posts = 0, release, held = new Promise(resolveHeld => { release = resolveHeld; });
         let respondWithError = true;
         const pendingRoutes = [];
+        const arrivals = [Promise.withResolvers(), Promise.withResolvers()];
+        const waitForSubmission = async index => {
+            let timer;
+            try {
+                await Promise.race([arrivals[index].promise, new Promise((_, reject) => {
+                    timer = setTimeout(() => reject(new Error('Note POST did not reach the held route')), 15000);
+                })]);
+            } finally { clearTimeout(timer); }
+        };
         const handler = route => {
             const operation = (async () => {
                 posts++;
                 assert.equal(route.request().method(), 'POST');
                 assert.deepEqual(route.request().postDataJSON(), {content, mention_ids: [], media_ids: []});
+                arrivals[posts - 1]?.resolve();
                 await held;
                 if (respondWithError) await route.fulfill({status: 503, contentType: 'application/json', body: JSON.stringify({message: 'Synthetic note service failure'})});
                 else await route.continue(); // Original request reaches the actual emitted Worker unchanged.
@@ -64,6 +74,9 @@ try {
             const commitTrace = await page.evaluate(() => window.noteFocusTrace.trace);
             await writeFile(join(evidence, `${viewport.width}-instant-busy-focus.json`), JSON.stringify(commitTrace, null, 2));
             assertNoteFocusTrace(commitTrace);
+            // A busy React commit precedes delivery to Playwright's route handler.
+            // Observe that boundary before checking duplicate submissions.
+            await waitForSubmission(0);
             await checkHeldNoteKeys(page, dialog);
             assert.equal(posts, 1, 'one user submission while held');
             const errorTrace = await page.evaluate(() => window.noteFocusTrace.stop());
@@ -86,6 +99,7 @@ try {
             await page.keyboard.press('Enter'); // Explicit user retry, with a keyboard submission.
             await page.waitForFunction(() => window.noteFocusTrace.trace.commits.some(commit => commit.busy));
             assertNoteFocusTrace(await page.evaluate(() => window.noteFocusTrace.trace));
+            await waitForSubmission(1);
             await checkHeldNoteKeys(page, dialog);
             assert.equal(posts, 2, 'one explicit retry POST');
             const successTrace = await page.evaluate(() => window.noteFocusTrace.stop());

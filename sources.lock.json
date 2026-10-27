@@ -1572,7 +1572,7 @@
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "d9414d1d67541897a30bca838702baad2008a46f29312ab0c349aa944e9c3243",
+      "sha256": "44294e763da713be8d625e9dadd0e73360d0178eba84fa185d8dce2c20851078",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -2624,7 +2624,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "8cdd7693659ea099da698f55fe941117308c84b59cda9a2617a6d643233b765d",
+      "sha256": "fce243013fc6f7fe940e7f110b67e48f03da762049a393ffd28019f1d922a827",
       "executable": false
     },
     "rer-project.json": {
@@ -3104,7 +3104,7 @@
       "executable": false
     },
     "scripts/installer/workflow-archive-upgrade.mjs": {
-      "sha256": "e1458eb71b9bbec32f2b55ac36f64eb7e8158976eb50770f475611ca1aee0aa5",
+      "sha256": "9d0143476629ea2cc35d0f1898ba69b2707dd5816f67f58ee9dbba8fc0d15b55",
       "executable": false
     },
     "scripts/legacy-export/attachments.mjs": {

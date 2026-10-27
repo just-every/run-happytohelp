@@ -4,6 +4,7 @@ import type {AppEnv} from '../../platform/env'
 import {requireProject} from '../../platform/auth'
 import {memberAccess} from '../access/gate'
 import {auditStatement,requestSource} from '../audit/record'
+import {objectBody} from '../training-runs/validation'
 import {finishTrainingPlanning} from '../training-runs/recovery'
 
 // A sandbox can narrow read-only tools; it never grants production authority.
@@ -23,9 +24,9 @@ procedureRoutes.get(root,async c=>{
  return c.json({versions:versions.results.map(v=>({...v,definition:JSON.parse(v.definition)})),productionExecutionAvailable:false})
 })
 procedureRoutes.post(root+'/:key/versions',async c=>{
- const pid=c.req.param('projectId')!,key=c.req.param('key')!,b=await c.req.json()
+ const pid=c.req.param('projectId')!,key=c.req.param('key')!,b=await objectBody(c.req)
  if(!/^[a-z0-9-]{1,80}$/.test(key)||!text(b.instructions,16000)||!text(b.intent,200)||!text(b.model,200)||!text(b.humanEscalation,2000))refuse('Declare a key, intent, instructions, model and human escalation')
- if(!Array.isArray(b.tools)||b.tools.length===0||b.tools.some((t:unknown)=>!procedureTools.includes(String(t)))||new Set(b.tools).size!==b.tools.length)refuse('Choose existing read-only tools only')
+ if(!Array.isArray(b.tools)||b.tools.length===0||b.tools.some((t:unknown)=>typeof t!=='string'||!procedureTools.includes(t))||new Set(b.tools).size!==b.tools.length)refuse('Choose existing read-only tools only')
  if(!Number.isFinite(b.maxCost)||b.maxCost<=0||b.maxCost>1000||!Number.isInteger(b.maxTokens)||b.maxTokens<1||b.maxTokens>32000)refuse('Declare bounded simulation cost and output tokens')
  if(!Array.isArray(b.cases)||b.cases.length!==4||procedureCases.some(kind=>b.cases.filter((x:any)=>x?.kind===kind).length!==1))refuse('Declare one synthetic case for each required path')
  const cases=b.cases.map((x:any)=>{
@@ -53,7 +54,7 @@ procedureRoutes.get(root+'/:key/versions/:versionId/simulations',async c=>{
  return c.json({runs:runs.results})
 })
 procedureRoutes.post(root+'/:key/versions/:versionId/release',async c=>{
- const pid=c.req.param('projectId')!,b=await c.req.json(),versionId=c.req.param('versionId')!
+ const pid=c.req.param('projectId')!,b=await objectBody(c.req),versionId=c.req.param('versionId')!
  const qualified=await c.env.DB.prepare(`SELECT v.id FROM procedure_versions v JOIN training_runs r ON r.project_id=v.project_id AND json_extract(r.config,'$.procedureVersionId')=v.id WHERE v.id=? AND v.project_id=? AND v.procedure_key=? AND r.id=? AND r.status='completed' AND r.case_count=4 AND (SELECT count(*) FROM training_cases WHERE run_id=r.id)=4 AND NOT EXISTS(SELECT 1 FROM training_cases WHERE run_id=r.id AND (status<>'completed' OR coalesce(json_extract(checks,'$.passed'),0)<>1))`).bind(versionId,pid,c.req.param('key')!,typeof b.evaluationId==='string'?b.evaluationId:'').first()
  if(!qualified)refuse('Release refused: this exact version needs all four required cases completed and passing',409)
  const artifacts=await c.env.DB.prepare('SELECT output_key FROM training_cases WHERE run_id=?').bind(b.evaluationId).all<{output_key:string}>()

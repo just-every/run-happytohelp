@@ -11372,7 +11372,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "4f1e1ec006eec3b162f01d16fd74f3e420db167de1cb94961d7bef296d572b9f",
+      "sha256": "9784542db6ebafa94dc3bd7216482d89d18c056f09a72d2cd992a16a53412e21",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {

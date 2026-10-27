@@ -1,0 +1,21 @@
+.procedure-settings button,
+.procedure-settings input:not([type=checkbox]),
+.procedure-settings select { min-height:44px; min-width:44px; }
+.procedure-settings fieldset { margin-bottom:24px; }
+.procedure-settings legend { font-size:16px; }
+.procedure-settings code { overflow-wrap:anywhere; }
+.procedure-settings .procedure-result { margin-top:12px; margin-bottom:12px; }
+.procedure-versions { display:flex; flex-wrap:wrap; gap:8px; }
+.procedure-version[aria-pressed=true] { background:#39727c; color:#fff; }
+.procedure-settings button:focus-visible,
+.procedure-settings input:focus-visible,
+.procedure-settings textarea:focus-visible { outline:3px solid var(--h2h-ink,#193b38); outline-offset:3px; }
+.procedure-settings [aria-disabled=true] { opacity:.65; cursor:wait; }
+.procedure-settings .form-check { display:flex; align-items:center; gap:12px; padding-left:0; margin:8px 0; min-height:44px; }
+.procedure-settings .form-check-input { flex:0 0 44px; width:44px; height:44px; margin:0; }
+.procedure-settings .form-check-label { display:flex; align-items:center; min-height:44px; }
+.procedure-run { margin-top:20px; }
+.procedure-run h3 { font-size:16px; }
+.procedure-receipt { margin-top:24px; }
+.procedure-case { margin:20px 0; }
+.procedure-case h3 { font-size:18px; }

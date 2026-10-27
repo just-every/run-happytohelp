@@ -1,7 +1,7 @@
 import {spawn} from 'node:child_process'
 import {isolatedQueues} from './isolated-queues.mjs'
-import {appendFileSync} from 'node:fs'
-import {mkdtemp,mkdir,readFile,writeFile,readdir,rm} from 'node:fs/promises'
+import {appendFileSync,rmSync} from 'node:fs'
+import {mkdtemp,mkdir,readFile,writeFile,readdir,rm,cp} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
 import {join,resolve,dirname} from 'node:path'
 import {randomUUID,createHash} from 'node:crypto'
@@ -11,6 +11,19 @@ import {randomUUID,createHash} from 'node:crypto'
 // `persist` serves an existing local D1/R2/DO state (an upgraded installation) after applying this source's migrations to it.
 // Server start to a healthy /health took 1.5-3.6 s (6 local rounds, load 33-46, 20 Oct 2026); migrations (24-57 s) run before this window.
 // A failed start exits and ends the wait at once; the bound only ends a start that neither reports ready nor exits.
+// Each fresh installation receives its own copy of a pristine migrated store.
+// Run the real migrator once per schema and database identity in this process;
+// snapshot it before the Worker starts or any tenant fixture is seeded.
+const migrationStores=new Map(),migrationDirectories=[]
+process.once('exit',()=>{for(const directory of migrationDirectories)rmSync(directory,{recursive:true,force:true})})
+async function migrateFresh(key,persist,apply){
+ let store=migrationStores.get(key)
+ if(!store){
+  store=(async()=>{await apply();const directory=await mkdtemp(join(tmpdir(),'h2h-pristine-migrations-'));migrationDirectories.push(directory);const snapshot=join(directory,'state');await cp(persist,snapshot,{recursive:true});return snapshot})()
+  migrationStores.set(key,store)
+  try{await store}catch(error){migrationStores.delete(key);throw error}
+ }else await cp(await store,persist,{recursive:true})
+}
 const WORKER_READY_MS=40_000
 export async function createRuntime({port=Number(process.env.H2H_RUNTIME_PORT||process.env.H2H_TEST_PORT)||0,inspectorPort=process.env.H2H_RUNTIME_INSPECTOR_PORT?Number(process.env.H2H_RUNTIME_INSPECTOR_PORT):undefined,vars={},workerFirst=false,outboundFixture,persist:existing,databaseId='isolated-test-only',queueConsumers}={}){
  const root=resolve(new URL('../..',import.meta.url).pathname),directory=await mkdtemp(join(tmpdir(),'h2h-native-runtime-')),persist=existing||join(directory,'state'),migrations=join(directory,'migrations'),configPath=join(directory,'wrangler.json');await mkdir(migrations)
@@ -20,7 +33,8 @@ export async function createRuntime({port=Number(process.env.H2H_RUNTIME_PORT||p
  await writeFile(configPath,JSON.stringify(config,null,2));const wrangler=join(root,'node_modules/wrangler/bin/wrangler.js'),env={PATH:process.env.PATH,TMPDIR:process.env.TMPDIR,WRANGLER_LOG_PATH:process.env.WRANGLER_LOG_PATH,H2H_TEST_BINDINGS:JSON.stringify(vars),...(outboundFixture?{H2H_TEST_OUTBOUND_FIXTURE:outboundFixture}:{}),CI:'1',WRANGLER_SEND_METRICS:'false',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false'};let logs='';const run=async args=>new Promise((resolveRun,reject)=>{const processRun=spawn(process.execPath,[wrangler,...args],{cwd:directory,env,stdio:['ignore','pipe','pipe']});let output='';processRun.stdout.on('data',b=>output+=b);processRun.stderr.on('data',b=>output+=b);processRun.on('error',reject);processRun.on('exit',async code=>{logs+=output;if(code===0)resolveRun(output);else{await writeFile(join(directory,'runtime.log'),logs);reject(new Error(`Wrangler command failed (${code}); preserved logs: ${directory}/runtime.log`))}})});
  // Preserve native runtime diagnostics even when a browser step is terminated.
  const record=bytes=>{logs+=bytes;appendFileSync(join(directory,'runtime.log'),bytes)}
- await run(['d1','migrations','apply','DB','--local','--config',configPath,'--persist-to',persist]);await writeFile(join(directory,'runtime.log'),logs);let child=spawn(process.execPath,[join(root,'tests/helpers/emitted-runtime-server.mjs'),configPath,persist,String(port),...(inspectorPort!==undefined?[String(inspectorPort)]:[])],{cwd:directory,env,stdio:['ignore','pipe','pipe']});child.stdout.on('data',record);child.stderr.on('data',record)
+ const schema=createHash('sha256').update(databaseId);for(const name of [...names].sort())schema.update(name).update(await readFile(join(migrations,name)))
+ const apply=()=>run(['d1','migrations','apply','DB','--local','--config',configPath,'--persist-to',persist]);if(existing)await apply();else await migrateFresh(schema.digest('hex'),persist,apply);await writeFile(join(directory,'runtime.log'),logs);let child=spawn(process.execPath,[join(root,'tests/helpers/emitted-runtime-server.mjs'),configPath,persist,String(port),...(inspectorPort!==undefined?[String(inspectorPort)]:[])],{cwd:directory,env,stdio:['ignore','pipe','pipe']});child.stdout.on('data',record);child.stderr.on('data',record)
  let origin;let ready=false;const readyBy=Date.now()+WORKER_READY_MS;while(Date.now()<readyBy){if(child.exitCode!==null)break;const match=logs.match(/Ready on (http:\/\/(?:localhost|127\.0\.0\.1):\d+)/);if(match){const candidate=`http://127.0.0.1:${match[1].split(':').pop()}`;try{const response=await fetch(candidate+'/health');const health=await response.json();ready=response.ok&&health?.status==='ok'&&health?.runtime==='native-rer'&&health?.database==='reachable'&&health?.files==='reachable';if(ready)origin=candidate}catch{}}if(ready)break;await new Promise(r=>setTimeout(r,250))}
  const close=async(success)=>{child.kill('SIGTERM');await Promise.race([new Promise(r=>child.exitCode!==null?r():child.once('exit',r)),new Promise(r=>setTimeout(r,3000))]);if(child.exitCode===null)child.kill('SIGKILL');await writeFile(join(directory,'runtime.log'),logs);if(success)await rm(directory,{recursive:true,force:true});else console.error('Native runtime failure artifacts retained:',directory)}
  if(!ready){await close(false);throw new Error('Emitted Worker did not start:\n'+logs)}

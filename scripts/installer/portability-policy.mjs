@@ -25,6 +25,8 @@ export const archivePolicy={
   'escalation_attachment_grants',
   'workflow_clock',
   'operator_notification_activity','operator_notifications',
+  // Receipts are live linkage capabilities. Preserve collection restrictions
+  // and explicit grants as business rows, but never restore receipt content.
   'knowledge_help_links','knowledge_help_sessions','knowledge_read_receipts',
   'portal_links','portal_session_proofs',
   'sessions','session_factors','webauthn_challenges','audit_purges','conversation_outbox','identity_tokens','magic_signins','registrations','login_attempts',

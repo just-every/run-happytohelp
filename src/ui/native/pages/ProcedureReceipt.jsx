@@ -29,7 +29,7 @@ export default function ProcedureReceipt({receipt,versionId,projectId}){
     {item.checks&&!item.checks.passed&&failures.length>0&&<ul>{failures.map(message=><li key={message}>{message}</li>)}</ul>}
     {setup?<ProviderSetupNotice projectId={projectId} error={item.error}/>:item.error&&!notRun&&<p>The simulation stopped without a confirmed result. Review the provider connection and simulation budget before starting another run.</p>}
     {item.status==='uncertain'&&<p>This attempt will not be replayed automatically. Inspect its error and any retained output before starting another run.</p>}
-    {item.artifact?.response&&<p>{item.artifact.response}</p>}
+    {item.artifact?.response&&<p>Reply: {item.artifact.response}</p>}
     {sandbox.length?sandbox.map((read,index)=><p key={index}>{toolLabels[read.tool]||'Sandbox read'}: {read.status==='ok'?'completed':read.status==='timeout'?'timed out':read.status==='denied'?'denied':'unavailable'}</p>):<p>No sandbox read</p>}
    </article>;
   })}

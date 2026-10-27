@@ -10500,7 +10500,7 @@
       "executable": false
     },
     "src/ui/native/pages/workflows/workflows.css": {
-      "sha256": "34d227e6c9f887fe1fda74338719cab4e7edffc9d01a886e47e37fd30e0737e6",
+      "sha256": "5436e26aee347b3785808dcc0810e7047c4a9bbba1349b15e393074da537966d",
       "executable": false
     },
     "src/ui/native/pages/workflows/WorkflowSettings.jsx": {

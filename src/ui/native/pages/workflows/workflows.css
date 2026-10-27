@@ -8,3 +8,4 @@
 
 @media(max-width:600px){.workflow-settings .sla-policy-settings :is(button,select,input:not([type=checkbox])){min-height:44px}}
 @media(max-width:600px){.workflow-settings .sla-policy-settings .workflow-checks>.form-check{min-height:44px;display:flex;align-items:center;gap:8px}.workflow-settings .sla-policy-settings .form-switch .form-check-label{min-height:44px;min-width:44px;display:inline-flex;align-items:center}.workflow-settings .sla-policy-settings .form-switch .form-check-input{margin-top:14px}}
+@media(max-width:600px){.workflow-settings .workflow-explanation{grid-template-columns:minmax(0,1fr);overflow-wrap:anywhere}}

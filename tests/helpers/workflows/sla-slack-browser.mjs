@@ -55,6 +55,8 @@ export async function slaSlackBrowser({page,runtime,fixture,policy}){
   await capture(`sla-slack-${state}`)
   if(state==='uncertain'){
    await panel.locator('.workflow-alert-list li').filter({hasText:'Slack: Uncertain'}).getByRole('button',{name:'Acknowledge alert',exact:true}).click()
+   await panel.getByText(/Acknowledged/).first().waitFor({state:'attached'})
+   await panel.locator('details:not([open]) > summary').filter({hasText:'SLA alerts'}).click()
    await panel.getByText(/Acknowledged/).first().waitFor()
    assert.equal((await api(`${base}/conversations/${row.id}/sla`)).data.alerts.find(a=>a.id===row.alert.id).state,'acknowledged')
    await capture('sla-slack-acknowledged')

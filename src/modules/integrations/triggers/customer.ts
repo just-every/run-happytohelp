@@ -1,3 +1,4 @@
+import {customerReplyScope} from '../../knowledge/delivery'
 import {notificationTemplateContext} from './context'
 import type {Env} from '../../../platform/env'
 import {emailConfigured,sendEmails,type EmailInput} from '../email'
@@ -36,7 +37,7 @@ export async function customerTicketNotification(env:Env,event:TicketNotificatio
  let inputs:EmailInput[]
  try{
   const subject=renderNotificationTemplate(trigger.subject,context),text=renderNotificationTemplate(trigger.body,context)
-  inputs=await Promise.all(recipients.map(async(recipient,index)=>({projectId:event.projectId,to:recipient.email,subject,text,headers:loopSuppressionHeaders({}),replyTo:settings?.inbound_address?await recipientReplyAddress(env,settings.inbound_address,event.projectId,ticket.id,recipient.email):undefined,idempotencyKey:index===0?id:`${id}:contact:${recipient.id}`})))
+  inputs=await Promise.all(recipients.map(async(recipient,index)=>({[customerReplyScope]:{projectId:event.projectId,conversationId:ticket.id},projectId:event.projectId,to:recipient.email,subject,text,headers:loopSuppressionHeaders({}),replyTo:settings?.inbound_address?await recipientReplyAddress(env,settings.inbound_address,event.projectId,ticket.id,recipient.email):undefined,idempotencyKey:index===0?id:`${id}:contact:${recipient.id}`})))
  }catch(error){
   const message=error instanceof Error?error.message:'Invalid notification template'
   await env.DB.prepare("INSERT OR IGNORE INTO notification_trigger_claims(id,project_id,conversation_id,event,state,outcome_json,created_at) VALUES(?,?,?,?,'template_error',?,?)").bind(id,event.projectId,ticket.id,claimEvent,JSON.stringify({error:message}),Date.now()).run()

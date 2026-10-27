@@ -1,3 +1,6 @@
+import {rememberReplySources} from './delivery'
+import {accessForKnowledgeConversation} from './access'
+import {entitlementRoutes} from './entitlements'
 import {memberAccess} from '../access/gate'
 import {HTTPException} from 'hono/http-exception'
 import {helpAuth} from './help-auth'
@@ -21,6 +24,7 @@ routes.use('/public/:projectId/*',async(c,next)=>{const project=await c.env.DB.p
 routes.route('/',helpAuth)
 routes.route('/',publicKnowledgeRoutes)
 routes.route('/',experienceRoutes)
+routes.route('/',entitlementRoutes)
 routes.route('/',analyticsRoutes)
 routes.route('/',authoring)
 routes.use('/:projectId/*',async(c,next)=>{await requireProject(c,c.req.param('projectId'),true);await next()})
@@ -36,8 +40,16 @@ routes.post('/:projectId/datasets',async c=>{
 })
 routes.post('/:projectId/datasets/:datasetId/refresh',async c=>{try{return c.json(await refreshDataset(c.env,c.req.param('projectId'),c.req.param('datasetId'),await c.req.json()),202)}catch(e){return c.json({error:String(e)},409)}})
 routes.delete('/:projectId/datasets/:datasetId',async c=>{const dataset=await c.env.DB.prepare('SELECT * FROM knowledge_datasets WHERE id=? AND project_id=?').bind(c.req.param('datasetId'),c.req.param('projectId')).first<any>();if(!dataset)return c.json({error:'Not found'},404);if(dataset.claim_token)return c.json({error:'Refresh active'},409);await c.env.DB.prepare("UPDATE knowledge_datasets SET published_version=NULL,status='deleting' WHERE id=? AND project_id=?").bind(dataset.id,c.req.param('projectId')).run();const versions=await c.env.DB.prepare('SELECT id,semantic FROM knowledge_versions WHERE dataset_id=?').bind(dataset.id).all<any>();for(const v of versions.results){if(v.semantic)await deleteSemantic(c.env,v.id);await c.env.FILES.delete(`knowledge/corpus/${v.id}.json`);await c.env.FILES.delete(`knowledge/jobs/${v.id}.json`);await c.env.FILES.delete(`knowledge/sources/${v.id}.json`);await c.env.FILES.delete(`knowledge/crawl/${v.id}.json`);let cursor:string|undefined;do{const page=await c.env.FILES.list({prefix:`knowledge/pages/${v.id}/`,cursor});if(page.objects.length)await c.env.FILES.delete(page.objects.map(o=>o.key));cursor=page.truncated?page.cursor:undefined}while(cursor)}await c.env.DB.prepare('DELETE FROM knowledge_datasets WHERE id=? AND project_id=?').bind(dataset.id,c.req.param('projectId')).run();return c.json({deleted:true})})
-routes.get('/:projectId/search',async c=>{const mode=c.req.query('mode')||'lexical';if(!['lexical','semantic'].includes(mode))return c.json({error:'Invalid search mode'},400);try{return c.json({mode,citations:await searchKnowledge({...c.env,APP_ORIGIN:c.env.APP_ORIGIN||new URL(c.req.url).origin},c.req.param('projectId'),requiredString(c.req.query('q'),'query',2000),mode as 'lexical'|'semantic')})}catch(e){return c.json({error:String(e)},503)}})
-routes.get('/:projectId/categories',async c=>c.json((await c.env.DB.prepare('SELECT *,name title,parent_id parentId FROM knowledge_categories WHERE project_id=?').bind(c.req.param('projectId')).all<any>()).results.map(row=>({...row,allowedDomains:JSON.parse(row.allowed_domains)}))))
+routes.get('/:projectId/search',async c=>{
+ const mode=c.req.query('mode')||'lexical';if(!['lexical','semantic'].includes(mode))return c.json({error:'Invalid search mode'},400)
+ try{
+  const projectId=c.req.param('projectId'),conversationId=c.req.query('conversationId')
+  const citations=await searchKnowledge({...c.env,APP_ORIGIN:c.env.APP_ORIGIN||new URL(c.req.url).origin},projectId,requiredString(c.req.query('q'),'query',2000),mode as 'lexical'|'semantic',conversationId?await accessForKnowledgeConversation(c.env,projectId,conversationId):undefined)
+  if(conversationId)await rememberReplySources(c.env,projectId,conversationId,citations)
+  return c.json({mode,citations})
+ }catch(e){if(e instanceof HTTPException)throw e;return c.json({error:String(e)},503)}
+})
+routes.get('/:projectId/categories',async c=>c.json((await c.env.DB.prepare('SELECT k.*,k.name title,k.parent_id parentId,(SELECT count(*) FROM knowledge_collection_entitlements g WHERE g.project_id=k.project_id AND g.category_id=k.id) entitlement_count FROM knowledge_categories k WHERE k.project_id=?').bind(c.req.param('projectId')).all<any>()).results.map(row=>({...row,allowedDomains:JSON.parse(row.allowed_domains)}))))
 routes.post('/:projectId/categories',async c=>c.json(await writeCategory(c.env,c.req.param('projectId'),id(),await c.req.json(),await knowledgeEditorGuard(c),true),201))
 routes.get('/:projectId/articles',async c=>{
  const projectId=c.req.param('projectId')

@@ -1,3 +1,4 @@
+import {customerReplyScope} from '../knowledge/delivery'
 import {createElement} from 'react'
 import {renderToStaticMarkup} from 'react-dom/server.edge'
 import Markdown from 'h2h-widget-markdown'
@@ -118,5 +119,5 @@ async function renderConversation(env:Env,input:RenderInput,loadMetadata:(messag
   text.push([name,content,...files].filter(Boolean).join('\n'))
   html.push(`<section><p><strong>${escape(name)}</strong></p>${body.join('')}</section>`)
  }
- return {text:text.join('\n\n'),html:`<div>${html.join('<hr />')}</div>`,attachments,omitted}
+ return {[customerReplyScope]:{projectId:input.projectId,conversationId:input.conversationId},text:text.join('\n\n'),html:`<div>${html.join('<hr />')}</div>`,attachments,omitted}
 }

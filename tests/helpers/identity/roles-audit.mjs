@@ -59,6 +59,23 @@ export async function rolesAuditJourney(){
   const approved=await decide(browser,await consentPage(browser,consent,w.tokens.operator),'approve',w.tokens.operator);assert.equal(approved.status,303)
   const exchanged=await app.request('/api/delegation/v1/token',{method:'POST',raw:true,headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',client_id:'slate',redirect_uri:register.redirect_uri,code:new URL(approved.headers.get('location')).searchParams.get('code'),code_verifier:verifier}).toString()})
   const grant=(await exchanged.json()).access_token,delegated=(path,body)=>app.request('/api/delegation/v1'+path,{token:grant,method:body?'POST':'GET',raw:true,headers:body?{'Content-Type':'application/json'}:{},body:body&&JSON.stringify(body)})
+  const restrictedCategory=await call(`/api/knowledge/${w.projectId}/categories`,{title:'Partner evidence',audience:'signed-in'},w.tokens.owner);assert.equal(restrictedCategory.status,201)
+  const restrictedTarget=`projects/${w.projectId}/articles/art-other`
+  assert.equal((await call(`/api/knowledge/${w.projectId}/articles`,{id:'art-other',title:'Private',slug:'private',content:'Unselected internal article',status:'published',categoryIds:[restrictedCategory.data.id]},w.tokens.owner)).status,201)
+  const audiences=[]
+  for(const door of ['evidence','check','audience']){
+   const response=await delegated(`/${door}?target=${restrictedTarget}`);assert.equal(response.status,200)
+   const data=await response.json(),result=door==='audience'?data:data.audience;audiences.push({door,kind:result.kind,principalIds:result.principalIds})
+  }
+  console.log('Restricted connected evidence',JSON.stringify(audiences))
+  for(const observed of audiences){assert.equal(observed.kind,'source-principals',observed.door+' must not label a restricted publication public');assert.ok(!observed.principalIds.includes(collaborator.actor.id),'members without knowledge authority are omitted')}
+  const scopedRole=await call(`${P}/roles`,{name:'Evidence selection',base:'operator',permissions:['knowledge.read'],knowledgeArticleIds:['art-other']},w.tokens.owner);assert.equal(scopedRole.status,201)
+  assert.equal((await call(`${P}/agents/${collaborator.actor.id}`,{role:scopedRole.data.data.id},w.tokens.owner,'PUT')).status,200)
+  const scopedAudience=async()=>(await (await delegated(`/audience?target=${restrictedTarget}`)).json())
+  const beforeSelection=await scopedAudience();assert.ok(beforeSelection.principalIds.includes(collaborator.actor.id))
+  assert.equal((await call(`${P}/roles/${scopedRole.data.data.id}`,{name:'Evidence selection',base:'operator',permissions:['knowledge.read'],knowledgeArticleIds:[]},w.tokens.owner,'PUT')).status,200)
+  const afterSelection=await scopedAudience();assert.ok(!afterSelection.principalIds.includes(collaborator.actor.id));assert.notEqual(afterSelection.audienceRevision,beforeSelection.audienceRevision)
+  assert.equal((await call(`${P}/agents/${collaborator.actor.id}`,{role:'collaborator'},w.tokens.owner,'PUT')).status,200)
   // Each edit names the audience it expects; one the grant may no longer read for is the one seen while it could.
   const audience=async status=>(await (await delegated('/audience?'+new URLSearchParams({target:article,operation:'happytohelp.article.update',intendedStatus:status}))).json()).audienceRevision
   const seen={draft:await audience('draft'),published:await audience('published')}
@@ -151,7 +168,7 @@ export async function rolesAuditJourney(){
   const internal=await call(`${K}/articles`,undefined,w.tokens.operator);assert.equal(internal.status,200);assert.deepEqual(internal.data.map(row=>row.id),['art-r']);assert.equal(internal.data[0].content,'Edited narrowed-draft')
   for(const path of [`${K}/articles/art-r/history`,`${K}/articles/art-r/translations/fr`])assert.equal((await call(path,undefined,w.tokens.operator)).status,200,path)
   for(const path of [`${K}/datasets`,`${K}/search?q=Returns`,`${K}/categories`,`${K}/experience`])assert.equal((await call(path,undefined,collaborator.token)).status,403,path)
-  assert.equal((await delegated('/evidence?target='+`projects/${w.projectId}/articles/art-other`)).status,403,'a granted target outside the current role selection is refused')
+  for(const door of ['evidence','check','audience'])assert.equal((await delegated(`/${door}?target=projects/${w.projectId}/articles/art-other`)).status,403,'current selection narrows every connected read door')
   assert.equal((await call(`${K}/articles/art-other/history`,undefined,w.tokens.operator)).status,403,'selection guards direct native reads too')
   assert.equal((await call(`${K}/articles?q=Unselected`,undefined,w.tokens.operator)).data.length,0,'search cannot recover omitted articles')
   for(const status of ['draft','published'])assert.equal((await edit('reader-'+status,status)).status,403,'read alone never edits or publishes')

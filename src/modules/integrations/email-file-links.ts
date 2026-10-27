@@ -1,3 +1,5 @@
+import {messageKnowledgeAvailable} from '../knowledge/delivery'
+import {resolveHelpAccess} from '../knowledge/access'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Env} from '../../platform/env'
@@ -23,15 +25,17 @@ export async function emailFileLink(env:Env,projectId:string,conversationId:stri
 
 export const emailFileLinks=new Hono<AppEnv>()
 emailFileLinks.get('/email/files/:mediaId/:signature',async c=>{
- const file=await c.env.DB.prepare(`SELECT a.id,a.project_id,a.conversation_id,a.object_key,a.filename,a.content_type FROM media a
+ const file=await c.env.DB.prepare(`SELECT a.id,a.project_id,a.conversation_id,a.message_id,a.object_key,a.filename,a.content_type FROM media a
   JOIN messages m ON m.id=a.message_id AND m.project_id=a.project_id AND m.conversation_id=a.conversation_id
   JOIN conversations c ON c.id=a.conversation_id AND c.project_id=a.project_id WHERE a.id=? AND ${contactAvailableSql()}`)
-  .bind(c.req.param('mediaId')).first<{id:string;project_id:string;conversation_id:string;object_key:string;filename:string;content_type:string}>()
+  .bind(c.req.param('mediaId')).first<{id:string;project_id:string;conversation_id:string;message_id:string;object_key:string;filename:string;content_type:string}>()
  const expected=file?await signature(c.env,file.project_id,file.conversation_id,file.id):null,supplied=c.req.param('signature')
  let difference=expected&&expected.length===supplied.length?0:1
  for(let index=0;expected&&index<expected.length;index++)difference|=expected.charCodeAt(index)^(supplied.charCodeAt(index)||0)
  if(!file||difference)throw new HTTPException(404)
+ const reader=await resolveHelpAccess(c.env,file.project_id,c.req.raw),readerId=reader?.contactId||''
+ if(!await messageKnowledgeAvailable(c.env,file.message_id,readerId))throw new HTTPException(404)
  const object=await c.env.FILES.get(file.object_key)
- if(!object)throw new HTTPException(404,{message:'File is unavailable'})
+ if(!object||!await messageKnowledgeAvailable(c.env,file.message_id,readerId))throw new HTTPException(404,{message:'File is unavailable'})
  return new Response(object.body,{headers:{...mediaResponseHeaders(file.content_type,file.filename),'Cache-Control':'private, no-store','Referrer-Policy':'no-referrer'}})
 })

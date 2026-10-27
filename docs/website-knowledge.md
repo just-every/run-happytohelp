@@ -81,3 +81,64 @@ Semantic search over website content additionally needs `QDRANT_URL`,
 `QDRANT_API_KEY`, `OPENAI_API_KEY` and `KNOWLEDGE_EMBEDDING_MODEL`; keyword
 search needs none of them. See the settings table in
 [Operations](../OPERATIONS.md).
+
+## Collection access and article requests
+
+Owners and admins can open a collection's **Named customer accounts** section,
+search verified workspace customers, add or remove accounts, then save. A
+collection requiring grants is labelled **Named accounts only**, with its account
+count. Removing the last account keeps the collection restricted. To make it
+public, explicitly choose **Anyone (public)** and clear the named-account
+requirement. Collection ancestry still applies. Company membership and matching
+email domains never create a named-account grant.
+
+An article offers **Contact support about this article** only when a published
+request form is available. The link carries an opaque receipt valid for 30
+minutes. A receipt counts at most one admitted ticket, with the original
+workspace, brand, article and read locale and the authorized reader identity
+when known. Anonymous possession proves linkage only. Restricted access is
+checked again at admission. Article analytics shows the total and per-article
+**Tickets from article request links**. Unlinked, expired, consent-denied and
+otherwise unobservable journeys remain unknown; this count is neither all
+post-read tickets nor deflection. Full consent, bounded retention and measurement
+coverage remain required gaps.
+
+Unreleased migration `257_knowledge_entitlements.sql`, after migration 256, adds
+`knowledge_categories.requires_entitlement` (default 0) and the tables
+`knowledge_collection_entitlements` and `knowledge_read_receipts`. Existing
+collection fields remain unchanged. Portable backups retain explicit grants and
+provenance while excluding live receipts; the restore sanitizer removes receipts
+from older archives. Customer erasure removes their grants, receipts and linked
+events. Member erasure retains scoped pseudonymous grant provenance without
+making a collection public. Back up the installation and apply missing migrations
+once, in ledger order, before serving the updated Worker; never reset to upgrade.
+
+Unreleased migration `258_knowledge_reply_sources.sql`, after 257, adds
+`knowledge_reply_sources` for durable ticket composition provenance. Before article
+text or a link leaves a ticket search, preview or insertion door, the server records
+its source and publication version. The single `customerReplyAdmissionSql`
+predicate in `src/modules/knowledge/delivery.ts` is the authority boundary for
+native composer, widget, email, API, AI auto-send, replay, scheduled and saved
+replies, article links and attachments, proactive insights, away replies, transcript email and partner forwarding.
+Each writer evaluates it inside its admitting statement. Previews, drafts and
+AI output carry provenance, never authority. Current requester and participant
+identities (including pending email CCs) must each have a current explicit grant
+for every restricted collection and ancestor. Company ticket visibility and a
+matching email domain confer no knowledge grant. Restricted agent retrieval
+still refuses tickets with additional participants; independently entitled help
+access is preserved.
+
+The fence accumulates across edits and sends: clients cannot prove previously
+retrieved material was removed. A changed grant or publication refuses the send
+with a knowledge-access message. Removing an unauthorized participant restores
+send access when every remaining recipient is entitled. Revocation also withholds
+stored/replayed replies and attachment downloads; download admission is rechecked
+after reading storage. Email rendering carries source identity into the common mail
+sender, which checks the final To, CC and BCC addresses in its durable send claim
+immediately before provider submission. Held resends and additional asynchronous
+consent/rate preparation recheck current authority before submission. A signed attachment URL never grants
+restricted knowledge access: the reader must authenticate and remain entitled. Backups retain these identifier-only
+fences, independently of audit retention. Contact erasure removes its ticket
+fences. Non-public collections always require a current explicit named-account
+grant, including legacy rows with `requires_entitlement=0`; domain membership is
+only an additional constraint. No additional company entitlement is implemented.

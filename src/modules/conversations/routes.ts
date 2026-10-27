@@ -1,3 +1,4 @@
+import {messageKnowledgeSql} from '../knowledge/delivery'
 import {workflowNow,workflowEnvironment} from '../workflows/clock'
 import {widgetConversationState} from '../widget/conversation-state'
 import {trackingStatement,resolutionState,publishResolution} from '../outcomes/state'
@@ -30,7 +31,7 @@ routes.post('/',async c=>{const b=await c.req.json();const actor=await requirePr
 routes.get('/:id',async c=>{const {actor,conversation}=await access(c);return c.json(actor.role==='contact'?customerTicket(conversation):conversation)})
 // The original email body (content_raw) is operator-only transcript data; customer sessions never receive it.
 routes.get('/:id/messages',async c=>{const {actor,conversation}=await access(c);const [messages,media]=await c.env.DB.batch<any>([
- c.env.DB.prepare('SELECT * FROM messages WHERE conversation_id=? ORDER BY revision').bind(conversation.id),
+ c.env.DB.prepare(`SELECT m.* FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE m.conversation_id=? ${actor.role==='contact'?`AND ${messageKnowledgeSql('m','c')}`:''} ORDER BY m.revision`).bind(conversation.id),
  c.env.DB.prepare('SELECT id,message_id,filename,content_type,size FROM media WHERE conversation_id=? AND message_id IS NOT NULL').bind(conversation.id)
  ]);const byMessage=new Map<string,any[]>();for(const {message_id,...item} of media.results){const key=String(message_id);if(!byMessage.has(key))byMessage.set(key,[]);byMessage.get(key)!.push(item)}for(const message of messages.results){if(actor.role==='contact')delete message.content_raw;message.media=byMessage.get(String(message.id))||[]}
  // Inbound email carries its origin, so an automatic notice that earned no reply is visible as such.
@@ -66,7 +67,16 @@ routes.post('/:id/messages',async c=>{
 })
 // Visitor quotas are checked after the bounded body is read, so a 429 is delivered intact rather than as an unread-upload 413.
 routes.post('/:id/media',async c=>{const {actor,conversation}=await access(c);await assertWritableConversation(c.env,actor.projectId,conversation.id);const declared=Number(c.req.header('Content-Length'));if(declared>20000000)throw new HTTPException(413);const data=await c.req.arrayBuffer();if(!data.byteLength||data.byteLength>20000000)throw new HTTPException(413);if(actor.role==='contact')await enforceRateLimits(c.env,[['uploadsPerContactDay',actor.contactId!],['uploadBytesPerContactDay',actor.contactId!,data.byteLength],['uploadsPerProjectDay',actor.projectId],['uploadBytesPerProjectDay',actor.projectId,data.byteLength]]);const mediaId=id(),key=`${actor.projectId}/${conversation.id}/${mediaId}`,filename=c.req.header('X-Filename')||'attachment',contentType=c.req.header('Content-Type')||'application/octet-stream';await c.env.FILES.put(key,data,{httpMetadata:{contentType}});try{await c.env.DB.prepare('INSERT INTO media VALUES(?,?,?,?,?,?,?,?,NULL,?)').bind(mediaId,actor.projectId,conversation.id,actor.id,key,filename,contentType,data.byteLength,Date.now()).run()}catch(error){await c.env.FILES.delete(key);throw error}return c.json({id:mediaId,filename,contentType,size:data.byteLength},201)})
-routes.get('/:id/media/:mediaId',async c=>{const {actor,conversation}=await access(c);const row=await c.env.DB.prepare(`SELECT * FROM media WHERE id=? AND conversation_id=? AND ${macroAttachmentAvailableSql()} AND (?<>'contact' OR (message_id IS NOT NULL OR uploaded_by=?) AND NOT EXISTS(SELECT 1 FROM conversation_note_media nm WHERE nm.media_id=media.id))`).bind(c.req.param('mediaId'),conversation.id,actor.role,actor.id).first<{object_key:string;filename:string;content_type:string}>();if(!row)throw new HTTPException(404);const object=await c.env.FILES.get(row.object_key);if(!object)throw new HTTPException(404);return new Response(object.body,{headers:mediaResponseHeaders(row.content_type,row.filename)})})
+routes.get('/:id/media/:mediaId',async c=>{
+ const {actor,conversation}=await access(c)
+ const eligible=`id=? AND conversation_id=? AND ${macroAttachmentAvailableSql()} AND (?<>'contact' OR EXISTS(SELECT 1 FROM conversations c WHERE c.id=media.conversation_id AND c.project_id=media.project_id AND ${messageKnowledgeSql()})) AND (?<>'contact' OR (message_id IS NOT NULL OR uploaded_by=?) AND NOT EXISTS(SELECT 1 FROM conversation_note_media nm WHERE nm.media_id=media.id))`
+ const args=[c.req.param('mediaId'),conversation.id,actor.role,actor.role,actor.id]
+ const row=await c.env.DB.prepare(`SELECT * FROM media WHERE ${eligible}`).bind(...args).first<{object_key:string;filename:string;content_type:string}>()
+ if(!row)throw new HTTPException(404)
+ const object=await c.env.FILES.get(row.object_key)
+ if(!object||!await c.env.DB.prepare(`SELECT 1 FROM media WHERE ${eligible} AND object_key=?`).bind(...args,row.object_key).first())throw new HTTPException(404)
+ return new Response(object.body,{headers:{...mediaResponseHeaders(row.content_type,row.filename),'Cache-Control':'private, no-store'}})
+})
 routes.get('/:id/socket',async c=>{const token=c.req.query('token');const {actor,conversation}=await access(c);const origin=c.req.header('Origin');const project=await c.env.DB.prepare('SELECT allowed_origin FROM projects WHERE id=?').bind(actor.projectId).first<{allowed_origin:string}>();if(origin&&origin!==new URL(c.req.url).origin&&origin!==project?.allowed_origin)throw new HTTPException(403);const headers=new Headers(c.req.raw.headers);headers.delete('X-Project-Id');headers.set('X-Conversation-Id',conversation.id);headers.set('X-Session-Token',token||c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]||'');headers.set('X-Actor-Id',actor.id);return c.env.CONVERSATIONS.get(c.env.CONVERSATIONS.idFromName(conversation.id)).fetch(new Request(c.req.raw,{headers}))})
 
 return routes

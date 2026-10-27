@@ -1572,7 +1572,7 @@
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "85df74e792cc71f6e27611631152d65bb205c866b6b7559540464caa4b7906fd",
+      "sha256": "44294e763da713be8d625e9dadd0e73360d0178eba84fa185d8dce2c20851078",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -1588,7 +1588,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "ede6b03957da449ca1f2236b59390ef7f8d764c4c10baec0625a4ae2aaa7f56f",
+      "sha256": "688ded31a270bb98f86ec13d4072855e57ca25356bb3501a76429915d7a8cedb",
       "executable": false
     },
     ".gitignore": {
@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "698ced98a1a91e45e77d2ef88f637d0d4e95305af3a2950e9d56de80a6eaefff",
+      "sha256": "5800df8ada88267bcc544e1267f1d61625ac30080a4415b7249be4bff8c20e97",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8295f44531a4ebb26ab55ae30711ba06ef6f5ceed018f9390c81b47983110f01",
+      "sha256": "aec4b16e9d99d8b2695a0473b63e3191280ada997a7a480426ae07cf16ae4110",
       "executable": false
     },
     "DEMO.md": {
@@ -2992,7 +2992,7 @@
       "executable": false
     },
     "scripts/installer/followup-archive.mjs": {
-      "sha256": "c530a2314413506761ec688adf1025b2768796dbe67dbc07641201e34fa8f3d9",
+      "sha256": "25cb01dec2529ad66dab7e1ceae9a2836a0fae52d99434360a73d92b75ff5268",
       "executable": false
     },
     "scripts/installer/hosted-d1.mjs": {
@@ -3032,7 +3032,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "8ea3c9515020fa10bb8ffe9cb153b70a8aebfac26e6ebf28b833c37570d8480a",
+      "sha256": "b7d4234d10747b3e7e5d609701be571a764955eab9f627a9e099a0837c933551",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -8304,7 +8304,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/conversation/FollowupObligations.css": {
-      "sha256": "43ad7163d713b8d9c3ff4ccb2dde64e4561e2599819465e6c4a68eccf3add7ef",
+      "sha256": "dc5cbd76edc01c9a65d9122ac837d550efd2263bd7860d87fd6d76e4312d9daa",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/FollowupObligations.jsx": {
@@ -11128,7 +11128,7 @@
       "executable": false
     },
     "tests/helpers/ai/obligations-browser.mjs": {
-      "sha256": "84cf25e45d4366a301ee7bcf1c9828edeb8a5d580710e25738da8c925573765c",
+      "sha256": "6ea6054d9407fb89947d0a8942208a8583cb462c594739ae3e45a5482ca6d064",
       "executable": false
     },
     "tests/helpers/ai/obligations.mjs": {
@@ -11888,7 +11888,7 @@
       "executable": false
     },
     "tests/helpers/recovery/followup.mjs": {
-      "sha256": "3b575f35a5d5c218697fd518be9e63e7d046344bc23d6309f3dee84ad49d2c0c",
+      "sha256": "758ea882fb152df1dd1573791ec7b2dea5750193afc02cf353553095600a0d65",
       "executable": false
     },
     "tests/helpers/recovery/independent-journey.mjs": {

@@ -126,7 +126,7 @@ async function teamsSharing(h){
 }
 
 async function teamsUpgrade(){
- const app=await startApp({migrate:name=>name!=='257_teams_escalations.sql'});
+ const app=await startApp({migrate:name=>name!=='258_teams_escalations.sql'});
  try{
   const ws=await app.seedWorkspace('upgrade');
   await app.db.batch([
@@ -134,7 +134,7 @@ async function teamsUpgrade(){
    app.db.prepare("INSERT INTO escalation_issues VALUES('existing-issue',?,'existing','github','1','1','https://github.com/just-every/run-happytohelp/issues/1','open',NULL,0,1)").bind(ws.projectId)
   ]);
   const before=await app.sql('SELECT * FROM escalation_issues');
-  await applyMigrations(app.db,name=>name==='257_teams_escalations.sql');
+  await applyMigrations(app.db,name=>name==='258_teams_escalations.sql');
   assert.deepEqual(await app.sql('SELECT * FROM escalation_issues'),before,'populated provider references survive the additive migration');
   assert.equal((await app.first("SELECT token_cipher FROM escalation_connections WHERE id='existing'")).token_cipher,'synthetic-hh-6');
   assert.deepEqual(await app.sql('PRAGMA foreign_key_check'),[]);

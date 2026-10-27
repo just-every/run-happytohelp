@@ -372,3 +372,51 @@ oversized bodies or content with 413 `payload_too_large`.
 Exports carry the credential entity as metadata, without bearer hashes or
 secrets. Restore revokes every credential and every secret; imported requests
 remain inert and do not replay.
+
+
+## Read-only HubSpot context (native administration)
+
+The initial CRM connection is available through native authenticated administration
+routes. It is separate from machine API credentials. Only a workspace owner or
+admin with the relevant native permissions can use it. Customer sessions cannot
+read CRM records, and a mapping never grants customer access or changes native
+identity links, company membership, entitlements or plan authority.
+
+All paths below start with `/api/management/projects/{projectId}`; the dashboard
+mount offers the same operations. Keep the native session and provider token in
+private request configuration, never command arguments or logs.
+
+| Operation | Method and path | Input or result |
+| --- | --- | --- |
+| Inspect connection | `GET /crm/hubspot` | Account ID, connected flag and required scopes; no credential |
+| Connect or rotate | `PUT /crm/hubspot` | `token`, numeric `account_id`, optional `properties` mapping `plan` and `entitlement` to provider property names; recent native step-up required |
+| Map customer | `PUT /crm/hubspot/contacts/{contactId}` | Numeric `source_contact_id`; optional native `company_id` and numeric `source_company_id` together |
+| Inspect customer | `GET /crm/hubspot/contacts/{contactId}` | Source IDs, context, source update times, last successful refresh and last check |
+| Refresh customer | `POST /crm/hubspot/contacts/{contactId}/refresh` | Empty object; reads the explicitly mapped source again |
+| Inspect ticket | `GET /conversations/{conversationId}/crm` | Context for the ticket's native requester |
+| Refresh ticket | `POST /conversations/{conversationId}/crm/refresh` | Empty object; requester and authority rechecked at commit |
+| Unmap customer | `DELETE /crm/hubspot/contacts/{contactId}` | Removes mapping and cached context only |
+| Disconnect | `DELETE /crm/hubspot` | Recent native step-up; deletes the credential and every CRM mapping in this workspace |
+
+Use a HubSpot private app with exactly `crm.objects.contacts.read` and
+`crm.objects.companies.read`. Extra scopes, including write scopes, are refused.
+HappyToHelp checks the private app's account and scopes through HubSpot's token
+information endpoint before storing its encrypted credential and again on every
+refresh. No returned URL is fetched, redirects are refused, responses are bounded
+and requests are never automatically retried. Reads use the fixed HubSpot API
+origin. The token information request is a read-only POST; object requests are GET.
+
+Mapping is an explicit operator decision. Contact email must match at refresh and
+readback. A company mapping also needs existing native membership, a matching
+native domain and a source contact association with that company. Competing source
+mappings are refused with 409. Native identity or membership changes hide cached
+context until the mismatch is resolved. Context becomes `stale` after five minutes;
+`identity_mismatch`, `permission_lost`, `scope_refused` and `unavailable` refresh
+outcomes clear its cached content rather than present it as current. Connection
+rotation clears mappings so a changed account cannot inherit them. Disconnect
+returns `disconnected` without cached content. Customer erasure removes affected
+mappings and cached personal data. Archives clear CRM credentials and cached
+context on export and import; the receiving owner must explicitly reconnect.
+
+The settings screens and ticket panels, browser qualification, live provider
+qualification, other CRMs and approved CRM writes remain pending under CRM-001.

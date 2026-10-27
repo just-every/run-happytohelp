@@ -7,7 +7,11 @@ import {intercomRecords,zendeskRecords,recordPackages,ambiguousRecords} from './
 import {zip} from './zip.mjs';
 const root='/api/move-in/projects/p/imports',post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const upload=(body,name='record.json',actor='owner')=>({method:'POST',actor,headers:{'X-Import-Filename':name,'X-Import-Schema':'2.16'},body});
-for(const slot of ['contact','source','participant'])test(`${slot}: root JSON retains known aliases and correct decisions through ordinary native erasure and changed replay`,async()=>{
+
+import {step} from './steps.mjs';
+
+test("erasure: erasing a contact removes every import custody that holds them and refuses any later upload carrying their aliases, while other people's data stays",async()=>{
+for(const slot of ['contact','source','participant'])await step(`${slot}: root JSON retains known aliases and correct decisions through ordinary native erasure and changed replay`,async()=>{
  const h=await nativeHarness();try{
   await h.db.batch([h.db.prepare("INSERT INTO contacts(id,project_id,email,external_id,created_at) VALUES('erase','p','record-private@example.test','native-external',1)"),h.db.prepare("INSERT INTO contacts(id,project_id,email,name,created_at) VALUES('keeper','p','keep@example.test','Keep',2)")]);
   const keeper=await h.db.prepare("SELECT * FROM contacts WHERE id='keeper'").first(),runs=[];let toApply;
@@ -31,7 +35,10 @@ for(const slot of ['contact','source','participant'])test(`${slot}: root JSON re
   await unchanged(h,before,`record-${slot}-erased-replay`);assert.equal((await (await h.files).list()).objects.length,0);assert.equal(h.outbound,0);
  }finally{await h.close()}
 });
-test('ambiguous documents and mixed wrappers refuse every packaging before D1/R2 custody, with authority and inertness intact',async()=>{
+});
+
+test("refusals: refused uploads are located at their exact source place before any custody, queue, native write or outbound call",async()=>{
+await step('ambiguous documents and mixed wrappers refuse every packaging before D1/R2 custody, with authority and inertness intact',async()=>{
  const h=await nativeHarness();try{const before=await h.snapshot();
   for(const [record,code,pointer] of ambiguousRecords())for(const [name,body,prefix] of recordPackages(record).slice(0,4)){
    const result=await h.raw(`${root}?vendor=intercom`,upload(body,name));assert.equal(result.response.status,422);assert.deepEqual(result.data.diagnostic,{code,location:{artifact:name,row:2,pointer:prefix+pointer}});assert.equal(h.lastWrites,0);assert.equal(h.queued.length,0);assert.equal((await (await h.files).list()).objects.length,0);
@@ -42,7 +49,10 @@ test('ambiguous documents and mixed wrappers refuse every packaging before D1/R2
   await unchanged(h,before,'record-document-refusals');assert.equal((await (await h.files).list()).objects.length,0);assert.equal(h.outbound,0);
  }finally{await h.close()}
 });
-test('separate typed JSON documents with collection siblings map all four kinds and derived tags exactly in native Worker',async()=>{
+});
+
+test("landing: an approved import lands each vendor's history, people, replies, notes, tags and knowledge exactly, keeps notes private, and repeats or repackages as a no-op",async()=>{
+await step('separate typed JSON documents with collection siblings map all four kinds and derived tags exactly in native Worker',async()=>{
  const h=await nativeHarness();try{
   const body=zip(Object.entries(intercomRecords()).map(([kind,record])=>({name:kind+'.json',body:JSON.stringify({...record,data:[]})}))),run=(await h.call(`${root}?vendor=intercom`,upload(body,'typed-roots.zip'))).data;await h.drain();const ready=(await h.call(`${root}/${run.id}`)).data;
   assert.equal(ready.plan.counts.unique,5);assert.equal(ready.plan.counts.rejected,0);assert.equal(ready.plan.counts.effects,5);assert.deepEqual(ready.plan.decisions.map(row=>row.kind).sort(),['article','contact','conversation','macro','tag-name']);
@@ -50,4 +60,5 @@ test('separate typed JSON documents with collection siblings map all four kinds 
   assert.deepEqual((await h.db.prepare('SELECT name,email,created_at FROM contacts').all()).results,[{name:'Mara',email:'person31@example.test',created_at:1704067200000}]);assert.deepEqual((await h.db.prepare('SELECT content,actor_role FROM messages').all()).results,[{content:'Opening message',actor_role:'operator'}]);assert.deepEqual((await h.db.prepare('SELECT content FROM move_in_notes').all()).results,[{content:'Private note'}]);assert.deepEqual((await h.db.prepare('SELECT title,content FROM macros').all()).results,[{title:'Greeting',content:'Hello Mara'}]);assert.deepEqual((await h.db.prepare('SELECT title,status FROM knowledge_articles').all()).results,[{title:'Guide',status:'draft'}]);assert.deepEqual((await h.db.prepare('SELECT name FROM workspace_tags').all()).results,[{name:'Returns'}]);
   const before=await h.snapshot(),repeat=await h.call(`${root}?vendor=intercom`,upload(body,'typed-roots.zip'));assert.equal(repeat.alreadyImported,true);assert.equal(h.lastWrites,0);await unchanged(h,before,'record-native-repeat');assert.equal(h.outbound,0);
  }finally{await h.close()}
+});
 });

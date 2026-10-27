@@ -1,6 +1,10 @@
 /** Fixed provider origin, bounded bodies, no redirects and no automatic retries. */
 export class HubSpotError extends Error {
- constructor(public state='unavailable'){super('HubSpot context is '+state)}
+ state:string
+ constructor(state='unavailable'){
+  super('HubSpot context is '+state)
+  this.state=state
+ }
 }
 export async function request(token:string,path:string,introspect=false):Promise<any>{
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000)

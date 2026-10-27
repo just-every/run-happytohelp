@@ -762,6 +762,12 @@
       "name": "256_inbound_lookup_indexes.sql",
       "sha256": "3c9b045f40e04ae9e632182d8e1a6168bedbf30961daec0c217b0fe89a33fb8c",
       "sql": "-- Bound native ticket admission, authenticated mailbox proof and API hold lookup.\n-- Indexes only: no stored row changes. Apply before the updated Worker serves traffic.\nCREATE INDEX inbound_emails_conversation ON inbound_emails(project_id,conversation_id,automatic,local_id);\nCREATE INDEX inbound_emails_message ON inbound_emails(project_id,message_id);\nCREATE INDEX api_requests_hold ON api_requests(project_id,held_id);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "257_hubspot_context.sql",
+      "sha256": "3f033ca7f7db8d7579e9876a75078e1f1b19efb589c8dcf4006fc683049d275d",
+      "sql": "-- Read-only CRM context never changes native customer identity or authority.\nCREATE TABLE crm_connections (\n project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,\n account_id TEXT NOT NULL,\n token_cipher TEXT,\n properties_json TEXT NOT NULL,\n revision TEXT NOT NULL,\n updated_at INTEGER NOT NULL\n);\nCREATE TABLE crm_mappings (\n project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,\n contact_id TEXT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,\n source_contact_id TEXT NOT NULL,\n company_id TEXT,\n source_company_id TEXT,\n revision TEXT NOT NULL,\n state TEXT NOT NULL DEFAULT 'stale',\n context_json TEXT,\n refreshed_at INTEGER,\n checked_at INTEGER,\n PRIMARY KEY(project_id,contact_id),\n UNIQUE(project_id,source_contact_id),\n CHECK ((company_id IS NULL) = (source_company_id IS NULL))\n);\nCREATE TABLE crm_changes (\n id TEXT PRIMARY KEY,\n project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,\n at INTEGER NOT NULL\n);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

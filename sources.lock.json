@@ -1588,7 +1588,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "688ded31a270bb98f86ec13d4072855e57ca25356bb3501a76429915d7a8cedb",
+      "sha256": "ede6b03957da449ca1f2236b59390ef7f8d764c4c10baec0625a4ae2aaa7f56f",
       "executable": false
     },
     ".gitignore": {
@@ -3512,7 +3512,7 @@
       "executable": false
     },
     "src/jobs.ts": {
-      "sha256": "a8ca5b9e3551ab13682352dd108a2af945687597721920942b06188d802ba6a7",
+      "sha256": "ed27b62d017df0506cad4f4e5da446ca95438168dc14885cd46093e780a29d4a",
       "executable": false
     },
     "src/message-effects.ts": {
@@ -7912,7 +7912,7 @@
       "executable": false
     },
     "src/platform/scheduled.ts": {
-      "sha256": "282861d88cb832b6a738e6ef4650f1ada797942098bae492d91bb59f01255609",
+      "sha256": "ac8793a1dcb6db372debb9724b88c5df3d971ccfbf03f9b92530536478355a9f",
       "executable": false
     },
     "src/platform/security-headers.ts": {

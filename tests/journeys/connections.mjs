@@ -8,3 +8,6 @@ import {sharingJourney,updatesJourney,custodyJourney} from '../helpers/escalatio
 test('engineering context is chosen per message and attachment across GitHub, Linear, Jira and Slack, with reciprocal many-to-many links and uncertain outcomes never replayed',sharingJourney)
 test('signed engineering updates are monotonic and idempotent, wake owners and draft editable customer updates that require approval while recovery stays unconfirmed',updatesJourney)
 test('engineering escalation permissions and contact erasure preserve other customers and expose external deletion work',custodyJourney)
+
+import {hubspotContextJourney} from '../helpers/hubspot-context.mjs'
+test('read-only HubSpot context uses explicit customer mappings, refreshes changed source fields and refuses stale authority, identity conflicts and unavailable grants without customer access',hubspotContextJourney)

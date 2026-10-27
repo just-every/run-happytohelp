@@ -9,29 +9,25 @@ import {contactAvailableSql} from '../conversations/contact-privacy'
 import {auditStatement,requestSource} from '../audit/record'
 
 const path='/projects/:projectId/conversations/:conversationId/obligations'
+const reviewAuthority=`EXISTS(SELECT 1 FROM sessions s JOIN memberships m ON m.project_id=? AND m.user_id=s.actor_id LEFT JOIN member_roles mr ON mr.project_id=m.project_id AND mr.user_id=m.user_id LEFT JOIN project_roles pr ON pr.project_id=m.project_id AND pr.id=mr.role_key WHERE s.token_hash=? AND s.actor_id=? AND s.revoked_at IS NULL AND s.expires_at>? AND (m.role='owner' OR (mr.role_key IS NULL AND m.role IN ('admin','operator')) OR (pr.base IN ('admin','operator') AND EXISTS(SELECT 1 FROM json_each(pr.permissions_json) WHERE value='conversations.manage'))))`
 const live=`${activeSourceProjectSql('c.project_id')} AND ${contactAvailableSql()}`
 async function terms(env:Env,pid:string,cid:string,b:any){
+ if(!b||typeof b!=='object'||Array.isArray(b)||(b.dependencyId!=null&&typeof b.dependencyId!=='string'))throw new HTTPException(400,{message:'Valid follow-up terms are required'})
  if(typeof b.ownerId!=='string'||!Number.isSafeInteger(b.dueAt)||b.dueAt<=Date.now()||b.dueAt>Date.now()+366*86400000)throw new HTTPException(400,{message:'An active owner and future due time within a year are required'})
  if(!await env.DB.prepare('SELECT 1 FROM memberships WHERE project_id=? AND user_id=?').bind(pid,b.ownerId).first())throw new HTTPException(400,{message:'Owner must belong to this workspace'})
  if(b.dependencyId&&!await env.DB.prepare('SELECT 1 FROM escalation_links WHERE project_id=? AND conversation_id=? AND issue_id=?').bind(pid,cid,b.dependencyId).first())throw new HTTPException(400,{message:'Dependency must be linked to this conversation'})
 }
-/** The model can propose only an exact quote in this conversation, never accept,
- * send or claim progress. Human acceptance confirms the meaning and due time. */
-export async function proposeObligation(env:Env,pid:string,cid:string,b:any){
- if(b.ownerId==='human'){
-  const user=await env.DB.prepare("SELECT user_id FROM memberships WHERE project_id=? ORDER BY CASE role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END,user_id LIMIT 1").bind(pid).first<{user_id:string}>()
-  if(!user)throw new HTTPException(409,{message:'No responsible teammate is available'})
-  b={...b,ownerId:user.user_id}
- }
+/** A proposal preserves an exact source quote; only a human can accept it. */
+async function proposeObligation(env:Env,pid:string,cid:string,b:any,reviewer:{id:string;sessionHash:string}){
  await terms(env,pid,cid,b)
- if(typeof b.quote!=='string'||!b.quote.trim()||b.quote.length>2000||typeof b.stopCondition!=='string'||!b.stopCondition.trim()||b.stopCondition.length>500)throw new HTTPException(400,{message:'An exact message quote and stop condition are required'})
+ if(typeof b.messageId!=='string'||typeof b.quote!=='string'||!b.quote.trim()||b.quote.length>2000||typeof b.stopCondition!=='string'||!b.stopCondition.trim()||b.stopCondition.length>500)throw new HTTPException(400,{message:'An exact message quote and stop condition are required'})
  const source=await env.DB.prepare(`SELECT m.content FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE m.id=? AND c.id=? AND c.project_id=? AND m.actor_role IN ('contact','operator','admin','owner','ai') AND ${live}`).bind(b.messageId,cid,pid).first<{content:string}>()
  const index=source?.content.indexOf(b.quote)??-1
  if(index<0)throw new HTTPException(400,{message:'Quote is not present in this conversation message'})
  const start=Array.from(source!.content.slice(0,index)).length,end=start+Array.from(b.quote).length
  const id=crypto.randomUUID(),now=Date.now()
- const result=await env.DB.prepare(`INSERT INTO followup_obligations(id,project_id,conversation_id,message_id,quote_start,quote_end,owner_id,due_at,stop_condition,dependency_id,created_at,updated_at) SELECT ?,c.project_id,c.id,?,?,?,?,?,?,?,?,? FROM conversations c WHERE c.id=? AND c.project_id=? AND ${live} AND EXISTS(SELECT 1 FROM messages WHERE id=? AND conversation_id=c.id AND content=?) AND EXISTS(SELECT 1 FROM memberships WHERE project_id=c.project_id AND user_id=?) AND NOT EXISTS(SELECT 1 FROM followup_obligations WHERE project_id=c.project_id AND conversation_id=c.id AND message_id=? AND quote_start=? AND quote_end=?)`).bind(id,b.messageId,start,end,b.ownerId,b.dueAt,b.stopCondition,b.dependencyId||null,now,now,cid,pid,b.messageId,source!.content,b.ownerId,b.messageId,start,end).run()
- if(!result.meta.changes){const prior=await env.DB.prepare('SELECT id,state FROM followup_obligations WHERE project_id=? AND conversation_id=? AND message_id=? AND quote_start=? AND quote_end=?').bind(pid,cid,b.messageId,start,end).first<{id:string;state:string}>();if(prior)return {...prior,duplicate:true,requiresHumanAcceptance:prior.state==='proposed'};throw new HTTPException(409,{message:'Source or authority changed'})}
+ const result=await env.DB.prepare(`INSERT INTO followup_obligations(id,project_id,conversation_id,message_id,quote_start,quote_end,owner_id,due_at,stop_condition,dependency_id,created_at,updated_at) SELECT ?,c.project_id,c.id,?,?,?,?,?,?,?,?,? FROM conversations c WHERE c.id=? AND c.project_id=? AND ${live} AND EXISTS(SELECT 1 FROM messages WHERE id=? AND conversation_id=c.id AND content=?) AND EXISTS(SELECT 1 FROM memberships WHERE project_id=c.project_id AND user_id=?) AND NOT EXISTS(SELECT 1 FROM followup_obligations WHERE project_id=c.project_id AND conversation_id=c.id AND message_id=? AND quote_start=? AND quote_end=?) AND ${reviewAuthority}`).bind(id,b.messageId,start,end,b.ownerId,b.dueAt,b.stopCondition,b.dependencyId||null,now,now,cid,pid,b.messageId,source!.content,b.ownerId,b.messageId,start,end,pid,reviewer.sessionHash,reviewer.id,now).run()
+ if(!result.meta.changes){if(!await env.DB.prepare(`SELECT 1 WHERE ${reviewAuthority}`).bind(pid,reviewer.sessionHash,reviewer.id,now).first())throw new HTTPException(409,{message:'Current authority changed'});const prior=await env.DB.prepare('SELECT id,state FROM followup_obligations WHERE project_id=? AND conversation_id=? AND message_id=? AND quote_start=? AND quote_end=?').bind(pid,cid,b.messageId,start,end).first<{id:string;state:string}>();if(prior)return {...prior,duplicate:true,requiresHumanAcceptance:prior.state==='proposed'};throw new HTTPException(409,{message:'Source or authority changed'})}
  return {id,state:'proposed',requiresHumanAcceptance:true}
 }
 const evidenceSql=`SELECT o.*,substr(m.content,o.quote_start+1,o.quote_end-o.quote_start) quote,
@@ -67,7 +63,7 @@ obligationRoutes.get(path,async c=>{
  ])
  return c.json({obligations,sources:sources.results,owners:owners.results,dependencies:dependencies.results})
 })
-obligationRoutes.post(path,async c=>c.json(await proposeObligation(c.env,c.req.param('projectId')!,c.req.param('conversationId')!,await c.req.json()),201))
+obligationRoutes.post(path,async c=>c.json(await proposeObligation(c.env,c.req.param('projectId')!,c.req.param('conversationId')!,await c.req.json(),{id:c.get('actor').id,sessionHash:c.get('sessionHash')}),201))
 obligationRoutes.post(path+'/:id/accept',async c=>{
  const pid=c.req.param('projectId')!,cid=c.req.param('conversationId')!,id=c.req.param('id')!,b=await c.req.json(),actor=c.get('actor'),now=Date.now()
  await terms(c.env,pid,cid,b)

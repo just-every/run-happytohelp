@@ -1,3 +1,8 @@
+// Free-text stop conditions can contain personal data. Portable copies keep
+// custody and accepted terms, but never retain a second copy of this text.
+export function followupArchiveRow(table,row) {
+ return table==='followup_obligations'?{...row,stop_condition:''}:row;
+}
 // Obligations retain their cited source and human acceptance history. They do
 // not carry a send grant; a restored internal reminder still requires membership.
 export async function followupArchiveSafety({db,tables}) {

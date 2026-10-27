@@ -6,3 +6,7 @@
 .followup-obligations blockquote { margin: 10px 0; font-weight: 600; }
 .followup-obligations summary { cursor: pointer; margin: 12px 0; }
 .followup-obligations button { white-space: normal; }
+.followup-obligations :is(button, input, select, textarea, summary) { min-width: 44px; min-height: 44px; box-sizing: border-box; }
+.followup-obligations summary { padding: 11px 0; }
+.followup-obligations :is(button, input, select, textarea, summary):focus-visible { outline: 3px solid #175d70; outline-offset: 2px; }
+body.conversation-workspace #chat .followup-obligations button.btn { min-width: 44px; min-height: 44px; }

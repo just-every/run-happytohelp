@@ -2612,7 +2612,7 @@
       "executable": false
     },
     "public/site-assets/help_center/request-forms.css": {
-      "sha256": "4726c466e0f87e87cdc1e37523666943db4fb1c34f26a51737759cc800755355",
+      "sha256": "f94c6d6a99bb0cfd5abb3c2c1a4ab0dac542cab00a7e8937ddbcb9a83b5700da",
       "executable": false
     },
     "public/site-assets/help_center/request-forms.js": {
@@ -8684,7 +8684,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/tickets/tickets.css": {
-      "sha256": "b9d92bf8d618c20f93c2eaaaf75743bf36376f2a8d7ed835a0b7fbeda5b3da7d",
+      "sha256": "e0827abb03caea0d5aa4c09d80a5ae992dc9524b13f0d23f1ba4a726fa137c81",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/TicketViewRules.jsx": {
@@ -11092,7 +11092,7 @@
       "executable": false
     },
     "tests/helpers/account-lookup-browser.mjs": {
-      "sha256": "c8d3944333bd2a78fab302f33466e5ecc47372a01af90f00663650f015988870",
+      "sha256": "02c8cb07190625f20744183fce5d53a044870d61236bd95230c475582578f376",
       "executable": false
     },
     "tests/helpers/account-lookup-journey.mjs": {

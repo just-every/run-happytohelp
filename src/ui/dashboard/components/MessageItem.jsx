@@ -1,5 +1,6 @@
 import React from 'react';
 import MessageCitations from '../../native/MessageCitations';
+import KnowledgeReferences from '../../native/knowledge-references/KnowledgeReferences';
 import PropTypes from 'prop-types';
 import Media from "./Media";
 import ReactMarkdown from "react-markdown";
@@ -39,6 +40,7 @@ function MessageItem({ message, conversation, showActor = true, grouped = false,
                 <summary>Original email</summary>
                 <pre className="mt-2 mb-1">{message.content_raw}</pre>
             </details> }
+            <KnowledgeReferences references={message.knowledgeReferences || []} showPreview={false}/>
             <MessageCitations message={message} />
             <MessageMailStatus status={message.email_status} />
             { message.media && message.media.map(media => (

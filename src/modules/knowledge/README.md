@@ -65,12 +65,21 @@ need a streaming source reader to stay within Worker memory; there is no claim
 that arbitrarily large exports fit one Worker invocation. Article import formats
 and provider availability remain subject to configured-provider acceptance.
 
-AI retrieval includes current published native articles and the last published
-version of each dataset. IDs are `article:<id>` and `knowledge:<id>`; continuations
-require the sourceVersion issued by search. Native publication identities change
-on title/content/slug/status changes, including unpublish/republish, independently
-of timestamps. `isArticleEligibleForAI` is the shared published/active-project
-check for retrieval and the owner's AI-use checklist. Native links use APP_ORIGIN
-and `/help/<projectId>/<slug>`; API requests capture the app origin for queued
-local work when no canonical origin is configured. Private `h2h:` dataset content
-can inform an answer but cannot become a public citation.
+AI retrieval uses `door.ts` for the required reader set: the operator and every
+current ticket recipient must pass the current tenant, publication, lineage,
+brand and account/company rules. Dataset documents remain visible while their
+published dataset contains that URL. IDs are `article:<id>` and `knowledge:<id>`;
+continuations pin the sourceVersion issued by search. Publication snapshots fix
+which text a reference renders; edits and refreshes do not withdraw old replies.
+Unpublication, revocation, lineage moves and deletion do.
+
+`reference-store.ts` owns opaque references and rendering. `canonicaliser.ts`
+recognizes copied normalized word runs, including previous publications and
+translations. `write-boundary.ts` protects bound D1 text writes, while admission
+and mail claims embed the same current visibility predicate. Model transcript
+references render as titles and links; bodies enter through recorded knowledge
+tools. Native links use APP_ORIGIN and `/help/<projectId>/<slug>`.
+
+The round remains partial. The current evidence and limitations, including cached
+desktop provider history outside the server write scope, are recorded in
+[website knowledge](../../../docs/website-knowledge.md).

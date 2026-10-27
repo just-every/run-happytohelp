@@ -14,6 +14,7 @@ import {m9Migrations} from '../helpers/recovery/m9-inventory.mjs';
 import {createHash} from 'node:crypto';
 import {seedCategoryUpgrade,assertCategoryUpgrade} from './upgrade-categories.mjs';
 import {knowledgeUpgradeDefaults,assertKnowledgeHistoryBackfill} from '../helpers/knowledge/upgrade.mjs';
+import {assertReferenceUpgrade} from '../helpers/knowledge/reference-upgrade.mjs';
 import {expectedSchema} from '../helpers/upgrade-schema-expectations.mjs';
 
 // A packaged install populated before the outcome, integration, mail and import stages upgrades in place; every prior row and file is kept.
@@ -214,6 +215,7 @@ try {
     }
     for(const table of Object.keys(final.rows).filter(name=>!Object.hasOwn(beforeAdditional.rows,name)&&!derived.has(name))){
       if(table==='knowledge_article_history'){assertKnowledgeHistoryBackfill(final.rows[table],beforeAdditional.rows.knowledge_articles);continue;}
+      if(assertReferenceUpgrade(table,final.rows[table],beforeAdditional.rows,final.rows,additionalStartedAt,additionalFinishedAt))continue;
       let expected=[];
       if(table==='ticket_statuses'){
         const statuses=[['new','New'],['open','Open'],['pending','Pending'],['on_hold','On-hold'],['solved','Solved'],['closed','Closed']];

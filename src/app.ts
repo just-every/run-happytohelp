@@ -1,3 +1,4 @@
+import {knowledgeHttpDoor} from './modules/knowledge/http-door'
 import {api as scopedApi} from './modules/api-integrations/routes'
 import {integrationSettings} from './modules/api-integrations/settings'
 import { notFoundResponse, rejectedResponse } from './base/rejected-response'
@@ -42,6 +43,9 @@ import {createOutboundTicketRoutes} from './modules/management/outbound-tickets'
 import {createEscalationRoutes} from './modules/escalations/routes'
 
 export const app = new Hono<AppEnv>()
+app.use('/api/identity/widget/profile',visitorProfileCredential)
+app.use('/api/*',knowledgeHttpDoor)
+app.use('/delegation/*',knowledgeHttpDoor)
 app.use('/api/*',async(c,next)=>{
  c.env=notificationRequestEnvironment(c.env)
  const origin=new URL(c.req.url);
@@ -51,7 +55,6 @@ app.use('/api/*',async(c,next)=>{
 })
 // The bearer-only API never enters native cookie/project CORS, including errors.
 app.route('/api/v1',scopedApi)
-app.use('/api/identity/widget/profile',visitorProfileCredential)
 app.use('/api/*',async(c,next)=>{if(c.req.path==='/api/v1'||c.req.path.startsWith('/api/v1/'))return next();return projectCors(c,next)})
 app.onError((error,c) => {
  if(error instanceof AiConfigurationError)return rejectedResponse(c.req.raw,c.json({error:error.message,code:error.code},error.status))

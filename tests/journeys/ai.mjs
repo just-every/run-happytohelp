@@ -9,7 +9,7 @@ import {requestLimits,projectCeilings,invalidLimits,aiCeilings,requestIds,usageS
 // The assistant on the real application: visitor messages and operator actions through their routes,
 // generations through the queue, and fixtures only at the model and mail providers.
 
-test('the visitor\'s assistant searches published knowledge and answers with exact citations, live and on replay; citations it was never issued, unpublished or changed sources admit nothing, and asking for a person hands over',answersJourney)
+test('the visitor\'s assistant searches published knowledge and answers with exact citations, live and on replay; unissued or withdrawn sources admit nothing and edits keep issued snapshots, and asking for a person hands over',answersJourney)
 
 test('each visitor turn is answered once and only if nothing it depends on changed; cancelled, interrupted or post-commit-failed attempts never replay the provider, and a missing key is visible without losing the message; triage labels gate confident intent routing, existing rules still route at admission when the model is down or unsure, and an operator\'s queue choice is kept',async()=>{await lifecycleJourney();await triageJourney()})
 

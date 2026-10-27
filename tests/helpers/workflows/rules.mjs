@@ -117,7 +117,7 @@ export async function timeAutomationFlow(f){
  await clock(nudgeAt)
  // Stop after the first action and its durable cursor commit, before the note or
  // notification. Dispose/recreate the Worker, losing all in-memory wakeups.
- const stopped=await app.call('/_test/scheduled',{body:{after:0},headers:{'x-test-fault':'db-interrupt','x-test-statement':'UPDATE workflow_runs SET cursor=max'}})
+ const stopped=await app.call('/_test/scheduled',{body:{after:0},headers:{'x-test-fault':'db-interrupt','x-test-statement':'UPDATE workflow_runs SET cursor='}})
  assert.equal(stopped.status,500,'the interrupted invocation cannot finish its remaining consumers')
  const interrupted=(await runs(pending)).find(run=>run.rule_id===nudge.id)
  assert.ok(interrupted);assert.equal(interrupted.cursor,1);assert.equal(interrupted.state,'running');assert.equal((await get(pending)).priority,'high')
@@ -190,7 +190,7 @@ async function signedWebhookFlow(f){
  const target=await app.ok(connections,{token:w.tokens.owner,body:{name:'Interrupted workflow',url:'https://hooks.example.com/ok',events:['conversation.rated']}})
  const subject='Interrupted signed webhook',rule=await f.publish({name:subject,kind:'event',event_kind:'customer_reply',conditions:{all:[{field:'subject',op:'eq',value:subject}]},actions:[action(target.id),{type:'priority',priority:'high'}]})
  const ticket=await app.ok('/api/conversations',{token:w.tokens.owner,body:{projectId:w.projectId,contactId:f.customer.contactId}}),before=requests().length
- await app.call(`/api/conversations/${ticket.id}/messages`,{token:f.customer.token,headers:{'x-test-fault':'db-interrupt','x-test-statement':"UPDATE workflow_notifications SET state='sending'"},body:{localId:'synthetic-happytohelp-3',content:subject,expectedRevision:0}})
+ await app.call(`/api/conversations/${ticket.id}/messages`,{token:f.customer.token,headers:{'x-test-fault':'db-interrupt','x-test-statement':"UPDATE workflow_notifications SET state="},body:{localId:'synthetic-happytohelp-3',content:subject,expectedRevision:0}})
  await app.configure({});await clock(initial+180000);await app.scheduled();await app.scheduled()
  const interrupted=(await ok(`/workflow-runs?conversation_id=${ticket.id}`)).runs.find(run=>run.rule_id===rule.id)
  assert.equal(interrupted.state,'uncertain',interrupted.reason)

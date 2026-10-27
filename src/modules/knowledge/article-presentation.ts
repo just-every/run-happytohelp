@@ -1,9 +1,9 @@
 import type {Env} from '../../platform/env'
-import {isArticleEligibleForAI} from './public-sources'
+import {articleVisible,anonymousReaders} from './door'
 
 /** Bind the owner-facing label to the same publication identity retrieval uses. */
 export async function presentArticle(env:Env,projectId:string,row:any){
- const eligible=await isArticleEligibleForAI(env,projectId,row.id,row.publication_version)
+ const eligible=await articleVisible(env,projectId,row.id,anonymousReaders)
  return {...row,categories:JSON.parse(row.categories),categoryIds:JSON.parse(row.categories),
   is_published:row.status==='published',aiEligibility:eligible?'used':'not_used'}
 }

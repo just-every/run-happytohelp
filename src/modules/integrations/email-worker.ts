@@ -1,3 +1,4 @@
+import {knowledgeWriteEnvironment} from '../knowledge/write-boundary'
 import {plainEmail} from './email-reply'
 import {HTTPException} from 'hono/http-exception'
 import {parseInboundMime} from './unreadable-email'
@@ -10,6 +11,8 @@ import {routingCandidates,authenticationVerdict,headerFromAddress} from './inbou
 import {emailAddress} from './inbound-routing'
 const addressList=(entries:any[]|undefined)=>(entries||[]).flatMap((entry:any)=>entry.group?entry.group.map((member:any)=>member.address):[entry.address]).filter(Boolean)
 export async function handleEmail(message:ForwardableEmailMessage,env:Env,execution:ExecutionContext){
+ env=knowledgeWriteEnvironment(env,()=>({}))
+
  if(message.rawSize>25000000){message.setReject('Message exceeds 25 MB');return}
  const raw=await new Response(message.raw).arrayBuffer()
  let parsed

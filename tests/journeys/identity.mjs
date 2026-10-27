@@ -1,3 +1,4 @@
+import {runSteps} from './kit/steps.mjs';
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {spawnSync} from 'node:child_process'
@@ -14,7 +15,50 @@ const migrationStatements=async name=>{const source=(await readFile('migrations/
 const mailOutbound=(mail,{reject=()=>false}={})=>async(request,entry)=>{const url=new URL(request.url);if(url.host==='api.resend.com'){if(reject(entry))return new Response('rejected',{status:400});const body=JSON.parse(entry.body);mail.push({to:body.to[0],text:body.text,subject:body.subject});return Response.json({id:'email-'+mail.length})}if(url.host==='api.sendgrid.com'){if(reject(entry))return new Response('rejected',{status:400});const body=JSON.parse(entry.body);mail.push({to:body.personalizations[0].to[0].email,text:body.content.find(part=>part.type==='text/plain').value,subject:body.subject});return new Response(null,{status:202,headers:{'x-message-id':'fixture-'+mail.length}})}throw new Error('Unexpected outbound request: '+request.url)}
 const tokenOf=url=>new URL(url).searchParams.get('token')
 
-test('first-owner setup validates, refuses cross-site claims, rolls back a failed claim, admits exactly one concurrent owner and then stays closed',async()=>{
+
+
+test('signed widget identity resumes one contact, refuses forged or blocked identities, and every workspace holds its own unexposed server secret',async()=>{
+ const app=await startApp({bindings:{REGISTRATION_ENABLED:'true'}})
+ try{
+  const ws=await app.seedWorkspace('signed',{allowedOrigin:'https://widget.example'})
+  await app.db.prepare('UPDATE projects SET verification_secret=? WHERE id=?').bind('signature-secret',ws.projectId).run()
+  const read=await app.request('/api/identity/projects/'+ws.projectId,{token:ws.tokens.operator}),body=await read.text();assert.equal(read.status,200)
+  assert.ok(!body.includes('signature-secret'),'the project read never exposes the verification secret');assert.deepEqual(Object.keys(JSON.parse(body)).sort(),['allowed_origin','created_at','id','name','widget_key'])
+  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode('signature-secret'),{name:'HMAC',hash:'SHA-256'},false,['sign'])
+  const signature=Buffer.from(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode('customer-verified'))).toString('hex')
+  const widgetSession=extra=>app.call('/api/identity/widget/session',{body:{widgetKey:ws.widgetKey,...extra},headers:{Origin:'https://widget.example'}})
+  assert.equal((await app.call('/api/identity/widget/session',{body:{widgetKey:ws.widgetKey},headers:{Origin:'https://foreign.example'}})).status,403)
+  const verified1=(await widgetSession({identifier:'customer-verified',contact_hash:signature})).data,verified2=(await widgetSession({identifier:'customer-verified',contact_hash:signature})).data
+  assert.equal(verified1.contactId,verified2.contactId,'a valid contact hash resumes the same contact')
+  assert.notEqual((await widgetSession({identifier:'customer-verified'})).data.contactId,verified1.contactId,'an unsigned identifier is not that contact')
+  assert.equal((await widgetSession({identifier:'customer-verified',contact_hash:'0'.repeat(64)})).status,403)
+  await app.db.prepare(`UPDATE contacts SET metadata_json='{"is_blocked":true}' WHERE id=?`).bind(verified1.contactId).run()
+  assert.equal((await widgetSession({identifier:'customer-verified',contact_hash:signature})).status,403);assert.equal((await app.call('/api/identity/session',{token:verified1.token})).status,401,'blocking ends the contact session')
+  // A verified registration creates a workspace with its own 256-bit secret.
+  const verify=async token=>{await app.db.prepare('INSERT INTO registrations VALUES(?,?,?,?,?,?,?,NULL)').bind(sha(token),token+'@example.test','Owner','hash','Project '+token,'https://'+token+'.example.test',Date.now()+60000).run();return (await app.call('/api/identity/verify-email',{body:{token},status:200})).data.projectId}
+  const secrets=await Promise.all([await verify('first'),await verify('second')].map(async id=>(await app.first('SELECT verification_secret FROM projects WHERE id=?',id)).verification_secret))
+  for(const secret of secrets)assert.match(secret,/^[0-9a-f]{64}$/);assert.notEqual(secrets[0],secrets[1])
+  // The upgrade backfill gives every older project without a secret its own and keeps existing ones.
+  for(const [id,secret] of [['null-secret',null],['empty-secret',''],['kept-secret','owner-chosen-secret']])await app.db.prepare('INSERT INTO projects(id,name,widget_key,allowed_origin,created_at,verification_secret) VALUES(?,?,?,?,1,?)').bind(id,id,'w-'+id,'https://'+id+'.test',secret).run()
+  for(const sql of await migrationStatements('0106_project_verification_secret.sql'))await app.db.prepare(sql).run()
+  const after=Object.fromEntries((await app.sql("SELECT id,verification_secret FROM projects WHERE id IN ('null-secret','empty-secret','kept-secret')")).map(row=>[row.id,row.verification_secret]))
+  assert.equal(after['kept-secret'],'owner-chosen-secret');assert.match(after['null-secret'],/^[0-9a-f]{64}$/);assert.match(after['empty-secret'],/^[0-9a-f]{64}$/);assert.notEqual(after['null-secret'],after['empty-secret'])
+ }finally{await app.close()}
+})
+
+
+
+
+
+test('two-factor sign-in: TOTP with recovery codes, a role policy that forces enrolment and ends unproven sessions, refused and rate-limited answers, step-up for exports, owner reset and installation-key owner recovery, all audited',twoFactorJourney)
+test('roles and the security log: a collaborator notes and follows but cannot reply, assign, erase or export; a restricted custom role cannot publish or export; a knowledge reader reads selected grant targets without writes and loses access on the next request; role changes step up; the log is append-only with retention and legal holds',rolesAuditJourney)
+
+test('no-password step-up proves the account mailbox, never the held session; links expire, bind the account, consume once, and rate-limit atomically with audit',emailStepUpJourney)
+
+
+
+test("first-owner claim journey: validate and claim once under local, deployed and Managed installation authority",()=>runSteps([
+  ['first-owner setup validates, refuses cross-site claims, rolls back a failed claim, admits exactly one concurrent owner and then stays closed',async()=>{
  const app=await startApp({base:'http://127.0.0.1'})
  try{
   const local='http://127.0.0.1',count=async table=>(await app.first(`SELECT count(*) AS n FROM ${table}`)).n
@@ -65,9 +109,8 @@ test('first-owner setup validates, refuses cross-site claims, rolls back a faile
   await app.db.prepare('DELETE FROM owner_setup').run();await app.db.prepare("INSERT INTO users VALUES('imported','import@example.invalid','Imported',1)").run();await app.db.prepare('DELETE FROM users').run()
   assert.deepEqual(await state(),{available:false},'an imported owner durably consumes first-owner setup')
  }finally{await app.close()}
-})
-
-test('a managed install claims only with its credential; a dropped welcome mail stays uncertain and is never resent',async()=>{
+}],
+  ['a managed install claims only with its credential; a dropped welcome mail stays uncertain and is never resent',async()=>{
  const mail=[],dropped=[]
  const app=await startApp({outbound:async(request,entry)=>{if(new URL(request.url).host==='api.resend.com'){dropped.push(JSON.parse(entry.body));throw new TypeError('connection lost')}throw new Error('Unexpected outbound request: '+request.url)},bindings:{RER_INSTALLATION_ID:'managed-fixture',H2H_SETUP_TOKEN:'synthetic-private-owner-setup-fixture',H2H_SETUP_OWNER_EMAIL:'OWNER@example.invalid',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'re_fixture',EMAIL_FROM:'HappyToHelp <welcome@example.invalid>'}})
  try{
@@ -93,9 +136,8 @@ test('a managed install claims only with its credential; a dropped welcome mail 
   for(const table of [...ownerTicketTables,'project_settings','sessions','credentials','memberships','user_settings','user_project_preferences','ai_profiles','users','projects'])await app.db.prepare(`DELETE FROM ${table}`).run()
   assert.equal((await submit(managedEntry)).status,409,'the managed credential shares the permanent claim, even after owner deletion')
  }finally{await app.close()}
-})
-
-test('a deployed install claims only with its private setup token or its owner-email deploy claim; loopback development stays tokenless',async()=>{
+}],
+  ['a deployed install claims only with its private setup token or its owner-email deploy claim; loopback development stays tokenless',async()=>{
  // The public deploy command refuses the local trial owner before any build or provider work.
  for(const flags of [[],['--dry-run']]){
   const result=spawnSync(process.execPath,['node_modules/@runeditrun/rer/bin/rer.mjs','deploy',...flags,'--non-interactive'],{env:{...process.env,OWNER_EMAIL:'owner@run-happytohelp.test'},encoding:'utf8'})
@@ -134,9 +176,11 @@ test('a deployed install claims only with its private setup token or its owner-e
   assert.equal(claim.status,303);assert.equal(claim.headers.get('Location'),'/setup')
   assert.deepEqual(await app.first('SELECT email,name FROM users'),{email:'ada.lovelace+support@example.test',name:'Ada Lovelace'});assert.equal((await app.first('SELECT name FROM projects')).name,'My workspace')
  }finally{await app.close()}
-})
+}]
+]));
 
-test('native passwords: sign-in, change and owner reset revoke sessions, an invitation accepts once, foreign switching is refused and a removed member keeps account-only sign-in',async()=>{
+test("native passwords and membership: scoped sessions, owner resets and invitations retire with current authority",()=>runSteps([
+['native passwords: sign-in, change and owner reset revoke sessions, an invitation accepts once, foreign switching is refused and a removed member keeps account-only sign-in',async()=>{
  const app=await startApp({bindings:{H2H_SETUP_TOKEN:'synthetic-identity-fixture-setup-token-0123456789abcdef',INTEGRATION_ENCRYPTION_KEY:encryptionKey()}})
  try{
   const call=(path,body,token)=>app.call('/api/identity'+path,{body,token})
@@ -167,38 +211,8 @@ test('native passwords: sign-in, change and owner reset revoke sessions, an invi
   assert.equal((await call('/switch-project',{projectId:recreated.id},removed.token)).status,200)
   const account=(await call('/login',{email:'owner@example.com',password:'test-correct-horse-battery'})).data;assert.equal(account.accountOnly,true);assert.equal(account.actor.projectId,null);assert.equal((await call('/session',undefined,account.token)).status,200)
  }finally{await app.close()}
-})
-
-test('signed widget identity resumes one contact, refuses forged or blocked identities, and every workspace holds its own unexposed server secret',async()=>{
- const app=await startApp({bindings:{REGISTRATION_ENABLED:'true'}})
- try{
-  const ws=await app.seedWorkspace('signed',{allowedOrigin:'https://widget.example'})
-  await app.db.prepare('UPDATE projects SET verification_secret=? WHERE id=?').bind('signature-secret',ws.projectId).run()
-  const read=await app.request('/api/identity/projects/'+ws.projectId,{token:ws.tokens.operator}),body=await read.text();assert.equal(read.status,200)
-  assert.ok(!body.includes('signature-secret'),'the project read never exposes the verification secret');assert.deepEqual(Object.keys(JSON.parse(body)).sort(),['allowed_origin','created_at','id','name','widget_key'])
-  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode('signature-secret'),{name:'HMAC',hash:'SHA-256'},false,['sign'])
-  const signature=Buffer.from(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode('customer-verified'))).toString('hex')
-  const widgetSession=extra=>app.call('/api/identity/widget/session',{body:{widgetKey:ws.widgetKey,...extra},headers:{Origin:'https://widget.example'}})
-  assert.equal((await app.call('/api/identity/widget/session',{body:{widgetKey:ws.widgetKey},headers:{Origin:'https://foreign.example'}})).status,403)
-  const verified1=(await widgetSession({identifier:'customer-verified',contact_hash:signature})).data,verified2=(await widgetSession({identifier:'customer-verified',contact_hash:signature})).data
-  assert.equal(verified1.contactId,verified2.contactId,'a valid contact hash resumes the same contact')
-  assert.notEqual((await widgetSession({identifier:'customer-verified'})).data.contactId,verified1.contactId,'an unsigned identifier is not that contact')
-  assert.equal((await widgetSession({identifier:'customer-verified',contact_hash:'0'.repeat(64)})).status,403)
-  await app.db.prepare(`UPDATE contacts SET metadata_json='{"is_blocked":true}' WHERE id=?`).bind(verified1.contactId).run()
-  assert.equal((await widgetSession({identifier:'customer-verified',contact_hash:signature})).status,403);assert.equal((await app.call('/api/identity/session',{token:verified1.token})).status,401,'blocking ends the contact session')
-  // A verified registration creates a workspace with its own 256-bit secret.
-  const verify=async token=>{await app.db.prepare('INSERT INTO registrations VALUES(?,?,?,?,?,?,?,NULL)').bind(sha(token),token+'@example.test','Owner','hash','Project '+token,'https://'+token+'.example.test',Date.now()+60000).run();return (await app.call('/api/identity/verify-email',{body:{token},status:200})).data.projectId}
-  const secrets=await Promise.all([await verify('first'),await verify('second')].map(async id=>(await app.first('SELECT verification_secret FROM projects WHERE id=?',id)).verification_secret))
-  for(const secret of secrets)assert.match(secret,/^[0-9a-f]{64}$/);assert.notEqual(secrets[0],secrets[1])
-  // The upgrade backfill gives every older project without a secret its own and keeps existing ones.
-  for(const [id,secret] of [['null-secret',null],['empty-secret',''],['kept-secret','owner-chosen-secret']])await app.db.prepare('INSERT INTO projects(id,name,widget_key,allowed_origin,created_at,verification_secret) VALUES(?,?,?,?,1,?)').bind(id,id,'w-'+id,'https://'+id+'.test',secret).run()
-  for(const sql of await migrationStatements('0106_project_verification_secret.sql'))await app.db.prepare(sql).run()
-  const after=Object.fromEntries((await app.sql("SELECT id,verification_secret FROM projects WHERE id IN ('null-secret','empty-secret','kept-secret')")).map(row=>[row.id,row.verification_secret]))
-  assert.equal(after['kept-secret'],'owner-chosen-secret');assert.match(after['null-secret'],/^[0-9a-f]{64}$/);assert.match(after['empty-secret'],/^[0-9a-f]{64}$/);assert.notEqual(after['null-secret'],after['empty-secret'])
- }finally{await app.close()}
-})
-
-test('pending invitations: owners and admins list, copy, resend and revoke within their role; links retire on acceptance, expiry, revocation and deleted workspaces',async()=>{
+}],
+['pending invitations: owners and admins list, copy, resend and revoke within their role; links retire on acceptance, expiry, revocation and deleted workspaces',async()=>{
  const mail=[],emailBindings={APP_ORIGIN:'https://support.example.test',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'HappyToHelp <support@example.test>'}
  const app=await startApp({bindings:emailBindings,outbound:mailOutbound(mail)})
  try{
@@ -265,9 +279,11 @@ test('pending invitations: owners and admins list, copy, resend and revoke withi
   const mailCount=mail.length,refused=await call(`/projects/${quiet.projectId}/invitations/noemail%40example.test/resend`,{token:quiet.tokens.owner,method:'POST'})
   assert.equal(refused.status,503);assert.match(JSON.stringify(refused.data),/not configured/i);assert.equal(mail.length,mailCount);assert.equal(await liveTokens(quiet.projectId,'noemail@example.test'),1)
  }finally{await app.close()}
-})
+}]
+]));
 
-test('identity pages learn the install state first; sign-up and recovery refuse plainly without mail and answer every address alike with it; links report their state without being consumed',async()=>{
+test("sign-in link journey: install-aware pages, neutral receipts and one explicit current-authority redemption",()=>runSteps([
+['identity pages learn the install state first; sign-up and recovery refuse plainly without mail and answer every address alike with it; links report their state without being consumed',async()=>{
  const mail=[],origin='https://app.example',configured={EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'HappyToHelp <support@example.test>',APP_ORIGIN:origin,REGISTRATION_ENABLED:'true'}
  const app=await startApp({outbound:mailOutbound(mail)})
  try{
@@ -300,9 +316,9 @@ test('identity pages learn the install state first; sign-up and recovery refuse 
   assert.equal((await app.call('/api/identity/session',{token:'owner-token-acme'})).status,401);assert.deepEqual(await status('reset',resetToken),{state:'used'})
   assert.equal((await app.call('/api/identity/login',{body:{email:'owner-acme@example.test',password:'synthetic-new-reset-password'}})).status,200)
  }finally{await app.close()}
-})
-
-test('a magic sign-in link is mailed as a bounded hashed capability, never consumed by GET, redeemed by exactly one explicit POST into the current role, and replay or redirect input changes nothing',async()=>{
+}],
+["magic sign-in journey: mail a single-use capability, redeem under current authority and never replay uncertain mail",()=>runSteps([
+  ['a magic sign-in link is mailed as a bounded hashed capability, never consumed by GET, redeemed by exactly one explicit POST into the current role, and replay or redirect input changes nothing',async()=>{
  const mail=[],origin='https://app.example'
  const app=await startApp({bindings:{EMAIL_PROVIDER:'sendgrid',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test',APP_ORIGIN:origin},outbound:mailOutbound(mail)})
  try{
@@ -335,9 +351,8 @@ test('a magic sign-in link is mailed as a bounded hashed capability, never consu
   const standalone=sha('standalone-capability');await app.db.prepare('INSERT INTO magic_signins VALUES(?,?,NULL,?,?,NULL)').bind(sha(standalone),'standalone','standalone@example.test',Date.now()+60000).run()
   assert.equal((await consume(standalone,{returnTo:'//evil.example'})).data.destination,'/projects/create','account-only sign-in defaults to creating a workspace')
  }finally{await app.close()}
-})
-
-test('magic sign-in refuses removed members, deleted workspaces, changed emails, foreign origins and missing configuration, rate-limits every address alike, and keeps an unknown mail outcome uncertain',async()=>{
+}],
+  ['magic sign-in refuses removed members, deleted workspaces, changed emails, foreign origins and missing configuration, rate-limits every address alike, and keeps an unknown mail outcome uncertain',async()=>{
  const mail=[],origin='https://app.example';let reject=false,hold
  const outbound=async(request,entry)=>{if(hold){const gate=hold;hold.entered();await gate.released;throw new Error('connection lost after submission')}return mailOutbound(mail,{reject:()=>reject})(request,entry)}
  const bindings={EMAIL_PROVIDER:'sendgrid',EMAIL_API_KEY:'fixture-key',EMAIL_FROM:'support@example.test',APP_ORIGIN:origin}
@@ -379,9 +394,6 @@ test('magic sign-in refuses removed members, deleted workspaces, changed emails,
   await app.until(async()=>(await app.first("SELECT state FROM email_deliveries WHERE recipient='owner-deferred@example.test'"))?.state==='uncertain',{message:'uncertain sign-in mail'})
   assert.ok((await app.first("SELECT consumed_at FROM magic_signins WHERE user_id='owner-deferred'")).consumed_at,'an uncertain capability is spent, never resent')
  }finally{await app.close()}
-})
-
-test('two-factor sign-in: TOTP with recovery codes, a role policy that forces enrolment and ends unproven sessions, refused and rate-limited answers, step-up for exports, owner reset and installation-key owner recovery, all audited',twoFactorJourney)
-test('roles and the security log: a collaborator notes and follows but cannot reply, assign, erase or export; a restricted custom role cannot publish or export; a knowledge reader reads selected grant targets without writes and loses access on the next request; role changes step up; the log is append-only with retention and legal holds',rolesAuditJourney)
-
-test('no-password step-up proves the account mailbox, never the held session; links expire, bind the account, consume once, and rate-limit atomically with audit',emailStepUpJourney)
+}]
+])]
+]));

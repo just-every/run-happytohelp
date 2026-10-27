@@ -79,8 +79,8 @@ identity and prior owner data under the recorded 8 October decision.
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 19 | 3 | 0 | 22 |
-| Target and push further | 18 | 23 | 12 | 53 |
-| All | 37 | 26 | 12 | 75 |
+| Target and push further | 18 | 24 | 11 | 53 |
+| All | 37 | 27 | 11 | 75 |
 
 The 23 October 2026 text clarification preserves every clause status. Local implementation/fixture evidence names code and assertions, not a fresh run; each named live qualification gap remains open until separately observed against the actual provider, domain, account or device. Repeated local fixture rounds cannot close those gaps.
 

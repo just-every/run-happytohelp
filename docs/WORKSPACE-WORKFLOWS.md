@@ -241,3 +241,21 @@ The same review is available through the management API:
 `POST contacts/:contactId/identity-links` under a workspace. Submit `action`
 (`link` or `unlink`), the other `contact_id`, and the evidence or reason in
 `provenance`; apply the returned preview including its `signature`.
+
+
+### Simulate immutable procedure versions
+
+An owner, or an admin with settings permission, can open **Settings → Procedures**
+to save numbered immutable versions restricted to the existing read-only tools.
+The initial mode accepts explicitly confirmed synthetic cases only: allowed,
+denied, timeout and prompt-injection paths. Run a simulation, inspect its
+version-linked case receipts and choose **Check release**. A failed, incomplete
+or mismatched evaluation refuses qualification. A passing result records an
+audited simulation qualification; production execution remains unavailable.
+
+This approved initial mode sends no real actions and transfers no historical
+customer text. PROCEDURE-001 remains partial: contracted historical replay,
+versioned operational context (knowledge versions and live data requirements)
+and controlled production release remain unimplemented. Bounded rollout,
+conversation attribution, tool revocation, rollback and real-model qualification
+still require their contracted implementation and proof.

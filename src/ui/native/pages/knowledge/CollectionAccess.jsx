@@ -11,12 +11,14 @@ export default function CollectionAccess({projectId,draft,change}) {
     const select = (_,value) => {
         change('audience',value === 'selected' ? 'signed-in' : value);
         change('requires_entitlement',value === 'selected');
-        change('entitlementContactIds',draft.entitlementContactIds ?? grants?.accounts.map(account => account.id) ?? []);
-        change('entitlementCompanyIds',draft.entitlementCompanyIds ?? grants?.companies.map(company => company.id) ?? []);
+        if (grants) {
+            change('entitlementContactIds',draft.entitlementContactIds ?? grants.accounts.map(account => account.id));
+            change('entitlementCompanyIds',draft.entitlementCompanyIds ?? grants.companies.map(company => company.id));
+        }
     };
     return <fieldset className="knowledge-governance-group">
         <legend>Collection access</legend>
-        <div className="form-group"><label className="form-label" htmlFor="collection-visibility">Who can read this collection?</label><select id="collection-visibility" className="form-select" value={visibility} disabled={Boolean(draft.id && !grants)} onChange={event => select('audience',event.target.value)}><option value="public">Public</option><option value="signed-in">Signed-in customers</option><option value="selected">Selected customers and companies</option></select></div>
+        <div className="form-group"><label className="form-label" htmlFor="collection-visibility">Who can read this collection?</label><select id="collection-visibility" className="form-select" value={visibility} onChange={event => select('audience',event.target.value)}><option value="public">Public</option><option value="signed-in">Signed-in customers</option><option value="selected">Selected customers and companies</option></select></div>
         {draft.id ? <CollectionEntitlements {...{projectId,draft,change}} selected={visibility === 'selected'} onLoaded={setGrants}/> : visibility === 'selected' && <p className="settings-note">Create this collection, then select customers and companies. Until grants are saved, no customers can read it.</p>}
         <p className="settings-note">Applies to articles in this collection and its child collections, including search results and AI answers. Publishing a collection does not override its access rules.</p>
     </fieldset>;

@@ -7,8 +7,10 @@ import {getKnowledgeExperience,validLocale,templateTypes} from './experience'
 import {knowledgeEditorGuard} from './management-guard'
 import {writeCategory} from './category-write'
 import {writeArticle} from './article-write'
+import {knowledgeUpgradeReport} from './upgrade-report'
 export const experienceRoutes=new Hono<AppEnv>()
 experienceRoutes.use('/:projectId/*',async(c,next)=>{await requireProject(c,c.req.param('projectId'),true);await next()})
+experienceRoutes.get('/:projectId/upgrade-report',knowledgeUpgradeReport)
 experienceRoutes.get('/:projectId/experience',async c=>c.json(await getKnowledgeExperience(c.env,c.req.param('projectId'))))
 experienceRoutes.put('/:projectId/experience',async c=>{
  const guard=await knowledgeEditorGuard(c),body=await c.req.json(),projectId=c.req.param('projectId'),defaultLocale=validLocale(body.defaultLocale)

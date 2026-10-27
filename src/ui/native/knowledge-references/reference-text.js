@@ -12,6 +12,21 @@ export function referenceParts(content = '') {
     return parts;
 }
 
+/** Keep the visible block boundaries in the opaque text that is saved and sent. */
+export function separateReferences(content, references = []) {
+    const parts = referenceParts(content);
+    const isLink = token => references.find(reference => reference.token === token)?.mode === 'link';
+    return parts.map((part,index) => {
+        if (part.token) return part.token;
+        const before = parts[index - 1]?.token, after = parts[index + 1]?.token;
+        if (!part.text) return before && after ? (isLink(before) && isLink(after) ? ' ' : '\n\n') : '';
+        let text = part.text;
+        if (before && !(isLink(before) ? /^\s/.test(text) : /^\r?\n/.test(text))) text = (isLink(before) ? ' ' : '\n\n') + text;
+        if (after && !(isLink(after) ? /\s$/.test(text) : /\r?\n$/.test(text))) text += isLink(after) ? ' ' : '\n\n';
+        return text;
+    }).join('');
+}
+
 export function removeReference(content, token) {
     return content.split(token).join('');
 }

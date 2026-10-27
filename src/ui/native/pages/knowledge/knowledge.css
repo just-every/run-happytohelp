@@ -111,3 +111,11 @@
 .knowledge-entitlement-list button{min-height:44px;min-width:66px;flex-shrink:0}
 
 .knowledge-governance-group select,.knowledge-entitlements input[type="search"]{min-height:44px}
+
+.knowledge-upgrade-report{border:1px solid var(--rule-strong);border-radius:12px;padding:1rem;margin:1.5rem 0}
+.knowledge-upgrade-report h2{font-size:1.25rem;margin:0 0 .75rem}
+.knowledge-upgrade-report dl{display:flex;flex-wrap:wrap;gap:1rem 2rem}
+.knowledge-upgrade-report dt{font-weight:500;color:var(--ink-soft)}
+.knowledge-upgrade-report dd{font-size:1.25rem;margin:0}
+.knowledge-upgrade-report li a{display:inline-flex;align-items:center;min-height:44px;overflow-wrap:anywhere}
+.knowledge-upgrade-report .btn{min-height:44px}

@@ -5,7 +5,7 @@ import MacrosPicker from './MacrosPicker';
 import ArticlePicker from './ArticlePicker';
 import ReferenceEditor from '../../native/knowledge-references/ReferenceEditor';
 import useReferencePreview from '../../native/knowledge-references/useReferencePreview';
-import {mergeReferences} from '../../native/knowledge-references/reference-text';
+import {mergeReferences, separateReferences} from '../../native/knowledge-references/reference-text';
 import usePluginMessageEvent from '../hooks/usePluginMessageEvent';
 import FormMedia from './FormMedia';
 import ConversationComposerTools from './ConversationComposerTools';
@@ -159,12 +159,12 @@ export default function ConversationForm({
         if (!canSend) return;
 
         setSendError(''); setBlockedReferences([]);
-        onSendMessage(content, sendAndClose, {cc:parseEmailRecipients(emailRecipients.cc),bcc:parseEmailRecipients(emailRecipients.bcc),...(sender.mailboxId?{mailboxId:sender.mailboxId}:{}),...(sender.fromAddress?{fromAddress:sender.fromAddress}:{})}).then(() => {
+        onSendMessage(separateReferences(content,editorReferences), sendAndClose, {cc:parseEmailRecipients(emailRecipients.cc),bcc:parseEmailRecipients(emailRecipients.bcc),...(sender.mailboxId?{mailboxId:sender.mailboxId}:{}),...(sender.fromAddress?{fromAddress:sender.fromAddress}:{})}).then(() => {
             onContentChange('');
             setEmailRecipients(noRecipients);
         }, error => { if (typeof error.data?.content === 'string') onContentChange(error.data.content); setBlockedReferences(error.data?.blockedReferences || []); setSendError(error.data?.reason === 'ticket_closed_followup_required'
             ? 'Not sent: this ticket was closed and is final. A customer reply opens a new ticket.'
-            : `Not sent: ${ error.message || 'the server refused the reply' }.`); });
+            : `Not sent: ${ error.message || 'the server refused the reply' }`); });
     };
 
     const handleKeyDown = event => {
@@ -213,9 +213,9 @@ export default function ConversationForm({
         const textarea = textareaRef.current;
         const draft = content || '';
         const offset = Number(textarea?.dataset.contentOffset || 0);
-        const { text, caret } = insertSavedReply(draft, reply, textarea ? offset + textarea.selectionStart : draft.length, textarea ? offset + textarea.selectionEnd : draft.length);
-        insertedCaret.current = { conversationId, content: text, caret };
-        onContentChange(text);
+        const { text, caret } = insertSavedReply(draft, reply, textarea ? offset + textarea.selectionStart : draft.length, textarea ? offset + textarea.selectionEnd : draft.length, metadata?.references?.find(reference => reference.token === reply)?.mode === 'link' ? ' ' : '\n\n');
+        insertedCaret.current = { conversationId, content: separateReferences(text,metadata?.references || editorReferences), caret: separateReferences(text.slice(0,caret),metadata?.references || editorReferences).length };
+        onContentChange(insertedCaret.current.content);
         setHelper(null);
     };
 

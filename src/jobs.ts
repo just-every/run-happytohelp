@@ -1,3 +1,4 @@
+import {remindObligations} from './modules/ai-support/obligations'
 import {sweepUploads} from './modules/api-integrations/upload-lifecycle'
 import {processRerMailbox,recoverRerMailboxes,refreshRerMailbox} from './modules/integrations/rer-mailbox'
 import {consumeTriage,dispatchTriage} from './modules/triage/worker'
@@ -53,7 +54,7 @@ export async function consumeJob(job:Job,env:Env) {
 }
 /** Each consumer owns a bounded allocation, including its admitted quantum.
  * An exception in one never takes away another consumer's turn. The workflow
- * maximum (720), tail allocations (220) total 940, including the local clock read.
+ * maximum (716), tail allocations (221) total 937, including the local clock read.
  * The other parallel scheduled consumers reserve the remaining 60 statements. */
 export async function runScheduled(env:Env) {
  const budget=boundedDatabase(env.DB,scheduledReservations.jobs)
@@ -65,7 +66,7 @@ export async function runScheduled(env:Env) {
   const available=Math.min(allocated-budget.statements,Math.max(3,ceiling-budget.statements))
   try{await run(cronConsumer(env,available))}catch(error){if(!(error instanceof CronDeferred))console.error(`${name} recovery failed`,error)}
  }
- await visit('Workflow',720,runWorkflows)
+ await visit('Workflow',716,runWorkflows)
  await visit('Survey',70,dispatchSurveys)
  await visit('Integration',60,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env)})
  // Hand larger message effects to the queue near the history-load target.
@@ -80,5 +81,6 @@ export async function runScheduled(env:Env) {
  await visit('Brand',6,recoverBrandJobs)
  await visit('Site read',7,recoverSiteReads)
  await visit('Lead',12,recoverLeadJobs)
+ await visit('Follow-up',1,remindObligations)
  await visit('Counter',1,pruneCounters)
 }

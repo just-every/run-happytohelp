@@ -5,7 +5,7 @@ import {randomUUID} from 'node:crypto'
 // made by the operator in the native ticket sidebar at both supported widths.
 export async function obligationsBrowserJourney({runtime,browser,shot}) {
  for(const width of [1440,390]) {
-  const origin=runtime.origin,tenant=await runtime.seedTenant({name:`Follow-up ${width}`,email:`followup-${width}@example.test`,allowedOrigin:origin})
+  const origin=runtime.origin,tenant=await runtime.seedTenant({name:`Follow-up ${width}`,email:`followup-${width}-${randomUUID()}@example.test`,allowedOrigin:origin})
   const call=async(path,body,token=tenant.token)=>{
    const response=await fetch(origin+path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json',Origin:origin,Authorization:'Bearer '+token},body:body===undefined?undefined:JSON.stringify(body)})
    assert.ok(response.ok,path+': '+response.status+' '+await response.clone().text());return response.json()
@@ -65,6 +65,16 @@ export async function obligationsBrowserJourney({runtime,browser,shot}) {
    const violations=await page.evaluate(async()=>(await window.axe.run('.followup-obligations',{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})))
    assert.deepEqual(violations,[]);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1))
    await page.screenshot({path:shot(`followup-accepted-${width}.png`),fullPage:true})
+   assert.ok((await panel.locator('button').allTextContents()).every(text=>text.trim()),'all new controls have visible text labels')
+   for(const control of await page.locator('button[data-tooltip]').all()) {
+    if(!await control.isVisible() || (await control.innerText()).trim())continue
+    const label=await control.getAttribute('aria-label')
+    await control.hover();await page.locator('.ui-tooltip[data-open]').filter({hasText:label}).waitFor()
+    await page.mouse.move(0,0);await control.focus()
+    await page.locator('.ui-tooltip[data-open]').filter({hasText:label}).waitFor({timeout:1000})
+    await page.screenshot({path:shot(`followup-tooltip-${width}.png`),fullPage:true})
+    break
+   }
    assert.deepEqual(errors,[])
   } catch(error) {await page.screenshot({path:shot(`followup-failure-${width}.png`),fullPage:true});throw error}
   finally {await context.close()}

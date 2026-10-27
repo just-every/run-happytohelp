@@ -1572,7 +1572,7 @@
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "44294e763da713be8d625e9dadd0e73360d0178eba84fa185d8dce2c20851078",
+      "sha256": "10d4fc9c530dd16d2327758d86d95e9e3961547ffe6dfb0f8f549e823f9f4bd5",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -1588,7 +1588,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "688ded31a270bb98f86ec13d4072855e57ca25356bb3501a76429915d7a8cedb",
+      "sha256": "ede6b03957da449ca1f2236b59390ef7f8d764c4c10baec0625a4ae2aaa7f56f",
       "executable": false
     },
     ".gitignore": {
@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "119e7e23e43b2e37233d56562122689c8f84179a7c6611a019b0b73be100211e",
+      "sha256": "40c857e496a34181c7e8c3a2664f6de7c4983e28b82ac5ae7b9dff89cd7d3fff",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "0aa87b3180b780a32e5353792ee3a9cbd1c9173b1aaf6f7e9b87e0bce389afb2",
+      "sha256": "8b90761057c1adac6facf1a9a0726ad65c3cb5502492f4ddd5726dd6ba1e649f",
       "executable": false
     },
     "DEMO.md": {
@@ -1816,7 +1816,7 @@
       "executable": false
     },
     "docs/workflows.md": {
-      "sha256": "9ef834ce75e12b4cdeb56d8daf6c0662eab3aadf45bbc0008a5f14edd36d10d7",
+      "sha256": "6816d71140cec45d527e1e6671e5ffc7cace38556b9a4c435faa1ba08adf1b5f",
       "executable": false
     },
     "docs/WORKSPACE-WORKFLOWS.md": {
@@ -1996,7 +1996,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "574d82ce46c682f6beba3134dd014854604a4abbaf7544d58979259c696a8304",
+      "sha256": "8b3361b1c90756d375f21b7a1069252be243dede17bd1b4dd0854f4e617777ed",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -3992,7 +3992,7 @@
       "executable": false
     },
     "src/modules/api-integrations/destinations.ts": {
-      "sha256": "5cdec1d97315fe4ca7e0bacc98454ff785bd92195ea6967f48aae77ebf11e1d9",
+      "sha256": "ebd1b964de58849e92e4888c289b82a8633df4b4fdf691b3bfeca20ae67b7cef",
       "executable": false
     },
     "src/modules/api-integrations/dispatch.ts": {
@@ -7672,7 +7672,7 @@
       "executable": false
     },
     "src/modules/workflows/routes-sla.ts": {
-      "sha256": "8dde9c49caf575271735273710fb8285906a9794eecc0fbb08b56745556fecfd",
+      "sha256": "6534c9311d3aa9b9a2eb25d26b0d6a34bf0526585ade4b9d9f5403a3e21f4ee2",
       "executable": false
     },
     "src/modules/workflows/routes.ts": {
@@ -7736,7 +7736,7 @@
       "executable": false
     },
     "src/modules/workflows/runtime.ts": {
-      "sha256": "e5dfb7c429482ec7e520e357e5aa967fcd28ec7326c190edc404e0047f647873",
+      "sha256": "c5af26e7c25e6c855967d7a8016f6309e4264ec2da83c9c64778c132dbc232f9",
       "executable": false
     },
     "src/modules/workflows/schedule-authority.ts": {
@@ -7760,7 +7760,7 @@
       "executable": false
     },
     "src/modules/workflows/sla-alerts.ts": {
-      "sha256": "c8100ebc059f4e446471c12d8e3b9f172bf99ded21c929b6352afd589a8671e7",
+      "sha256": "54325f442149a17f488e527ae7d0ec1de19de63ac71a99d5d9be6986cccb7f64",
       "executable": false
     },
     "src/modules/workflows/sla-backstop.ts": {
@@ -7780,7 +7780,7 @@
       "executable": false
     },
     "src/modules/workflows/sla-policy.ts": {
-      "sha256": "80c2a31978b34dc8b16bf792e2987f06dfa75eb7c8d8bd027a30caffcf8c8963",
+      "sha256": "fc7284715d90b67f94f792eae6b2f045939a947bff4fa5b8e0b1c9d9796f9f80",
       "executable": false
     },
     "src/modules/workflows/sla.ts": {
@@ -8832,7 +8832,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/workflows/SlaStatus.jsx": {
-      "sha256": "62b81f61ee3bb289ae9a60a311235cd26dc471c5b0129354dd7fc8edc7f9359b",
+      "sha256": "96ed6bcde39f087514e7550f304e84adf0f944c19cd0986b692937e6dec6b6e2",
       "executable": false
     },
     "src/ui/dashboard/components/workflows/WorkflowDue.jsx": {
@@ -8848,7 +8848,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/workflows/workflows.css": {
-      "sha256": "aba2ed2a5aa642385f3308cd4acb76a90a7edbf9556480053ab2c56dcbd14c5e",
+      "sha256": "8200decc5bdc14e2cbde7fd54a3734f0c96974301823aa9b44bc44d17fe2761c",
       "executable": false
     },
     "src/ui/dashboard/contexts/ChatContext.jsx": {
@@ -9932,7 +9932,7 @@
       "executable": false
     },
     "src/ui/native/pages/connections/connections.css": {
-      "sha256": "75d49280248fc0f64ec82bdb00cf33b5b5faf6a0c2ec53e8a3980e8f887ee5b8",
+      "sha256": "74585fa140d64de17df64dadb35b4764d574242f3aecf7e137c8d209c2fc820b",
       "executable": false
     },
     "src/ui/native/pages/connections/Deliveries.jsx": {
@@ -9940,7 +9940,7 @@
       "executable": false
     },
     "src/ui/native/pages/connections/Destinations.jsx": {
-      "sha256": "2b56f243721e29bb79c9655dd5c2e1a56fcd934830f2f05e749579abef9abfea",
+      "sha256": "399e58e17d93cfccef16b4a6ed851c2017a474539c3b2532388efed22f26a3d6",
       "executable": false
     },
     "src/ui/native/pages/connections/Tokens.jsx": {
@@ -10444,7 +10444,7 @@
       "executable": false
     },
     "src/ui/native/pages/workflows/PolicySettings.jsx": {
-      "sha256": "78adb4885a8af75cc5bb6d2bb648a0fba113b2d5c75d29019767787ffb2f0772",
+      "sha256": "738646c1e660ca4aa1a968617c4bcdeb56500da5348e69485d8d1ef9801114d2",
       "executable": false
     },
     "src/ui/native/pages/workflows/RoutingSettings.jsx": {
@@ -10492,7 +10492,7 @@
       "executable": false
     },
     "src/ui/native/pages/workflows/workflows.css": {
-      "sha256": "0fed9a3b3065aacb5798450e8ccb71bff4b4ba91746350fd2893988aaffedf4f",
+      "sha256": "d8100d63ac6b45905254a783d8c8b840bb45d9fbf51cf73617a29973187d7adc",
       "executable": false
     },
     "src/ui/native/pages/workflows/WorkflowSettings.jsx": {
@@ -11672,7 +11672,7 @@
       "executable": false
     },
     "tests/helpers/inbox/tickets-browser.mjs": {
-      "sha256": "25e46960844dd37b8a4cf380c5a8db4f3aa283ef20592a752fd01bdf78534a64",
+      "sha256": "387b149da624338c7ef930929a489a94d6a93ebd8e85d7c4e9ba560158874cd9",
       "executable": false
     },
     "tests/helpers/inbox/tickets.mjs": {
@@ -12084,11 +12084,11 @@
       "executable": false
     },
     "tests/helpers/workflows/fixture.mjs": {
-      "sha256": "f8051ac82a145b0f0adcf9c9969d7db5756b9be35762b110ede644f689bc6d16",
+      "sha256": "6dd95276c59ae6a30e80f325ecf4bb6e051f2b1cce861ed6bc3f121599f2269a",
       "executable": false
     },
     "tests/helpers/workflows/journey.mjs": {
-      "sha256": "826f0f3cc7dcdbb789a826f6544ee69013248b578defa8040561104af024d09e",
+      "sha256": "f18db1bd8ab8fb19e3c85eb39ea7a612a8e63d936d092253c0b321ff5de2977f",
       "executable": false
     },
     "tests/helpers/workflows/routing.mjs": {
@@ -12212,7 +12212,7 @@
       "executable": false
     },
     "tests/journeys/kit/browser.mjs": {
-      "sha256": "9bffdc55c3989fd7fdf225f2f61048603f6a11895699c9b87a511ca624c79542",
+      "sha256": "9f946bf6fbc08dc4ce693ccb2d00d14d8e28cc34a6cfab6bbc500d68e2004910",
       "executable": false
     },
     "tests/journeys/kit/http.mjs": {

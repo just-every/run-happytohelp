@@ -41,7 +41,7 @@
 @media (max-width: 650px) {
     .request-form-editor .form-switch { display: flex; align-items: center; gap: 8px; padding-left: 0; min-height: 44px; }
     .request-form-editor .form-switch .form-check-input { float: none; flex: 0 0 auto; margin: 0; }
-    .request-form-editor .form-switch .form-check-label { display: flex; align-items: center; min-height: 44px; margin: 0; }
+    .request-form-editor .form-switch .form-check-label { flex: 1; min-width: 0; display: inline-flex; align-items: center; min-height: 44px; margin: 0; }
 }
 @media (max-width: 650px) {
     .request-form-editor .settings-actions button { min-width: 44px; min-height: 44px; }

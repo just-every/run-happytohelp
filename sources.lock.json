@@ -11140,7 +11140,7 @@
       "executable": false
     },
     "tests/helpers/account-lookup-browser.mjs": {
-      "sha256": "773faf16f02278e23d99791e22a545b1332069d412c16a8a10f2bb2b714db488",
+      "sha256": "7bd7c11140b4ee8152b6a29525df60dbfdba6f90a8d87d7d45905cff6ff3d7b2",
       "executable": false
     },
     "tests/helpers/account-lookup-journey.mjs": {

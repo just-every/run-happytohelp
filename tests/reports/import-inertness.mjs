@@ -10,7 +10,7 @@ async function imported(h){const run=(await h.call(base+'?vendor=intercom',{meth
 
 test("import undo journey: imported history stays inert and every native outcome ledger blocks destructive undo",()=>runSteps([
   ['Move in and complete undo never create native outcome, rating or authorship rows',async()=>{const h=await nativeHarness();try{const {run}=await imported(h);await h.call(base+'/'+run.id+'/undo',post({}));await h.drain();assert.equal((await h.call(base+'/'+run.id)).data.state,'undone');for(const table of tables)assert.equal((await h.db.prepare('SELECT COUNT(*) n FROM '+table).first()).n,0);assert.equal(h.outbound,0)}finally{await h.close()}}],
-  ['native custody blocks import undo without a revision bump for every outcome ledger',async()=>{for(const kind of ['authorship','tracking','handoff','resolution and ratings','legacy marker']){try{await (async()=>{const h=await nativeHarness();try{const {run,conversation:c,message:m}=await imported(h);
+  ['native custody blocks import undo without a revision bump for every outcome ledger',()=>runSteps(['authorship','tracking','handoff','resolution and ratings','legacy marker'].map(kind=>[kind,async()=>{const h=await nativeHarness();try{const {run,conversation:c,message:m}=await imported(h);
  if(kind==='authorship')await h.db.prepare("INSERT INTO message_authorship VALUES(?,'p','unknown','native-audit',NULL,NULL,1)").bind(m.id).run();
  if(kind==='tracking')await h.db.prepare("INSERT INTO conversation_tracking(conversation_id,project_id,initial_history_complete,cycle_history_complete,cycle_start_at) VALUES(?,'p',0,0,1)").bind(c.id).run();
  if(kind==='handoff')await h.db.prepare("INSERT INTO conversation_handoffs VALUES('handoff','p',?,'owner',?,1,0)").bind(c.id,c.revision).run();
@@ -18,5 +18,5 @@ test("import undo journey: imported history stays inert and every native outcome
  if(kind==='legacy marker')await h.db.prepare("INSERT INTO reporting_legacy_conversations VALUES('p',?,'native-custody')").bind(c.id).run();
  const before={};for(const table of tables)before[table]=(await h.db.prepare('SELECT * FROM '+table).all()).results;
  await h.call(base+'/'+run.id+'/undo',post({}));await h.drain();const state=(await h.call(base+'/'+run.id)).data;assert.equal(state.state,'undoing');assert.equal(state.error,'NATIVE_EDIT_CONFLICT');assert.deepEqual(await h.db.prepare('SELECT * FROM conversations WHERE id=?').bind(c.id).first(),c);for(const table of tables)assert.deepEqual((await h.db.prepare('SELECT * FROM '+table).all()).results,before[table]);assert.equal(h.outbound,0)
- }finally{await h.close()}})()}catch(error){error.message=kind+': '+error.message;throw error}}}]
+ }finally{await h.close()}}]))]
 ]));

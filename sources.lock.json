@@ -1572,7 +1572,7 @@
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "1334550420d99902ee8e23034c4ef335e6c879feb6a0fb379d0a99ca03189a2a",
+      "sha256": "44294e763da713be8d625e9dadd0e73360d0178eba84fa185d8dce2c20851078",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -1588,7 +1588,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "53b66b42fb29595d5eb565f9e27dd45b1b8ef71068339f4b268f2dfd5f3401df",
+      "sha256": "688ded31a270bb98f86ec13d4072855e57ca25356bb3501a76429915d7a8cedb",
       "executable": false
     },
     ".gitignore": {
@@ -8628,7 +8628,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/tickets/problem.css": {
-      "sha256": "f14bfeadd44058666b2b9a165500d0a100c5026973375ba59445a4b26890c517",
+      "sha256": "508ac74c1bc8225b68b8c567683a8188aa6e7157e853a35d97df004a2af2ec31",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/ProblemBulkLink.jsx": {
@@ -11644,7 +11644,7 @@
       "executable": false
     },
     "tests/helpers/inbox/problem-suggestions-browser.mjs": {
-      "sha256": "d12c408412ed0290c8ff83e51b312b9496bb4da1a16f6ccee720e374cb9573dd",
+      "sha256": "96d36211dec391dff9b8f17468db41b6a9b2e130f6190b31c02a6ea09ba44517",
       "executable": false
     },
     "tests/helpers/inbox/problems.mjs": {

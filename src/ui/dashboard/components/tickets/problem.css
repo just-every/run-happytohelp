@@ -14,4 +14,5 @@
 @media (max-width: 480px) { .problem-actions { flex-wrap: wrap; } .problem-actions .form-control { flex-basis: 100%; } .problem-panel .btn { white-space: normal; } }
 
 .problem-suggestions { margin: .75rem 0; }
+.problem-suggestions .problem-actions { flex-wrap: wrap; }
 @media (max-width: 480px) { body.conversation-workspace #chat .conversation-details .problem-panel button.btn, .problem-panel summary { min-height: 44px; min-width: 44px; } }

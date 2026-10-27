@@ -2,7 +2,7 @@ name: Verify
 
 on:
   push:
-    branches: [main, release/0.3.x, release/0.4.x, cloud/hh-conv003-incident-suggest-r2]
+    branches: [main, release/0.3.x, release/0.4.x]
   pull_request:
   workflow_dispatch:
 
@@ -18,7 +18,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     # Only generated, public build output is shared; no local state or secrets.
     steps:
@@ -65,7 +65,7 @@ jobs:
   checks:
     needs: build
     name: Verify / ${{ matrix.name }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -204,7 +204,7 @@ jobs:
 
   public-preview:
     needs: build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
       H2H_PREVIEW_ORIGIN: http://127.0.0.1:5186
@@ -276,7 +276,7 @@ jobs:
           retention-days: 7
 
   legacy-export:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
       mysql:

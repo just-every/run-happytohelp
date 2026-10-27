@@ -16,13 +16,17 @@ export async function problemSuggestionsBrowser(page,fixture,origin){
  const capture=async name=>{
   for(const width of [1440,390]){
    await page.setViewportSize({width,height:width===390?844:1000})
-   if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click()
+   // Resizing closes the compact sheet through a media-query change and a React render.
+   // Wait for that transition before opening it, so a stale desktop read cannot skip the toggle.
+   await page.waitForFunction(hidden=>document.querySelector('#conversation-assistant')?.getAttribute('aria-hidden')===hidden,width===390?'true':'false')
+   if(width===390)await page.getByRole('button',{name:'Show conversation panel',exact:true}).click()
    await page.getByRole('tab',{name:'Ticket',exact:true}).click()
    await page.locator('.problem-panel').scrollIntoViewIfNeeded();await page.waitForTimeout(350)
    if(width===390)console.log(JSON.stringify({screen:name,width,targets:await page.locator('.problem-panel button:visible').evaluateAll(buttons=>buttons.map(button=>({name:button.textContent.trim(),height:button.getBoundingClientRect().height,width:button.getBoundingClientRect().width})))}))
    await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true})
   }
   await page.setViewportSize({width:1440,height:1000})
+  await page.waitForFunction(()=>document.querySelector('#conversation-assistant')?.getAttribute('aria-hidden')==='false')
  }
  await find();await panel.getByText('Checkout outage under investigation',{exact:true}).waitFor();await capture('01-found')
  await panel.getByRole('button',{name:'Inspect suggestion',exact:true}).click()

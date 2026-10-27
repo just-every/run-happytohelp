@@ -76,6 +76,17 @@ export async function accountLookupJourney(f,customer){
  await app.ok(companyPath+'/merge',{...owner,body:{sourceId:merged.id,preview:preview.token}})
  await refused(merged.id,'synthetic-hh-merged')
  assert.deepEqual((await app.ok(read,customer)).data.fields.find(row=>row.id===field.id).options,expected,'merged accounts are never offered')
+ // Account predicates accept workspace choices, never typed names or foreign IDs.
+ const detail=(await app.ok(base+'/ticket-fields',{...owner,body:{name:'Account detail',type:'text'}})).data
+ for(const value of ['Northstar account','synthetic-hh-forged',foreign.id,merged.id]){
+  await app.call(admin,{...owner,body:{title:'Invalid account condition',fields:[{fieldId:field.id},{fieldId:detail.id,condition:{fieldId:field.id,operator:'equals',value}}]},status:400})
+ }
+ const conditional=(await app.ok(admin,{...owner,body:{title:'Account condition',enabled:true,fields:[{fieldId:field.id,required:true},{fieldId:detail.id,required:true,condition:{fieldId:field.id,operator:'equals',value:company.id}}]}})).data
+ const conditionPath=`${api}/${conditional.id}/submissions`
+ const missingDetail=await app.call(conditionPath,{...customer,body:{...command,localId:'synthetic-hh-condition-missing'},status:422});assert.equal(missingDetail.data.field,detail.id)
+ await app.call(conditionPath,{...customer,body:{...command,localId:'synthetic-hh-condition-good',fields:{...command.fields,[detail.id]:'Account access'}},status:201})
+ const settings=(await app.ok(base+'/ticket-settings',owner)).data
+ assert.equal(settings.fields.find(f=>f.id===field.id).accountOptions.find(o=>o.value===company.id).label,'Northstar account')
  const created=await app.call(path,{...customer,body:command,status:201}),id=created.data.ticket.id,ticketPath=`/api/dashboard/projects/${p}/conversations/${id}/ticket`
  assert.equal((await app.ok(ticketPath,owner)).data.fields[field.id],company.id)
  await app.call(ticketPath,{...owner,method:'PATCH',body:{fields:{[field.id]:foreign.id}},status:422})

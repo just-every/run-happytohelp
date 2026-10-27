@@ -22,7 +22,7 @@ export async function validateAccountPublication(env:Env,projectId:string,formId
  const supplied=catalogue.filter(field=>field.type==='account'&&values[field.id]!==undefined&&values[field.id]!==null&&values[field.id]!=='')
  if(!supplied.length)return
  const form=await storedForm(env,projectId,formId)
- for(const field of supplied)if(!form.enabled||!publicField(field)||!form.fields.some(ref=>ref.fieldId===field.id))fieldError(field.id,'unavailable_field','This account field is not published for customers')
+ for(const field of supplied)if(!form.enabled||!publicField(field)||!form.fields.some(ref=>ref.fieldId===field.id))fieldError(field.id,'unavailable_field','This account question is no longer available. Contact the support team through the website chat.')
 }
 export async function accountChoices(env:Env,form:PublicForm,fieldId:string,identity?:PortalIdentity){
  if(!identity)return []
@@ -35,7 +35,7 @@ export async function accountChoices(env:Env,form:PublicForm,fieldId:string,iden
  return accounts.results.map(account=>({value:account.id,label:account.name}))
 }
 export async function withAccountChoices(env:Env,form:PublicForm,identity?:PortalIdentity){
- return {...form,fields:await Promise.all(form.fields.map(async field=>field.type==='account'?{...field,options:await accountChoices(env,form,field.id,identity)}:field))}
+ return {...form,verified:!!identity,fields:await Promise.all(form.fields.map(async field=>field.type==='account'?{...field,options:await accountChoices(env,form,field.id,identity)}:field))}
 }
 export async function validateAccountMembership(env:Env,projectId:string,contactId:string,fields:Array<{id:string;type:string;label?:string;name?:string}>,values:Record<string,unknown>){
  const guards:Array<ReturnType<typeof accountChoiceGuard>>=[]
@@ -52,7 +52,7 @@ export async function validateAccountChoices(env:Env,form:PublicForm,contactId:s
  for(const field of form.fields){
   const value=values[field.id];if(field.type!=='account'||value===null||value===undefined||value==='')continue
   const publication=publicationGuard(form,[field.id])
-  if(!await env.DB.prepare(`SELECT 1 WHERE ${publication.sql}`).bind(...publication.args).first())fieldError(field.id,'unavailable_field','This account field changed or is no longer published for customers')
+  if(!await env.DB.prepare(`SELECT 1 WHERE ${publication.sql}`).bind(...publication.args).first())fieldError(field.id,'unavailable_field','This account question has changed. Contact the support team through the website chat.')
   published.push(field.id)
  }
  if(published.length)guards.push(publicationGuard(form,published))

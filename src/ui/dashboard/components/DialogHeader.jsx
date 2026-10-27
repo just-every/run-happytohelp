@@ -6,15 +6,16 @@ import ModalContext from 'react-bootstrap/ModalContext';
 import { tooltip } from '../../../modules/tooltip/tooltip';
 
 /** A dialog's header whose × has its tooltip: Modal.Header draws its own close button, which takes no other props. */
-export default function DialogHeader({ closeButton = false, children, ...props }) {
+export default function DialogHeader({ closeButton = false, closeLabel = 'Close', children, ...props }) {
     const modal = useContext(ModalContext);
     return <Modal.Header { ...props }>
         { children }
-        { closeButton && <CloseButton { ...tooltip('Close') } onClick={ () => modal?.onHide() } /> }
+        { closeButton && <CloseButton { ...tooltip(closeLabel) } onClick={ () => modal?.onHide() } /> }
     </Modal.Header>;
 }
 
 DialogHeader.propTypes = {
     closeButton: PropTypes.bool,
+    closeLabel: PropTypes.string,
     children: PropTypes.node,
 };

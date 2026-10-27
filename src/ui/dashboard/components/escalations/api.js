@@ -1,6 +1,6 @@
 import {nativeRequest} from '../../../native/transport';
 
-export const providerNames = {github: 'GitHub', linear: 'Linear', jira: 'Jira', slack: 'Slack'};
+export const providerNames = {github: 'GitHub', linear: 'Linear', jira: 'Jira', slack: 'Slack', teams: 'Teams'};
 
 export async function escalationRead(path) {
     return (await nativeRequest(path)).data;

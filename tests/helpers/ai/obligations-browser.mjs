@@ -15,7 +15,11 @@ export async function obligationsBrowserJourney({runtime,browser,shot}) {
   await call(messages,{localId:randomUUID(),content:'Please keep me updated.',expectedRevision:0},visitor.token)
   const current=await call(messages),promise='I will send an export update by tomorrow.'
   const sent=await call(messages,{localId:randomUUID(),content:promise,expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId})
+  const before=(await call(messages)).messages.length
   const base=`/api/ai-support/projects/${tenant.projectId}/conversations/${conversation.id}/obligations`
+  await runtime.execute(`INSERT INTO escalation_connections(id,project_id,provider,target,updated_at) VALUES('synthetic-hh-connection-${width}','${tenant.projectId}','github','just-every/run-happytohelp',1);
+ INSERT INTO escalation_issues VALUES('synthetic-hh-issue-${width}','${tenant.projectId}','synthetic-hh-connection-${width}','github','${width}','HH-${width}','https://github.com/just-every/run-happytohelp/issues/1','closed',NULL,1,1);
+ INSERT INTO escalation_links(id,project_id,conversation_id,issue_id,created_at) VALUES('synthetic-hh-link-${width}','${tenant.projectId}','${conversation.id}','synthetic-hh-issue-${width}',1);`)
   const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage(),errors=[]
   page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(20000)
   try {
@@ -38,6 +42,7 @@ export async function obligationsBrowserJourney({runtime,browser,shot}) {
    const form=panel.locator('form').first(),due=new Date(Date.now()+3600000);due.setSeconds(0,0)
    const local=new Date(due.getTime()-due.getTimezoneOffset()*60000).toISOString().slice(0,16)
    await form.getByLabel('Responsible teammate',{exact:true}).selectOption(tenant.userId)
+   await form.getByLabel('Engineering dependency',{exact:true}).selectOption(`synthetic-hh-issue-${width}`)
    await form.getByLabel('Due time',{exact:true}).fill(local)
    await form.getByLabel('Stop condition',{exact:true}).fill('The customer receives an honest update.')
    await form.getByRole('button',{name:'Propose promise',exact:true}).click()
@@ -49,7 +54,9 @@ export async function obligationsBrowserJourney({runtime,browser,shot}) {
    await panel.getByText(/Accepted promise/).waitFor();await panel.getByRole('region',{name:'Unsent follow-up draft'}).waitFor()
    row=(await call(base)).obligations[0]
    assert.equal(row.owner_id,tenant.userId);assert.equal(row.due_at,due.getTime());assert.equal(row.state,'open')
-   assert.equal((await call(messages)).messages.length,2,'proposal, acceptance and draft review send nothing')
+   assert.equal(row.dependency.stale,true);assert.equal(row.dependency.progress,'unconfirmed')
+   await panel.getByText(/No current readback/).waitFor()
+   assert.equal((await call(messages)).messages.length,before,'proposal, acceptance and draft review send nothing')
    await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'})
    const violations=await page.evaluate(async()=>(await window.axe.run('.followup-obligations',{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})))
    assert.deepEqual(violations,[]);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1))

@@ -42,7 +42,17 @@ export async function obligationsJourney(){
  const dependent=(await call('',{body:{...body,dependencyId:'issue'},status:201})).data
  assert.equal(dependent.id,created.id,'one cited promise remains one obligation')
  await call(`/${dependent.id}/accept`,{body:{version:3,ownerId:workspace.users.owner,dueAt:due,dependencyId:'issue'},status:200})
- await app.scheduled();await app.scheduled()
+ // A saturated follow-up page yields to the other scheduled consumers. The
+ // overload rows represent accepted commitments already retained in storage.
+ for(let i=0;i<30;i++)await app.db.prepare(`INSERT INTO followup_obligations(id,project_id,conversation_id,message_id,quote_start,quote_end,owner_id,due_at,stop_condition,state,version,accepted_by,accepted_at,created_at,updated_at)
+ SELECT ?,project_id,conversation_id,message_id,?, ?,owner_id,due_at,stop_condition,'open',2,accepted_by,accepted_at,created_at,updated_at FROM followup_obligations WHERE id=?`).bind('synthetic-hh-backlog-'+i,i,i+1,dependent.id).run()
+ const tick=await app.scheduled()
+ assert.equal(tick.refused,0);assert.equal(tick.pruned,true)
+ assert.ok(Object.values(tick.consumers).every(consumer=>consumer.completed),'reminders do not starve existing scheduled consumers')
+ assert.equal((await app.first("SELECT count(*) n FROM notification_inbox WHERE id LIKE 'followup:%'")).n,25,'one bounded page is admitted')
+ await app.scheduled()
+ assert.equal((await app.first("SELECT count(*) n FROM notification_inbox WHERE id LIKE 'followup:%'")).n,31,'remaining obligations advance on the next tick')
+ await app.db.prepare("DELETE FROM followup_obligations WHERE id LIKE 'synthetic-hh-backlog-%'").run()
  const reminders=await app.sql("SELECT * FROM notification_inbox WHERE id LIKE 'followup:%'")
  assert.equal(reminders.filter(n=>n.id===`followup:${dependent.id}:4`).length,1,'accepted obligation receives one internal reminder even on repeated schedules')
  assert.equal(reminders.find(n=>n.id===`followup:${dependent.id}:4`).email,0)

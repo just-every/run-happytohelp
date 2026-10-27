@@ -15,7 +15,7 @@ export default function FollowupObligations({conversation, reads, liveKey}) {
     useEffect(() => {
         let active = true;
         setData(null); setError('');
-        nativeRequest(base).then(result => {if (active) setData(result.data);}).catch(e => {if (active) setError(e.message);});
+        nativeRequest(base).then(result => {if (active) setData(result);}).catch(e => {if (active) setError(e.message);});
         return () => {active = false;};
     }, [base, reads, liveKey, refresh]);
     const write = async (path, body) => {

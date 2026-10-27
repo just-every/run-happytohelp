@@ -1,3 +1,4 @@
+import {runSteps} from './kit/steps.mjs';
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
 import {spawn,execFileSync} from 'node:child_process'
@@ -21,7 +22,7 @@ async function terminal(name){
 }
 const stop=async child=>{if(child.exitCode!==null)return;try{process.kill(-child.pid,'SIGTERM')}catch{}await new Promise(done=>{child.once('exit',done);setTimeout(()=>{try{process.kill(-child.pid,'SIGKILL')}catch{}},3000).unref()})}
 
-for(const [label,viewport] of Object.entries(viewports))test(`at ${viewport.width}px the copied setup command installs the packaged connector, pairs with a literal computer name, and completes only for its own pairing`,async()=>{
+test(`at 1440 and 390px the copied setup command installs the packaged connector, pairs with a literal computer name, and completes only for its own pairing`,async()=>runSteps(Object.entries(viewports).map(([label,viewport])=>[`${viewport.width}px`,async()=>{
  const shot=await evidence('connector-setup'),tenant=await runtime.seedTenant({name:'Setup '+label,email:`setup-${label}@connector.test`,allowedOrigin:runtime.origin})
  const context=await browser.newContext({viewport}),page=await context.newPage(),errors=[],children=[];let output=''
  page.on('pageerror',error=>errors.push(error.message))
@@ -54,4 +55,4 @@ for(const [label,viewport] of Object.entries(viewports))test(`at ${viewport.widt
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal scroll')
   assert.deepEqual(errors,[])
  }catch(error){success=false;await page.screenshot({path:shot(label+'-failure.png'),fullPage:true}).catch(()=>{});throw error}finally{for(const child of children)await stop(child);await context.close()}
-})
+}])))

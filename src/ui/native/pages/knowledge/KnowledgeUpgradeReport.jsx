@@ -31,7 +31,7 @@ export default function KnowledgeUpgradeReport({projectId}) {
             <dl><div><dt>Text rows checked</dt><dd>{report.canonicalisedRows}</dd></div><div><dt>Rows converted to references</dt><dd>{report.changedRows}</dd></div><div><dt>Articles withdrawn</dt><dd>{report.affectedArticleCount}</dd></div></dl>
             <p className="settings-note">Articles in unpublished collections were withdrawn during the upgrade. Review the affected articles and their collection publication settings.</p>
             {report.unpublishedArticles.length ? <ul>{report.unpublishedArticles.map(article => <li key={article.id}><Link to={article.editorPath}>{article.title}</Link></li>)}</ul> : report.affectedArticleCount === 0 && <p>No articles were withdrawn by the upgrade.</p>}
-            {report.unavailableArticleCount > 0 && <p className="settings-note">{report.unavailableArticleCount} affected {report.unavailableArticleCount === 1 ? 'article is' : 'articles are'} no longer available in this workspace.</p>}
+            {report.unavailableArticleCount > 0 && <p className="settings-note">{report.unavailableArticleCount} affected {report.unavailableArticleCount === 1 ? 'article is' : 'articles are'} unavailable to you.</p>}
             {report.nextCursor && <button type="button" className="btn btn-white" disabled={busy} onClick={loadMore}>{busy ? 'Loading…' : 'Show more articles'}</button>}
         </>}
     </section>;

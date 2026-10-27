@@ -16,6 +16,16 @@ export async function upgradeReport({app,p,owner,other,call},article) {
  assert.equal((await app.call(path,{token:owner.tokens.operator})).status,403,'an Agent cannot read upgrade metadata');
  assert.equal((await app.call(`/api/knowledge/${other}/upgrade-report`,{token:owner.tokens.owner})).status,403,'another workspace is denied');
  assert.equal((await app.call(path)).status,401);
+ const definition={name:'Scoped upgrade admin',base:'admin',permissions:['settings.manage','knowledge.read'],knowledgeArticleIds:[]};
+ const role=(await call(`/api/management/projects/${p}/roles`,{body:definition,status:201})).data.data;
+ await call(`/api/management/projects/${p}/agents/${owner.users.admin}`,{method:'PUT',body:{role:role.id},status:200});
+ const scoped=(await app.call(path,{token:owner.tokens.admin,status:200})).data;
+ assert.equal(scoped.unpublishedArticles.length,0,'article selections also bind administrative upgrade metadata');
+ assert.equal(scoped.unavailableArticleCount,2);
+ assert.ok(!JSON.stringify(scoped).includes(source.title),'unselected article titles are withheld');
+ await call(`/api/management/projects/${p}/roles/${role.id}`,{method:'PUT',body:{...definition,permissions:['settings.manage']},status:200});
+ assert.equal((await app.call(path,{token:owner.tokens.admin})).status,403,'settings authority alone cannot read knowledge metadata');
+ await call(`/api/management/projects/${p}/agents/${owner.users.admin}`,{method:'PUT',body:{role:'admin'},status:200});
  // Restore clears completion while retaining historical JSON; the endpoint must show pending again.
  const report=await app.first('SELECT * FROM knowledge_upgrade_reports WHERE project_id=?',p);
  await app.db.prepare("UPDATE knowledge_upgrade_reports SET completed_at=NULL,report_json=json_set(report_json,'$.status','completed') WHERE project_id=?").bind(p).run();

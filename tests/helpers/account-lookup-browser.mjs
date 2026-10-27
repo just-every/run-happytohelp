@@ -88,7 +88,9 @@ export async function accountLookupBrowser(){
   assert.equal(await customerPage.locator('#request-result').evaluate(node=>document.activeElement===node),true,'later offer refreshes keep refusal feedback focused');
   await customerCapture('03c-removed-account-question');
   const restored=(await api(`/api/forms/projects/${p}/forms/${form.id}`,{fields:published.fields,updatedAt:removed.updatedAt},'PATCH')).data;
-  await customerPage.reload();await customerPage.getByLabel('Support account',{exact:false}).selectOption(company.id);await customerPage.getByLabel('Request detail',{exact:false}).fill('Please restore access.');
+  await customerPage.reload();
+  const restoredOffer=customerPage.waitForResponse(response=>response.url().startsWith(origin+`/api/forms/${p}/${form.id}?`)&&response.request().method()==='GET');
+  await customerPage.getByLabel('Support account',{exact:false}).selectOption(company.id);await (await restoredOffer).finished();await customerPage.getByLabel('Request detail',{exact:false}).fill('Please restore access.');
   const removedAgain=(await api(`/api/forms/projects/${p}/forms/${form.id}`,{fields:[],updatedAt:restored.updatedAt},'PATCH')).data;
   let releaseRefresh,refreshStarted;
   const delayedRefresh=new Promise(resolve=>{releaseRefresh=resolve}),startedRefresh=new Promise(resolve=>{refreshStarted=resolve});
@@ -99,6 +101,7 @@ export async function accountLookupBrowser(){
    const subject=customerPage.getByLabel('Subject',{exact:false});await subject.focus();await customerPage.keyboard.type(' More context');
    const refreshed=customerPage.waitForResponse(response=>response.url().startsWith(origin+`/api/forms/${p}/${form.id}?`)&&response.request().method()==='GET');
    releaseRefresh();await (await refreshed).finished();await customerPage.waitForFunction(()=>{const select=document.querySelector('select[aria-invalid="true"]');return select?.disabled&&select.closest('[hidden]')});
+   await customerPage.waitForFunction(()=>document.querySelector('button[type=submit]').textContent!=='Sending…');
    assert.equal(await subject.evaluate(node=>document.activeElement===node),true,'a delayed refusal refresh preserves focus when the customer moves to another answer');
    await customerPage.keyboard.type(' retained');assert.ok((await subject.inputValue()).endsWith(' More context retained'),'typing continues in the chosen answer after the refusal refresh');
   }finally{releaseRefresh();await customerPage.unroute(offerRoute,delayOffer)}

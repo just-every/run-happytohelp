@@ -59,7 +59,7 @@ export async function answersJourney(){
    const session=(await app.call('/api/identity/widget/session',{body:{widgetKey:a.workspace.widgetKey,identifier:email,email,contact_hash:createHmac('sha256',secret).update(email).digest('hex')},headers:{Origin:'https://widget.example'},status:201})).data
    const conversation=(await app.call('/api/conversations',{token:session.token,body:{projectId:p},status:201})).data
    const path=`/api/conversations/${conversation.id}/messages`,transcript=async()=>(await app.call(path,{token:session.token,status:200})).data
-   return {id:conversation.id,contact:(await app.first('SELECT contact_id FROM conversations WHERE id=?',conversation.id)).contact_id,transcript,say:async()=>{const current=await transcript();await app.call(path,{token:session.token,body:{localId:crypto.randomUUID(),content:'Explain my refund entitlement',expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})}}
+   return {token:session.token,id:conversation.id,contact:(await app.first('SELECT contact_id FROM conversations WHERE id=?',conversation.id)).contact_id,transcript,say:async()=>{const current=await transcript();await app.call(path,{token:session.token,body:{localId:crypto.randomUUID(),content:'Explain my refund entitlement',expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})}}
   }
   const permitted=await verifiedVisitor('synthetic-hh-1@trusted.test'),forbidden=await verifiedVisitor('synthetic-hh-2@trusted.test'),grantPath=`/api/knowledge/${p}/categories/${category}/entitlements`
   const grant=ids=>app.call(grantPath,{token:a.owner,method:'PUT',body:{contactIds:ids},status:200})
@@ -73,7 +73,23 @@ export async function answersJourney(){
   ai.respond=answering(()=>[]);await forbidden.say();await a.run()
   assert.ok(!searched.includes(`article:${restricted}`),'same-domain customer without entitlement never exposes the article to the model')
   ai.respond=answering(()=>restrictedRefs,{before:()=>grant([])});await permitted.say();await a.run()
-  assert.equal((await permitted.transcript()).messages.filter(m=>m.actor_role==='ai').length,1,'revocation between citation and message admission blocks the next answer')
+  assert.equal((await permitted.transcript()).messages.filter(m=>m.actor_role==='ai').length,0,'revocation hides stale replies and blocks the next answer')
+
+  const admittedCount=async()=>(await app.first("SELECT count(*) n FROM messages WHERE conversation_id=? AND actor_role='ai'",permitted.id)).n
+  const originalCount=await admittedCount()
+  await grant([permitted.contact])
+  ai.respond=answering(()=>[],{before:()=>grant([])});await permitted.say();await a.run()
+  assert.equal(await admittedCount(),originalCount,'uncited restricted answers recheck all retrieved sources at final admission')
+  assert.equal((await permitted.transcript()).messages.filter(m=>m.actor_role==='ai').length,0,'stored customer API replay suppresses stale restricted answers')
+  const replay=await app.request(`/api/conversations/${permitted.id}/socket?token=${permitted.token}`,{headers:{Upgrade:'websocket'}});assert.equal(replay.status,101)
+  const stream=replay.webSocket,events=[];stream.accept()
+  await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('restricted replay deadline')),5000);stream.addEventListener('message',event=>{const data=JSON.parse(event.data);events.push(data);if(data.type==='pong'){clearTimeout(timer);resolve()}});stream.send(JSON.stringify({type:'replay'}))})
+  assert.ok(!events.some(event=>event.message?.actor_role==='ai'),'socket replay cannot release a revoked answer');stream.close()
+  await grant([permitted.contact])
+  const participantPath=`/api/dashboard/projects/${p}/conversations/${permitted.id}/participants`
+  ai.respond=answering(()=>[],{before:()=>app.call(participantPath,{token:a.owner,body:{email:'synthetic-hh-2@trusted.test'},status:201})});await permitted.say();await a.run()
+  assert.equal(await admittedCount(),originalCount,'a recipient added after retrieval blocks even an uncited answer')
+  assert.equal((await permitted.transcript()).messages.filter(m=>m.actor_role==='ai').length,0,'changed participants suppress stale restricted replay')
 
   // Asking for a person hands the conversation to a human; the assistant writes nothing more and a person can reply.
   ai.respond=async()=>openaiToolCall('switch_agent',{agent_id:'human'},'handoff')

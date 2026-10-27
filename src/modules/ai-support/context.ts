@@ -1,3 +1,4 @@
+import {messageKnowledgeSql,inheritKnowledgeSources} from '../knowledge/delivery'
 import {assistanceProfileSql,replyProfileSql} from './selection'
 import type { Env } from '../../platform/env'
 import {repositoryTools} from './repository-tools'
@@ -14,11 +15,12 @@ export async function replyContext(env:Env,projectId:string,conversationId:strin
  const [project,customer,rows,notes,profile,customerContext]=await Promise.all([
  env.DB.prepare('SELECT id,name FROM projects WHERE id=?').bind(projectId).first(),
  env.DB.prepare('SELECT id,name,email FROM contacts WHERE id=? AND project_id=?').bind(conversation.contact_id,projectId).first(),
- env.DB.prepare('SELECT id,actor_role,content,created_at,revision FROM messages WHERE conversation_id=? AND project_id=? ORDER BY revision DESC LIMIT 100').bind(conversationId,projectId).all<any>(),
+ env.DB.prepare(`SELECT m.id,m.actor_role,m.content,m.created_at,m.revision FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE m.conversation_id=? AND m.project_id=? AND ${messageKnowledgeSql('m','c')} ORDER BY m.revision DESC LIMIT 100`).bind(conversationId,projectId).all<any>(),
  env.DB.prepare('SELECT n.id,n.content,n.created_at FROM conversation_notes n JOIN conversations c ON c.id=n.conversation_id WHERE c.id=? AND c.project_id=? ORDER BY n.created_at DESC LIMIT 40').bind(conversationId,projectId).all<any>(),
  env.DB.prepare(`SELECT a.id,a.name,a.prompt,a.model,a.avatar_url FROM conversations c JOIN ai_profiles a ON a.id=${audience==='agent'?assistanceProfileSql:replyProfileSql} WHERE c.id=? AND a.project_id=? AND a.is_enabled=1`).bind(conversationId,projectId).first<any>(),
  getContextPacket(env,projectId,conversation.contact_id)])
  if(!profile)throw new Error('CONFIGURATION_REQUIRED: enabled selected conversation AI')
+ if(generationId)await inheritKnowledgeSources(env,generationId,rows.results.map(row=>row.id))
  const timeline=rows.results.reverse().map(m=>({kind:'message',evidence_id:`message:${m.id}`,id:m.id,role:m.actor_role,content:m.content,created_at:m.created_at,visibility:'customer-conversation'}))
  const privateNotes=notes.results.reverse().map(n=>({...n,evidence_id:`note:${n.id}`,visibility:'private-to-operators'}))
  const activity=customerContext.consent?customerContext.evidence.map(e=>({...e,evidence_id:`context:${e.id}`})):[]

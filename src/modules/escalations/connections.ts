@@ -6,7 +6,7 @@ import {memberAccess} from '../access/gate'
 import {teamsTarget} from './providers/teams'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement,requestSource} from '../audit/record'
-import {escalationAccess,string} from './access'
+import {escalationAccess,string,requestBody} from './access'
 import type {Connection,Provider} from './providers'
 export const prefix='/projects/:projectId'
 export interface ConnectionRow {id:string;project_id:string;provider:Provider;target:string;base_url:string|null;token_cipher:string|null;webhook_cipher:string|null;installed_by:string|null}
@@ -30,8 +30,10 @@ function baseUrl(value:unknown,p:Provider){
 export const connectionRoutes=new Hono<AppEnv>()
 connectionRoutes.get(prefix+'/connections',async c=>{const {actor}=await escalationAccess(c);const rows=await c.env.DB.prepare('SELECT id,provider,target,base_url,token_cipher IS NOT NULL connected FROM escalation_connections WHERE project_id=? UNION ALL SELECT id,provider,target,base_url,token_cipher IS NOT NULL connected FROM escalation_teams_connections WHERE project_id=? ORDER BY provider').bind(actor.projectId,actor.projectId).all();return c.json({data:rows.results.map(row=>({...row,connected:!!row.connected,webhook_url:['slack','teams'].includes(String(row.provider))?undefined:new URL(`/api/escalations/webhooks/${row.id}`,c.req.url).href}))})})
 connectionRoutes.post(prefix+'/connections',async c=>{
- const {actor}=await escalationAccess(c,'integrations.install');await requireStepUp(c,actor,'escalations.install')
- const body=await c.req.json(),p=provider(body.provider),target=string(body.target,'provider target',200),url=baseUrl(body.base_url,p)
+ const {actor}=await escalationAccess(c,'integrations.install'),body=await requestBody(c);await requireStepUp(c,actor,'escalations.install')
+ const p=provider(body.provider),url=baseUrl(body.base_url,p)
+ let target=string(body.target,'provider target',200)
+ if(p==='teams')target=target.replace(/\s*\/\s*/,'/')
  if(p==='github'&&!/^[\w.-]+\/[\w.-]+$/.test(target)||p==='slack'&&!/^[CG][A-Z0-9]+$/.test(target))throw new HTTPException(400,{message:'Invalid repository or channel'})
  if(p==='teams'){const access=await memberAccess(c.env.DB,actor.projectId,actor.id);if(!access||!['owner','admin'].includes(access.base))throw new HTTPException(403,{message:'Only a workspace administrator can install Teams'});try{teamsTarget(target)}catch{throw new HTTPException(400,{message:'Use the Teams team UUID followed by its channel ID, separated by a slash'})}}
  const rawToken=string(body.token,'token',10000),token=p==='jira'&&body.email?'Basic '+btoa(string(body.email,'Jira email',320)+':'+rawToken):rawToken

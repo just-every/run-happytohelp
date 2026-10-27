@@ -99,6 +99,24 @@ export async function custodyJourney(){const h=await escalationHarness();try{
 
 async function teamsSharing(h){
  const {app,providers,records,root}=h,r=records[15],edge=providers.teams;
+ const routes=['/connections',...['/preview','/links','/slack','/teams','/links/unknown/recovery','/drafts/unknown/send'].map(path=>root(r)+path)];
+ const beforeRequests=Object.values(providers).reduce((n,p)=>n+(p.received?.length??0),0),beforeOutbound=app.requests.length;
+ const counts=async()=>Promise.all(['escalation_operations','escalation_attachment_grants','escalation_handoffs','escalation_drafts','messages','audit_events','conversation_outbox','triage_jobs'].map(table=>app.first(`SELECT count(*) n FROM ${table}`)));
+ const beforeRows=await counts();
+ for(const path of routes)for(const malformed of ['[]','[{}]','"synthetic-hh-8"','null','{','true','42','']){
+  const response=await app.call(h.base+path,{token:h.token,method:'POST',raw:true,body:malformed,headers:{'Content-Type':'application/json'}});
+  assert.equal(response.status,400,`${path} refuses non-object or invalid JSON: ${malformed}`);
+  assert.equal(typeof response.data.error,'string','refusal uses the normal error shape');
+  assert.equal(Object.values(providers).reduce((n,p)=>n+(p.received?.length??0),0),beforeRequests,'malformed input never reaches any provider');
+  assert.equal(app.requests.length,beforeOutbound,'malformed input starts no outbound work');
+ }
+ assert.deepEqual(await counts(),beforeRows,'malformed bodies persist no jobs, operations, grants, handoffs, drafts, messages or audit changes');
+ for(const target of [edge.target.replace('/',' / '),edge.target]){
+  const response=await app.call(h.base+'/connections',{token:h.token,body:{provider:'teams',target,base_url:edge.baseUrl,token:edge.token}});
+  assert.equal(response.status,201,'both displayed and compact Teams targets connect');
+  assert.equal(response.data.data.target,edge.target,'the stored Teams target is normalized');
+  assert.equal((await app.first('SELECT target FROM escalation_teams_connections WHERE project_id=?',h.ws.projectId)).target,edge.target);
+ }
  const body={message_ids:[r.message.id],attachment_ids:[r.file.id],request_id:crypto.randomUUID()};
  const send=(payload=body,token=h.token)=>app.call(h.base+root(r)+'/teams',{token,body:payload});
  const results=await Promise.all([send(),send()]);assert.ok(results.some(r=>r.status===201));assert.ok(results.every(r=>[200,201,409].includes(r.status)),JSON.stringify(results));

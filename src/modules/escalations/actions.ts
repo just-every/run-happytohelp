@@ -4,7 +4,7 @@ import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
 import {auditStatement,requestSource} from '../audit/record'
-import {escalationAccess,string} from './access'
+import {escalationAccess,string,requestBody} from './access'
 import {prefix,loadConnection,provider} from './connections'
 import {selectedContext,shareContext} from './context'
 import {saveIssue,ticketEscalations} from './issues'
@@ -12,9 +12,9 @@ import {createIssue,getIssue,addTicketLink,postSlack,postTeams} from './provider
 export const ticketPrefix=prefix+'/conversations/:conversationId'
 export const actionRoutes=new Hono<AppEnv>()
 actionRoutes.get(ticketPrefix,async c=>{const {actor,conversation}=await escalationAccess(c);return c.json({data:await ticketEscalations(c.env,actor.projectId,conversation.id)})})
-actionRoutes.post(ticketPrefix+'/preview',async c=>{const {actor,conversation}=await escalationAccess(c,'conversations.manage'),body=await c.req.json(),context=await selectedContext(c.env,actor.projectId,conversation.id,body);return c.json({data:{body:[`Support ticket: ${new URL(`/projects/${actor.projectId}/conversations/${conversation.id}`,c.req.url).href}`,context.body,...context.attachments.map(f=>`${f.filename} (${f.size} bytes; download link expires in 7 days)`)].filter(Boolean).join('\n\n')}})})
+actionRoutes.post(ticketPrefix+'/preview',async c=>{const {actor,conversation}=await escalationAccess(c,'conversations.manage'),body=await requestBody(c),context=await selectedContext(c.env,actor.projectId,conversation.id,body);return c.json({data:{body:[`Support ticket: ${new URL(`/projects/${actor.projectId}/conversations/${conversation.id}`,c.req.url).href}`,context.body,...context.attachments.map(f=>`${f.filename} (${f.size} bytes; download link expires in 7 days)`)].filter(Boolean).join('\n\n')}})})
 async function perform(c:any,handoff:'slack'|'teams'|null=null){
- const {actor,conversation}=await escalationAccess(c,'conversations.manage'),body=await c.req.json(),p=handoff??provider(body.provider),slack=!!handoff
+ const {actor,conversation}=await escalationAccess(c,'conversations.manage'),body=await requestBody(c),p=handoff??provider(body.provider),slack=!!handoff
  if(!slack&&['slack','teams'].includes(p))throw new HTTPException(400)
  const {row,connection}=await loadConnection(c.env,actor.projectId,p)
  const context=await selectedContext(c.env,actor.projectId,conversation.id,body)
@@ -54,7 +54,7 @@ actionRoutes.post(ticketPrefix+'/links',c=>perform(c))
 actionRoutes.post(ticketPrefix+'/slack',c=>perform(c,'slack'))
 actionRoutes.post(ticketPrefix+'/teams',c=>perform(c,'teams'))
 actionRoutes.post(ticketPrefix+'/links/:linkId/recovery',async c=>{
- const {actor,conversation}=await escalationAccess(c,'conversations.manage'),body=await c.req.json(),observation=string(body.observation,'customer recovery observation',2000),id=c.req.param('linkId')
+ const {actor,conversation}=await escalationAccess(c,'conversations.manage'),body=await requestBody(c),observation=string(body.observation,'customer recovery observation',2000),id=c.req.param('linkId')
  if(!id)throw new HTTPException(404)
  const link=await c.env.DB.prepare('SELECT id FROM escalation_links WHERE id=? AND project_id=? AND conversation_id=?').bind(id,actor.projectId,conversation.id).first();if(!link)throw new HTTPException(404)
  await c.env.DB.batch([c.env.DB.prepare("UPDATE escalation_links SET recovery='observed',observation=? WHERE id=?").bind(observation,id),auditStatement(c.env.DB,{projectId:actor.projectId,category:'approval',action:'escalation.recovery_observed',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'escalation_link',id}})])

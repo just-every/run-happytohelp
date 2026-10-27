@@ -56,7 +56,7 @@ export async function exerciseEscalations({browser,origin,owner,entryUrl,provide
  await open(records[0]);await panel().locator('.escalation-connections > summary').click();
  for(const name of ['github','linear','jira','slack','teams']){
   const form=panel().locator('.escalation-provider').filter({has:page.locator(`button`).filter({hasText:`Save ${name==='github'?'GitHub':name==='jira'?'Jira':name==='slack'?'Slack':name==='teams'?'Teams':'Linear'} connection`})});
-  await form.locator('summary').click();const p=providers[name];if(name==='teams'&&width===390){const [team,channel]=p.target.split('/');const example=(await form.locator('[name=target]').getAttribute('placeholder')).replace('Team UUID',team).replace('channel ID',channel).replaceAll(' ','');await form.locator('[name=target]').fill(example)}else await form.locator('[name=target]').fill(p.target);await form.locator('[name=base_url]').fill(p.baseUrl);
+  await form.locator('summary').click();const p=providers[name];if(name==='teams'&&width===390){const [team,channel]=p.target.split('/');const example=(await form.locator('[name=target]').getAttribute('placeholder')).replace('Team UUID',team).replace('channel ID',channel);await form.locator('[name=target]').fill(example)}else await form.locator('[name=target]').fill(p.target);await form.locator('[name=base_url]').fill(p.baseUrl);
   await form.locator('[name=token]').fill(name==='jira'?'synthetic-jira-token':p.token);
   if(name==='jira')await form.locator('[name=email]').fill('engineer@example.test');
   if(!['slack','teams'].includes(name))await form.locator('[name=webhook_secret]').fill(p.secret);

@@ -5,7 +5,7 @@ export async function slaSlackBrowser({page,runtime,fixture,policy}){
  const shot=await evidence('sla-slack')
  const capture=async name=>{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${name}: desktop overflow`)
-  for(const width of [1440,390]){await page.setViewportSize({width,height:width===390?844:1000});await page.waitForTimeout(350);await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true})}
+  for(const width of [1440,390]){await page.setViewportSize({width,height:width===390?844:1000});await page.waitForTimeout(350);if(['pending','failed','uncertain','acknowledged'].some(state=>name.endsWith(state))){if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click();await page.getByRole('tab',{name:'Ticket',exact:true}).click();await page.locator('.workflow-panel').scrollIntoViewIfNeeded()}await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true})}
   await page.setViewportSize({width:1440,height:1000})
  }
  await page.goto(`${runtime.origin}/projects/${projectId}/slack-settings`)
@@ -24,18 +24,20 @@ export async function slaSlackBrowser({page,runtime,fixture,policy}){
  await page.getByRole('button',{name:'Save policy',exact:true}).click()
  await page.getByRole('heading',{name:/Business account response/}).waitFor()
  assert.equal((await api(base+'/sla-policies')).data.find(row=>row.id===policy.id).slack_destination_id,target.id)
- // A separate call policy keeps every pre-existing browser fixture ticket out.
+ // A separate phone policy keeps every pre-existing browser fixture ticket out.
  const calendar=(await api(base+'/workflow-calendars',{name:'Slack proof hours',timezone:'UTC',weekly:[0,1,2,3,4,5,6].map(day=>({day,start:'00:00',end:'24:00'})),holidays:'none',closures:[]})).data
  const me=(await api('/api/management/bootstrap')).currentAgent
- const proof=(await api(base+'/sla-policies',{name:'Slack backup proof',calendar_id:calendar.id,position:0,conditions:{channels:['call']},first_response_minutes:30,approaching_minutes:15,backup_user_ids:[me.id],slack_destination_id:target.id})).data
+ const proof=(await api(base+'/sla-policies',{name:'Slack backup proof',calendar_id:calendar.id,position:0,conditions:{channels:['phone']},first_response_minutes:30,approaching_minutes:15,backup_user_ids:[me.id],slack_destination_id:target.id})).data
  const start=Date.parse('2030-01-07T12:00:00Z')
  await api(base+'/workflow-clock',{now:start})
+ await api(`/api/management/projects/${projectId}/availability`,{is_presence_away_enabled:false},'PUT')
  const ids=[]
  for(let n=0;n<3;n++){
   const ticket=await api('/api/conversations',{projectId,contactId:tickets[0].visitor.contactId})
-  await api(`/api/conversations/${ticket.id}/messages`,{localId:`synthetic-hh-${n}`,content:'A replacement is needed.',expectedRevision:0})
+  const admitted=await fetch(`${runtime.origin}/api/conversations/${ticket.id}/messages`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${tickets[0].visitor.token}`},body:JSON.stringify({localId:`synthetic-hh-${n}`,content:'A replacement is needed.',expectedRevision:0})})
+  assert.equal(admitted.status,200)
   const current=(await api(`${base}/conversations/${ticket.id}/ticket`)).data
-  await api(`${base}/conversations/${ticket.id}/ticket`,{expected_version:current.ticket_version,channel:'call',status_id:'open',agent_id:me.id},'PATCH')
+  await api(`${base}/conversations/${ticket.id}/ticket`,{expected_version:current.ticket_version,channel:'phone',status_id:'open',agent_id:me.id},'PATCH')
   ids.push(ticket.id)
  }
  for(let tick=0;tick<4;tick++)await api(base+'/workflow-clock',{now:start+15*60000})
@@ -52,7 +54,7 @@ export async function slaSlackBrowser({page,runtime,fixture,policy}){
   await panel.scrollIntoViewIfNeeded()
   await capture(`sla-slack-${state}`)
   if(state==='uncertain'){
-   await panel.getByRole('button',{name:'Acknowledge alert',exact:true}).first().click()
+   await panel.locator('.workflow-alert-list li').filter({hasText:'Slack: Uncertain'}).getByRole('button',{name:'Acknowledge alert',exact:true}).click()
    await panel.getByText(/Acknowledged/).first().waitFor()
    assert.equal((await api(`${base}/conversations/${row.id}/sla`)).data.alerts.find(a=>a.id===row.alert.id).state,'acknowledged')
    await capture('sla-slack-acknowledged')

@@ -12116,7 +12116,7 @@
       "executable": false
     },
     "tests/helpers/workflows/sla-slack-browser.mjs": {
-      "sha256": "3bad216c716f70b222553a3bb0dff56b3d031d1159134706d6cc0b323854c104",
+      "sha256": "dff14fdd0eee8f7d155c3ebc0148b5f6a8da09b566caee49b7eb5751a398d685",
       "executable": false
     },
     "tests/helpers/workflows/sla-slack.mjs": {

@@ -21,6 +21,8 @@ export async function obligationsJourney(){
  let row=(await call('',{status:200})).data.obligations[0]
  assert.equal(row.id,created.id);assert.equal(row.state,'proposed');assert.equal(row.draft,null)
  assert.equal(row.quote,body.quote)
+ const duplicate=(await call('',{body,status:201})).data
+ assert.equal(duplicate.id,created.id);assert.equal(duplicate.duplicate,true);assert.equal(duplicate.pendingChange,false)
  await call(`/${row.id}/accept`,{body:{version:1,ownerId:workspace.users.owner,dueAt:due},status:200})
  assert.equal((await call(`/${row.id}/accept`,{body:{version:1,ownerId:workspace.users.operator,dueAt:due+1000}})).status,409)
  await call(`/${row.id}/accept`,{body:{version:2,ownerId:workspace.users.operator,dueAt:due+1000},status:200})
@@ -41,7 +43,12 @@ export async function obligationsJourney(){
  ])
  const dependent=(await call('',{body:{...body,dependencyId:'issue'},status:201})).data
  assert.equal(dependent.id,created.id,'one cited promise remains one obligation')
- await call(`/${dependent.id}/accept`,{body:{version:3,ownerId:workspace.users.owner,dueAt:due,dependencyId:'issue'},status:200})
+ assert.equal(dependent.duplicate,true);assert.equal(dependent.pendingChange,true)
+ const pending=(await call('',{status:200})).data.obligations[0]
+ assert.equal(pending.owner_id,workspace.users.operator,'a revised proposal leaves accepted terms intact')
+ assert.deepEqual(pending.pendingTerms,{ownerId:body.ownerId,dueAt:body.dueAt,stopCondition:body.stopCondition,dependencyId:'issue'})
+ assert.equal((await call(`/${dependent.id}/accept`,{body:{version:3,ownerId:body.ownerId,dueAt:due}})).status,409)
+ await call(`/${dependent.id}/accept`,{body:{version:4,ownerId:workspace.users.owner,dueAt:due,dependencyId:'issue',stopCondition:'Customer receives the revised update'},status:200})
  // A saturated follow-up page yields to the other scheduled consumers. The
  // overload rows represent accepted commitments already retained in storage.
  for(let i=0;i<30;i++)await app.db.prepare(`INSERT INTO followup_obligations(id,project_id,conversation_id,message_id,quote_start,quote_end,owner_id,due_at,stop_condition,state,version,accepted_by,accepted_at,created_at,updated_at)
@@ -54,10 +61,10 @@ export async function obligationsJourney(){
  assert.equal((await app.first("SELECT count(*) n FROM notification_inbox WHERE id LIKE 'followup:%'")).n,31,'remaining obligations advance on the next tick')
  await app.db.prepare("DELETE FROM followup_obligations WHERE id LIKE 'synthetic-hh-backlog-%'").run()
  const reminders=await app.sql("SELECT * FROM notification_inbox WHERE id LIKE 'followup:%'")
- assert.equal(reminders.filter(n=>n.id===`followup:${dependent.id}:4`).length,1,'accepted obligation receives one internal reminder even on repeated schedules')
- assert.equal(reminders.find(n=>n.id===`followup:${dependent.id}:4`).email,0)
+ assert.equal(reminders.filter(n=>n.id===`followup:${dependent.id}:5`).length,1,'accepted obligation receives one internal reminder even on repeated schedules')
+ assert.equal(reminders.find(n=>n.id===`followup:${dependent.id}:5`).email,0)
  row=(await call('',{status:200})).data.obligations.find(o=>o.id===dependent.id)
- assert.equal(row.dependency.stale,true);assert.equal(row.dependency.progress,'unconfirmed')
+ assert.equal(row.pendingTerms,null);assert.equal(row.stop_condition,'Customer receives the revised update');assert.equal(row.dependency.stale,true);assert.equal(row.dependency.progress,'unconfirmed')
  assert.doesNotMatch(row.draft.content,/have observed recovery/,'a closed issue without readback is not progress')
  await app.db.prepare("INSERT INTO escalation_deliveries VALUES('con','receipt','issue',1,?)").bind(Date.now()).run()
  row=(await call('',{status:200})).data.obligations.find(o=>o.id===dependent.id)
@@ -65,10 +72,10 @@ export async function obligationsJourney(){
  await app.db.prepare("UPDATE escalation_links SET recovery='observed' WHERE id='link'").run()
  row=(await call('',{status:200})).data.obligations.find(o=>o.id===dependent.id)
  assert.equal(row.dependency.progress,'recovery observed')
- assert.equal((await call(`/${row.id}/complete`,{body:{version:4,stopConditionMet:true,confirmationMessageId:message.id,quote:body.quote}})).status,409,'the original promise is not fresh completion evidence')
+ assert.equal((await call(`/${row.id}/complete`,{body:{version:5,stopConditionMet:true,confirmationMessageId:message.id,quote:body.quote}})).status,409,'the original promise is not fresh completion evidence')
  await v.say('Thank you; the export works now.')
  const confirmation=(await v.transcript()).messages.filter(m=>m.actor_role==='contact').at(-1)
- await call(`/${row.id}/complete`,{body:{version:4,stopConditionMet:true,confirmationMessageId:confirmation.id,quote:'the export works now'},status:200})
+ await call(`/${row.id}/complete`,{body:{version:5,stopConditionMet:true,confirmationMessageId:confirmation.id,quote:'the export works now'},status:200})
  row=(await call('',{status:200})).data.obligations[0]
  assert.equal(row.state,'completed');assert.equal(row.reminderDue,false);assert.equal(row.draft,null)
  assert.equal(row.completion.confirmationMessageId,confirmation.id);assert.equal(row.completion.reviewerId,workspace.users.owner)

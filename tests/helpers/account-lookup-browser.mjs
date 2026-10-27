@@ -87,7 +87,22 @@ export async function accountLookupBrowser(){
   await customerPage.evaluate(()=>window.dispatchEvent(new Event('focus')));await (await refreshed).finished();
   assert.equal(await customerPage.locator('#request-result').evaluate(node=>document.activeElement===node),true,'later offer refreshes keep refusal feedback focused');
   await customerCapture('03c-removed-account-question');
-  await api(`/api/forms/projects/${p}/forms/${form.id}`,{fields:published.fields,updatedAt:removed.updatedAt},'PATCH');
+  const restored=(await api(`/api/forms/projects/${p}/forms/${form.id}`,{fields:published.fields,updatedAt:removed.updatedAt},'PATCH')).data;
+  await customerPage.reload();await customerPage.getByLabel('Support account',{exact:false}).selectOption(company.id);await customerPage.getByLabel('Request detail',{exact:false}).fill('Please restore access.');
+  const removedAgain=(await api(`/api/forms/projects/${p}/forms/${form.id}`,{fields:[],updatedAt:restored.updatedAt},'PATCH')).data;
+  let releaseRefresh,refreshStarted;
+  const delayedRefresh=new Promise(resolve=>{releaseRefresh=resolve}),startedRefresh=new Promise(resolve=>{refreshStarted=resolve});
+  const offerRoute=origin+`/api/forms/${p}/${form.id}?*`,delayOffer=async route=>{refreshStarted();await delayedRefresh;await route.continue()};
+  await customerPage.route(offerRoute,delayOffer);
+  try{
+   await customerPage.getByRole('button',{name:'Submit request',exact:true}).focus();await customerPage.keyboard.press('Enter');await startedRefresh;
+   const subject=customerPage.getByLabel('Subject',{exact:false});await subject.focus();await customerPage.keyboard.type(' More context');
+   const refreshed=customerPage.waitForResponse(response=>response.url().startsWith(origin+`/api/forms/${p}/${form.id}?`)&&response.request().method()==='GET');
+   releaseRefresh();await (await refreshed).finished();await customerPage.waitForFunction(()=>{const select=document.querySelector('select[aria-invalid="true"]');return select?.disabled&&select.closest('[hidden]')});
+   assert.equal(await subject.evaluate(node=>document.activeElement===node),true,'a delayed refusal refresh preserves focus when the customer moves to another answer');
+   await customerPage.keyboard.type(' retained');assert.ok((await subject.inputValue()).endsWith(' More context retained'),'typing continues in the chosen answer after the refusal refresh');
+  }finally{releaseRefresh();await customerPage.unroute(offerRoute,delayOffer)}
+  await api(`/api/forms/projects/${p}/forms/${form.id}`,{fields:published.fields,updatedAt:removedAgain.updatedAt},'PATCH');
   await customerPage.reload();await customerPage.getByLabel('Support account',{exact:false}).selectOption(company.id);await customerPage.getByLabel('Request detail',{exact:false}).fill('Please restore access.');
   await customerPage.getByRole('button',{name:'Submit request',exact:true}).click();await customerPage.getByRole('link',{name:'View your request',exact:true}).waitFor();await customerCapture('04-submitted')
   const ticketId=(await customerPage.getByRole('link',{name:'View your request'}).getAttribute('href')).split('/').at(-1)

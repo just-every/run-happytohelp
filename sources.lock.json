@@ -2628,7 +2628,7 @@
       "executable": false
     },
     "public/site-assets/help_center/request-forms.js": {
-      "sha256": "c65858da1172066c578219a856317a18539015e05ef87299169dc13b003327c4",
+      "sha256": "3857c5693a7a98b0c2d69e531f312a8d8342dd25389f5a1341791cb74887f0cd",
       "executable": false
     },
     "public/site-assets/help_center/surveys.css": {
@@ -11160,7 +11160,7 @@
       "executable": false
     },
     "tests/helpers/account-lookup-browser.mjs": {
-      "sha256": "defb6ca545fdb9e349635ddd96ad6593b4e27dec0b93e46a57acd60c17de1bba",
+      "sha256": "3a98434c4151ae4f9e832564095e53a5e3ad6b1b56404d3a94ca8cfe7da6065e",
       "executable": false
     },
     "tests/helpers/account-lookup-journey.mjs": {

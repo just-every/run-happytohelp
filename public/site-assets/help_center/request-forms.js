@@ -36,7 +36,7 @@
      const link=document.createElement('a');link.href=`/portal/${encodeURIComponent(model.projectId)}/requests`;link.textContent='My requests';identity.append(link,document.createTextNode('.'));
      form.querySelector('.request-unavailable')?.remove();
     }else{
-     const identity=form.querySelector('.request-identity'),link=document.createElement('a');link.href=form.dataset.signin;link.target='_blank';link.rel='noopener';link.textContent='verify your email';identity.replaceChildren(document.createTextNode('Before we send your request, '),link,document.createTextNode('. Keep this form open while you sign in.'));
+     const identity=form.querySelector('.request-identity'),link=document.createElement('a');link.href=form.dataset.signin;link.target='_blank';link.rel='noopener';link.textContent='verify your email';identity.replaceChildren(document.createTextNode('Before we send your request, you’ll need to '),link,document.createTextNode('. Keep this form open while you sign in.'));
     }
     update();if(restoreRefusal)focusRefusal();
    }catch{}finally{refreshing=null;if(refreshAgain){refreshAgain=false;await refreshAccounts();}}
@@ -62,6 +62,6 @@
    }
    sessionStorage.removeItem(key);const ticket=data.ticket||data;const a=document.createElement('a');a.href=`/portal/${encodeURIComponent(model.projectId)}/requests/${encodeURIComponent(ticket.id)}`;a.textContent='View your request';result.append(document.createTextNode('Your request was sent. '),a);form.hidden=true;result.focus();
   }catch {result.textContent='The connection was interrupted. Your form is still here. Submit again to check the same request.';}
-  finally{button.textContent=model.submitLabel;update();if(refused)focusRefusal();}
+  finally{button.textContent=model.submitLabel;update();if(refused&&[document.body,result,refusedField&&control(refusedField)].includes(document.activeElement))focusRefusal();}
  });
 })();

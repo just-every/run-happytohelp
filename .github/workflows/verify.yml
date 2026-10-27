@@ -2,7 +2,7 @@ name: Verify
 
 on:
   push:
-    branches: [main, release/0.3.x, release/0.4.x]
+    branches: ['**']
   pull_request:
   workflow_dispatch:
 
@@ -10,15 +10,61 @@ permissions:
   contents: read
 
 concurrency:
-  group: verify-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: verify-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   WRANGLER_SEND_METRICS: 'false'
 
 jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      skip: ${{ steps.reuse.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - id: reuse
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          WF_REF: ${{ github.workflow_ref }}
+        run: |
+          set -euo pipefail
+          source scripts/ci/verify-evidence.sh
+          skip=false
+          # C1: reuse a green branch push when main receives the identical SHA.
+          if [ "$EVENT" = push ] && [ "$REF" = refs/heads/main ] && green "$GITHUB_SHA"; then skip=true; fi
+          # C3: reuse a green parent only without conflicting evidence on this SHA.
+          if [ "$skip" = false ] && [ "$EVENT" = push ] && parent=$(git rev-parse -q --verify HEAD~1) \
+             && [ "$(git rev-parse 'HEAD^{tree}')" = "$(git rev-parse 'HEAD~1^{tree}')" ] \
+             && pushes_clear "$GITHUB_SHA" && green "$parent"; then skip=true; fi
+          # C2: a same-repository PR waits for its head's push, at most 25 minutes.
+          if [ "$EVENT" = pull_request ] && [ "$SAME_REPO" = true ]; then
+            for _ in $(seq 1 50); do
+              state=$(newest_push "$PR_HEAD")
+              case "$state" in
+                'completed success') skip=true; break ;;
+                ''|unavailable|completed\ *) break ;;
+                *) sleep 30 ;;
+              esac
+            done
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+
   build:
-    runs-on: ubuntu-latest
+    needs: plan
+    if: needs.plan.outputs.skip != 'true'
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     # Only generated, public build output is shared; no local state or secrets.
     steps:
@@ -63,93 +109,68 @@ jobs:
           retention-days: 7
 
   checks:
-    needs: build
+    needs: [plan, build]
+    if: needs.plan.outputs.skip != 'true'
     name: Verify / ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: public-browsers
+          - name: shard-1
             browser: true
+            # Last green main check time: 1020 seconds across these unchanged commands.
+            commands: |
+              node --test --test-concurrency=1 --test-skip-pattern=management.libraries --test-skip-pattern=appearance.settings tests/journeys/inbox-browser.mjs
+              node --test --test-concurrency=1 tests/journeys/move-in-erasure.mjs
+          - name: shard-2
+            browser: true
+            # Last green main check time: 1029 seconds across these unchanged commands.
+            commands: |
+              node --test --test-concurrency=1 tests/journeys/widget-browser.mjs tests/journeys/ai-browser.mjs
+              node --test --test-concurrency=1 tests/journeys/move-in-custody.mjs tests/journeys/move-in-capacity.mjs
+          - name: shard-3
+            browser: true
+            # Last green main check time: 998 seconds across these unchanged commands.
+            commands: |
+              node --test --test-concurrency=1 tests/journeys/ai.mjs tests/journeys/public.mjs tests/journeys/email.mjs tests/journeys/knowledge.mjs tests/journeys/inbox.mjs tests/journeys/widget.mjs tests/journeys/erasure.mjs tests/journeys/legacy.mjs tests/journeys/context.mjs
+              node --test --test-concurrency=1 --test-name-pattern=dashboard.is.ready tests/journeys/first-run-browser.mjs
+          - name: shard-4
+            browser: true
+            # Last green main check time: 913 seconds across these unchanged commands.
             commands: |
               node --test --test-concurrency=1 tests/journeys/public-browser.mjs tests/journeys/identity-browser.mjs
               node tests/demo-inbox-browser.mjs
-          - name: inbox-browser
-            browser: true
-            commands: |
-              node --test --test-concurrency=1 --test-skip-pattern=management.libraries --test-skip-pattern=appearance.settings tests/journeys/inbox-browser.mjs
-          - name: move-in-custody-and-capacity
-            browser: false
-            commands: |
-              node --test --test-concurrency=1 tests/journeys/move-in-custody.mjs tests/journeys/move-in-capacity.mjs
-          - name: restore
-            browser: false
-            commands: |
-              node --test --test-concurrency=1 tests/journeys/restore.mjs
-          - name: assistant-and-mail
-            browser: false
-            commands: |
-              node --test --test-concurrency=1 tests/journeys/ai.mjs tests/journeys/public.mjs tests/journeys/email.mjs tests/journeys/knowledge.mjs tests/journeys/inbox.mjs tests/journeys/widget.mjs tests/journeys/erasure.mjs tests/journeys/legacy.mjs tests/journeys/context.mjs
-          - name: context-browser
-            browser: true
-            commands: |
               node --test --test-concurrency=1 tests/journeys/context-browser.mjs
-          - name: move-in-admission
-            browser: false
-            commands: |
-              node --test --test-concurrency=1 tests/journeys/move-in-admission.mjs
-          - name: connections-and-delegation
-            browser: false
-            commands: |
-              node --test --test-concurrency=1 --test-skip-pattern=engineering tests/journeys/connections.mjs tests/journeys/delegation.mjs tests/journeys/delegation-computers.mjs tests/journeys/connector.mjs
-          - name: engineering-escalations
+          - name: shard-5
             browser: true
-            commands: |
-              node --test --test-concurrency=1 --test-name-pattern=engineering tests/journeys/connections.mjs
-              node --test --test-concurrency=1 --test-name-pattern=selected.engineering tests/journeys/connections-browser.mjs
-          - name: inbox-library-browser
-            browser: true
-            commands: |
-              node --test --test-concurrency=1 --test-name-pattern=management.libraries --test-name-pattern=appearance.settings tests/journeys/inbox-browser.mjs
-          - name: runtime-and-identity
-            browser: false
-            commands: |
-              node --test --test-concurrency=1 tests/journeys/runtime.mjs tests/journeys/identity.mjs tests/journeys/installer.mjs
-          - name: move-in-erasure
-            browser: false
-            commands: |
-              node --test --test-concurrency=1 tests/journeys/move-in-erasure.mjs
-          - name: business-browsers
-            browser: true
-            commands: |
-              node --test --test-concurrency=1 --test-skip-pattern=selected.engineering tests/journeys/move-in-browser.mjs tests/journeys/reports-browser.mjs tests/journeys/connections-browser.mjs tests/journeys/erasure-browser.mjs
-          - name: first-run-browser
-            browser: true
+            # Last green main check time: 904 seconds across these unchanged commands.
             commands: |
               node --test --test-concurrency=1 --test-skip-pattern=dashboard.is.ready tests/journeys/first-run-browser.mjs
-          - name: first-run-dashboard-browser
+              node --test --test-concurrency=1 tests/journeys/runtime.mjs tests/journeys/identity.mjs tests/journeys/installer.mjs
+          - name: shard-6
             browser: true
-            commands: |
-              node --test --test-concurrency=1 --test-name-pattern=dashboard.is.ready tests/journeys/first-run-browser.mjs
-          - name: widget-browsers
-            browser: true
-            commands: |
-              node --test --test-concurrency=1 tests/journeys/widget-browser.mjs tests/journeys/ai-browser.mjs
-          - name: reports-and-first-run
-            browser: false
+            # Last green main check time: 906 seconds across these unchanged commands.
             commands: |
               node --test --test-concurrency=1 tests/journeys/reports.mjs tests/journeys/first-run.mjs tests/journeys/upgrade.mjs
-          - name: delegation-browsers
-            browser: true
-            commands: |
-              node --test --test-concurrency=1 tests/journeys/delegation-browser.mjs tests/journeys/connector-browser.mjs
-          - name: contracts
-            browser: false
-            # The Managed build's verify (rer-project.json operations.verify).
-            commands: |
+              node --test --test-concurrency=1 --test-skip-pattern=selected.engineering tests/journeys/move-in-browser.mjs tests/journeys/reports-browser.mjs tests/journeys/connections-browser.mjs tests/journeys/erasure-browser.mjs
               pnpm run verify:build
+          - name: shard-7
+            browser: true
+            # Last green main check time: 1058 seconds across these unchanged commands.
+            commands: |
+              node --test --test-concurrency=1 tests/journeys/move-in-admission.mjs
+              node --test --test-concurrency=1 tests/journeys/restore.mjs
+              node --test --test-concurrency=1 --test-name-pattern=engineering tests/journeys/connections.mjs
+              node --test --test-concurrency=1 --test-name-pattern=selected.engineering tests/journeys/connections-browser.mjs
+          - name: shard-8
+            browser: true
+            # Last green main check time: 1085 seconds across these unchanged commands.
+            commands: |
+              node --test --test-concurrency=1 --test-name-pattern=management.libraries --test-name-pattern=appearance.settings tests/journeys/inbox-browser.mjs
+              node --test --test-concurrency=1 --test-skip-pattern=engineering tests/journeys/connections.mjs tests/journeys/delegation.mjs tests/journeys/delegation-computers.mjs tests/journeys/connector.mjs
+              node --test --test-concurrency=1 tests/journeys/delegation-browser.mjs tests/journeys/connector-browser.mjs
     steps:
       - name: Configure evidence directory
         run: echo "H2H_EVIDENCE_DIR=$RUNNER_TEMP/happytohelp-evidence" >> "$GITHUB_ENV"
@@ -172,8 +193,19 @@ jobs:
       - name: Restore the build from this workflow's exact checkout
         run: tar -xzf "$RUNNER_TEMP/verify-build/happytohelp-build.tar.gz"
       # Chromium only where a shard drives a browser.
-      - if: ${{ matrix.browser }}
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Cache Chromium fallback packages
+        if: ${{ matrix.browser }}
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/rer-apt/archives
+          key: chromium-apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Install Chromium
+        if: ${{ matrix.browser }}
+        run: |
+          set -euo pipefail
+          pnpm exec playwright install chromium
+          pnpm exec node scripts/chromium-probe.mjs || \
+            sudo env "PATH=$PATH" "APT_ARCHIVES=$RUNNER_TEMP/rer-apt/archives" python3 scripts/ci/install-chromium-deps.py
       # Every command in a shard runs even after another check fails.
       - name: Run shard checks
         env:
@@ -203,11 +235,10 @@ jobs:
           retention-days: 7
 
   public-preview:
-    needs: build
-    runs-on: ubuntu-latest
+    needs: [plan, build]
+    if: needs.plan.outputs.skip != 'true'
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
-    env:
-      H2H_PREVIEW_ORIGIN: http://127.0.0.1:5186
     steps:
       - name: Configure evidence directory
         run: echo "H2H_EVIDENCE_DIR=$RUNNER_TEMP/happytohelp-evidence" >> "$GITHUB_ENV"
@@ -224,35 +255,32 @@ jobs:
           cache: pnpm
       - name: Prepare space for native preview
         run: |
-          df -h "$RUNNER_TEMP" "$GITHUB_WORKSPACE"
-          sudo rm -rf -- /usr/local/lib/android
-          df -h "$RUNNER_TEMP" "$GITHUB_WORKSPACE"
+          bash scripts/ci/ensure-disk-space.sh
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
-      - name: Start local native preview
-        id: preview
+      - name: Cache Chromium fallback packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/rer-apt/archives
+          key: chromium-apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Install Chromium
         run: |
-          node --input-type=module -e 'import {mkdir,writeFile} from "node:fs/promises"; import {randomBytes} from "node:crypto"; await mkdir(".seed",{recursive:true,mode:0o700}); await writeFile(".seed/native-preview-answers.json",JSON.stringify({WORKSPACE_NAME:"CI preview",WIDGET_ORIGIN:"https://example.test",PRIMARY_COLOR:"#7c3aed",OWNER_NAME:"CI owner",OWNER_PASSWORD:randomBytes(24).toString("base64url"),EMAIL_PROVIDER:"later"}),{mode:0o600});'
-          pnpm exec rer setup --owner-email ci-preview@example.test --answers .seed/native-preview-answers.json --port 5186 --non-interactive
-          nohup pnpm exec rer preview --port 5186 --non-interactive > "$RUNNER_TEMP/native-preview.log" 2>&1 &
-          for _ in $(seq 1 60); do
-            if curl -fsS "$H2H_PREVIEW_ORIGIN/health"; then exit 0; fi
-            sleep 2
-          done
-          echo "Local native preview did not become healthy" >&2
-          exit 1
+          set -euo pipefail
+          pnpm exec playwright install chromium
+          pnpm exec node scripts/chromium-probe.mjs || \
+            sudo env "PATH=$PATH" "APT_ARCHIVES=$RUNNER_TEMP/rer-apt/archives" python3 scripts/ci/install-chromium-deps.py
+      - uses: actions/download-artifact@v4
+        with:
+          name: verify-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/verify-build
+      - name: Restore the build from this workflow's exact checkout
+        run: tar -xzf "$RUNNER_TEMP/verify-build/happytohelp-build.tar.gz"
       - name: Homepage and public site checks
-        if: ${{ !cancelled() && steps.preview.outcome == 'success' }}
         env:
-          H2H_TEST_ORIGIN: ${{ env.H2H_PREVIEW_ORIGIN }}
           H2H_CI_COMMANDS: |
             node tests/homepage-browser.mjs
-        run: node scripts/ci/run-checks.mjs
-      - name: Stop local native preview
-        if: ${{ always() && steps.preview.outcome != 'skipped' }}
-        run: pnpm exec rer preview --stop --non-interactive
+        run: node scripts/ci/public-preview.mjs
       - name: Confirm preview preserves source
-        if: ${{ !cancelled() && steps.preview.outcome == 'success' }}
+        if: ${{ !cancelled() }}
         run: git diff --exit-code && test -z "$(git ls-files --others --exclude-standard)"
       - name: Upload browser evidence
         if: ${{ always() }}
@@ -270,13 +298,14 @@ jobs:
           path: |
             /tmp/h2h-native-runtime-*/runtime.log
             /tmp/h2h-independent-*/runtime.log
-            ${{ runner.temp }}/native-preview.log
             test-results/
           if-no-files-found: ignore
           retention-days: 7
 
   legacy-export:
-    runs-on: ubuntu-latest
+    needs: plan
+    if: needs.plan.outputs.skip != 'true'
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     services:
       mysql:
@@ -307,3 +336,41 @@ jobs:
           LEGACY_TEST_MYSQL_HOST: 127.0.0.1
           LEGACY_TEST_MYSQL_PASSWORD: fixture-mysql-admin
         run: node --test tests/legacy-export.mjs
+
+  verify:
+    needs: [plan, build, checks, public-preview, legacy-export]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Require the plan and every check
+        env:
+          PLAN: ${{ needs.plan.result }}
+          SKIP: ${{ needs.plan.outputs.skip }}
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          WF_REF: ${{ github.workflow_ref }}
+        run: |
+          set -euo pipefail
+          test "$PLAN" = success
+          if [ "$SKIP" != true ]; then
+            for result in $RESULTS; do test "$result" = success; done
+          fi
+          # A merge checkout cannot establish that the PR head passed its push.
+          # Re-read once at the end, even when the plan previously found green.
+          if [ "$EVENT" = pull_request ] && [ "$SAME_REPO" = true ]; then
+            source scripts/ci/verify-evidence.sh
+            if ! green "$PR_HEAD"; then
+              echo 'The newest push Verify on the PR head must succeed.' >&2
+              exit 1
+            fi
+          fi

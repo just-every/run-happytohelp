@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     # Verify owns runtime/browser coverage, including mobile. This job owns the
     # real distributable; the two-checkout reproducibility proof runs nightly

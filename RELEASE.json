@@ -98,6 +98,10 @@
       "buyerSteps": "Apply after 255 and before the updated Worker serves traffic. Adds indexes on inbound-mail conversation/message lookups and API request hold lookups only; no stored row is changed. Apply once through the migration ledger and retain these indexes on restore."
     },
     {
+      "id": "257_hubspot_context.sql",
+      "buyerSteps": "Apply after 256 before serving the updated Worker. Adds encrypted read-only HubSpot connection, explicit customer mappings and transaction claims. Retain mappings with customer data; archives remove credentials and cached context, and require a fresh connection after restore. CRM context grants no customer access."
+    },
+    {
       "id": "257_move_in_attachment_bytes.sql",
       "buyerSteps": "MOVE-IN-002: apply after 256 before serving the updated Worker. Adds bounded explicitly supplied Freshdesk attachment payloads with native media and private-note ownership. Existing messages and attachments remain unchanged. Back up and restore the new table with native data; erasure and guarded undo remove payloads with their media. No source URL is retrieved and this migration sends nothing. During an upgrade, existing private-note transcripts remain readable before this migration: the reader checks table presence explicitly and includes imported payloads only after the table exists. Database query failures still propagate; attachment imports require this migration."
     },
@@ -106,8 +110,8 @@
       "buyerSteps": "Apply after 256 and before serving the updated Worker. Adds explicit Slack escalation destination consent and durable delivery outcomes to SLA policies and alerts. Existing policies stay unconfigured and existing alerts never gain a send. Retain terminal and uncertain outcomes across upgrades; archived pending sends must not replay."
     },
     {
-      "id": "257_hubspot_context.sql",
-      "buyerSteps": "Apply after 256 before serving the updated Worker. Adds encrypted read-only HubSpot connection, explicit customer mappings and transaction claims. Retain mappings with customer data; archives remove credentials and cached context, and require a fresh connection after restore. CRM context grants no customer access."
+      "id": "258_procedure_versions.sql",
+      "buyerSteps": "Apply after the existing 257 migrations and before serving the updated Worker. Adds immutable numbered procedure definitions with their required synthetic cases and budgets. Existing workspaces, customer records and applied migration history remain unchanged. Back up and restore this table with native data. Simulation qualification enables no production execution."
     }
   ]
 }

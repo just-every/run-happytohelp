@@ -170,6 +170,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
   const result=await admitMessage(env,{projectId:project.project_id,conversationId:conversation.id,actor,localId,content,expectedRevision:conversation.revision,expectedLastMessageId:conversation.last_message_id,mediaIds,[inboundAuthority]:{sender:from,receiptId:recordId,claimToken,raw,cc:participants,authenticated,...(project.mailbox_id?{mailboxId:project.mailbox_id,mailboxAddress:target.mailbox}:{}),...(possessed?{grant:await hashToken(target.replyToken!)}:{})}})
   // Closed between routing and admission: a temporary failure, so the retry opens the new ticket.
   if(result.reason==='ticket_closed_followup_required')throw new HTTPException(503,{message:'The addressed ticket was closed; retry later'})
+  if(result.reason==='knowledge_access_changed')throw new HTTPException(409,{message:'Knowledge access changed; review the current recipients and grants before replying'})
   if(!result.accepted)throw new Error(result.reason)
   await env.DB.prepare("UPDATE inbound_emails SET state='delivered',message_id=?,error=NULL WHERE id=?").bind(String(result.message!.id),recordId).run()
   await env.DB.batch(emailThreadingStatements(env,{projectId:project.project_id,conversationId:result.followupConversationId??conversation.id,keys:[{kind:'message_id',value:messageId,source:'native',sourceRef:String(result.message!.id)}],createdAt:Date.now()}))

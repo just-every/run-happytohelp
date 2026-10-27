@@ -1,3 +1,4 @@
+import {messageKnowledgeSql} from '../knowledge/delivery'
 import {workflowNow,workflowEnvironment} from '../workflows/clock'
 import {widgetConversationState} from '../widget/conversation-state'
 import {trackingStatement,resolutionState,publishResolution} from '../outcomes/state'
@@ -30,7 +31,7 @@ routes.post('/',async c=>{const b=await c.req.json();const actor=await requirePr
 routes.get('/:id',async c=>{const {actor,conversation}=await access(c);return c.json(actor.role==='contact'?customerTicket(conversation):conversation)})
 // The original email body (content_raw) is operator-only transcript data; customer sessions never receive it.
 routes.get('/:id/messages',async c=>{const {actor,conversation}=await access(c);const [messages,media]=await c.env.DB.batch<any>([
- c.env.DB.prepare('SELECT * FROM messages WHERE conversation_id=? ORDER BY revision').bind(conversation.id),
+ c.env.DB.prepare(`SELECT m.* FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE m.conversation_id=? ${actor.role==='contact'?`AND ${messageKnowledgeSql('m','c')}`:''} ORDER BY m.revision`).bind(conversation.id),
  c.env.DB.prepare('SELECT id,message_id,filename,content_type,size FROM media WHERE conversation_id=? AND message_id IS NOT NULL').bind(conversation.id)
  ]);const byMessage=new Map<string,any[]>();for(const {message_id,...item} of media.results){const key=String(message_id);if(!byMessage.has(key))byMessage.set(key,[]);byMessage.get(key)!.push(item)}for(const message of messages.results){if(actor.role==='contact')delete message.content_raw;message.media=byMessage.get(String(message.id))||[]}
  // Inbound email carries its origin, so an automatic notice that earned no reply is visible as such.

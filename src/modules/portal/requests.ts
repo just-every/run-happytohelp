@@ -1,3 +1,4 @@
+import {messageKnowledgeSql} from '../knowledge/delivery'
 import {companyPortalReply,portalTicketScope} from './company-visibility'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
@@ -25,7 +26,7 @@ export async function portalRequest(env:Env,identity:PortalIdentity,ticketId:str
 export async function portalRequestDetail(env:Env,identity:PortalIdentity,ticketId:string){
  const ticket=await portalRequest(env,identity,ticketId),session=portalSessionGuard(identity),visibility=portalTicketScope(identity),guard={sql:`${session.sql} AND ${visibility.sql}`,args:[...session.args,...visibility.args]}
  const [messages,media,surveys]=await env.DB.batch<any>([
-  env.DB.prepare(`SELECT m.id,m.content,m.created_at,CASE WHEN m.actor_role='contact' THEN 'customer' ELSE 'support' END author FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE c.id=? AND c.project_id=? AND m.erased_at IS NULL AND ${guard.sql} ORDER BY m.revision LIMIT 1000`).bind(ticketId,identity.actor.projectId,...guard.args),
+  env.DB.prepare(`SELECT m.id,m.content,m.created_at,CASE WHEN m.actor_role='contact' THEN 'customer' ELSE 'support' END author FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE c.id=? AND c.project_id=? AND m.erased_at IS NULL AND ${messageKnowledgeSql('m','c','?')} AND ${guard.sql} ORDER BY m.revision LIMIT 1000`).bind(ticketId,identity.actor.projectId,identity.actor.contactId||identity.actor.id,...guard.args),
   env.DB.prepare(`SELECT m.id,m.message_id,m.filename,m.content_type,m.size FROM media m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE c.id=? AND c.project_id=? AND m.message_id IS NOT NULL AND ${guard.sql}`).bind(ticketId,identity.actor.projectId,...guard.args),
   env.DB.prepare(`SELECT s.* ${surveyJoins} WHERE c.id=? AND c.project_id=? AND ct.id=? AND ${activeSurveySql} AND s.due_at<=? AND s.state<>'cancelled' AND s.token_revision=0 AND NOT EXISTS(SELECT 1 FROM csat_responses response WHERE response.resolution_id=s.resolution_id) AND ${guard.sql} LIMIT 1`).bind(ticketId,identity.actor.projectId,identity.actor.id,Date.now(),Date.now(),...guard.args)
  ])

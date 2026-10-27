@@ -1,3 +1,4 @@
+import {messageKnowledgeSql,messageKnowledgeAvailable} from '../knowledge/delivery'
 import {DurableObject} from 'cloudflare:workers'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
@@ -24,7 +25,7 @@ export class ConversationSocket extends DurableObject<Env>{
  async replay(ws:WebSocket){
   const a=ws.deserializeAttachment() as Attachment,actor=await this.authorized(a)
   if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return}
-  const rows=await this.env.DB.prepare('SELECT o.id eventId,m.* FROM conversation_outbox o JOIN messages m ON m.id=o.message_id WHERE '+(a.projectId?'o.project_id':'o.conversation_id')+'=? AND o.id>? ORDER BY o.id LIMIT 500').bind(a.projectId||a.conversationId,a.cursor).all()
+  const rows=await this.env.DB.prepare('SELECT o.id eventId,m.* FROM conversation_outbox o JOIN messages m ON m.id=o.message_id JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE '+(a.projectId?'o.project_id':'o.conversation_id')+`=? AND o.id>? ${actor.role==='contact'?`AND ${messageKnowledgeSql('m','c')}`:''} ORDER BY o.id LIMIT 500`).bind(a.projectId||a.conversationId,a.cursor).all()
   for(const row of rows.results){
    if(actor.role==='contact')delete row.content_raw
    row.media=(await this.env.DB.prepare('SELECT id,filename,content_type,size FROM media WHERE message_id=?').bind(row.id).all()).results
@@ -74,6 +75,7 @@ export class ConversationSocket extends DurableObject<Env>{
     if(a.conversationId&&a.conversationId!==event.conversationId||a.projectId&&a.projectId!==event.projectId)continue
     const actor=await this.authorized(a)
     if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');continue}
+    if(actor.role==='contact'&&event.message&&typeof (event.message as any).id==='string'&&!await messageKnowledgeAvailable(this.env,(event.message as any).id))continue
     if(event.operatorOnly===true&&actor.role==='contact')continue
     ws.send(JSON.stringify(event))
    }

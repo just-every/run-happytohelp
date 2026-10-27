@@ -186,6 +186,9 @@ export default function KnowledgePage({ projectId, section, recordId, project })
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
+            if(section === 'categories' && draft.entitlementContactIds !== undefined) {
+                await nativeRequest(`/api/knowledge/${projectId}/categories/${draft.id || result.id}/entitlements`, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({required:(draft.audience||'public')!=='public'||!!draft.requires_entitlement,contactIds:((draft.audience||'public')!=='public'||draft.requires_entitlement)?draft.entitlementContactIds:[]})});
+            }
             markSaved();
             if (!draft.id) {
                 await navigate({ to: '/projects/' + projectId + '/' + section + '/' + result.id, replace: true });
@@ -290,7 +293,7 @@ export default function KnowledgePage({ projectId, section, recordId, project })
                 />}
                 {section === 'datasets' && <WebsiteReader reader={reader}/>}
                 {isArticle && articleReady && draft.is_published && draft.slug && <p className="settings-note knowledge-public-address">Published on your Help Center: <a href={`/help/${projectId}/${draft.slug}`} target="_blank" rel="noreferrer">{`${window.location.origin}/help/${projectId}/${draft.slug}`}</a></p>}
-                {draft && (!isArticle || articleReady) && <KnowledgeFields {...{ section, draft, change, categories, fieldErrors }}/>}
+                {draft && (!isArticle || articleReady) && <KnowledgeFields {...{ projectId, section, draft, change, categories, fieldErrors }}/>}
                 {!isArticle && <div className="knowledge-form-actions">
                     <button className="btn btn-primary" disabled={busy}>
                         {busy ? 'Saving…' : draft.id ? 'Save' : section === 'datasets' ? 'Add URL' : 'Create'}

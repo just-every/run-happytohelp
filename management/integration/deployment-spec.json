@@ -762,6 +762,18 @@
       "name": "256_inbound_lookup_indexes.sql",
       "sha256": "3c9b045f40e04ae9e632182d8e1a6168bedbf30961daec0c217b0fe89a33fb8c",
       "sql": "-- Bound native ticket admission, authenticated mailbox proof and API hold lookup.\n-- Indexes only: no stored row changes. Apply before the updated Worker serves traffic.\nCREATE INDEX inbound_emails_conversation ON inbound_emails(project_id,conversation_id,automatic,local_id);\nCREATE INDEX inbound_emails_message ON inbound_emails(project_id,message_id);\nCREATE INDEX api_requests_hold ON api_requests(project_id,held_id);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "257_knowledge_entitlements.sql",
+      "sha256": "285865157be2b3ff5c4d0aeb453a5321476eb5f1411607b35a73d3e2f5116646",
+      "sql": "-- Explicit account grants are independent of verified email-domain audiences.\nALTER TABLE knowledge_categories ADD COLUMN requires_entitlement INTEGER NOT NULL DEFAULT 0 CHECK(requires_entitlement IN (0,1));\nCREATE TABLE knowledge_collection_entitlements (\n project_id TEXT NOT NULL REFERENCES projects(id),\n category_id TEXT NOT NULL REFERENCES knowledge_categories(id) ON DELETE CASCADE,\n contact_id TEXT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,\n granted_by TEXT NOT NULL REFERENCES users(id),\n created_at INTEGER NOT NULL,\n PRIMARY KEY(project_id,category_id,contact_id)\n);\n-- Opaque, short-lived receipts are carried only by an explicit request link.\nCREATE TABLE knowledge_read_receipts (\n token TEXT PRIMARY KEY,\n project_id TEXT NOT NULL REFERENCES projects(id),\n article_id TEXT NOT NULL REFERENCES knowledge_articles(id) ON DELETE CASCADE,\n locale TEXT NOT NULL,\n brand TEXT NOT NULL,\n contact_id TEXT REFERENCES contacts(id) ON DELETE CASCADE,\n expires_at INTEGER NOT NULL,\n conversation_id TEXT UNIQUE REFERENCES conversations(id) ON DELETE CASCADE\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "258_knowledge_reply_sources.sql",
+      "sha256": "05a8ab5c2cd68aecf40d8a2547a177cde31698d4be6a90fb0abcd955eef96ca9",
+      "sql": "-- Durable, server-held compose provenance. No reply door may drop this fence.\n-- No text, address, bearer capability or member reference is stored here.\nCREATE TABLE knowledge_reply_sources (\n project_id TEXT NOT NULL REFERENCES projects(id),\n conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,\n source_id TEXT NOT NULL,\n source_version TEXT NOT NULL,\n PRIMARY KEY(project_id,conversation_id,source_id,source_version)\n);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

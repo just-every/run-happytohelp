@@ -6,7 +6,7 @@
 .procedure-settings code { overflow-wrap:anywhere; }
 .procedure-settings .procedure-result { margin-top:12px; margin-bottom:12px; }
 .procedure-versions { display:flex; flex-wrap:wrap; gap:8px; }
-.procedure-version { white-space:normal; overflow-wrap:anywhere; text-align:left; max-width:100%; }
+.procedure-version { padding-block:8px; line-height:1.3; white-space:normal; overflow-wrap:anywhere; text-align:left; max-width:100%; }
 .procedure-versions > div { max-width:100%; }
 .procedure-version[aria-pressed=true] { background:#39727c; color:#fff; }
 .procedure-settings [aria-disabled=true] { opacity:.65; cursor:wait; }

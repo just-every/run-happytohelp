@@ -11800,7 +11800,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/experience.mjs": {
-      "sha256": "322498ef10cf5c3e7393d0fb9e1ebf18e758255f1324fe48438dc6374c7434ab",
+      "sha256": "2d3131b90644ee0a3a8e8fa71e14b3f503e62b6f0d342c2effbd2ba9ef147dae",
       "executable": false
     },
     "tests/helpers/knowledge/github.mjs": {

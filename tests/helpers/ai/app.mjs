@@ -11,7 +11,7 @@ export const model='gpt-5.6-luna'
 // `ai.reject` makes every provider refuse with a server error; `ai.network(request)` answers other hosts.
 export async function assistantApp({bindings={},prompt='Use evidence',assistantModel=model}={}){
  const ai={calls:[],before:null,reject:false,network:null,respond:()=>'Reply'}
- const app=await startApp({captureQueue:true,bindings:{OPENAI_API_KEY:'sk-test',APP_ORIGIN:'https://support.example',...bindings},outbound:async request=>{
+ const app=await startApp({captureQueue:true,bindings:{OPENAI_API_KEY:'synthetic-hh-1',APP_ORIGIN:'https://support.example',...bindings},outbound:async request=>{
   const host=new URL(request.url).hostname
   if(ai.reject){ai.calls.push({host,rejected:true});return new Response(JSON.stringify({error:{message:'fixture rejected',type:'server_error'}}),{status:503,headers:{'content-type':'application/json'}})}
   if(ai.network&&host!=='api.openai.com')return ai.network(request)

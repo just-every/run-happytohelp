@@ -7,7 +7,7 @@ import {redactRepositoryContent} from '../../modules/integrations/repository'
 import {linkedProject,nativePerson} from './people.ts'
 import {selectedTarget} from './local-credentials.ts'
 import type {Permission} from '../../modules/access/catalogue'
-export type Who=Pick<Principal,'person'|'clientId'|'scopes'>
+export type Who=Pick<Principal,'person'|'clientId'>&{scopes:readonly string[]}
 export async function actorFor(env:Env,who:Who,permission?:Permission):Promise<Actor>{
  const person=await nativePerson(env,who.person.id),link=await linkedProject(env)
  if(!person||!link)throw new ToolRefusal('sponsor_unavailable')

@@ -1,9 +1,11 @@
 import {randomBytes} from 'node:crypto'
 import {protectedFeedback} from './feedback.mjs'
-export default async function({request,origin,email,token}){
+export default async function({request,origin,email,token,reviewers}){
  const ownerResponse=await request(origin+'/api/identity/bootstrap',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({setupToken:token,email,password:randomBytes(32).toString('base64url'),allowedOrigin:'https://support-shop.example.test',ownerName:'Morgan Support'})})
  if(ownerResponse.status!==201)throw new Error('Native password and project setup refused')
  const cookie=ownerResponse.headers.getSetCookie(),owner=await ownerResponse.json()
+ const reviewer=await reviewers.initialize('quality',{cookie:cookie.map(value=>value.split(';',1)[0]).join('; ')})
+ if(reviewer.email===email||!reviewer.cookie)throw new Error('Independent native reviewer did not sign in')
  await protectedFeedback({request,origin,owner,allowedOrigin:'https://support-shop.example.test'})
  const native=async(path,body,method='POST')=>{
   const response=await request(origin+path,{method,headers:{Origin:origin,'Content-Type':'application/json',Authorization:'Bearer '+owner.token},body:JSON.stringify(body)})

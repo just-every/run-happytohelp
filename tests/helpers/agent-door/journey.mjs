@@ -1,14 +1,12 @@
-// PENDING 2026-10-28 / Base 7ce44fa5: normal conformance retains the
-// BASE-AGENT-009.native-target, BASE-AGENT-003.resource-code,
-// BASE-AGENT-012.replay-authority and BASE-AGENT-007.reviewer-lifecycle assertions.
-// BASE-AGENT-013.events-clause is also pending a Base mapping/ct clause: the
+// PENDING 2026-10-28 / ct: BASE-AGENT-013.events-clause:
 // built-in BASE-AGENT-010 reference is absent from the current seed contract.
-// These dependencies are not skips or substitutes for the normal verifier.
+// This dependency is not a skip or substitute for the normal verifier.
 import {readFile} from 'node:fs/promises'
 import assert from 'node:assert/strict'
 import {webcrypto,randomUUID} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {protectedFeedback} from './feedback.mjs'
+import initializeReviewer from './initialize-reviewer.mjs'
 import {accessToken,autonomousPolicy,policyEnvelope,signJws,seconds} from '../../../src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs'
 
 export async function agentDoorJourney(){
@@ -18,6 +16,11 @@ export async function agentDoorJourney(){
   const owner=await app.ok('/api/identity/bootstrap',{body:{setupToken:token,email,password:'Disposable-native-owner-892!zz',allowedOrigin:'https://store.example.test',ownerName:'Morgan Support'}})
   const native=(path,options={})=>app.ok(path,{token:owner.token,...options})
   const project=owner.projectId
+  const reviewerEmail='quality@example.test',reviewerSub=randomUUID()
+  const reviewerResponse=await initializeReviewer({origin,email:reviewerEmail,owner:{cookie:'h2h_session='+owner.token},request:(url,init)=>app.request(new URL(url).pathname,{...init,raw:true})})
+  const reviewerCookie=reviewerResponse.headers.getSetCookie().map(value=>value.split(';',1)[0]).join('; ')
+  const reviewerSession=await app.ok('/api/identity/session',{headers:{Cookie:reviewerCookie}})
+  const person=(path,body,cookie=reviewerCookie)=>app.call(path,{...(body===undefined?{}:{body}),headers:{Origin:origin,Cookie:cookie}})
   await protectedFeedback({origin,owner,allowedOrigin:'https://store.example.test',request:(url,init)=>app.request(new URL(url).pathname,{...init,raw:true})})
   const memberEmail='jordan@example.test',memberSub=randomUUID(),memberAgent=randomUUID()
   const invite=(await native(`/api/management/projects/${project}/agents`,{body:{email:memberEmail}})).data
@@ -29,7 +32,7 @@ export async function agentDoorJourney(){
    return app.call('/api/rer/business-settings',{body:{settings}})
   }
   const paired=await settings(1);assert.equal(paired.status,200,JSON.stringify(paired.data))
-  const team=await settings(2,[{id:memberSub,email:memberEmail,name:'Jordan Support',role:'member',invite:1}]);assert.equal(team.status,200,JSON.stringify(team.data))
+  const team=await settings(2,[{id:memberSub,email:memberEmail,name:'Jordan Support',role:'member',invite:1},{id:reviewerSub,email:reviewerEmail,name:'Riley Quality',role:'member',invite:1}]);assert.equal(team.status,200,JSON.stringify(team.data))
   assert.equal((await app.first('SELECT operator_id FROM bs_team WHERE business_id=?',memberSub)).operator_id,member.actor.id)
   const contact=(await native(`/api/management/projects/${project}/contacts`,{body:{name:'Avery Buyer',email:'avery@example.test'}})).data
   const conversation=await native('/api/conversations',{body:{projectId:project,contactId:contact.id}})
@@ -47,6 +50,10 @@ export async function agentDoorJourney(){
   const call=async(name,args,credential)=>{const response=await rpc('tools/call',{name,arguments:args},credential);assert.ok(response.data.result,JSON.stringify(response.data));const result=response.data.result;return {outcome:result.resultType==='input_required'?'pending':result.isError?'refused':'done',code:result._meta?.['com.runeditrun/error']?.code,result:result.structuredContent}}
   const unset=await call('happytohelp.conversations.note',{id:conversation.id,content:'Policy unset must not create this note',idempotency_key:randomUUID()})
   assert.equal(unset.code,'policy_unset')
+  const unsetAudit=JSON.parse((await app.first('SELECT row FROM agent_door_audit ORDER BY sequence DESC LIMIT 1')).row)
+  assert.deepEqual(unsetAudit.resource,{kind:'conversation',id:conversation.id})
+  assert.deepEqual(unsetAudit.classes,[{class:'standard',facts:{measure:1}}])
+  assert.deepEqual(unsetAudit.rules,[{class:'standard',rule:null,do:'unset'}])
   assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',conversation.id)).n,0)
   const adopt=async(document=autonomousPolicy(),options={})=>{
    const envelope=await policyEnvelope(context,document,options),response=await app.call('/api/rer/agent-policy',{body:{policy:envelope.policy}})
@@ -75,6 +82,16 @@ export async function agentDoorJourney(){
   const operation=await app.first('SELECT * FROM h2h_agent_operations WHERE id=?',note.result.operation)
   assert.equal(operation.agent_id,context.agentId);assert.equal(operation.sponsor_id,owner.userId)
   assert.equal((await call('happytohelp.conversations.note',{id:conversation.id,content:'Changed intent',idempotency_key})).code,'idempotency_conflict')
+  const replayArgs={id:conversation.id,content:'Private support investigation: verify before replying.',idempotency_key}
+  for(const [disposition,expected] of [['blocked','policy_blocked'],['approval','approval_required']]){
+   await adopt({...autonomousPolicy(),rules:[{id:'all',class:'*',do:disposition,...(disposition==='approval'?{approver:['sponsor'],wait:'PT1H'}:{})}]})
+   const replay=await call('happytohelp.conversations.note',replayArgs)
+   assert.equal(replay.code,expected);assert.equal(replay.result,undefined,'A refused replay never exposes saved content')
+  }
+  await adopt()
+  const missingScope=await rpc('tools/call',{name:'happytohelp.conversations.note',arguments:replayArgs},await accessToken(context,{scope:'events:read'}))
+  assert.equal(missingScope.status,403);assert.equal(missingScope.data.error.data.code,'insufficient_scope')
+  assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',conversation.id)).n,1)
   const ticket=(await call('happytohelp.conversations.read',{id:conversation.id})).result.ticket
   const updated=await call('happytohelp.conversations.update',{id:conversation.id,version:ticket.ticket_version,subject:'Shipping investigation',expected_revision:ticket.ticket_version,idempotency_key:randomUUID()})
   assert.equal(updated.outcome,'done',JSON.stringify(updated))
@@ -105,6 +122,31 @@ export async function agentDoorJourney(){
   for(const path of [`conversations/${conversation.id}`,`conversations/${conversation.id}/context`,`articles/${article.id}`,`jobs/${job.id}`,`operations/${note.result.operation}`])assert.equal((await rpc('resources/read',{uri:`happytohelp://projects/${project}/${path}`})).data.error,undefined,path)
   const absent=await rpc('resources/read',{uri:`happytohelp://projects/${project}/conversations/missing`}),foreign=await rpc('resources/read',{uri:`happytohelp://projects/foreign/conversations/${conversation.id}`})
   assert.deepEqual(absent.data.error,foreign.data.error)
+  assert.equal(absent.data.error.data.code,'resource_unavailable')
+  await adopt({...autonomousPolicy(),rules:[{id:'all',class:'*',do:'blocked'}]})
+  const blockedResource=await rpc('resources/read',{uri:`happytohelp://projects/${project}/conversations/${conversation.id}`})
+  assert.equal(blockedResource.data.error.data.code,'policy_blocked');assert.equal(blockedResource.data.result,undefined)
+  await adopt({...autonomousPolicy(),rules:[{id:'all',class:'*',do:'approval',approver:['person:'+reviewerSub],wait:'PT1H'}]})
+  const heldArgs={id:conversation.id,content:'Exact support note independently approved by Riley.',idempotency_key:randomUUID()}
+  const held=await rpc('tools/call',{name:'happytohelp.conversations.note',arguments:heldArgs})
+  const approval=held.data.result._meta['com.runeditrun/approval']
+  assert.ok(approval.id)
+  const view=(await person('/agents/api/approvals/'+approval.id)).data.approval
+  assert.deepEqual(view.summary.nativeTarget,{kind:'conversation',id:conversation.id})
+  assert.equal((await person('/agents/api/approvals/'+approval.id+'/approve',{revision:view.revision,summary_sha256:'stale'})).status,409)
+  const approved=await person('/agents/api/approvals/'+approval.id+'/approve',{revision:view.revision,summary_sha256:view.summary_sha256})
+  assert.equal(approved.data.approval.state,'executed',JSON.stringify(approved.data))
+  const approvedOperation=await app.first("SELECT o.* FROM h2h_agent_operations o JOIN conversation_notes n ON n.id=json_extract(o.result_json,'$.note_id') WHERE n.conversation_id=? AND n.content=?",conversation.id,heldArgs.content)
+  assert.equal(approvedOperation.sponsor_id,owner.userId);assert.equal(approvedOperation.agent_id,context.agentId)
+  assert.ok(JSON.parse(approvedOperation.approvers_json).some(person=>person.id===reviewerSession.id))
+  assert.equal((await person('/agents/api/approvals/'+approval.id+'/approve',{revision:view.revision,summary_sha256:view.summary_sha256})).data.approval.state,'executed')
+  assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=? AND content=?',conversation.id,heldArgs.content)).n,1)
+  await adopt({...autonomousPolicy(),rules:[{id:'all',class:'*',do:'review'}],reviewers:['person:'+reviewerSub]})
+  const reviewed=await rpc('tools/call',{name:'happytohelp.conversations.note',arguments:{id:conversation.id,content:'Riley reviews this native note.',idempotency_key:randomUUID()}})
+  const review=reviewed.data.result._meta['com.runeditrun/review']
+  const marked=await person('/agents/api/reviews/'+review.id+'/reviewed',{})
+  assert.equal(marked.data.review.state,'reviewed');assert.equal(marked.data.review.marked_by,reviewerSession.id)
+  await adopt()
   const invalid=await rpc('tools/list',{},await accessToken(context,{sub:randomUUID(),email}));assert.equal(invalid.status,401)
   const wrongAudience=await rpc('tools/list',{},await accessToken(context,{aud:'https://foreign.example/mcp'}));assert.equal(wrongAudience.status,401)
   // A real selected-article application credential keeps its original scope
@@ -143,6 +185,10 @@ export async function agentDoorJourney(){
   assert.equal((await rpc('tools/list',{},memberToken)).status,401,'native membership removal ends sponsorship immediately')
   const before=(await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',conversation.id)).n
   await adopt(autonomousPolicy(),{paused:true})
+  const pausedReplay=await call('happytohelp.conversations.note',replayArgs)
+  assert.equal(pausedReplay.code,'agents_paused');assert.equal(pausedReplay.result,undefined)
+  const replayAudit=JSON.parse((await app.first('SELECT row FROM agent_door_audit ORDER BY sequence DESC LIMIT 1')).row)
+  assert.deepEqual(replayAudit.resource,{kind:'conversation',id:conversation.id});assert.equal(replayAudit.outcome,'refused');assert.equal(replayAudit.revision,context.revision)
   assert.equal((await call('happytohelp.conversations.note',{id:conversation.id,content:'Must be paused',idempotency_key:randomUUID()})).code,'agents_paused')
   assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',conversation.id)).n,before)
   await native(`/api/dashboard/projects/${project}/conversations/${conversation.id}/notes`,{body:{content:'Person can still work while agents are paused'}})
@@ -152,6 +198,10 @@ export async function agentDoorJourney(){
   assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',conversation.id)).n,before+1)
   const audit=(await app.sql('SELECT row FROM agent_door_audit')).map(row=>JSON.parse(row.row))
   assert.ok(audit.some(row=>row.outcome==='done'));assert.ok(audit.some(row=>row.outcome==='refused'))
+  const heldAudit=audit.find(row=>row.approval?.id===approval.id&&row.outcome==='pending')
+  const executedAudit=audit.find(row=>row.decision_id===heldAudit.id)
+  assert.deepEqual(executedAudit.resource,{kind:'conversation',id:conversation.id});assert.equal(executedAudit.outcome,'done')
+  assert.ok(executedAudit.approval.by.includes(reviewerSession.id))
   assert.equal(app.requests.filter(request=>!['GET','HEAD'].includes(request.method)).length,0,'the configured network boundary receives no mutating provider request')
  }finally{await app.close()}
 }

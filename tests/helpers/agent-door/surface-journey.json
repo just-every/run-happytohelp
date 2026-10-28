@@ -43,6 +43,13 @@
           "external"
         ],
         "policy": "autonomous"
+      },
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
       }
     },
     {
@@ -61,7 +68,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      }
     },
     {
       "id": "assign",
@@ -86,7 +100,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      }
     },
     {
       "id": "note",
@@ -105,7 +126,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      }
     },
     {
       "id": "current-ticket",
@@ -123,7 +151,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      }
     },
     {
       "id": "update",
@@ -146,7 +181,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      }
     },
     {
       "id": "operation",
@@ -350,7 +392,14 @@
             "kind": "protected-content"
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "protected-tickets",
+          "pointer": "/conversations/0/id"
+        }
+      }
     },
     {
       "id": "protected-context",
@@ -375,7 +424,14 @@
             "kind": "protected-content"
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "protected-tickets",
+          "pointer": "/conversations/0/id"
+        }
+      }
     },
     {
       "id": "protected-articles",
@@ -451,6 +507,19 @@
         "RER_INSTALLATION_ID": "installationId"
       },
       "initializer": "tests/helpers/agent-door/initialize-owner.mjs"
+    },
+    "reviewers": [
+      {
+        "label": "quality",
+        "email": "quality@example.test",
+        "initializer": "tests/helpers/agent-door/initialize-reviewer.mjs"
+      }
+    ],
+    "replayAdmission": {
+      "prepare": [
+        "tickets",
+        "note"
+      ]
     }
   }
 }

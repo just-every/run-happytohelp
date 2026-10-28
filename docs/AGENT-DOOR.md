@@ -42,6 +42,10 @@ articles, connector jobs and attributed operations. Missing and restricted
 records have the same refusal. Customer and imported text is untrusted. Readers
 use redacted projections and never return connector credentials or bearer tokens.
 A connector report alone does not establish independently verified repair.
+Record tools resolve native target identities for audit and approval summaries.
+Resource refusals expose their machine code in JSON-RPC `error.data.code`.
+Reusing a successful mutation key still checks current authority, Pause and
+company policy before returning its saved outcome.
 
 The company chooses autonomous, review, approval or blocked dispositions.
 Unanswered policy and Pause refuse agent work. Approval pages show the saved

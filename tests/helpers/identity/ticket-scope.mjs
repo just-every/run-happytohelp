@@ -2,18 +2,32 @@ import {socketClient} from '../widget/sockets.mjs'
 import assert from 'node:assert/strict'
 import {sha} from '../../journeys/kit/app.mjs'
 
-/** Public read/write regressions for the internal scope foundation. Policy setup is
- * a storage fixture: role-management intentionally does not offer narrowing yet. */
+/** Public role-management and ticket-door scope assertions, including active revocation. */
 export async function nativeTicketScopeAssertions(app){
  const w=await app.seedWorkspace('ticket-scope'),p=w.projectId,P=`/api/management/projects/${p}`,D=`/api/dashboard/projects/${p}/conversations`
  const call=(path,body,method,token=w.tokens.operator)=>app.call(path,{body,method,token})
  const role=await call(`${P}/roles`,{name:'Scoped native agent',base:'operator',permissions:['conversations.manage','conversations.reply','conversations.notes','conversations.follow','contacts.manage']},'POST',w.tokens.owner)
  assert.equal(role.status,201)
  const roleId=role.data.data.id
- const unavailable=await call(`${P}/roles/${roleId}`,{name:'Scoped native agent',base:'operator',permissions:[],ticketScope:{groupIds:[],includeUngrouped:false}},'PUT',w.tokens.owner)
- assert.equal(unavailable.status,409,'the unfinished restriction mode must not be exposed or silently ignored')
- assert.equal((await app.first('SELECT ticket_scope_json FROM project_roles WHERE id=?',roleId)).ticket_scope_json,null)
  for(const group of ['scope-a','scope-b','scope-denied'])await app.db.prepare('INSERT INTO ticket_groups(id,project_id,name,updated_at) VALUES(?,?,?,1)').bind(group,p,group).run()
+ const definition={name:'Scoped native agent',base:'operator',permissions:role.data.data.permissions}
+ const select=async(groupIds,includeUngrouped)=>{const response=await call(`${P}/roles/${roleId}`,{...definition,ticketScope:{groupIds,includeUngrouped}},'PUT',w.tokens.owner);assert.equal(response.status,200,JSON.stringify(response.data));return response}
+ const foreignGroups=await app.seedWorkspace('scope-group-validation')
+ await app.db.prepare("INSERT INTO ticket_groups(id,project_id,name,updated_at) VALUES('scope-foreign',?,'Other workspace',1)").bind(foreignGroups.projectId).run()
+ for(const ticketScope of [{groupIds:['scope-foreign'],includeUngrouped:false},{groupIds:['unknown-group'],includeUngrouped:false},{groupIds:[],includeUngrouped:'yes'}]){
+  assert.equal((await call(`${P}/roles/${roleId}`,{...definition,ticketScope},'PUT',w.tokens.owner)).status,400,'foreign, unknown and malformed selections are refused')
+  assert.equal((await call(`${P}/roles`,{...definition,name:'Invalid scope',ticketScope},'POST',w.tokens.owner)).status,400)
+ }
+ await select(['scope-a','scope-b'],false)
+ assert.equal((await call(`${P}/roles/${roleId}`,definition,'PUT',w.tokens.owner)).status,200,'omitted updates preserve the prior scope')
+ const reloaded=(await call(`${P}/roles`,undefined,undefined,w.tokens.owner)).data.data.custom.find(r=>r.id===roleId)
+ assert.deepEqual(reloaded.ticketScope,{groupIds:['scope-a','scope-b'],includeUngrouped:false})
+ assert.equal((await call(`${P}/roles/${roleId}`,{...definition,ticketScope:null},'PUT')).status,403,'ordinary operators cannot change role scope')
+ await app.db.prepare('UPDATE session_factors SET verified_at=0 WHERE token_hash=?').bind(sha(w.tokens.owner)).run()
+ assert.equal((await call(`${P}/roles/${roleId}`,{...definition,ticketScope:null},'PUT',w.tokens.owner)).data.code,'step_up_required')
+ await app.db.prepare('UPDATE session_factors SET verified_at=? WHERE token_hash=?').bind(Date.now(),sha(w.tokens.owner)).run()
+ const audited=(await app.sql("SELECT detail_json FROM audit_events WHERE project_id=? AND action='role.updated' AND target_id=? ORDER BY at",p,roleId)).map(r=>JSON.parse(r.detail_json))
+ assert.ok(audited.some(d=>d.ticketScope.before===null&&d.ticketScope.after.groupIds.length===2),'audit records scope before and after')
  await app.db.prepare("INSERT INTO contacts(id,project_id,name,email,created_at) VALUES('scope-customer',?,'Morgan Customer','morgan@example.test',1)").bind(p).run()
  const tickets=[['scope-allowed-a','scope-a'],['scope-allowed-b','scope-b'],['scope-ungrouped',null],...Array.from({length:35},(_,i)=>['scope-denied-'+i,'scope-denied'])]
  for(const [id,group] of tickets)await app.db.batch([
@@ -27,13 +41,11 @@ export async function nativeTicketScopeAssertions(app){
  await app.db.prepare('INSERT INTO ticket_group_members(project_id,group_id,user_id) VALUES(?,?,?)').bind(p,'scope-denied',w.users.operator).run()
  await app.db.prepare("UPDATE conversations SET assigned_to=? WHERE id='scope-denied-0'").bind(w.users.operator).run()
  await app.db.prepare("INSERT INTO conversation_followers(conversation_id,user_id,created_at) VALUES('scope-denied-0',?,1)").bind(w.users.operator).run()
- const select=async(groupIds,includeUngrouped)=>app.db.prepare('UPDATE project_roles SET ticket_scope_json=?,updated_at=updated_at+1 WHERE project_id=? AND id=?').bind(JSON.stringify({groupIds,includeUngrouped}),p,roleId).run()
  await select(['scope-a','scope-b'],false)
 
  // Report/export authority remains independent; a scoped admin can export only the current cohort.
- const reportRole=await call(`${P}/roles`,{name:'Scoped report reviewer',base:'admin',permissions:['reports.view','data.export','contacts.manage','integrations.install','conversations.manage']},'POST',w.tokens.owner)
+ const reportRole=await call(`${P}/roles`,{name:'Scoped report reviewer',base:'admin',permissions:['reports.view','data.export','contacts.manage','integrations.install','conversations.manage'],ticketScope:{groupIds:['scope-a','scope-b'],includeUngrouped:false}},'POST',w.tokens.owner)
  assert.equal(reportRole.status,201)
- await app.db.prepare('UPDATE project_roles SET ticket_scope_json=? WHERE id=?').bind(JSON.stringify({groupIds:['scope-a','scope-b'],includeUngrouped:false}),reportRole.data.data.id).run()
  assert.equal((await call(`${P}/agents/${w.users.admin}`,{role:reportRole.data.data.id},'PUT',w.tokens.owner)).status,200)
 
  for(const ticket of ['scope-allowed-a','scope-denied-0']){

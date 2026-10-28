@@ -3556,7 +3556,7 @@
       "executable": false
     },
     "src/modules/access/assign.ts": {
-      "sha256": "7ff59010b016492bca34944ebf1fa00cac5fbaca09082e0a99ab18933ec6ae3e",
+      "sha256": "067fce4f0b80797ceb3c98a88b395d895092f69fadd5934329fe139c62a21454",
       "executable": false
     },
     "src/modules/access/catalogue.ts": {
@@ -3584,7 +3584,7 @@
       "executable": false
     },
     "src/modules/access/routes.ts": {
-      "sha256": "29fa7a327b3840ace1e0857092ebebbee7fb2a6a784a1a80796d0cacf69826a9",
+      "sha256": "0fe29784edeebaa79b0c60c488df39b4ac6d7f2c5475a13127fb299db45a91f2",
       "executable": false
     },
     "src/modules/access/self-service-routes.ts": {
@@ -4268,7 +4268,7 @@
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
-      "sha256": "3f12acc717d7835ac998805309aa6ba1ee07e0834b0d5639da79c879d8801e43",
+      "sha256": "67480288940190a8416fd1ffc0bb36dbed06f5b55323877f7b729a3f09238101",
       "executable": false
     },
     "src/modules/crm/hubspot.ts": {
@@ -8356,7 +8356,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/Conversation.jsx": {
-      "sha256": "889f7e6b027fd7460330b75ee2cf1d7e713e4ecb30301426c9ca0f630c00b2f3",
+      "sha256": "d4f961561075b4cb5fe3eab7dee9fcdf74fe48e9b0c1475df2281e081d638b5b",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ai-controls.css": {
@@ -8964,7 +8964,7 @@
       "executable": false
     },
     "src/ui/dashboard/contexts/ChatContext.jsx": {
-      "sha256": "8998d7622137933da008303037ebdd98feff0f1c4490216fcb42129d1ea86830",
+      "sha256": "be20ac09646bc927a78dc827be6b5ee03b53f0e8371870bcb0fa28ff53f99b3b",
       "executable": false
     },
     "src/ui/dashboard/contexts/ConversationSuggestionsContext.jsx": {
@@ -9000,7 +9000,7 @@
       "executable": false
     },
     "src/ui/dashboard/hooks/useConversationLoading.jsx": {
-      "sha256": "c0ea65dea908c625ca1630e8835be9dfdf62757b14ebf236db80f7b7ef2e27ca",
+      "sha256": "ec47e68ade38141b2cb64e0c9a4aef816346940995369ae587084e12b77ab056",
       "executable": false
     },
     "src/ui/dashboard/hooks/useConversationSuggestions.jsx": {
@@ -10488,11 +10488,11 @@
       "executable": false
     },
     "src/ui/native/pages/security/RolesPage.jsx": {
-      "sha256": "0592c08154faa12a5cef563262f490f061b5775f0e2c5172fc5dca9cf753409e",
+      "sha256": "18a2bb27b2c08a4bcff1fa2ed2f9dc78d10940750664f3c5221c67c4219a2497",
       "executable": false
     },
     "src/ui/native/pages/security/security.css": {
-      "sha256": "4bda8252d12f8b1bd3902dd5a41882e71bd21491cc2f8691af299726ec470a83",
+      "sha256": "420807e9cd213b9696a65093016d95ae1b4e8cb635e967c0a437d7a1a2c087eb",
       "executable": false
     },
     "src/ui/native/pages/security/SecurityLog.jsx": {
@@ -10712,7 +10712,7 @@
       "executable": false
     },
     "src/ui/native/transport.js": {
-      "sha256": "bd279f486860692a462ac6fd00dfbd07d3e0475c91d32b69f315546304e490f8",
+      "sha256": "b42fa6ff961cc21c61fc13e3854ae47f903c5ef6e57007589dc52941441f95ec",
       "executable": false
     },
     "src/ui/native/workspace-page-code.js": {
@@ -11740,7 +11740,7 @@
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {
-      "sha256": "5fb3317cc0751d45aeacdb59bf34a5308f5151b7d77d297d872c6827c2fe8a92",
+      "sha256": "9e564f132054c97e8ed81cbe597f21b1b29e9355be1bb4b55c73159a7b0c16d8",
       "executable": false
     },
     "tests/helpers/identity/step-up-mail-edge.mjs": {
@@ -11748,7 +11748,7 @@
       "executable": false
     },
     "tests/helpers/identity/ticket-scope.mjs": {
-      "sha256": "89f97b049cf6ed439a337cb6d99421c83ca8957ace6bdc5eefa38e5556a161bb",
+      "sha256": "eb40778daeecc8d9d50c4ecb7ca8aa6d575de526a4a7c555f5e2a6c9ecdee2ff",
       "executable": false
     },
     "tests/helpers/identity/two-factor.mjs": {

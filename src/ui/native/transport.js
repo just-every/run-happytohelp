@@ -86,7 +86,7 @@ function connectSocket(resourcePath, cursorKey, onFrame, onReconnect, onError, o
         };
         // A socket closed on purpose (teardown) is not an outage: report only failures that will reconnect.
         socket.onerror = () => { if (!stopped) onError(new Error('Live connection unavailable; reconnecting.')); };
-        socket.onclose = () => { if (!stopped) timer = setTimeout(open, Math.min(15000, 500 * 2 ** attempt++)); };
+        socket.onclose = event => { if (!stopped && event.code === 1008) { stopped = true; onError(Object.assign(new Error('This ticket is unavailable. Your access or its group may have changed.'), {status: 404})); return; } if (!stopped) timer = setTimeout(open, Math.min(15000, 500 * 2 ** attempt++)); };
     };
     open();
     const dispose = () => { stopped = true; clearTimeout(timer); socket?.close(); };

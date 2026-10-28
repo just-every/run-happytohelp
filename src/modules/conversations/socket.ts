@@ -68,6 +68,16 @@ export class ConversationSocket extends DurableObject<Env>{
  }
  async fetch(request:Request){
   const url=new URL(request.url)
+  if(url.pathname==='/access-change'){
+   const target=await request.json() as {roleId?:string;userId?:string}
+   for(const ws of this.ctx.getWebSockets()){
+    const a=ws.deserializeAttachment() as Attachment
+    if(!a.projectId)continue
+    const session=await this.env.DB.prepare('SELECT actor_id FROM sessions WHERE token_hash=?').bind(a.tokenHash).first<{actor_id:string}>()
+    if(session&&(target.userId===session.actor_id||target.roleId&&await this.env.DB.prepare('SELECT 1 FROM member_roles WHERE project_id=? AND user_id=? AND role_key=?').bind(a.projectId,session.actor_id,target.roleId).first()))ws.send(JSON.stringify({type:'access_changed'}))
+   }
+   return new Response('ok')
+  }
   if(url.pathname==='/event'){
    const event=await request.json() as {conversationId:string;[key:string]:unknown}
    for(const ws of this.ctx.getWebSockets()){

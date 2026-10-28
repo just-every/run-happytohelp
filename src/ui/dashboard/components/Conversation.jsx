@@ -319,7 +319,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         return <div className="chat flex-column justify-content-center text-center">
             <div className="container-xxl">
                 { loadError ? <p className="conversation-load-error" role="alert">
-                    Couldn’t load this conversation. <button type="button" onClick={ retryConversationLoad }>Retry</button>
+                    {[403,404].includes(loadError.status)?'This ticket is unavailable. Your access or its group may have changed.':'Couldn’t load this conversation.'} <button type="button" onClick={ retryConversationLoad }>Retry</button>
                 </p> : <div className="spinner-border text-primary" role="status">
                     <span className="visually-hidden">Loading...</span>
                 </div> }

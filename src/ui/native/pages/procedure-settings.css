@@ -26,7 +26,7 @@
 .procedure-definition td { padding:12px; vertical-align:top; border-bottom:1px solid #d7e0e0; text-align:left; white-space:pre-wrap; overflow-wrap:anywhere; }
 .procedure-definition thead th { background:#f0f5f5; }
 .procedure-definition th[scope=row] { width:28%; font-weight:500; }
-.procedure-change { display:block; font-size:12px; margin-top:4px; }
+.procedure-change { display:block; font-size:14px; margin-top:4px; }
 .procedure-value-changed { background:#edf7f6; }
 .procedure-value-changed .procedure-change { color:#24575f; font-weight:700; }
 .procedure-value-label { display:none; }
@@ -39,5 +39,5 @@
  .procedure-definition td { display:block; width:100%; border:0; padding:6px 12px; }
  .procedure-definition th[scope=row] { font-weight:700; }
  .procedure-change { display:inline; margin-left:8px; font-weight:400; }
- .procedure-value-label { display:block; font-size:12px; font-weight:600; margin-bottom:4px; }
+ .procedure-value-label { display:block; font-size:14px; font-weight:600; margin-bottom:4px; }
 }

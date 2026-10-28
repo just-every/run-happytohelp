@@ -1800,7 +1800,7 @@
       "executable": false
     },
     "docs/support-channels.md": {
-      "sha256": "e408fc45749e3a678bb15fff20c94e4c50818a660b2e38d8acc8502552c92eed",
+      "sha256": "f59204b4109ded2f83f1ae77fac7e5f880bf9c3d2558c59b720612d874e0c57f",
       "executable": false
     },
     "docs/tickets.md": {
@@ -6392,7 +6392,7 @@
       "executable": false
     },
     "src/modules/management/member-erasure.ts": {
-      "sha256": "567e459cb6ba40f0d86d555556545127fb794580197fd6b836d7a4bdc5968c28",
+      "sha256": "e0e57f3b9d9a91e6552745f645bbe5f108949919a2e1fc49c124121754e860aa",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {
@@ -12372,11 +12372,11 @@
       "executable": false
     },
     "tests/helpers/support-channels/journeys.mjs": {
-      "sha256": "007086cf8f323f46f8df7ab4cb1b2535a1f09aa1db84603b1bae26fd826176cf",
+      "sha256": "7ccda93c70a110572076f3e990e8b5cbf5caefeb2969bf541a44df4a2e4a78f8",
       "executable": false
     },
     "tests/helpers/support-channels/restore.mjs": {
-      "sha256": "7e2e9eeca8028b275f9a58b0221e03a8702720fed451cf4659e97e1376dc618c",
+      "sha256": "e167277665c28722beee9cd9b1af04fb2e83d46bf23a15ab0235fb62a4147064",
       "executable": false
     },
     "tests/helpers/training-portable.mjs": {

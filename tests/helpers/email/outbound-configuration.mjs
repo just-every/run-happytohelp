@@ -26,10 +26,15 @@ export async function outboundConfigurationJourney(){
   await refused({assigneeId:foreign.users.operator},'assigneeId')
   await refused({assigneeId:workspace.users.operator},'assigneeId')
   await refused({groupId:'missing-group'},'groupId')
+  const foreignForm=(await app.ok(`/api/forms/projects/${foreign.projectId}/forms`,{token:foreign.tokens.owner,body:{title:'Other brand form',enabled:true,fields:[]}})).data
+  await refused({formId:foreignForm.id},'formId')
   await refused({brandId:foreign.projectId},null,400)
   assert.equal((await app.call(`/api/dashboard/projects/${foreign.projectId}/tickets`,{...operator,body:command})).status,403)
   const race=`DELETE FROM ticket_group_members WHERE project_id='${p}' AND group_id='${group.id}' AND user_id='${workspace.users.admin}'`
   await refused({},'assigneeId',422,{'x-test-statement':'INSERT OR IGNORE INTO conversations','x-test-before-statement':race})
+  await app.db.prepare('INSERT INTO ticket_group_members VALUES(?,?,?)').bind(p,group.id,workspace.users.admin).run()
+  await refused({},'assigneeId',422,{'x-test-statement':'INSERT OR IGNORE INTO conversations','x-test-before-statement':`DELETE FROM memberships WHERE project_id='${p}' AND user_id='${workspace.users.admin}'`})
+  await app.db.prepare('INSERT INTO memberships VALUES(?,?,?)').bind(p,workspace.users.admin,'admin').run()
   await app.db.prepare('INSERT INTO ticket_group_members VALUES(?,?,?)').bind(p,group.id,workspace.users.admin).run()
   const disable=`UPDATE request_forms SET enabled=0 WHERE project_id='${p}' AND id='${form.id}'`
   await refused({},'formId',422,{'x-test-statement':'INSERT OR IGNORE INTO conversations','x-test-before-statement':disable})
@@ -66,6 +71,10 @@ export async function outboundConfigurationJourney(){
   const legacy={kind:'call',localId:'previously-admitted',requesterId:contact.id,subject:'Legacy call',content:'Original private note.'},old=await app.ok(base,{...operator,body:legacy})
   const normalized={kind:'call',localId:legacy.localId,requesterId:contact.id,requesterEmail:null,requesterName:'',subject:legacy.subject,content:legacy.content,mailboxId:null,fromAddress:null,cc:[],bcc:[]}
   const {createHash}=await import('node:crypto');await app.db.prepare('UPDATE operator_ticket_commands SET intent_hash=? WHERE project_id=? AND local_id=?').bind(createHash('sha256').update(JSON.stringify(normalized)).digest('hex'),p,legacy.localId).run()
+  const unassigned=await app.ok(base,{...operator,body:{...command,localId:'configured-unassigned-email',groupId:null,assigneeId:null}})
+  assert.equal(unassigned.conversation.assigned_to,null,'the first public comment preserves deliberately unassigned')
+  assert.equal(unassigned.conversation.group_id,null)
+  await app.until(()=>sent.length===2,{message:'unassigned configured email'})
   // Removing a form never changes an admitted command's replay or historical provenance.
   await app.ok(`/api/forms/projects/${p}/forms/${form.id}`,{...owner,method:'PATCH',body:{updatedAt:form.updatedAt,enabled:false}})
   assert.equal((await app.ok(base,{...operator,body:command})).conversation.id,id)

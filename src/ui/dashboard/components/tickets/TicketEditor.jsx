@@ -50,6 +50,7 @@ export default function TicketEditor({ conversation, record }) {
         {(error || loadError) && <p role="alert" className="text-danger">{error || loadError}</p>}
         {!draft && !loadError && <p role="status">Loading ticket…</p>}
         {draft && settings && <>
+            {ticket.history?.find(item=>item.changes.form)?.changes.form && <p className="form-text">Created with request form <strong>{ticket.history.find(item=>item.changes.form).changes.form.to}</strong> · Version {ticket.history.find(item=>item.changes.form).changes.form.version}</p>}
             <form onSubmit={save}>
                 <fieldset disabled={disabled}>
                     <legend className="visually-hidden">Ticket fields</legend>

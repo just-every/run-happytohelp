@@ -86,6 +86,7 @@ export async function outboundTicketBrowser(){
   }
   for(const width of [1440,390]){
    const project=await call('/api/management/projects',{name:`Synthetic parcel support ${width}`,allowedOrigin:runtime.origin},owner.token),projectId=project.id,base=`/api/dashboard/projects/${projectId}`,management=`/api/management/projects/${projectId}`
+   const session=await call('/api/identity/switch-project',{projectId},owner.token);owner.token=session.token;owner.actor=session.actor
    const mailbox=(await call(management+'/mailboxes',{provider:'forwarding',address:`synthetic-happytohelp-ticket-${width}@support.example`,displayName:''},owner.token)).data
    const reason=(await call(management+'/ticket-fields',{name:'Delivery reason',type:'dropdown',options:['replacement','question']},owner.token)).data
    const reference=(await call(management+'/ticket-fields',{name:'Delivery reference',type:'regex',required:true,validation:{pattern:'^DEL-[0-9]+$'}},owner.token)).data
@@ -140,6 +141,7 @@ export async function outboundTicketBrowser(){
    await delivered(base,created.conversation.id,content)
    assert.equal(copies().find(copy=>copy.text?.includes(content)).from,mailbox.address)
    await page.reload();await page.locator('.transcript-message-content').getByText(content,{exact:true}).waitFor()
+   if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click()
    await page.getByRole('tab',{name:'Ticket',exact:true}).click()
    await page.locator('#ticket-section-fields-heading').click()
    await page.getByLabel('Delivery reference',{exact:false}).waitFor()
@@ -166,9 +168,14 @@ export async function outboundTicketBrowser(){
    await dialog.getByLabel('Assignee',{exact:true}).selectOption('')
    assert.equal(await dialog.getByLabel('CC',{exact:true}).count(),0)
    await page.screenshot({path:join(evidenceDir,`${width}-new-call.png`),fullPage:true})
+   let lostCall
+   await page.route('**'+base+'/tickets',async route=>{const response=await route.fetch();assert.equal(response.status(),201);lostCall=await response.json();await route.abort('failed')},{times:1})
+   await dialog.getByRole('button',{name:'Log call',exact:true}).click()
+   await dialog.getByRole('button',{name:'Check same request',exact:true}).waitFor()
+   await page.screenshot({path:join(evidenceDir,`${width}-configured-call-lost-response.png`),fullPage:true})
    const callResponse=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
-   await dialog.getByRole('button',{name:'Log call',exact:true}).click();const logged=await callResponse;assert.equal(logged.status(),201)
-   const callTicket=await logged.json();assert.equal(callTicket.conversation.channel,'phone');assert.notEqual(callTicket.conversation.contact_id,created.conversation.contact_id);assert.equal(callTicket.conversation.assigned_to,null);assert.equal(callTicket.note.content,`Confirmed collection time (${width}).`)
+   await dialog.getByRole('button',{name:'Check same request',exact:true}).click();const logged=await callResponse;assert.equal(logged.status(),200)
+   const callTicket=await logged.json();assert.equal(callTicket.conversation.id,lostCall.conversation.id);assert.equal(callTicket.duplicate,true);assert.equal(callTicket.conversation.channel,'phone');assert.notEqual(callTicket.conversation.contact_id,created.conversation.contact_id);assert.equal(callTicket.conversation.assigned_to,null);assert.equal(callTicket.note.content,`Confirmed collection time (${width}).`)
    assert.equal(callTicket.message,undefined)
    const apiCall={kind:'call',localId:`synthetic-happytohelp-api-call-${width}`,requesterId:created.conversation.contact_id,subject:`Call follow-up ${width}`,content:'Synthetic private collection instructions.'}
    const loggedApi=await request(apiCall);assert.equal(loggedApi.status,201);assert.equal(loggedApi.body.conversation.channel,'phone');assert.equal(loggedApi.body.note.content,apiCall.content)

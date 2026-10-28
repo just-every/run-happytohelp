@@ -17,24 +17,30 @@ export default function CreateEmailTicket({projectId:initialProjectId, onHide, o
  const [error,setError] = useState(''), [busy,setBusy] = useState(false);
  const [preview,setPreview] = useState(null), [results,setResults] = useState(null);
  const intent = useRef(null), [uncertain,setUncertain] = useState(false);
- const change = (key,value) => setDraft(current => ({...current,[key]:value,...(key==='mailboxId'?{fromAddress:''}:key==='formId'?{fields:{}}:key==='kind'?{fields:{},formId:'',groupId:undefined,assigneeId:undefined}:key==='groupId'&&value&&!options?.groups.find(group=>group.id===value)?.members.includes(current.assigneeId===undefined?options.actorId:current.assigneeId)?{assigneeId:null}:{})}));
+ const change = (key,value) => setDraft(current => ({...current,[key]:value,...(key==='mailboxId'?{fromAddress:''}:key==='formId'?{fields:{}}:key==='kind'?{requesterId:undefined,fields:{},formId:'',groupId:undefined,assigneeId:undefined}:key==='groupId'&&value&&!options?.groups.find(group=>group.id===value)?.members.includes(current.assigneeId===undefined?options.actorId:current.assigneeId)?{assigneeId:null}:{})}));
  useEffect(()=>{
   let active=true;
   nativeRequest('/api/management/projects').then(result=>{if(active)setBrands(result.data);}).catch(failure=>{if(active)setError(failure.message);});
   return ()=>{active=false;};
  },[]);
  useEffect(()=>{if(mailboxes)setDraft(current=>current.mailboxId?current:{...current,mailboxId:mailboxes[0]?.id||''});},[mailboxes]);
- const switchBrand=value=>{
-  setProjectId(value);setDraft(current=>({...current,requesterId:undefined,requesterEmail:'',requesterName:'',mailboxId:'',fromAddress:'',cc:'',bcc:'',formId:'',fields:{},groupId:undefined,assigneeId:undefined}));setError('');setErrorField('');intent.current=null;
+ const switchBrand=async value=>{
+  if(busy||uncertain)return;
+  setBusy(true);setDraft(current=>({...current,requesterId:undefined,requesterEmail:'',requesterName:'',mailboxId:'',fromAddress:'',cc:'',bcc:'',formId:'',fields:{},groupId:undefined,assigneeId:undefined}));setError('');setErrorField('');intent.current=null;
+  try{await nativeRequest('/api/identity/switch-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId:value})});setProjectId(value);}catch(failure){setError(failure.message);}finally{setBusy(false);}
+ };
+ const close=async()=>{
+  if(busy||uncertain)return;
+  try{if(projectId!==initialProjectId)await nativeRequest('/api/identity/switch-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId:initialProjectId})});onHide();}catch(failure){setError(failure.message);}
  };
  const submit = async event => {
   event.preventDefault();if(busy)return;setError('');setErrorField('');
   const requesterEmails=[...new Set(parseEmailRecipients(draft.requesterEmail).map(address=>address.toLowerCase()))];
-  const invalid = emailRecipientsError(draft.kind==='notice'?requesterEmails:draft.requesterEmail) || (draft.kind==='notice' ? (parseEmailRecipients(draft.requesterEmail).length<2?'Enter at least two requester email addresses.':'') : (parseEmailRecipients(draft.requesterEmail).length !== 1 ? 'Enter one requester email address.' : '')) || (draft.kind === 'email' && (emailRecipientsError(draft.cc) || emailRecipientsError(draft.bcc)));
+  const invalid = draft.requesterId&&draft.kind==='call'?'':emailRecipientsError(draft.kind==='notice'?requesterEmails:draft.requesterEmail) || (draft.kind==='notice' ? (parseEmailRecipients(draft.requesterEmail).length<2?'Enter at least two requester email addresses.':'') : (parseEmailRecipients(draft.requesterEmail).length !== 1 ? 'Enter one requester email address.' : '')) || (draft.kind === 'email' && (emailRecipientsError(draft.cc) || emailRecipientsError(draft.bcc)));
   if(invalid){setError(invalid);return;}
   setBusy(true);
   try {
-   intent.current ||= {...draft,formId:draft.formId||undefined,fields:draft.kind==='notice'||!Object.keys(draft.fields).length?undefined:draft.fields,groupId:draft.kind==='notice'?undefined:draft.groupId,assigneeId:draft.kind==='notice'?undefined:draft.assigneeId,localId:crypto.randomUUID(),
+   intent.current ||= {...draft,requesterEmail:draft.requesterId&&!draft.requesterEmail?undefined:draft.requesterEmail,formId:draft.formId||undefined,fields:draft.kind==='notice'||!Object.keys(draft.fields).length?undefined:draft.fields,groupId:draft.kind==='notice'?undefined:draft.groupId,assigneeId:draft.kind==='notice'?undefined:draft.assigneeId,localId:crypto.randomUUID(),
     kind:draft.kind==='notice'?'email':draft.kind,
     ...(draft.kind==='notice'?{requesters:requesterEmails,requesterEmail:undefined,requesterName:undefined}:{}),
     fromAddress:draft.kind!=='call'&&draft.fromAddress?draft.fromAddress:undefined,
@@ -63,7 +69,7 @@ export default function CreateEmailTicket({projectId:initialProjectId, onHide, o
   } finally {setBusy(false);}
  };
  const input = (key,label,type='text',required=false) => <div className="form-group"><label className="form-label" htmlFor={`new-ticket-${key}`}>{label}</label><input className="form-control" id={`new-ticket-${key}`} type={type} required={required} value={draft[key]} disabled={!!draft.requesterId&&['requesterEmail','requesterName'].includes(key)} onChange={event=>change(key,event.target.value)} maxLength={key==='subject'?500:key==='requesterEmail'&&draft.kind==='notice'?16000:320}/></div>;
- return <Modal show onHide={()=>!busy&&!uncertain&&onHide()} className="create-email-ticket" backdrop="static" aria-labelledby="new-ticket-title">
+ return <Modal show onHide={close} className="create-email-ticket" backdrop="static" aria-labelledby="new-ticket-title">
   <DialogHeader closeButton={!busy&&!uncertain}><Modal.Title id="new-ticket-title">New ticket</Modal.Title></DialogHeader>
   <form onSubmit={submit}>
    <Modal.Body>
@@ -87,7 +93,7 @@ export default function CreateEmailTicket({projectId:initialProjectId, onHide, o
     {results&&<section aria-label="Notice results"><h3>Notice tickets</h3><p>Open each ticket to check its email outcome.</p><ul>{results.map(row=><li key={row.recipient}>{row.conversation?<a href={`/projects/${encodeURIComponent(projectId)}/conversations/${encodeURIComponent(row.conversation.id)}`}>{row.recipient}</a>:row.recipient}{row.error&&<span role="alert"> — {row.error}</span>}</li>)}</ul></section>}
 
    </Modal.Body>
-   <Modal.Footer>{preview&&!results&&!uncertain&&<button className="btn btn-white" type="button" disabled={busy} onClick={()=>{setPreview(null);intent.current=null;}}>Edit notice</button>}<button className="btn btn-white" type="button" disabled={busy||uncertain} onClick={onHide}>{results?'Close':'Cancel'}</button>{(!results||uncertain)&&<button className="btn btn-primary" type="submit" disabled={busy || (!uncertain&&(!options||!!choicesError)) || (!uncertain && draft.kind!=='call' && !draft.mailboxId)}>{busy?'Creating…':uncertain?'Check same request':draft.kind==='call'?'Log call':draft.kind==='notice'?(preview?'Confirm and email':'Preview recipients'):'Create and email'}</button>}</Modal.Footer>
+   <Modal.Footer>{preview&&!results&&!uncertain&&<button className="btn btn-white" type="button" disabled={busy} onClick={()=>{setPreview(null);intent.current=null;}}>Edit notice</button>}<button className="btn btn-white" type="button" disabled={busy||uncertain} onClick={close}>{results?'Close':'Cancel'}</button>{(!results||uncertain)&&<button className="btn btn-primary" type="submit" disabled={busy || (!uncertain&&(!options||!!choicesError)) || (!uncertain && draft.kind!=='call' && !draft.mailboxId)}>{busy?'Creating…':uncertain?'Check same request':draft.kind==='call'?'Log call':draft.kind==='notice'?(preview?'Confirm and email':'Preview recipients'):'Create and email'}</button>}</Modal.Footer>
   </form>
  </Modal>;
 }

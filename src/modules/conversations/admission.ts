@@ -20,10 +20,12 @@ import {writableConversationSql} from '../conversation-actions/merge-read'
 export const reservedLocalId=(localId:unknown)=>typeof localId==='string'&&/^(?:email|erased|away|schedule|problem):/.test(localId)
 /** An internal authority may add a transaction predicate; JSON callers cannot mint this symbol. */
 export const messageAuthority=Symbol('messageAuthority')
+/** Operator ticket reservation has already chosen its assignment, including unassigned. */
+export const preserveAssignment=Symbol('preserveAssignment')
 export const messageCommit=Symbol('messageCommit')
 /** Internal atomic receipt updates; never populated from request JSON. */
 export const messageCommitStatements=Symbol('messageCommitStatements')
-export interface MessageInput {[messageCommitStatements]?:(messageId:string)=>D1PreparedStatement[];[messageCommit]?:(messageId:string,conversationId:string,now:number)=>D1PreparedStatement[];[companyPortalReply]?:true;[messageAuthority]?:{sql:string;args:unknown[]};requireAvailableRequester?:true;[scheduledAdmission]?:ScheduledAdmission;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
+export interface MessageInput {[preserveAssignment]?:true;[messageCommitStatements]?:(messageId:string)=>D1PreparedStatement[];[messageCommit]?:(messageId:string,conversationId:string,now:number)=>D1PreparedStatement[];[companyPortalReply]?:true;[messageAuthority]?:{sql:string;args:unknown[]};requireAvailableRequester?:true;[scheduledAdmission]?:ScheduledAdmission;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
 export interface MessageResult {accepted:boolean;duplicate?:boolean;message?:any;reason?:string;followupConversationId?:string}
 export async function admitMessage(env:Env,input:MessageInput):Promise<MessageResult>{
  const {projectId,conversationId,actor,localId,content,expectedRevision}=input,email=input[inboundAuthority]
@@ -60,7 +62,7 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  if(scope.status_category==='closed'&&!followup)return {accepted:false,reason:'ticket_closed_followup_required'}
  const targetId=followup?await followupId(projectId,conversationId,actor.id,localId):conversationId
  if(followup){const replay=await env.DB.prepare('SELECT * FROM messages WHERE project_id=? AND conversation_id=? AND local_id=?').bind(projectId,targetId,localId).first<any>();if(replay){if(replay.actor_id!==writerId||replay.intent_hash!==intentHash)return {accepted:false,reason:'local_id_conflict'};return {accepted:true,duplicate:true,message:replay,followupConversationId:targetId}}}
- const autoAssign=actor.role!=='contact'&&!input.generationId&&!input.tokenAuthority&&(!scope.group_id||!!await env.DB.prepare('SELECT 1 FROM ticket_group_members WHERE project_id=? AND group_id=? AND user_id=?').bind(projectId,scope.group_id,actor.id).first())
+ const autoAssign=input[preserveAssignment]!==true&&actor.role!=='contact'&&!input.generationId&&!input.tokenAuthority&&(!scope.group_id||!!await env.DB.prepare('SELECT 1 FROM ticket_group_members WHERE project_id=? AND group_id=? AND user_id=?').bind(projectId,scope.group_id,actor.id).first())
  const authorship=await authoringSource(env,actor,conversationId,input.authoring,input.generationId)
  const citations=refs.length?await resolvePublicCitations(env,projectId,input.generationId!,refs):[]
  env=await workflowEnvironment(env)

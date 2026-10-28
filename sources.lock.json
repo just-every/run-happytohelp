@@ -4224,7 +4224,7 @@
       "executable": false
     },
     "src/modules/conversations/admission.ts": {
-      "sha256": "83dfd7ca5797712ebea379318a9c4b3c23cef7dc0a0ba32adadba05fcf52493d",
+      "sha256": "5d76c33fa07818e964542e4f9dab3a9706ae63f5210dcf8578a1f025e7f79438",
       "executable": false
     },
     "src/modules/conversations/citations.js": {
@@ -6284,7 +6284,7 @@
       "executable": false
     },
     "src/modules/management/outbound-configuration.ts": {
-      "sha256": "09e97eb3c88e78c2a0d2748c9c07f40528ad2efb1664dd32b129ebed88dec2eb",
+      "sha256": "e2d38b00a8d7a5e8b379441a83ef8996414f848ac9e2836fe5e42121b565ddaf",
       "executable": false
     },
     "src/modules/management/outbound-notices.ts": {
@@ -6304,7 +6304,7 @@
       "executable": false
     },
     "src/modules/management/outbound-tickets.ts": {
-      "sha256": "c1e8008bdbea826107846ff6a49b317c3e7a566481d16f950f9410fce083c15d",
+      "sha256": "5c6a0b434d37adc40d87c3eb272d55310e3dabc7222150d7e451efe3e643be39",
       "executable": false
     },
     "src/modules/management/policy.ts": {
@@ -8472,7 +8472,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/CreateEmailTicket.jsx": {
-      "sha256": "006a5898516409d2af4ca00ecfd791d5092e5aac6f7c6a20edfea9ce6f7aef5a",
+      "sha256": "f7008afe132f99bc6e0ad061e5fadf37ad4f01a190dfaf56c9285a780cb8d054",
       "executable": false
     },
     "src/ui/dashboard/components/DelegationAttachments.jsx": {
@@ -8772,7 +8772,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/tickets/TicketEditor.jsx": {
-      "sha256": "591a22d859a15f25fdb3a4850ea55786c6ec1032687b8e325049ffbe6b1768b4",
+      "sha256": "23b119ac5d6f29dc25c27243f855a2ed0f7fa68552db9a472f72b81309696540",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/TicketField.jsx": {
@@ -11500,7 +11500,7 @@
       "executable": false
     },
     "tests/helpers/email/outbound-configuration.mjs": {
-      "sha256": "222b1f4ba2f19c8759297ee0a4afc08b07b6f28951377447abf222ca8290123c",
+      "sha256": "1e78b97681f77f393d78f448a6b9afac2eb439fae2d37685154945d88e9045a5",
       "executable": false
     },
     "tests/helpers/email/recovery.mjs": {
@@ -11888,7 +11888,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ui-browser.mjs": {
-      "sha256": "92e0d0d74afdd294272c771d88a95ea5c8f4d1ab7155d8a565b60c091b21b223",
+      "sha256": "8d1ab030e7271882297b01286cd435fe96ff78de636cfbe032151ad1a74589d6",
       "executable": false
     },
     "tests/helpers/inbox/visual-edit-browser.mjs": {

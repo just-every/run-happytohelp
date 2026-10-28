@@ -5,7 +5,7 @@ import type {DeferEmailDelivery} from '../integrations/email'
 import {requestRoom} from '../integrations/notification-budget'
 import {scope} from './common'
 import {outboundOptionsRoutes} from './outbound-options'
-import {admitMessage,messageCommitStatements} from '../conversations/admission'
+import {admitMessage,messageCommitStatements,preserveAssignment} from '../conversations/admission'
 import {noticeCommand,outboundTicketInput,type OutboundTicketInput} from './outbound-ticket-input'
 import {previewOutboundNotices,confirmOutboundNotices} from './outbound-notices'
 import {logOutboundCall,reserveOutboundTicket} from './outbound-ticket-store'
@@ -24,7 +24,7 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
    const note=await logOutboundCall(c.env,actor,sessionHash,reservation.conversationId,input.content)
    return {accepted:true,duplicate:reservation.duplicate,conversation,note}
   }
-  const result=await admitMessage(c.env,{requireAvailableRequester:true,projectId:actor.projectId,conversationId:reservation.conversationId,actor,sessionHash,localId:input.localId,content:input.content,expectedRevision:0,expectedLastMessageId:null,...(input[noticeCommand]?{[messageCommitStatements]:(messageId:string)=>[c.env.DB.prepare(`UPDATE outbound_notice_commands SET receipts_json=json_set(receipts_json,?,?) WHERE project_id=? AND id=? AND outcome='succeeded' AND EXISTS(SELECT 1 FROM conversation_outbox WHERE project_id=? AND conversation_id=? AND message_id=?)`).bind(`$."${input.localId}".messageId`,messageId,actor.projectId,input[noticeCommand],actor.projectId,reservation.conversationId,messageId)]}:{})})
+  const result=await admitMessage(c.env,{[preserveAssignment]:true,requireAvailableRequester:true,projectId:actor.projectId,conversationId:reservation.conversationId,actor,sessionHash,localId:input.localId,content:input.content,expectedRevision:0,expectedLastMessageId:null,...(input[noticeCommand]?{[messageCommitStatements]:(messageId:string)=>[c.env.DB.prepare(`UPDATE outbound_notice_commands SET receipts_json=json_set(receipts_json,?,?) WHERE project_id=? AND id=? AND outcome='succeeded' AND EXISTS(SELECT 1 FROM conversation_outbox WHERE project_id=? AND conversation_id=? AND message_id=?)`).bind(`$."${input.localId}".messageId`,messageId,actor.projectId,input[noticeCommand],actor.projectId,reservation.conversationId,messageId)]}:{})})
   if(!result.accepted)return {...result,conversation}
   let generationError:string|undefined
   if(notice){

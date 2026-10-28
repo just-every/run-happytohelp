@@ -11,7 +11,9 @@ import type {OutboundTicketInput} from './outbound-ticket-input'
 
 /** Native form semantics, with submission requirements independent of required-to-solve. */
 export async function operatorForm(env:Env,actor:Actor,formId:string,access:Awaited<ReturnType<typeof ticketAuthority>>['access']){
- const form=await storedForm(env,actor.projectId,formId),catalogue=await fieldCatalogue(env,actor.projectId)
+ let form
+ try{form=await storedForm(env,actor.projectId,formId)}catch(error){if(error instanceof HTTPException&&error.status===404)fieldError('formId','unavailable_form','Choose an available workspace request form');throw error}
+ const catalogue=await fieldCatalogue(env,actor.projectId)
  if(!form.enabled)fieldError('formId','unavailable_form','Choose an available request form')
  const definitions:StoredField[]=form.fields.map(ref=>{
   const field=catalogue.find(f=>f.id===ref.fieldId)

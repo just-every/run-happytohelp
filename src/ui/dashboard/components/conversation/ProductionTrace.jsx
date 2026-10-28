@@ -1,49 +1,49 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {nativeRequest} from '../../../native/transport';
+import React, {useEffect, useState} from 'react';
+import {requestJson} from '../../utils/requestJson';
 
-/** The existing Ticket section presents allowlisted production receipts only. */
-export default function ProductionTrace({projectId,conversationId,shown}){
- const [result,setResult]=useState(null),[report,setReport]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),epoch=useRef(0);
- const base=`/api/ai-support/projects/${projectId}`;
- useEffect(()=>{epoch.current++;setResult(null);setReport(null);setError('');setBusy(false);return ()=>{epoch.current++;};},[base,conversationId]);
- const read=async(offset=0)=>{
-  const current=epoch.current;setBusy(true);setError('');
-  try{const data=await nativeRequest(`${base}/conversations/${conversationId}/trace?offset=${offset}`);if(current===epoch.current)setResult(prior=>({...data,traces:offset?[...(prior?.traces||[]),...data.traces]:data.traces}));}
-  catch(e){if(current===epoch.current)setError(e.message);}finally{if(current===epoch.current)setBusy(false);}
- };
- const inspect=async key=>{
-  const current=epoch.current;setBusy(true);setError('');
-  try{const data=await nativeRequest(`${base}/procedure-reports/${encodeURIComponent(key)}`);if(current===epoch.current)setReport(data);}
-  catch(e){if(current===epoch.current)setError(e.message);}finally{if(current===epoch.current)setBusy(false);}
- };
- const moreCases=async()=>{
-  const current=epoch.current;setBusy(true);setError('');
-  try{const data=await nativeRequest(`${base}/procedure-reports/${encodeURIComponent(report.procedureKey)}?offset=${report.nextOffset}`);if(current===epoch.current)setReport(prior=>({...data,cases:[...prior.cases,...data.cases]}));}
-  catch(e){if(current===epoch.current)setError(e.message);}finally{if(current===epoch.current)setBusy(false);}
- };
- const money=value=>typeof value==='number'?`$${value.toFixed(6)} USD`:'Price data unavailable';
- return <div className="production-trace" style={{overflowWrap:'anywhere'}}>
-  <p>Inspect admitted answers, read-only tool receipts and handoffs. A completed read or proposal does not prove a customer action succeeded.</p>
-  {error&&<p role="alert">{error}</p>}
-  <button type="button" className="btn btn-white btn-sm" disabled={busy||!shown} onClick={()=>read()}>{busy?'Loading traces…':result?'Refresh production traces':'Load production traces'}</button>
-  {result&&!result.traces.length&&<p>No production generations recorded for this conversation.</p>}
-  {result?.traces.map((trace,index)=><details key={trace.generationId}><summary>Generation {index+1}: {trace.state}{trace.result.customerMessageCommitted?' · answer committed':' · no admitted answer'}</summary>
-   <p>Provider estimate: {money(trace.providerCostEstimateUsd)}. {trace.durationMs===null?'Duration unknown':`${trace.durationMs} ms`}.</p>
-   {trace.failureCategory&&<p>Failure category: {trace.failureCategory}</p>}
-   <p>Assistant version: <code>{trace.assistantVersion}</code></p>
-   <ul aria-label="Issued knowledge sources">{trace.sources.map(source=><li key={source.id+source.sourceVersion}>{source.id} · {source.sourceVersion}</li>)}</ul>
-   <ul aria-label="Tool receipts">{trace.toolTrace.calls.map(tool=><li key={tool.id}><strong>{tool.toolName}</strong>: {tool.state}; {tool.requestedScope}; {tool.approval}; {tool.durationMs===null?'duration unknown':`${tool.durationMs} ms`}{tool.responsibleHumanId?`; responsible human ${tool.responsibleHumanId}`:''}. Business action executed: no.</li>)}</ul>
-   <ul aria-label="Provider usage">{trace.rounds.map(round=><li key={round.requestId}>{round.observed?'Observed':'Unconfirmed'} round: input {round.usage.input_tokens??'unknown'}, output {round.usage.output_tokens??'unknown'} tokens; {money(round.usage.cost)}.</li>)}</ul>
-   {trace.procedure?.procedureKey&&<button type="button" className="btn btn-link" disabled={busy} onClick={()=>inspect(trace.procedure.procedureKey)}>Open procedure report: {trace.procedure.procedureKey} v{trace.procedure.version}</button>}
-  </details>)}
-  {result?.nextOffset!==null&&result?.nextOffset!==undefined&&<button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={()=>read(result.nextOffset)}>More traces</button>}
-  {report&&<div aria-label="Procedure report"><h4>Procedure report: {report.procedureKey}</h4><p>{report.attribution}</p><p>{money(report.providerCostEstimateUsd)}</p>
-   <ul>{report.versions.map(version=><li key={version.versionId}>Version {version.version}: {version.reopened}/{version.denominator} resolution cycles reopened ({version.excluded} excluded from {version.originalDenominator} original cycles); {version.negativeCsat}/{version.rated} rated cycles negative.</li>)}</ul>
-   <p>{report.productionScope}</p><ul>{report.productionVersions.map(version=><li key={version.versionId}>{version.handoffs}/{version.generationDenominator} linked generations handed off; {version.failures} failed or uncertain outcomes.</li>)}</ul>
-   <ul>{report.cases.map(item=><li key={item.resolutionId}><a href={`/projects/${projectId}/conversations/${item.conversationId}`}>Supporting case, version {item.version}</a>: {item.included===0?'excluded by human attribution review':item.reopenedAt?'reopened':'closed, recovery unconfirmed'}{item.negativeCsat?'; negative CSAT':''}</li>)}</ul>
-   {report.nextOffset!==null&&<button type="button" className="btn btn-white btn-sm" disabled={busy} onClick={moreCases}>More supporting cases</button>}
-   <ul aria-label="Attribution reviews">{report.attributionReviews.map(review=><li key={review.id}>{review.decision}: {review.reason}; reviewer {review.reviewedBy}; evidence {review.evidenceMessageId}.</li>)}</ul>
-   <ul>{report.failureClusters.map(cluster=><li key={cluster.category}>{cluster.category}: {cluster.count} linked generations.</li>)}</ul>
-  </div>}
- </div>;
+export default function ProductionTrace({conversation,active}) {
+    const [read,setRead]=useState({key:null,loading:true});
+    const [version,reload]=useState(0);
+    const key=`${conversation.project_id}:${conversation.id}`;
+    useEffect(()=>{
+        if(!active)return undefined;
+        const controller=new AbortController();
+        setRead({key,loading:true});
+        requestJson(`/api/ai-support/projects/${conversation.project_id}/conversations/${conversation.id}/trace`,{credentials:'same-origin'},{signal:controller.signal})
+            .then(data=>{if(!controller.signal.aborted)setRead({key,data});})
+            .catch(()=>{if(!controller.signal.aborted)setRead({key,error:true});});
+        return ()=>controller.abort();
+    },[key,active,version]);
+    if(!active)return null;
+    const current=read.key===key?read:{loading:true};
+    return <section aria-label="Execution trace" style={{overflowWrap:'anywhere'}}>
+        <button className="btn btn-white" style={{minHeight:44}} onClick={()=>reload(v=>v+1)}>Refresh trace</button>
+        {current.loading?<p role="status">Loading trace…</p>:current.error?<p role="alert">Trace unavailable. Refresh to try again.</p>:<>
+            {!current.data.generations.length&&<p>No recorded executions.</p>}
+            <p>Latest {current.data.limit} executions. Provider cost: unavailable.</p>
+            {current.data.generations.map(run=><details key={run.id}>
+                <summary style={{minHeight:44,padding:'12px 0'}}> {run.result} · {run.state}</summary>
+                <dl>
+                    <dt>Requested scope</dt><dd>{run.requestedScope}</dd>
+                    <dt>Approval</dt><dd>{run.approval}</dd>
+                    <dt>Source versions</dt><dd>Assistant <abbr title={run.source.assistantVersion}>{run.source.assistantVersion.slice(0,12)}</abbr><br/>Conversation {run.source.conversationRevision}, context {run.source.contextRevision}
+                        {run.source.knowledge.map(source=><div key={source.source_id}>{source.source_id} · {source.source_version}</div>)}</dd>
+                    <dt>Timing</dt><dd>{run.timing.startedAt||'Not started'} · {run.timing.durationMs===null?'Duration unavailable':`${run.timing.durationMs} ms`}</dd>
+                    <dt>Provider outcome</dt><dd>{run.providerOutcome}</dd>
+                    <dt>Contribution</dt><dd>{run.contribution}</dd>
+                    <dt>Cycle outcome</dt><dd>{run.customerOutcome.cycle?<>
+                        <div>Resolution {run.customerOutcome.cycle.id}</div>
+                        <div>Resolved {run.customerOutcome.cycle.resolvedAt}</div>
+                        <div>Recorded attribution: {run.customerOutcome.cycle.attribution}</div>
+                        <div>{run.customerOutcome.cycle.rating?`Feedback: ${run.customerOutcome.cycle.rating.value} (${run.customerOutcome.cycle.rating.scale}), revision ${run.customerOutcome.cycle.rating.revision}`:'Feedback: not recorded'}</div>
+                        <div>{run.customerOutcome.cycle.reopenedAt?`Reopened ${run.customerOutcome.cycle.reopenedAt}`:'No later reopening recorded'}</div>
+                    </>:<>Unknown: {run.customerOutcome.reason}</>}</dd>
+                    <dt>Supporting case</dt><dd><a href={`/projects/${conversation.project_id}/conversations/${conversation.id}`}>Open conversation</a></dd>
+                    <dt>Interpretation</dt><dd>Contributions share a cycle; feedback does not establish causal blame or independently verified recovery.</dd>
+                    <dt>Committed answer</dt><dd>{run.committedAnswer?`${run.committedAnswer.id} · revision ${run.committedAnswer.revision}`:'None recorded'}</dd>
+                </dl>
+                {run.tools.map((tool,index)=><p key={index}>{tool.name} · {tool.outcome} · {tool.durationMs===null?'Duration unavailable':`${tool.durationMs} ms`}</p>)}
+            </details>)}
+        </>}
+    </section>;
 }

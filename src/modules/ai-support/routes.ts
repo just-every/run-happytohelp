@@ -1,7 +1,7 @@
 import {procedureReportRoutes} from './procedure-reports'
-import {procedureRoutes} from './procedures'
+import {procedureRoutes} from './advice-procedures'
 import {obligationRoutes} from './obligations'
-import {traceRoutes} from './trace'
+import {traceRoutes} from './execution-trace'
 import { Hono } from 'hono'
 import type { AppEnv } from '../../platform/env'
 import { requireProject } from '../../platform/auth'
@@ -30,3 +30,4 @@ routes.post('/projects/:projectId/conversations/:conversationId/suggestions',asy
  const projectId=c.req.param('projectId'),actor=await requireProject(c,projectId,true),body=await c.req.json()
  try{return c.json(await requestGeneration(c.env,{projectId,conversationId:c.req.param('conversationId'),actor,sessionHash:c.get('sessionHash'),expectedRevision:body.expectedRevision,kind:'suggestions'}),202)}catch(error){return c.json({error:String(error)},409)}
 })
+

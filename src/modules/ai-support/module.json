@@ -8,9 +8,9 @@
     "tests/journeys/ai.mjs",
     "tests/journeys/ai-browser.mjs",
     "tests/journeys/ai-live.mjs",
-    "migrations/242_followup_obligations.sql",
-    "migrations/243_procedure_versions.sql",
-    "migrations/245_procedure_regression_stop.sql"
+    "migrations/260_followup_obligations.sql",
+    "migrations/261_procedure_versions.sql",
+    "migrations/263_procedure_regression_stop.sql"
   ],
   "selectedEditionDependencies": [
     "runeditrun/base",

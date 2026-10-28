@@ -26,13 +26,13 @@ export async function domainsBrowserJourney({runtime,browser,fixture,viewport,sh
   await page.getByText('Saved.',{exact:true}).waitFor()
   assert.equal((await call(`/api/knowledge/${fixture.projectId}/experience`)).publishedHost,'localhost')
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'domain settings fit the viewport')
-  await page.screenshot({path:shot(`knowledge-domain-settings-${width}.png`),fullPage:true})
+  await capture(page,shot,`knowledge-domain-settings-${width}.png`)
   const logo='/homepage/media/brands/happytohelp-mark.svg'
   await call(`/api/management/projects/${fixture.projectId}/settings`,{method:'PUT',body:{brand_name:'Alpha Help',primary_color:'#204b3a',logo_url:logo}})
   await page.goto(publicHost.href)
   await page.locator('.help-center-brand strong').filter({hasText:'Alpha Help'}).waitFor()
   assert.ok(await page.locator('.help-center-logo').evaluate(img=>img.complete&&img.naturalWidth>0))
-  await page.screenshot({path:shot(`knowledge-alpha-host-${width}.png`),fullPage:true})
+  await capture(page,shot,`knowledge-alpha-host-${width}.png`)
   // Another help center has its own exact host, logo, color and content.
   const beta=await runtime.seedTenant({name:'Beta Help',email:`beta-help-${width}@example.test`,allowedOrigin:origin})
   await runtime.execute(`DELETE FROM public_project_aliases WHERE slug='second-browser-help'; INSERT INTO public_project_aliases(slug,project_id) VALUES('second-browser-help','${beta.projectId}')`)
@@ -44,7 +44,7 @@ export async function domainsBrowserJourney({runtime,browser,fixture,viewport,sh
   assert.match(await page.locator('.help-center-content').innerText(),/Beta article Beta guide/)
   assert.equal(await page.locator('.help-center-brand strong').innerText(),'Beta Help')
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1))
-  await page.screenshot({path:shot(`knowledge-beta-host-${width}.png`),fullPage:true})
+  await capture(page,shot,`knowledge-beta-host-${width}.png`)
   // Private translations retain the same audience on custom hosts and built-in paths.
   const category=await call(`/api/knowledge/${fixture.projectId}/categories`,{status:201,body:{title:`Private ${width}`,audience:'domains',allowedDomains:['trusted.test']}})
   const article=await call(`/api/knowledge/${fixture.projectId}/articles`,{status:201,body:{title:'Private export guide',slug:`private-export-${width}`,content:'Use the approved export queue.',categoryIds:[category.id],status:'published'}})
@@ -83,3 +83,5 @@ export async function domainsBrowserJourney({runtime,browser,fixture,viewport,sh
   assert.deepEqual(errors,[])
  }finally{await context.close()}
 }
+
+async function capture(page,shot,file){for(const width of [1440,390]){await page.setViewportSize({width,height:900});await page.screenshot({path:shot(file.replace('1440',String(width))),fullPage:true})}await page.setViewportSize({width:1440,height:900})}

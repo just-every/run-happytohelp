@@ -10,7 +10,7 @@
     "migrations/0053_knowledge_recovery.sql",
     "tests/journeys/knowledge.mjs",
     "migrations/170_knowledge_experience.sql",
-    "migrations/244_reviewed_knowledge_proposals.sql"
+    "migrations/262_reviewed_knowledge_proposals.sql"
   ],
   "selectedEditionDependencies": [
     "runeditrun/base"

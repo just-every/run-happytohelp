@@ -1,4 +1,4 @@
-import {failureCategory} from '../ai-support/tool-trace'
+import {failureCategory} from '../ai-support/execution-tools'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Env} from '../../platform/env'
@@ -32,7 +32,7 @@ proposalRoutes.get('/:projectId/gaps',async c=>{
  if(!Number.isSafeInteger(offset)||offset<0)throw new HTTPException(400)
  const searches=await c.env.DB.prepare("SELECT lower(trim(query)) topic,locale,brand,count(*) occurrences FROM knowledge_events WHERE project_id=? AND kind='search' AND result_count=0 AND query<>'' GROUP BY lower(trim(query)),locale,brand ORDER BY occurrences DESC,topic LIMIT 101 OFFSET ?").bind(pid,offset).all<any>()
  const cases=await c.env.DB.prepare("SELECT c.id conversationId,r.id resolutionId,r.reopened_at reopenedAt FROM conversations c JOIN conversation_resolutions r ON r.conversation_id=c.id AND r.project_id=c.project_id WHERE c.project_id=? AND r.reopened_at IS NOT NULL AND "+contactAvailableSql()+" ORDER BY r.reopened_at DESC,r.id LIMIT 101 OFFSET ?").bind(pid,offset).all()
- const failures=await c.env.DB.prepare(`SELECT g.id generationId,g.conversation_id conversationId,v.id versionId,v.procedure_key procedureKey,c.brand_id brand,g.state,g.error FROM ai_generations g JOIN procedure_generation pg ON pg.generation_id=g.id JOIN procedure_versions v ON v.id=pg.version_id AND v.project_id=g.project_id JOIN conversations c ON c.id=g.conversation_id AND c.project_id=g.project_id WHERE g.project_id=? AND g.state IN ('failed','uncertain') AND ${contactAvailableSql()} ORDER BY g.created_at DESC,g.id LIMIT 101 OFFSET ?`).bind(pid,offset).all<any>()
+ const failures=await c.env.DB.prepare(`SELECT g.id generationId,g.conversation_id conversationId,v.id versionId,v.procedure_key procedureKey,c.brand_id brand,g.state,g.error FROM ai_generations g JOIN procedure_generation pg ON pg.generation_id=g.id JOIN advice_procedure_versions v ON v.id=pg.version_id AND v.project_id=g.project_id JOIN conversations c ON c.id=g.conversation_id AND c.project_id=g.project_id WHERE g.project_id=? AND g.state IN ('failed','uncertain') AND ${contactAvailableSql()} ORDER BY g.created_at DESC,g.id LIMIT 101 OFFSET ?`).bind(pid,offset).all<any>()
  return c.json({procedureFailures:failures.results.slice(0,100).map(({error,...row})=>({...row,category:failureCategory(error),locale:'unavailable'})),searchTopics:searches.results.slice(0,100).map(r=>({...r,topic:redactKnowledgeDraft(r.topic,null)})),reopenedCases:cases.results.slice(0,100),nextOffset:searches.results.length>100||cases.results.length>100||failures.results.length>100?offset+100:null,clustering:'Exact normalized no-result search topics, separated by locale and brand; reopened native resolution cycles are cited separately.'})
 })
 proposalRoutes.get(root+'/sources',async c=>{

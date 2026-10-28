@@ -1,3 +1,4 @@
+import {campaignReport} from '../widget/campaigns/report'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -30,5 +31,5 @@ reports.get('/projects/:projectId/reports',async c=>{
   const body=transcripts?exportTranscripts(c.env,actor.projectId):query.format==='summary.csv'?summaryCSV(await readReport(c.env,actor.projectId,range)):exportCSV(c.env,actor.projectId,range)
   return new Response(body,{status:200,headers:{'Content-Type':`${transcripts?'application/json':'text/csv'}; charset=utf-8`,'Content-Disposition':`attachment; filename="${query.format}"`,'Cache-Control':'no-store'}})
  }
- return c.json(await readReport(c.env,actor.projectId,range))
+ return c.json({...await readReport(c.env,actor.projectId,range),campaigns:await campaignReport(c.env,actor.projectId,range.startAt,range.endAt)})
 })

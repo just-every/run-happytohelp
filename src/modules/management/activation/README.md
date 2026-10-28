@@ -1,8 +1,8 @@
 # Activation observations
 
 The management router mounts `GET /projects/:projectId/activation`, `POST
-/projects/:projectId/activation/check`, `POST /projects/:projectId/activation/skip` and
-`POST /projects/:projectId/activation/test-mail`.
+/projects/:projectId/activation/check`, `POST /projects/:projectId/activation/skip`, `POST
+/projects/:projectId/activation/local-trial` and `POST /projects/:projectId/activation/test-mail`.
 All require current owner/admin membership (an anonymous caller gets 401; a contact, an
 operator, another workspace's owner and a deleted workspace are denied); sending test mail additionally requires
 owner role and always targets that authenticated owner's current email address.
@@ -43,6 +43,11 @@ no-op. A stored skip turns a step that would be `needs_you` into `skipped` and n
 applicable. It is ignored once the step is observed `done` (a confirmed, counted
 row) or `failed` (a rejected key is a problem, not hidden), and it changes nothing for
 a step that is not a need right now (such as sender DNS on a local installation).
+
+`POST .../local-trial` takes `{}` (strict) and is the Setup page's "Try locally without a
+website or AI key": on a local installation it skips `widget_seen` and `model_key`
+together, in one transaction of the same statements (`skipLocalTrial`), and answers with
+the snapshot. A hosted installation answers 409; its owner skips each step on its own.
 
 ## Reading and checking
 

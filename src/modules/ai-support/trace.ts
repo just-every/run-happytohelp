@@ -1,50 +1,53 @@
-import {failureCategory} from './tool-trace'
-import {Hono} from 'hono'
-import {HTTPException} from 'hono/http-exception'
-import type {AppEnv} from '../../platform/env'
-import {requireProject,hashToken} from '../../platform/auth'
-import {memberAccess} from '../access/gate'
+import {traceOutcomes} from './trace-outcomes'
+import type {Env} from '../../platform/env'
 
+const parse=(value:string|null)=>{try{return JSON.parse(value||'null')}catch{return null}}
+const states=new Set(['queued','running','completed','uncertain','cancelled','superseded','failed'])
 const number=(value:unknown)=>typeof value==='number'&&Number.isFinite(value)&&value>=0?value:null
-const usageFields=['input_tokens','output_tokens','cache_creation_input_tokens','cache_read_input_tokens','reasoning_tokens','cost'] as const
-function measuredUsage(json:string|null){
- let source:any;try{source=JSON.parse(json||'null')}catch{}
- // Raw events, provider errors, prompts, tool arguments and unknown metadata never leave this door.
- return Object.fromEntries(usageFields.map(key=>[key,number(source?.[key])])) as Record<typeof usageFields[number],number|null>
-}
-function duration(start:string,end:string|null){const ms=Date.parse(end||'')-Date.parse(start);return Number.isFinite(ms)&&ms>=0?ms:null}
-export const traceRoutes=new Hono<AppEnv>()
-traceRoutes.get('/projects/:projectId/conversations/:conversationId/trace',async c=>{
- c.header('Cache-Control','private, no-store');c.header('Vary','Cookie, Authorization')
- const pid=c.req.param('projectId'),cid=c.req.param('conversationId'),actor=await requireProject(c,pid,true)
- if(!(await memberAccess(c.env.DB,pid,actor.id))?.permissions.has('reports.view'))throw new HTTPException(403,{message:'Report permission required'})
- if(!await c.env.DB.prepare('SELECT 1 FROM conversations WHERE id=? AND project_id=?').bind(cid,pid).first())throw new HTTPException(404,{message:'Conversation not found'})
- const offset=Number(c.req.query('offset')||0)
- if(!Number.isSafeInteger(offset)||offset<0)throw new HTTPException(400,{message:'Invalid trace offset'})
- const generations=await c.env.DB.prepare(`SELECT g.id,g.state,g.kind,g.source_revision,g.source_context_revision,g.source_last_message_id,g.ai_id,g.ai_profile_json,g.error,g.created_at,g.updated_at,
-  (SELECT id FROM messages WHERE project_id=g.project_id AND conversation_id=g.conversation_id AND local_id='generation:'||g.id AND actor_role='ai') message_id
-  FROM ai_generations g WHERE g.project_id=? AND g.conversation_id=? ORDER BY g.created_at,g.id LIMIT 101 OFFSET ?`).bind(pid,cid,offset).all<any>()
- const traces=[]
- for(const g of generations.results.slice(0,100)){
-  const [attempts,sources,tools]=await Promise.all([
-   c.env.DB.prepare('SELECT id,state,started_at,finished_at FROM ai_attempts WHERE generation_id=? ORDER BY started_at,id').bind(g.id).all<any>(),
-   c.env.DB.prepare('SELECT source_id id,source_version sourceVersion FROM ai_generation_sources WHERE generation_id=? AND project_id=? ORDER BY source_id,source_version').bind(g.id,pid).all<any>(),
-   c.env.DB.prepare('SELECT id,tool_name toolName,state,started_at startedAt,finished_at finishedAt,approval,authority_scope requestedScope,error_category failureCategory,responsible_user_id responsibleHumanId FROM ai_tool_traces WHERE generation_id=? ORDER BY started_at,rowid').bind(g.id).all<any>()])
-  const rounds=[]
-  for(const attempt of attempts.results){
-   const rows=await c.env.DB.prepare('SELECT request_id,usage_json,observed FROM ai_round_usage WHERE attempt_id=? ORDER BY request_id').bind(attempt.id).all<any>()
-   rounds.push(...rows.results.map(row=>({attemptId:attempt.id,requestId:row.request_id,observed:row.observed===1,usage:measuredUsage(row.usage_json)})))
-  }
-  const completeCost=rounds.length>0&&rounds.every(r=>r.observed&&r.usage.cost!==null)
-  traces.push({generationId:g.id,state:g.state,kind:g.kind,sourceRevision:g.source_revision,contextRevision:g.source_context_revision,sourceLastMessageId:g.source_last_message_id,
-   assistantId:g.ai_id,assistantVersion:await hashToken(g.ai_profile_json),sources:sources.results,
-   startedAt:g.created_at,finishedAt:['queued','running'].includes(g.state)?null:g.updated_at,durationMs:['queued','running'].includes(g.state)?null:duration(g.created_at,g.updated_at),
-   attempts:attempts.results.map(a=>({attemptId:a.id,state:a.state,startedAt:a.started_at,finishedAt:a.finished_at,durationMs:duration(a.started_at,a.finished_at)})),rounds,
-   providerCostEstimateUsd:completeCost?rounds.reduce((sum,r)=>sum+r.usage.cost!,0):null,priceData:completeCost?'available':'unavailable',
-   result:{customerMessageCommitted:!!g.message_id,messageId:g.message_id||null},
-   failureCategory:failureCategory(g.error),
-   toolTrace:{available:true,calls:tools.results.map(t=>({...t,durationMs:t.finishedAt===null?null:t.finishedAt-t.startedAt,outcomeKnown:t.state!=='started',businessActionExecuted:false,verifiedBusinessResult:false})),redaction:'Server-selected tool names, scope and timing only; arguments, output text and provider errors are excluded. A completed read or proposal is not an executed business action.'},
-   procedure:(await c.env.DB.prepare('SELECT pg.version_id versionId,pg.release_id releaseId,v.procedure_key procedureKey,v.version,r.state releaseState,r.regression_resolution_id regressionResolutionId FROM procedure_generation pg JOIN procedure_versions v ON v.id=pg.version_id AND v.project_id=? JOIN procedure_releases r ON r.id=pg.release_id AND r.project_id=v.project_id WHERE pg.generation_id=?').bind(pid,g.id).first())||{available:false,reason:'No versioned procedure is linked to this generation.'}})
+const duration=(start:string,end:string|null)=>end?number(Date.parse(end)-Date.parse(start)):null
+/** Only metadata selected here crosses the operator door. Never return provider events or error text. */
+export async function conversationTrace(env:Env,projectId:string,conversationId:string){
+ const conversation=await env.DB.prepare('SELECT id FROM conversations WHERE id=? AND project_id=?').bind(conversationId,projectId).first()
+ if(!conversation)return null
+ const rows=await env.DB.prepare('SELECT id,state,source_revision,source_context_revision,actor_json,ai_profile_json,kind,created_at,error FROM ai_generations WHERE project_id=? AND conversation_id=? ORDER BY created_at DESC,id LIMIT 50').bind(projectId,conversationId).all<any>()
+ if(!rows.results.length)return {generations:[],limit:50}
+ const ids=rows.results.map(row=>row.id),slots=ids.map(()=>'?').join(',')
+ // A bounded set of reads also works within the free Worker's query allowance.
+ const [attemptRows,roundRows,sourceRows,handoffRows,eventRows]=await env.DB.batch<any>([
+  env.DB.prepare(`SELECT * FROM ai_attempts WHERE generation_id IN (${slots})`).bind(...ids),
+  env.DB.prepare(`SELECT t.generation_id,u.observed,u.usage_json FROM ai_round_usage u JOIN ai_attempts t ON t.id=u.attempt_id WHERE t.generation_id IN (${slots})`).bind(...ids),
+  env.DB.prepare(`SELECT generation_id,source_id,source_version FROM ai_generation_sources WHERE project_id=? AND generation_id IN (${slots})`).bind(projectId,...ids),
+  env.DB.prepare(`SELECT generation_id FROM ai_handoff_receipts WHERE project_id=? AND conversation_id=? AND generation_id IN (${slots})`).bind(projectId,conversationId,...ids),
+  env.DB.prepare(`SELECT t.generation_id,e.event_json FROM ai_attempt_events e JOIN ai_attempts t ON t.id=e.attempt_id WHERE e.type='tool_trace' AND t.generation_id IN (${slots}) ORDER BY e.id LIMIT 5000`).bind(...ids),
+ ])
+ const outcomes=await traceOutcomes(env,projectId,conversationId,ids)
+ const generations=[]
+ for(const row of rows.results){
+  const attempt=attemptRows.results.find(item=>item.generation_id===row.id)
+  const rounds=roundRows.results.filter(item=>item.generation_id===row.id)
+  const sources=sourceRows.results.filter(item=>item.generation_id===row.id).map(({source_id,source_version})=>({source_id,source_version}))
+  const joined=outcomes(row.id,row.kind,row.state),answer=joined.committedAnswer
+  const handoff=handoffRows.results.some(item=>item.generation_id===row.id)
+  const events=eventRows.results.filter(item=>item.generation_id===row.id).slice(0,100)
+  const actor=parse(row.actor_json),error=String(attempt?.error||row.error||'')
+  const timedOut=/GENERATION_DEADLINE|TimeoutError|timed?\s*out/i.test(error)
+  generations.push({id:row.id,state:states.has(row.state)?row.state:'uncertain',
+   source:{assistantVersion:Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(row.ai_profile_json)))).map(n=>n.toString(16).padStart(2,'0')).join(''),conversationRevision:row.source_revision,contextRevision:row.source_context_revision,knowledge:sources},
+   requestedScope:row.kind==='suggestions'?'operator suggestions':'conversation reply',
+   approval:actor?.role==='contact'?'automatic assistant policy':['owner','admin','operator'].includes(actor?.role)?'explicit operator request':'unavailable',
+   timing:{requestedAt:row.created_at,startedAt:attempt?.started_at||null,finishedAt:attempt?.finished_at||null,durationMs:attempt?duration(attempt.started_at,attempt.finished_at):null},
+   providerOutcome:timedOut?'timeout':rounds.length?(row.state==='completed'?'completed':'unknown'):'not observed',
+   result:handoff?'handoff':answer?'committed answer':row.state==='uncertain'?'unknown':'no committed answer',
+   committedAnswer:answer||null,
+   contribution:handoff&&!answer?'handoff':joined.contribution,
+   customerOutcome:joined.outcome,
+   usage:rounds.map(round=>{const usage=parse(round.usage_json);return {observed:!!round.observed,inputTokens:number(usage?.input_tokens),outputTokens:number(usage?.output_tokens)}}),
+   // Token accounting alone cannot establish a priced, reconciled USD amount.
+   providerCostUsd:null,
+   tools:events.map(event=>{const e=parse(event.event_json);return {name:toolName(e?.name),outcome:['started','completed','denied','handoff','timeout','unknown'].includes(e?.outcome)?e.outcome:'unknown',durationMs:number(e?.durationMs)}}),
+  })
  }
- return c.json({conversationId:cid,traces,limit:100,nextOffset:generations.results.length>100?offset+100:null,accounting:'Provider cost estimates describe recorded usage, not a customer balance or savings.'})
-})
+ return {generations,limit:50}
+}
+const toolNames=new Set(['search_knowledge','read_knowledge_source','cite_knowledge','read_conversation_entry','read_conversation_history','search_conversation_history','switch_agent','repo_search','repo_read_file'])
+export const toolName=(name:unknown)=>typeof name==='string'&&toolNames.has(name)?name:'other tool'

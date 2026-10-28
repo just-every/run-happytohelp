@@ -18,8 +18,13 @@ export const schemaExceptions = [
   {migration: '190_email_step_up.sql', names: ['session_factors'], change: 'Rebuilds only the proof-method CHECK to admit email_link; all four prior columns and rows retained'},
   {migration: '195_restore_trigger_boundaries.sql', names: ['conversation_record_resolution'], change: 'Adds only whitespace before CASE and between END and its comma so the pinned Wrangler SQL splitter retains statement boundaries'},
   {migration: '241_away_reply_not_a_reply.sql', names: ['workflow_changed', 'conversation_record_resolution'], change: "Adds only the away reply's (actor_role 'system') exclusions: its revision bump journals no event and is never an operator reply, and outcomes do not count it as an answer"},
-  {migration: '246_translated_ai_publications.sql', names: ['knowledge_translations'], change: 'Adds nullable publication_version TEXT; every prior column definition is retained'},
-  {migration: '247_help_domain_publication.sql', names: ['knowledge_experience'], change: "Adds nullable published_host TEXT and link_color TEXT NOT NULL DEFAULT ''; every prior column definition is retained"},
+  {migration: '244_csat_response_surface.sql', names: ['csat_responses', 'csat_response_history'], change: 'Adds only the signed response surface with unknown for existing feedback; every prior column and row is retained'},
+  {migration: '246_imported_ticket_lifecycle.sql', names: ['ticket_conversation_defaults'], change: 'Adds only the reviewed import fence to status defaults; every other trigger clause is retained'},
+  {migration: '248_customer_recovery.sql', names: ['csat_responses', 'csat_response_history'], change: 'Adds only explicit customer recovery with unknown for existing feedback; every prior column and row is retained'},
+  {migration: '253_api_requests.sql', names: ['integration_tokens','native_integration_destinations'], change: 'Adds credential reference, display prefix and destination filters; legacy secret columns retained and every secret backfilled to its own credential'},
+  {migration: '251_knowledge_read_selection.sql', names: ['project_roles'], change: 'Adds only nullable knowledge_article_ids TEXT constrained to a valid JSON array; every prior column and row is retained'},
+  {migration: '264_translated_ai_publications.sql', names: ['knowledge_translations'], change: 'Adds nullable publication_version TEXT; every prior column definition is retained'},
+  {migration: '265_help_domain_publication.sql', names: ['knowledge_experience'], change: "Adds nullable published_host TEXT and link_color TEXT NOT NULL DEFAULT ''; every prior column definition is retained"},
   {migration: '0110_move_in.sql', names: ['context_message_added', 'context_message_removed'], change: 'WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences ...) inserted before BEGIN'},
 ];
 
@@ -43,6 +48,7 @@ export function expectedSchema(before, after, added) {
     }
     if (added.includes('195_restore_trigger_boundaries.sql') && name === 'conversation_record_resolution') wanted = {...entry, sql: entry.sql.replace(/\bEND,/g, 'END ,').replace('first_resolved_at=CASE', 'first_resolved_at= CASE')};
     if (added.includes('241_away_reply_not_a_reply.sql') && awayReplyExclusions[name]) wanted = {...wanted, sql: awayReplyExclusions[name](wanted.sql)};
+    if (added.includes('246_imported_ticket_lifecycle.sql') && name === 'ticket_conversation_defaults') wanted = {...wanted, sql: importedStatusDefaults(wanted.sql)};
     if (added.includes('181_context_message_subjects.sql') && name === 'context_message_added') wanted = {...entry, sql: messageSubjectTrigger};
     if (added.includes('182_import_kit_reversal_retirement.sql') && name === 'ik_d1_stream_revision_update') wanted = {...entry, sql: streamRetirementTrigger};
     if (added.includes('121_move_in_categories.sql')) {
@@ -63,6 +69,7 @@ const awayReplyExclusions = {
   workflow_changed: sql => sql.replace('AND (NEW.revision<>OLD.revision OR', `AND ((NEW.revision<>OLD.revision AND ${awayReply}) OR`).replace("WHEN NEW.revision<>OLD.revision THEN 'operator_reply'", `WHEN NEW.revision<>OLD.revision AND ${awayReply} THEN 'operator_reply'`),
   conversation_record_resolution: sql => sql.replaceAll("m.actor_role<>'contact' AND", "m.actor_role NOT IN ('contact','system') AND"),
 };
+const importedStatusDefaults = sql => ['status_id','status_category'].reduce((definition,column)=>definition.replace(`${column}= CASE WHEN`,`${column}= CASE WHEN EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=NEW.project_id AND f.conversation_id=NEW.id) THEN NEW.${column} WHEN`),sql);
 
 // The deliberate replacement's full expected body: unrelated article revisions
 // must not be invalidated, including articles linked through the join table.
@@ -77,6 +84,11 @@ END`;
 // Expected additions/replacements are explicit, independent of the migration
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
+  {migration:'253_api_requests.sql',table:'integration_tokens',sql:[
+    'credential_id TEXT','display_prefix TEXT',
+  ].map(column=>`ALTER TABLE integration_tokens ADD COLUMN ${column};`).join('\n')},
+  {migration:'253_api_requests.sql',table:'native_integration_destinations',sql:'ALTER TABLE native_integration_destinations ADD COLUMN credential_id TEXT; ALTER TABLE native_integration_destinations ADD COLUMN source_product TEXT;'},
+
   {migration: '0105_edition_delegation.sql', table: 'knowledge_articles', sql: "ALTER TABLE knowledge_articles ADD COLUMN source_revision INTEGER NOT NULL DEFAULT 1; ALTER TABLE knowledge_articles ADD COLUMN source_incarnation TEXT NOT NULL DEFAULT ''"},
   {migration: '0108_public_answer_citations.sql', table: 'knowledge_articles', sql: "ALTER TABLE knowledge_articles ADD COLUMN publication_version TEXT GENERATED ALWAYS AS (source_incarnation || ':' || source_revision) VIRTUAL"},
   {migration: '0108_public_answer_citations.sql', table: 'messages', sql: "ALTER TABLE messages ADD COLUMN citations_json TEXT NOT NULL DEFAULT '[]'"},
@@ -96,9 +108,12 @@ const tableChanges = [
   {migration: '132_ticket_erasure.sql', table: 'contact_erasures', sql: 'ALTER TABLE contact_erasures ADD COLUMN ticket_records INTEGER NOT NULL DEFAULT 0'},
   {migration: '170_knowledge_experience.sql', table: 'knowledge_categories', sql: `ALTER TABLE knowledge_categories ADD COLUMN audience TEXT NOT NULL DEFAULT 'public' CHECK(audience IN ('public','signed-in','domains')); ALTER TABLE knowledge_categories ADD COLUMN allowed_domains TEXT NOT NULL DEFAULT '[]'`},
   {migration: '170_knowledge_experience.sql', table: 'knowledge_articles', sql: 'ALTER TABLE knowledge_articles ADD COLUMN editor_id TEXT'},
-  {migration: '246_translated_ai_publications.sql', table: 'knowledge_translations', sql: 'ALTER TABLE knowledge_translations ADD COLUMN publication_version TEXT'},
-  {migration: '247_help_domain_publication.sql', table: 'knowledge_experience', sql: "ALTER TABLE knowledge_experience ADD COLUMN published_host TEXT; ALTER TABLE knowledge_experience ADD COLUMN link_color TEXT NOT NULL DEFAULT ''"},
+  {migration: '264_translated_ai_publications.sql', table: 'knowledge_translations', sql: 'ALTER TABLE knowledge_translations ADD COLUMN publication_version TEXT'},
+  {migration: '265_help_domain_publication.sql', table: 'knowledge_experience', sql: "ALTER TABLE knowledge_experience ADD COLUMN published_host TEXT; ALTER TABLE knowledge_experience ADD COLUMN link_color TEXT NOT NULL DEFAULT ''"},
   {migration: '190_email_step_up.sql', table: 'session_factors', sql: `CREATE TABLE session_factors_email(token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL,method TEXT NOT NULL CHECK(method IN ('password','email_link','totp','webauthn','recovery','installation')),verified_at INTEGER NOT NULL); DROP TABLE session_factors; ALTER TABLE session_factors_email RENAME TO session_factors`},
+  ...['csat_responses','csat_response_history'].map(table=>({migration:'244_csat_response_surface.sql',table,sql:`ALTER TABLE ${table} ADD COLUMN response_surface TEXT NOT NULL DEFAULT 'unknown' CHECK(response_surface IN ('email','portal','widget','unknown'))`})),
+  ...['csat_responses','csat_response_history'].map(table=>({migration:'248_customer_recovery.sql',table,sql:`ALTER TABLE ${table} ADD COLUMN recovery TEXT NOT NULL DEFAULT 'unknown' CHECK(recovery IN ('unknown','recovered','not_recovered'))`})),
+  {migration: '251_knowledge_read_selection.sql', table: 'project_roles', sql: "ALTER TABLE project_roles ADD COLUMN knowledge_article_ids TEXT CHECK(knowledge_article_ids IS NULL OR (json_valid(knowledge_article_ids) AND json_type(knowledge_article_ids)='array'))"},
 ];
 const messageSubjectTrigger = 'CREATE TRIGGER context_message_added AFTER INSERT ON messages WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=NEW.project_id AND f.conversation_id=NEW.conversation_id) BEGIN UPDATE context_subjects SET revision=revision+1 WHERE project_id=NEW.project_id AND subject_id IN (SELECT contact_id FROM conversations WHERE id=NEW.conversation_id AND project_id=NEW.project_id UNION SELECT NEW.actor_id); END';
 const streamRetirementTrigger = "CREATE TRIGGER ik_d1_stream_revision_update BEFORE UPDATE ON ik_d1_stream_revisions WHEN NEW.stream_id IS NOT OLD.stream_id OR NEW.destination IS NOT OLD.destination OR NEW.mapping_version IS NOT OLD.mapping_version OR NEW.principal_id IS NOT OLD.principal_id OR NEW.fingerprint IS NOT OLD.fingerprint OR NEW.total IS NOT OLD.total OR NEW.layout_hash IS NOT OLD.layout_hash OR NEW.layout_revision<OLD.layout_revision OR NEW.progress_revision<=OLD.progress_revision OR ((NEW.namespace IS NOT OLD.namespace OR NEW.operation_key IS NOT OLD.operation_key) AND NOT (NEW.namespace='' AND NEW.operation_key='' AND NOT EXISTS(SELECT 1 FROM ik_d1_streams WHERE id=OLD.stream_id) AND EXISTS(SELECT 1 FROM ik_d1_retirements WHERE id=OLD.stream_id AND kind='stream'))) BEGIN SELECT RAISE(ABORT,'IMPORT_STREAM_REVISION_CHANGED'); END";

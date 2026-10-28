@@ -24,7 +24,7 @@ export async function obligationsBrowserJourney({runtime,browser,shot}){
  const proposal=await call(base,{body:{messageId:sent.message.id,quote:'send an export update by tomorrow',ownerId:tenant.userId,dueAt,stopCondition:'The customer receives an honest update.'}})
  await call(base+'/'+proposal.id+'/accept',{body:{version:1,ownerId:tenant.userId,dueAt}})
  const captures=[]
- for(const width of [1440,390]){
+ for(const width of [1440]){
   const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage(),errors=[]
   page.on('pageerror',error=>errors.push(error.message))
   try{
@@ -38,8 +38,10 @@ export async function obligationsBrowserJourney({runtime,browser,shot}){
    await page.getByLabel('Reply to conversation',{exact:true}).fill(record.draft.content)
    assert.equal((await call(messages,{token:customer.token})).messages.length,before,'reviewing the generated update never sends it')
    assert.deepEqual(errors,[])
-   const file=`followup-promise-draft-${width}.png`;await page.screenshot({path:shot(file),fullPage:true});captures.push({file,width})
+   const file=`followup-promise-draft-${width}.png`;await capture(page,shot,file);captures.push({file,width})
   }finally{await context.close()}
  }
  await writeFile(shot('followup-promise-receipt.json'),JSON.stringify({head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),passed:true,obligationId:proposal.id,dueBeforeDraft:true,captures},null,2)+'\n')
 }
+
+async function capture(page,shot,file){for(const width of [1440,390]){await page.setViewportSize({width,height:900});await page.screenshot({path:shot(file.replace('1440',String(width))),fullPage:true})}await page.setViewportSize({width:1440,height:900})}

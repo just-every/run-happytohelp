@@ -31,42 +31,126 @@
   "pendingMigrations": [
     {
       "id": "240_operator_presence.sql",
-      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings \u2192 Availability."
+      "buyerSteps": "Add live teammate presence for WIDGET-001 presence-based away. Apply before the updated Worker serves traffic. Presence is live state that exports never carry, so an updated or restored installation starts with nobody online: a teammate counts as online once their dashboard reloads on the updated Worker. Presence-based away is on by default; a lead can turn it off in Settings → Availability."
     },
     {
       "id": "241_away_reply_not_a_reply.sql",
       "buyerSteps": "WIDGET-001: the workspace's away message is no longer a reply for automations or outcomes. Rules for an operator reply, and time since the last one, wait for a teammate or an assistant, and a conversation an assistant resolves after the away message records AI. Apply after 240 and before the updated Worker serves traffic; it redefines two triggers and changes no stored row, so earlier journal events and recorded outcomes stay as they were."
     },
     {
-      "id": "242_followup_obligations.sql",
+      "id": "242_customer_identity_links.sql",
+      "buyerSteps": "CUSTOMER-001: add operator-reviewed associations between independently proven identities. Apply after 241 and before the updated Worker serves traffic. Existing contacts, sessions and conversations are unchanged; links grant no customer access or sending authority. Back up and restore with the rest of customer data; erasure removes either side of a link."
+    },
+    {
+      "id": "243_widget_campaigns.sql",
+      "buyerSteps": "Add configurable proactive widget campaigns, consented visit/impression attribution, a durable daily-cap fence and consent-revocation/erasure cleanup. Apply after 242 and before the updated Worker serves traffic. Existing workspaces start with no campaigns; new campaigns are disabled until a lead enables them. Both collector switches and visitor consent are required. Campaign identifiers expire from reports after 30 days and are deleted by bounded cleanup, or immediately on consent revocation or native erasure. No existing conversation or message is changed."
+    },
+    {
+      "id": "244_csat_response_surface.sql",
+      "buyerSteps": "Preserve the signed response surface separately from survey invitation transport. Apply before the updated Worker serves traffic; existing feedback and links remain intact."
+    },
+    {
+      "id": "245_widget_survey_cycles.sql",
+      "buyerSteps": "Snapshot widget scale, language and timing on new resolution cycles. Apply after 244 and before the updated Worker serves traffic. Existing cycles retain immediate English thumbs feedback; visitors can stop widget surveys without changing mail preferences. No prior feedback is rewritten and this migration sends nothing."
+    },
+    {
+      "id": "246_imported_ticket_lifecycle.sql",
+      "buyerSteps": "Preserve reviewed native lifecycle and channel fields on new imports. Apply after 245 before serving the updated Worker. Existing imported records are not rewritten; changed mappings that meet prior native state stop for review. Zendesk/Freshdesk final Closed stays final; Help Scout/Intercom reopenable Closed maps to Solved."
+    },
+    {
+      "id": "247_ai_handoff_receipts.sql",
+      "buyerSteps": "Apply after 246 and before serving the updated Worker. Successful model-requested human transfers retain a causal receipt in the same database batch as assignment. Historical generic assignments are not backfilled or relabeled; no customer text, provider secret or replay authority is added."
+    },
+    {
+      "id": "248_customer_recovery.sql",
+      "buyerSteps": "Preserve explicit optional customer recovery separately from satisfaction. Apply before the updated Worker serves traffic. Existing ratings remain unknown for recovery; no historical positive rating becomes a recovery claim and no action is replayed."
+    },
+    {
+      "id": "249_rer_conversation_mail.sql",
+      "buyerSteps": "Apply after 248 and before the updated Worker serves traffic. Retain Managed mailbox routing history, encrypted ingress references and redacted delivery receipts with the rest of the installation. No provider credentials are stored in these tables; restored routes stay revoked until fresh authority is configured."
+    },
+    {
+      "id": "250_rer_mail_route_observation.sql",
+      "buyerSteps": "Apply after 249 and before the updated Worker serves traffic. Add route observation times and bounded status-read backoff without changing existing route authority or replaying mail."
+    },
+    {
+      "id": "251_knowledge_read_selection.sql",
+      "buyerSteps": "Apply after 250 and before the updated Worker serves traffic. Add the knowledge_article_ids selection column to project_roles for knowledge.read authority. NULL retains workspace-wide read authority; an empty JSON array selects no articles. Existing roles retain NULL, so this migration does not narrow their existing read authority."
+    },
+    {
+      "id": "252_customer_identity_link_history.sql",
+      "buyerSteps": "CUSTOMER-001: keep each operator-reviewed identity link and unlink decision, with its reviewer, time and evidence, after the link itself is removed. Apply after 251 and before the updated Worker serves traffic. It adds one table and its two indexes: existing contacts, links, sessions and conversations are unchanged and earlier decisions are not backfilled, so the history starts with the first link or unlink on the updated Worker. Decisions grant no customer access, merge or sending authority. Back up and restore with the rest of customer data; erasure removes every decision naming the erased customer."
+    },
+    {
+      "id": "253_api_requests.sql",
+      "buyerSteps": "Apply after 252 before serving the updated Worker. Backfills one credential entity per legacy bearer token with its existing scopes and workspace reach; bearer rows become secrets with a credential reference and enforced scope projection. Adds indexed requester keys, API request idempotency, source links, stored hold plans and upload disposal custody. Exported credentials are revoked and their token hashes replaced with inert identifiers. Retain API request and erasure fences with installation data."
+    },
+    {
+      "id": "254_api_erasure_inventory.sql",
+      "buyerSteps": "Apply after 253 before serving the updated Worker. Retains non-personal API erasure counts across retries and exports."
+    },
+    {
+      "id": "255_outbound_notice_commands.sql",
+      "buyerSteps": "Retain durable notice command fences independently of audit retention. Apply after 252 and before the updated Worker serves traffic. Backfill retained r6 ticket.notice_confirmed confirmations and ticket.notice_refused refusals; this migration changes no ticket or message row."
+    },
+    {
+      "id": "256_inbound_lookup_indexes.sql",
+      "buyerSteps": "Apply after 255 and before the updated Worker serves traffic. Adds indexes on inbound-mail conversation/message lookups and API request hold lookups only; no stored row is changed. Apply once through the migration ledger and retain these indexes on restore."
+    },
+    {
+      "id": "257_hubspot_context.sql",
+      "buyerSteps": "Apply after 256 before serving the updated Worker. Adds encrypted read-only HubSpot connection, explicit customer mappings and transaction claims. Retain mappings with customer data; archives remove credentials and cached context, and require a fresh connection after restore. CRM context grants no customer access."
+    },
+    {
+      "id": "257_move_in_attachment_bytes.sql",
+      "buyerSteps": "MOVE-IN-002: apply after 256 before serving the updated Worker. Adds bounded explicitly supplied Freshdesk attachment payloads with native media and private-note ownership. Existing messages and attachments remain unchanged. Back up and restore the new table with native data; erasure and guarded undo remove payloads with their media. No source URL is retrieved and this migration sends nothing. During an upgrade, existing private-note transcripts remain readable before this migration: the reader checks table presence explicitly and includes imported payloads only after the table exists. Database query failures still propagate; attachment imports require this migration."
+    },
+    {
+      "id": "257_sla_slack.sql",
+      "buyerSteps": "Apply after 256 and before serving the updated Worker. Adds explicit Slack escalation destination consent and durable delivery outcomes to SLA policies and alerts. Existing policies stay unconfigured and existing alerts never gain a send. Retain terminal and uncertain outcomes across upgrades; archived pending sends must not replay."
+    },
+    {
+      "id": "258_procedure_versions.sql",
+      "buyerSteps": "Apply after the existing 257 migrations and before serving the updated Worker. Adds immutable numbered procedure definitions with their required synthetic cases and budgets. Existing workspaces, customer records and applied migration history remain unchanged. Back up and restore this table with native data. Simulation qualification enables no production execution."
+    },
+    {
+      "id": "258_teams_escalations.sql",
+      "buyerSteps": "ESCALATION-001: retain all existing escalation connection identities and links while permitting a Teams connection with its installing administrator. Apply before the updated Worker serves traffic. Existing trackers and Slack retain their credentials; Teams starts disconnected. Teams sends require the installing member to retain integration installation permission; restoring an export requires reconnection. Back up native data before upgrade."
+    },
+    {
+      "id": "259_account_lookup_fields.sql",
+      "buyerSteps": "FORMS-001: apply after 258 before serving the updated Worker. Extend native ticket fields with account lookups while retaining existing definitions, historical typed values and workflow journaling. Back up and restore with the native data. Account choices require verified current explicit membership and a deliberately published field; company ticket visibility grants no lookup eligibility."
+    },
+    {
+      "id": "260_followup_obligations.sql",
       "buyerSteps": "Apply before the updated Worker serves traffic. Adds quoted follow-up proposals and human-accepted responsibility history; no customer message is sent automatically. Erasing a customer purges their obligations."
     },
     {
-      "id": "243_procedure_versions.sql",
+      "id": "261_procedure_versions.sql",
       "buyerSteps": "Apply before the updated Worker serves traffic. Adds immutable advice-procedure versions, exact-version evaluation release gates and bounded explicit cohorts. No business-action tools are added. A stopped cohort stays with a human review requirement until explicitly enrolled into another approved release; historical evaluations and version links remain available."
     },
     {
-      "id": "244_reviewed_knowledge_proposals.sql",
-      "buyerSteps": "Apply before the updated Worker serves traffic. Adds reviewed, source-linked private knowledge proposals and corrective review records. No draft is automatically published; named editors confirm redaction review. Source-derived publication is held to the customer\u2019s currently proven email-domain collection. Erasing that source customer removes the derived articles and proposals."
+      "id": "262_reviewed_knowledge_proposals.sql",
+      "buyerSteps": "Apply before the updated Worker serves traffic. Adds reviewed, source-linked private knowledge proposals and corrective review records. No draft is automatically published; named editors confirm redaction review. Source-derived publication is held to the customer’s currently proven email-domain collection. Erasing that source customer removes the derived articles and proposals."
     },
     {
-      "id": "245_procedure_regression_stop.sql",
+      "id": "263_procedure_regression_stop.sql",
       "buyerSteps": "Apply before serving the updated Worker. A native reopening of a cycle answered by an active advice procedure now stops that exact bounded rollout automatically, cancels its queued/running generations and restores an active human owner without publishing an AI draft. A lead must explicitly enroll an approved release and hand the conversation back to AI to resume; existing cases, reviews and failures remain retained."
     },
     {
-      "id": "246_translated_ai_publications.sql",
+      "id": "264_translated_ai_publications.sql",
       "buyerSteps": "Apply before the updated Worker serves traffic. Gives reviewed translations their own publication identity, preserving existing drafts and reviewed text. AI retrieval and admission now fence the exact translated publication and disclose source-language fallback."
     },
     {
-      "id": "247_help_domain_publication.sql",
-      "buyerSteps": "Apply before serving the updated Worker. Lets knowledge publishers select one exact help host already mapped to their workspace by PUBLIC_HELP_HOSTS, or select built-in paths. DNS and TLS remain the hosting administrator\u2019s prerequisite; existing mapped hosts keep working until a lead makes a choice."
+      "id": "265_help_domain_publication.sql",
+      "buyerSteps": "Apply before serving the updated Worker. Lets knowledge publishers select one exact help host already mapped to their workspace by PUBLIC_HELP_HOSTS, or select built-in paths. DNS and TLS remain the hosting administrator’s prerequisite; existing mapped hosts keep working until a lead makes a choice."
     },
     {
-      "id": "248_ai_tool_trace.sql",
+      "id": "266_ai_tool_trace.sql",
       "buyerSteps": "Apply before the updated Worker serves traffic. Records allowlisted per-tool timing, scoped read/proposal authority, denial and human handoff metadata. No arguments, response text, credentials or external business-action authority are added. Started calls without a terminal receipt remain unknown."
     },
     {
-      "id": "249_procedure_attribution_reviews.sql",
+      "id": "267_procedure_attribution_reviews.sql",
       "buyerSteps": "Apply before serving the updated Worker. Adds append-only human attribution corrections backed by an exact native message. Reports show original cycle counts, corrected denominators and retained reviews separately. Corrections do not resume a stopped rollout or convert a closure into verified recovery."
     }
   ]

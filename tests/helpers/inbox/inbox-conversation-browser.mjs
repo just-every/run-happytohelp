@@ -227,11 +227,12 @@ try{
  // conversation instead, whose header closes it.
  {
   const {context,page}=await open(inboxPath())
-  const label='Close conversation with Row Alpha'
-  await page.getByRole('button',{name:label}).waitFor({state:'attached'})
+  const rowAction=(on,contact,name)=>on.locator('.conversation-item-wrap').filter({has:on.getByRole('heading',{name:contact,exact:true})}).getByRole('button',{name,exact:true})
+  const isRowAction=([name,contact])=>{const el=document.activeElement;return el?.getAttribute('aria-label')===name&&document.getElementById(el.getAttribute('aria-describedby'))?.textContent.trim()===contact}
+  await rowAction(page,'Row Alpha','Close conversation').waitFor({state:'attached'})
   await page.locator('.conversation-inbox input[type=search]').focus()
   let reached=false
-  for(let i=0;i<80&&!reached;i++){await page.keyboard.press('Tab');reached=await page.evaluate(text=>document.activeElement?.getAttribute('aria-label')===text,label)}
+  for(let i=0;i<80&&!reached;i++){await page.keyboard.press('Tab');reached=await page.evaluate(isRowAction,['Close conversation','Row Alpha'])}
   assert.ok(reached,'Tab reaches the row Close control')
   const focused=await page.evaluate(()=>{const el=document.activeElement,r=el.getBoundingClientRect(),cs=getComputedStyle(el),row=el.parentElement,shown=other=>getComputedStyle(other).opacity!=='0'&&getComputedStyle(other).visibility!=='hidden',hit=[...row.querySelectorAll('.conversation-item-time,.avatar,.conversation-item-unread,.conversation-item-agent,h4')].filter(shown).filter(other=>{const o=other.getBoundingClientRect();return Math.min(o.right,r.right)-Math.max(o.left,r.left)>2&&Math.min(o.bottom,r.bottom)-Math.max(o.top,r.top)>2}).map(other=>other.className||other.tagName);return {w:r.width,h:r.height,opacity:Number(cs.opacity),display:cs.display,hit,time:getComputedStyle(row.querySelector('.conversation-item-time')).opacity,insideLink:el.closest('a')!==null}})
   assert.ok(focused.w>=24&&focused.h>=24&&focused.opacity>0.3&&focused.display!=='none',`focused control visible and large enough: ${JSON.stringify(focused)}`)
@@ -239,13 +240,13 @@ try{
   assert.deepEqual(focused.hit,[],'the control covers no visible row content')
   assert.equal(focused.insideLink,false,'the control is not nested in the row link')
   await page.keyboard.press('Enter')
-  await page.waitForFunction(text=>!document.querySelector(`[aria-label="${text}"]`),label)
+  await rowAction(page,'Row Alpha','Close conversation').waitFor({state:'detached'})
   assert.ok(new URL(page.url()).pathname.endsWith('/conversations'),'closing from the list does not open the conversation')
   await eventually(()=>state('alpha'),row=>row.resolved_at,'server closed the conversation')
   check('row Close control: reachable by Tab, shown in the time\'s place, clear of the rest of the row, Enter closes without navigating')
   await context.close()
   const touch=await open(inboxPath(),{viewport:{width:390,height:844},hasTouch:true,isMobile:true})
-  const button=touch.page.getByRole('button',{name:'Close conversation with Row Beta'})
+  const button=rowAction(touch.page,'Row Beta','Close conversation')
   await button.waitFor({state:'attached'})
   assert.deepEqual(await button.evaluate(el=>({opacity:getComputedStyle(el).opacity,pointerEvents:getComputedStyle(el).pointerEvents})),{opacity:'0',pointerEvents:'none'},'on touch the row shows no Close at rest and takes no tap there')
   const box=await button.boundingBox()
@@ -257,9 +258,9 @@ try{
   check('touch: no row Close at rest; a tap where it sits opens the conversation, and its header closes it')
   await touch.context.close()
   const closed=await open(inboxPath({view:'closed'}))
-  const reopen=closed.page.getByRole('button',{name:'Reopen conversation with Hannah Closed'})
+  const reopen=rowAction(closed.page,'Hannah Closed','Reopen conversation')
   await reopen.focus();await closed.page.keyboard.press('Enter')
-  await closed.page.waitForFunction(()=>!document.querySelector('[aria-label="Reopen conversation with Hannah Closed"]'))
+  await reopen.waitFor({state:'detached'})
   await eventually(()=>state('reopen'),row=>row.resolved_at===null,'server reopened the conversation')
   check('Closed view: the row Reopen control works from the keyboard')
   await closed.context.close()

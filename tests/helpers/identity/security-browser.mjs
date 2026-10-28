@@ -76,7 +76,7 @@ export async function securityBrowserJourney(browser){
   await owner.goto(origin+P+'/security');await owner.getByRole('heading',{name:'Two-factor sign-in'}).waitFor()
   await owner.getByLabel('Agents').check();await owner.getByRole('button',{name:'Save policy'}).click();await owner.getByRole('status').filter({hasText:'Saved'}).waitFor();await inspect(owner,'security-policy-1440')
   await owner.goto(origin+P+'/roles');await owner.getByRole('heading',{name:'Built-in roles'}).waitFor();await owner.getByRole('button',{name:'New role'}).click()
-  await owner.getByLabel('Name').fill('Billing helper');await owner.getByLabel('Publish help articles').uncheck();await owner.getByRole('button',{name:'Create role'}).click()
+  await owner.getByLabel('Read internal help articles').check();await owner.getByLabel('Name').fill('Billing helper');await owner.getByLabel('Publish help articles').uncheck();await owner.getByRole('button',{name:'Create role'}).click()
   await owner.getByRole('heading',{name:'Billing helper'}).waitFor();await inspect(owner,'roles-1440')
 
   // A collaborator reads a customer's conversation, follows it and has notes instead of a reply box.

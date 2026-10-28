@@ -64,7 +64,7 @@ EOF_CURL
 Resolve (`conversations:write`):
 
 ```sh
-curl --silent --show-error --config - --request POST "$H2H_URL/api/v1/conversations/$CONVERSATION_ID/resolve" <<EOF_CURL
+curl --silent --show-error --config - --request POST --header "Content-Type: application/json" --data '{}' "$H2H_URL/api/v1/conversations/$CONVERSATION_ID/resolve" <<EOF_CURL
 header = "Authorization: Bearer $H2H_TOKEN"
 EOF_CURL
 ```
@@ -207,8 +207,7 @@ is not proof that a customer answer was committed. Cost estimates are USD provid
 accounting; missing or invalid round pricing yields `null` and `priceData: unavailable`.
 
 The response allowlists fields. It excludes prompts, customer text, raw provider
-errors, tool arguments and unknown usage metadata. Per-tool approval/scope/results
-and procedure attribution are explicitly unavailable until those records exist.
+errors, tool arguments and unknown usage metadata. Per-tool approval, scope, timing and failure receipts plus advice-procedure attribution are returned only from their retained server records. Main's cycle-aware `generations` view remains available beside the paginated `traces` view.
 
 ### Requests after reading an article
 
@@ -220,7 +219,7 @@ still has article access. Invalid receipts do not prevent support requests. Retr
 never duplicate the count. This adds no tracking cookie and makes no claim that the
 article caused the ticket. Existing knowledge contact export and erasure include
 these events. Deployment-level `PUBLIC_HELP_HOSTS` remains the host-routing door;
-lead-managed custom-domain verification and publishing are not implemented.
+leads may publish one of their workspace's deployment-approved hosts; DNS and TLS provisioning remain the hosting administrator's prerequisite.
 
 
 ### Native follow-ups and advice procedures
@@ -297,3 +296,252 @@ the derived article and proposal. Native AI search/read/citation admission uses
 the recipient's current proof. Unscoped search stays public only. Customer model
 text is withheld until durable message admission, which revalidates every issued
 source even when the model did not select it as a citation.
+## Machine-created support requests
+
+An owner or admin can issue a machine credential through the existing token
+management endpoint with `source_product`, `scopes` and `bindings`. The source
+label is a lowercase product identifier. `conversations:create`,
+`messages:append` and `conversations:read` are independent scopes. Machine reads
+are restricted to tickets originating from that credential unless an administrator
+explicitly supplies creator IDs in `bindings.credentials`. Bindings also accept
+`brands`, `mailboxes`, `groups`, `forms`, `priorities` and existing tag IDs in
+`tags`; unknown tags are refused rather than created.
+
+`POST /api/v1/conversations` requires `Idempotency-Key` (1–200 characters).
+Keys belong to the workspace and source product, so rotating the bearer secret
+does not create another ticket. An identical canonical request returns the
+original status and body with `Idempotency-Replayed: true` while the ticket is inside the credential’s reach. A replay of an out-of-reach ticket answers 404. Changed bodies return
+`idempotency_conflict`; an outstanding claim returns `in_progress` and
+`Retry-After`. A reused source reference returns `source_ref_exists` with the
+existing conversation ID only for tickets inside the credential’s reach. Refused identities return `identity_conflict` or
+`identity_erased`.
+
+Keep `H2H_TOKEN` in the shell's private environment as in the examples above.
+The secret enters curl through standard input, never a command argument.
+
+```sh
+curl --silent --show-error --config - <<CURL
+url = "$H2H_URL/api/v1/conversations"
+header = "Authorization: Bearer $H2H_TOKEN"
+header = "Content-Type: application/json"
+header = "Idempotency-Key: synthetic-hh-docs-1"
+request = "POST"
+data = "{\"requester\":{\"external_id\":\"synthetic-hh-docs-1\"},\"subject\":\"Support request\",\"body\":\"Please help with this request\",\"source_ref\":{\"product\":\"synthetic-hh-docs\",\"ref\":\"synthetic-hh-docs-1\",\"url\":\"https://example.test/requests/1\"}}"
+CURL
+```
+
+`POST /api/v1/conversations/:id/append` accepts `kind: customer` or `kind: note`,
+`content` and a stable `localId`. A customer append reopens Solved tickets and
+creates a linked follow-up for Closed tickets. Merged tickets return
+`merged_into` with the surviving ID only when it is inside the credential’s reach. Notes are machine-authored internal context.
+
+```sh
+curl --silent --show-error --config - <<CURL
+url = "$H2H_URL/api/v1/conversations/$API_CONVERSATION_ID/append"
+header = "Authorization: Bearer $H2H_TOKEN"
+header = "Content-Type: application/json"
+request = "POST"
+data = "{\"kind\":\"customer\",\"localId\":\"synthetic-hh-docs-append-1\",\"content\":\"Additional context\"}"
+CURL
+```
+
+Create and append attachments accept an `upload_id` belonging to the same credential,
+or a public HTTPS `url`, `filename` and lowercase hexadecimal `sha256`. URL
+fetches refuse redirects, have a ten-second deadline and a 20 MB per-file limit;
+unsupported types return 415 and oversized files return 413. All attachments
+must validate before a ticket, message or note is committed. Append-only credentials
+can use the same bounded upload endpoint; private note files remain operator-only.
+
+Machine issuance accepts `create_per_minute` (default 20, maximum 60) and
+`create_per_day` (default 1000, maximum 10000). Installation workspace ceilings
+are 120 per minute and 20000 per day. A refused create returns 429 with code
+`credential` or `workspace`, `Retry-After` and `RateLimit-Limit`,
+`RateLimit-Remaining`, `RateLimit-Reset`. Replays do not consume create quota.
+
+Owners and admins rotate through `POST /connections/tokens/:id/rotate` under the
+same project management prefix, with `overlap_seconds` (default zero, maximum
+604800). Rotation requires step-up. Old secrets retire at their overlap deadline;
+revocation requires step-up and takes effect on the next request.
+
+Webhook destinations may select `conversation.status_changed` and
+`conversation.assigned`, and restrict delivery with `credential_id` or
+`source_product`. Status and assignment payloads contain identifiers and status
+values, with source references for machine-created conversations. The existing
+signature and retry protocol applies.
+
+Exported credential metadata carries an inert `revoked:<id>` storage placeholder
+instead of the bearer hash and a revocation timestamp. Restore cannot use old
+secrets. Request replay bodies and append responses are not exported; restored
+idempotency records cannot replay a response.
+
+### Current machine API limits
+
+Acknowledgment/consent options are not yet accepted. SMS and WhatsApp acknowledgment delivery is not implemented. Owners can configure `api_requester_hourly_cap` (1–100, default 5) through
+`PUT /api/management/projects/:projectId/settings`. Each supplied requester identity
+shares an atomic UTC hourly budget across credentials. The first request above the
+cap is held for review; further requests return 429 `requester` with `Retry-After`
+and `RateLimit-Limit`, `RateLimit-Remaining`, and `RateLimit-Reset`. Replays do not
+consume capacity. Failed admissions refund reserved capacity.
+
+Webhook envelopes include a signed `sequence` describing insertion order within
+this installation. Delivery may arrive out of order. Deduplicate by event `id`;
+apply state updates only when their sequence is newer than the last applied update.
+Retries retain the same ID, sequence and payload. Restore does not resume deliveries. Do not treat these endpoints as complete API-002 acceptance.
+
+### API admission, suspension and issuer erasure
+
+Owners and admins may set `api_abuse_terms` through
+`PUT /api/management/projects/:projectId/settings` with recent step-up.
+The default is an empty list. Up to 50 literal terms, each 1–200 characters,
+are matched without case sensitivity in the subject, body and source reference.
+A match returns `202 held_for_review` with reason `content_abuse`; Suspended
+retains the request for an operator to review and release. Held requests create
+no ticket, triage job, ticket-created event or outbound message. This deterministic
+policy does not establish live AI content-abuse or prompt-injection qualification.
+
+An installation administrator with recent step-up can suspend or resume a
+workspace using `PUT /api/management/admin/projects/:id/suspension` with
+`{"suspended":true}` or `{"suspended":false}`. Suspension preserves data and
+refuses all bearer API operations with 401 on the next request. Creates recheck
+workspace authority in their atomic commit; an interrupted create is whole or
+absent. Installation administration and the owner's review access remain available.
+
+An owner with recent step-up can erase a non-owner teammate using
+`POST /api/management/projects/:projectId/agents/:userId/erase`. Transfer ownership
+first. Accounts shared with another workspace and installation administrators
+require installation review and are refused. Erasure replaces the account's name
+and email with opaque former-teammate metadata, removes sign-in credentials,
+sessions and profile settings, and revokes the machine credentials it issued,
+removing their hashes and issuer links. Audit events and ticket history retain
+opaque actor IDs, machine credential names, source references and request IDs;
+audit exports label the erased human as Former teammate. Archives carry the
+redacted account and inert credential metadata. Customer content is erased
+separately through the requester-erasure door.
+
+Gaps: Live AI content-abuse and prompt-injection qualification of API-created
+requests is not proven. Live qualification remains for: "body text, subject and source fields can never instruct the agent or open an external effect." No live cross-product handoff (Handset HND-038) is proven.
+Consent-gated SMS/WhatsApp qualification remains pending CHANNELS-001.
+
+
+Customer appends honor both blocked sender addresses/domains and blocked contacts.
+They return 403 `blocked_sender` without adding a message or reopening a Solved
+ticket. Credential bindings and webhook credential filters follow the credential, including tickets created using the new secret.
+
+If a source reference was claimed by a clean request while another request waited
+in Suspended, releasing the held request returns 409 `source_ref_exists` with
+the surviving `conversation_id`. The held request remains available for review.
+The request-limit response reports the installation's configured
+`apiRequestsPerTokenMinute` in `RateLimit-Limit`.
+
+
+A machine credential can hold only `conversations:create`, `conversations:read`
+and `messages:append`. Operator, contact and article scopes remain available to
+legacy workspace tokens. Credential policy belongs to one entity; rotation adds
+secrets to that entity. Settings shows one card with each secret's prefix,
+expiry and last use. PATCH, rotate and revoke accept either the credential ID
+or any of its secret IDs. Scope, binding and quota edits apply to every secret.
+Expired or revoked credentials cannot be rotated (409).
+
+Reach combines the origin credential with the ticket's current brand, mailbox
+and group, plus its origin form. Moving a ticket out of a credential's reach
+removes that credential's access. Lists omit it and named-resource operations
+return 404. Priority and tag bindings are create-time value restrictions.
+A policy change or ticket move during an append is checked again at commit.
+Legacy workspace tokens retain workspace-wide reach.
+
+Requester admission recognizes normalized email, provided email, phone, external
+ID and API external ID. A block on any contact sharing a key applies to customer
+appends and held-request release as well as create. Address and domain rules
+apply to email keys. Erasure fences return `identity_erased`; internal notes
+are machine content and are unaffected by requester blocks.
+
+An API hold retains the complete ticket plan, including tags, placement, form,
+source reference and attachments. Release rechecks current credential policy,
+requester admission, tags and reference uniqueness. It may override requester-cap
+and content-abuse holds, but never a standing block or erasure fence. Release
+records the operator and machine source and sends no retroactive acknowledgment.
+The original idempotency key continues to replay its original 202 receipt.
+
+Consuming an upload removes its row and original object after the ticket copy
+commits. Scheduled cleanup removes expired unused uploads and retries object
+deletions. Each credential may hold 50 outstanding uploads by default; installation
+configuration `API_UPLOAD_LIMITS` can set a positive integer `outstanding` limit.
+Excess uploads return 429 `credential` with retry and rate-limit headers.
+All JSON write doors require `application/json` (415 otherwise) and reject
+oversized bodies or content with 413 `payload_too_large`.
+
+Exports carry the credential entity as metadata, without bearer hashes or
+secrets. Restore revokes every credential and every secret; imported requests
+remain inert and do not replay.
+
+
+## Read-only HubSpot context (native administration)
+
+The initial CRM connection is available through native authenticated administration
+routes. It is separate from machine API credentials. Only a workspace owner or
+admin with the relevant native permissions can use it. Customer sessions cannot
+read CRM records, and a mapping never grants customer access or changes native
+identity links, company membership, entitlements or plan authority.
+
+All paths below start with `/api/management/projects/{projectId}`; the dashboard
+mount offers the same operations. Keep the native session and provider token in
+private request configuration, never command arguments or logs.
+
+| Operation | Method and path | Input or result |
+| --- | --- | --- |
+| Inspect connection | `GET /crm/hubspot` | Account ID, connected flag and required scopes; no credential |
+| Connect or rotate | `PUT /crm/hubspot` | `token`, numeric `account_id`, optional `properties` mapping `plan` and `entitlement` to provider property names; recent native step-up required |
+| Map customer | `PUT /crm/hubspot/contacts/{contactId}` | Numeric `source_contact_id`; optional native `company_id` and numeric `source_company_id` together |
+| Inspect customer | `GET /crm/hubspot/contacts/{contactId}` | Source IDs, context, source update times, last successful refresh and last check |
+| Refresh customer | `POST /crm/hubspot/contacts/{contactId}/refresh` | Empty object; reads the explicitly mapped source again |
+| Inspect ticket | `GET /conversations/{conversationId}/crm` | Context for the ticket's native requester |
+| Refresh ticket | `POST /conversations/{conversationId}/crm/refresh` | Empty object; requester and authority rechecked at commit |
+| Unmap customer | `DELETE /crm/hubspot/contacts/{contactId}` | Removes mapping and cached context only |
+| Disconnect | `DELETE /crm/hubspot` | Recent native step-up; deletes the credential and every CRM mapping in this workspace |
+
+Use a HubSpot private app with exactly `crm.objects.contacts.read` and
+`crm.objects.companies.read`. Extra scopes, including write scopes, are refused.
+HappyToHelp checks the private app's account and scopes through HubSpot's token
+information endpoint before storing its encrypted credential and again on every
+refresh. No returned URL is fetched, redirects are refused, responses are bounded
+and requests are never automatically retried. Reads use the fixed HubSpot API
+origin. The token information request is a read-only POST; object requests are GET.
+
+Mapping is an explicit operator decision. Contact email must match at refresh and
+readback. A company mapping also needs existing native membership, a matching
+native domain and a source contact association with that company. Competing source
+mappings are refused with 409. Native identity or membership changes hide cached
+context until the mismatch is resolved. Context becomes `stale` after five minutes;
+`identity_mismatch`, `permission_lost`, `scope_refused` and `unavailable` refresh
+outcomes clear its cached content rather than present it as current. Connection
+rotation clears mappings so a changed account cannot inherit them. Disconnect
+returns `disconnected` without cached content. Customer erasure removes affected
+mappings and cached personal data. Archives clear CRM credentials and cached
+context on export and import; the receiving owner must explicitly reconnect.
+
+The settings screens and ticket panels, browser qualification, live provider
+qualification, other CRMs and approved CRM writes remain pending under CRM-001.
+
+### Teams ticket handoffs
+
+The selected-context escalation dialog supports a Teams channel configured by a
+workspace owner or administrator. Use a Microsoft Graph delegated token with
+`ChannelMessage.Send` permission and a target consisting of the team UUID, a slash,
+and the channel ID. The configured Graph origin is fixed; provider redirects are
+refused. Tokens remain encrypted workspace credentials and exports strip them.
+An expired token requires deliberate reconnection; there is no automatic refresh.
+
+`POST /api/escalations/projects/:projectId/conversations/:conversationId/teams`
+uses the existing selected `message_ids`, `attachment_ids` and `request_id` fields.
+Only the configured channel is eligible. Preview does not send; confirmation sends
+plain text containing the ticket reference and chosen context. A successful result
+retains the Teams message link. An explicit authentication or permission refusal
+is recorded as failed. Other delivery failures remain uncertain and neither state
+is automatically replayed. Repeating the same completed request returns its stored
+result; concurrent claims send at most once. The installing administrator must
+still have integration installation authority when the send starts.
+
+Sharing a handoff never publishes a customer reply or confirms recovery. An
+operator writes and explicitly sends any customer update in the ordinary reply
+composer. Teams inbound status and automatic fix-shipped drafts are not implemented.
+The ESCALATION-001 clause remains partial pending policy and live qualification.

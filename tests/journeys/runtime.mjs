@@ -15,51 +15,8 @@ import {client} from './kit/http.mjs'
 const exec=promisify(execFile)
 async function withRuntime(options,body){const runtime=await createRuntime(options);let success=false;try{await body(runtime,client(runtime.origin));success=true}finally{await runtime.close(success)}}
 
-test('the emitted Worker starts on real D1/R2, signs in its native owner and refuses the local entry, retired payment routes and unknown paths',async()=>{
- await withRuntime({},async(runtime,{call,request})=>{
-  const {origin}=runtime
-  const health=(await call('/health',{status:200})).data;assert.equal(health.status,'ok');assert.equal(health.database,'reachable');assert.equal(health.files,'reachable')
-  const homepage=await request('/');assert.equal(homepage.status,200);const html=await homepage.text();assert.match(html,/HappyToHelp/i);assert.doesNotMatch(html,/<h1>Foundation<\/h1>/)
-  for(const path of ['/login','/docs','/docs/install'])assert.equal((await request(path)).status,200,path)
-  for(const path of ['/does-not-exist','/docs/does-not-exist']){const response=await request(path),body=await response.text();assert.equal(response.status,404,path);assert.match(body,/<title>Page not found · HappyToHelp<\/title>/);assert.match(body,/Back to the homepage/)}
-  assert.equal((await call('/api/identity/session')).status,401);assert.equal((await call('/api/management/bootstrap')).status,401)
-  const first=(await call('/api/identity/bootstrap',{body:{password:'synthetic-test-setup-password-123',name:'Runtime project',email:'runtime-owner@example.com',allowedOrigin:origin},status:201})).data
-  // Visitors in these journeys write while nobody has the dashboard open and the team answers anyway, so presence-based away is off
-  // (presence itself: tests/helpers/widget/presence.mjs).
-  await runtime.presenceAwayOff(first.projectId)
-  assert.equal((await call('/api/identity/bootstrap',{body:{password:'synthetic-second-claim-password-123',name:'Second claim',email:'second-claim@example.com',allowedOrigin:origin}})).status>=400,true,'a claimed installation refuses a second first-owner claim')
-  await call('/api/identity/password',{body:{currentPassword:'synthetic-test-setup-password-123',password:'synthetic-runtime-fixture-password-123'},token:first.token,status:200})
-  assert.equal((await call('/api/identity/session',{token:first.token})).status,401,'a password change revokes the old session')
-  const loginResponse=await call('/api/identity/login',{body:{email:'runtime-owner@example.com',password:'synthetic-runtime-fixture-password-123'},status:200});assert.match(loginResponse.headers.get('Set-Cookie'),/HttpOnly/)
-  const login=loginResponse.data;assert.equal((await call('/api/identity/session',{headers:{Cookie:loginResponse.headers.get('Set-Cookie').split(';')[0]}})).status,200)
-  // Development auto-login must not exist in the emitted Worker, even for a same-origin loopback request.
-  assert.equal((await call('/api/identity/local-owner-session',{body:{},headers:{Origin:origin,'Sec-Fetch-Site':'same-origin'}})).status,404)
-  const second=(await call('/api/management/projects',{body:{name:'Second project',allowedOrigin:origin},token:login.token,status:201})).data
-  const switched=(await call('/api/identity/switch-project',{body:{projectId:second.id},token:login.token,status:200})).data;assert.equal(switched.actor.projectId,second.id)
-  const outsider=await runtime.seedTenant({name:'Other tenant',email:'other-tenant@example.com',allowedOrigin:origin})
-  assert.equal((await call('/api/identity/switch-project',{body:{projectId:outsider.projectId},token:login.token})).status,403)
-  const project=(await call('/api/identity/projects/'+first.projectId,{token:login.token,status:200})).data
-  const contact=(await call('/api/identity/widget/session',{body:{widgetKey:project.widget_key},headers:{Origin:origin},status:201})).data
-  const conversation=(await call('/api/conversations',{body:{projectId:first.projectId},token:contact.token,status:201})).data
-  const inbox=async()=>{const [counts,list]=await Promise.all(['/counts','?view=all'].map(async suffix=>(await call(`/api/dashboard/projects/${first.projectId}/conversations${suffix}`,{token:login.token})).data.data));return {unassigned:counts.unassigned,listed:list.some(row=>row.id===conversation.id)}}
-  const unwritten=await inbox();assert.equal(unwritten.listed,false,'an empty conversation is not in the inbox')
-  const command={localId:'runtime-message',content:'Native emitted Worker durable message',expectedRevision:0}
-  assert.equal((await call(`/api/conversations/${conversation.id}/messages`,{body:command,token:contact.token,status:200})).data.accepted,true)
-  assert.deepEqual(await inbox(),{unassigned:unwritten.unassigned+1,listed:true})
-  assert.equal((await call(`/api/conversations/${conversation.id}/messages`,{body:command,token:contact.token})).data.duplicate,true)
-  assert.equal((await call(`/api/conversations/${conversation.id}/messages`,{token:outsider.token})).status,404)
-  const transcript=(await call(`/api/conversations/${conversation.id}/messages`,{token:login.token})).data;assert.deepEqual(transcript.messages.map(m=>m.content),[command.content])
-  const retiredBilling=`/api/management/projects/${first.projectId}/billing`
-  for(const [path,method] of [[retiredBilling,'GET'],[retiredBilling+'/top-up','POST'],[retiredBilling+'/setup','POST'],[retiredBilling+'/portal','POST'],[retiredBilling+'/automated','PUT'],[retiredBilling+'/toggle','POST'],['/api/management/webhooks/stripe','POST']])assert.equal((await call(path,{method,body:method==='GET'?undefined:{},token:login.token})).status,404,`${method} ${path}`)
-  for(const path of ['/health/extra','/api','/api/this-route-does-not-exist'])assert.equal((await call(path)).status,404,path)
-  // Deleting the last workspace leaves an account-only sign-in that can create a new one.
-  await call('/api/management/projects/'+first.projectId,{method:'DELETE',token:login.token,status:200});await call('/api/management/projects/'+second.id,{method:'DELETE',token:switched.token,status:200})
-  const account=(await call('/api/identity/login',{body:{email:'runtime-owner@example.com',password:'synthetic-runtime-fixture-password-123'},status:200})).data;assert.equal(account.accountOnly,true)
-  const recreated=(await call('/api/management/projects',{body:{name:'Recreated project',allowedOrigin:origin},token:account.token,status:201})).data
-  await call('/api/identity/switch-project',{body:{projectId:recreated.id},token:account.token,status:200})
- })
-})
-
+// The broad emitted-Worker smoke was retired: native identity, site surface,
+// admission and socket journeys own its assertions without another installation.
 test('operator pages and APIs refuse foreign framing while the widget, its CORS API and published help pages stay embeddable',async()=>{
  const customer='https://customer.example.test'
  const application=(response,label,ancestors="frame-ancestors 'self'",frameOptions='SAMEORIGIN')=>{assert.equal(response.headers.get('content-security-policy'),ancestors,label);assert.equal(response.headers.get('x-frame-options'),frameOptions,label);assert.equal(response.headers.get('x-content-type-options'),'nosniff',label);assert.equal(response.headers.get('referrer-policy'),'strict-origin-when-cross-origin',label)}
@@ -136,10 +93,17 @@ test('message admission under contention: one writer per revision, exact replay,
   const project=(await call(`/api/identity/projects/${tenant.projectId}`,{token:tenant.token})).data
   const visitor=(await call('/api/identity/widget/session',{body:{widgetKey:project.widget_key},headers:{Origin:runtime.origin},status:201})).data
   const conversation=(await call('/api/conversations',{body:{projectId:tenant.projectId},token:visitor.token,status:201})).data,path=`/api/conversations/${conversation.id}/messages`
-  const [one,two]=await Promise.all(['one','two'].map(localId=>call(path,{body:{localId,content:'Hello '+localId,expectedRevision:0},token:visitor.token})))
+  const inbox=async()=>{const [counts,list]=await Promise.all(['/counts','?view=all'].map(async suffix=>(await call(`/api/dashboard/projects/${tenant.projectId}/conversations${suffix}`,{token:tenant.token,status:200})).data.data));return {unassigned:counts.unassigned,mine:counts.mine,listed:list.some(row=>row.id===conversation.id)}}
+  const empty=await inbox();assert.equal(empty.listed,false)
+  const upload=await fetch(runtime.origin+`/api/conversations/${conversation.id}/media`,{method:'POST',headers:{Authorization:'Bearer '+visitor.token,'Content-Type':'text/plain','X-Filename':'receipt.txt'},body:'journey attachment bytes\n'});assert.equal(upload.status,201);const media=await upload.json();assert.equal(media.filename,'receipt.txt');assert.equal(media.size,25)
+  const [one,two]=await Promise.all(['one','two'].map(localId=>call(path,{body:{localId,content:'Hello '+localId,expectedRevision:0,mediaIds:[media.id]},token:visitor.token})))
   assert.deepEqual([one.status,two.status].sort(),[200,409],'competing revisions accept one writer');const accepted=(one.status===200?one:two).data.message
-  assert.equal((await call(path,{body:{localId:accepted.local_id,content:accepted.content,expectedRevision:0},token:visitor.token,status:200})).data.duplicate,true,'exact replay is a duplicate')
+  assert.equal((await call(path,{body:{localId:accepted.local_id,content:accepted.content,expectedRevision:0,mediaIds:[media.id]},token:visitor.token,status:200})).data.duplicate,true,'exact replay is a duplicate')
   assert.equal((await call(path,{body:{localId:accepted.local_id,content:'changed',expectedRevision:0},token:visitor.token})).data.accepted,false,'a changed command under the same local id is refused')
+  assert.deepEqual(await inbox(),{unassigned:empty.unassigned+1,mine:empty.mine,listed:true})
+  const initial=(await call(path,{token:visitor.token,status:200})).data;assert.equal(initial.messages.length,1);assert.equal(initial.revision,1);assert.equal(initial.messages[0].media[0].id,media.id)
+  const download=await fetch(runtime.origin+`/api/conversations/${conversation.id}/media/${media.id}`,{headers:{Authorization:'Bearer '+visitor.token}});assert.equal(download.status,200);assert.equal(download.headers.get('Content-Type'),'text/plain');assert.match(download.headers.get('Content-Disposition'),/^inline;/);assert.match(download.headers.get('Content-Disposition'),/receipt\.txt/);assert.equal(await download.text(),'journey attachment bytes\n')
+  assert.equal((await call(path,{token:other.token})).status,404);assert.equal((await call(`/api/conversations/${conversation.id}`,{token:other.token})).status,404)
   // Media uploaded to another workspace's conversation cannot be attached here.
   const otherProject=(await call(`/api/identity/projects/${other.projectId}`,{token:other.token})).data,otherVisitor=(await call('/api/identity/widget/session',{body:{widgetKey:otherProject.widget_key},headers:{Origin:runtime.origin},status:201})).data
   const otherConversation=(await call('/api/conversations',{body:{projectId:other.projectId},token:otherVisitor.token,status:201})).data
@@ -149,6 +113,9 @@ test('message admission under contention: one writer per revision, exact replay,
   assert.equal((await call(path,{body:{localId:'stale',content:'Stale reply',expectedRevision:1,expectedLastMessageId:'not-current'},token:tenant.token})).data.accepted,false,'an operator reply on a stale frontier is refused')
   const takeover=await call(path,{body:{localId:'operator',content:'Operator reply',expectedRevision:1,expectedLastMessageId:accepted.id},token:tenant.token,status:200});assert.equal(takeover.data.accepted,true)
   const detail=(await call(`/api/dashboard/projects/${tenant.projectId}/conversations?view=all`,{token:tenant.token})).data.data.find(row=>row.id===conversation.id);assert.equal(detail.assigned_to,tenant.userId,'an operator reply takes the conversation')
+  assert.deepEqual(await inbox(),{unassigned:empty.unassigned,mine:empty.mine+1,listed:true})
+  assert.ok((await call('/api/conversations',{token:tenant.token,status:200})).data.conversations.some(row=>row.id===conversation.id))
+  const noAi=await call(`/api/ai-support/projects/${tenant.projectId}/conversations/${conversation.id}/generations`,{token:tenant.token,body:{expectedRevision:2},status:409});assert.match(noAi.data.error,/CONFIGURATION_REQUIRED/)
   const transcript=(await call(path,{token:visitor.token})).data;assert.deepEqual(transcript.messages.map(m=>m.local_id),[accepted.local_id,'operator']);assert.equal(transcript.revision,2)
  })
 })

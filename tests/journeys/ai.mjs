@@ -11,7 +11,7 @@ import {requestLimits,projectCeilings,invalidLimits,aiCeilings,requestIds,usageS
 
 test('the visitor\'s assistant searches published knowledge and answers with exact citations, live and on replay; citations it was never issued, unpublished or changed sources admit nothing, and asking for a person hands over',answersJourney)
 
-test('each visitor turn is answered once and only if nothing it depends on changed; cancelled, interrupted or post-commit-failed attempts never replay the provider, and a missing key is visible without losing the message; triage labels gate confident intent routing, existing rules still route at admission when the model is down or unsure, and an operator\'s queue choice is kept',async()=>{await lifecycleJourney();await triageJourney()})
+test('each visitor turn is answered once and only if nothing it depends on changed; cancelled, interrupted or post-commit-failed attempts never replay the provider, and a missing key is visible without losing the message; triage labels gate confident intent routing, existing rules still route at admission when the model is down or unsure, and an operator\'s queue choice is kept',async()=>{await lifecycleJourney();await triageJourney();await (await import('../helpers/ai/obligations.mjs')).obligationsJourney()})
 
 test('operator suggestions and draft tools run once per request and never send, fail whole when alternatives fail, and handing a waiting conversation back answers its turn once within ceilings and current authority',assistanceJourney)
 
@@ -21,12 +21,6 @@ test('public request limits answer 429 with Retry-After per project, address, co
 
 test('daily AI reply and spend ceilings skip replies visibly to operators only, keep the visitor\'s message and never replay; reply request ids are UUIDs; usage summaries keep unmeasured costs unknown',async()=>{await aiCeilings();await requestIds();await usageSummary()})
 
-test('training runs seed a confirmed synthetic workspace, check every reply, execute each evaluation family, and keep unreported, failed, expired or interrupted paid work uncertain rather than replaying it',async()=>(await import('../helpers/ai/training.mjs')).trainingJourney())
+test('training runs seed a confirmed synthetic workspace, check every reply, execute each evaluation family, and keep unreported, failed, expired or interrupted paid work uncertain rather than replaying it',async()=>{await (await import('../helpers/ai/training.mjs')).trainingJourney();await (await import('../helpers/ai/procedures.mjs')).proceduresJourney();await (await import('../helpers/ai/advice-procedures.mjs')).proceduresJourney()})
 
 test('repositories selected for operators are read as redacted, attributed evidence that suggestions cite, while secrets files, other repositories and visitor replies get nothing',async()=>(await import('../helpers/ai/repository.mjs')).repositoryJourney())
-
-test('operators inspect an allowlisted production answer trace with exact sources and measured usage, unknown prices remain unavailable, and customer, cross-workspace and revoked report access are refused',async()=>(await import('../helpers/ai/trace.mjs')).traceJourney())
-
-test('quoted follow-up proposals require human acceptance, preserve accepted responsibility through handoffs and restart, and never invent engineering progress',async()=>(await import('../helpers/ai/obligations.mjs')).obligationsJourney())
-
-test('immutable advice procedures require exact-version passing evaluations before bounded production cohorts, narrow tools on revocation and preserve failed evidence after stopping',async()=>(await import('../helpers/ai/procedures.mjs')).proceduresJourney())

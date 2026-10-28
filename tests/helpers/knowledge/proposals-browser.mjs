@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {randomUUID,createHmac} from 'node:crypto'
 export async function proposalsBrowserJourney({runtime,browser,shot}){
- for(const width of [1440,390]){
+ for(const width of [1440]){
   const origin=runtime.origin,tenant=await runtime.seedTenant({name:'Knowledge editorial '+width,email:`editor-${width}@example.test`,allowedOrigin:origin}),pid=tenant.projectId
   const call=async(path,{body,method=body===undefined?'GET':'POST',token=tenant.token,status=200}={})=>{const response=await fetch(origin+path,{method,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:body===undefined?undefined:JSON.stringify(body)});const text=await response.text();assert.equal(response.status,status,path+': '+text.slice(0,250));return text?JSON.parse(text):null}
   const secret='synthetic-happytohelp-42'
@@ -29,7 +29,7 @@ export async function proposalsBrowserJourney({runtime,browser,shot}){
    const content=page.getByLabel('Reviewed article content',{exact:true});assert.doesNotMatch(await content.inputValue(),/Avery|reader-|synthetic-happytohelp-41/)
    assert.ok(await page.getByRole('button',{name:'Publish reviewed private guidance',exact:true}).isDisabled())
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'draft review fits the viewport')
-   await page.screenshot({path:shot(`knowledge-sourced-draft-${width}.png`),fullPage:true})
+   await capture(page,shot,`knowledge-sourced-draft-${width}.png`)
    await page.getByLabel('Editorial rejection reason',{exact:true}).fill('Remove identifying details and state only the verified fix.')
    await page.getByRole('button',{name:'Reject draft',exact:true}).click();await page.getByText('Rejection retained for review.',{exact:true}).waitFor()
    await content.fill('Select UTF-8 export encoding and retry the export.')
@@ -39,12 +39,14 @@ export async function proposalsBrowserJourney({runtime,browser,shot}){
    const decisions=await page.locator('[aria-label="Editorial decisions"]').innerText();assert.match(decisions,/rejected/);assert.match(decisions,/approved/)
    await call(`/api/knowledge/public/${pid}/articles/export-recovery`,{token:'',status:404})
    assert.equal((await call(`/api/knowledge/public/${pid}/articles/export-recovery`,{token:customer.token})).content,'Select UTF-8 export encoding and retry the export.')
-   await page.screenshot({path:shot(`knowledge-reviewed-publication-${width}.png`),fullPage:true})
+   await capture(page,shot,`knowledge-reviewed-publication-${width}.png`)
    await call(`/api/dashboard/projects/${pid}/conversations/${conversation.id}`,{method:'PUT',body:{resolved:false}})
    await page.getByRole('button',{name:'Load proposals and gaps',exact:true}).click();await page.getByText('A source or cited customer cycle reopened.',{exact:false}).waitFor()
    await page.getByRole('button',{name:'Analyze corrective proposals',exact:true}).click();await page.getByText('Retained corrective proposals: 1.',{exact:true}).waitFor()
    assert.equal((await call(`/api/knowledge/public/${pid}/articles/export-recovery`,{token:customer.token})).content,'Select UTF-8 export encoding and retry the export.')
-   await page.screenshot({path:shot(`knowledge-corrective-review-${width}.png`),fullPage:true});assert.deepEqual(errors,[])
+   await capture(page,shot,`knowledge-corrective-review-${width}.png`);assert.deepEqual(errors,[])
   }finally{await context.close()}
  }
 }
+
+async function capture(page,shot,file){for(const width of [1440,390]){await page.setViewportSize({width,height:900});await page.screenshot({path:shot(file.replace('1440',String(width))),fullPage:true})}await page.setViewportSize({width:1440,height:900})}

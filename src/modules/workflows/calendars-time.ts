@@ -75,3 +75,14 @@ export function businessDue(calendar:WorkflowCalendar,from:number,milliseconds:n
  }
  throw new Error('Business calendar cannot reach the requested deadline')
 }
+
+/** The current or next open interval, using exactly the SLA clock's timezone,
+ * holiday and closure rules (including both DST folds). */
+export function businessWindow(calendar:WorkflowCalendar,at:number){
+ let date=dateAt(at,calendar)
+ for(let days=0;days<40000;days++,date=nextDate(date))for(const [opens,closes] of intervals(calendar,date)){
+  if(at<opens)return {available:false,opensAt:opens,changesAt:opens}
+  if(at<closes)return {available:true,opensAt:null,changesAt:closes}
+ }
+ throw new Error('Business calendar cannot reach its next opening')
+}

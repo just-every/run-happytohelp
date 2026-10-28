@@ -3,7 +3,7 @@ const F='/api/forms/projects/:projectId/forms', P='/api/portal/:projectId'
 const K='/api/knowledge/:projectId', O='/api/outcomes/projects/:projectId'
 /** R7 doors participate in the same custom-role policy as the rest of the desk. */
 export const selfServiceRules:Record<string,Permission|'self'|'none'>={
- [`GET ${F}`]:'self',[`GET ${F}/:formId`]:'self',
+ [`GET ${F}`]:'self',[`GET ${F}/:formId`]:'self',[`GET ${F}/:formId/versions`]:'settings.manage',
  [`POST ${F}`]:'settings.manage',[`PUT ${F}/:formId`]:'settings.manage',[`PATCH ${F}/:formId`]:'settings.manage',[`DELETE ${F}/:formId`]:'settings.manage',
  'POST /api/forms/:projectId/:formId/submissions':'none',
  [`POST ${P}/access/request`]:'none',[`POST ${P}/access/logout`]:'none',
@@ -13,9 +13,9 @@ export const selfServiceRules:Record<string,Permission|'self'|'none'>={
  [`GET ${K}/experience`]:'knowledge.edit',
  [`PUT ${K}/experience`]:'knowledge.publish',
  [`PUT ${K}/categories/:categoryId/audience`]:'knowledge.publish',
- [`GET ${K}/articles/:articleId/translations/:locale`]:'knowledge.edit',
+ [`GET ${K}/articles/:articleId/translations/:locale`]:'knowledge.read',
  [`PUT ${K}/articles/:articleId/translations/:locale`]:'knowledge.publish',
- [`GET ${K}/articles/:articleId/history`]:'knowledge.edit',
+ [`GET ${K}/articles/:articleId/history`]:'knowledge.read',
  [`POST ${K}/articles/:articleId/rollback`]:'knowledge.publish',
  [`GET ${K}/conversations/:conversationId/articles`]:'conversations.reply',
  [`POST ${K}/conversations/:conversationId/articles/:articleId/insert`]:'conversations.reply',

@@ -1,5 +1,5 @@
 import {operatorKnowledgeTools} from './knowledge-proposal-tools'
-import {selectedProcedure} from './procedures'
+import {selectedProcedure} from './advice-procedures'
 import {assistanceProfileSql,replyProfileSql} from './selection'
 import type { Env } from '../../platform/env'
 import {repositoryTools} from './repository-tools'

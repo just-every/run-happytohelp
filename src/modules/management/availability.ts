@@ -1,9 +1,8 @@
-/** Whether the team is taking conversations now, from the workspace's settings. With the schedule on, the team is
- * available inside its weekly hours in the workspace timezone; with it off, the "Accept new conversations" switch
- * decides. `opensAt` is when a scheduled team is next back (the visitor's expected reply time) and `changesAt` when
+/** Whether the team is taking conversations now, from the workspace's settings. The "Accept new conversations"
+ * switch can make the team away; otherwise the optional weekly schedule uses the workspace timezone. `opensAt` is when a scheduled team is next back (the visitor's expected reply time) and `changesAt` when
  * the schedule next changes this answer, so a widget left open can ask again. `live` says the answer also follows
  * live presence (presence-based away), so an open widget keeps asking. Times are epoch milliseconds. */
-export interface Availability {available:boolean;message:string;scheduled:boolean;timezone:string;opensAt:number|null;changesAt:number|null;live:boolean}
+export interface Availability {available:boolean;message:string;scheduled:boolean;timezone:string;opensAt:number|null;changesAt:number|null;live:boolean;calendar?:{id:string;name:string}}
 
 /** Presence-based away: on unless a lead turns it off, a teammate counts as away after this many idle minutes, and
  * the away message posted while nobody is online. */
@@ -32,13 +31,15 @@ function instant(year:number,month:number,day:number,hour:number,minute:number,t
  * answers visitors); without it the schedule and switch alone decide. While they say the team is open, nobody online
  * makes the team away with no known return, so the visitor sees the away notice and is asked for an email. */
 export function availability(settings:any,now=new Date(),presence?:{online:number}|null):Availability{
- const base=hours(settings,now)
+ return withPresence(hours(settings,now),settings,presence)
+}
+export function withPresence(base:Availability,settings:any,presence?:{online:number}|null):Availability{
  if(!base.available||!presence||!presenceSettings(settings).enabled)return base
  return presence.online>0?{...base,live:true}:{...base,available:false,message:presenceSettings(settings).message,opensAt:null,live:true}
 }
 function hours(settings:any,now:Date):Availability{
  const timezone=zone(settings.timezone),at=now.getTime(),live=false
- if(!settings.is_availability_schedule_enabled)return {available:settings.is_available!==false,message:settings.unavailable_message||'',scheduled:false,timezone,opensAt:null,changesAt:null,live}
+ if(settings.is_available===false||!settings.is_availability_schedule_enabled)return {available:settings.is_available!==false,message:settings.unavailable_message||'',scheduled:false,timezone,opensAt:null,changesAt:null,live}
  // Days are 1 (Monday) to 7 (Sunday); an imported legacy schedule may name Sunday 0.
  const schedule=settings.availability_schedule||{},days:number[]=Array.isArray(schedule.days)?schedule.days.map((day:unknown)=>Number(day)===0?7:Number(day)):[]
  const message=schedule.message||''

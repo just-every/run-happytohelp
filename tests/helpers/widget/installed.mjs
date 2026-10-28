@@ -8,7 +8,7 @@ import {launchBrowser} from '../../journeys/kit/browser.mjs'
 
 // The installed widget on a separate site origin against the emitted Worker: current and legacy installs and
 // open modes, a failed send and its recovery, after hours (away.mjs), and a foreign conversation refused.
-export async function installedWidget({api,origin,widgetKey,ownerToken,projectId,foreignConversation,evidence}){
+export async function installedWidget({api,origin,widgetKey,ownerToken,projectId,foreignConversation,evidence,mailReceipts}){
 
 if(!api||!origin||!widgetKey||!ownerToken)throw new Error('WIDGET_TEST_API, WIDGET_TEST_ORIGIN, WIDGET_TEST_KEY, WIDGET_TEST_OWNER_TOKEN required');
 if(!['localhost','127.0.0.1'].includes(new URL(origin).hostname))throw new Error('Browser fixture host must be local');
@@ -42,8 +42,9 @@ try{
  const result=await(await fetch(`${api}/api/conversations/${session.conversationId}/messages`,{method:'POST',headers,body:JSON.stringify({localId:'operator-browser-proof',content:'Native operator socket reply',expectedRevision:transcript.revision,expectedLastMessageId:transcript.lastMessageId})})).json();assert.equal(result.accepted,true);
  await page.getByText('Native operator socket reply',{exact:true}).waitFor();
  await page.locator('input[type=file]').setInputFiles({name:'widget-proof.txt',mimeType:'text/plain',buffer:Buffer.from('Native attachment bytes')});
- await page.locator('textarea[name=content]').fill('Attachment from widget');await page.locator('button[name=submit]').click();
- await page.waitForTimeout(700);
+ await page.locator('textarea[name=content]').fill('Attachment from widget');
+ const attachmentAdmitted=page.waitForResponse(response=>response.request().method()==='POST'&&/\/api\/conversations\/[^/]+\/messages$/.test(new URL(response.url()).pathname));
+ await page.locator('button[name=submit]').click();assert.equal((await attachmentAdmitted).status(),200,'the attachment message is admitted before inspecting its stored media');
  const before=await(await fetch(`${api}/api/conversations/${session.conversationId}/messages`,{headers})).json();assert.equal(before.messages.at(-1).media.length,1);
  const media=before.messages.at(-1).media[0];const downloaded=await fetch(`${api}/api/conversations/${session.conversationId}/media/${media.id}`,{headers});assert.equal(await downloaded.text(),'Native attachment bytes');
  await page.reload();await page.getByText('Native operator socket reply',{exact:true}).waitFor();await page.getByText('Attachment from widget',{exact:true}).waitFor();
@@ -65,7 +66,7 @@ try{
  assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
  const recoveryChecks=await widgetRecoveryBrowser({browser,origin,api,widgetKey,ownerToken});
  const failedSendChecks=await widgetFailedSendBrowser({browser,origin,api,widgetKey,ownerToken,evidence});
- const awayChecks=projectId?await awayWidget({browser,origin,api,ownerToken,projectId,evidence}):[];
+ const awayChecks=projectId?await awayWidget({browser,origin,api,ownerToken,projectId,evidence,mailReceipts}):[];
  if(projectId){
   const legacyContext=await browser.newContext({viewport:{width:1440,height:900}}),legacyPage=await legacyContext.newPage();
   legacyPage.on('pageerror',error=>errors.push(error.message));
@@ -96,18 +97,23 @@ try{
     await legacyPage.setViewportSize({width:1440,height:900});
    }
   }
-  const requests=[];legacyPage.on('request',request=>{if(request.url().startsWith(api+'/api/'))requests.push(request.url())});
-  await legacyPage.goto(`${origin}/?legacy=consent#launch-chat`);await legacyPage.waitForTimeout(150);
+  // Finish the already-consented document before observing the consent-gated one;
+  // its live conversation poll may otherwise fire while navigation is starting.
+  await legacyPage.close();
+  const consentPage=await legacyContext.newPage();
+  consentPage.on('pageerror',error=>errors.push(error.message));
+  const requests=[];consentPage.on('request',request=>{if(request.url().startsWith(api+'/api/'))requests.push(request.url())});
+  await consentPage.goto(`${origin}/?legacy=consent#launch-chat`);await consentPage.waitForTimeout(150);
   assert.deepEqual(requests,[],'consent gate starts no native network activity');
-  await legacyPage.evaluate(()=>h2h('consent',{provided:true}));
-  await legacyPage.locator('textarea[name=content]').waitFor({state:'visible'});
+  await consentPage.evaluate(()=>h2h('consent',{provided:true}));
+  await consentPage.locator('textarea[name=content]').waitFor({state:'visible'});
   assert.ok(requests.some(url=>url.includes('/api/widget/legacy-project')));
-  await legacyPage.evaluate(()=>h2h('consent',{provided:false}));
-  await legacyPage.locator('#happytohelp-root').waitFor({state:'detached'});
-  await legacyPage.evaluate(()=>h2h('consent',{provided:true}));
-  await legacyPage.locator('textarea[name=content]').waitFor({state:'visible'});
-  await legacyPage.reload();await legacyPage.evaluate(()=>h2h('consent',{provided:true}));
-  await legacyPage.getByText('Can I keep my existing ChargeDesk support link?',{exact:true}).waitFor();
+  await consentPage.evaluate(()=>h2h('consent',{provided:false}));
+  await consentPage.locator('#happytohelp-root').waitFor({state:'detached'});
+  await consentPage.evaluate(()=>h2h('consent',{provided:true}));
+  await consentPage.locator('textarea[name=content]').waitFor({state:'visible'});
+  await consentPage.reload();await consentPage.evaluate(()=>h2h('consent',{provided:true}));
+  await consentPage.getByText('Can I keep my existing ChargeDesk support link?',{exact:true}).waitFor();
   await legacyContext.close();assert.deepEqual(errors,[]);
  }
  const proof={checks:[...recoveryChecks,...failedSendChecks,...awayChecks,...(projectId?['legacy project resolver and queued init/open/close/settings/update','three legacy script attribute spellings and data-config','launch-chat initial fragment and repeated link opening','consent makes no requests before grant; revoke/remount resumes native conversation','legacy signatures never become verified native authority']:[]),'cross-origin settings/session CORS','Shadow DOM host isolation','widget message durable','operator socket delivery','attachment upload/authenticated download','reload identity/transcript resume','offline reconnect no duplicate','untrusted origin denied','cross-project transcript denied','contact form update','browser timezone/language and observed device context survive reload with collector disabled','mobile panel within viewport'],errors,failed,conversationId:session.conversationId,messages:after.messages.length};

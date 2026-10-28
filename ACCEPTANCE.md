@@ -65,6 +65,8 @@ This document defines the gate; it does not declare that every clause has passed
 
 The cap is **240 effective leaf checks**, not runner registrations. At `29f60c5a322c008e4e564f553df22b61a49c3166`, 188 runner registrations include 18 grouped journeys whose scenarios are registered through `tests/journeys/kit/scenarios.mjs`. The ruling's minimum audit identifies 145 Move-in, 42 Connections and 34 Reports scenarios (221 total). The effective count is at least **188 − 18 + 221 = 391**, **151 over the cap**. Direct registry enumeration expands to 150 Move-in, 42 Connections and 34 Reports registrations (226 total); the ruling's 221-scenario minimum is not an exhaustive total. This is a lower bound; grouping unrelated behaviors never hides their leaf count. Under ct's 23 October ruling, consolidate or delete overlapping tests in the same round, never raise the cap and never weaken an assertion. The excess remains unresolved; this text clarification changes no tests or statuses.
 
+The 28 October commerce landing audit on the current merged main enumerates **177 node:test registrations** plus **5 standalone command checks**. The 19 grouped Connections, Move-in and Reports registrations own 10, 50 and 9 scenarios respectively: **182 − 19 + 69 = 232 effective checks**, within the 240 cap. The commerce extension adds no registration or scenario leaf: its five former scenarios are folded into the existing API credential lifecycle and its browser flow extends the existing connections journey at 1440; separate candidate proof covers 390. The historical ruling above remains the record of the earlier excess.
+
 ## Qualification boundary
 
 Releases are tagged in this public repository, `v0.2.0` through `v0.4.12`; the

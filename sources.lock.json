@@ -1621,7 +1621,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "29525c0310192f9594e8dda53a8863acecceab86764d425b77993c527cd09718",
+      "sha256": "5151fd18055fc17cd24511845530f15649ce22344da76a689243b7ce04e281b2",
       "executable": false
     },
     "AGENTS.md": {
@@ -11497,7 +11497,7 @@
       "executable": false
     },
     "tests/helpers/business-connectors/journeys.mjs": {
-      "sha256": "f35a6c235ce843a3210c1f1f8311662115d01d2c7ba2fb64b21f63b9d408eb9c",
+      "sha256": "10869f6e3ae5969d441ec6bc26b2b8ace94ab9e9e379ec95cefded2c90ae0c1a",
       "executable": false
     },
     "tests/helpers/business-connectors/network.mjs": {

@@ -44,9 +44,9 @@ export async function businessJourney(){
   await h.connect('stripe',['read']);
   assert.equal((await h.call(action+'/reconcile',{})).data.state,'succeeded');
   assert.equal(h.network.refunds.length,2,'reconciliation never sends a second refund');
-  await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${h.visitor.contactId}/erase`,{token:h.token,body:{}});
-  assert.equal((await h.app.call(h.base+action+'/execute',{token:h.token,body:{}})).status,404);
   await h.call('/connections/'+encodeURIComponent(h.rows.stripe.id),undefined,{method:'DELETE'});
   assert.equal((await h.app.call(h.base+stripe+'/refresh',{token:h.token,body:{}})).status,403);
+  await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${h.visitor.contactId}/erase`,{token:h.token,body:{}});
+  assert.equal((await h.app.call(h.base+action+'/execute',{token:h.token,body:{}})).status,404);
  }finally{await h.close();}
 }

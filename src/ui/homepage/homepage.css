@@ -96,6 +96,7 @@
 .h2h-home h2 { font-size: clamp(2.2rem, 4.2vw, 3.7rem); font-weight: 500; line-height: 1.1; letter-spacing: -0.03em; text-wrap: balance; }
 .h2h-home .split-copy > p { margin-top: 20px; font-size: clamp(1.1rem, 1.5vw, 1.35rem); line-height: 1.55; color: var(--ink-soft); }
 .h2h-home .split-copy > p { max-width: 28em; }
+.h2h-home .split-copy > p.free-note { margin-top: 18px; font-size: 0.875rem; line-height: 1.4; }
 .h2h-home .steps { display: grid; gap: 18px; margin-top: 26px; counter-reset: move; }
 .h2h-home .steps li { position: relative; padding-left: 48px; max-width: 28em; font-size: 1.05rem; line-height: 1.5; color: var(--ink-soft); counter-increment: move; }
 .h2h-home .steps li::before { content: counter(move); position: absolute; left: 0; top: -2px; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--d-cyan); font-size: 0.95rem; font-weight: 600; color: var(--ink); }

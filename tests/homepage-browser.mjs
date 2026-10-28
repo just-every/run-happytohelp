@@ -43,11 +43,11 @@ try {
   await page.goto(origin, { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
 
-  // Content, in order. The page is the clarity pass: one idea per section, free plainly and absolutely, nothing small-print.
+  // Content, in order. The page is the clarity pass: one idea per section, open source plainly, the free source a quiet footnote.
   await page.getByRole('heading', { level: 1, name: 'Knows what your customer needs before they do.', exact: true }).waitFor();
   assert.equal(await page.locator('h1').count(), 1);
   assert.equal(await page.locator('.hero-sub').innerText(), 'Some customers who get stuck never write in. They just leave.');
-  assert.equal((await page.locator('.hero-free').innerText()).replace(/\s+/g, ' '), '100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk');
+  assert.equal((await page.locator('.hero-free').innerText()).replace(/\s+/g, ' '), 'Open source alternative to Zendesk, Intercom, Help Scout and Freshdesk');
   assert.deepEqual(await page.locator('.hero-free strong').allInnerTexts(), ['Zendesk', 'Intercom', 'Help\u00a0Scout', 'Freshdesk'], 'the four company names are strong elements and Help Scout does not break');
   assert.deepEqual(await page.locator('.hero-free').evaluate(el => [getComputedStyle(el).fontWeight, ...[...el.querySelectorAll('strong')].map(s => getComputedStyle(s).fontWeight)]), ['400', '600', '600', '600', '600'], 'the names are bold and the lead-in is not');
   assert.equal(await page.locator('.hero-examples').count(), 0, 'the examples strip is removed');
@@ -57,7 +57,7 @@ try {
   ], 'the hero names its two moments, before they ask and when they ask, under the drawing');
   assert.deepEqual(await page.locator('.hero-copy .actions a').allInnerTexts(), ['Get the code', 'Read the docs'], 'the hero has two controls and no third');
   assert.deepEqual(await page.locator('main > section').evaluateAll(sections => sections.map(section => section.id)), ['top', 'free', 'product', 'move-in', 'get-started']);
-  assert.deepEqual(await page.locator('main h2').allInnerTexts(), ['Not just better. Free.', 'The rest of your support desk', 'Try it beside what you have', 'Ready when you are.']);
+  assert.deepEqual(await page.locator('main h2').allInnerTexts(), ['Yours to run and change.', 'The rest of your support desk', 'Try it beside what you have', 'Ready when you are.']);
   assert.equal(await page.locator('#product .section-head p').count(), 0, 'the Product heading has no sub-line');
   assert.deepEqual(await page.locator('.parts > li h3').allInnerTexts(), ['Chat widget', 'Shared inbox', 'Help centre', 'Suggested replies']);
   assert.deepEqual(await page.locator('.parts > li > p').allInnerTexts(), [
@@ -67,7 +67,8 @@ try {
     'Drafted from your own articles, with sources.',
   ]);
   assert.equal(await page.locator('.signals').count(), 0, 'the signals list is removed');
-  assert.equal(await page.locator('#free .split-copy > p').innerText(), 'HappyToHelp is 100% free and open source. Free as in code, and free as in cost. It’s MIT licensed, so it’s yours to use, change and run however you like.');
+  assert.equal(await page.locator('#free .split-copy > p:not(.free-note)').innerText(), 'HappyToHelp is open source and MIT licensed, so it’s yours to use, change and run however you like.');
+  assert.equal(await page.locator('#free .split-copy > p.free-note').innerText(), 'You can also have all the source for free.');
   assert.deepEqual(await page.locator('#free .proof li').allInnerTexts(), ['No seats.', 'No plans.', 'No fees.']);
   assert.deepEqual(await page.locator('#free .actions a').allInnerTexts(), ['Get the code']);
   assert.equal(await page.locator('#move-in .split-copy > p').innerText(), 'Keep your current helpdesk running while you try it.');
@@ -84,18 +85,18 @@ try {
   assert.equal(await page.locator('footer').count(), 1);
   assert.deepEqual(await page.locator('footer a').allInnerTexts(), ['HappyToHelp', 'Docs', 'GitHub', 'Workspace', 'Set up', 'Log in', 'MIT licence']);
   assert.ok(!(await page.locator('[class*="village"], [class*="parallax"]').count()), 'retired homepage markup is absent');
-  // Free means free: nothing on the page, in its labels, title or description, names a price, a host, a provider or Run Edit Run.
+  // Nothing on the page, in its labels, title or description, names a price, a host, a provider or Run Edit Run.
   const pageText = await page.locator('.h2h-home').innerText();
   const labels = await page.locator('figure.drawing').evaluateAll(figures => figures.map(figure => figure.getAttribute('aria-label')).join(' '));
   const metaDescription = await page.locator('meta[name="description"]').getAttribute('content');
-  assert.equal(metaDescription, 'Customer support, solved. Your Codex or Claude fixes the problem and writes the reply; you press Send. Chat widget, shared inbox, help centre and suggested replies. 100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk. MIT licensed.');
-  const everything = `${pageText} ${labels} ${await page.title()} ${metaDescription}`.replace(/free as in cost|free of charge|No fees\./gi, '');
+  assert.equal(metaDescription, 'Customer support, solved. Your Codex or Claude fixes the problem and writes the reply; you press Send. Chat widget, shared inbox, help centre and suggested replies. Open source alternative to Zendesk, Intercom, Help Scout and Freshdesk. MIT licensed.');
+  const everything = `${pageText} ${labels} ${await page.title()} ${metaDescription}`.replace(/You can also have all the source for free\.|free of charge|No fees\./gi, '');
   assert.doesNotMatch(everything, /\$|£|€|\bUS\b|Cloudflare|\bhost(s|ing|ed)?\b|\bproviders?\b|run\s?edit\s?run|runeditrun|\bcosts?\b|\bfees?\b|\bpric(e|es|ed|ing)\b|\bpaid\b|\bbilling\b|invoice|Explain the change/i, 'no cost, hosting, provider, Run Edit Run or billing text anywhere on the page');
-  // Truth: only Codex and Claude, never sending or deciding by themselves, no invented access levels, no figure but "100% free".
+  // Truth: only Codex and Claude, never sending or deciding by themselves, no invented access levels, no percentage figure.
   assert.doesNotMatch(`${pageText} ${labels}`, /Cursor|Copilot|Gemini|Windsurf|Devin|ChatGPT|Aider|Cline|autonomous|autopilot|hands-free|no human|automatically|on its own|by itself|full access|admin access|read-write|sandbox|locked down|cloud agent|hosted agent|our agents|guaranteed|unlimited|forever/i, 'no claim the product cannot back');
-  assert.deepEqual([...pageText.matchAll(/\d+\s?%[^.]*/g)].map(match => match[0].slice(0, 6)), ['100% f', '100% f'], '100% appears only in "100% free"');
+  assert.deepEqual([...pageText.matchAll(/\d+\s?%[^.]*/g)].map(match => match[0].slice(0, 6)), [], 'the page states no percentage');
   assert.ok(!/sends? (it|the reply|replies) (automatically|itself)/i.test(pageText));
-  checks.push('headline, subhead, 100% free line and the two moments\' captions; five sections in order (hero, Not just better. Free., The rest of your support desk, Try it beside what you have, Ready when you are.); exact short copy for each; no cost, hosting, provider or Run Edit Run text; no unbacked claims; footer');
+  checks.push('headline, subhead, open source line and the two moments\' captions; five sections in order (hero, Yours to run and change., The rest of your support desk, Try it beside what you have, Ready when you are.); exact short copy for each; no cost, hosting, provider or Run Edit Run text; no unbacked claims; footer');
 
   // The lockup: one link named HappyToHelp by visually hidden text, the decorative mark first, then the drawn wordmark (the
   // geometry's strokes, round-capped, in currentColor); ink in currentColor, cyan sparks.

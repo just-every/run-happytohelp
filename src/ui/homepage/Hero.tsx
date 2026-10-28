@@ -15,7 +15,7 @@ export function Hero() {
       <h1 id="hero-title">Knows what your customer needs before they do.</h1>
       <p className="hero-sub">Some customers who get stuck never write in. They just leave.</p>
       <div className="actions"><a className="pill pill--ink pill--large" href={sourceUrl}>Get the code</a><a className="text-link" href={docsUrl}>Read the docs</a></div>
-      <p className="hero-free">100% free, open source alternative to <span className="hero-free-names"><strong>Zendesk</strong>, <strong>Intercom</strong>, <strong>Help&nbsp;Scout</strong> and <strong>Freshdesk</strong></span></p>
+      <p className="hero-free">Open source alternative to <span className="hero-free-names"><strong>Zendesk</strong>, <strong>Intercom</strong>, <strong>Help&nbsp;Scout</strong> and <strong>Freshdesk</strong></span></p>
       <Flourish intro />
     </div>
     <div className="hero-stage">

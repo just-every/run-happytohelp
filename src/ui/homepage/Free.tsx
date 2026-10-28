@@ -13,9 +13,10 @@ export function Free() {
   return <HydrationUnit><section className="section free" id="free" aria-labelledby="free-title">
     <div className="split">
       <div className="split-copy">
-        <h2 id="free-title">Not just better. Free.</h2>
-        <p>HappyToHelp is 100% free and open source. Free as in code, and free as in cost. It’s MIT licensed, so it’s yours to use, change and run however you like.</p>
+        <h2 id="free-title">Yours to run and change.</h2>
+        <p>HappyToHelp is open source and MIT licensed, so it’s yours to use, change and run however you like.</p>
         <div className="actions"><a className="pill pill--ink pill--large" href={sourceUrl}>Get the code</a></div>
+        <p className="free-note">You can also have all the source for free.</p>
       </div>
       <LicenceDrawing />
     </div>

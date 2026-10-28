@@ -8088,7 +8088,7 @@
       "executable": false
     },
     "src/routes/index.tsx": {
-      "sha256": "bdc307479d63d1837f2f196cd8a42db8aba58c5d6b8e705bac02b46802ad5983",
+      "sha256": "858714be9597dff6e4a87c614e381874ce57d7793d1165388a6de45c18636fb6",
       "executable": false
     },
     "src/routes/login_.magic.tsx": {
@@ -9484,7 +9484,7 @@
       "executable": false
     },
     "src/ui/homepage/Free.tsx": {
-      "sha256": "967c2a17c9d7674068b81ab05725af7ee1c68e9de19f0f1f66c7c222b2ba6ec4",
+      "sha256": "b1d2e4e07dd9ebc78f57110c50e964c6d6d98999f6f6ed4bc57896b6bb51d672",
       "executable": false
     },
     "src/ui/homepage/GetStarted.tsx": {
@@ -9496,11 +9496,11 @@
       "executable": false
     },
     "src/ui/homepage/Hero.tsx": {
-      "sha256": "1403de75797ae63591ceb9ca39d2f8dc0a1eb9f8a39b87332dab95ac5f9fe388",
+      "sha256": "dfd8c9a5d0b6cf92692e1cfd9bbd610823e9a9110554046fe26f47dafdfc7215",
       "executable": false
     },
     "src/ui/homepage/homepage.css": {
-      "sha256": "fcc7efa07d3920f4665c5d84795226e705f2c3e7a92b14dd7336faa8723eaa61",
+      "sha256": "ea6706755ce31fdbafec2d4bae4b87e5f9a5fbba2c301afa5b1edc34b5214e9c",
       "executable": false
     },
     "src/ui/homepage/Homepage.tsx": {
@@ -12268,7 +12268,7 @@
       "executable": false
     },
     "tests/homepage-browser.mjs": {
-      "sha256": "580bfd0bcaaa49669b48d308fde036bc4f0a2c1faaa40e59d46242cc51f56d96",
+      "sha256": "aaca7e8dc6e5cd268a0c8ebbcbc5005407d23632a576521c8a628fcaad60d765",
       "executable": false
     },
     "tests/journeys/ai-browser.mjs": {

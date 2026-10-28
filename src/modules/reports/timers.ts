@@ -19,6 +19,7 @@ async function timerScope(c:Context<AppEnv>){
  return {actor,id,ticket,access}
 }
 export async function readTimer(env:Env,projectId:string,conversationId:string,userId:string,now=Date.now()){
+ await requireTicketScope(env,userId,projectId,conversationId)
  const [sessions,total]=await Promise.all([
   env.DB.prepare('SELECT id,user_id,started_at,ended_at,adjusted_duration_ms,adjustment_reason FROM ticket_handle_sessions WHERE project_id=? AND conversation_id=? ORDER BY started_at DESC,id DESC LIMIT 100').bind(projectId,conversationId).all<{id:string;user_id:string;started_at:number;ended_at:number|null;adjusted_duration_ms:number|null;adjustment_reason:string|null}>(),
   env.DB.prepare('SELECT COALESCE(SUM(coalesce(adjusted_duration_ms,max(0,coalesce(ended_at,?)-started_at))),0) ticketTotalMs,COALESCE(SUM(CASE WHEN user_id=? THEN coalesce(adjusted_duration_ms,max(0,coalesce(ended_at,?)-started_at)) ELSE 0 END),0) totalMs,(SELECT id FROM ticket_handle_sessions WHERE project_id=? AND conversation_id=? AND user_id=? AND ended_at IS NULL) runningId FROM ticket_handle_sessions WHERE project_id=? AND conversation_id=?').bind(now,userId,now,projectId,conversationId,userId,projectId,conversationId).first<{ticketTotalMs:number;totalMs:number;runningId:string|null}>(),

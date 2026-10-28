@@ -53,6 +53,13 @@ export async function agentDoorJourney(){
    return response
   }
   await adopt()
+  const applied=(await app.first('SELECT envelope FROM agent_door_state WHERE id=1')).envelope
+  for(const overrides of [{aud:'https://another-installation.example.test'},{exp:seconds()-1}]){
+   const invalid=await policyEnvelope(context,autonomousPolicy(),overrides)
+   const refused=await app.call('/api/rer/agent-policy',{body:{policy:invalid.policy}})
+   assert.equal(refused.status,400);assert.equal(refused.data.code,'policy_invalid')
+   assert.equal((await app.first('SELECT envelope FROM agent_door_state WHERE id=1')).envelope,applied,'invalid adoption preserves the applied policy exactly')
+  }
   const declared=(await rpc('tools/list')).data.result.tools
   assert.deepEqual(declared.map(t=>t.name).sort(),context.surface.tools.map(t=>t.name).sort())
   for(const tool of declared){const entry=context.surface.tools.find(item=>item.name===tool.name);assert.deepEqual(tool._meta['com.runeditrun/classes'],entry.classes);assert.deepEqual(tool._meta['com.runeditrun/clauses'],entry.clauses);assert.equal(tool._meta['com.runeditrun/scope'],entry.scope)}

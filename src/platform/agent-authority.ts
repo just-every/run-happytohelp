@@ -29,7 +29,8 @@ export async function agentAuthority(env:Env,actor:Actor,ctx:ToolContext,tool:st
  AND (SELECT pr.updated_at FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=m.project_id AND mr.user_id=m.user_id) IS ?
  AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND (json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL OR json_extract(ps.settings_json,'$.suspended_at') IS NOT NULL))
  AND (SELECT settings_json FROM project_settings WHERE project_id=m.project_id) IS ?
- AND EXISTS(SELECT 1 FROM agent_door_state WHERE id=1 AND local_paused=0 AND envelope IS ? AND local_document IS ? AND local_revision=?)
+ AND EXISTS(SELECT 1 FROM agent_door_state WHERE id=1 AND local_paused=0 AND envelope IS ? AND local_document IS ? AND local_revision=?
+  AND (envelope IS NULL OR json_extract(envelope,'$.exp')*1000>CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)))
  AND NOT EXISTS(SELECT 1 FROM agent_door_agents WHERE id=? AND revoked=1)`
  return {[nativeAgentAuthority]:{sql,operationId:crypto.randomUUID(),projectId:actor.projectId,params:[actor.projectId,actor.id,actor.role,role?.role_key??null,role?.updated_at??null,projectSettings?.settings_json??null,state.envelope,state.local_document,state.local_revision,ctx.agent.id],ctx,tool}}
 }

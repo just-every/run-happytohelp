@@ -8052,7 +8052,7 @@
       "executable": false
     },
     "src/platform/agent-authority.ts": {
-      "sha256": "ef1a69b1a6ca4f152aa62d89ae3911294b40ff3532fb87914e5111904eb73467",
+      "sha256": "be212fe8b86e92ac7b48be7287363f88ea2043156633ffdbd18c9d4675e6970e",
       "executable": false
     },
     "src/platform/auth.ts": {
@@ -12424,7 +12424,7 @@
       "executable": false
     },
     "tests/helpers/agent-door/journey.mjs": {
-      "sha256": "52459aa61ec08861a52599315bf197ee9cb21148dc07871c6ab9b596c5c7798a",
+      "sha256": "3205e2264cb37e7d4d70938dffbbc564067b78361d7554fb86ac729cb3e60b37",
       "executable": false
     },
     "tests/helpers/agent-door/surface-journey.json": {

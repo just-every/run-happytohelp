@@ -1,3 +1,4 @@
+import {requireTicketScope} from '../access/ticket-scope'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -24,6 +25,7 @@ analyticsRoutes.get('/:projectId/analytics',async c=>{
  return c.json({articles,searches:searches.results.map(row=>({...row,clicks:clicks.results.find(click=>click.query===row.query&&click.locale===row.locale&&click.brand===row.brand)?.clicks||0})),comments:comments.results,totals})
 })
 async function conversationAccess(c:any){
+ await requireTicketScope(c.env,c.get('actor').id,c.req.param('projectId'),c.req.param('conversationId'))
  const pid=c.req.param('projectId'),row=await c.env.DB.prepare('SELECT contact_id FROM conversations WHERE id=? AND project_id=?').bind(c.req.param('conversationId'),pid).first()
  if(!row)throw new HTTPException(404,{message:'Conversation not found'})
  return accessForContact(c.env,pid,row.contact_id)

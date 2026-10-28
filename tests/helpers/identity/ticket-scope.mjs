@@ -43,6 +43,40 @@ export async function nativeTicketScopeAssertions(app){
  await app.db.prepare("INSERT INTO conversation_followers(conversation_id,user_id,created_at) VALUES('scope-denied-0',?,1)").bind(w.users.operator).run()
  await select(['scope-a','scope-b'],false)
 
+ // Generic native creation/upload doors share the same scope and commit fences.
+ const countBefore=(await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n
+ assert.equal((await call('/api/conversations',{projectId:p,contactId:'scope-customer'},'POST')).status,404,'native creation cannot return an ungrouped ticket outside scope')
+ assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,countBefore)
+ const nativeUpload=(ticket,headers={})=>app.call(`/api/conversations/${ticket}/media`,{token:w.tokens.operator,method:'POST',raw:true,body:'Synthetic native attachment',headers:{'Content-Type':'text/plain','X-Filename':'scope-native.txt',...headers}})
+ assert.equal((await nativeUpload('scope-denied-0')).status,404)
+ assert.equal((await nativeUpload('scope-allowed-a')).status,201)
+ const nativeMediaBefore=(await app.first('SELECT count(*) n FROM media WHERE project_id=?',p)).n,nativeObjectsBefore=(await (await app.files).list()).objects.map(o=>o.key).sort()
+ const nativeRace=await nativeUpload('scope-allowed-b',{'x-test-statement':'INSERT INTO media','x-test-before-statement':`UPDATE project_roles SET ticket_scope_json='${JSON.stringify({groupIds:[],includeUngrouped:false})}',updated_at=updated_at+1 WHERE id='${roleId}'`})
+ assert.equal(nativeRace.status,409,'generic native attachment admission rechecks current scope')
+ assert.equal((await app.first('SELECT count(*) n FROM media WHERE project_id=?',p)).n,nativeMediaBefore);assert.deepEqual((await (await app.files).list()).objects.map(o=>o.key).sort(),nativeObjectsBefore)
+ await select(['scope-a','scope-b'],false)
+ // Schedules, related followups and SLA alerts are ticket doors as well.
+ const scheduled=[]
+ for(const ticket of ['scope-allowed-a','scope-denied-0']){
+  const response=await call(`${P}/workflow-schedules`,{conversation_id:ticket,kind:'snooze',due_at:Date.now()+3600000,timezone:'UTC',owner_id:w.users.operator},'POST',ticket==='scope-allowed-a'?w.tokens.operator:w.tokens.owner)
+  assert.equal(response.status,201);scheduled.push(response.data.data.id)
+  await app.db.prepare("INSERT INTO sla_alerts(id,project_id,conversation_id,policy_id,metric,cycle,kind,recipient_id,created_at) VALUES(?,?,?,'scope-policy','first_reply',1,'breach',?,1)").bind('scope-alert-'+ticket,p,ticket,w.users.operator).run()
+ }
+ const schedules=await call(`${P}/workflow-schedules`);assert.equal(schedules.status,200);assert.deepEqual(schedules.data.data.map(s=>s.conversation_id),['scope-allowed-a'])
+ assert.equal((await call(`${P}/workflow-schedules/${scheduled[1]}`,{action:'cancel'},'PATCH')).status,404)
+ assert.equal((await call(`${P}/workflow-schedules`,{conversation_id:'scope-denied-0',kind:'snooze',due_at:Date.now()+3600000,timezone:'UTC',owner_id:w.users.owner},'POST')).status,404)
+ assert.equal((await call(`${P}/workflow-schedules`,{conversation_id:'scope-allowed-b',kind:'snooze',dependency_id:'scope-denied-0',timezone:'UTC',owner_id:w.users.owner},'POST')).status,404,'hidden dependencies are refused')
+ const alerts=await call(`${P}/sla-alerts`);assert.equal(alerts.status,200);assert.deepEqual(alerts.data.data.map(a=>a.conversation_id),['scope-allowed-a'])
+ assert.equal((await call(`${P}/sla-alerts/scope-alert-scope-denied-0/ack`,{},'PATCH')).status,404)
+ assert.equal((await call(`${P}/sla-alerts/scope-alert-scope-allowed-a/ack`,{},'PATCH')).status,200)
+ const racedSchedule=await app.call(`${P}/workflow-schedules/${scheduled[0]}`,{token:w.tokens.operator,method:'PATCH',body:{action:'cancel'},headers:{'x-test-statement':'UPDATE workflow_schedules SET state=', 'x-test-before-statement':`UPDATE project_roles SET ticket_scope_json='${JSON.stringify({groupIds:[],includeUngrouped:false})}',updated_at=updated_at+1 WHERE id='${roleId}'`}})
+ assert.equal(racedSchedule.status,409,'schedule cancellation rechecks role scope at commit')
+ assert.equal((await app.first('SELECT state FROM workflow_schedules WHERE id=?',scheduled[0])).state,'pending')
+ await select(['scope-a','scope-b'],false)
+ for(const id of scheduled)assert.equal((await call(`${P}/workflow-schedules/${id}`,{action:'cancel'},'PATCH',w.tokens.owner)).status,200)
+ await app.db.prepare("INSERT INTO ticket_followups(id,project_id,original_id,conversation_id,command_key,created_at) VALUES('scope-followup',?,'scope-allowed-a','scope-denied-0','scope-command',1)").bind(p).run()
+ const related=await call(`${P}/conversations/scope-allowed-a/workflows`);assert.equal(related.status,200);assert.deepEqual(related.data.data.followups,[],'related ticket metadata stays scoped')
+
  // Report/export authority remains independent; a scoped admin can export only the current cohort.
  const reportRole=await call(`${P}/roles`,{name:'Scoped report reviewer',base:'admin',permissions:['reports.view','data.export','contacts.manage','integrations.install','conversations.manage'],ticketScope:{groupIds:['scope-a','scope-b'],includeUngrouped:false}},'POST',w.tokens.owner)
  assert.equal(reportRole.status,201)
@@ -79,12 +113,13 @@ export async function nativeTicketScopeAssertions(app){
  assert.equal((await delegated('scope-allowed-b')).status,403,'role visibility cannot enlarge a machine target list')
 
  await (await app.files).put('scope-denied-attachment','Private attachment bytes')
- await app.db.prepare("INSERT INTO media(id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at) VALUES('scope-denied-media',?,'scope-denied-0',?,'scope-denied-attachment','private.txt','text/plain',24,'scope-denied-0-message',1)").bind(p,w.users.owner).run()
+ await app.db.prepare("INSERT INTO media(id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at) VALUES('scope-denied-media',?,'scope-denied-0',?,'scope-denied-attachment','private.txt','text/plain',24,'scope-denied-0-message',1)").bind(p,w.users.operator).run()
+ const macroSources=await call(`${P}/macros/attachment-options`);assert.equal(macroSources.status,200);assert.ok(macroSources.data.data.some(m=>m.filename==='scope-native.txt'));assert.equal(macroSources.data.data.some(m=>m.id==='scope-denied-media'),false,'attachment choices cannot expose a formerly owned hidden ticket')
  const listed=await call(D);assert.equal(listed.status,200);assert.equal(listed.data.meta.pagination.total,2,'scope filtering precedes pagination');assert.deepEqual(listed.data.data.map(t=>t.id).sort(),['scope-allowed-a','scope-allowed-b'])
  assert.deepEqual((await call(D+'?search=Scope')).data.data.map(t=>t.id).sort(),['scope-allowed-a','scope-allowed-b'],'search hydration stays scoped')
  assert.equal((await call(D+'/counts')).data.data.open,2,'counts use the same scope')
- for(const id of ['scope-allowed-a','scope-allowed-b'])for(const door of [`${D}/${id}`,`${D}/${id}/ticket`,`/api/conversations/${id}/messages`])assert.equal((await call(door)).status,200,door)
- for(const id of ['scope-denied-0','scope-ungrouped'])for(const door of [`${D}/${id}`,`${D}/${id}/ticket`,`/api/conversations/${id}`,`/api/conversations/${id}/messages`,`/api/conversations/${id}/media/scope-denied-media`,`${D}/${id}/buckets`])assert.equal((await call(door)).status,404,door)
+ for(const id of ['scope-allowed-a','scope-allowed-b'])for(const door of [`${D}/${id}`,`${D}/${id}/ticket`,`/api/conversations/${id}/messages`,`${P}/conversations/${id}/email-followups`,`${P}/conversations/${id}/routing`,`/api/knowledge/${p}/conversations/${id}/articles`,`/api/escalations/projects/${p}/conversations/${id}`])assert.equal((await call(door)).status,200,door)
+ for(const id of ['scope-denied-0','scope-ungrouped'])for(const door of [`${D}/${id}`,`${D}/${id}/ticket`,`/api/conversations/${id}`,`/api/conversations/${id}/messages`,`/api/conversations/${id}/media/scope-denied-media`,`${D}/${id}/buckets`,`${P}/conversations/${id}/email-followups`,`${P}/conversations/${id}/routing`,`/api/knowledge/${p}/conversations/${id}/articles`,`/api/escalations/projects/${p}/conversations/${id}`])assert.equal((await call(door)).status,404,door)
  const note=await call(D+'/scope-allowed-a/notes',{content:'A permitted internal note'},'POST');assert.equal(note.status,201)
  assert.equal((await call(D+'/scope-denied-0/notes',{content:'Denied note'},'POST')).status,404)
  const bulk={tickets:['scope-allowed-a','scope-denied-0'].map(id=>({id,expected_version:0})),changes:{priority:'high'}}

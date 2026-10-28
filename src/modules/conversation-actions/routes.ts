@@ -36,7 +36,7 @@ conversationActionRoutes.get(`${path}/partner-forwards`,async c=>{
  return c.json({data:{forwards:rows[0].results,replies:rows[1].results,files:rows[2].results,visibility:'private'}})
 })
 conversationActionRoutes.delete(`${path}/partner-forwards/:forwardId`,async c=>{
- const {actor,conversation}=await dashboardAccess(c),guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'conversations.reply'),now=Date.now(),forwardId=c.req.param('forwardId')
+ const {actor,conversation}=await dashboardAccess(c),guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'conversations.reply',conversation.id),now=Date.now(),forwardId=c.req.param('forwardId')
  const result=await c.env.DB.batch([
   c.env.DB.prepare(`UPDATE partner_forwards SET revoked_at=? WHERE id=? AND project_id=? AND conversation_id=? AND revoked_at IS NULL AND EXISTS(${guard.sql})`).bind(now,forwardId,actor.projectId,conversation.id,...guard.params),
   c.env.DB.prepare(`INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json) SELECT ?,project_id,?,'access','conversation.partner_revoked','succeeded','user',?,'dashboard','conversation',conversation_id,json_object('forward_id',id) FROM partner_forwards WHERE id=? AND project_id=? AND revoked_at=?`).bind(crypto.randomUUID(),now,actor.id,forwardId,actor.projectId,now),

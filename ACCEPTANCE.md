@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 5 | 63 | 17 | 85 |
+| Core | 5 | 65 | 15 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 5 | 63 | 22 | 90 |
+| Full target | 5 | 65 | 20 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -944,7 +944,7 @@ Core · target · **partial** · Cites BASE-SIGNIN-002, BASE-ACCESS-002, BASE-AG
 3. Approve a test refund and start an export with and without a recent step-up; recover a locked-out owner through `rer`; verify sessions without the factor ended when the policy was turned on.
 
 **Evidence.** `src/modules/identity/two-factor/`; `src/platform/auth.ts`; `src/edition/delegation/consent.ts`; `tests/journeys/identity.mjs`; `tests/journeys/identity-browser.mjs` (magic sign-in in 1440 and 390px browsers: neutral request, scanner-safe link, one explicit sign-in and refused replay); `tests/journeys/delegation-browser.mjs`
-**Gap.** Carried-done audit: unasserted in the cited Evidence set: role policy forces factor enrollment; single-use recovery codes; missing factor refused; wrong factor refused; replayed TOTP refused; used recovery refused; passkey sign-in; owner reset needs own step-up; reset notification; reset audit; refund needs recent step-up; export needs recent step-up; installation owner recovery; existing no-factor sessions revoked. Asserted: TOTP enrollment.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: TOTP enrollment; role policy forces factor enrollment; single-use recovery codes; missing factor refused; wrong factor refused; replayed TOTP refused; used recovery refused; passkey sign-in; owner reset needs own step-up; reset notification; reset audit; refund needs recent step-up; export needs recent step-up; installation owner recovery; existing no-factor sessions revoked. The direct enrollment call asserts only HTTP 201. Enrollment state and recovery-code assertions are in `tests/helpers/identity/two-factor.mjs`, outside the carried Evidence set.
 
 #### MOBILE-001 — Support from a phone
 
@@ -1026,15 +1026,15 @@ Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGEN
 
 #### FEEDBACK-001 — Source-linked feedback and release follow-up
 
-Core · target · **missing** · Register R-17
+Core · target · **partial** · Register R-17
 
 **Requirement.** Capture product feedback from a support conversation with the customer/account and supporting quote, link or create its request in Penny, and link engineering delivery in Vector or the buyer's issue tracker. Subscribe the affected requester to an approved service update when a linked feature/fix ships, respecting preference, channel policy and unresolved recovery. Penny owns aggregation, prioritization, roadmap/changelog and requester closure; HappyToHelp retains the support history and responsibility for the customer response.
 
 **Acceptance.**
 1. From two related customer tickets, hand off source-linked feedback to Penny, associate an engineering issue and receive a release event; preview and approve requester updates, deduplicate events, honor opt-out and keep a still-failing customer request open.
 
-**Evidence.** None.
-**Gap.** No implementation located. No Penny/Vector feedback and shipped-feature support follow-up implementation located.
+**Evidence.** Customer/account/quote capture, two related Penny handoffs, signed release, preview/approval, deduplication, opt-out, unresolved recovery and isolation/erasure: `tests/helpers/feedback/journeys.mjs` “feedbackJourney”, folded into the signed-engineering-updates test in `tests/journeys/connections.mjs`. UI: `tests/helpers/feedback/browser.mjs` “feedbackBrowserJourney”, folded into the selected-engineering browser journey with assertions at 1440; browser proof at 1440/390. Inert export/import: `tests/helpers/platform-archive.mjs` Platform archive journey. `docs/feedback-and-assurance.md`.
+**Gap.** Live Penny/Vector or buyer-tracker sandbox and configured release-bridge receipt pending. The adapter links and attributes an existing Penny request; creation stays in Penny. Requester opt-out has an authenticated API door. Service updates require explicit requester consent and human approval; sharing permission is separate and no shipment establishes recovery.
 
 #### ERASURE-001 — Customer erasure with coherent history
 
@@ -1078,7 +1078,7 @@ Core · target · **partial** · Cites BASE-DATA-001, BASE-BACKUP-001, BASE-SECR
 
 #### ASSURANCE-001 — Qualified regulated support deployments
 
-Core · target · **missing** · Cites BASE-DATA-006, BASE-ROLE-001, BASE-AUDIT-001 · Register R-18
+Core · target · **partial** · Cites BASE-DATA-006, BASE-ROLE-001, BASE-AUDIT-001 · Register R-18
 
 **Requirement.** US-first support uses USD, US provider contracts, IANA calendars and channel/recording consent controls. A regulated buyer can qualify an isolated deployment with required DPA/BAA, approved subprocessors/model data handling, access controls, audit, retention, incident response and validated deletion/export; health-data support is gated on those agreements and technical acceptance. The work remains a product obligation, with a named partner/provider path, rather than a claim that self-hosting alone supplies compliance.
 
@@ -1086,8 +1086,8 @@ Core · target · **missing** · Cites BASE-DATA-006, BASE-ROLE-001, BASE-AUDIT-
 1. Before enabling a regulated workspace, an authorized administrator records required executed agreements/provider settings and runs tenant isolation, permission, audit, retention, recovery and erasure journeys with representative sensitive data.
 2. Missing agreements/controls block that configuration visibly; verify access only after qualification and withdrawal upon expiry/revocation.
 
-**Evidence.** None.
-**Gap.** No implementation located. No regulated-deployment agreement/control qualification flow or compliance acceptance located.
+**Evidence.** Agreement/provider/control recording, admin/tenant denial, missing/expired/revoked blockers, audit, native retention and erasure: `tests/helpers/assurance/journeys.mjs` “assuranceJourney” (roles/security-log test in `tests/journeys/identity.mjs`). Settings/report UI at 1440/390: `tests/helpers/assurance/browser.mjs` “assuranceBrowserJourney” (account-security test in `tests/journeys/identity-browser.mjs`). Qualification history export/import: Platform archive journey in `tests/helpers/platform-archive.mjs`. `src/modules/assurance`; `docs/feedback-and-assurance.md`.
+**Gap.** Executed provider/partner agreements and representative sensitive-data deployment acceptance are not supplied. Manually recorded evidence cannot activate health-data support. Qualified activation, sensitive-data access enforcement and later withdrawal, including native/mail/background/public doors, are unimplemented; shared-boundary implementation is held for separate review. Conservative default: isolated deployment only, US/USD/IANA, recording off, no model training, explicit provider retention/BAA coverage, preflight evidence only and health-data activation disabled. No HIPAA, SOC 2 or FedRAMP assurance is claimed.
 
 ### Accountable customer recovery
 

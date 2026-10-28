@@ -2,7 +2,7 @@
 export function inboxFilters(query:(name:string)=>string|undefined,search:string,userId:string){
  const view=query('view')||query('filter')||'open'
  const defaults:Record<string,[string,string]>={open:['unresolved','anyone'],mine:['unresolved','myself'],unassigned:['unresolved','none'],closed:['resolved','anyone'],ai:['ai','anyone'],all:['all','anyone'],unread:['unresolved','anyone']}
- const [defaultStatus,defaultAssignment]=defaults[view]||defaults.open
+ const [defaultStatus,defaultAssignment]=Object.hasOwn(defaults,view)?defaults[view]:defaults.open
  const status=query('status')||defaultStatus,assignment=query('assigned_to')||defaultAssignment
  const conditions:string[]=[],params:any[]=[]
  // Search explicitly defaults to all history, independent of the previous queue.

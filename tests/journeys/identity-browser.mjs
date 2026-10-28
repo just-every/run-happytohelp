@@ -1,3 +1,4 @@
+import {assuranceBrowserJourney} from '../helpers/assurance/browser.mjs'
 import {runSteps} from './kit/steps.mjs';
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
@@ -80,4 +81,4 @@ test(`magic sign-in in 1440 and 390px browsers: neutral request, scanner-safe li
 }]))
 })
 
-test('account security in a 1440 and 390px browser: an authenticator app and a passkey, two-factor sign-in, the step-up dialog on an export, Settings → Security, Security log and Roles, a collaborator\'s notes-only conversation, and scoped native sign-out',{timeout:10*60_000},async()=>{await securityBrowserJourney(browser);await emailStepUpBrowserJourney(browser)})
+test('account security in a 1440 and 390px browser: an authenticator app and a passkey, two-factor sign-in, the step-up dialog on an export, Settings → Security, Security log and Roles, a collaborator\'s notes-only conversation, and scoped native sign-out',{timeout:10*60_000},async()=>{await securityBrowserJourney(browser);await emailStepUpBrowserJourney(browser);await assuranceBrowserJourney(browser)})

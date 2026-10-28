@@ -172,6 +172,11 @@
           "slug": "triage",
           "source": "docs/triage.md",
           "label": "Intelligent triage"
+        },
+        {
+          "slug": "feedback-and-assurance",
+          "source": "docs/feedback-and-assurance.md",
+          "label": "Feedback and regulated deployment"
         }
       ]
     },

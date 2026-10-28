@@ -42,7 +42,7 @@ projects.get('/bootstrap',async c=>{
   c.env.DB.prepare('SELECT p.* FROM plugins p WHERE EXISTS(SELECT 1 FROM memberships m WHERE m.project_id=p.project_id AND m.user_id=?) ORDER BY p.sort_order,p.id').bind(actor.id),
   c.env.DB.prepare('SELECT u.id,u.name,u.email,s.avatar_url FROM users u LEFT JOIN user_settings s ON s.user_id=u.id WHERE u.id=?').bind(actor.id)
  ]),isPlatformAdmin(c.env.DB,actor.id)])
- const map:Record<string,any>={}
+ const map:Record<string,any>=Object.create(null)
  const projectId=c.req.param('projectId')||c.req.query('projectId')||actor.projectId
  for(const p of data[0].results){
   const {settings_json,access_key,access_name,access_base,access_permissions,...summary}=p,appearance=JSON.parse(String(settings_json||'{}'))

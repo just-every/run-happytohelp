@@ -120,6 +120,18 @@
     {
       "id": "259_account_lookup_fields.sql",
       "buyerSteps": "FORMS-001: apply after 258 before serving the updated Worker. Extend native ticket fields with account lookups while retaining existing definitions, historical typed values and workflow journaling. Back up and restore with the native data. Account choices require verified current explicit membership and a deliberately published field; company ticket visibility grants no lookup eligibility."
+    },
+    {
+      "id": "260_feedback.sql",
+      "buyerSteps": "FEEDBACK-001: add source-linked feedback, signed release receipts and reviewed service updates. Apply before the updated Worker serves traffic. New links default to service updates off; explicit requester consent is required. Reconfigure release sender secrets after restore; source history restores with subscriptions off and pending sends cancelled."
+    },
+    {
+      "id": "261_assurance.sql",
+      "buyerSteps": "ASSURANCE-001: add regulated-deployment preflight profiles and expiring agreement/control evidence. Standard support access is unchanged. Recorded references prepare independent review; they never authorize health-data activation or supply compliance. Use an isolated deployment with health-data processing disabled until provider/partner acceptance and shared-runtime activation/withdrawal are implemented."
+    },
+    {
+      "id": "262_feedback_penny.sql",
+      "buyerSteps": "FEEDBACK-001: add a Penny API connection and durable source handoff receipts. A requester-authored sharing permission and explicit operator approval are required. Penny owns its requesters and votes; pending/uncertain external writes never replay. Reconfigure the Penny API key after restore; sending handoffs restore as uncertain."
     }
   ]
 }

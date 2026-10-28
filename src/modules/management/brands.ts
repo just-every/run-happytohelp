@@ -31,7 +31,7 @@ brands.get('/projects/:projectId/brands',async c=>{
   data.push({id:row.id,name:row.name,origin:row.allowed_origin,widgetKey:row.widget_key,helpCenterContextUrl:settings.help_center_domain||null,helpCenterPath:`/help/${id}`,helpHosts:Object.entries(hosts).filter(([,key])=>typeof key==='string'&&helpKeys.has(key)).map(([host])=>host),mailboxes:mail.results,
    policy:{timezone:settings.timezone||'UTC',collectEmail:settings.collect_email!==false,acceptNewConversations:settings.is_enabled!==false},
    settingsUrl:`/projects/${id}/edit`,membersUrl:`/projects/${id}/agents`})
-  for(const person of team.results){const member=members.get(person.id)||{id:person.id,name:person.name,roles:{} as Record<string,string>};member.roles[id]=person.role;members.set(person.id,member)}
+  for(const person of team.results){const member=members.get(person.id)||{id:person.id,name:person.name,roles:Object.create(null) as Record<string,string>};member.roles[id]=person.role;members.set(person.id,member)}
  }
  // Recheck after reading the whole selection, including changes made in-flight.
  await scope(c,true)

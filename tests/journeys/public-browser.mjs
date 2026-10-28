@@ -1,3 +1,5 @@
+import {runSteps} from './kit/steps.mjs';
+import {occlusionJourney} from '../accessibility-occlusion-regression.mjs';
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
 import {createRequire} from 'node:module'
@@ -31,7 +33,7 @@ const axe=async page=>{if(!(await page.evaluate(()=>Boolean(window.axe))))await 
 const noOverflow=page=>page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)
 async function guarded(body){try{await body()}catch(error){success=false;throw error}}
 
-for(const [label,viewport] of Object.entries(viewports))test(`a published help center at ${viewport.width}px: native, retained and host addresses, search to article and back, readable brand links and framed 404s that hide drafts`,async()=>guarded(async()=>{
+test(`a published help center at 1440 and 390px: native, retained and host addresses, search to article and back, readable brand links and framed 404s that hide drafts`,async()=>runSteps(Object.entries(viewports).map(([label,viewport])=>[`${viewport.width}px`,async()=>guarded(async()=>{
  const shot=await evidence('help-center'),context=await browser.newContext({viewport}),page=await context.newPage(),failures=[]
  page.on('requestfailed',request=>failures.push(request.url()));page.on('response',response=>{if(response.status()>=400&&['stylesheet','image','font','script'].includes(response.request().resourceType()))failures.push(response.url())})
  const hostOrigin=new URL(runtime.origin);hostOrigin.hostname='localhost'
@@ -65,12 +67,12 @@ for(const [label,viewport] of Object.entries(viewports))test(`a published help c
   assert.equal(pages['unpublished draft'],pages['missing article'],'a draft is indistinguishable from a missing article')
   await page.screenshot({path:shot(label+'-404.png'),fullPage:true})
  }finally{await context.close()}
-}))
+})])))
 
 // The H1 and h2 sequence of a Markdown file as written, outside fenced code.
 function headings(source){let fenced=false;const lines=readFileSync(join(root,source),'utf8').split('\n').filter(line=>{if(/^\s*(```|~~~)/.test(line))fenced=!fenced;return !fenced});const text=line=>line.replace(/^#+\s+/,'').replace(/`/g,'').trim();return {h1:text(lines.find(line=>/^# /.test(line))),h2:lines.filter(line=>/^## /.test(line)).map(text)}}
 
-for(const [label,viewport] of Object.entries(viewports))test(`the documentation and the application 404 at ${viewport.width}px: every manifest page renders its Markdown with working links and pager, keyboard reachable and accessible, and every way back works`,async()=>guarded(async()=>{
+test(`the documentation and the application 404 at 1440 and 390px: every manifest page renders its Markdown with working links and pager, keyboard reachable and accessible, and every way back works`,async()=>runSteps(Object.entries(viewports).map(([label,viewport])=>[`${viewport.width}px`,async()=>guarded(async()=>{
  const {readManifest}=await import('../../src/ui/docs/build/manifest.ts'),pages=readManifest(root).pages,repository=JSON.parse(readFileSync(join(root,'package.json'),'utf8')).repository.url
  const shot=await evidence('docs'),context=await browser.newContext({viewport}),page=await context.newPage(),external=[],errors=[],fetched=new Map()
  page.on('request',request=>{if(!request.url().startsWith(runtime.origin)&&!request.url().startsWith('data:'))external.push(request.url())});page.on('pageerror',error=>errors.push(error.message))
@@ -121,4 +123,7 @@ for(const [label,viewport] of Object.entries(viewports))test(`the documentation 
   const slash=await open('/docs/');assert.equal(slash.status(),200);assert.match(new URL(page.url()).pathname,/^\/docs\/?$/)
   for(const path of ['/docs','/docs/install','/docs/operations']){await open(path);await page.screenshot({path:shot(`${path.slice(1).replace(/\//g,'-')}-${label}.png`),fullPage:true})}
  }finally{await context.close()}
-}))
+})])))
+
+// Protect the browser audit oracle itself against silently accepting covered low-contrast text.
+test('the browser contrast audit distinguishes visible good and bad text from partial and full occlusion',async()=>guarded(()=>occlusionJourney(browser)))

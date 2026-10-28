@@ -1,0 +1,494 @@
+{
+  "schema": 1,
+  "title": "HappyToHelp",
+  "groups": [
+    {
+      "id": "workspace",
+      "label": "Workspace"
+    },
+    {
+      "id": "owner",
+      "label": "Your account"
+    },
+    {
+      "id": "email",
+      "label": "Email delivery"
+    },
+    {
+      "id": "ai",
+      "label": "AI replies (optional)"
+    },
+    {
+      "id": "managed-mail",
+      "label": "Managed email",
+      "audience": "developer"
+    }
+  ],
+  "fields": [
+    {
+      "name": "WORKSPACE_NAME",
+      "label": "Workspace name",
+      "kind": "text",
+      "group": "workspace",
+      "required": false,
+      "help": "Optional. Left empty, we name the workspace from your website."
+    },
+    {
+      "name": "WIDGET_ORIGIN",
+      "label": "Website where customers will use chat",
+      "kind": "url",
+      "group": "workspace",
+      "required": true,
+      "localDefault": {
+        "from": "origin"
+      },
+      "placeholder": "https://example.com",
+      "help": "The chat widget will be allowed on this website."
+    },
+    {
+      "name": "PRIMARY_COLOR",
+      "label": "Brand colour",
+      "kind": "colour",
+      "group": "workspace",
+      "required": false,
+      "help": "Optional. Left empty, we choose a colour for you and you can change it later."
+    },
+    {
+      "name": "OWNER_NAME",
+      "label": "Your name",
+      "kind": "text",
+      "group": "owner",
+      "required": false,
+      "default": "",
+      "help": "Optional. Left empty, we use the first part of your email."
+    },
+    {
+      "name": "OWNER_EMAIL",
+      "label": "Your email",
+      "kind": "email",
+      "group": "owner",
+      "required": true,
+      "prefill": "account-email"
+    },
+    {
+      "name": "OWNER_PASSWORD",
+      "label": "Create an owner password",
+      "kind": "secret",
+      "group": "owner",
+      "required": true,
+      "ownerVisible": true,
+      "input": "entered",
+      "localDefault": {
+        "generate": "hex"
+      },
+      "when": {
+        "field": "OWNER_EMAIL",
+        "nonEmpty": true
+      },
+      "help": "At least 12 characters. Used to create your owner account."
+    },
+    {
+      "name": "MAIL_PROVIDER",
+      "label": "Email hosting",
+      "kind": "select",
+      "group": "managed-mail",
+      "required": true,
+      "default": "direct",
+      "options": [
+        {
+          "value": "direct",
+          "label": "Your email provider"
+        },
+        {
+          "value": "rer",
+          "label": "Run Edit Run managed email"
+        }
+      ]
+    },
+    {
+      "name": "EMAIL_PROVIDER",
+      "label": "Email service",
+      "kind": "select",
+      "group": "email",
+      "required": true,
+      "default": "later",
+      "options": [
+        {
+          "value": "cloudflare",
+          "label": "Cloudflare Email Sending"
+        },
+        {
+          "value": "resend",
+          "label": "Resend"
+        },
+        {
+          "value": "sendgrid",
+          "label": "SendGrid"
+        },
+        {
+          "value": "later",
+          "label": "Set up email later"
+        },
+        {
+          "value": "development",
+          "label": "Local development (no email sent)"
+        }
+      ],
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "direct"
+      }
+    },
+    {
+      "name": "EMAIL_FROM",
+      "label": "Sender email address",
+      "kind": "email",
+      "group": "email",
+      "required": false,
+      "presentations": [
+        {
+          "when": {
+            "field": "EMAIL_PROVIDER",
+            "equals": "cloudflare"
+          },
+          "required": true
+        },
+        {
+          "when": {
+            "field": "EMAIL_PROVIDER",
+            "equals": "resend"
+          },
+          "required": true
+        },
+        {
+          "when": {
+            "field": "EMAIL_PROVIDER",
+            "equals": "sendgrid"
+          },
+          "required": true
+        }
+      ],
+      "help": "Use an address on your verified sending domain.",
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "direct"
+      }
+    },
+    {
+      "name": "EMAIL_ACCOUNT_ID",
+      "label": "Email Sending account",
+      "kind": "text",
+      "group": "email",
+      "required": false,
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "direct"
+      },
+      "presentations": [
+        {
+          "when": {
+            "field": "EMAIL_PROVIDER",
+            "equals": "cloudflare"
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "EMAIL_API_KEY",
+      "label": "Email sending token",
+      "kind": "secret",
+      "group": "email",
+      "required": false,
+      "ownerVisible": true,
+      "input": "entered",
+      "presentations": [
+        {
+          "when": {
+            "field": "EMAIL_PROVIDER",
+            "equals": "resend"
+          },
+          "required": true
+        },
+        {
+          "when": {
+            "field": "EMAIL_PROVIDER",
+            "equals": "sendgrid"
+          },
+          "required": true
+        }
+      ],
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "direct"
+      }
+    },
+    {
+      "name": "CLOUDFLARE_EMAIL_API_KEY",
+      "label": "Email Sending token",
+      "kind": "secret",
+      "group": "email",
+      "required": true,
+      "ownerVisible": true,
+      "input": "entered",
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "direct"
+      },
+      "presentations": [
+        {
+          "when": {
+            "field": "EMAIL_PROVIDER",
+            "equals": "cloudflare"
+          },
+          "required": true
+        }
+      ],
+      "help": "Cloudflare requires Email Sending: Edit permission."
+    },
+    {
+      "name": "AI_PROVIDER",
+      "label": "AI service",
+      "kind": "select",
+      "group": "ai",
+      "required": true,
+      "default": "later",
+      "options": [
+        {
+          "value": "openai",
+          "label": "OpenAI"
+        },
+        {
+          "value": "anthropic",
+          "label": "Anthropic (Claude)"
+        },
+        {
+          "value": "google",
+          "label": "Google (Gemini)"
+        },
+        {
+          "value": "deepseek",
+          "label": "DeepSeek"
+        },
+        {
+          "value": "xai",
+          "label": "xAI (Grok)"
+        },
+        {
+          "value": "openrouter",
+          "label": "OpenRouter"
+        },
+        {
+          "value": "later",
+          "label": "Set up AI later"
+        }
+      ],
+      "help": "Choose where AI replies come from. You can add a key later; nothing is sent to a provider until you do."
+    },
+    {
+      "name": "OPENAI_API_KEY",
+      "label": "OpenAI API key",
+      "kind": "secret",
+      "group": "ai",
+      "required": true,
+      "ownerVisible": true,
+      "input": "entered",
+      "when": {
+        "field": "AI_PROVIDER",
+        "equals": "openai"
+      }
+    },
+    {
+      "name": "ANTHROPIC_API_KEY",
+      "label": "Anthropic (Claude) API key",
+      "kind": "secret",
+      "group": "ai",
+      "required": true,
+      "ownerVisible": true,
+      "input": "entered",
+      "when": {
+        "field": "AI_PROVIDER",
+        "equals": "anthropic"
+      }
+    },
+    {
+      "name": "GOOGLE_API_KEY",
+      "label": "Google (Gemini) API key",
+      "kind": "secret",
+      "group": "ai",
+      "required": true,
+      "ownerVisible": true,
+      "input": "entered",
+      "when": {
+        "field": "AI_PROVIDER",
+        "equals": "google"
+      }
+    },
+    {
+      "name": "DEEPSEEK_API_KEY",
+      "label": "DeepSeek API key",
+      "kind": "secret",
+      "group": "ai",
+      "required": true,
+      "ownerVisible": true,
+      "input": "entered",
+      "when": {
+        "field": "AI_PROVIDER",
+        "equals": "deepseek"
+      }
+    },
+    {
+      "name": "XAI_API_KEY",
+      "label": "xAI (Grok) API key",
+      "kind": "secret",
+      "group": "ai",
+      "required": true,
+      "ownerVisible": true,
+      "input": "entered",
+      "when": {
+        "field": "AI_PROVIDER",
+        "equals": "xai"
+      }
+    },
+    {
+      "name": "OPENROUTER_API_KEY",
+      "label": "OpenRouter API key",
+      "kind": "secret",
+      "group": "ai",
+      "required": true,
+      "ownerVisible": true,
+      "input": "entered",
+      "when": {
+        "field": "AI_PROVIDER",
+        "equals": "openrouter"
+      }
+    },
+    {
+      "name": "H2H_SETUP_TOKEN",
+      "label": "Private owner setup token",
+      "kind": "secret",
+      "required": true,
+      "generate": "hex",
+      "ownerVisible": false
+    },
+    {
+      "name": "INBOUND_EMAIL_TOKEN",
+      "label": "Private inbound email token",
+      "kind": "secret",
+      "required": true,
+      "generate": "hex",
+      "ownerVisible": true,
+      "help": "Generated for you. Your email provider presents it when it forwards replies to this workspace."
+    },
+    {
+      "name": "INTEGRATION_ENCRYPTION_KEY",
+      "label": "Private integration encryption key",
+      "kind": "secret",
+      "required": true,
+      "generate": "base64",
+      "ownerVisible": false
+    },
+    {
+      "name": "H2H_OWNER_RECOVERY_KEY",
+      "label": "Owner recovery key",
+      "kind": "secret",
+      "required": true,
+      "generate": "hex",
+      "ownerVisible": false,
+      "help": "Generated for you and never shown. If the owner loses every second factor, set a new value with rer and use it once at /owner-recovery."
+    },
+    {
+      "name": "MAIL_FROM",
+      "label": "Managed sender address",
+      "kind": "text",
+      "group": "managed-mail",
+      "required": true,
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "rer"
+      }
+    },
+    {
+      "name": "MAIL_RELAY_URL",
+      "label": "Managed sending service",
+      "kind": "url",
+      "group": "managed-mail",
+      "required": true,
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "rer"
+      }
+    },
+    {
+      "name": "H2H_RER_MAIL_VERSION",
+      "label": "Conversation mail version",
+      "kind": "text",
+      "group": "managed-mail",
+      "required": true,
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "rer"
+      },
+      "default": "1"
+    },
+    {
+      "name": "RER_MAILBOX_ID",
+      "label": "Managed mailbox identity",
+      "kind": "text",
+      "group": "managed-mail",
+      "required": true,
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "rer"
+      }
+    },
+    {
+      "name": "RER_MAIL_ADDRESS",
+      "label": "Managed receiving address",
+      "kind": "text",
+      "group": "managed-mail",
+      "required": true,
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "rer"
+      }
+    },
+    {
+      "name": "RER_MAIL_CONTROL_URL",
+      "label": "Managed mailbox service",
+      "kind": "url",
+      "group": "managed-mail",
+      "required": true,
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "rer"
+      }
+    },
+    {
+      "name": "RER_MAIL_INGRESS_KEY",
+      "label": "Private managed receiving authority",
+      "kind": "secret",
+      "required": true,
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "rer"
+      },
+      "ownerVisible": false,
+      "input": "managed",
+      "generate": "hex"
+    }
+  ],
+  "steps": [
+    {
+      "type": "owner-claim",
+      "mode": "signed",
+      "emailField": "OWNER_EMAIL",
+      "tokenField": "H2H_SETUP_TOKEN",
+      "path": "/auth/bootstrap"
+    },
+    {
+      "type": "extension",
+      "id": "native-owner-password"
+    }
+  ]
+}

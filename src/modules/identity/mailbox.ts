@@ -4,8 +4,8 @@ export const signedMailboxSql=(alias:string)=>`(${alias}.is_verified=1 AND lower
 // Preserve R7b's existing receipt proof: the committed contact-authored message
 // proves admission even if receipt completion was interrupted afterwards.
 const authenticatedMailboxSql=(alias:string)=>`EXISTS(
- SELECT 1 FROM inbound_emails receipt JOIN messages message ON message.id=receipt.message_id AND message.project_id=receipt.project_id
- WHERE receipt.project_id=${alias}.project_id AND message.actor_role='contact' AND message.actor_id=${alias}.id
+ SELECT 1 FROM messages message CROSS JOIN inbound_emails receipt ON receipt.project_id=message.project_id AND receipt.message_id=message.id
+ WHERE message.project_id=${alias}.project_id AND message.actor_role='contact' AND message.actor_id=${alias}.id
  AND json_extract(receipt.evidence_json,'$.sender_verified')=1
  AND lower(trim(CASE WHEN instr(json_extract(receipt.evidence_json,'$.header_from'),'<')>0
  THEN substr(json_extract(receipt.evidence_json,'$.header_from'),instr(json_extract(receipt.evidence_json,'$.header_from'),'<')+1,instr(json_extract(receipt.evidence_json,'$.header_from'),'>')-instr(json_extract(receipt.evidence_json,'$.header_from'),'<')-1)

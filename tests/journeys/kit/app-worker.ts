@@ -13,10 +13,10 @@ const captured:unknown[]=[]
 const bindings=(env:Env):Env=>env.H2H_TEST_CAPTURE_QUEUE?{...env,JOBS:{send:async(job:unknown)=>{captured.push(job)},sendBatch:async(batch:{body:unknown}[])=>{captured.push(...batch.map(item=>item.body))}} as unknown as Env['JOBS']}:env
 // Count all three cron branches against the same enforced platform limit.
 function scheduledMeter(db:D1Database){
- const counts={statements:0,refused:0,pruned:false},consumers:Record<string,{statements:number;completed:boolean}>={}
+ const counts={statements:0,calls:0,refused:0,pruned:false},consumers:Record<string,{statements:number;completed:boolean}>={}
  const database=(name:string,input=db)=>{
   const own=consumers[name]={statements:0,completed:false},raw=new WeakMap<object,D1PreparedStatement>()
-  const hit=(n:number,sql='')=>{if(counts.statements+n>1000){counts.refused++;throw new Error('D1 invocation statement limit')}if(name==='invocation')counts.statements+=n;own.statements+=n;if(sql.includes('DELETE FROM abuse_counters'))counts.pruned=true}
+  const hit=(n:number,sql='')=>{if(counts.statements+n>1000){counts.refused++;throw new Error('D1 invocation statement limit')}if(name==='invocation'){counts.statements+=n;counts.calls++};own.statements+=n;if(sql.includes('DELETE FROM abuse_counters'))counts.pruned=true}
   const wrap=(statement:D1PreparedStatement,sql:string):D1PreparedStatement=>{
    const result={bind:(...args:unknown[])=>wrap(statement.bind(...args),sql),...Object.fromEntries(['first','all','run','raw'].map(key=>[key,(...args:unknown[])=>{hit(1,sql);return (statement as any)[key](...args)}]))} as D1PreparedStatement
    raw.set(result,statement);return result
@@ -78,7 +78,7 @@ const faulted=(request:Request,env:Env):Env=>{
   }} as unknown as R2Bucket,
  }
 }
-export default {
+const worker={
  async fetch(request:Request,env:Env,context:ExecutionContext){
   env=faulted(request,bindings(env))
   const path=new URL(request.url).pathname
@@ -101,7 +101,7 @@ export default {
   if(path==='/_test/scheduled'){const {after=0}=await request.json<{after?:number}>().catch(()=>({after:0}));const originalNow=Date.now
    // Long retention journeys move the runtime clock, so the actual scheduled
    // integration sees the same time as the edge; application policy is untouched.
-   const moved=after>=86400000;if(moved)Date.now=()=>originalNow()+after
+   const moved=after>=86400000||request.headers.get('x-test-clock')==='advance';if(moved)Date.now=()=>originalNow()+after
    const meter=scheduledMeter(env.DB)
    try{await runScheduledInvocation({...env,DB:meter.database('invocation')},{now:Date.now()+(moved?0:after),consumerEnv:(name,input)=>({...input,DB:meter.database(name,input.DB)})});for(const consumer of Object.values(meter.consumers))consumer.completed=true;delete meter.consumers.invocation;return Response.json({ran:true,...meter.counts,consumers:meter.consumers})}finally{Date.now=originalNow}}
   return app.fetch(request,env,context)
@@ -110,3 +110,13 @@ export default {
  // The deployed Email Worker entry (src/server.ts), reached through Miniflare's local email trigger.
  async email(message:ForwardableEmailMessage,env:Env,context:ExecutionContext){return handleEmail(message as any,bindings(env),context)},
 }
+
+export default {...worker,async fetch(request:Request,env:Env,context:ExecutionContext){
+ if(!request.headers.has('x-test-meter-d1'))return worker.fetch(request,env,context)
+ const meter=scheduledMeter(env.DB),pending:Promise<unknown>[]=[],ctx={...context,waitUntil:(work:Promise<unknown>)=>{pending.push(work)}} as ExecutionContext
+ const response=await worker.fetch(request,{...env,DB:meter.database('invocation')},ctx)
+ await Promise.all(pending)
+ const result=new Response(response.body,response)
+ result.headers.set('x-test-d1-statements',String(meter.counts.statements));result.headers.set('x-test-d1-calls',String(meter.counts.calls));result.headers.set('x-test-d1-refused',String(meter.counts.refused))
+ return result
+}}

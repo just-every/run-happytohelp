@@ -47,8 +47,10 @@ try{
   const after=await transport.refresh();assert.equal(after.revision,before.revision+2);assert.equal(after.messages.filter(m=>m.local_id===concurrent.local_id).length,1);assert.equal(transport.session.pendingCommands[concurrent.local_id],undefined);
  }
   // Over the per-minute limit the refusal is readable, carries its delay, and the command is not kept for replay.
+  // A short burst may cross one real minute boundary. Twelve attempts still
+  // exhaust a five-message bucket without depending on its wall-clock phase.
   let refused
-  for(let index=0;index<6&&!refused;index++)await transport.send({local_id:crypto.randomUUID(),content:'Burst '+index,media_ids:[]}).catch(error=>{refused=error})
+  for(let index=0;index<12&&!refused;index++)await transport.send({local_id:crypto.randomUUID(),content:'Burst '+index,media_ids:[]}).catch(error=>{refused=error})
   assert.ok(refused?.rateLimited,'the burst reaches the limit');assert.equal(refused.status,429);assert.ok(refused.retryAfter>=1);assert.equal(refused.definitiveRejection,true)
   assert.deepEqual(transport.session.pendingCommands,{});const posts=await app.first("SELECT count(*) n FROM messages");await transport.replayPending();assert.deepEqual(await app.first("SELECT count(*) n FROM messages"),posts)
  }finally{transport.close();globalThis.fetch=nativeFetch;globalThis.localStorage=previousStorage}

@@ -1,3 +1,4 @@
+import {ownershipOptions,previewOwnership,activateOwnership} from './ownership'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {Context} from 'hono'
@@ -32,8 +33,8 @@ moveInRoutes.use(root,recordImport)
 async function recordImport(c:Context<AppEnv>,next:Next){
  await next()
  const actor=c.get('actor')
- if(c.req.method!=='POST'||c.res.status>=300||!actor)return
- const step=c.req.path.split('/').at(-1),action=['apply','resume','undo'].includes(step!)?`import.${step}`:'import.started'
+ if(c.req.method!=='POST'||c.res.status>=300||!actor||c.req.path.endsWith('/ownership/preview'))return
+ const step=c.req.path.split('/').at(-1),ownership=c.req.path.includes('/ownership/'),action=ownership?'import.ownership.'+step:['apply','resume','undo'].includes(step!)?`import.${step}`:'import.started'
  const result=await c.res.clone().json().catch(()=>null) as {alreadyImported?:boolean;writes?:number;data?:{id?:string}}|null
  // An upload already on record is a no-op that writes nothing, the log included.
  if(result?.alreadyImported||result?.writes===0)return
@@ -66,3 +67,7 @@ moveInRoutes.get(`${root}/:runId`,async c=>{const {run}=await owned(c);return c.
 moveInRoutes.post(`${root}/:runId/apply`,async c=>{const {run,actor}=await owned(c),body=await c.req.json();if(run.state!=='ready'||typeof body.fingerprint!=='string'||JSON.parse(run.plan_json!).fingerprint!==body.fingerprint)throw new HTTPException(409,{message:'Review the current import plan before approving'});if(!run.total)throw new HTTPException(409,{message:'Nothing in this file can be imported. Fix the rejected records shown in the review, then upload the corrected file.'});await approve(c.env,{...run,...actor},body.fingerprint);return c.json({data:await runView(c.env,(await getRun(c.env,run.id))!)},202)})
 moveInRoutes.post(`${root}/:runId/resume`,async c=>{const {run,actor}=await owned(c);if(!['uploaded','parsing','planning','applying','undoing'].includes(run.state))throw new HTTPException(409);await guarded(c.env,{...run,...actor},[c.env.DB.prepare('UPDATE move_in_runs SET error=NULL,session_hash=? WHERE id=?').bind(actor.session_hash,run.id)]);await enqueue(c.env,run);return c.json({data:await runView(c.env,(await getRun(c.env,run.id))!)},202)})
 moveInRoutes.post(`${root}/:runId/undo`,async c=>{const {run,actor}=await owned(c);if(run.state!=='completed'&&!(run.state==='applying'&&run.error))throw new HTTPException(409,{message:'Only a completed or stopped import can be undone'});await guarded(c.env,{...run,...actor},[c.env.DB.prepare("UPDATE move_in_runs SET state='undoing',error=NULL,session_hash=? WHERE id=? AND state=?").bind(actor.session_hash,run.id,run.state)]);await enqueue(c.env,run);return c.json({data:await runView(c.env,(await getRun(c.env,run.id))!)},202)})
+
+moveInRoutes.get(`${root}/:runId/ownership`,async c=>{const {run}=await owned(c);return c.json(await ownershipOptions(c.env,run))})
+moveInRoutes.post(`${root}/:runId/ownership/preview`,async c=>{const {run,actor}=await owned(c);return c.json(await previewOwnership(c.env,{...run,...actor},await c.req.json()))})
+moveInRoutes.post(`${root}/:runId/ownership/apply`,async c=>{const {run,actor}=await owned(c),body=await c.req.json();return c.json(await activateOwnership(c.env,{...run,...actor},body.bindings,body.fingerprint))})

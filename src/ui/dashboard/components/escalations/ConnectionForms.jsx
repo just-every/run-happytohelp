@@ -62,5 +62,5 @@ export function SlackConnectionForm(props) {
 }
 
 export function TeamsConnectionForm(props) {
-    return <CredentialForm {...props} provider="teams" name="Teams" targetLabel="Teams team UUID/channel ID" targetPlaceholder="Team UUID/19:channel@thread.tacv2" tokenLabel="Microsoft Graph delegated ChannelMessage.Send token" defaultUrl="https://graph.microsoft.com"/>;
+    return <CredentialForm {...props} provider="teams" name="Teams" targetLabel="Team UUID and channel ID" targetPlaceholder="Team UUID / channel ID" tokenLabel="Microsoft Graph token with ChannelMessage.Send permission" defaultUrl="https://graph.microsoft.com"/>;
 }

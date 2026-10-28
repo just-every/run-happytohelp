@@ -1,25 +1,33 @@
 # Install HappyToHelp
 
-Start it with one line. You need **Node.js 22 or later** (with npm) and Git; check
-with `node --version`.
+Start the free local app with this single copy-and-run command. You do not need
+Node.js or npm installed first; the installer brings its own. Git is required.
+
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp
+```
+
+That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
+Node and pnpm, installs dependencies, sets up a local owner and starts the app.
+To start it again later, run `cd run-happytohelp && rer dev`.
+
+Normal setup and launch install the app's dependencies and build its local assets;
+they do not download Chromium. Dev uses its local
+address for the chat widget and generates a private owner password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
+real local owner and reach **Setup**. No private answers, email service or AI
+account are needed. Use `rer dev --stop` from the checkout to stop the managed app.
+
+## Expert / contributor alternatives
+
+If you already have **Node.js 22 or later** (with npm) and Git, check with
+`node --version`, then start the same app with:
 
 ```sh
 npx -y @runeditrun/rer dev just-every/run-happytohelp
 ```
 
-That clones HappyToHelp into `run-happytohelp`, provisions the checkout's own pinned
-Node and pnpm, installs dependencies, sets up a local owner and starts the app. To
-set it up without starting it, use `npx -y @runeditrun/rer setup just-every/run-happytohelp`.
-Without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-happytohelp`
-brings its own. To start it again later, run `cd run-happytohelp && rer dev`.
-
-The install also downloads Chromium (about 280 MB, into your user cache) the
-first time: `rer verify` and the browser checks run in it. Dev uses its local
-address for the chat widget and generates a private owner password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
-real local owner and reach **Setup**. No private answers, email service or AI
-account are needed. Use `rer dev --stop` from the checkout to stop the managed app.
-
-## Contributor setup
+To set it up without starting it, use
+`npx -y @runeditrun/rer setup just-every/run-happytohelp`.
 
 For source work, select Node **22.20.0** and pnpm **10.12.4**:
 
@@ -173,7 +181,20 @@ not confirmed inbox delivery. Inbound mail routing is configured separately.
 
 ## Verify, reset and move data
 
-Stop dev, then run `rer verify`. Export before destructive reset
+Stop dev, then run `rer verify`. Verification downloads the Chromium and headless
+shell pinned by the checkout's Playwright into your user cache the first time
+they are needed. To install them before running a browser journey directly, such
+as `pnpm run test:docs-browser`, run this from the checkout:
+
+```sh
+pnpm exec playwright install chromium
+```
+
+This command downloads Playwright's Chromium into your user cache if it is not
+already installed. On Linux, `pnpm exec playwright install --with-deps chromium`
+also installs the system libraries the browser needs.
+
+Export before destructive reset
 if you need the data. Reset requires `rer reset --yes` after
 reviewing its printed inventory. Export/import use `--output FILE` and
 `--input FILE --yes`; import requires an empty destination. Native owners survive
@@ -188,25 +209,14 @@ separately started **read-only provider preflight** with owner consent and the
 owner's scoped Cloudflare token. The preflight has its own acceptance: only the
 account's Workers subdomain and the Worker's settings and secret names (three
 GETs for an existing Worker), no mail and no mutations. Neither step is a mock of
-the other. This split is not yet built or proved.
+the other. The zero-outbound dry-run is implemented in this candidate. The separately started preflight still needs implementation and live qualification.
 
-Today's pinned rer 0.2.77 `rer deploy --dry-run` combines local validation/build
-with those credentialed Cloudflare reads. It refuses without Cloudflare
-credentials before any provider request, validates supplied private mail inputs,
-and refuses a required secret neither held by the Worker nor supplied. It sends
-no mail and changes no provider resources. It is not the required zero-outbound
-dry-run or a separately qualified provider preflight.
-
-Real deployment requires private `EMAIL_PROVIDER`, `EMAIL_FROM` and
-`EMAIL_API_KEY` inputs. The declaration maps them to both rer's `MAIL_*`
-preflight bindings and HappyToHelp's native `EMAIL_*` bindings. For a new
-installation, also supply a real `OWNER_EMAIL` that can receive sign-in mail in
-an owned 0600 `--env-file`. Existing installations retain held secrets. For
-Cloudflare mail, supply the additional account ID described in
-[Operations](../OPERATIONS.md#deploy-to-your-cloudflare-account).
-`rer deploy --environment production` requires owner authorization and the
-private credentials/declaration in Operations. Local development needs no email
-account. Live preflight and remote provisioning need separate qualification.
+`rer deploy --dry-run` validates the input shape and builds locally. It makes no
+provider requests, sends no mail and makes no deployment. Cloudflare credentials
+are not required. Remote resources, credential validity and existing secret
+bindings remain unchecked until a real deployment. `rer deploy --environment
+production` requires owner authorization and the private credentials/declaration
+in Operations. Local development still needs no email account.
 Stop `rer dev` first (`rer dev --stop`): while it runs it owns the checkout's local
 state, and `rer deploy`, including `--dry-run`, refuses with "An active local
 operation owns the state".

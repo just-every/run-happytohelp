@@ -1,4 +1,5 @@
 import {brandReports} from './brand-reports'
+import {brands} from './brands'
 import {recentMailboxProof} from '../identity/two-factor/state'
 import {inboxCounts} from './inbox-counts'
 import {validTimezone} from '../reports/calendar'
@@ -21,7 +22,7 @@ import {auditStatement,requestSource} from '../audit/record'
 import {accountAudit} from '../identity/two-factor/factors'
 import {projectAccess} from '../access/catalogue'
 export const projects=new Hono<AppEnv>()
-projects.route('/',brandReports)
+projects.route('/',brandReports).route('/',brands)
 projects.get('/bootstrap',async c=>{
  const actor=await requireActor(c)
  if(actor.role==='contact')throw new HTTPException(403)
@@ -78,6 +79,12 @@ projects.put('/projects/:projectId/settings',async c=>{
  for(const key of ['language','timezone','widget_position','default_responder','website','notification_email','unavailable_message'])if(key in b)settings[key]=text(b[key])
  if('help_center_domain' in b)settings.help_center_domain=b.help_center_domain===''?'':websiteAddress(b.help_center_domain,'Custom Help Center URL')
  for(const key of ['sidebar_artwork_enabled','is_enabled','collect_email','collector_enabled','disable_bots','is_contact_tracking_enabled','proactive_help_enabled','is_human_response_enabled','is_available'])if(key in b)settings[key]=Boolean(b[key])
+ if('api_abuse_terms' in b){
+  if(!Array.isArray(b.api_abuse_terms)||b.api_abuse_terms.length>50||b.api_abuse_terms.some((term:unknown)=>typeof term!=='string'||!term.trim()||term.length>200))throw new HTTPException(400,{message:'Use at most 50 nonempty abuse terms, each at most 200 characters'})
+  await requireStepUp(c,a,'integration.install')
+  settings.api_abuse_terms=[...new Set(b.api_abuse_terms.map((term:string)=>term.trim().toLowerCase()))]
+ }
+ if('api_requester_hourly_cap' in b){const cap=b.api_requester_hourly_cap;if(!Number.isInteger(cap)||cap<1||cap>100)throw new HTTPException(400,{message:'Requester hourly cap must be between 1 and 100'});settings.api_requester_hourly_cap=cap}
  const statements=[c.env.DB.prepare('INSERT INTO project_settings VALUES(?,?,?) ON CONFLICT(project_id) DO UPDATE SET settings_json=excluded.settings_json,updated_at=excluded.updated_at').bind(a.projectId,JSON.stringify(settings),Date.now())]
  if(b.name)statements.push(c.env.DB.prepare('UPDATE projects SET name=? WHERE id=?').bind(requiredString(b.name,'name',200),a.projectId))
  if(b.allowed_origin)statements.push(c.env.DB.prepare('UPDATE projects SET allowed_origin=? WHERE id=?').bind(websiteAddress(b.allowed_origin,'Widget website origin',true),a.projectId))

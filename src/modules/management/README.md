@@ -43,8 +43,12 @@ assistant takes a new widget conversation only while its provider key is install
 which secret it needs, never key material), so without a key visitors stay with the team and no reply fails; an
 explicit AI request still fails naming the missing secret. `tests/journeys/first-run.mjs` covers this through public routes.
 
-Availability (`availability.ts`, also used by Settings → Availability) decides from the schedule and the "Accept new
-conversations" switch; `live-availability.ts` adds presence-based away for the widget settings door and the away reply
+For the messenger, Accept new conversations off takes precedence; otherwise the first active SLA-001 policy
+(by position, then id) matching ordinary widget intake (normal priority, this workspace brand, no plan/form/field
+context) supplies its active calendar's hours, timezone, holidays and closures, falling back to the widget's own
+opening-hours setting when no calendar applies, then applying live presence.
+Settings → Availability retains the widget schedule; SLA calendars and policy order are managed under Settings → Workflows.
+`live-availability.ts` adds presence-based away for the widget settings door and the away reply
 (`away-reply.ts`): while they say open, the team is away when no teammate who may reply is online, unless the visitor
 assistant answers (enabled, provider key installed). Presence lives in `operator_presence` (migration 240), written only
 by the workspace's operator stream (`conversations/socket.ts` with `collaboration/presence.ts` and `presence-store.ts`):
@@ -52,7 +56,9 @@ the dashboard reports its idle time every 20 seconds, a row counts until it expi
 after the last stream closes) and while its member was active within the lead's idle time. Member removal and workspace
 deletion clear it; archives never carry it. Leads change it through `PUT /projects/:id/availability`, which records each
 change of the setting or idle time in the security log; `GET /projects/:id/presence` lists who is online. The away
-reply is the workspace speaking: reports, outcomes and automations never count it as a reply (migration 241).
+notice, header and reply show the lead's Widget settings → Texts → Human response time (default “Responds within
+24 hours”) when away without a known reopening time, including presence-based away and acceptance switched off. A
+calendar reopening remains the expected time when known. The away reply is the workspace speaking: reports, outcomes and automations never count it as a reply (migration 241).
 `tests/journeys/widget.mjs` and `tests/journeys/widget-browser.mjs` cover it.
 
 Pending invitations (`invitations.ts`, `invitation-store.ts`) are the unused invite links for one email in one

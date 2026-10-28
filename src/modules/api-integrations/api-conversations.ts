@@ -1,3 +1,8 @@
+import {ApiError} from './errors'
+import {uploadApi} from './api-upload'
+import {conversationReach} from './reach'
+import {appendApi} from './api-append'
+import {createApi} from './api-create'
 import {publishResolution} from '../outcomes/state'
 import {contactAvailableSql} from '../conversations/contact-privacy'
 import {HTTPException} from 'hono/http-exception'
@@ -10,16 +15,19 @@ import {getTicket,fieldAllowed,fieldData} from '../tickets/model'
 import {mutateTicket} from '../tickets/mutate'
 import {ticketPresentation} from '../tickets/presentation'
 export function conversationApi(app:Hono<ApiEnv>){
+ createApi(app)
+ uploadApi(app)
+ appendApi(app)
  const read=requireScope('conversations:read')
  app.get('/ticket-fields',read,async c=>{const a=c.get('authority'),rows=await c.env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? ORDER BY name,id').bind(a.projectId).all<any>();return c.json({data:rows.results.filter(field=>fieldAllowed(field,null)).map(field=>fieldData(field,null))})})
  app.get('/ticket-statuses',read,async c=>{const a=c.get('authority');return c.json({data:(await c.env.DB.prepare('SELECT id,name,category,active FROM ticket_statuses WHERE project_id=? ORDER BY category,name,id').bind(a.projectId).all()).results})})
- app.get('/ticket-groups',read,async c=>{const a=c.get('authority');return c.json({data:(await c.env.DB.prepare('SELECT id,name FROM ticket_groups WHERE project_id=? ORDER BY name,id').bind(a.projectId).all()).results})})
- async function conversation(c:any){const a=c.get('authority'),row=await c.env.DB.prepare(`SELECT c.* FROM conversations c WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()}`).bind(c.req.param('id'),a.projectId).first();if(!row)throw new HTTPException(404,{message:'Not found'});return row}
+ app.get('/ticket-groups',read,async c=>{const a=c.get('authority');return c.json({data:(await c.env.DB.prepare("SELECT g.id,g.name FROM ticket_groups g JOIN api_credentials credential ON credential.namespace=g.project_id AND credential.id=? WHERE g.project_id=? AND (credential.source_product IS NULL OR json_type(credential.reach_json,'$.groups') IS NULL OR g.id IN (SELECT value FROM json_each(credential.reach_json,'$.groups'))) ORDER BY g.name,g.id").bind(a.credentialId,a.projectId).all()).results})})
+ async function conversation(c:any){const a=c.get('authority'),row=await c.env.DB.prepare(`SELECT c.* FROM conversations c WHERE c.id=? AND c.project_id=? AND ${contactAvailableSql()} AND ${conversationReach()}`).bind(c.req.param('id'),a.projectId,a.credentialId).first();if(!row)throw new HTTPException(404,{message:'Not found'});return row}
  app.get('/conversations',read,async c=>{
   const a=c.get('authority'),q=c.req.query(),status=q.status||'all',since=q.updated_since?Date.parse(q.updated_since):null,tag=q.tag||null
   if(!['open','resolved','all'].includes(status)||since!==null&&!Number.isFinite(since)||tag&&tag.length>200)throw new HTTPException(400,{message:'Invalid conversation filter'})
   const ticketFilters=Object.fromEntries(['status_id','status_category','priority','subject','channel','brand_id','group_id','requester_id','submitter_id','submitter_type'].filter(key=>q[key]!==undefined).map(key=>[key,q[key]]))
-  const paging=page(q,{project:a.projectId,resource:'conversations',status,since,tag,ticketFilters}),pred=['c.project_id=?',contactAvailableSql()],params:any[]=[a.projectId]
+  const paging=page(q,{project:a.projectId,resource:'conversations',status,since,tag,ticketFilters}),pred=['c.project_id=?',contactAvailableSql(),conversationReach()],params:any[]=[a.projectId,a.credentialId]
   if(status!=='all')pred.push(`c.status_category ${status==='open'?'NOT ':''}IN ('solved','closed')`)
   for(const [field,value] of Object.entries(ticketFilters)){if(value.length>500)throw new HTTPException(400,{message:'Invalid ticket filter'});pred.push(`c.${field}=?`);params.push(value)}
   if(since!==null){pred.push('c.updated_at>=?');params.push(since)}
@@ -38,6 +46,7 @@ export function conversationApi(app:Hono<ApiEnv>){
  app.get('/conversations/:id/messages',read,async c=>{const row=await conversation(c),q=c.req.query(),p=page(q,{project:row.project_id,resource:'messages',conversation:row.id}),args:any[]=[row.project_id,row.id];if(p.cursor)args.push(p.cursor.time,p.cursor.time,p.cursor.id);const rows=await c.env.DB.prepare(`SELECT * FROM messages WHERE project_id=? AND conversation_id=? AND erased_at IS NULL AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()}) ${p.cursor?'AND (revision<? OR (revision=? AND id<?))':''} ORDER BY revision DESC,id DESC LIMIT ?`).bind(...args,p.size+1).all();return c.json({...p.finish(rows.results,'revision'),revision:row.revision,last_message_id:row.last_message_id})})
  app.post('/conversations/:id/messages',requireScope('messages:write'),async c=>{
   const current=await conversation(c),a=c.get('authority'),b=await jsonBody(c)
+  if(typeof b.content==='string'&&b.content.length>100000)throw new ApiError(413,'payload_too_large')
   if(typeof b.localId!=='string'||!b.localId||b.localId.length>200||typeof b.content!=='string'||!b.content.trim()||b.content.length>100000||!Number.isSafeInteger(b.expectedRevision)||b.expectedRevision<0||reservedLocalId(b.localId)||b.authoring!==undefined||b.generationId!==undefined||b.resolve!==undefined)throw new HTTPException(400,{message:'Invalid API reply command'})
   const actor={id:'api:'+a.tokenId,projectId:a.projectId,role:'operator' as const}
   const result=await admitMessage(c.env,{actor,projectId:a.projectId,conversationId:current.id,localId:b.localId,content:b.content,expectedRevision:b.expectedRevision,expectedLastMessageId:b.expectedLastMessageId,tokenAuthority:a})
@@ -46,5 +55,5 @@ export function conversationApi(app:Hono<ApiEnv>){
   c.executionCtx.waitUntil(Promise.all([publishResolution(c.env,a.projectId,current.id),...[current.id,`project:${a.projectId}`].map(key=>c.env.CONVERSATIONS.get(c.env.CONVERSATIONS.idFromName(key)).fetch('https://conversation.internal/broadcast',{method:'POST'}))]))
   return c.json({data:iso(result.message),duplicate:result.duplicate})
  })
- app.post('/conversations/:id/resolve',requireScope('conversations:write'),async c=>{await conversation(c);const a=c.get('authority');return c.json({data:await transitionConversation(c.env,{id:'api:'+a.tokenId,projectId:a.projectId,role:'operator'},c.req.param('id'),{resolved:true},undefined,a)})})
+ app.post('/conversations/:id/resolve',requireScope('conversations:write'),async c=>{await conversation(c);await jsonBody(c);const a=c.get('authority');return c.json({data:await transitionConversation(c.env,{id:'api:'+a.tokenId,projectId:a.projectId,role:'operator'},c.req.param('id'),{resolved:true},undefined,a)})})
 }

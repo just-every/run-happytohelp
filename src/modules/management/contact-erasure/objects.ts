@@ -1,3 +1,4 @@
+import {contactKeys} from '../../api-integrations/requester-admission'
 import {fenceImportErasure,type ErasureIdentity} from '../../move-in/erasure'
 import type {Env} from '../../../platform/env'
 import {localJobs,media} from './scope'
@@ -15,8 +16,17 @@ const R2_DELETE_LIMIT = 1000
  */
 export async function fenceAndStage(env: Env, projectId: string, contactId: string, now: number, identity?:ErasureIdentity) {
   const snapshot=identity??await env.DB.prepare('SELECT email,external_id,metadata_json FROM contacts WHERE project_id=? AND id=?').bind(projectId,contactId).first<ErasureIdentity>()??{}
+  const apiKeys=await contactKeys(env,projectId,contactId)
   const bound = (sql: string) => env.DB.prepare(sql).bind(projectId, contactId)
   await fenceAdmittedIdentity(env,projectId,contactId,snapshot,[
+    ...apiKeys.map(key=>env.DB.prepare('INSERT OR IGNORE INTO api_erased_keys(project_id,digest) VALUES(?,?)').bind(projectId,key.digest)),
+    bound(`INSERT OR IGNORE INTO api_erasure_inventory SELECT ?1,?2,
+     (SELECT count(*) FROM api_requests WHERE project_id=?1 AND contact_id=?2 AND response_json IS NOT NULL),
+     (SELECT count(*) FROM api_appends WHERE project_id=?1 AND contact_id=?2),
+     (SELECT count(*) FROM api_notes WHERE conversation_id IN (SELECT id FROM conversations WHERE project_id=?1 AND contact_id=?2)),
+     (SELECT count(*) FROM integration_deliveries WHERE namespace=?1 AND id IN (SELECT i.id FROM native_integration_intents i JOIN native_integration_events e ON e.id=i.event_id WHERE e.project_id=?1 AND e.contact_id=?2)),
+     (SELECT count(*) FROM api_requests WHERE project_id=?1 AND contact_id=?2 AND held_id IS NOT NULL AND erased=0)
+     WHERE EXISTS(SELECT 1 FROM contacts WHERE project_id=?1 AND id=?2)`),
     bound(conversationActionErasureStage),
     ...macroErasureObjectStatements(env,projectId,contactId),
     env.DB.prepare("UPDATE contacts SET metadata_json=CASE WHEN json_valid(metadata_json) THEN json_set(metadata_json,'$.is_blocked',1,'$.is_deleted',1,'$.is_erasing',1) ELSE json_object('is_blocked',1,'is_deleted',1,'is_erasing',1) END WHERE project_id=?1 AND id=?2").bind(projectId, contactId),

@@ -1,3 +1,4 @@
+import {rerMailboxStatus} from '../../integrations/rer-mailbox'
 import type {Env} from '../../../platform/env'
 import {aiCeilings} from '../../../platform/limit-config'
 import {DEFAULT_WORKSPACE_COLOUR} from '../workspace-colour'
@@ -36,7 +37,7 @@ export async function activationFacts(env:Env,config:Configuration,receipts:Rece
   workspaceNamed:!(typeof settings.derived?.name==='string'&&settings.derived.name===config.project?.name),
   website:config.project?.allowed_origin||null,
   colour:colour(settings),
-  mail:{mode:config.mailMode,provider,statusApi:provider==='resend',sender:config.sender,proposedSender:config.proposedSender,senderDnsDomain:senderDnsDomain(config),
+  mail:{managed:await rerMailboxStatus(env,config.projectId),mode:config.mailMode,provider,statusApi:provider==='resend',sender:config.sender,proposedSender:config.proposedSender,senderDnsDomain:senderDnsDomain(config),
    senderSwitch:switched&&switched.to===config.sender?{from:switched.from,to:switched.to,at:new Date(switched.at).toISOString()}:null},
   ai:{assistantId:config.assistant?.id||null,provider:config.provider,secretName:config.secretName,keyInstalled:Object.keys(modelSecrets).some(provider=>keyInstalled(env,provider)),
    checkable:Boolean(config.provider&&metadataProviders.has(config.provider))},

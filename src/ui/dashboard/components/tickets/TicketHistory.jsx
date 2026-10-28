@@ -38,7 +38,7 @@ function HistoryEntry({ item, settings, agents, assistants, conversation, tags }
         if (field) {
             if (Array.isArray(recorded)) return recorded.length ? recorded.map((option, index) => <React.Fragment key={index}>{index > 0 && ', '}{value(key, option, { ...field, type: 'dropdown' })}</React.Fragment>) : 'None';
             const option = fieldOptions(field).find(option => option.value === recorded);
-            return option ? option.label : plainValue(recorded);
+            return option ? option.label : field.type === 'account' ? 'Account unavailable' : plainValue(recorded);
         }
         if (key === 'requester_id') return person(recorded, 'contact');
         if (key === 'submitter_id') return person(recorded);

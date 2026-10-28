@@ -1,6 +1,6 @@
 import {customerArchiveStagedSafety} from './customer-archive-policy.mjs';
 export function escalationArchiveRow(table,row){
- if(['escalation_connections','escalation_team_connections'].includes(table))return {...row,token_cipher:null,webhook_cipher:null};
+ if(['escalation_connections','escalation_teams_connections'].includes(table))return {...row,token_cipher:null,webhook_cipher:null};
  if(table==='escalation_operations'&&row.state==='sending')return {...row,state:'uncertain'};
  return row;
 }

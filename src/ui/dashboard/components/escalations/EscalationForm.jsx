@@ -1,10 +1,11 @@
-import React, {useId, useState} from 'react';
+import React, {useEffect, useId, useRef, useState} from 'react';
 import ContextSelector from './ContextSelector';
 import {escalationWrite, providerNames} from './api';
 
 /** The selected-context escalation form, shown by "+" › Escalate to engineering… in a dialog. */
 export default function EscalationForm({base, connections, messages, onChanged, onBusyChange}) {
     const id = useId();
+    const errorRef = useRef(null);
     const available = connections.filter(connection => connection.connected);
     const [provider, setProvider] = useState(available[0]?.provider || '');
     const [mode, setMode] = useState('create'), [key, setKey] = useState(''), [title, setTitle] = useState('');
@@ -12,6 +13,12 @@ export default function EscalationForm({base, connections, messages, onChanged, 
     const [messageIds, setMessageIds] = useState([]), [attachmentIds, setAttachmentIds] = useState([]);
     const [preview, setPreview] = useState(null), [requestId, setRequestId] = useState(null);
     const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
+    useEffect(() => {
+        if (error) {
+            errorRef.current?.scrollIntoView({block: 'nearest'});
+            errorRef.current?.focus({preventScroll: true});
+        }
+    }, [error]);
     const connection = available.find(item => item.provider === provider);
     const slack = ['slack', 'teams'].includes(provider);
     const selection = {message_ids: messageIds, attachment_ids: attachmentIds};
@@ -50,9 +57,9 @@ export default function EscalationForm({base, connections, messages, onChanged, 
                 <legend className="visually-hidden">Share an escalation</legend>
                 <label htmlFor={`${id}-provider`}>Destination</label>
                 <select id={`${id}-provider`} className="form-select form-select-sm" value={provider} onChange={event => {setProvider(event.target.value); setPreview(null); setChannel(''); setKey(''); setNotice('');}}>
-                    {available.map(item => <option key={item.provider} value={item.provider}>{providerNames[item.provider]} · {item.target}</option>)}
+                    {available.map(item => <option key={item.provider} value={item.provider}>{item.provider === 'teams' ? providerNames[item.provider] : `${providerNames[item.provider]} · ${item.target}`}</option>)}
                 </select>
-                {slack ? <><label htmlFor={`${id}-channel`}>{provider === 'teams' ? 'Teams team UUID/channel ID' : 'Slack channel ID'}</label>
+                {slack ? provider === 'teams' ? <p className="escalation-hint">Teams destination: {connection?.target}. An administrator selects the allowed channel.</p> : <><label htmlFor={`${id}-channel`}>Slack channel ID</label>
                     <input id={`${id}-channel`} className="form-control form-control-sm" value={channel} placeholder={connection?.target} onChange={edit(setChannel)}/>
                     <p className="escalation-hint">Leave blank to use {connection?.target}.</p></> : <>
                     <label htmlFor={`${id}-mode`}>Issue action</label>
@@ -71,11 +78,12 @@ export default function EscalationForm({base, connections, messages, onChanged, 
                     {dependency.trim() && <p>Dependency: {dependency}</p>}
                     <pre>{preview}</pre>
                     <p className="escalation-hint">Only this selected context will be shared. Attachment links expire after seven days.</p>
+                    {error && <p ref={errorRef} className="escalation-error" role="alert" tabIndex={-1}>{error}</p>}
                     <button className="btn btn-sm btn-primary" type="button" onClick={share}>{slack ? `Share selected context to ${providerNames[provider]}` : mode === 'create' ? 'Create issue with selected context' : 'Link issue with selected context'}</button>
                 </section>}
             </fieldset>
         </form>
-        {error && <p className="escalation-error" role="alert">{error}</p>}
+        {error && preview === null && <p ref={errorRef} className="escalation-error" role="alert" tabIndex={-1}>{error}</p>}
         {notice && <p className="escalation-hint" role="status">{notice}</p>}
     </div>;
 }

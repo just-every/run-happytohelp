@@ -1,7 +1,7 @@
 import { startGitHub } from './github.mjs';
 import { startLinear } from './linear.mjs';
 import { startJira } from './jira.mjs';
-import { startTeams } from './teams.mjs';
+import {startTeams} from './teams.mjs';
 import { startSlack } from './slack.mjs';
 
 /** Five real loopback HTTP servers with provider-shaped network responses.

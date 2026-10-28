@@ -5,7 +5,7 @@ import { startEdge, hmac, notFound } from './edge.mjs';
 // https://docs.slack.dev/reference/methods/chat.getPermalink/
 // https://docs.slack.dev/authentication/verifying-requests-from-slack/
 export async function startSlack() {
-  const token = 'synthetic-happytohelp-302', secret = 'synthetic-slack-signing-secret', target = 'C0123456789';
+  const token = 'synthetic-hh-4', secret = 'synthetic-slack-signing-secret', target = 'C0123456789';
   let sequence = 0;
   const edge = await startEdge({ token, authorization: `Bearer ${token}`, secret, target,
     route({ method, path, json, body, url }, { issues }) {

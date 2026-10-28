@@ -1,3 +1,5 @@
+import {credentials,reads,money,uncertainty,erasure} from '../helpers/business-connectors/journeys.mjs';
+import {runSteps} from '../journeys/kit/steps.mjs';
 import {phases} from '../journeys/kit/scenarios.mjs';const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
@@ -11,10 +13,10 @@ const config=kind=>kind==='webhooks'
 
 // Include audit, quotas, jobs, delivery state and every business table. D1's own
 // platform accounting is not business state; all row values remain unnormalized.
-async function snapshot(h,excluded=[]){
+async function snapshot(h,excluded=[],credentialId=null){
  const names=(await h.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name<>'_cf_METADATA' ORDER BY name").all()).results;
  const state={};
- for(const {name} of names)if(!excluded.includes(name))state[name]=(await h.db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"').all()).results.map(row=>JSON.stringify(row)).sort();
+ for(const {name} of names)if(!excluded.includes(name))state[name]=(await h.db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"').all()).results.filter(row=>!(credentialId&&(name==='api_denial_counts'&&row.credential_id===credentialId||name==='audit_events'&&row.target_id===credentialId&&row.actor_id===credentialId&&row.source==='api'&&['credential.first_used','credential.denied'].includes(row.action)))).map(row=>JSON.stringify(row)).sort();
  return sha(JSON.stringify(state));
 }
 
@@ -53,7 +55,8 @@ async function concealed(h,path,options){
  assert.deepEqual(await response.json(),{error:'Not found'},path);
 }
 
-test('workspace API tokens conceal every native connection setting in both tenant directions without effects',async()=>{
+test("native settings authority: machine credentials never substitute for current native cookie sessions",()=>runSteps([
+  ['workspace API tokens conceal every native connection setting in both tenant directions without effects',async()=>{
  const h=await harness();try{
   const ids=await seedDestinations(h),credentials={p:await h.issue(),q:await h.issue(allScopes,'q')};
   for(const project of ['p','q'])ids[project].token=credentials[project].data.id;
@@ -66,16 +69,15 @@ test('workspace API tokens conceal every native connection setting in both tenan
   assert.equal(await snapshot(h),before,'native machine-token denials preserve every business row including audit and quota state');
   assert.equal(h.received.length,0);assert.equal(h.external,0);
  }finally{await h.close()}
-});
-
-test('credential validity and API scopes never confer native administration or leak through native settings',async()=>{
+}],
+  ['credential validity and API scopes never confer native administration or leak through native settings',async()=>{
  const h=await harness();try{
   const ids=await seedDestinations(h);
   for(const project of ['p','q']){
    const live=await h.issue(allScopes,project),wrongScope=await h.issue(['articles:read'],project);
    const revoked=await h.issue(allScopes,project),expired=await h.issue(allScopes,project,{expires_at:new Date(Date.now()+60000).toISOString()});
    await h.call(root(project)+'/tokens/'+revoked.data.id,{actor:actors[project],method:'DELETE'});
-   await h.db.prepare('UPDATE integration_tokens SET expires_at=1 WHERE id=?').bind(expired.data.id).run();
+   await h.db.prepare('UPDATE api_credentials SET expires_at=1 WHERE id=?').bind(expired.data.id).run();
    const unknown={token:'int_'+randomBytes(32).toString('hex')};
    const before=await snapshot(h);
    for(const credential of [live,wrongScope,revoked,expired,unknown])for(const target of ['p','q','nonexistent-workspace']){
@@ -91,9 +93,8 @@ test('credential validity and API scopes never confer native administration or l
   }
   assert.equal(h.received.length,0);assert.equal(h.external,0);
  }finally{await h.close()}
-});
-
-test('native owner and admin cookie sessions retain settings access without machine-bearer fallback',async()=>{
+}],
+  ['native owner and admin cookie sessions retain settings access without machine-bearer fallback',async()=>{
  const h=await harness();try{
   for(const project of ['p','q']){
    const admin='admin-'+project;
@@ -130,9 +131,8 @@ test('native owner and admin cookie sessions retain settings access without mach
   assert.equal((await h.raw(root('q')+'/slack',{actor:'foreign'})).status,401);
   assert.equal(h.received.length,0);assert.equal(h.external,0);
  }finally{await h.close()}
-});
-
-test('both workspace tokens retain API foreign-resource concealment and cannot enter native resource routes',async()=>{
+}],
+  ['both workspace tokens retain API foreign-resource concealment and cannot enter native resource routes',async()=>{
  const h=await harness();try{
   const conversations={};
   for(const project of ['p','q']){
@@ -152,13 +152,17 @@ test('both workspace tokens retain API foreign-resource concealment and cannot e
     ['contacts/visitor-'+target,{...body({name:'Denied edit'}),method:'PUT'}],
     ['articles/article-'+target,{}],['articles/article-'+target,{...body({title:'Denied edit',content:'Denied',status:'published'}),method:'PUT'}],
    ];
-   const accounting=['integration_token_usage','abuse_counters'],beforeApi=await snapshot(h,accounting);
+   const accounting=['integration_token_usage','abuse_counters'],beforeApi=await snapshot(h,accounting,credentials[source].data.id);
    for(const [path,options] of requests){
     const denied=await h.raw('/api/v1/'+path,{...options,token});
     const missing=await h.raw('/api/v1/'+path.replace(id,'missing').replace('visitor-'+target,'missing').replace('article-'+target,'missing'),{...options,token});
     assert.equal(denied.status,404,path);assert.equal(missing.status,404,path);assert.deepEqual(await denied.json(),await missing.json());
    }
-   assert.equal(await snapshot(h,accounting),beforeApi,'API foreign-resource denials preserve all business state apart from permitted token usage and quota accounting');
+   assert.equal(await snapshot(h,accounting,credentials[source].data.id),beforeApi,'API foreign-resource denials preserve all business state apart from permitted token usage and quota accounting');
+   const credentialId=credentials[source].data.id;
+   assert.equal((await h.db.prepare('SELECT sum(count) n FROM api_denial_counts WHERE project_id=? AND credential_id=?').bind(source,credentialId).first()).n,8,'each named-conversation refusal is counted against the credential');
+   const usageAudit=(await h.db.prepare("SELECT action,count(*) n FROM audit_events WHERE project_id=? AND target_id=? GROUP BY action ORDER BY action").bind(source,credentialId).all()).results;
+   assert.deepEqual(usageAudit,[{action:'credential.denied',n:1},{action:'credential.first_used',n:1}],'legacy credentials also audit one denial window and one first use');
    const nativePaths=[
     '/api/conversations/'+id,'/api/conversations/'+id+'/messages',
     '/api/knowledge/'+target+'/articles','/api/management/projects/'+target+'/contacts',
@@ -177,4 +181,10 @@ test('both workspace tokens retain API foreign-resource concealment and cannot e
   assert.deepEqual(await events(),seededEvents,'denied API and native requests added no event to the two fixture creation events');
   assert.equal(h.received.length,0);assert.equal(h.external,0);
  }finally{await h.close()}
-});
+}],
+ ['connect business accounts with current workspace authority',credentials],
+ ['map and refresh business context without foreign access',reads],
+ ['approve bounded provider actions and publish their confirmed result once',money],
+ ['reconcile uncertain provider work without replay',uncertainty],
+ ['erase business context and prevent its return',erasure]
+]));

@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "project": "just-every/happytohelp",
+  "compatibilityDate": "2026-09-08",
+  "compatibilityFlags": [
+    "nodejs_compat"
+  ],
+  "d1": [
+    {
+      "binding": "DB"
+    }
+  ],
+  "r2": [
+    {
+      "binding": "FILES"
+    }
+  ],
+  "durableObjects": [
+    {
+      "binding": "CONVERSATIONS",
+      "className": "ConversationSocket",
+      "storage": "sqlite"
+    }
+  ],
+  "queues": [
+    {
+      "binding": "JOBS",
+      "consumer": {
+        "batch_size": 1,
+        "max_retries": 0
+      },
+      "deadLetterQueue": "JOBS_DEAD_LETTER"
+    },
+    {
+      "binding": "JOBS_DEAD_LETTER"
+    }
+  ],
+  "crons": [
+    "* * * * *"
+  ],
+  "originVar": "APP_ORIGIN",
+  "secrets": [
+    {
+      "binding": "OWNER_EMAIL",
+      "environment": "OWNER_EMAIL"
+    },
+    {
+      "binding": "H2H_SETUP_TOKEN",
+      "environment": "H2H_SETUP_TOKEN"
+    },
+    {
+      "binding": "INTEGRATION_ENCRYPTION_KEY",
+      "environment": "INTEGRATION_ENCRYPTION_KEY"
+    },
+    {
+      "binding": "H2H_OWNER_RECOVERY_KEY",
+      "environment": "H2H_OWNER_RECOVERY_KEY"
+    },
+    {
+      "binding": "INBOUND_EMAIL_TOKEN",
+      "environment": "INBOUND_EMAIL_TOKEN"
+    },
+    {
+      "binding": "EMAIL_PROVIDER",
+      "environment": "EMAIL_PROVIDER",
+      "optional": true
+    },
+    {
+      "binding": "EMAIL_FROM",
+      "environment": "EMAIL_FROM",
+      "optional": true
+    },
+    {
+      "binding": "EMAIL_API_KEY",
+      "environment": "EMAIL_API_KEY",
+      "optional": true
+    },
+    {
+      "binding": "GOOGLE_MAIL_CLIENT_ID",
+      "environment": "GOOGLE_MAIL_CLIENT_ID",
+      "optional": true
+    },
+    {
+      "binding": "GOOGLE_MAIL_CLIENT_SECRET",
+      "environment": "GOOGLE_MAIL_CLIENT_SECRET",
+      "optional": true
+    },
+    {
+      "binding": "MICROSOFT_MAIL_CLIENT_ID",
+      "environment": "MICROSOFT_MAIL_CLIENT_ID",
+      "optional": true
+    },
+    {
+      "binding": "MICROSOFT_MAIL_CLIENT_SECRET",
+      "environment": "MICROSOFT_MAIL_CLIENT_SECRET",
+      "optional": true
+    },
+    {
+      "binding": "MAILBOX_SOCKET_HOSTS",
+      "environment": "MAILBOX_SOCKET_HOSTS",
+      "optional": true
+    },
+    {
+      "binding": "MAILBOX_SOCKET_PORTS",
+      "environment": "MAILBOX_SOCKET_PORTS",
+      "optional": true
+    },
+    {
+      "binding": "MAILBOX_IMAP_AUTHSERV",
+      "environment": "MAILBOX_IMAP_AUTHSERV",
+      "optional": true
+    },
+    {
+      "binding": "FORMS_TURNSTILE_SITE_KEY",
+      "environment": "FORMS_TURNSTILE_SITE_KEY",
+      "optional": true
+    },
+    {
+      "binding": "FORMS_TURNSTILE_SECRET_KEY",
+      "environment": "FORMS_TURNSTILE_SECRET_KEY",
+      "optional": true
+    },
+    {
+      "binding": "MAIL_PROVIDER",
+      "environment": "MAIL_PROVIDER",
+      "optional": true
+    },
+    {
+      "binding": "MAIL_FROM",
+      "environment": "MAIL_FROM",
+      "optional": true
+    },
+    {
+      "binding": "MAIL_RELAY_URL",
+      "environment": "MAIL_RELAY_URL",
+      "optional": true
+    },
+    {
+      "binding": "H2H_RER_MAIL_VERSION",
+      "environment": "H2H_RER_MAIL_VERSION",
+      "optional": true
+    },
+    {
+      "binding": "RER_MAILBOX_ID",
+      "environment": "RER_MAILBOX_ID",
+      "optional": true
+    },
+    {
+      "binding": "RER_MAIL_ADDRESS",
+      "environment": "RER_MAIL_ADDRESS",
+      "optional": true
+    },
+    {
+      "binding": "RER_MAIL_CONTROL_URL",
+      "environment": "RER_MAIL_CONTROL_URL",
+      "optional": true
+    },
+    {
+      "binding": "MAIL_PROVIDER_API_KEY",
+      "environment": "EMAIL_API_KEY",
+      "optional": true
+    },
+    {
+      "binding": "MAIL_ACCOUNT_ID",
+      "environment": "EMAIL_ACCOUNT_ID",
+      "optional": true
+    },
+    {
+      "binding": "MAIL_API_KEY",
+      "environment": "MAIL_API_KEY",
+      "optional": true
+    },
+    {
+      "binding": "RER_MAIL_INGRESS_KEY",
+      "environment": "RER_MAIL_INGRESS_KEY",
+      "optional": true
+    }
+  ]
+}

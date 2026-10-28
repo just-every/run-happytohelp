@@ -1,0 +1,8 @@
+#happytohelp-root .happytohelp-campaign { position:fixed; right:16px; bottom:90px; width:340px; max-width:calc(100vw - 32px); max-height:calc(100dvh - 120px); overflow:auto; box-sizing:border-box; padding:20px; border:1px solid #d0d5dd; border-radius:12px; background:#fff; color:#182230; box-shadow:0 8px 28px #10182826; z-index:10; font:14px/1.5 system-ui,sans-serif; text-align:left; }
+#happytohelp-root .happytohelp-campaign strong {font-size:16px;}
+#happytohelp-root .happytohelp-campaign p {margin:16px 0;white-space:pre-wrap;overflow-wrap:anywhere;}
+#happytohelp-root .happytohelp-campaign-actions {display:flex;gap:8px;flex-wrap:wrap;}
+#happytohelp-root .happytohelp-campaign button {font:inherit;padding:8px 12px;min-height:44px;border:1px solid #667085;border-radius:6px;background:#fff;color:#182230;cursor:pointer;}
+#happytohelp-root .happytohelp-campaign button:first-child {background:#182230;color:#fff;}
+#happytohelp-root .happytohelp-campaign button:focus-visible {outline:2px solid #1570ef;outline-offset:3px;}
+#happytohelp-root .happytohelp-ai-disclosure {display:block;font-size:13px;font-weight:500;}

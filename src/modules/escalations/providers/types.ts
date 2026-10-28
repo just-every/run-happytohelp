@@ -23,6 +23,8 @@ export interface IssueInput { title: string; body: string }
 export interface TicketLink { url: string; body: string }
 
 // Errors deliberately carry neither provider bodies nor request credentials.
+export class ProviderRefusal extends Error {}
+
 export function providerError(): Error {
   return new Error('Engineering provider request failed')
 }

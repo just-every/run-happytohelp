@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict'
+import {cycleOutcomes} from './cycle-outcomes.mjs'
 import {assistantApp} from './app.mjs'
 import {openaiToolCall} from '../openai-stream.mjs'
 
+const trace=async(a,v)=>{
+ const response=await a.app.call(`/api/ai-support/projects/${a.p}/conversations/${v.conversationId}/trace`,{token:a.owner,status:200})
+ assert.match(response.headers.get('cache-control')||'',/(?:^|,)\s*no-store(?:,|$)/,'private execution evidence must never enter a response cache')
+ return response.data.generations[0]
+}
 const toolNames=body=>(body.tools||[]).map(tool=>tool.name)
 
 // The visitor's assistant answers from published knowledge with exact citations, through the queue.
@@ -29,6 +35,20 @@ export async function answersJourney(){
   const version=await publication(),cited=[{id:'article:a',sourceVersion:version},{id:'knowledge:doc',sourceVersion:'v'}]
   const first=await ask('What is the refund window?',answering(()=>cited))
   assert.match(searched,/article:a/);assert.ok(searched.includes(version),'the model receives the issued publication version');assert.doesNotMatch(searched,/Refund secret/,'drafts never reach the model')
+  const recorded=await trace(a,first.v)
+  assert.equal(recorded.result,'committed answer');assert.equal(recorded.committedAnswer.id,first.answers[0].id)
+  assert.equal(recorded.providerOutcome,'completed');assert.equal(recorded.providerCostUsd,null)
+  assert.match(recorded.source.assistantVersion,/^[a-f0-9]{64}$/);assert.equal(recorded.source.knowledge.find(s=>s.source_id==='article:a').source_version,version)
+  assert.equal(recorded.approval,'automatic assistant policy');assert.equal(recorded.requestedScope,'conversation reply');assert.ok(recorded.timing.durationMs>=0)
+  assert.ok(recorded.tools.some(t=>t.name==='cite_knowledge'&&t.outcome==='completed'))
+  const tracePath=`/api/ai-support/projects/${p}/conversations/${first.v.conversationId}/trace`
+  await app.call(tracePath,{token:first.v.token,status:403})
+  await app.call(tracePath,{status:401})
+  const foreign=await app.seedWorkspace('trace-foreign')
+  await app.call(tracePath,{token:foreign.tokens.owner,status:403})
+  await app.call(`/api/ai-support/projects/not-this-project/conversations/${first.v.conversationId}/trace`,{token:a.owner,status:403})
+  await app.call(`/api/ai-support/projects/${p}/conversations/missing/trace`,{token:a.owner,status:404})
+  assert.doesNotMatch(JSON.stringify(recorded),/Refund policy|Refund within|Use policy|Refunds are available/)
   assert.equal(first.answers.length,1);const citations=JSON.parse(first.answers[0].citations_json)
   assert.deepEqual(citations.find(c=>c.id==='article:a'),{id:'article:a',sourceVersion:version,title:'Refund policy',url:'https://support.example/help/p-ai/refunds'})
   assert.equal(citations.find(c=>c.id==='knowledge:doc').url,'https://docs.example')
@@ -39,9 +59,12 @@ export async function answersJourney(){
   const frame=await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('replay deadline')),5000);socket.addEventListener('message',event=>{const message=JSON.parse(event.data);if(message.type==='message'&&message.message.actor_role==='ai'){clearTimeout(timer);resolve(message)}});socket.send(JSON.stringify({type:'replay'}))})
   assert.equal(frame.message.id,first.answers[0].id);assert.deepEqual(JSON.parse(frame.message.citations_json),citations);socket.close()
 
+  await cycleOutcomes(a,first.v,recorded)
+
   // A citation of a draft, private history or a version the search never issued is refused: no answer carries it.
   for(const sources of [[{id:'article:draft',sourceVersion:'x'}],[{id:'knowledge:private',sourceVersion:'v'}],[{id:'article:a',sourceVersion:'fabricated'}]]){
    const refused=await ask('Refunds again?',answering(()=>sources))
+   assert.ok((await trace(a,refused.v)).tools.some(t=>t.outcome==='denied'),'a refused citation is visible without its payload')
    for(const answer of refused.answers)assert.deepEqual(JSON.parse(answer.citations_json),[],JSON.stringify(sources))
   }
   // Unpublication or a new publication between citation and admission denies the answer atomically.
@@ -55,6 +78,7 @@ export async function answersJourney(){
   const handoff=await a.visitor();await handoff.say('I need a human');await a.run()
   assert.equal((await app.first('SELECT ai_id FROM conversation_ai WHERE conversation_id=?',handoff.conversationId))?.ai_id??null,null)
   assert.ok((await app.first('SELECT assigned_to FROM conversations WHERE id=?',handoff.conversationId)).assigned_to,'a person now owns the conversation')
+  assert.equal((await trace(a,handoff)).result,'handoff');assert.equal((await trace(a,handoff)).contribution,'handoff');assert.equal((await trace(a,handoff)).customerOutcome.cycle,null);assert.ok((await trace(a,handoff)).tools.some(t=>t.outcome==='handoff'))
   assert.equal((await a.generations(handoff.conversationId))[0].state,'superseded');assert.equal((await handoff.transcript()).messages.filter(m=>m.actor_role==='ai').length,0)
   const current=await handoff.transcript()
   assert.equal((await app.call(`/api/conversations/${handoff.conversationId}/messages`,{token:a.owner,body:{localId:'operator-reply',content:'Human reply',expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})).data.accepted,true)

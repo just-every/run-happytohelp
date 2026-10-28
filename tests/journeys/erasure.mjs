@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {registerHooks} from 'node:module'
 import {existsSync} from 'node:fs'
 import {startApp} from './kit/app.mjs'
+import {rerMailErasureJourney} from '../helpers/email/rer-erasure.mjs'
 registerHooks({resolve(specifier,context,next){if(specifier.startsWith('.')&&context.parentURL){const url=new URL(specifier+'.ts',context.parentURL);if(existsSync(url))return next(url.href,context)}return next(specifier,context)}})
 // Fault windows and races are driven through the application's own modules on the same real D1/R2 the routes use.
 const {admitMessage}=await import('../../src/modules/conversations/admission.ts')
@@ -363,4 +364,4 @@ step('inbound email evidence for the erased contact is redacted to classifier re
 
 test('only owners and admins of the contact\'s own workspace can erase; erasure removes every personal row and object in D1 and R2 while other contacts, workspaces and the operator transcript stay coherent',async()=>{for(const run of steps.slice(0,5))await run()})
 test('repeating an erasure is idempotent and records the run, an erasure interrupted after R2 deletion completes on retry, and erased command ids can never be replayed or collided',async()=>{for(const run of steps.slice(5,8))await run()})
-test('inbound email evidence of the erased contact is reduced to classifier reasons in every claim form, and other senders keep theirs',async()=>{for(const run of steps.slice(8))await run()})
+test('inbound email evidence is redacted in every claim form, held Managed copies lose their private MIME, and other senders keep theirs',async()=>{for(const run of steps.slice(8))await run();await app.close();app=null;await rerMailErasureJourney()})

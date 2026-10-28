@@ -1,3 +1,8 @@
+import {sourceOwnership} from '../source-ownership'
+import {mapCompanies} from './companies'
+import {zendeskFields,zendeskTicketFields} from './zendesk-fields'
+import {zendeskConfiguration,configurationTags} from './zendesk-configuration'
+import {zendeskMacroBody,zendeskMacroActions} from './zendesk-macro'
 import {importedEmailThreadKeys} from '../email-threading'
 import type { SourceBundle, SourceRecord } from '../../import-kit/src/types'
 import type { MappingInput, PreparedMapping, Vendor } from '../types'
@@ -15,13 +20,15 @@ const array=(value:unknown):any[]=>Array.isArray(value)?value:[]
 const tags=(record:SourceRecord):string[]=>record.namespace==='helpscout'?helpScoutTags(record):record.namespace==='freshdesk'?freshdeskTags(record):record.namespace==='zendesk'?array((record.payload as any)?.tags).filter(v=>typeof v==='string'&&v.trim()):array((record.payload as any)?.tags?.tags ?? (record.payload as any)?.tags?.data).filter(v=>object(v)&&typeof v.name==='string'&&v.name.trim()).map(v=>v.name)
 export function withTags(source:SourceBundle,vendor:Vendor):SourceBundle {
  const seen=new Set<string>(),added:SourceRecord[]=[]
- for(const record of source.records.filter(r=>['ticket','conversation'].includes(r.kind)||vendor==='helpscout'&&r.kind==='tag'))for(const name of tags(record)){if(name.trim().length>80){source.diagnostics.push({severity:'error',code:'tag_name_limit',message:'Tag names longer than 80 characters are not imported',location:record.location});continue}const key=tagKey(name);if(seen.has(key))continue;if(source.records.length+added.length>=LIMITS.records)throw new Error('export_record_limit');seen.add(key);added.push(sourceRecord(vendor,'tag-name',key,{name:name.trim()},record.location.artifact,record.artifactHash,record.location.row??1,`${record.location.pointer??''}/tags`))}
+ for(const record of source.records.filter(r=>['ticket','conversation'].includes(r.kind)||vendor==='helpscout'&&r.kind==='tag'||vendor==='zendesk'&&['macro','trigger','automation'].includes(r.kind)))for(const name of vendor==='zendesk'&&['macro','trigger','automation'].includes(record.kind)?configurationTags(record):tags(record)){if(name.trim().length>80){source.diagnostics.push({severity:'error',code:'tag_name_limit',message:'Tag names longer than 80 characters are not imported',location:record.location});continue}const key=tagKey(name);if(seen.has(key))continue;if(source.records.length+added.length>=LIMITS.records)throw new Error('export_record_limit');seen.add(key);added.push(sourceRecord(vendor,'tag-name',key,{name:name.trim()},record.location.artifact,record.artifactHash,record.location.row??1,`${record.location.pointer??''}/tags`))}
  return {...source,records:[...added,...source.records].sort((a,b)=>rank(a.kind)-rank(b.kind))}
 }
-const rank=(kind:string)=>kind==='tag-name'?0:kind==='user'||kind==='contact'||kind==='agent'?1:kind==='collection'?2:kind==='category'?3:4
+const rank=(kind:string)=>kind==='tag-name'?0:['company','organization'].includes(kind)?0.5:['group','schedule','ticket_field'].includes(kind)?1:kind==='user'||kind==='contact'||kind==='agent'?1:kind==='collection'?2:kind==='category'?3:4
 export async function prepareMapping(input:MappingInput):Promise<PreparedMapping> {
- if(input.vendor==='helpscout')return prepareHelpScout(input)
- if(input.vendor==='freshdesk')return prepareFreshdesk(input)
+ const result=await (input.vendor==='helpscout'?prepareHelpScout(input):input.vendor==='freshdesk'?prepareFreshdesk(input):prepareStandard(input))
+ mapCompanies(input,result);return result
+}
+async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
  const {projectId,actorId,vendor,source,tagIds}=input,result:PreparedMapping={known:new Set(),effects:new Map(),rejections:new Map(),omissions:new Map()}
  const records=new Map(source.records.map(r=>[recordKey(r),r])),id=(kind:string,source:string)=>nativeId(projectId,vendor,kind,source)
  const author=(value:any)=>{if(vendor==='zendesk'){const sid=sourceId(value,vendor),user=records.get(`user/${sid}`)?.payload as any;if(!user||!['end-user','agent','admin'].includes(user.role))throw new Error('comment_author_role_missing');return {id:sid,name:typeof user.name==='string'?user.name:null,role:user.role==='end-user'?'contact':'operator'}}
@@ -31,7 +38,9 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
  for(const record of source.records){const key=recordKey(record),p=record.payload as any,issues=auditShape(vendor,record.kind,p).issues.filter(issue=>issue.reason!=='record_kind_not_understood'),omissions:string[]=issues.map(shapeReason)
   for(const issue of issues)source.diagnostics.push({severity:'warning',code:issue.code,message:shapeReason(issue),kind:record.kind,sourceId:record.sourceId,location:{...record.location,pointer:`${record.location.pointer??''}${vendor==='zendesk'?`/${record.kind}`:''}${issue.path}`}})
   try{if(tags(record).some(name=>name.trim().length>80))throw new Error('tag_name_limit');let kind:string,tables:NativeValue['tables']={},target:string
-   if(record.kind==='tag-name'){kind='tag';target=tagIds.get(record.sourceId)??id('tag',record.sourceId);if(tagIds.has(record.sourceId)){result.omissions.set(key,['existing_workspace_tag_reused']);result.effects.set(key,[]);continue}tables.workspace_tags=[{id:target,project_id:projectId,name:p.name,normalized_name:record.sourceId}]}
+   const configuration=vendor==='zendesk'?zendeskFields(record,projectId,records,omissions)??zendeskConfiguration(record,projectId,actorId,records,tagIds,omissions):null
+   if(configuration){kind=configuration.kind;target=configuration.target;Object.assign(tables,configuration.tables)}
+   else if(record.kind==='tag-name'){kind='tag';target=tagIds.get(record.sourceId)??id('tag',record.sourceId);if(tagIds.has(record.sourceId)){result.omissions.set(key,['existing_workspace_tag_reused']);result.effects.set(key,[]);continue}tables.workspace_tags=[{id:target,project_id:projectId,name:p.name,normalized_name:record.sourceId}]}
    else if(vendor==='zendesk'&&record.kind==='user'||vendor==='intercom'&&record.kind==='contact'){
     if(vendor==='zendesk'){text(p.name,'contact_name_required',500);if(!email(p.email))throw new Error('contact_email_missing_or_invalid');time(p.created_at,'iso')}
     if(vendor==='intercom'&&p.name!=null&&typeof p.name!=='string')throw new Error('contact_name_invalid')
@@ -75,6 +84,7 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
     tables.move_in_conversations=[{conversation_id:target,project_id:projectId,vendor,source_id:record.sourceId,subject:typeof p.subject==='string'?p.subject:typeof p.title==='string'?p.title:typeof p.source?.subject==='string'?p.source.subject:'',source_state:state,source_channel:vendor==='zendesk'?(p.via?.channel??'unknown'):p.channel.initial}]
     tables.messages=rows;tables.move_in_message_sources=sources;tables.move_in_notes=notes
     tables.conversation_tags=[...new Set(tags(record).map(tagKey))].map(name=>({project_id:projectId,conversation_id:target,tag_id:tagIds.get(name)??id('tag',name)}))
+    if(vendor==='zendesk')tables.ticket_field_values=zendeskTicketFields(record,projectId,target,records,omissions)
     if(p.assignee_id||p.admin_assignee_id||p.team_assignee_id)omissions.push('historical_assignment_not_activated')
    }else if(record.kind==='macro'){
     kind='macro';target=id(kind,record.sourceId);let body:string,title:string,created:number,updated:number
@@ -82,8 +92,8 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
      if(p.restriction!=null)throw new Error('restricted_macro_not_imported')
      if(!Array.isArray(p.actions))throw new Error('macro_actions_required')
      const replies=p.actions.filter((a:any)=>['comment_value','comment_value_html'].includes(a.field));if(replies.length!==1)throw new Error('one_macro_reply_required')
-     if(p.actions.some((a:any)=>a.field==='comment_mode_is_public'&&a.value!==true&&a.value!=='true'))throw new Error('private_macro_not_imported')
-     body=text(replies[0].value,'macro_body_required');title=text(p.title,'macro_title_required');created=time(p.created_at,'iso');updated=time(p.updated_at,'iso');if(p.actions.length>1)omissions.push('macro_workflow_actions_not_activated')
+     // A private macro becomes an explicit native note, never a public reply.
+     body=text(replies[0].value,'macro_body_required');title=text(p.title,'macro_title_required');created=time(p.created_at,'iso');updated=time(p.updated_at,'iso');
     }else{
      if(p.visible_to!=='everyone')throw new Error('restricted_macro_not_imported')
      if(!Array.isArray(p.available_on)||!p.available_on.includes('inbox'))throw new Error('macro_channel_unsupported')
@@ -92,10 +102,12 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
     // Inspect every supported original representation before markup conversion
     // can discard dynamic attributes or the plain-text fallback expression.
     const representations=vendor==='intercom'?[p.body,p.body_text]:p.actions.filter((a:any)=>['comment_value','comment_value_html'].includes(a.field)).map((a:any)=>a.value)
-    if(representations.some((value:unknown)=>typeof value==='string'&&/\{\{|\{%|<\s*attribute\b/i.test(value)))throw new Error('macro_placeholders_not_supported')
+    if(vendor!=='zendesk'&&representations.some((value:unknown)=>typeof value==='string'&&/\{\{|\{%|<\s*attribute\b/i.test(value)))throw new Error('macro_placeholders_not_supported')
+    if(vendor==='zendesk'){body=zendeskMacroBody(body,omissions);if(/<[^>]*\{\{/.test(body))throw new Error('macro_attribute_placeholders_not_supported')}
     if(/<[a-z][^>]*>/i.test(body))body=await htmlToMarkdown(body)
-    if(/\{\{|\{%/.test(body))throw new Error('macro_placeholders_not_supported')
+    if(vendor!=='zendesk'&&/\{\{|\{%/.test(body))throw new Error('macro_placeholders_not_supported')
     tables.macros=[{id:target,project_id:projectId,title,content:body,created_by:actorId,created_at:created,updated_at:updated}]
+    if(vendor==='zendesk')tables.macro_versions=[{macro_id:target,project_id:projectId,version:1,title,content:body,actions_json:JSON.stringify(zendeskMacroActions(p.actions,new Map([...array(source.records).filter(r=>r.kind==='tag-name').map(r=>[r.sourceId,id('tag',r.sourceId)] as [string,string]),...tagIds]),omissions)),scope_json:JSON.stringify({visibility:'shared',roles:[],groups:[],brands:[]}),created_by:actorId,created_at:updated}]
    }else if(record.kind==='article'){
     kind='article';target=id(kind,record.sourceId);let status:string
     if(vendor==='zendesk'){
@@ -109,7 +121,7 @@ export async function prepareMapping(input:MappingInput):Promise<PreparedMapping
     if(p.translated_content||p.section_id||p.parent_id||p.tags||p.scheduled_publish_at||p.scheduled_unpublish_at||p.ai_agent_availability)omissions.push('article_structure_or_translations_retained_in_original_only')
    }else{result.effects.set(key,[]);result.omissions.set(key,[`unsupported_record_kind:${record.kind}`]);continue}
    if(kind==='conversation')tables.email_threading_keys=importedEmailThreadKeys(projectId,target,vendor,record,tables.conversations[0].created_at)
-   const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,created_at:p.created_at??null,updated_at:p.updated_at??null}}
+   const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,...(kind==='conversation'?{ownership:sourceOwnership(vendor,p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null}}
    if(nativeStatementCount(kind,value)>LIMITS.nativeStatements)throw new Error('native_record_statement_limit');result.effects.set(key,[{targetKind:kind,targetId:target,value:completeNativeValue(kind,value) as any}]);if(omissions.length)result.omissions.set(key,omissions)
   }catch(error){result.rejections.set(key,error instanceof Error?error.message:'record_mapping_failed');result.effects.set(key,[]);if(omissions.length)result.omissions.set(key,omissions)}
  }

@@ -12,3 +12,7 @@
 .problem-reply { white-space: pre-wrap; border: 1px solid var(--bs-border-color, #bac5d5); border-radius: 8px; padding: .7rem; margin: .6rem 0; background: var(--bs-light, #f5f7fa); color: var(--bs-body-color, #243146); }
 .problem-solve { margin-top: 1rem; }
 @media (max-width: 480px) { .problem-actions { flex-wrap: wrap; } .problem-actions .form-control { flex-basis: 100%; } .problem-panel .btn { white-space: normal; } }
+
+.problem-suggestions { margin: .75rem 0; }
+.problem-suggestions .problem-actions { flex-wrap: wrap; }
+@media (max-width: 480px) { body.conversation-workspace #chat .conversation-details .problem-panel button.btn, .problem-panel summary { min-height: 44px; min-width: 44px; } }

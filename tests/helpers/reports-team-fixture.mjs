@@ -11,6 +11,8 @@ export const insert=(table,row)=>`INSERT INTO ${table}(${Object.keys(row).join('
 /** Historical support activity is test data. All reads and operator effects use the product's routes. */
 export function reportFixture(projectId,{withTimers=true,withSla=true,count=426}={}){
  const statements=[],tickets=[],timerRows=[],slaRows=[]
+ for(const [id,title] of [['returns','Returns'],['delivery','Delivery']])statements.push(insert('request_forms',{project_id:projectId,id,config_json:JSON.stringify({title}),updated_at:1}))
+ statements.push(insert('ticket_fields',{project_id:projectId,id:'report-intent',name:'Intent',type:'text',updated_at:1}))
  statements.push(`INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES(${quote(projectId)},'{"timezone":"America/New_York"}',1) ON CONFLICT(project_id) DO UPDATE SET settings_json=json_set(settings_json,'$.timezone','America/New_York');`)
  for(let i=0;i<3;i++)statements.push(insert('ticket_groups',{project_id:projectId,id:`${projectId}-team-${i}`,name:teams[i],updated_at:1}))
  for(let i=0;i<6;i++){
@@ -29,7 +31,10 @@ export function reportFixture(projectId,{withTimers=true,withSla=true,count=426}
   const clocks=['first_response','next_response','resolution'].filter((_,j)=>j!==1||reopened).map((metric,j)=>({metric,cycle:1,started_at:created,due_at:created+(j+1)*3600000,completed_at:created+(j+1)*3000000,breached:(i+j)%7===0,spent_ms:(j+1)*3000000,target_ms:(j+1)*3600000,remaining_minutes:0,breached_at:(i+j)%7===0?created+(j+1)*3600000:null}))
   if(withSla){const sla={project_id:projectId,conversation_id:id,policy_id:policy.id,policy_json:JSON.stringify(policy),calendar_json:JSON.stringify(calendar),last_event_id:0,state_json:JSON.stringify({status,pause_reason:status==='pending'?'pending':null,clocks,cursor_at:created+7200000,response_count:reopened?2:1,resolution_count:1,waiting:false,customer_started:true}),next_check_at:null,updated_at:created+7200000};slaRows.push(sla);statements.push(insert('ticket_sla_state',sla))}
   if(withTimers&&i%3!==2){const timer={id:`${id}-timer`,project_id:projectId,conversation_id:id,user_id:row.assigned_to,started_at:created+3600000,ended_at:created+3600000+(5+i%25)*60000};timerRows.push(timer);statements.push(insert('ticket_handle_sessions',timer))}
-  tickets.push({...row,reopened,wasResolved:solved||reopened})
+  const form=i%4===0?'returns':i%4===1?'delivery':null,intent=i%5===0?'refund':i%5===1?'tracking':null
+  if(form)statements.push(insert('request_form_submissions',{project_id:projectId,contact_id:contact,local_id:id+'-form',form_id:form,conversation_id:id,intent_hash:'synthetic-happytohelp-1',created_at:created}))
+  if(intent)statements.push(insert('ticket_field_values',{project_id:projectId,conversation_id:id,field_id:'report-intent',value_json:JSON.stringify(intent)}))
+  tickets.push({...row,reopened,wasResolved:solved||reopened,form,intent})
  }
  return {statements,tickets,timerRows,slaRows}
 }

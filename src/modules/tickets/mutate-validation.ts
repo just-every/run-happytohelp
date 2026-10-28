@@ -1,3 +1,4 @@
+import {validateAccountMembership} from '../forms/account-lookup'
 import {batchRead,batchTicket} from './request-batch'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
@@ -38,6 +39,8 @@ export async function prepareTicketChange(env:Env,actor:Actor,id:string,input:Ti
  const values=Object.fromEntries(stored.map(v=>[v.field_id,JSON.parse(v.value_json)]))
  let fields:Record<string,unknown>
  try{fields=validateFieldChanges(definitions,values,object(change.fields??{}),guard.access)}catch(error){if(error instanceof HTTPException&&error.status===403)await audit(env,{projectId:actor.projectId,category:'access',action:'ticket.field_permission_denied',outcome:'refused',actor:{type:authority.tokenAuthority?'api':'user',id:authority.tokenAuthority?.tokenId??actor.id},source:authority.source??(authority.tokenAuthority?'api':'dashboard'),target:{type:'conversation',id}});throw error}
+ const accountGuards=await validateAccountMembership(env,actor.projectId,next.requester_id??next.contact_id,definitions,Object.fromEntries(Object.entries(fields).filter(([id,value])=>value!==values[id])))
+ for(const accountGuard of accountGuards){predicates.push(accountGuard.sql);params.push(...accountGuard.args)}
  if(solving(current.status_category,next.status_category))for(const field of requiredToSolve(definitions,values,fields,guard.access)){predicates.push('EXISTS(SELECT 1 FROM ticket_field_values WHERE project_id=c.project_id AND conversation_id=c.id AND field_id=?)');params.push(field)}
  predicates.push('(SELECT count(*) FROM ticket_fields WHERE project_id=c.project_id)=?');params.push(definitions.length)
  predicates.push("NOT EXISTS(SELECT 1 FROM json_each(?) ref WHERE NOT EXISTS(SELECT 1 FROM ticket_fields f WHERE f.project_id=c.project_id AND f.id=json_extract(ref.value,'$[0]') AND f.updated_at=json_extract(ref.value,'$[1]')))");params.push(JSON.stringify(definitions.map(f=>[f.id,f.updated_at])))

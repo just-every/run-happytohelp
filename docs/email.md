@@ -4,6 +4,22 @@ Use **Settings → Email** to configure sending, forwarding and connected mailbo
 
 Forwarding uses the installation's email provider. Connected mailboxes receive and send through the account you authorize. Disconnecting stops intake and sending while keeping ticket history.
 
+## Managed email
+
+A compatible Managed installation receives an address from Run Edit Run before its first workspace is created. Setup shows it under **What we’ve set**. There is no customer mail key, provider account or DNS task. Independent and Assisted installations keep their direct Resend, SendGrid or Cloudflare setup.
+
+**Settings → Email** shows configuration, receiving-route activity and actual inbound observations separately. An active route is not proof that mail arrived. The last outbound timestamp means **provider acceptance**, not inbox delivery. Password recovery and sign-in links use this same sending service. A failed binding stays visible; **Retry connection** repeats the original allocation rather than inventing another address.
+
+Customer replies use a private recipient-specific Reply-To address and retain the relay’s RFC Message-ID for threading. CC, BCC, inline images and attachments use the same native permissions and frozen recipient snapshot as other transports. Files over the included-file limit are linked through the existing authorized file route. A timeout or lost response stays uncertain and is never sent again automatically. A conversation reply, a scheduled reply or a problem’s reply to its incidents that is refused because the sending key was just rotated has not reached the relay: it shows as in progress (a scheduled reply as sending) and the same command is submitted once more, under the same identity, after the rebuilt release holds the new key; about an hour after the first refusal it fails instead, and a scheduled reply then shows as failed. Other mail, such as sign-in, invitation, report and trigger mail and the Settings test email, is not held and fails at once. **Check retained send receipt** reads the relay’s existing result without sending.
+
+Additional workspaces receive distinct allocations. Renaming a workspace or rotating relay/ingress credentials keeps its address and history. Deletion stops local intake immediately and durably queues retirement of the platform mapping. Custom mailboxes remain an optional later connection; checking a website’s DNS never replaces the managed sender.
+
+Signed MIME enters through `/api/integrations/email/rer/v1/inbound`. The edge’s verified, failed or unproven authentication verdict is passed to native admission; message-supplied authentication headers do not establish sender authority. Failed and unproven senders follow the existing Suspended policy, unless an existing recipient grant independently proves possession. Duplicate delivery identities cannot create another ticket; changed bytes are held for review.
+
+Original managed MIME is encrypted with the installation’s stable integration data key before acknowledgment. Acknowledged transport buffers expire after one minute; failed intake is retained for at most seven days of scheduled cleanup, while digest tombstones remain. Conversation history and attachments have their existing retention. Relay and ingress keys are separate from that data key. Preserve the data key privately when rotating transport keys; never include it in an archive. Exports retain conversations, attachments, RFC thread identities, routing history and redacted receipts. Restored routes are revoked, reply-grant metadata is unusable, and mailbox-control effects are excluded. This does not qualify the complete hosted export or live mail path: those gates remain pending with their owners.
+
+The Managed journeys replace only the external relay/edge network boundary. They establish application engineering behavior, not delivery through a real mail domain, provider account or deployed platform.
+
 ## Connect Gmail or Microsoft 365
 
 The person running the installation first registers an OAuth application with Google or Microsoft for this installation. Use your own application credentials and your own HappyToHelp origin; a connection on another installation does not authorize this one.
@@ -41,7 +57,7 @@ Under **Email signature**, save a mailbox default or an agent-specific signature
 
 Expand a mailbox to see its connection status, saved cursor, last successful sync and error. **Sync now** fetches the next bounded batch. The first sync starts with existing Inbox mail, so review the mailbox contents before starting it. **Backfill history** resets the scan to the beginning of the Inbox; use subsequent **Sync now** requests to continue its saved cursor rather than repeatedly restarting backfill. The saved provider cursor records progress, and incoming messages retain stable identities to detect repeated delivery. Gmail stores history/page progress, Microsoft stores a delta link, and IMAP stores UID validity and the last scanned UID.
 
-A rejected IMAP login or revoked OAuth credential shows **Reconnect required**. Use **Reconnect** and authorize the original mailbox account. A mailbox whose saved provider history has expired or whose IMAP UID state changed needs an explicit backfill decision. Do not treat a cursor error as proof that all mail was received.
+A rejected or revoked credential shows **Reconnect required**. Use **Reconnect** and authorize the original mailbox account. A mailbox whose saved provider history has expired or whose IMAP UID state changed needs an explicit backfill decision. Do not treat a cursor error as proof that all mail was received.
 
 One message delivered to several connected mailboxes in the same workspace creates one customer message. Each mailbox records its own progress. A permanently refused message is recorded in the audit and skipped so later mail can arrive; temporary failures retain the cursor and back off while healthy mailboxes sync first.
 
@@ -77,11 +93,9 @@ A reply to a Closed ticket creates a linked follow-up; the original ticket stays
 
 Imports do not activate the old vendor's reply addresses or send notifications. Test replies to real pre-cutover notifications from each vendor before relying on the cutover. See [Move in your history](moving-in.md) for the broader migration boundary.
 
+Imported Zendesk tickets also retain their source ticket number. Explicit
+`[Ticket #123]` and `[Request #123]` subject tags propose that imported ticket;
+ordinary order numbers do not grant sender authority. Conflicting keys or a
+different customer still go to Suspended for review.
 
-An SMTP permanent refusal is recorded as a failed delivery. If the connection
-ends before the server confirms acceptance, delivery remains uncertain. Neither
-outcome is automatically resent; reconcile the original attempt before choosing
-any new send. Protocol-edge journeys under `tests/helpers/email/imap-provider.mjs`
-exercise IMAP/SMTP through native connection, sync and ticket routes with a
-fragmented byte-stream fixture. This is separate from the still-required real
-provider-account UI qualification for forwarding, IMAP, Gmail and Microsoft 365.
+Imported Help Scout conversation-number tags such as `[#1901]` use the export’s explicit `number`, independently of its API `id`. The same bracket form can also name a Freshdesk ticket; if imported keys identify multiple tickets, the message is held for review. Neither form grants sender authority, and an API ID is never guessed to be a Help Scout notification number.

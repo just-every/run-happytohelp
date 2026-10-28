@@ -30,6 +30,16 @@ export default function ProductionTrace({conversation,active}) {
                         {run.source.knowledge.map(source=><div key={source.source_id}>{source.source_id} · {source.source_version}</div>)}</dd>
                     <dt>Timing</dt><dd>{run.timing.startedAt||'Not started'} · {run.timing.durationMs===null?'Duration unavailable':`${run.timing.durationMs} ms`}</dd>
                     <dt>Provider outcome</dt><dd>{run.providerOutcome}</dd>
+                    <dt>Contribution</dt><dd>{run.contribution}</dd>
+                    <dt>Cycle outcome</dt><dd>{run.customerOutcome.cycle?<>
+                        <div>Resolution {run.customerOutcome.cycle.id}</div>
+                        <div>Resolved {run.customerOutcome.cycle.resolvedAt}</div>
+                        <div>Recorded attribution: {run.customerOutcome.cycle.attribution}</div>
+                        <div>{run.customerOutcome.cycle.rating?`Feedback: ${run.customerOutcome.cycle.rating.value} (${run.customerOutcome.cycle.rating.scale}), revision ${run.customerOutcome.cycle.rating.revision}`:'Feedback: not recorded'}</div>
+                        <div>{run.customerOutcome.cycle.reopenedAt?`Reopened ${run.customerOutcome.cycle.reopenedAt}`:'No later reopening recorded'}</div>
+                    </>:<>Unknown: {run.customerOutcome.reason}</>}</dd>
+                    <dt>Supporting case</dt><dd><a href={`/projects/${conversation.project_id}/conversations/${conversation.id}`}>Open conversation</a></dd>
+                    <dt>Interpretation</dt><dd>Contributions share a cycle; feedback does not establish causal blame or independently verified recovery.</dd>
                     <dt>Committed answer</dt><dd>{run.committedAnswer?`${run.committedAnswer.id} · revision ${run.committedAnswer.revision}`:'None recorded'}</dd>
                 </dl>
                 {run.tools.map((tool,index)=><p key={index}>{tool.name} · {tool.outcome} · {tool.durationMs===null?'Duration unavailable':`${tool.durationMs} ms`}</p>)}

@@ -24,6 +24,12 @@ export async function finalizeGeneration(env: Env, row: Generation, attemptId: s
     return null;
   }
 
+  if(result?.requiresHumanReview===true){
+    await transition(env,row.id,'superseded','Internal promise/dependency work requires human review before a customer update');
+    await finishAttempt(env,attemptId,false);
+    return null;
+  }
+
   if (!result?.response?.trim()) throw new Error('Provider returned no customer reply');
   const admitted = await admitMessage(env, {
     projectId: row.project_id,

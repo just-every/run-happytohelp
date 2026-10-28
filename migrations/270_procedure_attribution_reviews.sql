@@ -1,0 +1,4 @@
+-- Corrections adjust report attribution, never erase original cycles or undo a stop.
+CREATE TABLE procedure_attribution_reviews(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),resolution_id TEXT NOT NULL REFERENCES conversation_resolutions(id) ON DELETE CASCADE,decision TEXT NOT NULL CHECK(decision IN ('include','exclude')),reason TEXT NOT NULL CHECK(reason IN ('human-led','unrelated','procedure-contributed')),evidence_message_id TEXT REFERENCES messages(id),reviewed_by TEXT NOT NULL,created_at INTEGER NOT NULL);
+CREATE INDEX procedure_attribution_cycle ON procedure_attribution_reviews(resolution_id,created_at,id);
+CREATE TRIGGER procedure_attribution_immutable BEFORE UPDATE ON procedure_attribution_reviews BEGIN SELECT RAISE(ABORT,'Attribution reviews are append-only'); END;

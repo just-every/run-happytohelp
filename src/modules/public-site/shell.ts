@@ -1,7 +1,7 @@
 import { escapeHtml as e } from './html'
 import {contrastInk,readableAccentOnWhite} from '../widget/appearance.js'
 import { platformIcons, platformLockup } from './platform-brand'
-export type PublicBrand = {name:string;color:string;logo_url:string;avatar_url:string;greeting:string}
+export type PublicBrand = {name:string;color:string;logo_url:string;avatar_url:string;greeting:string;linkColor?:string}
 export type HelpProject = {id?:string;name:string;brand?:PublicBrand}
 
 type ShellOptions = {
@@ -23,8 +23,8 @@ type ShellOptions = {
 /** The Help Center document frame: header, brand, search and content column. `base` is the project's help URL, or `/` when no project is known. */
 export function shell(project: HelpProject, base: string, content: string, { keyword = '', search = true, title, noindex = false, greeting = false, platform = false, locale = 'en', defaultLocale = 'en', tools = '' }: ShellOptions = {}) {
  const brand=project.brand, name=brand?.name||project.name
- const linkColor=brand?.color?readableAccentOnWhite(brand.color):''
- const accent=brand?.color?` style="--help-center-nav:${e(brand.color)};--help-center-link:${e(linkColor)};--help-center-link-hover:${e(linkColor)};--help-center-brand-ink:${contrastInk(brand.color)}"`:''
+ const linkColor=brand?.linkColor||(brand?.color?readableAccentOnWhite(brand.color):'')
+ const accent=(brand?.color||linkColor)?` style="${brand?.color?`--help-center-nav:${e(brand.color)};--help-center-brand-ink:${contrastInk(brand.color)};`:''}--help-center-link:${e(linkColor)};--help-center-link-hover:${e(linkColor)}"`:''
  const logo=brand?.logo_url?`<img class="help-center-logo" src="${e(brand.logo_url)}" alt="">`:''
  const welcome=greeting&&(brand?.greeting||brand?.avatar_url)?`<div class="help-center-welcome">${brand.avatar_url?`<img src="${e(brand.avatar_url)}" alt="${e(name)} support">`:''}${brand.greeting?`<p>${e(brand.greeting)}</p>`:''}</div>`:''
  const brandLabel=platform?`${platformLockup}<span><strong class="help-center-sr">HappyToHelp</strong> Help Center</span>`:`${logo}<span><strong>${e(name)}</strong> Help Center</span>`

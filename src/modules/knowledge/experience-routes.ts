@@ -1,3 +1,5 @@
+import {readableAccentOnWhite} from '../widget/appearance.js'
+import {approvedHelpHosts} from './domains'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -15,9 +17,13 @@ experienceRoutes.put('/:projectId/experience',async c=>{
  if(!Array.isArray(body.locales)||body.locales.length>30||!body.locales.includes(defaultLocale))throw new HTTPException(400,{message:'Default locale must be included'})
  const locales=[...new Set(body.locales.map(validLocale))],templates=body.templates||{}
  if(typeof templates!=='object'||Array.isArray(templates)||Object.entries(templates).some(([key,value])=>!templateTypes.includes(key as any)||typeof value!=='string'||value.length>10000||/<[^>]*>/.test(value)))throw new HTTPException(400,{message:'Templates must be plain text, up to 10000 characters'})
- const now=Date.now(),result=await c.env.DB.batch([c.env.DB.prepare(`INSERT INTO knowledge_experience SELECT ?,?,?,?,?,? WHERE EXISTS(${guard.sql}) ON CONFLICT(project_id) DO UPDATE SET default_locale=excluded.default_locale,locales_json=excluded.locales_json,templates_json=excluded.templates_json,updated_by=excluded.updated_by,updated_at=excluded.updated_at RETURNING project_id`).bind(projectId,defaultLocale,JSON.stringify(locales),JSON.stringify(templates),c.get('actor').id,now,...guard.params),auditStatement(c.env.DB,{projectId,category:'data',action:'knowledge.experience.updated',actor:{type:'user',id:c.get('actor').id},source:requestSource(c)})])
+ const publishedHost=body.publishedHost===undefined?(await getKnowledgeExperience(c.env,projectId)).publishedHost:body.publishedHost
+ if(publishedHost!==null&&publishedHost!==''&&!(await approvedHelpHosts(c.env,projectId)).includes(publishedHost))throw new HTTPException(409,{message:'Choose an exact help host already configured for this workspace by your hosting administrator'})
+ const linkColor=body.linkColor===undefined?(await getKnowledgeExperience(c.env,projectId)).linkColor:body.linkColor
+ if(typeof linkColor!=='string'||linkColor!==''&&(!/^#[0-9a-f]{6}$/i.test(linkColor)||readableAccentOnWhite(linkColor.toLowerCase())!==linkColor.toLowerCase()))throw new HTTPException(400,{message:'Choose a link color with at least 4.5:1 contrast on white'})
+ const now=Date.now(),result=await c.env.DB.batch([c.env.DB.prepare(`INSERT INTO knowledge_experience(project_id,default_locale,locales_json,templates_json,updated_by,updated_at,published_host,link_color) SELECT ?,?,?,?,?,?,?,? WHERE EXISTS(${guard.sql}) ON CONFLICT(project_id) DO UPDATE SET default_locale=excluded.default_locale,locales_json=excluded.locales_json,templates_json=excluded.templates_json,updated_by=excluded.updated_by,updated_at=excluded.updated_at,published_host=excluded.published_host,link_color=excluded.link_color RETURNING project_id`).bind(projectId,defaultLocale,JSON.stringify(locales),JSON.stringify(templates),c.get('actor').id,now,publishedHost,linkColor.toLowerCase(),...guard.params),auditStatement(c.env.DB,{projectId,category:'data',action:'knowledge.experience.updated',actor:{type:'user',id:c.get('actor').id},source:requestSource(c)})])
  if(!result[0].results.length)throw new HTTPException(409,{message:'Authority changed'})
- return c.json({defaultLocale,locales,templates})
+ return c.json(await getKnowledgeExperience(c.env,projectId))
 })
 experienceRoutes.put('/:projectId/categories/:categoryId/audience',async c=>c.json(await writeCategory(c.env,c.req.param('projectId'),c.req.param('categoryId'),await c.req.json(),await knowledgeEditorGuard(c))))
 experienceRoutes.get('/:projectId/articles/:articleId/translations/:locale',async c=>{

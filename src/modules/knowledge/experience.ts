@@ -1,3 +1,4 @@
+import {approvedHelpHosts} from './domains'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {articleAccessSql,categoryAccessSql,accessParams,type HelpAccess} from './access'
@@ -6,7 +7,7 @@ export const templateTypes=['home','category','section','article','search','requ
 export function validLocale(value:unknown):string {if(typeof value!=='string'||!/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,3}$/.test(value))throw new HTTPException(400,{message:'Invalid locale'});try{Intl.getCanonicalLocales(value)}catch{throw new HTTPException(400,{message:'Invalid locale'})}return value}
 export async function getKnowledgeExperience(env:Env,projectId:string){
  const row=await env.DB.prepare('SELECT * FROM knowledge_experience WHERE project_id=?').bind(projectId).first<any>()
- return {defaultLocale:row?.default_locale||'en',locales:JSON.parse(row?.locales_json||'["en"]') as string[],templates:JSON.parse(row?.templates_json||'{}') as Record<string,string>}
+ return {linkColor:row?.link_color||'',approvedHosts:await approvedHelpHosts(env,projectId),publishedHost:row?.published_host??null,defaultLocale:row?.default_locale||'en',locales:JSON.parse(row?.locales_json||'["en"]') as string[],templates:JSON.parse(row?.templates_json||'{}') as Record<string,string>}
 }
 export async function selectKnowledgeLocale(env:Env,projectId:string,requested?:string){const settings=await getKnowledgeExperience(env,projectId);return settings.locales.includes(requested||'')?requested!:settings.defaultLocale}
 export async function listAccessibleCategories(env:Env,projectId:string,access?:HelpAccess,locale?:string){

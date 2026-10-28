@@ -6,10 +6,13 @@ export const slaSchedule={schedule:{id:501,name:'Reviewed UTC support',time_zone
 export const slaSource={sla_policy:{id:502,title:'Normal first response',position:0,filter:{all:[],any:[]},move_in_schedule_id:501,policy_metrics:[{priority:'normal',metric:'first_reply_time',target:120,business_hours:true}],...dates}}
 const jsonl=(...records)=>records.map(JSON.stringify).join('\n'),post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
 export async function configurationSlaJourney(imported){
- const source=jsonl(slaSchedule,slaSource)
- await imported('zendesk',source,{before:h=>h.snapshot(),check:async({h,initial,review,plan,omissions,rows})=>{
-  assert.equal(plan.counts.rejected,0)
-  const target=plan.decisions.find(d=>d.kind==='sla_policy').targets[0];assert.equal(target.status,'inactive');assert.equal(target.label,'Normal first response')
+ const unsupported=structuredClone(slaSource);unsupported.sla_policy.id=503;unsupported.sla_policy.title='Unsupported multi-target policy';unsupported.sla_policy.policy_metrics.push({...unsupported.sla_policy.policy_metrics[0],metric:'next_reply_time'})
+ const source=jsonl(slaSchedule,slaSource,unsupported)
+ await imported('zendesk',source,{before:h=>h.snapshot(),check:async({h,initial,review,plan,omissions,rejection,rows})=>{
+  assert.equal(plan.counts.rejected,1)
+  assert.equal(rejection('sla_policy/503'),'sla_policy_single_metric_required')
+  assert.equal(plan.decisions.find(d=>d.sourceId==='503').location.row,3)
+  const target=plan.decisions.find(d=>d.sourceId==='502').targets[0];assert.equal(target.status,'inactive');assert.equal(target.label,'Normal first response')
   assert.ok(omissions('sla_policy/502').includes('sla_policy_calendar_reviewed:501:Reviewed UTC support'));assert.ok(omissions('sla_policy/502').includes('sla_policy_commitment_reviewed:normal:120'))
   const p=(await h.call('/api/dashboard/projects/p/sla-policies')).data[0]
   assert.equal(p.active,false);assert.deepEqual(p.conditions.priorities,['normal']);assert.equal(p.first_response_minutes,120);assert.equal(p.next_response_minutes,null);assert.equal(p.resolution_minutes,null)

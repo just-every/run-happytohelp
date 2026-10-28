@@ -12608,7 +12608,7 @@
       "executable": false
     },
     "tests/move-in/configuration-sla.mjs": {
-      "sha256": "13bd4d327fb37ce21dd536a74405334cb4b1223525916d9519ddaa96597e33b8",
+      "sha256": "0d76c04b4b7498520614b7035d859882e774a359cff1211d79faf86c63c75527",
       "executable": false
     },
     "tests/move-in/correction-fixtures.mjs": {

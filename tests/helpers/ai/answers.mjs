@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {cycleOutcomes} from './cycle-outcomes.mjs'
 import {assistantApp} from './app.mjs'
 import {openaiToolCall} from '../openai-stream.mjs'
 
@@ -58,6 +59,8 @@ export async function answersJourney(){
   const frame=await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('replay deadline')),5000);socket.addEventListener('message',event=>{const message=JSON.parse(event.data);if(message.type==='message'&&message.message.actor_role==='ai'){clearTimeout(timer);resolve(message)}});socket.send(JSON.stringify({type:'replay'}))})
   assert.equal(frame.message.id,first.answers[0].id);assert.deepEqual(JSON.parse(frame.message.citations_json),citations);socket.close()
 
+  await cycleOutcomes(a,first.v,recorded)
+
   // A citation of a draft, private history or a version the search never issued is refused: no answer carries it.
   for(const sources of [[{id:'article:draft',sourceVersion:'x'}],[{id:'knowledge:private',sourceVersion:'v'}],[{id:'article:a',sourceVersion:'fabricated'}]]){
    const refused=await ask('Refunds again?',answering(()=>sources))
@@ -75,7 +78,7 @@ export async function answersJourney(){
   const handoff=await a.visitor();await handoff.say('I need a human');await a.run()
   assert.equal((await app.first('SELECT ai_id FROM conversation_ai WHERE conversation_id=?',handoff.conversationId))?.ai_id??null,null)
   assert.ok((await app.first('SELECT assigned_to FROM conversations WHERE id=?',handoff.conversationId)).assigned_to,'a person now owns the conversation')
-  assert.equal((await trace(a,handoff)).result,'handoff');assert.ok((await trace(a,handoff)).tools.some(t=>t.outcome==='handoff'))
+  assert.equal((await trace(a,handoff)).result,'handoff');assert.equal((await trace(a,handoff)).contribution,'handoff');assert.equal((await trace(a,handoff)).customerOutcome.cycle,null);assert.ok((await trace(a,handoff)).tools.some(t=>t.outcome==='handoff'))
   assert.equal((await a.generations(handoff.conversationId))[0].state,'superseded');assert.equal((await handoff.transcript()).messages.filter(m=>m.actor_role==='ai').length,0)
   const current=await handoff.transcript()
   assert.equal((await app.call(`/api/conversations/${handoff.conversationId}/messages`,{token:a.owner,body:{localId:'operator-reply',content:'Human reply',expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})).data.accepted,true)

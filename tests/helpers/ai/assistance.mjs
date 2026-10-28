@@ -33,6 +33,7 @@ export async function assistanceJourney(){
   const trace=(await app.call(`/api/ai-support/projects/${p}/conversations/${v.conversationId}/trace`,{token:a.owner,status:200})).data.generations[0]
   assert.equal(trace.approval,'explicit operator request');assert.equal(trace.requestedScope,'operator suggestions')
   assert.equal(trace.committedAnswer,null);assert.equal(trace.result,'no committed answer');assert.equal(trace.usage.length,2)
+  assert.equal(trace.contribution,'unsent suggestion');assert.equal(trace.customerOutcome.cycle,null)
   assert.equal(trace.usage[0].inputTokens,5);assert.equal(trace.providerCostUsd,null)
   // A failing or repeated alternative fails the whole suggestion: no primary card alone.
   for(const alternatives of [()=>new Response(JSON.stringify({error:{message:'second stage rejected'}}),{status:503}),body=>({alternatives:[card('Cancel','Open Orders and choose Cancel.',body)],missing_information:[]})]){
@@ -40,6 +41,21 @@ export async function assistanceJourney(){
    const failed=await assist(v.conversationId,{request_id:crypto.randomUUID()});await a.run()
    const row=await generation(failed.data.id);assert.notEqual(row.state,'completed');assert.equal(JSON.parse(row.output_json||'{}').result,undefined)
   }
+
+  // Adoption is durable authorship, while another generated draft in that same cycle stays unsent.
+  ai.respond=body=>body.text?.format?.name==='agent_suggestion_alternatives'?{alternatives:[card('Confirmation','You will receive confirmation.',body)],missing_information:[]}:{user_goal:'Cancel',responses:[card('Review','Please review the cancellation.',body)],missing_information:[]}
+  const unsentDraft=await assist(v.conversationId,{request_id:crypto.randomUUID()});assert.equal(unsentDraft.status,202);await a.run()
+  assert.equal((await generation(unsentDraft.data.id)).state,'completed')
+  const unsentId=unsentDraft.data.id
+  const currentDraft=await v.transcript()
+  await app.call(`/api/conversations/${v.conversationId}/messages`,{token:a.owner,body:{localId:crypto.randomUUID(),content:'An edited cancellation reply.',authoring:{kind:'ai',generationId:first.data.id,selection:0},expectedRevision:currentDraft.revision,expectedLastMessageId:currentDraft.lastMessageId,resolve:true},status:200})
+  const resolution=(await v.transcript()).resolution
+  await app.call(`/api/conversations/${v.conversationId}/widget-events`,{token:v.token,body:{action:'rateResolution',data:{resolutionId:resolution.id,value:-1}},status:200})
+  const outcomes=(await app.call(`/api/ai-support/projects/${p}/conversations/${v.conversationId}/trace`,{token:a.owner,status:200})).data.generations
+  const adopted=outcomes.find(row=>row.id===first.data.id),unsent=outcomes.find(row=>row.id===unsentId)
+  assert.equal(adopted.contribution,'adopted suggestion');assert.equal(adopted.customerOutcome.cycle.id,resolution.id)
+  assert.equal(adopted.customerOutcome.cycle.attribution,'assisted');assert.equal(adopted.customerOutcome.cycle.rating.value,-1)
+  assert.equal(unsent.customerOutcome.cycle,null);assert.match(unsent.customerOutcome.reason,/No retained adoption/)
 
   // Handing a waiting conversation to the assistant answers the visitor's turn once, as the visitor's turn.
   ai.respond=()=>'Here is how to cancel.'

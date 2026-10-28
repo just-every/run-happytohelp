@@ -67,6 +67,7 @@ export async function lifecycleJourney(){
   const timeout=await ask();ai.respond=()=>{throw new DOMException('synthetic-hh-private-timeout','TimeoutError')};calls=a.providerCalls()
   await app.runJobs([timeout.job]);const timeoutTrace=await trace(timeout.v)
   assert.equal(timeoutTrace.providerOutcome,'timeout');assert.equal(timeoutTrace.result,'unknown');assert.equal(timeoutTrace.providerCostUsd,null)
+  assert.equal(timeoutTrace.contribution,'uncertain attempt');assert.equal(timeoutTrace.customerOutcome.cycle,null);assert.match(timeoutTrace.customerOutcome.reason,/No retained committed authorship/)
   assert.doesNotMatch(JSON.stringify(timeoutTrace),/synthetic-hh-private-timeout/)
   await app.runJobs([timeout.job]);assert.equal(a.providerCalls(),calls+1);ai.respond=()=>'Reply'
   // A key removed after the assistant took the conversation: the visitor's message is kept and the missing

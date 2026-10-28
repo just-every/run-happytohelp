@@ -1,4 +1,4 @@
-Old reference: `ab90cd822b4f62080294df0ff2a468b8eb874b54`.
+Old reference: `d31180334a32bc01031ad219b32c63cd4d068d58`.
 | Clause | Point | Outcome | Asserting test | Result |
 | --- | --- | --- | --- | --- |
 | IDENTITY-002 | 1. Complete native password setup, login, recovery and workspace re-entry, then upgrade with prior owner credentials and data intact; configured providers must not replace native identity. (acceptance point) | native setup (outcome) | `tests/journeys/identity.mjs:178` | asserted |

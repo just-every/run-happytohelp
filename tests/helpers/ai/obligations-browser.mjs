@@ -35,10 +35,18 @@ export async function obligationsBrowserJourney({runtime,browser,shot,widths=[14
    }
    await open();const panel=page.locator('.followup-obligations')
    const capture=async state=>{
-    await page.screenshot({path:shot(`followup-${state}-${width}.png`),fullPage:true})
-    await page.setViewportSize({width:390,height:844})
-    await page.screenshot({path:shot(`followup-${state}-390.png`),fullPage:true})
+    const target=state==='draft'?panel.getByRole('region',{name:'Unsent follow-up draft'}):state==='pending'?panel.getByRole('region',{name:'Pending promise changes'}):state==='error'?panel.getByRole('alert'):panel.locator('article').first()
+    for(const captureWidth of [width,390]){
+     const crossed=(page.viewportSize().width>=1280)!==(captureWidth>=1280)
+     await page.setViewportSize({width:captureWidth,height:captureWidth===390?844:900})
+     if(crossed)await page.waitForFunction(desktop=>document.querySelector('#conversation-assistant')?.getAttribute('aria-hidden')===String(!desktop),captureWidth>=1280)
+     if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click()
+     await page.getByRole('tab',{name:'Ticket',exact:true}).click()
+     await target.scrollIntoViewIfNeeded()
+     await page.screenshot({path:shot(`followup-${state}-${captureWidth}.png`),fullPage:true,animations:'disabled'})
+    }
     await page.setViewportSize({width,height:900})
+    await page.waitForFunction(()=>document.querySelector('#conversation-assistant')?.getAttribute('aria-hidden')==='false')
    }
    await panel.getByText('Propose a follow-up',{exact:true}).click()
    await panel.getByLabel('Promise message',{exact:true}).selectOption(sent.message.id)
@@ -51,10 +59,6 @@ export async function obligationsBrowserJourney({runtime,browser,shot,widths=[14
    await form.getByLabel('Engineering dependency',{exact:true}).selectOption(`synthetic-hh-issue-${tenant.projectId}`)
    await form.getByLabel('Due time',{exact:true}).fill(local)
    await form.getByLabel('Stop condition',{exact:true}).fill('The customer receives an honest update.')
-   await form.getByLabel('Promise message',{exact:true}).scrollIntoViewIfNeeded()
-
-   await panel.getByLabel('Exact promise quote',{exact:true}).scrollIntoViewIfNeeded()
-
    await form.getByRole('button',{name:'Propose promise',exact:true}).click()
    await panel.getByText(/Awaiting acceptance/).waitFor()
    let row=(await call(base)).obligations[0]
@@ -73,11 +77,9 @@ export async function obligationsBrowserJourney({runtime,browser,shot,widths=[14
    await panel.getByRole('region',{name:'Pending promise changes'}).scrollIntoViewIfNeeded()
    await capture('pending')
    await panel.getByText('Propose a follow-up',{exact:true}).click()
-   await panel.locator('article').first().scrollIntoViewIfNeeded()
-
    await panel.getByRole('button',{name:'Accept promise changes',exact:true}).click()
    await panel.getByText(/Accepted promise/).waitFor();await panel.getByRole('region',{name:'Unsent follow-up draft'}).waitFor()
-   // A stale visible form must fail with two readable sentences, without replay.
+   // A stale visible form refuses the change and offers an explicit refresh.
    let accepted=(await call(base)).obligations[0]
    await call(base+'/'+accepted.id+'/accept',{version:accepted.version,ownerId:tenant.userId,dueAt:revisedDue.getTime(),stopCondition:revised,dependencyId:accepted.dependency_id})
    await panel.getByRole('button',{name:'Accept promise changes',exact:true}).click()
@@ -96,8 +98,6 @@ export async function obligationsBrowserJourney({runtime,browser,shot,widths=[14
    await review.getByRole('button',{name:'Accept promise changes',exact:true}).click()
    await panel.getByText('Stop when: '+revised,{exact:true}).waitFor()
    await page.reload();await open()
-   await panel.getByText('Stop when: '+revised,{exact:true}).scrollIntoViewIfNeeded()
-
    assert.equal(await panel.locator('article').getByLabel('Stop condition',{exact:true}).inputValue(),revised)
    row=(await call(base)).obligations[0]
    assert.equal(row.owner_id,tenant.userId);assert.equal(row.due_at,revisedDue.getTime());assert.equal(row.stop_condition,revised);assert.equal(row.pendingTerms,null);assert.equal(row.state,'open')

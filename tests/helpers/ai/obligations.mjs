@@ -23,9 +23,11 @@ export async function obligationsJourney(){
  assert.equal(row.quote,body.quote)
  const duplicate=(await call('',{body,status:200})).data
  assert.equal(duplicate.id,created.id);assert.equal(duplicate.duplicate,true);assert.equal(duplicate.pendingChange,false)
- await call(`/${row.id}/accept`,{body:{version:1,ownerId:workspace.users.owner,dueAt:due},status:200})
- assert.equal((await call(`/${row.id}/accept`,{body:{version:1,ownerId:workspace.users.operator,dueAt:due+1000}})).status,409)
- await call(`/${row.id}/accept`,{body:{version:2,ownerId:workspace.users.operator,dueAt:due+1000},status:200})
+ const proposedVersion=row.version
+ await call(`/${row.id}/accept`,{body:{version:proposedVersion,ownerId:workspace.users.owner,dueAt:due},status:200})
+ assert.equal((await call(`/${row.id}/accept`,{body:{version:proposedVersion,ownerId:workspace.users.operator,dueAt:due+1000}})).status,409)
+ row=(await call('',{status:200})).data.obligations[0]
+ await call(`/${row.id}/accept`,{body:{version:row.version,ownerId:workspace.users.operator,dueAt:due+1000},status:200})
  await app.call(`/api/dashboard/projects/${p}/conversations/${v.conversationId}`,{token:owner,method:'PUT',body:{agent_id:workspace.users.operator},status:200})
  await app.call(`/api/dashboard/projects/${p}/conversations/${v.conversationId}`,{token:owner,method:'PUT',body:{agent_id:workspace.users.admin},status:200})
  await app.configure({})
@@ -50,12 +52,14 @@ export async function obligationsJourney(){
  await app.scheduled()
  assert.equal((await app.first("SELECT count(*) n FROM notification_inbox WHERE id LIKE 'followup:%'")).n,1,'a pending revision does not re-send the accepted reminder')
  assert.deepEqual(pending.pendingTerms,{ownerId:body.ownerId,dueAt:body.dueAt,stopCondition:body.stopCondition,dependencyId:'issue'})
- assert.equal((await call(`/${dependent.id}/accept`,{body:{version:3,ownerId:body.ownerId,dueAt:due}})).status,409)
- await call(`/${dependent.id}/accept`,{body:{version:4,ownerId:workspace.users.owner,dueAt:due,dependencyId:'issue',stopCondition:'Customer receives the revised update'},status:200})
+ assert.equal((await call(`/${dependent.id}/accept`,{body:{version:row.version,ownerId:body.ownerId,dueAt:due}})).status,409)
+ await call(`/${dependent.id}/accept`,{body:{version:pending.version,ownerId:workspace.users.owner,dueAt:due,dependencyId:'issue',stopCondition:'Customer receives the revised update'},status:200})
  await app.scheduled();await app.scheduled()
+ row=(await call('',{status:200})).data.obligations[0]
+ const reminderId=`followup:${dependent.id}:${row.version}`
  const reminders=await app.sql("SELECT * FROM notification_inbox WHERE id LIKE 'followup:%'")
- assert.equal(reminders.filter(n=>n.id===`followup:${dependent.id}:5`).length,1,'accepted obligation receives one internal reminder even on repeated schedules')
- assert.equal(reminders.find(n=>n.id===`followup:${dependent.id}:5`).email,0)
+ assert.equal(reminders.filter(n=>n.id===reminderId).length,1,'accepted obligation receives one internal reminder even on repeated schedules')
+ assert.equal(reminders.find(n=>n.id===reminderId).email,0)
  row=(await call('',{status:200})).data.obligations.find(o=>o.id===dependent.id)
  assert.equal(row.pendingTerms,null);assert.equal(row.stop_condition,'Customer receives the revised update');assert.equal(row.dependency.stale,true);assert.equal(row.dependency.progress,'unconfirmed')
  assert.doesNotMatch(row.draft.content,/have observed recovery/,'a closed issue without readback is not progress')
@@ -65,10 +69,10 @@ export async function obligationsJourney(){
  await app.db.prepare("UPDATE escalation_links SET recovery='observed' WHERE id='link'").run()
  row=(await call('',{status:200})).data.obligations.find(o=>o.id===dependent.id)
  assert.equal(row.dependency.progress,'recovery observed')
- assert.equal((await call(`/${row.id}/complete`,{body:{version:5,stopConditionMet:true,confirmationMessageId:message.id,quote:body.quote}})).status,409,'the original promise is not fresh completion evidence')
+ assert.equal((await call(`/${row.id}/complete`,{body:{version:row.version,stopConditionMet:true,confirmationMessageId:message.id,quote:body.quote}})).status,409,'the original promise is not fresh completion evidence')
  await v.say('Thank you; the export works now.')
  const confirmation=(await v.transcript()).messages.filter(m=>m.actor_role==='contact').at(-1)
- await call(`/${row.id}/complete`,{body:{version:5,stopConditionMet:true,confirmationMessageId:confirmation.id,quote:'the export works now'},status:200})
+ await call(`/${row.id}/complete`,{body:{version:row.version,stopConditionMet:true,confirmationMessageId:confirmation.id,quote:'the export works now'},status:200})
  row=(await call('',{status:200})).data.obligations[0]
  assert.equal(row.state,'completed');assert.equal(row.reminderDue,false);assert.equal(row.draft,null)
  assert.equal(row.completion.confirmationMessageId,confirmation.id);assert.equal(row.completion.reviewerId,workspace.users.owner)

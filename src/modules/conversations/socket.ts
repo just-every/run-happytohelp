@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {DurableObject} from 'cloudflare:workers'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
@@ -7,7 +8,7 @@ import {recordOnline} from '../collaboration/presence-store'
 
 export class ConversationSocket extends DurableObject<Env>{
  async authorized(a:Attachment):Promise<SocketActor|null>{
-  const scope=a.projectId?'EXISTS(SELECT 1 FROM memberships target WHERE target.user_id=s.actor_id AND target.project_id=?) AND s.role<>\'contact\'':`EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=s.project_id AND (s.role<>'contact' OR s.contact_id=c.contact_id AND EXISTS(SELECT 1 FROM contacts ct WHERE ct.id=c.contact_id AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1)))`
+  const scope=a.projectId?'EXISTS(SELECT 1 FROM memberships target WHERE target.user_id=s.actor_id AND target.project_id=?) AND s.role<>\'contact\'':`EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=s.project_id AND (s.role<>'contact' AND ${ticketScopeSql('s.actor_id')} OR s.role='contact' AND s.contact_id=c.contact_id AND EXISTS(SELECT 1 FROM contacts ct WHERE ct.id=c.contact_id AND COALESCE(json_extract(ct.metadata_json,'$.is_blocked'),0)!=1)))`
   const row=await this.env.DB.prepare(`SELECT s.actor_id,s.role,u.name,s.project_id,sf.verified_at factorAt,sf.method factorMethod,
    EXISTS(SELECT 1 FROM user_factors f WHERE f.user_id=s.actor_id AND f.confirmed_at IS NOT NULL) hasFactor,
    (SELECT json_extract(ps.settings_json,'$.two_factor_roles') FROM project_settings ps WHERE ps.project_id=s.project_id) twoFactorRoles,
@@ -24,7 +25,7 @@ export class ConversationSocket extends DurableObject<Env>{
  async replay(ws:WebSocket){
   const a=ws.deserializeAttachment() as Attachment,actor=await this.authorized(a)
   if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');return}
-  const rows=await this.env.DB.prepare('SELECT o.id eventId,m.* FROM conversation_outbox o JOIN messages m ON m.id=o.message_id WHERE '+(a.projectId?'o.project_id':'o.conversation_id')+'=? AND o.id>? ORDER BY o.id LIMIT 500').bind(a.projectId||a.conversationId,a.cursor).all()
+  const rows=await this.env.DB.prepare(`SELECT o.id eventId,m.* FROM conversation_outbox o JOIN messages m ON m.id=o.message_id JOIN conversations c ON c.id=o.conversation_id AND c.project_id=o.project_id WHERE ${a.projectId?'o.project_id':'o.conversation_id'}=? AND o.id>? ${actor.role==='contact'?'':`AND ${ticketScopeSql('?')}`} ORDER BY o.id LIMIT 500`).bind(a.projectId||a.conversationId,a.cursor,...(actor.role==='contact'?[]:[actor.actor_id])).all()
   for(const row of rows.results){
    if(actor.role==='contact')delete row.content_raw
    row.media=(await this.env.DB.prepare('SELECT id,filename,content_type,size FROM media WHERE message_id=?').bind(row.id).all()).results
@@ -75,6 +76,7 @@ export class ConversationSocket extends DurableObject<Env>{
     const actor=await this.authorized(a)
     if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');continue}
     if(event.operatorOnly===true&&actor.role==='contact')continue
+    if(actor.role!=='contact'&&!await this.env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND ${ticketScopeSql('?')}`).bind(event.conversationId,actor.actor_id).first())continue
     ws.send(JSON.stringify(event))
    }
    return new Response('ok')

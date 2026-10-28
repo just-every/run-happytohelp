@@ -12,7 +12,7 @@ export function sameFrontier(ticket:any,expected:ProblemFrontier){return ticket.
 export const problemAvailableSql=(alias='c')=>`${availableTicketSql(alias)} AND ${writableConversationSql(alias)} AND EXISTS(SELECT 1 FROM contacts pc WHERE pc.project_id=${alias}.project_id AND pc.id=${alias}.contact_id AND coalesce(json_extract(pc.metadata_json,'$.is_blocked'),0)!=1 AND coalesce(json_extract(pc.metadata_json,'$.is_deleted'),0)!=1)`
 export const problemRequesterSql=(alias='c')=>`(SELECT json_object('id',id,'name',name,'email',email,'metadata_json',metadata_json) FROM contacts WHERE project_id=${alias}.project_id AND id=${alias}.contact_id)`
 export async function problemTicket(env:Env,actor:Actor,id:string,authority:TicketAuthority){
- const guard=await ticketAuthority(env,actor,authority)
+ const guard=await ticketAuthority(env,actor,authority,'conversations.manage',id)
  const row=await env.DB.prepare(`SELECT c.*,${problemRequesterSql()} problem_requester_json FROM conversations c WHERE c.project_id=? AND c.id=? AND ${problemAvailableSql()} AND EXISTS(${guard.sql})`).bind(actor.projectId,id,...guard.params).first<any>()
  if(!row)throw new HTTPException(404,{message:'Ticket is unavailable'})
  const {problem_requester_json,...ticket}=row

@@ -25,6 +25,8 @@ roles.get(`${P}/roles`,async c=>{
 
 async function readRole(c:any,actor:{projectId:string;role:string},previousSelection:string|null=null){
  const body=await c.req.json().catch(()=>({}))
+ // Do not acknowledge a restriction until every ticket door has been qualified.
+ if(body.ticketScope!==undefined)throw new HTTPException(409,{message:'Ticket-group restrictions are not available yet.'})
  const name=text(body.name,60)
  if(!name)throw new HTTPException(400,{message:'Name the role.'})
  if(!['admin','operator','collaborator'].includes(body.base))throw new HTTPException(400,{message:'Choose what the role is based on: admin, agent or collaborator.'})

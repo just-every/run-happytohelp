@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {contactAvailableSql} from '../conversations/contact-privacy'
@@ -20,8 +21,8 @@ export async function ticketBatchEnvironment(env:Env,actor:Actor,ids:string[]):P
  (SELECT json_object('name',name,'email',email,'metadata_json',metadata_json) FROM contacts WHERE id=c.contact_id AND project_id=c.project_id) batch_contact,
  (SELECT json_group_object(field_id,json(value_json)) FROM ticket_field_values WHERE project_id=c.project_id AND conversation_id=c.id) batch_fields,
  (SELECT json_group_array(json_object('id',t.id,'name',t.name)) FROM conversation_tags ct JOIN workspace_tags t ON t.project_id=ct.project_id AND t.id=ct.tag_id WHERE ct.project_id=c.project_id AND ct.conversation_id=c.id) batch_tags
- FROM conversations c WHERE c.project_id=? AND c.id IN (SELECT value FROM json_each(?)) AND ${contactAvailableSql()}
- AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`).bind(actor.projectId,JSON.stringify(ids)).all<any>()
+ FROM conversations c WHERE c.project_id=? AND c.id IN (SELECT value FROM json_each(?)) AND ${contactAvailableSql()} AND ${ticketScopeSql('?')}
+ AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`).bind(actor.projectId,JSON.stringify(ids),actor.id).all<any>()
  const result={...env,[preparation]:{reads:new Map(),tickets:new Map(rows.results.map(row=>[row.id,row]))}}
  deferRequestAssignments(result)
  return result

@@ -1,3 +1,4 @@
+import {ticketScopeSql,requireTicketScope} from '../access/ticket-scope'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -13,7 +14,7 @@ import {compileFilters,parseFilters,queryJSON} from '../tickets/filters'
 import {compileSort,parseSort} from '../tickets/sort'
 import {savedQueue} from '../tickets/views'
 export const dashboard=new Hono<AppEnv>()
-export async function dashboardAccess(c:any){const actor=await requireActor(c);if(actor.role==='contact')throw new HTTPException(403);const row=await c.env.DB.prepare('SELECT c.*,m.role membership_role FROM conversations c JOIN memberships m ON m.project_id=c.project_id WHERE c.id=? AND m.user_id=? AND EXISTS(SELECT 1 FROM projects p WHERE p.id=c.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,"$.deleted_at") IS NOT NULL)').bind(c.req.param('conversationId'),actor.id).first();if(!row||c.req.param('projectId')&&row.project_id!==c.req.param('projectId'))throw new HTTPException(404);return {actor:{...actor,projectId:row.project_id,role:row.membership_role},conversation:row}}
+export async function dashboardAccess(c:any){const actor=await requireActor(c);if(actor.role==='contact')throw new HTTPException(403);const row=await c.env.DB.prepare(`SELECT c.*,m.role membership_role,${ticketScopeSql('m.user_id')} scope_allowed FROM conversations c JOIN memberships m ON m.project_id=c.project_id WHERE c.id=? AND m.user_id=? AND EXISTS(SELECT 1 FROM projects p WHERE p.id=c.project_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,"$.deleted_at") IS NOT NULL)`).bind(c.req.param('conversationId'),actor.id).first();if(!row||c.req.param('projectId')&&row.project_id!==c.req.param('projectId'))throw new HTTPException(404);if(!row.scope_allowed)await requireTicketScope(c.env,actor.id,row.project_id,row.id);delete row.scope_allowed;return {actor:{...actor,projectId:row.project_id,role:row.membership_role},conversation:row}}
 for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  dashboard.get(prefix,async c=>{
  const a=await requireActor(c)
@@ -21,7 +22,8 @@ for(const prefix of ['/conversations','/projects/:projectId/conversations']){
  const project=c.req.param('projectId')
  if(project)await scope(c)
  const page=Math.max(1,parseInt(c.req.query('page')||'1')||1),search=inboxSearchTerm(c)
- const conditions=["EXISTS(SELECT 1 FROM memberships m WHERE m.project_id=c.project_id AND m.user_id=?)",hasMessages,"NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)"],params:any[]=[a.id]
+ const conditions=["EXISTS(SELECT 1 FROM memberships m WHERE m.project_id=c.project_id AND m.user_id=?)",hasMessages,"NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)"],params:any[]=[a.id,a.id]
+ conditions.push(ticketScopeSql('?'))
  if(project){conditions.push('c.project_id=?');params.push(project)}
  const saved=await savedQueue(c.env,a,project,c.req.query('saved_view'))
  const requestedFilters=queryJSON(c.req.query('filters'),'filters'),requestedSort=queryJSON(c.req.query('sort'),'sort')

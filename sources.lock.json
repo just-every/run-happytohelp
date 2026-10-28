@@ -7128,7 +7128,7 @@
       "executable": false
     },
     "src/modules/support-channels/routes.ts": {
-      "sha256": "ad7012fa5f863575e1c497f03ed6d7052ed67a731d5ce10ac176d88ba8e4105e",
+      "sha256": "d53f7c6d247b153d860af87bbcd51b1eb3e57787016a6a585988cb3aa48e2913",
       "executable": false
     },
     "src/modules/support-channels/settings.css": {
@@ -12372,7 +12372,7 @@
       "executable": false
     },
     "tests/helpers/support-channels/journeys.mjs": {
-      "sha256": "615bfe96c4448dfc8b998b6e63e50d22d69b7663ea5683dfba5a43002513b8ab",
+      "sha256": "56a909c14fa70974de71606f4f9fdee3c913882cf04fea3c00caadd33a1005d0",
       "executable": false
     },
     "tests/helpers/training-portable.mjs": {

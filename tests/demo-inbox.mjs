@@ -14,6 +14,7 @@ const { getPlatformProxy } = await import('wrangler');
 const proxy = await getPlatformProxy({persist: false});
 try {
   const env = proxy.env, db = env.DB;
+  // Dashboard reads need both ticket-model groups and the stored native role scope.
   for (const file of ['0001_identity.sql','0002_conversations.sql','0003_identity_credentials.sql','0004_message_intent.sql','0005_widget_identity.sql','0007_conversation_history.sql','0070_management.sql','0071_management_preferences.sql','0080_integrations.sql','0050_knowledge.sql','0060_customer_context.sql','0060_customer_context_engine.sql','020_ai_support.sql','0103_contact_erasure.sql','0110_move_in.sql','111_move_in_identity_audit.sql','112_conversation_outcomes.sql','180_account_security.sql','130_ticket_model.sql','142_collaboration.sql','143_conversation_actions.sql','153_workflow_schedules.sql','161_suspended_email.sql','240_operator_presence.sql','251_knowledge_read_selection.sql','260_native_ticket_scope.sql']) {
     for (const sql of migrationStatements(await readFile(new URL('../migrations/' + file, import.meta.url), 'utf8'))) await db.prepare(sql).run();
   }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import useFileInput from 'use-file-input';
 import MacrosPicker from './MacrosPicker';
@@ -93,6 +93,7 @@ export default function ConversationForm({
     }));
     const composerRef = useRef(null);
     const textareaRef = useRef(null);
+    const insertedCaret = useRef(null);
     const hasContent = Boolean(content?.trim() || files.length);
     const isLoading = Boolean(loadingContent);
     const isComposerLocked = isLoading || Boolean(finalReason);
@@ -134,6 +135,25 @@ export default function ConversationForm({
         });
         return () => window.cancelAnimationFrame(frame);
     }, [ conversationId, focusRequest ]);
+
+    useLayoutEffect(() => {
+        const insertion = insertedCaret.current;
+        if (!insertion) return;
+        if (insertion.conversationId !== conversationId) { insertedCaret.current = null; return; }
+        if (helper || content !== insertion.content) return;
+        // Segment lengths must come from the committed controlled value. A frame
+        // scheduled by the picker can run while the previous draft is mounted.
+        const field = [...(composerRef.current?.querySelectorAll('textarea[data-content-offset]') || [])].find(element => {
+            const start = Number(element.dataset.contentOffset);
+            return insertion.caret >= start && insertion.caret <= start + element.value.length;
+        });
+        if (!field) return;
+        insertedCaret.current = null;
+        textareaRef.current = field;
+        field.focus({ preventScroll: true });
+        const position = insertion.caret - Number(field.dataset.contentOffset);
+        field.setSelectionRange(position, position);
+    }, [ content, helper, conversationId ]);
 
     const sendMessage = sendAndClose => {
         if (!canSend) return;
@@ -194,12 +214,9 @@ export default function ConversationForm({
         const draft = content || '';
         const offset = Number(textarea?.dataset.contentOffset || 0);
         const { text, caret } = insertSavedReply(draft, reply, textarea ? offset + textarea.selectionStart : draft.length, textarea ? offset + textarea.selectionEnd : draft.length);
+        insertedCaret.current = { conversationId, content: text, caret };
         onContentChange(text);
         setHelper(null);
-        window.requestAnimationFrame(() => {
-            const field = [...(composerRef.current?.querySelectorAll('textarea[data-content-offset]') || [])].find(element => {const start=Number(element.dataset.contentOffset);return caret >= start && caret <= start + element.value.length;});
-            if (field) {textareaRef.current=field;field.focus({preventScroll:true});const position=caret-Number(field.dataset.contentOffset);field.setSelectionRange(position,position);}
-        });
     };
 
     const handleComposerSurfaceClick = event => {

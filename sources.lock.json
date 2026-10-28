@@ -1684,7 +1684,7 @@
       "executable": false
     },
     "docs/contract/COVERAGE.json": {
-      "sha256": "8345e19bd738ad7245d900ba6fb4ae47d279c61b76ac9a1dcbbde05fb11a4f72",
+      "sha256": "3027315ae4c465334263acfceb86c08625ab20229e4f191fc8654b3541a32abf",
       "executable": false
     },
     "docs/contract/ID-MAP.json": {
@@ -2685,6 +2685,10 @@
     },
     "rer-setup.json": {
       "sha256": "4ca404a0aacfa8452cfae0ef09960c37e61d1586e7d638c1a5beb0a9aefec9e0",
+      "executable": false
+    },
+    "RULINGS.md": {
+      "sha256": "b46f077bb66b2a367b13225a4fe971dfa531d878e6f9df214b2a8f48c5c8968e",
       "executable": false
     },
     "RUN-LOCALLY.md": {

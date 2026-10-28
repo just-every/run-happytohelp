@@ -132,6 +132,10 @@
     {
       "id": "262_feedback_penny.sql",
       "buyerSteps": "FEEDBACK-001: add a Penny API connection and durable source handoff receipts. A requester-authored sharing permission and explicit operator approval are required. Penny owns its requesters and votes; pending/uncertain external writes never replay. Reconfigure the Penny API key after restore; sending handoffs restore as uncertain."
+    },
+    {
+      "id": "263_native_ticket_scope.sql",
+      "buyerSteps": "ACCESS-001: apply after 262 and before serving the updated Worker. Add native custom-role ticket group selection; NULL preserves existing workspace-wide visibility. Back up and restore role selections with native data. Existing migration names and bytes remain unchanged."
     }
   ]
 }

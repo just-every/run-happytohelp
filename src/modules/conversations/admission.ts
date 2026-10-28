@@ -1,3 +1,4 @@
+import {ticketScopeSql,requireTicketScope} from '../access/ticket-scope'
 import {companyPortalReply,portalTicketScope} from '../portal/company-visibility'
 import {workflowNow,workflowEnvironment} from '../workflows/clock'
 import {followupId,createFollowupStatement,carryFollowupStatements} from '../workflows/followups'
@@ -38,9 +39,11 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  const replayGuard=input.tokenAuthority?tokenGuard(input.tokenAuthority,projectId,input.tokenAuthority.scope==='messages:append'?'messages:append':'messages:write'):null
  const companyReply=input[companyPortalReply]===true&&actor.role==='contact'&&!!input.sessionHash&&!!input[messageAuthority]
  const authority=input[messageAuthority]
- const replayPredicate=(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')
- const replayArgs=[...(replayGuard?.params||[]),...(authority?.args||[])]
+ const nativeReplay=!input.tokenAuthority&&!input.generationId&&actor.role!=='contact'
+ const replayPredicate=(nativeReplay?` AND EXISTS(SELECT 1 FROM conversations scope_ticket WHERE scope_ticket.id=messages.conversation_id AND scope_ticket.project_id=messages.project_id AND ${ticketScopeSql('?','scope_ticket')})`:'')+(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')
+ const replayArgs=[...(nativeReplay?[actor.id]:[]),...(replayGuard?.params||[]),...(authority?.args||[])]
  const checkMembership=!input.tokenAuthority&&!input.generationId&&actor.role!=='contact'
+ if(checkMembership)await requireTicketScope(env,actor.id,projectId,conversationId,email?'email':'dashboard')
  // These observations are independent. Keep denial/replay precedence below,
  // and keep every live-authority and frontier predicate in the write itself.
  const observations=await env.DB.batch<any>([
@@ -86,6 +89,7 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
    args.push(actor.id,actor.role,email.sender)
   }
  }
+ if(checkMembership){predicates.push(ticketScopeSql('?'));args.push(actor.id)}
  if(input[scheduledAdmission]){const guard=input[scheduledAdmission]!;predicates.push(guard.sql);args.push(...guard.params)}
  if(input.sessionHash){predicates.push(activeSourceProjectSql('c.project_id'));predicates.push("EXISTS(SELECT 1 FROM sessions s WHERE s.token_hash=? AND s.actor_id=? AND s.revoked_at IS NULL AND s.expires_at>? AND (s.role='contact' AND s.project_id=c.project_id AND s.contact_id="+(companyReply?'?':'c.contact_id')+" OR s.role<>'contact' AND (s.project_id IS NULL AND s.role='operator' OR s.project_id=c.project_id AND EXISTS(SELECT 1 FROM memberships live WHERE live.project_id=s.project_id AND live.user_id=s.actor_id AND live.role=s.role))))");args.push(input.sessionHash,actor.id,Date.now(),...(companyReply?[actor.contactId||actor.id]:[]))}
  if(authority){predicates.push(`(${authority.sql})`);args.push(...authority.args)}

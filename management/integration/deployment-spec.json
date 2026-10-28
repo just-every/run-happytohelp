@@ -816,6 +816,12 @@
       "name": "262_feedback_penny.sql",
       "sha256": "0763293833bc7643746975d2974ed5c232ea1c0b4a736ae14c07639615e7928d",
       "sql": "CREATE TABLE feedback_penny_connections (\n project_id TEXT PRIMARY KEY REFERENCES projects(id), origin TEXT NOT NULL,\n token_cipher TEXT, updated_at INTEGER NOT NULL\n);\nCREATE TABLE feedback_penny_requesters (\n project_id TEXT NOT NULL REFERENCES projects(id), contact_id TEXT NOT NULL REFERENCES contacts(id),\n requester_id TEXT, claim_source_id TEXT NOT NULL, PRIMARY KEY(project_id,contact_id)\n);\nCREATE TABLE feedback_handoffs (\n source_id TEXT PRIMARY KEY REFERENCES feedback_sources(id) ON DELETE CASCADE,\n project_id TEXT NOT NULL REFERENCES projects(id), intent_hash TEXT NOT NULL,\n state TEXT NOT NULL CHECK(state IN ('sending','accepted','uncertain')),\n approved_by TEXT NOT NULL, consent_message_id TEXT NOT NULL,\n created_at INTEGER NOT NULL, settled_at INTEGER\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "263_native_ticket_scope.sql",
+      "sha256": "c0e7bdf31ea9c43f5188f5e8dfbcf9591527e043b46a91ee84a68b4e0f83428e",
+      "sql": "-- Additive custody only. Native role-management does not yet expose narrowing.\n-- NULL preserves every existing custom role's ticket visibility.\nALTER TABLE project_roles ADD COLUMN ticket_scope_json TEXT\n CHECK(ticket_scope_json IS NULL OR coalesce((json_valid(ticket_scope_json) AND json_type(ticket_scope_json)='object' AND json_type(ticket_scope_json,'$.groupIds')='array' AND json_type(ticket_scope_json,'$.includeUngrouped') IN ('true','false')),0));\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

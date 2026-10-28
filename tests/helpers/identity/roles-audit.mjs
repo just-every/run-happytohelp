@@ -1,3 +1,4 @@
+import {nativeTicketScopeAssertions} from './ticket-scope.mjs'
 import assert from 'node:assert/strict'
 import {startApp,sha} from '../../journeys/kit/app.mjs'
 import {challengeOf,consentPage,decide} from '../delegation/applications.mjs'
@@ -201,6 +202,8 @@ export async function rolesAuditJourney(){
   for(const status of ['draft','published'])assert.equal((await edit('collaborator-'+status,status)).status,403,status)
   assert.deepEqual(await app.first("SELECT status,content FROM knowledge_articles WHERE id='art-r'"),{status:'draft',content:'Edited narrowed-draft'})
   assert.ok((await app.first("SELECT count(*) n FROM audit_events WHERE action='permission.denied' AND actor_id=? AND target_type='grant'",w.users.operator)).n>=2)
+
+  await nativeTicketScopeAssertions(app)
 
   // The security log is append-only, kept for its retention except under a legal hold.
   await assert.rejects(app.db.prepare('UPDATE audit_events SET outcome=?').bind('failed').run(),/audit_append_only/)

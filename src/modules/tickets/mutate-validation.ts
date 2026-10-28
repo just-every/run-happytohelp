@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {validateAccountMembership} from '../forms/account-lookup'
 import {batchRead,batchTicket} from './request-batch'
 import {HTTPException} from 'hono/http-exception'
@@ -8,7 +9,7 @@ import {audit} from '../audit/record'
 import {writableConversationSql} from '../conversation-actions/merge-read'
 export interface TicketChange {expected_version?:number;expected_ticket_version?:number;expected_revision?:number;expected_last_message_id?:string|null;expected_updated_at?:number;status_id?:string;subject?:string;priority?:string;channel?:string;brand_id?:string;group_id?:string|null;requester_id?:string;submitter_id?:string;submitter_type?:string;fields?:Record<string,unknown>;agent_id?:string|null;assigned_to?:string|null;ai_id?:string|null;tags_add?:string[];tags_remove?:string[];add_tags?:string[];remove_tags?:string[]}
 export async function prepareTicketChange(env:Env,actor:Actor,id:string,input:TicketChange,authority:TicketAuthority){
- const change={...object(input)} as TicketChange,guard=await ticketAuthority(env,actor,authority)
+ const change={...object(input)} as TicketChange,guard=await ticketAuthority(env,actor,authority,'conversations.manage',id)
  const allowed=['expected_version','expected_ticket_version','expected_revision','expected_last_message_id','expected_updated_at','status_id','subject','priority','channel','brand_id','group_id','requester_id','submitter_id','submitter_type','fields','agent_id','assigned_to','ai_id','tags_add','tags_remove','add_tags','remove_tags']
  if(Object.keys(change).some(k=>!allowed.includes(k)))invalid('Unknown ticket change')
  if(change.assigned_to!==undefined){if(change.agent_id!==undefined&&change.agent_id!==change.assigned_to)invalid('Conflicting assignee');change.agent_id=change.assigned_to;delete change.assigned_to}
@@ -26,6 +27,7 @@ export async function prepareTicketChange(env:Env,actor:Actor,id:string,input:Ti
  if(change.brand_id!==undefined&&change.brand_id!==actor.projectId)invalid('Brand must be this workspace')
  if(change.group_id!==undefined){if(change.group_id!==null&&typeof change.group_id!=='string')invalid('Invalid group');next.group_id=change.group_id}
  if(next.group_id){predicates.push('EXISTS(SELECT 1 FROM ticket_groups WHERE project_id=c.project_id AND id=?)');params.push(next.group_id);if(!await env.DB.prepare('SELECT 1 FROM ticket_groups WHERE project_id=? AND id=?').bind(actor.projectId,next.group_id).first())invalid('Choose a workspace group')}
+ if(!authority.tokenAuthority){predicates.push(`EXISTS(SELECT 1 FROM (SELECT ? scope_user,? scope_destination) destination WHERE ${ticketScopeSql('destination.scope_user','c','destination.scope_destination')})`);params.push(actor.id,next.group_id);if(!await env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${ticketScopeSql('?3','c','?4')}`).bind(id,actor.projectId,actor.id,next.group_id).first())throw new HTTPException(403,{message:'Your role does not allow the destination group.'})}
  if(change.agent_id!==undefined){if(change.agent_id!==null&&typeof change.agent_id!=='string')invalid('Invalid assignee');next.assigned_to=change.agent_id}
  if(next.assigned_to){const sql=`SELECT 1 FROM memberships WHERE project_id=? AND user_id=? ${next.group_id?'AND EXISTS(SELECT 1 FROM ticket_group_members WHERE project_id=? AND group_id=? AND user_id=?)':''}`,args=[actor.projectId,next.assigned_to,...(next.group_id?[actor.projectId,next.group_id,next.assigned_to]:[])];if(!await batchRead(env,JSON.stringify([sql,args]),()=>env.DB.prepare(sql).bind(...args).first()))invalid('Assignee must belong to the workspace and selected group');predicates.push(`EXISTS(${sql})`);params.push(...args)}
  if(change.ai_id!==undefined){if(change.ai_id!==null&&typeof change.ai_id!=='string')invalid('Invalid assistant');next.current_ai_id=change.ai_id}

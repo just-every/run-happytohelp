@@ -99,8 +99,9 @@ joins by its original `ticket_id`; for a per-ticket response that omits it, set
 to distinguish supplied-empty from missing history. Event IDs, instance IDs,
 metric names, timestamps, audit status transitions, source targets and supplied
 elapsed units remain inert private history. Unknown event types stay labeled as
-unsupported. Privacy/redaction audit events refuse the ticket until the source
-conversation is reconciled; old text is never treated as the redacted version.
+unsupported. Privacy/redaction audit events are unsupported and refuse the ticket. Use a
+separately reconciled supported conversation export; old text is never treated
+as the redacted version.
 Missing files stay unavailable; current status never supplies an invented SLA
 result. Staff with current ticket access open **Details → Summary → Imported
 status and SLA history**. Customers cannot read this private history.

@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "90b615d16420f742953890191aff41233d3d947c8675827f5d7a4badb6dfe476",
+      "sha256": "ffb425f274e3e52e2d103d3677668a754c95651c9e9e65e7ec21f261e436870e",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "9ef064be6b78bc9810df9c7148c95fccec91b8610a963f7948fad7b65d54e1ab",
+      "sha256": "36551c9ad4b02eb51e1ac8b8a330d203287e53427638007373f208745e137c25",
       "executable": false
     },
     "DEMO.md": {
@@ -1748,7 +1748,7 @@
       "executable": false
     },
     "docs/moving-in.md": {
-      "sha256": "4aeb6e89760cac40456ab33e29874732d29d88b9f388e0776d80ede5fa59aea5",
+      "sha256": "dbdf5dc681d90f909304cecf2916906bc9516ba37eee09b09ddd5bfc0f0d576c",
       "executable": false
     },
     "docs/NAVIGATION.md": {
@@ -6176,7 +6176,7 @@
       "executable": false
     },
     "src/modules/management/contact-erasure/scope.ts": {
-      "sha256": "9e8c6256421f69461a5cc3edae7dba37f20a40408d23db1ffd1dbc6990b0eaed",
+      "sha256": "760dbc36845557cd353cce4fcd866ef6c343fa4a021385591c841af874a9ec40",
       "executable": false
     },
     "src/modules/management/contact-erasure/statements.ts": {
@@ -8712,7 +8712,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/ImportedHistory.jsx": {
-      "sha256": "a593321293afa6d9a2a798e0a4d1526ef923a2bd3550d69ce5729f5d166fe247",
+      "sha256": "ad036584d5bc5225ce611c436c86ddabff179f3149e45ed877bfb4c835a6d9e5",
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/TicketSection.jsx": {
@@ -9184,7 +9184,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-details.scss": {
-      "sha256": "80549a6d60a0a14a0c77806ac799b4944cd7332a3d1d8e5c1441e87df44fd2df",
+      "sha256": "6dc8500ab4ab8097ae08223f173b27d0129ef499a8bafbc3ccc5a650ea00ca5c",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-header.scss": {
@@ -12808,7 +12808,7 @@
       "executable": false
     },
     "tests/move-in/zendesk-offline-browser.mjs": {
-      "sha256": "ac95504816a5255d7e366d08185fbf9ed3e8a196a874cecaed14f3724cf9e797",
+      "sha256": "df4ecb3efdca0bd1e97dde3cf3e9f97ead09491b069c4c44d7363e29e4b62697",
       "executable": false
     },
     "tests/move-in/zendesk-offline-fixture.mjs": {
@@ -12816,7 +12816,7 @@
       "executable": false
     },
     "tests/move-in/zendesk-offline.mjs": {
-      "sha256": "e03e258d71dfe649f24463037a870fae43584a0da234703cb2a0af8625d95097",
+      "sha256": "20b1cd3cfe4a5eac7fea58a95b32320006cefe3b6007745c2b448138391c923f",
       "executable": false
     },
     "tests/move-in/zip.mjs": {

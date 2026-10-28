@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {zendeskCorpus,publicBytes,privateBytes} from './zendesk-offline-fixture.mjs'
+import {suppliedFreshdesk,publicBytes as freshdeskPublicBytes,privateBytes as freshdeskPrivateBytes} from './supplied-attachments.mjs'
 import {assertBusinessEquality} from './business-equality.mjs'
 const root='/api/move-in/projects/p/imports',post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),encode=records=>records.map(JSON.stringify).join('\n')
 /** One owner's offline move, inspected through the existing review, ticket,
@@ -55,11 +56,20 @@ export async function zendeskOfflineJourney(imported){
   assert.equal((await h.raw(`/api/conversations/${c.id}/imported-history`,{actor:'visitor'})).response.status,404)
   const visitor=JSON.stringify(await h.call(`/api/conversations/${c.id}/messages`,{actor:'visitor'}));assert.doesNotMatch(visitor,/private note|502/)
   for(const m of await rows('SELECT * FROM media'))assert.equal((await h.download(`/api/conversations/${c.id}/media/${m.id}`,'visitor')).status,m.message_id?200:404)
+  // Numeric source IDs are vendor-scoped: erasing Zendesk user 1 must not
+  // erase a private Freshdesk attachment authored by its different user 1.
+  const unrelated=suppliedFreshdesk(5001);unrelated[0].contact.id=1;unrelated[0].contact.name='synthetic-hh-101';unrelated[0].contact.email='synthetic-hh-101@example.test';unrelated[2].ticket.requester_id=1;unrelated[2].ticket.conversations.forEach(part=>{if(part.user_id===7)part.user_id=1});unrelated[2].ticket.conversations[0].user_id=1;unrelated[0].contact.other_emails=['synthetic-hh-101-alt@example.test'];unrelated[1].agent.contact.name='synthetic-hh-102';unrelated[1].agent.contact.email='synthetic-hh-102@example.test'
+  const fd=(await h.call(`${root}?vendor=freshdesk`,{method:'POST',headers:{'X-Import-Filename':'synthetic-hh-101.ndjson'},body:encode(unrelated)})).data
+  await h.drain();const fdReview=(await h.call(`${root}/${fd.id}`)).data;assert.equal(fdReview.plan.counts.rejected,0)
+  await h.call(`${root}/${fd.id}/apply`,post({fingerprint:fdReview.plan.fingerprint}));await h.drain()
+  const otherMedia=await rows("SELECT m.* FROM media m JOIN move_in_conversations s ON s.conversation_id=m.conversation_id WHERE s.vendor='freshdesk'");assert.equal(otherMedia.length,2)
   await h.call(`/api/management/projects/p/contacts/${c.contact_id}/erase`,post({}))
-  assert.equal((await rows('SELECT * FROM move_in_attachment_bytes')).length,0)
-  assert.equal((await rows('SELECT * FROM move_in_notes')).length,0)
-  assert.equal((await rows('SELECT * FROM ik_jobs')).length,0);assert.equal((await rows('SELECT * FROM move_in_records')).length,0)
-  assert.equal((await (await h.files).list({prefix:'move-in/'})).objects.length,0)
+  assert.equal((await rows('SELECT * FROM move_in_attachment_bytes')).length,2)
+  assert.equal((await rows('SELECT * FROM move_in_notes')).length,1)
+  for(const m of otherMedia)assert.deepEqual((await h.download(`/api/conversations/${m.conversation_id}/media/${m.id}`)).bytes,m.message_id?freshdeskPublicBytes:freshdeskPrivateBytes)
+  assert.equal((await h.call(`${root}/${fd.id}`)).data.state,'completed')
+  assert.equal((await rows("SELECT * FROM ik_jobs WHERE namespace='zendesk'")).length,0);assert.equal((await rows("SELECT r.* FROM move_in_records r JOIN move_in_runs i ON i.id=r.run_id WHERE i.vendor='zendesk'")).length,0)
+  assert.equal((await (await h.files).list({prefix:`move-in/p/${review.id}/`})).objects.length,0)
   assert.equal((await h.raw(`/api/conversations/${c.id}/imported-history`)).response.status,404)
   assert.equal((await h.call(`${root}/${review.id}`)).data.state,'erased')
   const corrected=structuredClone(records);corrected.filter(r=>r.ticket?.id===1001).forEach(r=>r.ticket.subject='synthetic-hh-corrected')

@@ -25,8 +25,8 @@ export async function assistantApp({bindings={},prompt='Use evidence',assistantM
   app.db.prepare('INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES(?,?,1)').bind(p,JSON.stringify({default_visitor_ai_id:'ai',default_responder:'ai'})),
  ])
  // A visitor on the widget with their own conversation; `say` admits a customer message at the current revision.
- const visitor=async(name='Visitor')=>{
-  const session=(await app.call('/api/identity/widget/session',{body:{widgetKey:workspace.widgetKey,name},headers:{Origin:'https://widget.example'},status:201})).data
+ const visitor=async(name='Visitor',identity={})=>{
+  const session=(await app.call('/api/identity/widget/session',{body:{...identity,widgetKey:workspace.widgetKey,name},headers:{Origin:'https://widget.example'},status:201})).data
   const conversation=(await app.call('/api/conversations',{token:session.token,body:{projectId:p},status:201})).data
   const path=`/api/conversations/${conversation.id}/messages`,transcript=async()=>(await app.call(path,{token:session.token,status:200})).data
   const say=async content=>{const current=await transcript();return (await app.call(path,{token:session.token,body:{localId:crypto.randomUUID(),content,expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})).data}

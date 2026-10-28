@@ -25,7 +25,7 @@ export async function recordKnowledgeEvent(env:Env,projectId:string,input:Knowle
  const proof=helpAccessWriteGuard(projectId,input.access),articleGuard=article?`EXISTS(SELECT 1 FROM knowledge_articles a WHERE a.id=? AND a.project_id=? AND a.status='published' AND a.publication_version=? AND ${articleAccessSql('a','?', '?')})`:'1=1'
  const result=await env.DB.prepare(`INSERT INTO knowledge_events SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE ${activeSourceProjectSql('?')} AND ${proof.sql} AND ${articleGuard} RETURNING id`).bind(crypto.randomUUID(),projectId,article?.article.id||null,locale,(input.brand||'').slice(0,200),input.kind,(input.query||'').slice(0,200),Number.isInteger(input.resultCount)?Math.max(0,input.resultCount!):null,input.visitorHash,input.access?.contactId||null,Date.now(),projectId,...proof.args,...(article?[article.article.id,projectId,article.article.publication_version,...accessParams(input.access)]:[])).all()
  if(!result.results.length)throw new HTTPException(409,{message:'Knowledge access changed'})
- return {recorded:true}
+ return {recorded:true,eventId:String(result.results[0].id)}
 }
 export async function recordHelpfulVote(env:Env,projectId:string,slug:string,input:{helpful:boolean;comment?:string;locale?:string;brand?:string;visitorHash:string;access?:HelpAccess}){
  if(typeof input.helpful!=='boolean'||typeof (input.comment||'')!=='string'||(input.comment||'').length>2000)throw new HTTPException(400,{message:'Invalid feedback'})

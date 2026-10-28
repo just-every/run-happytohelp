@@ -13,9 +13,9 @@ export function canonicalActorJson(actor:unknown):string{
  const canonical=(value:unknown):unknown=>Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical((value as Record<string,unknown>)[key])])):value
  return JSON.stringify(canonical(actor))
 }
-function commandOptions(json:string){try{const options=JSON.parse(json);delete options.application_origin;return JSON.stringify(options)}catch{return null}}
+function commandOptions(json:string){try{const options=JSON.parse(json);delete options.application_origin;delete options.operator_session_hash;return JSON.stringify(options)}catch{return null}}
 function storedActorJson(actorJson:string){try{return canonicalActorJson(JSON.parse(actorJson))}catch{return null}}
-export async function requestGeneration(env:Env,input:{projectId:string;conversationId:string;actor:Actor;expectedRevision:number;id?:string;kind?:'reply'|'suggestions';instruction?:string;options?:{tool?:string;message?:string;client_request_id?:string;display_request_version?:number;loading_message?:string}},configurationFailure:'reject'|'record'='reject',assignmentGuard?:AssignmentReplyGuard){
+export async function requestGeneration(env:Env,input:{projectId:string;conversationId:string;actor:Actor;sessionHash?:string;expectedRevision:number;id?:string;kind?:'reply'|'suggestions';instruction?:string;options?:{tool?:string;message?:string;client_request_id?:string;display_request_version?:number;loading_message?:string}},configurationFailure:'reject'|'record'='reject',assignmentGuard?:AssignmentReplyGuard){
  const profileSql=input.kind==='suggestions'?assistanceProfileSql:replyProfileSql
  const selected=await env.DB.prepare(`SELECT a.model FROM conversations c JOIN ai_profiles a ON a.id=${profileSql} AND a.project_id=c.project_id AND a.is_enabled=1 WHERE c.project_id=? AND c.id=?`).bind(input.projectId,input.conversationId).first<{model:string}>()
  if(!selected)throw new AiConfigurationError('enabled selected conversation AI')
@@ -25,8 +25,8 @@ export async function requestGeneration(env:Env,input:{projectId:string;conversa
  if(input.instruction && (input.actor.role==='contact'||input.instruction.length>16000))throw new Error('Operator instruction denied or too long')
  if(input.options?.tool&&!['improve','extend','shorten','complete'].includes(input.options.tool))throw new Error('Unknown assistant editing tool')
  if(input.options&&input.actor.role==='contact')throw new Error('Operator options denied')
- const clientOptions={...input.options};delete (clientOptions as Record<string,unknown>).application_origin
- const optionsJson=JSON.stringify({...clientOptions,...(env.APP_ORIGIN?{application_origin:new URL(String(env.APP_ORIGIN)).origin}: {})})
+ const clientOptions={...input.options};delete (clientOptions as Record<string,unknown>).application_origin;delete (clientOptions as Record<string,unknown>).operator_session_hash
+ const optionsJson=JSON.stringify({...clientOptions,...(input.sessionHash?{operator_session_hash:input.sessionHash}:{}),...(env.APP_ORIGIN?{application_origin:new URL(String(env.APP_ORIGIN)).origin}: {})})
  const actorJson=canonicalActorJson(input.actor)
  if(optionsJson.length>40000)throw new Error('Operator options too long')
  const id=input.id||crypto.randomUUID(),now=new Date().toISOString()

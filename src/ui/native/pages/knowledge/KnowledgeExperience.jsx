@@ -42,12 +42,17 @@ export default function KnowledgeExperience({ projectId, project, articles }) {
         <Feedback error={error} saved={saved}/>
         {!draft && !error && <p role="status">Loading Help Center settings…</p>}
         {draft && <form onSubmit={submit}>
+            <fieldset className="knowledge-governance-group"><legend>Published address</legend>
+                <Field name="knowledge-published-host" label="Help Center address" value={draft.publishedHost??'deployment-default'} onChange={(_, value) => change('publishedHost', value==='deployment-default'?null:value)} options={[{value:'deployment-default',label:'Keep the deployment’s current addresses'},{value:'',label:'Use built-in Help Center paths'},...(draft.approvedHosts||[]).map(host=>({value:host,label:`https://${host}`}))]} hint="Your hosting administrator configures DNS, TLS and the workspace’s allowed hosts first. Saving publishes this Help Center at the selected approved address."/>
+                {draft.publishedHost&&<p><a href={`https://${draft.publishedHost}`} target="_blank" rel="noreferrer">Open published Help Center</a></p>}
+            </fieldset>
             <fieldset className="knowledge-governance-group"><legend>Languages</legend>
                 <Field name="knowledge-locales" label="Available locales" type="textarea" rows={3} value={localeText} onChange={(_, value) => { markDirty(); setSaved(false); setLocaleText(value); }} required hint="One language tag per line, for example en, fr or pt-BR. Add a locale before writing its translations."/>
                 <Field name="knowledge-default-locale" label="Default locale" value={draft.defaultLocale} onChange={(_, value) => change('defaultLocale', value)} options={[...new Set([draft.defaultLocale, ...locales])].map(value => ({value, label: value}))}/>
                 <p className="settings-note">When a reviewed translation is unavailable, readers see the default language with a fallback notice.</p>
             </fieldset>
             <fieldset className="knowledge-governance-group"><legend>Page templates</legend>
+                <Field name="knowledge-link-color" label="Article link color" value={draft.linkColor||''} onChange={(_, value) => change('linkColor',value)} placeholder="#204b3a" hint="Optional six-digit hex color. Publication requires at least 4.5:1 contrast on white; leave empty to use the workspace’s readable accent."/>
                 <p className="settings-note">Use plain text with <code>{'{{title}}'}</code>, <code>{'{{summary}}'}</code> and <code>{'{{content}}'}</code>. Templates add text around the page content. Leave a template empty to use the standard page.</p>
                 <Field name="knowledge-template-type" label="Page to customize" value={type} onChange={(_, value) => setType(value)} options={templateTypes.map(([value, label]) => ({value, label}))}/>
                 <Field name="knowledge-template" label={`${templateTypes.find(([value]) => value === type)[1]} template`} value={template} type="textarea" rows={7} onChange={(_, value) => change('templates', {...draft.templates, [type]: value})}/>

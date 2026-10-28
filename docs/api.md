@@ -195,6 +195,107 @@ establish live Slack acceptance: **live Slack: not-supplied**.
 
 Slack posts one durable notification for a new native conversation once its first visitor message is committed. The notification includes up to 500 characters of that native visitor message, escaped through Base's Slack renderer. Empty widget conversations wait for that context. Erasure suppresses pending delivery and removes retained payloads; it cannot remove messages already accepted by Slack.
 
+
+### Production assistant traces
+
+`GET /api/ai-support/projects/:projectId/conversations/:conversationId/trace`
+requires workspace membership and `reports.view`. It returns up to 100 generations
+in creation order, immutable assistant configuration fingerprints, issued knowledge
+source/version references, attempt timings, numeric provider-round usage and the
+committed customer-message ID, when one exists. A completed provider attempt alone
+is not proof that a customer answer was committed. Cost estimates are USD provider
+accounting; missing or invalid round pricing yields `null` and `priceData: unavailable`.
+
+The response allowlists fields. It excludes prompts, customer text, raw provider
+errors, tool arguments and unknown usage metadata. Per-tool approval, scope, timing and failure receipts plus advice-procedure attribution are returned only from their retained server records. Main's cycle-aware `generations` view remains available beside the paginated `traces` view.
+
+### Requests after reading an article
+
+An article's **Submit a request** link carries an opaque `afterReading` receipt to
+the request form. The form forwards it on submission. The server attributes at most
+one article event per admitted ticket, only for a view within 30 minutes from the
+same reader or authenticated contact, in the same workspace, while that customer
+still has article access. Invalid receipts do not prevent support requests. Retries
+never duplicate the count. This adds no tracking cookie and makes no claim that the
+article caused the ticket. Existing knowledge contact export and erasure include
+these events. Deployment-level `PUBLIC_HELP_HOSTS` remains the host-routing door;
+leads may publish one of their workspace's deployment-approved hosts; DNS and TLS provisioning remain the hosting administrator's prerequisite.
+
+
+### Native follow-ups and advice procedures
+
+These session-authenticated doors are separate from the scoped integration API.
+They inherit native workspace permissions and cookie origin checks. They do not
+send customer messages automatically or add refund or other business-action tools.
+
+At `/api/ai-support/projects/:projectId/conversations/:conversationId/obligations`,
+GET lists quoted proposals and accepted history. POST proposes an exact
+`messageId`/`quote`, `ownerId`, future Unix-millisecond `dueAt`, `stopCondition`
+and optional linked `dependencyId`. POST `/:id/accept` requires the current
+`version`, accepted `ownerId` and `dueAt`; it can explicitly set a linked
+`dependencyId`. Only a human with conversation-management permission accepts
+material changes. A handoff does not silently change that accepted responsibility.
+POST `/:id/complete` requires a current `version`, `stopConditionMet: true`, a fresh human/customer `confirmationMessageId` and its exact `quote`; the original promise is not completion evidence. The reviewer and evidence ID remain inspectable. Completing the follow-up does not establish engineering progress. Model extraction can use `list_followup_dependencies` and `propose_followup`; the latter accepts a linked `dependencyId` or null and may propose `ownerId: "human"` for review. A customer-facing generation using either internal tool transfers to a responsible human; its model draft cannot pass customer-message admission. Operator assistance remains unsent for review. Internal reminders also chase missing or stale dependency readback before the pre-due drafting window. Reminders and pre-due drafts are permission scoped; a closed engineering
+issue without current readback and observed recovery remains unconfirmed.
+
+Leads manage advice procedures at `/api/ai-support/projects/:projectId/procedures`.
+POST `/:key/versions` creates an immutable `intent`, `instructions`, `model` and
+`config` (`tools`, `humanEscalation`, `maxCost`, `maxTokens`). Tools can only narrow
+the application's existing read-only surface. Submit an ordinary training run
+with `procedureVersionId` to evaluate that exact version: only customer-reply
+cases with declared `expected.must_include_all` outcomes and the version's model
+and budget qualify. These evaluations perform no business actions.
+
+POST `/:key/releases` accepts `versionId`, `evaluationId` and a `cohortLimit` of
+1–100 only after every stored case passes. POST `/:key/releases/:releaseId/cohort`
+explicitly enrolls a `conversationId`. POST `.../revoke-tool` narrows authority;
+POST `.../stop` stops the rollout. A stopped conversation fails closed until a
+lead explicitly enrolls it in another approved release. Restored archives retain
+history and stop all releases; they never restore live rollout authority.
+
+A version may carry a `proposal` naming `fromVersionId`, `resolutionIds` and an
+`expectedEffect`; its cited native cycles must include a reopening or negative
+CSAT. POST `/:key/versions/:versionId/review` records an `approved` or `rejected`
+review and `reason`; GET `.../reviews` preserves both decisions. A proposal needs
+approval as well as passing evaluations before release. POST
+`/:key/releases/:releaseId/check-regression` explicitly checks the rollout and
+reports its gate and stops it on any attributed reopening. Native resolution reopenings also enforce that gate automatically: the exact active rollout stops, queued/running generations cancel and an active human regains responsibility. Returning to AI requires explicit enrollment in an approved release and a human handback.
+
+GET `/api/ai-support/projects/:projectId/procedure-reports/:key` requires report
+permission. It reports committed-answer resolution-cycle denominators, reopen and
+negative-CSAT rates, supporting cycles (100 per page using `offset`), evaluation
+coverage and numeric recorded usage. Unversioned cycles and attempts without a
+committed answer are excluded from resolution denominators. Provider costs retain
+unknown prices; closing a cycle never establishes verified customer recovery.
+
+
+### Reviewed knowledge from support resolutions
+
+At `/api/knowledge/:projectId/gaps`, editors inspect exact normalized no-result
+search topics by locale/brand and cited reopened cycles. This groups existing
+native evidence; it does not claim semantic diagnosis.
+
+POST `/api/knowledge/:projectId/proposals` with `conversationId`, `resolutionId`,
+`messageId`, exact `quote`, `title`, private `categoryId` and the workspace default
+`locale`. The source must still be resolved with positive native customer
+feedback. The generated draft masks known contact names, addresses, URLs,
+credential labels and long identifiers. A named editor must review free text:
+automatic masking does not guarantee arbitrary anonymization.
+
+POST `/:id/reject` records a reason. POST `/:id/publish` requires edited `title`
+and `content`, optional `slug`, and explicit `redactionReviewed: true`; neither
+creation nor rejection publishes. GET the proposals to inspect source links,
+review history and later cited resolution/reopen cycles. POST
+`/:id/analyze-corrections` creates deduplicated review proposals from source or
+later cited reopenings. No correction automatically changes a published article.
+
+Customer-derived publication is conservatively limited to the source customer's
+proven email-domain collection. Ordinary article/category edits cannot broaden
+that scope. Public reuse and translations remain held; source erasure removes
+the derived article and proposal. Native AI search/read/citation admission uses
+the recipient's current proof. Unscoped search stays public only. Customer model
+text is withheld until durable message admission, which revalidates every issued
+source even when the model did not select it as a citation.
 ## Machine-created support requests
 
 An owner or admin can issue a machine credential through the existing token

@@ -86,13 +86,13 @@ export async function trainingBrowserJourney({runtime,browser,shot}){
     await createButton.click(); await page.getByRole('alert').waitFor();
     await page.getByText('Run created.', {exact: false}).waitFor();
     assert.ok(await createButton.isDisabled(), 'failed list refresh does not enable another creation');
-    await page.locator('.workspace-settings form').evaluate(form => form.requestSubmit());
+    await page.locator('.workspace-settings .training-run-form').evaluate(form => form.requestSubmit());
     assert.deepEqual(posts, [path], 'programmatic submit cannot create while refresh failed');
     await page.unroute('**' + path, failRefresh);
     const refresh = await hold(path);
     await page.getByRole('button', {name: 'Load runs', exact: true}).click(); await refresh.responseReady;
     assert.ok(await createButton.isDisabled(), 'explicit delayed recovery keeps creation disabled');
-    await page.locator('.workspace-settings form').evaluate(form => form.requestSubmit());
+    await page.locator('.workspace-settings .training-run-form').evaluate(form => form.requestSubmit());
     assert.deepEqual(posts, [path]);
     refresh.release(); await refresh.deliveryDone;
     await page.getByRole('button', {name: 'Evaluation', exact: true}).waitFor();
@@ -133,7 +133,7 @@ export async function trainingBrowserJourney({runtime,browser,shot}){
     await createButton.click(); const committed = await post.responseReady;
     assert.equal(committed.status(), 201, 'native POST committed once');
     assert.ok(await page.getByRole('button', {name: 'Creating…', exact: true}).isDisabled());
-    await page.locator('.workspace-settings form').evaluate(form => form.requestSubmit());
+    await page.locator('.workspace-settings .training-run-form').evaluate(form => form.requestSubmit());
     assert.deepEqual(posts, [path, path], 'programmatic repeated submit cannot replay the pending POST');
     await switchTrainingProject(page, 'Training Beta', beta.id); await createButton.waitFor();
     const before = [...gets];

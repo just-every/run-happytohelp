@@ -100,3 +100,8 @@
   .knowledge-metrics > div { min-width: 0; padding: 12px; }
   .knowledge-metrics dd { font-size: 22px; overflow-wrap: anywhere; }
 }
+
+.knowledge-row-menu summary,.knowledge-icon-control{position:relative}
+.knowledge-control-tooltip{position:absolute;right:0;bottom:calc(100% + 4px);z-index:10;width:max-content;max-width:180px;padding:4px 8px;border-radius:6px;background:var(--ink);color:var(--surface);font-size:13px;font-weight:500;line-height:1.3;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 0s,visibility 0s;transition-delay:0s}
+.knowledge-row-menu summary:hover>.knowledge-control-tooltip,.knowledge-icon-control:hover>.knowledge-control-tooltip{opacity:1;visibility:visible;transition-delay:300ms}
+.knowledge-row-menu summary:focus>.knowledge-control-tooltip,.knowledge-icon-control:focus>.knowledge-control-tooltip{opacity:1;visibility:visible;transition-delay:0s}

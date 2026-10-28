@@ -43,17 +43,17 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  const replayPredicate=(nativeReplay?` AND EXISTS(SELECT 1 FROM conversations scope_ticket WHERE scope_ticket.id=messages.conversation_id AND scope_ticket.project_id=messages.project_id AND ${ticketScopeSql('?','scope_ticket')})`:'')+(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')
  const replayArgs=[...(nativeReplay?[actor.id]:[]),...(replayGuard?.params||[]),...(authority?.args||[])]
  const checkMembership=!input.tokenAuthority&&!input.generationId&&actor.role!=='contact'
- if(checkMembership)await requireTicketScope(env,actor.id,projectId,conversationId,email?'email':'dashboard')
  // These observations are independent. Keep denial/replay precedence below,
  // and keep every live-authority and frontier predicate in the write itself.
  const observations=await env.DB.batch<any>([
-  env.DB.prepare('SELECT c.contact_id,c.resolved_at,c.assigned_to,c.group_id,c.status_id,c.status_category,c.ticket_version,(SELECT MAX(ordinal) FROM conversation_resolutions WHERE conversation_id=c.id) ordinal FROM conversations c WHERE c.id=? AND c.project_id=?').bind(conversationId,projectId),
+  env.DB.prepare(`SELECT c.contact_id,c.resolved_at,c.assigned_to,c.group_id,c.status_id,c.status_category,c.ticket_version,${checkMembership?ticketScopeSql('?'):'1'} native_scope_allowed,(SELECT MAX(ordinal) FROM conversation_resolutions WHERE conversation_id=c.id) ordinal FROM conversations c WHERE c.id=? AND c.project_id=?`).bind(...(checkMembership?[actor.id]:[]),conversationId,projectId),
   env.DB.prepare(`SELECT * FROM messages WHERE conversation_id=? AND project_id=? AND local_id=? ${replayPredicate}`).bind(conversationId,projectId,localId,...replayArgs),
   ...(checkMembership?[env.DB.prepare('SELECT 1 FROM memberships WHERE project_id=? AND user_id=? AND role=?').bind(projectId,actor.id,actor.role)]:[]),
   ...(input.generationId?[env.DB.prepare('SELECT ai_id FROM ai_generations WHERE id=? AND project_id=? AND conversation_id=?').bind(input.generationId,projectId,conversationId)]:[])
  ])
  const scope=observations[0].results[0]
  if(!scope||(!input.generationId&&actor.role==='contact'&&!email&&!companyReply&&scope.contact_id!==(actor.contactId||actor.id)))return {accepted:false,reason:'conversation_access_denied'}
+ if(checkMembership&&scope&&!scope.native_scope_allowed)await requireTicketScope(env,actor.id,projectId,conversationId,email?'email':'dashboard')
  if(checkMembership&&!observations[2].results[0])return {accepted:false,reason:'conversation_access_denied'}
  const generation=input.generationId?observations[2].results[0]:null
  if(input.generationId&&!generation)return {accepted:false,reason:'generation_not_found'}

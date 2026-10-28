@@ -802,8 +802,8 @@
     {
       "binding": "DB",
       "name": "260_native_ticket_scope.sql",
-      "sha256": "36e3d30b5775b259c54fd6228d8b14178850dac72b88174fcf2cca055aefc539",
-      "sql": "-- Additive custody only. Native role-management does not yet expose narrowing.\n-- NULL preserves every existing custom role's ticket visibility.\nALTER TABLE project_roles ADD COLUMN ticket_scope_json TEXT\n CHECK(ticket_scope_json IS NULL OR (json_valid(ticket_scope_json) AND json_type(ticket_scope_json)='object' AND json_type(ticket_scope_json,'$.groupIds')='array' AND json_type(ticket_scope_json,'$.includeUngrouped') IN ('true','false')));\n"
+      "sha256": "c0e7bdf31ea9c43f5188f5e8dfbcf9591527e043b46a91ee84a68b4e0f83428e",
+      "sql": "-- Additive custody only. Native role-management does not yet expose narrowing.\n-- NULL preserves every existing custom role's ticket visibility.\nALTER TABLE project_roles ADD COLUMN ticket_scope_json TEXT\n CHECK(ticket_scope_json IS NULL OR coalesce((json_valid(ticket_scope_json) AND json_type(ticket_scope_json)='object' AND json_type(ticket_scope_json,'$.groupIds')='array' AND json_type(ticket_scope_json,'$.includeUngrouped') IN ('true','false')),0));\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

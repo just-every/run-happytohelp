@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "2b367b83ebac72a8d97ada4c2e985d3bb26e6e515c937f7af97f99b84a5d7f6d",
+      "sha256": "3214f611a867e9104796e8611f6c7d2338d8146d584879c1358f21c552729342",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "04c99902efc72c80c6fbc6d61ace27443db123937db4dbd56f312ac7cb091ca7",
+      "sha256": "f6167b81f0a3e6f2e8bd75c4832900d43cf632b3b20c623853d31b88206e6f18",
       "executable": false
     },
     "DEMO.md": {
@@ -11420,7 +11420,7 @@
       "executable": false
     },
     "tests/helpers/account-lookup-journey.mjs": {
-      "sha256": "a311966f72527d650bf7e056f024a5076329c1e086dcee9953b731db8f3a38c3",
+      "sha256": "7e021cf926377ba062233d8f7257773496fcc4aad40eed2f08c29cb8aea8f7aa",
       "executable": false
     },
     "tests/helpers/ai/answers.mjs": {

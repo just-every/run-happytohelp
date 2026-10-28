@@ -210,10 +210,11 @@ not a prerequisite for an account-owned token or a reason to broaden its scope.
 The declaration names DB, FILES, CONVERSATIONS, JOBS, its dead-letter queue and
 scheduled recovery. Declared secret bindings include `OWNER_EMAIL`,
 `H2H_SETUP_TOKEN`, `INTEGRATION_ENCRYPTION_KEY`, `INBOUND_EMAIL_TOKEN`,
-`EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`. Before a deployment dry run
-or real deployment, supply the mail provider (`resend`, `sendgrid` or `cloudflare`),
-verified sender address and sending token in private environment variables or an
-owned 0600 `--env-file`. Provider and
+`EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`. Before a deployment dry run,
+supply the mail provider choice (`resend`, `sendgrid` or `cloudflare`) and sender
+address as private inputs. Sending tokens and Cloudflare credentials are needed
+for real deployment; the dry-run reports missing inputs without provider requests.
+Use private environment variables or an owned 0600 `--env-file`. Provider and
 sender are stored as secret bindings too, so the deployment declaration contains
 no account-specific values. Rer supplies the owner email (`OWNER_EMAIL`) from real local setup, or from the environment
 when you set it. Deploy refuses the local placeholder `owner@run-happytohelp.test`
@@ -252,6 +253,10 @@ Cloudflare API fixture through the real package command:
 ```sh
 pnpm run preflight --consent-read-only --env-file ~/happytohelp-production.env
 ```
+
+Use `pnpm run preflight --help` for usage without credentials or requests.
+The preflight needs a scoped token permitting the three Workers reads for the
+selected account (Workers Scripts: Read), with no mail or resource-write permission.
 
 Put `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in private environment
 variables or that owned 0600 KEY=VALUE file. As with deploy, the file overrides

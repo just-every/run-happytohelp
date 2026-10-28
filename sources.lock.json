@@ -2568,7 +2568,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "3ac8f1845902cddd23328ab5a6fa1cc315c84172f9ee6185827e82eb4b9e4395",
+      "sha256": "5752a682dd03c9d7dcb3055fef853e8eedd933767d48fd8b1de5e804ae0ebd0d",
       "executable": false
     },
     "package.json": {
@@ -3072,11 +3072,11 @@
       "executable": false
     },
     "scripts/installer/preflight-inputs.mjs": {
-      "sha256": "1e1b16fb835b7d65369c3b6fcbdcb95c1bde99fbd20e931005f4c6d2ff9f3b7d",
+      "sha256": "ed24f48003611f66d06f9eb3c49f639ad939fd6e182a5c169e77da747393fe8b",
       "executable": false
     },
     "scripts/installer/preflight.mjs": {
-      "sha256": "56b36186fb5f3959c61e86ad37359171b62619c5b9c96134665ec5b6b5f968f3",
+      "sha256": "09c765e4ba2aba526f6905e10d2a1712f105ade11c9d999f9082cb5e65a0c9e2",
       "executable": false
     },
     "scripts/installer/provider-preflight.mjs": {
@@ -11932,7 +11932,7 @@
       "executable": false
     },
     "tests/helpers/installer/provider-preflight.mjs": {
-      "sha256": "0657c028f1a88dbdc514e9aff0191588a82901e84ae4d4c5106ed80697d8f8ba",
+      "sha256": "d77cb6d8f7f23f25050c6a943e10c1838ff47d9f191703c6a546aab4bac2e691",
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {

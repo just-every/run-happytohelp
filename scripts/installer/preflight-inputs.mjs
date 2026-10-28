@@ -4,6 +4,7 @@ import {hexId} from '@runeditrun/rer/internal/modules/deploy-kit/validation.mjs'
 export class PreflightRefusal extends Error {}
 
 export function preflightOptions(args){
+ if(args.length===1&&args[0]==='--help')return {help:true};
  const options={environment:'production',consent:false};
  for(let i=0;i<args.length;i++){
   const arg=args[i];
@@ -30,6 +31,6 @@ export async function preflightCredentials(root,{envFile}){
  if(!token)throw new PreflightRefusal('Preflight needs CLOUDFLARE_API_TOKEN in the private environment or --env-file. Nothing was requested.');
  if(!accountId)throw new PreflightRefusal('Preflight needs CLOUDFLARE_ACCOUNT_ID in the private environment or --env-file. Nothing was requested.');
  if(!/^[A-Za-z0-9_-]{20,256}$/.test(token))throw new PreflightRefusal('Preflight needs a valid CLOUDFLARE_API_TOKEN shape (20–256 ASCII letters, digits, underscores or hyphens). Nothing was requested.');
- if(!hexId(accountId))throw new PreflightRefusal('Preflight needs a valid CLOUDFLARE_ACCOUNT_ID shape (32 nonzero hexadecimal digits). Nothing was requested.');
+ if(!hexId(accountId))throw new PreflightRefusal('Preflight needs a valid CLOUDFLARE_ACCOUNT_ID shape (32 hexadecimal digits, not all zero). Nothing was requested.');
  return {accountId,token};
 }

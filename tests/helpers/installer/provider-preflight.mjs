@@ -64,6 +64,8 @@ globalThis.fetch=async(input,options={})=>{
   for(const entry of requests)assert.deepEqual({...entry,url:undefined},{method:'GET',url:undefined,headers:['authorization'],authenticated:true,body:false,redirect:'error'});
   return {output,requests};
  }
+ const help=await invoke(['--help'],{CLOUDFLARE_API_TOKEN:'',CLOUDFLARE_ACCOUNT_ID:''});
+ assert.deepEqual(help.requests,[],'help needs neither credentials nor consent and makes no request');
  const consent=['--consent-read-only'];
  const existing=await invoke(consent);
  assert.deepEqual(existing.requests.map(row=>row.url),expected,'only the three ownerDeploy GETs, no mail or other host');

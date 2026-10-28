@@ -25,12 +25,13 @@ export async function conversationMailJourney(){
   const owner='mail-owner-token',notices=await threadNotifications(f,owner)
   await configureSender(f,owner)
   assert.equal((await app.call('/api/integrations/email/inbound',{body:{messageId:'forged'}})).status,403)
-  assert.equal(await f.email(raw('first-mail','inbound@example.com'),{from:'customer@example.com',to:'inbound@example.com',direct:true}),undefined)
-  const first=await f.claim('first-mail'),id=first.conversation_id,path=`/api/conversations/${id}/messages`
+  const firstMessageId='first-mail@customer.example'
+  assert.equal(await f.email(raw(firstMessageId,'inbound@example.com'),{from:'customer@example.com',to:'inbound@example.com',direct:true}),undefined)
+  const first=await f.claim(firstMessageId),id=first.conversation_id,path=`/api/conversations/${id}/messages`
   const transcript=()=>app.ok(path,{token:'operator-token'})
   const initial=await transcript();assert.equal(initial.messages.length,1)
   await notices.admitted(id)
-  assert.equal(await f.email(raw('first-mail','inbound@example.com'),{from:'customer@example.com',to:'inbound@example.com',direct:true}),undefined)
+  assert.equal(await f.email(raw(firstMessageId,'inbound@example.com'),{from:'customer@example.com',to:'inbound@example.com',direct:true}),undefined)
   assert.equal((await transcript()).messages.length,1)
   const address=await f.replyAddress(id,'customer@example.com');assert.ok(address.includes('+r.'))
   const reply={messageId:'gateway-reply',to:address,from:'customer@example.com',text:'The seam is torn on the left boot.'}
@@ -106,7 +107,7 @@ export async function conversationMailJourney(){
   assert.ok(machine.origin.reasons.includes('auto-submitted'))
   assert.equal(mail.sent.length,beforeAutomatic)
   await f.email(automatic,{from:'customer@example.com',to:address,direct:true});await f.idle();assert.equal(mail.sent.length,beforeAutomatic)
-  await continueViaMailbox({f,tls,owner,id})
+  await continueViaMailbox({f,tls,owner,id,parentMessageId:first.id})
   // The public message command cannot impersonate the inbound claim namespace.
   const current=await transcript()
   assert.equal((await app.call(path,{token:owner,body:{localId:'email:forged',content:'Forged mail',expectedRevision:current.revision}})).status,400)

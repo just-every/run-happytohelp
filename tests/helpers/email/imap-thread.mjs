@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 
 // The customer continues the same ticket after the lead connects its mailbox. Header threading
 // crosses the new IMAP transport; the next native Send crosses its real SMTP implementation.
-export async function continueViaMailbox({f,tls,owner,id}){
+export async function continueViaMailbox({f,tls,owner,id,parentMessageId}){
  const {app}=f,base='/api/management/projects/p/mailboxes',path=`/api/conversations/${id}/messages`
  // Use the newly connected inbox's own address. Reusing the legacy gateway
  // address would route its messages through email_settings before this inbox.
@@ -10,7 +10,9 @@ export async function continueViaMailbox({f,tls,owner,id}){
  const box=(await app.ok(base+'/imap',{token:owner,body:command})).data
  assert.equal(box.status,'connected');assert.equal(box.provider,'imap')
  await app.ok(`/api/dashboard/projects/p/conversations/${id}/actions`,{token:owner,body:{action:'assignAi',data:{ai_id:null}}})
- const raw=(key,automatic=false)=>`From: Customer <customer@example.com>\r\nTo: ${command.address}\r\nMessage-ID: <${key}>\r\nIn-Reply-To: <first-mail>\r\nSubject: My café parcel\r\nAuthentication-Results: mx.customer.example; dkim=pass header.d=example.com; dmarc=pass header.from=example.com\r\n${automatic?'Auto-Submitted: auto-replied\r\n':''}Content-Type: text/plain; charset=utf-8\r\n\r\nThe café parcel arrived. Thank you.\r\n`
+ // Reference the actual admitted RFC Message-ID. A bare <first-mail> token
+ // cannot be resolved by the header-threading parser, which requires local@domain.
+ const raw=(key,automatic=false)=>`From: Customer <customer@example.com>\r\nTo: ${command.address}\r\nMessage-ID: <${key}@customer.example>\r\nIn-Reply-To: ${parentMessageId}\r\nSubject: My café parcel\r\nAuthentication-Results: mx.customer.example; dkim=pass header.d=example.com; dmarc=pass header.from=example.com\r\n${automatic?'Auto-Submitted: auto-replied\r\n':''}Content-Type: text/plain; charset=utf-8\r\n\r\nThe café parcel arrived. Thank you.\r\n`
  const transcript=()=>app.ok(path,{token:owner}),poll=()=>app.ok(`${base}/${box.id}/poll`,{token:owner,body:{}})
  const before=(await transcript()).messages.length
  tls.messages.push(raw('imap-followup'))

@@ -1684,15 +1684,15 @@
       "executable": false
     },
     "docs/contract/COVERAGE.json": {
-      "sha256": "17303f617be38779707c72e5efe9c8921ad53f4951aa2bb37f9f0cecb39e56dd",
+      "sha256": "a02878c5e175573f5aa119508f993c77cd3c2d3c288e22ab94384452c8ccb748",
       "executable": false
     },
     "docs/contract/DONE-AUDIT.md": {
-      "sha256": "37ab20ff495fd77e5f3e3a124e192a9a78a8c11ba6df71b24cfc737ffe3b3f8f",
+      "sha256": "605d635109d272127db62b9e81aa349d48478e1b5250b450806c15a61009bb08",
       "executable": false
     },
     "docs/contract/ID-MAP.json": {
-      "sha256": "5956cb34828d36d025250c7ab8b9a541ade842719b085416abe63e21c0374e4f",
+      "sha256": "597dfd6369bbfe5413cf36d1235720092fa608b47e0827faed62f78d2e65aa16",
       "executable": false
     },
     "docs/contract/machine-api.md": {
@@ -11740,7 +11740,7 @@
       "executable": false
     },
     "tests/helpers/hubspot/browser.mjs": {
-      "sha256": "f9550c630b3f2332d3c9d93189576f651cef32cfb33395c2a4defb769a17fd66",
+      "sha256": "b85a8736452dc725740ed0babdeb5861bce9b2b3be7e08d7141a5ceb61ec0eed",
       "executable": false
     },
     "tests/helpers/hubspot/outbound.mjs": {

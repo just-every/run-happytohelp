@@ -80,6 +80,8 @@ export const Provider = (props) => {
     const conversationProjects = useRef({});
     const [ isMainVisible, setIsMainVisible ] = useState(false);
     const [ resolutionErrors, setResolutionErrors ] = useState({});
+    const [ resolvingConversations, setResolvingConversations ] = useState({});
+    const resolutionRequests = useRef(new Map());
     const [ unreadMessages, setUnreadMessages ] = useState([]);
     const isWindowFocused = useWindowFocus();
     const pluginsRef = useRef([]);
@@ -199,12 +201,21 @@ export const Provider = (props) => {
         if (resolved === undefined) {
             resolved = true;
         }
+        // Controls and plugins cannot race a new status write against the pending
+        // acknowledgement. Identical requests share it; an opposite intent is refused.
+        const pending = resolutionRequests.current.get(conversation.id);
+        if (pending) {
+            if (pending.resolved === resolved) return pending.request;
+            const message = 'Wait for the current conversation status change to finish.';
+            return Promise.reject(Object.assign(new Error(message), { displayMessage: message }));
+        }
 
         const previous = { resolved_at: conversation.resolved_at ?? null };
+        setResolvingConversations(current => ({ ...current, [conversation.id]: true }));
         setResolutionErrors(({ [conversation.id]: _, ...rest }) => rest);
         updateConversation(conversation.id, { resolved_at: resolved ? new Date() : null });
 
-        return Api.update(`/projects/${ conversation.project_id }/conversations/${ conversation.id }`, { resolved })
+        const request = Api.update(`/projects/${ conversation.project_id }/conversations/${ conversation.id }`, { resolved })
             .then(data => {
                 updateConversation(data.data.id, data.data);
                 sendPluginEvent('resolveConversation', data.data);
@@ -214,7 +225,13 @@ export const Provider = (props) => {
                 const message = `Could not ${ resolved ? 'close' : 'reopen' } this conversation: ${ error.message || 'the server refused the change' }.`;
                 setResolutionErrors(errors => ({ ...errors, [conversation.id]: message }));
                 throw Object.assign(error, { displayMessage: message });
+            })
+            .finally(() => {
+                resolutionRequests.current.delete(conversation.id);
+                setResolvingConversations(({ [conversation.id]: _, ...rest }) => rest);
             });
+        resolutionRequests.current.set(conversation.id, { request, resolved });
+        return request;
     }
 
     const updateConversation = (conversationId, updated, options = {}) => {
@@ -619,6 +636,7 @@ export const Provider = (props) => {
         updateConversation,
         resolveConversation,
         resolutionErrors,
+        resolvingConversations,
         currentAgent,
         agents,
         ais,

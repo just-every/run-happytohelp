@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "happytohelp/business-connectors",
+  "version": "0.1.0",
+  "sourcePaths": [
+    "src/modules/business-connectors",
+    "src/ui/native/pages/business-connectors",
+    "migrations/260_business_connectors.sql",
+    "scripts/installer/business-archive.mjs",
+    "tests/journeys/connections.mjs",
+    "tests/helpers/business-connectors",
+    "migrations/261_business_source_fields.sql",
+    "migrations/262_business_role_fences.sql"
+  ],
+  "selectedEditionDependencies": [
+    "happytohelp/api-integrations"
+  ],
+  "runtime": "Workers TypeScript with D1 and bounded HTTPS fetch",
+  "license": "MIT",
+  "notices": [
+    "LICENSE"
+  ],
+  "editionIntegration": {
+    "sourceOwner": "just-every/happytohelp",
+    "requiredContracts": [
+      "Native sessions, permissions, step-up, audit and erasure",
+      "Existing integration AES-GCM credential custody"
+    ],
+    "verificationScope": "Local Worker/D1 and network-edge provider fixtures. Live provider sandbox qualification is pending."
+  }
+}

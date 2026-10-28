@@ -1,3 +1,4 @@
+import BusinessPanel from '../../native/pages/business-connectors/Panel';
 import ProductionTrace from './conversation/ProductionTrace';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -139,6 +140,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
     return <div className="conversation-details">
         <TicketSummary conversation={ conversation } record={ record } workflows={ workflows } escalationUpdates={ escalationUpdates } onOpenSection={ openSection } />
         <div className="ticket-sections">
+            { record && section('business', 'Business context', <BusinessPanel projectId={ conversation.project_id } conversationId={ conversation.id } />) }
             { section('trace', 'Execution trace', <ProductionTrace conversation={ conversation } active={ Boolean(isShown) && open.has('trace') } />) }
             { record && section('fields', 'Ticket fields', <TicketEditor conversation={ conversation } record={ record } />) }
             { workflows && section('schedules', 'Schedules', <WorkflowPanel conversation={ conversation } workflows={ workflows } onBadge={ badgeSetters.schedules } />, badges.schedules) }

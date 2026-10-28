@@ -1,8 +1,9 @@
+import {businessJourney} from '../helpers/business-connectors/journeys.mjs';
 import test from 'node:test'
 import {journey} from '../connections/claims.mjs'
 
 // Connections through the real API, settings and dispatcher doors (tests/connections holds each journey's scenarios).
-for(const key of ['credentials','api','delivery','slack'])test(...journey(key))
+for(const key of ['credentials','api','delivery','slack']){const [title,run]=journey(key);test(title,async()=>{await run();if(key==='api')await businessJourney();});}
 
 import {sharingJourney,updatesJourney,custodyJourney} from '../helpers/escalations/journeys.mjs'
 test('engineering context is chosen per message and attachment across GitHub, Linear, Jira, Slack and Teams, with reciprocal links, concurrent claims, revoked installation authority and uncertain outcomes never replayed',sharingJourney)

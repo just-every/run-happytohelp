@@ -120,6 +120,18 @@
     {
       "id": "259_account_lookup_fields.sql",
       "buyerSteps": "FORMS-001: apply after 258 before serving the updated Worker. Extend native ticket fields with account lookups while retaining existing definitions, historical typed values and workflow journaling. Back up and restore with the native data. Account choices require verified current explicit membership and a deliberately published field; company ticket visibility grants no lookup eligibility."
+    },
+    {
+      "id": "260_business_connectors.sql",
+      "buyerSteps": "Apply before serving business connector routes. Business credentials are excluded from exports; reconnect provider accounts after restore. Restore cancels unexecuted approvals and preserves unknown outcomes without replay."
+    },
+    {
+      "id": "261_business_source_fields.sql",
+      "buyerSteps": "Apply after 260. Source plan and support entitlement properties are opt-in; sales lifecycle and community level confer no support rights."
+    },
+    {
+      "id": "262_business_role_fences.sql",
+      "buyerSteps": "Apply after 261. Custom role and membership role changes invalidate in-flight business connector write authority."
     }
   ]
 }

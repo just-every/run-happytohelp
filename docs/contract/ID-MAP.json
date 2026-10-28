@@ -1,0 +1,456 @@
+{
+  "schema": 1,
+  "old": "37d807e8cf269f85484e4af19558f1460b7345eb",
+  "ids": {
+    "NATIVE-001": {
+      "how": "kept",
+      "to": [
+        "NATIVE-001"
+      ]
+    },
+    "IDENTITY-002": {
+      "how": "kept",
+      "to": [
+        "IDENTITY-002"
+      ]
+    },
+    "IDENTITY-001": {
+      "how": "kept",
+      "to": [
+        "IDENTITY-001"
+      ]
+    },
+    "FIRST-RUN-001": {
+      "how": "kept",
+      "to": [
+        "FIRST-RUN-001"
+      ]
+    },
+    "LOCAL-MAIL-001": {
+      "how": "kept",
+      "to": [
+        "LOCAL-MAIL-001"
+      ]
+    },
+    "CONVERSATION-001": {
+      "how": "kept",
+      "to": [
+        "CONVERSATION-001"
+      ]
+    },
+    "DELIVERY-001": {
+      "how": "kept",
+      "to": [
+        "DELIVERY-001"
+      ]
+    },
+    "UI-001": {
+      "how": "kept",
+      "to": [
+        "UI-001"
+      ]
+    },
+    "MOVE-IN-001": {
+      "how": "kept",
+      "to": [
+        "MOVE-IN-001"
+      ]
+    },
+    "OUTCOMES-001": {
+      "how": "kept",
+      "to": [
+        "OUTCOMES-001"
+      ]
+    },
+    "REPORTS-001": {
+      "how": "kept",
+      "to": [
+        "REPORTS-001"
+      ]
+    },
+    "CONNECTIONS-001": {
+      "how": "kept",
+      "to": [
+        "CONNECTIONS-001"
+      ]
+    },
+    "ACTIVATION-001": {
+      "how": "kept",
+      "to": [
+        "ACTIVATION-001"
+      ]
+    },
+    "AI-001": {
+      "how": "kept",
+      "to": [
+        "AI-001"
+      ]
+    },
+    "KNOWLEDGE-001": {
+      "how": "kept",
+      "to": [
+        "KNOWLEDGE-001"
+      ]
+    },
+    "CONTEXT-001": {
+      "how": "kept",
+      "to": [
+        "CONTEXT-001"
+      ]
+    },
+    "DELEGATION-001": {
+      "how": "kept",
+      "to": [
+        "DELEGATION-001"
+      ]
+    },
+    "TRAINING-001": {
+      "how": "kept",
+      "to": [
+        "TRAINING-001"
+      ]
+    },
+    "INTEGRATION-001": {
+      "how": "kept",
+      "to": [
+        "INTEGRATION-001"
+      ]
+    },
+    "PUBLIC-001": {
+      "how": "kept",
+      "to": [
+        "PUBLIC-001"
+      ]
+    },
+    "MIGRATION-001": {
+      "how": "kept",
+      "to": [
+        "MIGRATION-001"
+      ]
+    },
+    "SOURCE-001": {
+      "how": "kept",
+      "to": [
+        "SOURCE-001"
+      ]
+    },
+    "DESK-001": {
+      "how": "kept",
+      "to": [
+        "DESK-001"
+      ]
+    },
+    "WIDGET-001": {
+      "how": "kept",
+      "to": [
+        "WIDGET-001"
+      ]
+    },
+    "MAIL-001": {
+      "how": "kept",
+      "to": [
+        "MAIL-001"
+      ]
+    },
+    "MAIL-002": {
+      "how": "kept",
+      "to": [
+        "MAIL-002"
+      ]
+    },
+    "OUTBOUND-001": {
+      "how": "kept",
+      "to": [
+        "OUTBOUND-001"
+      ]
+    },
+    "CHANNELS-001": {
+      "how": "kept",
+      "to": [
+        "CHANNELS-001"
+      ]
+    },
+    "CHANNELS-002": {
+      "how": "kept",
+      "to": [
+        "CHANNELS-002"
+      ]
+    },
+    "VOICE-001": {
+      "how": "kept",
+      "to": [
+        "VOICE-001"
+      ]
+    },
+    "QUEUE-001": {
+      "how": "kept",
+      "to": [
+        "QUEUE-001"
+      ]
+    },
+    "TRIAGE-001": {
+      "how": "kept",
+      "to": [
+        "TRIAGE-001"
+      ]
+    },
+    "QUEUE-002": {
+      "how": "kept",
+      "to": [
+        "QUEUE-002"
+      ]
+    },
+    "QUEUE-003": {
+      "how": "kept",
+      "to": [
+        "QUEUE-003"
+      ]
+    },
+    "MACRO-001": {
+      "how": "kept",
+      "to": [
+        "MACRO-001"
+      ]
+    },
+    "QUEUE-004": {
+      "how": "kept",
+      "to": [
+        "QUEUE-004"
+      ]
+    },
+    "STATUS-001": {
+      "how": "kept",
+      "to": [
+        "STATUS-001"
+      ]
+    },
+    "SLA-001": {
+      "how": "kept",
+      "to": [
+        "SLA-001"
+      ]
+    },
+    "AUTOMATION-001": {
+      "how": "kept",
+      "to": [
+        "AUTOMATION-001"
+      ]
+    },
+    "AUTOMATION-002": {
+      "how": "kept",
+      "to": [
+        "AUTOMATION-002"
+      ]
+    },
+    "NOTIFY-001": {
+      "how": "kept",
+      "to": [
+        "NOTIFY-001"
+      ]
+    },
+    "CONVERSATION-002": {
+      "how": "kept",
+      "to": [
+        "CONVERSATION-002"
+      ]
+    },
+    "CONVERSATION-003": {
+      "how": "kept",
+      "to": [
+        "CONVERSATION-003"
+      ]
+    },
+    "CUSTOMER-001": {
+      "how": "kept",
+      "to": [
+        "CUSTOMER-001"
+      ]
+    },
+    "COMMERCE-001": {
+      "how": "kept",
+      "to": [
+        "COMMERCE-001"
+      ]
+    },
+    "BILLING-001": {
+      "how": "kept",
+      "to": [
+        "BILLING-001"
+      ]
+    },
+    "CRM-001": {
+      "how": "kept",
+      "to": [
+        "CRM-001"
+      ]
+    },
+    "ESCALATION-001": {
+      "how": "kept",
+      "to": [
+        "ESCALATION-001"
+      ]
+    },
+    "API-001": {
+      "how": "kept",
+      "to": [
+        "API-001"
+      ]
+    },
+    "API-002": {
+      "how": "kept",
+      "to": [
+        "API-002"
+      ]
+    },
+    "MOVE-IN-002": {
+      "how": "kept",
+      "to": [
+        "MOVE-IN-002"
+      ]
+    },
+    "MOVE-IN-003": {
+      "how": "kept",
+      "to": [
+        "MOVE-IN-003"
+      ]
+    },
+    "MOVE-IN-004": {
+      "how": "kept",
+      "to": [
+        "MOVE-IN-004"
+      ]
+    },
+    "PORTAL-001": {
+      "how": "kept",
+      "to": [
+        "PORTAL-001"
+      ]
+    },
+    "FORMS-001": {
+      "how": "kept",
+      "to": [
+        "FORMS-001"
+      ]
+    },
+    "KNOWLEDGE-002": {
+      "how": "kept",
+      "to": [
+        "KNOWLEDGE-002"
+      ]
+    },
+    "KNOWLEDGE-003": {
+      "how": "kept",
+      "to": [
+        "KNOWLEDGE-003"
+      ]
+    },
+    "BRANDS-001": {
+      "how": "kept",
+      "to": [
+        "BRANDS-001"
+      ]
+    },
+    "ACCESS-001": {
+      "how": "kept",
+      "to": [
+        "ACCESS-001"
+      ]
+    },
+    "IDENTITY-003": {
+      "how": "kept",
+      "to": [
+        "IDENTITY-003"
+      ]
+    },
+    "MOBILE-001": {
+      "how": "kept",
+      "to": [
+        "MOBILE-001"
+      ]
+    },
+    "OUTCOMES-002": {
+      "how": "kept",
+      "to": [
+        "OUTCOMES-002"
+      ]
+    },
+    "REPORTS-002": {
+      "how": "kept",
+      "to": [
+        "REPORTS-002"
+      ]
+    },
+    "AGENT-001": {
+      "how": "kept",
+      "to": [
+        "AGENT-001"
+      ]
+    },
+    "PROCEDURE-001": {
+      "how": "kept",
+      "to": [
+        "PROCEDURE-001"
+      ]
+    },
+    "AGENT-002": {
+      "how": "kept",
+      "to": [
+        "AGENT-002"
+      ]
+    },
+    "FEEDBACK-001": {
+      "how": "kept",
+      "to": [
+        "FEEDBACK-001"
+      ]
+    },
+    "ERASURE-001": {
+      "how": "kept",
+      "to": [
+        "ERASURE-001"
+      ]
+    },
+    "AUDIT-001": {
+      "how": "kept",
+      "to": [
+        "AUDIT-001"
+      ]
+    },
+    "PORTABILITY-001": {
+      "how": "kept",
+      "to": [
+        "PORTABILITY-001"
+      ]
+    },
+    "ASSURANCE-001": {
+      "how": "kept",
+      "to": [
+        "ASSURANCE-001"
+      ]
+    },
+    "PUSH-001": {
+      "how": "kept",
+      "to": [
+        "PUSH-001"
+      ]
+    },
+    "PUSH-002": {
+      "how": "kept",
+      "to": [
+        "PUSH-002"
+      ]
+    },
+    "PUSH-003": {
+      "how": "kept",
+      "to": [
+        "PUSH-003"
+      ]
+    },
+    "PUSH-004": {
+      "how": "kept",
+      "to": [
+        "PUSH-004"
+      ]
+    }
+  }
+}

@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "c52b4ddbfad26af8c28cdcad563e101f44d5a455a4f8133ca7235408c752a844"
+    "sha256": "a44bae4aae36d7a2e3d5e2da4e080d3c92eb11f226f6e7322b23680f43e6f982"
   },
   "components": [
     {
@@ -2577,11 +2577,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "874e00b6f24059ead6c7c65f96275465b926f9b37be3db884f5bf43fe7ab5a99",
+      "sha256": "4476579b1cd6913aef10146589256ba0f45917db524b9581629c9b91230ef496",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "2001dd4915928e30d0b24d87a051fef2b7cb93f9fde0444c4cf3648ca76648a1",
+      "sha256": "72008fe41ace82388f608ec18833c3f132aa22df250f676ca00894bee3621aa7",
       "executable": false
     },
     "public/fonts/fonts.css": {

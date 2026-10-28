@@ -15,3 +15,4 @@
 .create-email-ticket .new-ticket-optional-fields summary { min-height:44px; padding:10px 0; cursor:pointer; }
 .create-email-ticket .new-ticket-optional-fields summary:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
 .create-email-ticket .ticket-field:has(.form-check-input) label { min-height:44px; display:flex; align-items:center; }
+.create-email-ticket .modal-header .btn-close { box-sizing:border-box; width:44px; height:44px; padding:0; margin:-10px -10px -10px auto; flex-shrink:0; }

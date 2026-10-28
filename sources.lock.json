@@ -8468,7 +8468,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/CreateEmailTicket.css": {
-      "sha256": "13c08c10a7940e35983fea9ac78cbe9b21c4f629e4ff31423a14f9c81f8b3ff6",
+      "sha256": "6b3e9cabee22aef77d3a64704581ea9decd8ef562a2be2cfd9e43b62246cbe6d",
       "executable": false
     },
     "src/ui/dashboard/components/CreateEmailTicket.jsx": {
@@ -11888,7 +11888,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ui-browser.mjs": {
-      "sha256": "83e32e27425e18fd4f7282908a0ce41914a02dddeb84dc9438e7c377df958d0c",
+      "sha256": "7f618dd3542669e7a079f01dd792f8a5781a6b700cff332f80f37e50cd7c17ca",
       "executable": false
     },
     "tests/helpers/inbox/visual-edit-browser.mjs": {

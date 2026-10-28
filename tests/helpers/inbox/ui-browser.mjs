@@ -103,6 +103,7 @@ export async function outboundTicketBrowser(){
    await page.route('**'+base+'/tickets/options',async route=>{const response=await route.fetch();await new Promise(resolve=>setTimeout(resolve,600));try{await route.fulfill({response})}catch{}},{times:1})
    await open()
    const dialog=page.getByRole('dialog',{name:'New ticket',exact:true}),requester=`synthetic-happytohelp-${width}@customer.example`,subject=`Replacement parcel ${width}`,content=`Your replacement parcel ships today (${width}).`
+   if(width===1440){const close=dialog.getByRole('button',{name:'Close',exact:true}),target=await close.boundingBox();assert.ok(target.width>=44&&target.height>=44);await dialog.getByLabel('Brand workspace',{exact:true}).focus();await page.keyboard.press('Shift+Tab');await page.locator('.ui-tooltip').filter({hasText:'Close'}).waitFor({state:'visible'})}
    await dialog.getByLabel('Requester email',{exact:true}).fill('draft@customer.example')
    await dialog.getByLabel('Brand workspace',{exact:true}).selectOption(other.id)
    await dialog.getByText('No connected mailboxes are available.',{exact:false}).waitFor()

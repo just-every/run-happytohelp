@@ -207,14 +207,15 @@ export default function ConversationForm({
 
     // The textarea stays mounted while the picker is open, so its selection is still the cursor the agent left.
     const insertReply = (reply, metadata) => {
-        if (metadata?.references) onReferencesChange?.(metadata.references);
+        const insertionReferences = mergeReferences(editorReferences,metadata?.references);
+        if (metadata?.references) onReferencesChange?.(insertionReferences);
         if (metadata?.usage_id || metadata?.reply_type) onMacroApplied?.(reply, metadata);
         if (metadata?.reply_type === 'note') { setHelper(null); return; }
         const textarea = textareaRef.current;
         const draft = content || '';
         const offset = Number(textarea?.dataset.contentOffset || 0);
         const { text, caret } = insertSavedReply(draft, reply, textarea ? offset + textarea.selectionStart : draft.length, textarea ? offset + textarea.selectionEnd : draft.length, metadata?.references?.find(reference => reference.token === reply)?.mode === 'link' ? ' ' : '\n\n');
-        insertedCaret.current = { conversationId, content: separateReferences(text,metadata?.references || editorReferences), caret: separateReferences(text.slice(0,caret),metadata?.references || editorReferences).length };
+        insertedCaret.current = { conversationId, content: separateReferences(text,insertionReferences), caret: separateReferences(text.slice(0,caret),insertionReferences).length };
         onContentChange(insertedCaret.current.content);
         setHelper(null);
     };

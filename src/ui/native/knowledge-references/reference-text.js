@@ -12,6 +12,17 @@ export function referenceParts(content = '') {
     return parts;
 }
 
+/** Cards already supply paragraph spacing visually. Keep those separators in
+ * stored content, outside the editable text ranges and their caret offsets. */
+export function editableReferenceParts(content) {
+    return referenceParts(content).map((part,index,parts) => {
+        if (part.token) return part;
+        const leading = index > 0 ? part.text.match(/^(?:\r?\n){1,2}/)?.[0].length || 0 : 0;
+        const trailing = index < parts.length - 1 ? part.text.match(/(?:\r?\n){1,2}$/)?.[0].length || 0 : 0;
+        return {...part,start:part.start + leading,text:part.text.slice(leading,Math.max(leading,part.text.length - trailing))};
+    });
+}
+
 /** Keep the visible block boundaries in the opaque text that is saved and sent. */
 export function separateReferences(content, references = []) {
     const parts = referenceParts(content);

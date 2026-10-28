@@ -7,3 +7,7 @@
 @media(max-width:575px) { .create-email-ticket .settings-grid { grid-template-columns:minmax(0,1fr); } }
 .create-email-ticket section { overflow-wrap:anywhere; }
 .create-email-ticket .notice-preview-message { white-space:pre-wrap; }
+.create-email-ticket .form-control, .create-email-ticket .form-select, .create-email-ticket .btn { min-height:44px; }
+.create-email-ticket .ticket-field:has(.form-check-input) { min-height:44px; display:flex; align-items:center; gap:12px; }
+.create-email-ticket .ticket-field:has(.form-check-input) label { margin:0; }
+.create-email-ticket .ticket-field .form-check-input { min-width:24px; min-height:24px; }

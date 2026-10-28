@@ -3,7 +3,8 @@ import {HTTPException} from 'hono/http-exception'
 import type {Actor,AppEnv,Env} from '../../platform/env'
 import type {DeferEmailDelivery} from '../integrations/email'
 import {requestRoom} from '../integrations/notification-budget'
-import {requireProject} from '../../platform/auth'
+import {scope} from './common'
+import {outboundOptionsRoutes} from './outbound-options'
 import {admitMessage,messageCommitStatements} from '../conversations/admission'
 import {noticeCommand,outboundTicketInput,type OutboundTicketInput} from './outbound-ticket-input'
 import {previewOutboundNotices,confirmOutboundNotices} from './outbound-notices'
@@ -13,6 +14,7 @@ export type OutboundTicketCommitted=(env:Env,message:Record<string,unknown>,acto
  * requester authority: only the current operator can create an outbound ticket. */
 export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCommitted){
  const routes=new Hono<AppEnv>()
+ routes.route('/',outboundOptionsRoutes())
  async function create(c:Context<AppEnv>,actor:Actor,input:OutboundTicketInput,notice=false){
   const sessionHash=c.get('sessionHash')
   if(input.kind==='email'&&!onCommittedMessage)throw new HTTPException(503,{message:'Outbound email delivery is unavailable'})
@@ -38,17 +40,18 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
   return {...result,conversation:current,...(generationError?{generationError}:{})}
  }
  routes.post('/projects/:projectId/tickets',async c=>{
-  const actor=await requireProject(c,c.req.param('projectId'),true),body=await c.req.json()
+  const actor=await scope(c) as Actor,body=await c.req.json()
+  if(body.brandId!==undefined&&body.brandId!==actor.projectId)throw new HTTPException(400,{message:'Choose the brand workspace before creating a ticket'})
   if(body.requesters!==undefined)throw new HTTPException(400,{message:'Use the service notice preview before sending to several requesters'})
   const result=await create(c,actor,outboundTicketInput(body))
   return c.json(result,!result.accepted?409:result.duplicate?200:201)
  })
  routes.post('/projects/:projectId/tickets/notices/preview',async c=>{
-  const actor=await requireProject(c,c.req.param('projectId'),true),preview=await previewOutboundNotices(c.env,actor,c.get('sessionHash'),await c.req.json())
+  const actor=await scope(c) as Actor,preview=await previewOutboundNotices(c.env,actor,c.get('sessionHash'),await c.req.json())
   return c.json({recipients:preview.recipients,confirmation:preview.confirmation})
  })
  routes.post('/projects/:projectId/tickets/notices',async c=>{
-  const actor=await requireProject(c,c.req.param('projectId'),true),inputs=await confirmOutboundNotices(c.env,actor,c.get('sessionHash'),await c.req.json()),results=[]
+  const actor=await scope(c) as Actor,inputs=await confirmOutboundNotices(c.env,actor,c.get('sessionHash'),await c.req.json()),results=[]
   // Read completed admissions once. Replaying a long prefix must never starve
   // its remaining rows; every retry still rechecks the current route authority.
   const saved=(await c.env.DB.prepare(`SELECT cmd.local_id,m.id AS admitted_message_id,c.* FROM operator_ticket_commands cmd JOIN conversations c ON c.id=cmd.conversation_id AND c.project_id=cmd.project_id LEFT JOIN messages m ON m.conversation_id=c.id AND m.project_id=c.project_id AND m.local_id=cmd.local_id WHERE EXISTS(SELECT 1 FROM contacts ct WHERE ct.id=c.contact_id AND ct.project_id=c.project_id AND COALESCE(json_extract(ct.metadata_json,'$.is_erasing'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.is_deleted'),0)!=1) AND cmd.project_id=? AND cmd.actor_id=? AND cmd.local_id IN (SELECT value FROM json_each(?))`).bind(actor.projectId,actor.id,JSON.stringify(inputs.map(input=>input.localId))).all<any>()).results

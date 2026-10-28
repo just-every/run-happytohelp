@@ -87,6 +87,13 @@ export async function outboundTicketBrowser(){
   for(const width of [1440,390]){
    const project=await call('/api/management/projects',{name:`Synthetic parcel support ${width}`,allowedOrigin:runtime.origin},owner.token),projectId=project.id,base=`/api/dashboard/projects/${projectId}`,management=`/api/management/projects/${projectId}`
    const mailbox=(await call(management+'/mailboxes',{provider:'forwarding',address:`synthetic-happytohelp-ticket-${width}@support.example`,displayName:''},owner.token)).data
+   const reason=(await call(management+'/ticket-fields',{name:'Delivery reason',type:'dropdown',options:['replacement','question']},owner.token)).data
+   const reference=(await call(management+'/ticket-fields',{name:'Delivery reference',type:'regex',required:true,validation:{pattern:'^DEL-[0-9]+$'}},owner.token)).data
+   const parcels=(await call(management+'/ticket-fields',{name:'Parcel count',type:'number'},owner.token)).data
+   const form=(await call(`/api/forms/projects/${projectId}/forms`,{title:'Replacement delivery',enabled:true,fields:[{fieldId:reason.id,required:true},{fieldId:reference.id,required:true,condition:{fieldId:reason.id,operator:'equals',value:'replacement'}},{fieldId:parcels.id}]},owner.token)).data
+   const group=(await call(management+'/ticket-groups',{name:'Delivery team',members:[owner.actor.id]},owner.token)).data
+   const other=await call('/api/management/projects',{name:`Synthetic empty brand ${width}`,allowedOrigin:runtime.origin},owner.token)
+   const existingRequester=(await call(management+'/contacts',{name:'Synthetic parcel customer',email:`synthetic-happytohelp-${width}@customer.example`},owner.token)).data
    const context=await browser.newContext({viewport:{width,height:width===390?844:1000}})
    await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
    const page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message))
@@ -94,20 +101,49 @@ export async function outboundTicketBrowser(){
    const open=async()=>{await page.goto(`${runtime.origin}/projects/${projectId}/conversations`);await page.getByRole('button',{name:'New ticket',exact:true}).click();await page.getByRole('dialog',{name:'New ticket',exact:true}).waitFor()}
    await open()
    const dialog=page.getByRole('dialog',{name:'New ticket',exact:true}),requester=`synthetic-happytohelp-${width}@customer.example`,subject=`Replacement parcel ${width}`,content=`Your replacement parcel ships today (${width}).`
-   await dialog.getByLabel('Requester email',{exact:true}).fill(requester);await dialog.getByLabel('Requester name',{exact:true}).fill('Synthetic parcel customer')
+   await dialog.getByLabel('Requester email',{exact:true}).fill('draft@customer.example')
+   await dialog.getByLabel('Brand workspace',{exact:true}).selectOption(other.id)
+   await dialog.getByText('No connected mailboxes are available.',{exact:false}).waitFor()
+   assert.equal(await dialog.getByLabel('Requester email',{exact:true}).inputValue(),'')
+   await page.screenshot({path:join(evidenceDir,`${width}-empty-brand.png`),fullPage:true})
+   await dialog.getByLabel('Brand workspace',{exact:true}).selectOption(projectId)
+   await dialog.getByLabel('Find requester by name, email or phone',{exact:true}).fill(requester)
+   await dialog.getByRole('button',{name:new RegExp(`Synthetic parcel customer ${requester.replaceAll('.','\\.')}`)}).click()
+   await dialog.getByLabel('Request form',{exact:true}).selectOption(form.id)
+   await dialog.getByLabel('Delivery reason *',{exact:true}).selectOption('question')
+   assert.equal(await dialog.getByLabel('Delivery reference *',{exact:true}).count(),0)
+   await dialog.getByLabel('Delivery reason *',{exact:true}).selectOption('replacement')
+   await dialog.getByLabel('Delivery reference *',{exact:true}).fill('invalid')
+   await dialog.getByLabel('Parcel count',{exact:true}).fill('2')
+   await dialog.getByLabel('Group',{exact:true}).selectOption(group.id)
+   await dialog.getByLabel('Assignee',{exact:true}).selectOption(owner.actor.id)
    await dialog.getByLabel('CC',{exact:true}).fill(`synthetic-happytohelp-cc-${width}@customer.example`);await dialog.getByLabel('BCC',{exact:true}).fill(`synthetic-happytohelp-bcc-${width}@customer.example`)
    await dialog.getByLabel('Subject',{exact:true}).fill(subject);await dialog.getByLabel('Message',{exact:true}).fill(content)
    await dialog.getByRole('button',{name:'Create and email',exact:true}).waitFor({state:'visible'})
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${width}: New ticket fits`)
    await page.screenshot({path:join(evidenceDir,`${width}-new-email.png`),fullPage:true})
+   const refusalResponse=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
+   await dialog.getByRole('button',{name:'Create and email',exact:true}).click()
+   assert.equal((await refusalResponse).status(),422)
+   await dialog.getByText('Delivery reference: Value does not match the required pattern',{exact:true}).first().waitFor()
+   assert.equal(await dialog.getByLabel('Subject',{exact:true}).inputValue(),subject,'refusal retains editable draft')
+   await page.screenshot({path:join(evidenceDir,`${width}-configuration-error.png`),fullPage:true})
+   await dialog.getByLabel('Delivery reference *',{exact:true}).fill('DEL-1048')
    const createdResponse=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
    await dialog.getByRole('button',{name:'Create and email',exact:true}).click()
    const response=await createdResponse;assert.equal(response.status(),201);const created=await response.json(),command=response.request().postDataJSON()
+   assert.equal(created.conversation.group_id,group.id);assert.equal(created.conversation.assigned_to,owner.actor.id);assert.equal(created.conversation.requester_id,existingRequester.id)
+   const configured=(await call(`${base}/conversations/${created.conversation.id}/ticket`,undefined,owner.token)).data
+   assert.equal(configured.fields[parcels.id],2);assert.equal(configured.fields[reference.id],'DEL-1048');assert.equal(configured.history.find(item=>item.changes.form).changes.form.formId,form.id)
    assert.equal(created.conversation.submitter_id,owner.actor.id);assert.equal(created.conversation.requester_id,created.conversation.contact_id)
    await page.waitForURL(`**/conversations/${created.conversation.id}`);await page.locator('.transcript-message-content').getByText(content,{exact:true}).waitFor()
    await delivered(base,created.conversation.id,content)
    assert.equal(copies().find(copy=>copy.text?.includes(content)).from,mailbox.address)
    await page.reload();await page.locator('.transcript-message-content').getByText(content,{exact:true}).waitFor()
+   await page.getByRole('tab',{name:'Ticket',exact:true}).click()
+   await page.locator('#ticket-section-fields-heading').click()
+   await page.getByLabel('Delivery reference',{exact:false}).waitFor()
+   await page.screenshot({path:join(evidenceDir,`${width}-configured-ticket.png`),fullPage:true})
    const replay=await request(command);assert.equal(replay.status,200);assert.equal(replay.body.conversation.id,created.conversation.id);assert.equal(replay.body.duplicate,true);await delivered(base,created.conversation.id,content)
    // The API door selects the existing requester rather than making another.
    const apiCommand={kind:'email',localId:`synthetic-happytohelp-api-${width}`,requesterId:created.conversation.contact_id,mailboxId:mailbox.id,subject:`Delivery update ${width}`,content:`Your parcel is ready for collection (${width}).`}
@@ -123,12 +159,16 @@ export async function outboundTicketBrowser(){
    // same durable command with the existing requester and no mailbox/copies.
    const beforeCalls=copies().length
    await open();await dialog.getByLabel('Ticket type',{exact:true}).selectOption('call')
-   await dialog.getByLabel('Requester email',{exact:true}).fill(requester);await dialog.getByLabel('Subject',{exact:true}).fill(`Customer called ${width}`);await dialog.getByLabel('Call notes',{exact:true}).fill(`Confirmed collection time (${width}).`)
+   await dialog.getByLabel('Requester email',{exact:true}).fill(`new-call-${width}@customer.example`);await dialog.getByLabel('Subject',{exact:true}).fill(`Customer called ${width}`);await dialog.getByLabel('Call notes',{exact:true}).fill(`Confirmed collection time (${width}).`)
+   await dialog.getByLabel('Request form',{exact:true}).selectOption(form.id)
+   await dialog.getByLabel('Delivery reason *',{exact:true}).selectOption('question')
+   await dialog.getByLabel('Parcel count',{exact:true}).fill('1')
+   await dialog.getByLabel('Assignee',{exact:true}).selectOption('')
    assert.equal(await dialog.getByLabel('CC',{exact:true}).count(),0)
    await page.screenshot({path:join(evidenceDir,`${width}-new-call.png`),fullPage:true})
    const callResponse=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
    await dialog.getByRole('button',{name:'Log call',exact:true}).click();const logged=await callResponse;assert.equal(logged.status(),201)
-   const callTicket=await logged.json();assert.equal(callTicket.conversation.channel,'phone');assert.equal(callTicket.conversation.contact_id,created.conversation.contact_id);assert.equal(callTicket.note.content,`Confirmed collection time (${width}).`)
+   const callTicket=await logged.json();assert.equal(callTicket.conversation.channel,'phone');assert.notEqual(callTicket.conversation.contact_id,created.conversation.contact_id);assert.equal(callTicket.conversation.assigned_to,null);assert.equal(callTicket.note.content,`Confirmed collection time (${width}).`)
    assert.equal(callTicket.message,undefined)
    const apiCall={kind:'call',localId:`synthetic-happytohelp-api-call-${width}`,requesterId:created.conversation.contact_id,subject:`Call follow-up ${width}`,content:'Synthetic private collection instructions.'}
    const loggedApi=await request(apiCall);assert.equal(loggedApi.status,201);assert.equal(loggedApi.body.conversation.channel,'phone');assert.equal(loggedApi.body.note.content,apiCall.content)

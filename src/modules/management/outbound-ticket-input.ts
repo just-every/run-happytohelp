@@ -2,7 +2,7 @@ import {HTTPException} from 'hono/http-exception'
 import {reservedLocalId} from '../conversations/admission'
 import {emailAddress} from '../integrations/inbound-routing'
 export const noticeCommand=Symbol('noticeCommand')
-export interface OutboundTicketInput {[noticeCommand]?:string;kind:'email'|'call';localId:string;requesterId:string|null;requesterEmail:string|null;requesterName:string;subject:string;content:string;mailboxId:string|null;fromAddress:string|null;cc:string[];bcc:string[]}
+export interface OutboundTicketInput {[noticeCommand]?:string;kind:'email'|'call';localId:string;requesterId:string|null;requesterEmail:string|null;requesterName:string;subject:string;content:string;mailboxId:string|null;fromAddress:string|null;cc:string[];bcc:string[];formId?:string;fields?:Record<string,unknown>;groupId?:string|null;assigneeId?:string|null}
 function string(value:unknown,label:string,max:number,required=true){
  if(typeof value!=='string'||value.length>max||required&&!value.trim()||/[\0]/.test(value))throw new HTTPException(400,{message:`Invalid ${label}`})
  return value.trim()
@@ -25,11 +25,16 @@ export function outboundTicketInput(body:Record<string,unknown>):OutboundTicketI
  if(/[\r\n]/.test(subject))throw new HTTPException(400,{message:'Subject must fit on one line'})
  if(cc.length+bcc.length>50||cc.some(address=>bcc.includes(address)))throw new HTTPException(400,{message:'Recipients must be unique across CC and BCC'})
  if(kind==='call'&&(cc.length||bcc.length||fromAddress))throw new HTTPException(400,{message:'Call logs cannot send email copies'})
- return {kind,localId,requesterId,requesterEmail,requesterName,subject,content,mailboxId,fromAddress,cc,bcc}
+ const configuration:Pick<OutboundTicketInput,'formId'|'fields'|'groupId'|'assigneeId'>={}
+ if(body.formId!==undefined)configuration.formId=string(body.formId,'formId',200)
+ if(body.fields!==undefined){if(!body.fields||typeof body.fields!=='object'||Array.isArray(body.fields)||Object.keys(body.fields).length>50)throw new HTTPException(400,{message:'Invalid field values'});configuration.fields=Object.fromEntries(Object.entries(body.fields as Record<string,unknown>).sort(([a],[b])=>a.localeCompare(b)))}
+ for(const key of ['groupId','assigneeId'] as const)if(body[key]!==undefined)configuration[key]=body[key]===null?null:string(body[key],key,200)
+ return {kind,localId,requesterId,requesterEmail,requesterName,subject,content,mailboxId,fromAddress,cc,bcc,...configuration}
 }
 
 /** A proactive batch contains isolated requester tickets, never a shared CC list. */
 export function outboundNoticeInputs(body:Record<string,unknown>):OutboundTicketInput[]{
+ if(['formId','fields','groupId','assigneeId','brandId'].some(key=>body[key]!==undefined))throw new HTTPException(400,{message:'Configuration is available for single tickets only'})
  if(!Array.isArray(body.requesters)||body.requesters.length<2||body.requesters.length>50)throw new HTTPException(400,{message:'Choose 2–50 requester emails'})
  const requesters=addresses(body.requesters,'requester')
  if(requesters.length<2)throw new HTTPException(400,{message:'Choose at least two distinct requesters'})

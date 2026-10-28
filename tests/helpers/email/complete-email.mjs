@@ -1,3 +1,4 @@
+import {outboundConfigurationJourney} from './outbound-configuration.mjs'
 import assert from 'node:assert/strict'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {vendorReplies} from './vendor-replies.mjs'
@@ -5,6 +6,7 @@ import {message} from './app.mjs'
 
 /** R6's operator, mail gateway, review, imported-history and privacy doors. */
 export async function completeEmailJourney(){
+ await outboundConfigurationJourney()
  await queuedNoticeRecovery()
  await noticeRetentionJourney()
  await outboundNoticesJourney()

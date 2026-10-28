@@ -60,7 +60,8 @@ function HistoryEntry({ item, settings, agents, assistants, conversation, tags }
         if (key === 'erased' || key === 'status_category' && changes.status_id?.from !== changes.status_id?.to) continue;
         const operational = operationalHistory(key, change, changes);
         if (operational !== undefined) { rows.push(operational); continue; }
-        if (key === 'fields') {
+        if (key === 'form') { rows.push(<li key={key}><strong>Request form:</strong> {plainValue(change.to)} · Version {change.version}</li>);
+        } else if (key === 'fields') {
             for (const [id, fieldChange] of Object.entries(change || {})) {
                 const field = settings.fields?.find(field => field.id === id);
                 // Never recover or display a value when its field definition is no longer visible.

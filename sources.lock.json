@@ -6283,20 +6283,28 @@
       "sha256": "5a377ef75580f537b943a23c9a5c16d9c0eb8bd9f16e62212a3b6d1f5c119b88",
       "executable": false
     },
+    "src/modules/management/outbound-configuration.ts": {
+      "sha256": "09e97eb3c88e78c2a0d2748c9c07f40528ad2efb1664dd32b129ebed88dec2eb",
+      "executable": false
+    },
     "src/modules/management/outbound-notices.ts": {
       "sha256": "ff865e53305296af50abeb3618d9bb0a4c768322da6c407cbded15294275d9da",
       "executable": false
     },
+    "src/modules/management/outbound-options.ts": {
+      "sha256": "a91f385895a844bf0f9001c355d9967d0dbe7285bdb06e14b36d6acf61e9010b",
+      "executable": false
+    },
     "src/modules/management/outbound-ticket-input.ts": {
-      "sha256": "ffcdfee99415591023c91385b431479310404b3ee280463767f85a51d8639227",
+      "sha256": "8c42fa88ef1600eb971fa487c1308313ce2dc892e65e1bcb15f617f5669899c4",
       "executable": false
     },
     "src/modules/management/outbound-ticket-store.ts": {
-      "sha256": "234be884194e0d8b54e89c788436a074cfae16e98cc76a8cc3181f0cbd9d3215",
+      "sha256": "e9336ee8e2b64c5afd9d4b9f8bb56450c2221c8aca553edec26805a34363796d",
       "executable": false
     },
     "src/modules/management/outbound-tickets.ts": {
-      "sha256": "d6aea033f5c9f1db093f9ca53478a10882707083bd7c07ff33223a708707bc22",
+      "sha256": "c1e8008bdbea826107846ff6a49b317c3e7a566481d16f950f9410fce083c15d",
       "executable": false
     },
     "src/modules/management/policy.ts": {
@@ -8448,7 +8456,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationsList.jsx": {
-      "sha256": "4cdc4959dc474b5df59ba03984efe0bf63bd2fb04aa21c292b3444d4d81e8be5",
+      "sha256": "98009ec1102df867e9c81785deccddfa9f2b74080430f6c6348f230a25d0ac96",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationSuggestionCard.jsx": {
@@ -8460,11 +8468,11 @@
       "executable": false
     },
     "src/ui/dashboard/components/CreateEmailTicket.css": {
-      "sha256": "6322fe7cdd0b6a2e3b18558303a389576cb607fd5632467055dd3d89f9662a84",
+      "sha256": "63b433fdfb23e2828251411ad2221433d896294e4877e834150dc58960acf41e",
       "executable": false
     },
     "src/ui/dashboard/components/CreateEmailTicket.jsx": {
-      "sha256": "01f1d18e80a70689a6292409203d4589f20becefe03754c0867222dfeeaa58ca",
+      "sha256": "006a5898516409d2af4ca00ecfd791d5092e5aac6f7c6a20edfea9ce6f7aef5a",
       "executable": false
     },
     "src/ui/dashboard/components/DelegationAttachments.jsx": {
@@ -8675,6 +8683,14 @@
       "sha256": "017c4ab6ef832ff7ed47fdf1939c080e7f3ee3aa79a8dfa44798be3e809eae35",
       "executable": false
     },
+    "src/ui/dashboard/components/NewTicketConfiguration.jsx": {
+      "sha256": "978e79e4da89814579042ebf51fa976140e300ffbe1700bb06e511f9e3eed1bb",
+      "executable": false
+    },
+    "src/ui/dashboard/components/NewTicketRequester.jsx": {
+      "sha256": "9db48fd414ca2738cff49b22eca7d62258d19abec2ae2d8414baff949c05bd65",
+      "executable": false
+    },
     "src/ui/dashboard/components/NoteModal.jsx": {
       "sha256": "402884d2192fe56e83fe9874f8a2206cadfa5d175a6837b15be50672c693ef06",
       "executable": false
@@ -8768,7 +8784,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/tickets/TicketHistory.jsx": {
-      "sha256": "d3b234200fe9d3340c764d3d67ba68de17c9106a679ef63c896495d35ad0c382",
+      "sha256": "7883bdc76d5cdf1df514f876918e5205a241ceb264ec06b6827072721ccae92b",
       "executable": false
     },
     "src/ui/dashboard/components/tickets/TicketIdentityPicker.jsx": {
@@ -8825,6 +8841,10 @@
     },
     "src/ui/dashboard/components/triage/TriagePanel.jsx": {
       "sha256": "d1a76d081fb1999de03b2e0b636c3e65113a41e46029c4e12b1a665a220c7ff4",
+      "executable": false
+    },
+    "src/ui/dashboard/components/useNewTicketChoices.js": {
+      "sha256": "1a13f341f55578368e80640c93b3087b614c2752a35891f50f807fef65582f7c",
       "executable": false
     },
     "src/ui/dashboard/components/widget-settings/CampaignSettings.jsx": {
@@ -11444,7 +11464,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "9784542db6ebafa94dc3bd7216482d89d18c056f09a72d2cd992a16a53412e21",
+      "sha256": "6a9932b8342ebba70d22dd47f1e365859bc997f35dfffbb1e14daa7711d1578d",
       "executable": false
     },
     "tests/helpers/email/customer-mail.mjs": {
@@ -11457,6 +11477,10 @@
     },
     "tests/helpers/email/mailbox-provider.mjs": {
       "sha256": "42d3af12e2d5faaea5d2f2238a608bf18ea74eb7ad3c3bf2f6c0b0e85fa34609",
+      "executable": false
+    },
+    "tests/helpers/email/outbound-configuration.mjs": {
+      "sha256": "222b1f4ba2f19c8759297ee0a4afc08b07b6f28951377447abf222ca8290123c",
       "executable": false
     },
     "tests/helpers/email/recovery.mjs": {
@@ -11836,7 +11860,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ui-browser.mjs": {
-      "sha256": "f62b69db4f98f123684111d244ac41fd5a6a021773f9363011877d53ff1971ef",
+      "sha256": "92e0d0d74afdd294272c771d88a95ea5c8f4d1ab7155d8a565b60c091b21b223",
       "executable": false
     },
     "tests/helpers/inbox/visual-edit-browser.mjs": {

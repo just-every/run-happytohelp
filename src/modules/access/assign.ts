@@ -1,3 +1,4 @@
+import {publishAccessChange} from './live'
 import type {Context} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,ActorSecurity} from '../../platform/env'
@@ -48,5 +49,6 @@ export async function assignRole(c:Context<AppEnv>,actor:{id:string;projectId:st
   ...(target.managesTickets?[]:[endHandleTimers(db,actor.projectId,userId,now)]),
   auditStatement(db,{projectId:actor.projectId,category:'access',action:'member.role_changed',actor:{type:'user',id:actor.id},source:requestSource(c),target:{type:'member',id:userId},detail:{from:currentKey,to:nextKey,fromName:current.name,toName:nextName}},now),
  ])
+ publishAccessChange(c,actor.projectId,{userId})
  return {changed:true}
 }

@@ -1,3 +1,4 @@
+import {ticketScopeBrowserJourney} from './ticket-scope-browser.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
 import {readFile,writeFile} from 'node:fs/promises'
@@ -21,6 +22,7 @@ const axe=await readFile(resolve('node_modules/axe-core/axe.min.js'),'utf8')
  * is axe-checked for serious findings and horizontal overflow, and photographed at 1440 and 390.
  */
 export async function securityBrowserJourney(browser){
+ await ticketScopeBrowserJourney(browser)
  const shot=await evidence('account-security'),errors=[],records=[],signouts=[]
  const runtime=await createRuntime({vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}})
  let passed=false,current

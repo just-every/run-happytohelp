@@ -22,3 +22,11 @@
 .account-two-factor { margin-top: 40px; }
 .erasure-providers { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .erasure-providers li { padding: 10px 14px; border: 1px solid var(--rule); border-radius: 10px; overflow-wrap: anywhere; }
+
+.role-ticket-scope { margin-top: 16px; min-width: 0; }
+.role-scope-choice { display: flex; gap: 10px; align-items: center; min-height: 44px; padding: 8px; cursor: pointer; overflow-wrap: anywhere; }
+.role-scope-choice input { flex: 0 0 auto; accent-color: var(--d-cyan-deep); }
+.role-scope-choice:has(input:focus-visible) { outline: 2px solid var(--d-cyan-deep); outline-offset: 2px; border-radius: 4px; }
+.role-scope-choice input:focus-visible { outline: none; }
+.role-scope-groups { margin-left: 12px; border-left: 2px solid var(--rule); padding-left: 8px; }
+@media (max-width: 767px) { .roles-page button, .roles-page .form-control, .roles-page .form-select { min-height: 44px; } .roles-form .form-check { display: flex; align-items: center; gap: 10px; min-height: 44px; padding-left: 0; } .roles-form .form-check-input { float: none; margin: 0; flex: 0 0 auto; } .roles-form .form-check-label { padding-block: 10px; flex: 1; } }

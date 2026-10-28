@@ -12348,7 +12348,7 @@
       "executable": false
     },
     "tests/helpers/support-channels/browser.mjs": {
-      "sha256": "1a98170934665a1897f7ccafd5f5301249f9747d788d678b5a11592119115c59",
+      "sha256": "7deb12d5016c83d47a9f20ef95dddcca1415543de8ca016ca6ff79744b9d7d50",
       "executable": false
     },
     "tests/helpers/support-channels/journeys.mjs": {

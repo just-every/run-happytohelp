@@ -1,3 +1,5 @@
+import {feedbackRouteRule} from '../feedback/permissions'
+import {assuranceRouteRule} from '../assurance/permissions'
 import type {Permission} from './catalogue'
 import {selfServiceRules} from './self-service-routes'
 import {r4RouteRule} from './r4-route-permissions'
@@ -175,6 +177,8 @@ rules[`POST ${P}/suspended/:id/recover`]='conversations.manage'
 rules[`DELETE ${P}/suspended/:id`]='conversations.manage'
 rules[`POST ${P}/sender-rules`]='settings.manage'
 export function routeRule(method:string,path:string):Rule|undefined{
+ const owned=feedbackRouteRule(method,path)??assuranceRouteRule(method,path)
+ if(owned)return owned
  if(path==='/api/escalations/webhooks/:connectionId'||path==='/api/escalations/attachments/:token')return 'none'
  if(path.startsWith('/api/escalations/projects/:projectId/')){
   if(method==='GET')return 'self'

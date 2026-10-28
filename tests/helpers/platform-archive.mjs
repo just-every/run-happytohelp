@@ -1,3 +1,4 @@
+import {seedCampaignArchive,assertCampaignArchive} from './feedback/archive.mjs';
 import assert from 'node:assert/strict';
 import {cp,mkdir,mkdtemp,readFile,readdir,rm,stat,symlink,writeFile} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
@@ -26,7 +27,8 @@ async function platformDestination(root){
 
 async function databaseSnapshot(root){return archiveStorage(root,async({DB})=>{
  const schema=(await DB.prepare("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE name NOT LIKE '_cf_%' ORDER BY name").all()).results,rows={};
- for(const {name} of schema.filter(item=>item.type==='table'))rows[name]=(await DB.prepare(`SELECT * FROM "${name.replaceAll('"','""')}"`).all()).results.map(row=>JSON.stringify(row)).sort();
+ const tables=schema.filter(item=>item.type==='table');
+ for(let offset=0;offset<tables.length;offset+=50){const chunk=tables.slice(offset,offset+50),results=await DB.batch(chunk.map(({name})=>DB.prepare(`SELECT * FROM "${name.replaceAll('"','""')}"`)));for(const [index,{name}] of chunk.entries())rows[name]=results[index].results.map(row=>JSON.stringify(row)).sort();}
  return {schema,rows};
 });}
 
@@ -55,6 +57,7 @@ export async function platformArchiveJourney(){
    await DB.prepare("INSERT INTO contacts(id,project_id,name,email,created_at) VALUES('archive-contact','archive-project','Archive visitor','visitor@example.test',1)").run();
    await FILES.put('archive-project/retained.txt','Retained support attachment',{httpMetadata:{contentType:'text/plain'},customMetadata:{purpose:'archive-journey'}});
   });
+  await archiveStorage(original,seedCampaignArchive);
   const archive=join(original,'exports/platform.rer');
   await cli(original,['export','--output',archive]);
   const before=await archiveSnapshot(original);
@@ -70,6 +73,7 @@ export async function platformArchiveJourney(){
    const prior=kind==='platform'?await databaseSnapshot(root):undefined;
    await cli(root,['import','--input',archive,'--yes']);
    compareArchive(before,await archiveSnapshot(root),['archive_addition']);
+   await archiveStorage(root,assertCampaignArchive);
    const restoredLedger=await databaseSnapshot(root);
    if(kind==='platform')assert.deepEqual(restoredLedger.rows.rer_migrations,prior.rows.rer_migrations,'import preserves Platform history');
    assert.ok(restoredLedger.rows[kind==='platform'?'rer_migrations':'d1_migrations']);

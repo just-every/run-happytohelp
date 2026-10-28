@@ -2,7 +2,7 @@
   "schema": 1,
   "seed": "happytohelp-product",
   "old": {
-    "commit": "34ac25aca8701a11fe68245ca8bd7a58e6b6b0a2",
+    "commit": "ab90cd822b4f62080294df0ff2a468b8eb874b54",
     "files": [
       "CONTRACT.md",
       "ACCEPTANCE.md"
@@ -4183,6 +4183,13 @@
     },
     {
       "file": "CONTRACT.md",
+      "line": 588,
+      "cell": "gap",
+      "text": "This round qualifies native reply-attachment refusal and recovery; it adds no live-provider or full accessibility qualification.",
+      "to": "changelog"
+    },
+    {
+      "file": "CONTRACT.md",
       "line": 599,
       "cell": "gap",
       "text": "Implementation/acceptance gaps: The required business connectors remain missing under COMMERCE-001, BILLING-001 and CRM-001. Live qualification gap: Real mail receipt, GitHub account authorization/events and provider-backed knowledge import are unobserved; adapter fixtures do not establish live delivery or account qualification.",
@@ -5293,7 +5300,7 @@
     {
       "file": "ACCEPTANCE.md",
       "line": 98,
-      "text": "| UI-001 | done | Use the native dashboard and separately installed widget at 1440 and 390 pixels with realistic conversations, attachments, drafts, errors and workspace switching; retain the approved desktop and mobile navigation and configured-origin transport. | `src/ui/dashboard`; `src/modules/widget`; `tests/journeys/inbox-browser.mjs` (appearance settings journey); `tests/helpers/inbox/settings-targets-browser.mjs` (settingsTargetsBrowser: Settings target rectangles, one focus ring per switch and weekday, Notifications checkbox alignment, saving and reload at desktop width, with separate phone proof). Existing responsive experience is retained; broader native mobile and accessibility qualification have separate clauses. |",
+      "text": "| UI-001 | done | Use the native dashboard and separately installed widget at 1440 and 390 pixels with realistic conversations, attachments, drafts, errors and workspace switching; retain the approved desktop and mobile navigation and configured-origin transport. | `src/ui/dashboard`; `src/modules/widget`; `tests/journeys/inbox-browser.mjs` (appearance settings journey); `tests/helpers/inbox/settings-targets-browser.mjs` (settingsTargetsBrowser: Settings target rectangles, one focus ring per switch and weekday, Notifications checkbox alignment, saving and reload at desktop width, with separate phone proof); `src/ui/dashboard/components/Conversation.jsx`; `tests/helpers/inbox/reply-attachments-browser.mjs` (replyAttachmentsBrowser, folded into the existing inbox conversation journey: native upload refusal keeps the reply and earlier attachments; deliberate file reselection recovers and sends byte-exact attachments that survive reload at desktop width, with separate phone proof). Existing responsive experience is retained; broader native mobile and accessibility qualification have separate clauses. |",
       "to": "docs",
       "path": "docs/verify.md"
     },

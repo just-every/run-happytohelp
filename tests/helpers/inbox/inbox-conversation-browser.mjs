@@ -5,6 +5,7 @@ import {tmpdir} from 'node:os'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {buildInboxFixture,REPLY} from '../inbox-conversation-fixture.mjs'
 import {emailConversationJourney} from '../email-conversation-browser.mjs'
+import {replyAttachmentsBrowser} from './reply-attachments-browser.mjs'
 import {launchBrowser} from '../../journeys/kit/browser.mjs'
 
 export async function inboxConversation(){
@@ -221,6 +222,15 @@ try{
   await page.reload();await page.getByText(expandedReply,{exact:true}).waitFor()
   check('saved reply fills an empty composer exactly')
   await context.close()
+ }
+
+ // Reply attachment refusal and explicit recovery stay in this existing inbox journey.
+ {
+  const {context,page}=await open(conversationPath('kenji'))
+  try{
+   await replyAttachmentsBrowser({page,projectId:fx.projectId,conversationId:fx.contacts.kenji.id,evidence})
+   check('attachment refusal is visible, preserves the draft and earlier files, and explicit recovery sends durable attachment bytes')
+  }finally{await context.close()}
  }
 
  // 6. Row Close control: shown on keyboard focus in the time's place, clear of the rest of the row; touch opens the

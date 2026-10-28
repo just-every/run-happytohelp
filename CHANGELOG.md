@@ -1149,3 +1149,7 @@ The 23 October 2026 contract-text clarification separates local implementation/f
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). R5 additionally updates SLA-001, AUTOMATION-001/002, QUEUE-001/004 and STATUS-001 from the workflow, inbox and packaged recovery journeys on 17 October 2026. WIDGET-001 and AUTOMATION-002 are re-judged at `473a30dab0c6458e5250a55cbebeef999e1e3063` (22 October 2026), with workspace presence and the away-reply correction (migrations 240 and 241). AUTOMATION-001 is re-judged DONE at `c36c8cf01a3b8770427e78bed07d71159a0fb872` (23 October 2026).
 
 Original acceptance evidence remains in docs/verify.md. Existing production cutover and Knowledge scope decisions are unchanged; HappyToHelp still lands only through its hh handoff lander after independent cleanup PASS and guarded receipts.
+
+## 2026-10-28 — Native reply-attachment qualification
+
+This round qualifies native reply-attachment refusal and recovery; it adds no live-provider or full accessibility qualification.

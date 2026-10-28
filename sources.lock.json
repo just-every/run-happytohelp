@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "831f3a7f6d5d6b0ca15572d580b8a71aa17c406c939d44a0b0b1a5415e72059e",
+      "sha256": "1e40f3f5758f773ec30dff58233e8bf676ab4009a45b1676efa20e1f32082dcb",
       "executable": false
     },
     "AGENTS.md": {
@@ -1620,7 +1620,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "327c5eab27cbfbaa7e1bd9217a542fb14d17034123d7045263ec81e0a7d59a36",
+      "sha256": "88b1a095cf5b365a50fedb685c15e7e593105105b62b00b6702a9a3d1c64ebd4",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "37029baa1da67e7bdde45e3ca3df750c6b1fa552a6c779814e309d0dfc5ae591",
+      "sha256": "e87bf7cb02161e8367e41de4e13467c1a22f6ba573a232ce51ff458b99e25568",
       "executable": false
     },
     "DEMO.md": {
@@ -1684,15 +1684,15 @@
       "executable": false
     },
     "docs/contract/COVERAGE.json": {
-      "sha256": "1beb89963546abc6fd3828a724cb77580a9bd267c2199e052ec3c9821a073414",
+      "sha256": "6f81773630f260eeb944f221a3f0876fdf55eb7fb51af99cc40bc4bafbf5f06a",
       "executable": false
     },
     "docs/contract/DONE-AUDIT.md": {
-      "sha256": "a2523ae2a29c11b6495d72ab83d7f3f7cf8a89fbd8e39b5f23d94ebbb60d0035",
+      "sha256": "475a1a6a4e50fca616a3d5f85d86dfe484c22f150ab766e31ff622be8f1a10ea",
       "executable": false
     },
     "docs/contract/ID-MAP.json": {
-      "sha256": "c1191158f9fb8b537f8aec44a831f0d59a53b21e005ad5770a502c99dfc1992e",
+      "sha256": "48c58ad881ea9df87f3afa52279a4ec23dedf7bcb1ead3368d457c8ec234c6f7",
       "executable": false
     },
     "docs/contract/machine-api.md": {
@@ -1844,7 +1844,7 @@
       "executable": false
     },
     "docs/verify.md": {
-      "sha256": "810e41fadd9952e66506cbd0a6f782d9647185f033e4dac8e5905576f6316b12",
+      "sha256": "8d3f6f64a098126947715b77eb5269213576f2a31f742c0078d2f4728dbd9486",
       "executable": false
     },
     "docs/website-knowledge.md": {
@@ -8480,7 +8480,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/Conversation.jsx": {
-      "sha256": "889f7e6b027fd7460330b75ee2cf1d7e713e4ecb30301426c9ca0f630c00b2f3",
+      "sha256": "601b5f9d41dcb25347eb7595fa86b970c9bd04d691510ab038999c2a0a93092d",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ai-controls.css": {
@@ -11936,7 +11936,7 @@
       "executable": false
     },
     "tests/helpers/inbox/inbox-conversation-browser.mjs": {
-      "sha256": "f06c571373ba3f4f6349f7fc69c145898826fa17cfd3fb296095a6ecd2712902",
+      "sha256": "3d7cd163078111fccd12e4c5781cd0ffcd77ac8290dee171ba6a0615bb3d40fc",
       "executable": false
     },
     "tests/helpers/inbox/inbox-default-browser.mjs": {
@@ -11977,6 +11977,10 @@
     },
     "tests/helpers/inbox/problems.mjs": {
       "sha256": "b25639ecfd27293df35fbe66323002b91e1d7c836b184e18d3e565f9d74df33b",
+      "executable": false
+    },
+    "tests/helpers/inbox/reply-attachments-browser.mjs": {
+      "sha256": "d583c130037f372ae7a7ffbd18e8bb06f7f89c9f33af4b7daf55fb757ace1c81",
       "executable": false
     },
     "tests/helpers/inbox/search.mjs": {

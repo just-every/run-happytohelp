@@ -126,7 +126,9 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     };
 
     const handleSendFile = selectedFiles => {
+        if (!selectedFiles?.length) return;
         cancelDraftAdoption();
+        setDraftError('');
         const uploadConversationId = conversationId;
         setIsSending(true);
 
@@ -142,8 +144,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                 }
             })
             .catch(error => {
-                console.log(error);
                 if (activeConversationIdRef.current === uploadConversationId) {
+                    setDraftError(`Attachment “${selectedFiles[0].name}” wasn’t added: ${error.message || 'the upload failed'}. Select it again to retry.`);
                     setIsSending(false);
                 }
             });

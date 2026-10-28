@@ -16,7 +16,7 @@ export default function TicketFilterValue({ field, row, index, onChange, project
         const encode = value => value === null ? '__no_value__' : String(value);
         const decode = value => all.find(option => encode(option.value) === value).value;
         return <div className="form-group ticket-field"><label className="form-label" htmlFor={id}>{multi ? 'Values' : 'Value'}</label><select id={id} className="form-select" multiple={multi} value={multi ? selected.map(encode) : selected.length ? encode(selected[0]) : ''} onChange={event => onChange(multi ? [...event.target.selectedOptions].map(option => decode(option.value)) : event.target.value === '' ? '' : decode(event.target.value))}>
-            {!multi && <option value="">Choose…</option>}{all.map(option => <option key={encode(option.value)} value={encode(option.value)} title={option.label.includes('(unavailable)') ? String(option.value) : undefined}>{option.label}</option>)}
+            {!multi && <option value="">Choose…</option>}{all.map(option => <option key={encode(option.value)} value={encode(option.value)} title={field.type !== 'account' && option.label.includes('(unavailable)') ? String(option.value) : undefined}>{option.label}</option>)}
         </select></div>;
     }
     const numeric = ['number', 'decimal'].includes(field.type);

@@ -912,7 +912,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company’s policy decides every 
 | `happytohelp.first_run.manage_001` | A useful first workspace | FIRST-RUN-001 | standard or external (+ access · security · sensitive) | not implemented |
 | `happytohelp.conversation.manage_001` | Durable transcript | CONVERSATION-001 | standard or external (+ destructive · sensitive) | not implemented |
 | `happytohelp.delivery.manage_001` | Live delivery and recovery | DELIVERY-001 | standard or external (+ sensitive) | not implemented |
-| `happytohelp.outcomes.manage_001` | Resolution feedback and provenance | OUTCOMES-001 | standard (+ destructive · sensitive) | not implemented |
+| `happytohelp.outcomes.manage_001` | Resolution feedback and provenance | OUTCOMES-001 | standard or external (+ live · destructive · sensitive) | not implemented |
 | `happytohelp.reports.manage_001` | Workspace calendar reports | REPORTS-001 | standard (+ sensitive) | not implemented |
 | `happytohelp.connections.manage_001` | Workspace integrations | CONNECTIONS-001 | standard or external (+ access · security · accounts · gated · sensitive) | not implemented |
 | `happytohelp.activation.manage_001` | Observed owner setup | ACTIVATION-001 | standard or external (+ security · sensitive) | not implemented |
@@ -932,7 +932,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company’s policy decides every 
 | `happytohelp.voice.manage_001` | Telephone service and unified voice agent | VOICE-001 | standard or external (+ accounts · gated · access · security · live · destructive · sensitive) | not implemented |
 | `happytohelp.queue.manage_001` | Assignment rules and available teams | QUEUE-001 | standard or live (+ access) | not implemented |
 | `happytohelp.triage.manage_001` | Intelligent triage | TRIAGE-001 | standard or external (+ live · sensitive) | not implemented |
-| `happytohelp.queue.manage_002` | Structured and bulk queue work | QUEUE-002 | standard | not implemented |
+| `happytohelp.queue.manage_002` | Structured and bulk queue work | QUEUE-002 | standard or external (+ live · destructive) | not implemented |
 | `happytohelp.queue.manage_003` | Collaboration without conflicting replies | QUEUE-003 | standard or external | not implemented |
 | `happytohelp.macro.manage_001` | Action macros with placeholders | MACRO-001 | standard or external (+ sensitive) | not implemented |
 | `happytohelp.queue.manage_004` | Snooze and scheduled follow-up | QUEUE-004 | standard or external | not implemented |

@@ -111,6 +111,8 @@ export async function hubspotBrowser({browser, directory}) {
                 await dialog.getByRole('button', {name: 'Confirm', exact: true}).click();
             }
         };
+        await page.goto(customer); await page.getByRole('heading', {name: 'Maya Patel', exact: true}).waitFor();
+        assert.equal(await panel().count(), 0, 'never-connected workspaces have no CRM box');
         await page.goto(settings); await page.getByText('HubSpot disconnected', {exact: true}).waitFor(); await captures('settings-empty');
         await runtime.execute(`INSERT INTO credentials(user_id,password_hash,updated_at) VALUES('${owner.userId}','${passwordHash('synthetic-hubspot-owner-password')}',${Date.now()}); UPDATE session_factors SET verified_at=1 WHERE user_id='${owner.userId}'`);
         provider.extraScope = true; await connect(true); await page.getByRole('alert').filter({hasText: 'exact read-only scopes'}).waitFor();
@@ -124,6 +126,10 @@ export async function hubspotBrowser({browser, directory}) {
         await panel().getByLabel('HubSpot contact ID', {exact: true}).fill('11');
         await panel().getByLabel('Native company (optional)', {exact: true}).selectOption(company.id);
         await panel().getByLabel('HubSpot company ID', {exact: true}).fill('21');
+        // A connection recheck while this customer stays open must retain the unsaved mapping.
+        const rechecked = page.waitForResponse(response => response.url().endsWith('/crm/hubspot') && response.request().method() === 'GET');
+        await page.evaluate(() => window.dispatchEvent(new Event('focus'))); await rechecked;
+        assert.equal(await panel().getByLabel('HubSpot contact ID', {exact: true}).inputValue(), '11');
         await panel().getByLabel('HubSpot contact ID', {exact: true}).focus();
         assert.equal(await panel().getByLabel('HubSpot contact ID', {exact: true}).evaluate(node => node === document.activeElement), true);
         await page.keyboard.press('Tab');
@@ -136,20 +142,20 @@ export async function hubspotBrowser({browser, directory}) {
         await panel().getByRole('button', {name: 'Remap customer', exact: true}).click();
         await panel().getByLabel('HubSpot contact ID', {exact: true}).fill('12');
         await panel().getByRole('button', {name: 'Save explicit mapping', exact: true}).click();
-        await refresh(); await fresh(); await panel().getByText('12', {exact: true}).first().waitFor();
+        await refresh(); await fresh(); await panel().getByText('HubSpot source identifiers', {exact: true}).click(); await panel().getByText('12', {exact: true}).first().waitFor();
         await runtime.execute(`UPDATE crm_mappings SET refreshed_at=${Date.now()-600000} WHERE project_id='${owner.projectId}' AND contact_id='${contact.id}'`);
         await panel().getByRole('button', {name: 'Check CRM status', exact: true}).click();
         await panel().getByText('Stale — refresh to check the latest identity and account context.', {exact: true}).waitFor();
         await panel().getByText('Business hours', {exact: true}).first().waitFor(); await captures('customer-stale-cache');
         await refresh(); await fresh();
-        const openTicket = async id => {
+        const openTicket = async (id, expectCrm = true) => {
             await page.goto(runtime.origin + `/projects/${owner.projectId}/conversations/${id}`);
             const assistant = page.locator('#conversation-assistant');
             if (await assistant.getAttribute('aria-hidden') === 'true') await page.getByRole('button', {name: 'Show conversation panel', exact: true}).click();
             await page.getByRole('tab', {name: 'Ticket', exact: true}).click();
             const heading = page.locator('#ticket-section-customer-heading');
             if (await heading.count() && await heading.getAttribute('aria-expanded') === 'false') await heading.click();
-            await panel().waitFor();
+            if (expectCrm) await panel().waitFor();
         };
         await openTicket(ticket.id); await fresh();
         provider.plan = 'Enterprise'; provider.entitlement = 'Priority response'; await refresh(); await fresh();
@@ -174,7 +180,7 @@ export async function hubspotBrowser({browser, directory}) {
         await panel().getByRole('button', {name: 'Map customer to HubSpot', exact: true}).click();
         await panel().getByLabel('HubSpot contact ID', {exact: true}).fill('12');
         await panel().getByRole('button', {name: 'Save explicit mapping', exact: true}).click();
-        await panel().getByRole('alert').filter({hasText: 'CRM mapping, identity or authority changed'}).waitFor();
+        await panel().getByRole('alert').filter({hasText: 'already mapped to another customer'}).waitFor();
         assert.equal(await panel().getByLabel('HubSpot contact ID', {exact: true}).inputValue(), '12');
         await panel().getByRole('button', {name: 'Cancel mapping', exact: true}).click();
         await openTicket(otherTicket.id); await panel().getByText('Unmapped — choose source IDs on the customer record.', {exact: true}).waitFor();
@@ -186,12 +192,13 @@ export async function hubspotBrowser({browser, directory}) {
         await panel().getByRole('button', {name: 'Remap customer', exact: true}).click();
         assert.equal(await panel().getByLabel('HubSpot contact ID', {exact: true}).inputValue(), '12');
         await runtime.execute(`UPDATE memberships SET role='operator' WHERE project_id='${owner.projectId}' AND user_id='${owner.userId}'; UPDATE sessions SET role='operator' WHERE actor_id='${owner.userId}'`);
-        await page.evaluate(() => window.dispatchEvent(new Event('focus'))); await panel().getByRole('alert').waitFor();
+        await page.evaluate(() => window.dispatchEvent(new Event('focus'))); await panel().waitFor({state: 'detached'});
         assert.equal(await panel().getByLabel('HubSpot contact ID', {exact: true}).count(), 0);
-        assert.equal(await panel().getByText('Priority response', {exact: true}).count(), 0); await captures('customer-denied');
-        await page.reload(); await page.getByText('CRM context requires a workspace owner or admin with customer management permission. Ask your owner for access.', {exact: true}).waitFor();
-        await openTicket(ticket.id); await panel().getByText('CRM context requires a workspace owner or admin with customer management permission. Ask your owner for access.', {exact: true}).waitFor();
-        assert.equal(await panel().getByText('Priority response', {exact: true}).count(), 0);
+        assert.equal(await panel().getByText('Priority response', {exact: true}).count(), 0); await page.screenshot({path: `${directory}/customer-denied-1440.png`, fullPage: true});
+        await page.reload(); await page.getByRole('heading', {name: 'Maya Patel', exact: true}).waitFor();
+        assert.equal(await panel().count(), 0, 'operators have no permanent CRM permission notice');
+        await openTicket(ticket.id, false);
+        assert.equal(await panel().count(), 0);
         await page.goto(settings); await page.getByText('HubSpot requires a workspace owner or admin with customer management permission. Ask your owner for access.', {exact: true}).waitFor();
         await runtime.execute(`UPDATE memberships SET role='owner' WHERE project_id='${owner.projectId}' AND user_id='${owner.userId}'; UPDATE sessions SET role='owner' WHERE actor_id='${owner.userId}'`);
         await openCustomer(); await fresh();
@@ -205,7 +212,8 @@ export async function hubspotBrowser({browser, directory}) {
         await page.getByRole('button', {name: 'Confirm disconnect', exact: true}).click();
         const disconnectProof = page.getByRole('dialog'); await disconnectProof.getByLabel('Your password', {exact: true}).fill('synthetic-hubspot-owner-password'); await disconnectProof.getByRole('button', {name: 'Confirm', exact: true}).click();
         await page.getByText('HubSpot disconnected', {exact: false}).first().waitFor(); await captures('settings-disconnected');
-        await openCustomer(); await panel().getByText(/^Disconnected —/).waitFor(); await captures('customer-disconnected');
+        await page.goto(customer); await page.getByRole('heading', {name: 'Maya Patel', exact: true}).waitFor();
+        assert.equal(await panel().count(), 0, 'disconnected workspaces have no CRM box');
         passed = true;
     } finally {
         await context?.close(); await runtime?.close(passed); await new Promise(resolve => server.close(resolve));

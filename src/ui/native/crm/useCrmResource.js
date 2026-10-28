@@ -14,24 +14,24 @@ export function useCrmAccess(projectId) {
 /** Each mounted resource owns its requests. Never retain content after a refused read or refresh. */
 export function useCrmResource(path) {
     const [state, setState] = useState({loading: true, data: null, error: '', notice: ''});
-    const request = useRef(null), serial = useRef(0), mutating = useRef(false);
+    const request = useRef(null), serial = useRef(0), pending = useRef(false);
     const run = useCallback(async (init, notice = '', background = false) => {
-        if (background && mutating.current) return;
+        if (background && pending.current) return;
         request.current?.abort();
         const controller = new AbortController(), version = ++serial.current;
         request.current = controller;
-        if (init) mutating.current = true;
-        setState({loading: true, data: null, error: '', notice: ''});
+        pending.current = true;
+        setState(previous => ({...previous, loading: true, error: '', notice: background ? previous.notice : ''}));
         try {
             if (init) await nativeRequest(path + (init.suffix || ''), {...init, signal: controller.signal});
             const data = await nativeRequest(path, {signal: controller.signal});
-            if (!controller.signal.aborted && serial.current === version) setState({loading: false, data, error: '', notice});
+            if (!controller.signal.aborted && serial.current === version) setState(previous => ({loading: false, data, error: '', notice: background ? previous.notice : notice}));
             return !controller.signal.aborted;
         } catch (error) {
             if (!controller.signal.aborted && serial.current === version) setState({loading: false, data: null, error: error.message, notice: '', denied: [401, 403].includes(error.status)});
             return false;
         } finally {
-            if (serial.current === version) mutating.current = false;
+            if (serial.current === version) pending.current = false;
         }
     }, [path]);
     useEffect(() => {

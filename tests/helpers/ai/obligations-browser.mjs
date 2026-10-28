@@ -70,7 +70,7 @@ export async function obligationsBrowserJourney({runtime,browser,shot}) {
     if(!await control.isVisible() || (await control.innerText()).trim())continue
     const label=await control.getAttribute('aria-label')
     await control.hover();await page.locator('.ui-tooltip[data-open]').filter({hasText:label}).waitFor()
-    await page.mouse.move(0,0);await control.focus()
+    await page.mouse.move(0,0);await page.keyboard.press('Tab');await control.focus()
     await page.locator('.ui-tooltip[data-open]').filter({hasText:label}).waitFor({timeout:1000})
     await page.screenshot({path:shot(`followup-tooltip-${width}.png`),fullPage:true})
     break

@@ -3732,7 +3732,7 @@
       "executable": false
     },
     "src/modules/ai-support/obligations.ts": {
-      "sha256": "61a7d7664f9ebe2cdabc1526b3a22e39146950f96512d80b474fbfeae8ab73c5",
+      "sha256": "ef295ca10acffa645a480d3b970ecbeba31140f6dcaeb5208fd5f0cc4999c72f",
       "executable": false
     },
     "src/modules/ai-support/presentation.ts": {
@@ -11376,7 +11376,7 @@
       "executable": false
     },
     "tests/helpers/ai/obligations-browser.mjs": {
-      "sha256": "0e2c77e58e4a8e59cdfa7ec08eaf9a9af6b9781cac94abdd8d84e8076cbae7d7",
+      "sha256": "f3e7845aac47ad3bfe58ce9151c748d6eda41a1682fdad1840c9cc48a3d829b2",
       "executable": false
     },
     "tests/helpers/ai/obligations.mjs": {

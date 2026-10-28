@@ -117,9 +117,13 @@
       ]
     },
     "PUBLIC-001": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
       ]
     },
     "MIGRATION-001": {
@@ -297,9 +301,15 @@
       ]
     },
     "API-002": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "API-002"
+        "API-002",
+        "API-003",
+        "API-004",
+        "API-005",
+        "API-006",
+        "API-007",
+        "API-008"
       ]
     },
     "MOVE-IN-002": {

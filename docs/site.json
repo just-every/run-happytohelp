@@ -295,6 +295,14 @@
     {
       "source": "docs/verify.md",
       "reason": "Retained acceptance source before the contract conversion"
+    },
+    {
+      "source": "docs/contract/machine-api.md",
+      "reason": "Detailed product protocol and retained design specification"
+    },
+    {
+      "source": "docs/contract/public-design.md",
+      "reason": "Detailed product protocol and retained design specification"
     }
   ]
 }

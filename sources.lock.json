@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d6627901a228f20f337d4a357c19fd6c9eb73768d44017a1d8ffdfee00016906",
+      "sha256": "aa2a0a592149f5a875b3cf6eced1cebc29910b113f4eb1be9ff02486d6296c33",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ed2e688eca4f241154541a08255f28b42c8c6ce36093be6e562b2443b26084f8",
+      "sha256": "8cffb5d723ee3e392a149c4f5aa5c6a7ce679f36c857272a281d15be59ab905b",
       "executable": false
     },
     "DEMO.md": {
@@ -1672,7 +1672,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "a2281e6d7b9582a11a9fcc8faa4dc871dade3c2218a7c9f365e691f31e06e3b1",
+      "sha256": "c1d76d126e6a6890fa2600ca11dc0c8427e9dd3b06679834fa5597d68aa93ed9",
       "executable": false
     },
     "docs/companies-and-csv.md": {
@@ -1684,11 +1684,11 @@
       "executable": false
     },
     "docs/contract/COVERAGE.json": {
-      "sha256": "1a7445b5dcffc38979f1b1c50a595e1bc6b7ad6e464a9eedf66be781663fc9a4",
+      "sha256": "6feaf3b4b063d416936b14c11e6b6d3c635ac1e9c6f33c51e48266da1b70ba26",
       "executable": false
     },
     "docs/contract/ID-MAP.json": {
-      "sha256": "bad6d8a009a03fb742e3f9c6c15d5b9adb6a608a2af2ab585b8ca3d51490cc39",
+      "sha256": "4fa671e38da654cb4fdc934cd0aceea2c6c6e9c920cd2da0e5b3c42de64155cb",
       "executable": false
     },
     "docs/customer-portal.md": {
@@ -1800,7 +1800,7 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "a0eab6626793f7740e3c8e2a0d10492a038a56553197c850d6abc18aac1ffd0e",
+      "sha256": "017896f1e925f5e009c8067764eb1255e68d47b3a506b7eb958fdd30912acb77",
       "executable": false
     },
     "docs/SOURCE-PROVENANCE.md": {
@@ -3320,7 +3320,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "cccdccfcd14566f29b052def8de90424891ac085c09a16e8a457d0d43b939089",
+      "sha256": "6820d9298b1fe699aa0e22c8506f5355433080fbbbb5b2d4a0fbb60c085764c6",
       "executable": false
     },
     "src/app.ts": {

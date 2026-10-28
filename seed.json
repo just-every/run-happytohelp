@@ -88,7 +88,11 @@
     {
       "id": "public-site",
       "clauses": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
       ]
     },
     {

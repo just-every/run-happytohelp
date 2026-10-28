@@ -1860,7 +1860,17 @@
       "text": "**PUBLIC-001 \u2014 Public product source.** The approved",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1869,7 +1879,17 @@
       "text": "homepage (owner approval 2026-10-01, clarity pass 2026-10-02, hero redesign",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1878,7 +1898,17 @@
       "text": "2026-10-08, hero leading with help before they ask 2026-10-20) is the real public `/` experience, in",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1887,7 +1917,17 @@
       "text": "this order: the hero, whose headline \u201cKnows what your customer needs before they do.\u201d stands left-aligned beside one",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1896,7 +1936,17 @@
       "text": "hand-drawn picture of both moments on a pale aqua blob, joined by an aqua pen arrow: 1, a checkout page in its window",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1905,7 +1955,17 @@
       "text": "with the widget's offer card (signed with the speech-bubble mark) floating over its corner; 2, a conversation already",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1914,7 +1974,17 @@
       "text": "solved (a customer, Maya, cannot turn on the Spanish version of her store; the agent's fix, beside a code glyph, says",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1923,7 +1993,17 @@
       "text": "it is fixed; the reply to Maya carries Send inside it, the only step left), each numbered on a filled aqua disc; with",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1932,7 +2012,17 @@
       "text": "the subhead \u201cSome customers who get stuck never write in. They just leave.\u201d, the line",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1941,7 +2031,17 @@
       "text": "\u201c100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk\u201d, an aqua pen-stroke flourish under the calls to",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1950,7 +2050,17 @@
       "text": "action that draws itself in once, and under the picture the captions \u201cBefore they ask\u201d (\u201cWhen someone seems stuck,",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1959,7 +2069,17 @@
       "text": "the widget offers a hand.\u201d) and \u201cWhen they ask\u201d (\u201cYour Codex or Claude fixes the problem and writes the reply. You",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1968,7 +2088,17 @@
       "text": "press Send.\u201d) on filled aqua number discs; \u201cNot just better. Free.\u201d (100% free and",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1977,7 +2107,17 @@
       "text": "open source, free as in code and free as in cost, MIT licensed, \u201cNo seats. No",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1986,7 +2126,17 @@
       "text": "plans. No fees.\u201d, each promise after a line icon in a pale aqua circle, with the MIT license drawn as an ink card",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -1995,7 +2145,17 @@
       "text": "over a wordless code editor, \u201cfree of charge\u201d and the rights highlighted in aqua);",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2004,7 +2164,17 @@
       "text": "\u201cThe rest of your support desk\u201d (chat widget, shared inbox, help center, suggested",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2013,7 +2183,17 @@
       "text": "replies, as frameless ink cards numbered on filled aqua discs); \u201cTry it beside what you have\u201d (install, bring the",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2022,7 +2202,17 @@
       "text": "help center from Zendesk, Intercom or Freshdesk, add the chat widget, on filled aqua discs, beside the finished",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2031,7 +2221,17 @@
       "text": "import in its window); \u201cReady when you are.\u201d, a big closing headline with an aqua pen line drawn under it;",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2040,7 +2240,17 @@
       "text": "and the footer, signed with the header's lockup. Below the hero the drawings carry the hero's language: each",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2049,7 +2259,17 @@
       "text": "floats on a pale aqua blob, the mark's three aqua sparks spring from the corner of four of its cards, a window",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2058,7 +2278,17 @@
       "text": "frame stays only for the code editor, the checkout and the import, the text links carry the hero's aqua",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2067,7 +2297,17 @@
       "text": "underline, and a full-width aqua pen line with one loop divides Free from the desk and the desk",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2076,7 +2316,17 @@
       "text": "from Try it beside what you have. The page carries no price, hosting or provider line and no plug for any other service.",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2085,7 +2335,17 @@
       "text": "The drawings mirror the real interface and make no claim the product cannot",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2094,7 +2354,17 @@
       "text": "back; conversation, ticket-history and automation import, reporting and",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2103,7 +2373,17 @@
       "text": "compliance claims are deliberately absent. It is a warm off-white page in one geometric sans-serif",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2112,7 +2392,17 @@
       "text": "(Outfit, self-hosted from `public/fonts/outfit/`, so the page makes no",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2121,7 +2411,17 @@
       "text": "third-party request, over a metric-matched local fallback, so no text moves",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2130,7 +2430,17 @@
       "text": "when it loads) with near-black ink and black pill buttons; color",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2139,7 +2449,17 @@
       "text": "appears only inside the drawings, which are labeled HTML/SVG rather than raster images,",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2148,7 +2468,17 @@
       "text": "and in aqua accents outside them (the hero's and the desk's number discs, the promises' circles, link underlines, the",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2157,7 +2487,17 @@
       "text": "hero flourish, the dividers, the closing line) and in the sparks of the speech-bubble mark beside the header and",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2166,7 +2506,17 @@
       "text": "footer wordmark. The wordmark is not set in Outfit: it is drawn by hand as round-capped SVG strokes following",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2175,7 +2525,17 @@
       "text": "Nunito's letter shapes (SIL OFL), with no font data embedded, and the link it sits in is named HappyToHelp by",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2184,7 +2544,17 @@
       "text": "visually hidden text. The page's text",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2193,7 +2563,17 @@
       "text": "and real links, derived from `package.json` `repository.url`, are ordinary DOM",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2202,7 +2582,17 @@
       "text": "content; the hero flourish draws in once as the page appears, and each moment below the hero (a drawing, the",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2211,7 +2601,17 @@
       "text": "promises, the steps, a desk card, a divider, the closing line) plays once, in under 1.8s, as it scrolls into view",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2220,7 +2620,17 @@
       "text": "(an IntersectionObserver), moving only opacity, transforms, clipping and strokes, so nothing shifts; reduced-motion",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2229,7 +2639,17 @@
       "text": "preferences remove all animation, transitions and smooth scrolling without",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2238,7 +2658,17 @@
       "text": "changing layout, leaving every drawing in its final state and every stroke fully drawn. `/docs` renders, at build",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2247,7 +2677,17 @@
       "text": "time, the Markdown files listed in `docs/site.json`, in the homepage's paper,",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2256,7 +2696,17 @@
       "text": "ink and Outfit, with section navigation, page contents and GitHub links for",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2265,7 +2715,17 @@
       "text": "everything unpublished; an unknown page gets the branded 404. Every build",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2274,7 +2734,17 @@
       "text": "renders the current files, and an unlisted Markdown file fails verification. Dynamic published",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2283,7 +2753,17 @@
       "text": "help centers retain project scope, canonical links, search and draft/deleted denial. The customer widget",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2292,7 +2772,17 @@
       "text": "remains available through owner-configured installation; broader marketing",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2301,7 +2791,17 @@
       "text": "routes, pricing, legal, referrer, waitlist and public auto-widget behavior",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2310,7 +2810,17 @@
       "text": "are outside this edition.",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2319,7 +2829,17 @@
       "text": "**Acceptance evidence:** Exercise the approved homepage and /docs requirements retained in this clause and the detailed acceptance specification at desktop/mobile, including keyboard/reduced motion, published Markdown manifest/link validation and draft/deleted help-center denial; target requirements do not authorize changed marketing claims.",
       "to": "clause",
       "ids": [
-        "PUBLIC-001"
+        "PUBLIC-001",
+        "PUBLIC-002",
+        "PUBLIC-003",
+        "PUBLIC-004",
+        "PUBLIC-005"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/public-design.md"
+        }
       ]
     },
     {
@@ -2976,7 +3496,19 @@
       "text": "**API-002 \u2014 Create and append support requests from another product or agent.** A workspace owner/admin issues a named machine credential for one source product or agent (for example a handoff from Handset) and binds it to exactly what it may touch; the scoped workspace API then lets that product create a ticket and append to it without a human session. Credentials are extensions of the CONNECTIONS-001 token model, not a second system: bearer-only, no cookies, no CORS, secret shown once at issue and stored only as a hash, with a non-secret display prefix, name, source-product label and the issuing member, creation time, optional expiry (UTC), last-used time and last-used source visible in Settings. Issue, rotate and revoke require the current owner/admin with step-up; rotation issues a new secret and keeps the old one valid for an owner-chosen overlap (default none, maximum 7 days) before it retires, and revocation, expiry, a blocked or deleted workspace and a restore take effect on the next request, with an in-flight create either committed whole or refused with nothing stored. Scopes are separate and narrow: `conversations:create`, `conversations:read` (bound by default to the conversations the credential created), `messages:append` (customer-side message or internal note on a conversation inside its bounds) and, unchanged, the existing operator-style `messages:write`; a read-only, a create-only and an append-only credential can each be issued, and no scope implies another. Bindings limit the credential to named brands, mailboxes/sender addresses, groups, request forms and an API channel label (`api:<source product>`, a first-class channel in inbox filters, reports, SLA and triage); it may set only priority levels and existing workspace tags its bindings allow (an unknown tag is refused, never created), may not assign, choose status beyond New, write internal-only fields or act as an operator, and an operation outside its bounds returns 404 for another resource and 403 `outside_credential_bounds` for a disallowed value, never a silent adjustment. Create takes a requester identified by email, E.164 phone or the caller's own external ID (namespaced to its source product) with optional name; subject, plain-text body and attachments passed by reference (a prior bounded upload id or a public HTTPS URL fetched under the existing egress rules with a required SHA-256, no redirects, size and 10-second bounds and the widget's type rules, the whole request atomic so one bad attachment stores no ticket); source channel label, priority and tags; and a source-product reference `{product, ref, url}` where the product label is fixed by the credential and cannot be spoofed, the URL is HTTPS without embedded credentials and is shown to operators as a back-link (\"Created via Handset, open in Handset\") and never fetched, and a second create for the same source reference under a different key returns 409 `source_ref_exists` with the existing ticket ID so the caller appends instead. The `Idempotency-Key` header is required on create (1-200 characters, scoped to workspace and source product so a rotated or reissued credential still deduplicates, retained at least 30 days): the same key and canonical body return the original status and body marked as a replay, a different body returns 409 `idempotency_conflict`, and a key still in flight returns 409 `in_progress` with `Retry-After`; append is idempotent by the existing `localId`. The identity rule is CUSTOMER-001's: a requester matches an existing contact only by an exact verified key, a new contact created by the credential is marked as asserted by that credential and unverified, email or name text alone never grants history access or merges contacts, two identifiers that point at different contacts return 409 `identity_conflict` without disclosing either contact, a requester matching an erasure tombstone is refused with `identity_erased`, and responses have the same shape whether or not the contact already existed. Append posts a message to an existing conversation as the requester (kind `customer`) or as an internal note (kind `note`), never as an operator or as AI; a `customer` message reopens a Solved ticket and creates the linked follow-up of a Closed one under STATUS-001, a merged ticket answers 409 `merged_into` with the surviving ID, and attachments follow the same reference rule. API-created tickets are untrusted customer content: they pass the same triage, automations, routing and AI-agent rules as any new ticket with source `api`, and body text, subject and source fields can never instruct the agent or open an external effect. They respect spam, abuse and consent: blocked senders, blocked identities and per-requester create caps (default 5 per hour, owner-configurable) place the request in Suspended under MAIL-002 with a reason and a 202 `held_for_review` response and no ticket-created event, AI request or outbound message; acknowledgments and any customer-facing send follow NOTIFY-001 and CHANNELS-001, an email acknowledgment is sent only when the caller supplies a consent record (channel, basis, time) the workspace accepts for that source, an SMS or WhatsApp send needs recorded opt-in and an approved template and an opted-out number is refused while the ticket is still created, and a created ticket otherwise contacts nobody. Signed webhooks use the existing `integrations.webhook.v1` signing, delivery and retry policy and add `conversation.status_changed` (ticket ID, previous and new status category and ID, source reference) and `conversation.assigned`; a destination can be limited to tickets created by one credential or one source product, and events keep carrying identifiers and values, never transcript text, email addresses or phone numbers. Limits are explicit: the existing per-credential requests-per-minute limit plus a separate create quota per minute and per day configured on the credential under workspace and installation ceilings, and the per-requester cap, each refused with 429, `Retry-After`, `RateLimit-Limit/Remaining/Reset` headers and a machine-readable code naming which limit (`credential`, `requester` or `workspace`); oversize bodies return 413 `payload_too_large` and unsupported types 415, nothing is silently truncated or dropped, and storage or plan exhaustion returns 503 `unavailable` with `Retry-After` and no partial ticket. Errors use the existing `{error:{code,message}}` shape with stable codes. Every action is audited under AUDIT-001 with a machine actor named on the credential: issue, rotation, scope or binding change, first use, expiry, revocation and denied attempts (counted per credential and window, not one event per probe), and every create or append records the credential name, source product and reference, request ID, idempotency-key digest and outcome in ticket history (\"Created by API credential Handset support handoff\"), never presented to the customer as a person, and the credential's name survives its revocation while an erased issuer is redacted without losing the event. Erasure under ERASURE-001 removes personal content from API-created tickets, stored replay bodies, pending event payloads and attachment bytes, keeps an opaque tombstone and the source reference without personal data, and fences a stale replay or a later create from resurrecting the identity. Portability under PORTABILITY-001 exports API-created tickets with channel label, source reference and machine-actor name, and exports credential metadata (ID, name, source product, scopes, bindings, creation, expiry, revocation, last-used) without hash or secret; restore creates every credential revoked and inert so the receiving owner must reissue, carries idempotency records as key and body digests only, and replays nothing. Documentation (`docs/api.md`) lists the new operations, scopes, bindings and error codes with runnable examples that keep tokens out of command arguments.",
       "to": "clause",
       "ids": [
-        "API-002"
+        "API-002",
+        "API-003",
+        "API-004",
+        "API-005",
+        "API-006",
+        "API-007",
+        "API-008"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/machine-api.md"
+        }
       ]
     },
     {
@@ -2985,7 +3517,19 @@
       "text": "**Acceptance evidence:** Through the documented bearer API and Settings, and with receivers and clocks faked only at the network edge: (1) issue a create-only, an append-only, a read-only and a full credential, observe each secret once, confirm the stored value is a hash and Settings shows prefix, source product, scopes, bindings, expiry and last used; (2) create a ticket with a valid key, then replay the same key and body for the same status and body marked as a replay and exactly one ticket, send the same key with a changed body for 409 `idempotency_conflict`, fire two concurrent creates with one key for one ticket and one `in_progress`, and omit the key for 400; (3) create with email, with phone and with an external ID, once for an existing verified contact (history not exposed, no merge), once for a new contact (marked asserted and unverified) and once with two identifiers on different contacts (409 `identity_conflict`, neither disclosed), and one for an erased contact (`identity_erased`, no identity recreated); (4) verify the operator sees subject, body, attachments, API channel label, priority, tags, requester, the credential as machine actor and a working source back-link, that a spoofed source product is refused, that a second create with the same source reference returns 409 `source_ref_exists` with the existing ID, and that an unknown tag, an assignment attempt and an internal field are each refused; (5) attach a bounded upload, a digest-matching HTTPS URL, a mismatching digest, a redirecting URL, a private-address URL and an oversize file and verify the atomic result (one stored ticket with bytes intact, or none) and 413/415 with no truncation; (6) append a customer message and an internal note to the created ticket, to a Solved one (reopens), a Closed one (new linked follow-up) and a merged one (`merged_into`), and refuse an append by a create-only credential, to another credential's conversation and across workspaces with 404; (7) bind a credential to one mailbox and brand and prove a create for another mailbox or brand is refused with `outside_credential_bounds` and not adjusted; (8) deliver a blocked sender, a requester over the per-requester cap and a message failing abuse checks and verify 202 `held_for_review` in Suspended with a reason and no ticket-created event, AI request or outbound mail, then release one from Suspended; (9) send an acknowledgment request with and without a consent record, an opted-in and an opted-out SMS/WhatsApp requester and verify consent, template and opt-out rules and a created ticket either way with no duplicate send on retry; (10) exceed the per-minute limit, the create quota and the per-requester cap and verify 429, `Retry-After`, the rate-limit headers and the limit-naming code each time, with no partial ticket; (11) receive signed `conversation.created`, `message.created`, `conversation.status_changed` and `conversation.assigned` at a destination limited to one credential, verify the signature, no transcript text or contact data, duplicate/out-of-order handling and a 429 retry with the same ID, and that another credential's tickets send nothing; (12) rotate a credential with an overlap, use old and new secrets in the window, then see the old refused after it, then revoke, expire (advance the clock) and block the workspace and verify 401 on the next request and an in-flight create committed whole or absent; (13) open the audit export and ticket history to find issue, rotate, binding change, first use, denial counts, revoke, every create and append with credential name, source product, reference and request ID and no secret, and erase the issuing member and a requester to verify redaction without losing the events; (14) erase a populated API-created contact and verify ticket content, stored replay bodies, pending event payloads and attachment bytes are removed, the tombstone and fences hold against a stale replay and a new create, and the owner-visible counts are complete; (15) export and restore into a clean installation and verify tickets with channel label, source reference and machine-actor name, credentials present as metadata only (no hash or secret), every credential revoked and unusable, idempotency digests carried, erasure fences kept and nothing replayed; (16) run the `docs/api.md` examples against a dev server and confirm they pass and expose no secret in arguments or logs.",
       "to": "clause",
       "ids": [
-        "API-002"
+        "API-002",
+        "API-003",
+        "API-004",
+        "API-005",
+        "API-006",
+        "API-007",
+        "API-008"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/machine-api.md"
+        }
       ]
     },
     {
@@ -3700,7 +4244,13 @@
       "text": "Native public-route evidence: `tests/connections/api-create.mjs` / \u201cmachine create credentials admit one atomic ticket and replay across rotation without granting other scopes\u201d covers create/replay and identity fencing; customer/note attachment and status matrices; configurable requester holds and 429 headers; signed ordered events, retries and credential filtering; overlap, expiry, revocation, binding-change and deleted-workspace admission races; and owner-readable API erasure counts with pending-payload removal. `tests/journeys/connections-browser.mjs` / \u201cat 1440px\u2026\u201d and \u201cat 390px an owner creates and revokes a token\u2026\u201d exercise create-only, append-only, read-only and full machine credentials, one-time secrets, Settings metadata and a working operator source back-link. `tests/helpers/recovery/journey.mjs` / `verifyRestoredApi`, through `tests/journeys/restore.mjs` / \u201ca populated packaged install restores\u2026\u201d, adds API metadata, revoked-token, digest and erasure-fence restore assertions; exact-candidate CI qualification is required. Additional deterministic evidence in the same API phase covers literal content-abuse holds across subject, body and source reference, no ticket/event/AI/outbox effect while held, reviewed release and native triage input; installation-admin workspace suspension with next-request 401 and atomic admission; and issuer erasure with retained machine history, redacted audit/export identity and revoked credentials without hashes. `tests/helpers/identity/roles-audit.mjs` / `rolesAuditJourney` qualifies both member-erasure route permissions. `tests/helpers/recovery/journey.mjs` / `eraseRecoveryIssuer` and `verifyRestoredApi`, through the populated restore journey, qualify issuer redaction and machine-event retention across export/restore. Owner transfer and installation review are required for owners and shared accounts respectively. Authority-model evidence: `tests/connections/api-create.mjs` / `apiInvariantSweeps` derives conversation-door coverage from the mounted router, crosses requester admission with every key spelling, checks one credential across rotation and policy changes, snapshots all foreign-workspace rows during erasure, and compares released tickets with direct creates. `tests/connections/migration.mjs` retains a populated legacy bearer grant across the credential backfill. The existing Settings browser journeys verify one credential card containing its rotated secrets at 1440 and 390. Repair scope: shared credential scope eligibility, isolate-cached schema-derived member-erasure scope with generated workspace deletes and reset/invite row separation; key-driven contact, sender-rule and digest-fence admission; indexed verified email/external/phone identity matching in create and release; reach-filtered credential replay/conflict references; operator-visible release collision IDs; and shared requester insertion. The existing scale sweep meters append, create and release doors with contacts, sender rules and both fence tables populated. API-002 remains missing pending exact-candidate verification and the independent gate. Remaining gaps: live AI content-abuse and complete triage/AI qualification, including \u201cbody text, subject and source fields can never instruct the agent or open an external effect.\u201d Point 9 (consent-gated SMS/WhatsApp acknowledgment) is out of scope pending CHANNELS. No Handset or live delivery qualification.",
       "to": "gap",
       "ids": [
-        "API-002"
+        "API-002",
+        "API-003",
+        "API-004",
+        "API-005",
+        "API-006",
+        "API-007",
+        "API-008"
       ]
     },
     {

@@ -9,8 +9,9 @@ import {iso,person} from './dashboard-data'
 
 /** Hydrate an already authorized set. One JSON bind keeps large transcripts
  * within D1's parameter limit without a query for each message or author. */
-export async function messagesData(env:Env,rows:any[]){
+export async function messagesData(env:Env,rows:any[],channels?:ReadonlyMap<string,string|undefined>){
  if(!rows.length)return []
+ const channelStatus=await channelStatuses(env,rows,channels)
  const ids=JSON.stringify(rows.map(row=>row.id))
  const selected='SELECT value FROM json_each(?)'
  const mailRows=rows.filter(row=>!['contact','system'].includes(row.actor_role)&&!row.erased_at),mailIds=JSON.stringify(mailRows.map(row=>row.id))
@@ -51,7 +52,6 @@ export async function messagesData(env:Env,rows:any[]){
  }
  const media=new Map<string,any[]>()
  for(const {message_id,...item} of data[3].results){const key=String(message_id);if(!media.has(key))media.set(key,[]);media.get(key)!.push(item)}
- const channelStatus=await channelStatuses(env,rows)
  return rows.map(row=>{
   const origin:any=origins.get(String(row.id)),sourceAuthor=origin?JSON.parse(origin.author_json):null
   // The workspace's away reply (away-reply.ts) has no teammate author and is never emailed.

@@ -28,6 +28,7 @@ export async function channelHarness(){
  return {app,ws,other,root,token,call,input,connect,event,signed,deliver,ticket,reply,sends,responses,close:()=>app.close()};
 }
 export async function credentials(){const h=await channelHarness();try{
+ assert.deepEqual((await h.app.call('/_test/unclassified-routes')).data,[],'channel settings, consent and provider ingress have explicit role rules');
  const c=await h.connect('sms');const list=await h.call('/connections');assert.ok(!JSON.stringify(list).includes(secret));assert.ok(!JSON.stringify(list).includes(credential));const stored=await h.app.first('SELECT * FROM support_channel_connections WHERE id=?',c.id);assert.notEqual(stored.token_cipher,credential);assert.notEqual(stored.signing_cipher,secret);assert.equal(supportChannelArchiveRow('support_channel_connections',stored).token_cipher,null);assert.equal(supportChannelArchiveRow('support_channel_connections',stored).signing_cipher,null);
  for(const token of [h.ws.tokens.operator,h.other.tokens.owner])for(const method of ['GET','POST','DELETE']){const path=h.root+'/connections'+(method==='DELETE'?'/'+c.id:'');assert.equal((await h.app.call(path,{token,method,...(method==='POST'?{body:h.input('slack')}: {})})).status,403);}
  assert.equal((await h.app.call(h.root+'/connections',{token:h.token,body:{...h.input('sms'),registered:false}})).status,400);

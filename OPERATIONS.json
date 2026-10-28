@@ -66,7 +66,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "Owner-account provision, migration, publication and health. Today pinned rer 0.2.77 dry-run combines local validation/build with credentialed read-only Cloudflare GETs for the account Workers subdomain and the Worker settings and secret names (three GETs for an existing Worker); refuses without credentials or a required secret neither held nor supplied, validates supplied private mail inputs, sends no mail and changes no provider resources. The required zero-outbound dry-run and separately started provider preflight are not yet built or proved; see OPERATIONS.md."
+      "effects": "Owner-account provision, migration, publication and health. Deploy dry-run validates/builds locally with zero outbound requests, without provider credentials, mail or provider changes; remote resources and secret bindings remain unchecked. Separately start pnpm run preflight --consent-read-only with private Cloudflare inputs to read the account Workers subdomain and Worker settings and secret names (three GETs for an existing Worker). The installer journey proves this split against fixtures; live preflight and remote provisioning remain unqualified and owner-only. See OPERATIONS.md."
     },
     "export": {
       "argv": [

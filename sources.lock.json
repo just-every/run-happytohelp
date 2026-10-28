@@ -1612,7 +1612,7 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "0a5b46b61c8375418ff7f5c81d1ed341cae04f694c7ebb6600bd8121a55d4673",
+      "sha256": "44899e4b71d23392b4f0c38407330bcf836cda3e519871b5da8587cfafd32381",
       "executable": false
     },
     "base-copies.json": {
@@ -1708,7 +1708,7 @@
       "executable": false
     },
     "docs/INSTALLER.md": {
-      "sha256": "98f7814ad2299e3fcafe58200a74f7e03f0bdeae4eda6628296a76406481a282",
+      "sha256": "bae38da002f12abc162c337a0fd84ad7a419ec4b4a1e0ec558476e7e5134bfff",
       "executable": false
     },
     "docs/legacy-entry-points.md": {
@@ -2564,11 +2564,11 @@
       "executable": false
     },
     "OPERATIONS.json": {
-      "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
+      "sha256": "7281c7836c31089f6db0675c419b10b1394f2dd824037f2472fe37dd74414a4c",
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "6c602d215f4aa56fc4dd8f9e1267a3df7845bbfde6e6e7df966b0fbc870893ad",
+      "sha256": "3ac8f1845902cddd23328ab5a6fa1cc315c84172f9ee6185827e82eb4b9e4395",
       "executable": false
     },
     "package.json": {
@@ -2644,7 +2644,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "ad2e154f0fd297f279a49af698c7a9e6d5dcc43566defd23fe9f5c82a3b2ae73",
+      "sha256": "336bf39d477d35bb0800502518a353030121d87d4c30700a0002f52a01f04624",
       "executable": false
     },
     "RELEASE.json": {
@@ -3069,6 +3069,18 @@
     },
     "scripts/installer/portability-policy.mjs": {
       "sha256": "58b4b02eb51609cb99e5ed5f0fa9b3f9646e5cea6953264d86f7dd1af3795967",
+      "executable": false
+    },
+    "scripts/installer/preflight-inputs.mjs": {
+      "sha256": "1e1b16fb835b7d65369c3b6fcbdcb95c1bde99fbd20e931005f4c6d2ff9f3b7d",
+      "executable": false
+    },
+    "scripts/installer/preflight.mjs": {
+      "sha256": "56b36186fb5f3959c61e86ad37359171b62619c5b9c96134665ec5b6b5f968f3",
+      "executable": false
+    },
+    "scripts/installer/provider-preflight.mjs": {
+      "sha256": "388f50eb1bd004a91dc67da4e4cada262f10a477f5053e312957f9402821750c",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -11904,7 +11916,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "57474f1030db8fe7ff34a858a1ec270d1499b69545f1b4c49beeb971a11ba900",
+      "sha256": "e4f6cbf6417f34a96b41cd1c19589fb8a14f44a6587ca2920891f5d2e8ffc2ca",
       "executable": false
     },
     "tests/helpers/installer/hosted-export-live.mjs": {
@@ -11917,6 +11929,10 @@
     },
     "tests/helpers/installer/hosted-export.mjs": {
       "sha256": "6fc55bcaa154dbe9813852e60409e8f2af3f942dba2dc93c579a4f78fcb5d4e8",
+      "executable": false
+    },
+    "tests/helpers/installer/provider-preflight.mjs": {
+      "sha256": "0657c028f1a88dbdc514e9aff0191588a82901e84ae4d4c5106ed80697d8f8ba",
       "executable": false
     },
     "tests/helpers/installer/readme-restore.mjs": {
@@ -12396,7 +12412,7 @@
       "executable": false
     },
     "tests/journeys/installer.mjs": {
-      "sha256": "a3ad34618e12436d4604c1f67be7f8309bf181788bd7bb708c9a29d0fa660a57",
+      "sha256": "1f155fb368175633cd350d75cc8f2be94adc992e6315c5c9a3465912938805f6",
       "executable": false
     },
     "tests/journeys/kit/app-worker.ts": {

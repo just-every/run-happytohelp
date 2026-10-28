@@ -246,8 +246,35 @@ and secret names, with no mail or mutations. Neither step is a mock of the other
 The candidate implements the zero-outbound dry-run: it validates and builds without
 provider credentials, sends no mail and changes no resources. Its report leaves
 remote resources, credential validity and existing secret bindings unchecked.
-The separately started owner-consented preflight and remote provisioning still
-need implementation or qualification, respectively.
+The separately started preflight is implemented and proved against a local
+Cloudflare API fixture through the real package command:
+
+```sh
+pnpm run preflight --consent-read-only --env-file ~/happytohelp-production.env
+```
+
+Put `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in private environment
+variables or that owned 0600 KEY=VALUE file. As with deploy, the file overrides
+the environment; credentials are never command arguments. The token must contain
+20–256 ASCII letters, digits, underscores or hyphens; the account ID is 32
+hexadecimal digits and cannot be all zero. The Worker is derived from
+`deploy.json` with rer's naming and `--environment production` (the default).
+
+Consent must be `--consent-read-only` on every invocation; an environment leftover
+or another command's `--yes` cannot supply it. Missing or malformed credentials,
+missing consent and write verbs refuse before any request. For an existing Worker
+the command makes exactly three GETs to api.cloudflare.com: Workers subdomain,
+Worker settings, then secret names. It prints the subdomain, a settings summary
+and secret names only, never binding values. A Worker settings 404 reports not
+deployed after two requests; a provider refusal reports its HTTP status and
+sanitized reason without retrying. The command sends no mail, writes no receipt
+or resources, follows no redirects and contacts no other host. It is never run
+implicitly by setup, dev, verify or deploy and does not call the dry-run.
+
+Rer 0.2.77's adapter has a fixed verb set without a preflight hook, so this is a
+documented package script. Fixture proof does not qualify the owner's real scoped
+token, a live account, real remote provisioning or a hosted installation. Those
+remain unproved and owner-only; NATIVE-001 stays partial.
 
 Cloudflare Email Sending additionally needs `EMAIL_ACCOUNT_ID`. Add
 `{"binding":"EMAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}` to the

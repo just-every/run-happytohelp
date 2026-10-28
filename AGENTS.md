@@ -29,7 +29,22 @@ pnpm exec rer describe
 Reset erases the printed local inventory; export your data **before** resetting
 if you need it. Import requires an empty destination and retains native owners.
 Deploy requires explicit owner authorization and private account configuration.
-NATIVE-001 requires a zero-outbound dry-run and a separately started read-only provider preflight with owner consent and a scoped token. The separate preflight still needs implementation and live qualification.
+NATIVE-001 requires a zero-outbound dry-run and a separately started read-only provider preflight with owner consent and a scoped token. The separate preflight ships as
+`pnpm run preflight --consent-read-only --env-file ~/happytohelp-production.env`.
+It uses the deploy input precedence (private environment, then owned 0600 file)
+for `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, never credential argv.
+Consent is required on every invocation, never inherited from the environment
+or `--yes`. The Worker name comes from `deploy.json` using rer's naming for
+`--environment production` (the default). The report prints the subdomain,
+settings summary and secret names only. Existing Workers take three GETs,
+missing Workers two; input/consent/write refusals make zero requests and
+Cloudflare failures report their status and sanitized reason without retry.
+No other host, mail or mutation is involved. This package script is used because
+rer 0.2.77 has no supported preflight verb/hook. It never runs implicitly or
+calls the dry-run. The installer journey proves it against a Cloudflare API
+fixture. Live qualification with the owner's real scoped token, real remote
+provisioning and hosted qualification remain unproved and owner-only; NATIVE-001
+stays partial.
 `--dry-run` validates and builds locally without provider requests or credentials.
 It sends no mail and changes no provider resources. Its receipt explicitly leaves
 remote resources, credential validity and existing secret bindings unchecked;

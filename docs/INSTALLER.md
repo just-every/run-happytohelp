@@ -209,15 +209,40 @@ separately started **read-only provider preflight** with owner consent and the
 owner's scoped Cloudflare token. The preflight has its own acceptance: only the
 account's Workers subdomain and the Worker's settings and secret names (three
 GETs for an existing Worker), no mail and no mutations. Neither step is a mock of
-the other. The zero-outbound dry-run is implemented in this candidate. The separately started preflight still needs implementation and live qualification.
+the other. Both steps are implemented and proved against local network-edge
+fixtures in the installer journey.
+
+Start the preflight explicitly from the installed checkout:
+
+```sh
+pnpm run preflight --consent-read-only --env-file ~/happytohelp-production.env
+```
+
+Read-only consent is required on each invocation. Environment leftovers and
+`--yes` cannot supply it. Set `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ACCOUNT_ID` in private environment variables or an owned 0600
+KEY=VALUE file; the file wins, as for deploy. Never pass credentials as arguments.
+The Worker comes from `deploy.json`, using rer's name for `--environment
+production` (the default). The report contains the Workers subdomain, a settings
+summary and secret names only. Existing Workers take three GETs; a missing
+Worker is reported after two. Invalid/missing inputs, missing consent and write
+verbs refuse with zero requests. Cloudflare refusals retain their HTTP status and
+sanitized reason without retries. No mail or resource changes occur.
+
+This separate package script is the supported surface here because rer 0.2.77
+has no preflight verb or adapter hook. Setup, dev, verify and deploy never start
+it. Fixture proof is not live qualification with the owner's real scoped token,
+real remote provisioning or hosted qualification; those remain unproved and
+owner-only.
 
 `rer deploy --dry-run` validates the input shape and builds locally. It makes no
 provider requests, sends no mail and makes no deployment. Cloudflare credentials
 are not required. Remote resources, credential validity and existing secret
-bindings remain unchecked until a real deployment. `rer deploy --environment
+bindings remain unchecked by the dry-run; inspect the provider separately with
+the preflight. `rer deploy --environment
 production` requires owner authorization and the private credentials/declaration
 in Operations. Local development still needs no email account.
-Stop `rer dev` first (`rer dev --stop`): while it runs it owns the checkout's local
+Stop your `rer dev --foreground` with Ctrl+C first: while it runs it owns the checkout's local
 state, and `rer deploy`, including `--dry-run`, refuses with "An active local
 operation owns the state".
 `rer describe` lists the remaining commands and real flags.

@@ -1,3 +1,4 @@
+import {providerPreflightJourney} from '../helpers/installer/provider-preflight.mjs'
 import {editionAuthoringJourney} from '../helpers/installer/edition-authoring.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -148,5 +149,6 @@ test('a native owner whose mail provider has no key is told EMAIL_API_KEY by the
   const refused=(await rer(process.cwd(),['deploy'],3,{env:inputs})).events.find(event=>event.event==='error')
   assert.match(refused.message,/\bEMAIL_API_KEY\b/)
   assert.equal(await readFile(calls,'utf8'),'','neither door makes a provider request')
+  await providerPreflightJourney(process.cwd(),root)
  }finally{await rm(root,{recursive:true,force:true})}
 })

@@ -138,26 +138,35 @@ rer deploy --dry-run
 rer deploy --environment production
 ```
 
-The contract requires two independent steps: a **zero-outbound dry-run** that
-explicitly reports no outbound requests, and a separately started **read-only
-provider preflight** with owner consent and the owner's scoped Cloudflare token.
-The preflight has its own acceptance: only the account's Workers subdomain and
-the Worker's settings and secret names (three GETs for an existing Worker), no
-mail and no mutations. Neither step is a mock of the other.
+Two independent steps now ship. `rer deploy --dry-run` validates and builds
+locally without provider credentials or outbound requests. Its report explicitly
+leaves remote resources, credential validity and existing secret bindings unchecked.
 
-That split is not yet built or proved. Today's `rer deploy --dry-run` still needs
-the Cloudflare credentials described in the prerequisites and performs those
-read-only GETs; it refuses without credentials and when required secrets are
-neither held nor supplied. It builds locally, sends no mail and changes no
-resources. For a new installation also supply real `EMAIL_PROVIDER`, `EMAIL_FROM`,
-`EMAIL_API_KEY` and `OWNER_EMAIL` inputs in an owned 0600 `--env-file`; the owner
-email must receive sign-in mail. Existing installations retain held secrets.
-The seven optional mailbox settings can stay unset. Live preflight and remote
-provisioning remain separately unqualified.
+Start the read-only provider preflight separately, consenting on this invocation:
 
 ```sh
-rer deploy --dry-run --env-file ~/happytohelp-production.env
+pnpm run preflight --consent-read-only --env-file ~/happytohelp-production.env
 ```
+
+Supply `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` privately through the
+environment or an owned 0600 KEY=VALUE file; the file wins. Never put credentials
+in command arguments. The command reads the Worker name from `deploy.json`
+using rer's naming for `--environment production` (the default). It reports the
+Workers subdomain, a settings summary and secret names only. An existing Worker
+takes exactly three Cloudflare GETs; a missing Worker is reported after two.
+Refused inputs make zero requests, and provider failures are reported without
+retrying. It sends no mail and changes no resources. Consent is the explicit
+`--consent-read-only` flag, never an environment setting or another command's
+`--yes`. Setup, dev, verify and deploy never start it implicitly.
+
+The package script is used because the pinned rer adapter has no supported
+preflight verb. The installer journey proves both independent steps against a
+network-edge fixture. Live preflight with the owner's real scoped token, real
+remote provisioning and hosted qualification remain unproved and owner-only.
+For real deployment, supply real `EMAIL_PROVIDER`, `EMAIL_FROM`, `EMAIL_API_KEY`
+and `OWNER_EMAIL` inputs privately; the owner email must receive sign-in mail.
+Existing installations retain held secrets. The seven optional mailbox settings
+can stay unset.
 
 Deployment
 provisions declared resources, applies migrations, publishes and checks health

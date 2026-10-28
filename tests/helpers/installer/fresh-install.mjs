@@ -1,6 +1,7 @@
 import { fileURLToPath as __rerTestEntryPath } from 'node:url';
 import assert from 'node:assert/strict';
 import {hostedExportJourney} from './hosted-export.mjs';
+import {providerPreflightJourney} from './provider-preflight.mjs';
 import {MAX_LINE_BYTES} from '@runeditrun/rer/modules/portability';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
@@ -195,6 +196,7 @@ globalThis.fetch=async()=>{
   await assert.rejects(access(join(root,'.rer/deploy/production.json')),{code:'ENOENT'});
   assert.ok(restoredPrivate.equals(await readFile(join(root,'.dev.vars'))),'dry run preserves the local owner settings');
  }
+ await providerPreflightJourney(root,scratch);
  await run(root,['reset','--yes']);await rm(additive);await run(root,setup);await start();
  const fresh=await json('/api/identity/login',{email,password});assert.notEqual(fresh.actor.id,actor.id);
  assert.equal((await json('/api/management/projects',undefined,fresh.token)).data.length,1);

@@ -24,7 +24,7 @@ before(async()=>{
 after(async()=>{await fixture?.close();await app?.close();if(scratch)await rm(scratch,{recursive:true,force:true})})
 
 test('a visitor\'s report is investigated read-only, an approved resolve child changes the customer system once, a separate investigation confirms it, and the person\'s Send reaches the visitor exactly once',async()=>{
- const seven=await runCase({origin:app.url,api,actor,fixture,directory:join(scratch,'case')})
+ const seven=await runCase({origin:app.url,api,actor,fixture,directory:join(scratch,'case'),mobile:true})
  assert.equal(seven.jobs.length,3);assert.equal(seven.fixtureEvents.filter(event=>event.method==='POST').length,1)
 })
 

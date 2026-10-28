@@ -1,6 +1,7 @@
 import {MobileMemory,clearMemory,type MobileCredential,type MobileSession,type TicketSnapshot,type MobileDraft,type DraftFile,type ConnectionState,type PurgeReason} from './client-state'
 import {MobileClientError,MobileTransport,type MobileFetch} from './client-transport'
 import type {MobileScope} from './authority'
+import type {Authoring} from '../outcomes/provenance'
 export {MobileClientError} from './client-transport'
 export type {MobileCredential,MobileSession,TicketSnapshot,MobileDraft,ConnectionState,PurgeReason} from './client-state'
 const json=(body:unknown):RequestInit=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
@@ -82,7 +83,7 @@ export class MobileClient {
  async knowledge(id:string,query=''){
   this.#requireOnline('knowledge');const data=await this.#transport.request(ticketPath(id)+'/knowledge?q='+encodeURIComponent(query));const key=id+'/knowledge';clearMemory(this.#memory.resources.get(key));this.#memory.resources.set(key,data);return data
  }
- saveDraft(id:string,content:string,{resolve=false,mediaIds=[]}:{resolve?:boolean;mediaIds?:string[]}={}){
+ saveDraft(id:string,content:string,{resolve=false,mediaIds=[],authoring}:{resolve?:boolean;mediaIds?:string[];authoring?:Authoring}={}){
   this.#checkExpiry()
   const snapshot=this.#memory.tickets.get(id)
   if(!snapshot||this.#state==='signed-out')throw new MobileClientError('Open this ticket before drafting')
@@ -90,6 +91,7 @@ export class MobileClient {
   if(existing&&existing.outcome!=='unsent'&&existing.outcome!=='refused')throw new MobileClientError('Inspect the ticket before replacing an uncertain send')
   const draft:MobileDraft=existing??{localId:crypto.randomUUID(),content:'',resolve:false,mediaIds:[],files:[],frontier:snapshot.frontier,reviewRequired:true,outcome:'unsent'}
   draft.content=content;draft.resolve=resolve;draft.mediaIds=[...mediaIds];draft.reviewRequired=true
+  if(authoring)draft.authoring=authoring
   this.#memory.drafts.set(id,draft);this.#notify();return draft
  }
  stageAttachment(id:string,file:Omit<DraftFile,'mediaId'>){
@@ -115,7 +117,7 @@ export class MobileClient {
     const uploaded=await this.#transport.request<{id:string}>(ticketPath(id)+'/attachments',{method:'POST',headers:{'Mobile-Frontier':draft.frontier,'Content-Type':file.contentType,'X-Filename':file.filename},body:file.bytes as BodyInit})
     file.mediaId=uploaded.id
    }
-   const result=await this.#transport.request<{accepted:boolean;messageId?:string;effects?:string}>(ticketPath(id)+'/reply',json({localId:draft.localId,frontier:draft.frontier,content:draft.content,resolve:draft.resolve,mediaIds:[...draft.mediaIds,...draft.files.map(file=>file.mediaId!)]}))
+   const result=await this.#transport.request<{accepted:boolean;messageId?:string;effects?:string}>(ticketPath(id)+'/reply',json({localId:draft.localId,frontier:draft.frontier,content:draft.content,resolve:draft.resolve,mediaIds:[...draft.mediaIds,...draft.files.map(file=>file.mediaId!)],authoring:draft.authoring??{kind:'human'}}))
    if(!result.accepted)throw new MobileClientError('Reply refused. Refresh and review.',409)
    clearMemory(draft);this.#memory.drafts.delete(id);this.#memory.invalidate();this.#notify();return result
   }catch(error){
@@ -129,6 +131,22 @@ export class MobileClient {
  }
  async assign(id:string,assignee:string|null){return this.#change(id,'assignment','assign',{assignee})}
  async note(id:string,content:string,mediaIds:string[]=[]){return this.#change(id,'notes','notes',{content,mediaIds})}
+ async approvals(id:string){
+  this.#requireOnline('approval');const data=await this.#transport.request(ticketPath(id)+'/approvals'),key=id+'/approvals'
+  clearMemory(this.#memory.resources.get(key));this.#memory.resources.set(key,data);return data
+ }
+ async approveFollowUp(id:string,jobId:string,proposalId:string){
+  this.#requireOnline('approval');const snapshot=this.#memory.tickets.get(id)
+  if(!snapshot)throw new MobileClientError('Refresh this ticket before approving')
+  const result=await this.#transport.request(ticketPath(id)+'/approvals/'+encodeURIComponent(jobId)+'/follow-ups/'+encodeURIComponent(proposalId),json({frontier:snapshot.frontier}))
+  this.#memory.invalidate();this.#notify();return result
+ }
+ async adoptReply(id:string,jobId:string,proposalId:string|null){
+  this.#requireOnline('approval');const snapshot=this.#memory.tickets.get(id)
+  if(!snapshot)throw new MobileClientError('Refresh this ticket before adopting a reply')
+  const result=await this.#transport.request<{draft:{body:string;attachments:{id:string}[];authoring:Authoring}}>(ticketPath(id)+'/approvals/'+encodeURIComponent(jobId)+'/draft',json({frontier:snapshot.frontier,proposalId}))
+  return this.saveDraft(id,result.draft.body,{mediaIds:result.draft.attachments.map(file=>file.id),authoring:result.draft.authoring})
+ }
  async #change(id:string,tail:string,scope:MobileScope,body:Record<string,unknown>){
   this.#requireOnline(scope);const snapshot=this.#memory.tickets.get(id)
   if(!snapshot||snapshot.frontierExpiresAt<=Date.now())throw new MobileClientError('Refresh this ticket before continuing')

@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "4486fe01dd6511e349195557ddd3a41dd4629589adad826bcd2d816ce5c53d90",
+      "sha256": "036cae8ea5bacda8d88a1d7c13275cebe919e0678ec84f490553cce64c6e76d4",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "f63c81a753fd9973e942cd732ab58d21d71b4d1d07bd81274cf1a43012e8ad19",
+      "sha256": "af6ae155c22fb1c02eda0cb0d5d71d3bd05783ab18d0b63c370b0130e1291bdd",
       "executable": false
     },
     "DEMO.md": {
@@ -7836,7 +7836,7 @@
       "executable": false
     },
     "src/modules/workflows/runtime.ts": {
-      "sha256": "dc9569eb7827c24b27c7d231d037f47c03dc4d570526c69dff04c7b636be5deb",
+      "sha256": "36396529378cf94fcedcb87e56396f14cb8e3cb34fbc95224d0b4895d5c4fa49",
       "executable": false
     },
     "src/modules/workflows/schedule-authority.ts": {
@@ -7879,12 +7879,16 @@
       "sha256": "3e674e988ce103b23124aa814ebde02444d1f4cddef87c4db6c266b53f5fdf9f",
       "executable": false
     },
+    "src/modules/workflows/sla-external.ts": {
+      "sha256": "b987976c4b68b5236fb6da8128d0a64e6947a6ed3a700fa1774cc6f6bdf32313",
+      "executable": false
+    },
     "src/modules/workflows/sla-policy.ts": {
       "sha256": "321386e4b389d6449886b16f542771bbf33c6cdf39f5452f25dd63b5a0e8f3ff",
       "executable": false
     },
     "src/modules/workflows/sla-slack.ts": {
-      "sha256": "136ace150368e785e8bb1382f46b2e5f75ce993b01357a45bf2c8030f1b19c18",
+      "sha256": "a8e375dd265c8499c56fa321b1496a056d98a4f98a3bac596e1b436ea67be190",
       "executable": false
     },
     "src/modules/workflows/sla-teams-transport.ts": {
@@ -7892,7 +7896,7 @@
       "executable": false
     },
     "src/modules/workflows/sla-teams.ts": {
-      "sha256": "c5bffff2686c27a211f26f8f244d2b9022485be1c38e8bb8dc795b08d93575ea",
+      "sha256": "a72a0631cb5aed6d7b8ec5fcf2b702c6b34fcb87087d302532bacf33e1c65a6a",
       "executable": false
     },
     "src/modules/workflows/sla.ts": {

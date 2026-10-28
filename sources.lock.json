@@ -3144,7 +3144,7 @@
       "executable": false
     },
     "scripts/installer/support-channel-archive.mjs": {
-      "sha256": "03f9bc3ff52afbf71e1bf06db1afff0fe890afe26f1aa5201f07cdc04006875b",
+      "sha256": "bbbe55c19eec9bc0d1ef2aeba20ce27b4513988c617b097ebd1fa42c2aff4297",
       "executable": false
     },
     "scripts/installer/ticket-archive-policy.mjs": {

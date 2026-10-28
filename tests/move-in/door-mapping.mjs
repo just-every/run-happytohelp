@@ -1,3 +1,4 @@
+import {configurationSlaJourney} from './configuration-sla.mjs';
 import {attachmentJourney} from './supplied-attachments.mjs';
 import {configurationFieldsJourney} from './configuration-fields.mjs';
 import {companyJourney} from './companies.mjs';
@@ -201,6 +202,7 @@ await step('one Intercom source in four packagings and a ZIP of all of them map 
 });
 await step('Zendesk macros translate placeholders and four actions into native preview and guarded manual apply',async()=>{
  await configurationJourney()
+ await configurationSlaJourney(imported)
  await configurationFieldsJourney(imported)
  const body=ndjson(user,staff,ticket,{macro:{id:81,title:'Refund follow-up',restriction:null,created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z',actions:[
   {field:'comment_value',value:'Hello {{ticket.requester.first_name}}, about {{ticket.title}}.'},

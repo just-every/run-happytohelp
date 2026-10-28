@@ -14,7 +14,7 @@ export default function FollowupObligations({conversation, reads, liveKey}) {
     const source = useRef(null);
     useEffect(() => {
         let active = true;
-        setData(null); setError('');
+        setError('');
         nativeRequest(base).then(result => {if (active) setData(result);}).catch(e => {if (active) setError(e.message);});
         return () => {active = false;};
     }, [base, reads, liveKey, refresh]);
@@ -40,7 +40,7 @@ export default function FollowupObligations({conversation, reads, liveKey}) {
                     event.preventDefault(); const fields = new FormData(event.currentTarget);
                     write('', {messageId, quote, ownerId:fields.get('ownerId'), dueAt:new Date(fields.get('dueAt')).getTime(), stopCondition:fields.get('stopCondition'), dependencyId:fields.get('dependencyId') || null});
                 }}>
-                    <label>Promise message<select required value={messageId} onChange={e => {setMessageId(e.target.value); setQuote('');}}><option value="">Choose a message</option>{data.sources.map(m => <option key={m.id} value={m.id}>{m.content.slice(0,100)}</option>)}</select></label>
+                    <label>Promise message<select aria-label="Promise message" required value={messageId} onChange={e => {setMessageId(e.target.value); setQuote('');}}><option value="">Choose a message</option>{data.sources.map(m => <option key={m.id} value={m.id}>{m.content.slice(0,100)}</option>)}</select></label>
                     {sourceMessage && <><label>Source message<textarea ref={source} readOnly value={sourceMessage.content} rows={5}/></label><button className="btn btn-sm btn-outline-secondary" type="button" onClick={() => setQuote(sourceMessage.content.slice(source.current.selectionStart,source.current.selectionEnd))}>Use selected quote</button></>}
                     <label>Exact promise quote<textarea required maxLength={2000} value={quote} onChange={e => setQuote(e.target.value)} rows={3}/></label>
                     <Terms data={data}/>
@@ -66,8 +66,8 @@ export default function FollowupObligations({conversation, reads, liveKey}) {
 
 function Terms({data, row}) {
     return <>
-        <label>Responsible teammate<select required name="ownerId" defaultValue={row?.owner_id || ''}><option value="">Choose a teammate</option>{data.owners.map(owner => <option key={owner.id} value={owner.id}>{owner.name}</option>)}</select></label>
+        <label>Responsible teammate<select aria-label="Responsible teammate" required name="ownerId" defaultValue={row?.owner_id || ''}><option value="">Choose a teammate</option>{data.owners.map(owner => <option key={owner.id} value={owner.id}>{owner.name}</option>)}</select></label>
         <label>Due time<input required type="datetime-local" name="dueAt" defaultValue={row ? localTime(row.due_at) : ''}/></label>
-        <label>Engineering dependency<select name="dependencyId" defaultValue={row?.dependency_id || ''}><option value="">No dependency</option>{data.dependencies.map(issue => <option key={issue.id} value={issue.id}>{issue.issue_key}</option>)}</select></label>
+        <label>Engineering dependency<select aria-label="Engineering dependency" name="dependencyId" defaultValue={row?.dependency_id || ''}><option value="">No dependency</option>{data.dependencies.map(issue => <option key={issue.id} value={issue.id}>{issue.issue_key}</option>)}</select></label>
     </>;
 }

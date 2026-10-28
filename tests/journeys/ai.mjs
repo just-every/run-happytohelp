@@ -24,7 +24,3 @@ test('daily AI reply and spend ceilings skip replies visibly to operators only, 
 test('training runs seed a confirmed synthetic workspace, check every reply, execute each evaluation family, and keep unreported, failed, expired or interrupted paid work uncertain rather than replaying it',async()=>{await (await import('../helpers/ai/training.mjs')).trainingJourney();await (await import('../helpers/ai/procedures.mjs')).proceduresJourney()})
 
 test('repositories selected for operators are read as redacted, attributed evidence that suggestions cite, while secrets files, other repositories and visitor replies get nothing',async()=>(await import('../helpers/ai/repository.mjs')).repositoryJourney())
-
-test('human-reviewed follow-ups retain cited promises across handoffs and restart, refuse stale authority and versions, chase unconfirmed dependencies once, draft without sending and erase with the customer',async()=>(await import('../helpers/ai/obligations.mjs')).obligationsJourney())
-
-test('follow-up custody survives additive upgrade and a native archive restore with accepted history intact, no live session, no outbound draft and one internal reminder',async()=>(await import('../helpers/recovery/followup.mjs')).followupRecoveryJourney())

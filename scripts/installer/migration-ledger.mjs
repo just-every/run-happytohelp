@@ -1,9 +1,11 @@
 import {fileURLToPath} from 'node:url';
 import {RerError} from '@runeditrun/rer/errors';
+import {ledgerRefusal} from '@runeditrun/rer/internal/cli/ledger-refusal.mjs';
 
 // Use Base's read-only preflight before the export's Durable Object capture.
-// Platform owns rer_migrations; Wrangler must never prepare that database.
-export async function platformMigrationLedger({root,store,signal}){
+// Platform owns rer_migrations; Wrangler must never prepare that database, so
+// the preflight decides whether Wrangler may apply this checkout's files.
+export async function nativeMigrationApply({root,store,signal}){
  const worker=fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/cli/portability-worker.mjs'));
  const input={root,binding:'DB',buckets:{},policyModule:'scripts/installer/portability-policy.mjs'};
  const child=store.spawn('Checking migration history',process.execPath,[worker,'migration-preflight',JSON.stringify(input)],{
@@ -16,7 +18,7 @@ export async function platformMigrationLedger({root,store,signal}){
  await store.stop(child);
  const status=await closed;
  if(!receipt || typeof receipt!=='object')throw new RerError('transfer_failed','Migration history check ended before it finished.',1);
- if(status.code!==0 || !receipt.ok)throw new RerError(receipt.code??'transfer_failed',`Archive operation refused (${receipt.reason??'incomplete'}).`,receipt.exitCode??1);
- if(typeof receipt.platformLedger!=='boolean')throw new RerError('transfer_failed','Migration history check returned no ledger decision.',1);
- return receipt.platformLedger;
+ if(status.code!==0 || !receipt.ok)throw new RerError(receipt.code??'transfer_failed',receipt.reason?.startsWith('migration_ledger:')?ledgerRefusal(receipt):`Archive operation refused (${receipt.reason??'incomplete'}).`,receipt.exitCode??1);
+ if(typeof receipt.nativeApply!=='boolean')throw new RerError('transfer_failed','Migration history check returned no ledger decision.',1);
+ return receipt.nativeApply;
 }

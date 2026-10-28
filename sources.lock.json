@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "993650c75fd11cb6a48c6854294463f079eaa596142c96d764df7a69831a0ac0",
+      "sha256": "c5fe3ead9c3f8f08d4808d6cb90607a7800b389b7c7b99c82d40f3c77dfa8de6",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "aab13be4d95878ae2960a643f44bb4a54688cd59c89d6a952954ab56ad9e52b9",
+      "sha256": "0e42da04c822aaf2f3e05567f45d01bd57d13d1daad1205a6dfa59eb464a660b",
       "executable": false
     },
     "DEMO.md": {
@@ -6784,7 +6784,7 @@
       "executable": false
     },
     "src/modules/public-site/help-host.ts": {
-      "sha256": "2f2743736f231217056eb7e5e0ff4749c29cc9aaa1f3cb7ada3662a8a2b12f91",
+      "sha256": "3dbd57929f58ea5cf56c58dfdea87e1d92598c4501e5614e0c34619f5fef4394",
       "executable": false
     },
     "src/modules/public-site/help-template.ts": {
@@ -7936,7 +7936,7 @@
       "executable": false
     },
     "src/platform/dashboard-path.js": {
-      "sha256": "251e5fc9b2c33717e72ef10ec5b1d7bd5be0cffae590ff2c7c07114b4f2b6b61",
+      "sha256": "aa82550183bb5fec1948e795f12b49709638dfe99ab1f84bf007042df6ec8fb0",
       "executable": false
     },
     "src/platform/db.ts": {
@@ -8368,7 +8368,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ConversationContactDetails.jsx": {
-      "sha256": "ea0a1bab97f923391b645f42ef63b8de327476c8acc1c674032818a9f1ca5305",
+      "sha256": "590641e4c60df3c6c4e440fe8ca0a92bc9f6be1404e625841f032442a4cd0649",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ConversationDetailField.jsx": {
@@ -9739,6 +9739,26 @@
       "sha256": "cef12d3234e75442fde7ba94bffffef2ffe48c892e4c44f6c2447d04ab47d7a3",
       "executable": false
     },
+    "src/ui/native/crm/crm.css": {
+      "sha256": "94e155c95fffc9e0ce42d0059c7cc4c9a276325967feabe9fe9ac26a13a9c1cf",
+      "executable": false
+    },
+    "src/ui/native/crm/HubSpotConnection.jsx": {
+      "sha256": "eb8cdba011ebee38b8e433a998d460552674e1714761306597f45ab26bc52479",
+      "executable": false
+    },
+    "src/ui/native/crm/HubSpotContext.jsx": {
+      "sha256": "f33c2f363aeff9d5e33ad75b4b759090d38724a6cd6c675e57f1dcf494faa5c9",
+      "executable": false
+    },
+    "src/ui/native/crm/HubSpotMapping.jsx": {
+      "sha256": "f4a468d24c3908abc0dc38fba59ea45676ee61ec895e2c6866cfff84e1327511",
+      "executable": false
+    },
+    "src/ui/native/crm/useCrmResource.js": {
+      "sha256": "8c7eeeca5e18d80b9a60acf9f428bae2d88a06120161ab9ca7ed08b238c7e5a0",
+      "executable": false
+    },
     "src/ui/native/dashboard-bootstrap.ts": {
       "sha256": "08e5a05ee48e83d89d663c9ea3e97cd566898f2c2c103f3971a53c15d4936ee4",
       "executable": false
@@ -10036,7 +10056,7 @@
       "executable": false
     },
     "src/ui/native/pages/Connections.jsx": {
-      "sha256": "0ed9058b72d2079c378ba9f0006c7673189a446f0de96f77b17245cd294b896e",
+      "sha256": "01efecccc2efc4dbacdad6a2a980a44cd2769514b8fffd311aa68dfb88fd538a",
       "executable": false
     },
     "src/ui/native/pages/connections/ConnectionHelp.jsx": {
@@ -10060,7 +10080,7 @@
       "executable": false
     },
     "src/ui/native/pages/ContactDetails.jsx": {
-      "sha256": "108c8701ae4a2609934091195c6356396e2dfbb1fc5f398bacc00d4eecaa84be",
+      "sha256": "dc96a7581d8385e44051c4757bb2eea0fc05824224269235b083306a3672a4d3",
       "executable": false
     },
     "src/ui/native/pages/ContactErasure.jsx": {
@@ -10632,7 +10652,7 @@
       "executable": false
     },
     "src/ui/native/settings-destinations.js": {
-      "sha256": "e5adbffc02fca04bb18c984fba2c2d1a23b1bda2803b41f99e69d2fb75f65a15",
+      "sha256": "000a568abb52983e4a10e9df221cd518c66bcf3cc20f310cf77c5c047a0774ee",
       "executable": false
     },
     "src/ui/native/SettingsNavigation.jsx": {
@@ -10696,7 +10716,7 @@
       "executable": false
     },
     "src/ui/native/workspace-page-code.js": {
-      "sha256": "fe8d277fcaf59e57f2defcbb91a056d379967122cee5147d3762d194fc0a5fa3",
+      "sha256": "659650f91ec80d6e11a30f9210f663c8401b4ddefc17245ebda4b42e174ce758",
       "executable": false
     },
     "src/ui/native/workspace-scope.ts": {
@@ -10708,7 +10728,7 @@
       "executable": false
     },
     "src/ui/native/WorkspacePages.jsx": {
-      "sha256": "945bc95afde371e0d660c22e17c1d63b4119e4dcdfb0a1087779854774319b6c",
+      "sha256": "7eb1e9db94d7aa651532fb6c15635ec77667affc1bf6bd722238272e120fabf9",
       "executable": false
     },
     "src/ui/native/WorkspaceSidebarArtwork.jsx": {
@@ -11679,6 +11699,14 @@
       "sha256": "c8cdfc1c4f681f00b1f7eda121f9faf5fec024f668d78251832d2db125ee0f69",
       "executable": false
     },
+    "tests/helpers/hubspot/browser.mjs": {
+      "sha256": "f9550c630b3f2332d3c9d93189576f651cef32cfb33395c2a4defb769a17fd66",
+      "executable": false
+    },
+    "tests/helpers/hubspot/outbound.mjs": {
+      "sha256": "1f931f17647596f596aad9330c5c04399134aac9ce2fcbb0479a18e5b138c18a",
+      "executable": false
+    },
     "tests/helpers/identity-browser-default.mjs": {
       "sha256": "060e170c913fed4e79c7a97d76affe0553632ec2283707f411028f57e14160a5",
       "executable": false
@@ -12296,7 +12324,7 @@
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {
-      "sha256": "efb5e5057f450499fb8c0e1c3c387b4e2d71ee1eb2c70a1e028d852d3896e2a5",
+      "sha256": "981e75c4fd0eb16603430e8c80c86bf9115292025f77fee419277f83d15969a5",
       "executable": false
     },
     "tests/journeys/connections.mjs": {

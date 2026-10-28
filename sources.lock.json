@@ -1660,7 +1660,7 @@
       "executable": false
     },
     "docs/AGENT-DOOR.md": {
-      "sha256": "221c0bc60c6644cb0af34f97a79bb99f0acf6f921ad7b21a85c181781205456e",
+      "sha256": "e5d4e5920c530a70774509475e5332c8230d6836ff9fb8944c8786c7f474c819",
       "executable": false
     },
     "docs/AGENT-FIX.md": {
@@ -12424,7 +12424,7 @@
       "executable": false
     },
     "tests/helpers/agent-door/journey.mjs": {
-      "sha256": "4f2a20a7146e8ed022928244dfd9565387890c752f0f7b9d30b77e848d867412",
+      "sha256": "72ce0f796fb126319be0817244cd59e8a38e7644a6c50be92a7b89648eaf1d52",
       "executable": false
     },
     "tests/helpers/agent-door/surface-journey.json": {

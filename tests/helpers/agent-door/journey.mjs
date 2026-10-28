@@ -76,6 +76,28 @@ export async function agentDoorJourney(){
   assert.deepEqual(absent.data.error,foreign.data.error)
   const invalid=await rpc('tools/list',{},await accessToken(context,{sub:randomUUID(),email}));assert.equal(invalid.status,401)
   const wrongAudience=await rpc('tools/list',{},await accessToken(context,{aud:'https://foreign.example/mcp'}));assert.equal(wrongAudience.status,401)
+  // A real selected-article application credential keeps its original scope
+  // through MCP. It never acquires a browser session or ticket-write authority.
+  const form=(path,body,cookie)=>app.request(path,{raw:true,body:new URLSearchParams(body).toString(),headers:{Origin:origin,'Content-Type':'application/x-www-form-urlencoded',...(cookie?{Cookie:'h2h_session='+cookie}:{})}})
+  const registration={account_id:project,id:'support-reference',origin:'https://reference.example.test',redirect_uri:'https://reference.example.test/callback'}
+  assert.equal((await form('/delegation/settings/clients',registration,owner.token)).status,303)
+  const verifier='native-selected-reference-'.repeat(3),challenge=Buffer.from(await webcrypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))).toString('base64url')
+  const query=new URLSearchParams({client_id:registration.id,redirect_uri:registration.redirect_uri,response_type:'code',state:'support-reference',code_challenge:challenge,code_challenge_method:'S256',account_id:project,scope:'knowledge.article.read',targets:JSON.stringify([`projects/${project}/articles/${article.id}`])})
+  const consent=(await app.ok('/delegation/authorize/request?'+query,{headers:{Cookie:'h2h_session='+owner.token}})).data
+  const allowed=await form('/delegation/authorize',{decision:'approve',request:JSON.stringify(consent.request),issued:String(consent.issued),csrf:consent.csrf},owner.token)
+  assert.equal(allowed.status,303)
+  const exchange=await form('/api/delegation/v1/token',{grant_type:'authorization_code',client_id:registration.id,redirect_uri:registration.redirect_uri,code:new URL(allowed.headers.get('location')).searchParams.get('code'),code_verifier:verifier})
+  assert.equal(exchange.status,200)
+  const localToken=(await exchange.json()).access_token
+  assert.deepEqual((await rpc('resources/templates/list',{},localToken)).data.result.resourceTemplates.map(resource=>resource.uriTemplate),['happytohelp://projects/{project}/articles/{id}'])
+  assert.equal((await call('happytohelp.articles.read',{id:article.id},localToken)).outcome,'done')
+  assert.equal((await call('happytohelp.articles.read',{id:randomUUID()},localToken)).outcome,'refused')
+  // Scope admission is an HTTP authorization challenge, before tool execution.
+  const scopedWrite=await rpc('tools/call',{name:'happytohelp.conversations.note',arguments:{id:conversation.id,content:'A selected article credential cannot write tickets',idempotency_key:randomUUID()}},localToken)
+  assert.equal(scopedWrite.status,403)
+  assert.equal(scopedWrite.data.error.data.code,'insufficient_scope')
+  assert.equal((await app.call('/api/delegation/v1/revoke',{token:localToken,body:{}})).status,200)
+  assert.equal((await rpc('tools/list',{},localToken)).status,401)
   // Native email reassignment does not transfer the signed Business binding.
   await app.ok('/api/management/profile',{method:'PUT',token:member.token,body:{name:'Jordan Support',email:'jordan.new@example.test'}})
   const replacementInvite=(await native(`/api/management/projects/${project}/agents`,{body:{email:memberEmail}})).data

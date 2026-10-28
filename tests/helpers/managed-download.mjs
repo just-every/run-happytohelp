@@ -42,9 +42,10 @@ export async function managedDownload(root,{extraSql=''}={}){
   const kinds=new Map((await query('PRAGMA table_list')).map(row=>[row.name,row.type]));
   const schema=await query("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE sql IS NOT NULL AND substr(lower(name),1,7)<>'sqlite_' AND substr(lower(name),1,4)<>'_cf_' ORDER BY name");
   const omittedTables=schema.filter(row=>row.type==='table'&&kinds.get(row.name)!=='table').map(row=>row.name);
-  let sql='PRAGMA defer_foreign_keys=ON;\n';
-  for(const table of schema.filter(row=>row.type==='table'&&!omittedTables.includes(row.name))){
-   sql+=table.sql+';\n';
+  // Every table definition precedes the rows, so a row's foreign keys name existing tables.
+  const tables=schema.filter(row=>row.type==='table'&&!omittedTables.includes(row.name));
+  let sql='PRAGMA defer_foreign_keys=ON;\n'+tables.map(table=>table.sql+';\n').join('');
+  for(const table of tables){
    const columns=(await query(`PRAGMA table_xinfo(${quote(table.name)})`)).filter(column=>!column.hidden);
    for(const row of await query(`SELECT ${columns.map((column,i)=>`quote(${quote(column.name)}) AS c${i}`).join(',')} FROM ${quote(table.name)} ORDER BY rowid`))
     sql+=`INSERT INTO ${quote(table.name)} VALUES(${columns.map((_,i)=>row['c'+i]).join(',')});\n`;

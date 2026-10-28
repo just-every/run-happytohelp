@@ -12660,7 +12660,7 @@
       "executable": false
     },
     "tests/helpers/managed-download.mjs": {
-      "sha256": "2c7729ece307e7ea2ac4af562ed9973a7f9939153fa22f1fef7efde808c6257f",
+      "sha256": "9193455b1d57365b251cc46012f80fd29c5e9a88aa5311f76a9ae98de9aa3c41",
       "executable": false
     },
     "tests/helpers/migration-statements.mjs": {

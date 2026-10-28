@@ -9,6 +9,6 @@ export default async request=>{
  if(url.hostname==='messaging.twilio.com'){const token=request.headers.get('authorization')||'';const account=Buffer.from(token.slice(6),'base64').toString().split(':')[0];return Response.json(url.pathname.endsWith('/PhoneNumbers')?{phone_numbers:[{account_sid:account,phone_number:'+12025550123'}]}:{usa2p:[{account_sid:account,campaign_status:'VERIFIED'}]});}
  if(url.hostname==='api.twilio.com')return Response.json({sid:'synthetic-happytohelp-3'});
  if(url.origin==='https://receiver.example.com'&&url.pathname==='/browser-resend'){const id=request.headers.get('webhook-id'),count=deliveries.get(id)||0;deliveries.set(id,count+1);return new Response(count<2?'':null,{status:count<2?500:204})}
- if(url.origin==='https://receiver.example.com'||url.href==='https://slack.com/api/chat.postMessage')return new Response('',{status:401});
+ if(url.hostname==='hooks.slack.com'||url.origin==='https://receiver.example.com'||url.href==='https://slack.com/api/chat.postMessage')return new Response('',{status:401});
  throw Error('External request prohibited');
 };

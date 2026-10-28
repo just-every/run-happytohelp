@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {startApp} from '../journeys/kit/app.mjs'
 import {assertBusinessEquality} from './business-equality.mjs'
+import {nativeHarness} from './harness.mjs'
 const dates={created_at:'2024-01-01T00:00:00Z',updated_at:'2024-01-02T00:00:00Z'}
 export const slaSchedule={schedule:{id:501,name:'Reviewed UTC support',time_zone:'UTC',intervals:[1,2,3,4,5].map(day=>({start_time:day*1440+540,end_time:day*1440+1020})),holidays:[{start_date:'2026-11-26',end_date:'2026-11-26'}],...dates}}
 export const slaSource={sla_policy:{id:502,title:'Normal first response',position:0,filter:{all:[],any:[]},move_in_schedule_id:501,policy_metrics:[{priority:'normal',metric:'first_reply_time',target:120,business_hours:true}],...dates}}
@@ -89,3 +90,24 @@ async function activationJourney(source){
   assert.deepEqual(app.requests,[],'configuration import and SLA evaluation send nothing')
  }finally{await app.close()}
 }
+
+const root='/api/move-in/projects/p/imports';
+let unique=0;
+
+// Each source goes through the real upload, review and approved apply; outcomes are read from native rows.
+async function imported(vendor,body,{name='export.jsonl',apply=true,check,before,withConversations=false,expectedPostReviewRequests=[]}={}){
+ const h=await nativeHarness({withConversations});try{
+  const initial=await before?.(h)
+  const sent=await h.raw(`${root}?vendor=${vendor}`,{method:'POST',headers:{'X-Import-Filename':name,'X-Import-Schema':'2.16'},body:typeof body==='string'?body+'\n'.repeat(++unique):body})
+  assert.equal(sent.response.status,201,JSON.stringify(sent.data).slice(0,400));await h.drain();const review=(await h.call(`${root}/${sent.data.data.id}`)).data
+  assert.ok(review.plan,`${name} reached no review: ${review.state} ${review.error}`)
+  const rejection=key=>review.plan.decisions.find(row=>`${row.kind}/${row.sourceId}`===key)?.rejection,omissions=key=>review.plan.decisions.find(row=>`${row.kind}/${row.sourceId}`===key)?.omissions.map(item=>item.reason)
+  let done
+  if(apply&&review.plan.counts.effects>0){await h.call(`${root}/${review.id}/apply`,post({fingerprint:review.plan.fingerprint}));await h.drain();done=(await h.call(`${root}/${review.id}`)).data;assert.equal(done.state,'completed');assert.equal(done.error,null)}
+  const rows=async sql=>(await h.db.prepare(sql).all()).results
+  assert.equal(h.outbound,0,'import makes no external request before review or activation')
+  await check({review,plan:review.plan,rejection,omissions,done,rows,h,initial});assert.deepEqual(h.outboundRequests,expectedPostReviewRequests,'only explicitly exercised native behavior may attempt the named provider request')
+ }finally{await h.close()}
+}
+
+export async function configurationSlaImportJourney(){await configurationSlaJourney(imported)}

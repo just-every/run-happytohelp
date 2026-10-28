@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict'
+import {providersJourney} from './providers.mjs'
+import {repositoryJourney} from './repository.mjs'
 import {cycleOutcomes} from './cycle-outcomes.mjs'
 import {assistantApp} from './app.mjs'
 import {openaiToolCall} from '../openai-stream.mjs'
@@ -80,7 +82,24 @@ export async function answersJourney(){
   assert.ok((await app.first('SELECT assigned_to FROM conversations WHERE id=?',handoff.conversationId)).assigned_to,'a person now owns the conversation')
   assert.equal((await trace(a,handoff)).result,'handoff');assert.equal((await trace(a,handoff)).contribution,'handoff');assert.equal((await trace(a,handoff)).customerOutcome.cycle,null);assert.ok((await trace(a,handoff)).tools.some(t=>t.outcome==='handoff'))
   assert.equal((await a.generations(handoff.conversationId))[0].state,'superseded');assert.equal((await handoff.transcript()).messages.filter(m=>m.actor_role==='ai').length,0)
+  // At handoff the operator asks for suggestions. The paid result is a draft,
+  // with both provider rounds retained; only the operator's reviewed send follows.
+  const requestId=crypto.randomUUID(),assist=()=>a.action(handoff.conversationId,'agentAssist',{options:{request_id:requestId}})
+  ai.respond=body=>body.text?.format?.name==='agent_suggestion_alternatives'?{alternatives:[],missing_information:[]}:{user_goal:'Human support',responses:[{button:'Help',icon:'circle-question-mark',response:'A teammate is reviewing your request.',use_when:'',evidence_ids:[JSON.stringify(body).match(/message:[0-9a-f-]{36}/)[0]]}],missing_information:[]}
+  const suggested=await assist();assert.equal(suggested.status,202);assert.equal((await assist()).data.id,suggested.data.id)
+  const beforeDraft=(await handoff.transcript()).messages.length;await a.run()
+  assert.equal((await handoff.transcript()).messages.length,beforeDraft)
+  const draftTrace=await trace(a,handoff);assert.equal(draftTrace.approval,'explicit operator request');assert.equal(draftTrace.committedAnswer,null);assert.equal(draftTrace.usage.length,2)
   const current=await handoff.transcript()
   assert.equal((await app.call(`/api/conversations/${handoff.conversationId}/messages`,{token:a.owner,body:{localId:'operator-reply',content:'Human reply',expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})).data.accepted,true)
+  await repositoryJourney(a,handoff)
+  await providersJourney(a)
+  ai.respond=()=>{throw new DOMException('Connection lost at the provider','TimeoutError')}
+  const timed=await a.action(handoff.conversationId,'agentAssist',{options:{request_id:crypto.randomUUID()}});assert.equal(timed.status,202)
+  const pending=await app.takeJobs(),beforeTimeout=a.providerCalls();await a.run(pending);await a.run(pending)
+  assert.equal(a.providerCalls(),beforeTimeout+1);assert.equal((await trace(a,handoff)).providerOutcome,'timeout');assert.equal((await trace(a,handoff)).committedAnswer,null)
+  await app.configure({OPENAI_API_KEY:undefined})
+  const missing=await a.action(handoff.conversationId,'agentAssist',{options:{request_id:crypto.randomUUID()}})
+  assert.equal(missing.status,503);assert.match(JSON.stringify(missing.data),/CONFIGURATION_REQUIRED/)
  }finally{await a.close()}
 }

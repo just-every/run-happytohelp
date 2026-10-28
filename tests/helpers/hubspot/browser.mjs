@@ -3,7 +3,8 @@ import {createServer} from 'node:http';
 import {randomBytes} from 'node:crypto';
 import {mkdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
-import {passwordHash} from '../identity-browser-kit.mjs';
+import {randomUUID,pbkdf2Sync} from 'node:crypto';
+function passwordHash(password){const salt=randomUUID();return `${salt}:${pbkdf2Sync(password,salt,100000,32,'sha256').toString('hex')}`}
 import {createRuntime} from '../emitted-runtime.mjs';
 
 /** Extends the existing Connections interface journey; only provider network I/O is substituted. */

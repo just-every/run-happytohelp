@@ -16,7 +16,7 @@ export async function mailApp({bindings={},projectId='p',inbound='inbound@exampl
   return (await mail.respond?.(entry))??accepted(entry)
  }})
  await app.db.batch([
-  app.db.prepare("INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES(?,'Project','w','https://example.com',1)").bind(projectId),
+  app.db.prepare("INSERT INTO projects(id,name,widget_key,allowed_origin,created_at,verification_secret) VALUES(?,'Project','w','https://example.com',1,'synthetic-happytohelp-widget-signing-key')").bind(projectId),
   app.db.prepare("INSERT INTO email_settings VALUES(?,'Support',?,?,1,1)").bind(projectId,outbox,inbound),
   app.db.prepare("INSERT INTO users VALUES('op','op@example.com','Operator',1)"),app.db.prepare("INSERT INTO memberships VALUES(?,'op','operator')").bind(projectId),
   app.db.prepare("INSERT INTO sessions(token_hash,actor_id,project_id,role,contact_id,expires_at) VALUES(?,'op',?,'operator',NULL,?)").bind(sha('operator-token'),projectId,Date.now()+3600000),

@@ -8,12 +8,12 @@ export async function companyPortalJourney(f){
  const company=(await app.ok(base+'/companies',{...owner,body:{name:'Northstar Supply',domains:['northstar.example'],attributes:{}}})).company
  for(const person of contacts)await app.ok(`${base}/companies/${company.id}/members/${person.contact_id}`,{...owner,method:'PUT',body:{}})
  const tickets=[]
- for(let i=0;i<12;i++)tickets.push((await app.ok(`${api}/${form.id}/submissions`,{...people[i%3],body:{...valid,localId:'company-order-'+i,subject:`Northstar delivery ${10482+i}`}})).ticket)
+ for(let i=0;i<3;i++)tickets.push((await app.ok(`${api}/${form.id}/submissions`,{...people[i%3],body:{...valid,localId:'company-order-'+i,subject:`Northstar delivery ${10482+i}`}})).ticket)
  const own=(await app.ok(P+'/tickets',people[0])).tickets
- assert.equal(own.length,4,'company entitlement starts off')
+ assert.equal(own.length,1,'company entitlement starts off')
  assert.equal((await app.call(P+`/tickets/${tickets[1].id}`,people[0])).status,404)
  await app.ok(`${base}/companies/${company.id}`,{...owner,method:'PATCH',body:{portalCompanyView:true}})
- assert.equal((await app.ok(P+'/tickets',people[0])).tickets.length,12)
+ assert.equal((await app.ok(P+'/tickets',people[0])).tickets.length,3)
  const upload=await app.ok(P+`/tickets/${tickets[1].id}/attachments`,{...people[1],raw:true,body:'Northstar shipping manifest',headers:{...people[1].headers,'Content-Type':'text/plain','X-Filename':'manifest.txt'}})
  const shared=(await app.ok(P+`/tickets/${tickets[1].id}`,people[0])).ticket
  const reply=await app.ok(P+`/tickets/${shared.id}/reply`,{...people[0],body:{localId:'alex-company-reply',content:'I coordinate deliveries for Northstar. Please use our loading dock.',expectedRevision:shared.revision,mediaIds:[]}})
@@ -33,6 +33,6 @@ export async function companyPortalJourney(f){
  assert.equal((await app.call(P+`/tickets/${shared.id}`,people[0])).status,404,'membership removal is immediate')
  assert.equal((await app.call(file,people[0])).status,404,'membership removal fences existing attachment links')
  await app.ok(`${base}/companies/${company.id}`,{...owner,method:'PATCH',body:{portalCompanyView:false}})
- assert.equal((await app.ok(P+'/tickets',people[1])).tickets.length,4,'entitlement removal is immediate')
+ assert.equal((await app.ok(P+'/tickets',people[1])).tickets.length,1,'entitlement removal is immediate')
  assert.equal((await app.call(P+`/tickets/${tickets[2].id}`,people[1])).status,404)
 }

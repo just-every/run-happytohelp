@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import {startApp} from '../../journeys/kit/app.mjs'
 
 export async function ticketFixture(options={}){
- const app=await startApp({...options,captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',INBOUND_EMAIL_TOKEN:'ticket-gateway'}})
+ const app=await startApp({...options,captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',INBOUND_EMAIL_TOKEN:'ticket-gateway',...options.bindings}})
  const w=await app.seedWorkspace('tickets'),foreign=await app.seedWorkspace('elsewhere')
  await app.presenceAwayOff(w.projectId);await app.presenceAwayOff(foreign.projectId)
  const base=`/api/dashboard/projects/${w.projectId}`

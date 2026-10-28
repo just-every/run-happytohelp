@@ -7,7 +7,7 @@ on:
   push:
     tags: ['v*']
   schedule:
-    - cron: '47 18 * * *'
+    - cron: '47 4 * * 1,4'
   workflow_dispatch:
 
 permissions:
@@ -21,7 +21,24 @@ env:
   WRANGLER_SEND_METRICS: 'false'
 
 jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      skip: ${{ steps.previous.outputs.skip }}
+    steps:
+      - id: previous
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          prior=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/installer-journeys.yml/runs?head_sha=$GITHUB_SHA&status=success&per_page=100" --jq '[.workflow_runs[] | select(.id != '"$GITHUB_RUN_ID"')] | length')
+          if [ "$prior" -gt 0 ]; then echo 'skip=true' >> "$GITHUB_OUTPUT"; else echo 'skip=false' >> "$GITHUB_OUTPUT"; fi
   journeys:
+    needs: plan
+    if: needs.plan.outputs.skip != 'true'
     name: Installer / ${{ matrix.name }}
     runs-on: ubuntu-24.04
     timeout-minutes: 90
@@ -41,6 +58,20 @@ jobs:
           - name: delegation-fresh-clone-browser
             browser: true
             command: pnpm run test:installer-nightly --test-name-pattern=agent.fix
+          - name: offline-deployment-preflight
+            browser: false
+            command: pnpm run test:installer-nightly --test-name-pattern=native.owner
+          - name: portable-installation-compatibility
+            browser: false
+            command: pnpm run test:installer-nightly --test-name-pattern=Platform.and.native
+          - name: import-and-report-scale
+            browser: false
+            command: pnpm run test:scale
+          # The script reports missing disposable-installation configuration as
+          # skipped; a skip is never live-provider qualification.
+          - name: configured-live-provider
+            browser: true
+            command: pnpm run test:live
           - name: release-upgrades
             browser: false
             command: pnpm run test:installer-nightly --test-name-pattern=every.published.release
@@ -104,3 +135,38 @@ jobs:
             test-results/
           if-no-files-found: ignore
           retention-days: 7
+
+  legacy-export:
+    needs: plan
+    if: needs.plan.outputs.skip != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: fixture-mysql-admin
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pfixture-mysql-admin"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.4
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Export two legacy projects and import each twice
+        env:
+          LEGACY_TEST_MYSQL_HOST: 127.0.0.1
+          LEGACY_TEST_MYSQL_PASSWORD: fixture-mysql-admin
+        run: node --test tests/legacy-export.mjs

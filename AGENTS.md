@@ -64,10 +64,10 @@ results distinct. After tracked edits, run `pnpm run source:lock`, then
 
 ## Landing and conflict resolution
 
-- Maintain `CONTRACT.md` by hand: this seed has no contract generator,
-  acceptance-view command or `Lander-Regenerate` step. Resolve it first,
-  retaining main's newer judgments and Status; reapply the candidate's Evidence/Gap.
-  Keep `ACCEPTANCE.md`, `docs/CLAIMS.md` and Status summary counts consistent by hand.
+- Maintain `CONTRACT.md` by hand. Resolve it first, retaining main's newer
+  judgments and Status; reapply the candidate's Evidence/Gap. Regenerate
+  `ACCEPTANCE.md` and `docs/CLAIMS.md` using Lander-Regenerate below;
+  keep the source Status summary counts consistent.
 - When adding `migrations/NNN_*.sql`, renumber the candidate's migrations in order
   above main's current highest numeric prefix. Update every reference, including
   `RELEASE.json` buyerSteps, docs, migration inventories/tests and contract Evidence.
@@ -80,3 +80,11 @@ results distinct. After tracked edits, run `pnpm run source:lock`, then
   with `node scripts/edition-authoring/cli.mjs lock`; then require exit 0 from
   `node scripts/edition-authoring/cli.mjs check` and
   `pnpm exec rer check --profile first-party`. Use GitHub Verify for the full check.
+
+## Generated contract evidence
+
+Lander-Regenerate: `node scripts/contract-docs.mjs write`
+
+Run `node scripts/contract-docs.mjs check` after generation. CONTRACT.md remains
+this edition's only requirement, acceptance and status source; the generator
+supports its retained clause layout without converting or changing clauses.

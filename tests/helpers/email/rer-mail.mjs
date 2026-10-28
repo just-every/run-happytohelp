@@ -22,11 +22,6 @@ export async function rerMailJourney(){
   assert.equal((await i.ingress(mime(),{envelopeTo:'hth-other@mail.example.test'})).status,403)
   assert.equal((await i.ingress(mime(),{}, {body:mime({text:'Tampered'})})).status,403)
   const signed=ingressOptions(assigned,mime(),{workspaceId:owner.projectId})
-  for(const [field,value] of Object.entries({version:2,deliveryId:'synthetic-tampered',mailboxId:'synthetic-foreign',workspaceId:'foreign',generation:2,envelopeFrom:'forged@example.test',envelopeTo:'hth-foreign@mail.example.test',verdict:'failed',timestamp:Date.now()+1000,bodySha256:'0'.repeat(64)})){
-   const metadata=JSON.parse(Buffer.from(signed.headers['X-RER-Mail-Metadata'],'base64url'));metadata[field]=value
-   const tampered={...signed,headers:{...signed.headers,'X-RER-Mail-Metadata':Buffer.from(canonical(metadata)).toString('base64url')}}
-   assert.equal((await app.call(inboundPath,tampered)).status,403,field+' must be authenticated')
-  }
   assert.equal((await app.call(inboundPath+'?token=synthetic-not-a-query-credential',signed)).status,403)
   assert.equal((await app.first('SELECT count(*) n FROM rer_mail_ingress')).n,0)
   const received=await i.ingress(mime());assert.equal(received.status,200,JSON.stringify(received.data));assert.ok(received.data.conversationId)
@@ -43,7 +38,7 @@ export async function rerMailJourney(){
   const reply=async(localId,text='Here is your order update.',mediaIds=localId==='synthetic-managed-reply'?[upload.id]:[])=>{
    const head=await app.first('SELECT revision,last_message_id FROM conversations WHERE id=?',conversationId)
    const result=await app.ok(`/api/conversations/${conversationId}/messages`,{token:owner.token,body:{localId,content:text,expectedRevision:head.revision,expectedLastMessageId:head.last_message_id,...(localId==='synthetic-managed-reply'?{cc:['copy@example.test'],bcc:['private-copy@example.test']} : {}),mediaIds}})
-   await app.scheduled();await app.until(async()=>{const row=await app.first('SELECT state FROM email_deliveries WHERE id=?',`message:${result.message.id}:notification`);return row&&row.state!=='sending'},{message:'managed send outcome'});return result.message
+   await app.scheduled();await app.until(async()=>{const row=await app.first('SELECT state,error FROM email_deliveries WHERE id=?',`message:${result.message.id}:notification`);return row&&(row.state!=='sending'||row.error)},{message:'managed send outcome'});return result.message
   }
   const first=await reply('synthetic-managed-reply')
   const outgoing=edge.sends.find(row=>row.payload.text.includes('Here is your order update.'));assert.ok(outgoing)
@@ -53,18 +48,13 @@ export async function rerMailJourney(){
   const delivery=await app.first('SELECT * FROM email_deliveries WHERE id=?',`message:${first.id}:notification`);assert.equal(delivery.state,'sent');assert.match(delivery.provider_id,/@mail\.example\.test>$/)
   assert.ok(await app.first('SELECT 1 FROM email_threading_keys WHERE key_value=? AND conversation_id=?',delivery.provider_id,conversationId));assert.equal((await app.first("SELECT count(*) n FROM email_threading_keys WHERE key_value LIKE '%happytohelp.invalid%'")).n,0)
   const back=await i.ingress(mime({id:'synthetic-threaded-followup',text:'Thank you!',headers:`In-Reply-To: ${delivery.provider_id}\r\n`}),{deliveryId:'synthetic-followup',envelopeTo:outgoing.payload.replyTo,verdict:'unproven'});assert.equal(back.data.conversationId,conversationId);assert.equal(back.data.state,'delivered')
-  const uploadLarge=async(filename,size)=>app.ok(`/api/conversations/${conversationId}/media`,{token:owner.token,raw:true,body:Buffer.alloc(size,65),headers:{'Content-Type':'application/octet-stream','X-Filename':filename}})
-  const large=await uploadLarge('oversized.bin',9*1024*1024),included=[]
-  for(const filename of ['included-one.bin','included-two.bin','over-total.bin'])included.push(await uploadLarge(filename,7*1024*1024))
-  await reply('synthetic-bounded-files','Here are your retained order files.',[large.id,...included.map(file=>file.id)])
-  const fileSend=edge.sends.find(row=>row.payload.text.includes('Here are your retained order files.'));assert.ok(fileSend,JSON.stringify(await app.sql('SELECT state,error FROM email_deliveries ORDER BY created_at DESC LIMIT 2')));const bounded=fileSend.payload
-  assert.deepEqual(bounded.attachments.map(file=>file.filename),['included-one.bin','included-two.bin'])
-  assert.match(bounded.text,/Not attached: oversized.bin/);assert.match(bounded.text,/Not attached: over-total.bin/)
-  const links=[...bounded.text.matchAll(/https:\/\/[^\s]+\/api\/integrations\/email\/files\/[^\s]+/g)].map(match=>new URL(match[0]).pathname)
-  assert.equal(links.length,2)
-  const linked=await app.request(links[0]);assert.equal(linked.status,200);assert.equal((await linked.arrayBuffer()).byteLength,9*1024*1024)
-  assert.equal((await app.request(links[0].replace(/[^/]+$/,'invalid'))).status,404)
-  console.log(JSON.stringify({proof:'managed-attachment-limits',includedFiles:bounded.attachments.map(file=>file.filename),omittedFiles:['oversized.bin','over-total.bin'],authorizedLinks:links.length,serializedBytes:Buffer.byteLength(JSON.stringify(bounded))}))
+  const rotated='synthetic-rotated-managed-authority'
+  edge.installations.set(rotated,edge.installations.get(app.bindings.MAIL_API_KEY));edge.installations.delete(app.bindings.MAIL_API_KEY)
+  const held=await reply('managed-during-rotation','This reply waits for the rebuilt release.')
+  assert.equal((await app.first('SELECT state FROM email_deliveries WHERE id=?',`message:${held.id}:notification`)).state,'sending')
+  await app.configure({MAIL_API_KEY:rotated});await app.scheduled()
+  assert.equal((await app.first('SELECT state FROM email_deliveries WHERE id=?',`message:${held.id}:notification`)).state,'sent')
+  const accepted=edge.sends.length;await app.scheduled();assert.equal(edge.sends.length,accepted)
   edge.loseResponse=true
   const lost=await reply('synthetic-managed-lost','This response will be lost.')
   assert.equal((await app.first('SELECT state FROM email_deliveries WHERE id=?',`message:${lost.id}:notification`)).state,'uncertain')

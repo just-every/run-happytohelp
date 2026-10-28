@@ -33,35 +33,3 @@ export async function holdNativeResponse(page, path, method = 'GET') {
         close: async () => { release(); await page.unroute('**' + path, handler); },
     };
 }
-
-export async function fillTrainingRun(page) {
-    await page.getByLabel('Models', {exact: false}).first().fill('gpt-5.6-luna');
-    await page.getByLabel('Case definitions', {exact: false}).fill('[{"id":"readiness-case","type":"customer-reply"}]');
-    await page.getByLabel('Maximum cost', {exact: false}).fill('5');
-    await page.getByLabel('Maximum tokens', {exact: false}).fill('2000');
-}
-
-export async function settleFrames(page) {
-    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-}
-
-export async function assertUnavailable(page, posts) {
-    assert.equal(await page.getByRole('button', {name: 'Create run', exact: true}).count(), 0, 'creation appears only after the real initial list');
-    assert.equal(await page.getByLabel('Case definitions', {exact: false}).count(), 0, 'no editable draft before list readiness');
-    assert.equal(await page.locator('table').count(), 0, 'loading/error is not an empty table');
-    assert.doesNotMatch(await page.locator('.workspace-page-content').innerText(), /No evaluation runs yet/);
-    assert.deepEqual(posts, [], 'no early training POST');
-}
-
-export async function switchTrainingProject(page, name, projectId) {
-    const nav = page.getByRole('navigation', {name: 'Main navigation'});
-    await nav.getByRole('button', {name: /Switch workspace:/}).click();
-    await nav.getByRole('button', {name, exact: true}).click();
-    await page.waitForURL('**/projects/' + projectId + '/conversations');
-    // The URL can change before the new workspace's scoped navigation commits.
-    await nav.getByRole('button', {name: `Switch workspace: ${name}`, exact: true}).waitFor();
-    await nav.getByRole('link', {name: 'Knowledge', exact: true}).and(page.locator(`a[href="/projects/${projectId}/articles"]`)).click();
-    await page.getByRole('heading', {name: 'Knowledge', exact: true}).waitFor();
-    await page.getByRole('navigation', {name: 'Knowledge sections'}).getByRole('link', {name: 'Evaluation runs', exact: true}).and(page.locator(`a[href="/projects/${projectId}/training-runs"]`)).click();
-    await page.waitForURL('**/projects/' + projectId + '/training-runs');
-}

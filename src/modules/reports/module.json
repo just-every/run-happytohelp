@@ -8,7 +8,7 @@
     "tests/reports/figures.mjs",
     "tests/reports/harness.mjs",
     "tests/reports/worker.ts",
-    "tests/journeys/reports-browser.mjs"
+    "tests/helpers/inbox/brand-support-browser.mjs"
   ],
   "selectedEditionDependencies": [
     "happytohelp/outcomes"

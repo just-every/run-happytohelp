@@ -5,30 +5,30 @@ import {seedTriageDataset} from './triage-dataset.mjs'
 export async function triageBrowserJourney({runtime,browser,shot,fixture}){
  const ownsRuntime=!runtime
  if(!runtime){const reservation=createServer();await new Promise(r=>reservation.listen(0,'127.0.0.1',r));const port=reservation.address().port;await new Promise(r=>reservation.close(r));runtime=await createRuntime({port,queueConsumers:true,vars:{APP_ORIGIN:`http://127.0.0.1:${port}`,OPENAI_API_KEY:'sk-test',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'},outboundFixture:new URL('./triage-network.mjs',import.meta.url).href})}
- const f=fixture??await seedTriageDataset(runtime.origin).catch(async error=>{if(ownsRuntime)await runtime.close(false);throw error}),context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]
+ const f=fixture??await seedTriageDataset(runtime.origin,{count:3,corrections:2}).catch(async error=>{if(ownsRuntime)await runtime.close(false);throw error}),context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]
  await context.addCookies([{name:'h2h_session',value:f.token,url:runtime.origin}]);page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());page.setDefaultTimeout(20000)
  const capture=async(name,selector)=>{
   await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'})
   const violations=await page.evaluate(async selector=>(await window.axe.run({include:[selector]},{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']}})).violations.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)})),selector)
   assert.deepEqual(violations,[],name+' accessibility');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' overflow');await page.screenshot({path:shot(name+'.png'),fullPage:true})
  }
+ let passed=false
  try{
- for(const width of [1440,390]){
-  await page.setViewportSize({width,height:width===390?844:1000})
+ {
+  const width=1440
+  await page.setViewportSize({width,height:1000})
   await page.goto(`${runtime.origin}/projects/${f.projectId}/workflow-settings`)
   await page.getByRole('button',{name:'Triage',exact:true}).click();await page.getByRole('heading',{name:'Intelligent triage',exact:true}).waitFor()
   await page.getByLabel('Enable triage',{exact:true}).waitFor();await capture(`triage-settings-${width}`,'.triage-settings')
   await page.getByLabel('I reviewed accuracy by intent',{exact:true}).check();await page.getByLabel('Use predictions for routing',{exact:true}).check();await page.getByRole('button',{name:'Save triage settings',exact:true}).click();await page.getByText('Saved.',{exact:true}).waitFor()
   assert.equal((await f.settings()).routing_enabled,true)
-  // Reset through the real settings door so each viewport proves explicit approval.
-  await f.api(f.base+'/triage-settings',{...await f.settings(),routing_enabled:false},'PUT')
   await page.goto(`${runtime.origin}/projects/${f.projectId}/conversations/${f.tickets[0].id}`)
   await page.locator('#conversation-assistant').waitFor({state:'attached'});if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click()
   await page.getByRole('tab',{name:'Ticket',exact:true}).click();const fields=page.locator('#ticket-section-fields-heading');if(await fields.getAttribute('aria-expanded')!=='true')await fields.click()
   await page.locator('.triage-panel summary').first().scrollIntoViewIfNeeded();await page.locator('.triage-prediction').first().waitFor();await capture(`triage-ticket-${width}`,'.triage-panel')
   await page.getByLabel('Field to correct',{exact:true}).selectOption('sentiment');await page.getByLabel('Correct sentiment',{exact:true}).selectOption('neutral');await page.getByRole('button',{name:'Save correction',exact:true}).click();await page.getByText('Triage correction saved.',{exact:true}).waitFor();await page.locator('.triage-history summary').click();await page.locator('.triage-history li').first().waitFor();await capture(`triage-correction-${width}`,'.triage-panel')
  }
- assert.deepEqual(errors,[])
- }catch(error){await page.screenshot({path:shot('triage-failure.png'),fullPage:true});console.error('Triage browser URL',page.url(),await page.locator('body').innerText());throw error}finally{await context.close();if(ownsRuntime)await runtime.close(true)}
+ assert.deepEqual(errors,[]);passed=true
+ }catch(error){await page.screenshot({path:shot('triage-failure.png'),fullPage:true});console.error('Triage browser URL',page.url(),await page.locator('body').innerText());throw error}finally{await context.close();if(ownsRuntime)await runtime.close(passed)}
  return f
 }

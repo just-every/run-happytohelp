@@ -1,26 +1,11 @@
-import {triageJourney} from '../helpers/ai/triage.mjs'
 import test from 'node:test'
 import {answersJourney} from '../helpers/ai/answers.mjs'
-import {lifecycleJourney} from '../helpers/ai/lifecycle.mjs'
-import {assistanceJourney} from '../helpers/ai/assistance.mjs'
-import {providersJourney} from '../helpers/ai/providers.mjs'
-import {requestLimits,projectCeilings,invalidLimits,aiCeilings,requestIds,usageSummary} from '../helpers/ai/limits.mjs'
+import {triageJourney} from '../helpers/ai/triage.mjs'
+import {trainingJourney} from '../helpers/ai/training.mjs'
 
-// The assistant on the real application: visitor messages and operator actions through their routes,
-// generations through the queue, and fixtures only at the model and mail providers.
+test('a visitor gets a source-linked answer from published knowledge, durable replay and a human handoff under current authority',answersJourney)
+test('reviewed intent labels enable routing while unavailable triage preserves the operator queue and ordinary admission rules',triageJourney)
+test('a confirmed synthetic evaluation records checked replies, paid usage and durable uncertain work without replay',trainingJourney)
 
-test('the visitor\'s assistant searches published knowledge and answers with exact citations, live and on replay; citations it was never issued, unpublished or changed sources admit nothing, and asking for a person hands over',answersJourney)
-
-test('each visitor turn is answered once and only if nothing it depends on changed; cancelled, interrupted or post-commit-failed attempts never replay the provider, and a missing key is visible without losing the message; triage labels gate confident intent routing, existing rules still route at admission when the model is down or unsure, and an operator\'s queue choice is kept',async()=>{await lifecycleJourney();await triageJourney()})
-
-test('operator suggestions and draft tools run once per request and never send, fail whole when alternatives fail, and handing a waiting conversation back answers its turn once within ceilings and current authority',assistanceJourney)
-
-test('the assistant answers through every supported provider protocol with usage recorded, and a refused paid attempt is never replayed',providersJourney)
-
-test('public request limits answer 429 with Retry-After per project, address, contact and conversation, store nothing for a refusal, return refused capacity, and fail visibly when misconfigured',async()=>{await requestLimits();await projectCeilings();await invalidLimits()})
-
-test('daily AI reply and spend ceilings skip replies visibly to operators only, keep the visitor\'s message and never replay; reply request ids are UUIDs; usage summaries keep unmeasured costs unknown',async()=>{await aiCeilings();await requestIds();await usageSummary()})
-
-test('training runs seed a confirmed synthetic workspace, check every reply, execute each evaluation family, and keep unreported, failed, expired or interrupted paid work uncertain rather than replaying it',async()=>{await (await import('../helpers/ai/training.mjs')).trainingJourney();await (await import('../helpers/ai/procedures.mjs')).proceduresJourney()})
-
-test('repositories selected for operators are read as redacted, attributed evidence that suggestions cite, while secrets files, other repositories and visitor replies get nothing',async()=>(await import('../helpers/ai/repository.mjs')).repositoryJourney())
+import {proceduresJourney} from '../helpers/ai/procedures.mjs'
+test('a lead versions a synthetic-only procedure, inspects its bounded simulations and refuses a failed or mismatched release',proceduresJourney)

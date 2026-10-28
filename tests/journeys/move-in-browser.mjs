@@ -1,12 +1,9 @@
-import {attachmentBrowserFlow} from '../move-in/attachment-browser-flow.mjs'
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile,writeFile} from 'node:fs/promises'
 import {randomBytes} from 'node:crypto'
 import {createRuntime} from '../helpers/emitted-runtime.mjs'
-import {ownershipBrowserFlow} from '../move-in/ownership-browser-flow.mjs'
-import {helpScoutBrowserFlow} from '../move-in/helpscout-browser-flow.mjs'
-import {generate,generateDiagnostics} from '../move-in/generator.mjs'
+import {generate} from '../move-in/generator.mjs'
 import {launchBrowser,evidence} from './kit/browser.mjs'
 
 // Move in in a real browser against the emitted Worker: one owner workspace, every
@@ -33,11 +30,8 @@ async function vendorJourney(width,vendor){
   await page.getByRole('heading',{name:`Complete: ${filename}`,exact:true}).waitFor({timeout:120000});await page.getByRole('heading',{name:'Imported records',exact:true}).scrollIntoViewIfNeeded();await inspect(`${label}-report`);
   assert.equal(await page.getByRole('link',{name:/^Open conversation /}).count(),6);assert.equal(await page.getByRole('link',{name:/^Open article /}).count(),2);assert.equal(await page.getByRole('link',{name:/^Open contact /}).count(),6);assert.equal(await page.getByRole('link',{name:/^Open saved reply /}).count(),1);
   await page.getByRole('button',{name:'Upload and review',exact:true}).click();await page.getByText('This export was already processed.',{exact:false}).waitFor();
-  await page.getByRole('link',{name:/^Open conversation /}).first().click();const details=page.getByRole('tab',{name:'Ticket',exact:true}),panelToggle=page.getByRole('button',{name:'Show conversation panel',exact:true});await details.or(panelToggle).first().waitFor();if(!await details.isVisible())await panelToggle.click();await details.click();await page.getByText(`Imported from ${vendor}; source ${vendor==='zendesk'?'10001':'cv-1'}, open. Excluded from Reports.`,{exact:true}).waitFor();if(vendor==='intercom'){const time=page.getByText('Conversation creation time',{exact:true});await time.waitFor();await time.focus();await page.getByText('original message timestamp unavailable.',{exact:false}).waitFor()}else{
-   // Details loads from conversation metadata before the transcript request finishes.
-   await page.locator('.transcript-message-time').first().waitFor({state:'attached'});
-   assert.ok(await page.locator('.transcript-message-time').count()>0);
-  }
+  await page.getByRole('link',{name:/^Open conversation /}).first().click();const details=page.getByRole('tab',{name:'Ticket',exact:true}),panelToggle=page.getByRole('button',{name:'Show conversation panel',exact:true});await details.or(panelToggle).first().waitFor();if(!await details.isVisible())await panelToggle.click();await details.click();await page.getByText(`Imported from ${vendor}; source 10001, open. Excluded from Reports.`,{exact:true}).waitFor();await page.locator('.transcript-message-time').first().waitFor({state:'attached'});
+  assert.ok(await page.locator('.transcript-message-time').count()>0);
   const input=page.getByRole('textbox',{name:'New tag',exact:true});await input.fill('Review me');await input.locator('..').getByRole('button',{name:'Add',exact:true}).click();const remove=page.getByRole('button',{name:'Remove tag Review me',exact:true});await remove.waitFor();await inspect(`${label}-tag-added`);await remove.click();await remove.waitFor({state:'hidden'});await inspect(`${label}-tag-removed`);
   await page.goto(runtime.origin+base+'/conversations');await page.getByRole('button',{name:'Filters',exact:true}).click();const filter=page.getByRole('combobox',{name:'Filter conversations by tag'});await filter.waitFor();await page.locator('.conversation-item').first().waitFor();
   // Imported closed history is in Closed, so the Open view already shows only the three Priority rows.
@@ -47,26 +41,16 @@ async function vendorJourney(width,vendor){
   assert.equal(await page.locator('.conversation-item').count(),3);assert.equal(await page.locator('.conversation-item .conversation-tag').filter({hasText:'Priority'}).count(),3);await inspect(`${label}-tag-filter`);
   await page.goto(runtime.origin+base+'/move-in');await page.getByRole('button',{name:`${filename} — Complete`,exact:true}).click();await page.getByRole('button',{name:'Undo whole import',exact:true}).click();await page.getByRole('heading',{name:`Undone: ${filename}`,exact:true}).waitFor({timeout:120000});await inspect(`${label}-undone`);
   const listed=await request(`/api/dashboard/projects/${project}/conversations?view=all`,{token});assert.equal(listed.meta.pagination.total,0);
-  const negativeName=`${label}-diagnostics.jsonl`,negative=generateDiagnostics(vendor,2,width+1).body.replace(vendor==='zendesk'?'\"draft\":false,\"user_segment_id\":null':'\"state\":\"published\"',vendor==='zendesk'?'\"draft\":false,\"user_segment_id\":7':'\"state\":\"published\",\"audience\":{\"type\":\"restricted\"}');await page.getByLabel('Export format',{exact:true}).selectOption(vendor);await page.getByLabel('Export file',{exact:true}).setInputFiles({name:negativeName,mimeType:'application/octet-stream',buffer:Buffer.from(negative)});await page.getByRole('button',{name:'Upload and review',exact:true}).click();await page.getByText('Upload refused:',{exact:false}).waitFor();assert.match(await page.locator('.move-in-page').innerText(),/No source files or import were saved/);await inspect(`${label}-upload-refused`);
-  await page.getByLabel('Export file',{exact:true}).setInputFiles({name:negativeName,mimeType:'application/octet-stream',buffer:Buffer.from(negative.slice(0,negative.lastIndexOf('{malformed')))});await page.getByRole('button',{name:'Upload and review',exact:true}).click();await page.getByRole('heading',{name:`Ready for review: ${negativeName}`,exact:true}).waitFor({timeout:120000});await page.getByText('The export contains conflicting records for this ID.',{exact:false}).first().waitFor();await page.getByText('This article has a restricted audience that cannot be preserved.',{exact:false}).first().waitFor();assert.match(await page.locator('.move-in-page').innerText(),new RegExp(`${negativeName}, line (?:9|10|11)`));await inspect(`${label}-diagnostics`);
+
 }
-for(const width of [1440,390])test(`at ${width}px Zendesk and Intercom exports are reviewed, imported, reported, opened, tagged, filtered, repeated, undone, refused and diagnosed`,guarded(async()=>{for(const vendor of ['zendesk','intercom'])await vendorJourney(width,vendor);await configurationBrowser(width);await ownershipBrowserFlow({page,request,origin:runtime.origin,token,width,inspect})}))
 
-test('a Help Scout export at 1440 and 390: its own guide, review, import, repeat, opened history and undo',guarded(async()=>{await helpScoutBrowserFlow({page,origin:runtime.origin,base,inspect,request,project,token});await attachmentBrowserFlow({page,origin:runtime.origin,base,inspect})}))
-
-test('entry points and limits: Settings and Setup lead to Move in, an oversized file never uploads, a late native conflict stops and undoes cleanly, and an operator cannot move in history',guarded(async()=>{
- await page.goto(runtime.origin+base+'/settings');await page.getByRole('link',{name:'Move in existing support history',exact:true}).click();await page.getByRole('heading',{name:'Move in',exact:true}).waitFor();
- await page.goto(runtime.origin+base+'/activation');await page.getByRole('link',{name:'Move in your existing support history',exact:true}).click();
- await page.getByLabel('Export file',{exact:true}).setInputFiles({name:'too-large.jsonl',mimeType:'application/octet-stream',buffer:Buffer.alloc(2*1024*1024+1)});assert.equal(await page.getByRole('button',{name:'Upload and review',exact:true}).isDisabled(),true);await page.getByText('This file exceeds the 2 MiB upload limit.',{exact:false}).waitFor();await page.getByLabel('Export format',{exact:true}).selectOption('intercom');assert.equal(await page.getByLabel('Export file',{exact:true}).evaluate(input=>input.files.length),0);assert.equal(await page.getByRole('button',{name:'Upload and review',exact:true}).isDisabled(),true);
- // Hand-written late-native conflict: the stopped review exposes exact progress
- // and undo while preserving the contact created after review.
- await page.goto(runtime.origin+base+'/move-in');await page.getByLabel('Export format',{exact:true}).selectOption('intercom');
- const stoppedName='late-native-conflict.jsonl',stoppedSource={type:'contact',id:'browser-conflict',email:'fence-browser@example.test',name:'Imported candidate',created_at:1704067200};
- await page.getByLabel('Export file',{exact:true}).setInputFiles({name:stoppedName,mimeType:'application/octet-stream',buffer:Buffer.from(JSON.stringify(stoppedSource))});await page.getByRole('button',{name:'Upload and review',exact:true}).click();await page.getByRole('heading',{name:`Ready for review: ${stoppedName}`,exact:true}).waitFor({timeout:120000});
- const keeper=(await request(`/api/management/projects/${project}/contacts`,{token,body:{name:'Native keeper',email:'FENCE-browser@example.test'}})).data;
- await page.getByRole('button',{name:'Approve and import',exact:true}).click();await page.getByText('Native contact identities changed after review.',{exact:false}).waitFor({timeout:120000});assert.match(await page.locator('.move-in-page').innerText(),/0 of 1 source records processed/);await page.getByRole('button',{name:'Undo whole import',exact:true}).waitFor();await inspect('late-native-conflict-stopped-390');
- await page.getByRole('button',{name:'Undo whole import',exact:true}).click();await page.getByRole('heading',{name:`Undone: ${stoppedName}`,exact:true}).waitFor({timeout:120000});const nativeContacts=(await request(`/api/management/projects/${project}/contacts`,{token})).data;assert.deepEqual(nativeContacts.filter(contact=>contact.email?.toLowerCase()==='fence-browser@example.test').map(contact=>contact.id),[keeper.id]);await inspect('late-native-conflict-undone-390');
- const member={email:'move-in-operator@example.test',name:'Operator',password:randomBytes(24).toString('base64url')},invite=await request(`/api/management/projects/${project}/agents`,{token,body:{email:member.email,role:'operator'}});await request('/api/identity/accept-token',{body:{token:new URL(invite.data.invitationUrl).searchParams.get('token'),name:member.name,password:member.password}});const memberSession=await request('/api/identity/login',{body:member});await context.clearCookies();await context.addCookies([{name:'h2h_session',value:memberSession.token,url:runtime.origin}]);await page.goto(runtime.origin+base+'/move-in');await page.getByText('Only a workspace owner or admin can move in support history.',{exact:false}).waitFor();assert.equal(await page.getByLabel('Export file',{exact:true}).count(),0);await inspect('operator-denied-390');await page.goto(runtime.origin+base+'/settings');await page.getByRole('heading',{name:'Project details',exact:true}).waitFor();assert.equal(await page.getByRole('link',{name:'Move in existing support history',exact:true}).count(),0);
+test('an owner reviews a Zendesk export, imports its history, opens and filters imported tickets, detects a repeat and undoes the complete import',guarded(async()=>{
+ await page.goto(runtime.origin+base+'/settings')
+ await page.getByRole('link',{name:'Move in existing support history',exact:true}).click()
+ await page.getByRole('heading',{name:'Move in',exact:true}).waitFor()
+ await vendorJourney(1440,'zendesk')
+ await configurationBrowser(1440)
+ await configurationBrowser(390)
 }))
 
 

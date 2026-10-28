@@ -7,8 +7,8 @@ const read=(repository,path,id)=>openaiToolCall('repo_read_file',{repository,pat
 
 // With repositories selected for operators, the assistant reads only allowed repository files as redacted,
 // attributed evidence that suggestions can cite; secrets files, other repositories and visitor replies get nothing.
-export async function repositoryJourney(){
- const a=await assistantApp({bindings:{}}),{app,ai,p,owner}=a
+export async function repositoryJourney(a,v){
+ const {app,ai,p,owner}=a
  try{
   await app.configure({GITHUB_TOKENS:JSON.stringify({[p]:'synthetic-mapped-installation-token'})})
   // GitHub is a fixture at the network edge: one file whose content holds a secret.
@@ -17,7 +17,7 @@ export async function repositoryJourney(){
   await app.call(`/api/management/projects/${p}/github`,{token:owner,method:'PUT',body:{repositories:[repo],allow_agents:true,allow_contacts:false},status:200})
   // A visitor reply is not offered repository tools when repositories are not shared with contacts.
   const visitor=await a.visitor();ai.respond=()=>'A reply';await visitor.say('Hello');await a.run();assert.ok(!tools(ai.calls.at(-1).body).some(name=>name.startsWith('repo_')))
-  const v=await a.visitor();await a.action(v.conversationId,'assignAi',{ai_id:null});await app.takeJobs();await v.say('Why does checkout fail?');await app.takeJobs()
+  await v.say('Why does checkout fail?');await app.takeJobs()
   let turn=0,evidence
   ai.respond=body=>{
    if(body.text?.format?.name==='agent_suggestion_alternatives')return {alternatives:[],missing_information:[]}
@@ -37,5 +37,5 @@ export async function repositoryJourney(){
   await app.call(`/api/management/projects/${p}/github`,{token:owner,method:'PUT',body:{repositories:[repo],allow_agents:false,allow_contacts:false},status:200})
   ai.respond=body=>{assert.ok(!tools(body).some(name=>name.startsWith('repo_')));return body.text?.format?.name==='agent_suggestion_alternatives'?{alternatives:[],missing_information:[]}:{user_goal:'Help',responses:[{button:'Help',icon:'circle-question-mark',response:'Help',use_when:'',evidence_ids:[JSON.stringify(body).match(/message:[0-9a-f-]{36}/)[0]]}],missing_information:[]}}
   await a.action(v.conversationId,'agentAssist',{options:{request_id:crypto.randomUUID()}});await a.run();assert.equal((await a.generations(v.conversationId)).at(-1).state,'completed')
- }finally{await a.close()}
+ }finally{ai.network=null}
 }

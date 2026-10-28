@@ -47,19 +47,21 @@ export async function hero({browser,operator,origin,bootstrap,directory,viewport
   assert.equal((await transcript()).filter(m=>m.actor_role!=='contact').length,0,'Resolve must not auto-send');
   await page.getByRole('button',{name:'Use '+reply.title,exact:true}).click();
   await page.waitForFunction(expected=>document.querySelector('textarea[aria-label="Reply to conversation"]')?.value===expected,reply.body);
-  if(viewport.width<1280)await page.locator('#conversation-assistant').waitFor({state:'hidden'});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'operator viewport containment');
   const composer=page.getByPlaceholder('Type your reply…');assert.equal(await composer.inputValue(),reply.body);
+  const sentBody=reply.body+' Please let us know if you need anything else.';
+  await composer.fill(sentBody);
+  assert.equal((await transcript()).filter(m=>m.actor_role!=='contact').length,0,'editing the proposed reply does not send it');
   await page.screenshot({path:dir+'/hero-before-send.png',fullPage:true});
   await page.getByRole('button',{name:'Send',exact:true}).click();
-  const message=await until(async()=>(await transcript()).find(m=>m.content===reply.body),Boolean,'Actual operator send');assert.equal(message.actor_role,'owner');assert.equal(message.actor_id,bootstrap.userId);
+  const message=await until(async()=>(await transcript()).find(m=>m.content===sentBody),Boolean,'Actual operator send');assert.equal(message.actor_role,'owner');assert.equal(message.actor_id,bootstrap.userId);
   await until(async()=>frames.find(f=>f.message?.id===message.id),Boolean,'Real visitor socket message',60);
-  assert.equal(frames.find(f=>f.message?.id===message.id).message.content,reply.body);
-  await visitor.getByText(reply.body,{exact:true}).waitFor();await visitor.screenshot({path:dir+'/visitor-received.png',fullPage:true});
-  await visitor.reload();await mount();await visitor.getByText(reply.body,{exact:true}).waitFor();
-  const after=await transcript();assert.equal(after.filter(m=>m.content===reply.body).length,1);assert.equal(after.find(m=>m.id===message.id).content,reply.body);
-  await page.reload();await page.getByText(reply.body,{exact:true}).first().waitFor();
+  assert.equal(frames.find(f=>f.message?.id===message.id).message.content,sentBody);
+  await visitor.getByText(sentBody,{exact:true}).waitFor();await visitor.screenshot({path:dir+'/visitor-received.png',fullPage:true});
+  await visitor.reload();await mount();await visitor.getByText(sentBody,{exact:true}).waitFor();
+  const after=await transcript();assert.equal(after.filter(m=>m.content===sentBody).length,1);assert.equal(after.find(m=>m.id===message.id).content,sentBody);
+  await page.reload();await page.getByText(sentBody,{exact:true}).first().waitFor();
   await visitor.screenshot({path:dir+'/visitor-reloaded.png',fullPage:true});
-  await save('hero-proof.json',{passed:true,projectId,conversationId:session.conversationId,jobId:job.id,runId:job.run_id,deviceId:connector.deviceId,mode:job.mode,result:job.result,publicationReceipts:capability.receipts,articleId:article.id,publicHttp:publicPage.status,publicApiHttp:publicRead.status,noAutomaticReply:true,clickedUse:true,clickedSend:true,messageId:message.id,replySha256:hash(reply.body),socketIdentityMatched:true,widgetBeforeAndAfterReloadMatched:true,durableMessageCount:1});
+  await save('hero-proof.json',{passed:true,projectId,conversationId:session.conversationId,jobId:job.id,runId:job.run_id,deviceId:connector.deviceId,mode:job.mode,result:job.result,publicationReceipts:capability.receipts,articleId:article.id,publicHttp:publicPage.status,publicApiHttp:publicRead.status,noAutomaticReply:true,clickedUse:true,clickedSend:true,messageId:message.id,replySha256:hash(sentBody),socketIdentityMatched:true,widgetBeforeAndAfterReloadMatched:true,durableMessageCount:1});
  }finally{await worker?.stop();await capability?.close();await visitorContext.close();}
 }

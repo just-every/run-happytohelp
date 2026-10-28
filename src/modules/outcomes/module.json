@@ -6,11 +6,8 @@
     "src/modules/outcomes",
     "migrations/112_conversation_outcomes.sql",
     "migrations/113_outcomes_history.sql",
-    "tests/reports/outcomes.mjs",
-    "tests/reports/ratings.mjs",
-    "tests/reports/widget-races.mjs",
-    "tests/reports/import-inertness.mjs",
-    "tests/reports/operator-feedback.mjs",
+    "tests/reports/support-outcomes.mjs",
+    "tests/reports/figures.mjs",
     "tests/journeys/reports.mjs",
     "tests/journeys/upgrade.mjs",
     "migrations/171_csat_surveys.sql"

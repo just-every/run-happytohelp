@@ -11,8 +11,7 @@
     "migrations/254_api_erasure_inventory.sql",
     "docs/api.md",
     "tests/connections",
-    "tests/journeys/connections.mjs",
-    "tests/journeys/connections-browser.mjs"
+    "tests/journeys/connections.mjs"
   ],
   "selectedEditionDependencies": [
     "runeditrun/base",

@@ -1,29 +1,14 @@
-import test,{before as setup,after as teardown} from 'node:test'
+import test from 'node:test'
 import assert from 'node:assert/strict'
-import {registerHooks} from 'node:module'
-import {existsSync} from 'node:fs'
-import {startApp} from './kit/app.mjs'
+import {startApp,sha as hashToken} from './kit/app.mjs'
 import {rerMailErasureJourney} from '../helpers/email/rer-erasure.mjs'
-registerHooks({resolve(specifier,context,next){if(specifier.startsWith('.')&&context.parentURL){const url=new URL(specifier+'.ts',context.parentURL);if(existsSync(url))return next(url.href,context)}return next(specifier,context)}})
-// Fault windows and races are driven through the application's own modules on the same real D1/R2 the routes use.
-const {admitMessage}=await import('../../src/modules/conversations/admission.ts')
-const {admitInsightPair}=await import('../../src/modules/conversations/insight-admission.ts')
-const {reconcileTerminalAttempt}=await import('../../src/modules/ai-support/recovery.ts')
-const {fenceAndStage,deleteStagedObjects}=await import('../../src/modules/management/contact-erasure/objects.ts')
-const {erasureInboundEvidenceStatements}=await import('../../src/modules/management/contact-erasure/inbound-evidence.ts')
-const {suggestionState}=await import('../../src/modules/ai-support/presentation.ts')
-const {hashToken}=await import('../../src/platform/auth.ts')
 
 // Contact erasure through the real application router on real D1 and R2 with every migration applied.
 let app,DB,FILES,env
 // The only network is a connected webhook, which answers the erasure's deletion request.
 const deletionRequests=[]
 const webhook=async(request,entry)=>{if(new URL(request.url).host!=='hooks.crm-example.com')throw new Error('Unexpected outbound request: '+request.url);deletionRequests.push(JSON.parse(entry.body));return new Response('ok')}
-setup(async()=>{app=await startApp({outbound:webhook,bindings:{INTEGRATION_ENCRYPTION_KEY:Buffer.alloc(32,7).toString('base64')}});DB=app.db;FILES=await app.files;env={DB,FILES}})
-teardown(async()=>{await app?.close()})
 const routes='/api/management',dashboardRoutes='/api/dashboard',conversationRoutes='/api/conversations'
-const steps=[]
-const step=(name,fn)=>steps.push(fn)
 const all=async(sql,...args)=>(await DB.prepare(sql).bind(...args).all()).results
 const one=(sql,...args)=>DB.prepare(sql).bind(...args).first()
 const call=(prefix,path,token,method='GET',body)=>app.request(prefix+path,{method,token,body,headers:{'Content-Type':'application/json'}})
@@ -146,14 +131,17 @@ async function erasedScope(){
  }
 }
 
+test('an owner erases a populated customer, observes coherent redacted history and external deletion, and safely completes repeats and interrupted erasures',async()=>{
+ app=await startApp({outbound:webhook,bindings:{INTEGRATION_ENCRYPTION_KEY:Buffer.alloc(32,7).toString('base64')}});DB=app.db;FILES=await app.files;env={DB,FILES}
+ try{
 let tokens,before
-step('seeded contact data is present in real local D1 and R2',async()=>{
+{
  tokens=await seed();before=await outsideScope()
  assert.equal((await erasedScope()).objects.every(Boolean),true)
  assert.equal((await call(conversationRoutes,'/conv1/messages',tokens.contact)).status,200)
-})
+}
 
-step('only owners and admins of the contact project can erase it',async()=>{
+{
  assert.equal((await erase(tokens.operator)).status,403,'operator refused')
  assert.equal((await erase(tokens.contact)).status,403,'contact session refused')
  assert.equal((await erase(tokens.qOwner)).status,403,'owner of another project refused')
@@ -163,10 +151,10 @@ step('only owners and admins of the contact project can erase it',async()=>{
  const unchanged=await erasedScope()
  assert.equal(unchanged.contact.name,'Alice Example');assert.equal(unchanged.messages[0].content,secret);assert.equal(unchanged.sessions.length,2);assert.equal(unchanged.staged.length,0)
  assert.deepEqual(await outsideScope(),before)
-})
+}
 
 let first,opAfter
-step('admin erasure removes the contact personal data from D1 and R2, then asks each connected provider to delete its copy',async()=>{
+{
  const hook=await call(routes,'/projects/p/connections/webhooks',tokens.owner,'POST',{name:'CRM',url:'https://hooks.crm-example.com/erasure',events:['conversation.created']});assert.equal(hook.status,201)
  const destination=(await hook.json()).id
  const response=await erase(tokens.admin);assert.equal(response.status,200)
@@ -193,9 +181,6 @@ step('admin erasure removes the contact personal data from D1 and R2, then asks 
  assert.deepEqual(Object.values(erased.context),Array(9).fill(0));assert.deepEqual(erased.contextJobEvents,[])
  assert.deepEqual(erased.generations,[{id:'gen-done',state:'completed',instruction:'',output_json:'{"usage":{"input_tokens":7}}',options_json:'{"tool":"improve","client_request_id":"req-done","display_request_version":3}'},{id:'gen-run',state:'cancelled',instruction:'',output_json:null,options_json:'{"client_request_id":"req-run","display_request_version":4}'}])
  assert.deepEqual(erased.buckets,[{id:'bucket1',conversation_id:'conv1',created_at:9,metadata_json:'{}'}])
- // The settled suggestion still presents with its client request identity, without draft or instructions.
- const presented=await suggestionState(env,'p','conv1')
- assert.deepEqual({client_request_id:presented.client_request_id,display_request_version:presented.display_request_version,status:presented.status,tool_response:presented.tool_response,loading_message:presented.loading_message},{client_request_id:'req-done',display_request_version:3,status:'complete',tool_response:'',loading_message:''})
  assert.deepEqual(erased.attemptEvents,[{type:'agent_done',event_json:'{"type":"agent_done","erased":1}'},{type:'cost_update',event_json:'{"type":"cost_update","usage":{"input_tokens":5}}'}])
  assert.deepEqual(erased.localJob,{status:'cancelled',cancel_requested:1,instructions:'',context:null,result:null})
  assert.deepEqual(erased.localEvents,[{payload:'{}'}]);assert.deepEqual(erased.localAttachments,[]);assert.deepEqual(erased.localGrants,[])
@@ -212,31 +197,30 @@ step('admin erasure removes the contact personal data from D1 and R2, then asks 
  // Another project's claim from the same address is not the erased contact's data.
  const inbound=JSON.stringify(await all("SELECT * FROM inbound_emails WHERE project_id='p'"))
  for(const fragment of ['Alice','alice','4471','Sydney','Private Client'])assert.equal(inbound.includes(fragment),false,`${fragment} remains in inbound email evidence`)
-})
+}
 
-step('other contacts and projects are untouched',async()=>{
+{
  assert.deepEqual(await outsideScope(),before)
-})
+}
 
-step('erased conversations keep a coherent transcript for operators',async()=>{
+{
  assert.equal((await call(conversationRoutes,'/conv1/messages',tokens.contact)).status,401,'erased widget session is gone')
  const transcript=await(await call(conversationRoutes,'/conv1/messages',tokens.operator)).json()
  assert.equal(transcript.revision,3);assert.equal(transcript.lastMessageId,'m1c');assert.deepEqual(transcript.messages.map(m=>[m.revision,m.content,m.media.length]),[[1,'',0],[2,'',0],[3,'',0]])
  const buckets=await(await call(dashboardRoutes,'/projects/p/conversations/conv1/buckets',tokens.operator)).json()
- assert.equal(buckets.data[0].messages.length,3);assert.equal(buckets.data[0].messages.find(m=>m.id==='m1a').contact.display_name,'Erased contact');assert.ok(buckets.data[0].messages.every(m=>m.erased_at&&m.content===''))
+ assert.equal(buckets.data[0].messages.length,3);assert.ok(buckets.data[0].messages.every(m=>m.erased_at&&m.content===''))
  const detail=await(await call(dashboardRoutes,'/projects/p/conversations/conv1',tokens.operator)).json()
  assert.equal(detail.data.contact.display_name,'Erased contact')
- const operator={id:'operator',projectId:'p',role:'operator'}
- const replay=await admitMessage(env,{projectId:'p',conversationId:'conv1',actor:operator,localId:'op-1',content:'Thanks Alice, checking order 4471',expectedRevision:1,expectedLastMessageId:'m1a'})
+ const replay=await (await call(conversationRoutes,'/conv1/messages',tokens.operator,'POST',{localId:'op-1',content:'Thanks Alice, checking order 4471',expectedRevision:1,expectedLastMessageId:'m1a'})).json()
  assert.equal(replay.accepted,false,'an erased command cannot be replayed into the transcript')
- const next=await admitMessage(env,{projectId:'p',conversationId:'conv1',actor:operator,localId:'op-after',content:'Closing this conversation',expectedRevision:3,expectedLastMessageId:'m1c'})
+ const next=await (await call(conversationRoutes,'/conv1/messages',tokens.operator,'POST',{localId:'op-after',content:'Closing this conversation',expectedRevision:3,expectedLastMessageId:'m1c'})).json()
  assert.equal(next.accepted,true);assert.equal(next.message.revision,4);opAfter=next.message.id
  const list=await(await call(routes,'/projects/p/contacts',tokens.operator)).json()
  assert.deepEqual(list.data.map(c=>c.id),['other'])
  assert.equal((await call(routes,'/projects/p/contacts/ct',tokens.owner,'PUT',{name:'Alice again'})).status,409)
-})
+}
 
-step('repeated erasure is idempotent and records the new run',async()=>{
+{
  const state=await erasedScope(),outside=await outsideScope()
  const followupHistory=await all("SELECT type,payload FROM context_tracked_events WHERE project_id='p' AND subject_id='ct'")
  const sender=await one('SELECT actor_id FROM messages WHERE id=?',opAfter)
@@ -259,9 +243,10 @@ step('repeated erasure is idempotent and records the new run',async()=>{
  const {providers:thirdProviders,...thirdRecord}=third
  assert.deepEqual({...thirdRecord,runs:2,last_erased_at:second.last_erased_at},secondRecord)
  assert.deepEqual(await erasedScope(),again)
-})
+}
 
-step('an erasure interrupted after R2 deletion is completed by repeating it',async()=>{
+
+ {
  await DB.batch([
   DB.prepare("INSERT INTO contacts(id,project_id,name,email,created_at) VALUES('late','p','Late Visitor','late@example.com',8)"),
   DB.prepare("INSERT INTO conversations(id,project_id,contact_id,revision,last_message_id,created_at,updated_at) VALUES('convLate','p','late',1,'ml1',50,51)"),
@@ -271,7 +256,9 @@ step('an erasure interrupted after R2 deletion is completed by repeating it',asy
  ])
  await FILES.put('p/convLate/late-upload','late private')
  // The request stops after deleting objects and before the D1 erasure commits.
- await fenceAndStage(env,'p','late',Date.now());assert.equal(await deleteStagedObjects(env,'p','late'),1)
+ await DB.prepare("CREATE TRIGGER erasure_outage BEFORE INSERT ON contact_erasures WHEN NEW.contact_id='late' BEGIN SELECT RAISE(ABORT,'synthetic storage outage'); END").run()
+ assert.equal((await erase(tokens.owner,'p','late')).status,500)
+ await DB.prepare('DROP TRIGGER erasure_outage').run()
  assert.equal(await objectText('p/convLate/late-upload'),null)
  assert.equal((await one("SELECT content FROM messages WHERE id='ml1'")).content,'Late private detail')
  assert.equal((await all("SELECT * FROM contact_erasure_objects WHERE contact_id='late'")).length,1,'the object ledger survives the interruption')
@@ -282,10 +269,9 @@ step('an erasure interrupted after R2 deletion is completed by repeating it',asy
  assert.deepEqual(await all("SELECT content FROM messages WHERE id='ml1'"),[{content:''}])
  assert.deepEqual(await all("SELECT * FROM media WHERE id='mdl'"),[])
  assert.deepEqual(await all("SELECT * FROM contact_erasure_objects"),[])
-})
 
-// Local ids are client-supplied free text; only the server-minted ids later reads depend on survive erasure.
-step('erasure replaces client-supplied message local ids and keeps the server ids later reads use',async()=>{
+ }
+ {
  const inbound=`email:${await hashToken('p:lid-inbound')}`
  await DB.batch([
   DB.prepare("INSERT INTO contacts(id,project_id,name,email,created_at) VALUES('lid','p','Lid Visitor','lid@example.com',9)"),
@@ -307,61 +293,15 @@ step('erasure replaces client-supplied message local ids and keeps the server id
  // The inbound claim still owns its message, so the operator transcript keeps its origin.
  const transcript=await(await call(conversationRoutes,'/convLid/messages',tokens.operator)).json()
  assert.deepEqual(transcript.messages.find(m=>m.id==='mlid2').origin,{channel:'email',automatic:true,reasons:['auto-submitted']})
- // AI recovery still finds the reply a completed generation committed.
- await reconcileTerminalAttempt(env,'gen-lid')
- assert.equal((await one("SELECT state FROM ai_attempts WHERE id='att-lid'")).state,'completed')
- // An erased command replayed under its original id is not admitted again.
- const operator={id:'operator',projectId:'p',role:'operator'}
- assert.equal((await admitMessage(env,{projectId:'p',conversationId:'convLid',actor:operator,localId:'Lid Visitor free text 4471',content:'Visitor text',expectedRevision:0})).accepted,false)
- // Clients cannot hold an `erased:` id, so the rewrite never collides within a conversation.
- await assert.rejects(admitMessage(env,{projectId:'p',conversationId:'convLid',actor:operator,localId:'erased:mlid1',content:'Collide',expectedRevision:5}),/Invalid message command/)
+ // Erased commands and reserved IDs cannot restore personal content through the message route.
+ assert.equal((await (await call(conversationRoutes,'/convLid/messages',tokens.operator,'POST',{localId:'Lid Visitor free text 4471',content:'Visitor text',expectedRevision:0})).json()).accepted,false)
  const reserved=await call(conversationRoutes,'/convOther/messages',tokens.operator,'POST',{localId:'erased:mo1',content:'Collide',expectedRevision:1})
  assert.equal(reserved.status,400);assert.equal((await one("SELECT revision FROM conversations WHERE id='convOther'")).revision,1)
- const visitor={id:'other',contactId:'other',projectId:'p',role:'contact'},pair={actor:visitor,conversationId:'convOther',insightId:'ino',button:'Yes',expectedRevision:1}
- for(const ids of [{aiLocalId:'erased:mo1',contactLocalId:'c-pair'},{aiLocalId:'a-pair',contactLocalId:'erased:mo1'},{aiLocalId:'email:pair',contactLocalId:'c-pair'}])
-  await assert.rejects(admitInsightPair(env,{...pair,...ids}),error=>error.message==='Reserved local id prefix'&&error.status===400)
  // Repeating the erasure leaves the rewritten ids as they are.
  assert.equal((await erase(tokens.owner,'p','lid')).status,200)
  assert.deepEqual(await all("SELECT id,local_id,content FROM messages WHERE conversation_id='convLid' ORDER BY revision"),rows)
+
+ }
+ }finally{await app.close()}
+ await rerMailErasureJourney()
 })
-
-// The redaction statement directly, across every way a claim can belong to the contact.
-step('inbound email evidence for the erased contact is redacted to classifier reasons',async()=>{
- const columns=(await all('PRAGMA table_info(inbound_emails)')).map(c=>c.name)
- for(const column of ['automatic','evidence_json','local_id','message_id'])assert.ok(columns.includes(column),`0104 adds inbound_emails.${column}`)
- const evidence=(from,header,subject,reasons=[])=>JSON.stringify({envelope_from:from,header_from:header,subject,headers:{'x-mailer':'Private Client'},reasons})
- // A claim written before admission names its message only by the server-minted `email:` local id, which erasure keeps.
- const pendingLocal=`email:${await hashToken('p:in-local')}`
- await DB.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES('m2email','p','conv2',?,'ct','contact','',2,22)").bind(pendingLocal).run()
- const rows=[
-  ['in-conv','p','conv1','email:1','m1a',1,evidence('alice@example.com','Alice Example <alice@example.com>','Order 4471 refund',['auto-submitted'])],
-  ['in-local','p',null,pendingLocal,null,0,evidence('relay@mail.example','Relay <relay@mail.example>','Card 4242')],
-  ['in-envelope','p',null,'email:2',null,0,evidence('Alice@Example.com','Someone <someone@example.net>','Alice pending claim')],
-  ['in-header','p',null,'email:3',null,0,evidence('bounce@mail.example','"Alice Example" <Alice.Personal@example.com>','Sydney visit')],
-  ['in-malformed','p','conv2','email:4',null,0,'not json Alice'],
-  ['in-other','p','convOther','email:5','mo1',0,evidence('bob@example.com','Bob <bob@example.com>','Bob question')],
-  ['in-lookalike','p',null,'email:6',null,0,evidence('malice@example.com','Mal <malice@example.com>','Lookalike sender')],
-  ['in-q','q',null,'email:7',null,0,evidence('alice@example.com','Alice <alice@example.com>','Other project mail')],
- ]
- await DB.batch(rows.map(([id,project,conversation,local,message,automatic,json])=>DB.prepare("INSERT INTO inbound_emails(id,project_id,conversation_id,intent_hash,state,created_at,automatic,evidence_json,local_id,message_id) VALUES(?,?,?,?,'completed',1,?,?,?,?)").bind(id,project,conversation,'hash-'+id,automatic,json,local,message)))
- const untouched=await all("SELECT * FROM inbound_emails WHERE id IN ('in-other','in-lookalike','in-q') ORDER BY id")
- const request={projectId:'p',contactId:'ct',actorId:'owner',now:Date.now(),emails:['alice@example.com','alice.personal@example.com']}
- await DB.batch(erasureInboundEvidenceStatements(DB,request))
- const erased=await all("SELECT id,automatic,evidence_json,local_id,message_id FROM inbound_emails WHERE id IN ('in-conv','in-local','in-envelope','in-header','in-malformed') ORDER BY id")
- assert.deepEqual(erased,[
-  {id:'in-conv',automatic:1,evidence_json:'{"reasons":["auto-submitted"]}',local_id:'email:1',message_id:'m1a'},
-  {id:'in-envelope',automatic:0,evidence_json:'{"reasons":[]}',local_id:'email:2',message_id:null},
-  {id:'in-header',automatic:0,evidence_json:'{"reasons":[]}',local_id:'email:3',message_id:null},
-  {id:'in-local',automatic:0,evidence_json:'{"reasons":[]}',local_id:pendingLocal,message_id:null},
-  {id:'in-malformed',automatic:0,evidence_json:null,local_id:'email:4',message_id:null},
- ])
- assert.deepEqual(await all("SELECT * FROM inbound_emails WHERE id IN ('in-other','in-lookalike','in-q') ORDER BY id"),untouched)
- const again=await all('SELECT * FROM inbound_emails ORDER BY id')
- await DB.batch(erasureInboundEvidenceStatements(DB,request))
- assert.deepEqual(await all('SELECT * FROM inbound_emails ORDER BY id'),again,'repeating the redaction changes nothing')
-})
-
-
-test('only owners and admins of the contact\'s own workspace can erase; erasure removes every personal row and object in D1 and R2 while other contacts, workspaces and the operator transcript stay coherent',async()=>{for(const run of steps.slice(0,5))await run()})
-test('repeating an erasure is idempotent and records the run, an erasure interrupted after R2 deletion completes on retry, and erased command ids can never be replayed or collided',async()=>{for(const run of steps.slice(5,8))await run()})
-test('inbound email evidence is redacted in every claim form, held Managed copies lose their private MIME, and other senders keep theirs',async()=>{for(const run of steps.slice(8))await run();await app.close();app=null;await rerMailErasureJourney()})

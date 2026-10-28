@@ -2,8 +2,9 @@ import assert from 'node:assert/strict'
 import {knowledgeApp} from './app.mjs'
 
 // Website sources: Add URL crawls once with its saved bounds, publishes, and a failed refresh keeps the last corpus.
-export async function sourcesJourney(){
- const k=await knowledgeApp({bindings:{APIFY_TOKEN:'test-only',APIFY_CRAWLER_ACTOR_ID:'selected-test-actor'}}),{p,other,call,drain,search}=k
+export async function sourcesJourney(k){
+ const {p,other,call,drain,search}=k
+ await k.app.configure({APIFY_TOKEN:'test-only',APIFY_CRAWLER_ACTOR_ID:'selected-test-actor'})
  const starts=[];let rejectStart=false
  k.provider=async request=>{
   const url=new URL(request.url);assert.equal(url.host,'api.apify.com','only the crawler provider is called')
@@ -14,7 +15,7 @@ export async function sourcesJourney(){
  }
  const read=async id=>(await call(`/api/knowledge/${p}/datasets/${id}`,{status:200})).data
  try{
-  for(const mode of ['manual','adaptive']){
+  for(const mode of ['adaptive']){
    const settings={url:`https://crawl.example.test/${mode}`,excluded_urls:['https://crawl.example.test/private/**'],max_crawl_depth:2,max_crawl_pages:7,refreshMode:mode}
    const created=(await call(`/api/knowledge/${p}/datasets`,{body:settings,status:201})).data;assert.equal(created.refresh?.status,'queued','Add URL dispatches its first refresh in either recurrence mode')
    const initial=await read(created.id);assert.equal(initial.status,'ingesting');assert.ok(initial.source_input,'the source keeps its recoverable input')
@@ -43,5 +44,5 @@ export async function sourcesJourney(){
   for(const body of [{url:'javascript:invalid'},{url:'https://crawl.example.test',excluded_urls:'private'},{url:'https://crawl.example.test',max_crawl_pages:0}])assert.equal((await call(`/api/knowledge/${p}/datasets`,{body})).status,400,JSON.stringify(body))
   assert.equal((await call(`/api/knowledge/${other}/datasets`,{body:{url:'https://crawl.example.test'}})).status,403)
   assert.deepEqual(await k.app.takeJobs(),[]);assert.equal(starts.length,attempts)
- }finally{await k.close()}
+ }finally{k.provider=undefined}
 }

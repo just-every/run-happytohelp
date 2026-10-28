@@ -1,4 +1,5 @@
 import {createHash} from 'node:crypto';
+import {inspectionContext,localProcessConflict} from '@runeditrun/rer/process-diagnostics';
 import {readArtifact} from '../artifact-payloads.mjs';
 import {exportD1Sql} from '../../../scripts/installer/search-index-sql.mjs';
 import assert from 'node:assert/strict';
@@ -62,8 +63,20 @@ try {
     const project = before.rows.projects.map(row => JSON.parse(row)).find(row => row.id === journey.owner.projectId);
     assert.match(project.verification_secret, /^[a-f0-9]{64}$/, 'Project verification secret must survive full row comparison');
   });
+  // The documented exporter is the public process. Failure must restore search before retry.
+  const quiescent=async()=>{
+    const deadline=Date.now()+30000;
+    while(await localProcessConflict(original.directory,undefined,inspectionContext({verb:'reset'}))){
+      if(Date.now()>deadline)throw Error('Owned storage worker did not finish shutdown before export');
+      await new Promise(done=>setTimeout(done,100));
+    }
+  };
+  await quiescent();
+  const exporter=(file)=>spawnSync(process.execPath,[resolve('scripts/export-d1.mjs'),'--local','--config',join(original.directory,'wrangler.json'),'--output',file],{encoding:'utf8'});
+  const refused=exporter(original.directory);assert.notEqual(refused.status,0,'a directory is not an export file');
+  await quiescent();
   const exportFile = join(output, 'native-export.sql');
-  await exportD1Sql({inspect:input=>original.withStorage(storage=>storage.inspect(input)),runExport:()=>original.run(['d1','export','DB','--local','--output',exportFile]),output:exportFile});
+  const exported=exporter(exportFile);assert.equal(exported.status,0,exported.stderr);
   // The documented restore path: a credential-free backup made by the shipped sanitizer, never the raw export.
   const backupFile = join(output, 'restore.sql');
   const sanitized = spawnSync('python3', [resolve('scripts/independent/delegation-backup.py'), exportFile, backupFile], {encoding: 'utf8'});

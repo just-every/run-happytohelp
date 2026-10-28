@@ -1,14 +1,10 @@
 import {feedbackJourney} from '../helpers/feedback/journeys.mjs'
 import test from 'node:test'
-import {journey} from '../connections/claims.mjs'
+import {connectionsJourney} from '../connections/api.mjs'
 
-// Connections through the real API, settings and dispatcher doors (tests/connections holds each journey's scenarios).
-for(const key of ['credentials','api','delivery','slack'])test(...journey(key))
+test('a connected product opens and appends one scoped support request, receives signed events and a safe team notification, then loses access on expiry, erasure and revocation without replaying uncertain delivery',connectionsJourney)
 
-import {sharingJourney,updatesJourney,custodyJourney} from '../helpers/escalations/journeys.mjs'
-test('engineering context is chosen per message and attachment across GitHub, Linear, Jira, Slack and Teams, with reciprocal links, concurrent claims, revoked installation authority and uncertain outcomes never replayed',sharingJourney)
-test('signed engineering updates are monotonic and idempotent, wake owners and draft editable customer updates that require approval while recovery stays unconfirmed',async()=>{await updatesJourney();await feedbackJourney()})
-test('engineering escalation permissions and contact erasure preserve other customers and expose external deletion work',custodyJourney)
-
+import {engineeringJourney} from '../helpers/escalations/journeys.mjs'
 import {hubspotContextJourney} from '../helpers/hubspot-context.mjs'
-test('read-only HubSpot context uses explicit customer mappings, refreshes changed source fields and refuses stale authority, identity conflicts and unavailable grants without customer access',hubspotContextJourney)
+test('a support case shares selected engineering evidence, receives signed updates, sends only an approved customer draft and retains honest recovery and erasure custody',async()=>{await engineeringJourney();await feedbackJourney()})
+test('mapped HubSpot records refresh read-only customer context while current identity and grant authority fence every read',hubspotContextJourney)

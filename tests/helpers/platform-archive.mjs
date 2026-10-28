@@ -55,6 +55,13 @@ export async function platformArchiveJourney(){
   await archiveStorage(original,async({DB,FILES})=>{
    await DB.prepare("INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES('archive-project','Archive support','archive-widget','https://example.test',1)").run();
    await DB.prepare("INSERT INTO contacts(id,project_id,name,email,created_at) VALUES('archive-contact','archive-project','Archive visitor','visitor@example.test',1)").run();
+   // Managed mail history travels through the public rer archive, with routing authority revoked.
+   await DB.prepare("INSERT INTO conversations(id,project_id,contact_id,revision,last_message_id,created_at,updated_at) VALUES('archive-conversation','archive-project','archive-contact',1,'archive-message',1,2)").run();
+   await DB.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES('archive-message','archive-project','archive-conversation','synthetic-mail-message','archive-contact','contact','Retained managed mail',1,2)").run();
+   await DB.prepare("INSERT INTO rer_mailboxes(project_id,allocation_key,mailbox_id,address,generation,state,configured,route_active,updated_at) VALUES('archive-project','synthetic-allocation','synthetic-mailbox','synthetic-support@mail.example.test',1,'ready',1,1,2)").run();
+   await DB.prepare("INSERT INTO email_threading_keys VALUES('archive-project','archive-conversation','message_id','<synthetic-retained@mail.example.test>','managed','synthetic-retained',2)").run();
+   await DB.prepare("INSERT INTO email_reply_grants VALUES('synthetic-live-reply-grant','archive-project','archive-conversation','visitor@example.test',2)").run();
+   await DB.prepare("INSERT INTO email_deliveries VALUES('synthetic-managed-delivery','archive-project','visitor@example.test','Retained reply','synthetic-intent','sent','<synthetic-receipt@mail.example.test>',NULL,2,2)").run();
    await FILES.put('archive-project/retained.txt','Retained support attachment',{httpMetadata:{contentType:'text/plain'},customMetadata:{purpose:'archive-journey'}});
   });
   await archiveStorage(original,seedCampaignArchive);
@@ -74,6 +81,13 @@ export async function platformArchiveJourney(){
    await cli(root,['import','--input',archive,'--yes']);
    compareArchive(before,await archiveSnapshot(root),['archive_addition']);
    await archiveStorage(root,assertCampaignArchive);
+   await archiveStorage(root,async({DB})=>{
+    const mailbox=await DB.prepare("SELECT state,configured,route_active FROM rer_mailboxes WHERE project_id='archive-project'").first();
+    assert.deepEqual(mailbox,{state:'revoked',configured:0,route_active:0});
+    assert.ok((await DB.prepare('SELECT token_hash FROM email_reply_grants').first()).token_hash.startsWith('archived:'));
+    assert.equal((await DB.prepare('SELECT count(*) n FROM rer_mailbox_outbox').first()).n,0);
+    assert.equal((await DB.prepare("SELECT content FROM messages WHERE id='archive-message'").first()).content,'Retained managed mail');
+   });
    const restoredLedger=await databaseSnapshot(root);
    if(kind==='platform')assert.deepEqual(restoredLedger.rows.rer_migrations,prior.rows.rer_migrations,'import preserves Platform history');
    assert.ok(restoredLedger.rows[kind==='platform'?'rer_migrations':'d1_migrations']);

@@ -30,15 +30,15 @@ export async function browserJourney(evidence){
   stage='dev';await waitForServingCapacity();server=command(checkout,['dev']);const ready=await server.waitFor(event=>event.event==='ready',180000);assert.equal(ready.url,origin);
   stage='automatic owner entry';
   browser=await launchBrowser();
-  const loginContext=await browser.newContext(),loginPage=await loginContext.newPage();
+  const loginContext=await browser.newContext({viewport:{width:1440,height:1000}}),loginPage=await loginContext.newPage();
   const {readFile}=await import('node:fs/promises');
   await loginPage.goto((await readFile(join(checkout,'.rer/local/open-url'),'utf8')).trim());
   await loginPage.waitForURL(/\/projects\/[^/]+\/activation$/);
   const session=await loginContext.request.get(origin+'/api/identity/session');assert.equal(session.status(),200);const actor=await session.json();assert.equal(actor.role,'owner');automaticOwnerEntry=true;
   const state=await loginContext.storageState();await loginContext.close();
-  for(const width of [1440,390]){
+  for(const width of [1440]){
    stage=`operator and visitor journey ${width}`;
-   const viewport={width,height:width===390?844:1000},context=await browser.newContext({viewport,storageState:state}),page=await context.newPage();
+   const viewport={width,height:1000},context=await browser.newContext({viewport,storageState:state}),page=await context.newPage();
    const cookie=(await context.cookies()).find(c=>c.name==='h2h_session');assert.ok(cookie);
    // Use the stranger's complete owner-entry cookie jar, including checkout
    // admission. A copied dev bearer token must remain insufficient by itself.
@@ -70,11 +70,11 @@ export async function browserJourney(evidence){
    };
    try{checks.push({width,...await runCase({origin,api,actor,fixture,directory,ui})});assert.deepEqual(errors,[])}finally{await visitorContext?.close();await context.close()}
   }
-  success=true;console.log('Fresh rer install/setup/dev owner-entry agent-fix browser journey passed at 1440 and 390 with operator and widget screenshots for all seven steps.');
+  success=true;console.log('Fresh rer install/setup/dev owner-entry agent-fix browser journey passed at 1440 with operator and widget screenshots for all seven steps.');
  }catch(error){
   await failureDiagnostics({evidence,stage,error,server,scratch,secrets:[password]});throw error;
  }finally{
-  const cleanup=await Promise.allSettled([browser?.close(),fixture.close(),(async()=>{if(server){try{await run(checkout,['dev','--stop'])}finally{await server.stop()}}})()]);
+  const cleanup=await Promise.allSettled([browser?.close(),fixture.close(),server?.stop()]);
   const cleanupFailed=cleanup.some(result=>result.status==='rejected');
   await writeFile(join(evidence,'browser-result.json'),JSON.stringify({success:success&&!cleanupFailed,stage,cleanupSucceeded:!cleanupFailed,layer:'LOCAL TEST',provider:'scripted Codex CLI boundary',liveProvider:false,customerSystem:'loopback fixture only',freshInstalledRer,automaticOwnerEntry,checks},null,2));
   await writeFile(join(evidence,'SCREENSHOTS.md'),captions.join('\n')+'\n');

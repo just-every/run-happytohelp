@@ -17,7 +17,7 @@ test('live cited native answer reaches widget and the same inbox; handoff and op
  timeout:240000,
 },async()=>{
  browser=await chromium.launch({headless:true,args:['--use-mock-keychain','--password-store=basic']})
- const widgetContext=await browser.newContext(),operatorContext=await browser.newContext()
+ const widgetContext=await browser.newContext({viewport:{width:1440,height:900}}),operatorContext=await browser.newContext({viewport:{width:1440,height:900}})
  const widget=await widgetContext.newPage(),operator=await operatorContext.newPage()
  widget.setDefaultTimeout(90000);operator.setDefaultTimeout(30000)
  const storageKey=`rer-widget:${base}:${widgetKey}`,frames=[]

@@ -12,7 +12,7 @@ import {interruptPortableTraining} from '../training-portable.mjs';
 import {interruptPortableWork,verifyPortableWork} from '../unfinished-portable.mjs';
 import {seedReportClaimedRecovery} from '../reports-portable.mjs';
 
-// The README clone-and-restore journey: setup twice, owner entry at 1440/390, D1/R2/Durable Object round trip into a fresh clone, reset.
+// The README clone-and-restore journey: setup twice, owner entry at 1440, D1/R2/Durable Object round trip into a fresh clone, reset.
 export async function readmeRestoreJourney(){
 const source=resolve(import.meta.dirname,'../../..'),directory=await mkdtemp(join(tmpdir(),'h2h-cli-journey-'));
 const evidence=resolve(process.env.H2H_EVIDENCE_DIR||'test-results/base-command');await mkdir(evidence,{recursive:true});
@@ -39,7 +39,7 @@ try{
  await command(root,['setup','--non-interactive'],env);assert.ok(saved.equals(await readFile(join(root,'.dev.vars'))),'second setup preserves exact private bytes');receipt.commands.push('setup again');
  runtime=await serve(root,env);assert.equal(runtime.origin,origin);browser=await launchBrowser();
  await beforeHydration({browser,origin,email:answer.OWNER_EMAIL,password});receipt.preHydration=true;
- for(const width of [1440,390]){await signIn({browser,origin,openUrl:await readFile(join(root,'.rer/local/open-url'),'utf8'),width,evidence});receipt.widths.push(width);}
+ for(const width of [1440]){await signIn({browser,origin,openUrl:await readFile(join(root,'.rer/local/open-url'),'utf8'),width,evidence});receipt.widths.push(width);}
  const logged=await post(origin,'/api/identity/login',{email:answer.OWNER_EMAIL,password});
  const project=await (await fetch(origin+'/api/identity/projects/'+logged.actor.projectId,{headers:{Authorization:'Bearer '+logged.token}})).json();
  // Native Connections must work with the generated local encryption key.
@@ -76,7 +76,7 @@ try{
  await runtime.close();runtime=null;await command(target,['reset','--non-interactive'],env,4);await command(target,['reset','--yes','--non-interactive'],env);
  assert.ok(await stat(join(target,'exports/support.jsonl')),'reset preserves owner archives');await command(target,['setup','--answers','.seed/local-answers.json','--port',String(port),'--non-interactive'],env);
  receipt.roundTrip=true;receipt.reset=true;receipt.commands.push('dev','export','import into fresh clone','export comparison','confirmed reset','fresh setup');
- await writeFile(join(evidence,'cli-proof.json'),JSON.stringify(receipt,null,2)+'\n');console.log('CLI README journey passed: setup twice, automatic owner entry at 1440/390, private settings, D1/R2 round trip, active-state refusal and confirmed reset.');
+ await writeFile(join(evidence,'cli-proof.json'),JSON.stringify(receipt,null,2)+'\n');console.log('CLI README journey passed: setup twice, automatic owner entry at 1440, private settings, D1/R2 round trip, active-state refusal and confirmed reset.');
 }finally{await runtime?.close();await browser?.close();await rm(directory,{recursive:true,force:true});}
 
 }

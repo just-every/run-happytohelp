@@ -53,7 +53,8 @@ function expected(t:Table,value:NativeValue){return JSON.stringify([...(value.ta
 function guard(row:TargetRow|null,destination:string,kind:string,id:string):D1Sql {
  const defs=definitions(kind),clauses:string[]=[],bindings:any[]=[]
  for(const t of defs){clauses.push(`${select(t)}=?`);bindings.push(...params(t,destination,id),row?expected(t,row.value as unknown as NativeValue):'[]')}
- if(row&&kind==='field'){clauses.push("NOT EXISTS(SELECT 1 FROM ticket_field_values WHERE project_id=? AND field_id=?) AND NOT EXISTS(SELECT 1 FROM request_forms f,json_each(f.config_json,'$.fields') ref WHERE f.project_id=? AND json_extract(ref.value,'$.fieldId')=?)");bindings.push(destination,id,destination,id)}
+ // Equality describes the imported definition. References created by the
+ // same import do not change it; undoReferencesClear protects deletion.
  if(row&&kind==='form'){clauses.push('NOT EXISTS(SELECT 1 FROM request_form_submissions WHERE project_id=? AND form_id=?)');bindings.push(destination,id)}
  if(row&&kind==='group'){clauses.push('NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=? AND group_id=?)');bindings.push(destination,id)}
  if(row&&kind==='calendar'){clauses.push('NOT EXISTS(SELECT 1 FROM sla_policies WHERE project_id=? AND calendar_id=?)');bindings.push(destination,id)}

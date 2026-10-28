@@ -6,7 +6,7 @@
     "src/modules/widget",
     "scripts/build-widget.mjs",
     "tests/journeys/widget.mjs",
-    "tests/journeys/widget-browser.mjs"
+    "tests/journeys/inbox-browser.mjs"
   ],
   "selectedEditionDependencies": [
     "runeditrun/base",

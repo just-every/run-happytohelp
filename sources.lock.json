@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "f49d4d71f083668fa6a8d2ba924bbc866290747885ad452745db6c477d96a7e4",
+      "sha256": "7ab50f6eb860af16e90d6c5dc0aacebf85564ceeebb68e177db6dd224b491547",
       "executable": false
     },
     "agent-surface.json": {
@@ -1632,7 +1632,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "43b697ed6a1d39ea84f6fbd2d16e1a51757a0870febeccf628ff7be323a13ea1",
+      "sha256": "f5efda11ee78af15a27ec7fecb9165e89f31c6a684858f5665476fb78360295d",
       "executable": false
     },
     "DEMO.md": {
@@ -1788,7 +1788,7 @@
       "executable": false
     },
     "docs/reports.md": {
-      "sha256": "befc7e6bf5e956ccc57098d5a09fc83f399665911e99f039953735f41c28e8ec",
+      "sha256": "f68a40a4bd20986d2db1c10beaf5943b030652f85cefe61fbd2a955001dd6a13",
       "executable": false
     },
     "docs/request-forms.md": {
@@ -7036,7 +7036,11 @@
       "executable": false
     },
     "src/modules/reports/team-breakdowns.ts": {
-      "sha256": "f7b951ee26a77e6d8556a338c31905cb9d756fb23ff7aa317d0412c32ef8d76d",
+      "sha256": "dfe880b6d0d62af25c72bcbbee297a4a61cacc58de06726317a359d66519c935",
+      "executable": false
+    },
+    "src/modules/reports/team-containment.ts": {
+      "sha256": "6eaa4478cc1319f70098d925c91781c3c6b29db9727c39c5fb424d4f78cda3b8",
       "executable": false
     },
     "src/modules/reports/team-csv.ts": {
@@ -7048,7 +7052,7 @@
       "executable": false
     },
     "src/modules/reports/team-read.ts": {
-      "sha256": "d501188dc016f8c0740c214821a21398d2842c87365e5ae9a868e2b77e1a7488",
+      "sha256": "5a76cf890214d449b0df991e6deb701f6bf9a693b5f0a26db73a20cc3c333158",
       "executable": false
     },
     "src/modules/reports/team-routes.ts": {
@@ -10584,7 +10588,7 @@
       "executable": false
     },
     "src/ui/native/pages/reports/team-reports.css": {
-      "sha256": "5f3d82544d7077c1a8c58799e5c5856cba0140f1f8be105bc82992aa2bab19f2",
+      "sha256": "55bfbea03e1f1550bf2ac5f4ca0cb9cfc7b8d543ed8194f9e63f88ff9a032731",
       "executable": false
     },
     "src/ui/native/pages/reports/TeamReportFilters.jsx": {
@@ -10604,7 +10608,7 @@
       "executable": false
     },
     "src/ui/native/pages/reports/WorkloadPanel.jsx": {
-      "sha256": "7cc2ca97bcbd723fe401b8e78be66d18a324e2dc678e85302d037ec91806c110",
+      "sha256": "b1c3bd2a5df85385ec08d5e1b383d7492704588d43de7f55767e86a1342ea951",
       "executable": false
     },
     "src/ui/native/pages/request-forms/ConditionEditor.jsx": {
@@ -13680,7 +13684,7 @@
       "executable": false
     },
     "tests/journeys/reports-browser.mjs": {
-      "sha256": "292d9a44d48b096cc3d53487bb0eb596dc3467e99fc143c33f8f4ae34741d303",
+      "sha256": "02ee1c678a0ea92a96e8ab515373d5b1e4cc3da7a7fd64e82725074d9b88f3cd",
       "executable": false
     },
     "tests/journeys/reports.mjs": {
@@ -14088,7 +14092,7 @@
       "executable": false
     },
     "tests/reports/team-journey.mjs": {
-      "sha256": "7cbcb1ccaa40080a2f6dd33c89ed085a44f3b4c3b55c77bab0c9bbc05457bbef",
+      "sha256": "0505b2c9d5c284e68fb72fb195a47b48761dbfa2cdc03fd412574795fd9917b1",
       "executable": false
     },
     "tests/reports/upgrade-attachments.mjs": {

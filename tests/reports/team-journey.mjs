@@ -269,6 +269,8 @@ export async function publicCohort(){
   const widgets=report.breakdowns.channel.find(r=>r.id==='widget'),mail=report.breakdowns.channel.find(r=>r.id==='email')
   assert.deepEqual(widgets.recovery,{recovered:1,notRecovered:0,answered:1,unknown:2,rate:1});assert.deepEqual(mail.recovery,{recovered:0,notRecovered:0,answered:0,unknown:1,rate:null});assert.equal(widgets.tickets,3);assert.equal(mail.tickets,1);assert.equal(mail.csat.rated,0)
   assert.equal(widgets.csat.rated,1);assert.equal(widgets.csat.positive,1);assert.equal(widgets.ai.closed,1);assert.equal(widgets.ai.handedOff,1);assert.equal(mail.ai.handedOff,0,'ordinary human assignment is not an AI transfer')
+  assert.deepEqual(widgets.ai.containment,{contained:1,notContained:1,unknown:0,denominator:2,rate:.5,customerConfirmed:1},'AI-only service and the human transfer reconcile independently of CSAT')
+  assert.deepEqual(mail.ai.containment,{contained:0,notContained:0,unknown:0,denominator:0,rate:null,customerConfirmed:0},'human-only tickets never dilute AI participation')
   assert.ok(widgets.ai.outcomeUnknown>=1,'an unanswered request is never a verified AI resolution')
   assert.equal(widgets.reopens.denominator,2);assert.equal(widgets.reopens.reopened,1)
   assert.ok(widgets.sla.first_response.breached>=1,'the public local-clock door breaches the unanswered request')
@@ -296,6 +298,7 @@ export async function publicCohort(){
   assert.equal((await door(url+'&includeImported=true')).reopens.imported_history_unknown,1,'an ordinary field edit cannot invent missing lifecycle history')
   await status(importedTicket,'open');const observed=await door(url+'&includeImported=true');assert.equal(observed.reopens.denominator,4);assert.equal(observed.reopens.reopened,2);assert.equal(observed.reopens.imported_history_unknown,0)
   const csv=await app.call(base+url+'&format=summary.csv',{token:owner,status:200});assert.ok(csv.data.includes('"denominators.cohort","4"'))
+  assert.ok(csv.data.includes('"breakdowns.channel.'+report.breakdowns.channel.findIndex(r=>r.id==='widget')+'.ai.containment.denominator","2"'),'manual export retains the containment denominator')
   const schedule=await door('/report-schedules',{name:'Daily public cohort',frequency:'daily',hour:0,recipients:[w.users.owner,w.users.admin],includeImported:true})
   const scheduledAt=Date.now(),scheduleStart=date(scheduledAt),scheduleEnd=date(scheduledAt+day)
   const created=await Promise.all([...all,importedTicket].map(async id=>({id,at:(await ticket(id)).created_at})))
@@ -312,7 +315,19 @@ export async function publicCohort(){
   // belong to yesterday even though the wider interactive cohort contains it.
   const mailedReport=await door(`/reports/team?period=custom&start=${scheduleStart}&end=${scheduleEnd}&includeImported=true`)
   for(const dimension of ['agent','team','channel','brand','account','tag'])for(const [index,row] of mailedReport.breakdowns[dimension].entries())for(const [metric,value] of Object.entries(row.recovery))assert.ok(delivered.includes(`"breakdowns.${dimension}.${index}.recovery.${metric}","${value===null?'null':value}"`),'scheduled recovery '+dimension+' '+metric)
+  for(const dimension of ['agent','team','channel','brand','account','tag'])for(const [index,row] of mailedReport.breakdowns[dimension].entries())for(const [metric,value] of Object.entries(row.ai.containment))assert.ok(delivered.includes(`"breakdowns.${dimension}.${index}.ai.containment.${metric}","${value===null?'null':value}"`),'scheduled containment '+dimension+' '+metric)
   for(const [key,value] of [['denominators.cohort',scheduledCohort.length],['denominators.imported',Number(scheduledCohort.includes(importedTicket))],['backlog.total',2],['reopens.denominator',scheduledCohort.filter(id=>id!==unanswered.conversationId).length],['reopens.reopened',scheduledReopens],['reopens.events',scheduledReopens]])assert.ok(delivered.includes(`"${key}","${value}"`),'scheduled public cohort '+key)
   console.log(JSON.stringify({proof:'public-door multichannel report cohort',tickets:5,nativeTickets:4,importedTickets:1,nativeChannels:['widget','email'],firstResponse:native.firstResponse,firstResolution:native.firstResolution,reopens:report.reopens,providerBoundary:'network-edge fixture; no live delivery'}))
+  // A customer's recovery answer is separate from operational containment.
+  await app.ok(`/api/conversations/${answered.conversationId}/widget-events`,{token:answered.token,body:{action:'rateResolution',data:{resolutionId:resolution.id,value:1,recovery:'not_recovered'}}})
+  const containment=async()=> (await door(url)).breakdowns.channel.find(row=>row.id==='widget').ai.containment
+  assert.deepEqual(await containment(),{contained:1,notContained:1,unknown:0,denominator:2,rate:.5,customerConfirmed:0})
+  await answered.say('The parcel still has not arrived.')
+  assert.deepEqual(await containment(),{contained:0,notContained:2,unknown:0,denominator:2,rate:0,customerConfirmed:0},'reopening removes prior containment even if the customer had confirmed recovery')
+  await app.ok(`/api/management/projects/${p}/ai`,{token:owner,method:'PUT',body:{default_visitor_ai_id:'ai',default_verified_user_ai_id:'-'}})
+  ai.reject=true
+  const failed=await a.visitor('AI unavailable');await failed.say('Please track my parcel.');await app.drainJobs();ai.reject=false
+  const pending=await a.visitor('AI queued');await pending.say('Please check delivery.')
+  assert.deepEqual(await containment(),{contained:0,notContained:2,unknown:2,denominator:4,rate:0,customerConfirmed:0},'failed and queued work stay visible in the participating denominator')
  }finally{await a.close()}
 }

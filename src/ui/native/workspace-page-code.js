@@ -1,7 +1,7 @@
 import { lazyPageCode } from './lazy-page-code';
 
 const pages = {
-    ChannelSettings: lazyPageCode(() => import('../../modules/support-channels/Settings')),
+    ChannelSettings: lazyPageCode(() => import('../../modules/support-channels/Settings.jsx')),
     AssurancePage: lazyPageCode(() => import('../../modules/assurance/ui/AssurancePage')),
     ProcedureSettings: lazyPageCode(() => import('./pages/ProcedureSettings')),
     Connections: lazyPageCode(() => import('./pages/Connections')),

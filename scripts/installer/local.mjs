@@ -9,7 +9,7 @@ import {selectLocalState} from '@runeditrun/rer/local/state';
 import {commandAdapter as createCommandAdapter} from '@runeditrun/rer/adapter';
 import {hostedDeploy} from './hosted-deploy.mjs';
 import {nativeSetupPath} from '../deployment/mail-declaration.mjs';
-import {localPortability} from '@runeditrun/rer/portability';
+import {localPortability,withManagedDataImport} from '@runeditrun/rer/portability';
 import {localInputDefaults,localOwner,nativeOwner,prepareNativeLocal} from './native-local.mjs';
 import {ticketRestoreSql} from './ticket-archive-upgrade.mjs';
 import {r4RestoreSql} from './r4-tables.mjs';
@@ -50,7 +50,8 @@ export const adapter=localInstaller({
  start:preview,owner:nativeOwner,localOwner,signIn:{returnTo:'/setup'},
 });
 export const install=(root,input,store,onApp,signal)=>installOperator(root,input,store,onApp,signal,adapter.hooks);
-const transfer=localPortability({database:'DB',buckets:{FILES:'FILES'},policyModule:'scripts/installer/portability-policy.mjs',transient:['ConversationSocket connections (messages are in D1)','live teammate presence (who has the dashboard open)','queue execution leases','active sessions and one-use sign-in links','GitHub and integration credentials','local computer pairing, grants and job execution records','local workflow clock overrides; queued workflow sends are cancelled and claimed sends remain uncertain']});
+const declaration={buckets:{FILES:'FILES'},policyModule:'scripts/installer/portability-policy.mjs',transient:['ConversationSocket connections (messages are in D1)','live teammate presence (who has the dashboard open)','queue execution leases','active sessions and one-use sign-in links','GitHub and integration credentials','local computer pairing, grants and job execution records','local workflow clock overrides; queued workflow sends are cancelled and claimed sends remain uncertain']};
+const transfer=localPortability({database:'DB',...declaration});
 const d1=(context,label,sql)=>context.store.run(label,'pnpm',['exec','wrangler','d1','execute','DB','--local','--persist-to','.wrangler/state','--config','wrangler.jsonc','--command',sql],{cwd:context.root,signal:context.signal});
 async function archiveInput(path){
  try{return await checkArchiveSnapshot(path)}catch(error){
@@ -112,7 +113,10 @@ export const commandAdapter=createCommandAdapter(adapter,{
  generatedOutputs:['.generated','migrations/core','delivery-artifact','management/integration/deployment-spec.json','management/integration/managed-deploy.json',nativeSetupPath,'public/downloads','public/widget.js'],
  site:{entry:'src/site/pages.ts',config:'vite.site.config.ts',output:'.rer/site',declaration:'deploy-site.json'},
  product:model.product.name,dev,preview,signInPath:'/login',devIdentity:{entry:'src/dev/server.ts',output:['dist','delivery-artifact'],emailLinkTest:'tests/first-run/cli-sign-in.mjs'},verify:['pnpm',['run','verify:app']],deploy:hostedDeploy('deploy.json',hostedLifecycle),
- portability:{...portability,hostedExport:['node','scripts/installer/hosted-export.mjs']},
+ // Platform's Managed data ZIP enters through Base's bounded intake: its SQL runs only in a private
+ // sandbox, every source table, index, trigger and view is placed by this checkout's migrations and
+ // policy, and the native archive it stages goes through this same restore and its fences.
+ portability:{...portability,managedDataImport:context=>withManagedDataImport(context,{binding:'DB',...declaration},portability.import),hostedExport:['node','scripts/installer/hosted-export.mjs']},
  setup:{get manifestFile(){return process.env.MAIL_PROVIDER==='rer'?'rer-setup.json':nativeSetupPath;}},browserModule:'scripts/installer/ui/seed.mjs',input:{names:{email:'OWNER_EMAIL',name:'OWNER_NAME'},defaults:localInputDefaults},
  localPrerequisites:async({vars})=>vars.H2H_LOCAL==='true'&&vars.EMAIL_PROVIDER==='development',
 });

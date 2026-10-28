@@ -26,7 +26,7 @@ async function selected(env:Env,projectId:string,id:string,input:any){
  return {ids,messages}
 }
 export async function previewPartnerForward(env:Env,actor:Actor,conversation:any,input:any,authority:TicketAuthority){
- await ticketAuthority(env,actor,authority,'conversations.reply')
+ await ticketAuthority(env,actor,authority,'conversations.reply',conversation.id)
  const recipient=recipientAddress(input.recipient),{ids,messages}=await selected(env,actor.projectId,conversation.id,input)
  const [files,customer]=await Promise.all([
   env.DB.prepare('SELECT id,filename,size FROM media WHERE project_id=? AND conversation_id=? AND message_id IN (SELECT value FROM json_each(?)) ORDER BY id').bind(actor.projectId,conversation.id,JSON.stringify(ids)).all(),
@@ -35,7 +35,7 @@ export async function previewPartnerForward(env:Env,actor:Actor,conversation:any
  return {recipient,message_ids:ids,messages:messages.map(m=>({id:m.id,content:m.content,actor_role:m.actor_role})),attachments:files.results,customer_identity:customer,channel:conversation.channel,private_notes_included:false,reply_visibility:'private',external_participant:true,customer_notified:false,expected_version:conversation.ticket_version}
 }
 export async function forwardToPartner(env:Env,actor:Actor,conversation:any,input:any,authority:TicketAuthority){
- const guard=await ticketAuthority(env,actor,authority,'conversations.reply'),recipient=recipientAddress(input.recipient),command=requiredString(input.idempotencyKey,'idempotencyKey',200),subject=requiredString(input.subject,'subject',500),note=typeof input.note==='string'?input.note:''
+ const guard=await ticketAuthority(env,actor,authority,'conversations.reply',conversation.id),recipient=recipientAddress(input.recipient),command=requiredString(input.idempotencyKey,'idempotencyKey',200),subject=requiredString(input.subject,'subject',500),note=typeof input.note==='string'?input.note:''
  if(/[\r\n]/.test(subject)||note.length>10000)throw new HTTPException(400,{message:'Invalid subject or forwarding note'})
  if(!Number.isSafeInteger(input.expected_version)||input.expected_version!==conversation.ticket_version)throw new HTTPException(409,{message:'Ticket changed. Preview the forward again.'})
  const {ids,messages}=await selected(env,actor.projectId,conversation.id,input),intent=await hashToken(JSON.stringify({recipient,subject,note,ids,version:input.expected_version}))

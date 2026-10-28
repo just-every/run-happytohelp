@@ -2,7 +2,7 @@ import {statement,type TeamReportContext} from './team-scope'
 
 type SlaRow={metric:string;met:number;breached:number;pending:number;total:number}
 export async function teamSla(context:TeamReportContext){
- const bindings=[context.projectId,context.range.startAt,context.range.endAt,context.filters.teamId,context.filters.brandId,context.filters.includeImported?1:0,context.now]
+ const bindings=[context.projectId,context.range.startAt,context.range.endAt,context.filters.teamId,context.filters.brandId,context.filters.includeImported?1:0,context.now,context.accessRole,context.userId]
  // R5 stores business-calendar due instants, completed cycles and pause state.
  // Reading an overdue active clock never mutates the workflow or assumes that
  // elapsed wall time equals business time. Completed clocks use their snapshot.

@@ -22,7 +22,7 @@ function recentFactor(c:any,actor:Actor):Guard{
 }
 async function input(c:any){return object(await c.req.json().catch(()=>invalid('Expected a JSON object')))}
 companyRoutes.get(prefix,async c=>{const actor=await scope(c) as Actor;return c.json(await companyList(c.env,actor.projectId))})
-companyRoutes.get(`${prefix}/:companyId`,async c=>{const actor=await scope(c) as Actor;return c.json(await companyDetail(c.env,actor.projectId,c.req.param('companyId')))})
+companyRoutes.get(`${prefix}/:companyId`,async c=>{const actor=await scope(c) as Actor;return c.json(await companyDetail(c.env,actor.projectId,c.req.param('companyId'),actor.id))})
 companyRoutes.post(prefix,async c=>{
  const actor=await scope(c) as Actor,guard=await authority(c,actor),body=await input(c),definitions=await fields(c.env,actor.projectId),id=crypto.randomUUID(),at=Date.now(),assigned=domains(body.domains??[])
  if(body.portalCompanyView!==undefined&&typeof body.portalCompanyView!=='boolean')invalid('Company portal visibility must be boolean')
@@ -65,11 +65,11 @@ companyRoutes.post(`${prefix}/:companyId/merge`,async c=>{
  const actor=await scope(c) as Actor,guard=await authority(c,actor)
  await requireStepUp(c,actor,'company.merge')
  const historyId=await mergeCompanies(c.env,actor,c.req.param('companyId'),await input(c),together(guard,recentFactor(c,actor)))
- return c.json({...await companyDetail(c.env,actor.projectId,c.req.param('companyId')),historyId})
+ return c.json({...await companyDetail(c.env,actor.projectId,c.req.param('companyId'),actor.id),historyId})
 })
 companyRoutes.post(`${prefix}/:companyId/history/:historyId/undo`,async c=>{
  const actor=await scope(c) as Actor,guard=await authority(c,actor)
  await requireStepUp(c,actor,'company.undo')
  const historyId=await undoCompanyHistory(c.env,actor,c.req.param('companyId'),c.req.param('historyId'),together(guard,recentFactor(c,actor)))
- return c.json({...await companyDetail(c.env,actor.projectId,c.req.param('companyId')),historyId})
+ return c.json({...await companyDetail(c.env,actor.projectId,c.req.param('companyId'),actor.id),historyId})
 })

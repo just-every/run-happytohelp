@@ -9,8 +9,8 @@ export interface Integration {
   authorize(c: Context<any>, projectId: string): Promise<Principal>;
   /** Pairing a computer or approving its authorization installs a credential: the edition may demand more (a recent step-up). */
   authorizeInstall?(c: Context<any>, projectId: string, action: string): Promise<Principal>;
-  hasAccess(db: D1Database, userId: string, projectId: string): Promise<boolean>;
-  context(db: D1Database, projectId: string, conversationId: string): Promise<Record<string, any>>;
+  hasAccess(db: D1Database, userId: string, projectId: string, conversationId?: string): Promise<boolean>;
+  context(db: D1Database, projectId: string, conversationId: string, operatorId: string): Promise<Record<string, any>>;
   recordResult(env:LocalEnv, job:Record<string,any>,result:Record<string,any>):Promise<void>;
   deliveryRevision(env:LocalEnv,projectId:string,conversationId:string):Promise<number>;
   prepareDraft(env: LocalEnv, input: DraftInput): Promise<{ body: string; attachments: Record<string, unknown>[] }>;

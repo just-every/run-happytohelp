@@ -25,7 +25,7 @@ brandReports.get('/projects/:projectId/brands/reports',async c=>{
  for(const id of ids){
   const row=await permitted(id),timezone=JSON.parse(row.settings_json||'{}').timezone||'UTC'
   if(!validTimezone(timezone))throw new HTTPException(422,{message:'Configure a valid timezone for every selected brand'})
-  const report=await readReport(c.env,id,reportRange(query,timezone))
+  const report=await readReport(c.env,id,reportRange(query,timezone),actor.id)
   // Detailed comments and conversation IDs stay within the individual brand door.
   const {comments,...metrics}=report
   brands.push({id,name:row.name,...metrics})

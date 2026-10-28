@@ -57,7 +57,7 @@ export async function teamBreakdowns(context:TeamReportContext){
  (SELECT json_group_array(json_object('metric',metric,'count',count,'median',median,'p90',p90)) FROM distributions s WHERE s.dimension=d.dimension AND s.key IS d.key) durations,
  (SELECT json_group_array(json_object('metric',metric,'met',met,'breached',breached,'pending',pending)) FROM service s WHERE s.dimension=d.dimension AND s.key IS d.key) sla
  FROM dimensions d JOIN evidence e ON e.id=d.conversation_id GROUP BY d.dimension,d.key,d.label ORDER BY d.dimension,tickets DESC,d.label,d.key`)
- .bind(context.projectId,context.range.startAt,context.range.endAt,context.filters.teamId,context.filters.brandId,context.filters.includeImported?1:0,context.now).all<any>()
+ .bind(context.projectId,context.range.startAt,context.range.endAt,context.filters.teamId,context.filters.brandId,context.filters.includeImported?1:0,context.now,context.accessRole,context.userId).all<any>()
  const breakdowns:Record<Dimension,Breakdown[]>={agent:[],team:[],channel:[],brand:[],account:[],tag:[]}
  for(const row of results){
   const durations=JSON.parse(row.durations),sla=JSON.parse(row.sla)

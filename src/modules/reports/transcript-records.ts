@@ -18,6 +18,7 @@ export function transcriptGroups(rows:AsyncGenerator<Row>){
  return {
   async *take(conversationId:string){
    pending??=await rows.next()
+   while(!pending.done&&pending.value.conversationId<conversationId)pending=await rows.next()
    while(!pending.done&&pending.value.conversationId===conversationId){
     const {conversationId:_,...row}=pending.value
     yield row

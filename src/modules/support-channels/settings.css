@@ -1,2 +1,3 @@
 .support-channel-settings .d-grid { grid-template-columns: minmax(0, 1fr); }
 .support-channel-settings label, .support-channel-settings article { min-width: 0; }
+.support-channel-settings .btn { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }

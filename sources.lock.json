@@ -11548,7 +11548,7 @@
       "executable": false
     },
     "tests/helpers/delegation/adoption.mjs": {
-      "sha256": "c6486d1ac26ffb42b7829c5a682f7279fe89229d75e941b171b78d1fccae11a4",
+      "sha256": "328e6c3afa466e18ce644122d5f02c18d66f16eb8b8993444ea1a27d9e6f429b",
       "executable": false
     },
     "tests/helpers/delegation/applications.mjs": {
@@ -11880,11 +11880,11 @@
       "executable": false
     },
     "tests/helpers/identity/ticket-scope-browser.mjs": {
-      "sha256": "934d3158a38cc36a877672661f951cef4a68d4bcee92d415cbbded7f657bdcbb",
+      "sha256": "2866af3c37aef07eb6cfd8a064df9334a8e8c8772e3fcb1e404359eb0c8c6e32",
       "executable": false
     },
     "tests/helpers/identity/ticket-scope.mjs": {
-      "sha256": "6d3d69813e40c503e16460093b0d1d1bd4aeb28cb88974c0d3ee241a9b83b699",
+      "sha256": "c2d7a33247c179bf09833e7107d3d5bcc65ba423aaa16d81339eb29b4f3346c3",
       "executable": false
     },
     "tests/helpers/identity/two-factor.mjs": {

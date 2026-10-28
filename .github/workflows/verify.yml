@@ -85,9 +85,10 @@ jobs:
       - run: pnpm exec rer check --profile first-party
       - run: pnpm run build
       - name: Package internal build output
-        run: >-
-          tar -czf "$RUNNER_TEMP/happytohelp-build.tar.gz"
-          dist delivery-artifact .generated migrations/core public/widget.js public/downloads src/routeTree.gen.ts
+        # Generated outputs are data, not helpers this workflow runs.
+        env:
+          BUILD_OUTPUT: dist delivery-artifact .generated migrations/core public/widget.js public/downloads src/routeTree.gen.ts
+        run: tar -czf "$RUNNER_TEMP/happytohelp-build.tar.gz" $BUILD_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
           name: verify-build-${{ github.run_id }}

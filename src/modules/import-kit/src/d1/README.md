@@ -13,19 +13,26 @@ use Undo from the same history when needed. Base's reference accepts people JSON
 here, not installation `.rer` archives. Editions adopt this same door
 with their own supported readers and native adapters.
 
-For seed integration, follow [the door adoption guide](../door/ADOPTING.md)
+For seed integration, follow [the door adoption guide](https://github.com/runeditrun/base/blob/main/modules/import-kit/src/door/ADOPTING.md)
 first. The D1 primitives below back that shared pipeline; do not mount separate
 job creation/apply routes beside it. Keep native readers and target adapters.
 
-Import `src/d1/index.ts` in Workers with `nodejs_compat`. This entry point does
+Import `@runeditrun/rer/modules/import-kit/d1` from a supplying rer release
+after 0.2.77 in TypeScript Workers with `nodejs_compat` (or `src/d1/index.ts`
+when working in Base source). The package carries TypeScript source for the
+Worker bundler and includes the shared D1 transport. This entry point does
 not import `node:sqlite` or the optional file/API readers. Products that need the
 readers can explicitly import `src/readers/index.ts`. The synchronous Node API and its guarantees remain
 unchanged. D1 uses the same reviewed plans, source identities, retained originals,
 provenance and inert-effect policy through an asynchronous native SQL port.
 
-Copy the shared [D1 transport](../../../d1-transport/index.mjs) and its
+When copying Base source directly, copy the shared [D1 transport](../../../d1-transport/index.mjs) and its
 [types](../../../d1-transport/index.d.mts), preserving their sibling location
 beside the import-kit directory.
+Reading codec-dependent stored plans without the matching codec ID refuses with
+`IMPORT_PLAN_CODEC_REQUIRED`; encoding a codec whose round trip changes the plan
+fingerprint refuses with `IMPORT_PLAN_CODEC_MISMATCH`.
+
 The D1 entry uses this shared transport automatically. It accounts for actual
 UTF-8 bytes and workerd's whole-call two-byte strings, escapes sparse wide text
 for SQLite to decode, and keeps each mutation in its original transaction.
@@ -38,6 +45,12 @@ Apply `d1Schema`, `d1ErasureSchema`, `d1StreamOriginSchema`,
 `initializeD1ImportStorage(database)` during setup. The schema includes the common
 kit tables and D1 ownership/assertion tables. Do not mix the synchronous engine
 and D1 engine for the same jobs: each engine owns its checkpoint protocol.
+For reviewed reversal-policy conversion, also apply the additive
+`d1ReversalPolicyConversionSchema` after these existing schemas in a new
+product-owned numbered migration. `initializeD1ImportStorage` installs it
+automatically. Do not rewrite an applied migration. Partial preserved-undo schema
+evolution refuses with `IMPORT_SCHEMA_EVOLUTION_INCOMPLETE`; complete the additive
+evolution before continuing.
 
 Apply stream-origin backfill and legacy receipt conversion in one transaction.
 Origins record actual page, parent and job bindings and remain immutable until
@@ -57,10 +70,10 @@ evaluates the expression at both ends of every atomic mutation batch. A false
 predicate raises `IMPORT_ATOMIC_GUARD` and rolls back every native and kit write.
 Read operations also require current authority. Jobs remain bound to their actor.
 The plan and its fingerprint carry that `principalId`, so a job can never be rebound
-to another one, and an archive carries the jobs but not the operators who created
-them: after an export, reset, import and setup the owner is a new operator row. A
-product that wants restored jobs to stay usable passes a principal that survives a
-restore, such as the operator's role (`'role:' + role`), and lets `predicate` check
+to another one. Identity retention depends on the seed's archive policy: a
+restored job remains bound to its recorded principal, so verify whether that
+principal survives the selected policy. A product that wants restored jobs to
+stay usable passes a principal that survives a restore, such as the operator's role (`'role:' + role`), and lets `predicate` check
 that the acting operator is still active in that role. A product that passes the
 operator's row id keeps its jobs bound to that operator for good.
 
@@ -264,13 +277,32 @@ all layers. An import still applying or reversing cannot be superseded
 The bounds below follow [D1 limits](https://developers.cloudflare.com/d1/platform/limits/).
 Bulk text insertion uses the supported [D1 JSON SQL functions](https://developers.cloudflare.com/d1/sql-api/query-json/).
 
-The port counts SQL executions over the entire public invocation (including
-nested resume reads and every atomic batch statement), caps them at 1,000 and
+The port assumes Workers Paid: one Worker invocation allows 1,000 D1 queries;
+Workers Free allows only 50 and is not supported by this budget. Each direct
+read and each `batch()` call counts as one query, independent of batch members.
+Statement length, bound-parameter and value guards still check every member.
+Planning and creation preflight share the production batch-cost function; a
+plan exceeding the fresh creation query ceiling is refused during planning
+with `IMPORT_PLAN_TOO_LARGE`, naming the 1,000-query paid-plan limit.
+`preflightD1ImportJob().totalExecutions` measures those D1 queries;
+`totalStatements` and `mutationStatements` retain the individual statement
+counts, and `mutationExecutions` counts mutation batch calls.
+The door shares one budget across all its kit calls in one HTTP request; later
+apply, resume and undo requests are distinct Worker invocations. Erasure retains
+its existing 1,000-statement work ceiling, counting every batch member as well
+as reads. An explicit `maxStatements` may tighten that separate ceiling.
+
+The port counts queries over the entire public invocation (including
+nested resume reads and atomic batches), caps them at 1,000 and
 returns durable partial progress as the budget approaches exhaustion. Explicit
 `IMPORT_D1_REQUEST_LIMIT`, `IMPORT_D1_STATEMENT_LIMIT` and
 `IMPORT_D1_VALUE_LIMIT` failures publish no portion of the rejected batch.
-Create, apply and reversal reserve both return reads before publication, including
-the read of a chunked plan. Each successful batch retains its checked job state;
+Create, apply and reversal reserve their return reads before publication,
+including chunked-plan readback. A shared calculation sizes plan pages from the
+maximum JSON-encoded stored chunk row bytes, measured before reading, with space
+reserved under the transport ceiling for row metadata and two-byte strings.
+Today's small chunks use up to 64 rows per page; larger legacy chunks use
+smaller pages. Neither the stored plan format nor the canonical byte cap changes. Each successful batch retains its checked job state;
 if a later batch's preflight or exact SQL count exhausts the same request budget,
 the invocation returns that durable partial progress. Other adapter, integrity
 and authority failures still reject. A first batch that cannot fit rejects before
@@ -766,7 +798,9 @@ The synchronous SQLite engine is unchanged and does not use these D1 columns.
 New jobs may select `context.reversalPolicy = 'preserve-conflicts'` at creation.
 Omission creates a strict job. Later calls may omit the option to use the durable
 policy, or pass the same value; a different explicit value rejects with
-`REVERSAL_POLICY_CONFLICT`. The policy and its binding are fenced alongside the
+`REVERSAL_POLICY_CONFLICT`. Only the explicit reviewed conversion described
+below can change an eligible existing strict job's policy; no ordinary call
+switches it automatically. The policy and its binding are fenced alongside the
 job, original custody and plan. Creation admission measures these statements,
 all exact custody guards, initial authorization, and the actual return reads.
 
@@ -853,6 +887,83 @@ Custom observation guards and the complete dependency guards still apply.
 The native dependency snapshot and integrity closure are complete per batch,
 so adapters must use bounded set queries; `batchSize` bounds mutations rather
 than promising constant-memory reads of an arbitrarily large native graph.
+
+### Reviewed conversion of existing strict jobs
+
+The public D1 entry exports two operations:
+
+```ts
+const preview = await previewD1PreservedUndo(jobId, context);
+// { job, policy, reviewedFingerprint, dispositions }
+
+// Show the exact preview for review before submitting its fingerprint.
+const job = await convertD1ReversalPolicy(jobId, context, {
+  to: 'preserve-conflicts',
+  reviewedFingerprint: preview.reviewedFingerprint,
+}); // ImportJob
+```
+
+`previewD1PreservedUndo` requires current `undo` authorization and the existing
+job binding. It executes SELECT-only SQL and checks the complete native and
+dependency snapshot supplied by `targets.preparePreservedUndo`, including its
+guards. It does not change policy, start reversal or store an approval.
+
+`convertD1ReversalPolicy` accepts only a strict job in `completed` or `undoing`
+state, including one stopped by `NATIVE_EDIT_CONFLICT`. It requires the same
+current undo authority and binding as an undo, and the exact
+`reviewedFingerprint` returned for the reviewed snapshot. Conversion atomically
+commits the new policy and its binding, an append-only conversion journal record
+with the policy hash, and baseline report dispositions for effects already
+reversed by strict undo. It does not repeat those native reversals or rewrite
+provenance, originals, source claims or history. Refusal leaves no partial
+conversion state; there is no automatic policy switch or silent re-conversion.
+An earlier strict reversal must still have its exact restored before-image or
+absence. A recreated or superseding target makes that baseline unfenceable;
+conversion refuses rather than misreporting retained later work as reversed.
+
+| Job or review condition | Conversion result |
+| --- | --- |
+| Strict `completed` or `undoing`, current undo authority and binding, exact reviewed snapshot, complete fenceable adapter observations | Converts atomically to `preserve-conflicts`. |
+| Already converted | `IMPORT_CONVERSION_ALREADY_CONVERTED`; no new conversion. |
+| Any other state or an ineligible policy | `IMPORT_CONVERSION_UNAVAILABLE`, with the state/policy reason. |
+| Superseded job | `IMPORT_CONVERSION_UNAVAILABLE`, with the superseded reason. |
+| Missing or incomplete adapter guards, an unfenceable later reversal, or a conversion that would release predecessor history | `IMPORT_CONVERSION_UNAVAILABLE`, with the unfenceable reason. |
+| The reviewed fingerprint no longer matches the complete snapshot | `IMPORT_CONVERSION_REVIEW_CHANGED`; obtain and review a fresh preview. |
+| Missing or revoked undo authority, or a different job binding | The ordinary authorization/binding refusal; conversion grants no additional authority. |
+
+Conversion-specific refusals are typed `D1ReversalPolicyConversionError`; inspect
+its `code` and the reason distinguishing state, superseded and unfenceable jobs.
+An already preserved job cannot use this operation to obtain another conversion.
+
+Later preserved reversal rechecks the complete current native/dependency
+snapshot in every batch. Converted jobs cannot release predecessor history to
+make reversal proceed. No later work, money or signed document may be detached
+or deleted to satisfy conversion. A seed implementing reviewed compensation
+must still supply an approval-bound adapter that fences every reversal batch to
+its own approved snapshot; reviewing conversion does not replace that product
+approval contract.
+
+`readD1ImportUndoReport(jobId, context)` exposes optional `conversion` evidence
+and an `outcome` of `pending`, `undone` or `compensated`. The engine checkpoint
+still ends at `job.state === 'undone'`. Consumers must use the report's `outcome`
+for the product result and must never present `compensated` as `undone`.
+
+Existing installations must apply `d1ReversalPolicyConversionSchema` after the
+existing D1 schemas in a new product-owned numbered migration before using
+these operations. `initializeD1ImportStorage` installs it automatically. The
+earlier preserved-undo evolution alone does not install conversion storage.
+Existing plan/apply/read/undo calls continue to work on that earlier schema;
+the new conversion and preview operations refuse with the `schema` reason until
+their additive migration is installed. Updating kit source does not silently
+adopt conversion or require an edit to an existing seed migration.
+
+Historically, rer 0.2.77 lacked this API. A seed adopts a reviewed vendored Base
+revision containing the capability, or a pinned rer release that supplies it,
+and proves its migration, current authority, conversion and later reversal through its own
+public door. Base's tests do not prove that adoption. Until then, existing strict
+jobs retain their policy and the seed's compensation-unavailable refusal remains
+in force. Adoption, seed release and deployment are separate from this Base
+source change.
 
 `tests/d1-preserved-scale.test.ts` exercises 34,000 distinct effects in real
 SQLite and local workerd D1. It measures complete public resume, report,

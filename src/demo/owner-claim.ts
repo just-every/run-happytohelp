@@ -3,7 +3,6 @@ import { HTTPException } from 'hono/http-exception'
 import type { AppEnv } from '../platform/env'
 import { serverSecret } from '../platform/db'
 import { createNativeOwner } from '../modules/identity/setup'
-// @ts-expect-error Base's portable verifier is JavaScript without declarations.
 import { verifyOwnerClaim } from '../vendor/base/modules/owner-claim/verify.mjs'
 import { company, ownerName } from './team'
 import { demoMode } from './mode'
@@ -19,7 +18,7 @@ demoOwnerClaim.post('/owner-claim', async c => {
   const email = String(env.OWNER_EMAIL || '').trim().toLowerCase()
   const token = (await c.req.parseBody()).token
   try {
-    await verifyOwnerClaim(String(token || ''), { issuer: env.RER_OWNER_CLAIM_ISSUER, installationId: env.RER_OWNER_CLAIM_INSTALLATION_ID, appOrigin: origin, expectedEmail: email, publicKeys: JSON.parse(env.RER_OWNER_CLAIM_PUBLIC_KEYS) })
+    await verifyOwnerClaim(String(token || ''), { issuer: env.RER_OWNER_CLAIM_ISSUER as string, installationId: env.RER_OWNER_CLAIM_INSTALLATION_ID as string, appOrigin: origin, expectedEmail: email, publicKeys: JSON.parse(env.RER_OWNER_CLAIM_PUBLIC_KEYS) })
   } catch (error) {
     const claim = error as { code?: string; status?: number }
     return c.json({ error: claim.code ?? 'invalid_claim' }, (claim.status === 503 ? 503 : 403))

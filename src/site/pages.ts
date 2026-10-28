@@ -6,9 +6,12 @@ import Homepage from '../ui/homepage/Homepage'
 import { DocsPage } from '../ui/docs/DocsPage'
 import { buildSite } from '../ui/docs/build/site'
 import { contractPageHtml } from './base/contract-page'
+import { runPricing } from './base/run-pricing'
 import { runPageHtml, siteNotFoundHtml, type SiteBuild, type SiteContext } from './base/run-site'
 import { identity } from './identity'
-import run from './run.json'
+import runData from './run.json'
+
+const run = { ...runData, pricing: runPricing }
 
 export function sitePages({ contract, styles = [] }: Partial<SiteContext> = {}): SiteBuild {
   const docs = buildSite(process.cwd())

@@ -486,9 +486,9 @@ HappyToHelp you install and run yourself.
   every browser suite and the homepage and public-site checks on pushes to
   `main` and on pull requests.
 
-## Contract source before 37d807e8cf269f85484e4af19558f1460b7345eb
+#### Contract source before 37d807e8cf269f85484e4af19558f1460b7345eb
 
-# HappyToHelp product contract
+### HappyToHelp product contract
 
 Target edition · 17 October 2026 · US-first, USD. HappyToHelp is a complete customer service help desk and AI support agent for a US SMB support lead switching from Zendesk, Intercom (with Fin), Help Scout or Freshdesk. It owns the job from customer intake through a shared operational queue, self-service and live business context to an authorized resolution and continued customer recovery. Decagon, Sierra and Pylon set the agent/procedure and B2B-channel baseline; the target goes further with verified repair and obligations that survive handoffs.
 
@@ -496,7 +496,7 @@ This is the product we are building towards. Required behavior is not a claim of
 
 Keep the owner-approved homepage, UI and behavior intact. The retained owner decisions of 8 October (native passwords), 9 October (import equality and bounded ordinary HTTPS transport) and the detailed PUBLIC-001 specification remain in force. This contract expansion authorizes future build rounds against the missing work; it does not silently change today's marketing claims. The product remains editable source on Cloudflare Workers with a separately authorized local connector, run through `rer`.
 
-## Product target
+#### Product target
 
 HappyToHelp is the complete help desk and AI support agent a US SMB support lead buys instead of Zendesk, Intercom (with Fin), Help Scout or Freshdesk; Decagon, Sierra and Pylon set the agent and procedure baseline it must also meet.
 
@@ -506,7 +506,7 @@ HappyToHelp is the complete help desk and AI support agent a US SMB support lead
 | Incumbents a buyer switches from | Zendesk, Intercom (with Fin), Help Scout, Freshdesk (agent baseline: Decagon, Sierra, Pylon) |
 | First buyer | A US SMB support lead, costs in USD, moving a Zendesk, Intercom, Help Scout or Freshdesk help desk |
 
-## Retained product and operating guarantees
+#### Retained product and operating guarantees
 
 - **NATIVE-001 — Native owner installation.** A clean owner can inspect the
   operating description before installing dependencies, install locked source,
@@ -823,9 +823,9 @@ HappyToHelp is the complete help desk and AI support agent a US SMB support lead
   **Gap:** The authoring CLI and source-integrity checks exist and the capability graph is maintained. `tests/helpers/installer/edition-authoring.mjs`, editionAuthoringJourney, runs inside the existing release-artifact test in `tests/journeys/installer.mjs` (Verify runtime-and-identity shard). It exercises CLI origin, local drift and executable-mode refusals, selected licensed release, excluded local credentials/private fixtures, clean-source refusal and receipt verification. Source integrity does not assert a product build or deployment; exact-SHA Verify remains required.
 
 
-## Target clauses
+#### Target clauses
 
-### Complete support operations
+##### Complete support operations
 
 - **DESK-001 — The shared support desk.** A visitor starts website live chat, identifies themselves under the workspace policy, sends files and returns to their history. Humans see one durable shared inbox with customer history, scoped retained-history search with words, quoted phrases and literal customer-identity matching, open/closed/mine/unassigned/AI/tag filters and saved replies that insert into the composer without silently sending. Ticket status follows the STATUS-001 lifecycle and saved replies extend to MACRO-001 action macros. Replies, attachment downloads and errors are visible on both sides; privacy/collector controls remain effective.
 
@@ -1024,7 +1024,7 @@ HappyToHelp is the complete help desk and AI support agent a US SMB support lead
   **Acceptance evidence:** Before enabling a regulated workspace, an authorized administrator records required executed agreements/provider settings and runs tenant isolation, permission, audit, retention, recovery and erasure journeys with representative sensitive data. Missing agreements/controls block that configuration visibly; verify access only after qualification and withdrawal upon expiry/revocation.
 
 
-## Push further: accountable agents
+#### Push further: accountable agents
 
 - **PUSH-001 — Reproduce, repair and prove customer recovery.** Given the conversation, authorized live product state and an explicitly paired repair workspace, the agent reproduces the customer's failure, records its observation, prepares or performs only the permitted fix, and verifies with a distinct post-change read or user journey. Environment, operations, data, spending and time limits are granted by a named person; production changes and reply publication have separate authority. Reconcile started/uncertain work, gather customer-scoped recovery evidence, report in the original thread and reopen/escalate if recovery fails or the customer reports recurrence. A successful command or closed engineering issue never proves recovery.
 
@@ -1042,7 +1042,7 @@ HappyToHelp is the complete help desk and AI support agent a US SMB support lead
 
   **Acceptance evidence:** Resolve a previously undocumented case, trigger gap analysis, inspect a cited redacted draft, reject and then publish an edited version and ask the next customer's question. Verify permission-aware retrieval, no automatic publication, attribution and a corrective proposal when the case reopens.
 
-## Honest boundaries and connected products
+#### Honest boundaries and connected products
 
 HappyToHelp owns customer support, its operational queue, service follow-up and support CSAT. It consumes sales/customer context from [Orbit](https://github.com/just-every/run-orbit), HubSpot and Salesforce; [Buoy](https://github.com/just-every/run-buoy) owns post-sale customer-success programs. [Penny](https://github.com/just-every/run-penny) owns feedback aggregation, prioritization, roadmap/changelog and requester closure; [Vector](https://github.com/just-every/run-vector) owns engineering issues and delivery. HappyToHelp links their records and follows the support request through verified recovery. General marketing campaigns go to [Mango](https://github.com/just-every/run-mango), incident subscriber communication to [Lamp](https://github.com/just-every/run-lamp), general survey research to [Pencil](https://github.com/just-every/run-pencil) and employee IT service management to [Linen](https://github.com/just-every/run-linen). No neighboring product or unowned LIST gap is absorbed.
 
@@ -1052,7 +1052,7 @@ Arbitrary repair execution runs only in an explicitly paired external workspace,
 
 The platform admission index's `move_in_contact_keys.email_digest` remains lazy derived memoization. Exact business equality preserves its project/contact links and validates each populated digest against the native email; NULL-to-correct-digest does not alter business state. Contacts, native email, identity and all source/business links remain in the equality comparison.
 
-## Status
+#### Status
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). R5 additionally updates SLA-001, AUTOMATION-001/002, QUEUE-001/004 and STATUS-001 from the workflow, inbox and packaged recovery journeys on 17 October 2026. WIDGET-001 and AUTOMATION-002 are re-judged at `473a30dab0c6458e5250a55cbebeef999e1e3063` (22 October 2026), with workspace presence and the away-reply correction (migrations 240 and 241). AUTOMATION-001 is re-judged DONE at `c36c8cf01a3b8770427e78bed07d71159a0fb872` (23 October 2026).
 

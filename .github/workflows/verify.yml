@@ -81,6 +81,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec rer describe
+      - run: node src/site/base/contract-docs.mjs check
       - run: node scripts/edition-authoring/cli.mjs check
       - run: pnpm exec rer check --profile first-party
       - run: pnpm run build

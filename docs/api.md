@@ -285,7 +285,7 @@ consume capacity. Failed admissions refund reserved capacity.
 Webhook envelopes include a signed `sequence` describing insertion order within
 this installation. Delivery may arrive out of order. Deduplicate by event `id`;
 apply state updates only when their sequence is newer than the last applied update.
-Retries retain the same ID, sequence and payload. Restore does not resume deliveries. Do not treat these endpoints as complete API-002 acceptance.
+Retries retain the same ID, sequence and payload. Restore does not resume deliveries. Do not treat these endpoints as complete API-002 through API-008 acceptance.
 
 ### API admission, suspension and issuer erasure
 

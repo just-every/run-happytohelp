@@ -76,18 +76,20 @@
       "file": "CONTRACT.md",
       "line": 22,
       "text": "operating description before installing dependencies, install locked source,",
-      "to": "clause",
+      "to": "base",
       "ids": [
-        "NATIVE-001"
+        "BASE-INSTALL-001",
+        "BASE-OPS-002"
       ]
     },
     {
       "file": "CONTRACT.md",
       "line": 23,
       "text": "prepare local or selected remote bindings/migrations, build, verify and deploy",
-      "to": "clause",
+      "to": "base",
       "ids": [
-        "NATIVE-001"
+        "BASE-INSTALL-001",
+        "BASE-OPS-002"
       ]
     },
     {
@@ -3687,7 +3689,44 @@
     {
       "file": "CONTRACT.md",
       "line": 484,
-      "text": "**ACCESS-001 \u2014 Enterprise identity and custom permissions.** Retain native owner/password access while optionally connecting Google Workspace, Microsoft Entra ID or Okta using SAML/OIDC SSO and SCIM provisioning. Define custom roles and field/tool/brand/team permissions for operators, admins, reviewers and agents; separate integration installation, refund approval, knowledge publication and destructive access. Collaborator (light-agent) seats can view permitted tickets, add internal notes and follow tickets but cannot reply publicly, change fields or read restricted knowledge. Deprovisioning/revocation promptly ends sessions, pending tool authority and customer-data access, with tested owner recovery. RULED interim default and target (ct, 23 October 2026 10:46Z): `knowledge.edit` gates internal knowledge management and connected-application article reads; `knowledge.publish` still gates publication. Published help keeps its audience gates, so a reader never gains internal articles through it. A separate knowledge-read permission is required for read-only access to selected internal knowledge without edit or publish authority.",
+      "text": "**ACCESS-001 \u2014 Enterprise identity and custom permissions.** ",
+      "to": "clause",
+      "ids": [
+        "ACCESS-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 484,
+      "text": "Retain native owner/password access while optionally connecting Google Workspace, Microsoft Entra ID or Okta using SAML/OIDC SSO and SCIM provisioning.",
+      "to": "base",
+      "ids": [
+        "BASE-SIGNIN-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 484,
+      "text": "Define custom roles and field/tool/brand/team permissions for operators, admins, reviewers and agents; separate integration installation, refund approval, knowledge publication and destructive access. Collaborator (light-agent) seats can view permitted tickets, add internal notes and follow tickets but cannot reply publicly, change fields or read restricted knowledge. ",
+      "to": "clause",
+      "ids": [
+        "ACCESS-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 484,
+      "text": "Deprovisioning/revocation promptly ends sessions, pending tool authority and customer-data access, with tested owner recovery.",
+      "to": "base",
+      "ids": [
+        "BASE-ROLE-001",
+        "BASE-ACCESS-002"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 484,
+      "text": " RULED interim default and target (ct, 23 October 2026 10:46Z): `knowledge.edit` gates internal knowledge management and connected-application article reads; `knowledge.publish` still gates publication. Published help keeps its audience gates, so a reader never gains internal articles through it. A separate knowledge-read permission is required for read-only access to selected internal knowledge without edit or publish authority.",
       "to": "clause",
       "ids": [
         "ACCESS-001"
@@ -3705,7 +3744,43 @@
     {
       "file": "CONTRACT.md",
       "line": 488,
-      "text": "**IDENTITY-003 \u2014 Two-factor authentication for native accounts.** Native password accounts enroll a second factor: a TOTP authenticator app or WebAuthn security keys and passkeys, with ten single-use recovery codes shown once. An owner can require two-factor sign-in for every teammate or by role; affected users must enroll at their next sign-in before reaching any data, and existing sessions without the factor end. A sign-in without the factor, with a wrong or replayed TOTP code (one use per time step) or with a used recovery code is refused, rate-limited and audited. Owner-assisted reset of a teammate's factor requires the owner's own recent factor, notifies the teammate and is audited; an owner who loses every factor recovers through the documented installation-level owner recovery through `rer`, never by email alone. Refund and billing approval (COMMERCE-001, BILLING-001), integration and credential installation, exports, erasure, role changes and the two-factor policy itself require a recent second-factor step-up. API access uses scoped tokens (CONNECTIONS-001), never a password alone. SSO users follow their identity provider's MFA (ACCESS-001). This adds to the retained native password identity (IDENTITY-002) and never replaces it.",
+      "text": "**IDENTITY-003 \u2014 Two-factor authentication for native accounts.** ",
+      "to": "clause",
+      "ids": [
+        "IDENTITY-003"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 488,
+      "text": "Native password accounts enroll a second factor: a TOTP authenticator app or WebAuthn security keys and passkeys, with ten single-use recovery codes shown once.",
+      "to": "base",
+      "ids": [
+        "BASE-SIGNIN-002"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 488,
+      "text": "An owner can require two-factor sign-in for every teammate or by role; affected users must enroll at their next sign-in before reaching any data, and existing sessions without the factor end. ",
+      "to": "clause",
+      "ids": [
+        "IDENTITY-003"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 488,
+      "text": "A sign-in without the factor, with a wrong or replayed TOTP code (one use per time step) or with a used recovery code is refused, rate-limited and audited.",
+      "to": "base",
+      "ids": [
+        "BASE-SIGNIN-002"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 488,
+      "text": " Owner-assisted reset of a teammate's factor requires the owner's own recent factor, notifies the teammate and is audited; an owner who loses every factor recovers through the documented installation-level owner recovery through `rer`, never by email alone. Refund and billing approval (COMMERCE-001, BILLING-001), integration and credential installation, exports, erasure, role changes and the two-factor policy itself require a recent second-factor step-up. API access uses scoped tokens (CONNECTIONS-001), never a password alone. SSO users follow their identity provider's MFA (ACCESS-001). This adds to the retained native password identity (IDENTITY-002) and never replaces it.",
       "to": "clause",
       "ids": [
         "IDENTITY-003"
@@ -3887,9 +3962,12 @@
       "file": "CONTRACT.md",
       "line": 524,
       "text": "Keep an inspectable, exportable append-only audit of authentication/permission changes, imports/exports/erasure, assignments, procedure changes, approvals and external actions with actor, purpose, source, time and outcome; ",
-      "to": "clause",
+      "to": "base",
       "ids": [
-        "AUDIT-001"
+        "BASE-AUDIT-001",
+        "BASE-ROLE-001",
+        "BASE-SECRET-001",
+        "BASE-DATA-006"
       ]
     },
     {
@@ -3905,9 +3983,12 @@
       "file": "CONTRACT.md",
       "line": 524,
       "text": " Configure retention/legal holds with visible effects and never silently delete evidence to improve reports.",
-      "to": "clause",
+      "to": "base",
       "ids": [
-        "AUDIT-001"
+        "BASE-AUDIT-001",
+        "BASE-ROLE-001",
+        "BASE-SECRET-001",
+        "BASE-DATA-006"
       ]
     },
     {

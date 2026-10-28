@@ -72,7 +72,7 @@ the current contract's outcome/retry policy and tenant/erasure fences.
 
 The approved homepage retains its aqua/ink illustrations, self-hosted Outfit,
 hand-drawn wordmark, actual links and reduced-motion behavior. Its ordered
-content and drawings are specified by PUBLIC-001; no price/hosting/provider plug,
+content and drawings are specified by PUBLIC-001 through PUBLIC-005; no price/hosting/provider plug,
 compliance claim or unsupported import promise belongs there. Native docs use
 the same visual language and current Markdown, with one page heading.
 

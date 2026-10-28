@@ -439,27 +439,27 @@ Expose a documented versioned HappyToHelp API and signed outbound webhooks for c
 
 ## API-002
 
-A named source-product credential binds ticket creation and appending to explicit scopes, mailbox, brand and source identity. Its lifecycle preserves the connection-token model and atomic admission. The protocol, overlap bounds and Settings fields are specified in [the machine support-request protocol](docs/contract/machine-api.md).
+A named source-product credential binds ticket creation and appending to explicit scopes, mailbox, brand and source identity. Its lifecycle preserves the connection-token model and atomic admission. The protocol, overlap bounds and Settings fields are specified in [the machine support-request protocol](../../docs/contract/machine-api.md).
 
 ## API-003
 
-Create a support request from a source product with exact verified requester matching, unverified new identities, a fixed source label and an operator back-link. Source-reference and key replay protect one ticket across credential rotation; conflicts reveal no other identity. The full request and replay contract is in [the protocol](docs/contract/machine-api.md).
+Create a support request from a source product with exact verified requester matching, unverified new identities, a fixed source label and an operator back-link. Source-reference and key replay protect one ticket across credential rotation; conflicts reveal no other identity. The full request and replay contract is in [the protocol](../../docs/contract/machine-api.md).
 
 ## API-004
 
-Append customer messages or private notes within the credential’s conversations, retaining solved, closed and merged lifecycle behavior. Bounded upload references and verified remote attachments admit either the complete ticket and bytes or nothing, under [the attachment protocol](docs/contract/machine-api.md).
+Append customer messages or private notes within the credential’s conversations, retaining solved, closed and merged lifecycle behavior. Bounded upload references and verified remote attachments admit either the complete ticket and bytes or nothing, under [the attachment protocol](../../docs/contract/machine-api.md).
 
 ## API-005
 
-Treat source-product requests as untrusted customer input, with the same triage, routing and AI policy as other requests. Suspended abuse and requester holds cause no ticket or external effect; acknowledgments depend on consent and channel rules. Capacity and business-policy limits, exhaustion and stable refusal meanings are defined in [the protocol](docs/contract/machine-api.md).
+Treat source-product requests as untrusted customer input, with the same triage, routing and AI policy as other requests. Suspended abuse and requester holds cause no ticket or external effect; acknowledgments depend on consent and channel rules. Capacity and business-policy limits, exhaustion and stable refusal meanings are defined in [the protocol](../../docs/contract/machine-api.md).
 
 ## API-006
 
-Machine-created requests carry source-product and credential provenance into filtered signed support events and ticket history. Revocation retains machine attribution; issuer erasure redacts personal attribution without losing events. Event fields and audit records are specified in [the protocol](docs/contract/machine-api.md).
+Machine-created requests carry source-product and credential provenance into filtered signed support events and ticket history. Revocation retains machine attribution; issuer erasure redacts personal attribution without losing events. Event fields and audit records are specified in [the protocol](../../docs/contract/machine-api.md).
 
 ## API-007
 
-Machine-request erasure covers ticket content, replay bodies, pending events and files, with tombstones that prevent resurrection. Portable archives retain source provenance and digest-only replay records, while all restored credentials and actions remain inert. Exact portable fields and fences are specified in [the protocol](docs/contract/machine-api.md).
+Machine-request erasure covers ticket content, replay bodies, pending events and files, with tombstones that prevent resurrection. Portable archives retain source provenance and digest-only replay records, while all restored credentials and actions remain inert. Exact portable fields and fences are specified in [the protocol](../../docs/contract/machine-api.md).
 
 ## API-008
 

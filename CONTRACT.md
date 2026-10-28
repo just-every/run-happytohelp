@@ -33,7 +33,7 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 | Base duty | Duty | Delta clauses | Base journey |
 | --- | --- | --- | --- |
 | BASE-ACCESS-001 | Sign-in | IDENTITY-002 | not run |
-| BASE-ACCESS-002 | Sessions | IDENTITY-001, LOCAL-MAIL-001, DELIVERY-001, IDENTITY-003 | not run |
+| BASE-ACCESS-002 | Sessions | IDENTITY-001, LOCAL-MAIL-001, DELIVERY-001, ACCESS-001, IDENTITY-003 | not run |
 | BASE-ACCESS-003 | Public endpoints | IDENTITY-001 | not run |
 | BASE-ACCESS-004 | Server-side authorisation | IDENTITY-001 | not run |
 | BASE-INPUT-001 | Validation | CONNECTIONS-001, CONTEXT-001 | not run |
@@ -111,7 +111,7 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 #### NATIVE-001 — Native owner installation
 
-**Requirement.** A clean owner can inspect the operating description before installing dependencies, install locked source, prepare local or selected remote bindings/migrations, build, verify and deploy through `rer`. Local setup exits with no app running; dev prints a private `RER_OPEN` address that enters as the real local owner through the rer dev v2 boundary, preserving native sessions, roles and passwords. Reset is explicitly confirmed and local; export/import preserve supported native data with documented exclusions. Deployment dry-run makes zero outbound requests and explicitly reports that fact. A separately and explicitly started read-only provider preflight uses the owner's scoped Cloudflare token with owner consent to read the account's Workers subdomain and the Worker's settings and secret names (three GETs for an existing Worker); it sends no mail and changes no resources. Dry-run and preflight are independent steps, neither a mock of the other. The delivered runtime requires no original checkout or PHP service. Details are in [the support protocol guide](docs/contract/support-protocols.md).
+**Requirement.** The owner can inspect the operating description before dependency installation; setup preserves this edition’s native owner and selected bindings. Local setup exits with no app running; dev prints a private entry address that enters as the real local owner through the rer dev v2 boundary, preserving native sessions, roles and passwords. Reset is explicitly confirmed and local; export/import preserve supported native data with documented exclusions. Deployment dry-run makes zero outbound requests and explicitly reports that fact. A separately and explicitly started read-only provider preflight uses the owner's scoped Cloudflare token with owner consent to read the account's Workers subdomain and the Worker's settings and secret names (three GETs for an existing Worker); it sends no mail and changes no resources. Dry-run and preflight are independent steps, neither a mock of the other. The delivered runtime requires no original checkout or PHP service. Details are in [the support protocol guide](docs/contract/support-protocols.md).
 
 **Acceptance.**
 1. Use a clean checkout through rer describe/check, locked installation, setup, dev, verify, reset and export/import; preserve owner/data/settings and refuse unconfirmed destructive work.
@@ -255,7 +255,7 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 #### PUBLIC-001 — Homepage hero and two support moments
 
-**Requirement.** The approved homepage (owner approval 2026-10-01, clarity pass 2026-10-02, hero redesign 2026-10-08, hero leading with help before they ask 2026-10-20) is the real public `/` experience, in this order: the hero, whose headline “Knows what your customer needs before they do.” stands left-aligned beside one hand-drawn picture of both moments on a pale aqua blob, joined by an aqua pen arrow: 1, a checkout page in its window with the widget's offer card (signed with the speech-bubble mark) floating over its corner; 2, a conversation already solved (a customer, Maya, cannot turn on the Spanish version of her store; the agent's fix, beside a code glyph, says it is fixed; the reply to Maya carries Send inside it, the only step left), each numbered on a filled aqua disc; with the subhead “Some customers who get stuck never write in. They just leave.”, the line “100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk”, an aqua pen-stroke flourish under the calls to action that draws itself in once, and under the picture the captions “Before they ask” (“When someone seems stuck, the widget offers a hand.”) and “When they ask” (“Your Codex or Claude fixes the problem and writes the reply. You press Send.”) on filled aqua number discs;
+**Requirement.** The retained homepage hero (RL-10) places the headline “Knows what your customer needs before they do.” stands left-aligned beside one hand-drawn picture of both moments on a pale aqua blob, joined by an aqua pen arrow: 1, a checkout page in its window with the widget's offer card (signed with the speech-bubble mark) floating over its corner; 2, a conversation already solved (a customer, Maya, cannot turn on the Spanish version of her store; the agent's fix, beside a code glyph, says it is fixed; the reply to Maya carries Send inside it, the only step left), each numbered on a filled aqua disc; with the subhead “Some customers who get stuck never write in. They just leave.”, the line “100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk”, an aqua pen-stroke flourish under the calls to action that draws itself in once, and under the picture the captions “Before they ask” (“When someone seems stuck, the widget offers a hand.”) and “When they ask” (“Your Codex or Claude fixes the problem and writes the reply. You press Send.”) on filled aqua number discs;
 
 **Acceptance.**
 1. The homepage leads with “Knows what your customer needs before they do.”, the retained subhead and free alternative line.
@@ -293,7 +293,7 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 #### PUBLIC-005 — Documentation and public knowledge routes
 
-**Requirement.** `/docs` renders, at build time, the Markdown files listed in `docs/site.json`, in the homepage's paper, ink and Outfit, with section navigation, page contents and GitHub links for everything unpublished; an unknown page gets the branded 404. Every build renders the current files, and an unlisted Markdown file fails verification. Dynamic published help centers retain project scope, canonical links, search and draft/deleted denial. The customer widget remains available through owner-configured installation; broader marketing routes, pricing, legal, referrer, waitlist and public auto-widget behavior are outside this edition.
+**Requirement.** Documentation renders the listed Markdown pages at build time, in the homepage's paper, ink and Outfit, with section navigation, page contents and GitHub links for everything unpublished; an unknown page gets the branded not-found page. Every build renders the current files, and an unlisted Markdown file fails verification. Dynamic published help centers retain project scope, canonical links, search and draft/deleted denial. The customer widget remains available through owner-configured installation; broader marketing routes, pricing, legal, referrer, waitlist and public auto-widget behavior are outside this edition.
 
 **Acceptance.**
 1. Every listed Markdown page renders from current source with the retained section navigation, page contents, source links, responsive layout and detailed documentation specification.
@@ -562,7 +562,7 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 *Tier:* Core · *Cites:* BASE-ROLE-001 · *Register:* R-8
 
-**Requirement.** Connect Stripe for customer/payment/invoice/subscription context and permitted refunds, credits and subscription cancellation, pause or plan changes. Show USD totals, tax/proration/effective-date consequences and linked provider records before approval; separate read, prepare, approve and execute scopes and spending limits. Reconcile actual provider state after timeout and report what changed in the original conversation. No raw card data or customer funds enter HappyToHelp. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
+**Requirement.** Connect Stripe for customer/payment/invoice/subscription context and permitted refunds, credits and subscription cancellation, pause or plan changes. Show USD totals, tax/proration/effective-date consequences and linked provider records before the company-policy decision for money and commitment; separate reading, preparation and execution scopes and the company’s spending limits. Reconcile actual provider state after timeout and report what changed in the original conversation. No raw card data or customer funds enter HappyToHelp. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
 1. Under the held company policy, from a support ticket linked to a Stripe test customer, inspect an invoice, approve a bounded refund and a subscription change and verify provider readback plus customer-visible results.
@@ -648,7 +648,7 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 **Requirement.** Machine-created requests carry source-product and credential provenance into filtered signed support events and ticket history. Revocation retains machine attribution; issuer erasure redacts personal attribution without losing events. Event fields and audit records are specified in [the protocol](docs/contract/machine-api.md).
 
 **Acceptance.**
-1. Receive signed `conversation.created`, `message.created`, `conversation.status_changed` and `conversation.assigned` at a destination limited to one credential, verify the signature, no transcript text or contact data, duplicate/out-of-order handling and a a rate-limit refusal retry with the same ID, and that another credential's tickets send nothing.
+1. Receive signed ticket-created, message-created, ticket-status-changed and ticket-assigned at a destination limited to one credential, verify the signature, no transcript text or contact data, duplicate/out-of-order handling and a a rate-limit refusal retry with the same ID, and that another credential's tickets send nothing.
 2. Open the audit export and ticket history to find issue, rotate, binding change, first use, denial counts, revoke, every create and append with credential name, source product, reference and request ID and no secret, and erase the issuing member and a requester to verify redaction without losing the events.
 
 #### API-007 — Erase and restore machine-created support history
@@ -754,9 +754,9 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 #### ACCESS-001 — Enterprise identity and custom permissions
 
-*Tier:* Core · *Cites:* BASE-SIGNIN-001, BASE-ROLE-001 · *Register:* R-13
+*Tier:* Core · *Cites:* BASE-SIGNIN-001, BASE-ROLE-001, BASE-ACCESS-002 · *Register:* R-13
 
-**Requirement.** Retain native owner/password access while optionally connecting Google Workspace, Microsoft Entra ID or Okta using SAML/OIDC SSO and SCIM provisioning. Define custom roles and field/tool/brand/team permissions for operators, admins, reviewers and agents; separate integration installation, refund approval, knowledge publication and destructive access. Collaborator (light-agent) seats can view permitted tickets, add internal notes and follow tickets but cannot reply publicly, change fields or read restricted knowledge. Deprovisioning/revocation promptly ends sessions, pending tool authority and customer-data access, with tested owner recovery. Internal knowledge management and connected reads use the knowledge-edit permission; publication keeps its distinct permission and published-help audience gates. A separate read permission allows selected internal knowledge without edit or publication authority (RL-4).
+**Requirement.** Workforce providers include Google Workspace, Microsoft Entra ID and Okta; IDENTITY-002 retains native password access. Define custom roles and field/tool/brand/team permissions for operators, admins, reviewers and agents; separate integration installation, refund approval, knowledge publication and destructive access. Collaborator (light-agent) seats can view permitted tickets, add internal notes and follow tickets but cannot reply publicly, change fields or read restricted knowledge.  Internal knowledge management and connected reads use the knowledge-edit permission; publication keeps its distinct permission and published-help audience gates. A separate read permission allows selected internal knowledge without edit or publication authority (RL-4).
 
 **Acceptance.**
 1. Provision an operator through each supported identity protocol, assign a restricted custom role, attempt denied exports/refunds/publication, then deprovision during active work and verify sessions/tools lose access.
@@ -769,11 +769,11 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 *Tier:* Core · *Cites:* BASE-SIGNIN-002, BASE-ACCESS-002, BASE-AGENT-006, BASE-AGENT-008
 
-**Requirement.** Native password accounts enroll a second factor: a TOTP authenticator app or WebAuthn security keys and passkeys, with ten single-use recovery codes shown once. An owner can require two-factor sign-in for every teammate or by role; affected users must enroll at their next sign-in before reaching any data, and existing sessions without the factor end. A sign-in without the factor, with a wrong or replayed TOTP code (one use per time step) or with a used recovery code is refused, rate-limited and audited. Owner-assisted reset of a teammate's factor requires the owner's own recent factor, notifies the teammate and is audited; an owner who loses every factor recovers through the documented installation-level owner recovery through `rer`, never by email alone. Refund and billing approval (COMMERCE-001, BILLING-001), integration and credential installation, exports, erasure, role changes and the two-factor policy itself require a recent second-factor step-up. API access uses scoped tokens (CONNECTIONS-001), never a password alone. SSO users follow their identity provider's MFA (ACCESS-001). This adds to the retained native password identity (IDENTITY-002) and never replaces it.
+**Requirement.** Native accounts have ten single-use recovery codes shown once, alongside the shared native-factor duty. An owner can require two-factor sign-in for every teammate or by role; affected users must enroll at their next sign-in before reaching any data, and existing sessions without the factor end.  Owner-assisted reset of a teammate's factor requires the owner's own recent factor, notifies the teammate and is audited; an owner who loses every factor recovers through the documented installation-level owner recovery through `rer`, never by email alone. Refund and billing approval (COMMERCE-001, BILLING-001), integration and credential installation, exports, erasure, role changes and the two-factor policy itself require a recent second-factor step-up. API access uses scoped tokens (CONNECTIONS-001), never a password alone. SSO users follow their identity provider's MFA (ACCESS-001). This adds to the retained native password identity (IDENTITY-002) and never replaces it.
 
 **Acceptance.**
-1. As owner require two-factor sign-in; sign in as an agent and be forced to enroll TOTP and receive recovery codes; sign out and verify refusal without the factor, with a wrong code, with a reused code and with a used recovery code; sign in with a passkey.
-2. Reset the agent's factor as owner with a step-up and observe the notification and audit.
+1. As owner require two-factor sign-in; sign in as a support operator and be forced to enroll TOTP and receive recovery codes; sign out and verify refusal without the factor, with a wrong code, with a reused code and with a used recovery code; sign in with a passkey.
+2. Reset the support operator’s factor as owner with a step-up and observe the notification and audit.
 3. Approve a test refund and start an export with and without a recent step-up; recover a locked-out owner through `rer`; verify sessions without the factor ended when the policy was turned on.
 
 #### MOBILE-001 — Support from a phone
@@ -859,7 +859,7 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 *Tier:* Core · *Cites:* BASE-SECRET-001, BASE-ROLE-001, BASE-DATA-003, BASE-AUDIT-001, BASE-DATA-006
 
-**Requirement.** Encrypt configured provider credentials under installation custody, apply installation custody to support-provider configuration. Keep an inspectable, exportable append-only audit of authentication/permission changes, imports/exports/erasure, assignments, procedure changes, approvals and external actions with actor, purpose, source, time and outcome; Configure retention/legal holds with visible effects and never silently delete evidence to improve reports.
+**Requirement.** The security view joins support-specific assignments, procedure changes, customer updates, import journals and erasure requests with their purpose and native action provenance. Support-provider credentials remain encrypted under installation custody. Support records retained by a legal hold keep their report treatment; cleanup never deletes evidence to improve support reports.
 
 **Acceptance.**
 1. Using owner/security views, rotate/revoke credentials, attempt cross-tenant/CSRF/SSRF access, approve an action, export audit and erase its actor; inspect durable outcomes with no secrets.
@@ -909,74 +909,76 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company’s policy decides every 
 | --- | --- | --- | --- | --- |
 | `happytohelp.identity.manage_002` | Retained native password identity | IDENTITY-002 | access | not implemented |
 | `happytohelp.identity.manage_001` | Scoped authority | IDENTITY-001 | access | not implemented |
-| `happytohelp.first_run.manage_001` | A useful first workspace | FIRST-RUN-001 | standard or external | not implemented |
-| `happytohelp.conversation.manage_001` | Durable transcript | CONVERSATION-001 | standard or external | not implemented |
-| `happytohelp.delivery.manage_001` | Live delivery and recovery | DELIVERY-001 | standard or external | not implemented |
-| `happytohelp.outcomes.manage_001` | Resolution feedback and provenance | OUTCOMES-001 | standard or external | not implemented |
-| `happytohelp.reports.manage_001` | Workspace calendar reports | REPORTS-001 | standard or external | not implemented |
+| `happytohelp.first_run.manage_001` | A useful first workspace | FIRST-RUN-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.conversation.manage_001` | Durable transcript | CONVERSATION-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.delivery.manage_001` | Live delivery and recovery | DELIVERY-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.outcomes.manage_001` | Resolution feedback and provenance | OUTCOMES-001 | standard (+ sensitive) | not implemented |
+| `happytohelp.reports.manage_001` | Workspace calendar reports | REPORTS-001 | standard (+ sensitive) | not implemented |
 | `happytohelp.connections.manage_001` | Workspace integrations | CONNECTIONS-001 | security (+ accounts · gated) | not implemented |
-| `happytohelp.activation.manage_001` | Observed owner setup | ACTIVATION-001 | standard or external | not implemented |
-| `happytohelp.ai.manage_001` | Configured model execution | AI-001 | standard or external | not implemented |
-| `happytohelp.knowledge.manage_001` | Published knowledge | KNOWLEDGE-001 | standard or external | not implemented |
-| `happytohelp.context.manage_001` | Attributed customer context | CONTEXT-001 | standard or external | not implemented |
-| `happytohelp.delegation.manage_001` | Explicit local authority | DELEGATION-001 | standard or live (+ access · security · external) | not implemented |
-| `happytohelp.training.manage_001` | Durable evaluation | TRAINING-001 | standard or external | not implemented |
-| `happytohelp.integration.manage_001` | Honest external effects | INTEGRATION-001 | standard or external | not implemented |
-| `happytohelp.desk.manage_001` | The shared support desk | DESK-001 | standard or external | not implemented |
-| `happytohelp.widget.manage_001` | Availability-aware messenger and proactive messages | WIDGET-001 | standard or external | not implemented |
-| `happytohelp.mail.manage_001` | Complete support email | MAIL-001 | standard or external | not implemented |
-| `happytohelp.mail.manage_002` | Reviewable suspended and spam mail | MAIL-002 | standard or external | not implemented |
-| `happytohelp.outbound.manage_001` | Agent-created and proactive tickets | OUTBOUND-001 | external | not implemented |
-| `happytohelp.channels.manage_001` | Messaging and social support | CHANNELS-001 | external (+ accounts · gated) | not implemented |
-| `happytohelp.channels.manage_002` | B2B shared-channel support | CHANNELS-002 | external (+ accounts · gated) | not implemented |
+| `happytohelp.activation.manage_001` | Observed owner setup | ACTIVATION-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.ai.manage_001` | Configured model execution | AI-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.knowledge.manage_001` | Published knowledge | KNOWLEDGE-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.context.manage_001` | Attributed customer context | CONTEXT-001 | standard (+ sensitive) | not implemented |
+| `happytohelp.delegation.manage_001` | Explicit local authority | DELEGATION-001 | standard or live (+ access · security · external) (+ sensitive) | not implemented |
+| `happytohelp.training.manage_001` | Durable evaluation | TRAINING-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.integration.manage_001` | Honest external effects | INTEGRATION-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.desk.manage_001` | The shared support desk | DESK-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.widget.manage_001` | Availability-aware messenger and proactive messages | WIDGET-001 | standard or external (+ live) | not implemented |
+| `happytohelp.mail.manage_001` | Complete support email | MAIL-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.mail.manage_002` | Reviewable suspended and spam mail | MAIL-002 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.outbound.manage_001` | Agent-created and proactive tickets | OUTBOUND-001 | external (+ sensitive) | not implemented |
+| `happytohelp.channels.manage_001` | Messaging and social support | CHANNELS-001 | external (+ accounts · gated) (+ sensitive) | not implemented |
+| `happytohelp.channels.manage_002` | B2B shared-channel support | CHANNELS-002 | external (+ accounts · gated) (+ sensitive) | not implemented |
 | `happytohelp.voice.manage_001` | Telephone service and unified voice agent | VOICE-001 | external (+ accounts · gated · sensitive) | not implemented |
-| `happytohelp.queue.manage_001` | Assignment rules and available teams | QUEUE-001 | standard or external | not implemented |
-| `happytohelp.triage.manage_001` | Intelligent triage | TRIAGE-001 | standard or external | not implemented |
-| `happytohelp.queue.manage_002` | Structured and bulk queue work | QUEUE-002 | standard or external | not implemented |
+| `happytohelp.queue.manage_001` | Assignment rules and available teams | QUEUE-001 | live | not implemented |
+| `happytohelp.triage.manage_001` | Intelligent triage | TRIAGE-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.queue.manage_002` | Structured and bulk queue work | QUEUE-002 | standard | not implemented |
 | `happytohelp.queue.manage_003` | Collaboration without conflicting replies | QUEUE-003 | standard or external | not implemented |
-| `happytohelp.macro.manage_001` | Action macros with placeholders | MACRO-001 | standard or external | not implemented |
+| `happytohelp.macro.manage_001` | Action macros with placeholders | MACRO-001 | standard or external (+ sensitive) | not implemented |
 | `happytohelp.queue.manage_004` | Snooze and scheduled follow-up | QUEUE-004 | standard or external | not implemented |
 | `happytohelp.status.manage_001` | Ticket status lifecycle | STATUS-001 | standard or external | not implemented |
-| `happytohelp.sla.manage_001` | Business-hour service commitments | SLA-001 | standard or external | not implemented |
-| `happytohelp.automation.manage_001` | Explainable durable support workflows | AUTOMATION-001 | standard or external | not implemented |
-| `happytohelp.automation.manage_002` | Time-based automations | AUTOMATION-002 | standard or external | not implemented |
-| `happytohelp.notify.manage_001` | Customer acknowledgments and teammate notifications | NOTIFY-001 | external | not implemented |
-| `happytohelp.conversation.manage_002` | Merge and external forwarding | CONVERSATION-002 | standard or external | not implemented |
-| `happytohelp.conversation.manage_003` | Problem and incident linking | CONVERSATION-003 | standard or external | not implemented |
-| `happytohelp.customer.manage_001` | Customer and company support records | CUSTOMER-001 | standard or external | not implemented |
-| `happytohelp.commerce.manage_001` | Shopify order actions | COMMERCE-001 | money · commitment (+ external) | not implemented |
-| `happytohelp.billing.manage_001` | Stripe billing and subscription resolution | BILLING-001 | money · commitment (+ external) | not implemented |
+| `happytohelp.sla.manage_001` | Business-hour service commitments | SLA-001 | live or external | not implemented |
+| `happytohelp.automation.manage_001` | Explainable durable support workflows | AUTOMATION-001 | standard or live (+ external) | not implemented |
+| `happytohelp.automation.manage_002` | Time-based automations | AUTOMATION-002 | standard or live (+ external) | not implemented |
+| `happytohelp.notify.manage_001` | Customer acknowledgments and teammate notifications | NOTIFY-001 | external (+ live) | not implemented |
+| `happytohelp.conversation.manage_002` | Merge and external forwarding | CONVERSATION-002 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.conversation.manage_003` | Problem and incident linking | CONVERSATION-003 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.customer.manage_001` | Customer and company support records | CUSTOMER-001 | standard or access (+ sensitive) | not implemented |
+| `happytohelp.commerce.manage_001` | Shopify order actions | COMMERCE-001 | money · commitment (+ external) (+ sensitive) | not implemented |
+| `happytohelp.billing.manage_001` | Stripe billing and subscription resolution | BILLING-001 | money · commitment (+ external) (+ sensitive) | not implemented |
 | `happytohelp.crm.manage_001` | Live CRM and account context | CRM-001 | standard or external (+ sensitive · accounts · gated) | not implemented |
-| `happytohelp.escalation.manage_001` | Engineering and team escalations that return | ESCALATION-001 | external (+ accounts · gated) | not implemented |
-| `happytohelp.api.manage_002` | Bound machine credentials | API-002 | standard or external | not implemented |
-| `happytohelp.api.manage_003` | Create one correctly attributed support request | API-003 | standard or external | not implemented |
-| `happytohelp.api.manage_004` | Append messages and atomic attachments | API-004 | standard or external | not implemented |
-| `happytohelp.api.manage_005` | Admit machine requests without unwanted contact | API-005 | standard or external | not implemented |
-| `happytohelp.api.manage_006` | Machine events and accountable ticket history | API-006 | standard or external | not implemented |
-| `happytohelp.api.manage_007` | Erase and restore machine-created support history | API-007 | standard or external | not implemented |
-| `happytohelp.portal.manage_001` | Authenticated customer self-service | PORTAL-001 | standard or external | not implemented |
-| `happytohelp.forms.manage_001` | Customer request forms with custom fields | FORMS-001 | standard or external | not implemented |
-| `happytohelp.knowledge.manage_002` | Governed private and multilingual knowledge | KNOWLEDGE-002 | standard or external (+ commitment) | not implemented |
-| `happytohelp.knowledge.manage_003` | Branded help center, article feedback and knowledge in the ticket | KNOWLEDGE-003 | standard or external | not implemented |
-| `happytohelp.brands.manage_001` | Multi-brand support operations | BRANDS-001 | standard or external | not implemented |
+| `happytohelp.escalation.manage_001` | Engineering and team escalations that return | ESCALATION-001 | external (+ accounts · gated) (+ sensitive) | not implemented |
+| `happytohelp.api.manage_002` | Bound machine credentials | API-002 | security · access | not implemented |
+| `happytohelp.api.manage_003` | Create one correctly attributed support request | API-003 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.api.manage_004` | Append messages and atomic attachments | API-004 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.api.manage_005` | Admit machine requests without unwanted contact | API-005 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.api.manage_006` | Machine events and accountable ticket history | API-006 | standard (+ sensitive) | not implemented |
+| `happytohelp.api.manage_007` | Erase and restore machine-created support history | API-007 | destructive · security (+ sensitive) | not implemented |
+| `happytohelp.portal.manage_001` | Authenticated customer self-service | PORTAL-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.forms.manage_001` | Customer request forms with custom fields | FORMS-001 | standard or external (+ live · sensitive) | not implemented |
+| `happytohelp.knowledge.manage_002` | Governed private and multilingual knowledge | KNOWLEDGE-002 | standard or external (+ commitment) (+ sensitive) | not implemented |
+| `happytohelp.knowledge.manage_003` | Branded help center, article feedback and knowledge in the ticket | KNOWLEDGE-003 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.brands.manage_001` | Multi-brand support operations | BRANDS-001 | live or access (+ security · external) | not implemented |
 | `happytohelp.access.manage_001` | Enterprise identity and custom permissions | ACCESS-001 | access or security | not implemented |
 | `happytohelp.identity.manage_003` | Two-factor authentication for native accounts | IDENTITY-003 | security | not implemented |
-| `happytohelp.outcomes.manage_002` | CSAT across support channels | OUTCOMES-002 | standard or external | not implemented |
-| `happytohelp.reports.manage_002` | Workload, service and agent outcomes | REPORTS-002 | standard or external | not implemented |
-| `happytohelp.agent.manage_001` | A production support agent with clean handoff | AGENT-001 | standard or external | not implemented |
-| `happytohelp.procedure.manage_001` | Natural-language procedures and release simulation | PROCEDURE-001 | standard or external | not implemented |
-| `happytohelp.agent.manage_002` | Inspectable quality and resolution economics | AGENT-002 | standard or external | not implemented |
-| `happytohelp.feedback.manage_001` | Source-linked feedback and release follow-up | FEEDBACK-001 | standard or external | not implemented |
+| `happytohelp.outcomes.manage_002` | CSAT across support channels | OUTCOMES-002 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.reports.manage_002` | Workload, service and agent outcomes | REPORTS-002 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.agent.manage_001` | A production support agent with clean handoff | AGENT-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.procedure.manage_001` | Natural-language procedures and release simulation | PROCEDURE-001 | standard or live (+ money · external · sensitive) | not implemented |
+| `happytohelp.agent.manage_002` | Inspectable quality and resolution economics | AGENT-002 | standard (+ sensitive) | not implemented |
+| `happytohelp.feedback.manage_001` | Source-linked feedback and release follow-up | FEEDBACK-001 | standard or external (+ commitment · sensitive) | not implemented |
 | `happytohelp.erasure.manage_001` | Customer erasure with coherent history | ERASURE-001 | destructive (+ sensitive) | not implemented |
 | `happytohelp.audit.manage_001` | Security and accountable actions | AUDIT-001 | security or sensitive | not implemented |
 | `happytohelp.portability.manage_001` | Complete customer-owned portable support data | PORTABILITY-001 | security (+ sensitive · destructive) | not implemented |
 | `happytohelp.assurance.manage_001` | Qualified regulated support deployments | ASSURANCE-001 | security · sensitive (+ commitment) | not implemented |
 | `happytohelp.push.manage_001` | Reproduce, repair and prove customer recovery | PUSH-001 | standard or live (+ external · sensitive) | not implemented |
-| `happytohelp.push.manage_002` | Promises survive every handoff | PUSH-002 | standard or commitment (+ external) | not implemented |
-| `happytohelp.push.manage_003` | Learn from reopenings under human control | PUSH-003 | standard or live (+ access · security · money) | not implemented |
-| `happytohelp.push.manage_004` | Turn verified edge cases into reviewed knowledge | PUSH-004 | standard or external (+ commitment) | not implemented |
+| `happytohelp.push.manage_002` | Promises survive every handoff | PUSH-002 | standard or commitment (+ external) (+ sensitive) | not implemented |
+| `happytohelp.push.manage_003` | Learn from reopenings under human control | PUSH-003 | standard or live (+ access · security · money) (+ sensitive) | not implemented |
+| `happytohelp.push.manage_004` | Turn verified edge cases into reviewed knowledge | PUSH-004 | standard or external (+ commitment) (+ sensitive) | not implemented |
 
 **Resources.** `happytohelp://workspaces/{workspace}/tickets/{ticket}`, `happytohelp://workspaces/{workspace}/customers/{customer}`, `happytohelp://workspaces/{workspace}/knowledge/{article}`, `happytohelp://workspaces/{workspace}/procedures/{procedure}`, `happytohelp://workspaces/{workspace}/obligations/{obligation}`, and `happytohelp://workspaces/{workspace}/evaluations/{evaluation}`.
+
+Additional templates cover companies, attachments, macros, ticket fields, saved views, workflows, channel connections, escalations, feedback, reports and audit under `happytohelp://workspaces/{workspace}/{recordType}/{record}`.
 
 **Events.** Ticket created, message added, status changed, assignment changed, knowledge published, escalation changed, recovery observed, obligation due and procedure released; approval, review and policy events inherit Base.
 
@@ -1004,7 +1006,6 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company’s policy decides every 
 **Limits.** Request rate, body and file sizes use the documented installation capacity bounds in [the public limits](docs/PUBLIC-LIMITS.md) and [machine protocol](docs/contract/machine-api.md). Daily business volume, recipient thresholds and provider spending are the company’s policy.
 
 **Handoffs.** It listens for customer messages, tracker delivery and shipped-fix events, and emits source-linked feedback to Penny, engineering requests to Vector and recovery observations for Buoy. A handoff keeps the support request’s owner and the cited source record.
-
 
 #### SURFACE-001 — Registry covers the support jobs
 

@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d451dd9a4a8f60540338e28bdabe841f082f54f0d8cd0d4bd652f61ab9a74749",
+      "sha256": "8d4fd758ad98108ad7bafd362acb898e9fd8eff0240a4331581c301833ad36d2",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "2b61f79e9c822c113114100fca2fd51150ac486ffaf8e1e5bd84c789f0b34943",
+      "sha256": "39cd7f8a72588d763b72ecaf6e5ee143c8f1f8315d594b22627b76317ac11290",
       "executable": false
     },
     "DEMO.md": {
@@ -2523,16 +2523,8 @@
       "sha256": "8376815e0f79757f1ff58d380f587c6201b380c112a0e098167923400e75d489",
       "executable": false
     },
-    "migrations/250_voice.sql": {
-      "sha256": "2fc9c4397ce136a3227e73b7b6d0e4d761ffba7a1c53effa6e50447adcd58584",
-      "executable": false
-    },
     "migrations/251_knowledge_read_selection.sql": {
       "sha256": "3477a5982527a84b6f9a96cdf2b9d8d481f46d16b08e8eec50238ee21c20c21b",
-      "executable": false
-    },
-    "migrations/251_voice_media.sql": {
-      "sha256": "5e503f0984fbe3c8c2b70a642957b0c56de633392f49d73a41ffce67d93bc442",
       "executable": false
     },
     "migrations/252_customer_identity_link_history.sql": {
@@ -12400,7 +12392,7 @@
       "executable": false
     },
     "tests/helpers/voice/journeys.mjs": {
-      "sha256": "dea6122c23358cadfab8979798cfb891401bbcd2da74917a99ade192eace50f2",
+      "sha256": "443c1bf41cf4f3deb40983915b6efe5f6dd20de33b11250d71da4be31a42a5c6",
       "executable": false
     },
     "tests/helpers/voice/portable.mjs": {
@@ -12548,7 +12540,7 @@
       "executable": false
     },
     "tests/journeys/connections.mjs": {
-      "sha256": "aff0bdc45dd1d44494c70e1155cdf4ba0db1a272f8492acdaf0aa673a7cfb0f7",
+      "sha256": "66f8da8ee3dff7adf6e35f98b27264d59b84635f068bebd3971105fec44fea0d",
       "executable": false
     },
     "tests/journeys/connector-browser.mjs": {

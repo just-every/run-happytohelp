@@ -194,6 +194,8 @@ body.conversation-workspace #chat {
         text-transform: uppercase;
     }
 
+    .ticket-summary__row--history { grid-template-columns: minmax(0, 1fr); }
+
     .imported-history {
         min-width: 0;
         overflow-wrap: anywhere;

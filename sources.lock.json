@@ -8720,7 +8720,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/TicketSummary.jsx": {
-      "sha256": "847683d0157acf5600be8d4f03bc13b6176fcc54aa1d374896b81659ff511389",
+      "sha256": "3ed038a616df452ad1d0ed297b2567e78606430617b369aa9731bef173a27c65",
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/useTicketRecord.js": {
@@ -9184,7 +9184,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-details.scss": {
-      "sha256": "96cf7a8ccba98209dbce496f61a452612a959c82ffd8c32a87e171c659963fa5",
+      "sha256": "80549a6d60a0a14a0c77806ac799b4944cd7332a3d1d8e5c1441e87df44fd2df",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-header.scss": {
@@ -12808,7 +12808,7 @@
       "executable": false
     },
     "tests/move-in/zendesk-offline-browser.mjs": {
-      "sha256": "b5bde9645d6f0f2f1431dcf1c261c924c632d4ef8c28703faad908e3bd1f23b4",
+      "sha256": "ac95504816a5255d7e366d08185fbf9ed3e8a196a874cecaed14f3724cf9e797",
       "executable": false
     },
     "tests/move-in/zendesk-offline-fixture.mjs": {

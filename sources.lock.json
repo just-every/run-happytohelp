@@ -12304,7 +12304,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/reference-upgrade.mjs": {
-      "sha256": "c1c66dc49f449ea1028cad0231749f7f55cd3464b2c7c9c52327dc5e62499efd",
+      "sha256": "eb9b60cdf2d42c6a5d5a71a216eebceb85c06532000afe45655a53c3ef2b13b5",
       "executable": false
     },
     "tests/helpers/knowledge/references.mjs": {
@@ -12396,7 +12396,7 @@
       "executable": false
     },
     "tests/helpers/recovery/comparison.mjs": {
-      "sha256": "1a2e73be32160c9ec711f483e6bd7ba8e7130a3d9c76d38365045fbb7e6acfde",
+      "sha256": "9ad04edaa817dcae9d4a006168f4fe9b329b8d6afc97cd62e92cc676de3af480",
       "executable": false
     },
     "tests/helpers/recovery/independent-journey.mjs": {
@@ -12405,6 +12405,10 @@
     },
     "tests/helpers/recovery/journey.mjs": {
       "sha256": "0dc9a850d8346490bf2db332f9f0cd8a05dd0978b2635711f75044d6b215a0d7",
+      "executable": false
+    },
+    "tests/helpers/recovery/knowledge-ready.mjs": {
+      "sha256": "4568b9605bd295a1c7564ca6156c17640056bc66fc1adf336241b72c4c1e1397",
       "executable": false
     },
     "tests/helpers/recovery/m9-inventory.mjs": {
@@ -12416,7 +12420,7 @@
       "executable": false
     },
     "tests/helpers/recovery/runtime.mjs": {
-      "sha256": "21bb012314818c6c3e4d5fe038eee873606034bf6ad77a3d62b4260f0805dd92",
+      "sha256": "2d499f84b8d0ad9389578d30211f03554234be3293eb4303fc14b4bca372c0bf",
       "executable": false
     },
     "tests/helpers/recovery/snapshot.mjs": {

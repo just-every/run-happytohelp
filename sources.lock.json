@@ -6248,7 +6248,7 @@
       "executable": false
     },
     "src/modules/management/inbox-filters.ts": {
-      "sha256": "2b6fc900ff43084abc8d315cf39d29a1b9ced04331a6275b5e7e598913a0ede4",
+      "sha256": "3c9e2df4dde5cd5484839ae62e255d595dcccf388099e2fc480d7b85a6098ba1",
       "executable": false
     },
     "src/modules/management/inbox-search.ts": {
@@ -6308,7 +6308,7 @@
       "executable": false
     },
     "src/modules/management/projects.ts": {
-      "sha256": "a7ec21ac21b0a3ee35c84cabe02fb5fbef5d45b67b148b5854b74c859d51e43c",
+      "sha256": "c5cec7f57191fdbecfbf89a57543f9fef72f512411efda41700729c723b3e3b1",
       "executable": false
     },
     "src/modules/management/provisioning/condition.ts": {
@@ -12392,7 +12392,7 @@
       "executable": false
     },
     "tests/journeys/inbox.mjs": {
-      "sha256": "3c807378aacf7a26889d2e915140556189a919d179c43b9aca6feb0c92507f15",
+      "sha256": "e77bf88d348fc48ea2921bb91331c06c8bc8d723b16b7dada27ac6be6ebfd7c8",
       "executable": false
     },
     "tests/journeys/installer-nightly.mjs": {

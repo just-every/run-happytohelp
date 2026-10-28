@@ -1,6 +1,8 @@
 import {companyRecordsJourney} from '../helpers/company-records.mjs'
 import {customerCsvJourney} from '../helpers/customer-csv.mjs'
 import test from 'node:test'
+import assert from 'node:assert/strict'
+import {startApp} from './kit/app.mjs'
 import {ticketsJourney} from '../helpers/inbox/tickets.mjs'
 import {managementJourney} from '../helpers/inbox/management.mjs'
 import {inboxSearchJourney} from '../helpers/inbox/search.mjs'
@@ -10,7 +12,25 @@ import {appearanceJourney} from '../helpers/inbox/appearance.mjs'
 
 // The operator's workspace on the real application's routes; fixtures only at the mail provider, DNS and crawler.
 
-test('workspace management keeps settings, resources, bootstrap, owners, notes, participants, transcript mail, widget origins, presence and mailbox ownership within each workspace\'s current authority',async()=>{await managementJourney();await companyRecordsJourney();await customerCsvJourney()})
+test('workspace management keeps settings, resources, bootstrap, owners, notes, participants, transcript mail, widget origins, presence and mailbox ownership within each workspace\'s current authority',async()=>{
+ const app=await startApp()
+ try{
+  const workspace=await app.seedWorkspace('synthetic-happytohelp-1')
+  const unknown=await app.request('/api/management/bootstrap?projectId=synthetic-missing',{token:workspace.tokens.operator})
+  assert.equal(unknown.status,403)
+  const refusal=await unknown.text(),results=[]
+  for(const name of ['constructor','toString','valueOf','__proto__','hasOwnProperty'])for(const inbox of ['', '&inbox=project','&inbox=global']){
+   const response=await app.request('/api/management/bootstrap?projectId='+encodeURIComponent(name)+inbox,{token:workspace.tokens.operator})
+   results.push({name,inbox,status:response.status,body:await response.text()})
+  }
+  for(const {name,inbox,status,body} of results){
+   assert.equal(status,403,name+inbox+': '+body)
+   assert.equal(body,refusal,name+inbox)
+   assert.doesNotMatch(body,/binding|stack|native code/i)
+  }
+ }finally{await app.close()}
+ await managementJourney();await companyRecordsJourney();await customerCsvJourney()
+})
 
 test('inbox search matches literally across names, emails, supplied identity and all history from an index built later and kept by every write, composes with status, assignment and AI views, and bounds its terms',inboxSearchJourney)
 

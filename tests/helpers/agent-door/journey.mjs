@@ -17,12 +17,18 @@ export async function agentDoorJourney(){
   const owner=await app.ok('/api/identity/bootstrap',{body:{setupToken:token,email,password:'Disposable-native-owner-892!zz',allowedOrigin:'https://store.example.test',ownerName:'Morgan Support'}})
   const native=(path,options={})=>app.ok(path,{token:owner.token,...options})
   const project=owner.projectId
+  const memberEmail='jordan@example.test',memberSub=randomUUID(),memberAgent=randomUUID()
+  const invite=(await native(`/api/management/projects/${project}/agents`,{body:{email:memberEmail}})).data
+  await app.ok('/api/identity/accept-token',{body:{token:new URL(invite.invitationUrl).searchParams.get('token'),name:'Jordan Support',password:'Disposable-native-jordan-693!zz'}})
+  const member=await app.ok('/api/identity/login',{body:{email:memberEmail,password:'Disposable-native-jordan-693!zz'}})
   assert.equal((await app.first('SELECT project_id FROM h2h_business_project WHERE singleton=1')).project_id,project)
   const settings=async(rev,team=null)=>{
    const iat=seconds(),settings=await signJws(pair.privateKey,kid,'rer-business-settings+jwt',{v:1,iss:issuer,aud:origin,sub:installationId,business:'support-company',email,owner_id:sub,jti:randomUUID(),iat,exp:iat+300,rev,values:{},logo:null,team})
    return app.call('/api/rer/business-settings',{body:{settings}})
   }
   const paired=await settings(1);assert.equal(paired.status,200,JSON.stringify(paired.data))
+  const team=await settings(2,[{id:memberSub,email:memberEmail,name:'Jordan Support',role:'member',invite:1}]);assert.equal(team.status,200,JSON.stringify(team.data))
+  assert.equal((await app.first('SELECT operator_id FROM bs_team WHERE business_id=?',memberSub)).operator_id,member.actor.id)
   const contact=(await native(`/api/management/projects/${project}/contacts`,{body:{name:'Avery Buyer',email:'avery@example.test'}})).data
   const conversation=await native('/api/conversations',{body:{projectId:project,contactId:contact.id}})
   const article=await native(`/api/knowledge/${project}/articles`,{body:{title:'Shipping answer',content:'Orders ship within two business days.',status:'draft'}})
@@ -70,6 +76,18 @@ export async function agentDoorJourney(){
   assert.deepEqual(absent.data.error,foreign.data.error)
   const invalid=await rpc('tools/list',{},await accessToken(context,{sub:randomUUID(),email}));assert.equal(invalid.status,401)
   const wrongAudience=await rpc('tools/list',{},await accessToken(context,{aud:'https://foreign.example/mcp'}));assert.equal(wrongAudience.status,401)
+  // Native email reassignment does not transfer the signed Business binding.
+  await app.ok('/api/management/profile',{method:'PUT',token:member.token,body:{name:'Jordan Support',email:'jordan.new@example.test'}})
+  const replacementInvite=(await native(`/api/management/projects/${project}/agents`,{body:{email:memberEmail}})).data
+  await app.ok('/api/identity/accept-token',{body:{token:new URL(replacementInvite.invitationUrl).searchParams.get('token'),name:'Casey Support',password:'Disposable-native-casey-781!zz'}})
+  const replacement=await app.ok('/api/identity/login',{body:{email:memberEmail,password:'Disposable-native-casey-781!zz'}})
+  const memberToken=await accessToken(context,{sub:memberSub,email:memberEmail,act:{sub:memberAgent,name:'Jordan helper',specialist:'support agent'}})
+  const memberNote=await call('happytohelp.conversations.note',{id:conversation.id,content:'A durable Business id still acts for Jordan after the email changes.',idempotency_key:randomUUID()},memberToken)
+  assert.equal(memberNote.outcome,'done',JSON.stringify(memberNote))
+  const memberOperation=await app.first('SELECT sponsor_id FROM h2h_agent_operations WHERE id=?',memberNote.result.operation)
+  assert.equal(memberOperation.sponsor_id,member.actor.id);assert.notEqual(memberOperation.sponsor_id,replacement.actor.id)
+  const removed=await settings(3,[]);assert.equal(removed.status,200)
+  assert.equal((await rpc('tools/list',{},memberToken)).status,401,'native membership removal ends sponsorship immediately')
   const before=(await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',conversation.id)).n
   await adopt(autonomousPolicy(),{paused:true})
   assert.equal((await call('happytohelp.conversations.note',{id:conversation.id,content:'Must be paused',idempotency_key:randomUUID()})).code,'agents_paused')

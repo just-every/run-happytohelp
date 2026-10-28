@@ -16,7 +16,7 @@ export default async function({request,origin,email,token}){
  const protectedConversation=await native('/api/conversations',{projectId:owner.projectId,contactId:protectedContact.id})
  await native(`/api/dashboard/projects/${owner.projectId}/conversations/${protectedConversation.id}`,{subject:'Patient record 321-54-6789'},'PUT')
  await native(`/api/customer-context/${owner.projectId}/${protectedContact.id}/evidence`,{source:'customer_message',content:'Patient record 321-54-6789 is protected support evidence.'})
- await native(`/api/knowledge/${owner.projectId}/articles`,{title:'Patient record handling',content:'Social security number 321-54-6789 is synthetic protected material.',status:'draft'})
+ await native(`/api/knowledge/${owner.projectId}/articles`,{title:'Patient record 321-54-6789 handling',content:'Social security number 321-54-6789 is synthetic protected material.',status:'draft'})
  const pairing=(await native(`/api/projects/${owner.projectId}/local-agents/pairings`,{})).data
  const paired=(await native('/api/local-agents/pair',{code:pairing.code,provider:'codex',name:'Support investigation device',capabilities:[]})).data
  await native(`/api/projects/${owner.projectId}/conversations/${conversation.id}/delegations`,{request_id:'support-shift-investigation',device_id:paired.device.id,mode:'investigate',instructions:'Read the selected support evidence. Do not repair or send a reply.'})

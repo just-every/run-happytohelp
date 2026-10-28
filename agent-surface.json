@@ -19,6 +19,21 @@
         "properties": {},
         "required": [],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "assistants": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "assistants"
+        ],
+        "additionalProperties": false
       }
     },
     {
@@ -42,6 +57,21 @@
           }
         },
         "required": [],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "articles": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "articles"
+        ],
         "additionalProperties": false
       }
     },
@@ -70,6 +100,18 @@
           "id"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "article": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "article"
+        ],
+        "additionalProperties": false
       }
     },
     {
@@ -95,6 +137,18 @@
         },
         "required": [
           "id"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "context": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "context"
         ],
         "additionalProperties": false
       }
@@ -135,6 +189,24 @@
           "user_id"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "object"
+          },
+          "operation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "ticket",
+          "operation"
+        ],
+        "additionalProperties": false
       }
     },
     {
@@ -159,6 +231,47 @@
         },
         "required": [],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "conversations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "subject": {
+                  "type": "string"
+                },
+                "revision": {
+                  "type": "integer"
+                },
+                "ticket_version": {
+                  "type": "integer"
+                },
+                "note_count": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "subject",
+                "revision",
+                "ticket_version",
+                "note_count"
+              ]
+            }
+          }
+        },
+        "required": [
+          "conversations"
+        ],
+        "additionalProperties": false
       }
     },
     {
@@ -169,7 +282,6 @@
         "standard"
       ],
       "clauses": [
-        "CONVERSATION-001",
         "CONVERSATION-001"
       ],
       "inputSchema": {
@@ -200,6 +312,24 @@
           "content"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "object"
+          },
+          "operation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "note",
+          "operation"
+        ],
+        "additionalProperties": false
       }
     },
     {
@@ -225,6 +355,46 @@
         },
         "required": [
           "id"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "object"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "activity": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "ticket",
+          "messages",
+          "attachments",
+          "activity",
+          "jobs"
         ],
         "additionalProperties": false
       }
@@ -270,6 +440,24 @@
           "version"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "object"
+          },
+          "operation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "ticket",
+          "operation"
+        ],
+        "additionalProperties": false
       }
     },
     {
@@ -287,6 +475,18 @@
         "type": "object",
         "properties": {},
         "required": [],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "email"
+        ],
         "additionalProperties": false
       }
     },
@@ -314,6 +514,18 @@
           "id"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "job": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "job"
+        ],
+        "additionalProperties": false
       }
     },
     {
@@ -339,6 +551,18 @@
           "id"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "operation"
+        ],
+        "additionalProperties": false
       }
     },
     {
@@ -356,6 +580,21 @@
         "type": "object",
         "properties": {},
         "required": [],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "people": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "people"
+        ],
         "additionalProperties": false
       }
     },
@@ -386,6 +625,18 @@
           "end"
         ],
         "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "report"
+        ],
+        "additionalProperties": false
       }
     },
     {
@@ -403,6 +654,21 @@
         "type": "object",
         "properties": {},
         "required": [],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "workflows": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "workflows"
+        ],
         "additionalProperties": false
       }
     },

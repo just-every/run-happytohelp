@@ -59,7 +59,25 @@ export function happyTools(env:Env):ToolDefinition[]{
   name:'happytohelp.'+name,title,description:title+' through the native transaction; current role and source revision remain authoritative.',scope:'happytohelp.'+name,readOnly:false,inputSchema:input,outputSchema:output({[name==='conversations.note'?'note':'ticket']:record,operation:string}),classes:['standard'],clauses,
   async classify(args,ctx){await actorFor(env,ctx,permission);await conversationRead(env,ctx,String(args.id));return [{class:'standard',facts:{measure:1}}]},
   revision:async(args,ctx)=>{const {ticket}=await conversationRead(env,ctx,String(args.id));return ticket.ticket_version},
-  async summary(args,ctx){const {ticket}=await conversationRead(env,ctx,String(args.id));return {target:{id:ticket.id,name:ticket.subject||'Support ticket'},items:[title,JSON.stringify(redacted(args))]}},
+  async summary(args,ctx){
+   const {ticket}=await conversationRead(env,ctx,String(args.id)),items=[title]
+   if(name==='conversations.note'){
+    items.push(String(args.content))
+    if(Array.isArray(args.media_ids))for(const id of args.media_ids){
+     const media=await env.DB.prepare('SELECT filename FROM media WHERE id=? AND conversation_id=? AND project_id=? AND uploaded_by=? AND message_id IS NULL').bind(id,ticket.id,ticket.project_id,ctx.person.id).first<{filename:string}>()
+     if(!media)throw new ToolRefusal('not_found')
+     items.push('Attachment: '+media.filename)
+    }
+   }else if(name==='conversations.assign'){
+    const assignee=args.user_id===null?null:await env.DB.prepare('SELECT u.name FROM memberships m JOIN users u ON u.id=m.user_id WHERE m.project_id=? AND m.user_id=?').bind(ticket.project_id,args.user_id).first<{name:string}>()
+    if(args.user_id!==null&&!assignee)throw new ToolRefusal('not_found')
+    items.push(assignee?'Assign to '+assignee.name:'Remove the current assignment')
+   }else{
+    if(args.subject!==undefined)items.push('Subject: '+String(args.subject))
+    if(args.priority!==undefined)items.push('Priority: '+String(args.priority))
+   }
+   return {target:{id:ticket.id,name:ticket.subject||'Support ticket'},items}
+  },
   async run(args,ctx){
    if(ctx.clientId?.startsWith('edition:'))throw new ToolRefusal('insufficient_scope')
    const actor=await actorFor(env,ctx,permission),authority=await agentAuthority(env,actor,ctx,'happytohelp.'+name,permission)
@@ -73,7 +91,7 @@ export function happyTools(env:Env):ToolDefinition[]{
  tools.push(
   mutation('conversations.update','Update a support ticket',['CONVERSATION-001','QUEUE-001'],schema({id:string,version:{type:'integer',minimum:0},subject:{type:'string',maxLength:500},priority:{enum:['low','normal','high','urgent']}},['id','version']), 'conversations.manage',async(a,_ctx,actor,authority)=>({ticket:await mutateTicket(env,actor,a.id,{expected_ticket_version:a.version,...(a.subject===undefined?{}:{subject:a.subject}),...(a.priority===undefined?{}:{priority:a.priority})},{...authority,source:'api'})})),
   mutation('conversations.assign','Assign a support ticket',['CONVERSATION-001','QUEUE-001'],schema({id:string,version:{type:'integer',minimum:0},user_id:{type:['string','null']}},['id','version','user_id']),'conversations.manage',async(a,_ctx,actor,authority)=>({ticket:await mutateTicket(env,actor,a.id,{expected_ticket_version:a.version,agent_id:a.user_id},{...authority,source:'api'})})),
-  mutation('conversations.note','Add a private internal note',['CONVERSATION-001','CONVERSATION-001'],schema({id:string,content:text,media_ids:{type:'array',items:string,maxItems:20}},['id','content']),'conversations.notes',async(a,_ctx,actor,authority)=>({note:await createNote(env,actor,a.id,{content:a.content,media_ids:a.media_ids},{...authority,source:'api'})})),
+  mutation('conversations.note','Add a private internal note',['CONVERSATION-001'],schema({id:string,content:text,media_ids:{type:'array',items:string,maxItems:20}},['id','content']),'conversations.notes',async(a,_ctx,actor,authority)=>({note:await createNote(env,actor,a.id,{content:a.content,media_ids:a.media_ids},{...authority,source:'api'})})),
  )
  return tools.sort((a,b)=>a.name.localeCompare(b.name))
 }

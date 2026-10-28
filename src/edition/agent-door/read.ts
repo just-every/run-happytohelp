@@ -26,7 +26,7 @@ export function redacted<T>(input:T):T{
 }
 export function readClasses(record:unknown):ClassAndFacts[]{
  const wire=JSON.stringify(record)
- const protectedContent=/\b\d{3}-\d{2}-\d{4}\b|\b(?:medical diagnosis|patient record|social security number)\b/i.test(wire)
+ const protectedContent=/\b(?!000|666|9\d{2})\d{3}-(?!00)\d{2}-(?!0000)\d{4}\b/.test(wire)
  return protectedContent?[{class:'standard',facts:{measure:1}},{class:'sensitive',facts:{measure:1,kind:'protected-content'}}]:[{class:'standard',facts:{measure:1}}]
 }
 export async function conversationRead(env:Env,who:Who,id:string){

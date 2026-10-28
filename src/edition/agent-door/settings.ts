@@ -21,11 +21,14 @@ export function nativeTeam(env:Env):TeamAdapter {
     const previous=managed.find(m=>m.email===member.email)
     // An applied Business id retains its native id across an email change/reassignment.
     const existing=previous?.operatorId?await env.DB.prepare('SELECT id,email FROM users WHERE id=?').bind(previous.operatorId).first<{id:string;email:string}>():await env.DB.prepare('SELECT id,email FROM users WHERE lower(email)=?').bind(member.email).first<{id:string;email:string}>()
-    if(existing?.id===link.owner_user_id){rows.push({email:member.email,operatorId:null,invite:member.invite,state:'conflict'});continue}
+    if(previous?.operatorId&&!existing){rows.push({...previous,state:'inactive'});continue}
+    if(existing?.id===link.owner_user_id){rows.push({email:member.email,operatorId:existing.id,invite:member.invite,state:'conflict'});continue}
     const id=existing?.id??crypto.randomUUID(),now=Date.now(),role=member.role==='admin'?'admin':'operator'
     const current=existing?await env.DB.prepare('SELECT role FROM memberships WHERE project_id=? AND user_id=?').bind(link.project_id,id).first<{role:string}>():null
     // Never overwrite independent native owner/custom role authority through roster sync.
-    if(current?.role==='owner'){rows.push({email:member.email,operatorId:null,invite:member.invite,state:'conflict'});continue}
+    if(current?.role==='owner'){rows.push({email:member.email,operatorId:id,invite:member.invite,state:'conflict'});continue}
+    const custom=existing?await env.DB.prepare('SELECT pr.base FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=? AND mr.user_id=?').bind(link.project_id,id).first<{base:string}>():null
+    if(role==='operator'&&custom?.base==='admin'){rows.push({email:member.email,operatorId:id,invite:member.invite,state:'conflict'});continue}
     if(!existing)statements.push(env.DB.prepare(`INSERT INTO users(id,email,name,created_at) SELECT ?,?,?,? WHERE ${guard.sql}`).bind(id,member.email,member.name,now,...guard.args))
     statements.push(env.DB.prepare(`INSERT INTO memberships(project_id,user_id,role) SELECT ?,?,? WHERE ${guard.sql} AND EXISTS(SELECT 1 FROM h2h_business_project WHERE singleton=1 AND project_id=? AND owner_user_id=?) ON CONFLICT(project_id,user_id) DO UPDATE SET role=excluded.role WHERE memberships.role<>'owner'`).bind(link.project_id,id,role,...guard.args,link.project_id,link.owner_user_id))
     const admitted=existing&&await env.DB.prepare('SELECT 1 FROM credentials WHERE user_id=? UNION SELECT 1 FROM sessions WHERE actor_id=? AND revoked_at IS NULL AND expires_at>?').bind(id,id,now).first()

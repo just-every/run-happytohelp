@@ -3476,7 +3476,7 @@
       "executable": false
     },
     "src/edition/agent-door/tools.ts": {
-      "sha256": "9ab2eae2727e248d3fe8425cee05b74074aa48c616e11bcdfb2d4d73770b8473",
+      "sha256": "d6d768036132bb154b3cbb68a31483df9eb766056f9a51efc2902ac9d9e5647d",
       "executable": false
     },
     "src/edition/ai/customer-context-provider.ts": {
@@ -12424,7 +12424,7 @@
       "executable": false
     },
     "tests/helpers/agent-door/journey.mjs": {
-      "sha256": "72ce0f796fb126319be0817244cd59e8a38e7644a6c50be92a7b89648eaf1d52",
+      "sha256": "52459aa61ec08861a52599315bf197ee9cb21148dc07871c6ab9b596c5c7798a",
       "executable": false
     },
     "tests/helpers/agent-door/surface-journey.json": {

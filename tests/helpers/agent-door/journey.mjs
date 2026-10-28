@@ -70,8 +70,21 @@ export async function agentDoorJourney(){
   const updated=await call('happytohelp.conversations.update',{id:conversation.id,version:ticket.ticket_version,subject:'Shipping investigation',expected_revision:ticket.ticket_version,idempotency_key:randomUUID()})
   assert.equal(updated.outcome,'done',JSON.stringify(updated))
   assert.equal((await call('happytohelp.conversations.update',{id:conversation.id,version:ticket.ticket_version,subject:'Stale edit',expected_revision:ticket.ticket_version,idempotency_key:randomUUID()})).code,'revision_conflict')
+  const assigned=await call('happytohelp.conversations.assign',{id:conversation.id,version:updated.result.ticket.ticket_version,user_id:owner.userId,idempotency_key:randomUUID()})
+  assert.equal(assigned.outcome,'done',JSON.stringify(assigned))
+  assert.equal((await native(`/api/dashboard/projects/${project}/conversations/${conversation.id}/ticket`)).data.assigned_to,owner.userId)
+  const pairing=(await native(`/api/projects/${project}/local-agents/pairings`,{body:{}})).data
+  const device=(await native('/api/local-agents/pair',{body:{code:pairing.code,provider:'codex',name:'Unconnected investigation device',capabilities:[]}})).data
+  const job=(await native(`/api/projects/${project}/conversations/${conversation.id}/delegations`,{body:{request_id:randomUUID(),device_id:device.device.id,mode:'investigate',instructions:'Investigate only; no repair or customer reply authority.'}})).data
+  const day=at=>new Date(at).toISOString().slice(0,10)
+  for(const [name,args] of [
+   ['conversations.list',{}],['context.read',{id:conversation.id}],['articles.list',{}],['jobs.read',{id:job.id}],['operations.read',{id:note.result.operation}],
+   ['reports.read',{start:day(Date.now()-86400000),end:day(Date.now()+86400000)}],['people.read',{}],['workflows.read',{}],['ai.read',{}],['integrations.read',{}],['events.list',{}],
+  ]){const read=await call('happytohelp.'+name,args);assert.equal(read.outcome,'done',name+': '+JSON.stringify(read))}
+  const observedJob=(await call('happytohelp.jobs.read',{id:job.id})).result.job
+  assert.equal(observedJob.status,'queued');assert.match(observedJob.observation,/unconfirmed/)
   assert.equal((await call('happytohelp.articles.read',{id:article.id})).outcome,'done')
-  assert.equal((await rpc('resources/read',{uri:`happytohelp://projects/${project}/conversations/${conversation.id}`})).data.error,undefined)
+  for(const path of [`conversations/${conversation.id}`,`conversations/${conversation.id}/context`,`articles/${article.id}`,`jobs/${job.id}`,`operations/${note.result.operation}`])assert.equal((await rpc('resources/read',{uri:`happytohelp://projects/${project}/${path}`})).data.error,undefined,path)
   const absent=await rpc('resources/read',{uri:`happytohelp://projects/${project}/conversations/missing`}),foreign=await rpc('resources/read',{uri:`happytohelp://projects/foreign/conversations/${conversation.id}`})
   assert.deepEqual(absent.data.error,foreign.data.error)
   const invalid=await rpc('tools/list',{},await accessToken(context,{sub:randomUUID(),email}));assert.equal(invalid.status,401)

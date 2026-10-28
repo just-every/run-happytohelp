@@ -12052,7 +12052,7 @@
       "executable": false
     },
     "tests/helpers/mobile-fixture.mjs": {
-      "sha256": "ac52b771b4043e0940ff592d88e590b137ec511b605789e222f4f5ac132cb28f",
+      "sha256": "abf83967d7278975007abc510d8715fb9c581c85f6058f72a5ec8b10ac5c2c85",
       "executable": false
     },
     "tests/helpers/mobile-offline.mjs": {

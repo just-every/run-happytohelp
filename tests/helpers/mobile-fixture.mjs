@@ -15,4 +15,3 @@ export async function fixture(){
  const read=async(device,id=t.id)=>(await call(`/tickets/${id}`,{token:device.token,status:200})).data
  return {app,w,other,t,foreign,pair,call,read}
 }
-

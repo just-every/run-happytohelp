@@ -10,7 +10,7 @@ const localTime = value => {
 export default function FollowupObligations({conversation, reads, liveKey}) {
     const base = `/api/ai-support/projects/${conversation.project_id}/conversations/${conversation.id}/obligations`;
     const [data, setData] = useState(null), [error, setError] = useState(''), [busy, setBusy] = useState(false), [refresh, setRefresh] = useState(0);
-    const [messageId, setMessageId] = useState(''), [quote, setQuote] = useState(''), [notice, setNotice] = useState('');
+    const [messageId, setMessageId] = useState(''), [quote, setQuote] = useState(''), [notice, setNotice] = useState(''), [proposing, setProposing] = useState(false);
     const source = useRef(null);
     useEffect(() => {
         let active = true;
@@ -35,12 +35,12 @@ export default function FollowupObligations({conversation, reads, liveKey}) {
         {notice && <p role="status">{notice}</p>}
         {!data && !error && <p role="status">Loading promises…</p>}
         {data && <>
-            <details><summary>Propose a follow-up</summary>
+            <details onToggle={event => setProposing(event.currentTarget.open)}><summary>Propose a follow-up</summary>
                 <form onSubmit={event => {
                     event.preventDefault(); const fields = new FormData(event.currentTarget);
                     write('', {messageId, quote, ownerId:fields.get('ownerId'), dueAt:new Date(fields.get('dueAt')).getTime(), stopCondition:fields.get('stopCondition'), dependencyId:fields.get('dependencyId') || null});
                 }}>
-                    <label>Promise message<select aria-label="Promise message" required value={messageId} onChange={e => {setMessageId(e.target.value); setQuote('');}}><option value="">Choose a message</option>{data.sources.map(m => <option key={m.id} value={m.id}>{m.content.slice(0,100)}</option>)}</select></label>
+                    <label>Promise message<select aria-label="Promise message" required value={messageId} onChange={e => {setMessageId(e.target.value); setQuote('');}}><option value="">Choose a message</option>{proposing && data.sources.map((m, index) => <option key={m.id} value={m.id}>Message {index + 1}: {m.content.slice(0,100)}</option>)}</select></label>
                     {sourceMessage && <><label>Source message<textarea aria-label="Source message" ref={source} readOnly value={sourceMessage.content} rows={5}/></label><button className="btn btn-sm btn-outline-secondary" type="button" onClick={() => setQuote(sourceMessage.content.slice(source.current.selectionStart,source.current.selectionEnd))}>Use selected quote</button></>}
                     <label>Exact promise quote<textarea aria-label="Exact promise quote" required maxLength={2000} value={quote} onChange={e => setQuote(e.target.value)} rows={3}/></label>
                     <Terms data={data}/>

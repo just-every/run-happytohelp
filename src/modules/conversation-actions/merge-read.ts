@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 
@@ -17,11 +18,11 @@ export async function customerMergeTarget(env:Env,projectId:string,id:string,con
 }
 /** CALLER MUST enforce current operator membership. Never call for widgets,
  * customer attachment reads, notifications or customer transcript exports. */
-export async function operatorThreadIds(env:Env,projectId:string,id:string){
+export async function operatorThreadIds(env:Env,projectId:string,id:string,userId:string){
  const alias=await mergedAlias(env,projectId,id),target=alias?.target_id??id
- const rows=await env.DB.prepare('SELECT source_id FROM conversation_merges WHERE project_id=? AND target_id=? AND undone_at IS NULL ORDER BY created_at,id').bind(projectId,target).all<{source_id:string}>()
- return [target,...rows.results.map(row=>row.source_id)]
+ const rows=await env.DB.prepare(`SELECT c.id FROM conversations c WHERE c.project_id=? AND (c.id=? OR c.id IN (SELECT source_id FROM conversation_merges WHERE project_id=c.project_id AND target_id=? AND undone_at IS NULL)) AND ${ticketScopeSql('?')} ORDER BY c.id`).bind(projectId,target,target,userId).all<{id:string}>()
+ return rows.results.map(row=>row.id)
 }
-export async function mergeHistory(env:Env,projectId:string,id:string){
- return (await env.DB.prepare('SELECT * FROM conversation_merges WHERE project_id=? AND (source_id=? OR target_id=?) ORDER BY created_at DESC,id LIMIT 100').bind(projectId,id,id).all()).results
+export async function mergeHistory(env:Env,projectId:string,id:string,userId:string){
+ return (await env.DB.prepare(`SELECT * FROM conversation_merges m WHERE project_id=? AND (source_id=? OR target_id=?) AND EXISTS(SELECT 1 FROM conversations c WHERE c.project_id=m.project_id AND c.id=m.source_id AND ${ticketScopeSql('?')}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.project_id=m.project_id AND c.id=m.target_id AND ${ticketScopeSql('?')}) ORDER BY created_at DESC,id LIMIT 100`).bind(projectId,id,id,userId,userId).all()).results
 }

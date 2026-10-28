@@ -1,3 +1,4 @@
+import {ticketScopeSql,requireTicketScope} from '../access/ticket-scope'
 import {assistanceProfileSql,replyProfileSql} from './selection'
 import {assertModelConfigured,AiConfigurationError} from './configuration'
 import {publishSuggestions} from './presentation'
@@ -16,6 +17,7 @@ export function canonicalActorJson(actor:unknown):string{
 function commandOptions(json:string){try{const options=JSON.parse(json);delete options.application_origin;return JSON.stringify(options)}catch{return null}}
 function storedActorJson(actorJson:string){try{return canonicalActorJson(JSON.parse(actorJson))}catch{return null}}
 export async function requestGeneration(env:Env,input:{projectId:string;conversationId:string;actor:Actor;expectedRevision:number;id?:string;kind?:'reply'|'suggestions';instruction?:string;options?:{tool?:string;message?:string;client_request_id?:string;display_request_version?:number;loading_message?:string}},configurationFailure:'reject'|'record'='reject',assignmentGuard?:AssignmentReplyGuard){
+ if(input.actor.role!=='contact')await requireTicketScope(env,input.actor.id,input.projectId,input.conversationId)
  const profileSql=input.kind==='suggestions'?assistanceProfileSql:replyProfileSql
  const selected=await env.DB.prepare(`SELECT a.model FROM conversations c JOIN ai_profiles a ON a.id=${profileSql} AND a.project_id=c.project_id AND a.is_enabled=1 WHERE c.project_id=? AND c.id=?`).bind(input.projectId,input.conversationId).first<{model:string}>()
  if(!selected)throw new AiConfigurationError('enabled selected conversation AI')
@@ -45,7 +47,7 @@ export async function requestGeneration(env:Env,input:{projectId:string;conversa
  const result=await env.DB.prepare(`INSERT OR IGNORE INTO ai_generations(id,project_id,conversation_id,state,source_revision,source_context_revision,source_last_message_id,actor_json,model,ai_id,ai_profile_json,kind,instruction,options_json,created_at,updated_at,error)
  SELECT ?,c.project_id,c.id,?,c.revision,(SELECT revision FROM context_subjects WHERE project_id=c.project_id AND subject_id=c.contact_id),c.last_message_id,?,a.model,a.id,json_object('id',a.id,'model',a.model,'prompt',a.prompt),?,?,?,?,?,?
  FROM conversations c JOIN ai_profiles a ON a.id=${profileSql} AND a.project_id=c.project_id AND a.is_enabled=1
- WHERE c.id=? AND c.project_id=? AND c.revision=? AND c.resolved_at IS NULL AND (? != 'contact' OR c.contact_id=?) ${assignmentGuard?`AND (${assignmentGuard.sql})`:''}`).bind(id,configurationError||skipped?'failed':'queued',actorJson,input.kind||'reply',input.instruction||'',optionsJson,now,now,configurationError||skipped,input.conversationId,input.projectId,input.expectedRevision,input.actor.role,input.actor.contactId||input.actor.id,...(assignmentGuard?.params||[])).run()
+ WHERE c.id=? AND c.project_id=? AND c.revision=? AND c.resolved_at IS NULL AND (? != 'contact' OR c.contact_id=?) ${input.actor.role==='contact'?'':`AND ${ticketScopeSql('?')}`} ${assignmentGuard?`AND (${assignmentGuard.sql})`:''}`).bind(id,configurationError||skipped?'failed':'queued',actorJson,input.kind||'reply',input.instruction||'',optionsJson,now,now,configurationError||skipped,input.conversationId,input.projectId,input.expectedRevision,input.actor.role,input.actor.contactId||input.actor.id,...(input.actor.role==='contact'?[]:[input.actor.id]),...(assignmentGuard?.params||[])).run()
  if(!result.meta.changes){if(admission?.admitted)await admission.refund();if(assignmentGuard){const winner=await env.DB.prepare('SELECT state FROM ai_generations WHERE id=? AND project_id=? AND conversation_id=?').bind(id,input.projectId,input.conversationId).first<{state:string}>();if(winner)return {id,state:winner.state}}throw new Error('Generation admission denied or command already exists')}
  if(input.kind==='suggestions'){await env.DB.prepare("UPDATE ai_generations SET state='superseded' WHERE project_id=? AND conversation_id=? AND kind='suggestions' AND state IN ('queued','running') AND rowid<(SELECT rowid FROM ai_generations WHERE id=?)").bind(input.projectId,input.conversationId,id).run();await publishSuggestions(env,input.projectId,input.conversationId)}
  if(configurationError)return {id,state:'failed'}

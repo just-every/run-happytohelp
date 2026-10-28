@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope';
 import type { Env } from '../../platform/env';
 import type { Generation } from './repository';
 import { assistanceProfileSql, replyProfileSql } from './selection';
@@ -13,7 +14,7 @@ export function generationCurrentness(env: Env, row: Generation, abort: AbortCon
       FROM ai_generations g
       JOIN conversations c ON c.id=g.conversation_id AND c.project_id=g.project_id
       LEFT JOIN ai_profiles a ON a.id=${profileSql} AND a.project_id=c.project_id
-      WHERE g.id=?
+      WHERE g.id=? AND (json_extract(g.actor_json,'$.role')='contact' OR ${ticketScopeSql("json_extract(g.actor_json,'$.id')")})
     `).bind(row.id).first<any>();
     const changed = !current
       || current.context_revision === null

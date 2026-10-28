@@ -86,10 +86,20 @@ export async function adoptionJourney(){
   await run('INSERT INTO memberships VALUES(?,?,?)',s.projectId,other.userId,'operator');const peerToken=randomUUID()
   await run('INSERT INTO sessions VALUES(?,?,?,?,NULL,?,NULL)',sha(peerToken),other.userId,s.projectId,'operator',Date.now()+3600000)
   assert.equal((await request(s.draftPath,s.command,peerToken)).status,409,'a same-project peer does not own this job')
-  assert.equal((await request(s.draftPath.replace(s.conversationId,other.conversationId),s.command,s.token)).status,409)
+  assert.equal((await request(s.draftPath.replace(s.conversationId,other.conversationId),s.command,s.token)).status,404)
   assert.equal((await request(s.draftPath.replace(s.jobId,other.jobId),s.command,s.token)).status,409)
   assert.equal((await request(s.draftPath.replace(s.projectId,other.projectId),s.command,s.token)).status,403)
   await run('UPDATE local_devices SET user_id=? WHERE id=?',other.userId,s.deviceId);assert.equal((await s.adopt()).status,409);await noAdoption(s)
+
+
+  // Native owner recovery never becomes machine or delegated ticket authority.
+  // A deliberately stored empty scope revokes the previously completed job.
+  const scoped=await fixture(),scopedRole=randomUUID()
+  await run('INSERT INTO project_roles(id,project_id,name,base,permissions_json,ticket_scope_json,created_at,updated_at) VALUES(?,?,?,?,?,?,1,1)',scopedRole,scoped.projectId,'Stored ticket restriction','operator','[]',JSON.stringify({groupIds:[],includeUngrouped:false}))
+  await run('INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES(?,?,?,1)',scoped.projectId,scoped.userId,scopedRole)
+  assert.equal((await scoped.adopt()).status,404,'a delegated draft never inherits owner recovery bypass');await noAdoption(scoped)
+  assert.equal((await request(`/api/projects/${scoped.projectId}/conversations/${scoped.conversationId}/delegations`,undefined,scoped.token)).status,404,'local work history also loses ticket access')
+  assert.equal((await request(`/api/local-agents/jobs/${scoped.jobId}/context?run_id=synthetic`,undefined,scoped.deviceToken)).status,403,'device context refuses current scope before run hydration')
 
   // Proposal selection, the immutable frontier and required fields are checked.
   const v=await fixture()

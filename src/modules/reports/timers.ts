@@ -1,3 +1,4 @@
+import {requireTicketScope} from '../access/ticket-scope'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {Context} from 'hono'
@@ -11,7 +12,9 @@ const path='/projects/:projectId/conversations/:conversationId/timer'
 async function timerScope(c:Context<AppEnv>){
  const actor=await scope(c) as Actor,access=await memberAccess(c.env.DB,actor.projectId,actor.id)
  if(!access||access.base==='collaborator'||!access.permissions.has('conversations.manage'))throw new HTTPException(403,{message:'Ticket management permission is required to use handle timers'})
- const id=c.req.param('conversationId')!,ticket=await c.env.DB.prepare(`SELECT c.status_category FROM conversations c WHERE c.project_id=? AND c.id=? AND ${availableTicketSql()}`).bind(actor.projectId,id).first<{status_category:string}>()
+ const id=c.req.param('conversationId')!
+ await requireTicketScope(c.env,actor.id,actor.projectId,id)
+ const ticket=await c.env.DB.prepare(`SELECT c.status_category FROM conversations c WHERE c.project_id=? AND c.id=? AND ${availableTicketSql()}`).bind(actor.projectId,id).first<{status_category:string}>()
  if(!ticket)throw new HTTPException(404)
  return {actor,id,ticket,access}
 }
@@ -26,7 +29,7 @@ timerRoutes.get(path,async c=>{const {actor,id,access}=await timerScope(c);retur
 timerRoutes.post(`${path}/start`,async c=>{
  const {actor,id,ticket,access}=await timerScope(c)
  if(['solved','closed'].includes(ticket.status_category))throw new HTTPException(409,{message:'Reopen the ticket before starting a handle timer'})
- const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')}),now=Date.now()
+ const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'conversations.manage',id),now=Date.now()
  await c.env.DB.prepare(`INSERT OR IGNORE INTO ticket_handle_sessions(id,project_id,conversation_id,user_id,started_at) SELECT ?,c.project_id,c.id,?,? FROM conversations c WHERE c.id=? AND c.project_id=? AND c.status_category NOT IN ('solved','closed') AND ${availableTicketSql()} AND EXISTS(${guard.sql})`).bind(crypto.randomUUID(),actor.id,now,id,actor.projectId,...guard.params).run()
  const result=await readTimer(c.env,actor.projectId,id,actor.id)
  if(!result.running)throw new HTTPException(409,{message:'The ticket or your access changed. Reload before starting the timer.'})
@@ -36,7 +39,7 @@ timerRoutes.post(`${path}/start`,async c=>{
 // its session, as /adjust does; the stop records who made it (migration 205).
 timerRoutes.post(`${path}/stop`,async c=>{
  const {actor,id,access}=await timerScope(c),b=object(await c.req.json()),sessionId=b.sessionId===undefined?null:named(b.sessionId,200)
- const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')}),lead=['owner','admin'].includes(access.base)
+ const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'conversations.manage',id),lead=['owner','admin'].includes(access.base)
  const target=sessionId===null?{sql:'user_id=?',params:[actor.id]}:{sql:'id=? AND (user_id=? OR ?=1)',params:[sessionId,actor.id,Number(lead)]}
  const result=await c.env.DB.prepare(`UPDATE ticket_handle_sessions SET ended_at=max(started_at,?),ended_by=? WHERE project_id=? AND conversation_id=? AND ${target.sql} AND ended_at IS NULL AND EXISTS(${guard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=ticket_handle_sessions.conversation_id AND c.project_id=ticket_handle_sessions.project_id AND ${availableTicketSql()})`).bind(Date.now(),actor.id,actor.projectId,id,...target.params,...guard.params).run()
  if(!result.meta.changes)throw new HTTPException(409,{message:'No running timer to stop. Reload to see the current timer.'})
@@ -46,7 +49,7 @@ timerRoutes.post(`${path}/stop`,async c=>{
 timerRoutes.post(`${path}/adjust`,async c=>{
  const {actor,id,access}=await timerScope(c),b=object(await c.req.json()),sessionId=named(b.sessionId,200),reason=named(b.reason,1000)
  if(!Number.isSafeInteger(b.durationMs)||b.durationMs<0||b.durationMs>366*86400000)throw new HTTPException(400,{message:'Enter a duration between zero and 366 days'})
- const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')}),lead=['owner','admin'].includes(access.base)
+ const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'conversations.manage',id),lead=['owner','admin'].includes(access.base)
  const result=await c.env.DB.prepare(`UPDATE ticket_handle_sessions SET adjusted_duration_ms=?,adjustment_reason=?,adjusted_by=?,adjusted_at=? WHERE id=? AND project_id=? AND conversation_id=? AND ended_at IS NOT NULL AND (user_id=? OR ?=1) AND EXISTS(${guard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=ticket_handle_sessions.conversation_id AND c.project_id=ticket_handle_sessions.project_id AND ${availableTicketSql()})`).bind(b.durationMs,reason,actor.id,Date.now(),sessionId,actor.projectId,id,actor.id,Number(lead),...guard.params).run()
  if(!result.meta.changes)throw new HTTPException(409,{message:'Only your completed timer, or a completed timer managed by a lead, can be adjusted. Reload before trying again.'})
  return c.json({...await readTimer(c.env,actor.projectId,id,actor.id),canAdjustOthers:['owner','admin'].includes(access.base)})

@@ -28,8 +28,8 @@ reports.get('/projects/:projectId/reports',async c=>{
   await requireStepUp(c,actor,'reports.export')
   const transcripts=query.format==='transcripts.json'
   await auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'reports.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{format:query.format,...(transcripts?{scope:'all_workspace_conversations'}:{start:range.start,end:range.end})}}).run()
-  const body=transcripts?exportTranscripts(c.env,actor.projectId):query.format==='summary.csv'?summaryCSV(await readReport(c.env,actor.projectId,range)):exportCSV(c.env,actor.projectId,range)
+  const body=transcripts?exportTranscripts(c.env,actor.projectId,actor.id):query.format==='summary.csv'?summaryCSV(await readReport(c.env,actor.projectId,range,actor.id)):exportCSV(c.env,actor.projectId,range,actor.id)
   return new Response(body,{status:200,headers:{'Content-Type':`${transcripts?'application/json':'text/csv'}; charset=utf-8`,'Content-Disposition':`attachment; filename="${query.format}"`,'Cache-Control':'no-store'}})
  }
- return c.json({...await readReport(c.env,actor.projectId,range),campaigns:await campaignReport(c.env,actor.projectId,range.startAt,range.endAt)})
+ return c.json({...await readReport(c.env,actor.projectId,range,actor.id),campaigns:await campaignReport(c.env,actor.projectId,range.startAt,range.endAt)})
 })

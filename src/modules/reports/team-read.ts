@@ -16,8 +16,8 @@ async function reportOptions({env,projectId}:TeamReportContext){
  return {teams:teams.results,brands:brands.results,agents:agents.results}
 }
 
-export async function readTeamReport(env:Env,projectId:string,range:ReportRange,filters:TeamReportFilters,now=Date.now(),accessRole:string|null=null){
- const context={env,projectId,range,filters,now,accessRole}
+export async function readTeamReport(env:Env,projectId:string,range:ReportRange,filters:TeamReportFilters,now=Date.now(),accessRole:string|null=null,userId:string|null=null){
+ const context={env,projectId,range,filters,now,accessRole,userId}
  const [denominators,workload,backlog,sla,reopens,handleTime,options,breakdowns]=await Promise.all([
   statement(context,`SELECT COUNT(*) cohort,COALESCE(SUM(imported=0),0) native,COALESCE(SUM(imported=1),0) imported,
    (SELECT COUNT(*) FROM candidates WHERE created_at>=?2 AND imported=1 AND ?6=0) excludedImported FROM cohort`).first<{cohort:number;native:number;imported:number;excludedImported:number}>(),

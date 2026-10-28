@@ -22,7 +22,7 @@ teamReports.get('/projects/:projectId/reports/team',async c=>{
   await requireReportPermission(c,actor,'data.export')
   await requireStepUp(c,actor,'reports.export')
  }
- const report=await readTeamReport(c.env,actor.projectId,range,filters,Date.now(),access.key)
+ const report=await readTeamReport(c.env,actor.projectId,range,filters,Date.now(),access.key,actor.id)
  c.header('Cache-Control','no-store')
  if(query.format){
   await auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'reports.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{format:'team-summary.csv',start:range.start,end:range.end,timezone,...filters}}).run()

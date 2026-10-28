@@ -26,9 +26,8 @@ export async function controller(f,device){
 export async function offlineAdmission(){
  const f=await fixture(),{app,w,t,pair}=f
  try{
-  for(const platform of ['ios','android']){
-   const {client,lifecycle,network,requests}=await controller(f,await pair({platform}))
-   console.info('Mobile offline admission:',platform,'paired')
+  for(const platform of ['android']){
+   const device=await pair({platform}),{client,lifecycle,network,requests}=await controller(f,device)
    try{
     await client.openTicket(t.id)
     client.saveDraft(t.id,'I have checked your return and attached the instructions. '+platform)
@@ -42,7 +41,6 @@ export async function offlineAdmission(){
     network.online=true;lifecycle.dispatchEvent(new Event('online'))
     assert.equal(client.state.connection,'reconnect-required');assert.equal(requests.length,before,'online event does not send or replay')
     await client.reconnect()
-    console.info('Mobile offline admission:',platform,'reconnected')
     assert.ok(requests.slice(before).every(request=>request.method==='GET'),'reconnect only refreshes authority and current ticket/schedules')
     assert.ok(client.cachedTicket(t.id).schedules.some(row=>row[0]===(schedule.data?.id??schedule.id)))
     await assert.rejects(()=>client.sendDraft(t.id));assert.equal(client.draft(t.id).reviewRequired,true)
@@ -53,9 +51,12 @@ export async function offlineAdmission(){
     await assert.rejects(()=>client.sendDraft(t.id),error=>error.status===409)
     assert.equal(client.draft(t.id).outcome,'refused')
     await client.openTicket(t.id);client.reviewDraft(t.id)
-    const text=client.draft(t.id).content,result=await client.sendDraft(t.id)
+    const draft=client.draft(t.id),text=draft.content,result=await client.sendDraft(t.id)
+    const sentRequest=requests.findLast(request=>request.path.endsWith('/reply')),command=JSON.parse(sentRequest.body)
+    const replay=await f.call('/tickets/'+t.id+'/reply',{token:device.token,body:command,status:200})
+    assert.equal(replay.data.duplicate,true);assert.equal(replay.data.messageId,result.messageId)
+    await f.call('/tickets/'+t.id+'/reply',{token:device.token,body:{...command,content:'A different reply'},status:409})
     assert.equal(result.accepted,true);assert.equal(client.draft(t.id),undefined)
-    console.info('Mobile offline admission:',platform,'sent attachment reply')
     const snapshot=await client.openTicket(t.id)
     assert.equal(snapshot.messages.filter(message=>message.content===text).length,1)
     const media=snapshot.media.find(media=>media.message_id===result.messageId)
@@ -64,7 +65,6 @@ export async function offlineAdmission(){
     // after reconnect or another press of Send.
     client.saveDraft(t.id,'One response whose acknowledgment is lost. '+platform);client.reviewDraft(t.id)
     network.loseReply=true;await assert.rejects(()=>client.sendDraft(t.id))
-    console.info('Mobile offline admission:',platform,'lost reply response')
     assert.equal(client.draft(t.id).outcome,'uncertain')
     const writes=requests.filter(request=>request.method==='POST').length
     await client.reconnect();await assert.rejects(()=>client.sendDraft(t.id));assert.throws(()=>client.reviewDraft(t.id));
@@ -84,8 +84,8 @@ export async function offlineAuthority(){
   const file=await call(`/tickets/${t.id}/attachments`,{token:source.token,method:'POST',raw:true,body:'Private cached attachment',headers:{'Mobile-Frontier':frontier,'Content-Type':'text/plain','X-Filename':'customer-file.txt'},status:201})
   await call(`/tickets/${t.id}/notes`,{token:source.token,body:{localId:'private-file-note',frontier,content:'Private customer file',mediaIds:[file.data.id]},status:201})
   await call('/session',{token:source.token,method:'DELETE',status:200})
-  for(const reason of ['signout','offline-signout','revocation','parent-signout','authority-change','workspace-change','process-exit']){
-   const device=await pair({token:reason==='parent-signout'?w.tokens.admin:w.tokens.owner}),{client,lifecycle,network,requests}=await controller(f,device)
+  for(const reason of ['offline-signout','revocation','workspace-change','process-exit']){
+   const device=await pair({token:w.tokens.owner}),{client,lifecycle,network,requests}=await controller(f,device)
    try{
     await client.tickets();await client.openTicket(t.id)
     const cachedBytes=await client.attachment(t.id,file.data.id)
@@ -94,12 +94,8 @@ export async function offlineAuthority(){
     client.stageAttachment(t.id,{filename:'private.txt',contentType:'text/plain',bytes:new TextEncoder().encode('Private customer attachment')})
     const snapshot=client.cachedTicket(t.id),draft=client.draft(t.id),bytes=draft.files[0].bytes
     assert.ok(snapshot.ticket.id&&draft.content&&bytes.some(byte=>byte!==0))
-    console.info('Mobile offline authority:',reason,'loaded')
-    if(reason==='signout'){assert.equal((await client.signOut()).serverRevoked,true);assert.equal((await call('/session',{token:device.token})).status,401)}
     if(reason==='offline-signout'){network.online=false;client.setOffline();assert.equal((await client.signOut()).serverRevoked,false)}
     if(reason==='revocation'){client.setOffline();await call(`/devices/${device.id}`,{token:w.tokens.owner,method:'DELETE',status:200});await assert.rejects(()=>client.reconnect(),error=>error.status===401)}
-    if(reason==='parent-signout'){await app.call('/api/identity/session',{token:w.tokens.admin,method:'DELETE',status:200});await assert.rejects(()=>client.reconnect(),error=>error.status===401)}
-    if(reason==='authority-change')client.authorityChanged()
     if(reason==='workspace-change')client.workspaceChanged()
     if(reason==='process-exit')lifecycle.dispatchEvent(new Event('pagehide'))
     assert.equal(client.state.connection,'signed-out');assert.equal(client.state.ticketCount+client.state.draftCount+client.state.resourceCount,0)

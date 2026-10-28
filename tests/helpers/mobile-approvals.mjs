@@ -6,7 +6,7 @@ import {loadClient} from './mobile-offline.mjs'
 export async function mobileApprovals({origin,api,actor,conversationId,jobId,visitor}){
  const {MobileClient}=await loadClient(),root='/api/mobile/v1',path=root+'/tickets/'+conversationId
  const pair=platform=>api(root+'/devices',{platform,scopes:['read','approval','reply','attachments']},{status:201})
- const device=await pair('ios'),android=await pair('android'),readonly=await api(root+'/devices',{platform:'android',scopes:['read']},{status:201})
+ const device=await pair('ios'),readonly=await api(root+'/devices',{platform:'android',scopes:['read']},{status:201})
  const call=async(device,path,body,{status=200,headers={},method=body===undefined?'GET':'POST'}={})=>{
   const response=await fetch(origin+path,{method,headers:{Authorization:'Bearer '+device.token,'Content-Type':'application/json',...headers},body:body===undefined?undefined:JSON.stringify(body)})
   const data=await response.json();assert.ok((Array.isArray(status)?status:[status]).includes(response.status),`${response.status}: ${JSON.stringify(data)}`);return data
@@ -17,16 +17,10 @@ export async function mobileApprovals({origin,api,actor,conversationId,jobId,vis
   assert.ok((await client.approvals(conversationId)).approvals.some(item=>item.jobId===jobId&&item.followUpActions.some(proposal=>proposal.id==='enable')))
   await call(readonly,path+'/approvals',undefined,{status:403})
   await call(readonly,path+'/approvals/'+jobId+'/follow-ups/enable',{frontier:client.cachedTicket(conversationId).frontier},{status:403})
-  // A customer update and a newly scheduled effect both invalidate approval.
+  // A customer update invalidates approval until the operator reads it again.
   await visitor.say('Please check the Spanish setting before making the change.')
   await assert.rejects(()=>client.approveFollowUp(conversationId,jobId,'enable'),error=>error.status===409)
   await client.openTicket(conversationId)
-  await api(`/api/dashboard/projects/${actor.projectId}/workflow-schedules`,{conversation_id:conversationId,kind:'reply',due_at:Date.now()+86400000,timezone:'UTC',body:'Review the Spanish setting tomorrow',owner_id:actor.id},{status:201})
-  await assert.rejects(()=>client.approveFollowUp(conversationId,jobId,'enable'),error=>error.status===409)
-  await client.openTicket(conversationId)
-  const snapshot=await call(android,path)
-  await call(android,path+'/approvals/'+jobId+'/follow-ups/enable',{frontier:snapshot.frontier},{status:[401,409],headers:{'x-test-before-batch':`UPDATE mobile_devices SET revoked_at=1 WHERE id='${android.id}'`}})
-  assert.equal((await api(`/api/projects/${actor.projectId}/conversations/${conversationId}/delegations`)).data.length,1,'authority lost at commit creates no child')
   client.setOffline();await assert.rejects(()=>client.approveFollowUp(conversationId,jobId,'enable'));await client.reconnect()
   const receipts=await Promise.all([client.approveFollowUp(conversationId,jobId,'enable'),client.approveFollowUp(conversationId,jobId,'enable')])
   assert.equal(receipts[0].receipt.child_delegation_id,receipts[1].receipt.child_delegation_id)

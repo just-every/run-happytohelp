@@ -9,9 +9,9 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Core | 41 | 27 | 17 | 85 |
-| Agent surface | 0 | 0 | 0 | 0 |
+| Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 41 | 27 | 17 | 85 |
+| Full target | 41 | 27 | 22 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -23,15 +23,7 @@ Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd
 
 Core · published · **partial** · Cites BASE-INSTALL-001, BASE-OPS-002, BASE-DATA-001 · Register R-1
 
-**Requirement.** A clean owner can inspect the
-operating description before installing dependencies, install locked source,
-prepare local or selected remote bindings/migrations, build, verify and deploy
-through `rer`. Local setup exits with no app running; dev
-prints a private `RER_OPEN` address that enters as the real local owner through
-the rer dev v2 boundary, preserving native sessions, roles and passwords.
-Reset is explicitly confirmed and local;
-export/import preserve supported native data with documented exclusions.
-Deployment dry-run makes zero outbound requests and explicitly reports that fact. A separately and explicitly started read-only provider preflight uses the owner's scoped Cloudflare token with owner consent to read the account's Workers subdomain and the Worker's settings and secret names (three GETs for an existing Worker); it sends no mail and changes no resources. Dry-run and preflight are independent steps, neither a mock of the other. The delivered runtime requires no original checkout or PHP service. Details are in [the support protocol guide](docs/contract/support-protocols.md).
+**Requirement.** A clean owner can inspect the operating description before installing dependencies, install locked source, prepare local or selected remote bindings/migrations, build, verify and deploy through `rer`. Local setup exits with no app running; dev prints a private `RER_OPEN` address that enters as the real local owner through the rer dev v2 boundary, preserving native sessions, roles and passwords. Reset is explicitly confirmed and local; export/import preserve supported native data with documented exclusions. Deployment dry-run makes zero outbound requests and explicitly reports that fact. A separately and explicitly started read-only provider preflight uses the owner's scoped Cloudflare token with owner consent to read the account's Workers subdomain and the Worker's settings and secret names (three GETs for an existing Worker); it sends no mail and changes no resources. Dry-run and preflight are independent steps, neither a mock of the other. The delivered runtime requires no original checkout or PHP service. Details are in [the support protocol guide](docs/contract/support-protocols.md).
 
 **Acceptance.**
 1. Use a clean checkout through rer describe/check, locked installation, setup, dev, verify, reset and export/import; preserve owner/data/settings and refuse unconfirmed destructive work.
@@ -46,8 +38,7 @@ Deployment dry-run makes zero outbound requests and explicitly reports that fact
 
 Core · published · **done** · Cites BASE-ROLE-001, BASE-ACCESS-001, BASE-SIGNIN-002
 
-**Requirement.** Preserve native password sign-in, first-owner setup, the accepted owner
-experience and prior account/workspace data with the maintained Base command mechanisms. Retain this edition's authentication and native owner setup.  A second factor for these native accounts is required by IDENTITY-003; it adds to native passwords and never replaces them. Supersedes `BASE-ACCESS-001` for native password identity under RL-1.
+**Requirement.** Preserve native password sign-in, first-owner setup, the accepted owner experience and prior account/workspace data with the maintained Base command mechanisms. Retain this edition's authentication and native owner setup. A second factor for these native accounts is required by IDENTITY-003; it adds to native passwords and never replaces them. Supersedes `BASE-ACCESS-001` for native password identity under RL-1.
 
 **Acceptance.**
 1. Complete native password setup, login, recovery and workspace re-entry, then upgrade with prior owner credentials and data intact; configured providers must not replace native identity.
@@ -59,12 +50,7 @@ experience and prior account/workspace data with the maintained Base command mec
 
 Core · published · **done** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-ACCESS-003, BASE-ACCESS-004
 
-**Requirement.** Owner setup, registration, login/recovery,
-project switching, membership and widget admission establish native identity.
- Provider configuration
-never substitutes for user authority. The public widget key and origin are not
-a secret: visitor, registration and project-creation requests are bounded by
-D1-backed limits (the documented admission limits) and refused with HTTP 429 and `Retry-After`.
+**Requirement.** Owner setup, registration, login/recovery, project switching, membership and widget admission establish native identity. Provider configuration never substitutes for user authority. The public widget key and origin are not a secret: visitor, registration and project-creation requests are bounded by D1-backed limits (the documented admission limits) and refused with HTTP 429 and `Retry-After`.
 
 **Acceptance.**
 1. Through native session and widget routes, deny cross-tenant, blocked/deleted and revoked access; prove public admission returns 429 with Retry-After when limited and provider configuration conveys no actor authority.
@@ -76,27 +62,7 @@ D1-backed limits (the documented admission limits) and refused with HTTP 429 and
 
 Core · published · **done** · Cites BASE-INSTALL-001, BASE-MAIL-001, BASE-AGENT-007, BASE-AGENT-011
 
-**Requirement.** First-run setup is one screen: the
-owner's email, a password, the website and, only where the server requires one,
-the private setup token. Missing names and colors are derived and every derived
-value can be changed. A completed installation leads the owner to a workspace that
-is already set up, whose Setup page lists only what cannot be done for them (an
-AI service key, the widget on their website and, with a hosted email provider, a
-verified sending domain), leads with the widget, lets the owner skip any of
-them for now, and shows everything else under "What we've set". Every workspace created by first-owner setup, signed-in
-workspace creation or email-verified registration, and never a demo workspace,
-is provisioned in one step: a starter
-assistant as its default visitor assistant, a reply-by-email mailbox when the
-installation holds the installation’s inbound-email credential, and mail sent from the installation
-sender until the workspace's own domain is verified. The starter assistant answers
-visitors by itself once a provider key exists, within the daily AI ceilings; with
-no key no assistant is assigned to a new conversation, it stays with the team and
-the AI page and Setup say a key is missing. The first-run Create workspace action
-may send one welcome email to the owner; an uncertain send is never replayed.
-Ordinary workspace creation leads with the widget snippet; Advanced retains the
-server secret and verification examples. Empty inboxes offer installation, a link to
-Setup and a demo. Workspace headers follow workspace switching.
-Visitor headers retain the operator's display name.
+**Requirement.** First-run setup is one screen: the owner's email, a password, the website and, only where the server requires one, the private setup token. Missing names and colors are derived and every derived value can be changed. A completed installation leads the owner to a workspace that is already set up, whose Setup page lists only what cannot be done for them (an AI service key, the widget on their website and, with a hosted email provider, a verified sending domain), leads with the widget, lets the owner skip any of them for now, and shows everything else under "What we've set". Every workspace created by first-owner setup, signed-in workspace creation or email-verified registration, and never a demo workspace, is provisioned in one step: a starter assistant as its default visitor assistant, a reply-by-email mailbox when the installation holds the installation’s inbound-email credential, and mail sent from the installation sender until the workspace's own domain is verified. The starter assistant’s visitor replies carry external, and its internal preparation standard; the company’s policy decides each call once a provider key and complete policy exist, within that policy’s AI spending limits; with no key no assistant is assigned to a new conversation, it stays with the team and the AI page and Setup say a key is missing. The first-run Create workspace action may send one welcome email to the owner; an uncertain send is never replayed. Ordinary workspace creation leads with the widget snippet; Advanced retains the server secret and verification examples. Empty inboxes offer installation, a link to Setup and a demo. Workspace headers follow workspace switching. Visitor headers retain the operator's display name.
 
 **Acceptance.**
 1. Run fresh first-owner setup and signed-in workspace creation to Setup and an installable widget; inspect derived editable name/color, starter assistant, mailbox/sender, skip/Advanced controls and mobile headers.
@@ -110,14 +76,7 @@ Visitor headers retain the operator's display name.
 
 Core · published · **done** · Cites BASE-MAIL-001, BASE-ACCESS-002 · Register R-2
 
-**Requirement.** Trusted local development configuration
-uses the rer dev v2 development transport: it validates and suppresses visitor
-and teammate mail, reports `development`, stores no messages and exposes no mail viewer.
-It sends no external email. The local
-owner enters automatically through the dev boundary; native password identity,
-ordinary hosted email-link confirmation and prior stored data are retained.
-Production has no local dev surface. Missing credentials or failed remote
-delivery never select a local substitute.
+**Requirement.** Trusted local development configuration uses the rer dev v2 development transport: it validates and suppresses visitor and teammate mail, reports `development`, stores no messages and exposes no mail viewer. It sends no external email. The local owner enters automatically through the dev boundary; native password identity, ordinary hosted email-link confirmation and prior stored data are retained. Production has no local dev surface. Missing credentials or failed remote delivery never select a local substitute.
 
 **Acceptance.**
 1. Enter through rer dev v2; send visitor and teammate mail and prove development suppression without storage, viewer or external send; refuse forged and production dev entry and never substitute suppression for a failed hosted provider.
@@ -129,12 +88,7 @@ delivery never select a local substitute.
 
 Core · published · **done** · Cites BASE-OPS-003, BASE-DATA-003
 
-**Requirement.** Customer, operator, generation,
-import and administrative writers preserve stable message/command identity,
-revision/frontier, attachment ownership and final-reply admission atomically.
-Competing or repeated writes cannot admit two incompatible final replies.
-Owner/admin contact erasure removes message content while keeping identity,
-revision and frontier, so erased transcripts stay coherent.
+**Requirement.** Customer, operator, generation, import and administrative writers preserve stable message/command identity, revision/frontier, attachment ownership and final-reply admission atomically. Competing or repeated writes cannot admit two incompatible final replies. Owner/admin contact erasure removes message content while keeping identity, revision and frontier, so erased transcripts stay coherent.
 
 **Acceptance.**
 1. Race visitor, operator, model and import writers through conversation routes with duplicate and lost responses; admit only compatible final replies.
@@ -147,10 +101,7 @@ revision and frontier, so erased transcripts stay coherent.
 
 Core · published · **done** · Cites BASE-ACCESS-002, BASE-OPS-003, BASE-OPS-004
 
-**Requirement.** Persist before broadcast;
-reconnect/outbox replay and socket authorization recover committed messages
-after reload, disconnection or process wake. Provisional AI deltas never become
-durable final answers until guarded admission succeeds.
+**Requirement.** Persist before broadcast; reconnect/outbox replay and socket authorization recover committed messages after reload, disconnection or process wake. Provisional AI deltas never become durable final answers until guarded admission succeeds.
 
 **Acceptance.**
 1. Disconnect/reconnect widget and operator sockets after persisted writes, restart the runtime and recover the same committed messages/attachments; unauthorized replay is denied and superseded AI deltas never become final replies.
@@ -162,10 +113,7 @@ durable final answers until guarded admission succeeds.
 
 Core · published · **done** · Cites BASE-ACCESSIBILITY-001, BASE-INPUT-003 · Register R-19, R-20
 
-**Requirement.** Reuse the original React dashboard,
-transcripts/drafts/suggestions, settings and Shadow DOM widget; preserve useful
-desktop/mobile flows, attachment display, collector/privacy controls and errors.
-Native routing and transport use the configured application origin.
+**Requirement.** Reuse the original React dashboard, transcripts/drafts/suggestions, settings and Shadow DOM widget; preserve useful desktop/mobile flows, attachment display, collector/privacy controls and errors. Native routing and transport use the configured application origin.
 
 **Acceptance.**
 1. Use the native dashboard and separately installed widget at 1440 and 390 pixels with realistic conversations, attachments, drafts, errors and workspace switching; retain the approved desktop/mobile navigation and configured-origin transport.
@@ -177,21 +125,7 @@ Native routing and transport use the configured application origin.
 
 Core · published · **done** · Cites BASE-ROLE-001, BASE-OPS-003, BASE-DATA-001 · Rules D-1
 
-**Requirement.** Current workspace owner/admin
-reviewers privately upload, inspect per-kind plans, source-located omissions,
-rejections, conflicts and publication changes, then explicitly apply bounded,
-resumable imports of conversations, contacts, tags, saved replies and articles.
-Preserve source identities, timestamps, private notes and publication state;
-reject unsupported meaning rather than inventing it. Recheck current role and
-workspace authority for apply, resume and whole-import undo. Retain immutable
-source custody and conflict-safe reversal journals. Imports and undo send no
-mail, widget messages, model requests, assignment or connection notifications;
-imports are excluded from Reports. Native tag controls enforce workspace scope.
-RL-2 requires exact business-state repeat/undo equality,
-including contacts, conversations, messages, private notes, tags, source links
-and every other imported business table. Only platform counters/sequences,
-audit history and import journals are excluded. Synthetic 1,000-conversation
-datasets for Zendesk and Help Scout qualify this local flow.
+**Requirement.** Current workspace owner/admin reviewers privately upload, inspect per-kind plans, source-located omissions, rejections, conflicts and publication changes, then explicitly apply bounded, resumable imports of conversations, contacts, tags, saved replies and articles. Preserve source identities, timestamps, private notes and publication state; reject unsupported meaning rather than inventing it. Recheck current role and workspace authority for apply, resume and whole-import undo. Retain immutable source custody and conflict-safe reversal journals. Imports and undo send no mail, widget messages, model requests, assignment or connection notifications; imports are excluded from Reports. Native tag controls enforce workspace scope. RL-2 requires exact business-state repeat/undo equality, including contacts, conversations, messages, private notes, tags, source links and every other imported business table. Only platform counters/sequences, audit history and import journals are excluded. Synthetic 1,000-conversation datasets for Zendesk and Help Scout qualify this local flow.
 
 **Acceptance.**
 1. Through Move in, exercise all five kinds, source custody, per-row omissions/rejections/conflicts, current-role denials, inert apply/resume/repeat/undo and exact business-state equality for synthetic 1,000-conversation Zendesk and Help Scout datasets; counters/sequences, audit and journals are the only named exclusions.
@@ -203,16 +137,7 @@ datasets for Zendesk and Help Scout qualify this local flow.
 
 Core · published · **done** · Cites BASE-DATA-003, BASE-ROLE-001, BASE-AGENT-008 · Rules D-2
 
-**Requirement.** Current original visitor
-sessions may rate a closed resolution with thumbs up/down and an optional
-comment up to 1,000 characters. Changes retain history; reopened cycles cannot
-receive the previous resolution's rating. Operators retain access to each past
-resolution's latest feedback after reopening; visitor eligibility and report
-denominators remain tied to the current cycle. Erasure removes rating comments.
-Confirmed operator-sent drafts establish assisted outcomes, otherwise confirmed
-human replies establish human outcomes. AI requires a complete visible answer
-history without a person handoff; missing evidence remains unknown. Status,
-assignment and cancellation transitions recheck current authority atomically.
+**Requirement.** Current original visitor sessions may rate a closed resolution with thumbs up/down and an optional comment up to 1,000 characters. Changes retain history; reopened cycles cannot receive the previous resolution's rating. Operators retain access to each past resolution's latest feedback after reopening; visitor eligibility and report denominators remain tied to the current cycle. Erasure removes rating comments. Confirmed operator-sent drafts establish assisted outcomes, otherwise confirmed human replies establish human outcomes. AI requires a complete visible answer history without a person handoff; missing evidence remains unknown. Status, assignment and cancellation transitions recheck current authority atomically.
 
 **Acceptance.**
 1. Close, rate, rerate, reopen and close again via widget/operator routes; prevent previous-session/cycle feedback, retain old-cycle operator visibility, redact erased comments and verify human/assisted/AI/unknown attribution from actual visible answers.
@@ -224,17 +149,7 @@ assignment and cancellation transitions recheck current authority atomically.
 
 Core · published · **done** · Cites BASE-ROLE-001, BASE-DATA-001 · Rules D-2
 
-**Requirement.** Native conversations created in
-the workspace IANA calendar range with at least one persisted message form the cohort; Move in and legacy imports
-are excluded. First visitor-to-visible-answer response and creation-to-first
-known-resolution durations use median and nearest-rank p90. Each conversation
-contributes its latest closed cycle once to outcome and satisfaction rates.
-Reopened conversations leave those denominators. Aggregate queries return
-bounded data; CSV streams every matching conversation with formula-safe cells.
-Empty widget conversations stay durable but are excluded from Reports and its
-analytics CSVs. A separate step-up guarded JSON export includes all workspace
-conversations, messages, private notes and attachment names across dates and imports;
-attachment bytes stay in the portable backup.
+**Requirement.** Native conversations created in the workspace IANA calendar range with at least one persisted message form the cohort; Move in and legacy imports are excluded. First visitor-to-visible-answer response and creation-to-first known-resolution durations use median and nearest-rank p90. Each conversation contributes its latest closed cycle once to outcome and satisfaction rates. Reopened conversations leave those denominators. Aggregate queries return bounded data; CSV streams every matching conversation with formula-safe cells. Empty widget conversations stay durable but are excluded from Reports and its analytics CSVs. A separate step-up guarded JSON export includes all workspace conversations, messages, private notes and attachment names across dates and imports; attachment bytes stay in the portable backup.
 
 **Acceptance.**
 1. Compare Reports and formula-safe CSV to hand-calculated response/resolution median and p90, latest-cycle outcome and satisfaction cohorts across DST and tenants, including more than 10,000 rows and excluded imports/reopened cycles.
@@ -246,15 +161,7 @@ attachment bytes stay in the portable backup.
 
 Core · published · **done** · Cites BASE-OPS-003, BASE-AUDIT-001, BASE-ROLE-001, BASE-SECRET-001, BASE-INPUT-001, BASE-DATA-004
 
-**Requirement.** Owner/admin tokens have explicit
-scopes, optional expiry, one-time display, hashed storage and durable audit.
-Bearer-only API calls have no CORS, per-token limits and native guarded writes.
-Contact erasure fences API identity restoration and pending event payloads.
-Native events commit tenant-bound webhook and Slack intents; historical import
-apply and undo do not emit them. Slack projects bounded native visitor text
-through Base escaping. 
-
-The owner-authorized ordinary HTTPS exception retains redirect refusal, bounded requests/responses and literal-destination checks instead of DNS pinning (RL-3). See [the full transport exception](docs/contract/support-protocols.md).
+**Requirement.** Owner/admin tokens have explicit scopes, optional expiry, one-time display, hashed storage and durable audit. Bearer-only API calls have no CORS, per-token limits and native guarded writes. Contact erasure fences API identity restoration and pending event payloads. Native events commit tenant-bound webhook and Slack intents; historical import apply and undo do not emit them. Slack projects bounded native visitor text through Base escaping. The owner-authorized ordinary HTTPS exception retains redirect refusal, bounded requests/responses and literal-destination checks instead of DNS pinning (RL-3). See [the full transport exception](docs/contract/support-protocols.md).
 
 **Acceptance.**
 1. Issue, use, expire and revoke each scoped show-once token; exercise native API operations, erasure fences, signed events and Slack escaping.
@@ -267,34 +174,7 @@ The owner-authorized ordinary HTTPS exception retains redirect refusal, bounded 
 
 Core · published · **done** · Cites BASE-MAIL-001, BASE-SECRET-001
 
-**Requirement.** An owner sees the durable,
-project-scoped eight-step list on the Setup page; the genuinely empty inbox
-shows one next action and a link to it, and loads none of it. A
-step is confirmed only by an observation, never by a saved configuration, an
-installer default or a preset, so a workspace with nothing observed yet is zero
-of its applicable steps. The system runs its own checks: while an owner is signed
-in the page asks the server to observe, bounded by freshness windows. These
-checks are non-generative metadata, domain and DNS reads and never send mail.
-They distinguish saved configuration from observed sender DNS, authenticated
-model metadata, an inbound receipt, effective runtime ceilings, allowed origin
-and an authenticated widget ping; whether an article is published is not one of
-them (that step stays among the eight ids but is hidden and never counted). Mail to the owner
-is confirmed by a used emailed sign-in link, or by the provider's reported outcome
-for the welcome or test email; local development mail is suppressed and never
-confirms delivery, and provider acceptance or queueing is pending. Reading Setup performs no
-provider work and writes nothing. Only an explicit owner action (Create
-workspace, or Send me a test) may send mail, to that owner's mailbox, with
-durable identity; ambiguous work is never replayed. Missing provider permissions
-and unsupported status APIs remain unavailable. Configuration changes invalidate
-observations; model and DNS validation expire after 15 minutes and every
-observation shows its time. The owner can skip an owner-only step (the widget,
-the AI service, the sending domain) for now, and undo it. A skip is stored on the
-server for the workspace, can be made by an owner or admin only, makes no provider
-request, and moves the step out of Needs you and out of the confirmed count and its
-total; a skipped step is never shown as confirmed. An observation always wins: a
-skipped step that is later observed is confirmed and counted, and a rejected
-provider key stays under Needs you whether or not it was skipped. Provider keys and
-their fingerprints never enter API responses or browser storage. Details are in [the support protocol guide](docs/contract/support-protocols.md).
+**Requirement.** An owner sees the durable, project-scoped eight-step list on the Setup page; the genuinely empty inbox shows one next action and a link to it, and loads none of it. A step is confirmed only by an observation, never by a saved configuration, an installer default or a preset, so a workspace with nothing observed yet is zero of its applicable steps. The system runs its own checks: while an owner is signed in the page asks the server to observe, bounded by freshness windows. These checks are non-generative metadata, domain and DNS reads and never send mail. They distinguish saved configuration from observed sender DNS, authenticated model metadata, an inbound receipt, effective runtime ceilings, allowed origin and an authenticated widget ping; whether an article is published is not one of them (that step stays among the eight ids but is hidden and never counted). Mail to the owner is confirmed by a used emailed sign-in link, or by the provider's reported outcome for the welcome or test email; local development mail is suppressed and never confirms delivery, and provider acceptance or queueing is pending. Reading Setup performs no provider work and writes nothing. Only an explicit owner action (Create workspace, or Send me a test) may send mail, to that owner's mailbox, with durable identity; ambiguous work is never replayed. Missing provider permissions and unsupported status APIs remain unavailable. Configuration changes invalidate observations; model and DNS validation expire after 15 minutes and every observation shows its time. The owner can skip an owner-only step (the widget, the AI service, the sending domain) for now, and undo it. A skip is stored on the server for the workspace, can be made by an owner or admin only, makes no provider request, and moves the step out of Needs you and out of the confirmed count and its total; a skipped step is never shown as confirmed. An observation always wins: a skipped step that is later observed is confirmed and counted, and a rejected provider key stays under Needs you whether or not it was skipped. Provider keys and their fingerprints never enter API responses or browser storage. Details are in [the support protocol guide](docs/contract/support-protocols.md).
 
 **Acceptance.**
 1. Read Setup without side effects, observe fresh/expired/rejected configuration and explicit provider outcomes, skip/undo owner steps and reload.
@@ -305,17 +185,9 @@ their fingerprints never enter API responses or browser storage. Details are in 
 
 #### AI-001 — Configured model execution
 
-Core · published · **done** · Cites BASE-AGENT-007, BASE-AGENT-011 · Rules D-3 · Register R-15
+Core · published · **done** · Cites BASE-AGENT-007, BASE-AGENT-011 · Register R-15
 
-**Requirement.** Retain Ensemble model selection,
-context/tools, streamed events, normalization, raw per-round provider usage,
-attribution, bounded suggestions and reply lifecycle. Missing providers fail
-explicitly when AI is asked for, and a default assistant whose provider has no
-key is simply not assigned to new conversations; uncertain provider attempts
-remain uncertain and are not replayed automatically. Usage is diagnostic/provider accounting data, not an active
-payment, balance or debit system. Visitor-caused automatic AI work is capped per
-UTC day per project and installation (the installation and workspace AI ceilings); a skipped reply is
-recorded as terminal and never replayed.
+**Requirement.** Retain Ensemble model selection, context/tools, streamed events, normalization, raw per-round provider usage, attribution, bounded suggestions and reply lifecycle. Missing providers fail explicitly when AI is asked for, and a default assistant whose provider has no key is simply not assigned to new conversations; uncertain provider attempts remain uncertain and are not replayed automatically. Usage is diagnostic/provider accounting data, not an active payment, balance or debit system. Visitor-caused model work carries the classes of its eventual action, and the company’s policy sets its project and installation AI spending limits; a skipped reply is recorded as terminal and never replayed.
 
 **Acceptance.**
 1. Request configured suggestions/replies through native routes; inspect normalized streaming events, per-round usage, context/tool and budget bounds, explicit missing-provider errors and durable daily-cap skips; crash/ambiguous attempts must not automatically replay.
@@ -325,13 +197,9 @@ recorded as terminal and never replayed.
 
 #### KNOWLEDGE-001 — Published knowledge
 
-Core · published · **done** · Cites BASE-ROLE-001, BASE-PUBLIC-001 · Rules D-3
+Core · published · **done** · Cites BASE-ROLE-001, BASE-PUBLIC-001
 
-**Requirement.** Dataset ingestion/crawl, retained
-corpus, lexical/selected semantic retrieval, citations and article/category
-authoring maintain project scope and publication state. A failed refresh cannot
-replace the last usable published corpus. Public pages exclude drafts/deleted
-projects and preserve original canonical article/search routes.
+**Requirement.** Dataset ingestion/crawl, retained corpus, lexical/selected semantic retrieval, citations and article/category authoring maintain project scope and publication state. A failed refresh cannot replace the last usable published corpus. Public pages exclude drafts/deleted projects and preserve original canonical article/search routes.
 
 **Acceptance.**
 1. Publish and search articles/categories through authoring and public help-center doors; deny draft/deleted/cross-project access, verify citations and canonical links and retain the last usable published corpus after a failed refresh.
@@ -343,10 +211,7 @@ projects and preserve original canonical article/search routes.
 
 Core · published · **done** · Cites BASE-ROLE-001, BASE-INPUT-001
 
-**Requirement.** Profiles, monitoring, insights
-and context packets preserve evidence attribution, source bounds, consent and
-project ownership. Provider output must satisfy the selected schemas before
-becoming usable customer context.
+**Requirement.** Profiles, monitoring, insights and context packets preserve evidence attribution, source bounds, consent and project ownership. Provider output must satisfy the selected schemas before becoming usable customer context.
 
 **Acceptance.**
 1. Generate/read profile, monitoring, insight and context packets through native routes; reject ungrounded/schema-invalid or cross-project content, preserve attributed evidence and respect consent/source bounds.
@@ -358,16 +223,11 @@ becoming usable customer context.
 
 Core · published · **done** · Cites BASE-AGENT-005, BASE-AGENT-007, BASE-AGENT-008 · Register R-17
 
-**Requirement.** Pairing, devices/grants,
-revocation, tool context and work/result states preserve investigation, resolve
-and advance-authorized resolve-and-reply distinctions. Revocation withdraws
-authority and never asserts that a local process stopped: started work becomes
-terminal with an unconfirmed outcome, and only the device may report cancellation.
-Local processes remain in the optional connector, never an implicit Worker capability.
+**Requirement.** Pairing, devices/grants, revocation, tool context and work/result states preserve investigation, resolve and advance-authorized resolve-and-reply distinctions. Revocation withdraws authority and never asserts that a local process stopped: started work becomes terminal with an unconfirmed outcome, and only the device may report cancellation. Local processes remain in the optional connector, never an implicit Worker capability. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
-1. Pair the packaged connector, investigate, separately authorize a child fix, obtain a distinct read-only observation and use human Send with exact-request replay.
-2. Refuse stale/revoked/offline/unverified/uncertain work and distinguish resolve from advance-authorized resolve-and-reply; revocation cannot assert process cancellation.
+1. Under the held company policy, pair the packaged connector, investigate, separately authorize a child fix, obtain a distinct read-only observation and use human Send with exact-request replay.
+2. Under the held company policy, refuse stale/revoked/offline/unverified/uncertain work and distinguish resolve from advance-authorized resolve-and-reply; revocation cannot assert process cancellation.
 
 **Evidence.** `src/modules/local-computer/results.ts`; `src/edition/delegation/routes.ts`; `tests/journeys/delegation.mjs`
 **Gap.** None.
@@ -376,11 +236,7 @@ Local processes remain in the optional connector, never an implicit Worker capab
 
 Core · published · **done** · Cites BASE-AUDIT-001, BASE-AGENT-011 · Register R-15
 
-**Requirement.** Training and evaluation preserve run/case
-state, model/budget selection, raw provider usage and cancellation/recovery.
-Synthetic data admission is explicitly local/test-only. Historical pending
-attempts require reconciliation; a fixture pass is not live-provider quality
-acceptance.
+**Requirement.** Training and evaluation preserve run/case state, model/budget selection, raw provider usage and cancellation/recovery. Synthetic data admission is explicitly local/test-only. Historical pending attempts require reconciliation; a fixture pass is not live-provider quality acceptance.
 
 **Acceptance.**
 1. Create, run, cancel and recover persisted evaluations through training routes with model/budget selection and raw usage; reconcile historical pending/uncertain attempts and keep synthetic admission local/test-only, with live quality qualification separate.
@@ -392,15 +248,7 @@ acceptance.
 
 Core · published · **partial** · Cites BASE-OPS-003, BASE-MAIL-001, BASE-DATA-004, BASE-AGENT-007 · Register R-10
 
-**Requirement.** Email/inbound mail, GitHub,
-branding and knowledge imports use configured native adapters, tenant-scoped
-credentials, durable identity and ambiguous-outcome handling. Website previews
-use a separate origin, scoped expiring grants and public-network restrictions.
-Machine-generated inbound mail never triggers autonomous AI replies,
-notifications or outbound email; its classification is recorded before
-admission and survives recovery and redelivery. The `email:` message local-id
-prefix is reserved for inbound claims and refused by the message API.
-Shopify, Stripe and CRM support actions are required by COMMERCE-001, BILLING-001 and CRM-001. HappyToHelp never holds funds or becomes a payment processor; historical imported balances remain custody records, not executable authority.
+**Requirement.** Email/inbound mail, GitHub, branding and knowledge imports use configured native adapters, tenant-scoped credentials, durable identity and ambiguous-outcome handling. Website previews use a separate origin, scoped expiring grants and public-network restrictions. Machine-generated inbound mail is a loop-suppression input, not a customer request or notification trigger; its classification is recorded before admission and survives recovery and redelivery. The `email:` message local-id prefix is reserved for inbound claims and refused by the message API. Shopify, Stripe and CRM support actions are required by COMMERCE-001, BILLING-001 and CRM-001. HappyToHelp never holds funds or becomes a payment processor; historical imported balances remain custody records, not executable authority.
 
 **Acceptance.**
 1. Use configured email, inbound mail, GitHub and knowledge-import public doors; test idempotency, machine-generated-mail suppression, separate-origin preview grants and network denial.
@@ -414,19 +262,7 @@ Shopify, Stripe and CRM support actions are required by COMMERCE-001, BILLING-00
 
 Core · published · **done** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
-**Requirement.** The approved
-homepage (owner approval 2026-10-01, clarity pass 2026-10-02, hero redesign
-2026-10-08, hero leading with help before they ask 2026-10-20) is the real public `/` experience, in
-this order: the hero, whose headline “Knows what your customer needs before they do.” stands left-aligned beside one
-hand-drawn picture of both moments on a pale aqua blob, joined by an aqua pen arrow: 1, a checkout page in its window
-with the widget's offer card (signed with the speech-bubble mark) floating over its corner; 2, a conversation already
-solved (a customer, Maya, cannot turn on the Spanish version of her store; the agent's fix, beside a code glyph, says
-it is fixed; the reply to Maya carries Send inside it, the only step left), each numbered on a filled aqua disc; with
-the subhead “Some customers who get stuck never write in. They just leave.”, the line
-“100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk”, an aqua pen-stroke flourish under the calls to
-action that draws itself in once, and under the picture the captions “Before they ask” (“When someone seems stuck,
-the widget offers a hand.”) and “When they ask” (“Your Codex or Claude fixes the problem and writes the reply. You
-press Send.”) on filled aqua number discs;
+**Requirement.** The approved homepage (owner approval 2026-10-01, clarity pass 2026-10-02, hero redesign 2026-10-08, hero leading with help before they ask 2026-10-20) is the real public `/` experience, in this order: the hero, whose headline “Knows what your customer needs before they do.” stands left-aligned beside one hand-drawn picture of both moments on a pale aqua blob, joined by an aqua pen arrow: 1, a checkout page in its window with the widget's offer card (signed with the speech-bubble mark) floating over its corner; 2, a conversation already solved (a customer, Maya, cannot turn on the Spanish version of her store; the agent's fix, beside a code glyph, says it is fixed; the reply to Maya carries Send inside it, the only step left), each numbered on a filled aqua disc; with the subhead “Some customers who get stuck never write in. They just leave.”, the line “100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk”, an aqua pen-stroke flourish under the calls to action that draws itself in once, and under the picture the captions “Before they ask” (“When someone seems stuck, the widget offers a hand.”) and “When they ask” (“Your Codex or Claude fixes the problem and writes the reply. You press Send.”) on filled aqua number discs;
 
 **Acceptance.**
 1. The homepage leads with “Knows what your customer needs before they do.”, the retained subhead and free alternative line.
@@ -441,10 +277,7 @@ press Send.”) on filled aqua number discs;
 
 Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
-**Requirement.** “Not just better. Free.” (100% free and
-open source, free as in code and free as in cost, MIT licensed, “No seats. No
-plans. No fees.”, each promise after a line icon in a pale aqua circle, with the MIT license drawn as an ink card
-over a wordless code editor, “free of charge” and the rights highlighted in aqua);
+**Requirement.** “Not just better. Free.” (100% free and open source, free as in code and free as in cost, MIT licensed, “No seats. No plans. No fees.”, each promise after a line icon in a pale aqua circle, with the MIT license drawn as an ink card over a wordless code editor, “free of charge” and the rights highlighted in aqua);
 
 **Acceptance.**
 1. The Free section retains the no-seats, no-plans, no-fees promise, MIT license, aqua icon circles and ink license over a wordless editor.
@@ -457,11 +290,7 @@ over a wordless code editor, “free of charge” and the rights highlighted in 
 
 Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
-**Requirement.** “The rest of your support desk” (chat widget, shared inbox, help center, suggested
-replies, as frameless ink cards numbered on filled aqua discs); “Try it beside what you have” (install, bring the
-help center from Zendesk, Intercom or Freshdesk, add the chat widget, on filled aqua discs, beside the finished
-import in its window); “Ready when you are.”, a big closing headline with an aqua pen line drawn under it;
-and the footer, signed with the header's lockup.
+**Requirement.** “The rest of your support desk” (chat widget, shared inbox, help center, suggested replies, as frameless ink cards numbered on filled aqua discs); “Try it beside what you have” (install, bring the help center from Zendesk, Intercom or Freshdesk, add the chat widget, on filled aqua discs, beside the finished import in its window); “Ready when you are.”, a big closing headline with an aqua pen line drawn under it; and the footer, signed with the header's lockup.
 
 **Acceptance.**
 1. The desk presents chat widget, shared inbox, help center and suggested replies as frameless numbered ink cards.
@@ -475,27 +304,7 @@ and the footer, signed with the header's lockup.
 
 Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
-**Requirement.** Below the hero the drawings carry the hero's language: each
-floats on a pale aqua blob, the mark's three aqua sparks spring from the corner of four of its cards, a window
-frame stays only for the code editor, the checkout and the import, the text links carry the hero's aqua
-underline, and a full-width aqua pen line with one loop divides Free from the desk and the desk
-from Try it beside what you have. The page carries no price, hosting or provider line and no plug for any other service.
-The drawings mirror the real interface and make no claim the product cannot
-back; conversation, ticket-history and automation import, reporting and
-compliance claims are deliberately absent. It is a warm off-white page in one geometric sans-serif
-(Outfit, self-hosted from `public/fonts/outfit/`, over a metric-matched local fallback, so no text moves when it loads) with near-black ink and black pill buttons; color
-appears only inside the drawings, which are labeled HTML/SVG rather than raster images,
-and in aqua accents outside them (the hero's and the desk's number discs, the promises' circles, link underlines, the
-hero flourish, the dividers, the closing line) and in the sparks of the speech-bubble mark beside the header and
-footer wordmark. The wordmark is not set in Outfit: it is drawn by hand as round-capped SVG strokes following
-Nunito's letter shapes (SIL OFL), with no font data embedded, and the link it sits in is named HappyToHelp by
-visually hidden text. The page's text
-and real links, derived from `package.json` `repository.url`, are ordinary DOM
-content; the hero flourish draws in once as the page appears, and each moment below the hero (a drawing, the
-promises, the steps, a desk card, a divider, the closing line) plays once, in under 1.8s, as it scrolls into view
-(an IntersectionObserver), moving only opacity, transforms, clipping and strokes, so nothing shifts; reduced-motion
-preferences remove all animation, transitions and smooth scrolling without
-changing layout, leaving every drawing in its final state and every stroke fully drawn.
+**Requirement.** The public brand preserves the exact paper, ink, aqua drawings, licensed hand-drawn mark, real text and repository-derived links in [the retained public design](docs/contract/public-design.md). Local fonts and metric-matched fallback prevent text movement. Each below-hero moment appears once without layout shift; reduced motion leaves its final state complete. The approved drawing, frame, color, underline, spark, animation-property and timing details remain binding in that specification (RL-10).
 
 **Acceptance.**
 1. The retained public design uses off-white paper, near-black ink, pill controls, pale aqua blobs and only the specified aqua accents and mark sparks.
@@ -511,15 +320,7 @@ changing layout, leaving every drawing in its final state and every stroke fully
 
 Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001, BASE-DOCS-001 · Register R-19, R-20
 
-**Requirement.** `/docs` renders, at build
-time, the Markdown files listed in `docs/site.json`, in the homepage's paper,
-ink and Outfit, with section navigation, page contents and GitHub links for
-everything unpublished; an unknown page gets the branded 404. Every build
-renders the current files, and an unlisted Markdown file fails verification. Dynamic published
-help centers retain project scope, canonical links, search and draft/deleted denial. The customer widget
-remains available through owner-configured installation; broader marketing
-routes, pricing, legal, referrer, waitlist and public auto-widget behavior
-are outside this edition.
+**Requirement.** `/docs` renders, at build time, the Markdown files listed in `docs/site.json`, in the homepage's paper, ink and Outfit, with section navigation, page contents and GitHub links for everything unpublished; an unknown page gets the branded 404. Every build renders the current files, and an unlisted Markdown file fails verification. Dynamic published help centers retain project scope, canonical links, search and draft/deleted denial. The customer widget remains available through owner-configured installation; broader marketing routes, pricing, legal, referrer, waitlist and public auto-widget behavior are outside this edition.
 
 **Acceptance.**
 1. Every listed Markdown page renders from current source with the retained section navigation, page contents, source links, responsive layout and detailed documentation specification.
@@ -533,16 +334,7 @@ are outside this edition.
 
 Core · published · **done** · Cites BASE-DATA-001, BASE-DATA-003, BASE-ROLE-001
 
-**Requirement.** Explicit legacy artifacts preserve IDs,
-exact historical financial values, transcripts, object hashes, publication and
-permissions through resumable guarded D1/R2 import. Historical financial SQL,
-imported rows and reconciliation holds remain immutable archive custody; they
-never become active payments, balances or provider work. The one exception is an
-explicit owner/admin contact erasure: it takes precedence over archive custody for
-that contact's personal data and redacts the imported rows and their verbatim
-archive copies (row digests are kept, so replaying the bundle does not restore
-them), leaving a opaque erasure audit tombstone. Old credentials do not
-become trusted native authority. Details are in [the support protocol guide](docs/contract/support-protocols.md).
+**Requirement.** Explicit legacy artifacts preserve IDs, exact historical financial values, transcripts, object hashes, publication and permissions through resumable guarded D1/R2 import. Historical financial SQL, imported rows and reconciliation holds remain immutable archive custody; they never become active payments, balances or provider work. The one exception is an explicit owner/admin contact erasure: it takes precedence over archive custody for that contact's personal data and redacts the imported rows and their verbatim archive copies (row digests are kept, so replaying the bundle does not restore them), leaving a opaque erasure audit tombstone. Old credentials do not become trusted native authority. Details are in [the support protocol guide](docs/contract/support-protocols.md).
 
 **Acceptance.**
 1. Import representative legacy IDs, permissions, exact historical financial values and media hashes through local D1/R2; resume safely and refuse conflicts without external work.
@@ -555,11 +347,7 @@ become trusted native authority. Details are in [the support protocol guide](doc
 
 Core · published · **partial** · Cites BASE-INSTALL-001, BASE-SECRET-001
 
-**Requirement.** The edition selects maintained
-source with inspect/check/lock/release commands. Shared capabilities include
-substantial implementation, migrations and meaningful tests; a second consumer
-preserves its own policy. Release selects the licensed tree and
-retains asset provenance/licensing obligations. Original work is preserved.
+**Requirement.** The edition selects maintained source with inspect/check/lock/release commands. Shared capabilities include substantial implementation, migrations and meaningful tests; a second consumer preserves its own policy. Release selects the licensed tree and retains asset provenance/licensing obligations. Original work is preserved.
 
 **Acceptance.**
 1. Run inspect/lock/check and offline Base-copy verification on staged intentional source, exercise origin/drift/mode refusals and release only the selected licensed tree without credentials or private fixtures; source custody alone is not product acceptance.
@@ -732,7 +520,7 @@ Core · target · **done** · Cites BASE-ROLE-001
 
 Core · target · **done** · Cites BASE-ROLE-001
 
-**Requirement.** Operators apply a personal, group or shared macro that in one action sets the reply text (public or internal note), status, priority, tags (add or remove), assignee and group, followers, custom fields and attachments. Reply text supports placeholders for the requester's name, first name and email, ticket ID, subject and link, assignee, brand, organization, and custom ticket and contact fields, with explicit fallbacks (for example first name, else "there"). Applying a macro previews every change and puts the rendered text in the composer for editing; nothing is sent until the operator sends. A placeholder that cannot be resolved is flagged and blocks sending instead of reaching the customer as a literal. Macros are versioned, permission-scoped by role, group and brand, searchable, usage-reported and applicable in bulk (QUEUE-002). AI may recommend a macro but never applies one silently.
+**Requirement.** Operators apply a personal, group or shared macro that in one action sets the reply text (public or internal note), status, priority, tags (add or remove), assignee and group, followers, custom fields and attachments. Reply text supports placeholders for the requester's name, first name and email, ticket ID, subject and link, assignee, brand, organization, and custom ticket and contact fields, with explicit fallbacks (for example first name, else "there"). Applying a macro previews every change and puts the rendered text in the composer for editing; nothing is sent until the operator sends. A placeholder that cannot be resolved is flagged and blocks sending instead of reaching the customer as a literal. Macros are versioned, permission-scoped by role, group and brand, searchable, usage-reported and applicable in bulk (QUEUE-002). AI macro calls carry standard for internal reversible edits and external when they send or expose a reply; the company’s policy decides whether each is applied, reviewed, held or refused.
 
 **Acceptance.**
 1. From a ticket, apply a shared macro that sets status Pending, adds a tag, assigns a group and agent, sets a custom field and inserts a reply using the requester's first name and ticket ID; inspect the preview, edit the text, send and reload.
@@ -842,7 +630,7 @@ Core · target · **done** · Cites BASE-ROLE-001
 
 Core · target · **partial** · Cites BASE-ROLE-001
 
-**Requirement.** An operator marks a ticket as a Problem and links Incident tickets that report the same issue, manually, from search or from a TRIAGE-001 or agent suggestion a person confirms. The problem lists its incidents with customers and counts. Solving the problem can, with a previewed public reply that uses MACRO-001 placeholders per requester, solve or update every linked incident in its own channel, each reply going only to that incident's requester, with per-ticket outcomes and consent and reply-window checks. Incidents keep their own SLA, history and CSAT; unlinking is audited. A problem can link an ESCALATION-001 engineering issue so that one shipped fix updates every affected customer.
+**Requirement.** An operator marks a ticket as a Problem and links Incident tickets that report the same issue, manually, from search or from a TRIAGE-001 or agent suggestion whose reversible internal link carries standard; the company’s policy decides the agent’s call. The problem lists its incidents with customers and counts. Solving the problem can, with a previewed public reply that uses MACRO-001 placeholders per requester, solve or update every linked incident in its own channel, each reply going only to that incident's requester, with per-ticket outcomes and consent and reply-window checks. Incidents keep their own SLA, history and CSAT; unlinking is audited. A problem can link an ESCALATION-001 engineering issue so that one shipped fix updates every affected customer.
 
 **Acceptance.**
 1. Create a problem and link five incidents arriving by email, widget and SMS; solve the problem with a previewed bulk update and verify each requester receives only their own reply in their channel, an incident whose reply window expired is reported blocked, no customer sees another's identity and each incident keeps its own status, SLA and CSAT invitation.
@@ -866,12 +654,12 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1 · Register R-
 
 #### COMMERCE-001 — Shopify order actions
 
-Core · target · **missing** · Cites BASE-ROLE-001 · Rules D-3 · Register R-7
+Core · target · **missing** · Cites BASE-ROLE-001 · Register R-7
 
-**Requirement.** Connect Shopify stores with merchant-granted scopes; show customer orders, fulfillment, delivery, return and refund state in the conversation. Authorized agents/humans can perform permitted return, cancellation and full/partial refund actions with USD amounts, tax/shipping implications and a reason. Preview the exact order/action, require the configured approval and limit, use provider idempotency and verify provider state before telling the customer it succeeded.
+**Requirement.** Connect Shopify stores with merchant-granted scopes; show customer orders, fulfillment, delivery, return and refund state in the conversation. Authorized agents/humans can perform permitted return, cancellation and full/partial refund actions with USD amounts, tax/shipping implications and a reason. Preview the exact order/action, compute money with USD amount and merchant, adding commitment when it binds terms, and apply the company’s policy and limits, use provider idempotency and verify provider state before telling the customer it succeeded. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
-1. Connect a Shopify test store through settings, find a customer order from a ticket, approve a bounded partial refund/return or cancellation and read back the order/provider ledger.
+1. Under the held company policy, connect a Shopify test store through settings, find a customer order from a ticket, approve a bounded partial refund/return or cancellation and read back the order/provider ledger.
 2. Deny excess/refused/revoked scopes, double clicks and cross-store access; a timeout remains pending/uncertain until reconciliation, with no second refund.
 
 **Evidence.** None.
@@ -879,12 +667,12 @@ Core · target · **missing** · Cites BASE-ROLE-001 · Rules D-3 · Register R-
 
 #### BILLING-001 — Stripe billing and subscription resolution
 
-Core · target · **missing** · Cites BASE-ROLE-001 · Rules D-3 · Register R-8
+Core · target · **missing** · Cites BASE-ROLE-001 · Register R-8
 
-**Requirement.** Connect Stripe for customer/payment/invoice/subscription context and permitted refunds, credits and subscription cancellation, pause or plan changes. Show USD totals, tax/proration/effective-date consequences and linked provider records before approval; separate read, prepare, approve and execute scopes and spending limits. Reconcile actual provider state after timeout and report what changed in the original conversation. No raw card data or customer funds enter HappyToHelp.
+**Requirement.** Connect Stripe for customer/payment/invoice/subscription context and permitted refunds, credits and subscription cancellation, pause or plan changes. Show USD totals, tax/proration/effective-date consequences and linked provider records before approval; separate read, prepare, approve and execute scopes and spending limits. Reconcile actual provider state after timeout and report what changed in the original conversation. No raw card data or customer funds enter HappyToHelp. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
-1. From a support ticket linked to a Stripe test customer, inspect an invoice, approve a bounded refund and a subscription change and verify provider readback plus customer-visible results.
+1. Under the held company policy, from a support ticket linked to a Stripe test customer, inspect an invoice, approve a bounded refund and a subscription change and verify provider readback plus customer-visible results.
 2. Exercise duplicate requests, proration preview, denied approval and an uncertain timeout without double money movement.
 
 **Evidence.** None.
@@ -894,10 +682,10 @@ Core · target · **missing** · Cites BASE-ROLE-001 · Rules D-3 · Register R-
 
 Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1 · Register R-9
 
-**Requirement.** Connect Orbit, HubSpot and Salesforce independently; map contacts, companies/accounts, support entitlements, plan and owner to support records with source IDs and sync freshness. Read relevant CRM context and write only explicitly scoped support outcomes/approved field changes. Conflicts, identity mismatch and revoked grants are surfaced; the CRM remains the sales/account system of record.
+**Requirement.** Connect Orbit, HubSpot and Salesforce independently; map contacts, companies/accounts, support entitlements, plan and owner to support records with source IDs and sync freshness. Read relevant CRM context and write only explicitly scoped support outcomes/approved field changes. Conflicts, identity mismatch and revoked grants are surfaced; the CRM remains the sales/account system of record. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
-1. For each named CRM, connect a test account through settings, map a customer, change source entitlement and refresh the ticket, publish an approved support outcome and disconnect.
+1. Under the held company policy, for each named CRM, connect a test account through settings, map a customer, change source entitlement and refresh the ticket, publish an approved support outcome and disconnect.
 2. Verify conflict handling, read-only scope refusal and no cross-account data exposure.
 
 **Evidence.** `tests/journeys/connections.mjs` — “read-only HubSpot context uses explicit customer mappings, refreshes changed source fields and refuses stale authority, identity conflicts and unavailable grants without customer access” (`tests/helpers/hubspot-context.mjs`): exact read-only scopes and account check; explicit contact and company source IDs; changed plan and entitlement context through ticket refresh; timestamps and stale state; conflicting mapping, identity mismatch, permission loss, disconnect, cross-workspace and customer denial, session and disconnect races, erasure, redirect and response bounds.
@@ -907,18 +695,18 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1 · Register R-
 
 Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-2 · Register R-6, R-10
 
-**Requirement.** Create or link GitHub Issues, Linear and Jira issues and Slack/Teams handoffs from a conversation, choosing exactly what context/attachments to share. Persist reciprocal links, assignee, status and dependency; signed provider updates return to the support thread, wake its owner and draft a customer update when a fix ships. Issue closure alone never proves customer recovery; operators approve customer publication or grant an explicit bounded policy. The accepted Teams slice uses one owner/admin-installed fixed channel, current installing authority, selected public plain text without mentions and no automatic replay or customer publication; it grants no inbound authority (RL-8).
+**Requirement.** Create or link GitHub Issues, Linear and Jira issues and Slack/Teams handoffs from a conversation, choosing exactly what context/attachments to share. Persist reciprocal links, assignee, status and dependency; signed provider updates return to the support thread, wake its owner and draft a customer update when a fix ships. Issue closure alone never proves customer recovery; customer publication carries external, and the company’s policy decides an agent’s call. The accepted Teams slice uses one owner/admin-installed fixed channel, current installing authority, selected public plain text without mentions and no automatic replay or customer publication; it grants no inbound authority (RL-8). Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
 1. From a ticket, create/link an issue in each named tracker and a Slack/Teams handoff; receive duplicate/out-of-order provider status updates and close the issue.
-2. Verify one linked escalation, refreshed ticket state, private-content exclusion and an approved customer update with recovery still unconfirmed until observed.
+2. Under the held company policy, verify one linked escalation, refreshed ticket state, private-content exclusion and an approved customer update with recovery still unconfirmed until observed.
 
 **Evidence.** Local implementation and fixture evidence: `./src/modules/escalations`; `tests/journeys/connections.mjs`; `tests/journeys/connections-browser.mjs`; `tests/helpers/escalations/dev-proof.mjs`. `tests/journeys/connections.mjs` and `tests/journeys/connections-browser.mjs` use local HTTP GitHub, Linear, Jira and Slack fixtures: 40 tickets, 12 issues, 3 handoffs, one issue linked from 5 tickets, private and unchosen exclusion, forged, duplicate and older webhooks, assignee and status, owner inbox, edited approved drafts, recovery observation, collaborator refusal and erasure. `tests/helpers/escalations/dev-proof.mjs` lines 11-17 starts rer dev --foreground, opens its RER_OPEN entry and repeats the UI at 1440 and 390. Export strips credentials and restore retains disconnected links.
 **Gap.** Teams authenticated return status, owner notification, reviewable customer updates and separately observed recovery remain unproved. RL-8 preserves the outbound-only accepted slice and all Slack retry/consent riders.
 
 #### API-001 — Owned API and managed connectors
 
-Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1, D-3 · Register R-11, R-21
+Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1 · Register R-11, R-21
 
 **Requirement.** Expose a documented versioned HappyToHelp API and signed outbound webhooks for conversations, contacts, articles and support events with scoped authorization, pagination, stable cursors, idempotency and revocation. Provide Zapier actions/triggers and managed MCP tools with the same tenant/action boundaries. Offer Help Scout Inbox API/webhook read synchronization for staged migration/coexistence, with cursors and deduplication; it is separate from native API authority. Connection health, scopes, event attempts and manual reconciliation are visible. Creating and appending support requests from another product or agent with credentials bound to a source product is covered by API-002, API-003, API-004, API-005, API-006, API-007, API-008.
 
@@ -931,7 +719,7 @@ Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT
 
 #### API-002 — Bound machine credentials
 
-Core · target · **missing** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1, D-3
+Core · target · **missing** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1
 
 **Requirement.** A named source-product credential binds ticket creation and appending to explicit scopes, mailbox, brand and source identity. Its lifecycle preserves the connection-token model and atomic admission. The protocol, overlap bounds and Settings fields are specified in [the machine support-request protocol](docs/contract/machine-api.md).
 
@@ -945,7 +733,7 @@ Core · target · **missing** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT
 
 #### API-003 — Create one correctly attributed support request
 
-Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1, D-3
+Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1
 
 **Requirement.** Create a support request from a source product with exact verified requester matching, unverified new identities, a fixed source label and an operator back-link. Source-reference and key replay protect one ticket across credential rotation; conflicts reveal no other identity. The full request and replay contract is in [the protocol](docs/contract/machine-api.md).
 
@@ -959,7 +747,7 @@ Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT
 
 #### API-004 — Append messages and atomic attachments
 
-Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1, D-3
+Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1
 
 **Requirement.** Append customer messages or private notes within the credential’s conversations, retaining solved, closed and merged lifecycle behavior. Bounded upload references and verified remote attachments admit either the complete ticket and bytes or nothing, under [the attachment protocol](docs/contract/machine-api.md).
 
@@ -972,7 +760,7 @@ Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT
 
 #### API-005 — Admit machine requests without unwanted contact
 
-Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1, D-3
+Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1
 
 **Requirement.** Treat source-product requests as untrusted customer input, with the same triage, routing and AI policy as other requests. Suspended abuse and requester holds cause no ticket or external effect; acknowledgments depend on consent and channel rules. Capacity and business-policy limits, exhaustion and stable refusal meanings are defined in [the protocol](docs/contract/machine-api.md).
 
@@ -986,7 +774,7 @@ Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT
 
 #### API-006 — Machine events and accountable ticket history
 
-Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1, D-3
+Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1
 
 **Requirement.** Machine-created requests carry source-product and credential provenance into filtered signed support events and ticket history. Revocation retains machine attribution; issuer erasure redacts personal attribution without losing events. Event fields and audit records are specified in [the protocol](docs/contract/machine-api.md).
 
@@ -999,7 +787,7 @@ Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT
 
 #### API-007 — Erase and restore machine-created support history
 
-Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1, D-3
+Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1
 
 **Requirement.** Machine-request erasure covers ticket content, replay bodies, pending events and files, with tombstones that prevent resurrection. Portable archives retain source provenance and digest-only replay records, while all restored credentials and actions remain inert. Exact portable fields and fences are specified in [the protocol](docs/contract/machine-api.md).
 
@@ -1012,7 +800,7 @@ Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT
 
 #### API-008 — Usable machine-request documentation
 
-Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1, D-3
+Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1
 
 **Requirement.** The on-site API guide covers machine-request operations, scopes, bindings and refusal meanings through usable examples that keep credentials private.
 
@@ -1091,9 +879,9 @@ Core · target · **partial** · Cites BASE-ROLE-001
 
 #### KNOWLEDGE-002 — Governed private and multilingual knowledge
 
-Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-3
+Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007
 
-**Requirement.** Support public and authenticated private help centers, multiple languages/locales, version history, editorial review, redirects and brand/domain publishing. Source refreshes and translated drafts preserve permissions and previous published versions; restricted knowledge is never exposed to public search, an unauthorized agent answer or another account. Agents may propose cited changes, while named editors control publication.
+**Requirement.** Support public and authenticated private help centers, multiple languages/locales, version history, editorial review, redirects and brand/domain publishing. Source refreshes and translated drafts preserve permissions and previous published versions; restricted knowledge is never exposed to public search, an unauthorized agent answer or another account. An agent’s cited edits carry standard internally and external when publication exposes them; the company’s policy decides the call. An editorial sign-off others rely on also carries commitment. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
 1. Publish an English article and reviewed translation, restrict a collection by explicit account/company entitlement (email-domain membership alone does not establish that entitlement), update/rollback a version and follow an old URL.
@@ -1104,7 +892,7 @@ Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT
 
 #### KNOWLEDGE-003 — Branded help center, article feedback and knowledge in the ticket
 
-Core · target · **partial** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Rules D-3
+Core · target · **partial** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
 
 **Requirement.** Leads brand each help center with logo, colors, fonts, custom domain, navigation and editable page templates (home, category, section, article, search and request form), previewed before publication with readable contrast enforced. Each article offers "Was this helpful?" votes with an optional comment. Leads see per-article views and votes, search terms with and without results, click-through and tickets created after reading, by brand and locale. From a ticket an operator searches the help center, previews an article and inserts its link or text into the reply in one action, limited to knowledge that customer may see, and can flag an article as outdated or propose a new one (PUSH-004).
 
@@ -1199,35 +987,35 @@ Core · target · **partial** · Rules D-2 · Register R-16
 
 #### AGENT-001 — A production support agent with clean handoff
 
-Core · target · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007 · Rules D-2, D-3 · Register R-15
+Core · target · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007 · Rules D-2 · Register R-15
 
-**Requirement.** The AI agent answers using approved help-center content, permitted past conversations and fresh connected customer/product state, with citations, retrieval permissions and clear AI disclosure across chat/email/voice. Execute only enabled procedures/tools; distinguish advice, prepared action, approved execution and observed success. A customer can request a person; uncertain, low-evidence or disallowed actions transfer promptly with transcript, sources, attempted actions, failures and the next responsible human. The agent stops replying after handoff until explicitly resumed.
+**Requirement.** The AI agent answers using approved help-center content, permitted past conversations and fresh connected customer/product state, with citations, retrieval permissions and clear AI disclosure across chat/email/voice. Execute only enabled procedures/tools; distinguish advice, prepared action, policy-decided execution and observed success; outside replies carry external and money movements carry money, under the company’s policy. A customer can request a person; uncertain, low-evidence or disallowed actions transfer promptly with transcript, sources, attempted actions, failures and the next responsible human. The agent stops replying after handoff until explicitly resumed. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
 1. On representative provider-sandbox or official-schema channel journeys, ask grounded and unanswerable questions, attempt restricted retrieval/actions, request a human mid-tool-call and disconnect.
-2. Verify cited valid answers, no private leakage, no unauthorized tool call, durable handoff context and no competing post-handoff AI answer; record live evaluation separately from fixtures.
+2. Under the held company policy, verify cited valid answers, no private leakage, no unauthorized tool call, durable handoff context and no competing post-handoff AI answer; record live evaluation separately from fixtures.
 
 **Evidence.** Local implementation/fixture evidence: `src/modules/ai-support/service.ts`; `src/modules/knowledge`; `src/edition/delegation/routes.ts`; `tests/journeys/first-run.mjs`; `tests/journeys/delegation.mjs`. Configured AI and scoped local handoff are implemented; local first-run/delegation journeys assert configured-provider boundaries and authorized handoff behavior with fixtures.
 **Gap.** Implementation/acceptance gaps: Full multichannel, business-action and production-quality coverage is incomplete.
 
 #### PROCEDURE-001 — Natural-language procedures and release simulation
 
-Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-011 · Rules D-3 · Register R-15
+Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-011 · Register R-15
 
-**Requirement.** Support leads author versioned natural-language operating procedures tied to intents, knowledge versions, live data requirements, tools, approval gates, budgets and human escalation. Simulate paths, adversarial cases, provider errors, handoffs and permissions against redacted historical examples in an isolated workflow sandbox with no real actions. Per-procedure evaluations must pass declared outcomes before an authorized staged release; compare versions, stop/rollback a rollout and keep old cases reproducible. The initial simulation slice uses explicit synthetic-only confirmation by an owner or settings administrator and transfers no historical customer text or real actions; historical replay, operational context and controlled production release remain the target (RL-6).
+**Requirement.** Support leads author versioned natural-language operating procedures tied to intents, knowledge versions, live data requirements, tools, company-policy decisions by class, policy budgets and human escalation. Simulate paths, adversarial cases, provider errors, handoffs and permissions against redacted historical examples in an isolated workflow sandbox with no real actions. Per-procedure evaluations must pass declared outcomes before an authorized staged release; compare versions, stop/rollback a rollout and keep old cases reproducible. The initial simulation slice uses explicit synthetic-only confirmation by an owner or settings administrator and transfers no historical customer text or real actions; historical replay, operational context and controlled production release remain the target (RL-6). Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
 1. Through procedure settings, draft a refund procedure, simulate allowed/denied/timeout/prompt-injection paths with network-edge fakes, inspect a failing case and prevent release.
-2. Approve a passing version into a bounded live cohort, revoke a tool and roll back; verify no sandbox external effect and exact version linkage in conversations.
+2. Under the held company policy, approve a passing version into a bounded live cohort, revoke a tool and roll back; verify no sandbox external effect and exact version linkage in conversations.
 
 **Evidence.** Local evidence: `tests/helpers/ai/procedures.mjs`, proceduresJourney, through `tests/journeys/ai.mjs`: immutable numbered drafts restricted to existing read-only tool names, frozen required synthetic allowed, denied, timeout and injection cases, exact version-linked outputs and sandbox read receipts, current admin authority, isolation from customer messages and mail, failed or mismatched release refusal and no automatic replay of uncertain provider work. `tests/helpers/ai/procedures-browser.mjs`, proceduresBrowserJourney, through `tests/journeys/ai-browser.mjs`: create two versions, inspect passing and failing cases and refuse a failed release; retain keyboard focus and visible action results, distinguish loading and failed reads from editable drafts, and hide the form from denied roles, including a narrowed admin. Receipts present readable outcomes and setup guidance, with stopped cases marked not run; browser proof at 1440 and 390. Qualification records an audited simulation result and enables no production execution.
 **Gap.** Implementation and acceptance gaps: Controlled production rollout, conversation attribution, revocation and rollback remain absent. Synthetic sandbox tools mirror read-only retrieval names against an isolated fixed publication; integration with real knowledge versions and live data requirements remains unimplemented. Historical examples are not admitted.  Historical replay, versioned operational context and controlled production release remain incomplete under RL-6.
 
 #### AGENT-002 — Inspectable quality and resolution economics
 
-Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-009 · Rules D-2, D-3 · Register R-16
+Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-009 · Rules D-2 · Register R-16
 
-**Requirement.** Operators inspect a redacted per-conversation/tool-call trace with source/version, requested scope, human approval, timings, provider outcome and verified result. Leads explore procedure-level evaluation coverage, resolution/reopen/handoff rates, failure clusters and provider costs/usage without treating attempted actions as success. Human labels and later customer outcomes can correct attribution; provider usage remains accounting evidence, not a customer balance or invented monetary saving.
+**Requirement.** Operators inspect a redacted per-conversation/tool-call trace with source/version, requested scope, the company-policy decision and any person’s recorded approval, timings, provider outcome and verified result. Leads explore procedure-level evaluation coverage, resolution/reopen/handoff rates, failure clusters and provider costs/usage without treating attempted actions as success. Human labels and later customer outcomes can correct attribution; provider usage remains accounting evidence, not a customer balance or invented monetary saving. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
 1. Open production-run traces from a conversation and drill from a procedure report to supporting cases; include timeout, denied tool, handoff, negative CSAT and reopened outcomes.
@@ -1265,7 +1053,7 @@ Core · target · **done** · Cites BASE-DATA-003, BASE-DATA-006
 
 Core · target · **done** · Cites BASE-SECRET-001, BASE-ROLE-001, BASE-DATA-003, BASE-AUDIT-001, BASE-DATA-006
 
-**Requirement.** Encrypt configured provider credentials under installation custody, apply installation custody to support-provider configuration. Keep an inspectable, exportable append-only audit of authentication/permission changes, imports/exports/erasure, assignments, procedure changes, approvals and external actions with actor, purpose, source, time and outcome;  Configure retention/legal holds with visible effects and never silently delete evidence to improve reports.
+**Requirement.** Encrypt configured provider credentials under installation custody, apply installation custody to support-provider configuration. Keep an inspectable, exportable append-only audit of authentication/permission changes, imports/exports/erasure, assignments, procedure changes, approvals and external actions with actor, purpose, source, time and outcome; Configure retention/legal holds with visible effects and never silently delete evidence to improve reports.
 
 **Acceptance.**
 1. Using owner/security views, rotate/revoke credentials, attempt cross-tenant/CSRF/SSRF access, approve an action, export audit and erase its actor; inspect durable outcomes with no secrets.
@@ -1305,22 +1093,22 @@ Core · target · **missing** · Cites BASE-DATA-006, BASE-ROLE-001, BASE-AUDIT-
 
 #### PUSH-001 — Reproduce, repair and prove customer recovery
 
-Core · push-further · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2, D-3 · Register R-17
+Core · push-further · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2 · Register R-17
 
-**Requirement.** Given the conversation, authorized live product state and an explicitly paired repair workspace, the agent reproduces the customer's failure, records its observation, prepares or performs only the permitted fix, and verifies with a distinct post-change read or user journey. Environment, operations, data, spending and time limits are granted by a named person; production changes and reply publication have separate authority. Reconcile started/uncertain work, gather customer-scoped recovery evidence, report in the original thread and reopen/escalate if recovery fails or the customer reports recurrence. A successful command or closed engineering issue never proves recovery.
+**Requirement.** Given the conversation, authorized live product state and an explicitly paired repair workspace, the agent reproduces the customer's failure, records its observation, prepares or performs only the permitted fix, and verifies with a distinct post-change read or user journey. Environment, operations, data, spending and time limits are granted by a named person; production changes and reply publication have separate authority. Reconcile started/uncertain work, gather customer-scoped recovery evidence, report in the original thread and reopen/escalate if recovery fails or the customer reports recurrence. A successful command or closed engineering issue never proves recovery. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
-1. Start with a real support request and reproducible product failure; pair the connector, run read-only reproduction, approve a bounded fix, independently observe the affected customer path and approve/send the original-thread report.
-2. Inject stale authority, uncertain change, failed verification, restart and later recurrence; verify no unapproved production effect/reply, truthful evidence and reopened ownership.
+1. Under the held company policy, start with a real support request and reproducible product failure; pair the connector, run read-only reproduction, approve a bounded fix, independently observe the affected customer path and approve/send the original-thread report.
+2. Under the held company policy, inject stale authority, uncertain change, failed verification, restart and later recurrence; verify no unapproved production effect/reply, truthful evidence and reopened ownership.
 
 **Evidence.** Local implementation/fixture evidence: `src/modules/local-computer/results.ts`; `src/edition/delegation/routes.ts`; `tests/journeys/delegation.mjs`; `tests/helpers/delegation-journey/case.mjs`. Approved local repair, distinct readback and human Send are exercised by the delegation edge fixture.
 **Gap.** Implementation/acceptance gaps: Sustained customer recovery verification, later recurrence and reopening remain incomplete.
 
 #### PUSH-002 — Promises survive every handoff
 
-Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2, D-3 · Register R-17
+Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2 · Register R-17
 
-**Requirement.** The agent extracts explicit commitments, quoted evidence and dependencies from messages and linked issues into durable obligations with a responsible person, due time, current evidence and stop condition. Chase missing evidence internally, detect stale dependencies and draft an honest customer update before a promise expires. Humans accept material due-date or promise changes; no fabricated progress, invented commitment or unapproved customer message is allowed.
+**Requirement.** The agent extracts explicit commitments, quoted evidence and dependencies from messages and linked issues into durable obligations with a responsible person, due time, current evidence and stop condition. Chase missing evidence internally, detect stale dependencies and draft an honest customer update before a promise expires. Material due-date or promise changes carry commitment and customer updates carry external; the company’s policy decides the agent’s calls. Progress and commitments retain their supporting evidence. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
 1. In a conversation promise a follow-up, link an engineering dependency, hand off twice and restart.
@@ -1331,33 +1119,109 @@ Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BAS
 
 #### PUSH-003 — Learn from reopenings under human control
 
-Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2, D-3 · Register R-17
+Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2 · Register R-17
 
-**Requirement.** The agent joins reopened requests, complaints, CSAT, procedure/tool versions and connected business outcomes to identify failed resolution paths. Propose a concrete procedure/policy change with cited cases, replay evaluation and expected effect; a human approves changed permissions/tools, spending limits and bounded rollout. Track actual post-release recovery and regression, stop/rollback on deterioration and preserve original procedure versions and dissenting evidence.
+**Requirement.** The agent joins reopened requests, complaints, CSAT, procedure/tool versions and connected business outcomes to identify failed resolution paths. Propose a concrete procedure/policy change with cited cases, replay evaluation and expected effect; changed permissions carry access, protective tool settings security, spending limits money and a running rollout live; the company’s policy decides the calls, while people set that policy. Track actual post-release recovery and regression, stop/rollback on deterioration and preserve original procedure versions and dissenting evidence. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
-1. Create matched resolved/reopened cases under two procedure versions, inspect a proposed change and its replay set, reject then approve a limited rollout and inject regression.
-2. Verify only approved versions/actions run, before/after outcomes are attributable and rollback preserves all failure evidence.
+1. Under the held company policy, create matched resolved/reopened cases under two procedure versions, inspect a proposed change and its replay set, reject then approve a limited rollout and inject regression.
+2. Under the held company policy, verify only approved versions/actions run, before/after outcomes are attributable and rollback preserves all failure evidence.
 
 **Evidence.** None.
 **Gap.** No implementation located: version-joined diagnosis of reopened cases, proposals and controlled rollout are absent (evaluation runs in `src/modules/training-runs/runner.ts` are generic).
 
 #### PUSH-004 — Turn verified edge cases into reviewed knowledge
 
-Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2, D-3 · Register R-17
+Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2 · Register R-17
 
-**Requirement.** The agent identifies unanswered or repeatedly reopened topics from permitted conversations, support searches and procedure failures, clusters the gap and drafts a sourced article/update from verified resolutions. Strip personal data, obey private/brand/locale boundaries and include the evidence and proposed scope. A named editor reviews publication/translation and the agent measures whether later customers recover, proposing corrections when they do not.
+**Requirement.** The agent identifies unanswered or repeatedly reopened topics from permitted conversations, support searches and procedure failures, clusters the gap and drafts a sourced article/update from verified resolutions. Strip personal data, obey private/brand/locale boundaries and include the evidence and proposed scope. Publication and translated exposure carry external, adding commitment for an editorial sign-off; the company’s policy decides the call and the agent measures whether later customers recover, proposing corrections when they do not. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
 **Acceptance.**
 1. Resolve a previously undocumented case, trigger gap analysis, inspect a cited redacted draft, reject and then publish an edited version and ask the next customer's question.
-2. Verify permission-aware retrieval, no automatic publication, attribution and a corrective proposal when the case reopens.
+2. Under the held company policy, verify permission-aware retrieval, publication decided by the held company policy, attribution and a corrective proposal when the case reopens.
 
 **Evidence.** None.
 **Gap.** No implementation located: gap clustering from unanswered cases, sourced draft articles and recovery measurement are absent (article authoring in `src/modules/knowledge/authoring.ts` is manual).
 
 ## Agent surface
 
-None.
+### Agent surface
+
+#### SURFACE-001 — Registry covers the support jobs
+
+Agent surface · target · **missing** · From new · Cites BASE-AGENT-002, BASE-AGENT-006
+
+**Requirement.** The support-agent registry and its not-a-tool reasons match the table above, including both customer-facing and internal native actions.
+
+**Acceptance.**
+1. The registry’s Core clause references and stated reasons cover every Core clause, with no risk-based exclusion.
+2. On seeded tickets, customers, knowledge and procedures, each listed tool calls the same action as its corresponding operator job and reports the same business result.
+
+**Evidence.** None.
+**Gap.** No remote support-specialist MCP workflow and class/policy conformance proof is implemented for these points.
+
+#### SURFACE-002 — Internal, exposure and authority classifiers
+
+Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
+
+**Requirement.** Support records and recipients determine internal, outside, sensitive and authority facts at the call boundary.
+
+**Acceptance.**
+1. An internal reversible draft carries standard with its item count; publishing that draft to a customer carries external with recipient count and known, new or public counterparty facts.
+2. A message or article newly exposed through a public share carries external even when the initiating operation is an internal move or edit.
+3. A customer or source record with regulated health, identity, bank or card data adds sensitive with its kind and record count.
+4. Changing staff, knowledge selection, entitlements or device/application grants adds access with affected people and widening or narrowing direction.
+5. Credential or factor-policy changes add security naming the setting; content claiming a different classification changes none of these outcomes.
+
+**Evidence.** None.
+**Gap.** No remote support-specialist MCP workflow and class/policy conformance proof is implemented for these points.
+
+#### SURFACE-003 — Financial, provider and service classifiers
+
+Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
+
+**Requirement.** Support business actions declare their actual financial, provider and operational stakes.
+
+**Acceptance.**
+1. A Shopify or Stripe money movement or charge change carries money with USD amount and customer or merchant; a mere read does not become money.
+2. A promise or binding sign-off carries commitment with its counterparty and value.
+3. Creating an outside service account, number or paid resource carries accounts with provider and resource facts.
+4. A provider-kept consent, checkout or verification step carries gated with provider and step; the provider’s response can add gated.
+5. Permanent erasure or replacement restore carries destructive with the affected item count.
+6. A running product repair or published routing, procedure or automation change carries live naming the service.
+
+**Evidence.** None.
+**Gap.** No remote support-specialist MCP workflow and class/policy conformance proof is implemented for these points.
+
+#### SURFACE-004 — Support resources and recovery events
+
+Agent surface · target · **missing** · From new · Cites BASE-AGENT-003, BASE-AGENT-010, BASE-AGENT-013
+
+**Requirement.** The support specialist follows linked tickets, customers, knowledge, procedures, evaluations and obligations and joins changes to the original support history.
+
+**Acceptance.**
+1. Each listed support-record template reads the role-permitted support record, and a completed job links its affected ticket and related record.
+2. A ticket update, shipped fix, independent recovery observation and obligation due event retain their original support-record link and responsible owner.
+3. The listed specialist prompts resolve to their named Core jobs; customer text remains evidence rather than an instruction to widen a job.
+
+**Evidence.** None.
+**Gap.** No remote support-specialist MCP workflow and class/policy conformance proof is implemented for these points.
+
+#### SURFACE-005 — A stranger specialist completes a support week
+
+Agent surface · target · **missing** · From new · Cites BASE-AGENT-007, BASE-AGENT-008, BASE-AGENT-009, BASE-AGENT-013
+
+**Requirement.** Given only the installation URL, a support agent completes the same seeded support week under an all-autonomous company policy and a held company policy.
+
+**Acceptance.**
+1. The agent triages arrivals, drafts from permitted knowledge, updates an internal queue, escalates a product problem, performs a permitted repair, reads back recovery and follows the original customer promise through MCP.
+2. Under the all-autonomous company policy, every declared class is autonomous; the week completes with no policy wait or refusal and an empty review feed.
+3. Under the held company policy, standard calls enter review and every other declared class waits for its named person’s approval; approved actions run once and refused steps leave the remaining internal work usable.
+4. The two weeks keep citations, per-request customer separation, truthful agent attribution and independent recovery evidence through their handoffs.
+5. Before company-policy setup is answered, the first support call returns the setup link and has no effect; all unanswered support classes are visible.
+
+**Evidence.** None.
+**Gap.** No remote support-specialist MCP workflow and class/policy conformance proof is implemented for these points.
 
 ## Later
 

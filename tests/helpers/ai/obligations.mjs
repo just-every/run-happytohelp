@@ -41,11 +41,14 @@ export async function obligationsJourney(){
  app.db.prepare("INSERT INTO escalation_issues VALUES('issue',?,'con','github','1','EX-1','https://github.com/just-every/run-happytohelp/issues/1','closed',NULL,1,1)").bind(p),
  app.db.prepare("INSERT INTO escalation_links(id,project_id,conversation_id,issue_id,created_at) VALUES('link',?,?,'issue',1)").bind(p,v.conversationId)
  ])
+ await app.scheduled()
  const dependent=(await call('',{body:{...body,dependencyId:'issue'},status:201})).data
  assert.equal(dependent.id,created.id,'one cited promise remains one obligation')
  assert.equal(dependent.duplicate,true);assert.equal(dependent.pendingChange,true)
  const pending=(await call('',{status:200})).data.obligations[0]
  assert.equal(pending.owner_id,workspace.users.operator,'a revised proposal leaves accepted terms intact')
+ await app.scheduled()
+ assert.equal((await app.first("SELECT count(*) n FROM notification_inbox WHERE id LIKE 'followup:%'")).n,1,'a pending revision does not re-send the accepted reminder')
  assert.deepEqual(pending.pendingTerms,{ownerId:body.ownerId,dueAt:body.dueAt,stopCondition:body.stopCondition,dependencyId:'issue'})
  assert.equal((await call(`/${dependent.id}/accept`,{body:{version:3,ownerId:body.ownerId,dueAt:due}})).status,409)
  await call(`/${dependent.id}/accept`,{body:{version:4,ownerId:workspace.users.owner,dueAt:due,dependencyId:'issue',stopCondition:'Customer receives the revised update'},status:200})
@@ -56,9 +59,9 @@ export async function obligationsJourney(){
  const tick=await app.scheduled()
  assert.equal(tick.refused,0);assert.equal(tick.pruned,true)
  assert.ok(Object.values(tick.consumers).every(consumer=>consumer.completed),'reminders do not starve existing scheduled consumers')
- assert.equal((await app.first("SELECT count(*) n FROM notification_inbox WHERE id LIKE 'followup:%'")).n,25,'one bounded page is admitted')
+ assert.equal((await app.first("SELECT count(*) n FROM notification_inbox WHERE id LIKE 'followup:%'")).n,26,'one bounded page is admitted in addition to the prior accepted reminder')
  await app.scheduled()
- assert.equal((await app.first("SELECT count(*) n FROM notification_inbox WHERE id LIKE 'followup:%'")).n,31,'remaining obligations advance on the next tick')
+ assert.equal((await app.first("SELECT count(*) n FROM notification_inbox WHERE id LIKE 'followup:%'")).n,32,'remaining obligations advance on the next tick')
  await app.db.prepare("DELETE FROM followup_obligations WHERE id LIKE 'synthetic-hh-backlog-%'").run()
  const reminders=await app.sql("SELECT * FROM notification_inbox WHERE id LIKE 'followup:%'")
  assert.equal(reminders.filter(n=>n.id===`followup:${dependent.id}:5`).length,1,'accepted obligation receives one internal reminder even on repeated schedules')

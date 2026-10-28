@@ -31,6 +31,7 @@ export const settingsGroups = [
     ] },
     { label: 'Connections', destinations: [
         { label: 'Slack', path: 'slack-settings' },
+        { label: 'HubSpot', path: 'hubspot-settings' },
         { label: 'GitHub', path: 'github-settings' },
         { label: 'Webhooks', path: 'webhook-settings' },
         { label: 'API tokens', path: 'api-settings' },

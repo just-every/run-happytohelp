@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "c87680f40ee65f02651e71576e2c2bc895656e3d30015f6597d2c8bc6f565d9a",
+      "sha256": "b6ca4b50ac77c8ed1171825f17459743f800dced7305db93d3205c07133a66fe",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "0c6251cb35fbf082274b0de520053a079639a111dff547772550d3e649a0251e",
+      "sha256": "2932d10a947a346f47ccfcbe9534b11cc245ebec18871ab3395c83fe671ff4ac",
       "executable": false
     },
     "DEMO.md": {
@@ -12268,7 +12268,7 @@
       "executable": false
     },
     "tests/helpers/voice/journeys.mjs": {
-      "sha256": "dea6122c23358cadfab8979798cfb891401bbcd2da74917a99ade192eace50f2",
+      "sha256": "443c1bf41cf4f3deb40983915b6efe5f6dd20de33b11250d71da4be31a42a5c6",
       "executable": false
     },
     "tests/helpers/voice/portable.mjs": {
@@ -12416,7 +12416,7 @@
       "executable": false
     },
     "tests/journeys/connections.mjs": {
-      "sha256": "0c900589ba0388f5d975fd17d0c77609485dd0484f301d72d7c649cc1139e7c2",
+      "sha256": "7763ff1dcab37f7f9167bf803590ed2b6aac7c949d0e26429caca6f7f5b61240",
       "executable": false
     },
     "tests/journeys/connector-browser.mjs": {

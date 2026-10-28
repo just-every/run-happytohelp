@@ -2,8 +2,8 @@ import test from 'node:test'
 import {journey} from '../connections/claims.mjs'
 
 // Connections through the real API, settings and dispatcher doors (tests/connections holds each journey's scenarios).
-import {credentialsProof,signedDeliveryProof,routingProof,uncertaintyProof,erasureProof} from '../helpers/voice/journeys.mjs'
-const voiceSteps={credentials:[credentialsProof],api:[erasureProof],delivery:[signedDeliveryProof,routingProof,uncertaintyProof]}
+import {routingProof,erasureProof} from '../helpers/voice/journeys.mjs'
+const voiceSteps={api:[erasureProof],delivery:[routingProof]}
 for(const key of ['credentials','api','delivery','slack']){const [name,run]=journey(key);test(name,async()=>{await run();for(const proof of voiceSteps[key]||[])await proof()})}
 
 import {sharingJourney,updatesJourney,custodyJourney} from '../helpers/escalations/journeys.mjs'

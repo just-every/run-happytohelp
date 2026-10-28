@@ -11241,7 +11241,7 @@
       "executable": false
     },
     "tests/helpers/ai/app.mjs": {
-      "sha256": "4efb3359b901818da8e7c9dc0e1bb359e5fceceb5049f69df2eb52da70454ea2",
+      "sha256": "e51050f5867a00264e831ea646503c40126a7078eb55dabe43c4804af8fa3953",
       "executable": false
     },
     "tests/helpers/ai/cycle-outcomes.mjs": {

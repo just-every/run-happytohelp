@@ -3042,7 +3042,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "92eebcf8ec0419824f9835c968c3b41827b14d6926151501b73161a686012dbb",
+      "sha256": "a5d80b5055ab63a17cc85057749d65beda678b6d92fbb9371b914566de715986",
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {
@@ -11530,7 +11530,7 @@
       "executable": false
     },
     "tests/helpers/recovery/portable-journey.mjs": {
-      "sha256": "5fdf42342701e9bafa48411c86a3232fe280f6d599778db313aa2a4399dec0e2",
+      "sha256": "499afcf21896ea8f825fdeee571093fe6b0a970bc53256cd833329bcf51737fc",
       "executable": false
     },
     "tests/helpers/recovery/r4-data.mjs": {
@@ -11538,7 +11538,7 @@
       "executable": false
     },
     "tests/helpers/recovery/runtime.mjs": {
-      "sha256": "e178e2f0c7eb18de2be7a85f837cf65a88315634ed028b75b1b0db5b54c33f39",
+      "sha256": "f6f69f5c41a56b1b04c90a4f46bbc30def1e508725a15df8c5d110deaff96c95",
       "executable": false
     },
     "tests/helpers/recovery/snapshot.mjs": {

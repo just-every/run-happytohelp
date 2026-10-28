@@ -41,7 +41,9 @@ export async function portableRestoreJourney({archiveQualification=false}={}){
   }
   // The source's application and state are gone before the destination opens.
   await rm(sourceRoot,{recursive:true,force:true});source=undefined;
-  target=await recoveryRuntime(artifact,{directory:join(scratch,'restored-runtime'),variables:{H2H_SETUP_TOKEN:setupToken}});
+  // Public rer import owns preparation of a fresh push destination. Nightly
+  // refusals retain a migrated empty store for the unchanged-state comparisons.
+  target=await recoveryRuntime(artifact,{directory:join(scratch,'restored-runtime'),variables:{H2H_SETUP_TOKEN:setupToken},initializeStorage:archiveQualification});
   const targetRoot=target.directory,restore=await cliForRuntime(target);
   // The full archive qualification shares this same destroyed-source restore
   // lifecycle on nightly/release runs; push keeps the successful public path.

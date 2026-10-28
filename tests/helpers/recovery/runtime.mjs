@@ -7,7 +7,7 @@ import {freePort} from '../../first-run/browser-kit.mjs';
 
 // A separate harness leaves the historical independent-runtime and its helper
 // byte-identical. Only one owner opens native state at a time.
-export async function recoveryRuntime(artifact, {directory, restoreFile, variables}) {
+export async function recoveryRuntime(artifact, {directory, restoreFile, variables, initializeStorage=true}) {
   // Separate jobs share the runner's loopback interface. Never let a fixed
   // readiness URL accidentally admit another journey's native installation.
   const [port, inspectorPort] = await Promise.all([freePort(), freePort()]);
@@ -85,10 +85,12 @@ export async function recoveryRuntime(artifact, {directory, restoreFile, variabl
     storageOpen = true;
     try {return await withArtifactStorage(directory, config, visit)} finally {storageOpen = false}
   }
-  try {
-    await run(restoreFile
-      ? ['d1', 'execute', 'DB', '--local', '--persist-to', '.wrangler/state', '--file', restoreFile]
-      : ['d1', 'migrations', 'apply', 'DB', '--local', '--persist-to', '.wrangler/state']);
-  } catch (error) {await close(); throw error}
+  if (initializeStorage) {
+    try {
+      await run(restoreFile
+        ? ['d1', 'execute', 'DB', '--local', '--persist-to', '.wrangler/state', '--file', restoreFile]
+        : ['d1', 'migrations', 'apply', 'DB', '--local', '--persist-to', '.wrangler/state']);
+    } catch (error) {await close(); throw error}
+  }
   return {origin, directory, start, close, withStorage, run};
 }

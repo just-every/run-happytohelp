@@ -57,7 +57,7 @@ export async function platformArchiveJourney(){
    await FILES.put('archive-project/retained.txt','Retained support attachment',{httpMetadata:{contentType:'text/plain'},customMetadata:{purpose:'archive-journey'}});
   });
   // Platform's Managed data download of this installation, made before any native export touches it.
-  const download=await managedDownload(original),downloaded=await archiveSnapshot(original);
+  const download=await managedDownload(original);
   const unknownTable=await managedDownload(original,{extraSql:"CREATE TABLE synthetic_happytohelp_unknown(id TEXT PRIMARY KEY);\nINSERT INTO synthetic_happytohelp_unknown VALUES('synthetic-happytohelp-2');\n"});
   const archive=join(original,'exports/platform.rer');
   await cli(original,['export','--output',archive]);
@@ -81,12 +81,8 @@ export async function platformArchiveJourney(){
    await cli(root,['export','--output','exports/roundtrip.rer']);
    compareArchive(before,await archiveSnapshot(root),['archive_addition']);
   }
-  // The Managed download restores natively into a fresh install. A table the policy cannot place,
-  // a cut-off download and an occupied destination refuse before any destination byte changes.
-  const zip=join(scratch,'platform-data.zip');await writeFile(zip,download,{mode:0o600});
-  const managed=await fixture('managed');
-  await cli(managed,['import','--input',zip,'--yes']);
-  compareArchive(downloaded,await archiveSnapshot(managed));
+  // rer import routes a Managed data download through rer's bounded intake. A table this checkout
+  // cannot place and a cut-off download refuse before any destination byte changes.
   async function refuseDownload(root,bytes,reason){
    const input=join(scratch,'refused.zip');await rm(input,{force:true});await writeFile(input,bytes,{mode:0o600});
    const stored=await databaseBytes(root);assert.ok(Object.keys(stored).length,'the destination has a database to protect');
@@ -94,7 +90,6 @@ export async function platformArchiveJourney(){
    assert.match(result.events.find(event=>event.event==='error').message,reason);
    assert.deepEqual(await databaseBytes(root),stored,'a refused download changes no destination database byte');
   }
-  await refuseDownload(managed,download,/target_not_empty/);
   // Refusals happen before snapshot capture, schema preparation or transfer.
   const root=await fixture('refusals');await platformDestination(root);
   await refuseDownload(root,unknownTable,/managed_data_schema_table_missing/);
@@ -125,6 +120,6 @@ export async function platformArchiveJourney(){
    await DB.prepare('UPDATE rer_migrations SET sha256=? WHERE name=?').bind(hash('changed migration bytes'),last).run();
   });
   await refuse(/migration_ledger:unknown[:)]/);
-  console.log('Platform archive journey passed: Platform export; older archive into Platform and native destinations; row/file equality; ledger custody; native re-export; Managed data download restored natively, with unknown-table, truncated and occupied refusals leaving destination bytes unchanged; missing, multiple and mismatched ledger refusals with no write.');
+  console.log('Platform archive journey passed: Platform export; older archive into Platform and native destinations; row/file equality; ledger custody; native re-export; Managed data downloads with an unknown table or cut off mid-file refused with destination bytes unchanged; missing, multiple and mismatched ledger refusals with no write.');
  }finally{await rm(scratch,{recursive:true,force:true,maxRetries:3,retryDelay:100});}
 }

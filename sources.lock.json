@@ -4261,7 +4261,7 @@
       "executable": false
     },
     "src/modules/business-connectors/README.md": {
-      "sha256": "2ab0a7bd65e35ff1354a695295b0dd363a0d86bf6f6adb2d7ae6ca72d15653a3",
+      "sha256": "1f14a6ceefb088a03fdcd8932136b36d21b7b80e6d06bc7fde71a793311abe4d",
       "executable": false
     },
     "src/modules/business-connectors/routes.ts": {
@@ -11869,7 +11869,7 @@
       "executable": false
     },
     "tests/helpers/hubspot/browser.mjs": {
-      "sha256": "f9550c630b3f2332d3c9d93189576f651cef32cfb33395c2a4defb769a17fd66",
+      "sha256": "b85a8736452dc725740ed0babdeb5861bce9b2b3be7e08d7141a5ceb61ec0eed",
       "executable": false
     },
     "tests/helpers/hubspot/outbound.mjs": {

@@ -24,7 +24,7 @@ export class MobileTransport {
   const credential=this.#credential
   if(!credential)return {serverRevoked:false}
   // This explicit sign-out attempt survives local cancellation of data reads.
-  try{const response=await this.fetcher(this.origin+'/api/mobile/v1/session',{method:'DELETE',headers:{Authorization:'Bearer '+credential.token},credentials:'omit',cache:'no-store',redirect:'error'});await response.body?.cancel();return {serverRevoked:response.ok}}catch{return {serverRevoked:false}}
+  try{const response=await this.fetcher(this.origin+'/api/mobile/v1/session',{method:'DELETE',headers:{Authorization:'Bearer '+credential.token},credentials:'omit',cache:'no-store',redirect:'error'});void response.arrayBuffer().catch(()=>{});return {serverRevoked:response.ok}}catch{return {serverRevoked:false}}
  }
  async request<T>(path:string,init:RequestInit={},binary=false):Promise<T>{
   const credential=this.#credential
@@ -34,10 +34,10 @@ export class MobileTransport {
   this.#requests.add(controller)
   try{
    const response=await this.fetcher(this.origin+'/api/mobile/v1'+path,{...init,headers:{...Object.fromEntries(new Headers(init.headers)),Authorization:'Bearer '+credential.token},credentials:'omit',cache:'no-store',redirect:'error',signal:controller.signal})
-   if(generation!==this.#generation)throw new MobileClientError('This session changed',401)
+   if(generation!==this.#generation){void response.arrayBuffer().catch(()=>{});throw new MobileClientError('This session changed',401)}
    // Honour purge even when an intermediary replaces the JSON body.
    if(response.status===401||response.status===403||response.headers.get('Mobile-Cache-Action')==='purge'){
-    await response.body?.cancel();this.onPurge(response.status===403?'authority-change':'revocation');throw new MobileClientError('Device access ended. Sign in again.',response.status===403?403:401)
+    this.onPurge(response.status===403?'authority-change':'revocation');void response.arrayBuffer().catch(()=>{});throw new MobileClientError('Device access ended. Sign in again.',response.status===403?403:401)
    }
    if(binary&&response.ok){const bytes=new Uint8Array(await response.arrayBuffer());if(generation!==this.#generation){bytes.fill(0);throw new MobileClientError('This session changed',401)}return bytes as T}
    const data=await response.json() as Record<string,unknown>

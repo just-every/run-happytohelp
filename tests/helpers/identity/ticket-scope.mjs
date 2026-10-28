@@ -31,10 +31,18 @@ export async function nativeTicketScopeAssertions(app){
  await select(['scope-a','scope-b'],false)
 
  // Report/export authority remains independent; a scoped admin can export only the current cohort.
- const reportRole=await call(`${P}/roles`,{name:'Scoped report reviewer',base:'admin',permissions:['reports.view','data.export']},'POST',w.tokens.owner)
+ const reportRole=await call(`${P}/roles`,{name:'Scoped report reviewer',base:'admin',permissions:['reports.view','data.export','contacts.manage','integrations.install','conversations.manage']},'POST',w.tokens.owner)
  assert.equal(reportRole.status,201)
  await app.db.prepare('UPDATE project_roles SET ticket_scope_json=? WHERE id=?').bind(JSON.stringify({groupIds:['scope-a','scope-b'],includeUngrouped:false}),reportRole.data.data.id).run()
  assert.equal((await call(`${P}/agents/${w.users.admin}`,{role:reportRole.data.data.id},'PUT',w.tokens.owner)).status,200)
+
+ for(const ticket of ['scope-allowed-a','scope-denied-0']){
+  const crm=await call(`${P}/conversations/${ticket}/crm`,undefined,undefined,w.tokens.admin)
+  assert.equal(crm.status,ticket==='scope-allowed-a'?200:404,'CRM requester context obeys ticket scope')
+  const trace=await call(`/api/ai-support/projects/${p}/conversations/${ticket}/trace`,undefined,undefined,w.tokens.admin)
+  assert.equal(trace.status,ticket==='scope-allowed-a'?200:404,'trace metadata obeys ticket scope')
+ }
+ assert.equal((await call(`${P}/conversations/scope-denied-0/crm/refresh`,{},'POST',w.tokens.admin)).status,404,'hidden CRM refresh refuses before provider work')
  const reportPath=`/api/dashboard/projects/${p}/reports?period=custom&start=1970-01-01&end=1970-01-02`
  const report=await call(reportPath,undefined,undefined,w.tokens.admin);assert.equal(report.status,200);assert.equal(report.data.volume,2,'report aggregation filters before reducing')
  const team=await call(`/api/dashboard/projects/${p}/reports/team?period=custom&start=1970-01-01&end=1970-01-02`,undefined,undefined,w.tokens.admin);assert.equal(team.status,200);assert.equal(team.data.denominators.cohort,2,'team report uses the same current scope')

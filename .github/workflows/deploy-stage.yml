@@ -66,18 +66,31 @@ jobs:
         with:
           ref: ${{ needs.validate.outputs.sha }}
           persist-credentials: false
+      - name: Cache Chromium fallback packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/rer-apt/archives
+          key: chromium-apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Verify then package native Worker
         env:
           WRANGLER_SEND_METRICS: 'false'
         run: |
           set -euo pipefail
           pnpm install --frozen-lockfile
-          pnpm exec playwright install --with-deps chromium
+          pnpm exec playwright install chromium
+          # Selected historical candidates may predate the probe and fallback scripts.
+          if ! pnpm exec node --input-type=module -e 'import {chromium} from "playwright"; const browser=await chromium.launch({headless:true,timeout:15000}); await browser.close();'; then
+            mkdir -p "$RUNNER_TEMP/rer-apt/archives/partial"
+            echo "Dir::Cache::archives \"$RUNNER_TEMP/rer-apt/archives\";" > "$RUNNER_TEMP/chromium-apt.conf"
+            echo 'Acquire::Retries "1"; Acquire::http::Timeout "30"; Acquire::https::Timeout "30";' >> "$RUNNER_TEMP/chromium-apt.conf"
+            timeout --kill-after=5s 180s sudo env "PATH=$PATH" "APT_CONFIG=$RUNNER_TEMP/chromium-apt.conf" pnpm exec playwright install-deps chromium
+          fi
           pnpm run verify
           sha256sum delivery-artifact/happytohelp-worker-artifact.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: happytohelp-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+          name: happytohelp-candidate-${{ github.run_id }}
+          overwrite: true
           path: delivery-artifact/
           if-no-files-found: error
           retention-days: 7
@@ -108,7 +121,7 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: happytohelp-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+          name: happytohelp-candidate-${{ github.run_id }}
           path: ${{ runner.temp }}/candidate
       - name: Run reviewed controller with provider credentials only
         id: execute

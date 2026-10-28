@@ -49,6 +49,31 @@ export async function rolesAuditJourney(){
   assert.ok((await app.first("SELECT count(*) n FROM audit_events WHERE action='permission.denied' AND actor_id=?",collaborator.actor.id)).n>=5)
   assert.equal((await call(`${P}/agents`,undefined,w.tokens.owner)).data.data.some(row=>row.id===collaborator.actor.id&&row.role==='operator'),true,'the collaborator joins on the agent base')
 
+  // Suggestion decisions require the same ticket authority at both mounted doors.
+  const suggestionDoors=['management','dashboard'].map(area=>`/api/${area}/projects/${w.projectId}/conversations/conv-r/ticket/problem/suggestions`)
+  const refuseSuggestions=async token=>{
+   for(const door of suggestionDoors)for(const action of ['preview','confirm','reject']){
+    const refused=await call(`${door}/${action}`,{},token)
+    assert.equal(refused.status,403,`${door}/${action}`);assert.equal(refused.data.code,'permission_denied');assert.equal(refused.data.permission,'conversations.manage')
+   }
+  }
+  await refuseSuggestions(collaborator.token)
+  await app.db.prepare("INSERT INTO conversations(id,project_id,contact_id,subject,created_at,updated_at) VALUES('conv-problem-r',?,'ct-r','Synthetic checkout outage',?,?)").bind(w.projectId,Date.now(),Date.now()).run()
+  const ticketPath=id=>`${P}/conversations/${id}/ticket/problem`
+  const problemTicket=(await call(ticketPath('conv-problem-r'),undefined,w.tokens.operator)).data.data.ticket
+  assert.equal((await call(ticketPath('conv-problem-r'),{...problemTicket,is_problem:true},w.tokens.operator,'PATCH')).status,200)
+  const incidentTicket=(await call(ticketPath('conv-r'),undefined,w.tokens.operator)).data.data.ticket
+  assert.equal((await call(`${P}/conversations/conv-r/ticket`,{subject:'Synthetic checkout outage',expected_version:incidentTicket.expected_version},w.tokens.operator,'PATCH')).status,200)
+  for(const door of suggestionDoors){
+   const preview=async()=>{const result=await call(`${door}/preview`,{problem_id:'conv-problem-r'},w.tokens.operator);assert.equal(result.status,200,door);return result.data.data.preview_id}
+   const rejected=await call(`${door}/reject`,{preview_id:await preview()},w.tokens.operator);assert.equal(rejected.status,200);assert.equal(rejected.data.data.status,'rejected')
+   assert.equal((await call(ticketPath('conv-r'),undefined,w.tokens.operator)).data.data.parent,null)
+   const confirmed=await call(`${door}/confirm`,{preview_id:await preview()},w.tokens.operator);assert.equal(confirmed.status,200);assert.equal(confirmed.data.data.status,'linked')
+   const linked=(await call(ticketPath('conv-r'),undefined,w.tokens.operator)).data.data
+   assert.equal(linked.parent.problem_id,'conv-problem-r')
+   assert.equal((await call(`${ticketPath('conv-problem-r')}/incidents/apply`,{action:'unlink',tickets:[linked.ticket]},w.tokens.operator)).status,200)
+  }
+
   // While still an Agent, the agent connects an application that may edit and publish one article.
   await app.db.prepare("INSERT INTO knowledge_articles(id,project_id,slug,title,content,summary,status,updated_at) VALUES('art-r',?,'returns','Returns','Original','','draft',1)").bind(w.projectId).run()
   await app.db.prepare("INSERT INTO knowledge_articles(id,project_id,slug,title,content,summary,status,updated_at) VALUES('art-other',?,'private','Private','Unselected internal article','','draft',1)").bind(w.projectId).run()
@@ -79,6 +104,7 @@ export async function rolesAuditJourney(){
   const replyOnly=await call(`${P}/roles`,{name:'Synthetic reply only',base:'operator',permissions:['conversations.reply']},w.tokens.owner)
   assert.equal(replyOnly.status,201)
   assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:replyOnly.data.data.id},w.tokens.owner,'PUT')).status,200)
+  await refuseSuggestions(w.tokens.operator)
   observe('F3 reply-only article picker',(await call(`/api/knowledge/${w.projectId}/conversations/conv-r/articles`,undefined,w.tokens.operator)).status,200)
   assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:'operator'},w.tokens.owner,'PUT')).status,200)
   await app.db.prepare("INSERT INTO knowledge_articles(id,project_id,slug,title,content,summary,status,updated_at) VALUES('art-deleted',?,'synthetic-deleted','Synthetic deleted','Synthetic','','draft',1)").bind(w.projectId).run()

@@ -122,6 +122,9 @@ export async function requestFormsJourney(){
   await app.ok(fieldPath,{...owner,method:'PATCH',body:{read_roles:[],write_roles:[]}})
 
 
+  const {accountLookupJourney}=await import('./account-lookup-journey.mjs')
+  await accountLookupJourney(f,customer)
+
   await app.configure({FORMS_TURNSTILE_SECRET_KEY:undefined})
   assert.equal((await app.call(path,{body:{...valid,localId:'not-configured'},status:503})).data.code,'verification_unavailable')
   // A verified mailbox can still use the portal when anonymous submissions are disabled.

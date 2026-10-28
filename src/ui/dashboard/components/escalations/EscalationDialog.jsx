@@ -33,7 +33,7 @@ export default function EscalationDialog({projectId, conversationId, onHide, onC
         return () => { active = false; };
     }, [base, conversationBase]);
     return <Modal show size="lg" onHide={busy ? undefined : onHide} aria-labelledby={titleId} className="escalation-dialog">
-        <DialogHeader closeButton={!busy}><Modal.Title id={titleId}>Escalate to engineering</Modal.Title></DialogHeader>
+        <DialogHeader closeButton={!busy} closeLabel="Close dialog"><Modal.Title id={titleId}>Escalate to engineering</Modal.Title></DialogHeader>
         <Modal.Body>
             {state.loading && <p className="escalation-hint" role="status">Loading escalation context…</p>}
             {state.error && <p className="escalation-error" role="alert">{state.error}</p>}

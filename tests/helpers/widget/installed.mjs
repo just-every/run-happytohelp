@@ -42,8 +42,9 @@ try{
  const result=await(await fetch(`${api}/api/conversations/${session.conversationId}/messages`,{method:'POST',headers,body:JSON.stringify({localId:'operator-browser-proof',content:'Native operator socket reply',expectedRevision:transcript.revision,expectedLastMessageId:transcript.lastMessageId})})).json();assert.equal(result.accepted,true);
  await page.getByText('Native operator socket reply',{exact:true}).waitFor();
  await page.locator('input[type=file]').setInputFiles({name:'widget-proof.txt',mimeType:'text/plain',buffer:Buffer.from('Native attachment bytes')});
- await page.locator('textarea[name=content]').fill('Attachment from widget');await page.locator('button[name=submit]').click();
- await page.waitForTimeout(700);
+ await page.locator('textarea[name=content]').fill('Attachment from widget');
+ const attachmentAdmitted=page.waitForResponse(response=>response.request().method()==='POST'&&/\/api\/conversations\/[^/]+\/messages$/.test(new URL(response.url()).pathname));
+ await page.locator('button[name=submit]').click();assert.equal((await attachmentAdmitted).status(),200,'the attachment message is admitted before inspecting its stored media');
  const before=await(await fetch(`${api}/api/conversations/${session.conversationId}/messages`,{headers})).json();assert.equal(before.messages.at(-1).media.length,1);
  const media=before.messages.at(-1).media[0];const downloaded=await fetch(`${api}/api/conversations/${session.conversationId}/media/${media.id}`,{headers});assert.equal(await downloaded.text(),'Native attachment bytes');
  await page.reload();await page.getByText('Native operator socket reply',{exact:true}).waitFor();await page.getByText('Attachment from widget',{exact:true}).waitFor();

@@ -211,9 +211,9 @@
       "file": "CONTRACT.md",
       "line": 41,
       "text": "Every private read/write enforces the current actor/project/role; blocked or",
-      "to": "clause",
+      "to": "base",
       "ids": [
-        "IDENTITY-001"
+        "BASE-ROLE-001"
       ]
     },
     {
@@ -489,7 +489,16 @@
     {
       "file": "CONTRACT.md",
       "line": 76,
-      "text": "It sends no external email and never claims delivery. The local",
+      "text": "It sends no external email and never claims delivery.",
+      "to": "base",
+      "ids": [
+        "BASE-MAIL-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 76,
+      "text": " The local",
       "to": "clause",
       "ids": [
         "LOCAL-MAIL-001"
@@ -1101,7 +1110,7 @@
     {
       "file": "CONTRACT.md",
       "line": 158,
-      "text": "through Base escaping. Base owns signing, durable attempts and retry policy.",
+      "text": "through Base escaping. ",
       "to": "clause",
       "ids": [
         "CONNECTIONS-001"
@@ -1109,11 +1118,20 @@
     },
     {
       "file": "CONTRACT.md",
+      "line": 158,
+      "text": "Base owns signing, durable attempts and retry policy.",
+      "to": "base",
+      "ids": [
+        "BASE-OPS-003"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
       "line": 159,
       "text": "HTTP 500 stays uncertain and is not replayed; 429 retains bounded retries.",
-      "to": "clause",
+      "to": "base",
       "ids": [
-        "CONNECTIONS-001"
+        "BASE-AUDIT-001"
       ]
     },
     {
@@ -2409,19 +2427,9 @@
       "file": "CONTRACT.md",
       "line": 287,
       "text": "third-party request, over a metric-matched local fallback, so no text moves",
-      "to": "clause",
+      "to": "base",
       "ids": [
-        "PUBLIC-001",
-        "PUBLIC-002",
-        "PUBLIC-003",
-        "PUBLIC-004",
-        "PUBLIC-005"
-      ],
-      "also": [
-        {
-          "to": "docs",
-          "path": "docs/contract/public-design.md"
-        }
+        "BASE-PUBLIC-001"
       ]
     },
     {
@@ -3859,7 +3867,44 @@
     {
       "file": "CONTRACT.md",
       "line": 524,
-      "text": "**AUDIT-001 \u2014 Security and accountable actions.** Encrypt configured provider credentials under installation custody, never return secrets in ordinary reads/logs/exports and enforce tenant, role, origin and public rate limits at every door. Keep an inspectable, exportable append-only audit of authentication/permission changes, imports/exports/erasure, assignments, procedure changes, approvals and external actions with actor, purpose, source, time and outcome; redact erased actors without losing the event. Configure retention/legal holds with visible effects and never silently delete evidence to improve reports.",
+      "text": "**AUDIT-001 \u2014 Security and accountable actions.** Encrypt configured provider credentials under installation custody, ",
+      "to": "clause",
+      "ids": [
+        "AUDIT-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 524,
+      "text": "never return secrets in ordinary reads/logs/exports and enforce tenant, role, origin and public rate limits at every door.",
+      "to": "base",
+      "ids": [
+        "BASE-SECRET-001",
+        "BASE-ROLE-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 524,
+      "text": "Keep an inspectable, exportable append-only audit of authentication/permission changes, imports/exports/erasure, assignments, procedure changes, approvals and external actions with actor, purpose, source, time and outcome; ",
+      "to": "clause",
+      "ids": [
+        "AUDIT-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 524,
+      "text": "redact erased actors without losing the event.",
+      "to": "base",
+      "ids": [
+        "BASE-DATA-003"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 524,
+      "text": " Configure retention/legal holds with visible effects and never silently delete evidence to improve reports.",
       "to": "clause",
       "ids": [
         "AUDIT-001"
@@ -3877,7 +3922,25 @@
     {
       "file": "CONTRACT.md",
       "line": 528,
-      "text": "**PORTABILITY-001 \u2014 Complete customer-owned portable support data.** Export versioned machine-readable conversations, attachments, contacts/companies, knowledge/versions, settings, rules/procedures/evaluations, outcomes and audit with a schema, integrity digest and explicit exclusions. Validate a bounded archive before atomic inactive restore to a clean installation; do not transfer sessions, provider secrets or connector authority and do not replay imported actions. Include D1, R2 and Durable Object business state or a lossless reconstruction; retain erasure fences and receiving-owner identity. This target replaces the current documented incomplete-storage boundary without pretending the held Base-data equivalence is done.",
+      "text": "**PORTABILITY-001 \u2014 Complete customer-owned portable support data.** Export versioned machine-readable conversations, attachments, contacts/companies, knowledge/versions, settings, rules/procedures/evaluations, outcomes and audit ",
+      "to": "clause",
+      "ids": [
+        "PORTABILITY-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 528,
+      "text": "with a schema, integrity digest and explicit exclusions.",
+      "to": "base",
+      "ids": [
+        "BASE-DATA-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 528,
+      "text": " Validate a bounded archive before atomic inactive restore to a clean installation; do not transfer sessions, provider secrets or connector authority and do not replay imported actions. Include D1, R2 and Durable Object business state or a lossless reconstruction; retain erasure fences and receiving-owner identity. This target replaces the current documented incomplete-storage boundary without pretending the held Base-data equivalence is done.",
       "to": "clause",
       "ids": [
         "PORTABILITY-001"

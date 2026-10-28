@@ -303,6 +303,10 @@
     {
       "source": "docs/contract/public-design.md",
       "reason": "Detailed product protocol and retained design specification"
+    },
+    {
+      "source": "docs/contract/support-protocols.md",
+      "reason": "Retained support protocol and implementation details"
     }
   ]
 }

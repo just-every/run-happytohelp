@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "aa2a0a592149f5a875b3cf6eced1cebc29910b113f4eb1be9ff02486d6296c33",
+      "sha256": "73b5d8d995c2e70a8c04415d01d35d7c2dcb3b3d07a177745139239fecf5bf20",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8cffb5d723ee3e392a149c4f5aa5c6a7ce679f36c857272a281d15be59ab905b",
+      "sha256": "a1a50329de159acafda8b2ed2c5c767392f556b58deba336f23cff9acf9a51ad",
       "executable": false
     },
     "DEMO.md": {
@@ -1684,11 +1684,19 @@
       "executable": false
     },
     "docs/contract/COVERAGE.json": {
-      "sha256": "6feaf3b4b063d416936b14c11e6b6d3c635ac1e9c6f33c51e48266da1b70ba26",
+      "sha256": "db99bbe281e6d7a0b66070f00e37e2b1ee7c76c4a152e11ea8d1f7042085120c",
       "executable": false
     },
     "docs/contract/ID-MAP.json": {
       "sha256": "4fa671e38da654cb4fdc934cd0aceea2c6c6e9c920cd2da0e5b3c42de64155cb",
+      "executable": false
+    },
+    "docs/contract/machine-api.md": {
+      "sha256": "598c31348ef9bdcb731b1d230f5e9b2a9973f3e735abf497a29130ece80835de",
+      "executable": false
+    },
+    "docs/contract/public-design.md": {
+      "sha256": "8982ceaa88b29510e8f4c3e45a6ec3c9c87433b9b08da0ea104d146554706909",
       "executable": false
     },
     "docs/customer-portal.md": {
@@ -1800,7 +1808,7 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "017896f1e925f5e009c8067764eb1255e68d47b3a506b7eb958fdd30912acb77",
+      "sha256": "5282c66dfb5e04b7fc57ddeba220f8e01a8c0801f8417574d481087a4ac363a2",
       "executable": false
     },
     "docs/SOURCE-PROVENANCE.md": {

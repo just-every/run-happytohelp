@@ -23,40 +23,90 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 - Field proof records real-world qualification separately.
 - ACCEPTANCE.md, docs/CLAIMS.md and summary counts are generated from this file.
 
+## Door rules
+
+- **D-1.** Support identity. Linking customers supplies staff context only; it grants no customer-side access, merge or send authority. Each customer continues to use their own verified session.
+- **D-2.** Support recovery. A provider acknowledgment, closed engineering issue or completed command is not customer recovery; record the separate observation.
+- **D-3.** Agent decisions. A support action uses the risk classes computed from its actual records; the company’s policy determines its disposition. The contract supplies no dispositions.
+
 ## Shared duties (Base)
 
 | Base duty | Duty | Delta clauses | Base journey |
 | --- | --- | --- | --- |
-
+| BASE-ACCESS-001 | Sign-in | IDENTITY-002 | not run |
+| BASE-ACCESS-002 | Sessions | IDENTITY-001, LOCAL-MAIL-001, DELIVERY-001, IDENTITY-003 | not run |
+| BASE-ACCESS-003 | Public endpoints | IDENTITY-001 | not run |
+| BASE-ACCESS-004 | Server-side authorisation | IDENTITY-001 | not run |
+| BASE-INPUT-001 | Validation | CONNECTIONS-001, CONTEXT-001 | not run |
+| BASE-INPUT-002 | HTML | none | not run |
+| BASE-INPUT-003 | Uploads | UI-001, DESK-001 | not run |
+| BASE-SECRET-001 | No leakage | CONNECTIONS-001, ACTIVATION-001, SOURCE-001, AUDIT-001, PORTABILITY-001 | not run |
+| BASE-SECRET-002 | Startup | none | not run |
+| BASE-DATA-001 | Export and import | NATIVE-001, MOVE-IN-001, REPORTS-001, MIGRATION-001, PORTABILITY-001 | not run |
+| BASE-DATA-002 | Retention | MAIL-002 | not run |
+| BASE-DATA-003 | Erasure | CONVERSATION-001, OUTCOMES-001, MIGRATION-001, ERASURE-001, AUDIT-001 | not run |
+| BASE-DATA-004 | Outbound flows | CONNECTIONS-001, INTEGRATION-001 | not run |
+| BASE-DATA-005 | Independence | none | not run |
+| BASE-PUBLIC-001 | Privacy | KNOWLEDGE-001, PUBLIC-001, PUBLIC-002, PUBLIC-003, PUBLIC-004, PUBLIC-005, KNOWLEDGE-003 | not run |
+| BASE-PUBLIC-002 | Origins | none | not run |
+| BASE-PUBLIC-003 | Accessibility | none | not run |
+| BASE-OPS-001 | Health | none | not run |
+| BASE-OPS-002 | Migrations | NATIVE-001 | not run |
+| BASE-OPS-003 | Idempotency | CONVERSATION-001, DELIVERY-001, MOVE-IN-001, CONNECTIONS-001, INTEGRATION-001, MAIL-001 | not run |
+| BASE-OPS-004 | Failure is visible | DELIVERY-001 | not run |
+| BASE-OPS-005 | Audit | none | not run |
+| BASE-ROLE-001 | Roles through every door | IDENTITY-002, IDENTITY-001, MOVE-IN-001, OUTCOMES-001, REPORTS-001, CONNECTIONS-001, KNOWLEDGE-001, CONTEXT-001, MIGRATION-001, DESK-001, MAIL-002, OUTBOUND-001, QUEUE-001, QUEUE-002, QUEUE-003, MACRO-001, QUEUE-004, STATUS-001, SLA-001, AUTOMATION-001, AUTOMATION-002, NOTIFY-001, CONVERSATION-002, CONVERSATION-003, CUSTOMER-001, COMMERCE-001, BILLING-001, CRM-001, ESCALATION-001, API-001, API-002, API-003, API-004, API-005, API-006, API-007, API-008, MOVE-IN-002, MOVE-IN-003, MOVE-IN-004, PORTAL-001, FORMS-001, KNOWLEDGE-002, BRANDS-001, ACCESS-001, AUDIT-001, ASSURANCE-001 | not run |
+| BASE-AUDIT-001 | Searchable, durable audit | CONNECTIONS-001, TRAINING-001, MAIL-002, AUDIT-001, ASSURANCE-001 | not run |
+| BASE-BACKUP-001 | Independent backup, restore and rollback | PORTABILITY-001 | not run |
+| BASE-DATA-006 | Erasure respects retention and legal hold | ERASURE-001, AUDIT-001, ASSURANCE-001 | not run |
+| BASE-SIGNIN-001 | Standards-based SSO and lifecycle | ACCESS-001 | not run |
+| BASE-SIGNIN-002 | Native multi-factor authentication | IDENTITY-002, IDENTITY-003 | not run |
+| BASE-INSTALL-001 | Free self-host and removal | NATIVE-001, FIRST-RUN-001, SOURCE-001 | not run |
+| BASE-MAIL-001 | Truthful mail outcomes | FIRST-RUN-001, LOCAL-MAIL-001, ACTIVATION-001, INTEGRATION-001, MAIL-001, MAIL-002, CHANNELS-001 | not run |
+| BASE-ACCESSIBILITY-001 | One accessibility bar | UI-001, PUBLIC-001, PUBLIC-002, PUBLIC-003, PUBLIC-004, PUBLIC-005, KNOWLEDGE-003 | not run |
+| BASE-DOCS-001 | On-site docs from one contract | PUBLIC-005 | not run |
+| BASE-AGENT-001 | One MCP door per seed | none | not run |
+| BASE-AGENT-002 | The seed's jobs are tools, through the UI's own actions | none | not run |
+| BASE-AGENT-003 | Records are resources | AGENT-001, PUSH-001, PUSH-002, PUSH-003, PUSH-004 | not run |
+| BASE-AGENT-004 | Business identity and short-lived, audience-bound tokens | none | not run |
+| BASE-AGENT-005 | An agent acts as a person in a role, never more | DELEGATION-001 | not run |
+| BASE-AGENT-006 | Every action declares its risk class | CHANNELS-001, VOICE-001, API-001, API-002, API-003, API-004, API-005, API-006, API-007, API-008, KNOWLEDGE-002, IDENTITY-003, AGENT-001, PROCEDURE-001, AGENT-002, PUSH-001, PUSH-002, PUSH-003, PUSH-004 | not run |
+| BASE-AGENT-007 | The company's policy decides, at one chokepoint | FIRST-RUN-001, AI-001, DELEGATION-001, INTEGRATION-001, CHANNELS-001, VOICE-001, API-001, API-002, API-003, API-004, API-005, API-006, API-007, API-008, KNOWLEDGE-002, AGENT-001, PROCEDURE-001, AGENT-002, PUSH-001, PUSH-002, PUSH-003, PUSH-004 | not run |
+| BASE-AGENT-008 | Truthful attribution | OUTCOMES-001, DELEGATION-001, IDENTITY-003, PUSH-001, PUSH-002, PUSH-003, PUSH-004 | not run |
+| BASE-AGENT-009 | Every agent action is audited with its class and decision | AGENT-002 | not run |
+| BASE-AGENT-010 | Agents can follow changes | none | not run |
+| BASE-AGENT-011 | Limits are policy, and Pause stops everything | FIRST-RUN-001, AI-001, TRAINING-001, PROCEDURE-001 | not run |
+| BASE-AGENT-012 | Writes are idempotent and conflict-safe | none | not run |
+| BASE-AGENT-013 | Manifest, docs and the conformance journey | none | not run |
 
 ## Published clauses
 
-- `NATIVE-001`: *Tier:* Core
-- `IDENTITY-002`: *Tier:* Core
-- `IDENTITY-001`: *Tier:* Core
-- `FIRST-RUN-001`: *Tier:* Core
-- `LOCAL-MAIL-001`: *Tier:* Core
-- `CONVERSATION-001`: *Tier:* Core
-- `DELIVERY-001`: *Tier:* Core
-- `UI-001`: *Tier:* Core
-- `MOVE-IN-001`: *Tier:* Core
-- `OUTCOMES-001`: *Tier:* Core
-- `REPORTS-001`: *Tier:* Core
-- `CONNECTIONS-001`: *Tier:* Core
-- `ACTIVATION-001`: *Tier:* Core
-- `AI-001`: *Tier:* Core
-- `KNOWLEDGE-001`: *Tier:* Core
-- `CONTEXT-001`: *Tier:* Core
-- `DELEGATION-001`: *Tier:* Core
-- `TRAINING-001`: *Tier:* Core
-- `INTEGRATION-001`: *Tier:* Core
-- `PUBLIC-001`: *Tier:* Core
-- `PUBLIC-002`: *Tier:* Core · *From:* PUBLIC-001
-- `PUBLIC-003`: *Tier:* Core · *From:* PUBLIC-001
-- `PUBLIC-004`: *Tier:* Core · *From:* PUBLIC-001
-- `PUBLIC-005`: *Tier:* Core · *From:* PUBLIC-001
-- `MIGRATION-001`: *Tier:* Core
-- `SOURCE-001`: *Tier:* Core
+- `NATIVE-001`: *Tier:* Core · *Cites:* BASE-INSTALL-001, BASE-OPS-002, BASE-DATA-001
+- `IDENTITY-002`: *Tier:* Core · *Cites:* BASE-ROLE-001, BASE-ACCESS-001, BASE-SIGNIN-002
+- `IDENTITY-001`: *Tier:* Core · *Cites:* BASE-ROLE-001, BASE-ACCESS-002, BASE-ACCESS-003, BASE-ACCESS-004
+- `FIRST-RUN-001`: *Tier:* Core · *Cites:* BASE-INSTALL-001, BASE-MAIL-001, BASE-AGENT-007, BASE-AGENT-011
+- `LOCAL-MAIL-001`: *Tier:* Core · *Cites:* BASE-MAIL-001, BASE-ACCESS-002
+- `CONVERSATION-001`: *Tier:* Core · *Cites:* BASE-OPS-003, BASE-DATA-003
+- `DELIVERY-001`: *Tier:* Core · *Cites:* BASE-ACCESS-002, BASE-OPS-003, BASE-OPS-004
+- `UI-001`: *Tier:* Core · *Cites:* BASE-ACCESSIBILITY-001, BASE-INPUT-003
+- `MOVE-IN-001`: *Tier:* Core · *Cites:* BASE-ROLE-001, BASE-OPS-003, BASE-DATA-001 · *Rules:* D-1
+- `OUTCOMES-001`: *Tier:* Core · *Cites:* BASE-DATA-003, BASE-ROLE-001, BASE-AGENT-008 · *Rules:* D-2
+- `REPORTS-001`: *Tier:* Core · *Cites:* BASE-ROLE-001, BASE-DATA-001 · *Rules:* D-2
+- `CONNECTIONS-001`: *Tier:* Core · *Cites:* BASE-OPS-003, BASE-AUDIT-001, BASE-ROLE-001, BASE-SECRET-001, BASE-INPUT-001, BASE-DATA-004
+- `ACTIVATION-001`: *Tier:* Core · *Cites:* BASE-MAIL-001, BASE-SECRET-001
+- `AI-001`: *Tier:* Core · *Cites:* BASE-AGENT-007, BASE-AGENT-011 · *Rules:* D-3
+- `KNOWLEDGE-001`: *Tier:* Core · *Cites:* BASE-ROLE-001, BASE-PUBLIC-001 · *Rules:* D-3
+- `CONTEXT-001`: *Tier:* Core · *Cites:* BASE-ROLE-001, BASE-INPUT-001
+- `DELEGATION-001`: *Tier:* Core · *Cites:* BASE-AGENT-005, BASE-AGENT-007, BASE-AGENT-008
+- `TRAINING-001`: *Tier:* Core · *Cites:* BASE-AUDIT-001, BASE-AGENT-011
+- `INTEGRATION-001`: *Tier:* Core · *Cites:* BASE-OPS-003, BASE-MAIL-001, BASE-DATA-004, BASE-AGENT-007
+- `PUBLIC-001`: *Tier:* Core · *Cites:* BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
+- `PUBLIC-002`: *Tier:* Core · *From:* PUBLIC-001 · *Cites:* BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
+- `PUBLIC-003`: *Tier:* Core · *From:* PUBLIC-001 · *Cites:* BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
+- `PUBLIC-004`: *Tier:* Core · *From:* PUBLIC-001 · *Cites:* BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
+- `PUBLIC-005`: *Tier:* Core · *From:* PUBLIC-001 · *Cites:* BASE-PUBLIC-001, BASE-ACCESSIBILITY-001, BASE-DOCS-001
+- `MIGRATION-001`: *Tier:* Core · *Cites:* BASE-DATA-001, BASE-DATA-003, BASE-ROLE-001
+- `SOURCE-001`: *Tier:* Core · *Cites:* BASE-INSTALL-001, BASE-SECRET-001
 
 ### Retained product and operating guarantees
 
@@ -70,7 +120,7 @@ prints a private `RER_OPEN` address that enters as the real local owner through
 the rer dev v2 boundary, preserving native sessions, roles and passwords.
 Reset is explicitly confirmed and local;
 export/import preserve supported native data with documented exclusions.
-Deployment dry-run makes zero outbound requests and explicitly reports that fact. A separately and explicitly started read-only provider preflight uses the owner's scoped Cloudflare token with owner consent to read the account's Workers subdomain and the Worker's settings and secret names (three GETs for an existing Worker); it sends no mail and changes no resources. Dry-run and preflight are independent steps, neither a mock of the other. The delivered runtime requires no original checkout or PHP service.
+Deployment dry-run makes zero outbound requests and explicitly reports that fact. A separately and explicitly started read-only provider preflight uses the owner's scoped Cloudflare token with owner consent to read the account's Workers subdomain and the Worker's settings and secret names (three GETs for an existing Worker); it sends no mail and changes no resources. Dry-run and preflight are independent steps, neither a mock of the other. The delivered runtime requires no original checkout or PHP service. Details are in [the support protocol guide](docs/contract/support-protocols.md).
 
 **Acceptance.**
 1. Use a clean checkout through rer describe/check, locked installation, setup, dev, verify, reset and export/import; preserve owner/data/settings and refuse unconfirmed destructive work.
@@ -81,8 +131,7 @@ Deployment dry-run makes zero outbound requests and explicitly reports that fact
 #### IDENTITY-002 — Retained native password identity (owner decision 2026-10-08)
 
 **Requirement.** Preserve native password sign-in, first-owner setup, the accepted owner
-experience and prior account/workspace data with the maintained Base command mechanisms. Retain this edition's authentication and native owner setup. Existing tenant and permission checks
-continue to govern every session. A second factor for these native accounts is required by IDENTITY-003; it adds to native passwords and never replaces them.
+experience and prior account/workspace data with the maintained Base command mechanisms. Retain this edition's authentication and native owner setup.  A second factor for these native accounts is required by IDENTITY-003; it adds to native passwords and never replaces them.
 
 **Acceptance.**
 1. Complete native password setup, login, recovery and workspace re-entry, then upgrade with prior owner credentials and data intact; configured providers must not replace native identity.
@@ -91,11 +140,10 @@ continue to govern every session. A second factor for these native accounts is r
 
 **Requirement.** Owner setup, registration, login/recovery,
 project switching, membership and widget admission establish native identity.
-Every private read/write enforces the current actor/project/role; blocked or
-deleted projects and revoked credentials lose access. Provider configuration
+ Provider configuration
 never substitutes for user authority. The public widget key and origin are not
 a secret: visitor, registration and project-creation requests are bounded by
-D1-backed limits (`RATE_LIMITS`) and refused with HTTP 429 and `Retry-After`.
+D1-backed limits (the documented admission limits) and refused with HTTP 429 and `Retry-After`.
 
 **Acceptance.**
 1. Through native session and widget routes, deny cross-tenant, blocked/deleted and revoked access; prove public admission returns 429 with Retry-After when limited and provider configuration conveys no actor authority.
@@ -113,7 +161,7 @@ them for now, and shows everything else under "What we've set". Every workspace 
 workspace creation or email-verified registration, and never a demo workspace,
 is provisioned in one step: a starter
 assistant as its default visitor assistant, a reply-by-email mailbox when the
-installation holds `INBOUND_EMAIL_TOKEN`, and mail sent from the installation
+installation holds the installation’s inbound-email credential, and mail sent from the installation
 sender until the workspace's own domain is verified. The starter assistant answers
 visitors by itself once a provider key exists, within the daily AI ceilings; with
 no key no assistant is assigned to a new conversation, it stays with the team and
@@ -134,7 +182,7 @@ Visitor headers retain the operator's display name.
 **Requirement.** Trusted local development configuration
 uses the rer dev v2 development transport: it validates and suppresses visitor
 and teammate mail, reports `development`, stores no messages and exposes no mail viewer.
-It sends no external email and never claims delivery. The local
+It sends no external email. The local
 owner enters automatically through the dev boundary; native password identity,
 ordinary hosted email-link confirmation and prior stored data are retained.
 Production has no local dev surface. Missing credentials or failed remote
@@ -238,8 +286,8 @@ Bearer-only API calls have no CORS, per-token limits and native guarded writes.
 Contact erasure fences API identity restoration and pending event payloads.
 Native events commit tenant-bound webhook and Slack intents; historical import
 apply and undo do not emit them. Slack projects bounded native visitor text
-through Base escaping. Base owns signing, durable attempts and retry policy.
-HTTP 500 stays uncertain and is not replayed; 429 retains bounded retries.
+through Base escaping. 
+
 **Scoped edition override, owner decision 2026-10-09:** this consumer uses
 ordinary platform HTTPS fetch through the unchanged Base wire interface. It
 refuses every 3xx with manual redirect handling, enforces a 10-second timeout,
@@ -247,7 +295,7 @@ a 1 MiB request limit and 64 KiB streamed-response limit. Destination syntax
 and literal IP validation remain enforced. This expressly overrides Base's
 transport DNS-pinning requirement for this edition; it does not claim DNS
 pinning or change copied Base contracts. Local synthetic protocol checks do
-not establish a live Slack connection or hosted installation.
+not establish a live Slack connection or hosted installation. Details are in [the support protocol guide](docs/contract/support-protocols.md).
 
 **Acceptance.**
 1. Issue, use, expire and revoke each scoped show-once token; exercise native API operations, erasure fences, signed events and Slack escaping.
@@ -269,7 +317,7 @@ and an authenticated widget ping; whether an article is published is not one of
 them (that step stays among the eight ids but is hidden and never counted). Mail to the owner
 is confirmed by a used emailed sign-in link, or by the provider's reported outcome
 for the welcome or test email; local development mail is suppressed and never
-confirms delivery, and provider acceptance or queueing is pending. `GET` performs no
+confirms delivery, and provider acceptance or queueing is pending. Reading Setup performs no
 provider work and writes nothing. Only an explicit owner action (Create
 workspace, or Send me a test) may send mail, to that owner's mailbox, with
 durable identity; ambiguous work is never replayed. Missing provider permissions
@@ -282,7 +330,7 @@ request, and moves the step out of Needs you and out of the confirmed count and 
 total; a skipped step is never shown as confirmed. An observation always wins: a
 skipped step that is later observed is confirmed and counted, and a rejected
 provider key stays under Needs you whether or not it was skipped. Provider keys and
-their fingerprints never enter API responses or browser storage.
+their fingerprints never enter API responses or browser storage. Details are in [the support protocol guide](docs/contract/support-protocols.md).
 
 **Acceptance.**
 1. Read Setup without side effects, observe fresh/expired/rejected configuration and explicit provider outcomes, skip/undo owner steps and reload.
@@ -297,7 +345,7 @@ explicitly when AI is asked for, and a default assistant whose provider has no
 key is simply not assigned to new conversations; uncertain provider attempts
 remain uncertain and are not replayed automatically. Usage is diagnostic/provider accounting data, not an active
 payment, balance or debit system. Visitor-caused automatic AI work is capped per
-UTC day per project and installation (`AI_DAILY_CEILINGS`); a skipped reply is
+UTC day per project and installation (the installation and workspace AI ceilings); a skipped reply is
 recorded as terminal and never replayed.
 
 **Acceptance.**
@@ -421,9 +469,7 @@ from Try it beside what you have. The page carries no price, hosting or provider
 The drawings mirror the real interface and make no claim the product cannot
 back; conversation, ticket-history and automation import, reporting and
 compliance claims are deliberately absent. It is a warm off-white page in one geometric sans-serif
-(Outfit, self-hosted from `public/fonts/outfit/`, so the page makes no
-third-party request, over a metric-matched local fallback, so no text moves
-when it loads) with near-black ink and black pill buttons; color
+(Outfit, self-hosted from `public/fonts/outfit/`, over a metric-matched local fallback, so no text moves when it loads) with near-black ink and black pill buttons; color
 appears only inside the drawings, which are labeled HTML/SVG rather than raster images,
 and in aqua accents outside them (the hero's and the desk's number discs, the promises' circles, link underlines, the
 hero flourish, the dividers, the closing line) and in the sparks of the speech-bubble mark beside the header and
@@ -471,8 +517,8 @@ never become active payments, balances or provider work. The one exception is an
 explicit owner/admin contact erasure: it takes precedence over archive custody for
 that contact's personal data and redacts the imported rows and their verbatim
 archive copies (row digests are kept, so replaying the bundle does not restore
-them), leaving a `contact_erasures` audit tombstone. Old credentials do not
-become trusted native authority.
+them), leaving a opaque erasure audit tombstone. Old credentials do not
+become trusted native authority. Details are in [the support protocol guide](docs/contract/support-protocols.md).
 
 **Acceptance.**
 1. Import representative legacy IDs, permissions, exact historical financial values and media hashes through local D1/R2; resume safely and refuse conflicts without external work.
@@ -495,7 +541,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### DESK-001 — The shared support desk
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001, BASE-INPUT-003
 
 **Requirement.** A visitor starts website live chat, identifies themselves under the workspace policy, sends files and returns to their history. Humans see one durable shared inbox with customer history, scoped retained-history search with words, quoted phrases and literal customer-identity matching, open/closed/mine/unassigned/AI/tag filters and saved replies that insert into the composer without silently sending. Ticket status follows the STATUS-001 lifecycle and saved replies extend to MACRO-001 action macros. Replies, attachment downloads and errors are visible on both sides; privacy/collector controls remain effective.
 
@@ -515,7 +561,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### MAIL-001 — Complete support email
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-MAIL-001, BASE-OPS-003
 
 **Requirement.** Connect inbound forwarding, an IMAP/SMTP mailbox, Gmail/Google Workspace or Microsoft 365/Outlook using scoped credentials/OAuth. New mail creates tickets and replies thread by stable Message-ID/In-Reply-To/References with deliberate handling of changed subject, aliases and multiple recipients. Operators manage CC/BCC, attachments, signatures and branded sender/reply addresses. Duplicate/redelivered mail, bounces, spam and auto-responders cannot create loops or send twice, and mail classified as spam or failing sender checks goes to the reviewable Suspended view of MAIL-002; reconnect/backfill has a visible cursor and errors, and removal stops new intake without deleting history.
 
@@ -526,7 +572,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### MAIL-002 — Reviewable suspended and spam mail
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-MAIL-001, BASE-DATA-002, BASE-ROLE-001, BASE-AUDIT-001
 
 **Requirement.** Inbound mail that is spam-scored, fails DMARC/SPF/DKIM or alignment, comes from a blocked sender or domain, forges a verified customer's address, exceeds size limits or is a detected mail loop is never silently dropped. It lands in a Suspended view with its reason, authentication results, headers and safely previewed attachments, and creates no ticket, AI work, acknowledgment or notification. Permitted operators recover a false positive into a normal ticket that threads correctly (into the existing ticket when its references match) without retroactively triggering acknowledgments or AI unless they choose to; delete true spam; and block or allow a sender or domain. Recovery, deletion and list changes are audited. Suspended mail is kept for a stated retention period (default 14 days) and then explicitly deleted with an audit record; the view shows counts and the oldest age so nothing ages out unseen. Allow/block lists and suspension reasons are reportable.
 
@@ -537,7 +583,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### OUTBOUND-001 — Agent-created and proactive tickets
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** From the inbox an operator creates a ticket for an existing or new contact: search by name, email or phone or create the contact inline under CUSTOMER-001 identity rules; choose brand, sender address, channel, form, fields, assignee and group; and make the first comment public or an internal note. A public first comment is sent as an outbound email, or, where the customer consented, as an approved SMS/WhatsApp template under CHANNELS-001. The customer is recorded as requester and the operator as submitter, and the customer's reply threads into the same ticket. Logging a phone call or walk-in creates a ticket without contacting the customer. Proactive service notices to several customers (for example a delayed order) create one ticket per requester with a preview, consent checks and rate limits, never send twice on retry and remain distinct from marketing campaigns, which belong to Mango.
 
@@ -547,7 +593,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### CHANNELS-001 — Messaging and social support
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-AGENT-006, BASE-AGENT-007, BASE-MAIL-001
 
 **Requirement.** Connect US SMS through Twilio and WhatsApp Business, Instagram Direct and Facebook Messenger through authorized Meta business accounts. Inbound messages, supported media, delivery states and channel identity enter the shared inbox; replies return in the original channel. Respect consent, opt-out, A2P 10DLC registration, approved WhatsApp templates and channel reply windows; an expired window becomes an actionable blocker with an approved continuation, never silent loss or unauthorized cross-channel contact.
 
@@ -566,7 +612,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### VOICE-001 — Telephone service and unified voice agent
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-AGENT-006, BASE-AGENT-007
 
 **Requirement.** Connect Aircall and Twilio Voice numbers for inbound/outbound customer support, business-hours routing, IVR, queues, transfers, voicemail and missed-call follow-up. Calls, consented recordings/transcripts and summaries attach to the customer conversation. The same governed AI procedures can serve voice, email and chat, with immediate human transfer and visible failed transfers; disclose automated agents and obtain recording consent under the configured US jurisdiction.
 
@@ -577,7 +623,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### QUEUE-001 — Assignment rules and available teams
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** Support leads define teams, membership, skills, capacity, availability and routing rules by channel, brand, language, account, tag or priority. Route to a named owner, team, round-robin or capacity-aware queue; explain which rule won, prevent starvation and preserve fair state across restarts. Manual takeover, absent/offline assignees, reassignment and unassigned overflow always leave a visible responsible queue.
 
@@ -597,7 +643,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### QUEUE-002 — Structured and bulk queue work
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** Operators manage workspace-scoped tags, typed/validated custom issue fields (including values customers submit through FORMS-001) and priorities, and statuses from the STATUS-001 lifecycle; saved views can filter and sort on them. Leads select tickets and bulk assign, tag, change priority/status or apply a permitted MACRO-001 macro with a preview, per-record authority checks and a complete partial-failure result. Bulk actions cannot publish replies or reveal another workspace accidentally.
 
@@ -607,7 +653,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### QUEUE-003 — Collaboration without conflicting replies
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** Internal notes and @mentions notify only permitted teammates; followers (internal CCs, distinct from customer CCs and never shown to the customer) receive updates under NOTIFY-001; viewing, typing and unsent-draft indicators warn of collisions before send. Guarded send still refuses stale replies. Operators save personal/shared work views and reusable replies/macros with scoped permissions; private notes and drafts never appear in customer channels, forwarding or public history.
 
@@ -618,7 +664,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### MACRO-001 — Action macros with placeholders
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** Operators apply a personal, group or shared macro that in one action sets the reply text (public or internal note), status, priority, tags (add or remove), assignee and group, followers, custom fields and attachments. Reply text supports placeholders for the requester's name, first name and email, ticket ID, subject and link, assignee, brand, organization, and custom ticket and contact fields, with explicit fallbacks (for example first name, else "there"). Applying a macro previews every change and puts the rendered text in the composer for editing; nothing is sent until the operator sends. A placeholder that cannot be resolved is flagged and blocks sending instead of reaching the customer as a literal. Macros are versioned, permission-scoped by role, group and brand, searchable, usage-reported and applicable in bulk (QUEUE-002). AI may recommend a macro but never applies one silently.
 
@@ -629,7 +675,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### QUEUE-004 — Snooze and scheduled follow-up
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** Snooze a ticket until an exact timezone-aware time or a dependency; incoming customer replies wake it immediately. Schedule outbound service replies, see/cancel/edit them before send and prevent stale queued replies after a customer response or reassignment. Each follow-up has a responsible owner, due time, stop condition and visible pending/failed/uncertain outcome; restarts cannot lose it or resend an ambiguous attempt.
 
@@ -639,7 +685,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### STATUS-001 — Ticket status lifecycle
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** Every ticket has one status from a lifecycle the lead can extend: New, Open, Pending (waiting on the customer), On-hold (waiting on an internal team or third party), Solved and Closed, plus workspace custom statuses that each map to one of those categories. A customer reply to a Pending or On-hold ticket returns it to Open and wakes its owner. On-hold and every internal status label are never shown to the customer, who sees an open request in the widget, portal and email. A customer reply to a Solved ticket reopens it. After a lead-configured period (default 4 days) a durable time-based automation (AUTOMATION-002) moves Solved to Closed, and Closed is final: a customer reply to a Closed ticket creates a new follow-up ticket linked to it that carries the requester, CCs, tags and fields. Status filters, sorts, views, bulk edits (QUEUE-002), SLA pausing (SLA-001), resolution cycles (OUTCOMES-001) and reports all use this lifecycle, and every change records its actor, time and source (person, rule, automation or customer reply).
 
@@ -651,7 +697,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### SLA-001 — Business-hour service commitments
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** Leads configure first/next response and resolution SLAs by priority, customer plan, channel and brand, using US IANA timezones, weekly hours and holiday calendars. Show due times and pause reasons in the queue; Pending pauses customer-wait clocks and On-hold follows the policy's stated choice under the STATUS-001 lifecycle, and reopen restarts the next-response clock. Durable approaching-breach, breach and unattended-ticket alerts escalate to named backups through inbox/email/Slack/Teams and persist until acknowledged or resolved.
 
@@ -662,7 +708,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### AUTOMATION-001 — Explainable durable support workflows
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** Leads version event-triggered condition/action rules (on ticket create and update) for routing, tagging, priority/status, reminders, customer updates and refund-exception escalation; actions include notifying the requester and CCs, the assignee, the group or followers (NOTIFY-001), adding an internal note and calling a signed webhook. Time-based conditions are AUTOMATION-002. Preview the effect against historical tickets in a workflow sandbox without real sends, then publish explicitly. Ordered/conflicting rules, loop prevention, owner, due time and stop condition are inspectable. Background execution persists decisions and failure/uncertainty across handoffs and restart; operators pause, cancel or reconcile work without blind retries.
 
@@ -673,7 +719,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### AUTOMATION-002 — Time-based automations
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** Leads define automations that run at least hourly over New, Open, Pending, On-hold and Solved tickets. Conditions include hours since created, updated, assigned, requester update, agent update, Pending, On-hold, Solved and SLA due, in calendar or business hours (SLA-001 schedules), combined with status, priority, tag, form, field, brand, channel and group. Actions set status, priority, tags, fields and assignee or group, add an internal note and send a templated customer or teammate notification (NOTIFY-001). An automation must include a condition its own action nullifies, or it fires at most once per ticket, so it cannot repeat; publishing one that could loop is refused. Runs are durable across restart, never replay an uncertain send, and record which automation changed what. Ready templates cover the common cases: nudge the customer after 48 business hours in Pending, auto-solve after 96, and close Solved after N days.
 
@@ -684,7 +730,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### NOTIFY-001 — Customer acknowledgments and teammate notifications
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** Default, editable triggers send the requester and CCs one "request received" acknowledgment for a new ticket (per channel and brand, with the ticket reference and expected reply time), a notification when a public reply is added, and a solved notice. Machine-generated mail, suspended mail (MAIL-002), imports and merges never trigger them, and each ticket receives at most one acknowledgment even under redelivery. Teammates are notified by inbox, email, push (MOBILE-001) and Slack/Teams: the assignee on assignment and on customer update, the group on unassigned group tickets, followers on update and mentioned teammates on mention, each according to personal preferences and current permission to the ticket, workspace and brand. Templates use MACRO-001 placeholders with a visible failure for a missing value. Every notification carries loop-suppression headers and records its delivery outcome; an uncertain send is never replayed.
 
@@ -694,7 +740,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### CONVERSATION-002 — Merge and external forwarding
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** Merge duplicate tickets with an explicit surviving thread, source links, attribution, attachments, notes, SLA/outcome treatment and reversible history where safe. Forward selected customer-visible content to an external partner and thread their reply back while clearly distinguishing an external participant from a teammate. Customer identity, private notes and channel restrictions are previewed; merges cannot cross tenants or silently erase evidence.
 
@@ -704,7 +750,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### CONVERSATION-003 — Problem and incident linking
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** An operator marks a ticket as a Problem and links Incident tickets that report the same issue, manually, from search or from a TRIAGE-001 or agent suggestion a person confirms. The problem lists its incidents with customers and counts. Solving the problem can, with a previewed public reply that uses MACRO-001 placeholders per requester, solve or update every linked incident in its own channel, each reply going only to that incident's requester, with per-ticket outcomes and consent and reply-window checks. Incidents keep their own SLA, history and CSAT; unlinking is audited. A problem can link an ESCALATION-001 engineering issue so that one shipped fix updates every affected customer.
 
@@ -714,7 +760,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### CUSTOMER-001 — Customer and company support records
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001 · *Rules:* D-1
 
 **Requirement.** Maintain contacts, verified linked channel identities, companies/accounts, account members, custom attributes, consent/preferences and all interaction history. Link/unlink or merge identities with preview and source provenance; email text alone never grants access. Show current business-system context with last sync time, permission and unavailable/stale state, plus account-level open work and relationship history. Import contacts and companies from CSV outside a vendor migration with column mapping, validation, duplicate matching by email or external ID, a dry-run preview and whole-import undo; such imports send nothing.
 
@@ -724,7 +770,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### COMMERCE-001 — Shopify order actions
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001 · *Rules:* D-3
 
 **Requirement.** Connect Shopify stores with merchant-granted scopes; show customer orders, fulfillment, delivery, return and refund state in the conversation. Authorized agents/humans can perform permitted return, cancellation and full/partial refund actions with USD amounts, tax/shipping implications and a reason. Preview the exact order/action, require the configured approval and limit, use provider idempotency and verify provider state before telling the customer it succeeded.
 
@@ -734,7 +780,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### BILLING-001 — Stripe billing and subscription resolution
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001 · *Rules:* D-3
 
 **Requirement.** Connect Stripe for customer/payment/invoice/subscription context and permitted refunds, credits and subscription cancellation, pause or plan changes. Show USD totals, tax/proration/effective-date consequences and linked provider records before approval; separate read, prepare, approve and execute scopes and spending limits. Reconcile actual provider state after timeout and report what changed in the original conversation. No raw card data or customer funds enter HappyToHelp.
 
@@ -744,7 +790,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### CRM-001 — Live CRM and account context
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001 · *Rules:* D-1
 
 **Requirement.** Connect Orbit, HubSpot and Salesforce independently; map contacts, companies/accounts, support entitlements, plan and owner to support records with source IDs and sync freshness. Read relevant CRM context and write only explicitly scoped support outcomes/approved field changes. Conflicts, identity mismatch and revoked grants are surfaced; the CRM remains the sales/account system of record.
 
@@ -754,7 +800,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### ESCALATION-001 — Engineering and team escalations that return
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001 · *Rules:* D-2
 
 **Requirement.** Create or link GitHub Issues, Linear and Jira issues and Slack/Teams handoffs from a conversation, choosing exactly what context/attachments to share. Persist reciprocal links, assignee, status and dependency; signed provider updates return to the support thread, wake its owner and draft a customer update when a fix ships. Issue closure alone never proves customer recovery; operators approve customer publication or grant an explicit bounded policy.
 
@@ -764,7 +810,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### API-001 — Owned API and managed connectors
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · *Rules:* D-1, D-3
 
 **Requirement.** Expose a documented versioned HappyToHelp API and signed outbound webhooks for conversations, contacts, articles and support events with scoped authorization, pagination, stable cursors, idempotency and revocation. Provide Zapier actions/triggers and managed MCP tools with the same tenant/action boundaries. Offer Help Scout Inbox API/webhook read synchronization for staged migration/coexistence, with cursors and deduplication; it is separate from native API authority. Connection health, scopes, event attempts and manual reconciliation are visible. Creating and appending support requests from another product or agent with credentials bound to a source product is covered by API-002, API-003, API-004, API-005, API-006, API-007, API-008.
 
@@ -774,7 +820,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### API-002 — Bound machine credentials
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · *Rules:* D-1, D-3
 
 **Requirement.** A named source-product credential binds ticket creation and appending to explicit scopes, mailbox, brand and source identity. Its lifecycle preserves the connection-token model and atomic admission. The protocol, overlap bounds and Settings fields are specified in [the machine support-request protocol](docs/contract/machine-api.md).
 
@@ -785,7 +831,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### API-003 — Create one correctly attributed support request
 
-*Tier:* Core · *From:* API-002
+*Tier:* Core · *From:* API-002 · *Cites:* BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · *Rules:* D-1, D-3
 
 **Requirement.** Create a support request from a source product with exact verified requester matching, unverified new identities, a fixed source label and an operator back-link. Source-reference and key replay protect one ticket across credential rotation; conflicts reveal no other identity. The full request and replay contract is in [the protocol](docs/contract/machine-api.md).
 
@@ -796,7 +842,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### API-004 — Append messages and atomic attachments
 
-*Tier:* Core · *From:* API-002
+*Tier:* Core · *From:* API-002 · *Cites:* BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · *Rules:* D-1, D-3
 
 **Requirement.** Append customer messages or private notes within the credential’s conversations, retaining solved, closed and merged lifecycle behavior. Bounded upload references and verified remote attachments admit either the complete ticket and bytes or nothing, under [the attachment protocol](docs/contract/machine-api.md).
 
@@ -806,7 +852,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### API-005 — Admit machine requests without unwanted contact
 
-*Tier:* Core · *From:* API-002
+*Tier:* Core · *From:* API-002 · *Cites:* BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · *Rules:* D-1, D-3
 
 **Requirement.** Treat source-product requests as untrusted customer input, with the same triage, routing and AI policy as other requests. Suspended abuse and requester holds cause no ticket or external effect; acknowledgments depend on consent and channel rules. Capacity and business-policy limits, exhaustion and stable refusal meanings are defined in [the protocol](docs/contract/machine-api.md).
 
@@ -817,7 +863,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### API-006 — Machine events and accountable ticket history
 
-*Tier:* Core · *From:* API-002
+*Tier:* Core · *From:* API-002 · *Cites:* BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · *Rules:* D-1, D-3
 
 **Requirement.** Machine-created requests carry source-product and credential provenance into filtered signed support events and ticket history. Revocation retains machine attribution; issuer erasure redacts personal attribution without losing events. Event fields and audit records are specified in [the protocol](docs/contract/machine-api.md).
 
@@ -827,7 +873,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### API-007 — Erase and restore machine-created support history
 
-*Tier:* Core · *From:* API-002
+*Tier:* Core · *From:* API-002 · *Cites:* BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · *Rules:* D-1, D-3
 
 **Requirement.** Machine-request erasure covers ticket content, replay bodies, pending events and files, with tombstones that prevent resurrection. Portable archives retain source provenance and digest-only replay records, while all restored credentials and actions remain inert. Exact portable fields and fences are specified in [the protocol](docs/contract/machine-api.md).
 
@@ -837,7 +883,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### API-008 — Usable machine-request documentation
 
-*Tier:* Core · *From:* API-002
+*Tier:* Core · *From:* API-002 · *Cites:* BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · *Rules:* D-1, D-3
 
 **Requirement.** The on-site API guide covers machine-request operations, scopes, bindings and refusal meanings through usable examples that keep credentials private.
 
@@ -846,7 +892,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### MOVE-IN-002 — Switch from every named incumbent
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001 · *Rules:* D-1
 
 **Requirement.** Provide guided one-click connection or export upload for Zendesk, Intercom, Help Scout and Freshdesk, covering contacts/companies, conversations/messages/attachments/private notes, tags/custom fields, ownership, timestamps and articles/categories/publication. Preview supported mappings and every unsupported field/rule/brand/permission; no silent truncation. Resume with source IDs, deduplicate a second run, perform an inert final delta cutover and explicitly repoint channels. Preserve links and counts; imports never activate automations or expose formerly private knowledge. Imported tickets keep their email threading keys so post-cutover replies land in them (MOVE-IN-003), and configuration moves in under MOVE-IN-004.
 
@@ -857,7 +903,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### MOVE-IN-003 — Replies to pre-migration mail land in the imported ticket
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001 · *Rules:* D-1
 
 **Requirement.** Imported tickets keep their email threading keys: every source Message-ID and In-Reply-To/References chain, the source ticket number and each vendor's reply token (Zendesk encoded IDs in `[XXXX-XXXX]` brackets and ticket-number subject tags, Help Scout conversation numbers and reply addresses, Freshdesk `[#ticket]` subjects and reply-to addresses, Intercom conversation reply addresses). After channel cutover, a customer reply to a notification the old system sent is matched by those keys in that priority and lands in the imported conversation with its migrated requester, owner, group and status, reopening it under STATUS-001 when Solved and creating a linked follow-up when Closed. A key that matches more than one record, or a record belonging to a different customer identity, goes to review instead of the wrong ticket; an unmatched reply creates a new ticket marked as a possible pre-migration reply. Keys are imported inertly and are covered by repeat/undo equality and erasure.
 
@@ -867,7 +913,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### MOVE-IN-004 — Bring configuration, not only history
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001 · *Rules:* D-1
 
 **Requirement.** Move in maps each incumbent's configuration into native equivalents: macros with their actions and placeholders (MACRO-001), views, groups and memberships, business-hour schedules and holidays, SLA policies, request forms and custom fields (FORMS-001), triggers and automations, brands and help-center structure. A per-item preview shows what translates exactly, what translates with a stated change and what is unsupported, with the reason. Translated rules arrive inactive as drafts; an admin reviews, simulates them in the AUTOMATION-001 sandbox and activates them, and nothing sends, routes or breaches during import. Placeholders translate to native placeholders or are flagged.
 
@@ -877,7 +923,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### PORTAL-001 — Authenticated customer self-service
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001 · *Rules:* D-1
 
 **Requirement.** A customer securely signs in to a branded portal to search permitted knowledge, create tickets with attachments through FORMS-001 request forms (which anonymous visitors may also submit where the lead allows), review/reply/reopen their own requests and manage notification preferences. Company-wide ticket visibility is an explicit entitlement, never inferred from an email domain. Identity recovery, revoked membership and inaccessible/deleted requests fail safely across web and mobile.
 
@@ -887,7 +933,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### FORMS-001 — Customer request forms with custom fields
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** Leads build several request forms (for example Order problem, Refund, Technical) from typed custom ticket fields (text, number, decimal, date, drop-down, multi-select, checkbox, pattern-validated text and lookups to an order or account), with required and conditional fields, customer-facing labels, descriptions and locale translations, and offer them in the help center, portal, widget and API. Anonymous visitors may submit where the lead allows, with email verification, rate limits and bot protection; signed-in customers' identity and organization are prefilled. Submissions are validated on the server and refused with the failing field named; accepted values are stored as typed ticket fields with the chosen form and are usable by QUEUE-001 routing, SLA-001 policies, AUTOMATION-001/002 conditions, views and reports. Agents see and edit the same fields under field-level permissions; forms and fields are versioned so old tickets keep their values.
 
@@ -898,7 +944,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### KNOWLEDGE-002 — Governed private and multilingual knowledge
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · *Rules:* D-3
 
 **Requirement.** Support public and authenticated private help centers, multiple languages/locales, version history, editorial review, redirects and brand/domain publishing. Source refreshes and translated drafts preserve permissions and previous published versions; restricted knowledge is never exposed to public search, an unauthorized agent answer or another account. Agents may propose cited changes, while named editors control publication.
 
@@ -908,7 +954,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### KNOWLEDGE-003 — Branded help center, article feedback and knowledge in the ticket
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · *Rules:* D-3
 
 **Requirement.** Leads brand each help center with logo, colors, fonts, custom domain, navigation and editable page templates (home, category, section, article, search and request form), previewed before publication with readable contrast enforced. Each article offers "Was this helpful?" votes with an optional comment. Leads see per-article views and votes, search terms with and without results, click-through and tickets created after reading, by brand and locale. From a ticket an operator searches the help center, previews an article and inserts its link or text into the reply in one action, limited to knowledge that customer may see, and can flag an article as outdated or propose a new one (PUSH-004).
 
@@ -919,7 +965,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### BRANDS-001 — Multi-brand support operations
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-ROLE-001
 
 **Requirement.** A business can manage distinct brands, mailboxes, widget identities, domains, help centers, signatures, channels and policies with deliberate shared teams and reporting. Route and report by brand without mixing customer identities, private knowledge or sender credentials. Cross-brand administration and customer handoffs require explicit access and a visible explanation.
 
@@ -928,9 +974,9 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### ACCESS-001 — Enterprise identity and custom permissions
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-SIGNIN-001, BASE-ROLE-001
 
-**Requirement.** Retain native owner/password access while optionally connecting Google Workspace, Microsoft Entra ID or Okta using SAML/OIDC SSO and SCIM provisioning. Define custom roles and field/tool/brand/team permissions for operators, admins, reviewers and agents; separate integration installation, refund approval, knowledge publication and destructive access. Collaborator (light-agent) seats can view permitted tickets, add internal notes and follow tickets but cannot reply publicly, change fields or read restricted knowledge. Deprovisioning/revocation promptly ends sessions, pending tool authority and customer-data access, with tested owner recovery. RULED interim default and target (ct, 23 October 2026 10:46Z): `knowledge.edit` gates internal knowledge management and connected-application article reads; `knowledge.publish` still gates publication. Published help keeps its audience gates, so a reader never gains internal articles through it. A separate knowledge-read permission is required for read-only access to selected internal knowledge without edit or publish authority.
+**Requirement.** Retain native owner/password access while optionally connecting Google Workspace, Microsoft Entra ID or Okta using SAML/OIDC SSO and SCIM provisioning. Define custom roles and field/tool/brand/team permissions for operators, admins, reviewers and agents; separate integration installation, refund approval, knowledge publication and destructive access. Collaborator (light-agent) seats can view permitted tickets, add internal notes and follow tickets but cannot reply publicly, change fields or read restricted knowledge. Deprovisioning/revocation promptly ends sessions, pending tool authority and customer-data access, with tested owner recovery. RULED interim default and target (ct, 23 October 2026 10:46Z): the knowledge-edit permission gates internal knowledge management and connected-application article reads; the knowledge-publication permission still gates publication. Published help keeps its audience gates, so a reader never gains internal articles through it. A separate knowledge-read permission is required for read-only access to selected internal knowledge without edit or publish authority.
 
 **Acceptance.**
 1. Provision an operator through each supported identity protocol, assign a restricted custom role, attempt denied exports/refunds/publication, then deprovision during active work and verify sessions/tools lose access.
@@ -941,7 +987,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### IDENTITY-003 — Two-factor authentication for native accounts
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-SIGNIN-002, BASE-ACCESS-002, BASE-AGENT-006, BASE-AGENT-008
 
 **Requirement.** Native password accounts enroll a second factor: a TOTP authenticator app or WebAuthn security keys and passkeys, with ten single-use recovery codes shown once. An owner can require two-factor sign-in for every teammate or by role; affected users must enroll at their next sign-in before reaching any data, and existing sessions without the factor end. A sign-in without the factor, with a wrong or replayed TOTP code (one use per time step) or with a used recovery code is refused, rate-limited and audited. Owner-assisted reset of a teammate's factor requires the owner's own recent factor, notifies the teammate and is audited; an owner who loses every factor recovers through the documented installation-level owner recovery through `rer`, never by email alone. Refund and billing approval (COMMERCE-001, BILLING-001), integration and credential installation, exports, erasure, role changes and the two-factor policy itself require a recent second-factor step-up. API access uses scoped tokens (CONNECTIONS-001), never a password alone. SSO users follow their identity provider's MFA (ACCESS-001). This adds to the retained native password identity (IDENTITY-002) and never replaces it.
 
@@ -962,7 +1008,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### OUTCOMES-002 — CSAT across support channels
 
-*Tier:* Core
+*Tier:* Core · *Rules:* D-2
 
 **Requirement.** Offer configurable post-resolution satisfaction surveys via widget, portal, email and permitted messaging channels with rating scale, optional comment, locale, send timing and opt-out. Associate one latest response with the exact resolution cycle and channel; preserve previous-cycle history and reconcile signed response links without requiring a widget session. Leads inspect low-score follow-up and customer recovery without auto-closing complaints.
 
@@ -971,7 +1017,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### REPORTS-002 — Workload, service and agent outcomes
 
-*Tier:* Core
+*Tier:* Core · *Rules:* D-2
 
 **Requirement.** Leads explore team/agent workload, backlog age, incoming volume, response/resolution time, SLA compliance, reopened requests, CSAT and AI containment/handoff/resolution by channel, brand, account, tag and procedure version. Publish inspectable numerators, denominators, timezone and exclusion rules; distinguish bot closure from verified resolution and include failures/unknowns. Operators record time spent per ticket (a timer while the ticket is open, with manual adjustment) and leads report handle time by agent, form and intent. Export complete formula-safe records and schedule permission-scoped reports; no sampling or silent truncation.
 
@@ -982,7 +1028,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### AGENT-001 — A production support agent with clean handoff
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007 · *Rules:* D-2, D-3
 
 **Requirement.** The AI agent answers using approved help-center content, permitted past conversations and fresh connected customer/product state, with citations, retrieval permissions and clear AI disclosure across chat/email/voice. Execute only enabled procedures/tools; distinguish advice, prepared action, approved execution and observed success. A customer can request a person; uncertain, low-evidence or disallowed actions transfer promptly with transcript, sources, attempted actions, failures and the next responsible human. The agent stops replying after handoff until explicitly resumed.
 
@@ -992,7 +1038,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### PROCEDURE-001 — Natural-language procedures and release simulation
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-011 · *Rules:* D-3
 
 **Requirement.** Support leads author versioned natural-language operating procedures tied to intents, knowledge versions, live data requirements, tools, approval gates, budgets and human escalation. Simulate paths, adversarial cases, provider errors, handoffs and permissions against redacted historical examples in an isolated workflow sandbox with no real actions. Per-procedure evaluations must pass declared outcomes before an authorized staged release; compare versions, stop/rollback a rollout and keep old cases reproducible.
 
@@ -1002,7 +1048,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### AGENT-002 — Inspectable quality and resolution economics
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-009 · *Rules:* D-2, D-3
 
 **Requirement.** Operators inspect a redacted per-conversation/tool-call trace with source/version, requested scope, human approval, timings, provider outcome and verified result. Leads explore procedure-level evaluation coverage, resolution/reopen/handoff rates, failure clusters and provider costs/usage without treating attempted actions as success. Human labels and later customer outcomes can correct attribution; provider usage remains accounting evidence, not a customer balance or invented monetary saving.
 
@@ -1021,7 +1067,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### ERASURE-001 — Customer erasure with coherent history
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-DATA-003, BASE-DATA-006
 
 **Requirement.** Owner/admin contact erasure removes personal content from native/imported transcripts, notes, context, feedback, stored files and archive copies while retaining nonpersonal identity/frontier and an opaque erasure tombstone. Erasure fences APIs, pending events, source re-import and stale restore from resurrecting the identity. Provide completion/failed counts for all stores and separately request deletion from connected providers under their capabilities; do not claim already sent messages or offline archive bytes were recalled.
 
@@ -1031,9 +1077,9 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### AUDIT-001 — Security and accountable actions
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-SECRET-001, BASE-ROLE-001, BASE-DATA-003, BASE-AUDIT-001, BASE-DATA-006
 
-**Requirement.** Encrypt configured provider credentials under installation custody, never return secrets in ordinary reads/logs/exports and enforce tenant, role, origin and public rate limits at every door. Keep an inspectable, exportable append-only audit of authentication/permission changes, imports/exports/erasure, assignments, procedure changes, approvals and external actions with actor, purpose, source, time and outcome; redact erased actors without losing the event. Configure retention/legal holds with visible effects and never silently delete evidence to improve reports.
+**Requirement.** Encrypt configured provider credentials under installation custody, apply installation custody to support-provider configuration. Keep an inspectable, exportable append-only audit of authentication/permission changes, imports/exports/erasure, assignments, procedure changes, approvals and external actions with actor, purpose, source, time and outcome;  Configure retention/legal holds with visible effects and never silently delete evidence to improve reports.
 
 **Acceptance.**
 1. Using owner/security views, rotate/revoke credentials, attempt cross-tenant/CSRF/SSRF access, approve an action, export audit and erase its actor; inspect durable outcomes with no secrets.
@@ -1041,9 +1087,9 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### PORTABILITY-001 — Complete customer-owned portable support data
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-DATA-001, BASE-BACKUP-001, BASE-SECRET-001
 
-**Requirement.** Export versioned machine-readable conversations, attachments, contacts/companies, knowledge/versions, settings, rules/procedures/evaluations, outcomes and audit with a schema, integrity digest and explicit exclusions. Validate a bounded archive before atomic inactive restore to a clean installation; do not transfer sessions, provider secrets or connector authority and do not replay imported actions. Include D1, R2 and Durable Object business state or a lossless reconstruction; retain erasure fences and receiving-owner identity. This target replaces the current documented incomplete-storage boundary without pretending the held Base-data equivalence is done.
+**Requirement.** Export versioned machine-readable conversations, attachments, contacts/companies, knowledge/versions, settings, rules/procedures/evaluations, outcomes and audit with the documented support-data inventory. Validate a bounded archive before atomic inactive restore to a clean installation; do not transfer sessions, provider secrets or connector authority and do not replay imported actions. Include D1, R2 and Durable Object business state or a lossless reconstruction; retain erasure fences and receiving-owner identity. This target replaces the current documented incomplete-storage boundary without pretending the held Base-data equivalence is done.
 
 **Acceptance.**
 1. Through rer export/import and owner data controls, populate each business store, export, destroy the disposable source and restore to a clean installation.
@@ -1052,7 +1098,7 @@ retains asset provenance/licensing obligations. Original work is preserved.
 
 #### ASSURANCE-001 — Qualified regulated support deployments
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-DATA-006, BASE-ROLE-001, BASE-AUDIT-001
 
 **Requirement.** US-first support uses USD, US provider contracts, IANA calendars and channel/recording consent controls. A regulated buyer can qualify an isolated deployment with required DPA/BAA, approved subprocessors/model data handling, access controls, audit, retention, incident response and validated deletion/export; health-data support is gated on those agreements and technical acceptance. The work remains a product obligation, with a named partner/provider path, rather than a claim that self-hosting alone supplies compliance.
 
@@ -1070,7 +1116,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 #### PUSH-001 — Reproduce, repair and prove customer recovery
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · *Rules:* D-2, D-3
 
 **Requirement.** Given the conversation, authorized live product state and an explicitly paired repair workspace, the agent reproduces the customer's failure, records its observation, prepares or performs only the permitted fix, and verifies with a distinct post-change read or user journey. Environment, operations, data, spending and time limits are granted by a named person; production changes and reply publication have separate authority. Reconcile started/uncertain work, gather customer-scoped recovery evidence, report in the original thread and reopen/escalate if recovery fails or the customer reports recurrence. A successful command or closed engineering issue never proves recovery.
 
@@ -1080,7 +1126,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 #### PUSH-002 — Promises survive every handoff
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · *Rules:* D-2, D-3
 
 **Requirement.** The agent extracts explicit commitments, quoted evidence and dependencies from messages and linked issues into durable obligations with a responsible person, due time, current evidence and stop condition. Chase missing evidence internally, detect stale dependencies and draft an honest customer update before a promise expires. Humans accept material due-date or promise changes; no fabricated progress, invented commitment or unapproved customer message is allowed.
 
@@ -1090,7 +1136,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 #### PUSH-003 — Learn from reopenings under human control
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · *Rules:* D-2, D-3
 
 **Requirement.** The agent joins reopened requests, complaints, CSAT, procedure/tool versions and connected business outcomes to identify failed resolution paths. Propose a concrete procedure/policy change with cited cases, replay evaluation and expected effect; a human approves changed permissions/tools, spending limits and bounded rollout. Track actual post-release recovery and regression, stop/rollback on deterioration and preserve original procedure versions and dissenting evidence.
 
@@ -1100,7 +1146,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 #### PUSH-004 — Turn verified edge cases into reviewed knowledge
 
-*Tier:* Core
+*Tier:* Core · *Cites:* BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · *Rules:* D-2, D-3
 
 **Requirement.** The agent identifies unanswered or repeatedly reopened topics from permitted conversations, support searches and procedure failures, clusters the gap and drafts a sourced article/update from verified resolutions. Strip personal data, obey private/brand/locale boundaries and include the evidence and proposed scope. A named editor reviews publication/translation and the agent measures whether later customers recover, proposing corrections when they do not.
 

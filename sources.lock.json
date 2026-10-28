@@ -11136,7 +11136,7 @@
       "executable": false
     },
     "tests/demo-inbox.mjs": {
-      "sha256": "1052e9da712715a9aea7e2867d006f180b2221b1a1481f9f0e37c725ac7a8492",
+      "sha256": "5dfdafc91b2ec2eb479ce8d466bc55e6bf894cdb2cf76fd6d762082c13a932b4",
       "executable": false
     },
     "tests/demo-knowledge-activation.mjs": {
@@ -11144,7 +11144,7 @@
       "executable": false
     },
     "tests/demo-transcript-events.mjs": {
-      "sha256": "51877329ce603c1b031912d4fead0534a7d084ad0f391559989a129e214563d4",
+      "sha256": "53ef3924bb3779017b51b8cf243244fd8684717c5ef67e5c6e92bbbbf44908d6",
       "executable": false
     },
     "tests/eval-harness/fixtures/assist-human-voice.json": {

@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "2bad83e549df1c497ad0e1cf0f755d9b9619a962e70978354847281697fe0615",
+      "sha256": "d0ac2bb240d2abd09601887c7c49f416a8314087f302d8fb23b71e4d6ae6f91a",
       "executable": false
     },
     "AGENTS.md": {
@@ -3808,7 +3808,7 @@
       "executable": false
     },
     "src/modules/ai-support/routes.ts": {
-      "sha256": "30c2e3794997c435da530f940e935f7e9d6d7b94a5db09059b33bd3ec963b207",
+      "sha256": "5f3407206339b939d21183fa4eeef68006e1f61b60068adcd23374b9de2c2747",
       "executable": false
     },
     "src/modules/ai-support/selection.ts": {
@@ -10320,7 +10320,7 @@
       "executable": false
     },
     "src/ui/native/pages/knowledge/KnowledgeLists.jsx": {
-      "sha256": "828f36a6c72820fbf0cac1059e7d05a8ad4f38ffcb5038e9af05553e1a55ba1f",
+      "sha256": "a3c1d1522a50a61313f99d9723ca875b7a3c33575af799e9a8fbd33622500bef",
       "executable": false
     },
     "src/ui/native/pages/knowledge/KnowledgeProposals.jsx": {
@@ -10568,7 +10568,7 @@
       "executable": false
     },
     "src/ui/native/pages/RowMenu.jsx": {
-      "sha256": "4c8e18d84e38c5b389aea850b42eba6e21885c3f4e7c7a8de757ed1586e9dd9d",
+      "sha256": "f46406004ed1009702720a8cad4a5a9084daca1869570c1a21d8484be1d44dd3",
       "executable": false
     },
     "src/ui/native/pages/security/RolesPage.jsx": {
@@ -11804,7 +11804,7 @@
       "executable": false
     },
     "tests/helpers/hubspot/browser.mjs": {
-      "sha256": "f9550c630b3f2332d3c9d93189576f651cef32cfb33395c2a4defb769a17fd66",
+      "sha256": "b85a8736452dc725740ed0babdeb5861bce9b2b3be7e08d7141a5ceb61ec0eed",
       "executable": false
     },
     "tests/helpers/hubspot/outbound.mjs": {
@@ -12052,7 +12052,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/domains-browser.mjs": {
-      "sha256": "d4065c8c3792334268196886d06a536e8366482d802492fa3daabae79e3a17ca",
+      "sha256": "9752401a5f18ba1fc5c82429e57f5d1b85e2ffd425daacf46ec1fecfe963cee6",
       "executable": false
     },
     "tests/helpers/knowledge/experience.mjs": {
@@ -12568,7 +12568,7 @@
       "executable": false
     },
     "tests/journeys/public-browser.mjs": {
-      "sha256": "a96f439d713d9073011da0a3d8b170f157b0fe247372b5e8da80560b3d47cbad",
+      "sha256": "7174bb54a190dfe8ac9eee2829d2dca0d31d1e55f6fcde095494d44a928d4bb2",
       "executable": false
     },
     "tests/journeys/public.mjs": {

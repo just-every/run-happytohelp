@@ -16,7 +16,7 @@ const useStackedRows = () => useSyncExternalStore(subscribe, () => window.matchM
  * control on the row card, so nothing a row can do is hidden. `className` styles the wide-screen menu. The ⋮ is named
  * for its action and described by the row's `label`.
  */
-export default function RowMenu({label, className, children, tooltip}) {
+export default function RowMenu({label, className, children}) {
     const actions = Children.toArray(children);
     const labelId = useId();
     if (useStackedRows()) return <div className="row-actions-inline" role="group" aria-label={`Actions for ${label}`}>{actions.flatMap((action, index) => index ? [' ', action] : [action])}</div>;

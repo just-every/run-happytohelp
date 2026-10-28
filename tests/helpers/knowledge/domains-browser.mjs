@@ -60,7 +60,7 @@ export async function domainsBrowserJourney({runtime,browser,fixture,viewport,sh
    try{
     if(identity)await reader.addCookies([{name:'h2h_session',value:identity.token,url:publicHost.origin}])
     const response=await readerPage.goto(privateUrl);assert.equal(response.status(),allowed?200:404)
-    if(allowed){await readerPage.getByText('Utilisez la file approuvée.',{exact:true}).waitFor();await readerPage.screenshot({path:shot(`knowledge-private-translation-${width}.png`),fullPage:true})}
+    if(allowed){await readerPage.getByText('Utilisez la file approuvée.',{exact:true}).waitFor();await capture(readerPage,shot,`knowledge-private-translation-${width}.png`)}
     else assert.doesNotMatch(await readerPage.locator('body').innerText(),/Utilisez la file approuvée/)
    }finally{await reader.close()}
   }
@@ -75,10 +75,10 @@ export async function domainsBrowserJourney({runtime,browser,fixture,viewport,sh
    await call(`/api/knowledge/${fixture.projectId}/articles`,{status:201,body:{id:article.id,title:'Private export guide',slug:`private-export-${width}-reviewed`,content:'Use the newly reviewed export queue.',status:'published'}})
    await readerPage.reload();assert.equal(new URL(readerPage.url()).pathname,`/private-export-${width}-reviewed`);await readerPage.getByText('Use the newly reviewed export queue.',{exact:true}).waitFor();await readerPage.locator('.help-center-translation-note').waitFor()
    assert.match(await readerPage.locator('.help-center-translation-note').innerText(),/available in en/)
-   await readerPage.screenshot({path:shot(`knowledge-source-fallback-${width}.png`),fullPage:true})
+   await capture(readerPage,shot,`knowledge-source-fallback-${width}.png`)
    await call(`/api/knowledge/${fixture.projectId}/articles/${article.id}/rollback`,{body:{versionId:original.id}})
    await readerPage.reload();await readerPage.getByText('Use the approved export queue.',{exact:true}).waitFor();assert.equal(new URL(readerPage.url()).pathname,`/private-export-${width}`)
-   await readerPage.screenshot({path:shot(`knowledge-restored-version-${width}.png`),fullPage:true})
+   await capture(readerPage,shot,`knowledge-restored-version-${width}.png`)
   }finally{await reader.close()}
   assert.deepEqual(errors,[])
  }finally{await context.close()}

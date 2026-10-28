@@ -51,9 +51,18 @@ export async function hubspotBrowser({browser, directory}) {
         const settings = runtime.origin + `/projects/${owner.projectId}/hubspot-settings`;
         const customer = runtime.origin + `/projects/${owner.projectId}/contacts/${contact.id}`;
         const panel = () => page.getByRole('region', {name: 'HubSpot context', exact: true});
+        const captureViewport = async (name, width) => {
+            const crossedPanelBreakpoint = (page.viewportSize().width >= 1280) !== (width >= 1280);
+            await page.setViewportSize({width, height: 1000});
+            if (name.startsWith('ticket') && crossedPanelBreakpoint) {
+                // useConversationAssistant closes the compact sheet in a matchMedia
+                // change handler. Wait for React to apply it before deciding to open it.
+                await page.waitForFunction(desktop => document.querySelector('#conversation-assistant')?.getAttribute('aria-hidden') === String(!desktop), width >= 1280);
+            }
+        };
         const captures = async name => {
             for (const width of [1440, 390]) {
-                await page.setViewportSize({width, height: 1000});
+                await captureViewport(name, width);
                 if (name.startsWith('ticket')) {
                     const assistant = page.locator('#conversation-assistant');
                     if (await assistant.getAttribute('aria-hidden') === 'true') await page.getByRole('button', {name: 'Show conversation panel', exact: true}).click();
@@ -70,7 +79,7 @@ export async function hubspotBrowser({browser, directory}) {
                     await page.screenshot({path: `${directory}/${name}-values-${width}.png`});
                 }
             }
-            await page.setViewportSize({width: 1440, height: 1000});
+            await captureViewport(name, 1440);
             if (name.startsWith('ticket')) {
                 const assistant = page.locator('#conversation-assistant');
                 if (await assistant.getAttribute('aria-hidden') === 'true') await page.getByRole('button', {name: 'Show conversation panel', exact: true}).click();

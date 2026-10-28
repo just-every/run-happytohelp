@@ -10,7 +10,7 @@ import {audienceLabel} from './CollectionAccess';
 import '../stack-table.css';
 import { tooltip } from '../../../../modules/tooltip/tooltip';
 export const HeaderActions=PageHeaderActions;
-export function RowActions({edit,remove,label}) {return <RowMenu className="knowledge-row-menu" label={label} tooltip="More actions"><Link to={edit}>Edit</Link><button type="button" onClick={remove}>Delete</button></RowMenu>;}
+export function RowActions({edit,remove,label}) {return <RowMenu className="knowledge-row-menu" label={label}><Link to={edit}>Edit</Link><button type="button" onClick={remove}>Delete</button></RowMenu>;}
 function AiAnswerStatus({source,kind}) {
  const status=aiAnswerStatus(source,kind);
  return <span className={`knowledge-ai-status knowledge-ai-status--${status.state.replace('_','-')}`}>{status.label}</span>;

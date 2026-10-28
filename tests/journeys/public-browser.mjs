@@ -59,6 +59,7 @@ test(`a published help center at 1440 and 390px: native, retained and host addre
   }
   await page.goto(`${runtime.origin}/${fixture.projectId}/quick-start`);await assertHelpLinksReadable(page)
   for(const accent of accents){await page.goto(`${runtime.origin}/${accent.projectId}/guide`);await assertHelpLinksReadable(page)}
+  if(viewport.width===1440){
   await page.goto(`${runtime.origin}/help/${fixture.projectId}/quick-start`)
   await page.getByRole('link',{name:'Submit a request',exact:true}).click()
   assert.match(page.url(),/afterReading=[a-f0-9-]{36}/)
@@ -66,7 +67,9 @@ test(`a published help center at 1440 and 390px: native, retained and host addre
   assert.match(await page.locator('.help-center-content').innerText(),/Before request Ask support/)
   assert.match(await page.locator('#customer-request').getAttribute('data-after-reading'),/^[a-f0-9-]{36}$/)
   assert.ok(await noOverflow(page),'request form fits the viewport')
-  await page.screenshot({path:shot(label+'-request-template.png'),fullPage:true})
+  for(const width of [1440,390]){await page.setViewportSize({width,height:900});await page.screenshot({path:shot(`request-template-${width}.png`),fullPage:true})}
+  await page.setViewportSize(viewport)
+  }
   // Help Center 404s: HTML in the help frame; a draft looks exactly like a missing article.
   const pages={}
   for(const [id,path,known] of [['missing article',`/help/${fixture.projectId}/nope`,true],['unpublished draft',`/help/${fixture.projectId}/webhooks-draft`,true],['unknown project','/help/does-not-exist',false],['unroutable','/help/a/b/c',false]]){

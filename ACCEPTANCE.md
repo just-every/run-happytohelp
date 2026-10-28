@@ -63,7 +63,9 @@ This document defines the gate; it does not declare that every clause has passed
 
 ## Test budget
 
-The cap is **240 effective leaf checks**, not runner registrations. At `29f60c5a322c008e4e564f553df22b61a49c3166`, 188 runner registrations include 18 grouped journeys whose scenarios are registered through `tests/journeys/kit/scenarios.mjs`. The ruling's minimum audit identifies 145 Move-in, 42 Connections and 34 Reports scenarios (221 total). The effective count is at least **188 − 18 + 221 = 391**, **151 over the cap**. Direct registry enumeration expands to 150 Move-in, 42 Connections and 34 Reports registrations (226 total); the ruling's 221-scenario minimum is not an exhaustive total. This is a lower bound; grouping unrelated behaviors never hides their leaf count. Under ct's 23 October ruling, consolidate or delete overlapping tests in the same round, never raise the cap and never weaken an assertion. The excess remains unresolved; this text clarification changes no tests or statuses.
+The cap is **240 effective leaf checks**, not runner registrations. The current main (`e1e6958776a4f90b272a8e5759e9453b9503b11e`) and this integrated candidate each register **176** journey checks. Sixteen registrations own the expanded scenario registries: nine Move in journeys own 50 scenarios, four Connections journeys own 10, and three Reports journeys own 9. Counting each expanded scenario once gives **176 − 16 + 50 + 10 + 9 = 229 effective checks**, 11 below the cap. Candidate follow-up, advice-rollout, trace and reviewed-knowledge assertions extend the nearest existing public-door journeys; they add no registrations. Main's retained assertions and its consolidated journeys remain intact.
+
+The earlier audit at `29f60c5a322c008e4e564f553df22b61a49c3166` identified at least 391 effective checks, 151 over the same cap. The current count reflects the subsequently landed consolidation; grouping unrelated behaviors never hides their leaf count. The cap remains unchanged.
 
 ## Qualification boundary
 

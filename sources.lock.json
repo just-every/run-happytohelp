@@ -12372,11 +12372,11 @@
       "executable": false
     },
     "tests/helpers/support-channels/journeys.mjs": {
-      "sha256": "9ad5c45e1db71f4a3a8e1952d412875992494792c93fb1690e511bfc8d3223cc",
+      "sha256": "007086cf8f323f46f8df7ab4cb1b2535a1f09aa1db84603b1bae26fd826176cf",
       "executable": false
     },
     "tests/helpers/support-channels/restore.mjs": {
-      "sha256": "35d16d7e5bb7769e9827e8d416721200f961cdca7d3176954806461b3593abcc",
+      "sha256": "66e2e16ab048ff98a81b0da971931ead8f6d7e1e97deed0687e7dac3a4b7a39c",
       "executable": false
     },
     "tests/helpers/training-portable.mjs": {

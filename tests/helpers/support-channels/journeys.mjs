@@ -25,7 +25,7 @@ export async function channelHarness({restored}={}){
   return {'Content-Type':'application/json','X-Hub-Signature-256':'sha256='+createHmac('sha256',secret).update(raw).digest('hex')};
  };
  const deliver=(c,p,raw,headers=signed(c,p,raw))=>app.call('/api/support-channels/webhooks/'+c.id,{body:raw,raw:true,headers});
- const ticket=async c=>app.first('SELECT * FROM support_channel_threads WHERE connection_id=? ORDER BY last_inbound_at DESC',c.id);
+ const ticket=async c=>app.first('SELECT * FROM support_channel_threads WHERE connection_id=? ORDER BY last_inbound_at DESC,rowid DESC',c.id);
  const reply=async(t,{localId=randomUUID(),content='We can help.',...extra}={})=>{const current=await app.ok('/api/conversations/'+t.conversation_id,{token});return app.ok('/api/conversations/'+t.conversation_id+'/messages',{token,body:{localId,content,expectedRevision:current.revision,authoring:{kind:'human'},...extra}});};
  return {app,ws,other,root,token,call,input,connect,event,signed,deliver,ticket,reply,sends,responses,mediaResponses,templates,install,close:()=>app.close()};
 }
@@ -125,7 +125,7 @@ async function sharedExchange(){const h=await channelHarness();try{
    return JSON.stringify({team_id:h.input(p).account,event_id:id,event:{type:'message',subtype:kind==='deleted'?'message_deleted':'message_changed',channel:'C12345678',event_ts:String(Date.now()/1000),message:{ts:'1710000000.1',user:sender,text:'Corrected order',...(media?{files:[{id:'synthetic-happytohelp-replacement'}]}:{})}}});
   };
   const edit=change('edited');assert.equal((await h.deliver(c,p,edit)).status,200);await h.deliver(c,p,edit);let changes=(await h.call('/conversations/'+t.conversation_id)).data.changes;assert.equal(changes.length,1);assert.equal(changes[0].content,'Corrected order');assert.equal(changes[0].actor_id,t.contact_id);assert.ok(changes[0].actor_name&&changes[0].at>0);
-  const held=await h.deliver(c,p,change('edited',{media:true}));assert.equal(held.status,200);assert.equal(held.data.data[0].reason,'attachment_change_requires_review');
+  const held=await h.deliver(c,p,change('edited',{media:true,id:'synthetic-happytohelp-attachment-'+p}));assert.equal(held.status,200);assert.equal(held.data.data[0].reason,'attachment_change_requires_review');
   assert.equal((await h.deliver(c,p,change('deleted'))).status,200);changes=(await h.call('/conversations/'+t.conversation_id)).data.changes;assert.deepEqual(new Set(changes.map(x=>x.kind)),new Set(['edited','deleted','attachment_review']));
   const retained=await h.app.ok('/api/conversations/'+t.conversation_id+'/messages',{token:h.token});assert.equal(retained.messages[0].content,'Please help with my order');
   const unknown=await h.deliver(c,p,change('edited',{sender:'synthetic-happytohelp-stranger'}));assert.equal(unknown.data.data[0].held,true);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.changes.length,3);
@@ -139,20 +139,22 @@ async function sharedExchange(){const h=await channelHarness();try{
 
 async function consentExchange(){const h=await channelHarness();try{
  for(const p of ['sms','whatsapp']){
-  const c=await h.connect(p),inbound=h.event(p);await h.deliver(c,p,inbound);const t=await h.ticket(c),status=()=>h.call('/conversations/'+t.conversation_id);
+  const event=(options={})=>h.event(p,{sender:'+12025550124',...options});
+  const c=await h.connect(p),inbound=event();await h.deliver(c,p,inbound);const t=await h.ticket(c),status=()=>h.call('/conversations/'+t.conversation_id);
   const schedule=async()=>h.app.ok(`/api/management/projects/${h.ws.projectId}/workflow-schedules`,{token:h.token,body:{conversation_id:t.conversation_id,kind:'reply',due_at:Date.now()+3600000,timezone:'UTC',body:'Queued during opt-out',owner_id:h.ws.users.owner}});
-  const stop=h.event(p,{text:'STOP'});assert.equal((await h.deliver(c,p,stop)).status,200);await h.reply(t);const blocked=(await status()).data.sends[0];assert.equal(blocked.error_code,'customer_opted_out');
+  const stop=event({text:'STOP'});assert.equal((await h.deliver(c,p,stop)).status,200);await h.reply(t);const blocked=(await status()).data.sends[0];assert.equal(blocked.error_code,'customer_opted_out');
   const scheduled=await schedule();assert.equal(scheduled.data.state,'cancelled');
   await h.call('/connections/'+c.id,undefined,{method:'DELETE'});await h.connect(p);assert.match((await status()).data.blocked,/customer_opted_out/);
   assert.equal((await h.app.call(h.root+'/conversations/'+t.conversation_id+'/consent',{token:h.token,body:{consent:true}})).status,409);
-  const before=h.sends.length,help=h.event(p,{text:'HELP'}),helpResult=await h.deliver(c,p,help);assert.equal(helpResult.status,200);if(p==='sms')assert.match(helpResult.data,/<Message>/);else assert.equal(h.sends.length,before+1);assert.match((await status()).data.blocked,/customer_opted_out/);await h.deliver(c,p,help);assert.equal(h.sends.length,p==='sms'?before:before+1);
-  const start=h.event(p,{text:'START',id:'synthetic-happytohelp-start-'+p});assert.equal((await h.deliver(c,p,start,{})).status,401);assert.match((await status()).data.blocked,/customer_opted_out/);
+  const before=h.sends.length,help=event({text:'HELP'}),helpResult=await h.deliver(c,p,help);assert.equal(helpResult.status,200);if(p==='sms')assert.match(helpResult.data,/<Message>/);else assert.equal(h.sends.length,before+1);assert.match((await status()).data.blocked,/customer_opted_out/);await h.deliver(c,p,help);assert.equal(h.sends.length,p==='sms'?before:before+1);
+  const start=event({text:'START',id:'synthetic-happytohelp-start-'+p});assert.equal((await h.deliver(c,p,start,{})).status,401);assert.match((await status()).data.blocked,/customer_opted_out/);
   // A different subscriber and a different channel cannot grant this thread consent.
-  await h.deliver(c,p,h.event(p,{text:'START',sender:p==='sms'?'+12025550129':'synthetic-happytohelp-other'}));assert.match((await status()).data.blocked,/customer_opted_out/);
+  await h.deliver(c,p,event({text:'START',sender:p==='sms'?'+12025550129':'synthetic-happytohelp-other'}));assert.match((await status()).data.blocked,/customer_opted_out/);
+  const otherProvider=p==='sms'?'whatsapp':'sms',otherChannel=await h.connect(otherProvider);await h.deliver(otherChannel,otherProvider,h.event(otherProvider,{text:'START',sender:'+12025550124'}));assert.match((await status()).data.blocked,/customer_opted_out/,'consent is scoped to its channel');
   assert.equal((await h.deliver(c,p,start)).status,200);assert.equal((await status()).data.blocked,null);const fact=(await status()).data.consent.find(f=>f.kind==='start');assert.equal(fact.event_id,'synthetic-happytohelp-start-'+p);assert.ok(fact.at>0&&fact.received_at>=fact.at);
   const count=h.sends.length;await h.app.scheduled();assert.equal(h.sends.length,count);assert.equal((await status()).data.sends.find(s=>s.message_id===blocked.message_id).state,'blocked');
   await h.reply(t,{content:'A freshly approved support reply'});assert.equal(h.sends.length,count+1);
-  await h.deliver(c,p,h.event(p,{text:'STOP'}));await h.deliver(c,p,start);assert.match((await status()).data.blocked,/customer_opted_out/,'replayed START cannot undo later STOP');
+  await h.deliver(c,p,event({text:'STOP'}));await h.deliver(c,p,start);assert.match((await status()).data.blocked,/customer_opted_out/,'replayed START cannot undo later STOP');
   await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${t.contact_id}/erase`,{token:h.token,body:{}});assert.equal((await status()).data,null);assert.equal((await h.app.first('SELECT count(*) n FROM support_channel_consent WHERE contact_id=?',t.contact_id)).n,0);
  }
  }finally{await h.close();}}

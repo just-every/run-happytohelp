@@ -7,6 +7,18 @@ import {policy,schemaIdentity,excludedTable} from '@runeditrun/rer/modules/porta
 import {r4Tables} from './r4-tables.mjs';
 import {emailArchiveTables} from './email-archive-tables.mjs';
 const {changesData}=await import(new URL('./migration-statements.mjs',import.meta.resolve('@runeditrun/rer/modules/portability/migration-history')));
+const {tokens,identifier,folded}=await import(new URL('./generated.mjs',import.meta.resolve('@runeditrun/rer/modules/portability/migration-history')));
+
+// Project additive schema changes onto the historical subsystem inventory.
+// A subsystem omitted from that inventory has no table to alter or index, even
+// when its later evolution lives in a migration outside its original range.
+function omittedSchemaChange(sql,omitted){
+ const list=tokens(sql),words=list.map(token=>token.quoted?undefined:folded(token.text));
+ let target;
+ if(words[0]==='alter'&&words[1]==='table'&&words[3]==='add')target=list[2];
+ else if(words[0]==='create'&&(words[1]==='index'||words[1]==='unique'&&words[2]==='index'))target=list[words.indexOf('on')+1];
+ return target!==undefined&&omitted.includes(folded(target.quoted?identifier(target):target.text));
+}
 
 export const workflowTables=['workflow_queue_turns','workflow_events','workflow_event_sequence','workflow_clock','ticket_followups','workflow_calendars','sla_policies','ticket_sla_state','sla_alerts','sla_scheduler_cursors','workflow_rules','workflow_rule_versions','workflow_runs','workflow_action_receipts','workflow_notifications','workflow_time_state','workflow_scheduler_cursors','routing_operators','routing_state','routing_decisions','workflow_schedules'];
 export const ticketTables=['ticket_statuses','ticket_groups','ticket_group_members','ticket_fields','ticket_field_values','ticket_history','ticket_views'];
@@ -41,9 +53,9 @@ export async function workflowArchivePolicy(root,input,{beforeTickets=false,befo
   // This inventory deliberately has no workflow journal (150 is omitted).
   // Later replacements of its trigger and the consent trigger on the omitted
   // workflow_schedules table stay omitted too. Keep the other statements in
-  // mixed migrations, including 241's resolution correction and 253's consent.
+  // mixed migrations, including 241's resolution correction and 263's consent.
   const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))
-   .filter(sql=>!/^\s*(?:CREATE|DROP)\s+TRIGGER\s+(?:workflow_changed|support_channel_opted_out_schedule)\b/i.test(sql))));
+   .filter(sql=>!/^\s*(?:CREATE|DROP)\s+TRIGGER\s+(?:workflow_changed|support_channel_opted_out_schedule)\b/i.test(sql)&&!omittedSchemaChange(sql,omitted))));
   for(let index=0;index<plan.length;index++){
    for(const sql of plan[index])scratch.exec(sql);
    const tables=scratch.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row=>row.name).filter(name=>!excludedTable(name,result)&&!(result.derivedTables??[]).some(derived=>name===derived||name.startsWith(derived+'_')));

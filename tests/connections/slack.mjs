@@ -1,9 +1,14 @@
+import {runSteps} from '../journeys/kit/steps.mjs';
 import {phases} from '../journeys/kit/scenarios.mjs';const test=phases(import.meta.url);import assert from 'node:assert/strict';import {randomBytes} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {harness,body} from './harness.mjs';
 const recorded=JSON.parse(readFileSync(new URL('./fixtures/slack-responses.json',import.meta.url),'utf8'));
 const root='/api/management/projects/p/connections';
-test('both Slack modes deliver one logical new-conversation notification and escape mentions, ampersands and links',async()=>{
+
+
+
+test('Slack notification lifecycle: deliver once with safe rendering and current workspace recipients',()=>runSteps([
+['both Slack modes deliver one logical new-conversation notification and escape mentions, ampersands and links',async()=>{
  await (await import('../helpers/support-channels/journeys.mjs')).slack();
  for(const mode of ['incoming-webhook','bot']){const h=await harness();try{
   const privateValue=randomBytes(24).toString('hex'),input=mode==='bot'?{token:'xoxb-'+privateValue,channel:'C12345678'}:{url:'https://hooks.slack.com/services/T123/B123/'+privateValue};
@@ -21,8 +26,8 @@ test('both Slack modes deliver one logical new-conversation notification and esc
   h.responses.push(mode==='bot'?recorded.botRejected:recorded.webhookRejected);await h.call(root+'/slack/'+saved.id+'/test',body({}));assert.equal(h.received.length,2);const failed=(await h.call(root+'/deliveries')).data.find(x=>x.event==='integration.test');assert.equal(failed.state,'rejected');assert.ok(failed.error_class.startsWith('slack_'));
   assert.equal(h.external,0)
  }finally{await h.close()}}
-});
-test('Slack notification context and recipients stay inside their native workspace',async()=>{
+}],
+['Slack notification context and recipients stay inside their native workspace',async()=>{
  const h=await harness();try{
   for(const [project,actor,path] of [['p','owner','A'],['q','foreign','B']])await h.call(`/api/management/projects/${project}/connections/slack`,{actor,...body({name:'Workspace '+project,mode:'incoming-webhook',url:'https://hooks.slack.com/services/T123/B123/'+path})});
   await h.contact();await h.contact('foreign-visitor','q');const a=await h.conversation(),b=await h.conversation('foreign-visitor','q');
@@ -30,4 +35,5 @@ test('Slack notification context and recipients stay inside their native workspa
   h.responses.push({status:200,body:'ok'},{status:200,body:'ok'});await h.dispatch('p');assert.equal(h.received.length,1);assert.equal(JSON.parse(h.received[0].body).blocks[0].text.text,'Only workspace A');assert.ok(h.received[0].path.endsWith('/A'));
   await h.dispatch('q');assert.equal(h.received.length,2);assert.equal(JSON.parse(h.received[1].body).blocks[0].text.text,'Only workspace B');assert.ok(h.received[1].path.endsWith('/B'));await h.restart();await h.dispatch('p');await h.dispatch('q');assert.equal(h.received.length,2);
  }finally{await h.close()}
-});
+}]
+]));

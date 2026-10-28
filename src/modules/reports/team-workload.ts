@@ -1,17 +1,24 @@
 import {statement,type TeamReportContext} from './team-scope'
 
-export type WorkloadRow={id:string|null;label:string;incoming:number;resolved:number;backlog:number}
+export type WorkloadRow={id:string|null;label:string;incoming:number;resolved:number;backlog:number;oldest_age_ms:number|null;ageBuckets:{id:string;count:number}[]}
+export const teamDimensionsSQL=`, dimensions AS (
+ SELECT c.id conversation_id,c.created_at,c.status_category,d.value dimension,
+ CASE d.value WHEN 'agent' THEN c.assigned_to WHEN 'team' THEN c.group_id WHEN 'channel' THEN c.channel WHEN 'brand' THEN COALESCE(c.brand_id,c.project_id) WHEN 'account' THEN a.id ELSE t.id END key,
+ CASE d.value WHEN 'agent' THEN COALESCE(u.name,c.assigned_to,'Unassigned') WHEN 'team' THEN COALESCE(g.name,c.group_id,'No team') WHEN 'channel' THEN c.channel WHEN 'brand' THEN CASE WHEN COALESCE(c.brand_id,c.project_id)=p.id THEN p.name ELSE c.brand_id END WHEN 'account' THEN COALESCE(a.name,'No account') ELSE COALESCE(t.name,'Untagged') END label
+ FROM scoped c CROSS JOIN json_each('["agent","team","channel","brand","account","tag"]') d
+ JOIN projects p ON p.id=c.project_id
+ LEFT JOIN users u ON d.value='agent' AND u.id=c.assigned_to
+ LEFT JOIN ticket_groups g ON d.value='team' AND g.project_id=c.project_id AND g.id=c.group_id
+ LEFT JOIN contact_companies cc ON d.value='account' AND cc.project_id=c.project_id AND cc.contact_id=c.contact_id
+ LEFT JOIN companies a ON a.project_id=cc.project_id AND a.id=cc.company_id AND a.merged_into IS NULL
+ LEFT JOIN conversation_tags ct ON d.value='tag' AND ct.project_id=c.project_id AND ct.conversation_id=c.id
+ LEFT JOIN workspace_tags t ON t.project_id=ct.project_id AND t.id=ct.tag_id
+ )`
 const active="status_category NOT IN ('solved','closed')"
 export async function teamWorkload(context:TeamReportContext){
- const {results}=await statement(context,`, dimensions AS (
- SELECT c.id conversation_id,c.created_at,c.status_category,'agent' dimension,c.assigned_to key,COALESCE(u.name,c.assigned_to,'Unassigned') label FROM scoped c LEFT JOIN users u ON u.id=c.assigned_to
- UNION ALL SELECT c.id,c.created_at,c.status_category,'team',c.group_id,COALESCE(g.name,c.group_id,'No team') FROM scoped c LEFT JOIN ticket_groups g ON g.project_id=c.project_id AND g.id=c.group_id
- UNION ALL SELECT c.id,c.created_at,c.status_category,'channel',c.channel,c.channel FROM scoped c
- UNION ALL SELECT c.id,c.created_at,c.status_category,'brand',COALESCE(c.brand_id,c.project_id),CASE WHEN COALESCE(c.brand_id,c.project_id)=p.id THEN p.name ELSE c.brand_id END FROM scoped c JOIN projects p ON p.id=c.project_id
- UNION ALL SELECT c.id,c.created_at,c.status_category,'tag',t.id,COALESCE(t.name,'Untagged') FROM scoped c LEFT JOIN conversation_tags ct ON ct.project_id=c.project_id AND ct.conversation_id=c.id LEFT JOIN workspace_tags t ON t.project_id=ct.project_id AND t.id=ct.tag_id
- ) SELECT dimension,key id,label,SUM(created_at>=?2) incoming,SUM(created_at>=?2 AND status_category IN ('solved','closed')) resolved,SUM(${active}) backlog FROM dimensions GROUP BY dimension,key,label ORDER BY dimension,incoming DESC,backlog DESC,label,key`).all<WorkloadRow&{dimension:'agent'|'team'|'channel'|'brand'|'tag'}>()
- const workload:{agent:WorkloadRow[];team:WorkloadRow[];channel:WorkloadRow[];brand:WorkloadRow[];tag:WorkloadRow[]}={agent:[],team:[],channel:[],brand:[],tag:[]}
- for(const {dimension,...row} of results)workload[dimension].push(row)
+ const {results}=await statement(context,`${teamDimensionsSQL} SELECT dimension,key id,label,SUM(created_at>=?2) incoming,SUM(created_at>=?2 AND status_category IN ('solved','closed')) resolved,SUM(${active}) backlog,MIN(CASE WHEN ${active} THEN created_at END) oldest,COALESCE(SUM(${active} AND ?7-created_at<86400000),0) under_1d,COALESCE(SUM(${active} AND ?7-created_at>=86400000 AND ?7-created_at<259200000),0) days_1_3,COALESCE(SUM(${active} AND ?7-created_at>=259200000 AND ?7-created_at<604800000),0) days_3_7,COALESCE(SUM(${active} AND ?7-created_at>=604800000 AND ?7-created_at<2592000000),0) days_7_30,COALESCE(SUM(${active} AND ?7-created_at>=2592000000),0) days_30_plus FROM dimensions GROUP BY dimension,key,label ORDER BY dimension,incoming DESC,backlog DESC,label,key`).bind(context.projectId,context.range.startAt,context.range.endAt,context.filters.teamId,context.filters.brandId,context.filters.includeImported?1:0,context.now).all<any&{dimension:'agent'|'team'|'channel'|'brand'|'tag'|'account'}>()
+ const workload:{agent:WorkloadRow[];team:WorkloadRow[];channel:WorkloadRow[];brand:WorkloadRow[];tag:WorkloadRow[];account:WorkloadRow[]}={agent:[],team:[],channel:[],brand:[],tag:[],account:[]}
+ for(const {dimension,oldest,under_1d,days_1_3,days_3_7,days_7_30,days_30_plus,...row} of results)workload[dimension as keyof typeof workload].push({...row,oldest_age_ms:oldest===null?null:Math.max(0,context.now-oldest),ageBuckets:Object.entries({under_1d,days_1_3,days_3_7,days_7_30,days_30_plus}).map(([id,count])=>({id,count:count as number}))})
  return workload
 }
 

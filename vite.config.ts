@@ -196,5 +196,5 @@ export default defineConfig(({ command, isPreview }) => {
       next()
     })
   },
-}, cloudflare({ ...(localOrigin?{config:{main:'src/dev/server.ts',vars:{RER_DEV_KEY:process.env.RER_DEV_KEY||'',RER_DEV_IDENTITY:process.env.RER_DEV_IDENTITY||'on',...local('RER_DEMO'),...local('RER_DEMO_EXPIRES')}}}:{}), persistState: { path: process.env.RER_STATE_DIR ?? '.wrangler/state' }, remoteBindings: false, configPath: process.env.H2H_WRANGLER_CONFIG, viteEnvironment: { name: 'ssr' } }), docsSite(), tanstackStart(), react(), workspaceModulePreloads(), reproducibleOutput(), archiveOutputGuard()] };
+}, cloudflare({ inspectorPort: 0, ...(localOrigin?{config:{main:'src/dev/server.ts',vars:{RER_DEV_KEY:process.env.RER_DEV_KEY||'',RER_DEV_IDENTITY:process.env.RER_DEV_IDENTITY||'on',...local('RER_DEMO'),...local('RER_DEMO_EXPIRES')}}}:{}), persistState: { path: process.env.RER_STATE_DIR ?? '.wrangler/state' }, remoteBindings: false, configPath: process.env.H2H_WRANGLER_CONFIG, viteEnvironment: { name: 'ssr' } }), docsSite(), tanstackStart(), react(), workspaceModulePreloads(), reproducibleOutput(), archiveOutputGuard()] };
 })

@@ -1,3 +1,4 @@
+import {rerMail} from '../../integrations/rer-mail-contract'
 import type {Env} from '../../../platform/env'
 import {hashToken} from '../../../platform/auth'
 import {emailAddress} from '../../integrations/inbound-routing'
@@ -29,14 +30,14 @@ export async function activationConfiguration(env:Env, projectId:string) {
  const provider=modelProvider(model)
  const secretName=provider?modelSecrets[provider]:null
  const key=rawKey(env,provider)
- const sender=emailAddress(email?.from_address||env.EMAIL_FROM)
+ const sender=emailAddress(email?.from_address||(rerMail(env)?env.MAIL_FROM:env.EMAIL_FROM))
  // The owner has chosen an address other than the installation sender the workspace was seeded with.
- const senderOverridden=Boolean(email?.from_address)&&sender!==emailAddress(env.EMAIL_FROM)
+ const senderOverridden=Boolean(email?.from_address)&&!rerMail(env)&&sender!==emailAddress(env.EMAIL_FROM)
  // The workspace's own sending address, proposed at creation while mail goes out from the installation sender.
- const proposedSender=emailAddress(settings.proposed_sender)
+ const proposedSender=rerMail(env)?null:emailAddress(settings.proposed_sender)
  const providerName=selectedEmailProvider(env)
  // Digests stay server-side. Never return credential material or its digest to the browser.
- const mailIdentity=[providerName,sender,email?.from_name||'',env.EMAIL_FROM,env.EMAIL_ACCOUNT_ID,env.EMAIL_API_KEY]
+ const mailIdentity=[providerName,sender,email?.from_name||'',env.EMAIL_FROM,env.EMAIL_ACCOUNT_ID,env.EMAIL_API_KEY,...(rerMail(env)?[env.MAIL_API_KEY,env.RER_MAILBOX_ID]:[])]
  const values:Record<StepId,unknown>={
   owner_mail:[mailIdentity,owners.results],sender_dns:proposedSender&&!senderOverridden?[mailIdentity,proposedSender]:mailIdentity,
   inbound_address:[email?.inbound_address,email?.is_enabled,email?.updated_at,env.INBOUND_EMAIL_TOKEN,inboundNeedsCustomDomain(email?.inbound_address)],

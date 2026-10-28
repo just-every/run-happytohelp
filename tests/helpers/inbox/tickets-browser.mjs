@@ -1,10 +1,18 @@
+import {problemSuggestionsBrowser} from './problem-suggestions-browser.mjs'
+import {createHash} from 'node:crypto'
+import {createServer} from 'node:net'
+import {slaSlackBrowser} from '../workflows/sla-slack-browser.mjs'
 import assert from 'node:assert/strict'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {launchBrowser,evidence} from '../../journeys/kit/browser.mjs'
 import {seedTicketBrowser} from './ticket-browser-fixture.mjs'
 
+async function ticketRuntime(){
+ const reservation=createServer();await new Promise(resolve=>reservation.listen(0,'127.0.0.1',resolve));const port=reservation.address().port;await new Promise(resolve=>reservation.close(resolve))
+ return createRuntime({port,outboundFixture:new URL('../../fixtures/sla-slack-edge.mjs',import.meta.url).href,vars:{APP_ORIGIN:`http://127.0.0.1:${port}`,INTEGRATION_ENCRYPTION_KEY:createHash('sha256').update('synthetic-hh-1').digest('base64'),H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}})
+}
 export async function ticketsBrowser({count=12,installation}={}){
- const runtime=installation?{origin:installation.origin,close:async()=>{}}:await createRuntime({vars:{H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}}),browser=await launchBrowser(),shot=await evidence('tickets')
+ const runtime=installation?{origin:installation.origin,close:async()=>{}}:await ticketRuntime(),browser=await launchBrowser(),shot=await evidence('tickets')
  let success=false
  try{
   const fixture=await seedTicketBrowser(runtime.origin,count,installation),{projectId,base,owner}=fixture,context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]
@@ -82,9 +90,75 @@ export async function ticketsBrowser({count=12,installation}={}){
   assert.equal((await fixture.api(`${base}/conversations/${open.id}/ticket`)).data.status_category,unchanged)
   await capture('17-refused-close')
   await fixture.api(`${base}/ticket-fields/${required.id}`,undefined,'DELETE')
+  await problemSuggestionsBrowser(page,fixture,runtime.origin)
   await page.goto(runtime.origin+'/docs/tickets');await page.getByRole('heading',{name:'Tickets',level:1,exact:true}).waitFor();await capture('14-ticket-docs');
+  // Policies configured through the public API remain readable and editable in
+  // settings, including object-shaped typed conditions and form restrictions.
+  const tier=(await fixture.api(base+'/ticket-fields',{name:'Plan tier',type:'dropdown',options:['business','personal']})).data
+  const requestForm=(await fixture.api(`/api/forms/projects/${projectId}/forms`,{title:'Account help',enabled:true,fields:[{fieldId:tier.id,required:true}]})).data
+  const calendar=(await fixture.api(base+'/workflow-calendars',{name:'Account support hours',timezone:'America/New_York',weekly:[{day:1,start:'09:00',end:'17:00'}]})).data
+  const policy=(await fixture.api(base+'/sla-policies',{name:'Business account help',calendar_id:calendar.id,conditions:{form_ids:[requestForm.id],fields:{[tier.id]:'business'}},first_response_minutes:60})).data
+  await page.goto(`${runtime.origin}/projects/${projectId}/workflow-settings`)
+  await page.getByRole('button',{name:'SLA policies',exact:true}).click()
+  await page.getByRole('heading',{name:'SLA policies',exact:true}).waitFor()
+  await page.getByText('Plan tier = "business"',{exact:false}).waitFor()
+  await page.getByText('Request forms: Account help',{exact:false}).waitFor()
+  await capture('18-sla-policy')
+  await page.getByRole('button',{name:'Edit policy',exact:true}).click()
+  await page.getByLabel('Name',{exact:true}).fill('Business account response')
+  await capture('19-sla-policy-edit')
+  await page.getByRole('button',{name:'Save policy',exact:true}).click()
+  await page.getByRole('heading',{name:/Business account response/}).waitFor()
+  const savedPolicy=(await fixture.api(base+'/sla-policies')).data.find(row=>row.id===policy.id)
+  assert.deepEqual(savedPolicy.conditions.fields,{[tier.id]:'business'})
+  assert.deepEqual(savedPolicy.conditions.form_ids,[requestForm.id])
+  await slaSlackBrowser({page,runtime,fixture,capture,policy})
+  await page.goto(`${runtime.origin}/projects/${projectId}/workflow-settings?tab=rules`)
+  // The lead's normal settings screen configures and publishes the same
+  // versioned actions that the provider-edge workflow journeys execute.
+  await page.getByRole('button',{name:'Rules',exact:true}).click()
+  await page.getByRole('heading',{name:'Event and hourly rules',exact:true}).waitFor()
+  await page.getByRole('button',{name:'New rule',exact:true}).click()
+  const form=page.locator('.workflow-form')
+  await form.getByLabel('Name',{exact:true}).fill('Warranty review workflow')
+  await form.getByLabel('When',{exact:true}).selectOption('changed')
+  await form.getByRole('button',{name:'Add required condition',exact:true}).click()
+  await form.getByLabel('Ticket field',{exact:true}).selectOption('priority')
+  await form.getByLabel('Value',{exact:true}).selectOption('high')
+  for(const [index,type] of ['route','tags','status','note','notify','notify'].entries()){
+   await form.getByRole('button',{name:'Add action',exact:true}).click()
+   await form.getByLabel(`Action ${index+1}`,{exact:true}).selectOption(type)
+   if(type==='tags')await form.getByRole('group',{name:'Add tags',exact:true}).getByLabel('Needs return label',{exact:true}).check()
+   if(type==='status')await form.getByLabel('Status',{exact:true}).selectOption('pending')
+   if(type==='note')await form.getByLabel('Internal note',{exact:true}).fill('Review the replacement before the next reply.')
+   if(type==='notify'){
+    const notify=form.getByLabel('Notify',{exact:true}).nth(index===4?0:1)
+    await notify.selectOption(index===4?'assignee':'customer_update')
+    await form.getByLabel('Notification message',{exact:true}).nth(index===4?0:1).fill(index===4?'Review request {{ticket.id}}.':'We are reviewing request {{ticket.id}}.')
+   }
+  }
+  await capture('21-rule-draft')
+  await form.getByRole('button',{name:'Save draft',exact:true}).click()
+  const rule=page.locator('article.workflow-item').filter({has:page.getByRole('heading',{name:'0. Warranty review workflow',exact:true})})
+  await rule.getByRole('button',{name:'Preview draft',exact:true}).click()
+  await page.getByRole('heading',{name:'Preview: Warranty review workflow',exact:true}).waitFor()
+  await page.getByText(/No messages sent and no tickets changed/).waitFor()
+  await capture('22-rule-preview')
+  page.once('dialog',dialog=>dialog.accept())
+  await rule.getByRole('button',{name:'Publish draft',exact:true}).click()
+  await rule.getByText('Event · Published · Published version 1',{exact:true}).waitFor()
+  await rule.getByText('Published version history',{exact:true}).click()
+  await rule.getByRole('heading',{name:'Version 1',exact:true}).waitFor()
+  await capture('23-rule-published')
+  await rule.getByRole('button',{name:'Pause',exact:true}).click()
+  await rule.getByText('Event · Paused · Published version 1',{exact:true}).waitFor()
+  await capture('24-rule-paused')
+  await page.goto(runtime.origin+'/docs/workflows')
+  await page.getByRole('heading',{level:1,name:'Business hours and ticket workflows',exact:true}).waitFor()
+  await capture('25-workflow-docs')
   await fixture.api(`/api/management/projects/${projectId}/contacts/${fixture.tickets[0].visitor.contactId}/erase`,{},'POST');
   await page.goto(`${runtime.origin}/projects/${projectId}/contacts/${fixture.tickets[0].visitor.contactId}`);await page.getByText('Personal data erased.',{exact:true}).waitFor();await capture('15-erasure');
+  const {accountLookupBrowser}=await import('../account-lookup-browser.mjs');await accountLookupBrowser()
   assert.deepEqual(errors,[]);success=true
   return {fixture,origin:runtime.origin}
  }finally{await browser.close();await runtime.close(success)}

@@ -5,6 +5,7 @@ import useOnclickOutside from 'react-cool-onclickoutside';
 import ReplyIcon from '../reply-icons/ReplyIcon';
 import ConversationDetailField from './ConversationDetailField';
 import ConversationDetailSection from './ConversationDetailSection';
+import HubSpotContext from '../../../native/crm/HubSpotContext';
 import address from './emailAddress';
 import { tooltip } from '../../../../modules/tooltip/tooltip';
 
@@ -30,7 +31,7 @@ export default function ConversationContactDetails({ conversation, onEdit, onEma
         actionsButtonRef.current?.focus();
     };
 
-    return <ConversationDetailSection className="conversation-details-contact" title="Contact">
+    return <><ConversationDetailSection className="conversation-details-contact" title="Contact">
         { name && <ConversationDetailField className="conversation-detail-field--primary" icon="user" label="Name">
             <a href={ contactPath(conversation, contact) }>{ name }</a>
             { hasDifferentProvidedName && <a href={ contactPath(conversation, contact) } className="conversation-detail-field__secondary-value">{ contact.provided_name }</a> }
@@ -74,7 +75,7 @@ export default function ConversationContactDetails({ conversation, onEdit, onEma
             />
             { contact.blocked_at && <ConversationDetailField className="conversation-detail-field--compact" icon="ban" label="Blocked" value={ <TimeAgo date={ contact.blocked_at } /> } /> }
         </div>
-    </ConversationDetailSection>;
+    </ConversationDetailSection><HubSpotContext projectId={conversation.project_id} contact={contact} conversationId={conversation.id}/></>;
 }
 
 ConversationContactDetails.propTypes = {

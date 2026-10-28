@@ -1,4 +1,5 @@
 import TicketChannel from '../../../modules/support-channels/TicketChannel';
+import ProductionTrace from './conversation/ProductionTrace';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDashboardSettings } from '../../native/dashboard-state';
@@ -17,6 +18,7 @@ import EscalationsPanel from './escalations/EscalationsPanel';
 import HandleTimer from './tickets/HandleTimer';
 import useHandleTimer, { handleDuration } from './tickets/useHandleTimer';
 import ProblemPanel from './tickets/ProblemPanel';
+import PossiblySameCustomer from './tickets/PossiblySameCustomer';
 import TicketEditor from './tickets/TicketEditor';
 import TicketHistory from './tickets/TicketHistory';
 import TicketSection from './ticket-panel/TicketSection';
@@ -138,6 +140,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
     return <div className="conversation-details">
         <TicketSummary conversation={ conversation } record={ record } workflows={ workflows } escalationUpdates={ escalationUpdates } onOpenSection={ openSection } />
         <div className="ticket-sections">
+            { section('trace', 'Execution trace', <ProductionTrace conversation={ conversation } active={ Boolean(isShown) && open.has('trace') } />) }
             { record && section('fields', 'Ticket fields', <TicketEditor conversation={ conversation } record={ record } />) }
             { workflows && section('schedules', 'Schedules', <WorkflowPanel conversation={ conversation } workflows={ workflows } onBadge={ badgeSetters.schedules } />, badges.schedules) }
             { ['sms','whatsapp','instagram','messenger','slack','teams'].includes(conversation.channel) && section('support-channel', 'Support channel', <TicketChannel projectId={conversation.project_id} conversationId={conversation.id} refreshKey={liveKey}/>) }
@@ -156,6 +159,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
                     onEmailTranscript={ () => setIsEmailConversationTranscriptModalVisible(true) }
                     onToggleBlock={ handleBlock }
                 />
+                <PossiblySameCustomer projectId={ conversation.project_id } contact={ { ...conversation.contact, id: conversation.contact_id } } active={ open.has('customer') } />
                 <ConversationEnvironmentDetails contact={ conversation.contact } />
                 { conversation.contact.metadata && <ConversationDetailSection className="conversation-details-metadata" title="Metadata">
                     { Object.entries(conversation.contact.metadata).map(([ key, value ]) => <MetadataItem key={ key } name={ key } value={ value } />) }

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {managedReadOnlyJourney} from './managed-mail-observation.mjs'
 import {activationApp,hosted,step} from './activation-app.mjs'
 
 // One workspace's Setup checklist through its routes: a pure GET, owner/admin-only checks, explicit observations
@@ -104,4 +105,5 @@ export async function observationJourney(){
   await app.db.prepare("UPDATE project_settings SET settings_json=json_set(settings_json,'$.deleted_at',1) WHERE project_id=?").bind(primary.projectId).run()
   assert.ok([401,403].includes((await call()).status))
  }finally{await a.close()}
+ await managedReadOnlyJourney()
 }

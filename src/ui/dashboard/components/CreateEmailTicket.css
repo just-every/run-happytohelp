@@ -5,3 +5,5 @@
 .create-email-ticket .modal-body { max-height:75dvh; overflow:auto; }
 .create-email-ticket .form-control, .create-email-ticket .form-select { min-width:0; }
 @media(max-width:575px) { .create-email-ticket .settings-grid { grid-template-columns:minmax(0,1fr); } }
+.create-email-ticket section { overflow-wrap:anywhere; }
+.create-email-ticket .notice-preview-message { white-space:pre-wrap; }

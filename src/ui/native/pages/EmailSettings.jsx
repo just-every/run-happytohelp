@@ -1,12 +1,11 @@
+import ManagedEmail from './email/ManagedEmail';
 import {Link} from '@tanstack/react-router';
 import React from 'react';
 import OwnerTestMail from '../activation/OwnerTestMail';
-import CopyCommand from '../setup-help/CopyCommand';
-import SecretSteps from '../setup-help/SecretSteps';
 import { Section } from './forms';
 import Mailboxes from './email/Mailboxes';
 
-const providers = {resend: 'Resend', sendgrid: 'SendGrid', cloudflare: 'Cloudflare Email Sending'};
+const providers = {rer:'Run Edit Run',resend: 'Resend', sendgrid: 'SendGrid', cloudflare: 'Cloudflare Email Sending'};
 const domainOf = address => String(address || '').split('@')[1] || '';
 
 function Sending({sending, installation, role, projectId}) {
@@ -15,28 +14,27 @@ function Sending({sending, installation, role, projectId}) {
  return <div data-sending="missing">
   <div className="sh-state"><span className="h2h-chip h2h-chip--muted">Not set up</span><p>HappyToHelp needs an email service to send sign-in links, invitations and your replies to customers.</p></div>
   <div className="sh-steps"><ol>
-   <li>Make an API key with one of these services: <a href="https://resend.com/api-keys" target="_blank" rel="noreferrer">Resend</a>, <a href="https://app.sendgrid.com/settings/api_keys" target="_blank" rel="noreferrer">SendGrid</a> or <a href="/docs/integrations#extra-steps-for-cloudflare-email-sending">Cloudflare Email Sending</a>. Use <code>resend</code>, <code>sendgrid</code> or <code>cloudflare</code> as the provider below.</li>
+   <li>Make an API key with one of these services: <a href="https://resend.com/api-keys" target="_blank" rel="noreferrer">Resend</a>, <a href="https://app.sendgrid.com/settings/api_keys" target="_blank" rel="noreferrer">SendGrid</a> or <a href="/docs/integrations#extra-steps-for-cloudflare-email-sending">Cloudflare Email Sending</a>. Choose that service in your installation’s email setup.</li>
    <li>Verify the address you send from with that service.</li>
-   <li>Add the three values to this installation:</li>
+   <li>Add your provider key and sending address in installation setup.</li>
   </ol></div>
-  <SecretSteps installation={installation} values={[{name: 'EMAIL_PROVIDER', example: 'resend'}, {name: 'EMAIL_FROM', example: 'support@example.com'}, {name: 'EMAIL_API_KEY', example: 'your-api-key'}]}/>
+  <p><a href="/docs/email">Open the email setup guide</a></p>
  </div>;
 }
 
 const receivingCopy = (receiving, domain) => ({
- ready: ['Ready', <>Mail to <b>{receiving.address}</b> reaches a mail server. Send it a test email: Setup confirms the first one that arrives.</>],
- no_address: ['Not set up', <>Enter the address customers will write to, then save.</>],
+ ready: ['Mail server found', <>Mail to <b>{receiving.address}</b> reaches a mail server. Send it a test email: Setup confirms the first one that arrives.</>],
+ no_address: ['Not set up', <>Enter the address customers will write to. Changes save automatically.</>],
  local: ['Local trial', <>Email can’t be received on your computer. Receiving works on a deployed installation with an address on your own domain.</>],
- no_token: ['Not available', <>This installation has no inbound token (<code>INBOUND_EMAIL_TOKEN</code>), so it can’t accept mail. Run <code>rer setup</code> in your checkout to add it, then <code>rer deploy --environment YOUR-ENVIRONMENT</code>.</>],
+ no_token: ['Not available', <>This installation has no receiving credential. Ask the person running it to finish email setup.</>],
  workers_dev: ['Not available', <><b>{receiving.address}</b> can’t receive email: <code>workers.dev</code> addresses have no mail server. Use an address on a domain you own, such as <code>support@in.example.com</code>, then route it as shown below.</>],
  no_mx: ['Not set up', <><b>{receiving.address}</b> can’t receive email yet: <code>{domain}</code> has no mail server (MX record). Route it as shown below.</>],
  dns_unknown: ['Unknown', <>We couldn’t check the mail records for <code>{domain}</code> just now. Reload the page to try again.</>],
-})[receiving.reason];
+})[receiving.reason] || ['Waiting', 'The receiving route is being activated.'];
 
 function RoutingSteps({receiving, installation}) {
  // A workers.dev domain can never be routed, so its steps use a domain of your own.
  const domain = receiving.reason !== 'workers_dev' && domainOf(receiving.address) || 'in.yourcompany.com', local = (receiving.address || 'support@').split('@')[0] || 'support';
- const host = installation?.origin ? new URL(installation.origin).host : 'your-happytohelp-address';
  return <details className="sh-guide" open={!['ready', 'local'].includes(receiving.reason)} data-guide="receiving">
   <summary>How to receive email</summary>
   <div className="sh-steps">
@@ -50,8 +48,7 @@ function RoutingSteps({receiving, installation}) {
    <p><b>SendGrid Inbound Parse</b> (any DNS provider)</p>
    <ol>
     <li>At your DNS provider, add an MX record: name <code>{domain}</code>, value <code>mx.sendgrid.net</code>, priority <code>10</code>.</li>
-    <li>In SendGrid, open <b>Settings</b>, <b>Inbound Parse</b>, <b>Add Host &amp; URL</b>. Choose <code>{domain}</code>, leave “POST the raw, full MIME message” unticked, and use this URL with your inbound token in place of <code>TOKEN</code>:<CopyCommand text={`https://hh:TOKEN@${host}/api/integrations/email/sendgrid/inbound`}/></li>
-    <li>Your inbound token is the <code>INBOUND_EMAIL_TOKEN</code> line in <code>.dev.vars</code>, in the checkout you {installation?.environment === 'local' ? 'run' : 'deployed'} from{installation?.environment === 'local' ? '' : <>: <code>rer deploy</code> installed that same value here</>}. Run this in that folder to show it:<CopyCommand text="grep INBOUND_EMAIL_TOKEN .dev.vars"/>{installation?.environment !== 'local' && <>No checkout, or not sure it is the one you deployed from? Choose a new token in place of <code>NEW-TOKEN</code> (a long random value, for example from <code>openssl rand -hex 32</code>) and install it, then use it in the URL above:<CopyCommand text={`umask 077 && printf 'INBOUND_EMAIL_TOKEN=%s\n' NEW-TOKEN > private.env\nrer deploy --environment YOUR-ENVIRONMENT --env-file private.env --set-secret INBOUND_EMAIL_TOKEN`}/></>}</li>
+    <li>In SendGrid, open <b>Settings</b>, <b>Inbound Parse</b>, and configure authenticated forwarding to this installation. The <a href="/docs/integrations#receive-email">receiving setup guide</a> has the endpoint and private-credential steps.</li>
    </ol>
    <p className="sh-note">More detail, including your own gateway: <a href="/docs/integrations#receive-email">Receive email</a>.</p>
   </div>
@@ -59,7 +56,8 @@ function RoutingSteps({receiving, installation}) {
 }
 
 /** Settings → Email: what sending and receiving can actually do on this installation, and the steps for each. */
-export default function EmailSettings({data, status, field, role, projectId}) {
+export default function EmailSettings({data, status, field, role, projectId,onRefresh}) {
+ if(status?.managed)return <ManagedEmail managed={status.managed} {...{field,role,projectId,onRefresh}}/>;
  const receiving = status?.receiving || {reason: 'no_address', address: null}, domain = domainOf(receiving.address);
  const [chip, copy] = receivingCopy(receiving, domain);
  return <>

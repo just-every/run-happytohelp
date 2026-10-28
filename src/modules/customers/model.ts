@@ -5,7 +5,7 @@ import type {CompanyField} from './validation'
 export interface CompanyRow {id:string;project_id:string;name:string;attributes_json:string;portal_company_view:number;revision:number;created_at:number;updated_at:number;merged_into:string|null}
 export interface CompanySnapshot {company:CompanyRow;domains:string[];members:string[]}
 export interface Guard {sql:string;params:unknown[]}
-export const companyTables=['companies','company_domains','contact_companies','company_attribute_definitions','company_history'] as const
+export const companyTables=['companies','company_domains','contact_companies','company_attribute_definitions','company_history','customer_identity_links','customer_identity_link_history'] as const
 export const domainSnapshot=`SELECT json_group_array(domain) FROM (SELECT domain FROM company_domains WHERE project_id=? AND company_id=? ORDER BY domain)`
 export const memberSnapshot=`SELECT json_group_array(contact_id) FROM (SELECT contact_id FROM contact_companies WHERE project_id=? AND company_id=? ORDER BY contact_id)`
 export async function snapshot(env:Env,projectId:string,id:string,active=true):Promise<CompanySnapshot>{

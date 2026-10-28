@@ -17,6 +17,25 @@ For example, a two-hour commitment starting at 4 pm on a day ending at 5 pm
 uses one hour that afternoon and the next hour when business hours resume.
 Closed dates and holidays contribute no working time.
 
+The widget also uses these calendars for availability. **Accept new
+conversations** off always wins, independently of hours or presence. With
+acceptance on, the first active matching ordinary widget SLA policy with an
+active calendar supplies business hours, holidays, closed dates and timezone.
+If no matching policy has an active calendar, the widget's own opening hours
+and workspace timezone are the fallback. During open hours, live presence
+then decides availability when its away setting is on; an enabled visitor
+assistant with its provider key installed keeps the widget available when
+nobody is online.
+
+**Settings → Project → Availability → Right now** uses the same availability
+as the server and widget and identifies the governing SLA calendar. Away
+notices, headers and replies show the next reopening when known, otherwise
+**Human response time** from **Settings → Widget**. With acceptance on, a
+calendar closure uses the widget's **Away message outside hours**, or the
+standard message if that field is empty; it never uses the message for paused
+new conversations. See [When your team is away](away.md) for visitor behavior
+and away-message settings.
+
 ## SLA policies and alerts
 
 In **SLA policies**, choose a calendar and the commitments you need: first
@@ -134,3 +153,54 @@ and rule runs are cancelled on restore; a send that was already claimed remains
 uncertain. Pending SLA notifications are stopped. Their recorded identities stay
 so restoring a backup cannot replay the same queued action. Local clock overrides
 are excluded. Restoring does not establish delivery of any archived message.
+
+
+## Review a stopped workflow run
+
+An owner or admin with settings permission can review a failed, not-delivered or
+uncertain run through `POST /api/dashboard/projects/:projectId/workflow-runs/:runId/reconcile`.
+Inspect the current run first, then submit its `expected_updated_at`, a `note`
+(up to 2,000 characters) and an evidence `reference` (up to 500 characters).
+The guarded command records who reviewed it and cancels its remaining actions.
+It never sends, retries or resumes work, and it preserves every existing provider
+outcome, including uncertainty. A receipt or review note does not itself prove
+that a customer received a message. Repeated or stale reviews are refused.
+The review stays in the portable audit store under its existing custody rules.
+
+A named group notification is limited to the ticket's current group while the
+ticket is unassigned. It uses each current member's group preferences; followers
+use their own preferences. A group from another workspace is refused. Changing
+the group or membership before delivery cancels the old authority. Customer and
+follower notices use the ticket audience and cannot be redirected to a named
+person. Terminal delivery claims remain terminal across restart.
+
+Workflow and SLA inbox notices remain available when email delivery is not
+configured. Their frozen delivery record says email was not configured; installing
+a mail provider later does not replay that action. The workflow run or SLA alert
+keeps the explicit not-delivered email outcome for review.
+
+
+## Slack SLA escalations
+
+An owner or admin can save an incoming webhook or bot destination in Settings →
+Slack. Turn off **Notify on new conversations** for a destination used only by SLA
+policies. In Settings → Workflows → SLA policies, explicitly select the **Slack
+escalation destination** and named backup operators. Leaving the destination empty
+sends no SLA alerts to Slack. Existing alerts keep their original destination;
+changing the selection never redirects an old alert.
+
+Approaching, breached and unattended alerts send fixed ticket and named-operator
+identifiers, the metric and alert kind. Customer text, names, email addresses and
+private notes are excluded. The configured Slack channel is an explicitly chosen
+external audience; the app does not infer its members. Current backup membership,
+policy authority, destination availability and ticket state are checked before
+sending. The destination installer must still be a workspace owner or admin, as for Teams handoffs. Removing that authority, a backup or destination consent cancels unsent work. Saving a connection sends no test message; use the separate **Send test** action to consent to a test post.
+
+Ticket → Schedules shows Slack delivery separately from the persistent alert:
+pending, accepted, failed, uncertain or cancelled, with attempts and any next retry.
+An explicit rate-limit refusal respects its cooldown and stops after five attempts.
+A lost response, unknown provider outcome or interrupted send stays uncertain
+across restart and never sends again automatically. Inspect Slack to reconcile
+unknown outcomes. **Acknowledge alert** in HappyToHelp persists acknowledgment and
+stops unsent work; it does not edit the Slack message or create another post.
+Teams and live account qualification remain pending under SLA-001.

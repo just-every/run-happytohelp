@@ -63,7 +63,14 @@
         "ENABLE_SYNTHETIC_EVALUATION",
         "RATE_LIMITS",
         "AI_DAILY_CEILINGS",
-        "FORMS_TURNSTILE_SITE_KEY"
+        "FORMS_TURNSTILE_SITE_KEY",
+        "MAIL_PROVIDER",
+        "MAIL_FROM",
+        "MAIL_RELAY_URL",
+        "H2H_RER_MAIL_VERSION",
+        "RER_MAILBOX_ID",
+        "RER_MAIL_ADDRESS",
+        "RER_MAIL_CONTROL_URL"
       ],
       "secretNames": [
         "H2H_SETUP_TOKEN"
@@ -98,7 +105,9 @@
         "MAILBOX_SOCKET_HOSTS",
         "MAILBOX_SOCKET_PORTS",
         "MAILBOX_IMAP_AUTHSERV",
-        "FORMS_TURNSTILE_SECRET_KEY"
+        "FORMS_TURNSTILE_SECRET_KEY",
+        "MAIL_API_KEY",
+        "RER_MAIL_INGRESS_KEY"
       ],
       "surfaces": {
         "app": {
@@ -127,7 +136,12 @@
         "pendingStatus": 409,
         "completeStatus": 200
       },
-      "recovery": "Retain source, D1 backups and R2 objects. Preserve applied migration history and reconcile uncertain provider jobs before resuming. Restore data into separate resources and verify before switching traffic."
+      "recovery": "Retain source, D1 backups and R2 objects. Preserve applied migration history and reconcile uncertain provider jobs before resuming. Restore data into separate resources and verify before switching traffic.",
+      "mail": {
+        "providers": [
+          "rer"
+        ]
+      }
     },
     "mainModule": "index.js"
   },

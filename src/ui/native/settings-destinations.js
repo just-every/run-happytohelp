@@ -25,12 +25,14 @@ export const settingsGroups = [
     ] },
     { label: 'Automation', destinations: [
         { label: 'AI', path: 'ais' },
+        { label: 'Procedures', path: 'procedures' },
         { label: 'Workflows', path: 'workflow-settings' },
         { label: 'Local computers', path: 'local-agent', session: '/local-agent/authorize' },
     ] },
     { label: 'Connections', destinations: [
         { label: 'Support channels', path: 'support-channels' },
         { label: 'Slack', path: 'slack-settings' },
+        { label: 'HubSpot', path: 'hubspot-settings' },
         { label: 'GitHub', path: 'github-settings' },
         { label: 'Webhooks', path: 'webhook-settings' },
         { label: 'API tokens', path: 'api-settings' },

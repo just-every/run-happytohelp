@@ -1,3 +1,4 @@
+import {rerMail} from './rer-mail-contract'
 import type {Env} from '../../platform/env'
 import {localMailOrigin} from '../../edition/local-mail/configuration'
 import {inboundNeedsCustomDomain} from '../management/activation/inbound-domain'
@@ -14,7 +15,7 @@ export const resolveMx:MxResolver=async domain=>{
  return (result.Answer||[]).filter(a=>a.type===15).map(a=>a.data.trim().split(/\s+/).pop()!.replace(/\.$/,'')).filter(Boolean)
 }
 
-export type Receiving={address:string|null;ready:boolean;reason:'ready'|'no_address'|'local'|'no_token'|'workers_dev'|'no_mx'|'dns_unknown'}
+export type Receiving={address:string|null;ready:boolean;reason:'ready'|'no_address'|'local'|'no_token'|'workers_dev'|'no_mx'|'dns_unknown'|'managed_pending'|'managed_failed'}
 const cache=new Map<string,{exchangers:string[]|null;at:number}>()
 const CACHE_MS=5*60*1000
 
@@ -25,6 +26,10 @@ export async function receivingState(env:Env,address:unknown,resolver:MxResolver
  const base=mailbox(address)
  if(!base)return {address:null,ready:false,reason:'no_address'}
  const result=(reason:Receiving['reason'])=>({address:base,ready:reason==='ready',reason})
+ if(rerMail(env)){
+  const bound=await env.DB.prepare("SELECT state,route_active FROM rer_mailboxes WHERE lower(address)=? AND state<>'revoked' AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=rer_mailboxes.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)").bind(base).first<{state:string;route_active:number}>()
+  return result(bound?.state==='active'&&bound.route_active?'ready':bound?.state==='failed'?'managed_failed':'managed_pending')
+ }
  if(localMailOrigin(env))return result('local')
  const connected=await env.DB.prepare("SELECT 1 FROM mailbox_addresses address JOIN mailbox_connections mailbox ON mailbox.id=address.mailbox_id AND mailbox.project_id=address.project_id WHERE address.address=? AND mailbox.status='connected' AND mailbox.provider<>'forwarding'").bind(base).first()
  if(connected)return result('ready')

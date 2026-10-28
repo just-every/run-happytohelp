@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {workflowFixture} from './fixture.mjs'
+import {slaSlackFlow} from './sla-slack.mjs'
 import {slaFlow} from './sla.mjs'
 import {rulesFlow} from './rules.mjs'
 import {routingFlow} from './routing.mjs'
@@ -24,4 +25,10 @@ export async function workflowsJourney(){
   for(const table of ['workflow_events','ticket_followups','ticket_sla_state','sla_alerts','workflow_runs','workflow_action_receipts','workflow_notifications','workflow_time_state','routing_decisions','workflow_schedules'])assert.equal((await f.app.first(`SELECT count(*) n FROM ${table} WHERE project_id=?`,f.w.projectId)).n,0,table)
   assert.ok((await f.app.first('SELECT ticket_records FROM contact_erasures WHERE project_id=? AND contact_id=?',f.w.projectId,f.customer.contactId)).ticket_records>0)
  }finally{await f.app.close()}
+ const slackFixture=await workflowFixture()
+ try{
+  const calendar=await slackFixture.ok('/workflow-calendars',{name:'Slack support',timezone:'America/New_York',weekly:[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})),holidays:'none',closures:[]})
+  const policy=await slackFixture.ok('/sla-policies',{name:'Existing inbox policy',calendar_id:calendar.id,first_response_minutes:120})
+  await slaSlackFlow(slackFixture,policy,calendar)
+ }finally{await slackFixture.app.close()}
 }

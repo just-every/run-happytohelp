@@ -126,16 +126,20 @@
       "buyerSteps": "FEEDBACK-001: add source-linked feedback, signed release receipts and reviewed service updates. Apply before the updated Worker serves traffic. New links default to service updates off; explicit requester consent is required. Reconfigure release sender secrets after restore; source history restores with subscriptions off and pending sends cancelled."
     },
     {
+      "id": "260_followup_obligations.sql",
+      "buyerSteps": "Apply after 259 before serving the updated Worker. Retain cited message offsets, accepted ownership and due-time history in backups. Contact erasure removes obligations and their changes. Internal reminders are bounded and deduplicated per accepted version; drafts never authorize a customer send."
+    },
+    {
       "id": "261_assurance.sql",
       "buyerSteps": "ASSURANCE-001: add regulated-deployment preflight profiles and expiring agreement/control evidence. Standard support access is unchanged. Recorded references prepare independent review; they never authorize health-data activation or supply compliance. Use an isolated deployment with health-data processing disabled until provider/partner acceptance and shared-runtime activation/withdrawal are implemented."
     },
     {
-      "id": "262_feedback_penny.sql",
-      "buyerSteps": "FEEDBACK-001: add a Penny API connection and durable source handoff receipts. A requester-authored sharing permission and explicit operator approval are required. Penny owns its requesters and votes; pending/uncertain external writes never replay. Reconfigure the Penny API key after restore; sending handoffs restore as uncertain."
+      "id": "261_followup_pending_terms.sql",
+      "buyerSteps": "Apply after 260 before serving the updated Worker. Retain pending reviewed responsibility and due-time changes separately from accepted terms; restore redacts personal stop-condition text and requires explicit re-entry."
     },
     {
-      "id": "257_followup_obligations.sql",
-      "buyerSteps": "Apply after 256 before serving the updated Worker. Retain cited message offsets, accepted ownership and due-time history in backups. Contact erasure removes obligations and their changes. Internal reminders are bounded and deduplicated per accepted version; drafts never authorize a customer send."
+      "id": "262_feedback_penny.sql",
+      "buyerSteps": "FEEDBACK-001: add a Penny API connection and durable source handoff receipts. A requester-authored sharing permission and explicit operator approval are required. Penny owns its requesters and votes; pending/uncertain external writes never replay. Reconfigure the Penny API key after restore; sending handoffs restore as uncertain."
     }
   ]
 }

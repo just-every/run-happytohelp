@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "238067bd4859d59d355bc9ee5e429ffccc7f4ee046156694dba8f4c773c5ae5b",
+      "sha256": "e36654c2a0e884f9b61e0e0ee6cbfe94920b2f940eb33569412e3b688df447be",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "f5d3dd58974aac90faeda6f4b4273718bb20c1743d563d2796d523d83601b53e",
+      "sha256": "6921331f852f405f3b5832ca9db5191562584e73a5054f73de147e1b0f49b115",
       "executable": false
     },
     "DEMO.md": {
@@ -2543,10 +2543,6 @@
       "sha256": "3c9b045f40e04ae9e632182d8e1a6168bedbf30961daec0c217b0fe89a33fb8c",
       "executable": false
     },
-    "migrations/257_followup_obligations.sql": {
-      "sha256": "488a6cffda3c8a6616967918594aafa805f1160a624b9f2c7462b254c382b14f",
-      "executable": false
-    },
     "migrations/257_hubspot_context.sql": {
       "sha256": "3f033ca7f7db8d7579e9876a75078e1f1b19efb589c8dcf4006fc683049d275d",
       "executable": false
@@ -2557,10 +2553,6 @@
     },
     "migrations/257_sla_slack.sql": {
       "sha256": "e3ba183c93594309ab8f1381d912080955bc02017f7cd810c834a5689933ccdd",
-      "executable": false
-    },
-    "migrations/258_followup_pending_terms.sql": {
-      "sha256": "06fe0f4ab5d3403d8469dc11ad5d4e57b4572b753c5ccdbf8dea636b68541def",
       "executable": false
     },
     "migrations/258_procedure_versions.sql": {
@@ -2579,8 +2571,16 @@
       "sha256": "9b8d4320b904a998ecd62f4a8d58dfbf87c8d537e0f21737c6327b997ba48808",
       "executable": false
     },
+    "migrations/260_followup_obligations.sql": {
+      "sha256": "488a6cffda3c8a6616967918594aafa805f1160a624b9f2c7462b254c382b14f",
+      "executable": false
+    },
     "migrations/261_assurance.sql": {
       "sha256": "472fc38afaaf4c171d53cb626cbd1965e5d3919c4253bfcd4ea658bf093afcc3",
+      "executable": false
+    },
+    "migrations/261_followup_pending_terms.sql": {
+      "sha256": "06fe0f4ab5d3403d8469dc11ad5d4e57b4572b753c5ccdbf8dea636b68541def",
       "executable": false
     },
     "migrations/262_feedback_penny.sql": {
@@ -2672,7 +2672,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "92c19549d25eb623a745ccb22d629012375ec35ae8d46cd259ef686519879222",
+      "sha256": "3361a007ec22346ad73a20760331bbf96ea6441f4f1d5dee744bb4d1b0fe285a",
       "executable": false
     },
     "rer-project.json": {
@@ -3736,7 +3736,7 @@
       "executable": false
     },
     "src/modules/ai-support/module.json": {
-      "sha256": "c16bd2aeeff253ca47865f7d75f3980362b7665df2d757dc5c3889cc40835c22",
+      "sha256": "e77f9b498c7a36ec56896e1b6c375ed9b08e85061fec3c50bc90a8f6617c9a64",
       "executable": false
     },
     "src/modules/ai-support/obligations.ts": {
@@ -3784,7 +3784,7 @@
       "executable": false
     },
     "src/modules/ai-support/routes.ts": {
-      "sha256": "832aaa48dc48b71f49b33204f7b71ea6482fd84950e765aaa5efac3c47b9fac2",
+      "sha256": "cfc503230bffe53716dbf03b755ce3800e6778cf78ca4624a377806c30684c80",
       "executable": false
     },
     "src/modules/ai-support/selection.ts": {
@@ -11384,11 +11384,11 @@
       "executable": false
     },
     "tests/helpers/ai/obligations-browser.mjs": {
-      "sha256": "7f05951c9bb4dac0c2b3b7fa9d5daaeaeb7416d4c64cc1941a6dc828e2912b06",
+      "sha256": "c2244f27b933edd79f21e305ee21f4b6f42853a1a14b7f7d566a9109dde62dd4",
       "executable": false
     },
     "tests/helpers/ai/obligations.mjs": {
-      "sha256": "21df094d52f5bf2dff1a2c188b8c6b50d017e0e4b81023c0f73b9b19a189ed34",
+      "sha256": "43851b0f96ac67b33af3718fdde81e2f5303823d0a159c30b95ca8ddde186892",
       "executable": false
     },
     "tests/helpers/ai/procedures-browser.mjs": {
@@ -12204,7 +12204,7 @@
       "executable": false
     },
     "tests/helpers/recovery/followup.mjs": {
-      "sha256": "efa5813df3bb6d8ce28e7d1eb7835dba2b85216abdb5017c2bf8a65a123b517d",
+      "sha256": "fba0145b1d8c5fc1d27bdb8076da2b3c659df0d7d4c4e9022dfa630585473f14",
       "executable": false
     },
     "tests/helpers/recovery/independent-journey.mjs": {

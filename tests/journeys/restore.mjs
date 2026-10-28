@@ -28,4 +28,4 @@ test('an independent packaged install opens setup only with its token, keeps med
  for(const journey of [independentRestoreJourney,rerMailArchiveJourney])await journey()
 })
 
-test('a Platform-applied install exports an older archive into Platform and native destinations, and incomplete or multiple migration ledgers refuse without writes',{timeout:10*60_000},platformArchiveJourney)
+test('a Platform-applied install exports an older archive into Platform and native destinations and restores its Managed data download natively, while unplaceable, cut-off or occupied-destination downloads and incomplete or multiple migration ledgers refuse without writes',{timeout:10*60_000},platformArchiveJourney)

@@ -88,6 +88,19 @@ over them. Re-enter private configuration and external integration credentials.
 Restore sends no mail, model request or connection notification. Remote transfer
 is unsupported and refuses with exit 4.
 
+Import also reads the data download of a Managed installation (a `.zip`)
+directly. Keep it private first, then restore it the same way:
+
+```sh
+chmod 600 exports/managed-data.zip
+rer import --input exports/managed-data.zip --yes
+```
+
+Its database is checked in a private sandbox, and every table must be one this
+release knows; conversation search is rebuilt after restore. A damaged or
+cut-off download, a table this release cannot place, or a destination that
+already holds data is refused before anything changes.
+
 Archives carry Durable Object storage too. Export reads every stored record of
 every `ConversationSocket` instance into the archived `durable_object_snapshots`
 table with its schema (`happytohelp.durable-objects/1`) and a SHA-256 digest, and

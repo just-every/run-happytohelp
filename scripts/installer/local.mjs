@@ -36,6 +36,8 @@ const dev=async context=>{
 export const adapter=localInstaller({
  node:'22.20.0',features:{...model.features,hosting:false,github:false},
  guard:async({root})=>{await selectLocalState(root);},prepare:prepareNativeLocal,
+ // Export, import and Managed data intake read the collected migrations, also in a checkout that never ran setup.
+ prepareData:context=>[process.execPath,['scripts/migrations.mjs'],{cwd:context.root,signal:context.signal,heavy:false}],
  migrate:async context=>{
   // Existing dev installs reuse their build. Collect newly added source SQL
   // before the migration phase, including an upgrade started with rer dev.
@@ -68,7 +70,6 @@ async function archiveInput(path){
 }
 
 const portability=Object.fromEntries(['export','import'].map(verb=>[verb,async context=>{
- await context.store.run('Collecting local migrations',process.execPath,['scripts/migrations.mjs'],{cwd:context.root,signal:context.signal,heavy:false});
  let snapshots;
  if(verb==='export'){
   // Durable Object storage enters the archive as a D1 table with its schema and digest.

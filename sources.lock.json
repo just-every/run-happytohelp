@@ -3600,7 +3600,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "d948b880c27d7a57a75629a1b9ef119f9a07a7e29b3d0ce5cd972a01299fe08e",
+      "sha256": "0a025174f983dd0251837d989812e8dc7653d7923d598a7c0d8831e72d8d5594",
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {
@@ -12696,7 +12696,7 @@
       "executable": false
     },
     "tests/helpers/platform-archive.mjs": {
-      "sha256": "5a91d45a70d9c94d9ea7d2659f8ef508cbf44dc6b5e555f2792cc4ad187296e8",
+      "sha256": "107c60c51d8db18a9c772d0f4c0611441004fe8d3dca58673746b76ce50a8a88",
       "executable": false
     },
     "tests/helpers/proactive-provider-network.mjs": {

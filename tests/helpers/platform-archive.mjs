@@ -56,6 +56,9 @@ export async function platformArchiveJourney(){
    await DB.prepare("INSERT INTO contacts(id,project_id,name,email,created_at) VALUES('archive-contact','archive-project','Archive visitor','visitor@example.test',1)").run();
    await FILES.put('archive-project/retained.txt','Retained support attachment',{httpMetadata:{contentType:'text/plain'},customMetadata:{purpose:'archive-journey'}});
   });
+  // Platform's Managed data download of this installation, made before any native export touches it.
+  const download=await managedDownload(original),downloaded=await archiveSnapshot(original);
+  const unknownTable=await managedDownload(original,{extraSql:"CREATE TABLE synthetic_happytohelp_unknown(id TEXT PRIMARY KEY);\nINSERT INTO synthetic_happytohelp_unknown VALUES('synthetic-happytohelp-2');\n"});
   const archive=join(original,'exports/platform.rer');
   await cli(original,['export','--output',archive]);
   const before=await archiveSnapshot(original);
@@ -78,14 +81,12 @@ export async function platformArchiveJourney(){
    await cli(root,['export','--output','exports/roundtrip.rer']);
    compareArchive(before,await archiveSnapshot(root),['archive_addition']);
   }
-  // Platform's Managed data download of the same installation restores natively into a fresh
-  // install. A table the policy cannot place, a cut-off download and an occupied destination
-  // refuse before any destination byte changes.
-  const download=await managedDownload(original),zip=join(scratch,'platform-data.zip');
-  await writeFile(zip,download,{mode:0o600});
+  // The Managed download restores natively into a fresh install. A table the policy cannot place,
+  // a cut-off download and an occupied destination refuse before any destination byte changes.
+  const zip=join(scratch,'platform-data.zip');await writeFile(zip,download,{mode:0o600});
   const managed=await fixture('managed');
   await cli(managed,['import','--input',zip,'--yes']);
-  compareArchive(before,await archiveSnapshot(managed));
+  compareArchive(downloaded,await archiveSnapshot(managed));
   const empty=await fixture('managed-refusals');await platformDestination(empty);
   async function refuseDownload(root,bytes,reason){
    const input=join(scratch,'refused.zip');await rm(input,{force:true});await writeFile(input,bytes,{mode:0o600});
@@ -94,7 +95,7 @@ export async function platformArchiveJourney(){
    assert.match(result.events.find(event=>event.event==='error').message,reason);
    assert.deepEqual(await databaseBytes(root),stored,'a refused download changes no destination database byte');
   }
-  await refuseDownload(empty,await managedDownload(original,{extraSql:"CREATE TABLE synthetic_happytohelp_unknown(id TEXT PRIMARY KEY);\nINSERT INTO synthetic_happytohelp_unknown VALUES('synthetic-happytohelp-2');\n"}),/managed_data_schema_table_missing/);
+  await refuseDownload(empty,unknownTable,/managed_data_schema_table_missing/);
   await refuseDownload(empty,download.subarray(0,download.length-64),/managed_data_truncated/);
   await refuseDownload(managed,download,/target_not_empty/);
   // Refusals happen before snapshot capture, schema preparation or transfer.

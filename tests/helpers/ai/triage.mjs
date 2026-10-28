@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {assistantApp} from './app.mjs'
+import {replyLifecycle} from './reply-lifecycle.mjs'
 export async function triageJourney(){
  const a=await assistantApp(),{app,p,owner,workspace:w,ai}=a,base=`/api/dashboard/projects/${p}`
  const call=async(path,body,method='POST',token=owner)=>{const result=await app.ok(base+path,{token,body,method});return result.data??result}
@@ -57,8 +58,14 @@ export async function triageJourney(){
  await call(`/workflow-rules/${robin.rule.id}/publish`,{})
  const admitted=async(name,words)=>{const v=await a.visitor(name);await v.say(words);const t=await ticket(v.conversationId);assert.equal((await read(v.conversationId)).state,'pending');assert.equal(t.assigned_to,w.users.operator,name);assert.equal(t.group_id,returns.id,name);await run();const after=await ticket(v.conversationId);assert.equal(after.assigned_to,w.users.operator,name);assert.equal(after.group_id,returns.id,name);return v.conversationId}
  assert.equal((await read(await admitted('Model down','Where is my parcel?'))).state,'unavailable')
- await app.configure({OPENAI_API_KEY:'sk-test'});answer={intent:{value:'shipping',confidence:.95,quote:'my parcel'},sentiment:{value:'neutral',confidence:.9,quote:'my parcel'},language:{value:'en',confidence:.5,quote:'my parcel'}}
+ await app.configure({OPENAI_API_KEY:'synthetic-hh-1'});answer={intent:{value:'shipping',confidence:.95,quote:'my parcel'},sentiment:{value:'neutral',confidence:.9,quote:'my parcel'},language:{value:'en',confidence:.5,quote:'my parcel'}}
  assert.equal((await read(await admitted('Unsure language','Hola, my parcel is late'))).state,'complete')
+ // The lead now returns this case to the assistant. Pause the human-routing policies
+ // first so the assignment change and next customer turn keep the assistant selected.
+ await call(`/workflow-rules/${rule.rule.id}/pause`,{})
+ await call(`/workflow-rules/${robin.rule.id}/pause`,{})
+ await app.configure({OPENAI_API_KEY:'synthetic-hh-1'});ai.reject=false
+ await replyLifecycle(a,visitor)
  const collaborator=await app.seedWorkspace('triage-collab');await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(collaborator.projectId,collaborator.users.operator,Date.now()).run()
  assert.equal((await app.call(`/api/dashboard/projects/${collaborator.projectId}/triage-settings`,{token:collaborator.tokens.operator,method:'PUT',body:{}})).status,403)
  assert.equal((await app.call(base+`/conversations/${id}/triage`,{token:collaborator.tokens.owner})).status,404)

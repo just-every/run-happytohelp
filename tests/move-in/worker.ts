@@ -1,6 +1,3 @@
-import {custodyRace,custodyWriters,custodyReservationABA} from './custody-race'
-import {nativeUpdateDuringErasure,interruptFirstFence} from './erasure-interleaving'
-import {publicationBoundary,legacyReview} from './publication-fixture'
 import {auditDatabase} from './sql-audit'
 import {emailConfigured} from '../../src/modules/integrations/email-provider'
 import {app} from '../../src/app'
@@ -9,13 +6,6 @@ import {boundedDatabase} from '../../src/platform/d1-budget'
 import type {Env} from '../../src/platform/env'
 export {ConversationSocket} from '../../src/modules/conversations/socket'
 export default {async fetch(request:Request,env:Env,context:ExecutionContext){const url=new URL(request.url),queue:any[]=[],effects={widget:0};const bindings={...env,JOBS:{send:async(job:any)=>{queue.push(job)}},CONVERSATIONS:{idFromName:(name:string)=>{effects.widget++;return env.CONVERSATIONS.idFromName(name)},get:(id:DurableObjectId)=>env.CONVERSATIONS.get(id)}} as unknown as Env
- if(url.pathname==='/_test/custody-race')return Response.json(await custodyRace(bindings,(await request.json<{id:string}>()).id))
- if(url.pathname==='/_test/native-update-erasure')return nativeUpdateDuringErasure(request,bindings,context)
- if(url.pathname==='/_test/interrupt-first-fence')return interruptFirstFence(request,bindings,context)
- if(url.pathname==='/_test/publication-boundary')return Response.json(await publicationBoundary(bindings,await request.json()))
- if(url.pathname==='/_test/legacy-review')return Response.json(await legacyReview(bindings,(await request.json<{id:string}>()).id))
- if(url.pathname==='/_test/custody-writers')return Response.json(await custodyWriters(bindings,(await request.json<{id:string}>()).id))
- if(url.pathname==='/_test/custody-reservation-aba')return Response.json(await custodyReservationABA(bindings,(await request.json<{id:string}>()).id))
  if(url.pathname==='/_test/configured')return Response.json({mail:emailConfigured(bindings),model:typeof bindings.OPENAI_API_KEY==='string'&&bindings.OPENAI_API_KEY.length>0})
  if(url.pathname==='/_test/queue'||url.pathname==='/_test/queue-audit'){const audit=url.pathname.endsWith('-audit')?auditDatabase(bindings.DB):null;if(audit)bindings.DB=audit.database;const jobs=await request.json<any[]>(),acked:any[]=[],retried:any[]=[],result=await consumeQueue({messages:jobs.map((body,i)=>({id:String(i),body,ack(){acked.push(i)},retry(){retried.push(i)}}))} as any,bindings);return Response.json({...result,queue,acked,retried,effects,...(audit?{sqlAudit:audit.reads,sqlTransactions:audit.transactions}:{})})}
  const budget=boundedDatabase(bindings.DB),response=await app.fetch(request,{...bindings,DB:budget.database},context),headers=new Headers(response.headers);headers.set('X-Test-Widget-Effects',String(effects.widget));headers.set('X-Test-Statements',String(budget.statements));headers.set('X-Test-Writes',String(budget.writes));headers.set('X-Test-Limits',JSON.stringify(budget.metrics));headers.set('X-Test-Queued',JSON.stringify(queue));return new Response(response.body,{status:response.status,headers})

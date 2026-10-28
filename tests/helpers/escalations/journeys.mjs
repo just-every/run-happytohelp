@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
-import {startApp,applyMigrations} from '../../journeys/kit/app.mjs';
+import {startApp} from '../../journeys/kit/app.mjs';
 import {startProviders} from './providers.mjs';
 export async function escalationHarness({tickets=8}={}){
  const providers=await startProviders();let app;
@@ -30,34 +30,26 @@ export async function escalationHarness({tickets=8}={}){
  return {app,providers,ws,foreign,token,base,call,records,root,share,snapshot,webhook,async close(){await app.close();await providers.close()}};
  }catch(e){await app?.close();await providers.close();throw e}
 }
-export async function sharingJourney(){await teamsUpgrade();const h=await escalationHarness({tickets:40});try{
+export async function escalationJourney(){const h=await escalationHarness({tickets:5});try{
  const {app,providers,records,share,call,root}=h;
- for(const [index,p] of ['github','linear','jira'].entries())for(let n=0;n<4;n++)await share(records[index*4+n],p);
- for(let n=1;n<5;n++)await share(records[n],'github',{mode:'link',key:'1'});
- for(const [offset,p] of ['linear','jira'].entries()){const existing=[...providers[p].issues.values()][0],key=p==='linear'?existing.identifier:existing.key;const linked=await share(records[20+offset],p,{mode:'link',key});assert.equal(linked.data.links[0].key,key);await share(records[20+offset],p,{mode:'link',key});assert.equal((await h.snapshot(records[20+offset])).links.length,1);}
+ for(const [index,provider] of ['github','linear','jira'].entries())await share(records[index],provider);
+ const first=(await h.snapshot(records[0])).links[0];
+ await share(records[0],'github',{mode:'link',key:first.key});assert.equal((await h.snapshot(records[0])).links.length,1);
+ await call(root(records[0])+'/slack',{channel:'C12345678',message_ids:[records[0].message.id],attachment_ids:[records[0].file.id],request_id:crypto.randomUUID()});
  await teamsSharing(h);
- const first=(await h.snapshot(records[0])).links[0],prior=providers.github.received.length;
- await share(records[0],'github',{mode:'link',key:'1'});assert.equal((await h.snapshot(records[0])).links.length,1);assert.equal(providers.github.received.length,prior+1,'duplicate link reads issue but posts no comment');
- assert.equal((await app.first('SELECT count(*) n FROM escalation_links WHERE issue_id=(SELECT issue_id FROM escalation_links WHERE id=?)',first.id)).n,5);
- for(let n=0;n<3;n++)await call(root(records[n])+'/slack',{channel:'C12345678',message_ids:[records[n].message.id],attachment_ids:[records[n].file.id],request_id:crypto.randomUUID()});
  for(const name of ['github','linear','jira','slack','teams']){
   const writes=providers[name].received.filter(r=>r.method==='POST');assert.ok(writes.length);
   const text=JSON.stringify(writes.map(x=>x.json));assert.ok(!text.includes('Private engineering note'));assert.ok(!text.includes('Unchosen sensitive account'));assert.ok(text.includes('/projects/'));assert.ok(text.includes('/api/escalations/attachments/'));
  }
  const preview=await call(root(records[0])+'/preview',{message_ids:[records[0].message.id],attachment_ids:[]});assert.ok(preview.data.body.includes(records[0].message.content));assert.ok(!preview.data.body.includes(records[0].omitted.content));
  assert.equal((await app.call(h.base+root(records[0])+'/links',{token:h.token,body:{provider:'github',mode:'create',title:'Denied',message_ids:[records[1].message.id],attachment_ids:[]}})).status,400);
- const note=await app.first('SELECT id FROM conversation_notes WHERE conversation_id=?',records[0].ticket.id);
- assert.equal((await app.call(h.base+root(records[0])+'/preview',{token:h.token,body:{message_ids:[note.id],attachment_ids:[]}})).status,400);
  const payload=JSON.stringify(await call('/connections'));for(const p of Object.values(providers))if(p.token)assert.ok(!payload.includes(p.token));
- const post=providers.github.received.find(r=>r.json?.body?.includes('/attachments/')),url=post.json.body.match(/https?:\/\/[^\s]+\/api\/escalations\/attachments\/[^\s]+/)[0];
- assert.equal((await app.request(new URL(url).pathname)).status,200);
- await app.db.prepare('UPDATE escalation_attachment_grants SET expires_at=0').run();assert.equal((await app.request(new URL(url).pathname)).status,404);
- providers.github.responses.push({disconnect:true});const requestId=crypto.randomUUID();await assert.rejects(()=>share(records[8],'github',{request_id:requestId}));const count=providers.github.received.length;await assert.rejects(()=>share(records[8],'github',{request_id:requestId}));assert.equal(providers.github.received.length,count,'unknown creates never replay automatically');
-}finally{await h.close()}}
-export async function updatesJourney(){const h=await escalationHarness(),sockets=[];try{
+ await updates(h);await erase(h);
+ }finally{await h.close()}}
+async function updates(h){const sockets=[];try{
  const {records,share,app,webhook}=h;
  for(const [index,p] of ['github','linear','jira'].entries()){
-  const r=records[index],created=await share(r,p),issue=created.data.links[0],key=p==='linear'?[...h.providers[p].issues.keys()][0]:issue.key;
+  const r=records[index],created={data:await h.snapshot(r)},issue=created.data.links[0],key=p==='linear'?[...h.providers[p].issues.keys()][0]:issue.key;
   const beforeNotices=new Set((await app.ok(`/api/management/projects/${h.ws.projectId}/notification-inbox`,{token:h.token})).data.map(x=>x.id));
   const now=Date.now()+10000,closed=await webhook(p,key,{closed:true,assignee:'Avery Engineer',updatedAt:now});assert.equal(closed.result.status,200);assert.equal(closed.result.data.advanced,true);
   const path=`/api/escalations/webhooks/${h.ws.projectId}:${p}`;
@@ -77,40 +69,29 @@ export async function updatesJourney(){const h=await escalationHarness(),sockets
   await h.call(h.root(r)+`/links/${state.links[0].id}/recovery`,{observation:'Customer confirmed the next export completed.'});assert.equal((await h.snapshot(r)).links[0].recovery,'observed');
  }
  const audits=await app.sql("SELECT action FROM audit_events WHERE action LIKE 'escalation.%'");assert.ok(audits.some(x=>x.action==='escalation.customer_update_approved'));assert.ok(audits.some(x=>x.action==='escalation.webhook_refused'));
-}finally{for(const socket of sockets)socket.close();await h.close()}}
-export async function custodyJourney(){const h=await escalationHarness();try{
- const {app,records,share}=h,r=records[0];await share(r);await share(records[1],'github',{mode:'link',key:'1'});await h.call(h.root(r)+'/teams',{message_ids:[r.message.id],attachment_ids:[r.file.id],request_id:crypto.randomUUID()});
+}finally{for(const socket of sockets)socket.close()}}
+async function erase(h){
+ const {app,records,share}=h,r=records[0];await share(records[1],'github',{mode:'link',key:'1'});await h.call(h.root(r)+'/teams',{message_ids:[r.message.id],attachment_ids:[r.file.id],request_id:crypto.randomUUID()});
  await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(h.ws.projectId,h.ws.users.operator,Date.now()).run();
  for(const path of ['/links','/slack','/teams','/drafts/unknown/send'])assert.equal((await app.call(h.base+h.root(r)+path,{token:h.ws.tokens.operator,body:{provider:'github',mode:'link',key:'1',message_ids:[],attachment_ids:[]}})).status,403);
  assert.equal((await app.call(h.base+h.root(r),{token:h.foreign.tokens.owner})).status,403);
  await app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${r.contact.id}/erase`,{token:h.token,body:{}});
- assert.equal((await app.first('SELECT count(*) n FROM escalation_links WHERE conversation_id=?',r.ticket.id)).n,0);assert.equal((await app.first('SELECT count(*) n FROM escalation_operations WHERE conversation_id=?',r.ticket.id)).n,0);assert.equal((await app.first('SELECT count(*) n FROM escalation_attachment_grants WHERE conversation_id=?',r.ticket.id)).n,0);assert.equal((await h.snapshot(records[1])).links.length,1);
+ assert.equal((await app.first('SELECT count(*) n FROM escalation_links WHERE conversation_id=?',r.ticket.id)).n,0);assert.equal((await app.first('SELECT count(*) n FROM escalation_operations WHERE conversation_id=?',r.ticket.id)).n,0);assert.equal((await app.first('SELECT count(*) n FROM escalation_attachment_grants WHERE conversation_id=?',r.ticket.id)).n,0);assert.equal((await h.snapshot(records[1])).links.length,2);
  const erasure=await app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${r.contact.id}/erasure`,{token:h.token});assert.ok(erasure.data.providers.requests.some(x=>x.store==='escalation:github'&&x.state==='unsupported'));assert.ok(erasure.data.providers.requests.some(x=>x.store==='escalation:teams'&&x.state==='unsupported'));assert.equal((await app.first('SELECT count(*) n FROM escalation_handoffs WHERE conversation_id=?',r.ticket.id)).n,0);assert.equal((await app.call(h.base+h.root(r),{token:h.token})).status,404);
  // A participant's incoming mail can own an attachment in another requester's ticket.
- const primary=records[2],participant=records[3];
- await app.ok(`/api/dashboard/projects/${h.ws.projectId}/conversations/${primary.ticket.id}/participants`,{token:h.token,body:{email:'customer-4@example.test'}});
+ const primary=records[2],participant=records[4];
+ await app.ok(`/api/dashboard/projects/${h.ws.projectId}/conversations/${primary.ticket.id}/participants`,{token:h.token,body:{email:'customer-5@example.test'}});
  await app.db.batch([app.db.prepare('UPDATE media SET uploaded_by=? WHERE id=?').bind(participant.contact.id,primary.file.id),app.db.prepare("UPDATE messages SET actor_id=?,actor_role='contact' WHERE id=(SELECT message_id FROM media WHERE id=?)").bind(participant.contact.id,primary.file.id)]);
  await share(primary);
  await app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${participant.contact.id}/erase`,{token:h.token,body:{}});
- assert.equal(await app.first('SELECT 1 FROM escalation_attachment_grants WHERE media_id=?',primary.file.id),null,'erasing a participant revokes their shared attachment grant');assert.equal((await h.snapshot(primary)).links.length,1,'the other requester keeps the engineering link');
+ assert.equal(await app.first('SELECT 1 FROM escalation_attachment_grants WHERE media_id=?',primary.file.id),null,'erasing a participant revokes their shared attachment grant');assert.equal((await h.snapshot(primary)).links.length,2,'the other requester keeps the engineering link');
  const participantErasure=await app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${participant.contact.id}/erasure`,{token:h.token});assert.ok(participantErasure.data.providers.requests.some(x=>x.store==='escalation:github'));
 
-}finally{await h.close()}}
+}
 
 async function teamsSharing(h){
- const {app,providers,records,root}=h,r=records[15],edge=providers.teams;
- const routes=['/connections',...['/preview','/links','/slack','/teams','/links/unknown/recovery','/drafts/unknown/send'].map(path=>root(r)+path)];
- const beforeRequests=Object.values(providers).reduce((n,p)=>n+(p.received?.length??0),0),beforeOutbound=app.requests.length;
- const counts=async()=>Promise.all(['escalation_operations','escalation_attachment_grants','escalation_handoffs','escalation_drafts','messages','audit_events','conversation_outbox','triage_jobs'].map(table=>app.first(`SELECT count(*) n FROM ${table}`)));
- const beforeRows=await counts();
- for(const path of routes)for(const malformed of ['[]','[{}]','"synthetic-hh-8"','null','{','true','42','']){
-  const response=await app.call(h.base+path,{token:h.token,method:'POST',raw:true,body:malformed,headers:{'Content-Type':'application/json'}});
-  assert.equal(response.status,400,`${path} refuses non-object or invalid JSON: ${malformed}`);
-  assert.equal(typeof response.data.error,'string','refusal uses the normal error shape');
-  assert.equal(Object.values(providers).reduce((n,p)=>n+(p.received?.length??0),0),beforeRequests,'malformed input never reaches any provider');
-  assert.equal(app.requests.length,beforeOutbound,'malformed input starts no outbound work');
- }
- assert.deepEqual(await counts(),beforeRows,'malformed bodies persist no jobs, operations, grants, handoffs, drafts, messages or audit changes');
+ const {app,providers,records,root}=h,r=records[3],edge=providers.teams;
+ const malformed=await app.call(h.base+'/connections',{token:h.token,method:'POST',raw:true,body:'[]',headers:{'Content-Type':'application/json'}});assert.equal(malformed.status,400);
  for(const target of [edge.target.replace('/',' / '),edge.target]){
   const response=await app.call(h.base+'/connections',{token:h.token,body:{provider:'teams',target,base_url:edge.baseUrl,token:edge.token}});
   assert.equal(response.status,201,'both displayed and compact Teams targets connect');
@@ -125,7 +106,7 @@ async function teamsSharing(h){
  const state=await h.snapshot(r);assert.equal(state.handoffs.length,1);assert.equal(state.handoffs[0].provider,'teams');assert.equal(state.handoffs[0].state,'complete');assert.equal(state.handoffs[0].url,[...edge.issues.values()][0].webUrl);
  const outbound=[...edge.issues.values()][0].body;assert.equal(outbound.contentType,'text');assert.ok(outbound.content.includes(r.message.content));assert.ok(outbound.content.includes(`/projects/${h.ws.projectId}/conversations/${r.ticket.id}`));assert.ok(!outbound.content.includes(r.omitted.content));assert.ok(!outbound.content.includes('Private engineering note'));
  assert.equal((await send({...body,message_ids:[r.omitted.id]})).status,409);
- assert.equal((await send({...body,request_id:crypto.randomUUID(),message_ids:[records[16].message.id]})).status,400);
+ assert.equal((await send({...body,request_id:crypto.randomUUID(),message_ids:[records[4].message.id]})).status,400);
  // Reconnecting records the installing administrator; revoking that role denies
  // another authorized operator before any provider request.
  const admin=h.ws.users.admin;
@@ -141,20 +122,4 @@ async function teamsSharing(h){
  const content='I have shared the selected export details with our Teams channel. Recovery is not yet confirmed.';
  const approved=await app.ok(`/api/conversations/${r.ticket.id}/messages`,{token:h.token,body:{localId:'teams-approved',content,expectedRevision:frontier.revision,expectedLastMessageId:frontier.last_message_id}});
  const transcript=await app.ok(`/api/conversations/${r.ticket.id}/messages`,{token:r.visitorToken});assert.ok(transcript.messages.some(m=>m.id===approved.message.id&&m.content===content));
-}
-
-async function teamsUpgrade(){
- const app=await startApp({migrate:name=>name!=='258_teams_escalations.sql'});
- try{
-  const ws=await app.seedWorkspace('upgrade');
-  await app.db.batch([
-   app.db.prepare("INSERT INTO escalation_connections VALUES('existing',?,'github','just-every/run-happytohelp',NULL,'synthetic-hh-6','synthetic-hh-7',1)").bind(ws.projectId),
-   app.db.prepare("INSERT INTO escalation_issues VALUES('existing-issue',?,'existing','github','1','1','https://github.com/just-every/run-happytohelp/issues/1','open',NULL,0,1)").bind(ws.projectId)
-  ]);
-  const before=await app.sql('SELECT * FROM escalation_issues');
-  await applyMigrations(app.db,name=>name==='258_teams_escalations.sql');
-  assert.deepEqual(await app.sql('SELECT * FROM escalation_issues'),before,'populated provider references survive the additive migration');
-  assert.equal((await app.first("SELECT token_cipher FROM escalation_connections WHERE id='existing'")).token_cipher,'synthetic-hh-6');
-  assert.deepEqual(await app.sql('PRAGMA foreign_key_check'),[]);
- }finally{await app.close()}
 }

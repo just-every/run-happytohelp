@@ -3,10 +3,14 @@ import {spawn} from 'node:child_process';
 import {mkdir, writeFile} from 'node:fs/promises';
 import {dirname, join, resolve} from 'node:path';
 import {withArtifactStorage} from '../independent-storage.mjs';
+import {freePort} from '../../first-run/browser-kit.mjs';
 
 // A separate harness leaves the historical independent-runtime and its helper
 // byte-identical. Only one owner opens native state at a time.
-export async function recoveryRuntime(artifact, {directory, port, inspectorPort, restoreFile, variables}) {
+export async function recoveryRuntime(artifact, {directory, restoreFile, variables}) {
+  // Separate jobs share the runner's loopback interface. Never let a fixed
+  // readiness URL accidentally admit another journey's native installation.
+  const [port, inspectorPort] = await Promise.all([freePort(), freePort()]);
   await mkdir(directory, {recursive: true});
   for (const [folder, entries, key] of [['server', artifact.modules, 'name'], ['public', artifact.assets, 'path']]) {
     for (const entry of entries) {

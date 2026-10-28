@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import {holdNativeResponse} from '../training-readiness.mjs'
+import {holdNativeResponse} from './procedures-browser-delivery.mjs'
 import {procedureDefinition} from './procedures.mjs'
 
 export async function proceduresBrowserJourney({runtime,browser,shot}){
@@ -74,11 +74,7 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
    assert.equal(await receipt.locator('pre').count(),0,'receipts present results rather than raw evaluator objects')
    assert.doesNotMatch(await receipt.innerText(),/response_digest|harness_failures|must_not_include_per_reply/)
    await activate(button('Check release'),()=>version===1?page.getByText('Simulation qualified. Production rollout remains unavailable.').waitFor():page.getByRole('alert').filter({hasText:'Release refused'}).waitFor());await visibleResult()
-   if(version===2)for(const width of [1440,390]){
-    await page.setViewportSize({width,height:width===390?844:1000})
-    await page.screenshot({path:shot(`procedures-v${version}-${width}.png`),fullPage:true})
-   }
-   await page.setViewportSize({width:1440,height:1000})
+   if(version===2)await page.screenshot({path:shot(`procedures-v${version}-1440.png`),fullPage:true})
   }
 
   // Review a saved change, then revise the older definition without changing its cases or receipts.

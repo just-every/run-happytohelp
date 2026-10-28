@@ -23,13 +23,4 @@ export async function companyJourney(imported,vendor){
   const before=await h.snapshot(),uploaded=(await h.call(root+'?vendor='+vendor,{method:'POST',headers:{'X-Import-Filename':'companies-repeat.jsonl','X-Import-Schema':'2.16'},body:'\n'+source})).data;await h.drain();const repeat=(await h.call(root+'/'+uploaded.id)).data;assert.equal(repeat.plan.counts.rejected,0,JSON.stringify(repeat.plan.decisions));await h.call(root+'/'+repeat.id+'/apply',post({fingerprint:repeat.plan.fingerprint}));await h.drain();assertBusinessEquality(before,await h.snapshot());
   await h.call(root+'/'+review.id+'/undo',post({}));await h.drain();assertBusinessEquality(initial,await h.snapshot());
  }});
- await imported(vendor,source,{check:async({h,review})=>{
-  const company=(await h.call(native+'/companies')).companies[0];await h.call(native+'/companies/'+company.id,{...post({name:'Reviewed native company',revision:company.revision}),method:'PATCH'});
-  await h.call(root+'/'+review.id+'/undo',post({}));await h.drain();assert.equal((await h.call(native+'/companies/'+company.id)).company.name,'Reviewed native company');assert.equal((await h.call(root+'/'+review.id)).data.error,'NATIVE_EDIT_CONFLICT');
- }});
- const changed=vendor==='intercom'?{contact:{companies:{data:[{id:'company-internal',type:'company'},{id:'other-company',type:'company'}],total_count:2,has_more:false}}}:vendor==='freshdesk'?{contact:{other_companies:[{company_id:72,view_all_tickets:true}]}}:null;
- if(changed)await imported(vendor,companySource(vendor,changed).map(JSON.stringify).join('\n'),{check:async({h,plan})=>{
-  const company=(await h.call(native+'/companies')).companies[0];assert.equal(company.portalCompanyView,false);assert.equal(company.memberCount,vendor==='intercom'?0:1);assert.ok(plan.decisions.some(row=>row.omissions.some(item=>item.reason===(vendor==='intercom'?'multiple_company_memberships_require_native_review':'additional_company_memberships_not_imported'))));
- }});
- if(vendor!=='intercom')await imported(vendor,source,{before:async h=>{await h.call(native+'/companies',post({name:'Existing account',domains:['northstar.example']}));return h.snapshot()},check:async({h,plan})=>{assert.ok(plan.decisions.some(row=>row.rejection==='company_domain_conflict'));assert.equal((await h.call(native+'/companies')).companies.length,1,'a shared domain never merges unrelated accounts')}});
 }

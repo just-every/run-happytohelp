@@ -26,7 +26,7 @@ page records what was restored and which original features are still missing.
 | AI and management | Dedicated assistant/default-responder controls, saved reply and plugin forms, agent list and pending invitations (with Copy link, Resend and Revoke for owners and admins, see below), contact details. |
 | Knowledge | Dataset forms and source tabs, article editor/import selection, category tree, original help-center empty state, real editing/deletion and evaluation access. |
 | Insights and administration | Original list/empty-state presentation, dedicated admin navigation, resource-specific columns and labelled record details. |
-| Widget | Existing original React controls retained and checked across Code, Theme, Settings and Texts. Theme, Texts and Settings open on the widget's effective defaults (saved overrides laid over `src/modules/widget/js/context/defaults.js`), default copy doubles as placeholder text, and Save writes only edited fields. Widget > Code shows the project's server secret (`H2H_SECRET`, generated at project creation and backfilled by migration `0106`) to owners and admins with working Reveal and Copy; other roles see a note. `pnpm run test:widget-settings-browser` checks this. |
+| Widget | Existing original React controls retained and checked across Code, Theme, Settings and Texts. Theme, Texts and Settings open on the widget's effective defaults (saved overrides laid over `src/modules/widget/js/context/defaults.js`), default copy doubles as placeholder text, and Save writes only edited fields. Widget > Code shows the project's server secret (`H2H_SECRET`, generated at project creation and backfilled by migration `0106`) to owners and admins with working Reveal and Copy; other roles see a note. `pnpm run test:browsers` checks this. |
 | Local computers and delegation | Not a restoration of a legacy screen: native surfaces use the workspace design system. The Connect computer dialog is styled on Local computers as well as in the inbox; authorizing a computer reports its outcome and clears the code; Connected applications (`/delegation/settings`) and the connection consent screen (`/delegation/authorize`) render in the workspace shell with friendly pages for missing, invalid, unavailable and signed-out requests. See `docs/NAVIGATION.md`. |
 | Not-found pages | Added after the 15 September comparison (1 October 2026). The original Laravel application was not re-run for this row, so it is not a parity claim. Unknown application paths show a branded 404 in the homepage visual language (title, message, links to the homepage and workspace); Help Center 404s (unknown project, missing article, unpublished draft) show inside the Help Center header with HTTP 404. Both return HTTP 404. |
 
@@ -161,5 +161,5 @@ do not establish complete WCAG conformance or close the feature/API gaps above; 
 [HANDOVER.md](../HANDOVER.md) for the current disposition.
 
 The comparison screenshots are not part of this repository. The browser suites
-named above (`pnpm run test:ui-browser` and related `test:*-browser` scripts)
+named above (`pnpm run test:browsers` and related `test:*-browser` scripts)
 are the maintained checks.

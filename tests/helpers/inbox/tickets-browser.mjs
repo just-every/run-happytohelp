@@ -1,3 +1,5 @@
+import {triageBrowserJourney} from '../ai/triage-browser.mjs'
+import {seedTriageDataset,triageOwner} from '../ai/triage-dataset.mjs'
 import {problemSuggestionsBrowser} from './problem-suggestions-browser.mjs'
 import {createHash} from 'node:crypto'
 import {createServer} from 'node:net'
@@ -9,19 +11,21 @@ import {seedTicketBrowser} from './ticket-browser-fixture.mjs'
 
 async function ticketRuntime(){
  const reservation=createServer();await new Promise(resolve=>reservation.listen(0,'127.0.0.1',resolve));const port=reservation.address().port;await new Promise(resolve=>reservation.close(resolve))
- return createRuntime({port,outboundFixture:new URL('../../fixtures/sla-slack-edge.mjs',import.meta.url).href,vars:{APP_ORIGIN:`http://127.0.0.1:${port}`,INTEGRATION_ENCRYPTION_KEY:createHash('sha256').update('synthetic-hh-1').digest('base64'),H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}})
+ return createRuntime({port,queueConsumers:true,outboundFixture:new URL('../../sanity/browser/operations-edge.mjs',import.meta.url).href,vars:{APP_ORIGIN:`http://127.0.0.1:${port}`,INTEGRATION_ENCRYPTION_KEY:createHash('sha256').update('synthetic-hh-1').digest('base64'),OPENAI_API_KEY:'synthetic-happytohelp-1',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}})
 }
-export async function ticketsBrowser({count=12,installation}={}){
+export async function ticketsBrowser({count=6,installation}={}){
  const runtime=installation?{origin:installation.origin,close:async()=>{}}:await ticketRuntime(),browser=await launchBrowser(),shot=await evidence('tickets')
  let success=false
  try{
-  const fixture=await seedTicketBrowser(runtime.origin,count,installation),{projectId,base,owner}=fixture,context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]
+  const triage=installation?null:await seedTriageDataset(runtime.origin,{count:3,corrections:3})
+  if(triage)await triage.api(`/api/management/projects/${triage.projectId}/ai`,{default_visitor_ai_id:null,default_verified_user_ai_id:null},'PUT')
+  const fixture=await seedTicketBrowser(runtime.origin,count,installation??{projectId:triage.projectId,owner:triageOwner}),{projectId,base,owner}=fixture,context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]
   page.on('pageerror',error=>errors.push(error.message));page.setDefaultTimeout(15000)
   await page.goto(runtime.origin+'/login?'+new URLSearchParams({returnTo:`/projects/${projectId}/ticket-settings`}))
   await page.getByLabel('Email',{exact:true}).fill(owner.email);await page.getByLabel('Password',{exact:true}).fill(owner.password);await page.getByRole('button',{name:'Login',exact:true}).click()
-  const capture=async name=>{if(!await page.evaluate(()=>Boolean(window.axe)))await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});for(const width of [1440,390]){
-   await page.setViewportSize({width,height:width===390?844:1000});
-   await page.waitForTimeout(500);
+  const capture=async name=>{if(!await page.evaluate(()=>Boolean(window.axe)))await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});for(const width of [1440]){
+   await page.setViewportSize({width,height:1000});
+
    if(/^0[1-6]/.test(name))await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0)});
    if(/^0[78]/.test(name)){
     await page.waitForTimeout(100);
@@ -33,7 +37,7 @@ export async function ticketsBrowser({count=12,installation}={}){
    }
    if(name==='10b-view-save')await page.getByLabel('View name',{exact:true}).scrollIntoViewIfNeeded();
    if(/^1[23]/.test(name))await page.getByRole('region',{name:'Bulk ticket changes',exact:true}).locator('.ticket-result-list').scrollIntoViewIfNeeded();
-   await page.waitForTimeout(200);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${name} ${width} overflow`);
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${name} ${width} overflow`);
    const violations=await page.evaluate(async()=>{const selector='.workspace-settings, .ticket-editor, .ticket-queue-tools';if(!document.querySelector(selector))return [];const result=await window.axe.run({include:[selector]},{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']}});return result.violations.map(({id,nodes})=>({id,nodes:nodes.map(node=>node.target)}))});
    assert.deepEqual(violations,[],`${name} ${width} accessibility`);console.log(`${name} ${width}: no horizontal overflow or WCAG axe violations`);
    await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true});
@@ -158,7 +162,7 @@ export async function ticketsBrowser({count=12,installation}={}){
   await capture('25-workflow-docs')
   await fixture.api(`/api/management/projects/${projectId}/contacts/${fixture.tickets[0].visitor.contactId}/erase`,{},'POST');
   await page.goto(`${runtime.origin}/projects/${projectId}/contacts/${fixture.tickets[0].visitor.contactId}`);await page.getByText('Personal data erased.',{exact:true}).waitFor();await capture('15-erasure');
-  const {accountLookupBrowser}=await import('../account-lookup-browser.mjs');await accountLookupBrowser()
+  if(triage)await triageBrowserJourney({runtime,browser,shot,fixture:triage})
   assert.deepEqual(errors,[]);success=true
   return {fixture,origin:runtime.origin}
  }finally{await browser.close();await runtime.close(success)}

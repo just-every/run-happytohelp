@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict'
 // Extends the existing public-door SLA proof without another registration.
 export async function slaSlackFlow(f,original,calendar){
- const {app,w,other,ok,call,create,clock,patch,slack,initial}=f
+ const {app,w,other,ok,call,clock,patch,slack,initial}=f
+ // Earlier queue routing remains published in this shared workspace. The lead
+ // pauses automatic assignment while reviewing unassigned backup escalations;
+ // otherwise a routed assignee earns a separate, still-authorized Slack alert.
+ const routing=(await ok('/workflow-rules')).rules.filter(rule=>rule.kind==='routing'&&rule.state==='published')
+ for(const rule of routing)await ok(`/workflow-rules/${rule.id}/pause`,{})
  const path=`/api/management/projects/${w.projectId}/connections/slack`
  const config={name:'Synthetic SLA channel',mode:'incoming-webhook',events:[],url:'https://hooks.slack.com/services/synthetic-hh-1/synthetic-hh-2/synthetic-hh-3'}
  assert.equal((await app.call(path,{token:w.tokens.operator,body:config})).status,403)
@@ -11,7 +16,16 @@ export async function slaSlackFlow(f,original,calendar){
  assert.equal((await call(`/sla-policies/${original.id}`,{slack_destination_id:foreign.id},'PATCH')).status,400)
  assert.equal((await call(`/sla-policies/${original.id}`,{slack_destination_id:target.id},'PATCH','operator')).status,403)
  await ok(`/sla-policies/${original.id}`,{active:false},'PATCH')
- const policy=await ok('/sla-policies',{name:'Slack commitments',calendar_id:calendar.id,position:0,conditions:{},first_response_minutes:120,approaching_minutes:30,unattended_minutes:180,backup_user_ids:[w.users.admin],slack_destination_id:target.id})
+ // This shared inbox already contains other customers' commitments. Explicitly
+ // choose which tickets the lead consents to escalate to this Slack channel.
+ const field=await ok('/ticket-fields',{name:'Escalation destination',type:'text'})
+ const policy=await ok('/sla-policies',{name:'Slack commitments',calendar_id:calendar.id,position:0,conditions:{fields:{[field.id]:'Slack backup'}},first_response_minutes:120,approaching_minutes:30,unattended_minutes:180,backup_user_ids:[w.users.admin],slack_destination_id:target.id})
+ const create=async content=>{
+  const id=await f.create(content)
+  const ticket=await patch(id,{assigned_to:null,fields:{[field.id]:'Slack backup'}})
+  assert.equal(ticket.assigned_to,null,'backup escalation starts in the unassigned queue')
+  return id
+ }
  assert.equal(JSON.parse((await app.first("SELECT detail_json FROM audit_events WHERE target_id=? AND action='sla-policies.post'",policy.id)).detail_json).slack_destination_id,target.id,'outbound consent records the selected destination in the audit')
  const start=Date.parse('2026-11-27T14:00:00Z')
  const alerts=async id=>(await ok(`/conversations/${id}/sla`)).alerts.filter(a=>a.recipient_id===w.users.admin)
@@ -55,6 +69,8 @@ export async function slaSlackFlow(f,original,calendar){
  await patch(retryId,{status_id:'solved'})
  // Current policy backup authority, not an old alert snapshot, controls sending.
  await clock(start);const revoked=await create();await clock(start+90*60000);await alerts(revoked)
+ const pending=(await ok(`/conversations/${revoked}/sla`)).alerts.filter(alert=>alert.slack_state==='pending')
+ assert.deepEqual(pending.map(alert=>alert.recipient_id),[w.users.admin],'the revoked backup owns the only pending Slack effect')
  await ok(`/sla-policies/${policy.id}`,{backup_user_ids:[]},'PATCH')
  const prior=slack.requests.length;await settle()
  assert.equal((await alerts(revoked)).find(a=>a.kind==='approaching').slack_state,'cancelled')
@@ -113,4 +129,5 @@ export async function slaSlackFlow(f,original,calendar){
  assert.equal(slack.requests.length,testCount)
  await app.ok(path+'/'+testTarget.id+'/test',{token:w.tokens.owner,body:{}})
  assert.equal(slack.requests.length,testCount+1,'only the explicit owner test action posts a test')
+ for(const rule of routing)await ok(`/workflow-rules/${rule.id}/publish`,{})
 }

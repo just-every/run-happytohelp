@@ -1,16 +1,25 @@
 import assert from 'node:assert/strict'
+import {openaiStream} from '../openai-stream.mjs'
 import {startApp,sha} from '../../journeys/kit/app.mjs'
 
 // A workspace mailbox on the real application. Mail arrives through the Worker's email entry, the
 // JSON gateway or SendGrid Inbound Parse; outbound mail is captured at the mail provider, which
 // `mail.mode` can make fail. Mailboxes answer their MX lookup so they can receive replies.
-export async function mailApp({bindings={},projectId='p',inbound='inbound@example.com',outbox='support@example.com'}={}){
+export async function mailApp({bindings={},projectId='p',inbound='inbound@example.com',outbox='support@example.com',tls}={}){
  // Each provider answers as it does on acceptance; `mail.respond(entry)` may answer instead (a refusal,
  // a bounce, or a response held open), and `mail.mode='lost'` loses the response after the request.
  const accepted=entry=>entry.host==='api.sendgrid.com'?new Response(null,{status:202,headers:{'X-Message-Id':`sg-${mail.sent.length}`}}):entry.host==='api.cloudflare.com'?Response.json({success:true,result:{queued:[].concat(entry.body.to).map(to=>to?.email??to),delivered:[],permanent_bounces:[]}}):Response.json({id:`resend-${mail.sent.length}`})
- const mail={sent:[],mode:'deliver',attempts:0,respond:null}
- const app=await startApp({captureQueue:true,origin:'https://app.example',bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-resend',EMAIL_FROM:outbox,INBOUND_EMAIL_TOKEN:'fixture-gateway',...bindings},outbound:async request=>{
-  if(request.url.startsWith('https://cloudflare-dns.com/'))return Response.json({Status:0,Answer:new URL(request.url).searchParams.get('name')==='unrouted.example'?[]:[{type:15,data:'10 mx.example.com.'}]})
+ const mail={sent:[],mode:'deliver',attempts:0,respond:null,model:null,dnsRecords:null,dnsOffline:false}
+ const app=await startApp({captureQueue:true,...(tls?{socketModule:tls.socketModule}:{}),origin:'https://app.example',bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'fixture-resend',EMAIL_FROM:outbox,INBOUND_EMAIL_TOKEN:'fixture-gateway',...tls?.bindings,...bindings},outbound:async request=>{
+  const url=new URL(request.url)
+  if(url.hostname==='synthetic-mail-edge.example'){assert.ok(tls);return tls.outbound(request)}
+  if(url.hostname==='api.openai.com'){assert.ok(mail.model,'model execution must be explicitly selected by the fixture');return openaiStream(await mail.model(await request.json()))}
+  if(url.hostname==='cloudflare-dns.com'){
+   if(mail.dnsOffline)return new Response('DNS unavailable',{status:503})
+   const name=url.searchParams.get('name'),txt=url.searchParams.get('type')==='TXT'
+   return Response.json({Status:0,Answer:txt?(mail.dnsRecords?.[name]||[]).map(data=>({type:16,data:JSON.stringify(data)})):name==='unrouted.example'?[]:[{type:15,data:'10 mx.example.com.'}]})
+  }
+  assert.ok(['api.resend.com','api.sendgrid.com','api.cloudflare.com'].includes(url.hostname),'unexpected mail destination')
   mail.attempts++;if(mail.mode==='lost')throw new Error('response lost')
   const entry={url:request.url,host:new URL(request.url).hostname,headers:Object.fromEntries(request.headers),body:await request.json()};mail.sent.push(entry)
   return (await mail.respond?.(entry))??accepted(entry)

@@ -363,7 +363,7 @@ a published artifact.
 
 To run the artifact locally and check backup and restore, run
 `node tests/journeys/restore.mjs` (see
-[tests/helpers/INDEPENDENT-RECOVERY.md](../tests/helpers/INDEPENDENT-RECOVERY.md)).
+[the export and restore journey](../tests/helpers/recovery/portable-journey.mjs)).
 
 ## Share the source without Git history
 

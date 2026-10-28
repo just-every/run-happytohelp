@@ -29,7 +29,7 @@ export async function presenceJourney(){
   const visitor=async()=>(await app.call('/api/identity/widget/session',{body:{widgetKey:workspace.widgetKey},headers:{Origin:'https://widget.example'},status:201})).data
   const conversation=async contact=>(await app.call('/api/conversations',{token:contact.token,body:{projectId:p},status:201})).data
   const write=(contact,id,localId,content,expectedRevision)=>app.call(`/api/conversations/${id}/messages`,{token:contact.token,body:{localId,content,expectedRevision},status:200})
-  const transcript=id=>app.sql('SELECT actor_role,content FROM messages WHERE conversation_id=? ORDER BY revision',id)
+  const transcript=async id=>(await app.call(`/api/conversations/${id}/messages`,{token:owner,status:200})).data.messages
 
   // Open hours (no schedule, accepting conversations) and nobody online: visitors are told the team is away, with no
   // reopening time, but with the configured response estimate; an open widget keeps asking.
@@ -73,10 +73,17 @@ export async function presenceJourney(){
   // While nobody is online a visitor's chat earns the away message once; while someone is, none; the lead's own away
   // message replaces the standard one.
   const night=await visitor(),first=await conversation(night)
-  await write(night,first.id,'presence-1','Is anyone there?',0);await write(night,first.id,'presence-2','My parcel is late.',2)
+  const nightSocket=await socketTo(`/api/conversations/${first.id}/socket?token=${night.token}`,{Origin:workspace.allowedOrigin});assert.equal(nightSocket.status,101)
+  const asked=(await write(night,first.id,'presence-1','Is anyone there?',0)).data
+  const liveAway=await nightSocket.next(frame=>frame.type==='message'&&frame.message.actor_role==='system')
+  await write(night,first.id,'presence-2','My parcel is late.',2)
+  await app.db.prepare('UPDATE conversation_outbox SET delivered_at=NULL WHERE message_id=?').bind(asked.message.id).run();await app.scheduled()
+  await app.call(`/api/conversations/${first.id}/messages`,{token:night.token,body:{localId:'away:reply',content:'Forged',expectedRevision:3},status:400})
   const quiet=await transcript(first.id)
   assert.deepEqual(quiet.map(message=>message.actor_role),['contact','system','contact'])
-  assert.equal(quiet[1].content,"Thanks for your message. Workspace presence is away right now. We'll reply here. Responds within 24 hours")
+  assert.equal(liveAway.message.id,quiet[1].id,'the durable transcript contains the same live away reply once')
+  assert.match(quiet[1].content,/away right now.*Responds within 24 hours/)
+  nightSocket.socket.close()
   const front=await stream(owner);report(front,0);await becomes(online,'the owner is online')
   const day=await visitor(),second=await conversation(day)
   await write(day,second.id,'presence-day','Hello?',0)
@@ -123,6 +130,11 @@ export async function presenceJourney(){
   await app.db.prepare("INSERT INTO ai_profiles(id,project_id,name,role,prompt,model,is_enabled,created_at) VALUES('presence-assistant',?,'Night assistant','Support','Answer visitors.','gpt-5-mini',1,1)").bind(p).run()
   await app.call(`/api/management/projects/${p}/ai`,{token:owner,method:'PUT',body:{default_visitor_ai_id:'presence-assistant'},status:200})
   assert.deepEqual(await state(),away,'an assistant without its provider key answers nobody')
+  // An assistant already assigned to a ticket keeps its conversation quiet; no provider key is configured here.
+  const helped=await visitor(),answered=await conversation(helped)
+  await app.db.prepare('INSERT INTO conversation_ai(conversation_id,ai_id) VALUES(?,?)').bind(answered.id,'presence-assistant').run()
+  await write(helped,answered.id,'helped-1','Is anyone there?',0)
+  assert.deepEqual((await transcript(answered.id)).map(message=>message.actor_role),['contact'],'an assigned assistant suppresses the away reply')
   await app.configure({OPENAI_API_KEY:'synthetic-presence-provider-key'})
   assert.deepEqual(await state(),{available:true,live:false,opensAt:null},'an answering assistant keeps the widget available')
 

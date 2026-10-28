@@ -22,7 +22,7 @@ const claim=async(a,{email,website,base=origin,setupToken})=>{
 
 // A local installation: the loopback owner is claimed without a setup token, and customer, teammate, welcome and
 // test mail are validated and suppressed without delivery records, reply grants or any provider request.
-async function localMail(){
+export async function localMail(){
  const a=await activationApp({bindings:{...hosted,...local},appOrigin:loopback,captureQueue:true}),{app}=a
  try{
   const owner='owner-mail@example.test',{ws,welcomeEmail}=await claim(a,{email:owner,website:'https://mail.example',base:loopback})

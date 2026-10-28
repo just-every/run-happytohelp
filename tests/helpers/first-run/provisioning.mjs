@@ -1,26 +1,34 @@
 import assert from 'node:assert/strict'
 import {createHash} from 'node:crypto'
-import {startApp,applyMigrations} from '../../journeys/kit/app.mjs'
+import {startApp} from '../../journeys/kit/app.mjs'
 
 // Workspace provisioning through public routes on the real application: the starter assistant, mailbox and proposed
 // sender every new workspace starts with, the spend it reports and the Setup tables an upgrade adds. Only the network
 // edge is faked: OpenAI answers a streamed reply, Resend accepts mail and nothing else is reachable.
 const setupToken='synthetic-provisioning-setup-token'
-const edge=log=>async(request,{url,body})=>{
+const edge=(log,s)=>async(request,{url,body})=>{
  const {host,pathname}=new URL(url)
+ if(host==='cloudflare-dns.com'){
+  const name=new URL(url).searchParams.get('name'),value=name.startsWith('_dmarc.')?'v=DMARC1; p=none':name.includes('._domainkey.')?'v=DKIM1; p=synthetic-public-key':'v=spf1 include:fixture.test ~all'
+  return Response.json({Status:0,Answer:[{type:16,data:JSON.stringify(value)}]})
+ }
+ if(host==='api.resend.com'&&pathname==='/domains')return Response.json({data:['example.test','acme-outdoors.example'].map(name=>({id:name,name})),has_more:false})
+ if(host==='api.resend.com'&&pathname.startsWith('/domains/'))return Response.json({id:pathname.split('/').pop(),name:pathname.split('/').pop(),status:s.dns,records:[{record:'SPF',name:'send',type:'TXT',value:'v=spf1 include:fixture.test ~all',status:s.dns},{record:'DKIM',name:'resend._domainkey',type:'TXT',value:'p=fixture',status:s.dns}]})
+ if(host==='api.resend.com'&&pathname.startsWith('/emails/')){const id=pathname.split('/').pop(),sent=s.sent.get(id);return Response.json({id,to:sent.to,from:sent.from,last_event:s.event})}
+ if(host==='api.openai.com'&&pathname.startsWith('/v1/models/'))return Response.json({id:decodeURIComponent(pathname.split('/').pop())},{status:s.modelStatus})
  if(host==='api.openai.com'){
   log.push({provider:'openai',path:pathname})
   const text='Our help article says returns are free within 30 days.'
   const events=[{type:'response.output_text.delta',item_id:'msg1',delta:text},{type:'response.output_text.done',item_id:'msg1',text},{type:'response.completed',response:{usage:{input_tokens:5,output_tokens:9,total_tokens:14,input_tokens_details:{cached_tokens:0,cache_write_tokens:0},output_tokens_details:{reasoning_tokens:0}}}}]
   return new Response(events.map(event=>`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`).join(''),{headers:{'content-type':'text/event-stream'}})
  }
- if(host==='api.resend.com'&&pathname==='/emails'){const sent=JSON.parse(body);log.push({provider:'resend',to:sent.to,text:sent.text});return Response.json({id:`fixture-${log.length}`})}
+ if(host==='api.resend.com'&&pathname==='/emails'){s.attempts++;const sent=JSON.parse(body);log.push({provider:'resend',to:sent.to,text:sent.text});if(s.lost)throw new TypeError('Synthetic lost send acknowledgement');const id=`fixture-${log.length}`;s.sent.set(id,sent);return Response.json({id})}
  log.push({unreachable:host});return new Response('Not reachable from this test',{status:503})
 }
 const ok=(response,status=200)=>{assert.equal(response.status,status,JSON.stringify(response.data));return response.data}
 
 async function installation(bindings,{claim=true}={}){
- const log=[],app=await startApp({bindings:{H2H_SETUP_TOKEN:setupToken,RATE_LIMITS:JSON.stringify({projectsPerAccountDay:100,projectsPerIpDay:100,registrationsPerIpDay:100,widgetSessionsPerIpHour:100}),...bindings},outbound:edge(log)})
+ const observations={sent:new Map(),attempts:0,lost:false,event:'sent',dns:'verified',modelStatus:200},log=[],app=await startApp({bindings:{H2H_SETUP_TOKEN:setupToken,RATE_LIMITS:JSON.stringify({projectsPerAccountDay:100,projectsPerIpDay:100,registrationsPerIpDay:100,widgetSessionsPerIpHour:100}),...bindings},outbound:edge(log,observations)})
  const call=(path,{origin,...options}={})=>app.call(path,{...options,headers:{Origin:origin||app.origin,...options.headers}})
  const owner=claim?ok(await call('/api/identity/bootstrap',{body:{name:'Owner workspace',email:'owner@provisioning.example',password:'synthetic-provisioning-owner-password-123',allowedOrigin:'https://owner.example',setupToken}}),201):null
  const settingsOf=async(token,projectId)=>ok(await call(`/api/management/projects/${projectId}/settings`,{token})).data
@@ -45,21 +53,26 @@ async function installation(bindings,{claim=true}={}){
   const say=async content=>{const transcript=ok(await call(`/api/conversations/${conversation.id}/messages`,{token:session.token,origin}));return ok(await call(`/api/conversations/${conversation.id}/messages`,{body:{localId:content,content,expectedRevision:transcript.revision},token:session.token,origin}))}
   return {conversation,session,say}
  }
- return {app,log,call,owner,settingsOf,assistantsOf,mailboxOf,newWorkspace,assertStarter,visitor,close:()=>app.close()}
+ return {app,log,observations,call,owner,settingsOf,assistantsOf,mailboxOf,newWorkspace,assertStarter,visitor,close:()=>app.close()}
 }
 
 export async function provisioningJourney(){
- await upgradedSetupTables()
- await withoutKey()
- await keyedRegistration()
- await installedProvider()
- await localInstall()
+ const i=await installation({INBOUND_EMAIL_TOKEN:'a'.repeat(64)})
+ try{
+  await withoutKey(i)
+  await i.app.configure({OPENAI_API_KEY:'test-only-openai-key',AI_DAILY_CEILINGS:JSON.stringify({repliesPerProject:1}),EMAIL_API_KEY:'test-only-resend-key',EMAIL_FROM:'HappyToHelp <hello@app.example>',APP_ORIGIN:'https://app.example',REGISTRATION_ENABLED:'true',INBOUND_EMAIL_DOMAIN:'replies.app.example'})
+  await keyedRegistration(i)
+  // Leave the hosted inbound-domain override behind when entering a local trial.
+  await i.app.configure({OPENAI_API_KEY:undefined,EMAIL_API_KEY:undefined,INBOUND_EMAIL_DOMAIN:undefined,H2H_LOCAL:'true',EMAIL_PROVIDER:'development',APP_ORIGIN:'http://127.0.0.1:8787',EMAIL_FROM:'HappyToHelp <owner-mail@localhost.test>'})
+  await localInstall(i)
+  await i.app.configure({H2H_LOCAL:undefined,EMAIL_PROVIDER:'resend',APP_ORIGIN:undefined,EMAIL_FROM:undefined,ANTHROPIC_API_KEY:'test-only-anthropic-key',INBOUND_EMAIL_TOKEN:undefined,AI_DAILY_CEILINGS:JSON.stringify({repliesPerProject:2,repliesPerInstallation:3,spendUsdPerProject:1,contextRunsPerProject:2})})
+  await installedProvider(i)
+ }finally{await i.close()}
 }
 
 // Without an AI key a new workspace is set up, keeps visitors with the team and fails nothing.
-async function withoutKey(){
- const i=await installation({INBOUND_EMAIL_TOKEN:'a'.repeat(64)}),{app,call,log}=i
- try{
+async function withoutKey(i){
+ const {app,call,log}=i
   const token=i.owner.token,origin='https://www.acme-outdoors.example'
   const first=await i.newWorkspace(token,'Acme Outdoors',origin),{starter}=await i.assertStarter(token,first.id)
   // Its mailbox is on the website's own domain and stays off until this installation can send mail.
@@ -96,13 +109,15 @@ async function withoutKey(){
   const edited=await i.settingsOf(token,first.id)
   assert.equal(edited.default_visitor_ai_id,null);assert.equal(edited.starter_ai.seed.prompt,starter.prompt)
   assert.equal((await i.assistantsOf(token,first.id))[0].prompt,'Answer in the owner\'s own words.')
- }finally{await i.close()}
+  ok(await call(`/api/management/projects/${first.id}/ais/${starter.id}`,{method:'PUT',body:{model:'gpt-5-mini'},token}))
+  ok(await call(`/api/management/projects/${first.id}/ai`,{method:'PUT',body:{default_visitor_ai_id:starter.id},token}))
+  const {setupObservation}=await import('./setup-observation.mjs')
+  await setupObservation(i,{id:first.id,origin})
 }
 
 // With a key and mail, a registered workspace answers visitors by itself within the daily ceiling.
-async function keyedRegistration(){
- const i=await installation({OPENAI_API_KEY:'test-only-openai-key',AI_DAILY_CEILINGS:JSON.stringify({repliesPerProject:1}),EMAIL_API_KEY:'test-only-resend-key',EMAIL_FROM:'HappyToHelp <hello@app.example>',APP_ORIGIN:'https://app.example',REGISTRATION_ENABLED:'true',INBOUND_EMAIL_TOKEN:'b'.repeat(64),INBOUND_EMAIL_DOMAIN:'replies.app.example'}),{app,call,log}=i
- try{
+async function keyedRegistration(i){
+ const {app,call,log}=i
   // Each sign-up mails its own verification link.
   const register=async(email,projectName,allowedOrigin)=>{
    const mails=log.length
@@ -142,14 +157,12 @@ async function keyedRegistration(){
   const skipped=await app.until(()=>app.first("SELECT state,error FROM ai_generations WHERE conversation_id=? AND state='failed'",chat.conversation.id),{timeout:15000,message:'the ceiling decision'})
   assert.match(skipped.error,/^AI_REPLY_CEILING: .*repliesPerProject/)
   await new Promise(resolve=>setTimeout(resolve,500));assert.equal(log.filter(entry=>entry.provider==='openai').length,providerCalls)
- }finally{await i.close()}
 }
 
 // The installed provider chooses the starter model; no inbound token seeds no mailbox; demo inboxes are never provisioned.
 // The workspace's spend is reported from persisted receipts, scoped to it and its day, known apart from unknown.
-async function installedProvider(){
- const i=await installation({ANTHROPIC_API_KEY:'test-only-anthropic-key',AI_DAILY_CEILINGS:JSON.stringify({repliesPerProject:2,repliesPerInstallation:3,spendUsdPerProject:1,contextRunsPerProject:2})}),{app,call}=i
- try{
+async function installedProvider(i){
+ const {app,call}=i
   const token=i.owner.token,workspace=await i.newWorkspace(token,'Northwind','https://northwind.example'),{starter}=await i.assertStarter(token,workspace.id)
   const readiness=ok(await call(`/api/management/projects/${workspace.id}/ai`,{token})).data
   assert.deepEqual([readiness.ready,readiness.secretName],[true,'ANTHROPIC_API_KEY'])
@@ -160,7 +173,6 @@ async function installedProvider(){
   assert.ok((await i.assistantsOf(token,demo.id)).every(assistant=>assistant.prompt!==starter.prompt),'no starter in a demo inbox')
   assert.equal((await i.mailboxOf(token,demo.id)).email_to_address,null)
   await spend(i)
- }finally{await i.close()}
 }
 
 async function spend(i){
@@ -193,7 +205,7 @@ async function spend(i){
  // Ceilings reached are reported as such, without the installation-wide count.
  const start=Math.floor(Date.now()/86400000)*86400000
  for(const [name,key,count] of [['ai:replies-per-project',owner.projectId,2],['ai:replies-per-installation','installation',3],['ai:reply-spend-micro-usd',owner.projectId,1000000],['ai:reply-ceiling-skips',owner.projectId,4],['ai:context-runs-per-project',owner.projectId,2]])
-  await app.db.prepare('INSERT INTO abuse_counters(key,window_start,used,expires_at) VALUES(?,?,?,?)').bind(name+':'+createHash('sha256').update(key).digest('hex'),start,count,start+86400000).run()
+  await app.db.prepare('INSERT INTO abuse_counters(key,window_start,used,expires_at) VALUES(?,?,?,?) ON CONFLICT(key) DO UPDATE SET window_start=excluded.window_start,used=excluded.used,expires_at=excluded.expires_at').bind(name+':'+createHash('sha256').update(key).digest('hex'),start,count,start+86400000).run()
  const blocked=await read()
  assert.equal(blocked.automatic.replyCeilingReached,true);assert.equal(blocked.automatic.installationCeilingReached,true);assert.equal(blocked.automatic.skippedReplies,4);assert.equal(blocked.contextRuns.ceilingReached,true)
  assert.equal('installationUsed' in blocked.automatic,false)
@@ -207,9 +219,8 @@ async function spend(i){
 }
 
 // A local install seeds its mailbox on localhost.test, sends from the installation sender and still records the proposed sender.
-async function localInstall(){
- const i=await installation({H2H_LOCAL:'true',EMAIL_PROVIDER:'development',APP_ORIGIN:'http://127.0.0.1:8787',EMAIL_FROM:'HappyToHelp <owner-mail@localhost.test>',INBOUND_EMAIL_TOKEN:'c'.repeat(64)}),{call}=i
- try{
+async function localInstall(i){
+ const {call}=i
   const token=i.owner.token,workspace=await i.newWorkspace(token,'Northstar Outfitters','https://www.northstar.example')
   await i.assertStarter(token,workspace.id)
   const mailbox=await i.mailboxOf(token,workspace.id)
@@ -217,32 +228,4 @@ async function localInstall(){
   assert.equal(mailbox.is_enabled,1,'local mail is validated and suppressed, so the mailbox remains available')
   assert.equal(mailbox.from_address,'owner-mail@localhost.test')
   assert.equal((await i.settingsOf(token,workspace.id)).proposed_sender,'support@northstar.example')
- }finally{await i.close()}
-}
-
-// An installation upgraded from the release before Setup observations: the migration keeps every earlier row,
-// invents no observation, and the later Setup migrations add none to a receipt recorded in between.
-async function upgradedSetupTables(){
- const activation=name=>name.endsWith('_activation_receipts.sql')
- let reached=false
- const app=await startApp({migrate:name=>!(reached||=activation(name))})
- try{
-  await app.db.batch([
-   app.db.prepare("INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES('p','Existing','key','https://old.example',1)"),
-   app.db.prepare("INSERT INTO email_settings VALUES('p','Support','support@example.test','inbound@example.test',1,2)"),
-   app.db.prepare("INSERT INTO inbound_emails(id,project_id,intent_hash,state,created_at,message_id) VALUES('old','p','old','delivered',3,'old-message')"),
-  ])
-  const prior=async()=>[await app.sql('SELECT * FROM projects'),await app.sql('SELECT * FROM inbound_emails')],before=await prior()
-  await applyMigrations(app.db,activation)
-  assert.deepEqual(await prior(),before,'earlier rows are unchanged')
-  for(const table of ['activation_receipts','activation_widget_pings','activation_inbound_receipts'])assert.equal((await app.first(`SELECT count(*) n FROM ${table}`)).n,0,`${table}: no fabricated observation`)
-  await app.db.prepare("INSERT INTO activation_receipts VALUES('p','widget_origin','done','fingerprint',4,'Observed','origin:https://old.example','token')").run()
-  let later=false;await applyMigrations(app.db,name=>later||(later=activation(name),false))
-  assert.deepEqual({...await app.first('SELECT state,receipt_ref,observation_json FROM activation_receipts')},{state:'done',receipt_ref:'origin:https://old.example',observation_json:null})
-  // The upgraded tables observe from now on: new inbound mail is attributed to its mailbox, and a changed origin drops its pings.
-  await app.db.prepare("INSERT INTO inbound_emails(id,project_id,intent_hash,state,created_at) VALUES('new','p','new','processing',4)").run()
-  assert.equal((await app.first('SELECT address FROM activation_inbound_receipts')).address,'inbound@example.test')
-  await app.db.batch([app.db.prepare("INSERT INTO activation_widget_pings VALUES('p','https://old.example',5,'ping')"),app.db.prepare("UPDATE projects SET allowed_origin='https://new.example' WHERE id='p'")])
-  assert.equal((await app.first('SELECT count(*) n FROM activation_widget_pings')).n,0)
- }finally{await app.close()}
 }

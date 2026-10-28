@@ -1,24 +1,9 @@
-import {upgradeSteps as upgrade0} from './empty-upgrade.mjs';
-import {upgradeSteps as upgrade1} from './envelope-upgrade.mjs';
-import {upgradeSteps as upgrade2} from './nested-upgrade.mjs';
-import {upgradeSteps as upgrade3} from './record-upgrade.mjs';
-import {upgradeSteps as upgrade4} from './shape-upgrade.mjs';
-import {phases} from '../journeys/kit/scenarios.mjs';
-const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
 import {nativeHarness} from './harness.mjs';
 import {assertUnchangedTable} from './equality.mjs';
 import {snapshotDatabase} from './snapshot.mjs';
 
-import {step} from './steps.mjs';
-
-test("upgrade: imports recorded before the identity audit upgrade conservatively: prior rows stay byte-equal, old originals are reindexed or fenced, and erasure still holds",async()=>{
- await step('empty-upgrade',upgrade0);
- await step('envelope-upgrade',upgrade1);
- await step('nested-upgrade',upgrade2);
- await step('record-upgrade',upgrade3);
- await step('shape-upgrade',upgrade4);
-await step('native additive import migrations preserve prior business rows and their route access',async()=>{let before,beforeRuntime;const h=await nativeHarness({async beforeMoveIn(db,directory){await db.batch([
+export async function moveInMigrationJourney(){let before,beforeRuntime;const h=await nativeHarness({async beforeMoveIn(db,directory){await db.batch([
  db.prepare("INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES('prior-project','Prior workspace','prior-widget','https://prior.example',5)"),
  db.prepare("INSERT INTO users VALUES('prior-owner','prior@example.test','Prior owner',5)"),
  db.prepare("INSERT INTO memberships VALUES('prior-project','prior-owner','owner')"),
@@ -34,5 +19,4 @@ await step('native additive import migrations preserve prior business rows and t
  await db.prepare(`INSERT INTO ik_originals VALUES('prior-job','artifact','prior-original','original.txt','prior-hash',3,X'0001FF')`).run();
  beforeRuntime=(await snapshotDatabase(directory,db)).tables;
  },async afterRuntimeUpgrade(db,directory){const after=(await snapshotDatabase(directory,db)).tables;for(const [table,rows] of Object.entries(beforeRuntime))assertUnchangedTable(table,rows,after[table]);}
- });try{await h.contactSession('prior-visitor','prior-project','prior-contact');const transcript=await h.call('/api/conversations/prior-conversation/messages',{actor:'prior-visitor'});assert.equal(transcript.messages[0].content,'Existing customer message');assert.equal(h.outbound,0)}finally{await h.close()}});
-});
+ });try{await h.contactSession('prior-visitor','prior-project','prior-contact');const transcript=await h.call('/api/conversations/prior-conversation/messages',{actor:'prior-visitor'});assert.equal(transcript.messages[0].content,'Existing customer message');assert.equal(h.outbound,0)}finally{await h.close()}}

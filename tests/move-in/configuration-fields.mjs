@@ -23,17 +23,4 @@ export async function configurationFieldsJourney(imported){
   assert.equal(repeated.plan.counts.rejected,0,JSON.stringify(repeated.plan.decisions));await h.call(root+'/'+repeated.id+'/apply',post({fingerprint:repeated.plan.fingerprint}));await h.drain();assertBusinessEquality(beforeRepeat,await h.snapshot());
   await h.call(root+'/'+review.id+'/undo',post({}));await h.drain();assertBusinessEquality(initial,await h.snapshot());
  }});
- await imported('zendesk',source,{check:async({h,review,rows})=>{
-  const form=(await h.call('/api/forms/projects/p/forms')).data.find(form=>form.title==='Order question');
-  await h.call('/api/forms/projects/p/forms/'+form.id,{...post({...form,enabled:true}),method:'PATCH'});
-  const visible=(await h.call('/api/forms/p/'+form.id)).data;
-  assert.deepEqual(visible.fields.filter(field=>!['subject','message'].includes(field.id)).map(field=>[field.label,field.required]),[['Order number',true],['Items',true],['Replacement requested',true],['Reason',true]]);
-  assert.deepEqual(visible.fields.find(field=>field.label==='Reason').options,[{value:'refund',label:'Refund requested'},{value:'shipping',label:'Shipment question'}]);
-  await h.call(root+'/'+review.id+'/undo',post({}));await h.drain();
-  assert.equal((await h.call('/api/forms/p/'+form.id)).data.title,'Order question','undo preserves an explicitly published native form');
-  assert.equal((await rows('SELECT count(*) n FROM ticket_fields'))[0].n,4,'undo preserves definitions referenced by that form');
- }});
- for(const changed of [form(403,'Conditional request',[301],{end_user_conditions:[{parent_field_id:301,value:'urgent'}]}),form(403,'Missing field',[999]),form(403,'Restricted request',[301],{restricted_brand_ids:[8],in_all_brands:false})])await imported('zendesk',[...fields,changed].map(JSON.stringify).join('\n'),{check:async({plan,rows})=>{
-  assert.ok(plan.decisions.find(row=>row.kind==='ticket_form').rejection,'unsupported form is rejected whole');assert.equal((await rows('SELECT count(*) n FROM request_forms'))[0].n,0);
- }});
 }

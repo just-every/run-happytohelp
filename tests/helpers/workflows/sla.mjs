@@ -8,11 +8,14 @@ export async function slaFlow(f){
  const policy=await ok('/sla-policies',{name:'Priority order support',calendar_id:calendar.id,position:1,conditions:{priorities:['normal'],plans:[],channels:['widget'],brands:[w.projectId]},first_response_minutes:120,next_response_minutes:60,resolution_minutes:480,pause_on_hold:true,approaching_minutes:30,unattended_minutes:180,backup_user_ids:[w.users.admin]})
  f.policy=policy
  const empty=await app.ok('/api/conversations',{token:w.tokens.owner,body:{projectId:w.projectId,contactId:f.customer.contactId}})
+ const team=await ok('/ticket-groups',{name:'Replacement service commitments',members:[w.users.owner,w.users.operator,w.users.admin]})
+ await patch(empty.id,{group_id:team.id})
  await clock(initial+30*60000);await app.scheduled()
  assert.deepEqual((await ok(`/conversations/${empty.id}/sla`)).clocks,[],'Opening an empty widget never starts a service commitment')
  assert.deepEqual((await ok(`/conversations/${empty.id}/sla`)).alerts,[])
  await clock(initial)
  const id=await create();f.slaId=id
+ await patch(id,{group_id:team.id})
  // The original schema permits an empty condition object. A stored policy
  // using that default still matches, without requiring a settings rewrite.
  await app.db.prepare("UPDATE sla_policies SET conditions_json='{}' WHERE project_id=? AND id=?").bind(w.projectId,policy.id).run()
@@ -30,7 +33,7 @@ export async function slaFlow(f){
  await app.configure({H2H_WORKFLOW_NOW:String(Date.parse('2026-11-27T15:01:00Z'))});await app.scheduled()
  sla=await ok(`/conversations/${id}/sla`);assert.ok(sla.alerts.some(a=>a.kind==='breach'&&a.metric==='first_response'));assert.equal(sla.alerts.find(a=>a.id===approaching.id).state,'acknowledged')
  const backup=sla.alerts.find(a=>a.kind==='breach'&&a.metric==='first_response'&&a.recipient_id===w.users.admin);assert.ok(backup,'a breach names the configured current backup')
- const report=await ok('/reports/team?period=custom&start=2026-01-01&end=2027-01-01');assert.equal(report.sla.first_response.breached,1);assert.equal(report.sla.first_response.total,1);assert.equal(report.sla.resolution.pending,1);assert.equal(report.backlog.total,1,'empty widgets are excluded from workload')
+ const report=await ok('/reports/team?period=custom&start=2026-01-01&end=2027-01-01&teamId='+team.id);assert.equal(report.sla.first_response.breached,1);assert.equal(report.sla.first_response.total,1);assert.equal(report.sla.resolution.pending,1);assert.equal(report.backlog.total,1,'the service team sees its live request, excluding its empty widget and the rest of the shared queue')
  const count=sla.alerts.length;await app.scheduled();assert.equal((await ok(`/conversations/${id}/sla`)).alerts.length,count)
  await clock('2026-11-27T17:01:00Z');await app.scheduled();await app.scheduled()
  sla=await ok(`/conversations/${id}/sla`)

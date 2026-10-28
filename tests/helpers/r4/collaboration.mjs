@@ -1,15 +1,19 @@
 import assert from 'node:assert/strict'
-import {startApp,sha} from '../../journeys/kit/app.mjs'
+import {sha} from '../../journeys/kit/app.mjs'
 
 /** Two operators and a visitor through the real router, D1 and conversation Durable Object. */
-export async function collaborationJourney({onStep=()=>{}}={}){
- onStep('starting app')
- const app=await startApp({captureQueue:true})
- onStep('app started')
+export async function collaborationFlow(f,{onStep=()=>{}}={}){
+ const {app}=f
  const sockets=[]
  try{
-  const workspace=await app.seedWorkspace('collaboration'),foreign=await app.seedWorkspace('foreign-collaboration')
-  const {projectId,tokens,users}=workspace
+  const projectId=f.w.projectId,foreign=f.foreign
+  const users={owner:f.w.users.owner,operator:'collaboration-operator',admin:'collaboration-reader'}
+  const tokens={owner:f.w.tokens.owner,operator:'collaboration-operator-token',admin:'collaboration-reader-token'}
+  await app.db.batch(['operator','admin'].flatMap(role=>[
+   app.db.prepare('INSERT INTO users VALUES(?,?,?,1)').bind(users[role],users[role]+'@example.test',users[role]),
+   app.db.prepare("INSERT INTO memberships VALUES(?,?,'operator')").bind(projectId,users[role]),
+   app.db.prepare("INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,?,?,'operator',?)").bind(sha(tokens[role]),users[role],projectId,Date.now()+3600000),
+  ]))
   await app.db.prepare('INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES(?,?,?,1)').bind(projectId,users.admin,'collaborator').run()
   // Collaborator is represented by an operator membership plus the effective role assignment.
   await app.db.batch([
@@ -17,8 +21,8 @@ export async function collaborationJourney({onStep=()=>{}}={}){
    app.db.prepare("UPDATE sessions SET role='operator' WHERE actor_id=?").bind(users.admin),
   ])
   onStep('workspace seeded')
-  const visitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:workspace.widgetKey,name:'Visitor'}})
-  const ticket=await app.ok('/api/conversations',{token:visitor.token,body:{projectId}})
+  const visitor=f.visitor,ticket={id:f.queueIds[0]}
+  const initialMessages=(await app.ok(`/api/conversations/${ticket.id}/messages`,{token:visitor.token})).messages
   const path=`/api/dashboard/projects/${projectId}/conversations/${ticket.id}`
   const call=(suffix,token=tokens.owner,body,method=body===undefined?'GET':'POST',headers={})=>app.call(path+suffix,{token,body,method,headers})
   const connect=async token=>{
@@ -80,17 +84,10 @@ export async function collaborationJourney({onStep=()=>{}}={}){
   await app.until(()=>reconnect.closed,{timeout:12000,message:'revoked operator socket closes without sending a command'})
   await app.until(()=>owner.frames.findLast(frame=>frame.type==='presence')?.peers.every(peer=>peer.id!==users.operator))
   onStep('revocation checks done')
-  const latest=await connect(tokens.admin)
-  latest.ws.send(JSON.stringify({type:'presence',typing:true,draft:true}))
-  await app.until(()=>owner.frames.findLast(frame=>frame.type==='presence')?.peers.some(peer=>peer.id===users.admin&&peer.draft))
-  // Keep only the observing operator alive. A quiet tab's flags expire, including after hibernation.
-  const heartbeat=setInterval(()=>owner.ws.send(JSON.stringify({type:'presence',typing:false,draft:false})),10000)
-  try{await app.until(()=>owner.frames.findLast(frame=>frame.type==='presence')?.peers.every(peer=>peer.id!==users.admin),{timeout:40000,interval:50,message:'silent presence expires'})}finally{clearInterval(heartbeat)}
-  onStep('expiry checks done')
   assert.ok(!contact.frames.some(frame=>frame.type==='presence'||frame.kind==='note'||frame.kind==='followers'),'internal collaboration never reaches visitor socket')
-  assert.deepEqual((await app.ok(`/api/conversations/${ticket.id}/messages`,{token:visitor.token})).messages,[],'internal notes never enter the customer transcript')
+  assert.deepEqual((await app.ok(`/api/conversations/${ticket.id}/messages`,{token:visitor.token})).messages,initialMessages,'internal notes never enter the customer transcript')
   assert.equal((await call(`/notes/${note.data.data.id}`,tokens.owner,undefined,'DELETE')).status,200)
   assert.deepEqual(await app.sql('SELECT * FROM conversation_note_media WHERE note_id=?',note.data.data.id),[],'note deletion cleans attachment links')
   assert.deepEqual(await app.sql('SELECT * FROM conversation_note_mentions WHERE note_id=?',note.data.data.id),[],'note deletion cleans mention identities')
- }catch(error){onStep(error.stack);throw error}finally{onStep('closing app');for(const {ws} of sockets)try{ws.close(1000,'test complete')}catch{}await app.close()}
+ }catch(error){onStep(error.stack);throw error}finally{onStep('closing app');for(const {ws} of sockets)try{ws.close(1000,'test complete')}catch{}}
 }

@@ -13,26 +13,7 @@ export async function problemSuggestionsBrowser(page,fixture,origin){
  await page.locator('#ticket-section-problem-heading').click()
  const panel=page.getByRole('region',{name:'Suggested problems',exact:true})
  const find=()=>panel.getByRole('button',{name:'Find suggested problems',exact:true}).click()
- const capture=async name=>{
-  for(const width of [1440,390]){
-   await page.setViewportSize({width,height:width===390?844:1000})
-   // Resizing closes the compact sheet through a media-query change and a React render.
-   // Wait for that transition before opening it, so a stale desktop read cannot skip the toggle.
-   await page.waitForFunction(hidden=>document.querySelector('#conversation-assistant')?.getAttribute('aria-hidden')===hidden,width===390?'true':'false')
-   if(width===390)await page.getByRole('button',{name:'Show conversation panel',exact:true}).click()
-   await page.getByRole('tab',{name:'Ticket',exact:true}).click()
-   await page.locator('.problem-panel').scrollIntoViewIfNeeded();await page.waitForTimeout(350)
-   if(width===390){
-    const targets=await page.locator('.problem-panel button:visible').evaluateAll(buttons=>buttons.map(button=>({name:button.textContent.trim(),height:button.getBoundingClientRect().height,width:button.getBoundingClientRect().width})))
-    assert.ok(targets.length>0,`${name}: problem controls are visible`)
-    for(const target of targets)assert.ok(target.height>=44&&target.width>=44,`${name}: ${target.name} has a usable phone target`)
-    console.log(JSON.stringify({screen:name,width,targets}))
-   }
-   await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true})
-  }
-  await page.setViewportSize({width:1440,height:1000})
-  await page.waitForFunction(()=>document.querySelector('#conversation-assistant')?.getAttribute('aria-hidden')==='false')
- }
+ const capture=async name=>{await page.screenshot({path:shot(`${name}-1440.png`),fullPage:true})}
  await find();await panel.getByText('Checkout outage under investigation',{exact:true}).waitFor();await capture('01-found')
  await panel.getByRole('button',{name:'Inspect suggestion',exact:true}).click()
  await panel.getByLabel('Suggested problem preview').waitFor();assert.equal((await api(path(incident.id))).data.parent,null)

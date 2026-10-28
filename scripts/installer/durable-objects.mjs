@@ -9,8 +9,10 @@ import {fileRecords} from '@runeditrun/rer/modules/portability/files';
 // instances as SQLite files under .wrangler/state/v3/do/<worker>-<class>/.
 export const SNAPSHOT_SCHEMA='happytohelp.durable-objects/1';
 const NAMESPACES=[{binding:'CONVERSATIONS',className:'ConversationSocket'}];
-// Workerd's own bookkeeping (alarms, the storage format) is not business state.
-const INTERNAL=new Set(['_cf_METADATA','_cf_ALARM']);
+// Workerd's alarms/storage metadata and Miniflare's object-id-to-name mapping
+// are tooling bookkeeping. Keep KV, external values and application tables in
+// the snapshot so unsupported business storage still refuses instead of vanishing.
+const INTERNAL=new Set(['_cf_METADATA','_cf_ALARM','__miniflare_do_name']);
 
 const canonical=value=>Array.isArray(value)?`[${value.map(canonical).join(',')}]`:value&&typeof value==='object'?`{${Object.keys(value).sort().map(key=>`${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}`:JSON.stringify(value);
 const cell=value=>value instanceof Uint8Array?{blob:Buffer.from(value).toString('base64')}:typeof value==='bigint'?Number(value):value;
@@ -65,7 +67,11 @@ export async function checkArchiveSnapshot(path){
   let records;
   try{records=JSON.parse(row.records_json);}catch{throw Error('Restore refused: the archive\'s Durable Object snapshot is damaged.');}
   if(!Array.isArray(records)||records.length!==row.records||snapshotDigest(row.namespace,row.class_name,records)!==row.digest)throw Error('Restore refused: the archive\'s Durable Object snapshot does not match its digest.');
-  if(records.length)throw Error(`Restore refused: the archive holds ${records.length} ${row.class_name} Durable Object records, and this release keeps no Durable Object storage to restore them into.`);
+  // Older exports included Miniflare's name mapping. Verify their original
+  // complete snapshot above before disregarding that exact tooling table.
+  // Leave the archived D1 row untouched so its bytes and digest still travel.
+  const applicationRecords=records.filter(record=>record?.table!=='__miniflare_do_name');
+  if(applicationRecords.length)throw Error(`Restore refused: the archive holds ${applicationRecords.length} ${row.class_name} Durable Object records, and this release keeps no Durable Object storage to restore them into.`);
  }
  return found.map(row=>({namespace:row.namespace,className:row.class_name,instances:row.instances,records:row.records,digest:row.digest}));
 }

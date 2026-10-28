@@ -1,7 +1,3 @@
-import test from 'node:test'
-import {journey} from '../move-in/claims.mjs'
-
-// Move in through its real upload, review, apply, resume, undo and erasure doors (tests/move-in holds each journey's scenarios).
-test(...journey('publication'))
-test(...journey('recovery'))
-test(...journey('authority'))
+import test from 'node:test';
+import {custodyLifecycle} from '../move-in/custody-lifecycle.mjs';
+test('stopped publication preserves native work through resume and undo, then customer erasure removes source custody and fences replay while peers survive',custodyLifecycle);

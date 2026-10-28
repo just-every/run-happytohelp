@@ -1,3 +1,7 @@
+import {workspaceBrand} from './workspace-brand.mjs'
+import {workspaceLibrary} from './workspace-library.mjs'
+import {companyRecordsJourney} from '../company-records.mjs'
+import {customerCsvJourney} from '../customer-csv.mjs'
 import assert from 'node:assert/strict'
 import {startApp,sha,applyMigrations} from '../../journeys/kit/app.mjs'
 
@@ -8,7 +12,7 @@ export async function managementJourney(){
  const network={requests:[],reject:false}
  // Migration 129 runs on the seeded workspaces below, as an upgrade would run it on existing ones.
  const ownerAlerts=name=>name.startsWith('129_')
- const app=await startApp({origin:'https://app.example',migrate:name=>!ownerAlerts(name),outbound:async request=>{
+ const app=await startApp({captureQueue:true,origin:'https://app.example',migrate:name=>!ownerAlerts(name),outbound:async request=>{
   if(request.url.startsWith('https://cloudflare-dns.com/'))return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.com.'}]})
   assert.equal(request.url,'https://api.resend.com/emails','only the mail provider is called');network.requests.push(await request.json())
   return network.reject?new Response('unavailable',{status:503}):Response.json({id:'provider-transcript'})
@@ -246,6 +250,10 @@ await DB.prepare("INSERT INTO memberships VALUES('q','u','owner')").run()
 await DB.prepare("INSERT INTO sessions VALUES(?,'u','q','owner',NULL,?,NULL)").bind(await hashToken('q-token'),Date.now()+999999).run()
 async function callQ(path,method='GET',body){return app.request('/api/management'+path,{raw:true,method,headers:{Authorization:'Bearer q-token','Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)})}
 assert.equal((await callQ('/projects/q/email-settings','PUT',{from_name:'Other Support',from_address:'other@example.com',inbound_address:'INBOUND@example.com',is_enabled:true})).status,409,'case-insensitive active mailbox conflict is explicit')
+await workspaceBrand(app)
+await workspaceLibrary(app)
+await companyRecordsJourney(app)
+await customerCsvJourney(app)
 const liveSettings=(await DB.prepare("SELECT settings_json FROM project_settings WHERE project_id='p'").first()).settings_json
 // The workspace is deleted after the request is admitted but before the mailbox write commits.
 const raced=await app.request('/api/management/projects/p/email-settings',{method:'PUT',token:'token',headers:{'x-test-statement':'^\\s*INSERT INTO email_settings','x-test-before-statement':"UPDATE project_settings SET settings_json=json_set(settings_json,'$.deleted_at',123),updated_at=123 WHERE project_id='p'"},body:{from_name:'Stale',from_address:'stale@example.com',inbound_address:'stale@example.com',is_enabled:true}})

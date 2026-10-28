@@ -23,6 +23,7 @@ export async function schedulesFlow(f){
  await ok(`/sla-policies/${f.policy.id}`,{active:false},'PATCH');await app.scheduled()
  for(const token of Object.values(w.tokens))await app.ok(`/api/management/projects/${w.projectId}/notification-preferences`,{token,method:'PUT',body:{preferences:['assignment','customer_updated','group','follower','mention'].map(kind=>({kind,inbox:true,email:false}))}})
  await app.db.prepare('UPDATE contacts SET is_verified=1 WHERE id=? AND project_id=?').bind(f.customer.contactId,w.projectId).run()
+ const providerBefore=app.requests.length
  await app.configure({EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'workflow-provider-edge-key',EMAIL_FROM:'support@example.test'})
  await clock(due)
  await app.scheduled()
@@ -30,7 +31,7 @@ export async function schedulesFlow(f){
  await app.configure({H2H_WORKFLOW_NOW:String(due+180000)});await app.scheduled()
  assert.equal((await app.sql('SELECT * FROM messages WHERE local_id=?',`schedule:${uncertain.id}`)).length,1)
  assert.equal((await call(`/workflow-schedules/${uncertain.id}`,{body:'Do not replay'},'PATCH')).status,409)
- assert.equal(app.requests.filter(r=>new URL(r.url).hostname==='api.resend.com').length,1,JSON.stringify(app.requests.filter(r=>new URL(r.url).hostname==='api.resend.com').map(r=>{const body=JSON.parse(r.body);return {to:body.to,subject:body.subject}})))
+ assert.equal(app.requests.slice(providerBefore).filter(r=>new URL(r.url).hostname==='api.resend.com').length,1,JSON.stringify(app.requests.slice(providerBefore).filter(r=>new URL(r.url).hostname==='api.resend.com').map(r=>{const body=JSON.parse(r.body);return {to:body.to,subject:body.subject}})))
  await app.configure({EMAIL_PROVIDER:'development',EMAIL_API_KEY:undefined})
  // A dependency snooze wakes once the named ticket is solved.
  await clock(initial)

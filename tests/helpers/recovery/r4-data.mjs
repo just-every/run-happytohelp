@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {createHash} from 'node:crypto';
+import {createHash, pbkdf2Sync, randomBytes} from 'node:crypto';
 
 const digest = value => createHash('sha256').update(value).digest('hex');
 const kinds = ['assignment', 'group', 'follower', 'mention', 'customer_updated'];
@@ -18,12 +18,14 @@ function api(runtime, token, projectId) {
 /** Populate native R4 state before the existing every-row/every-object snapshot.
  * Only partner delivery history is synthetic; it never calls a mail provider.
  * The storage owner is opened exclusively while the packaged Worker is stopped. */
-export async function seedRecoveryR4(runtime, {owner, visitor, conversation, media, ticket}) {
+export async function seedRecoveryR4(runtime, {owner, visitor, conversation, media, ticket}, prepareStorage) {
   const request = api(runtime, owner.token, owner.projectId);
   const bootstrap = await request('/api/management/bootstrap', undefined, 'GET', true);
   const actorId = bootstrap.currentAgent.id, now = Date.now();
   const ids = Object.fromEntries(['teammate', 'forward', 'reply', 'file', 'identity'].map(kind => [kind, `recovery-r4-${kind}`]));
   const teammateToken = 'synthetic-recovery-r4-teammate-session';
+  const teammatePassword = randomBytes(24).toString('base64url'), salt = randomBytes(16).toString('hex');
+  const passwordHash = salt+':'+pbkdf2Sync(teammatePassword,salt,100000,32,'sha256').toString('hex');
   const partnerBytes = [...Buffer.from('Private supplier analysis: retain café and 日本語 bytes.\n')];
   const partnerKey = `${owner.projectId}/partner-replies/${ids.reply}/${ids.file}`;
   await request('/notification-triggers', {triggers: ['request_received', 'ticket_solved'].map(event => ({
@@ -41,6 +43,7 @@ export async function seedRecoveryR4(runtime, {owner, visitor, conversation, med
     const linked=[visitor.contactId,ids.identity].sort();
     await write('INSERT INTO customer_identity_links VALUES(?,?,?,?,?,?)',[owner.projectId,...linked,'synthetic-happytohelp-51',actorId,now]);
     await write('INSERT INTO users(id,email,name,created_at) VALUES(?,?,?,?)', [ids.teammate, 'recovery-teammate@example.test', 'Recovery teammate', now]);
+    await write('INSERT INTO credentials VALUES(?,?,?)',[ids.teammate,passwordHash,now]);
     await write('INSERT INTO memberships(project_id,user_id,role) VALUES(?,?,?)', [owner.projectId, ids.teammate, 'operator']);
     await write('INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,?,?,?,?)', [digest(teammateToken), ids.teammate, owner.projectId, 'operator', now + 3_600_000]);
     await write('INSERT INTO session_factors(token_hash,user_id,method,verified_at) VALUES(?,?,?,?)', [digest(teammateToken), ids.teammate, 'password', now]);
@@ -56,6 +59,7 @@ export async function seedRecoveryR4(runtime, {owner, visitor, conversation, med
       httpMetadata: {contentType: 'text/plain', cacheControl: 'private, no-store'},
       customMetadata: {purpose: 'recovery-private-partner-analysis', fixture: 'synthetic'},
     }});
+    if(prepareStorage)await prepareStorage(storage,owner);
   });
   await runtime.start();
 
@@ -94,7 +98,7 @@ export async function seedRecoveryR4(runtime, {owner, visitor, conversation, med
   const mention = notices.find(row => row.kind === 'mention' && row.conversation_id === conversation.id);
   assert.ok(mention, 'The native mention must create the persisted teammate notification');
   await teammateRequest(`/notification-inbox/${mention.id}/read`, {}, 'PUT');
-  const r4 = {identity:{contactId:visitor.contactId,linkedId:ids.identity},readNoticeId: mention.id, actorId, teammateToken, teammateId: ids.teammate, macroId: macro.id, draft: draft.draft, noteId: note.id, mergeId: merged.id, mergeTarget: target.id, mergeSource: source.id, partner: {...ids, bytes: partnerBytes}};
+  const r4 = {identity:{contactId:visitor.contactId,linkedId:ids.identity},readNoticeId: mention.id, actorId, teammateToken, teammatePassword, teammateId: ids.teammate, macroId: macro.id, draft: draft.draft, noteId: note.id, mergeId: merged.id, mergeTarget: target.id, mergeSource: source.id, partner: {...ids, bytes: partnerBytes}};
   await verifyRecoveryR4(runtime, {owner, conversation, r4}, owner.token);
   return r4;
 }

@@ -35,6 +35,7 @@ export async function ticketApiPrivacy(f){
  assert.equal((await app.first('SELECT count(*) n FROM conversation_participants WHERE conversation_id=?',next.id)).n,1)
  assert.equal((await ok(`/conversations/${next.id}/workflows`)).followup_of,email.id)
 
+ f.finishTicketErasure=async()=>{
  const before=await get(id);assert.ok(before.history.length)
  const referenced=await ok('/ticket-views',{name:'Dana requests',visibility:'personal',filters:[{field:'requester_id',operator:'eq',value:visitor.contactId}],sort:[]})
  const erased=await app.ok(`/api/management/projects/${w.projectId}/contacts/${visitor.contactId}/erase`,{token:w.tokens.owner,body:{}})
@@ -46,5 +47,7 @@ export async function ticketApiPrivacy(f){
  assert.ok(history.every(row=>row.changes_json==='{"erased":true}'))
  assert.equal((await app.call('/api/v1/conversations/'+id,{token:issued.token})).status,404)
  assert.equal((await app.call('/api/v1/conversations/'+id,{token:issued.token,method:'PATCH',body:{priority:'urgent'}})).status,404)
+ }
+
  assert.equal(incoming.duplicate,false)
 }

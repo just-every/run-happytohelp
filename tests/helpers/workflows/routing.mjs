@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict'
-import {startApp} from '../../journeys/kit/app.mjs'
 export async function routingFlow(f){
  const {app,w,ok,create,get,patch,publish}=f
  const group=await ok('/ticket-groups',{name:'US returns',members:[w.users.owner,w.users.admin,w.users.operator]})
@@ -34,15 +33,15 @@ export async function routingFlow(f){
  await app.configure({H2H_WORKFLOW_NOW:app.bindings.H2H_WORKFLOW_NOW})
  const overflow=await create('Overflow still needs a responsible group'),ticket=await get(overflow)
  assert.equal(ticket.assigned_to,null);assert.equal(ticket.group_id,group.id);assert.equal((await ok(`/conversations/${overflow}/routing`)).decision.winner_id,null)
- await ok('/routing-operators',{operators:[{user_id:w.users.admin,available:false,capacity:10,skills:['returns']},{user_id:w.users.operator,available:true,capacity:10,skills:['returns']}]},'PUT')
+ const occupied=Object.fromEntries((await ok('/routing-operators')).operators.map(o=>[o.user_id,o.workload]))
+ await ok('/routing-operators',{operators:[{user_id:w.users.admin,available:false,capacity:occupied[w.users.admin]+10,skills:['returns']},{user_id:w.users.operator,available:true,capacity:occupied[w.users.operator]+10,skills:['returns']}]},'PUT')
  const available=await create('Offline admin is skipped');assert.equal((await get(available)).assigned_to,w.users.operator)
  // Capacity-aware selection chooses the lower occupied share while respecting the same live eligibility checks.
  await ok(`/workflow-rules/${route.id}/pause`,{})
  await publish({name:'Available capacity',kind:'routing',position:1,conditions:{all:[]},actions:[],routing:{strategy:'capacity',group_id:group.id,skills:['returns']}})
  const capacity=await create('Capacity queue request');assert.equal((await get(capacity)).assigned_to,w.users.operator)
  // One workspace's refused routing commit cannot hold a neighbour's cron-only events.
- {const app=await startApp({bindings:{APP_ORIGIN:'https://app.example',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',H2H_WORKFLOW_NOW:String(f.initial)}})
- try{
+ {
  const a=await app.seedWorkspace('routing-retry'),b=await app.seedWorkspace('routing-neighbour'),at=f.initial
  const api=async(ws,path,body,method)=>{const response=await app.call(`/api/dashboard/projects/${ws.projectId}${path}`,{token:ws.tokens.owner,body,method});assert.ok(response.status<300,JSON.stringify(response.data));return response.data.data??response.data}
  const named=async ws=>{await api(ws,'/routing-operators',{operators:[{user_id:ws.users.owner,available:true,capacity:100,skills:[]}]},'PUT');const {rule}=await api(ws,'/workflow-rules',{name:'Available owner',kind:'routing',position:1,conditions:{all:[]},actions:[],routing:{strategy:'named',user_id:ws.users.owner,skills:[]}});await api(ws,`/workflow-rules/${rule.id}/publish`,{});return rule}
@@ -63,8 +62,9 @@ export async function routingFlow(f){
  const outcomes=(await api(a,`/conversations/${stuck.id}/routing`)).events
  assert.ok(outcomes.length>0);assert.ok(outcomes.every(event=>event.state==='not_routed'&&event.error&&event.attempts>0&&event.next_attempt_at===null))
  assert.equal((await api(a,`/conversations/${stuck.id}/ticket`)).assigned_to,null)
- }finally{await app.close()}}
+ }
  // The enclosing erasure journey retains its original single-customer fixture.
  for(const visitor of visitors)await app.ok(`/api/management/projects/${w.projectId}/contacts/${visitor.contactId}/erase`,{token:w.tokens.owner,body:{}})
+ await f.clock(f.initial)
  f.routingId=available
 }

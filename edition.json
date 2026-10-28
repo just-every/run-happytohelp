@@ -195,8 +195,7 @@
         "paths": [
           "src/modules/widget",
           "scripts/build-widget.mjs",
-          "tests/journeys/widget.mjs",
-          "tests/journeys/widget-browser.mjs"
+          "tests/journeys/widget.mjs"
         ]
       }
     },
@@ -215,7 +214,6 @@
           "src/modules/ai-support",
           "migrations/020_ai_support.sql",
           "tests/journeys/ai.mjs",
-          "tests/journeys/ai-browser.mjs",
           "tests/journeys/ai-live.mjs"
         ]
       }
@@ -251,8 +249,7 @@
           "src/modules/customer-context",
           "migrations/0060_customer_context.sql",
           "migrations/0060_customer_context_engine.sql",
-          "tests/journeys/context.mjs",
-          "tests/journeys/context-browser.mjs"
+          "tests/journeys/context.mjs"
         ]
       }
     },
@@ -271,7 +268,6 @@
           "scripts/local-agent-archive.cjs",
           "migrations/030_local_computer.sql",
           "tests/provider-helpers",
-          "tests/journeys/delegation-computers.mjs",
           "tests/journeys/delegation-browser.mjs"
         ]
       }
@@ -371,8 +367,6 @@
           "migrations/090_legacy_import.sql",
           "migrations/123_inbox_message_search.sql",
           "tests/helpers",
-          "tests/deleted-background-worker.ts",
-          "tests/prepare-browser-fixture.mjs",
           "docs/site.json",
           "scripts/deployment",
           "scripts/import-legacy.mjs",
@@ -392,9 +386,6 @@
           "public/homepage",
           "migrations/0098_personal_visual_inspiration.sql",
           "migrations/0099_personal_sidebar_artwork.sql",
-          "tests/demo-inbox.mjs",
-          "tests/demo-inbox-browser.mjs",
-          "tests/demo-transcript-events.mjs",
           "src/edition",
           "migrations/0100_inbound_email_claims.sql",
           "migrations/0101_email_mailbox_lifecycle.sql",
@@ -408,8 +399,6 @@
           "migrations/0108_public_answer_citations.sql",
           "tests/live",
           "migrations/0107_activation_receipts.sql",
-          "tests/demo-activation-browser.mjs",
-          "tests/demo-knowledge-activation.mjs",
           "src/modules/sendgrid-email/module.json",
           "scripts/build.mjs",
           "live-proofs/git.mjs",
@@ -420,11 +409,9 @@
           "tests/legacy-export.mjs",
           "tests/legacy-export",
           "docs/LEGACY-EXPORT.md",
-          "tests/journeys/connector-browser.mjs",
           "tests/journeys/connector.mjs",
           "tests/journeys/delegation.mjs",
           "tests/journeys/email.mjs",
-          "tests/journeys/erasure-browser.mjs",
           "tests/journeys/erasure.mjs",
           "tests/journeys/first-run-browser.mjs",
           "tests/journeys/first-run.mjs",
@@ -436,16 +423,12 @@
           "tests/journeys/legacy.mjs",
           "tests/journeys/move-in-admission.mjs",
           "tests/journeys/move-in-browser.mjs",
-          "tests/journeys/move-in-capacity.mjs",
           "tests/journeys/move-in-custody.mjs",
-          "tests/journeys/move-in-erasure.mjs",
-          "tests/journeys/public-browser.mjs",
           "tests/journeys/public.mjs",
           "tests/journeys/restore.mjs",
           "tests/journeys/upgrade-nightly.mjs",
           "tests/journeys/kit",
           "tests/first-run",
-          "tests/activation",
           "src/modules/tickets",
           "migrations/130_ticket_model.sql",
           "migrations/131_ticket_views_bulk.sql",
@@ -467,7 +450,10 @@
           "docs/workflows.md",
           "src/modules/triage",
           "migrations/220_ticket_triage.sql",
-          "docs/triage.md"
+          "docs/triage.md",
+          "tests/sanity",
+          "scripts/test-journeys.mjs",
+          "scripts/contract-docs.mjs"
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",
@@ -1469,9 +1455,6 @@
           "migrations/113_outcomes_history.sql",
           "tests/reports/outcomes.mjs",
           "tests/reports/ratings.mjs",
-          "tests/reports/widget-races.mjs",
-          "tests/reports/import-inertness.mjs",
-          "tests/reports/operator-feedback.mjs",
           "tests/journeys/reports.mjs",
           "tests/journeys/upgrade.mjs",
           "migrations/171_csat_surveys.sql"
@@ -1575,8 +1558,7 @@
           "migrations/126_restore_contact_erasure.sql",
           "docs/api.md",
           "tests/connections",
-          "tests/journeys/connections.mjs",
-          "tests/journeys/connections-browser.mjs"
+          "tests/journeys/connections.mjs"
         ]
       }
     }

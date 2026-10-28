@@ -1,13 +1,11 @@
-import assert from 'node:assert/strict'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {openaiStream,formatName} from '../openai-stream.mjs'
-import {providerFixture} from './provider-fixtures.mjs'
 
 export const model='gpt-5.6-luna'
 
 // A workspace whose visitor assistant answers through the real queue and generation lifecycle.
 // Only providers are fixtures: `ai.respond(body,request)` answers each OpenAI request with a
-// Response, a structured object or text; other provider hosts answer with their protocol fixture;
+// Response, a structured object or text;
 // `ai.reject` makes every provider refuse with a server error; `ai.network(request)` answers other hosts.
 export async function assistantApp({bindings={},prompt='Use evidence',assistantModel=model}={}){
  const ai={calls:[],before:null,reject:false,network:null,respond:()=>'Reply'}
@@ -15,7 +13,7 @@ export async function assistantApp({bindings={},prompt='Use evidence',assistantM
   const host=new URL(request.url).hostname
   if(ai.reject){ai.calls.push({host,rejected:true});return new Response(JSON.stringify({error:{message:'fixture rejected',type:'server_error'}}),{status:503,headers:{'content-type':'application/json'}})}
   if(ai.network&&host!=='api.openai.com')return ai.network(request)
-  if(host!=='api.openai.com'){ai.calls.push({host});return providerFixture(host)}
+  if(host!=='api.openai.com')throw new Error('Unexpected model network destination: '+host)
   const body=await request.json();ai.calls.push({host,name:formatName(body),body});if(ai.before)await ai.before(body)
   const answer=await ai.respond(body,request);return answer instanceof Response?answer:openaiStream(answer,{input_tokens:5,output_tokens:2})
  }})

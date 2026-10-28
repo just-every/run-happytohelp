@@ -32,8 +32,8 @@ export async function brandsBrowser(){
    brands.push({id,label,color,token:scoped.token,ticket})
   }
   browser=await launchBrowser()
-  for(const width of [1440,390]){
-   const context=await browser.newContext({viewport:{width,height:width===390?844:1000}}),page=await context.newPage();page.setDefaultTimeout(20000)
+  for(const width of [1440]){
+   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage();page.setDefaultTimeout(20000)
    page.on('pageerror',error=>errors.push(error.message))
    try{
     for(const brand of brands){

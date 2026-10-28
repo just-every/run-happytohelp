@@ -1,15 +1,10 @@
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
-import {startApp} from '../../journeys/kit/app.mjs'
 
 // Configurable offers through the same public widget command door; no provider fake or message fixture.
-export async function campaignsJourney(){
- const app=await startApp()
- try{
-  const w=await app.seedWorkspace('campaigns'),other=await app.seedWorkspace('campaigns-other'),p=w.projectId,owner=w.tokens.owner
+export async function campaignsJourney({app,workspace:w,contact:visitor,conversation}){
+  const other=await app.seedWorkspace('campaigns-other'),p=w.projectId,owner=w.tokens.owner
   const endpoint=`/api/management/projects/${p}/widget-campaigns`
-  const visitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey},headers:{Origin:w.allowedOrigin}})
-  const conversation=await app.ok('/api/conversations',{token:visitor.token,body:{projectId:p}})
   assert.deepEqual((await app.ok(`/api/conversations/${conversation.id}/messages`,{token:visitor.token})).widget,{ai_id:null});
   assert.equal('widget' in await app.ok(`/api/conversations/${conversation.id}/messages`,{token:owner}),false,'operator transcript does not gain visitor state');
   const command=(action,data={},status=200,token=visitor.token,id=conversation.id)=>app.call(`/api/conversations/${id}/widget-events`,{token,body:{action,data},status})
@@ -170,5 +165,5 @@ export async function campaignsJourney(){
   await app.ok(`/api/management/projects/${p}/contacts/${foreignVisitor.contactId}/erase`,{token:owner,body:{}})
   for(const table of ['widget_campaign_impressions','widget_campaign_visits'])assert.equal((await app.first(`SELECT count(*) n FROM ${table} WHERE contact_id=?`,foreignVisitor.contactId)).n,0,'native erasure immediately removes campaign identifiers')
   assert.equal((await row(retained.id)).impressions,0,'erased attribution immediately disappears from reports')
- }finally{await app.close()}
+  return {...conversation,id:followed.followupConversationId}
 }

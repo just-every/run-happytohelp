@@ -34,5 +34,5 @@ editor imports the same file, so what it shows is what the widget renders.
 | Isolation | Shadow DOM styles, exact Worker origin checks, scoped bearer authorization, separate storage keys |
 
 Build success alone does not prove the native routes or provider behavior. Run
-`pnpm run test:widget-browser` and `pnpm run test:widget-lifecycle-browser` for
+`pnpm run test:browsers` and `pnpm run test:browsers` for
 local runtime/browser checks; provider-backed replies need a configured provider.

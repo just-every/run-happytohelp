@@ -1,6 +1,0 @@
-{
-  "botAccepted": {"status":200,"body":"{\"ok\":true,\"channel\":\"C123ABC456\",\"ts\":\"1503435956.000247\"}"},
-  "botRejected": {"status":200,"body":"{\"ok\":false,\"error\":\"too_many_attachments\"}"},
-  "webhookAccepted": {"status":200,"body":"ok"},
-  "webhookRejected": {"status":403,"body":"action_prohibited"}
-}

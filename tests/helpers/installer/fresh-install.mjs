@@ -67,11 +67,12 @@ try{
  await run(root,['check','--profile','first-party']);
  await run(root,['install']);
  await mkdir(join(root,'.seed'),{mode:0o700,recursive:true});
- await writeFile(join(root,'.seed/local-answers.json'),JSON.stringify({WORKSPACE_NAME:'Rer support',WIDGET_ORIGIN:'https://example.test',PRIMARY_COLOR:'#7c3aed',OWNER_NAME:'Rer owner',OWNER_PASSWORD:password,EMAIL_PROVIDER:'later'}),{mode:0o600});
+ await writeFile(join(root,'.seed/local-answers.json'),JSON.stringify({WIDGET_ORIGIN:'https://example.test',OWNER_PASSWORD:password,EMAIL_PROVIDER:'later'}),{mode:0o600});
  await run(root,setup);
  await assert.rejects(fetch(origin+'/health',{signal:AbortSignal.timeout(2000)}),'setup must leave no runtime');
  await run(root,['setup','--owner-email','other-owner@example.test','--answers','.seed/local-answers.json','--port',String(port)],4); // A different owner is refused before any change.
  const privateBefore=await readFile(join(root,'.dev.vars'));
+ assert.ok(/^INBOUND_EMAIL_TOKEN=.+$/m.test(privateBefore.toString()),'setup generates a private inbound token with the minimal answers');
  assert.equal((await stat(join(root,'.dev.vars'))).mode&0o777,0o600);
  await start();
  const actor=await signIn();assert.equal(actor.role,'owner');assert.ok(actor.id);
@@ -185,16 +186,18 @@ globalThis.fetch=async()=>{
  throw Error('Offline deployment dry-run must make no provider requests');
 };
 `);
- const dryEnv={OWNER_EMAIL:'owner@dry-run.example.com',EMAIL_PROVIDER:'sendgrid',EMAIL_FROM:'support@dry-run.example.test',EMAIL_API_KEY:'synthetic-happytohelp-1',CLOUDFLARE_ACCOUNT_ID:'',CLOUDFLARE_API_TOKEN:'',NODE_OPTIONS:[process.env.NODE_OPTIONS,`--import=${pathToFileURL(network).href}`].filter(Boolean).join(' ')};
- for(const credentials of [{},{CLOUDFLARE_ACCOUNT_ID:'a'.repeat(32),CLOUDFLARE_API_TOKEN:'synthetic-happytohelp-2'}]){
-  const dry=await run(root,['deploy','--dry-run'],0,{env:{...dryEnv,...credentials}});
-  assert.equal(dry.events.at(-1).ok,true);
-  assert.equal(dry.events.at(-1).dryRun,true);assert.equal(dry.events.at(-1).deployed,false);
-  assert.equal(dry.events.at(-1).providerChecked,false,'offline validation never claims target readiness');
-  assert.equal(await readFile(calls,'utf8'),'','dry run makes zero provider requests with or without credentials');
-  await assert.rejects(access(join(root,'.rer/deploy/production.json')),{code:'ENOENT'});
-  assert.ok(restoredPrivate.equals(await readFile(join(root,'.dev.vars'))),'dry run preserves the local owner settings');
- }
+ const dryEnv={OWNER_EMAIL:'owner@dry-run.example.com',EMAIL_PROVIDER:'sendgrid',EMAIL_FROM:'support@dry-run.example.test',EMAIL_API_KEY:'',CLOUDFLARE_ACCOUNT_ID:'',CLOUDFLARE_API_TOKEN:'',NODE_OPTIONS:[process.env.NODE_OPTIONS,`--import=${pathToFileURL(network).href}`].filter(Boolean).join(' ')};
+ const dry=await run(root,['deploy','--dry-run'],0,{env:dryEnv});
+ const receipt=dry.events.at(-1);
+ assert.equal(receipt.ok,true);
+ assert.equal(receipt.dryRun,true);assert.equal(receipt.deployed,false);
+ assert.equal(receipt.providerChecked,false,'offline validation never claims target readiness');
+ assert.match(receipt.neededForRealDeploy.join('\n'),/\bEMAIL_API_KEY\b/);
+ const refused=await run(root,['deploy'],3,{env:dryEnv});
+ assert.match(refused.events.find(event=>event.event==='error').message,/\bEMAIL_API_KEY\b/);
+ assert.equal(await readFile(calls,'utf8'),'','dry run and missing-credential refusal make zero provider requests');
+ await assert.rejects(access(join(root,'.rer/deploy/production.json')),{code:'ENOENT'});
+ assert.ok(restoredPrivate.equals(await readFile(join(root,'.dev.vars'))),'dry run preserves the local owner settings');
  await run(root,['reset','--yes']);await rm(additive);await run(root,setup);await start();
  const fresh=await json('/api/identity/login',{email,password});assert.notEqual(fresh.actor.id,actor.id);
  assert.equal((await json('/api/management/projects',undefined,fresh.token)).data.length,1);

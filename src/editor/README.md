@@ -10,5 +10,5 @@ component; never resume from an intermediate layout containing an unresolved Out
 `onRendered` alone is insufficient for nested lazy hydration in the maintained
 router version. Do not replace this boundary with a timer or React private fields.
 
-`pnpm verify:visual` validates compiled JSON, source locks, types, build, and focused
+`pnpm verify` validates compiled JSON, source locks, types, build, and focused
 real-browser navigation/reload behavior. Full `pnpm verify` remains the default.

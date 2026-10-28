@@ -2,8 +2,9 @@ import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
 import {startApp,sha} from '../journeys/kit/app.mjs'
 
-export async function companyRecordsJourney(){
- const app=await startApp({captureQueue:true}),w=await app.seedWorkspace('companies'),other=await app.seedWorkspace('foreign-companies'),p=w.projectId,owner={token:w.tokens.owner},B=`/api/management/projects/${p}`
+export async function companyRecordsJourney(sharedApp){
+ const app=sharedApp??await startApp({captureQueue:true}),w=await app.seedWorkspace('companies'),other=await app.seedWorkspace('foreign-companies'),p=w.projectId,owner={token:w.tokens.owner},B=`/api/management/projects/${p}`
+ const requestsBefore=app.requests.length
  try{
   const defs={}
   for(const [type,value,options] of [['text','US distribution'],['number',125],['date','2026-10-20'],['dropdown','Enterprise',['Standard','Enterprise']],['checkbox',true]]){
@@ -84,7 +85,7 @@ export async function companyRecordsJourney(){
   assert.deepEqual((await app.ok(`${B}/contacts/${social.contactId}/identity-links`,owner)).history.map(entry=>entry.contact.id),[alice.contactId,alice.contactId])
   await apply(intent)
   assert.equal((await app.sql("SELECT action FROM audit_events WHERE project_id=? AND action IN ('customer.identity_linked','customer.identity_unlinked')",p)).length,3)
-  assert.equal(app.requests.length,0,'identity review sends nothing')
+  assert.equal(app.requests.length,requestsBefore,'identity review sends nothing')
   await apply({...intent,action:'unlink'})
   const provenanceIntent={...intent,provenance:`Verified in support request from ${contacts[0].email}`}
   const priorErasureReview=(await app.ok(linkPath+'/preview',{...owner,body:provenanceIntent})).preview
@@ -106,5 +107,5 @@ export async function companyRecordsJourney(){
   assert.equal(await app.first('SELECT * FROM contact_companies WHERE project_id=? AND contact_id=?',p,contacts[0].id),null)
   assert.equal((await app.sql('SELECT before_json,after_json,provenance_json FROM company_history WHERE project_id=?',p)).some(row=>JSON.stringify(row).includes(contacts[0].id)),false)
   assert.ok((await app.sql("SELECT action FROM audit_events WHERE project_id=? AND action LIKE 'company.%'",p)).length>0)
- }finally{await app.close()}
+ }finally{if(!sharedApp)await app.close()}
 }

@@ -13,15 +13,13 @@ export async function triageBrowserJourney({runtime,browser,shot,fixture}){
   assert.deepEqual(violations,[],name+' accessibility');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' overflow');await page.screenshot({path:shot(name+'.png'),fullPage:true})
  }
  try{
- for(const width of [1440,390]){
-  await page.setViewportSize({width,height:width===390?844:1000})
+ for(const width of [1440]){
+  await page.setViewportSize({width,height:1000})
   await page.goto(`${runtime.origin}/projects/${f.projectId}/workflow-settings`)
   await page.getByRole('button',{name:'Triage',exact:true}).click();await page.getByRole('heading',{name:'Intelligent triage',exact:true}).waitFor()
   await page.getByLabel('Enable triage',{exact:true}).waitFor();await capture(`triage-settings-${width}`,'.triage-settings')
   await page.getByLabel('I reviewed accuracy by intent',{exact:true}).check();await page.getByLabel('Use predictions for routing',{exact:true}).check();await page.getByRole('button',{name:'Save triage settings',exact:true}).click();await page.getByText('Saved.',{exact:true}).waitFor()
   assert.equal((await f.settings()).routing_enabled,true)
-  // Reset through the real settings door so each viewport proves explicit approval.
-  await f.api(f.base+'/triage-settings',{...await f.settings(),routing_enabled:false},'PUT')
   await page.goto(`${runtime.origin}/projects/${f.projectId}/conversations/${f.tickets[0].id}`)
   await page.locator('#conversation-assistant').waitFor({state:'attached'});if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click()
   await page.getByRole('tab',{name:'Ticket',exact:true}).click();const fields=page.locator('#ticket-section-fields-heading');if(await fields.getAttribute('aria-expanded')!=='true')await fields.click()

@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict'
 import {startApp,sha} from '../journeys/kit/app.mjs'
 
-export async function customerCsvJourney(){
- const app=await startApp({captureQueue:true}),w=await app.seedWorkspace('csv'),p=w.projectId,owner={token:w.tokens.owner},B=`/api/management/projects/${p}`,I=B+'/customer-imports'
+export async function customerCsvJourney(sharedApp){
+ const app=sharedApp??await startApp({captureQueue:true}),w=await app.seedWorkspace('csv'),p=w.projectId,owner={token:w.tokens.owner},B=`/api/management/projects/${p}`,I=B+'/customer-imports'
  try{
   const company=(await app.ok(B+'/companies',{...owner,body:{name:'Northstar Supply',domains:['northstar.example']}})).company
   const original=(await app.ok(B+'/contacts',{...owner,body:{name:'Old name',email:'known@northstar.example'}})).data
   const rows=Array.from({length:500},(_,i)=>`${i===0?'Updated name':`Customer ${i}`},${i===0?'known@northstar.example':i===1?'not-an-email':i===2?'known@northstar.example':`customer${i}@northstar.example`}`)
   const input={kind:'contacts',csv:'Full name,Work email\n'+rows.join('\n'),mapping:{name:'Full name',email:'Work email'},matchDomains:true}
-  const before={mail:app.requests.length,jobs:(await app.takeJobs()).length,workflows:(await app.first('SELECT count(*) n FROM workflow_events')).n,sla:(await app.first('SELECT count(*) n FROM ticket_sla_state')).n}
+  // Earlier workspace operations may have queued work. Observe only jobs admitted by this import.
+  await app.takeJobs()
+  const before={mail:app.requests.length,workflows:(await app.first('SELECT count(*) n FROM workflow_events')).n,sla:(await app.first('SELECT count(*) n FROM ticket_sla_state')).n}
   assert.equal((await app.call(I+'/preview',{token:w.tokens.operator,body:input})).status,403)
   const run=await app.ok(I+'/preview',{...owner,body:input})
   assert.equal(run.rows.length,500)
@@ -24,7 +26,7 @@ export async function customerCsvJourney(){
   assert.equal(applied.status,'applied')
   assert.equal((await app.first('SELECT count(*) n FROM contact_companies WHERE project_id=? AND company_id=?',p,company.id)).n,498)
   assert.equal((await app.first('SELECT name FROM contacts WHERE id=?',original.id)).name,'Updated name')
-  assert.equal(app.requests.length,before.mail);assert.equal((await app.takeJobs()).length,before.jobs)
+  assert.equal(app.requests.length,before.mail);assert.deepEqual(await app.takeJobs(),[],'the CSV import admits no background work')
   assert.equal((await app.first('SELECT count(*) n FROM workflow_events')).n,before.workflows)
   assert.equal((await app.first('SELECT count(*) n FROM ticket_sla_state')).n,before.sla)
   assert.equal((await app.ok(`${I}/${run.id}/undo`,{...owner,body:{}})).status,'undone')
@@ -78,5 +80,5 @@ export async function customerCsvJourney(){
   assert.equal(retained.includes(original.email),false)
   assert.equal((await app.call(`${I}/${erased.id}/undo`,{...owner,body:{}})).status,409)
   assert.ok((await app.sql("SELECT action FROM audit_events WHERE project_id=? AND action LIKE 'customer_csv.%'",p)).length>=3)
- }finally{await app.close()}
+ }finally{if(!sharedApp)await app.close()}
 }

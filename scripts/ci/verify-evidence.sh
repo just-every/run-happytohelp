@@ -14,6 +14,10 @@ newest_push() {
   push_runs "$1" 'max_by(.id) | select(. != null) | "\(.status) \(.conclusion)"'
 }
 
+newest_branch_push() {
+  push_runs "$1" '[.[] | select(.head_branch != "main")] | max_by(.id) | select(. != null) | "\(.status) \(.conclusion)"'
+}
+
 green() { [ "$(newest_push "$1")" = 'completed success' ]; }
 
 # A missing run is safe; any unfinished or unsuccessful run blocks parent reuse.

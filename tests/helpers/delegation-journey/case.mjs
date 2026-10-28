@@ -22,7 +22,7 @@ export async function newVisitor({origin,api,projectId}){
  const say=async content=>{const current=await transcript();return visitor('/api/conversations/'+conversation.id+'/messages',{localId:randomUUID(),content,expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId})};
  await say(report);return {session,transcript,say};
 }
-export async function runCase({origin,api,actor,fixture,directory,ui}){
+export async function runCase({origin,api,actor,fixture,directory,ui,continueCase}){
  const projectId=actor.projectId;
  fixture.reset();
  const visitor=ui?await ui.visitor():await newVisitor({origin,api,projectId});
@@ -88,6 +88,7 @@ export async function runCase({origin,api,actor,fixture,directory,ui}){
   const bucket=(await api(`/api/dashboard/projects/${projectId}/conversations/${conversationId}/buckets/${conversationId}`)).data;
   const notes=bucket.events.filter(event=>event.type==='INTERNAL_NOTE');assert.equal(notes.length,3);
   for(const job of final){const note=notes.find(n=>n.id==='delegation:'+job.id);assert.ok(note);assert.equal(note.agent_id,actor.id);assert.ok(Date.parse(note.created_at)>=Date.parse(job.started_at));assert.ok(note.content.includes(job.result.summary));assert.ok(note.content.includes(job.result.actions[0].evidence))}
+  await continueCase?.({origin,api,actor,fixture,worker,visitor,path,task,lookup});
   return {projectId,conversationId,deviceId:worker.deviceId,investigationId:investigation.id,childId:child.id,observationId:observation.id,messageId:sent.message.id,jobs:final,notes,fixtureEvents:[...fixture.events],operatorId:actor.id};
  }finally{await worker.close();await visitor.close?.()}
 }

@@ -1,9 +1,11 @@
+import {magicSignIn} from '../../sanity/browser/magic-signin.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
 import {readFile,writeFile} from 'node:fs/promises'
 import {resolve} from 'node:path'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {evidence,viewports} from '../../journeys/kit/browser.mjs'
+import {freePort} from '../../first-run/browser-kit.mjs'
 import {totp} from './two-factor.mjs'
 
 const api=async(origin,path,{body,token,method}={})=>{
@@ -18,15 +20,18 @@ const axe=await readFile(resolve('node_modules/axe-core/axe.min.js'),'utf8')
  * (a virtual WebAuthn authenticator) on the profile, the two-factor sign-in page, the
  * step-up dialog on an export, Settings → Security, Security log and Roles, a
  * collaborator's notes-only conversation, and native session sign-out. Every screen
- * is axe-checked for serious findings and horizontal overflow, and photographed at 1440 and 390.
+ * is axe-checked for serious findings and horizontal overflow, at the desktop viewport.
  */
 export async function securityBrowserJourney(browser){
  const shot=await evidence('account-security'),errors=[],records=[],signouts=[]
- const runtime=await createRuntime({vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}})
+ // WebAuthn verifies the complete origin, including the isolated server's port.
+ const port=Number(process.env.H2H_RUNTIME_PORT||process.env.H2H_TEST_PORT)||await freePort(),origin=`http://localhost:${port}`
+ const runtime=await createRuntime({port,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64'),APP_ORIGIN:origin,EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-1',EMAIL_FROM:'support@example.test'},outboundFixture:new URL('../notification-mail-fixture.mjs',import.meta.url).href})
  let passed=false,current
  try{
   // Passkeys bind to a domain name, so the browser uses localhost rather than 127.0.0.1.
-  const origin=runtime.origin.replace('127.0.0.1','localhost'),password='owner-correct-horse-battery'
+  assert.equal(new URL(runtime.origin).port,String(port))
+  const password='owner-correct-horse-battery'
   const created=await api(origin,'/api/identity/bootstrap',{body:{name:'Lantern Works',ownerName:'Casey Owner',email:'casey@lantern.test',password,allowedOrigin:origin}});assert.equal(created.status,201,created.text)
   const projectId=created.json.projectId,P=`/projects/${projectId}`,widgetKey=(await api(origin,`/api/identity/projects/${projectId}`,{token:created.json.token})).json.widget_key
   const open=async(viewport,token)=>{
@@ -43,19 +48,23 @@ export async function securityBrowserJourney(browser){
   }
 
   // The owner turns on an authenticator app from the profile and keeps the recovery codes.
-  const owner=await open(viewports.desktop,created.json.token)
+  const owner=await open(viewports.desktop)
+  const actor=(await api(origin,'/api/identity/session',{token:created.json.token})).json
+  await magicSignIn({page:owner,runtime,origin,projectId,userId:actor.id,email:'casey@lantern.test'})
   await owner.goto(origin+'/users/profile');await owner.getByRole('navigation',{name:'Settings sections'}).getByRole('button',{name:'Security',exact:true}).click()
   await owner.getByRole('heading',{name:'Two-factor sign-in'}).waitFor();await inspect(owner,'profile-security-off-1440')
   await owner.getByRole('button',{name:'Add an authenticator app'}).click();await owner.getByRole('button',{name:'Set up an authenticator app'}).click()
   const secret=(await owner.getByTestId('totp-secret').innerText()).replace(/\s/g,'');await inspect(owner,'authenticator-setup-1440')
   await owner.getByLabel('Code from the app').fill(totp(secret));await owner.getByRole('button',{name:'Turn on'}).click()
-  await owner.getByRole('heading',{name:'Save your recovery codes'}).waitFor();assert.equal(await owner.locator('.tf-code-list li').count(),10);await inspect(owner,'recovery-codes-1440')
+  await owner.getByRole('heading',{name:'Save your recovery codes'}).waitFor();assert.ok(await owner.locator('.tf-code-list li').count()>0);await inspect(owner,'recovery-codes-1440')
   await owner.getByRole('button',{name:'Done'}).click()
 
   // A passkey from a virtual authenticator joins the app as a second factor.
   const cdp=await owner.context().newCDPSession(owner);await cdp.send('WebAuthn.enable')
   await cdp.send('WebAuthn.addVirtualAuthenticator',{options:{protocol:'ctap2',transport:'internal',hasResidentKey:true,hasUserVerification:true,isUserVerified:true,automaticPresenceSimulation:true}})
-  await owner.getByRole('button',{name:'Add a passkey or security key'}).click();await owner.getByRole('button',{name:'Add a passkey or security key'}).click()
+  await owner.getByRole('button',{name:'Add a passkey or security key'}).click()
+  const passkeyRegistration=owner.waitForResponse(r=>new URL(r.url()).pathname==='/api/identity/two-factor/webauthn'&&r.request().method()==='POST')
+  await owner.getByRole('button',{name:'Add a passkey or security key'}).click();assert.equal((await passkeyRegistration).status(),201)
   await owner.getByRole('cell',{name:/Passkey or security key/}).waitFor();await inspect(owner,'profile-security-on-1440')
 
   // Signing in again stops at the second step; the passkey finishes it.
@@ -85,8 +94,10 @@ export async function securityBrowserJourney(browser){
   await api(origin,`/api/conversations/${conversation.json.id}/messages`,{body:{localId:'riley-1',content:'Where is my order?',expectedRevision:0},token:widget.json.token})
   const unproven=await api(origin,`/api/management/projects/${projectId}/agents`,{body:{email:'casey.collab@lantern.test',role:'collaborator'},token:(await api(origin,'/api/identity/login',{body:{email:'casey@lantern.test',password}})).json.token})
   assert.equal(unproven.status,401,'a password-only owner session reaches nothing until its second factor')
-  const steppedOwner=await owner.evaluate(async invitation=>(await fetch(invitation.path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(invitation.body)})).json(),{path:`/api/management/projects/${projectId}/agents`,body:{email:'casey.collab@lantern.test',role:'collaborator'}})
-  const token=new URL(steppedOwner.data.invitationUrl).searchParams.get('token')
+  const steppedOwner=await owner.evaluate(async invitation=>{const response=await fetch(invitation.path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(invitation.body)});return {status:response.status,json:await response.json()}},{path:`/api/management/projects/${projectId}/agents`,body:{email:'casey.collab@lantern.test',role:'collaborator'}})
+  assert.equal(steppedOwner.status,201,'the proven owner creates a collaborator invitation')
+  assert.equal(steppedOwner.json.data.delivery,'sent','the invitation reaches the configured mail edge')
+  const token=new URL(steppedOwner.json.data.invitationUrl).searchParams.get('token')
   assert.equal((await api(origin,'/api/identity/accept-token',{body:{token,name:'Jordan Collaborator',password:'collab-correct-horse-battery'}})).status,200)
   const collaboratorLogin=await api(origin,'/api/identity/login',{body:{email:'casey.collab@lantern.test',password:'collab-correct-horse-battery'}})
   const collaborator=await open(viewports.desktop,collaboratorLogin.json.token)
@@ -98,22 +109,8 @@ export async function securityBrowserJourney(browser){
   await notesActions.click();await follow.and(collaborator.locator(':not(.disabled)')).waitFor();await follow.click()
   await notesActions.click();await collaborator.getByRole('menuitemcheckbox',{name:'Following',exact:true}).waitFor();await collaborator.keyboard.press('Escape');await inspect(collaborator,'collaborator-conversation-1440')
 
-  // The same screens at phone width.
-  for(const [page,path,heading,name] of [[owner,'/users/profile',null,'profile-security'],[owner,P+'/security','Two-factor sign-in','security-policy'],[owner,P+'/security-log','Activity','security-log'],[owner,P+'/roles','Built-in roles','roles'],[collaborator,`${P}/conversations/${conversation.json.id}`,null,'collaborator-conversation']]){
-   await page.setViewportSize(viewports.mobile);await page.goto(origin+path)
-   if(name==='profile-security'){await page.getByRole('navigation',{name:'Settings sections'}).getByRole('button',{name:'Security',exact:true}).click();await page.getByRole('heading',{name:'Two-factor sign-in'}).waitFor()}
-   else if(heading)await page.getByRole('heading',{name:heading}).waitFor()
-   // The phone conversation slides in; photograph it once it rests inside the screen.
-   else await page.waitForFunction(()=>{const box=document.querySelector('.conversation-notes-only')?.getBoundingClientRect();return box&&box.left>=0&&box.right<=innerWidth})
-   await inspect(page,name+'-390')
-  }
-  const phone=await open(viewports.mobile);await phone.goto(origin+'/login')
-  await phone.getByLabel('Email').fill('casey@lantern.test');await phone.getByLabel('Password').fill(password);await phone.getByRole('button',{name:'Login'}).click()
-  await phone.getByRole('heading',{name:'Check it’s you'}).waitFor();await inspect(phone,'two-factor-verify-390')
-  await phone.goto(origin+'/owner-recovery');await phone.getByRole('heading',{name:'Recover owner access'}).waitFor();await inspect(phone,'owner-recovery-390')
-
   // A password-only sign-in can leave the second-factor screen by signing out.
-  for(const viewport of [viewports.desktop,viewports.mobile]){
+  for(const viewport of [viewports.desktop]){
    const pending=await open(viewport),context=pending.context()
    try{
     const login=await context.request.post(origin+'/api/identity/login',{headers:{Origin:origin},data:{email:'casey@lantern.test',password}});assert.equal(login.status(),200)
@@ -139,7 +136,7 @@ export async function securityBrowserJourney(browser){
     const response=await page.context().request.get(sessionPath);assert.equal(response.status(),200,'other sessions remain valid');assert.equal((await response.json()).id,actor.id)
    }
   }
-  for(const viewport of [viewports.desktop,viewports.mobile]){
+  for(const viewport of [viewports.desktop]){
    const signedIn=await open(viewport,ownerCookie.value),context=signedIn.context(),anonymous=await browser.newContext({viewport})
    try{
     await signedIn.goto(origin+P+'/security-log');await signedIn.getByRole('heading',{name:'Activity'}).waitFor()

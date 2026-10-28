@@ -61,3 +61,11 @@ New workspaces are provisioned only through `src/modules/management/provisioning
 on the designated remote runner; keep local, hosted and configured-provider
 results distinct. After tracked edits, run `pnpm run source:lock`, then
 `pnpm run source:check`. Preserve the selected byte-exact Base sources.
+
+## Lander-Regenerate
+
+After changing evidence citations in `CONTRACT.md`, run
+`node scripts/contract-docs.mjs write` then `node scripts/contract-docs.mjs check`.
+Commit generated `ACCEPTANCE.md` and `docs/CLAIMS.md` whole; preserve the retained
+command requirements and holds in `docs/acceptance-notes.md`. Regenerate
+`sources.lock.json` last.

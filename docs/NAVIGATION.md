@@ -218,7 +218,7 @@ navigation. Every actual leaf must resume them after its React commit through
 intermediate layout or a component surrounding `Suspense`/`Outlet`: those may
 commit before the rendered leaf hydrates. The wrapper adds no DOM and observes
 the route href so reused wildcard and query-only navigation resume correctly.
-Keep this boundary when adding routes. `pnpm run verify:visual` checks the saved
+Keep this boundary when adding routes. `pnpm run verify` checks the saved
 snapshot, source integrity, types, build and an isolated local browser journey.
 The focused profile also compiles a test-only login-heading edit and checks SSR
 hydration, reload and return navigation for browser errors. Run it in a dedicated

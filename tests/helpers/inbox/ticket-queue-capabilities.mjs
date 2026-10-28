@@ -1,3 +1,4 @@
+import {macroDraftLifecycle} from '../r4/macros.mjs'
 import assert from 'node:assert/strict'
 
 // The queue composes the native macro, status and public request-form doors.
@@ -13,7 +14,13 @@ export async function ticketQueueCapabilities(f,queueIds,tag){
  const tickets=before.map(ticket=>({id:ticket.id,expected_version:ticket.ticket_version}))
  const messages=async id=>(await app.ok(`/api/conversations/${id}/messages`,{token:w.tokens.owner})).messages
  const messagesBefore=await Promise.all(tickets.map(ticket=>messages(ticket.id)))
- const preview=await ok(`/macros/${macro.id}/preview`,{version:macro.version,tickets})
+ const stranger=await app.ok('/api/identity/widget/session',{body:{widgetKey:f.foreign.widgetKey},headers:{Origin:f.foreign.allowedOrigin}})
+ const foreign=await app.ok('/api/conversations',{token:stranger.token,body:{projectId:f.foreign.projectId}})
+ const stale={id:ids[2],expected_version:(await get(ids[2])).ticket_version}
+ const selection=[...tickets,stale,{id:foreign.id,expected_version:0}]
+ const previewReceipt=await ok(`/macros/${macro.id}/preview`,{version:macro.version,tickets:selection})
+ assert.deepEqual(previewReceipt.results.map(row=>row.status),['ready','ready','ready','forbidden'])
+ const preview={...previewReceipt,results:previewReceipt.results.slice(0,2)}
  assert.deepEqual(preview.results.map(row=>row.status),['ready','ready'])
  for(const row of preview.results){
   assert.deepEqual(row.draft.unresolved,[])
@@ -23,7 +30,10 @@ export async function ticketQueueCapabilities(f,queueIds,tag){
  assert.deepEqual(await Promise.all(tickets.map(ticket=>get(ticket.id))),before,'macro preview leaves tickets unchanged')
  assert.deepEqual(await Promise.all(tickets.map(ticket=>messages(ticket.id))),messagesBefore,'macro preview sends no replies')
  for(const ticket of tickets)assert.equal((await call(`/conversations/${ticket.id}/macro-draft`)).data.data,null)
- const applied=await ok(`/macros/${macro.id}/apply`,{version:macro.version,tickets,command_id:'queue-replacement-labels'})
+ await patch(ids[2],{subject:'Customer updated while preview was open'})
+ const appliedReceipt=await ok(`/macros/${macro.id}/apply`,{version:macro.version,tickets:selection,command_id:'queue-replacement-labels'})
+ assert.deepEqual(appliedReceipt.results.map(row=>row.status),['applied','applied','stale','forbidden'])
+ const applied={...appliedReceipt,results:appliedReceipt.results.slice(0,2)}
  assert.deepEqual(applied.results.map(row=>row.status),['applied','applied'])
  for(const [i,row] of applied.results.entries()){
   const ticket=await get(row.id),draft=await ok(`/conversations/${row.id}/macro-draft`)
@@ -41,6 +51,8 @@ export async function ticketQueueCapabilities(f,queueIds,tag){
   const receipt=audit.find(event=>event.action==='macro.applied'&&event.target_id===row.id&&event.detail.usage_id===row.usage_id)
   assert.ok(receipt);assert.equal(receipt.outcome,'succeeded');assert.equal(receipt.detail.macro_id,macro.id)
  }
+
+ await macroDraftLifecycle(f,macro,ids[0])
 
  // A verified customer submits the same typed field through the public form.
  const forms=`/api/forms/projects/${w.projectId}/forms`,publicForms=`/api/forms/${w.projectId}`

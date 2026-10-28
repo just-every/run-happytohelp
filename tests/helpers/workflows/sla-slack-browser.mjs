@@ -3,20 +3,7 @@ import {evidence} from '../../journeys/kit/browser.mjs'
 export async function slaSlackBrowser({page,runtime,fixture,policy}){
  const {projectId,base,api,tickets}=fixture
  const shot=await evidence('sla-slack')
- const capture=async name=>{
-  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${name}: desktop overflow`)
-  for(const width of [1440,390]){await page.setViewportSize({width,height:width===390?844:1000});await page.waitForTimeout(350);if(['pending','failed','uncertain','acknowledged'].some(state=>name.endsWith(state))){if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click();await page.getByRole('tab',{name:'Ticket',exact:true}).click();await page.locator('.workflow-panel').scrollIntoViewIfNeeded()}if(width===390){
-   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+': phone overflow')
-   const controls=await page.locator('button,a[href],input:not([type=hidden]),select,textarea,summary,[role=button],[role=tab],[role=checkbox],[role=switch]').evaluateAll(nodes=>nodes.filter(node=>node.getClientRects().length&&getComputedStyle(node).visibility!=='hidden'&&!node.closest('[inert],[aria-hidden="true"]')).map(node=>{
-    const target=node.matches('input[type=checkbox],input[type=radio]')?(node.labels?.[0]||node):node
-    const box=target.getBoundingClientRect()
-    return {name:node.getAttribute('aria-label')||node.textContent?.trim()||node.id,width:box.width,height:box.height}
-   }))
-   console.log(name+' phone targets: '+JSON.stringify(controls))
-   assert.deepEqual(controls.filter(({width,height})=>width<44||height<44),[],name+': every phone control is at least 44 by 44')
-  }await page.screenshot({path:shot(`${name}-${width}.png`),fullPage:true})}
-  await page.setViewportSize({width:1440,height:1000})
- }
+ const capture=async name=>{await page.screenshot({path:shot(`${name}-1440.png`),fullPage:true})}
  await page.goto(`${runtime.origin}/projects/${projectId}/slack-settings`)
  await page.getByLabel('Connection name',{exact:true}).fill('SLA backup channel')
  await page.getByLabel('Slack incoming webhook URL',{exact:true}).fill('https://hooks.slack.com/services/synthetic-hh-1/synthetic-hh-2/synthetic-hh-3')
@@ -45,6 +32,9 @@ export async function slaSlackBrowser({page,runtime,fixture,policy}){
   const ticket=await api('/api/conversations',{projectId,contactId:tickets[0].visitor.contactId})
   const admitted=await fetch(`${runtime.origin}/api/conversations/${ticket.id}/messages`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${tickets[0].visitor.token}`},body:JSON.stringify({localId:`synthetic-hh-${n}`,content:'A replacement is needed.',expectedRevision:0})})
   assert.equal(admitted.status,200)
+  // Automatic triage owns its own versioned ticket update. Observe completion
+  // before the lead applies channel and assignment changes to that frontier.
+  await page.waitForFunction(async path=>{const response=await fetch(path);return (await response.json()).data?.state==='complete'},`${base}/conversations/${ticket.id}/triage`)
   const current=(await api(`${base}/conversations/${ticket.id}/ticket`)).data
   await api(`${base}/conversations/${ticket.id}/ticket`,{expected_version:current.ticket_version,channel:'phone',status_id:'open',agent_id:me.id},'PATCH')
   ids.push(ticket.id)

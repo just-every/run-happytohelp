@@ -139,11 +139,11 @@ jobs:
           - name: activation
             browser: true
             commands: |
-              node --test --test-concurrency=2 tests/journeys/public.mjs tests/journeys/reports.mjs tests/journeys/erasure.mjs tests/journeys/move-in-custody.mjs tests/journeys/first-run-browser.mjs tests/journeys/procedures-browser.mjs
+              node --test --test-concurrency=2 tests/journeys/public.mjs tests/journeys/reports.mjs tests/journeys/erasure.mjs tests/journeys/move-in-custody.mjs tests/journeys/connections.mjs tests/journeys/first-run.mjs tests/journeys/identity.mjs tests/sanity/ai/admission.mjs tests/journeys/first-run-browser.mjs tests/journeys/procedures-browser.mjs tests/journeys/move-in-browser.mjs
           - name: operations
             browser: true
             commands: |
-              node --test --test-concurrency=2 tests/journeys/knowledge.mjs tests/journeys/email.mjs tests/journeys/context.mjs tests/journeys/inbox-browser.mjs
+              node --test --test-concurrency=2 tests/journeys/knowledge.mjs tests/journeys/email.mjs tests/journeys/context.mjs tests/journeys/legacy.mjs tests/journeys/ai.mjs tests/journeys/delegation.mjs tests/journeys/installer.mjs tests/journeys/inbox-browser.mjs tests/journeys/phone-browser.mjs
           - name: customer
             browser: true
             commands: |
@@ -152,18 +152,10 @@ jobs:
             browser: true
             commands: |
               node --test --test-concurrency=2 tests/journeys/inbox.mjs tests/journeys/brands-browser.mjs
-          - name: move-in
-            browser: true
-            commands: |
-              node --test --test-concurrency=2 tests/journeys/connections.mjs tests/journeys/first-run.mjs tests/journeys/identity.mjs tests/sanity/ai/admission.mjs tests/journeys/move-in-browser.mjs
           - name: delegation
             browser: true
             commands: |
               node --test --test-concurrency=2 tests/journeys/restore.mjs tests/journeys/widget.mjs tests/journeys/delegation-browser.mjs
-          - name: recovery
-            browser: true
-            commands: |
-              node --test --test-concurrency=2 tests/journeys/legacy.mjs tests/journeys/ai.mjs tests/journeys/delegation.mjs tests/journeys/installer.mjs tests/journeys/phone-browser.mjs
     steps:
       - name: Configure evidence directory
         run: echo "H2H_EVIDENCE_DIR=$RUNNER_TEMP/happytohelp-evidence" >> "$GITHUB_ENV"

@@ -39,3 +39,10 @@ test('a connected application gets selected access only through native consent w
 test('delegated authority holds under concurrency and loss: identical writes share one hash-only receipt, conflicting writes split 200/409, a recreated article is stale, and expiry, a disabled client, lost membership, a deleted project or a narrowed scope end access; receipts survive a restart',authorityJourney)
 
 test('Connected applications data and the consent screen re-check session, project and role; registration is owner-only, approval lands at the exact callback, cancel returns to settings, a project deleted mid-approval issues nothing, and without an installation consent is unavailable',pagesJourney)
+
+// One added core registration; the production router, native owner/password,
+// signed settings, native effects and shared policy all run over real D1.
+test('the support agent door binds Business ids to native people, preserves scoped reads and native transactions, and enforces policy, replay, revision, Pause and consent',async()=>{
+ const {agentDoorJourney}=await import('../helpers/agent-door/journey.mjs')
+ await agentDoorJourney()
+})

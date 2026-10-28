@@ -16,6 +16,7 @@ import {r4RouteRule} from './r4-route-permissions'
 type Rule=Permission|'self'|'none'
 const P='/api/management/projects/:projectId',D='/api/dashboard/projects/:projectId',C=`${D}/conversations/:conversationId`,K='/api/knowledge/:projectId',X='/api/customer-context/:projectId/:subjectId',L='/api/projects/:project'
 const rules:Record<string,Rule>={
+ 'POST /api/rer/business-project':'integrations.install','GET /api/rer/business-project':'self',
  // Own account and sign-in
  'POST /auth/signout':'self','POST /api/identity/switch-project':'self','POST /api/identity/password':'self','POST /api/identity/accept-invitation':'self','DELETE /api/identity/session':'self',
  'PUT /api/management/profile':'self',[`PUT ${P}/agents/:userId/primary`]:'self',

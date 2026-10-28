@@ -490,5 +490,17 @@
       "type": "extension",
       "id": "native-owner-password"
     }
-  ]
+  ],
+  "business": {
+    "settings": 1,
+    "values": [
+      "display_name"
+    ],
+    "team": {
+      "roles": {
+        "admin": "admin",
+        "member": "operator"
+      }
+    }
+  }
 }

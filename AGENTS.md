@@ -62,6 +62,25 @@ on the designated remote runner; keep local, hosted and configured-provider
 results distinct. After tracked edits, run `pnpm run source:lock`, then
 `pnpm run source:check`. Preserve the selected byte-exact Base sources.
 
+## Landing and conflict resolution
+
+- Maintain `CONTRACT.md` by hand. Resolve it first, retaining main's newer
+  judgments and Status; reapply the candidate's Evidence/Gap. Regenerate
+  `ACCEPTANCE.md`, `docs/CLAIMS.md` and Status summary counts with the
+  `Lander-Regenerate` commands below; never hand-resolve these generated views.
+- When adding `migrations/NNN_*.sql`, renumber the candidate's migrations in order
+  above main's current highest numeric prefix. Update every reference, including
+  `RELEASE.json` buyerSteps, docs, migration inventories/tests and contract Evidence.
+  Never give two candidate migrations one number or reuse a number main already has.
+  Re-check main's highest numeric prefix immediately before finishing.
+- List each added migration with its buyer steps in `RELEASE.json`. On conflict,
+  retain main's entries and append the candidate's renumbered entries after them.
+- Verify the resolved candidate with `pnpm run typecheck` and the tests covering
+  the resolved files. Regenerate the source lock LAST, after all tracked edits,
+  with `node scripts/edition-authoring/cli.mjs lock`; then require exit 0 from
+  `node scripts/edition-authoring/cli.mjs check` and
+  `pnpm exec rer check --profile first-party`. Use GitHub Verify for the full check.
+
 Lander-Regenerate: node src/site/base/contract-docs.mjs write
 Lander-Regenerate: node scripts/edition-authoring/cli.mjs lock
 

@@ -24,7 +24,7 @@ function Connection({projectId, writable}) {
         <ul><li><code>crm.objects.contacts.read</code></li><li><code>crm.objects.companies.read</code></li></ul>
         <p>Extra scopes are refused. No CRM fields are written, no customers are matched automatically, and CRM mappings never grant customer or ticket access.</p>
         {loading && <p role="status">Checking HubSpot connection…</p>}
-        {error && <p role="alert" className="alert alert-danger">{error} Check the account, exact scopes and your current permissions, then try again. Re-enter the private token to reconnect.</p>}
+        {error && <p role="alert" className="alert alert-danger">{error.replace(/[.!?\s]+$/, '')}. Check the account, exact scopes and your current permissions, then try again. Re-enter the private token to reconnect.</p>}
         {notice && <p role="status" className="alert alert-success">{notice}</p>}
         {data && <p role="status">{data.connection?.connected ? `Connected to HubSpot account ${data.connection.account_id}` : 'HubSpot disconnected'}{data.connection?.updated_at && <> · Updated {new Date(data.connection.updated_at).toLocaleString()}</>}</p>}
         <button type="button" className="btn btn-white" disabled={loading} onClick={() => run()}>Check connection</button>

@@ -6460,7 +6460,7 @@
       "executable": false
     },
     "src/modules/mobile/client.ts": {
-      "sha256": "fdff3ff55fa18e4b940aa1e7b2e7635292ffc1e4bfbf41cb0dd203e0969ba830",
+      "sha256": "e6844a0f77d628358af12effb66f408ac15e2f6c41b48422f7e531374aef35bd",
       "executable": false
     },
     "src/modules/mobile/commands.ts": {
@@ -12052,11 +12052,11 @@
       "executable": false
     },
     "tests/helpers/mobile-offline.mjs": {
-      "sha256": "29cbc44c2c11aded856ed22a82700bc3f8ffedb8cc8794141446fc7196dbe0da",
+      "sha256": "93b8a173b44d9cee4fc959ee89f7a2d9a65aebf7a304ef7089fe73f53d7df326",
       "executable": false
     },
     "tests/helpers/mobile.mjs": {
-      "sha256": "f7a7bf959c927e1915359052dbb3b694fc6a19c9fbed60427d73a5d8e3a00db3",
+      "sha256": "9bec88e8f8cbea2124735fafeb55dbdc1651b0e727ac703246021e4cef0e58a1",
       "executable": false
     },
     "tests/helpers/native-http.mjs": {

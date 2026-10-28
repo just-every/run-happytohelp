@@ -8496,7 +8496,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/conversation/FollowupObligations.jsx": {
-      "sha256": "d1e8e1d5f4602036fd6cf84237aba75fd3843c75e9bd57afa9922b80e40921cc",
+      "sha256": "a88cf7231c46224a0f5454e7fd6523b7698264357d9b9478108fa78d979aa949",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ProductionTrace.jsx": {
@@ -11376,11 +11376,11 @@
       "executable": false
     },
     "tests/helpers/ai/obligations-browser.mjs": {
-      "sha256": "9ac67164afe061317507f87e0d32d7dd8136d633ce078844c3dab2831ae5b385",
+      "sha256": "eefe9d66808663d8091bd76991aaeb25ce316f0959755d46233a144bcef27552",
       "executable": false
     },
     "tests/helpers/ai/obligations.mjs": {
-      "sha256": "a51713ba91de9a63e5374db32f40a3f5abb0eb7b50143aee98468a226408fe14",
+      "sha256": "f5a622a9580314439bb8571e472547ebadc65e8e86cc5bd7b15b2b6c47da12b6",
       "executable": false
     },
     "tests/helpers/ai/procedures-browser.mjs": {
@@ -12196,7 +12196,7 @@
       "executable": false
     },
     "tests/helpers/recovery/followup.mjs": {
-      "sha256": "8be084bccc5a9f72ffb60cfc888a89fe9f81e7c43a0842a2da02af824cbd551b",
+      "sha256": "3b575f35a5d5c218697fd518be9e63e7d046344bc23d6309f3dee84ad49d2c0c",
       "executable": false
     },
     "tests/helpers/recovery/independent-journey.mjs": {

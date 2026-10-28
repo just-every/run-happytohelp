@@ -4,7 +4,7 @@ import {archivePolicy} from '../../../scripts/installer/portability-policy.mjs'
 import {startApp,applyMigrations,sha} from '../../journeys/kit/app.mjs'
 
 export async function followupRecoveryJourney() {
- const source=await startApp({captureQueue:true,migrate:name=>name<'257_'});let destination
+ const source=await startApp({captureQueue:true,migrate:name=>name<'257_'});let destination,refused
  try {
   const workspace=await source.seedWorkspace('followup-upgrade'),p=workspace.projectId,token=workspace.tokens.owner
   const visitor=(await source.call('/api/identity/widget/session',{headers:{Origin:workspace.allowedOrigin},body:{widgetKey:workspace.widgetKey},status:201})).data
@@ -36,5 +36,17 @@ export async function followupRecoveryJourney() {
   assert.equal((await destination.first('SELECT count(*) n FROM messages')).n,1,'restoring a draft never sends')
   await destination.scheduled();await destination.scheduled()
   assert.equal((await destination.first("SELECT count(*) n FROM notification_inbox WHERE id=?",`followup:${created.id}:2`)).n,1)
- } finally {await destination?.close();await source.close()}
+  // An archive cannot transplant a citation into a different tenant. Refusal
+  // occurs before the staged business rows become visible.
+  const other=await source.seedWorkspace('followup-foreign')
+  await source.db.prepare('UPDATE followup_obligations SET project_id=? WHERE id=?').bind(other.projectId,created.id).run()
+  const badId=await transfer.exports.create()
+  do {state=await transfer.exports.advance(badId,{maxParts:100})}while(state.phase!=='complete')
+  const bad=(await new Response(await transfer.exports.download(badId)).text()).trim().split('\n').map(JSON.parse)
+  refused=await startApp({captureQueue:true})
+  const rejected=await portable(refused),rejectedId=await rejected.imports.create(bad[0])
+  for(const part of bad.filter(r=>r.kind==='part'))await rejected.imports.uploadPart(rejectedId,part.index,part)
+  await assert.rejects(()=>rejected.imports.finalize(rejectedId,{archiveHash:bad.at(-1).archiveHash,contentHash:bad.at(-1).contentHash}),/invalid cited relationship/)
+  assert.equal((await refused.first('SELECT count(*) n FROM projects')).n,0,'invalid custody restores no tenant data')
+ } finally {await refused?.close();await destination?.close();await source.close()}
 }

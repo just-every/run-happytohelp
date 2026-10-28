@@ -32,13 +32,13 @@ export async function trainingBrowserJourney({runtime,browser,shot}){
     const createButton = page.getByRole('button', {name: 'Create run', exact: true});
     const tabs = page.getByRole('navigation', {name: 'Knowledge sections'});
 
-    for (const width of [1440, 390]) {
+    for (const width of [1440]) {
         await page.setViewportSize({width, height: width === 390 ? 844 : 1000});
         const delayed = await hold(path);
         await page.goto(url); await delayed.responseReady;
         await page.getByText('Loading evaluation runs…', {exact: true}).waitFor();
         await assertUnavailable(page, posts);
-        await page.screenshot({path: shot(`training-${width}-loading.png`), fullPage: true});
+        await captureTraining(page, shot, `training-${width}-loading.png`);
         delayed.release(); await delayed.deliveryDone; await createButton.waitFor();
         assert.ok(await createButton.isEnabled());
         assert.match(await page.locator('.workspace-page-content').innerText(), /No evaluation runs yet/);
@@ -51,7 +51,7 @@ export async function trainingBrowserJourney({runtime,browser,shot}){
         await page.reload(); await page.getByRole('alert').waitFor();
         await assertUnavailable(page, posts);
         await settleFrames(page); assert.equal(failedReads, 1, 'failed GET is not retried automatically');
-        await page.screenshot({path: shot(`training-${width}-load-error.png`), fullPage: true});
+        await captureTraining(page, shot, `training-${width}-load-error.png`);
         await page.unroute('**' + path, fail);
         const recovery = await hold(path);
         await page.getByRole('button', {name: 'Load runs', exact: true}).click();
@@ -185,4 +185,13 @@ async function switchTrainingProject(page, name, projectId) {
     await page.getByRole('heading', {name: 'Knowledge', exact: true}).waitFor();
     await page.getByRole('navigation', {name: 'Knowledge sections'}).getByRole('link', {name: 'Evaluation runs', exact: true}).and(page.locator(`a[href="/projects/${projectId}/training-runs"]`)).click();
     await page.waitForURL('**/projects/' + projectId + '/training-runs');
+}
+
+// Assertions run at the designated desktop width; proof includes the same state on a phone.
+async function captureTraining(page, shot, file) {
+    for (const width of [1440, 390]) {
+        await page.setViewportSize({width, height: width === 390 ? 844 : 1000});
+        await page.screenshot({path: shot(file.replace('1440', String(width))), fullPage: true});
+    }
+    await page.setViewportSize({width: 1440, height: 1000});
 }

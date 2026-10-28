@@ -9,6 +9,7 @@ import { nativeRequest } from '../../native/transport';
 import FormMedia from './FormMedia';
 import {addEditableMention,editableMentionDraft,submitMentionDraft} from './collaboration/mention-editor';
 import { collaborationPath, mentionIds } from './collaboration/mentions';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
 function NoteModal({ onHide, conversation, initialContent = '', initialMedia = [] }) {
     const modalRef = useRef(null);
@@ -72,7 +73,7 @@ function NoteModal({ onHide, conversation, initialContent = '', initialMedia = [
             onExited={ dialog => dialog.removeEventListener('keydown', trapDialogTab) }>
             <Modal.Header>
                 <Modal.Title id="add-note-title">Add Note</Modal.Title>
-                <button type="button" className="btn-close" aria-label="Close" disabled={ isLoading } onClick={ cancel } />
+                <button type="button" className="btn-close" { ...tooltip('Close') } disabled={ isLoading } onClick={ cancel } />
             </Modal.Header>
             <Form aria-busy={ isLoading } onSubmit={ handleSubmit(handleAddNote) } onChange={ () => { markDirty(); setIsValidated(null); setErrors({})} } noValidate validated={ isValidated }>
                 <Modal.Body>

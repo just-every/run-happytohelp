@@ -5,7 +5,9 @@ import useOnclickOutside from 'react-cool-onclickoutside';
 import ReplyIcon from '../reply-icons/ReplyIcon';
 import ConversationDetailField from './ConversationDetailField';
 import ConversationDetailSection from './ConversationDetailSection';
+import HubSpotContext from '../../../native/crm/HubSpotContext';
 import address from './emailAddress';
+import { tooltip } from '../../../../modules/tooltip/tooltip';
 
 const contactPath = (conversation, contact) => `/projects/${ conversation.project_id }/contacts/${ contact.id }`;
 
@@ -29,7 +31,7 @@ export default function ConversationContactDetails({ conversation, onEdit, onEma
         actionsButtonRef.current?.focus();
     };
 
-    return <ConversationDetailSection className="conversation-details-contact" title="Contact">
+    return <><ConversationDetailSection className="conversation-details-contact" title="Contact">
         { name && <ConversationDetailField className="conversation-detail-field--primary" icon="user" label="Name">
             <a href={ contactPath(conversation, contact) }>{ name }</a>
             { hasDifferentProvidedName && <a href={ contactPath(conversation, contact) } className="conversation-detail-field__secondary-value">{ contact.provided_name }</a> }
@@ -53,8 +55,7 @@ export default function ConversationContactDetails({ conversation, onEdit, onEma
             <button type="button" className="btn btn-white" onClick={ onEdit }>
                 <ReplyIcon name="pencil" /> Edit contact
             </button>
-            <button type="button" className="btn btn-white dropdown-toggle dropdown-toggle-split" ref={ actionsButtonRef } aria-haspopup="menu" aria-expanded={ actionsOpen } onClick={ () => setActionsOpen(open => !open) }>
-                <span className="visually-hidden">Contact actions</span>
+            <button type="button" className="btn btn-white dropdown-toggle dropdown-toggle-split" ref={ actionsButtonRef } { ...tooltip('Contact actions') } aria-haspopup="menu" aria-expanded={ actionsOpen } onClick={ () => setActionsOpen(open => !open) }>
                 <ReplyIcon name="chevron-down" />
             </button>
             { actionsOpen && <ul className="dropdown-menu show" role="menu">
@@ -74,7 +75,7 @@ export default function ConversationContactDetails({ conversation, onEdit, onEma
             />
             { contact.blocked_at && <ConversationDetailField className="conversation-detail-field--compact" icon="ban" label="Blocked" value={ <TimeAgo date={ contact.blocked_at } /> } /> }
         </div>
-    </ConversationDetailSection>;
+    </ConversationDetailSection><HubSpotContext projectId={conversation.project_id} contact={contact} conversationId={conversation.id}/></>;
 }
 
 ConversationContactDetails.propTypes = {

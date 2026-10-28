@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Field } from '../forms';
 import ConditionEditor from './ConditionEditor';
 import { fieldName, movedFields, validOrder } from './form-model';
+import { tooltip } from '../../../../modules/tooltip/tooltip';
 
 export default function RequestFormFields({ selected, definitions, onChange }) {
     const [adding, setAdding] = useState('');
@@ -15,11 +16,12 @@ export default function RequestFormFields({ selected, definitions, onChange }) {
             const dependants = selected.filter(item => item.condition?.fieldId === field.fieldId);
             const name = fieldName(definitions, field.fieldId);
             return <li key={field.fieldId} className="request-form-field">
-                <div className="request-form-field__heading"><div><h4>{name}</h4><p className="settings-note">{definition?.type || 'This field is no longer eligible for public forms.'}</p></div><div className="request-form-field__actions">
-                    {[-1, 1].map(offset => <button key={offset} type="button" className="btn btn-outline-secondary btn-sm" aria-label={`Move ${name} ${offset < 0 ? 'up' : 'down'}`} disabled={index + offset < 0 || index + offset >= selected.length || !validOrder(movedFields(selected, index, offset))} onClick={() => onChange(movedFields(selected, index, offset))}>{offset < 0 ? '↑' : '↓'}</button>)}
+                <div className="request-form-field__heading"><div><h4 id={`request-field-${field.fieldId}-name`}>{name}</h4><p className="settings-note">{definition?.type || 'This field is no longer eligible for public forms.'}</p></div><div className="request-form-field__actions">
+                    {[-1, 1].map(offset => <button key={offset} type="button" className="btn btn-outline-secondary btn-sm" {...tooltip(offset < 0 ? 'Move up' : 'Move down', { describedBy: `request-field-${field.fieldId}-name` })} disabled={index + offset < 0 || index + offset >= selected.length || !validOrder(movedFields(selected, index, offset))} onClick={() => onChange(movedFields(selected, index, offset))}>{offset < 0 ? '↑' : '↓'}</button>)}
                     <button type="button" className="btn btn-link btn-sm" disabled={dependants.length > 0} aria-label={`Remove ${name}`} onClick={() => onChange(selected.filter((_, at) => at !== index))}>Remove</button>
                 </div></div>
                 {dependants.length > 0 && <p className="settings-note">Remove conditions that use this field before removing it. Reordering keeps condition fields before their dependants.</p>}
+                {definition?.type === 'account' && <p className="settings-note">Including this field on a published form lets verified customers choose their current accounts. Only eligible account names and identifiers are shared. Company ticket visibility is separate. Remove this field to stop offering accounts.</p>}
                 <Field name={`request-field-${field.fieldId}-required`} label={`Require ${name}`} type="checkbox" value={field.required} onChange={(_, required) => change(index, { ...field, required })}/>
                 {index > 0 && (field.condition || selected.slice(0, index).some(item => definitions.some(definition => definition.id === item.fieldId))) && <ConditionEditor id={`request-field-${field.fieldId}`} condition={field.condition} previous={selected.slice(0, index)} definitions={definitions} onChange={condition => { const next = { ...field }; if (condition) next.condition = condition; else delete next.condition; change(index, next); }}/>}
             </li>;

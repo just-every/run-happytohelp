@@ -5,6 +5,7 @@ import address from './emailAddress';
 import ReplyIcon from '../reply-icons/ReplyIcon';
 import Api from '../../api';
 import { ChatContext } from '../../contexts/ChatContext';
+import { tooltip } from '../../../../modules/tooltip/tooltip';
 
 ConversationParticipantsControl.propTypes = {
     conversation: PropTypes.object.isRequired,
@@ -38,9 +39,10 @@ export default function ConversationParticipantsControl({ conversation }) {
                 { requester && <li className="is-requester"><span title="Requester">{ address(requester) }</span></li> }
                 { participants.map(participant => {
                     const email = participant.provided_email || participant.email;
+                    // The address describes its Remove, which is named for the action like every row's control.
                     return <li key={ `participant-${participant.id}` }>
-                        <span>{ address(email) }</span>
-                        <button type="button" className="btn btn-link" disabled={ removing !== null } aria-label={ `Remove ${email}` } onClick={ () => removeParticipant(participant.pivot.id) }>
+                        <span id={ `participant-${participant.id}-address` }>{ address(email) }</span>
+                        <button type="button" className="btn btn-link" disabled={ removing !== null } { ...tooltip('Remove participant', { describedBy: `participant-${participant.id}-address` }) } onClick={ () => removeParticipant(participant.pivot.id) }>
                             <ReplyIcon name="x" />
                         </button>
                     </li>;

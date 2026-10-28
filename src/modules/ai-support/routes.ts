@@ -1,3 +1,4 @@
+import {conversationTrace} from './trace'
 import { Hono } from 'hono'
 import type { AppEnv } from '../../platform/env'
 import { requireProject } from '../../platform/auth'
@@ -21,4 +22,11 @@ routes.post('/projects/:projectId/generations/:id/cancel',async c=>{
 routes.post('/projects/:projectId/conversations/:conversationId/suggestions',async c=>{
  const projectId=c.req.param('projectId'),actor=await requireProject(c,projectId,true),body=await c.req.json()
  try{return c.json(await requestGeneration(c.env,{projectId,conversationId:c.req.param('conversationId'),actor,expectedRevision:body.expectedRevision,kind:'suggestions'}),202)}catch(error){return c.json({error:String(error)},409)}
+})
+
+routes.get('/projects/:projectId/conversations/:conversationId/trace',async c=>{
+ const projectId=c.req.param('projectId');await requireProject(c,projectId,true)
+ c.header('Cache-Control','private, no-store')
+ const trace=await conversationTrace(c.env,projectId,c.req.param('conversationId'))
+ return trace?c.json(trace):c.json({error:'Not found'},404)
 })

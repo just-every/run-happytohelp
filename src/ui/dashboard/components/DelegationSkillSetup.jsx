@@ -5,6 +5,7 @@ import DelegationCopyButton from './DelegationCopyButton';
 import DelegationDeviceSettings from './DelegationDeviceSettings';
 import { isWorkerReady } from '../utils/localAgentSetup';
 import { setupDocumentUrl, setupPrompt } from '../utils/localAgentSkillSetup';
+import DialogHeader from './DialogHeader';
 
 const serverOrigin = () => {
     if (typeof window === 'undefined') return '';
@@ -35,9 +36,9 @@ export default function DelegationSkillSetup({ device, isOpen, onHide, onUseStan
         contentClassName="delegation-skill-modal__content"
         aria-labelledby="delegation-skill-setup-title"
     >
-        <Modal.Header closeButton>
+        <DialogHeader closeButton>
             <Modal.Title id="delegation-skill-setup-title">Connect HappyToHelp</Modal.Title>
-        </Modal.Header>
+        </DialogHeader>
         <Modal.Body>
             <div className="delegation-skill-modal__body">
                 { device ? <section className={ 'delegation-skill-state' + (listening ? ' is-listening' : '') }>

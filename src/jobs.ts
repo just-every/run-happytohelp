@@ -1,4 +1,6 @@
 import {expireVoiceMedia} from './modules/voice/media'
+import {sweepUploads} from './modules/api-integrations/upload-lifecycle'
+import {processRerMailbox,recoverRerMailboxes,refreshRerMailbox} from './modules/integrations/rer-mailbox'
 import {consumeTriage,dispatchTriage} from './modules/triage/worker'
 import {dispatchScheduledReports} from './modules/reports/schedule-dispatch'
 import {recoverTicketContinuations} from './modules/tickets/continuation'
@@ -28,6 +30,8 @@ import { pruneCounters } from './platform/usage-counters'
 import {dispatchSurveys} from './modules/outcomes/survey-delivery'
 
 export async function consumeJob(job:Job,env:Env) {
+ if(job.type==='rer.mailbox.status'){await refreshRerMailbox(env,job.projectId);return}
+ if(job.type==='rer.mailbox'){await processRerMailbox(env,job.projectId);return}
  if(job.type==='reports.schedule'){await dispatchScheduledReports(env);return}
  if(job.type==='outbox.page'){if(!Number.isSafeInteger(job.lastId))throw new Error('Invalid persisted outbox page');await recoverOutboxPage(env,{project_id:job.projectId,conversation_id:job.id,last_id:Number(job.lastId)});return}
  if(job.type==='local.effects'){await recoverLocalResultEffects(env,localComputerIntegration,job.id);return}
@@ -64,7 +68,7 @@ export async function runScheduled(env:Env) {
  }
  await visit('Workflow',720,runWorkflows)
  await visit('Survey',70,dispatchSurveys)
- await visit('Integration',58,dispatchIntegrations)
+ await visit('Integration',58,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env)})
  await visit('Voice media',2,expireVoiceMedia)
  // Hand larger message effects to the queue near the history-load target.
  // The hard consumer allocation still reserves every later recovery and prune.

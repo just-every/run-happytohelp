@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { parseEmailRecipients } from '../EmailRecipients';
+import { tooltip } from '../../../../modules/tooltip/tooltip';
 
 export function senderLabel(sender, mailboxes) {
     if (!sender.mailboxId) return '';
@@ -21,7 +22,7 @@ export default function RecipientChips({ cc, bcc, sender, mailboxes, onEdit, onC
             <button type="button" className="conversation-recipient-chip__edit" disabled={ disabled } onClick={ onEdit } aria-label={ `Edit ${ chip.label }: ${ chip.value }` }>
                 <span className="conversation-recipient-chip__label">{ chip.label }</span> <span className="conversation-recipient-chip__value">{ chip.value }</span>
             </button>
-            <button type="button" className="conversation-recipient-chip__remove" disabled={ disabled } onClick={ () => onClear(chip.key) } aria-label={ `Remove ${ chip.label }` }>
+            <button type="button" className="conversation-recipient-chip__remove" disabled={ disabled } onClick={ () => onClear(chip.key) } { ...tooltip(`Remove ${ chip.label }`) }>
                 <i className="fe fe-x" aria-hidden="true" />
             </button>
         </li>) }

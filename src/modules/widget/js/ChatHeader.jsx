@@ -7,7 +7,8 @@ import AgentAvatar from "./AgentAvatar";
 import {ConnectContext} from "./context/ConnectContext";
 import AppContext from "./context/AppContext";
 import {faTimes as falTimes} from "@fortawesome/free-solid-svg-icons";
-import {backAt} from "../availability-text.js";
+import {backAt, humanResponseTime} from "../availability-text.js";
+import { tooltip } from '../../tooltip/tooltip';
 export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded, onHeightChange}) {
     const context = useContext(AppContext);
     const {
@@ -23,9 +24,9 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
     const [lastHeight, setLastHeight] = useState(0);
 
     const currentAgent = getCurrentAgent();
-    // A person replies within the usual time only while the team is available.
+    // An away team keeps its configured reply estimate when no reopening time is known.
     const availability = conversationSettings?.availability;
-    const humanResponse = availability?.available === false ? (availability.opensAt ? context.text.away.header_back.replace('{when}', backAt(availability.opensAt)) : context.text.away.header) : context.text.ai.human_response;
+    const humanResponse = availability?.available === false ? (availability.opensAt ? context.text.away.header_back.replace('{when}', backAt(availability.opensAt)) : `${context.text.away.header} · ${humanResponseTime(context.text)}`) : humanResponseTime(context.text);
     const canExpand = conversationSettings && (conversationSettings.ais.length + (conversationSettings.is_human_response_enabled ? 1 : 0)) > 1;
     if(!canExpand && headerExpanded) {
         headerExpanded = false;
@@ -117,6 +118,7 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
                 <div className="happytohelp-insight-agent">
                     <span className="happytohelp-insight-agent-name">
                         {currentAgent.first_name ?? currentAgent.name}
+                        {currentAgent.is_ai && <small className="happytohelp-ai-disclosure">AI assistant</small>}
                         {canExpand && <span className="happytohelp-chat-header-edit-inline-tiny">
                             <FontAwesomeIcon icon={faAngleDown}/>
                         </span>}
@@ -144,7 +146,7 @@ export default function ChatHeader({ setOpen, headerExpanded, setHeaderExpanded,
     }
 
     return <div className={"happytohelp-chat-header-container " + (headerExpanded ? "happytohelp-chat-header-container-expanded" : "happytohelp-chat-header-container-collapsed")} style={style} onKeyDown={handleHeaderKeyDown}>
-        <button type="button" className="happytohelp-close" aria-label="Close chat" onClick={() => { setOpen(false) }}>
+        <button type="button" className="happytohelp-close" { ...tooltip('Close chat') } onClick={() => { setOpen(false) }}>
             <FontAwesomeIcon icon={falTimes} aria-hidden="true"/>
         </button>
         <div ref={contentEl}>

@@ -8,12 +8,14 @@ import {auditStatement} from '../audit/record'
 import {problemTicket,sameFrontier,problemAvailableSql,problemError} from './problem-model'
 import {problemDestination,sameDestination,problemMessageDelivery} from './problem-delivery'
 import {solveProblemTicket} from './problem-solve-state'
+import {rerMailHeld} from '../integrations/rer-mail-hold'
 export async function problemSolveResults(env:Env,actor:Actor,id:string,previewId:string,authority:TicketAuthority){
  await problemTicket(env,actor,id,authority)
  const preview=await env.DB.prepare('SELECT id,state,plan_json FROM ticket_problem_previews WHERE id=? AND project_id=? AND problem_id=? AND actor_id=?').bind(previewId,actor.projectId,id,actor.id).first<any>()
- if(!preview)throw new HTTPException(404)
- const attempts=await env.DB.prepare('SELECT incident_id id,state status,reason,message_id FROM ticket_problem_attempts WHERE preview_id=? ORDER BY created_at,id').bind(preview.id).all<any>()
- const recorded=new Map(attempts.results.map((row:any)=>[row.id,['claimed','ready','sending'].includes(row.status)?{...row,status:'uncertain',reason:row.reason??'This reply attempt is running or was interrupted. Check its transcript and delivery; it will not be automatically replayed.'}:row]))
+ if(!preview||JSON.parse(preview.plan_json).kind)throw new HTTPException(404)
+ const attempts=await env.DB.prepare("SELECT a.incident_id id,a.state status,a.reason,a.message_id,d.error held FROM ticket_problem_attempts a LEFT JOIN email_deliveries d ON d.id='message:'||a.message_id||':notification' AND d.state='sending' AND d.error=? WHERE a.preview_id=? ORDER BY a.created_at,a.id").bind(rerMailHeld,preview.id).all<any>()
+ // A held reply is pending: replay resends it once or fails it after the hold's bound.
+ const recorded=new Map(attempts.results.map(({held,...row}:any)=>[row.id,held&&row.status==='sending'?{...row,reason:held}:['claimed','ready','sending'].includes(row.status)?{...row,status:'uncertain',reason:row.reason??'This reply attempt is running or was interrupted. Check its transcript and delivery; it will not be automatically replayed.'}:row]))
  const results=JSON.parse(preview.plan_json).tickets?.map((ticket:any)=>recorded.get(ticket.id)??{id:ticket.id,status:ticket.status==='blocked'?'blocked':preview.state==='preview'?'ready':'not_attempted',reason:ticket.reason??(preview.state==='preview'?undefined:'Execution has started; this reply will not be automatically replayed')})??[]
  return {preview_id:preview.id,state:preview.state,results}
 }
@@ -56,7 +58,7 @@ export async function executeProblemSolve(env:Env,actor:Actor,id:string,previewI
  const {guard}=await problemTicket(env,actor,id,authority)
  const replyGuard=await ticketAuthority(env,actor,authority,'conversations.reply')
  const preview=await env.DB.prepare('SELECT * FROM ticket_problem_previews WHERE id=? AND project_id=? AND problem_id=? AND actor_id=?').bind(previewId,actor.projectId,id,actor.id).first<any>()
- if(!preview)throw new HTTPException(404)
+ if(!preview||JSON.parse(preview.plan_json).kind)throw new HTTPException(404)
  if(preview.state!=='preview')return problemSolveResults(env,actor,id,previewId,authority)
  const plan=JSON.parse(preview.plan_json)
  const claimed=await env.DB.prepare(`UPDATE ticket_problem_previews SET state='executing' WHERE id=? AND state='preview' AND expires_at>? AND EXISTS(SELECT 1 FROM conversations c JOIN ticket_problems p ON p.project_id=c.project_id AND p.conversation_id=c.id WHERE c.id=ticket_problem_previews.problem_id AND c.project_id=ticket_problem_previews.project_id AND p.version=ticket_problem_previews.problem_version AND c.ticket_version=ticket_problem_previews.problem_ticket_version AND c.revision=ticket_problem_previews.problem_revision AND c.last_message_id IS ticket_problem_previews.problem_last_message_id AND ${problemAvailableSql()} AND EXISTS(${guard.sql}) AND EXISTS(${replyGuard.sql})) AND (SELECT role_key FROM member_roles WHERE project_id=ticket_problem_previews.project_id AND user_id=ticket_problem_previews.actor_id) IS ? AND (SELECT pr.updated_at FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=ticket_problem_previews.project_id AND mr.user_id=ticket_problem_previews.actor_id) IS ?`).bind(previewId,Date.now(),...guard.params,...replyGuard.params,plan.role_assignment,plan.role_updated_at).run()

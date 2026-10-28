@@ -2,7 +2,7 @@ import type {Actor,Env} from '../../platform/env'
 import {teamAvailability} from './live-availability'
 import {emailMode} from '../integrations/email-provider'
 import {publicAppearance} from '../widget/appearance.js'
-import {backAt} from '../widget/availability-text.js'
+import {backAt,humanResponseTime} from '../widget/availability-text.js'
 import {workflowNow} from '../workflows/clock'
 
 /** The away reply's author, and its local id: one per conversation, since a conversation's local ids are unique,
@@ -27,7 +27,8 @@ export async function postAwayReply(env:Env,message:Record<string,unknown>,actor
  if(state.available)return null
  const configured=String(state.message||'').trim(),mail=emailMode(env)!=='unavailable',known=Boolean(row.email||row.provided_email)
  const back=state.opensAt?backAt(state.opensAt,{timeZone:state.timezone,now:sentAt,withZone:true}):''
- const content=configured||`Thanks for your message. ${publicAppearance(settings,row.name).name} is away right now${back?` and back ${back}`:''}. We'll reply here${mail?known?' and by email':', and by email if you leave your address':''}.`
+ const reply=configured||`Thanks for your message. ${publicAppearance(settings,row.name).name} is away right now${back?` and back ${back}`:''}. We'll reply here${mail?known?' and by email':', and by email if you leave your address':''}.`
+ const content=back?reply:`${reply} ${humanResponseTime(settings.widget_settings?.text)}`
  // Stamped on the clock admission used for the message that earned it (a local install may set that clock).
  const id=crypto.randomUUID(),now=workflowNow(env)
  const [inserted]=await env.DB.batch([

@@ -3,6 +3,7 @@ import { Button, Form, Modal } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import Api from "../api";
 import { ChatContext } from "../contexts/ChatContext";
+import DialogHeader from './DialogHeader';
 
 function ContactUpdateModal({ onHide, contact, conversation }) {
     const {
@@ -53,9 +54,9 @@ function ContactUpdateModal({ onHide, contact, conversation }) {
 
     return (
         <Modal show onHide={ onHide }>
-            <Modal.Header closeButton>
+            <DialogHeader closeButton>
                 <Modal.Title>Edit Contact</Modal.Title>
-            </Modal.Header>
+            </DialogHeader>
             <Form onSubmit={ handleSubmit(handleContactUpdate) } onChange={ () => { setIsValidated(null); setErrors({})} } noValidate validated={ isValidated }>
                 <Modal.Body>
                     { fields.map((field, i) => (

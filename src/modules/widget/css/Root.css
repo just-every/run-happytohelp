@@ -224,6 +224,11 @@
 #happytohelp-root time:not(svg), #happytohelp-root mark:not(svg), #happytohelp-root audio:not(svg), #happytohelp-root video:not(svg), #happytohelp-root button:not(svg), #happytohelp-root svg:not(svg), #happytohelp-root path:not(svg) {
   vertical-align: baseline;
 }
+/* The reset reverts display, which drops the hidden attribute's own display: none (Chrome maps it as a presentational
+   hint, not a user-agent rule), so a hidden element (a control's description) would be drawn. */
+#happytohelp-root [hidden] {
+  display: none !important;
+}
 #happytohelp-root article, #happytohelp-root aside, #happytohelp-root details, #happytohelp-root figcaption, #happytohelp-root figure,
 #happytohelp-root footer, #happytohelp-root header, #happytohelp-root hgroup, #happytohelp-root menu, #happytohelp-root nav, #happytohelp-root section {
   display: block;
@@ -804,7 +809,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
   }
 }
 #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header .happytohelp-insight-agent-info {
-  font-size: 0.8em;
+  font-size: 13px;
   color: #667085;
   line-height: 1.6em;
 }
@@ -815,7 +820,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
   #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header .happytohelp-insight-agent-info {
     color: #667085;
     display: inline;
-    font-size: 0.9em;
+    font-size: 13px;
   }
   #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header .happytohelp-insight-agent-info .happytohelp-insight-agent-seperator-tiny {
     display: inline;
@@ -970,7 +975,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
   color: #002c46;
 }
 #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header-title-agents .happytohelp-chat-header-agent .happytohelp-insight-agent .happytohelp-insight-agent-info {
-  font-size: 0.8em;
+  font-size: 13px;
 }
 @media (max-width: 500px) {
   #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header-title-agents .happytohelp-chat-header-agent .happytohelp-insight-agent .happytohelp-insight-agent-seperator {
@@ -984,7 +989,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
   }
   #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header-title-agents .happytohelp-chat-header-agent .happytohelp-insight-agent .happytohelp-insight-agent-info {
     color: #a2aeb4;
-    font-size: 0.8em;
+    font-size: 13px;
     line-height: 1.6em;
     display: inline;
   }
@@ -1530,6 +1535,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
   position: absolute;
   top: -0.6em;
   right: -0.6em;
+  box-sizing: content-box;
   cursor: pointer;
   font-size: 1em;
   transform: scale(1);
@@ -1793,19 +1799,17 @@ html.wf-sacramento-n4-active .happytohelp-title {
   }
 }
 
-#happytohelp-root .happytohelp-tooltip {
-  z-index: 2147483621;
-  font-family: var(--happytohelp-font);
-  font-weight: 400;
-  font-style: normal;
-  padding: 8px 21px;
-  font-size: 13px;
-  margin: 0 10px 0 0;
-  color: #fff;
+/* The icon-only controls' tooltips (src/modules/tooltip) in the widget's own type, restated over the reset above, which
+   would otherwise take their padding, colour, type and display. */
+#happytohelp-root .ui-tooltip {
+  padding: var(--tooltip-padding, 5px 9px);
+  border-radius: var(--tooltip-radius, 6px);
+  color: var(--tooltip-fg, #ffffff);
+  font: 500 var(--tooltip-font-size, 13px)/1.35 var(--happytohelp-font);
+  letter-spacing: normal;
 }
-#happytohelp-root .happytohelp-tooltip.type-light {
-  border-radius: 25px;
-}
+#happytohelp-root .ui-tooltip:not([data-open]) { display: none; }
+#happytohelp-root .ui-tooltip[data-open] { display: block; }
 #happytohelp-root .happytohelp-text-muted {
   opacity: 0.4;
 }
@@ -1964,9 +1968,6 @@ html.wf-sacramento-n4-active .happytohelp-title {
   }
   #happytohelp-root .happytohelp-interact-container textarea::placeholder, #happytohelp-root .happytohelp-interact-container input::placeholder {
     font-size: 15px;
-  }
-  #happytohelp-root .happytohelp-interact-container .happytohelp-tooltip {
-    display: none;
   }
 }
 #happytohelp-root .happytohelp-interact {
@@ -2694,6 +2695,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
 #happytohelp-root button.happytohelp-return-to-chat,
 #happytohelp-root button.happytohelp-preview-close,
 #happytohelp-root button.happytohelp-error-close,
+#happytohelp-root button.happytohelp-insight-close,
 #happytohelp-root button.happytohelp-chat-header-desc,
 #happytohelp-modal-preview button.happytohelp-modal-preview-close {
   appearance: none;
@@ -2707,6 +2709,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
 #happytohelp-root button.happytohelp-return-to-chat,
 #happytohelp-root button.happytohelp-preview-close,
 #happytohelp-root button.happytohelp-error-close,
+#happytohelp-root button.happytohelp-insight-close,
 #happytohelp-root button.happytohelp-chat-header-desc,
 #happytohelp-modal-preview button.happytohelp-modal-preview-close {
   background: transparent;

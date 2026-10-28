@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, Button, Form, Modal } from 'react-bootstrap';
 import Api from '../api';
+import DialogHeader from './DialogHeader';
 
 const normalize = value => value.trim().toLowerCase();
 const validAddress = value => value.length <= 320 && /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/.test(value);
@@ -69,7 +70,7 @@ function EmailConversationTranscriptModal({ onHide, conversation }) {
 
     return (
         <Modal show onHide={onHide}>
-            <Modal.Header closeButton><Modal.Title>Email Conversation Transcript</Modal.Title></Modal.Header>
+            <DialogHeader closeButton><Modal.Title>Email Conversation Transcript</Modal.Title></DialogHeader>
             <Form onSubmit={handleEmailTranscript}>
                 <Modal.Body>
                     <Form.Group className="form-group" controlId="form-transcript-email">

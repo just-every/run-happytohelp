@@ -66,7 +66,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "Owner-account provision, migration, publication and health; dry-run builds/validates locally with no provider request."
+      "effects": "Owner-account provision, migration, publication and health. Today pinned rer 0.2.77 dry-run combines local validation/build with credentialed read-only Cloudflare GETs for the account Workers subdomain and the Worker settings and secret names (three GETs for an existing Worker); refuses without credentials or a required secret neither held nor supplied, validates supplied private mail inputs, sends no mail and changes no provider resources. The required zero-outbound dry-run and separately started provider preflight are not yet built or proved; see OPERATIONS.md."
     },
     "export": {
       "argv": [
@@ -157,7 +157,7 @@
       "effects": "Serve fixed production output, preserve local owner and durable state, stop after idle timeout or explicit stop."
     }
   },
-  "authentication": "Owner-account deployment requires private CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN plus the secret environment inputs declared in deploy.json. Local native password/development owner sign-in requires no external provider credential. See OPERATIONS.md.",
+  "authentication": "Owner-account deployment and today's dry-run require private CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN; deployment also needs the secret environment inputs declared in deploy.json unless held by the Worker. Local native password/development owner sign-in requires no external provider credential. See OPERATIONS.md.",
   "health": {
     "path": "/health",
     "meaning": "Native Worker with reachable D1 and R2; does not prove queues, sockets, providers or product acceptance."
@@ -195,7 +195,8 @@
   "notes": [
     "Node 22.20.0, pnpm 10.12.4 and frozen dependencies.",
     "Native HappyToHelp owner/password and magic-link auth is retained. Local sign-in uses automatic owner entry.",
-    "No CLI operation implies hosted or provider acceptance."
+    "No CLI operation implies hosted or provider acceptance.",
+    "NATIVE-001 requires a zero-outbound dry-run that explicitly reports no outbound requests and needs no provider credentials, then a separately started read-only provider preflight with owner consent and the owner's scoped Cloudflare token. The preflight has its own acceptance: only the three Cloudflare GETs named in deploy effects for an existing Worker, no mail and no mutations. Neither step is a mock of the other. The split remains unbuilt and unproved; today's command qualifies as neither step. Live preflight and remote provisioning need separate qualification."
   ],
   "project": "just-every/happytohelp",
   "runtime": {

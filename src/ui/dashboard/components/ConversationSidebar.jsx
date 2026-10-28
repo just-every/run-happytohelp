@@ -1,4 +1,5 @@
 import VoicePanel from './voice/VoicePanel';
+import ProductionTrace from './conversation/ProductionTrace';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDashboardSettings } from '../../native/dashboard-state';
@@ -17,6 +18,7 @@ import EscalationsPanel from './escalations/EscalationsPanel';
 import HandleTimer from './tickets/HandleTimer';
 import useHandleTimer, { handleDuration } from './tickets/useHandleTimer';
 import ProblemPanel from './tickets/ProblemPanel';
+import PossiblySameCustomer from './tickets/PossiblySameCustomer';
 import TicketEditor from './tickets/TicketEditor';
 import TicketHistory from './tickets/TicketHistory';
 import TicketSection from './ticket-panel/TicketSection';
@@ -139,6 +141,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
         <TicketSummary conversation={ conversation } record={ record } workflows={ workflows } escalationUpdates={ escalationUpdates } onOpenSection={ openSection } />
         <div className="ticket-sections">
             { conversation.channel==='phone' && section('voice', 'Telephone calls', <VoicePanel key={conversation.id} conversation={conversation}/>) }
+            { section('trace', 'Execution trace', <ProductionTrace conversation={ conversation } active={ Boolean(isShown) && open.has('trace') } />) }
             { record && section('fields', 'Ticket fields', <TicketEditor conversation={ conversation } record={ record } />) }
             { workflows && section('schedules', 'Schedules', <WorkflowPanel conversation={ conversation } workflows={ workflows } onBadge={ badgeSetters.schedules } />, badges.schedules) }
             { section('escalations', 'Escalations', <EscalationsPanel projectId={ conversation.project_id } conversationId={ conversation.id } refreshKey={ liveKey } reads={ reads } onDraft={ onReviewEscalationDraft } onBadge={ badgeSetters.escalations } onUpdates={ setEscalationUpdates } />, badges.escalations) }
@@ -156,6 +159,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
                     onEmailTranscript={ () => setIsEmailConversationTranscriptModalVisible(true) }
                     onToggleBlock={ handleBlock }
                 />
+                <PossiblySameCustomer projectId={ conversation.project_id } contact={ { ...conversation.contact, id: conversation.contact_id } } active={ open.has('customer') } />
                 <ConversationEnvironmentDetails contact={ conversation.contact } />
                 { conversation.contact.metadata && <ConversationDetailSection className="conversation-details-metadata" title="Metadata">
                     { Object.entries(conversation.contact.metadata).map(([ key, value ]) => <MetadataItem key={ key } name={ key } value={ value } />) }

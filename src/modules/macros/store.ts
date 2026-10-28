@@ -51,7 +51,7 @@ async function validReferences(env:Env,actor:Actor,data:MacroDefinition){
  if(data.scope.brands.some(id=>id!==actor.projectId))invalid('Choose a workspace brand')
  for(const role of data.scope.roles)if(!['owner','admin','operator','collaborator'].includes(role)&&!await env.DB.prepare('SELECT 1 FROM project_roles WHERE project_id=? AND id=?').bind(actor.projectId,role).first())invalid('Choose a workspace role')
  const access=await ticketReadAccess(env,actor)
- for(const [id,value] of Object.entries(data.actions.fields??{})){const field=await env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id=?').bind(actor.projectId,id).first<any>();if(!field)invalid('Choose a workspace field');if(!fieldAllowed(field,access)||!fieldAllowed(field,access,true))throw new HTTPException(403,{message:'This macro field is not writable by your role'});validateFieldValue(field,value)}
+ for(const [id,value] of Object.entries(data.actions.fields??{})){const field=await env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id=?').bind(actor.projectId,id).first<any>();if(!field)invalid('Choose a workspace field');if(!fieldAllowed(field,access)||!fieldAllowed(field,access,true))throw new HTTPException(403,{message:'This macro field is not writable by your role'});validateFieldValue(field,value);if(field.type==='account'&&value!==null&&value!==undefined&&!await env.DB.prepare('SELECT 1 FROM companies WHERE project_id=? AND id=? AND merged_into IS NULL').bind(actor.projectId,value).first())invalid(`${field.name}: Choose an available account`)}
  await validateAttachments(env,actor,data.actions.attachments??[],true)
 }
 export async function saveMacro(env:Env,actor:Actor,input:unknown,authority:TicketAuthority,id?:string){

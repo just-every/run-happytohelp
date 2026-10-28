@@ -51,6 +51,10 @@ export async function verifySettingsParity(page, {origin,projectId,checks}) {
   assert.equal(new Date(opensAt).toLocaleDateString('en-US',{weekday:'long',timeZone:'UTC'}),openDay,'and when the team is back');
   // The tab says the same thing in words before anything is saved.
   await page.getByRole('status').filter({hasText:'Right now:'}).filter({hasText:`Away. Back ${openDay} at 9:30 AM`}).waitFor();
+  await page.getByRole('button',{name:'Notifications',exact:true}).click();
+  const subject=page.getByLabel('Subject',{exact:true}).first();await subject.waitFor();const original=await subject.inputValue(),draft=original+' (reviewed draft)';await subject.fill(draft);
+  let warnings=0;page.once('dialog',async dialog=>{warnings++;await dialog.dismiss()});await page.getByRole('button',{name:'Appearance',exact:true}).click();assert.equal(warnings,1,'leaving an independently mounted editor requires a discard decision');assert.equal(await subject.inputValue(),draft);
+  page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Appearance',exact:true}).click();await page.getByLabel('Workspace color hex').waitFor();await page.getByRole('button',{name:'Notifications',exact:true}).click();await subject.waitFor();assert.equal(await subject.inputValue(),original,'discarding an unsaved notification draft never persists it');
   checks.push('project tabs preserve unsaved edits without submitting; color, mode and schedule survive reload; the widget settings door and the tab report the saved schedule as away now, with when the team is back');
 }
 
@@ -134,7 +138,7 @@ export async function verifyAssistantParity(page,{origin,projectId,checks}) {
   assert.equal(await page.getByLabel('Default responder for non-logged in users',{exact:true}).inputValue(),id);
   assert.equal(await page.getByLabel('Allow human responders',{exact:true}).isChecked(),true);
   await page.getByLabel('Default responder for non-logged in users',{exact:true}).selectOption('-');await save(page);
-  const toggle=page.getByRole('checkbox',{name:'Enable Browser assistant assistant',exact:true});
+  const toggle=page.getByRole('checkbox',{name:'Enable assistant',description:'Browser assistant',exact:true});
   await Promise.all([page.waitForResponse(r=>r.url().endsWith(`/ais/${id}`)&&r.request().method()==='PUT'),toggle.click()]);await page.reload();
   assert.equal(await toggle.isChecked(),false);
   await Promise.all([page.waitForResponse(r=>r.url().endsWith(`/ais/${id}`)&&r.request().method()==='PUT'),toggle.click()]);await page.reload();

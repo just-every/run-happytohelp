@@ -30,7 +30,7 @@ export async function portalRequestDetail(env:Env,identity:PortalIdentity,ticket
   env.DB.prepare(`SELECT s.* ${surveyJoins} WHERE c.id=? AND c.project_id=? AND ct.id=? AND ${activeSurveySql} AND s.due_at<=? AND s.state<>'cancelled' AND s.token_revision=0 AND NOT EXISTS(SELECT 1 FROM csat_responses response WHERE response.resolution_id=s.resolution_id) AND ${guard.sql} LIMIT 1`).bind(ticketId,identity.actor.projectId,identity.actor.id,Date.now(),Date.now(),...guard.args)
  ])
  const survey=surveys.results[0] as Survey|undefined
- return {ticket,messages:messages.results.map((message:any)=>({...message,attachments:media.results.filter((item:any)=>item.message_id===message.id).map(({message_id,...item}:any)=>item)})),survey:survey?{state:'available',url:await surveyURL(env,survey)}:{state:ticket.status==='solved'?'unavailable':'open'}}
+ return {ticket,messages:messages.results.map((message:any)=>({...message,attachments:media.results.filter((item:any)=>item.message_id===message.id).map(({message_id,...item}:any)=>item)})),survey:survey?{state:'available',url:await surveyURL(env,survey,'portal')}:{state:ticket.status==='solved'?'unavailable':'open'}}
 }
 export async function replyPortalRequest(env:Env,identity:PortalIdentity,ticketId:string,body:any,defer?:DeferEmailDelivery){
  await portalRequest(env,identity,ticketId)

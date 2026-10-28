@@ -61,7 +61,7 @@ export function ConnectProvider({children, open, setOpen, setInsightOpen, onSett
         configuredAt.current = Date.now();
         setCollectorReady(value.proactiveHelpEnabled === true && !(context.settings.collector.disable_bots && isBot));
         const brand = value.brand?.name || value.project?.name;
-        setConversationSettings(current => ({...current, ais: value.ais || [], human: value.currentAgent || (brand ? {id: null, name: `${brand} Team`, initials: brand.split(/\s+/).map(part => part[0]).join('').slice(0,2)} : null), mailMode: value.mailMode, availability: value.availability || null, workspace_brand: {name: brand, avatar_url: value.brand?.avatar_url || value.brand?.logo_url}, is_human_response_enabled: value.is_human_response_enabled, is_contact_tracking_enabled: value.collectorEnabled}));
+        setConversationSettings(current => ({...current, ais: value.ais || [], human: value.currentAgent || (brand ? {id: null, name: `${brand} Team`, initials: brand.split(/\s+/).map(part => part[0]).join('').slice(0,2)} : null), campaignsEnabled:value.campaignsEnabled,campaignsStartAfter:value.campaignsStartAfter,mailMode: value.mailMode, availability: value.availability || null, workspace_brand: {name: brand, avatar_url: value.brand?.avatar_url || value.brand?.logo_url}, is_human_response_enabled: value.is_human_response_enabled, is_contact_tracking_enabled: value.collectorEnabled}));
         onSettingsUpdated?.({...widgetAppearance(value.brand, value.settings), settings: {...value.settings?.settings, collector: {...value.settings?.settings?.collector, enabled: value.collectorEnabled === true}}});
         break;
       }

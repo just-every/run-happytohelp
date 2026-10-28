@@ -1,3 +1,4 @@
+import {notificationSendSignal} from '../email-send-window'
 import type {connect} from 'cloudflare:sockets'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../../platform/env'
@@ -19,13 +20,16 @@ export function validateSocketHost(env:Env,value:unknown){
 /** One TLS connection, fixed port, bounded bytes and a wall-clock deadline. */
 export class MailSocket {
  socket:Socket;reader:ReadableStreamDefaultReader<Uint8Array>;writer:WritableStreamDefaultWriter<Uint8Array>
+ private signal?:AbortSignal;private abort=()=>{void this.socket.close().catch(()=>{})}
  private buffer=new Uint8Array(0);private total=0;private timer:ReturnType<typeof setTimeout>
  static async open(host:string,port:number){
   const {connect}=await import('cloudflare:sockets')
+  notificationSendSignal()
   return new MailSocket(connect({hostname:host,port},{secureTransport:'on',allowHalfOpen:false}))
  }
  constructor(socket:Socket){
   this.socket=socket
+  this.signal=notificationSendSignal();this.signal?.addEventListener('abort',this.abort,{once:true})
   this.reader=this.socket.readable.getReader();this.writer=this.socket.writable.getWriter()
   this.socket.closed.catch(()=>{})
   this.timer=setTimeout(()=>{void this.socket.close().catch(()=>{})},25000)
@@ -48,7 +52,7 @@ export class MailSocket {
   while(this.buffer.length<length)await this.fill()
   const value=this.buffer.slice(0,length);this.buffer=this.buffer.slice(length);return value
  }
- async close(){clearTimeout(this.timer);await this.socket.close().catch(()=>{})}
+ async close(){clearTimeout(this.timer);this.signal?.removeEventListener('abort',this.abort);await this.socket.close().catch(()=>{})}
 }
 const quote=(value:string)=>{if(/[\r\n\0]/.test(value)||value.length>2048)throw new HTTPException(400,{message:'Invalid mailbox credential'});return '"'+value.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"'}
 export class ImapSession {

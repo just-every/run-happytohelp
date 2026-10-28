@@ -13,9 +13,9 @@ export const claims={
   any('shape-syntax'),any('security',/^real upload route/,/^source record limits/))],
  review:['an accepted export is reviewed with each record\'s kind, ID, payload, exact location, duplicates, conflicts and reasons before anything is approved',either(
   any('door-readers',/^every supported envelope/,/^untyped nested/,/^record discrimination/,/^Zendesk singular/),any('empty-native',/blank auxiliary members/),any('parse-accounting',/^repeated source/),
-  any('security',/generated diagnostics/,/seeded 1,000/,/^malformed line and conflicting/),any('limits',/^derived unique tag/,/3,000-ticket/,/400-comment/),any('native-corrections',/^native macro HTML/))],
+  any('security',/generated diagnostics/,/seeded 1,000/),any('limits',/^derived unique tag/,/3,000-ticket/,/400-comment/),any('native-corrections',/^native macro HTML/))],
  landing:['an approved import lands each vendor\'s history, people, replies, notes, tags and knowledge exactly, keeps notes private, and repeats or repackages as a no-op',either(
-  any('door-mapping',/^Zendesk history/,/^Intercom lists/,/^Freshdesk/,/^one Intercom source/),any('formats',/private ZIP upload/),any('record-native',/^separate typed/),any('envelope-native',/^unknown parent records map/),
+  any('door-mapping',/^Zendesk history/,/^Zendesk macros/,/^Intercom lists/,/^Freshdesk/,/^one Intercom source/),any('formats',/private ZIP upload/),any('record-native',/^separate typed/),any('envelope-native',/^unknown parent records map/),
   any('security',/^an admin can review/,/^a differently packaged/,/^imported private notes/),any('partitions',/^a matching prior native tag/),any('limits',/200-comment/))],
  publication:['publication meets later native changes safely: conflicts stop it before any write, a stopped publication resumes or undoes exactly, and guards stay bounded',either(
   any('publication-correction'),any('publication-resume'),any('native-corrections',/^planning reads/,/^email collision index/,/^oversized relevant native/),any('partitions',/^one immutable review/))],
@@ -35,4 +35,9 @@ export const claims={
   any('helpscout-security'),any('door-mapping',/^Help Scout/),any('formats',/^Help Scout/))],
 };
 
+// Consolidated modules register the flow name; limits retains its distinct
+// accept/refuse boundary registrations. Each original assertion is a named step.
+for(const [key,claim] of Object.entries(claims)){
+ const original=claim[1];claim[1]=phase=>phase.name.startsWith(key+': ')||original(phase);
+}
 export const journey=journeys(claims);

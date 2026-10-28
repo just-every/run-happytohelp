@@ -3,9 +3,9 @@ import test from 'node:test'
 import {journey} from '../connections/claims.mjs'
 
 // Connections through the real API, settings and dispatcher doors (tests/connections holds each journey's scenarios).
-import {voiceProofs,routingProof} from '../helpers/voice/journeys.mjs'
-for(const key of ['credentials','api','delivery','slack']){const [name,run]=journey(key);test(name,async()=>{await run();await voiceProofs[key]?.()})}
-test('connected telephone calls follow IVR and hours routing with explicit consent, private linked history, voicemail and failed-transfer follow-up',routingProof)
+import {credentialsProof,signedDeliveryProof,routingProof,uncertaintyProof,erasureProof} from '../helpers/voice/journeys.mjs'
+const voiceSteps={credentials:[credentialsProof],api:[erasureProof],delivery:[signedDeliveryProof,routingProof,uncertaintyProof]}
+for(const key of ['credentials','api','delivery','slack']){const [name,run]=journey(key);test(name,async()=>{await run();for(const proof of voiceSteps[key]||[])await proof()})}
 
 import {sharingJourney,updatesJourney,custodyJourney} from '../helpers/escalations/journeys.mjs'
 test('engineering context is chosen per message and attachment across GitHub, Linear, Jira, Slack and Teams, with reciprocal links, concurrent claims, revoked installation authority and uncertain outcomes never replayed',sharingJourney)

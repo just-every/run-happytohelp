@@ -134,12 +134,12 @@
       "buyerSteps": "FEEDBACK-001: add a Penny API connection and durable source handoff receipts. A requester-authored sharing permission and explicit operator approval are required. Penny owns its requesters and votes; pending/uncertain external writes never replay. Reconfigure the Penny API key after restore; sending handoffs restore as uncertain."
     },
     {
-      "id": "250_voice.sql",
+      "id": "260_voice.sql",
       "buyerSteps": "VOICE-001 partial: apply the additive voice tables before the updated Worker. Back up D1 and private settings. Configure provider credentials again after restore; restored numbers stay disabled and unknown call commands never replay. Voice launch remains held for live provider, emergency-calling and consent qualification."
     },
     {
-      "id": "251_voice_media.sql",
-      "buyerSteps": "Apply after 250_voice.sql before the updated Worker. Back up D1. Existing call media expires one day after admission; expired and withdrawn content stays unavailable after restore. Provider copies require separate cleanup. Voice launch remains held for sandbox, emergency routing and consent qualification."
+      "id": "261_voice_media.sql",
+      "buyerSteps": "Apply after 260_voice.sql before the updated Worker. Back up D1. Existing call media expires one day after admission; expired and withdrawn content stays unavailable after restore. Provider copies require separate cleanup. Voice launch remains held for sandbox, emergency routing and consent qualification."
     }
   ]
 }

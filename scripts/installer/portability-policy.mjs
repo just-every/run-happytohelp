@@ -29,6 +29,7 @@ export const archivePolicy={
  excludeTables:[
   'crm_changes',
   'rer_mailbox_outbox',
+  'support_channel_attachment_grants',
   'escalation_attachment_grants',
   'workflow_clock',
   'operator_notification_activity','operator_notifications',

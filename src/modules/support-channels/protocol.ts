@@ -1,5 +1,6 @@
 import {HTTPException} from 'hono/http-exception'
 import type {Connection} from './model'
+import type {Attachment} from './media'
 const bytes=new TextEncoder()
 export async function mac(secret:string,value:string,algorithm='SHA-256',base64=false){const key=await crypto.subtle.importKey('raw',bytes.encode(secret),{name:'HMAC',hash:algorithm},false,['sign']);const data=new Uint8Array(await crypto.subtle.sign('HMAC',key,bytes.encode(value)));return base64?btoa(String.fromCharCode(...data)):Array.from(data,x=>x.toString(16).padStart(2,'0')).join('')}
 function equal(a:string,b:string){let diff=a.length^b.length;for(let n=0;n<Math.max(a.length,b.length);n++)diff|=(a.charCodeAt(n)||0)^(b.charCodeAt(n)||0);return diff===0}
@@ -14,15 +15,17 @@ export async function verify(row:Connection,secret:string,url:string,raw:string,
  }else{expected='sha256='+await mac(secret,raw);received=headers.get('x-hub-signature-256')||''}
  if(!equal(expected,received))throw new HTTPException(401,{message:'Provider signature rejected'})
 }
-export interface Inbound {at?:number;id:string;sender:string;channel:string;thread:string;text:string;optOut?:boolean;media:boolean;status?:string;providerId?:string;ignored?:string}
+export interface Inbound {at?:number;id:string;sender:string;channel:string;thread:string;text:string;optOut?:boolean;templateConsent?:boolean;media:Attachment[];status?:string;providerId?:string;watermark?:number;ignored?:string;serviceUrl?:string;editId?:string;deleted?:boolean;action?:{kind:string;target?:string}}
 function timestamp(value:unknown,seconds=false){const time=Number(value)*(seconds?1000:1);if(!Number.isFinite(time)||time<=0||time>Date.now()+300000)throw new HTTPException(400,{message:'Invalid provider message timestamp'});return time}
 export function events(row:Connection,raw:string):Inbound[]{
  if(row.provider==='sms'){
   const f=new URLSearchParams(raw);if(f.get('AccountSid')!==row.account)throw new HTTPException(403)
-  if(f.get('MessageStatus')&&!f.has('Body')&&f.get('From')===row.sender)return [{id:'status:'+f.get('MessageSid')+':'+f.get('MessageStatus'),sender:'',channel:'',thread:'',text:'',media:false,status:f.get('MessageStatus')!,providerId:f.get('MessageSid')!}]
+  if(f.get('MessageStatus')&&!f.has('Body')&&f.get('From')===row.sender)return [{id:'status:'+f.get('MessageSid')+':'+f.get('MessageStatus'),sender:'',channel:'',thread:'',text:'',media:[],status:f.get('MessageStatus')!,providerId:f.get('MessageSid')!}]
   if(f.get('To')!==row.sender)throw new HTTPException(403)
   const sender=f.get('From')||'';if(!/^\+1\d{10}$/.test(sender)||!f.get('MessageSid'))throw new HTTPException(400)
-  const text=f.get('Body')||'';return [{id:f.get('MessageSid')!,sender,channel:row.sender,thread:sender,text,optOut:/^(STOP|STOPALL|UNSUBSCRIBE|CANCEL|END|QUIT)$/i.test(text.trim())||f.get('OptOutType')==='STOP',media:Number(f.get('NumMedia')||0)>0}]
+  const count=Number(f.get('NumMedia')||0);if(!Number.isInteger(count)||count<0||count>5)throw new HTTPException(413)
+  const media=Array.from({length:count},(_,i)=>({url:f.get('MediaUrl'+i)||'',type:f.get('MediaContentType'+i)||''}))
+  const text=f.get('Body')||'';return [{id:f.get('MessageSid')!,sender,channel:row.sender,thread:sender,text,optOut:/^(STOP|STOPALL|UNSUBSCRIBE|CANCEL|END|QUIT)$/i.test(text.trim())||f.get('OptOutType')==='STOP',media}]
  }
  let body:any;try{body=JSON.parse(raw)}catch{throw new HTTPException(400,{message:'Invalid provider JSON'})}
  if(row.provider==='slack'){
@@ -30,17 +33,29 @@ export function events(row:Connection,raw:string):Inbound[]{
   const e=body.event;if(!e)return []
   if(!JSON.parse(row.channels_json).includes(e.channel))throw new HTTPException(403,{message:'Customer channel is not installed and allowed'})
   if(e.bot_id||e.user===row.sender)return []
-  if(e.subtype)return [{id:body.event_id,sender:'',channel:e.channel,thread:'',text:'',media:false,ignored:e.subtype}]
+  if(e.subtype)return [{id:body.event_id,sender:'',channel:e.channel,thread:'',text:'',media:[],ignored:e.subtype}]
   if(e.type!=='message'||!e.user||!e.ts||!body.event_id)return []
-  return [{id:body.event_id,sender:e.user,channel:e.channel,thread:e.thread_ts||e.ts,text:e.text||'',media:!!e.files?.length}]
+  return [{id:body.event_id,sender:e.user,channel:e.channel,thread:e.thread_ts||e.ts,text:e.text||'',media:(e.files||[]).map((f:any)=>({url:f.url_private_download||f.url_private,name:f.name,type:f.mimetype}))}]
  }
  const result:Inbound[]=[]
  for(const entry of body.entry||[]){
   if(String(entry.id)!==row.account)throw new HTTPException(403)
   if(row.provider==='whatsapp')for(const change of entry.changes||[]){const v=change.value;if(String(v?.metadata?.phone_number_id)!==row.sender)throw new HTTPException(403)
-   for(const s of v.statuses||[])result.push({id:'status:'+s.id+':'+s.status,sender:'',channel:'',thread:'',text:'',media:false,status:s.status,providerId:s.id})
-   for(const m of v.messages||[]){if(!m.id||!m.from)throw new HTTPException(400);result.push({at:timestamp(m.timestamp,true),id:m.id,sender:m.from,channel:row.sender,thread:m.from,text:m.text?.body||'',media:m.type!=='text',optOut:/^(stop|unsubscribe)$/i.test(m.text?.body?.trim()||'')})}
-  }else for(const e of entry.messaging||[]){if(String(e.recipient?.id)!==row.sender)throw new HTTPException(403);if(e.message?.is_echo)continue;if(e.message?.mid&&e.sender?.id)result.push({at:timestamp(e.timestamp),id:e.message.mid,sender:e.sender.id,channel:row.sender,thread:e.sender.id,text:e.message.text||'',media:!!e.message.attachments?.length})}
+   for(const s of v.statuses||[])result.push({id:'status:'+s.id+':'+s.status,sender:'',channel:'',thread:'',text:'',media:[],status:s.status,providerId:s.id})
+   for(const m of v.messages||[]){
+    if(!m.id||!m.from)throw new HTTPException(400)
+    if(!['text','image','audio','video','document','button','interactive'].includes(m.type))throw new HTTPException(422,{message:'Unsupported WhatsApp message type; retain the event for review'})
+    const file=m[m.type],text=m.text?.body||file?.caption||m.button?.text||m.interactive?.button_reply?.title||''
+    const consent=text.trim().toLowerCase()==='i agree to whatsapp support updates'
+    result.push({at:timestamp(m.timestamp,true),id:m.id,sender:m.from,channel:row.sender,thread:m.from,text,media:['image','audio','video','document'].includes(m.type)?[{id:file?.id,type:file?.mime_type||'',name:file?.filename}]:[],templateConsent:consent,optOut:/^(stop|unsubscribe)$/i.test(text.trim())})
+   }
+  }else for(const e of entry.messaging||[]){
+   if(String(e.recipient?.id)!==row.sender)throw new HTTPException(403)
+   if(e.message?.is_echo)continue
+   if(e.delivery?.mids)for(const id of e.delivery.mids)result.push({id:'delivery:'+id,sender:e.sender?.id,channel:row.sender,thread:'',text:'',media:[],status:'delivered',providerId:id})
+   if(e.read?.watermark)result.push({id:'read:'+e.sender?.id+':'+e.read.watermark,sender:e.sender?.id,channel:row.sender,thread:'',text:'',media:[],status:'read',watermark:timestamp(e.read.watermark)})
+   if(e.message?.mid&&e.sender?.id)result.push({at:timestamp(e.timestamp),id:e.message.mid,sender:e.sender.id,channel:row.sender,thread:e.sender.id,text:e.message.text||'',media:(e.message.attachments||[]).map((a:any)=>{if(!['image','audio','video','file'].includes(a.type))throw new HTTPException(422,{message:'Unsupported social attachment; retain the event for review'});return {url:a.payload?.url,type:''}})})
+  }
  }
  if(result.length>30)throw new HTTPException(413)
  return result

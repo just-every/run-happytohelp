@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readdir,readFile,mkdtemp,rm} from 'node:fs/promises';
-import {join} from 'node:path';
+import {join,resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {tmpdir} from 'node:os';
 import {createPortability} from '@runeditrun/rer/modules/portability';
 import {exportArchive,importArchive} from '@runeditrun/rer/modules/portability/files';
@@ -32,4 +33,10 @@ export async function restoreConsent(harness){
   await target.deliver(wa,'whatsapp',target.event('whatsapp',{text:'I agree to WhatsApp support updates'}));assert.equal((await waStatus()).data.template_consent,true);assert.equal(target.sends.length,1,'fresh agreement never sends a continuation automatically');
 
  }finally{await source?.close();await target?.close();await rm(directory,{recursive:true,force:true});}
+}
+
+// Run the real archive journey without leaking Wrangler's HTTP dispatcher into its caller.
+if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
+ const {channelHarness}=await import('./journeys.mjs');
+ await restoreConsent(channelHarness);
 }

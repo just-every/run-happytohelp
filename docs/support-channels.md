@@ -128,7 +128,8 @@ attachment grants. Restored connections are disconnected and support-reply conse
 a new authenticated subscriber START. Continuation requires a fresh agreement,
 and a prior STOP continuation fence remains; in-flight message/status
 sends become uncertain. Reconfigure credentials explicitly. Back up D1, R2 and
-private configuration and apply migrations 250, 251, 252 and 253 in order before serving
+private configuration and apply migrations 260, 261, 262 and 263 in order after
+the existing main migrations and before serving
 the updated Worker, without resetting or editing the existing migration ledger.
 
 The channel tests use the synthetic Teams channel ID

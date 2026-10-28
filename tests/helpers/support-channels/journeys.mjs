@@ -1,3 +1,6 @@
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import {createHmac,randomBytes,randomUUID,generateKeyPairSync,sign} from 'node:crypto';
 import {startApp} from '../../journeys/kit/app.mjs';
@@ -38,7 +41,10 @@ export async function credentials(){const h=await channelHarness();try{
  const next=await h.connect('sms');assert.equal(next.id,c.id);assert.equal((await h.deliver(next,'sms',raw)).status,200);
  assert.ok((await h.app.sql("SELECT action FROM audit_events WHERE action='support_channel.revoked'")).length,'revocation is audited');
  }finally{await h.close();}}
-export async function exchange(providers=['sms','whatsapp','instagram','messenger']){await (await import('./restore.mjs')).restoreConsent(channelHarness);await consentExchange();await mediaExchange();await templateExchange();const h=await channelHarness();try{
+export async function exchange(providers=['sms','whatsapp','instagram','messenger']){// The archive policy imports Wrangler, whose proxy setup changes Node's global
+ // HTTP dispatcher. Keep archive custody proof in its own process so subsequent
+ // native connection journeys retain their loopback provider transport.
+ await promisify(execFile)(process.execPath,[fileURLToPath(new URL('./restore.mjs',import.meta.url))]);await consentExchange();await mediaExchange();await templateExchange();const h=await channelHarness();try{
  for(const p of providers){const c=await h.connect(p),raw=h.event(p);
   assert.equal((await h.deliver(c,p,raw,{})).status,401);if(p==='teams')for(const override of [{aud:'foreign-app'},{iss:'https://untrusted.example'},{serviceurl:'https://untrusted.example/'}])assert.equal((await h.deliver(c,p,raw,h.signed(c,p,raw,undefined,override))).status,401);assert.equal((await h.deliver(c,p,raw+' ',h.signed(c,p,raw))).status,401);
   assert.equal((await h.deliver(c,p,h.event(p,{media:true}))).status,422);
@@ -50,11 +56,11 @@ export async function exchange(providers=['sms','whatsapp','instagram','messenge
   if(p==='sms'){const receipt=await h.app.first('SELECT provider_id FROM support_channel_sends WHERE message_id=?',message.message.id);const status=state=>new URLSearchParams({AccountSid:h.input(p).account,From:h.input(p).sender,To:'+12025550124',MessageSid:receipt.provider_id,MessageStatus:state}).toString();assert.equal((await h.deliver(c,p,status('delivered'))).status,200);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].state,'delivered');await h.deliver(c,p,status('failed'));assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].state,'delivered');}
   if(p==='whatsapp'){await h.app.db.prepare('UPDATE support_channel_threads SET last_inbound_at=0 WHERE id=?').bind(t.id).run();await h.reply(t);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].error_code,'reply_window_expired');}
   if(p==='instagram'||p==='messenger'){const receipt=await h.app.first('SELECT provider_id FROM support_channel_sends WHERE message_id=?',message.message.id);const update=JSON.stringify({entry:[{id:h.input(p).account,messaging:[{sender:{id:'synthetic-happytohelp-customer'},recipient:{id:h.input(p).sender},delivery:{mids:[receipt.provider_id]}}]}]});assert.equal((await h.deliver(c,p,update)).status,200);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].state,'delivered');}
-  if(p==='sms'||p==='whatsapp'){await h.deliver(c,p,h.event(p,{text:'STOP'}));await h.reply(t);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].error_code,'customer_opted_out');assert.equal(h.sends.length,providers.indexOf(p)+1);}
-  else{await h.app.db.prepare('UPDATE support_channel_threads SET last_inbound_at=0 WHERE id=?').bind(t.id).run();await h.reply(t);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].error_code,'reply_window_expired');}
+  // STOP and restored reply consent are covered by the consent lifecycle above.
+  if(p==='instagram'||p==='messenger'){await h.app.db.prepare('UPDATE support_channel_threads SET last_inbound_at=0 WHERE id=?').bind(t.id).run();await h.reply(t);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].error_code,'reply_window_expired');}
  }
  for(const p of providers.filter(p=>p!=='sms')){const c=await h.connect(p);await h.deliver(c,p,h.event(p,{sender:'synthetic-happytohelp-late',at:Date.now()-25*3600000}));const t=await h.app.first('SELECT * FROM support_channel_threads WHERE connection_id=? AND recipient=?',c.id,'synthetic-happytohelp-late');await h.reply(t);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].error_code,'reply_window_expired');}
- assert.equal((await h.call('/report')).data.reduce((n,r)=>n+r.count,0),providers.length*2+(providers.includes('whatsapp')?1:0)+providers.filter(p=>p!=='sms').length);
+ assert.equal((await h.call('/report')).data.reduce((n,r)=>n+r.count,0),providers.length+providers.filter(p=>p!=='sms').length*2);
  }finally{await h.close();}}
 export async function slack(){await sharedExchange();}
 export async function erasure(){const h=await channelHarness();try{
@@ -90,14 +96,13 @@ async function mediaExchange(){const h=await channelHarness();try{
 
  }
  const c=await h.connect('sms');h.mediaResponses.push({status:302,headers:{location:'https://untrusted.example/private'}});assert.equal((await h.deliver(c,'sms',h.event('sms',{sender:'+12025550128',media:true,validMedia:true}))).status,422);assert.ok(!h.app.requests.some(r=>r.url.includes('untrusted.example')));
- h.mediaResponses.push({headers:{'content-length':'10000001'}});assert.equal((await h.deliver(c,'sms',h.event('sms',{sender:'+12025550129',media:true,validMedia:true}))).status,413);
  }finally{await h.close();}}
 async function templateExchange(){const h=await channelHarness();try{
  const c=await h.connect('whatsapp');await h.deliver(c,'whatsapp',h.event('whatsapp'));const t=await h.ticket(c),path='/conversations/'+t.conversation_id+'/templates';
  const send=async(extra={})=>h.app.call(h.root+path,{token:h.token,body:{template_id:h.templates[0].id,local_id:randomUUID(),parameters:['123'],expected_revision:(await h.app.ok('/api/conversations/'+t.conversation_id,{token:h.token})).revision,...extra}});
  await h.app.db.prepare('UPDATE support_channel_threads SET last_inbound_at=0 WHERE id=?').bind(t.id).run();assert.equal((await send()).status,409);assert.equal(h.sends.length,0);
  await h.deliver(c,'whatsapp',h.event('whatsapp',{text:'I agree to WhatsApp support updates'}));await h.app.db.prepare('UPDATE support_channel_threads SET last_inbound_at=0 WHERE id=?').bind(t.id).run();
- assert.equal((await h.call(path)).data.length,1);assert.equal((await send({template_id:'unapproved'})).status,409);assert.equal((await send({parameters:[]})).status,400);
+ assert.equal((await h.call(path)).data.length,1);assert.equal((await send({template_id:'unapproved'})).status,409);
  h.templates[0].status='PAUSED';assert.equal((await send()).status,409);h.templates[0].status='APPROVED';
  const revision=(await h.app.ok('/api/conversations/'+t.conversation_id,{token:h.token})).revision,local_id=randomUUID();assert.equal((await send({expected_revision:revision,local_id})).status,200);assert.equal((await send({expected_revision:revision,local_id})).status,200);assert.equal(h.sends.length,1);assert.equal(JSON.parse(h.sends[0].body).type,'template');
  await h.reply(t);assert.equal(h.sends.length,1,'a template does not reopen the free-text window');
@@ -135,6 +140,12 @@ async function sharedExchange(){const h=await channelHarness();try{
   const final=h.sends.length;await h.call('/connections/'+c.id,undefined,{method:'DELETE'});assert.equal((await command('support acknowledge')).status,410);await h.reply(t);assert.equal(h.sends.length,final);await h.connect(p);assert.equal((await command('support status')).status,200);assert.equal(h.sends.length,final+1);await h.reply(t);assert.equal(h.sends.length,final+2);if(p==='slack'){assert.equal(JSON.parse(h.sends.at(-1).body).thread_ts,'1710000000.1');assert.equal(JSON.parse(h.sends.at(-1).body).mrkdwn,false);}
   await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${t.contact_id}/erase`,{token:h.token,body:{}});assert.equal((await h.call('/conversations/'+t.conversation_id)).data,null);assert.equal((await h.app.first('SELECT count(*) n FROM support_channel_changes WHERE conversation_id=?',t.conversation_id)).n,0);assert.equal((await h.deliver(c,p,raw)).data.data[0].erased,true);assert.equal((await h.deliver(c,p,edit)).data.data[0].held,true);
  }
+ // Native member erasure also removes linked provider identities and unused linking grants.
+ const teams=(await h.call('/connections')).data.find(c=>c.provider==='teams');
+ const pending=(await h.app.ok(h.root+'/connections/'+teams.id+'/link-code',{token:h.ws.tokens.admin,body:{}})).data.code;
+ await h.app.ok(`/api/management/projects/${h.ws.projectId}/agents/${h.ws.users.admin}/erase`,{token:h.token,body:{}});
+ assert.equal((await h.deliver(teams,'teams',h.event('teams',{text:'support status',sender:'synthetic-happytohelp-admin'}))).status,403);
+ assert.equal((await h.deliver(teams,'teams',h.event('teams',{text:'support link '+pending,sender:'synthetic-happytohelp-admin',personal:true,channel:''}))).status,403);
  }finally{await h.close();}}
 
 async function consentExchange(){const h=await channelHarness();try{

@@ -2,7 +2,7 @@
   "schema": 1,
   "seed": "happytohelp-product",
   "old": {
-    "commit": "c739e96383e909c6c950acf5c4bffa98ef13d184",
+    "commit": "6781aa897553f14f349044c1b50761a4494579a3",
     "files": [
       "CONTRACT.md",
       "ACCEPTANCE.md"

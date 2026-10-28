@@ -25,6 +25,7 @@ function ConversationItem({ conversation }) {
         setIsMainVisible,
         resolveConversation,
         resolutionErrors,
+        resolvingConversations,
         isGlobalInbox,
         getProject,
     } = useContext(ChatContext)
@@ -109,7 +110,7 @@ function ConversationItem({ conversation }) {
                 </div>
             </div>
         </Link>
-        { !isFinal && <button type="button" className="conversation-item-action btn btn-white" { ...tooltip(actionLabel, { placement: 'left', describedBy: nameId }) } onClick={ event => handleResolve(event, !isResolved) }>
+        { !isFinal && <button type="button" className="conversation-item-action btn btn-white" disabled={ Boolean(resolvingConversations?.[conversation.id]) } { ...tooltip(actionLabel, { placement: 'left', describedBy: nameId }) } onClick={ event => handleResolve(event, !isResolved) }>
             <i className={ `fe ${ isResolved ? 'fe-rotate-ccw' : 'fe-check-circle' }` } aria-hidden="true"></i>
         </button> }
         { resolutionError && urlConversationId !== conversation.id && <p className="conversation-item-error" role="alert">{ resolutionError }</p> }

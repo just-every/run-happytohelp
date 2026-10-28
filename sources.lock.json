@@ -4316,7 +4316,7 @@
       "executable": false
     },
     "src/modules/conversations/routes.ts": {
-      "sha256": "6ab35707fd8eb0b623c4a4b7a1a0636970a3ac0ab180911098a1d30177f469f4",
+      "sha256": "7684d222057c46d82814f78c51e74cb92f56bbada2eaccb4611b4d028759f93f",
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
@@ -8532,11 +8532,11 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationHeader.jsx": {
-      "sha256": "9456585be15c74d281a1b38e96087a6b25184219655ee817a216b11586559059",
+      "sha256": "a180edca807d5b406b7edb99f7ebe13545dd1a4310e3614f357939f7de6ea8ca",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationItem.jsx": {
-      "sha256": "765be76e8b4299e2fa9bf124dedd2034defc0ad4578aff618e91a1dc20b450dd",
+      "sha256": "b8c5efd463edd226ca2b094156cc46f13b9da525b027429ef5f762ec3b74e100",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationItemMeta.jsx": {
@@ -9064,7 +9064,7 @@
       "executable": false
     },
     "src/ui/dashboard/contexts/ChatContext.jsx": {
-      "sha256": "be20ac09646bc927a78dc827be6b5ee03b53f0e8371870bcb0fa28ff53f99b3b",
+      "sha256": "7de835f738cc39beca431ff3ec7d93a37223ba18e1f89c2b98ceb0b37ff78a65",
       "executable": false
     },
     "src/ui/dashboard/contexts/ConversationSuggestionsContext.jsx": {
@@ -11340,7 +11340,7 @@
       "executable": false
     },
     "tests/helpers/account-lookup-journey.mjs": {
-      "sha256": "a311966f72527d650bf7e056f024a5076329c1e086dcee9953b731db8f3a38c3",
+      "sha256": "e182e0f75b5bceb4062d0e615946a7e9ce76dc719f0552491b46a8e661408b92",
       "executable": false
     },
     "tests/helpers/ai/answers.mjs": {
@@ -11880,7 +11880,7 @@
       "executable": false
     },
     "tests/helpers/identity/ticket-scope-browser.mjs": {
-      "sha256": "2866af3c37aef07eb6cfd8a064df9334a8e8c8772e3fcb1e404359eb0c8c6e32",
+      "sha256": "6e66a89d3d1ae8dc40b607811d6adcd36f70d5d787e8405f5ad5429488c06505",
       "executable": false
     },
     "tests/helpers/identity/ticket-scope.mjs": {

@@ -74,7 +74,7 @@ routes.post('/:id/media',async c=>{
  const guard=actor.role==='contact'?null:await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'conversations.reply',conversation.id)
  const declared=Number(c.req.header('Content-Length'));if(declared>20000000)throw new HTTPException(413)
  const data=await c.req.arrayBuffer();if(!data.byteLength||data.byteLength>20000000)throw new HTTPException(413)
- if(actor.role==='contact')await enforceRateLimits(c.env,[['uploadsPerContactDay',actor.contactId!],['uploadBytesPerContactDay',actor.contactId!,data.byteLength],['uploadsPerProjectDay',actor.projectId,data.byteLength]])
+ if(actor.role==='contact')await enforceRateLimits(c.env,[['uploadsPerContactDay',actor.contactId!],['uploadBytesPerContactDay',actor.contactId!,data.byteLength],['uploadsPerProjectDay',actor.projectId],['uploadBytesPerProjectDay',actor.projectId,data.byteLength]])
  const mediaId=id(),key=`${actor.projectId}/${conversation.id}/${mediaId}`,filename=c.req.header('X-Filename')||'attachment',contentType=c.req.header('Content-Type')||'application/octet-stream'
  await c.env.FILES.put(key,data,{httpMetadata:{contentType}})
  try{

@@ -177,7 +177,8 @@ export async function accountLookupJourney(f,customer){
 }
 
 async function accountLookupUpgrade(){
- const f=await selfServiceFixture({migrate:name=>name<'259_account_lookup_fields.sql'}),{app,p,owner,signin,api,form,valid}=f
+ // Isolate the account-field migration while retaining unrelated later schema, including native role scope.
+ const f=await selfServiceFixture({migrate:name=>name!=='259_account_lookup_fields.sql'}),{app,p,owner,signin,api,form,valid}=f
  try{
   const customer=await signin('synthetic-hh-upgrade@example.com'),ticket=(await app.call(`${api}/${form.id}/submissions`,{...customer,body:valid,status:201})).data.ticket
   const snapshot=async()=>({fields:await app.sql('SELECT * FROM ticket_fields ORDER BY project_id,id'),values:await app.sql('SELECT * FROM ticket_field_values ORDER BY project_id,conversation_id,field_id'),events:await app.sql('SELECT * FROM workflow_events ORDER BY id')})

@@ -58,7 +58,34 @@ export async function ticketScopeBrowserJourney(browser,runtime){
    if(viewport.width===1440){assert.equal(await agent.getByText('Private finance dispute',{exact:true}).count(),0);assert.equal(await agent.getByText('Ungrouped delivery question',{exact:true}).count(),0)}
    await inspect(agent,`restricted-inbox-${viewport.width}`)
    await agent.goto(origin+`/projects/${p}/conversations/${tickets[0]}`);await agent.getByText('Return label for boots: synthetic customer request',{exact:true}).waitFor();await inspect(agent,`permitted-ticket-${viewport.width}`)
-   if(viewport.width===1440){await agent.getByRole('button',{name:'Close',exact:true}).click();await agent.getByRole('button',{name:'Reopen',exact:true}).click();await agent.getByRole('button',{name:'Close',exact:true}).waitFor()}
+   if(viewport.width===1440){
+    // Hold the real close request at the browser edge. Optimistic status must not
+    // admit an overlapping reopen before the first native mutation has settled.
+    const mutationUrl=origin+`${D}/conversations/${tickets[0]}`
+    let releaseClose
+    const closeGate=new Promise(resolve=>{releaseClose=resolve})
+    const holdClose=async route=>{
+     if(route.request().method()==='PUT'&&route.request().postDataJSON()?.resolved===true)await closeGate
+     await route.continue()
+    }
+    const isMutation=(response,resolved)=>response.url()===mutationUrl&&response.request().method()==='PUT'&&response.request().postDataJSON()?.resolved===resolved
+    await agent.route(mutationUrl,holdClose)
+    const closeRequested=agent.waitForRequest(request=>request.url()===mutationUrl&&request.method()==='PUT'&&request.postDataJSON()?.resolved===true)
+    const closed=agent.waitForResponse(response=>isMutation(response,true))
+    try{
+     await agent.getByRole('button',{name:'Close',exact:true}).click();await closeRequested
+     const reopen=agent.getByRole('button',{name:'Reopen',exact:true});await reopen.waitFor()
+     assert.equal(await reopen.isDisabled(),true,'the optimistic reopen waits for the pending close')
+     await inspect(agent,'pending-close-1440');await agent.setViewportSize(viewports.mobile);await inspect(agent,'pending-close-390');await agent.setViewportSize(viewports.desktop)
+     releaseClose();assert.equal((await closed).status(),200,'the scoped close commits')
+     const reopened=agent.waitForResponse(response=>isMutation(response,false))
+     await reopen.click();assert.equal((await reopened).status(),200,'the scoped reopen commits after close')
+     await agent.getByRole('button',{name:'Close',exact:true}).waitFor()
+     const stored=await api(`${D}/conversations/${tickets[0]}`,undefined,'GET',agentToken)
+     assert.equal(stored.status,200);assert.equal(stored.data.data.resolved_at,null,'reopen remains durable')
+     await agent.reload();await agent.getByRole('button',{name:'Close',exact:true}).waitFor()
+    }finally{releaseClose();await closed.catch(()=>{});await agent.unroute(mutationUrl,holdClose)}
+   }
    await agent.goto(origin+`/projects/${p}/conversations/${tickets[2]}`);await agent.getByText(/This ticket is unavailable/).waitFor();if(viewport.width===1440)assert.equal(await agent.getByText('Private finance dispute: synthetic customer request',{exact:true}).count(),0);await inspect(agent,`denied-ticket-${viewport.width}`)
   }
   await agent.setViewportSize(viewports.desktop)

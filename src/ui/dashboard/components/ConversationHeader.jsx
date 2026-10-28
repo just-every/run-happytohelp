@@ -30,7 +30,7 @@ export default function ConversationHeader({
     onPanelToggle,
     panelToggleRef,
 }) {
-    const { getProject, isGlobalInbox, resolveConversation, setIsMainVisible } = useContext(ChatContext);
+    const { getProject, isGlobalInbox, resolveConversation, resolvingConversations, setIsMainVisible } = useContext(ChatContext);
     const projectName = isGlobalInbox ? getProject(conversation.project_id).name : null;
     const isAiAssigned = Boolean(conversation.ai_id);
     // A Closed ticket is final: nothing reopens it, and customer replies open a new ticket.
@@ -88,8 +88,8 @@ export default function ConversationHeader({
                 </div>
                 <div className="conversation-header-actions">
                     { canManage && !isFinal && (conversation.resolved_at
-                        ? <button type="button" className="btn btn-white conversation-header-reopen" title="Reopen conversation" onClick={ () => resolveConversation(conversation, false).catch(() => {}) }><i className="fe fe-rotate-ccw me-2" aria-hidden="true"></i>Reopen</button>
-                        : <button type="button" className="btn btn-white conversation-header-close" title="Close conversation" onClick={ () => resolveConversation(conversation).catch(() => {}) }><i className="fe fe-check-circle me-2" aria-hidden="true"></i>Close</button>) }
+                        ? <button type="button" className="btn btn-white conversation-header-reopen" title="Reopen conversation" disabled={ Boolean(resolvingConversations?.[conversation.id]) } onClick={ () => resolveConversation(conversation, false).catch(() => {}) }><i className="fe fe-rotate-ccw me-2" aria-hidden="true"></i>Reopen</button>
+                        : <button type="button" className="btn btn-white conversation-header-close" title="Close conversation" disabled={ Boolean(resolvingConversations?.[conversation.id]) } onClick={ () => resolveConversation(conversation).catch(() => {}) }><i className="fe fe-check-circle me-2" aria-hidden="true"></i>Close</button>) }
                     <button
                         type="button"
                         className={ `btn btn-white conversation-assistant-toggle${ showAlert ? ' has-alert' : '' }` }

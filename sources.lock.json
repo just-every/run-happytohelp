@@ -2588,7 +2588,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "b2b5bcfd5f5bcf120da49778b95fe92d74bcb1537b0de9bb076c588fea2312cf",
+      "sha256": "87c0bb5762a688dfc7d5709efa86043571a58c12b4bda01f660d37d70c6b6062",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -2841,10 +2841,6 @@
     },
     "scripts/delivery/reproducible-output.ts": {
       "sha256": "24ffc7fdbbfbc65d3f73b09b4d2bcaeea4a695be3acb82628e08c78253fd50b8",
-      "executable": false
-    },
-    "scripts/delivery/setup-binding.mjs": {
-      "sha256": "2d55a11d8da84082ef1434809e125fd3bbbee8418e6852d3a121d34bf56e2f37",
       "executable": false
     },
     "scripts/deployment/environment.mjs": {

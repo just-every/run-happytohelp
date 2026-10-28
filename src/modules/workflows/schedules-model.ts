@@ -1,3 +1,4 @@
+import {ticketScopeSql,requireTicketScope} from '../access/ticket-scope'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {object,invalid} from '../tickets/model'
@@ -19,13 +20,17 @@ export function scheduleDefinition(input:unknown,now:number,existing?:any){
  if(typeof b.owner_id!=='string'||!b.owner_id)invalid('Choose a responsible teammate')
  return {kind,due_at:due,timezone:b.timezone,body,owner_id:b.owner_id,dependency_id:dependency}
 }
-export async function scheduleReferences(env:Env,projectId:string,ticketId:string,value:ReturnType<typeof scheduleDefinition>){
+export async function scheduleReferences(env:Env,projectId:string,ticketId:string,value:ReturnType<typeof scheduleDefinition>,userId:string){
  if(!await env.DB.prepare('SELECT 1 FROM memberships WHERE project_id=? AND user_id=?').bind(projectId,value.owner_id).first())invalid('The responsible teammate must belong to this workspace')
+ if(value.dependency_id)await requireTicketScope(env,userId,projectId,value.dependency_id)
  if(value.dependency_id&&(value.dependency_id===ticketId||!await env.DB.prepare('SELECT 1 FROM conversations WHERE project_id=? AND id=?').bind(projectId,value.dependency_id).first()))invalid('Choose another ticket in this workspace as the dependency')
 }
-export async function scheduleRows(env:Env,projectId:string,id?:string){return (await env.DB.prepare(`SELECT * FROM workflow_schedules WHERE project_id=? ${id?'AND conversation_id=?':''} ORDER BY created_at DESC LIMIT 200`).bind(projectId,...(id?[id]:[])).all()).results}
-export async function workflowTicketData(env:Env,projectId:string,id:string){
- const [schedules,parent,children]=await Promise.all([scheduleRows(env,projectId,id),env.DB.prepare('SELECT original_id FROM ticket_followups WHERE project_id=? AND conversation_id=?').bind(projectId,id).first<{original_id:string}>(),env.DB.prepare('SELECT c.id,c.subject,c.status_category FROM ticket_followups f JOIN conversations c ON c.id=f.conversation_id WHERE f.project_id=? AND f.original_id=? ORDER BY f.created_at').bind(projectId,id).all()])
+export async function scheduleRows(env:Env,projectId:string,userId:string,id?:string){
+ const rows=await env.DB.prepare(`SELECT s.*,CASE WHEN s.dependency_id IS NULL OR EXISTS(SELECT 1 FROM conversations d WHERE d.id=s.dependency_id AND d.project_id=s.project_id AND ${ticketScopeSql('?','d')}) THEN s.dependency_id ELSE NULL END visible_dependency_id FROM workflow_schedules s JOIN conversations c ON c.project_id=s.project_id AND c.id=s.conversation_id WHERE s.project_id=? AND ${ticketScopeSql('?')} ${id?'AND s.conversation_id=?':''} ORDER BY s.created_at DESC LIMIT 200`).bind(userId,projectId,userId,...(id?[id]:[])).all<any>()
+ return rows.results.map(({visible_dependency_id,...row})=>({...row,dependency_id:visible_dependency_id}))
+}
+export async function workflowTicketData(env:Env,projectId:string,id:string,userId:string){
+ const [schedules,parent,children]=await Promise.all([scheduleRows(env,projectId,userId,id),env.DB.prepare(`SELECT f.original_id FROM ticket_followups f JOIN conversations c ON c.project_id=f.project_id AND c.id=f.original_id WHERE f.project_id=? AND f.conversation_id=? AND ${ticketScopeSql('?')}`).bind(projectId,id,userId).first<{original_id:string}>(),env.DB.prepare(`SELECT c.id,c.subject,c.status_category FROM ticket_followups f JOIN conversations c ON c.id=f.conversation_id AND c.project_id=f.project_id WHERE f.project_id=? AND f.original_id=? AND ${ticketScopeSql('?')} ORDER BY f.created_at`).bind(projectId,id,userId).all()])
  return {schedules,followup_of:parent?.original_id??null,followups:children.results}
 }
 export const scheduleConflict=()=>new HTTPException(409,{message:'Schedule, ticket or authority changed. Reload before continuing.'})

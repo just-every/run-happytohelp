@@ -22,7 +22,6 @@ const axe=await readFile(resolve('node_modules/axe-core/axe.min.js'),'utf8')
  * is axe-checked for serious findings and horizontal overflow, and photographed at 1440 and 390.
  */
 export async function securityBrowserJourney(browser){
- await ticketScopeBrowserJourney(browser)
  const shot=await evidence('account-security'),errors=[],records=[],signouts=[]
  const runtime=await createRuntime({vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}})
  let passed=false,current
@@ -30,6 +29,7 @@ export async function securityBrowserJourney(browser){
   // Passkeys bind to a domain name, so the browser uses localhost rather than 127.0.0.1.
   const origin=runtime.origin.replace('127.0.0.1','localhost'),password='owner-correct-horse-battery'
   const created=await api(origin,'/api/identity/bootstrap',{body:{name:'Lantern Works',ownerName:'Casey Owner',email:'casey@lantern.test',password,allowedOrigin:origin}});assert.equal(created.status,201,created.text)
+  await ticketScopeBrowserJourney(browser,runtime)
   const projectId=created.json.projectId,P=`/projects/${projectId}`,widgetKey=(await api(origin,`/api/identity/projects/${projectId}`,{token:created.json.token})).json.widget_key
   const open=async(viewport,token)=>{
    const context=await browser.newContext({viewport,acceptDownloads:true});if(token)await context.addCookies([{name:'h2h_session',value:token,url:origin}])

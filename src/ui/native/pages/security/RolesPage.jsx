@@ -17,7 +17,7 @@ export default function RolesPage({projectId,role}){
  const load=async()=>{try{setData((await nativeRequest(path)).data)}catch(e){setError(e.message)}};
  useEffect(()=>{if(['owner','admin'].includes(role))load();},[path,role]);
  if(!['owner','admin'].includes(role))return <p role="alert">Only workspace owners and admins can manage roles.</p>;
- if(!data)return <Feedback error={error}/>;
+ if(!data)return error?<><Feedback error={error}/><button type="button" onClick={()=>{setError('');load()}}>Retry loading roles</button></>:<p role="status">Loading roles…</p>;
  const label=key=>data.permissions.find(item=>item.key===key)?.label||key;
  const allowed=base=>data.builtIn.find(item=>item.key===base).permissions;
  const edit=(item,event)=>{trigger.current=event?.currentTarget;editDraft(item)};

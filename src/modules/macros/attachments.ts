@@ -1,10 +1,11 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {availableTicketSql} from '../tickets/model'
 export async function validateAttachments(env:Env,actor:Actor,ids:string[],owned=false){
  const rows=[]
  for(const id of ids){
-  const row=await env.DB.prepare(`SELECT media.*,coalesce(cp.source_contact_id,c.contact_id) source_contact_id FROM media JOIN conversations c ON c.id=media.conversation_id LEFT JOIN macro_attachment_copies cp ON cp.media_id=media.id AND cp.project_id=media.project_id WHERE media.id=? AND media.project_id=? AND c.project_id=media.project_id AND ${availableTicketSql()} AND EXISTS(SELECT 1 FROM contacts root WHERE root.id=coalesce(cp.source_contact_id,c.contact_id) AND root.project_id=c.project_id AND coalesce(json_extract(root.metadata_json,'$.is_erased'),0)!=1 AND coalesce(json_extract(root.metadata_json,'$.is_erasing'),0)!=1) ${owned?'AND media.uploaded_by=?':''}`).bind(id,actor.projectId,...(owned?[actor.id]:[])).first<any>()
+  const row=await env.DB.prepare(`SELECT media.*,coalesce(cp.source_contact_id,c.contact_id) source_contact_id FROM media JOIN conversations c ON c.id=media.conversation_id LEFT JOIN macro_attachment_copies cp ON cp.media_id=media.id AND cp.project_id=media.project_id WHERE media.id=? AND media.project_id=? AND c.project_id=media.project_id AND ${availableTicketSql()} AND ${ticketScopeSql('?')} AND EXISTS(SELECT 1 FROM contacts root WHERE root.id=coalesce(cp.source_contact_id,c.contact_id) AND root.project_id=c.project_id AND coalesce(json_extract(root.metadata_json,'$.is_erased'),0)!=1 AND coalesce(json_extract(root.metadata_json,'$.is_erasing'),0)!=1) ${owned?'AND media.uploaded_by=?':''}`).bind(id,actor.projectId,actor.id,...(owned?[actor.id]:[])).first<any>()
   if(!row)throw new HTTPException(400,{message:'A macro attachment is unavailable or belongs to another workspace'})
   rows.push(row)
  }

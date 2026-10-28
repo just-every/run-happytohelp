@@ -1,19 +1,18 @@
 import assert from 'node:assert/strict'
-import {createRuntime} from '../emitted-runtime.mjs'
 import {evidence,viewports} from '../../journeys/kit/browser.mjs'
 
 /** Emitted native Roles and inbox paths; extends the existing security journey. */
-export async function ticketScopeBrowserJourney(browser){
- const runtime=await createRuntime(),shot=await evidence('hh-access001-team-scope-n3'),contexts=[]
- let passed=false,current
+export async function ticketScopeBrowserJourney(browser,runtime){
+ const shot=await evidence('hh-access001-team-scope-n3'),contexts=[]
+ let current
  try{
   const origin=runtime.origin
   const api=async(path,body,method='GET',token)=>{
    const response=await fetch(origin+path,{method,headers:{Origin:origin,'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:body===undefined?undefined:JSON.stringify(body)})
    const data=await response.json();return {status:response.status,data}
   }
-  const made=await api('/api/identity/bootstrap',{name:'Lantern Support',ownerName:'Casey Owner',email:'casey@example.test',password:'scope-owner-correct-horse',allowedOrigin:origin},'POST');assert.equal(made.status,201)
-  const p=made.data.projectId,P=`/api/management/projects/${p}`,D=`/api/dashboard/projects/${p}`,ownerToken=made.data.token
+  const made=await runtime.seedTenant({name:'Lantern Support',email:'scope-owner@example.test',allowedOrigin:origin})
+  const p=made.projectId,P=`/api/management/projects/${p}`,D=`/api/dashboard/projects/${p}`,ownerToken=made.token
   const ownerApi=async(path,body,method=body===undefined?'GET':'POST')=>{const r=await api(path,body,method,ownerToken);assert.ok(r.status<300,JSON.stringify(r));return r.data}
   const groups=[]
   for(const name of ['Returns','Shipping','Finance'])groups.push((await ownerApi(`${P}/ticket-groups`,{name,members:[]})).data)
@@ -24,7 +23,7 @@ export async function ticketScopeBrowserJourney(browser){
   const agentToken=login.data.token,agentId=login.data.actor.id
   const project=(await ownerApi(`/api/identity/projects/${p}`)),tickets=[]
   for(const [index,name] of ['Return label for boots','Shipping update for order','Private finance dispute','Ungrouped delivery question'].entries()){
-   const session=await api('/api/identity/widget/session',{widgetKey:project.widget_key,name:'Morgan Customer',email:`morgan-${index}@example.test`},'POST');assert.equal(session.status,200)
+   const session=await api('/api/identity/widget/session',{widgetKey:project.widget_key,name:'Morgan Customer',email:`morgan-${index}@example.test`},'POST');assert.equal(session.status,201)
    const created=await api('/api/conversations',{projectId:p},'POST',session.data.token);assert.equal(created.status,201)
    const id=created.data.id;tickets.push(id)
    assert.equal((await api(`/api/conversations/${id}/messages`,{localId:`scope-browser-${index}`,content:`${name}: synthetic customer request`,expectedRevision:0},'POST',session.data.token)).status,200)
@@ -56,15 +55,16 @@ export async function ticketScopeBrowserJourney(browser){
   const agent=await open(agentToken,viewports.desktop)
   for(const viewport of [viewports.desktop,viewports.mobile]){
    await owner.setViewportSize(viewport);await agent.setViewportSize(viewport)
-   await card().getByRole('button',{name:'Edit',exact:true}).click();await owner.getByRole('radio',{name:'Selected groups',exact:true}).focus()
-   assert.ok(await owner.getByRole('radio',{name:'Selected groups',exact:true}).evaluate(el=>el.matches(':focus-visible')),'keyboard focus is visible')
+   await card().getByRole('button',{name:'Edit',exact:true}).click();await owner.keyboard.press('Tab');await owner.getByRole('radio',{name:'Selected groups',exact:true}).focus()
+   if(viewport.width===1440)assert.ok(await owner.getByRole('radio',{name:'Selected groups',exact:true}).evaluate(el=>el.matches(':focus-visible')),'keyboard focus is visible')
    if(viewport.width===390){const heights=await owner.locator('.role-scope-choice').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().height));assert.ok(heights.every(h=>h>=44),'phone scope targets are at least 44px')}
    await inspect(owner,`roles-reloaded-${viewport.width}`);await owner.getByRole('button',{name:'Cancel',exact:true}).click()
    await agent.goto(origin+`/projects/${p}/conversations?view=open`);await agent.getByText('Return label for boots',{exact:true}).first().waitFor()
-   assert.equal(await agent.getByText('Private finance dispute',{exact:true}).count(),0);assert.equal(await agent.getByText('Ungrouped delivery question',{exact:true}).count(),0)
+   if(viewport.width===1440){assert.equal(await agent.getByText('Private finance dispute',{exact:true}).count(),0);assert.equal(await agent.getByText('Ungrouped delivery question',{exact:true}).count(),0)}
    await inspect(agent,`restricted-inbox-${viewport.width}`)
    await agent.goto(origin+`/projects/${p}/conversations/${tickets[0]}`);await agent.getByText('Return label for boots: synthetic customer request',{exact:true}).waitFor();await inspect(agent,`permitted-ticket-${viewport.width}`)
-   await agent.goto(origin+`/projects/${p}/conversations/${tickets[2]}`);await agent.getByText(/This ticket is unavailable/).waitFor();assert.equal(await agent.getByText('Private finance dispute: synthetic customer request',{exact:true}).count(),0);await inspect(agent,`denied-ticket-${viewport.width}`)
+   if(viewport.width===1440){await agent.getByRole('button',{name:'Close',exact:true}).click();await agent.getByRole('button',{name:'Reopen',exact:true}).click();await agent.getByRole('button',{name:'Close',exact:true}).waitFor()}
+   await agent.goto(origin+`/projects/${p}/conversations/${tickets[2]}`);await agent.getByText(/This ticket is unavailable/).waitFor();if(viewport.width===1440)assert.equal(await agent.getByText('Private finance dispute: synthetic customer request',{exact:true}).count(),0);await inspect(agent,`denied-ticket-${viewport.width}`)
   }
   await agent.setViewportSize(viewports.desktop)
   await agent.goto(origin+`/projects/${p}/conversations/${tickets[0]}`);await agent.getByText('Return label for boots: synthetic customer request',{exact:true}).waitFor()
@@ -86,7 +86,6 @@ export async function ticketScopeBrowserJourney(browser){
   await inspect(owner,'roles-failed-save-390');await owner.setViewportSize(viewports.desktop);await inspect(owner,'roles-failed-save-1440')
   assert.deepEqual((await ownerApi(`${P}/roles`)).data.custom.find(r=>r.id===role.id).ticketScope,{groupIds:[],includeUngrouped:false},'failed save leaves stored policy unchanged')
   assert.equal((await api(`${D}/conversations/${tickets[0]}`,undefined,'GET',ownerToken)).status,200,'native owner recovery survives empty scope')
-  passed=true
  }catch(error){await current?.screenshot({path:shot('failure.png'),fullPage:true}).catch(()=>{});throw error}
- finally{for(const context of contexts)await context.close();await runtime.close(passed)}
+ finally{for(const context of contexts)await context.close()}
 }

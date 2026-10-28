@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {batchRead} from '../tickets/request-batch'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
@@ -23,7 +24,7 @@ export async function prepareMacro(env:Env,actor:Actor,macroId:string,version:nu
  if(prepared.next.assigned_to!==prepared.current.assigned_to){const assignee=prepared.next.assigned_to?await batchRead(env,`user:${prepared.next.assigned_to}`,()=>env.DB.prepare('SELECT name,email FROM users WHERE id=?').bind(prepared.next.assigned_to).first<any>()):null;loaded.context['assignee.name']=assignee?.name;loaded.context['assignee.email']=assignee?.email}
  const rendered=renderPlaceholders(macro.content,loaded.context)
  // Source attachments are rechecked with the requester privacy fence at commit.
- for(const source of media){prepared.predicates.push('EXISTS(SELECT 1 FROM media sm JOIN conversations sc ON sc.id=sm.conversation_id JOIN contacts ct ON ct.id=sc.contact_id WHERE sm.id=? AND sm.project_id=c.project_id AND sm.object_key=? AND coalesce(json_extract(ct.metadata_json,\'$.is_erased\'),0)!=1 AND coalesce(json_extract(ct.metadata_json,\'$.is_erasing\'),0)!=1)');prepared.params.push(source.id,source.object_key);prepared.predicates.push("EXISTS(SELECT 1 FROM contacts root WHERE root.id=? AND root.project_id=c.project_id AND coalesce(json_extract(root.metadata_json,'$.is_erased'),0)!=1 AND coalesce(json_extract(root.metadata_json,'$.is_erasing'),0)!=1)");prepared.params.push(source.source_contact_id)}
+ for(const source of media){prepared.predicates.push(`EXISTS(SELECT 1 FROM media sm JOIN conversations sc ON sc.id=sm.conversation_id JOIN contacts ct ON ct.id=sc.contact_id WHERE sm.id=? AND sm.project_id=c.project_id AND sm.object_key=? AND ${ticketScopeSql('?','sc')} AND coalesce(json_extract(ct.metadata_json,\'$.is_erased\'),0)!=1 AND coalesce(json_extract(ct.metadata_json,\'$.is_erasing\'),0)!=1)`);prepared.params.push(source.id,source.object_key,actor.id);prepared.predicates.push("EXISTS(SELECT 1 FROM contacts root WHERE root.id=? AND root.project_id=c.project_id AND coalesce(json_extract(root.metadata_json,'$.is_erased'),0)!=1 AND coalesce(json_extract(root.metadata_json,'$.is_erasing'),0)!=1)");prepared.params.push(source.source_contact_id)}
  const changes:any[]=[]
  for(const [key,to] of Object.entries(change)){
   if(key==='fields')for(const [field,value] of Object.entries(to as object))changes.push({field:`custom.${field}`,from:loaded.ticket.fields[field]??null,to:value})

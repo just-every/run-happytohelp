@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import type {Env} from '../../platform/env'
 import {memberAccess} from '../access/gate'
 import type {Spent} from './budget'
@@ -13,7 +14,7 @@ async function installationAuthorized(env:Env,projectId:string,destinationId:str
  const access=installer?.actor_id?await memberAccess(env.DB,projectId,installer.actor_id):null
  return !!access?.permissions.has('integrations.install')&&['owner','admin'].includes(access.base)
 }
-const eligible=`EXISTS(SELECT 1 FROM conversations c JOIN sla_policies p ON p.project_id=c.project_id AND p.id=sla_alerts.policy_id JOIN workflow_calendars cal ON cal.project_id=p.project_id AND cal.id=p.calendar_id JOIN ticket_sla_state s ON s.project_id=c.project_id AND s.conversation_id=c.id WHERE c.project_id=sla_alerts.project_id AND c.id=sla_alerts.conversation_id AND ${liveSlaTicketSql()} AND c.status_category NOT IN ('solved','closed') AND s.policy_id=p.id AND p.active=1 AND cal.active=1 AND p.slack_destination_id=sla_alerts.slack_destination_id AND EXISTS(SELECT 1 FROM memberships m WHERE m.project_id=c.project_id AND m.user_id=sla_alerts.recipient_id) AND (c.assigned_to=sla_alerts.recipient_id OR EXISTS(SELECT 1 FROM json_each(p.backup_user_ids_json) b WHERE b.value=sla_alerts.recipient_id)) AND EXISTS(SELECT 1 FROM native_integration_destinations d WHERE d.project_id=c.project_id AND d.id=sla_alerts.slack_destination_id AND d.kind='slack' AND d.enabled=1 ))`
+const eligible=`EXISTS(SELECT 1 FROM conversations c JOIN sla_policies p ON p.project_id=c.project_id AND p.id=sla_alerts.policy_id JOIN workflow_calendars cal ON cal.project_id=p.project_id AND cal.id=p.calendar_id JOIN ticket_sla_state s ON s.project_id=c.project_id AND s.conversation_id=c.id WHERE c.project_id=sla_alerts.project_id AND c.id=sla_alerts.conversation_id AND ${liveSlaTicketSql()} AND ${ticketScopeSql('sla_alerts.recipient_id','c','c.group_id',false)} AND c.status_category NOT IN ('solved','closed') AND s.policy_id=p.id AND p.active=1 AND cal.active=1 AND p.slack_destination_id=sla_alerts.slack_destination_id AND EXISTS(SELECT 1 FROM memberships m WHERE m.project_id=c.project_id AND m.user_id=sla_alerts.recipient_id) AND (c.assigned_to=sla_alerts.recipient_id OR EXISTS(SELECT 1 FROM json_each(p.backup_user_ids_json) b WHERE b.value=sla_alerts.recipient_id)) AND EXISTS(SELECT 1 FROM native_integration_destinations d WHERE d.project_id=c.project_id AND d.id=sla_alerts.slack_destination_id AND d.kind='slack' AND d.enabled=1 ))`
 /** One bounded send per tick. Only an explicit rate-limit refusal may retry.
  * Interrupted claims and unknown provider effects remain terminal and inspectable. */
 export async function deliverSlaSlack(env:Env,now:number,spent?:Spent){

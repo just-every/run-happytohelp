@@ -108,6 +108,12 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         setIsMainVisible,
         lastConnected,
     });
+    useEffect(() => {
+        if (![401,403,404].includes(loadError?.status)) return;
+        setContent(''); setFiles([]); setLoadingContent(''); setDraftOrigin(null);
+        setEscalationDraftId(null); setNoteMacro(null); setIsNoteModalVisible(false);
+        setTicketDialog(null); setIsSending(false);
+    }, [loadError]);
     const applyMacroDraft = (text, metadata) => {
         if (metadata.reply_type === 'note') { setNoteMacro({content:text,media:metadata.media || []}); setIsNoteModalVisible(true); }
         else {

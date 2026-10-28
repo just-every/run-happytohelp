@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import type {Context} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Actor} from '../../platform/env'
@@ -9,7 +10,7 @@ export async function escalationAccess(c:Context<AppEnv>,permission?:Permission)
  const actor=await scope(c) as Actor,access=await memberAccess(c.env.DB,actor.projectId,actor.id)
  if(permission&&!access?.permissions.has(permission))throw new HTTPException(403,{message:'Your role cannot perform this escalation action'})
  const conversationId=c.req.param('conversationId')
- const conversation=conversationId?await c.env.DB.prepare(`SELECT c.* FROM conversations c WHERE c.project_id=? AND c.id=? AND ${contactAvailableSql()} AND NOT EXISTS(SELECT 1 FROM conversation_merges m WHERE m.source_id=c.id AND m.undone_at IS NULL)`).bind(actor.projectId,conversationId).first<any>():null
+ const conversation=conversationId?await c.env.DB.prepare(`SELECT c.* FROM conversations c WHERE c.project_id=? AND c.id=? AND ${contactAvailableSql()} AND ${ticketScopeSql('?')} AND NOT EXISTS(SELECT 1 FROM conversation_merges m WHERE m.source_id=c.id AND m.undone_at IS NULL)`).bind(actor.projectId,conversationId,actor.id).first<any>():null
  if(conversationId&&!conversation)throw new HTTPException(404)
  return {actor,conversation}
 }

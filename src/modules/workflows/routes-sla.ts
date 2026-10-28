@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {Hono} from 'hono'
 import {emptyCommand} from './command-body'
 import {HTTPException} from 'hono/http-exception'
@@ -73,14 +74,15 @@ for(const kind of ['workflow-calendars','sla-policies'] as const){
 workflowSlaRoutes.get(`${prefix}/sla-alerts`,async c=>{
  const actor=await scope(c) as Actor
  await ticketReadAccess(c.env,actor)
- const alerts=await c.env.DB.prepare(`SELECT a.* FROM sla_alerts a JOIN conversations c ON c.project_id=a.project_id AND c.id=a.conversation_id WHERE a.project_id=? AND ${liveSlaTicketSql()} ORDER BY a.created_at DESC,a.id`).bind(actor.projectId).all<any>()
+ const alerts=await c.env.DB.prepare(`SELECT a.* FROM sla_alerts a JOIN conversations c ON c.project_id=a.project_id AND c.id=a.conversation_id WHERE a.project_id=? AND ${liveSlaTicketSql()} AND ${ticketScopeSql('?')} ORDER BY a.created_at DESC,a.id`).bind(actor.projectId,actor.id).all<any>()
  return c.json({data:alerts.results})
 })
 workflowSlaRoutes.patch(`${prefix}/sla-alerts/:id/ack`,async c=>{
- const actor=await scope(c) as Actor,guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash'),source:'dashboard'}),id=c.req.param('id'),now=workflowNow(c.env),receipt=crypto.randomUUID()
+ const actor=await scope(c) as Actor,id=c.req.param('id'),now=workflowNow(c.env),receipt=crypto.randomUUID()
  await emptyCommand(c)
- const alert=await c.env.DB.prepare(`SELECT a.* FROM sla_alerts a JOIN conversations c ON c.project_id=a.project_id AND c.id=a.conversation_id WHERE a.id=? AND a.project_id=? AND ${liveSlaTicketSql()}`).bind(id,actor.projectId).first<any>()
+ const alert=await c.env.DB.prepare(`SELECT a.* FROM sla_alerts a JOIN conversations c ON c.project_id=a.project_id AND c.id=a.conversation_id WHERE a.id=? AND a.project_id=? AND ${liveSlaTicketSql()} AND ${ticketScopeSql('?')}`).bind(id,actor.projectId,actor.id).first<any>()
  if(!alert)throw new HTTPException(404)
+ const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash'),source:'dashboard'},'conversations.manage',alert.conversation_id)
  if(alert.state!=='open')return c.json({data:alert})
  const results=await c.env.DB.batch([
   c.env.DB.prepare(`INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json) SELECT ?,?,?,'data','sla.alert.acknowledged','succeeded','user',?,'dashboard','sla_alert',?,'{}' WHERE EXISTS(${guard.sql}) AND EXISTS(SELECT 1 FROM sla_alerts a JOIN conversations c ON c.project_id=a.project_id AND c.id=a.conversation_id WHERE a.id=? AND a.project_id=? AND a.state='open' AND ${availableTicketSql()})`).bind(receipt,actor.projectId,now,actor.id,id,...guard.params,id,actor.projectId),

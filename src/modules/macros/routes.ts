@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {queueTicketContinuation} from '../tickets/continuation'
 import {boundedDatabase} from '../../platform/d1-budget'
 import {ticketBatchEnvironment,TicketCapacityError} from '../tickets/request-batch'
@@ -21,7 +22,7 @@ macroRoutes.post(base,async c=>{const actor=await scope(c) as Actor;return c.jso
 macroRoutes.get(`${base}/attachment-options`,async c=>{
  const actor=await scope(c) as Actor
  await ticketAuthority(c.env,actor,authority(c),'conversations.reply')
- const rows=await c.env.DB.prepare(`SELECT media.id,media.filename,media.content_type,media.size,c.subject FROM media JOIN conversations c ON c.id=media.conversation_id WHERE media.project_id=? AND c.project_id=media.project_id AND media.uploaded_by=? AND ${availableTicketSql()} ORDER BY media.created_at DESC LIMIT 200`).bind(actor.projectId,actor.id).all()
+ const rows=await c.env.DB.prepare(`SELECT media.id,media.filename,media.content_type,media.size,c.subject FROM media JOIN conversations c ON c.id=media.conversation_id WHERE media.project_id=? AND c.project_id=media.project_id AND media.uploaded_by=? AND ${availableTicketSql()} AND ${ticketScopeSql('?')} ORDER BY media.created_at DESC LIMIT 200`).bind(actor.projectId,actor.id,actor.id).all()
  return c.json({data:rows.results})
 })
 macroRoutes.get(`${base}/:macroId`,async c=>{const actor=await scope(c) as Actor,{row}=await readMacro(c.env,actor,c.req.param('macroId'));return c.json({data:{...macroData(row),id:row.macro_id}})})
@@ -43,7 +44,7 @@ macroRoutes.get(`${base}/:macroId/usage`,async c=>{
  const personal=JSON.parse(row.scope_json).visibility==='personal'
  if(personal?row.owner_id!==actor.id:!['owner','admin'].includes(actor.role))throw new HTTPException(403)
  await ticketAuthority(c.env,actor,authority(c),personal?'conversations.reply':'settings.manage')
- return c.json({data:(await c.env.DB.prepare('SELECT version,actor_id,count(*) uses,max(created_at) last_used_at FROM macro_usage WHERE project_id=? AND macro_id=? GROUP BY version,actor_id ORDER BY version DESC,uses DESC').bind(actor.projectId,row.macro_id).all()).results})
+ return c.json({data:(await c.env.DB.prepare(`SELECT u.version,u.actor_id,count(*) uses,max(u.created_at) last_used_at FROM macro_usage u JOIN conversations c ON c.id=u.conversation_id AND c.project_id=u.project_id WHERE u.project_id=? AND u.macro_id=? AND ${ticketScopeSql('?')} GROUP BY u.version,u.actor_id ORDER BY u.version DESC,uses DESC`).bind(actor.projectId,row.macro_id,actor.id).all()).results})
 })
 for(const action of ['preview','apply'] as const)macroRoutes.post(`${base}/:macroId/${action}`,async c=>{
  const actor=await scope(c) as Actor,body=object(await c.req.json()),macroId=c.req.param('macroId'),tickets:MacroSelection[]=body.tickets??[{id:body.conversation_id,expected_version:body.expected_ticket_version}]

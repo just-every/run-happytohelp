@@ -894,7 +894,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company’s policy decides every 
 
 **How HappyToHelp computes each class.**
 - **standard:** reversible internal drafts, ticket organization, triage, private knowledge edits and obligations; facts include affected item count.
-- **external:** a reply, notification, share, published article or destination newly exposes support content outside the business; facts include recipients and known customer/vendor, new counterparty or public exposure.
+- **external:** a reply, notification, share, published article or destination newly exposes support content outside the business; facts include recipients and known customer/vendor, new counterparty or public exposure. A proactive insight saved or generated for a visitor whose widget will show it is external, with recipient count and known, new or public counterparty facts.
 - **money:** a Shopify refund, Stripe refund/subscription charge change or changed support-provider spending; facts include amount, currency and merchant/customer.
 - **commitment:** a customer promise, accepted offer or editorial sign-off others rely on; facts include value and counterparty.
 - **accounts:** connecting a service creates an outside provider account, number or paid resource; facts include provider and resource.
@@ -918,7 +918,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company’s policy decides every 
 | `happytohelp.activation.manage_001` | Observed owner setup | ACTIVATION-001 | standard or external (+ security · sensitive) | not implemented |
 | `happytohelp.ai.manage_001` | Configured model execution | AI-001 | standard or external (+ sensitive) | not implemented |
 | `happytohelp.knowledge.manage_001` | Published knowledge | KNOWLEDGE-001 | standard or external (+ sensitive) | not implemented |
-| `happytohelp.context.manage_001` | Attributed customer context | CONTEXT-001 | standard (+ sensitive) | not implemented |
+| `happytohelp.context.manage_001` | Attributed customer context | CONTEXT-001 | standard or external (+ sensitive) | not implemented |
 | `happytohelp.delegation.manage_001` | Explicit local authority | DELEGATION-001 | standard or live (+ access · security · external) (+ sensitive) | not implemented |
 | `happytohelp.training.manage_001` | Durable evaluation | TRAINING-001 | standard or external (+ money · sensitive) | not implemented |
 | `happytohelp.integration.manage_001` | Honest external effects | INTEGRATION-001 | standard or external (+ access · security · sensitive) | not implemented |

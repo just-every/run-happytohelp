@@ -7,7 +7,7 @@ import { DocsPage } from '../ui/docs/DocsPage'
 import { buildSite } from '../ui/docs/build/site'
 import { contractPageHtml } from './base/contract-page'
 import { runPricing } from './base/run-pricing'
-import { runPageHtml, siteNotFoundHtml, type SiteBuild, type SiteContext } from './base/run-site'
+import { docsMovedHtml, runPageHtml, siteNotFoundHtml, type SiteBuild, type SiteContext } from './base/run-site'
 import { identity } from './identity'
 import runData from './run.json'
 
@@ -23,6 +23,8 @@ export function sitePages({ contract, styles = [] }: Partial<SiteContext> = {}):
       { path: '/', html: document(renderToStaticMarkup(createElement(Homepage)), 'HappyToHelp — Customer Support, Solved.') },
       ...docs.pages.map(page => ({ path: page.href, html: document(renderToStaticMarkup(createElement(DocsPage, { page, sections: docs.sections, repository: docs.repository, version: 0 })), 'HappyToHelp docs') })),
       { path: '/run', html: runPageHtml(identity, run, contract) },
+      // The shared Run page walks people through /docs/getting-started; HappyToHelp's walkthrough is its install guide.
+      { path: '/docs/getting-started', html: docsMovedHtml(identity, run, '/docs/install', 'Install HappyToHelp', contract) },
       ...(contract ? [{ path: '/contract', html: contractPageHtml(identity, run, contract) }] : []),
       { path: '/404', html: siteNotFoundHtml(identity, run, contract) },
     ],

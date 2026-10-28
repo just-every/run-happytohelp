@@ -91,9 +91,12 @@ export async function customerPortalJourney(){
   await app.ok(`/api/outcomes/projects/${p}/settings`,{...owner,method:'PUT',body:{enabled:true,scale:'five',delayMinutes:0,expiresDays:14,locale:'en'}})
   await app.ok(`/api/dashboard/projects/${p}/conversations/${id}`,{...owner,method:'PUT',body:{resolved:true}});await app.scheduled()
   const solved=await detail();assert.equal(solved.ticket.status,'solved');assert.equal(solved.survey.state,'available')
-  const survey=new URL(solved.survey.url);assert.equal((await app.request(survey.pathname)).status,200)
+  const survey=new URL(solved.survey.url);assert.match(survey.pathname,/\.portal\./);
+  assert.equal((await app.request(survey.pathname.replace('.portal.','.'))).status,404,'response surface cannot be forged without its signature');assert.equal((await app.request(survey.pathname)).status,200)
   assert.equal((await app.request(survey.pathname,{body:{score:4,reason:'outcome',comment:'Thank you for the clear answer'}})).status,200)
   assert.equal((await app.call(survey.pathname,{body:{score:4}})).status,410)
+  const portalResult=(await app.ok(`/api/outcomes/projects/${p}/results`,owner)).results.find(row=>row.conversationId===id)
+  assert.equal(portalResult.response.channel,'portal');assert.equal(portalResult.response.invitationChannel,'email')
   await app.ok(P+`/tickets/${id}/reopen`,{...rosa,body:{expectedRevision:solved.ticket.revision}})
   assert.equal((await detail()).ticket.status,'open');assert.equal((await app.call(survey.pathname)).status,410)
   const history=await app.sql('SELECT source FROM ticket_history WHERE conversation_id=?',id);assert.ok(history.some(h=>h.source==='portal'))

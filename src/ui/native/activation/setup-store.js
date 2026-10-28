@@ -37,6 +37,22 @@ function createStore(projectId) {
   }, pollMs);
  };
  const onVisible = () => { if (!document.hidden && !stopped && waiting(state.data)) { polls = 0; observe(true).then(schedule); } };
+ // Skip for now, its undo, or trying locally: stored on the server for the workspace, never in the browser. One write at
+ // a time, after any check in flight; the answer is the snapshot.
+ const write = (route, body) => {
+  if (skipping) return skipping;
+  skipping = (async () => {
+   set({skipBusy: true, error: ''});
+   await inflight;
+   try {
+    const result = await nativeRequest(`${path}/${route}`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body), cache: 'no-store'});
+    if (!stopped) set({data: result.data});
+    polls = 0;
+   } catch (error) { if (!stopped) set({error: error.message}); }
+   finally { skipping = null; if (!stopped) set({skipBusy: false}); schedule(); }
+  })();
+  return skipping;
+ };
  const start = async () => {
   document.addEventListener('visibilitychange', onVisible);
   try {
@@ -62,21 +78,9 @@ function createStore(projectId) {
   path,
   // The footer's explicit "Check again": a check that is not marked automatic, so the server runs it now.
   checkAgain: async () => { await inflight; await observe(false); polls = 0; schedule(); },
-  // Skip for now, or undo it: stored on the server for the workspace, never in the browser. The answer is the snapshot.
-  skip: (step, skipped) => {
-   if (skipping) return skipping;
-   skipping = (async () => {
-    set({skipBusy: true, error: ''});
-    await inflight;
-    try {
-     const result = await nativeRequest(`${path}/skip`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({step, skipped}), cache: 'no-store'});
-     if (!stopped) set({data: result.data});
-     polls = 0;
-    } catch (error) { if (!stopped) set({error: error.message}); }
-    finally { skipping = null; if (!stopped) set({skipBusy: false}); schedule(); }
-   })();
-   return skipping;
-  },
+  skip: (step, skipped) => write('skip', {step, skipped}),
+  // Try locally without a website or AI key: both local-trial steps left for now in one request.
+  tryLocally: () => write('local-trial', {}),
  };
 }
 

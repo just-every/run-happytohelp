@@ -28,3 +28,6 @@ import {conversationActionsJourney} from '../helpers/r4/conversation-actions.mjs
 test('action macros preview and apply scoped versioned changes and attachments to a ticket and thirty tickets, preserve editable drafts and block unresolved sends',macrosJourney)
 test('teammates collaborate with private mentions, followers and live viewing, typing and draft collision warnings while visitors retain their own scope',collaborationJourney)
 test('duplicate tickets merge into a surviving operator thread with safe undo and private partner replies through the real mail gateways',conversationActionsJourney)
+
+import {brandsJourney} from '../helpers/inbox/brands.mjs'
+test('two brands deliberately share a team while domains, senders, signatures, customer identities, private knowledge, routing and policy stay isolated, reports aggregate only permitted brands and revocation ends access',brandsJourney)

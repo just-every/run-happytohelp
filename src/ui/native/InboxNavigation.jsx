@@ -8,6 +8,7 @@ import { ticketPath } from '../dashboard/components/tickets/ticket-model';
 import { useMobileNavigation } from './MobileNavigation';
 import { inboxSource, useInboxNavigation, useInboxNavigationActions } from './inbox-navigation-state';
 import { nativeRequest } from './transport';
+import DialogHeader from '../dashboard/components/DialogHeader';
 
 const RAIL_SAVED_VIEWS = 5;
 // The router marks a link current when its search is a subset of the page's; this group decides which row is current
@@ -103,7 +104,7 @@ export default function InboxNavigation({ id, settings, inboxActive, open }) {
             </Link></li> }
         </ul> }
         { allViews && <Modal show onHide={ () => setAllViews(false) } className="inbox-all-views" aria-labelledby={ `${ id }-all` }>
-            <Modal.Header closeButton><Modal.Title id={ `${ id }-all` }>Saved views</Modal.Title></Modal.Header>
+            <DialogHeader closeButton><Modal.Title id={ `${ id }-all` }>Saved views</Modal.Title></DialogHeader>
             <Modal.Body>
                 { [ [ 'personal', 'Personal' ], [ 'shared', 'Shared' ] ].map(([ visibility, title ]) => {
                     const group = orderedSavedViews(views).filter(view => view.visibility === visibility);

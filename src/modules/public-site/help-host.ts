@@ -19,7 +19,7 @@ function configuredProject(request: Request, env: Env): string | null {
 }
 
 // These unprefixed native document routes must keep their application authority even on a help host.
-const applicationPaths = new Set(['auth','admin','users','register','verify-email','accept-invitation','forgot-password','reset-password','two-factor','owner-recovery','delegation','preview','activation','articles','datasets','categories','ais','agents','macros','plugins','edit','email-settings','api-settings','webhook-settings','slack-settings','delivery-log','github-settings','widget-settings','local-agent','training-runs','reports','move-in','insights'])
+const applicationPaths = new Set(['auth','admin','users','register','verify-email','accept-invitation','forgot-password','reset-password','two-factor','owner-recovery','delegation','preview','activation','articles','datasets','categories','ais','agents','macros','plugins','edit','email-settings','api-settings','webhook-settings','hubspot-settings','slack-settings','delivery-log','github-settings','widget-settings','local-agent','training-runs','reports','move-in','insights'])
 
 const hostRoutes = new Hono<AppEnv>()
 hostRoutes.get('/', c => renderHelpCenter(c, configuredProject(c.req.raw, c.env)!, ''))

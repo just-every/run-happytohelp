@@ -6,11 +6,11 @@ import { useDashboardLocation } from './dashboard-state';
 import { adminTitles } from './pages/AdminRecords';
 import { workspacePageComponents, workspacePageRoute } from './workspace-page-code';
 import { AdminRequired, PageNotFound, ProjectUnavailable } from './pages/WorkspaceNotices';
-const titles={assurance:'Regulated deployment',companies:'Companies','workflow-settings':'Workflows','ticket-settings':'Tickets','api-settings':'API tokens','webhook-settings':'Webhooks','slack-settings':'Slack','delivery-log':'Delivery log',reports:'Reports','move-in':'Move in',edit:'Project',settings:'Project',ais:'AI',datasets:'Knowledge',articles:'Knowledge',categories:'Knowledge',agents:'Agents','local-agent':'Local computers','email-settings':'Email',suspended:'Suspended email','widget-settings':'Widget',macros:'Saved Replies',contacts:'Contacts',plugins:'Plugins',users:'Profile',insights:'Insights','training-runs':'Evaluation runs',security:'Security','security-log':'Security log',roles:'Roles'};
+const titles={assurance:'Regulated deployment','hubspot-settings':'HubSpot',procedures:'Procedures',companies:'Companies','workflow-settings':'Workflows','ticket-settings':'Tickets','api-settings':'API tokens','webhook-settings':'Webhooks','slack-settings':'Slack','delivery-log':'Delivery log',reports:'Reports','move-in':'Move in',edit:'Project',settings:'Project',ais:'AI',datasets:'Knowledge',articles:'Knowledge',categories:'Knowledge',agents:'Agents','local-agent':'Local computers','email-settings':'Email',suspended:'Suspended email','widget-settings':'Widget',macros:'Saved Replies',contacts:'Contacts',plugins:'Plugins',users:'Profile',insights:'Insights','training-runs':'Evaluation runs',security:'Security','security-log':'Security log',roles:'Roles'};
 export default function WorkspacePages({ settings, pages = {} }) {
     const { AssurancePage, Connections, Reports, Companies, MoveIn, ActivationPage, SetupTitle, GitHubSettings, ArticleImport,
         ProjectsPage, AdminPage, KnowledgePage, ManagementPage, ProjectSettings, WidgetSettingsPage,
-        ComputersPage, DelegationSettings, DelegationAuthorize, TrainingRuns, AccountPage, InsightsPage, SecurityPage, SecurityLog, RolesPage, TicketSettings, SuspendedMail, WorkflowSettings } = { ...workspacePageComponents, ...pages };
+        ComputersPage, DelegationSettings, DelegationAuthorize, ProcedureSettings, TrainingRuns, AccountPage, InsightsPage, SecurityPage, SecurityLog, RolesPage, TicketSettings, SuspendedMail, WorkflowSettings } = { ...workspacePageComponents, ...pages };
     const pathname = useDashboardLocation().pathname;
     const {segments,section,recordId}=workspacePageRoute(pathname,settings);
     const projectId=segments[0]==='projects'?segments[1]:settings.project?.id||Object.keys(settings.projects||{})[0];
@@ -19,8 +19,8 @@ export default function WorkspacePages({ settings, pages = {} }) {
     let page;
     if(settings.projectUnavailable)page=<ProjectUnavailable/>;
     else if(section==='projects')page=<ProjectsPage/>;
-    else if(section==='assurance')page=<AssurancePage projectId={projectId} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='reports')page=<Reports projectId={projectId}/>;
+    else if(section==='assurance')page=<AssurancePage projectId={projectId} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='companies')page=<Companies projectId={projectId} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='move-in')page=<MoveIn projectId={projectId}/>;
     else if(section==='activation')page=<ActivationPage projectId={projectId} role={settings.projects?.[projectId]?.role}/>;
@@ -28,7 +28,7 @@ export default function WorkspacePages({ settings, pages = {} }) {
     else if(['datasets','articles','categories'].includes(section))page=<KnowledgePage {...{projectId,section,recordId}} project={settings.projects?.[projectId]||settings.project}/>;
     else if(['ais','macros','contacts','plugins','agents'].includes(section))page=<ManagementPage {...{projectId,section,recordId}}/>;
     else if(['edit','settings','email-settings'].includes(section))page=<ProjectSettings {...{projectId,section}} role={settings.projects?.[projectId]?.role}/>;
-    else if(['api-settings','webhook-settings','slack-settings','delivery-log'].includes(section))page=<Connections {...{projectId,section}} role={settings.projects?.[projectId]?.role}/>;
+    else if(['hubspot-settings','api-settings','webhook-settings','slack-settings','delivery-log'].includes(section))page=<Connections {...{projectId,section}} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='github-settings')page=<GitHubSettings {...{projectId}}/>;
     else if(section==='security')page=<SecurityPage {...{projectId}} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='security-log')page=<SecurityLog {...{projectId}} role={settings.projects?.[projectId]?.role}/>;
@@ -40,6 +40,7 @@ export default function WorkspacePages({ settings, pages = {} }) {
     else if(section==='local-agent')page=<ComputersPage {...{projectId}} projectName={settings.projects[projectId]?.name}/>;
     else if(section==='delegation'&&recordId==='authorize')page=<DelegationAuthorize projectId={settings.isGlobalInbox?undefined:settings.project?.id}/>;
     else if(section==='delegation')page=<DelegationSettings projectId={settings.isGlobalInbox?undefined:settings.project?.id} projects={settings.projects}/>;
+    else if(section==='procedures')page=<ProcedureSettings {...{projectId}} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='training-runs')page=<TrainingRuns {...{projectId}}/>;
     else if(foreignUser)page=<PageNotFound action={<Link className="btn btn-primary" to="/users/profile">Go to your profile</Link>}/>;
     else if(section==='users')page=<AccountPage {...{projectId,section}}/>;

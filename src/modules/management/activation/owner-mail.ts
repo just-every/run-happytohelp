@@ -1,3 +1,4 @@
+import {rerMail} from '../../integrations/rer-mail-contract'
 import type {Env} from '../../../platform/env'
 import {hashToken} from '../../../platform/auth'
 import {emailAddress} from '../../integrations/inbound-routing'
@@ -61,13 +62,14 @@ export async function checkOwnerMail(env:Env,config:Configuration,ownerId?:strin
  if(signIn)return {state:'done',detail:`You signed in with a link emailed to you at ${at(signIn.consumed_at)}, so mail from this installation reaches your mailbox.`,receiptRef:`signin:${signIn.user_id}:${signIn.consumed_at}`}
  const found=await latestOwnerDelivery(env,config,ownerId)
  if(!found) {
+  if(config.mailMode==='unavailable'&&rerMail(env))return {state:'unavailable',detail:'Run Edit Run is activating managed email. No customer email setup is needed.'}
   if(config.mailMode==='unavailable')return {state:'unavailable',detail:'CONFIGURATION_REQUIRED: EMAIL_API_KEY and EMAIL_FROM. Add the email provider settings to the installation; mail to you cannot be sent or confirmed until then.'}
   return {state:'pending',detail:'Not confirmed yet. Sign in once with an emailed link, or send yourself a test from Email settings.'}
  }
  const {delivery,kind}=found,name=kind==='welcome'?'welcome email':'test message'
  if(delivery.state==='failed')return {state:'failed',detail:`The provider rejected the ${name}. Review the provider log; it will not be sent again automatically.`,receiptRef:delivery.id}
  if(delivery.state==='uncertain'||delivery.state==='sending')return {state:'unknown',detail:`The ${name} send outcome is unknown. Reconcile it with the provider; it is never resent.`,receiptRef:delivery.id}
- if(config.providerName!=='resend')return {state:'pending',detail:`${config.providerName||'The provider'} accepted the ${name} (sent). This provider reports no delivery status here; sign in once with an emailed link to confirm you received it.`,receiptRef:delivery.id}
+ if(config.providerName!=='resend')return {state:'pending',detail:`${config.providerName==='rer'?'Run Edit Run':config.providerName||'The provider'} accepted the ${name} (sent). This provider reports no delivery status here; sign in once with an emailed link to confirm you received it.`,receiptRef:delivery.id}
  if(!env.EMAIL_API_KEY)return {state:'unavailable',detail:'CONFIGURATION_REQUIRED: EMAIL_API_KEY. Install the selected email provider key to read delivery status.',receiptRef:delivery.id}
  if(!delivery.provider_id)return {state:'unknown',detail:'The provider did not retain a message ID for delivery lookup.',receiptRef:delivery.id}
  const body=await providerJson(`https://api.resend.com/emails/${encodeURIComponent(delivery.provider_id)}`,bearer(env.EMAIL_API_KEY))

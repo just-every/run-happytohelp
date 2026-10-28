@@ -20,6 +20,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { v4 as uuidv4 } from 'uuid';
 import {ConnectContext} from "./context/ConnectContext";
+import { tooltip } from '../../tooltip/tooltip';
 
 
 
@@ -143,7 +144,7 @@ export default function Interact({ setOpen }) {
                     {errors.map((error, index) =>
                         <div key={"error-" + index} className="happytohelp-error" role="alert">
                             <span>{error}</span>
-                            <button type="button" className="happytohelp-error-close" aria-label="Dismiss message" onClick={() => {
+                            <button type="button" className="happytohelp-error-close" { ...tooltip('Dismiss message') } onClick={() => {
                             setErrors(errors => errors.splice(index, 1) && [...errors])
                         }}>
                                 <FontAwesomeIcon icon={falTimes} className="happytohelp-show-opened" aria-hidden="true" />

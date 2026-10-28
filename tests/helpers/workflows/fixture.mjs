@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict'
+import {createHash} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
 export async function workflowFixture(){
- const initial=Date.parse('2026-11-25T21:00:00Z'),app=await startApp({captureQueue:true,outbound:async request=>{if(new URL(request.url).hostname==='api.resend.com')throw new TypeError('Connection reset after request body was received');throw new Error('Unexpected external call '+request.url)},bindings:{APP_ORIGIN:'https://app.example',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',INBOUND_EMAIL_TOKEN:'workflow-gateway',H2H_WORKFLOW_NOW:String(initial)}})
+ const slack={responses:[],requests:[]}
+ const initial=Date.parse('2026-11-25T21:00:00Z'),app=await startApp({captureQueue:true,outbound:async request=>{if(new URL(request.url).hostname==='hooks.slack.com'){slack.requests.push(await request.json());const response=slack.responses.shift()??{status:200,body:'ok'};if(response.lost)throw new TypeError('Synthetic lost response');return new Response(response.body,{status:response.status,headers:response.headers})}if(new URL(request.url).hostname==='hooks.example.com'){const path=new URL(request.url).pathname;if(path==='/lost')throw new TypeError('Connection reset after request body');return new Response('',{status:path==='/reject'?422:200})}if(new URL(request.url).hostname==='api.resend.com')throw new TypeError('Connection reset after request body was received');throw new Error('Unexpected external call '+request.url)},bindings:{APP_ORIGIN:'https://app.example',INTEGRATION_ENCRYPTION_KEY:createHash('sha256').update('synthetic-happytohelp-1').digest('base64'),H2H_LOCAL:'true',EMAIL_PROVIDER:'development',INBOUND_EMAIL_TOKEN:'workflow-gateway',H2H_WORKFLOW_NOW:String(initial)}})
  if(process.env.H2H_WORKFLOW_TRACE)console.log('fixture started')
  const w=await app.seedWorkspace('workflow'),other=await app.seedWorkspace('other-workflow'),base=`/api/dashboard/projects/${w.projectId}`
  const call=(path,body,method,role='owner',headers={})=>{if(process.env.H2H_WORKFLOW_TRACE)console.log('workflow',method??(body===undefined?'GET':'POST'),path);return app.call(base+path,{token:w.tokens[role],...(body===undefined?{}:{body}),...(method?{method}:{}),headers})}
@@ -14,5 +16,5 @@ export async function workflowFixture(){
  const patch=async(id,changes)=>ok(`/conversations/${id}/ticket`,{expected_version:(await get(id)).ticket_version,...changes},'PATCH')
  const clock=async value=>{const now=typeof value==='number'?value:Date.parse(value);if(process.env.H2H_WORKFLOW_TRACE)console.log('clock',new Date(now).toISOString());await app.configure({H2H_WORKFLOW_NOW:String(now)});if(process.env.H2H_WORKFLOW_TRACE)console.log('clock ready');return now}
  const publish=async d=>{const {rule}=await ok('/workflow-rules',d);return (await ok(`/workflow-rules/${rule.id}/publish`,{})).rule}
- return {app,w,other,base,call,ok,customer,get,send,create,patch,clock,publish,initial}
+ return {slack,app,w,other,base,call,ok,customer,get,send,create,patch,clock,publish,initial}
 }

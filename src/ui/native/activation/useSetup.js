@@ -5,5 +5,5 @@ import {setupStore} from './setup-store';
 export default function useSetup(projectId) {
  const store = setupStore(projectId);
  const state = useSyncExternalStore(store.subscribe, store.snapshot);
- return {...state, checkAgain: store.checkAgain, skip: store.skip};
+ return {...state, checkAgain: store.checkAgain, skip: store.skip, tryLocally: store.tryLocally};
 }

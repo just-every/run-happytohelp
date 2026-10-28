@@ -36,7 +36,7 @@ export async function platformArchiveJourney(){
  const source=resolve('.'),scratch=await mkdtemp(join(tmpdir(),'h2h-platform-archive-'));
  async function fixture(name,additive=false){
   const root=join(scratch,name);await mkdir(root);
-  for(const entry of ['scripts','src','migrations','docs','package.json','seed.json','OPERATIONS.json','OPERATIONS.md','ACCEPTANCE.md','rer-setup.json','wrangler.jsonc','deploy.json'])await cp(join(source,entry),join(root,entry),{recursive:true});
+  for(const entry of ['scripts','src','migrations','docs','management','package.json','seed.json','OPERATIONS.json','OPERATIONS.md','ACCEPTANCE.md','rer-setup.json','wrangler.jsonc','deploy.json'])await cp(join(source,entry),join(root,entry),{recursive:true});
   await symlink(join(source,'node_modules'),join(root,'node_modules'),'dir');
   if(additive)await writeFile(join(root,'migrations/9999_archive_addition.sql'),'CREATE TABLE archive_addition(id TEXT PRIMARY KEY,value TEXT);\n');
   return root;

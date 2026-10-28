@@ -111,7 +111,6 @@ export const defaultText = {
     away: {
         title: "We're away right now",
         back: "We're back {when}.",
-        later: "We'll reply as soon as we're back.",
         email_ask: "Leave your email below and we'll send our reply there too.",
         email_known: "We'll reply here and email you at {email}.",
         header: "Away",

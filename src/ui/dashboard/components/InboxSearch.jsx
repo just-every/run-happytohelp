@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { tooltip } from '../../../modules/tooltip/tooltip';
 
 const scopes = [ [ 'all', 'All history' ], [ 'view', 'This view' ] ];
 
@@ -33,7 +34,7 @@ export default function InboxSearch({ query, scope, onSearch }) {
                     placeholder="Search messages or customers…"
                     aria-label="Search conversations by message, name or email" />
                 <div className="input-group-append">
-                    <button className="btn btn-lg btn-ico btn-secondary btn-minimal bg-white" type="submit" aria-label="Search conversations">
+                    <button className="btn btn-lg btn-ico btn-secondary btn-minimal bg-white" type="submit" { ...tooltip('Search conversations') }>
                         <i className="fe fe-search" aria-hidden="true"></i>
                     </button>
                 </div>

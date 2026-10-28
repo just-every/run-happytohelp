@@ -1,6 +1,6 @@
 import {requireActiveProject,isProjectActive} from '../../platform/project-status'
 import type {Env,Job} from '../../platform/env'
-import {z} from 'zod'
+import {z,stringMax,lengthBounds} from '../validation/zod.js'
 import {currentGuard,publishProfile,finishContextJob} from './outcomes'
 // @ts-ignore Retained profile schemas.
 import * as schemas from './profiles/schemas.js'
@@ -57,7 +57,7 @@ async function runMonitoring(env:Env,job:any,request:ContextRequest){
   insight={id:crypto.randomUUID(),...candidate,help_type:analysis.help_type}
  }
  // A summary compacts only the exact bounded evidence used by this run, after attributable analysis.
- const summaryRequest=monitorPrompt.buildSummaryRequest({...context,monitoring_packet:summaryPacket},z.object({summary:z.string().trim().min(1).max(2400)}).strict())
+ const summaryRequest=monitorPrompt.buildSummaryRequest({...context,monitoring_packet:summaryPacket},z.object({summary:stringMax(lengthBounds(z.string().trim(),{min:1}),2400)}).strict())
  const summary=summaryRequest.schema.parse(await request(env,job,'summary',summaryRequest))
  const statements=[currentGuard(env,job)]
  if(insight)statements.push(env.DB.prepare(`INSERT INTO context_insights(id,project_id,subject_id,help_type,content,buttons,evidence_ids,created_at) VALUES(?,?,?,?,?,?,?,?)`).bind(insight.id,job.project_id,job.subject_id,insight.help_type,insight.content,JSON.stringify(insight.buttons),JSON.stringify(insight.evidence_ids),Date.now()))

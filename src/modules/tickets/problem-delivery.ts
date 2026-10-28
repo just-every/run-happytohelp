@@ -1,6 +1,7 @@
 import type {Actor,Env} from '../../platform/env'
 import {memberAccess} from '../access/gate'
-import {sendEmail,emailConfigured} from '../integrations/email'
+import {sendEmail,resendHeldEmails,emailConfigured,type EmailInput} from '../integrations/email'
+import {rerMailHeld,openRerMailHolds} from '../integrations/rer-mail-hold'
 import {renderConversationEmail} from '../integrations/email-content'
 import {recipientReplyAddress} from '../integrations/email-reply-address'
 import {loopSuppressionHeaders} from '../integrations/notification-delivery'
@@ -23,12 +24,41 @@ export async function problemDestination(env:Env,projectId:string,ticket:any,req
  return {channel:'email',contact_id:contact.id,contact_name:contact.name,contact_email:contact.email,metadata_json:contact.metadata_json,recipient,mailbox_id:ticket.mailbox_id??null}
 }
 export const sameDestination=(left:any,right:any)=>JSON.stringify(left)===JSON.stringify(right)
+const rejected='Email provider rejected delivery; incident remains open',unconfirmed='Delivery could not be confirmed; incident remains open and this send will not be replayed'
+/** The reviewed reply to its frozen requester destination; a held resend rebuilds the same command. */
+async function problemEmail(env:Env,row:any,item:any,message:any):Promise<EmailInput>{
+ const settings=await env.DB.prepare('SELECT inbound_address FROM email_settings WHERE project_id=? AND is_enabled=1').bind(row.project_id).first<{inbound_address:string}>()
+ const {omitted,...content}=await renderConversationEmail(env,{projectId:row.project_id,conversationId:row.incident_id,messages:[message]})
+ const replyTo=settings?await recipientReplyAddress(env,settings.inbound_address,row.project_id,row.incident_id,item.destination.recipient):undefined
+ return {...content,to:item.destination.recipient,replyTo,projectId:row.project_id,subject:'Reply to your support conversation',headers:loopSuppressionHeaders(message),idempotencyKey:`message:${message.id}:notification`}
+}
+/** A reply refused at authenticate after a MAIL_API_KEY rotation is held, whatever its
+ * attempt became. Replay fails it after the hold's bound, or resends a sending
+ * attempt's command once while the reviewed destination is unchanged; that attempt
+ * then settles from the delivery's outcome. */
+async function heldProblemReply(env:Env,row:any,message:any){
+ const id=`message:${message.id}:notification`,sending=row.state==='sending'&&row.message_id===message.id
+ if(await openRerMailHolds(env,id)&&sending){
+  const item=JSON.parse(row.plan_json).tickets.find((entry:any)=>entry.id===row.incident_id)
+  const ticket=await env.DB.prepare(`SELECT c.*,${problemRequesterSql()} problem_requester_json FROM conversations c WHERE c.id=? AND c.project_id=? AND ${problemAvailableSql()}`).bind(row.incident_id,row.project_id).first<any>()
+  if(item&&ticket&&sameDestination(await problemDestination(env,row.project_id,ticket,JSON.parse(ticket.problem_requester_json)),item.destination))await resendHeldEmails(env,[await problemEmail(env,row,item,message)])
+ }
+ if(!sending)return {state:row.state,reason:row.reason??undefined}
+ const delivery=await env.DB.prepare('SELECT state,error FROM email_deliveries WHERE id=?').bind(id).first<{state:string;error:string|null}>()
+ // Still held, or another worker's resend is in flight: that worker settles the attempt.
+ if(delivery?.state==='sending')return {state:'sending',reason:delivery.error===rerMailHeld?rerMailHeld:'Delivery is uncertain and will not be replayed'}
+ const state=delivery?.state==='sent'?'sent':delivery?.state==='failed'?'failed':'uncertain',reason=state==='failed'?rejected:state==='uncertain'?unconfirmed:null
+ await env.DB.prepare("UPDATE ticket_problem_attempts SET state=?,reason=?,updated_at=? WHERE id=? AND state='sending'").bind(state,reason,Date.now(),row.id).run()
+ return {state,...(reason?{reason}:{})}
+}
 /** Called by notifyMessage before its ordinary participant fan-out, including on
- * outbox recovery. A durable sending claim is terminal: it is never replayed. */
+ * outbox recovery. A durable sending claim is terminal: it is never replayed,
+ * except a held managed send, which replay resends once (heldProblemReply). */
 export async function problemMessageDelivery(env:Env,message:any,actor:Actor):Promise<{state:string;reason?:string}|null>{
  if(typeof message.local_id!=='string'||!message.local_id.startsWith('problem:'))return null
  const row=await env.DB.prepare('SELECT a.*,p.actor_id,p.plan_json,p.state preview_state,p.problem_ticket_version,p.problem_revision,p.problem_last_message_id FROM ticket_problem_attempts a JOIN ticket_problem_previews p ON p.id=a.preview_id WHERE a.project_id=? AND a.local_id=? AND a.incident_id=?').bind(actor.projectId,message.local_id,message.conversation_id).first<any>()
  if(!row)return {state:'blocked',reason:'Problem reply receipt is unavailable; no automatic delivery'}
+ if(row.state!=='ready'&&await env.DB.prepare("SELECT 1 FROM email_deliveries WHERE id=? AND state='sending' AND error=?").bind(`message:${message.id}:notification`,rerMailHeld).first())return heldProblemReply(env,row,message)
  if(row.message_id!==message.id||!['ready','sending','sent'].includes(row.state))return {state:row.state,reason:row.reason??undefined}
  if(row.state!=='ready')return {state:row.state,reason:row.state==='sending'?'Delivery is uncertain and will not be replayed':row.reason??undefined}
  const plan=JSON.parse(row.plan_json),item=plan.tickets.find((entry:any)=>entry.id===row.incident_id)
@@ -44,10 +74,7 @@ export async function problemMessageDelivery(env:Env,message:any,actor:Actor):Pr
  try{
   let state='sent',reason:string|undefined
   if(item.destination.channel==='email'){
-   const settings=await env.DB.prepare('SELECT inbound_address FROM email_settings WHERE project_id=? AND is_enabled=1').bind(row.project_id).first<{inbound_address:string}>()
-   const {omitted,...content}=await renderConversationEmail(env,{projectId:row.project_id,conversationId:row.incident_id,messages:[message]})
-   const replyTo=settings?await recipientReplyAddress(env,settings.inbound_address,row.project_id,row.incident_id,item.destination.recipient):undefined
-   const result=await sendEmail(env,{...content,to:item.destination.recipient,replyTo,projectId:row.project_id,subject:'Reply to your support conversation',headers:loopSuppressionHeaders(message),idempotencyKey:`message:${message.id}:notification`})
+   const result=await sendEmail(env,await problemEmail(env,row,item,message),undefined,true)
    state=result.state
    if(state!=='sent')reason=state==='suppressed'?'Development mail was suppressed; incident remains open':`Email delivery is ${state}; incident remains open`
   }
@@ -56,7 +83,9 @@ export async function problemMessageDelivery(env:Env,message:any,actor:Actor):Pr
   return {state:terminal,...(reason?{reason}:{})}
  }catch{
   const delivery=await env.DB.prepare('SELECT state,error FROM email_deliveries WHERE id=?').bind(`message:${message.id}:notification`).first<{state:string;error:string|null}>()
-  const state=delivery?.state==='failed'?'failed':'uncertain',reason=state==='failed'?'Email provider rejected delivery; incident remains open':'Delivery could not be confirmed; incident remains open and this send will not be replayed'
+  // A held send stays pending for replay to resend once or fail after the hold's bound.
+  if(delivery?.state==='sending'&&delivery.error===rerMailHeld)return {state:'sending',reason:rerMailHeld}
+  const state=delivery?.state==='failed'?'failed':'uncertain',reason=state==='failed'?rejected:unconfirmed
   await env.DB.prepare("UPDATE ticket_problem_attempts SET state=?,reason=?,updated_at=? WHERE id=? AND state='sending'").bind(state,reason,Date.now(),row.id).run()
   return {state,reason}
  }

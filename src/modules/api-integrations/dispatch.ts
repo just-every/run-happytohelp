@@ -34,10 +34,10 @@ export async function dispatchIntegrations(env:Env,projectId?:string){
  for(const {project_id:project} of projects){
   if(!cronRoom(env,5))break
   let worked=false,deferred=false
-  const s=services(env,project,transport),pending=await env.DB.prepare(`SELECT i.id,i.destination_id,d.kind,d.mode,e.event,e.body,e.created_at,e.conversation_id FROM native_integration_intents i JOIN native_integration_events e ON e.id=i.event_id AND e.project_id=i.project_id JOIN native_integration_destinations d ON d.id=i.destination_id AND d.project_id=i.project_id WHERE i.project_id=? AND i.prepared_at IS NULL AND ${readyIntentSql} ORDER BY e.created_at,i.id LIMIT ?`).bind(project,preparations).all<any>()
+  const s=services(env,project,transport),pending=await env.DB.prepare(`SELECT i.id,i.destination_id,d.kind,d.mode,e.event,e.body,e.created_at,e.conversation_id,e.rowid sequence FROM native_integration_intents i JOIN native_integration_events e ON e.id=i.event_id AND e.project_id=i.project_id JOIN native_integration_destinations d ON d.id=i.destination_id AND d.project_id=i.project_id WHERE i.project_id=? AND i.prepared_at IS NULL AND ${readyIntentSql} ORDER BY e.rowid,i.id LIMIT ?`).bind(project,preparations).all<any>()
   for(const row of pending.results){if(!cronRoom(env,47)){deferred=true;break}preparations--;worked=true;try{
    await destination(env,project,row.destination_id)
-   if(row.kind==='webhook')await s.webhook.enqueue({id:row.id,tenant:project,destinationId:row.destination_id,event:row.event,protocol:'webhook',body:JSON.stringify({id:row.id,event:row.event,created_at:new Date(row.created_at).toISOString(),data:JSON.parse(row.body)})})
+   if(row.kind==='webhook')await s.webhook.enqueue({id:row.id,tenant:project,destinationId:row.destination_id,event:row.event,protocol:'webhook',body:JSON.stringify({id:row.id,event:row.event,sequence:row.sequence,created_at:new Date(row.created_at).toISOString(),data:JSON.parse(row.body)})})
    else {
     let title:string|undefined
     if(row.event==='conversation.created'){

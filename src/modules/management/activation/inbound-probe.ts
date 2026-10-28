@@ -1,3 +1,5 @@
+import {rerMail} from '../../integrations/rer-mail-contract'
+import {rerMailboxStatus} from '../../integrations/rer-mailbox'
 import type {Env} from '../../../platform/env'
 import {hashToken} from '../../../platform/auth'
 import type {Configuration} from './configuration'
@@ -9,6 +11,10 @@ import {inboundIntent} from '../../integrations/inbound-intent'
  * can change between ingress lookup and insertion; the trigger alone is not proof
  * of the recipient. A plain-text receipt can be reconstructed without opening R2. */
 export async function checkInbound(env:Env,config:Configuration):Promise<Probe> {
+ if(rerMail(env)){
+  const bound=await rerMailboxStatus(env,config.projectId)
+  return {state:bound?.observed?'done':bound?.state==='failed'?'failed':'pending',receiptRef:bound?.observed?`rer:inbound:${bound.lastInboundAt}`:null,detail:bound?.observed?`A signed email reached ${bound.address}.`:bound?.error||(!bound?.routeActive?'Run Edit Run is activating the receiving route. No customer mail setup is needed.':`Waiting for the first email to ${bound.address}. An active route alone does not prove receiving.`)}
+ }
  const email=config.email
  const receiving=await receivingState(env,email?.inbound_address)
  if(receiving.reason==='workers_dev')return {state:'unavailable',detail:`${receiving.address} cannot receive email: workers.dev addresses have no mail server. Use an address on a domain you own; the Email page has the steps.`}

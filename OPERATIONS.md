@@ -20,7 +20,7 @@ password. Wait for `RER_READY`, then open the `RER_OPEN` address to enter as the
 real local owner and reach **Setup**. No private answers, email service or AI
 account are needed. Use `rer dev --stop` from the checkout to stop the managed app.
 
-The checkout pins **`@runeditrun/rer` 0.2.42** in `package.json` and
+The checkout pins **`@runeditrun/rer` 0.2.77** in `package.json` and
 `pnpm-lock.yaml`. The launcher you run (npx or a global install) may have a different
 version; inside the checkout it provisions the tools and delegates to the pinned
 local package. Updating the launcher does not change the project's pin.
@@ -126,6 +126,34 @@ complete procedure, interruption recovery and restore checks. For a local SQL
 backup, stop dev/preview and use `--local`; `rer export` above remains the local
 portable archive command.
 
+## Portable archive from a hosted installation
+
+`rer export --target remote --output exports/hosted-support.rer` produces the same
+versioned D1/R2 archive that local `rer import` validates. First stop the source
+application, queue and cron writers. Set `H2H_EXPORT_WRITERS_STOPPED=yes` only
+once they are stopped; the exporter cannot stop them for you. Supply the owning
+account's `CLOUDFLARE_API_TOKEN` privately. Select the actual deployed resources
+with `H2H_EXPORT_CONFIG`, an owned regular 0600 JSON/JSONC file containing
+`account_id`, the `d1_databases` entry bound as `DB` (including `database_id`)
+and the `r2_buckets` entry bound as `FILES` (including `bucket_name`). Resource
+identities must come from that installation, never from this checkout's local
+placeholder configuration. No application vars or secrets are loaded from it.
+
+D1 queries and R2 reads use Cloudflare's API directly. The exporter temporarily
+spools one object at a time in its private output directory, then removes it.
+
+The command refuses missing or incompatible migration history, existing outputs,
+changed attachment inventory and changed erasure fences. It checks the complete
+archive before publishing a new 0600 file. Base writes and removes transfer
+bookkeeping and snapshot copies in the source D1 database; it does not change
+product rows, send mail, run jobs or write R2 objects. Restore remains a separate
+explicit command into a clean local installation and keeps actions inactive.
+Current ConversationSocket business state is reconstructible from D1; live
+sockets, presence and alarms are excluded. Nonempty unsupported Durable Object
+snapshots refuse. Keep the archive private and re-enter excluded credentials
+and connector authority on the receiving installation. Local remote-binding
+fixtures establish the command boundary, not a live hosted-provider receipt.
+
 ## Deploy to your Cloudflare account
 
 Use the real `deploy.json` declaration with Base deploy-kit. The command derives
@@ -201,23 +229,31 @@ Back up both with the installation; to deploy from another checkout, copy both
 there. Without the secrets file, a redeploy still keeps every secret the live
 Worker already holds and sends only ones it lacks.
 
-The declaration maps the same `EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`
-inputs to rer's shared `MAIL_PROVIDER`, `MAIL_FROM` and `MAIL_API_KEY` preflight
-bindings as well as HappyToHelp's native bindings. Real deployment requires these
-mail inputs. `rer deploy --dry-run` validates their shape when you supply them. It
-needs the Cloudflare account credentials: without them it refuses before any
-provider request and lists what the real deploy needs. With them it builds locally
-and makes only read-only Cloudflare GET requests: the account's Workers subdomain
-and the Worker's settings and secret names (three requests against an existing
-Worker in `tests/helpers/installer/fresh-install.mjs`). It refuses when a required
-secret, such as a mail input, is neither held by the Worker nor supplied. Dry run
-sends no mail and changes no provider resources.
+The declaration maps native `EMAIL_PROVIDER`, `EMAIL_FROM` and `EMAIL_API_KEY`
+inputs to rer's shared `MAIL_PROVIDER`, `MAIL_FROM` and `MAIL_PROVIDER_API_KEY`
+preflight bindings as well as HappyToHelp's native bindings. The deploy adapter
+resolves the setup choice `MAIL_PROVIDER=direct` to the selected native provider
+before preflight. Cloudflare also uses `EMAIL_ACCOUNT_ID`; the adapter supplies
+its native token to the shared `MAIL_API_KEY` binding. Managed deployments use
+their assigned `MAIL_*` inputs, independently of native credentials. Real
+deployment requires the selected transport's mail inputs. NATIVE-001 requires a **zero-outbound dry-run** that explicitly
+reports no outbound requests and needs no provider credentials. A separate,
+explicitly started **read-only provider preflight** requires owner consent and
+the owner's scoped Cloudflare token. Its own acceptance permits only three GETs
+for an existing Worker: the account's Workers subdomain and the Worker's settings
+and secret names, with no mail or mutations. Neither step is a mock of the other.
+
+The candidate implements the zero-outbound dry-run: it validates and builds without
+provider credentials, sends no mail and changes no resources. Its report leaves
+remote resources, credential validity and existing secret bindings unchecked.
+The separately started owner-consented preflight and remote provisioning still
+need implementation or qualification, respectively.
 
 Cloudflare Email Sending additionally needs `EMAIL_ACCOUNT_ID`. Add
 `{"binding":"EMAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}` to the
 declaration's `secrets` array, plus
 `{"binding":"MAIL_ACCOUNT_ID","environment":"EMAIL_ACCOUNT_ID"}`, and supply that account ID privately before deploying
-with Cloudflare mail. It is not required for Resend or SendGrid; rer 0.2.42 requires
+with Cloudflare mail. It is not required for Resend or SendGrid; rer 0.2.77 requires
 every declared secret not marked `optional` on a new Worker.
 
 Preserve existing keys and owner data. Configure other optional mail/model inputs
@@ -231,8 +267,7 @@ rer deploy --environment production
 ```
 
 Default environment is production. Dry run validates the declaration and real
-build locally; its only provider requests are the read-only Cloudflare GET
-requests above, and without Cloudflare credentials it makes none. Real deploy
+build locally without provider requests or credentials. Real deploy
 builds, provisions, applies migrations, publishes and checks health in the owner
 account. It is an external change requiring owner authorization. Release produces
 source/artifacts with its existing `--repo` and `--output` arguments and never
@@ -861,3 +896,17 @@ Keep asset provenance and third-party notices with selected source. The
 [authoring guide](docs/AUTHORING.md) describes exact Base copies and source graph
 checks. Reproducible artifact and prior-data checks have their own public paths;
 a source lock is not product or provider acceptance.
+
+### Operating description before installation
+
+The operating declaration is available in `OPERATIONS.json`. The current pinned global `rer` launcher bootstraps the checkout’s locked dependencies before it dispatches `rer describe`, including in a fresh clone. NATIVE-001’s before-dependency inspection point remains blocked on a Base launcher change. Published rer 0.2.79 has the same ordering. A successful description after bootstrap does not establish dependency-free inspection.
+
+## Managed conversation mail v1
+
+The application declares `mail.providers: ["rer"]` and `H2H_RER_MAIL_VERSION=1`. Managed routing is assigned by the platform through `MAIL_PROVIDER`, `MAIL_FROM`, `MAIL_RELAY_URL`, `RER_MAILBOX_ID`, `RER_MAIL_ADDRESS` and `RER_MAIL_CONTROL_URL`. Keep `MAIL_API_KEY`, `RER_MAIL_INGRESS_KEY`, `INBOUND_EMAIL_TOKEN` and the existing `INTEGRATION_ENCRYPTION_KEY` private. They are application authority/data keys; no provider credential is requested from a Managed customer. Native and Assisted direct-provider configuration still uses `EMAIL_*`.
+
+Migration 249 retains mailbox bindings, an idempotent control outbox, encrypted MIME object references and redacted command/thread receipts. Provisioning seeds the reserved default in the workspace transaction and binds it after commit. The native queue/schedule retries control work with bounded backoff, surfaces conflicts, refreshes route status and retires deleted workspaces. A new installation cannot choose a mailbox owned by another installation; platform enforcement and live qualification remain required.
+
+The frozen transport signs `POST`, the ingress path, canonical metadata and the exact MIME bytes with HMAC-SHA256. Metadata includes protocol version, delivery/mailbox/workspace identities, generation, envelope, provider verdict, timestamp and body SHA-256. The app rejects stale, tampered or foreign requests and stores content before acknowledgment. Retrying a delivery keeps its identity. Never route this through the bearer JSON gateway as a substitute for sender authentication.
+
+HTTP 202 records provider acceptance only. Native outbound commands never replay failed, sending or uncertain attempts. One refusal is held instead: a conversation notification (a scheduled reply’s included) or a problem reply refused at authenticate with `mail_credential_revoked` or `mail_credential_required` (a `MAIL_API_KEY` rotation before the rebuilt release serves traffic) has no relay send row, so it stays pending and the conversation outbox resends the same command, with the same `messageKey`, using the key the running release holds. About an hour after the first refusal it fails as an unavailable authority. The scheduled reply or problem attempt then records the resend’s or the failure’s outcome. Other mail is not held. An authorized reconciliation reads `send/:messageKey`; it never posts another send. During disconnect/leave, platform revocation remains responsible for its durable authority boundary. Hosted complete export and the real-mail gate remain pending; this change does not promote PORTABILITY-001 or MAIL-001. See [support email](docs/email.md#managed-email).

@@ -48,9 +48,24 @@ remote's main instead. Resolve conflicts while retaining your customizations.
 The current package-mode instructions require current public source; the
 older `v0.4.1` tag does not contain this command-package conversion.
 
-The build and deployment dry run preserve local data and private settings and
-make no deployment. Rer 0.2.42's dry run validates the private mail inputs real
-deployment needs when they are supplied, and lists them otherwise; see [deployment prerequisites](../OPERATIONS.md#deploy-to-your-cloudflare-account). Do not reset or replace `.wrangler/state` during an update.
+The build and today's deployment dry run preserve local data and private
+settings and make no deployment. The dry run validates and builds locally with
+zero provider requests, with or without Cloudflare credentials. It explicitly
+reports no provider requests, mail or deployment and returns
+`providerChecked: false`. Remote resources, credential validity and existing
+secret bindings remain unchecked; the dry-run does not establish target
+readiness or qualify real provisioning. See
+[deployment prerequisites](../OPERATIONS.md#deploy-to-your-cloudflare-account).
+
+NATIVE-001 requires a **zero-outbound dry-run** that explicitly reports no
+outbound requests and needs no provider credentials. A separately started
+**read-only provider preflight** requires owner consent and the owner's scoped
+Cloudflare token, with its own acceptance limited to the account's Workers
+subdomain and the Worker's settings and secret names (three GETs for an existing
+Worker), no mail and no mutations. Neither step is a mock of the other. The
+separate preflight remains unimplemented and unqualified. Remote provisioning
+needs separate qualification. Do not reset or replace `.wrangler/state` during an
+update.
 Run setup with your existing owner and private answers to apply local migrations,
 then start `pnpm exec rer dev --foreground`. For a hosted installation, apply the
 reviewed update only through the owner-authorized deployment path.
@@ -65,7 +80,14 @@ covers retained owners and settings from the older local installer.
 
 ## Back up your data
 
-Your data lives in two places: the D1 database (named `<prefix>-db`, where
+For a versioned portable archive containing D1 records, R2 bytes and metadata,
+and the lossless conversation-state reconstruction, follow [Portable archive from
+a hosted installation](../OPERATIONS.md#portable-archive-from-a-hosted-installation).
+Keep every source writer stopped until that command completes. Restore into a
+clean installation with `rer import`; sessions, provider credentials and execution
+authority are excluded, and interrupted work stays inactive.
+
+The separate SQL recovery procedure below also requires an R2 copy. Your data lives in two places: the D1 database (named `<prefix>-db`, where
 `<prefix>` is your resource name) and the R2 file bucket (`<prefix>-files`). To
 take a consistent backup:
 
@@ -80,9 +102,9 @@ take a consistent backup:
    node scripts/export-d1.mjs --database <prefix>-db --config wrangler.jsonc --remote --output private-backup.sql
    ```
 
-3. Export every R2 object, with both its metadata and its bytes. HappyToHelp
-   doesn't include a command for this, so use a tool that copies each object's
-   metadata as well as its contents.
+3. For this SQL recovery path, copy every R2 object's metadata and bytes with
+   a separate storage tool. A SQL file alone does not contain attachments. The
+   portable archive command linked above includes both stores.
 4. Write down any call to an outside service whose outcome you're unsure of,
    such as an email or AI reply that may or may not have gone out (HappyToHelp
    marks these as *uncertain*). Before you let HappyToHelp try one again, check
@@ -263,10 +285,17 @@ To hand support work to your own computer, use the local agent's pairing steps
 Use `pnpm exec rer deploy --environment production` with the real
 `deploy.json` declaration and private owner-account credentials.
 [Deploy to your Cloudflare account](../OPERATIONS.md#deploy-to-your-cloudflare-account)
-covers prerequisites, secret custody and health boundaries. Local
-`pnpm exec rer deploy --dry-run` with rer 0.2.42 validates the private mail inputs
-real deployment needs when supplied, and otherwise lists them as needed. It builds
-locally without provider requests or sending mail.
+covers prerequisites, secret custody and health boundaries. Today's
+pinned rer 0.2.77 `pnpm exec rer deploy --dry-run` combines local validation/build
+with credentialed read-only Cloudflare GETs for the account's Workers subdomain
+and the Worker's settings and secret names (three GETs for an existing Worker).
+It refuses without Cloudflare credentials, validates supplied private mail inputs
+and refuses a required secret neither held nor supplied; it sends no mail and
+changes no provider resources. The required zero-outbound dry-run with an explicit
+no-outbound report and the separately started, owner-consented read-only preflight
+using the owner's scoped token remain an unbuilt, unproved split. The preflight's
+own acceptance permits only those three GETs, no mail and no mutations; live
+qualification remains separate.
 
 **Website preview** lets owners and admins see their website with the chat
 widget on it. It needs its own custom-domain origin (`PREVIEW_ORIGIN`), pointed

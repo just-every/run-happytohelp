@@ -3,7 +3,7 @@ import {createServer} from 'node:net'
 import {createServer as createHttpServer} from 'node:http'
 import {createHash,randomUUID} from 'node:crypto'
 import {writeFile} from 'node:fs/promises'
-import {createConfiguredMailRuntime} from '../configured-mail-runtime.mjs'
+import {createConfiguredMailRuntime,mailReceipts} from '../configured-mail-runtime.mjs'
 import {evidence,launchBrowser,viewports} from '../../journeys/kit/browser.mjs'
 
 const freePort=async()=>{const socket=createServer();await new Promise(done=>socket.listen(0,'127.0.0.1',done));const port=socket.address().port;await new Promise(done=>socket.close(done));return port}
@@ -51,6 +51,10 @@ export async function presenceBrowserJourney(){
   const both=async name=>{await visitor.setViewportSize(viewports.desktop);await visitor.waitForTimeout(300);await visitor.screenshot({path:shot(`${name}-1440.png`)});await visitor.setViewportSize(viewports.mobile);await visitor.waitForTimeout(300);assert.ok(await visitor.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${name}: no horizontal scroll at 390`);await visitor.screenshot({path:shot(`${name}-390.png`)});await visitor.setViewportSize(viewports.desktop)}
   await both('widget-online');checks.push('with a teammate online the widget shows the usual reply time and no away notice')
 
+  const responseTime='Responds within two business days'
+  await json(`/api/management/projects/${p}/widget-settings`,{token:owner.token,method:'PUT',body:{text:{ai:{human_response:responseTime}}}})
+  await visitor.reload();await header.filter({hasText:responseTime}).first().waitFor()
+
   // The owner leaves: the agent keeps the team available. The agent leaves too: the open widget turns to the away
   // notice and email field by itself, within the close grace and its 30-second re-check.
   await ana.context.close()
@@ -59,14 +63,14 @@ export async function presenceBrowserJourney(){
   const left=Date.now();await bo.context.close()
   await notice.waitFor({timeout:CLOSE_GRACE_MS+WIDGET_RECHECK_MS+SLACK_MS})
   checks.push(`nobody online: the open widget turned away by itself ${Math.round((Date.now()-left)/1000)} s after the last teammate left`)
-  assert.match(await notice.innerText(),/We're away right now\s+We'll reply as soon as we're back\.\s+Leave your email below and we'll send our reply there too\./)
-  await header.filter({hasText:'Away'}).first().waitFor()
+  assert.ok((await notice.innerText()).includes(responseTime),'the away notice shows the configured response estimate')
+  await header.filter({hasText:responseTime}).first().waitFor()
   const email=visitor.locator('input[name=email]');await email.waitFor();await visitor.getByText("We'll email our reply to this address.",{exact:true}).waitFor()
   await both('widget-away-by-presence')
   await email.fill('night-owl@example.test');await email.press('Enter')
   await notice.filter({hasText:"We'll reply here and email you at night-owl@example.test."}).waitFor()
   await visitor.locator('textarea[name=content]').fill('Do you ship tents to Norway?');await visitor.locator('button[name=submit]').click()
-  const awayReply=visitor.locator('.happytohelp-chat-message').filter({hasText:"Thanks for your message. Northwind Support is away right now. We'll reply here and by email."})
+  const awayReply=visitor.locator('.happytohelp-chat-message').filter({hasText:"Thanks for your message. Northwind Support is away right now. We'll reply here and by email. Responds within two business days"})
   await awayReply.waitFor()
   await visitor.locator('textarea[name=content]').fill('Order 5521, if that helps.');await visitor.locator('button[name=submit]').click()
   await visitor.getByText('Order 5521, if that helps.',{exact:true}).waitFor()
@@ -81,12 +85,26 @@ export async function presenceBrowserJourney(){
   const back=await dashboard(agent.token,viewports.mobile),returned=Date.now();await back.page.locator('#chat').waitFor()
   await notice.waitFor({state:'detached',timeout:WIDGET_RECHECK_MS+SLACK_MS})
   checks.push(`a teammate opening the dashboard turned the widget available ${Math.round((Date.now()-returned)/1000)} s later`)
-  await header.filter({hasText:'Responds within 24 hours'}).first().waitFor()
+  await header.filter({hasText:responseTime}).first().waitFor()
   const answer=await json(`/api/conversations/${session.conversationId}/messages`,{token:agent.token,body:{localId:'presence-answer',content:'Yes, we ship tents to Norway within five days.',expectedRevision:transcript.revision,expectedLastMessageId:transcript.lastMessageId}})
   assert.equal(answer.accepted,true);await visitor.getByText('Yes, we ship tents to Norway within five days.',{exact:true}).waitFor()
   const mailed=async()=>(await json(`/api/dashboard/projects/${p}/conversations/${session.conversationId}/buckets`,{token:owner.token})).data.flatMap(bucket=>bucket.messages).find(message=>message.id===answer.message.id)?.email_status?.state==='sent'
-  await until(mailed,10_000,'the answer is emailed');await both('widget-back-online')
-  checks.push('back online: the agent\'s answer reached the widget and the visitor\'s email')
+  await until(mailed,10_000,'the answer is accepted by the mail provider fake')
+  assert.ok(mailReceipts(runtime).some(receipt=>[].concat(receipt.to).includes('night-owl@example.test')&&receipt.text?.includes('Yes, we ship tents to Norway within five days.')),'the mail boundary receives the answer text addressed to the captured visitor email')
+  await both('widget-back-online')
+  checks.push('back online: the answer reached the widget; the mail provider fake observed the captured email recipient and exact answer text')
+
+  await json(`/api/management/projects/${p}/settings`,{token:owner.token,method:'PUT',body:{is_available:false}})
+  await visitorContext.clearCookies();await visitor.evaluate(()=>localStorage.clear());await visitor.reload()
+  await notice.waitFor();assert.ok((await notice.innerText()).includes(responseTime))
+  await header.filter({hasText:responseTime}).first().waitFor()
+  await both('widget-accept-off')
+  await visitor.locator('textarea[name=content]').fill('Can I leave a request while acceptance is off?');await visitor.locator('button[name=submit]').click()
+  await visitor.locator('.happytohelp-chat-message').filter({hasText:responseTime}).waitFor()
+  await both('widget-accept-off-reply')
+  await json(`/api/management/projects/${p}/settings`,{token:owner.token,method:'PUT',body:{is_available:true}})
+  await visitor.reload();await notice.waitFor({state:'detached'})
+  checks.push('with Accept new conversations off and a teammate online, notice, header and away reply show the configured response estimate at 1440/390')
 
   // A Worker restart while both are online, with the owner's tab closed while the Worker is down: every entry written
   // before the restart has expired 90 seconds later, so the agent, whose open dashboard reconnected and reported again,

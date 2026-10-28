@@ -116,6 +116,7 @@ body.conversation-workspace #chat {
     }
 
     .conversation-details-empty { margin: 0; color: var(--ink-soft); font-size: 14.5px; }
+    .conversation-details-identity-links__note { margin: 0; color: var(--ink-soft); font-size: 14.5px; }
     .conversation-details-fields { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
     .conversation-detail-field { display: flex; align-items: flex-start; gap: .75rem; min-width: 0; }
     .conversation-detail-field__icon {

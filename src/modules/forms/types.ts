@@ -5,8 +5,8 @@ export interface FieldTranslation {label?:string;description?:string;options?:Re
 export interface FormTranslation {title?:string;description?:string;submitLabel?:string;fields?:Record<string,FieldTranslation>}
 export interface FormConfig {title:string;description:string;submitLabel:string;locale:string;enabled:boolean;fields:FormField[];translations:Record<string,FormTranslation>}
 export interface RequestForm extends FormConfig {id:string;projectId:string;updatedAt:number}
-export interface PublicField {id:string;type:string;label:string;description:string;required:boolean;options:Array<{value:string;label:string}>;validation:Record<string,unknown>;condition?:FieldCondition}
+export interface PublicField {id:string;type:string;label:string;description:string;required:boolean;options:Array<{value:string;label:string}>;validation:Record<string,unknown>;condition?:FieldCondition;visible?:boolean}
 export interface PublicForm {id:string;projectId:string;title:string;description:string;submitLabel:string;locale:string;defaultLocale:string;locales:string[];fields:PublicField[];turnstileSiteKey:string|null;updatedAt:number}
 export interface FormIdentity {actor:Actor;sessionHash:string}
-export interface Submission {subject:string;message:string;fields:Record<string,unknown>;localId:string}
+export interface Submission {cc:string[];subject:string;message:string;fields:Record<string,unknown>;localId:string}
 export interface StoredField {id:string;project_id:string;name:string;type:string;required:number;options_json:string;validation_json:string;read_roles_json:string;write_roles_json:string;updated_at:number}

@@ -1,6 +1,7 @@
 import React, { Suspense, useCallback, useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import AppContext from './context/AppContext';
 import Connection from './Connection';
+import CampaignOffer from './CampaignOffer';
 import classNames from 'classnames/bind';
 import root from 'react-shadow';
 
@@ -11,6 +12,7 @@ import { ConnectProvider } from "./context/ConnectContext";
 
 import { isPreviewMode, normalizePreviewUpdate } from "./preview/previewMode";
 import log from "./includes/log";
+import WidgetTooltips from "./WidgetTooltips";
 import { initHelpers, openMetaTags, closeMetaTags, updateViewportProperties } from "./includes/utils";
 
 const Button = React.lazy(() => import(/* webpackChunkName: "Button" */ './Button'));
@@ -266,10 +268,11 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
                         'happytohelp-preview': isPreview,
                         'happytohelp-proxy': config.proxy
                     })}>
-                        <AppContext.Provider value={contextValues}>
+                        <WidgetTooltips />
+                        <AppContext.Provider value={{...contextValues,prepareCampaign:initiate,openCampaign:()=>{initiate();setOpen(true);}}}>
                             <ActiveConnectProvider open={open} setOpen={setOpen} setInsightOpen={setInsightOpen}
                                                    onSettingsUpdated={handleSettingsUpdated}>
-                                {!isPreview && <Connection ref={connectionRef} />}
+                                {!isPreview && <><Connection ref={connectionRef} /><CampaignOffer /></>}
                                 <Suspense fallback={<div/>}>
                                     {initiated ?
                                         <Interact setOpen={setOpen}/>

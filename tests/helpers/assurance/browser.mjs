@@ -4,10 +4,10 @@ import {createRuntime} from '../emitted-runtime.mjs'
 import {evidence,viewports} from '../../journeys/kit/browser.mjs'
 import {resolve} from 'node:path'
 import {writeFile} from 'node:fs/promises'
-export async function assuranceBrowserJourney(browser){
+export async function assuranceBrowserJourney(browser,viewport=viewports.desktop){
  const runtime=await createRuntime({vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}}),shot=await evidence('assurance');let passed=false
  try{
- for(const viewport of Object.values(viewports)){
+ {
   const owner=await runtime.seedTenant({name:'Regulated deployment '+viewport.width,email:`synthetic-happytohelp-${viewport.width}@example.test`,allowedOrigin:runtime.origin}),context=await browser.newContext({viewport});await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}]);const page=await context.newPage();page.setDefaultTimeout(25000)
   try{
    const path=`/api/assurance/projects/${owner.projectId}`,inspect=async name=>{assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'qualification fits viewport');await page.screenshot({path:shot(`${viewport.width}-${name}.png`),fullPage:true})}

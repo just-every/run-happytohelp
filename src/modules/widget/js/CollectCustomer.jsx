@@ -11,6 +11,7 @@ import {
 
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {ConnectContext} from "./context/ConnectContext";
+import { tooltip } from '../../tooltip/tooltip';
 
 export default function CollectCustomer({ needsNotifyEmail, away = false, setShowCollector, localContact, contact, sendContact }) {
     const context = useContext(AppContext);
@@ -98,7 +99,7 @@ export default function CollectCustomer({ needsNotifyEmail, away = false, setSho
             {!needsNotifyEmail && <div className="happytohelp-collect-customer-prompt">
                 { context.text.prompt.edit_contact }
             </div> }
-            { !needsNotifyEmail && <button type="button" className="happytohelp-collect-customer-close" aria-label="Close contact details" onClick={() => setShowCollector(false)}><FontAwesomeIcon icon={falTimes} aria-hidden="true" /></button> }
+            { !needsNotifyEmail && <button type="button" className="happytohelp-collect-customer-close" { ...tooltip('Close contact details') } onClick={() => setShowCollector(false)}><FontAwesomeIcon icon={falTimes} aria-hidden="true" /></button> }
             {content}
         </form>
     );

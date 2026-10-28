@@ -4,6 +4,7 @@ import { ChatContext } from '../../contexts/ChatContext';
 import { json, ticketPath } from './ticket-model';
 import ProblemTicketSearch from './ProblemTicketSearch';
 import ProblemSolve from './ProblemSolve';
+import ProblemSuggestions from './ProblemSuggestions';
 import './problem.css';
 
 /**
@@ -45,6 +46,7 @@ export default function ProblemPanel({ projectId, conversationId, ticket, onChan
         {error && <p role="alert" className="text-danger">{error}</p>}
         {!data && !error && <p role="status">Loading problem links…</p>}
         {data && <>
+            {!data.is_problem && !data.parent && <ProblemSuggestions key={path} path={path} disabled={disabled} onChanged={reload} />}
             {data.parent && <p>Incident of <button className="btn btn-sm btn-link" type="button" onClick={() => open(data.parent.problem_id)}>{data.parent.subject || data.parent.problem_id}</button></p>}
             {!data.parent && <button className="btn btn-sm btn-white" type="button" data-section-focus disabled={disabled || data.is_problem && data.incident_count > 0} onClick={changeMark}>{data.is_problem ? 'Remove problem designation' : 'Mark as problem'}</button>}
             {data.is_problem && <>

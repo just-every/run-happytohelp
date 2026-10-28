@@ -1,3 +1,4 @@
+import {sourceOwnership} from '../source-ownership'
 import {importedEmailThreadKeys} from '../email-threading'
 import type {SourceRecord} from '../../import-kit/src/types'
 import type {MappingInput,PreparedMapping} from '../types'
@@ -54,7 +55,7 @@ export async function prepareHelpScout({projectId,source,tagIds}:MappingInput):P
     tables.knowledge_article_categories=(p.categories.length?p.categories.map((category:any)=>id('category',`category:${category}`)):[id('category',`collection:${p.collectionId}`)]).map((category_id:string)=>({article_id:target,category_id}));if(p.hasDraft)omissions.push('article_draft_body_provenance_ambiguous_kept_unpublished');if(status==='draft'&&p.status==='published')omissions.push('private_ancestry_kept_unpublished')
    }else{result.effects.set(key,[]);result.omissions.set(key,[...omissions,kind==='article-ref'?'article_list_metadata_only_detail_body_required':kind==='article-draft'?'unpublished_draft_body_retained_only':`source_metadata_only:${kind}`]);continue}
    if(kind==='conversation')tables.email_threading_keys=importedEmailThreadKeys(projectId,target,'helpscout',record,tables.conversations[0].created_at,source.records.filter(r=>r.kind==='thread-page'&&r.sourceId.split(':')[0]===record.sourceId))
-   const value={tables,source:{vendor:'helpscout',kind:record.kind,id:record.sourceId,created_at:p.createdAt??null,updated_at:p.updatedAt??p.userUpdatedAt??null}}
+   const value={tables,source:{vendor:'helpscout',kind:record.kind,id:record.sourceId,...(kind==='conversation'?{ownership:sourceOwnership('helpscout',p)}:{}),created_at:p.createdAt??null,updated_at:p.updatedAt??p.userUpdatedAt??null}}
    if(nativeStatementCount(kind,value)>LIMITS.nativeStatements)throw new Error('native_record_statement_limit')
    result.effects.set(key,[{targetKind:kind,targetId:target,value:completeNativeValue(kind,value) as any}])
   }catch(error){result.rejections.set(key,error instanceof Error?error.message:'record_mapping_failed');result.effects.set(key,[])}

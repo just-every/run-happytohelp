@@ -3,6 +3,7 @@ import { Button, Form, Modal } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import Api from "../api";
 import { ChatContext } from "../contexts/ChatContext";
+import DialogHeader from './DialogHeader';
 
 function AddParticipantModal({ onHide, conversation }) {
     const {
@@ -43,9 +44,9 @@ function AddParticipantModal({ onHide, conversation }) {
 
     return (
         <Modal show onHide={ onHide }>
-            <Modal.Header closeButton>
+            <DialogHeader closeButton>
                 <Modal.Title>Add Participant</Modal.Title>
-            </Modal.Header>
+            </DialogHeader>
             <Form onSubmit={ submit } onChange={ () => { setIsValidated(null); setErrors({})} } noValidate validated={ isValidated }>
                 <Modal.Body>
                     { fields.map((field, i) => (

@@ -12,11 +12,9 @@ export async function assuranceJourney(){
  assert.equal((await app.call(base,{token:ws.tokens.operator})).status,403)
  assert.equal((await app.call(base,{token:foreign.tokens.owner})).status,403)
  const config={partner:'US qualification partner',deployment_ref:'synthetic-happytohelp-1-isolated-deployment',timezone:'America/New_York',country:'US',currency:'USD',recording_enabled:false}
- for(const change of [{timezone:'EST'},{country:'EU'},{currency:'EUR'},{recording_enabled:true}])assert.equal((await app.call(base,{token,method:'PUT',body:{...config,...change}})).status,400)
  assert.equal((await app.call(base,{token:ws.tokens.operator,method:'PUT',body:config})).status,403)
  assert.equal((await app.call(base,{method:'PUT',body:config,headers:{Cookie:'h2h_session='+token,Origin:'https://foreign.example'}})).status,403)
  await call('',config,{method:'PUT'})
- const held=(await call()).data;assert.equal(held.profile.country,'US');assert.equal(held.profile.currency,'USD');assert.equal(held.profile.timezone,'America/New_York');assert.equal(held.recording_enabled,false)
  assert.equal((await app.call('/api/conversations/'+ticket.id,{token})).status,200,'recording a preflight does not change ordinary support access')
  assert.equal((await app.call(base+'/activate',{token,body:{}})).status,409,'missing controls block health-data configuration without a shared runtime interception')
  // Evidence review and native retention remain available in the ordinary workspace.

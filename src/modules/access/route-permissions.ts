@@ -57,13 +57,17 @@ const rules:Record<string,Rule>={
  [`DELETE ${D}/report-schedules/:scheduleId`]:'data.export',
  // Workspace settings
  'POST /api/management/projects':'settings.manage',[`PUT ${P}/settings`]:'settings.manage',[`DELETE ${P}`]:'data.erase',
- [`PUT ${P}/appearance`]:'settings.manage',[`PUT ${P}/artwork`]:'settings.manage',[`PUT ${P}/widget-settings`]:'settings.manage',[`PUT ${P}/availability`]:'settings.manage',[`PUT ${P}/ai`]:'settings.manage',
- [`POST ${P}/brand-media`]:'settings.manage',[`POST ${P}/activation/check`]:'settings.manage',[`POST ${P}/activation/skip`]:'settings.manage',[`POST ${P}/activation/test-mail`]:'settings.manage',
+ [`PUT ${P}/appearance`]:'settings.manage',[`PUT ${P}/artwork`]:'settings.manage',[`PUT ${P}/widget-settings`]:'settings.manage',[`PUT ${P}/widget-campaigns/:campaignId`]:'settings.manage',[`PUT ${P}/availability`]:'settings.manage',[`PUT ${P}/ai`]:'settings.manage',
+ [`POST ${P}/brand-media`]:'settings.manage',[`POST ${P}/activation/check`]:'settings.manage',[`POST ${P}/activation/skip`]:'settings.manage',[`POST ${P}/activation/local-trial`]:'settings.manage',[`POST ${P}/activation/test-mail`]:'settings.manage',
+ [`POST ${P}/email-settings/managed/reconcile`]:'settings.manage',[`POST ${P}/email-settings/managed/retry`]:'settings.manage',
  [`PUT ${P}/email-settings`]:'settings.manage',[`POST ${P}/email-settings/test`]:'settings.manage',[`POST ${P}/inbound-emails/:messageId/reconcile`]:'conversations.manage',
  'POST /api/site-preview/projects/:projectId/brand-image-generations':'settings.manage','POST /api/site-preview/projects/:projectId/brand-assets':'settings.manage','PUT /api/site-preview/projects/:projectId/brand-assets/:id/publish':'settings.manage','POST /api/site-preview/projects/:projectId/preview':'settings.manage',
+ 'POST /api/projects/:projectId/procedures/:key/versions':'settings.manage',
+ 'POST /api/projects/:projectId/procedures/:key/versions/:versionId/simulations':'settings.manage',
+ 'POST /api/projects/:projectId/procedures/:key/versions/:versionId/release':'settings.manage',
  'POST /api/training/projects/:project/runs':'settings.manage','POST /api/training/projects/:project/runs/:run/cancel':'settings.manage','POST /api/training/synthetic-workspace':'settings.manage',
  // Integrations and credentials
- [`POST ${P}/connections/tokens`]:'integrations.install',[`DELETE ${P}/connections/tokens/:id`]:'integrations.install',
+ [`POST ${P}/connections/tokens`]:'integrations.install',[`PATCH ${P}/connections/tokens/:id`]:'integrations.install',[`POST ${P}/connections/tokens/:id/rotate`]:'integrations.install',[`DELETE ${P}/connections/tokens/:id`]:'integrations.install',
  [`POST ${P}/connections/webhooks`]:'integrations.install',[`DELETE ${P}/connections/webhooks/:id`]:'integrations.install',[`POST ${P}/connections/webhooks/:id/test`]:'integrations.install',
  [`POST ${P}/connections/slack`]:'integrations.install',[`DELETE ${P}/connections/slack/:id`]:'integrations.install',[`POST ${P}/connections/slack/:id/test`]:'integrations.install',
  [`POST ${P}/connections/deliveries/:id/resend`]:'integrations.install',
@@ -73,9 +77,10 @@ const rules:Record<string,Rule>={
  'POST /delegation/authorize':'integrations.install','POST /delegation/settings/revoke':'integrations.install','POST /delegation/settings/clients':'integrations.install',
  // Move in
  'POST /api/move-in/projects/:projectId/imports':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/apply':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/resume':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/undo':'data.import',
+ 'POST /api/move-in/projects/:projectId/imports/:runId/ownership/preview':'data.import','POST /api/move-in/projects/:projectId/imports/:runId/ownership/apply':'data.import',
  // Doors with their own authority
  'POST /auth/bootstrap':'none','POST /auth/owner-claim':'none','POST /api/identity/login':'none','POST /api/identity/accept-token':'none','POST /api/identity/forgot-password':'none','POST /api/identity/widget/session':'none','POST /api/identity/register':'none','POST /api/identity/verify-email':'none','POST /api/identity/bootstrap':'none','POST /api/identity/link-status':'none','POST /api/identity/magic-link':'none','POST /api/identity/magic-link/consume':'none','POST /api/identity/owner-recovery':'none',
- 'POST /api/conversations/:id/widget-events':'none','POST /api/integrations/email/inbound':'none','POST /api/integrations/email/sendgrid/inbound':'none','POST /api/dashboard/demo-inbox':'none',
+ 'POST /api/conversations/:id/widget-events':'none','POST /api/integrations/email/rer/v1/inbound':'none','POST /api/integrations/email/inbound':'none','POST /api/integrations/email/sendgrid/inbound':'none','POST /api/dashboard/demo-inbox':'none',
  'POST /api/delegation/v1/token':'none','POST /api/delegation/v1/effects':'none','POST /api/delegation/v1/revoke':'none',
  'POST /api/local-agents/pair':'none','POST /api/local-agents/heartbeat':'none','POST /api/local-agents/device-authorizations':'none','POST /api/local-agents/device-authorizations/token':'none','POST /api/local-agents/task-sessions':'none','POST /api/local-agents/claim':'none','POST /api/local-agents/jobs/:job/progress':'none','POST /api/local-agents/jobs/:job/result':'none','POST /api/local-agents/jobs/:job/attachments':'none',
 }
@@ -83,7 +88,7 @@ const rules:Record<string,Rule>={
 for(const [kind,rule] of [['ais','settings.manage'],['macros','settings.manage'],['plugins','settings.manage'],['contacts','contacts.manage']] as const)for(const base of [P,D]){
  rules[`POST ${base}/${kind}`]=rule;rules[`PUT ${base}/${kind}/:resourceId`]=rule;rules[`DELETE ${base}/${kind}/:resourceId`]=kind==='contacts'?'data.erase':rule
 }
-for(const base of [P,D]){rules[`PUT ${base}/agents/:userId`]='members.manage';rules[`DELETE ${base}/agents/:userId`]='members.manage';rules[`POST ${base}/plugins/:pluginId/:direction`]='settings.manage'}
+for(const base of [P,D]){rules[`PUT ${base}/agents/:userId`]='members.manage';rules[`DELETE ${base}/agents/:userId`]='members.manage';rules[`POST ${base}/agents/:userId/erase`]='data.erase';rules[`POST ${base}/plugins/:pluginId/:direction`]='settings.manage'}
 // Ticket configuration follows existing settings authority; personal views are
 // self-owned and their handlers separately guard shared definitions.
 for(const base of [P,D]){
@@ -96,12 +101,13 @@ for(const base of [P,D]){
  rules[`GET ${base}/conversations/:conversationId/ticket`]='self'
  rules[`PATCH ${base}/conversations/:conversationId/ticket`]='conversations.manage'
  for(const method of ['GET','PATCH'])rules[`${method} ${base}/conversations/:conversationId/ticket/problem`]='conversations.manage'
- for(const action of ['incidents/preview','incidents/apply','solve/preview','solve/apply'])rules[`POST ${base}/conversations/:conversationId/ticket/problem/${action}`]='conversations.manage'
+ for(const action of ['incidents/preview','incidents/apply','solve/preview','solve/apply','suggestions/preview','suggestions/confirm','suggestions/reject'])rules[`POST ${base}/conversations/:conversationId/ticket/problem/${action}`]='conversations.manage'
  rules[`GET ${base}/conversations/:conversationId/ticket/problem/solve/:previewId`]='conversations.manage'
  rules[`GET ${base}/conversations/:conversationId/timer`]='conversations.manage'
  for(const action of ['start','stop','adjust'])rules[`POST ${base}/conversations/:conversationId/timer/${action}`]='conversations.manage'
  for(const kind of ['statuses','fields','groups']){
   rules[`GET ${base}/ticket-${kind}`]='self'
+  if(kind==='fields')rules[`GET ${base}/ticket-fields/:id/versions`]='settings.manage'
   rules[`POST ${base}/ticket-${kind}`]='settings.manage'
   rules[`PATCH ${base}/ticket-${kind}/:id`]='settings.manage'
   rules[`DELETE ${base}/ticket-${kind}/:id`]='settings.manage'
@@ -119,6 +125,7 @@ for(const base of [P,D]){
  for(const path of ['workflow-calendars','sla-policies','workflow-rules']){
   rules[`POST ${base}/${path}`]='settings.manage';rules[`PATCH ${base}/${path}/:id`]='settings.manage';
  }
+ rules[`POST ${base}/workflow-runs/:runId/reconcile`]='settings.manage'
  for(const action of ['preview','publish','pause','cancel'])rules[`POST ${base}/workflow-rules/:id/${action}`]='settings.manage'
  rules[`PUT ${base}/routing-operators`]='settings.manage'
  rules[`PATCH ${base}/sla-alerts/:id/ack`]='conversations.manage'
@@ -133,6 +140,8 @@ for(const base of [P,D]){
   rules[`GET ${base}/${kind}`]=rule
   rules[`POST ${base}/${kind}`]=rule
  }
+ for(const tail of ['', '/preview'])rules[`POST ${base}/contacts/:contactId/identity-links${tail}`]='contacts.manage'
+ rules[`GET ${base}/contacts/:contactId/identity-links`]='contacts.manage'
  rules[`GET ${base}/companies/:companyId`]='contacts.manage'
  rules[`PATCH ${base}/companies/:companyId`]='contacts.manage'
  for(const method of ['PUT','DELETE'])rules[`${method} ${base}/companies/:companyId/members/:contactId`]='contacts.manage'
@@ -142,8 +151,21 @@ for(const base of [P,D]){
  rules[`GET ${base}/customer-imports/:runId`]='data.import'
 }
 
+for(const base of [P,D]){
+ for(const method of ['PUT','DELETE'])rules[`${method} ${base}/crm/hubspot`]='integrations.install'
+ for(const method of ['PUT','DELETE'])rules[`${method} ${base}/crm/hubspot/contacts/:contactId`]='integrations.install'
+ rules[`POST ${base}/crm/hubspot/contacts/:contactId/refresh`]='integrations.install'
+ rules[`GET ${base}/crm/hubspot`]='contacts.manage'
+ rules[`GET ${base}/crm/hubspot/contacts/:contactId`]='contacts.manage'
+ rules[`GET ${base}/conversations/:conversationId/crm`]='contacts.manage'
+ rules[`POST ${base}/conversations/:conversationId/crm/refresh`]='integrations.install'
+}
+
 const prefixes=['/api/v1/','/api/management/admin/']
-for(const base of [P,D])rules[`POST ${base}/tickets`]='conversations.reply'
+for(const base of [P,D]){
+ rules[`POST ${base}/tickets`]='conversations.reply'
+ for(const suffix of ['notices/preview','notices'])rules[`POST ${base}/tickets/${suffix}`]='conversations.reply'
+}
 for(const action of ['connect','imap'])rules[`POST ${P}/mailboxes/${action}`]='integrations.install'
 rules[`POST ${P}/mailboxes`]='integrations.install'
 rules[`PATCH ${P}/mailboxes/:mailboxId`]='settings.manage'
@@ -163,6 +185,11 @@ export function routeRule(method:string,path:string):Rule|undefined{
   if(path.endsWith('/connections'))return 'integrations.install'
   if(path.endsWith('/send'))return 'conversations.reply'
   return 'conversations.manage'
+ }
+ // Internal knowledge GETs never inherit the permissive unclassified-read default.
+ if(method==='GET'&&path.startsWith('/api/knowledge/:projectId/')){
+  if(path==='/api/knowledge/:projectId/articles'||/\/articles\/:articleId\/(history|translations\/:locale)$/.test(path))return 'knowledge.read'
+  return rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]??'knowledge.edit'
  }
  if(prefixes.some(prefix=>path.startsWith(prefix)))return 'none'
  return r4RouteRule(method,path)??rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]

@@ -38,7 +38,6 @@ const groups = [
     { title: "When your team is away", fields: [
         ["text[away][title]", "Away heading"],
         ["text[away][back]", "Back time, {when} is the day and time"],
-        ["text[away][later]", "Back time unknown"],
         ["text[away][email_ask]", "Ask for an email"],
         ["text[away][email_known]", "Email known, {email} is the address"],
         ["text[away][email_prompt]", "Email field note"],

@@ -1,3 +1,4 @@
+import {abandonedNotificationReason} from './email-send-window'
 import type {Env} from '../../platform/env'
 import {emailConfigured} from './email-provider'
 import {localMailOrigin} from '../../edition/local-mail/configuration'
@@ -9,9 +10,10 @@ import {notificationContactsSql} from './notification-contacts'
 export async function messageMailStatus(env:Env,message:{id:string;project_id:string;actor_role:string;erased_at?:number}) {
  if(message.actor_role==='contact'||message.erased_at)return null
  const deliveryId=`message:${message.id}:notification`,prefix=deliveryId+':'
- const attempts=(await env.DB.prepare('SELECT state,updated_at FROM email_deliveries WHERE project_id=? AND (id=? OR substr(id,1,?)=?)').bind(message.project_id,deliveryId,prefix.length,prefix).all<{state:string;updated_at:number}>()).results
+ const attempts=(await env.DB.prepare('SELECT state,error,updated_at FROM email_deliveries WHERE project_id=? AND (id=? OR substr(id,1,?)=?)').bind(message.project_id,deliveryId,prefix.length,prefix).all<{state:string;error:string|null;updated_at:number}>()).results
+ for(const attempt of attempts){if(attempt.state==='failed'&&attempt.error?.startsWith('Outbound notice rate limit'))attempt.state='rate_limited';if(attempt.state==='failed'&&attempt.error==='Requester unavailable or email notices disabled')attempt.state='consent_refused'}
  if(localMailOrigin(env))return {state:'suppressed'}
- if(attempts.length)return {state:['uncertain','sending','failed'].find(state=>attempts.some(attempt=>attempt.state===state))||attempts[0].state,updatedAt:Math.max(...attempts.map(attempt=>attempt.updated_at))}
+ if(attempts.length)return {...(attempts.some(attempt=>attempt.state==='uncertain'&&attempt.error===abandonedNotificationReason)?{reason:abandonedNotificationReason}:{}),state:['uncertain','sending','rate_limited','consent_refused','failed'].find(state=>attempts.some(attempt=>attempt.state===state))||attempts[0].state,updatedAt:Math.max(...attempts.map(attempt=>attempt.updated_at))}
  if(!emailConfigured(env))return {state:'not_configured'}
  const settings=await env.DB.prepare('SELECT is_enabled FROM email_settings WHERE project_id=?').bind(message.project_id).first<{is_enabled:number}>()
  if(settings?.is_enabled===0)return {state:'disabled'}

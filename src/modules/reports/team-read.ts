@@ -5,6 +5,7 @@ import {teamBacklog,teamWorkload} from './team-workload'
 import {teamReopens,teamSla} from './team-service'
 import {teamBreakdowns} from './team-breakdowns'
 import {teamHandleTime} from './team-handle-time'
+import {containmentRule} from './team-containment'
 
 async function reportOptions({env,projectId}:TeamReportContext){
  const [teams,brands,agents]=await Promise.all([
@@ -33,6 +34,7 @@ export async function readTeamReport(env:Env,projectId:string,range:ReportRange,
   'Handle time sums each recorded session clipped to the selected interval and generatedAt, including work on older matching tickets. Running sessions accrue to generatedAt. Manual duration adjustments are allocated proportionally to the interval overlap; a zero-length adjusted session belongs to its start date. Time is attributed to the session owner; concurrent agents each count their recorded work.',
   'Breakdowns use the incoming cohort and current dimensions. Response and first-resolution distributions publish sample counts, median and nearest-rank p90 in milliseconds; missing or invalid durations are excluded, never zero. CSAT uses the latest cycle response, including reopened cycles; thumbs up or 4–5 is positive. Unrated cycles are excluded from the rate.',
   'AI closed is recorded AI authorship at the current solved/closed boundary, not verified customer recovery or containment. AI handedOff counts tickets with a causal receipt committed with a successful model-requested transfer. Assignment handoffs count tickets with any observed native assignment handoff. Older assignments have no causal receipt and are not inferred to be AI transfers. Failed and uncertain are generation attempts (running is also uncertain), not tickets. Missing outcomes remain unknown. No procedure-version attribution or independently verified resolution is inferred.',
+  containmentRule,
   'Customer recovery is the latest explicit customer answer for the latest resolution cycle. Reopened or erased cycles are unknown for current recovery. Recovered / (recovered + not recovered) excludes unknowns. This is customer confirmation, not independent technical verification or an AI closure claim.',
   'Form and intent use current ticket metadata. Intent is the native ticket field named Intent (first readable field id if duplicated), respecting the viewer’s current field role; missing or restricted intent and missing form are shown as unknown. Time before recording began is unknown, not estimated.'
  ]}

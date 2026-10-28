@@ -39,6 +39,9 @@
 .team-report-table th:first-child { text-align: left; width: 43%; }
 .team-report-table thead th { font-size: 13px; font-weight: 500; color: var(--team-muted); }
 .team-report-table tbody th { font-weight: 400; }
+.team-report-containment-table { min-width: 760px; }
+.team-report-containment-table th,.team-report-containment-table td { white-space: nowrap; overflow-wrap: normal; }
+.team-report-containment-table th:first-child { width: auto; }
 .team-report-dot { display: inline-block; width: 8px; height: 8px; background: var(--team-green); border-radius: 50%; margin-right: 7px; vertical-align: middle; }
 .team-report-sla-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; margin-top: 16px; }
 .team-report-sla { border: 1px solid #e4eeee; border-radius: 9px; padding: 12px 9px; min-width: 0; }

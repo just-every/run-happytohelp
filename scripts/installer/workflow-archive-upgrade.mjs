@@ -53,7 +53,7 @@ export async function workflowArchivePolicy(root,input,{beforeTickets=false,befo
   // This inventory deliberately has no workflow journal (150 is omitted).
   // Later replacements of its trigger and the consent trigger on the omitted
   // workflow_schedules table stay omitted too. Keep the other statements in
-  // mixed migrations, including 241's resolution correction and 253's consent.
+  // mixed migrations, including 241's resolution correction and 266's consent.
   const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))
    .filter(sql=>!/^\s*(?:CREATE|DROP)\s+TRIGGER\s+(?:workflow_changed|support_channel_opted_out_schedule)\b/i.test(sql)&&!omittedSchemaChange(sql,omitted))));
   for(let index=0;index<plan.length;index++){

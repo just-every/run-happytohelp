@@ -1,5 +1,10 @@
 # Support channels
 
+Upgrade without resetting: apply `263_support_channels.sql`,
+`264_support_channel_media.sql`, `265_shared_channel_actions.sql` and
+`266_channel_consent.sql`, in that order after the existing 262 migrations,
+before serving the updated Worker. Back up D1, R2 and private settings first.
+
 Settings → **Support channels** connects Twilio US SMS, WhatsApp Business,
 Instagram Direct, Facebook Messenger, Slack Connect and Microsoft Teams to the
 shared inbox. Code and network-edge tests are available for qualification.

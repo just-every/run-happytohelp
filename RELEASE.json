@@ -134,16 +134,20 @@
       "buyerSteps": "FEEDBACK-001: add a Penny API connection and durable source handoff receipts. A requester-authored sharing permission and explicit operator approval are required. Penny owns its requesters and votes; pending/uncertain external writes never replay. Reconfigure the Penny API key after restore; sending handoffs restore as uncertain."
     },
     {
-      "id": "250_support_channels.sql",
-      "buyerSteps": "CHANNELS-001/002: add isolated support-channel connections, scoped text threads, delivery claims and contact-erasure fences. Back up D1, R2 and private configuration; apply before the updated Worker serves traffic, without resetting or editing prior migration ledger rows. Configure authorized provider accounts explicitly. Restored connections are disconnected and pending sends are uncertain; opt-out and erasure fences remain. Media, Teams, approved continuation templates and live provider qualification remain pending."
+      "id": "263_support_channels.sql",
+      "buyerSteps": "CHANNELS-001/002: add isolated support-channel connections, scoped text threads, delivery claims and contact-erasure fences. Apply after 262 and before the updated Worker serves traffic. Back up D1, R2 and private configuration; apply before the updated Worker serves traffic, without resetting or editing prior migration ledger rows. Configure authorized provider accounts explicitly. Restored connections are disconnected and pending sends are uncertain; opt-out and erasure fences remain. Media, Teams, approved continuation templates and live provider qualification remain pending."
     },
     {
-      "id": "251_support_channel_media.sql",
-      "buyerSteps": "CHANNELS-001: apply after 250 with D1/R2/private settings backed up. Adds attachment grants and explicit WhatsApp continuation consent without changing existing consent. Temporary attachment grants never export; opt-out stays fenced. Live provider qualification remains required."
+      "id": "264_support_channel_media.sql",
+      "buyerSteps": "CHANNELS-001: Apply after 263 with D1/R2/private settings backed up. Adds attachment grants and explicit WhatsApp continuation consent without changing existing consent. Temporary attachment grants never export; opt-out stays fenced. Live provider qualification remains required."
     },
     {
-      "id": "252_shared_channel_actions.sql",
-      "buyerSteps": "CHANNELS-002: apply after 251 with D1, R2 and private settings backed up. Adds provider-linked teammate identities, explicit channel/company mappings, action receipts and visible edit/delete notices; retains original transcripts until erasure. Link codes and attachment grants never export. Reconnect with verified Slack scopes/Twilio A2P settings; Teams requires a tenant-scoped installed bot. Live provider acceptance remains pending."
+      "id": "265_shared_channel_actions.sql",
+      "buyerSteps": "CHANNELS-002: Apply after 264 with D1, R2 and private settings backed up. Adds provider-linked teammate identities, explicit channel/company mappings, action receipts and visible edit/delete notices; retains original transcripts until erasure. Link codes and attachment grants never export. Reconnect with verified Slack scopes/Twilio A2P settings; Teams requires a tenant-scoped installed bot. Live provider acceptance remains pending."
+    },
+    {
+      "id": "266_channel_consent.sql",
+      "buyerSteps": "CHANNELS-001: Apply after 265 before serving the updated Worker, with D1/R2/private settings backed up. Retains authenticated subscriber consent facts and permanently fences continuation after STOP. Imports deactivate reply and continuation consent; reconnect never replays held replies."
     }
   ]
 }

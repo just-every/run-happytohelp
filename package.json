@@ -119,7 +119,8 @@
     "test:delegation-journey": "node --test --test-concurrency=1 --test-name-pattern=\"agent fix\" tests/journeys/delegation.mjs",
     "verify:release": "pnpm run build && H2H_UPGRADE_RELEASES=0.4.1 node --test --test-concurrency=1 tests/journeys/upgrade-nightly.mjs",
     "test:legacy-export": "node --test tests/legacy-export.mjs",
-    "test:installer-nightly": "node scripts/installer/qualify.mjs"
+    "test:installer-nightly": "node scripts/installer/qualify.mjs",
+    "agent-surface:generate": "node scripts/generate-agent-surface.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.111.0",

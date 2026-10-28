@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
 import {mkdir,writeFile} from 'node:fs/promises'
+import {referenceEditing} from './reference-editing-browser.mjs'
 import {referenceLayout} from './reference-layout.mjs'
 import {join,resolve} from 'node:path'
 import {tmpdir} from 'node:os'
@@ -25,6 +26,7 @@ export async function referenceBrowser(){
   const invitation=(await call(`/api/management/projects/${p}/agents`,{email:'morgan@aster.example.test',role:'operator'},token)).data
   await call('/api/identity/accept-token',{token:new URL(invitation.invitationUrl).searchParams.get('token'),name:'Morgan Ellis',password:'synthetic-aster-operator-password'})
   const agent=await call('/api/identity/login',{email:'morgan@aster.example.test',password:'synthetic-aster-operator-password'})
+  const upgradeBaseline=await call(`/api/knowledge/${p}/upgrade-report`,undefined,token)
   await runtime.execute(`UPDATE knowledge_upgrade_reports SET report_json=json_set(report_json,'$.unpublishedArticles',json_array('${article}','removed-source')) WHERE project_id='${p}'`)
   const greeting='Hi Alice, thanks for flagging this. Here is how your studio can recover access:',closing='Let me know if your owner needs any help.'
   const errors=[]
@@ -33,6 +35,10 @@ export async function referenceBrowser(){
    const screen=async name=>{measurements.push({width,name,...await referenceLayout(page)});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${width} ${name}: no horizontal overflow`);await page.screenshot({path:join(evidence,`${width}-${name}.png`),fullPage:true})}
    const ticket=async customer=>{await page.goto(`${runtime.origin}/projects/${p}/conversations/${customer.conversation.id}`);await page.getByRole('textbox',{name:'Reply to conversation'}).first().waitFor()}
    const tools=async item=>{await page.locator('#conversation-composer-tools').click();await page.getByRole('menuitem',{name:item,exact:true}).click()}
+   await runtime.execute(`UPDATE knowledge_upgrade_reports SET report_json=json_set(report_json,'$.unpublishedArticles',json_array()) WHERE project_id='${p}'`)
+   await page.goto(`${runtime.origin}/projects/${p}/categories`);const emptyReport=page.getByRole('region',{name:'Knowledge upgrade report'});await emptyReport.waitFor();await screen('upgrade-report-empty');if(width===1440){assert.equal(upgradeBaseline.affectedArticleCount,0);assert.equal(await emptyReport.locator('.settings-note').count(),0,'an empty completed upgrade has no withdrawal instructions')}
+   await referenceEditing({page,width,p,a,article,body,call,token,screen,ticket,tools})
+   await runtime.execute(`UPDATE knowledge_upgrade_reports SET report_json=json_set(report_json,'$.unpublishedArticles',json_array('${article}','removed-source')) WHERE project_id='${p}'`)
    await page.goto(`${runtime.origin}/projects/${p}/categories`);await page.getByRole('region',{name:'Knowledge upgrade report'}).getByRole('link',{name:'Recover a team account',exact:true}).waitFor();await screen('upgrade-report')
    const agentContext=await browser.newContext({viewport:{width,height:width===390?844:1000}});await agentContext.addCookies([{name:'h2h_session',value:agent.token,url:runtime.origin}]);const agentPage=await agentContext.newPage()
    await agentPage.goto(`${runtime.origin}/projects/${p}/categories/${category}`);await agentPage.locator('.knowledge-grants-readonly').waitFor();assert.equal(await agentPage.getByLabel('Who can read this collection?').isDisabled(),false);assert.equal(await agentPage.locator('#collection-customer-search').count(),0);await agentPage.screenshot({path:join(evidence,`${width}-agent-collection.png`),fullPage:true})

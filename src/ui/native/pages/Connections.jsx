@@ -1,3 +1,4 @@
+import BusinessSettings from './business-connectors/Settings';
 import React,{useEffect,useState} from 'react';
 import './connections/connections.css';
 import {nativeRequest} from '../transport';
@@ -6,6 +7,7 @@ import Tokens from './connections/Tokens';
 import Destinations from './connections/Destinations';
 import Deliveries from './connections/Deliveries';
 export default function Connections(props){
+ if(props.section==='business-settings')return <BusinessSettings {...props}/>;
  if(props.section==='hubspot-settings')return <HubSpotConnection projectId={props.projectId}/>;
  return <OtherConnections {...props}/>;
 }

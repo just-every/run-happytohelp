@@ -9,6 +9,8 @@
     "migrations/126_restore_contact_erasure.sql",
     "migrations/253_api_requests.sql",
     "migrations/254_api_erasure_inventory.sql",
+    "migrations/260_helpscout_sync.sql",
+    "migrations/264_helpscout_continuous_merge.sql",
     "docs/api.md",
     "tests/connections",
     "tests/journeys/connections.mjs",

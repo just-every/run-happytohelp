@@ -1,0 +1,4 @@
+/* Provider IDs and reviewed confirmation labels must fit narrow settings and ticket panels. */
+.business-connections .btn,
+.business-panel .btn { max-inline-size: 100%; white-space: normal; overflow-wrap: anywhere; }
+.business-panel fieldset { min-inline-size: 0; }

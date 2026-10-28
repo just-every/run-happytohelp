@@ -1,3 +1,4 @@
+import {credentials,reads,money,uncertainty,erasure} from '../helpers/business-connectors/journeys.mjs';
 import {runSteps} from '../journeys/kit/steps.mjs';
 import {phases} from '../journeys/kit/scenarios.mjs';const test=phases(import.meta.url);
 import assert from 'node:assert/strict';
@@ -180,5 +181,10 @@ test("native settings authority: machine credentials never substitute for curren
   assert.deepEqual(await events(),seededEvents,'denied API and native requests added no event to the two fixture creation events');
   assert.equal(h.received.length,0);assert.equal(h.external,0);
  }finally{await h.close()}
-}]
+}],
+ ['connect business accounts with current workspace authority',credentials],
+ ['map and refresh business context without foreign access',reads],
+ ['approve bounded provider actions and publish their confirmed result once',money],
+ ['reconcile uncertain provider work without replay',uncertainty],
+ ['erase business context and prevent its return',erasure]
 ]));

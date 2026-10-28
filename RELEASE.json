@@ -120,6 +120,26 @@
     {
       "id": "259_account_lookup_fields.sql",
       "buyerSteps": "FORMS-001: apply after 258 before serving the updated Worker. Extend native ticket fields with account lookups while retaining existing definitions, historical typed values and workflow journaling. Back up and restore with the native data. Account choices require verified current explicit membership and a deliberately published field; company ticket visibility grants no lookup eligibility."
+    },
+    {
+      "id": "260_helpscout_sync.sql",
+      "buyerSteps": "Apply before serving the updated Worker. Adds optional read-only Help Scout connection and digest/Move in receipts; it changes no prior ticket or import. Configure an explicitly authorized mailbox read token, private webhook secret and existing integration encryption key through the native connection API. Sync stages ordinary Move in reviews; approval remains explicit. Provider credentials and active sync stores are excluded from export and require reconnecting after restore; native import history and erased-identity tombstones remain retained."
+    },
+    {
+      "id": "261_business_connectors.sql",
+      "buyerSteps": "Apply before serving business connector routes. Business credentials are excluded from exports; reconnect provider accounts after restore. Restore cancels unexecuted approvals and preserves unknown outcomes without replay."
+    },
+    {
+      "id": "262_business_source_fields.sql",
+      "buyerSteps": "Apply in migration order before serving the updated Worker. Source plan and support entitlement properties are opt-in; sales lifecycle and community level confer no support rights."
+    },
+    {
+      "id": "263_business_role_fences.sql",
+      "buyerSteps": "Apply in migration order before serving the updated Worker. Custom role and membership role changes invalidate in-flight business connector write authority."
+    },
+    {
+      "id": "264_helpscout_continuous_merge.sql",
+      "buyerSteps": "Apply in migration order before serving the updated Worker. Existing connections keep continuous reads off. An explicit reconnect can authorize five-minute staging only while the connecting native session and data.import permission remain valid. Existing-ticket changes require a separately reviewed append-only merge. No native ticket is updated automatically; credentials and active sync receipts are excluded from export and require reconnecting after restore."
     }
   ]
 }

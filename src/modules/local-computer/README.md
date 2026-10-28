@@ -56,3 +56,13 @@ conversation. Each effect is swept independently, so one failing row cannot abor
 recoveries after it. Legacy imports use the same vocabulary: started delegations arrive
 `revoked`/`authority_revoked`, queued ones `cancelled`/`held`. Tests inject a post-delivery/pre-note failure and
 prove one message plus one note after recovery. Verification: node tests/journeys/delegation-computers.mjs.
+
+A new customer message invalidates earlier local reply evidence. Even when a
+caller supplies the current composer revision, both draft adoption and final
+message admission refuse the older proposal. Internal notes and teammate edits
+do not invalidate it. A later customer recurrence reopens the original solved
+thread with its accountable owner; the packaged-connector journey restarts the
+application, reproduces the recurrence with a fresh read-only investigation and
+proves that neither the earlier repair nor its reply is replayed automatically.
+These disposable-system observations do not qualify a live customer environment
+or enforce all production, data, spending and time constraints required by PUSH-001.

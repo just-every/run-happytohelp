@@ -1,3 +1,4 @@
+import BusinessPanel from '../../native/pages/business-connectors/Panel';
 import ProductionTrace from './conversation/ProductionTrace';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -142,6 +143,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
             { section('trace', 'Execution trace', <ProductionTrace conversation={ conversation } active={ Boolean(isShown) && open.has('trace') } />) }
             { record && section('fields', 'Ticket fields', <TicketEditor conversation={ conversation } record={ record } />) }
             { workflows && section('schedules', 'Schedules', <WorkflowPanel conversation={ conversation } workflows={ workflows } onBadge={ badgeSetters.schedules } />, badges.schedules) }
+            { record && section('business', 'Business context', <BusinessPanel projectId={ conversation.project_id } conversationId={ conversation.id } />) }
             { section('escalations', 'Escalations', <EscalationsPanel projectId={ conversation.project_id } conversationId={ conversation.id } refreshKey={ liveKey } reads={ reads } onDraft={ onReviewEscalationDraft } onBadge={ badgeSetters.escalations } onUpdates={ setEscalationUpdates } />, badges.escalations) }
             { section('merges', 'Merges and partner threads', <ConversationActions conversation={ conversation } refreshKey={ liveKey } reads={ reads } onChanged={ onTicketChanged } onBadge={ badgeSetters.merges } />, badges.merges) }
             { manage && section('problem', 'Problem and incidents', <ProblemPanel projectId={ conversation.project_id } conversationId={ conversation.id } ticket={ ticket } onChanged={ () => record.reload() } onBadge={ badgeSetters.problem } />, badges.problem) }

@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "bbab3becabacc2cec6d1bec186a22b21d8370aea49ec5b8b667dbcb853849166",
+      "sha256": "dd9d74124b68139c9c7e13ade818e13b2568ae78eb494339db0bc6ab7113ddcc",
       "executable": false
     },
     "DEMO.md": {
@@ -1816,7 +1816,7 @@
       "executable": false
     },
     "docs/voice.md": {
-      "sha256": "547eec09e3cf091812ad1c663205c97c1cd7cf0a6f6200e2d9db4f04f243fadd",
+      "sha256": "e9c85b674b2e333cca4d9dbe145417a1a7b70dbf94e93c4d78aaaaf34fe4fbba",
       "executable": false
     },
     "docs/website-knowledge.md": {
@@ -2004,7 +2004,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "caffc4749313a1f4b2e4582264c20986fc2fe2a559230d3c75e50c7c3b49b8b6",
+      "sha256": "526746d7809f5733e4973ca23e982102b69a8f191a2f2a111e18bb09e894786a",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2575,20 +2575,20 @@
       "sha256": "9b8d4320b904a998ecd62f4a8d58dfbf87c8d537e0f21737c6327b997ba48808",
       "executable": false
     },
-    "migrations/260_voice.sql": {
-      "sha256": "2fc9c4397ce136a3227e73b7b6d0e4d761ffba7a1c53effa6e50447adcd58584",
-      "executable": false
-    },
     "migrations/261_assurance.sql": {
       "sha256": "472fc38afaaf4c171d53cb626cbd1965e5d3919c4253bfcd4ea658bf093afcc3",
       "executable": false
     },
-    "migrations/261_voice_media.sql": {
-      "sha256": "5e503f0984fbe3c8c2b70a642957b0c56de633392f49d73a41ffce67d93bc442",
-      "executable": false
-    },
     "migrations/262_feedback_penny.sql": {
       "sha256": "0763293833bc7643746975d2974ed5c232ea1c0b4a736ae14c07639615e7928d",
+      "executable": false
+    },
+    "migrations/263_voice.sql": {
+      "sha256": "2fc9c4397ce136a3227e73b7b6d0e4d761ffba7a1c53effa6e50447adcd58584",
+      "executable": false
+    },
+    "migrations/264_voice_media.sql": {
+      "sha256": "5e503f0984fbe3c8c2b70a642957b0c56de633392f49d73a41ffce67d93bc442",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -2676,7 +2676,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "7bdfa70c1cb5d3e59e6e490fae83d333865051c277d33084b0161ff92b35a78e",
+      "sha256": "1b84c77b4ef378da0fe08df4ab842105f29f97ac6acc9fd11b19a15704c01f38",
       "executable": false
     },
     "rer-project.json": {
@@ -3580,7 +3580,7 @@
       "executable": false
     },
     "src/jobs.ts": {
-      "sha256": "2fc4552f5a614798928cffe6be9ff4fee9a93dd5852b9c51c847b4a91d5f4bf9",
+      "sha256": "0668a245f95f0dc679a369af6d9626632eb7fe6bb2f3e065fc72dff9cabea70d",
       "executable": false
     },
     "src/message-effects.ts": {
@@ -10536,7 +10536,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProjectSettings.jsx": {
-      "sha256": "9173014b91891da15adaba60643eb03a7e816e51d1ae252725ee0c21cc59560a",
+      "sha256": "0bcf222112a05f34b1ef94373e11ff27fb87bffb8f09a7fe490d686a7cab7dd2",
       "executable": false
     },
     "src/ui/native/pages/ProjectsPage.d.ts": {

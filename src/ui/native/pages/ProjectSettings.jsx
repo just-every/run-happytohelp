@@ -24,6 +24,7 @@ export default function ProjectSettings({ projectId, section, role }) {
  const kind=section==='edit'?'settings':section,path=`/api/management/projects/${projectId}/${kind}`;
  const [data,setData]=useState(null),[tab,setTab]=useState(['surveys','forms'].includes(search.tab)?search.tab:'general'),[error,setError]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false);
  const [status,setStatus]=useState(null);
+ const [voiceDirty,setVoiceDirty]=useState(false);
  const [formsDirty,setFormsDirty]=useState(false),[surveysDirty,setSurveysDirty]=useState(false);
  const load=()=>nativeRequest(path).then(r=>{const value=r.data||r;setData(kind==='email-settings'?{...value,email_from_address:value.email_from_address??value.from_address??'',email_from_name:value.email_from_name??value.from_name??''}:value);if(kind==='email-settings')setStatus({managed:r.managed,sending:r.sending,receiving:r.receiving,installation:r.installation});}).catch(e=>setError(e.message));
  useEffect(()=>{load();},[path]);

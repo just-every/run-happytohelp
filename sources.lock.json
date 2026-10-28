@@ -1608,19 +1608,19 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "c3264e8d8c3ad00ea62e3d135f4d03e8edea51968608b9bd1e9062be68bb1d2b",
+      "sha256": "fab10fab3569bb663c6d11fa61b45cf1bd99e369f7c3727d47aae6a0d569b6c6",
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "0a5b46b61c8375418ff7f5c81d1ed341cae04f694c7ebb6600bd8121a55d4673",
+      "sha256": "a2fa81086fab8ec10c636f1e8cf39c5423406e8a382ff126b5043fd217851328",
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "ca7b433cce53e9b275dabbb2891730c578e9a4bfa57dc9f554aaea551adc4ae4",
+      "sha256": "3859230f61e27c5f80c9b34c1a931b66ab6cc2962a86078f9b4112737897dad0",
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "e63549091a549821bd7a3fb226e89cbc11978f0c5593236ed5641a8ca9c12a56",
+      "sha256": "bdea424635b7ad89bec0993b6c5888f329b86e3b60af5176d202c3fe2f6df88e",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "3ab249190a63f93dbd42bff27d33fa2b6fae0d40e1aa55e4102a4e340b483a4a",
+      "sha256": "1a744c1a33cd6c818746565bc4879c85fc4bfb358bc10fcedb27f25948d92706",
       "executable": false
     },
     "DEMO.md": {
@@ -1788,7 +1788,7 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "74766162aad951933bf72426e801371991fbdb785b280374c65351cf6c7e5581",
+      "sha256": "a0eab6626793f7740e3c8e2a0d10492a038a56553197c850d6abc18aac1ffd0e",
       "executable": false
     },
     "docs/SOURCE-PROVENANCE.md": {

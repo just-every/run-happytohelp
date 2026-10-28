@@ -287,6 +287,14 @@
     {
       "source": "DEMO.md",
       "reason": "Copied Base guide to rer demo and the hosted demo for maintainers"
+    },
+    {
+      "source": "docs/CLAIMS.md",
+      "reason": "Homepage claims generated from the contract"
+    },
+    {
+      "source": "docs/verify.md",
+      "reason": "Retained acceptance source before the contract conversion"
     }
   ]
 }

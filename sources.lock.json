@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "9e42e906023bdd4d62eb7486ce2dac3a16193f7c2213aef0886c18c16287c314",
+      "sha256": "e6e6db7cec4d12d73a19efe7247d4ac332b0a0d7d043eb8e846730f4f895540b",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "45e4e82b060d986ececdaf9984bfb3bacbd2ae53769fcb281cab906967362d32",
+      "sha256": "e09d6c5fa704b70dbf93e4b46cc2ade8a4d7ebdc7187e41cd4f7bffdd5e73a3d",
       "executable": false
     },
     "DEMO.md": {
@@ -3720,7 +3720,7 @@
       "executable": false
     },
     "src/modules/ai-support/procedures.ts": {
-      "sha256": "280850a98768d7e1b64f77533fe3a41ebd21ea2dc9dc6e143924e03cfb920099",
+      "sha256": "6284f2a9316e319a0932c28ceb169ae927dbaf878df5d9b87531274ee3ac3f6d",
       "executable": false
     },
     "src/modules/ai-support/README.md": {
@@ -10376,7 +10376,11 @@
       "executable": false
     },
     "src/ui/native/pages/procedure-settings.css": {
-      "sha256": "798b55463c2c389df9cb83de1a82d7f7bc16b7ce2b2d34992e5e37ee6c4054af",
+      "sha256": "39b2e5cb792843fac1295145b54c7c8974097621d8a3260021eed2e88004bc0e",
+      "executable": false
+    },
+    "src/ui/native/pages/ProcedureDefinition.jsx": {
+      "sha256": "e9776f8427605f890a0f3158498295fb10300b77c3b160ec8e5e971ed297076d",
       "executable": false
     },
     "src/ui/native/pages/ProcedureReceipt.jsx": {
@@ -10384,7 +10388,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProcedureSettings.jsx": {
-      "sha256": "73efed2f92285bcc0719d6137204636c8e676aab3325d902bef0b3d48212b555",
+      "sha256": "3af9f0a373dd39ad495c97c1bd4796ecac81a059b653ea62c97fda5d1c2f3c8a",
       "executable": false
     },
     "src/ui/native/pages/project-parity.css": {
@@ -11276,11 +11280,11 @@
       "executable": false
     },
     "tests/helpers/ai/procedures-browser.mjs": {
-      "sha256": "a0f01871f93c9cf1c6460f46688048d69784a1104e76cdaa0d47db54a04aa35c",
+      "sha256": "54b38d81e96e5f389e0aae6eb2b37e8f25ec98bf47d8c8e8053309d5b68beac6",
       "executable": false
     },
     "tests/helpers/ai/procedures.mjs": {
-      "sha256": "0bb17ef226a8497ea7c50a3661a0a143a600029caf326733180ac0407a49347e",
+      "sha256": "fdb4764e53186a79bafb09baf189324a19118dc19993b77a3ce0d03553a8ab74",
       "executable": false
     },
     "tests/helpers/ai/provider-fixtures.mjs": {

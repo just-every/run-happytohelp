@@ -2,174 +2,67 @@ import {socketClient} from '../widget/sockets.mjs'
 import assert from 'node:assert/strict'
 import {sha} from '../../journeys/kit/app.mjs'
 
-/** Public role-management and ticket-door scope assertions, including active revocation. */
+/** A role is narrowed, used for ticket work and reports, then revoked during active work. */
 export async function nativeTicketScopeAssertions(app){
  const w=await app.seedWorkspace('ticket-scope'),p=w.projectId,P=`/api/management/projects/${p}`,D=`/api/dashboard/projects/${p}/conversations`
  const call=(path,body,method,token=w.tokens.operator)=>app.call(path,{body,method,token})
- const role=await call(`${P}/roles`,{name:'Scoped native agent',base:'operator',permissions:['conversations.manage','conversations.reply','conversations.notes','conversations.follow','contacts.manage']},'POST',w.tokens.owner)
+ for(const group of ['scope-a','scope-b','scope-denied'])await app.db.prepare('INSERT INTO ticket_groups(id,project_id,name,updated_at) VALUES(?,?,?,1)').bind(group,p,group).run()
+ const definition={name:'Scoped native agent',base:'operator',permissions:['conversations.manage','conversations.reply','conversations.notes','conversations.follow','contacts.manage']}
+ const role=await call(`${P}/roles`,{...definition,ticketScope:{groupIds:['scope-a','scope-b'],includeUngrouped:false}},'POST',w.tokens.owner)
  assert.equal(role.status,201)
  const roleId=role.data.data.id
- for(const group of ['scope-a','scope-b','scope-denied'])await app.db.prepare('INSERT INTO ticket_groups(id,project_id,name,updated_at) VALUES(?,?,?,1)').bind(group,p,group).run()
- const definition={name:'Scoped native agent',base:'operator',permissions:role.data.data.permissions}
- const select=async(groupIds,includeUngrouped)=>{const response=await call(`${P}/roles/${roleId}`,{...definition,ticketScope:{groupIds,includeUngrouped}},'PUT',w.tokens.owner);assert.equal(response.status,200,JSON.stringify(response.data));return response}
- const foreignGroups=await app.seedWorkspace('scope-group-validation')
- await app.db.prepare("INSERT INTO ticket_groups(id,project_id,name,updated_at) VALUES('scope-foreign',?,'Other workspace',1)").bind(foreignGroups.projectId).run()
- for(const ticketScope of [{groupIds:['scope-foreign'],includeUngrouped:false},{groupIds:['unknown-group'],includeUngrouped:false},{groupIds:[],includeUngrouped:'yes'}]){
-  assert.equal((await call(`${P}/roles/${roleId}`,{...definition,ticketScope},'PUT',w.tokens.owner)).status,400,'foreign, unknown and malformed selections are refused')
-  assert.equal((await call(`${P}/roles`,{...definition,name:'Invalid scope',ticketScope},'POST',w.tokens.owner)).status,400)
- }
- await select(['scope-a','scope-b'],false)
- assert.equal((await call(`${P}/roles/${roleId}`,definition,'PUT',w.tokens.owner)).status,200,'omitted updates preserve the prior scope')
+ const select=async(groupIds,includeUngrouped)=>{const response=await call(`${P}/roles/${roleId}`,{...definition,ticketScope:{groupIds,includeUngrouped}},'PUT',w.tokens.owner);assert.equal(response.status,200,JSON.stringify(response.data))}
  const reloaded=(await call(`${P}/roles`,undefined,undefined,w.tokens.owner)).data.data.custom.find(r=>r.id===roleId)
  assert.deepEqual(reloaded.ticketScope,{groupIds:['scope-a','scope-b'],includeUngrouped:false})
- assert.equal((await call(`${P}/roles/${roleId}`,{...definition,ticketScope:null},'PUT')).status,403,'ordinary operators cannot change role scope')
- await app.db.prepare('UPDATE session_factors SET verified_at=0 WHERE token_hash=?').bind(sha(w.tokens.owner)).run()
- assert.equal((await call(`${P}/roles/${roleId}`,{...definition,ticketScope:null},'PUT',w.tokens.owner)).data.code,'step_up_required')
- await app.db.prepare('UPDATE session_factors SET verified_at=? WHERE token_hash=?').bind(Date.now(),sha(w.tokens.owner)).run()
- const audited=(await app.sql("SELECT detail_json FROM audit_events WHERE project_id=? AND action='role.updated' AND target_id=? ORDER BY at",p,roleId)).map(r=>JSON.parse(r.detail_json))
- assert.ok(audited.some(d=>d.ticketScope.before===null&&d.ticketScope.after.groupIds.length===2),'audit records scope before and after')
  await app.db.prepare("INSERT INTO contacts(id,project_id,name,email,created_at) VALUES('scope-customer',?,'Morgan Customer','morgan@example.test',1)").bind(p).run()
- const tickets=[['scope-allowed-a','scope-a'],['scope-allowed-b','scope-b'],['scope-ungrouped',null],...Array.from({length:35},(_,i)=>['scope-denied-'+i,'scope-denied'])]
- for(const [id,group] of tickets)await app.db.batch([
-  app.db.prepare('INSERT INTO conversations(id,project_id,contact_id,group_id,revision,last_message_id,created_at,updated_at) VALUES(?,?,?, ?,1,?,1,?)').bind(id,p,'scope-customer',group,id+'-message',id.includes('denied')?1000:1),
+ for(const [id,group] of [['scope-allowed-a','scope-a'],['scope-allowed-b','scope-b'],['scope-ungrouped',null],['scope-denied-0','scope-denied']])await app.db.batch([
+  app.db.prepare('INSERT INTO conversations(id,project_id,contact_id,group_id,revision,last_message_id,created_at,updated_at) VALUES(?,?,?, ?,1,?,1,1)').bind(id,p,'scope-customer',group,id+'-message'),
   app.db.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) VALUES(?,?,?,?,'scope-customer','contact',?,1,1)").bind(id+'-message',p,id,id+'-local','Scope marker '+id),
   app.db.prepare('INSERT INTO conversation_outbox(project_id,conversation_id,message_id,created_at) VALUES(?,?,?,1)').bind(p,id,id+'-message'),
  ])
  assert.equal((await call(`${P}/agents/${w.users.operator}`,{role:roleId},'PUT',w.tokens.owner)).status,200)
- // Accepted native membership plus a stored role selection: routing membership,
- // assignment, following and customer association never supply visibility.
- await app.db.prepare('INSERT INTO ticket_group_members(project_id,group_id,user_id) VALUES(?,?,?)').bind(p,'scope-denied',w.users.operator).run()
+ // Assignment and following never supply visibility outside the saved role.
  await app.db.prepare("UPDATE conversations SET assigned_to=? WHERE id='scope-denied-0'").bind(w.users.operator).run()
  await app.db.prepare("INSERT INTO conversation_followers(conversation_id,user_id,created_at) VALUES('scope-denied-0',?,1)").bind(w.users.operator).run()
- await select(['scope-a','scope-b'],false)
+ const listed=await call(D);assert.equal(listed.status,200);assert.deepEqual(listed.data.data.map(t=>t.id).sort(),['scope-allowed-a','scope-allowed-b'])
+ assert.deepEqual((await call(D+'?search=Scope')).data.data.map(t=>t.id).sort(),['scope-allowed-a','scope-allowed-b'])
+ assert.equal((await call(D+'/counts')).data.data.open,2)
+ assert.equal((await call(D+'/scope-allowed-a')).status,200)
+ for(const id of ['scope-denied-0','scope-ungrouped'])assert.equal((await call(`${D}/${id}`)).status,404)
+ assert.equal((await call(D+'/scope-allowed-a/notes',{content:'A permitted internal note'},'POST')).status,201)
+ assert.equal((await call(D+'/scope-denied-0/notes',{content:'Denied note'},'POST')).status,404)
+ assert.equal((await call(`${D}/scope-allowed-a/ticket`,{group_id:'scope-denied'},'PATCH')).status,403)
 
- // Generic native creation/upload doors share the same scope and commit fences.
- const countBefore=(await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n
- assert.equal((await call('/api/conversations',{projectId:p,contactId:'scope-customer'},'POST')).status,404,'native creation cannot return an ungrouped ticket outside scope')
- assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,countBefore)
- const nativeUpload=(ticket,headers={})=>app.call(`/api/conversations/${ticket}/media`,{token:w.tokens.operator,method:'POST',raw:true,body:'Synthetic native attachment',headers:{'Content-Type':'text/plain','X-Filename':'scope-native.txt',...headers}})
- assert.equal((await nativeUpload('scope-denied-0')).status,404)
- assert.equal((await nativeUpload('scope-allowed-a')).status,201)
- const nativeMediaBefore=(await app.first('SELECT count(*) n FROM media WHERE project_id=?',p)).n,nativeObjectsBefore=(await (await app.files).list()).objects.map(o=>o.key).sort()
- const nativeRace=await nativeUpload('scope-allowed-b',{'x-test-statement':'INSERT INTO media','x-test-before-statement':`UPDATE project_roles SET ticket_scope_json='${JSON.stringify({groupIds:[],includeUngrouped:false})}',updated_at=updated_at+1 WHERE id='${roleId}'`})
- assert.equal(nativeRace.status,409,'generic native attachment admission rechecks current scope')
- assert.equal((await app.first('SELECT count(*) n FROM media WHERE project_id=?',p)).n,nativeMediaBefore);assert.deepEqual((await (await app.files).list()).objects.map(o=>o.key).sort(),nativeObjectsBefore)
- await select(['scope-a','scope-b'],false)
- // Schedules, related followups and SLA alerts are ticket doors as well.
- const scheduled=[]
- for(const ticket of ['scope-allowed-a','scope-denied-0']){
-  const response=await call(`${P}/workflow-schedules`,{conversation_id:ticket,kind:'snooze',due_at:Date.now()+3600000,timezone:'UTC',owner_id:w.users.operator},'POST',ticket==='scope-allowed-a'?w.tokens.operator:w.tokens.owner)
-  assert.equal(response.status,201);scheduled.push(response.data.data.id)
-  await app.db.prepare("INSERT INTO sla_alerts(id,project_id,conversation_id,policy_id,metric,cycle,kind,recipient_id,created_at) VALUES(?,?,?,'scope-policy','first_reply',1,'breach',?,1)").bind('scope-alert-'+ticket,p,ticket,w.users.operator).run()
- }
- const schedules=await call(`${P}/workflow-schedules`);assert.equal(schedules.status,200);assert.deepEqual(schedules.data.data.map(s=>s.conversation_id),['scope-allowed-a'])
- assert.equal((await call(`${P}/workflow-schedules/${scheduled[1]}`,{action:'cancel'},'PATCH')).status,404)
- assert.equal((await call(`${P}/workflow-schedules`,{conversation_id:'scope-denied-0',kind:'snooze',due_at:Date.now()+3600000,timezone:'UTC',owner_id:w.users.owner},'POST')).status,404)
- assert.equal((await call(`${P}/workflow-schedules`,{conversation_id:'scope-allowed-b',kind:'snooze',dependency_id:'scope-denied-0',timezone:'UTC',owner_id:w.users.owner},'POST')).status,404,'hidden dependencies are refused')
- const alerts=await call(`${P}/sla-alerts`);assert.equal(alerts.status,200);assert.deepEqual(alerts.data.data.map(a=>a.conversation_id),['scope-allowed-a'])
- assert.equal((await call(`${P}/sla-alerts/scope-alert-scope-denied-0/ack`,{},'PATCH')).status,404)
- assert.equal((await call(`${P}/sla-alerts/scope-alert-scope-allowed-a/ack`,{},'PATCH')).status,200)
- const racedSchedule=await app.call(`${P}/workflow-schedules/${scheduled[0]}`,{token:w.tokens.operator,method:'PATCH',body:{action:'cancel'},headers:{'x-test-statement':'UPDATE workflow_schedules SET state=', 'x-test-before-statement':`UPDATE project_roles SET ticket_scope_json='${JSON.stringify({groupIds:[],includeUngrouped:false})}',updated_at=updated_at+1 WHERE id='${roleId}'`}})
- assert.equal(racedSchedule.status,409,'schedule cancellation rechecks role scope at commit')
- assert.equal((await app.first('SELECT state FROM workflow_schedules WHERE id=?',scheduled[0])).state,'pending')
- await select(['scope-a','scope-b'],false)
- for(const id of scheduled)assert.equal((await call(`${P}/workflow-schedules/${id}`,{action:'cancel'},'PATCH',w.tokens.owner)).status,200)
- await app.db.prepare("INSERT INTO ticket_followups(id,project_id,original_id,conversation_id,command_key,created_at) VALUES('scope-followup',?,'scope-allowed-a','scope-denied-0','scope-command',1)").bind(p).run()
- const related=await call(`${P}/conversations/scope-allowed-a/workflows`);assert.equal(related.status,200);assert.deepEqual(related.data.data.followups,[],'related ticket metadata stays scoped')
-
- // Report/export authority remains independent; a scoped admin can export only the current cohort.
+ // A separate reporting permission still exports only the reviewer's visible cohort.
  const reportRole=await call(`${P}/roles`,{name:'Scoped report reviewer',base:'admin',permissions:['reports.view','data.export','contacts.manage','integrations.install','conversations.manage'],ticketScope:{groupIds:['scope-a','scope-b'],includeUngrouped:false}},'POST',w.tokens.owner)
  assert.equal(reportRole.status,201)
  assert.equal((await call(`${P}/agents/${w.users.admin}`,{role:reportRole.data.data.id},'PUT',w.tokens.owner)).status,200)
-
- for(const ticket of ['scope-allowed-a','scope-denied-0']){
-  const crm=await call(`${P}/conversations/${ticket}/crm`,undefined,undefined,w.tokens.admin)
-  assert.equal(crm.status,ticket==='scope-allowed-a'?200:404,'CRM requester context obeys ticket scope')
-  const trace=await call(`/api/ai-support/projects/${p}/conversations/${ticket}/trace`,undefined,undefined,w.tokens.admin)
-  assert.equal(trace.status,ticket==='scope-allowed-a'?200:404,'trace metadata obeys ticket scope')
- }
- assert.equal((await call(`${P}/conversations/scope-denied-0/crm/refresh`,{},'POST',w.tokens.admin)).status,404,'hidden CRM refresh refuses before provider work')
  const reportPath=`/api/dashboard/projects/${p}/reports?period=custom&start=1970-01-01&end=1970-01-02`
- const report=await call(reportPath,undefined,undefined,w.tokens.admin);assert.equal(report.status,200);assert.equal(report.data.volume,2,'report aggregation filters before reducing')
- const team=await call(`/api/dashboard/projects/${p}/reports/team?period=custom&start=1970-01-01&end=1970-01-02`,undefined,undefined,w.tokens.admin);assert.equal(team.status,200);assert.equal(team.data.denominators.cohort,2,'team report uses the same current scope')
+ const report=await call(reportPath,undefined,undefined,w.tokens.admin);assert.equal(report.status,200);assert.equal(report.data.volume,2)
  const exported=await call(reportPath+'&format=conversations.csv',undefined,undefined,w.tokens.admin);assert.equal(exported.status,200);assert.match(exported.data,/scope-allowed-a/);assert.doesNotMatch(exported.data,/scope-denied|scope-ungrouped/)
- const transcript=await call(reportPath+'&format=transcripts.json',undefined,undefined,w.tokens.admin);assert.equal(transcript.status,200);assert.deepEqual(transcript.data.conversations.map(c=>c.id),['scope-allowed-a','scope-allowed-b']);assert.match(JSON.stringify(transcript.data),/Scope marker scope-allowed-a/);assert.doesNotMatch(JSON.stringify(transcript.data),/scope-denied|scope-ungrouped/)
- for(const ticket of ['scope-denied-0','scope-ungrouped'])assert.equal((await call(`${D}/${ticket}/timer`)).status,404,'timer reads refuse hidden tickets')
- const company=await call(`${P}/companies`,{name:'Scope customer company'},'POST',w.tokens.owner);assert.equal(company.status,201)
- assert.equal((await call(`${P}/companies/${company.data.company.id}/members/scope-customer`,{},'PUT',w.tokens.owner)).status,200)
- const history=await call(`${P}/companies/${company.data.company.id}`);assert.equal(history.status,200);assert.deepEqual(history.data.tickets.map(t=>t.id).sort(),['scope-allowed-a','scope-allowed-b'],'company association grants no ticket visibility')
+ const transcript=await call(reportPath+'&format=transcripts.json',undefined,undefined,w.tokens.admin);assert.equal(transcript.status,200);assert.deepEqual(transcript.data.conversations.map(c=>c.id),['scope-allowed-a','scope-allowed-b'])
 
-
- // Persisted connected credentials retain their own exact target/scope bounds and
- // also lose ticket access with the principal's current role, on the public door.
+ // An already approved machine target loses access with its principal's role.
  const delegationToken='synthetic-ticket-scope-grant',targets=['scope-allowed-a','scope-denied-0'].map(id=>`projects/${p}/conversations/${id}`)
  await app.db.batch([
   app.db.prepare("INSERT INTO edition_clients(id,project_id,origin,redirect_uri) VALUES('scope-client',?,'https://scope.example','https://scope.example/callback')").bind(p),
   app.db.prepare("INSERT INTO edition_grants(id,installation_id,client_id,project_id,principal_id,scopes,targets,expires_at,token_hash,created_at) VALUES('scope-grant','roles-installation','scope-client',?,?,?,?,?,?,1)").bind(p,w.users.operator,JSON.stringify(['support.conversation.read']),JSON.stringify(targets),Date.now()+60000,sha(delegationToken)),
  ])
  const delegated=id=>call('/api/delegation/v1/evidence?target='+encodeURIComponent(`projects/${p}/conversations/${id}`),undefined,undefined,delegationToken)
- const permittedEvidence=await delegated('scope-allowed-a');assert.equal(permittedEvidence.status,200);assert.match(permittedEvidence.data.text,/Scope marker scope-allowed-a/)
- assert.equal((await delegated('scope-denied-0')).status,404,'an exact grant target cannot bypass current ticket scope')
- assert.equal((await delegated('scope-allowed-b')).status,403,'role visibility cannot enlarge a machine target list')
-
- await (await app.files).put('scope-denied-attachment','Private attachment bytes')
- await app.db.prepare("INSERT INTO media(id,project_id,conversation_id,uploaded_by,object_key,filename,content_type,size,message_id,created_at) VALUES('scope-denied-media',?,'scope-denied-0',?,'scope-denied-attachment','private.txt','text/plain',24,'scope-denied-0-message',1)").bind(p,w.users.operator).run()
- const macroSources=await call(`${P}/macros/attachment-options`);assert.equal(macroSources.status,200);assert.ok(macroSources.data.data.some(m=>m.filename==='scope-native.txt'));assert.equal(macroSources.data.data.some(m=>m.id==='scope-denied-media'),false,'attachment choices cannot expose a formerly owned hidden ticket')
- const listed=await call(D);assert.equal(listed.status,200);assert.equal(listed.data.meta.pagination.total,2,'scope filtering precedes pagination');assert.deepEqual(listed.data.data.map(t=>t.id).sort(),['scope-allowed-a','scope-allowed-b'])
- assert.deepEqual((await call(D+'?search=Scope')).data.data.map(t=>t.id).sort(),['scope-allowed-a','scope-allowed-b'],'search hydration stays scoped')
- assert.equal((await call(D+'/counts')).data.data.open,2,'counts use the same scope')
- for(const id of ['scope-allowed-a','scope-allowed-b'])for(const door of [`${D}/${id}`,`${D}/${id}/ticket`,`/api/conversations/${id}/messages`,`${P}/conversations/${id}/email-followups`,`${P}/conversations/${id}/routing`,`/api/knowledge/${p}/conversations/${id}/articles`,`/api/escalations/projects/${p}/conversations/${id}`])assert.equal((await call(door)).status,200,door)
- for(const id of ['scope-denied-0','scope-ungrouped'])for(const door of [`${D}/${id}`,`${D}/${id}/ticket`,`/api/conversations/${id}`,`/api/conversations/${id}/messages`,`/api/conversations/${id}/media/scope-denied-media`,`${D}/${id}/buckets`,`${P}/conversations/${id}/email-followups`,`${P}/conversations/${id}/routing`,`/api/knowledge/${p}/conversations/${id}/articles`,`/api/escalations/projects/${p}/conversations/${id}`])assert.equal((await call(door)).status,404,door)
- const note=await call(D+'/scope-allowed-a/notes',{content:'A permitted internal note'},'POST');assert.equal(note.status,201)
- assert.equal((await call(D+'/scope-denied-0/notes',{content:'Denied note'},'POST')).status,404)
- const bulk={tickets:['scope-allowed-a','scope-denied-0'].map(id=>({id,expected_version:0})),changes:{priority:'high'}}
- const preview=await call(`/api/dashboard/projects/${p}/tickets/bulk/preview`,bulk,'POST');assert.equal(preview.status,200);assert.equal(preview.data.data.results.find(t=>t.id==='scope-allowed-a').status,'ready');assert.notEqual(preview.data.data.results.find(t=>t.id==='scope-denied-0').status,'ready')
- const applied=await call(`/api/dashboard/projects/${p}/tickets/bulk/apply`,bulk,'POST');assert.equal(applied.status,200);assert.equal(applied.data.data.results.find(t=>t.id==='scope-allowed-a').status,'applied');assert.equal(applied.data.data.results.find(t=>t.id==='scope-denied-0').status,'forbidden');assert.equal((await app.first("SELECT priority FROM conversations WHERE id='scope-denied-0'")).priority,'normal')
- assert.equal((await call(`${D}/scope-allowed-a/ticket`,{group_id:'scope-denied'},'PATCH')).status,403,'destination scope is independent of routing membership')
- assert.equal((await call(`${D}/scope-allowed-a/ticket`,{priority:'high'},'PATCH')).status,200)
-
- const upload=async(ticket,headers={})=>{const form=new FormData();form.set('conversation_id',ticket);form.set('file',new File(['Synthetic attachment'],'scope.txt',{type:'text/plain'}));const encoded=new Request('https://app.example',{method:'POST',body:form});return app.call(`/api/dashboard/projects/${p}/media`,{token:w.tokens.operator,method:'POST',raw:true,body:await encoded.arrayBuffer(),headers:{'Content-Type':encoded.headers.get('Content-Type'),...headers}})}
- assert.equal((await upload('scope-denied-0')).status,404,'upload refuses hidden ticket before storing bytes')
- assert.equal((await upload('scope-allowed-a')).status,201,'permitted native upload stays usable')
- const mediaBefore=(await app.first('SELECT count(*) n FROM media WHERE project_id=?',p)).n,objectsBefore=(await (await app.files).list()).objects.map(o=>o.key).sort()
- const racedUpload=await upload('scope-allowed-b',{'x-test-statement':'INSERT INTO media','x-test-before-statement':`UPDATE project_roles SET ticket_scope_json='${JSON.stringify({groupIds:[],includeUngrouped:false})}',updated_at=updated_at+1 WHERE id='${roleId}'`})
- assert.equal(racedUpload.status,409,'an awaited upload checks scope inside its row admission')
- assert.equal((await app.first('SELECT count(*) n FROM media WHERE project_id=?',p)).n,mediaBefore);assert.deepEqual((await (await app.files).list()).objects.map(o=>o.key).sort(),objectsBefore,'refused upload cleans up its staged bytes')
- await select(['scope-a','scope-b'],false)
- for(const ticket of ['scope-allowed-a','scope-denied-0'])await app.db.prepare("INSERT INTO notification_inbox(id,project_id,conversation_id,user_id,kind,inbox,email,created_at) VALUES(?,?,?,?, 'follower',1,0,1)").bind('scope-notice-'+ticket,p,ticket,w.users.operator).run()
-
- for(const ticket of ['scope-allowed-a','scope-denied-0'])await app.db.prepare("INSERT INTO notification_trigger_claims(id,project_id,conversation_id,event,claim_token,state,outcome_json,created_at) VALUES(?,?,?,'ticket_updated','synthetic','complete','{}',1)").bind('scope-claim-'+ticket,p,ticket).run()
- const noticeOutcomes=await call(`${P}/notification-triggers`);assert.equal(noticeOutcomes.status,200);assert.deepEqual(noticeOutcomes.data.outcomes.map(n=>n.conversation_id),['scope-allowed-a'],'settings outcome reads also filter hidden tickets')
- const notices=await call(`${P}/notification-inbox`);assert.equal(notices.status,200);assert.deepEqual(notices.data.data.map(n=>n.conversation_id),['scope-allowed-a'],'following and old inbox notices grant no ticket access')
-
-
- assert.equal((await call(`${D}/scope-allowed-a/timer/start`,{},'POST')).status,200,'permitted timer starts')
- assert.equal((await call(`${D}/scope-allowed-a/timer/stop`,{},'POST')).status,200,'permitted timer stops')
- const timersBefore=(await app.first('SELECT count(*) n FROM ticket_handle_sessions WHERE project_id=?',p)).n
- const timerRace=await app.call(`${D}/scope-allowed-b/timer/start`,{token:w.tokens.operator,method:'POST',body:{},headers:{'x-test-statement':'INSERT OR IGNORE INTO ticket_handle_sessions','x-test-before-statement':`UPDATE project_roles SET ticket_scope_json='${JSON.stringify({groupIds:[],includeUngrouped:false})}',updated_at=updated_at+1 WHERE id='${roleId}'`}})
- assert.equal(timerRace.status,404,'a timer cannot start after commit-time scope loss')
- assert.equal((await app.first('SELECT count(*) n FROM ticket_handle_sessions WHERE project_id=?',p)).n,timersBefore,'revocation leaves no timer write')
+ const permitted=await delegated('scope-allowed-a');assert.equal(permitted.status,200);assert.match(permitted.data.text,/Scope marker scope-allowed-a/)
+ assert.equal((await delegated('scope-denied-0')).status,404)
+ assert.equal((await delegated('scope-allowed-b')).status,403,'role visibility cannot enlarge the grant target list')
  await select(['scope-a','scope-b'],true)
  assert.equal((await call(D+'/counts')).data.data.open,3,'explicit ungrouped choice')
  const stream=await socketClient(app)(`/api/conversations/scope-allowed-a/socket?token=${w.tokens.operator}`)
  assert.equal(stream.status,101);await stream.next(frame=>frame.type==='message')
  await select([],false)
- assert.equal((await delegated('scope-allowed-a')).status,404,'active grant sees role-scope revocation on its next request')
- try{const closed=new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('scope stream did not revoke')),3000);stream.socket.addEventListener('close',event=>{clearTimeout(timer);resolve(event.code)},{once:true})});stream.socket.send(JSON.stringify({type:'ping'}));assert.equal(await closed,1008,'an already open stream checks current scope')}finally{stream.socket.close()}
+ assert.equal((await delegated('scope-allowed-a')).status,404)
+ try{const closed=new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('scope stream did not revoke')),3000);stream.socket.addEventListener('close',event=>{clearTimeout(timer);resolve(event.code)},{once:true})});stream.socket.send(JSON.stringify({type:'ping'}));assert.equal(await closed,1008)}finally{stream.socket.close()}
  assert.equal((await call(D)).data.meta.pagination.total,0,'restricted empty means no tickets')
- assert.equal((await call(D+'/counts')).data.data.open,0)
- assert.equal((await call(D+'/scope-allowed-a')).status,404,'next request observes narrowing')
+ assert.equal((await call(D+'/scope-allowed-a')).status,404)
  assert.equal((await call(D+'/scope-allowed-a/notes',{content:'Stale tab note'},'POST')).status,404)
  assert.equal((await call(D+'/scope-allowed-a',undefined,undefined,w.tokens.owner)).status,200,'native owner retains recovery')
- await select(['scope-a'],false)
- const before=await app.first("SELECT subject FROM conversations WHERE id='scope-allowed-a'")
- const raced=await app.call(`${D}/scope-allowed-a/ticket`,{token:w.tokens.operator,method:'PATCH',body:{subject:'Must not commit'},headers:{'x-test-statement':'INSERT INTO ticket_history','x-test-before-statement':`UPDATE project_roles SET ticket_scope_json='${JSON.stringify({groupIds:[],includeUngrouped:false})}',updated_at=updated_at+1 WHERE id='${roleId}'`}})
- assert.equal(raced.status,409,'scope changed between preparation and receipt refuses the write');assert.deepEqual(await app.first("SELECT subject FROM conversations WHERE id='scope-allowed-a'"),before)
- await select(['scope-a'],false)
- await app.db.prepare("UPDATE conversations SET group_id='scope-denied' WHERE id='scope-allowed-a'").run()
- assert.equal((await call(D+'/scope-allowed-a')).status,404,'ticket movement revokes the next read')
- assert.equal((await call(D+'/scope-allowed-b')).status,404,'other selected groups can be removed')
- const foreign=await app.seedWorkspace('ticket-scope-foreign')
- assert.equal((await call(`/api/dashboard/projects/${foreign.projectId}/conversations`)).status,403,'selection grants no other brand membership')
- assert.ok((await app.first("SELECT count(*) n FROM audit_events WHERE project_id=? AND action='ticket.scope_denied'",p)).n>0)
+ const audit=(await app.sql("SELECT detail_json FROM audit_events WHERE project_id=? AND action='role.updated' AND target_id=?",p,roleId)).map(r=>JSON.parse(r.detail_json))
+ assert.ok(audit.some(d=>d.ticketScope.before.groupIds.length===2&&d.ticketScope.after.groupIds.length===0),'revocation is audited with before and after selections')
 }

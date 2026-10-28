@@ -1,3 +1,4 @@
+import {traceOutcomes} from './trace-outcomes'
 import type {Env} from '../../platform/env'
 
 const parse=(value:string|null)=>{try{return JSON.parse(value||'null')}catch{return null}}
@@ -12,21 +13,20 @@ export async function conversationTrace(env:Env,projectId:string,conversationId:
  if(!rows.results.length)return {generations:[],limit:50}
  const ids=rows.results.map(row=>row.id),slots=ids.map(()=>'?').join(',')
  // A bounded set of reads also works within the free Worker's query allowance.
- const [attemptRows,roundRows,sourceRows,answerRows,handoffRows,eventRows]=await env.DB.batch<any>([
+ const [attemptRows,roundRows,sourceRows,handoffRows,eventRows]=await env.DB.batch<any>([
   env.DB.prepare(`SELECT * FROM ai_attempts WHERE generation_id IN (${slots})`).bind(...ids),
   env.DB.prepare(`SELECT t.generation_id,u.observed,u.usage_json FROM ai_round_usage u JOIN ai_attempts t ON t.id=u.attempt_id WHERE t.generation_id IN (${slots})`).bind(...ids),
   env.DB.prepare(`SELECT generation_id,source_id,source_version FROM ai_generation_sources WHERE project_id=? AND generation_id IN (${slots})`).bind(projectId,...ids),
-  env.DB.prepare(`SELECT id,revision,local_id FROM messages WHERE project_id=? AND conversation_id=? AND actor_role='ai' AND local_id IN (${slots})`).bind(projectId,conversationId,...ids.map(id=>`generation:${id}`)),
   env.DB.prepare(`SELECT generation_id FROM ai_handoff_receipts WHERE project_id=? AND conversation_id=? AND generation_id IN (${slots})`).bind(projectId,conversationId,...ids),
   env.DB.prepare(`SELECT t.generation_id,e.event_json FROM ai_attempt_events e JOIN ai_attempts t ON t.id=e.attempt_id WHERE e.type='tool_trace' AND t.generation_id IN (${slots}) ORDER BY e.id LIMIT 5000`).bind(...ids),
  ])
+ const outcomes=await traceOutcomes(env,projectId,conversationId,ids)
  const generations=[]
  for(const row of rows.results){
   const attempt=attemptRows.results.find(item=>item.generation_id===row.id)
   const rounds=roundRows.results.filter(item=>item.generation_id===row.id)
   const sources=sourceRows.results.filter(item=>item.generation_id===row.id).map(({source_id,source_version})=>({source_id,source_version}))
-  const committed=answerRows.results.find(item=>item.local_id===`generation:${row.id}`)
-  const answer=committed?{id:committed.id,revision:committed.revision}:null
+  const joined=outcomes(row.id,row.kind,row.state),answer=joined.committedAnswer
   const handoff=handoffRows.results.some(item=>item.generation_id===row.id)
   const events=eventRows.results.filter(item=>item.generation_id===row.id).slice(0,100)
   const actor=parse(row.actor_json),error=String(attempt?.error||row.error||'')
@@ -39,6 +39,8 @@ export async function conversationTrace(env:Env,projectId:string,conversationId:
    providerOutcome:timedOut?'timeout':rounds.length?(row.state==='completed'?'completed':'unknown'):'not observed',
    result:handoff?'handoff':answer?'committed answer':row.state==='uncertain'?'unknown':'no committed answer',
    committedAnswer:answer||null,
+   contribution:handoff&&!answer?'handoff':joined.contribution,
+   customerOutcome:joined.outcome,
    usage:rounds.map(round=>{const usage=parse(round.usage_json);return {observed:!!round.observed,inputTokens:number(usage?.input_tokens),outputTokens:number(usage?.output_tokens)}}),
    // Token accounting alone cannot establish a priced, reconciled USD amount.
    providerCostUsd:null,

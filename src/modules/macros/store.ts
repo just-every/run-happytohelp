@@ -29,7 +29,7 @@ async function loadMacro(env:Env,actor:Actor,id:string,brandId:string){
 }
 export async function listMacros(env:Env,actor:Actor,search:string,page:number,limit=50,sort='title',direction='asc'){
  const sorts:Record<string,string>={title:'v.title COLLATE NOCASE',created_at:'m.created_at',updated_at:'m.updated_at',created_by_name:'created_by_name COLLATE NOCASE'}
- if(!sorts[sort]||!['asc','desc'].includes(direction)||!Number.isSafeInteger(page)||page<1||page>1000000||!Number.isSafeInteger(limit)||limit<1||limit>200||search.length>500)invalid('Invalid search, page, limit or sort order')
+ if(!Object.hasOwn(sorts,sort)||!['asc','desc'].includes(direction)||!Number.isSafeInteger(page)||page<1||page>1000000||!Number.isSafeInteger(limit)||limit<1||limit>200||search.length>500)invalid('Invalid search, page, limit or sort order')
  const pattern=`%${search.replace(/[\\%_]/g,'\\$&')}%`,access=await ticketReadAccess(env,actor)
  const where=`m.project_id=? AND h.archived_at IS NULL AND (v.title LIKE ? ESCAPE '\\' OR v.content LIKE ? ESCAPE '\\')
  AND (json_extract(v.scope_json,'$.visibility')<>'personal' OR m.created_by=?)

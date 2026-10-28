@@ -9,7 +9,7 @@ import {inboundNeedsCustomDomain} from './inbound-domain'
 import {getProviderFromModel} from '../../ai-support/vendor/ensemble/model_providers/model_provider.js'
 import type {Environment,StepId} from './types'
 
-export const modelSecrets:Record<string,string> = {openai:'OPENAI_API_KEY',anthropic:'ANTHROPIC_API_KEY',google:'GOOGLE_API_KEY',deepseek:'DEEPSEEK_API_KEY',xai:'XAI_API_KEY',openrouter:'OPENROUTER_API_KEY'}
+export const modelSecrets:Record<string,string> = Object.assign(Object.create(null),{openai:'OPENAI_API_KEY',anthropic:'ANTHROPIC_API_KEY',google:'GOOGLE_API_KEY',deepseek:'DEEPSEEK_API_KEY',xai:'XAI_API_KEY',openrouter:'OPENROUTER_API_KEY'})
 const rawKey=(env:Env,provider:string|null)=>{const name=provider?modelSecrets[provider]:undefined;return name?env[name]||(provider==='google'?env.GEMINI_API_KEY:undefined):undefined}
 /** Whether the installation holds a usable key for a provider. Presence only; the value never leaves the server. */
 export function keyInstalled(env:Env,provider:string|null) {const value=rawKey(env,provider);return typeof value==='string'&&Boolean(value.trim())}

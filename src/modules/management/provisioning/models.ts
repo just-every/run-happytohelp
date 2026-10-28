@@ -25,7 +25,8 @@ const providers = Object.keys(starterModels) as ModelProvider[]
 const present = (value: unknown) => typeof value === 'string' && value.trim() !== ''
 
 export function providerKeyInstalled(env: Env, provider: ModelProvider) {
- return present(env[starterModels[provider].apiKeyEnvironment]) || (provider === 'google' && present(env.GEMINI_API_KEY))
+ const model = Object.hasOwn(starterModels, provider) ? starterModels[provider] : undefined
+ return Boolean(model && (present(env[model.apiKeyEnvironment]) || (provider === 'google' && present(env.GEMINI_API_KEY))))
 }
 /** The first provider, in installer order, whose key the installation holds. */
 export function installedProvider(env: Env): ModelProvider | null {

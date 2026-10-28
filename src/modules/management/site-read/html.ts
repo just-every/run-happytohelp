@@ -8,14 +8,15 @@ export function decodeEntities(text: string): string {
    const code = body[1].toLowerCase() === 'x' ? parseInt(body.slice(2), 16) : parseInt(body.slice(1), 10)
    return Number.isInteger(code) && code > 0 && code < 0x110000 ? String.fromCodePoint(code) : ' '
   }
-  return NAMED[body.toLowerCase()] ?? whole
+  const name = body.toLowerCase()
+  return Object.hasOwn(NAMED, name) ? NAMED[name] : whole
  })
 }
 
 const squash = (text: string) => decodeEntities(text).replace(/\s+/g, ' ').trim()
 
 export function attributes(source: string): Record<string, string> {
- const found: Record<string, string> = {}
+ const found: Record<string, string> = Object.create(null)
  for (const match of source.matchAll(/([^\s=/"'<>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g)) {
   const name = match[1].toLowerCase()
   if (!(name in found)) found[name] = decodeEntities(match[2] ?? match[3] ?? match[4] ?? '')

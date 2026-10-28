@@ -23,6 +23,19 @@ test('workspace management keeps settings, resources, bootstrap, owners, notes, 
    const response=await app.request('/api/management/bootstrap?projectId='+encodeURIComponent(name)+inbox,{token:workspace.tokens.operator})
    results.push({name,inbox,status:response.status,body:await response.text()})
   }
+  const open=await app.request('/api/dashboard/conversations?view=open',{token:workspace.tokens.operator})
+  assert.equal(open.status,200)
+  const openData=await open.json()
+  for(const name of ['constructor','toString','valueOf','__proto__','hasOwnProperty'])for(const parameter of ['view','filter']){
+   const response=await app.request('/api/dashboard/conversations?'+parameter+'='+encodeURIComponent(name),{token:workspace.tokens.operator})
+   assert.equal(response.status,200,name+': '+await response.clone().text())
+   assert.deepEqual(await response.json(),openData,name+' uses the default inbox')
+  }
+  for(const name of ['constructor','toString','valueOf','__proto__','hasOwnProperty'])for(const resource of ['contacts','macros']){
+   const response=await app.request('/api/management/projects/'+workspace.projectId+'/'+resource+'?sort='+encodeURIComponent(name),{token:workspace.tokens.operator})
+   assert.equal(response.status,400,resource+': '+await response.clone().text())
+   assert.doesNotMatch(await response.text(),/binding|stack|native code/i)
+  }
   for(const {name,inbox,status,body} of results){
    assert.equal(status,403,name+inbox+': '+body)
    assert.equal(body,refusal,name+inbox)

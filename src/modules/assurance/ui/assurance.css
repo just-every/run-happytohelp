@@ -1,0 +1,9 @@
+.assurance-page { max-width:960px; overflow-wrap:anywhere; }
+.assurance-page fieldset { min-width:0; max-width:680px; }
+.assurance-page .form-group { margin-bottom:16px; }
+.assurance-page .btn { margin:8px 0; white-space:normal; }
+.assurance-dates { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.assurance-evidence { list-style:none; margin:20px 0 0; padding:0; }
+.assurance-evidence li { border-top:1px solid var(--rule,#d8e0e4); padding:16px 0; }
+.assurance-evidence p { margin:6px 0; }
+@media(max-width:600px){.assurance-dates{grid-template-columns:1fr;gap:0}.assurance-page .alert{padding:14px}}

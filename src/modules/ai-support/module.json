@@ -9,6 +9,7 @@
     "tests/journeys/ai-browser.mjs",
     "tests/journeys/ai-live.mjs",
     "migrations/257_followup_obligations.sql",
+    "migrations/258_followup_pending_terms.sql",
     "tests/helpers/ai/obligations.mjs",
     "tests/helpers/ai/obligations-browser.mjs",
     "tests/helpers/recovery/followup.mjs"

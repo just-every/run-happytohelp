@@ -13,7 +13,7 @@ import {trainingArchiveRow,trainingArchiveStagedSafety} from './training-archive
 export const archivePolicy={
  // Enforce revocation at restore too, including an archive produced by an older
  // exporter or containing an unrevoked metadata row. Never revive bearer authority.
- importSafety:{followup_obligations:{stop_condition:['']},
+ importSafety:{followup_obligations:{stop_condition:[''],pending_terms_json:[null]},followup_changes:{stop_condition:[null]},
   integration_tokens:{revoked_at:[1]},api_credentials:{revoked_at:[1]},
   crm_connections:{token_cipher:[null]},
   crm_mappings:{context_json:[null],state:['stale'],refreshed_at:[null],checked_at:[null]},

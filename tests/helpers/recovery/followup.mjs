@@ -13,7 +13,7 @@ export async function followupRecoveryJourney() {
   const visitor=(await source.call('/api/identity/widget/session',{headers:{Origin:workspace.allowedOrigin},body:{widgetKey:workspace.widgetKey},status:201})).data
   const conversation=(await source.call('/api/conversations',{token:visitor.token,body:{projectId:p},status:201})).data
   const sent=(await source.call(`/api/conversations/${conversation.id}/messages`,{token,body:{localId:'synthetic-hh-followup-upgrade',content:'I will follow up tomorrow.',expectedRevision:0},status:200})).data.message
-  await applyMigrations(source.db,name=>name.startsWith('257_'))
+  await applyMigrations(source.db,name=>name>='257_')
   const base=`/api/ai-support/projects/${p}/conversations/${conversation.id}/obligations`,terms={ownerId:workspace.users.owner,dueAt:Date.now()+3600000}
   const privateStop='Call Léa at lea.private@example.test about her medical leave'
   const privateSubject='Léa medical leave follow-up'
@@ -43,10 +43,12 @@ export async function followupRecoveryJourney() {
    destination.db.prepare("INSERT INTO session_factors VALUES(?,?,'password',?)").bind(sha(fresh),workspace.users.owner,now)
   ])
   const after=(await destination.call(base,{token:fresh,status:200})).data.obligations[0]
-  assert.deepEqual(after,{...before,stop_condition:''},'restore retains the same citation, accepted responsibility, due time and history')
+  assert.deepEqual(after,{...before,stop_condition:'',changes:before.changes.map(change=>({...change,stop_condition:null}))},'restore retains the same citation, accepted responsibility, due time and history')
+  await destination.call(base+'/'+created.id+'/accept',{token:fresh,body:{...terms,version:after.version,stopCondition:'Customer receives the restored update'},status:200})
+  assert.equal((await destination.call(base,{token:fresh,status:200})).data.obligations[0].stop_condition,'Customer receives the restored update','restored stop conditions can be re-entered and retained')
   assert.equal((await destination.first('SELECT count(*) n FROM messages')).n,1,'restoring a draft never sends')
   await destination.scheduled();await destination.scheduled()
-  assert.equal((await destination.first("SELECT count(*) n FROM notification_inbox WHERE id=?",`followup:${created.id}:2`)).n,1)
+  assert.equal((await destination.first("SELECT count(*) n FROM notification_inbox WHERE id=?",`followup:${created.id}:3`)).n,1)
   // Produce the old exporter format through the same archive door. Its valid
   // digests bind raw personal text, so the receiving policy must erase it.
   const legacy=await createPortability({db:source.db,buckets:{FILES:await source.files},policy:{...archivePolicy,exportRow:(table,row)=>table==='followup_obligations'?row:archivePolicy.exportRow(table,row)}})

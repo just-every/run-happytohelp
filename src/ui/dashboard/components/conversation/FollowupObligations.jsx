@@ -21,10 +21,10 @@ export default function FollowupObligations({conversation, reads, liveKey}) {
     const write = async (path, body) => {
         setBusy(true); setError(''); setNotice('');
         try {
-            await nativeRequest(base + path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
-            setNotice(path ? 'Changes accepted.' : 'Promise proposed. Review and explicitly accept its terms.');
+            const result = await nativeRequest(base + path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+            setNotice(path ? 'Changes accepted.' : result.duplicate ? (result.pendingChange ? 'Existing promise found. Revised terms are pending your review.' : 'Existing promise found. No new promise was created.') : 'Promise proposed. Review and explicitly accept its terms.');
             setRefresh(n => n + 1);
-        } catch (e) {setError(e.message + ' Refresh the record before trying again.');}
+        } catch (e) {setError(e.message.trim().replace(/[.!?]*$/, '.') + ' Refresh the record before trying again.');}
         finally {setBusy(false);}
     };
     const sourceMessage = data?.sources.find(m => m.id === messageId);
@@ -40,7 +40,7 @@ export default function FollowupObligations({conversation, reads, liveKey}) {
                     event.preventDefault(); const fields = new FormData(event.currentTarget);
                     write('', {messageId, quote, ownerId:fields.get('ownerId'), dueAt:new Date(fields.get('dueAt')).getTime(), stopCondition:fields.get('stopCondition'), dependencyId:fields.get('dependencyId') || null});
                 }}>
-                    <label>Promise message<select aria-label="Promise message" required value={messageId} onChange={e => {setMessageId(e.target.value); setQuote('');}}><option value="">Choose a message</option>{proposing && data.sources.map((m, index) => <option key={m.id} value={m.id}>Message {index + 1}: {m.content.slice(0,100)}</option>)}</select></label>
+                    <label>Promise message<select aria-label="Promise message" required value={messageId} onChange={e => {setMessageId(e.target.value); setQuote('');}}><option value="">Choose a message</option>{proposing && data.sources.map((m, index) => <option key={m.id} value={m.id} title={m.content}>Message {index + 1}: {m.content.length > 100 ? m.content.slice(0,100).trimEnd() + '…' : m.content}</option>)}</select></label>
                     {sourceMessage && <><label>Source message<textarea aria-label="Source message" ref={source} readOnly value={sourceMessage.content} rows={5}/></label><button className="btn btn-sm btn-outline-secondary" type="button" onClick={() => setQuote(sourceMessage.content.slice(source.current.selectionStart,source.current.selectionEnd))}>Use selected quote</button></>}
                     <label>Exact promise quote<textarea aria-label="Exact promise quote" required maxLength={2000} value={quote} onChange={e => setQuote(e.target.value)} rows={3}/></label>
                     <Terms data={data}/>
@@ -51,13 +51,14 @@ export default function FollowupObligations({conversation, reads, liveKey}) {
             {data.obligations.length === 0 && <p>No follow-up promises yet.</p>}
             {data.obligations.map(row => <article key={`${row.id}:${row.version}`} aria-label="Follow-up promise">
                 <blockquote>{row.quote}</blockquote><p>{row.state === 'proposed' ? 'Awaiting acceptance' : row.state === 'open' ? 'Accepted promise' : 'Completed'} · Version {row.version}</p>
-                <p>Stop when: {row.stop_condition}</p>
+                <p>Stop when: {row.stop_condition || 'Re-enter the stop condition after restore.'}</p>
+                {row.pendingTerms && <section aria-label="Pending promise changes"><strong>Pending changes · not accepted</strong><p>Responsible teammate: {data.owners.find(o => o.id === row.pendingTerms.ownerId)?.name || 'Former teammate'}. Due {new Date(row.pendingTerms.dueAt).toLocaleString()}. Stop when: {row.pendingTerms.stopCondition}</p></section>}
                 {row.dependency.id && <p role="status">Dependency {row.issue_key}: {row.dependency.stale ? 'Stale · ' : ''}{row.dependency.progress}. {row.dependency.readbackAt ? `Read back ${new Date(row.dependency.readbackAt).toLocaleString()}.` : 'No current readback.'}</p>}
                 {['proposed','open'].includes(row.state) && <form onSubmit={event => {
                     event.preventDefault(); const fields = new FormData(event.currentTarget);
-                    write(`/${row.id}/accept`, {version:row.version, ownerId:fields.get('ownerId'), dueAt:new Date(fields.get('dueAt')).getTime(), dependencyId:fields.get('dependencyId') || null});
-                }}><Terms data={data} row={row}/><p>Review responsibility, due time and dependency before accepting. Earlier accepted terms remain in history.</p><button className="btn btn-sm btn-primary" disabled={busy} type="submit">Accept promise changes</button></form>}
-                {row.changes.length > 0 && <details><summary>Accepted changes ({row.changes.length})</summary><ol>{row.changes.map(change => <li key={change.version}>Version {change.version}: {data.owners.find(o => o.id === change.owner_id)?.name || 'Former teammate'}, due {new Date(change.due_at).toLocaleString()}, accepted {new Date(change.accepted_at).toLocaleString()}.</li>)}</ol></details>}
+                    write(`/${row.id}/accept`, {version:row.version, ownerId:fields.get('ownerId'), dueAt:new Date(fields.get('dueAt')).getTime(), dependencyId:fields.get('dependencyId') || null, stopCondition:fields.get('stopCondition')});
+                }}><Terms data={data} row={row.pendingTerms ? {...row,owner_id:row.pendingTerms.ownerId,due_at:row.pendingTerms.dueAt,dependency_id:row.pendingTerms.dependencyId} : row}/><label>Stop condition<textarea aria-label="Stop condition" name="stopCondition" required maxLength={500} rows={2} defaultValue={row.pendingTerms?.stopCondition ?? row.stop_condition}/></label><p>Review responsibility, due time and dependency before accepting. Earlier accepted terms remain in history.</p><button className="btn btn-sm btn-primary" disabled={busy} type="submit">Accept promise changes</button></form>}
+                {row.changes.length > 0 && <details><summary>Accepted changes ({row.changes.length})</summary><ol>{row.changes.map(change => <li key={change.version}>Version {change.version}: {data.owners.find(o => o.id === change.owner_id)?.name || 'Former teammate'}, due {new Date(change.due_at).toLocaleString()}, accepted {new Date(change.accepted_at).toLocaleString()}. {change.stop_condition && `Stop when: ${change.stop_condition}.`}</li>)}</ol></details>}
                 {row.draft && <section aria-label="Unsent follow-up draft"><strong>Unsent customer update</strong><p>{row.draft.content}</p><p>Review this wording before using the reply composer.</p></section>}
             </article>)}
         </>}

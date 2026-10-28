@@ -1,0 +1,8 @@
+.followup-obligations { font-size: 14px; overflow-wrap: anywhere; }
+.followup-obligations form, .followup-obligations label { display: grid; gap: 6px; }
+.followup-obligations form { gap: 12px; margin: 12px 0; }
+.followup-obligations input, .followup-obligations select, .followup-obligations textarea { width: 100%; min-width: 0; box-sizing: border-box; font: inherit; padding: 8px; border: 1px solid #929b9d; border-radius: 6px; color: inherit; background: var(--bs-body-bg, white); }
+.followup-obligations article { padding: 14px 0; border-top: 1px solid #c5cdcf; }
+.followup-obligations blockquote { margin: 10px 0; font-weight: 600; }
+.followup-obligations summary { cursor: pointer; margin: 12px 0; }
+.followup-obligations button { white-space: normal; }

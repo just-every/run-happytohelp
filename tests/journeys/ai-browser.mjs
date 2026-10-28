@@ -14,3 +14,5 @@ const recorded=work=>async()=>{try{await work()}catch(error){passed=false;throw 
 test('evaluation runs at 1440 and 390 show only real native state: loading and failed reads are never a list, recovery is explicit, stale responses never repaint, and a pending creation is never replayed',recorded(async()=>{await trainingBrowserJourney({runtime,browser,shot});await (await import('../helpers/ai/procedures-browser.mjs')).proceduresBrowserJourney({runtime,browser,shot})}))
 
 test('the AI panel at 1440 and 390 waits for a customer message, requests suggestions once per Enter in the instructions, keeps Shift+Enter as a newline, and shows the cards without sending; triage shows measured accuracy, evidence and corrections',recorded(async()=>{for(const viewport of Object.values(viewports))await suggestionsAtWidth({runtime,browser,shot,viewport});await triageBrowserJourney({browser,shot})}))
+
+test('operators select a cited promise, propose terms and explicitly accept them in the ticket sidebar at 1440 and 390 without sending a customer message',recorded(async()=>(await import('../helpers/ai/obligations-browser.mjs')).obligationsBrowserJourney({runtime,browser,shot})))

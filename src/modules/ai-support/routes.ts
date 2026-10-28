@@ -1,4 +1,5 @@
 import {conversationTrace} from './trace'
+import {obligationRoutes} from './obligations'
 import { Hono } from 'hono'
 import type { AppEnv } from '../../platform/env'
 import { requireProject } from '../../platform/auth'
@@ -30,3 +31,4 @@ routes.get('/projects/:projectId/conversations/:conversationId/trace',async c=>{
  const trace=await conversationTrace(c.env,projectId,c.req.param('conversationId'))
  return trace?c.json(trace):c.json({error:'Not found'},404)
 })
+routes.route('/',obligationRoutes)

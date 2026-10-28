@@ -132,6 +132,10 @@
     {
       "id": "262_feedback_penny.sql",
       "buyerSteps": "FEEDBACK-001: add a Penny API connection and durable source handoff receipts. A requester-authored sharing permission and explicit operator approval are required. Penny owns its requesters and votes; pending/uncertain external writes never replay. Reconfigure the Penny API key after restore; sending handoffs restore as uncertain."
+    },
+    {
+      "id": "257_followup_obligations.sql",
+      "buyerSteps": "Apply after 256 before serving the updated Worker. Retain cited message offsets, accepted ownership and due-time history in backups. Contact erasure removes obligations and their changes. Internal reminders are bounded and deduplicated per accepted version; drafts never authorize a customer send."
     }
   ]
 }

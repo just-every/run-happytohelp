@@ -179,6 +179,7 @@ rules[`POST ${P}/sender-rules`]='settings.manage'
 export function routeRule(method:string,path:string):Rule|undefined{
  const owned=feedbackRouteRule(method,path)??assuranceRouteRule(method,path)
  if(owned)return owned
+ if(path.startsWith('/api/ai-support/projects/:projectId/conversations/:conversationId/obligations'))return 'conversations.manage'
  if(path==='/api/escalations/webhooks/:connectionId'||path==='/api/escalations/attachments/:token')return 'none'
  if(path.startsWith('/api/escalations/projects/:projectId/')){
   if(method==='GET')return 'self'

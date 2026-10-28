@@ -2000,7 +2000,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "24296df428b38836d07a6a974e8afa08965c0753d992e15d6f7641e2b75f95cf",
+      "sha256": "a9fadbed3d136b67e2f1ea68a7189b8ab250c25b02bd4025fb837e4fcf9aa619",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2543,6 +2543,10 @@
       "sha256": "3c9b045f40e04ae9e632182d8e1a6168bedbf30961daec0c217b0fe89a33fb8c",
       "executable": false
     },
+    "migrations/257_followup_obligations.sql": {
+      "sha256": "488a6cffda3c8a6616967918594aafa805f1160a624b9f2c7462b254c382b14f",
+      "executable": false
+    },
     "migrations/257_hubspot_context.sql": {
       "sha256": "3f033ca7f7db8d7579e9876a75078e1f1b19efb589c8dcf4006fc683049d275d",
       "executable": false
@@ -2664,7 +2668,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "980acf1e6729ffd7d7168040d390295cc40a11d038c198fa1e8afc75aa9e74a2",
+      "sha256": "92c19549d25eb623a745ccb22d629012375ec35ae8d46cd259ef686519879222",
       "executable": false
     },
     "rer-project.json": {
@@ -3051,6 +3055,10 @@
       "sha256": "1254a9e3b5538dfd81e4a66a19f9a377578e854e9f438fea969ec28cf660bfb4",
       "executable": false
     },
+    "scripts/installer/followup-archive.mjs": {
+      "sha256": "c530a2314413506761ec688adf1025b2768796dbe67dbc07641201e34fa8f3d9",
+      "executable": false
+    },
     "scripts/installer/hosted-d1.mjs": {
       "sha256": "27e51d539fe67628d5e1cbb06ddca2433f983a8916fbccc6c6ad76d96ed683f2",
       "executable": false
@@ -3088,7 +3096,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "e539fab2b1d051dbc8d73370e191505bf4aa3ad36670e7f110a744924d6a73f8",
+      "sha256": "39533a62028f964327ae9bfe88b1fd27db0f560da14faecd1f67b3f4c91dde62",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -3564,7 +3572,7 @@
       "executable": false
     },
     "src/jobs.ts": {
-      "sha256": "ed27b62d017df0506cad4f4e5da446ca95438168dc14885cd46093e780a29d4a",
+      "sha256": "a8ca5b9e3551ab13682352dd108a2af945687597721920942b06188d802ba6a7",
       "executable": false
     },
     "src/message-effects.ts": {
@@ -3596,7 +3604,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "95c8c7ddd21d2d5282bbc7d8834f63d3e6c3056aa6532808e91e8f832fc9d5e3",
+      "sha256": "321689469874f180aa56071d39161841f96a64ee5be2fa75f33e43150201b3fa",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -3720,7 +3728,11 @@
       "executable": false
     },
     "src/modules/ai-support/module.json": {
-      "sha256": "ce012b6bcc4a2e2aa4b0394dc2d24784a452e2565f4b2da112318c116d8afb14",
+      "sha256": "53e973cd16cff60c4090f37cbefa0732141efc54ddbe89e3ebf96d5f256fc992",
+      "executable": false
+    },
+    "src/modules/ai-support/obligations.ts": {
+      "sha256": "61a7d7664f9ebe2cdabc1526b3a22e39146950f96512d80b474fbfeae8ab73c5",
       "executable": false
     },
     "src/modules/ai-support/presentation.ts": {
@@ -3764,7 +3776,7 @@
       "executable": false
     },
     "src/modules/ai-support/routes.ts": {
-      "sha256": "eb323c696232930dfb27b8d8539bed7f1768a5de5c195753a2d3392c35f32978",
+      "sha256": "832aaa48dc48b71f49b33204f7b71ea6482fd84950e765aaa5efac3c47b9fac2",
       "executable": false
     },
     "src/modules/ai-support/selection.ts": {
@@ -8479,6 +8491,14 @@
       "sha256": "e74675be0811655c42e081573139047b22f33d787fa782b209ba726a00151297",
       "executable": false
     },
+    "src/ui/dashboard/components/conversation/FollowupObligations.css": {
+      "sha256": "43ad7163d713b8d9c3ff4ccb2dde64e4561e2599819465e6c4a68eccf3add7ef",
+      "executable": false
+    },
+    "src/ui/dashboard/components/conversation/FollowupObligations.jsx": {
+      "sha256": "d1e8e1d5f4602036fd6cf84237aba75fd3843c75e9bd57afa9922b80e40921cc",
+      "executable": false
+    },
     "src/ui/dashboard/components/conversation/ProductionTrace.jsx": {
       "sha256": "9e4dd9c0a4f4b127b7f015bf2e7c5b70329ac8a6e5024e2d9c68170c003cfc22",
       "executable": false
@@ -8536,7 +8556,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationSidebar.jsx": {
-      "sha256": "7705e68da497bfb4c8ce0eccf5246392bc037e13a00f75a0cc6d6978cd40f29f",
+      "sha256": "163776346ec70b6f706b9181304d69df1e5021a2f026574a55567fef6b6ce5ae",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationsList.jsx": {
@@ -11355,6 +11375,14 @@
       "sha256": "880f269d80b849e41f2dbb03b8282db589a234807fd2f9ff91f8ab871419403f",
       "executable": false
     },
+    "tests/helpers/ai/obligations-browser.mjs": {
+      "sha256": "9ac67164afe061317507f87e0d32d7dd8136d633ce078844c3dab2831ae5b385",
+      "executable": false
+    },
+    "tests/helpers/ai/obligations.mjs": {
+      "sha256": "a51713ba91de9a63e5374db32f40a3f5abb0eb7b50143aee98468a226408fe14",
+      "executable": false
+    },
     "tests/helpers/ai/procedures-browser.mjs": {
       "sha256": "54b38d81e96e5f389e0aae6eb2b37e8f25ec98bf47d8c8e8053309d5b68beac6",
       "executable": false
@@ -12167,6 +12195,10 @@
       "sha256": "74316ac59b8a3ed24e9c65f63e629f4750f20d3bee1de3b1b650c5bab8b9fe54",
       "executable": false
     },
+    "tests/helpers/recovery/followup.mjs": {
+      "sha256": "8be084bccc5a9f72ffb60cfc888a89fe9f81e7c43a0842a2da02af824cbd551b",
+      "executable": false
+    },
     "tests/helpers/recovery/independent-journey.mjs": {
       "sha256": "91e278a974287a023f4d1ee89042286135f2f2814273f20ec9bcc91fa3353112",
       "executable": false
@@ -12428,7 +12460,7 @@
       "executable": false
     },
     "tests/journeys/ai-browser.mjs": {
-      "sha256": "3176ded7fabb60af593866e1240a1797f7f2f2b66ebd1cdbbcb30560fc89533f",
+      "sha256": "b56d06a2667230b53c6c5c894a0734f8933972e481453fac20d890a4ddb28d11",
       "executable": false
     },
     "tests/journeys/ai-live.mjs": {
@@ -12436,7 +12468,7 @@
       "executable": false
     },
     "tests/journeys/ai.mjs": {
-      "sha256": "70c2c9e6b95c3d87f0d963313621a7b9df8a5f45d852f74191ec39d47cd56e07",
+      "sha256": "cbd7c489a60aeb20e0c61284be55f90c5685c00672aee69aad3d163b69b6cd2b",
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {

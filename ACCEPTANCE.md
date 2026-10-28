@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 41 | 27 | 17 | 85 |
+| Core | 5 | 63 | 17 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 41 | 27 | 22 | 90 |
+| Full target | 5 | 63 | 22 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -36,7 +36,7 @@ Core · published · **partial** · Cites BASE-INSTALL-001, BASE-OPS-002, BASE-D
 
 #### IDENTITY-002 — Retained native password identity
 
-Core · published · **done** · Cites BASE-ROLE-001, BASE-ACCESS-001, BASE-SIGNIN-002
+Core · published · **partial** · Cites BASE-ROLE-001, BASE-ACCESS-001, BASE-SIGNIN-002
 
 **Requirement.** Preserve native password sign-in, first-owner setup, the accepted owner experience and prior account/workspace data with the maintained Base command mechanisms. Retain this edition's authentication and native owner setup. A second factor for these native accounts is required by IDENTITY-003; it adds to native passwords and never replaces them. Supersedes `BASE-ACCESS-001` for native password identity under RL-1.
 
@@ -44,11 +44,11 @@ Core · published · **done** · Cites BASE-ROLE-001, BASE-ACCESS-001, BASE-SIGN
 1. Complete native password setup, login, recovery and workspace re-entry, then upgrade with prior owner credentials and data intact; configured providers must not replace native identity.
 
 **Evidence.** `src/modules/identity/routes.ts`; `tests/journeys/identity.mjs` (native passwords and membership: scoped sessions, owner resets and invitations retire with current authority; first-owner claim journey: validate and claim once under local, deployed and Managed installation authority; sign-in link journey: install-aware pages, neutral receipts and one explicit current-authority redemption)
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: upgrade retains prior owner credentials; upgrade retains prior workspace data; configured providers cannot replace native identity. Asserted: native setup; native password login; password recovery; workspace re-entry.
 
 #### IDENTITY-001 — Scoped authority
 
-Core · published · **done** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-ACCESS-003, BASE-ACCESS-004
+Core · published · **partial** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-ACCESS-003, BASE-ACCESS-004
 
 **Requirement.** Owner setup, registration, login/recovery, project switching, membership and widget admission establish native identity. Provider configuration never substitutes for user authority. The public widget key and origin are not a secret: visitor, registration and project-creation requests are bounded by D1-backed limits (the documented admission limits) and refused with HTTP 429 and `Retry-After`.
 
@@ -56,11 +56,11 @@ Core · published · **done** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-ACCE
 1. Through native session and widget routes, deny cross-tenant, blocked/deleted and revoked access; prove public admission returns 429 with Retry-After when limited and provider configuration conveys no actor authority.
 
 **Evidence.** `src/modules/management/policy.ts`; `tests/journeys/identity.mjs`; `tests/journeys/runtime.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: widget cross-tenant refusal; provider configuration conveys no actor authority. Asserted: native cross-tenant refusal; blocked visitor loses access; deleted workspace loses access; revoked session loses access; public admission rate refusal; public admission Retry-After.
 
 #### FIRST-RUN-001 — A useful first workspace
 
-Core · published · **done** · Cites BASE-INSTALL-001, BASE-MAIL-001, BASE-AGENT-007, BASE-AGENT-011
+Core · published · **partial** · Cites BASE-INSTALL-001, BASE-MAIL-001, BASE-AGENT-007, BASE-AGENT-011
 
 **Requirement.** First-run setup is one screen: the owner's email, a password, the website and, only where the server requires one, the private setup token. Missing names and colors are derived and every derived value can be changed. A completed installation leads the owner to a workspace that is already set up, whose Setup page lists only what cannot be done for them (an AI service key, the widget on their website and, with a hosted email provider, a verified sending domain), leads with the widget, lets the owner skip any of them for now, and shows everything else under "What we've set". Every workspace created by first-owner setup, signed-in workspace creation or email-verified registration, and never a demo workspace, is provisioned in one step: a starter assistant as its default visitor assistant, a reply-by-email mailbox when the installation holds the installation’s inbound-email credential, and mail sent from the installation sender until the workspace's own domain is verified. The starter assistant’s visitor replies carry external, and its internal preparation standard; the company’s policy decides each call once a provider key and complete policy exist, within that policy’s AI spending limits; with no key no assistant is assigned to a new conversation, it stays with the team and the AI page and Setup say a key is missing. The first-run Create workspace action may send one welcome email to the owner; an uncertain send is never replayed. Ordinary workspace creation leads with the widget snippet; Advanced retains the server secret and verification examples. Empty inboxes offer installation, a link to Setup and a demo. Workspace headers follow workspace switching. Visitor headers retain the operator's display name.
 
@@ -70,11 +70,11 @@ Core · published · **done** · Cites BASE-INSTALL-001, BASE-MAIL-001, BASE-AGE
 3. A workers.dev hostname must not become a business name.
 
 **Evidence.** `src/modules/management/provisioning/index.ts`; `tests/journeys/first-run.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: first-owner route reaches Setup; signed-in creation reaches Setup; widget is installable; derived name is editable; derived color is editable; starter assistant; conditional mailbox; installation sender; skip control; Advanced control; mobile workspace headers; no-key visitor stays with team; configured provider uses policy AI ceilings; workers.dev hostname is not a business name. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### LOCAL-MAIL-001 — Rer dev mail
 
-Core · published · **done** · Cites BASE-MAIL-001, BASE-ACCESS-002 · Register R-2
+Core · published · **partial** · Cites BASE-MAIL-001, BASE-ACCESS-002 · Register R-2
 
 **Requirement.** Trusted local development configuration uses the rer dev v2 development transport: it validates and suppresses visitor and teammate mail, reports `development`, stores no messages and exposes no mail viewer. It sends no external email. The local owner enters automatically through the dev boundary; native password identity, ordinary hosted email-link confirmation and prior stored data are retained. Production has no local dev surface. Missing credentials or failed remote delivery never select a local substitute.
 
@@ -82,11 +82,11 @@ Core · published · **done** · Cites BASE-MAIL-001, BASE-ACCESS-002 · Registe
 1. Enter through rer dev v2; send visitor and teammate mail and prove development suppression without storage, viewer or external send; refuse forged and production dev entry and never substitute suppression for a failed hosted provider.
 
 **Evidence.** `src/modules/integrations/email.ts`; `tests/journeys/first-run.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: local dev entry; visitor mail is suppressed; teammate mail is suppressed; no message storage; no mail viewer; no external mail; forged entry refused; production dev entry refused; hosted failure never selects suppression. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### CONVERSATION-001 — Durable transcript
 
-Core · published · **done** · Cites BASE-OPS-003, BASE-DATA-003
+Core · published · **partial** · Cites BASE-OPS-003, BASE-DATA-003
 
 **Requirement.** Customer, operator, generation, import and administrative writers preserve stable message/command identity, revision/frontier, attachment ownership and final-reply admission atomically. Competing or repeated writes cannot admit two incompatible final replies. Owner/admin contact erasure removes message content while keeping identity, revision and frontier, so erased transcripts stay coherent.
 
@@ -95,11 +95,11 @@ Core · published · **done** · Cites BASE-OPS-003, BASE-DATA-003
 2. Erase a contact through the owner door and verify coherent identity/revision/frontier with content removed.
 
 **Evidence.** `src/modules/conversations/admission.ts`; `tests/journeys/runtime.mjs`; `tests/journeys/erasure.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: model writer race; import writer race; lost-response final-reply race. Asserted: competing visitor revisions admit one writer; exact duplicate replay; changed replay refused; stale operator frontier refused; operator admission; erased message identity; erased message revision; erased message content removed; erased transcript frontier.
 
 #### DELIVERY-001 — Live delivery and recovery
 
-Core · published · **done** · Cites BASE-ACCESS-002, BASE-OPS-003, BASE-OPS-004
+Core · published · **partial** · Cites BASE-ACCESS-002, BASE-OPS-003, BASE-OPS-004
 
 **Requirement.** Persist before broadcast; reconnect/outbox replay and socket authorization recover committed messages after reload, disconnection or process wake. Provisional AI deltas never become durable final answers until guarded admission succeeds.
 
@@ -107,11 +107,11 @@ Core · published · **done** · Cites BASE-ACCESS-002, BASE-OPS-003, BASE-OPS-0
 1. Disconnect/reconnect widget and operator sockets after persisted writes, restart the runtime and recover the same committed messages/attachments; unauthorized replay is denied and superseded AI deltas never become final replies.
 
 **Evidence.** `src/modules/conversations/socket.ts`; `tests/journeys/widget.mjs`; `tests/journeys/first-run.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: widget reconnect replay; operator reconnect replay; runtime restart replay; committed messages recovered; committed attachments recovered; unauthorized replay denied; superseded provisional AI never becomes final. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### UI-001 — Existing editable experience
 
-Core · published · **done** · Cites BASE-ACCESSIBILITY-001, BASE-INPUT-003 · Register R-19, R-20
+Core · published · **partial** · Cites BASE-ACCESSIBILITY-001, BASE-INPUT-003 · Register R-19, R-20
 
 **Requirement.** Reuse the original React dashboard, transcripts/drafts/suggestions, settings and Shadow DOM widget; preserve useful desktop/mobile flows, attachment display, collector/privacy controls and errors. Native routing and transport use the configured application origin.
 
@@ -119,11 +119,11 @@ Core · published · **done** · Cites BASE-ACCESSIBILITY-001, BASE-INPUT-003 ·
 1. Use the native dashboard and separately installed widget at 1440 and 390 pixels with realistic conversations, attachments, drafts, errors and workspace switching; retain the approved desktop/mobile navigation and configured-origin transport.
 
 **Evidence.** `src/ui/dashboard`; `src/modules/widget`; `tests/journeys/inbox-browser.mjs` (appearance settings journey); `tests/helpers/inbox/settings-targets-browser.mjs` (settingsTargetsBrowser: Settings target rectangles, one focus ring per switch and weekday, Notifications checkbox alignment, saving and reload at desktop width, with separate phone proof)
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: desktop dashboard conversation; phone dashboard conversation; separately installed widget; attachment display; draft display; error display; workspace switching; approved desktop navigation; approved phone navigation; configured-origin transport. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### MOVE-IN-001 — Reviewed history import
 
-Core · published · **done** · Cites BASE-ROLE-001, BASE-OPS-003, BASE-DATA-001 · Rules D-1
+Core · published · **partial** · Cites BASE-ROLE-001, BASE-OPS-003, BASE-DATA-001 · Rules D-1
 
 **Requirement.** Current workspace owner/admin reviewers privately upload, inspect per-kind plans, source-located omissions, rejections, conflicts and publication changes, then explicitly apply bounded, resumable imports of conversations, contacts, tags, saved replies and articles. Preserve source identities, timestamps, private notes and publication state; reject unsupported meaning rather than inventing it. Recheck current role and workspace authority for apply, resume and whole-import undo. Retain immutable source custody and conflict-safe reversal journals. Imports and undo send no mail, widget messages, model requests, assignment or connection notifications; imports are excluded from Reports. Native tag controls enforce workspace scope. RL-2 requires exact business-state repeat/undo equality, including contacts, conversations, messages, private notes, tags, source links and every other imported business table. Only platform counters/sequences, audit history and import journals are excluded. Synthetic 1,000-conversation datasets for Zendesk and Help Scout qualify this local flow.
 
@@ -131,7 +131,7 @@ Core · published · **done** · Cites BASE-ROLE-001, BASE-OPS-003, BASE-DATA-00
 1. Through Move in, exercise all five kinds, source custody, per-row omissions/rejections/conflicts, current-role denials, inert apply/resume/repeat/undo and exact business-state equality for synthetic 1,000-conversation Zendesk and Help Scout datasets; counters/sequences, audit and journals are the only named exclusions.
 
 **Evidence.** `src/modules/move-in/plan.ts`; `tests/journeys/move-in-capacity.mjs`; `tests/journeys/move-in-browser.mjs`; `tests/journeys/move-in-admission.mjs` — “an approved import lands each vendor's history, people, replies, notes, tags and knowledge exactly, keeps notes private, and repeats or repackages as a no-op”; `tests/journeys/move-in-custody.mjs` — “publication meets later native changes safely: conflicts stop it before any write, a stopped publication resumes or undoes exactly, and guards stay bounded”; `tests/journeys/move-in-erasure.mjs` — “erasing a contact removes every import custody that holds them and refuses any later upload carrying their aliases, while other people's data stays” (original named steps retained in `tests/move-in/native-corrections.mjs`)
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: all five record kinds; immutable source custody; per-row omissions; per-row rejections; per-row conflicts; current-role denials; inert apply; inert resume; inert repeat; inert undo; exact 1000-conversation Zendesk equality; exact 1000-conversation Help Scout equality; only named equality exclusions. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### OUTCOMES-001 — Resolution feedback and provenance
 
@@ -159,7 +159,7 @@ Core · published · **done** · Cites BASE-ROLE-001, BASE-DATA-001 · Rules D-2
 
 #### CONNECTIONS-001 — Workspace integrations
 
-Core · published · **done** · Cites BASE-OPS-003, BASE-AUDIT-001, BASE-ROLE-001, BASE-SECRET-001, BASE-INPUT-001, BASE-DATA-004
+Core · published · **partial** · Cites BASE-OPS-003, BASE-AUDIT-001, BASE-ROLE-001, BASE-SECRET-001, BASE-INPUT-001, BASE-DATA-004
 
 **Requirement.** Owner/admin tokens have explicit scopes, optional expiry, one-time display, hashed storage and durable audit. Bearer-only API calls have no CORS, per-token limits and native guarded writes. Contact erasure fences API identity restoration and pending event payloads. Native events commit tenant-bound webhook and Slack intents; historical import apply and undo do not emit them. Slack projects bounded native visitor text through Base escaping. The owner-authorized ordinary HTTPS exception retains redirect refusal, bounded requests/responses and literal-destination checks instead of DNS pinning (RL-3). See [the full transport exception](docs/contract/support-protocols.md).
 
@@ -168,11 +168,11 @@ Core · published · **done** · Cites BASE-OPS-003, BASE-AUDIT-001, BASE-ROLE-0
 2. Refuse redirects/unsafe literal destinations and over-limit traffic; preserve timeout, streamed bounds, uncertain 500 without replay and bounded 429 behavior under the recorded HTTPS override.
 
 **Evidence.** `src/modules/api-integrations`; `tests/connections/api.mjs` (API credential lifecycle: issue, use scoped operations, paginate, refuse lost authority and erasure, then revoke); `tests/connections/delivery.mjs` (delivery lifecycle: prepare, sign, dispatch, recover bounded work and require fresh approval for uncertain resend); `tests/connections/slack.mjs` (Slack notification lifecycle: deliver once with safe rendering and current workspace recipients)
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: show-once secret; hashed secret storage; unsafe literal destination refused. Asserted: issued token has exact scopes; issued token has expiry; scoped native API use; token revocation; token expiry; erasure replay fences; signed events; Slack escaped customer text; redirect target never requested; outgoing byte bound; declared response bound; streamed response bound; timeout remains uncertain; server error remains uncertain; uncertain work never replays; rate-limit retry retains same event.
 
 #### ACTIVATION-001 — Observed owner setup
 
-Core · published · **done** · Cites BASE-MAIL-001, BASE-SECRET-001
+Core · published · **partial** · Cites BASE-MAIL-001, BASE-SECRET-001
 
 **Requirement.** An owner sees the durable, project-scoped eight-step list on the Setup page; the genuinely empty inbox shows one next action and a link to it, and loads none of it. A step is confirmed only by an observation, never by a saved configuration, an installer default or a preset, so a workspace with nothing observed yet is zero of its applicable steps. The system runs its own checks: while an owner is signed in the page asks the server to observe, bounded by freshness windows. These checks are non-generative metadata, domain and DNS reads and never send mail. They distinguish saved configuration from observed sender DNS, authenticated model metadata, an inbound receipt, effective runtime ceilings, allowed origin and an authenticated widget ping; whether an article is published is not one of them (that step stays among the eight ids but is hidden and never counted). Mail to the owner is confirmed by a used emailed sign-in link, or by the provider's reported outcome for the welcome or test email; local development mail is suppressed and never confirms delivery, and provider acceptance or queueing is pending. Reading Setup performs no provider work and writes nothing. Only an explicit owner action (Create workspace, or Send me a test) may send mail, to that owner's mailbox, with durable identity; ambiguous work is never replayed. Missing provider permissions and unsupported status APIs remain unavailable. Configuration changes invalidate observations; model and DNS validation expire after 15 minutes and every observation shows its time. The owner can skip an owner-only step (the widget, the AI service, the sending domain) for now, and undo it. A skip is stored on the server for the workspace, can be made by an owner or admin only, makes no provider request, and moves the step out of Needs you and out of the confirmed count and its total; a skipped step is never shown as confirmed. An observation always wins: a skipped step that is later observed is confirmed and counted, and a rejected provider key stays under Needs you whether or not it was skipped. Provider keys and their fingerprints never enter API responses or browser storage. Details are in [the support protocol guide](docs/contract/support-protocols.md).
 
@@ -181,11 +181,11 @@ Core · published · **done** · Cites BASE-MAIL-001, BASE-SECRET-001
 2. A skip or preset never counts as confirmation; local suppression never proves delivery; keys/fingerprints remain server-only and uncertain explicit test/welcome mail is never replayed.
 
 **Evidence.** `src/modules/management/activation`; `tests/journeys/first-run.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: Setup read has no effects; fresh observation; expired observation; rejected configuration; provider outcome; skip; undo; reload; skip is not confirmation; preset is not confirmation; suppression is not delivery; keys remain server-only; fingerprints remain server-only; uncertain test mail never replays; uncertain welcome mail never replays. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### AI-001 — Configured model execution
 
-Core · published · **done** · Cites BASE-AGENT-007, BASE-AGENT-011 · Register R-15
+Core · published · **partial** · Cites BASE-AGENT-007, BASE-AGENT-011 · Register R-15
 
 **Requirement.** Retain Ensemble model selection, context/tools, streamed events, normalization, raw per-round provider usage, attribution, bounded suggestions and reply lifecycle. Missing providers fail explicitly when AI is asked for, and a default assistant whose provider has no key is simply not assigned to new conversations; uncertain provider attempts remain uncertain and are not replayed automatically. Usage is diagnostic/provider accounting data, not an active payment, balance or debit system. Visitor-caused model work carries the classes of its eventual action, and the company’s policy sets its project and installation AI spending limits; a skipped reply is recorded as terminal and never replayed.
 
@@ -193,11 +193,11 @@ Core · published · **done** · Cites BASE-AGENT-007, BASE-AGENT-011 · Registe
 1. Request configured suggestions/replies through native routes; inspect normalized streaming events, per-round usage, context/tool and budget bounds, explicit missing-provider errors and durable daily-cap skips; crash/ambiguous attempts must not automatically replay.
 
 **Evidence.** `src/modules/ai-support/service.ts`; `tests/journeys/first-run.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: configured suggestion; configured reply; normalized stream events; per-round usage; bounded context; bounded tools; policy budgets; missing-provider error; durable daily skip; crash never replays; ambiguous attempt never replays. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### KNOWLEDGE-001 — Published knowledge
 
-Core · published · **done** · Cites BASE-ROLE-001, BASE-PUBLIC-001
+Core · published · **partial** · Cites BASE-ROLE-001, BASE-PUBLIC-001
 
 **Requirement.** Dataset ingestion/crawl, retained corpus, lexical/selected semantic retrieval, citations and article/category authoring maintain project scope and publication state. A failed refresh cannot replace the last usable published corpus. Public pages exclude drafts/deleted projects and preserve original canonical article/search routes.
 
@@ -205,11 +205,11 @@ Core · published · **done** · Cites BASE-ROLE-001, BASE-PUBLIC-001
 1. Publish and search articles/categories through authoring and public help-center doors; deny draft/deleted/cross-project access, verify citations and canonical links and retain the last usable published corpus after a failed refresh.
 
 **Evidence.** `src/modules/knowledge/authoring.ts`; `src/modules/public-site/help-center.tsx`; `tests/journeys/knowledge.mjs`; `tests/journeys/public.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: article authoring; category authoring; retrieval citations; failed refresh retains last usable corpus. Asserted: public search; canonical article links; draft denial; cross-workspace denial; deleted project public denial.
 
 #### CONTEXT-001 — Attributed customer context
 
-Core · published · **done** · Cites BASE-ROLE-001, BASE-INPUT-001
+Core · published · **partial** · Cites BASE-ROLE-001, BASE-INPUT-001
 
 **Requirement.** Profiles, monitoring, insights and context packets preserve evidence attribution, source bounds, consent and project ownership. Provider output must satisfy the selected schemas before becoming usable customer context.
 
@@ -217,11 +217,11 @@ Core · published · **done** · Cites BASE-ROLE-001, BASE-INPUT-001
 1. Generate/read profile, monitoring, insight and context packets through native routes; reject ungrounded/schema-invalid or cross-project content, preserve attributed evidence and respect consent/source bounds.
 
 **Evidence.** `src/modules/customer-context`; `tests/journeys/context.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: profile generation; monitoring generation; insight generation; context packet generation; ungrounded rejection; schema-invalid rejection; cross-project rejection; source attribution; consent boundary; source boundary. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### DELEGATION-001 — Explicit local authority
 
-Core · published · **done** · Cites BASE-AGENT-005, BASE-AGENT-007, BASE-AGENT-008 · Register R-17
+Core · published · **partial** · Cites BASE-AGENT-005, BASE-AGENT-007, BASE-AGENT-008 · Register R-17
 
 **Requirement.** Pairing, devices/grants, revocation, tool context and work/result states preserve investigation, resolve and advance-authorized resolve-and-reply distinctions. Revocation withdraws authority and never asserts that a local process stopped: started work becomes terminal with an unconfirmed outcome, and only the device may report cancellation. Local processes remain in the optional connector, never an implicit Worker capability. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
@@ -230,19 +230,19 @@ Core · published · **done** · Cites BASE-AGENT-005, BASE-AGENT-007, BASE-AGEN
 2. Under the held company policy, refuse stale/revoked/offline/unverified/uncertain work and distinguish resolve from advance-authorized resolve-and-reply; revocation cannot assert process cancellation.
 
 **Evidence.** `src/modules/local-computer/results.ts`; `src/edition/delegation/routes.ts`; `tests/journeys/delegation.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: packaged connector pairing; read-only investigation; separately authorized child fix; distinct read-only observation; human Send; exact-request replay; stale work refused; revoked work refused; offline work refused; unverified work refused; uncertain work not replayed; resolve versus resolve-and-reply; revocation does not assert cancellation. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### TRAINING-001 — Durable evaluation
 
-Core · published · **done** · Cites BASE-AUDIT-001, BASE-AGENT-011 · Register R-15
+Core · published · **partial** · Cites BASE-AUDIT-001, BASE-AGENT-011 · Register R-15
 
 **Requirement.** Training and evaluation preserve run/case state, model/budget selection, raw provider usage and cancellation/recovery. Synthetic data admission is explicitly local/test-only. Historical pending attempts require reconciliation; a fixture pass is not live-provider quality acceptance.
 
 **Acceptance.**
-1. Create, run, cancel and recover persisted evaluations through training routes with model/budget selection and raw usage; reconcile historical pending/uncertain attempts and keep synthetic admission local/test-only, with live quality qualification separate.
+1. Create, run, cancel and recover persisted evaluations through training routes with model/budget selection and raw usage; reconcile historical pending/uncertain attempts and keep synthetic admission local/test-only.
 
 **Evidence.** `src/modules/training-runs/runner.ts`; `src/edition/ai/training.ts`; `tests/journeys/ai.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: persisted create; run; cancel; recover; model selection; budget selection; raw usage; pending reconciliation; uncertain reconciliation; synthetic admission restricted. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### INTEGRATION-001 — Honest external effects
 
@@ -260,7 +260,7 @@ Core · published · **partial** · Cites BASE-OPS-003, BASE-MAIL-001, BASE-DATA
 
 #### PUBLIC-001 — Homepage hero and two support moments
 
-Core · published · **done** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
+Core · published · **partial** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
 **Requirement.** The approved homepage (owner approval 2026-10-01, clarity pass 2026-10-02, hero redesign 2026-10-08, hero leading with help before they ask 2026-10-20) is the real public `/` experience, in this order: the hero, whose headline “Knows what your customer needs before they do.” stands left-aligned beside one hand-drawn picture of both moments on a pale aqua blob, joined by an aqua pen arrow: 1, a checkout page in its window with the widget's offer card (signed with the speech-bubble mark) floating over its corner; 2, a conversation already solved (a customer, Maya, cannot turn on the Spanish version of her store; the agent's fix, beside a code glyph, says it is fixed; the reply to Maya carries Send inside it, the only step left), each numbered on a filled aqua disc; with the subhead “Some customers who get stuck never write in. They just leave.”, the line “100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk”, an aqua pen-stroke flourish under the calls to action that draws itself in once, and under the picture the captions “Before they ask” (“When someone seems stuck, the widget offers a hand.”) and “When they ask” (“Your Codex or Claude fixes the problem and writes the reply. You press Send.”) on filled aqua number discs;
 
@@ -271,7 +271,7 @@ Core · published · **done** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 �
 4. Calls to action retain the once-drawn aqua flourish; under reduced motion the final drawing is complete.
 
 **Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: left-aligned headline. Asserted: homepage headline; retained subhead; free alternative line; wide side-by-side layout; captions below drawing; phone stacked layout; shared aqua blob; checkout offer overlays corner; offer retains mark; Send is inside prepared reply; connecting aqua arrow; numbered caption discs; moment captions; Spanish-store solved-conversation text; flourish draws once within timing bound; reduced-motion final flourish.
 
 #### PUBLIC-002 — Free product promise
 
@@ -302,7 +302,7 @@ Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-
 
 #### PUBLIC-004 — Public brand, links and motion
 
-Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
+Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
 **Requirement.** The public brand preserves the exact paper, ink, aqua drawings, licensed hand-drawn mark, real text and repository-derived links in [the retained public design](docs/contract/public-design.md). Local fonts and metric-matched fallback prevent text movement. Each below-hero moment appears once without layout shift; reduced motion leaves its final state complete. The approved drawing, frame, color, underline, spark, animation-property and timing details remain binding in that specification (RL-10).
 
@@ -314,11 +314,11 @@ Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-
 5. Keyboard navigation and the homepage’s permitted-width layouts preserve the approved experience.
 
 **Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: licensed wordmark letter shapes. Asserted: aqua accents; near-black chrome; pale aqua blobs; off-white paper; pill controls; real text labels; repository-derived destinations; self-hosted Outfit; metric-matched fallback keeps layout; hand-drawn wordmark accessible name; each moment plays once within 1.8 seconds; no layout shift; reduced-motion final state; keyboard navigation; permitted-width layouts.
 
 #### PUBLIC-005 — Documentation and public knowledge routes
 
-Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001, BASE-DOCS-001 · Register R-19, R-20
+Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001, BASE-DOCS-001 · Register R-19, R-20
 
 **Requirement.** `/docs` renders, at build time, the Markdown files listed in `docs/site.json`, in the homepage's paper, ink and Outfit, with section navigation, page contents and GitHub links for everything unpublished; an unknown page gets the branded 404. Every build renders the current files, and an unlisted Markdown file fails verification. Dynamic published help centers retain project scope, canonical links, search and draft/deleted denial. The customer widget remains available through owner-configured installation; broader marketing routes, pricing, legal, referrer, waitlist and public auto-widget behavior are outside this edition.
 
@@ -328,11 +328,11 @@ Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-
 3. Published help-center routes retain canonical links and search while denying drafts and deleted workspaces.
 
 **Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: current Markdown rebuild; section navigation; page contents; source links; responsive documentation layout; complete detailed documentation specification; branded unknown-page result. Asserted: unlisted Markdown refused; broken links refused; canonical help links; public help search; draft denial; deleted workspace denial.
 
 #### MIGRATION-001 — Prior-data custody
 
-Core · published · **done** · Cites BASE-DATA-001, BASE-DATA-003, BASE-ROLE-001
+Core · published · **partial** · Cites BASE-DATA-001, BASE-DATA-003, BASE-ROLE-001
 
 **Requirement.** Explicit legacy artifacts preserve IDs, exact historical financial values, transcripts, object hashes, publication and permissions through resumable guarded D1/R2 import. Historical financial SQL, imported rows and reconciliation holds remain immutable archive custody; they never become active payments, balances or provider work. The one exception is an explicit owner/admin contact erasure: it takes precedence over archive custody for that contact's personal data and redacts the imported rows and their verbatim archive copies (row digests are kept, so replaying the bundle does not restore them), leaving a opaque erasure audit tombstone. Old credentials do not become trusted native authority. Details are in [the support protocol guide](docs/contract/support-protocols.md).
 
@@ -341,7 +341,7 @@ Core · published · **done** · Cites BASE-DATA-001, BASE-DATA-003, BASE-ROLE-0
 2. Erase an imported contact and prove archive redaction plus tombstone/digest fencing prevents restoration of erased personal data.
 
 **Evidence.** `src/modules/legacy-import`; `tests/journeys/erasure.mjs`; `tests/journeys/move-in-admission.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: legacy IDs retained; legacy permissions retained; exact historical financial values retained; media hashes retained; resume is safe; conflicts refused; no external work; imported archive redacted; opaque tombstone retained; digest fencing prevents restoration. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### SOURCE-001 — Author-owned capability graph
 
@@ -359,7 +359,7 @@ Core · published · **partial** · Cites BASE-INSTALL-001, BASE-SECRET-001
 
 #### DESK-001 — The shared support desk
 
-Core · target · **done** · Cites BASE-ROLE-001, BASE-INPUT-003
+Core · target · **partial** · Cites BASE-ROLE-001, BASE-INPUT-003
 
 **Requirement.** A visitor starts website live chat, identifies themselves under the workspace policy, sends files and returns to their history. Humans see one durable shared inbox with customer history, scoped retained-history search with words, quoted phrases and literal customer-identity matching, open/closed/mine/unassigned/AI/tag filters and saved replies that insert into the composer without silently sending. Ticket status follows the STATUS-001 lifecycle and saved replies extend to MACRO-001 action macros. Replies, attachment downloads and errors are visible on both sides; privacy/collector controls remain effective.
 
@@ -367,7 +367,7 @@ Core · target · **done** · Cites BASE-ROLE-001, BASE-INPUT-003
 1. Through the installed widget and operator inbox, exchange messages and real attachment bytes, search/filter the resulting queue, insert and edit a saved reply, reload both sides and deny another tenant the same records.
 
 **Evidence.** `src/modules/management/dashboard.ts`; `src/modules/management/inbox-search.ts`; `src/modules/tickets`; `tests/journeys/first-run.mjs`; `tests/journeys/inbox.mjs`; `tests/journeys/reports.mjs`; `tests/journeys/delegation-browser.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: installed widget exchange; operator inbox exchange; real attachment bytes; search; filters; saved reply insert; reply editing; widget reload; inbox reload; tenant denial. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### WIDGET-001 — Availability-aware messenger and proactive messages
 
@@ -399,7 +399,7 @@ Core · target · **partial** · Cites BASE-MAIL-001, BASE-OPS-003 · Register R
 
 #### MAIL-002 — Reviewable suspended and spam mail
 
-Core · target · **done** · Cites BASE-MAIL-001, BASE-DATA-002, BASE-ROLE-001, BASE-AUDIT-001
+Core · target · **partial** · Cites BASE-MAIL-001, BASE-DATA-002, BASE-ROLE-001, BASE-AUDIT-001
 
 **Requirement.** Inbound mail that is spam-scored, fails DMARC/SPF/DKIM or alignment, comes from a blocked sender or domain, forges a verified customer's address, exceeds size limits or is a detected mail loop is never silently dropped. It lands in a Suspended view with its reason, authentication results, headers and safely previewed attachments, and creates no ticket, AI work, acknowledgment or notification. Permitted operators recover a false positive into a normal ticket that threads correctly (into the existing ticket when its references match) without retroactively triggering acknowledgments or AI unless they choose to; delete true spam; and block or allow a sender or domain. Recovery, deletion and list changes are audited. Suspended mail is kept for a stated retention period (default 14 days) and then explicitly deleted with an audit record; the view shows counts and the oldest age so nothing ages out unseen. Allow/block lists and suspension reasons are reportable.
 
@@ -409,7 +409,7 @@ Core · target · **done** · Cites BASE-MAIL-001, BASE-DATA-002, BASE-ROLE-001,
 3. Advance the clock past retention at the runtime edge and verify explicit, audited deletion; refuse every action to a role without permission.
 
 **Evidence.** `src/modules/integrations/suspended.ts`; `src/modules/integrations/suspended-store.ts`; `src/modules/integrations/suspended-recovery.ts`; `tests/helpers/email/complete-email.mjs`; `docs/email.md`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: spam-score reason readback; no AI request while suspended; no outbound mail while suspended; spam deletion result readback; unauthorized recover refusal; unauthorized delete refusal. Asserted: DMARC failure suspension reason; forged customer mail creates no ticket; blocked sender suspension; recover existing thread; recover sends nothing; recover new ticket content; allow-list redelivery; retention deletion; retention audit record; unauthorized list refusal.
 
 #### OUTBOUND-001 — Agent-created and proactive tickets
 
@@ -465,7 +465,7 @@ Core · target · **missing** · Cites BASE-AGENT-006, BASE-AGENT-007 · Registe
 
 #### QUEUE-001 — Assignment rules and available teams
 
-Core · target · **done** · Cites BASE-ROLE-001
+Core · target · **partial** · Cites BASE-ROLE-001
 
 **Requirement.** Support leads define teams, membership, skills, capacity, availability and routing rules by channel, brand, language, account, tag or priority. Route to a named owner, team, round-robin or capacity-aware queue; explain which rule won, prevent starvation and preserve fair state across restarts. Manual takeover, absent/offline assignees, reassignment and unassigned overflow always leave a visible responsible queue.
 
@@ -473,11 +473,11 @@ Core · target · **done** · Cites BASE-ROLE-001
 1. Configure two teams and a round-robin rule through settings, admit concurrent tickets through real channel routes, change availability and restart; verify ownership, fairness, overflow, explainable decisions and current-role refusal on manual takeover.
 
 **Evidence.** `src/modules/workflows/routing.ts`; `src/modules/workflows/routing-candidates.ts`; `src/ui/native/pages/workflows/RoutingSettings.jsx`; `tests/helpers/workflows/routing.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: two-team settings configuration; concurrent ticket admission; current-role refusal on manual takeover; fairness state readback after restart. Asserted: balanced assignment; full owner excluded; explainable winning rule; overflow keeps responsible group after restart; offline assignee skipped.
 
 #### TRIAGE-001 — Intelligent triage
 
-Core · target · **done**
+Core · target · **partial**
 
 **Requirement.** Each new ticket and customer message is classified for intent (from a lead-editable taxonomy with US commerce and SaaS defaults), sentiment and language, with a confidence score and the quoted evidence, by the configured model within AI-001 budgets. The predictions become ticket fields that QUEUE-001 routing, SLA-001 priority, AUTOMATION-001/002 conditions, views, AGENT-001 procedure selection and reports can use. A low-confidence prediction routes to the default queue instead of guessing. Operators correct a prediction and the correction is recorded as a label; leads see accuracy per intent against those labels before enabling a prediction for routing. With no model key there is no prediction, shown as unavailable and never invented.
 
@@ -487,7 +487,7 @@ Core · target · **done**
 3. Remove the model key and verify triage shows unavailable and routing still works.
 
 **Evidence.** `src/modules/triage/`; `src/modules/workflows/routing-triage.ts`; `tests/helpers/ai/triage.mjs`; `tests/helpers/ai/triage-browser.mjs`; `docs/triage.md`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: email classification door. Asserted: widget intent; widget sentiment; widget language; quoted evidence; confidence; intent routing; Spanish negative-sentiment priority; low-confidence default queue; operator correction recorded; accuracy report numerator; accuracy report denominator; no-key unavailable; no-key routing remains usable.
 
 #### QUEUE-002 — Structured and bulk queue work
 
@@ -504,7 +504,7 @@ Core · target · **done** · Cites BASE-ROLE-001
 
 #### QUEUE-003 — Collaboration without conflicting replies
 
-Core · target · **done** · Cites BASE-ROLE-001
+Core · target · **partial** · Cites BASE-ROLE-001
 
 **Requirement.** Internal notes and @mentions notify only permitted teammates; followers (internal CCs, distinct from customer CCs and never shown to the customer) receive updates under NOTIFY-001; viewing, typing and unsent-draft indicators warn of collisions before send. Guarded send still refuses stale replies. Operators save personal/shared work views and reusable replies/macros with scoped permissions; private notes and drafts never appear in customer channels, forwarding or public history.
 
@@ -514,11 +514,11 @@ Core · target · **done** · Cites BASE-ROLE-001
 3. Add a follower and verify updates reach them and never the customer.
 
 **Evidence.** `src/modules/collaboration`; `src/modules/conversations/socket.ts`; `src/modules/tickets`; `src/ui/dashboard/components/collaboration`; `tests/journeys/inbox.mjs`; `tests/journeys/first-run.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: two operator typing; scoped mention; view saved; reply saved; competing sends; reload; early collision warning; one admitted final reply; permitted mention delivery; private content absent from visitor transcript; follower receives update; customer receives no follower update. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### MACRO-001 — Action macros with placeholders
 
-Core · target · **done** · Cites BASE-ROLE-001
+Core · target · **partial** · Cites BASE-ROLE-001
 
 **Requirement.** Operators apply a personal, group or shared macro that in one action sets the reply text (public or internal note), status, priority, tags (add or remove), assignee and group, followers, custom fields and attachments. Reply text supports placeholders for the requester's name, first name and email, ticket ID, subject and link, assignee, brand, organization, and custom ticket and contact fields, with explicit fallbacks (for example first name, else "there"). Applying a macro previews every change and puts the rendered text in the composer for editing; nothing is sent until the operator sends. A placeholder that cannot be resolved is flagged and blocks sending instead of reaching the customer as a literal. Macros are versioned, permission-scoped by role, group and brand, searchable, usage-reported and applicable in bulk (QUEUE-002). AI macro calls carry standard for internal reversible edits and external when they send or expose a reply; the company’s policy decides whether each is applied, reviewed, held or refused.
 
@@ -528,11 +528,11 @@ Core · target · **done** · Cites BASE-ROLE-001
 3. Verify a role without macro access cannot apply it, bulk application reports per-ticket results and the customer sees only the rendered text.
 
 **Evidence.** `src/modules/macros`; `src/ui/native/pages/macros`; `src/ui/dashboard/components/macros`; `tests/helpers/r4/macros.mjs`; `tests/journeys/inbox.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: stored added tag; stored assigned group; resolved first-name readback; resolved ticket-ID readback. Asserted: preview includes reply; preview includes status; preview includes tag; preview includes group; preview includes assignee; preview includes custom field; stored Pending status; stored assignee; stored custom field; edited text sent; reload retains draft; missing name fallback; unresolved placeholder blocks sending; role denial; per-ticket bulk result; customer receives rendered text only.
 
 #### QUEUE-004 — Snooze and scheduled follow-up
 
-Core · target · **done** · Cites BASE-ROLE-001
+Core · target · **partial** · Cites BASE-ROLE-001
 
 **Requirement.** Snooze a ticket until an exact timezone-aware time or a dependency; incoming customer replies wake it immediately. Schedule outbound service replies, see/cancel/edit them before send and prevent stale queued replies after a customer response or reassignment. Each follow-up has a responsible owner, due time, stop condition and visible pending/failed/uncertain outcome; restarts cannot lose it or resend an ambiguous attempt.
 
@@ -541,11 +541,11 @@ Core · target · **done** · Cites BASE-ROLE-001
 2. Observe a single wake/send or explicit refusal, overdue ownership and uncertainty without automatic replay.
 
 **Evidence.** `src/modules/workflows/schedules.ts`; `src/modules/workflows/routes-schedules.ts`; `src/ui/dashboard/components/workflows/WorkflowPanel.jsx`; `tests/helpers/workflows/schedules.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: overdue responsible owner readback. Asserted: snooze hides from active queue; customer reply wakes snooze; reply cancellation; customer response cancels scheduled reply; restart preserves scheduled state; one due send; uncertain outcome retained; uncertain provider request never replays.
 
 #### STATUS-001 — Ticket status lifecycle
 
-Core · target · **done** · Cites BASE-ROLE-001
+Core · target · **partial** · Cites BASE-ROLE-001
 
 **Requirement.** Every ticket has one status from a lifecycle the lead can extend: New, Open, Pending (waiting on the customer), On-hold (waiting on an internal team or third party), Solved and Closed, plus workspace custom statuses that each map to one of those categories. A customer reply to a Pending or On-hold ticket returns it to Open and wakes its owner. On-hold and every internal status label are never shown to the customer, who sees an open request in the widget, portal and email. A customer reply to a Solved ticket reopens it. After a lead-configured period (default 4 days) a durable time-based automation (AUTOMATION-002) moves Solved to Closed, and Closed is final: a customer reply to a Closed ticket creates a new follow-up ticket linked to it that carries the requester, CCs, tags and fields. Status filters, sorts, views, bulk edits (QUEUE-002), SLA pausing (SLA-001), resolution cycles (OUTCOMES-001) and reports all use this lifecycle, and every change records its actor, time and source (person, rule, automation or customer reply).
 
@@ -556,7 +556,7 @@ Core · target · **done** · Cites BASE-ROLE-001
 4. Create a custom status in the Pending category and confirm SLA pausing and report attribution; refuse a status change by a forbidden role.
 
 **Evidence.** `src/modules/tickets`; `src/modules/workflows/followups.ts`; `src/modules/workflows/rule-time.ts`; `tests/helpers/inbox/ticket-lifecycle.mjs`; `tests/helpers/inbox/ticket-api-privacy.mjs`; `tests/helpers/workflows/rules.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: email lifecycle door; owner wake readback; portal hides On-hold; email hides On-hold; follow-up CCs carried; follow-up tags carried; custom Pending SLA pause; custom Pending report attribution; forbidden role status refusal. Asserted: New to Open; Pending customer reply returns Open; widget hides On-hold and custom status; Solved reopens; automatic close at configured time; Closed creates linked follow-up; follow-up fields carried; follow-up requester carried.
 
 #### SLA-001 — Business-hour service commitments
 
@@ -574,7 +574,7 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Register R-6
 
 #### AUTOMATION-001 — Explainable durable support workflows
 
-Core · target · **done** · Cites BASE-ROLE-001
+Core · target · **partial** · Cites BASE-ROLE-001
 
 **Requirement.** Leads version event-triggered condition/action rules (on ticket create and update) for routing, tagging, priority/status, reminders, customer updates and refund-exception escalation; actions include notifying the requester and CCs, the assignee, the group or followers (NOTIFY-001), adding an internal note and calling a signed webhook. Time-based conditions are AUTOMATION-002. Preview the effect against historical tickets in a workflow sandbox without real sends, then publish explicitly. Ordered/conflicting rules, loop prevention, owner, due time and stop condition are inspectable. Background execution persists decisions and failure/uncertainty across handoffs and restart; operators pause, cancel or reconcile work without blind retries.
 
@@ -584,11 +584,11 @@ Core · target · **done** · Cites BASE-ROLE-001
 3. Include a notify-assignee and a customer-update action and verify one send to the permitted recipient only.
 
 **Evidence.** Settings and sandbox: `tests/helpers/inbox/tickets-browser.mjs`, in `tests/journeys/inbox-browser.mjs` / “ticket settings and ticket fields save through the dashboard at desktop and phone widths”, configures route/tag/status/note/reminder/customer-update actions, previews with no effects, explicitly publishes an immutable version and pauses it at 1440 and 390. Execution: `tests/helpers/workflows/rules.mjs`, in `tests/journeys/inbox.mjs` / “tickets carry typed fields, scoped teams and lifecycle history through customer replies, saved views, previewed bulk changes, the API and erasure”, proves responsible lead, matching/nonmatching requests, ordered/versioned actions, historical sandbox suppression, signed-webhook success/refusal/uncertainty, interrupted claims, current receiver authority, restart and pause without replay. Permitted notifications and reconciliation: `tests/helpers/r4/notifications.mjs`, in `tests/journeys/email.mjs` / “editable requester triggers send received and solved once, suppress historical and machine mail, and teammate notices follow current authority and preferences”, proves one assignee and requester/proven-CC send, current named-group/follower audiences and preferences, explicit failures/unknown outcomes, stopping later actions, restart, pause and guarded manual review. Native runtime and network-edge assertions establish this clause; no live-provider delivery qualification is claimed.
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: settings route rule; settings tag rule; settings status rule; settings reminder rule; provider failure; restart terminal result; one assignee notification; one permitted customer update; other recipients receive nothing. Asserted: historical sandbox has no external effect; matching ticket result; nonmatching ticket unchanged; pause before another external side effect.
 
 #### AUTOMATION-002 — Time-based automations
 
-Core · target · **done** · Cites BASE-ROLE-001
+Core · target · **partial** · Cites BASE-ROLE-001
 
 **Requirement.** Leads define automations that run at least hourly over New, Open, Pending, On-hold and Solved tickets. Conditions include hours since created, updated, assigned, requester update, agent update, Pending, On-hold, Solved and SLA due, in calendar or business hours (SLA-001 schedules), combined with status, priority, tag, form, field, brand, channel and group. Actions set status, priority, tags, fields and assignee or group, add an internal note and send a templated customer or teammate notification (NOTIFY-001). An automation must include a condition its own action nullifies, or it fires at most once per ticket, so it cannot repeat; publishing one that could loop is refused. Runs are durable across restart, never replay an uncertain send, and record which automation changed what. Ready templates cover the common cases: nudge the customer after 48 business hours in Pending, auto-solve after 96, and close Solved after N days.
 
@@ -598,7 +598,7 @@ Core · target · **done** · Cites BASE-ROLE-001
 3. Verify exactly one nudge per ticket, auto-solve at the configured business time, no action after a customer reply resets the condition, refusal to publish a repeating automation and "automation <name>" recorded as the actor of each change.
 
 **Evidence.** `src/modules/workflows/rule-time.ts`; `src/modules/workflows/rule-engine.ts`; `src/jobs.ts`; `tests/journeys/inbox.mjs`; `tests/helpers/workflows/rules.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: 48-hour nudge settings; 96-hour solve settings; Solved-close settings. Asserted: preview causes no side effects; weekend business clock; DST business clock; mid-run restart retains interrupted cursor; exactly one nudge result; configured auto-solve; customer reply resets eligibility; repeating automation publication refused; automation actor recorded.
 
 #### NOTIFY-001 — Customer acknowledgments and teammate notifications
 
@@ -615,7 +615,7 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Register R-3, R-6
 
 #### CONVERSATION-002 — Merge and external forwarding
 
-Core · target · **done** · Cites BASE-ROLE-001
+Core · target · **partial** · Cites BASE-ROLE-001
 
 **Requirement.** Merge duplicate tickets with an explicit surviving thread, source links, attribution, attachments, notes, SLA/outcome treatment and reversible history where safe. Forward selected customer-visible content to an external partner and thread their reply back while clearly distinguishing an external participant from a teammate. Customer identity, private notes and channel restrictions are previewed; merges cannot cross tenants or silently erase evidence.
 
@@ -624,7 +624,7 @@ Core · target · **done** · Cites BASE-ROLE-001
 2. Verify no private note leaks, no duplicate customer send, explicit unsafe-undo refusal and no cross-workspace merge.
 
 **Evidence.** `src/modules/conversation-actions`; `src/ui/dashboard/components/conversation-actions`; `tests/helpers/r4/conversation-actions.mjs`; `tests/journeys/inbox.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: merge reports reconcile. Asserted: merged source histories retained; selected external forward has one send; partner reply retained; no private note in outbound; no duplicate customer send; unsafe undo refused; cross-workspace merge refused.
 
 #### CONVERSATION-003 — Problem and incident linking
 
@@ -852,7 +852,7 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1 · Register R-
 
 #### PORTAL-001 — Authenticated customer self-service
 
-Core · target · **done** · Cites BASE-ROLE-001 · Rules D-1
+Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1
 
 **Requirement.** A customer securely signs in to a branded portal to search permitted knowledge, create tickets with attachments through FORMS-001 request forms (which anonymous visitors may also submit where the lead allows), review/reply/reopen their own requests and manage notification preferences. Company-wide ticket visibility is an explicit entitlement, never inferred from an email domain. Identity recovery, revoked membership and inaccessible/deleted requests fail safely across web and mobile.
 
@@ -861,7 +861,7 @@ Core · target · **done** · Cites BASE-ROLE-001 · Rules D-1
 2. Submit an anonymous request form and a signed-in one (FORMS-001).
 
 **Evidence.** `src/modules/portal`; `src/modules/public-site/portal-pages.ts`; `src/modules/customers`; `tests/helpers/customer-portal-journey.mjs`; `tests/helpers/company-portal.mjs`; `tests/journeys/knowledge.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: anonymous form submit; signed-in form submit. Asserted: two identities stay isolated; customer sign-in; ticket creation; reply; reopen; history; grant company visibility; revoke company visibility; identity recovery; denied deep links; denied attachments.
 
 #### FORMS-001 — Customer request forms with custom fields
 
@@ -906,7 +906,7 @@ Core · target · **partial** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
 
 #### BRANDS-001 — Multi-brand support operations
 
-Core · target · **done** · Cites BASE-ROLE-001
+Core · target · **partial** · Cites BASE-ROLE-001
 
 **Requirement.** A business can manage distinct brands, mailboxes, widget identities, domains, help centers, signatures, channels and policies with deliberate shared teams and reporting. Route and report by brand without mixing customer identities, private knowledge or sender credentials. Cross-brand administration and customer handoffs require explicit access and a visible explanation.
 
@@ -914,7 +914,7 @@ Core · target · **done** · Cites BASE-ROLE-001
 1. Configure two brands with different domains/senders and a shared permitted team; receive and resolve messages from each, change one policy, inspect per-brand and aggregate reports and deny an unauthorized cross-brand customer/agent read.
 
 **Evidence.** Configuration and shared team, reception/resolution in each brand, one-brand policy changes and denied customer/agent reads: `tests/journeys/inbox.mjs` — “two brands deliberately share a team while domains, senders, signatures, customer identities, private knowledge, routing and policy stay isolated, reports aggregate only permitted brands and revocation ends access”. Per-brand/aggregate reports: the same journey plus `tests/journeys/reports.mjs` — “reports count the workspace calendar cohort with independent median, p90, rate and comment oracles, stream complete formula-safe CSVs above 10,000 rows, and refuse deleted or foreign workspaces” (`tests/reports/figures.mjs` — “report export journey: independent calendar oracles, complete bounded CSV and transcript export”) for weighted rates. UI configuration, sender, isolated inbox, reports and distinct help-host article routes: `tests/journeys/inbox-browser.mjs` — “two brands retain their own native configuration, sender, inbox and reports at 1440 and 390 with explicit shared-team report selection”.
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: two brand configuration; distinct domains; distinct senders; shared permitted team; receive each brand; resolve each brand; change one policy; deny unauthorized customer read; deny unauthorized agent read. Asserted: per-brand reports; aggregate reports.
 
 #### ACCESS-001 — Enterprise identity and custom permissions
 
@@ -934,7 +934,7 @@ Core · target · **partial** · Cites BASE-SIGNIN-001, BASE-ROLE-001 · Registe
 
 #### IDENTITY-003 — Two-factor authentication for native accounts
 
-Core · target · **done** · Cites BASE-SIGNIN-002, BASE-ACCESS-002, BASE-AGENT-006, BASE-AGENT-008
+Core · target · **partial** · Cites BASE-SIGNIN-002, BASE-ACCESS-002, BASE-AGENT-006, BASE-AGENT-008
 
 **Requirement.** Native password accounts enroll a second factor: a TOTP authenticator app or WebAuthn security keys and passkeys, with ten single-use recovery codes shown once. An owner can require two-factor sign-in for every teammate or by role; affected users must enroll at their next sign-in before reaching any data, and existing sessions without the factor end. A sign-in without the factor, with a wrong or replayed TOTP code (one use per time step) or with a used recovery code is refused, rate-limited and audited. Owner-assisted reset of a teammate's factor requires the owner's own recent factor, notifies the teammate and is audited; an owner who loses every factor recovers through the documented installation-level owner recovery through `rer`, never by email alone. Refund and billing approval (COMMERCE-001, BILLING-001), integration and credential installation, exports, erasure, role changes and the two-factor policy itself require a recent second-factor step-up. API access uses scoped tokens (CONNECTIONS-001), never a password alone. SSO users follow their identity provider's MFA (ACCESS-001). This adds to the retained native password identity (IDENTITY-002) and never replaces it.
 
@@ -944,7 +944,7 @@ Core · target · **done** · Cites BASE-SIGNIN-002, BASE-ACCESS-002, BASE-AGENT
 3. Approve a test refund and start an export with and without a recent step-up; recover a locked-out owner through `rer`; verify sessions without the factor ended when the policy was turned on.
 
 **Evidence.** `src/modules/identity/two-factor/`; `src/platform/auth.ts`; `src/edition/delegation/consent.ts`; `tests/journeys/identity.mjs`; `tests/journeys/identity-browser.mjs` (magic sign-in in 1440 and 390px browsers: neutral request, scanner-safe link, one explicit sign-in and refused replay); `tests/journeys/delegation-browser.mjs`
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: role policy forces factor enrollment; single-use recovery codes; missing factor refused; wrong factor refused; replayed TOTP refused; used recovery refused; passkey sign-in; owner reset needs own step-up; reset notification; reset audit; refund needs recent step-up; export needs recent step-up; installation owner recovery; existing no-factor sessions revoked. Asserted: TOTP enrollment.
 
 #### MOBILE-001 — Support from a phone
 
@@ -1038,7 +1038,7 @@ Core · target · **missing** · Register R-17
 
 #### ERASURE-001 — Customer erasure with coherent history
 
-Core · target · **done** · Cites BASE-DATA-003, BASE-DATA-006
+Core · target · **partial** · Cites BASE-DATA-003, BASE-DATA-006
 
 **Requirement.** Owner/admin contact erasure removes personal content from native/imported transcripts, notes, context, feedback, stored files and archive copies while retaining nonpersonal identity/frontier and an opaque erasure tombstone. Erasure fences APIs, pending events, source re-import and stale restore from resurrecting the identity. Provide completion/failed counts for all stores and separately request deletion from connected providers under their capabilities; do not claim already sent messages or offline archive bytes were recalled.
 
@@ -1047,11 +1047,11 @@ Core · target · **done** · Cites BASE-DATA-003, BASE-DATA-006
 2. Verify coherent redacted threads, tombstone fencing and explicit unresolved external/old-archive deletion.
 
 **Evidence.** `src/modules/management/contact-erasure.ts`; `src/modules/management/contact-erasure/providers.ts`; `tests/journeys/erasure.mjs`; `tests/journeys/erasure-browser.mjs` (at 1440 and 390px an owner erases a contact only after typing ERASE; identity, content and attachment are gone, the session is revoked and other visitors are untouched)
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: populated imported-contact export inspected; stale API fencing; stale import fencing; old external archive deletion remains unresolved. Asserted: native D1 content removed; R2 files removed; role refusal; cross-tenant refusal; coherent redacted thread; external deletion remains unsupported or pending.
 
 #### AUDIT-001 — Security and accountable actions
 
-Core · target · **done** · Cites BASE-SECRET-001, BASE-ROLE-001, BASE-DATA-003, BASE-AUDIT-001, BASE-DATA-006
+Core · target · **partial** · Cites BASE-SECRET-001, BASE-ROLE-001, BASE-DATA-003, BASE-AUDIT-001, BASE-DATA-006
 
 **Requirement.** Encrypt configured provider credentials under installation custody, apply installation custody to support-provider configuration. Keep an inspectable, exportable append-only audit of authentication/permission changes, imports/exports/erasure, assignments, procedure changes, approvals and external actions with actor, purpose, source, time and outcome; Configure retention/legal holds with visible effects and never silently delete evidence to improve reports.
 
@@ -1060,11 +1060,11 @@ Core · target · **done** · Cites BASE-SECRET-001, BASE-ROLE-001, BASE-DATA-00
 2. Apply retention/hold settings and verify protected records and report denominators survive restart and cleanup.
 
 **Evidence.** `src/modules/audit/`; `migrations/180_account_security.sql`; `tests/journeys/identity.mjs`; `tests/journeys/erasure.mjs`; `tests/journeys/identity-browser.mjs` (magic sign-in in 1440 and 390px browsers: neutral request, scanner-safe link, one explicit sign-in and refused replay)
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: rotate credentials; revoke credentials; cross-tenant refusal; CSRF refusal; SSRF refusal; approval audit export; erased actor retained anonymously; no secrets in exported audit; retention setting; legal hold setting; held records survive restart; held records survive cleanup; report denominators preserved. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
 
 #### PORTABILITY-001 — Complete customer-owned portable support data
 
-Core · target · **done** · Cites BASE-DATA-001, BASE-BACKUP-001, BASE-SECRET-001
+Core · target · **partial** · Cites BASE-DATA-001, BASE-BACKUP-001, BASE-SECRET-001
 
 **Requirement.** Export versioned machine-readable conversations, attachments, contacts/companies, knowledge/versions, settings, rules/procedures/evaluations, outcomes and audit with the documented support-data inventory. Validate a bounded archive before atomic inactive restore to a clean installation; do not transfer sessions, provider secrets or connector authority and do not replay imported actions. Include D1, R2 and Durable Object business state or a lossless reconstruction; retain erasure fences and receiving-owner identity. This target replaces the current documented incomplete-storage boundary without pretending the held Base-data equivalence is done.
 
@@ -1074,7 +1074,7 @@ Core · target · **done** · Cites BASE-DATA-001, BASE-BACKUP-001, BASE-SECRET-
 3. Include Durable Object history and interrupted actions.
 
 **Evidence.** Population, versioned schema/digest, explicit exclusions, atomic corrupt/oversized/nonempty/schema refusals, owner identity and erasure replay fences: `tests/helpers/installer/fresh-install.mjs`, freshInstallJourney, through `tests/journeys/installer-nightly.mjs`. Every portable D1 row and R2 byte/metadata: `tests/helpers/rer-archive.mjs`, archiveSnapshot/compareArchive, in that journey. Public business-store fixtures: `tests/helpers/rer-data.mjs`, seedPortableData/verifyPortableData, and `tests/helpers/business-portable.mjs`, seedPortableBusiness/verifyPortableBusiness, plus `tests/helpers/campaigns-portable.mjs`, seedPortableCampaign/verifyPortableCampaign: populated campaign settings, consented visits/impressions and reporting survive with campaigns disabled and original retention timestamps. Business stores include reviewed identity associations, companies, knowledge versions, macros, fields, groups, views, workflows, outcomes and evaluations. Source destruction and clean independent checkout: `tests/helpers/installer/readme-restore.mjs`, readmeRestoreJourney, including native owner entry at 1440/390, revoked old grants and exact archive equality. Durable Object business history is losslessly reconstructed from D1; freshInstallJourney checks the declared native snapshots. Actual interrupted execution states and retained usage: `tests/helpers/unfinished-portable.mjs`, interruptPortableWork/verifyPortableWork; `tests/helpers/training-portable.mjs`, verifyPortableTraining. Historical ledger custody: `tests/helpers/platform-archive.mjs`, platformArchiveJourney. Hosted public command refusals/private custody: `tests/helpers/installer/hosted-export.mjs`, hostedExportJourney. Held staging public rer export, full content equality and confirmed D1/R2 source deletion: fleet logs/hh-camp-movein-r4-hosted.log (source 19fcf6e5d01e06b86ff706422ce48b98107010f8). Clean current native public import compared all 267 source tables directly and all 24 R2 byte streams/metadata, retaining inert stored states: fleet logs/hh-camp-movein-r4-hosted-restore.log, remote job 20261023T222829785287Z-heavy-slot-78d46af1 at 6379d7b00ef5ab16c49059a26cc347b6a265f704; its full freshInstallJourney also passed. Boundary: the separate Base-data equivalence hold is not closed by this clause.
-**Gap.** None.
+**Gap.** Carried-done audit: unasserted in the cited Evidence set: nonempty target refused. Asserted: source destroyed before restore; clean independent install; each populated portable business record; native support store equality; every attachment byte; R2 metadata equality; erasure fences preserved; corrupt archive refused; oversized archive refused; refusal has no partial restore; restored work is inert; Durable Object history captured; interrupted business action state retained inertly.
 
 #### ASSURANCE-001 — Qualified regulated support deployments
 

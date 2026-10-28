@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "af064134e47de8c9ec07854d31aa286ba2dc9f18d08afb260d476f913dda907f",
+      "sha256": "4c5373a88e71bde3928a1c900989dcaafa51c36c1260ad967b5b635cea02f468",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "c9b59683862dfd9735941ab7801bc51d8ae25d1c6d7ed5784fa5c53daa888a2e",
+      "sha256": "023e451c49854a7174d352e4693bde0428b94d20914e592d5057e5cf066cbad4",
       "executable": false
     },
     "DEMO.md": {
@@ -1672,7 +1672,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "fadf9b3f579a2d0390b391a30fedaa921be4935d041d83fdfdbdde9beb07bb52",
+      "sha256": "6a453e96feff8da4f92037720b7a5c90fae3e98f98a554984e53884a6bf68cf6",
       "executable": false
     },
     "docs/companies-and-csv.md": {
@@ -1812,7 +1812,7 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "f11ff511d67449ec2c7c84d1050116853d2a921aec4a0fbd0804886917d93c82",
+      "sha256": "137513f65a8a9a80e2bd313ae4393df8d73d0985593aa03988a5284251678451",
       "executable": false
     },
     "docs/SOURCE-PROVENANCE.md": {

@@ -907,71 +907,71 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company’s policy decides every 
 
 | Tool | Does | Core clauses | Risk class | Today |
 | --- | --- | --- | --- | --- |
-| `happytohelp.identity.manage_002` | Retained native password identity | IDENTITY-002 | access | not implemented |
-| `happytohelp.identity.manage_001` | Scoped authority | IDENTITY-001 | access | not implemented |
-| `happytohelp.first_run.manage_001` | A useful first workspace | FIRST-RUN-001 | standard or external (+ sensitive) | not implemented |
-| `happytohelp.conversation.manage_001` | Durable transcript | CONVERSATION-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.identity.manage_002` | Retained native password identity | IDENTITY-002 | standard or access (+ security) | not implemented |
+| `happytohelp.identity.manage_001` | Scoped authority | IDENTITY-001 | standard or access (+ security) | not implemented |
+| `happytohelp.first_run.manage_001` | A useful first workspace | FIRST-RUN-001 | standard or external (+ access · security · sensitive) | not implemented |
+| `happytohelp.conversation.manage_001` | Durable transcript | CONVERSATION-001 | standard or external (+ destructive · sensitive) | not implemented |
 | `happytohelp.delivery.manage_001` | Live delivery and recovery | DELIVERY-001 | standard or external (+ sensitive) | not implemented |
-| `happytohelp.outcomes.manage_001` | Resolution feedback and provenance | OUTCOMES-001 | standard (+ sensitive) | not implemented |
+| `happytohelp.outcomes.manage_001` | Resolution feedback and provenance | OUTCOMES-001 | standard (+ destructive · sensitive) | not implemented |
 | `happytohelp.reports.manage_001` | Workspace calendar reports | REPORTS-001 | standard (+ sensitive) | not implemented |
-| `happytohelp.connections.manage_001` | Workspace integrations | CONNECTIONS-001 | security (+ accounts · gated) | not implemented |
-| `happytohelp.activation.manage_001` | Observed owner setup | ACTIVATION-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.connections.manage_001` | Workspace integrations | CONNECTIONS-001 | standard or external (+ access · security · accounts · gated · sensitive) | not implemented |
+| `happytohelp.activation.manage_001` | Observed owner setup | ACTIVATION-001 | standard or external (+ security · sensitive) | not implemented |
 | `happytohelp.ai.manage_001` | Configured model execution | AI-001 | standard or external (+ sensitive) | not implemented |
 | `happytohelp.knowledge.manage_001` | Published knowledge | KNOWLEDGE-001 | standard or external (+ sensitive) | not implemented |
 | `happytohelp.context.manage_001` | Attributed customer context | CONTEXT-001 | standard (+ sensitive) | not implemented |
 | `happytohelp.delegation.manage_001` | Explicit local authority | DELEGATION-001 | standard or live (+ access · security · external) (+ sensitive) | not implemented |
-| `happytohelp.training.manage_001` | Durable evaluation | TRAINING-001 | standard or external (+ sensitive) | not implemented |
-| `happytohelp.integration.manage_001` | Honest external effects | INTEGRATION-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.training.manage_001` | Durable evaluation | TRAINING-001 | standard or external (+ money · sensitive) | not implemented |
+| `happytohelp.integration.manage_001` | Honest external effects | INTEGRATION-001 | standard or external (+ access · security · sensitive) | not implemented |
 | `happytohelp.desk.manage_001` | The shared support desk | DESK-001 | standard or external (+ sensitive) | not implemented |
-| `happytohelp.widget.manage_001` | Availability-aware messenger and proactive messages | WIDGET-001 | standard or external (+ live) | not implemented |
-| `happytohelp.mail.manage_001` | Complete support email | MAIL-001 | standard or external (+ sensitive) | not implemented |
-| `happytohelp.mail.manage_002` | Reviewable suspended and spam mail | MAIL-002 | standard or external (+ sensitive) | not implemented |
-| `happytohelp.outbound.manage_001` | Agent-created and proactive tickets | OUTBOUND-001 | external (+ sensitive) | not implemented |
-| `happytohelp.channels.manage_001` | Messaging and social support | CHANNELS-001 | external (+ accounts · gated) (+ sensitive) | not implemented |
-| `happytohelp.channels.manage_002` | B2B shared-channel support | CHANNELS-002 | external (+ accounts · gated) (+ sensitive) | not implemented |
-| `happytohelp.voice.manage_001` | Telephone service and unified voice agent | VOICE-001 | external (+ accounts · gated · sensitive) | not implemented |
-| `happytohelp.queue.manage_001` | Assignment rules and available teams | QUEUE-001 | live | not implemented |
-| `happytohelp.triage.manage_001` | Intelligent triage | TRIAGE-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.widget.manage_001` | Availability-aware messenger and proactive messages | WIDGET-001 | standard or external (+ live · sensitive) | not implemented |
+| `happytohelp.mail.manage_001` | Complete support email | MAIL-001 | standard or external (+ gated · access · security · sensitive) | not implemented |
+| `happytohelp.mail.manage_002` | Reviewable suspended and spam mail | MAIL-002 | standard or external (+ security · destructive · sensitive) | not implemented |
+| `happytohelp.outbound.manage_001` | Agent-created and proactive tickets | OUTBOUND-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.channels.manage_001` | Messaging and social support | CHANNELS-001 | standard or external (+ accounts · gated · access · security · sensitive) | not implemented |
+| `happytohelp.channels.manage_002` | B2B shared-channel support | CHANNELS-002 | standard or external (+ accounts · gated · access · security · sensitive) | not implemented |
+| `happytohelp.voice.manage_001` | Telephone service and unified voice agent | VOICE-001 | standard or external (+ accounts · gated · access · security · live · destructive · sensitive) | not implemented |
+| `happytohelp.queue.manage_001` | Assignment rules and available teams | QUEUE-001 | standard or live (+ access) | not implemented |
+| `happytohelp.triage.manage_001` | Intelligent triage | TRIAGE-001 | standard or external (+ live · sensitive) | not implemented |
 | `happytohelp.queue.manage_002` | Structured and bulk queue work | QUEUE-002 | standard | not implemented |
 | `happytohelp.queue.manage_003` | Collaboration without conflicting replies | QUEUE-003 | standard or external | not implemented |
 | `happytohelp.macro.manage_001` | Action macros with placeholders | MACRO-001 | standard or external (+ sensitive) | not implemented |
 | `happytohelp.queue.manage_004` | Snooze and scheduled follow-up | QUEUE-004 | standard or external | not implemented |
-| `happytohelp.status.manage_001` | Ticket status lifecycle | STATUS-001 | standard or external | not implemented |
-| `happytohelp.sla.manage_001` | Business-hour service commitments | SLA-001 | live or external | not implemented |
+| `happytohelp.status.manage_001` | Ticket status lifecycle | STATUS-001 | standard or external (+ live · destructive) | not implemented |
+| `happytohelp.sla.manage_001` | Business-hour service commitments | SLA-001 | standard or live (+ external) | not implemented |
 | `happytohelp.automation.manage_001` | Explainable durable support workflows | AUTOMATION-001 | standard or live (+ external) | not implemented |
-| `happytohelp.automation.manage_002` | Time-based automations | AUTOMATION-002 | standard or live (+ external) | not implemented |
-| `happytohelp.notify.manage_001` | Customer acknowledgments and teammate notifications | NOTIFY-001 | external (+ live) | not implemented |
-| `happytohelp.conversation.manage_002` | Merge and external forwarding | CONVERSATION-002 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.automation.manage_002` | Time-based automations | AUTOMATION-002 | standard or live (+ external · destructive) | not implemented |
+| `happytohelp.notify.manage_001` | Customer acknowledgments and teammate notifications | NOTIFY-001 | standard or external (+ live) | not implemented |
+| `happytohelp.conversation.manage_002` | Merge and external forwarding | CONVERSATION-002 | standard or external (+ destructive · sensitive) | not implemented |
 | `happytohelp.conversation.manage_003` | Problem and incident linking | CONVERSATION-003 | standard or external (+ sensitive) | not implemented |
 | `happytohelp.customer.manage_001` | Customer and company support records | CUSTOMER-001 | standard or access (+ sensitive) | not implemented |
-| `happytohelp.commerce.manage_001` | Shopify order actions | COMMERCE-001 | money · commitment (+ external) (+ sensitive) | not implemented |
-| `happytohelp.billing.manage_001` | Stripe billing and subscription resolution | BILLING-001 | money · commitment (+ external) (+ sensitive) | not implemented |
-| `happytohelp.crm.manage_001` | Live CRM and account context | CRM-001 | standard or external (+ sensitive · accounts · gated) | not implemented |
-| `happytohelp.escalation.manage_001` | Engineering and team escalations that return | ESCALATION-001 | external (+ accounts · gated) (+ sensitive) | not implemented |
-| `happytohelp.api.manage_002` | Bound machine credentials | API-002 | security · access | not implemented |
+| `happytohelp.commerce.manage_001` | Shopify order actions | COMMERCE-001 | standard or external (+ money · commitment · gated · access · security · sensitive) | not implemented |
+| `happytohelp.billing.manage_001` | Stripe billing and subscription resolution | BILLING-001 | standard or external (+ money · commitment · gated · access · security · sensitive) | not implemented |
+| `happytohelp.crm.manage_001` | Live CRM and account context | CRM-001 | standard or external (+ sensitive · accounts · gated · access · security) | not implemented |
+| `happytohelp.escalation.manage_001` | Engineering and team escalations that return | ESCALATION-001 | standard or external (+ accounts · gated · access · security · sensitive) | not implemented |
+| `happytohelp.api.manage_002` | Bound machine credentials | API-002 | standard or security (+ access) | not implemented |
 | `happytohelp.api.manage_003` | Create one correctly attributed support request | API-003 | standard or external (+ sensitive) | not implemented |
 | `happytohelp.api.manage_004` | Append messages and atomic attachments | API-004 | standard or external (+ sensitive) | not implemented |
 | `happytohelp.api.manage_005` | Admit machine requests without unwanted contact | API-005 | standard or external (+ sensitive) | not implemented |
-| `happytohelp.api.manage_006` | Machine events and accountable ticket history | API-006 | standard (+ sensitive) | not implemented |
-| `happytohelp.api.manage_007` | Erase and restore machine-created support history | API-007 | destructive · security (+ sensitive) | not implemented |
-| `happytohelp.portal.manage_001` | Authenticated customer self-service | PORTAL-001 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.api.manage_006` | Machine events and accountable ticket history | API-006 | standard or external (+ destructive · sensitive) | not implemented |
+| `happytohelp.api.manage_007` | Erase and restore machine-created support history | API-007 | standard or destructive (+ security · sensitive) | not implemented |
+| `happytohelp.portal.manage_001` | Authenticated customer self-service | PORTAL-001 | standard or external (+ access · security · sensitive) | not implemented |
 | `happytohelp.forms.manage_001` | Customer request forms with custom fields | FORMS-001 | standard or external (+ live · sensitive) | not implemented |
-| `happytohelp.knowledge.manage_002` | Governed private and multilingual knowledge | KNOWLEDGE-002 | standard or external (+ commitment) (+ sensitive) | not implemented |
-| `happytohelp.knowledge.manage_003` | Branded help center, article feedback and knowledge in the ticket | KNOWLEDGE-003 | standard or external (+ sensitive) | not implemented |
-| `happytohelp.brands.manage_001` | Multi-brand support operations | BRANDS-001 | live or access (+ security · external) | not implemented |
-| `happytohelp.access.manage_001` | Enterprise identity and custom permissions | ACCESS-001 | access or security | not implemented |
-| `happytohelp.identity.manage_003` | Two-factor authentication for native accounts | IDENTITY-003 | security | not implemented |
-| `happytohelp.outcomes.manage_002` | CSAT across support channels | OUTCOMES-002 | standard or external (+ sensitive) | not implemented |
+| `happytohelp.knowledge.manage_002` | Governed private and multilingual knowledge | KNOWLEDGE-002 | standard or external (+ commitment · access · sensitive) | not implemented |
+| `happytohelp.knowledge.manage_003` | Branded help center, article feedback and knowledge in the ticket | KNOWLEDGE-003 | standard or external (+ live · sensitive) | not implemented |
+| `happytohelp.brands.manage_001` | Multi-brand support operations | BRANDS-001 | standard or live (+ access · security · external) | not implemented |
+| `happytohelp.access.manage_001` | Enterprise identity and custom permissions | ACCESS-001 | standard or access or security | not implemented |
+| `happytohelp.identity.manage_003` | Two-factor authentication for native accounts | IDENTITY-003 | standard or security (+ access) | not implemented |
+| `happytohelp.outcomes.manage_002` | CSAT across support channels | OUTCOMES-002 | standard or external (+ access · security · destructive · sensitive) | not implemented |
 | `happytohelp.reports.manage_002` | Workload, service and agent outcomes | REPORTS-002 | standard or external (+ sensitive) | not implemented |
-| `happytohelp.agent.manage_001` | A production support agent with clean handoff | AGENT-001 | standard or external (+ sensitive) | not implemented |
-| `happytohelp.procedure.manage_001` | Natural-language procedures and release simulation | PROCEDURE-001 | standard or live (+ money · external · sensitive) | not implemented |
+| `happytohelp.agent.manage_001` | A production support agent with clean handoff | AGENT-001 | standard or external (+ money · sensitive) | not implemented |
+| `happytohelp.procedure.manage_001` | Natural-language procedures and release simulation | PROCEDURE-001 | standard or live (+ access · money · external · sensitive) | not implemented |
 | `happytohelp.agent.manage_002` | Inspectable quality and resolution economics | AGENT-002 | standard (+ sensitive) | not implemented |
 | `happytohelp.feedback.manage_001` | Source-linked feedback and release follow-up | FEEDBACK-001 | standard or external (+ commitment · sensitive) | not implemented |
-| `happytohelp.erasure.manage_001` | Customer erasure with coherent history | ERASURE-001 | destructive (+ sensitive) | not implemented |
-| `happytohelp.audit.manage_001` | Security and accountable actions | AUDIT-001 | security or sensitive | not implemented |
-| `happytohelp.portability.manage_001` | Complete customer-owned portable support data | PORTABILITY-001 | security (+ sensitive · destructive) | not implemented |
-| `happytohelp.assurance.manage_001` | Qualified regulated support deployments | ASSURANCE-001 | security · sensitive (+ commitment) | not implemented |
-| `happytohelp.push.manage_001` | Reproduce, repair and prove customer recovery | PUSH-001 | standard or live (+ external · sensitive) | not implemented |
+| `happytohelp.erasure.manage_001` | Customer erasure with coherent history | ERASURE-001 | standard or destructive (+ sensitive) | not implemented |
+| `happytohelp.audit.manage_001` | Security and accountable actions | AUDIT-001 | standard or security (+ access · destructive · sensitive) | not implemented |
+| `happytohelp.portability.manage_001` | Complete customer-owned portable support data | PORTABILITY-001 | standard or security (+ sensitive · destructive) | not implemented |
+| `happytohelp.assurance.manage_001` | Qualified regulated support deployments | ASSURANCE-001 | standard or security (+ access · destructive · sensitive · commitment) | not implemented |
+| `happytohelp.push.manage_001` | Reproduce, repair and prove customer recovery | PUSH-001 | standard or live (+ access · security · external · sensitive) | not implemented |
 | `happytohelp.push.manage_002` | Promises survive every handoff | PUSH-002 | standard or commitment (+ external) (+ sensitive) | not implemented |
 | `happytohelp.push.manage_003` | Learn from reopenings under human control | PUSH-003 | standard or live (+ access · security · money) (+ sensitive) | not implemented |
 | `happytohelp.push.manage_004` | Turn verified edge cases into reviewed knowledge | PUSH-004 | standard or external (+ commitment) (+ sensitive) | not implemented |

@@ -122,12 +122,24 @@
       "buyerSteps": "FORMS-001: apply after 258 before serving the updated Worker. Extend native ticket fields with account lookups while retaining existing definitions, historical typed values and workflow journaling. Back up and restore with the native data. Account choices require verified current explicit membership and a deliberately published field; company ticket visibility grants no lookup eligibility."
     },
     {
+      "id": "260_feedback.sql",
+      "buyerSteps": "FEEDBACK-001: add source-linked feedback, signed release receipts and reviewed service updates. Apply before the updated Worker serves traffic. New links default to service updates off; explicit requester consent is required. Reconfigure release sender secrets after restore; source history restores with subscriptions off and pending sends cancelled."
+    },
+    {
       "id": "260_support_channels.sql",
       "buyerSteps": "CHANNELS-001/002: add isolated support-channel connections, scoped text threads, delivery claims and contact-erasure fences. Apply after 259 and before the updated Worker serves traffic. Back up D1, R2 and private configuration; apply before the updated Worker serves traffic, without resetting or editing prior migration ledger rows. Configure authorized provider accounts explicitly. Restored connections are disconnected and pending sends are uncertain; opt-out and erasure fences remain. Media, Teams, approved continuation templates and live provider qualification remain pending."
     },
     {
+      "id": "261_assurance.sql",
+      "buyerSteps": "ASSURANCE-001: add regulated-deployment preflight profiles and expiring agreement/control evidence. Standard support access is unchanged. Recorded references prepare independent review; they never authorize health-data activation or supply compliance. Use an isolated deployment with health-data processing disabled until provider/partner acceptance and shared-runtime activation/withdrawal are implemented."
+    },
+    {
       "id": "261_support_channel_media.sql",
       "buyerSteps": "CHANNELS-001: apply after 260 with D1/R2/private settings backed up. Adds attachment grants and explicit WhatsApp continuation consent without changing existing consent. Temporary attachment grants never export; opt-out stays fenced. Live provider qualification remains required."
+    },
+    {
+      "id": "262_feedback_penny.sql",
+      "buyerSteps": "FEEDBACK-001: add a Penny API connection and durable source handoff receipts. A requester-authored sharing permission and explicit operator approval are required. Penny owns its requesters and votes; pending/uncertain external writes never replay. Reconfigure the Penny API key after restore; sending handoffs restore as uncertain."
     },
     {
       "id": "262_shared_channel_actions.sql",

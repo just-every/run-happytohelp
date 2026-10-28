@@ -46,6 +46,7 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   await page.getByLabel('Search knowledge',{exact:true}).uncheck()
   await activate(save,()=>page.getByRole('alert').waitFor());await visibleResult()
   await page.getByLabel('Search knowledge',{exact:true}).check()
+  await page.getByLabel('Human escalation',{exact:true}).fill('Refund review team')
   await page.getByLabel('Instructions',{exact:true}).fill('synthetic-hh-failing: read policy and escalate to a human; never issue a refund.')
   await activate(save,()=>button('refund · Version 2').waitFor());await visibleResult()
   const getVersions=await context.request.get(runtime.origin+root),versions=(await getVersions.json()).versions
@@ -73,12 +74,47 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
    assert.equal(await receipt.locator('pre').count(),0,'receipts present results rather than raw evaluator objects')
    assert.doesNotMatch(await receipt.innerText(),/response_digest|harness_failures|must_not_include_per_reply/)
    await activate(button('Check release'),()=>version===1?page.getByText('Simulation qualified. Production rollout remains unavailable.').waitFor():page.getByRole('alert').filter({hasText:'Release refused'}).waitFor());await visibleResult()
-   for(const width of [1440,390]){
+   if(version===2)for(const width of [1440,390]){
     await page.setViewportSize({width,height:width===390?844:1000})
     await page.screenshot({path:shot(`procedures-v${version}-${width}.png`),fullPage:true})
    }
    await page.setViewportSize({width:1440,height:1000})
   }
+
+  // Review a saved change, then revise the older definition without changing its cases or receipts.
+  const original=versions.find(item=>item.version===1),revised=versions.find(item=>item.version===2)
+  const comparison=page.getByRole('table',{name:'refund: Version 1 compared with selected Version 2',exact:true})
+  const instructionChange=comparison.getByRole('row').filter({has:page.getByRole('rowheader',{name:'Instructions Changed',exact:true})})
+  await instructionChange.waitFor()
+  assert.deepEqual(await instructionChange.getByRole('cell').allTextContents(),[`Version 1${original.definition.instructions}`,`Selected · Version 2${revised.definition.instructions}`])
+  await comparison.getByRole('rowheader',{name:'Human escalation Changed',exact:true}).waitFor()
+  await comparison.getByRole('rowheader',{name:'Read-only sandbox tools Unchanged',exact:true}).waitFor()
+  await page.getByLabel('Compare with',{exact:true}).selectOption('')
+  await page.getByRole('table',{name:'refund: saved Version 2',exact:true}).waitFor()
+  await page.getByLabel('Compare with',{exact:true}).selectOption(original.id)
+  await activate(button('refund · Version 1'),()=>page.getByRole('heading',{name:'Version 1 definition',exact:true}).waitFor())
+  await page.getByLabel('Instructions',{exact:true}).fill('Unsaved work that must not be replaced silently')
+  page.once('dialog',dialog=>dialog.dismiss())
+  await button('Draft from this version').click()
+  assert.equal(await page.getByLabel('Instructions',{exact:true}).inputValue(),'Unsaved work that must not be replaced silently')
+  page.once('dialog',dialog=>dialog.accept())
+  await button('Draft from this version').click()
+  await page.waitForFunction(()=>document.activeElement?.id==='procedure-instructions')
+  assert.equal(await page.getByLabel('Instructions',{exact:true}).inputValue(),original.definition.instructions)
+  await page.getByLabel('Instructions',{exact:true}).fill('Revised synthetic policy: read the policy and ask a human to approve.')
+  const revisionInstructions=await page.getByLabel('Instructions',{exact:true}).inputValue()
+  await activate(save,()=>button('refund · Version 3').waitFor())
+  const savedVersions=(await (await context.request.get(runtime.origin+root)).json()).versions
+  const saved=savedVersions.find(item=>item.version===3)
+  assert.deepEqual(saved.definition,{...original.definition,basedOnVersionId:original.id,instructions:revisionInstructions},'a revision retains its source cases, tools and budgets through the public save door')
+  assert.deepEqual(savedVersions.find(item=>item.id===original.id),original,'the source snapshot remains unchanged')
+  await activate(button('refund · Version 3'),()=>page.getByRole('heading',{name:'Version 3 definition',exact:true}).waitFor())
+  assert.equal(await page.locator('.procedure-run').count(),0,'a revision never inherits qualification from its source')
+  await page.reload()
+  await activate(button('refund · Version 3'),()=>page.getByRole('heading',{name:'Version 3 definition',exact:true}).waitFor())
+  await page.getByText('Based on refund · Version 1.',{exact:true}).waitFor()
+  await page.getByLabel('Compare with',{exact:true}).selectOption(original.id)
+  await page.getByRole('table',{name:'refund: Version 1 compared with selected Version 3',exact:true}).getByRole('rowheader',{name:'Instructions Changed',exact:true}).waitFor()
 
   // A configuration refusal stops one attempt; untouched cases are not failures.
   await page.getByLabel('Procedure key',{exact:true}).fill('configuration')

@@ -1,4 +1,5 @@
 import TicketChannel from '../../../modules/support-channels/TicketChannel';
+import FeedbackPanel from '../../../modules/feedback/ui/FeedbackPanel';
 import ProductionTrace from './conversation/ProductionTrace';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -144,6 +145,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
             { record && section('fields', 'Ticket fields', <TicketEditor conversation={ conversation } record={ record } />) }
             { workflows && section('schedules', 'Schedules', <WorkflowPanel conversation={ conversation } workflows={ workflows } onBadge={ badgeSetters.schedules } />, badges.schedules) }
             { ['sms','whatsapp','instagram','messenger','slack','teams'].includes(conversation.channel) && section('support-channel', 'Support channel', <TicketChannel projectId={conversation.project_id} conversationId={conversation.id} refreshKey={liveKey}/>) }
+            { section('feedback', 'Product feedback', <FeedbackPanel projectId={ conversation.project_id } conversationId={ conversation.id } refreshKey={ liveKey } active={ open.has('feedback') } />) }
             { section('escalations', 'Escalations', <EscalationsPanel projectId={ conversation.project_id } conversationId={ conversation.id } refreshKey={ liveKey } reads={ reads } onDraft={ onReviewEscalationDraft } onBadge={ badgeSetters.escalations } onUpdates={ setEscalationUpdates } />, badges.escalations) }
             { section('merges', 'Merges and partner threads', <ConversationActions conversation={ conversation } refreshKey={ liveKey } reads={ reads } onChanged={ onTicketChanged } onBadge={ badgeSetters.merges } />, badges.merges) }
             { manage && section('problem', 'Problem and incidents', <ProblemPanel projectId={ conversation.project_id } conversationId={ conversation.id } ticket={ ticket } onChanged={ () => record.reload() } onBadge={ badgeSetters.problem } />, badges.problem) }

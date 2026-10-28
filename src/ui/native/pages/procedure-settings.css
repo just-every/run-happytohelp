@@ -17,3 +17,27 @@
 .procedure-receipt { margin-top:24px; }
 .procedure-case { margin:20px 0; }
 .procedure-case h3 { font-size:18px; }
+
+.procedure-definition-controls { display:flex; flex-wrap:wrap; align-items:end; gap:16px; margin-bottom:20px; }
+.procedure-definition-controls .form-group { margin-bottom:0; flex:1 1 220px; max-width:360px; }
+.procedure-definition-controls > button { margin-bottom:0; }
+.procedure-definition { width:100%; table-layout:fixed; margin:16px 0 24px; }
+.procedure-definition th,
+.procedure-definition td { padding:12px; vertical-align:top; border-bottom:1px solid #d7e0e0; text-align:left; white-space:pre-wrap; overflow-wrap:anywhere; }
+.procedure-definition thead th { background:#f0f5f5; }
+.procedure-definition th[scope=row] { width:28%; font-weight:500; }
+.procedure-change { display:block; font-size:12px; margin-top:4px; }
+.procedure-value-changed { background:#edf7f6; }
+.procedure-value-changed .procedure-change { color:#24575f; font-weight:700; }
+.procedure-value-label { display:none; }
+@media (max-width:640px) {
+ .procedure-definition thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+ .procedure-definition tbody,
+ .procedure-definition tr { display:block; }
+ .procedure-definition tr { padding:12px 0; border-bottom:1px solid #d7e0e0; }
+ .procedure-definition th[scope=row],
+ .procedure-definition td { display:block; width:100%; border:0; padding:6px 12px; }
+ .procedure-definition th[scope=row] { font-weight:700; }
+ .procedure-change { display:inline; margin-left:8px; font-weight:400; }
+ .procedure-value-label { display:block; font-size:12px; font-weight:600; margin-bottom:4px; }
+}

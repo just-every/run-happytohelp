@@ -27,6 +27,11 @@
           "slug": "agent-fix",
           "source": "docs/AGENT-FIX.md",
           "label": "What an agent fix looks like"
+        },
+        {
+          "slug": "agent-door",
+          "source": "docs/AGENT-DOOR.md",
+          "label": "Support agent access"
         }
       ]
     },

@@ -33,6 +33,7 @@ function HistoryEntry({ item, settings, agents, assistants, conversation, tags }
     let actor = actorRoles[item.actor_type] || 'Unknown actor';
     if (['user', 'agent'].includes(item.actor_type) && agent(item.actor_id)) actor = personName(agent(item.actor_id));
     if (['contact', 'customer'].includes(item.actor_type)) actor = erased ? 'Erased customer' : contact(item.actor_id) ? personName(contact(item.actor_id), true) : 'Customer (name unavailable)';
+    if (item.prepared_by) actor = `${item.prepared_by.agent} for ${item.prepared_by.sponsor}`;
     const value = (key, recorded, field) => {
         if (recorded === undefined || missing(recorded)) return key === 'assigned_to' && recorded === null ? 'Unassigned' : plainValue(recorded);
         if (field) {

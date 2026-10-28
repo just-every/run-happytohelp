@@ -1,3 +1,4 @@
+import {agentOperation,nativeAgentAuthority,type NativeAgentAuthority} from '../../platform/agent-authority'
 import {inTicketBatch,admitTicketWork} from './request-batch'
 import {auditStatement,type AuditEvent} from '../audit/record'
 import {processWorkflowEvents} from '../workflows/events'
@@ -56,6 +57,7 @@ export async function mutateTicket(env:Env,actor:Actor,id:string,input:TicketCha
  if(assignmentChanged||['solved','closed'].includes(next.status_category))statements.push(env.DB.prepare(`UPDATE ai_generations SET state='cancelled',updated_at=? WHERE project_id=? AND conversation_id=? AND state IN ('queued','running') AND ${accepted}`).bind(new Date(now).toISOString(),actor.projectId,id,receipt,id))
  if(assignmentChanged){statements.push(assignmentHistoryStatement(env,{id:receipt,conversationId:id,actorId,agentId:next.assigned_to,aiId:next.current_ai_id,createdAt:now},accepted,[receipt,id]),assignmentNotificationStatement(env,{id:receipt,projectId:actor.projectId,conversationId:id,actorId,previousAssignee:current.assigned_to,assignee:next.assigned_to},accepted,[receipt,id]))}
  if(receiptAudit)statements.push(auditStatement(env.DB,receiptAudit,now,{sql:accepted,params:[receipt,id]}))
+ if(authority[nativeAgentAuthority])statements.push(agentOperation(env,authority as NativeAgentAuthority,'conversation',id,{sql:accepted,params:[receipt,id]},{history_id:receipt}))
  admitTicketWork(env,statements.length+(inTicketBatch(env)?24:64))
  let committed=false
  try{committed=Boolean((await env.DB.batch(statements))[0].meta.changes)}catch(error){

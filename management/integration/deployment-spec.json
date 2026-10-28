@@ -822,6 +822,12 @@
       "name": "257_followup_obligations.sql",
       "sha256": "488a6cffda3c8a6616967918594aafa805f1160a624b9f2c7462b254c382b14f",
       "sql": "-- Commitments are proposals until a teammate accepts them. Quotes remain in the\n-- original message; erasure never leaves a second copy of customer content here.\nCREATE TABLE followup_obligations (\n id TEXT PRIMARY KEY, project_id TEXT NOT NULL REFERENCES projects(id),\n conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,\n message_id TEXT NOT NULL REFERENCES messages(id) ON DELETE CASCADE,\n quote_start INTEGER NOT NULL, quote_end INTEGER NOT NULL,\n owner_id TEXT NOT NULL, due_at INTEGER NOT NULL, stop_condition TEXT NOT NULL,\n dependency_id TEXT REFERENCES escalation_issues(id),\n state TEXT NOT NULL DEFAULT 'proposed' CHECK(state IN ('proposed','open','completed','cancelled')),\n version INTEGER NOT NULL DEFAULT 1, accepted_by TEXT, accepted_at INTEGER,\n created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL\n);\nCREATE INDEX followup_due ON followup_obligations(state,due_at);\nCREATE TABLE followup_changes (\n id TEXT PRIMARY KEY, obligation_id TEXT NOT NULL REFERENCES followup_obligations(id) ON DELETE CASCADE,\n version INTEGER NOT NULL, owner_id TEXT NOT NULL, due_at INTEGER NOT NULL,\n accepted_by TEXT NOT NULL, accepted_at INTEGER NOT NULL, UNIQUE(obligation_id,version)\n);\nCREATE TRIGGER followup_contact_erasure AFTER UPDATE OF metadata_json ON contacts\n WHEN coalesce(json_extract(NEW.metadata_json,'$.is_erasing'),0)=1 OR coalesce(json_extract(NEW.metadata_json,'$.is_erased'),0)=1\n BEGIN DELETE FROM followup_obligations WHERE conversation_id IN (SELECT id FROM conversations WHERE contact_id=NEW.id AND project_id=NEW.project_id); END;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "258_followup_pending_terms.sql",
+      "sha256": "06fe0f4ab5d3403d8469dc11ad5d4e57b4572b753c5ccdbf8dea636b68541def",
+      "sql": "-- Revised proposals remain separate from accepted responsibility until review.\nALTER TABLE followup_obligations ADD COLUMN pending_terms_json TEXT;\nALTER TABLE followup_changes ADD COLUMN stop_condition TEXT;\nALTER TABLE followup_changes ADD COLUMN dependency_id TEXT;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

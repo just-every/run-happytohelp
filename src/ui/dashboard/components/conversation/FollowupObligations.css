@@ -10,3 +10,5 @@
 .followup-obligations summary { padding: 11px 0; }
 .followup-obligations :is(button, input, select, textarea, summary):focus-visible { outline: 3px solid #175d70; outline-offset: 2px; }
 body.conversation-workspace #chat .followup-obligations button.btn { min-width: 44px; min-height: 44px; }
+
+.followup-obligations select { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }

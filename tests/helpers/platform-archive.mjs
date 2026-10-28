@@ -114,17 +114,18 @@ export async function platformArchiveJourney(){
    }
   }
   await archiveStorage(root,({DB})=>DB.prepare('DELETE FROM rer_migrations WHERE name=?').bind(last).run());
-  await refuse(new RegExp('migration_ledger:unapplied:'+last.replaceAll('.','\\.')));
+  // rer 0.2.85 reports constant ledger categories, naming only this checkout's unapplied file.
+  await refuse(new RegExp('migration_ledger:unapplied\\): migration '+last.replaceAll('.','\\.')+':'));
   await archiveStorage(root,async({DB})=>{
    await DB.prepare('INSERT INTO rer_migrations(name,sha256,applied_at) VALUES(?,?,?)').bind(row.name,row.sha256,row.applied_at).run();
    await DB.prepare('CREATE TABLE d1_migrations(id INTEGER PRIMARY KEY,name TEXT,applied_at TEXT)').run();
   });
-  await refuse(/migration_ledger:multiple:rer_migrations/);
+  await refuse(/migration_ledger:multiple\)/);
   await archiveStorage(root,async({DB})=>{
    await DB.prepare('DROP TABLE d1_migrations').run();
    await DB.prepare('UPDATE rer_migrations SET sha256=? WHERE name=?').bind(hash('changed migration bytes'),last).run();
   });
-  await refuse(/migration_ledger:unknown:/);
+  await refuse(/migration_ledger:unknown[:)]/);
   console.log('Platform archive journey passed: Platform export; older archive into Platform and native destinations; row/file equality; ledger custody; native re-export; Managed data download restored natively, with unknown-table, truncated and occupied refusals leaving destination bytes unchanged; missing, multiple and mismatched ledger refusals with no write.');
  }finally{await rm(scratch,{recursive:true,force:true,maxRetries:3,retryDelay:100});}
 }

@@ -3588,7 +3588,7 @@
       "executable": false
     },
     "scripts/installer/hosted-export.mjs": {
-      "sha256": "97b4d5a500f10210820c273f5c232d9ad54894455cf60c04e411f50621428ac4",
+      "sha256": "3e9c50a64abcc2377ee2bc4f266118a72b8d32866fa2e1b11101f0add092459a",
       "executable": false
     },
     "scripts/installer/hosted-origin.mjs": {
@@ -3600,11 +3600,11 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "0a025174f983dd0251837d989812e8dc7653d7923d598a7c0d8831e72d8d5594",
+      "sha256": "1f131d99cb37490be240554f5a985bf6a01e0c86ca522faa0defddf26a325dd8",
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {
-      "sha256": "92e416b2e86161b5357341a72282412690b93be65dd9757b627881b36af7218a",
+      "sha256": "673e81b4eeecbbc1e2a20ad4f46686ad3b32d15ce4dbb9efa839469832235b90",
       "executable": false
     },
     "scripts/installer/native-local.mjs": {
@@ -12696,7 +12696,7 @@
       "executable": false
     },
     "tests/helpers/platform-archive.mjs": {
-      "sha256": "107c60c51d8db18a9c772d0f4c0611441004fe8d3dca58673746b76ce50a8a88",
+      "sha256": "2a3b38cfc172be289214ad2fb1d6d042f8e05999a296bff09a0097a010d45cb6",
       "executable": false
     },
     "tests/helpers/proactive-provider-network.mjs": {

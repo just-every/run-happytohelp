@@ -1143,3 +1143,24 @@ The 23 October 2026 contract-text clarification separates local implementation/f
 | `PUSH-002` | Promises survive every handoff | push-further | missing |  | No implementation located: obligation records with owner and due time, reminders and follow-up drafts are absent (durable messages and notes in `src/modules/conversations/admission.ts` are not obligations). |
 | `PUSH-003` | Learn from reopenings under human control | push-further | missing |  | No implementation located: version-joined diagnosis of reopened cases, proposals and controlled rollout are absent (evaluation runs in `src/modules/training-runs/runner.ts` are generic). |
 | `PUSH-004` | Turn verified edge cases into reviewed knowledge | push-further | missing |  | No implementation located: gap clustering from unanswered cases, sourced draft articles and recovery measurement are absent (article authoring in `src/modules/knowledge/authoring.ts` is manual). |
+
+
+MAIL-002 prior done-row boundary: R6 local scope complete: separate held-mail store, reasons/authentication/headers, safe text and attachment inspection, existing/new-ticket recovery, address/domain rules and audited 14-day expiry. Public-door journeys cover spoof isolation, permissions, recovery without retrospective effects and erasure. R6's browser check of recovery, allow/block/remove and deletion at 1440 and 390 has no repository journey and was not repeated for this review.
+
+
+TRIAGE-001 prior done-row boundary: Configured-model classification runs after admission, with confidence, exact quoted evidence and native ticket fields. Operator labels measure accuracy before explicit intent-routing approval. Triage gates only rules with a triage condition; other routing rules act at admission whether the model is pending, down or unsure. An unsure or failed result places an unplaced ticket in the default queue once, never over a teammate's choice. Local API, dashboard, widget admission, erasure and rer archive journeys cover roles and custody. Live model quality is not claimed.
+
+
+AUTOMATION-001 prior done-row boundary: ADOPTED policy: review cancels all remaining actions, preserves existing provider uncertainty and never resumes or replays work. Live qualification gap: Real notification-provider delivery and signed-webhook receiver acceptance are unobserved; local sandbox/outcome assertions do not qualify either.
+
+
+AUTOMATION-002 prior done-row boundary: Hourly durable time automations, the 48/96 business-hour templates, the seeded four-day close, restart-safe cursors, customer-reply reset, unsafe-repeat refusal and automation actors pass their journeys. The last-agent-update time (`src/modules/workflows/time-rules.ts`, `src/modules/workflows/rule-model.ts`) counts a teammate's reply and never the workspace's system away reply (migration 241), so an agent-update automation waits for the teammate's reply (`tests/helpers/workflows/rules.mjs`).
+
+
+PORTAL-001 prior done-row boundary: Email-link sign-in, request flows, attachments and preferences include explicit per-company ticket visibility, off by default. Current membership and entitlement fence list, detail, reply, reopen and attachment access; removals take effect on the next request. Local runtime journeys establish these paths; no live email-provider qualification is claimed.
+
+
+BRANDS-001 prior done-row boundary: Live qualification gap: Two real brand domains/senders with authorized shared-team operation and channel receipt remain unobserved; separate synthetic workspaces do not establish multi-brand qualification.
+
+
+IDENTITY-003 prior done-row boundary: Each second-factor answer claims its attempt before it is checked, so parallel guesses stay within the limit. Registering a connected application and approving its access are credential installs and step up. A re-entered password (step-up, password change) claims its attempt the same way. Every factor enrollment, a teammate's password reset link (owner's own factor), a changed sign-in email, and copying or resending an admin or owner invitation step up; the identity invitation door without those rules is removed. Accounts without a second factor may confirm beside the password by a single-use, 15-minute, account-bound email sign-in link; requests are atomically rate-limited and audited, and only the fresh sign-in session gains proof. New email claims install no unknown password or recent proof. Existing credentials remain intact; recent mailbox proof authorizes setting a new password without the old one, so older claim-generated or externally chosen passwords cannot strand an account. Enrolled second factors remain required. Setting a first password on an account without one (every moved-in teammate) and adding, repointing or re-enabling a side-panel plugin step up too.

@@ -287,6 +287,42 @@
     {
       "source": "DEMO.md",
       "reason": "Copied Base guide to rer demo and the hosted demo for maintainers"
+    },
+    {
+      "source": "docs/CLAIMS.md",
+      "reason": "Contract requirements, generated claims or maintainer proof boundary"
+    },
+    {
+      "source": "RULINGS.md",
+      "reason": "Contract requirements, generated claims or maintainer proof boundary"
+    },
+    {
+      "source": "docs/contract/DONE-AUDIT.md",
+      "reason": "Contract requirements, generated claims or maintainer proof boundary"
+    },
+    {
+      "source": "docs/verify.md",
+      "reason": "Contract requirements, generated claims or maintainer proof boundary"
+    },
+    {
+      "source": "docs/public-product-spec.md",
+      "reason": "Contract requirements, generated claims or maintainer proof boundary"
+    },
+    {
+      "source": "docs/support-request-api-spec.md",
+      "reason": "Contract requirements, generated claims or maintainer proof boundary"
+    },
+    {
+      "source": "docs/setup-observation-spec.md",
+      "reason": "Contract requirements, generated claims or maintainer proof boundary"
+    },
+    {
+      "source": "docs/first-workspace-spec.md",
+      "reason": "Contract requirements, generated claims or maintainer proof boundary"
+    },
+    {
+      "source": "docs/contract-authoring.md",
+      "reason": "Contract requirements, generated claims or maintainer proof boundary"
     }
   ]
 }

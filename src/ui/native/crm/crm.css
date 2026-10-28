@@ -3,3 +3,5 @@
 @media(max-width:600px){.crm-panel :is(button,a,input,select){min-height:44px;min-width:44px}.crm-panel a{display:inline-flex;align-items:center}.crm-panel{padding:.75rem}.crm-facts>div{grid-template-columns:minmax(0,1fr)}.crm-facts dd{margin-bottom:.5rem}}
 .crm-panel{container-type:inline-size;scroll-margin-top:6rem}
 @container(max-width:400px){.crm-facts>div{grid-template-columns:minmax(0,1fr)}.crm-facts dd{margin-bottom:.5rem}}
+
+.crm-panel .crm-link{text-decoration:underline;text-underline-offset:3px;color:var(--bs-link-color,#176c78)}

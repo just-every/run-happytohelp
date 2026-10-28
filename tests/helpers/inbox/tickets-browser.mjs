@@ -158,6 +158,7 @@ export async function ticketsBrowser({count=12,installation}={}){
   await capture('25-workflow-docs')
   await fixture.api(`/api/management/projects/${projectId}/contacts/${fixture.tickets[0].visitor.contactId}/erase`,{},'POST');
   await page.goto(`${runtime.origin}/projects/${projectId}/contacts/${fixture.tickets[0].visitor.contactId}`);await page.getByText('Personal data erased.',{exact:true}).waitFor();await capture('15-erasure');
+  const {accountLookupBrowser}=await import('../account-lookup-browser.mjs');await accountLookupBrowser()
   assert.deepEqual(errors,[]);success=true
   return {fixture,origin:runtime.origin}
  }finally{await browser.close();await runtime.close(success)}

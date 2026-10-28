@@ -116,6 +116,10 @@
     {
       "id": "258_teams_escalations.sql",
       "buyerSteps": "ESCALATION-001: retain all existing escalation connection identities and links while permitting a Teams connection with its installing administrator. Apply before the updated Worker serves traffic. Existing trackers and Slack retain their credentials; Teams starts disconnected. Teams sends require the installing member to retain integration installation permission; restoring an export requires reconnection. Back up native data before upgrade."
+    },
+    {
+      "id": "259_account_lookup_fields.sql",
+      "buyerSteps": "FORMS-001: apply after 258 before serving the updated Worker. Extend native ticket fields with account lookups while retaining existing definitions, historical typed values and workflow journaling. Back up and restore with the native data. Account choices require verified current explicit membership and a deliberately published field; company ticket visibility grants no lookup eligibility."
     }
   ]
 }

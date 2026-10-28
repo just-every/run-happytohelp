@@ -8,6 +8,7 @@ import {readFile} from 'node:fs/promises'
 import assert from 'node:assert/strict'
 import {webcrypto,randomUUID} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
+import {protectedFeedback} from './feedback.mjs'
 import {accessToken,autonomousPolicy,policyEnvelope,signJws,seconds} from '../../../src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs'
 
 export async function agentDoorJourney(){
@@ -17,6 +18,7 @@ export async function agentDoorJourney(){
   const owner=await app.ok('/api/identity/bootstrap',{body:{setupToken:token,email,password:'Disposable-native-owner-892!zz',allowedOrigin:'https://store.example.test',ownerName:'Morgan Support'}})
   const native=(path,options={})=>app.ok(path,{token:owner.token,...options})
   const project=owner.projectId
+  await protectedFeedback({origin,owner,allowedOrigin:'https://store.example.test',request:(url,init)=>app.request(new URL(url).pathname,{...init,raw:true})})
   const memberEmail='jordan@example.test',memberSub=randomUUID(),memberAgent=randomUUID()
   const invite=(await native(`/api/management/projects/${project}/agents`,{body:{email:memberEmail}})).data
   await app.ok('/api/identity/accept-token',{body:{token:new URL(invite.invitationUrl).searchParams.get('token'),name:'Jordan Support',password:'Disposable-native-jordan-693!zz'}})
@@ -77,6 +79,8 @@ export async function agentDoorJourney(){
   const updated=await call('happytohelp.conversations.update',{id:conversation.id,version:ticket.ticket_version,subject:'Shipping investigation',expected_revision:ticket.ticket_version,idempotency_key:randomUUID()})
   assert.equal(updated.outcome,'done',JSON.stringify(updated))
   assert.equal((await call('happytohelp.conversations.update',{id:conversation.id,version:ticket.ticket_version,subject:'Stale edit',expected_revision:ticket.ticket_version,idempotency_key:randomUUID()})).code,'revision_conflict')
+  assert.equal((await call('happytohelp.conversations.update',{id:conversation.id,version:ticket.ticket_version,subject:'Stale native version without a door revision hint',idempotency_key:randomUUID()})).code,'revision_conflict')
+  assert.equal((await native(`/api/dashboard/projects/${project}/conversations/${conversation.id}/ticket`)).data.subject,'Shipping investigation')
   const assigned=await call('happytohelp.conversations.assign',{id:conversation.id,version:updated.result.ticket.ticket_version,user_id:owner.userId,idempotency_key:randomUUID()})
   assert.equal(assigned.outcome,'done',JSON.stringify(assigned))
   assert.equal((await native(`/api/dashboard/projects/${project}/conversations/${conversation.id}/ticket`)).data.assigned_to,owner.userId)
@@ -90,6 +94,13 @@ export async function agentDoorJourney(){
   ]){const read=await call('happytohelp.'+name,args);assert.equal(read.outcome,'done',name+': '+JSON.stringify(read))}
   const observedJob=(await call('happytohelp.jobs.read',{id:job.id})).result.job
   assert.equal(observedJob.status,'queued');assert.match(observedJob.observation,/unconfirmed/)
+  const report=await rpc('tools/call',{name:'happytohelp.reports.read',arguments:{start:day(Date.now()-86400000),end:day(Date.now()+86400000)}})
+  assert.ok(report.data.result._meta['com.runeditrun/decision'].classes.some(item=>item.class==='sensitive'),'native protected customer feedback adds sensitive to the report read')
+  await adopt({...autonomousPolicy(),rules:[{id:'all',class:'*',do:'autonomous'},{id:'protected',class:'sensitive',do:'blocked'}]})
+  const protectedReport=await call('happytohelp.reports.read',{start:day(Date.now()-86400000),end:day(Date.now()+86400000)})
+  assert.equal(protectedReport.code,'policy_blocked');assert.ok(!JSON.stringify(protectedReport).includes('321-54-6789'))
+  assert.equal((await call('happytohelp.reports.read',{start:'2000-01-01',end:'2000-01-02'})).outcome,'done','a native report without protected comments stays standard')
+  await adopt()
   assert.equal((await call('happytohelp.articles.read',{id:article.id})).outcome,'done')
   for(const path of [`conversations/${conversation.id}`,`conversations/${conversation.id}/context`,`articles/${article.id}`,`jobs/${job.id}`,`operations/${note.result.operation}`])assert.equal((await rpc('resources/read',{uri:`happytohelp://projects/${project}/${path}`})).data.error,undefined,path)
   const absent=await rpc('resources/read',{uri:`happytohelp://projects/${project}/conversations/missing`}),foreign=await rpc('resources/read',{uri:`happytohelp://projects/foreign/conversations/${conversation.id}`})
@@ -141,6 +152,6 @@ export async function agentDoorJourney(){
   assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',conversation.id)).n,before+1)
   const audit=(await app.sql('SELECT row FROM agent_door_audit')).map(row=>JSON.parse(row.row))
   assert.ok(audit.some(row=>row.outcome==='done'));assert.ok(audit.some(row=>row.outcome==='refused'))
-  assert.equal(app.requests.filter(request=>!['GET','HEAD'].includes(request.method)).length,0,'internal support work performs no provider mutation or external send')
+  assert.equal(app.requests.filter(request=>!['GET','HEAD'].includes(request.method)).length,0,'the configured network boundary receives no mutating provider request')
  }finally{await app.close()}
 }

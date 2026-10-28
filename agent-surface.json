@@ -603,7 +603,8 @@
       "scope": "happytohelp.reports.read",
       "readOnly": true,
       "classes": [
-        "standard"
+        "standard",
+        "sensitive"
       ],
       "clauses": [
         "REPORTS-001"
@@ -918,6 +919,22 @@
       "id": "reports",
       "tool": "happytohelp.reports.read",
       "args": {
+        "start": "2000-01-01",
+        "end": "2000-01-02"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "protected-reports",
+      "tool": "happytohelp.reports.read",
+      "args": {
         "start": "2026-10-01",
         "end": "2026-10-29"
       },
@@ -926,6 +943,13 @@
           "class": "standard",
           "facts": {
             "measure": 1
+          }
+        },
+        {
+          "class": "sensitive",
+          "facts": {
+            "measure": 1,
+            "kind": "protected-content"
           }
         }
       ]

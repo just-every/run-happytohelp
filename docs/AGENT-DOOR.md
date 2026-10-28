@@ -27,6 +27,9 @@ subject or priority, assign a current teammate and add an internal note.
 Ticket and article searches return at most 100 records. Transcript reads return
 the first 1,000 messages and up to 200 attributed operations; they do not promise
 a complete export of a longer history. Use the native export door for that job.
+Reports include the native calendar aggregates and customer feedback. Protected
+content in that returned feedback adds the sensitive class; a policy blocking
+that class refuses the read without returning the comment.
 
 Internal changes call the same native ticket and note services as the dashboard.
 They retain native version fences and store the agent, sponsoring person and

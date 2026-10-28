@@ -219,6 +219,45 @@ undo rather than losing those edits.
 
 ### Configuration and lifecycle mapping
 
-A Zendesk file can also contain singular `group`, `view`, `schedule`, `trigger` and `automation` records. Include complete original timestamps. Groups import without members or a new default. Views with supported all-conditions import privately for the importing admin. Schedules retain supported weekly intervals, timezone and explicit holiday date ranges but start inactive. Supported triggers and hourly automations become native drafts: review the per-item changes, open their native settings from the import report, preview, then publish explicitly. Unsupported rule conditions or actions set the whole rule aside; a missing condition is never dropped to broaden a rule. Native rules process new journal events, and hourly automations run once per matching ticket episode. SLA policies, forms, memberships, brands and other vendors’ configuration equivalents are still incomplete.
+A Zendesk file can also contain singular `group`, `view`, `schedule`, `trigger` and `automation` records. Include complete original timestamps. Groups import without members or a new default. Views with supported all-conditions import privately for the importing admin. Schedules retain supported weekly intervals, timezone and explicit holiday date ranges but start inactive. Supported triggers and hourly automations become native drafts: review the per-item changes, open their native settings from the import report, preview, then publish explicitly. Unsupported rule conditions or actions set the whole rule aside; a missing condition is never dropped to broaden a rule. Native rules process new journal events, and hourly automations run once per matching ticket episode. Broader SLA policies, memberships, defaults, brands and other vendors’ configuration equivalents remain incomplete.
 
 New imports retain their explicit lifecycle and channel. Zendesk/Freshdesk distinguish final Closed from Solved; Help Scout/Intercom use a reopenable Closed state, which maps to native Solved. Historical owners are not granted native access or activated. Existing imported records are not rewritten when this mapping changes: a changed mapping meeting earlier native state remains a review conflict.
+
+
+### Bounded Zendesk SLA policies
+
+Upload a singular `sla_policy` wrapper alongside its singular `schedule` record.
+This slice accepts exactly one `policy_metrics` entry: `metric` is
+`first_reply_time`, `business_hours` is `true`, `target` is positive business
+minutes, and `priority` is explicitly `low`, `normal`, `high` or `urgent`.
+Other priorities receive no commitment from this policy. The source `filter` must have
+empty `any` and either empty `all` or only matching `priority is` conditions.
+Extra metrics, other conditions, unknown semantics and conflicting schedules
+reject the entire policy; no condition or metric is discarded to widen scope.
+
+Zendesk policy exports do not establish a calendar association. After reviewing
+the source schedule, the importing admin must add `move_in_schedule_id` with
+that schedule's source ID to the policy payload. This is a Move in annotation,
+not a Zendesk API field. The schedule must be present and supported in the same
+upload. Review the named association and priority in the upload preview before
+approving. No account default or calendar is inferred.
+
+For example, alongside schedule 501, a policy payload can contain:
+
+```json
+{"sla_policy":{"id":502,"title":"Normal first response","position":0,"created_at":"2024-01-01T00:00:00Z","updated_at":"2024-01-02T00:00:00Z","filter":{"all":[],"any":[]},"move_in_schedule_id":501,"policy_metrics":[{"priority":"normal","metric":"first_reply_time","target":120,"business_hours":true}]}}
+```
+
+Both records arrive inactive. The review and report link to native SLA settings.
+Review native order (the first matching active policy wins), timezone, holidays,
+priority and pauses before activating the calendar and then the policy.
+Native pending status pauses the clock; on-hold does not pause this imported
+subset. Approaching alerts, unattended escalation and backup recipients are not
+configured by the import. Imported historical tickets never acquire SLA clocks
+or alerts, including after activation. These stated native semantics do not
+claim full Zendesk equivalence. On a test ticket, compare its first-response
+deadline with a hand calculation before using the policy for live work.
+
+A second identical import is a no-op. Undo removes an unchanged imported policy
+before its calendar. Native edits or activation preserve the policy; a calendar
+referenced by a remaining policy is also preserved.

@@ -1,4 +1,5 @@
 import type {Env} from '../../platform/env'
+import {HTTPException} from 'hono/http-exception'
 import {ToolRefusal,type ToolDefinition,type ToolContext,type JsonSchemaObject} from '../../vendor/agent-base/modules/agent-door/index.ts'
 import {actorFor,articleRead,contextRead,conversationRead,jobRead,operationRead,readClasses,redacted} from './read.ts'
 import {currentGrant} from './local-credentials.ts'
@@ -22,8 +23,8 @@ export function happyTools(env:Env):ToolDefinition[]{
  const read=(name:string,title:string,clauses:string[],input:JsonSchemaObject,run:(args:any,ctx:ToolContext)=>Promise<any>):ToolDefinition=>{
   const prepared=new WeakMap<Record<string,unknown>,{person:string;record:unknown}>()
   return {
-  name:'happytohelp.'+name,title,description:title+'. Reads current native project authority and redacted records.',scope:'happytohelp.'+name,readOnly:true,inputSchema:input,outputSchema:output(readOutputs[name]),classes:['conversations.list','conversations.read','context.read','articles.list','articles.read'].includes(name)?['standard','sensitive']:['standard'],clauses,untrusted:true,
-  async classify(args,ctx){const record=await run(args,ctx);prepared.set(args,{person:ctx.person.id,record});return ['conversations.list','conversations.read','context.read','articles.list','articles.read'].includes(name)?readClasses(record):[{class:'standard',facts:{measure:1}}]},
+  name:'happytohelp.'+name,title,description:title+'. Reads current native project authority and redacted records.',scope:'happytohelp.'+name,readOnly:true,inputSchema:input,outputSchema:output(readOutputs[name]),classes:['conversations.list','conversations.read','context.read','articles.list','articles.read','reports.read'].includes(name)?['standard','sensitive']:['standard'],clauses,untrusted:true,
+  async classify(args,ctx){const record=await run(args,ctx);prepared.set(args,{person:ctx.person.id,record});return ['conversations.list','conversations.read','context.read','articles.list','articles.read','reports.read'].includes(name)?readClasses(record):[{class:'standard',facts:{measure:1}}]},
   async run(args,ctx){const saved=prepared.get(args),current=await run(args,ctx);if(!saved||saved.person!==ctx.person.id||JSON.stringify(saved.record)!==JSON.stringify(current))throw new ToolRefusal('native_evidence_changed');return {result:current}},
   }
  }
@@ -49,7 +50,7 @@ export function happyTools(env:Env):ToolDefinition[]{
   read('operations.read','Read attributed native work',['AGENT-002'],schema({id:string}),async(a,c)=>({operation:await operationRead(env,c,a.id)})),
   read('reports.read','Read native workspace report',['REPORTS-001'],schema({start:{type:'string',pattern:'^\\d{4}-\\d{2}-\\d{2}$'},end:{type:'string',pattern:'^\\d{4}-\\d{2}-\\d{2}$'}}),async(a,ctx)=>{
    await projectRead(ctx);const actor=await actorFor(env,ctx,'reports.view'),settings=await env.DB.prepare('SELECT settings_json FROM project_settings WHERE project_id=?').bind(actor.projectId).first<{settings_json:string}>(),timezone=JSON.parse(settings?.settings_json??'{}').timezone??'UTC'
-   return {report:await readReport(env,actor.projectId,reportRange({period:'custom',start:a.start,end:a.end},timezone))}
+   return redacted({report:await readReport(env,actor.projectId,reportRange({period:'custom',start:a.start,end:a.end},timezone))})
   }),
   read('people.read','Read customer identities',['IDENTITY-001','ACCESS-001'],schema(),async(_,ctx)=>{const actor=await projectRead(ctx);return {people:(await env.DB.prepare(`SELECT id,name,email FROM contacts WHERE project_id=? AND ${contactWritable} ORDER BY id LIMIT 100`).bind(actor.projectId).all()).results}}),
   read('workflows.read','Read current routing rules',['AUTOMATION-001','AUTOMATION-002'],schema(),async(_,ctx)=>{const actor=await projectRead(ctx);return redacted({workflows:(await env.DB.prepare('SELECT id,name,state,updated_at FROM workflow_rules WHERE project_id=? ORDER BY id').bind(actor.projectId).all()).results})}),
@@ -82,7 +83,14 @@ export function happyTools(env:Env):ToolDefinition[]{
   async run(args,ctx){
    if(ctx.clientId?.startsWith('edition:'))throw new ToolRefusal('insufficient_scope')
    const actor=await actorFor(env,ctx,permission),authority=await agentAuthority(env,actor,ctx,'happytohelp.'+name,permission)
-   const result=await effect(args,ctx,actor,authority)
+   let result:any
+   try{result=await effect(args,ctx,actor,authority)}catch(error){
+    if(error instanceof HTTPException){
+     const codes:Record<number,string>={400:'invalid_arguments',403:'permission_denied',404:'not_found',409:'revision_conflict'}
+     if(codes[error.status])throw new ToolRefusal(codes[error.status])
+    }
+    throw error
+   }
    const target=String(args.id),operation=authority[nativeAgentAuthority].operationId
    const uri=`happytohelp://projects/${actor.projectId}/conversations/${target}`
    ctx.emit('conversation.changed',uri,{operation})

@@ -9,7 +9,7 @@ import {runScheduled} from '../jobs'
 import {dispatchOperatorNotifications} from '../modules/integrations/notifications'
 import {purgeExpiredAudit} from '../modules/audit/retention'
 
-type Consumer='cron'|'notifications'|'reports'|'audit'|'followups'
+type Consumer='cron'|'notifications'|'reports'|'audit'
 /** Serial handoff makes unused reservations spendable without double admission.
  * The outer meter also counts discovery and failures, even when a consumer throws.
  * Each later consumer still gets its turn after a failure in an earlier one. */
@@ -28,7 +28,7 @@ export async function runScheduledInvocation(env:Env,options:{now?:number;consum
  // Follow-ups use a separate bounded turn after every existing consumer. A
  // saturated invocation leaves them for the next tick without changing mail
  // recovery admission or any earlier consumer's allocation.
- if(scheduledStatementLimit-budget.statements>=1)await run('followups',input=>remindObligations(cronConsumer(input,1)))
+ if(scheduledStatementLimit-budget.statements>=1){try{await remindObligations(cronConsumer({...env,DB:budget.database},1))}catch(error){errors.push(error)}}
  if(errors.length)throw new AggregateError(errors,'Scheduled consumers failed')
  return budget.metrics
 }

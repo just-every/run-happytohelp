@@ -60,7 +60,7 @@ const memberPolicies:Record<string,RegistryEntry>={
  conversation_followers:{erase:{column:'user_id',through:'conversation_id'}},
  ticket_handle_sessions:{effects:[{prefix:'UPDATE ticket_handle_sessions SET ended_at=max(started_at,?)',where:'user_id=? AND ended_at IS NULL',before:c=>[c.now],after:c=>[c.user]}]},
  audit_events:{audit:true},
- ...Object.fromEntries(['macros','conversation_reads','conversation_notes','github_oauth_states','move_in_runs','local_pairings','local_grants','local_authorizations','local_devices','operator_notifications','ticket_group_members','ticket_views','notification_preferences','notification_inbox','conversation_note_mentions','routing_operators','mailbox_oauth_states','email_sender_rules','email_message_options','operator_ticket_commands','report_schedules','report_schedule_recipients','report_schedule_deliveries','customer_identity_links','customer_identity_link_history','api_notes'].map(table=>[table,{}])),
+ ...Object.fromEntries(['macros','conversation_reads','conversation_notes','github_oauth_states','move_in_runs','local_pairings','local_grants','local_authorizations','local_devices','operator_notifications','ticket_group_members','ticket_views','notification_preferences','notification_inbox','conversation_note_mentions','routing_operators','mailbox_oauth_states','email_sender_rules','email_message_options','operator_ticket_commands','report_schedules','report_schedule_recipients','report_schedule_deliveries','customer_identity_links','customer_identity_link_history','voice_context_links','api_notes'].map(table=>[table,{}])),
  platform_admins:{accountOnly:true},owner_recoveries:{accountOnly:true},
  assertion_cleanup:{internal:'cleanup'},
 }

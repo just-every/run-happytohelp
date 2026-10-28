@@ -2,7 +2,7 @@
   "schema": 1,
   "seed": "happytohelp-product",
   "old": {
-    "commit": "d7ef6084ceba048fb35f17e61c2b864df9721e69",
+    "commit": "615278d0b6fa0ef6c419a4990037a17f5c614637",
     "files": [
       "CONTRACT.md",
       "ACCEPTANCE.md"
@@ -4660,24 +4660,6 @@
     },
     {
       "file": "CONTRACT.md",
-      "line": 646,
-      "cell": "gap",
-      "text": "Implementation gaps: Procedure report drill-down, joined negative CSAT and reopened outcomes, procedure evaluation coverage, known-denominator rates and reconciled USD cost estimates remain incomplete. The trace shows the latest 50 executions; approval describes the recorded automatic assistant policy or explicit operator request, not a separate per-tool human consent receipt. Provider cost remains unavailable without reconciled price evidence. Live qualification gap: Actual production traces, tool and procedure outcomes and costs reconciled to real usage and prices remain unobserved; network-edge fixtures establish no live economics.",
-      "to": "gap",
-      "ids": [
-        "AGENT-002"
-      ],
-      "also": [
-        {
-          "to": "register",
-          "ids": [
-            "R-16"
-          ]
-        }
-      ]
-    },
-    {
-      "file": "CONTRACT.md",
       "line": 647,
       "cell": "gap",
       "text": "No implementation located. No Penny/Vector feedback and shipped-feature support follow-up implementation located.",
@@ -5677,13 +5659,6 @@
     },
     {
       "file": "ACCEPTANCE.md",
-      "line": 156,
-      "text": "| AGENT-002 | partial | Open production-run traces from a conversation and drill from a procedure report to supporting cases; include timeout, denied tool, handoff, negative CSAT and reopened outcomes. Compare rates and USD provider-cost estimates to raw usage and known denominators, redact secrets and show unavailable price data explicitly. | Local fixture evidence: `tests/journeys/ai.mjs` with `tests/helpers/ai/answers.mjs` (answersJourney) proves the conversation trace joins source publication versions and assistant fingerprint, requested scope, automatic policy approval, timing, provider completion, committed message evidence, denied citations and handoff receipts; it denies visitors and other projects and omits prompt, answer and raw tool payloads. `tests/helpers/ai/assistance.mjs` (assistanceJourney) proves explicit operator-request attribution, suggestion scope and two-round token evidence without claiming a sent answer. `tests/helpers/ai/lifecycle.mjs` (lifecycleJourney) proves timeout and interrupted outcomes remain unknown without replay and missing prices remain unavailable. `tests/journeys/ai-browser.mjs` with `tests/helpers/ai/suggestions-browser.mjs` (suggestionsAtWidth) opens the trace from a fixture conversation and keyboard-expands timeout and denied details; screenshots cover 1440 and 390. Existing training and usage evidence: `src/edition/ai/training-trace.ts`; `tests/journeys/first-run.mjs`; `tests/reports/figures.mjs`. Implementation gaps: Procedure report drill-down, joined negative CSAT and reopened outcomes, procedure evaluation coverage, known-denominator rates and reconciled USD cost estimates remain incomplete. The trace shows the latest 50 executions; approval describes the recorded automatic assistant policy or explicit operator request, not a separate per-tool human consent receipt. Provider cost remains unavailable without reconciled price evidence. Live qualification gap: Actual production traces, tool and procedure outcomes and costs reconciled to real usage and prices remain unobserved; network-edge fixtures establish no live economics. |",
-      "to": "docs",
-      "path": "docs/verify.md"
-    },
-    {
-      "file": "ACCEPTANCE.md",
       "line": 157,
       "text": "| FEEDBACK-001 | missing | From two related customer tickets, hand off source-linked feedback to Penny, associate an engineering issue and receive a release event; preview and approve requester updates, deduplicate events, honor opt-out and keep a still-failing customer request open. | No implementation located.. No Penny/Vector feedback and shipped-feature support follow-up implementation located. |",
       "to": "docs",
@@ -6018,6 +5993,35 @@
       "file": "ACCEPTANCE.md",
       "line": 137,
       "text": "| CRM-001 | partial | For each named CRM, connect a test account through settings, map a customer, change source entitlement and refresh the ticket, publish an approved support outcome and disconnect. Verify conflict handling, read-only scope refusal and no cross-account data exposure. | `tests/journeys/connections.mjs` \u2014 \u201cread-only HubSpot context uses explicit customer mappings, refreshes changed source fields and refuses stale authority, identity conflicts and unavailable grants without customer access\u201d (`tests/helpers/hubspot-context.mjs`): exact read-only scopes and account check; explicit contact and company source IDs; changed plan and entitlement context through ticket refresh; timestamps and stale state; conflicting mapping, identity mismatch, permission loss, disconnect, cross-workspace and customer denial, session and disconnect races, erasure, redirect and response bounds. Local emitted-interface fixture evidence: `tests/journeys/connections-browser.mjs`, Connections owner journey extended by `tests/helpers/hubspot/browser.mjs`: Settings connect/disconnect through native password step-up; exact-scope refusal with cleared token and retained account/property inputs; explicit customer/company mapping and remapping; shared customer and actual-ticket-requester context with changed entitlement, source IDs, owner IDs and check/refresh times; fresh, stale, loading, disconnected, identity-mismatch, revoked-provider and unavailable states; conflicting mapping refusal, native authority revocation while open, denied operator and foreign workspace; stale customer/ticket response isolation, unmap and reconnect clearing. Browser assertions run at 1440px, with changed screens captured at 1440 and 390px. Live HubSpot qualification, wider staff entitlement, ct approval of the conservative default, Orbit, Salesforce and approved CRM writes remain unproved. Conservative default ADOPTED pending ct approval: owner or admin only with native permissions, exact contact and company read scopes, explicit source mapping with email and company-domain plus association checks, no automatic matching or CRM-derived customer access; failed refreshes clear cached context and reconnect clears mappings. Imported and restored archives clear CRM credentials and cached personal context, mark mappings stale and require explicit reauthorization, including older archives. Authorized support operators still need relevant CRM context on their own work: it is not yet shown to them in their ticket and customer panels. Approved CRM writes remain contracted and unproved. CRM-001 remains partial. |",
+      "to": "docs",
+      "path": "docs/verify.md"
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 646,
+      "cell": "gap",
+      "text": "Implementation gaps: Procedure report drill-down, procedure evaluation coverage, known-denominator rates and reconciled USD cost estimates remain incomplete. The trace shows the latest 50 executions; approval describes the recorded automatic assistant policy or explicit operator request, not a separate per-tool human consent receipt. Provider cost remains unavailable without reconciled price evidence. Live qualification gap: Actual production traces, tool and procedure outcomes and costs reconciled to real usage and prices remain unobserved; network-edge fixtures establish no live economics.",
+      "to": "gap",
+      "ids": [
+        "AGENT-002"
+      ],
+      "also": [
+        {
+          "to": "register",
+          "ids": [
+            "R-16"
+          ]
+        },
+        {
+          "to": "docs",
+          "path": "docs/verify.md"
+        }
+      ]
+    },
+    {
+      "file": "ACCEPTANCE.md",
+      "line": 156,
+      "text": "| AGENT-002 | partial | Open production-run traces from a conversation and drill from a procedure report to supporting cases; include timeout, denied tool, handoff, negative CSAT and reopened outcomes. Compare rates and USD provider-cost estimates to raw usage and known denominators, redact secrets and show unavailable price data explicitly. | Local fixture evidence: `tests/journeys/ai.mjs` with `tests/helpers/ai/answers.mjs` (answersJourney) proves the conversation trace joins source publication versions and assistant fingerprint, requested scope, automatic policy approval, timing, provider completion, committed message evidence, denied citations and handoff receipts; it denies visitors and other projects and omits prompt, answer and raw tool payloads. `tests/helpers/ai/assistance.mjs` (assistanceJourney) proves explicit operator-request attribution, suggestion scope and two-round token evidence without claiming a sent answer. `tests/helpers/ai/lifecycle.mjs` (lifecycleJourney) proves timeout and interrupted outcomes remain unknown without replay and missing prices remain unavailable. `tests/journeys/ai-browser.mjs` with `tests/helpers/ai/suggestions-browser.mjs` (suggestionsAtWidth) opens the trace from a fixture conversation and keyboard-expands timeout and denied details; screenshots cover 1440 and 390. Local cycle evidence: `src/modules/ai-support/trace-outcomes.ts` joins retained message authorship contributions to resolution revision boundaries within the workspace and conversation, returning only cycle identity/time, recorded attribution, current feedback scale/value/revision and later reopening time. `tests/helpers/ai/cycle-outcomes.mjs` in answersJourney proves separate native answer/resolution/feedback cycles, rerating history, shared contributions, missing or ambiguous provenance, denied and revoked authority, and erasure; assistanceJourney distinguishes adopted and completed unsent drafts, and lifecycleJourney retains uncertain attempts without customer outcomes. `tests/helpers/ai/suggestions-browser.mjs` displays negative, rerated, reopened, unknown, erased, empty, loading, failed-read and revoked-access trace states with a supporting conversation link and keyboard expansion; browser captures cover 1440 and 390, with assertions at 1440. Shared cycle feedback establishes neither causal blame nor independently verified recovery. Existing training and usage evidence: `src/edition/ai/training-trace.ts`; `tests/journeys/first-run.mjs`; `tests/reports/figures.mjs`. Implementation gaps: Procedure report drill-down, procedure evaluation coverage, known-denominator rates and reconciled USD cost estimates remain incomplete. The trace shows the latest 50 executions; approval describes the recorded automatic assistant policy or explicit operator request, not a separate per-tool human consent receipt. Provider cost remains unavailable without reconciled price evidence. Live qualification gap: Actual production traces, tool and procedure outcomes and costs reconciled to real usage and prices remain unobserved; network-edge fixtures establish no live economics. |",
       "to": "docs",
       "path": "docs/verify.md"
     }

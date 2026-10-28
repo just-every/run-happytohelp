@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "dd815b92bda62305b57499f6905c54112c6e67741f6b20163183b3a90819ce21",
+      "sha256": "03d96991cbcda77878dec938b495f9d198e0527f55953d463c527b29e2b4a9e2",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "db72ea58e082b975fffd089962d04827a8ce3c5c9bdf938da8044d75596d3912",
+      "sha256": "2c8ff49552e81a55f9ab127ba3277666fda6290c5427d21545ee5984f5762ada",
       "executable": false
     },
     "DEMO.md": {
@@ -1684,15 +1684,15 @@
       "executable": false
     },
     "docs/contract/COVERAGE.json": {
-      "sha256": "85f14c085062fe796a667c032a04580edcc3d42416bcf390e41eed952fb00dfa",
+      "sha256": "17303f617be38779707c72e5efe9c8921ad53f4951aa2bb37f9f0cecb39e56dd",
       "executable": false
     },
     "docs/contract/DONE-AUDIT.md": {
-      "sha256": "5a773958124967757ce308017455798aa1cf80a3aab7c6eacb38ddadd00aebd1",
+      "sha256": "37ab20ff495fd77e5f3e3a124e192a9a78a8c11ba6df71b24cfc737ffe3b3f8f",
       "executable": false
     },
     "docs/contract/ID-MAP.json": {
-      "sha256": "4fa671e38da654cb4fdc934cd0aceea2c6c6e9c920cd2da0e5b3c42de64155cb",
+      "sha256": "5956cb34828d36d025250c7ab8b9a541ade842719b085416abe63e21c0374e4f",
       "executable": false
     },
     "docs/contract/machine-api.md": {
@@ -1840,7 +1840,7 @@
       "executable": false
     },
     "docs/verify.md": {
-      "sha256": "5d39721d65639beb4fbee43e48c04b8a0be81e25e2f09249b1c793ad3c52e629",
+      "sha256": "bf03c25deb4f56f769594af3fe878777b532ba8c2afaabe1f6877615de0c8a36",
       "executable": false
     },
     "docs/website-knowledge.md": {
@@ -3799,8 +3799,12 @@
       "sha256": "f75dcbc5e518a4885e086703293290c4a8c859213a799e1a9d17ba74a7cae977",
       "executable": false
     },
+    "src/modules/ai-support/trace-outcomes.ts": {
+      "sha256": "ad4deecfd6efc17871ace39495ce232fb1c950b14728e8c7a209f43b4c7dde9b",
+      "executable": false
+    },
     "src/modules/ai-support/trace.ts": {
-      "sha256": "80f4682203fcd49a1376bd8fa9f867f05f59d2521b9e915e4bd0e87f4d4d8bfa",
+      "sha256": "592cea7d8e41c6bc4911fca8877907f31c83d62aab84a0b4ef185ac729088a92",
       "executable": false
     },
     "src/modules/ai-support/vendor/ensemble/config/tool_execution.js": {
@@ -8428,7 +8432,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ProductionTrace.jsx": {
-      "sha256": "c47b4c35b19346f84c3157febc8370bc37ee43b82e7e613227ac9ae9f6f3357d",
+      "sha256": "9e4dd9c0a4f4b127b7f015bf2e7c5b70329ac8a6e5024e2d9c68170c003cfc22",
       "executable": false
     },
     "src/ui/dashboard/components/conversation/ResolutionSummary.jsx": {
@@ -11272,7 +11276,7 @@
       "executable": false
     },
     "tests/helpers/ai/answers.mjs": {
-      "sha256": "5ca50486f1cde135bd2926ed19eda63d5a267d9aab5fe72c7accfc1b07555e5b",
+      "sha256": "f64936e39a01abb745f05a53c088ffc5fa00a675ba260eb033bd38fa40914484",
       "executable": false
     },
     "tests/helpers/ai/app.mjs": {
@@ -11280,11 +11284,15 @@
       "executable": false
     },
     "tests/helpers/ai/assistance.mjs": {
-      "sha256": "e623714e2a62993873b3d5a62a95c60adc923365a9fbc1c824e4d23aff749654",
+      "sha256": "4fc64e4a9cad573ae16c2d3c2896238b03f893c15d21ae820f86036a58f888bb",
+      "executable": false
+    },
+    "tests/helpers/ai/cycle-outcomes.mjs": {
+      "sha256": "a443ff92ede257df023aaf74bb421b42c6885cd989d49b240b3eb37693635db6",
       "executable": false
     },
     "tests/helpers/ai/lifecycle.mjs": {
-      "sha256": "e83431feb69b79c94709585c8593cf6be2469b509a41b1e519d3a020f1e3ecd0",
+      "sha256": "d2b015757bd1d6ee44e7230ee7105b5f1f755de467843e7a2de3563008f88489",
       "executable": false
     },
     "tests/helpers/ai/limits.mjs": {
@@ -11320,7 +11328,7 @@
       "executable": false
     },
     "tests/helpers/ai/suggestions-browser.mjs": {
-      "sha256": "07617b4dbd1bb21f28823fc8d727c00675872384c22c16b0b98e72b255ecb9a8",
+      "sha256": "f06eedb5f388f86c96c665cbb2f9c21f34b91f1eb87e3e5fa49a473889bf94bd",
       "executable": false
     },
     "tests/helpers/ai/training-browser.mjs": {

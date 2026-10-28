@@ -1,5 +1,5 @@
 import type {Env,Actor} from '../../platform/env'
-import {ToolRefusal,type Principal,type ClassAndFacts} from '../../vendor/agent-base/modules/agent-door/index.ts'
+import {ToolRefusal,type ToolContext,type ClassAndFacts} from '../../vendor/agent-base/modules/agent-door/index.ts'
 import {memberAccess} from '../../modules/access/gate'
 import {getTicket} from '../../modules/tickets/model'
 import {getContextPacket} from '../../modules/customer-context/service'
@@ -7,7 +7,7 @@ import {redactRepositoryContent} from '../../modules/integrations/repository'
 import {linkedProject,nativePerson} from './people.ts'
 import {selectedTarget} from './local-credentials.ts'
 import type {Permission} from '../../modules/access/catalogue'
-export type Who=Pick<Principal,'person'|'clientId'|'scopes'>
+export type Who=Pick<ToolContext,'person'|'clientId'|'scopes'>
 export async function actorFor(env:Env,who:Who,permission?:Permission):Promise<Actor>{
  const person=await nativePerson(env,who.person.id),link=await linkedProject(env)
  if(!person||!link)throw new ToolRefusal('sponsor_unavailable')

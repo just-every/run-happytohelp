@@ -25,6 +25,14 @@ export function happyTools(env:Env):ToolDefinition[]{
   return {
   name:'happytohelp.'+name,title,description:title+'. Reads current native project authority and redacted records.',scope:'happytohelp.'+name,readOnly:true,inputSchema:input,outputSchema:output(readOutputs[name]),classes:['conversations.list','conversations.read','context.read','articles.list','articles.read','reports.read'].includes(name)?['standard','sensitive']:['standard'],clauses,untrusted:true,
   async classify(args,ctx){const record=await run(args,ctx);prepared.set(args,{person:ctx.person.id,record});return ['conversations.list','conversations.read','context.read','articles.list','articles.read','reports.read'].includes(name)?readClasses(record):[{class:'standard',facts:{measure:1}}]},
+  async target(args,ctx){
+   if(name==='context.read'){const {ticket}=await conversationRead(env,ctx,String(args.id));return {kind:'conversation',id:ticket.id}}
+   const targets:Record<string,[string,string]>={'conversations.read':['conversation','ticket'],'articles.read':['article','article'],'jobs.read':['job','job'],'operations.read':['operation','operation']}
+   const target=targets[name]
+   if(!target)return null
+   const record=await run(args,ctx)
+   return {kind:target[0],id:record[target[1]].id}
+  },
   async run(args,ctx){const saved=prepared.get(args),current=await run(args,ctx);if(!saved||saved.person!==ctx.person.id||JSON.stringify(saved.record)!==JSON.stringify(current))throw new ToolRefusal('native_evidence_changed');return {result:current}},
   }
  }
@@ -60,6 +68,7 @@ export function happyTools(env:Env):ToolDefinition[]{
  const mutation=(name:string,title:string,clauses:string[],input:JsonSchemaObject,permission:'conversations.manage'|'conversations.notes',effect:(args:any,ctx:ToolContext,actor:any,authority:any)=>Promise<any>):ToolDefinition=>({
   name:'happytohelp.'+name,title,description:title+' through the native transaction; current role and source revision remain authoritative.',scope:'happytohelp.'+name,readOnly:false,inputSchema:input,outputSchema:output({[name==='conversations.note'?'note':'ticket']:record,operation:string}),classes:['standard'],clauses,
   async classify(args,ctx){await actorFor(env,ctx,permission);await conversationRead(env,ctx,String(args.id));return [{class:'standard',facts:{measure:1}}]},
+  async target(args,ctx){await actorFor(env,ctx,permission);const {ticket}=await conversationRead(env,ctx,String(args.id));return {kind:'conversation',id:ticket.id}},
   revision:async(args,ctx)=>{const {ticket}=await conversationRead(env,ctx,String(args.id));return ticket.ticket_version},
   async summary(args,ctx){
    const {ticket}=await conversationRead(env,ctx,String(args.id)),items=[title]

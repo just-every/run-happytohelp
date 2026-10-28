@@ -1612,7 +1612,7 @@
       "executable": false
     },
     "agent-surface.json": {
-      "sha256": "e25df178a46e174f5d8cad1c0dbd0f423104b2f8d248cbfe92f7785ffc517315",
+      "sha256": "91f9f910d9dfe142807bfaafe5f37d5ebc6182cd7c458e24afadd50750764ddc",
       "executable": false
     },
     "AGENTS.md": {
@@ -1660,7 +1660,7 @@
       "executable": false
     },
     "docs/AGENT-DOOR.md": {
-      "sha256": "03b1077540df2378f281d84bcbc95ef3d141a1e9ab1c35db85709f8fd6fdec02",
+      "sha256": "859a9a79aca861e44ebdb2137b0f241adb718032e045b6ed42695727878d9045",
       "executable": false
     },
     "docs/AGENT-FIX.md": {
@@ -3464,7 +3464,7 @@
       "executable": false
     },
     "src/edition/agent-door/read.ts": {
-      "sha256": "ea858b711a3004ac86d6cba35fe058f0f8101f78141ea303c37ac319f450f40c",
+      "sha256": "3420cb68d3ba0776230c6a0e29ce8f882f73733cc278c1b2629726df546ecbdb",
       "executable": false
     },
     "src/edition/agent-door/resources.ts": {
@@ -3476,7 +3476,7 @@
       "executable": false
     },
     "src/edition/agent-door/tools.ts": {
-      "sha256": "a9c261cb6f8cc6810b01becf92ca0f2681d02e210cbf03cd4d8ba932ee0b6c0c",
+      "sha256": "fd350af756f797b2e11b1ed2c03df0250899b71710a16b8e8e8d2fe1029e82c0",
       "executable": false
     },
     "src/edition/ai/customer-context-provider.ts": {
@@ -12464,15 +12464,19 @@
       "executable": false
     },
     "tests/helpers/agent-door/initialize-owner.mjs": {
-      "sha256": "945473b73b5d7b95952e43a263827c11abc2bc75191ed9204030be8f17f978fa",
+      "sha256": "423c110ace2d36db1b560493b9eda82b327d9510a856b3a4bad4d776c04fad4b",
+      "executable": false
+    },
+    "tests/helpers/agent-door/initialize-reviewer.mjs": {
+      "sha256": "d721d5d172e0c95cf69bdd197ae91d32c10e602b8f550e948ac04c63030036d8",
       "executable": false
     },
     "tests/helpers/agent-door/journey.mjs": {
-      "sha256": "51c25fcb392cce93a3f454ff503a43d6be1dfb83aa8c43820d41781a219b72cf",
+      "sha256": "ea04606f2e615950fa09af6232578f31b148a484ba9e6edc91fec7617a73321b",
       "executable": false
     },
     "tests/helpers/agent-door/surface-journey.json": {
-      "sha256": "ce88683f51ffc0933ef85b2935e20b7bcfae5d1804b70e698d45884fcb7eef18",
+      "sha256": "c3d464d4bc1710fcdaeba3cf629f5829d490fc95179ae31f6a80b35cbe0d5a93",
       "executable": false
     },
     "tests/helpers/ai/answers.mjs": {

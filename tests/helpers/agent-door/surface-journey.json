@@ -43,6 +43,13 @@
           "external"
         ],
         "policy": "autonomous"
+      },
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
       }
     },
     {
@@ -61,7 +68,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      }
     },
     {
       "id": "assign",
@@ -86,7 +100,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      }
     },
     {
       "id": "note",
@@ -105,7 +126,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      }
     },
     {
       "id": "current-ticket",
@@ -123,7 +151,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      }
     },
     {
       "id": "update",
@@ -146,7 +181,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "conversation",
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      }
     },
     {
       "id": "operation",
@@ -164,7 +206,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "operation",
+        "id": {
+          "$from": "note",
+          "pointer": "/operation"
+        }
+      }
     },
     {
       "id": "articles",
@@ -197,7 +246,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "article",
+        "id": {
+          "$from": "articles",
+          "pointer": "/articles/0/id"
+        }
+      }
     },
     {
       "id": "reports",
@@ -440,7 +496,14 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "job",
+        "id": {
+          "$from": "transcript",
+          "pointer": "/jobs/0/id"
+        }
+      }
     }
   ],
   "verification": {
@@ -451,6 +514,19 @@
         "RER_INSTALLATION_ID": "installationId"
       },
       "initializer": "tests/helpers/agent-door/initialize-owner.mjs"
-    }
+    },
+    "replayAdmission": {
+      "prepare": [
+        "tickets",
+        "note"
+      ]
+    },
+    "reviewers": [
+      {
+        "label": "quality",
+        "email": "synthetic-quality@example.test",
+        "initializer": "tests/helpers/agent-door/initialize-reviewer.mjs"
+      }
+    ]
   }
 }

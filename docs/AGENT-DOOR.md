@@ -36,11 +36,22 @@ They retain native version fences and store the agent, sponsoring person and
 actual policy approvers in the native transaction. Internal notes remain private.
 Ticket history and note authors identify the agent for its sponsor. Every write
 needs an idempotency key; changing the arguments under a used key refuses.
+Retries recheck current policy, Pause, sponsor, consent and scope before returning
+a saved result. A newly required approval cannot reuse an earlier autonomous
+decision. Replaying an admitted write returns its original outcome once.
+
+Record tools resolve their native target under the caller's current access.
+Audit rows identify that native record; approval summaries bind the same target
+alongside the exact proposed change. Approval execution rechecks that evidence.
+The agent remains the preparer and its sponsor remains the native actor; a
+review or approval records the separate, currently signed-in person who made it.
 
 Private resource templates cover project conversations, conversation context,
 articles, connector jobs and attributed operations. Missing and restricted
 records have the same refusal. Customer and imported text is untrusted. Readers
-use redacted projections and never return connector credentials or bearer tokens.
+return refusal codes in JSON-RPC `error.data.code`, including
+`resource_unavailable` for a missing or restricted record and the current policy
+refusal when the read is blocked or held. Readers use redacted projections and never return connector credentials or bearer tokens.
 A connector report alone does not establish independently verified repair.
 
 The company chooses autonomous, review, approval or blocked dispositions.

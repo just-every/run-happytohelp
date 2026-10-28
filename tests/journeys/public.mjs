@@ -33,7 +33,7 @@ test('a published help center: Markdown rendered safely, complete summary search
   await publish(other,{slug:'foreign-guide',title:'foreign-guide',content:'Other project',summary:'violet lantern'})
   for(let i=0;i<18;i++)await publish(tenant,{slug:`guide-${i}`,title:`Guide ${String(i).padStart(2,'0')}`,content:'Instructions for your account.',summary:'violet lantern'})
   for(const base of [`/${tenant.projectId}`,`/${slug}`,`/help/${slug}`])for(const tail of ['','/','/search?keyword=retained','/retained-guide']){
-   const response=await request(base+tail),html=await response.text();assert.equal(response.status,200,base+tail);assert.ok(html.includes(`action="${base}/search"`),'search stays on the retained path')
+   const response=await request(base+tail),html=await response.text();assert.equal(response.status,200,base+tail);assert.equal(response.headers.get('referrer-policy'),'same-origin',base+tail);assert.ok(html.includes(`action="${base}/search"`),'search stays on the retained path')
    assert.doesNotMatch(html,signIn,'a public-only collection needs no sign-in link')
    assert.match(html,/class="help-center-controls"/,'customer request controls are available on every retained help path')
    assert.ok(html.includes(`href="/help/${tenant.projectId}/requests${tail==='/retained-guide'?'?afterReading=':'"'}`),'request form entry stays in this workspace and carries a receipt only from an article')

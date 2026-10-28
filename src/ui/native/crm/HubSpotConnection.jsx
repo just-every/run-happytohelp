@@ -8,7 +8,7 @@ export default function HubSpotConnection({projectId}) {
     return <Connection key={projectId + access.identity} projectId={projectId} writable={access.writable}/>;
 }
 function Connection({projectId, writable}) {
-    const {data, loading, error, notice, run} = useCrmResource(crmRoot(projectId));
+    const {data, loading, error, notice, denied, run} = useCrmResource(crmRoot(projectId));
     const token = useRef(null), [account, setAccount] = useState(''), [plan, setPlan] = useState(''), [entitlement, setEntitlement] = useState('');
     const [disconnect, setDisconnect] = useState(false);
     const connect = event => {
@@ -28,7 +28,7 @@ function Connection({projectId, writable}) {
         {notice && <p role="status" className="alert alert-success">{notice}</p>}
         {data && <p role="status">{data.connection?.connected ? `Connected to HubSpot account ${data.connection.account_id}` : 'HubSpot disconnected'}{data.connection?.updated_at && <> · Updated {new Date(data.connection.updated_at).toLocaleString()}</>}</p>}
         <button type="button" className="btn btn-white" disabled={loading} onClick={() => run()}>Check connection</button>
-        {!writable ? <p role="alert">Your role needs integrations.install to connect or disconnect HubSpot.</p> : <>
+        {denied ? <p role="alert">Connection controls are hidden while access is refused. Ask your owner to restore your permissions, then check the connection again.</p> : !writable ? <p role="alert">Your role needs integrations.install to connect or disconnect HubSpot.</p> : <>
             <form onSubmit={connect} className="crm-form" autoComplete="off">
                 <label>HubSpot account ID<input className="form-control" required inputMode="numeric" pattern="[0-9]+" maxLength={200} value={account} onChange={e => setAccount(e.target.value)}/></label>
                 <label>Private app token<input ref={token} className="form-control" type="password" required maxLength={10000} autoComplete="new-password"/></label>

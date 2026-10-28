@@ -26,7 +26,7 @@ export default function HubSpotMapping({projectId, contact, data, loading, writa
             if (await run(crmJson('PUT', {source_contact_id: source, company_id: company || null, source_company_id: company ? sourceCompany : null}), 'Mapping saved as stale. Refresh to verify identity and read context.')) setEditing(false);
         }}>
             <label>HubSpot contact ID<input className="form-control" required inputMode="numeric" pattern="[0-9]+" maxLength={200} value={source} onChange={e => setSource(e.target.value)}/></label>
-            <label>Native company (optional)<select className="form-select" value={company} disabled={!companies} onChange={e => {setCompany(e.target.value); setSourceCompany('');}}><option value="">No company mapping</option>{companies?.map(item => <option key={item.id} value={item.id}>{item.name} ({item.id})</option>)}</select></label>
+            <label>Native company (optional)<select aria-label="Native company (optional)" className="form-select" value={company} disabled={!companies} onChange={e => {setCompany(e.target.value); setSourceCompany('');}}><option value="">No company mapping</option>{companies?.map(item => <option key={item.id} value={item.id}>{item.name} ({item.id})</option>)}</select></label>
             {company && <label>HubSpot company ID<input className="form-control" required inputMode="numeric" pattern="[0-9]+" maxLength={200} value={sourceCompany} onChange={e => setSourceCompany(e.target.value)}/></label>}
             <div className="crm-actions"><button className="btn btn-primary" disabled={loading || !contact.email}>Save explicit mapping</button><button type="button" className="btn btn-white" disabled={loading} onClick={() => setEditing(false)}>Cancel mapping</button></div>
         </form>}

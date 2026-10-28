@@ -17,12 +17,12 @@ const time = value => value ? new Date(value).toLocaleString() : 'Not yet';
 export default function HubSpotContext({projectId, contact, conversationId}) {
     const access = useCrmAccess(projectId);
     if (!access.allowed) return <section className="crm-panel" aria-label="HubSpot context"><h3>HubSpot</h3><p>CRM context requires a workspace owner or admin with customer management permission. Ask your owner for access.</p></section>;
-    return <Context key={JSON.stringify([projectId, contact.id, conversationId, access.identity])} {...{projectId, contact, conversationId}} writable={access.writable}/>;
+    return <Context key={JSON.stringify([projectId, contact.id, conversationId, contact.email, access.identity])} {...{projectId, contact, conversationId}} writable={access.writable}/>;
 }
 function Context({projectId, contact, conversationId, writable}) {
     // Ticket context always resolves the requester through the server's ticket route.
     const path = conversationId ? `/api/management/projects/${encodeURIComponent(projectId)}/conversations/${encodeURIComponent(conversationId)}/crm` : `${crmRoot(projectId)}/contacts/${encodeURIComponent(contact.id)}`;
-    const {data, loading, error, notice, run} = useCrmResource(path);
+    const {data, loading, error, notice, denied, run} = useCrmResource(path);
     return <section className="crm-panel" aria-label="HubSpot context" aria-busy={loading}>
         <div className="crm-heading"><h3>HubSpot</h3><span className="text-muted">Read only</span></div>
         <p>{contact.name || contact.provided_name || 'Customer'} · Native customer <span>{contact.id}</span></p>
@@ -44,7 +44,7 @@ function Context({projectId, contact, conversationId, writable}) {
             {writable && data && !['unmapped', 'disconnected'].includes(data.state) && <button type="button" className="btn btn-sm btn-primary" disabled={loading} onClick={() => run({method: 'POST', suffix: '/refresh'}, 'Refresh checked. See the resulting state above.')}>Refresh HubSpot context</button>}
             <Link to={`/projects/${projectId}/hubspot-settings`}>HubSpot settings</Link>
         </div>
-        {conversationId ? <p><Link to={`/projects/${projectId}/contacts/${contact.id}`}>Manage this customer’s mapping</Link></p> : <HubSpotMapping {...{projectId, contact, data, loading, writable, run}}/>}
+        {!denied && (conversationId ? <p><Link to={`/projects/${projectId}/contacts/${contact.id}`}>Manage this customer’s mapping</Link></p> : <HubSpotMapping {...{projectId, contact, data, loading, writable, run}}/>)}
     </section>;
 }
 function ContextValues({context}) {

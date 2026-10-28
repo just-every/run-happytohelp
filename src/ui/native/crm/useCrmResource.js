@@ -28,7 +28,7 @@ export function useCrmResource(path) {
             if (!controller.signal.aborted && serial.current === version) setState({loading: false, data, error: '', notice});
             return !controller.signal.aborted;
         } catch (error) {
-            if (!controller.signal.aborted && serial.current === version) setState({loading: false, data: null, error: error.message, notice: ''});
+            if (!controller.signal.aborted && serial.current === version) setState({loading: false, data: null, error: error.message, notice: '', denied: [401, 403].includes(error.status)});
             return false;
         } finally {
             if (serial.current === version) mutating.current = false;

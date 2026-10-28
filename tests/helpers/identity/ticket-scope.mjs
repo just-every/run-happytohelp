@@ -73,11 +73,26 @@ export async function nativeTicketScopeAssertions(app){
  assert.equal((await call(`${D}/scope-allowed-a/ticket`,{group_id:'scope-denied'},'PATCH')).status,403,'destination scope is independent of routing membership')
  assert.equal((await call(`${D}/scope-allowed-a/ticket`,{priority:'high'},'PATCH')).status,200)
 
+ const upload=async(ticket,headers={})=>{const form=new FormData();form.set('conversation_id',ticket);form.set('file',new File(['Synthetic attachment'],'scope.txt',{type:'text/plain'}));const encoded=new Request('https://app.example',{method:'POST',body:form});return app.call(`/api/dashboard/projects/${p}/media`,{token:w.tokens.operator,method:'POST',raw:true,body:await encoded.arrayBuffer(),headers:{'Content-Type':encoded.headers.get('Content-Type'),...headers}})}
+ assert.equal((await upload('scope-denied-0')).status,404,'upload refuses hidden ticket before storing bytes')
+ assert.equal((await upload('scope-allowed-a')).status,201,'permitted native upload stays usable')
+ const mediaBefore=(await app.first('SELECT count(*) n FROM media WHERE project_id=?',p)).n,objectsBefore=(await (await app.files).list()).objects.map(o=>o.key).sort()
+ const racedUpload=await upload('scope-allowed-b',{'x-test-statement':'INSERT INTO media','x-test-before-statement':`UPDATE project_roles SET ticket_scope_json='${JSON.stringify({groupIds:[],includeUngrouped:false})}',updated_at=updated_at+1 WHERE id='${roleId}'`})
+ assert.equal(racedUpload.status,409,'an awaited upload checks scope inside its row admission')
+ assert.equal((await app.first('SELECT count(*) n FROM media WHERE project_id=?',p)).n,mediaBefore);assert.deepEqual((await (await app.files).list()).objects.map(o=>o.key).sort(),objectsBefore,'refused upload cleans up its staged bytes')
+ await select(['scope-a','scope-b'],false)
+ for(const ticket of ['scope-allowed-a','scope-denied-0'])await app.db.prepare("INSERT INTO notification_inbox(id,project_id,conversation_id,user_id,kind,inbox,email,created_at) VALUES(?,?,?,?, 'follower',1,0,1)").bind('scope-notice-'+ticket,p,ticket,w.users.operator).run()
+
+ for(const ticket of ['scope-allowed-a','scope-denied-0'])await app.db.prepare("INSERT INTO notification_trigger_claims(id,project_id,conversation_id,event,claim_token,state,outcome_json,created_at) VALUES(?,?,?,'ticket_updated','synthetic','complete','{}',1)").bind('scope-claim-'+ticket,p,ticket).run()
+ const noticeOutcomes=await call(`${P}/notification-triggers`);assert.equal(noticeOutcomes.status,200);assert.deepEqual(noticeOutcomes.data.outcomes.map(n=>n.conversation_id),['scope-allowed-a'],'settings outcome reads also filter hidden tickets')
+ const notices=await call(`${P}/notification-inbox`);assert.equal(notices.status,200);assert.deepEqual(notices.data.data.map(n=>n.conversation_id),['scope-allowed-a'],'following and old inbox notices grant no ticket access')
+
+
  assert.equal((await call(`${D}/scope-allowed-a/timer/start`,{},'POST')).status,200,'permitted timer starts')
  assert.equal((await call(`${D}/scope-allowed-a/timer/stop`,{},'POST')).status,200,'permitted timer stops')
  const timersBefore=(await app.first('SELECT count(*) n FROM ticket_handle_sessions WHERE project_id=?',p)).n
  const timerRace=await app.call(`${D}/scope-allowed-b/timer/start`,{token:w.tokens.operator,method:'POST',body:{},headers:{'x-test-statement':'INSERT OR IGNORE INTO ticket_handle_sessions','x-test-before-statement':`UPDATE project_roles SET ticket_scope_json='${JSON.stringify({groupIds:[],includeUngrouped:false})}',updated_at=updated_at+1 WHERE id='${roleId}'`}})
- assert.equal(timerRace.status,409,'a timer cannot start after commit-time scope loss')
+ assert.equal(timerRace.status,404,'a timer cannot start after commit-time scope loss')
  assert.equal((await app.first('SELECT count(*) n FROM ticket_handle_sessions WHERE project_id=?',p)).n,timersBefore,'revocation leaves no timer write')
  await select(['scope-a','scope-b'],true)
  assert.equal((await call(D+'/counts')).data.data.open,3,'explicit ungrouped choice')

@@ -1,5 +1,5 @@
 import {inCron,cronRoom} from '../../platform/cron-budget';
-import {type App,type Integration,id,now,present,requireValue,text} from './contracts';
+import {type App,type Integration,jobAccessSql,id,now,present,requireValue,text} from './contracts';
 import {ownedJob} from './jobs';
 import {admitFailureResult} from './provider-errors';
 import {validateResult} from './result-validation';
@@ -34,7 +34,7 @@ export function registerResults(app:App,integration:Integration){
  const cancelledResult=admitFailureResult(b.result,b.status,true); // A cancellation may race this admission before the atomic batch.
 
  await c.env.DB.batch([
- c.env.DB.prepare("INSERT OR IGNORE INTO local_events(job_id,event_id,kind,payload,created_at) SELECT id,?,'result',CASE WHEN cancel_requested=1 THEN ? ELSE ? END,? FROM local_jobs WHERE id=? AND run_id=? AND status IN ('running','needs_input')").bind(eventId,JSON.stringify({status:'cancelled',result:cancelledResult}),JSON.stringify({status,result:b.result}),now(),j.id,b.run_id),
+ c.env.DB.prepare(`INSERT OR IGNORE INTO local_events(job_id,event_id,kind,payload,created_at) SELECT id,?,'result',CASE WHEN cancel_requested=1 THEN ? ELSE ? END,? FROM local_jobs WHERE id=? AND run_id=? AND status IN ('running','needs_input') AND ${jobAccessSql(integration)}`).bind(eventId,JSON.stringify({status:'cancelled',result:cancelledResult}),JSON.stringify({status,result:b.result}),now(),j.id,b.run_id),
  c.env.DB.prepare("UPDATE local_jobs SET status=CASE WHEN cancel_requested=1 THEN 'cancelled' ELSE ? END,result=CASE WHEN cancel_requested=1 THEN ? ELSE ? END,session_id=COALESCE(?,session_id),completed_at=? WHERE id=? AND status IN ('running','needs_input') AND EXISTS(SELECT 1 FROM local_events WHERE job_id=? AND event_id=? AND kind='result')").bind(status,JSON.stringify(cancelledResult),JSON.stringify(b.result),b.session_id||null,['completed','failed','cancelled'].includes(status)?now():null,j.id,j.id,eventId),
  c.env.DB.prepare("INSERT OR IGNORE INTO local_result_effects(job_id,event_id,payload) SELECT id,?,? FROM local_jobs WHERE id=? AND status='completed' AND EXISTS(SELECT 1 FROM local_events WHERE job_id=? AND event_id=? AND kind='result')").bind(eventId,JSON.stringify(b.result),j.id,j.id,eventId)
  ]);

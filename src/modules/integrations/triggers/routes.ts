@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../../access/ticket-scope'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../../platform/env'
@@ -14,7 +15,7 @@ notificationRoutes.get(`${path}/notification-triggers`,async c=>{
  const actor=await scope(c),rows=await c.env.DB.prepare('SELECT * FROM notification_triggers WHERE project_id=? ORDER BY event,channel,brand_id').bind(actor.projectId).all<any>()
  const defaults=defaultTriggers.filter(d=>!rows.results.some(r=>r.event===d.event&&r.channel==='*'&&r.brand_id==='*'))
  const access=await memberAccess(c.env.DB,actor.projectId,actor.id)
- const claims=await c.env.DB.prepare(`SELECT conversation_id,event,state,outcome_json,created_at FROM notification_trigger_claims WHERE project_id=? AND event NOT LIKE 'team:%' ORDER BY created_at DESC LIMIT 50`).bind(actor.projectId).all<any>()
+ const claims=await c.env.DB.prepare(`SELECT t.conversation_id,t.event,t.state,t.outcome_json,t.created_at FROM notification_trigger_claims t JOIN conversations c ON c.project_id=t.project_id AND c.id=t.conversation_id WHERE t.project_id=? AND t.event NOT LIKE 'team:%' AND ${ticketScopeSql('?')} ORDER BY t.created_at DESC LIMIT 50`).bind(actor.projectId,actor.id).all<any>()
  return c.json({data:[...defaults,...rows.results],can_manage:['owner','admin'].includes(actor.role)&&access?.permissions.has('settings.manage'),outcomes:claims.results.map(row=>({...row,outcome:JSON.parse(row.outcome_json),outcome_json:undefined}))})
 })
 notificationRoutes.put(`${path}/notification-triggers`,async c=>{
@@ -58,7 +59,7 @@ notificationRoutes.put(`${path}/notification-preferences`,async c=>{
 notificationRoutes.get(`${path}/notification-inbox`,async c=>{
  const actor=await scope(c),rows=await c.env.DB.prepare(`SELECT n.id,n.conversation_id,n.kind,n.read_at,n.created_at,n.state FROM notification_inbox n
  JOIN conversations c ON c.id=n.conversation_id AND c.project_id=n.project_id JOIN memberships m ON m.project_id=n.project_id AND m.user_id=n.user_id
- WHERE n.project_id=? AND n.user_id=? AND n.inbox=1 AND ${contactAvailableSql()} ORDER BY n.created_at DESC,n.id DESC LIMIT 100`).bind(actor.projectId,actor.id).all<any>()
+ WHERE n.project_id=? AND n.user_id=? AND n.inbox=1 AND ${ticketScopeSql('m.user_id')} AND ${contactAvailableSql()} ORDER BY n.created_at DESC,n.id DESC LIMIT 100`).bind(actor.projectId,actor.id).all<any>()
  return c.json({data:rows.results.map(row=>({...row,label:notificationLabels[row.kind]}))})
 })
 notificationRoutes.put(`${path}/notification-inbox/:id/read`,async c=>{

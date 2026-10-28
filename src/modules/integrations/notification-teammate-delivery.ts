@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import type {Env} from '../../platform/env'
 import {cronRoom} from '../../platform/cron-budget'
 import {notificationTicket,notificationTicketSql} from './triggers/eligibility'
@@ -15,16 +16,16 @@ export async function deliverTeammateNotice(env:Env,row:Notice){
  LEFT JOIN user_settings s ON s.user_id=m.user_id LEFT JOIN email_settings e ON e.project_id=m.project_id WHERE m.project_id=? AND m.user_id=?`).bind(row.kind,row.project_id,row.user_id).first<any>()
  const relation=row.kind==='assignment'?'c.assigned_to=?':row.kind==='group'?`c.assigned_to IS NULL AND EXISTS(SELECT 1 FROM ticket_group_members gm WHERE gm.project_id=c.project_id AND gm.group_id=c.group_id AND gm.user_id=?)`:row.kind==='follower'?`EXISTS(SELECT 1 FROM conversation_followers f WHERE f.conversation_id=c.id AND f.user_id=?)`:'1'
  const relationArgs=relation==='1'?[]:[row.user_id]
- const currentAudience=ticket&&await env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${relation}`).bind(row.conversation_id,row.project_id,...relationArgs).first()
+ const currentAudience=ticket&&await env.DB.prepare(`SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${ticketScopeSql('?')} AND ${relation}`).bind(row.conversation_id,row.project_id,row.user_id,...relationArgs).first()
  const allowed=ticket&&user&&currentAudience&&row.email&&user.preference!==0&&!(row.kind==='assignment'&&user.preference==null&&user.legacy_assignment===0)&&user.is_enabled!==0
  if(!allowed){await env.DB.prepare("UPDATE notification_inbox SET state='complete' WHERE id=? AND state IN ('pending','awaiting_provider')").bind(row.id).run();return}
  if(!emailConfigured(env)){await env.DB.prepare("UPDATE notification_inbox SET state='awaiting_provider' WHERE id=? AND state='pending'").bind(row.id).run();return}
  const claim=await env.DB.prepare(`UPDATE notification_inbox SET state='uncertain' WHERE id=? AND state IN ('pending','awaiting_provider')
  AND EXISTS(SELECT 1 FROM memberships WHERE project_id=? AND user_id=?)
  AND EXISTS(SELECT 1 FROM (${notificationTicketSql}) eligible)
- AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${relation})
+ AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND ${ticketScopeSql('?')} AND ${relation})
  AND NOT EXISTS(SELECT 1 FROM notification_preferences WHERE project_id=? AND user_id=? AND kind=? AND email=0)`)
- .bind(row.id,row.project_id,row.user_id,row.conversation_id,row.project_id,row.conversation_id,row.project_id,...relationArgs,row.project_id,row.user_id,row.kind).run()
+ .bind(row.id,row.project_id,row.user_id,row.conversation_id,row.project_id,row.conversation_id,row.project_id,row.user_id,...relationArgs,row.project_id,row.user_id,row.kind).run()
  if(!claim.meta.changes)return
  let state='uncertain'
  try{

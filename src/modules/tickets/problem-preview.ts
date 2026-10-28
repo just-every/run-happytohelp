@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {ticketAuthority,type TicketAuthority} from './model'
@@ -16,7 +17,7 @@ export async function previewProblemSolve(env:Env,actor:Actor,id:string,input:an
  await prepareTicketChange(env,actor,id,{status_id:'solved',expected_version:problem.ticket_version},authority)
  let selected:string[]|undefined
  if(input.incident_ids!==undefined){if(!Array.isArray(input.incident_ids)||!input.incident_ids.length||input.incident_ids.length>100||input.incident_ids.some((v:any)=>typeof v!=='string'))throw new HTTPException(400,{message:'Choose 1–100 linked incident ids'});selected=[...new Set<string>(input.incident_ids)]}
- const rows=await env.DB.prepare(`SELECT c.* FROM ticket_problem_incidents link JOIN conversations c ON c.id=link.incident_id AND c.project_id=link.project_id WHERE link.project_id=? AND link.problem_id=? ${selected?'AND c.id IN (SELECT value FROM json_each(?))':''} ORDER BY link.created_at,c.id LIMIT 101`).bind(actor.projectId,id,...(selected?[JSON.stringify(selected)]:[])).all<any>()
+ const rows=await env.DB.prepare(`SELECT c.* FROM ticket_problem_incidents link JOIN conversations c ON c.id=link.incident_id AND c.project_id=link.project_id WHERE link.project_id=? AND link.problem_id=? AND ${ticketScopeSql('?')} ${selected?'AND c.id IN (SELECT value FROM json_each(?))':''} ORDER BY link.created_at,c.id LIMIT 101`).bind(actor.projectId,id,actor.id,...(selected?[JSON.stringify(selected)]:[])).all<any>()
  if(rows.results.length>100)throw new HTTPException(400,{message:'Choose up to 100 linked incidents for each reviewed batch'})
  if(selected&&rows.results.length!==selected.length)throw new HTTPException(409,{message:'Selection includes a ticket that is no longer linked'})
  const results:any[]=[]

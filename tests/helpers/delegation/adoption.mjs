@@ -101,6 +101,14 @@ export async function adoptionJourney(){
   assert.equal((await request(`/api/projects/${scoped.projectId}/conversations/${scoped.conversationId}/delegations`,undefined,scoped.token)).status,404,'local work history also loses ticket access')
   assert.equal((await request(`/api/local-agents/jobs/${scoped.jobId}/context?run_id=synthetic`,undefined,scoped.deviceToken)).status,403,'device context refuses current scope before run hydration')
 
+
+  // A scope change after snapshot preparation cannot admit or return queued context.
+  await run('UPDATE project_roles SET ticket_scope_json=NULL WHERE id=?',scopedRole)
+  await run("UPDATE local_jobs SET status='queued',claim_id=NULL,context=NULL WHERE id=?",scoped.jobId)
+  const lostClaim=await request('/api/local-agents/claim',{claim_id:randomUUID()},scoped.deviceToken,{'x-test-statement':"UPDATE local_jobs SET status='running',claim_id",'x-test-before-statement':`UPDATE project_roles SET ticket_scope_json='${JSON.stringify({groupIds:[],includeUngrouped:false})}',updated_at=updated_at+1 WHERE id='${scopedRole}'`})
+  assert.equal(lostClaim.status,200);assert.equal(lostClaim.body.data,null,'a lost scope never returns a prepared snapshot')
+  assert.deepEqual(await one('SELECT status,context FROM local_jobs WHERE id=?',scoped.jobId),{status:'queued',context:null},'scope is checked inside the queue claim')
+
   // Proposal selection, the immutable frontier and required fields are checked.
   const v=await fixture()
   for(const change of [{proposal_id:'missing'},{expected_revision:1},{expected_last_message_id:'foreign'}]){const response=await v.adopt(change);assert.ok([404,409].includes(response.status),JSON.stringify(response))}

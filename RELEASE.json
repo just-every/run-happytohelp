@@ -132,6 +132,10 @@
     {
       "id": "262_feedback_penny.sql",
       "buyerSteps": "FEEDBACK-001: add a Penny API connection and durable source handoff receipts. A requester-authored sharing permission and explicit operator approval are required. Penny owns its requesters and votes; pending/uncertain external writes never replay. Reconfigure the Penny API key after restore; sending handoffs restore as uncertain."
+    },
+    {
+      "id": "250_support_channels.sql",
+      "buyerSteps": "CHANNELS-001/002: add isolated support-channel connections, scoped text threads, delivery claims and contact-erasure fences. Back up D1, R2 and private configuration; apply before the updated Worker serves traffic, without resetting or editing prior migration ledger rows. Configure authorized provider accounts explicitly. Restored connections are disconnected and pending sends are uncertain; opt-out and erasure fences remain. Media, Teams, approved continuation templates and live provider qualification remain pending."
     }
   ]
 }

@@ -177,6 +177,11 @@
           "slug": "feedback-and-assurance",
           "source": "docs/feedback-and-assurance.md",
           "label": "Feedback and regulated deployment"
+        },
+        {
+          "slug": "support-channels",
+          "source": "docs/support-channels.md",
+          "label": "Support channels"
         }
       ]
     },

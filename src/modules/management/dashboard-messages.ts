@@ -1,3 +1,4 @@
+import {channelStatuses} from '../support-channels/presentation'
 import {abandonedNotificationReason} from '../integrations/email-send-window'
 import type {Env} from '../../platform/env'
 import {emailConfigured} from '../integrations/email-provider'
@@ -50,6 +51,7 @@ export async function messagesData(env:Env,rows:any[]){
  }
  const media=new Map<string,any[]>()
  for(const {message_id,...item} of data[3].results){const key=String(message_id);if(!media.has(key))media.set(key,[]);media.get(key)!.push(item)}
+ const channelStatus=await channelStatuses(env,rows)
  return rows.map(row=>{
   const origin:any=origins.get(String(row.id)),sourceAuthor=origin?JSON.parse(origin.author_json):null
   // The workspace's away reply (away-reply.ts) has no teammate author and is never emailed.
@@ -58,6 +60,6 @@ export async function messagesData(env:Env,rows:any[]){
   // Keep the durable mail-status precedence, including suppressed development
   // mail and unknown delivery. Reads never ask the provider to do work.
   const emailStatus=origin||row.actor_role==='contact'||row.actor_role==='system'||row.erased_at?null:suppressed?{state:'suppressed'}:attempt?.state?{state:attempt.state,updatedAt:attempt.updated_at,...(attempt.reason?{reason:attempt.reason}:{})}:!configured?{state:'not_configured'}:attempt?.is_enabled===0?{state:'disabled'}:{state:messageNotificationRecipients(recipients.get(String(row.id))||[],attempt?.sender_email?{id:row.actor_id,email:attempt.sender_email}:undefined,row.actor_role).state}
-  return {...row,...(reads.get(String(row.id))||{read_by_contacts:{},read_by_agents:{}}),email_status:emailStatus,created_at:iso(row.created_at),source_time_provenance:origin?.time_provenance,source_author:sourceAuthor,bucket_id:row.bucket_id||row.conversation_id,agent:sourceAuthor&&sourceAuthor.role!=='contact'?person({id:row.actor_id,name:sourceAuthor.name||'Imported author'}):agent,agent_id:sourceAuthor&&sourceAuthor.role!=='contact'?row.actor_id:agent?.id,contact_id:row.actor_role==='contact'?row.actor_id:null,contact:row.actor_role==='contact'?person(contacts.get(String(row.actor_id))):null,media:(media.get(String(row.id))||[]).map(m=>({...m,filename_original:m.filename,url:`/api/conversations/${row.conversation_id}/media/${m.id}`,preview_url:`/api/conversations/${row.conversation_id}/media/${m.id}`,aggregate_type:m.content_type.startsWith('image/')?'image':'file'}))}
+  return {...row,...(reads.get(String(row.id))||{read_by_contacts:{},read_by_agents:{}}),email_status:channelStatus.has(String(row.id))?null:emailStatus,channel_status:channelStatus.get(String(row.id))??null,created_at:iso(row.created_at),source_time_provenance:origin?.time_provenance,source_author:sourceAuthor,bucket_id:row.bucket_id||row.conversation_id,agent:sourceAuthor&&sourceAuthor.role!=='contact'?person({id:row.actor_id,name:sourceAuthor.name||'Imported author'}):agent,agent_id:sourceAuthor&&sourceAuthor.role!=='contact'?row.actor_id:agent?.id,contact_id:row.actor_role==='contact'?row.actor_id:null,contact:row.actor_role==='contact'?person(contacts.get(String(row.actor_id))):null,media:(media.get(String(row.id))||[]).map(m=>({...m,filename_original:m.filename,url:`/api/conversations/${row.conversation_id}/media/${m.id}`,preview_url:`/api/conversations/${row.conversation_id}/media/${m.id}`,aggregate_type:m.content_type.startsWith('image/')?'image':'file'}))}
  })
 }

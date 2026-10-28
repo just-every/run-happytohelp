@@ -29,7 +29,7 @@ export default function WorkspacePages({ settings, pages = {} }) {
     else if(['ais','macros','contacts','plugins','agents'].includes(section))page=<ManagementPage {...{projectId,section,recordId}}/>;
     else if(['edit','settings','email-settings'].includes(section))page=<ProjectSettings {...{projectId,section}} role={settings.projects?.[projectId]?.role}/>;
     else if(['hubspot-settings','api-settings','webhook-settings','slack-settings','delivery-log'].includes(section))page=<Connections {...{projectId,section}} role={settings.projects?.[projectId]?.role}/>;
-    else if(section==='support-channels')page=<ChannelSettings {...{projectId}}/>;
+    else if(section==='support-channels')page=<ChannelSettings key={projectId} {...{projectId}} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='github-settings')page=<GitHubSettings {...{projectId}}/>;
     else if(section==='security')page=<SecurityPage {...{projectId}} role={settings.projects?.[projectId]?.role}/>;
     else if(section==='security-log')page=<SecurityLog {...{projectId}} role={settings.projects?.[projectId]?.role}/>;

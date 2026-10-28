@@ -20,7 +20,7 @@ inbound.post(webhook,async c=>{
  return row.provider==='sms'?c.body('<Response/>',200,{'Content-Type':'text/xml'}):c.json({received:true,data:receipts})
 })
 async function receive(env:Env,row:Connection,event:Inbound){
- const eventHash=await digest(event.id),now=Date.now()
+ const eventHash=await digest(event.id),now=Date.now(),at=Math.min(now,event.at??now)
  if(event.status){
   // A status never creates a ticket or downgrades a terminal delivered/read receipt.
   const state=['delivered','read'].includes(event.status)?'delivered':['failed','undelivered'].includes(event.status)?'failed':'accepted'
@@ -37,7 +37,7 @@ async function receive(env:Env,row:Connection,event:Inbound){
  await env.DB.batch([
   env.DB.prepare(`INSERT OR IGNORE INTO contacts(id,project_id,name,created_at) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM support_channel_connections WHERE id=? AND ${liveConnection}) AND NOT EXISTS(SELECT 1 FROM support_channel_fences WHERE connection_id=? AND identity_hash=?)`).bind(contactId,row.project_id,`${row.provider} customer`,now,row.id,row.id,identity),
   env.DB.prepare(`INSERT OR IGNORE INTO conversations(id,project_id,contact_id,channel,created_at,updated_at) SELECT ?,project_id,id,?,?,? FROM contacts WHERE id=? AND project_id=? AND coalesce(json_extract(metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(metadata_json,'$.is_erased'),0)!=1 AND EXISTS(SELECT 1 FROM support_channel_connections WHERE id=? AND ${liveConnection})`).bind(conversationId,row.provider,now,now,contactId,row.project_id,row.id),
-  env.DB.prepare(`INSERT OR IGNORE INTO support_channel_threads SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND c.contact_id=? AND EXISTS(SELECT 1 FROM support_channel_connections WHERE id=? AND ${liveConnection})) AND NOT EXISTS(SELECT 1 FROM support_channel_fences WHERE connection_id=? AND identity_hash=?)`).bind(threadId,row.project_id,row.id,contactId,conversationId,identity,event.sender,event.channel,event.thread,now,event.optOut?1:0,conversationId,row.project_id,contactId,row.id,row.id,identity),
+  env.DB.prepare(`INSERT OR IGNORE INTO support_channel_threads SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM conversations c WHERE c.id=? AND c.project_id=? AND c.contact_id=? AND EXISTS(SELECT 1 FROM support_channel_connections WHERE id=? AND ${liveConnection})) AND NOT EXISTS(SELECT 1 FROM support_channel_fences WHERE connection_id=? AND identity_hash=?)`).bind(threadId,row.project_id,row.id,contactId,conversationId,identity,event.sender,event.channel,event.thread,at,event.optOut?1:0,conversationId,row.project_id,contactId,row.id,row.id,identity),
  ])
  t=await env.DB.prepare('SELECT t.*,c.revision FROM support_channel_threads t JOIN conversations c ON c.id=t.conversation_id WHERE t.id=?').bind(threadId).first<any>()
  if(!t)throw new HTTPException(409)
@@ -47,7 +47,7 @@ async function receive(env:Env,row:Connection,event:Inbound){
  const result=await admitMessage(env,{projectId:row.project_id,conversationId:t.conversation_id,actor:{id:t.contact_id,contactId:t.contact_id,projectId:row.project_id,role:'contact'},localId,content:event.text,expectedRevision:t.revision,requireAvailableRequester:true,[messageAuthority]:{sql:`EXISTS(SELECT 1 FROM support_channel_connections WHERE id=? AND ${liveConnection}) AND NOT EXISTS(SELECT 1 FROM support_channel_fences WHERE connection_id=? AND identity_hash=?)`,args:[row.id,row.id,identity]}})
  if(!result.accepted)throw new HTTPException(409,{message:'Channel message not admitted; redeliver after reconciling the conversation'})
  const target=String(result.message.conversation_id)
- await env.DB.batch([env.DB.prepare('INSERT OR IGNORE INTO support_channel_events VALUES(?,?,?,?,?)').bind(row.id,eventHash,threadId,result.message.id,now),env.DB.prepare('UPDATE support_channel_threads SET last_inbound_at=?,opted_out=MAX(opted_out,?),conversation_id=? WHERE id=?').bind(now,event.optOut?1:0,target,threadId),auditStatement(env.DB,{projectId:row.project_id,category:'integration',action:'support_channel.received',actor:{type:'system'},source:'system',target:{type:'conversation',id:target},detail:{provider:row.provider}})])
+ await env.DB.batch([env.DB.prepare('INSERT OR IGNORE INTO support_channel_events VALUES(?,?,?,?,?)').bind(row.id,eventHash,threadId,result.message.id,now),env.DB.prepare('UPDATE support_channel_threads SET last_inbound_at=MAX(last_inbound_at,?),opted_out=MAX(opted_out,?),conversation_id=? WHERE id=?').bind(at,event.optOut?1:0,target,threadId),auditStatement(env.DB,{projectId:row.project_id,category:'integration',action:'support_channel.received',actor:{type:'system'},source:'system',target:{type:'conversation',id:target},detail:{provider:row.provider}})])
  await publishActivity(env,row.project_id,target,'message')
  return {conversation_id:target,message_id:result.message.id}
 }

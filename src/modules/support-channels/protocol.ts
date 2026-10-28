@@ -14,7 +14,8 @@ export async function verify(row:Connection,secret:string,url:string,raw:string,
  }else{expected='sha256='+await mac(secret,raw);received=headers.get('x-hub-signature-256')||''}
  if(!equal(expected,received))throw new HTTPException(401,{message:'Provider signature rejected'})
 }
-export interface Inbound {id:string;sender:string;channel:string;thread:string;text:string;optOut?:boolean;media:boolean;status?:string;providerId?:string;ignored?:string}
+export interface Inbound {at?:number;id:string;sender:string;channel:string;thread:string;text:string;optOut?:boolean;media:boolean;status?:string;providerId?:string;ignored?:string}
+function timestamp(value:unknown,seconds=false){const time=Number(value)*(seconds?1000:1);if(!Number.isFinite(time)||time<=0||time>Date.now()+300000)throw new HTTPException(400,{message:'Invalid provider message timestamp'});return time}
 export function events(row:Connection,raw:string):Inbound[]{
  if(row.provider==='sms'){
   const f=new URLSearchParams(raw);if(f.get('AccountSid')!==row.account)throw new HTTPException(403)
@@ -23,7 +24,7 @@ export function events(row:Connection,raw:string):Inbound[]{
   const sender=f.get('From')||'';if(!/^\+1\d{10}$/.test(sender)||!f.get('MessageSid'))throw new HTTPException(400)
   const text=f.get('Body')||'';return [{id:f.get('MessageSid')!,sender,channel:row.sender,thread:sender,text,optOut:/^(STOP|STOPALL|UNSUBSCRIBE|CANCEL|END|QUIT)$/i.test(text.trim())||f.get('OptOutType')==='STOP',media:Number(f.get('NumMedia')||0)>0}]
  }
- const body=JSON.parse(raw)
+ let body:any;try{body=JSON.parse(raw)}catch{throw new HTTPException(400,{message:'Invalid provider JSON'})}
  if(row.provider==='slack'){
   if(body.team_id!==row.account)throw new HTTPException(403)
   const e=body.event;if(!e)return []
@@ -38,8 +39,8 @@ export function events(row:Connection,raw:string):Inbound[]{
   if(String(entry.id)!==row.account)throw new HTTPException(403)
   if(row.provider==='whatsapp')for(const change of entry.changes||[]){const v=change.value;if(String(v?.metadata?.phone_number_id)!==row.sender)throw new HTTPException(403)
    for(const s of v.statuses||[])result.push({id:'status:'+s.id+':'+s.status,sender:'',channel:'',thread:'',text:'',media:false,status:s.status,providerId:s.id})
-   for(const m of v.messages||[]){if(!m.id||!m.from)throw new HTTPException(400);result.push({id:m.id,sender:m.from,channel:row.sender,thread:m.from,text:m.text?.body||'',media:m.type!=='text',optOut:/^(stop|unsubscribe)$/i.test(m.text?.body?.trim()||'')})}
-  }else for(const e of entry.messaging||[]){if(String(e.recipient?.id)!==row.sender)throw new HTTPException(403);if(e.message?.is_echo)continue;if(e.message?.mid&&e.sender?.id)result.push({id:e.message.mid,sender:e.sender.id,channel:row.sender,thread:e.sender.id,text:e.message.text||'',media:!!e.message.attachments?.length})}
+   for(const m of v.messages||[]){if(!m.id||!m.from)throw new HTTPException(400);result.push({at:timestamp(m.timestamp,true),id:m.id,sender:m.from,channel:row.sender,thread:m.from,text:m.text?.body||'',media:m.type!=='text',optOut:/^(stop|unsubscribe)$/i.test(m.text?.body?.trim()||'')})}
+  }else for(const e of entry.messaging||[]){if(String(e.recipient?.id)!==row.sender)throw new HTTPException(403);if(e.message?.is_echo)continue;if(e.message?.mid&&e.sender?.id)result.push({at:timestamp(e.timestamp),id:e.message.mid,sender:e.sender.id,channel:row.sender,thread:e.sender.id,text:e.message.text||'',media:!!e.message.attachments?.length})}
  }
  if(result.length>30)throw new HTTPException(413)
  return result

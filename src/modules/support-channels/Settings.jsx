@@ -2,13 +2,15 @@ import React,{useEffect,useState} from 'react';
 import {nativeRequest} from '../../ui/native/transport';
 import '../../ui/native/pages/connections/connections.css';
 const names={sms:'Twilio US SMS',whatsapp:'WhatsApp Business',instagram:'Instagram Direct',messenger:'Facebook Messenger',slack:'Slack customer channels'};
-export default function ChannelSettings({projectId}){
+export default function ChannelSettings({projectId,role}){
+ const allowed=['owner','admin'].includes(role);
  const root=`/api/support-channels/projects/${projectId}`;
  const [rows,setRows]=useState([]),[report,setReport]=useState([]),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[provider,setProvider]=useState('sms'),[verify,setVerify]=useState(null);
  const load=async()=>{const [list,counts]=await Promise.all([nativeRequest(root+'/connections'),nativeRequest(root+'/report')]);setRows(list.data);setReport(counts.data);};
- useEffect(()=>{let active=true;setRows([]);setReport([]);setVerify(null);load().catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[root]);
+ useEffect(()=>{let active=true;setRows([]);setReport([]);setVerify(null);if(allowed)load().catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[root,allowed]);
  const save=async e=>{e.preventDefault();const form=e.currentTarget,data=new FormData(form);setBusy(true);setError('');setNotice('');setVerify(null);try{const result=await nativeRequest(root+'/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider,account:data.get('account'),sender:data.get('sender'),token:data.get('token'),signing_secret:data.get('signing_secret'),channels:String(data.get('channels')||'').split(',').map(x=>x.trim()).filter(Boolean),registered:data.has('registered')})});form.reset();setVerify(result.data);setNotice('Connection saved. Configure the webhook with your provider. Live account qualification is still required.');await load();}catch(e){setError(e.message);}finally{setBusy(false);}};
  const revoke=async row=>{setBusy(true);setError('');try{await nativeRequest(root+'/connections/'+row.id,{method:'DELETE'});setNotice('Connection revoked. No new channel send is authorized.');await load();}catch(e){setError(e.message);}finally{setBusy(false);}};
+ if(!allowed)return <p role="alert">Only workspace owners and administrators can manage support channels.</p>;
  return <div className="workspace-settings connections-page" style={{maxWidth:800,overflowWrap:'anywhere'}} aria-busy={busy}>
   <p>Receive customer messages in the shared inbox and reply in their original channel.</p>
   <p className="alert alert-warning">Text support is available for qualification. Media intake and sending, approved WhatsApp continuation templates, and live provider acceptance remain pending. Teams shared-channel intake is unavailable.</p>

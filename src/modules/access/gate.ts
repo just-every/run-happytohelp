@@ -56,9 +56,6 @@ export async function enforceRole(c:Context<AppEnv>,actor:Actor){
  const articleIndex=route.path.split('/').indexOf(':articleId')
  const articleId=articleIndex<0?undefined:decodeURIComponent(c.req.path.split('/')[articleIndex]??'')
  let rule=route.path?routeRule(route.method,route.path):undefined
- // Native knowledge management exposes drafts, source text and restricted content.
- // Notes-only seats use the ordinary published help-center doors instead.
- if(route.method==='GET'&&route.path.startsWith('/api/knowledge/:projectId/'))rule='knowledge.edit'
  if(rule==='members.manage'&&/\/agents\/:userId$/.test(route.path)&&c.req.param('userId')===actor.id)rule='self'
  // A report downloaded as CSV is an export.
  if(((route.path.endsWith('/reports')||route.path.endsWith('/reports/team'))||route.path==='/api/outcomes/projects/:projectId/results')&&c.req.query('format'))rule='data.export'

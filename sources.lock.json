@@ -11700,7 +11700,7 @@
       "executable": false
     },
     "tests/helpers/hubspot/browser.mjs": {
-      "sha256": "f9550c630b3f2332d3c9d93189576f651cef32cfb33395c2a4defb769a17fd66",
+      "sha256": "b85a8736452dc725740ed0babdeb5861bce9b2b3be7e08d7141a5ceb61ec0eed",
       "executable": false
     },
     "tests/helpers/hubspot/outbound.mjs": {

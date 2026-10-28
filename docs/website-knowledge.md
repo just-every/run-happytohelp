@@ -81,3 +81,30 @@ Semantic search over website content additionally needs `QDRANT_URL`,
 `QDRANT_API_KEY`, `OPENAI_API_KEY` and `KNOWLEDGE_EMBEDDING_MODEL`; keyword
 search needs none of them. See the settings table in
 [Operations](../OPERATIONS.md).
+
+## Publish a governed help center
+
+Under **Knowledge → Help Center settings**, configure your source language,
+translation locales and plain-text page templates. Reviewed translations retain
+their published text while a new draft is edited. A changed source requires a new
+translation review; pages and AI citations disclose source-language fallback.
+
+Your hosting administrator first configures DNS, TLS and the exact
+`PUBLIC_HELP_HOSTS` hostname-to-workspace mapping. You can then publish at one
+approved address, keep the deployment’s existing addresses, or use only the
+built-in Help Center paths. An address mapped to another workspace cannot be
+claimed. A custom article-link color must have at least 4.5:1 contrast on white.
+
+**Review proposals** shows search gaps, reopened source cases and recorded
+procedure failures. Prepare a draft from a resolved, positively rated native
+case and its exact message. Operator-requested AI assistance can also prepare a
+masked, cited draft; it cannot publish one. The exact requesting operator session
+and current knowledge authority remain required. A named editor reviews the
+source, personal data, private destination collection and text before publication.
+Rejections remain visible after later approval. Reopened cited cycles request
+corrective review and never silently change published guidance.
+
+Customer-derived guidance stays within the source customer’s proven email-domain
+collection and the workspace’s default publication locale. Public/cross-domain reuse and translated or
+cross-brand reuse remain held. Citation, satisfaction and ticket closure alone do
+not establish verified customer recovery.

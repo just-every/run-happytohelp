@@ -45,7 +45,10 @@ try {
    await write("INSERT INTO session_factors VALUES(?,?,'password',?)",[hash,issuerId,Date.now()]);
   });
   await original.start();
+  const issuerPair = await call(original, '/api/mobile/v1/devices', {platform:'android',scopes:['read']}, issuerSession);
+  assert.equal(issuerPair.status,201);const issuerMobile=await issuerPair.json();
   await eraseRecoveryIssuer(original,journey,issuerId,issuerSession);
+  assert.equal((await call(original,'/api/mobile/v1/session',undefined,issuerMobile.token)).status,401,'member erasure ends mobile access');
   await original.close();
   let before;
   await original.withStorage(async storage => {

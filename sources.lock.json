@@ -1740,7 +1740,7 @@
       "executable": false
     },
     "docs/mobile-api.md": {
-      "sha256": "4b6b96c2c77e490112a57aa062d509e05069b56ec779f23ca6b0da45414bc878",
+      "sha256": "d5891fb2a48496c7bd687d71ca115240574160168b37fff4ecab28554cf40a7a",
       "executable": false
     },
     "docs/MODULES.md": {
@@ -6292,7 +6292,7 @@
       "executable": false
     },
     "src/modules/management/member-erasure.ts": {
-      "sha256": "567e459cb6ba40f0d86d555556545127fb794580197fd6b836d7a4bdc5968c28",
+      "sha256": "78ee0bd5c10f43c0701a81c17f8677f815276ef05d449f06bd7d2fdd0b053469",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {
@@ -12044,11 +12044,11 @@
       "executable": false
     },
     "tests/helpers/mobile-adoption.mjs": {
-      "sha256": "56d496458ce518adeb2394e408e9aa1ba5cd049ce8bd19673260e7d8f066a9a2",
+      "sha256": "3b064ee7ed664f29eb2bf1e2b710cd63db8805034f4ba0d6408f66ce33d63154",
       "executable": false
     },
     "tests/helpers/mobile-approvals.mjs": {
-      "sha256": "80546608c00b9fdbcb320ca5c70f4e7e132647026d9770fdae1c07bba56c5995",
+      "sha256": "77e87974d0835eba7f9a48fe0cc91514cdf19430af7e543de33e5b245697e0b4",
       "executable": false
     },
     "tests/helpers/mobile-fixture.mjs": {
@@ -12056,11 +12056,11 @@
       "executable": false
     },
     "tests/helpers/mobile-offline.mjs": {
-      "sha256": "fa37e8ac69c79adb335ae3a56cc52b3d022a3c2a0db77282de3e70dfa5681d88",
+      "sha256": "8dad52778c7b27bbbed4abda59d486e7d563ffc9c01accbda66172e35f872ff3",
       "executable": false
     },
     "tests/helpers/mobile.mjs": {
-      "sha256": "9bec88e8f8cbea2124735fafeb55dbdc1651b0e727ac703246021e4cef0e58a1",
+      "sha256": "557e8bd58d0f75cb6a40b6e549903420a558b4f81c4b006ca6bab6365117ccb8",
       "executable": false
     },
     "tests/helpers/native-http.mjs": {
@@ -12120,7 +12120,7 @@
       "executable": false
     },
     "tests/helpers/recovery/comparison.mjs": {
-      "sha256": "9c8aaeede1e0172d8ed3703e5732dd2b96a18b338b62cd38aea22f5f5c1f77dc",
+      "sha256": "d4f10c05d018398096093437a7017a2e6ea0d59f5ae22261701399f2dfbb8aea",
       "executable": false
     },
     "tests/helpers/recovery/independent-journey.mjs": {

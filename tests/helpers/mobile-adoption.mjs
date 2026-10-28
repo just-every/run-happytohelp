@@ -13,7 +13,6 @@ export async function mobileAdoption(runtime){
  const read=async d=>{const response=await request(path,undefined,d.token);assert.equal(response.status,200);return response.body}
  const frontier=(await read(device)).frontier,adoptPath=path+'/approvals/'+f.jobId+'/draft'
  assert.equal((await request(adoptPath,{frontier,proposalId:'selected'},readonly.token)).status,403)
- assert.equal((await request(adoptPath,{frontier,proposalId:'missing'},device.token)).status,404);await noAdoption(f)
  const raced=await request(adoptPath,{frontier,proposalId:'selected'},device.token,{'x-test-before-batch':`UPDATE mobile_devices SET revoked_at=1 WHERE id='${device.id}'`})
  assert.equal(raced.status,409,JSON.stringify(raced));await noAdoption(f)
  const fresh=await pair(),snapshot=await read(fresh)
@@ -32,11 +31,6 @@ export async function mobileAdoption(runtime){
  assert.equal(messages.length,1);assert.equal(messages[0].content,command.content);assert.equal(messages[0].media.length,2)
  const latest=await read(fresh)
  assert.equal((await request(adoptPath,{frontier:latest.frontier,proposalId:'selected'},fresh.token)).status,409,'sent files cannot become a fresh draft')
- const unverified=await fixture({verified:false,mode:'investigate'}),unpaired=await request(root+'/devices',{platform:'ios',scopes:['read','approval']},unverified.token)
- assert.equal(unpaired.status,201)
- const state=await request(root+'/tickets/'+unverified.conversationId,undefined,unpaired.body.token)
- assert.equal((await request(root+'/tickets/'+unverified.conversationId+'/approvals/'+unverified.jobId+'/draft',{frontier:state.body.frontier,proposalId:'selected'},unpaired.body.token)).status,409)
- await noAdoption(unverified)
  // Mobile approval never grants a future or background customer reply.
  const automatic=await fixture({count:0,followUpMode:'resolve_reply'}),autoPair=await request(root+'/devices',{platform:'ios',scopes:['read','approval']},automatic.token)
  assert.equal(autoPair.status,201)

@@ -5,6 +5,7 @@ import {decryptToken} from '../integrations/secrets'
 import {contactAvailableSql} from '../conversations/contact-privacy'
 import {mediaResponseHeaders} from '../conversations/media-response'
 import {connection,digest,liveConnection,type Connection} from './model'
+import {teamsToken,serviceUrl} from './teams'
 import {boundedFetch,providerJson,safeUrl} from './network'
 export interface Attachment {url?:string;id?:string;name?:string;type:string}
 const types=new Set(['image/png','image/jpeg','image/gif','image/webp','application/pdf','text/plain','audio/mpeg','audio/ogg','audio/mp4','video/mp4'])
@@ -22,6 +23,8 @@ export async function inboundMedia(env:Env,row:Connection,t:any,files:Attachment
    const info=await providerJson('https://graph.facebook.com/v23.0/'+encodeURIComponent(file.id)+'?phone_number_id='+encodeURIComponent(row.sender),{headers:{Authorization:'Bearer '+token}})
    if(info.id!==file.id)throw new HTTPException(422,{message:'WhatsApp media identity mismatch'})
    url=safeUrl(info.url,cdn);headers.Authorization='Bearer '+token
+  }else if(row.provider==='teams'){
+   const base=new URL(serviceUrl(t.service_url));url=safeUrl(url,u=>u.origin===base.origin&&u.pathname.startsWith(base.pathname+'v3/attachments/'));headers.Authorization='Bearer '+await teamsToken(env,row)
   }else if(row.provider==='slack'){
    url=safeUrl(url,u=>u.hostname==='files.slack.com'&&u.pathname.startsWith('/files-pri/'));headers.Authorization='Bearer '+token
   }else url=safeUrl(url,cdn)

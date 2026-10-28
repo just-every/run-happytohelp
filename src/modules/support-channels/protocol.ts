@@ -1,5 +1,6 @@
 import {HTTPException} from 'hono/http-exception'
 import type {Connection} from './model'
+import {teamsEvents} from './teams'
 import type {Attachment} from './media'
 const bytes=new TextEncoder()
 export async function mac(secret:string,value:string,algorithm='SHA-256',base64=false){const key=await crypto.subtle.importKey('raw',bytes.encode(secret),{name:'HMAC',hash:algorithm},false,['sign']);const data=new Uint8Array(await crypto.subtle.sign('HMAC',key,bytes.encode(value)));return base64?btoa(String.fromCharCode(...data)):Array.from(data,x=>x.toString(16).padStart(2,'0')).join('')}
@@ -15,9 +16,10 @@ export async function verify(row:Connection,secret:string,url:string,raw:string,
  }else{expected='sha256='+await mac(secret,raw);received=headers.get('x-hub-signature-256')||''}
  if(!equal(expected,received))throw new HTTPException(401,{message:'Provider signature rejected'})
 }
-export interface Inbound {at?:number;id:string;sender:string;channel:string;thread:string;text:string;optOut?:boolean;templateConsent?:boolean;media:Attachment[];status?:string;providerId?:string;watermark?:number;ignored?:string;serviceUrl?:string;editId?:string;deleted?:boolean;action?:{kind:string;target?:string}}
+export interface Inbound {at?:number;id:string;sender:string;channel:string;thread:string;text:string;optOut?:boolean;templateConsent?:boolean;media:Attachment[];status?:string;providerId?:string;watermark?:number;ignored?:string;serviceUrl?:string;providerConversation?:string;private?:boolean;providerMessageId?:string;editId?:string;deleted?:boolean;action?:{kind:string;target?:string}}
 function timestamp(value:unknown,seconds=false){const time=Number(value)*(seconds?1000:1);if(!Number.isFinite(time)||time<=0||time>Date.now()+300000)throw new HTTPException(400,{message:'Invalid provider message timestamp'});return time}
 export function events(row:Connection,raw:string):Inbound[]{
+ if(row.provider==='teams')return teamsEvents(row,raw)
  if(row.provider==='sms'){
   const f=new URLSearchParams(raw);if(f.get('AccountSid')!==row.account)throw new HTTPException(403)
   if(f.get('MessageStatus')&&!f.has('Body')&&f.get('From')===row.sender)return [{id:'status:'+f.get('MessageSid')+':'+f.get('MessageStatus'),sender:'',channel:'',thread:'',text:'',media:[],status:f.get('MessageStatus')!,providerId:f.get('MessageSid')!}]
@@ -31,11 +33,12 @@ export function events(row:Connection,raw:string):Inbound[]{
  if(row.provider==='slack'){
   if(body.team_id!==row.account)throw new HTTPException(403)
   const e=body.event;if(!e)return []
-  if(!JSON.parse(row.channels_json).includes(e.channel))throw new HTTPException(403,{message:'Customer channel is not installed and allowed'})
+  if(!JSON.parse(row.channels_json).includes(e.channel)&&!(/^D/.test(e.channel)&&/^support link [a-f0-9-]{36}$/i.test(e.text||'')))throw new HTTPException(403,{message:'Customer channel is not installed and allowed'})
   if(e.bot_id||e.user===row.sender)return []
+  if(['message_changed','message_deleted'].includes(e.subtype)){const m=e.message||e.previous_message;return [{id:body.event_id,sender:m?.user||'',channel:e.channel,thread:m?.thread_ts||m?.ts||e.deleted_ts,text:m?.text||'',media:[],editId:m?.ts||e.deleted_ts,deleted:e.subtype==='message_deleted',at:timestamp(e.event_ts||e.ts,true)}]}
   if(e.subtype)return [{id:body.event_id,sender:'',channel:e.channel,thread:'',text:'',media:[],ignored:e.subtype}]
   if(e.type!=='message'||!e.user||!e.ts||!body.event_id)return []
-  return [{id:body.event_id,sender:e.user,channel:e.channel,thread:e.thread_ts||e.ts,text:e.text||'',media:(e.files||[]).map((f:any)=>({url:f.url_private_download||f.url_private,name:f.name,type:f.mimetype}))}]
+  return [{id:body.event_id,private:/^D/.test(e.channel),providerMessageId:e.ts,sender:e.user,channel:e.channel,thread:e.thread_ts||e.ts,text:e.text||'',media:(e.files||[]).map((f:any)=>({url:f.url_private_download||f.url_private,name:f.name,type:f.mimetype}))}]
  }
  const result:Inbound[]=[]
  for(const entry of body.entry||[]){

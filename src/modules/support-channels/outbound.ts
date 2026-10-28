@@ -5,6 +5,7 @@ import {httpsTransport} from '../api-integrations/transport'
 import {auditStatement} from '../audit/record'
 import {memberAccess} from '../access/gate'
 import {thread,connection} from './model'
+import {teamsToken,teamsReplyUrl} from './teams'
 import {outboundMedia} from './media'
 export interface Continuation {name:string;language:{code:string};components?:{type:string;parameters:{type:string;text:string}[]}[]}
 export function blocker(t:any,now=Date.now(),continuation=false){
@@ -36,6 +37,8 @@ export async function channelMessage(env:Env,message:Record<string,unknown>,acto
    const form=new URLSearchParams({From:t.sender,To:t.recipient,Body:content});for(const f of files)form.append('MediaUrl',f.url)
    if(env.APP_ORIGIN)form.set('StatusCallback',new URL('/api/support-channels/webhooks/'+t.connection_id,String(env.APP_ORIGIN)).href)
    body=form.toString()
+  }else if(t.provider==='teams'){
+   url=teamsReplyUrl(t);headers.Authorization='Bearer '+await teamsToken(env,current);body=JSON.stringify({type:'message',text:content,textFormat:'plain',attachments:files.map(f=>({contentType:f.content_type,contentUrl:f.url,name:f.filename}))})
   }else if(t.provider==='slack'){
    url='https://slack.com/api/chat.postMessage';body=JSON.stringify({channel:t.channel_id,thread_ts:t.thread_key,text:content||'Support attachment',attachments:files.map(f=>({fallback:f.filename,title:f.filename,title_link:f.url})),mrkdwn:false,unfurl_links:false,unfurl_media:false,parse:'none'})
   }else if(t.provider==='whatsapp'){
@@ -50,12 +53,12 @@ export async function channelMessage(env:Env,message:Record<string,unknown>,acto
    body=JSON.stringify({recipient:{id:t.recipient},message:file?{attachment:{type:file.content_type.startsWith('image/')?'image':file.content_type.startsWith('audio/')?'audio':file.content_type.startsWith('video/')?'video':'file',payload:{url:file.url,is_reusable:false}}}:{text:content},messaging_type:'RESPONSE'})
   }
   const live=await thread(env,actor.projectId,String(message.conversation_id)),fresh=await connection(env,t.connection_id)
-  if(!live||blocker(live,Date.now(),!!continuation)||fresh.token_cipher!==current.token_cipher||(live.provider==='slack'&&!JSON.parse(fresh.channels_json).includes(live.channel_id))||!(await memberAccess(env.DB,actor.projectId,actor.id))?.permissions.has('conversations.reply')){state='blocked';error='channel_authority_changed'}
+  if(!live||blocker(live,Date.now(),!!continuation)||fresh.token_cipher!==current.token_cipher||(['slack','teams'].includes(live.provider)&&!JSON.parse(fresh.channels_json).includes(live.channel_id))||!(await memberAccess(env.DB,actor.projectId,actor.id))?.permissions.has('conversations.reply')){state='blocked';error='channel_authority_changed'}
   else{
    requested=true
    const response=await httpsTransport.send({url,headers,body}),data=(()=>{try{return JSON.parse(response.body)}catch{return null}})()
    if(response.status>=200&&response.status<300&&data&&(t.provider!=='slack'||data.ok===true)){
-    providerId=data.sid??data.ts??data.messages?.[0]?.id??data.message_id??null
+    providerId=data.sid??data.ts??data.id??data.messages?.[0]?.id??data.message_id??null
     if(providerId){state='accepted';error=null}
    }else if(response.status>=400&&response.status<500||(t.provider==='slack'&&data?.ok===false)){state='failed';error='provider_rejected'}
   }

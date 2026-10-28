@@ -6,7 +6,7 @@ import {memberAccess} from '../access/gate'
 import type {Permission} from '../access/catalogue'
 import {hashToken} from '../../platform/auth'
 import {contactAvailableSql} from '../conversations/contact-privacy'
-export type Provider='sms'|'whatsapp'|'instagram'|'messenger'|'slack'
+export type Provider='sms'|'whatsapp'|'instagram'|'messenger'|'slack'|'teams'
 export interface Connection {id:string;project_id:string;provider:Provider;account:string;sender:string;channels_json:string;token_cipher:string|null;signing_cipher:string|null;verify_hash:string;registered:number;revoked_at:number|null}
 export const prefix='/projects/:projectId'
 export async function access(c:Context<AppEnv>,permission?:Permission){const actor=await scope(c) as Actor;if(permission&&!(await memberAccess(c.env.DB,actor.projectId,actor.id))?.permissions.has(permission))throw new HTTPException(403,{message:'Your role cannot perform this channel action'});return actor}

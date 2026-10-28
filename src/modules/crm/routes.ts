@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {Hono,type Context} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Actor} from '../../platform/env'
@@ -126,13 +127,13 @@ crmRoutes.delete(prefix+'/contacts/:contactId',async c=>{
 })
 // A ticket resolves its native requester; CRM never selects or authenticates one.
 crmRoutes.get('/projects/:projectId/conversations/:conversationId/crm',async c=>{
- const {actor}=await access(c),ticket=await c.env.DB.prepare(`SELECT contact_id FROM conversations c WHERE project_id=? AND id=? AND ${contactAvailableSql()}`).bind(actor.projectId,c.req.param('conversationId')).first<any>()
+ const {actor}=await access(c),ticket=await c.env.DB.prepare(`SELECT contact_id FROM conversations c WHERE project_id=? AND id=? AND ${contactAvailableSql()} AND ${ticketScopeSql('?')}`).bind(actor.projectId,c.req.param('conversationId'),actor.id).first<any>()
  if(!ticket)throw new HTTPException(404)
  return readContext(c,actor.projectId,ticket.contact_id)
 })
 crmRoutes.post('/projects/:projectId/conversations/:conversationId/crm/refresh',async c=>{
  const {actor}=await access(c,true),conversationId=c.req.param('conversationId')
- const ticket=await c.env.DB.prepare(`SELECT contact_id FROM conversations c WHERE project_id=? AND id=? AND ${contactAvailableSql()}`).bind(actor.projectId,conversationId).first<any>()
+ const ticket=await c.env.DB.prepare(`SELECT contact_id FROM conversations c WHERE project_id=? AND id=? AND ${contactAvailableSql()} AND ${ticketScopeSql('?')}`).bind(actor.projectId,conversationId,actor.id).first<any>()
  if(!ticket)throw new HTTPException(404)
- return refreshContext(c,ticket.contact_id,{sql:`EXISTS(SELECT 1 FROM conversations c WHERE c.project_id=? AND c.id=? AND c.contact_id=? AND ${contactAvailableSql()})`,params:[actor.projectId,conversationId,ticket.contact_id]})
+ return refreshContext(c,ticket.contact_id,{sql:`EXISTS(SELECT 1 FROM conversations c WHERE c.project_id=? AND c.id=? AND c.contact_id=? AND ${contactAvailableSql()} AND ${ticketScopeSql('?')})`,params:[actor.projectId,conversationId,ticket.contact_id,actor.id]})
 })

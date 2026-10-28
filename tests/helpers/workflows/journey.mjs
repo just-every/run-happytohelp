@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {workflowFixture} from './fixture.mjs'
+import {slaTeamsFlow} from './sla-teams.mjs'
 import {slaSlackFlow} from './sla-slack.mjs'
 import {slaFlow} from './sla.mjs'
 import {rulesFlow} from './rules.mjs'
@@ -30,5 +31,6 @@ export async function workflowsJourney(){
   const calendar=await slackFixture.ok('/workflow-calendars',{name:'Slack support',timezone:'America/New_York',weekly:[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})),holidays:'none',closures:[]})
   const policy=await slackFixture.ok('/sla-policies',{name:'Existing inbox policy',calendar_id:calendar.id,first_response_minutes:120})
   await slaSlackFlow(slackFixture,policy,calendar)
+  await slaTeamsFlow(slackFixture,policy,calendar)
  }finally{await slackFixture.app.close()}
 }

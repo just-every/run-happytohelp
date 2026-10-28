@@ -168,6 +168,31 @@ uses recorded responses for both modes; **live Slack: not-supplied**. Import and
 undo generate no connection notifications. Erasure suppresses pending payloads;
 it cannot withdraw a message already accepted by a receiver.
 
+## Escalate SLA alerts to Teams
+
+Connect Teams through **Ticket → Escalations → Connections** as an owner or
+admin. Saving the connection sends no SLA alert. In **Settings → Workflows →
+SLA policies**, edit a policy and explicitly select its **Teams escalation
+destination**, then save. The selection binds the current connection revision;
+a reconnect or channel change requires selecting the new revision and saving
+again. Existing alerts never acquire a new destination retroactively.
+
+Approaching, breach and unattended alerts send fixed ticket and named-operator
+identifiers, metric and kind to that channel as plain text. Customer messages,
+names, addresses and private notes are excluded. In **Ticket → Schedules**, read
+Teams delivery state and attempts, cooldown or safe failure detail. Accepted
+means Graph accepted a message; it does not prove a human read it. Acknowledge
+in HappyToHelp. Acknowledgment sends no Teams callback. Resolution, removed
+backups, revoked installation authority and withdrawn or stale connection
+consent stop unsent alerts.
+
+Only an explicit rate-limit refusal with a usable Retry-After permits retry,
+with at most five total attempts. Other refusals fail visibly; lost responses,
+ambiguous effects and interrupted claims remain uncertain without automatic
+replay. Reconcile uncertain messages in Teams before any deliberate further
+work. This path has local network-edge evidence only; live Teams account scopes,
+channel receipt and human acknowledgment remain unqualified.
+
 ## Call a signed webhook from a rule
 
 The workflow API accepts `{ "type": "webhook", "destination_id": "..." }` in an

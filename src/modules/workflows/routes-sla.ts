@@ -14,6 +14,12 @@ import {ticketSla,liveSlaTicketSql} from './sla'
 
 export const workflowSlaRoutes=new Hono<AppEnv>()
 const prefix='/projects/:projectId'
+workflowSlaRoutes.get(`${prefix}/sla-teams-destinations`,async c=>{
+ const actor=await scope(c) as Actor
+ await ticketReadAccess(c.env,actor)
+ const rows=await c.env.DB.prepare('SELECT id,target,updated_at,token_cipher IS NOT NULL connected FROM escalation_teams_connections WHERE project_id=?').bind(actor.projectId).all<any>()
+ return c.json({data:rows.results.map(row=>({...row,connected:!!row.connected}))})
+})
 for(const kind of ['workflow-calendars','sla-policies'] as const){
  const calendar=kind==='workflow-calendars',table=calendar?'workflow_calendars':'sla_policies',decode=calendar?calendarData:policyData,path=`${prefix}/${kind}`
  workflowSlaRoutes.get(path,async c=>{
@@ -39,6 +45,14 @@ for(const kind of ['workflow-calendars','sla-policies'] as const){
     if(!await c.env.DB.prepare(destination).bind(actor.projectId,policy.slack_destination_id).first())invalid('Choose an enabled workspace Slack destination')
     extra.push(`EXISTS(${destination})`);args.push(actor.projectId,policy.slack_destination_id)
    }
+   if(policy.teams_connection_id!==(existing?.teams_connection_id??null)||policy.teams_connection_version!==(existing?.teams_connection_version??null)){
+    if(!['owner','admin'].includes(actor.role))throw new HTTPException(403,{message:'Only an owner or admin can change Teams escalation consent'})
+   }
+   if(policy.teams_connection_id){
+    const connection="SELECT 1 FROM escalation_teams_connections WHERE project_id=? AND id=? AND updated_at=? AND token_cipher IS NOT NULL"
+    if(!await c.env.DB.prepare(connection).bind(actor.projectId,policy.teams_connection_id,policy.teams_connection_version).first())invalid('Choose a current connected workspace Teams channel; reconnecting requires renewed SLA consent')
+    extra.push(`EXISTS(${connection})`);args.push(actor.projectId,policy.teams_connection_id,policy.teams_connection_version)
+   }
    const conditions=JSON.parse(policy.conditions_json),fieldIds=Object.keys(conditions.fields??{})
    if(fieldIds.length){
     const fields=(await c.env.DB.prepare('SELECT * FROM ticket_fields WHERE project_id=? AND id IN (SELECT value FROM json_each(?))').bind(actor.projectId,JSON.stringify(fieldIds)).all<any>()).results
@@ -63,7 +77,7 @@ for(const kind of ['workflow-calendars','sla-policies'] as const){
   }
   const now=Math.max(workflowNow(c.env),(existing?.updated_at??0)+1),receipt=crypto.randomUUID(),accepted='EXISTS(SELECT 1 FROM audit_events WHERE id=?)',columns=Object.keys(definition),values=Object.values(definition)
   const results=await c.env.DB.batch([
-   c.env.DB.prepare(`INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json) SELECT ?,?,?,'data',?,'succeeded','user',?,'dashboard',?,?,? WHERE EXISTS(${guard.sql}) ${extra.map(predicate=>'AND '+predicate).join(' ')}`).bind(receipt,actor.projectId,now,`${kind}.${method}`,actor.id,table,id,JSON.stringify(calendar?{}:{slack_destination_id:(definition as ReturnType<typeof policyDefinition>).slack_destination_id}),...guard.params,...args),
+   c.env.DB.prepare(`INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json) SELECT ?,?,?,'data',?,'succeeded','user',?,'dashboard',?,?,? WHERE EXISTS(${guard.sql}) ${extra.map(predicate=>'AND '+predicate).join(' ')}`).bind(receipt,actor.projectId,now,`${kind}.${method}`,actor.id,table,id,JSON.stringify(calendar?{}:{slack_destination_id:(definition as ReturnType<typeof policyDefinition>).slack_destination_id,teams_connection_id:(definition as ReturnType<typeof policyDefinition>).teams_connection_id,teams_connection_version:(definition as ReturnType<typeof policyDefinition>).teams_connection_version}),...guard.params,...args),
    method==='post'?c.env.DB.prepare(`INSERT INTO ${table}(project_id,id,${columns.join(',')},updated_at) SELECT ?,?,${columns.map(()=>'?').join(',')},? WHERE ${accepted}`).bind(actor.projectId,id,...values,now,receipt):c.env.DB.prepare(`UPDATE ${table} SET ${columns.map(column=>`${column}=?`).join(',')},updated_at=? WHERE project_id=? AND id=? AND ${accepted}`).bind(...values,now,actor.projectId,id,receipt)
   ])
   if(!results[0].meta.changes)throw new HTTPException(409,{message:'Settings or authority changed. Reload before applying changes.'})

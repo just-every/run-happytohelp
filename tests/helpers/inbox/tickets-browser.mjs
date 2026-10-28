@@ -1,6 +1,7 @@
 import {problemSuggestionsBrowser} from './problem-suggestions-browser.mjs'
 import {createHash} from 'node:crypto'
 import {createServer} from 'node:net'
+import {slaTeamsBrowser} from '../workflows/sla-teams-browser.mjs'
 import {slaSlackBrowser} from '../workflows/sla-slack-browser.mjs'
 import assert from 'node:assert/strict'
 import {createRuntime} from '../emitted-runtime.mjs'
@@ -113,6 +114,7 @@ export async function ticketsBrowser({count=12,installation}={}){
   assert.deepEqual(savedPolicy.conditions.fields,{[tier.id]:'business'})
   assert.deepEqual(savedPolicy.conditions.form_ids,[requestForm.id])
   await slaSlackBrowser({page,runtime,fixture,capture,policy})
+  await slaTeamsBrowser({page,runtime,fixture})
   await page.goto(`${runtime.origin}/projects/${projectId}/workflow-settings?tab=rules`)
   // The lead's normal settings screen configures and publishes the same
   // versioned actions that the provider-edge workflow journeys execute.

@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "37992d45f7f2165b5a586df3220bfab311596a1c6cb6381fb4c359954e928543",
+      "sha256": "d451dd9a4a8f60540338e28bdabe841f082f54f0d8cd0d4bd652f61ab9a74749",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8d0a1b1e125ef9545c2f1bcd27f22f9c60b752693a978aeb24d5b3041767afa1",
+      "sha256": "2b61f79e9c822c113114100fca2fd51150ac486ffaf8e1e5bd84c789f0b34943",
       "executable": false
     },
     "DEMO.md": {
@@ -2583,8 +2583,16 @@
       "sha256": "9b8d4320b904a998ecd62f4a8d58dfbf87c8d537e0f21737c6327b997ba48808",
       "executable": false
     },
+    "migrations/260_voice.sql": {
+      "sha256": "2fc9c4397ce136a3227e73b7b6d0e4d761ffba7a1c53effa6e50447adcd58584",
+      "executable": false
+    },
     "migrations/261_assurance.sql": {
       "sha256": "472fc38afaaf4c171d53cb626cbd1965e5d3919c4253bfcd4ea658bf093afcc3",
+      "executable": false
+    },
+    "migrations/261_voice_media.sql": {
+      "sha256": "5e503f0984fbe3c8c2b70a642957b0c56de633392f49d73a41ffce67d93bc442",
       "executable": false
     },
     "migrations/262_feedback_penny.sql": {
@@ -2676,7 +2684,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "266a968bb8435aba22a617eddaec1ba942ebcc644ecc3d819d7a2481a8b7794a",
+      "sha256": "7bdfa70c1cb5d3e59e6e490fae83d333865051c277d33084b0161ff92b35a78e",
       "executable": false
     },
     "rer-project.json": {
@@ -12388,11 +12396,11 @@
       "executable": false
     },
     "tests/helpers/voice/browser.mjs": {
-      "sha256": "256dd362f39628025d1d0925575b6de9ed34a9192637ab4ff26e57b29f3f347f",
+      "sha256": "e4780508c7d4f60d6de4a92880c233086a17e66dcf5b5b773707c1f9e953042e",
       "executable": false
     },
     "tests/helpers/voice/journeys.mjs": {
-      "sha256": "2709a42b7bd653899d4e28ebc222775e2c925723c97d30c3e78a8c21273bcd8f",
+      "sha256": "dea6122c23358cadfab8979798cfb891401bbcd2da74917a99ade192eace50f2",
       "executable": false
     },
     "tests/helpers/voice/portable.mjs": {
@@ -12536,11 +12544,11 @@
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {
-      "sha256": "669a31266fbe30cb4837101a9d817b7715e56a4561159abcbd8762354fb3a7bf",
+      "sha256": "81a712a40460b0c208c27fe5e2630c474feddd8b6acbb6d8484ccfa86622c263",
       "executable": false
     },
     "tests/journeys/connections.mjs": {
-      "sha256": "23fb25019d7513b5776e0a1b7b1d0670fdcad19cb20315125dc2c16705db0c7e",
+      "sha256": "aff0bdc45dd1d44494c70e1155cdf4ba0db1a272f8492acdaf0aa673a7cfb0f7",
       "executable": false
     },
     "tests/journeys/connector-browser.mjs": {

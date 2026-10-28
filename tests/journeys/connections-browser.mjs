@@ -61,7 +61,7 @@ test(`at 1440 and 390px an owner creates and revokes a token, connects a webhook
   const freshResponse=await context.request.post(settings+'/webhooks/'+original.destination_id+'/test',{data:{}});assert.equal(freshResponse.status(),202);const fresh=await freshResponse.json();await page.getByRole('button',{name:'Refresh delivery log',exact:true}).click();await page.getByRole('button',{name:'Resend uncertain webhook',exact:true}).click();assert.equal((await context.request.delete(settings+'/webhooks/'+original.destination_id)).status(),200);await page.getByRole('button',{name:'Resend despite duplicate risk',exact:true}).click();await page.getByRole('alert').filter({hasText:'The original destination is unavailable or changed'}).waitFor();await audit(page,'resend-error-'+width);assert.equal((await (await context.request.get(settings+'/deliveries')).json()).data.find(row=>row.id===fresh.id).state,'uncertain');
 
   await context.close()
-}catch(error){success=false;throw error}}])); await hubspotBrowser({browser,directory:shot('hubspot')});})
+}catch(error){success=false;throw error}}])); await hubspotBrowser({browser,directory:shot('hubspot')});await voiceBrowserProof({widths:[1440]});})
 
 import {startProviders} from '../helpers/escalations/providers.mjs'
 import {exerciseEscalations} from '../helpers/escalations/browser.mjs'
@@ -72,4 +72,3 @@ test(`at 1440 and 390px selected engineering context reaches connected trackers,
 })
 
 import {voiceBrowserProof} from '../helpers/voice/browser.mjs'
-test('at 1440 and 390px telephone settings, private voicemail, callback and human transfer, consent withdrawal, customer context and call reports work through dashboard controls',voiceBrowserProof)

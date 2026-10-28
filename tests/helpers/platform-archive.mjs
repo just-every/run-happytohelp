@@ -87,7 +87,6 @@ export async function platformArchiveJourney(){
   const managed=await fixture('managed');
   await cli(managed,['import','--input',zip,'--yes']);
   compareArchive(downloaded,await archiveSnapshot(managed));
-  const empty=await fixture('managed-refusals');await platformDestination(empty);
   async function refuseDownload(root,bytes,reason){
    const input=join(scratch,'refused.zip');await rm(input,{force:true});await writeFile(input,bytes,{mode:0o600});
    const stored=await databaseBytes(root);assert.ok(Object.keys(stored).length,'the destination has a database to protect');
@@ -95,11 +94,11 @@ export async function platformArchiveJourney(){
    assert.match(result.events.find(event=>event.event==='error').message,reason);
    assert.deepEqual(await databaseBytes(root),stored,'a refused download changes no destination database byte');
   }
-  await refuseDownload(empty,unknownTable,/managed_data_schema_table_missing/);
-  await refuseDownload(empty,download.subarray(0,download.length-64),/managed_data_truncated/);
   await refuseDownload(managed,download,/target_not_empty/);
   // Refusals happen before snapshot capture, schema preparation or transfer.
   const root=await fixture('refusals');await platformDestination(root);
+  await refuseDownload(root,unknownTable,/managed_data_schema_table_missing/);
+  await refuseDownload(root,download.subarray(0,download.length-64),/managed_data_truncated/);
   const names=(await readdir(join(root,'.generated/migrations'))).filter(name=>name.endsWith('.sql')).sort(),last=names.at(-1);
   const row=await archiveStorage(root,({DB})=>DB.prepare('SELECT * FROM rer_migrations WHERE name=?').bind(last).first());
   async function refuse(reason){

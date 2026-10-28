@@ -9,6 +9,7 @@ export async function referenceJourney(){
   const category=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Selected accounts',audience:'signed-in',requires_entitlement:1},status:201})).data.id
   const body='The indigo recovery procedure requires a copper checkpoint before the violet console accepts any emergency account restoration request. Keep the amber access certificate inside the sealed support envelope until the overnight coordinator completes the identity inspection.'
   const article=(await call(`/api/knowledge/${p}/articles`,{body:{title:'Account restoration',content:body,slug:'restoration',categoryIds:[category],status:'published'},status:201})).data.id
+  await (await import('./upgrade-report.mjs')).upgradeReport(k,article)
   const secret=(await app.first('SELECT verification_secret FROM projects WHERE id=?',p)).verification_secret
   const contact=async name=>{const email=name+'@customer.test',contact_hash=createHmac('sha256',secret).update(email).digest('hex');const customer=(await app.call('/api/identity/widget/session',{body:{widgetKey:'widget-p',identifier:email,email,contact_hash},status:201})).data;const conversation=(await app.call('/api/conversations',{token:customer.token,body:{projectId:p},status:201})).data;return {...customer,conversation}}
   const [a,b,c]=await Promise.all(['reader-a','reader-b','reader-c'].map(contact))

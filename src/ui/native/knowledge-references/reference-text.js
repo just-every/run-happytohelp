@@ -32,7 +32,9 @@ export function separateReferences(content, references = []) {
         const before = parts[index - 1]?.token, after = parts[index + 1]?.token;
         if (!part.text) return before && after ? (isLink(before) && isLink(after) ? ' ' : '\n\n') : '';
         let text = part.text;
-        if (before && !(isLink(before) ? /^\s/.test(text) : /^\r?\n/.test(text))) text = (isLink(before) ? ' ' : '\n\n') + text;
+        // Closing punctuation belongs to the preceding reference, including copied
+        // spans whose canonical token ends immediately before a full stop.
+        if (before && !/^[,.;:!?%)\]}»”’]/u.test(text) && !(isLink(before) ? /^\s/.test(text) : /^\r?\n/.test(text))) text = (isLink(before) ? ' ' : '\n\n') + text;
         if (after && !(isLink(after) ? /\s$/.test(text) : /\r?\n$/.test(text))) text += isLink(after) ? ' ' : '\n\n';
         return text;
     }).join('');

@@ -86,7 +86,9 @@ HTTP failure authorizes a new local ID and an automatic retry.
 - `POST /tickets/:ticketId/approvals/:jobId/follow-ups/:proposalId` with
   `{frontier}` explicitly approves that stored proposal once. It queues the
   same linked child as the native approval door, with the proposal's exact mode,
-  instructions and attachment grants. Concurrent or repeated approval returns
+  instructions and attachment grants. Only investigate/resolve proposals are
+  available; resolve-and-reply proposals are refused so mobile approval never
+  grants a future or background customer send. Concurrent or repeated approval returns
   the original child receipt. Changed ticket/scheduled effects, revoked device,
   lost computer grant or replaced result refuse new authority atomically.
 - `POST /tickets/:ticketId/approvals/:jobId/draft` with `{frontier, proposalId}`

@@ -1,3 +1,4 @@
+import {zendeskOffline} from './zendesk-offline'
 import {sourceOwnership} from '../source-ownership'
 import {mapCompanies} from './companies'
 import {zendeskFields,zendeskTicketFields} from './zendesk-fields'
@@ -68,7 +69,7 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
      if(p.via?.channel!=null&&typeof p.via.channel!=='string')throw new Error('conversation_source_channel_invalid')
      if(!Array.isArray(p.comments)||!p.comments.length)throw new Error('ticket_comments_required')
      for(const part of p.comments){if(!object(part)||typeof part.public!=='boolean')throw new Error('comment_visibility_required');await add(part,sourceId(part.id,vendor),part.plain_body??part.body,part.public,time(part.created_at,'iso'),author(part.author_id),part.created_at,'source')}
-     if(p.attachments||p.comments.some((v:any)=>array(v.attachments).length))omissions.push('attachments_metadata_retained_bytes_not_imported')
+     
     }else{
      if(!object(p.source)||!['email','messenger'].includes(p.channel?.initial))throw new Error('conversation_source_channel_unsupported')
      if(p.conversation_parts?.type!=='conversation_part.list'||!Array.isArray(p.conversation_parts.conversation_parts))throw new Error('conversation_parts_required')
@@ -84,7 +85,7 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
     tables.move_in_conversations=[{conversation_id:target,project_id:projectId,vendor,source_id:record.sourceId,subject:typeof p.subject==='string'?p.subject:typeof p.title==='string'?p.title:typeof p.source?.subject==='string'?p.source.subject:'',source_state:state,source_channel:vendor==='zendesk'?(p.via?.channel??'unknown'):p.channel.initial}]
     tables.messages=rows;tables.move_in_message_sources=sources;tables.move_in_notes=notes
     tables.conversation_tags=[...new Set(tags(record).map(tagKey))].map(name=>({project_id:projectId,conversation_id:target,tag_id:tagIds.get(name)??id('tag',name)}))
-    if(vendor==='zendesk')tables.ticket_field_values=zendeskTicketFields(record,projectId,target,records,omissions)
+    if(vendor==='zendesk'){tables.ticket_field_values=zendeskTicketFields(record,projectId,target,records,omissions);if(p.custom_status_id!=null)omissions.push('zendesk_custom_status_not_mapped:'+p.custom_status_id)}
     if(p.assignee_id||p.admin_assignee_id||p.team_assignee_id)omissions.push('historical_assignment_not_activated')
    }else if(record.kind==='macro'){
     kind='macro';target=id(kind,record.sourceId);let body:string,title:string,created:number,updated:number
@@ -121,7 +122,8 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
     if(p.translated_content||p.section_id||p.parent_id||p.tags||p.scheduled_publish_at||p.scheduled_unpublish_at||p.ai_agent_availability)omissions.push('article_structure_or_translations_retained_in_original_only')
    }else{result.effects.set(key,[]);result.omissions.set(key,[`unsupported_record_kind:${record.kind}`]);continue}
    if(kind==='conversation')tables.email_threading_keys=importedEmailThreadKeys(projectId,target,vendor,record,tables.conversations[0].created_at)
-   const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,...(kind==='conversation'?{ownership:sourceOwnership(vendor,p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null}}
+   const history=vendor==='zendesk'&&kind==='conversation'?zendeskOffline(p,projectId,target,tables,omissions):undefined
+   const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,...(history?{history}:{}),...(kind==='conversation'?{ownership:sourceOwnership(vendor,p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null}}
    if(nativeStatementCount(kind,value)>LIMITS.nativeStatements)throw new Error('native_record_statement_limit');result.effects.set(key,[{targetKind:kind,targetId:target,value:completeNativeValue(kind,value) as any}]);if(omissions.length)result.omissions.set(key,omissions)
   }catch(error){result.rejections.set(key,error instanceof Error?error.message:'record_mapping_failed');result.effects.set(key,[]);if(omissions.length)result.omissions.set(key,omissions)}
  }

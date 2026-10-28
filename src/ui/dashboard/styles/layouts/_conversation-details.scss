@@ -194,6 +194,15 @@ body.conversation-workspace #chat {
         text-transform: uppercase;
     }
 
+    .imported-history {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        summary { min-height: 44px; padding-block: 10px; cursor: pointer; }
+        summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+        button { min-height: 44px; }
+        ol, ul { padding-left: 1.2rem; }
+    }
+
     .ticket-summary__rows { margin: 0; }
 
     .ticket-summary__row {

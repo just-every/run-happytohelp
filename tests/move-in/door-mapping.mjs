@@ -1,3 +1,4 @@
+import {zendeskOfflineJourney} from './zendesk-offline.mjs';
 import {attachmentJourney} from './supplied-attachments.mjs';
 import {configurationFieldsJourney} from './configuration-fields.mjs';
 import {companyJourney} from './companies.mjs';
@@ -133,6 +134,7 @@ import {step} from './steps.mjs';
 
 test("landing: an approved import lands each vendor's history, people, replies, notes, tags and knowledge exactly, keeps notes private, and repeats or repackages as a no-op",async()=>{
 await step('Zendesk history lands with roles, original times, private notes, one tag, contact-only tags and plain bodies; incomplete or restricted sources are review rejections',async()=>{
+ await zendeskOfflineJourney(imported)
  await companyJourney(imported,'zendesk')
  await lifecycleJourney()
  await imported('zendesk','\n'+ndjson(user,staff,ticket),{check:async({plan,omissions,rows})=>{

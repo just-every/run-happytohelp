@@ -1748,7 +1748,7 @@
       "executable": false
     },
     "docs/moving-in.md": {
-      "sha256": "25f1e31d0cfc83a715dddbc7ac8c079f6e78202d220a9e9abde48e3b8a064604",
+      "sha256": "df76477ee0622bfadf32f4fe8ebd78d9002b7d6ffadd386550454771d5dd812f",
       "executable": false
     },
     "docs/NAVIGATION.md": {
@@ -4260,7 +4260,7 @@
       "executable": false
     },
     "src/modules/conversations/routes.ts": {
-      "sha256": "9884541bdd84991c1c32390d14aac89151bfe082eb7c9cfab3a9fb805bdeb05c",
+      "sha256": "a66d26f79a05e960c35646dfe919f822237f469cb9b3e2ae0508a1f35f208534",
       "executable": false
     },
     "src/modules/conversations/socket.ts": {
@@ -6172,7 +6172,7 @@
       "executable": false
     },
     "src/modules/management/contact-erasure/scope.ts": {
-      "sha256": "077be4e61692f3fed38e90d0929220c14e4b5be1ce590c925e2dedb5d1a63032",
+      "sha256": "9e8c6256421f69461a5cc3edae7dba37f20a40408d23db1ffd1dbc6990b0eaed",
       "executable": false
     },
     "src/modules/management/contact-erasure/statements.ts": {
@@ -6480,7 +6480,7 @@
       "executable": false
     },
     "src/modules/move-in/plan.ts": {
-      "sha256": "d1f56c61c84e88eb6538c1076a27d0bf6c2ae2fcb61eda4b4d339d0d4f37d786",
+      "sha256": "f5a5f99fed5992a8836610fba7595e3b3026a17b994398102789ac85b563bf7a",
       "executable": false
     },
     "src/modules/move-in/planning-state.ts": {
@@ -6488,7 +6488,7 @@
       "executable": false
     },
     "src/modules/move-in/plans.ts": {
-      "sha256": "f631279da0fa3e7eeb04bf5b461531649ecfaf340cfadca45a3859bb2a95f00b",
+      "sha256": "3accf3d21c3fcdc064e4613c60f4790a7e1b241dede65630cb1df912c9efeb20",
       "executable": false
     },
     "src/modules/move-in/private-custody.ts": {
@@ -6512,7 +6512,7 @@
       "executable": false
     },
     "src/modules/move-in/readers/classification.ts": {
-      "sha256": "e38ae8b10beaacc21db723807e79868e87263c5a5dba3067ae45953deb2dbba0",
+      "sha256": "6ea62c99ba6c691d416d4de4be99cdd896ebd7a03be786d02d7fdc55e721a5eb",
       "executable": false
     },
     "src/modules/move-in/readers/closed-state.ts": {
@@ -6564,7 +6564,7 @@
       "executable": false
     },
     "src/modules/move-in/readers/normalise.ts": {
-      "sha256": "844de76826c7683c13dd8a40667c2f5b1e46b310d84ca329377af13bc987a13d",
+      "sha256": "f857813f8dcfa3a8b27600064c85f4f8cd6a179c8dbca4febf9da3545ff46c67",
       "executable": false
     },
     "src/modules/move-in/readers/records.ts": {
@@ -6572,7 +6572,7 @@
       "executable": false
     },
     "src/modules/move-in/readers/shapes.ts": {
-      "sha256": "ec7f5ba12dd9fa2cadac41f34e7f306415f27455e7e56b5644e8474e9aaf2c62",
+      "sha256": "a7f0a9aa720b43d9b59b36824d0744b377d60d8dff099220043464e46e16a9da",
       "executable": false
     },
     "src/modules/move-in/readers/zendesk-configuration.ts": {
@@ -6612,7 +6612,7 @@
       "executable": false
     },
     "src/modules/move-in/supplied-attachments.ts": {
-      "sha256": "8932c9ebd954a66e1aea09716646579c25ea94f250e77e0efef64b0ea86baf04",
+      "sha256": "2f02e8353d876400d7bc61e3ad8cb0e705370e72a09f831deddfb5afdcb16263",
       "executable": false
     },
     "src/modules/move-in/targets.ts": {
@@ -8708,7 +8708,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/TicketSummary.jsx": {
-      "sha256": "1cf528aed652a57d17247d34686caf5d76578201d66e286e47771c658d1e8c70",
+      "sha256": "847683d0157acf5600be8d4f03bc13b6176fcc54aa1d374896b81659ff511389",
       "executable": false
     },
     "src/ui/dashboard/components/ticket-panel/useTicketRecord.js": {
@@ -9172,7 +9172,7 @@
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-details.scss": {
-      "sha256": "7badeed8f9497a3aeed5f7c9c755fc83a1c5037081a6c8d67eba26908ab55a52",
+      "sha256": "28329418f4072d5220971bca84d2e43a6e2bd42057aaf3a5187b28791651b2f4",
       "executable": false
     },
     "src/ui/dashboard/styles/layouts/_conversation-header.scss": {
@@ -10312,15 +10312,15 @@
       "executable": false
     },
     "src/ui/native/pages/move-in-presentation.js": {
-      "sha256": "640ee8055f711d50a52605e1d4f55c97479720899710f600652ec42ad66e01b4",
+      "sha256": "47666d5cc750686a14f519464ed90643baacbcafb2a485a780ecd32abdfce6bd",
       "executable": false
     },
     "src/ui/native/pages/move-in-reasons.js": {
-      "sha256": "ffae783ca412d4a9ab8d585c7aed543509b36daf54b1e01f639bb1cc719d0542",
+      "sha256": "ac96f67dcfecb5bb9ba506f74f0dadddcd2326fdbe6ed08004ffe6605eb6acbb",
       "executable": false
     },
     "src/ui/native/pages/move-in.css": {
-      "sha256": "225794862b7825fdddc597ec9765ea593af98326638ba2c7b405fbbe60945e40",
+      "sha256": "42bdf6b81195579df516fe1121a5176ccf25c73f995c3e98e4c8b371c280dd12",
       "executable": false
     },
     "src/ui/native/pages/MoveIn.jsx": {
@@ -10328,7 +10328,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInGuide.jsx": {
-      "sha256": "57d3b7b7ec3252f23da7dd803197f1678728c493acda937d7e244d76005183ef",
+      "sha256": "1acbea0b9d6b900e12e71b65dfb91892106e4538149d1940140c6eaf368333b2",
       "executable": false
     },
     "src/ui/native/pages/MoveInOwnership.jsx": {
@@ -10340,7 +10340,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInReview.jsx": {
-      "sha256": "2700c64b710499e6d1feba53ae1049a22b3e4a7e5979f179a1d134379147dff6",
+      "sha256": "fc6b9ec93d19a7e5d1146c5c412b87c45ed3c28a7a1830385de920c07395d431",
       "executable": false
     },
     "src/ui/native/pages/notifications/NotificationInbox.jsx": {
@@ -12436,7 +12436,7 @@
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
-      "sha256": "14cc0b7a33e4486c8092f8a2ef1910541054064834c2c0947a3cbe736d9b916d",
+      "sha256": "0ebdea2f8ce48ff8ac9c86d69623c45012abb3393251aecb3c0b70f2ac40f569",
       "executable": false
     },
     "tests/journeys/move-in-capacity.mjs": {
@@ -12588,7 +12588,7 @@
       "executable": false
     },
     "tests/move-in/capacity-journey.mjs": {
-      "sha256": "26b2017cec5419fa2935208bdfcab4d1ac965249dab80ca881e1ddc4dfce3c7b",
+      "sha256": "eeabc24fb04635f4b3dc0b338b07754216f67cf6274f2da5bc6edcec458eb87f",
       "executable": false
     },
     "tests/move-in/claims.mjs": {
@@ -12616,7 +12616,7 @@
       "executable": false
     },
     "tests/move-in/door-mapping.mjs": {
-      "sha256": "d606587c3e777d598277f82ebc8f0b238173bdeab09fe254c0bfe86efdb42203",
+      "sha256": "4024f76d9d137fbd858e13c6ea323bfabbac4eb8dddd24f1f72dc363f0ac8380",
       "executable": false
     },
     "tests/move-in/door-readers.mjs": {
@@ -12664,7 +12664,7 @@
       "executable": false
     },
     "tests/move-in/generator.mjs": {
-      "sha256": "99b1ad3ca96c03ec0fb1447b9ed9226483639fa3ddaaedc8ee6c46a211fb8c76",
+      "sha256": "6c63a958dfe1761e19c66195e5717db5cfbcc46fa03ac57f8b7bd4c5c6179a6a",
       "executable": false
     },
     "tests/move-in/harness.mjs": {

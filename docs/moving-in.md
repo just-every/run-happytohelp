@@ -14,7 +14,7 @@ Uploads are limited to 2 MiB, with at most 2 MiB of expanded source bytes, 64 ZI
 
 Planning reads only candidate native identities and complete related target bundles. A persisted email index preserves Unicode comparisons and reconciles at most 100 changed native contacts per background turn; unrelated workspace history is not accumulated in memory. A native target larger than 512 KiB, or combined native candidates larger than 8 MiB, is reported as a review-size conflict before its content is loaded. Parsing indexes structural source offsets and physical lines once per file, then stages at most 100 records per batch from those saved positions. Archive extraction stages at most 20 entries per batch. One immutable review covers the whole import. Internally, reviewed plans contain at most twenty source records, 512 KiB of estimated decision material and 1 MiB of serialized plan data; an individual decision beyond that bound is refused. Large conversation bundles get a plan of their own; any record needing more than 750 native SQL writes is rejected during review with its source location. A review supports at most 300 internal plans; a larger expansion is refused before approval. Application and undo process at most twenty source records or target bundles per batch, with an additional whole-invocation D1 statement cap. Durable child journals apply in dependency order and undo in reverse order while the report shows global progress. Original uploads and extracted source bytes are retained in private object storage. The global review binds the exact original upload and parsed files by private object key, size and digest; every apply/undo invocation verifies those bytes again. Each smaller Base journal retains its reviewed decisions, source digests and provenance, and explicitly marks original bytes unavailable within that child journal. Exact bytes live in the private group custody, not duplicated in every child journal. Erasure fences the entire group before removing all child journals and source objects.
 
-Unsupported records and fields are reported rather than turned into guessed data. Attachment metadata stays in the original unless explicitly supplied Freshdesk bytes pass the checks below. Other vendors do not yet attach bytes to native messages. Automation, assignment rules, external actions, company and segment rules, and unsupported conversation parts are not activated. Inspect the report's source filename, physical line and JSON pointer to locate a problem. Invalid JSON, duplicate JSON members (including equivalent escaped names), invalid UTF-8, excessive nesting, oversized records, excess source positions and exhausted identity work budgets refuse the entire upload before private R2 and D1 custody or native effects. The refusal gives the source file, physical line, JSON path and reason. Every ZIP member is checked first, including directories and later extraction batches; no partial upload is retained. An export with no source records is refused after the complete bounded scan. Blank files, supported empty record lists and empty stored or deflated directories can accompany actual records, including records in later archive batches. Directories must first pass header, empty-body and checksum validation. Unsupported record kinds still count as source records and reach the reasoned plan. ZIP32 stored or deflated members and checked 32-bit data descriptors are supported. Opaque archive comments or extra fields, undeclared bytes, encrypted, multidisk or ZIP64 members and unsupported compression are refused; repackage the source files without that metadata. Correct the export and upload again. Valid JSON with unsupported kinds or mapping errors still reaches the reasoned plan; those decisions have no fabricated source ID or native effect. Input counts include repeated records and derived tags; per-kind counts describe distinct identified decisions plus invalid positions. The progress total counts only identified source decisions.
+Unsupported records and fields are reported rather than turned into guessed data. Attachment metadata stays in the original unless explicitly supplied Freshdesk or offline Zendesk bytes pass the checks below. Intercom and Help Scout do not yet attach bytes to native messages. Automation, assignment rules, external actions, company and segment rules, and unsupported conversation parts are not activated. Inspect the report's source filename, physical line and JSON pointer to locate a problem. Invalid JSON, duplicate JSON members (including equivalent escaped names), invalid UTF-8, excessive nesting, oversized records, excess source positions and exhausted identity work budgets refuse the entire upload before private R2 and D1 custody or native effects. The refusal gives the source file, physical line, JSON path and reason. Every ZIP member is checked first, including directories and later extraction batches; no partial upload is retained. An export with no source records is refused after the complete bounded scan. Blank files, supported empty record lists and empty stored or deflated directories can accompany actual records, including records in later archive batches. Directories must first pass header, empty-body and checksum validation. Unsupported record kinds still count as source records and reach the reasoned plan. ZIP32 stored or deflated members and checked 32-bit data descriptors are supported. Opaque archive comments or extra fields, undeclared bytes, encrypted, multidisk or ZIP64 members and unsupported compression are refused; repackage the source files without that metadata. Correct the export and upload again. Valid JSON with unsupported kinds or mapping errors still reaches the reasoned plan; those decisions have no fabricated source ID or native effect. Input counts include repeated records and derived tags; per-kind counts describe distinct identified decisions plus invalid positions. The progress total counts only identified source decisions.
 
 ## Zendesk
 
@@ -33,6 +33,102 @@ A minimal file with one saved reply and one article, one record per line. The re
 ```
 
 IDs must be positive safe integers or canonical positive decimal strings. String IDs remain strings, including IDs too large for a safe JavaScript number. Exact repeated records are collapsed; conflicting duplicate IDs are rejected. Ticket tags are actual exported strings, normalized for workspace uniqueness. User tags remain contact metadata and do not become conversation tags. No numeric vendor tag ID is invented. Standalone tag inventories are reported as unsupported.
+
+### Offline Zendesk account files
+
+Already downloaded account files can be packed locally without a service token:
+
+```sh
+node scripts/pack-zendesk-offline.mjs local-manifest.json > synthetic-hh-move.ndjson
+```
+
+Upload the resulting file through **Move in → Zendesk → Upload and review**.
+The packer reads local files only, makes no network requests and never writes
+native state. It accepts source JSON arrays, objects with `tickets`, `users` or
+`organizations` arrays, `ticket_fields` supplements, and singular wrapped JSONL/NDJSON records. Split account
+members can appear in any order. Unpacked uploads retain the existing singular
+wrapper-per-line format; arbitrary account JSON collections require this packing
+step. ZIP uploads may contain multiple such wrapped files, within the same limits.
+
+The manifest is local packing metadata, not a Zendesk export schema. Paths are
+relative to its directory; absolute paths, parent traversal, symlinks and files
+outside that directory are refused. For example:
+
+```json
+{
+  "format": "happytohelp-zendesk-offline-v1",
+  "files": [
+    {"kind":"ticket","path":"tickets.json"},
+    {"kind":"user","path":"users.json"},
+    {"kind":"organization","path":"organizations.json"},
+    {"kind":"comments","path":"comments-1001.json","ticket_id":1001,"complete":true,"page":1,"pages":1},
+    {"kind":"metrics","path":"metrics.json"},
+    {"kind":"audits","path":"audits.json"}
+  ],
+  "attachments": [
+    {"ticket_id":1001,"comment_id":101,"attachment_id":501,"path":"bytes/receipt.txt","size":5,"sha256":"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"}
+  ]
+}
+```
+
+Here the local file contains exactly `hello`. Its corresponding Zendesk comment
+attachment must have `id:501`, `file_name`, `content_type` and `size:5`. Zendesk's
+`content_url` is metadata, never a download instruction. Duplicate filenames are
+fine; attachment IDs and local paths must have exactly one owner. The packer strips
+URL user information, queries and fragments before output; direct uploads with
+credential-bearing links are refused before custody. Original local files are not
+uploaded by this command. Preserve them privately yourself when appropriate.
+
+Comments files hold a `comments` array (or an array of comments), associated with
+the manifest's explicit `ticket_id`. Supply every page, numbered from 1 through
+`pages`, each marked `complete:true` only after reconciling it; a non-null
+`next_page`, a missing page, source `comments_truncated`/`comments_incomplete`,
+or a mismatched `comment_count` makes the ticket visibly incomplete and rejects
+it in review. Supplied comments replace the ticket's embedded array. Without a
+separate file, the embedded complete array remains supported. A description
+never replaces missing comments. Identical repeated tickets collapse; differing
+copies require correction before packing. Conflicting IDs in direct uploads
+remain source-located review rejections.
+
+Metric files hold `ticket_metric_events`; audit files hold `audits`. Each record
+joins by its original `ticket_id`; for a per-ticket response that omits it, set
+`ticket_id` on that manifest file. Empty event files can declare that ticket ID
+to distinguish supplied-empty from missing history. Event IDs, instance IDs,
+metric names, timestamps, audit status transitions, source targets and supplied
+elapsed units remain inert private history. Unknown event types stay labeled as
+unsupported. Privacy/redaction audit events refuse the ticket until the source
+conversation is reconciled; old text is never treated as the redacted version.
+Missing files stay unavailable; current status never supplies an invented SLA
+result. Staff with current ticket access open **Details → Summary → Imported
+status and SLA history**. Customers cannot read this private history.
+
+Packing enrichments live only under a ticket's `_offline` object, identified by
+`format:happytohelp-zendesk-offline-v1`: `attachments` binds `attachment_id`,
+`comment_id`, relative `path`, `sha256` and canonical `base64`; `history` declares
+`metrics` and `audits` as `missing` or `supplied`; `metric_events`, `audits` and
+`provenance` retain their source file, digest, row and JSON pointer. These are
+explicit local packing fields, never required fields in an untouched Zendesk
+export. The review identifies packed file/row/pointer and source ticket ID;
+provenance retains the original component locations inside private ticket custody.
+The exact packed bytes bind the reviewed fingerprint.
+
+Supplied bytes use the existing native media store and access rules, at most
+48 KiB per file and 20 supplied files per ticket. Public comments keep public
+attachments; internal notes keep teammate-only attachments. Types and bounds
+match Freshdesk. URL-only attachments are visible omissions, never binary
+successes. Digest, size or ownership mismatches reject the entire ticket before
+native effects. Inert history is part of the native adapter's guarded
+`move_in_origins.source_json`, its plans, repeat/undo and portable database;
+there is no separate history store. Erasure removes the affected custody and
+bytes and keeps source-identity replay fences.
+
+Keep each packed upload and its decoded input within 2 MiB, each ticket with its
+history and bytes within 128 KiB, and source plus derived records within 5,000.
+Larger exports need separate manifest batches of complete tickets, each including
+their users, organizations, field definitions and relevant history. Do not split
+one ticket's conversation across independent imports. Full configuration fidelity,
+shared M3 opt-in/Business grants/catch-up transport, signed real-export
+qualification, other vendors and final live cutover remain unproved.
 
 ## Intercom
 

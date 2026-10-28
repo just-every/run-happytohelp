@@ -42,7 +42,7 @@ export function intercomDocument(properties:DocumentField[]):{kind:string}|{enve
 /** Freshdesk attachment and avatar URLs carry signed access keys, which import custody must never keep.
  * The pointer of the first such link, or null. The Move in script removes them before upload. */
 function signedLink(value:unknown,path=''):string|null{
- if(typeof value==='string')return /^(?:https?:\/\/|\/)[^?#]*\?(?:[^#]*&)?[^=&#]*(?:token|secret|key|auth|signature|credential|password|cookie)[^=&#]*=/i.test(value)?path:null
+ if(typeof value==='string'){try{const url=new URL(value);if(['https:','http:'].includes(url.protocol)&&(url.username||url.password||/(?:token|secret|key|auth|signature|credential|password|cookie)[^=&#]*=/i.test(url.hash)))return path}catch{};return /^(?:https?:\/\/|\/)[^?#]*\?(?:[^#]*&)?[^=&#]*(?:token|secret|key|auth|signature|credential|password|cookie)[^=&#]*=/i.test(value)?path:null}
  if(Array.isArray(value)){for(let i=0;i<value.length;i++){const found=signedLink(value[i],`${path}/${i}`);if(found!==null)return found}return null}
  if(object(value))for(const [key,child] of Object.entries(value)){const found=signedLink(child,`${path}/${escape(key)}`);if(found!==null)return found}
  return null
@@ -58,7 +58,7 @@ export function classifyRecord(value:unknown,vendor:Vendor):{kind:string;payload
   if(!/^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/.test(kind)||!object(payload))throw new RecordStructureError('singular_wrapper_required',prefix)
   if(vendor==='zendesk'&&kind==='tag'){try{recordSourceId(kind,payload,vendor)}catch{throw new RecordStructureError('invalid_source_id',prefix)}}
   if(!identifiedKinds[vendor as 'zendesk'|'freshdesk'].has(kind)){try{sourceId(payload.id,vendor)}catch{throw new RecordStructureError('unsupported_wrapper_requires_record_id',prefix)}}
-  if(vendor==='freshdesk'){const link=signedLink(payload);if(link!==null)throw new RecordStructureError('signed_download_link_not_accepted',prefix+link)}
+  if(vendor==='freshdesk'||vendor==='zendesk'){const link=signedLink(payload);if(link!==null)throw new RecordStructureError('signed_download_link_not_accepted',prefix+link)}
   // Zendesk's singular wrapper is authoritative. Payload type is ordinary
   // vendor metadata (for example a ticket's problem/incident/question/task),
   // never an alternative document discriminator.

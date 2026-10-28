@@ -5,3 +5,4 @@
 .move-in-page li { margin: .4rem 0; }
 .move-in-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 1rem 0; }
 .import-source-note { margin: .3rem 0; color: var(--ink-soft); font-size: 14.5px; overflow-wrap: anywhere; }
+.move-in-details > summary { min-height: 44px; padding-block: 10px; cursor: pointer; }

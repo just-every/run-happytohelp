@@ -23,3 +23,13 @@ export function generateDiagnostics(vendor,count=2,seed=271828){
  if(vendor==='zendesk')duplicate.ticket.subject='Conflicting duplicate';else duplicate.title='Conflicting duplicate';
  return {body:lines.join('\n')+'\n'+lines[index]+'\n'+JSON.stringify(duplicate)+'\n{malformed\n',duplicateLine:lines.length+2,malformedLine:lines.length+3};
 }
+
+// The existing capacity journey uses mixed lifecycle categories and inert
+// source events. Ordinary browser fixtures retain their approved queue shape.
+export function generateCapacity(vendor,count){
+ const source=generate(vendor,count);if(vendor!=='zendesk')return source
+ return source.trimEnd().split('\n').map(line=>{
+  const record=JSON.parse(line);if(record.ticket){const t=record.ticket,i=t.id-10001;t.status=['new','open','pending','hold','solved','closed'][i%6];t._offline={format:'happytohelp-zendesk-offline-v1',history:{metrics:'supplied',audits:'missing'},metric_events:[{id:t.id,ticket_id:t.id,instance_id:1,type:i%2?'fulfill':'pause',metric:'reply_time',time:t.updated_at,status:{calendar:2,business:2}}],audits:[],attachments:[]}}
+  return JSON.stringify(record)
+ }).join('\n')+'\n'
+}

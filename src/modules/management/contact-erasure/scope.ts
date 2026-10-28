@@ -8,7 +8,7 @@ export const conversations = 'SELECT id FROM conversations WHERE project_id=?1 A
 export const messages = `project_id=?1 AND (conversation_id IN (${conversations}) OR (actor_role='contact' AND actor_id=?2))`
 
 /** Uploads in those conversations, uploads by the contact, and media attached to erased messages. */
-export const media = `project_id=?1 AND (conversation_id IN (${conversations}) OR uploaded_by=?2 OR id IN (SELECT a.media_id FROM move_in_attachment_bytes a JOIN move_in_notes n ON n.id=a.note_id JOIN move_in_origins o ON o.project_id=n.project_id AND o.target_kind='contact' AND o.target_id=?2 AND o.vendor='freshdesk' AND o.source_id=json_extract(n.author_json,'$.id') WHERE a.project_id=?1 AND json_extract(n.author_json,'$.role')='contact') OR message_id IN (SELECT id FROM messages WHERE ${messages}))`
+export const media = `project_id=?1 AND (conversation_id IN (${conversations}) OR uploaded_by=?2 OR id IN (SELECT a.media_id FROM move_in_attachment_bytes a JOIN move_in_notes n ON n.id=a.note_id JOIN move_in_origins o ON o.project_id=n.project_id AND o.target_kind='contact' AND o.target_id=?2 AND o.vendor IN ('freshdesk','zendesk') AND o.source_id=json_extract(n.author_json,'$.id') WHERE a.project_id=?1 AND json_extract(n.author_json,'$.role')='contact') OR message_id IN (SELECT id FROM messages WHERE ${messages}))`
 
 export const localJobs = `SELECT id FROM local_jobs WHERE project_id=?1 AND conversation_id IN (${conversations})`
 export const generations = `SELECT id FROM ai_generations WHERE project_id=?1 AND conversation_id IN (${conversations})`

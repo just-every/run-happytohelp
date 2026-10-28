@@ -8,6 +8,8 @@ const expected={expected_string:'should be text',expected_integer:'should be a w
 const field=path=>`“${String(path).replace(/^\//,'').replace(/~1/g,'/').replace(/~0/g,'~')||'record'}”`;
 // Codes that carry a field or record name after a colon.
 const patterns=[
+ [/^zendesk_custom_status_not_mapped:(.*)$/,([,id])=>`Custom source status ${id} is retained in the export; only its built-in status category is imported.`],
+ [/^zendesk_history_unsupported_type:(.*)$/,([,type])=>`The source history event “${type}” is retained as unsupported history; it does not activate native behavior.`],
  [/^company_metadata_retained_in_original_only:(.*)$/,([,name])=>`The company’s “${name}” field stays in the original export; it grants no native access or routing.`],
  [/^configuration_action_unsupported:(.*)$/,([,name])=>`The “${name}” action cannot be translated safely. This entire rule stays in your original file and is not activated.`],
  [/^configuration_condition_unsupported:([^:]*):(.*)$/,([,name])=>`The “${name}” condition cannot be translated safely. The whole rule or view is set aside, so its scope is never broadened.`],

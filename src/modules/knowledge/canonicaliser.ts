@@ -60,7 +60,7 @@ function copySpans(shingles:Shingles,matches:Map<string,number>,sourceSets:Map<n
  return spans
 }
 
-async function canonicaliseLeaves(env:Env,projectId:WriteProject,leaves:TextLeaf[],authorContactId:string|undefined,indexReady:boolean){
+async function canonicaliseLeaves(env:Env,projectId:WriteProject,leaves:TextLeaf[],authorContactId:string|undefined,indexReady:boolean,generationId?:string){
  const candidates=leaves.filter(leaf=>leaf.shingles.length)
  // Short fields never consult D1, including the dirty-index refresh. Notification
  // envelopes can contain hundreds of identifiers and other nonmatching leaves.
@@ -81,7 +81,7 @@ async function canonicaliseLeaves(env:Env,projectId:WriteProject,leaves:TextLeaf
  }
  // One creation batch per owning project, across all text fields in this write.
  for(const [owner,occurrences] of groups){
-  const tokens=await createBlocks(env,owner,occurrences.map(({leaf,span})=>({kind:'copy',text:leaf.text.slice(span.start,span.end),sources:span.sources.map(source=>source.id),sourceIdentities:span.sources.filter(source=>source.id.startsWith('article:')),authorContactId:targetProject?authorContactId:undefined})))
+  const tokens=await createBlocks(env,owner,occurrences.map(({leaf,span})=>({kind:'copy',text:leaf.text.slice(span.start,span.end),sources:span.sources.map(source=>source.id),sourceIdentities:span.sources.filter(source=>source.id.startsWith('article:')),authorContactId:targetProject?authorContactId:undefined,generationId})))
   occurrences.forEach(({span},index)=>span.token=tokens[index])
  }
  for(const leaf of candidates){
@@ -92,9 +92,9 @@ async function canonicaliseLeaves(env:Env,projectId:WriteProject,leaves:TextLeaf
  }
 }
 
-export async function canonicaliseKnowledge(env:Env,projectId:string|undefined,text:string,authorContactId?:string,indexReady=false){
+export async function canonicaliseKnowledge(env:Env,projectId:string|undefined,text:string,authorContactId?:string,indexReady=false,generationId?:string){
  const leaf=textLeaf(text)
- await canonicaliseLeaves(env,projectId,[leaf],authorContactId,indexReady)
+ await canonicaliseLeaves(env,projectId,[leaf],authorContactId,indexReady,generationId)
  return leaf.output
 }
 

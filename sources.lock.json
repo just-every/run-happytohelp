@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "7c5cde6b932f3907fd1704f2a1e33411cd3aacf0ece23fcefa8a307360be7ae6",
+      "sha256": "5e174484e8c39e3e6ed5b3aa9ebeaeded4cbf33afd94e0e1b7121e1c4bd97573",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b2d032faef1cde1d072922f7a663144f89e1d0f37843463b02332f93feda8c64",
+      "sha256": "462256820e853c07e6c5d0cef49e0b9e5afe2c78d9a22587ece44bde3e5aaa63",
       "executable": false
     },
     "DEMO.md": {
@@ -8468,7 +8468,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/CreateEmailTicket.css": {
-      "sha256": "63b433fdfb23e2828251411ad2221433d896294e4877e834150dc58960acf41e",
+      "sha256": "13c08c10a7940e35983fea9ac78cbe9b21c4f629e4ff31423a14f9c81f8b3ff6",
       "executable": false
     },
     "src/ui/dashboard/components/CreateEmailTicket.jsx": {
@@ -8684,7 +8684,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/NewTicketConfiguration.jsx": {
-      "sha256": "978e79e4da89814579042ebf51fa976140e300ffbe1700bb06e511f9e3eed1bb",
+      "sha256": "67f7b8ad2d99aabe3a840cb0a95c493957e79c77d07b9bf7d6000b3043823d4a",
       "executable": false
     },
     "src/ui/dashboard/components/NewTicketRequester.jsx": {
@@ -11888,7 +11888,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ui-browser.mjs": {
-      "sha256": "2d0734506464fde68702aa6b282b82cb132be6e5e55449ed1eb932011cdc1d30",
+      "sha256": "83e32e27425e18fd4f7282908a0ce41914a02dddeb84dc9438e7c377df958d0c",
       "executable": false
     },
     "tests/helpers/inbox/visual-edit-browser.mjs": {

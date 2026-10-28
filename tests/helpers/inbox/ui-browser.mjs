@@ -113,6 +113,7 @@ export async function outboundTicketBrowser(){
    await dialog.getByRole('button',{name:new RegExp(`Synthetic parcel customer ${requester.replaceAll('.','\\.')}`)}).click()
    await dialog.getByLabel('Send from mailbox',{exact:true}).scrollIntoViewIfNeeded()
    await page.screenshot({path:join(evidenceDir,`${width}-configured-sender.png`),fullPage:true})
+   if(width===1440){await dialog.locator('summary').filter({hasText:'Optional ticket fields'}).click();assert.equal(await dialog.getByLabel('Delivery reference',{exact:true}).getAttribute('required'),null,'required-to-solve remains optional at creation without a selected form')}
    await dialog.getByLabel('Request form',{exact:true}).selectOption(form.id)
    await dialog.getByLabel('Delivery reason *',{exact:true}).selectOption('question')
    assert.equal(await dialog.getByLabel('Delivery reference *',{exact:true}).count(),0)

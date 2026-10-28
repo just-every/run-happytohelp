@@ -11,3 +11,7 @@
 .create-email-ticket .ticket-field:has(.form-check-input) { min-height:44px; display:flex; align-items:center; gap:12px; }
 .create-email-ticket .ticket-field:has(.form-check-input) label { margin:0; }
 .create-email-ticket .ticket-field .form-check-input { min-width:24px; min-height:24px; }
+
+.create-email-ticket .new-ticket-optional-fields summary { min-height:44px; padding:10px 0; cursor:pointer; }
+.create-email-ticket .new-ticket-optional-fields summary:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
+.create-email-ticket .ticket-field:has(.form-check-input) label { min-height:44px; display:flex; align-items:center; }

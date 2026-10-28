@@ -3,8 +3,8 @@ import {randomUUID} from 'node:crypto'
 
 // Only initial conversation data is seeded. Every proposal and acceptance is
 // made by the operator in the native ticket sidebar at both supported widths.
-export async function obligationsBrowserJourney({runtime,browser,shot}) {
- for(const width of [1440,390]) {
+export async function obligationsBrowserJourney({runtime,browser,shot,widths=[390]}) {
+ for(const width of widths) {
   const origin=runtime.origin,tenant=await runtime.seedTenant({name:`Follow-up ${width}`,email:`followup-${width}-${randomUUID()}@example.test`,allowedOrigin:origin})
   const call=async(path,body,token=tenant.token)=>{
    const response=await fetch(origin+path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json',Origin:origin,Authorization:'Bearer '+token},body:body===undefined?undefined:JSON.stringify(body)})
@@ -47,6 +47,15 @@ export async function obligationsBrowserJourney({runtime,browser,shot}) {
    await form.getByLabel('Stop condition',{exact:true}).fill('The customer receives an honest update.')
    await panel.getByLabel('Exact promise quote',{exact:true}).scrollIntoViewIfNeeded()
    await page.screenshot({path:shot(`followup-selection-${width}.png`),fullPage:true})
+   if(width===390) {
+    const targets=await panel.locator('button,input,select,textarea,summary').evaluateAll(elements=>elements.filter(el=>el.checkVisibility()).map(el=>({name:el.getAttribute('aria-label')||el.textContent.trim(),width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height})))
+    assert.ok(targets.every(target=>target.width>=44&&target.height>=44),JSON.stringify(targets))
+    for(const target of await panel.locator('button,input,select,textarea,summary').all()) {
+     if(!await target.isVisible())continue
+     await page.keyboard.press('Tab');await target.focus()
+     assert.equal(await target.evaluate(el=>getComputedStyle(el).outlineStyle),'solid','keyboard focus remains visible')
+    }
+   }
    await form.getByRole('button',{name:'Propose promise',exact:true}).click()
    await panel.getByText(/Awaiting acceptance/).waitFor()
    let row=(await call(base)).obligations[0]
@@ -56,6 +65,10 @@ export async function obligationsBrowserJourney({runtime,browser,shot}) {
    await page.screenshot({path:shot(`followup-proposed-${width}.png`),fullPage:true})
    await panel.getByRole('button',{name:'Accept promise changes',exact:true}).click()
    await panel.getByText(/Accepted promise/).waitFor();await panel.getByRole('region',{name:'Unsent follow-up draft'}).waitFor()
+   if(width===390) {
+    const targets=await panel.locator('button,input,select,textarea,summary').evaluateAll(elements=>elements.filter(el=>el.checkVisibility()).map(el=>({width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height})))
+    assert.ok(targets.every(target=>target.width>=44&&target.height>=44),JSON.stringify(targets))
+   }
    row=(await call(base)).obligations[0]
    assert.equal(row.owner_id,tenant.userId);assert.equal(row.due_at,due.getTime());assert.equal(row.state,'open')
    assert.equal(row.dependency.stale,true);assert.equal(row.dependency.progress,'unconfirmed')

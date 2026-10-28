@@ -807,27 +807,27 @@
     },
     {
       "binding": "DB",
+      "name": "260_followup_obligations.sql",
+      "sha256": "488a6cffda3c8a6616967918594aafa805f1160a624b9f2c7462b254c382b14f",
+      "sql": "-- Commitments are proposals until a teammate accepts them. Quotes remain in the\n-- original message; erasure never leaves a second copy of customer content here.\nCREATE TABLE followup_obligations (\n id TEXT PRIMARY KEY, project_id TEXT NOT NULL REFERENCES projects(id),\n conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,\n message_id TEXT NOT NULL REFERENCES messages(id) ON DELETE CASCADE,\n quote_start INTEGER NOT NULL, quote_end INTEGER NOT NULL,\n owner_id TEXT NOT NULL, due_at INTEGER NOT NULL, stop_condition TEXT NOT NULL,\n dependency_id TEXT REFERENCES escalation_issues(id),\n state TEXT NOT NULL DEFAULT 'proposed' CHECK(state IN ('proposed','open','completed','cancelled')),\n version INTEGER NOT NULL DEFAULT 1, accepted_by TEXT, accepted_at INTEGER,\n created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL\n);\nCREATE INDEX followup_due ON followup_obligations(state,due_at);\nCREATE TABLE followup_changes (\n id TEXT PRIMARY KEY, obligation_id TEXT NOT NULL REFERENCES followup_obligations(id) ON DELETE CASCADE,\n version INTEGER NOT NULL, owner_id TEXT NOT NULL, due_at INTEGER NOT NULL,\n accepted_by TEXT NOT NULL, accepted_at INTEGER NOT NULL, UNIQUE(obligation_id,version)\n);\nCREATE TRIGGER followup_contact_erasure AFTER UPDATE OF metadata_json ON contacts\n WHEN coalesce(json_extract(NEW.metadata_json,'$.is_erasing'),0)=1 OR coalesce(json_extract(NEW.metadata_json,'$.is_erased'),0)=1\n BEGIN DELETE FROM followup_obligations WHERE conversation_id IN (SELECT id FROM conversations WHERE contact_id=NEW.id AND project_id=NEW.project_id); END;\n"
+    },
+    {
+      "binding": "DB",
       "name": "261_assurance.sql",
       "sha256": "472fc38afaaf4c171d53cb626cbd1965e5d3919c4253bfcd4ea658bf093afcc3",
       "sql": "CREATE TABLE assurance_profiles (\n project_id TEXT PRIMARY KEY REFERENCES projects(id), requested_at INTEGER NOT NULL,\n partner TEXT NOT NULL, deployment_ref TEXT NOT NULL, timezone TEXT NOT NULL,\n country TEXT NOT NULL DEFAULT 'US' CHECK(country='US'), currency TEXT NOT NULL DEFAULT 'USD' CHECK(currency='USD'),\n recording_enabled INTEGER NOT NULL DEFAULT 0 CHECK(recording_enabled=0),\n revision INTEGER NOT NULL DEFAULT 1, updated_by TEXT NOT NULL, updated_at INTEGER NOT NULL\n);\nCREATE TABLE assurance_evidence (\n id TEXT PRIMARY KEY, project_id TEXT NOT NULL REFERENCES projects(id), kind TEXT NOT NULL,\n provider TEXT NOT NULL, reference TEXT NOT NULL, recorded_by TEXT NOT NULL,\n recorded_at INTEGER NOT NULL, valid_from INTEGER NOT NULL, expires_at INTEGER NOT NULL,\n status TEXT NOT NULL CHECK(status IN ('executed','passed','approved','revoked')),\n settings_json TEXT NOT NULL DEFAULT '{}' CHECK(json_valid(settings_json)),\n revoked_at INTEGER, UNIQUE(project_id,id)\n);\nCREATE INDEX assurance_evidence_project ON assurance_evidence(project_id,kind,expires_at);\n"
     },
     {
       "binding": "DB",
+      "name": "261_followup_pending_terms.sql",
+      "sha256": "06fe0f4ab5d3403d8469dc11ad5d4e57b4572b753c5ccdbf8dea636b68541def",
+      "sql": "-- Revised proposals remain separate from accepted responsibility until review.\nALTER TABLE followup_obligations ADD COLUMN pending_terms_json TEXT;\nALTER TABLE followup_changes ADD COLUMN stop_condition TEXT;\nALTER TABLE followup_changes ADD COLUMN dependency_id TEXT;\n"
+    },
+    {
+      "binding": "DB",
       "name": "262_feedback_penny.sql",
       "sha256": "0763293833bc7643746975d2974ed5c232ea1c0b4a736ae14c07639615e7928d",
       "sql": "CREATE TABLE feedback_penny_connections (\n project_id TEXT PRIMARY KEY REFERENCES projects(id), origin TEXT NOT NULL,\n token_cipher TEXT, updated_at INTEGER NOT NULL\n);\nCREATE TABLE feedback_penny_requesters (\n project_id TEXT NOT NULL REFERENCES projects(id), contact_id TEXT NOT NULL REFERENCES contacts(id),\n requester_id TEXT, claim_source_id TEXT NOT NULL, PRIMARY KEY(project_id,contact_id)\n);\nCREATE TABLE feedback_handoffs (\n source_id TEXT PRIMARY KEY REFERENCES feedback_sources(id) ON DELETE CASCADE,\n project_id TEXT NOT NULL REFERENCES projects(id), intent_hash TEXT NOT NULL,\n state TEXT NOT NULL CHECK(state IN ('sending','accepted','uncertain')),\n approved_by TEXT NOT NULL, consent_message_id TEXT NOT NULL,\n created_at INTEGER NOT NULL, settled_at INTEGER\n);\n"
-    },
-    {
-      "binding": "DB",
-      "name": "257_followup_obligations.sql",
-      "sha256": "488a6cffda3c8a6616967918594aafa805f1160a624b9f2c7462b254c382b14f",
-      "sql": "-- Commitments are proposals until a teammate accepts them. Quotes remain in the\n-- original message; erasure never leaves a second copy of customer content here.\nCREATE TABLE followup_obligations (\n id TEXT PRIMARY KEY, project_id TEXT NOT NULL REFERENCES projects(id),\n conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,\n message_id TEXT NOT NULL REFERENCES messages(id) ON DELETE CASCADE,\n quote_start INTEGER NOT NULL, quote_end INTEGER NOT NULL,\n owner_id TEXT NOT NULL, due_at INTEGER NOT NULL, stop_condition TEXT NOT NULL,\n dependency_id TEXT REFERENCES escalation_issues(id),\n state TEXT NOT NULL DEFAULT 'proposed' CHECK(state IN ('proposed','open','completed','cancelled')),\n version INTEGER NOT NULL DEFAULT 1, accepted_by TEXT, accepted_at INTEGER,\n created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL\n);\nCREATE INDEX followup_due ON followup_obligations(state,due_at);\nCREATE TABLE followup_changes (\n id TEXT PRIMARY KEY, obligation_id TEXT NOT NULL REFERENCES followup_obligations(id) ON DELETE CASCADE,\n version INTEGER NOT NULL, owner_id TEXT NOT NULL, due_at INTEGER NOT NULL,\n accepted_by TEXT NOT NULL, accepted_at INTEGER NOT NULL, UNIQUE(obligation_id,version)\n);\nCREATE TRIGGER followup_contact_erasure AFTER UPDATE OF metadata_json ON contacts\n WHEN coalesce(json_extract(NEW.metadata_json,'$.is_erasing'),0)=1 OR coalesce(json_extract(NEW.metadata_json,'$.is_erased'),0)=1\n BEGIN DELETE FROM followup_obligations WHERE conversation_id IN (SELECT id FROM conversations WHERE contact_id=NEW.id AND project_id=NEW.project_id); END;\n"
-    },
-    {
-      "binding": "DB",
-      "name": "258_followup_pending_terms.sql",
-      "sha256": "06fe0f4ab5d3403d8469dc11ad5d4e57b4572b753c5ccdbf8dea636b68541def",
-      "sql": "-- Revised proposals remain separate from accepted responsibility until review.\nALTER TABLE followup_obligations ADD COLUMN pending_terms_json TEXT;\nALTER TABLE followup_changes ADD COLUMN stop_condition TEXT;\nALTER TABLE followup_changes ADD COLUMN dependency_id TEXT;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

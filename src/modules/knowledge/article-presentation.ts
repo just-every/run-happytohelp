@@ -5,5 +5,5 @@ import {isArticleEligibleForAI} from './public-sources'
 export async function presentArticle(env:Env,projectId:string,row:any){
  const eligible=await isArticleEligibleForAI(env,projectId,row.id,row.publication_version)
  return {...row,categories:JSON.parse(row.categories),categoryIds:JSON.parse(row.categories),
-  is_published:row.status==='published',aiEligibility:eligible?'used':'not_used'}
+  is_published:row.status==='published',aiEligibility:eligible?'used':row.status==='published'?'recipient_scoped':'not_used'}
 }

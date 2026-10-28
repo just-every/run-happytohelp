@@ -1,3 +1,4 @@
+import ExecutionTrace from './conversation/ExecutionTrace';
 import ProductionTrace from './conversation/ProductionTrace';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -150,6 +151,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
                 { ticket && record.settings && <TicketHistory history={ ticket.history } settings={ record.settings } agents={ agentsFor(conversation.project_id) || [] } assistants={ aisFor(conversation.project_id) || [] } conversation={ { ...conversation, tags: ticket.tags || conversation.tags } } /> }
                 <ResolutionSummary resolution={ conversation.resolution } history={ conversation.resolutionHistory } />
             </>, historyCount) }
+            { section('production-trace', 'Production AI trace', <ExecutionTrace key={conversation.id} projectId={conversation.project_id} conversationId={conversation.id} shown={isShown&&open.has('production-trace')}/> ) }
             { section('customer', 'Customer', <>
                 <ConversationContactDetails
                     conversation={ conversation }

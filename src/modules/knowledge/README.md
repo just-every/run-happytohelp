@@ -74,3 +74,18 @@ check for retrieval and the owner's AI-use checklist. Native links use APP_ORIGI
 and `/help/<projectId>/<slug>`; API requests capture the app origin for queued
 local work when no canonical origin is configured. Private `h2h:` dataset content
 can inform an answer but cannot become a public citation.
+
+
+Recipient-scoped AI retrieval accepts an optional trusted `HelpAccess` as the
+fifth `searchKnowledge` argument. With no access argument it remains public
+only. Conversation tools derive this proof from the native recipient, never from
+model arguments or an operator's own access. Source reads repeat that proof and
+message admission fences all issued sources, including sources not cited by the
+model. Customer drafts are never streamed before this durable admission.
+
+Migration 244 adds source-linked editorial proposals. Drafting requires a current
+positively rated native resolution. Publication requires a named editor, explicit
+redaction review and the source's proven private email-domain collection; generic
+article and collection edits preserve this boundary. Native correction analysis
+uses source and later cited reopened cycles without publishing automatically.
+Apply the pending migrations in RELEASE.json before serving the updated Worker.

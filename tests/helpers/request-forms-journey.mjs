@@ -35,7 +35,9 @@ export async function requestFormsJourney(){
   await app.email(message({id:'synthetic-happytohelp-form-cc',from:cc,to:'help@example.com',text:'Please help with my own order.'}),{from:cc,to:'help@example.com',direct:true})
   assert.equal((await app.call(path,{...customer,body:{...valid,cc:['not an address']},status:422})).data.field,'cc')
   const ignored='synthetic-happytohelp-2@customer.example'
-  const submitted={...valid,cc:[cc,ignored,'  ROSA@EXAMPLE.COM  ','rosa@example.com']}
+  const article=(await app.call(`/api/knowledge/${p}/articles`,{...owner,body:{title:'Refund help',slug:'refund-help',content:'Contact support after checking the charge.',status:'published'},status:201})).data
+  const view=(await app.call(`/api/knowledge/public/${p}/events`,{body:{kind:'view',slug:'refund-help',locale:'es'},status:200})).data.eventId
+  const submitted={...valid,afterReading:view,cc:[cc,ignored,'  ROSA@EXAMPLE.COM  ','rosa@example.com']}
   const formBefore=(await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n
   const created=await app.call(path,{...customer,body:{...submitted,locale:'es'},status:201}),id=created.data.ticket.id;assert.equal(created.data.ticket.status,'open')
   const values=await app.sql('SELECT field_id,value_json FROM ticket_field_values WHERE conversation_id=?',id);assert.deepEqual(Object.fromEntries(values.map(v=>[v.field_id,JSON.parse(v.value_json)])),valid.fields)
@@ -56,6 +58,8 @@ export async function requestFormsJourney(){
   await app.configure({})
   assert.equal((await app.call(path,{...customer,body:submitted,status:200})).data.ticket.id,id)
   assert.equal(ccNotices().length,1,'restart and replay preserve the frozen acknowledgment')
+  const analytics=(await app.call(`/api/knowledge/${p}/analytics`,{...owner,status:200})).data
+  assert.equal(analytics.articles.find(row=>row.articleId===article.id).tickets,1,'an admitted request after an article view is attributed once despite replay')
   const foreignEmail='synthetic-happytohelp-foreign@customer.example'
   await app.db.prepare('INSERT INTO contacts(id,project_id,email,created_at,is_verified,external_id) VALUES(?,?,?,?,1,?)').bind('synthetic-happytohelp-foreign',f.foreign.projectId,foreignEmail,Date.now(),foreignEmail).run()
   const shapes=[]

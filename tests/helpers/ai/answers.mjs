@@ -67,10 +67,10 @@ export async function answersJourney(){
    assert.ok((await trace(a,refused.v)).tools.some(t=>t.outcome==='denied'),'a refused citation is visible without its payload')
    for(const answer of refused.answers)assert.deepEqual(JSON.parse(answer.citations_json),[],JSON.stringify(sources))
   }
-  // Unpublication or a new publication between citation and admission denies the answer atomically.
+  // Withdrawal denies admission; editing preserves the already issued publication snapshot.
   for(const change of ["UPDATE knowledge_articles SET status='draft' WHERE id='a'","UPDATE knowledge_articles SET content='New publication' WHERE id='a'","UPDATE knowledge_datasets SET published_version=NULL WHERE id='ds'"]){
    const current=[{id:'article:a',sourceVersion:await publication()},{id:'knowledge:doc',sourceVersion:'v'}]
-   const raced=await ask('One more time?',answering(()=>current,{before:()=>app.db.prepare(change).run()}));assert.equal(raced.answers.length,0,change)
+   const raced=await ask('One more time?',answering(()=>current,{before:()=>app.db.prepare(change).run()}));assert.equal(raced.answers.length,change.includes("content='New publication'")?1:0,change);if(raced.answers.length){const citations=JSON.parse(raced.answers[0].citations_json);assert.ok(citations.some(citation=>citation.id==='article:a'&&citation.sourceVersion===current[0].sourceVersion),'an edit preserves the issued citation snapshot')}
    await app.db.prepare("UPDATE knowledge_articles SET status='published' WHERE id='a'").run();await app.db.prepare("UPDATE knowledge_datasets SET published_version='v' WHERE id='ds'").run()
   }
   // Asking for a person hands the conversation to a human; the assistant writes nothing more and a person can reply.

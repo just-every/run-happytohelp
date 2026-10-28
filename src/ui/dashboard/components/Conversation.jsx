@@ -24,6 +24,7 @@ import { CollaborationProvider } from './collaboration/useCollaboration';
 import { HandleTimerProvider } from './tickets/useHandleTimer';
 import TicketActionDialogs from './composer/TicketActionDialogs';
 import {nativeRequest} from '../../native/transport';
+import {mergeReferences} from '../../native/knowledge-references/reference-text';
 
 function Conversation({ projectId, conversationId, conversation, buckets }) {
     const {
@@ -49,6 +50,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
     const [ atTop, setAtTop ] = useState(true);
     const [ files, setFiles ] = useState([]);
     const [ content, setContent ] = useState('');
+    const [knowledgeReferences,setKnowledgeReferences] = useState([]);
     const [ draftOrigin, setDraftOrigin ] = useState(null);
     const [ draftFocusRequest, setDraftFocusRequest ] = useState(null);
     const [ draftError, setDraftError ] = useState('');
@@ -200,6 +202,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         macroDraftUsageRef.current = null;
         setDraftError('');
         setContent('');
+        setKnowledgeReferences([]);
         setDraftOrigin(null);
         setEscalationDraftId(null);
         setDraftFocusRequest(null);
@@ -223,7 +226,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                 const draft = result.data;
                 if (!active || !draft || draftEditVersion.current !== editVersion) return;
                 if (draft.reply_type === 'note') setNoteMacro({content:draft.content,media:draft.media || []});
-                else { macroDraftUsageRef.current = draft.usage_id; setContent(draft.content); setFiles(draft.media || []); }
+                else { macroDraftUsageRef.current = draft.usage_id; setContent(draft.content); setKnowledgeReferences(draft.references || []); setFiles(draft.media || []); }
             }).catch(error => { if (active) setDraftError(`Couldn’t load your saved macro draft: ${error.message}`); });
         return () => { active = false; };
     }, [conversationProjectId,conversationId,isConversationReady]);
@@ -381,6 +384,9 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                         : canReply ? <ConversationForm
                             key={ conversationId }
                             content={ draftContent }
+                            audienceRevision={JSON.stringify([conversation.contact_id,conversation.contact?.email,conversation.participants?.map(participant => [participant.id,participant.email,participant.provided_email])])}
+                            references={knowledgeReferences}
+                            onReferencesChange={incoming => setKnowledgeReferences(current => mergeReferences(current,incoming))}
                             focusRequest={ draftFocusRequest?.conversationId === conversationId ? draftFocusRequest.version : 0 }
                             conversationId={ conversationId }
                             projectId={ conversationProjectId }

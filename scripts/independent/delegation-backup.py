@@ -9,6 +9,13 @@ import sqlite3
 from pathlib import Path
 
 CREDENTIAL_TABLES = ('edition_codes', 'edition_consents', 'edition_grants', 'edition_effect_guards')
+# Live read/sign-in linkage and installation-local canonicalisation completion
+# receipts do not travel. Preserve restrictions, explicit grants, reference bodies
+# and source/shingle indexes as durable business data. Remove complete receipt
+# rows so future personal columns cannot survive a backup or restore.
+KNOWLEDGE_PRIVATE_TABLES = ('knowledge_read_receipts', 'knowledge_help_links',
+                            'knowledge_help_sessions', 'knowledge_canonicalisation_receipts',
+                            'knowledge_write_guards', 'knowledge_upgrade_permits', 'knowledge_upgrade_progress')
 
 def punctuated_end(statement):
     # Wrangler's splitter recognizes END followed by whitespace or a semicolon,
@@ -37,9 +44,29 @@ def sanitize(sql):
         db.executescript(sql)
         db.execute('PRAGMA foreign_keys=OFF')
         tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        for table in CREDENTIAL_TABLES:
+        for table in CREDENTIAL_TABLES + KNOWLEDGE_PRIVATE_TABLES:
             if table in tables:
                 db.execute(f'DELETE FROM "{table}"')
+        if 'knowledge_upgrade_reports' in tables:
+            # Completion receipts never transfer: the restored source must
+            # establish its own canonicalisation before nonmember disclosure.
+            db.execute('UPDATE knowledge_upgrade_reports SET completed_at=NULL')
+        if 'knowledge_reply_blocks' in tables:
+            # Keep live authors' own-word visibility, pinned payloads and source
+            # authority. Only erased/orphan personal author links are removed.
+            live = '0'
+            if 'contacts' in tables:
+                fence = ("AND NOT EXISTS(SELECT 1 FROM contact_erasures erased WHERE "
+                         "erased.project_id=contact.project_id AND erased.contact_id=contact.id)"
+                         if 'contact_erasures' in tables else '')
+                live = ("EXISTS(SELECT 1 FROM contacts contact WHERE contact.project_id=block.project_id "
+                        "AND contact.id=block.author_contact_id "
+                        "AND coalesce(json_extract(contact.metadata_json,'$.is_deleted'),0)<>1 "
+                        "AND coalesce(json_extract(contact.metadata_json,'$.is_erasing'),0)<>1 "
+                        "AND coalesce(json_extract(contact.metadata_json,'$.is_erased'),0)<>1 "
+                        + fence + ')')
+            db.execute('UPDATE knowledge_reply_blocks AS block SET author_contact_id=NULL '
+                       'WHERE author_contact_id IS NOT NULL AND NOT (' + live + ')')
         if 'api_credentials' in tables:
             revisions = list(db.execute('SELECT policy_revision,namespace,id FROM api_credentials'))
             db.execute("UPDATE api_credentials SET revoked_at=coalesce(revoked_at,max(1,created_at))")

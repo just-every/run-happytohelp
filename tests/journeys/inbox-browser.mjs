@@ -42,3 +42,5 @@ test('an icon-only control reached by the keyboard shows its tooltip at once, wo
 
 import {brandsBrowser} from '../helpers/inbox/brands-browser.mjs'
 test('two brands retain their own native configuration, sender, inbox and reports at 1440 and 390 with explicit shared-team report selection',brandsBrowser)
+
+test('knowledge references remain reviewable in saved replies, ticket insertion, recipient refusals and collection grants at 1440 and 390',async()=>{const {referenceBrowser}=await import('../helpers/knowledge/reference-browser.mjs');await referenceBrowser()})

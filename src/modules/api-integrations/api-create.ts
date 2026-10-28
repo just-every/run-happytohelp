@@ -1,3 +1,4 @@
+import {admitMessage,atomicMessage} from '../conversations/admission'
 import {reachableConversation,reachableReference} from './reach'
 import {requesterStatements,ticketStatements,type TicketPlan} from './ticket-plan'
 import {consumeUploads,finishUploads} from './upload-lifecycle'
@@ -63,15 +64,16 @@ export function createApi(app:Hono<ApiEnv>){
    }
    const response={data:{id,subject:input.subject,channel:input.channel,status_category:'new',source_ref:input.ref?{product,ref:input.ref,url:input.url}:null}},history=JSON.stringify({action:'created',credential_name:credential.name,source_product:product,source_ref:input.ref,request_id:claim,idempotency_digest:digest})
    const assert=c.env.DB.prepare(`INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(${guard.sql}) AND (${privacy.sql}) AND (${admission.sql}) THEN 1 ELSE 0 END`).bind(...guard.params,...privacy.params,...admission.params)
-   await c.env.DB.batch([
+   const admitted=await admitMessage(c.env,{[atomicMessage]:true,projectId:p,conversationId:id,newRequesterId:contactId,operatorId:credential.issuer_id||'',messages:[{content:input.content},{content:input.subject}],commit:contents=>[
     assert,
     ...requesterStatements(c.env,p,credential,plan,input,now),
     ...consumeUploads(c.env,p,credential.id,files),
     ...input.digests.map(value=>c.env.DB.prepare('INSERT OR IGNORE INTO api_requester_keys VALUES(?,?,?)').bind(p,value,contactId)),
-    ...ticketStatements(c.env,p,credential,plan,input,{id,messageId,now,localId:'api:'+digest,actorId:credential.id,actorType:'api',history:JSON.parse(history)}),
+    ...ticketStatements(c.env,p,credential,plan,{...input,content:contents[0],subject:contents[1]},{id,messageId,now,localId:'api:'+digest,actorId:credential.id,actorType:'api',history:JSON.parse(history)}),
     c.env.DB.prepare('UPDATE api_requests SET conversation_id=?,contact_id=?,status=201,response_json=? WHERE project_id=? AND source_product=? AND key_digest=? AND claim=?').bind(id,contactId,JSON.stringify(response),p,product,digest,claim),
     c.env.DB.prepare('DELETE FROM ik_d1_assertions')
-   ])
+   ]})
+   if(!admitted.accepted)throw new ApiError(422,'knowledge_access_denied','Knowledge is unavailable to this requester',{blockedRecipients:[contactId]})
    await finishUploads(c.env,p,files)
    return c.json(response,201)
   }catch(error){

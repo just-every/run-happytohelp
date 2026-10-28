@@ -7,6 +7,20 @@ import {r4ExportRow} from './r4-tables.mjs';
 import {workflowArchiveRow} from './workflow-archive-safety.mjs';
 import {escalationArchiveRow,escalationArchiveSafety} from './escalation-archive.mjs';
 import {trainingArchiveRow,trainingArchiveStagedSafety} from './training-archive.mjs';
+const privateKnowledgeTables=['knowledge_help_links','knowledge_help_sessions','knowledge_read_receipts','knowledge_canonicalisation_receipts','knowledge_write_guards','knowledge_upgrade_permits','knowledge_upgrade_progress'];
+async function knowledgeArchiveSafety({db,tables}){
+ const quoted=name=>'"'+tables[name].replaceAll('"','""')+'"',statements=[];
+ // Older archives must not restore personal linkage or a transient write permit.
+ for(const name of privateKnowledgeTables)if(tables[name])statements.push(db.prepare(`DELETE FROM ${quoted(name)}`));
+ if(tables.knowledge_upgrade_reports)statements.push(db.prepare(`UPDATE ${quoted('knowledge_upgrade_reports')} SET completed_at=NULL`));
+ if(tables.knowledge_reply_blocks){
+  const live=tables.contacts?`EXISTS(SELECT 1 FROM ${quoted('contacts')} contact WHERE contact.project_id=block.project_id AND contact.id=block.author_contact_id
+   AND coalesce(json_extract(contact.metadata_json,'$.is_deleted'),0)<>1 AND coalesce(json_extract(contact.metadata_json,'$.is_erasing'),0)<>1 AND coalesce(json_extract(contact.metadata_json,'$.is_erased'),0)<>1
+   ${tables.contact_erasures?`AND NOT EXISTS(SELECT 1 FROM ${quoted('contact_erasures')} erased WHERE erased.project_id=contact.project_id AND erased.contact_id=contact.id)`:''})`:'0';
+  statements.push(db.prepare(`UPDATE ${quoted('knowledge_reply_blocks')} AS block SET author_contact_id=NULL WHERE author_contact_id IS NOT NULL AND NOT (${live})`));
+ }
+ if(statements.length)await db.batch(statements);
+}
 // Native identities and password hashes move with their referenced domain rows.
 // Live bearer grants, provider credentials and pending outbound deliveries do not.
 export const archivePolicy={
@@ -17,11 +31,12 @@ export const archivePolicy={
   crm_connections:{token_cipher:[null]},
   crm_mappings:{context_json:[null],state:['stale'],refreshed_at:[null],checked_at:[null]},
  },
- importRow:(table,row)=>table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:['integration_tokens','api_credentials'].includes(table)&&row.revoked_at==null?{...row,revoked_at:1}:row,
- product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await feedbackArchiveSafety(input);await rerMailArchiveSafety(input);await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);await trainingArchiveStagedSafety(input);await asyncWorkArchiveStagedSafety(input);return reportArchiveStagedSafety(input)},
+ importRow:(table,row)=>table==='knowledge_upgrade_reports'?{...row,completed_at:null}:table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:['integration_tokens','api_credentials'].includes(table)&&row.revoked_at==null?{...row,revoked_at:1}:row,
+ product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await feedbackArchiveSafety(input);await knowledgeArchiveSafety(input);await rerMailArchiveSafety(input);await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);await trainingArchiveStagedSafety(input);await asyncWorkArchiveStagedSafety(input);return reportArchiveStagedSafety(input)},
  // Keep invitation history, but restored archives never restore a live survey link or queued send.
  exportRow:(table,row)=>feedbackArchiveRow(table,table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:rerMailArchiveRow(table,asyncWorkArchiveRow(table,trainingArchiveRow(table,triageArchiveRow(table,escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='integration_tokens'?{...row,token_hash:'revoked:'+row.id,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_credentials'?{...row,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_requests'?{...row,response_json:null,erased:1}:table==='api_appends'?{...row,response_json:null}:table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
   :table==='mailbox_connections'?{...row,credential_cipher:null,status:'disconnected',cursor_json:null,sync_lock:null,sync_lock_until:null}
+  :table==='knowledge_upgrade_reports'?{...row,completed_at:null}
   :table==='mailbox_sends'&&row.state==='sending'?{...row,state:'uncertain',error_code:'restored_pending_send'}:row))))))))),
  // Reconstruct the full-text index from retained messages after restore.
  derivedTables:['inbox_message_search'],
@@ -31,7 +46,10 @@ export const archivePolicy={
   'escalation_attachment_grants',
   'workflow_clock',
   'operator_notification_activity','operator_notifications',
-  'knowledge_help_links','knowledge_help_sessions',
+  // Preserve grants, reference bodies and source/shingle indexes. Live read
+  // linkage and local canonicalisation completion must not survive a restore;
+  // the restored installation canonicalises before nonmember disclosure.
+  ...privateKnowledgeTables,
   'portal_links','portal_session_proofs',
   'sessions','session_factors','webauthn_challenges','audit_purges','conversation_outbox','identity_tokens','magic_signins','registrations','login_attempts',
   // Who has the dashboard open is live state: a restore never claims a teammate is online.

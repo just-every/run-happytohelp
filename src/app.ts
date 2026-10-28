@@ -1,4 +1,5 @@
 import {assuranceRoutes} from './modules/assurance/routes'
+import {knowledgeHttpDoor} from './modules/knowledge/http-door'
 import {api as scopedApi} from './modules/api-integrations/routes'
 import {integrationSettings} from './modules/api-integrations/settings'
 import { notFoundResponse, rejectedResponse } from './base/rejected-response'
@@ -44,6 +45,8 @@ import {feedbackRoutes} from './modules/feedback/routes'
 import {createEscalationRoutes} from './modules/escalations/routes'
 
 export const app = new Hono<AppEnv>()
+app.use('/api/*',knowledgeHttpDoor)
+app.use('/delegation/*',knowledgeHttpDoor)
 app.use('/api/*',async(c,next)=>{
  c.env=notificationRequestEnvironment(c.env)
  const origin=new URL(c.req.url);

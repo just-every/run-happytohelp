@@ -1,4 +1,5 @@
 import {tracedTools} from './tool-trace';
+import {knowledgeAnswer} from '../knowledge/model-door'
 import {handoffTool} from './handoff';
 import type { Env } from '../../platform/env';
 import type { Generation } from './repository';
@@ -45,7 +46,7 @@ export async function executeGenerationProvider(
       if (row.kind === 'reply' && event.type === 'message_delta' && typeof event.content === 'string' && !event.thinking) {
         await effects.emit(env, row, {
           type: 'chunk',
-          payload: { localId: `generation:${row.id}`, chunk: event.content, index: chunkIndex++, agent: context.agent },
+          payload: { localId: `generation:${row.id}`, chunk: await knowledgeAnswer(env,row.project_id,row.id,event.content), index: chunkIndex++, agent: context.agent },
         });
       }
     },

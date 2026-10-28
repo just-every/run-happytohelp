@@ -1621,7 +1621,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "61d050c88138c54448dad5abe071d7f19ca18e0a04ca5a0147af83aa54fadc23",
+      "sha256": "0b59446a23b07e566074331a44078d7ef3ef112f124067348e31e4647944dd5a",
       "executable": false
     },
     "AGENTS.md": {
@@ -1645,7 +1645,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "34e17808d272d263acffd513404324618160b6fd29d08c0280b88c31a57746be",
+      "sha256": "be0cb8ee012fb652cf9c1a518041e649ed4beb965b435832fac890b0cd4db7e7",
       "executable": false
     },
     "DEMO.md": {
@@ -4161,7 +4161,7 @@
       "executable": false
     },
     "src/modules/api-integrations/module.json": {
-      "sha256": "f79ef070963e9dabc4b2865b429b944e67770e2b5ae7e7f1d5d11f3bb6de9f9c",
+      "sha256": "49b43495a4a43285fdb14d5b715dc296051fa1499456db43ad61a249c6706cf3",
       "executable": false
     },
     "src/modules/api-integrations/reach.ts": {
@@ -4253,7 +4253,7 @@
       "executable": false
     },
     "src/modules/business-connectors/module.json": {
-      "sha256": "709c5b58a05a43ed8fe0aba092ab463428c735070363d6938edff717904abf0c",
+      "sha256": "0fda7c859ba73657de175906aa0473cf3b11f9c98d971f002511a7f32f6b0399",
       "executable": false
     },
     "src/modules/business-connectors/permissions.ts": {
@@ -4281,7 +4281,7 @@
       "executable": false
     },
     "src/modules/business-connectors/README.md": {
-      "sha256": "2c7fb7f7b881eb473a5601b082dc0790f570af7f729b879ca49c11d19774f2ee",
+      "sha256": "863e6d67ae2604319d7add0fbc6fc3bc29f238f77d4af14d8f4c94c9a47c1d91",
       "executable": false
     },
     "src/modules/business-connectors/routes.ts": {
@@ -12517,7 +12517,7 @@
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {
-      "sha256": "de63b70bed310385701f5cdfc26adbc3d9b8382507a8714f6140163da872e957",
+      "sha256": "01d4a42e625909c1dc2b449916793e5008094a08048717c485c387ce2146618c",
       "executable": false
     },
     "tests/journeys/connections.mjs": {

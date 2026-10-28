@@ -55,8 +55,10 @@ copies and legally retained financial records need separate handling. Restore
 removes credentials and snapshots, cancels unexecuted approvals and preserves
 started outcomes as uncertain; it never resumes execution.
 
-`tests/connections/business.mjs` folds network-boundary scenarios into the
-existing credentials, API, erasure and uncertainty journeys. Provider fixtures
+`tests/connections/native-boundary.mjs` extends the existing native settings
+authority journey with business account, context, approval, uncertainty and
+erasure steps. `tests/connections/api.mjs` extends the API lifecycle with managed
+MCP, Zapier and reviewed Help Scout intake. Provider fixtures
 prove local protocol behavior only; they are not live sandbox receipts. The
 campaign separately exercised a held Stripe test key through verified account
 settings, a paid USD invoice, one refund with a deliberately lost response,

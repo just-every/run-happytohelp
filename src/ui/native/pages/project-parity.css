@@ -12,13 +12,9 @@
 .project-mode-control button.active { background: var(--d-cyan-tint); font-weight: 500; }
 .project-appearance .workspace-brand { margin-top: 32px; }
 .project-appearance details { margin-top: 16px; }
+.project-appearance details > summary { min-width: 44px; min-height: 44px; padding-block: 10px; }
 .project-parity-narrow .btn-link { min-width: 44px; min-height: 44px; }
-.project-parity-narrow .form-check-label { display: inline-flex; align-items: center; min-width: 44px; min-height: 44px; }
-.project-mode-control button:focus-visible,
-.project-parity-narrow .btn-link:focus-visible,
-.project-parity-narrow summary:focus-visible,
-.project-parity-narrow .form-check-input:focus-visible + .form-check-label,
-.project-days label:has(input:focus-visible) { outline: 2px solid var(--ink); outline-offset: 3px; }
+.project-parity-narrow .form-switch > .form-check-label { display: inline-flex; align-items: center; min-width: 44px; min-height: 44px; }
 
 .project-days { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
 .project-days label { display: inline-flex; align-items: center; gap: 8px; min-width: 44px; min-height: 44px; margin: 0; padding: 0 14px; border: 1px solid var(--rule-strong); border-radius: 999px; background: var(--surface); font-size: 16px; }

@@ -22,6 +22,6 @@ test('public request limits answer 429 with Retry-After per project, address, co
 
 test('daily AI reply and spend ceilings skip replies visibly to operators only, keep the visitor\'s message and never replay; reply request ids are UUIDs; usage summaries keep unmeasured costs unknown',async()=>{await aiCeilings();await requestIds();await usageSummary()})
 
-test('training runs seed a confirmed synthetic workspace, check every reply, execute each evaluation family, and keep unreported, failed, expired or interrupted paid work uncertain rather than replaying it',async()=>(await import('../helpers/ai/training.mjs')).trainingJourney())
+test('training runs seed a confirmed synthetic workspace, check every reply, execute each evaluation family, and keep unreported, failed, expired or interrupted paid work uncertain rather than replaying it',async()=>{await (await import('../helpers/ai/training.mjs')).trainingJourney();await (await import('../helpers/ai/procedures.mjs')).proceduresJourney()})
 
 test('repositories selected for operators are read as redacted, attributed evidence that suggestions cite, while secrets files, other repositories and visitor replies get nothing',async()=>(await import('../helpers/ai/repository.mjs')).repositoryJourney())

@@ -21,6 +21,7 @@ export default function RequestFormFields({ selected, definitions, onChange }) {
                     <button type="button" className="btn btn-link btn-sm" disabled={dependants.length > 0} aria-label={`Remove ${name}`} onClick={() => onChange(selected.filter((_, at) => at !== index))}>Remove</button>
                 </div></div>
                 {dependants.length > 0 && <p className="settings-note">Remove conditions that use this field before removing it. Reordering keeps condition fields before their dependants.</p>}
+                {definition?.type === 'account' && <p className="settings-note">Including this field on a published form lets verified customers choose their current accounts. Only eligible account names and identifiers are shared. Company ticket visibility is separate. Remove this field to stop offering accounts.</p>}
                 <Field name={`request-field-${field.fieldId}-required`} label={`Require ${name}`} type="checkbox" value={field.required} onChange={(_, required) => change(index, { ...field, required })}/>
                 {index > 0 && (field.condition || selected.slice(0, index).some(item => definitions.some(definition => definition.id === item.fieldId))) && <ConditionEditor id={`request-field-${field.fieldId}`} condition={field.condition} previous={selected.slice(0, index)} definitions={definitions} onChange={condition => { const next = { ...field }; if (condition) next.condition = condition; else delete next.condition; change(index, next); }}/>}
             </li>;

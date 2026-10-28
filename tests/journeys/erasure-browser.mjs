@@ -1,14 +1,15 @@
+import {runSteps} from './kit/steps.mjs';
 import test,{before,after} from 'node:test'
 import assert from 'node:assert/strict'
 import {writeFile} from 'node:fs/promises'
 import {createRuntime} from '../helpers/emitted-runtime.mjs'
 import {launchBrowser,viewports,evidence} from './kit/browser.mjs'
 
-// Dashboard contact erasure on the emitted Worker with real local D1/R2, at desktop and phone widths.
+// The complete erasure journey runs once; the seed-wide phone smoke checks rendering separately.
 let browser
 before(async()=>{browser=await launchBrowser()})
 after(async()=>{await browser?.close()})
-for(const viewport of Object.values(viewports))test(`at ${viewport.width}px an owner erases a contact only after typing ERASE; identity, content and attachment are gone, the session is revoked and other visitors are untouched`,async()=>{
+test(`at 1440 and 390px an owner erases a contact only after typing ERASE; identity, content and attachment are gone, the session is revoked and other visitors are untouched`,async()=>{await runSteps(Object.values(viewports).map(viewport=>[`${viewport.width}px`,async()=>{
  const shot=await evidence('contact-erasure'),runtime=await createRuntime(),origin=runtime.origin;let success=false
  const request=async(path,{token,body,method=body===undefined?'GET':'POST',headers={},raw=false}={})=>{const response=await fetch(origin+path,{method,headers:{...(body!==undefined&&!(body instanceof Uint8Array)?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{}),...headers},body:body===undefined?undefined:body instanceof Uint8Array?body:JSON.stringify(body)});if(raw)return response;assert.ok(response.ok,`${method} ${path}: ${response.status} ${await response.clone().text()}`);return response.json();};
  try{
@@ -58,4 +59,24 @@ for(const viewport of Object.values(viewports))test(`at ${viewport.width}px an o
  await writeFile(shot(`${viewport.width}-result.json`),JSON.stringify({checks},null,2));
  console.log(`Contact erasure browser passed: ${checks.length} checks.\n- ${checks.join('\n- ')}`);success=true;
 }finally{await runtime.close(success)}
+}]))
+})
+
+// One phone smoke for the main workspace screens; behavioural journeys own their assertions.
+test('at 390px the main workspace screens render without horizontal scrolling',async()=>{
+ const runtime=await createRuntime(),shot=await evidence('phone-smoke');let passed=false,context
+ try{
+  const owner=await runtime.seedTenant({name:'Phone smoke',email:'synthetic-happytohelp-1@example.test',allowedOrigin:runtime.origin})
+  context=await browser.newContext({viewport:viewports.mobile});await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
+  const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message))
+  for(const screen of ['conversations','contacts','reports','activation','api-settings','webhook-settings','slack-settings','delivery-log']){
+   const response=await page.goto(`${runtime.origin}/projects/${owner.projectId}/${screen}`)
+   assert.equal(response.status(),200,screen+' renders')
+   await page.locator('#workspace-main').waitFor();await page.locator('#workspace-main h1').first().waitFor({state:'attached'});await page.evaluate(()=>document.fonts.ready)
+   assert.ok((await page.locator('#workspace-main').innerText()).trim().length,screen+' has content')
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),screen+' has no horizontal scroll')
+   await page.screenshot({path:shot(screen+'-390.png'),fullPage:true})
+  }
+  assert.deepEqual(errors,[],'main phone screens have no page errors');passed=true
+ }finally{await context?.close();await runtime.close(passed)}
 })

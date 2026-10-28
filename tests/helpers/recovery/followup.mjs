@@ -7,13 +7,13 @@ import {startApp,applyMigrations,sha} from '../../journeys/kit/app.mjs'
 
 export async function followupRecoveryJourney() {
  const finish=app=>finishArchiveRestore((_label,sql)=>app.db.batch(unstable_splitSqlQuery(sql).map(statement=>app.db.prepare(statement))))
- const source=await startApp({captureQueue:true,migrate:name=>name<'257_'});let destination,legacyDestination,refused
+ const source=await startApp({captureQueue:true,migrate:name=>name<'260_'});let destination,legacyDestination,refused
  try {
   const workspace=await source.seedWorkspace('followup-upgrade'),p=workspace.projectId,token=workspace.tokens.owner
   const visitor=(await source.call('/api/identity/widget/session',{headers:{Origin:workspace.allowedOrigin},body:{widgetKey:workspace.widgetKey},status:201})).data
   const conversation=(await source.call('/api/conversations',{token:visitor.token,body:{projectId:p},status:201})).data
   const sent=(await source.call(`/api/conversations/${conversation.id}/messages`,{token,body:{localId:'synthetic-hh-followup-upgrade',content:'I will follow up tomorrow.',expectedRevision:0},status:200})).data.message
-  await applyMigrations(source.db,name=>name>='257_')
+  await applyMigrations(source.db,name=>name>='260_')
   const base=`/api/ai-support/projects/${p}/conversations/${conversation.id}/obligations`,terms={ownerId:workspace.users.owner,dueAt:Date.now()+3600000}
   const privateStop='Call Léa at lea.private@example.test about her medical leave'
   const privateSubject='Léa medical leave follow-up'

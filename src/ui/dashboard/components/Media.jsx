@@ -33,7 +33,7 @@ function Media({ media }) {
                 <i className="fe fe-paperclip"></i>
             </span>
             <div className="media-body overflow-hidden flex-fill">
-                <a href={ media.url } className="d-block text-truncate font-medium text-reset" target="_blank" rel="noreferrer">{ media.filename_original }</a>
+                <a href={ media.url } className="d-block text-truncate font-medium text-reset" style={{ minHeight: 44 }} target="_blank" rel="noreferrer">{ media.filename_original }</a>
                 <ul className="list-inline small mb-0">
                     <li className="list-inline-item">
                         <span className="t">{ prettyBytes(media.size) }</span>

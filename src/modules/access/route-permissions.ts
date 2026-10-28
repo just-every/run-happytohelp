@@ -60,6 +60,9 @@ const rules:Record<string,Rule>={
  [`POST ${P}/email-settings/managed/reconcile`]:'settings.manage',[`POST ${P}/email-settings/managed/retry`]:'settings.manage',
  [`PUT ${P}/email-settings`]:'settings.manage',[`POST ${P}/email-settings/test`]:'settings.manage',[`POST ${P}/inbound-emails/:messageId/reconcile`]:'conversations.manage',
  'POST /api/site-preview/projects/:projectId/brand-image-generations':'settings.manage','POST /api/site-preview/projects/:projectId/brand-assets':'settings.manage','PUT /api/site-preview/projects/:projectId/brand-assets/:id/publish':'settings.manage','POST /api/site-preview/projects/:projectId/preview':'settings.manage',
+ 'POST /api/projects/:projectId/procedures/:key/versions':'settings.manage',
+ 'POST /api/projects/:projectId/procedures/:key/versions/:versionId/simulations':'settings.manage',
+ 'POST /api/projects/:projectId/procedures/:key/versions/:versionId/release':'settings.manage',
  'POST /api/training/projects/:project/runs':'settings.manage','POST /api/training/projects/:project/runs/:run/cancel':'settings.manage','POST /api/training/synthetic-workspace':'settings.manage',
  // Integrations and credentials
  [`POST ${P}/connections/tokens`]:'integrations.install',[`PATCH ${P}/connections/tokens/:id`]:'integrations.install',[`POST ${P}/connections/tokens/:id/rotate`]:'integrations.install',[`DELETE ${P}/connections/tokens/:id`]:'integrations.install',
@@ -96,7 +99,7 @@ for(const base of [P,D]){
  rules[`GET ${base}/conversations/:conversationId/ticket`]='self'
  rules[`PATCH ${base}/conversations/:conversationId/ticket`]='conversations.manage'
  for(const method of ['GET','PATCH'])rules[`${method} ${base}/conversations/:conversationId/ticket/problem`]='conversations.manage'
- for(const action of ['incidents/preview','incidents/apply','solve/preview','solve/apply'])rules[`POST ${base}/conversations/:conversationId/ticket/problem/${action}`]='conversations.manage'
+ for(const action of ['incidents/preview','incidents/apply','solve/preview','solve/apply','suggestions/preview','suggestions/confirm','suggestions/reject'])rules[`POST ${base}/conversations/:conversationId/ticket/problem/${action}`]='conversations.manage'
  rules[`GET ${base}/conversations/:conversationId/ticket/problem/solve/:previewId`]='conversations.manage'
  rules[`GET ${base}/conversations/:conversationId/timer`]='conversations.manage'
  for(const action of ['start','stop','adjust'])rules[`POST ${base}/conversations/:conversationId/timer/${action}`]='conversations.manage'
@@ -144,6 +147,16 @@ for(const base of [P,D]){
  for(const method of ['PATCH','DELETE'])rules[`${method} ${base}/company-fields/:fieldId`]='settings.manage'
  for(const tail of ['preview',':runId/apply',':runId/undo'])rules[`POST ${base}/customer-imports/${tail}`]='data.import'
  rules[`GET ${base}/customer-imports/:runId`]='data.import'
+}
+
+for(const base of [P,D]){
+ for(const method of ['PUT','DELETE'])rules[`${method} ${base}/crm/hubspot`]='integrations.install'
+ for(const method of ['PUT','DELETE'])rules[`${method} ${base}/crm/hubspot/contacts/:contactId`]='integrations.install'
+ rules[`POST ${base}/crm/hubspot/contacts/:contactId/refresh`]='integrations.install'
+ rules[`GET ${base}/crm/hubspot`]='contacts.manage'
+ rules[`GET ${base}/crm/hubspot/contacts/:contactId`]='contacts.manage'
+ rules[`GET ${base}/conversations/:conversationId/crm`]='contacts.manage'
+ rules[`POST ${base}/conversations/:conversationId/crm/refresh`]='integrations.install'
 }
 
 const prefixes=['/api/v1/','/api/management/admin/']

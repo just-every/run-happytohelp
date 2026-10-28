@@ -7,7 +7,7 @@ import {memberAccess,type MemberAccess} from '../access/gate'
 import type {Permission} from '../access/catalogue'
 import {audit,type AuditSource} from '../audit/record'
 import {contactAvailableSql} from '../conversations/contact-privacy'
-export type TicketAuthority={sessionHash?:string;tokenAuthority?:TokenAuthority;source?:AuditSource}
+export type TicketAuthority={sessionHash?:string;tokenAuthority?:TokenAuthority;source?:AuditSource;guard?:{sql:string;params:unknown[]}}
 export const categories=['new','open','pending','on_hold','solved','closed'] as const
 export const priorities=['low','normal','high','urgent'] as const
 export function invalid(message:string):never{throw new HTTPException(400,{message})}
@@ -24,7 +24,7 @@ export async function ticketAuthority(env:Env,actor:Actor,authority:TicketAuthor
  }
  // Pin both the role assignment and role definition at commit, including removals.
  const sql=`SELECT 1 FROM memberships m JOIN sessions s ON s.token_hash=? WHERE m.project_id=? AND m.user_id=? AND m.role=? AND s.actor_id=m.user_id AND s.role<>'contact' AND s.revoked_at IS NULL AND s.expires_at>max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)) AND (s.project_id IS NULL AND s.role='operator' OR s.project_id=m.project_id AND s.role=m.role) AND (SELECT role_key FROM member_roles WHERE project_id=m.project_id AND user_id=m.user_id) IS ? AND (SELECT pr.updated_at FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=m.project_id AND mr.user_id=m.user_id) IS ? AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
- return {sql,params:[authority.sessionHash,actor.projectId,actor.id,actor.role,Date.now(),role?.role_key??null,role?.updated_at??null],access}
+ return {sql:sql+(authority.guard?` AND (${authority.guard.sql})`:''),params:[authority.sessionHash,actor.projectId,actor.id,actor.role,Date.now(),role?.role_key??null,role?.updated_at??null,...(authority.guard?.params??[])],access}
 }
 export async function ticketReadAccess(env:Env,actor:Actor){
  if(actor.role==='contact')throw new HTTPException(403)

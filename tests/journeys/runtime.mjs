@@ -1,3 +1,4 @@
+import {mobileAdmission} from '../helpers/mobile.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {request as httpRequest} from 'node:http'
@@ -87,6 +88,7 @@ test('default limits refuse excess widget sessions and visitor messages with a r
 })
 
 test('message admission under contention: one writer per revision, exact replay, refused collisions, foreign media and stale operator frontiers',async()=>{
+ await mobileAdmission()
  await withRuntime({},async(runtime,{call})=>{
   const tenant=await runtime.seedTenant({name:'Admission',email:'admission@native.test',allowedOrigin:runtime.origin}),other=await runtime.seedTenant({name:'Admission other',email:'admission-other@native.test',allowedOrigin:runtime.origin})
   await runtime.presenceAwayOff(tenant.projectId)

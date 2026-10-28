@@ -7,7 +7,7 @@ import {readFile, writeFile, mkdir, rm, copyFile} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {recoveryRuntime} from './runtime.mjs';
 import {snapshot, compareSnapshots, summarize, sha256} from './snapshot.mjs';
-import {seedJourney, verifyAccess, verifyFreshLogin, verifyRestoredApi, eraseRecoveryIssuer, setupToken} from './journey.mjs';
+import {seedJourney, verifyAccess, verifyFreshLogin, verifyRestoredApi, eraseRecoveryIssuer, setupToken, call} from './journey.mjs';
 
 // Native export of a populated packaged install, restored into a fresh destination and compared row by row and object by object.
 export async function recoveryComparison(buildDirectory, outputDirectory, profile='first-run'){
@@ -30,6 +30,9 @@ try {
   original = await recoveryRuntime(artifact, {directory: join(output, 'source-runtime'), port, inspectorPort: port + 1, variables});
   await original.start();
   const journey = await seedJourney(original);
+  const paired = await call(original, '/api/mobile/v1/devices', {platform:'ios',scopes:['read']}, journey.owner.token);
+  assert.equal(paired.status,201);const mobile=await paired.json();
+  assert.equal((await call(original,'/api/mobile/v1/tickets/'+journey.conversation.id,undefined,mobile.token)).status,200);
   await original.close();
   // Prior member fixture; issuance, use and erasure cross only the real public doors.
   const issuerId='synthetic-hh-recovery-issuer',issuerSession='synthetic-hh-recovery-issuer-session';
@@ -70,7 +73,7 @@ try {
   assert.equal(sanitized.status, 0, sanitized.stderr);
   const backup = await readFile(backupFile, 'utf8');
   assert.doesNotMatch(backup, /private-grant-hash|private-code-hash/, 'the backup carries no delegated credential');
-  for (const table of ['edition_grants', 'edition_codes','integration_deliveries','native_integration_intents','native_integration_destinations','api_uploads','api_upload_disposals']) before.rows[table] = [];
+  for (const table of ['edition_grants', 'edition_codes','mobile_devices','mobile_frontiers','mobile_commands','mobile_links','integration_deliveries','native_integration_intents','native_integration_destinations','api_uploads','api_upload_disposals']) before.rows[table] = [];
   for(const table of ['integration_tokens','api_credentials','api_requests','api_appends'])before.rows[table]=before.rows[table].map(value=>{
    const row=JSON.parse(value);
    if(table==='api_credentials')row.revoked_at??=Math.max(1,row.created_at);
@@ -98,6 +101,7 @@ try {
   assert.equal(spawnSync('python3', [resolve('scripts/independent/delegation-backup.py'), repeatExport, repeatBackup]).status, 0);
   assert.equal(await readFile(repeatBackup, 'utf8'), backup, 'a backup of the restored install is identical to the backup it came from');
   await restored.start();
+  assert.equal((await call(restored,'/api/mobile/v1/session',undefined,mobile.token)).status,401,'credential-free restore never revives a mobile capability');
   await verifyAccess(restored, journey, journey.owner.token);
   await verifyFreshLogin(restored, journey);
   await verifyRestoredApi(restored, journey);

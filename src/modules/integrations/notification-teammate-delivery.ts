@@ -1,3 +1,4 @@
+import {prepareMobileNotice} from '../mobile/push'
 import type {Env} from '../../platform/env'
 import {cronRoom} from '../../platform/cron-budget'
 import {notificationTicket,notificationTicketSql} from './triggers/eligibility'
@@ -9,6 +10,7 @@ type Notice={id:string;project_id:string;conversation_id:string;user_id:string;k
 /** Claim into uncertainty before any provider work. A process lost after this
  * commit leaves a visible outcome and cannot cause an automatic replay. */
 export async function deliverTeammateNotice(env:Env,row:Notice){
+ await prepareMobileNotice(env,row)
  const ticket=await notificationTicket(env,row.project_id,row.conversation_id)
  const user=await env.DB.prepare(`SELECT u.email,p.email preference,s.is_notifiable_on_conversation_assignment legacy_assignment,e.inbound_address,e.is_enabled
  FROM memberships m JOIN users u ON u.id=m.user_id LEFT JOIN notification_preferences p ON p.project_id=m.project_id AND p.user_id=m.user_id AND p.kind=?

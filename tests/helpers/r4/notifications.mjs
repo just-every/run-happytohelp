@@ -1,3 +1,4 @@
+import {mobileNotifications} from '../mobile.mjs'
 import assert from 'node:assert/strict'
 import {mailApp,recipients,replyTo} from '../email/app.mjs'
 import {createHmac} from 'node:crypto'
@@ -6,6 +7,7 @@ import {sha} from '../../journeys/kit/app.mjs'
 // One public-door journey. Only mail provider/DNS are network fixtures; persistence,
 // sessions, admission, ticket mutation, note mentions and settings use the real app.
 export async function notificationTriggersJourney(){
+ await mobileNotifications()
  const m=await mailApp(),{app,DB,mail,operator}=m
  const base='/api/management/projects/p',ticket=id=>`/api/dashboard/projects/p/conversations/${id}`
  const call=async(path,body,method='PUT',headers=operator)=>{const r=await app.call(path,{headers,method,body});assert.ok(r.status>=200&&r.status<300,`${path}: ${r.status} ${JSON.stringify(r.data)}`);return r.data}

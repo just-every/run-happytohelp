@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: verify-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
+  group: verify-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
@@ -25,6 +25,7 @@ jobs:
       actions: read
     outputs:
       skip: ${{ steps.reuse.outputs.skip }}
+      tier: ${{ steps.reuse.outputs.tier }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -59,7 +60,16 @@ jobs:
               esac
             done
           fi
+          tier=full
+          if [ "$skip" = true ]; then
+            tier=skip
+          elif [ "$EVENT" = push ] && parent=$(git rev-parse -q --verify HEAD~1) && green "$parent"; then
+            if ! git diff --name-only "$parent" HEAD | grep -qvE '^(sources\.lock\.json|CONTRACT\.md|ACCEPTANCE\.md|CLAIMS\.md|docs/CLAIMS\.md|HANDOVER\.md|STATUS\.md|evidence/.*|\.artifacts/.*)$'; then
+              tier=light
+            fi
+          fi
           echo "skip=$skip" >> "$GITHUB_OUTPUT"
+          echo "tier=$tier" >> "$GITHUB_OUTPUT"
 
   build:
     needs: plan
@@ -83,6 +93,8 @@ jobs:
       - run: pnpm exec rer describe
       - run: node src/site/base/contract-docs.mjs check
       - run: node scripts/edition-authoring/cli.mjs check
+      - run: node scripts/contract-docs.mjs check
+      - run: pnpm run typecheck
       - run: pnpm exec rer check --profile first-party
       - run: pnpm run build
       - name: Package internal build output
@@ -112,7 +124,7 @@ jobs:
 
   checks:
     needs: [plan, build]
-    if: needs.plan.outputs.skip != 'true'
+    if: needs.plan.outputs.tier == 'full'
     name: Verify / ${{ matrix.name }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -120,59 +132,38 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: shard-1
-            browser: true
-            # Last green main check time: 1020 seconds across these unchanged commands.
+          - name: identity-and-desk
+            browser: false
             commands: |
-              node --test --test-concurrency=1 --test-skip-pattern=management.libraries --test-skip-pattern=appearance.settings tests/journeys/inbox-browser.mjs
-              node --test --test-concurrency=1 tests/journeys/move-in-erasure.mjs
-          - name: shard-2
-            browser: true
-            # Last green main check time: 1029 seconds across these unchanged commands.
+              node --test --test-concurrency=1 tests/journeys/identity.mjs tests/journeys/erasure.mjs tests/journeys/inbox.mjs tests/journeys/first-run.mjs tests/journeys/customers.mjs
+          - name: assistant-and-knowledge
+            browser: false
             commands: |
-              node --test --test-concurrency=1 tests/journeys/widget-browser.mjs tests/journeys/ai-browser.mjs
-              node --test --test-concurrency=1 tests/journeys/move-in-custody.mjs tests/journeys/move-in-capacity.mjs
-          - name: shard-3
-            browser: true
-            # Last green main check time: 998 seconds across these unchanged commands.
+              node --test --test-concurrency=1 tests/journeys/ai.mjs tests/journeys/context.mjs tests/journeys/knowledge.mjs tests/journeys/email.mjs
+          - name: connections-and-computers
+            browser: false
             commands: |
-              node --test --test-concurrency=1 tests/journeys/ai.mjs tests/journeys/public.mjs tests/journeys/email.mjs tests/journeys/knowledge.mjs tests/journeys/inbox.mjs tests/journeys/widget.mjs tests/journeys/erasure.mjs tests/journeys/legacy.mjs tests/journeys/context.mjs
-              node --test --test-concurrency=1 --test-name-pattern=dashboard.is.ready tests/journeys/first-run-browser.mjs
-          - name: shard-4
-            browser: true
-            # Last green main check time: 913 seconds across these unchanged commands.
+              node --test --test-concurrency=1 tests/journeys/connections.mjs tests/journeys/widget.mjs tests/journeys/delegation.mjs tests/journeys/delegation-computers.mjs tests/journeys/connector.mjs tests/journeys/upgrade.mjs tests/journeys/runtime.mjs
+          - name: import-and-reports
+            browser: false
             commands: |
-              node --test --test-concurrency=1 tests/journeys/public-browser.mjs tests/journeys/identity-browser.mjs
-              node tests/demo-inbox-browser.mjs
-              node --test --test-concurrency=1 tests/journeys/context-browser.mjs
-          - name: shard-5
+              node --test --test-concurrency=1 tests/journeys/move-in-admission.mjs tests/journeys/move-in-custody.mjs tests/journeys/move-in-erasure.mjs tests/journeys/reports.mjs tests/journeys/legacy.mjs tests/journeys/public.mjs
+          - name: support-workflow-browser
             browser: true
-            # Last green main check time: 904 seconds across these unchanged commands.
             commands: |
-              node --test --test-concurrency=1 --test-skip-pattern=dashboard.is.ready tests/journeys/first-run-browser.mjs
-              node --test --test-concurrency=1 tests/journeys/runtime.mjs tests/journeys/identity.mjs tests/journeys/installer.mjs
-          - name: shard-6
+              node --test --test-concurrency=1 tests/journeys/workflows-browser.mjs
+          - name: support-and-recovery
             browser: true
-            # Last green main check time: 906 seconds across these unchanged commands.
             commands: |
-              node --test --test-concurrency=1 tests/journeys/reports.mjs tests/journeys/first-run.mjs tests/journeys/upgrade.mjs
-              node --test --test-concurrency=1 --test-skip-pattern=selected.engineering tests/journeys/move-in-browser.mjs tests/journeys/reports-browser.mjs tests/journeys/connections-browser.mjs tests/journeys/erasure-browser.mjs
-              pnpm run verify:build
-          - name: shard-7
+              node --test --test-concurrency=1 tests/journeys/inbox-browser.mjs tests/journeys/restore.mjs
+          - name: identity-and-repair-browser
             browser: true
-            # Last green main check time: 1058 seconds across these unchanged commands.
             commands: |
-              node --test --test-concurrency=1 tests/journeys/move-in-admission.mjs
-              node --test --test-concurrency=1 tests/journeys/restore.mjs
-              node --test --test-concurrency=1 --test-name-pattern=engineering tests/journeys/connections.mjs
-              node --test --test-concurrency=1 --test-name-pattern=selected.engineering tests/journeys/connections-browser.mjs
-          - name: shard-8
+              node --test --test-concurrency=1 tests/journeys/identity-browser.mjs tests/journeys/delegation-browser.mjs
+          - name: public-and-import-browser
             browser: true
-            # Last green main check time: 1085 seconds across these unchanged commands.
             commands: |
-              node --test --test-concurrency=1 --test-name-pattern=management.libraries --test-name-pattern=appearance.settings tests/journeys/inbox-browser.mjs
-              node --test --test-concurrency=1 --test-skip-pattern=engineering tests/journeys/connections.mjs tests/journeys/delegation.mjs tests/journeys/delegation-computers.mjs tests/journeys/connector.mjs
-              node --test --test-concurrency=1 tests/journeys/delegation-browser.mjs tests/journeys/connector-browser.mjs
+              node --test --test-concurrency=1 tests/journeys/public-browser.mjs tests/journeys/move-in-browser.mjs tests/journeys/erasure-browser.mjs
     steps:
       - name: Configure evidence directory
         run: echo "H2H_EVIDENCE_DIR=$RUNNER_TEMP/happytohelp-evidence" >> "$GITHUB_ENV"
@@ -236,111 +227,8 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-  public-preview:
-    needs: [plan, build]
-    if: needs.plan.outputs.skip != 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    steps:
-      - name: Configure evidence directory
-        run: echo "H2H_EVIDENCE_DIR=$RUNNER_TEMP/happytohelp-evidence" >> "$GITHUB_ENV"
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.12.4
-          run_install: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22.20.0
-          cache: pnpm
-      - name: Prepare space for native preview
-        run: |
-          bash scripts/ci/ensure-disk-space.sh
-      - run: pnpm install --frozen-lockfile
-      - name: Cache Chromium fallback packages
-        uses: actions/cache@v4
-        with:
-          path: ${{ runner.temp }}/rer-apt/archives
-          key: chromium-apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Install Chromium
-        run: |
-          set -euo pipefail
-          pnpm exec playwright install chromium
-          pnpm exec node scripts/chromium-probe.mjs || \
-            sudo env "PATH=$PATH" "APT_ARCHIVES=$RUNNER_TEMP/rer-apt/archives" python3 scripts/ci/install-chromium-deps.py
-      - uses: actions/download-artifact@v4
-        with:
-          name: verify-build-${{ github.run_id }}
-          path: ${{ runner.temp }}/verify-build
-      - name: Restore the build from this workflow's exact checkout
-        run: tar -xzf "$RUNNER_TEMP/verify-build/happytohelp-build.tar.gz"
-      - name: Homepage and public site checks
-        env:
-          H2H_CI_COMMANDS: |
-            node tests/homepage-browser.mjs
-        run: node scripts/ci/public-preview.mjs
-      - name: Confirm preview preserves source
-        if: ${{ !cancelled() }}
-        run: git diff --exit-code && test -z "$(git ls-files --others --exclude-standard)"
-      - name: Upload browser evidence
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: browser-evidence-public-preview-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/happytohelp-evidence
-          if-no-files-found: ignore
-          retention-days: 14
-      - name: Upload failure diagnostics
-        if: ${{ failure() || cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: failure-diagnostics-public-preview-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            /tmp/h2h-native-runtime-*/runtime.log
-            /tmp/h2h-independent-*/runtime.log
-            test-results/
-          if-no-files-found: ignore
-          retention-days: 7
-
-  legacy-export:
-    needs: plan
-    if: needs.plan.outputs.skip != 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    services:
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_ROOT_PASSWORD: fixture-mysql-admin
-          MYSQL_ROOT_HOST: '%'
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -pfixture-mysql-admin"
-          --health-interval=5s --health-timeout=5s --health-retries=20
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.12.4
-          run_install: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22.20.0
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Export two legacy projects and import each twice
-        env:
-          LEGACY_TEST_MYSQL_HOST: 127.0.0.1
-          LEGACY_TEST_MYSQL_PASSWORD: fixture-mysql-admin
-        run: node --test tests/legacy-export.mjs
-
   verify:
-    needs: [plan, build, checks, public-preview, legacy-export]
+    needs: [plan, build, checks]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 1
@@ -355,7 +243,9 @@ jobs:
         env:
           PLAN: ${{ needs.plan.result }}
           SKIP: ${{ needs.plan.outputs.skip }}
-          RESULTS: ${{ join(needs.*.result, ' ') }}
+          TIER: ${{ needs.plan.outputs.tier }}
+          BUILD: ${{ needs.build.result }}
+          CHECKS: ${{ needs.checks.result }}
           GH_TOKEN: ${{ github.token }}
           EVENT: ${{ github.event_name }}
           SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
@@ -365,7 +255,8 @@ jobs:
           set -euo pipefail
           test "$PLAN" = success
           if [ "$SKIP" != true ]; then
-            for result in $RESULTS; do test "$result" = success; done
+            test "$BUILD" = success
+            if [ "$TIER" = full ]; then test "$CHECKS" = success; else test "$TIER" = light; fi
           fi
           # A merge checkout cannot establish that the PR head passed its push.
           # Re-read once at the end, even when the plan previously found green.

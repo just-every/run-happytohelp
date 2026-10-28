@@ -1,7 +1,4 @@
 import test from 'node:test'
-import {journey} from '../move-in/claims.mjs'
+import {importErasureJourney} from '../move-in/erasure-journey.mjs'
 
-// Move in through its real upload, review, apply, resume, undo and erasure doors (tests/move-in holds each journey's scenarios).
-test(...journey('erasure'))
-test(...journey('upgrade'))
-test(...journey('helpscout'))
+test('erase an imported customer across reviewed, rejected and pending alias uploads; revoke their transcript and attachments while preserving the peer',{timeout:180_000},importErasureJourney)

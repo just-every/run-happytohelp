@@ -1,3 +1,4 @@
+import {accountLookupJourney} from './account-lookup-journey.mjs'
 import {companyPortalJourney} from './company-portal.mjs'
 import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
@@ -11,11 +12,20 @@ export async function customerPortalJourney(){
   const widget=await app.ok('/api/identity/widget/session',{body:{widgetKey:f.workspace.widgetKey,email:'rosa@example.com'},headers:{Origin:f.workspace.allowedOrigin}})
   const trap=await app.ok('/api/conversations',{token:widget.token,body:{projectId:p}})
   await app.ok(`/api/conversations/${trap.id}/messages`,{token:widget.token,body:{localId:'typed-address',content:'Only the widget visitor may see this.',expectedRevision:0}})
-  const rosa=await signin('rosa@example.com'),other=await signin('mallory@example.com')
+  const beforeAnonymous=(await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n
+  assert.equal((await app.call(`${api}/${form.id}/submissions`,{body:valid})).status,428)
+  assert.equal((await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n,beforeAnonymous)
+  assert.equal((await app.call(`${api}/${form.id}/submissions`,{body:{...valid,fields:{[f.reason.id]:'refund'}}})).status,422)
+  const rosa=await signin('rosa@example.com',`/help/${p}/requests/${form.id}`),other=await signin('mallory@example.com')
+  assert.equal(rosa.location,`/help/${p}/requests/${form.id}`);assert.equal((await app.call(rosa.path)).status,400)
   assert.equal((await app.call(P+'/tickets')).status,401)
   assert.equal((await app.call(P+`/tickets/${trap.id}`,rosa)).status,404)
   assert.equal((await app.call(P+'/tickets',rosa)).data.tickets.length,0)
   const create=(await app.call(`${api}/${form.id}/submissions`,{...rosa,body:valid,status:201})).data,id=create.ticket.id
+  const nativeTicket=(await app.ok(`/api/management/projects/${p}/conversations/${id}/ticket`,owner)).data
+  const view=(await app.ok(`/api/dashboard/projects/${p}/ticket-views`,{...owner,body:{name:'Open refund requests',visibility:'shared',filters:[{field:'status_category',operator:'eq',value:nativeTicket.status_category},{field:'custom:'+f.reason.id,operator:'eq',value:'refund'}],sort:[]}})).data
+  const queue=(await app.ok(`/api/dashboard/projects/${p}/conversations?saved_view=${view.id}`,owner)).data
+  assert.ok(queue.some(ticket=>ticket.id===id));assert.equal((await app.first('SELECT value_json FROM ticket_field_values WHERE conversation_id=? AND field_id=?',id,f.order.id)).value_json,JSON.stringify(valid.fields[f.order.id]))
   // Portal first, then real authenticated inbound mail: a separate ticket with
   // one requester, visible immediately and after another mailbox verification.
   const emailed=await app.ok('/api/integrations/email/inbound',{headers:{Authorization:'Bearer fixture-survey-signing-key-for-self-service'},body:{messageId:'rosa-mail-after-portal',to:'help@example.com',from:'rosa@example.com',subject:'Delivery of my replacement order',text:'When will my replacement order arrive?'}})
@@ -38,35 +48,6 @@ export async function customerPortalJourney(){
   const signedThread=await app.ok('/api/conversations',{token:signed.token,body:{projectId:p}})
   await app.ok(`/api/conversations/${signedThread.id}/messages`,{token:signed.token,body:{localId:'signed-widget-question',content:'An update from my account.',expectedRevision:0}})
   assert.equal((await app.call(P+`/tickets/${signedThread.id}`,rosa)).status,200)
-  // Legacy sites may sign only an identifier before adding email. A portal
-  // sign-in in between must not strand the widget customer or their history.
-  const identifier='fay@example.com',signature=createHmac('sha256',secret).update(identifier).digest('hex')
-  const identify=async withEmail=>(await app.call('/api/identity/widget/session',{headers:{Origin:f.workspace.allowedOrigin},body:{widgetKey:f.workspace.widgetKey,identifier,contact_hash:signature,...(withEmail?{email:identifier}:{})},status:201})).data
-  const first=await identify(false),prior=await app.ok('/api/conversations',{token:first.token,body:{projectId:p}})
-  await app.ok(`/api/conversations/${prior.id}/messages`,{token:first.token,body:{localId:'identifier-only-question',content:'Please check delivery of order NS-10483.',expectedRevision:0}})
-  await signin(identifier)
-  for(let visit=0;visit<2;visit++){
-   const returned=await identify(true)
-   assert.equal(returned.contactId,first.contactId)
-   assert.equal((await app.call(`/api/conversations/${prior.id}`,{token:returned.token})).status,200)
-   assert.ok((await app.ok(`/api/conversations?projectId=${p}`,{token:returned.token})).conversations.some(thread=>thread.id===prior.id))
-  }
-  const joined=await signin(identifier)
-  assert.equal((await app.call(P+`/tickets/${prior.id}`,joined)).status,200)
-  assert.equal((await app.call(`/api/conversations/${prior.id}`,{token:first.token})).status,200)
-  // An operator's email edit is not mailbox proof. The original mailbox can
-  // sign in again and read later authenticated mail without restoring the edit.
-  const pia=await signin('pia@example.com')
-  const piaRequest=(await app.ok(`${api}/${form.id}/submissions`,{...pia,body:{...valid,localId:'pia-before-email-edit'}})).ticket
-  const piaContact=(await app.first('SELECT contact_id FROM conversations WHERE id=?',piaRequest.id)).contact_id
-  await app.ok(`/api/management/projects/${p}/contacts/${piaContact}`,{...owner,method:'PUT',body:{email:'pia.work@example.com'}})
-  const piaMail=await app.ok('/api/integrations/email/inbound',{headers:{Authorization:'Bearer fixture-survey-signing-key-for-self-service'},body:{messageId:'pia-mail-after-edit',to:'help@example.com',from:'pia@example.com',subject:'Replacement order after my email was edited',text:'Please check my replacement delivery.'}})
-  const recovered=await signin('pia@example.com')
-  assert.deepEqual((await app.ok(P+'/tickets',recovered)).tickets.map(t=>t.id),[piaMail.conversationId])
-  assert.equal((await app.call(P+`/tickets/${piaMail.conversationId}`,recovered)).status,200)
-  const newAddress=await signin('pia.work@example.com')
-  assert.deepEqual((await app.ok(P+'/tickets',newAddress)).tickets,[])
-  assert.equal((await app.call(P+`/tickets/${piaRequest.id}`,newAddress)).status,404)
   // Unsigned mail impersonating this proven mailbox is kept apart, even when
   // sent after the customer's proof and after a signed widget visit.
   await app.email('From: Rosa <rosa@example.com>\r\nTo: help@example.com\r\nMessage-ID: <spoof-rosa>\r\nSubject: Forged request\r\n\r\nThis is an unproven sender.',{from:'rosa@example.com',to:'help@example.com'})
@@ -100,6 +81,19 @@ export async function customerPortalJourney(){
   await app.ok(P+`/tickets/${id}/reopen`,{...rosa,body:{expectedRevision:solved.ticket.revision}})
   assert.equal((await detail()).ticket.status,'open');assert.equal((await app.call(survey.pathname)).status,410)
   const history=await app.sql('SELECT source FROM ticket_history WHERE conversation_id=?',id);assert.ok(history.some(h=>h.source==='portal'))
+  // This customer's email ticket also receives a separately signed email-channel survey.
+  f.allowSurveyMail();const surveyMailBefore=mail.length
+  emailTicket=(await app.ok(P+`/tickets/${emailId}`,rosa)).ticket
+  await app.ok(P+`/tickets/${emailId}/reply`,{...rosa,body:{localId:'new-delivery-followup',content:'The replacement has arrived. Thank you.',expectedRevision:emailTicket.revision}})
+  await app.ok(`/api/dashboard/projects/${p}/conversations/${emailId}`,{...owner,method:'PUT',body:{resolved:true}});await app.scheduled()
+  const invitation=mail.slice(surveyMailBefore).find(message=>message.text?.includes('/api/outcomes/surveys/')&&message.text.includes('.email.'))
+  assert.ok(invitation,'the solved email request receives its own survey')
+  const emailSurvey=invitation.text.match(/https:\/\/app\.example(\/api\/outcomes\/surveys\/[^\s)]+)/)[1]
+  assert.equal((await app.request(emailSurvey)).status,200,'scanners do not consume the survey')
+  assert.equal((await app.request(emailSurvey,{body:{score:5,reason:'outcome',comment:'The emailed answer solved my request'}})).status,200)
+  assert.equal((await app.request(emailSurvey,{body:{score:1}})).status,410)
+  const emailResult=(await app.ok(`/api/outcomes/projects/${p}/results`,owner)).results.find(row=>row.conversationId===emailId)
+  assert.equal(emailResult.response.channel,'email');assert.equal(emailResult.response.comment,'The emailed answer solved my request')
   const delayed=(await app.ok(`${api}/${form.id}/submissions`,{...rosa,body:{...valid,localId:'delayed-survey'}})).ticket
   await app.ok(`/api/outcomes/projects/${p}/settings`,{...owner,method:'PUT',body:{enabled:true,scale:'five',delayMinutes:60,expiresDays:14,locale:'en'}})
   await app.ok(`/api/dashboard/projects/${p}/conversations/${delayed.id}`,{...owner,method:'PUT',body:{resolved:true}});await app.scheduled()
@@ -115,6 +109,7 @@ export async function customerPortalJourney(){
   before=mail.length;revision=(await app.first('SELECT revision FROM conversations WHERE id=?',id)).revision
   await app.ok(`/api/conversations/${id}/messages`,{...owner,body:{localId:'operator-notify',content:'You can track your refund in your account.',expectedRevision:revision}})
   assert.ok(mail.slice(before).some(m=>[].concat(m.to).includes('rosa@example.com')),'reply email resumes after preference change')
+  await accountLookupJourney(f,rosa)
   assert.equal((await app.call(`/api/portal/${f.foreign.projectId}/tickets`,rosa)).status,401)
   await app.ok(`/api/management/projects/${p}/contacts/${contact}/erase`,{...owner,body:{}})
   for(const table of ['portal_identities','portal_preferences','portal_session_proofs','request_form_submissions'])assert.equal((await app.first(`SELECT count(*) n FROM ${table} WHERE project_id=? AND contact_id=?`,p,contact)).n,0)

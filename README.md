@@ -37,19 +37,54 @@ work delegated to your own Codex or Claude. It works with human replies without
 an AI provider. The editable React application runs on Cloudflare Workers with
 Hono, D1, R2, Queues and Durable Objects.
 
-## Release 0.4.12
+## Release 0.4.13
 
-Deploy version 0.4.12, the latest tagged release **`v0.4.12`**, using the commands below.
-No breaking change. No migrations.
+Deploy version 0.4.13, the latest tagged release **`v0.4.13`**, using the commands below.
+No breaking change. Twenty-six migrations.
 
-- **Hono security patch:** the Worker runtime dependency Hono moves from 4.13.7 to 4.13.11, which fixes Hono's static path decoding vulnerability.
-- **H5/H10/H11 app pass:** stylesheets only. Selected navigation and the open inbox row show selection with a wash or a complete hairline ring, never a border on one side of a rounded rectangle; the active rail item has an accessible aqua highlight; the in-app Setup page uses up to 1100px; small app text is raised one step.
-- **AUTOMATION-002/QUEUE-002 proof:** tests and documentation only. Journeys prove time-based automations, including the seeded rule that closes solved tickets after four days, and structured queue work. QUEUE-002 reads done. AUTOMATION-002 reads partial: the last-agent-update time (`src/modules/workflows/time-rules.ts`, `src/modules/workflows/rule-model.ts`) also counts the workspace's system away reply, so an automation timed from the last agent update can act on a ticket no teammate answered.
-- **Platform migration-ledger guard with rer 0.2.77:** export and leave backups now work on Platform-applied installs without re-running their database migrations. Incomplete or conflicting migration history (a `rer_migrations` ledger that is missing rows, sits beside a second ledger or does not match the migration files) is refused with exit 4 before data changes, and an empty legacy `d1_migrations` is never dropped automatically; native installs retain their usual migration path. The installer pins rer 0.2.77, including migration-ledger checks and the narrowed GitHub-reference rule; restore journeys run in their own CI shard.
+- **Setup manifest binding:** rer-project.json now declares `setup` {`rer-setup.json`, sha256 of that file}, so a Platform install of this release reads the setup manifest at the approved commit; the drift-guard script added with it is removed again and the binding stays.
+- **App pass (H6 to H20, UI-001):** inbox views in the rail, ticket actions in the reply card's "+" start menu, the right panel as the ticket's record and the system UI face in place of Inter (H6/H7/H8/H9/H12/H13/H14); the assigned agent's initial at 13px (H11); condensed inbox rows (H16); daily work in the left menu and configuration under Settings (H18); one shared tooltip on every icon-only control (H19); a one-step local trial in Setup (H20); comfortable, scoped Settings click and focus targets with one focus ring, and reply attachment upload failures shown with recoverable drafts kept (UI-001); the installer theme kept to rer's grammar.
+- **Widget:** presence-based away: with no teammate online the widget shows the away message, which is not a teammate's reply for automations or outcomes (WIDGET-001, migrations 240 and 241); opening hours from applicable SLA calendars with away replies and the reply estimate kept; proactive widget campaigns with consented attribution, a daily-cap fence and consent-revocation cleanup (migration 243).
+- **Workflows, forms and SLAs:** request forms and typed answers in routing and SLA policies, On-hold policy choices, signed workflow webhooks executed once, field history and current field permissions; account lookup fields (FORMS-001, migration 259); SLA Slack escalations with explicit destination consent and durable outcomes (migration 257_sla_slack); reviewed Zendesk first-response SLA policies imported as inactive.
+- **Customers and identity:** operator-reviewed identity links (CUSTOMER-001, migration 242) with "possibly the same customer" links on the customer page and ticket, and kept link and unlink history (migration 252); inherited workspace and inbox names are refused.
+- **Mail:** Managed conversation mail v1 with route observation (migrations 249 and 250), authentication holds and settled held scheduled replies; mailbox protocol and operator ticket doors, proven form CCs, requester notice batches with preview, rate limits and durable notice commands (migration 255); bounded inbound receipt and API hold lookups (migration 256).
+- **Move-in and portability:** reviewed Zendesk, Freshdesk and Help Scout configuration as native drafts, preserved imported ticket lifecycle (246), signed survey response surfaces and widget survey cycles (244, 245), causal AI handoff receipts (247), optional customer recovery (248), complete native restore and hosted archive export coverage; explicitly supplied Freshdesk attachment bytes (MOVE-IN-002, migration 257_move_in_attachment_bytes); the move-in journeys folded within the test budget.
+- **Knowledge:** internal knowledge reads limited to each role's selected articles (migration 251), with the compatibility and selection-revocation repair.
+- **API and connections:** the machine support request API with credential entities, shared admission, quotas and erasure inventory (API-002, migrations 253 and 254); the read-only HubSpot customer context API, its owner and admin connection interface and stable HubSpot panels (CRM-001, migration 257_hubspot_context), with operator first-message sends recovered through the queue; Teams escalation handoffs from a ticket (ESCALATION-001, partial, migration 258_teams_escalations).
+- **Procedures, agents, feedback and reports:** immutable procedure versions with isolated synthetic simulation (PROCEDURE-001, migration 258_procedure_versions), saved procedure comparison and revision lineage and more readable saved procedures; redacted conversation execution traces joined to their resolution cycles (AGENT-002); human-confirmed incident suggestions (CONV-003); conservative native AI containment reports (REPORTS-002); source-linked feedback with signed release updates and a Penny handoff (FEEDBACK-001), and regulated-deployment qualification records (ASSURANCE-001) (migrations 260, 261 and 262).
+- **Dependencies:** Zod 3.24.2 to 4.6.6 with public validation responses preserved, postal-mime 3.0.0 to 4.0.8, the undici override 7.29.1 to 7.30.1 and Vite 8.2.2 to 8.2.4; react-tooltip and zod-to-json-schema are removed.
+- **Tests, CI and documentation:** duplicate browser journeys run once with a phone smoke, within the test budget; Verify in eight balanced shards with reusable proven runs, rerun artifacts, 30-minute browser jobs and timer-polled plugin-frame waits; contract re-judgements and text rulings, the API-002 clause, SOURCE-001 status, the no-Node installation guide and AGENTS.md landing and conflict-resolution guidance.
 
-Update from v0.4.11, or any earlier line, to v0.4.12 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.77. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. v0.4.12 adds no migration, so a v0.4.11 installation's migration ledger stays unchanged and nothing is applied. An earlier installation applies its missing published migrations once, in order and by file name, through pinned rer before the updated Worker serves traffic. Held secrets inherit and the seven Google, Microsoft and IMAP mailbox settings stay optional. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. No breaking change.
+**Migrations from v0.4.12:**
 
-**Recovery note (Platform-applied installs):** if an export made with v0.4.11 or earlier failed, it may have left an empty `d1_migrations` table beside the complete `rer_migrations` ledger. v0.4.12 refuses that state as multiple migration histories (exit 4) before any write and never drops either table. Do not delete or edit either table by hand. Recovery is a separate, verified operator procedure for that one installation, taken only after a fresh snapshot and with an explicit source scope; this release performs no cleanup. Native installs, whose history is `d1_migrations` alone, are unaffected.
+- `240_operator_presence.sql`
+- `241_away_reply_not_a_reply.sql`
+- `242_customer_identity_links.sql`
+- `243_widget_campaigns.sql`
+- `244_csat_response_surface.sql`
+- `245_widget_survey_cycles.sql`
+- `246_imported_ticket_lifecycle.sql`
+- `247_ai_handoff_receipts.sql`
+- `248_customer_recovery.sql`
+- `249_rer_conversation_mail.sql`
+- `250_rer_mail_route_observation.sql`
+- `251_knowledge_read_selection.sql`
+- `252_customer_identity_link_history.sql`
+- `253_api_requests.sql`
+- `254_api_erasure_inventory.sql`
+- `255_outbound_notice_commands.sql`
+- `256_inbound_lookup_indexes.sql`
+- `257_hubspot_context.sql`
+- `257_move_in_attachment_bytes.sql`
+- `257_sla_slack.sql`
+- `258_procedure_versions.sql`
+- `258_teams_escalations.sql`
+- `259_account_lookup_fields.sql`
+- `260_feedback.sql`
+- `261_assurance.sql`
+- `262_feedback_penny.sql`
+
+Update from v0.4.12, or any earlier line, to v0.4.13 without resetting. Back up D1, R2, Durable Object state and private settings first. Install frozen dependencies with Node 22.20.0, pnpm 10.12.4 and pinned @runeditrun/rer 0.2.77. Retain private settings, owners, imported support history, permissions, files, erasure fences and migration history; never delete, reorder or edit ledger rows. Run rer deploy --dry-run against the retained installation first. Apply the following twenty-six migrations once, in listed order and by file name, through pinned rer before the updated Worker serves traffic: 240_operator_presence.sql, 241_away_reply_not_a_reply.sql, 242_customer_identity_links.sql, 243_widget_campaigns.sql, 244_csat_response_surface.sql, 245_widget_survey_cycles.sql, 246_imported_ticket_lifecycle.sql, 247_ai_handoff_receipts.sql, 248_customer_recovery.sql, 249_rer_conversation_mail.sql, 250_rer_mail_route_observation.sql, 251_knowledge_read_selection.sql, 252_customer_identity_link_history.sql, 253_api_requests.sql, 254_api_erasure_inventory.sql, 255_outbound_notice_commands.sql, 256_inbound_lookup_indexes.sql, 257_hubspot_context.sql, 257_move_in_attachment_bytes.sql, 257_sla_slack.sql, 258_procedure_versions.sql, 258_teams_escalations.sql, 259_account_lookup_fields.sql, 260_feedback.sql, 261_assurance.sql, 262_feedback_penny.sql. An earlier installation also applies its other missing published migrations by name through pinned rer. Held secrets inherit; the seven Google, Microsoft and IMAP mailbox settings stay optional, and the new Managed email inputs are optional and unused by a native installation, whose MAIL_PROVIDER stays direct. Connection credentials for Slack, Teams, HubSpot and Penny never enter exports; reconnect them after a restore. Escalation connections keep no provider credentials in exports; retain human Send and unconfirmed recovery. The v0.4.12 recovery note for Platform-applied installs still applies. No breaking change.
 
 See [RELEASE.json](RELEASE.json), [Updates and recovery](docs/INDEPENDENT-RELEASE.md) and [the changelog](CHANGELOG.md).
 
@@ -119,11 +154,11 @@ own operating contract; this seed's CLI is not a platform admission requirement.
 
 ## Deploy to your own Cloudflare account
 
-For a new installation, acquire the latest tagged release **`v0.4.12`**,
+For a new installation, acquire the latest tagged release **`v0.4.13`**,
 after installing `rer` as shown above:
 
 ```sh
-git clone --branch v0.4.12 https://github.com/just-every/run-happytohelp
+git clone --branch v0.4.13 https://github.com/just-every/run-happytohelp
 cd run-happytohelp
 ```
 

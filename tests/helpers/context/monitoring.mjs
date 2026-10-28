@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import {contextApp} from './app.mjs'
+import {contextApp,model} from './app.mjs'
 
 const evidenceIds=body=>[...new Set(JSON.stringify(body).match(/action:[a-z0-9-]+/g)||[])]
 const actions=(prefix,count,text)=>Array.from({length:count},(_,i)=>({localId:`${prefix}${i}`,action:`${text} ${i}`}))
@@ -41,6 +41,8 @@ export async function monitoringJourney(){
   assert.equal((await use('Yes, help me','use-1')).data.duplicate,true);await app.takeJobs()
   const transcript=(await app.call(`/api/conversations/${v.conversationId}/messages`,{token:v.token,status:200})).data.messages.map(message=>message.content)
   assert.deepEqual(transcript.slice(-2),['Would you like help with your payment?','Yes, help me'])
+  const displayed=(await app.call(`/api/dashboard/projects/${p}/conversations/${v.conversationId}/buckets`,{token:c.workspace.tokens.owner,status:200})).data.data
+  assert.deepEqual(displayed.flatMap(bucket=>bucket.messages).filter(message=>pair.data.messages.some(admitted=>admitted.id===message.id)).map(message=>message.content),['Would you like help with your payment?','Yes, help me'])
   // A dismissed insight stays dismissed, and stops further model requests for that visitor.
   assert.equal((await v.widget('dismissInsight',offered[0].id,200)).data.dismissed,true);assert.deepEqual((await v.widget('insights',{},200)).data.insights,[])
   await app.db.prepare('UPDATE context_collectors SET last_run_at=0 WHERE subject_id=?').bind(subject).run();const calls=ai.calls.length
@@ -51,14 +53,49 @@ export async function monitoringJourney(){
   const other=await c.visitor('Other visitor')
   assert.equal((await app.call(`/api/conversations/${v.conversationId}/widget-events`,{token:other.token,body:{action:'collector',data:actions('x',1,'cross')}})).status,404)
 
-  // A large burst is analysed and summarised in bounded windows; the summary takes the oldest evidence and leaves the rest.
-  const bounded=await c.visitor('Busy visitor');await bounded.widget('contextConsent',{consent:true},200);ai.calls.length=0
-  ai.answer=name=>name==='context_summary'?{summary:'Many failures were observed.'}:{decision:'no_insight',help_type:null,evidence_ids:[],help:null}
-  await bounded.widget('collector',actions('bound',70,'Observed failure'),200)
-  const oldest=(await app.first('SELECT id FROM context_actions WHERE subject_id=? ORDER BY occurred_at,id LIMIT 1',bounded.contactId)).id
-  await runAll();const [boundedAnalysis,boundedSummary]=ai.calls.map(call=>call.body)
-  assert.equal(evidenceIds(boundedAnalysis).length,60);assert.equal(evidenceIds(boundedSummary).length,60);assert.equal(evidenceIds(boundedSummary)[0],`action:${oldest}`)
-  assert.equal(await count('context_actions','subject_id=?',bounded.contactId),10,'unselected activity waits for a later batch')
-  assert.equal(await count('context_actions','project_id!=?',p),0)
+  const packet=(await c.context(`/${subject}`,{status:200})).data
+  assert.equal((await c.context(`/${subject}/profiles/contact`,{method:'PUT',body:{evidenceFingerprint:packet.evidence_fingerprint,profile:{user_type:{value:'Unsupported claim',confidence:90,evidence_status:'supported',evidence_ids:['foreign-evidence']}}}})).status,409)
+  // The same customer's current evidence becomes an attributed profile. Re-reading
+  // unchanged evidence is free, and withdrawal of consent fences a running answer.
+  const fields=['upcoming_events','user_type','problem','solutions_needed','job','role','risk_profile','personality']
+  const unknown={value:null,confidence:null,evidence_status:'unknown',evidence_ids:[]}
+  const profile=async()=>JSON.parse((await app.first("SELECT profile FROM context_profiles WHERE subject_id=? AND type='contact'",subject))?.profile||'null')
+  const generate=async()=>(await c.context(`/${subject}/generate/contact`,{body:{model},status:202})).data
+  const evidence=(await c.context(`/${subject}/evidence`,{body:{source:'customer_message',content:'I am a developer'},status:201})).data.id
+  const answer=(body,value,status='supported')=>Object.fromEntries(fields.map(key=>[key,key==='user_type'?{value,confidence:value?90:null,evidence_status:status,evidence_ids:[`message:${evidence}`]}:unknown]))
+  ai.answer=(_,body)=>answer(body,'developer')
+  assert.ok((await generate()).id);await runAll(true)
+  assert.equal((await profile()).user_type.value,'developer')
+  const used=ai.calls.length;assert.equal((await generate()).reason,'unchanged_evidence');assert.equal(ai.calls.length,used)
+  await app.db.prepare("UPDATE context_evidence SET content='I am not a developer' WHERE id=?").bind(evidence).run()
+  await app.db.prepare("UPDATE context_profiles SET started_at=0 WHERE subject_id=? AND type='contact'").bind(subject).run()
+  ai.answer=(_,body)=>answer(body,null,'contradicted')
+  assert.ok((await generate()).id);await runAll();assert.equal((await profile()).user_type,undefined)
+  await app.db.prepare("UPDATE context_evidence SET content='New fact' WHERE id=?").bind(evidence).run()
+  await app.db.prepare("UPDATE context_profiles SET started_at=0 WHERE subject_id=? AND type='contact'").bind(subject).run()
+  ai.answer=async(_,body)=>{await v.widget('contextConsent',{consent:false},200);return answer(body,'developer')}
+  const withdrawn=await generate();await runAll()
+  assert.equal((await app.first('SELECT state FROM context_jobs WHERE id=?',withdrawn.id)).state,'superseded')
+  assert.equal((await profile()).user_type,undefined)
+  await v.widget('contextConsent',{consent:true},200)
+  await app.db.prepare("UPDATE context_profiles SET started_at=0 WHERE subject_id=? AND type='contact'").bind(subject).run()
+  const interrupted=await generate(),[wake]=await app.takeJobs()
+  await app.db.prepare("UPDATE context_jobs SET state='running',started_at=0,provider_started=1 WHERE id=?").bind(interrupted.id).run()
+  await app.scheduled();const beforeReplay=ai.calls.length;await app.runJobs([wake])
+  assert.equal(ai.calls.length,beforeReplay)
+  assert.equal((await app.first('SELECT state FROM context_jobs WHERE id=?',interrupted.id)).state,'uncertain')
+  assert.equal((await c.context(`/${subject}/jobs/${interrupted.id}/abandon`,{body:{reason:'Provider outcome reviewed'},status:200})).data.abandoned,true)
+  const inventory=(await c.context('/insights',{status:200})).data
+  assert.ok(!JSON.stringify(inventory).includes('Other visitor'))
+  assert.equal((await app.call(`/api/customer-context/${p}/insights`,{token:other.token})).status,403)
+  await c.context(`/${other.contactId}/evidence`,{body:{source:'customer_message',content:'I run a shop'},status:201})
+  await other.widget('contextConsent',{consent:true},200)
+  await app.configure({AI_DAILY_CEILINGS:JSON.stringify({contextRunsPerProject:1})})
+  const limited=(await other.widget('collector',actions('limited',7,'Needs help'),200)).data
+  assert.equal(limited.job.reason,'daily_ceiling');assert.equal(ai.calls.length,beforeReplay)
+  const last=(await c.context(`/${other.contactId}/generate/contact`,{body:{model},status:202})).data;assert.ok(last.id)
+  const deletedWork=await app.takeJobs(),beforeDeletion=ai.calls.length
+  await app.call(`/api/management/projects/${p}`,{token:c.workspace.tokens.owner,method:'DELETE',status:200})
+  await app.runJobs(deletedWork);assert.equal(ai.calls.length,beforeDeletion)
  }finally{await c.close()}
 }

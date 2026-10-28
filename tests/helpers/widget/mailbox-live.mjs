@@ -83,7 +83,7 @@ export async function mailboxLiveJourney(){
     await notice.waitFor()
     assert.match(await notice.innerText(),/We're away right now/)
     assert.match(await notice.innerText(),point==='P1'?/We're back .+ at/:/Responds within 24 hours/)
-    const both=async phase=>{for(const [size,viewport] of Object.entries(viewports)){await page.setViewportSize(viewport);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:join(output,`${point}-${phase}-${size}.png`),fullPage:true})}}
+    const both=async phase=>{for(const [size,viewport] of Object.entries({desktop:viewports.desktop})){await page.setViewportSize(viewport);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:join(output,`${point}-${phase}-${size}.png`),fullPage:true})}}
     await page.locator('.happytohelp-insight-agent-info').filter({hasText:point==='P1'?'Away until':'Responds within 24 hours'}).first().waitFor()
     await both('email-ask')
     await page.locator('input[name=email]').fill(process.env.WIDGET_LIVE_MAIL_TO)

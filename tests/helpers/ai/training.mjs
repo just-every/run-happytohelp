@@ -63,5 +63,15 @@ export async function trainingJourney(){
   await app.db.prepare("INSERT INTO training_runs(id,project_id,operator_id,request_id,kind,status,config,case_count,max_cost,max_tokens,created_at) VALUES('restored',?,?,'restored','evaluation','planning',?,1,1,100,1)").bind(p,a.workspace.users.owner,JSON.stringify({plan:[{id:'restored-case',definition:{id:'restored',expected:{}},model,variant:'prototype'}]})).run()
   await app.scheduled();assert.equal((await app.first("SELECT status FROM training_runs WHERE id='restored'")).status,'queued');assert.equal((await app.first("SELECT COUNT(*) n FROM training_cases WHERE run_id='restored'")).n,1)
   assert.ok((await app.takeJobs()).some(job=>job.type==='training'&&job.id==='restored'))
+  const cancelled=(await call(runs,{body:{request_id:crypto.randomUUID(),kind:'evaluation',cases:[{id:'cancelled',expected:{min_responses:1}}],models:[model],max_cost:2,max_tokens:100},status:201})).data
+  const waiting=await app.takeJobs(),beforeCancel=a.providerCalls()
+  await call(`${runs}/${cancelled.id}/cancel`,{body:{},status:200});await app.runJobs(waiting)
+  assert.equal((await call(`${runs}/${cancelled.id}`,{status:200})).data.status,'cancelled');assert.equal(a.providerCalls(),beforeCancel)
+  // Deletion after admission and before execution wins over the durable wakeup.
+  const deleted=(await call(runs,{body:{request_id:crypto.randomUUID(),kind:'evaluation',cases:[{id:'deleted',expected:{min_responses:1}}],models:[model],max_cost:2,max_tokens:100},status:201})).data
+  const queued=await app.takeJobs(),beforeDelete=a.providerCalls()
+  await app.call(`/api/management/projects/${p}`,{token:owner,method:'DELETE',status:200})
+  await app.runJobs(queued);assert.equal(a.providerCalls(),beforeDelete)
+  assert.equal((await call(`${runs}/${deleted.id}`)).status,401)
  }finally{await a.close()}
 }

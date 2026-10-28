@@ -5,8 +5,9 @@ const keys={ANTHROPIC_API_KEY:'sk-ant-fixture',GOOGLE_API_KEY:'google-fixture',D
 
 // The visitor's assistant answers through each supported provider protocol with its usage recorded,
 // and a refused paid attempt is never replayed.
-export async function providersJourney(){
- const a=await assistantApp({bindings:keys}),{app,ai,p,owner}=a
+export async function providersJourney(a){
+ const {app,ai,p,owner}=a
+ await app.configure(keys);ai.network=null
  try{
   for(const model of ['claude-haiku-4-5','gemini-3.5-flash-lite','deepseek-v4-flash','grok-4.3','meta-llama/llama-4-maverick']){
    await app.call(`/api/management/projects/${p}/ais/ai`,{token:owner,method:'PUT',body:{model},status:200})
@@ -19,5 +20,5 @@ export async function providersJourney(){
    await a.run(jobs);assert.equal(a.providerCalls()-before,1,model+' must not replay a paid attempt');await a.run(jobs);assert.equal(a.providerCalls()-before,1)
    assert.notEqual((await a.generations(refused.conversationId))[0].state,'completed');ai.reject=false
   }
- }finally{await a.close()}
+ }finally{ai.reject=false;await app.call(`/api/management/projects/${p}/ais/ai`,{token:owner,method:'PUT',body:{model:'gpt-5.6-luna'},status:200})}
 }

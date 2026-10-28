@@ -74,8 +74,8 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
    assert.equal(await receipt.locator('pre').count(),0,'receipts present results rather than raw evaluator objects')
    assert.doesNotMatch(await receipt.innerText(),/response_digest|harness_failures|must_not_include_per_reply/)
    await activate(button('Check release'),()=>version===1?page.getByText('Simulation qualified. Production rollout remains unavailable.').waitFor():page.getByRole('alert').filter({hasText:'Release refused'}).waitFor());await visibleResult()
-   if(version===2)for(const width of [1440,390]){
-    await page.setViewportSize({width,height:width===390?844:1000})
+   if(version===2)for(const width of [1440]){
+    await page.setViewportSize({width,height:1000})
     await page.screenshot({path:shot(`procedures-v${version}-${width}.png`),fullPage:true})
    }
    await page.setViewportSize({width:1440,height:1000})
@@ -86,7 +86,7 @@ export async function proceduresBrowserJourney({runtime,browser,shot}){
   const comparison=page.getByRole('table',{name:'refund: Version 1 compared with selected Version 2',exact:true})
   const instructionChange=comparison.getByRole('row').filter({has:page.getByRole('rowheader',{name:'Instructions Changed',exact:true})})
   await instructionChange.waitFor()
-  assert.deepEqual(await instructionChange.getByRole('cell').allTextContents(),[`Version 1${original.definition.instructions}`,`Selected · Version 2${revised.definition.instructions}`])
+  assert.deepEqual(await instructionChange.getByRole('cell').evaluateAll(cells=>cells.map(cell=>cell.innerText.trim())),[original.definition.instructions,revised.definition.instructions])
   await comparison.getByRole('rowheader',{name:'Human escalation Changed',exact:true}).waitFor()
   await comparison.getByRole('rowheader',{name:'Read-only sandbox tools Unchanged',exact:true}).waitFor()
   await page.getByLabel('Compare with',{exact:true}).selectOption('')

@@ -6,7 +6,7 @@
     "src/modules/ai-support",
     "migrations/020_ai_support.sql",
     "tests/journeys/ai.mjs",
-    "tests/journeys/ai-browser.mjs",
+    "tests/journeys/workflows-browser.mjs",
     "tests/journeys/ai-live.mjs"
   ],
   "selectedEditionDependencies": [

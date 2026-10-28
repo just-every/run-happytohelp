@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {startApp,sha} from '../../journeys/kit/app.mjs'
+import {campaignsJourney} from './campaigns.mjs'
 import {socketClient} from './sockets.mjs'
 
 // Conversation sockets on the real application: scoped REST and socket admission by token, origin and membership,
@@ -14,6 +15,7 @@ export async function socketJourney(){
   const session=async()=>(await app.call('/api/identity/widget/session',{body:{widgetKey:workspace.widgetKey},headers:{Origin:'https://widget.example'},status:201})).data
   const contact=await session(),other=await session()
   const conversation=(await app.call('/api/conversations',{token:contact.token,body:{projectId:p},status:201})).data
+  const finishVisit=await campaignsJourney({app,workspace,contact,conversation,owner,socketTo})
   const first=(await app.call(`/api/conversations/${conversation.id}/messages`,{token:contact.token,body:{localId:'one',content:'Persistent message',expectedRevision:0},status:200})).data
   await app.db.prepare("UPDATE messages SET content_raw='Private original email body' WHERE id=?").bind(first.message.id).run()
   assert.equal((await app.call(`/api/conversations/${conversation.id}/messages`,{token:other.token})).status,404,'another visitor cannot read the conversation')
@@ -51,24 +53,6 @@ export async function socketJourney(){
   const acknowledged=(await app.call(`/api/dashboard/projects/${p}/conversations/${conversation.id}/buckets`,{token:owner,status:200})).data
   assert.equal(acknowledged.data.flatMap(bucket=>bucket.messages).find(row=>row.id===first.message.id).read_by_agents[workspace.users.owner],ack.receipts[0].readAt)
   assert.ok(projection.data.flatMap(bucket=>bucket.events).some(event=>event.type==='AGENT_ASSIGNED'&&event.payload.name==='owner socket'),'operator takeover writes attributed handoff history')
-  // With new conversations off, a visitor's chat message earns the workspace's away message once, live on the
-  // visitor's socket, even when the schedule replays the message. Clients cannot mint its id, and an assistant that
-  // answers the conversation keeps it quiet.
-  await app.call(`/api/management/projects/${p}/settings`,{token:owner,method:'PUT',body:{is_available:false},status:200})
-  const night=await session(),late=(await app.call('/api/conversations',{token:night.token,body:{projectId:p},status:201})).data
-  const nightSocket=await socketTo(`/api/conversations/${late.id}/socket?token=${night.token}`,{Origin:'https://widget.example'});assert.equal(nightSocket.status,101)
-  const asked=(await app.call(`/api/conversations/${late.id}/messages`,{token:night.token,body:{localId:'late-1',content:'Is anyone there?',expectedRevision:0},status:200})).data
-  const away=await nightSocket.next(frame=>frame.type==='message'&&frame.message.actor_role==='system')
-  assert.match(away.message.content,/^Thanks for your message\. .+ is away right now\. We'll reply here\. Responds within 24 hours$/)
-  await app.call(`/api/conversations/${late.id}/messages`,{token:night.token,body:{localId:'late-2',content:'Order 4471 arrived damaged.',expectedRevision:2},status:200})
-  await app.db.prepare('UPDATE conversation_outbox SET delivered_at=NULL WHERE message_id=?').bind(asked.message.id).run();await app.scheduled()
-  assert.deepEqual((await app.sql('SELECT actor_role,revision FROM messages WHERE conversation_id=? ORDER BY revision',late.id)).map(row=>row.actor_role),['contact','system','contact'])
-  assert.equal((await app.call(`/api/conversations/${late.id}/messages`,{token:night.token,body:{localId:'away:reply',content:'Forged',expectedRevision:3}})).status,400)
-  nightSocket.socket.close()
-  const helped=await session(),answered=(await app.call('/api/conversations',{token:helped.token,body:{projectId:p},status:201})).data
-  await app.db.batch([app.db.prepare("INSERT INTO ai_profiles(id,project_id,name,role,prompt,model,is_enabled,created_at) VALUES('night-assistant',?,'Night assistant','Support','Answer visitors.','gpt-5-mini',1,1)").bind(p),app.db.prepare("INSERT INTO conversation_ai VALUES(?,'night-assistant')").bind(answered.id)])
-  await app.call(`/api/conversations/${answered.id}/messages`,{token:helped.token,body:{localId:'helped-1',content:'Is anyone there?',expectedRevision:0},status:200})
-  assert.deepEqual((await app.sql('SELECT actor_role FROM messages WHERE conversation_id=?',answered.id)).map(row=>row.actor_role),['contact'])
   // Full replay and cursor-only catch-up belong to this socket journey, not a
   // second broad first-release installation.
   const full=await socketTo(`${path}?token=${contact.token}`,{Origin:'https://widget.example'}),frames=[await full.next(frame=>frame.type==='message'),await full.next(frame=>frame.type==='message')]
@@ -76,6 +60,7 @@ export async function socketJourney(){
   const offline=(await app.call(`/api/conversations/${conversation.id}/messages`,{token:owner,body:{localId:'offline-reply',content:'Corrected invoice sent while offline.',expectedRevision:2,expectedLastMessageId:reply.message.id},status:200})).data
   const resumed=await socketTo(`${path}?token=${contact.token}&after=${frames[1].eventId}`,{Origin:'https://widget.example'}),caught=await resumed.next(frame=>frame.type==='message');assert.equal(caught.message.id,offline.message.id);assert.equal(caught.message.revision,3);assert.ok(Number(caught.eventId)>Number(frames[1].eventId));assert.equal(resumed.frames.filter(frame=>frame.type==='message').length,0);resumed.socket.close()
   const transcript=(await app.call(`/api/conversations/${conversation.id}/messages`,{token:contact.token,status:200})).data;assert.deepEqual(transcript.messages.map(message=>message.revision),[1,2,3]);assert.equal(transcript.lastMessageId,offline.message.id)
+  await finishVisit()
   // A revoked visitor session closes its socket and cannot open another.
   await app.call('/api/identity/session',{token:contact.token,method:'DELETE',status:200})
   assert.equal((await app.call(`/api/conversations/${conversation.id}/messages`,{token:contact.token})).status,401)

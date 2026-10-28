@@ -1,7 +1,4 @@
 import test from 'node:test'
-import {journey} from '../move-in/claims.mjs'
+import {reviewImportJourney} from '../move-in/review-import.mjs'
 
-// Move in through its real upload, review, apply, resume, undo and erasure doors (tests/move-in holds each journey's scenarios).
-test(...journey('refusals'))
-test(...journey('review'))
-test(...journey('landing'))
+test('review an export, import its history and private notes, repeat and repackage without effects, then undo exactly',{timeout:180_000},reviewImportJourney)

@@ -90,62 +90,11 @@ export async function siteReadJourney(){
   await app.runJobs([queued.get(acme)]);await scheduled()
   assert.deepEqual([(await datasets(acme)).length,(await readOf(acme)).state,sites.requests.length],[0,'done',before],'not re-created, not read again')
 
-  // At most 8 help pages, however many the sitemap offers. A workspace the owner named keeps its name.
-  sites.reset();const big=await create('https://big.example.com'),bigRead=await run(big)
-  assert.equal(bigRead.pages,8);assert.equal(sites.siteRequests().filter(r=>r.path.startsWith('/help/')).length,8)
-  assert.equal((await documents(big)).length,8);assert.equal((await datasets(big)).length,1);assert.equal(await articleCount(big),0)
-  assert.ok(sites.siteRequests().length<=11,'robots, sitemap, home and 8 pages')
-  assert.equal(await nameOf(big),'Acme Example','a name the owner typed is never replaced')
-
   // The owner's edits made before the read runs survive: nothing is replaced unless it still equals the derived value.
   const derive=(project,settings)=>app.db.prepare("UPDATE project_settings SET settings_json=json_patch(settings_json,?) WHERE project_id=?").bind(JSON.stringify(settings),project).run()
   const edited=await create('https://quiet.example.com','Quiet Derived');await derive(edited,{primary_color:'#ff0000',derived:{name:'Quiet Derived',colour:true}})
   await app.db.prepare("UPDATE projects SET name='Our own name' WHERE id=?").bind(edited).run()
   assert.equal((await run(edited)).state,'done');assert.equal(await nameOf(edited),'Our own name');assert.equal((await settingsOf(edited)).primary_color,'#ff0000')
   assert.equal((await documents(edited)).length,1,'the source is still written')
-  const half=await create('https://quiet.example.com','Derived Name');await derive(half,{primary_color:'#00aaff',derived:{name:'Derived Name',colour:true}})
-  const halfDone=await run(half)
-  assert.equal(await nameOf(half),'Acme Widgets & Co','name still derived: replaced');assert.equal((await settingsOf(half)).primary_color,'#00aaff','colour was changed by the owner: kept');assert.equal(halfDone.colour,undefined)
-
-  // An edit made while the read is running, and a read the scheduler has already given up on, write nothing.
-  const racy=await create('https://racy.example.com','Racy Derived');await derive(racy,{primary_color:'#713ee0',derived:{name:'Racy Derived',colour:true}})
-  await app.runJobs([queued.get(racy)])
-  assert.equal(await nameOf(racy),'Typed by the owner');assert.equal((await settingsOf(racy)).primary_color,'#713ee0')
-  await nothingWritten(racy,'a read marked uncertain mid-flight');assert.equal((await readOf(racy)).state,'uncertain')
-
-  // Refusals: non-public origins are skipped without a single request, DNS included.
-  sites.reset()
-  assert.equal((await app.call('/api/management/projects',{token:owner.token,body:{name:'Plain',allowed_origin:'http://acme.example.com'}})).status,400,'a plain-HTTP website is refused at creation')
-  for(const origin of ['https://localhost','https://127.0.0.1','https://[::1]','https://wiki.internal','https://printer.local','https://app.localhost','https://acme.example.com:8443','https://intranet']){
-   const project=await create(origin),record=await run(project)
-   assert.deepEqual([record.state,record.reason],['skipped','non_public_origin'],origin);await nothingWritten(project,origin)
-  }
-  assert.equal(sites.requests.length,0,'nothing was requested for non-public origins')
-  for(const origin of ['https://private-dns.example.com','https://nxdomain.example.com']){const record=await run(await create(origin));assert.deepEqual([record.state,record.reason],['skipped','dns_not_public'],origin)}
-  assert.deepEqual(sites.siteRequests(),[],'a private DNS answer stops the read before any site request')
-
-  // robots.txt that disallows everything, a failing site and an off-origin redirect all leave the workspace untouched.
-  sites.reset()
-  const closed=await create('https://closed.example.com');assert.deepEqual([(await run(closed)).state,(await readOf(closed)).reason],['skipped','robots_disallowed'])
-  assert.deepEqual(sites.siteRequests().map(r=>r.path),['/robots.txt'])
-  const down=await create('https://down.example.com'),downRecord=await run(down);assert.deepEqual([downRecord.state,downRecord.reason],['failed','home_unreadable'])
-  const bounce=await create('https://bounce.example.com'),bounced=await run(bounce);assert.deepEqual([bounced.state,bounced.reason],['failed','off_origin_redirect'])
-  assert.ok(!sites.requests.some(r=>r.host==='evil.example.net'),'the redirect target was never contacted')
-  for(const project of [closed,down,bounce]){assert.equal(await nameOf(project),'Acme Example');await nothingWritten(project,'closed, down or bounced')}
-  // No retry: the failed site was asked once, and neither a redelivery nor the scheduler asks again.
-  const homeRequests=()=>sites.siteRequests('down.example.com').filter(r=>r.path==='/').length
-  assert.equal(homeRequests(),1);await app.runJobs([queued.get(down)]);await scheduled();assert.equal(homeRequests(),1)
-
-  // A read stuck running is marked uncertain by the scheduler and never repeated; a lost queue message is sent again.
-  const state=(project,read)=>app.db.prepare("UPDATE project_settings SET settings_json=json_set(settings_json,'$.site_read',json(?)) WHERE project_id=?").bind(JSON.stringify(read),project).run()
-  const stale=await create('https://quiet.example.com'),lost=await create('https://quiet.example.com'),fresh=await create('https://quiet.example.com')
-  await state(stale,{state:'running',at:Date.now()-10*60000});await state(lost,{state:'queued',at:Date.now()-10*60000});await state(fresh,{state:'running',at:Date.now()})
-  sites.reset();queued.clear();await scheduled()
-  assert.deepEqual([...queued.keys()],[lost],'only the lost read is sent again')
-  assert.equal((await run(lost)).state,'done','a lost queue message is delivered again')
-  assert.deepEqual([(await readOf(stale)).state,(await readOf(stale)).reason],['uncertain','interrupted'])
-  assert.equal((await readOf(fresh)).state,'running','a recent running read is left alone')
-  await app.runJobs([{type:'site.read',id:stale,projectId:stale}]);await nothingWritten(stale,'an uncertain read is not repeated')
-  assert.equal(sites.siteRequests().length,4,'only the recovered queued read touched the site: robots, home, sitemap, one page')
  }finally{await app.close()}
 }

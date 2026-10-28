@@ -1,4 +1,3 @@
-import engineering from '../escalations/outbound.mjs'
 // The only fake is Penny's network boundary; the app and storage are the emitted Worker.
 export default async request=>{
  const url=new URL(request.url)
@@ -7,5 +6,5 @@ export default async request=>{
   if(typeof data.source!=='string'||typeof data.sourceUrl!=='string'||!data.contact&&!data.requesterId)return Response.json({error:'invalid_source'},{status:400})
   return Response.json({requesterId:'00000000000000000000000001',created:true})
  }
- return engineering(request)
+ throw new Error('Unexpected feedback provider '+url.origin)
 }

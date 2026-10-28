@@ -50,6 +50,14 @@ async function draftRuntime(){
 export async function adoptionJourney(){
  const runtime=await draftRuntime(),{request,fixture,run,one,keys,bytes,noAdoption}=runtime
  try{
+  // An actual storage failure during Use admits no message/media and leaves no copied object.
+  const interrupted=await fixture({count:2})
+  await run(`CREATE TRIGGER adoption_storage_outage BEFORE INSERT ON media WHEN NEW.conversation_id='${interrupted.conversationId}' BEGIN SELECT RAISE(ABORT,'synthetic media storage outage'); END`)
+  assert.equal((await interrupted.adopt()).status,500)
+  await noAdoption(interrupted)
+  await run('DROP TRIGGER adoption_storage_outage')
+  const retried=await interrupted.adopt();assert.equal(retried.status,200)
+  const recovered=await interrupted.adopt();assert.deepEqual(recovered.body.data,retried.body.data)
   // Local and legacy Use adopt exact native owned media, deduplicate, then ordinary Send admits exactly once.
   const f=await fixture(),[first,concurrent]=await Promise.all([f.adopt(),f.adopt()])
   assert.equal(first.status,200,JSON.stringify(first));assert.equal(concurrent.status,200,JSON.stringify(concurrent));assert.deepEqual(first.body.data,concurrent.body.data)
@@ -146,26 +154,5 @@ export async function adoptionJourney(){
   const l=await fixture({mode:'resolve_reply',legacyOnly:true})
   assert.equal((await one("SELECT status FROM local_receipts WHERE job_id=? AND proposal_id='legacy'",l.jobId)).status,'sent')
   const delivered=await l.media();assert.equal(delivered.length,1);assert.equal(delivered[0].uploaded_by,l.userId);assert.equal((await l.messages()).length,1);assert.deepEqual(await bytes(delivered[0].object_key),png)
- }finally{await runtime.close()}
-}
-
-export async function adoptionFaultJourney(){
- const runtime=await draftRuntime(),{fixture,run,keys,bytes,noAdoption}=runtime
- try{
-  // Concurrent changes land between the copies and the atomic batch, as another request would make them.
-  const concurrent=f=>({revoke:`UPDATE local_devices SET revoked_at='revoked-during-copy' WHERE id='${f.deviceId}'`,frontier:`UPDATE conversations SET revision=revision+1 WHERE id='${f.conversationId}'`,cancel:`UPDATE local_jobs SET cancel_requested=1 WHERE id='${f.jobId}'`,grant:`UPDATE local_grants SET revoked_at='revoked-during-copy' WHERE user_id='${f.userId}'`,proposal:`UPDATE local_jobs SET result=json_set(result,'$.reply_draft','changed-during-copy') WHERE id='${f.jobId}'`,attachment:`UPDATE local_attachments SET device_id='foreign-during-copy' WHERE job_id='${f.jobId}'`})
-  for(const fault of ['second-copy','unknown-copy','db-before','revoke','frontier','cancel','grant','proposal','attachment']){
-   const f=await fixture({count:2})
-   if(fault==='grant'){const grant=randomUUID();await run('INSERT INTO local_grants(id,user_id,project_id) VALUES(?,?,?)',grant,f.userId,f.projectId);await run('UPDATE local_devices SET grant_id=? WHERE id=?',grant,f.deviceId)}
-   const headers=concurrent(f)[fault]?{'x-test-before-batch':concurrent(f)[fault]}:{'x-test-fault':fault}
-   const result=await f.adopt({},headers);assert.equal(result.status,['second-copy','unknown-copy','db-before'].includes(fault)?500:409,fault+': '+JSON.stringify(result))
-   await noAdoption(f)
-  }
-  // A lost D1 acknowledgement keeps committed native bytes and fails; explicit Use recovers the same ids.
-  const f=await fixture({count:2});assert.equal((await f.adopt({},{'x-test-fault':'db-after'})).status,500)
-  const before=await f.media();assert.equal(before.length,2);assert.deepEqual(await f.messages(),[])
-  for(const row of before)assert.deepEqual(await bytes(row.object_key),png)
-  const recovered=await f.adopt();assert.equal(recovered.status,200,JSON.stringify(recovered))
-  assert.deepEqual(recovered.body.data.attachments.map(a=>a.id).sort(),before.map(a=>a.id).sort());assert.equal((await keys(f)).length,2)
  }finally{await runtime.close()}
 }

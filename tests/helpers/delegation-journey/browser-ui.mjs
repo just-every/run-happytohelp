@@ -13,7 +13,6 @@ export function browserUI({page,context,origin,actor,api,width,evidence,captions
   async open(id,{panel=true}={}){
    conversationId=id;await page.goto(origin+`/projects/${actor.projectId}/conversations/${id}`);
    if(panel)await openPanel();else{
-    const hide=page.getByRole('button',{name:'Hide conversation panel',exact:true});if(width===390&&await hide.isVisible())await hide.click();
     await page.locator('.transcript-message-content').getByText(report,{exact:true}).waitFor();
    }
   },

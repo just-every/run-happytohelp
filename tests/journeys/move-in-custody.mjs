@@ -1,7 +1,4 @@
 import test from 'node:test'
-import {journey} from '../move-in/claims.mjs'
+import {custodyJourney} from '../move-in/custody-journey.mjs'
 
-// Move in through its real upload, review, apply, resume, undo and erasure doors (tests/move-in holds each journey's scenarios).
-test(...journey('publication'))
-test(...journey('recovery'))
-test(...journey('authority'))
+test('an admin reviews conflicts, loses and regains authority, resumes after a Worker stop and keeps later native work when undo refuses',{timeout:180_000},custodyJourney)

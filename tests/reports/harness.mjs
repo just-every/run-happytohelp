@@ -7,23 +7,17 @@ import {randomBytes,createHash} from 'node:crypto';
 import {build} from 'esbuild';
 const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[require.resolve('wrangler')]}));
 export const json=body=>({method:'POST',body:JSON.stringify(body),headers:{'Content-Type':'application/json'}});
-export async function optIntoProactiveHelp(h,conversationId){
- // Insight admission requires the workspace policy and the visitor's own consent.
- await h.db.prepare(`INSERT INTO project_settings(project_id,settings_json,updated_at) VALUES('p','{"is_contact_tracking_enabled":true,"proactive_help_enabled":true}',?) ON CONFLICT(project_id) DO UPDATE SET settings_json=json_set(settings_json,'$.is_contact_tracking_enabled',json('true'),'$.proactive_help_enabled',json('true')),updated_at=excluded.updated_at`).bind(Date.now()).run();
- await h.call('/api/conversations/'+conversationId+'/widget-events',{...json({action:'contextConsent',data:{consent:true}}),actor:'visitor'});
-}
 // Compile the same public-door Worker once per test process; each case still
 // owns fresh isolated D1/R2 state and its own network edge.
 let workerBundle;
 const compiledWorker=()=>workerBundle??=build({entryPoints:['tests/reports/worker.ts'],bundle:true,write:false,format:'esm',platform:'node',external:['node:*','cloudflare:*'],logLevel:'silent'}).then(result=>result.outputFiles[0].text);
-export async function harness({beforeOutcomes,bindings={}}={}){
+export async function harness({bindings={}}={}){
  const directory=await mkdtemp(join(tmpdir(),'reports-'));let mf,external=0;const tokens={};
  try{
 
  mf=new Miniflare(convertV4MiniflareOptions({name:'reports-check',modules:true,script:await compiledWorker(),compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings,d1Databases:{DB:'reports-check'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async()=>{external++;throw Error('External requests prohibited')}}));
  const db=await mf.getD1Database('DB');
  for(const file of (await readdir('migrations')).filter(x=>x.endsWith('.sql')).sort()){
-  if(file==='112_conversation_outcomes.sql'&&beforeOutcomes)await beforeOutcomes(db)
   const sql=(await readFile(join('migrations',file),'utf8')).replace(/^\s*--[^\n]*$/gm,'');await db.batch([...sql.matchAll(/\s*(CREATE TRIGGER[\s\S]*?END;|[^;]+;)/g)].map(([,statement])=>db.prepare(statement)))
  }
  for(const [project,user] of [['p','owner'],['q','foreign']]){await db.prepare('INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES(?,?,?,?,1)').bind(project,project,'widget-'+project,'https://app.example').run();await db.prepare('INSERT INTO users VALUES(?,?,?,1)').bind(user,user+'@example.test',user).run();await db.prepare("INSERT INTO memberships VALUES(?,?,'owner')").bind(project,user).run();await session(user,project,user,'owner')}

@@ -1,6 +1,6 @@
-import {teamReportsJourney} from '../reports/team-journey.mjs'
 import test from 'node:test'
-import {journey} from '../reports/claims.mjs'
+import {calendarReportsJourney} from '../reports/figures.mjs'
+import {supportOutcomesJourney,publicCohort} from '../reports/support-outcomes.mjs'
 
-// Reports through their real doors (tests/reports holds each journey's scenarios).
-for(const key of ['figures','outcomes','ratings'])key==='figures'?test(journey(key)[0],async()=>{await journey(key)[1]();await teamReportsJourney()}):test(...journey(key))
+test('inspect calendar Reports and formula-safe exports against known durations, rates and exclusions, then revoke private export access',{timeout:180_000},calendarReportsJourney)
+test('resolve and reopen multichannel support with visible answer attribution, visitor feedback and permission-scoped team reports',{timeout:180_000},async()=>{await supportOutcomesJourney();await publicCohort()})

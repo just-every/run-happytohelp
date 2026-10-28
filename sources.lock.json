@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "3f85a9577988dfc4bf5b5d7f14b28334b151b16a378219c5314fb4f7bb0b8616",
+      "sha256": "b9046f61802a122b4654a40610602c34f711d2c14730d28a49c2a3bfae579392",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ad6608a0f414bdaf1aad091e50cd96299b88c0f86d5d38c993d801d366f82718",
+      "sha256": "7f5baa04811b0b459e846e93f718ffdc17525348727d0df68e5bada9869adf65",
       "executable": false
     },
     "DEMO.md": {
@@ -1672,7 +1672,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "c1d76d126e6a6890fa2600ca11dc0c8427e9dd3b06679834fa5597d68aa93ed9",
+      "sha256": "fadf9b3f579a2d0390b391a30fedaa921be4935d041d83fdfdbdde9beb07bb52",
       "executable": false
     },
     "docs/companies-and-csv.md": {
@@ -1684,7 +1684,7 @@
       "executable": false
     },
     "docs/contract/COVERAGE.json": {
-      "sha256": "3027315ae4c465334263acfceb86c08625ab20229e4f191fc8654b3541a32abf",
+      "sha256": "e17b471d7cc822bd57fdb3f0be4e7acfff3dfb1394584945a89ea12085d82624",
       "executable": false
     },
     "docs/contract/ID-MAP.json": {

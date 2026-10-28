@@ -13,7 +13,7 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 | Later | 0 | 0 | 0 | 0 |
 | Full target | 41 | 27 | 17 | 85 |
 
-Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 0 rows; 0 passed, 0 failed, 0 not run.
+Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
 ## Core
 
@@ -21,7 +21,7 @@ Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd
 
 #### NATIVE-001 — Native owner installation
 
-Core · published · **partial** · Cites BASE-INSTALL-001, BASE-OPS-002, BASE-DATA-001
+Core · published · **partial** · Cites BASE-INSTALL-001, BASE-OPS-002, BASE-DATA-001 · Register R-1
 
 **Requirement.** A clean owner can inspect the
 operating description before installing dependencies, install locked source,
@@ -108,7 +108,7 @@ Visitor headers retain the operator's display name.
 
 #### LOCAL-MAIL-001 — Rer dev mail
 
-Core · published · **done** · Cites BASE-MAIL-001, BASE-ACCESS-002
+Core · published · **done** · Cites BASE-MAIL-001, BASE-ACCESS-002 · Register R-2
 
 **Requirement.** Trusted local development configuration
 uses the rer dev v2 development transport: it validates and suppresses visitor
@@ -160,7 +160,7 @@ durable final answers until guarded admission succeeds.
 
 #### UI-001 — Existing editable experience
 
-Core · published · **done** · Cites BASE-ACCESSIBILITY-001, BASE-INPUT-003
+Core · published · **done** · Cites BASE-ACCESSIBILITY-001, BASE-INPUT-003 · Register R-19, R-20
 
 **Requirement.** Reuse the original React dashboard,
 transcripts/drafts/suggestions, settings and Shadow DOM widget; preserve useful
@@ -305,7 +305,7 @@ their fingerprints never enter API responses or browser storage. Details are in 
 
 #### AI-001 — Configured model execution
 
-Core · published · **done** · Cites BASE-AGENT-007, BASE-AGENT-011 · Rules D-3
+Core · published · **done** · Cites BASE-AGENT-007, BASE-AGENT-011 · Rules D-3 · Register R-15
 
 **Requirement.** Retain Ensemble model selection,
 context/tools, streamed events, normalization, raw per-round provider usage,
@@ -356,7 +356,7 @@ becoming usable customer context.
 
 #### DELEGATION-001 — Explicit local authority
 
-Core · published · **done** · Cites BASE-AGENT-005, BASE-AGENT-007, BASE-AGENT-008
+Core · published · **done** · Cites BASE-AGENT-005, BASE-AGENT-007, BASE-AGENT-008 · Register R-17
 
 **Requirement.** Pairing, devices/grants,
 revocation, tool context and work/result states preserve investigation, resolve
@@ -374,7 +374,7 @@ Local processes remain in the optional connector, never an implicit Worker capab
 
 #### TRAINING-001 — Durable evaluation
 
-Core · published · **done** · Cites BASE-AUDIT-001, BASE-AGENT-011
+Core · published · **done** · Cites BASE-AUDIT-001, BASE-AGENT-011 · Register R-15
 
 **Requirement.** Training and evaluation preserve run/case
 state, model/budget selection, raw provider usage and cancellation/recovery.
@@ -390,7 +390,7 @@ acceptance.
 
 #### INTEGRATION-001 — Honest external effects
 
-Core · published · **partial** · Cites BASE-OPS-003, BASE-MAIL-001, BASE-DATA-004, BASE-AGENT-007
+Core · published · **partial** · Cites BASE-OPS-003, BASE-MAIL-001, BASE-DATA-004, BASE-AGENT-007 · Register R-10
 
 **Requirement.** Email/inbound mail, GitHub,
 branding and knowledge imports use configured native adapters, tenant-scoped
@@ -408,11 +408,11 @@ Shopify, Stripe and CRM support actions are required by COMMERCE-001, BILLING-00
 3. Test accepted, failed and uncertain outcomes without invented delivery; business-action evidence is also required by COMMERCE-001, BILLING-001 and CRM-001.
 
 **Evidence.** Local implementation/fixture evidence: `src/modules/integrations/inbound.ts`; `src/modules/integrations/github.ts`; `tests/journeys/email.mjs` (customer mail admission and suspended-message recovery preserve identity, authenticate gateways and admit each message once; automatic mail classification journey: original admission and recovery stay quiet while human mail notifies); `tests/journeys/knowledge.mjs`. Existing mail, inbound, GitHub and knowledge-import adapters exercise idempotency, suppression and outcome handling at local test/network boundaries.
-**Gap.** Implementation/acceptance gaps: The required business connectors remain missing under COMMERCE-001, BILLING-001 and CRM-001. Live qualification gap: Real mail receipt, GitHub account authorization/events and provider-backed knowledge import are unobserved; adapter fixtures do not establish live delivery or account qualification.
+**Gap.** Implementation/acceptance gaps: The required business connectors remain missing under COMMERCE-001, BILLING-001 and CRM-001.
 
 #### PUBLIC-001 — Homepage hero and two support moments
 
-Core · published · **done** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
+Core · published · **done** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
 **Requirement.** The approved
 homepage (owner approval 2026-10-01, clarity pass 2026-10-02, hero redesign
@@ -439,7 +439,7 @@ press Send.”) on filled aqua number discs;
 
 #### PUBLIC-002 — Free product promise
 
-Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
+Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
 **Requirement.** “Not just better. Free.” (100% free and
 open source, free as in code and free as in cost, MIT licensed, “No seats. No
@@ -455,7 +455,7 @@ over a wordless code editor, “free of charge” and the rights highlighted in 
 
 #### PUBLIC-003 — Support desk, move-in invitation and closing
 
-Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
+Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
 **Requirement.** “The rest of your support desk” (chat widget, shared inbox, help center, suggested
 replies, as frameless ink cards numbered on filled aqua discs); “Try it beside what you have” (install, bring the
@@ -473,7 +473,7 @@ and the footer, signed with the header's lockup.
 
 #### PUBLIC-004 — Public brand, links and motion
 
-Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
+Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
 **Requirement.** Below the hero the drawings carry the hero's language: each
 floats on a pale aqua blob, the mark's three aqua sparks spring from the corner of four of its cards, a window
@@ -509,7 +509,7 @@ changing layout, leaving every drawing in its final state and every stroke fully
 
 #### PUBLIC-005 — Documentation and public knowledge routes
 
-Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001, BASE-DOCS-001
+Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001, BASE-DOCS-001 · Register R-19, R-20
 
 **Requirement.** `/docs` renders, at build
 time, the Markdown files listed in `docs/site.json`, in the homepage's paper,
@@ -597,17 +597,17 @@ Core · target · **partial**
 
 #### MAIL-001 — Complete support email
 
-Core · target · **partial** · Cites BASE-MAIL-001, BASE-OPS-003
+Core · target · **partial** · Cites BASE-MAIL-001, BASE-OPS-003 · Register R-2
 
 **Requirement.** Connect inbound forwarding, an IMAP/SMTP mailbox, Gmail/Google Workspace or Microsoft 365/Outlook using scoped credentials/OAuth. New mail creates tickets and replies thread by stable Message-ID/In-Reply-To/References with deliberate handling of changed subject, aliases and multiple recipients. Operators manage CC/BCC, attachments, signatures and branded sender/reply addresses. Duplicate/redelivered mail, bounces, spam and auto-responders cannot create loops or send twice, and mail classified as spam or failing sender checks goes to the reviewable Suspended view of MAIL-002; reconnect/backfill has a visible cursor and errors, and removal stops new intake without deleting history.
 
 **Acceptance.**
-1. For each of forwarding, IMAP, Gmail and Microsoft 365, use the connection UI and real provider test accounts to receive a new thread, reply from the inbox, receive its follow-up and attachment, disconnect/reconnect with redelivery and observe bounce/permission failure.
+1. For each of forwarding, IMAP, Gmail and Microsoft 365, use the connection UI and provider sandboxes or official-schema fakes to receive a new thread, reply from the inbox, receive its follow-up and attachment, disconnect/reconnect with redelivery and observe bounce/permission failure.
 2. Verify no duplicate ticket/reply or machine-mail AI loop; keep provider-protocol tests separate from live acceptance.
 3. Spam and failing-sender mail reaches the MAIL-002 Suspended view, not a ticket.
 
 **Evidence.** Local implementation/fixture evidence: `src/modules/integrations/mailboxes/`; `src/modules/integrations/email-threading.ts`; `tests/helpers/email/mailbox-provider.mjs`; `tests/helpers/email/complete-email.mjs`; `tests/helpers/email/transports.mjs`; `docs/email.md`. Forwarding, Gmail and Microsoft 365 OAuth connections, aliases, branded sender, signatures, CC/BCC, header/token threading and cursor/reconnect/backfill/disconnect controls are asserted against network-edge fixtures in `tests/journeys/email.mjs` (customer mail admission and suspended-message recovery preserve identity, authenticate gateways and admit each message once; automatic mail classification journey: original admission and recovery stay quiet while human mail notifies).
-**Gap.** Protocol evidence: `tests/helpers/email/complete-email.mjs`, imapSmtpJourney, independently registered in `tests/journeys/email.mjs`, drives `src/modules/integrations/mailboxes/socket.ts` through connection verification, fragmented IMAP greetings/commands/UTF-8 literals, UIDVALIDITY, cursor sync/backfill, reconnect and SMTP authentication/DATA. Only the TLS socket boundary is replaced; application admission, encrypted credentials and durable send stores assert redelivery without duplicate tickets/effects, cursor retention and inert automatic-mail redelivery. This is protocol fixture proof, not a real TLS server or live mailbox qualification. Live qualification gap: Real forwarding, IMAP/SMTP, Gmail and Microsoft 365 test accounts, domain/sender authorization, delivery, bounce/permission failures and production cutover are unqualified; simulated OAuth/provider responses do not qualify a real account.
+**Gap.** Protocol evidence: `tests/helpers/email/complete-email.mjs`, imapSmtpJourney, independently registered in `tests/journeys/email.mjs`, drives `src/modules/integrations/mailboxes/socket.ts` through connection verification, fragmented IMAP greetings/commands/UTF-8 literals, UIDVALIDITY, cursor sync/backfill, reconnect and SMTP authentication/DATA. Only the TLS socket boundary is replaced; application admission, encrypted credentials and durable send stores assert redelivery without duplicate tickets/effects, cursor retention and inert automatic-mail redelivery. This is protocol fixture proof, not a real TLS server or live mailbox qualification.
 
 #### MAIL-002 — Reviewable suspended and spam mail
 
@@ -616,7 +616,7 @@ Core · target · **done** · Cites BASE-MAIL-001, BASE-DATA-002, BASE-ROLE-001,
 **Requirement.** Inbound mail that is spam-scored, fails DMARC/SPF/DKIM or alignment, comes from a blocked sender or domain, forges a verified customer's address, exceeds size limits or is a detected mail loop is never silently dropped. It lands in a Suspended view with its reason, authentication results, headers and safely previewed attachments, and creates no ticket, AI work, acknowledgment or notification. Permitted operators recover a false positive into a normal ticket that threads correctly (into the existing ticket when its references match) without retroactively triggering acknowledgments or AI unless they choose to; delete true spam; and block or allow a sender or domain. Recovery, deletion and list changes are audited. Suspended mail is kept for a stated retention period (default 14 days) and then explicitly deleted with an audit record; the view shows counts and the oldest age so nothing ages out unseen. Allow/block lists and suspension reasons are reportable.
 
 **Acceptance.**
-1. Through real inbound doors deliver a spam-scored message, a DMARC-failing message, mail from a blocked sender and a forged From of a known customer; verify each appears in Suspended with its reason and creates no ticket, AI request or outbound mail.
+1. Through the application’s inbound doors deliver a spam-scored message, a DMARC-failing message, mail from a blocked sender and a forged From of a known customer; verify each appears in Suspended with its reason and creates no ticket, AI request or outbound mail.
 2. Recover the DMARC-failing message into a new ticket and another into its existing thread, delete the spam, allow-list a sender and redeliver.
 3. Advance the clock past retention at the runtime edge and verify explicit, audited deletion; refuse every action to a role without permission.
 
@@ -625,32 +625,32 @@ Core · target · **done** · Cites BASE-MAIL-001, BASE-DATA-002, BASE-ROLE-001,
 
 #### OUTBOUND-001 — Agent-created and proactive tickets
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **partial** · Cites BASE-ROLE-001 · Register R-2
 
 **Requirement.** From the inbox an operator creates a ticket for an existing or new contact: search by name, email or phone or create the contact inline under CUSTOMER-001 identity rules; choose brand, sender address, channel, form, fields, assignee and group; and make the first comment public or an internal note. A public first comment is sent as an outbound email, or, where the customer consented, as an approved SMS/WhatsApp template under CHANNELS-001. The customer is recorded as requester and the operator as submitter, and the customer's reply threads into the same ticket. Logging a phone call or walk-in creates a ticket without contacting the customer. Proactive service notices to several customers (for example a delayed order) create one ticket per requester with a preview, consent checks and rate limits, never send twice on retry and remain distinct from marketing campaigns, which belong to Mango.
 
 **Acceptance.**
-1. From the inbox create a ticket for an existing contact and one for a new contact, send the first public email, reply as each customer from a real mailbox and confirm the reply threads into the created ticket with requester and submitter attribution.
+1. From the inbox create a ticket for an existing contact and one for a new contact, send the first public email, reply as each customer from a provider mailbox sandbox or official-schema fake and confirm the reply threads into the created ticket with requester and submitter attribution.
 2. Create an internal-only ticket (no send), a WhatsApp-template ticket to an opted-in number and one to an opted-out number (refused), and a proactive notice to three contacts with one failed send; verify no duplicate send on retry and refusal for an operator without create authority.
 
 **Evidence.** Local implementation/fixture evidence: `src/modules/management/outbound-tickets.ts`; `src/modules/management/outbound-ticket-input.ts`; `src/modules/management/outbound-ticket-store.ts`; `tests/helpers/email/complete-email.mjs`; `tests/helpers/email/mailbox-provider.mjs`; `docs/email.md`. Individual email and call creation implement requester/operator submitter attribution, mailbox and authorized sender, immutable CC/BCC, private call notes and durable send identity/outcomes. Network-edge fixture journeys inspect sent copies and threaded replies. `tests/helpers/email/complete-email.mjs`, in `tests/journeys/email.mjs` / “operators start email and call tickets, header and imported vendor replies preserve identity, suspicious mail stays in Suspended for safe audited recovery or expiry, and erasure removes its new stores”, proves new/existing requester creation and requester/submitter attribution, first-email header threading, immutable copies, call-note no-send, selected-mailbox authority, current-role races, a visible failed first-send outcome and exact retry without a second send or contact. `tests/helpers/email/mailbox-provider.mjs` proves provider-edge sent copies.
-**Gap.** Browser evidence: `tests/helpers/inbox/ui-browser.mjs`, outboundTicketBrowser, independently registered as “New ticket creates email and call tickets with recoverable previewed service notices at 1440 and 390” in `tests/journeys/inbox-browser.mjs`, drives email/private-call creation, immutable replay, consent changes after preview and lost-response recovery. Definitive no-creation refusals retain the editable draft and usable Cancel, close and Escape; uncertain outcomes retain the same command. Service-notice evidence: `tests/helpers/email/complete-email.mjs`, outboundNoticesJourney, exercises preview confirmation, provider/refusal outcomes, consent refusal retained across later opt-in, and fifty requesters under enforced 1000-statement/call invocation meters. Remaining admissions resume under the immutable command after concurrent retries and native re-login. Durable notice commands live in `outbound_notice_commands`, independently of audit retention, for the lifetime of the workspace (no time-based command expiry). The workspace dialog intent is unique across operators and freezes its original actor, fingerprint and refusal or reservation before any admission. Ticket creation and first-message/outbox admission update the same command’s recovery IDs in their existing atomic batches; provider I/O remains outside transactions. Replays return already admitted tickets even after requester blocking, and reserved work keeps its original ticket identity. The existing email journey proves complete, reserved and partial replay after supported 90-day audit retention at day 91, native re-login and workspace isolation. No accepted or reserved command can become a `notice_not_created` certificate when its audit expires. The admission budget includes two additional statements per new notice recipient (ticket and outbox recovery receipts), each folded into an existing batch with no added D1 call. Scheduled abandoned-send reconciliation deliberately uses one additional statement/call compared with the previous main; the 1000-statement and 1000-call platform caps remain enforced. Each admitted message uses the durable outbox; lost dispatch, scheduled recovery and individual jobs finish without duplicate sends. Notification send execution is bounded to 60 seconds, including provider I/O; the scheduled pass reconciles sending claims older than 120 seconds without an open managed hold to uncertain with “the worker stopped during a send; check the provider before resending”. A send whose invocation died between claim and receipt is never retried automatically. The default remains 10 first-notice attempts per workspace per fixed UTC minute, with no batch CC/BCC. Capacity-deferred rows have no send claim; rate and consent refusals are terminal and visibly distinct from provider rejection. Implementation/acceptance gaps: Remaining form/field/brand/assignment configuration and consented SMS/WhatsApp template creation remain incomplete. Live qualification gap: Sending from an authorized real mailbox/domain and receiving the customer's real-mailbox reply are unobserved; inspected fixture copies do not prove delivery or live threading. Real-mailbox reply/cutover receipts are absent. WhatsApp sandbox credentials and an opted-in/out test number are not provisioned.
+**Gap.** Browser evidence: `tests/helpers/inbox/ui-browser.mjs`, outboundTicketBrowser, independently registered as “New ticket creates email and call tickets with recoverable previewed service notices at 1440 and 390” in `tests/journeys/inbox-browser.mjs`, drives email/private-call creation, immutable replay, consent changes after preview and lost-response recovery. Definitive no-creation refusals retain the editable draft and usable Cancel, close and Escape; uncertain outcomes retain the same command. Service-notice evidence: `tests/helpers/email/complete-email.mjs`, outboundNoticesJourney, exercises preview confirmation, provider/refusal outcomes, consent refusal retained across later opt-in, and fifty requesters under enforced 1000-statement/call invocation meters. Remaining admissions resume under the immutable command after concurrent retries and native re-login. Durable notice commands live in `outbound_notice_commands`, independently of audit retention, for the lifetime of the workspace (no time-based command expiry). The workspace dialog intent is unique across operators and freezes its original actor, fingerprint and refusal or reservation before any admission. Ticket creation and first-message/outbox admission update the same command’s recovery IDs in their existing atomic batches; provider I/O remains outside transactions. Replays return already admitted tickets even after requester blocking, and reserved work keeps its original ticket identity. The existing email journey proves complete, reserved and partial replay after supported 90-day audit retention at day 91, native re-login and workspace isolation. No accepted or reserved command can become a `notice_not_created` certificate when its audit expires. The admission budget includes two additional statements per new notice recipient (ticket and outbox recovery receipts), each folded into an existing batch with no added D1 call. Scheduled abandoned-send reconciliation deliberately uses one additional statement/call compared with the previous main; the 1000-statement and 1000-call platform caps remain enforced. Each admitted message uses the durable outbox; lost dispatch, scheduled recovery and individual jobs finish without duplicate sends. Notification send execution is bounded to 60 seconds, including provider I/O; the scheduled pass reconciles sending claims older than 120 seconds without an open managed hold to uncertain with “the worker stopped during a send; check the provider before resending”. A send whose invocation died between claim and receipt is never retried automatically. The default remains 10 first-notice attempts per workspace per fixed UTC minute, with no batch CC/BCC. Capacity-deferred rows have no send claim; rate and consent refusals are terminal and visibly distinct from provider rejection. Implementation/acceptance gaps: Remaining form/field/brand/assignment configuration and consented SMS/WhatsApp template creation remain incomplete.
 
 #### CHANNELS-001 — Messaging and social support
 
-Core · target · **missing** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-MAIL-001
+Core · target · **missing** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-MAIL-001 · Register R-3
 
 **Requirement.** Connect US SMS through Twilio and WhatsApp Business, Instagram Direct and Facebook Messenger through authorized Meta business accounts. Inbound messages, supported media, delivery states and channel identity enter the shared inbox; replies return in the original channel. Respect consent, opt-out, A2P 10DLC registration, approved WhatsApp templates and channel reply windows; an expired window becomes an actionable blocker with an approved continuation, never silent loss or unauthorized cross-channel contact.
 
 **Acceptance.**
-1. Using each connected provider account, exchange a customer message/media and operator reply in one mapped conversation, redeliver a signed event, revoke the connection and exercise opt-out and expired-window/template refusal with visible delivery failure and no duplicate send.
+1. Using each provider sandbox or official-schema fake, exchange a customer message/media and operator reply in one mapped conversation, redeliver a signed event, revoke the connection and exercise opt-out and expired-window/template refusal with visible delivery failure and no duplicate send.
 
 **Evidence.** None.
 **Gap.** No implementation located. No SMS/Meta support channel implementation located.
 
 #### CHANNELS-002 — B2B shared-channel support
 
-Core · target · **missing**
+Core · target · **missing** · Register R-4
 
 **Requirement.** Slack Connect and Microsoft Teams customer channels become authorized support intake, with thread replies, attachments, requester/account mapping and internal/private separation. The team can acknowledge, assign and hand off from Slack/Teams while the canonical support record retains the thread and current status. Installed-channel permissions, edited/deleted events, duplicates and disconnected channels have explicit behavior; Slack notifications alone do not satisfy this clause.
 
@@ -663,13 +663,13 @@ Core · target · **missing**
 
 #### VOICE-001 — Telephone service and unified voice agent
 
-Core · target · **missing** · Cites BASE-AGENT-006, BASE-AGENT-007
+Core · target · **missing** · Cites BASE-AGENT-006, BASE-AGENT-007 · Register R-5
 
 **Requirement.** Connect Aircall and Twilio Voice numbers for inbound/outbound customer support, business-hours routing, IVR, queues, transfers, voicemail and missed-call follow-up. Calls, consented recordings/transcripts and summaries attach to the customer conversation. The same governed AI procedures can serve voice, email and chat, with immediate human transfer and visible failed transfers; disclose automated agents and obtain recording consent under the configured US jurisdiction.
 
 **Acceptance.**
 1. Call a connected support number through IVR to an agent, transfer to a human, leave voicemail after hours and call back from the inbox; verify consent, transcript/recording access, linked history, failed-transfer escalation and erasure.
-2. Use the provider-approved emergency-calling test procedure to verify number/location routing and disclosed limitations before launch.
+2. Use the provider’s documented emergency-routing sandbox or official-schema fake to verify number/location routing and disclosed limitations; real provider qualification is recorded in R-5.
 3. Repeat an approved procedure across voice/chat/email and inspect one consistent authority policy.
 
 **Evidence.** None.
@@ -772,7 +772,7 @@ Core · target · **done** · Cites BASE-ROLE-001
 
 #### SLA-001 — Business-hour service commitments
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **partial** · Cites BASE-ROLE-001 · Register R-6
 
 **Requirement.** Leads configure first/next response and resolution SLAs by priority, customer plan, channel and brand, using US IANA timezones, weekly hours and holiday calendars. Show due times and pause reasons in the queue; Pending pauses customer-wait clocks and On-hold follows the policy's stated choice under the STATUS-001 lifecycle, and reopen restarts the next-response clock. Durable approaching-breach, breach and unattended-ticket alerts escalate to named backups through inbox/email/Slack/Teams and persist until acknowledged or resolved. Slack alerts use explicitly selected same-workspace destinations, fixed ticket/operator metadata and current installing authority; acknowledgment stays in HappyToHelp, and test posts require their own explicit consent. Revoked destinations, consent or backups stop unsent alerts. Only explicit rate-limit refusals retry, within five total attempts (RL-7).
 
@@ -814,7 +814,7 @@ Core · target · **done** · Cites BASE-ROLE-001
 
 #### NOTIFY-001 — Customer acknowledgments and teammate notifications
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **partial** · Cites BASE-ROLE-001 · Register R-3, R-6
 
 **Requirement.** Default, editable triggers send the requester and CCs one "request received" acknowledgment for a new ticket (per channel and brand, with the ticket reference and expected reply time), a notification when a public reply is added, and a solved notice. Machine-generated mail, suspended mail (MAIL-002), imports and merges never trigger them, and each ticket receives at most one acknowledgment even under redelivery. Teammates are notified by inbox, email, push (MOBILE-001) and Slack/Teams: the assignee on assignment and on customer update, the group on unassigned group tickets, followers on update and mentioned teammates on mention, each according to personal preferences and current permission to the ticket, workspace and brand. Templates use MACRO-001 placeholders with a visible failure for a missing value. Every notification carries loop-suppression headers and records its delivery outcome; an uncertain send is never replayed.
 
@@ -823,7 +823,7 @@ Core · target · **partial** · Cites BASE-ROLE-001
 2. Assign the ticket, add a follower, update it as the customer and mention a teammate; verify each notification reaches only permitted current members according to preference, a revoked member receives nothing, a group notification reaches the group and an uncertain provider send stays uncertain without a second send.
 
 **Evidence.** Local implementation/fixture evidence: `src/modules/integrations/triggers.ts`; `src/modules/integrations/triggers`; `src/modules/integrations/notification-teammates.ts`; `src/modules/integrations/operator-notifications.ts`; `tests/journeys/email.mjs`; `tests/journeys/inbox.mjs`. Local network-edge journeys assert editable requester/proven-CC received and solved notices, teammate inbox/email preferences, frozen delivery claims, machine/import/merge suppression and uncertain-send fences. The workflow notification interface uses the same proven-address delivery claims (`src/modules/workflows/notify.ts` lines 3,36; `src/modules/integrations/notification-actions.ts` lines 17). `tests/helpers/r4/notifications.mjs`, in `tests/journeys/email.mjs` / “editable requester triggers send received and solved once, suppress historical and machine mail, and teammate notices follow current authority and preferences”, proves requester/proven-CC acknowledgment and redelivery suppression, widget admission, machine/import suppression, assignment/follower/mention/group audiences, current permissions/preferences, revoked recipients, template failures, loop headers and durable uncertain outcomes. Its workflow actions additionally prove assignee/customer, explicitly selected current-group and follower recipients, foreign-group refusal, preference-respecting email/inbox delivery and restart without replay. `tests/helpers/request-forms-journey.mjs` in `tests/journeys/knowledge.mjs` proves one verified requester acknowledgment and separately addressed proven-CC acknowledgments across replay/restart, with no recipient leakage. Valid unknown, ambiguous, unproven or other-workspace CC addresses are silently omitted with the same public success shape; malformed addresses still fail validation. Normalized requester self-duplicates add no participant or extra acknowledgment. Typed CCs create no identity; changing the CC command conflicts.
-**Gap.** Implementation/acceptance gaps: Mobile push and personal Slack/Teams delivery are unimplemented; no Slack bot sandbox credential, push application or Teams test tenant is supplied. The clause stays partial. Live qualification gap: Real requester/CC/teammate mail receipt and live Slack/Teams or push-account delivery are unobserved; proven-address claims and fixture receipts are not live delivery evidence.
+**Gap.** Implementation/acceptance gaps: Mobile push and personal Slack/Teams delivery are unimplemented; no Slack bot sandbox credential, push application or Teams test tenant is supplied. The clause stays partial.
 
 #### CONVERSATION-002 — Merge and external forwarding
 
@@ -849,11 +849,11 @@ Core · target · **partial** · Cites BASE-ROLE-001
 2. Unlink one incident before solving and verify it is untouched.
 
 **Evidence.** Local implementation and fixture evidence: `src/modules/tickets/problem-routes.ts`; `src/modules/tickets/problem-execute.ts`; `tests/helpers/inbox/problems.mjs`; `docs/tickets.md`. Local journeys assert manual and bulk Problem and incident linking, requester-specific placeholder previews, email and widget replies, independently confirmed solve and failed-send open states, per-ticket history and audit, erasure and safe restore. `tests/helpers/inbox/problems.mjs`, in `tests/journeys/inbox.mjs` / “tickets carry typed fields, scoped teams and lifecycle history through customer replies, saved views, previewed bulk changes, the API and erasure”, proves previewed 25-incident linking, requester-rendered replies, email and widget isolation, per-ticket failures and status, unlink-before-solve isolation, history and audit and erasure. It also proves an engineering issue on the Problem, signed closure and duplicate suppression, one unsent approval draft, unconfirmed recovery, explicit stale context after disconnect and restart. The same journey proves per-incident SLA and CSAT invitations: under one SLA policy each incident's resolution commitment starts from its own request, each solved incident completes its own running commitment at its own solve, and incidents left open by a failed or blocked reply or unlinked before the solve keep theirs running; a second Problem whose incidents arrived through the widget from signed mailboxes sends exactly one CSAT invitation per solved ticket, to its own requester, and none for the incident unlinked before the solve. The existing roles and security log journey in `tests/journeys/identity.mjs` (`tests/helpers/identity/roles-audit.mjs`) proves collaborator and reply-only custom-role refusal at all six suggestion mutation doors, and successful operator preview, rejection and confirmation at both mounts. Local deterministic triage suggestions are proved in the existing ticket lifecycle journey (`tests/helpers/inbox/problems.mjs`): same-workspace active Problems matched by shared subject terms, operator-owned preview and explicit single-use confirmation, rejection without mutation, expired and stale previews on either ticket, foreign-tenant and revoked-role denial, audited unlinking and zero automatic sends. The existing “ticket settings and ticket fields save through the dashboard at desktop and phone widths” journey in `tests/journeys/inbox-browser.mjs` (`tests/helpers/inbox/tickets-browser.mjs`, with `tests/helpers/inbox/problem-suggestions-browser.mjs`) proves discovery, inspection, rejection, stale-preview recovery and the resulting link; browser receipts show those screens at 1440 and 390.
-**Gap.** Implementation and acceptance gaps: SMS consent and reply-window transport and its live Twilio receipt remain unavailable (TWILIO_AUTH_TOKEN is not provisioned). The clause stays partial for SMS and live delivery qualification. Live qualification gap: Real email receipt and SMS provider delivery and window enforcement for linked incidents are unobserved; email fixtures and local widget observations qualify only those local paths.
+**Gap.** Implementation and acceptance gaps: SMS consent and reply-window transport and its live Twilio receipt remain unavailable (TWILIO_AUTH_TOKEN is not provisioned). The clause stays partial for SMS and live delivery qualification.
 
 #### CUSTOMER-001 — Customer and company support records
 
-Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1
+Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1 · Register R-9
 
 **Requirement.** Maintain contacts, verified linked channel identities, companies/accounts, account members, custom attributes, consent/preferences and all interaction history. Link/unlink or merge identities with preview and source provenance; email text alone never grants access. Show current business-system context with last sync time, permission and unavailable/stale state, plus account-level open work and relationship history. Import contacts and companies from CSV outside a vendor migration with column mapping, validation, duplicate matching by email or external ID, a dry-run preview and whole-import undo; such imports send nothing. A reviewed link gives same-workspace staff a labelled possible-identity view under role scope, with reviewer, time, evidence and reversible history; it merges nothing, sends nothing and changes no customer’s own verified access (RL-5).
 
@@ -866,7 +866,7 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1
 
 #### COMMERCE-001 — Shopify order actions
 
-Core · target · **missing** · Cites BASE-ROLE-001 · Rules D-3
+Core · target · **missing** · Cites BASE-ROLE-001 · Rules D-3 · Register R-7
 
 **Requirement.** Connect Shopify stores with merchant-granted scopes; show customer orders, fulfillment, delivery, return and refund state in the conversation. Authorized agents/humans can perform permitted return, cancellation and full/partial refund actions with USD amounts, tax/shipping implications and a reason. Preview the exact order/action, require the configured approval and limit, use provider idempotency and verify provider state before telling the customer it succeeded.
 
@@ -879,7 +879,7 @@ Core · target · **missing** · Cites BASE-ROLE-001 · Rules D-3
 
 #### BILLING-001 — Stripe billing and subscription resolution
 
-Core · target · **missing** · Cites BASE-ROLE-001 · Rules D-3
+Core · target · **missing** · Cites BASE-ROLE-001 · Rules D-3 · Register R-8
 
 **Requirement.** Connect Stripe for customer/payment/invoice/subscription context and permitted refunds, credits and subscription cancellation, pause or plan changes. Show USD totals, tax/proration/effective-date consequences and linked provider records before approval; separate read, prepare, approve and execute scopes and spending limits. Reconcile actual provider state after timeout and report what changed in the original conversation. No raw card data or customer funds enter HappyToHelp.
 
@@ -892,7 +892,7 @@ Core · target · **missing** · Cites BASE-ROLE-001 · Rules D-3
 
 #### CRM-001 — Live CRM and account context
 
-Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1
+Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1 · Register R-9
 
 **Requirement.** Connect Orbit, HubSpot and Salesforce independently; map contacts, companies/accounts, support entitlements, plan and owner to support records with source IDs and sync freshness. Read relevant CRM context and write only explicitly scoped support outcomes/approved field changes. Conflicts, identity mismatch and revoked grants are surfaced; the CRM remains the sales/account system of record.
 
@@ -905,7 +905,7 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1
 
 #### ESCALATION-001 — Engineering and team escalations that return
 
-Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-2
+Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-2 · Register R-6, R-10
 
 **Requirement.** Create or link GitHub Issues, Linear and Jira issues and Slack/Teams handoffs from a conversation, choosing exactly what context/attachments to share. Persist reciprocal links, assignee, status and dependency; signed provider updates return to the support thread, wake its owner and draft a customer update when a fix ships. Issue closure alone never proves customer recovery; operators approve customer publication or grant an explicit bounded policy. The accepted Teams slice uses one owner/admin-installed fixed channel, current installing authority, selected public plain text without mentions and no automatic replay or customer publication; it grants no inbound authority (RL-8).
 
@@ -918,7 +918,7 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-2
 
 #### API-001 — Owned API and managed connectors
 
-Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1, D-3
+Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1, D-3 · Register R-11, R-21
 
 **Requirement.** Expose a documented versioned HappyToHelp API and signed outbound webhooks for conversations, contacts, articles and support events with scoped authorization, pagination, stable cursors, idempotency and revocation. Provide Zapier actions/triggers and managed MCP tools with the same tenant/action boundaries. Offer Help Scout Inbox API/webhook read synchronization for staged migration/coexistence, with cursors and deduplication; it is separate from native API authority. Connection health, scopes, event attempts and manual reconciliation are visible. Creating and appending support requests from another product or agent with credentials bound to a source product is covered by API-002, API-003, API-004, API-005, API-006, API-007, API-008.
 
@@ -927,7 +927,7 @@ Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT
 2. Exercise a Zapier trigger/action, MCP read versus denied write and Help Scout incremental ingestion with duplicate events/reconnect; verify no replay of old imports or erased identities.
 
 **Evidence.** Local implementation/fixture evidence: `src/modules/api-integrations`; `local-agent/lib/mcp.mjs`; `src/modules/move-in/plan.ts`; `tests/connections/api.mjs` (API credential lifecycle: issue, use scoped operations, paginate, refuse lost authority and erasure, then revoke); `tests/connections/delivery.mjs` (delivery lifecycle: prepare, sign, dispatch, recover bounded work and require fresh approval for uncertain resend). Native scoped API/webhooks, Help Scout export import and connector MCP transport exist. Local public-door and network-edge journeys assert guarded API operations and webhook protocol behavior; synthetic export import is distinct from continuous synchronization.
-**Gap.** Implementation/acceptance gaps: Managed connector catalog, Zapier actions/triggers and continuous Help Scout API/webhook synchronization are absent. Live qualification gap: Real webhook receiver acceptance, Zapier account execution and Help Scout account scopes/cursors/reconnect are unobserved; native API and export fixtures do not qualify managed provider connectors.
+**Gap.** Implementation/acceptance gaps: Managed connector catalog, Zapier actions/triggers and continuous Help Scout API/webhook synchronization are absent.
 
 #### API-002 — Bound machine credentials
 
@@ -1024,12 +1024,12 @@ Core · target · **missing** · From API-002 · Cites BASE-ROLE-001, BASE-AGENT
 
 #### MOVE-IN-002 — Switch from every named incumbent
 
-Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1
+Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1 · Register R-12
 
 **Requirement.** Provide guided one-click connection or export upload for Zendesk, Intercom, Help Scout and Freshdesk, covering contacts/companies, conversations/messages/attachments/private notes, tags/custom fields, ownership, timestamps and articles/categories/publication. Preview supported mappings and every unsupported field/rule/brand/permission; no silent truncation. Resume with source IDs, deduplicate a second run, perform an inert final delta cutover and explicitly repoint channels. Preserve links and counts; imports never activate automations or expose formerly private knowledge. Imported tickets keep their email threading keys so post-cutover replies land in them (MOVE-IN-003), and configuration moves in under MOVE-IN-004.
 
 **Acceptance.**
-1. For each of the four vendors, use its documented export/API through Move in with representative realistic records, compare exact source/target counts and attachment bytes, inspect omission reports, resume/repeat/undo and final delta, then receive a new live message after channel cutover.
+1. For each of the four vendors, use its documented export/API through Move in with representative realistic records, compare exact source/target counts and attachment bytes, inspect omission reports, resume/repeat/undo and final delta, then receive a new message through the channel sandbox after simulated cutover.
 2. Exercise role revocation and source redaction without accidental sends.
 3. Reply to a pre-cutover notification (MOVE-IN-003) and import configuration (MOVE-IN-004).
 
@@ -1038,12 +1038,12 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1
 
 #### MOVE-IN-003 — Replies to pre-migration mail land in the imported ticket
 
-Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1
+Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1 · Register R-12
 
 **Requirement.** Imported tickets keep their email threading keys: every source Message-ID and In-Reply-To/References chain, the source ticket number and each vendor's reply token (Zendesk encoded IDs in `[XXXX-XXXX]` brackets and ticket-number subject tags, Help Scout conversation numbers and reply addresses, Freshdesk `[#ticket]` subjects and reply-to addresses, Intercom conversation reply addresses). After channel cutover, a customer reply to a notification the old system sent is matched by those keys in that priority and lands in the imported conversation with its migrated requester, owner, group and status, reopening it under STATUS-001 when Solved and creating a linked follow-up when Closed. A key that matches more than one record, or a record belonging to a different customer identity, goes to review instead of the wrong ticket; an unmatched reply creates a new ticket marked as a possible pre-migration reply. Keys are imported inertly and are covered by repeat/undo equality and erasure.
 
 **Acceptance.**
-1. Import Zendesk, Help Scout, Freshdesk and Intercom datasets that carry real notification headers, perform cutover, then reply to a pre-cutover notification from each vendor by headers only, by subject token only and by reply address; verify each reply lands in the right imported conversation with its owner and status, reopens a Solved one and links a follow-up to a Closed one.
+1. Import Zendesk, Help Scout, Freshdesk and Intercom datasets that carry documented notification headers, perform cutover, then reply to a pre-cutover notification from each vendor by headers only, by subject token only and by reply address; verify each reply lands in the right imported conversation with its owner and status, reopens a Solved one and links a follow-up to a Closed one.
 2. Send a reply whose token belongs to another customer (held for review) and an unmatched reply (new ticket with the hint); undo the import and verify the keys no longer match.
 
 **Evidence.** Local implementation/fixture evidence: `tests/helpers/email/vendor-replies.mjs`, vendorReplies, through `tests/journeys/email.mjs`, completeEmailJourney: all four vendors’ old Message-ID chains and reply addresses; documented Zendesk/Freshdesk/Help Scout subject schemes; explicit current-member/group activation; owner/group/requester preservation on Solved reopening; each supported matching method reopens Solved history and links a follow-up to final Closed history; wrong-customer review and unmatched hints. Exact-repeat, whole-undo, reimport and contact-erasure assertions cover the four vendors’ keys. Role/membership changes refuse stale activation and activation sends nothing. `tests/move-in/door-mapping.mjs`, lifecycleJourney (steps in “landing: an approved import lands each vendor's history, people, replies, notes, tags and knowledge exactly, keeps notes private, and repeats or repackages as a no-op”): source lifecycle/channel and exact undo of inert keys.
@@ -1051,7 +1051,7 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1
 
 #### MOVE-IN-004 — Bring configuration, not only history
 
-Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1
+Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1 · Register R-12
 
 **Requirement.** Move in maps each incumbent's configuration into native equivalents: macros with their actions and placeholders (MACRO-001), views, groups and memberships, business-hour schedules and holidays, SLA policies, request forms and custom fields (FORMS-001), triggers and automations, brands and help-center structure. A per-item preview shows what translates exactly, what translates with a stated change and what is unsupported, with the reason. Translated rules arrive inactive as drafts; an admin reviews, simulates them in the AUTOMATION-001 sandbox and activates them, and nothing sends, routes or breaches during import. Placeholders translate to native placeholders or are flagged.
 
@@ -1087,7 +1087,7 @@ Core · target · **partial** · Cites BASE-ROLE-001
 3. Translate a form and submit it in Spanish; deny an agent role a restricted field.
 
 **Evidence.** Local implementation and fixture evidence: `src/modules/forms/settings.ts`; `src/modules/forms/definition.ts`; `src/modules/forms/validation.ts`; `src/modules/forms/challenge.ts`; `src/modules/forms/submit.ts`; `src/ui/native/pages/request-forms/RequestFormsSettings.jsx`; `tests/helpers/request-forms-journey.mjs`; `tests/helpers/self-service-fixture.mjs`; `tests/journeys/knowledge.mjs`. Local journeys assert typed ticket fields, required and conditional questions, locale labels, server refusal of invalid and hidden values, verified email identity and fail-closed Turnstile boundary responses for anonymous submissions. Verified customer sessions submit without Turnstile. `tests/helpers/request-forms-journey.mjs`, in `tests/journeys/knowledge.mjs` / “a translated request form enforces typed conditional required fields on the server, protects anonymous submissions, and admits one ticket after email verification”, proves conditional required, regex and hidden-field validation, Spanish labels, verified customer admission and replay, once-only acknowledgment, challenge denial, typed values selecting routing and SLA, nonmatching exclusions, field and form version history, old values, restart, stale-save and field-read restrictions. `tests/helpers/inbox/tickets-browser.mjs`, in `tests/journeys/inbox-browser.mjs` / “ticket settings and ticket fields save through the dashboard at desktop and phone widths”, proves policy display and editing preserving form and typed conditions at 1440 and 390. `tests/helpers/account-lookup-journey.mjs`, extending the existing translated request-form journey in `tests/journeys/knowledge.mjs`, proves native account configuration, authenticated choice scoping, forged and foreign IDs, hidden, merged and revoked choices, portal visibility off with a published field, portal visibility on with an unpublished field, membership and publication and field-permission revocation at commit, historical values through upgrade and restart, operator edits and field permissions. `tests/helpers/account-lookup-browser.mjs`, extending the existing ticket-settings journey in `tests/journeys/inbox-browser.mjs`, proves account field configuration, aligned phone switches with 44 px targets, workspace account choices for form conditions, email verification in another tab refreshing the open form without losing the draft, a clear no-account contact path, revoked selections cleared synchronously with field-specific refusal while keyboard focus stays on the account field after empty choices refresh, removed questions transfer refusal focus to the result message, empty account conditions retained across save and reload without choosing an account, submission retaining ordinary typed answers, named ticket values and history, and a saved-view account filter. The same existing journeys assert field-specific revoked-account refusal with the dependent answer both empty and filled, reject saved-reply account names and foreign or merged identifiers, and preview canonical account changes with company names. The browser journey configures saved-reply account choices without free text and inspects named account changes on the ticket. Browser captures and control measurements cover 1440 and 390. The existing account journey also inspects raw public list, detail, rendered pages, refresh offers and admission refusals for anonymous visitors, eligible members, customers with no membership and revoked members. Account predicates are evaluated on the server against currently eligible selections; customer responses carry only visibility results, never account condition values.
-**Gap.** Implementation and acceptance gaps: Order lookup remains incomplete. Native account lookup uses a verified current customer identity and current explicit membership in an unmerged account in the same workspace. An authorized owner or admin deliberately publishes the customer-facing account field by including it on a published form; only eligible account identifiers and labels are disclosed. Eligibility is independent of company-wide portal ticket visibility. Identity, membership, eligibility, publication and field permissions are checked at offer and admission, including guarded writes; forged, foreign, hidden, merged and revoked choices receive field-specific refusals. No membership is derived from domains. The quoted ct alternative is implemented; final ct approval remains pending. Future order lookup must inherit the same current-authority checks. Live qualification gap: Real Turnstile hostname and site-key verification and mail-provider delivery and verification links remain unobserved; simulated challenge and mail responses are fixture evidence only. Live Turnstile and mail delivery receipts are absent; FORMS_TURNSTILE_SECRET_KEY is not provisioned. Historical form and field versions and their values are retained, but do not qualify live providers.
+**Gap.** Implementation and acceptance gaps: Order lookup remains incomplete. Native account lookup uses a verified current customer identity and current explicit membership in an unmerged account in the same workspace. An authorized owner or admin deliberately publishes the customer-facing account field by including it on a published form; only eligible account identifiers and labels are disclosed. Eligibility is independent of company-wide portal ticket visibility. Identity, membership, eligibility, publication and field permissions are checked at offer and admission, including guarded writes; forged, foreign, hidden, merged and revoked choices receive field-specific refusals. No membership is derived from domains. The quoted ct alternative is implemented; final ct approval remains pending. Future order lookup must inherit the same current-authority checks.
 
 #### KNOWLEDGE-002 — Governed private and multilingual knowledge
 
@@ -1100,7 +1100,7 @@ Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT
 2. Search and ask the agent as public, permitted and forbidden customers and verify permission-aware citations, locale fallback disclosure and failed-refresh preservation.
 
 **Evidence.** Local implementation/fixture evidence: `src/modules/knowledge/access.ts`; `src/modules/knowledge/experience.ts`; `src/modules/knowledge/experience-routes.ts`; `src/modules/knowledge/help-auth.ts`; `src/modules/knowledge/public-sources.ts`; `src/modules/public-site/help-center.tsx`; `tests/journeys/knowledge.mjs`. Local route journeys cover public and signed-in/email-domain collections, reviewed translations, article history/restore and slug redirects. The assistant uses public-audience articles only, so restricted knowledge is excluded from answers. Email-domain membership is an audience gate, not account/company entitlement.
-**Gap.** Implementation/acceptance gaps: Explicit account/company-entitled collections and permission-aware restricted agent retrieval remain incomplete; per-brand domain publishing and agent-proposed cited changes are absent. Existing email-domain gates do not satisfy the account-only acceptance. Live qualification gap: Custom-domain/DNS publishing, real customer mail authentication and account/company entitlement from a real account system remain unobserved; local audience fixtures do not qualify them.
+**Gap.** Implementation/acceptance gaps: Explicit account/company-entitled collections and permission-aware restricted agent retrieval remain incomplete; per-brand domain publishing and agent-proposed cited changes are absent. Existing email-domain gates do not satisfy the account-only acceptance.
 
 #### KNOWLEDGE-003 — Branded help center, article feedback and knowledge in the ticket
 
@@ -1114,7 +1114,7 @@ Core · target · **partial** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 �
 3. From a ticket search, insert an article link and send; verify a restricted article cannot be inserted into a reply to a customer without access.
 
 **Evidence.** Local implementation/fixture evidence: `src/modules/knowledge/feedback.ts`; `src/modules/knowledge/analytics-routes.ts`; `src/ui/native/pages/knowledge/KnowledgeExperience.jsx`; `src/ui/dashboard/components/ArticlePicker.jsx`; `src/modules/public-site/help-center.tsx`; `src/modules/public-site/request-pages.ts`; `tests/journeys/knowledge.mjs`; `tests/journeys/public.mjs`. Plain-text templates (home, category, section, article, search and request form), votes/comments, locale/brand activity analytics and recipient-scoped article insertion are implemented. Local journeys cover templates, search/view/click activity, feedback and insertion; no journey exercises the request-form template.
-**Gap.** Implementation/acceptance gaps: Per-brand custom domains and ticket-after-reading attribution remain incomplete; request-form template acceptance is unproved. Live qualification gap: Real brand-domain/DNS/TLS publishing and customer mail delivery of inserted links remain unobserved; local host/template fixtures do not qualify domains or receipt.
+**Gap.** Implementation/acceptance gaps: Per-brand custom domains and ticket-after-reading attribution remain incomplete; request-form template acceptance is unproved.
 
 #### BRANDS-001 — Multi-brand support operations
 
@@ -1130,7 +1130,7 @@ Core · target · **done** · Cites BASE-ROLE-001
 
 #### ACCESS-001 — Enterprise identity and custom permissions
 
-Core · target · **partial** · Cites BASE-SIGNIN-001, BASE-ROLE-001
+Core · target · **partial** · Cites BASE-SIGNIN-001, BASE-ROLE-001 · Register R-13
 
 **Requirement.** Retain native owner/password access while optionally connecting Google Workspace, Microsoft Entra ID or Okta using SAML/OIDC SSO and SCIM provisioning. Define custom roles and field/tool/brand/team permissions for operators, admins, reviewers and agents; separate integration installation, refund approval, knowledge publication and destructive access. Collaborator (light-agent) seats can view permitted tickets, add internal notes and follow tickets but cannot reply publicly, change fields or read restricted knowledge. Deprovisioning/revocation promptly ends sessions, pending tool authority and customer-data access, with tested owner recovery. Internal knowledge management and connected reads use the knowledge-edit permission; publication keeps its distinct permission and published-help audience gates. A separate read permission allows selected internal knowledge without edit or publication authority (RL-4).
 
@@ -1142,7 +1142,7 @@ Core · target · **partial** · Cites BASE-SIGNIN-001, BASE-ROLE-001
 5. For the separate knowledge-read permission, prove a custom role with read only reads selected internal knowledge, cannot edit or publish, loses access on the next request after revocation, and has audited access, refusals and revocation.
 
 **Evidence.** Local implementation/fixture evidence: `src/modules/access/`; `src/platform/auth.ts`; `src/modules/integrations/inbound-authority.ts`; `src/edition/delegation/common.ts`; `src/modules/tickets/model.ts`; `tests/journeys/identity.mjs`; `tests/helpers/inbox/ticket-lifecycle.mjs`. Native owner/admin/agent, collaborator (notes and follow only) and restricted custom roles exist, with audited refusals and retained owner recovery. Connected-application article read/update/publish scopes are rechecked against the approving member's current role on each request (`src/edition/delegation/common.ts` lines 20-22); ticket fields carry read/write roles including custom roles. Published help retains its audience gates so a reader never gains internal articles through it.
-**Gap.** Implementation/acceptance gaps: `knowledge.read` and optional per-role `knowledgeArticleIds` select internal articles independently of edit/publication. `tests/helpers/identity/roles-audit.mjs`, rolesAuditJourney (registered in `tests/journeys/identity.mjs`), asserts selected native lists/search/history/translations and connected-grant evidence, refusal outside the current role selection, no edit/publication, next-request permission/selection revocation and security-log access/refusal/revocation entries. Migration 251 persists the role selection; omitted selections retain workspace-wide compatibility, while an empty selection reads no articles. Internal source/dataset management remains separately gated; published help keeps audience gates. Exact-SHA Verify remains required. SSO (SAML/OIDC), SCIM and brand/team permissions remain absent. Live qualification gap: Real Google Workspace, Microsoft Entra ID or Okta SSO/SCIM provisioning/deprovisioning remains unobserved; native-role and connected-grant fixtures do not qualify an identity provider.
+**Gap.** Implementation/acceptance gaps: `knowledge.read` and optional per-role `knowledgeArticleIds` select internal articles independently of edit/publication. `tests/helpers/identity/roles-audit.mjs`, rolesAuditJourney (registered in `tests/journeys/identity.mjs`), asserts selected native lists/search/history/translations and connected-grant evidence, refusal outside the current role selection, no edit/publication, next-request permission/selection revocation and security-log access/refusal/revocation entries. Migration 251 persists the role selection; omitted selections retain workspace-wide compatibility, while an empty selection reads no articles. Internal source/dataset management remains separately gated; published help keeps audience gates. Exact-SHA Verify remains required. SSO (SAML/OIDC), SCIM and brand/team permissions remain absent.
 
 #### IDENTITY-003 — Two-factor authentication for native accounts
 
@@ -1160,7 +1160,7 @@ Core · target · **done** · Cites BASE-SIGNIN-002, BASE-ACCESS-002, BASE-AGENT
 
 #### MOBILE-001 — Support from a phone
 
-Core · target · **partial**
+Core · target · **partial** · Register R-14, R-19, R-20
 
 **Requirement.** Provide responsive operator/customer web flows and native iOS/Android operator apps for shared queues, push notifications, assignment, notes, attachments, knowledge, approval and reply. Show offline state and protect cached customer data; drafts may persist safely, but reconnect must revalidate role/frontier and scheduled effects. Deep links return to the correct permitted workspace and push payloads omit sensitive content by default.
 
@@ -1169,11 +1169,11 @@ Core · target · **partial**
 2. Verify no stale duplicate send, leaked push content or retained cache after sign-out/revocation.
 
 **Evidence.** Local implementation/fixture evidence: `src/ui/dashboard`; `src/modules/widget`; `tests/journeys/inbox-browser.mjs`; `tests/journeys/reports-browser.mjs` (at 1440 and 390px a widget rating reaches the operator live and on reload, Reports range and both CSVs include it, and reopening clears the prompt while keeping prior feedback). Responsive web journeys exist at desktop/phone viewports.
-**Gap.** Implementation/acceptance gaps: Native iOS/Android apps, mobile push and protected offline work are absent. Live qualification gap: Real iOS/Android devices, push-provider delivery/deep links and offline/revocation/cache behavior are unobserved; 1440/390 browser fixtures do not qualify native mobile behavior.
+**Gap.** Implementation/acceptance gaps: Native iOS/Android apps, mobile push and protected offline work are absent.
 
 #### OUTCOMES-002 — CSAT across support channels
 
-Core · target · **partial** · Rules D-2
+Core · target · **partial** · Rules D-2 · Register R-3
 
 **Requirement.** Offer configurable post-resolution satisfaction surveys via widget, portal, email and permitted messaging channels with rating scale, optional comment, locale, send timing and opt-out. Associate one latest response with the exact resolution cycle and channel; preserve previous-cycle history and reconcile signed response links without requiring a widget session. Leads inspect low-score follow-up and customer recovery without auto-closing complaints.
 
@@ -1185,7 +1185,7 @@ Core · target · **partial** · Rules D-2
 
 #### REPORTS-002 — Workload, service and agent outcomes
 
-Core · target · **partial** · Rules D-2
+Core · target · **partial** · Rules D-2 · Register R-16
 
 **Requirement.** Leads explore team/agent workload, backlog age, incoming volume, response/resolution time, SLA compliance, reopened requests, CSAT and AI containment/handoff/resolution by channel, brand, account, tag and procedure version. Publish inspectable numerators, denominators, timezone and exclusion rules; distinguish bot closure from verified resolution and include failures/unknowns. Operators record time spent per ticket (a timer while the ticket is open, with manual adjustment) and leads report handle time by agent, form and intent. Export complete formula-safe records and schedule permission-scoped reports; no sampling or silent truncation.
 
@@ -1199,20 +1199,20 @@ Core · target · **partial** · Rules D-2
 
 #### AGENT-001 — A production support agent with clean handoff
 
-Core · target · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007 · Rules D-2, D-3
+Core · target · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007 · Rules D-2, D-3 · Register R-15
 
 **Requirement.** The AI agent answers using approved help-center content, permitted past conversations and fresh connected customer/product state, with citations, retrieval permissions and clear AI disclosure across chat/email/voice. Execute only enabled procedures/tools; distinguish advice, prepared action, approved execution and observed success. A customer can request a person; uncertain, low-evidence or disallowed actions transfer promptly with transcript, sources, attempted actions, failures and the next responsible human. The agent stops replying after handoff until explicitly resumed.
 
 **Acceptance.**
-1. On representative real-provider channel journeys, ask grounded and unanswerable questions, attempt restricted retrieval/actions, request a human mid-tool-call and disconnect.
+1. On representative provider-sandbox or official-schema channel journeys, ask grounded and unanswerable questions, attempt restricted retrieval/actions, request a human mid-tool-call and disconnect.
 2. Verify cited valid answers, no private leakage, no unauthorized tool call, durable handoff context and no competing post-handoff AI answer; record live evaluation separately from fixtures.
 
 **Evidence.** Local implementation/fixture evidence: `src/modules/ai-support/service.ts`; `src/modules/knowledge`; `src/edition/delegation/routes.ts`; `tests/journeys/first-run.mjs`; `tests/journeys/delegation.mjs`. Configured AI and scoped local handoff are implemented; local first-run/delegation journeys assert configured-provider boundaries and authorized handoff behavior with fixtures.
-**Gap.** Implementation/acceptance gaps: Full multichannel, business-action and production-quality coverage is incomplete. Live qualification gap: Representative real-model channel evaluations, restricted retrieval/actions, mid-tool handoff and production-quality outcomes remain unobserved; fixture answers and local handoff do not establish a production support agent. Answering by a live model on an independently installed website/domain remains unobserved; P3 uses a provider-edge fake.
+**Gap.** Implementation/acceptance gaps: Full multichannel, business-action and production-quality coverage is incomplete.
 
 #### PROCEDURE-001 — Natural-language procedures and release simulation
 
-Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-011 · Rules D-3
+Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-011 · Rules D-3 · Register R-15
 
 **Requirement.** Support leads author versioned natural-language operating procedures tied to intents, knowledge versions, live data requirements, tools, approval gates, budgets and human escalation. Simulate paths, adversarial cases, provider errors, handoffs and permissions against redacted historical examples in an isolated workflow sandbox with no real actions. Per-procedure evaluations must pass declared outcomes before an authorized staged release; compare versions, stop/rollback a rollout and keep old cases reproducible. The initial simulation slice uses explicit synthetic-only confirmation by an owner or settings administrator and transfers no historical customer text or real actions; historical replay, operational context and controlled production release remain the target (RL-6).
 
@@ -1225,7 +1225,7 @@ Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGEN
 
 #### AGENT-002 — Inspectable quality and resolution economics
 
-Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-009 · Rules D-2, D-3
+Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-009 · Rules D-2, D-3 · Register R-16
 
 **Requirement.** Operators inspect a redacted per-conversation/tool-call trace with source/version, requested scope, human approval, timings, provider outcome and verified result. Leads explore procedure-level evaluation coverage, resolution/reopen/handoff rates, failure clusters and provider costs/usage without treating attempted actions as success. Human labels and later customer outcomes can correct attribution; provider usage remains accounting evidence, not a customer balance or invented monetary saving.
 
@@ -1234,11 +1234,11 @@ Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGEN
 2. Compare rates and USD provider-cost estimates to raw usage and known denominators, redact secrets and show unavailable price data explicitly.
 
 **Evidence.** Local fixture evidence: `tests/journeys/ai.mjs` with `tests/helpers/ai/answers.mjs` (answersJourney) proves the conversation trace joins source publication versions and assistant fingerprint, requested scope, automatic policy approval, timing, provider completion, committed message evidence, denied citations and handoff receipts; it denies visitors and other projects and omits prompt, answer and raw tool payloads. `tests/helpers/ai/assistance.mjs` (assistanceJourney) proves explicit operator-request attribution, suggestion scope and two-round token evidence without claiming a sent answer. `tests/helpers/ai/lifecycle.mjs` (lifecycleJourney) proves timeout and interrupted outcomes remain unknown without replay and missing prices remain unavailable. `tests/journeys/ai-browser.mjs` with `tests/helpers/ai/suggestions-browser.mjs` (suggestionsAtWidth) opens the trace from a fixture conversation and keyboard-expands timeout and denied details; screenshots cover 1440 and 390. Existing training and usage evidence: `src/edition/ai/training-trace.ts`; `tests/journeys/first-run.mjs`; `tests/reports/figures.mjs`.
-**Gap.** Implementation gaps: Procedure report drill-down, joined negative CSAT and reopened outcomes, procedure evaluation coverage, known-denominator rates and reconciled USD cost estimates remain incomplete. The trace shows the latest 50 executions; approval describes the recorded automatic assistant policy or explicit operator request, not a separate per-tool human consent receipt. Provider cost remains unavailable without reconciled price evidence. Live qualification gap: Actual production traces, tool and procedure outcomes and costs reconciled to real usage and prices remain unobserved; network-edge fixtures establish no live economics.
+**Gap.** Implementation gaps: Procedure report drill-down, joined negative CSAT and reopened outcomes, procedure evaluation coverage, known-denominator rates and reconciled USD cost estimates remain incomplete. The trace shows the latest 50 executions; approval describes the recorded automatic assistant policy or explicit operator request, not a separate per-tool human consent receipt. Provider cost remains unavailable without reconciled price evidence.
 
 #### FEEDBACK-001 — Source-linked feedback and release follow-up
 
-Core · target · **missing**
+Core · target · **missing** · Register R-17
 
 **Requirement.** Capture product feedback from a support conversation with the customer/account and supporting quote, link or create its request in Penny, and link engineering delivery in Vector or the buyer's issue tracker. Subscribe the affected requester to an approved service update when a linked feature/fix ships, respecting preference, channel policy and unresolved recovery. Penny owns aggregation, prioritization, roadmap/changelog and requester closure; HappyToHelp retains the support history and responsibility for the customer response.
 
@@ -1290,7 +1290,7 @@ Core · target · **done** · Cites BASE-DATA-001, BASE-BACKUP-001, BASE-SECRET-
 
 #### ASSURANCE-001 — Qualified regulated support deployments
 
-Core · target · **missing** · Cites BASE-DATA-006, BASE-ROLE-001, BASE-AUDIT-001
+Core · target · **missing** · Cites BASE-DATA-006, BASE-ROLE-001, BASE-AUDIT-001 · Register R-18
 
 **Requirement.** US-first support uses USD, US provider contracts, IANA calendars and channel/recording consent controls. A regulated buyer can qualify an isolated deployment with required DPA/BAA, approved subprocessors/model data handling, access controls, audit, retention, incident response and validated deletion/export; health-data support is gated on those agreements and technical acceptance. The work remains a product obligation, with a named partner/provider path, rather than a claim that self-hosting alone supplies compliance.
 
@@ -1305,7 +1305,7 @@ Core · target · **missing** · Cites BASE-DATA-006, BASE-ROLE-001, BASE-AUDIT-
 
 #### PUSH-001 — Reproduce, repair and prove customer recovery
 
-Core · push-further · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2, D-3
+Core · push-further · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2, D-3 · Register R-17
 
 **Requirement.** Given the conversation, authorized live product state and an explicitly paired repair workspace, the agent reproduces the customer's failure, records its observation, prepares or performs only the permitted fix, and verifies with a distinct post-change read or user journey. Environment, operations, data, spending and time limits are granted by a named person; production changes and reply publication have separate authority. Reconcile started/uncertain work, gather customer-scoped recovery evidence, report in the original thread and reopen/escalate if recovery fails or the customer reports recurrence. A successful command or closed engineering issue never proves recovery.
 
@@ -1314,11 +1314,11 @@ Core · push-further · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BAS
 2. Inject stale authority, uncertain change, failed verification, restart and later recurrence; verify no unapproved production effect/reply, truthful evidence and reopened ownership.
 
 **Evidence.** Local implementation/fixture evidence: `src/modules/local-computer/results.ts`; `src/edition/delegation/routes.ts`; `tests/journeys/delegation.mjs`; `tests/helpers/delegation-journey/case.mjs`. Approved local repair, distinct readback and human Send are exercised by the delegation edge fixture.
-**Gap.** Implementation/acceptance gaps: Sustained customer recovery verification, later recurrence and reopening remain incomplete. Live qualification gap: Repair and independent observation of an authorized real customer product/workspace remain unobserved; edge-fixture readback and sent reports do not establish live customer recovery.
+**Gap.** Implementation/acceptance gaps: Sustained customer recovery verification, later recurrence and reopening remain incomplete.
 
 #### PUSH-002 — Promises survive every handoff
 
-Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2, D-3
+Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2, D-3 · Register R-17
 
 **Requirement.** The agent extracts explicit commitments, quoted evidence and dependencies from messages and linked issues into durable obligations with a responsible person, due time, current evidence and stop condition. Chase missing evidence internally, detect stale dependencies and draft an honest customer update before a promise expires. Humans accept material due-date or promise changes; no fabricated progress, invented commitment or unapproved customer message is allowed.
 
@@ -1331,7 +1331,7 @@ Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BAS
 
 #### PUSH-003 — Learn from reopenings under human control
 
-Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2, D-3
+Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2, D-3 · Register R-17
 
 **Requirement.** The agent joins reopened requests, complaints, CSAT, procedure/tool versions and connected business outcomes to identify failed resolution paths. Propose a concrete procedure/policy change with cited cases, replay evaluation and expected effect; a human approves changed permissions/tools, spending limits and bounded rollout. Track actual post-release recovery and regression, stop/rollback on deterioration and preserve original procedure versions and dissenting evidence.
 
@@ -1344,7 +1344,7 @@ Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BAS
 
 #### PUSH-004 — Turn verified edge cases into reviewed knowledge
 
-Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2, D-3
+Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2, D-3 · Register R-17
 
 **Requirement.** The agent identifies unanswered or repeatedly reopened topics from permitted conversations, support searches and procedure failures, clusters the gap and drafts a sourced article/update from verified resolutions. Strip personal data, obey private/brand/locale boundaries and include the evidence and proposed scope. A named editor reviews publication/translation and the agent measures whether later customers recover, proposing corrections when they do not.
 
@@ -1365,4 +1365,26 @@ None.
 
 ## Field proof register
 
-No field proof is recorded yet.
+| ID | Proof | Clauses | State | Date | Receipt |
+| --- | --- | --- | --- | --- | --- |
+| R-1 | Independent owner Cloudflare provisioning and a separately installed public domain with real mailbox delivery | NATIVE-001 | not run | | |
+| R-2 | Real forwarding, IMAP/SMTP, Google Workspace and Microsoft 365 mailbox receipt, sender authorization, bounce and permission-loss qualification | MAIL-001, OUTBOUND-001, LOCAL-MAIL-001 | not run | | |
+| R-3 | Real Twilio SMS and Meta WhatsApp, Instagram and Messenger accounts, registration and delivery qualification | CHANNELS-001, NOTIFY-001, OUTCOMES-002 | not run | | |
+| R-4 | Real Slack Connect and Microsoft Teams customer-channel installations and bidirectional intake qualification | CHANNELS-002 | not run | | |
+| R-5 | Real Aircall and Twilio Voice number/location routing, provider emergency-test receipt, consent and live calls | VOICE-001 | not run | | |
+| R-6 | Real customer email and Slack/Teams escalation receipt and acknowledgment | SLA-001, NOTIFY-001, ESCALATION-001 | not run | | |
+| R-7 | Real Shopify merchant qualification and provider-ledger reconciliation | COMMERCE-001 | not run | | |
+| R-8 | Real Stripe customer, subscription and money-movement qualification | BILLING-001 | not run | | |
+| R-9 | Real Orbit, HubSpot and Salesforce account authorization, refreshed context and support-outcome write qualification | CRM-001, CUSTOMER-001 | not run | | |
+| R-10 | Real GitHub, Linear, Jira, Slack and Teams account scopes, callbacks and escalation delivery | ESCALATION-001, INTEGRATION-001 | not run | | |
+| R-11 | Real Zapier, Help Scout and webhook receiver accounts and continuous synchronization qualification | API-001 | not run | | |
+| R-12 | Real incumbent migration and channel cutover with post-cutover customer mail | MOVE-IN-002, MOVE-IN-003, MOVE-IN-004 | not run | | |
+| R-13 | Real Google Workspace, Entra and Okta vendor-tenant certification of SSO and SCIM; run-auth remains repository-testable | ACCESS-001 | not run | | |
+| R-14 | Native iOS/Android store approval and real-device push delivery, deep links, offline and revoked-cache qualification | MOBILE-001 | not run | | |
+| R-15 | Representative real-model support-quality evaluation on independently installed customer channels | AGENT-001, AI-001, TRAINING-001, PROCEDURE-001 | not run | | |
+| R-16 | Real production traces, procedure results and USD costs reconciled with provider usage and prices | AGENT-002, REPORTS-002 | not run | | |
+| R-17 | Real authorized customer-system repair, independent recovery observation and later recurrence follow-up | DELEGATION-001, PUSH-001, PUSH-002, PUSH-003, PUSH-004, FEEDBACK-001 | not run | | |
+| R-18 | Executed DPA/BAA and required vendor/subprocessor agreements, regulated-deployment certification and audit receipt | ASSURANCE-001 | not run | | |
+| R-19 | Human screen-reader review of operator and public journeys | UI-001, PUBLIC-001, PUBLIC-002, PUBLIC-003, PUBLIC-004, PUBLIC-005, MOBILE-001 | not run | | |
+| R-20 | Independent accessibility VPAT | UI-001, PUBLIC-001, PUBLIC-002, PUBLIC-003, PUBLIC-004, PUBLIC-005, MOBILE-001 | not run | | |
+| R-21 | Real Claude, ChatGPT, Codex and Copilot client compatibility receipts | API-001 | not run | | |

@@ -12517,7 +12517,7 @@
       "executable": false
     },
     "tests/journeys/connections-browser.mjs": {
-      "sha256": "01d4a42e625909c1dc2b449916793e5008094a08048717c485c387ce2146618c",
+      "sha256": "46e1dc65a6e2571575de9f14afe3f3c7b1644211a8dd2ee8ef96cf2ad1e51ce1",
       "executable": false
     },
     "tests/journeys/connections.mjs": {

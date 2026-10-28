@@ -60,7 +60,7 @@ test(`at 1440 and 390px an owner creates and revokes a token, connects a webhook
   const after=(await (await context.request.get(settings+'/deliveries')).json()).data.filter(row=>row.id===original.id);assert.equal(after.length,3);assert.ok(after.every(row=>row.state==='accepted'));assert.equal(await page.getByRole('button',{name:'Resend uncertain webhook',exact:true}).count(),0);await audit(page,'resend-history-'+width);
   const freshResponse=await context.request.post(settings+'/webhooks/'+original.destination_id+'/test',{data:{}});assert.equal(freshResponse.status(),202);const fresh=await freshResponse.json();await page.getByRole('button',{name:'Refresh delivery log',exact:true}).click();await page.getByRole('button',{name:'Resend uncertain webhook',exact:true}).click();assert.equal((await context.request.delete(settings+'/webhooks/'+original.destination_id)).status(),200);await page.getByRole('button',{name:'Resend despite duplicate risk',exact:true}).click();await page.getByRole('alert').filter({hasText:'The original destination is unavailable or changed'}).waitFor();await audit(page,'resend-error-'+width);assert.equal((await (await context.request.get(settings+'/deliveries')).json()).data.find(row=>row.id===fresh.id).state,'uncertain');
 
-  await exerciseBusiness({page,context,origin:runtime.origin,owner,width,audit})
+  await exerciseBusiness({page,context,origin:runtime.origin,owner,width,audit:width===1440?audit:(page,name)=>page.screenshot({path:shot(name+'.png'),fullPage:true})})
   await context.close()
 }catch(error){success=false;throw error}}])); await hubspotBrowser({browser,directory:shot('hubspot')});})
 

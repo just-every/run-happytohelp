@@ -2572,7 +2572,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "87c0bb5762a688dfc7d5709efa86043571a58c12b4bda01f660d37d70c6b6062",
+      "sha256": "0dd4bbceaf8fb41e2b89431573d583ea437abe3de912f88fc86d7bc3fdf86c83",
       "executable": false
     },
     "pnpm-lock.yaml": {

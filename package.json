@@ -21,6 +21,7 @@
     "verify": "rer verify",
     "setup": "rer setup",
     "deploy": "rer deploy",
+    "preflight": "node scripts/installer/preflight.mjs",
     "test:runtime": "node --test --test-concurrency=1 tests/journeys/runtime.mjs",
     "test:runtime-transport": "node --test --test-concurrency=1 --test-name-pattern=\"transport\" tests/journeys/runtime.mjs",
     "test:journey": "node --test --test-concurrency=1 --test-name-pattern=\"native passwords|message admission under contention|conversation sockets\" tests/journeys/identity.mjs tests/journeys/runtime.mjs tests/journeys/widget.mjs",

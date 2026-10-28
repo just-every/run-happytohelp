@@ -73,7 +73,7 @@ export async function obligationsJourney(){
  assert.equal(row.state,'completed');assert.equal(row.reminderDue,false);assert.equal(row.draft,null)
  assert.equal(row.completion.confirmationMessageId,confirmation.id);assert.equal(row.completion.reviewerId,workspace.users.owner)
 
- await app.db.prepare("UPDATE contacts SET metadata_json=json_set(metadata_json,'$.is_erasing',1) WHERE id=?").bind(v.contactId).run()
+ await app.call(`/api/management/projects/${p}/contacts/${v.contactId}/erase`,{token:owner,body:{},status:200})
  assert.equal((await call('')).status,404)
  assert.equal((await app.first('SELECT count(*) n FROM followup_obligations')).n,0,'erasure removes obligations')
  assert.equal((await app.first('SELECT count(*) n FROM followup_changes')).n,0,'erasure removes accepted history')

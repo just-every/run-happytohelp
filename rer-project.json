@@ -14,5 +14,9 @@
     "verify": "export PATH=\"$PWD/.rer-tools/node_modules/.bin:$PATH\" && pnpm run verify:build",
     "artifact": "node scripts/delivery/build.mjs --clean",
     "recovery": "Retain exact source, D1 SQL and all R2 bytes; preserve applied migration identities. Follow docs/INDEPENDENT-RELEASE.md. Stop jobs before a consistent backup, restore to fresh isolated resources, reconcile uncertain provider attempts, and verify owner authority and data before switching traffic. Complete automatic RER export requires Durable Object support; do not describe a D1/R2-only backup as complete."
+  },
+  "setup": {
+    "path": "rer-setup.json",
+    "sha256": "4ca404a0aacfa8452cfae0ef09960c37e61d1586e7d638c1a5beb0a9aefec9e0"
   }
 }

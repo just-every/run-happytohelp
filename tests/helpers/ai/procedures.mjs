@@ -8,10 +8,12 @@ export async function proceduresJourney(){
  try{
   const d=procedureDefinition()
   const v1=(await call(`${root}/refund/versions`,{body:d,status:201})).data
-  const v2=(await call(`${root}/refund/versions`,{body:{...d,instructions:'A new immutable instruction; hand over to a human.'},status:201})).data
+  const v2=(await call(`${root}/refund/versions`,{body:{...d,basedOnVersionId:v1.id,instructions:'A new immutable instruction; hand over to a human.'},status:201})).data
   assert.equal(v2.version,v1.version+1)
   const versions=(await call(root,{status:200})).data.versions
   assert.equal(versions.find(v=>v.id===v1.id).definition.instructions,d.instructions)
+  assert.equal(versions.find(v=>v.id===v2.id).definition.basedOnVersionId,v1.id)
+  await call(`${root}/another-procedure/versions`,{body:{...d,basedOnVersionId:v1.id},status:409})
   await assert.rejects(app.db.prepare('UPDATE procedure_versions SET definition=? WHERE id=?').bind('{}',v1.id).run(),/immutable/)
   await call(`${root}/refund/versions`,{body:{...d,tools:['issue_refund']},status:400})
   await call(`${root}/refund/versions`,{body:{...d,tools:[['search_knowledge']]},status:400})
@@ -23,6 +25,7 @@ export async function proceduresJourney(){
   await call(`${root}/refund/versions`,{body:{...d,cases:d.cases.slice(0,3)},status:400})
   for(const token of [a.workspace.tokens.operator])await call(root,{token,status:403})
   const other=await app.seedWorkspace('procedure-other')
+  await call(`/api/projects/${other.projectId}/procedures/refund/versions`,{token:other.tokens.owner,body:{...d,basedOnVersionId:v1.id},status:409})
   await call(`${root}/refund/versions/${v1.id}/simulations`,{token:other.tokens.owner,body:{},status:403})
   await call(`/api/projects/${other.projectId}/procedures/refund/versions/${v1.id}/simulations`,{token:other.tokens.owner,body:{},status:404})
   await call(`/api/training/projects/${p}/runs`,{body:{request_id:'forged',kind:'simulation',cases:[{id:'forged',family:'procedure',procedureVersionId:v1.id}],models:[model],max_cost:1,max_tokens:100},status:422})

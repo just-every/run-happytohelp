@@ -34,8 +34,15 @@ procedureRoutes.post(root+'/:key/versions',async c=>{
   return {id:x.kind,kind:x.kind,prompt:x.prompt,expected:x.expected,forbidden:x.forbidden}
  })
  // Reconstruct the definition: historical IDs, private context and client pass flags are never admitted.
- if(Object.keys(b).some(k=>!['intent','instructions','model','humanEscalation','tools','maxCost','maxTokens','cases','syntheticConfirmation'].includes(k))||b.syntheticConfirmation!=='synthetic-only')refuse('Confirm synthetic-only input; historical context is not accepted')
- const definition={intent:b.intent,instructions:b.instructions,model:b.model,humanEscalation:b.humanEscalation,tools:b.tools,maxCost:b.maxCost,maxTokens:b.maxTokens,cases},id=crypto.randomUUID()
+ if(Object.keys(b).some(k=>!['intent','instructions','model','humanEscalation','tools','maxCost','maxTokens','cases','syntheticConfirmation','basedOnVersionId'].includes(k))||b.syntheticConfirmation!=='synthetic-only')refuse('Confirm synthetic-only input; historical context is not accepted')
+ let lineage:{basedOnVersionId?:string}={}
+ if(b.basedOnVersionId!==undefined){
+  if(!text(b.basedOnVersionId,200))refuse('Choose a saved source version')
+  const source=await c.env.DB.prepare('SELECT id FROM procedure_versions WHERE id=? AND project_id=? AND procedure_key=?').bind(b.basedOnVersionId,pid,key).first<{id:string}>()
+  if(!source)return refuse('Source version must belong to this procedure in this workspace',409)
+  lineage={basedOnVersionId:source.id}
+ }
+ const definition={...lineage,intent:b.intent,instructions:b.instructions,model:b.model,humanEscalation:b.humanEscalation,tools:b.tools,maxCost:b.maxCost,maxTokens:b.maxTokens,cases},id=crypto.randomUUID()
  const created=await c.env.DB.prepare('INSERT INTO procedure_versions(id,project_id,procedure_key,version,definition,created_by,created_at) VALUES(?,?,?,(SELECT coalesce(max(version),0)+1 FROM procedure_versions WHERE project_id=? AND procedure_key=?),?,?,?) RETURNING id,version').bind(id,pid,key,pid,key,JSON.stringify(definition),c.get('actor').id,Date.now()).first()
  await auditStatement(c.env.DB,{projectId:pid,category:'data',action:'procedure.version.created',actor:{type:'user',id:c.get('actor').id},source:requestSource(c),target:{type:'procedure_version',id}}).run()
  return c.json(created,201)

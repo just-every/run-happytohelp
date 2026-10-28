@@ -22,7 +22,7 @@ export function installedStarterModel(env:Env):string|null {
  return provider?starterModels[provider].model:null
 }
 /** Whether the installation holds the key the model's own provider needs. */
-const providerKeyHeld=(env:Env,model:string)=>{const provider=modelProvider(model) as ModelProvider;return provider in starterModels&&providerKeyInstalled(env,provider)}
+const providerKeyHeld=(env:Env,model:string)=>{const provider=modelProvider(model) as ModelProvider;return Object.hasOwn(starterModels,provider)&&providerKeyInstalled(env,provider)}
 
 /**
  * When the untouched starter's provider has no key but another provider's key is installed, move the starter to that

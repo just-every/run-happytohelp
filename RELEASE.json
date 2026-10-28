@@ -122,7 +122,7 @@
       "buyerSteps": "FORMS-001: apply after 258 before serving the updated Worker. Extend native ticket fields with account lookups while retaining existing definitions, historical typed values and workflow journaling. Back up and restore with the native data. Account choices require verified current explicit membership and a deliberately published field; company ticket visibility grants no lookup eligibility."
     },
     {
-      "id": "250_mobile_devices.sql",
+      "id": "260_mobile_devices.sql",
       "buyerSteps": "MOBILE-001 server slice: apply after earlier pending migrations and before the updated Worker serves traffic. Back up D1/R2 and private settings first. Adds scoped device capabilities, reconnect frontiers, command receipts and opaque link metadata. Existing native sessions and customer history are retained; no native client or provider delivery is enabled. Pair devices through native sign-in after upgrade. See docs/mobile-api.md."
     }
   ]

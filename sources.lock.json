@@ -1740,7 +1740,7 @@
       "executable": false
     },
     "docs/mobile-api.md": {
-      "sha256": "d794c7f7163fe13d0448a83e48367194c4320a4cda619ce67a2cef14291944b1",
+      "sha256": "4b6b96c2c77e490112a57aa062d509e05069b56ec779f23ca6b0da45414bc878",
       "executable": false
     },
     "docs/MODULES.md": {
@@ -2515,10 +2515,6 @@
       "sha256": "c266726c4aab8483792919427a1962e6da3f44f293ac0093f1bef124a1316572",
       "executable": false
     },
-    "migrations/250_mobile_devices.sql": {
-      "sha256": "0d8b83f2977dbaa1469cbf98bd73492c5dde16bb4b59527fdf789b9b9359a040",
-      "executable": false
-    },
     "migrations/250_rer_mail_route_observation.sql": {
       "sha256": "8376815e0f79757f1ff58d380f587c6201b380c112a0e098167923400e75d489",
       "executable": false
@@ -2569,6 +2565,10 @@
     },
     "migrations/259_account_lookup_fields.sql": {
       "sha256": "433a6586f24b35bcb31e65e1262714e64021a0bd2923e3e611d0a484c1713511",
+      "executable": false
+    },
+    "migrations/260_mobile_devices.sql": {
+      "sha256": "0d8b83f2977dbaa1469cbf98bd73492c5dde16bb4b59527fdf789b9b9359a040",
       "executable": false
     },
     "OPERATIONS.json": {
@@ -2656,7 +2656,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "c8b5a3fbbf89bafa2b1337ee5e3cb130c1da6f6d0ee12317b3a1aa78369b9ad5",
+      "sha256": "bdb67e63f76d6dbefc7c1b241838730c097f961d1efbf92b5fdc3e9c7de29005",
       "executable": false
     },
     "rer-project.json": {

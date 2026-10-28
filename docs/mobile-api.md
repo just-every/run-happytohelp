@@ -185,7 +185,7 @@ registration and the native screens remain unimplemented.
 
 ## Upgrade and proof boundary
 
-Migration `250_mobile_devices.sql` is additive. Apply it before the updated
+Migration `260_mobile_devices.sql` is additive. Apply it before the updated
 Worker serves traffic; back up D1/R2 and private settings first. It introduces
 only derived device authority, frontier/command receipts and opaque link
 metadata. It migrates no existing session into a mobile credential and enables

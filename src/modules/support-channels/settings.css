@@ -1,0 +1,2 @@
+.support-channel-settings .d-grid { grid-template-columns: minmax(0, 1fr); }
+.support-channel-settings label, .support-channel-settings article { min-width: 0; }

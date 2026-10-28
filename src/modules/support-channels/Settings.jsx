@@ -1,6 +1,7 @@
 import React,{useEffect,useState} from 'react';
 import {nativeRequest} from '../../ui/native/transport';
 import '../../ui/native/pages/connections/connections.css';
+import './settings.css';
 const names={sms:'Twilio US SMS',whatsapp:'WhatsApp Business',instagram:'Instagram Direct',messenger:'Facebook Messenger',slack:'Slack customer channels',teams:'Microsoft Teams customer channels'};
 export default function ChannelSettings({projectId,role}){
  const allowed=['owner','admin'].includes(role);
@@ -11,7 +12,7 @@ export default function ChannelSettings({projectId,role}){
  const save=async e=>{e.preventDefault();const form=e.currentTarget,data=new FormData(form);setBusy(true);setError('');setNotice('');setVerify(null);try{const result=await nativeRequest(root+'/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider,account:data.get('account'),sender:data.get('sender'),token:data.get('token'),signing_secret:data.get('signing_secret'),channels:String(data.get('channels')||'').split(',').map(x=>x.trim()).filter(Boolean),registered:data.has('registered'),messaging_service:data.get('messaging_service')})});form.reset();setVerify(result.data);setNotice('Connection saved. Configure the webhook with your provider. Live account qualification is still required.');await load();}catch(e){setError(e.message);}finally{setBusy(false);}};
  const revoke=async row=>{setBusy(true);setError('');try{await nativeRequest(root+'/connections/'+row.id,{method:'DELETE'});setNotice('Connection revoked. No new channel send is authorized.');await load();}catch(e){setError(e.message);}finally{setBusy(false);}};
  if(!allowed)return <p role="alert">Only workspace owners and administrators can manage support channels.</p>;
- return <div className="workspace-settings connections-page" style={{maxWidth:800,overflowWrap:'anywhere'}} aria-busy={busy}>
+ return <div className="workspace-settings connections-page support-channel-settings" style={{maxWidth:800,overflowWrap:'anywhere'}} aria-busy={busy}>
   <p>Receive customer messages in the shared inbox and reply in their original channel.</p>
   <p className="alert alert-warning">Messaging and attachments are available for qualification. Live provider acceptance remains pending. Teams requires a tenant-scoped bot installation; provider sandbox qualification remains pending.</p>
   {error&&<p role="alert" className="alert alert-danger">{error}</p>}{notice&&<p role="status" className="alert alert-info">{notice}</p>}

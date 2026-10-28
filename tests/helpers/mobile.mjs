@@ -77,6 +77,8 @@ export async function mobileAuthority(){
   assert.equal((await call('/session',{token:fresh.token})).status,401)
   const parentBound=await pair({token:w.tokens.admin});await app.call('/api/identity/session',{token:w.tokens.admin,method:'DELETE',status:200})
   assert.equal((await call('/session',{token:parentBound.token})).status,401,'native sign-out retires derived devices')
+  const expiring=await pair({token:w.tokens.owner});await app.db.prepare('UPDATE mobile_devices SET expires_at=1 WHERE id=?').bind(expiring.id).run();
+  assert.equal((await call('/session',{token:expiring.token})).status,401,'an expired capability cannot reconnect');
   const ownerDevice=await pair({token:w.tokens.owner});await call(`/devices/${ownerDevice.id}`,{token:w.tokens.owner,method:'DELETE',status:200})
   assert.equal((await call('/session',{token:ownerDevice.token})).status,401)
  }finally{await app.close()}
@@ -96,8 +98,10 @@ export async function mobileTicketWork(){
   const knowledge=`/api/knowledge/${w.projectId}`
   await app.ok(knowledge+'/articles',{token:w.tokens.owner,body:{title:'Public returns',slug:'public-returns',content:'Public instructions',status:'published'}})
   await app.ok(knowledge+'/articles',{token:w.tokens.owner,body:{title:'Unreviewed secret',slug:'unreviewed-secret',content:'Private draft',status:'draft'}})
+  const restricted=await app.ok(knowledge+'/categories',{token:w.tokens.owner,body:{title:'Private collection',audience:'signed-in'}});
+  await app.ok(knowledge+'/articles',{token:w.tokens.owner,body:{title:'Private returns',slug:'private-returns',content:'Private instructions',status:'published',categoryId:restricted.id}});
   const articles=(await call(`/tickets/${t.id}/knowledge?q=`,{token:device.token,status:200})).data.articles
-  assert.ok(articles.some(a=>a.title==='Public returns'));assert.equal(articles.some(a=>a.title==='Unreviewed secret'),false)
+  assert.ok(articles.some(a=>a.title==='Public returns'));assert.equal(articles.some(a=>a.title==='Unreviewed secret'||a.title==='Private returns'),false)
   // A failed note outcome cannot silently replay its side effect.
   const interrupted=await call(`/tickets/${t.id}/notes`,{token:device.token,body:{localId:'lost-note',frontier:assigned.frontier,content:'One interrupted note'},headers:{'x-test-fault':'db-after'}})
   assert.equal(interrupted.status,500)
@@ -129,6 +133,16 @@ export async function mobileNotifications(){
   assert.equal((await call('/links/'+link,{token:device.token})).status,404)
   await call('/session',{token:second.token,method:'DELETE',status:200})
   assert.equal((await call('/links/'+new URL(two.payloads[0].link).pathname.slice(1),{token:second.token})).status,401)
+  const third=await pair();await call('/push',{token:third.token,method:'PUT',body:{enabled:true},status:200});
+  await app.ok(`/api/management/projects/${w.projectId}/notification-preferences`,{token:w.tokens.operator,method:'PUT',body:{preferences:[{kind:'mention',inbox:true,email:false}]}});
+  await app.ok(base+'/notes',{token:w.tokens.owner,body:{content}});
+  const pending=(await call('/push/prepared',{token:third.token,status:200})).data.payloads[0],expiredId=new URL(pending.link).pathname.slice(1);
+  await app.db.prepare('UPDATE mobile_links SET expires_at=1 WHERE id=?').bind(expiredId).run();
+  assert.equal((await call('/links/'+expiredId,{token:third.token})).status,404,'expired deep links cannot retrieve a ticket');
+  await app.ok(base+'/notes',{token:w.tokens.owner,body:{content}});
+  const erasureLink=(await call('/push/prepared',{token:third.token,status:200})).data.payloads[0];
+  await app.ok(`/api/management/projects/${w.projectId}/contacts/${t.contact_id}/erase`,{token:w.tokens.owner,body:{}});
+  assert.equal((await call('/links/'+new URL(erasureLink.link).pathname.slice(1),{token:third.token})).status,404,'erasure fences existing links');
   assert.equal(app.requests.length,0,'prepared envelopes are never reported as provider delivery')
  }finally{await app.close()}
 }

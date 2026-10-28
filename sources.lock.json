@@ -12024,7 +12024,7 @@
       "executable": false
     },
     "tests/helpers/mobile.mjs": {
-      "sha256": "433981a40bf1d4fb8db844244d0202a7ba8291b7c463a77cf3f09e4f0f8be56b",
+      "sha256": "a556c4e9a155a51de93789e02f99df840eee564231a4ed6bc0461584d4605f5c",
       "executable": false
     },
     "tests/helpers/native-http.mjs": {

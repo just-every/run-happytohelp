@@ -11376,7 +11376,7 @@
       "executable": false
     },
     "tests/helpers/ai/obligations-browser.mjs": {
-      "sha256": "eefe9d66808663d8091bd76991aaeb25ce316f0959755d46233a144bcef27552",
+      "sha256": "708cc5902f8a7cfd35dbafbbdaa5fe2b51f5db96f01af2e771b0c8826767b6e4",
       "executable": false
     },
     "tests/helpers/ai/obligations.mjs": {

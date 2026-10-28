@@ -1,3 +1,4 @@
+import {rerInbound} from './rer-inbound'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -7,6 +8,7 @@ import {emailEvidence,gatewayHeaderEntries} from './email-classification'
 import {sendgridInbound} from './sendgrid-inbound'
 import {emailFileLinks} from './email-file-links'
 export const inboundEmail=new Hono<AppEnv>()
+inboundEmail.route('/',rerInbound)
 inboundEmail.post('/email/inbound',async c=>{if(typeof c.env.INBOUND_EMAIL_TOKEN!=='string'||c.req.header('Authorization')!==`Bearer ${c.env.INBOUND_EMAIL_TOKEN}`)throw new HTTPException(403);const body=await c.req.json()
  // `from` is the sender the gateway authenticated; `replyTo` is a reply target only. `envelopeFrom` (the SMTP return path, empty for a
  // null sender), `subject` and `headers` (name to value) are optional classification evidence.

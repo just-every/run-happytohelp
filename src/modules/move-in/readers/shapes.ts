@@ -3,13 +3,14 @@ import {freshdeskShapes} from './freshdesk-shapes'
 import {object,sourceId,time} from './common'
 import type {Vendor} from '../types'
 
-type Shape={type:'string'|'boolean'|'integer'|'id'|'iso'|'unix'|'visibility'|'opaque'|'object'|'array'|'action';nullable?:boolean;values?:string[];fields?:Record<string,Shape>;item?:Shape;required?:string[];person?:boolean;reference?:boolean}
+type Shape={type:'string'|'boolean'|'integer'|'id'|'iso'|'unix'|'visibility'|'opaque'|'object'|'array'|'action'|'condition';nullable?:boolean;values?:string[];fields?:Record<string,Shape>;item?:Shape;required?:string[];person?:boolean;reference?:boolean}
 const string:Shape={type:'string'},boolean:Shape={type:'boolean'},integer:Shape={type:'integer'},id:Shape={type:'id'},opaque:Shape={type:'opaque'}
 const nullable=(shape:Shape):Shape=>({...shape,nullable:true})
 const oneOf=(...values:string[]):Shape=>({...string,values})
 const array=(item:Shape):Shape=>({type:'array',item})
 const record=(fields:Record<string,Shape>,required:string[]=[]):Shape=>({type:'object',fields,required})
 const reference:Shape={...id,reference:true}
+const configurationConditions=record({all:array({type:'condition'}),any:array({type:'condition'})},['all','any'])
 const person=record({id:reference,type:oneOf('contact','user','lead','admin','teammate','team','bot','campaign','system'),name:nullable(string),email:nullable(string),external_id:nullable(string)},['id'])
 person.person=true
 const tag=record({id,type:oneOf('tag'),name:string},['name'])
@@ -26,11 +27,20 @@ function common(timestamp:'iso'|'unix'){return {id,type:string,kind:string,creat
  * read by mappings. Opaque retained fields are explicit leaves, never traversed or
  * guessed from arbitrary text. Missing mapping requirements remain mapper errors. */
 export const recordShapes:Record<string,Shape>={
- 'zendesk/user':{...record({...common('iso'),...contactFields,role:oneOf('end-user','agent','admin'),tags:nullable(array(string))},['id']),person:true},
- 'zendesk/ticket':record({...common('iso'),subject:nullable(string),requester_id:reference,status:oneOf('new','open','pending','hold','solved','closed'),tags:nullable(array(string)),comments:array(comment),attachments:nullable(opaque),assignee_id:nullable(reference),via},['requester_id','comments']),
+ 'zendesk/organization':record({...common('iso'),name:string,domain_names:array(string),details:nullable(opaque),notes:nullable(opaque),external_id:nullable(string),group_id:nullable(id),organization_fields:nullable(opaque),tags:array(string),shared_comments:boolean,shared_tickets:boolean,ticket_restriction:nullable(string),url:string},['id','name','created_at','updated_at']),
+ 'intercom/company':record({...common('unix'),name:string,company_id:string,website:nullable(string),custom_attributes:nullable(opaque),plan:nullable(opaque),monthly_spend:nullable(opaque),session_count:integer,user_count:integer,size:nullable(integer),industry:nullable(string),remote_created_at:nullable({type:'unix'})},['id','name','created_at','updated_at']),
+ 'zendesk/ticket_field':record({...common('iso'),title:string,title_in_portal:string,description:nullable(string),active:boolean,required:boolean,visible_in_portal:boolean,editable_in_portal:boolean,required_in_portal:boolean,agent_can_edit:boolean,regexp_for_validation:nullable(string),default_value:nullable(opaque),tag:nullable(string),custom_field_options:array(record({id,name:string,raw_name:string,value:string,default:boolean},['name','value']))},['id','type','title','updated_at']),
+ 'zendesk/ticket_form':record({...common('iso'),name:string,display_name:string,raw_name:string,raw_display_name:string,active:boolean,default:boolean,end_user_visible:boolean,in_all_brands:boolean,restricted_brand_ids:array(id),ticket_field_ids:array(id),agent_conditions:array(opaque),end_user_conditions:array(opaque)},['id','name','ticket_field_ids','updated_at']),
+ 'zendesk/group':record({...common('iso'),name:string,deleted:boolean,default:boolean,description:nullable(string)},['id','name','created_at','updated_at']),
+ 'zendesk/schedule':record({...common('iso'),name:string,time_zone:string,intervals:array(record({start_time:integer,end_time:integer},['start_time','end_time'])),holidays:array(record({id,name:string,start_date:string,end_date:string},['start_date','end_date']))},['id','name','time_zone','intervals']),
+ 'zendesk/view':record({...common('iso'),title:string,active:boolean,restriction:nullable(opaque),conditions:configurationConditions,execution:record({sort_by:string,sort_order:string,columns:opaque,group_by:nullable(opaque),group_order:nullable(opaque)})},['id','title','conditions']),
+ 'zendesk/trigger':record({...common('iso'),title:string,active:boolean,position:integer,conditions:configurationConditions,actions:array({type:'action'})},['id','title','conditions','actions']),
+ 'zendesk/automation':record({...common('iso'),title:string,active:boolean,position:integer,conditions:configurationConditions,actions:array({type:'action'})},['id','title','conditions','actions']),
+ 'zendesk/user':{...record({...common('iso'),...contactFields,role:oneOf('end-user','agent','admin'),organization_id:nullable(id),tags:nullable(array(string))},['id']),person:true},
+ 'zendesk/ticket':record({...common('iso'),subject:nullable(string),requester_id:reference,status:oneOf('new','open','pending','hold','solved','closed'),tags:nullable(array(string)),comments:array(comment),attachments:nullable(opaque),assignee_id:nullable(reference),group_id:nullable(id),custom_fields:array(record({id,value:nullable(opaque)},['id','value'])),via},['requester_id','comments']),
  'zendesk/macro':record({...common('iso'),title:string,restriction:nullable(opaque),actions:array({type:'action'})}),
  'zendesk/article':record({...common('iso'),title:string,body:string,draft:boolean,user_segment_id:nullable(id),user_segment_ids:array(id),...articleStructure}),
- 'intercom/contact':{...record({...common('unix'),...contactFields,tags:tagList},['id']),person:true},
+ 'intercom/contact':{...record({...common('unix'),...contactFields,tags:tagList,companies:record({data:array(record({id,type:oneOf('company'),url:string},['id','type'])),url:string,total_count:integer,has_more:boolean},['data','total_count','has_more'])},['id']),person:true},
  'intercom/conversation':record({...common('unix'),title:nullable(string),subject:nullable(string),source,state:oneOf('open','closed','snoozed'),contacts:record({type:oneOf('contact.list'),contacts:array(person)},['type','contacts']),conversation_parts:record({type:oneOf('conversation_part.list'),total_count:integer,conversation_parts:array(part)},['type','conversation_parts']),channel,tags:tagList,admin_assignee_id:nullable(reference),team_assignee_id:nullable(reference)},['source','contacts','conversation_parts','channel']),
  'intercom/macro':record({...common('iso'),name:string,body:nullable(string),body_text:nullable(string),visible_to:oneOf('everyone'),available_on:array(string)}),
  'intercom/article':record({...common('unix'),title:string,body:nullable(string),body_markdown:nullable(string),state:oneOf('draft','published'),audience:nullable(opaque),audience_rules:nullable(opaque),...articleStructure}),
@@ -41,11 +51,12 @@ export const recordShapes:Record<string,Shape>={
  'intercom/$envelope':record({type:string,kind:string,total_count:integer,pages:nullable(record({}))})
 }
 Object.assign(recordShapes,helpScoutShapes({record,array,nullable,string,integer,id,reference,opaque,boolean}),freshdeskShapes({record,array,nullable,string,integer,id,reference,opaque,boolean}))
-for(const [plural,singular] of Object.entries({conversations:'conversation',customers:'contact',tags:'tag'}))recordShapes[`helpscout/inbox-list:${plural}`]=record({_embedded:record({[plural]:array(recordShapes[`helpscout/${singular}`])}),page:recordShapes['helpscout/$page'].fields!.value,_links:recordShapes['helpscout/$links'].fields!.value})
+for(const [plural,singular] of Object.entries({organizations:'organization',conversations:'conversation',customers:'contact',tags:'tag'}))recordShapes[`helpscout/inbox-list:${plural}`]=record({_embedded:record({[plural]:array(recordShapes[`helpscout/${singular}`])}),page:recordShapes['helpscout/$page'].fields!.value,_links:recordShapes['helpscout/$links'].fields!.value})
 for(const [plural,singular] of Object.entries({collections:'collection',categories:'category',articles:'article-ref'}))recordShapes[`helpscout/docs-list:${plural}`]=record({page:integer,pages:integer,count:integer,items:array(recordShapes[`helpscout/${singular}`])})
 for(const [key,schema] of Object.entries(recordShapes)){const kind=key.split('/')[1];if(!key.startsWith('helpscout/')&&!key.startsWith('freshdesk/')&&!kind.startsWith('$')){schema.fields!.type=oneOf(kind);schema.fields!.kind=oneOf(kind)}}
 // The wrapper determines Zendesk record kind. Ticket type is a nullable
 // business classification, not the Intercom document discriminator.
+recordShapes['zendesk/ticket_field'].fields!.type=string
 recordShapes['zendesk/ticket'].fields!.type=nullable(oneOf('problem','incident','question','task'))
 export interface ShapeIssue {code:'unsupported_source_field'|'malformed_source_field'|'opaque_source_field'|'source_shape_limit';path:string;reason:string}
 /** uninterpreted: every retained value the schema does not read, for whole-value erasure. */
@@ -65,8 +76,13 @@ export function auditShape(vendor:Vendor,kind:string,payload:unknown):ShapeAudit
   if(!count(path))return
   if(value===null&&schema.nullable)return
   if(schema.type==='opaque'){issue('opaque_source_field',path,'retained_value_not_identity_indexed');result.uninterpreted.push(value);return}
+  if(schema.type==='condition'){
+   const field=object(value)?value.field:undefined
+   const valueShape:Shape=['group_id','assignee_id','requester_id'].includes(field)?reference:['status','priority','tags'].includes(field)?string:typeof field==='string'&&field.startsWith('hours_since_')?(typeof (value as any).value==='number'?integer:string):opaque
+   visit(value,record({field:string,operator:string,value:valueShape},['field','operator','value']),path);return
+  }
   if(schema.type==='action'){
-   const field=object(value)?value.field:undefined,valueShape:Shape=['comment_value','comment_value_html'].includes(field)?string:field==='comment_mode_is_public'?{type:'visibility'}:opaque
+   const field=object(value)?value.field:undefined,valueShape:Shape=['comment_value','comment_value_html','priority','status','current_tags','remove_tags'].includes(field)?string:field==='group_id'?reference:field==='comment_mode_is_public'?{type:'visibility'}:opaque
    visit(value,record({field:string,value:valueShape},['field','value']),path);return
   }
   if(schema.type==='object'){

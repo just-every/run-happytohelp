@@ -14,8 +14,15 @@ const root=fileURLToPath(new URL('../..',import.meta.url))
 async function withRuntime(options,body){const runtime=await createRuntime(options);let success=false;try{await body(runtime,client(runtime.origin));success=true}finally{await runtime.close(success)}}
 
 test('the site serves its documentation, branded 404s, legacy resource redirects and local assets, and nothing retired',async()=>{
- await withRuntime({},async(runtime,{request})=>{
+ await withRuntime({},async(runtime,{request,call})=>{
   const html=await (await request('/')).text()
+  assert.match(html,/HappyToHelp/i);assert.doesNotMatch(html,/<h1>Foundation<\/h1>/)
+  assert.equal((await call('/api/identity/session')).status,401);assert.equal((await call('/api/management/bootstrap')).status,401)
+  assert.equal((await call('/api/identity/local-owner-session',{body:{},headers:{Origin:runtime.origin,'Sec-Fetch-Site':'same-origin'}})).status,404)
+  const tenant=await runtime.seedTenant({name:'Retired routes',email:'synthetic-happytohelp-retired@example.test',allowedOrigin:runtime.origin}),billing=`/api/management/projects/${tenant.projectId}/billing`
+  for(const [path,method] of [[billing,'GET'],[billing+'/top-up','POST'],[billing+'/setup','POST'],[billing+'/portal','POST'],[billing+'/automated','PUT'],[billing+'/toggle','POST'],['/api/management/webhooks/stripe','POST']])assert.equal((await call(path,{method,body:method==='GET'?undefined:{},token:tenant.token})).status,404)
+  for(const path of ['/health/extra','/api','/api/this-route-does-not-exist'])assert.equal((await call(path)).status,404)
+
   for(const route of ['/projects','/login','/setup','/docs','/docs/install'])assert.ok(html.includes(`href="${route}"`),route)
   assert.doesNotMatch(html,/waitlist|pricing|widget\.js|stripe|<\?php|@extends\(/i)
   assert.doesNotMatch(html,/fonts\.googleapis|fonts\.gstatic|https?:\/\/[^"]*\.(?:woff2?|css|js)\b/i,'no third-party font, stylesheet or script')

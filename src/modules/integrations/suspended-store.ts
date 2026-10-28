@@ -5,13 +5,14 @@ import type {IncomingEmail} from './inbound-service'
 import {hashToken} from '../../platform/auth'
 import {classifyInboundEmail} from './email-classification'
 
+export interface HeldEmailCustody {deliveryId:string;headerFrom:string|null;envelopeFrom:string|null}
 export const SUSPENDED_RETENTION_MS=14*24*60*60*1000
 export async function senderRule(env:Env,projectId:string,address:string){
  return env.DB.prepare("SELECT action FROM email_sender_rules WHERE project_id=? AND address IN (?,?) ORDER BY CASE WHEN action='block' THEN 0 ELSE 1 END,CASE WHEN address=? THEN 0 ELSE 1 END LIMIT 1").bind(projectId,address,'@'+address.split('@')[1],address).first<{action:'allow'|'block'}>()
 }
 /** No contact, conversation, outbox or provider work exists for held mail. MIME
  * HTML is never stored as executable markup. Attachments remain encoded data. */
-export async function suspendEmail(env:Env,input:IncomingEmail,context:{projectId:string;receiptId:string;claimToken:string;reason:string;candidateId?:string|null}){
+export async function suspendEmail(env:Env,input:IncomingEmail,context:{projectId:string;receiptId:string;claimToken:string;reason:string;candidateId?:string|null;custody?:HeldEmailCustody}){
  const {attachments,...safe}=input,now=Date.now(),key=crypto.randomUUID()
  const files=[]
  for(const [index,file] of (attachments||[]).entries()){
@@ -22,7 +23,7 @@ export async function suspendEmail(env:Env,input:IncomingEmail,context:{projectI
  const auth={verified:input.senderAuthenticated===true&&input.senderFailed!==true&&input.fromUnusable!==true,failed:input.senderFailed===true,from_unusable:input.fromUnusable===true}
  await env.DB.batch([
   env.DB.prepare(`INSERT INTO suspended_emails(id,project_id,receipt_id,from_address,to_json,subject,text,reason,auth_json,headers_json,candidate_conversation_id,input_json,created_at,expires_at)
-   SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM inbound_emails WHERE id=? AND claim_token=? AND state='processing') ON CONFLICT(project_id,receipt_id) DO NOTHING`).bind(key,context.projectId,context.receiptId,input.from,JSON.stringify(input.to),input.evidence?.subject||'',input.text.slice(0,100000),context.reason,JSON.stringify(auth),JSON.stringify(input.evidence?.headers||{}),context.candidateId??null,JSON.stringify({...safe,attachments:files}),now,now+SUSPENDED_RETENTION_MS,context.receiptId,context.claimToken),
+   SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM inbound_emails WHERE id=? AND claim_token=? AND state='processing') ON CONFLICT(project_id,receipt_id) DO NOTHING`).bind(key,context.projectId,context.receiptId,input.from,JSON.stringify(input.to),input.evidence?.subject||'',input.text.slice(0,100000),context.reason,JSON.stringify(auth),JSON.stringify(input.evidence?.headers||{}),context.candidateId??null,JSON.stringify({...safe,attachments:files,...(context.custody?{custody:context.custody}:{})}),now,now+SUSPENDED_RETENTION_MS,context.receiptId,context.claimToken),
   env.DB.prepare("UPDATE inbound_emails SET state='suspended',error=?,conversation_id=NULL WHERE id=? AND claim_token=? AND state='processing'").bind(context.reason,context.receiptId,context.claimToken),
   auditStatement(env.DB,{projectId:context.projectId,category:'integration',action:'email.suspended',actor:{type:'system'},source:'email',target:{type:'suspended_email',id:key},detail:{reason:context.reason,candidateId:context.candidateId??null}}),
  ])

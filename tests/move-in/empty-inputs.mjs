@@ -1,5 +1,4 @@
 import {archive} from './archive-inputs.mjs';
-export const emptyReason='Export is empty: no source records were found';
 export const encode=body=>typeof body==='string'?Buffer.from(body):body;
 export const sourceName=vendor=>vendor==='zendesk'?'source.ndjson':'source.json';
 export function person(vendor){return vendor==='zendesk'?{user:{id:83,role:'end-user',name:'Keira',email:'keira@example.test',created_at:'2024-04-01T00:00:00Z'}}:{type:'contact',id:'person-83',name:'Keira',email:'keira@example.test',created_at:1711929600}}
@@ -25,7 +24,7 @@ export function emptyCases(vendor){const files=emptyFiles(vendor);return [
  ['later-empty.zip',archive([...Array.from({length:21},(_,i)=>({name:`empty-${i}/`})),...files.map(([name,body])=>({name,body}))])],
 ]}
 export function laterSource(vendor,{unsupported=false,offset=25}={}){
- const record=unsupported?vendor==='zendesk'?{group:{id:91,name:'Source-only group'}}:{type:'company',id:'company-91',name:'Source-only company'}:person(vendor);
+ const record=unsupported?vendor==='zendesk'?{audit_log:{id:91,name:'Source-only audit entry'}}:{type:'audit_log',id:'audit-91',name:'Source-only audit entry'}:person(vendor);
  const entries=[...Array.from({length:offset},(_,i)=>({name:`empty-${i}/`,method:i%2?0:8})),...emptyFiles(vendor).map(([name,body])=>({name,body})),{name:sourceName(vendor),body:'\r\n'+JSON.stringify(record)}];
  return {entries,body:archive(entries),record};
 }

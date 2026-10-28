@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {campaignsJourney} from './campaigns.mjs'
 import { createHash } from 'node:crypto'
 import { startApp } from '../../journeys/kit/app.mjs'
 
@@ -6,6 +7,7 @@ import { startApp } from '../../journeys/kit/app.mjs'
 // insight pair, read state, observed presence, live authority on every request, consent-gated monitoring with a
 // native model run, and the visitor's responder selector resuming one waiting turn. Only the model is a fixture.
 export async function widgetEventsJourney(){
+ await campaignsJourney()
  const app=await startApp({captureQueue:true,origin:'https://app.example',cf:{country:'US'},bindings:{OPENAI_API_KEY:'synthetic-inert-test-key'},outbound:async request=>{
     assert.equal(new URL(request.url).hostname,'api.openai.com');
     const body=await request.json(),name=body.text?.format?.name;

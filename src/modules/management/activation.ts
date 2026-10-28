@@ -6,7 +6,7 @@ import {activationConfiguration} from './activation/configuration'
 import {activationFacts} from './activation/facts'
 import {activationSnapshot} from './activation/snapshot'
 import {finishCheck,readReceipts,startCheck} from './activation/store'
-import {setSkip,skippable} from './activation/skips'
+import {setSkip,skipLocalTrial,skippable} from './activation/skips'
 import {stepIds,type StepId,type Probe} from './activation/types'
 import {runChecks} from './activation/checks'
 import {reconcileStarter} from './activation/starter'
@@ -43,6 +43,14 @@ activation.post(`${path}/skip`,async c=>{
  const actor=await ownerScope(c),body=await c.req.json().catch(()=>null)
  if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(key=>key!=='step'&&key!=='skipped')||!skippable.includes(body.step)||typeof body.skipped!=='boolean')throw new HTTPException(400,{message:`Choose one of ${skippable.join(', ')} and whether to skip it for now (skipped: true or false).`})
  await setSkip(c.env,actor.projectId,body.step,body.skipped)
+ return snapshotResponse(c,actor.projectId)
+})
+// Try locally without a website or AI key: a local trial leaves its widget and AI key steps for now in one request.
+activation.post(`${path}/local-trial`,async c=>{
+ const actor=await ownerScope(c),body=await c.req.json().catch(()=>null)
+ if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).length)throw new HTTPException(400,{message:'Trying locally takes no options: send an empty object.'})
+ if((await activationConfiguration(c.env,actor.projectId)).environment!=='local')throw new HTTPException(409,{message:'Only a local trial skips its widget and AI key together. Skip each step on its own.'})
+ await skipLocalTrial(c.env,actor.projectId)
  return snapshotResponse(c,actor.projectId)
 })
 activation.post(`${path}/test-mail`,async c=>{

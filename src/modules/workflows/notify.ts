@@ -16,10 +16,11 @@ export async function notifyWorkflow(env:Env,input:WorkflowNotification):Promise
  const customer=['customer_update','request_received','solved'].includes(kind)
  if(kind.startsWith('sla_')&&!recipientId)return {state:'cancelled',detail:'An SLA alert requires a named current operator'}
  if(customer&&recipientId)return {state:'cancelled',detail:'Customer notices use the ticket’s current proven customer addresses'}
- const audience:TicketNotificationAction['audience']=customer?'requester':recipientId?'member':kind==='assignee'||kind==='group'||kind==='followers'?kind:'member'
+ const audience:TicketNotificationAction['audience']=customer?'requester':kind==='group'||kind==='followers'?kind:recipientId?'member':kind==='assignee'?'assignee':'member'
  if(audience==='member'&&!recipientId)return {state:'cancelled',detail:'The notification requires a named current operator'}
  const guard=input.guard?`AND (${input.guard.sql})`:'',args=input.guard?.params??[]
- const ticket=`SELECT 1 FROM conversations c WHERE c.project_id=? AND c.id=? AND ${availableTicketSql()} AND ${conversationHasMessages()} AND NOT EXISTS(SELECT 1 FROM contact_erasures er WHERE er.project_id=c.project_id AND er.contact_id=c.contact_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) ${guard} ${recipientId?'AND EXISTS(SELECT 1 FROM memberships WHERE project_id=c.project_id AND user_id=?)':''}`
+ const recipientCheck=recipientId?(kind==='group'?"AND c.assigned_to IS NULL AND c.group_id=? AND EXISTS(SELECT 1 FROM ticket_groups g WHERE g.project_id=c.project_id AND g.id=c.group_id)":'AND EXISTS(SELECT 1 FROM memberships WHERE project_id=c.project_id AND user_id=?)'):''
+ const ticket=`SELECT 1 FROM conversations c WHERE c.project_id=? AND c.id=? AND ${availableTicketSql()} AND ${conversationHasMessages()} AND NOT EXISTS(SELECT 1 FROM contact_erasures er WHERE er.project_id=c.project_id AND er.contact_id=c.contact_id) AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL) ${guard} ${recipientCheck}`
  const ticketArgs=[projectId,conversationId,...args,...(recipientId?[recipientId]:[])]
  if(!await env.DB.prepare(ticket).bind(...ticketArgs).first())return {state:'cancelled',detail:'Ticket, recipient or workflow is no longer eligible'}
  await env.DB.prepare(`INSERT OR IGNORE INTO workflow_notifications(id,project_id,conversation_id,kind,recipient_id,message,state,detail,created_at,updated_at) SELECT ?,?,?,?,?,?,'pending',NULL,?,? WHERE EXISTS(${ticket})`).bind(id,projectId,conversationId,kind,recipientId??null,message??null,now,now,...ticketArgs).run()

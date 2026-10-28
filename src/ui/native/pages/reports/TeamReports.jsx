@@ -29,7 +29,7 @@ export default function TeamReports({projectId}) {
                 <Metric title="Handle time" value={reportDuration(report.handleTime.total_ms)} detail={`${reportCount(report.handleTime.session_count)} recorded sessions`}/>
             </div>
             {!report.denominators.cohort && <p role="status" className="team-report-empty">No tickets with messages were created in this selection. Older unresolved tickets may still appear in the backlog.</p>}
-            <div className="team-report-panels"><WorkloadPanel workload={report.workload}/><ServiceLevels sla={report.sla} timezone={report.range.timezone}/><BacklogPanel backlog={report.backlog}/><HandleTimePanel handleTime={report.handleTime}/></div>
+            <div className="team-report-panels"><WorkloadPanel workload={report.workload} breakdowns={report.breakdowns}/><ServiceLevels sla={report.sla} timezone={report.range.timezone}/><BacklogPanel backlog={report.backlog}/><HandleTimePanel handleTime={report.handleTime}/></div>
             {report.permissions.schedule ? <ReportSchedules key={projectId} projectId={projectId} options={report.options}/> : <p className="team-report-muted">Scheduling requires report and data export access.</p>}
             <details className="team-report-rules"><summary>Team report definitions and exclusions</summary><ul>{report.rules.map(rule => <li key={rule}>{rule}</li>)}</ul><p>Imported tickets with unknown native reopen history: {reportCount(report.reopens.imported_history_unknown)}.</p><p>Generated {new Date(report.generatedAt).toLocaleString(undefined, {timeZone: report.range.timezone})} · {report.range.timezone}</p></details>
         </>}

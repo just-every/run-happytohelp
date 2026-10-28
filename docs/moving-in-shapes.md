@@ -185,3 +185,29 @@ itself determines the incoming customer role. Unread or unsupported content is
 retained with source-located diagnostics and participates in the conservative
 whole-value erasure index. See [Help Scout inputs](moving-in.md#help-scout-inbox-v2-and-docs-v1)
 for exact grouping, pagination and publication rules.
+
+## Company relationships
+
+Move in reads Zendesk `organization` wrappers and users' `organization_id`,
+Freshdesk `company` wrappers and contacts' `company_id`, Intercom 2.16 typed
+company records and contacts' embedded `companies` relationship, and Help Scout
+organization wrappers or complete `_embedded.organizations` list responses with
+customers' `organizationId`. Include those unmodified company responses alongside
+the existing history export. A company name alone never creates a relationship.
+
+Company names and explicit Zendesk/Freshdesk/Help Scout domain lists map to native
+companies. Intercom's website is not a domain membership claim. Source company
+IDs remain namespaced, contacts stay unverified, and company-wide portal access
+stays off. Duplicate domains or a domain already owned by another native company
+are review conflicts; import never merges accounts. Unsupported attributes,
+sharing and routing settings are named in the review and retained in the private
+original. Help Scout's checked organization shape has no source timestamps;
+native creation time records the import and the omission is explicit.
+
+Native contacts currently have one company. Zendesk's explicit default and
+Freshdesk's primary company map with an omission for additional memberships;
+Help Scout maps its explicit organization ID. Intercom maps only a complete
+single-company relationship (`has_more: false`, matching distinct `total_count`);
+multiple or incomplete relationships remain unlinked with an explicit reason.
+Importing company data grants no company-wide customer history access. Later
+native company or membership edits prevent whole-import undo from deleting them.

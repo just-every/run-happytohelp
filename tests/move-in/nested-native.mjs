@@ -6,7 +6,11 @@ import {unchanged} from './admission-equality.mjs';
 import {nestedRecord,nestedCases,nestedUpload} from './nested-inputs.mjs';
 import {archive} from './archive-inputs.mjs';
 const root='/api/move-in/projects/p/imports',post=body=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-test('all nested wrapper packagings refuse full custody, queues and effects after authority checks',async()=>{
+
+import {step} from './steps.mjs';
+
+test("refusals: refused uploads are located at their exact source place before any custody, queue, native write or outbound call",async()=>{
+await step('all nested wrapper packagings refuse full custody, queues and effects after authority checks',async()=>{
  const h=await nativeHarness();try{const before=await h.snapshot();
   for(const [name,body,row,pointer] of nestedCases())for(const packed of [false,true]){
    const input=packed?archive([{name:'safe.json',body:JSON.stringify(nestedRecord)},{name:'inside/'+name,body}]):body,filename=packed?'nested.zip':name;
@@ -17,7 +21,10 @@ test('all nested wrapper packagings refuse full custody, queues and effects afte
   await unchanged(h,before,'nested-refusals-zero-custody');assert.equal(h.outbound,0);assert.equal((await (await h.files).list()).objects.length,0);
  }finally{await h.close()}
 });
-test('known record payloads remain one decision across actual crash resume and keep erasure alias fences',async()=>{
+});
+
+test("recovery: interrupted work resumes from durable state after a killed Worker, a broken checkpoint or tampered originals, without duplicating history",async()=>{
+await step('known record payloads remain one decision across actual crash resume and keep erasure alias fences',async()=>{
  const h=await nativeHarness();try{
   await h.db.prepare("INSERT INTO contacts(id,project_id,email,created_at) VALUES('native','p','imani@example.test',1)").run();
   const payload={...nestedRecord,details:{container:{type:'article',id:'payload-only',body:'not an independent source record'}}},body=JSON.stringify({type:'list',unknown:payload}),run=(await h.call(`${root}?vendor=intercom`,nestedUpload(body,'known.json'))).data;
@@ -29,4 +36,5 @@ test('known record payloads remain one decision across actual crash resume and k
   for(const [name,body,row,pointer] of nestedCases()){const refused=await h.raw(`${root}?vendor=intercom`,nestedUpload(body,name));assert.equal(refused.response.status,422);assert.deepEqual(refused.data.diagnostic,{code:'unsupported_nested_envelope',location:{artifact:name,row,pointer}});assert.equal(h.lastWrites,0);assert.equal(h.queued.length,0)}
   await unchanged(h,before,'nested-erasure-and-replay');assert.equal(h.outbound,0);
  }finally{await h.close()}
+});
 });

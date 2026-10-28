@@ -32,7 +32,7 @@ export async function presenceJourney(){
   const transcript=id=>app.sql('SELECT actor_role,content FROM messages WHERE conversation_id=? ORDER BY revision',id)
 
   // Open hours (no schedule, accepting conversations) and nobody online: visitors are told the team is away, with no
-  // return time, and an open widget keeps asking.
+  // reopening time, but with the configured response estimate; an open widget keeps asking.
   assert.deepEqual(await state(),away,'nobody online during open hours is away')
   const notes=await stream(collaborator);report(notes,0)
   await app.until(()=>row('collaborator-presence'),{message:'the collaborator stream reported'})
@@ -76,16 +76,24 @@ export async function presenceJourney(){
   await write(night,first.id,'presence-1','Is anyone there?',0);await write(night,first.id,'presence-2','My parcel is late.',2)
   const quiet=await transcript(first.id)
   assert.deepEqual(quiet.map(message=>message.actor_role),['contact','system','contact'])
-  assert.equal(quiet[1].content,"Thanks for your message. Workspace presence is away right now. We'll reply here.")
+  assert.equal(quiet[1].content,"Thanks for your message. Workspace presence is away right now. We'll reply here. Responds within 24 hours")
   const front=await stream(owner);report(front,0);await becomes(online,'the owner is online')
   const day=await visitor(),second=await conversation(day)
   await write(day,second.id,'presence-day','Hello?',0)
   assert.deepEqual((await transcript(second.id)).map(message=>message.actor_role),['contact'],'no away message while a teammate is online')
+  const responseTime='Responds within two business days'
+  await app.call(`/api/management/projects/${p}/widget-settings`,{token:owner,method:'PUT',body:{text:{ai:{human_response:responseTime}}},status:200})
+  await app.call(`/api/management/projects/${p}/settings`,{token:owner,method:'PUT',body:{is_available:false},status:200})
+  assert.equal((await state()).available,false,'Accept new conversations off is away even with the owner online')
+  const paused=await visitor(),pausedChat=await conversation(paused)
+  await write(paused,pausedChat.id,'presence-paused','Can you help?',0)
+  assert.ok((await transcript(pausedChat.id))[1].content.includes(responseTime),'the switched-off away reply includes the configured estimate')
+  await app.call(`/api/management/projects/${p}/settings`,{token:owner,method:'PUT',body:{is_available:true},status:200})
   await availabilityPut(owner,{presence_away_message:'Our team is with other customers. We will email you shortly.'})
   front.socket.close();await becomes(away,'the owner left')
   const later=await visitor(),third=await conversation(later)
   await write(later,third.id,'presence-later','Still there?',0)
-  assert.deepEqual((await transcript(third.id)).map(message=>message.content),['Still there?','Our team is with other customers. We will email you shortly.'])
+  assert.deepEqual((await transcript(third.id)).map(message=>message.content),['Still there?',`Our team is with other customers. We will email you shortly. ${responseTime}`])
 
   // Outside the schedule's hours nothing changes: the team is away with its return time, whoever is online.
   const back=await stream(owner);report(back,0);await becomes(online,'the owner is back')
@@ -117,5 +125,40 @@ export async function presenceJourney(){
   assert.deepEqual(await state(),away,'an assistant without its provider key answers nobody')
   await app.configure({OPENAI_API_KEY:'synthetic-presence-provider-key'})
   assert.deepEqual(await state(),{available:true,live:false,opensAt:null},'an answering assistant keeps the widget available')
+
+  // SLA calendars, not the legacy opening-hours setting, own matching widget intake.
+  // Both the holiday and explicit closure are exercised through the public settings door.
+  await app.call(`/api/management/projects/${p}/ai`,{token:owner,method:'PUT',body:{default_visitor_ai_id:null},status:200})
+  await availabilityPut(owner,{is_presence_away_enabled:false,is_availability_schedule_enabled:true,availability_schedule:{days:[1,2,3,4,5,6,7],time_from:'00:00',time_to:'23:59',message:''}})
+  const manage=(path,body,method='POST')=>app.call(`/api/management/projects/${p}${path}`,{token:owner,body,method,status:method==='POST'?201:200}).then(result=>result.data.data)
+  const calendar=await manage('/workflow-calendars',{name:'Northwind support hours',timezone:'America/New_York',weekly:[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})),holidays:'us_federal',closures:[]})
+  const ignored=await manage('/sla-policies',{name:'synthetic-happytohelp-2',calendar_id:calendar.id,position:0,conditions:{channels:['email']},first_response_minutes:60})
+  const policy=await manage('/sla-policies',{name:'synthetic-happytohelp-3',calendar_id:calendar.id,position:1,conditions:{channels:['widget']},first_response_minutes:60})
+  const pausedMessage='New conversations are paused while our team is at the annual planning day.'
+  await app.call(`/api/management/projects/${p}/settings`,{token:owner,method:'PUT',body:{is_available:false,unavailable_message:pausedMessage},status:200})
+  await app.call(`/api/management/projects/${p}/settings`,{token:owner,method:'PUT',body:{is_available:true},status:200})
+  for(const date of ['2026-11-26','2026-11-27']){
+   const holiday=date==='2026-11-26'
+   await availabilityPut(owner,{is_presence_away_enabled:false,is_availability_schedule_enabled:!holiday,availability_schedule:{days:[1,2,3,4,5,6,7],time_from:'00:00',time_to:'23:59',message:''}})
+   await manage(`/workflow-calendars/${calendar.id}`,{closures:holiday?[]:[date]},'PATCH')
+   await app.configure({H2H_LOCAL:'true',APP_ORIGIN:'https://app.example',H2H_WORKFLOW_NOW:String(Date.parse(`${date}T17:00:00Z`))})
+   const settings=(await app.call(`/api/widget/settings?widgetKey=${workspace.widgetKey}`,{headers:{Origin:'https://widget.example'},status:200})).data
+   assert.equal(settings.availability.available,false,`${date}: the SLA holiday or closure governs with widget hours off or open`)
+   assert.equal(settings.availability.opensAt,Date.parse(holiday?'2026-11-27T14:00:00Z':'2026-11-30T14:00:00Z'),'the next opening follows the calendar holidays, closures and timezone')
+   const lead=(await app.call(`/api/management/projects/${p}/presence`,{token:owner,status:200})).data.data
+   assert.deepEqual(lead.availability,settings.availability,'the lead and visitor doors share the same calendar-aware availability')
+   const contact=await visitor(),ticket=await conversation(contact)
+   await write(contact,ticket.id,`calendar-${date}`,'When will someone reply?',0)
+   const reply=(await transcript(ticket.id))[1].content
+   assert.ok(reply.includes(`back ${holiday?'tomorrow':'Monday'} at 9:00 AM EST`),'the public conversation names the calendar reopening as the expected reply time')
+   assert.ok(!reply.includes(pausedMessage),'acceptance is on: the calendar reply never uses the paused-conversations message')
+  }
+  await manage(`/workflow-calendars/${calendar.id}`,{closures:[],holidays:'none'},'PATCH')
+  assert.equal((await state()).available,true,'removing the calendar exceptions restores availability')
+  await manage(`/sla-policies/${policy.id}`,{active:false},'PATCH')
+  assert.equal((await state()).available,true,'a nonmatching email policy leaves the widget opening hours in force')
+  await availabilityPut(owner,{is_presence_away_enabled:false,is_availability_schedule_enabled:true,availability_schedule:{days:[1],time_from:'09:00',time_to:'17:00',message:''}})
+  assert.equal((await state()).available,false,'without a matching SLA calendar, the legacy schedule still closes the widget')
+
  }finally{await app.close()}
 }

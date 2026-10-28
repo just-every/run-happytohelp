@@ -1,0 +1,2 @@
+/* Linked before /rer-theme.css on the run site's /run, /contract and /404 (src/site/identity.ts) and inlined into the hosted demo's gate: the rules rer's theme grammar keeps out of /rer-theme.css. */
+@media(max-width:480px){.bar{flex-wrap:wrap;row-gap:10px}}

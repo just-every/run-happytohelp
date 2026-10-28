@@ -14,3 +14,9 @@ export async function escalationAccess(c:Context<AppEnv>,permission?:Permission)
  return {actor,conversation}
 }
 export function string(value:unknown,name:string,max=2000){if(typeof value!=='string'||!value.trim()||value.length>max)throw new HTTPException(400,{message:`Invalid ${name}`});return value.trim()}
+
+export async function requestBody(c:Context<AppEnv>){
+ const body=await c.req.json().catch(()=>null)
+ if(!body||typeof body!=='object'||Array.isArray(body))throw new HTTPException(400,{message:'Submit a JSON object'})
+ return body
+}

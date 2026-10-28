@@ -1,6 +1,7 @@
 import { lazyPageCode } from './lazy-page-code';
 
 const pages = {
+    ProcedureSettings: lazyPageCode(() => import('./pages/ProcedureSettings')),
     Connections: lazyPageCode(() => import('./pages/Connections')),
     Reports: lazyPageCode(() => import('./pages/surveys/ReportsWithSurveys')),
     Companies: lazyPageCode(() => import('./pages/Companies')),
@@ -60,7 +61,7 @@ export function preloadWorkspacePage(pathname, settings) {
     else if (['datasets', 'articles', 'categories'].includes(section)) name = 'KnowledgePage';
     else if (['ais', 'macros', 'contacts', 'plugins', 'agents'].includes(section)) name = 'ManagementPage';
     else if (['edit', 'settings', 'email-settings'].includes(section)) name = 'ProjectSettings';
-    else if (['api-settings', 'webhook-settings', 'slack-settings', 'delivery-log'].includes(section)) name = 'Connections';
+    else if (['hubspot-settings', 'api-settings', 'webhook-settings', 'slack-settings', 'delivery-log'].includes(section)) name = 'Connections';
     else if (section === 'github-settings') name = 'GitHubSettings';
     else if (section === 'security') name = 'SecurityPage';
     else if (section === 'security-log') name = 'SecurityLog';
@@ -71,6 +72,7 @@ export function preloadWorkspacePage(pathname, settings) {
     else if (section === 'widget-settings') name = 'WidgetSettingsPage';
     else if (section === 'local-agent') name = 'ComputersPage';
     else if (section === 'delegation') name = recordId === 'authorize' ? 'DelegationAuthorize' : 'DelegationSettings';
+    else if (section === 'procedures') name = 'ProcedureSettings';
     else if (section === 'training-runs') name = 'TrainingRuns';
     else if (section === 'users' && (!settings || recordId === 'profile' || recordId === settings.currentAgent?.id)) name = 'AccountPage';
     else if (section === 'admin' && (!settings || settings.isPlatformAdmin)) name = 'AdminPage';

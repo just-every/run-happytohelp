@@ -5,6 +5,7 @@ import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {randomBytes,createHash} from 'node:crypto';
 import {build} from 'esbuild';
+import {settleKnowledgeUpgrades} from '../helpers/knowledge/settle-upgrade.mjs';
 const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[require.resolve('wrangler')]}));
 export const json=body=>({method:'POST',body:JSON.stringify(body),headers:{'Content-Type':'application/json'}});
 export async function optIntoProactiveHelp(h,conversationId){
@@ -20,12 +21,13 @@ export async function harness({beforeOutcomes,bindings={}}={}){
  const directory=await mkdtemp(join(tmpdir(),'reports-'));let mf,external=0;const tokens={};
  try{
 
- mf=new Miniflare(convertV4MiniflareOptions({name:'reports-check',modules:true,script:await compiledWorker(),compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings,d1Databases:{DB:'reports-check'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async()=>{external++;throw Error('External requests prohibited')}}));
+ mf=new Miniflare(convertV4MiniflareOptions({name:'reports-check',modules:true,script:await compiledWorker(),compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings,d1Databases:{DB:'reports-check'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},queueProducers:{JOBS:'reports-jobs'},queueConsumers:{'reports-jobs':{maxBatchSize:1,maxRetries:0}},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService:async()=>{external++;throw Error('External requests prohibited')}}));
  const db=await mf.getD1Database('DB');
  for(const file of (await readdir('migrations')).filter(x=>x.endsWith('.sql')).sort()){
   if(file==='112_conversation_outcomes.sql'&&beforeOutcomes)await beforeOutcomes(db)
   const sql=(await readFile(join('migrations',file),'utf8')).replace(/^\s*--[^\n]*$/gm,'');await db.batch([...sql.matchAll(/\s*(CREATE TRIGGER[\s\S]*?END;|[^;]+;)/g)].map(([,statement])=>db.prepare(statement)))
  }
+ await settleKnowledgeUpgrades(mf,db);
  for(const [project,user] of [['p','owner'],['q','foreign']]){await db.prepare('INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES(?,?,?,?,1)').bind(project,project,'widget-'+project,'https://app.example').run();await db.prepare('INSERT INTO users VALUES(?,?,?,1)').bind(user,user+'@example.test',user).run();await db.prepare("INSERT INTO memberships VALUES(?,?,'owner')").bind(project,user).run();await session(user,project,user,'owner')}
  async function session(name,project,actor,role='contact'){tokens[name]=randomBytes(32).toString('hex');await db.prepare('INSERT INTO sessions(token_hash,actor_id,project_id,role,contact_id,expires_at) VALUES(?,?,?,?,?,?)').bind(createHash('sha256').update(tokens[name]).digest('hex'),actor,project,role,role==='contact'?actor:null,Date.now()+3600000).run();if(role!=='contact')await db.prepare("INSERT INTO session_factors(token_hash,user_id,method,verified_at) VALUES(?,?,'password',?)").bind(createHash('sha256').update(tokens[name]).digest('hex'),actor,Date.now()).run()}
  async function raw(path,{actor='owner',headers={},...options}={}){return mf.dispatchFetch('https://app.example'+path,{...options,headers:{Authorization:'Bearer '+tokens[actor],...headers}})}

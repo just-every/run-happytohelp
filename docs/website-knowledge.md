@@ -221,3 +221,5 @@ model-session revocation guarantee.
 Both knowledge clauses remain partial. The binding riders and retained named gaps
 are in [the contract](../CONTRACT.md#knowledge-policy-riders-and-round-7-design)
 and [acceptance map](../ACCEPTANCE.md#knowledge-policy-riders-and-round-7-design).
+
+`268_knowledge_indexable_sources.sql` keeps never-published drafts out of the detector dirty queue while retaining every indexed or published source. Strict undo removes an unused import’s own publication and index rows only after checking retained references, generation sources and later native activity. New reference and tool-source writes check the incarnation observed with source bytes inside their insert, so delayed writes cannot borrow a replacement article’s authority. Ordinary article deletion retains history and retired identity.

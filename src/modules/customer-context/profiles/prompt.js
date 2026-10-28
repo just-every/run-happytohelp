@@ -18,7 +18,7 @@ const historicalProfile = (profile) => Object.entries(profileWithoutMetadata(pro
             evidence_status: 'historical_unverified',
         };
         return out;
-    }, {});
+    }, profile?.knowledge_provenance ? {knowledge_provenance:profile.knowledge_provenance} : {});
 
 const taskInstructions = {
     project: [

@@ -1,3 +1,4 @@
+import {attributeReadTicket} from '../knowledge/read-attribution'
 import {withAccountChoices,validateAccountChoices,validateAccountPublication,validateAccountMembership} from './account-lookup'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
@@ -32,7 +33,7 @@ export async function submitRequest(env:Env,input:SubmitRequestInput){
  const contactId=identity?.actor.contactId??identity?.actor.id,guard=identity?portalSessionGuard(identity):undefined
  const existing=identity?await env.DB.prepare(`SELECT r.* FROM request_form_submissions r WHERE r.project_id=? AND r.contact_id=? AND r.local_id=? AND ${guard!.sql}`).bind(projectId,contactId!,typeof body?.localId==='string'?body.localId:'',...guard!.args).first<any>():null
  const values=body?.fields&&typeof body.fields==='object'&&!Array.isArray(body.fields)?body.fields as Record<string,unknown>:{}
- const submissionIntent=async(submission:ReturnType<typeof validateSubmission>)=>hashToken(JSON.stringify({formId,subject:submission.subject,message:submission.message,...(submission.cc.length?{cc:submission.cc}:{}),fields:Object.entries(submission.fields).sort(([a],[b])=>a.localeCompare(b))}))
+ const submissionIntent=async(submission:ReturnType<typeof validateSubmission>)=>hashToken(JSON.stringify({formId,...(typeof body?.knowledgeRead==='string'?{knowledgeRead:body.knowledgeRead}:{}),subject:submission.subject,message:submission.message,...(submission.cc.length?{cc:submission.cc}:{}),fields:Object.entries(submission.fields).sort(([a],[b])=>a.localeCompare(b))}))
  // Historical replay may use revoked values, but never exposes current predicates
  // through a changed command or a field-specific validation failure.
  let submission:ReturnType<typeof validateSubmission>
@@ -47,7 +48,7 @@ export async function submitRequest(env:Env,input:SubmitRequestInput){
  if(existing&&existing.intent_hash!==intent)throw new HTTPException(409,{message:'This submission ID was already used for a different request'})
  // A successful admitted command can be replayed with its live proof without reusing a single-use challenge.
  const admitted=existing?await env.DB.prepare(`SELECT * FROM messages WHERE project_id=? AND conversation_id=? AND local_id=? AND ${guard!.sql}`).bind(projectId,existing.conversation_id,submission.localId,...guard!.args).first<any>():null
- if(admitted){const ticket=await env.DB.prepare('SELECT * FROM conversations WHERE project_id=? AND id=?').bind(projectId,existing.conversation_id).first();return {ticket:publicTicket(ticket),message:publicMessage(admitted),duplicate:true}}
+ if(admitted){await attributeReadTicket(env,projectId,existing.conversation_id,admitted.id,body?.knowledgeRead,identity!,{brand:new URL(request.url).hostname,locale:form.locale});const ticket=await env.DB.prepare('SELECT * FROM conversations WHERE project_id=? AND id=?').bind(projectId,existing.conversation_id).first();return {ticket:publicTicket(ticket),message:publicMessage(admitted),duplicate:true}}
  if(!identity){await verifyFormChallenge(env,request,body?.turnstileToken);throw verificationRequired()}
  if(!contactId||!guard)throw verificationRequired()
  if(!await env.DB.prepare(`SELECT 1 WHERE ${guard.sql}`).bind(...guard.args).first())throw verificationRequired()
@@ -81,6 +82,7 @@ export async function submitRequest(env:Env,input:SubmitRequestInput){
  if(!result.accepted)await validateAccountChoices(env,form,contactId,submission.fields)
  if(!result.accepted)throw new HTTPException(409,{message:'Request changed or access expired. Reload before retrying.'})
  await env.DB.prepare(`INSERT OR IGNORE INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json) SELECT ?,?,?,'data','form.submitted','succeeded','system',?,'api','conversation',?,? WHERE EXISTS(SELECT 1 FROM messages WHERE id=?)`).bind(`form:${receipt.conversation_id}`,projectId,now,identity.actor.id,receipt.conversation_id,JSON.stringify({formId,fieldCount:Object.keys(submission.fields).length}),result.message!.id).run()
+ await attributeReadTicket(env,projectId,receipt.conversation_id,result.message!.id,body?.knowledgeRead,identity,{brand:new URL(request.url).hostname,locale:form.locale})
  let effectsPending=false
  if(!result.duplicate)try{await applyMessageEffects(env,result.message!,identity.actor,input.defer)}catch{effectsPending=true}
  const ticket=await env.DB.prepare('SELECT * FROM conversations WHERE project_id=? AND id=?').bind(projectId,receipt.conversation_id).first()

@@ -1,3 +1,6 @@
+import {renderPublicKnowledgeHtml} from '../knowledge/public-html'
+import {listForms} from '../forms/store'
+import {createReadReceipt} from '../knowledge/read-attribution'
 import { Hono } from 'hono'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -52,19 +55,23 @@ export async function renderHelpCenter(c:any,key:string,base:string,tail?:string
   content=helpTemplate(settings.templates.search,content,'Search results',keyword)
  }else if(tail){
   const found=await lookupAccessibleArticle(c.env,project.id,tail,{access,locale})
-  if(!found)return c.html(missingArticlePage(project,base),404)
+  if(!found)return c.html(await renderPublicKnowledgeHtml(c.env,project.id,c.req.raw,missingArticlePage(project,base)),404)
   if(found.redirectSlug)return c.redirect(`${base}/${encodeURIComponent(found.redirectSlug)}${suffix}`,308)
   const article=found.article
   await recordKnowledgeEvent(c.env,project.id,{kind:'view',slug:article.slug,locale,visitorHash,access})
   content=(article.locale!==locale?`<p class="help-center-translation-note">This article is available in ${e(article.locale)} while its translation is being reviewed.</p>`:'')+`<article lang="${e(article.locale)}"><h1>${e(article.title)}</h1>`+renderToStaticMarkup(<Markdown remarkPlugins={[remarkGfm]} components={articleComponents}>{String(article.content)}</Markdown>)+'</article>'
   content=helpTemplate(settings.templates.article,content,article.title,article.summary)
+  if((await listForms(c.env,project.id,article.locale)).length){
+   const read=await createReadReceipt(c.env,project.id,article.id,article.locale,new URL(c.req.url).hostname,access)
+   if(read)content+=`<p class="help-center-request-link"><a href="/help/${encodeURIComponent(project.id)}/requests?read=${encodeURIComponent(read)}&amp;locale=${encodeURIComponent(article.locale)}">Contact support about this article</a></p>`
+  }
   content+=helpfulContent(project.id,article.slug,article.locale,`${base}/${encodeURIComponent(article.slug)}${suffix}`,c.req.query('feedback')==='1')
  }else{
   const [categories,articles]=await Promise.all([listAccessibleCategories(c.env,project.id,access,locale),listAccessibleArticles(c.env,project.id,{access,locale})])
   content=categoryTree(categories,articles,base,suffix,settings.templates)||'<h1>How can we help?</h1><p class="help-center-notice">There are no published articles yet. Please contact the support team through the website chat.</p>'
   content=helpTemplate(settings.templates.home,content,project.name)
  }
- return c.html(shell(project,base,content,{keyword,greeting:!tail,locale,defaultLocale:settings.defaultLocale,tools}))
+ return c.html(await renderPublicKnowledgeHtml(c.env,project.id,c.req.raw,shell(project,base,content,{keyword,greeting:!tail,locale,defaultLocale:settings.defaultLocale,tools})))
 }
 function render(c:any){const key=c.req.param('project'),base=c.req.path.startsWith('/help/')?`/help/${encodeURIComponent(key)}`:`/${encodeURIComponent(key)}`;return renderHelpCenter(c,key,base,c.req.param('article'))}
 helpCenterRoutes.get('/help/:project',render)

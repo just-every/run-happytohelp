@@ -22,7 +22,7 @@ export async function lifecycleJourney(){
   for(const [label,change] of [
    ['visitor message',v=>v.say('Another detail')],
    ['instructions',()=>app.db.prepare("UPDATE ai_profiles SET prompt='Changed policy' WHERE id='ai'").run()],
-   ['private note',v=>app.call(`/api/dashboard/projects/${p}/conversations/${v.conversationId}/notes`,{token:owner,body:{content:'New private fact'},status:200})],
+   ['private note',v=>app.call(`/api/dashboard/projects/${p}/conversations/${v.conversationId}/notes`,{token:owner,body:{content:'New private fact'},status:201})],
   ]){
    const turn=await ask();ai.before=()=>{ai.before=null;return change(turn.v)};await app.runJobs([turn.job]);await app.takeJobs()
    assert.equal((await app.first('SELECT state FROM ai_generations WHERE id=?',turn.job.id)).state,'superseded',label);assert.equal((await replies(turn.v)).length,0,label)

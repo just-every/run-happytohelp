@@ -7,7 +7,7 @@ try{
  const category=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Members',audience:'domains',allowedDomains:['trusted.test']},status:201})).data.id
  const aid=(await call(`/api/knowledge/${p}/articles`,{body:{title:'Secret',content:'Restricted instructions',slug:'secret',categoryIds:[category],status:'published'},status:201})).data.id
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`)).status,404)
- assert.equal((await k.search('Restricted')).length,0)
+ assert.ok((await k.search('Restricted')).some(source=>source.id===`article:${aid}`),'an operator can search their permitted internal knowledge without a ticket audience')
  const openCategory=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Public'},status:201})).data.id
  const child=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Child',parentId:category},status:201})).data.id
  const nested=(await call(`/api/knowledge/${p}/articles`,{body:{title:'Nested secret',slug:'nested-secret',content:'Restricted hierarchy',categoryIds:[openCategory,child],status:'published'},status:201})).data.id
@@ -18,19 +18,27 @@ try{
  await app.db.prepare("INSERT INTO email_settings VALUES(?,'Support','support@example.test','native-help@example.test',1,1)").bind(p).run()
  const received=(await app.call('/api/integrations/email/inbound',{headers:{Authorization:'Bearer fixture-native-knowledge'},body:{messageId:'native-knowledge@example.test',to:'native-help@example.test',from:'native@trusted.test',subject:'Account question',text:'Please explain my business account.'},status:201})).data
  const emailConversation=received.conversationId||received.conversation_id
- assert.ok((await call(`/api/knowledge/${p}/conversations/${emailConversation}/articles`,{status:200})).data.some(a=>a.id===aid),'a proven native email customer can receive their permitted article')
+ const nativeContact=(await call(`/api/dashboard/projects/${p}/conversations/${emailConversation}`,{status:200})).data.data.contact.id
+ const grants=`/api/knowledge/${p}/categories/${category}/entitlements`
+ const nativeBefore=(await call(`/api/knowledge/${p}/conversations/${emailConversation}/articles`,{status:200})).data.find(article=>article.id===aid)
+ assert.equal(nativeBefore.insertable,false,'a proven native email and matching domain do not create a selected-account grant')
+ assert.ok(nativeBefore.blockedRecipients.some(recipient=>recipient.kind==='contact'&&recipient.id===nativeContact))
+ await call(grants,{method:'PUT',body:{required:true,contactIds:[nativeContact],companyIds:[]},status:200})
+ assert.ok((await call(`/api/knowledge/${p}/conversations/${emailConversation}/articles`,{status:200})).data.some(a=>a.id===aid&&a.insertable),'a proven native email customer can receive their explicitly granted article')
 
 
  const signed=await app.first('SELECT verification_secret FROM projects WHERE id=?',p)
  const {createHmac}=await import('node:crypto')
  const widget=async(identifier,email)=>{const contact_hash=createHmac('sha256',signed.verification_secret).update(identifier).digest('hex');return (await app.call('/api/identity/widget/session',{body:{widgetKey:'widget-p',identifier,email,contact_hash},status:201})).data}
  const good=await widget('customer@trusted.test','customer@trusted.test')
+ assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:good.token})).status,404,'the same email domain gives a proven account no implicit selected access')
+ await call(grants,{method:'PUT',body:{required:true,contactIds:[nativeContact,good.contactId],companyIds:[]},status:200})
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:good.token})).status,200)
  const bad=await widget('customer-id','customer@trusted.test')
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:bad.token})).status,404)
- const typed=(await app.call('/api/identity/widget/session',{body:{widgetKey:'widget-p',email:'reader@trusted.test'},status:201})).data
+ const typed=(await app.call('/api/identity/widget/session',{body:{widgetKey:'widget-p',email:'customer@trusted.test'},status:201})).data
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{token:typed.token})).status,404)
- await app.call(`/api/knowledge/public/${p}/access/request`,{body:{email:'reader@trusted.test'},status:202})
+ await app.call(`/api/knowledge/public/${p}/access/request`,{body:{email:'customer@trusted.test'},status:202})
  const link=new URL(mail.at(-1).text.match(/https:\/\/[^\s]+/)[0]),verify=await app.call(link.pathname+link.search,{status:303}),cookie=verify.headers.get('Set-Cookie').split(';')[0]
  assert.ok(cookie.startsWith('h2h_help='));assert.equal((await app.call(link.pathname+link.search)).status,400,'a possession link is single-use')
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{headers:{Cookie:cookie},status:200})).data.content,'Restricted instructions')
@@ -39,10 +47,15 @@ try{
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret`,{headers:{Cookie:cookie}})).status,404)
  const goodConversation=(await app.call('/api/conversations',{token:good.token,body:{projectId:p},status:201})).data.id
  const badConversation=(await app.call('/api/conversations',{token:bad.token,body:{projectId:p},status:201})).data.id
- assert.ok((await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles?q=Restricted`,{status:200})).data.some(a=>a.id===aid))
- assert.ok(!(await call(`/api/knowledge/${p}/conversations/${badConversation}/articles?q=Restricted`,{status:200})).data.some(a=>a.id===aid))
+ assert.ok((await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles?q=Restricted`,{status:200})).data.some(a=>a.id===aid&&a.insertable))
+ const blockedArticle=(await call(`/api/knowledge/${p}/conversations/${badConversation}/articles?q=Restricted`,{status:200})).data.find(a=>a.id===aid)
+ assert.equal(blockedArticle.insertable,false)
+ assert.ok(blockedArticle.blockedRecipients.some(recipient=>recipient.kind==='contact'&&recipient.id===bad.contactId))
+ assert.deepEqual((await call(`/api/knowledge/${p}/search?`+new URLSearchParams({q:'Restricted',conversationId:badConversation}),{status:200})).data.citations,[],'recipient-aware retrieval excludes knowledge the target customer cannot read')
  const inserted=(await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles/${aid}/insert`,{body:{mode:'text'},status:200})).data
- assert.equal(inserted.text,'Restricted instructions')
+ assert.match(inserted.token,/^⟦k:[a-f0-9]{32}⟧$/)
+ assert.equal(inserted.preview.content,'Restricted instructions')
+ assert.equal(inserted.text,undefined,'the composer receives a reference rather than plain article text')
  assert.equal((await call(`/api/knowledge/${p}/conversations/${badConversation}/articles/${aid}/insert`,{body:{mode:'text'}})).status,404)
 
  await call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{article:'{{title}}\n{{content}}'}},status:200})
@@ -64,7 +77,8 @@ try{
  await app.call(`/api/knowledge/public/${p}/search?q=absent&locale=fr`,{token:good.token,status:200})
  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/secret/helpful`,{token:good.token,headers:{Origin:'https://evil.test'},body:{helpful:true}})).status,403)
  const stats=(await call(`/api/knowledge/${p}/analytics`,{status:200})).data;assert.equal(stats.totals.helpful,1);assert.equal(stats.comments[0].comment,'Worked');assert.equal(stats.totals.views,1);assert.equal(stats.totals.clicks,1);assert.ok(stats.searches.some(row=>row.query==='Restricted'&&row.withResults>0&&row.clicks===1));assert.ok(stats.searches.some(row=>row.query==='absent'&&row.withoutResults>0))
- assert.equal((await k.search('Restricted')).length,0,'private articles remain excluded from AI even after human access')
+ assert.ok((await k.search('Restricted')).some(source=>source.id===`article:${aid}`),'operator retrieval remains permitted independently of a customer ticket')
+ assert.deepEqual((await call(`/api/knowledge/${p}/search?`+new URLSearchParams({q:'Restricted',conversationId:badConversation}),{status:200})).data.citations,[],'operator access does not widen the target customer’s retrieval')
 
 }finally{await k.close()}
 }

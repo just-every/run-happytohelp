@@ -34,5 +34,12 @@ await step('native additive import migrations preserve prior business rows and t
  await db.prepare(`INSERT INTO ik_originals VALUES('prior-job','artifact','prior-original','original.txt','prior-hash',3,X'0001FF')`).run();
  beforeRuntime=(await snapshotDatabase(directory,db)).tables;
  },async afterRuntimeUpgrade(db,directory){const after=(await snapshotDatabase(directory,db)).tables;for(const [table,rows] of Object.entries(beforeRuntime))assertUnchangedTable(table,rows,after[table]);}
- });try{await h.contactSession('prior-visitor','prior-project','prior-contact');const transcript=await h.call('/api/conversations/prior-conversation/messages',{actor:'prior-visitor'});assert.equal(transcript.messages[0].content,'Existing customer message');assert.equal(h.outbound,0)}finally{await h.close()}});
+ });try{
+  await h.contactSession('prior-visitor','prior-project','prior-contact');
+  const pending=await h.raw('/api/conversations/prior-conversation/messages',{actor:'prior-visitor'});
+  assert.equal(pending.response.status,503,'historical text stays closed until the real upgrade queue completes');
+  await h.drain();
+  const transcript=await h.call('/api/conversations/prior-conversation/messages',{actor:'prior-visitor'});
+  assert.equal(transcript.messages[0].content,'Existing customer message');assert.equal(h.outbound,0);
+ }finally{await h.close()}});
 });

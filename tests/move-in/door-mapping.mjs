@@ -20,7 +20,7 @@ async function imported(vendor,body,{name='export.jsonl',apply=true,check,before
   assert.ok(review.plan,`${name} reached no review: ${review.state} ${review.error}`)
   const rejection=key=>review.plan.decisions.find(row=>`${row.kind}/${row.sourceId}`===key)?.rejection,omissions=key=>review.plan.decisions.find(row=>`${row.kind}/${row.sourceId}`===key)?.omissions.map(item=>item.reason)
   let done
-  if(apply&&review.plan.counts.effects>0){await h.call(`${root}/${review.id}/apply`,post({fingerprint:review.plan.fingerprint}));await h.drain();done=(await h.call(`${root}/${review.id}`)).data;assert.equal(done.state,'completed');assert.equal(done.error,null)}
+  if(apply&&review.plan.counts.effects>0){await h.call(`${root}/${review.id}/apply`,post({fingerprint:review.plan.fingerprint}));await h.drain();done=(await h.call(`${root}/${review.id}`)).data;assert.equal(done.state,'completed',JSON.stringify(done));assert.equal(done.error,null)}
   const rows=async sql=>(await h.db.prepare(sql).all()).results
   assert.equal(h.outbound,0,'import makes no external request before review or activation')
   await check({review,plan:review.plan,rejection,omissions,done,rows,h,initial});assert.deepEqual(h.outboundRequests,expectedPostReviewRequests,'only explicitly exercised native behavior may attempt the named provider request')

@@ -30,3 +30,5 @@ test('a solved native conversation emails one signed satisfaction survey, record
 test('a translated request form enforces typed conditional required fields on the server, protects anonymous submissions, and admits one ticket after email verification',async()=>{const {requestFormsJourney}=await import('../helpers/request-forms-journey.mjs');await requestFormsJourney()})
 
 test('customers sign into their own portal by email, reply with attachments, answer a signed survey, reopen a solved request and control notifications while other identities and erased sessions are denied',async()=>{const {customerPortalJourney}=await import('../helpers/customer-portal-journey.mjs');await customerPortalJourney()})
+
+test('knowledge references survive cross-ticket saved replies, copied edits, revocation, API reads and collection publication',async()=>{const {referenceJourney}=await import('../helpers/knowledge/references.mjs');await referenceJourney()})

@@ -100,3 +100,22 @@
   .knowledge-metrics > div { min-width: 0; padding: 12px; }
   .knowledge-metrics dd { font-size: 22px; overflow-wrap: anywhere; }
 }
+
+.knowledge-entitlements{margin-top:1rem}
+.knowledge-entitlements h3{font-size:1rem}
+.knowledge-entitlement-toggle{display:flex;align-items:center;gap:.6rem;min-height:44px}
+.knowledge-entitlement-list{list-style:none;margin:.5rem 0 1rem;padding:0}
+.knowledge-entitlement-list li{display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--border-color,#ddd);padding:.5rem 0}
+.knowledge-entitlement-list span{min-width:0;overflow-wrap:anywhere}
+.knowledge-entitlement-list small{display:block}
+.knowledge-entitlement-list button{min-height:44px;min-width:66px;flex-shrink:0}
+
+.knowledge-governance-group select,.knowledge-entitlements input[type="search"]{min-height:44px}
+
+.knowledge-upgrade-report{border:1px solid var(--rule-strong);border-radius:12px;padding:1rem;margin:1.5rem 0}
+.knowledge-upgrade-report h2{font-size:1.25rem;margin:0 0 .75rem}
+.knowledge-upgrade-report dl{display:flex;flex-wrap:wrap;gap:1rem 2rem}
+.knowledge-upgrade-report dt{font-weight:500;color:var(--ink-soft)}
+.knowledge-upgrade-report dd{font-size:1.25rem;margin:0}
+.knowledge-upgrade-report li a{display:inline-flex;align-items:center;min-height:44px;overflow-wrap:anywhere}
+.knowledge-upgrade-report .btn{min-height:44px}

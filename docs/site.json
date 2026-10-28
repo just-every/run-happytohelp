@@ -307,6 +307,10 @@
     {
       "source": "docs/contract/support-protocols.md",
       "reason": "Retained support protocol and implementation details"
+    },
+    {
+      "source": "RULINGS.md",
+      "reason": "Retained owner and ct scope decisions"
     }
   ]
 }

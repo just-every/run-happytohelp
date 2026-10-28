@@ -1143,3 +1143,9 @@ The 23 October 2026 contract-text clarification separates local implementation/f
 | `PUSH-002` | Promises survive every handoff | push-further | missing |  | No implementation located: obligation records with owner and due time, reminders and follow-up drafts are absent (durable messages and notes in `src/modules/conversations/admission.ts` are not obligations). |
 | `PUSH-003` | Learn from reopenings under human control | push-further | missing |  | No implementation located: version-joined diagnosis of reopened cases, proposals and controlled rollout are absent (evaluation runs in `src/modules/training-runs/runner.ts` are generic). |
 | `PUSH-004` | Turn verified edge cases into reviewed knowledge | push-further | missing |  | No implementation located: gap clustering from unanswered cases, sourced draft articles and recovery measurement are absent (article authoring in `src/modules/knowledge/authoring.ts` is manual). |
+
+## 2026-10-28 — Contract structure and retained judgements
+
+Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). R5 additionally updates SLA-001, AUTOMATION-001/002, QUEUE-001/004 and STATUS-001 from the workflow, inbox and packaged recovery journeys on 17 October 2026. WIDGET-001 and AUTOMATION-002 are re-judged at `473a30dab0c6458e5250a55cbebeef999e1e3063` (22 October 2026), with workspace presence and the away-reply correction (migrations 240 and 241). AUTOMATION-001 is re-judged DONE at `c36c8cf01a3b8770427e78bed07d71159a0fb872` (23 October 2026).
+
+Original acceptance evidence remains in docs/verify.md. Existing production cutover and Knowledge scope decisions are unchanged; HappyToHelp still lands only through its hh handoff lander after independent cleanup PASS and guarded receipts.

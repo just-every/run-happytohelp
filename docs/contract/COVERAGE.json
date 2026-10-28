@@ -4067,14 +4067,14 @@
       "file": "CONTRACT.md",
       "line": 563,
       "text": "The platform admission index's `move_in_contact_keys.email_digest` remains lazy derived memoization. Exact business equality preserves its project/contact links and validates each populated digest against the native email; NULL-to-correct-digest does not alter business state. Contacts, native email, identity and all source/business links remain in the equality comparison.",
-      "to": "changelog"
+      "to": "docs",
+      "path": "docs/contract/support-protocols.md"
     },
     {
       "file": "CONTRACT.md",
       "line": 567,
       "text": "Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). R5 additionally updates SLA-001, AUTOMATION-001/002, QUEUE-001/004 and STATUS-001 from the workflow, inbox and packaged recovery journeys on 17 October 2026. WIDGET-001 and AUTOMATION-002 are re-judged at `473a30dab0c6458e5250a55cbebeef999e1e3063` (22 October 2026), with workspace presence and the away-reply correction (migrations 240 and 241). AUTOMATION-001 is re-judged DONE at `c36c8cf01a3b8770427e78bed07d71159a0fb872` (23 October 2026).",
-      "to": "section",
-      "section": "Status"
+      "to": "changelog"
     },
     {
       "file": "CONTRACT.md",
@@ -4208,6 +4208,14 @@
       "to": "gap",
       "ids": [
         "SLA-001"
+      ],
+      "also": [
+        {
+          "to": "rulings",
+          "ids": [
+            "RL-7"
+          ]
+        }
       ]
     },
     {
@@ -4258,6 +4266,14 @@
       "to": "gap",
       "ids": [
         "CUSTOMER-001"
+      ],
+      "also": [
+        {
+          "to": "rulings",
+          "ids": [
+            "RL-5"
+          ]
+        }
       ]
     },
     {
@@ -4288,6 +4304,14 @@
       "to": "gap",
       "ids": [
         "ESCALATION-001"
+      ],
+      "also": [
+        {
+          "to": "rulings",
+          "ids": [
+            "RL-8"
+          ]
+        }
       ]
     },
     {
@@ -4464,6 +4488,14 @@
       "to": "gap",
       "ids": [
         "PROCEDURE-001"
+      ],
+      "also": [
+        {
+          "to": "rulings",
+          "ids": [
+            "RL-6"
+          ]
+        }
       ]
     },
     {

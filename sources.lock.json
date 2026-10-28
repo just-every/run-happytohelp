@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "73b5d8d995c2e70a8c04415d01d35d7c2dcb3b3d07a177745139239fecf5bf20",
+      "sha256": "3f85a9577988dfc4bf5b5d7f14b28334b151b16a378219c5314fb4f7bb0b8616",
       "executable": false
     },
     "AGENTS.md": {
@@ -1620,7 +1620,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "bdea424635b7ad89bec0993b6c5888f329b86e3b60af5176d202c3fe2f6df88e",
+      "sha256": "dca8917c3aa25d357ffcf9adb41a991c4377e1abeb2dda42840aa94a20ae5e21",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a1a50329de159acafda8b2ed2c5c767392f556b58deba336f23cff9acf9a51ad",
+      "sha256": "ad6608a0f414bdaf1aad091e50cd96299b88c0f86d5d38c993d801d366f82718",
       "executable": false
     },
     "DEMO.md": {
@@ -1684,7 +1684,7 @@
       "executable": false
     },
     "docs/contract/COVERAGE.json": {
-      "sha256": "db99bbe281e6d7a0b66070f00e37e2b1ee7c76c4a152e11ea8d1f7042085120c",
+      "sha256": "8345e19bd738ad7245d900ba6fb4ae47d279c61b76ac9a1dcbbde05fb11a4f72",
       "executable": false
     },
     "docs/contract/ID-MAP.json": {
@@ -1697,6 +1697,10 @@
     },
     "docs/contract/public-design.md": {
       "sha256": "8982ceaa88b29510e8f4c3e45a6ec3c9c87433b9b08da0ea104d146554706909",
+      "executable": false
+    },
+    "docs/contract/support-protocols.md": {
+      "sha256": "e94e217882463e0a5c8f6fd2fc1222e10afa563552b6e3d85c9e34029134802d",
       "executable": false
     },
     "docs/customer-portal.md": {
@@ -1808,7 +1812,7 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "5282c66dfb5e04b7fc57ddeba220f8e01a8c0801f8417574d481087a4ac363a2",
+      "sha256": "f11ff511d67449ec2c7c84d1050116853d2a921aec4a0fbd0804886917d93c82",
       "executable": false
     },
     "docs/SOURCE-PROVENANCE.md": {

@@ -24,7 +24,15 @@ export async function seedJourney(runtime) {
   const media = await json(response, 201);
   const ticket = await seedRecoveryTicket(runtime, owner, conversation);
   const r4 = await seedRecoveryR4(runtime, {owner, visitor, conversation, media, ticket});
-  const state = {owner, conversation, media, bytes, command, article, ticket, r4};
+  const machine=await json(await call(runtime,`/api/management/projects/${owner.projectId}/connections/tokens`,{name:'Synthetic recovery machine',source_product:'synthetic-hh-restore',scopes:['conversations:create','messages:append','conversations:read']},owner.token),201);
+  const request={requester:{external_id:'synthetic-hh-restore'},subject:'API recovery',body:'Retained machine request',source_ref:{product:'synthetic-hh-restore',ref:'synthetic-hh-restore',url:'https://example.test/restore'}};
+  const apiTicket=await json(await call(runtime,'/api/v1/conversations',request,machine.token,{'Idempotency-Key':'synthetic-hh-restore'}),201);
+  const erasedRequest={requester:{external_id:'synthetic-hh-restore-erased'},subject:'Erase before restore',body:'Remove this API content'};
+  const erasedTicket=await json(await call(runtime,'/api/v1/conversations',erasedRequest,machine.token,{'Idempotency-Key':'synthetic-hh-restore-erased'}),201);
+  const erasedState=await json(await call(runtime,`/api/management/projects/${owner.projectId}/conversations/${erasedTicket.data.id}/ticket`,undefined,owner.token),200);
+  await json(await call(runtime,`/api/management/projects/${owner.projectId}/contacts/${erasedState.data.contact_id}/erase`,{},owner.token),200);
+  const api={machine,request,apiTicket,erasedRequest};
+  const state = {api,owner, conversation, media, bytes, command, article, ticket, r4};
   await verifyAccess(runtime, state, owner.token);
   return state;
 }
@@ -48,4 +56,35 @@ export async function verifyFreshLogin(runtime, state) {
   const login = await json(await call(runtime, '/api/identity/login', {email: credentials.email, password: credentials.password}), 200);
   assert.notEqual(login.token, state.owner.token, 'Fresh password login must create a new session');
   await verifyAccess(runtime, state, login.token);
+}
+
+export async function verifyRestoredApi(runtime,state){
+ const {owner,api}=state;
+ const settings=`/api/management/projects/${owner.projectId}/connections/tokens`;
+ const list=await json(await call(runtime,settings,undefined,owner.token),200);
+ const credential=list.data.find(row=>row.id===api.machine.data.id);assert.ok(credential.revokedAt);assert.equal(credential.source_product,'synthetic-hh-restore');
+ assert.equal((await call(runtime,'/api/v1/conversations',api.request,api.machine.token,{'Idempotency-Key':'synthetic-hh-restore'})).status,401);
+ const ticket=await json(await call(runtime,`/api/management/projects/${owner.projectId}/conversations/${api.apiTicket.data.id}/ticket`,undefined,owner.token),200);
+ assert.equal(ticket.data.channel,'api:synthetic-hh-restore');assert.equal(ticket.data.api.credential_name,'Synthetic recovery machine');assert.equal(ticket.data.api.source_ref,api.request.source_ref.ref);
+ const erasedIssuer=list.data.find(row=>row.id===api.erasedIssuer.data.id);assert.equal(erasedIssuer.issuer_id,null);assert.ok(erasedIssuer.revokedAt);
+ assert.equal((await call(runtime,'/api/v1/conversations',api.request,api.erasedIssuer.token,{'Idempotency-Key':'synthetic-hh-inert-issuer'})).status,401);
+ const audit=await json(await call(runtime,`/api/management/projects/${owner.projectId}/audit/export?format=json`,undefined,owner.token),200);
+ for(const id of api.issuerEvents){const event=audit.events.find(event=>event.id===id);assert.ok(event);assert.equal(event.actor,'Former teammate')}
+ const issuerTicket=await json(await call(runtime,`/api/management/projects/${owner.projectId}/conversations/${api.issuerTicketId}/ticket`,undefined,owner.token),200);assert.equal(issuerTicket.data.api.credential_name,'Synthetic retained recovery machine');
+ const reissued=await json(await call(runtime,settings,{name:'Synthetic restored machine',source_product:'synthetic-hh-restore',scopes:['conversations:create']},owner.token),201);
+ for(const [request,key] of [[api.request,'synthetic-hh-restore'],[api.erasedRequest,'synthetic-hh-new-after-restore']]){
+  const result=await call(runtime,'/api/v1/conversations',request,reissued.token,{'Idempotency-Key':key});assert.equal(result.status,409);assert.equal((await result.json()).error.code,'identity_erased');
+ }
+}
+
+export async function eraseRecoveryIssuer(runtime,state,issuerId,issuerSession){
+ const {owner,api}=state,settings=`/api/management/projects/${owner.projectId}/connections/tokens`;
+ api.erasedIssuer=await json(await call(runtime,settings,{name:'Synthetic retained recovery machine',source_product:'synthetic-hh-issuer-restore',scopes:['conversations:create','messages:append']},issuerSession),201);
+ const created=await json(await call(runtime,'/api/v1/conversations',{requester:{external_id:'synthetic-hh-issuer-restore'},subject:'Retained issuer ticket',body:'Customer request'},api.erasedIssuer.token,{'Idempotency-Key':'synthetic-hh-issuer-restore'}),201);
+ api.issuerTicketId=created.data.id;
+ await json(await call(runtime,`/api/v1/conversations/${created.data.id}/append`,{kind:'customer',localId:'synthetic-hh-issuer-restore-append',content:'Retained followup'},api.erasedIssuer.token),200);
+ await json(await call(runtime,`/api/dashboard/projects/${owner.projectId}/agents/${issuerId}/erase`,{},owner.token),200);
+ const audit=await json(await call(runtime,`/api/management/projects/${owner.projectId}/audit/export?format=json`,undefined,owner.token),200);
+ api.issuerEvents=audit.events.filter(event=>event.actor_id===issuerId).map(event=>event.id);assert.ok(api.issuerEvents.length);
+ assert.ok(audit.events.filter(event=>api.issuerEvents.includes(event.id)).every(event=>event.actor==='Former teammate'));
 }

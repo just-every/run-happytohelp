@@ -55,6 +55,23 @@ refused. Accepted custom answers are stored as typed ticket values for the
 inbox and the existing ticket-field filters and rules. Changing a form does not
 rewrite values on earlier requests.
 
+## Route requests and apply service commitments
+
+Workflow conditions can match `form_id` and `field:<ticket-field-id>` together,
+so two forms with the same answer can route to different teams. The form ID is
+read from the admitted submission, rather than supplied as a ticket attribute.
+
+The SLA policy API at `/api/dashboard/projects/:projectId/sla-policies` accepts
+`conditions.form_ids` (any listed form) and `conditions.fields` (all listed typed
+answers). For example, `fields: {"priority-field-id": "urgent"}` matches that
+exact stored answer. Numbers and booleans retain their types; multi-select lists
+match their complete stored list in order. Empty conditions match any value.
+References must belong to the workspace, field values must pass the field's
+validation, and restricted fields cannot be used. If a field becomes restricted,
+its values no longer select that SLA. Existing policies without these conditions
+keep their behavior. The settings screen displays these conditions and preserves
+them when editing a policy; configure these two conditions through the API.
+
 ## API reference
 
 Public form definitions are available through `GET /api/forms/:projectId` and
@@ -64,6 +81,15 @@ choice values, required flags, conditions, validation and available locales.
 
 Submit with `POST /api/forms/:projectId/:formId/submissions`. The request has
 `subject`, `message`, `fields` keyed by ticket-field ID, and a unique `localId`.
+An optional `cc` array admits up to 50 unique email addresses already independently
+proven to this workspace by signed customer identity or authenticated customer mail.
+Valid unknown, ambiguous, unavailable, unproven or other-workspace addresses are
+silently omitted. The public response never reports which CCs qualified. Malformed
+addresses still return a `422` validation error. A normalized duplicate of the
+requester is skipped. Typing an address creates no contact and proves no identity.
+The CC set is part of the immutable command. The requester and admitted CCs receive
+one separately addressed acknowledgment, including when the same command is
+replayed after a restart. No recipient sees another recipient’s address.
 Anonymous requests supply `turnstileToken` from the bot check, but a successful
 bot check alone does not create a request: the customer must still verify their
 email. Signed-in submissions use the portal cookie established by email
@@ -83,6 +109,25 @@ Each field references `fieldId` and `required`, with an optional `condition`
 containing `fieldId`, `operator` and, except for `present`, `value`. Translations
 are keyed by locale; their `fields` entries are keyed by field ID, including
 `subject` and `message`, and contain `label`, `description` and choice `options`.
+
+Owners and admins with settings permission can inspect the latest 100 saved
+versions with `GET /api/forms/projects/:projectId/forms/:formId/versions`.
+History also respects the current read permissions of its referenced fields.
+Each version records its save time, actor, previous version, form configuration
+and the referenced field definitions, in the same transaction as the save.
+Updates that lose a permission or stale-definition check create no version.
+The history uses the existing portable audit store and its custody rules; it
+starts with saves made after this capability was installed. Deleted forms retain
+their recorded history. To reuse a prior configuration, read the current form,
+copy the saved `config` into an ordinary update and supply the current
+`updatedAt`; this makes a new version and still validates current fields.
+Existing tickets retain their original typed values when forms change.
+The corresponding ticket-field definitions have a history API at
+`GET /api/management/projects/:projectId/ticket-fields/:id/versions`, with the same
+settings authority and the field's read permissions. Accepted edits retain their
+prior definitions and must validate every existing value. A field with stored
+ticket values cannot be deleted; make it optional or edit it instead. This keeps
+old ticket values from disappearing when a lead changes their forms.
 
 Order/account lookup fields and a form version-history management screen are not
 available. Form fields reuse the current ticket-field permissions and validation; they do not introduce a separate field

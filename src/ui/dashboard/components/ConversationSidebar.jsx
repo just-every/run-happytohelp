@@ -1,4 +1,5 @@
 import BusinessPanel from '../../native/pages/business-connectors/Panel';
+import ProductionTrace from './conversation/ProductionTrace';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDashboardSettings } from '../../native/dashboard-state';
@@ -17,6 +18,7 @@ import EscalationsPanel from './escalations/EscalationsPanel';
 import HandleTimer from './tickets/HandleTimer';
 import useHandleTimer, { handleDuration } from './tickets/useHandleTimer';
 import ProblemPanel from './tickets/ProblemPanel';
+import PossiblySameCustomer from './tickets/PossiblySameCustomer';
 import TicketEditor from './tickets/TicketEditor';
 import TicketHistory from './tickets/TicketHistory';
 import TicketSection from './ticket-panel/TicketSection';
@@ -138,9 +140,10 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
     return <div className="conversation-details">
         <TicketSummary conversation={ conversation } record={ record } workflows={ workflows } escalationUpdates={ escalationUpdates } onOpenSection={ openSection } />
         <div className="ticket-sections">
+            { record && section('business', 'Business context', <BusinessPanel projectId={ conversation.project_id } conversationId={ conversation.id } />) }
+            { section('trace', 'Execution trace', <ProductionTrace conversation={ conversation } active={ Boolean(isShown) && open.has('trace') } />) }
             { record && section('fields', 'Ticket fields', <TicketEditor conversation={ conversation } record={ record } />) }
             { workflows && section('schedules', 'Schedules', <WorkflowPanel conversation={ conversation } workflows={ workflows } onBadge={ badgeSetters.schedules } />, badges.schedules) }
-            { record && section('business', 'Business context', <BusinessPanel projectId={ conversation.project_id } conversationId={ conversation.id } />) }
             { section('escalations', 'Escalations', <EscalationsPanel projectId={ conversation.project_id } conversationId={ conversation.id } refreshKey={ liveKey } reads={ reads } onDraft={ onReviewEscalationDraft } onBadge={ badgeSetters.escalations } onUpdates={ setEscalationUpdates } />, badges.escalations) }
             { section('merges', 'Merges and partner threads', <ConversationActions conversation={ conversation } refreshKey={ liveKey } reads={ reads } onChanged={ onTicketChanged } onBadge={ badgeSetters.merges } />, badges.merges) }
             { manage && section('problem', 'Problem and incidents', <ProblemPanel projectId={ conversation.project_id } conversationId={ conversation.id } ticket={ ticket } onChanged={ () => record.reload() } onBadge={ badgeSetters.problem } />, badges.problem) }
@@ -156,6 +159,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
                     onEmailTranscript={ () => setIsEmailConversationTranscriptModalVisible(true) }
                     onToggleBlock={ handleBlock }
                 />
+                <PossiblySameCustomer projectId={ conversation.project_id } contact={ { ...conversation.contact, id: conversation.contact_id } } active={ open.has('customer') } />
                 <ConversationEnvironmentDetails contact={ conversation.contact } />
                 { conversation.contact.metadata && <ConversationDetailSection className="conversation-details-metadata" title="Metadata">
                     { Object.entries(conversation.contact.metadata).map(([ key, value ]) => <MetadataItem key={ key } name={ key } value={ value } />) }

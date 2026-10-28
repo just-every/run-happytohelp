@@ -29,12 +29,11 @@ pnpm exec rer describe
 Reset erases the printed local inventory; export your data **before** resetting
 if you need it. Import requires an empty destination and retains native owners.
 Deploy requires explicit owner authorization and private account configuration.
-`--dry-run` needs the Cloudflare account credentials too: without them it refuses
-before any provider request. With them it builds locally and makes only read-only
-Cloudflare GET requests (the account's Workers subdomain and the Worker's settings
-and secret names), validates the private mail inputs when supplied and refuses
-when a required secret is neither held nor supplied. It sends no mail and changes
-no provider resources.
+NATIVE-001 requires a zero-outbound dry-run and a separately started read-only provider preflight with owner consent and a scoped token. The separate preflight still needs implementation and live qualification.
+`--dry-run` validates and builds locally without provider requests or credentials.
+It sends no mail and changes no provider resources. Its receipt explicitly leaves
+remote resources, credential validity and existing secret bindings unchecked;
+a real deployment checks those before changing resources.
 See [OPERATIONS.md](OPERATIONS.md) for state, deployment and restore requirements.
 
 ## Working on HappyToHelp

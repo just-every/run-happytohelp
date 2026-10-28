@@ -53,11 +53,11 @@ contactErasure.post('/projects/:projectId/contacts/:contactId/erase', async c =>
     ...providerErasureStatements(c.env, {projectId: actor.projectId, contactId, externalId: reach?.external_id ?? null, now, usedAi: Boolean(reach?.ai), usedComputers: Boolean(reach?.computers)}),
     auditStatement(c.env.DB, {projectId: actor.projectId, category: 'erasure', action: 'contact.erased', actor: {type: 'user', id: actor.id}, source: requestSource(c), target: {type: 'contact', id: contactId}, detail: {run: erasure.runs, conversations: erasure.conversations, messages: erasure.messages, attachments: erasure.attachments, trackedEvents: erasure.tracked_events, contextRecords: erasure.context_records, sessions: erasure.sessions, ticketRecords:erasure.ticket_records}}, now),
   ])
-  return c.json({data: {...erasure, providers: await providerRequests(c.env, actor.projectId, contactId)}})
+  return c.json({data: {...erasure, api:await c.env.DB.prepare('SELECT requests,appends,notes,pending_payloads,held_requests FROM api_erasure_inventory WHERE project_id=? AND contact_id=?').bind(actor.projectId,contactId).first(), providers: await providerRequests(c.env, actor.projectId, contactId)}})
 })
 contactErasure.get('/projects/:projectId/contacts/:contactId/erasure', async c => {
   const actor = await scope(c, true), contactId = c.req.param('contactId')
   const erasure = await c.env.DB.prepare('SELECT * FROM contact_erasures WHERE project_id=? AND contact_id=?').bind(actor.projectId, contactId).first<ContactErasure>()
   if (!erasure) throw new HTTPException(404)
-  return c.json({data: {...erasure, providers: await providerRequests(c.env, actor.projectId, contactId)}})
+  return c.json({data: {...erasure, api:await c.env.DB.prepare('SELECT requests,appends,notes,pending_payloads,held_requests FROM api_erasure_inventory WHERE project_id=? AND contact_id=?').bind(actor.projectId,contactId).first(), providers: await providerRequests(c.env, actor.projectId, contactId)}})
 })

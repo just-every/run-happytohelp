@@ -10,11 +10,12 @@ export function helpScoutPositions(raw:string,maxRecords:number):JsonPosition[]{
  if(syntax.some(position=>position.error))return syntax.filter(position=>position.error)
  const root=JSON.parse(raw),result:JsonPosition[]=[],esc=(s:string)=>s.replace(/~/g,'~0').replace(/\//g,'~1')
  const add=(pointer:string,sourceKind:string)=>{const position=offsets.get(pointer);if(!position)throw new Error('helpscout_document_depth_unsupported');if(result.length>=maxRecords)throw new IndexLimitError(position.row,pointer);result.push({...position,sourceKind})}
- const kinds:Record<string,string>={conversations:'conversation',customers:'contact',tags:'tag',collections:'collection',categories:'category',articles:'article-ref'}
+ const kinds:Record<string,string>={organizations:'organization',conversations:'conversation',customers:'contact',tags:'tag',collections:'collection',categories:'category',articles:'article-ref'}
  function record(value:any,pointer:string,hint?:string){
   if(!object(value))throw new Error('helpscout_record_must_be_object')
   if(hint){add(pointer,hint);return}
   if(object(value.article)){add(`${pointer}/article`,'article');for(const key of Object.keys(value))if(key!=='article')add(`${pointer}/${esc(key)}`,`metadata:${pointer}/${key}`);return}
+  if(object(value.organization)){add(`${pointer}/organization`,'organization');for(const key of Object.keys(value))if(key!=='organization')add(`${pointer}/${esc(key)}`,`metadata:${pointer}/${key}`);return}
   if(object(value._embedded)&&Array.isArray(value._embedded.threads)&&value.page){add(pointer,'thread-page');return}
   if(value.id!==undefined){const kind=typeof value.threads==='number'&&value.primaryCustomer?'conversation':value.firstName!==undefined||value._embedded?.emails?'contact':value.siteId!==undefined?'collection':value.collectionId!==undefined&&value.defaultSort!==undefined?'category':typeof value.text==='string'&&value.collectionId!==undefined?'article':undefined;if(!kind)throw new Error('helpscout_detail_shape_unknown');add(pointer,kind);return}
   if(object(value._embedded)){

@@ -1,3 +1,4 @@
+import {hasSuppliedAttachmentSchema} from '../move-in/attachment-schema'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 export function noteMediaIds(value:unknown){
@@ -17,7 +18,12 @@ export async function prepareNoteMedia(env:Env,actor:Actor,conversationId:string
 export async function noteMediaData(env:Env,projectId:string,noteIds:string[]){
  const byNote=new Map<string,Record<string,unknown>[]>()
  if(!noteIds.length)return byNote
- const rows=await env.DB.prepare(`SELECT nm.note_id,n.conversation_id,m.id,m.filename,m.content_type,m.size FROM conversation_note_media nm JOIN conversation_notes n ON n.id=nm.note_id JOIN conversations c ON c.id=n.conversation_id JOIN media m ON m.id=nm.media_id AND m.project_id=c.project_id AND m.conversation_id=c.id WHERE c.project_id=? AND n.id IN (SELECT value FROM json_each(?)) ORDER BY nm.note_id,m.created_at,m.id`).bind(projectId,JSON.stringify(noteIds)).all<{note_id:string;conversation_id:string;id:string;filename:string;content_type:string;size:number}>()
+ // Transcript reads remain available while an installation is awaiting the
+ // additive attachment migration. Inspect the schema explicitly; query failures
+ // still propagate, and importing bytes continues to require the migrated table.
+ const importedBytes=await hasSuppliedAttachmentSchema(env)
+ const importedMedia=importedBytes?' UNION ALL SELECT note_id,media_id FROM move_in_attachment_bytes WHERE note_id IS NOT NULL':''
+ const rows=await env.DB.prepare(`SELECT nm.note_id,n.conversation_id,m.id,m.filename,m.content_type,m.size FROM (SELECT note_id,media_id FROM conversation_note_media UNION ALL SELECT note_id,media_id FROM api_note_media${importedMedia}) nm JOIN (SELECT id,conversation_id FROM conversation_notes UNION ALL SELECT id,conversation_id FROM api_notes UNION ALL SELECT id,conversation_id FROM move_in_notes) n ON n.id=nm.note_id JOIN conversations c ON c.id=n.conversation_id JOIN media m ON m.id=nm.media_id AND m.project_id=c.project_id AND m.conversation_id=c.id WHERE c.project_id=? AND n.id IN (SELECT value FROM json_each(?)) ORDER BY nm.note_id,m.created_at,m.id`).bind(projectId,JSON.stringify(noteIds)).all<{note_id:string;conversation_id:string;id:string;filename:string;content_type:string;size:number}>()
  for(const row of rows.results){const media=byNote.get(row.note_id)||[];media.push({id:row.id,filename:row.filename,filename_original:row.filename,content_type:row.content_type,size:row.size,aggregate_type:row.content_type.startsWith('image/')?'image':'file',url:`/api/conversations/${encodeURIComponent(row.conversation_id)}/media/${encodeURIComponent(row.id)}`});byNote.set(row.note_id,media)}
  return byNote
 }

@@ -1,3 +1,6 @@
+import {rerMailboxSeed} from './rer-mailbox'
+import {rerMail} from '../../integrations/rer-mail-contract'
+import {processRerMailbox} from '../../integrations/rer-mailbox'
 import type {Env} from '../../../platform/env'
 import type {SqlGuard} from '../../../platform/integration-authority'
 import {enqueueSiteRead} from '../site-read/index'
@@ -26,8 +29,9 @@ export type WorkspaceSeed = {projectId: string; name: string; website: string; o
 export function workspaceDefaults(env: Env, seed: WorkspaceSeed, guard?: SqlGuard): {statements: D1PreparedStatement[]; after: () => Promise<void>} {
  const now = Date.now(), when = creationCondition(seed.projectId, guard)
  return {
-  statements: [...starterAssistant(env, seed.projectId, now, when), ...proposedSender(env, seed, now, when), ...inboundMailbox(env, seed, now, when), ...ownerAlerts(env, seed.projectId, when)],
+  statements: [...starterAssistant(env, seed.projectId, now, when), ...proposedSender(env, seed, now, when), ...(rerMail(env)?rerMailboxSeed(env,seed,now,when):inboundMailbox(env, seed, now, when)), ...ownerAlerts(env, seed.projectId, when)],
   after: async () => {
+   if(rerMail(env))try{await processRerMailbox(env,seed.projectId)}catch{console.error('Managed mailbox binding remains queued')}
    try { await enqueueSiteRead(env, seed.projectId) } catch (error) {
     console.error('Site read not queued', seed.projectId, error instanceof Error ? error.message : String(error))
    }

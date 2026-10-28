@@ -11,5 +11,5 @@ export function movedFields(fields, index, offset) {
 export function conditionValue(field, value) {
     if (field?.type === 'checkbox') return value === true || value === 'true';
     if (['number', 'decimal'].includes(field?.type)) return value === '' ? '' : Number(value);
-    return value;
+    return typeof value === 'object' && value !== null ? value.value : value;
 }

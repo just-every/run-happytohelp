@@ -1,9 +1,11 @@
 // Turns the activation snapshot into what the Setup list shows. Pure: no requests, no wording decided by the server.
-// Needs you = steps the server places in `needs_you`, less the AI service once a key is installed, unless the provider
-// rejected the key or refused to let us check it (see modelKeyState). Skipped = the same steps once the owner chose to
-// leave them for now (placement `skipped`); an observation always wins, so a skipped step later seen is just a row;
-// What we've set = every other visible step plus the facts that have no observation of their own (workspace, colour,
-// starter assistant). Every row says what is true of its state: installed is not confirmed, off is not waiting.
+// Open = steps the server places in `needs_you`, less the AI service once a key is installed, unless the provider
+// rejected the key or refused to let us check it (see modelKeyState). An open step is Needs you, or Optional: the AI
+// service while it has no key, and the widget until the owner gives a website of their own. Skipped = the same steps
+// once the owner chose to leave them for now (placement `skipped`); an observation always wins, so a skipped step later
+// seen is just a row; What we've set = every other visible step plus the facts that have no observation of their own
+// (workspace, colour, starter assistant). Every row says what is true of its state: installed is not confirmed, off is
+// not waiting.
 export const needOrder = ['widget_seen', 'model_key', 'sender_dns'];
 
 // The settings page each row's Change link opens, and how that page is named in the link's accessible label.
@@ -77,9 +79,20 @@ const ownerStep = (data, item) => item.id !== 'model_key' || ['missing', 'proble
 const asksOwner = (data, item) => item.placement === 'needs_you' && ownerStep(data, item);
 const leftForNow = (data, item) => item.placement === 'skipped' && ownerStep(data, item);
 const inNeedOrder = (a, b) => needOrder.indexOf(a.id) - needOrder.indexOf(b.id);
-export const needs = data => data.steps.filter(item => asksOwner(data, item)).sort(inNeedOrder);
+/** Whether the widget answers on a website of the owner's own, rather than nowhere yet or only on this app's address. */
+const siteGiven = data => Boolean(data.facts?.website) && hostOf(data.facts.website) !== hostOf(data.facts?.widget?.apiOrigin);
+// AI is optional, so the AI service waits under Optional while it has no key (a rejected or refused key is a problem,
+// which needs the owner); so does the widget, until there is a website of the owner's own to put it on.
+const optionalStep = (data, item) => item.id === 'model_key' ? modelKeyState(data) === 'missing' : item.id === 'widget_seen' && !siteGiven(data);
+/** Every step still open to the owner, needed or optional, in need order: the heading stays at "Nearly ready" while any is. */
+export const open = data => data.steps.filter(item => asksOwner(data, item)).sort(inNeedOrder);
+export const needs = data => open(data).filter(item => !optionalStep(data, item));
+/** What the owner can do whenever they want: shown apart from Needs you and never counted as needing them. */
+export const optional = data => open(data).filter(item => optionalStep(data, item));
 /** What the owner chose to leave for now, in need order. Never counted and never shown as confirmed. */
 export const skipped = data => data.steps.filter(item => leftForNow(data, item)).sort(inNeedOrder);
+/** A local trial whose widget and AI key are both still open, with no key yet: one action leaves both for now. */
+export const localTrial = data => data.environment === 'local' && modelKeyState(data) === 'missing' && ['widget_seen', 'model_key'].every(id => open(data).some(item => item.id === id));
 
 function ceilingsValue(data) {
  const limits = data.facts?.ceilings;
@@ -104,6 +117,7 @@ function rowFor(data, id) {
    return {...withObservation('set', !facts.website ? sentence(own?.detail || '') : testing ? `${facts.website}. This is HappyToHelp’s own address, so the widget answers only here, which suits a test. Enter your website’s address to use it there.` : `${facts.website}. Your widget works only here.`), change: [...pages.widget, 'settings']};
   }
   case 'owner_mail': {
+   if(facts.mail?.managed&&!observed)return {...base,state:facts.mail.managed.error?'problem':'set',value:facts.mail.managed.error|| (facts.mail.managed.lastOutboundAcceptanceAt?'The provider accepted an email for you. Use an emailed sign-in link to confirm it arrived.':'Your assigned address sends account and support email once Run Edit Run activates it.')};
    if (facts.mail?.mode === 'unavailable') {
     const names = own?.state === 'unavailable' ? requiredNames(own.detail) : '';
     return {...base, state: 'unavailable', value: `Email isn’t configured, so we can’t email you.${names ? ` It needs ${names}.` : ''}`};
@@ -111,6 +125,7 @@ function rowFor(data, id) {
    return withObservation('set', facts.mail?.mode === 'local' ? 'Email is suppressed during local development. No email is sent.' : observed ? `${/delivered/i.test(own.receiptRef || '') ? 'Delivered' : 'Received'}. ${own.checkedAt ? `Confirmed ${utc(own.checkedAt)}.` : ''}`.trim() : 'Not confirmed yet. Signing in with an emailed link, or the test on the Email page, confirms it.');
   }
   case 'inbound_address': {
+   if(facts.mail?.managed){const m=facts.mail.managed;return {...base,state:m.error?'problem':m.observed?'confirmed':'set',value:`${m.address||'Your managed address'}. ${m.error|| (m.observed?'Email has arrived here.':m.routeActive?'Route active; waiting for the first email.':'Run Edit Run is activating the route. No email setup is needed.')}`};}
    // Replies by email: customers answer an emailed reply by pressing Reply. Each reason says what is true and where to act.
    const mailbox = facts.inboundAddress, lead = mailbox ? `${mailbox}. ` : '', reason = facts.inbound?.receiving;
    if (reason === 'workers_dev' || facts.inbound?.customDomainRequired) return {...base, state: 'unavailable', value: `${lead}This address can’t receive email: workers.dev addresses have no mail server. Customers answer in the chat for now. To let them reply by email, use an address on your own domain; the Email page shows how.`};
@@ -131,7 +146,7 @@ function rowFor(data, id) {
    return withObservation('set', observed ? `Connected. ${facts.starterAssistant?.model ? `Your starter assistant uses ${facts.starterAssistant.model}.` : ''}`.trim() : sentence(own?.detail || ''));
   }
   case 'widget_seen': return withObservation('set', observed ? `Seen on ${hostOf(facts.website)}${own.checkedAt ? `, ${utc(own.checkedAt)}` : ''}.` : sentence(own?.detail || ''));
-  case 'sender_dns': return withObservation('set', observed ? 'Your sending address is verified.' : own?.state === 'unavailable' ? 'Cannot be checked automatically for this provider.' : sentence(own?.detail || ''));
+  case 'sender_dns': if(facts.mail?.managed)return {...base,state:facts.mail.managed.configured?'set':'waiting',value:facts.mail.managed.address?`${facts.mail.managed.address}. Provided by Run Edit Run.`:'Run Edit Run is assigning your email address.'};return withObservation('set', observed ? 'Your sending address is verified.' : own?.state === 'unavailable' ? 'Cannot be checked automatically for this provider.' : sentence(own?.detail || ''));
   default: return null;
  }
 }

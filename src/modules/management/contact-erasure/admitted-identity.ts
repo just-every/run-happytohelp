@@ -1,3 +1,4 @@
+import {contactKeys} from '../../api-integrations/requester-admission'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../../platform/env'
 import {retainErasureIdentity,type ErasureIdentity} from '../../move-in/erasure'
@@ -10,9 +11,11 @@ export async function fenceAdmittedIdentity(env:Env,projectId:string,contactId:s
  let current=original
  for(let attempt=0;attempt<3;attempt++){
   const retain=[...await retainErasureIdentity(env,projectId,contactId,original),...(current===original?[]:await retainErasureIdentity(env,projectId,contactId,current))]
+  const apiKeys=await contactKeys(env,projectId,contactId)
   try{
    await env.DB.batch([
     env.DB.prepare('INSERT INTO ik_d1_assertions(ok) SELECT CASE WHEN EXISTS(SELECT 1 FROM contacts WHERE project_id=? AND id=? AND email IS ? AND external_id IS ? AND metadata_json IS ?) THEN 1 ELSE 0 END').bind(projectId,contactId,current.email??null,current.external_id??null,current.metadata_json??null),
+    ...apiKeys.map(key=>env.DB.prepare('INSERT OR IGNORE INTO api_erased_keys(project_id,digest) VALUES(?,?)').bind(projectId,key.digest)),
     ...retain,...emailEvidenceStatements(env,{projectId,contactId,emails:[...new Set([...contactEmails(original),...contactEmails(current)])]}),...statements,env.DB.prepare('DELETE FROM ik_d1_assertions')
    ]);return
   }catch(error){

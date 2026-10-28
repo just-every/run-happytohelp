@@ -178,11 +178,13 @@ export async function macrosJourney(){
     assert.deepEqual(inbox.find(row=>row.id===intent.id),{id:intent.id,user_id:w.users[role],inbox:1,state:'sent'})
     assert.deepEqual(notices.slice(mailBefore).filter(notice=>notice.key===intent.id).map(notice=>notice.body.to),[[`${role}-tickets@example.test`]],'each committed intent sends exactly one provider mail to its assignee')
    }
-   const sent=notices.slice(mailBefore)
+   // A later tick may legitimately send an unread digest after its quiet period.
+   const assignmentMail=()=>notices.slice(mailBefore).filter(notice=>notice.key?.startsWith('assignment:'))
+   const sent=assignmentMail()
    assert.equal(new Set(sent.map(notice=>notice.key)).size,sent.length,'provider captures contain no duplicate keys')
-   assert.deepEqual(sent.map(notice=>notice.key).sort(),intentIds,'provider captures contain every assignment and no extra mail')
+   assert.deepEqual(sent.map(notice=>notice.key).sort(),intentIds,'provider captures contain every assignment and no extra assignment mail')
    await cronTick()
-   assert.deepEqual(notices.slice(mailBefore),sent,'a later cron tick never replays assignment mail')
+   assert.deepEqual(assignmentMail(),sent,'a later cron tick never replays assignment mail')
    assert.deepEqual((await assignmentIntents()).filter(intent=>!previousIds.has(intent.id)),intents,'a later cron tick creates no extra assignment intent')
   }
   await app.configure({EMAIL_PROVIDER:'development',EMAIL_API_KEY:undefined,EMAIL_FROM:undefined})

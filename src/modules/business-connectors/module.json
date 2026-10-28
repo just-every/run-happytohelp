@@ -5,12 +5,12 @@
   "sourcePaths": [
     "src/modules/business-connectors",
     "src/ui/native/pages/business-connectors",
-    "migrations/250_business_connectors.sql",
+    "migrations/260_business_connectors.sql",
     "scripts/installer/business-archive.mjs",
     "tests/connections/business.mjs",
     "tests/helpers/business-connectors",
-    "migrations/251_business_source_fields.sql",
-    "migrations/252_business_role_fences.sql"
+    "migrations/261_business_source_fields.sql",
+    "migrations/262_business_role_fences.sql"
   ],
   "selectedEditionDependencies": [
     "happytohelp/api-integrations"

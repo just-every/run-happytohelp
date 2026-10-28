@@ -7,6 +7,8 @@
     "migrations/115_native_integrations.sql",
     "migrations/124_contact_email_proof_guard.sql",
     "migrations/126_restore_contact_erasure.sql",
+    "migrations/253_api_requests.sql",
+    "migrations/254_api_erasure_inventory.sql",
     "docs/api.md",
     "tests/connections",
     "tests/journeys/connections.mjs",

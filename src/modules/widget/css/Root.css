@@ -809,7 +809,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
   }
 }
 #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header .happytohelp-insight-agent-info {
-  font-size: 0.8em;
+  font-size: 13px;
   color: #667085;
   line-height: 1.6em;
 }
@@ -820,7 +820,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
   #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header .happytohelp-insight-agent-info {
     color: #667085;
     display: inline;
-    font-size: 0.9em;
+    font-size: 13px;
   }
   #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header .happytohelp-insight-agent-info .happytohelp-insight-agent-seperator-tiny {
     display: inline;
@@ -975,7 +975,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
   color: #002c46;
 }
 #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header-title-agents .happytohelp-chat-header-agent .happytohelp-insight-agent .happytohelp-insight-agent-info {
-  font-size: 0.8em;
+  font-size: 13px;
 }
 @media (max-width: 500px) {
   #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header-title-agents .happytohelp-chat-header-agent .happytohelp-insight-agent .happytohelp-insight-agent-seperator {
@@ -989,7 +989,7 @@ html.wf-sacramento-n4-active .happytohelp-title {
   }
   #happytohelp-root .happytohelp-interact-container .happytohelp-chat-header-title-agents .happytohelp-chat-header-agent .happytohelp-insight-agent .happytohelp-insight-agent-info {
     color: #a2aeb4;
-    font-size: 0.8em;
+    font-size: 13px;
     line-height: 1.6em;
     display: inline;
   }

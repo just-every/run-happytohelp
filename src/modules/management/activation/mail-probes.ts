@@ -1,3 +1,4 @@
+import {rerMail} from '../../integrations/rer-mail-contract'
 import type {Env} from '../../../platform/env'
 import {sendEmail,emailConfigured} from '../../integrations/email'
 import {checkSenderDomain} from '../../integrations/sender-domain'
@@ -14,6 +15,7 @@ export async function sendOwnerTestMail(env:Env,config:Configuration,ownerId:str
  if(!identity)return {state:'unavailable',detail:'Only a workspace owner can send a test to their own mailbox.'}
  const existing=await env.DB.prepare('SELECT state FROM email_deliveries WHERE id=? AND project_id=?').bind(identity.id,config.projectId).first()
  if(existing)return checkOwnerMail(env,config,ownerId)
+ if(!emailConfigured(env)&&rerMail(env))return {state:'unavailable',detail:'Run Edit Run is activating managed email. No customer email setup is needed.'}
  if(!emailConfigured(env))return {state:'unavailable',detail:'CONFIGURATION_REQUIRED: EMAIL_API_KEY and EMAIL_FROM. Add email secrets to the installation.'}
  if(!config.sender)return {state:'pending',detail:'Save a sender email address in Email settings.'}
  try {
@@ -34,6 +36,10 @@ function senderRecords(records:any[]):SenderRecord[] {
  * sender is checked while mail still goes out from the installation sender; once the owner has chosen another address,
  * that address's domain is checked instead. */
 export async function checkSenderDns(env:Env,config:Pick<Configuration,'sender'|'providerName'>&{proposedSender?:string|null;senderOverridden?:boolean}):Promise<Probe> {
+ if(rerMail(env)){
+  const bound=await env.DB.prepare("SELECT configured,state,address,error FROM rer_mailboxes WHERE address=?").bind(config.sender).first<{configured:number;state:string;address:string;error:string|null}>()
+  return {state:bound?.state==='active'&&bound.configured?'done':bound?.state==='failed'?'failed':'pending',receiptRef:bound?.state==='active'?`rer:configured:${bound.address}`:null,detail:bound?.state==='active'&&bound.configured?`Run Edit Run configured ${bound.address} for this workspace. This confirms configuration, not email delivery.`:bound?.error||'Run Edit Run is activating your assigned email address.'}
+ }
  const address=senderDnsAddress(config)
  if(!address)return {state:'pending',detail:'Save a sender email address in Email settings.'}
  if(!config.providerName)return {state:'unavailable',detail:'Select an email provider in installation settings.'}

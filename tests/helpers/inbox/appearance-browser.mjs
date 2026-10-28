@@ -6,6 +6,7 @@ import {assertHelpSearchFits,assertHelpSearchReachable} from '../appearance-geom
 import {assertHelpLinksReadable} from '../help-center-link-contrast.mjs';
 import {exerciseLongAppearance} from '../appearance-long-content.mjs';
 import {appearanceAudit} from '../appearance-audit.mjs';
+import {settingsTargetsBrowser} from './settings-targets-browser.mjs';
 import {launchBrowser} from '../../journeys/kit/browser.mjs'
 
 export async function appearanceBrowser(){
@@ -47,6 +48,7 @@ try{
  const saved=await(await api(settingsPath,{token:tenant.token})).json();for(const [key,value]of Object.entries(brand))assert.equal((saved.data||saved)[key],value);
  const denied=await api(settingsPath,{token:other.token,method:'PUT',body:{welcome_message:'Tenant leak'}});assert.equal(denied.status,403);
  const second=await(await api(`/api/management/projects/${other.projectId}/settings`,{token:other.token})).json();assert.notEqual((second.data||second).welcome_message,brand.welcome_message);
+ await settingsTargetsBrowser({page,origin,tenant,audit});
  const article={title:'Published instructions',slug:'published-instructions',content:'Read the published instructions.',status:'published'};
  let publicArticle;
  for(const viewport of [{width:1440,height:900},{width:390,height:844}]){

@@ -18,6 +18,7 @@ import { routes as knowledge } from './modules/knowledge'
 import { routes as context } from './modules/customer-context'
 import { registerLocalComputerRoutes } from './modules/local-computer'
 import { localComputerIntegration } from './edition/local-computer'
+import {procedureRoutes} from './modules/ai-support/procedures'
 import { trainingRoutes } from './modules/training-runs'
 import { routes as management,dashboardRoutes,publicWidget,widgetEvents } from './modules/management'
 import { inboundEmail } from './modules/integrations'
@@ -87,6 +88,7 @@ app.route('/api/outcomes',surveyReports)
 app.route('/api/outcomes/surveys',publicSurveys)
 app.route('/api/customer-context',context)
 app.route('/api/training',trainingRoutes)
+app.route('/api',procedureRoutes)
 app.route('/api/management',integrationSettings)
 app.route('/api/business',createBusinessRoutes(applyMessageEffects))
 app.route('/api/management',management)

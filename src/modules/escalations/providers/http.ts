@@ -1,9 +1,10 @@
-import { providerError, type Connection } from './types'
+import { ProviderRefusal, providerError, type Connection } from './types'
 
 const origins = {
   github: 'https://api.github.com',
   linear: 'https://api.linear.app',
   slack: 'https://slack.com',
+  teams: 'https://graph.microsoft.com',
 }
 
 export function baseUrl(connection: Connection): string {
@@ -53,6 +54,7 @@ export async function request(connection: Connection, path: string, body?: unkno
     })
     if (!response.ok) {
       await response.body?.cancel()
+      if(connection.provider==='teams'&&[401,403].includes(response.status))throw new ProviderRefusal('Teams refused this request')
       throw providerError()
     }
     const length = response.headers.get('content-length')
@@ -75,6 +77,6 @@ export async function request(connection: Connection, path: string, body?: unkno
     let offset = 0
     for (const chunk of chunks) { data.set(chunk, offset); offset += chunk.byteLength }
     return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(data))
-  } catch { throw providerError() }
+  } catch(error) { if(error instanceof ProviderRefusal)throw error;throw providerError() }
   finally { clearTimeout(timeout) }
 }

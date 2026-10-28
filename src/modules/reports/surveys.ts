@@ -17,13 +17,13 @@ function readCursor(raw:string|undefined):Cursor|null{
  throw new HTTPException(400,{message:'Invalid results cursor'})
 }
 async function page(env:Env,projectId:string,lowOnly:boolean,limit:number,cursor:Cursor|null){
- const rows=await env.DB.prepare(`SELECT r.id resolution_id,r.conversation_id,r.ordinal,r.resolved_at,r.reopened_at,s.id survey_id,s.state delivery_state,s.revoked_at,s.expires_at,v.channel,v.scale,v.score,CASE WHEN ${erased} THEN '' ELSE v.reason END reason,CASE WHEN ${erased} THEN '' ELSE v.comment END comment,v.revision,v.updated_at ${joins} WHERE ${eligible} ${lowOnly?`AND ${low}`:''} ${cursor?'AND (r.resolved_at<? OR r.resolved_at=? AND r.id<?)':''} ORDER BY r.resolved_at DESC,r.id DESC LIMIT ?`)
+ const rows=await env.DB.prepare(`SELECT r.id resolution_id,r.conversation_id,r.ordinal,r.resolved_at,r.reopened_at,s.id survey_id,s.state delivery_state,s.revoked_at,s.expires_at,CASE WHEN v.channel='widget' THEN 'widget' ELSE v.response_surface END channel,v.channel invitation_channel,v.scale,v.score,CASE WHEN ${erased} THEN '' ELSE v.reason END reason,CASE WHEN ${erased} THEN '' ELSE v.comment END comment,v.revision,v.updated_at,CASE WHEN ${erased} THEN 'unknown' ELSE COALESCE(v.recovery,'unknown') END recovery ${joins} WHERE ${eligible} ${lowOnly?`AND ${low}`:''} ${cursor?'AND (r.resolved_at<? OR r.resolved_at=? AND r.id<?)':''} ORDER BY r.resolved_at DESC,r.id DESC LIMIT ?`)
  .bind(projectId,...(cursor?[cursor.at,cursor.at,cursor.id]:[]),limit).all<any>()
  return rows.results
 }
 const encodeCursor=(row:any)=>btoa(JSON.stringify({at:row.resolved_at,id:row.resolution_id}))
 const iso=(at:number|null)=>at===null?null:new Date(at).toISOString()
-const present=(row:any)=>({resolutionId:row.resolution_id,conversationId:row.conversation_id,ordinal:row.ordinal,resolvedAt:iso(row.resolved_at),reopenedAt:iso(row.reopened_at),surveyId:row.survey_id,deliveryState:row.delivery_state,revokedAt:iso(row.revoked_at),expiresAt:iso(row.expires_at),response:row.score===null?null:{channel:row.channel,scale:row.scale,score:row.score,reason:row.reason,comment:row.comment,revision:row.revision,updatedAt:iso(row.updated_at)}})
+const present=(row:any)=>({resolutionId:row.resolution_id,conversationId:row.conversation_id,ordinal:row.ordinal,resolvedAt:iso(row.resolved_at),reopenedAt:iso(row.reopened_at),surveyId:row.survey_id,deliveryState:row.delivery_state,revokedAt:iso(row.revoked_at),expiresAt:iso(row.expires_at),response:row.score===null?null:{channel:row.channel,invitationChannel:row.invitation_channel,scale:row.scale,score:row.score,recovery:row.recovery,reason:row.reason,comment:row.comment,revision:row.revision,updatedAt:iso(row.updated_at)}})
 export const surveyReports=new Hono<AppEnv>()
 surveyReports.get('/projects/:projectId/results',async c=>{
  const actor=await scope(c),lowOnly=c.req.query('lowScore')==='true',rawLimit=c.req.query('limit'),limit=rawLimit===undefined?50:Number(rawLimit),cursor=readCursor(c.req.query('cursor'))
@@ -35,10 +35,10 @@ surveyReports.get('/projects/:projectId/results',async c=>{
   await auditStatement(c.env.DB,{projectId:actor.projectId,category:'data',action:'csat.results.exported',actor:{type:'user',id:actor.id},source:requestSource(c),detail:{lowScore:lowOnly}}).run()
   const env=c.env,encoder=new TextEncoder();let current:Cursor|null=null,started=false
   return new Response(new ReadableStream({async pull(controller){try{
-   if(!started){started=true;controller.enqueue(encoder.encode(csv([['Resolution','Conversation','Cycle','Resolved (UTC)','Reopened (UTC)','Delivery','Channel','Scale','Score','Reason','Comment','Revision','Response (UTC)']])));return}
+   if(!started){started=true;controller.enqueue(encoder.encode(csv([['Resolution','Conversation','Cycle','Resolved (UTC)','Reopened (UTC)','Delivery','Channel','Scale','Score','Reason','Comment','Revision','Response (UTC)','Customer recovery']])));return}
    const rows=await page(env,actor.projectId,lowOnly,100,current)
    if(!rows.length){controller.close();return}
-   controller.enqueue(encoder.encode(csv(rows.map(row=>[row.resolution_id,row.conversation_id,row.ordinal,iso(row.resolved_at),iso(row.reopened_at),row.delivery_state,row.channel,row.scale,row.score,row.reason,row.comment,row.revision,iso(row.updated_at)]))))
+   controller.enqueue(encoder.encode(csv(rows.map(row=>[row.resolution_id,row.conversation_id,row.ordinal,iso(row.resolved_at),iso(row.reopened_at),row.delivery_state,row.channel,row.scale,row.score,row.reason,row.comment,row.revision,iso(row.updated_at),row.recovery]))))
    const last=rows[rows.length-1];current={at:last.resolved_at,id:last.resolution_id}
   }catch(error){controller.error(error)}}}),{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="satisfaction-surveys.csv"','Cache-Control':'no-store'}})
  }
@@ -49,5 +49,5 @@ surveyReports.get('/projects/:projectId/results',async c=>{
   c.env.DB.prepare('SELECT COUNT(*) count FROM csat_optouts WHERE project_id=?').bind(actor.projectId).first<{count:number}>()
  ])
  const more=rows.length>limit,shown=rows.slice(0,limit)
- return c.json({summary:{rated:summary.rated,positive:summary.positive,lowScore:summary.low_score,rate:summary.rated?summary.positive/summary.rated:null,invited:summary.invited,delivery:Object.fromEntries(delivery.results.map(row=>[row.state,row.count])),optedOut:optout?.count||0},results:shown.map(present),nextCursor:more?encodeCursor(shown[shown.length-1]):null,definitions:{timezone:'UTC',unit:'One latest response per exact resolution cycle, including previous and reopened cycles. Imported conversations excluded.',positive:'Thumbs up or 4–5 out of 5.',lowScore:'Thumbs down or 1–3 out of 5. Feedback never closes a complaint.',rate:'Positive responses divided by rated resolution cycles. Invitations without a response are excluded.',delivery:'Sent means provider accepted, not confirmed inbox delivery. Sending and uncertain outcomes are never automatically replayed.'}})
+ return c.json({summary:{rated:summary.rated,positive:summary.positive,lowScore:summary.low_score,rate:summary.rated?summary.positive/summary.rated:null,invited:summary.invited,delivery:Object.fromEntries(delivery.results.map(row=>[row.state,row.count])),optedOut:optout?.count||0},results:shown.map(present),nextCursor:more?encodeCursor(shown[shown.length-1]):null,definitions:{timezone:'UTC',recovery:'Explicit customer answer for this exact cycle, independent of satisfaction. Unknown is never inferred from a score. A reopened cycle does not establish current recovery. Feedback never changes ticket status.',unit:'One latest response per exact resolution cycle, including previous and reopened cycles. Imported conversations excluded.',positive:'Thumbs up or 4–5 out of 5.',lowScore:'Thumbs down or 1–3 out of 5. Feedback never closes a complaint.',rate:'Positive responses divided by rated resolution cycles. Invitations without a response are excluded.',delivery:'Sent means provider accepted, not confirmed inbox delivery. Sending and uncertain outcomes are never automatically replayed.'}})
 })

@@ -6,8 +6,9 @@ settings:
 
 overrides:
   sharp: ^0.35.5
-  undici@>=7.0.0 <7.29.1: 7.29.1
+  undici@>=7.0.0 <7.30.1: 7.30.1
   source-map-js@>=1.0.0 <1.2.2: ^1.2.2
+  zod@<4.6.6: 4.6.6
 
 importers:
 
@@ -15,7 +16,7 @@ importers:
     dependencies:
       '@anthropic-ai/sdk':
         specifier: 0.111.0
-        version: 0.111.0(zod@3.24.2)
+        version: 0.111.0(zod@4.6.6)
       '@floating-ui/react':
         specifier: ^0.26.22
         version: 0.26.28(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -93,10 +94,10 @@ importers:
         version: 14.2.4
       openai:
         specifier: 6.46.0
-        version: 6.46.0(ws@8.21.0)(zod@3.24.2)
+        version: 6.46.0(ws@8.21.0)(zod@4.6.6)
       postal-mime:
-        specifier: 3.0.0
-        version: 3.0.0
+        specifier: 4.0.8
+        version: 4.0.8
       pretty-bytes:
         specifier: ^5.5.0
         version: 5.6.0
@@ -167,11 +168,8 @@ importers:
         specifier: 8.21.0
         version: 8.21.0
       zod:
-        specifier: 3.24.2
-        version: 3.24.2
-      zod-to-json-schema:
-        specifier: 3.24.2
-        version: 3.24.2(zod@3.24.2)
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: 1.54.5
@@ -225,7 +223,7 @@ packages:
     resolution: {integrity: sha512-1hUqKi+uJQoS5X90+InwHbFAXMvgq0DnsC5hVLEeSRaODiU5WvmqDAcVCmGS2wC0pN9Z8jtWCbWw7JLzeDdm/Q==}
     hasBin: true
     peerDependencies:
-      zod: ^3.25.0 || ^4.0.0
+      zod: 4.6.6
     peerDependenciesMeta:
       zod:
         optional: true
@@ -2145,7 +2143,7 @@ packages:
       '@smithy/hash-node': '>=4.3.0 <5'
       '@smithy/signature-v4': '>=5.4.0 <6'
       ws: ^8.18.0
-      zod: ^3.25 || ^4.0
+      zod: 4.6.6
     peerDependenciesMeta:
       '@aws-sdk/credential-provider-node':
         optional: true
@@ -2212,8 +2210,9 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  postal-mime@3.0.0:
-    resolution: {integrity: sha512-Z4a9ar2Bv3YpK3IXag+Yda30k7bMZfpRuUGyqtHnZ2pjHG8Bl62EhZIk4n1dzv00gfzP9g+94e9kd8+XmjVWLA==}
+  postal-mime@4.0.8:
+    resolution: {integrity: sha512-nnAgc4a9hn7zYuQmX4C7LU+fN47kR5S8cE8zvB/vZ2NimNDbaj+ISZJ9qe3CKIfn2uOTwwz4nQeIyljvdFNgOA==}
+    engines: {node: '>=20'}
 
   postcss@8.5.28:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
@@ -2565,8 +2564,8 @@ packages:
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
-  undici@7.29.1:
-    resolution: {integrity: sha512-RYONW2MeafgYlkVOKYKkA/Ag7BmXqgIWCa8t1m0JcxrQg9pI9lEqRhAOruOBCbAohOa/gkCF+iPi9hrgvTzu6Q==}
+  undici@7.30.1:
+    resolution: {integrity: sha512-03KrMbjIFDWQR5RNPrSw3bd1r12JpyFQl9/yxjUbJtqkjmllqC5lFjZh6ujeuJCKr8EOQvRW872Oy/az+nLYxg==}
     engines: {node: '>=20.18.1'}
 
   unenv@2.0.0-rc.24:
@@ -2849,16 +2848,8 @@ packages:
   youch@4.1.0-beta.10:
     resolution: {integrity: sha512-rLfVLB4FgQneDr0dv1oddCVZmKjcJ6yX6mS4pU82Mq/Dt9a3cLZQ62pDBL4AUO+uVrCvtWz3ZFUL2HFAFJ/BXQ==}
 
-  zod-to-json-schema@3.24.2:
-    resolution: {integrity: sha512-pNUqrcSxuuB3/+jBbU8qKUbTbDqYUaG1vf5cXFjbhGgoUuA1amO/y4Q8lzfOhHU8HNPK6VFJ18lBDKj3OHyDsg==}
-    peerDependencies:
-      zod: ^3.24.1
-
-  zod@3.24.2:
-    resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
-
-  zod@4.6.3:
-    resolution: {integrity: sha512-qTMC0QXIpf4iH+G0rCJl6ZjKiFpqAU9++JDN8tqts3KP58MWeJU/in9tDccsHqlOolCIrBKsiPXR8vCLhe4QhA==}
+  zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
   zwitch@1.0.5:
     resolution: {integrity: sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==}
@@ -2868,12 +2859,12 @@ packages:
 
 snapshots:
 
-  '@anthropic-ai/sdk@0.111.0(zod@3.24.2)':
+  '@anthropic-ai/sdk@0.111.0(zod@4.6.6)':
     dependencies:
       json-schema-to-ts: 3.1.1
       standardwebhooks: 1.1.1
     optionalDependencies:
-      zod: 3.24.2
+      zod: 4.6.6
 
   '@babel/code-frame@7.29.7':
     dependencies:
@@ -3676,7 +3667,7 @@ snapshots:
       jiti: 2.7.0
       magic-string: 0.30.21
       prettier: 3.9.6
-      zod: 4.6.3
+      zod: 4.6.6
     transitivePeerDependencies:
       - supports-color
 
@@ -3690,7 +3681,7 @@ snapshots:
       '@tanstack/router-utils': 1.162.3
       chokidar: 5.0.0
       unplugin: 3.3.0(esbuild@0.28.1)(rolldown@1.2.8)(vite@8.2.4(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.104.1))
-      zod: 4.6.3
+      zod: 4.6.6
     optionalDependencies:
       '@tanstack/react-router': 1.170.41(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       vite: 8.2.4(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.104.1)
@@ -3748,7 +3739,7 @@ snapshots:
       ufo: 1.6.4
       vitefu: 1.1.3(vite@8.2.4(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.104.1))
       xmlbuilder2: 4.0.3
-      zod: 4.6.3
+      zod: 4.6.6
     optionalDependencies:
       vite: 8.2.4(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.104.1)
     transitivePeerDependencies:
@@ -4885,7 +4876,7 @@ snapshots:
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       sharp: 0.35.5(@types/node@26.5.1)
-      undici: 7.29.1
+      undici: 7.30.1
       workerd: 1.20260907.1
       ws: 8.21.0
       youch: 4.1.0-beta.10
@@ -4940,10 +4931,10 @@ snapshots:
       codsen-utils: 1.10.2
       util-nonempty: 5.2.3
 
-  openai@6.46.0(ws@8.21.0)(zod@3.24.2):
+  openai@6.46.0(ws@8.21.0)(zod@4.6.6):
     optionalDependencies:
       ws: 8.21.0
-      zod: 3.24.2
+      zod: 4.6.6
 
   p-retry@4.6.2:
     dependencies:
@@ -5005,7 +4996,7 @@ snapshots:
     dependencies:
       playwright-core: 1.63.0-alpha-2026-08-31
 
-  postal-mime@3.0.0: {}
+  postal-mime@4.0.8: {}
 
   postcss@8.5.28:
     dependencies:
@@ -5471,7 +5462,7 @@ snapshots:
 
   undici-types@8.9.0: {}
 
-  undici@7.29.1: {}
+  undici@7.30.1: {}
 
   unenv@2.0.0-rc.24:
     dependencies:
@@ -5739,13 +5730,7 @@ snapshots:
       cookie: 1.1.1
       youch-core: 0.3.3
 
-  zod-to-json-schema@3.24.2(zod@3.24.2):
-    dependencies:
-      zod: 3.24.2
-
-  zod@3.24.2: {}
-
-  zod@4.6.3: {}
+  zod@4.6.6: {}
 
   zwitch@1.0.5: {}
 

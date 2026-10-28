@@ -100,6 +100,7 @@ export async function outboundTicketBrowser(){
    const page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message))
    const request=async(body,path=base+'/tickets')=>page.evaluate(async({path,body})=>{const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:response.status,body:await response.json()}},{path,body})
    const open=async()=>{await page.goto(`${runtime.origin}/projects/${projectId}/conversations`);await page.getByRole('button',{name:'New ticket',exact:true}).click();await page.getByRole('dialog',{name:'New ticket',exact:true}).waitFor()}
+   await page.route('**'+base+'/tickets/options',async route=>{const response=await route.fetch();await new Promise(resolve=>setTimeout(resolve,600));try{await route.fulfill({response})}catch{}},{times:1})
    await open()
    const dialog=page.getByRole('dialog',{name:'New ticket',exact:true}),requester=`synthetic-happytohelp-${width}@customer.example`,subject=`Replacement parcel ${width}`,content=`Your replacement parcel ships today (${width}).`
    await dialog.getByLabel('Requester email',{exact:true}).fill('draft@customer.example')
@@ -110,6 +111,8 @@ export async function outboundTicketBrowser(){
    await dialog.getByLabel('Brand workspace',{exact:true}).selectOption(projectId)
    await dialog.getByLabel('Find requester by name, email or phone',{exact:true}).fill(requester)
    await dialog.getByRole('button',{name:new RegExp(`Synthetic parcel customer ${requester.replaceAll('.','\\.')}`)}).click()
+   await dialog.getByLabel('Send from mailbox',{exact:true}).scrollIntoViewIfNeeded()
+   await page.screenshot({path:join(evidenceDir,`${width}-configured-sender.png`),fullPage:true})
    await dialog.getByLabel('Request form',{exact:true}).selectOption(form.id)
    await dialog.getByLabel('Delivery reason *',{exact:true}).selectOption('question')
    assert.equal(await dialog.getByLabel('Delivery reference *',{exact:true}).count(),0)
@@ -128,6 +131,7 @@ export async function outboundTicketBrowser(){
    assert.equal((await refusalResponse).status(),422)
    await dialog.getByText('Delivery reference: Value does not match the required pattern',{exact:true}).first().waitFor()
    assert.equal(await dialog.getByLabel('Subject',{exact:true}).inputValue(),subject,'refusal retains editable draft')
+   await page.waitForFunction(id=>document.activeElement?.id===`new-ticket-field-${id}`,reference.id)
    await page.screenshot({path:join(evidenceDir,`${width}-configuration-error.png`),fullPage:true})
    await dialog.getByLabel('Delivery reference *',{exact:true}).fill('DEL-1048')
    const createdResponse=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
@@ -146,6 +150,8 @@ export async function outboundTicketBrowser(){
    await page.locator('#ticket-section-fields-heading').click()
    await page.getByLabel('Delivery reference',{exact:false}).waitFor()
    await page.screenshot({path:join(evidenceDir,`${width}-configured-ticket.png`),fullPage:true})
+   await page.getByLabel('Delivery reference',{exact:false}).scrollIntoViewIfNeeded()
+   await page.screenshot({path:join(evidenceDir,`${width}-stored-field-values.png`),fullPage:true})
    const replay=await request(command);assert.equal(replay.status,200);assert.equal(replay.body.conversation.id,created.conversation.id);assert.equal(replay.body.duplicate,true);await delivered(base,created.conversation.id,content)
    // The API door selects the existing requester rather than making another.
    const apiCommand={kind:'email',localId:`synthetic-happytohelp-api-${width}`,requesterId:created.conversation.contact_id,mailboxId:mailbox.id,subject:`Delivery update ${width}`,content:`Your parcel is ready for collection (${width}).`}

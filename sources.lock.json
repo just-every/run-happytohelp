@@ -8472,7 +8472,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/CreateEmailTicket.jsx": {
-      "sha256": "f7008afe132f99bc6e0ad061e5fadf37ad4f01a190dfaf56c9285a780cb8d054",
+      "sha256": "70fa35e1d9a70c2447f8f6ff8ee9f6fd8a0bd0ef1529b5a5968142f9513c4fa3",
       "executable": false
     },
     "src/ui/dashboard/components/DelegationAttachments.jsx": {
@@ -11888,7 +11888,7 @@
       "executable": false
     },
     "tests/helpers/inbox/ui-browser.mjs": {
-      "sha256": "8d1ab030e7271882297b01286cd435fe96ff78de636cfbe032151ad1a74589d6",
+      "sha256": "2d0734506464fde68702aa6b282b82cb132be6e5e55449ed1eb932011cdc1d30",
       "executable": false
     },
     "tests/helpers/inbox/visual-edit-browser.mjs": {

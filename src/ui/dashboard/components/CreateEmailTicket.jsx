@@ -23,6 +23,7 @@ export default function CreateEmailTicket({projectId:initialProjectId, onHide, o
   nativeRequest('/api/management/projects').then(result=>{if(active)setBrands(result.data);}).catch(failure=>{if(active)setError(failure.message);});
   return ()=>{active=false;};
  },[]);
+ useEffect(()=>{if(errorField&&!busy){const control=document.getElementById(`new-ticket-field-${errorField}`)||document.getElementById(`new-ticket-${errorField}`);control?.focus();control?.scrollIntoView({block:'center'});}},[errorField,busy]);
  useEffect(()=>{if(mailboxes)setDraft(current=>current.mailboxId?current:{...current,mailboxId:mailboxes[0]?.id||''});},[mailboxes]);
  const switchBrand=async value=>{
   if(busy||uncertain)return;
@@ -61,7 +62,6 @@ export default function CreateEmailTicket({projectId:initialProjectId, onHide, o
    setUncertain(false);onCreated?.(result.conversation,result);onHide();
   } catch(failure) {
    setError(failure.message);setErrorField(failure.data?.field||'');
-   if(failure.data?.field)setTimeout(()=>document.getElementById(`new-ticket-field-${failure.data.field}`)?.focus(),0);
    // The durable refusal fence guarantees no ticket was created, including
    // recovery after a lost response. Every other unknown keeps its exact command.
    if(failure.data?.code!=='notice_not_created' && (preview || !failure.status || failure.status >= 500))setUncertain(true);

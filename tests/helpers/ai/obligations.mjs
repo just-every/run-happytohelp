@@ -21,7 +21,7 @@ export async function obligationsJourney(){
  let row=(await call('',{status:200})).data.obligations[0]
  assert.equal(row.id,created.id);assert.equal(row.state,'proposed');assert.equal(row.draft,null)
  assert.equal(row.quote,body.quote)
- const duplicate=(await call('',{body,status:201})).data
+ const duplicate=(await call('',{body,status:200})).data
  assert.equal(duplicate.id,created.id);assert.equal(duplicate.duplicate,true);assert.equal(duplicate.pendingChange,false)
  await call(`/${row.id}/accept`,{body:{version:1,ownerId:workspace.users.owner,dueAt:due},status:200})
  assert.equal((await call(`/${row.id}/accept`,{body:{version:1,ownerId:workspace.users.operator,dueAt:due+1000}})).status,409)
@@ -42,7 +42,7 @@ export async function obligationsJourney(){
  app.db.prepare("INSERT INTO escalation_links(id,project_id,conversation_id,issue_id,created_at) VALUES('link',?,?,'issue',1)").bind(p,v.conversationId)
  ])
  await app.scheduled()
- const dependent=(await call('',{body:{...body,dependencyId:'issue'},status:201})).data
+ const dependent=(await call('',{body:{...body,dependencyId:'issue'},status:200})).data
  assert.equal(dependent.id,created.id,'one cited promise remains one obligation')
  assert.equal(dependent.duplicate,true);assert.equal(dependent.pendingChange,true)
  const pending=(await call('',{status:200})).data.obligations[0]

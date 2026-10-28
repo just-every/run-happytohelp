@@ -1,7 +1,21 @@
 // Free-text stop conditions can contain personal data. Portable copies keep
 // custody and accepted terms, but never retain a second copy of this text.
 export function followupArchiveRow(table,row) {
- return table==='followup_obligations'?{...row,stop_condition:'',pending_terms_json:null}:table==='followup_changes'?{...row,stop_condition:null}:row;
+ if(table==='followup_changes')return Object.hasOwn(row,'stop_condition')?{...row,stop_condition:null}:row;
+ if(table!=='followup_obligations')return row;
+ let pending=null;
+ try {
+  const terms=JSON.parse(row.pending_terms_json);
+  if(terms&&typeof terms.ownerId==='string'&&Number.isSafeInteger(terms.dueAt)&&(terms.dependencyId===null||typeof terms.dependencyId==='string'))pending=JSON.stringify({ownerId:terms.ownerId,dueAt:terms.dueAt,dependencyId:terms.dependencyId,stopCondition:''});
+ }catch{}
+ return {...row,stop_condition:'',...(Object.hasOwn(row,'pending_terms_json')?{pending_terms_json:pending}:{})};
+}
+// The Base import door allows only declared, fixed-value redactions. Current
+// exports already contain normalized pending terms; older raw pending text is
+// discarded rather than admitting personal data during import.
+export function followupArchiveImportRow(table,row) {
+ const safe=followupArchiveRow(table,row);
+ return table==='followup_obligations'&&Object.hasOwn(row,'pending_terms_json')&&safe.pending_terms_json!==row.pending_terms_json?{...safe,pending_terms_json:null}:safe;
 }
 // Obligations retain their cited source and human acceptance history. They do
 // not carry a send grant; a restored internal reminder still requires membership.

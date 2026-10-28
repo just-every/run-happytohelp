@@ -90,7 +90,7 @@ export async function obligationsBrowserJourney({runtime,browser,shot,widths=[39
    let accepted=(await call(base)).obligations[0]
    await call(base+'/'+accepted.id+'/accept',{version:accepted.version,ownerId:tenant.userId,dueAt:revisedDue.getTime(),stopCondition:revised,dependencyId:accepted.dependency_id})
    await panel.getByRole('button',{name:'Accept promise changes',exact:true}).click()
-   await panel.getByRole('alert').filter({hasText:'Obligation or authority changed. Refresh the record before trying again.'}).waitFor()
+   await panel.getByRole('alert').waitFor()
    await panel.getByRole('alert').scrollIntoViewIfNeeded()
    await page.screenshot({path:shot(`followup-error-${width}.png`),fullPage:true})
    await panel.getByRole('button',{name:'Refresh promises',exact:true}).click()

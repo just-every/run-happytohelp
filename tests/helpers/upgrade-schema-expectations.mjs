@@ -82,6 +82,10 @@ END`;
 // Expected additions/replacements are explicit, independent of the migration
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
+  {migration:"257_sla_slack.sql",table:"sla_policies",sql:"ALTER TABLE sla_policies ADD COLUMN slack_destination_id TEXT;"},
+  {migration:"257_sla_slack.sql",table:"sla_alerts",sql:"ALTER TABLE sla_alerts ADD COLUMN slack_destination_id TEXT; ALTER TABLE sla_alerts ADD COLUMN slack_state TEXT NOT NULL DEFAULT 'not_configured'; ALTER TABLE sla_alerts ADD COLUMN slack_attempts INTEGER NOT NULL DEFAULT 0; ALTER TABLE sla_alerts ADD COLUMN slack_started_at INTEGER; ALTER TABLE sla_alerts ADD COLUMN slack_next_attempt_at INTEGER; ALTER TABLE sla_alerts ADD COLUMN slack_error TEXT;"},
+  {migration:"258_teams_escalations.sql",table:"escalation_connections",sql:"ALTER TABLE escalation_connections ADD COLUMN installed_by TEXT;"},
+  {migration:"259_account_lookup_fields.sql",table:"ticket_fields",sql:"DROP TABLE ticket_fields; CREATE TABLE ticket_fields(project_id TEXT NOT NULL REFERENCES projects(id),id TEXT NOT NULL,name TEXT NOT NULL,type TEXT NOT NULL CHECK(type IN ('text','number','decimal','date','dropdown','multiselect','checkbox','regex','account')),required INTEGER NOT NULL DEFAULT 0,options_json TEXT NOT NULL DEFAULT '[]',validation_json TEXT NOT NULL DEFAULT '{}',read_roles_json TEXT NOT NULL DEFAULT '[]',write_roles_json TEXT NOT NULL DEFAULT '[]',updated_at INTEGER NOT NULL,PRIMARY KEY(project_id,id));"},
   {migration:'253_api_requests.sql',table:'integration_tokens',sql:[
     'credential_id TEXT','display_prefix TEXT',
   ].map(column=>`ALTER TABLE integration_tokens ADD COLUMN ${column};`).join('\n')},

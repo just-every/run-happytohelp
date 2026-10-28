@@ -70,7 +70,7 @@ copies and legally retained financial records need separate handling. Restore
 removes credentials and snapshots, cancels unexecuted approvals and preserves
 started outcomes as uncertain; it never resumes execution.
 
-`tests/connections/business.mjs` folds network-boundary scenarios into the
+`tests/helpers/business-connectors/journeys.mjs` extends the existing API credential lifecycle in `tests/journeys/connections.mjs` through the
 existing credentials, API, erasure and uncertainty journeys. Provider fixtures
 prove local protocol behavior only; they are not live sandbox receipts. The
 campaign separately exercised a held Stripe test key through verified account

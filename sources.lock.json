@@ -4213,7 +4213,7 @@
       "executable": false
     },
     "src/modules/business-connectors/module.json": {
-      "sha256": "3af37a538b562e85f16f44882de577e58526e5ecabc1fd4e7e3f41fcc77f9ac5",
+      "sha256": "16153b462b86b04dcb0e1b1814655fd9c46b516b8e3975d2669dbb69a0af7a72",
       "executable": false
     },
     "src/modules/business-connectors/options.ts": {
@@ -4261,7 +4261,7 @@
       "executable": false
     },
     "src/modules/business-connectors/README.md": {
-      "sha256": "0f3bb00662879cd838c1598f788d52a1d1f3c7455183f4abf0240d602c9f4c36",
+      "sha256": "2ab0a7bd65e35ff1354a695295b0dd363a0d86bf6f6adb2d7ae6ca72d15653a3",
       "executable": false
     },
     "src/modules/business-connectors/routes.ts": {
@@ -10089,7 +10089,7 @@
       "executable": false
     },
     "src/ui/native/pages/business-connectors/Panel.jsx": {
-      "sha256": "da1a09812b019d073eaab4f70fc198222fc7dad3f980718b807d37a74a9bbe67",
+      "sha256": "50a89aab5e9505c600e0ae42a452c3201597a68102c153f83209e6affa772ed8",
       "executable": false
     },
     "src/ui/native/pages/business-connectors/Settings.jsx": {

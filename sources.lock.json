@@ -11880,7 +11880,7 @@
       "executable": false
     },
     "tests/helpers/identity/ticket-scope-browser.mjs": {
-      "sha256": "6e66a89d3d1ae8dc40b607811d6adcd36f70d5d787e8405f5ad5429488c06505",
+      "sha256": "b3e89f2f2547eacf33f24a62dda90d6f208b952b07e48718fdfd2d4c02ee6830",
       "executable": false
     },
     "tests/helpers/identity/ticket-scope.mjs": {

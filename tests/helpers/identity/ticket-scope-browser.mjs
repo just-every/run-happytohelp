@@ -76,7 +76,12 @@ export async function ticketScopeBrowserJourney(browser,runtime){
      await agent.getByRole('button',{name:'Close',exact:true}).click();await closeRequested
      const reopen=agent.getByRole('button',{name:'Reopen',exact:true});await reopen.waitFor()
      assert.equal(await reopen.isDisabled(),true,'the optimistic reopen waits for the pending close')
-     await inspect(agent,'pending-close-1440');await agent.setViewportSize(viewports.mobile);await inspect(agent,'pending-close-390');await agent.setViewportSize(viewports.desktop)
+     const panelToggle=agent.locator('.conversation-assistant-toggle')
+     if(await panelToggle.getAttribute('aria-expanded')==='true')await panelToggle.click()
+     await agent.waitForFunction(()=>document.querySelector('#conversation-assistant')?.getAttribute('aria-hidden')==='true')
+     await inspect(agent,'pending-close-1440');await agent.setViewportSize(viewports.mobile)
+     await agent.waitForFunction(()=>{const box=document.querySelector('.conversation-header-actions')?.getBoundingClientRect();return box&&box.left>=0&&box.right<=innerWidth})
+     await inspect(agent,'pending-close-390');await agent.setViewportSize(viewports.desktop)
      releaseClose();assert.equal((await closed).status(),200,'the scoped close commits')
      const reopened=agent.waitForResponse(response=>isMutation(response,false))
      await reopen.click();assert.equal((await reopened).status(),200,'the scoped reopen commits after close')

@@ -69,9 +69,9 @@ export async function runScheduled(env:Env) {
  await visit('Workflow',720,runWorkflows)
  await visit('Survey',70,dispatchSurveys)
  await visit('Integration',58,async env=>{await sweepUploads(env);await dispatchIntegrations(env);await recoverRerMailboxes(env)})
+ await visit('Voice media',2,expireVoiceMedia)
  // Hand larger message effects to the queue near the history-load target.
  // The hard consumer allocation still reserves every later recovery and prune.
- await visit('Voice media',2,expireVoiceMedia)
  await visit('Outbox',3,dispatchOutbox,700)
  await visit('Generation',10,async env=>{await recoverQueuedGenerations(env,generationEffects);await dispatchTriage(env)})
  await visit('Knowledge',15,refreshDueDatasets)

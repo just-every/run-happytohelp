@@ -35,3 +35,5 @@ body.conversation-workspace #chat .chat-footer .chat-entry-form:has(.knowledge-r
 @media(max-width:480px){
  .knowledge-article-insert__controls .form-group{flex-basis:100%}
 }
+
+.chat-footer:has(.conversation-composer__error) .knowledge-reference-editor:has(.knowledge-reference-card){max-height:min(28rem,32dvh)}

@@ -53,11 +53,11 @@ export const recordShapes:Record<string,Shape>={
 Object.assign(recordShapes,helpScoutShapes({record,array,nullable,string,integer,id,reference,opaque,boolean}),freshdeskShapes({record,array,nullable,string,integer,id,reference,opaque,boolean}))
 for(const [plural,singular] of Object.entries({organizations:'organization',conversations:'conversation',customers:'contact',tags:'tag'}))recordShapes[`helpscout/inbox-list:${plural}`]=record({_embedded:record({[plural]:array(recordShapes[`helpscout/${singular}`])}),page:recordShapes['helpscout/$page'].fields!.value,_links:recordShapes['helpscout/$links'].fields!.value})
 for(const [plural,singular] of Object.entries({collections:'collection',categories:'category',articles:'article-ref'}))recordShapes[`helpscout/docs-list:${plural}`]=record({page:integer,pages:integer,count:integer,items:array(recordShapes[`helpscout/${singular}`])})
-const zendeskAttachment=record({id,file_name:string,content_type:string,size:integer,content_url:string,inline:boolean,thumbnails:opaque},['id','file_name','content_type','size'])
-comment.fields!.attachments=nullable(array(zendeskAttachment))
+const packedProvenance=record({file:string,sha256:string,row:integer,pointer:string},['file','sha256','row','pointer'])
+for(const kind of ['user','organization','ticket_field'])recordShapes[`zendesk/${kind}`].fields!._offline_provenance=array(packedProvenance)
 const sourceSla=record({target:{type:'number'},unit:string,business_hours:boolean,policy:record({id,title:string,description:nullable(string)},['id'])})
 const offlineAttachment=record({attachment_id:id,comment_id:id,path:string,sha256:string,base64:string},['attachment_id','comment_id','path','sha256','base64'])
-const offline=record({format:string,comments_complete:boolean,redacted_urls:integer,attachments:array(offlineAttachment),history:record({metrics:oneOf('missing','supplied'),audits:oneOf('missing','supplied')}),metric_events:array(record({id,ticket_id:id,instance_id:id,type:string,metric:string,time:{type:'iso'},status:record({calendar:{type:'number'},business:{type:'number'}}),sla:sourceSla,deleted:boolean},['id','ticket_id','instance_id','type','metric','time'])),audits:array(record({id,ticket_id:id,author_id:reference,created_at:{type:'iso'},events:array({type:'zendesk-audit'})},['id','ticket_id','created_at','events'])),provenance:array(record({file:string,sha256:string,row:integer,pointer:string},['file','sha256','row','pointer']))},['format'])
+const offline=record({format:string,comments_complete:boolean,redacted_urls:integer,attachments:array(offlineAttachment),history:record({metrics:oneOf('missing','supplied'),audits:oneOf('missing','supplied')}),metric_events:array(record({id,ticket_id:id,instance_id:id,type:string,metric:string,time:{type:'iso'},status:record({calendar:{type:'number'},business:{type:'number'}}),sla:sourceSla,deleted:boolean},['id','ticket_id','instance_id','type','metric','time'])),audits:array(record({id,ticket_id:id,author_id:reference,created_at:{type:'iso'},events:array({type:'zendesk-audit'})},['id','ticket_id','created_at','events'])),provenance:array(packedProvenance)},['format'])
 Object.assign(recordShapes['zendesk/ticket'].fields!,{_offline:offline,comment_count:integer,comments_truncated:boolean,comments_incomplete:boolean,has_more:boolean,next_page:nullable(string),custom_status_id:nullable(id)})
 for(const [key,schema] of Object.entries(recordShapes)){const kind=key.split('/')[1];if(!key.startsWith('helpscout/')&&!key.startsWith('freshdesk/')&&!kind.startsWith('$')){schema.fields!.type=oneOf(kind);schema.fields!.kind=oneOf(kind)}}
 // The wrapper determines Zendesk record kind. Ticket type is a nullable
@@ -106,6 +106,7 @@ export function auditShape(vendor:Vendor,kind:string,payload:unknown):ShapeAudit
   let valid=false
   if(schema.type==='id'){try{sourceId(value,vendor);valid=true}catch{}}
   else if(schema.type==='iso'||schema.type==='unix'){try{time(value,schema.type);valid=true}catch{}}
+  else if(schema.type==='number')valid=typeof value==='number'&&Number.isFinite(value)
   else if(schema.type==='integer')valid=typeof value==='number'&&Number.isSafeInteger(value)&&value>=0
   else if(schema.type==='visibility')valid=typeof value==='boolean'||value==='true'||value==='false'
   else valid=typeof value===schema.type

@@ -16,10 +16,10 @@ export async function zendeskOfflineBrowserFlow({page,origin,base,inspect,reques
  const contents=page.locator('summary').filter({hasText:'Ticket contents (6)'});await contents.focus();await page.keyboard.press('Enter');await page.getByText(/2 public comments, 1 internal notes, 1 tags, 1 typed fields/).waitFor()
  await page.getByText('Supplied attachments (2)',{exact:true}).click();await page.getByText('The conversation is incomplete.',{exact:false}).first().waitFor();await capture('review')
  await page.getByRole('button',{name:'Approve and import',exact:true}).click();await page.getByRole('heading',{name:`Complete: ${name}`,exact:true}).waitFor({timeout:120000});await capture('complete')
- await page.getByRole('link',{name:'Open conversation “synthetic-hh-1 new”',exact:true}).click()
+ await page.getByRole('link',{name:'Open conversation “synthetic-hh-1 open”',exact:true}).click()
  const details=page.getByRole('tab',{name:'Ticket',exact:true}),toggle=page.getByRole('button',{name:'Show conversation panel',exact:true});await details.or(toggle).first().waitFor();if(!await details.isVisible())await toggle.click();await details.click()
  const history=page.locator('summary').filter({hasText:'Imported status and SLA history'});await history.focus();await page.keyboard.press('Enter');await page.getByText('Metric file: supplied. Audit file: supplied. 5 events.',{exact:true}).waitFor()
- await page.getByText('Source elapsed units:',{exact:false}).waitFor();await page.getByText('synthetic-hh-unknown',{exact:false}).waitFor();await capture('ticket-history')
+ await page.getByText('Source elapsed units:',{exact:false}).waitFor();await page.getByText('synthetic-hh-999',{exact:false}).waitFor();await capture('ticket-history')
  const links=page.getByRole('link',{name:'receipt.txt',exact:true});await links.first().waitFor();assert.equal(await links.count(),2)
  const downloads=[];for(const link of await links.all()){const response=await page.request.get(new URL(await link.getAttribute('href'),origin).href);assert.equal(response.status(),200);downloads.push((await response.body()).toString('base64'))}
  assert.deepEqual(downloads.sort(),[publicBytes,privateBytes].map(b=>b.toString('base64')).sort())

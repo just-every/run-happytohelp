@@ -69,7 +69,7 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
      if(p.via?.channel!=null&&typeof p.via.channel!=='string')throw new Error('conversation_source_channel_invalid')
      if(!Array.isArray(p.comments)||!p.comments.length)throw new Error('ticket_comments_required')
      for(const part of p.comments){if(!object(part)||typeof part.public!=='boolean')throw new Error('comment_visibility_required');await add(part,sourceId(part.id,vendor),part.plain_body??part.body,part.public,time(part.created_at,'iso'),author(part.author_id),part.created_at,'source')}
-     
+
     }else{
      if(!object(p.source)||!['email','messenger'].includes(p.channel?.initial))throw new Error('conversation_source_channel_unsupported')
      if(p.conversation_parts?.type!=='conversation_part.list'||!Array.isArray(p.conversation_parts.conversation_parts))throw new Error('conversation_parts_required')
@@ -123,7 +123,7 @@ async function prepareStandard(input:MappingInput):Promise<PreparedMapping> {
    }else{result.effects.set(key,[]);result.omissions.set(key,[`unsupported_record_kind:${record.kind}`]);continue}
    if(kind==='conversation')tables.email_threading_keys=importedEmailThreadKeys(projectId,target,vendor,record,tables.conversations[0].created_at)
    const history=vendor==='zendesk'&&kind==='conversation'?zendeskOffline(p,projectId,target,tables,omissions):undefined
-   const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,...(history?{history}:{}),...(kind==='conversation'?{ownership:sourceOwnership(vendor,p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null}}
+   const value:NativeValue={tables,source:{vendor,kind:record.kind,id:record.sourceId,...(vendor==='zendesk'&&Array.isArray(p._offline_provenance)?{packedProvenance:p._offline_provenance}:{}),...(history?{history}:{}),...(kind==='conversation'?{ownership:sourceOwnership(vendor,p)}:{}),created_at:p.created_at??null,updated_at:p.updated_at??null}}
    if(nativeStatementCount(kind,value)>LIMITS.nativeStatements)throw new Error('native_record_statement_limit');result.effects.set(key,[{targetKind:kind,targetId:target,value:completeNativeValue(kind,value) as any}]);if(omissions.length)result.omissions.set(key,omissions)
   }catch(error){result.rejections.set(key,error instanceof Error?error.message:'record_mapping_failed');result.effects.set(key,[]);if(omissions.length)result.omissions.set(key,omissions)}
  }

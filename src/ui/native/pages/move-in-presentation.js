@@ -8,6 +8,7 @@ const expected={expected_string:'should be text',expected_integer:'should be a w
 const field=path=>`“${String(path).replace(/^\//,'').replace(/~1/g,'/').replace(/~0/g,'~')||'record'}”`;
 // Codes that carry a field or record name after a colon.
 const patterns=[
+ [/^zendesk_history_unsupported_metric:(.*)$/,([,metric])=>`The source metric “${metric}” is retained as unsupported history; no SLA result is inferred.`],
  [/^zendesk_custom_status_not_mapped:(.*)$/,([,id])=>`Custom source status ${id} is retained in the export; only its built-in status category is imported.`],
  [/^zendesk_history_unsupported_type:(.*)$/,([,type])=>`The source history event “${type}” is retained as unsupported history; it does not activate native behavior.`],
  [/^company_metadata_retained_in_original_only:(.*)$/,([,name])=>`The company’s “${name}” field stays in the original export; it grants no native access or routing.`],

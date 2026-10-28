@@ -14,7 +14,7 @@ export default function ImportedHistory({conversation}){
   {data&&<><p>Metric file: {data.history.metrics}. Audit file: {data.history.audits}. {data.history.events.length} events.</p>
    {data.history.provenance?.length>0&&<details><summary>Original file locations</summary><ul>{data.history.provenance.map((source,index)=><li key={index} className="text-break">{source.file}, row {source.row}, {source.pointer||'/'}<br/>SHA-256: {source.sha256}</li>)}</ul></details>}
    <ol>{data.history.events.slice(page*10,page*10+10).map(e=><li className="text-break" key={`${e.kind}/${e.id}`}>
-    <b>{e.type}</b> — {e.metric||e.field||'unsupported meaning'}{!e.understood&&' (unsupported event type)'}<br/>
+    <b>{e.type}</b> — {e.metric||e.field||'unsupported meaning'}{!e.understood&&' (unsupported meaning)'}<br/>
     Ticket {e.ticket_id}; {e.kind} event {e.id}{e.audit_id&&`; audit ${e.audit_id}`}{e.instance_id&&`; instance ${e.instance_id}`}<br/>
     <time dateTime={e.time}>{e.time}</time>
     {e.deleted===true&&<p>Source event marked deleted.</p>}

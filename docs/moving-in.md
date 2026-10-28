@@ -74,9 +74,12 @@ outside that directory are refused. For example:
 Here the local file contains exactly `hello`. Its corresponding Zendesk comment
 attachment must have `id:501`, `file_name`, `content_type` and `size:5`. Zendesk's
 `content_url` is metadata, never a download instruction. Duplicate filenames are
-fine; attachment IDs and local paths must have exactly one owner. The packer strips
-URL user information, queries and fragments before output; direct uploads with
-credential-bearing links are refused before custody. Original local files are not
+fine; attachment IDs and local paths must have exactly one owner. The packer removes attachment download URLs entirely, including path-based
+access tokens, and strips user information, queries and fragments from other
+URL values before output; direct uploads with
+credential-bearing links are refused before custody. Direct Zendesk attachment
+URL metadata with any query, fragment or credential path is refused as well; pack it locally to
+strip those access-bearing parts first. Original local files are not
 uploaded by this command. Preserve them privately yourself when appropriate.
 
 Comments files hold a `comments` array (or an array of comments), associated with
@@ -86,7 +89,7 @@ the manifest's explicit `ticket_id`. Supply every page, numbered from 1 through
 or a mismatched `comment_count` makes the ticket visibly incomplete and rejects
 it in review. Supplied comments replace the ticket's embedded array. Without a
 separate file, the embedded complete array remains supported. A description
-never replaces missing comments. Identical repeated tickets collapse; differing
+never replaces missing comments. Identical repeated tickets reach the mounted review as exact repeated records and are counted once; differing
 copies require correction before packing. Conflicting IDs in direct uploads
 remain source-located review rejections.
 
@@ -110,6 +113,8 @@ Packing enrichments live only under a ticket's `_offline` object, identified by
 explicit local packing fields, never required fields in an untouched Zendesk
 export. The review identifies packed file/row/pointer and source ticket ID;
 provenance retains the original component locations inside private ticket custody.
+Packed users, organizations and field definitions carry the same file/digest/row/pointer
+as a list under `_offline_provenance`, retained in their guarded native source provenance.
 The exact packed bytes bind the reviewed fingerprint.
 
 Supplied bytes use the existing native media store and access rules, at most
@@ -126,7 +131,8 @@ Keep each packed upload and its decoded input within 2 MiB, each ticket with its
 history and bytes within 128 KiB, and source plus derived records within 5,000.
 Larger exports need separate manifest batches of complete tickets, each including
 their users, organizations, field definitions and relevant history. Do not split
-one ticket's conversation across independent imports. Full configuration fidelity,
+one ticket's conversation across independent imports. A complete ticket beyond
+128 KiB cannot be imported by this bounded slice. Full configuration fidelity,
 shared M3 opt-in/Business grants/catch-up transport, signed real-export
 qualification, other vendors and final live cutover remain unproved.
 

@@ -11,6 +11,7 @@ export function zendeskOffline(p:Record<string,any>,projectId:string,conversatio
  if(['comments_truncated','comments_incomplete','has_more'].some(key=>Object.hasOwn(p,key)&&typeof p[key]!=='boolean')||offline?.comments_complete!==undefined&&typeof offline.comments_complete!=='boolean')throw new Error('zendesk_comments_incomplete')
  if(p.comments_truncated===true||p.comments_incomplete===true||p.has_more===true||p.next_page!=null||offline?.comments_complete===false)throw new Error('zendesk_comments_incomplete')
  if(p.comment_count!==undefined&&(!Number.isSafeInteger(p.comment_count)||p.comment_count!==p.comments?.length))throw new Error('zendesk_comments_incomplete')
+ if(offline?.provenance!==undefined&&(!Array.isArray(offline.provenance)||offline.provenance.some((s:any)=>!object(s)||typeof s.file!=='string'||typeof s.sha256!=='string'||! /^[a-f0-9]{64}$/.test(s.sha256)||!Number.isSafeInteger(s.row)||s.row<1||typeof s.pointer!=='string')))throw new Error('zendesk_offline_format_invalid')
  if(offline?.history!==undefined&&!object(offline.history))throw new Error('zendesk_history_availability_invalid')
  const bindings=offline?.attachments??[]
  if(!Array.isArray(bindings))throw new Error('attachment_binding_invalid')
@@ -40,10 +41,12 @@ export function zendeskOffline(p:Record<string,any>,projectId:string,conversatio
  for(const kind of ['metrics','audits'])if(!['missing','supplied'].includes(history[kind])||history[kind]==='missing'&&(kind==='metrics'?metricEvents:audits).length)throw new Error('zendesk_history_availability_invalid')
  const ids=new Set<string>()
  for(const e of metricEvents){
-  if(!object(e)||sourceId(e.ticket_id,'zendesk')!==String(p.id)||typeof e.type!=='string'||typeof e.metric!=='string')throw new Error('zendesk_metric_event_invalid')
+  if(!object(e)||sourceId(e.ticket_id,'zendesk')!==String(p.id)||typeof e.type!=='string'||typeof e.metric!=='string'||!e.metric.trim())throw new Error('zendesk_metric_event_invalid')
+  if(e.status!==undefined&&(!object(e.status)||['calendar','business'].some(key=>e.status[key]!==undefined&&(typeof e.status[key]!=='number'||!Number.isFinite(e.status[key])||e.status[key]<0))))throw new Error('zendesk_metric_event_invalid')
   const id=sourceId(e.id,'zendesk'),instance=sourceId(e.instance_id,'zendesk');time(e.time,'iso')
   if(ids.has(`metric/${id}`))throw new Error('zendesk_history_duplicate_id');ids.add(`metric/${id}`)
-  const understood=['activate','pause','fulfill','apply_sla','breach'].includes(e.type)
+  const knownType=['activate','pause','fulfill','apply_sla','breach'].includes(e.type),knownMetric=['reply_time','agent_work_time','requester_wait_time','pausable_update_time','periodic_update_time'].includes(e.metric),understood=knownType&&knownMetric
+  if(!knownMetric)omissions.push(`zendesk_history_unsupported_metric:${e.metric}`)
   if(!understood)omissions.push(`zendesk_history_unsupported_type:${e.type}`)
   history.events.push({kind:'metric',id,ticket_id:String(p.id),instance_id:instance,time:e.time,type:e.type,metric:e.metric,understood,...(e.sla!==undefined?{sla:e.sla}:{}),...(e.status!==undefined?{elapsed:e.status}:{}),...(e.deleted!==undefined?{deleted:e.deleted}:{})})
  }

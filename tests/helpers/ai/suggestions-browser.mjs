@@ -75,9 +75,18 @@ export async function suggestionsAtWidth({runtime,browser,shot,viewport}){
   await page.screenshot({path:shot(`trace-${viewport.width}.png`),fullPage:true})
   const refresh=tracePanel.getByRole('button',{name:'Refresh trace'})
   const capture=async name=>page.screenshot({path:shot(`${name}-${viewport.width}.png`),fullPage:true})
-  const expandCycles=async()=>{for(const summary of await tracePanel.locator('summary').all())if((await summary.innerText()).trim().startsWith('committed answer')){await summary.focus();await page.keyboard.press('Enter')}}
+  const expandCycles=async feedback=>{
+   // A pre-refresh summary can still be attached while the new read is in flight.
+   // Wait for this cycle's updated label before expanding the rendered records.
+   await tracePanel.getByText(feedback,{exact:true}).waitFor({state:'attached'})
+   for(const summary of await tracePanel.locator('summary').all())if((await summary.innerText()).trim().startsWith('committed answer')&&await summary.locator('..').getAttribute('open')===null){
+    await summary.press('Enter')
+    if(viewport.width===1440)assert.ok(await summary.evaluate(element=>element.parentElement.open&&element===document.activeElement),'keyboard expansion opens the record and keeps focus')
+   }
+   await tracePanel.getByText(feedback,{exact:true}).waitFor()
+  }
   await rate(firstResolution.id,1);await refresh.click()
-  await tracePanel.locator('summary').first().waitFor();await expandCycles()
+  await tracePanel.locator('summary').first().waitFor();await expandCycles('Feedback: 1 (thumbs), revision 2')
   if(viewport.width===1440)await tracePanel.getByText('Feedback: 1 (thumbs), revision 2',{exact:true}).waitFor()
   await tracePanel.getByText('Feedback: 1 (thumbs), revision 2',{exact:true}).scrollIntoViewIfNeeded();await capture('cycle-rerated')
   await rate(firstResolution.id,-1)
@@ -87,7 +96,7 @@ export async function suggestionsAtWidth({runtime,browser,shot,viewport}){
   const humanHead=await json(transcriptPath,undefined,visitor.token)
   await json(transcriptPath,{localId:randomUUID(),content:'I checked the cancellation personally.',authoring:{kind:'human'},expectedRevision:humanHead.revision,expectedLastMessageId:humanHead.lastMessageId,resolve:true},tenant.token)
   const nextResolution=(await json(transcriptPath,undefined,visitor.token)).resolution
-  await rate(nextResolution.id,1);await refresh.click();await tracePanel.locator('summary').first().waitFor();await expandCycles()
+  await rate(nextResolution.id,1);await refresh.click();await tracePanel.locator('summary').first().waitFor();await expandCycles('Feedback: -1 (thumbs), revision 3')
   if(viewport.width===1440){
    await tracePanel.getByText('Feedback: -1 (thumbs), revision 3',{exact:true}).waitFor()
    await tracePanel.getByText('Feedback: 1 (thumbs), revision 1',{exact:true}).waitFor()

@@ -11288,7 +11288,7 @@
       "executable": false
     },
     "tests/helpers/ai/suggestions-browser.mjs": {
-      "sha256": "843019ea644e76c07375da0819584c73826f079a0bd475c2eedbba0e2759e437",
+      "sha256": "f06eedb5f388f86c96c665cbb2f9c21f34b91f1eb87e3e5fa49a473889bf94bd",
       "executable": false
     },
     "tests/helpers/ai/training-browser.mjs": {

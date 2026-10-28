@@ -1,3 +1,5 @@
+import {recordConsent} from './consent'
+import {answerHelp} from './help'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv,Env} from '../../platform/env'
@@ -20,7 +22,7 @@ inbound.post(webhook,async c=>{
  if(row.provider==='teams')await verifyTeams(row,raw,c.req.raw.headers);else await verify(row,secret,url.href,raw,c.req.raw.headers)
  if(row.provider==='slack'){const body=JSON.parse(raw);if(body.type==='url_verification')return c.json({challenge:body.challenge})}
  const receipts=[];for(const event of events(row,raw))receipts.push(await receive(c.env,row,event))
- return row.provider==='sms'?c.body('<Response/>',200,{'Content-Type':'text/xml'}):c.json({received:true,data:receipts})
+ return row.provider==='sms'?c.body(receipts.some(r=>'help' in r&&r.help)?'<Response><Message>For support, reply with your question. Send START to allow support replies or STOP to opt out.</Message></Response>':'<Response/>',200,{'Content-Type':'text/xml'}):c.json({received:true,data:receipts})
 })
 async function receive(env:Env,row:Connection,event:Inbound){
  const handled=await sharedEvent(env,row,event);if(handled)return handled
@@ -44,7 +46,7 @@ async function receive(env:Env,row:Connection,event:Inbound){
  t=await env.DB.prepare('SELECT t.*,c.revision FROM support_channel_threads t JOIN conversations c ON c.id=t.conversation_id WHERE t.id=?').bind(threadId).first<any>()
  if(!t)throw new HTTPException(409)
  if(row.provider==='teams'){await env.DB.prepare('UPDATE support_channel_threads SET service_url=?,provider_conversation=? WHERE id=?').bind(event.serviceUrl!,event.providerConversation!,threadId).run();t.service_url=event.serviceUrl;t.provider_conversation=event.providerConversation}
- if(event.optOut)await env.DB.prepare('UPDATE support_channel_threads SET opted_out=1,template_consent=0 WHERE connection_id=? AND identity_hash=?').bind(row.id,identity).run()
+ await recordConsent(env,row,event,identity,contactId,at)
  if(shared){await env.DB.batch([env.DB.prepare("INSERT OR IGNORE INTO conversation_participants(id,conversation_id,contact_id,created_at,joined_via) SELECT ?,?,?,?,'self' WHERE EXISTS(SELECT 1 FROM contacts WHERE id=? AND project_id=? AND coalesce(json_extract(metadata_json,'$.is_erasing'),0)!=1 AND coalesce(json_extract(metadata_json,'$.is_erased'),0)!=1) AND EXISTS(SELECT 1 FROM support_channel_connections WHERE id=? AND "+liveConnection+")").bind(await digest(threadId+'|'+contactId),t.conversation_id,contactId,now,contactId,row.project_id,row.id),env.DB.prepare('INSERT OR IGNORE INTO contact_companies SELECT ?,?,a.company_id FROM support_channel_accounts a JOIN companies c ON c.id=a.company_id AND c.project_id=a.project_id AND c.merged_into IS NULL WHERE a.connection_id=? AND a.channel_id=?').bind(row.project_id,contactId,row.id,event.channel)])}
  const localId='channel:'+eventHash,prior=await env.DB.prepare('SELECT id FROM messages WHERE conversation_id=? AND local_id=?').bind(t.conversation_id,localId).first<{id:string}>()
  if(prior)return {duplicate:true,conversation_id:t.conversation_id}
@@ -54,7 +56,8 @@ async function receive(env:Env,row:Connection,event:Inbound){
  if(!result.accepted){await discardMedia(env,staged);}
  if(!result.accepted)throw new HTTPException(409,{message:'Channel message not admitted; redeliver after reconciling the conversation'})
  const target=String(result.message.conversation_id)
- await env.DB.batch([env.DB.prepare('INSERT OR IGNORE INTO support_channel_events(connection_id,event_hash,thread_id,message_id,created_at,provider_message_id,sender_hash) VALUES(?,?,?,?,?,?,?)').bind(row.id,eventHash,threadId,result.message.id,now,event.providerMessageId??event.id,identity),env.DB.prepare('UPDATE support_channel_threads SET last_inbound_at=MAX(last_inbound_at,?),opted_out=MAX(opted_out,?),template_consent=CASE WHEN opted_out=0 THEN MAX(template_consent,?) ELSE 0 END,conversation_id=? WHERE id=?').bind(at,event.optOut?1:0,event.templateConsent?1:0,target,threadId),auditStatement(env.DB,{projectId:row.project_id,category:'integration',action:'support_channel.received',actor:{type:'system'},source:'system',target:{type:'conversation',id:target},detail:{provider:row.provider}})])
+ await env.DB.batch([env.DB.prepare('INSERT OR IGNORE INTO support_channel_events(connection_id,event_hash,thread_id,message_id,created_at,provider_message_id,sender_hash) VALUES(?,?,?,?,?,?,?)').bind(row.id,eventHash,threadId,result.message.id,now,event.providerMessageId??event.id,identity),env.DB.prepare('UPDATE support_channel_threads SET last_inbound_at=MAX(last_inbound_at,?),conversation_id=? WHERE id=?').bind(at,target,threadId),auditStatement(env.DB,{projectId:row.project_id,category:'integration',action:'support_channel.received',actor:{type:'system'},source:'system',target:{type:'conversation',id:target},detail:{provider:row.provider}})])
  await publishActivity(env,row.project_id,target,'message')
- return {conversation_id:target,message_id:result.message.id}
+ if(event.help&&row.provider==='whatsapp')await answerHelp(env,row,t,String(result.message.id))
+ return {conversation_id:target,message_id:result.message.id,help:!!event.help&&!event.carrierHelp}
 }

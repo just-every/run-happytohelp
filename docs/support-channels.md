@@ -56,12 +56,20 @@ each send; unknown outcomes never replay automatically. Review the provider's
 record before deliberately composing another reply.
 
 SMS and WhatsApp STOP/UNSUBSCRIBE messages fence further sends across reconnects.
-No teammate or START event clears that fence. Meta free-text replies expire after
+Only an authenticated START (or carrier-confirmed opt-in) from the subscriber
+restores support replies to that number in that channel. Each STOP, START and
+continuation agreement retains its provider event ID and timestamp as a new
+consent fact. A later STOP wins; replaying an older START cannot restore consent.
+Teammates, reconnects, restores and imports cannot grant consent. Replies already
+queued at STOP, and replies queued during opt-out, stay blocked or cancelled for
+human review after START. HELP receives an informational answer without changing
+consent; Twilio-handled HELP is not answered a second time. Meta free-text replies expire after
 24 hours. Wait for a new customer message, or deliberately choose a currently
 approved WhatsApp text-only UTILITY template. The customer must first send
 “I agree to WhatsApp support updates” in WhatsApp. The signed customer event is
 recorded as continuation consent only while no opt-out fence exists. STOP takes
-precedence even after another consent phrase. The template is checked against the
+precedence even after START or another consent phrase; START restores support
+replies only and never restores continuation consent. The template is checked against the
 connected account at send time; marketing/authentication and media/interactive
 templates are excluded. Sending a template does not reopen free-text replies.
 There is no automatic cross-channel continuation.
@@ -100,8 +108,12 @@ ticket and are not automatically replayed.
 
 Attributed provider edits/deletions appear as notices in the ticket alongside
 the retained original support record. They do not silently rewrite history.
-Attachment changes require review. Events without an attributable original are
-held. Customer erasure removes the retained content and notices.
+Notices identify the original canonical author and provider event time. Attachment
+changes are explicitly held for review without replacing the original files.
+Events without an attributable original are held. Customer erasure removes the retained content and notices. Provider
+delete-for-everyone and provider-terms erasure obligations remain an explicit
+qualification gap; retaining a support record does not assert compliance with
+those obligations.
 
 ## Revoke, erase and restore
 
@@ -114,5 +126,5 @@ work. Local erasure does not claim to remove provider copies.
 Archives omit credentials, verification grants, identity-link codes and temporary
 attachment grants. Restored connections are disconnected; in-flight message/status
 sends become uncertain. Reconfigure credentials explicitly. Back up D1, R2 and
-private configuration and apply migrations 250, 251 and 252 in order before serving
+private configuration and apply migrations 250, 251, 252 and 253 in order before serving
 the updated Worker, without resetting or editing the existing migration ledger.

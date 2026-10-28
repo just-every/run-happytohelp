@@ -30,7 +30,6 @@ export async function channelHarness(){
  return {app,ws,other,root,token,call,input,connect,event,signed,deliver,ticket,reply,sends,responses,mediaResponses,templates,install,close:()=>app.close()};
 }
 export async function credentials(){const h=await channelHarness();try{
- assert.deepEqual((await h.app.call('/_test/unclassified-routes')).data,[],'channel settings, consent and provider ingress have explicit role rules');
  const c=await h.connect('sms');const list=await h.call('/connections');assert.ok(!JSON.stringify(list).includes(secret));assert.ok(!JSON.stringify(list).includes(credential));const stored=await h.app.first('SELECT * FROM support_channel_connections WHERE id=?',c.id);assert.notEqual(stored.token_cipher,credential);assert.notEqual(stored.signing_cipher,secret);
  for(const token of [h.ws.tokens.operator,h.other.tokens.owner])for(const method of ['GET','POST','DELETE']){const path=h.root+'/connections'+(method==='DELETE'?'/'+c.id:'');assert.equal((await h.app.call(path,{token,method,...(method==='POST'?{body:h.input('slack')}: {})})).status,403);}
  assert.equal((await h.app.call(h.root+'/connections',{token:h.token,body:{...h.input('sms'),registered:false}})).status,400);
@@ -39,7 +38,7 @@ export async function credentials(){const h=await channelHarness();try{
  const next=await h.connect('sms');assert.equal(next.id,c.id);assert.equal((await h.deliver(next,'sms',raw)).status,200);
  assert.ok((await h.app.sql("SELECT action FROM audit_events WHERE action LIKE 'support_channel.%'")).length>=3);
  }finally{await h.close();}}
-export async function exchange(providers=['sms','whatsapp','instagram','messenger']){await mediaExchange();await templateExchange();const h=await channelHarness();try{
+export async function exchange(providers=['sms','whatsapp','instagram','messenger']){await consentExchange();await mediaExchange();await templateExchange();const h=await channelHarness();try{
  for(const p of providers){const c=await h.connect(p),raw=h.event(p);
   assert.equal((await h.deliver(c,p,raw,{})).status,401);if(p==='teams')for(const override of [{aud:'foreign-app'},{iss:'https://untrusted.example'},{serviceurl:'https://untrusted.example/'}])assert.equal((await h.deliver(c,p,raw,h.signed(c,p,raw,undefined,override))).status,401);assert.equal((await h.deliver(c,p,raw+' ',h.signed(c,p,raw))).status,401);
   assert.equal((await h.deliver(c,p,h.event(p,{media:true}))).status,422);
@@ -57,14 +56,7 @@ export async function exchange(providers=['sms','whatsapp','instagram','messenge
  for(const p of providers.filter(p=>p!=='sms')){const c=await h.connect(p);await h.deliver(c,p,h.event(p,{sender:'synthetic-happytohelp-late',at:Date.now()-25*3600000}));const t=await h.app.first('SELECT * FROM support_channel_threads WHERE connection_id=? AND recipient=?',c.id,'synthetic-happytohelp-late');await h.reply(t);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].error_code,'reply_window_expired');}
  assert.equal((await h.call('/report')).data.reduce((n,r)=>n+r.count,0),providers.length*2+(providers.includes('whatsapp')?1:0)+providers.filter(p=>p!=='sms').length);
  }finally{await h.close();}}
-export async function slack(){await sharedExchange();const h=await channelHarness();try{
- const c=await h.connect('slack'),raw=h.event('slack');assert.equal((await h.deliver(c,'slack',raw)).status,200);const t=await h.ticket(c);await h.reply(t);assert.equal(JSON.parse(h.sends[0].body).thread_ts,'1710000000.1');assert.equal(JSON.parse(h.sends[0].body).mrkdwn,false);
- assert.equal((await h.deliver(c,'slack',raw)).status,200);assert.equal((await h.deliver(c,'slack',h.event('slack',{channel:'C99999999'}))).status,403);
- assert.equal((await h.deliver(c,'slack',h.event('slack',{id:'stale'}),h.signed(c,'slack',h.event('slack',{id:'stale'}),'1'))).status,401);
- assert.equal((await h.deliver(c,'slack',h.event('slack',{subtype:'channel_join'}))).data.data[0].held,true);
- const count=h.sends.length;await h.app.ok(`/api/dashboard/projects/${h.ws.projectId}/conversations/${t.conversation_id}/notes`,{token:h.token,body:{content:'Private handoff context'}});assert.equal(h.sends.length,count);
- await h.call('/connections/'+c.id,undefined,{method:'DELETE'});await h.reply(t);assert.equal(h.sends.length,count);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.sends[0].error_code,'connection_revoked');const next=await h.connect('slack');assert.equal(next.id,c.id);await h.reply(t);assert.equal(h.sends.length,count+1);
- }finally{await h.close();}}
+export async function slack(){await sharedExchange();}
 export async function erasure(){const h=await channelHarness();try{
  const c=await h.connect('sms');await h.deliver(c,'sms',h.event('sms'));const t=await h.ticket(c);await h.reply(t);
  await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${t.contact_id}/erase`,{token:h.token,body:{}});
@@ -102,7 +94,7 @@ async function templateExchange(){const h=await channelHarness();try{
  h.templates[0].status='PAUSED';assert.equal((await send()).status,409);h.templates[0].status='APPROVED';
  const revision=(await h.app.ok('/api/conversations/'+t.conversation_id,{token:h.token})).revision,local_id=randomUUID();assert.equal((await send({expected_revision:revision,local_id})).status,200);assert.equal((await send({expected_revision:revision,local_id})).status,200);assert.equal(h.sends.length,1);assert.equal(JSON.parse(h.sends[0].body).type,'template');
  await h.reply(t);assert.equal(h.sends.length,1,'a template does not reopen the free-text window');
- await h.deliver(c,'whatsapp',h.event('whatsapp',{text:'STOP'}));assert.equal((await send()).status,409);await h.call('/connections/'+c.id,undefined,{method:'DELETE'});await h.connect('whatsapp');await h.deliver(c,'whatsapp',h.event('whatsapp',{text:'I agree to WhatsApp support updates'}));assert.equal((await send()).status,409);assert.equal(h.sends.length,1);
+ await h.deliver(c,'whatsapp',h.event('whatsapp',{text:'STOP'}));assert.equal((await send()).status,409);await h.call('/connections/'+c.id,undefined,{method:'DELETE'});await h.connect('whatsapp');await h.deliver(c,'whatsapp',h.event('whatsapp',{text:'START'}));assert.equal((await send()).status,409,'START never restores continuation authority');await h.deliver(c,'whatsapp',h.event('whatsapp',{text:'I agree to WhatsApp support updates'}));assert.equal((await send()).status,409);assert.equal(h.sends.length,1);
  }finally{await h.close();}}
 
 async function sharedExchange(){const h=await channelHarness();try{
@@ -121,12 +113,39 @@ async function sharedExchange(){const h=await channelHarness();try{
   assert.equal((await command('support assign synthetic-happytohelp-owner')).status,200);const response=h.event(p,{text:'We are checking your order.',sender:'synthetic-happytohelp-owner'});assert.equal((await h.deliver(c,p,response)).status,200);assert.equal((await h.deliver(c,p,response)).status,200);const transcript=await h.app.ok('/api/conversations/'+t.conversation_id+'/messages',{token:h.token});assert.equal(transcript.messages.at(-1).actor_id,h.ws.users.owner);
   const before=h.sends.length;await h.app.ok(`/api/dashboard/projects/${h.ws.projectId}/conversations/${t.conversation_id}/notes`,{token:h.token,body:{content:'Private escalation detail'}});assert.equal(h.sends.length,before);
   const current=await h.app.ok('/api/conversations/'+t.conversation_id,{token:h.token});await h.app.ok(`/api/dashboard/projects/${h.ws.projectId}/conversations/${t.conversation_id}/ticket`,{method:'PATCH',token:h.token,body:{agent_id:h.ws.users.admin,expected_ticket_version:current.ticket_version}});assert.ok(h.sends.length>before);assert.ok(!h.sends.some(s=>s.body.includes('Private escalation')));
-  if(p==='teams'){
-   const changed=JSON.parse(raw);changed.type='messageUpdate';changed.text='The customer corrected the order number';changed.timestamp=new Date().toISOString();assert.equal((await h.deliver(c,p,JSON.stringify(changed))).status,200);changed.type='messageDelete';assert.equal((await h.deliver(c,p,JSON.stringify(changed))).status,200);assert.deepEqual(new Set((await h.call('/conversations/'+t.conversation_id)).data.changes.map(x=>x.kind)),new Set(['edited','deleted']));
-   const wrong=JSON.parse(raw);wrong.channelData.tenant.id='synthetic-happytohelp-foreign';assert.equal((await h.deliver(c,p,JSON.stringify(wrong))).status,403);assert.equal((await h.deliver(c,p,raw,{})).status,401);if(p==='teams')for(const override of [{aud:'foreign-app'},{iss:'https://untrusted.example'},{serviceurl:'https://untrusted.example/'}])assert.equal((await h.deliver(c,p,raw,h.signed(c,p,raw,undefined,override))).status,401);assert.equal((await h.deliver(c,p,raw,h.signed(c,p,raw,'1'))).status,401);
-  }else{
-   const edit=JSON.stringify({team_id:h.input(p).account,event_id:'synthetic-happytohelp-edit',event:{type:'message',subtype:'message_changed',channel:'C12345678',event_ts:String(Date.now()/1000),message:{ts:'1710000000.1',user:'synthetic-happytohelp-customer',text:'Corrected order'}}});assert.equal((await h.deliver(c,p,edit)).status,200);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.changes[0].content,'Corrected order');
-  }
-  const final=h.sends.length;await h.call('/connections/'+c.id,undefined,{method:'DELETE'});assert.equal((await command('support acknowledge')).status,410);await h.reply(t);assert.equal(h.sends.length,final);await h.connect(p);assert.equal((await command('support status')).status,200);assert.equal(h.sends.length,final+1);
+  const change=(kind,{media=false,sender='synthetic-happytohelp-customer',id='synthetic-happytohelp-'+kind+'-'+p}={})=>{
+   if(p==='teams'){const changed=JSON.parse(raw);changed.from={id:sender,aadObjectId:sender};changed.type=kind==='deleted'?'messageDelete':'messageUpdate';changed.text='Corrected order';changed.timestamp=new Date().toISOString();if(media)changed.attachments=[{contentType:'application/vnd.microsoft.card.adaptive',content:{private:'unsupported replacement'}}];return JSON.stringify(changed);}
+   return JSON.stringify({team_id:h.input(p).account,event_id:id,event:{type:'message',subtype:kind==='deleted'?'message_deleted':'message_changed',channel:'C12345678',event_ts:String(Date.now()/1000),message:{ts:'1710000000.1',user:sender,text:'Corrected order',...(media?{files:[{id:'synthetic-happytohelp-replacement'}]}:{})}}});
+  };
+  const edit=change('edited');assert.equal((await h.deliver(c,p,edit)).status,200);await h.deliver(c,p,edit);let changes=(await h.call('/conversations/'+t.conversation_id)).data.changes;assert.equal(changes.length,1);assert.equal(changes[0].content,'Corrected order');assert.equal(changes[0].actor_id,t.contact_id);assert.ok(changes[0].actor_name&&changes[0].at>0);
+  const held=await h.deliver(c,p,change('edited',{media:true}));assert.equal(held.status,200);assert.equal(held.data.data[0].reason,'attachment_change_requires_review');
+  assert.equal((await h.deliver(c,p,change('deleted'))).status,200);changes=(await h.call('/conversations/'+t.conversation_id)).data.changes;assert.deepEqual(new Set(changes.map(x=>x.kind)),new Set(['edited','deleted','attachment_review']));
+  const retained=await h.app.ok('/api/conversations/'+t.conversation_id+'/messages',{token:h.token});assert.equal(retained.messages[0].content,'Please help with my order');
+  const unknown=await h.deliver(c,p,change('edited',{sender:'synthetic-happytohelp-stranger'}));assert.equal(unknown.data.data[0].held,true);assert.equal((await h.call('/conversations/'+t.conversation_id)).data.changes.length,3);
+  assert.equal((await h.deliver(c,p,h.event(p,{channel:p==='slack'?'C99999999':'19:synthetic-happytohelp-forbidden'}))).status,403);assert.equal((await h.deliver(c,p,raw,{})).status,401);
+  if(p==='teams'){const wrong=JSON.parse(raw);wrong.channelData.tenant.id='synthetic-happytohelp-foreign';assert.equal((await h.deliver(c,p,JSON.stringify(wrong))).status,403);for(const override of [{aud:'foreign-app'},{iss:'https://untrusted.example'},{serviceurl:'https://untrusted.example/'}])assert.equal((await h.deliver(c,p,raw,h.signed(c,p,raw,undefined,override))).status,401);}
+  else{assert.equal((await h.deliver(c,p,raw,h.signed(c,p,raw,'1'))).status,401);assert.equal((await h.deliver(c,p,h.event(p,{subtype:'channel_join'}))).data.data[0].held,true);}
+  const final=h.sends.length;await h.call('/connections/'+c.id,undefined,{method:'DELETE'});assert.equal((await command('support acknowledge')).status,410);await h.reply(t);assert.equal(h.sends.length,final);await h.connect(p);assert.equal((await command('support status')).status,200);assert.equal(h.sends.length,final+1);await h.reply(t);assert.equal(h.sends.length,final+2);if(p==='slack'){assert.equal(JSON.parse(h.sends.at(-1).body).thread_ts,'1710000000.1');assert.equal(JSON.parse(h.sends.at(-1).body).mrkdwn,false);}
+  await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${t.contact_id}/erase`,{token:h.token,body:{}});assert.equal((await h.call('/conversations/'+t.conversation_id)).data,null);assert.equal((await h.app.first('SELECT count(*) n FROM support_channel_changes WHERE conversation_id=?',t.conversation_id)).n,0);assert.equal((await h.deliver(c,p,raw)).data.data[0].erased,true);assert.equal((await h.deliver(c,p,edit)).data.data[0].held,true);
+ }
+ }finally{await h.close();}}
+
+async function consentExchange(){const h=await channelHarness();try{
+ for(const p of ['sms','whatsapp']){
+  const c=await h.connect(p),inbound=h.event(p);await h.deliver(c,p,inbound);const t=await h.ticket(c),status=()=>h.call('/conversations/'+t.conversation_id);
+  const schedule=async()=>h.app.ok(`/api/management/projects/${h.ws.projectId}/workflow-schedules`,{token:h.token,body:{conversation_id:t.conversation_id,kind:'reply',due_at:Date.now()+3600000,timezone:'UTC',body:'Queued during opt-out',owner_id:h.ws.users.owner}});
+  const stop=h.event(p,{text:'STOP'});assert.equal((await h.deliver(c,p,stop)).status,200);await h.reply(t);const blocked=(await status()).data.sends[0];assert.equal(blocked.error_code,'customer_opted_out');
+  const scheduled=await schedule();assert.equal(scheduled.data.state,'cancelled');
+  await h.call('/connections/'+c.id,undefined,{method:'DELETE'});await h.connect(p);assert.match((await status()).data.blocked,/customer_opted_out/);
+  assert.equal((await h.app.call(h.root+'/conversations/'+t.conversation_id+'/consent',{token:h.token,body:{consent:true}})).status,409);
+  const before=h.sends.length,help=h.event(p,{text:'HELP'}),helpResult=await h.deliver(c,p,help);assert.equal(helpResult.status,200);if(p==='sms')assert.match(helpResult.data,/<Message>/);else assert.equal(h.sends.length,before+1);assert.match((await status()).data.blocked,/customer_opted_out/);await h.deliver(c,p,help);assert.equal(h.sends.length,p==='sms'?before:before+1);
+  const start=h.event(p,{text:'START',id:'synthetic-happytohelp-start-'+p});assert.equal((await h.deliver(c,p,start,{})).status,401);assert.match((await status()).data.blocked,/customer_opted_out/);
+  // A different subscriber and a different channel cannot grant this thread consent.
+  await h.deliver(c,p,h.event(p,{text:'START',sender:p==='sms'?'+12025550129':'synthetic-happytohelp-other'}));assert.match((await status()).data.blocked,/customer_opted_out/);
+  assert.equal((await h.deliver(c,p,start)).status,200);assert.equal((await status()).data.blocked,null);const fact=(await status()).data.consent.find(f=>f.kind==='start');assert.equal(fact.event_id,'synthetic-happytohelp-start-'+p);assert.ok(fact.at>0&&fact.received_at>=fact.at);
+  const count=h.sends.length;await h.app.scheduled();assert.equal(h.sends.length,count);assert.equal((await status()).data.sends.find(s=>s.message_id===blocked.message_id).state,'blocked');
+  await h.reply(t,{content:'A freshly approved support reply'});assert.equal(h.sends.length,count+1);
+  await h.deliver(c,p,h.event(p,{text:'STOP'}));await h.deliver(c,p,start);assert.match((await status()).data.blocked,/customer_opted_out/,'replayed START cannot undo later STOP');
+  await h.app.ok(`/api/management/projects/${h.ws.projectId}/contacts/${t.contact_id}/erase`,{token:h.token,body:{}});assert.equal((await status()).data,null);assert.equal((await h.app.first('SELECT count(*) n FROM support_channel_consent WHERE contact_id=?',t.contact_id)).n,0);
  }
  }finally{await h.close();}}

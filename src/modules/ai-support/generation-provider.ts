@@ -45,7 +45,9 @@ export async function executeGenerationProvider(
       await checkCurrent();
       if (row.kind === 'reply' && event.type === 'message_delta' && typeof event.content === 'string' && !event.thinking) {
         await effects.emit(env, row, {
-          type: 'chunk',
+          // Customer-visible text waits for whole-answer admission; a restricted
+          // copied run can span provider deltas. Operators retain live progress.
+          type: 'chunk', operatorOnly: true,
           payload: { localId: `generation:${row.id}`, chunk: await knowledgeAnswer(env,row.project_id,row.id,event.content), index: chunkIndex++, agent: context.agent },
         });
       }

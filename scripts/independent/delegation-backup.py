@@ -52,8 +52,8 @@ def sanitize(sql):
             # establish its own canonicalisation before nonmember disclosure.
             db.execute('UPDATE knowledge_upgrade_reports SET completed_at=NULL')
         if 'knowledge_reply_blocks' in tables:
-            # Keep live authors' own-word visibility, pinned payloads and source
-            # authority. Only erased/orphan personal author links are removed.
+            # Keep live authors' own words. Erased/orphan copies must lose the
+            # entire payload and author-derived fingerprint, not only the link.
             live = '0'
             if 'contacts' in tables:
                 fence = ("AND NOT EXISTS(SELECT 1 FROM contact_erasures erased WHERE "
@@ -65,7 +65,7 @@ def sanitize(sql):
                         "AND coalesce(json_extract(contact.metadata_json,'$.is_erasing'),0)<>1 "
                         "AND coalesce(json_extract(contact.metadata_json,'$.is_erased'),0)<>1 "
                         + fence + ')')
-            db.execute('UPDATE knowledge_reply_blocks AS block SET author_contact_id=NULL '
+            db.execute('DELETE FROM knowledge_reply_blocks AS block '
                        'WHERE author_contact_id IS NOT NULL AND NOT (' + live + ')')
         if 'api_credentials' in tables:
             revisions = list(db.execute('SELECT policy_revision,namespace,id FROM api_credentials'))

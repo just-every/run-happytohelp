@@ -1608,7 +1608,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "06cd8bbf856dba3d2312af92571f6e30abf4ce335815b353adc411e114c1b6a1",
+      "sha256": "d30595522af2218e7ec411306cbcb47ce89bcccfbcea37c321f18898ea0d0109",
       "executable": false
     },
     "AGENTS.md": {
@@ -1628,7 +1628,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "7f842211274e7dd9441a2306dabd5ce655eb442b3acf17c3f6f7ac37451bba87",
+      "sha256": "c759ac87538d190763ed45593e44ad357b6439820a73069f3c35d97f5fa6fae4",
       "executable": false
     },
     "DEMO.md": {
@@ -1820,7 +1820,7 @@
       "executable": false
     },
     "docs/website-knowledge.md": {
-      "sha256": "e480476d765d280ecb9caff68ca5f0d08603207de95d4a2d442408641a2a8ed1",
+      "sha256": "205ab149527a79b0aaa01c9740084e70e429793839eb1ca3b03fdc6aaf7a5e3d",
       "executable": false
     },
     "docs/workflows.md": {
@@ -3040,7 +3040,7 @@
       "executable": false
     },
     "scripts/independent/delegation-backup.py": {
-      "sha256": "50005a3cb0d65d74afcb15850ab667b67876131d0e50dcf764dd22657de7ef89",
+      "sha256": "bed6c175041951edd377d886725bbeec62b4c118a7bfea456643885c42aa38fc",
       "executable": false
     },
     "scripts/independent/setup-build.mjs": {
@@ -3116,7 +3116,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "2526f111e53cb1eb31d9d0c3373132d2b5dd270ce43e0d9427fc304719e5e7b8",
+      "sha256": "01c8996a9a68e7b1b13ce23371f45e142f4061c21a3110db43a76e8dcb6cfa8c",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -3712,7 +3712,7 @@
       "executable": false
     },
     "src/modules/ai-support/generation-provider.ts": {
-      "sha256": "c9819b982489f5378fbb55e91deb40ee9ccf8b4ee25203ac45e2497b7a112dd2",
+      "sha256": "d670c184c8a4ee5e0b5571964e2ba174800420b20ef01533cfa56424eccbcc65",
       "executable": false
     },
     "src/modules/ai-support/generation-queue.ts": {
@@ -4304,7 +4304,7 @@
       "executable": false
     },
     "src/modules/conversations/admission.ts": {
-      "sha256": "aec3a419e23b314d56bcedded7c1c5267ff579015b29736ee90e9acbea222f59",
+      "sha256": "957169997898cb54c8ff3cb5bd3a5e0fa96ad1c5fc27489f05bf10eaac9bea45",
       "executable": false
     },
     "src/modules/conversations/citations.js": {
@@ -5896,7 +5896,7 @@
       "executable": false
     },
     "src/modules/knowledge/canonicaliser.ts": {
-      "sha256": "8002d65b7003d54bdd28c85e4ef61170266a77a9dcfef64bc8b45fedff7b7b12",
+      "sha256": "f6522c38a54f7d55ddcab099d5133f1a6c2bbd5bb2049ead82bfcdbe0bd69937",
       "executable": false
     },
     "src/modules/knowledge/case-fold.ts": {
@@ -5940,11 +5940,11 @@
       "executable": false
     },
     "src/modules/knowledge/feedback.ts": {
-      "sha256": "3df11b1d73135fb752dd87532e01387f68775adbb306acf727db472193edff47",
+      "sha256": "9f62d71d62d3f398aff0768f82e45a7934ec6ac90752f56386c4cea03bcf7867",
       "executable": false
     },
     "src/modules/knowledge/generation-sources.ts": {
-      "sha256": "4507dc5d438807410a10672192b2780ecfa2641708d1c2ac76a62bfcdc34591c",
+      "sha256": "2c51df5c1920c095b04b9c4f43d377880b3400649453ffc35bccb7ae1272366a",
       "executable": false
     },
     "src/modules/knowledge/help-auth.ts": {
@@ -6060,11 +6060,11 @@
       "executable": false
     },
     "src/modules/knowledge/reference-policy.ts": {
-      "sha256": "0e7234ec954a215bf6fec2cae03740ed899ac3ae03354bbafb838ff632b9daa4",
+      "sha256": "5445f7a714af01f146f44d1e7c084805cadf76bc9b81972d6d58760a56837cfe",
       "executable": false
     },
     "src/modules/knowledge/reference-store.ts": {
-      "sha256": "6d84c76371d53d5797e035fb47e5b7bcefb52cd05c44454aa06d3668dd12ce52",
+      "sha256": "dd9176fe77744acf43a42704689fc9cb31c7480045d37f82b77a222e1ee63650",
       "executable": false
     },
     "src/modules/knowledge/result-fields.ts": {
@@ -12300,7 +12300,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/reference-ai.mjs": {
-      "sha256": "7dd32bfa1ccd8da1061795b1901c9ec9f552932f9b0cdfead8209972a0200eae",
+      "sha256": "27eb552acaf3ac73b180c70e24d7ebc11e6565d9dea0dfc5c37321d8b92724c2",
       "executable": false
     },
     "tests/helpers/knowledge/reference-authority.mjs": {
@@ -12323,6 +12323,10 @@
       "sha256": "7aaf2997069bdae7ddbd7177a5367143f56763f38be5aa7a649ae005782cb16b",
       "executable": false
     },
+    "tests/helpers/knowledge/reference-erasure.mjs": {
+      "sha256": "9d11755eebe2c075df57f69621c5f243fd36f6c5dd396fe7777a5a923e4e874c",
+      "executable": false
+    },
     "tests/helpers/knowledge/reference-layout.mjs": {
       "sha256": "4634f7041d5d8e143c0e092e271d06a140411d4b991900fe533c8c3171bb22f0",
       "executable": false
@@ -12332,7 +12336,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/references.mjs": {
-      "sha256": "2eff05cceba3ab1b40c721ce25baf78cfc318bf5e6c3f862edc7fbb76610ecb0",
+      "sha256": "1bba8d665d72f88a532096320fb273d0548754951258d8d42cae48c73ec444a1",
       "executable": false
     },
     "tests/helpers/knowledge/settle-upgrade.mjs": {

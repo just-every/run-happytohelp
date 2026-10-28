@@ -1,3 +1,4 @@
+import {canonicaliseKnowledge} from './canonicaliser'
 import {htmlReference} from './html-reference'
 import {modelReferenceLabels} from './model-labels'
 import {visibleBlockSql,referenceSetAdmittedSql,referenceAdmissionPolicy} from './reference-policy'
@@ -17,7 +18,9 @@ interface BlockInput {kind:KnowledgeBlock['kind'];text:string;title?:string;url?
 // source reads instead prove the incarnation observed with their source bytes.
 const blockSourcesObservedSql=(requested:string)=>`NOT EXISTS(SELECT 1 FROM json_each(json_extract(${requested},'$.sources_json')) source WHERE source.value LIKE 'article:%' AND NOT EXISTS(SELECT 1 FROM json_each(json_extract(${requested},'$.sourceIdentities')) observed WHERE json_extract(observed.value,'$.id')=source.value AND ${observedArticleSourceSql('source.value',"json_extract(observed.value,'$.project')","json_extract(observed.value,'$.incarnation')")}) AND NOT EXISTS(SELECT 1 FROM knowledge_generation_sources generation_source WHERE generation_source.project_id=json_extract(${requested},'$.project_id') AND generation_source.generation_id=json_extract(${requested},'$.generation_id') AND generation_source.source_id=source.value) AND NOT EXISTS(SELECT 1 FROM ai_generation_sources generation_source WHERE generation_source.project_id=json_extract(${requested},'$.project_id') AND generation_source.generation_id=json_extract(${requested},'$.generation_id') AND generation_source.source_id=source.value))`
 export async function createBlocks(env:Env,projectId:string,blocks:BlockInput[]){
- const rows=await Promise.all(blocks.map(async block=>{const payload_json=JSON.stringify({text:block.text,title:block.title,url:block.url}),sources_json=JSON.stringify([...new Set(block.sources)].sort()),generation_id=block.generationId||null,author_contact_id=block.authorContactId||null;
+ // Protect answer bytes before wrapping or indexing them. A permitted retrieved
+ // source cannot authorize an unrelated restricted copy in the model output.
+ const rows=await Promise.all(blocks.map(async block=>{const text=block.kind==='answer'?await canonicaliseKnowledge(env,projectId,block.text,undefined,false,block.generationId):block.text;const payload_json=JSON.stringify({text,title:block.title,url:block.url}),sources_json=JSON.stringify([...new Set(block.sources)].sort()),generation_id=block.generationId||null,author_contact_id=block.authorContactId||null;
  const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify([block.kind,payload_json,sources_json,generation_id,author_contact_id]))),fingerprint=Array.from(new Uint8Array(bytes),n=>n.toString(16).padStart(2,'0')).join('');
  return {id:crypto.randomUUID().replaceAll('-',''),project_id:projectId,kind:block.kind,payload_json,sources_json,generation_id,author_contact_id,created_at:Date.now(),fingerprint,sourceIdentities:block.sourceIdentities||[]}}))
  if(!rows.length)return []

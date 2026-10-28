@@ -1,3 +1,4 @@
+import {obligationsJourney} from '../helpers/ai/obligations.mjs'
 import {triageJourney} from '../helpers/ai/triage.mjs'
 import test from 'node:test'
 import {answersJourney} from '../helpers/ai/answers.mjs'
@@ -13,7 +14,7 @@ test('the visitor\'s assistant searches published knowledge and answers with exa
 
 test('each visitor turn is answered once and only if nothing it depends on changed; cancelled, interrupted or post-commit-failed attempts never replay the provider, and a missing key is visible without losing the message; triage labels gate confident intent routing, existing rules still route at admission when the model is down or unsure, and an operator\'s queue choice is kept',async()=>{await lifecycleJourney();await triageJourney()})
 
-test('operator suggestions and draft tools run once per request and never send, fail whole when alternatives fail, and handing a waiting conversation back answers its turn once within ceilings and current authority',assistanceJourney)
+test('operator suggestions and draft tools run once per request and never send, fail whole when alternatives fail, and handing a waiting conversation back answers its turn once within ceilings and current authority',async()=>{await assistanceJourney();await obligationsJourney()})
 
 test('the assistant answers through every supported provider protocol with usage recorded, and a refused paid attempt is never replayed',providersJourney)
 

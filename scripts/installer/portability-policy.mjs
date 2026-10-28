@@ -1,3 +1,4 @@
+import {followupArchiveRow,followupArchiveImportRow,followupArchiveSafety} from './followup-archive.mjs';
 import {rerMailArchiveRow,rerMailArchiveSafety} from './rer-mail-archive.mjs';
 import {asyncWorkArchiveRow,asyncWorkArchiveStagedSafety} from './async-work-archive.mjs';
 import {triageArchiveRow,triageArchiveStagedSafety} from './triage-archive.mjs';
@@ -12,16 +13,17 @@ export const archivePolicy={
  // Enforce revocation at restore too, including an archive produced by an older
  // exporter or containing an unrevoked metadata row. Never revive bearer authority.
  importSafety:{
+  followup_obligations:{stop_condition:[''],pending_terms_json:[null]},followup_changes:{stop_condition:[null]},
   integration_tokens:{revoked_at:[1]},api_credentials:{revoked_at:[1]},
   crm_connections:{token_cipher:[null]},
   crm_mappings:{context_json:[null],state:['stale'],refreshed_at:[null],checked_at:[null]},
  },
- importRow:(table,row)=>table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:['integration_tokens','api_credentials'].includes(table)&&row.revoked_at==null?{...row,revoked_at:1}:row,
- product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await rerMailArchiveSafety(input);await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);await trainingArchiveStagedSafety(input);await asyncWorkArchiveStagedSafety(input);return reportArchiveStagedSafety(input)},
+ importRow:(table,row)=>followupArchiveImportRow(table,table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:['integration_tokens','api_credentials'].includes(table)&&row.revoked_at==null?{...row,revoked_at:1}:row),
+ product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await followupArchiveSafety(input);await rerMailArchiveSafety(input);await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);await trainingArchiveStagedSafety(input);await asyncWorkArchiveStagedSafety(input);return reportArchiveStagedSafety(input)},
  // Keep invitation history, but restored archives never restore a live survey link or queued send.
- exportRow:(table,row)=>table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:rerMailArchiveRow(table,asyncWorkArchiveRow(table,trainingArchiveRow(table,triageArchiveRow(table,escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='integration_tokens'?{...row,token_hash:'revoked:'+row.id,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_credentials'?{...row,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_requests'?{...row,response_json:null,erased:1}:table==='api_appends'?{...row,response_json:null}:table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
+ exportRow:(table,row)=>followupArchiveRow(table,table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:rerMailArchiveRow(table,asyncWorkArchiveRow(table,trainingArchiveRow(table,triageArchiveRow(table,escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='integration_tokens'?{...row,token_hash:'revoked:'+row.id,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_credentials'?{...row,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_requests'?{...row,response_json:null,erased:1}:table==='api_appends'?{...row,response_json:null}:table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
   :table==='mailbox_connections'?{...row,credential_cipher:null,status:'disconnected',cursor_json:null,sync_lock:null,sync_lock_until:null}
-  :table==='mailbox_sends'&&row.state==='sending'?{...row,state:'uncertain',error_code:'restored_pending_send'}:row)))))))),
+  :table==='mailbox_sends'&&row.state==='sending'?{...row,state:'uncertain',error_code:'restored_pending_send'}:row))))))))),
  // Reconstruct the full-text index from retained messages after restore.
  derivedTables:['inbox_message_search'],
  excludeTables:[

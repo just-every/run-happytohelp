@@ -1,3 +1,4 @@
+import {obligationRoutes} from './obligations'
 import {conversationTrace} from './trace'
 import { Hono } from 'hono'
 import type { AppEnv } from '../../platform/env'
@@ -24,6 +25,7 @@ routes.post('/projects/:projectId/conversations/:conversationId/suggestions',asy
  try{return c.json(await requestGeneration(c.env,{projectId,conversationId:c.req.param('conversationId'),actor,expectedRevision:body.expectedRevision,kind:'suggestions'}),202)}catch(error){return c.json({error:String(error)},409)}
 })
 
+routes.route('/',obligationRoutes)
 routes.get('/projects/:projectId/conversations/:conversationId/trace',async c=>{
  const projectId=c.req.param('projectId');await requireProject(c,projectId,true)
  c.header('Cache-Control','private, no-store')

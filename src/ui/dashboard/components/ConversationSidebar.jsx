@@ -11,6 +11,7 @@ import MetadataItem from './MetadataItem';
 import ConversationContactDetails from './conversation/ConversationContactDetails';
 import ConversationDetailSection from './conversation/ConversationDetailSection';
 import ConversationEnvironmentDetails from './conversation/ConversationEnvironmentDetails';
+import FollowupObligations from './conversation/FollowupObligations';
 import ResolutionSummary from './conversation/ResolutionSummary';
 import ConversationActions from './conversation-actions/ConversationActions';
 import EscalationsPanel from './escalations/EscalationsPanel';
@@ -142,6 +143,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
             { section('trace', 'Execution trace', <ProductionTrace conversation={ conversation } active={ Boolean(isShown) && open.has('trace') } />) }
             { record && section('fields', 'Ticket fields', <TicketEditor conversation={ conversation } record={ record } />) }
             { workflows && section('schedules', 'Schedules', <WorkflowPanel conversation={ conversation } workflows={ workflows } onBadge={ badgeSetters.schedules } />, badges.schedules) }
+            { manage && section('followups', 'Follow-up promises', <FollowupObligations key={ conversation.id } conversation={ conversation } reads={ reads } liveKey={ liveKey } />) }
             { section('escalations', 'Escalations', <EscalationsPanel projectId={ conversation.project_id } conversationId={ conversation.id } refreshKey={ liveKey } reads={ reads } onDraft={ onReviewEscalationDraft } onBadge={ badgeSetters.escalations } onUpdates={ setEscalationUpdates } />, badges.escalations) }
             { section('merges', 'Merges and partner threads', <ConversationActions conversation={ conversation } refreshKey={ liveKey } reads={ reads } onChanged={ onTicketChanged } onBadge={ badgeSetters.merges } />, badges.merges) }
             { manage && section('problem', 'Problem and incidents', <ProblemPanel projectId={ conversation.project_id } conversationId={ conversation.id } ticket={ ticket } onChanged={ () => record.reload() } onBadge={ badgeSetters.problem } />, badges.problem) }

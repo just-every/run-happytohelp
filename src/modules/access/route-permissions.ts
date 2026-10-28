@@ -175,6 +175,7 @@ rules[`POST ${P}/suspended/:id/recover`]='conversations.manage'
 rules[`DELETE ${P}/suspended/:id`]='conversations.manage'
 rules[`POST ${P}/sender-rules`]='settings.manage'
 export function routeRule(method:string,path:string):Rule|undefined{
+ if(path.startsWith('/api/ai-support/projects/:projectId/conversations/:conversationId/obligations'))return 'conversations.manage'
  if(path==='/api/escalations/webhooks/:connectionId'||path==='/api/escalations/attachments/:token')return 'none'
  if(path.startsWith('/api/escalations/projects/:projectId/')){
   if(method==='GET')return 'self'

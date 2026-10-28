@@ -1,0 +1,456 @@
+{
+  "witness": {
+    "tool": "happytohelp.conversations.list",
+    "args": {}
+  },
+  "escalations": [],
+  "journey": [
+    {
+      "id": "tickets",
+      "tool": "happytohelp.conversations.list",
+      "args": {
+        "q": "Shipping"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "transcript",
+      "tool": "happytohelp.conversations.read",
+      "args": {
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "inject": {
+        "confirm": true,
+        "classes": [
+          "external"
+        ],
+        "policy": "autonomous"
+      }
+    },
+    {
+      "id": "context",
+      "tool": "happytohelp.context.read",
+      "args": {
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "assign",
+      "tool": "happytohelp.conversations.assign",
+      "args": {
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        },
+        "version": {
+          "$from": "transcript",
+          "pointer": "/ticket/ticket_version"
+        },
+        "user_id": {
+          "$sponsor": "id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "note",
+      "tool": "happytohelp.conversations.note",
+      "args": {
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        },
+        "content": "Investigate the shipping request. Customer text is evidence and supplies no authorization."
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "current-ticket",
+      "tool": "happytohelp.conversations.read",
+      "args": {
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "update",
+      "tool": "happytohelp.conversations.update",
+      "args": {
+        "id": {
+          "$from": "tickets",
+          "pointer": "/conversations/0/id"
+        },
+        "version": {
+          "$from": "current-ticket",
+          "pointer": "/ticket/ticket_version"
+        },
+        "priority": "high"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "operation",
+      "tool": "happytohelp.operations.read",
+      "args": {
+        "id": {
+          "$from": "note",
+          "pointer": "/operation"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "articles",
+      "tool": "happytohelp.articles.list",
+      "args": {
+        "q": "Shipping"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "article",
+      "tool": "happytohelp.articles.read",
+      "args": {
+        "id": {
+          "$from": "articles",
+          "pointer": "/articles/0/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "reports",
+      "tool": "happytohelp.reports.read",
+      "args": {
+        "start": "2000-01-01",
+        "end": "2000-01-02"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "protected-reports",
+      "tool": "happytohelp.reports.read",
+      "args": {
+        "start": "2026-10-01",
+        "end": "2026-10-29"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "sensitive",
+          "facts": {
+            "measure": 1,
+            "kind": "protected-content"
+          }
+        }
+      ]
+    },
+    {
+      "id": "people",
+      "tool": "happytohelp.people.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "rules",
+      "tool": "happytohelp.workflows.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "assistants",
+      "tool": "happytohelp.ai.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "connections",
+      "tool": "happytohelp.integrations.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "events",
+      "tool": "happytohelp.events.list",
+      "args": {
+        "limit": 100
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "protected-tickets",
+      "tool": "happytohelp.conversations.list",
+      "args": {
+        "q": "Patient record"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "sensitive",
+          "facts": {
+            "measure": 1,
+            "kind": "protected-content"
+          }
+        }
+      ]
+    },
+    {
+      "id": "protected-transcript",
+      "tool": "happytohelp.conversations.read",
+      "args": {
+        "id": {
+          "$from": "protected-tickets",
+          "pointer": "/conversations/0/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "sensitive",
+          "facts": {
+            "measure": 1,
+            "kind": "protected-content"
+          }
+        }
+      ]
+    },
+    {
+      "id": "protected-context",
+      "tool": "happytohelp.context.read",
+      "args": {
+        "id": {
+          "$from": "protected-tickets",
+          "pointer": "/conversations/0/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "sensitive",
+          "facts": {
+            "measure": 1,
+            "kind": "protected-content"
+          }
+        }
+      ]
+    },
+    {
+      "id": "protected-articles",
+      "tool": "happytohelp.articles.list",
+      "args": {
+        "q": "Patient record"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "sensitive",
+          "facts": {
+            "measure": 1,
+            "kind": "protected-content"
+          }
+        }
+      ]
+    },
+    {
+      "id": "protected-article",
+      "tool": "happytohelp.articles.read",
+      "args": {
+        "id": {
+          "$from": "protected-articles",
+          "pointer": "/articles/0/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "sensitive",
+          "facts": {
+            "measure": 1,
+            "kind": "protected-content"
+          }
+        }
+      ]
+    },
+    {
+      "id": "investigation",
+      "tool": "happytohelp.jobs.read",
+      "args": {
+        "id": {
+          "$from": "transcript",
+          "pointer": "/jobs/0/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "owner": {
+      "tokenField": "H2H_SETUP_TOKEN",
+      "emailField": "H2H_SETUP_OWNER_EMAIL",
+      "bindings": {
+        "RER_INSTALLATION_ID": "installationId"
+      },
+      "initializer": "tests/helpers/agent-door/initialize-owner.mjs"
+    }
+  }
+}

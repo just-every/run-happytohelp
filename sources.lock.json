@@ -2025,7 +2025,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "8a70724192e5872c14e24075968eb524ab8ded67863023b4e5306b8c437dee6a",
+      "sha256": "dc0794463a78c7b213237dcf622ca25d3b6c4744548a6706f9938d1bf9915302",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -12062,6 +12062,14 @@
     },
     "tests/helpers/upgrade-snapshot.mjs": {
       "sha256": "94b525e815aeba1a4a87ae00b72e4384c690aee836d8339883e095ea8ead5d1c",
+      "executable": false
+    },
+    "tests/helpers/voice/browser-network.mjs": {
+      "sha256": "e1b6c1a1b4cc4c2cf071f804eea1eba98704575deeefd69c1fc60d743eff7850",
+      "executable": false
+    },
+    "tests/helpers/voice/browser.mjs": {
+      "sha256": "765fde758fd7a06be47770f1449ec1162dc124473041d566f07e534533676ab0",
       "executable": false
     },
     "tests/helpers/voice/journeys.mjs": {

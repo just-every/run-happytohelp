@@ -23,8 +23,8 @@ export async function voiceHarness(){
  const ws=await app.seedWorkspace('voice'),foreign=await app.seedWorkspace('voice-foreign'),token=ws.tokens.owner,base=`/api/voice/projects/${ws.projectId}`
  const connect=async(options={})=>(await app.ok(base+'/numbers',{token,body:{provider:'twilio',provider_id:providerNumber,account_id:account,token:secret,settings,...options}})).data
  let number=await connect()
- const hook=async({step,remote='synthetic-happytohelp-5',extra={},signed=true,options={}}={})=>{
-  const path='/api/voice/hooks/'+number.id+(step?'?step='+step:''),form={AccountSid:account,CallSid:remote,...(step==='recording'?{}:{From:callerPhone,To:numberPhone}),...extra},raw=new URLSearchParams(form).toString()
+ const hook=async({step,command,remote='synthetic-happytohelp-5',extra={},signed=true,options={}}={})=>{
+  const path='/api/voice/hooks/'+number.id+(step?'?step='+step:'')+(command?'&command='+command:''),form={AccountSid:account,CallSid:remote,...(step==='recording'?{}:{From:callerPhone,To:numberPhone}),...extra},raw=new URLSearchParams(form).toString()
   return app.call(path,{body:raw,raw:true,headers:{'Content-Type':'application/x-www-form-urlencoded',...(signed?{'X-Twilio-Signature':signature(app.origin+path,form)}:{})},...options})
  }
  const open=async(options)=>{const result=await hook(options);assert.equal(result.status,200,JSON.stringify(result.data));return app.first('SELECT * FROM voice_calls ORDER BY created_at DESC,id DESC LIMIT 1')}
@@ -96,7 +96,12 @@ export async function uncertaintyProof(){const h=await voiceHarness();try{
  result=await app.ok(path,{token,body});assert.equal(result.data.state,'uncertain');assert.equal(app.requests.length,count,'unknown callback does not replay')
  assert.equal((await app.call(path,{token,body:{...body,kind:'transfer'}})).status,409)
  h.setReply(201);const accepted=await app.ok(path,{token,body:{...body,request_id:'callback-two'}});assert.equal(accepted.data.state,'accepted');const sent=new URLSearchParams(app.requests.at(-1).body);assert.equal(sent.get('To'),settings.human_phone);assert.equal(sent.get('Record'),'false');assert.match(sent.get('Twiml'),/\+12025550102/)
+ await h.hook({step:'dial',extra:{DialCallStatus:'busy'}})
  h.setReply(503);const failed=await app.ok(path,{token,body:{...body,kind:'transfer',request_id:'transfer-one'}});assert.equal(failed.data.state,'uncertain');assert.equal((await h.calls(call.conversation_id))[0].state,'transfer_failed');assert.equal((await h.calls(call.conversation_id))[0].follow_up,1)
+ const transferRequest=new URLSearchParams(app.requests.at(-1).body);assert.ok(transferRequest.get('Twiml').includes('command='+failed.data.id))
+ assert.equal((await h.hook({step:'dial',command:failed.data.id,extra:{DialCallStatus:'completed'}})).status,200,'a later human transfer has its own idempotent provider callback')
+ assert.equal((await h.calls(call.conversation_id))[0].state,'completed')
+ assert.equal((await h.hook({step:'dial',command:'synthetic-happytohelp-21',extra:{DialCallStatus:'completed'}})).status,404)
  await app.configure({});await app.ok(path,{token,body});assert.equal(app.requests.length,count+2,'restart does not replay an unknown callback')
  const command=await app.first('SELECT * FROM voice_commands WHERE id=?',accepted.data.id);assert.equal(voiceArchiveRow('voice_commands',{...command,state:'sending'}).state,'uncertain')
  const n=await app.first('SELECT * FROM voice_numbers');assert.equal(voiceArchiveRow('voice_numbers',n).token_cipher,null);assert.equal(voiceArchiveRow('voice_numbers',n).enabled,0)

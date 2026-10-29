@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "cc827c3acb2c71309e9de39f58f3a8101f21fabe0ace453f034f14005a39a97d",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "b1502c4414f8b3ecd0ec60d8d62dc5a136e85acdda8fdff4d51ff52daec5d2fd",
       "executable": false
     },
     "DEMO.md": {
@@ -11816,6 +11816,10 @@
       "sha256": "fa22713d174b063a608b67501442000edea429d8bfddc71c28fdb899f7733587",
       "executable": false
     },
+    "tests/helpers/identity/scoped-authority.mjs": {
+      "sha256": "a3f99ce693c79cef0c0d6e1d197499a14ae53e44a4ffdcf377cf8061e368bfe7",
+      "executable": false
+    },
     "tests/helpers/identity/security-browser.mjs": {
       "sha256": "45a9ad6797a37a8036f5622ffe4f5892095ce75177f8b4e0cc837b34be6c847d",
       "executable": false
@@ -12201,7 +12205,7 @@
       "executable": false
     },
     "tests/journeys/identity.mjs": {
-      "sha256": "ac29488f2bb3a1530aec6ba19b319d118c7ba048bb0e10ad36ff80e38fd680ee",
+      "sha256": "1be5e6e3b744768abc0cb9401924277718bf0867ff95f4674c122c918874fa47",
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {

@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -48,15 +48,15 @@ Core · published · **partial** · Cites BASE-ROLE-001, BASE-ACCESS-001, BASE-S
 
 #### IDENTITY-001 — Scoped authority
 
-Core · published · **partial** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-ACCESS-003, BASE-ACCESS-004
+Core · published · **done** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-ACCESS-003, BASE-ACCESS-004
 
 **Requirement.** Owner setup, registration, login/recovery, project switching, membership and widget admission establish native identity. Provider configuration never substitutes for user authority. The public widget key and origin are not a secret: visitor, registration and project-creation requests are bounded by D1-backed limits (the documented admission limits) and refused with HTTP 429 and `Retry-After`.
 
 **Acceptance.**
 1. Through native session and widget routes, deny cross-tenant, blocked/deleted and revoked access; prove public admission returns 429 with Retry-After when limited and provider configuration conveys no actor authority.
 
-**Evidence.** `src/modules/management/policy.ts`; `tests/journeys/identity.mjs`; `tests/journeys/runtime.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: native cross-tenant refusal; widget cross-tenant refusal; blocked visitor loses access; deleted workspace loses access; revoked session loses access; public admission rate refusal; public admission Retry-After; provider configuration conveys no actor authority. Asserted: no outcome in the currently cited test files. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: widget cross-tenant refusal; provider configuration conveys no actor authority. Asserted: native cross-tenant refusal; blocked visitor loses access; deleted workspace loses access; revoked session loses access; public admission rate refusal; public admission Retry-After.
+**Evidence.** `tests/helpers/identity/native-account.mjs`, nativeAccountJourney: native setup, password sign-in/recovery, membership, project switching and signed widget admission. `tests/helpers/identity/scoped-authority.mjs`, scopedAuthorityJourney (called by the existing first-owner test in `tests/journeys/identity.mjs`): tenantAuthority asserts native and widget cross-tenant read/write refusal, owner-blocked visitor re-admission/read/write refusal, native and visitor session revocation, and deleted-workspace native/widget refusal while the other tenant remains usable; providerAuthority asserts configured provider credentials grant no actor or project authority; admissionLimits and limited assert HTTP 429, bounded Retry-After, no admission side effects and persisted default D1 counters through widget session, registration, signed-in project creation and email verification routes. Admission thresholds are the unchanged defaults documented in `docs/PUBLIC-LIMITS.md` (30 widget sessions/hour/address, 5 registrations/day/address, 10 projects/day/account or address); no limiter override or fake is used.
+**Gap.** None. All eight scoped-authority outcomes are asserted through public routes; provider mail is the only network-edge fixture.
 
 #### FIRST-RUN-001 — A useful first workspace
 

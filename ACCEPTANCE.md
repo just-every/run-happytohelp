@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -135,15 +135,15 @@ Core · published · **partial** · Cites BASE-ROLE-001, BASE-OPS-003, BASE-DATA
 
 #### OUTCOMES-001 — Resolution feedback and provenance
 
-Core · published · **partial** · Cites BASE-DATA-003, BASE-ROLE-001, BASE-AGENT-008 · Rules D-2
+Core · published · **done** · Cites BASE-DATA-003, BASE-ROLE-001, BASE-AGENT-008 · Rules D-2
 
 **Requirement.** Current original visitor sessions may rate a closed resolution with thumbs up/down and an optional comment up to 1,000 characters. Changes retain history; reopened cycles cannot receive the previous resolution's rating. Operators retain access to each past resolution's latest feedback after reopening; visitor eligibility and report denominators remain tied to the current cycle. Erasure removes rating comments. Confirmed operator-sent drafts establish assisted outcomes, otherwise confirmed human replies establish human outcomes. AI requires a complete visible answer history without a person handoff; missing evidence remains unknown. Status, assignment and cancellation transitions recheck current authority atomically.
 
 **Acceptance.**
 1. Close, rate, rerate, reopen and close again via widget/operator routes; prevent previous-session/cycle feedback, retain old-cycle operator visibility, redact erased comments and verify human/assisted/AI/unknown attribution from actual visible answers.
 
-**Evidence.** `src/modules/outcomes/rating.ts`; `src/modules/outcomes/operator-feedback.ts`; `tests/reports/support-outcomes.mjs` (visitor rating lifecycle: current session and cycle, bounded changes, commit races and erasure); `tests/reports/support-outcomes.mjs` (answer provenance: native and local proposals retain their original attribution through send and replay; resolution lifecycle: send, close, reopen and reassign atomically under current authority)
-**Gap.** Main re-audit: unasserted in the cited Evidence set: rerating retains history; other actors cannot rate; revoked session cannot rate; reopened cycle cannot use previous rating; erasure redacts comment history. Asserted: close and initial eligible rating; rerating preserves latest value; expired session cannot rate; second close has a distinct cycle; operator reads past-cycle feedback after reopen; erasure redacts current comments; human outcome from visible answer; assisted outcome from visible answer; AI-only outcome from visible answer; missing provenance stays unknown.
+**Evidence.** `src/modules/outcomes/rating.ts`; `src/modules/outcomes/operator-feedback.ts`; `tests/reports/support-outcomes.mjs`, supportOutcomesJourney: native widget/operator close, bounded rating changes, other-actor and expired-session refusals, distinct reopened cycles with past-cycle operator visibility, current-comment erasure, and human/assisted/AI/unknown attribution from visible answers with replay preserving authorship; `tests/reports/resolution-feedback.mjs`, resolutionFeedbackHistory (called by that same journey): retained rating revisions through the operator door, reopened-cycle refusal, current-session sign-out preventing further rating, erasure redacting every retained comment while preserving revision/value/time, visitor/foreign/revoked operator history denials, and rejected versus accepted status/assignment/queued-answer cancellation transitions.
+**Gap.** None.
 
 #### REPORTS-001 — Workspace calendar reports
 

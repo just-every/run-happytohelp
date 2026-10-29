@@ -33,17 +33,35 @@ export async function supportOutcomesJourney(){
   await rate(firstHandResolution.id,-1,'Please explain further')
   const changed=(await handed.transcript()).resolution.rating
   assert.equal(changed.revision,2);assert.equal(changed.comment,'Please explain further');assert.equal(changed.recovery,'unknown')
+  // The public rating door appends each correction; the latest projection alone
+  // would not prove that the original feedback survives in durable history.
+  const ratingHistory=()=>app.sql('SELECT revision,value,comment FROM conversation_rating_history WHERE resolution_id=? ORDER BY revision',firstHandResolution.id)
+  const surveyHistory=()=>app.sql('SELECT revision,score,comment FROM csat_response_history WHERE resolution_id=? ORDER BY revision',firstHandResolution.id)
+  const revisions=[{revision:1,value:1,comment:'Initial feedback'},{revision:2,value:-1,comment:'Please explain further'}]
+  assert.deepEqual(await ratingHistory(),revisions,'rerating retains both original feedback and its correction')
+  assert.deepEqual(await surveyHistory(),revisions.map(({value,...row})=>({...row,score:value})))
   await rate(firstHandResolution.id,0,'Invalid value',handed.token,400)
   await rate(firstHandResolution.id,1,'x'.repeat(1001),handed.token,400)
   await rate(firstHandResolution.id,1,'Foreign visitor',answered.token,404)
   await rate(firstHandResolution.id,1,'Operator cannot rate',owner,403)
+  assert.deepEqual((await handed.transcript()).resolution.rating,changed,'refused actors and invalid feedback leave the customer rating unchanged')
+  assert.deepEqual(await ratingHistory(),revisions,'refusals append no feedback revision')
   await app.ok(`/api/outcomes/projects/${p}/settings`,{token:owner,method:'PUT',body:{enabled:false,widgetEnabled:true,scale:'five',locale:'es',delayMinutes:0,expiresDays:1}})
   assert.equal((await handed.transcript()).resolution.survey.scale,'thumbs','a settings edit does not reinterpret an existing cycle')
-  await status(handed.conversationId,'open');await handed.say('One more question');await humanReply(handed.conversationId,'The replacement is tracked.');await status(handed.conversationId,'solved')
+  await status(handed.conversationId,'open')
+  assert.equal((await handed.transcript()).resolution,null,'an open cycle offers no rating')
+  await rate(firstHandResolution.id,1,'Reopened cycle',handed.token,409)
+  const reopened=(await door(`/conversations/${handed.conversationId}`)).data
+  assert.equal(reopened.resolution,null)
+  assert.deepEqual(reopened.resolutionHistory.map(row=>[row.id,row.rating.value,row.rating.comment,row.rating.revision]),[[firstHandResolution.id,-1,'Please explain further',2]],'operators retain latest past-cycle feedback while the request is open')
+  await handed.say('One more question');await humanReply(handed.conversationId,'The replacement is tracked.');await status(handed.conversationId,'solved')
   const secondHandResolution=(await handed.transcript()).resolution
+  assert.notEqual(secondHandResolution.id,firstHandResolution.id)
   assert.equal(secondHandResolution.ordinal,2);assert.equal(secondHandResolution.rating,null)
   assert.equal(secondHandResolution.survey.scale,'five');assert.equal(secondHandResolution.survey.locale,'es')
   await rate(firstHandResolution.id,1,'Old cycle',handed.token,409)
+  assert.equal((await handed.transcript()).resolution.rating,null,'old-cycle feedback cannot populate the new resolution')
+  assert.deepEqual(await ratingHistory(),revisions,'reopening and closing again do not rewrite prior feedback')
   const retained=(await door(`/conversations/${handed.conversationId}`)).data.resolutionHistory
   assert.deepEqual(retained.map(row=>[row.id,row.ordinal,row.rating.value,row.rating.comment,row.rating.revision]),[[firstHandResolution.id,1,-1,'Please explain further',2]])
   assert.ok(retained[0].reopenedAt)
@@ -133,13 +151,23 @@ export async function supportOutcomesJourney(){
   assert.equal((await fiveRate(4)).status,409)
   await app.db.prepare('UPDATE sessions SET expires_at=1 WHERE contact_id=?').bind(handed.contactId).run()
   assert.equal((await fiveRate(4)).status,401)
+  assert.equal((await door(`/conversations/${handed.conversationId}`)).data.resolution.rating.revision,1,'an expired credential appends no rating')
+  const peer=(await answered.transcript()).resolution
+  assert.equal(peer.rating.value,1);assert.equal(peer.rating.recovery,'recovered')
+  await app.call('/api/identity/session',{token:answered.token,method:'DELETE',status:200})
+  await app.call(`/api/conversations/${answered.conversationId}/widget-events`,{token:answered.token,body:{action:'rateResolution',data:{resolutionId:peer.id,value:-1,comment:'Revoked session'}},status:401})
+  assert.deepEqual((await door(`/conversations/${answered.conversationId}`)).data.resolution.rating,peer.rating,'revoking an eligible visitor session prevents any change to its rating')
   await app.ok(`/api/management/projects/${p}/contacts/${handed.contactId}/erase`,{token:owner,body:{}})
   const erased=(await door(`/conversations/${handed.conversationId}`)).data
   assert.equal(erased.resolution.rating.comment,'')
-  assert.ok(erased.resolutionHistory.every(row=>row.rating.comment===''))
-  assert.equal((await app.first("SELECT COUNT(*) n FROM conversation_rating_history WHERE resolution_id IN (?,?) AND comment<>''",firstHandResolution.id,secondHandResolution.id)).n,0)
-  const peer=(await answered.transcript()).resolution
-  assert.equal(peer.rating.value,1);assert.equal(peer.rating.recovery,'recovered')
+  assert.deepEqual(erased.resolutionHistory.map(row=>[row.id,row.rating.comment]),[[firstHandResolution.id,'']])
+  assert.deepEqual(await ratingHistory(),revisions.map(row=>({...row,comment:''})),'erasure redacts comments without deleting the correction history')
+  assert.deepEqual(await surveyHistory(),revisions.map(({value,...row})=>({...row,score:value,comment:''})))
+  for(const table of ['conversation_rating_history','csat_response_history']){
+   const history=await app.sql(`SELECT revision,comment FROM ${table} WHERE resolution_id=? ORDER BY revision`,secondHandResolution.id)
+   assert.deepEqual(history,[{revision:1,comment:''}],'erasure also redacts the current cycle history')
+  }
+  assert.deepEqual((await door(`/conversations/${answered.conversationId}`)).data.resolution.rating,peer.rating,'erasing one customer preserves the other customer feedback')
   await status(unanswered.conversationId,'solved')
   assert.equal((await unanswered.transcript()).resolution.outcome,'unknown','closing without visible answer evidence stays unknown')
   await status(unanswered.conversationId,'open');await unanswered.say('Can you explain the invoice?')

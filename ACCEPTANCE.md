@@ -142,7 +142,7 @@ Core · published · **partial** · Cites BASE-DATA-003, BASE-ROLE-001, BASE-AGE
 **Acceptance.**
 1. Close, rate, rerate, reopen and close again via widget/operator routes; prevent previous-session/cycle feedback, retain old-cycle operator visibility, redact erased comments and verify human/assisted/AI/unknown attribution from actual visible answers.
 
-**Evidence.** `src/modules/outcomes/rating.ts`; `src/modules/outcomes/operator-feedback.ts`; `tests/reports/support-outcomes.mjs` (visitor rating lifecycle: current session and cycle, bounded changes, commit races and erasure); `tests/reports/support-outcomes.mjs` (answer provenance: native and local proposals retain their original attribution through send and replay; resolution lifecycle: send, close, reopen and reassign atomically under current authority)
+**Evidence.** `src/modules/outcomes/rating.ts`; `src/modules/outcomes/operator-feedback.ts`; `tests/journeys/reports.mjs` — “resolve and reopen multichannel support with visible answer attribution, visitor feedback and permission-scoped team reports” (`tests/reports/support-outcomes.mjs`, “supportOutcomesJourney”: original and corrected feedback histories, invalid/foreign/operator/expired/revoked refusals without mutation, open and reclosed cycle eligibility, operator past-cycle feedback, erasure of current and retained comments, human/assisted/AI/unknown visible-answer attribution)
 **Gap.** Main re-audit: unasserted in the cited Evidence set: rerating retains history; other actors cannot rate; revoked session cannot rate; reopened cycle cannot use previous rating; erasure redacts comment history. Asserted: close and initial eligible rating; rerating preserves latest value; expired session cannot rate; second close has a distinct cycle; operator reads past-cycle feedback after reopen; erasure redacts current comments; human outcome from visible answer; assisted outcome from visible answer; AI-only outcome from visible answer; missing provenance stays unknown.
 
 #### REPORTS-001 — Workspace calendar reports
@@ -154,7 +154,7 @@ Core · published · **partial** · Cites BASE-ROLE-001, BASE-DATA-001 · Rules 
 **Acceptance.**
 1. Compare Reports and formula-safe CSV to hand-calculated response/resolution median and p90, latest-cycle outcome and satisfaction cohorts across DST and tenants, including more than 10,000 rows and excluded imports/reopened cycles.
 
-**Evidence.** `src/modules/reports/routes.ts`; `src/modules/reports/metrics.ts`; `tests/reports/figures.mjs` (report export journey: independent calendar oracles, complete bounded CSV and transcript export; workspace deletion journey: retained links, invitations and commit races never restore report authority); `tests/journeys/reports.mjs`
+**Evidence.** `src/modules/reports/routes.ts`; `src/modules/reports/metrics.ts`; `tests/journeys/reports.mjs` — “inspect calendar Reports and formula-safe exports against known durations, rates and exclusions, then revoke private export access” (`tests/reports/figures.mjs`, “calendarReportsJourney”: independent calendar/duration/rate oracles, DST, imports/reopened cycles, formula-safe CSV, complete transcripts and tenant authority); `tests/reports/nightly.mjs` — “Reports streams every conversation above 10,000 while aggregates and summary stay complete” (`tests/reports/scale.mjs`, “reportScaleJourney”: cohort 10,001, every CSV ID exactly once, full transcripts and aggregate/summary completeness; run by “pnpm run test:scale” in `.github/workflows/installer-journeys.yml`, “Installer / import-and-report-scale”, on scheduled/release qualification)
 **Gap.** Main re-audit: unasserted in the cited Evidence set: cohort above 10000 rows; complete CSV above 10000 rows. Asserted: response median; response p90; resolution median; resolution p90; latest-cycle outcome rate; satisfaction cohort; DST calendar range; formula-safe CSV; imported history excluded; reopened row remains open in detail; tenant isolation. The scale assertions now live in `tests/reports/scale.mjs`, outside this clause’s carried Evidence set; they do not establish completion here.
 
 #### CONNECTIONS-001 — Workspace integrations
@@ -283,7 +283,7 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 1. The Free section retains the no-seats, no-plans, no-fees promise, MIT license, aqua icon circles and ink license over a wordless editor.
 2. The page makes no price, hosting, provider or unrelated-service promotion.
 
-**Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`
+**Evidence.** `src/ui/homepage`; `tests/journeys/public-browser.mjs` — “a new owner finds the source and installation guide from the public product page, and recovers from a missing documentation page” (`tests/homepage-browser.mjs`, “homepageJourney”; `tests/helpers/homepage/free-browser.mjs`, “freeProductPromise”: visitor walks the Free section, free/open-source and MIT promises, no seats/plans/fees, wordless editor with overlaid ink license, aqua promise circles and no price/hosting/provider/unrelated-service promotion)
 **Gap.** Main re-audit: unasserted in the cited Evidence set: free-product statement; MIT licensing; no seats; no plans; no fees; wordless code editor; license card placement; aqua promise circles; no price claim; no hosting claim; no provider promotion; no unrelated-service promotion. Asserted: no outcome in the currently cited test files.
 
 #### PUBLIC-003 — Support desk, move-in invitation and closing
@@ -297,7 +297,7 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 2. The move-in section offers install, help-center import from Zendesk, Intercom or Freshdesk and widget installation beside the finished import drawing.
 3. The closing headline and footer retain the aqua line and header lockup, in the published section order.
 
-**Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`
+**Evidence.** `src/ui/homepage`; `tests/journeys/public-browser.mjs` — “a new owner finds the source and installation guide from the public product page, and recovers from a missing documentation page” (`tests/homepage-browser.mjs`, “homepageJourney”; `tests/helpers/homepage/desk-browser.mjs`, “supportDesk”, “moveInInvitation”, “closingAndFooter”: published section order, four numbered frameless ink desk cards on aqua discs, install and Zendesk/Intercom/Freshdesk help import plus widget invitation, completed import drawing, closing headline/aqua line and matching header/footer lockup)
 **Gap.** Main re-audit: unasserted in the cited Evidence set: chat widget; shared inbox; help center; suggested replies; numbered ink desk cards; installation invitation; Zendesk help import; Intercom help import; Freshdesk help import; widget installation; finished import drawing; closing headline; published section order; closing aqua line; footer matches header lockup. Asserted: no outcome in the currently cited test files.
 
 #### PUBLIC-004 — Public brand, links and motion
@@ -499,7 +499,7 @@ Core · target · **partial** · Cites BASE-ROLE-001
 1. Create a custom field and priority view, bulk-update mixed eligible/stale/forbidden tickets from the inbox and reload; verify each permitted effect, rejected reason, audit and lack of cross-tenant changes.
 2. Bulk-apply a macro and filter a view by STATUS-001 status and a form-submitted field.
 
-**Evidence.** `src/modules/tickets`; `tests/journeys/inbox.mjs`; `tests/journeys/inbox.mjs`; `tests/journeys/inbox.mjs`; `tests/helpers/inbox/tickets-browser.mjs`
+**Evidence.** `src/modules/tickets`; `tests/journeys/inbox.mjs` — “a replacement request moves through scoped fields, a reviewed macro, shared queue work, private collaboration, routing, schedules and durable automations before closure and erasure” (`tests/helpers/inbox/tickets.mjs`, “ticketsJourney”; `tests/helpers/inbox/queue-work.mjs`, “queueWork”: typed custom field and priority saved view, eligible/stale/forbidden bulk preview and commit results, reloaded per-ticket effects and audit, unchanged foreign ticket, permitted bulk macro without reply publication, lifecycle and form-submitted-field view filters)
 **Gap.** Main re-audit: unasserted in the cited Evidence set: custom field; priority view; eligible bulk result; stale bulk result; forbidden bulk result; per-record audit; no foreign changes; bulk macro apply; filter by lifecycle status; filter by form-submitted field. Asserted: no outcome in the currently cited test files.
 
 #### QUEUE-003 — Collaboration without conflicting replies

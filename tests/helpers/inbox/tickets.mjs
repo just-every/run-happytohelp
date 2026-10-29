@@ -3,6 +3,7 @@ import {randomBytes} from 'node:crypto'
 import {ticketFixture} from './ticket-fixture.mjs'
 import {deskWorkflows} from '../workflows/desk-flow.mjs'
 import {deskCollaboration} from './desk-collaboration.mjs'
+import {queueWork,securityLog} from './queue-work.mjs'
 
 // One replacement request moves through the shared desk. Previewed operations,
 // private collaboration and automation all use the same native ticket history.
@@ -45,26 +46,13 @@ export async function ticketsJourney(){
   const visible=await app.ok(`/api/conversations/${id}/messages`,{token:visitor.token});assert.equal(visible.messages.at(-1).content,edited);assert.equal(visible.messages.at(-1).media.length,1)
   await deskCollaboration(f)
 
-  const second=await f.create(1),view=await ok('/ticket-views',{name:'Replacement queue',visibility:'shared',filters:[{field:'priority',operator:'eq',value:'high'}],sort:[]})
-  assert.ok((await ok(`/conversations?saved_view=${view.id}`)).some(ticket=>ticket.id===id))
-  const search=await ok('/conversations?search='+encodeURIComponent('TO-48200'));assert.ok(search.some(ticket=>ticket.id===id))
-  const foreignVisitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:foreign.widgetKey},headers:{Origin:foreign.allowedOrigin}})
-  const foreignTicket=await app.ok('/api/conversations',{token:foreignVisitor.token,body:{projectId:foreign.projectId}})
-  const batch={tickets:[{id,expected_version:(await get(id)).ticket_version},{id:second,expected_version:(await get(second)).ticket_version},{id:foreignTicket.id,expected_version:0}],changes:{priority:'urgent'}}
-  const bulkPreview=await ok('/tickets/bulk/preview',batch);assert.deepEqual(bulkPreview.results.map(result=>result.status),['ready','ready','forbidden']);assert.equal((await get(second)).priority,'normal')
-  await patch(second,{subject:'Changed while preview was open'})
-  const bulk=await ok('/tickets/bulk/apply',batch);assert.deepEqual(bulk.results.map(result=>result.status),['applied','stale','forbidden']);assert.equal((await get(id)).priority,'urgent');assert.equal((await get(second)).priority,'normal')
+  const second=await queueWork(f,{field,pending,tag})
   const unnamed=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey},headers:{Origin:w.allowedOrigin}})
   const unnamedTicket=await app.ok('/api/conversations',{token:unnamed.token,body:{projectId:w.projectId}})
   const fallback=(await ok(`/macros/${macro.id}/preview`,{version:macro.version,tickets:[{id:unnamedTicket.id,expected_version:0}]})).results[0]
   assert.match(fallback.draft.content,/Hello there/)
   const restricted=await ok('/macros',{title:'Owner review',content:'Reviewed only',scope:{visibility:'shared',roles:['owner'],groups:[],brands:[]}})
   assert.equal((await ok(`/macros/${restricted.id}/apply`,{version:restricted.version,command_id:'restricted-macro',tickets:[{id,expected_version:(await get(id)).ticket_version}]},'operator')).results[0].status,'forbidden')
-  const bulkMacro=await ok('/macros',{title:'Replacement queue update',content:'Reference {{ticket.id}}',actions:{priority:'urgent',fields:{[field.id]:'RMA-BULK'}}})
-  const macroBatch=await ok(`/macros/${bulkMacro.id}/apply`,{version:bulkMacro.version,command_id:'replacement-batch',tickets:[{id,expected_version:(await get(id)).ticket_version},{id:second,expected_version:(await get(second)).ticket_version},{id:foreignTicket.id,expected_version:0}]})
-  assert.deepEqual(macroBatch.results.map(result=>result.status),['applied','applied','forbidden'])
-  assert.equal((await get(second)).fields[field.id],'RMA-BULK')
-  assert.equal((await app.ok(`/api/conversations/${second}/messages`,{token:visitor.token})).messages.length,1,'bulk macro replies remain editable drafts')
   await deskWorkflows(f,{initial,id,field,group})
 
   // Closure retains the old transcript and creates a linked follow-up. Required
@@ -81,7 +69,7 @@ export async function ticketsJourney(){
   assert.equal((await call(`/conversations/${second}/ticket`,{status_id:'solved'},'owner','PATCH')).status,400)
   await patch(second,{fields:{[field.id]:'RMA-SECOND'},status_id:'solved'})
   const history=(await get(id)).history;assert.ok(history.some(event=>event.source==='customer_reply'));assert.ok(history.some(event=>event.actor_id===w.users.owner))
-  const audit=(await app.ok(`/api/management/projects/${w.projectId}/audit?limit=200`,{token:w.tokens.owner})).data
+  const audit=await securityLog(app,w)
   assert.ok(audit.some(event=>event.action==='macro.applied'));assert.ok(audit.some(event=>event.action==='ticket.updated'))
   const neighbour=await app.ok('/api/identity/widget/session',{body:{widgetKey:foreign.widgetKey},headers:{Origin:foreign.allowedOrigin}})
   assert.equal((await app.call(`/api/conversations/${id}/messages`,{token:neighbour.token})).status,404)

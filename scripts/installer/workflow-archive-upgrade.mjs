@@ -51,10 +51,11 @@ export async function workflowArchivePolicy(root,input,{beforeTickets=false,befo
   // R7b's reserved 172–174 numbers also landed after the pre-ticket release.
   const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!/^22[0-9]_/.test(name)&&!/^15[0-9]_/.test(name)&&(!beforeTickets||!/^13[0-9]_/.test(name)&&!/^17[234]_/.test(name)&&name<'191_')&&(!beforeR4||!/^14[0-9]_/.test(name))&&(!beforeEmail||!/^16[0-9]_/.test(name))).sort();
   // This inventory deliberately has no workflow journal (150 is omitted).
-  // Later replacements of its trigger must stay omitted too. Keep the other
-  // statements in mixed migrations, including 241's resolution correction.
+  // Later replacements of its trigger and the consent trigger on the omitted
+  // workflow_schedules table stay omitted too. Keep the other statements in
+  // mixed migrations, including 241's resolution correction and 266's consent.
   const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))
-   .filter(sql=>!/^\s*(?:CREATE|DROP)\s+TRIGGER\s+workflow_changed\b/i.test(sql)&&!omittedSchemaChange(sql,omitted))));
+   .filter(sql=>!/^\s*(?:CREATE|DROP)\s+TRIGGER\s+(?:workflow_changed|support_channel_opted_out_schedule)\b/i.test(sql)&&!omittedSchemaChange(sql,omitted))));
   for(let index=0;index<plan.length;index++){
    for(const sql of plan[index])scratch.exec(sql);
    const tables=scratch.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row=>row.name).filter(name=>!excludedTable(name,result)&&!(result.derivedTables??[]).some(derived=>name===derived||name.startsWith(derived+'_')));

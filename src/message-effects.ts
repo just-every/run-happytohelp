@@ -1,8 +1,8 @@
+import {channelMessage} from './modules/support-channels/outbound'
 import {dispatchTriage} from './modules/triage/worker'
 import {inCron,cronRequire} from './platform/cron-budget'
 import {workflowEnvironment} from './modules/workflows/clock'
 import {processWorkflowEvents} from './modules/workflows/events'
-import {isProjectActive} from './platform/project-status'
 import type { Actor, Env } from './platform/env'
 import { onCustomerMessage } from './modules/ai-support/service'
 import { isAutomaticInboundEmail,notifyMessage } from './modules/integrations'
@@ -17,7 +17,11 @@ import {postAwayReply} from './modules/management/away-reply'
 // message to an away team earns the away reply once per conversation (away-reply.ts).
 export async function applyMessageEffects(env:Env,message:Record<string,unknown>,actor:Actor,defer?:DeferEmailDelivery,options:{workflow?:boolean}={}) {
  env=await workflowEnvironment(env)
- if(!await isProjectActive(env,actor.projectId))return
+ // Select the channel in the existing active-project read. Ordinary messages
+ // must not spend the scheduler's bounded effect allocation probing channel stores.
+ const project=await env.DB.prepare("SELECT (SELECT channel FROM conversations c WHERE c.id=? AND c.project_id=p.id) channel FROM projects p WHERE p.id=? AND NOT EXISTS(SELECT 1 FROM project_settings s WHERE s.project_id=p.id AND json_extract(s.settings_json,'$.deleted_at') IS NOT NULL)").bind(message.conversation_id,actor.projectId).first<{channel:string|null}>()
+ if(!project)return
+ if(['sms','whatsapp','instagram','messenger','slack','teams'].includes(project.channel??'')&&await channelMessage(env,message,actor))return
  if(await isAutomaticInboundEmail(env,actor.projectId,message))return
  await dispatchTriage(env,String(message.conversation_id)).catch(()=>console.error('Triage dispatch deferred to recovery'))
  if(options.workflow!==false)await processWorkflowEvents(env,String(message.conversation_id),20)

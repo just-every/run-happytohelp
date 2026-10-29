@@ -1,5 +1,6 @@
 import {feedbackRouteRule} from '../feedback/permissions'
 import {assuranceRouteRule} from '../assurance/permissions'
+import {supportChannelRule} from '../support-channels/permissions'
 import type {Permission} from './catalogue'
 import {selfServiceRules} from './self-service-routes'
 import {r4RouteRule} from './r4-route-permissions'
@@ -217,5 +218,5 @@ export function routeRule(method:string,path:string):Rule|undefined{
   return rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]??'knowledge.edit'
  }
  if(prefixes.some(prefix=>path.startsWith(prefix)))return 'none'
- return r4RouteRule(method,path)??rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]
+ return supportChannelRule(method,path)??r4RouteRule(method,path)??rules[`${method} ${path}`]??selfServiceRules[`${method} ${path}`]
 }

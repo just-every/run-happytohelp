@@ -43,3 +43,20 @@ test('governed advice retains evaluation state, refuses failed releases, links b
  try{const shot=await evidence('advice');await trainingBrowserJourney({runtime,browser,shot});await adviceProceduresBrowserJourney({runtime,browser,shot});await obligationsBrowserJourney({runtime,browser,shot});passed=true}
  finally{await browser.close();await runtime.close(passed)}
 })
+
+import {channelsBrowser} from '../helpers/support-channels/browser.mjs'
+import {auditPage} from './kit/browser.mjs'
+test('support-channel settings, original-channel replies and shared customer controls stay authorized',async()=>{
+ const runtime=await createRuntime({vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outboundFixture:new URL('../helpers/support-channels/browser-network.mjs',import.meta.url).href}),browser=await launchBrowser()
+ let passed=false
+ try{
+  const width=1440,owner=await runtime.seedTenant({name:'Support channels',email:'channels@example.test'}),context=await browser.newContext({viewport:{width,height:1000}})
+  try{
+   await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
+   const page=await context.newPage();page.setDefaultTimeout(20000)
+   const shot=await evidence('support-channels')
+   await channelsBrowser({page,context,runtime,owner,width,audit:(page,name)=>auditPage(page,shot(name+'.png'))})
+  }finally{await context.close()}
+  passed=true
+ }finally{await browser.close();await runtime.close(passed)}
+})

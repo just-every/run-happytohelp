@@ -30,7 +30,7 @@ export function draftRoutes(onCommittedMessage:(env:Env,message:Record<string,un
   if(!result.duplicate){try{await onCommittedMessage(c.env,result.message,actor)}catch{generationError='Message saved. Check the delivery status before attempting another reply.'}}
   await Promise.all([publishResolution(c.env,actor.projectId,conversation.id),...[conversation.id,`project:${actor.projectId}`].map(key=>c.env.CONVERSATIONS.get(c.env.CONVERSATIONS.idFromName(key)).fetch('https://conversation.internal/broadcast',{method:'POST'}))])
   await publishActivity(c.env,actor.projectId,conversation.id,'escalation')
-  return c.json({...result,dashboardMessage:await messageData(c.env,result.message),...(generationError?{generationError}:{})})
+  return c.json({...result,dashboardMessage:await messageData(c.env,result.message,conversation.channel),...(generationError?{generationError}:{})})
  })
  return routes
 }

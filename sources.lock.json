@@ -3241,7 +3241,7 @@
       "executable": false
     },
     "scripts/installer/voice-archive.mjs": {
-      "sha256": "1252f623bde68d9f80538d9b539659037d4e31c4472b2cb4decf7bcd3e11fa8d",
+      "sha256": "6e5b5a772b94c0a529f9b2dedfea155263c17177b653616785aa7fc1a47a3af3",
       "executable": false
     },
     "scripts/installer/workflow-archive-defaults.mjs": {
@@ -7521,7 +7521,7 @@
       "executable": false
     },
     "src/modules/voice/calls.ts": {
-      "sha256": "7ed2a48a196da164f15dd94b20f691e023f270067cb2e0c55421ea7a18ef0247",
+      "sha256": "7d83dc36ff7a1fcb28e60c39329ec7d5d0666e9dff0e40c2852aa578ab2fef0b",
       "executable": false
     },
     "src/modules/voice/erasure.ts": {
@@ -7529,11 +7529,11 @@
       "executable": false
     },
     "src/modules/voice/hooks.ts": {
-      "sha256": "107f7facd588dc4f2ece095f61b22fb92ca569a208ad131a6d1cc334b282e5db",
+      "sha256": "c02a24acb8474f6c3763eb37033bf08dbefbb4794eef06c7070a54cf9d21ff0f",
       "executable": false
     },
     "src/modules/voice/model.ts": {
-      "sha256": "356ce0ed6f1d613a9ab6a18ae6b4b7cf37188c4cf6efbb930cd49edb3909df0b",
+      "sha256": "39e65e931e4b4f9f5e5b13275ea7442a9352571270f0263caeae9566c2a37420",
       "executable": false
     },
     "src/modules/voice/provider.ts": {
@@ -7549,7 +7549,7 @@
       "executable": false
     },
     "src/modules/voice/store.ts": {
-      "sha256": "f7a96589faa8a919e4461d094e2399aac67f51e495775a50c072d6a9822f8b7f",
+      "sha256": "067a1a72e3df6408b04577e91d939c26fc32525a43907bbed9bb842afa6ebb6b",
       "executable": false
     },
     "src/modules/widget/appearance-values.d.ts": {
@@ -12069,11 +12069,11 @@
       "executable": false
     },
     "tests/helpers/voice/browser.mjs": {
-      "sha256": "765fde758fd7a06be47770f1449ec1162dc124473041d566f07e534533676ab0",
+      "sha256": "edb2d21d582835a5823c91c9c9687c99e3727799c296f0d5d623facfdbcc3062",
       "executable": false
     },
     "tests/helpers/voice/journeys.mjs": {
-      "sha256": "824fb8b90b3ca23ea0016d3bd22da0cf06c8886c843608fe507e15cf269ee9da",
+      "sha256": "5f22c3c0ec9f4d898e289ab0922a193b62613093ac9681650780e9e81f83df56",
       "executable": false
     },
     "tests/helpers/widget/campaigns.mjs": {

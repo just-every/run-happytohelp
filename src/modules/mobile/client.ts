@@ -79,9 +79,14 @@ export class MobileClient {
   }catch(error){if(error instanceof MobileClientError&&[403,404].includes(error.status))this.#memory.forgetTicket(id);throw error}
  }
  async openTicket(id:string){this.#requireOnline();const snapshot=await this.#refresh(id);this.#memory.invalidate();this.#notify();return snapshot}
- async tickets(){this.#requireOnline();const data=await this.#transport.request<{tickets:Record<string,unknown>[]}>( '/tickets');clearMemory(this.#memory.resources.get('queue'));this.#memory.resources.set('queue',data);return data}
+ async #resource<T>(key:string,path:string,binary=false){
+  const epoch=this.#epoch,value=await this.#transport.request<T>(path,{},binary)
+  if(epoch!==this.#epoch){clearMemory(value);throw new MobileClientError('This session changed',401)}
+  clearMemory(this.#memory.resources.get(key));this.#memory.resources.set(key,value);return value
+ }
+ async tickets(){this.#requireOnline();return this.#resource<{tickets:Record<string,unknown>[]}>( 'queue','/tickets')}
  async knowledge(id:string,query=''){
-  this.#requireOnline('knowledge');const data=await this.#transport.request(ticketPath(id)+'/knowledge?q='+encodeURIComponent(query));const key=id+'/knowledge';clearMemory(this.#memory.resources.get(key));this.#memory.resources.set(key,data);return data
+  this.#requireOnline('knowledge');return this.#resource(id+'/knowledge',ticketPath(id)+'/knowledge?q='+encodeURIComponent(query))
  }
  async openLink(link:string){
   this.#requireOnline()
@@ -134,14 +139,12 @@ export class MobileClient {
   }
  }
  async attachment(id:string,mediaId:string){
-  this.#requireOnline();const key=id+'/attachment/'+mediaId,bytes=await this.#transport.request<Uint8Array>(ticketPath(id)+'/attachments/'+encodeURIComponent(mediaId),{},true)
-  clearMemory(this.#memory.resources.get(key));this.#memory.resources.set(key,bytes);return bytes
+  this.#requireOnline();return this.#resource<Uint8Array>(id+'/attachment/'+mediaId,ticketPath(id)+'/attachments/'+encodeURIComponent(mediaId),true)
  }
  async assign(id:string,assignee:string|null){return this.#change(id,'assignment','assign',{assignee})}
  async note(id:string,content:string,mediaIds:string[]=[]){return this.#change(id,'notes','notes',{content,mediaIds})}
  async approvals(id:string){
-  this.#requireOnline('approval');const data=await this.#transport.request(ticketPath(id)+'/approvals'),key=id+'/approvals'
-  clearMemory(this.#memory.resources.get(key));this.#memory.resources.set(key,data);return data
+  this.#requireOnline('approval');return this.#resource(id+'/approvals',ticketPath(id)+'/approvals')
  }
  async approveFollowUp(id:string,jobId:string,proposalId:string){
   this.#requireOnline('approval');const snapshot=this.#memory.tickets.get(id)

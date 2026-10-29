@@ -80,10 +80,16 @@ export async function offlineAdmission(){
 export async function offlineAuthority(){
  const f=await fixture(),{app,w,t,pair,call}=f
  try{
+  const source=await pair({token:w.tokens.owner}),frontier=(await f.read(source)).frontier
+  const file=await call(`/tickets/${t.id}/attachments`,{token:source.token,method:'POST',raw:true,body:'Private cached attachment',headers:{'Mobile-Frontier':frontier,'Content-Type':'text/plain','X-Filename':'customer-file.txt'},status:201})
+  await call(`/tickets/${t.id}/notes`,{token:source.token,body:{localId:'private-file-note',frontier,content:'Private customer file',mediaIds:[file.data.id]},status:201})
+  await call('/session',{token:source.token,method:'DELETE',status:200})
   for(const reason of ['signout','offline-signout','revocation','parent-signout','authority-change','workspace-change','process-exit']){
    const device=await pair({token:reason==='parent-signout'?w.tokens.admin:w.tokens.owner}),{client,lifecycle,network,requests}=await controller(f,device)
    try{
     await client.tickets();await client.openTicket(t.id)
+    const cachedBytes=await client.attachment(t.id,file.data.id)
+    assert.equal(new TextDecoder().decode(cachedBytes),'Private cached attachment')
     client.saveDraft(t.id,'Private pending reply '+reason)
     client.stageAttachment(t.id,{filename:'private.txt',contentType:'text/plain',bytes:new TextEncoder().encode('Private customer attachment')})
     const snapshot=client.cachedTicket(t.id),draft=client.draft(t.id),bytes=draft.files[0].bytes
@@ -98,6 +104,7 @@ export async function offlineAuthority(){
     if(reason==='process-exit')lifecycle.dispatchEvent(new Event('pagehide'))
     assert.equal(client.state.connection,'signed-out');assert.equal(client.state.ticketCount+client.state.draftCount+client.state.resourceCount,0)
     assert.deepEqual(snapshot,{});assert.deepEqual(draft,{});assert.ok(bytes.every(byte=>byte===0),'held attachment buffers are zeroed')
+    assert.ok(cachedBytes.every(byte=>byte===0),'downloaded customer attachment buffers are zeroed')
     const ended=requests.length;await assert.rejects(()=>client.reconnect());await assert.rejects(()=>client.sendDraft(t.id));assert.equal(requests.length,ended,'a purged client no longer has authority to issue a request')
    }finally{client.dispose()}
   }

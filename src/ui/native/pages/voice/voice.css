@@ -1,0 +1,9 @@
+.voice-controls { min-width: 0; max-width: 64rem; }
+.voice-controls .voice-number, .voice-call { border-top: 1px solid var(--border-color, #cbd5d1); padding: 1rem 0; }
+.voice-row { display: flex; gap: .75rem; flex-wrap: wrap; align-items: end; margin-bottom: 1rem; }
+.voice-row > * { flex: 1 1 9rem; min-width: 0; }
+.voice-wrap, .voice-call p, .voice-call pre { overflow-wrap: anywhere; white-space: pre-wrap; }
+.voice-call button { margin: .25rem .25rem .25rem 0; }
+.voice-call pre { font: inherit; }
+.voice-report table { width: 100%; }
+.voice-report th, .voice-report td { padding: .5rem; text-align: left; }

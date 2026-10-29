@@ -2,6 +2,7 @@ import FeedbackPanel from '../../../modules/feedback/ui/FeedbackPanel';
 import ExecutionTrace from './conversation/ExecutionTrace';
 import ProductionTrace from './conversation/ProductionTrace';
 import TicketChannel from '../../../modules/support-channels/TicketChannel';
+import VoicePanel from './voice/VoicePanel';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDashboardSettings } from '../../native/dashboard-state';
@@ -143,6 +144,7 @@ function TicketPanel({ conversation, record = null, workflows = null, isShown, r
         <TicketSummary conversation={ conversation } record={ record } workflows={ workflows } escalationUpdates={ escalationUpdates } onOpenSection={ openSection } />
         <div className="ticket-sections">
             { section('trace', 'Execution trace', <ProductionTrace conversation={ conversation } active={ Boolean(isShown) && open.has('trace') } />) }
+            { conversation.channel==='phone' && section('voice', 'Telephone calls', <VoicePanel key={conversation.id} conversation={conversation}/>) }
             { record && section('fields', 'Ticket fields', <TicketEditor conversation={ conversation } record={ record } />) }
             { workflows && section('schedules', 'Schedules', <WorkflowPanel conversation={ conversation } workflows={ workflows } onBadge={ badgeSetters.schedules } />, badges.schedules) }
             { section('feedback', 'Product feedback', <FeedbackPanel projectId={ conversation.project_id } conversationId={ conversation.id } refreshKey={ liveKey } active={ open.has('feedback') } />) }

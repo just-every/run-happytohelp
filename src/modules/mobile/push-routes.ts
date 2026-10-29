@@ -4,7 +4,7 @@ import type {AppEnv} from '../../platform/env'
 import {contactAvailableSql} from '../conversations/contact-privacy'
 import {clockSql,mobileActor,stillAuthorized} from './authority'
 import {objectBody} from './commands'
-import {redactedPush} from './push'
+import {prepareMobileNotices,redactedPush} from './push'
 export const mobilePushRoutes=new Hono<AppEnv>()
 mobilePushRoutes.put('/push',async c=>{
  const a=await mobileActor(c,'push'),b=objectBody(await c.req.json())
@@ -18,7 +18,8 @@ mobilePushRoutes.put('/push',async c=>{
 })
 mobilePushRoutes.get('/push/prepared',async c=>{
  const a=await mobileActor(c,'push')
- const rows=await c.env.DB.prepare(`SELECT l.id FROM mobile_links l JOIN conversations c ON c.id=l.conversation_id JOIN notification_inbox n ON n.id=l.notice_id WHERE l.device_id=? AND l.expires_at>${clockSql} AND c.project_id=? AND ${contactAvailableSql()} AND NOT EXISTS(SELECT 1 FROM notification_preferences p WHERE p.project_id=n.project_id AND p.user_id=n.user_id AND p.kind=n.kind AND p.inbox=0) ORDER BY l.rowid DESC LIMIT 100`).bind(a.device.id,a.actor.projectId).all<{id:string}>()
+ await prepareMobileNotices(c.env,a)
+ const rows=await c.env.DB.prepare(`SELECT l.id FROM mobile_links l JOIN conversations c ON c.id=l.conversation_id JOIN notification_inbox n ON n.id=l.notice_id WHERE n.inbox=1 AND l.device_id=? AND l.expires_at>${clockSql} AND c.project_id=? AND ${contactAvailableSql()} AND NOT EXISTS(SELECT 1 FROM notification_preferences p WHERE p.project_id=n.project_id AND p.user_id=n.user_id AND p.kind=n.kind AND p.inbox=0) ORDER BY l.rowid DESC LIMIT 100`).bind(a.device.id,a.actor.projectId).all<{id:string}>()
  await stillAuthorized(c.env,a);return c.json({delivery:'not-configured',payloads:rows.results.map(row=>redactedPush(row.id))})
 })
 mobilePushRoutes.get('/links/:linkId',async c=>{

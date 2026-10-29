@@ -1557,7 +1557,7 @@
       "executable": false
     },
     ".github/workflows/installer-journeys.yml": {
-      "sha256": "3f8f202c111727b74d416be79cca4fc61beb0a22ee7448fd651fbfc09e4ae8df",
+      "sha256": "890640763fa57331f735990cc0721de9c26b4673c320ea3c29821e3109bddf12",
       "executable": false
     },
     ".github/workflows/live-proof.yml": {
@@ -1573,7 +1573,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "9f0972aec236eebf5ec569420244075a2595920c0a44869ee07ce2f03bfad2c5",
+      "sha256": "0c2c38862ffddeac8817a4b092e6872898332f491c6e432b7dba9f9934ee8ab8",
       "executable": false
     },
     ".gitignore": {
@@ -1601,7 +1601,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "7cbe444858b2d8c33ebabca38a7bfe060a0bc5a01f0cd263a81b02300285c979",
+      "sha256": "f46fff6fd345d999918d35f56dfc9e6968db7d82f8540e545c8b518d51c26cd5",
       "executable": false
     },
     "CHANGELOG.md": {
@@ -2777,7 +2777,7 @@
       "executable": false
     },
     "scripts/chromium-probe.mjs": {
-      "sha256": "5b08ef78f0cc30ee1e625ac73175ed97879787783b5ac6b0e6ab55458eee3a06",
+      "sha256": "232c66a1aa944a6404acb34d99dc2be1cf589db2650e7a03f90d0f1f8f9e9bfc",
       "executable": false
     },
     "scripts/ci/ensure-disk-space.sh": {
@@ -2788,12 +2788,32 @@
       "sha256": "1cdf078bf40b1d8a76a6f33223890a73121683d6ef614566f5e88d1228014e93",
       "executable": false
     },
+    "scripts/ci/install-chromium.sh": {
+      "sha256": "ac925cdb31be1b38e8581f47cfd647eecefabffa015f5e5f946a9a09e6f64ea1",
+      "executable": false
+    },
     "scripts/ci/run-checks.mjs": {
       "sha256": "0b060966dedf9ecedcb02be565a289059925b0726342c140bdfaeaabe8f605f8",
       "executable": false
     },
-    "scripts/ci/verify-evidence.sh": {
-      "sha256": "d9cde77c939f9cf19529df1e51c8e762f55e6a40d211faa0cfc15751019f0452",
+    "scripts/ci/verify-evidence.mjs": {
+      "sha256": "57a7a8b3c15eeb10bc204f41995943e284f1fc8b4696d506ec09427fdb91cd43",
+      "executable": false
+    },
+    "scripts/ci/verify-inventory.mjs": {
+      "sha256": "30c7e0d58f0b2cafb0aa1c74c6450b1f175a2e7052c65f6ba812df50554e9d47",
+      "executable": false
+    },
+    "scripts/ci/verify-lifecycle.mjs": {
+      "sha256": "a8c72cb9d561c8cdf64a1f51353e4df7179f670daeec9eb2569de83cc8e126f3",
+      "executable": false
+    },
+    "scripts/ci/verify-light.mjs": {
+      "sha256": "2c3fe9c0a256074f09b84cdfc94e58c656a67ac079f6dc4001a23867ee5ca86b",
+      "executable": false
+    },
+    "scripts/ci/verify-plan.mjs": {
+      "sha256": "345e82c52ff6f251a94b4382db3fd4e6b4960cd53e2cdac53f60ba593b7b284a",
       "executable": false
     },
     "scripts/contract-docs.mjs": {
@@ -3717,7 +3737,7 @@
       "executable": false
     },
     "scripts/installer/hosted-export.mjs": {
-      "sha256": "97b4d5a500f10210820c273f5c232d9ad54894455cf60c04e411f50621428ac4",
+      "sha256": "3e9c50a64abcc2377ee2bc4f266118a72b8d32866fa2e1b11101f0add092459a",
       "executable": false
     },
     "scripts/installer/hosted-origin.mjs": {
@@ -3729,11 +3749,11 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "92eebcf8ec0419824f9835c968c3b41827b14d6926151501b73161a686012dbb",
+      "sha256": "6ba17b4474f8667a7334555ce5bfbb876aeff67f45153d16a530d5b9c4ad6911",
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {
-      "sha256": "92e416b2e86161b5357341a72282412690b93be65dd9757b627881b36af7218a",
+      "sha256": "45aed37886c813fafb9e0184d821436e43376cf0766db39ecebcddda5a99c88d",
       "executable": false
     },
     "scripts/installer/native-local.mjs": {
@@ -3981,7 +4001,7 @@
       "executable": false
     },
     "SEED-COMMAND-CONTRACT.md": {
-      "sha256": "26fa9d9e8952d1fa5551f4806dec25d36b7e5257ec4619b6e0f52a2535cc7329",
+      "sha256": "ceba7e212bea622f8cb1ffe2be249b7174de0c538fa680fa60b383312e67f9f8",
       "executable": false
     },
     "seed.json": {
@@ -13585,7 +13605,7 @@
       "executable": false
     },
     "wrangler.jsonc": {
-      "sha256": "f5f332204457848aad7ee2127bc40e7146735d4068615b5fed4dd5855bebdb78",
+      "sha256": "76c30be7e9452f06f21e50a44d8df15fa98582c9d02511841c71d103d912b8db",
       "executable": false
     }
   }

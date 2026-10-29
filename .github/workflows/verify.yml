@@ -3,18 +3,28 @@ name: Verify
 on:
   push:
     branches: ['**']
+    tags: ['v*']
   pull_request:
+  schedule:
+    - cron: '47 4 * * 1,4'
   workflow_dispatch:
+    inputs:
+      tier:
+        description: Verification tier
+        type: choice
+        options: [push, nightly, all]
+        default: all
 
 permissions:
   contents: read
 
 concurrency:
-  group: verify-${{ github.workflow }}-${{ github.ref }}
+  group: verify-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   WRANGLER_SEND_METRICS: 'false'
+  PLAYWRIGHT_SKIP_BROWSER_GC: '1'
 
 jobs:
   plan:
@@ -24,56 +34,33 @@ jobs:
       contents: read
       actions: read
     outputs:
-      skip: ${{ steps.reuse.outputs.skip }}
-      tier: ${{ steps.reuse.outputs.tier }}
+      skip: ${{ steps.plan.outputs.skip }}
+      tier: ${{ steps.plan.outputs.tier }}
+      coverage: ${{ steps.plan.outputs.coverage }}
+      readers: ${{ steps.plan.outputs.readers }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
           persist-credentials: false
-      - id: reuse
+      - name: Look up complete nightly marker
+        id: nightly
+        if: ${{ github.event_name == 'schedule' || inputs.tier == 'nightly' }}
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/nightly-green
+          key: h2h-nightly-green-v1-${{ github.sha }}
+          lookup-only: true
+      - id: plan
         env:
-          GH_TOKEN: ${{ github.token }}
-          EVENT: ${{ github.event_name }}
-          REF: ${{ github.ref }}
-          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-          PR_HEAD: ${{ github.event.pull_request.head.sha }}
-          WF_REF: ${{ github.workflow_ref }}
-        run: |
-          set -euo pipefail
-          source scripts/ci/verify-evidence.sh
-          skip=false
-          # C1: reuse a green branch push when main receives the identical SHA.
-          if [ "$EVENT" = push ] && [ "$REF" = refs/heads/main ] && green "$GITHUB_SHA"; then skip=true; fi
-          # C3: reuse a green parent only without conflicting evidence on this SHA.
-          if [ "$skip" = false ] && [ "$EVENT" = push ] && parent=$(git rev-parse -q --verify HEAD~1) \
-             && [ "$(git rev-parse 'HEAD^{tree}')" = "$(git rev-parse 'HEAD~1^{tree}')" ] \
-             && pushes_clear "$GITHUB_SHA" && green "$parent"; then skip=true; fi
-          # C2: a same-repository PR waits for its head's push, at most 25 minutes.
-          if [ "$EVENT" = pull_request ] && [ "$SAME_REPO" = true ]; then
-            for _ in $(seq 1 50); do
-              state=$(newest_push "$PR_HEAD")
-              case "$state" in
-                'completed success') skip=true; break ;;
-                ''|unavailable|completed\ *) break ;;
-                *) sleep 30 ;;
-              esac
-            done
-          fi
-          tier=full
-          if [ "$skip" = true ]; then
-            tier=skip
-          elif [ "$EVENT" = push ] && parent=$(git rev-parse -q --verify HEAD~1) && green "$parent"; then
-            if ! git diff --name-only "$parent" HEAD | grep -qvE '^(sources\.lock\.json|CONTRACT\.md|ACCEPTANCE\.md|CLAIMS\.md|docs/CLAIMS\.md|HANDOVER\.md|STATUS\.md|evidence/.*|\.artifacts/.*)$'; then
-              tier=light
-            fi
-          fi
-          echo "skip=$skip" >> "$GITHUB_OUTPUT"
-          echo "tier=$tier" >> "$GITHUB_OUTPUT"
+          GITHUB_TOKEN: ${{ github.token }}
+          TIER: ${{ inputs.tier || 'push' }}
+          NIGHTLY_CACHE_HIT: ${{ steps.nightly.outputs.cache-hit }}
+        run: node scripts/ci/verify-lifecycle.mjs --plan
 
   build:
     needs: plan
-    if: needs.plan.outputs.skip != 'true'
+    if: ${{ needs.plan.outputs.coverage != 'reuse' && needs.plan.outputs.tier != 'nightly' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     # Only generated, public build output is shared; no local state or secrets.
@@ -88,7 +75,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22.20.0
-          cache: pnpm
+      - name: Set runner-owned caches
+        run: |
+          pnpm config set store-dir "$RUNNER_TEMP/pnpm-store"
+          printf 'PLAYWRIGHT_BROWSERS_PATH=%s/ms-playwright\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/pnpm-store" "$RUNNER_TEMP/ms-playwright" "$RUNNER_TEMP/rer-apt/archives"
+      - name: Cache frozen dependencies and Chromium
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.temp }}/pnpm-store
+            ${{ runner.temp }}/ms-playwright
+            ${{ runner.temp }}/rer-apt/archives/*.deb
+          key: h2h-ubuntu24-temp-v1-${{ runner.arch }}-browser-false-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec rer describe
       - run: node src/site/base/contract-docs.mjs check
@@ -97,6 +96,13 @@ jobs:
       - run: pnpm run typecheck
       - run: pnpm exec rer check --profile first-party
       - run: pnpm run build
+      - name: Run reviewed light readers and build the run site
+        if: ${{ needs.plan.outputs.coverage == 'light' }}
+        env:
+          LIGHT_READERS: ${{ needs.plan.outputs.readers }}
+        run: |
+          node scripts/ci/verify-lifecycle.mjs --light
+          pnpm run build --site
       - name: Package internal build output
         run: >-
           tar -czf "$RUNNER_TEMP/happytohelp-build.tar.gz"
@@ -124,7 +130,7 @@ jobs:
 
   checks:
     needs: [plan, build]
-    if: needs.plan.outputs.tier == 'full'
+    if: ${{ needs.plan.outputs.coverage == 'full' && needs.plan.outputs.tier != 'nightly' }}
     name: Verify / ${{ matrix.name }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -177,7 +183,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22.20.0
-          cache: pnpm
+      - name: Set runner-owned caches
+        run: |
+          pnpm config set store-dir "$RUNNER_TEMP/pnpm-store"
+          printf 'PLAYWRIGHT_BROWSERS_PATH=%s/ms-playwright\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/pnpm-store" "$RUNNER_TEMP/ms-playwright" "$RUNNER_TEMP/rer-apt/archives"
+      - name: Cache frozen dependencies and Chromium
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.temp }}/pnpm-store
+            ${{ runner.temp }}/ms-playwright
+            ${{ runner.temp }}/rer-apt/archives/*.deb
+          key: h2h-ubuntu24-temp-v1-${{ runner.arch }}-browser-${{ matrix.browser }}-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
       - run: pnpm install --frozen-lockfile
       - uses: actions/download-artifact@v4
         with:
@@ -185,20 +203,10 @@ jobs:
           path: ${{ runner.temp }}/verify-build
       - name: Restore the build from this workflow's exact checkout
         run: tar -xzf "$RUNNER_TEMP/verify-build/happytohelp-build.tar.gz"
-      # Chromium only where a shard drives a browser.
-      - name: Cache Chromium fallback packages
-        if: ${{ matrix.browser }}
-        uses: actions/cache@v4
-        with:
-          path: ${{ runner.temp }}/rer-apt/archives
-          key: chromium-apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install Chromium
         if: ${{ matrix.browser }}
         run: |
-          set -euo pipefail
-          pnpm exec playwright install chromium
-          pnpm exec node scripts/chromium-probe.mjs || \
-            sudo env "PATH=$PATH" "APT_ARCHIVES=$RUNNER_TEMP/rer-apt/archives" python3 scripts/ci/install-chromium-deps.py
+          bash scripts/ci/install-chromium.sh
       # Every command in a shard runs even after another check fails.
       - name: Run shard checks
         env:
@@ -227,8 +235,36 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-  verify:
+  slow:
+    needs: plan
+    if: ${{ needs.plan.outputs.coverage == 'full' && needs.plan.outputs.tier != 'push' }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/installer-journeys.yml
+
+  full-push-proof:
     needs: [plan, build, checks]
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') && needs.plan.outputs.tier == 'push' && needs.plan.outputs.coverage == 'full' && needs.build.result == 'success' && needs.checks.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+    steps:
+      - run: test '${{ needs.build.result }}:${{ needs.checks.result }}' = success:success
+
+  nightly-proof:
+    needs: [plan, slow]
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && (needs.plan.outputs.tier == 'nightly' || needs.plan.outputs.tier == 'all') && needs.plan.outputs.coverage == 'full' && needs.slow.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+    steps:
+      - name: Mark complete nightly coverage
+        run: mkdir -p "$RUNNER_TEMP/nightly-green" && printf '%s\n' '${{ github.sha }}' > "$RUNNER_TEMP/nightly-green/sha"
+      - uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/nightly-green
+          key: h2h-nightly-green-v1-${{ github.sha }}
+
+  verify:
+    needs: [plan, build, checks, slow, full-push-proof, nightly-proof]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 1
@@ -239,31 +275,34 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Require the plan and every check
+      - name: Require the plan and every selected check
         env:
           PLAN: ${{ needs.plan.result }}
           SKIP: ${{ needs.plan.outputs.skip }}
           TIER: ${{ needs.plan.outputs.tier }}
+          COVERAGE: ${{ needs.plan.outputs.coverage }}
           BUILD: ${{ needs.build.result }}
           CHECKS: ${{ needs.checks.result }}
-          GH_TOKEN: ${{ github.token }}
-          EVENT: ${{ github.event_name }}
-          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-          PR_HEAD: ${{ github.event.pull_request.head.sha }}
-          WF_REF: ${{ github.workflow_ref }}
+          SLOW: ${{ needs.slow.result }}
+          PUSH_PROOF: ${{ needs.full-push-proof.result }}
+          NIGHTLY_PROOF: ${{ needs.nightly-proof.result }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           test "$PLAN" = success
-          if [ "$SKIP" != true ]; then
-            test "$BUILD" = success
-            if [ "$TIER" = full ]; then test "$CHECKS" = success; else test "$TIER" = light; fi
-          fi
-          # A merge checkout cannot establish that the PR head passed its push.
-          # Re-read once at the end, even when the plan previously found green.
-          if [ "$EVENT" = pull_request ] && [ "$SAME_REPO" = true ]; then
-            source scripts/ci/verify-evidence.sh
-            if ! green "$PR_HEAD"; then
-              echo 'The newest push Verify on the PR head must succeed.' >&2
-              exit 1
-            fi
-          fi
+          case "$PUSH_PROOF:$NIGHTLY_PROOF" in *failure*|*cancelled*) exit 1 ;; esac
+          case "$COVERAGE:$TIER" in
+            reuse:push|reuse:nightly)
+              test "$SKIP:$BUILD:$CHECKS:$SLOW" = true:skipped:skipped:skipped ;;
+            light:push)
+              test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:skipped:skipped ;;
+            full:push)
+              test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:success:skipped
+              if [ "$GITHUB_EVENT_NAME" = push ]; then test "$PUSH_PROOF" = success; fi ;;
+            full:nightly)
+              test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:skipped:skipped:success ;;
+            full:all)
+              test "$SKIP:$BUILD:$CHECKS:$SLOW" = false:success:success:success ;;
+            *) exit 1 ;;
+          esac
+          node scripts/ci/verify-lifecycle.mjs --require-pr

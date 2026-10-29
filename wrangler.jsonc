@@ -62,12 +62,6 @@
     ]
   },
   "vars": {
-    "MAIL_PROVIDER": "direct",
-    "MAIL_FROM": "",
-    "MAIL_RELAY_URL": "",
-    "H2H_RER_MAIL_VERSION": "1",
-    "RER_MAILBOX_ID": "",
-    "RER_MAIL_ADDRESS": "",
-    "RER_MAIL_CONTROL_URL": ""
+    "MAIL_FROM": ""
   }
 }

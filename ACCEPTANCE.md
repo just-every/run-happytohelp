@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -465,15 +465,15 @@ Core · target · **missing** · Cites BASE-AGENT-006, BASE-AGENT-007 · Registe
 
 #### QUEUE-001 — Assignment rules and available teams
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **done** · Cites BASE-ROLE-001
 
 **Requirement.** Support leads define teams, membership, skills, capacity, availability and routing rules by channel, brand, language, account, tag or priority. Route to a named owner, team, round-robin or capacity-aware queue; explain which rule won, prevent starvation and preserve fair state across restarts. Manual takeover, absent/offline assignees, reassignment and unassigned overflow always leave a visible responsible queue.
 
 **Acceptance.**
 1. Configure two teams and a round-robin rule through settings, admit concurrent tickets through real channel routes, change availability and restart; verify ownership, fairness, overflow, explainable decisions and current-role refusal on manual takeover.
 
-**Evidence.** `src/modules/workflows/routing.ts`; `src/modules/workflows/routing-candidates.ts`; `src/ui/native/pages/workflows/RoutingSettings.jsx`; `tests/journeys/inbox.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: two-team settings configuration; concurrent ticket admission; current-role refusal on manual takeover; balanced assignment; full owner excluded; explainable winning rule; overflow keeps responsible group after restart; offline assignee skipped; fairness state readback after restart. Asserted: no outcome in the currently cited test files. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: two-team settings configuration; concurrent ticket admission; current-role refusal on manual takeover; fairness state readback after restart. Asserted: balanced assignment; full owner excluded; explainable winning rule; overflow keeps responsible group after restart; offline assignee skipped.
+**Evidence.** `src/modules/workflows/routing.ts`; `src/modules/workflows/routing-candidates.ts`; `src/ui/native/pages/workflows/RoutingSettings.jsx`; `tests/journeys/inbox.mjs` → `tests/helpers/inbox/tickets.mjs`, ticketsJourney → `tests/helpers/workflows/desk-flow.mjs`, deskWorkflows: settings create Returns/Shipping and publish round robin, concurrent admission and balanced ownership, winning rule and responsible overflow. `tests/helpers/inbox/queue-routing.mjs`, queueRoutingProof: both team memberships and published rule read back through settings; concurrent widget messages split fairly; positive-capacity full owner and offline assignee excluded; operator availability/capacity/skills/workload, winning decision and unassigned responsible group survive Worker restart; subsequent public decisions retain the previous turn and alternate fairly; same-session takeover refused after role restriction through both dashboard PUT and ticket PATCH without changing ownership, group, version or history; authorized takeover/reassignment and visible unassigned queue.
+**Gap.** None. All nine audited outcomes are asserted through public settings, widget and inbox routes using real D1 and Worker restart. No live provider or hosted qualification is claimed.
 
 #### TRIAGE-001 — Intelligent triage
 

@@ -23,6 +23,7 @@ export async function mobileReply(env:Env,a:MobileAuthority,ticketId:string,body
   localId,content:body.content,mediaIds:body.mediaIds,resolve:body.resolve===true,
   expectedRevision:f.revision,expectedLastMessageId:f.last_message_id,sessionHash:a.device.parent_session_hash,
   requireAvailableRequester:true,
+  authoring:body.authoring??{kind:'human'},
   [messageAuthority]:{sql:`EXISTS(${guard.sql}) AND ((${fresh.sql}) OR EXISTS(SELECT 1 FROM messages replay WHERE replay.conversation_id=? AND replay.project_id=? AND replay.local_id=? AND replay.actor_id=? AND replay.erased_at IS NULL))`,args:[...guard.params,...fresh.params,ticketId,a.actor.projectId,localId,a.actor.id]},
  })
  if(result.accepted&&!result.duplicate){

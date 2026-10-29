@@ -3,7 +3,7 @@ import {build} from 'esbuild'
 import {fixture,root} from './mobile-fixture.mjs'
 
 let clientModule
-const loadClient=()=>clientModule??=build({entryPoints:['src/modules/mobile/client.ts'],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022'}).then(result=>import('data:text/javascript;base64,'+Buffer.from(result.outputFiles[0].text).toString('base64')))
+export const loadClient=()=>clientModule??=build({entryPoints:['src/modules/mobile/client.ts'],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022'}).then(result=>import('data:text/javascript;base64,'+Buffer.from(result.outputFiles[0].text).toString('base64')))
 
 export async function controller(f,device){
  const {MobileClient}=await loadClient(),lifecycle=new EventTarget(),requests=[]

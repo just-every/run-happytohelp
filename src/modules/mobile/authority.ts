@@ -6,7 +6,7 @@ import {memberAccess} from '../access/gate'
 import type {Permission} from '../access/catalogue'
 import {pendingFactor,policyRoles,type FactorMethod} from '../identity/two-factor/state'
 
-export const scopePermissions={read:null,notes:'conversations.notes',reply:'conversations.reply',assign:'conversations.manage',attachments:null,knowledge:'knowledge.edit',push:null} as const
+export const scopePermissions={read:null,notes:'conversations.notes',reply:'conversations.reply',assign:'conversations.manage',attachments:null,knowledge:'knowledge.edit',approval:'conversations.reply',push:null} as const
 export type MobileScope=keyof typeof scopePermissions
 export const clockSql="CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)"
 // Changes to membership, role definition, factor enrolment or factor policy retire a

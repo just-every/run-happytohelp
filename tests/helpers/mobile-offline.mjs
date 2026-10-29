@@ -28,6 +28,7 @@ export async function offlineAdmission(){
  try{
   for(const platform of ['ios','android']){
    const {client,lifecycle,network,requests}=await controller(f,await pair({platform}))
+   console.info('Mobile offline admission:',platform,'paired')
    try{
     await client.openTicket(t.id)
     client.saveDraft(t.id,'I have checked your return and attached the instructions. '+platform)
@@ -41,6 +42,7 @@ export async function offlineAdmission(){
     network.online=true;lifecycle.dispatchEvent(new Event('online'))
     assert.equal(client.state.connection,'reconnect-required');assert.equal(requests.length,before,'online event does not send or replay')
     await client.reconnect()
+    console.info('Mobile offline admission:',platform,'reconnected')
     assert.ok(requests.slice(before).every(request=>request.method==='GET'),'reconnect only refreshes authority and current ticket/schedules')
     assert.ok(client.cachedTicket(t.id).schedules.some(row=>row[0]===(schedule.data?.id??schedule.id)))
     await assert.rejects(()=>client.sendDraft(t.id));assert.equal(client.draft(t.id).reviewRequired,true)
@@ -53,6 +55,7 @@ export async function offlineAdmission(){
     await client.openTicket(t.id);client.reviewDraft(t.id)
     const text=client.draft(t.id).content,result=await client.sendDraft(t.id)
     assert.equal(result.accepted,true);assert.equal(client.draft(t.id),undefined)
+    console.info('Mobile offline admission:',platform,'sent attachment reply')
     const snapshot=await client.openTicket(t.id)
     assert.equal(snapshot.messages.filter(message=>message.content===text).length,1)
     const media=snapshot.media.find(media=>media.message_id===result.messageId)
@@ -61,6 +64,7 @@ export async function offlineAdmission(){
     // after reconnect or another press of Send.
     client.saveDraft(t.id,'One response whose acknowledgment is lost. '+platform);client.reviewDraft(t.id)
     network.loseReply=true;await assert.rejects(()=>client.sendDraft(t.id))
+    console.info('Mobile offline admission:',platform,'lost reply response')
     assert.equal(client.draft(t.id).outcome,'uncertain')
     const writes=requests.filter(request=>request.method==='POST').length
     await client.reconnect();await assert.rejects(()=>client.sendDraft(t.id));assert.throws(()=>client.reviewDraft(t.id));
@@ -84,6 +88,7 @@ export async function offlineAuthority(){
     client.stageAttachment(t.id,{filename:'private.txt',contentType:'text/plain',bytes:new TextEncoder().encode('Private customer attachment')})
     const snapshot=client.cachedTicket(t.id),draft=client.draft(t.id),bytes=draft.files[0].bytes
     assert.ok(snapshot.ticket.id&&draft.content&&bytes.some(byte=>byte!==0))
+    console.info('Mobile offline authority:',reason,'loaded')
     if(reason==='signout'){assert.equal((await client.signOut()).serverRevoked,true);assert.equal((await call('/session',{token:device.token})).status,401)}
     if(reason==='offline-signout'){network.online=false;client.setOffline();assert.equal((await client.signOut()).serverRevoked,false)}
     if(reason==='revocation'){client.setOffline();await call(`/devices/${device.id}`,{token:w.tokens.owner,method:'DELETE',status:200});await assert.rejects(()=>client.reconnect(),error=>error.status===401)}

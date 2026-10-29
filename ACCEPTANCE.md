@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -359,15 +359,15 @@ Core · published · **partial** · Cites BASE-INSTALL-001, BASE-SECRET-001
 
 #### DESK-001 — The shared support desk
 
-Core · target · **partial** · Cites BASE-ROLE-001, BASE-INPUT-003
+Core · target · **done** · Cites BASE-ROLE-001, BASE-INPUT-003
 
 **Requirement.** A visitor starts website live chat, identifies themselves under the workspace policy, sends files and returns to their history. Humans see one durable shared inbox with customer history, scoped retained-history search with words, quoted phrases and literal customer-identity matching, open/closed/mine/unassigned/AI/tag filters and saved replies that insert into the composer without silently sending. Ticket status follows the STATUS-001 lifecycle and saved replies extend to MACRO-001 action macros. Replies, attachment downloads and errors are visible on both sides; privacy/collector controls remain effective.
 
 **Acceptance.**
 1. Through the installed widget and operator inbox, exchange messages and real attachment bytes, search/filter the resulting queue, insert and edit a saved reply, reload both sides and deny another tenant the same records.
 
-**Evidence.** `src/modules/management/dashboard.ts`; `src/modules/management/inbox-search.ts`; `src/modules/tickets`; `tests/journeys/first-run.mjs`; `tests/journeys/inbox.mjs`; `tests/journeys/reports.mjs`; `tests/journeys/delegation-browser.mjs`
-**Gap.** Carried-done audit: unasserted in the cited Evidence set: installed widget exchange; operator inbox exchange; real attachment bytes; search; filters; saved reply insert; reply editing; widget reload; inbox reload; tenant denial. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
+**Evidence.** `tests/helpers/inbox/brand-support-browser.mjs` and `tests/helpers/inbox/desk-browser.mjs`, in `tests/journeys/inbox-browser.mjs` / “two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening”, install the widget asset on the allowed help page, collect the workspace-required visitor name/email, exchange visitor and operator messages, upload visitor and operator files, download and compare their exact bytes on both sides, insert a plain saved reply without sending, edit and explicitly send it once, and retain the same messages and downloads after both pages reload. `tests/helpers/inbox/reply-attachments-browser.mjs`, in that same request, proves a native upload refusal stays visible while preserving the draft and earlier attachment, followed by deliberate corrected upload and send. `tests/helpers/inbox/desk-proof.mjs`, in `tests/helpers/inbox/tickets.mjs` through `tests/journeys/inbox.mjs` / “a replacement request moves through scoped fields, a reviewed macro, shared queue work, private collaboration, routing, schedules and durable automations before closure and erasure”, asserts older matching-message previews, unordered words, ordered quoted phrases, case-insensitive literal customer identity, punctuation/operator handling, all-history versus explicit current-view search, the 200-character error, open/closed/mine/unassigned/AI/tag queues, exact label downloads by visitor and operator, and foreign visitor/operator refusal at transcript, inbox and attachment doors even with identical search words. The existing reviewed macro and lifecycle assertions remain intact. Desk widget and inbox receipts show the same request at 1440 and 390; behavioral assertions run at 1440.
+**Gap.** All ten previously uncited outcomes are asserted through the installed widget, emitted operator pages and native HTTP routes. This is local native/browser acceptance; no hosted installation, live mailbox delivery, paid-model execution or complete accessibility qualification is claimed.
 
 #### WIDGET-001 — Availability-aware messenger and proactive messages
 

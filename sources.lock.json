@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "8bc9d1bd45a361d8380e6c84578edc0c61ffefc7f42cf70eb7867d1bdde8cb44",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "b6640106799ba8f0252a990209686e09192db4b52f8275adae9b0fbc6020e1dd",
       "executable": false
     },
     "DEMO.md": {
@@ -1657,7 +1657,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "6a453e96feff8da4f92037720b7a5c90fae3e98f98a554984e53884a6bf68cf6",
+      "sha256": "cb8a9137a216304f269ec2a8418798e2d2eace4dd4ed6907c23b13760e983472",
       "executable": false
     },
     "docs/companies-and-csv.md": {
@@ -11825,7 +11825,7 @@
       "executable": false
     },
     "tests/helpers/inbox/brand-support-browser.mjs": {
-      "sha256": "1ab0c658af099390d9338055c8d328eb27598a8277d80f28a2a5256ec29604e2",
+      "sha256": "55aa577ffd3f38255a664798ee60db1d783b01187c6502eb6e1418455b5b7141",
       "executable": false
     },
     "tests/helpers/inbox/brands-browser.mjs": {
@@ -11836,8 +11836,16 @@
       "sha256": "11e6cb17c923ab06cce84ea7b89b25d70f9eb6a56c72b7fd6339ac1d5345bd6d",
       "executable": false
     },
+    "tests/helpers/inbox/desk-browser.mjs": {
+      "sha256": "65220527ea53ad83b28679eb80a5d6131696fcdd30043f18ba91de3ae48e75ea",
+      "executable": false
+    },
     "tests/helpers/inbox/desk-collaboration.mjs": {
       "sha256": "8ca84688e87f8242a8173771125bdf81ddc38a0046d55040fbe07e564a643fea",
+      "executable": false
+    },
+    "tests/helpers/inbox/desk-proof.mjs": {
+      "sha256": "9c5a0d025e4634c14c9fbcfa3524b7d57ca7c22d56d4c0da11557159dd7360d9",
       "executable": false
     },
     "tests/helpers/inbox/mobile-inbox-browser.mjs": {
@@ -11865,7 +11873,7 @@
       "executable": false
     },
     "tests/helpers/inbox/tickets.mjs": {
-      "sha256": "8ca5c0d56a14b5235ab8d0a591b75058f1db77a9bfad9977d575460bb4a6d371",
+      "sha256": "054de2a70bf9387c5a881d6529260429424beccccb2b742988ac87bf9becb3c9",
       "executable": false
     },
     "tests/helpers/INDEPENDENT-RECOVERY.md": {

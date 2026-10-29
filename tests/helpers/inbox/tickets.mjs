@@ -3,6 +3,7 @@ import {randomBytes} from 'node:crypto'
 import {ticketFixture} from './ticket-fixture.mjs'
 import {deskWorkflows} from '../workflows/desk-flow.mjs'
 import {deskCollaboration} from './desk-collaboration.mjs'
+import {deskQueueProof} from './desk-proof.mjs'
 
 // One replacement request moves through the shared desk. Previewed operations,
 // private collaboration and automation all use the same native ticket history.
@@ -50,6 +51,7 @@ export async function ticketsJourney(){
   const search=await ok('/conversations?search='+encodeURIComponent('TO-48200'));assert.ok(search.some(ticket=>ticket.id===id))
   const foreignVisitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:foreign.widgetKey},headers:{Origin:foreign.allowedOrigin}})
   const foreignTicket=await app.ok('/api/conversations',{token:foreignVisitor.token,body:{projectId:foreign.projectId}})
+  await deskQueueProof(f,{second,tag,foreignVisitor,foreignTicket})
   const batch={tickets:[{id,expected_version:(await get(id)).ticket_version},{id:second,expected_version:(await get(second)).ticket_version},{id:foreignTicket.id,expected_version:0}],changes:{priority:'urgent'}}
   const bulkPreview=await ok('/tickets/bulk/preview',batch);assert.deepEqual(bulkPreview.results.map(result=>result.status),['ready','ready','forbidden']);assert.equal((await get(second)).priority,'normal')
   await patch(second,{subject:'Changed while preview was open'})

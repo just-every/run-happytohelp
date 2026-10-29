@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -518,7 +518,7 @@ Core · target · **partial** · Cites BASE-ROLE-001
 
 #### MACRO-001 — Action macros with placeholders
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **done** · Cites BASE-ROLE-001
 
 **Requirement.** Operators apply a personal, group or shared macro that in one action sets the reply text (public or internal note), status, priority, tags (add or remove), assignee and group, followers, custom fields and attachments. Reply text supports placeholders for the requester's name, first name and email, ticket ID, subject and link, assignee, brand, organization, and custom ticket and contact fields, with explicit fallbacks (for example first name, else "there"). Applying a macro previews every change and puts the rendered text in the composer for editing; nothing is sent until the operator sends. A placeholder that cannot be resolved is flagged and blocks sending instead of reaching the customer as a literal. Macros are versioned, permission-scoped by role, group and brand, searchable, usage-reported and applicable in bulk (QUEUE-002). AI macro calls carry standard for internal reversible edits and external when they send or expose a reply; the company’s policy decides whether each is applied, reviewed, held or refused.
 
@@ -527,8 +527,8 @@ Core · target · **partial** · Cites BASE-ROLE-001
 2. Apply it to a requester with no name (fallback used) and with a placeholder for an absent custom field (flagged, send blocked).
 3. Verify a role without macro access cannot apply it, bulk application reports per-ticket results and the customer sees only the rendered text.
 
-**Evidence.** `src/modules/macros`; `src/ui/native/pages/macros`; `src/ui/dashboard/components/macros`; `tests/journeys/inbox.mjs`; `tests/journeys/inbox.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: preview includes reply; preview includes status; preview includes tag; preview includes group; preview includes assignee; preview includes custom field; stored Pending status; stored assignee; stored custom field; stored added tag; stored assigned group; resolved first-name readback; resolved ticket-ID readback; edited text sent; reload retains draft; missing name fallback; unresolved placeholder blocks sending; role denial; per-ticket bulk result; customer receives rendered text only. Asserted: no outcome in the currently cited test files. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: stored added tag; stored assigned group; resolved first-name readback; resolved ticket-ID readback. Asserted: preview includes reply; preview includes status; preview includes tag; preview includes group; preview includes assignee; preview includes custom field; stored Pending status; stored assignee; stored custom field; edited text sent; reload retains draft; missing name fallback; unresolved placeholder blocks sending; role denial; per-ticket bulk result; customer receives rendered text only.
+**Evidence.** `src/modules/macros`; `src/ui/native/pages/macros`; `src/ui/dashboard/components/macros`; `tests/journeys/inbox.mjs`; `tests/helpers/inbox/tickets.mjs` (public-route preview of every action; stored macro status/tag/group/agent/custom field; Pending status, tag, group and custom-field readback after send; first-name and ticket-ID draft/customer readback; edited reply and attachment; unnamed requester fallback; unresolved custom-field send refusal; role denial and per-ticket bulk results)
+**Gap.** None.
 
 #### QUEUE-004 — Snooze and scheduled follow-up
 

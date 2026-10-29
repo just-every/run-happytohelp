@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "d41107ef315e825c83bfc4396ea9732cd0f4e8983f94d6bc60a8c4c906b90903",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "0b304bc6f107ffd93e07933c7180df058fc35387d40d25fd4e19224646c4e05d",
       "executable": false
     },
     "DEMO.md": {
@@ -11865,7 +11865,7 @@
       "executable": false
     },
     "tests/helpers/inbox/tickets.mjs": {
-      "sha256": "8ca5c0d56a14b5235ab8d0a591b75058f1db77a9bfad9977d575460bb4a6d371",
+      "sha256": "dc424bd2bca3509061968727c247390376edbe3c93986032797757dc9f10435a",
       "executable": false
     },
     "tests/helpers/INDEPENDENT-RECOVERY.md": {

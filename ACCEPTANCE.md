@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -159,7 +159,7 @@ Core · published · **partial** · Cites BASE-ROLE-001, BASE-DATA-001 · Rules 
 
 #### CONNECTIONS-001 — Workspace integrations
 
-Core · published · **partial** · Cites BASE-OPS-003, BASE-AUDIT-001, BASE-ROLE-001, BASE-SECRET-001, BASE-INPUT-001, BASE-DATA-004
+Core · published · **done** · Cites BASE-OPS-003, BASE-AUDIT-001, BASE-ROLE-001, BASE-SECRET-001, BASE-INPUT-001, BASE-DATA-004
 
 **Requirement.** Owner/admin tokens have explicit scopes, optional expiry, one-time display, hashed storage and durable audit. Bearer-only API calls have no CORS, per-token limits and native guarded writes. Contact erasure fences API identity restoration and pending event payloads. Native events commit tenant-bound webhook and Slack intents; historical import apply and undo do not emit them. Slack projects bounded native visitor text through Base escaping. The owner-authorized ordinary HTTPS exception retains redirect refusal, bounded requests/responses and literal-destination checks instead of DNS pinning (RL-3). See [the full transport exception](docs/contract/support-protocols.md).
 
@@ -167,8 +167,8 @@ Core · published · **partial** · Cites BASE-OPS-003, BASE-AUDIT-001, BASE-ROL
 1. Issue, use, expire and revoke each scoped show-once token; exercise native API operations, erasure fences, signed events and Slack escaping.
 2. Refuse redirects/unsafe literal destinations and over-limit traffic; preserve timeout, streamed bounds, uncertain 500 without replay and bounded 429 behavior under the recorded HTTPS override.
 
-**Evidence.** `src/modules/api-integrations`; `tests/connections/api.mjs` (API credential lifecycle: issue, use scoped operations, paginate, refuse lost authority and erasure, then revoke); `tests/connections/delivery.mjs` (delivery lifecycle: prepare, sign, dispatch, recover bounded work and require fresh approval for uncertain resend); `tests/connections/slack.mjs` (Slack notification lifecycle: deliver once with safe rendering and current workspace recipients)
-**Gap.** Main re-audit: unasserted in the cited Evidence set: issued token has exact scopes; issued token has expiry; show-once secret; hashed secret storage; unsafe literal destination refused; outgoing byte bound. Asserted: scoped native API use; token revocation; token expiry; erasure replay fences; signed events; Slack escaped customer text; redirect target never requested; declared response bound; streamed response bound; timeout remains uncertain; server error remains uncertain; uncertain work never replays; rate-limit retry retains same event. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: show-once secret; hashed secret storage; unsafe literal destination refused. Asserted: issued token has exact scopes; issued token has expiry; scoped native API use; token revocation; token expiry; erasure replay fences; signed events; Slack escaped customer text; redirect target never requested; outgoing byte bound; declared response bound; streamed response bound; timeout remains uncertain; server error remains uncertain; uncertain work never replays; rate-limit retry retains same event.
+**Evidence.** `src/modules/api-integrations`; `tests/connections/outcomes.mjs`, connectionOutcomes, called by the existing `tests/journeys/connections.mjs` connected-product journey (owner/admin token exact scopes and optional/explicit expiry, real expiry refusal, show-once metadata across restart, SHA-256-only storage, bearer-only/no-CORS scoped native operations, per-token limits, role refusals, erasure identity and pending-payload fences, revocation; native visitor webhook/Slack receipts, escaped 500-character Unicode projection; public Settings test action drains persisted queued-body fixtures at 1 MiB and refuses one-byte/UTF-8 overflow before network I/O; four-attempt 429 exhaustion retains identical bytes and stops across restart); `tests/connections/delivery.mjs`, deliveryLifecycle, reused by that native visitor proof (tenant-bound signatures, 429 same-event retry, uncertain 500/timeout without replay, approved resend, redirect refusal and declared/streamed response bounds, unsafe literal destination refusal); `tests/connections/slack.mjs`, assertSlack (one safe notification, no private-note leakage); existing `tests/connections/api.mjs` connected-product lifecycle retained unchanged
+**Gap.** None for the two acceptance points under the recorded RL-3 ordinary-HTTPS override. New owner/admin token evidence uses no source-product bindings, rotation or machine create/append protocol. Outgoing-boundary tests vary real persisted queue bodies before invoking the existing public Settings test action; only network receivers are fakes. Local synthetic receipts do not establish live Slack, hosted operation or DNS pinning; no such claim is made.
 
 #### ACTIVATION-001 — Observed owner setup
 

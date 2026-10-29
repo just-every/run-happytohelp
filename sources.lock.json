@@ -12000,8 +12000,16 @@
       "sha256": "70e39f2445a302d89b130da82caa4cdedd5157ac995e40733c4b197ef4cf95ca",
       "executable": false
     },
+    "tests/helpers/mobile-fixture.mjs": {
+      "sha256": "364e6795dbdd4013f83154724236b2e741410b61f9b0b38dbc13d2c90a81e73c",
+      "executable": false
+    },
+    "tests/helpers/mobile-offline.mjs": {
+      "sha256": "062604321d34ae0f420642544d272afab6e54585d802f985317127db9e881b58",
+      "executable": false
+    },
     "tests/helpers/mobile.mjs": {
-      "sha256": "a556c4e9a155a51de93789e02f99df840eee564231a4ed6bc0461584d4605f5c",
+      "sha256": "f7a7bf959c927e1915359052dbb3b694fc6a19c9fbed60427d73a5d8e3a00db3",
       "executable": false
     },
     "tests/helpers/openai-stream.mjs": {

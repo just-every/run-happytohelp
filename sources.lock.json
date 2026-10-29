@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "fd19bf8ff28ceea1d1d1ab1f275e394c2db4b9d1a43933c30e7eef37afc72704",
+      "sha256": "02fe0b7013783e0d9c29027c38030c1d50dd11e4e15abaa5f894dd54e113b0fc",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "85a63b87b238e1a2cef510177d3c9a70688589032ca6946864eb34424dbe8664",
+      "sha256": "ac9ef00d52ed53ba617ccbd3c1aebed89f09cf7fd1ea139e6cf726e25802df79",
       "executable": false
     },
     "DEMO.md": {
@@ -9193,7 +9193,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/voice/VoicePanel.jsx": {
-      "sha256": "a82d23ad373b983cff4dc5a6abe68c94d24d5c95a0b2a4f3209ba701406cd8bf",
+      "sha256": "a7daa7f3899af4bfc18bc0e0627b8883a3ea69842750aedd637c3e8252295dcc",
       "executable": false
     },
     "src/ui/dashboard/components/widget-settings/CampaignSettings.jsx": {
@@ -10957,11 +10957,15 @@
       "executable": false
     },
     "src/ui/native/pages/voice/VoiceReport.jsx": {
-      "sha256": "68d3907a0057193d301f7b520e97faac5c516f8ada6d4757ffc6afa83be9d4c3",
+      "sha256": "941a5d4055f5ce85b787ed17bac42981d1219f665680e1e90ddc9b882b41c4d1",
       "executable": false
     },
     "src/ui/native/pages/voice/VoiceSettings.jsx": {
-      "sha256": "9b9e6bcb1ea05f4733ab98c0740557e10bea563a6411a136ee50886b7a5d303e",
+      "sha256": "ec9308aac5e410596e6ae193bca14101cdbc4c53f763826059fd34716c1856bb",
+      "executable": false
+    },
+    "src/ui/native/pages/voice/VoiceTooltips.jsx": {
+      "sha256": "068fed8bf77ff0397eeb2809460802b8ef8dd5d090c7396ccdae26a3d791ff52",
       "executable": false
     },
     "src/ui/native/pages/WidgetSettingsPage.jsx": {
@@ -12097,7 +12101,7 @@
       "executable": false
     },
     "tests/helpers/voice/browser.mjs": {
-      "sha256": "bee6ff0ab3ffb9c9b2d46ce1711c27b3b2c22ad4312d9f95a8d52cec1b99bca6",
+      "sha256": "256dd362f39628025d1d0925575b6de9ed34a9192637ab4ff26e57b29f3f347f",
       "executable": false
     },
     "tests/helpers/voice/journeys.mjs": {

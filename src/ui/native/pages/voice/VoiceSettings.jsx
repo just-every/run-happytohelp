@@ -1,3 +1,4 @@
+import VoiceTooltips from './VoiceTooltips';
 import React, {useEffect,useState} from 'react';
 import {useUnsavedChanges} from '../../NavigationGuard';
 import {nativeRequest} from '../../transport';
@@ -20,7 +21,7 @@ export default function VoiceSettings({projectId,onDirtyChange=()=>{}}){
  }catch(e){setError(e.message);}finally{setBusy(false);}};
  const disconnect=async n=>{if(!window.confirm('Disconnect this support number? New webhook events and call commands will be refused.'))return;setBusy(true);setError('');try{await nativeRequest(base+'/numbers/'+n.id,{method:'DELETE'});setDraft(null);setNotice('Voice number disconnected. Manage retained recordings in the provider account.');await load();}catch(e){setError(e.message);}finally{setBusy(false);}};
  const row=(kind,index,key,value)=>settings(kind,draft.settings[kind].map((r,i)=>i===index?{...r,[key]:value}:r));
- return <div className="voice-controls"><Feedback error={error}/><Section title="Telephone support" description="Connect support numbers and manage hours, routing and optional media.">
+ return <div className="voice-controls"><VoiceTooltips/><Feedback error={error}/><Section title="Telephone support" description="Connect support numbers and manage hours, routing and optional media.">
  <p className="settings-note">Launch is pending provider sandbox, emergency number/location and US consent qualification. This is customer support, not emergency dispatch. Callers must hang up and dial 911 for an emergency.</p>
  {notice&&<p role="status">{notice}</p>}{secret&&<div role="status"><p>Aircall webhook token — shown once. Copy it to Aircall before leaving.</p><code className="voice-wrap">{secret}</code><button type="button" onClick={()=>setSecret('')}>Hide token</button></div>}
  {numbers.map(n=><article key={n.id} className="voice-number"><h3>{n.phone} · {n.provider}</h3><p>{n.enabled?'Connected':'Disconnected'}</p><p className="voice-wrap">Webhook URL: {n.webhook_url}</p>{n.enabled?<><button type="button" className="btn btn-secondary" disabled={busy} onClick={()=>edit(n)}>Edit routing for {n.phone}</button> <button type="button" className="btn btn-link" disabled={busy} onClick={()=>disconnect(n)}>Disconnect {n.phone}</button></>:<button type="button" className="btn btn-secondary" onClick={()=>{edit(null);setDraft({...n,id:undefined,token:'',settings:{...defaults,...n.settings}});}}>Reconnect {n.phone}</button>}</article>)}

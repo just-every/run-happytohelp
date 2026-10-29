@@ -16,7 +16,11 @@ export async function nativeMigrationDecision({root,store,signal}){
  await store.stop(child);
  const status=await closed;
  if(!receipt || typeof receipt!=='object')throw new RerError('transfer_failed','Migration history check ended before it finished.',1);
- if(status.code!==0 || !receipt.ok)throw new RerError(receipt.code??'transfer_failed',`Archive operation refused (${receipt.reason??'incomplete'}).`,receipt.exitCode??1);
+ if(status.code!==0 || !receipt.ok){
+  // Rer 0.2.90 separates the pending checkout filename from its refusal code.
+  const reason=receipt.reason==='migration_ledger:unapplied'&&typeof receipt.unapplied==='string'?`${receipt.reason}:${receipt.unapplied}`:receipt.reason??'incomplete';
+  throw new RerError(receipt.code??'transfer_failed',`Archive operation refused (${reason}).`,receipt.exitCode??1);
+ }
  if(typeof receipt.nativeApply!=='boolean')throw new RerError('transfer_failed','Migration history check returned no ledger decision.',1);
  return receipt.nativeApply;
 }

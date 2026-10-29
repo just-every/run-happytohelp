@@ -3757,7 +3757,7 @@
       "executable": false
     },
     "scripts/installer/migration-ledger.mjs": {
-      "sha256": "45aed37886c813fafb9e0184d821436e43376cf0766db39ecebcddda5a99c88d",
+      "sha256": "dfcf5df7c92d2e057fd3fbe2a040709c58fa22b8a6289e23a8a812ea04e96db2",
       "executable": false
     },
     "scripts/installer/native-local.mjs": {
@@ -12973,7 +12973,7 @@
       "executable": false
     },
     "tests/helpers/installer/fresh-install.mjs": {
-      "sha256": "9a80c3cce785996e0db4fc505d3add02dfb3930141ff8c6437d8235da0cb463f",
+      "sha256": "01c90dcdd3bfd6a28e5e6c2327d50762e42259c8d32e11ea949b34ad45c26059",
       "executable": false
     },
     "tests/helpers/installer/hosted-export-live.mjs": {

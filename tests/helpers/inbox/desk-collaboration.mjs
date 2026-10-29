@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {queueCollaboration} from './queue-collaboration.mjs'
 
 // Teammates collaborate on, merge and forward the same active replacement.
 export async function deskCollaboration(f){
@@ -6,9 +7,14 @@ export async function deskCollaboration(f){
  const connect=async token=>{const response=await app.request(`/api/conversations/${id}/socket?token=${token}`,{headers:{Upgrade:'websocket'}});assert.equal(response.status,101);const ws=response.webSocket,frames=[];ws.accept();ws.addEventListener('message',event=>frames.push(JSON.parse(event.data)));sockets.push(ws);return {ws,frames}}
  try{
   const owner=await connect(w.tokens.owner),teammate=await connect(w.tokens.operator),customer=await connect(visitor.token)
-  owner.ws.send(JSON.stringify({type:'presence',typing:false,draft:false}));teammate.ws.send(JSON.stringify({type:'presence',typing:true,draft:true,content:'Private draft content'}))
+  owner.ws.send(JSON.stringify({type:'presence',typing:true,draft:true}));teammate.ws.send(JSON.stringify({type:'presence',typing:true,draft:true,content:'Private draft content'}))
   const presence=await app.until(()=>owner.frames.find(frame=>frame.type==='presence'&&frame.peers.some(peer=>peer.id===w.users.operator&&peer.typing&&peer.draft)))
   assert.ok(!JSON.stringify(presence).includes('Private draft content'));assert.ok(!customer.frames.some(frame=>frame.type==='presence'))
+  const reciprocal=await app.until(()=>teammate.frames.find(frame=>frame.type==='presence'&&frame.peers.some(peer=>peer.id===w.users.owner&&peer.typing&&peer.draft)))
+  assert.ok(reciprocal,'both operators receive collision indicators before sending')
+  teammate.ws.send(JSON.stringify({type:'presence',typing:false,draft:true}))
+  assert.ok(await app.until(()=>owner.frames.find(frame=>frame.type==='presence'&&frame.peers.some(peer=>peer.id===w.users.operator&&!peer.typing&&peer.draft))),'an unsent draft still warns after typing stops')
+  await queueCollaboration(f,{owner,customer})
   await ok(`/conversations/${id}/followers`,{user_ids:[w.users.operator]},'owner','PUT')
   const note=await ok(`/conversations/${id}/notes`,{content:`Private @[Operator](user:${w.users.operator}) review`,mention_ids:[w.users.operator]})
   assert.ok(await app.first("SELECT id FROM notification_inbox WHERE conversation_id=? AND user_id=? AND kind='mention'",id,w.users.operator))
@@ -19,6 +25,10 @@ export async function deskCollaboration(f){
   assert.equal(competing.filter(result=>result.data.accepted).length,1)
   assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',id)).n,beforeMessages+1)
   assert.ok(competing.some(result=>result.data.accepted===false||result.status===409))
+  const admitted=competing.find(result=>result.data.accepted),reloaded=await app.ok(`/api/conversations/${id}/messages`,{token:visitor.token})
+  assert.equal(reloaded.messages.filter(message=>message.content.startsWith('The replacement is being reviewed ')).length,1,'reload shows exactly one admitted final reply')
+  assert.equal(reloaded.messages.at(-1).id,admitted.data.message.id)
+  assert.equal((await get(id)).revision,frontier.revision+1)
   teammate.ws.close();await app.until(()=>owner.frames.findLast(frame=>frame.type==='presence')?.peers.every(peer=>peer.id!==w.users.operator))
 
   const other=await app.ok('/api/identity/widget/session',{body:{widgetKey:w.widgetKey,name:'Another customer'},headers:{Origin:w.allowedOrigin}})

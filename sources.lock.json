@@ -1669,15 +1669,15 @@
       "executable": false
     },
     "docs/contract/COVERAGE.json": {
-      "sha256": "401a159a5904d446946aca23fb2d631e1d4faf8a6b09cfe5362470fc42567e93",
+      "sha256": "dfc94e657a1b9ede2510cf518a008c0c040fb5c91f80caa5de966ed262ff2400",
       "executable": false
     },
     "docs/contract/DONE-AUDIT.md": {
-      "sha256": "475563cf14a3b011695bc955f819b81038b75550290d7805f467186f965a5d96",
+      "sha256": "7d497275d2c7203cca053b95e35e173ec612136432a1bbbc43f4aaa6d98959d1",
       "executable": false
     },
     "docs/contract/ID-MAP.json": {
-      "sha256": "fd8f8262b5c4fc016cde51339a82429287fd6b7e7f192e6ffe4e0eb6e31d1ba4",
+      "sha256": "afc720829b153e4af0e3136873629524a082a352fb1c8b9a5226484e539fec40",
       "executable": false
     },
     "docs/contract/machine-api.md": {
@@ -11761,7 +11761,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "b4e6273e83c3b8094c8db8c8e2f67dc81f233848a3220370129ceb7f69f87254",
+      "sha256": "a4f9eba983bddbf6f0db8776c2d3d7bf4a83cf3ea87b181f1e7f92d41a120a7f",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

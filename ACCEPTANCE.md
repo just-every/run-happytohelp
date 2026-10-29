@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -74,15 +74,15 @@ Core · published · **partial** · Cites BASE-INSTALL-001, BASE-MAIL-001, BASE-
 
 #### LOCAL-MAIL-001 — Rer dev mail
 
-Core · published · **partial** · Cites BASE-MAIL-001, BASE-ACCESS-002 · Register R-2
+Core · published · **done** · Cites BASE-MAIL-001, BASE-ACCESS-002 · Register R-2
 
 **Requirement.** Trusted local development configuration uses the rer dev v2 development transport: it validates and suppresses visitor and teammate mail, reports `development`, stores no messages and exposes no mail viewer. It sends no external email. The local owner enters automatically through the dev boundary; native password identity, ordinary hosted email-link confirmation and prior stored data are retained. Production has no local dev surface. Missing credentials or failed remote delivery never select a local substitute.
 
 **Acceptance.**
 1. Enter through rer dev v2; send visitor and teammate mail and prove development suppression without storage, viewer or external send; refuse forged and production dev entry and never substitute suppression for a failed hosted provider.
 
-**Evidence.** `src/modules/integrations/email.ts`; `tests/journeys/first-run.mjs`
-**Gap.** Carried-done audit: unasserted in the cited Evidence set: local dev entry; visitor mail is suppressed; teammate mail is suppressed; no message storage; no mail viewer; no external mail; forged entry refused; production dev entry refused; hosted failure never selects suppression. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
+**Evidence.** `tests/helpers/email/local-mail.mjs`, localMailJourney, in the existing customer-email journey in `tests/journeys/email.mjs`: localMailRoutes asserts development transport reporting, suppressed visitor transcript and teammate invitation receipts, validation, zero email delivery and legacy outbox rows, no viewer routes or external requests, local email-link refusal, retained native password identity and prior transcript, and unavailable or failed/uncertain hosted mail without substitution or replay. devEntry uses public rer setup/dev and the real key-gated owner route to reach Setup, refuses missing/forged keys, forged cookies and headers, cross-site entry and a native dev session without its gate. productionEntry refuses dev entry, key exchange, personas and mail viewer through the emitted production Worker. `tests/helpers/email/complete-email.mjs`, completeEmailJourney, in the same journey retains ordinary hosted email-link confirmation and uncertain-provider replay fences. Existing local provisioning coverage remains in `tests/helpers/first-run/provisioning.mjs`, provisioningJourney, in `tests/journeys/first-run.mjs` (suppressed owner test mail and zero delivery rows after the local support reply). `src/modules/integrations/routes.ts` reports the development provider explicitly.
+**Gap.** Local acceptance has no remaining unasserted outcome. R-2 live forwarding, IMAP/SMTP, Google Workspace/Microsoft 365 receipt, sender authorization, bounce and permission-loss qualification are UNMET-EXTERNAL and remain separate field proof for MAIL-001/OUTBOUND-001; no live delivery is claimed.
 
 #### CONVERSATION-001 — Durable transcript
 

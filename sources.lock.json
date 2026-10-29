@@ -6501,7 +6501,7 @@
       "executable": false
     },
     "src/modules/management/member-erasure.ts": {
-      "sha256": "e0e57f3b9d9a91e6552745f645bbe5f108949919a2e1fc49c124121754e860aa",
+      "sha256": "86e7ea3ce5cc9e5e0ee5f3bc5c7269385d60ab77eef893b8db646bddfa2a1c13",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {

@@ -6,7 +6,7 @@ A claim is done when every clause behind it is done, missing when every one is m
 
 | # | Claim | Clauses | Status |
 | --- | --- | --- | --- |
-| 1 | Knows what your customer needs before they do. | `WIDGET-001` partial; `CONTEXT-001` partial | partial |
+| 1 | Knows what your customer needs before they do. | `WIDGET-001` partial; `CONTEXT-001` done | partial |
 | 2 | When someone seems stuck, the widget offers a hand. | `WIDGET-001` partial | partial |
 | 3 | Your Codex or Claude fixes the problem and writes the reply. You press Send. | `DELEGATION-001` partial; `PUSH-001` partial | partial |
 | 4 | 100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk. | `NATIVE-001` partial; `SOURCE-001` partial; `DESK-001` partial | partial |

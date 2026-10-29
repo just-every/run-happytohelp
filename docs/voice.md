@@ -33,3 +33,5 @@ Erasing a telephone customer removes caller ciphertext, provider call/recording 
 AGENT-001 can use the native conversation ID and the guarded human-transfer command as its telephony hook. This module executes no AI procedure, grants no cross-channel account authority and claims no governed voice agent. Automated-agent disclosure, consistent approved procedures across voice/chat/email and AI-to-human handoff remain with that campaign.
 
 After a restore, reconnecting a number permits newly signed calls. Archived calls cannot resume: old entry, routing and recording callbacks are refused, so a saved call step cannot restart recording or refresh callback identity.
+
+Upgrade in order: apply `275_voice.sql` after main’s migration 262, then `276_voice_media.sql`, before serving the updated Worker. Retain all earlier migration ledger entries.

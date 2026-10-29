@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "2a4f2bd0532b13f595f1cf1936c926707bf8736d40e1c8154e4fd90aff7b7f29",
+      "sha256": "f0eb4eaf154edc9b34d859c3c019ced675895de6809e63418dd9ad2b9fa029d4",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "cf600cc7f7fcfc7cb2952824cdeedcb8249ac0439c7ed8f453c79680a58e37b7",
+      "sha256": "d789ca47e4b47f04a0e1109b88f4481c39cf85f2aaf52812bef7b79a4334c781",
       "executable": false
     },
     "DEMO.md": {
@@ -1837,7 +1837,7 @@
       "executable": false
     },
     "docs/voice.md": {
-      "sha256": "547eec09e3cf091812ad1c663205c97c1cd7cf0a6f6200e2d9db4f04f243fadd",
+      "sha256": "8710bd8ebe4eefea0db0e1f3f9f92e8f79828c2e451b9a447d19b8f13680e869",
       "executable": false
     },
     "docs/website-knowledge.md": {
@@ -3657,7 +3657,7 @@
       "executable": false
     },
     "src/jobs.ts": {
-      "sha256": "db374631e69109b9365ded05dd20813708b233091a9049d4984f88d4f158a9c1",
+      "sha256": "49bea2b841373fadc9504da2c14533441228d8dc8ca0609816d6a1a5876f498c",
       "executable": false
     },
     "src/message-effects.ts": {
@@ -10761,7 +10761,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProjectSettings.jsx": {
-      "sha256": "9173014b91891da15adaba60643eb03a7e816e51d1ae252725ee0c21cc59560a",
+      "sha256": "0bcf222112a05f34b1ef94373e11ff27fb87bffb8f09a7fe490d686a7cab7dd2",
       "executable": false
     },
     "src/ui/native/pages/ProjectsPage.d.ts": {

@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -209,15 +209,15 @@ Core · published · **partial** · Cites BASE-ROLE-001, BASE-PUBLIC-001
 
 #### CONTEXT-001 — Attributed customer context
 
-Core · published · **partial** · Cites BASE-ROLE-001, BASE-INPUT-001
+Core · published · **done** · Cites BASE-ROLE-001, BASE-INPUT-001
 
 **Requirement.** Profiles, monitoring, insights and context packets preserve evidence attribution, source bounds, consent and project ownership. Provider output must satisfy the selected schemas before becoming usable customer context.
 
 **Acceptance.**
 1. Generate/read profile, monitoring, insight and context packets through native routes; reject ungrounded/schema-invalid or cross-project content, preserve attributed evidence and respect consent/source bounds.
 
-**Evidence.** `src/modules/customer-context`; `tests/journeys/context.mjs`
-**Gap.** Carried-done audit: unasserted in the cited Evidence set: profile generation; monitoring generation; insight generation; context packet generation; ungrounded rejection; schema-invalid rejection; cross-project rejection; source attribution; consent boundary; source boundary. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
+**Evidence.** `src/modules/customer-context`; `tests/journeys/context.mjs` invokes `tests/helpers/context/monitoring.mjs`, monitoringJourney, and `tests/helpers/context/attribution.mjs`, attributionJourney/assertMonitoringAttribution. Native routes and widget events with real Worker/D1/queue execution assert profile and monitoring generation, delivered insights and read context packets; exact profile/insight evidence IDs and source labels; invented/foreign evidence and schema-invalid profile, analysis and insight rejection without publication; project-scoped read/write authority; bounded provider evidence; consent admission, public-category withdrawal and in-flight publication fences. The model alone is a network-edge fixture; this is local behavioral evidence, not configured-provider quality or hosted qualification.
+**Gap.** None.
 
 #### DELEGATION-001 — Explicit local authority
 

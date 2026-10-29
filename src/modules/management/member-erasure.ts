@@ -54,7 +54,7 @@ const memberPolicies:Record<string,RegistryEntry>={
  api_credentials:{effects:[{prefix:'UPDATE api_credentials SET issuer_id=NULL,revoked_at=coalesce(revoked_at,?)',where:'issuer_id=?',before:c=>[c.now],after:c=>[c.user]}]},
  users:{accountOnly:true,anonymize:true},
  ...Object.fromEntries(['credentials','user_settings','user_factors','recovery_codes','session_factors','webauthn_challenges'].map(table=>[table,accountDelete()])),
- ...Object.fromEntries(['user_project_preferences','member_roles','operator_presence','support_channel_members','support_channel_link_codes','memberships'].map(table=>[table,workspaceDelete()])),
+ ...Object.fromEntries(['user_project_preferences','member_roles','operator_presence','mobile_devices','support_channel_members','support_channel_link_codes','memberships'].map(table=>[table,workspaceDelete()])),
  magic_signins:{erase:{column:'user_id',nullable:true}},
  sessions:{erase:{column:'actor_id',nullable:true,predicate:"actor_id=? AND role<>'contact'",args:c=>[c.user]}},
  conversation_followers:{erase:{column:'user_id',through:'conversation_id'}},

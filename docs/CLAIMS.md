@@ -16,11 +16,11 @@ A claim is done when every clause behind it is done, missing when every one is m
 | 8 | No fees. | `NATIVE-001` partial; `SOURCE-001` partial | partial |
 | 9 | Chat widget. Right on your website. | `DESK-001` partial; `UI-001` partial | partial |
 | 10 | Shared inbox. Chat and email, in one place. | `DESK-001` partial; `MAIL-001` partial | partial |
-| 11 | Help centre. Answers customers find themselves. | `KNOWLEDGE-001` partial; `KNOWLEDGE-003` partial | partial |
-| 12 | Suggested replies. Drafted from your own articles, with sources. | `AI-001` partial; `KNOWLEDGE-001` partial | partial |
+| 11 | Help centre. Answers customers find themselves. | `KNOWLEDGE-001` done; `KNOWLEDGE-003` partial | partial |
+| 12 | Suggested replies. Drafted from your own articles, with sources. | `AI-001` partial; `KNOWLEDGE-001` done | partial |
 | 13 | Keep your current helpdesk running while you try it. | `MOVE-IN-002` partial; `API-001` partial | partial |
 | 14 | Install it. Codex or Claude can help. | `NATIVE-001` partial | partial |
-| 15 | Bring your help centre. From Zendesk, Intercom or Freshdesk. | `MOVE-IN-002` partial; `KNOWLEDGE-001` partial | partial |
+| 15 | Bring your help centre. From Zendesk, Intercom or Freshdesk. | `MOVE-IN-002` partial; `KNOWLEDGE-001` done | partial |
 | 16 | Add the chat widget. One script tag on your site. | `DESK-001` partial; `UI-001` partial | partial |
 
 Claims: 16; 0 done, 16 partial, 0 missing.

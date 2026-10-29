@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -197,15 +197,15 @@ Core · published · **partial** · Cites BASE-AGENT-007, BASE-AGENT-011 · Regi
 
 #### KNOWLEDGE-001 — Published knowledge
 
-Core · published · **partial** · Cites BASE-ROLE-001, BASE-PUBLIC-001
+Core · published · **done** · Cites BASE-ROLE-001, BASE-PUBLIC-001
 
 **Requirement.** Dataset ingestion/crawl, retained corpus, lexical/selected semantic retrieval, citations and article/category authoring maintain project scope and publication state. A failed refresh cannot replace the last usable published corpus. Public pages exclude drafts/deleted projects and preserve original canonical article/search routes.
 
 **Acceptance.**
 1. Publish and search articles/categories through authoring and public help-center doors; deny draft/deleted/cross-project access, verify citations and canonical links and retain the last usable published corpus after a failed refresh.
 
-**Evidence.** `src/modules/knowledge/authoring.ts`; `src/modules/public-site/help-center.tsx`; `tests/journeys/knowledge.mjs`; `tests/journeys/public.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: article authoring; category authoring; retrieval citations; failed refresh retains last usable corpus. Asserted: public search; canonical article links; draft denial; cross-workspace denial; deleted project public denial. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: article authoring; category authoring; retrieval citations; failed refresh retains last usable corpus. Asserted: public search; canonical article links; draft denial; cross-workspace denial; deleted project public denial.
+**Evidence.** `tests/helpers/knowledge/published.mjs`, publishedKnowledgeJourney, called within the existing authoring test in `tests/journeys/knowledge.mjs`: built HTTP article draft-to-published and category edit/publication readback; scored lexical and selected semantic citations with exact source ID, publication version, title, content and canonical URL; a real queued refresh ingests replacement documents then fails at the embedding HTTP edge (503), after which dataset pages, both retrieval modes and rendered public home/search/article pages retain their prior publications across restart and exclude the failed replacement. Existing `tests/helpers/knowledge/authoring.mjs`: authored content/category links, owner/public search, draft/foreign/deleted-workspace refusal and article deletion; `tests/helpers/knowledge/sources.mjs`: bounded website crawl, durable publication, failed crawl retention and cross-workspace refusal; `tests/helpers/knowledge/corpus.mjs`: paged/replayed ingestion, scoped lexical and explicit semantic retrieval, failed empty refresh retention and repeated Intercom/Freshdesk/Zendesk imports. `tests/journeys/public.mjs` retains emitted-page coverage of canonical/alias/host article and search routes, drafts/foreign/deleted projects.
+**Gap.** Native route, built-page and durable-queue assertions with fakes only at provider HTTP edges establish this acceptance point; no live-provider account qualification is claimed.
 
 #### CONTEXT-001 — Attributed customer context
 

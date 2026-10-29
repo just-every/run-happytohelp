@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "74ebd92c72c28cc6dbfc1519d88db823f7a0f0a9c2d1397e866dde6b1478b1f4",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "2d92fd0f9b0f9c883833478172c58cd8e5d5a9c3813d731e9f20912a09d15cf4",
       "executable": false
     },
     "DEMO.md": {
@@ -1657,7 +1657,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "6a453e96feff8da4f92037720b7a5c90fae3e98f98a554984e53884a6bf68cf6",
+      "sha256": "1171655e9eedb85bd40a4a67b92bb775d44ab0015c1d01830dcd6e6501191214",
       "executable": false
     },
     "docs/companies-and-csv.md": {
@@ -11940,6 +11940,10 @@
       "sha256": "1dd4b530da825475213069407b94650fbd44e6f57451fb81006de84366c9bbc6",
       "executable": false
     },
+    "tests/helpers/knowledge/published.mjs": {
+      "sha256": "abc185ed6be0a8b27624b63b3b54210382b0b698cb176abf71942c6d566ce650",
+      "executable": false
+    },
     "tests/helpers/knowledge/sources.mjs": {
       "sha256": "9dcda0c0f2ad2413cf806f1edfecb573b621fd2bef70c2b814d0564a7f3a027f",
       "executable": false
@@ -12237,7 +12241,7 @@
       "executable": false
     },
     "tests/journeys/knowledge.mjs": {
-      "sha256": "fc9c6d5b9068e2f9c88dd1edc508b82c2c935eff20739316f66520d71e280922",
+      "sha256": "7bf0279072b8c0725d865eb20d54a3bbb2ad1cea516dffb56d7d5af418e60d4b",
       "executable": false
     },
     "tests/journeys/legacy.mjs": {

@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "ea7240516455b035145a59edf2a60b9b3c7ead21d0c495d7476595bdf2694b46",
+      "sha256": "2a4f2bd0532b13f595f1cf1936c926707bf8736d40e1c8154e4fd90aff7b7f29",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "4f411beee1298a9083f28b431f368d124d7936ddf5fe8283d238e57971fc72b2",
+      "sha256": "cf600cc7f7fcfc7cb2952824cdeedcb8249ac0439c7ed8f453c79680a58e37b7",
       "executable": false
     },
     "DEMO.md": {
@@ -12105,7 +12105,7 @@
       "executable": false
     },
     "tests/helpers/voice/journeys.mjs": {
-      "sha256": "dea6122c23358cadfab8979798cfb891401bbcd2da74917a99ade192eace50f2",
+      "sha256": "443c1bf41cf4f3deb40983915b6efe5f6dd20de33b11250d71da4be31a42a5c6",
       "executable": false
     },
     "tests/helpers/voice/portable.mjs": {

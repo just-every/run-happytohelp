@@ -3,11 +3,11 @@ import {randomBytes,createHmac} from 'node:crypto'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {launchBrowser,evidence} from '../../journeys/kit/browser.mjs'
 
-export async function voiceBrowserProof(){
+export async function voiceBrowserProof({widths=[1440,390],debug=false}={}){
  const runtime=await createRuntime({outboundFixture:new URL('./browser-network.mjs',import.meta.url).href,vars:{INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')}}),browser=await launchBrowser(),shot=await evidence('voice')
  let passed=false
  try{
- for(const width of [1440,390]){
+ for(const width of widths){
   const owner=await runtime.seedTenant({name:'Telephone support '+width,email:`voice-${width}@example.test`}),context=await browser.newContext({viewport:{width,height:1000}})
   try{
    await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}]);const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(25000)
@@ -28,6 +28,7 @@ export async function voiceBrowserProof(){
    await page.getByRole('button',{name:'Edit routing for +12025550101',exact:true}).click()
    await page.getByLabel('Media retention in days',{exact:true}).fill('2')
    await capture('settings')
+   if(debug)await page.evaluate(()=>{window.voiceEvents=[];for(const event of ['pointerdown','pointerup','click','submit'])document.addEventListener(event,e=>window.voiceEvents.push({type:event,tag:e.target.tagName,text:e.target.tagName==='BUTTON'?e.target.textContent:null,prevented:e.defaultPrevented}),true)})
    await page.getByRole('button',{name:'Save voice number',exact:true}).click()
    await page.getByText('Voice number saved. Configure the provider webhook before testing.',{exact:true}).waitFor()
    number=(await req(base+'/numbers')).data[0];assert.equal(number.settings.retention_days,2)
@@ -72,7 +73,7 @@ export async function voiceBrowserProof(){
    await page.goto(runtime.origin+`/projects/${owner.projectId}/settings`);await page.getByRole('button',{name:'Telephone',exact:true}).click()
    page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Disconnect +12025550101',exact:true}).click();await page.getByText('Disconnected',{exact:true}).waitFor()
    assert.equal((await req(base+'/numbers')).data[0].enabled,0);assert.deepEqual(errors,[])
-  }finally{await context.close()}
+  }catch(error){for(const p of context.pages()){await p.screenshot({path:shot(`failure-${width}.png`),fullPage:true}).catch(()=>{});if(debug)console.error('Voice events',await p.evaluate(()=>({events:window.voiceEvents,buttons:[...document.querySelectorAll('button')].filter(n=>n.textContent.includes('Save voice')).map(n=>({form:!!n.form,type:n.type,disabled:n.disabled})),active:document.activeElement?.tagName})));console.error('Voice form validity',await p.locator('input:invalid,select:invalid').evaluateAll(nodes=>nodes.map(n=>({name:n.name,message:n.validationMessage}))).catch(()=>[]));}throw error}finally{await context.close()}
  }
  passed=true
  }finally{await browser.close();await runtime.close(passed)}

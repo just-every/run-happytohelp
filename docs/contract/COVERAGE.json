@@ -2,7 +2,7 @@
   "schema": 1,
   "seed": "happytohelp-product",
   "old": {
-    "commit": "44b7af7670bb6fbf7ba80cabfbc1c43a506daa88",
+    "commit": "8fe2cd7328a3e6d6b6013ad8e379c410c5b21b7a",
     "files": [
       "CONTRACT.md"
     ]
@@ -4310,26 +4310,6 @@
     },
     {
       "file": "CONTRACT.md",
-      "line": 636,
-      "cell": "gap",
-      "text": "Implementation/acceptance gaps: Explicit account/company-entitled collections and permission-aware restricted agent retrieval remain incomplete; per-brand domain publishing and agent-proposed cited changes are absent. Existing email-domain gates do not satisfy the account-only acceptance. Live qualification gap: Custom-domain/DNS publishing, real customer mail authentication and account/company entitlement from a real account system remain unobserved; local audience fixtures do not qualify them.",
-      "to": "gap",
-      "ids": [
-        "KNOWLEDGE-002"
-      ]
-    },
-    {
-      "file": "CONTRACT.md",
-      "line": 637,
-      "cell": "gap",
-      "text": "Implementation/acceptance gaps: Per-brand custom domains and ticket-after-reading attribution remain incomplete; request-form template acceptance is unproved. Live qualification gap: Real brand-domain/DNS/TLS publishing and customer mail delivery of inserted links remain unobserved; local host/template fixtures do not qualify domains or receipt.",
-      "to": "gap",
-      "ids": [
-        "KNOWLEDGE-003"
-      ]
-    },
-    {
-      "file": "CONTRACT.md",
       "line": 638,
       "cell": "gap",
       "text": "Live qualification gap: Two real brand domains/senders with authorized shared-team operation and channel receipt remain unobserved; separate synthetic workspaces do not establish multi-brand qualification.",
@@ -4343,24 +4323,6 @@
       "text": "Each second-factor answer claims its attempt before it is checked, so parallel guesses stay within the limit. Registering a connected application and approving its access are credential installs and step up. A re-entered password (step-up, password change) claims its attempt the same way. Every factor enrollment, a teammate's password reset link (owner's own factor), a changed sign-in email, and copying or resending an admin or owner invitation step up; the identity invitation door without those rules is removed. Accounts without a second factor may confirm beside the password by a single-use, 15-minute, account-bound email sign-in link; requests are atomically rate-limited and audited, and only the fresh sign-in session gains proof. New email claims install no unknown password or recent proof. Existing credentials remain intact; recent mailbox proof authorizes setting a new password without the old one, so older claim-generated or externally chosen passwords cannot strand an account. Enrolled second factors remain required. Setting a first password on an account without one (every moved-in teammate) and adding, repointing or re-enabling a side-panel plugin step up too.",
       "to": "docs",
       "path": "docs/verify.md"
-    },
-    {
-      "file": "CONTRACT.md",
-      "line": 644,
-      "cell": "gap",
-      "text": "Implementation/acceptance gaps: Full multichannel, business-action and production-quality coverage is incomplete. Live qualification gap: Representative real-model channel evaluations, restricted retrieval/actions, mid-tool handoff and production-quality outcomes remain unobserved; fixture answers and local handoff do not establish a production support agent. Answering by a live model on an independently installed website/domain remains unobserved; P3 uses a provider-edge fake.",
-      "to": "gap",
-      "ids": [
-        "AGENT-001"
-      ],
-      "also": [
-        {
-          "to": "register",
-          "ids": [
-            "R-15"
-          ]
-        }
-      ]
     },
     {
       "file": "CONTRACT.md",
@@ -4398,36 +4360,6 @@
             "R-17"
           ]
         }
-      ]
-    },
-    {
-      "file": "CONTRACT.md",
-      "line": 653,
-      "cell": "gap",
-      "text": "No implementation located: obligation records with owner and due time, reminders and follow-up drafts are absent (durable messages and notes in `src/modules/conversations/admission.ts` are not obligations).",
-      "to": "gap",
-      "ids": [
-        "PUSH-002"
-      ]
-    },
-    {
-      "file": "CONTRACT.md",
-      "line": 654,
-      "cell": "gap",
-      "text": "No implementation located: version-joined diagnosis of reopened cases, proposals and controlled rollout are absent (evaluation runs in `src/modules/training-runs/runner.ts` are generic).",
-      "to": "gap",
-      "ids": [
-        "PUSH-003"
-      ]
-    },
-    {
-      "file": "CONTRACT.md",
-      "line": 655,
-      "cell": "gap",
-      "text": "No implementation located: gap clustering from unanswered cases, sourced draft articles and recovery measurement are absent (article authoring in `src/modules/knowledge/authoring.ts` is manual).",
-      "to": "gap",
-      "ids": [
-        "PUSH-004"
       ]
     },
     {
@@ -4635,26 +4567,6 @@
       "to": "gap",
       "ids": [
         "REPORTS-002"
-      ]
-    },
-    {
-      "file": "CONTRACT.md",
-      "line": 645,
-      "cell": "gap",
-      "text": "Implementation and acceptance gaps: Controlled production rollout, conversation attribution, revocation and rollback remain absent. Synthetic sandbox tools mirror read-only retrieval names against an isolated fixed publication; integration with real knowledge versions and live data requirements remains unimplemented. Historical examples are not admitted. Initial mode approved with ct riders (27 October): owner or admin with settings permission only, explicit synthetic-only confirmation, no historical customer text transfer and no real actions. This initial mode does not complete the clause or replace contracted historical replay, versioned operational context or controlled production release; all three remain gaps. Live qualification gap: Real-model tool execution in an approved bounded cohort with version-linked conversation results and rollback remains unobserved; synthetic model-edge fixtures do not qualify production procedures.",
-      "to": "gap",
-      "ids": [
-        "PROCEDURE-001"
-      ]
-    },
-    {
-      "file": "CONTRACT.md",
-      "line": 646,
-      "cell": "gap",
-      "text": "Implementation gaps: Procedure report drill-down, procedure evaluation coverage, known-denominator rates and reconciled USD cost estimates remain incomplete. The trace shows the latest 50 executions; approval describes the recorded automatic assistant policy or explicit operator request, not a separate per-tool human consent receipt. Provider cost remains unavailable without reconciled price evidence. Live qualification gap: Actual production traces, tool and procedure outcomes and costs reconciled to real usage and prices remain unobserved; network-edge fixtures establish no live economics.",
-      "to": "gap",
-      "ids": [
-        "AGENT-002"
       ]
     },
     {
@@ -5349,6 +5261,84 @@
       "text": "owner's import equality, native-auth and bounded-HTTPS decisions.",
       "to": "docs",
       "path": "docs/verify.md"
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 636,
+      "cell": "gap",
+      "text": "Remaining qualification: Real customer authentication and account entitlement, real brand-domain/DNS/TLS publishing and configured-provider retrieval remain unobserved. The newer main judgement stays partial; this merge makes no status raise.",
+      "to": "gap",
+      "ids": [
+        "KNOWLEDGE-002"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 637,
+      "cell": "gap",
+      "text": "Lead-editable font and navigation design remains for the Claude lane. Hosting administrators still provision DNS/TLS; native publication cannot claim an arbitrary typed domain.",
+      "to": "gap",
+      "ids": [
+        "KNOWLEDGE-003"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 644,
+      "cell": "gap",
+      "text": "Implementation/acceptance gaps: Full multichannel, business-action and production-quality coverage is incomplete. Live qualification gap: Representative real-model channel evaluations, restricted retrieval/actions, mid-tool handoff and production-quality outcomes remain unobserved; fixture answers and local handoff do not establish a production support agent. Answering by a live model on an independently installed website/domain remains unobserved; P3 uses a provider-edge fake.",
+      "to": "gap",
+      "ids": [
+        "AGENT-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 645,
+      "cell": "gap",
+      "text": "Implementation and acceptance gaps: Controlled production rollout, conversation attribution, revocation and rollback remain absent. Synthetic sandbox tools mirror read-only retrieval names against an isolated fixed publication; integration with real knowledge versions and live data requirements remains unimplemented. Historical examples are not admitted. Initial mode approved with ct riders (27 October): owner or admin with settings permission only, explicit synthetic-only confirmation, no historical customer text transfer and no real actions. This initial mode does not complete the clause or replace contracted historical replay, versioned operational context or controlled production release; all three remain gaps. Live qualification gap: Real-model tool execution in an approved bounded cohort with version-linked conversation results and rollback remains unobserved; synthetic model-edge fixtures do not qualify production procedures.",
+      "to": "gap",
+      "ids": [
+        "PROCEDURE-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 646,
+      "cell": "gap",
+      "text": "Implementation gaps: Procedure report drill-down, procedure evaluation coverage, known-denominator rates and reconciled USD cost estimates remain incomplete. The trace shows the latest 50 executions; approval describes the recorded automatic assistant policy or explicit operator request, not a separate per-tool human consent receipt. Provider cost remains unavailable without reconciled price evidence. Live qualification gap: Actual production traces, tool and procedure outcomes and costs reconciled to real usage and prices remain unobserved; network-edge fixtures establish no live economics.",
+      "to": "gap",
+      "ids": [
+        "AGENT-002"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 653,
+      "cell": "gap",
+      "text": "\u2014",
+      "to": "generated",
+      "note": "An empty done-row Gap placeholder; the generated acceptance view renders None."
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 654,
+      "cell": "gap",
+      "text": "Automatic background semantic diagnosis and redacted historical model replay are held for the privacy/retention ruling. Business-tool/permission/spending changes and connected post-release business recovery remain unqualified; native closure is not verified recovery.",
+      "to": "gap",
+      "ids": [
+        "PUSH-003"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 655,
+      "cell": "gap",
+      "text": "Conservative default: customer-derived publication stays within the source customer\u2019s proven email-domain collection and the workspace\u2019s default publication locale. Public/cross-domain reuse, translated/cross-brand reuse and verified causal customer recovery remain held; no semantic-clustering or causal-recovery claim is made.",
+      "to": "gap",
+      "ids": [
+        "PUSH-004"
+      ]
     }
   ]
 }

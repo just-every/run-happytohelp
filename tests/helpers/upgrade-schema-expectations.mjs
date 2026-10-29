@@ -23,6 +23,8 @@ export const schemaExceptions = [
   {migration: '248_customer_recovery.sql', names: ['csat_responses', 'csat_response_history'], change: 'Adds only explicit customer recovery with unknown for existing feedback; every prior column and row is retained'},
   {migration: '253_api_requests.sql', names: ['integration_tokens','native_integration_destinations'], change: 'Adds credential reference, display prefix and destination filters; legacy secret columns retained and every secret backfilled to its own credential'},
   {migration: '251_knowledge_read_selection.sql', names: ['project_roles'], change: 'Adds only nullable knowledge_article_ids TEXT constrained to a valid JSON array; every prior column and row is retained'},
+  {migration: '267_translated_ai_publications.sql', names: ['knowledge_translations'], change: 'Adds nullable publication_version TEXT; every prior column definition is retained'},
+  {migration: '268_help_domain_publication.sql', names: ['knowledge_experience'], change: "Adds nullable published_host TEXT and link_color TEXT NOT NULL DEFAULT ''; every prior column definition is retained"},
   {migration: '0110_move_in.sql', names: ['context_message_added', 'context_message_removed'], change: 'WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences ...) inserted before BEGIN'},
 ];
 
@@ -110,6 +112,8 @@ const tableChanges = [
   {migration: '132_ticket_erasure.sql', table: 'contact_erasures', sql: 'ALTER TABLE contact_erasures ADD COLUMN ticket_records INTEGER NOT NULL DEFAULT 0'},
   {migration: '170_knowledge_experience.sql', table: 'knowledge_categories', sql: `ALTER TABLE knowledge_categories ADD COLUMN audience TEXT NOT NULL DEFAULT 'public' CHECK(audience IN ('public','signed-in','domains')); ALTER TABLE knowledge_categories ADD COLUMN allowed_domains TEXT NOT NULL DEFAULT '[]'`},
   {migration: '170_knowledge_experience.sql', table: 'knowledge_articles', sql: 'ALTER TABLE knowledge_articles ADD COLUMN editor_id TEXT'},
+  {migration: '267_translated_ai_publications.sql', table: 'knowledge_translations', sql: 'ALTER TABLE knowledge_translations ADD COLUMN publication_version TEXT'},
+  {migration: '268_help_domain_publication.sql', table: 'knowledge_experience', sql: "ALTER TABLE knowledge_experience ADD COLUMN published_host TEXT; ALTER TABLE knowledge_experience ADD COLUMN link_color TEXT NOT NULL DEFAULT ''"},
   {migration: '190_email_step_up.sql', table: 'session_factors', sql: `CREATE TABLE session_factors_email(token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL,method TEXT NOT NULL CHECK(method IN ('password','email_link','totp','webauthn','recovery','installation')),verified_at INTEGER NOT NULL); DROP TABLE session_factors; ALTER TABLE session_factors_email RENAME TO session_factors`},
   ...['csat_responses','csat_response_history'].map(table=>({migration:'244_csat_response_surface.sql',table,sql:`ALTER TABLE ${table} ADD COLUMN response_surface TEXT NOT NULL DEFAULT 'unknown' CHECK(response_surface IN ('email','portal','widget','unknown'))`})),
   ...['csat_responses','csat_response_history'].map(table=>({migration:'248_customer_recovery.sql',table,sql:`ALTER TABLE ${table} ADD COLUMN recovery TEXT NOT NULL DEFAULT 'unknown' CHECK(recovery IN ('unknown','recovered','not_recovered'))`})),

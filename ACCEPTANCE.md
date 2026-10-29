@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 0 | 70 | 15 | 85 |
+| Core | 1 | 72 | 12 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 0 | 70 | 20 | 90 |
+| Full target | 1 | 72 | 17 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -887,8 +887,8 @@ Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT
 1. Publish an English article and reviewed translation, restrict a collection by explicit account/company entitlement (email-domain membership alone does not establish that entitlement), update/rollback a version and follow an old URL.
 2. Search and ask the agent as public, permitted and forbidden customers and verify permission-aware citations, locale fallback disclosure and failed-refresh preservation.
 
-**Evidence.** Local implementation/fixture evidence: `src/modules/knowledge/access.ts`; `src/modules/knowledge/experience.ts`; `src/modules/knowledge/experience-routes.ts`; `src/modules/knowledge/help-auth.ts`; `src/modules/knowledge/public-sources.ts`; `src/modules/public-site/help-center.tsx`; `tests/journeys/knowledge.mjs`. Local route journeys cover public and signed-in/email-domain collections, reviewed translations, article history/restore and slug redirects. The assistant uses public-audience articles only, so restricted knowledge is excluded from answers. Email-domain membership is an audience gate, not account/company entitlement.
-**Gap.** Implementation/acceptance gaps: Explicit account/company-entitled collections and permission-aware restricted agent retrieval remain incomplete; per-brand domain publishing and agent-proposed cited changes are absent. Existing email-domain gates do not satisfy the account-only acceptance.
+**Evidence.** `src/modules/knowledge/access.ts`; `src/modules/knowledge/experience.ts`; `src/modules/knowledge/experience-routes.ts`; `src/modules/knowledge/help-auth.ts`; `src/modules/knowledge/public-sources.ts`; `src/modules/public-site/help-center.tsx`; `tests/journeys/knowledge.mjs`; `tests/journeys/ai.mjs`; `tests/helpers/knowledge/proposals.mjs`; `tests/journeys/public-browser.mjs`
+**Gap.** Remaining qualification: Real customer authentication and account entitlement, real brand-domain/DNS/TLS publishing and configured-provider retrieval remain unobserved. The newer main judgement stays partial; this merge makes no status raise.
 
 #### KNOWLEDGE-003 — Branded help center, article feedback and knowledge in the ticket
 
@@ -901,8 +901,8 @@ Core · target · **partial** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
 2. Vote on an article as a visitor, search for a term with no results and then open a ticket; compare analytics with the known events.
 3. From a ticket search, insert an article link and send; verify a restricted article cannot be inserted into a reply to a customer without access.
 
-**Evidence.** Local implementation/fixture evidence: `src/modules/knowledge/feedback.ts`; `src/modules/knowledge/analytics-routes.ts`; `src/ui/native/pages/knowledge/KnowledgeExperience.jsx`; `src/ui/dashboard/components/ArticlePicker.jsx`; `src/modules/public-site/help-center.tsx`; `src/modules/public-site/request-pages.ts`; `tests/journeys/knowledge.mjs`; `tests/journeys/public.mjs`. Plain-text templates (home, category, section, article, search and request form), votes/comments, locale/brand activity analytics and recipient-scoped article insertion are implemented. Local journeys cover templates, search/view/click activity, feedback and insertion; no journey exercises the request-form template.
-**Gap.** Implementation/acceptance gaps: Per-brand custom domains and ticket-after-reading attribution remain incomplete; request-form template acceptance is unproved.
+**Evidence.** `src/modules/knowledge/feedback.ts`; `src/modules/knowledge/analytics-routes.ts`; `src/ui/native/pages/knowledge/KnowledgeExperience.jsx`; `src/ui/dashboard/components/ArticlePicker.jsx`; `src/modules/public-site/help-center.tsx`; `src/modules/public-site/request-pages.ts`; `tests/journeys/knowledge.mjs`; `tests/journeys/public.mjs`; `tests/journeys/public-browser.mjs`
+**Gap.** Lead-editable font and navigation design remains for the Claude lane. Hosting administrators still provision DNS/TLS; native publication cannot claim an arbitrary typed domain.
 
 #### BRANDS-001 — Multi-brand support operations
 
@@ -995,8 +995,8 @@ Core · target · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGEN
 1. On representative provider-sandbox or official-schema channel journeys, ask grounded and unanswerable questions, attempt restricted retrieval/actions, request a human mid-tool-call and disconnect.
 2. Under the held company policy, verify cited valid answers, no private leakage, no unauthorized tool call, durable handoff context and no competing post-handoff AI answer; record live evaluation separately from fixtures.
 
-**Evidence.** Local implementation/fixture evidence: `src/modules/ai-support/service.ts`; `src/modules/knowledge`; `src/edition/delegation/routes.ts`; `tests/journeys/first-run.mjs`; `tests/journeys/delegation.mjs`. Configured AI and scoped local handoff are implemented; local first-run/delegation journeys assert configured-provider boundaries and authorized handoff behavior with fixtures.
-**Gap.** Implementation/acceptance gaps: Full multichannel, business-action and production-quality coverage is incomplete.
+**Evidence.** `src/modules/ai-support/service.ts`; `src/modules/knowledge`; `src/edition/delegation/routes.ts`; `tests/journeys/first-run.mjs`; `tests/journeys/delegation.mjs`; `tests/journeys/ai.mjs`; `tests/journeys/knowledge.mjs`
+**Gap.** Implementation/acceptance gaps: Full multichannel, business-action and production-quality coverage is incomplete. Live qualification gap: Representative real-model channel evaluations, restricted retrieval/actions, mid-tool handoff and production-quality outcomes remain unobserved; fixture answers and local handoff do not establish a production support agent. Answering by a live model on an independently installed website/domain remains unobserved; P3 uses a provider-edge fake.
 
 #### PROCEDURE-001 — Natural-language procedures and release simulation
 
@@ -1008,8 +1008,8 @@ Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGEN
 1. Through procedure settings, draft a refund procedure, simulate allowed/denied/timeout/prompt-injection paths with network-edge fakes, inspect a failing case and prevent release.
 2. Under the held company policy, approve a passing version into a bounded live cohort, revoke a tool and roll back; verify no sandbox external effect and exact version linkage in conversations.
 
-**Evidence.** Local evidence: `tests/helpers/ai/procedures.mjs`, proceduresJourney, through `tests/journeys/ai.mjs`: immutable numbered drafts restricted to existing read-only tool names, frozen required synthetic allowed, denied, timeout and injection cases, exact version-linked outputs and sandbox read receipts, current admin authority, isolation from customer messages and mail, failed or mismatched release refusal and no automatic replay of uncertain provider work. `tests/helpers/ai/procedures-browser.mjs`, proceduresBrowserJourney, through `tests/journeys/workflows-browser.mjs`: compare complete saved definitions (instructions, intent, model, tools, escalation, budgets and required cases), draft a revision from an older version with validated same-procedure/workspace lineage and unsaved-draft confirmation, retain the original snapshot and receipts, and require a new evaluation for the revision; inspect passing and failing cases and refuse a failed release; retain keyboard focus and visible action results, distinguish loading and failed reads from editable drafts, and hide the form from denied roles, including a narrowed admin. Receipts present readable outcomes and setup guidance, with stopped cases marked not run; browser proof at 1440 and 390. Qualification records an audited simulation result and enables no production execution. Saved-definition comparison labels use the same readable secondary-text size at desktop and phone widths.
-**Gap.** Implementation and acceptance gaps: Controlled production rollout, conversation attribution, revocation and rollback remain absent. Synthetic sandbox tools mirror read-only retrieval names against an isolated fixed publication; integration with real knowledge versions and live data requirements remains unimplemented. Historical examples are not admitted.  Historical replay, versioned operational context and controlled production release remain incomplete under RL-6.
+**Evidence.** `tests/helpers/ai/procedures.mjs`; `tests/journeys/ai.mjs`; `tests/helpers/ai/procedures-browser.mjs`; `tests/journeys/workflows-browser.mjs`; `tests/helpers/ai/advice-procedures.mjs`; `tests/helpers/ai/advice-procedures-browser.mjs`
+**Gap.** Implementation and acceptance gaps: Controlled production rollout, conversation attribution, revocation and rollback remain absent. Synthetic sandbox tools mirror read-only retrieval names against an isolated fixed publication; integration with real knowledge versions and live data requirements remains unimplemented. Historical examples are not admitted. Initial mode approved with ct riders (27 October): owner or admin with settings permission only, explicit synthetic-only confirmation, no historical customer text transfer and no real actions. This initial mode does not complete the clause or replace contracted historical replay, versioned operational context or controlled production release; all three remain gaps. Live qualification gap: Real-model tool execution in an approved bounded cohort with version-linked conversation results and rollback remains unobserved; synthetic model-edge fixtures do not qualify production procedures.
 
 #### AGENT-002 — Inspectable quality and resolution economics
 
@@ -1021,8 +1021,8 @@ Core · target · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGEN
 1. Open production-run traces from a conversation and drill from a procedure report to supporting cases; include timeout, denied tool, handoff, negative CSAT and reopened outcomes.
 2. Compare rates and USD provider-cost estimates to raw usage and known denominators, redact secrets and show unavailable price data explicitly.
 
-**Evidence.** Local fixture evidence: `tests/journeys/ai.mjs` with `tests/helpers/ai/answers.mjs` (answersJourney) proves the conversation trace joins source publication versions and assistant fingerprint, requested scope, automatic policy approval, timing, provider completion, committed message evidence, denied citations and handoff receipts; it denies visitors and other projects and omits prompt, answer and raw tool payloads. `tests/journeys/ai.mjs` (assistanceJourney) proves explicit operator-request attribution, suggestion scope and two-round token evidence without claiming a sent answer. `tests/journeys/ai.mjs` (lifecycleJourney) proves timeout and interrupted outcomes remain unknown without replay and missing prices remain unavailable. `tests/journeys/inbox-browser.mjs` with `tests/journeys/ai.mjs` (suggestionsAtWidth) opens the trace from a fixture conversation and keyboard-expands timeout and denied details; screenshots cover 1440 and 390. Local cycle evidence: `src/modules/ai-support/trace-outcomes.ts` joins retained message authorship contributions to resolution revision boundaries within the workspace and conversation, returning only cycle identity/time, recorded attribution, current feedback scale/value/revision and later reopening time. `tests/helpers/ai/cycle-outcomes.mjs` in answersJourney proves separate native answer/resolution/feedback cycles, rerating history, shared contributions, missing or ambiguous provenance, denied and revoked authority, and erasure; assistanceJourney distinguishes adopted and completed unsent drafts, and lifecycleJourney retains uncertain attempts without customer outcomes. `tests/journeys/ai.mjs` displays negative, rerated, reopened, unknown, erased, empty, loading, failed-read and revoked-access trace states with a supporting conversation link and keyboard expansion; browser captures cover 1440 and 390, with assertions at 1440. Shared cycle feedback establishes neither causal blame nor independently verified recovery. Existing training and usage evidence: `src/edition/ai/training-trace.ts`; `tests/journeys/first-run.mjs`; `tests/reports/figures.mjs`.
-**Gap.** Implementation gaps: Procedure report drill-down, procedure evaluation coverage, known-denominator rates and reconciled USD cost estimates remain incomplete. The trace shows the latest 50 executions; approval describes the recorded automatic assistant policy or explicit operator request, not a separate per-tool human consent receipt. Provider cost remains unavailable without reconciled price evidence.
+**Evidence.** `tests/journeys/ai.mjs`; `tests/helpers/ai/answers.mjs`; `tests/journeys/inbox-browser.mjs`; `src/modules/ai-support/trace-outcomes.ts`; `tests/helpers/ai/cycle-outcomes.mjs`; `src/edition/ai/training-trace.ts`; `tests/journeys/first-run.mjs`; `tests/reports/figures.mjs`; `tests/helpers/ai/advice-procedures.mjs`; `tests/journeys/workflows-browser.mjs`; `tests/helpers/ai/advice-procedures-browser.mjs`
+**Gap.** Implementation gaps: Procedure report drill-down, procedure evaluation coverage, known-denominator rates and reconciled USD cost estimates remain incomplete. The trace shows the latest 50 executions; approval describes the recorded automatic assistant policy or explicit operator request, not a separate per-tool human consent receipt. Provider cost remains unavailable without reconciled price evidence. Live qualification gap: Actual production traces, tool and procedure outcomes and costs reconciled to real usage and prices remain unobserved; network-edge fixtures establish no live economics.
 
 #### FEEDBACK-001 — Source-linked feedback and release follow-up
 
@@ -1106,7 +1106,7 @@ Core · push-further · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BAS
 
 #### PUSH-002 — Promises survive every handoff
 
-Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2 · Register R-17
+Core · push-further · **done** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2 · Register R-17
 
 **Requirement.** The agent extracts explicit commitments, quoted evidence and dependencies from messages and linked issues into durable obligations with a responsible person, due time, current evidence and stop condition. Chase missing evidence internally, detect stale dependencies and draft an honest customer update before a promise expires. Material due-date or promise changes carry commitment and customer updates carry external; the company’s policy decides the agent’s calls. Progress and commitments retain their supporting evidence. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
@@ -1114,12 +1114,12 @@ Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BAS
 1. In a conversation promise a follow-up, link an engineering dependency, hand off twice and restart.
 2. Verify the same cited obligation, accepted owner/due-time changes, reminders and a timely draft; mark an evidence-free dependency stale and block any claim of completed progress until readback exists.
 
-**Evidence.** None.
-**Gap.** No implementation located: obligation records with owner and due time, reminders and follow-up drafts are absent (durable messages and notes in `src/modules/conversations/admission.ts` are not obligations).
+**Evidence.** `src/modules/ai-support/obligations.ts`; `tests/journeys/ai.mjs`; `tests/helpers/ai/obligations.mjs`; `tests/journeys/workflows-browser.mjs`; `tests/helpers/ai/obligations-browser.mjs`; `tests/journeys/connections.mjs`
+**Gap.** None.
 
 #### PUSH-003 — Learn from reopenings under human control
 
-Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2 · Register R-17
+Core · push-further · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2 · Register R-17
 
 **Requirement.** The agent joins reopened requests, complaints, CSAT, procedure/tool versions and connected business outcomes to identify failed resolution paths. Propose a concrete procedure/policy change with cited cases, replay evaluation and expected effect; changed permissions carry access, protective tool settings security, spending limits money and a running rollout live; the company’s policy decides the calls, while people set that policy. Track actual post-release recovery and regression, stop/rollback on deterioration and preserve original procedure versions and dissenting evidence. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
@@ -1127,12 +1127,12 @@ Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BAS
 1. Under the held company policy, create matched resolved/reopened cases under two procedure versions, inspect a proposed change and its replay set, reject then approve a limited rollout and inject regression.
 2. Under the held company policy, verify only approved versions/actions run, before/after outcomes are attributable and rollback preserves all failure evidence.
 
-**Evidence.** None.
-**Gap.** No implementation located: version-joined diagnosis of reopened cases, proposals and controlled rollout are absent (evaluation runs in `src/modules/training-runs/runner.ts` are generic).
+**Evidence.** `tests/journeys/ai.mjs`; `tests/helpers/ai/advice-procedures.mjs`; `tests/journeys/workflows-browser.mjs`; `tests/helpers/ai/advice-procedures-browser.mjs`
+**Gap.** Automatic background semantic diagnosis and redacted historical model replay are held for the privacy/retention ruling. Business-tool/permission/spending changes and connected post-release business recovery remain unqualified; native closure is not verified recovery.
 
 #### PUSH-004 — Turn verified edge cases into reviewed knowledge
 
-Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2 · Register R-17
+Core · push-further · **partial** · Cites BASE-AGENT-003, BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008 · Rules D-2 · Register R-17
 
 **Requirement.** The agent identifies unanswered or repeatedly reopened topics from permitted conversations, support searches and procedure failures, clusters the gap and drafts a sourced article/update from verified resolutions. Strip personal data, obey private/brand/locale boundaries and include the evidence and proposed scope. Publication and translated exposure carry external, adding commitment for an editorial sign-off; the company’s policy decides the call and the agent measures whether later customers recover, proposing corrections when they do not. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
@@ -1140,8 +1140,8 @@ Core · push-further · **missing** · Cites BASE-AGENT-003, BASE-AGENT-006, BAS
 1. Resolve a previously undocumented case, trigger gap analysis, inspect a cited redacted draft, reject and then publish an edited version and ask the next customer's question.
 2. Under the held company policy, verify permission-aware retrieval, publication decided by the held company policy, attribution and a corrective proposal when the case reopens.
 
-**Evidence.** None.
-**Gap.** No implementation located: gap clustering from unanswered cases, sourced draft articles and recovery measurement are absent (article authoring in `src/modules/knowledge/authoring.ts` is manual).
+**Evidence.** `tests/journeys/knowledge.mjs`; `tests/helpers/knowledge/proposals.mjs`; `tests/journeys/public-browser.mjs`; `tests/helpers/knowledge/proposals-browser.mjs`
+**Gap.** Conservative default: customer-derived publication stays within the source customer’s proven email-domain collection and the workspace’s default publication locale. Public/cross-domain reuse, translated/cross-brand reuse and verified causal customer recovery remain held; no semantic-clustering or causal-recovery claim is made.
 
 ## Agent surface
 

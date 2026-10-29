@@ -33,14 +33,22 @@ test('a published help center: Markdown rendered safely, complete summary search
   await publish(other,{slug:'foreign-guide',title:'foreign-guide',content:'Other project',summary:'violet lantern'})
   for(let i=0;i<18;i++)await publish(tenant,{slug:`guide-${i}`,title:`Guide ${String(i).padStart(2,'0')}`,content:'Instructions for your account.',summary:'violet lantern'})
   for(const base of [`/${tenant.projectId}`,`/${slug}`,`/help/${slug}`])for(const tail of ['','/','/search?keyword=retained','/retained-guide']){
-   const response=await request(base+tail),html=await response.text();assert.equal(response.status,200,base+tail);assert.ok(html.includes(`action="${base}/search"`),'search stays on the retained path')
+   const response=await request(base+tail),html=await response.text();assert.equal(response.status,200,base+tail);assert.equal(response.headers.get('referrer-policy'),'same-origin',base+tail);assert.ok(html.includes(`action="${base}/search"`),'search stays on the retained path')
    assert.doesNotMatch(html,signIn,'a public-only collection needs no sign-in link')
    assert.match(html,/class="help-center-controls"/,'customer request controls are available on every retained help path')
-   assert.ok(html.includes(`href="/help/${tenant.projectId}/requests"`),'request form entry stays in this workspace')
+   assert.ok(html.includes(`href="/help/${tenant.projectId}/requests${tail==='/retained-guide'?'?afterReading=':'"'}`),'request form entry stays in this workspace and carries a receipt only from an article')
    assert.ok(html.includes(`href="/portal/${tenant.projectId}/requests"`),'customer portal entry stays in this workspace')
    if(!tail||tail.startsWith('/search'))assert.ok(html.includes(`href="${base}/retained-guide"`),'article links retain their entry path')
   }
-  const article=await (await request(`/${slug}/formatted`)).text();assert.match(article,/<strong>Knowledge<\/strong>/);assert.doesNotMatch(article,/<script>alert/)
+  const formResponse=await request(`/api/forms/projects/${tenant.projectId}/forms`,{token:tenant.token,body:{title:'Ask support',description:'Tell us what went wrong.',locale:'en',enabled:true,fields:[]}})
+  assert.equal(formResponse.status,201);const form=(await formResponse.json()).data
+  await edit('experience',{defaultLocale:'en',locales:['en'],templates:{request:'Before request {{title}}\n{{content}}\nAfter request'}},'PUT')
+  const article=await (await request(`/${slug}/formatted`)).text();
+  const requestLink=article.match(/href="([^"]*requests\?afterReading=[^"]+)"/)[1].replaceAll('&amp;','&')
+  const choose=await (await request(requestLink)).text()
+  assert.match(choose,/Before request Ask support/);assert.match(choose,/After request/);assert.match(choose,/data-after-reading="[a-f0-9-]{36}"/)
+  const directForm=await (await request(`/help/${tenant.projectId}/requests/${form.id}`)).text();assert.match(directForm,/Before request Ask support/);assert.match(directForm,/id="customer-request"/)
+  assert.match(article,/<strong>Knowledge<\/strong>/);assert.doesNotMatch(article,/<script>alert/)
   assert.match(await (await request(`/${slug}/signin`)).text(),/Retained customer sign-in instructions/)
   assert.match(await (await request('/survey/retained-guide')).text(),/Retained instructions/)
   assert.equal((await request(`/${slug}?access=signin`)).status,200)

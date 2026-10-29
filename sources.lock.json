@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "7f0248b3c0113165d029edc5ffc2642ae8fb9c6b955dd401c932e2b2aca769b9",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "a8a807b3b1579a835282b2bf3534af21987b645148714d7abe9a81488a21063e",
       "executable": false
     },
     "DEMO.md": {
@@ -11865,7 +11865,7 @@
       "executable": false
     },
     "tests/helpers/inbox/tickets.mjs": {
-      "sha256": "8ca5c0d56a14b5235ab8d0a591b75058f1db77a9bfad9977d575460bb4a6d371",
+      "sha256": "451c75d58463aa38968b42657f79c36aec3bd27e2de0aeae454192e9687b43b9",
       "executable": false
     },
     "tests/helpers/INDEPENDENT-RECOVERY.md": {
@@ -12129,7 +12129,7 @@
       "executable": false
     },
     "tests/helpers/workflows/desk-flow.mjs": {
-      "sha256": "96b18dc2e15a009949e263aea12100f439ca5bbc28026639e3bebe42d997f7a4",
+      "sha256": "ef34be2e8d87d4fbcc6af6709974dbf8495f9fc23010a9a4f6cbd04b97b307e6",
       "executable": false
     },
     "tests/helpers/workflows/rules.mjs": {

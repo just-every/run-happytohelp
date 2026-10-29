@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -532,7 +532,7 @@ Core · target · **partial** · Cites BASE-ROLE-001
 
 #### QUEUE-004 — Snooze and scheduled follow-up
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **done** · Cites BASE-ROLE-001
 
 **Requirement.** Snooze a ticket until an exact timezone-aware time or a dependency; incoming customer replies wake it immediately. Schedule outbound service replies, see/cancel/edit them before send and prevent stale queued replies after a customer response or reassignment. Each follow-up has a responsible owner, due time, stop condition and visible pending/failed/uncertain outcome; restarts cannot lose it or resend an ambiguous attempt.
 
@@ -540,8 +540,8 @@ Core · target · **partial** · Cites BASE-ROLE-001
 1. From a ticket, snooze, schedule and cancel replies, then inject customer responses before/at the due time and restart the worker/executor.
 2. Observe a single wake/send or explicit refusal, overdue ownership and uncertainty without automatic replay.
 
-**Evidence.** `src/modules/workflows/schedules.ts`; `src/modules/workflows/routes-schedules.ts`; `src/ui/dashboard/components/workflows/WorkflowPanel.jsx`; `tests/journeys/inbox.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: snooze hides from active queue; customer reply wakes snooze; reply cancellation; customer response cancels scheduled reply; restart preserves scheduled state; one due send; uncertain outcome retained; uncertain provider request never replays; overdue responsible owner readback. Asserted: no outcome in the currently cited test files. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: overdue responsible owner readback. Asserted: snooze hides from active queue; customer reply wakes snooze; reply cancellation; customer response cancels scheduled reply; restart preserves scheduled state; one due send; uncertain outcome retained; uncertain provider request never replays.
+**Evidence.** `tests/journeys/inbox.mjs` — “a replacement request moves through scoped fields, a reviewed macro, shared queue work, private collaboration, routing, schedules and durable automations before closure and erasure”, through `tests/helpers/inbox/tickets.mjs` / ticketsJourney and `tests/helpers/workflows/desk-flow.mjs` / scheduleFlow. Native dashboard schedule, ticket, active-queue and customer-message routes assert timezone-offset snooze hiding/wake, dependency and exact-time wake once, customer responses before and at due time, explicit cancellation and refusal of edits by another operator, edited body/due/owner readback, overdue responsible ownership through both workspace and ticket doors after restart, stale reassignment refusal and one admitted reply. Real persisted sending-claim interruption becomes uncertain after executor restart without admission or replay. Provider-edge acceptance, refusal and lost-response fixtures assert visible pending/sent/failed/uncertain states, responsible owner and due time, one customer-visible message and one network attempt, retained terminal outcomes across restarts and refused rescheduling.
+**Gap.** None.
 
 #### STATUS-001 — Ticket status lifecycle
 

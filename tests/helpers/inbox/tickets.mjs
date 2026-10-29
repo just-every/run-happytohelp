@@ -10,7 +10,12 @@ export async function ticketsJourney(){
  const initial=Date.parse('2026-11-02T09:00:00Z'),sent=[]
  const f=await ticketFixture({bindings:{H2H_WORKFLOW_NOW:String(initial),INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outbound:async request=>{
   const host=new URL(request.url).hostname
-  if(host==='api.resend.com'){sent.push(await request.json());return Response.json({id:'desk-mail-'+sent.length})}
+  if(host==='api.resend.com'){
+   const mail=await request.json();sent.push(mail)
+   if(mail.text?.includes('Scheduled replacement lost'))throw new TypeError('Connection lost after accepting scheduled mail')
+   if(mail.text?.includes('Scheduled replacement refused'))return new Response('Mailbox refused the reply',{status:422})
+   return Response.json({id:'desk-mail-'+sent.length})
+  }
   if(host==='hooks.example.com'){const mode=new URL(request.url).pathname;if(mode==='/lost')throw new TypeError('Connection lost after accepting workflow request');return new Response('',{status:mode==='/reject'?422:200})}
   if(host==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]})
   throw new Error('Unexpected desk provider '+host)

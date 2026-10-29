@@ -9,9 +9,15 @@
           "label": "Overview"
         },
         {
+          "slug": "getting-started",
+          "source": "docs/getting-started.md",
+          "label": "Getting started"
+        },
+        {
           "slug": "install",
           "source": "docs/INSTALLER.md",
-          "label": "Install"
+          "label": "Install",
+          "hidden": true
         },
         {
           "slug": "setup",

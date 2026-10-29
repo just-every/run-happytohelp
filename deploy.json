@@ -121,41 +121,6 @@
       "optional": true
     },
     {
-      "binding": "MAIL_PROVIDER",
-      "environment": "EMAIL_PROVIDER",
-      "optional": true
-    },
-    {
-      "binding": "MAIL_FROM",
-      "environment": "EMAIL_FROM",
-      "optional": true
-    },
-    {
-      "binding": "MAIL_RELAY_URL",
-      "environment": "MAIL_RELAY_URL",
-      "optional": true
-    },
-    {
-      "binding": "H2H_RER_MAIL_VERSION",
-      "environment": "H2H_RER_MAIL_VERSION",
-      "optional": true
-    },
-    {
-      "binding": "RER_MAILBOX_ID",
-      "environment": "RER_MAILBOX_ID",
-      "optional": true
-    },
-    {
-      "binding": "RER_MAIL_ADDRESS",
-      "environment": "RER_MAIL_ADDRESS",
-      "optional": true
-    },
-    {
-      "binding": "RER_MAIL_CONTROL_URL",
-      "environment": "RER_MAIL_CONTROL_URL",
-      "optional": true
-    },
-    {
       "binding": "MAIL_PROVIDER_API_KEY",
       "environment": "EMAIL_API_KEY",
       "optional": true

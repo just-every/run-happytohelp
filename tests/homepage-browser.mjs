@@ -13,8 +13,8 @@ export async function homepageJourney({page,origin,shot}){
  await page.locator('.hero-copy').getByRole('link',{name:'Read the docs',exact:true}).click()
  await page.waitForURL(origin+'/docs')
  await page.getByRole('heading',{level:1}).waitFor()
- await page.getByRole('navigation',{name:'Documentation',exact:true}).getByRole('link',{name:'Install',exact:true}).click()
- await page.waitForURL(origin+'/docs/install')
+ await page.getByRole('navigation',{name:'Documentation',exact:true}).getByRole('link',{name:'Getting started',exact:true}).click()
+ await page.waitForURL(origin+'/docs/getting-started')
  await page.locator('.docs-prose pre').first().waitFor()
  await auditPage(page,shot('installation.png'))
  // A mistyped documentation address leaves a working route back to the product.

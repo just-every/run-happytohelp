@@ -1,13 +1,16 @@
-import {managedMailDeclaration} from '../deployment/mail-declaration.mjs';
+import {managedMailDeclaration,publicMailNames} from '../deployment/mail-declaration.mjs';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {invalid} from '@runeditrun/rer/errors';
 
 /** A custom public address changes application links, never resource identity. */
-export async function hostedDeclaration(root,declaration,value,mailProvider){
+export async function hostedDeclaration(root,declaration,value,env){
  const hasOrigin=value!==undefined&&value!=='';
- if(!hasOrigin&&mailProvider!=='rer')return null;
- const custom=mailProvider==='rer'?managedMailDeclaration(declaration):structuredClone(declaration);
+ const mail=Object.fromEntries(publicMailNames.filter(name=>typeof env[name]==='string').map(name=>[name,env[name]]));
+ if(!hasOrigin&&env.MAIL_PROVIDER!=='rer'&&!Object.keys(mail).length)return null;
+ const custom=env.MAIL_PROVIDER==='rer'?managedMailDeclaration(declaration):structuredClone(declaration);
+ // Public inputs belong in vars; credentials keep the declaration's secret path.
+ custom.vars={...custom.vars,...mail};
  if(hasOrigin){
   let url;
   try{url=new URL(value);}catch{}

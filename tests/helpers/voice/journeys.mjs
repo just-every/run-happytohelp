@@ -107,9 +107,13 @@ export async function uncertaintyProof(){const h=await voiceHarness();try{
  assert.equal((await h.calls(call.conversation_id))[0].state,'completed')
  assert.equal((await h.hook({step:'dial',command:'synthetic-happytohelp-21',extra:{DialCallStatus:'completed'}})).status,404)
  await app.configure({});await app.ok(path,{token,body});assert.equal(app.requests.length,count+2,'restart does not replay an unknown callback')
+ await h.hook({step:'consent',extra:{Digits:'1'}});await h.hook({step:'ivr',extra:{Digits:'1'}})
  await voiceArchiveSafety({db:app.db,tables:Object.fromEntries(['voice_calls','voice_numbers','conversations','voice_identities','contacts','voice_commands'].map(n=>[n,n]))});assert.equal((await app.first('SELECT token_cipher FROM voice_numbers')).token_cipher,null);assert.equal((await app.first('SELECT phone_cipher FROM voice_identities')).phone_cipher,null)
  assert.equal((await h.hook()).status,404,'restored voice connections need explicit credentials')
- await h.configure({});const restored=await h.open({remote:'synthetic-happytohelp-19'});h.setReply(201);assert.equal((await app.ok(base+`/conversations/${restored.conversation_id}/commands`,{token,body:{...body,call_id:restored.id,request_id:'restored-current-call'}})).data.state,'accepted','a newly signed caller supplies fresh callback identity after reconnect')
+ await h.configure({});
+ for(const replay of [{},{step:'consent',extra:{Digits:'1'}},{step:'ivr',extra:{Digits:'1'}},{step:'dial',extra:{DialCallStatus:'busy'}}])assert.equal((await h.hook(replay)).status,409,'a reconnected number cannot resume an archived call or replay cached recording instructions')
+ assert.equal((await app.first('SELECT phone_cipher FROM voice_identities')).phone_cipher,null,'a restored old call cannot refresh callback identity')
+ const restored=await h.open({remote:'synthetic-happytohelp-19'});h.setReply(201);assert.equal((await app.ok(base+`/conversations/${restored.conversation_id}/commands`,{token,body:{...body,call_id:restored.id,request_id:'restored-current-call'}})).data.state,'accepted','a newly signed caller supplies fresh callback identity after reconnect')
 }finally{await h.close()}}
 export async function erasureProof(){const h=await voiceHarness();try{
  const {app,base,token,ws}=h,call=await h.open(),root=base+`/conversations/${call.conversation_id}`

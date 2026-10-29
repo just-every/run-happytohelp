@@ -37,4 +37,13 @@ export async function mobileAdoption(runtime){
  const state=await request(root+'/tickets/'+unverified.conversationId,undefined,unpaired.body.token)
  assert.equal((await request(root+'/tickets/'+unverified.conversationId+'/approvals/'+unverified.jobId+'/draft',{frontier:state.body.frontier,proposalId:'selected'},unpaired.body.token)).status,409)
  await noAdoption(unverified)
+ // Mobile approval never grants a future or background customer reply.
+ const automatic=await fixture({count:0,followUpMode:'resolve_reply'}),autoPair=await request(root+'/devices',{platform:'ios',scopes:['read','approval']},automatic.token)
+ assert.equal(autoPair.status,201)
+ const autoPath=root+'/tickets/'+automatic.conversationId,autoState=await request(autoPath,undefined,autoPair.body.token)
+ const proposals=await request(autoPath+'/approvals',undefined,autoPair.body.token)
+ assert.equal(proposals.body.approvals.find(item=>item.jobId===automatic.jobId).followUpActions.length,0)
+ assert.equal((await request(autoPath+'/approvals/'+automatic.jobId+'/follow-ups/automatic-reply',{frontier:autoState.body.frontier},autoPair.body.token)).status,403)
+ const jobs=await request(`/api/projects/${automatic.projectId}/conversations/${automatic.conversationId}/delegations`,undefined,automatic.token)
+ assert.equal(jobs.body.data.length,1);await noAdoption(automatic)
 }

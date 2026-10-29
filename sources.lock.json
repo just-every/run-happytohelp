@@ -1757,7 +1757,7 @@
       "executable": false
     },
     "docs/mobile-api.md": {
-      "sha256": "2c5f9493dfe04d4f2c4832db144ad09d4afab2c3345f96eb0689e8beee172652",
+      "sha256": "9f0ceabbfaf049bad9073475c61fc5049eccede7eacc210e3c9dcaff9a4f1467",
       "executable": false
     },
     "docs/MODULES.md": {
@@ -6145,7 +6145,7 @@
       "executable": false
     },
     "src/modules/local-computer/follow-up.ts": {
-      "sha256": "b48e1d2e220ea4742a0bfbcc670aafac8625ecebb4639298b82b5ccc42216018",
+      "sha256": "0ad62f3af6b6a91cdf3a27e6643d5ab2cc33ebec841141b9a57c899b36142b35",
       "executable": false
     },
     "src/modules/local-computer/index.ts": {
@@ -6665,7 +6665,7 @@
       "executable": false
     },
     "src/modules/mobile/approval-routes.ts": {
-      "sha256": "0261085f201c912f32113c390173026333d7aa57c726411ec9b68779c0baa79d",
+      "sha256": "a54aa14f2866825351ae0bfe950ae8a5974b4e09a46817a0440650aad274f120",
       "executable": false
     },
     "src/modules/mobile/authority.ts": {
@@ -6673,7 +6673,7 @@
       "executable": false
     },
     "src/modules/mobile/client-state.ts": {
-      "sha256": "c00993c88ddbca01f7d2c7af348761eb4460dec7ec9ccbd46e7ab24ca7779070",
+      "sha256": "d3c5299ae3de69c76d0a80c28df014239d5a3f2c5142b7b370dd8030d3beb96a",
       "executable": false
     },
     "src/modules/mobile/client-transport.ts": {
@@ -6681,7 +6681,7 @@
       "executable": false
     },
     "src/modules/mobile/client.ts": {
-      "sha256": "4c6757ad44b4c7301c67b905ad45c9ba14d5a23fd235f4c874ca933ce4996623",
+      "sha256": "b556f3e6aaf7b84d8b4880aa59bf557f69d36b57dd23d7e2312a469c4bd7b32e",
       "executable": false
     },
     "src/modules/mobile/commands.ts": {
@@ -11665,7 +11665,7 @@
       "executable": false
     },
     "tests/helpers/delegation/adoption.mjs": {
-      "sha256": "7233cdc2dc3c753a2efb09f2358fda536b4718ea93dc5b6fd6fbe767036c9438",
+      "sha256": "fcbbc5f2d46c326319db1d9c0cd040b4630d2bb4b8ca4e8d97d7f6e92a7c52d6",
       "executable": false
     },
     "tests/helpers/delegation/applications.mjs": {
@@ -12009,7 +12009,7 @@
       "executable": false
     },
     "tests/helpers/mobile-adoption.mjs": {
-      "sha256": "fb510a2997d5c700725bf89ed4065d1648f0f24c95be41e09722f7404599a006",
+      "sha256": "56d496458ce518adeb2394e408e9aa1ba5cd049ce8bd19673260e7d8f066a9a2",
       "executable": false
     },
     "tests/helpers/mobile-approvals.mjs": {

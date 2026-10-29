@@ -9241,11 +9241,15 @@
       "executable": false
     },
     "src/site/pages.ts": {
-      "sha256": "58045d6bbeaa9063e23527f68973bb2e59415160e84e1c036868a3266b9f61ce",
+      "sha256": "28df970dbdf989eca56dd2519fe9f29fabc2a2e8641c4e21f08f2fbf74459638",
       "executable": false
     },
     "src/site/run.json": {
       "sha256": "e463bd4801061be5116f26823b3fe9fb33bc4d57412f3fc0b73e38155b885859",
+      "executable": false
+    },
+    "src/site/run.ts": {
+      "sha256": "0c9f4046a4047be77b68f945ad21031045fa5ea00b8e3fa85aa4203eb4cb1b6a",
       "executable": false
     },
     "src/ui/dashboard/api.jsx": {

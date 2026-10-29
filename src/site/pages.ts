@@ -7,13 +7,11 @@ import { DocsPage } from '../ui/docs/DocsPage'
 import { buildSite } from '../ui/docs/build/site'
 import { contractPageHtml } from './base/contract-page'
 import { runPageHtml, siteNotFoundHtml, type SiteBuild, type SiteContext } from './base/run-site'
+import { hostingPageHtml } from './base/hosting-page'
 import { identity } from './identity'
-import { runPricing } from './base/run-pricing'
-import runData from './run.json'
+import { run } from './run'
 
-const run = { ...runData, pricing: runPricing }
-
-export function sitePages({ contract, styles = [] }: Partial<SiteContext> = {}): SiteBuild {
+export function sitePages({ contract, hosting = null, styles = [] }: Partial<SiteContext> = {}): SiteBuild {
   const docs = buildSite(process.cwd())
   if (docs.problems.length) throw Error(docs.problems.join('\n'))
   const document = (body: string, title: string) => '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
@@ -23,6 +21,7 @@ export function sitePages({ contract, styles = [] }: Partial<SiteContext> = {}):
       { path: '/', html: document(renderToStaticMarkup(createElement(Homepage)), 'HappyToHelp — Customer Support, Solved.') },
       ...docs.pages.map(page => ({ path: page.href, html: document(renderToStaticMarkup(createElement(DocsPage, { page, sections: docs.sections, repository: docs.repository, version: 0 })), 'HappyToHelp docs') })),
       { path: '/run', html: runPageHtml(identity, run, contract) },
+      { path: '/docs/hosting', html: hostingPageHtml(identity, run, hosting, contract) },
       ...(contract ? [{ path: '/contract', html: contractPageHtml(identity, run, contract) }] : []),
       { path: '/404', html: siteNotFoundHtml(identity, run, contract) },
     ],

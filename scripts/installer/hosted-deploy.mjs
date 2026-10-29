@@ -39,7 +39,7 @@ export function hostedDeploy(path,lifecycle){
    Object.assign(process.env,env);
    if(env.MAIL_PROVIDER===undefined)delete process.env.MAIL_PROVIDER;
    context.options.envFile=undefined;
-   const custom=await hostedDeclaration(context.root,declaration,env.H2H_PUBLIC_ORIGIN,env.MAIL_PROVIDER);
+   const custom=await hostedDeclaration(context.root,declaration,env.H2H_PUBLIC_ORIGIN,env);
    if(context.options.dryRun)return offlineDeploy(custom||path,lifecycle,context);
    if(custom)return ownerDeploy(custom,lifecycle)(context);
   }

@@ -2,9 +2,10 @@
 // names. Both declarations share resource identity and the same deployment kit.
 export const managedDeployPath='management/integration/managed-deploy.json';
 export const nativeSetupPath='management/integration/native-setup.json';
+export const publicMailNames=['MAIL_PROVIDER','MAIL_FROM','MAIL_RELAY_URL','H2H_RER_MAIL_VERSION','RER_MAILBOX_ID','RER_MAIL_ADDRESS','RER_MAIL_CONTROL_URL'];
 export function managedMailDeclaration(declaration){
  const managed=structuredClone(declaration);
- for(const secret of managed.secrets??[])if(['MAIL_PROVIDER','MAIL_FROM','MAIL_API_KEY'].includes(secret.binding))secret.environment=secret.binding;
+ for(const secret of managed.secrets??[])if(secret.binding==='MAIL_API_KEY')secret.environment=secret.binding;
  return managed;
 }
 export function nativeMailSetupManifest(manifest){

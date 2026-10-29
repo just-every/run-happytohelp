@@ -1629,7 +1629,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "f8e15b01d70e231ac285d6b6315055cda03d8a2224d2200e7ebb769d3b33fe4a",
+      "sha256": "46dffd02b82829b2cad5f68c5b259a9857a0cd7bec6eefb45fa4a81590c36f1a",
       "executable": false
     },
     "docs/ACCESSIBILITY-AUDIT-2026-09-30.md": {
@@ -2029,7 +2029,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "cae9fdcf04a30fbef7d860b994bd030cc91e6ebe03ab5216828c728a400a9b63",
+      "sha256": "c7756cd172fe5141a240a3c9a3d5ff55e76eb3b91b4f9219541a74a03bbe95fd",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2041,7 +2041,7 @@
       "executable": false
     },
     "management/integration/managed-deploy.json": {
-      "sha256": "85c2cd14f786ed28f91add3563b9c61dfeda79ab35ae8eb9954a3ef9be7f40ab",
+      "sha256": "1a403f1d8131e4298353edd62d9dd5e168b91b08b1919ea81dc2d6504715e00b",
       "executable": false
     },
     "management/integration/native-setup.json": {
@@ -2961,11 +2961,11 @@
       "executable": false
     },
     "scripts/deployment/environment.mjs": {
-      "sha256": "b0a52b2d0eaaf56fb501ae780e88b99c5c30c4b0927b84e948d333ad71d4bd70",
+      "sha256": "df854b16a52c9445ec34b7e60ae78e00fcbd0362d0505ba7c373b12946083caf",
       "executable": false
     },
     "scripts/deployment/mail-declaration.mjs": {
-      "sha256": "db841dc87352f758751ca2a332af7ee273943c08f909a11b7298f2d258dc6fae",
+      "sha256": "b5fe71ba5038477d3bdd5838f2d6387307f1c7ab37a09ca0ba6f327273aaf43d",
       "executable": false
     },
     "scripts/edition-authoring/adopt.mjs": {
@@ -3737,7 +3737,7 @@
       "executable": false
     },
     "scripts/installer/hosted-deploy.mjs": {
-      "sha256": "8adeb0e6327bb6ac559988f915e6fd101ef7bfc80acc47cf1e0d499246a9e7fc",
+      "sha256": "4f679db72999dca271b72eee35ecd88925fe3bc63fca223a44c1f769fa1e1444",
       "executable": false
     },
     "scripts/installer/hosted-export.mjs": {
@@ -3745,7 +3745,7 @@
       "executable": false
     },
     "scripts/installer/hosted-origin.mjs": {
-      "sha256": "054b658b4a8be882a1cc726947fc77da9ac7ac2af350934d5c40c1325d99477c",
+      "sha256": "b88494fd776a229db5eba1f8b2c9cf64213b44e1a2b051322d8787e50c5cafdd",
       "executable": false
     },
     "scripts/installer/hosted-r2.mjs": {
@@ -13617,7 +13617,7 @@
       "executable": false
     },
     "wrangler.jsonc": {
-      "sha256": "76c30be7e9452f06f21e50a44d8df15fa98582c9d02511841c71d103d912b8db",
+      "sha256": "3702312775350a56501d1c3367b29b91790312b4d1dc372b6717d3f980512ad9",
       "executable": false
     }
   }

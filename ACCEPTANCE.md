@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -588,7 +588,7 @@ Core · target · **partial** · Cites BASE-ROLE-001
 
 #### AUTOMATION-002 — Time-based automations
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **done** · Cites BASE-ROLE-001
 
 **Requirement.** Leads define automations that run at least hourly over New, Open, Pending, On-hold and Solved tickets. Conditions include hours since created, updated, assigned, requester update, agent update, Pending, On-hold, Solved and SLA due, in calendar or business hours (SLA-001 schedules), combined with status, priority, tag, form, field, brand, channel and group. Actions set status, priority, tags, fields and assignee or group, add an internal note and send a templated customer or teammate notification (NOTIFY-001). An automation must include a condition its own action nullifies, or it fires at most once per ticket, so it cannot repeat; publishing one that could loop is refused. Runs are durable across restart, never replay an uncertain send, and record which automation changed what. Ready templates cover the common cases: nudge the customer after 48 business hours in Pending, auto-solve after 96, and close Solved after N days.
 
@@ -597,8 +597,8 @@ Core · target · **partial** · Cites BASE-ROLE-001
 2. Seed tickets at known times, advance the clock at the runtime edge across an hourly boundary, a weekend and a DST change, and restart mid-run.
 3. Verify exactly one nudge per ticket, auto-solve at the configured business time, no action after a customer reply resets the condition, refusal to publish a repeating automation and "automation <name>" recorded as the actor of each change.
 
-**Evidence.** `src/modules/workflows/rule-time.ts`; `src/modules/workflows/rule-engine.ts`; `src/jobs.ts`; `tests/journeys/inbox.mjs`; `tests/helpers/workflows/rules.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: 48-hour nudge settings; 96-hour solve settings; Solved-close settings. Asserted: preview causes no side effects; weekend business clock; DST business clock; mid-run restart retains interrupted cursor; exactly one nudge result; configured auto-solve; customer reply resets eligibility; repeating automation publication refused; automation actor recorded. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: 48-hour nudge settings; 96-hour solve settings; Solved-close settings. Asserted: preview causes no side effects; weekend business clock; DST business clock; mid-run restart retains interrupted cursor; exactly one nudge result; configured auto-solve; customer reply resets eligibility; repeating automation publication refused; automation actor recorded.
+**Evidence.** `tests/helpers/workflows/rules.mjs`, timeAutomationFlow, reached by deskWorkflows in `tests/helpers/workflows/desk-flow.mjs` and ticketsJourney in `tests/helpers/inbox/tickets.mjs`, registered in `tests/journeys/inbox.mjs`: workflow settings routes assert all three ready templates, complete saved drafts, published hours/calendar/conditions/actions, lead ownership and immutable version readback after restart; preview has no ticket or network effects, including a matching nudge. Native hourly execution proves 48/96 business hours across weekend/DST, four-day Solved close, interrupted cursor recovery, one provider-edge nudge to the proven requester, no duplicate after restart, explicit unconfigured-mail refusal, customer-reply reset, repeat-publication refusal and automation actors/history/audit. Shared notification uncertainty and no replay: `tests/helpers/email/workflow-notices.mjs`, workflowNotices, through `tests/helpers/email/complete-email.mjs` in `tests/journeys/email.mjs`. Runtime: `src/modules/workflows/rule-time.ts`, `src/modules/workflows/rule-engine.ts`, `src/jobs.ts`. Local/native and network-edge evidence; no live-provider delivery claim.
+**Gap.** None.
 
 #### NOTIFY-001 — Customer acknowledgments and teammate notifications
 

@@ -12061,7 +12061,7 @@
       "executable": false
     },
     "tests/homepage-browser.mjs": {
-      "sha256": "fab3ab8824144bdba7ecbc11747fbab9ab3b584482fab82eecb528971afd74c1",
+      "sha256": "54c66f4e7dd78e7b7117a2efa0730ba229e8d646be1fd483c9b6a951f5a1c3da",
       "executable": false
     },
     "tests/journeys/ai-live.mjs": {

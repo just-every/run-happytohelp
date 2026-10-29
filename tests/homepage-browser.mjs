@@ -6,8 +6,9 @@ import {see} from './helpers/homepage/visual.mjs'
 
 async function publishedSections({page,shot}){
  const sections=page.getByRole('main').locator(':scope > section'),footer=page.getByRole('contentinfo')
- const headings=['Knows what your customer needs before they do.','Not just better. Free.','The rest of your support desk','Try it beside what you have','Ready when you are.']
- assert.deepEqual(await sections.locator('h1,h2').allTextContents(),headings,'the visitor encounters the five published sections in order')
+ const headings=['Not just better. Free.','The rest of your support desk','Try it beside what you have','Ready when you are.']
+ assert.equal(await sections.first().getByRole('heading',{level:1}).count(),1,'the hero opens the published section sequence')
+ assert.deepEqual(await sections.locator('h2').allTextContents(),headings,'the visitor encounters Free, desk, move-in and closing in their published order')
  const positions=await sections.evaluateAll(nodes=>nodes.map(node=>({top:node.getBoundingClientRect().top,bottom:node.getBoundingClientRect().bottom,heading:node.querySelector('h1,h2').getBoundingClientRect().top})))
  assert.ok(positions.every((position,index)=>!index||position.top>positions[index-1].top&&position.heading>positions[index-1].heading),'the visible sections and headings follow the published reading order')
  assert.ok((await footer.boundingBox()).y>=positions.at(-1).bottom,'the footer follows the closing section')

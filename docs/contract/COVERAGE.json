@@ -5317,8 +5317,8 @@
       "line": 653,
       "cell": "gap",
       "text": "\u2014",
-      "to": "generated",
-      "note": "An empty done-row Gap placeholder; the generated acceptance view renders None."
+      "to": "deleted",
+      "note": "An empty done-row Gap table-cell placeholder with no acceptance content; PUSH-002 in CONTRACT.md retains its requirement and acceptance outcomes."
     },
     {
       "file": "CONTRACT.md",

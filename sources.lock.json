@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "2ef1f939cfd1be5f9e33dbe67940ced60eb468f460bda871395df60f5f3116d6",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "3f09b09d7000b0f79f022776df1613fe228dbb7f1673c0a6105caf5211442dc6",
       "executable": false
     },
     "DEMO.md": {
@@ -11468,6 +11468,10 @@
       "sha256": "e51050f5867a00264e831ea646503c40126a7078eb55dabe43c4804af8fa3953",
       "executable": false
     },
+    "tests/helpers/ai/configured-execution.mjs": {
+      "sha256": "a238a7ea39ddec790d91b6351754d38ff96efaa9deac85b15ac8d33e607d886b",
+      "executable": false
+    },
     "tests/helpers/ai/cycle-outcomes.mjs": {
       "sha256": "a443ff92ede257df023aaf74bb421b42c6885cd989d49b240b3eb37693635db6",
       "executable": false
@@ -11497,7 +11501,7 @@
       "executable": false
     },
     "tests/helpers/ai/providers.mjs": {
-      "sha256": "ed3b04f297dc3cbfb613157c7b9a3866d19bb8ec0632efab83bf0cf4bd95464e",
+      "sha256": "e9aeccf32b228c88370d9b39cce990d545e76640950f2030f6ca37373b379c6f",
       "executable": false
     },
     "tests/helpers/ai/repository.mjs": {
@@ -12145,7 +12149,7 @@
       "executable": false
     },
     "tests/journeys/ai.mjs": {
-      "sha256": "963e26c885484894c3808efbfcbed538da05c40205940795cd521811f364f334",
+      "sha256": "6d1b0f06138f2c884476c70a604794712cd305421e13ea1c1625be30e8138400",
       "executable": false
     },
     "tests/journeys/connections.mjs": {

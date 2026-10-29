@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -36,15 +36,15 @@ Core · published · **partial** · Cites BASE-INSTALL-001, BASE-OPS-002, BASE-D
 
 #### IDENTITY-002 — Retained native password identity
 
-Core · published · **partial** · Cites BASE-ROLE-001, BASE-ACCESS-001, BASE-SIGNIN-002
+Core · published · **done** · Cites BASE-ROLE-001, BASE-ACCESS-001, BASE-SIGNIN-002
 
 **Requirement.** Preserve native password sign-in, first-owner setup, the accepted owner experience and prior account/workspace data with the maintained Base command mechanisms. Retain this edition's authentication and native owner setup. A second factor for these native accounts is required by IDENTITY-003; it adds to native passwords and never replaces them. Supersedes `BASE-ACCESS-001` for native password identity under RL-1.
 
 **Acceptance.**
 1. Complete native password setup, login, recovery and workspace re-entry, then upgrade with prior owner credentials and data intact; configured providers must not replace native identity.
 
-**Evidence.** `src/modules/identity/routes.ts`; `tests/journeys/identity.mjs` (native passwords and membership: scoped sessions, owner resets and invitations retire with current authority; first-owner claim journey: validate and claim once under local, deployed and Managed installation authority; sign-in link journey: install-aware pages, neutral receipts and one explicit current-authority redemption)
-**Gap.** Main re-audit: unasserted in the cited Evidence set: native setup; native password login; password recovery; workspace re-entry; upgrade retains prior owner credentials; upgrade retains prior workspace data; configured providers cannot replace native identity. Asserted: no outcome in the currently cited test files. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: upgrade retains prior owner credentials; upgrade retains prior workspace data; configured providers cannot replace native identity. Asserted: native setup; native password login; password recovery; workspace re-entry.
+**Evidence.** `tests/helpers/identity/native-account.mjs`, nativeAccountJourney (called by `tests/journeys/identity.mjs`): native first-owner setup, chosen-password login, teammate recovery and workspace switching/re-entry. `tests/helpers/identity/retained-native.mjs`, retainedNativeIdentityJourney (same existing journey registration): configure and remove installation model, mail, GitHub and management providers across Worker restarts; retain the native owner, password, cookie session and original conversation; recover the owner's password through the mail edge, retire old passwords/sessions and re-enter the same workspace. `tests/reports/prior-schema-upgrade.mjs`, priorSchemaUpgrade (called by `tests/journeys/upgrade.mjs`, in push Verify): apply current migrations to a populated prior-schema store, sign in through /api/identity/login with its retained owner password, read back the same conversation/messages, attachment bytes and published knowledge through public routes, and append/read a new reply.
+**Gap.** None for this clause's seven native outcomes. Upgrade proof is the repository-testable prior-schema in-place journey; it does not claim hosted upgrades or released-version nightly qualification. Provider fixtures replace only network edges; workforce SSO/provider certification and native two-factor remain separately judged under ACCESS-001 and IDENTITY-003.
 
 #### IDENTITY-001 — Scoped authority
 

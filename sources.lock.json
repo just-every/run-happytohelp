@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "b0af04613f2ada280d8398f462a51e39866ca60b8dca1609f53eb045d6745992",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "3c1b8722c9f2ebca0b26c2f3abc630e020d663c0266b6fc8947cde125937de79",
       "executable": false
     },
     "DEMO.md": {
@@ -11812,6 +11812,10 @@
       "sha256": "ca04edd456168aec7348cb93ace6b61095bf22aff3ac826723f2b513d6d14bde",
       "executable": false
     },
+    "tests/helpers/identity/retained-native.mjs": {
+      "sha256": "e00027c88340f5f040e9a884d77c00ea3df695231c613b1c1ecfd13a2d0336f6",
+      "executable": false
+    },
     "tests/helpers/identity/roles-audit.mjs": {
       "sha256": "fa22713d174b063a608b67501442000edea429d8bfddc71c28fdb899f7733587",
       "executable": false
@@ -12201,7 +12205,7 @@
       "executable": false
     },
     "tests/journeys/identity.mjs": {
-      "sha256": "ac29488f2bb3a1530aec6ba19b319d118c7ba048bb0e10ad36ff80e38fd680ee",
+      "sha256": "bc88b904d9014558d30184ea6f4fb7e81b2a7d90894e26e56bbaffc4dcce7959",
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {

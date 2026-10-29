@@ -62,7 +62,7 @@ routes.post('/:id/messages',async c=>{
  const effected=performance.now()
  const committedId=String(result.message?.conversation_id??conversation.id)
  if(result.accepted)c.executionCtx.waitUntil(Promise.all([publishResolution(c.env,actor.projectId,committedId),...[committedId,`project:${actor.projectId}`].map(key=>c.env.CONVERSATIONS.get(c.env.CONVERSATIONS.idFromName(key)).fetch('https://conversation.internal/broadcast',{method:'POST'}))]))
- const dashboardMessage=result.accepted&&actor.role!=='contact'?await messageData(c.env,result.message!):undefined,hydrated=performance.now()
+ const dashboardMessage=result.accepted&&actor.role!=='contact'?await messageData(c.env,result.message!,conversation.channel):undefined,hydrated=performance.now()
  c.header('Server-Timing',`access;dur=${(accessed-started).toFixed(1)},admission;dur=${(admitted-admitting).toFixed(1)},effects;dur=${(effected-admitted).toFixed(1)},hydrate;dur=${(hydrated-effected).toFixed(1)}`)
  return c.json({...result,...(dashboardMessage?{dashboardMessage}:{}),...(generationError?{generationError}: {})},result.accepted?200:409)
 })

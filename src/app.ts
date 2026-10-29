@@ -1,4 +1,5 @@
 import {assuranceRoutes} from './modules/assurance/routes'
+import {channels} from './modules/support-channels/routes'
 import {api as scopedApi} from './modules/api-integrations/routes'
 import {integrationSettings} from './modules/api-integrations/settings'
 import { notFoundResponse, rejectedResponse } from './base/rejected-response'
@@ -98,6 +99,7 @@ app.route('/api/site-preview',sitePreview)
 app.route('/preview',previewRoutes)
 app.route('/api/integrations',inboundEmail)
 app.route('/api/feedback',feedbackRoutes(applyMessageEffects))
+app.route('/api/support-channels',channels)
 app.route('/api/escalations',createEscalationRoutes(applyMessageEffects))
 app.route('/api/dashboard',dashboardRoutes)
 app.route('/api/dashboard',tags)

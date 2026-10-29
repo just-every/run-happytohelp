@@ -1,3 +1,4 @@
+import {supportChannelArchiveRow,supportChannelArchiveSafety} from './support-channel-archive.mjs';
 import {feedbackArchiveRow,feedbackArchiveSafety} from './feedback-archive.mjs';
 import {agentArchiveRow,agentArchiveSafety} from './agent-archive.mjs';
 import {rerMailArchiveRow,rerMailArchiveSafety} from './rer-mail-archive.mjs';
@@ -19,14 +20,15 @@ export const archivePolicy={
   crm_mappings:{context_json:[null],state:['stale'],refreshed_at:[null],checked_at:[null]},
  },
  importRow:(table,row)=>table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:['integration_tokens','api_credentials'].includes(table)&&row.revoked_at==null?{...row,revoked_at:1}:row,
- product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await feedbackArchiveSafety(input);await agentArchiveSafety(input);await rerMailArchiveSafety(input);await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);await trainingArchiveStagedSafety(input);await asyncWorkArchiveStagedSafety(input);return reportArchiveStagedSafety(input)},
+ product:'just-every/happytohelp',buckets:{FILES:{}},validateStaged:async input=>{await supportChannelArchiveSafety(input);await feedbackArchiveSafety(input);await agentArchiveSafety(input);await rerMailArchiveSafety(input);await triageArchiveStagedSafety(input);await escalationArchiveSafety(input);await trainingArchiveStagedSafety(input);await asyncWorkArchiveStagedSafety(input);return reportArchiveStagedSafety(input)},
  // Keep invitation history, but restored archives never restore a live survey link or queued send.
- exportRow:(table,original)=>{const row=feedbackArchiveRow(table,agentArchiveRow(table,original));return table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:rerMailArchiveRow(table,asyncWorkArchiveRow(table,trainingArchiveRow(table,triageArchiveRow(table,escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='integration_tokens'?{...row,token_hash:'revoked:'+row.id,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_credentials'?{...row,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_requests'?{...row,response_json:null,erased:1}:table==='api_appends'?{...row,response_json:null}:table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
+ exportRow:(table,original)=>{const row=supportChannelArchiveRow(table,feedbackArchiveRow(table,agentArchiveRow(table,original)));return table==='crm_connections'?{...row,token_cipher:null}:table==='crm_mappings'?{...row,context_json:null,state:'stale',refreshed_at:null,checked_at:null}:rerMailArchiveRow(table,asyncWorkArchiveRow(table,trainingArchiveRow(table,triageArchiveRow(table,escalationArchiveRow(table,reportArchiveRow(table,workflowArchiveRow(table,r4ExportRow(table,table==='integration_tokens'?{...row,token_hash:'revoked:'+row.id,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_credentials'?{...row,revoked_at:row.revoked_at??Math.max(1,row.created_at)}:table==='api_requests'?{...row,response_json:null,erased:1}:table==='api_appends'?{...row,response_json:null}:table==='csat_surveys'?{...row,recipient:'',state:row.state==='pending'?'cancelled':row.state,revoked_at:row.revoked_at??row.created_at}
   :table==='mailbox_connections'?{...row,credential_cipher:null,status:'disconnected',cursor_json:null,sync_lock:null,sync_lock_until:null}
   :table==='mailbox_sends'&&row.state==='sending'?{...row,state:'uncertain',error_code:'restored_pending_send'}:row))))))));},
  // Reconstruct the full-text index from retained messages after restore.
  derivedTables:['inbox_message_search'],
  excludeTables:[
+  'support_channel_attachment_grants','support_channel_link_codes',
   'crm_changes',
   'rer_mailbox_outbox',
   'escalation_attachment_grants',

@@ -7,8 +7,8 @@ Requirements, acceptance evidence and statuses below come from [CONTRACT.md](CON
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 19 | 3 | 0 | 22 |
-| Target and push further | 19 | 28 | 6 | 53 |
-| All | 38 | 31 | 6 | 75 |
+| Target and push further | 19 | 30 | 4 | 53 |
+| All | 38 | 33 | 4 | 75 |
 
 ## NATIVE-001 — Native owner installation
 
@@ -562,27 +562,27 @@ Status: **partial** (target).
 
 ## CHANNELS-001 — Messaging and social support
 
-Status: **missing** (target).
+Status: **partial** (target).
 
 - **CHANNELS-001 — Messaging and social support.** Connect US SMS through Twilio and WhatsApp Business, Instagram Direct and Facebook Messenger through authorized Meta business accounts. Inbound messages, supported media, delivery states and channel identity enter the shared inbox; replies return in the original channel. Respect consent, opt-out, A2P 10DLC registration, approved WhatsApp templates and channel reply windows; an expired window becomes an actionable blocker with an approved continuation, never silent loss or unauthorized cross-channel contact.
 
   **Acceptance evidence:** Using each connected provider account, exchange a customer message/media and operator reply in one mapped conversation, redeliver a signed event, revoke the connection and exercise opt-out and expired-window/template refusal with visible delivery failure and no duplicate send.
 
-**Repository evidence:** None recorded.
+**Repository evidence:** `migrations/271_support_channels.sql`, `migrations/272_support_channel_media.sql`, `migrations/274_channel_consent.sql`; `tests/helpers/support-channels/journeys.mjs` (registered in tests/journeys/connections.mjs): credentials (encrypted role/workspace settings, Twilio sender/A2P and Slack installation refusal), exchange/mediaExchange (signed original-channel text/media exchange, private downloads, redelivery, social delivery, opt-out/window refusal), templateExchange (deliberate currently approved UTILITY continuation, explicit authenticated customer agreement, STOP surviving START/reconnect/teammates, no duplicate send), consentExchange (STOP, STOP-fenced reconnect, signed subscriber START restoring only that number/channel with provider ID/time facts, HELP without consent change, later STOP/old START replay, blocked/cancelled opt-out queue); `tests/helpers/support-channels/restore.mjs`: restoreConsent (production archive import deactivates consent, reconnect retains STOP, fresh START never replays held replies), uncertainty (no automatic replay), erasure (external deletion work and redelivery fence); `tests/helpers/support-channels/browser.mjs`: channelsBrowser within tests/journeys/workflows-browser.mjs (settings, original-channel inbox/report and template continuation asserted at 1440; separate browser proof at 1440/390).
 
-**Qualification boundary:** No implementation located. No SMS/Meta support channel implementation located.
+**Qualification boundary:** SANDBOX: connected Twilio/Meta account message/media/reply, delivery, consent and registration qualification receipts remain unavailable. ct consent rulings implemented: authenticated subscriber START restores fresh support replies for that number/channel only; STOP permanently fences WhatsApp continuation even after START, reconnect or a new agreement. HELP does not grant consent; queued replies require human review. Imports deactivate reply consent and continuation agreement; reconnect never changes consent. No held Twilio/Meta credential names are present in this run environment, so live sandbox qualification is blocked on provider accounts/keys. Fresh independent gate, exact-head CI and Mac COMPLETE publication scan remain required.
 
 ## CHANNELS-002 — B2B shared-channel support
 
-Status: **missing** (target).
+Status: **partial** (target).
 
 - **CHANNELS-002 — B2B shared-channel support.** Slack Connect and Microsoft Teams customer channels become authorized support intake, with thread replies, attachments, requester/account mapping and internal/private separation. The team can acknowledge, assign and hand off from Slack/Teams while the canonical support record retains the thread and current status. Installed-channel permissions, edited/deleted events, duplicates and disconnected channels have explicit behavior; Slack notifications alone do not satisfy this clause.
 
   **Acceptance evidence:** Install scoped Slack and Teams apps, open support threads from allowed customer channels, reply and assign from both surfaces and observe bidirectional updates/reconnect. A private note, disallowed channel or revoked workspace must never leak into customer channels.
 
-**Repository evidence:** None recorded.
+**Repository evidence:** `migrations/271_support_channels.sql`, `migrations/273_shared_channel_actions.sql`; `tests/helpers/support-channels/journeys.mjs` (registered in tests/journeys/connections.mjs): slack/sharedExchange (Slack/Teams authenticated allowed-channel intake, distinct requester attribution and explicit company mapping, private teammate linking, acknowledge/assign/handoff, provider replies and inbox status updates, attributed/time-stamped edit/delete notices with original transcript retained until customer erasure, explicit attachment-change review holds, duplicate/revoke/reconnect and private-note isolation), mediaExchange (private original-channel attachments retained through edit holds, removed on erasure), credentials (installation and workspace/role refusal); `tests/helpers/support-channels/browser.mjs`: channelsBrowser within tests/journeys/workflows-browser.mjs (attributed edit and attachment-review notices, shared-thread controls, company mapping and Teams settings asserted at 1440; separate browser proof at 1440/390).
 
-**Qualification boundary:** `src/modules/api-integrations/dispatch.ts`; `tests/connections/slack.mjs`; `src/modules/escalations/actions.ts`. Slack receives new-conversation notifications and outbound engineering handoff posts only, which this clause excludes; customer intake, bidirectional Slack Connect and Teams are absent.
+**Qualification boundary:** SANDBOX: live scoped Slack Connect and Teams installation/consent, channel accessibility and bidirectional exchange receipts remain unavailable. ct retention ruling implemented: attributed edits/deletions add visible notices; original support history remains until customer erasure; unsupported attachment changes are held for review without replacing the original bytes. PROVIDER TERMS GAP: provider delete-for-everyone and provider-terms erasure obligations are unqualified and require provider-specific resolution before production acceptance. No held Slack/Teams credential names are present in this run environment; live installation and exchange qualification is blocked on provider accounts/keys. Fresh independent gate, exact-head CI and Mac COMPLETE publication scan remain required.
 
 ## VOICE-001 — Telephone service and unified voice agent
 

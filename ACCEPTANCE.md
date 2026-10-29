@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -99,15 +99,15 @@ Core · published · **partial** · Cites BASE-OPS-003, BASE-DATA-003
 
 #### DELIVERY-001 — Live delivery and recovery
 
-Core · published · **partial** · Cites BASE-ACCESS-002, BASE-OPS-003, BASE-OPS-004
+Core · published · **done** · Cites BASE-ACCESS-002, BASE-OPS-003, BASE-OPS-004
 
 **Requirement.** Persist before broadcast; reconnect/outbox replay and socket authorization recover committed messages after reload, disconnection or process wake. Provisional AI deltas never become durable final answers until guarded admission succeeds.
 
 **Acceptance.**
 1. Disconnect/reconnect widget and operator sockets after persisted writes, restart the runtime and recover the same committed messages/attachments; unauthorized replay is denied and superseded AI deltas never become final replies.
 
-**Evidence.** `src/modules/conversations/socket.ts`; `tests/journeys/widget.mjs`; `tests/journeys/first-run.mjs`
-**Gap.** Carried-done audit: unasserted in the cited Evidence set: widget reconnect replay; operator reconnect replay; runtime restart replay; committed messages recovered; committed attachments recovered; unauthorized replay denied; superseded provisional AI never becomes final. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
+**Evidence.** `src/modules/conversations/socket.ts`; `tests/journeys/widget.mjs` → `tests/helpers/widget/socket.mjs`, socketJourney: durable full/cursor replay, foreign/revoked cursor denial; `tests/journeys/runtime.mjs`, deliverySocket/recover: real widget/operator disconnect, offline attachment-bearing commit, cursor catch-up, Worker restart, same message identities/revisions/frontier/media metadata and downloaded bytes, full reload and no duplicate after acknowledged cursor; `tests/journeys/ai.mjs` → `tests/helpers/ai/answers.mjs`, answersJourney: admitted AI answer replay, operator takeover between provider delta and completion, no provisional text live/in transcript/replay, no paid-attempt redelivery.
+**Gap.** None for this clause: public HTTP/WebSocket and emitted-Worker assertions cover all seven delivery/recovery outcomes; only the model/network edge is faked. Local evidence does not qualify hosted deployment or a live paid provider.
 
 #### UI-001 — Existing editable experience
 

@@ -325,6 +325,10 @@
     {
       "source": "docs/contract/DONE-AUDIT.md",
       "reason": "Carried-done acceptance outcomes and their asserting lines"
+    },
+    {
+      "source": "docs/voice.md",
+      "reason": "Partial telephony API, consent, privacy and live-provider qualification limits for maintainers"
     }
   ]
 }

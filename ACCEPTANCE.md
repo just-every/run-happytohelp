@@ -460,8 +460,8 @@ Core · target · **missing** · Cites BASE-AGENT-006, BASE-AGENT-007 · Registe
 2. Use the provider’s documented emergency-routing sandbox or official-schema fake to verify number/location routing and disclosed limitations; real provider qualification is recorded in R-5.
 3. Repeat an approved procedure across voice/chat/email and inspect one consistent authority policy.
 
-**Evidence.** None.
-**Gap.** No implementation located. No voice routing/agent or Aircall connector implementation located.
+**Evidence.** `src/modules/voice`; `tests/journeys/connections.mjs`: “connected telephone calls follow IVR and hours routing…” proves signed Twilio IVR/human routing, consent-gated voicemail, linked private inbox history, recording access and failed-transfer follow-up; “each native event is signed…” includes signed/idempotent Aircall and Twilio intake; “a delivery whose outcome is unknown…” includes guarded callback/transfer uncertainty and archive disabling; “API writes and pending deliveries…” includes native erasure, late-event fences and workspace isolation. `docs/voice.md`.
+**Gap.** Native API slice only: dedicated settings, inbox callback/transfer controls and report UI await the design-tool connection. Live Aircall/Twilio sandbox receipts and the provider-approved emergency number/location procedure are pending; no production launch. Aircall owns its routing/transfers and consented media import remains absent. Live-call transcription, automated summaries, configurable retention/active consent withdrawal and cross-channel identity linking remain unqualified. Conservative default ADOPTED: all-party opt-in, unrecorded outbound callbacks, caller number confers no account authority. Governed AI procedures, automated-agent disclosure and consistent voice/chat/email authority belong to AGENT-001; only a native conversation/transfer hook exists.
 
 #### QUEUE-001 — Assignment rules and available teams
 

@@ -15,3 +15,7 @@ test('support channels: exchange',()=>channels.exchange())
 test('support channels: slack',()=>channels.slack())
 test('support channels: erasure',()=>channels.erasure())
 test('support channels: uncertainty',()=>channels.uncertainty())
+
+import {voiceProofs,routingProof} from '../helpers/voice/journeys.mjs'
+for(const [key,run] of Object.entries(voiceProofs))test('voice '+key,run)
+test('connected telephone calls follow IVR and hours routing with explicit consent, private linked history, voicemail and failed-transfer follow-up',routingProof)

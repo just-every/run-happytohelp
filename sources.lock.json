@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "eaa765cf1c5b51aa6050b02ba3259f75eacc8c6e64c533bcf6ca232a7713ba2a",
+      "sha256": "66b0295b9140be683ad8e54b2b34196c93c0c891ba37eb3fb062392b545293ee",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "7ef48e66b0c622db171e244325c75242be3320d845ee47a21309baa2317e4aee",
+      "sha256": "81b0fd36b1280bea90e0e6e987be9881c32342c8a9d0657e9eb516911acbb86a",
       "executable": false
     },
     "DEMO.md": {
@@ -1805,7 +1805,7 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "93c661d65fe533af76088f435ba3c5288302fe5726db597b35b6c0ee949ee676",
+      "sha256": "090f448c501b38843ef89c1c8d6b033b522854a192e867174eddd05dcc4a4f0b",
       "executable": false
     },
     "docs/SOURCE-PROVENANCE.md": {
@@ -1834,6 +1834,10 @@
     },
     "docs/verify.md": {
       "sha256": "59553152b0c7d5d261a0d712659b792a006d7079c872fe4fa365a1a36078bfcf",
+      "executable": false
+    },
+    "docs/voice.md": {
+      "sha256": "b63e7b1975aab72955f2755e191de503670683caab426f0911bb42a5017c4d74",
       "executable": false
     },
     "docs/website-knowledge.md": {
@@ -2648,6 +2652,10 @@
       "sha256": "a10663f2dfdd00987138a4bea9e2c533f78ae6dae4c2d2409f949cf2c147af28",
       "executable": false
     },
+    "migrations/275_voice.sql": {
+      "sha256": "2fc9c4397ce136a3227e73b7b6d0e4d761ffba7a1c53effa6e50447adcd58584",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2733,7 +2741,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "5a8a159a065b50de78120caf7f8e1d389c5f4a4ae0a2a57a4b5aeaf25751bde8",
+      "sha256": "198696cceb79c58f7dbb998f4933cb90c5f1e7374f2d3079ebf3c0fefe661160",
       "executable": false
     },
     "rer-project.json": {
@@ -3165,7 +3173,7 @@
       "executable": false
     },
     "scripts/installer/portability-policy.mjs": {
-      "sha256": "b8468cb6f910d9b88081be7d795bb2c305ac81749a943e2452e31926726c4e5b",
+      "sha256": "c295f8f6b5ede492b140f76c34ac6c1fde15d35114602172253cd54ade572b88",
       "executable": false
     },
     "scripts/installer/qualify.mjs": {
@@ -3230,6 +3238,10 @@
     },
     "scripts/installer/ui/seed.mjs": {
       "sha256": "1b4b36b293f242c7f08068627df6afe2c5441e4c33247433b787b20fd872f745",
+      "executable": false
+    },
+    "scripts/installer/voice-archive.mjs": {
+      "sha256": "1252f623bde68d9f80538d9b539659037d4e31c4472b2cb4decf7bcd3e11fa8d",
       "executable": false
     },
     "scripts/installer/workflow-archive-defaults.mjs": {
@@ -3405,7 +3417,7 @@
       "executable": false
     },
     "src/app.ts": {
-      "sha256": "faf5f4d2c6dc676a2f1f998ce7bc52c78068108f7d475949a9b86a8c4cd541a9",
+      "sha256": "7b6d36f90c8238750a0e2578669e68afac1de4d46000b5f01dcddefc9b8161a7",
       "executable": false
     },
     "src/base/deployment-health.ts": {
@@ -3673,7 +3685,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "c03bc16fd39f8276aa0e6d498736397a1479f745279366f76d6e6eaabd7f3b45",
+      "sha256": "f670f3b70bc248ff959985d447d50209aa2281a49add214a9c3e610b6b834fff",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -6381,7 +6393,7 @@
       "executable": false
     },
     "src/modules/management/contact-erasure/statements.ts": {
-      "sha256": "8210996da197b448f8ef544fb869df9ee1946c7432dc8f7096084eecf97f583f",
+      "sha256": "d60ae1f0e5df30ee12aa7545d47dd12025e8a23cf39204e47b2382ec7d6a80b0",
       "executable": false
     },
     "src/modules/management/contact-identity.ts": {
@@ -7506,6 +7518,38 @@
     },
     "src/modules/validation/zod.js": {
       "sha256": "e95f3b9ba7a909d5cabcc66fcca87ae0f13faf164f6aff29438d7df4d6d4618f",
+      "executable": false
+    },
+    "src/modules/voice/calls.ts": {
+      "sha256": "7ed2a48a196da164f15dd94b20f691e023f270067cb2e0c55421ea7a18ef0247",
+      "executable": false
+    },
+    "src/modules/voice/erasure.ts": {
+      "sha256": "b100cff93dabbc54ea6a8d1ce2db918ebd8f0e422252fdb6d705ca79d2a38e86",
+      "executable": false
+    },
+    "src/modules/voice/hooks.ts": {
+      "sha256": "107f7facd588dc4f2ece095f61b22fb92ca569a208ad131a6d1cc334b282e5db",
+      "executable": false
+    },
+    "src/modules/voice/model.ts": {
+      "sha256": "356ce0ed6f1d613a9ab6a18ae6b4b7cf37188c4cf6efbb930cd49edb3909df0b",
+      "executable": false
+    },
+    "src/modules/voice/provider.ts": {
+      "sha256": "217598ec84412af9892cd607b36ec813e56054086d62b433140a7d5d5f04ee4d",
+      "executable": false
+    },
+    "src/modules/voice/routes.ts": {
+      "sha256": "8fe653b724834a4f67323f9787f26e7d326c556f838dda143004c28e995441a5",
+      "executable": false
+    },
+    "src/modules/voice/settings.ts": {
+      "sha256": "cfc6cbafd9c594b97dc0b95edb6d122bdbce0c99c9a50292245a65d5a8242ab1",
+      "executable": false
+    },
+    "src/modules/voice/store.ts": {
+      "sha256": "f7a96589faa8a919e4461d094e2399aac67f51e495775a50c072d6a9822f8b7f",
       "executable": false
     },
     "src/modules/widget/appearance-values.d.ts": {
@@ -12020,6 +12064,10 @@
       "sha256": "94b525e815aeba1a4a87ae00b72e4384c690aee836d8339883e095ea8ead5d1c",
       "executable": false
     },
+    "tests/helpers/voice/journeys.mjs": {
+      "sha256": "824fb8b90b3ca23ea0016d3bd22da0cf06c8886c843608fe507e15cf269ee9da",
+      "executable": false
+    },
     "tests/helpers/widget/campaigns.mjs": {
       "sha256": "63d5ee6dd6509b1017a52403c59cb8204dd88cb0d1b825f383244c5974bb65af",
       "executable": false
@@ -12057,7 +12105,7 @@
       "executable": false
     },
     "tests/journeys/connections.mjs": {
-      "sha256": "37965013defe4acfe86c2287f1faec6b200aea66a596a56303b86e07456c54d1",
+      "sha256": "88e21944bf6f713e60cba11956afc9d77cb0b5efa707bd604160dfccffa2f60c",
       "executable": false
     },
     "tests/journeys/connector.mjs": {

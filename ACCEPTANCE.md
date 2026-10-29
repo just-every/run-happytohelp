@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -86,7 +86,7 @@ Core · published · **partial** · Cites BASE-MAIL-001, BASE-ACCESS-002 · Regi
 
 #### CONVERSATION-001 — Durable transcript
 
-Core · published · **partial** · Cites BASE-OPS-003, BASE-DATA-003
+Core · published · **done** · Cites BASE-OPS-003, BASE-DATA-003
 
 **Requirement.** Customer, operator, generation, import and administrative writers preserve stable message/command identity, revision/frontier, attachment ownership and final-reply admission atomically. Competing or repeated writes cannot admit two incompatible final replies. Owner/admin contact erasure removes message content while keeping identity, revision and frontier, so erased transcripts stay coherent.
 
@@ -94,8 +94,8 @@ Core · published · **partial** · Cites BASE-OPS-003, BASE-DATA-003
 1. Race visitor, operator, model and import writers through conversation routes with duplicate and lost responses; admit only compatible final replies.
 2. Erase a contact through the owner door and verify coherent identity/revision/frontier with content removed.
 
-**Evidence.** `src/modules/conversations/admission.ts`; `tests/journeys/runtime.mjs`; `tests/journeys/erasure.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: model writer race; import writer race; lost-response final-reply race. Asserted: competing visitor revisions admit one writer; exact duplicate replay; changed replay refused; stale operator frontier refused; operator admission; erased message identity; erased message revision; erased message content removed; erased transcript frontier. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: model writer race; import writer race; lost-response final-reply race. Asserted: competing visitor revisions admit one writer; exact duplicate replay; changed replay refused; stale operator frontier refused; operator admission; erased message identity; erased message revision; erased message content removed; erased transcript frontier.
+**Evidence.** `src/modules/conversations/admission.ts`; `src/modules/ai-support/service.ts`; `tests/journeys/runtime.mjs`: visitor revision race, exact replay, changed-command refusal, stale operator frontier and cross-workspace attachment refusal; `tests/helpers/conversation/model-races.mjs`, modelWriterRaces (called by admissionRaces in the same runtime journey): concurrent incompatible model finals, model/operator and model/visitor races, active/completed queue redelivery, stable final identity/revision/frontier and one provider call per command; `tests/helpers/conversation/import-races.mjs`, importWriterRaces: independently approved overlapping history writers, lost apply response, native final race, exact history identity/revision preservation, repeat/repackaged custody, refused conflicting final replay and administrative undo; `tests/helpers/conversation/lost-response.mjs`, lostFinalReplyResponse: real post-commit HTTP response loss, incompatible operator final plus concurrent exact retries, changed retry refusal, staged attachment ownership and durable final/attachment/solved-state readback; `tests/journeys/erasure.mjs` and `tests/helpers/conversation/erased-transcript.mjs`, erasedTranscript: owner/admin erasure, retained message IDs/revisions/frontier, empty content/media, erased-command refusal, compatible subsequent operator admission and repeat erasure through the owner door. All new assertions use the real router and writers over workerd/D1/R2; only provider/network boundaries are fixtures.
+**Gap.** None for the clause's native route and queue outcomes.
 
 #### DELIVERY-001 — Live delivery and recovery
 

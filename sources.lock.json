@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "51853de6fbd97f5c5655262bc3a9ca19ab84a5cc5642c7ec1881484b7da29042",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "599ab4cda5d48daa026a51b430664898ade463dfb42111675c2b096537d85fa8",
       "executable": false
     },
     "DEMO.md": {
@@ -11529,7 +11529,7 @@
       "executable": false
     },
     "tests/helpers/ai/triage.mjs": {
-      "sha256": "dd7df65d1471a4a1c99f31c36e9671f24da1025e07b91d5d1302da825c1988e3",
+      "sha256": "ce270581de97356906a95b1d548a142ad0ab69fc49c693f9c9cf90431f66d28d",
       "executable": false
     },
     "tests/helpers/artifact-payloads.mjs": {

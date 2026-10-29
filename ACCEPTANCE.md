@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -477,7 +477,7 @@ Core · target · **partial** · Cites BASE-ROLE-001
 
 #### TRIAGE-001 — Intelligent triage
 
-Core · target · **partial**
+Core · target · **done**
 
 **Requirement.** Each new ticket and customer message is classified for intent (from a lead-editable taxonomy with US commerce and SaaS defaults), sentiment and language, with a confidence score and the quoted evidence, by the configured model within AI-001 budgets. The predictions become ticket fields that QUEUE-001 routing, SLA-001 priority, AUTOMATION-001/002 conditions, views, AGENT-001 procedure selection and reports can use. A low-confidence prediction routes to the default queue instead of guessing. Operators correct a prediction and the correction is recorded as a label; leads see accuracy per intent against those labels before enabling a prediction for routing. With no model key there is no prediction, shown as unavailable and never invented.
 
@@ -486,8 +486,8 @@ Core · target · **partial**
 2. Send an ambiguous message (low confidence, default queue), correct a prediction and verify the accuracy report.
 3. Remove the model key and verify triage shows unavailable and routing still works.
 
-**Evidence.** `src/modules/triage/`; `src/modules/workflows/routing-triage.ts`; `tests/helpers/ai/triage.mjs`; `tests/helpers/ai/triage-browser.mjs`; `docs/triage.md`
-**Gap.** Carried-done audit: unasserted in the cited Evidence set: email classification door. Asserted: widget intent; widget sentiment; widget language; quoted evidence; confidence; intent routing; Spanish negative-sentiment priority; low-confidence default queue; operator correction recorded; accuracy report numerator; accuracy report denominator; no-key unavailable; no-key routing remains usable.
+**Evidence.** `src/modules/triage/`; `src/modules/workflows/routing-triage.ts`; `tests/helpers/ai/triage.mjs`, triageJourney through `tests/journeys/ai.mjs` / “reviewed intent labels enable routing while unavailable triage preserves the operator queue and ordinary admission rules”; `tests/helpers/ai/triage-browser.mjs`; `docs/triage.md`. The public widget and Email Worker MIME doors prove intent, sentiment, language, exact quotes and confidence in predictions and ticket fields. Production scheduled recovery dispatches email triage; Spanish refund mail triggers the approved intent assignment and negative-sentiment priority rules, and an English follow-up replaces its prior fields on the same ticket. The same journey proves low-confidence default placement, an operator correction with retained original prediction, per-intent accuracy numerator and denominator, reviewed routing enablement, empty/unavailable predictions without a model key and continued ordinary routing. Only paid/network edges are fixtures; this is local deterministic evidence, not live mailbox delivery or representative model-quality qualification.
+**Gap.** None.
 
 #### QUEUE-002 — Structured and bulk queue work
 

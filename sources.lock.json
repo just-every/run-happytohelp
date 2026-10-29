@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "f0eb4eaf154edc9b34d859c3c019ced675895de6809e63418dd9ad2b9fa029d4",
+      "sha256": "3a529872d0c5257f01c3f8d2164f9e30769302d71e099da014c865f7cc90f6a2",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d789ca47e4b47f04a0e1109b88f4481c39cf85f2aaf52812bef7b79a4334c781",
+      "sha256": "7cffbfbb8d527322fa954eca052d0731b6a60cef6de39e30be378b2ebef6f65f",
       "executable": false
     },
     "DEMO.md": {
@@ -1837,7 +1837,7 @@
       "executable": false
     },
     "docs/voice.md": {
-      "sha256": "8710bd8ebe4eefea0db0e1f3f9f92e8f79828c2e451b9a447d19b8f13680e869",
+      "sha256": "2e1b7b330c8ef46a93da62226a47efe227192c778db5ac328142594cbda89b98",
       "executable": false
     },
     "docs/website-knowledge.md": {
@@ -2745,7 +2745,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "351afcfb1fd63c75b39b9da788b1bdb5c776d31ce65a77ea669cb6b71c60f4a5",
+      "sha256": "a0f67e4221651cda17776efc9a9de77dbcc261d07eaf0bbedada5cfe83dd6ba8",
       "executable": false
     },
     "rer-project.json": {
@@ -12149,7 +12149,7 @@
       "executable": false
     },
     "tests/journeys/connections.mjs": {
-      "sha256": "88e21944bf6f713e60cba11956afc9d77cb0b5efa707bd604160dfccffa2f60c",
+      "sha256": "793be5e2605ba68bc415fedfef45b528f98697de757803c85850fba0b44bc90f",
       "executable": false
     },
     "tests/journeys/connector.mjs": {
@@ -12205,7 +12205,7 @@
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {
-      "sha256": "ceab23479d3525759228f07826f17a5a441c6978a3ade94798d50df80b735f9b",
+      "sha256": "b2e250e78b82beed21bbd3612962c7d068c151181c0700f2368c65d2a10b7783",
       "executable": false
     },
     "tests/journeys/inbox.mjs": {

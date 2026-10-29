@@ -1,8 +1,9 @@
 import {feedbackJourney} from '../helpers/feedback/journeys.mjs'
 import test from 'node:test'
 import {connectionsJourney} from '../connections/api.mjs'
+import {routingProof,erasureProof} from '../helpers/voice/journeys.mjs'
 
-test('a connected product opens and appends one scoped support request, receives signed events and a safe team notification, then loses access on expiry, erasure and revocation without replaying uncertain delivery',connectionsJourney)
+test('a connected product opens and appends one scoped support request, receives signed events and a safe team notification, then loses access on expiry, erasure and revocation without replaying uncertain delivery',async()=>{await connectionsJourney();await routingProof();await erasureProof()})
 
 import {engineeringJourney} from '../helpers/escalations/journeys.mjs'
 import {hubspotContextJourney} from '../helpers/hubspot-context.mjs'
@@ -15,7 +16,3 @@ test('support channels: exchange',()=>channels.exchange())
 test('support channels: slack',()=>channels.slack())
 test('support channels: erasure',()=>channels.erasure())
 test('support channels: uncertainty',()=>channels.uncertainty())
-
-import {voiceProofs,routingProof} from '../helpers/voice/journeys.mjs'
-for(const [key,run] of Object.entries(voiceProofs))test('voice '+key,run)
-test('connected telephone calls follow IVR and hours routing with explicit consent, private linked history, voicemail and failed-transfer follow-up',routingProof)

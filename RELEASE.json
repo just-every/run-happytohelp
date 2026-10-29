@@ -139,7 +139,7 @@
     },
     {
       "id": "265_reviewed_knowledge_proposals.sql",
-      "buyerSteps": "Apply before the updated Worker serves traffic. Adds reviewed, source-linked private knowledge proposals and corrective review records. No draft is automatically published; named editors confirm redaction review. Source-derived publication is held to the customer\u2019s currently proven email-domain collection. Erasing that source customer removes the derived articles and proposals."
+      "buyerSteps": "Apply before the updated Worker serves traffic. Adds reviewed, source-linked private knowledge proposals and corrective review records. No draft is automatically published; named editors confirm redaction review. Source-derived publication is held to the customer’s currently proven email-domain collection. Erasing that source customer removes the derived articles and proposals."
     },
     {
       "id": "266_procedure_regression_stop.sql",
@@ -151,7 +151,7 @@
     },
     {
       "id": "268_help_domain_publication.sql",
-      "buyerSteps": "Apply before serving the updated Worker. Lets knowledge publishers select one exact help host already mapped to their workspace by PUBLIC_HELP_HOSTS, or select built-in paths. DNS and TLS remain the hosting administrator\u2019s prerequisite; existing mapped hosts keep working until a lead makes a choice."
+      "buyerSteps": "Apply before serving the updated Worker. Lets knowledge publishers select one exact help host already mapped to their workspace by PUBLIC_HELP_HOSTS, or select built-in paths. DNS and TLS remain the hosting administrator’s prerequisite; existing mapped hosts keep working until a lead makes a choice."
     },
     {
       "id": "269_ai_tool_trace.sql",
@@ -184,7 +184,7 @@
     },
     {
       "id": "275_voice.sql",
-      "buyerSteps": "VOICE-001 partial: apply the additive voice tables before the updated Worker. Back up D1 and private settings. Configure provider credentials again after restore; restored numbers stay disabled and unknown call commands never replay. Voice launch remains held for live provider, emergency-calling and consent qualification."
+      "buyerSteps": "VOICE-001 partial: apply the additive voice tables after 274_channel_consent.sql and before 276_voice_media.sql, before the updated Worker. Back up D1 and private settings. Configure provider credentials again after restore; restored numbers stay disabled and unknown call commands never replay. Voice launch remains held for live provider, emergency-calling and consent qualification."
     },
     {
       "id": "276_voice_media.sql",

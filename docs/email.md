@@ -73,6 +73,8 @@ Operators with permission to manage conversations can review, recover and delete
 
 Use **Delete email** for unwanted messages. Owners and admins use **Allow sender**, **Block sender** and **Remove sender rule** for a full address or an `@domain` in this workspace. Block rules take precedence. An allow rule does not establish identity or override failed authentication. Recovery, deletion and sender-rule changes are audited.
 
+Messages above the 25 MB receiving limit, or with more than 20 attachments or an attachment above 20 MB, stay in Suspended rather than creating a partial ticket. An oversized raw message is retained as metadata-only `original.eml`; its sender remains unproven. Attachment-limit recovery cannot discard files to bypass the limit; retain the message as a private operator note or request a smaller replacement.
+
 Held messages expire after **14 days**. Expiry explicitly deletes held content and records an audit event; reads and the scheduled cleanup process remove expired entries. Deleting or expiring held mail does not send a reply.
 
 ## Create an email ticket or log a call

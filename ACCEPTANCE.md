@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -399,7 +399,7 @@ Core · target · **partial** · Cites BASE-MAIL-001, BASE-OPS-003 · Register R
 
 #### MAIL-002 — Reviewable suspended and spam mail
 
-Core · target · **partial** · Cites BASE-MAIL-001, BASE-DATA-002, BASE-ROLE-001, BASE-AUDIT-001
+Core · target · **done** · Cites BASE-MAIL-001, BASE-DATA-002, BASE-ROLE-001, BASE-AUDIT-001
 
 **Requirement.** Inbound mail that is spam-scored, fails DMARC/SPF/DKIM or alignment, comes from a blocked sender or domain, forges a verified customer's address, exceeds size limits or is a detected mail loop is never silently dropped. It lands in a Suspended view with its reason, authentication results, headers and safely previewed attachments, and creates no ticket, AI work, acknowledgment or notification. Permitted operators recover a false positive into a normal ticket that threads correctly (into the existing ticket when its references match) without retroactively triggering acknowledgments or AI unless they choose to; delete true spam; and block or allow a sender or domain. Recovery, deletion and list changes are audited. Suspended mail is kept for a stated retention period (default 14 days) and then explicitly deleted with an audit record; the view shows counts and the oldest age so nothing ages out unseen. Allow/block lists and suspension reasons are reportable.
 
@@ -408,8 +408,8 @@ Core · target · **partial** · Cites BASE-MAIL-001, BASE-DATA-002, BASE-ROLE-0
 2. Recover the DMARC-failing message into a new ticket and another into its existing thread, delete the spam, allow-list a sender and redeliver.
 3. Advance the clock past retention at the runtime edge and verify explicit, audited deletion; refuse every action to a role without permission.
 
-**Evidence.** `src/modules/integrations/suspended.ts`; `src/modules/integrations/suspended-store.ts`; `src/modules/integrations/suspended-recovery.ts`; `tests/helpers/email/complete-email.mjs`; `docs/email.md`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: DMARC failure suspension reason; forged customer mail creates no ticket; spam-score reason readback; no AI request while suspended; no outbound mail while suspended; recover new ticket content; allow-list redelivery; spam deletion result readback; unauthorized list refusal; unauthorized recover refusal; unauthorized delete refusal. Asserted: blocked sender suspension; recover existing thread; recover sends nothing; retention deletion; retention audit record. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: spam-score reason readback; no AI request while suspended; no outbound mail while suspended; spam deletion result readback; unauthorized recover refusal; unauthorized delete refusal. Asserted: DMARC failure suspension reason; forged customer mail creates no ticket; blocked sender suspension; recover existing thread; recover sends nothing; recover new ticket content; allow-list redelivery; retention deletion; retention audit record; unauthorized list refusal.
+**Evidence.** `src/modules/integrations/suspended.ts`; `src/modules/integrations/suspended-store.ts`; `src/modules/integrations/suspended-recovery.ts`; `src/modules/integrations/email-limits.ts`; `src/modules/integrations/email-worker.ts`; `src/modules/integrations/inbound-service.ts`; `tests/journeys/email.mjs` invokes `tests/helpers/email/complete-email.mjs`, completeEmailJourney / suspendedMailReview; `docs/email.md`. The public Email Worker and authenticated gateway, Suspended detail/list/attachment/recovery/deletion, sender-rule and audit routes assert spam-score and DMARC failure reasons, blocked senders, a forged verified-customer From, no ticket/AI/provider/notification effects while held, safe attachment previews, counts/oldest age, private-note recovery of failed/unproven senders into new/existing tickets, normal authenticated false-positive recovery by References without retrospective sends/AI, allow-list redelivery and block/authentication precedence, deletion readback, all unauthorized review/list-change refusals, and explicit audited retention deletion after 14 days. Oversized raw MIME, a file above 20 MB, more than 20 files and a sender loop remain reviewable without partial tickets; over-limit public recovery is refused before creating a ticket.
+**Gap.** None in the three local public-door acceptance points. Failed authentication recovers only as an explicitly unverified private operator note, preserving native sender authority. Provider/DNS network fixtures establish application behavior, not live provider or hosted delivery qualification.
 
 #### OUTBOUND-001 — Agent-created and proactive tickets
 

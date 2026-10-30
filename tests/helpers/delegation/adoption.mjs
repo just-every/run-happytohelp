@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
 import {startApp,sha} from '../../journeys/kit/app.mjs'
+import {mobileAdoption} from '../mobile-adoption.mjs'
 
 export const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aS1sAAAAASUVORK5CYII=','base64')
 
@@ -44,7 +45,7 @@ async function draftRuntime(){
  const keys=async f=>(await bucket.list()).objects.filter(o=>o.key.startsWith(f.projectId+'/')).map(o=>o.key).sort()
  const bytes=async key=>Buffer.from(await (await bucket.get(key)).arrayBuffer())
  const noAdoption=async f=>{assert.deepEqual(await f.media(),[]);assert.deepEqual(await f.messages(),[]);assert.deepEqual(await keys(f),[])}
- return {app,bucket,request,fixture,run,one,keys,bytes,noAdoption,close:()=>app.close()}
+ return {app,bucket,request,fixture,run,one,keys,bytes,png,noAdoption,close:()=>app.close()}
 }
 
 export async function adoptionJourney(){
@@ -58,6 +59,7 @@ export async function adoptionJourney(){
   await run('DROP TRIGGER adoption_storage_outage')
   const retried=await interrupted.adopt();assert.equal(retried.status,200)
   const recovered=await interrupted.adopt();assert.deepEqual(recovered.body.data,retried.body.data)
+  await mobileAdoption(runtime)
   // Local and legacy Use adopt exact native owned media, deduplicate, then ordinary Send admits exactly once.
   const f=await fixture(),[first,concurrent]=await Promise.all([f.adopt(),f.adopt()])
   assert.equal(first.status,200,JSON.stringify(first));assert.equal(concurrent.status,200,JSON.stringify(concurrent));assert.deepEqual(first.body.data,concurrent.body.data)

@@ -12289,7 +12289,7 @@
       "executable": false
     },
     "tests/journeys/kit/app.mjs": {
-      "sha256": "aadafe0f055042f3a4b7d3fae1b3eb0a39ba1524a382f86918b04410ab04511d",
+      "sha256": "87d96e4efea0491dc4a1d07a1dce1a541173b1f8c27a39787f4ffa44fe13a8aa",
       "executable": false
     },
     "tests/journeys/kit/browser.mjs": {

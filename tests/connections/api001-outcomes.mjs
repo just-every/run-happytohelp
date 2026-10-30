@@ -7,6 +7,7 @@ const rpc=(method,params={})=>body({jsonrpc:'2.0',id:1,method,params})
 export async function api001Outcomes(){
  const h=await harness()
  try{
+  const inventory=await h.call('/_test/api001-role-inventory');assert.deepEqual(inventory.unclassified,[]);assert.equal(inventory.helpscout.filter(route=>route.permission==='none'&&route.method==='POST').length,1);assert.ok(inventory.helpscout.filter(route=>route.path.includes('/connections/')).every(route=>route.permission==='integrations.install'))
   const full=await h.issue(),token=full.token,read=await h.issue(['contacts:read','articles:read','conversations:read']),foreign=await h.issue(undefined,'q')
   const post=(path,value)=>h.call('/api/v1'+path,{token,...body(value)})
   const contact=(await post('/contacts',{name:'Connector customer',email:'connector@example.test'})).data

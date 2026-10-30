@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -147,15 +147,15 @@ Core · published · **partial** · Cites BASE-DATA-003, BASE-ROLE-001, BASE-AGE
 
 #### REPORTS-001 — Workspace calendar reports
 
-Core · published · **partial** · Cites BASE-ROLE-001, BASE-DATA-001 · Rules D-2
+Core · published · **done** · Cites BASE-ROLE-001, BASE-DATA-001 · Rules D-2
 
 **Requirement.** Native conversations created in the workspace IANA calendar range with at least one persisted message form the cohort; Move in and legacy imports are excluded. First visitor-to-visible-answer response and creation-to-first known-resolution durations use median and nearest-rank p90. Each conversation contributes its latest closed cycle once to outcome and satisfaction rates. Reopened conversations leave those denominators. Aggregate queries return bounded data; CSV streams every matching conversation with formula-safe cells. Empty widget conversations stay durable but are excluded from Reports and its analytics CSVs. A separate step-up guarded JSON export includes all workspace conversations, messages, private notes and attachment names across dates and imports; attachment bytes stay in the portable backup.
 
 **Acceptance.**
 1. Compare Reports and formula-safe CSV to hand-calculated response/resolution median and p90, latest-cycle outcome and satisfaction cohorts across DST and tenants, including more than 10,000 rows and excluded imports/reopened cycles.
 
-**Evidence.** `src/modules/reports/routes.ts`; `src/modules/reports/metrics.ts`; `tests/reports/figures.mjs` (report export journey: independent calendar oracles, complete bounded CSV and transcript export; workspace deletion journey: retained links, invitations and commit races never restore report authority); `tests/journeys/reports.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: cohort above 10000 rows; complete CSV above 10000 rows. Asserted: response median; response p90; resolution median; resolution p90; latest-cycle outcome rate; satisfaction cohort; DST calendar range; formula-safe CSV; imported history excluded; reopened row remains open in detail; tenant isolation. The scale assertions now live in `tests/reports/scale.mjs`, outside this clause’s carried Evidence set; they do not establish completion here.
+**Evidence.** `src/modules/reports/routes.ts`; `src/modules/reports/read.ts`; `src/modules/reports/csv.ts`; `tests/reports/figures.mjs` (lines 60–62), calendarReportsJourney via `tests/journeys/reports.mjs` (line 5): independent response/resolution median and nearest-rank p90, latest-cycle outcome and satisfaction rates, DST boundaries/daily counts, formula-safe CSV, excluded Move in/legacy history, reopened detail and tenant isolation; `tests/reports/figures.mjs` (lines 23–55): empty widget exclusion and guarded complete transcripts with messages, notes, attachment names, imports, out-of-range and empty history. `tests/reports/scale-oracles.mjs` (lines 42–127), proveScaleOracles called by reportScaleJourney in `tests/reports/scale.mjs` (line 23), with persisted fixtures in `tests/reports/scale-seed.mjs`: 10,001 native conversations, independently sorted known-duration median/p90, latest-cycle rates excluding reopened rows, bounded aggregate response, exact DST daily cohorts and second-workspace refusal, complete streamed conversation CSV (all IDs and last row), full summary counts, all six formula prefixes including tab/CR, analytics exclusions and guarded complete transcripts. Ran and read passing: node --test --test-name-pattern='inspect calendar Reports' tests/journeys/reports.mjs and node --test --test-name-pattern='Reports streams every conversation above 10,000' tests/reports/nightly.mjs. Scale is registered only in pnpm test:scale (nightly), outside push Verify; this local scale run is its proof, not a Verify scale claim.
+**Gap.** None.
 
 #### CONNECTIONS-001 — Workspace integrations
 

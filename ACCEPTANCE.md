@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 2 | 73 | 10 | 85 |
+| Core | 3 | 72 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 2 | 73 | 15 | 90 |
+| Full target | 3 | 72 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -706,7 +706,7 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-2 · Register R-
 
 #### API-001 — Owned API and managed connectors
 
-Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1 · Register R-11, R-21
+Core · target · **done** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT-007 · Rules D-1 · Register R-11, R-21
 
 **Requirement.** Expose a documented versioned HappyToHelp API and signed outbound webhooks for conversations, contacts, articles and support events with scoped authorization, pagination, stable cursors, idempotency and revocation. Provide Zapier actions/triggers and managed MCP tools with the same tenant/action boundaries. Offer Help Scout Inbox API/webhook read synchronization for staged migration/coexistence, with cursors and deduplication; it is separate from native API authority. Connection health, scopes, event attempts and manual reconciliation are visible. Creating and appending support requests from another product or agent with credentials bound to a source product is covered by API-002, API-003, API-004, API-005, API-006, API-007, API-008.
 
@@ -714,8 +714,8 @@ Core · target · **partial** · Cites BASE-ROLE-001, BASE-AGENT-006, BASE-AGENT
 1. Use a scoped client to page/export records and perform native guarded writes, validate a signed webhook and revoke the token.
 2. Exercise a Zapier trigger/action, MCP read versus denied write and Help Scout incremental ingestion with duplicate events/reconnect; verify no replay of old imports or erased identities.
 
-**Evidence.** Local implementation/fixture evidence: `src/modules/api-integrations`; `local-agent/lib/mcp.mjs`; `src/modules/move-in/plan.ts`; `tests/connections/api.mjs` (API credential lifecycle: issue, use scoped operations, paginate, refuse lost authority and erasure, then revoke); `tests/connections/delivery.mjs` (delivery lifecycle: prepare, sign, dispatch, recover bounded work and require fresh approval for uncertain resend). Native scoped API/webhooks, Help Scout export import and connector MCP transport exist. Local public-door and network-edge journeys assert guarded API operations and webhook protocol behavior; synthetic export import is distinct from continuous synchronization.
-**Gap.** Implementation/acceptance gaps: Managed connector catalog, Zapier actions/triggers and continuous Help Scout API/webhook synchronization are absent.
+**Evidence.** Acceptance 1 / O1–O2: `tests/connections/api.mjs`, connectionsJourney (idempotent create/replay/conflict, native reply/resolve, tenant/scope/rate/expiry/erasure/revocation); `tests/connections/delivery.mjs`, deliveryLifecycle (tenant/destination-bound HMAC, bounded retries, uncertain recovery); `tests/connections/api001-outcomes.mjs`, api001Outcomes (complete tied-row contact/article exports, writes and read-only refusals, cursor/filter/limit guards, contact/article events, forged/wrong-destination rejection and bound-destination revocation). Acceptance 2 / O3–O5: api001Outcomes exercises the shipped `src/modules/api-integrations/zapier-app.mjs` subscribe/unsubscribe/sample and idempotent reply templates, scopes/tenant/erasure fences and managed HTTP MCP read, denied inert write, private-note exclusion, audit/rate limit and revocation. O6–O7: `tests/connections/api001-helpscout-outcomes.mjs`, api001ScoutOutcomes (reviewed first/incremental pulls, duplicate/forged intake, interrupted cursor, disconnect/rotate/reconnect and page continuation, visible bounded 429/401/size/pagination errors, inert repeat, erased-identity skip beside an unrelated applied conversation, separate provider/native authority and archive credential removal). O8: both helpers assert owner-only metadata catalog, failures/attempts, one uncertain resend and Help Scout cursor/pull/waiting metadata; `tests/helpers/api001-outcomes-browser.mjs`, api001Browser, in the existing ticket/workflow browser journey asserts the rendered rows, failure and reconciliation at 1440 with browser proof at 1440/390. `migrations/277_managed_connectors.sql`; `docs/api.md`.
+**Gap.** UNMET-EXTERNAL: Zapier publication and live Zapier/Help Scout accounts, OAuth and continuous-provider qualification (R-11); real Claude, ChatGPT, Codex and Copilot compatibility (R-21); held Base company policy. Help Scout synchronization is explicitly manual and stages person-reviewed imports; unattended scheduled pull and automatic apply remain unimplemented. No live-provider or policy qualification is claimed.
 
 #### API-002 — Bound machine credentials
 

@@ -1,3 +1,5 @@
+import {helpscoutSettings} from './helpscout'
+import {connectorCatalog} from './catalog'
 import {credentialById,credentialBindings,resolveBindings} from './credentials'
 import {machineInput,rotateMachine} from './machine-credentials'
 import {Hono} from 'hono'
@@ -11,7 +13,9 @@ import {iso,jsonBody} from './http'
 import {resendDelivery} from './resend'
 import {requireStepUp} from '../identity/two-factor/step-up'
 export const integrationSettings=new Hono<AppEnv>()
+integrationSettings.route('/',helpscoutSettings)
 const root='/projects/:projectId/connections'
+integrationSettings.get(root+'/connectors',async c=>{const who=await issuer(c);return c.json({data:await connectorCatalog(c.env,who.actor.projectId)})})
 async function issuer(c:any):Promise<Issuer>{const actor=await scope(c,true);if(actor.role!=='owner'&&actor.role!=='admin')throw new HTTPException(403);return {actor:{...actor,role:actor.role},sessionHash:c.get('sessionHash')}}
 async function audit(c:any,who:Issuer,action:string,resource='settings'){
  const guard=await issuerGuard(c.env,who)

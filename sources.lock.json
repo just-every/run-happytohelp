@@ -14189,7 +14189,7 @@
       "executable": false
     },
     "tests/helpers/inbox/status-lifecycle.mjs": {
-      "sha256": "451ec7e13ef149b1a025975325995c891c759402bbd6542fb5e3fbcd6dd08655",
+      "sha256": "b6be44677f085949a571cfd9ad03957aab2dcb52d6e66ea1b436de492cd08f11",
       "executable": false
     },
     "tests/helpers/inbox/ticket-browser-fixture.mjs": {

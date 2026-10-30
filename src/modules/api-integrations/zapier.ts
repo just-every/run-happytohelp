@@ -17,7 +17,7 @@ export function zapierApi(app:Hono<ApiEnv>){
    const cipher=await encryptToken(c.env,a.projectId,JSON.stringify({url:b.url,key}))
    const result=await c.env.DB.prepare(`INSERT INTO native_integration_destinations(id,project_id,kind,name,events_json,secret_ciphertext,created_at,credential_id,connector) SELECT ?,?,'webhook','Zapier hook',?,?,?,?, 'zapier' WHERE EXISTS(${guard.sql})`).bind(id,a.projectId,JSON.stringify([b.event]),cipher,Date.now(),a.credentialId,...guard.params).run()
    if(!result.meta.changes)throw new HTTPException(409)
-   return c.json({id,secret:key,event:b.event},201)
+   return c.json({id,secret:key,event:b.event,project_id:a.projectId},201)
   })
  })
  app.delete('/zapier/hooks/:hookId',async c=>{

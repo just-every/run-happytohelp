@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "33ecfdabf969de8e04204369df52fc05fd801c73c5fb630015eb2ddea413d253",
+      "sha256": "df5d4c3dde3fe049e1923d6179c2a2161cca90ccb37f9f4d0bbc4281971ea34e",
       "executable": false
     },
     "DEMO.md": {
@@ -1645,7 +1645,7 @@
       "executable": false
     },
     "docs/api.md": {
-      "sha256": "63dc0cb46561ea19c54bfc3d3fd20f3fdb138f5ff109928c1056055cf4fef360",
+      "sha256": "646c789039d79fc57442cd90d7a015c8ad72d853f6a4b1a5a1f16b873d03908b",
       "executable": false
     },
     "docs/AUTHORING.md": {
@@ -4301,11 +4301,11 @@
       "executable": false
     },
     "src/modules/api-integrations/zapier-app.mjs": {
-      "sha256": "5459e4e2b379e7bcee301c6bc3dea9647b433ddc70c899c1335b834dd8e87d52",
+      "sha256": "aeb3628f2a6e579c27fce50715923ba7c99ca0f2c39947bce05dbfeee5e5113c",
       "executable": false
     },
     "src/modules/api-integrations/zapier.ts": {
-      "sha256": "abe5ee6cbde4db66b1a77e6c078f7c8d2dc4a28fc3365121011ee5581c9ccf27",
+      "sha256": "b9f751cdf040de4b903f26df81fa2355e5f745278313fc83799a98b362285837",
       "executable": false
     },
     "src/modules/assurance/model.ts": {
@@ -11437,7 +11437,7 @@
       "executable": false
     },
     "tests/connections/api001-outcomes.mjs": {
-      "sha256": "c30ff3d45095f0d45c950187fe415382b93cfb62194e206ac4183b17e1745f2d",
+      "sha256": "2cda34a682f861035a056533bcb4e1a12f7c917f97c1db1a04fabee429a10561",
       "executable": false
     },
     "tests/connections/delivery.mjs": {

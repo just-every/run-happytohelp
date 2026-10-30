@@ -88,6 +88,11 @@ execution history. A notification that this installation cannot deliver is
 marked **Not delivered** with the reason at once; it is not kept to be sent
 late. Waiting work never holds up other rules or other workspaces.
 
+If a worker stops after claiming a notification, recovery records that action
+and its run as **Uncertain** before stopping later actions. A provider may have
+accepted the message even when the workflow could not record its outcome;
+restarting the worker does not send it again.
+
 Snoozed tickets retain their status and responsible owner, and still count toward
 that owner’s open workload. Use the snooze filter to see them.
 

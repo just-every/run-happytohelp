@@ -22,9 +22,10 @@ export async function handleGeneration(env: Env, job: Job, effects: GenerationEf
         return true;
     }
     if (row.state === 'running') {
-        // A previous delivery may have reached the provider. Never replay it.
-        await transition(env, row.id, 'uncertain', 'Interrupted attempt; provider outcome requires review');
-        await env.DB.prepare("UPDATE ai_attempts SET state='uncertain',finished_at=? WHERE generation_id=? AND state='running'").bind(new Date().toISOString(), row.id).run();
+        // Redelivery does not prove that the claimed execution stopped. Keep
+        // its running frontier eligible for guarded final admission, without
+        // starting another provider call. Scheduled deadline recovery alone
+        // marks abandoned executions uncertain; it never replays the provider.
         return true;
     }
     try {

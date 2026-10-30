@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "8d0dca66dbd3730ee5d83a90e4f63fdbfdf8ad4925b8972a72736e5e18e916fb",
+      "sha256": "a926d3e41dc13a2bb5326e35a54ce17d118df5ace591f13cee631d355576b29b",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5981e08bd453675a9033ab49f46d31255424bc7b9bb9e193fe8d8157d0724b1a",
+      "sha256": "936e83929018867f69d62ccbb086b3d8690bc26eda8c1eb30f93dbedd76c58fc",
       "executable": false
     },
     "DEMO.md": {
@@ -11577,7 +11577,7 @@
       "executable": false
     },
     "tests/helpers/customer-outcomes-edges.mjs": {
-      "sha256": "3c7b60a1472a9917a142a5c88453004301ff1a13dcadb54867b94728aada2f3e",
+      "sha256": "7b27ef5b9a34be83dcf687e922f7b1a94a81814ef83867961fde01b4ee9a8fdd",
       "executable": false
     },
     "tests/helpers/customer-outcomes.mjs": {
@@ -12213,7 +12213,7 @@
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {
-      "sha256": "b2e250e78b82beed21bbd3612962c7d068c151181c0700f2368c65d2a10b7783",
+      "sha256": "8f73f22c5a216bc8d68f18ca416826ef282e84136e834c2ea7ad3d330518eb8c",
       "executable": false
     },
     "tests/journeys/inbox.mjs": {

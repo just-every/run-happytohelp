@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "93dfde320fffbec6032aeabf12c830ddd3c6bae462e8c6409bf5f2c2c23233a2",
+      "sha256": "49bd8029ff9a424eccba05f4a5403944067c358a05d89ef593130793ae7e50c9",
       "executable": false
     },
     "DEMO.md": {
@@ -10769,7 +10769,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProjectsPage.jsx": {
-      "sha256": "9295492dbd87e1535848e73436d7908565ff244513e8d19e26e6f3281a81dce8",
+      "sha256": "96de60b0dbb28ad1f9b17207ed351f2851d6771c6c1370f813d95bee280edb66",
       "executable": false
     },
     "src/ui/native/pages/Reports.css": {
@@ -11756,6 +11756,10 @@
       "sha256": "1217afecb23c5a73340b0977a49df11b328f2854d9d1744c3b1d93a7766ae33c",
       "executable": false
     },
+    "tests/helpers/first-run/outcomes.mjs": {
+      "sha256": "dcc9ea90be56bbc6193f600818a1ea2f5d82a02c188b85e2df838c12cb234a2b",
+      "executable": false
+    },
     "tests/helpers/first-run/provisioning.mjs": {
       "sha256": "9a3c5c4c4b3a28ba7cf002bb24ca36ca18d665a31ddd4f5922c91216e99a81d3",
       "executable": false
@@ -12209,11 +12213,11 @@
       "executable": false
     },
     "tests/journeys/first-run.mjs": {
-      "sha256": "d70540354e369e20e62df77436aa6c18548c5f921dc1dc22ea0c3896740cb83b",
+      "sha256": "14c3470bbea988e4d7101db637f90962399e726b0b6fc4967d09ea875614c97f",
       "executable": false
     },
     "tests/journeys/identity-browser.mjs": {
-      "sha256": "0c8885853ee9351e385505ec3d0217f6756e4d5c816993a2d1e7b5893ed1c552",
+      "sha256": "4b548b2c45893083b8c4d7f9b92ddae31f566a1240157a700108f62d66c9c6bd",
       "executable": false
     },
     "tests/journeys/identity.mjs": {

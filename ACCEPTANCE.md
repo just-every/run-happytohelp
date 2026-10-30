@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -1038,7 +1038,7 @@ Core · target · **partial** · Register R-17
 
 #### ERASURE-001 — Customer erasure with coherent history
 
-Core · target · **partial** · Cites BASE-DATA-003, BASE-DATA-006
+Core · target · **done** · Cites BASE-DATA-003, BASE-DATA-006
 
 **Requirement.** Owner/admin contact erasure removes personal content from native/imported transcripts, notes, context, feedback, stored files and archive copies while retaining nonpersonal identity/frontier and an opaque erasure tombstone. Erasure fences APIs, pending events, source re-import and stale restore from resurrecting the identity. Provide completion/failed counts for all stores and separately request deletion from connected providers under their capabilities; do not claim already sent messages or offline archive bytes were recalled.
 
@@ -1046,8 +1046,8 @@ Core · target · **partial** · Cites BASE-DATA-003, BASE-DATA-006
 1. Erase a populated native/imported contact through the authorized owner route, inspect D1/R2 and the resulting export, retry a stale API/import and test role/cross-tenant denial.
 2. Verify coherent redacted threads, tombstone fencing and explicit unresolved external/old-archive deletion.
 
-**Evidence.** `src/modules/management/contact-erasure.ts`; `src/modules/management/contact-erasure/providers.ts`; `tests/journeys/erasure.mjs`; `tests/journeys/erasure-browser.mjs` (at 1440 and 390px an owner erases a contact only after typing ERASE; identity, content and attachment are gone, the session is revoked and other visitors are untouched)
-**Gap.** Main re-audit: unasserted in the cited Evidence set: populated imported-contact export inspected; stale API fencing; stale import fencing; old external archive deletion remains unresolved. Asserted: native D1 content removed; R2 files removed; role refusal; cross-tenant refusal; coherent redacted thread; external deletion remains unsupported or pending. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: populated imported-contact export inspected; stale API fencing; stale import fencing; old external archive deletion remains unresolved. Asserted: native D1 content removed; R2 files removed; role refusal; cross-tenant refusal; coherent redacted thread; external deletion remains unsupported or pending.
+**Evidence.** Native populated erasure, D1/R2 removal, owner/admin authority, role/cross-tenant refusal, counts, coherent redacted frontier, non-machine stale update/message refusal and resumable repeats: `tests/journeys/erasure.mjs`. Populated imported contact and private notes and D1-supplied attachment bytes plus R2 source originals, inspected public “rer export”, changed/repackaged source replay refusal, hash-only tombstones, offline archive non-recall, old “rer import --journal” refusal with no partial restore and restored tombstones: `tests/helpers/erasure/outcomes.mjs`, “erasureOutcomes”, called by that journey. Pending/changed signed-mail replay and retained opaque ingress tombstones: `tests/helpers/email/rer-erasure.mjs`, “rerMailErasureJourney”/“erasureOrder”, called by the same journey. Alias/pending/rejected import erasure and replay fencing: `tests/move-in/erasure-journey.mjs`, “importErasureJourney”, via `tests/journeys/move-in-erasure.mjs`. Feedback removal and linked-provider deletion unsupported: `tests/helpers/feedback/journeys.mjs`, “feedbackJourney”, via `tests/journeys/connections.mjs`. Existing provider-edge webhook pending/completed counts and AI/computer unsupported requests are asserted by `tests/journeys/erasure.mjs`. `src/modules/management/contact-erasure.ts` commits the portability redaction checkpoint and invalidates stale transfer snapshots with D1 erasure. Existing browser confirmation/redacted-thread coverage: `tests/journeys/erasure-browser.mjs` (assertions at 1440; no UI changed here).
+**Gap.** Local acceptance outcomes asserted. Provider-edge fixtures establish deletion-request states only; already sent messages, provider-retained data and old offline archive bytes are not recalled. The old archive remains unchanged and needs its custodian's deletion; stale recovery is fenced when the later erasure journal is supplied. Machine-created support-request erasure/restore and machine-only stale writes belong to API-007 and API-002..008 (UNMET-EXTERNAL to this clause's scoped proof, nonblocking). Prior-data custody remains MIGRATION-001; retention/legal-hold judgments remain AUDIT-001. No live provider or publication qualification is claimed.
 
 #### AUDIT-001 — Security and accountable actions
 

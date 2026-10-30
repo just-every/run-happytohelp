@@ -1,3 +1,4 @@
+import {redactionStatements,invalidateTransfersStatements} from '@runeditrun/rer/modules/portability/journal'
 import {csvErasureIdentities} from '../import-kit/csv/erasure'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
@@ -32,6 +33,10 @@ export async function eraseContact(env: Env, projectId: string, contactId: strin
   const emails=[...new Set([...contactEmails(contact),...contactEmails(fenced??{})])]
   const csvIdentities=[...new Set([...csvBeforeFence,...await csvErasureIdentities(env,projectId,contactId,emails)])]
   await env.DB.batch([
+    // Retained redacted rows need a checkpoint, rather than a ban on their IDs.
+    // Commit it with erasure and discard in-flight copies of the old content.
+    ...await redactionStatements(env.DB),
+    ...await invalidateTransfersStatements(env.DB),
     ...await knowledgeErasureStatements(env,projectId,contactId,emails),
     ...erasureStatements(env, {projectId, contactId, actorId, now, emails,csvIdentities}),
   ])

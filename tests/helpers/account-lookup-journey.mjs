@@ -184,6 +184,8 @@ async function accountLookupUpgrade(){
   const before=await snapshot()
   await applyMigrations(app.db,name=>name==='259_account_lookup_fields.sql')
   assert.deepEqual(await snapshot(),before,'extending the field type retains definitions, typed values and the workflow journal byte for byte')
+  // The upgrade applies its remaining pending migrations before the current app serves an edit.
+  await applyMigrations(app.db,name=>name>'259_account_lookup_fields.sql')
   await app.ok(`/api/dashboard/projects/${p}/conversations/${ticket.id}/ticket`,{...owner,method:'PATCH',body:{fields:{[f.order.id]:'NS-10483'}}})
   assert.equal((await app.first('SELECT value_json FROM ticket_field_values WHERE conversation_id=? AND field_id=?',ticket.id,f.order.id)).value_json,'"NS-10483"')
   assert.ok((await app.sql('SELECT after_json FROM workflow_events WHERE conversation_id=?',ticket.id)).some(row=>JSON.parse(row.after_json).fields?.[f.order.id]==='NS-10483'),'editing a retained field still journals its new typed value')

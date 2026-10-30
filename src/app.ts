@@ -1,3 +1,5 @@
+import {businessProject} from './edition/agent-door/project.ts'
+import {handleAgentRequest} from './edition/agent-door/index.ts'
 import {assuranceRoutes} from './modules/assurance/routes'
 import {channels} from './modules/support-channels/routes'
 import {api as scopedApi} from './modules/api-integrations/routes'
@@ -47,6 +49,7 @@ import {createEscalationRoutes} from './modules/escalations/routes'
 import {voiceRoutes} from './modules/voice/routes'
 
 export const app = new Hono<AppEnv>()
+app.use('*',async(c,next)=>{const response=await handleAgentRequest(c.req.raw,c.env);if(response)return response;await next()})
 app.use('/api/*',async(c,next)=>{
  c.env=notificationRequestEnvironment(c.env)
  const origin=new URL(c.req.url);
@@ -54,6 +57,7 @@ app.use('/api/*',async(c,next)=>{
  if(!c.env.APP_ORIGIN)c.env={...c.env,APP_ORIGIN:origin.origin,H2H_LOCAL:undefined};
  await next();
 })
+app.route('/api/rer/business-project',businessProject)
 app.route('/api/assurance',assuranceRoutes)
 // The bearer-only API never enters native cookie/project CORS, including errors.
 app.route('/api/v1',scopedApi)

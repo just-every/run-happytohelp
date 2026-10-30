@@ -121,41 +121,6 @@
       "optional": true
     },
     {
-      "binding": "MAIL_PROVIDER",
-      "environment": "MAIL_PROVIDER",
-      "optional": true
-    },
-    {
-      "binding": "MAIL_FROM",
-      "environment": "MAIL_FROM",
-      "optional": true
-    },
-    {
-      "binding": "MAIL_RELAY_URL",
-      "environment": "MAIL_RELAY_URL",
-      "optional": true
-    },
-    {
-      "binding": "H2H_RER_MAIL_VERSION",
-      "environment": "H2H_RER_MAIL_VERSION",
-      "optional": true
-    },
-    {
-      "binding": "RER_MAILBOX_ID",
-      "environment": "RER_MAILBOX_ID",
-      "optional": true
-    },
-    {
-      "binding": "RER_MAIL_ADDRESS",
-      "environment": "RER_MAIL_ADDRESS",
-      "optional": true
-    },
-    {
-      "binding": "RER_MAIL_CONTROL_URL",
-      "environment": "RER_MAIL_CONTROL_URL",
-      "optional": true
-    },
-    {
       "binding": "MAIL_PROVIDER_API_KEY",
       "environment": "EMAIL_API_KEY",
       "optional": true
@@ -173,6 +138,31 @@
     {
       "binding": "RER_MAIL_INGRESS_KEY",
       "environment": "RER_MAIL_INGRESS_KEY",
+      "optional": true
+    },
+    {
+      "binding": "RER_OWNER_CLAIM_ISSUER",
+      "environment": "RER_OWNER_CLAIM_ISSUER",
+      "optional": true
+    },
+    {
+      "binding": "RER_OWNER_CLAIM_INSTALLATION_ID",
+      "environment": "RER_OWNER_CLAIM_INSTALLATION_ID",
+      "optional": true
+    },
+    {
+      "binding": "RER_OWNER_CLAIM_APP_ORIGIN",
+      "environment": "RER_OWNER_CLAIM_APP_ORIGIN",
+      "optional": true
+    },
+    {
+      "binding": "RER_OWNER_CLAIM_PUBLIC_KEYS",
+      "environment": "RER_OWNER_CLAIM_PUBLIC_KEYS",
+      "optional": true
+    },
+    {
+      "binding": "RER_BUSINESS_TRUST",
+      "environment": "RER_BUSINESS_TRUST",
       "optional": true
     }
   ]

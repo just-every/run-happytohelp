@@ -21,6 +21,22 @@ import {interruptPortableWork,verifyPortableWork} from '../unfinished-portable.m
 import {safeDiagnostic} from '../delegation-journey/diagnostics.mjs';
 import {readDurableObjects} from '../../../scripts/installer/durable-objects.mjs';
 
+// Dev requests consume abuse limits and cron advances scheduler scan positions.
+// Only these runtime-progress rows may change across a dev session. Keep the
+// export/import oracle exact, including these tables, and compare every business
+// row, workflow definition/event/action, owner and setting without exclusions.
+function compareRestoredDevEntry(before,after){
+ const stable=snapshot=>{
+  const copy=structuredClone(snapshot);
+  for(const table of ['abuse_counters','workflow_queue_turns','workflow_scheduler_cursors','sla_scheduler_cursors']){
+   assert.ok(Object.hasOwn(copy.rows,table),`runtime-progress table ${table} remains in the snapshot`);
+   copy.rows[table]=[];
+  }
+  return copy;
+ };
+ compareDevEntryArchive(stable(before),stable(after));
+}
+
 // The fresh-clone rer command journey: install, setup, dev, export/import, reset and fresh owner.
 export async function freshInstallJourney(){
 const __rerTestEntry = __rerTestEntryPath(import.meta.resolve('@runeditrun/rer/internal/global/rer.mjs'));
@@ -160,7 +176,7 @@ try{
   compareArchive(restoredData,afterSetup);
   await start();await signIn();await stop();
   const afterSignIn=await archiveSnapshot(root);
-  compareDevEntryArchive(afterSetup,afterSignIn);
+  compareRestoredDevEntry(afterSetup,afterSignIn);
   restoredData=afterSignIn;
   assert.deepEqual(await ledgerSnapshot(),restoredLedgers,'post-restore setup preserves every migration ledger row');
   const currentPrivate=await readFile(join(root,'.dev.vars'));
@@ -177,7 +193,7 @@ try{
  await verifyVoicePortable(origin,portable,restored.token,json);
  await signIn();
  await stop();assert.equal(await migrationCount(),1);
- compareDevEntryArchive(beforeRestoredReads,await archiveSnapshot(root));
+ compareRestoredDevEntry(beforeRestoredReads,await archiveSnapshot(root));
  assert.deepEqual(await ledgerSnapshot(),restoredLedgers,'post-restore reads and refused replays preserve migration history');
  // Every dry-run invocation uses the real command/build with the network edge
  // refusing every request, including read-only provider inspection.

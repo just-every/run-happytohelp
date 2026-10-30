@@ -900,6 +900,30 @@
       "name": "276_voice_media.sql",
       "sha256": "5e503f0984fbe3c8c2b70a642957b0c56de633392f49d73a41ffce67d93bc442",
       "sql": "-- Consent withdrawal fences media immediately, independently of the provider outcome.\nALTER TABLE voice_calls ADD COLUMN media_expires_at INTEGER NOT NULL DEFAULT 0;\nALTER TABLE voice_calls ADD COLUMN media_withdrawn_at INTEGER;\nALTER TABLE voice_calls ADD COLUMN provider_stop_state TEXT;\nUPDATE voice_calls SET media_expires_at=created_at+86400000;\nCREATE INDEX voice_media_expiry ON voice_calls(media_expires_at) WHERE erased=0;\nCREATE TABLE voice_transcript_segments(\n call_id TEXT NOT NULL REFERENCES voice_calls(id), sequence INTEGER NOT NULL,\n track TEXT NOT NULL, content TEXT NOT NULL, digest TEXT NOT NULL,\n PRIMARY KEY(call_id,sequence)\n);\nCREATE TABLE voice_context_links(\n project_id TEXT NOT NULL REFERENCES projects(id), contact_id TEXT NOT NULL REFERENCES contacts(id),\n linked_contact_id TEXT NOT NULL REFERENCES contacts(id), linked_by TEXT NOT NULL REFERENCES users(id), linked_at INTEGER NOT NULL,\n PRIMARY KEY(project_id,contact_id), CHECK(contact_id<>linked_contact_id)\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "277_agent_door.sql",
+      "sha256": "016d8a98b964385f5c4a13447361c3c783910a76aaf4606b0e0081482bc819cc",
+      "sql": "CREATE TABLE IF NOT EXISTS agent_door_state (\n  id INTEGER PRIMARY KEY CHECK(id=1), envelope TEXT, local_document TEXT,\n  local_revision INTEGER NOT NULL DEFAULT 0, local_paused INTEGER NOT NULL DEFAULT 0,\n  decision_lock TEXT, decision_until INTEGER\n);\nCREATE TABLE IF NOT EXISTS agent_door_agents (\n  id TEXT PRIMARY KEY, name TEXT NOT NULL, specialist TEXT, sponsor TEXT NOT NULL,\n  sponsor_name TEXT NOT NULL, revoked INTEGER NOT NULL DEFAULT 0,\n  window INTEGER NOT NULL DEFAULT 0, requests INTEGER NOT NULL DEFAULT 0\n);\nCREATE TABLE IF NOT EXISTS agent_door_audit (\n  sequence INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, at TEXT NOT NULL,\n  agent TEXT NOT NULL, classes TEXT NOT NULL, row TEXT NOT NULL, evidence TEXT\n);\nCREATE INDEX IF NOT EXISTS agent_door_audit_agent ON agent_door_audit(agent,sequence);\nCREATE TABLE IF NOT EXISTS agent_door_calls (\n  agent TEXT NOT NULL, key TEXT NOT NULL, digest TEXT NOT NULL, decision_id TEXT NOT NULL,\n  created_at INTEGER NOT NULL, state TEXT NOT NULL, outcome TEXT, PRIMARY KEY(agent,key)\n);\nCREATE TABLE IF NOT EXISTS agent_door_approvals (\n  id TEXT PRIMARY KEY, state TEXT NOT NULL, saved TEXT NOT NULL, approvals TEXT NOT NULL DEFAULT '[]',\n  result TEXT, version INTEGER NOT NULL DEFAULT 0\n);\nCREATE TABLE IF NOT EXISTS agent_door_reviews (\n  id TEXT PRIMARY KEY, state TEXT NOT NULL, saved TEXT NOT NULL, marked_by TEXT, marked_at TEXT\n);\nCREATE TABLE IF NOT EXISTS agent_door_events (\n  sequence INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, uri TEXT NOT NULL, event TEXT NOT NULL\n);\nCREATE INDEX IF NOT EXISTS agent_door_events_uri ON agent_door_events(uri,sequence);\nCREATE TABLE IF NOT EXISTS agent_door_usage (\n  decision_id TEXT PRIMARY KEY, at INTEGER NOT NULL, seed TEXT NOT NULL, specialist TEXT, agent TEXT NOT NULL,\n  classes TEXT NOT NULL\n);\nCREATE INDEX IF NOT EXISTS agent_door_usage_day ON agent_door_usage(at);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "278_business_settings.sql",
+      "sha256": "a16f736a781aa3fe02a2e090c993f8c360c904f9fb6d86126acdab6e1f24e773",
+      "sql": "CREATE TABLE bs_settings (\n  singleton INTEGER PRIMARY KEY CHECK(singleton=1),\n  rev INTEGER NOT NULL DEFAULT 0,\n  document TEXT,\n  applied_at TEXT,\n  stopped INTEGER NOT NULL DEFAULT 0 CHECK(stopped IN(0,1)),\n  token TEXT NOT NULL DEFAULT ''\n);\nCREATE TABLE bs_overrides (\n  field TEXT PRIMARY KEY CHECK(field IN('display_name','owner_name','brand_color','logo','timezone')),\n  value TEXT NOT NULL,\n  actor TEXT NOT NULL,\n  changed_at TEXT NOT NULL\n);\nCREATE TABLE bs_logo (\n  singleton INTEGER PRIMARY KEY CHECK(singleton=1),\n  sha256 TEXT NOT NULL,\n  type TEXT NOT NULL,\n  bytes BLOB NOT NULL\n);\nCREATE TABLE bs_team (\n  email TEXT PRIMARY KEY,\n  operator_id TEXT,\n  invite INTEGER NOT NULL,\n  state TEXT NOT NULL CHECK(state IN('invited','active','inactive','conflict'))\n);\nCREATE TABLE bs_audit (\n  id INTEGER PRIMARY KEY,\n  actor TEXT NOT NULL,\n  action TEXT NOT NULL,\n  field TEXT,\n  changed_at TEXT NOT NULL\n);\n-- An INSERT of NULL fails the transaction if a concurrent write invalidated its fence.\nCREATE TABLE bs_assert (value INTEGER NOT NULL);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "279_business_people.sql",
+      "sha256": "51aa39622d866b987d71b6e37c9a8300e7f24c54a55611edaab669ed051b01cd",
+      "sql": "ALTER TABLE bs_settings ADD COLUMN owner_id TEXT CHECK(owner_id IS NULL OR owner_id <> '');\nALTER TABLE bs_team ADD COLUMN business_id TEXT CHECK(business_id IS NULL OR business_id <> '');\nALTER TABLE bs_team ADD COLUMN business_role TEXT CHECK(business_role IS NULL OR business_role IN('admin','member'));\nCREATE UNIQUE INDEX bs_team_business_id ON bs_team(business_id) WHERE business_id IS NOT NULL;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "280_agent_native.sql",
+      "sha256": "82b5c5eb2a587c3fdeb7ae73a3d2938aaf161f280e3802f3892c4df7e84a6bdc",
+      "sql": "-- One explicit native project per Business installation. Native owner setup writes it.\nCREATE TABLE h2h_business_project (\n singleton INTEGER PRIMARY KEY CHECK(singleton=1),\n project_id TEXT NOT NULL REFERENCES projects(id),\n owner_user_id TEXT NOT NULL REFERENCES users(id)\n);\n-- Attribution is retained separately from mutable person display/email and provider receipts.\nCREATE TABLE h2h_agent_operations (\n id TEXT PRIMARY KEY,project_id TEXT NOT NULL,tool TEXT NOT NULL,target_type TEXT NOT NULL,target_id TEXT NOT NULL,\n agent_id TEXT NOT NULL,agent_name TEXT NOT NULL,sponsor_id TEXT NOT NULL,sponsor_name TEXT NOT NULL,\n approvers_json TEXT NOT NULL,at INTEGER NOT NULL,result_json TEXT NOT NULL\n);\nCREATE INDEX h2h_agent_operations_target ON h2h_agent_operations(project_id,target_type,target_id,at);\n\n-- The original native claim links its single workspace; ambiguous upgrades require\n-- an explicit current-owner project link instead of enrolling every workspace.\nINSERT INTO h2h_business_project(singleton,project_id,owner_user_id)\n SELECT 1,min(m.project_id),o.claim_id FROM owner_setup o JOIN memberships m ON m.user_id=o.claim_id AND m.role='owner'\n GROUP BY o.claim_id HAVING count(*)=1;\nCREATE TRIGGER h2h_business_native_claim AFTER INSERT ON memberships\n WHEN NEW.role='owner' AND EXISTS(SELECT 1 FROM owner_setup WHERE claim_id=NEW.user_id)\n BEGIN\n INSERT INTO h2h_business_project(singleton,project_id,owner_user_id) VALUES(1,NEW.project_id,NEW.user_id) ON CONFLICT(singleton) DO NOTHING;\n END;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
@@ -921,8 +945,8 @@
     }
   ],
   "publicVariables": {
-    "MAIL_PROVIDER": "direct",
     "MAIL_FROM": "",
+    "MAIL_PROVIDER": "direct",
     "MAIL_RELAY_URL": "",
     "H2H_RER_MAIL_VERSION": "1",
     "RER_MAILBOX_ID": "",

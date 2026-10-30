@@ -31,3 +31,9 @@ test('a visitor\'s report is investigated read-only, an approved resolve child c
 })
 
 test('a connected application gets selected access only through native consent with an exact callback, a single-use code and PKCE; it repairs and publishes an article atomically with exact replay, meets stale, category and audience revisions as conflicts, loses erased evidence, and ends with membership loss or revocation',consentJourney)
+
+// The production router, native owner/password and shared policy run over real D1.
+test('the support agent door binds Business ids to native people, preserves scoped reads and native transactions, enforces policy, replay, revision, Pause and consent, keeps agent ticket work off customer threads and erases its copies of erased people and customers',async()=>{
+ const {agentDoorJourney}=await import('../helpers/agent-door/journey.mjs')
+ await agentDoorJourney()
+})

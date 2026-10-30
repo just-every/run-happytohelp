@@ -1,14 +1,10 @@
 name: Installer and README journeys
 
 # Fresh-clone installs/restores, two-location reproducibility and release upgrades are
-# retained on the slow qualification lane.
-# Branch pushes and pull requests use Verify's bounded native/build checks.
+# retained on Verify's reusable slow qualification lane.
+# Verify selects nightly on Monday/Thursday and all coverage on release tags.
 on:
-  push:
-    tags: ['v*']
-  schedule:
-    - cron: '47 4 * * 1,4'
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -19,26 +15,10 @@ concurrency:
 
 env:
   WRANGLER_SEND_METRICS: 'false'
+  PLAYWRIGHT_SKIP_BROWSER_GC: '1'
 
 jobs:
-  plan:
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      actions: read
-    outputs:
-      skip: ${{ steps.previous.outputs.skip }}
-    steps:
-      - id: previous
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          prior=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/installer-journeys.yml/runs?head_sha=$GITHUB_SHA&status=success&per_page=100" --jq '[.workflow_runs[] | select(.id != '"$GITHUB_RUN_ID"')] | length')
-          if [ "$prior" -gt 0 ]; then echo 'skip=true' >> "$GITHUB_OUTPUT"; else echo 'skip=false' >> "$GITHUB_OUTPUT"; fi
   journeys:
-    needs: plan
-    if: needs.plan.outputs.skip != 'true'
     name: Installer / ${{ matrix.name }}
     runs-on: ubuntu-24.04
     timeout-minutes: 90
@@ -88,25 +68,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22.20.0
-          cache: pnpm
       - name: Prepare space for fresh native checkouts
         # Retain rer's real disk guard; this app does not use the Android SDK.
         run: |
           bash scripts/ci/ensure-disk-space.sh
-      - run: pnpm install --frozen-lockfile
-      - name: Cache Chromium fallback packages
-        if: ${{ matrix.browser }}
+      - name: Set runner-owned caches
+        run: |
+          pnpm config set store-dir "$RUNNER_TEMP/pnpm-store"
+          printf 'PLAYWRIGHT_BROWSERS_PATH=%s/ms-playwright\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/pnpm-store" "$RUNNER_TEMP/ms-playwright" "$RUNNER_TEMP/rer-apt/archives"
+      - name: Cache frozen dependencies and Chromium
         uses: actions/cache@v4
         with:
-          path: ${{ runner.temp }}/rer-apt/archives
-          key: chromium-apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+          path: |
+            ${{ runner.temp }}/pnpm-store
+            ${{ runner.temp }}/ms-playwright
+            ${{ runner.temp }}/rer-apt/archives/*.deb
+          key: h2h-ubuntu24-temp-v1-${{ runner.arch }}-browser-${{ matrix.browser }}-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
+      - run: pnpm install --frozen-lockfile
       - name: Install Chromium
         if: ${{ matrix.browser }}
         run: |
-          set -euo pipefail
-          pnpm exec playwright install chromium
-          pnpm exec node scripts/chromium-probe.mjs || \
-            sudo env "PATH=$PATH" "APT_ARCHIVES=$RUNNER_TEMP/rer-apt/archives" python3 scripts/ci/install-chromium-deps.py
+          bash scripts/ci/install-chromium.sh
       - if: ${{ matrix.name == 'release-upgrades' }}
         run: pnpm run build
       - name: Run complete fresh-clone journey
@@ -137,8 +120,6 @@ jobs:
           retention-days: 7
 
   legacy-export:
-    needs: plan
-    if: needs.plan.outputs.skip != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     services:
@@ -163,7 +144,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22.20.0
-          cache: pnpm
+      - name: Set runner-owned caches
+        run: |
+          pnpm config set store-dir "$RUNNER_TEMP/pnpm-store"
+          printf 'PLAYWRIGHT_BROWSERS_PATH=%s/ms-playwright\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/pnpm-store" "$RUNNER_TEMP/ms-playwright" "$RUNNER_TEMP/rer-apt/archives"
+      - name: Cache frozen dependencies and Chromium
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.temp }}/pnpm-store
+            ${{ runner.temp }}/ms-playwright
+            ${{ runner.temp }}/rer-apt/archives/*.deb
+          key: h2h-ubuntu24-temp-v1-${{ runner.arch }}-browser-false-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
       - run: pnpm install --frozen-lockfile
       - name: Export two legacy projects and import each twice
         env:

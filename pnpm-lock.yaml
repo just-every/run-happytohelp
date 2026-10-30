@@ -178,8 +178,8 @@ importers:
         specifier: 5.20260908.1
         version: 5.20260908.1
       '@runeditrun/rer':
-        specifier: 0.2.77
-        version: 0.2.77
+        specifier: 0.2.94
+        version: 0.2.94
       '@tanstack/router-generator':
         specifier: 1.167.40
         version: 1.167.40
@@ -198,6 +198,9 @@ importers:
       esbuild:
         specifier: 0.28.1
         version: 0.28.1
+      miniflare:
+        specifier: 5.20260907.0-alpha
+        version: 5.20260907.0-alpha(@types/node@26.5.1)
       mysql2:
         specifier: 3.24.6
         version: 3.24.6(@types/node@26.5.1)
@@ -1035,8 +1038,8 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@runeditrun/rer@0.2.77':
-    resolution: {integrity: sha512-318XO8Oa+rI0mE2Gj4I8Oz2ETb1jeg05j1bi4+HzfHZJ2aQnTXAsAQCaNjEORmdFU6ZFbublYJirriB9yI+Alw==}
+  '@runeditrun/rer@0.2.94':
+    resolution: {integrity: sha512-F+URqV6t0nTLmognzhm0X66Fd0N9JmDxqa7UP6Hz7rLYigdU4U2rvN6tji3Ml7ivZqp+0k3rHH8ERizQ9/cTtA==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -3542,7 +3545,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@runeditrun/rer@0.2.77': {}
+  '@runeditrun/rer@0.2.94': {}
 
   '@selderee/plugin-htmlparser2@0.12.0(selderee@0.12.0)':
     dependencies:

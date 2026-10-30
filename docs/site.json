@@ -9,9 +9,15 @@
           "label": "Overview"
         },
         {
+          "slug": "getting-started",
+          "source": "docs/getting-started.md",
+          "label": "Getting started"
+        },
+        {
           "slug": "install",
           "source": "docs/INSTALLER.md",
-          "label": "Install"
+          "label": "Install",
+          "hidden": true
         },
         {
           "slug": "setup",
@@ -27,6 +33,11 @@
           "slug": "agent-fix",
           "source": "docs/AGENT-FIX.md",
           "label": "What an agent fix looks like"
+        },
+        {
+          "slug": "agent-door",
+          "source": "docs/AGENT-DOOR.md",
+          "label": "Support agent access"
         }
       ]
     },

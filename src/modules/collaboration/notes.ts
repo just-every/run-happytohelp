@@ -1,3 +1,4 @@
+import {agentOperation,nativeAgentAuthority,type NativeAgentAuthority} from '../../platform/agent-authority'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
 import {requiredString,id} from '../../platform/db'
@@ -23,6 +24,7 @@ export async function createNote(env:Env,actor:Actor,conversationId:string,body:
   env.DB.prepare('INSERT INTO conversation_note_media(note_id,media_id) SELECT n.id,j.value FROM conversation_notes n JOIN json_each(?) j WHERE n.id=?').bind(JSON.stringify(media.ids),key),
   env.DB.prepare('DELETE FROM macro_drafts WHERE project_id=? AND conversation_id=? AND actor_id=? AND EXISTS(SELECT 1 FROM conversation_notes WHERE id=?)').bind(actor.projectId,conversationId,actor.id,key),
   env.DB.prepare("INSERT INTO audit_events(id,project_id,at,category,action,outcome,actor_type,actor_id,source,target_type,target_id,detail_json) SELECT ?,?,?,'data','conversation.note_created','succeeded','user',?,?,'note',?,? WHERE EXISTS(SELECT 1 FROM conversation_notes WHERE id=?)").bind(crypto.randomUUID(),actor.projectId,now,actor.id,authority.source??'dashboard',key,JSON.stringify({conversationId,mentionIds:mentions,attachmentCount:media.ids.length}),key),
+  ...(authority[nativeAgentAuthority]?[agentOperation(env,authority as NativeAgentAuthority,'conversation',conversationId,{sql:'EXISTS(SELECT 1 FROM conversation_notes WHERE id=?)',params:[key]},{note_id:key})]:[]),
  ])
  if(!result[0].meta.changes)throw new HTTPException(409,{message:'Conversation access changed. Reload and try again.'})
  await publishActivity(env,actor.projectId,conversationId,'note')

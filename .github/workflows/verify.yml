@@ -141,7 +141,7 @@ jobs:
             commands: |
               node --test --test-concurrency=1 tests/journeys/ai.mjs tests/journeys/context.mjs tests/journeys/knowledge.mjs tests/journeys/email.mjs
           - name: connections-and-computers
-            browser: false
+            browser: true
             commands: |
               node --test --test-concurrency=1 tests/journeys/connections.mjs tests/journeys/widget.mjs tests/journeys/delegation.mjs tests/journeys/delegation-computers.mjs tests/journeys/connector.mjs tests/journeys/upgrade.mjs tests/journeys/runtime.mjs
           - name: import-and-reports

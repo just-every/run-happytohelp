@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "be628c03f8fbc404d1b10f73f94234a8150acc150ce4d15be4a456b21b603001",
+      "sha256": "d164a627be2220ca1e12aa64b3363262d400f71885e245006ab6bdfcb4276fe8",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "23b98a72bda6cfd9944b2ecf22984f752d157660f087fd109e64ccd3dc78f9ec",
+      "sha256": "cd3886e43e9895062a2efb6963c30694d60a63b15f52a83710c0c7dc1e33dd50",
       "executable": false
     },
     "DEMO.md": {
@@ -1645,7 +1645,7 @@
       "executable": false
     },
     "docs/api.md": {
-      "sha256": "63dc0cb46561ea19c54bfc3d3fd20f3fdb138f5ff109928c1056055cf4fef360",
+      "sha256": "646c789039d79fc57442cd90d7a015c8ad72d853f6a4b1a5a1f16b873d03908b",
       "executable": false
     },
     "docs/AUTHORING.md": {
@@ -4301,11 +4301,11 @@
       "executable": false
     },
     "src/modules/api-integrations/zapier-app.mjs": {
-      "sha256": "5459e4e2b379e7bcee301c6bc3dea9647b433ddc70c899c1335b834dd8e87d52",
+      "sha256": "aeb3628f2a6e579c27fce50715923ba7c99ca0f2c39947bce05dbfeee5e5113c",
       "executable": false
     },
     "src/modules/api-integrations/zapier.ts": {
-      "sha256": "abe5ee6cbde4db66b1a77e6c078f7c8d2dc4a28fc3365121011ee5581c9ccf27",
+      "sha256": "b9f751cdf040de4b903f26df81fa2355e5f745278313fc83799a98b362285837",
       "executable": false
     },
     "src/modules/assurance/model.ts": {
@@ -11437,7 +11437,7 @@
       "executable": false
     },
     "tests/connections/api001-outcomes.mjs": {
-      "sha256": "c30ff3d45095f0d45c950187fe415382b93cfb62194e206ac4183b17e1745f2d",
+      "sha256": "2cda34a682f861035a056533bcb4e1a12f7c917f97c1db1a04fabee429a10561",
       "executable": false
     },
     "tests/connections/delivery.mjs": {

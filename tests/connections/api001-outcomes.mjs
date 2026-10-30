@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
 import {harness,body,sha} from './harness.mjs'
-import {zapierApp,requestTemplate} from '../../src/modules/api-integrations/zapier-app.mjs'
+import {zapierApp,zapierRequests,requestTemplate,verifiedZapierEvent} from '../../src/modules/api-integrations/zapier-app.mjs'
 const root='/api/management/projects/p/connections'
 const rpc=(method,params={})=>body({jsonrpc:'2.0',id:1,method,params})
 export async function api001Outcomes(){
@@ -42,7 +42,7 @@ export async function api001Outcomes(){
   const first=await h.call('/api/v1/conversations?limit=1',{token});assert.ok(first.next_cursor)
   assert.equal((await h.raw('/api/v1/conversations?status=open&cursor='+encodeURIComponent(first.next_cursor),{token})).status,400)
   // O3: definition-owned REST-hook templates, signed event once, unsubscribe and revocation.
-  const subscribe=async(credential=token,event='contact.updated')=>{const request=requestTemplate(zapierApp.triggers.support_event.subscribe,{event,url:'https://receiver.example.com/zapier'});return h.raw(request.path,{token:credential,...request})}
+  const subscribe=async(credential=token,event='contact.updated')=>{const request=requestTemplate(zapierRequests.subscribe,{event,url:'https://receiver.example.com/zapier'});return h.raw(request.path,{token:credential,...request})}
   const hook=await (await subscribe()).json();assert.ok(hook.id&&hook.secret)
   assert.equal((await subscribe(read.token,'article.published')).status,201)
   const noScope=await h.issue(['articles:read']);assert.equal((await subscribe(noScope.token)).status,403)
@@ -59,9 +59,12 @@ export async function api001Outcomes(){
   assert.equal(headers['webhook-signature'],signature('p',hook.id,receipt.body.toString()))
   assert.notEqual(headers['webhook-signature'],signature('p','another-destination',receipt.body.toString()))
   assert.notEqual(headers['webhook-signature'],signature('p',hook.id,'forged bytes'))
+  const bundle={subscribeData:hook,rawRequest:{headers,content:receipt.body.toString()}};assert.equal(verifiedZapierEvent(bundle)[0].event,'contact.updated')
+  assert.throws(()=>verifiedZapierEvent({...bundle,rawRequest:{...bundle.rawRequest,content:'forged bytes'}}),/signature refused/)
+  assert.throws(()=>verifiedZapierEvent({...bundle,rawRequest:{...bundle.rawRequest,headers:{...headers,'webhook-destination':'foreign'}}}),/binding refused/)
   assert.ok(!receipt.body.toString().includes('Webhook change'))
   await h.dispatch();assert.equal(h.received.filter(r=>r.headers['webhook-destination']===hook.id).length,1)
-  const unsubscribe=requestTemplate(zapierApp.triggers.support_event.unsubscribe,{id:hook.id})
+  const unsubscribe=requestTemplate(zapierRequests.unsubscribe,{id:hook.id})
   assert.equal((await h.raw(unsubscribe.path,{token:foreign.token,...unsubscribe})).status,404)
   await h.call(unsubscribe.path,{token,...unsubscribe});await h.call('/api/v1/contacts/'+contact.id,{token,...body({name:'After unsubscribe'}),method:'PUT'});await h.dispatch()
   assert.equal(h.received.filter(r=>r.headers['webhook-destination']===hook.id).length,1)
@@ -75,8 +78,11 @@ export async function api001Outcomes(){
   assert.equal((await h.raw('/api/v1/zapier/sample?event=contact.updated',{token:revocable.token})).status,401)
   // O4: the shipped action request itself retains native idempotency and fences.
   const revision=(await h.db.prepare('SELECT revision FROM conversations WHERE id=?').bind(id).first()).revision
-  const action=requestTemplate(zapierApp.actions.reply,{id,localId:'zapier-reply',content:'Action through app definition',expectedRevision:revision})
-  const replied=await h.call(action.path,{token,...action});assert.ok(replied.data.id);assert.equal((await h.call(action.path,{token,...action})).duplicate,true)
+  const action=requestTemplate(zapierRequests.reply,{id,localId:'zapier-reply',content:'Action through app definition',expectedRevision:revision})
+  const z={request:async({url,...wire})=>{const response=await h.raw(new URL(url).pathname,wire),data=await response.json();return {data,throwForStatus(){assert.ok(response.ok,'Zapier request: '+response.status)}}}},actionBundle={authData:{baseUrl:'https://app.example',token},inputData:{id,localId:'zapier-reply',content:'Action through app definition',expectedRevision:revision}}
+  const replied=await zapierApp.creates.reply.operation.perform(z,actionBundle);assert.ok(replied.id);assert.equal((await zapierApp.creates.reply.operation.perform(z,actionBundle)).id,replied.id)
+  assert.equal((await h.call(action.path,{token,...action})).duplicate,true)
+  for(const [credential,status] of [[read.token,403],[foreign.token,404]])await assert.rejects(()=>zapierApp.creates.reply.operation.perform(z,{...actionBundle,authData:{...actionBundle.authData,token:credential}}),new RegExp(String(status)))
   assert.equal((await h.raw(action.path,{token:read.token,...action})).status,403);assert.equal((await h.raw(action.path,{token:foreign.token,...action})).status,404)
   // O5: listed authority equals native scopes, denied writes are inert, private notes absent.
   const initialized=await h.call('/api/v1/mcp',{token:read.token,...rpc('initialize')});assert.equal(initialized.result.serverInfo.name,'HappyToHelp')
@@ -106,7 +112,8 @@ export async function api001Outcomes(){
   const limited=await h.raw('/api/v1/mcp',{token:rate.token,...rpc('tools/call',{name:'list_contacts',arguments:{}})});assert.equal(limited.status,429);assert.ok(limited.headers.get('Retry-After'))
   assert.ok((await h.db.prepare('SELECT count(*) n FROM integration_token_usage WHERE token_id=? AND allowed=0').bind(rate.data.id).first()).n>0)
   await h.call('/api/management/projects/p/contacts/'+contact.id+'/erase',body({}))
-  const restore=requestTemplate(zapierApp.actions.create_contact,{name:'Cannot restore',email:'connector@example.test'});assert.equal((await h.raw(restore.path,{token,...restore})).status,409)
+  await assert.rejects(()=>zapierApp.creates.create_contact.operation.perform(z,{authData:actionBundle.authData,inputData:{name:'Cannot restore',email:'connector@example.test'}}),/409/)
+  const restore=requestTemplate(zapierRequests.create_contact,{name:'Cannot restore',email:'connector@example.test'});assert.equal((await h.raw(restore.path,{token,...restore})).status,409)
   assert.equal(h.external,0)
  }finally{await h.close()}
 }

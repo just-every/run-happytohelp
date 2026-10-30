@@ -550,7 +550,9 @@ The ESCALATION-001 clause remains partial pending policy and live qualification.
 
 The unpublished Zapier app definition is
 `src/modules/api-integrations/zapier-app.mjs`. Install it privately with the
-workspace API origin and bearer credential. Its request templates use native
+workspace API origin and bearer credential. The definition exports Zapier Platform
+`creates`, `searches` and REST-hook operations; its hook performer validates
+the tenant, destination, event and signature before returning event IDs. Its request templates use native
 find/create contact, reply, resolve and draft-article operations. Find contacts
 with `GET /api/v1/contacts?email=…` (exact, case-insensitive); search and create
 require their separate read and write scopes. Replies retain `localId` replay
@@ -560,7 +562,7 @@ additional authority. App publication and live Zapier qualification remain R-11.
 
 REST hooks use `POST /api/v1/zapier/hooks` with
 `{"event":"contact.updated","url":"https://receiver.example.com/events"}`.
-The response shows `{id, secret, event}` once. Use
+The response shows `{id, secret, event, project_id}` once. Use
 `DELETE /api/v1/zapier/hooks/{id}` to unsubscribe; only the subscribing
 credential can remove it. `GET /api/v1/zapier/sample?event=contact.updated`
 reads up to five current native records, never fabricated samples. Conversation,

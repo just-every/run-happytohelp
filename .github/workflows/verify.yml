@@ -133,7 +133,7 @@ jobs:
       matrix:
         include:
           - name: identity-and-desk
-            browser: false
+            browser: true
             commands: |
               node --test --test-concurrency=1 tests/journeys/identity.mjs tests/journeys/erasure.mjs tests/journeys/inbox.mjs tests/journeys/first-run.mjs tests/journeys/customers.mjs
           - name: assistant-and-knowledge

@@ -1573,7 +1573,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "9f0972aec236eebf5ec569420244075a2595920c0a44869ee07ce2f03bfad2c5",
+      "sha256": "ddac8dc18269c3a58419becdc0e3e71c9509b7d7929965d22144e378f619fa13",
       "executable": false
     },
     ".gitignore": {
@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "e256b271adcb6bf41ad2b51a4121d4472c568e0f9ee7932f31dd9b7cc5a61a10",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "e0b9483f734ac700e308febc2e906d66bccc736d7279d1f6659db0969f3d94de",
       "executable": false
     },
     "DEMO.md": {
@@ -10769,7 +10769,7 @@
       "executable": false
     },
     "src/ui/native/pages/ProjectsPage.jsx": {
-      "sha256": "9295492dbd87e1535848e73436d7908565ff244513e8d19e26e6f3281a81dce8",
+      "sha256": "96de60b0dbb28ad1f9b17207ed351f2851d6771c6c1370f813d95bee280edb66",
       "executable": false
     },
     "src/ui/native/pages/Reports.css": {
@@ -11756,6 +11756,10 @@
       "sha256": "1217afecb23c5a73340b0977a49df11b328f2854d9d1744c3b1d93a7766ae33c",
       "executable": false
     },
+    "tests/helpers/first-run/outcomes.mjs": {
+      "sha256": "1a1e62b08bc9ce31f881c0cd39ea80f3be08e4b5b439149d7c6ed114e0babed9",
+      "executable": false
+    },
     "tests/helpers/first-run/provisioning.mjs": {
       "sha256": "9a3c5c4c4b3a28ba7cf002bb24ca36ca18d665a31ddd4f5922c91216e99a81d3",
       "executable": false
@@ -12193,7 +12197,7 @@
       "executable": false
     },
     "tests/journeys/first-run.mjs": {
-      "sha256": "d70540354e369e20e62df77436aa6c18548c5f921dc1dc22ea0c3896740cb83b",
+      "sha256": "3ee4508459e95d9a8823de8434f528dc77d60309177ef90ac443588c137dd3d1",
       "executable": false
     },
     "tests/journeys/identity-browser.mjs": {

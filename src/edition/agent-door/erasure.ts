@@ -84,7 +84,7 @@ export async function memberDoorErasure(db:D1Database,userId:string):Promise<D1P
   ...known.flatMap(name=>[
    ...outputs(quoted(name),quoted(formerTeammate)),
    ...outputs(' for '+quoted(name).slice(1),' for '+quoted(formerTeammate).slice(1)),
-   text('agent_door_approvals','saved',quoted('Assign to '+name),quoted('Assign to '+formerTeammate)),
+   ...['agent_door_approvals','agent_door_reviews'].map(table=>text(table,'saved',quoted('Assign to '+name),quoted('Assign to '+formerTeammate))),
   ]),
   ...addresses.flatMap(address=>outputs(quoted(address),quoted('erased:'+userId))),
   ...renamed.flatMap(({from,to})=>[...outputs(quoted(from),quoted(to)),...outputs(quoted(from).slice(0,-1)+' for ',quoted(to).slice(0,-1)+' for ')]),

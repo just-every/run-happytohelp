@@ -5,6 +5,7 @@ import {scope} from './common'
 import {issuerGuard} from '../../platform/integration-authority'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement} from '../audit/record'
+import {memberBusinessErasure} from '../../edition/agent-door/member-business-erasure'
 import {memberDoorErasure} from '../../edition/agent-door/erasure'
 
 export const memberErasure=new Hono<AppEnv>()
@@ -24,7 +25,7 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  const registry=await currentRegistry(c.env.DB)
  if(registry.errors.length)throw new HTTPException(503,{message:'Member erasure schema requires review'})
  // Agent-door copies of the teammate's name are read before the account is anonymized.
- await c.env.DB.batch([...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...await memberDoorErasure(c.env.DB,userId)])
+ await c.env.DB.batch([...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...await memberDoorErasure(c.env.DB,userId),...await memberBusinessErasure(c.env.DB,actor.projectId,userId)])
  return c.json({erased:true,credentialsRevoked:true,eventsRetained:true})
 })
 
@@ -54,6 +55,7 @@ const memberPolicies:Record<string,RegistryEntry>={
  integration_token_events:{effects:[{prefix:"INSERT INTO integration_token_events(namespace,id,token_id,at,action,feature) SELECT namespace,lower(hex(randomblob(16))),id,?,'revoked','integrations.tokens' FROM api_credentials",source:'api_credentials',where:'issuer_id=? AND revoked_at IS NULL',before:c=>[c.now],after:c=>[c.user]}]},
  integration_tokens:{effects:[{prefix:"UPDATE integration_tokens SET revoked_at=coalesce(revoked_at,?),token_hash='erased:'||id",where:'credential_id IN (SELECT id FROM api_credentials WHERE namespace=? AND issuer_id=?)',before:c=>[c.now],after:c=>[c.project,c.user]}]},
  api_credentials:{effects:[{prefix:'UPDATE api_credentials SET issuer_id=NULL,revoked_at=coalesce(revoked_at,?)',where:'issuer_id=?',before:c=>[c.now],after:c=>[c.user]}]},
+ context_tracked_events:{effects:[{prefix:"UPDATE context_tracked_events SET payload=json_set(payload,'$.name','Former teammate')",where:"type='AGENT_ASSIGNED' AND json_valid(payload) AND coalesce(json_extract(payload,'$.is_ai'),0)=0 AND (json_extract(payload,'$.assigned_to')=? OR (json_type(payload,'$.assigned_to') IS NULL AND json_extract(payload,'$.name')=(SELECT name FROM users WHERE id=?)))",after:c=>[c.user,c.user]}]},
  users:{accountOnly:true,anonymize:true},
  ...Object.fromEntries(['credentials','user_settings','user_factors','recovery_codes','session_factors','webauthn_challenges'].map(table=>[table,accountDelete()])),
  ...Object.fromEntries(['user_project_preferences','member_roles','operator_presence','support_channel_members','support_channel_link_codes','memberships'].map(table=>[table,workspaceDelete()])),

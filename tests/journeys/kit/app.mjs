@@ -52,6 +52,7 @@ export async function startApp({bindings={},outbound,origin='https://app.example
   get files(){return mf.getR2Bucket('FILES')},
   get bindings(){return current},
   // Restart the same stored state with changed configuration, as a redeploy would.
+  async withStopped(visit){await mf.dispose();try{return await visit()}finally{await start()}},
   async configure(changes){await mf.dispose();current={...current,...changes};await start()},
   async takeJobs(){return (await call('/_test/queue/take')).data},
   async runJobs(jobs,headers){return (await call('/_test/queue/run',{body:jobs,status:200,headers})).data},

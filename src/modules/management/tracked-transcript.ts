@@ -13,7 +13,7 @@ export async function trackedTranscripts(env:Env,conversation:any,bucketIds:stri
    AND coalesce(json_extract(e.payload,'$.bucket_id'),c.id) IN (SELECT value FROM json_each(?))
    ORDER BY e.created_at,e.id`).bind(conversation.id,conversation.project_id,conversation.contact_id,JSON.stringify(bucketIds)),
   env.DB.prepare('SELECT id,name,email FROM contacts WHERE id=? AND project_id=?').bind(conversation.contact_id,conversation.project_id),
-  env.DB.prepare('SELECT u.id,u.name FROM users u JOIN memberships m ON m.user_id=u.id WHERE m.project_id=?').bind(conversation.project_id),
+  env.DB.prepare(`SELECT u.id,u.name FROM users u WHERE EXISTS(SELECT 1 FROM memberships m WHERE m.user_id=u.id AND m.project_id=?1) OR (u.email='erased:'||u.id AND EXISTS(SELECT 1 FROM context_tracked_events e WHERE e.project_id=?1 AND json_valid(e.payload) AND json_extract(e.payload,'$.agent_id')=u.id))`).bind(conversation.project_id),
   env.DB.prepare('SELECT id FROM context_insights WHERE project_id=? AND subject_id=?').bind(conversation.project_id,conversation.contact_id)
  ])
  const contact=person(data[1].results[0]),agents=new Map(data[2].results.map(row=>[row.id,row])),insights=new Set(data[3].results.map(row=>row.id)),events=new Map<string,any[]>()

@@ -148,4 +148,29 @@ export async function outcomesJourney(){
   // authority-epoch counter deliberately survives its session's removal.
  }finally{await h.close()}
  await roleDenials()
+ await publicationConflict()
+}
+
+// A plan with real publication work must be fenced when native identity changes
+// after review; refusing an all-rejected plan alone cannot establish that.
+async function publicationConflict(){
+ const h=await nativeHarness()
+ try{
+  const run=await review(h,'zendesk',generate('zendesk',1))
+  assert.ok(run.plan.decisions.some(row=>row.targets.some(target=>target.kind==='conversation')))
+  const native=(await h.call('/api/management/projects/p/contacts',json({name:'Later native customer',email:'person1@example.test'}))).data
+  const before=await h.snapshot()
+  await inert(h,'publication identity conflict',async()=>{
+   await h.call(`${root}/${run.id}/apply`,json({fingerprint:run.plan.fingerprint}));await h.drain()
+   const stopped=await state(h,run)
+   assert.equal(stopped.state,'applying');assert.equal(stopped.error,'native_contact_changed_since_review')
+   assertBusinessEquality(before,await h.snapshot())
+  })
+  assert.deepEqual((await h.call('/api/management/projects/p/contacts')).data.map(row=>row.id),[native.id])
+  assert.equal((await h.call('/api/dashboard/projects/p/conversations')).data.length,0,'no first conversation was published')
+  const replanned=await review(h,'zendesk',generate('zendesk',1)+'\n','rechecked.jsonl')
+  const row=replanned.plan.decisions.find(row=>row.kind==='user'&&row.sourceId==='1')
+  assert.equal(row.rejection,'native_contact_email_conflict')
+  assert.equal(row.location.artifact,'rechecked.jsonl');assert.equal(row.location.row,2)
+ }finally{await h.close()}
 }

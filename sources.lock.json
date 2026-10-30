@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "01b25b96e3b3a5d226d547f16b9e6746930dfba40d98bd4ae181e287dc6a5754",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "530ac728708ea378679a09f5a81d51b536be1da5a80b63bc8d20639255f16220",
       "executable": false
     },
     "DEMO.md": {
@@ -11956,6 +11956,14 @@
       "sha256": "70e39f2445a302d89b130da82caa4cdedd5157ac995e40733c4b197ef4cf95ca",
       "executable": false
     },
+    "tests/helpers/notify/outcomes.mjs": {
+      "sha256": "99e9d45ea55c74f53953c8b85877425a51b2b448de2e823bd6951b952a75c84a",
+      "executable": false
+    },
+    "tests/helpers/notify/teammates.mjs": {
+      "sha256": "fee253473e99919d152379019493b4c36169cced536f3d864b37b8c296771aa4",
+      "executable": false
+    },
     "tests/helpers/openai-stream.mjs": {
       "sha256": "19fe60cd275db9614dd15a22aff12b4a6b72547e304d96d851b3287d877dfe66",
       "executable": false
@@ -12181,7 +12189,7 @@
       "executable": false
     },
     "tests/journeys/email.mjs": {
-      "sha256": "74bc12e2f56105fa1efcea1aa33dfb22f7c875af66b9bf8de5014b1d02c10d49",
+      "sha256": "37b5b3e1a8d0ae6739eeda4f608cffe4871f1d1e6cb9e91e69d743f75807310b",
       "executable": false
     },
     "tests/journeys/erasure-browser.mjs": {

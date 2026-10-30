@@ -3,12 +3,13 @@ import assert from 'node:assert/strict'
 import {webcrypto,randomUUID} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {protectedFeedback} from './feedback.mjs'
+import {supportToolsJourney} from './support-tools.mjs'
 import initializeReviewer from './initialize-reviewer.mjs'
 import {accessToken,autonomousPolicy,policyEnvelope,signJws,seconds} from '../../../src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs'
 
 export async function agentDoorJourney(){
  const pair=await webcrypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']),kid=randomUUID(),issuer='https://business.example.test',installationId=randomUUID(),origin='https://app.example',email='morgan@example.test',sub=randomUUID(),publicKeys={[kid]:await webcrypto.subtle.exportKey('jwk',pair.publicKey)},token=randomUUID()
- const app=await startApp({bindings:{APP_ORIGIN:origin,H2H_SETUP_TOKEN:token,H2H_SETUP_OWNER_EMAIL:email,RER_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_APP_ORIGIN:origin,RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify(publicKeys),RER_BUSINESS_TRUST:JSON.stringify({v:1,issuer,audience:origin,subject:installationId,email,keys:publicKeys})}})
+ const app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:origin,H2H_SETUP_TOKEN:token,H2H_SETUP_OWNER_EMAIL:email,RER_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_APP_ORIGIN:origin,RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify(publicKeys),RER_BUSINESS_TRUST:JSON.stringify({v:1,issuer,audience:origin,subject:installationId,email,keys:publicKeys})}})
  try{
   const owner=await app.ok('/api/identity/bootstrap',{body:{setupToken:token,email,password:'Disposable-native-owner-892!zz',allowedOrigin:'https://store.example.test',ownerName:'Morgan Support'}})
   const native=(path,options={})=>app.ok(path,{token:owner.token,...options})
@@ -52,6 +53,8 @@ export async function agentDoorJourney(){
   assert.deepEqual(unsetAudit.classes,[{class:'standard',facts:{measure:1}}])
   assert.deepEqual(unsetAudit.rules,[{class:'standard',rule:null,do:'unset'}])
   assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',conversation.id)).n,0)
+  assert.equal((await call('happytohelp.conversations.draft',{id:conversation.id,content:'Unset policy must not save a draft',draft_id:null,revision:conversation.revision,last_message_id:conversation.last_message_id,idempotency_key:randomUUID()})).code,'policy_unset')
+  assert.equal((await app.first('SELECT count(*) n FROM macro_drafts')).n,0)
   const adopt=async(document=autonomousPolicy(),options={})=>{
    const envelope=await policyEnvelope(context,document,options),response=await app.call('/api/rer/agent-policy',{body:{policy:envelope.policy}})
    assert.equal(response.status,200,JSON.stringify(response.data));context.revision=envelope.payload.revision;context.seq=envelope.payload.seq
@@ -69,6 +72,7 @@ export async function agentDoorJourney(){
   const declared=(await rpc('tools/list')).data.result.tools
   assert.deepEqual(declared.map(t=>t.name).sort(),context.surface.tools.map(t=>t.name).sort())
   for(const tool of declared){const entry=context.surface.tools.find(item=>item.name===tool.name);assert.deepEqual(tool._meta['com.runeditrun/classes'],entry.classes);assert.deepEqual(tool._meta['com.runeditrun/clauses'],entry.clauses);assert.equal(tool._meta['com.runeditrun/scope'],entry.scope)}
+  await supportToolsJourney({app,native,call,rpc,adopt,context,owner,settings,existingMemberSub:memberSub,existingMemberEmail:memberEmail,person,reviewerSub,reviewerEmail})
   const result=await call('happytohelp.conversations.read',{id:conversation.id})
   assert.equal(result.outcome,'done',JSON.stringify(result))
   assert.equal(result.result.ticket.id,conversation.id)
@@ -184,7 +188,7 @@ export async function agentDoorJourney(){
   assert.equal(memberNote.outcome,'done',JSON.stringify(memberNote))
   const memberOperation=await app.first('SELECT sponsor_id FROM h2h_agent_operations WHERE id=?',memberNote.result.operation)
   assert.equal(memberOperation.sponsor_id,member.actor.id);assert.notEqual(memberOperation.sponsor_id,replacement.actor.id)
-  const removed=await settings(3,[]);assert.equal(removed.status,200)
+  const removed=await settings(4,[]);assert.equal(removed.status,200)
   assert.equal((await rpc('tools/list',{},memberToken)).status,401,'native membership removal ends sponsorship immediately')
   const before=(await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',conversation.id)).n
   await adopt(autonomousPolicy(),{paused:true})

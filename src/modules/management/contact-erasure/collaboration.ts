@@ -1,3 +1,4 @@
+import {replyDraftErasure} from '../../conversations/draft-erasure'
 import type {Env} from '../../../platform/env'
 import {macroErasureCount,macroErasureStatements} from '../../macros/erasure'
 import {notificationErasureStatements} from '../../integrations/triggers/erasure'
@@ -12,6 +13,7 @@ export const collaborationRecordsCount=`(${macroErasureCount})+(${conversationAc
  +(SELECT count(*) FROM conversation_note_media WHERE note_id IN (SELECT id FROM conversation_notes WHERE conversation_id IN (${owned})))
  +(SELECT count(*) FROM conversation_followers WHERE conversation_id IN (${owned}))`
 export function collaborationRecordsStatements(env:Env,projectId:string,contactId:string){return [
+ ...replyDraftErasure(env,projectId,contactId),
  ...macroErasureStatements(env,projectId,contactId),
  ...notificationErasureStatements(env,projectId,contactId),
  env.DB.prepare(collaborationErasureSql).bind(projectId,contactId),

@@ -210,6 +210,77 @@
       }
     },
     {
+      "name": "happytohelp.conversations.draft",
+      "scope": "happytohelp.conversations.draft",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "CONVERSATION-001",
+        "IDENTITY-001"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50000
+          },
+          "draft_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 200
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "last_message_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "id",
+          "content",
+          "draft_id",
+          "revision",
+          "last_message_id"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "draft": {
+            "type": "object"
+          },
+          "operation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "draft",
+          "operation"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
       "name": "happytohelp.conversations.list",
       "scope": "happytohelp.conversations.list",
       "readOnly": true,
@@ -461,6 +532,48 @@
       }
     },
     {
+      "name": "happytohelp.drafts.read",
+      "scope": "happytohelp.drafts.read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "CONVERSATION-001",
+        "IDENTITY-001"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "draft": {
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "draft"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
       "name": "happytohelp.integrations.read",
       "scope": "happytohelp.integrations.read",
       "readOnly": true,
@@ -636,6 +749,144 @@
         },
         "required": [
           "report"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "happytohelp.saved_replies.list",
+      "scope": "happytohelp.saved_replies.list",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "MACRO-001",
+        "IDENTITY-001"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "sort": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string"
+          },
+          "pagination": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "data",
+          "sort",
+          "direction",
+          "pagination"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "happytohelp.saved_replies.read",
+      "scope": "happytohelp.saved_replies.read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "MACRO-001",
+        "IDENTITY-001"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "reply": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "reply"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "happytohelp.settings.read",
+      "scope": "happytohelp.settings.read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "IDENTITY-001"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "project_id"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "settings": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "settings"
         ],
         "additionalProperties": false
       }

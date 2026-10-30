@@ -2,7 +2,7 @@
 
 # HappyToHelp homepage claims
 
-A product claim is done when every clause behind it is done, missing when every one is missing, and partial otherwise. Explicit source-bound non-product facts are unassessed; their historical status is history, not current proof.
+A claim is done when every clause behind it is done, missing when every one is missing, and partial otherwise.
 
 | # | Claim | Clauses | Status |
 | --- | --- | --- | --- |

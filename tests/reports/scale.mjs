@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {harness} from './harness.mjs'
+import {proveScaleOracles} from './scale-oracles.mjs'
 
 async function seedQuestions(h){await h.db.prepare("INSERT INTO messages(id,project_id,conversation_id,local_id,actor_id,actor_role,content,revision,created_at) SELECT 'question-'||id,project_id,id,'question-'||id,contact_id,'contact','Question',1,created_at FROM conversations").run()}
 
@@ -22,5 +23,6 @@ export async function reportScaleJourney(){
   assert.equal(result.status,200);assert.match(summary,/"Conversations","10001"/);assert.match(summary,/"2026-04-01","10001","0","0","0","0"/);
   assert.doesNotMatch(summary,/bulk-|"ID","Created|Latest comment/);
   assert.equal(h.external,0);
+  await proveScaleOracles(h);
  }finally{await h.close()}
 }

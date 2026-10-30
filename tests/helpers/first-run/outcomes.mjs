@@ -17,7 +17,6 @@ export default async function networkEdge(request){
 
 export async function firstRunOutcomes(){
  await routeOutcomes()
- await builtOutcomes()
 }
 
 async function routeOutcomes(){
@@ -41,7 +40,7 @@ async function routeOutcomes(){
  }finally{await app.close()}
 }
 
-async function builtOutcomes(){
+export async function builtOutcomes(){
  const reservation=createServer();await new Promise(done=>reservation.listen(0,'127.0.0.1',done))
  const port=reservation.address().port;await new Promise(done=>reservation.close(done))
  const runtime=await createRuntime({port,queueConsumers:true,vars:{APP_ORIGIN:`http://127.0.0.1:${port}`,EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-outcomes-mail',EMAIL_FROM:'support@installation.test',INBOUND_EMAIL_TOKEN:'synthetic-outcomes-inbound'},outboundFixture:import.meta.url})

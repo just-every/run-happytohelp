@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -906,15 +906,15 @@ Core · target · **partial** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
 
 #### BRANDS-001 — Multi-brand support operations
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **done** · Cites BASE-ROLE-001
 
 **Requirement.** A business can manage distinct brands, mailboxes, widget identities, domains, help centers, signatures, channels and policies with deliberate shared teams and reporting. Route and report by brand without mixing customer identities, private knowledge or sender credentials. Cross-brand administration and customer handoffs require explicit access and a visible explanation.
 
 **Acceptance.**
 1. Configure two brands with different domains/senders and a shared permitted team; receive and resolve messages from each, change one policy, inspect per-brand and aggregate reports and deny an unauthorized cross-brand customer/agent read.
 
-**Evidence.** Configuration and shared team, reception/resolution in each brand, one-brand policy changes and denied customer/agent reads: `tests/journeys/inbox.mjs` — “two brands deliberately share a team while domains, senders, signatures, customer identities, private knowledge, routing and policy stay isolated, reports aggregate only permitted brands and revocation ends access”. Per-brand/aggregate reports: the same journey plus `tests/journeys/reports.mjs` — “reports count the workspace calendar cohort with independent median, p90, rate and comment oracles, stream complete formula-safe CSVs above 10,000 rows, and refuse deleted or foreign workspaces” (`tests/reports/figures.mjs` — “report export journey: independent calendar oracles, complete bounded CSV and transcript export”) for weighted rates. UI configuration, sender, isolated inbox, reports and distinct help-host article routes: `tests/journeys/inbox-browser.mjs` — “two brands retain their own native configuration, sender, inbox and reports at 1440 and 390 with explicit shared-team report selection”.
-**Gap.** Main re-audit: unasserted in the cited Evidence set: two brand configuration; distinct domains; distinct senders; shared permitted team; receive each brand; resolve each brand; change one policy; deny unauthorized customer read; deny unauthorized agent read. Asserted: per-brand reports; aggregate reports. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: two brand configuration; distinct domains; distinct senders; shared permitted team; receive each brand; resolve each brand; change one policy; deny unauthorized customer read; deny unauthorized agent read. Asserted: per-brand reports; aggregate reports.
+**Evidence.** `tests/journeys/inbox.mjs` — “two brands share a permitted team while customer identity, knowledge, routing, sender policy and reports retain their current brand authority”, registered as brandsJourney in `tests/helpers/inbox/brands.mjs`: public brand configuration, distinct domains/senders/signatures, deliberately accepted shared teammate without copied staff access, widget and email reception/routing/resolution, distinct same-email identities, foreign-origin widget-settings and customer-history denials, isolated policy change in the manifest, reports and selection-time revocation. Its brandsOutcomes call (`tests/helpers/inbox/brands-outcomes.mjs`) asserts persisted configuration, exact per-brand ticket sets, resolved widget/email states and selected-mailbox branded sent copies; independently counts inbox volume and resolved conversation states for individual and combined reports; refuses uninvited administration, inbox/history/reports, malformed/unavailable/single-brand selections and ticket moves with readable explanations; invites then revokes a shared admin, races report reads with revocation, excludes removed-brand global rows and preserves the other brand's reports/reads. brandKnowledgeOutcomes in the same helper (line 116) proves public-article route isolation, draft isolation and foreign edit denial, and own versus foreign help-session access to published private knowledge. brandMailboxOutcomes (`tests/helpers/inbox/brands-mailbox-outcomes.mjs`) provisions two native brands through public identity/management routes, installs separate OAuth credentials through network-edge fixtures, refuses foreign mailbox edits/signatures/reconnect/disconnect/send without provider effects, excludes credentials from individual/combined reads and inspects each authorized sent MIME copy for its own sender/signature under its own credential. `tests/journeys/inbox-browser.mjs` — “two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening”, brandsBrowser (`tests/helpers/inbox/brands-browser.mjs`) with openBrandRequest/answerAndReport (`tests/helpers/inbox/brand-support-browser.mjs`): built configuration/sender, isolated inboxes and separate help-host article routes. Report statistics/export oracles remain calendarReportsJourney (`tests/reports/figures.mjs`, REPORTS-001/002); mailbox protocol remains mailboxProviderJourney (`tests/helpers/email/mailbox-provider.mjs`, MAIL-001); knowledge audience/host code remains `src/modules/knowledge/access.ts`, `src/modules/knowledge/public-routes.ts` and `src/modules/public-site` (KNOWLEDGE-002/003); phone operation remains mobileInbox (`tests/helpers/inbox/mobile-inbox-browser.mjs`, MOBILE-001).
+**Gap.** UNMET-EXTERNAL (not blocking under the 23 October ct ruling supplied in the brief): two real brand domains, real sender verification and real notification-provider delivery remain unobserved. Network-edge fixture acceptance does not establish those live outcomes.
 
 #### ACCESS-001 — Enterprise identity and custom permissions
 

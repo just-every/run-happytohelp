@@ -72,7 +72,8 @@
     "test:docs-browser": "node --test tests/journeys/public-browser.mjs",
     "test:docs-site": "node --test tests/journeys/public.mjs",
     "test:base-origin": "pnpm run source:verify-base-origin",
-    "test:usage": "pnpm run test:ai"
+    "test:usage": "pnpm run test:ai",
+    "agent-surface:generate": "node scripts/generate-agent-surface.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.111.0",

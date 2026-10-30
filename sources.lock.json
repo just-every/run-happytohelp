@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8ec420a9221ab25abb1a4a67791f5bef4c174893ac17a8a53f3f46aef23fcee5",
+      "sha256": "ad3f83e5b73e49e8e0fc1ebd55f2871007d4781205a9ac7545dbc40939714579",
       "executable": false
     },
     "DEMO.md": {
@@ -4225,7 +4225,7 @@
       "executable": false
     },
     "src/modules/api-integrations/helpscout-pull.ts": {
-      "sha256": "e34038a9b9b6411ab3a096d2be7316763a5e23bd3a471e236512271b97805d24",
+      "sha256": "4daa1809d9c2129bdaa5fb8de2516bd9bb798a1335ee5e6970994c62ec2a8151",
       "executable": false
     },
     "src/modules/api-integrations/helpscout.ts": {

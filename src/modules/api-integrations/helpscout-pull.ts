@@ -34,6 +34,12 @@ export async function pullScout(env:Env,who:Issuer,headers:Headers,execution:Par
     // Recheck both connection generation and reviewer before entering immutable import custody.
     if(!await env.DB.prepare(`SELECT 1 FROM helpscout_connections WHERE project_id=? AND revision=? AND claim=? AND secret_ciphertext IS NOT NULL AND EXISTS(${guard.sql})`).bind(project,row.revision,claim,...guard.params).first())throw new ScoutError('authority_changed')
     const result=await moveInRoutes.fetch(new Request('https://import.internal/projects/'+encodeURIComponent(project)+'/imports?vendor=helpscout',{method:'POST',headers:{Authorization:headers.get('Authorization')??'',Cookie:headers.get('Cookie')??'','Content-Type':'application/json','X-Import-Filename':'helpscout-sync.json'},body:'['+parts.join(',')+']'}),env,execution)
+    // An unchanged erased artifact is refused by Hono as plain text, before
+    // the import door's JSON identity check. Skip it without retaining content.
+    if(result.status===410&&result.headers.get('Content-Type')?.startsWith('text/plain')){
+     if(await result.text()==='This export contains erased data and cannot be replayed'){skipped++;continue}
+     throw new ScoutError('import_refused')
+    }
     const receipt:any=await result.json()
     if(result.status===410&&(receipt.code==='erased_identity_match'||String(receipt.error).includes('erased data'))){skipped++;continue}
     if(!result.ok||!receipt.data?.id)throw new ScoutError(result.status===401||result.status===403?'reviewer_refused':'import_refused')

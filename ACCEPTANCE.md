@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 2 | 73 | 10 | 85 |
+| Core | 3 | 72 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 2 | 73 | 15 | 90 |
+| Full target | 3 | 72 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -961,15 +961,15 @@ Core · target · **partial** · Register R-14, R-19, R-20
 
 #### OUTCOMES-002 — CSAT across support channels
 
-Core · target · **partial** · Rules D-2 · Register R-3
+Core · target · **done** · Rules D-2 · Register R-3
 
 **Requirement.** Offer configurable post-resolution satisfaction surveys via widget, portal, email and permitted messaging channels with rating scale, optional comment, locale, send timing and opt-out. Associate one latest response with the exact resolution cycle and channel; preserve previous-cycle history and reconcile signed response links without requiring a widget session. Leads inspect low-score follow-up and customer recovery without auto-closing complaints.
 
 **Acceptance.**
 1. Resolve tickets across the channels, receive/answer a survey as the eligible customer, rerate, reopen and revoke/expire a response link; compare cycle-level CSAT and opt-out behavior, ensure no duplicate invitation and verify erased comments disappear everywhere.
 
-**Evidence.** Local implementation/fixture evidence: `tests/helpers/customer-portal-journey.mjs`, csatJourney: eligible signed email response, rerating/concurrency, timing, expiry/revocation, opt-out, cycle history, import/machine exclusions and erasure. `tests/helpers/customer-portal-journey.mjs`, customerPortalJourney: the same eligible signed invitation in the portal. `tests/reports/support-outcomes.mjs` (visitor rating lifecycle: current session and cycle, bounded changes, commit races and erasure): widget scale/locale/timing snapshots, latest-cycle rerating and visitor-owned opt-out. Explicit optional customer recovery is stored independently of the rating, and low feedback never changes ticket status. `tests/helpers/inbox/brand-support-browser.mjs` (at 1440 and 390px a widget rating reaches the operator live and on reload, Reports range and both CSVs include it, and reopening clears the prompt while keeping prior feedback): Settings persistence and Spanish feedback at 1440/390.
-**Gap.** Implementation/acceptance and live qualification gaps: Native permitted messaging-channel transports, identity/consent/window/template rules and survey dispatch/response remain incomplete. Live mail and messaging-provider delivery receipts remain pending. Browser qualification passed at 1440/390.
+**Evidence.** Local implementation/fixture evidence: `tests/helpers/customer-portal-journey.mjs`, customerPortalJourney: eligible signed portal/email responses, scanner-safe GET, replay refusal, reopening and delayed/opted-out portal surveys. `tests/helpers/outcomes-002-email-outcomes.mjs`, emailOutcomes and surveyUpgrade: settings validation, cycle snapshots/lifetime, one invitation on repeated scheduling, signed rerating/history, expiry/revocation/opt-out, pending cancellation, low-score recovery without ticket-status changes, erasure in results/history/CSV, and byte/value-preserving migration 277. `tests/helpers/support-channels/outcomes-002-outcomes.mjs`, messagingOutcomes, and `tests/helpers/support-channels/outcomes-002-refusals.mjs`, messagingRefusals, through the existing connections journey: SMS/WhatsApp/Instagram/Messenger original-channel dispatch with no outbound mail configured, sessionless signed responses/rerating, replay/forgery/expiry/revoke/reopen refusal, cycle comparison/history, no duplicate invitation or uncertain replay, visible consent/window/registration/revocation suppression, scoped SMS/WhatsApp STOP/START/HELP and erasure in results/operator history/CSV with no recipient identity on survey rows. `tests/reports/support-outcomes.mjs`, supportOutcomesJourney and publicCohort: existing widget scale/locale/timing snapshots, eligible current-cycle rating/rerating, history, opt-out, erasure and independent recovery.
+**Gap.** UNMET-EXTERNAL: live Twilio/Meta delivery, consent and A2P/template-registration receipts on connected accounts, and live mail delivery receipts remain unqualified. Signed provider fixtures do not qualify live accounts. Adopted defaults: no WhatsApp-template survey delivery and no in-channel digit-rating replies.
 
 #### REPORTS-002 — Workload, service and agent outcomes
 

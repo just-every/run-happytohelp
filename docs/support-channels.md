@@ -142,3 +142,24 @@ The channel tests use the synthetic Teams channel ID
 email-shaped substring through the exact declaration in `.publish-check/config.json`;
 this is a protocol fixture, not a mailbox or credential. Credential checks and
 full-history scanning remain enabled.
+
+
+## Satisfaction surveys
+
+Resolving a native SMS, WhatsApp, Instagram or Messenger thread can schedule one
+survey in its original channel under **Reports → Satisfaction surveys → Survey
+settings**. The shared enabled flag, scale, locale, delay and link lifetime are
+snapshotted for each cycle. No extra channel control is required.
+
+Surveys use the same reply authority as human sends: current connection and
+consent, registered SMS sender, and the 24-hour social reply window. STOP fences
+SMS/WhatsApp survey links and dispatch; START restores only that number and
+channel, and HELP grants no consent. Outside that authority the survey is
+suppressed with a reason in the thread's delivery receipts. It never switches
+channel, uses a WhatsApp template, or retries a failed/unknown provider outcome.
+Only a signed web response link accepts a rating; an in-channel digit does not.
+
+Signed provider fixtures qualify dispatch, response, rerating, opt-out and
+erasure locally. Live Twilio/Meta delivery, consent and A2P/template-registration
+receipts remain UNMET-EXTERNAL. See [Customer satisfaction](customer-satisfaction.md)
+for survey settings, reporting and the separate live mail qualification gap.

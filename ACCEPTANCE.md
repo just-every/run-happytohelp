@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -332,7 +332,7 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 
 #### MIGRATION-001 — Prior-data custody
 
-Core · published · **partial** · Cites BASE-DATA-001, BASE-DATA-003, BASE-ROLE-001
+Core · published · **done** · Cites BASE-DATA-001, BASE-DATA-003, BASE-ROLE-001
 
 **Requirement.** Explicit legacy artifacts preserve IDs, exact historical financial values, transcripts, object hashes, publication and permissions through resumable guarded D1/R2 import. Historical financial SQL, imported rows and reconciliation holds remain immutable archive custody; they never become active payments, balances or provider work. The one exception is an explicit owner/admin contact erasure: it takes precedence over archive custody for that contact's personal data and redacts the imported rows and their verbatim archive copies (row digests are kept, so replaying the bundle does not restore them), leaving a opaque erasure audit tombstone. Old credentials do not become trusted native authority. Details are in [the support protocol guide](docs/contract/support-protocols.md).
 
@@ -340,8 +340,8 @@ Core · published · **partial** · Cites BASE-DATA-001, BASE-DATA-003, BASE-ROL
 1. Import representative legacy IDs, permissions, exact historical financial values and media hashes through local D1/R2; resume safely and refuse conflicts without external work.
 2. Erase an imported contact and prove archive redaction plus tombstone/digest fencing prevents restoration of erased personal data.
 
-**Evidence.** `src/modules/legacy-import`; `tests/journeys/erasure.mjs`; `tests/journeys/move-in-admission.mjs`
-**Gap.** Carried-done audit: unasserted in the cited Evidence set: legacy IDs retained; legacy permissions retained; exact historical financial values retained; media hashes retained; resume is safe; conflicts refused; no external work; imported archive redacted; opaque tombstone retained; digest fencing prevents restoration. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
+**Evidence.** `tests/helpers/legacy/custody.mjs`, legacyCustodyJourney, called by the existing command journey in `tests/journeys/legacy.mjs`: both documented --file and --package import doors; retained IDs and owner/admin/operator memberships, exact decimal strings and safe minor units (including awkward/negative/large values and unsafe-unit refusal), downloaded media SHA-256, a real D1 transaction interruption followed by clean-state convergence and duplicate-free replay, late financial conflicts with unchanged D1/R2, inert old credentials and reconciliation holds. `tests/helpers/legacy/network-edge.mjs` refuses and records external fetch/socket/TLS attempts during each import. The same custody helper erases an imported contact through the emitted owner's HTTP route, reads redacted native/source copies and retained row digests, checks one opaque tombstone, then reapplies each original bundle and compares D1, verbatim archives and R2 after replay; historical money and holds remain unchanged. Existing `tests/journeys/legacy.mjs` assertions retain transcript IDs/text, attachment bytes, inbox membership, published knowledge and old-password refusal. Related reviewed-vendor import proof remains in `tests/journeys/move-in-admission.mjs`; native erasure scope remains ERASURE-001 in `tests/journeys/erasure.mjs`.
+**Gap.** None for these synthetic local D1/R2 acceptance outcomes. Importing the owner's real export is separate operational work and is not claimed.
 
 #### SOURCE-001 — Author-owned capability graph
 

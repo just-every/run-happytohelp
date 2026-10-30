@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "618d7819ba4eb3dbea5b5aac135099180f5e0b97ea33a0432240dc45ab028d4b",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "9b8136211a3911f53a50b80ecb0b2d605957d596bec88cc62068e62c00230f3d",
       "executable": false
     },
     "DEMO.md": {
@@ -3353,11 +3353,11 @@
       "executable": false
     },
     "scripts/legacy-import/import-package.mjs": {
-      "sha256": "c497a235570878c654d58e21303b9aed993ff23d040a436e9cface0434257a84",
+      "sha256": "cf3b539781a2728ba40d15f3dc91b8ec90c81e60781d21633182fe6753572491",
       "executable": false
     },
     "scripts/legacy-import/objects.mjs": {
-      "sha256": "879cc6fa82262e1cf265863fabaef45aee457e4f52fa69b8f33b02a87690d1a6",
+      "sha256": "ecf7bdafa912b228d33a2f35e14d9c89ba9f866de124db83be656f24e6253c27",
       "executable": false
     },
     "scripts/legacy-import/package.mjs": {
@@ -6085,7 +6085,7 @@
       "executable": false
     },
     "src/modules/legacy-import/importer.ts": {
-      "sha256": "9e0a1623212a5cac584ec51a43eacb2e7d6cbd3912db5239c6fb9c984cdcbe16",
+      "sha256": "0c37d033df240cc7ad265db9d0819e8f39612938ccff94ce8e9ba06afa184827",
       "executable": false
     },
     "src/modules/legacy-import/map-core.ts": {
@@ -6097,7 +6097,7 @@
       "executable": false
     },
     "src/modules/legacy-import/map-operations.ts": {
-      "sha256": "f9334a3a57e48502ec60ad2501d105d08ef5d1503bbf2993a85507e594716d06",
+      "sha256": "bfb605c7f527a8e8945e84781bd84d2df57105b616cc1aa7e3ad15bfa8e81dc9",
       "executable": false
     },
     "src/modules/legacy-import/map-project.ts": {
@@ -6105,7 +6105,7 @@
       "executable": false
     },
     "src/modules/legacy-import/mapping-shared.ts": {
-      "sha256": "1f165379c53fdcb4f3a54e81ecab2591d7ca8aab20cdc52e2fd3e16a243a0765",
+      "sha256": "c9c60ac4a6f9e996298150d64202ebc023ace8d801a888c0ba09a724c2b0b42d",
       "executable": false
     },
     "src/modules/legacy-import/mapping.ts": {
@@ -11952,6 +11952,14 @@
       "sha256": "ac20f63488cbb9fd117226c3fb16d71b6f4b43f856c55036cddd0cb3d4c726b7",
       "executable": false
     },
+    "tests/helpers/legacy/custody.mjs": {
+      "sha256": "a03f774a861a05d1234649d9a8dc2e59053f9e0c62809c563c03341d480e031d",
+      "executable": false
+    },
+    "tests/helpers/legacy/network-edge.mjs": {
+      "sha256": "292d9a1c03de5add3fe7a4ab530454a7bf4217368539862cd256eb3facd07d14",
+      "executable": false
+    },
     "tests/helpers/mail-provider-network.mjs": {
       "sha256": "70e39f2445a302d89b130da82caa4cdedd5157ac995e40733c4b197ef4cf95ca",
       "executable": false
@@ -12241,7 +12249,7 @@
       "executable": false
     },
     "tests/journeys/legacy.mjs": {
-      "sha256": "91035887d56f153e2e2b7a4f5e010fe140412b73de579f88df1bf62e1fb909ff",
+      "sha256": "c3fe7b06c8f664c200fa0398465939e20917388e43626ec9be756be0433b7d42",
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {

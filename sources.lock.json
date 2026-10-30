@@ -11837,7 +11837,7 @@
       "executable": false
     },
     "tests/helpers/inbox/desk-collaboration.mjs": {
-      "sha256": "8ca84688e87f8242a8173771125bdf81ddc38a0046d55040fbe07e564a643fea",
+      "sha256": "a36fceffed0bac5f630666ec45c929e249286c9b3a3baa078e5b71569d09b733",
       "executable": false
     },
     "tests/helpers/inbox/mobile-inbox-browser.mjs": {
@@ -12205,7 +12205,7 @@
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {
-      "sha256": "b2e250e78b82beed21bbd3612962c7d068c151181c0700f2368c65d2a10b7783",
+      "sha256": "cc6a98b7e7e5559ea772ff7d91bd901bb78e7c1178349386f6a7af3142ce88f2",
       "executable": false
     },
     "tests/journeys/inbox.mjs": {

@@ -12,6 +12,9 @@ try{
  let registry
  try{registry=await (await mf.dispatchFetch('https://registry.invalid')).json()}finally{await mf.dispose()}
  const journey=JSON.parse(await readFile('tests/helpers/agent-door/surface-journey.json','utf8'))
+ const support=JSON.parse(await readFile('tests/helpers/agent-door/support-surface-journey.json','utf8'))
+ journey.journey=[...journey.journey,...support.journey]
+ journey.verification.fixtures={module:'tests/helpers/agent-door/support-phase-fixtures.mjs'}
  const surface={schema:'rer-agent-surface/1',seed:'happytohelp',specialist:'support agent',...registry,tools:[...registry.tools,{name:'happytohelp.events.list',scope:'events:read',readOnly:true,classes:['standard'],clauses:['BASE-AGENT-010']}],...journey}
  await writeFile('agent-surface.json',JSON.stringify(surface,null,2)+'\n')
 }finally{await rm(directory,{recursive:true,force:true})}

@@ -176,6 +176,10 @@
     {
       "id": "280_agent_native.sql",
       "buyerSteps": "Link an unambiguous existing native owner workspace and retain separate agent/sponsor attribution after migration 279. Ambiguous installations require an explicit owner workspace choice. No customer message is sent."
+    },
+    {
+      "id": "281_native_reply_drafts.sql",
+      "buyerSteps": "Apply after 280 before serving the updated Worker. Back up D1 and retain every migration ledger row. Preserves all existing macro drafts and adds opaque versions for direct per-teammate reply drafts in the same native composer slot. Draft persistence never admits a message or delivery."
     }
   ],
   "breaking": false,

@@ -1,3 +1,4 @@
+import {replyDraftMemberErasure} from '../conversations/draft-erasure'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
@@ -23,8 +24,8 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  const context:ErasureContext={env:c.env,project:actor.projectId,user:userId,actor:actor.id,now,guard:{sql:`EXISTS(${guard.sql}) AND ${eligible}`,params:[...guard.params,...args]}}
  const registry=await currentRegistry(c.env.DB)
  if(registry.errors.length)throw new HTTPException(503,{message:'Member erasure schema requires review'})
- // Agent-door copies of the teammate's name are read before the account is anonymized.
- await c.env.DB.batch([...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...await memberDoorErasure(c.env.DB,userId)])
+// Agent-door identity copies are prepared before native anonymization.
+ await c.env.DB.batch([...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...await memberDoorErasure(c.env.DB,userId),...replyDraftMemberErasure(c.env,actor.projectId,userId)])
  return c.json({erased:true,credentialsRevoked:true,eventsRetained:true})
 })
 
@@ -59,6 +60,7 @@ const memberPolicies:Record<string,RegistryEntry>={
  ...Object.fromEntries(['user_project_preferences','member_roles','operator_presence','support_channel_members','support_channel_link_codes','memberships'].map(table=>[table,workspaceDelete()])),
  magic_signins:{erase:{column:'user_id',nullable:true}},
  sessions:{erase:{column:'actor_id',nullable:true,predicate:"actor_id=? AND role<>'contact'",args:c=>[c.user]}},
+ macro_drafts:{erase:{column:'actor_id'}},
  conversation_followers:{erase:{column:'user_id',through:'conversation_id'}},
  ticket_handle_sessions:{effects:[{prefix:'UPDATE ticket_handle_sessions SET ended_at=max(started_at,?)',where:'user_id=? AND ended_at IS NULL',before:c=>[c.now],after:c=>[c.user]}]},
  audit_events:{audit:true},

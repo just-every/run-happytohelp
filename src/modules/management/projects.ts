@@ -11,7 +11,7 @@ import { id,requiredString,serverSecret } from '../../platform/db'
 import { clientAddress,enforceRateLimits } from '../../platform/rate-limits'
 import {person} from './dashboard-data'
 import {artworkUrl} from './workspace-artwork'
-import {scope,text,url,decode} from './common'
+import {scope,text,url} from './common'
 import {isPlatformAdmin} from './admin'
 import {appearanceSettings} from './appearance-settings'
 import {workspaceDefaults} from './provisioning/index'
@@ -20,6 +20,7 @@ import {websiteAddress} from './website-address'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement,requestSource} from '../audit/record'
 import {accountAudit} from '../identity/two-factor/factors'
+import {readProjectSettings} from './read-settings'
 import {projectAccess} from '../access/catalogue'
 export const projects=new Hono<AppEnv>()
 projects.route('/',brandReports).route('/',brands)
@@ -69,7 +70,7 @@ projects.post('/projects',async c=>{
  await defaults.after()
  return c.json({id:projectId,name,allowed_origin:origin},201)
 })
-projects.get('/projects/:projectId/settings',async c=>{const a=await scope(c);return c.json({data:decode(await c.env.DB.prepare('SELECT p.id,p.name,p.widget_key,p.allowed_origin,p.created_at,s.settings_json FROM projects p LEFT JOIN project_settings s ON s.project_id=p.id WHERE p.id=?').bind(a.projectId).first())})})
+projects.get('/projects/:projectId/settings',async c=>{const a=await scope(c);return c.json({data:await readProjectSettings(c.env,a.projectId)})})
 projects.put('/projects/:projectId/settings',async c=>{
  const a=await scope(c,true),b=await c.req.json(),appearance=appearanceSettings(b)
  if('timezone' in b&&!validTimezone(b.timezone))throw new HTTPException(400,{message:'Choose a valid IANA timezone'})

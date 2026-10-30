@@ -26,6 +26,8 @@ export const ticketTables=['ticket_statuses','ticket_groups','ticket_group_membe
 // The exact R3 row transition remains supported, including old erasure receipts.
 // No invented customer data: these are the cells migration 130/132 introduced.
 export function workflowArchiveUpgradeRow(table,row){
+ // The native draft rebuild retains every old cell and adds only a null direct-draft marker.
+ if(table==='macro_drafts'&&row.draft_id===undefined)return {...row,draft_id:null};
  if(table==='conversations'&&row.status_id===undefined){
   const category=row.resolved_at!==null?'solved':row.revision>0?'open':'new';
   row={...row,status_id:category,status_category:category,subject:'',priority:'normal',channel:'widget',brand_id:row.project_id,group_id:null,requester_id:row.contact_id,submitter_id:row.contact_id,submitter_type:'contact',ticket_version:0,ticket_actor_id:null,ticket_actor_type:'system',ticket_source:'rer'};
@@ -49,7 +51,8 @@ export async function workflowArchivePolicy(root,input,{beforeTickets=false,befo
   // v0.4.2, the last pre-ticket release, ends at 190; every later migration
   // (191's ticket_history index onward) only ever runs after the ticket model.
   // R7b's reserved 172–174 numbers also landed after the pre-ticket release.
-  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!/^22[0-9]_/.test(name)&&!/^15[0-9]_/.test(name)&&(!beforeTickets||!/^13[0-9]_/.test(name)&&!/^17[234]_/.test(name)&&name<'191_')&&(!beforeR4||!/^14[0-9]_/.test(name))&&(!beforeEmail||!/^16[0-9]_/.test(name))).sort();
+  const draftRebuild='281_native_reply_drafts.sql';
+ const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!/^22[0-9]_/.test(name)&&!/^15[0-9]_/.test(name)&&(!beforeTickets||!/^13[0-9]_/.test(name)&&!/^17[234]_/.test(name)&&name<'191_')&&(!beforeR4||!/^14[0-9]_/.test(name)&&name!==draftRebuild)&&(!beforeEmail||!/^16[0-9]_/.test(name))).sort();
   // This inventory deliberately has no workflow journal (150 is omitted).
   // Later replacements of its trigger and the consent trigger on the omitted
   // workflow_schedules table stay omitted too. Keep the other statements in
@@ -57,11 +60,20 @@ export async function workflowArchivePolicy(root,input,{beforeTickets=false,befo
   const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))
    .filter(sql=>!/^\s*(?:CREATE|DROP)\s+TRIGGER\s+(?:workflow_changed|support_channel_opted_out_schedule)\b/i.test(sql)&&!omittedSchemaChange(sql,omitted))));
   for(let index=0;index<plan.length;index++){
-   for(const sql of plan[index])scratch.exec(sql);
+   // Historical projections intentionally omit workflow/email tables while
+   // retaining independent triggers. The private temporary-table rename must not
+   // validate those omitted subsystems; it rewrites no trigger or foreign-key
+   // reference. This affects only the in-memory historical schema projection.
+   const rebuilding=names[index]===draftRebuild;
+   if(rebuilding)scratch.exec('PRAGMA legacy_alter_table=ON');
+   try{for(const sql of plan[index])scratch.exec(sql);}finally{if(rebuilding)scratch.exec('PRAGMA legacy_alter_table=OFF');}
    const tables=scratch.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row=>row.name).filter(name=>!excludedTable(name,result)&&!(result.derivedTables??[]).some(derived=>name===derived||name.startsWith(derived+'_')));
    // Retain Base's refusal of unrelated skipped data migrations. Only the
    // explicitly supported ticket backfill above is allowed to upgrade rows.
-   if(plan.slice(index+1).some(statements=>statements.some(sql=>changesData(sql,tables))))continue;
+   // This edition-owned rebuild copies the original draft cells exactly; the
+   // row adapter above supplies its nullable marker. All other data migrations
+   // retain the existing refusal fence.
+   if(plan.slice(index+1).some((statements,offset)=>names[index+1+offset]!==draftRebuild&&statements.some(sql=>changesData(sql,tables))))continue;
    acceptedSchemas[await schemaIdentity(db,config)]={upgradeRow:workflowArchiveUpgradeRow};
   }
   return {...result,acceptedSchemas};

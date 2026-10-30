@@ -86,7 +86,8 @@ export async function publicMotionJourney({page,origin}){
  assert.deepEqual(final,[],'reduced motion leaves drawings and every stroke complete')
 
  // Hold all local fonts to measure the actual fallback -> Outfit swap, without pinning a font file list.
- const fontPage=await page.context().newPage(),requests=[]
+ const fontContext=await page.context().browser().newContext({viewport:page.viewportSize()})
+ const fontPage=await fontContext.newPage(),requests=[]
  let release
  const gate=new Promise(resolve=>{release=resolve})
  await fontPage.addInitScript(observe)
@@ -111,5 +112,5 @@ export async function publicMotionJourney({page,origin}){
   console.log('PUBLIC_PROOF font swap layout-shift='+shift)
   if(shift!==0)console.log('PUBLIC_FINDING PUBLIC-004: fallback-to-Outfit text shifts; no approved CSS changed; Gap remains open')
   assert.deepEqual(loaded,fallback,'fallback and loaded font preserve element boxes (text-shift defect is reported separately)')
- }finally{release();await fontPage.close()}
+ }finally{release();await fontContext.close()}
 }

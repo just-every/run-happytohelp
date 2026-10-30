@@ -149,7 +149,7 @@ export async function publicDocsJourney({page,origin,shot,repository}){
  const operations=await page.goto(origin+'/docs/operations')
  const bytes=(await operations.body()).byteLength
  console.log('PUBLIC_PROOF operations raw HTML bytes='+bytes)
- if(bytes>160*1024)console.log('PUBLIC_FINDING PUBLIC-005: operations raw HTML exceeds the retained 160 KB budget; no page changed; Gap remains open')
+ assert.ok(bytes<160*1024,'operations raw HTML stays below the 160 KiB budget')
  const bodyText=await page.locator('.docs-prose > p').first().innerText()
  for(const entry of await page.locator('script[type="module"][src]').all()){
   const url=new URL(await entry.getAttribute('src'),origin),code=await (await page.request.get(url.href)).text()
@@ -159,15 +159,70 @@ export async function publicDocsJourney({page,origin,shot,repository}){
  assert.equal(await page.locator('.site-header nav [aria-current]').getAttribute('href'),'/docs')
  assert.equal(await css(page.locator('.site-header nav [aria-current]'),'textDecorationColor'),'rgb(90, 216, 236)')
  assert.equal(await page.locator('.site-header .brand').innerHTML(),await page.locator('.site-footer .brand').innerHTML())
+ for(const brand of await page.locator('.site-header .brand,.site-footer .brand').all()){
+  const mark=await brand.locator('.brand-mark').boundingBox(),word=await brand.locator('.brand-word').boundingBox()
+  assert.ok(mark.x+mark.width<=word.x&&mark.y<word.y+word.height&&word.y<mark.y+mark.height,'mark and wordmark stay beside each other in a one-line lockup')
+ }
+ const blocks=page.locator('.docs-prose pre');assert.ok(await blocks.count()>0)
+ for(const block of await blocks.all()){
+  assert.equal(await css(block,'backgroundColor'),'rgba(255, 255, 255, 0.62)')
+  assert.ok(parseFloat(await css(block,'borderTopWidth'))>=1,'code card has a visible ink border');assert.equal(await css(block,'borderTopStyle'),'solid')
+  assert.equal(await css(block,'borderTopColor'),'rgb(20, 20, 20)')
+  assert.notEqual(await css(block,'borderTopLeftRadius'),await css(block,'borderTopRightRadius'),'drawn card retains irregular corners')
+  assert.notEqual(await css(block,'boxShadow'),'none');assert.equal(await css(block,'whiteSpace'),'pre-wrap')
+  assert.deepEqual(await block.locator('code,code *').evaluateAll(nodes=>[...new Set(nodes.map(n=>getComputedStyle(n).color))].filter(c=>!['rgb(20, 20, 20)','rgb(102, 99, 93)'].includes(c))),[],'code highlighting uses ink and weight instead of hue')
+  assert.ok(await block.evaluate(n=>n.scrollWidth<=n.clientWidth+1),'code wraps inside its card')
+ }
+ const accents=await page.locator('.h2h-docs *').evaluateAll(nodes=>{
+  const aqua=['rgb(143, 227, 238)','rgb(90, 216, 236)','rgb(214, 245, 250)','rgb(232, 249, 252)'],problems=[]
+  for(const node of nodes)for(const pseudo of [null,'::before','::after']){
+   const s=getComputedStyle(node,pseudo)
+   for(const property of ['color','backgroundColor','backgroundImage','borderTopColor','borderRightColor','borderBottomColor','borderLeftColor','textDecorationColor','fill','stroke']){
+    if(!aqua.some(color=>s[property].includes(color)))continue
+    const permitted=node.closest('.brand-mark')
+     ||property==='backgroundColor'&&node.matches('.docs-nav-group a[aria-current="page"]')
+     ||property==='textDecorationColor'&&node.matches('.docs-prose a,.site-header nav a[aria-current]')
+    if(!permitted)problems.push({tag:node.tagName,class:node.getAttribute('class'),pseudo,property,color:s[property]})
+   }
+  }
+  return problems
+ })
+ assert.deepEqual(accents,[],'docs aqua is exclusive to the current item, link underlines and retained brand sparks')
+ assert.equal(await css(page.locator('.docs-sidebar a[aria-current="page"]'),'backgroundColor'),'rgb(214, 245, 250)')
+ assert.equal(await css(page.locator('.docs-prose a').first(),'textDecorationColor'),'rgb(90, 216, 236)')
+ console.log('PUBLIC_PROOF PUBLIC-005 code cards, one-line lockups and exclusive aqua accents asserted at 1440')
+ // Check the delivered stylesheet's exact responsive boundaries from this desktop screen.
+ const boundaries=await page.evaluate(()=>{
+  const rules=[]
+  const visit=list=>{for(const rule of list){if(rule instanceof CSSMediaRule)rules.push([rule.conditionText,[...rule.cssRules].map(r=>r.cssText).join(' ')]);if(rule.cssRules)visit(rule.cssRules)}}
+  for(const sheet of document.styleSheets)visit(sheet.cssRules)
+  return rules
+ })
+ for(const [query,selector,declaration] of [
+  ['(max-width: 860px)','.docs-sidebar','display: none'],
+  ['(min-width: 861px)','.docs-menu','display: none'],
+  ['(max-width: 1199px)','.docs-toc','display: none'],
+  ['(min-width: 1200px)','.docs-toc-compact','display: none'],
+  ['(max-width: 640px)','.docs-pager','grid-template-columns: minmax(0px, 1fr)'],
+ ])assert.ok(boundaries.some(([condition,rules])=>condition.replace(/\s+/g,'').replace(/width<=([0-9]+px)/,'max-width:$1').replace(/width>=([0-9]+px)/,'min-width:$1')===query.replace(/\s+/g,'')&&rules.includes(selector)&&rules.includes(declaration)),'delivered responsive rule: '+query+' '+selector)
+ assert.ok(await page.locator('.docs-sidebar').isVisible());assert.ok(await page.locator('.docs-toc').isVisible())
+ assert.equal(await page.locator('.docs-menu').isVisible(),false);assert.equal(await page.locator('.docs-toc-compact').isVisible(),false)
+ console.log('PUBLIC_PROOF PUBLIC-005 delivered responsive boundaries 640/860/861/1199/1200 and desktop visibility asserted')
  const measure=await page.locator('.docs-prose > p').first().evaluate(node=>{const s=getComputedStyle(node),canvas=document.createElement('canvas'),context=canvas.getContext('2d');context.font=s.font;return node.getBoundingClientRect().width/context.measureText('0').width})
  console.log('PUBLIC_PROOF operations prose measure='+measure+'ch')
- if(measure<55||measure>80)console.log('PUBLIC_FINDING PUBLIC-005: operations prose measure falls outside retained 55–80 characters; no page changed; Gap remains open')
+ assert.ok(measure>=55&&measure<=80,'desktop prose measure stays within 55–80ch')
  for(const link of await page.locator('.docs-toc a').all()){
   const href=await link.getAttribute('href');assert.equal(await page.locator('[id="'+href.slice(1)+'"]').count(),1,'contents links reach real headings')
  }
  await page.keyboard.press('Tab');assert.equal(await page.locator(':focus').getAttribute('href'),'#docs-content')
  await page.keyboard.press('Enter');assert.equal(await page.locator(':focus').getAttribute('id'),'docs-content')
- const contents=page.locator('.docs-toc a').first();await contents.focus();await page.keyboard.press('Enter')
+ const contents=page.locator('.docs-toc a').first();await contents.focus()
+ assert.equal(await contents.evaluate(node=>node.matches(':focus-visible')),true)
+ assert.equal(await css(contents,'outlineStyle'),'solid');assert.ok(parseFloat(await css(contents,'outlineWidth'))>=2)
+ assert.equal(await css(contents,'outlineColor'),'rgb(20, 20, 20)')
+ assert.ok(parseFloat(await css(contents,'outlineOffset'))>0,'keyboard focus ring sits clear of the text')
+ console.log('PUBLIC_PROOF PUBLIC-005 visible keyboard focus ring asserted')
+ await page.keyboard.press('Enter')
  assert.equal(new URL(page.url()).hash,await contents.getAttribute('href'))
  await page.evaluate(()=>{document.activeElement?.blur();scrollTo({top:0,behavior:'instant'})})
  await auditPage(page,shot('approved-docs-1440.png'))
@@ -180,6 +235,11 @@ export async function publicDocsJourney({page,origin,shot,repository}){
  await page.locator('.docs-toc-compact a').first().focus();await page.keyboard.press('Enter')
  await page.evaluate(()=>{document.activeElement?.blur();scrollTo({top:0,behavior:'instant'})})
  await auditPage(page,shot('approved-docs-390.png'))
+ await page.goto(origin+'/docs/operations');await auditPage(page,shot('operations-390.png'))
+ for(const width of [1440,390]){
+  await page.setViewportSize({width,height:900});await page.goto(origin+'/docs/managed-conversation-mail')
+  await auditPage(page,shot('managed-conversation-mail-'+width+'.png'))
+ }
  await page.setViewportSize({width:1440,height:900})
  const home=await page.goto(origin+'/docs/');assert.equal(home.status(),200);assert.equal(new URL(page.url()).pathname,'/docs')
  for(const path of ['/docs/missing-public-proof','/docs/INSTALL','/docs/install/deeper']){

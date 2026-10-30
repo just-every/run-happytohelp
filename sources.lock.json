@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "45013033292b93ca675033be818e87d2b42c0ff4761c41448cda4f3f0b39c658",
+      "sha256": "09c1be497e9d27b7a493b85c8dbe23053cb93ada725350a230024aabbb7e9d94",
       "executable": false
     },
     "DEMO.md": {
@@ -1756,6 +1756,10 @@
       "sha256": "546a95a3400634e6dc7813211253e4a46f2acaf42562d6c30de5dee24974576b",
       "executable": false
     },
+    "docs/managed-conversation-mail.md": {
+      "sha256": "9db8ae6f8addfc89f41e7ee320c4035e6805cd380c527567b037b039f5838190",
+      "executable": false
+    },
     "docs/MODULES.md": {
       "sha256": "4b40cf86daf6b6a00ef6e22c01a27c7c52fe35f0c6c9a495b3791d11a0558d30",
       "executable": false
@@ -1805,7 +1809,7 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "090f448c501b38843ef89c1c8d6b033b522854a192e867174eddd05dcc4a4f0b",
+      "sha256": "01a5516ddc560f333f833474e8551694d890502cf8eb721cdf3a9eec9ffd26dd",
       "executable": false
     },
     "docs/SOURCE-PROVENANCE.md": {
@@ -2665,7 +2669,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "6c602d215f4aa56fc4dd8f9e1267a3df7845bbfde6e6e7df966b0fbc870893ad",
+      "sha256": "5d2439c4fb46f54c993501e387dff7808381fc576a13881b3cbc48711893d93e",
       "executable": false
     },
     "package.json": {
@@ -9713,7 +9717,7 @@
       "executable": false
     },
     "src/ui/docs/docs.css": {
-      "sha256": "22d3b53e26cda48244bcb9d7946318cb7685d5716578967476d203d4ff730f1d",
+      "sha256": "b35bcbf1bcbdd757f1d7cab2031864d4c86762e02b5475ae923ad541cb5a8801",
       "executable": false
     },
     "src/ui/docs/DocsArticle.tsx": {
@@ -11965,11 +11969,11 @@
       "executable": false
     },
     "tests/helpers/public-docs-journey.mjs": {
-      "sha256": "4e6bdbd6dd731be061f97d33b7313de01f62dc0ebfc6a1d31bb9afb84a586384",
+      "sha256": "cbf10f745ac8082cb65e78ff7c6a23304a06856b31fdbd9529a6cefe696dbf72",
       "executable": false
     },
     "tests/helpers/public-site-journey.mjs": {
-      "sha256": "566532e19f122d62efb137a36852a7613d38fa7681f9bc86282148b053acc4b3",
+      "sha256": "86abf0fbcf91eda35c12a2ddb0880d9219f4f18d6ea977288b1c35fbc2504b8a",
       "executable": false
     },
     "tests/helpers/public-site-motion.mjs": {
@@ -12281,7 +12285,7 @@
       "executable": false
     },
     "tests/journeys/public.mjs": {
-      "sha256": "fd3898145d685718a69f706465dd25f7938f16ef16205f9fa5a570815df22ef0",
+      "sha256": "1bfa94e6e6ab35bebcbc0af5543edb774ac06b8773a2dec6e5611ffb22ec9db9",
       "executable": false
     },
     "tests/journeys/reports.mjs": {

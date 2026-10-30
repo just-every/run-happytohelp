@@ -102,5 +102,16 @@ test('a published help center: Markdown rendered safely, complete summary search
   // The same configuration can name a native workspace id directly.
   await runtime.execute(`DELETE FROM public_project_aliases WHERE slug='${slug}'; INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES('${slug}','Direct native help','direct-native-help','https://example.test',1); INSERT INTO knowledge_articles(id,project_id,slug,title,content,status,updated_at) VALUES('direct-guide','${slug}','direct-guide','Direct native guide','Native instructions.','published',1)`)
   for(const path of ['/','/search?keyword=Native','/direct-guide'])assert.equal((await host(path)).status,200,'configured native id '+path)
+  // Make the help alias lookup genuinely unavailable; reserved docs must still render without it.
+  await runtime.execute('ALTER TABLE public_project_aliases RENAME TO unavailable_public_aliases')
+  try{
+   assert.equal((await request(`/help/${slug}`)).status,500,'control: a real help route requires the unavailable alias lookup')
+   for(const [path,status] of [['/docs',200],['/docs/operations',200],['/docs/missing-lookup-proof',404]]){
+    const response=await request(path);assert.equal(response.status,status,'documentation is independent of the help alias lookup: '+path)
+    assert.match(await response.text(),/HappyToHelp/)
+   }
+   console.log('PUBLIC_PROOF PUBLIC-005 docs 200/200/404 with unavailable alias lookup; help control=500')
+  }finally{await runtime.execute('ALTER TABLE unavailable_public_aliases RENAME TO public_project_aliases')}
+
  })
 })

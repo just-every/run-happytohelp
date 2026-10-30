@@ -44,6 +44,11 @@
           "label": "Operations"
         },
         {
+          "slug": "managed-conversation-mail",
+          "source": "docs/managed-conversation-mail.md",
+          "label": "Managed conversation mail"
+        },
+        {
           "slug": "integrations",
           "source": "src/modules/integrations/README.md",
           "label": "Email and integrations"

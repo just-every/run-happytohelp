@@ -13752,6 +13752,10 @@
       "sha256": "0dab17a132023e827007f386ab0cc6029a600b5a9e933e622fa54a9aadfd5fc1",
       "executable": false
     },
+    "tests/helpers/agent-door/phase-fixtures.mjs": {
+      "sha256": "f69fdd6371c4249ff5a7e3bcc8ec7be87127263891d69bba757b60b4e8d0d3d0",
+      "executable": false
+    },
     "tests/helpers/agent-door/surface-journey.json": {
       "sha256": "9a483027ff9bae0935a9ef2d03ce6e2110e0683674b3344169b1c524d9fd3d80",
       "executable": false

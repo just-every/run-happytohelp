@@ -25,12 +25,12 @@ export async function startApp({bindings={},outbound,origin='https://app.example
  const outboundService=async request=>{const body=request.method==='GET'||request.method==='HEAD'?'':await request.clone().text();const entry={url:request.url,method:request.method,headers:Object.fromEntries(request.headers),body};requests.push(entry);if(!outbound)throw new Error('External calls prohibited: '+request.url);return outbound(request,entry)}
  const start=async()=>{
   mf=new Miniflare(convertV4MiniflareOptions({name:'h2h-app',...(cf?{cf}:{}),...(listen?{host:'127.0.0.1',port}:{}),modules:true,script,unsafeTriggerHandlers:true,compatibilityDate:'2026-09-14',compatibilityFlags:['nodejs_compat'],bindings:{...(captureQueue?{H2H_TEST_CAPTURE_QUEUE:'1'}:{}),...Object.fromEntries(Object.entries(current).filter(([,value])=>value!==undefined))},d1Databases:{DB:'h2h-app'},r2Buckets:['FILES'],durableObjects:{CONVERSATIONS:'ConversationSocket'},queueProducers:{JOBS:'h2h-app-jobs'},queueConsumers:{'h2h-app-jobs':{maxBatchSize:1,maxRetries:0}},resourcePersistencePath:join(directory,'state'),resourceTmpPath:join(directory,'tmp'),outboundService}))
-  db=await mf.getD1Database('DB')
+  console.info('app boot: before binding');db=await mf.getD1Database('DB');console.info('app boot: bound')
   if(listen){url=String(await mf.ready).replace(/\/$/,'');port=Number(new URL(url).port)}
  }
- await start()
+ console.info('app boot: starting');await start();console.info('app boot: started')
  // `migrate` may name the migrations to apply, so a test can stage prior state between them.
- try{if(migrate)await applyMigrations(db,typeof migrate==='function'?migrate:undefined)}catch(error){await mf.dispose();await rm(directory,{recursive:true,force:true});throw error}
+ try{console.info('app boot: migrating');if(migrate)await applyMigrations(db,typeof migrate==='function'?migrate:undefined);console.info('app boot: migrated')}catch(error){console.error('app boot migration failure',error.message);await mf.dispose();await rm(directory,{recursive:true,force:true});throw error}
  // A CF-IPCountry header is mirrored into request.cf, as Cloudflare's edge sets both.
  const request=(path,{body,token,method=body===undefined?'GET':'POST',headers={},raw=false,base=origin}={})=>mf.dispatchFetch(base+path,{method,redirect:'manual',...(headers['CF-IPCountry']?{cf:{country:headers['CF-IPCountry']}}:{}),headers:{...(body!==undefined&&!raw?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{}),...headers},body:body===undefined?undefined:raw?body:JSON.stringify(body)})
  const call=async(path,options={})=>{const response=await request(path,options),text=await response.text();let data;try{data=text?JSON.parse(text):null}catch{data=text}if(options.status!==undefined&&response.status!==options.status)throw new Error(`${options.method||(options.body===undefined?'GET':'POST')} ${path}: expected ${options.status}, got ${response.status}: ${text.slice(0,500)}`);return {status:response.status,headers:response.headers,data}}

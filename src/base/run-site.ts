@@ -17,6 +17,8 @@ import type { SeedContract } from './seed-contract.mjs'
 export interface RunData {
   /** The seed's name: "Cradle". */
   name: string
+  /** Optional plain-text homepage heading, repeated below the Run page heading. */
+  leadLine?: string
   /** The public source repository: "https://github.com/just-every/cradle". */
   repository: string
   /**
@@ -98,6 +100,7 @@ export function checkRunData(run: RunData): RunData {
   if (!run || typeof run !== 'object' || !run.paths || typeof run.paths !== 'object' || Array.isArray(run.paths)
       || 'hosted' in run || 'requirements' in run) throw new Error('Run data needs paths; migrate the old RunData to paths.')
   for (const key of ['name', 'clone', 'licence'] as const) if (typeof run[key] !== 'string' || !run[key].trim()) throw new Error(`Run data needs ${key}.`)
+  if (run.leadLine !== undefined && typeof run.leadLine !== 'string') throw new Error('Run data leadLine is a plain string when present.')
   const repo = run.clone.slice(repoStart.length)
   if (!run.clone.startsWith(repoStart) || repositoryId.exec(repo)?.[0] !== repo) throw new Error(`Run data clone must be ${repoStart}<owner>/<repo> with a valid repository id.`)
   if (!/^https:\/\/[^\s"<>]+$/.test(run.repository)) throw new Error('Run data repository is an https URL.')
@@ -194,7 +197,7 @@ export function runPageHtml(identity: EditionIdentity, run: RunData, contract?: 
     return `<section class="door ${id}" aria-labelledby="${id}"><div class="door-heading"><h2 id="${id}">${escape(path.title)}</h2>${closed ? `<span class="chip">${escape(PATHS.closed.chip)}</span>` : ''}</div>`
       + `<p class="door-body">${escape(path.lead + ' ' + (closed ? PATHS.closed.line : path.rest))}</p><p class="price">${escape(path.price(run))} · ${escape(PATHS.priceNote(run))}</p><p class="door-action">${action(PATHS.entry(id, product), closed ? PATHS.closed.action : path.action)}</p></section>`
   }).join('')
-  const body = `${homepage?.html ?? header(identity, run, contract)}<main><div class="intro"><h1>${escape(PATHS.heading(run.name))}</h1></div><div class="chooser">`
+  const body = `${homepage?.html ?? header(identity, run, contract)}<main><div class="intro"><h1>${escape(PATHS.heading(run.name))}</h1>${run.leadLine !== undefined ? `<p class="sub">${escape(run.leadLine)}</p>` : ''}</div><div class="chooser">`
     + `<section class="self" aria-labelledby="self"><div class="self-heading"><span class="badge">${escape(self.badge)}</span><h2 id="self">${escape(self.title)}</h2><p class="self-body">${escape(self.body(run.name))}</p></div>`
     + codeBlock(startLine(run), self.title)
     + `<section class="paste-panel" aria-labelledby="paste-title"><h3 id="paste-title">${escape(self.pasteTitle)}</h3><div class="paste-track">${stops(steps, true)}<p class="track-note">${escape(self.note)}</p></div></section>`
@@ -209,7 +212,7 @@ export function runPageHtml(identity: EditionIdentity, run: RunData, contract?: 
 /** Base's composed homepage for a seed without an approved one: its primary action is Run <Seed>. */
 export function siteHomeHtml(identity: EditionIdentity, run: RunData, contract?: SeedContract): string {
   checkIdentity(identity); checkRunData(run)
-  const body = `${header(identity, run, contract)}<main><div class="hero"><h1>${escape(identity.tagline)}</h1><p class="sub">100% free and open source.</p>`
+  const body = `${header(identity, run, contract)}<main><div class="hero"><h1>${escape(run.leadLine ?? identity.tagline)}</h1><p class="sub">100% free and open source.</p>`
     + `<div class="actions"><a class="btn" href="/run">Run ${escape(identity.product)}${ARROW}</a>${run.docs ? '<a class="link" href="/docs">Read the docs</a>' : ''}</div></div></main>`
   return document(identity, identity.product, identity.tagline, HOME, body)
 }

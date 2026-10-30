@@ -1,11 +1,14 @@
+import type { Capability } from './capabilities.mjs'
 import type { ClassFacts, ClassId } from './policy/catalogue.ts'
+import type { Decision } from './policy/decide.ts'
+import type { ApproverRef } from './policy/document.ts'
 import type { PolicyDocument } from './policy/document.ts'
 
 export type JsonSchema = boolean | { [key: string]: unknown }
 export interface JsonSchemaObject { type: 'object'; properties?: Record<string, JsonSchema>; required?: string[]; [key: string]: unknown }
 export interface Person { id: string; email: string; name: string; role: string; active: boolean }
 export interface Agent { id: string; name: string; specialist?: string | null }
-export interface Principal { person: Person; agent: Agent; scopes: string[]; clientId?: string; consent?: string; nativeProof?: { kind: string; reference: string }; operationId?: string; idempotencyKey?: string | null }
+export interface Principal { person: Person; agent: Agent; scopes: string[]; clientId?: string; consent?: string; nativeProof?: { kind: string; reference: string }; operationId?: string; idempotencyKey?: string | null; continuationItemId?: string }
 export interface PeopleAdapter {
   sponsor(claims: { sub: string }): Promise<Person | null>
   person(id: string): Promise<Person | null>
@@ -23,6 +26,7 @@ export interface ToolContext {
   readonly person: Readonly<Person>; readonly agent: Readonly<Agent>
   readonly consent?: string; readonly scopes: readonly string[]; readonly clientId?: string
   readonly operationId: string; readonly idempotencyKey: string | null
+  readonly continuationItemId?: string
   readonly nativeProof?: Readonly<{ kind: string; reference: string }>
   readonly actor: { readonly agent: Readonly<PreparedBy['agent']>; readonly for: Readonly<PreparedBy['for']>; readonly label: string }
   readonly seed: string; readonly origin: string; readonly door: 'mcp' | 'embedded'
@@ -41,7 +45,7 @@ export interface ApprovalSummary {
   target?: { id?: string; name?: string; email?: string }; recipients?: string[]
   amount?: { value: number; currency: string }; payee?: string; role?: string; items?: string[]
 }
-export type ApprovalDisplaySummary = (ApprovalSummary | { arguments: Record<string, unknown> } | { uri: string }) & { nativeTarget?: NativeTarget }
+export type ApprovalDisplaySummary = (ApprovalSummary | { arguments: Record<string, unknown> } | { uri: string }) & { nativeTarget?: NativeTarget; company_policy?: CompanyPolicyDecision }
 export interface UndoContext {
   db: D1Database; person: Person; agent: null; actor: { kind: 'person'; person: { id: string; name: string }; label: string }
   seed: string; origin: string; now(): number; door: 'mcp' | 'embedded'
@@ -49,18 +53,24 @@ export interface UndoContext {
 }
 export interface ToolDefinition {
   name: string; title: string; description: string; scope: string; readOnly: boolean
+  /** Only invoke may call this tool; omitted keeps MCP discovery and calls. */
+  exposure?: 'invoke'
   inputSchema: JsonSchemaObject; outputSchema: JsonSchema; classes: ClassId[]; clauses: string[]
-  classify(args: Record<string, unknown>, ctx: ToolContext): ClassAndFacts[] | Promise<ClassAndFacts[]>
+  /** Always enforce current native authority. On completed replay, use the
+   * recorded effect facts instead of requiring consumed preparation state. */
+  classify(args: Record<string, unknown>, ctx: ToolContext, completed?: readonly ClassAndFacts[]): ClassAndFacts[] | Promise<ClassAndFacts[]>
   run(args: Record<string, unknown>, ctx: ToolContext): Promise<{ result: unknown; resources?: Array<{ uri: string; name: string }>; undo?: unknown }>
   revisionType?: 'integer' | 'number' | 'string'
   revision?(args: Record<string, unknown>, ctx: ToolContext): Promise<string | number | null>
   summary?(args: Record<string, unknown>, ctx: ToolContext): ApprovalSummary | Promise<ApprovalSummary>
   target?(args: Record<string, unknown>, ctx: ToolContext): NativeTarget | null | Promise<NativeTarget | null>
+  /** Resolve persisted native queue identity, bound to its originating admission. */
+  continuationItem?(args: Record<string, unknown>, ctx: ToolContext): { id: string; operationId: string } | null | Promise<{ id: string; operationId: string } | null>
   undo?(saved: unknown, ctx: UndoContext): Promise<void>
   authority?: 'none' | ((args: Record<string, unknown>, ctx: ToolContext) => Promise<{ subject: string; widens: boolean } | null>)
   effect?: { kind: 'record'; justification: string }
   proof?: 'native'; proofKind?: string
-  widens?: false; narrowing?: { effect: 'revoke' | 'narrow'; target: string }
+  widens?: false; narrowing?: { effect: 'revoke' | 'narrow'; target: string | string[] }
   untrusted?: boolean
 }
 export type ResourceContext = Principal & { db: D1Database }
@@ -69,8 +79,18 @@ export interface ResourceDefinition {
   classify(record: { json?: unknown; text?: string }, ctx: ResourceContext): ClassAndFacts[] | Promise<ClassAndFacts[]>
   read(uri: string, ctx: ResourceContext): Promise<{ json?: unknown; text?: string; untrusted?: boolean } | null>
 }
+export type CompanyPolicyDecision =
+  | { decision: 'allow'; rule: string; revision: string }
+  | { decision: 'deny'; rule: string; revision: string }
+  | { decision: 'hold'; rule: string; revision: string; approvers: ApproverRef[]; wait: string }
+type Immutable<T> = T extends object ? { readonly [K in keyof T]: Immutable<T[K]> } : T
+export type CompanyPolicyInput = Immutable<{
+  tool: string; args: Record<string, unknown>; classes: ClassAndFacts[]; target: NativeTarget | null; policy: Decision
+}>
+export type CompanyPolicyContext = Pick<ToolContext, 'db' | 'person' | 'agent' | 'consent' | 'scopes' | 'clientId' | 'operationId' | 'idempotencyKey' | 'seed' | 'origin' | 'now' | 'door'>
 export interface AgentDoorOptions {
   seed: string; name: string; specialist: string; version?: string; db: D1Database; origin: string; trust: Trust | null
+  capabilities?: readonly Capability[]
   tools: ToolDefinition[]; resources?: ResourceDefinition[]
   prompts?: Array<{ name: string; title?: string; description: string; clauses?: string[]; messages(args: Record<string, string>): unknown[] }>
   notTools?: Array<{ clauses: string[]; reason: 'device' | 'screen' | 'connector' | 'import-door' | 'installation' }>
@@ -80,11 +100,13 @@ export interface AgentDoorOptions {
     handoff(input: { kind: string; tool: string; principal: Principal }): string | Promise<string>
     verify(input: { kind: string; tool: string; args: Record<string, unknown>; principal: Principal; reference: string }): Promise<boolean>
   }
+  /** Read-only native rule evaluation; may only restrict the class policy. */
+  companyPolicy?: { decide(input: CompanyPolicyInput, ctx: CompanyPolicyContext): CompanyPolicyDecision | Promise<CompanyPolicyDecision> }
   currentScopes?(principal: Principal): Promise<string[]>
   paths?: string[]; limits?: { requestsPerMinute?: number; maxBodyBytes?: number }
   onEvent?(event: AgentEvent): void | Promise<void>; now?(): number
 }
-export interface DecisionMeta { id: string; disposition: string; revision: number | null; classes: Array<{ class: string; facts: object; rule: string | null; do: string }> }
+export interface DecisionMeta { company_policy?: CompanyPolicyDecision; id: string; disposition: string; revision: number | null; classes: Array<{ class: string; facts: object; rule: string | null; do: string }> }
 export interface CallResult {
   outcome: 'done' | 'pending' | 'refused'; code?: string; result?: unknown; decision: DecisionMeta | null
   fields?: Record<string, unknown>; resources?: Array<{ uri: string; name: string }>; review?: { id: string }

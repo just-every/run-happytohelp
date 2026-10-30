@@ -94,7 +94,9 @@ otherwise blocked, approval, review, autonomous is the order of strictness.
 
 Signed policy adoption verifies the existing owner-claim issuer, app audience,
 installation subject, ring and revision signature. A greater sequence replaces
-the envelope; equal sequence with later issue time refreshes it. The closed
+the envelope; equal sequence with later issue time may change only `iat`/`exp`,
+retaining all authority and the exact revision signature. Before requests the
+verifier renews an envelope with less than 60 seconds left, keeping its 300-second lifetime. The closed
 answer is `{"adopted":{"seq":n,"revision":r},"door":{"classes":[{"class":"standard","tools":["seed.area.verb"]}]}}`,
 where `revision` can be null. Resources also contribute declared classes. A
 Business rule with `max_per_day` must name a `seed`; unscoped daily limits are
@@ -122,8 +124,12 @@ Undo is a reviewer act with `UndoContext.agent: null` and a person actor.
 Mutating tools require `idempotency_key`; `expected_revision` is optional for
 tools with native revision lookup. Same agent and key and arguments return the
 recorded outcome; changed arguments conflict. Recorded outcomes are retained
-indefinitely. A `running` audit row, usage reservation and idempotency claim commit in one
-D1 batch before execution. The recorded outcome precedes finalising that row.
+indefinitely. Completed mutation retries still run the native classifier for current
+sponsor authority. Its optional third argument carries the original effect's
+classes and facts, so it can classify consumed preparation state after enforcing
+current access. Current policy admission uses the recorded effect, and the
+approval receipt retains its original decision separately. A `running` audit row,
+usage reservation and idempotency claim commit in one D1 batch before execution. The recorded outcome precedes finalising that row.
 A replay completes a non-final audit from the durable outcome; without an outcome
 it returns `call_in_progress` and runs nothing. Every attempt captures its key,
 traceparent and ignored argument names before early policy refusals. Native

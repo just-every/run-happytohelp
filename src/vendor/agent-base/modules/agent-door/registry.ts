@@ -1,3 +1,4 @@
+import { offers } from './capabilities.mjs'
 import { recordOnlyAuthority } from './conformance/authority.mjs'
 import { narrowingContract } from './conformance/narrowing.mjs'
 import { isClass } from './policy/catalogue.ts'
@@ -9,13 +10,14 @@ export const defineTool = (tool: ToolDefinition): ToolDefinition => tool
 export function registry(options: AgentDoorOptions): ToolDefinition[] {
   if (!/^[a-z][a-z0-9-]*$/.test(options.seed) || !validToolName(`${options.seed}.events.list`, options.seed)) throw new TypeError('Invalid seed id')
   if (new URL(options.origin).origin !== options.origin) throw new TypeError('Agent origin must be canonical')
-  for (const resource of options.resources ?? []) {
+  for (const resource of offers(options.capabilities, 'resources') ? options.resources ?? [] : []) {
     if (!resource.classes?.length || new Set(resource.classes).size !== resource.classes.length || resource.classes.some(cls => !isClass(cls)) || typeof resource.classify !== 'function') throw new TypeError(`Invalid resource classes: ${resource.uriTemplate}`)
   }
   const names = new Set<string>([`${options.seed}.events.list`])
   return options.tools.map(tool => {
     if (!validToolName(tool.name, options.seed) || names.has(tool.name)) throw new TypeError(`Invalid or duplicate tool name: ${tool.name}`)
     names.add(tool.name)
+    if (tool.exposure !== undefined && tool.exposure !== 'invoke') throw new TypeError(`Invalid exposure: ${tool.name}`)
     if (!tool.classes?.length || new Set(tool.classes).size !== tool.classes.length || tool.classes.some(cls => !isClass(cls))) throw new TypeError(`Invalid classes: ${tool.name}`)
     if (!tool.inputSchema || tool.inputSchema.type !== 'object' || !schemaValid(tool.inputSchema) || tool.outputSchema === undefined || !schemaValid(tool.outputSchema)) throw new TypeError(`Missing or invalid schema: ${tool.name}`)
     if (!tool.scope || !tool.title || !tool.description || typeof tool.readOnly !== 'boolean' || !Array.isArray(tool.clauses) || typeof tool.classify !== 'function' || typeof tool.run !== 'function') throw new TypeError(`Invalid tool: ${tool.name}`)
@@ -23,6 +25,7 @@ export function registry(options: AgentDoorOptions): ToolDefinition[] {
     if ('cost' in tool) throw new TypeError(`Provider cost is not enforced: ${tool.name}`)
     if (!tool.readOnly && typeof tool.summary !== 'function') throw new TypeError(`Missing approval summary: ${tool.name}`)
     if (tool.target !== undefined && typeof tool.target !== 'function') throw new TypeError(`Invalid target resolver: ${tool.name}`)
+    if (tool.continuationItem !== undefined && (tool.readOnly || typeof tool.continuationItem !== 'function')) throw new TypeError(`Invalid continuation item resolver: ${tool.name}`)
     if (tool.authority === 'none' && !recordOnlyAuthority(tool)) throw new TypeError(`Invalid no-subject authority: ${tool.name}`)
     if (tool.classes.some(cls => cls === 'access' || cls === 'security') && tool.authority !== 'none' && typeof tool.authority !== 'function') throw new TypeError(`Missing authority: ${tool.name}`)
     if ((tool.widens !== undefined || tool.narrowing !== undefined) && (!tool.classes.some(cls => cls === 'access' || cls === 'security') || tool.readOnly || !narrowingContract(tool))) throw new TypeError(`Invalid narrowing-only contract: ${tool.name}`)

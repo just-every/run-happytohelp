@@ -23,7 +23,8 @@ it does not prove acceptance. Report Core done and full-target done together.
 Follow `platform/CONTRACT-STANDARD.md` for the governing contract standard.
 `check` also runs `check-prose`. The latter reads CONTRACT.md and, when present,
 docs/contract/COVERAGE.json and its recorded old Git commit. Keep that commit
-available locally. Each finding names its clause id, family and source location:
+available locally or commit the verified anchor record described below. Each
+finding names its clause id, family and source location:
 
 - ERROR a: acceptance prose mapped to `generated`, including an `also`
   destination. Only recognized status/count statements are exempt. Coverage
@@ -79,6 +80,35 @@ rebase, move coverage from the previous old reference to the new main revision,
 place newly changed lines, regenerate the ID map against that same revision,
 and check coverage again. A structural rewrite preserves scope, clause status,
 evidence and the last judged commit and date; it never promotes status.
+
+### Portable historical anchor
+
+Before distributing a snapshot or shallow checkout, run this in a checkout
+that contains the coverage original, then commit the resulting record:
+
+```sh
+node src/base/contract-docs.mjs anchor --old FULL_ORIGINAL_SHA
+```
+
+`docs/contract/ANCHOR.json` records schema 1, the full anchor commit SHA and
+Git objects as `{type, data}` keyed by their SHA-1 object IDs; `data` is canonical
+base64. It contains the raw commit, the root and required directory trees, and
+the original CONTRACT.md, ACCEPTANCE.md and claims blobs when present. The
+command requires the same anchor as COVERAGE.json and any contract-claim-source.
+
+`write`, `check` and `check-prose` verify the commit's object hash against the
+existing pinned original SHA, then the tree chain and each document's blob hash.
+Trees also prove which optional source files were absent. Verification needs
+neither Git nor a network. Historical text supplies provenance and preservation
+checks; current answers still come only from CONTRACT.md. A record is never
+accepted merely because it contains a tree identity or its own file checksums.
+
+A malformed, incomplete or mismatching record refuses with
+`contract_anchor_invalid`, even when Git history is available. Without a record,
+the existing Git path is used; unavailable history refuses with
+`contract_anchor_missing`. Full-history seeds need no record and keep identical
+generated output. Rewrite/rebase commands still use their explicit Git sources;
+after changing the pinned original, recreate and commit its matching record.
 
 ### Historical claim references
 

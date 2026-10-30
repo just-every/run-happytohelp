@@ -1,3 +1,4 @@
+import { offers } from '../capabilities.mjs';
 import { isDeepStrictEqual } from 'node:util';
 import { webcrypto } from 'node:crypto';
 import { accessToken, autonomousPolicy, policyEnvelope, seconds, signJws } from './crypto.mjs';
@@ -5,9 +6,10 @@ import { errorCode, VERSION } from './protocol.mjs';
 
 export async function negativePhase(c) {
  await c.adopt(autonomousPolicy());
+ await c.prepare('negative');
  const before = await c.witness(), iat = seconds(c.now);
  const unavailable = await c.mcp('resources/read', { uri: `unregistered://${crypto.randomUUID()}` });
- c.add('BASE-AGENT-003.refusal-code', unavailable.message?.error?.data?.code === 'tool_not_found' && unavailable.result === undefined, 'An unregistered resource must refuse with JSON-RPC error.data.code and no content.');
+ c.add('BASE-AGENT-003.refusal-code', unavailable.message?.error?.data?.code === (offers(c.surface.capabilities, 'resources') ? 'tool_not_found' : 'capability_not_declared') && unavailable.result === undefined, 'An unregistered resource must refuse with JSON-RPC error.data.code and no content.');
  const noToken = await c.mcp('tools/list', {}, { token: null });
  c.add('BASE-AGENT-004.1.challenge', noToken.status === 401 && /resource_metadata=/.test(noToken.headers.get('www-authenticate') ?? ''), 'An unauthenticated call must return 401 and a resource_metadata challenge.');
  for (const [name, overrides] of [
@@ -17,6 +19,31 @@ export async function negativePhase(c) {
  ]) {
   const answer = await c.mcp('tools/list', {}, { token: await accessToken(c, overrides) });
   c.add(`BASE-AGENT-004.${name === 'audience' ? '2' : '3'}.${name}`, answer.status === 401, `${name} token returned HTTP ${answer.status}, expected 401.`);
+ }
+ const sponsorProbes = [
+  ['unknown', { sub: crypto.randomUUID() }],
+  ['changed-email', { email: `changed-${crypto.randomUUID()}@example.invalid` }],
+  ...Object.entries(c.fixtureSponsors),
+ ];
+ const undeclared = ['inactive', 'excluded'].filter(kind => !Object.hasOwn(c.fixtureSponsors, kind));
+ if (undeclared.length) console.error(`Agent sponsor probes: undeclared=${undeclared.join(',')}; no points run for these states.`);
+ for (const [kind, sponsor] of sponsorProbes) {
+  // Give each probe an unused agent, so a prior agent/sponsor binding cannot
+  // mask missing sponsor admission. Only sponsor claims override its valid
+  // token. Signing authority stays in the verifier.
+  let ok = false, status;
+  try {
+   const native = await c.witness();
+   const token = await accessToken({ ...c, agentId: `rer-sponsor-probe-${crypto.randomUUID()}` }, sponsor);
+   const answer = await c.mcp('tools/list', {}, { token });
+   const after = await c.witness(), code = errorCode(answer);
+   status = answer.status;
+   ok = [401, 403].includes(status)
+    && (answer.message?.error?.code === -32001 || typeof code === 'string' && code.length > 0)
+    && answer.result === undefined && isDeepStrictEqual(native, after);
+  } catch { /* Native and fixture diagnostics may contain private identities. */ }
+  c.add(`BASE-AGENT-004.sponsor.${kind}`, ok,
+   `Sponsor ${kind} must return HTTP 401 or 403 with a typed error and leave native state unchanged${status === undefined ? '' : ` (HTTP ${status})`}.`);
  }
  const write = c.surface.journey.find(step => !c.surface.tools.find(tool => tool.name === step.tool)?.readOnly);
  if (write) {
@@ -42,6 +69,9 @@ export async function negativePhase(c) {
  const foreign = await c.request('/api/rer/agent-policy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ policy: foreignBusiness.policy }) });
  c.add('BASE-AGENT-007.8.business', !foreign.ok, 'An envelope whose Business does not match its revision signature was accepted.');
  await foreign.body?.cancel();
- c.add('BASE-AGENT-007.8.state', isDeepStrictEqual(state, await c.personJson('/agents/api/state')), 'An invalid envelope changed the adopted policy state or revision.');
+ // Slow requests may renew the adopted envelope before the second state read.
+ // Only its acknowledged expiry may change; every other field stays strict.
+ const sameState = actual => isDeepStrictEqual({ ...state, policy: { ...state.policy, expires_at: new Date(c.adoptedPolicy.exp * 1000).toISOString() } }, actual);
+ c.add('BASE-AGENT-007.8.state', sameState(await c.personJson('/agents/api/state')), 'An invalid envelope changed the adopted policy state or revision.');
  c.add('BASE-AGENT-004.negative-no-effect', isDeepStrictEqual(before, await c.witness()), 'An authentication/person-door/policy-envelope negative changed native state.');
 }

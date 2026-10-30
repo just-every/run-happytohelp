@@ -1,6 +1,12 @@
 import type { AuditRow } from './audit.ts'
-import type { Principal, Runtime, ToolContext } from './types.ts'
+import type { Principal, Runtime, ToolContext, ToolDefinition } from './types.ts'
 import { ToolRefusal } from './errors.ts'
+
+// A retained, identity-matched admission can still be executing. It cannot
+// authorize work yet, but its native continuation can be described in audit.
+export class UnfinishedOperation extends ToolRefusal {
+  constructor() { super('operation_mismatch') }
+}
 
 /** Only the door's retained admission can authorize a native continuation. */
 export async function resumeOperation(rt: Runtime, id: string, principal: Principal, key: string | null): Promise<{ principal: Principal; approvers: ToolContext['approvers'] }> {
@@ -15,10 +21,12 @@ export async function resumeOperation(rt: Runtime, id: string, principal: Princi
     const execution = approval ? JSON.parse(approval.result).execution_id : null
     saved = execution ? await load(execution) : null
   }
-  if (!saved || saved.outcome !== 'done' || saved.operation_id !== id || saved.idempotency_key === null || saved.idempotency_key !== key || saved.consent !== (principal.consent ?? null)
+  if (!saved || saved.operation_id !== id || saved.idempotency_key === null || saved.idempotency_key !== key || saved.consent !== (principal.consent ?? null)
     || saved.agent.id !== principal.agent.id || saved.agent.name !== principal.agent.name || (saved.agent.specialist ?? null) !== (principal.agent.specialist ?? null) || saved.sponsor.id !== principal.person.id || saved.client_id !== (principal.clientId ?? null)
     || !Array.isArray(saved.scopes) || saved.scopes.length !== new Set(principal.scopes).size
     || saved.scopes.some(scope => !principal.scopes.includes(scope))) throw new ToolRefusal('operation_mismatch')
+  if (saved.outcome === 'running') throw new UnfinishedOperation()
+  if (saved.outcome !== 'done') throw new ToolRefusal('operation_mismatch')
   const approvers = []
   for (const id of saved.approval?.by ?? []) {
     const person = await rt.options.people.person(id)
@@ -30,4 +38,13 @@ export async function resumeOperation(rt: Runtime, id: string, principal: Princi
 
 // A continuation has its own once-only claim, retaining the public key unchanged.
 // NUL is forbidden in public keys so these internal claims cannot alias them.
-export const operationKey = (id: string, tool: string, key: string) => `\0${id}\0${tool}\0${key}`
+export const operationKey = (id: string, tool: string, key: string, item?: string) => `\0${id}\0${tool}\0${key}${item === undefined ? '' : `\0${item}`}`
+
+/** Only the seed's native resolver can select an item's once-only claim. */
+export async function continuationItem(tool: ToolDefinition, args: Record<string, unknown>, ctx: ToolContext, operationId?: string): Promise<string | undefined> {
+  if (!tool.continuationItem) return undefined
+  if (!operationId) throw new ToolRefusal('operation_mismatch')
+  const item = await tool.continuationItem(args, ctx)
+  if (!item || typeof item.id !== 'string' || !item.id.trim() || item.id.length > 200 || item.id.includes('\0') || item.operationId !== operationId) throw new ToolRefusal('operation_mismatch')
+  return item.id
+}

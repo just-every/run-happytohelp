@@ -9,6 +9,7 @@ import { policyState } from './policy-store.ts'
 import { nativeTarget } from './target.ts'
 import { nativeProof } from './native-proof.ts'
 import { narrowPrincipal } from './principal.ts'
+import { continuationItem } from './operation.ts'
 
 export interface Effect { type: string; uri: string; data?: Record<string, unknown> }
 export function context(rt: Runtime, principal: Principal, door: ToolContext['door'], effects: Effect[], approvers: ToolContext['approvers'] = []): ToolContext {
@@ -16,14 +17,15 @@ export function context(rt: Runtime, principal: Principal, door: ToolContext['do
   return Object.freeze({ db: rt.options.db, person: Object.freeze({ ...principal.person }), agent: Object.freeze({ ...principal.agent, specialist: principal.agent.specialist ?? null }),
     consent: principal.consent, scopes: Object.freeze([...principal.scopes]), clientId: principal.clientId,
     operationId: principal.operationId!, idempotencyKey: principal.idempotencyKey ?? null,
+    continuationItemId: principal.continuationItemId,
     nativeProof: principal.nativeProof && Object.freeze({ ...principal.nativeProof }),
     actor: Object.freeze({ ...actor, agent: Object.freeze(actor.agent), for: Object.freeze(actor.for) }),
     seed: rt.options.seed, origin: rt.options.origin, now: rt.now, door,
     approvers: Object.freeze(approvers.map(person => Object.freeze({ ...person }))),
     emit(type: string, uri: string, data?: Record<string, unknown>) { effects.push({ type, uri, data }) } })
 }
-export async function classify(tool: ToolDefinition, args: Record<string, unknown>, ctx: ToolContext): Promise<ClassAndFacts[]> {
-  const classes = await tool.classify(args, ctx)
+export async function classify(tool: ToolDefinition, args: Record<string, unknown>, ctx: ToolContext, completed?: readonly ClassAndFacts[]): Promise<ClassAndFacts[]> {
+  const classes = await tool.classify(args, ctx, completed && Object.freeze(structuredClone(completed)))
   if (!Array.isArray(classes) || !classes.length || new Set(classes.map(item => item.class)).size !== classes.length || classes.some(item => !tool.classes.includes(item.class) || !item.facts || !Number.isSafeInteger(item.facts.measure) || item.facts.measure < 0 || classDefinition(item.class).facts.some(field => typeof item.facts[field as keyof typeof item.facts] !== 'string') || (item.facts.currency !== undefined && !/^[A-Z]{3}$/.test(item.facts.currency)) || (item.facts.counterparty !== undefined && !['internal','known','new','public'].includes(item.facts.counterparty)) || (item.facts.direction !== undefined && !['widens','narrows'].includes(item.facts.direction)))) throw new Error('classification_invalid')
   return classes
 }
@@ -46,6 +48,7 @@ export async function runTool(rt: Runtime, tool: ToolDefinition, args: Record<st
     if (principal.consent && (await policyState(rt)).revoked.consents.includes(principal.consent)) throw new ToolRefusal('consent_revoked')
     if (tool.scope && !principal.scopes.includes(tool.scope)) throw new ToolRefusal('insufficient_scope')
     principal = await nativeProof(rt, tool, args, principal, principal.nativeProof?.reference)
+    if (await continuationItem(tool, args, context(rt, principal, door, [], approvers), principal.operationId) !== principal.continuationItemId) throw new ToolRefusal('operation_mismatch')
     const value = await tool.run(args, context(rt, principal, door, effects, approvers))
     if (!validateSchema(tool.outputSchema, value.result)) return { result: { ...result, outcome: 'refused', code: 'output_invalid' }, effects, undo: value.undo }
     return { result: { ...result, outcome: 'done', result: value.result, resources: value.resources, untrusted: tool.untrusted }, effects, undo: value.undo }

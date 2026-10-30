@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "3ebacb4665bcd112cd90e3ffbaf7cd60ee70194b6dd0377dac572eb83365c17e",
+      "sha256": "d6242246bebf19eddc766356895ed00523c33929c22281dbc7c6cf043fb91724",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "475dde601ec0f99b366d8322b6e5512e26fb39ad376f88e06b3c60aec364745e",
+      "sha256": "97012a1007ba3879ee7cb7300302c568f52be42155fabc7a166b6c50e6c1c175",
       "executable": false
     },
     "DEMO.md": {
@@ -12429,7 +12429,7 @@
       "executable": false
     },
     "tests/move-in/outcomes.mjs": {
-      "sha256": "33a784f29e7b02619dae79be9be3850c5e71e9f0e0a59fecd97b375f8416a848",
+      "sha256": "cfe1c1b095c107ac73195519d4c54dd3a3b85cb5d8ea6f7262d1b41a4803265d",
       "executable": false
     },
     "tests/move-in/owned-workerd.mjs": {

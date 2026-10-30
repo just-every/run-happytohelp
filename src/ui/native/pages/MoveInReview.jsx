@@ -9,7 +9,7 @@ function keptBehind(decisions){
  for(const d of decisions)if(!d.rejection)for(const o of d.omissions){const text=reasonLabel(o.reason),group=groups.get(text)||{text,records:[]};if(!group.records.includes(d))group.records.push(d);groups.set(text,group)}
  return [...groups.values()];
 }
-const names=(vendor,records)=>`${records.slice(0,3).map(d=>recordName(vendor,d)).join(', ')}${records.length>3?` and ${records.length-3} more`:''}`;
+const names=(vendor,records)=>`${records.slice(0,3).map(d=>`${recordName(vendor,d)} (${where(d.location)})`).join(', ')}${records.length>3?` and ${records.length-3} more`:''}`;
 
 /** The plan for one upload: what imports, what needs fixing first, and what stays in the original file. */
 export default function MoveInReview({plan,vendor,state,projectId}){

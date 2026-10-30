@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d6242246bebf19eddc766356895ed00523c33929c22281dbc7c6cf043fb91724",
+      "sha256": "07684c8f6f7699abec044b0f033fc6513d0e1282baf63c8f6d422d2f671d0a5b",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "97012a1007ba3879ee7cb7300302c568f52be42155fabc7a166b6c50e6c1c175",
+      "sha256": "affcf2c9e773bc31ede7e0c21899ce8c7cbac8bb7539dbd560bf35ffbf4264fd",
       "executable": false
     },
     "DEMO.md": {
@@ -10709,7 +10709,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInReview.jsx": {
-      "sha256": "ab94a8694b3042f928c9045eb5387880e3ebca5ecb4a48c757d6c5a2424d09de",
+      "sha256": "b32fc61e91c8236f174299b033271d9300cfbdd07def41f480b494529302fd22",
       "executable": false
     },
     "src/ui/native/pages/notifications/NotificationInbox.jsx": {
@@ -12249,7 +12249,7 @@
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
-      "sha256": "98792bc99eb698143a47ff671a19234cce03925997ec66e8ec3dadeb28f20bf4",
+      "sha256": "093b060cbbe3a5083b532b6798fef9cd81fb57ae5b620f4388b720bf459b9a03",
       "executable": false
     },
     "tests/journeys/move-in-capacity.mjs": {
@@ -12425,7 +12425,7 @@
       "executable": false
     },
     "tests/move-in/outcomes-policy.mjs": {
-      "sha256": "19ea1229f62f1ee33879466d40186b8cc4a50d3c9aea4025aa9f7a6b9774cd2a",
+      "sha256": "67cf56207466db8c070a8bd540987840ddb209bb23d23fe6b3b85addaeda91a9",
       "executable": false
     },
     "tests/move-in/outcomes.mjs": {

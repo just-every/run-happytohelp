@@ -14,7 +14,7 @@ export async function controller(f,device){
   if(!network.online)throw new TypeError('Disconnected at network edge')
   const response=await f.app.request(path,{method:init.method,headers:Object.fromEntries(new Headers(init.headers)),body:init.body,raw:true})
   if(network.hold&&path===root+'/tickets/'+f.t.id){const hold=network.hold;network.hold=null;hold.started();await hold.wait}
-  if(network.loseReply&&path.endsWith('/reply')){network.loseReply=false;await response.body?.cancel();throw new TypeError('Reply response lost at network edge')}
+  if(network.loseReply&&path.endsWith('/reply')){network.loseReply=false;await response.arrayBuffer();throw new TypeError('Reply response lost at network edge')}
   return response
  }
  const client=new MobileClient({origin:f.app.origin,credential:{deviceId:device.id,projectId:device.projectId,token:device.token,scopes:device.scopes,expiresAt:device.expiresAt},fetch,lifecycle})

@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -1051,7 +1051,7 @@ Core · target · **partial** · Cites BASE-DATA-003, BASE-DATA-006
 
 #### AUDIT-001 — Security and accountable actions
 
-Core · target · **partial** · Cites BASE-SECRET-001, BASE-ROLE-001, BASE-DATA-003, BASE-AUDIT-001, BASE-DATA-006
+Core · target · **done** · Cites BASE-SECRET-001, BASE-ROLE-001, BASE-DATA-003, BASE-AUDIT-001, BASE-DATA-006
 
 **Requirement.** The security view joins support-specific assignments, procedure changes, customer updates, import journals and erasure requests with their purpose and native action provenance. Support-provider credentials remain encrypted under installation custody. Support records retained by a legal hold keep their report treatment; cleanup never deletes evidence to improve support reports.
 
@@ -1059,8 +1059,8 @@ Core · target · **partial** · Cites BASE-SECRET-001, BASE-ROLE-001, BASE-DATA
 1. Using owner/security views, rotate/revoke credentials, attempt cross-tenant/CSRF/SSRF access, approve an action, export audit and erase its actor; inspect durable outcomes with no secrets.
 2. Apply retention/hold settings and verify protected records and report denominators survive restart and cleanup.
 
-**Evidence.** `src/modules/audit/`; `migrations/180_account_security.sql`; `tests/journeys/identity.mjs`; `tests/journeys/erasure.mjs`; `tests/journeys/identity-browser.mjs` (magic sign-in in 1440 and 390px browsers: neutral request, scanner-safe link, one explicit sign-in and refused replay)
-**Gap.** Carried-done audit: unasserted in the cited Evidence set: rotate credentials; revoke credentials; cross-tenant refusal; CSRF refusal; SSRF refusal; approval audit export; erased actor retained anonymously; no secrets in exported audit; retention setting; legal hold setting; held records survive restart; held records survive cleanup; report denominators preserved. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
+**Evidence.** `tests/helpers/identity/audit-outcomes.mjs`, auditOutcomesJourney, called within the existing roles/security-log test in `tests/journeys/identity.mjs`: workspace-token rotation and revocation; delegation replacement by fresh consent and withdrawal through settings/bearer doors; cross-tenant security read/export refusal; native approval exported with actor, category, source and grant provenance; owner erasure retains the exact approval anonymously; CSV/JSON exclude credentials, signing material, ciphertext and erased identity; retention/hold settings, held evidence and support records survive restart and actual scheduled cleanup with an expired unheld purge control; the public Reports route retains the exact three-request cohort and response, resolution, AI-outcome and satisfaction denominators. Existing assertions retained and cited: `tests/helpers/identity/roles-audit.mjs`, rolesAuditJourney (append-only triggers, permission-denied audit rows, owner-only retention, hold placement/release and cleanup); `tests/helpers/identity/two-factor.mjs`, twoFactorJourney (stepped-up export without the factor secret); `tests/helpers/delegation/consent.mjs`, consentJourney, in `tests/journeys/delegation.mjs` (CSRF refusal); `tests/journeys/erasure.mjs` (cross-tenant erasure refusal); `tests/connections/delivery.mjs`, deliveryLifecycle, through `tests/connections/api.mjs` and `tests/journeys/connections.mjs` (unsafe literal SSRF destination refused). `src/modules/audit/`; `migrations/180_account_security.sql`. Approval proof is native connected-application consent, not a shared company-policy decision API.
+**Gap.** None.
 
 #### PORTABILITY-001 — Complete customer-owned portable support data
 

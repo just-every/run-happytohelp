@@ -36,7 +36,7 @@ export function assertEqualityPolicy(raw,business,excluded){
 
 // The existing built-browser journey calls this once, at its desktop width.
 // No new test registration or configuration-import scenario is introduced.
-export async function reviewExplanations(page,origin,base){
+export async function reviewExplanations(page,origin,base,shot){
  const filename='outcome-explanations.jsonl',stamp='2024-01-01T00:00:00Z'
  const records=[
   {user:{id:87001,role:'end-user',name:'Review person',email:'review-outcome@example.test',created_at:stamp,user_fields:{legacy:'keep in source'}}},
@@ -59,7 +59,12 @@ export async function reviewExplanations(page,origin,base){
   const row=page.locator('.move-in-details li').filter({hasText:record}).filter({hasText:reason}).first()
   await row.waitFor();const text=await row.innerText()
   assert.ok(text.includes(reason),`${record}: plain review reason`)
-  if(line>1)assert.ok(text.includes(`${filename}, line ${line}`),`${record}: source-located rejection/conflict; omission location is asserted through the review route`)
+  assert.ok(text.includes(`${filename}, line ${line}`),`${record}: each plain reason shows its source location`)
  }
  assert.doesNotMatch(await page.locator('.move-in-page').innerText(),/restricted_macro_not_imported|conflicting_duplicate_id|custom_fields_retained_in_original_only/,'review shows plain reasons, never engine codes')
+ // Assertions run once at 1440; show the changed review at both proof widths.
+ await page.screenshot({path:shot('outcome-explanations-1440.png'),fullPage:true})
+ await page.setViewportSize({width:390,height:1000})
+ await page.screenshot({path:shot('outcome-explanations-390.png'),fullPage:true})
+ await page.setViewportSize({width:1440,height:1000})
 }

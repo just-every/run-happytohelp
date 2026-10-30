@@ -47,6 +47,8 @@ export async function publicMotionJourney({page,origin}){
    assert.equal(timing.iterations,1,'one play per moving part')
    assert.ok(timing.endTime<=1800,'complete moment including delay fits 1.8 seconds: '+timing.name)
    for(const property of timing.properties)assert.ok(['opacity','transform','translate','scale','clipPath','strokeDasharray','strokeDashoffset','backgroundSize','backgroundColor','color'].includes(property),'motion does not animate layout: '+property)
+   const extra=timing.properties.filter(property=>!['opacity','transform','translate','scale','clipPath','strokeDasharray','strokeDashoffset'].includes(property))
+   if(extra.length)console.log('PUBLIC_FINDING PUBLIC-004: '+timing.name+' animates '+[...new Set(extra)].join(',')+' beyond the retained opacity/transform/clip/stroke set; no approved CSS changed; Gap remains open')
   }
  }
  assert.equal(proof.shifts.reduce((sum,e)=>sum+e.value,0),0,'no browser-observed layout shift while moments play')

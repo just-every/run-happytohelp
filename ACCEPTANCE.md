@@ -314,7 +314,7 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 5. Keyboard navigation and the homepage’s permitted-width layouts preserve the approved experience.
 
 **Evidence.** `tests/helpers/public-site-journey.mjs` (paper/ink/aqua, links, DOM labels and brand); `tests/helpers/public-site-motion.mjs` (font-swap measurement, once-only motion, layout stability, keyboard and reduced motion); `tests/journeys/public-browser.mjs`
-**Gap.** The font-swap probe observes nonzero fallback-to-Outfit text layout shift, despite unchanged element boxes; the approved CSS is retained for ct. Licensed Nunito-derived letter-shape/vendor proof, human screen-reader review R-19 and VPAT R-20 remain UNMET-EXTERNAL. Browser width proof is 1440/390; the retained 320–1920 range is not exhaustively qualified. Other brand, link, motion, keyboard and reduced-motion points have builder assertions; awaiting this clause's judge.
+**Gap.** The font-swap probe observes nonzero fallback-to-Outfit text layout shift, despite unchanged element boxes. Some below-hero effects animate backgroundSize/backgroundColor beyond the retained opacity/transform/clipping/stroke property set; these are measured findings for ct, and the approved CSS is retained. Licensed Nunito-derived letter-shape/vendor proof, human screen-reader review R-19 and VPAT R-20 remain UNMET-EXTERNAL. Browser width proof is 1440/390; the retained 320–1920 range is not exhaustively qualified. Other brand, link, motion, keyboard and reduced-motion points have builder assertions; awaiting this clause's judge.
 
 #### PUBLIC-005 — Documentation and public knowledge routes
 

@@ -1,3 +1,5 @@
+import {api001Outcomes} from './api001-outcomes.mjs'
+import {api001ScoutOutcomes} from './api001-helpscout-outcomes.mjs'
 import assert from 'node:assert/strict'
 import {harness,body,sha} from './harness.mjs'
 import {deliveryLifecycle} from './delivery.mjs'
@@ -6,6 +8,8 @@ import {installSlack,assertSlack} from './slack.mjs'
 // A connected product installs scoped credentials, opens a real support request
 // and observes its signed lifecycle. Network receivers are the only fakes.
 export async function connectionsJourney(){
+ await api001Outcomes()
+ await api001ScoutOutcomes()
  const h=await harness(),settings='/api/management/projects/p/connections'
  try{
   const destination=await h.call(settings+'/webhooks',body({name:'Support events',url:'https://receiver.example.com/events',events:['conversation.created','message.created','conversation.resolved','conversation.rated']}))

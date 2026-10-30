@@ -1,3 +1,4 @@
+import {consumeQueue} from '../../src/queue'
 import {integrationSettings} from '../../src/modules/api-integrations/settings'
 import {requesterAdmission,requesterKeys} from '../../src/modules/api-integrations/requester-admission'
 import {boundedDatabase} from '../../src/platform/d1-budget'
@@ -26,8 +27,10 @@ function meteredDatabase(db:D1Database){
  return {metrics,database:{prepare:(sql:string)=>wrap(db.prepare(sql)),batch:async(statements:D1PreparedStatement[])=>(await db.batch(statements.map(s=>raw.get(s)??s))).map(record)} as D1Database}
 }
 export default {async fetch(request:Request,env:any,ctx:ExecutionContext){
+ const queue:any[]=[];env={...env,JOBS:{send:async(job:any)=>{queue.push(job)}}}
+ if(new URL(request.url).pathname==='/_test/queue'){const jobs=await request.json<any[]>(),retried:number[]=[];await consumeQueue({messages:jobs.map((body,i)=>({id:String(i),body,ack(){},retry(){retried.push(i)}}))} as any,env);return Response.json({retried},{headers:{'X-Test-Queued':JSON.stringify(queue)}})}
  if(request.headers.get('X-Test-Meter')==='1'){
   const meter=meteredDatabase(env.DB),response=await app.fetch(request,{...env,DB:meter.database},ctx),out=new Response(response.body,response)
   out.headers.set('X-Test-D1',JSON.stringify(meter.metrics));return out
  }
- return new URL(request.url).pathname.startsWith('/_test/')?tests.fetch(request,env,ctx):app.fetch(request,env,ctx)}}
+ const response=await (new URL(request.url).pathname.startsWith('/_test/')?tests.fetch(request,env,ctx):app.fetch(request,env,ctx));const out=new Response(response.body,response);out.headers.set('X-Test-Queued',JSON.stringify(queue));return out}}

@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "07579e8d833cb6b72240944a65b0d652948a171c9dbf9586c4af6199b41b1982",
+      "sha256": "276e99f6d327384ce239ce28ae5831487c972cbb91f9e130ef20583059722557",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "21749005215a86352f42f9f745ddb686d1904a0a014bf1d5a952409aa7d3a51c",
+      "sha256": "0922fefdaff239a47e79044cb64f3ab5c32d422d11af95302ca4c1c5b8105fad",
       "executable": false
     },
     "DEMO.md": {
@@ -1657,7 +1657,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "6f9df88e695564e40e9e110cd8a2093d5c918f478787a4209f525a7fb7589404",
+      "sha256": "6a453e96feff8da4f92037720b7a5c90fae3e98f98a554984e53884a6bf68cf6",
       "executable": false
     },
     "docs/companies-and-csv.md": {
@@ -4225,7 +4225,7 @@
       "executable": false
     },
     "src/modules/api-integrations/helpscout-pull.ts": {
-      "sha256": "e34038a9b9b6411ab3a096d2be7316763a5e23bd3a471e236512271b97805d24",
+      "sha256": "4daa1809d9c2129bdaa5fb8de2516bd9bb798a1335ee5e6970994c62ec2a8151",
       "executable": false
     },
     "src/modules/api-integrations/helpscout.ts": {

@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -491,7 +491,7 @@ Core · target · **partial**
 
 #### QUEUE-002 — Structured and bulk queue work
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **done** · Cites BASE-ROLE-001
 
 **Requirement.** Operators manage workspace-scoped tags, typed/validated custom issue fields (including values customers submit through FORMS-001) and priorities, and statuses from the STATUS-001 lifecycle; saved views can filter and sort on them. Leads select tickets and bulk assign, tag, change priority/status or apply a permitted MACRO-001 macro with a preview, per-record authority checks and a complete partial-failure result. Bulk actions cannot publish replies or reveal another workspace accidentally.
 
@@ -499,8 +499,8 @@ Core · target · **partial** · Cites BASE-ROLE-001
 1. Create a custom field and priority view, bulk-update mixed eligible/stale/forbidden tickets from the inbox and reload; verify each permitted effect, rejected reason, audit and lack of cross-tenant changes.
 2. Bulk-apply a macro and filter a view by STATUS-001 status and a form-submitted field.
 
-**Evidence.** `src/modules/tickets`; `tests/journeys/inbox.mjs`; `tests/journeys/inbox.mjs`; `tests/journeys/inbox.mjs`; `tests/helpers/inbox/tickets-browser.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: custom field; priority view; eligible bulk result; stale bulk result; forbidden bulk result; per-record audit; no foreign changes; bulk macro apply; filter by lifecycle status; filter by form-submitted field. Asserted: no outcome in the currently cited test files.
+**Evidence.** `tests/journeys/inbox.mjs`, existing replacement-request journey; `tests/helpers/inbox/tickets.mjs`, ticketsJourney: custom field readback, priority view, ready/applied/stale/forbidden bulk results and permitted bulk macro drafts; `tests/helpers/inbox/queue-bulk.mjs`, queueBulkJourney: inbox selection, preview without mutation, mixed per-record results and reasons, assignment/tag/priority/status readback after restart, priority sorting, per-record audit actor/source/outcome and exact stale/foreign state, audit and visitor transcript preservation through bulk edits and macros, typed field validation and persisted unsent macro drafts; formFieldQueue: verified FORMS-001 submissions through existing public doors, saved lifecycle-status and submitted-field filters, negative controls and custom-field sorting after restart. `tests/journeys/workflows-browser.mjs`; `tests/helpers/inbox/tickets-browser.mjs`, ticketsBrowser: built ticket-field settings, priority view and Bulk ticket changes region.
+**Gap.** None. All ten previously listed outcomes are asserted through public routes or the built page; provider fakes are confined to the network edge. No UI changed.
 
 #### QUEUE-003 — Collaboration without conflicting replies
 

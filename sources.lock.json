@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "25fa4d9547a8668481079785c1d7eeaa0100af7dcf994d236c74956727b5ebc3",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "258ed7907b22ff32a9b7a6100f5352f7188f4b8b45d82f88f713687dcf33531c",
       "executable": false
     },
     "DEMO.md": {
@@ -11848,6 +11848,10 @@
       "sha256": "b25639ecfd27293df35fbe66323002b91e1d7c836b184e18d3e565f9d74df33b",
       "executable": false
     },
+    "tests/helpers/inbox/queue-bulk.mjs": {
+      "sha256": "3cdd25ba0f75cc87189fdef8b0f90b795a2eebe02fe99cbd87a59ad4eb47a7a9",
+      "executable": false
+    },
     "tests/helpers/inbox/reply-attachments-browser.mjs": {
       "sha256": "d583c130037f372ae7a7ffbd18e8bb06f7f89c9f33af4b7daf55fb757ace1c81",
       "executable": false
@@ -12209,7 +12213,7 @@
       "executable": false
     },
     "tests/journeys/inbox.mjs": {
-      "sha256": "78a4a05d73290fd6fa0ca308fce94c68bdaa953bfa526b3d6f77443168f0b450",
+      "sha256": "33b648c30b0c9c3d0247739f163a17cfa492eb203fc375ebf0216b1b477fb860",
       "executable": false
     },
     "tests/journeys/installer-nightly.mjs": {

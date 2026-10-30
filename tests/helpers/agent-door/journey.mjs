@@ -1,6 +1,3 @@
-// PENDING 2026-10-28 / ct: BASE-AGENT-013.events-clause:
-// built-in BASE-AGENT-010 reference is absent from the current seed contract.
-// This dependency is not a skip or substitute for the normal verifier.
 import {readFile} from 'node:fs/promises'
 import assert from 'node:assert/strict'
 import {webcrypto,randomUUID} from 'node:crypto'
@@ -171,12 +168,18 @@ export async function agentDoorJourney(){
   assert.equal(scopedWrite.data.error.data.code,'insufficient_scope')
   assert.equal((await app.call('/api/delegation/v1/revoke',{token:localToken,body:{}})).status,200)
   assert.equal((await rpc('tools/list',{},localToken)).status,401)
-  // Native email reassignment does not transfer the signed Business binding.
+  // Native email reassignment does not transfer the signed Business binding,
+  // and a token minted for the old address no longer admits its sponsor.
   await app.ok('/api/management/profile',{method:'PUT',token:member.token,body:{name:'Jordan Support',email:'jordan.new@example.test'}})
   const replacementInvite=(await native(`/api/management/projects/${project}/agents`,{body:{email:memberEmail}})).data
   await app.ok('/api/identity/accept-token',{body:{token:new URL(replacementInvite.invitationUrl).searchParams.get('token'),name:'Casey Support',password:'Disposable-native-casey-781!zz'}})
   const replacement=await app.ok('/api/identity/login',{body:{email:memberEmail,password:'Disposable-native-casey-781!zz'}})
-  const memberToken=await accessToken(context,{sub:memberSub,email:memberEmail,act:{sub:memberAgent,name:'Jordan helper',specialist:'support agent'}})
+  const notesBeforeStale=(await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',conversation.id)).n
+  const staleToken=await accessToken(context,{sub:memberSub,email:memberEmail,act:{sub:randomUUID(),name:'Jordan helper',specialist:'support agent'}})
+  const stale=await rpc('tools/call',{name:'happytohelp.conversations.note',arguments:{id:conversation.id,content:'An old-address token acts for neither Jordan nor Casey.',idempotency_key:randomUUID()}},staleToken)
+  assert.equal(stale.status,401,JSON.stringify(stale.data))
+  assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',conversation.id)).n,notesBeforeStale)
+  const memberToken=await accessToken(context,{sub:memberSub,email:'jordan.new@example.test',act:{sub:memberAgent,name:'Jordan helper',specialist:'support agent'}})
   const memberNote=await call('happytohelp.conversations.note',{id:conversation.id,content:'A durable Business id still acts for Jordan after the email changes.',idempotency_key:randomUUID()},memberToken)
   assert.equal(memberNote.outcome,'done',JSON.stringify(memberNote))
   const memberOperation=await app.first('SELECT sponsor_id FROM h2h_agent_operations WHERE id=?',memberNote.result.operation)

@@ -904,6 +904,22 @@
           "$from": "tickets",
           "pointer": "/conversations/0/id"
         }
+      },
+      "resource": {
+        "uriTemplate": "happytohelp://projects/{project}/conversations/{id}",
+        "state": {
+          "ticket": {
+            "id": {
+              "$from": "tickets",
+              "pointer": "/conversations/0/id"
+            },
+            "priority": "high",
+            "ticket_version": {
+              "$from": "update",
+              "pointer": "/ticket/ticket_version"
+            }
+          }
+        }
       }
     },
     {

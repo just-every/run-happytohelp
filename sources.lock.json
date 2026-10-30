@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "df5d4c3dde3fe049e1923d6179c2a2161cca90ccb37f9f4d0bbc4281971ea34e",
+      "sha256": "8ec420a9221ab25abb1a4a67791f5bef4c174893ac17a8a53f3f46aef23fcee5",
       "executable": false
     },
     "DEMO.md": {
@@ -3693,7 +3693,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "396c5f93ac8a15a381ce11b457ca8d2c41e6cbe70639a29001cd41970f4df7b6",
+      "sha256": "20cf1394b099d0a51712eca2c56eeee21c92ec2b9bb2192ac7d2198804268015",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -4258,6 +4258,10 @@
     },
     "src/modules/api-integrations/module.json": {
       "sha256": "ccaf0d9d7d85a46f9193acd1f91699acf49bc63c25526ca60b83da6e875881f1",
+      "executable": false
+    },
+    "src/modules/api-integrations/permissions.ts": {
+      "sha256": "475654d93a93a46d42e41c969ea4d95a934e258b927dd6fb0164e9e052602010",
       "executable": false
     },
     "src/modules/api-integrations/reach.ts": {
@@ -11437,7 +11441,7 @@
       "executable": false
     },
     "tests/connections/api001-outcomes.mjs": {
-      "sha256": "2cda34a682f861035a056533bcb4e1a12f7c917f97c1db1a04fabee429a10561",
+      "sha256": "1ddc16b7da4bdc145ea4e9ceedfb87a155ad96d3a265f7f48f413e450ee6742a",
       "executable": false
     },
     "tests/connections/delivery.mjs": {
@@ -11465,7 +11469,7 @@
       "executable": false
     },
     "tests/connections/worker.ts": {
-      "sha256": "a8bd6f8627532feab575c8d2c692173330a13eebebc6479cbbe136b126c89117",
+      "sha256": "282b2a0614a4fd380c5883625284fed338d8311835b3baaa32c325208861f490",
       "executable": false
     },
     "tests/eval-harness/fixtures/assist-human-voice.json": {

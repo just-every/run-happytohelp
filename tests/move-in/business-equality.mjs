@@ -1,3 +1,4 @@
+import {assertEqualityPolicy} from './outcomes-policy.mjs';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {isSearchShadow} from '../helpers/search-index.mjs';
@@ -28,6 +29,7 @@ export function businessSnapshot(snapshot){
   assert.ok(email_digest===null||email_digest===expected,'populated admission digest matches native email');
   return link;
  });
+ assertEqualityPolicy(snapshot,result,excluded);
  return result;
 }
 export function assertBusinessEquality(before,after){

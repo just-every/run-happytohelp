@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "13889325265dd67af0667d617c7d251c6c61375d126431d489121e891e6ecf41",
+      "sha256": "23de8582965ffbb81dbd40e995c00f42c478dbb0419ca45b2fe67cab5489b6c7",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5a6f328a5c22cacb1fcaaf35c36a6033e8a2ec92b9e902bfeb1bbab74ca88bc6",
+      "sha256": "c73db4db7f84b1ed22f4c5acf7eb771e3fb1abd2304672695c0cfca91999ac51",
       "executable": false
     },
     "DEMO.md": {
@@ -11832,12 +11832,8 @@
       "sha256": "a73eca3ac1bf6991f3b5ee5a4258939bbc11efb51c3df01d82940c9b2402711b",
       "executable": false
     },
-    "tests/helpers/inbox/brands-credentials.mjs": {
-      "sha256": "d279d55a8b43999c4cb81d2f52d6c38d60ea5105eeb3c41e8649a902474481af",
-      "executable": false
-    },
     "tests/helpers/inbox/brands-outcomes.mjs": {
-      "sha256": "f2b5044acb76b4ffddd217ab87399e132be1214c5c6a0eebd348652bb81b54ed",
+      "sha256": "2a283073b13d3721f6c7b0ed851f041da2a52fcab6392c6b5ce7d9e258fd29ff",
       "executable": false
     },
     "tests/helpers/inbox/brands.mjs": {

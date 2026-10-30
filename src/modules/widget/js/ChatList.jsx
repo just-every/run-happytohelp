@@ -165,7 +165,9 @@ export default function ChatList({ messages, contact, sendContact, scrollRef, ag
     const showAgentName = (agent, groupIndex, newDate = false) => {
         if(!agent?.first_name && !agent?.name) return null;
 
-        let show = false;
+        // A historical AI reply keeps its disclosure when the header switches
+        // to a human. The current responder is not every message's author.
+        let show = !!agent.is_ai;
         if(groupIndex > 0) {
             if(newDate) {
                 show = true;
@@ -188,7 +190,7 @@ export default function ChatList({ messages, contact, sendContact, scrollRef, ag
         }
 
         if(show) {
-            return <div className="happytohelp-chat-agent-name happytohelp-text-muted">{agent.first_name ?? agent.name}</div>;
+            return <div className="happytohelp-chat-agent-name happytohelp-text-muted"><span>{agent.first_name ?? agent.name}</span>{agent.is_ai && <small className="happytohelp-ai-disclosure">AI assistant</small>}</div>;
         }
 
         return null;

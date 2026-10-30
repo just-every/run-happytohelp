@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "93dfde320fffbec6032aeabf12c830ddd3c6bae462e8c6409bf5f2c2c23233a2",
+      "sha256": "05fc2afd2e482d095d12a9a39e2191d6a3c659a7634c6dfca268ea5b4cdb29c0",
       "executable": false
     },
     "DEMO.md": {
@@ -11808,6 +11808,10 @@
       "sha256": "1f931f17647596f596aad9330c5c04399134aac9ce2fcbb0479a18e5b138c18a",
       "executable": false
     },
+    "tests/helpers/identity/audit-outcomes.mjs": {
+      "sha256": "f436d2279e2407cc1ecd9320af61eb2af39b784bbe7c6f42456694e0385f93e6",
+      "executable": false
+    },
     "tests/helpers/identity/email-step-up.mjs": {
       "sha256": "947ab9258d2c9a85e4e7e67cb2b525611bf6cb4003a637366fdbbcfa1339ed5b",
       "executable": false
@@ -12217,7 +12221,7 @@
       "executable": false
     },
     "tests/journeys/identity.mjs": {
-      "sha256": "ac29488f2bb3a1530aec6ba19b319d118c7ba048bb0e10ad36ff80e38fd680ee",
+      "sha256": "41a2bead7a1153e062b6c78cb7b175a83b330360b48059bfd2c7ef281b0cc320",
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {

@@ -270,8 +270,8 @@ Core · published · **partial** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-00
 3. The checkout offer and solved Spanish-store conversation retain the numbered aqua discs, connecting arrow, captions, speech-bubble mark and Send inside the prepared reply.
 4. Calls to action retain the once-drawn aqua flourish; under reduced motion the final drawing is complete.
 
-**Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: homepage headline; retained subhead; free alternative line; wide side-by-side layout; captions below drawing; phone stacked layout; left-aligned headline; shared aqua blob; checkout offer overlays corner; offer retains mark; Send is inside prepared reply; connecting aqua arrow; numbered caption discs; moment captions; Spanish-store solved-conversation text; flourish draws once within timing bound; reduced-motion final flourish. Asserted: no outcome in the currently cited test files. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: left-aligned headline. Asserted: homepage headline; retained subhead; free alternative line; wide side-by-side layout; captions below drawing; phone stacked layout; shared aqua blob; checkout offer overlays corner; offer retains mark; Send is inside prepared reply; connecting aqua arrow; numbered caption discs; moment captions; Spanish-store solved-conversation text; flourish draws once within timing bound; reduced-motion final flourish.
+**Evidence.** `tests/helpers/public-site-journey.mjs` (hero geometry, DOM copy and drawing); `tests/helpers/public-site-motion.mjs` (once-drawn flourish and reduced motion); `tests/homepage-browser.mjs` via `tests/journeys/public-browser.mjs`
+**Gap.** Acceptance points 1–4 now have builder journey assertions, with desktop assertions and phone stacking proof at 1440/390. Awaiting this clause's judge ACCEPT; no owner-approved homepage source or copy changed. Human screen-reader review R-19 and VPAT R-20 remain UNMET-EXTERNAL, separately recorded.
 
 #### PUBLIC-002 — Free product promise
 
@@ -283,8 +283,8 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 1. The Free section retains the no-seats, no-plans, no-fees promise, MIT license, aqua icon circles and ink license over a wordless editor.
 2. The page makes no price, hosting, provider or unrelated-service promotion.
 
-**Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: free-product statement; MIT licensing; no seats; no plans; no fees; wordless code editor; license card placement; aqua promise circles; no price claim; no hosting claim; no provider promotion; no unrelated-service promotion. Asserted: no outcome in the currently cited test files.
+**Evidence.** `tests/helpers/public-site-journey.mjs` (free promises, MIT licence/editor layering, aqua icon circles, promotion and destination refusal); `tests/homepage-browser.mjs` via `tests/journeys/public-browser.mjs`
+**Gap.** Acceptance points 1–2 now have builder journey assertions. Awaiting this clause's judge ACCEPT. Human screen-reader review R-19 and VPAT R-20 remain UNMET-EXTERNAL, separately recorded.
 
 #### PUBLIC-003 — Support desk, move-in invitation and closing
 
@@ -297,8 +297,8 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 2. The move-in section offers install, help-center import from Zendesk, Intercom or Freshdesk and widget installation beside the finished import drawing.
 3. The closing headline and footer retain the aqua line and header lockup, in the published section order.
 
-**Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: chat widget; shared inbox; help center; suggested replies; numbered ink desk cards; installation invitation; Zendesk help import; Intercom help import; Freshdesk help import; widget installation; finished import drawing; closing headline; published section order; closing aqua line; footer matches header lockup. Asserted: no outcome in the currently cited test files.
+**Evidence.** `tests/helpers/public-site-journey.mjs` (desk cards, move-in steps and finished import, section order, closing line and lockups); `tests/homepage-browser.mjs` via `tests/journeys/public-browser.mjs`
+**Gap.** Acceptance points 1–3 now have builder journey assertions. Awaiting this clause's judge ACCEPT. Human screen-reader review R-19 and VPAT R-20 remain UNMET-EXTERNAL, separately recorded.
 
 #### PUBLIC-004 — Public brand, links and motion
 
@@ -313,8 +313,8 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 4. Every below-hero moment plays once within 1.8 seconds without layout shift; reduced motion leaves every final drawing and stroke complete.
 5. Keyboard navigation and the homepage’s permitted-width layouts preserve the approved experience.
 
-**Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: aqua accents; near-black chrome; pale aqua blobs; off-white paper; pill controls; real text labels; repository-derived destinations; self-hosted Outfit; metric-matched fallback keeps layout; hand-drawn wordmark accessible name; licensed wordmark letter shapes; each moment plays once within 1.8 seconds; no layout shift; reduced-motion final state; keyboard navigation; permitted-width layouts. Asserted: no outcome in the currently cited test files. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: licensed wordmark letter shapes. Asserted: aqua accents; near-black chrome; pale aqua blobs; off-white paper; pill controls; real text labels; repository-derived destinations; self-hosted Outfit; metric-matched fallback keeps layout; hand-drawn wordmark accessible name; each moment plays once within 1.8 seconds; no layout shift; reduced-motion final state; keyboard navigation; permitted-width layouts.
+**Evidence.** `tests/helpers/public-site-journey.mjs` (paper/ink/aqua, links, DOM labels and brand); `tests/helpers/public-site-motion.mjs` (font-swap measurement, once-only motion, layout stability, keyboard and reduced motion); `tests/journeys/public-browser.mjs`
+**Gap.** The metric-matched-fallback layout point remains unmet: the font-swap probe observes fallback-to-Outfit text layout shift and reports changed element boxes when present. Its measured 0.0001 regression bound does not prove zero movement. Some below-hero effects animate backgroundSize/backgroundColor beyond the retained opacity/transform/clipping/stroke property set; these are measured findings for ct, and the approved CSS is retained. Licensed Nunito-derived letter-shape/vendor proof, human screen-reader review R-19 and VPAT R-20 remain UNMET-EXTERNAL. Browser width proof is 1440/390; the retained 320–1920 range is not exhaustively qualified. Other brand, link, motion, keyboard and reduced-motion points have builder assertions; awaiting this clause's judge.
 
 #### PUBLIC-005 — Documentation and public knowledge routes
 
@@ -327,8 +327,8 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 2. Unlisted Markdown and broken links fail verification; an unknown page receives the branded not-found page.
 3. Published help-center routes retain canonical links and search while denying drafts and deleted workspaces.
 
-**Evidence.** `src/ui/homepage`; `tests/homepage-browser.mjs`; `tests/journeys/public.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: current Markdown rebuild; section navigation; page contents; source links; responsive documentation layout; complete detailed documentation specification; unlisted Markdown refused; broken links refused; branded unknown-page result. Asserted: canonical help links; public help search; draft denial; deleted workspace denial. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: current Markdown rebuild; section navigation; page contents; source links; responsive documentation layout; complete detailed documentation specification; branded unknown-page result. Asserted: unlisted Markdown refused; broken links refused; canonical help links; public help search; draft denial; deleted workspace denial.
+**Evidence.** `tests/helpers/public-docs-journey.mjs` (all current emitted pages, manifest verification command and disposable negative cases, current-source Vite build, dev route loader updates, docs navigation/layout/contents/source links and branded 404); `tests/homepage-browser.mjs`; `tests/journeys/public-browser.mjs`; `tests/journeys/public.mjs` (canonical help links, search, draft/foreign/deleted denial)
+**Gap.** The retained detailed specification remains partial: the built /docs/operations raw HTML exceeds 160 KB, and its measured prose is below the stated 55-character minimum; the approved pages are retained for ct. Docs width proof is 1440/390; the retained 375–1920 range is not exhaustively qualified. Dev evidence drives the real route loader/plugin, without claiming a full dev HTTP/browser reload qualification. The docs-alias/no-D1-lookup detail is not instrumented by this journey. Other current-source build, listing/link refusal, docs surface and public help-route points have builder assertions; awaiting this clause's judge. Human screen-reader review R-19 and VPAT R-20 remain UNMET-EXTERNAL.
 
 #### MIGRATION-001 — Prior-data custody
 

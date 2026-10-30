@@ -4,7 +4,7 @@
    drawings' hand-drawn card. */
 
 /* Layout: sidebar | page | contents. The sidebar shows from 861px, the contents column from 1200px. */
-.h2h-docs .docs-shell { max-width: 1536px; margin: 0 auto; padding: 0 var(--gutter) clamp(48px, 6vw, 96px); display: grid; grid-template-columns: minmax(0, 1fr); column-gap: clamp(32px, 4vw, 64px); }
+.h2h-docs .docs-shell { max-width: 1536px; margin: 0 auto; padding: 0 var(--gutter) clamp(48px, 6vw, 96px); display: grid; grid-template-columns: minmax(0, 1fr); column-gap: clamp(32px, 3.5vw, 56px); }
 .h2h-docs .docs-main { max-width: none; margin: 0; padding: clamp(20px, 2vw, 28px) 0 0; min-width: 0; }
 .h2h-docs .docs-main:focus { outline: none; }
 .h2h-docs .docs-sidebar, .h2h-docs .docs-toc { position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; padding: clamp(8px, 2vw, 28px) 4px 24px 14px; margin-left: -14px; }
@@ -29,10 +29,10 @@
   .h2h-docs .docs-title-stroke[data-drawn="still"] path { animation: none; }
 }
 
-/* Prose: 17px on a 36em measure. Tables may run past the measure into the rest of the column before they scroll, because
+/* Prose: 17px on a 60ch measure. Tables may run past the measure into the rest of the column before they scroll, because
    their identifiers cannot wrap. The homepage and Bootstrap resets are put back for running text. */
 .h2h-docs .docs-prose { font-size: 17px; line-height: 1.7; color: var(--ink); overflow-wrap: break-word; }
-.h2h-docs .docs-prose > :not(.docs-table) { max-width: 36em; }
+.h2h-docs .docs-prose > :not(.docs-table) { max-width: 60ch; }
 .h2h-docs .docs-prose > .docs-table { width: fit-content; min-width: min(36em, 100%); }
 .h2h-docs .docs-prose :is(p, ul, ol, pre, blockquote, .docs-table, .docs-callout) { margin: 0 0 1.1em; }
 .h2h-docs .docs-prose :is(ul, ol) { padding-left: 1.35em; }
@@ -136,3 +136,6 @@
   .h2h-docs .docs-pager { grid-template-columns: minmax(0, 1fr); }
   .h2h-docs .docs-pager-card--next { grid-column: auto; }
 }
+
+/* Native details controls need the same visible keyboard ring as public links. */
+.h2h-docs summary:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; border-radius: 6px; }

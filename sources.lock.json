@@ -11969,7 +11969,7 @@
       "executable": false
     },
     "tests/helpers/public-docs-journey.mjs": {
-      "sha256": "cbf10f745ac8082cb65e78ff7c6a23304a06856b31fdbd9529a6cefe696dbf72",
+      "sha256": "c073a8eddd8aca8cf8d4c04ad30aa304b414eb96f59ee527d38e6e60112b744c",
       "executable": false
     },
     "tests/helpers/public-site-journey.mjs": {

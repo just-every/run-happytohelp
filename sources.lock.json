@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "3ebacb4665bcd112cd90e3ffbaf7cd60ee70194b6dd0377dac572eb83365c17e",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "475dde601ec0f99b366d8322b6e5512e26fb39ad376f88e06b3c60aec364745e",
       "executable": false
     },
     "DEMO.md": {
@@ -6849,7 +6849,7 @@
       "executable": false
     },
     "src/modules/move-in/undo-references.ts": {
-      "sha256": "ac0cede9d59e87c9aa10b5f1c564a933cbd1623a1ebc83a76288cf46db22b4b6",
+      "sha256": "de2c0eb0184d6ccced17fa9253b702dac24562554ae07c947ca4064bf515c158",
       "executable": false
     },
     "src/modules/move-in/uninterpreted-identities.ts": {
@@ -12245,11 +12245,11 @@
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {
-      "sha256": "d6fb657a34dfeb41f813f38b1894c75515d90ff3498590b31ed98bac1a81c191",
+      "sha256": "0a8d0b47220b2e4c47bf01ee9c69d084149a9c22c92792726862937b08764c49",
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
-      "sha256": "0b09f5e2a3520420200cf1b9bfbc78793e4def683a263f14bce3725b6a844312",
+      "sha256": "98792bc99eb698143a47ff671a19234cce03925997ec66e8ec3dadeb28f20bf4",
       "executable": false
     },
     "tests/journeys/move-in-capacity.mjs": {
@@ -12373,7 +12373,7 @@
       "executable": false
     },
     "tests/move-in/business-equality.mjs": {
-      "sha256": "e88d7b8ee0a581e6e02211089cd97c566bb59a525935d7f322c29469309e082e",
+      "sha256": "46ccb35680a53087acd45d60adcba62de8aecec0b430006adda05abb63f5a70f",
       "executable": false
     },
     "tests/move-in/capacity-journey.mjs": {
@@ -12422,6 +12422,14 @@
     },
     "tests/move-in/journey-kit.mjs": {
       "sha256": "4945af12370eca667bf9cbbbad42909b28280833c3652c070f2355d553a78e1a",
+      "executable": false
+    },
+    "tests/move-in/outcomes-policy.mjs": {
+      "sha256": "19ea1229f62f1ee33879466d40186b8cc4a50d3c9aea4025aa9f7a6b9774cd2a",
+      "executable": false
+    },
+    "tests/move-in/outcomes.mjs": {
+      "sha256": "33a784f29e7b02619dae79be9be3850c5e71e9f0e0a59fecd97b375f8416a848",
       "executable": false
     },
     "tests/move-in/owned-workerd.mjs": {

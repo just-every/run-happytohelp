@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -545,7 +545,7 @@ Core · target · **partial** · Cites BASE-ROLE-001
 
 #### STATUS-001 — Ticket status lifecycle
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **done** · Cites BASE-ROLE-001
 
 **Requirement.** Every ticket has one status from a lifecycle the lead can extend: New, Open, Pending (waiting on the customer), On-hold (waiting on an internal team or third party), Solved and Closed, plus workspace custom statuses that each map to one of those categories. A customer reply to a Pending or On-hold ticket returns it to Open and wakes its owner. On-hold and every internal status label are never shown to the customer, who sees an open request in the widget, portal and email. A customer reply to a Solved ticket reopens it. After a lead-configured period (default 4 days) a durable time-based automation (AUTOMATION-002) moves Solved to Closed, and Closed is final: a customer reply to a Closed ticket creates a new follow-up ticket linked to it that carries the requester, CCs, tags and fields. Status filters, sorts, views, bulk edits (QUEUE-002), SLA pausing (SLA-001), resolution cycles (OUTCOMES-001) and reports all use this lifecycle, and every change records its actor, time and source (person, rule, automation or customer reply).
 
@@ -555,8 +555,8 @@ Core · target · **partial** · Cites BASE-ROLE-001
 3. Solve it, reply as the customer and observe reopen; solve again, advance the clock at the runtime edge past the close period and observe Closed by automation; reply to the Closed ticket and observe a new linked follow-up ticket with the carried fields.
 4. Create a custom status in the Pending category and confirm SLA pausing and report attribution; refuse a status change by a forbidden role.
 
-**Evidence.** `src/modules/tickets`; `src/modules/workflows/followups.ts`; `src/modules/workflows/rule-time.ts`; `tests/journeys/inbox.mjs`; `tests/journeys/inbox.mjs`; `tests/helpers/workflows/rules.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: New to Open; Pending customer reply returns Open; email lifecycle door; owner wake readback; widget hides On-hold and custom status; portal hides On-hold; email hides On-hold; Solved reopens; automatic close at configured time; Closed creates linked follow-up; follow-up fields carried; follow-up requester carried; follow-up CCs carried; follow-up tags carried; custom Pending SLA pause; custom Pending report attribution; forbidden role status refusal. Asserted: no outcome in the currently cited test files. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: email lifecycle door; owner wake readback; portal hides On-hold; email hides On-hold; follow-up CCs carried; follow-up tags carried; custom Pending SLA pause; custom Pending report attribution; forbidden role status refusal. Asserted: New to Open; Pending customer reply returns Open; widget hides On-hold and custom status; Solved reopens; automatic close at configured time; Closed creates linked follow-up; follow-up fields carried; follow-up requester carried. A carried status assertion now lives in `tests/helpers/inbox/tickets.mjs`, outside this clause’s carried Evidence set; it does not establish completion here.
+**Evidence.** `tests/journeys/inbox.mjs`, replacement-request journey: `tests/helpers/inbox/status-lifecycle.mjs`, statusLifecycleJourney, proves New to Open by operator reply; widget Pending and custom On-hold customer replies return Open and durably wake the assigned owner's notification inbox; email Pending, On-hold and Solved replies return Open with contact/time/email provenance; default and custom On-hold read as open without internal labels in the widget, portal list/detail and customer transcript email; custom Pending pauses the existing SLA clock across a clock advance and remains attributed to the unresolved email/owner report with its pending SLA resolution; a lead configures a 12-hour close, runtime-edge clock ticks show no early close and one durable automation close with actor/time/source after restart; a Closed email reply creates one linked follow-up carrying requester, both CCs, tags and fields without changing the final original; an invited collaborator's status PATCH is refused at both dashboard and management doors with unchanged ticket/history and a refusal audit. Existing complementary assertions: `tests/helpers/inbox/tickets.mjs`, ticketsJourney, asserts widget Solved reopen and Closed follow-up fields/link/finality; `tests/helpers/workflows/desk-flow.mjs`, deskWorkflows, asserts the widget's hidden On-hold; `tests/helpers/workflows/rules.mjs`, timeAutomationFlow, asserts the default four-day automation close and its single completed run, actor and automation source after restart. Only provider-network mail and DNS are fixtures.
+**Gap.** No remaining acceptance gap for this clause under local public-door proof. Live provider qualification remains separate; no UI changed.
 
 #### SLA-001 — Business-hour service commitments
 

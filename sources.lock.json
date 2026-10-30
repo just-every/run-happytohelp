@@ -1597,7 +1597,7 @@
       "executable": false
     },
     "agent-surface.json": {
-      "sha256": "9ddd6870a0679996ad1a7f535332f7371493141701e485a6bd352af6b0d82e94",
+      "sha256": "4f57b0f9e339a96eaacad6df49f1b34eaa399f8ffc2325f6adff6c0ef62b5a2c",
       "executable": false
     },
     "AGENTS.md": {
@@ -13753,7 +13753,7 @@
       "executable": false
     },
     "tests/helpers/agent-door/surface-journey.json": {
-      "sha256": "02aa023616ee506ccf273662b3d52955dc621cf2310760b74821c7048f3ed309",
+      "sha256": "9a483027ff9bae0935a9ef2d03ce6e2110e0683674b3344169b1c524d9fd3d80",
       "executable": false
     },
     "tests/helpers/ai/advice-procedures-browser.mjs": {

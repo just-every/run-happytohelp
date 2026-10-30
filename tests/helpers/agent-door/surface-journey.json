@@ -1,7 +1,9 @@
 {
   "witness": {
     "tool": "happytohelp.conversations.list",
-    "args": {}
+    "args": {
+      "q": "Shipping"
+    }
   },
   "escalations": [],
   "journey": [
@@ -277,8 +279,14 @@
       "id": "protected-reports",
       "tool": "happytohelp.reports.read",
       "args": {
-        "start": "2026-10-01",
-        "end": "2026-10-29"
+        "start": {
+          "$fixture": "report",
+          "pointer": "/start"
+        },
+        "end": {
+          "$fixture": "report",
+          "pointer": "/end"
+        }
       },
       "expect": [
         {
@@ -536,6 +544,9 @@
         "tickets",
         "note"
       ]
+    },
+    "fixtures": {
+      "module": "tests/helpers/agent-door/phase-fixtures.mjs"
     }
   }
 }

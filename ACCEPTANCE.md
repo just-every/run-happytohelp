@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 2 | 73 | 10 | 85 |
+| Core | 5 | 70 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 2 | 73 | 15 | 90 |
+| Full target | 5 | 70 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -260,7 +260,7 @@ Core · published · **partial** · Cites BASE-OPS-003, BASE-MAIL-001, BASE-DATA
 
 #### PUBLIC-001 — Homepage hero and two support moments
 
-Core · published · **partial** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
+Core · published · **done** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
 **Requirement.** The retained homepage hero (RL-10) places the headline “Knows what your customer needs before they do.” stands left-aligned beside one hand-drawn picture of both moments on a pale aqua blob, joined by an aqua pen arrow: 1, a checkout page in its window with the widget's offer card (signed with the speech-bubble mark) floating over its corner; 2, a conversation already solved (a customer, Maya, cannot turn on the Spanish version of her store; the agent's fix, beside a code glyph, says it is fixed; the reply to Maya carries Send inside it, the only step left), each numbered on a filled aqua disc; with the subhead “Some customers who get stuck never write in. They just leave.”, the line “100% free, open source alternative to Zendesk, Intercom, Help Scout and Freshdesk”, an aqua pen-stroke flourish under the calls to action that draws itself in once, and under the picture the captions “Before they ask” (“When someone seems stuck, the widget offers a hand.”) and “When they ask” (“Your Codex or Claude fixes the problem and writes the reply. You press Send.”) on filled aqua number discs;
 
@@ -270,12 +270,12 @@ Core · published · **partial** · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-00
 3. The checkout offer and solved Spanish-store conversation retain the numbered aqua discs, connecting arrow, captions, speech-bubble mark and Send inside the prepared reply.
 4. Calls to action retain the once-drawn aqua flourish; under reduced motion the final drawing is complete.
 
-**Evidence.** `tests/helpers/public-site-journey.mjs` (hero geometry, DOM copy and drawing); `tests/helpers/public-site-motion.mjs` (once-drawn flourish and reduced motion); `tests/homepage-browser.mjs` via `tests/journeys/public-browser.mjs`
-**Gap.** Acceptance points 1–4 now have builder journey assertions, with desktop assertions and phone stacking proof at 1440/390. Awaiting this clause's judge ACCEPT; no owner-approved homepage source or copy changed. Human screen-reader review R-19 and VPAT R-20 remain UNMET-EXTERNAL, separately recorded.
+**Evidence.** `tests/helpers/public-site-journey.mjs`, presentation: acceptance 1, headline, subhead and free-alternative DOM copy; acceptance 2, desktop side-by-side hero and phone stacking through publicSiteJourney at 1440/390; acceptance 3, checkout overlap, solved Spanish-store conversation, numbered aqua discs, arrow, captions, speech-bubble mark and Send inside the reply. `tests/helpers/public-site-motion.mjs`, publicMotionJourney: acceptance 4, once-drawn flourish and complete reduced-motion state. Both are invoked by `tests/homepage-browser.mjs`, homepageJourney, in `tests/journeys/public-browser.mjs` / “a new owner finds the source and installation guide from the public product page, and recovers from a missing documentation page”.
+**Gap.** None.
 
 #### PUBLIC-002 — Free product promise
 
-Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
+Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
 **Requirement.** “Not just better. Free.” (100% free and open source, free as in code and free as in cost, MIT licensed, “No seats. No plans. No fees.”, each promise after a line icon in a pale aqua circle, with the MIT license drawn as an ink card over a wordless code editor, “free of charge” and the rights highlighted in aqua);
 
@@ -283,12 +283,12 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 1. The Free section retains the no-seats, no-plans, no-fees promise, MIT license, aqua icon circles and ink license over a wordless editor.
 2. The page makes no price, hosting, provider or unrelated-service promotion.
 
-**Evidence.** `tests/helpers/public-site-journey.mjs` (free promises, MIT licence/editor layering, aqua icon circles, promotion and destination refusal); `tests/homepage-browser.mjs` via `tests/journeys/public-browser.mjs`
-**Gap.** Acceptance points 1–2 now have builder journey assertions. Awaiting this clause's judge ACCEPT. Human screen-reader review R-19 and VPAT R-20 remain UNMET-EXTERNAL, separately recorded.
+**Evidence.** `tests/helpers/public-site-journey.mjs`, presentation, invoked by `tests/homepage-browser.mjs`, homepageJourney, in `tests/journeys/public-browser.mjs` / “a new owner finds the source and installation guide from the public product page, and recovers from a missing documentation page”: acceptance 1, no-seats/no-plans/no-fees promises, MIT licence above the wordless editor, aqua icon circles and licence highlights; acceptance 2, refusal of price, hosting, provider and unrelated-service promotion in visible copy and repository-only external destinations.
+**Gap.** None.
 
 #### PUBLIC-003 — Support desk, move-in invitation and closing
 
-Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
+Core · published · **done** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BASE-ACCESSIBILITY-001 · Register R-19, R-20
 
 **Requirement.** “The rest of your support desk” (chat widget, shared inbox, help center, suggested replies, as frameless ink cards numbered on filled aqua discs); “Try it beside what you have” (install, bring the help center from Zendesk, Intercom or Freshdesk, add the chat widget, on filled aqua discs, beside the finished import in its window); “Ready when you are.”, a big closing headline with an aqua pen line drawn under it; and the footer, signed with the header's lockup.
 
@@ -297,8 +297,8 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 2. The move-in section offers install, help-center import from Zendesk, Intercom or Freshdesk and widget installation beside the finished import drawing.
 3. The closing headline and footer retain the aqua line and header lockup, in the published section order.
 
-**Evidence.** `tests/helpers/public-site-journey.mjs` (desk cards, move-in steps and finished import, section order, closing line and lockups); `tests/homepage-browser.mjs` via `tests/journeys/public-browser.mjs`
-**Gap.** Acceptance points 1–3 now have builder journey assertions. Awaiting this clause's judge ACCEPT. Human screen-reader review R-19 and VPAT R-20 remain UNMET-EXTERNAL, separately recorded.
+**Evidence.** `tests/helpers/public-site-journey.mjs`, presentation: acceptance 1, four frameless numbered ink desk cards; acceptance 2, install/import/widget steps, complete import status and counts, invitation beside the finished drawing with overlapping vertical ranges at 1440; publicSiteJourney asserts invitation above the finished drawing at 390; acceptance 3, ordered sections, closing aqua line and identical header/footer lockups. Invoked by `tests/homepage-browser.mjs`, homepageJourney, in `tests/journeys/public-browser.mjs` / “a new owner finds the source and installation guide from the public product page, and recovers from a missing documentation page”.
+**Gap.** None.
 
 #### PUBLIC-004 — Public brand, links and motion
 
@@ -327,8 +327,8 @@ Core · published · **partial** · From PUBLIC-001 · Cites BASE-PUBLIC-001, BA
 2. Unlisted Markdown and broken links fail verification; an unknown page receives the branded not-found page.
 3. Published help-center routes retain canonical links and search while denying drafts and deleted workspaces.
 
-**Evidence.** `tests/helpers/public-docs-journey.mjs` (all current emitted pages, manifest verification command and disposable negative cases, current-source Vite build, dev route loader updates, docs navigation/layout/contents/source links and branded 404); `tests/homepage-browser.mjs`; `tests/journeys/public-browser.mjs`; `tests/journeys/public.mjs` (canonical help links, search, draft/foreign/deleted denial)
-**Gap.** The retained detailed specification remains partial: the built /docs/operations raw HTML exceeds 160 KB, and its measured prose is below the stated 55-character minimum; the approved pages are retained for ct. Docs width proof is 1440/390; the retained 375–1920 range is not exhaustively qualified. Dev evidence drives the real route loader/plugin, without claiming a full dev HTTP/browser reload qualification. The docs-alias/no-D1-lookup detail is not instrumented by this journey. Other current-source build, listing/link refusal, docs surface and public help-route points have builder assertions; awaiting this clause's judge. Human screen-reader review R-19 and VPAT R-20 remain UNMET-EXTERNAL.
+**Evidence.** `tests/helpers/public-docs-journey.mjs`, publicDocsJourney and emittedDocs, through `tests/homepage-browser.mjs` in `tests/journeys/public-browser.mjs` / “a new owner finds the source and installation guide from the public product page, and recovers from a missing documentation page”: acceptance 1, every current emitted Markdown body, headings, links, section navigation, contents, source/pager destinations, under-160-KiB Operations HTML after the listed managed-mail page split, 55–80ch desktop measure, delivered responsive boundary rules, visible keyboard focus, one-line lockups, drawn ink code cards and exclusive aqua accents; phone menu/contents use and screen proof at 390. Acceptance 2, verifyDocs and temporaryBuild refuse unlisted Markdown and broken links, prove current-source build/dev-loader updates, and branded unknown/miscased/deep docs routes return 404. `tests/journeys/public.mjs` / “a published help center: Markdown rendered safely, complete summary search paging, retained aliases and configured hosts, and drafts, other workspaces and deleted ones indistinguishable from missing”: docs 200/200/404 with the alias lookup unavailable, plus acceptance 3 canonical links, scoped search and draft/foreign/deleted-workspace denial.
+**Gap.** Awaiting this clause's judge ACCEPT for the committed documentation and public-help assertions, including the Operations split, measure and detailed surface requirements. Browser screen proof is 1440/390; delivered responsive boundary rules are asserted without claiming exhaustive 375–1920 browser qualification. Dev evidence exercises the actual loader/plugin without claiming full dev HTTP/browser reload qualification. Human screen-reader review R-19 and VPAT R-20 remain UNMET-EXTERNAL.
 
 #### MIGRATION-001 — Prior-data custody
 

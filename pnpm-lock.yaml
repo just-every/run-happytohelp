@@ -198,6 +198,9 @@ importers:
       esbuild:
         specifier: 0.28.1
         version: 0.28.1
+      miniflare:
+        specifier: 5.20260907.0-alpha
+        version: 5.20260907.0-alpha(@types/node@26.5.1)
       mysql2:
         specifier: 3.24.6
         version: 3.24.6(@types/node@26.5.1)

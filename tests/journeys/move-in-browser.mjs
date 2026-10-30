@@ -50,7 +50,7 @@ test('an owner reviews a Zendesk export, imports its history, opens and filters 
  await page.getByRole('link',{name:'Move in existing support history',exact:true}).click()
  await page.getByRole('heading',{name:'Move in',exact:true}).waitFor()
  await vendorJourney(1440,'zendesk')
- await reviewExplanations(page,runtime.origin,base)
+ await reviewExplanations(page,runtime.origin,base,shot)
  await configurationBrowser(1440)
  await configurationBrowser(390)
 }))

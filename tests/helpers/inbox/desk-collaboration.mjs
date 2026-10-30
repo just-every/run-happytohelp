@@ -7,6 +7,9 @@ export async function deskCollaboration(f){
  const transcript=()=>app.ok(`/api/conversations/${id}/messages`,{token:visitor.token})
  const privateDraft='Private draft content'
  const privateNote=`Private @[Operator](user:${w.users.operator}) review`
+ const originalBindings={...app.bindings},address=name=>[name,'example.test'].join('@')
+ await app.configure({EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-1',EMAIL_FROM:address('synthetic-happytohelp-sender')})
+ const mailStart=app.requests.length
  const connect=async token=>{const response=await app.request(`/api/conversations/${id}/socket?token=${token}`,{headers:{Upgrade:'websocket'}});assert.equal(response.status,101);const ws=response.webSocket,frames=[];ws.accept();ws.addEventListener('message',event=>frames.push(JSON.parse(event.data)));sockets.push(ws);return {ws,frames}}
  try{
   const owner=await connect(w.tokens.owner),teammate=await connect(w.tokens.operator),customer=await connect(visitor.token)
@@ -31,6 +34,11 @@ export async function deskCollaboration(f){
   assert.ok((await inbox('admin')).some(row=>row.kind==='follower'&&row.id.includes(note.id)),'an internal note notifies its follower')
   assert.ok(!(await inbox('admin')).some(row=>row.kind==='mention'&&row.id.includes(note.id)),'non-mentioned teammates get no mention')
   assert.deepEqual(await transcript(),beforePrivate,'notes and internal CC updates leave the customer transcript unchanged')
+  const notices=app.requests.slice(mailStart).filter(request=>new URL(request.url).hostname==='api.resend.com').map(request=>JSON.parse(request.body))
+  const recipients=notices.flatMap(notice=>Array.isArray(notice.to)?notice.to:[notice.to])
+  assert.ok(recipients.includes(address('operator-tickets')),'the permitted mention reaches the teammate mail boundary')
+  assert.ok(recipients.includes(address('admin-tickets')),'the follower update reaches the teammate mail boundary')
+  assert.ok(recipients.every(recipient=>[address('operator-tickets'),address('admin-tickets')].includes(recipient)),'internal updates are addressed only to permitted teammates, never the customer')
   const notesBefore=await ok(`/conversations/${id}/buckets`),noticesBefore=await inbox('operator')
   assert.equal((await call(`/conversations/${id}/notes`,{content:`Hidden @[Foreign](user:${foreign.users.owner})`,mention_ids:[foreign.users.owner]})).status,403)
   assert.equal((await call(`/conversations/${id}/notes`,{content:'No visible mention',mention_ids:[w.users.operator]})).status,400)
@@ -98,7 +106,10 @@ export async function deskCollaboration(f){
   assert.equal(revoked.status,401)
   assert.equal((await app.call(`/api/management/projects/${w.projectId}/notification-inbox`,{token:w.tokens.admin})).status,401)
  }
- finally{for(const socket of sockets)try{socket.close()}catch{}}
+ finally{
+  for(const socket of sockets)try{socket.close()}catch{}
+  await app.configure({EMAIL_PROVIDER:originalBindings.EMAIL_PROVIDER,EMAIL_API_KEY:originalBindings.EMAIL_API_KEY,EMAIL_FROM:originalBindings.EMAIL_FROM})
+ }
  await privateForward(f)
 }
 
@@ -136,7 +147,7 @@ export async function deskCollaborationBrowser(){
  const runtime=await createRuntime(),browser=await launchBrowser(),shot=await evidence('collaboration'),origin=runtime.origin
  let passed=false
  const request=async(path,body,token,method=body===undefined?'GET':'POST')=>{
-  const response=await fetch(origin+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})})
+  const response=await fetch(origin+path,{signal:AbortSignal.timeout(20000),method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})})
   const data=await response.json();assert.ok(response.ok,`${method} ${path}: ${response.status} ${JSON.stringify(data)}`);return data
  }
  try{
@@ -167,20 +178,27 @@ export async function deskCollaborationBrowser(){
   await teammatePage.locator('.conversation-presence').filter({hasText:'Alex Owner has an unsent draft'}).waitFor()
   for(const page of pages){assert.match(await page.locator('.conversation-presence').innerText(),/Check before replying/);assert.ok(await page.getByRole('button',{name:'Send',exact:true}).isEnabled())}
   assert.equal((await request(`/api/conversations/${id}/messages`,undefined,visitor.token)).messages.length,1,'typing and drafts send no customer reply')
+  await ownerPage.getByRole('button',{name:'Hide',exact:true}).click()
   await auditPage(ownerPage,shot('warning-1440.png'))
-  await ownerPage.setViewportSize(viewports.mobile);await ownerPage.screenshot({path:shot('warning-390.png'),fullPage:true});await ownerPage.setViewportSize(viewports.desktop)
+  await ownerPage.setViewportSize(viewports.mobile)
+  await ownerPage.reload()
+  await ownerPage.locator('.conversation-presence').filter({hasText:'Casey Operator has an unsent draft'}).waitFor()
+  await ownerPage.screenshot({path:shot('warning-390.png'),fullPage:true})
+  await ownerPage.setViewportSize(viewports.desktop)
   const saved=await request(base+'/macros',{title:'Replacement status',content:'Saved replacement reply awaiting review',scope:{visibility:'personal'}},teammate.token)
   const current=(await request(base+`/conversations/${id}/ticket`,undefined,teammate.token)).data
   const applied=await request(base+`/macros/${saved.data.id}/apply`,{version:saved.data.version,command_id:'synthetic-happytohelp-browser-macro',tickets:[{id,expected_version:current.ticket_version}]},teammate.token)
   assert.equal(applied.data.results[0].status,'applied')
   const view=await request(base+'/ticket-views',{name:'My replacement work',visibility:'personal',filters:[],sort:[]},teammate.token)
   await teammatePage.reload()
+  await teammatePage.waitForFunction(content=>document.querySelector('textarea[aria-label="Reply to conversation"]')?.value===content,saved.data.content)
   assert.equal(await teammatePage.getByRole('textbox',{name:'Reply to conversation',exact:true}).inputValue(),saved.data.content,'reload restores the saved reusable reply draft')
   await ownerPage.locator('.conversation-presence').filter({hasText:'Casey Operator has an unsent draft'}).waitFor()
   await teammatePage.goto(`${origin}/projects/${projectId}/conversations?view=open`)
   await teammatePage.locator('nav[data-testid="inbox-views"]').getByRole('link',{name:view.data.name,exact:true}).click()
   await teammatePage.waitForURL(url=>url.searchParams.get('saved_view')===view.data.id)
   await teammatePage.locator('.conversation-list-items').getByText('Replacement customer',{exact:true}).click()
+  await teammatePage.waitForFunction(content=>document.querySelector('textarea[aria-label="Reply to conversation"]')?.value===content,saved.data.content)
   assert.equal(await teammatePage.getByRole('textbox',{name:'Reply to conversation',exact:true}).inputValue(),saved.data.content)
   const transcript=await request(`/api/conversations/${id}/messages`,undefined,visitor.token)
   assert.equal(transcript.messages.length,1);assert.ok(!JSON.stringify(transcript).includes(saved.data.content))
@@ -193,12 +211,22 @@ async function privateForward({app,w,id,ok,get,visitor}){
  await app.configure({EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-happytohelp-1',EMAIL_FROM:address('sender')})
  try{
   await app.ok(`/api/management/projects/${w.projectId}/email-settings`,{token:w.tokens.owner,method:'PUT',body:{from_address:address('sender'),inbound_address:address('inbound'),is_enabled:true}})
+  assert.ok((await ok('/ticket-views',undefined,'operator')).some(view=>view.name==='My replacement work'),'personal view survives runtime restart')
+  assert.ok((await ok('/ticket-views',undefined,'operator')).some(view=>view.name==='Team replacement work'),'shared view survives runtime restart')
+  assert.ok((await ok('/macros',undefined,'operator')).some(reply=>reply.content==='We are checking your replacement.'),'shared reply survives runtime restart')
+  assert.equal((await ok(`/conversations/${id}/macro-draft`,undefined,'operator')).content,'Private reusable draft','personal reusable draft survives runtime restart')
+  const notices=(await app.ok(`/api/management/projects/${w.projectId}/notification-inbox`,{token:w.tokens.operator})).data
+  assert.ok(notices.some(notice=>notice.kind==='mention'&&notice.conversation_id===id))
+  assert.ok(notices.some(notice=>notice.kind==='follower'&&notice.conversation_id===id))
   const transcript=await app.ok(`/api/conversations/${id}/messages`,{token:visitor.token}),selected=transcript.messages[0]
   const result=await ok(`/conversations/${id}/partner-forwards`,{recipient:address('partner'),message_ids:[selected.id],subject:'Replacement review',idempotencyKey:'synthetic-happytohelp-public-forward',expected_version:(await get(id)).ticket_version})
   assert.equal(result.state,'sent')
   const copies=app.requests.filter(request=>new URL(request.url).hostname==='api.resend.com').map(request=>JSON.parse(request.body)).filter(body=>JSON.stringify(body.to).includes(address('partner')))
   assert.equal(copies.length,1);assert.ok(copies[0].text.includes(selected.content))
-  for(const privateText of ['Private draft content','Private @[Operator]','Private reusable draft'])assert.ok(!JSON.stringify(copies[0]).includes(privateText),'forward contains no private note or draft')
+  for(const privateText of ['Private draft content','Private @[Operator]','Private reusable draft']){
+   assert.ok(!JSON.stringify(copies[0]).includes(privateText),'forward contains no private note or draft')
+   assert.ok(!JSON.stringify(transcript).includes(privateText),'reloaded customer history contains no private note or draft')
+  }
   assert.deepEqual(await app.ok(`/api/conversations/${id}/messages`,{token:visitor.token}),transcript,'forwarding never publishes internal work to the customer')
  }finally{await app.configure({EMAIL_PROVIDER:before.EMAIL_PROVIDER,EMAIL_API_KEY:before.EMAIL_API_KEY,EMAIL_FROM:before.EMAIL_FROM})}
 }

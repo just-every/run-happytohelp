@@ -8,12 +8,12 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
-Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
+Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). QUEUE-003 is rechecked from this candidate’s code and tests by its exact-commit Verify run (30 October 2026); the other judgments are retained. Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
 ## Core
 
@@ -504,7 +504,7 @@ Core · target · **partial** · Cites BASE-ROLE-001
 
 #### QUEUE-003 — Collaboration without conflicting replies
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **done** · Cites BASE-ROLE-001
 
 **Requirement.** Internal notes and @mentions notify only permitted teammates; followers (internal CCs, distinct from customer CCs and never shown to the customer) receive updates under NOTIFY-001; viewing, typing and unsent-draft indicators warn of collisions before send. Guarded send still refuses stale replies. Operators save personal/shared work views and reusable replies/macros with scoped permissions; private notes and drafts never appear in customer channels, forwarding or public history.
 
@@ -513,8 +513,8 @@ Core · target · **partial** · Cites BASE-ROLE-001
 2. Confirm early collision warnings, one admitted final reply, scoped mention delivery and no private content in the visitor transcript.
 3. Add a follower and verify updates reach them and never the customer.
 
-**Evidence.** `src/modules/collaboration`; `src/modules/conversations/socket.ts`; `src/modules/tickets`; `src/ui/dashboard/components/collaboration`; `tests/journeys/inbox.mjs`; `tests/journeys/first-run.mjs`
-**Gap.** Carried-done audit: unasserted in the cited Evidence set: two operator typing; scoped mention; view saved; reply saved; competing sends; reload; early collision warning; one admitted final reply; permitted mention delivery; private content absent from visitor transcript; follower receives update; customer receives no follower update. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
+**Evidence.** `tests/journeys/inbox.mjs` — “a replacement request moves through scoped fields, a reviewed macro, shared queue work, private collaboration, routing, schedules and durable automations before closure and erasure”, via `tests/helpers/inbox/desk-collaboration.mjs` (deskCollaboration, savedCollaboration, privateForward): two signed-in operators see viewing, typing and unsent-draft presence; personal and shared views and replies survive reload and runtime restart with denied reads and edits; concurrent sends admit exactly one customer-visible reply and refuse the stale loser; permitted mentions and followers receive inbox and network-edge mail updates, while customer transcripts, socket replay and selected forwarding exclude private work. Foreign teammates, customer collaboration access and revoked sessions are refused. `tests/journeys/inbox-browser.mjs` — “two brands save their appearance and sender, serve isolated help and inboxes, and retain one widget reply and rating through reports, exports and reopening”, via deskCollaborationBrowser in `tests/helpers/inbox/desk-collaboration.mjs`: two native password sessions see each other viewing, typing and holding drafts before Send; a personal view and reusable reply draft survive browser reload. Assertions run at 1440px, with the collision warning captured at 1440px and 390px. Network-edge mail fixtures qualify recipient isolation and private-content exclusion, not live delivery.
+**Gap.** None.
 
 #### MACRO-001 — Action macros with placeholders
 

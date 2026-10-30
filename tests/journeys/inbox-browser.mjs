@@ -9,3 +9,7 @@ test('two brands save their appearance and sender, serve isolated help and inbox
 test('at 390px an operator opens a customer request, replies, returns to the inbox and navigates to Contacts without horizontal scrolling',mobileInbox)
 
 test('two signed-in operators see viewing, typing and unsent draft warnings before replying and after reload',collaborationBrowser)
+
+import {outcomesJourney} from '../helpers/widget/outcomes.mjs'
+
+test('installed widget availability, provider-edge answers and consent-aware proactive outcomes',outcomesJourney)

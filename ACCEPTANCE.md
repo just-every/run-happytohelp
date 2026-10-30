@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -615,7 +615,7 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Register R-3, R-6
 
 #### CONVERSATION-002 — Merge and external forwarding
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **done** · Cites BASE-ROLE-001
 
 **Requirement.** Merge duplicate tickets with an explicit surviving thread, source links, attribution, attachments, notes, SLA/outcome treatment and reversible history where safe. Forward selected customer-visible content to an external partner and thread their reply back while clearly distinguishing an external participant from a teammate. Customer identity, private notes and channel restrictions are previewed; merges cannot cross tenants or silently erase evidence.
 
@@ -623,8 +623,8 @@ Core · target · **partial** · Cites BASE-ROLE-001
 1. Merge two duplicate tickets via the inbox, inspect both source histories and reports, then forward selected content to a partner and receive their reply.
 2. Verify no private note leaks, no duplicate customer send, explicit unsafe-undo refusal and no cross-workspace merge.
 
-**Evidence.** `src/modules/conversation-actions`; `src/ui/dashboard/components/conversation-actions`; `tests/journeys/inbox.mjs`; `tests/journeys/inbox.mjs`
-**Gap.** Main re-audit: unasserted in the cited Evidence set: merged source histories retained; merge reports reconcile; selected external forward has one send; partner reply retained; no private note in outbound; no duplicate customer send; unsafe undo refused; cross-workspace merge refused. Asserted: no outcome in the currently cited test files. Prior-reference qualification (before test consolidation): Carried-done audit: unasserted in the cited Evidence set: merge reports reconcile. Asserted: merged source histories retained; selected external forward has one send; partner reply retained; no private note in outbound; no duplicate customer send; unsafe undo refused; cross-workspace merge refused.
+**Evidence.** `src/modules/conversation-actions`; `src/ui/dashboard/components/conversation-actions`; `tests/helpers/inbox/conversation-actions.mjs`, conversationActionsJourney, called by the existing `tests/journeys/email.mjs` mail journey: inbox preview/apply, both intact source histories with attribution, links, attachment bytes and private notes; independent SLA commitments and resolution evidence; reports 2 tickets/1 resolved before merge, 1/0 while merged and exact restoration after safe undo; selected partner content sent once across command replay, private reply retained once across restart, actual outbound excludes notes and unselected content, zero additional customer mail, explicit unsafe-undo refusal after partner activity and both cross-workspace merge directions refused. `tests/helpers/email/complete-email.mjs`, completeEmailJourney, in the same journey, also asserts partner sender refusal, selected-forward replay and private reply threading. `tests/helpers/inbox/desk-collaboration.mjs`, deskCollaboration, in `tests/journeys/inbox.mjs`, asserts source customer isolation and unsafe undo after a customer reply.
+**Gap.** Local public-route acceptance is proved with the existing DNS/mail-provider network edge fake. Live partner mailbox receipt is UNMET-EXTERNAL and remains unobserved; this does not claim configured-provider delivery. No UI changed.
 
 #### CONVERSATION-003 — Problem and incident linking
 

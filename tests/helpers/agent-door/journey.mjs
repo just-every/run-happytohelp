@@ -1,14 +1,15 @@
 import {readFile} from 'node:fs/promises'
 import assert from 'node:assert/strict'
-import {webcrypto,randomUUID} from 'node:crypto'
+import {webcrypto,randomUUID,randomBytes} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {protectedFeedback} from './feedback.mjs'
 import initializeReviewer from './initialize-reviewer.mjs'
+import {doorCustody,slackEdge} from './custody.mjs'
 import {accessToken,autonomousPolicy,policyEnvelope,signJws,seconds} from '../../../src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs'
 
 export async function agentDoorJourney(){
  const pair=await webcrypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']),kid=randomUUID(),issuer='https://business.example.test',installationId=randomUUID(),origin='https://app.example',email='morgan@example.test',sub=randomUUID(),publicKeys={[kid]:await webcrypto.subtle.exportKey('jwk',pair.publicKey)},token=randomUUID()
- const app=await startApp({bindings:{APP_ORIGIN:origin,H2H_SETUP_TOKEN:token,H2H_SETUP_OWNER_EMAIL:email,RER_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_APP_ORIGIN:origin,RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify(publicKeys),RER_BUSINESS_TRUST:JSON.stringify({v:1,issuer,audience:origin,subject:installationId,email,keys:publicKeys})}})
+ const app=await startApp({bindings:{APP_ORIGIN:origin,H2H_SETUP_TOKEN:token,H2H_SETUP_OWNER_EMAIL:email,RER_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_APP_ORIGIN:origin,RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify(publicKeys),RER_BUSINESS_TRUST:JSON.stringify({v:1,issuer,audience:origin,subject:installationId,email,keys:publicKeys}),INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outbound:slackEdge})
  try{
   const owner=await app.ok('/api/identity/bootstrap',{body:{setupToken:token,email,password:'Disposable-native-owner-892!zz',allowedOrigin:'https://store.example.test',ownerName:'Morgan Support'}})
   const native=(path,options={})=>app.ok(path,{token:owner.token,...options})
@@ -206,5 +207,6 @@ export async function agentDoorJourney(){
   assert.deepEqual(executedAudit.resource,{kind:'conversation',id:conversation.id});assert.equal(executedAudit.outcome,'done')
   assert.ok(executedAudit.approval.by.includes(reviewerSession.id))
   assert.equal(app.requests.filter(request=>!['GET','HEAD'].includes(request.method)).length,0,'the configured network boundary receives no mutating provider request')
+  await doorCustody({app,owner,project,native,person,context,call,rpc,adopt,settings,conversation})
  }finally{await app.close()}
 }

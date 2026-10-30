@@ -5,6 +5,7 @@ import {scope} from './common'
 import {issuerGuard} from '../../platform/integration-authority'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement} from '../audit/record'
+import {memberDoorErasure} from '../../edition/agent-door/erasure'
 
 export const memberErasure=new Hono<AppEnv>()
 /** Erase an installation account only when this workspace owns its sole membership.
@@ -22,7 +23,8 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  const context:ErasureContext={env:c.env,project:actor.projectId,user:userId,actor:actor.id,now,guard:{sql:`EXISTS(${guard.sql}) AND ${eligible}`,params:[...guard.params,...args]}}
  const registry=await currentRegistry(c.env.DB)
  if(registry.errors.length)throw new HTTPException(503,{message:'Member erasure schema requires review'})
- await c.env.DB.batch(Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]))
+ // Agent-door copies of the teammate's name are read before the account is anonymized.
+ await c.env.DB.batch([...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...await memberDoorErasure(c.env.DB,userId)])
  return c.json({erased:true,credentialsRevoked:true,eventsRetained:true})
 })
 

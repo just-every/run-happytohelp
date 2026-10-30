@@ -18,6 +18,8 @@ export function normalizeOpenAIResponsesUsage(model, usage) {
         cache_write_tokens: cacheWriteTokens,
         reasoning_tokens: reasoningTokens,
         metadata: {
+            // Keep provider evidence separate from normalized accounting fields.
+            raw_provider_usage: structuredClone(usage),
             provider_total_tokens: providerTotalTokens,
             reasoning_tokens: reasoningTokens,
         },
@@ -42,6 +44,7 @@ export function normalizeOpenAIChatUsage(model, usage) {
         cache_write_tokens: cacheWriteTokens,
         reasoning_tokens: reasoningTokens,
         metadata: {
+            raw_provider_usage: structuredClone(usage),
             provider_total_tokens: providerTotalTokens,
             reasoning_tokens: reasoningTokens,
         },
@@ -75,6 +78,7 @@ export function normalizeGeminiUsage(model, usage) {
         cached_tokens: cachedTokens,
         reasoning_tokens: reasoningTokens,
         metadata: {
+            raw_provider_usage: structuredClone(usage),
             ...(providerTotalTokens === undefined ? {} : { provider_total_tokens: providerTotalTokens }),
             reasoning_tokens: reasoningTokens,
             tool_tokens: toolTokens,

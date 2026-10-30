@@ -241,8 +241,8 @@ Core · published · **partial** · Cites BASE-AUDIT-001, BASE-AGENT-011 · Regi
 **Acceptance.**
 1. Create, run, cancel and recover persisted evaluations through training routes with model/budget selection and raw usage; reconcile historical pending/uncertain attempts and keep synthetic admission local/test-only.
 
-**Evidence.** `src/modules/training-runs/runner.ts`; `src/edition/ai/training.ts`; `tests/journeys/ai.mjs`
-**Gap.** Carried-done audit: unasserted in the cited Evidence set: persisted create; run; cancel; recover; model selection; budget selection; raw usage; pending reconciliation; uncertain reconciliation; synthetic admission restricted. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
+**Evidence.** `tests/helpers/ai/training.mjs`, trainingJourney (registered in `tests/journeys/ai.mjs`): per-reply checks, evaluation families, missing usage, expired leases, planning, cancellation and deleted-project wakeups; `tests/helpers/ai/training-outcomes.mjs`, trainingOutcomes: persisted create/restart/replay, selected model and token cap at provider HTTP, unselected/unpriced model refusal, bounded spent/reserved cost, exact raw provider usage through run details, scheduled recovery and local synthetic admission. `tests/helpers/ai/training-browser.mjs` covers native loading/readiness; `tests/helpers/training-portable.mjs` covers inert retained history (prior evidence).
+**Gap.** Historical pending/uncertain attempts have no operator reconciliation decision door: imported and restored attempts stay inert/uncertain with reservations held, but no operator decision is recorded. R-15 representative real-model support-quality evaluation remains UNMET-EXTERNAL; fixture passes are not live-provider quality acceptance. Company-policy model/budget limits remain held on Base BASE-AGENT-007/011; these assertions cover only explicit run selections and budgets.
 
 #### INTEGRATION-001 — Honest external effects
 

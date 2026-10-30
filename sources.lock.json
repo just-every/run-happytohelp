@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "077c6f46b63265017288042062d185d47e0aa3fe3be389ebe5c7c099f75f2e75",
+      "sha256": "6033bcdfa08b0990e5817d1d536003eabfd3c0a3b01c355a87dae8718b10cce3",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "93dfde320fffbec6032aeabf12c830ddd3c6bae462e8c6409bf5f2c2c23233a2",
+      "sha256": "417b5b75327f7276de6285856ba5cb4320616ac3bbfd48146852421cace94022",
       "executable": false
     },
     "DEMO.md": {
@@ -1657,7 +1657,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "6a453e96feff8da4f92037720b7a5c90fae3e98f98a554984e53884a6bf68cf6",
+      "sha256": "cb8a9137a216304f269ec2a8418798e2d2eace4dd4ed6907c23b13760e983472",
       "executable": false
     },
     "docs/companies-and-csv.md": {
@@ -11837,7 +11837,7 @@
       "executable": false
     },
     "tests/helpers/inbox/brand-support-browser.mjs": {
-      "sha256": "1ab0c658af099390d9338055c8d328eb27598a8277d80f28a2a5256ec29604e2",
+      "sha256": "55aa577ffd3f38255a664798ee60db1d783b01187c6502eb6e1418455b5b7141",
       "executable": false
     },
     "tests/helpers/inbox/brands-browser.mjs": {
@@ -11848,8 +11848,16 @@
       "sha256": "11e6cb17c923ab06cce84ea7b89b25d70f9eb6a56c72b7fd6339ac1d5345bd6d",
       "executable": false
     },
+    "tests/helpers/inbox/desk-browser.mjs": {
+      "sha256": "65220527ea53ad83b28679eb80a5d6131696fcdd30043f18ba91de3ae48e75ea",
+      "executable": false
+    },
     "tests/helpers/inbox/desk-collaboration.mjs": {
       "sha256": "ff287efd2caf6fd9bf222b669f711c8f0114e557e1f90d481302bb4ed8f9c3bc",
+      "executable": false
+    },
+    "tests/helpers/inbox/desk-proof.mjs": {
+      "sha256": "9c5a0d025e4634c14c9fbcfa3524b7d57ca7c22d56d4c0da11557159dd7360d9",
       "executable": false
     },
     "tests/helpers/inbox/mobile-inbox-browser.mjs": {
@@ -11861,7 +11869,7 @@
       "executable": false
     },
     "tests/helpers/inbox/queue-work.mjs": {
-      "sha256": "66b3403a002b41352c13d6310310345dc1108cf52a3dfc9426381f545fcc907b",
+      "sha256": "212de5989c7e2ed32ba2fc20ab0d5899c2f11bd982eb155cbe24f414bdef009e",
       "executable": false
     },
     "tests/helpers/inbox/reply-attachments-browser.mjs": {

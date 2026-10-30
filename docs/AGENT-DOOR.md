@@ -116,3 +116,9 @@ for a future authorized integration; no operator is deployed or policy adopted
 by the feature. Existing selected-resource connected-application grants receive
 none of the new scopes. All tools pass through the shared signed-policy door.
 An internal draft approval grants no send or publication scope.
+
+Native customer erasure removes the owned drafts and cancels their pending
+approval and review displays. Native teammate erasure removes that teammate’s
+drafts and anonymizes their draft-operation attribution while preserving other
+sponsors and approvers. Operational identifiers remain. Native exports retain
+the draft content, ownership and opaque version; restoring them admits no send.

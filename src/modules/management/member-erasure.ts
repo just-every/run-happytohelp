@@ -59,7 +59,7 @@ const memberPolicies:Record<string,RegistryEntry>={
  magic_signins:{erase:{column:'user_id',nullable:true}},
  sessions:{erase:{column:'actor_id',nullable:true,predicate:"actor_id=? AND role<>'contact'",args:c=>[c.user]}},
  macro_drafts:{erase:{column:'actor_id'}},
- h2h_agent_operations:{effects:[{prefix:"UPDATE h2h_agent_operations SET sponsor_name='Former teammate',agent_name='Support agent',approvers_json='[]'",where:"tool='happytohelp.conversations.draft' AND (sponsor_id=? OR EXISTS(SELECT 1 FROM json_each(approvers_json) WHERE json_extract(value,'$.id')=?))",after:c=>[c.user,c.user]}]},
+ h2h_agent_operations:{effects:[{prefix:"UPDATE h2h_agent_operations SET sponsor_name=CASE WHEN sponsor_id=? THEN 'Former teammate' ELSE sponsor_name END,agent_name=CASE WHEN sponsor_id=? THEN 'Support agent' ELSE agent_name END,approvers_json=coalesce((SELECT json_group_array(json(CASE WHEN json_extract(value,'$.id')=? THEN json_set(json_remove(value,'$.email'),'$.name','Former teammate') ELSE value END)) FROM json_each(h2h_agent_operations.approvers_json)),'[]')",before:c=>[c.user,c.user,c.user],where:"tool='happytohelp.conversations.draft' AND (sponsor_id=? OR EXISTS(SELECT 1 FROM json_each(approvers_json) WHERE json_extract(value,'$.id')=?))",after:c=>[c.user,c.user]}]},
  conversation_followers:{erase:{column:'user_id',through:'conversation_id'}},
  ticket_handle_sessions:{effects:[{prefix:'UPDATE ticket_handle_sessions SET ended_at=max(started_at,?)',where:'user_id=? AND ended_at IS NULL',before:c=>[c.now],after:c=>[c.user]}]},
  audit_events:{audit:true},

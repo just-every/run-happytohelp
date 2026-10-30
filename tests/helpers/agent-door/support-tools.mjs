@@ -1,3 +1,6 @@
+import supportFixtures from './support-phase-fixtures.mjs'
+import {readFile} from 'node:fs/promises'
+import {draftUpgradeJourney} from './draft-upgrade.mjs'
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
 import {accessToken,autonomousPolicy} from '../../../src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs'
@@ -6,6 +9,7 @@ import {archivePolicy} from '../../../scripts/installer/portability-policy.mjs'
 // Functional native operator qualification. This is separate from the fixed
 // adoption conformance phases and adds no test registrations.
 export async function supportToolsJourney({app,native,call,rpc,adopt,context,owner,settings,existingMemberSub,existingMemberEmail,person,reviewerSub,reviewerEmail}){
+ await draftUpgradeJourney()
  const P=`/api/management/projects/${owner.projectId}`,D=`/api/dashboard/projects/${owner.projectId}`
  const memberEmail='synthetic-draft-person@example.test',memberSub=randomUUID()
  const invite=(await native(P+'/agents',{body:{email:memberEmail}})).data
@@ -13,6 +17,7 @@ export async function supportToolsJourney({app,native,call,rpc,adopt,context,own
  const member=await app.ok('/api/identity/login',{body:{email:memberEmail,password:'synthetic-happytohelp-draft-password'}})
  assert.equal((await settings(3,[{id:existingMemberSub,email:existingMemberEmail,name:'Jordan Support',role:'member',invite:1},{id:reviewerSub,email:reviewerEmail,name:'Riley Quality',role:'member',invite:1},{id:memberSub,email:memberEmail,name:'Synthetic Draft Teammate',role:'member',invite:1}])).status,200)
  const shared=(await native(P+'/macros',{body:{title:'Synthetic shipping reply',content:'Your synthetic order ships in two days.'}})).data
+ await native(P+'/macros',{body:{title:'Synthetic second shared reply',content:'Another native saved reply.'}})
  const personal=(await app.ok(P+'/macros',{token:member.token,body:{title:'Synthetic private reply',content:'Only my own reply.',scope:{visibility:'personal'}}})).data
  const restricted=(await native(P+'/macros',{body:{title:'Synthetic agent reply',content:'Only the native agent role.',scope:{roles:['operator']}}})).data
  const group=(await native(P+'/ticket-groups',{body:{name:'Synthetic dispatch',members:[member.actor.id]}})).data
@@ -36,9 +41,9 @@ export async function supportToolsJourney({app,native,call,rpc,adopt,context,own
  // Synthetic unknown connection fields, including nested settings, must never be
  // swept into a future projection just because their names look innocuous.
  await app.db.prepare("UPDATE project_settings SET settings_json=json_set(settings_json,'$.connection',json('{\"credential\":\"synthetic-happytohelp-hidden\"}'),'$.availability_schedule',json('{\"days\":[1,2],\"time_from\":\"09:00\",\"time_to\":\"17:00\",\"password\":\"synthetic-happytohelp-hidden\"}')) WHERE project_id=?").bind(owner.projectId).run()
- const settings=await call(newNames[2],{project_id:owner.projectId})
- assert.equal(settings.outcome,'done',JSON.stringify(settings));assert.equal(settings.result.settings.timezone,'America/New_York');assert.equal(settings.result.settings.is_available,false)
- assert.ok(!JSON.stringify(settings).includes('synthetic-happytohelp-hidden'));assert.ok(!('settings_json' in settings.result.settings));assert.ok(!('widget_key' in settings.result.settings))
+ const settingsRead=await call(newNames[2],{project_id:owner.projectId})
+ assert.equal(settingsRead.outcome,'done',JSON.stringify(settingsRead));assert.equal(settingsRead.result.settings.timezone,'America/New_York');assert.equal(settingsRead.result.settings.is_available,false)
+ assert.ok(!JSON.stringify(settingsRead).includes('synthetic-happytohelp-hidden'));assert.ok(!('settings_json' in settingsRead.result.settings));assert.ok(!('widget_key' in settingsRead.result.settings))
  assert.equal((await memberCall(newNames[2],{project_id:owner.projectId})).result.settings.timezone,'America/New_York','native Settings GET is available to a current staff member')
  const other=await app.seedWorkspace('synthetic-happytohelp-foreign')
  const foreignMacro=(await app.ok(`/api/management/projects/${other.projectId}/macros`,{token:other.tokens.owner,body:{title:'Foreign reply',content:'Foreign tenant content'}})).data
@@ -47,8 +52,22 @@ export async function supportToolsJourney({app,native,call,rpc,adopt,context,own
  assert.equal((await rpc('tools/list',{},await accessToken(context,{business:'foreign-business'}))).status,401)
  console.log('PROBE S2: /mcp settings.read linked/foreign project -> native timezone/availability; no raw JSON, nested credentials or cross-project data; unknown sponsor denied')
  const create=async(label)=>{const contact=(await native(P+'/contacts',{body:{name:'Synthetic '+label,email:'synthetic-'+label+'@example.test'}})).data;const ticket=await native('/api/conversations',{body:{projectId:owner.projectId,contactId:contact.id}});return {contact,ticket}}
+ const widget=await native(P+'/widget-settings')
+ const visitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:widget.widgetKey,identifier:'synthetic-happytohelp-settings-visitor',name:'Synthetic visitor'}})
+ assert.equal((await app.call(P+'/settings',{token:visitor.token})).status,403)
+ assert.equal((await rpc('tools/list',{},visitor.token)).status,401)
+ const foreignContact=(await app.ok(`/api/management/projects/${other.projectId}/contacts`,{token:other.tokens.owner,body:{name:'Synthetic foreign draft customer'}})).data
+ const foreignTicket=await app.ok('/api/conversations',{token:other.tokens.owner,body:{projectId:other.projectId,contactId:foreignContact.id}})
+ assert.equal((await call(newNames[3],{id:foreignTicket.id})).code,'not_found')
+ assert.equal((await call(newNames[4],{id:foreignTicket.id,content:'Cannot draft across tenants',draft_id:null,revision:foreignTicket.revision,last_message_id:foreignTicket.last_message_id,idempotency_key:randomUUID()})).code,'not_found')
  const erased=await create('erase-draft'),retained=await create('retain-draft'),C=id=>D+'/conversations/'+id
  const args=(ticket,content,draft_id=null)=>({id:ticket.id,content,draft_id,revision:ticket.revision,last_message_id:ticket.last_message_id,idempotency_key:randomUUID()})
+ const macroCase=await create('macro-draft')
+ const applied=await native(P+'/macros/'+shared.id+'/apply',{body:{conversation_id:macroCase.ticket.id,expected_ticket_version:macroCase.ticket.ticket_version,version:shared.version,command_id:randomUUID()}})
+ assert.equal(applied.data.results[0].status,'applied',JSON.stringify(applied))
+ const macroDraft=(await native(C(macroCase.ticket.id)+'/macro-draft')).data
+ assert.equal((await call(newNames[4],args(macroCase.ticket,'Must not overwrite a native macro draft'))).code,'revision_conflict')
+ assert.equal((await call(newNames[4],args(macroCase.ticket,'Explicit reviewed replacement',macroDraft.usage_id))).outcome,'done')
  const firstArgs=args(erased.ticket,'Synthetic personal draft for erase-draft')
  await app.takeJobs();const networkAt=app.requests.length
  const messagesBefore=await app.sql('SELECT id,content,revision FROM messages ORDER BY id')
@@ -93,6 +112,12 @@ export async function supportToolsJourney({app,native,call,rpc,adopt,context,own
  assert.equal((await native(C(retained.ticket.id)+'/macro-draft')).data.content,retainedArgs.content)
  await adopt()
  assert.deepEqual(await app.takeJobs(),[]);assert.equal(app.requests.length,networkAt)
+ // A review display also owns a copy of the personal draft summary.
+ await adopt({...autonomousPolicy(),rules:[{id:'draft-review',class:'*',do:'review'}],reviewers:['person:'+reviewerSub]})
+ const reviewedDraft=await rpc('tools/call',{name:newNames[4],arguments:args(erased.ticket,'Synthetic updated personal draft',edited.result.draft.id)})
+ const erasedReviewId=reviewedDraft.data.result._meta['com.runeditrun/review'].id
+ assert.ok(erasedReviewId)
+ await adopt()
  // Public-door customer erasure fences replay as well as fresh reads.
  const pendingArgs=args(erased.ticket,'Synthetic pending erased customer',edited.result.draft.id)
  await adopt({...autonomousPolicy(),rules:[{id:'hold',class:'*',do:'approval',approver:['person:'+reviewerSub],wait:'PT1H'}]})
@@ -101,9 +126,11 @@ export async function supportToolsJourney({app,native,call,rpc,adopt,context,own
  assert.equal((await native(P+'/contacts/'+erased.contact.id+'/erase',{body:{}})).data?.erased??true,true)
  await app.configure({})
  assert.equal((await call(newNames[3],{id:erased.ticket.id})).code,'not_found')
+ assert.equal((await app.call(C(erased.ticket.id)+'/macro-draft',{token:owner.token})).status,404)
  assert.equal((await call(newNames[4],firstArgs)).code,'not_found')
  assert.equal((await app.first('SELECT count(*) n FROM macro_drafts WHERE conversation_id=?',erased.ticket.id)).n,0)
  assert.equal(await app.first('SELECT id FROM agent_door_approvals WHERE id=?',pendingId),null)
+ assert.equal(await app.first('SELECT id FROM agent_door_reviews WHERE id=?',erasedReviewId),null)
  assert.equal((await call(newNames[3],{id:retained.ticket.id})).result.draft.content,retainedArgs.content)
  // Native role narrowing applies on the next request, including a cached replay.
  const role=(await native(P+'/roles',{body:{name:'Synthetic draft reader only',base:'operator',permissions:[]}})).data
@@ -114,13 +141,25 @@ export async function supportToolsJourney({app,native,call,rpc,adopt,context,own
  const memberRetained=args(retained.ticket,'Synthetic teammate personal reply')
  assert.equal((await memberCall(newNames[4],memberRetained)).outcome,'done')
  const memberOp=await app.first("SELECT id FROM h2h_agent_operations WHERE tool=? AND sponsor_id=? ORDER BY at DESC LIMIT 1",newNames[4],member.actor.id)
+ await adopt({...autonomousPolicy(),rules:[{id:'teammate-approval',class:'*',do:'approval',approver:['person:'+memberSub],wait:'PT1H'}]})
+ const ownVersion=(await native(C(retained.ticket.id)+'/macro-draft')).data.usage_id
+ const teammateHeld=await rpc('tools/call',{name:newNames[4],arguments:args(retained.ticket,retainedArgs.content,ownVersion)})
+ const teammateApproval=teammateHeld.data.result._meta['com.runeditrun/approval'].id,memberCookie='h2h_session='+member.token
+ const teammateView=(await person('/agents/api/approvals/'+teammateApproval,undefined,memberCookie)).data.approval
+ assert.equal((await person('/agents/api/approvals/'+teammateApproval+'/approve',{revision:teammateView.revision,summary_sha256:teammateView.summary_sha256},memberCookie)).data.approval.state,'executed')
+ await adopt()
+ const attribution=await app.first("SELECT id,agent_name,sponsor_name FROM h2h_agent_operations WHERE tool=? AND sponsor_id=? ORDER BY at DESC LIMIT 1",newNames[4],owner.userId)
  const machineCount=(await app.first('SELECT count(*) n FROM h2h_agent_operations')).n
  await native(P+'/agents/'+member.actor.id+'/erase',{body:{}})
  await app.configure({})
  assert.equal((await app.first('SELECT count(*) n FROM macro_drafts WHERE actor_id=?',member.actor.id)).n,0)
  assert.equal((await rpc('tools/list',{},await memberCredential())).status,401)
+ assert.equal((await app.call(C(retained.ticket.id)+'/macro-draft',{token:member.token})).status,401)
  const op=(await app.first('SELECT sponsor_name FROM h2h_agent_operations WHERE id=?',memberOp.id));assert.equal(op.sponsor_name,'Former teammate')
  assert.equal((await app.first('SELECT count(*) n FROM h2h_agent_operations')).n,machineCount)
+ const anonymized=await app.first('SELECT agent_name,sponsor_name,approvers_json FROM h2h_agent_operations WHERE id=?',attribution.id)
+ assert.equal(anonymized.agent_name,attribution.agent_name);assert.equal(anonymized.sponsor_name,attribution.sponsor_name)
+ assert.equal(JSON.parse(anonymized.approvers_json).find(person=>person.id===member.actor.id).name,'Former teammate')
  assert.equal((await native(C(retained.ticket.id)+'/macro-draft')).data.content,retainedArgs.content)
  assert.deepEqual(archivePolicy.exportRow('macro_drafts',await app.first('SELECT * FROM macro_drafts WHERE conversation_id=? AND actor_id=?',retained.ticket.id,owner.userId)).content,retainedArgs.content)
  console.log('PROBE S4: /mcp blocked/held/approved draft, native customer/member erasure, restart -> no mutation before approval; erased drafts/pending display unavailable; native attribution anonymized; unrelated draft and machine history retained')
@@ -137,6 +176,20 @@ export async function supportToolsJourney({app,native,call,rpc,adopt,context,own
  assert.equal((await flow(allowlist[5],{id:ticket.id})).result.draft.content,reply.content)
  assert.deepEqual(await app.takeJobs(),[]);assert.equal(app.requests.length,networkAt)
  assert.deepEqual(await app.sql('SELECT id,content,revision FROM messages ORDER BY id'),messagesBefore)
- for(const name of ['happytohelp.conversations.note','happytohelp.conversations.send']){const denied=await rpc('tools/call',{name,arguments:{id:ticket.id,content:'Must not send',idempotency_key:randomUUID()}},credential);assert.ok(denied.status===403||denied.data.result?.isError)}
+ for(const name of ['happytohelp.conversations.note','happytohelp.conversations.send']){const denied=await rpc('tools/call',{name,arguments:{id:ticket.id,content:'Must not send',idempotency_key:randomUUID()}},credential);assert.equal(denied.status,name.endsWith('.send')?400:403);assert.equal(denied.data.error.data.code,name.endsWith('.send')?'tool_not_found':'insufficient_scope')}
+ const wrongScope=await accessToken(context,{scope:'events:read'})
+ for(const [name,args] of [[newNames[0],{}],[newNames[1],{id:shared.id}],[newNames[2],{project_id:owner.projectId}],[newNames[3],{id:ticket.id}],[newNames[4],{id:ticket.id,content:'Must have own scope',draft_id:null,revision:ticket.revision,last_message_id:ticket.last_message_id,idempotency_key:randomUUID()}]]){
+  const refused=await rpc('tools/call',{name,arguments:args},wrongScope);assert.equal(refused.status,403);assert.equal(refused.data.error.data.code,'insufficient_scope')
+ }
+ const prepared=await supportFixtures({request:(url,init)=>app.request(new URL(url).pathname,{...init,raw:true}),origin:context.origin,cookie:'h2h_session='+owner.token,now:Date.now()})
+ const fixtureJourney=JSON.parse(await readFile(new URL('./support-surface-journey.json',import.meta.url),'utf8')).journey
+ const resolve=value=>value&&typeof value==='object'&&value.$fixture?prepared.values[value.$fixture][value.pointer.slice(1)]:value
+ for(const step of fixtureJourney){
+  const args=Object.fromEntries(Object.entries(step.args).map(([key,value])=>[key,resolve(value)]))
+  if(step.tool===newNames[4])args.idempotency_key=randomUUID()
+  const answer=await rpc('tools/call',{name:step.tool,arguments:args})
+  assert.equal(answer.status,200);assert.ok(!answer.data.result.isError,JSON.stringify(answer.data.result))
+  assert.deepEqual(answer.data.result._meta['com.runeditrun/decision'].classes.map(item=>({class:item.class,facts:item.facts})),step.expect)
+ }
  console.log('PROBE S5: scoped /mcp case -> saved reply -> Settings -> conversations.draft -> drafts.read -> real persisted reply, zero provider calls/jobs/messages; allowlist='+allowlist.join(','))
 }

@@ -72,7 +72,6 @@ export async function agentDoorJourney(){
   const declared=(await rpc('tools/list')).data.result.tools
   assert.deepEqual(declared.map(t=>t.name).sort(),context.surface.tools.map(t=>t.name).sort())
   for(const tool of declared){const entry=context.surface.tools.find(item=>item.name===tool.name);assert.deepEqual(tool._meta['com.runeditrun/classes'],entry.classes);assert.deepEqual(tool._meta['com.runeditrun/clauses'],entry.clauses);assert.equal(tool._meta['com.runeditrun/scope'],entry.scope)}
-  await supportToolsJourney({app,native,call,rpc,adopt,context,owner,settings,existingMemberSub:memberSub,existingMemberEmail:memberEmail,person,reviewerSub,reviewerEmail})
   const result=await call('happytohelp.conversations.read',{id:conversation.id})
   assert.equal(result.outcome,'done',JSON.stringify(result))
   assert.equal(result.result.ticket.id,conversation.id)
@@ -110,6 +109,7 @@ export async function agentDoorJourney(){
    ['conversations.list',{}],['context.read',{id:conversation.id}],['articles.list',{}],['jobs.read',{id:job.id}],['operations.read',{id:note.result.operation}],
    ['reports.read',{start:day(Date.now()-86400000),end:day(Date.now()+86400000)}],['people.read',{}],['workflows.read',{}],['ai.read',{}],['integrations.read',{}],['events.list',{}],
   ]){const read=await call('happytohelp.'+name,args);assert.equal(read.outcome,'done',name+': '+JSON.stringify(read))}
+  await supportToolsJourney({app,native,call,rpc,adopt,context,owner,settings,existingMemberSub:memberSub,existingMemberEmail:memberEmail,person,reviewerSub,reviewerEmail})
   const observedJob=(await call('happytohelp.jobs.read',{id:job.id})).result.job
   assert.equal(observedJob.status,'queued');assert.match(observedJob.observation,/unconfirmed/)
   const report=await rpc('tools/call',{name:'happytohelp.reports.read',arguments:{start:day(Date.now()-86400000),end:day(Date.now()+86400000)}})

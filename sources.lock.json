@@ -1597,7 +1597,7 @@
       "executable": false
     },
     "agent-surface.json": {
-      "sha256": "6a84646a82c9c59cb024524f584f5d1c62a3d51c771321ebe6112c9962b88f66",
+      "sha256": "4340889bb0f71297d23f984b8a2a4ab4726f3dfebf35fce2cb1eab4e49997048",
       "executable": false
     },
     "AGENTS.md": {
@@ -1645,7 +1645,7 @@
       "executable": false
     },
     "docs/AGENT-DOOR.md": {
-      "sha256": "52951b934aeeecacfdcc2be748477b5a463bad4991da16915410494c7e71303b",
+      "sha256": "841380fc135225cd301eeeabd86910206798cf328c21f3a818febc232c9d618c",
       "executable": false
     },
     "docs/AGENT-FIX.md": {
@@ -3709,7 +3709,7 @@
       "executable": false
     },
     "scripts/generate-agent-surface.mjs": {
-      "sha256": "104d55f022aaa84ae0baa5cc9aa1dd7fac80be5f328c461d1be83f2b2c971633",
+      "sha256": "e572545008e80846ca82f93b1a2007b3db49e3632cde0a441122ffde4380d96b",
       "executable": false
     },
     "scripts/generate-routes.mjs": {
@@ -3889,7 +3889,7 @@
       "executable": false
     },
     "scripts/installer/workflow-archive-upgrade.mjs": {
-      "sha256": "70e14ff77372c3ed1f95c5b43e3493979842732a3d8be87715554a10b05215fb",
+      "sha256": "18cb2b960b748b9524c52111f959710e06ef62bfa44375994586c52e98eecf18",
       "executable": false
     },
     "scripts/legacy-export/attachments.mjs": {
@@ -7261,7 +7261,7 @@
       "executable": false
     },
     "src/modules/management/member-erasure.ts": {
-      "sha256": "5d092c7d37ec206ca17f66efb63fc03a2c2a882afbc0100b8023ec8c3f5bedeb",
+      "sha256": "383fa9384e7c07acf10d80be80265f5eb76683a3cd480cef16409a651add4d0a",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {
@@ -13756,6 +13756,10 @@
       "sha256": "b585d3cf0927081296f1f5cef94bb61f85ae5125270512566a1390d1cf905c86",
       "executable": false
     },
+    "tests/helpers/agent-door/draft-upgrade.mjs": {
+      "sha256": "f6172fff2824785f1ea9612ea40023f6a25b8ad782f9eea9334a677d675b151d",
+      "executable": false
+    },
     "tests/helpers/agent-door/feedback.mjs": {
       "sha256": "7c2b8dddfc89a38f61258a6b3c60b8bb67970002543316d65b2ed76778639420",
       "executable": false
@@ -13769,15 +13773,23 @@
       "executable": false
     },
     "tests/helpers/agent-door/journey.mjs": {
-      "sha256": "f7af8335da972ee963887ebf899c094ca8bb4afe1453a110e2cc59625298c6ce",
+      "sha256": "33cc751b977fa8ba0d0dd350f2d2845a646f6ee9a23f77dd09a96eb5b5966331",
       "executable": false
     },
     "tests/helpers/agent-door/phase-fixtures.mjs": {
       "sha256": "f69fdd6371c4249ff5a7e3bcc8ec7be87127263891d69bba757b60b4e8d0d3d0",
       "executable": false
     },
+    "tests/helpers/agent-door/support-phase-fixtures.mjs": {
+      "sha256": "b2a5dc1346f8341c69e5c8866101087f36ddca2ed048286f9186e4e0d80caecf",
+      "executable": false
+    },
+    "tests/helpers/agent-door/support-surface-journey.json": {
+      "sha256": "29f97dd60ebeac0ee270ad82804b7919abde8c43d129cea237491b97f801a1d2",
+      "executable": false
+    },
     "tests/helpers/agent-door/support-tools.mjs": {
-      "sha256": "2d8e31a1c501fadfd846ba6d1c53d8ded0c77da8642bf590b1b6864258e1229a",
+      "sha256": "3c65b8e3d5953c25d8798c3c1c1b3cb8c5fc8f0ecb6e840f8f425747b220d5ce",
       "executable": false
     },
     "tests/helpers/agent-door/surface-journey.json": {

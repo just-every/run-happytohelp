@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict'
 import {auditPage} from './journeys/kit/browser.mjs'
+import {publicSiteJourney} from './helpers/public-site-journey.mjs'
 
 export async function homepageJourney({page,origin,shot}){
+ await publicSiteJourney({page,origin,shot})
  const errors=[]
  page.on('pageerror',error=>errors.push(error.message))
  const response=await page.goto(origin+'/')

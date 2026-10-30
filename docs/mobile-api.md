@@ -195,6 +195,10 @@ receipts and prepared links; pairing must be repeated after restore.
 
 The existing native admission, role, ticket and notification journeys now also
 exercise these mobile public doors in `tests/helpers/mobile.mjs`. They prove
-server behavior with real D1/R2 and the application router. They do not prove
+server and portable-client behavior with real D1/R2 and the application router.
+The existing delegation and editable-draft journeys also cover mobile approval,
+attachment adoption and refusal of background reply authority. No test
+registrations were added: the existing admission, authority, notification and
+adoption flows carry their mobile variants. These assertions do not prove
 iOS/Android binaries, offline OS storage, APNs/FCM networking or receipt on a
 physical device. MOBILE-001 stays partial.

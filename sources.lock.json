@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ad3f83e5b73e49e8e0fc1ebd55f2871007d4781205a9ac7545dbc40939714579",
+      "sha256": "0f6778e517c9e7277207e26e26827dd1a4da321bc71e8d2c28cdb07ac39c1ca9",
       "executable": false
     },
     "DEMO.md": {
@@ -2749,7 +2749,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "73dff8f67606209c19743a6b7311b5852489d5663d12f84254627021b6643c34",
+      "sha256": "5b9c2c189230e8dd4f4b8ba1684bd41db04d5e8bfa274ef6f02eef6c6e1cda08",
       "executable": false
     },
     "rer-project.json": {

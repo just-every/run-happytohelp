@@ -12,7 +12,7 @@ export const brandReports=new Hono<AppEnv>()
 brandReports.get('/projects/:projectId/brands/reports',async c=>{
  const actor=await scope(c),query=c.req.query()
  const ids=[...new Set((query.projects||'').split(',').filter(Boolean))]
- if(!ids.length||ids.length>20||ids.some(id=>!/^[-a-zA-Z0-9_]{1,200}$/.test(id))||!ids.includes(actor.projectId)||query.format)throw new HTTPException(400,{message:'Explicitly select this brand and up to 19 other brands; exports use each brand’s own report door'})
+ if(ids.length<2||ids.length>20||ids.some(id=>!/^[-a-zA-Z0-9_]{1,200}$/.test(id))||!ids.includes(actor.projectId)||query.format)throw new HTTPException(400,{message:'Explicitly select this brand and at least one other brand, up to 20 brands total; exports use each brand’s own report door'})
  async function permitted(id:string){
   const row=await c.env.DB.prepare(`SELECT p.id,p.name,m.role,s.settings_json FROM projects p
    JOIN memberships m ON m.project_id=p.id AND m.user_id=? LEFT JOIN project_settings s ON s.project_id=p.id

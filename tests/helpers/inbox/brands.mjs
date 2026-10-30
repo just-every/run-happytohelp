@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {startApp} from '../../journeys/kit/app.mjs'
+import {brandsOutcomes} from './brands-outcomes.mjs'
 
 export async function brandsJourney(){
  const sent=[]
@@ -89,6 +90,7 @@ export async function brandsJourney(){
   const report=(await app.ok(reports,{token:shared})).data
   assert.deepEqual(report.brands.map(r=>r.volume),[2,2]);assert.equal(report.aggregate.volume,4);assert.equal(report.aggregate.resolved,4)
   assert.ok(report.brands.every(r=>!('comments' in r)));assert.equal(report.aggregate.satisfactionRate,null)
+  await brandsOutcomes({app,alpha,owner,shared,records,selection,reports})
   // Membership is per brand, including global inbox reads and aggregate reports.
   await app.ok(`/api/management/projects/${b.projectId}/agents/${alpha.users.operator}`,{token:b.brandOwner,method:'DELETE'})
   assert.equal((await app.call(reports,{token:shared})).status,403)

@@ -4192,6 +4192,10 @@
       "sha256": "3c328531b4adf2b2050843b0d9f6a3d8a5b15bd55ac017d878a02f8735598785",
       "executable": false
     },
+    "src/edition/agent-door/erasure.ts": {
+      "sha256": "8a041757ac747bdfac127af7f566b4fc4ae8699d4874ece2105ae79d1b595ef3",
+      "executable": false
+    },
     "src/edition/agent-door/index.ts": {
       "sha256": "961f8c566be1c1b559f5e30992f9a0e79379023b545aa0c520c3e70018e6f383",
       "executable": false
@@ -7157,7 +7161,7 @@
       "executable": false
     },
     "src/modules/management/contact-erasure/statements.ts": {
-      "sha256": "d60ae1f0e5df30ee12aa7545d47dd12025e8a23cf39204e47b2382ec7d6a80b0",
+      "sha256": "bda3faabaf8b14b3f12c1ead31e5f67b86c424f676ef2500107ee1fdb0cc61d7",
       "executable": false
     },
     "src/modules/management/contact-identity.ts": {
@@ -7261,7 +7265,7 @@
       "executable": false
     },
     "src/modules/management/member-erasure.ts": {
-      "sha256": "383fa9384e7c07acf10d80be80265f5eb76683a3cd480cef16409a651add4d0a",
+      "sha256": "e414856fbba6b6e54a9751ddf9fc20e647f9267fe36f1b569b7b8e6d2e76e0ba",
       "executable": false
     },
     "src/modules/management/member-updates.ts": {
@@ -8085,7 +8089,7 @@
       "executable": false
     },
     "src/modules/tickets/mutate.ts": {
-      "sha256": "0e260f879792fd0873c28875eaf4f14d5553c823663a8a5fee51a9627e88b9e1",
+      "sha256": "bd3de41fde43498afe837a6759a8ceb9eb587d1a44d6465e2c4d6e5aae263858",
       "executable": false
     },
     "src/modules/tickets/presentation.ts": {
@@ -13756,6 +13760,10 @@
       "sha256": "b585d3cf0927081296f1f5cef94bb61f85ae5125270512566a1390d1cf905c86",
       "executable": false
     },
+    "tests/helpers/agent-door/custody.mjs": {
+      "sha256": "eba348b650f4cc37c15598d23f18054c4c9269599b06237c6db98d1f4a46f894",
+      "executable": false
+    },
     "tests/helpers/agent-door/draft-upgrade.mjs": {
       "sha256": "f6172fff2824785f1ea9612ea40023f6a25b8ad782f9eea9334a677d675b151d",
       "executable": false
@@ -13773,7 +13781,7 @@
       "executable": false
     },
     "tests/helpers/agent-door/journey.mjs": {
-      "sha256": "33cc751b977fa8ba0d0dd350f2d2845a646f6ee9a23f77dd09a96eb5b5966331",
+      "sha256": "b5b66217f82284465e26ea3ed25dac137a1d3736980311a7f10eab8d46efb378",
       "executable": false
     },
     "tests/helpers/agent-door/phase-fixtures.mjs": {
@@ -13789,7 +13797,7 @@
       "executable": false
     },
     "tests/helpers/agent-door/support-tools.mjs": {
-      "sha256": "3c65b8e3d5953c25d8798c3c1c1b3cb8c5fc8f0ecb6e840f8f425747b220d5ce",
+      "sha256": "231958d5e33296c13d336d1eed021ecad16d077021c3dba49d6a332410f6b6b8",
       "executable": false
     },
     "tests/helpers/agent-door/surface-journey.json": {
@@ -14517,7 +14525,7 @@
       "executable": false
     },
     "tests/journeys/delegation.mjs": {
-      "sha256": "3ed4bdc34b5885aa2ebca29889136d71cefd6a546d57b89f68e7581b98730f1f",
+      "sha256": "6c6a521610fcb9842bed71884a73d4d9a396970aa8f940fe1b610ef82f11483a",
       "executable": false
     },
     "tests/journeys/deploy-nightly.mjs": {

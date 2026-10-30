@@ -6,6 +6,7 @@ import {scope} from './common'
 import {issuerGuard} from '../../platform/integration-authority'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement} from '../audit/record'
+import {memberDoorErasure} from '../../edition/agent-door/erasure'
 
 export const memberErasure=new Hono<AppEnv>()
 /** Erase an installation account only when this workspace owns its sole membership.
@@ -23,7 +24,8 @@ memberErasure.post('/projects/:projectId/agents/:userId/erase',async c=>{
  const context:ErasureContext={env:c.env,project:actor.projectId,user:userId,actor:actor.id,now,guard:{sql:`EXISTS(${guard.sql}) AND ${eligible}`,params:[...guard.params,...args]}}
  const registry=await currentRegistry(c.env.DB)
  if(registry.errors.length)throw new HTTPException(503,{message:'Member erasure schema requires review'})
- await c.env.DB.batch([...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...replyDraftMemberErasure(c.env,actor.projectId,userId)])
+// Agent-door identity copies are prepared before native anonymization.
+ await c.env.DB.batch([...Object.values(registry.entries).flatMap(entry=>entry.statements?.(context)??[]),...await memberDoorErasure(c.env.DB,userId),...replyDraftMemberErasure(c.env,actor.projectId,userId)])
  return c.json({erased:true,credentialsRevoked:true,eventsRetained:true})
 })
 
@@ -59,7 +61,6 @@ const memberPolicies:Record<string,RegistryEntry>={
  magic_signins:{erase:{column:'user_id',nullable:true}},
  sessions:{erase:{column:'actor_id',nullable:true,predicate:"actor_id=? AND role<>'contact'",args:c=>[c.user]}},
  macro_drafts:{erase:{column:'actor_id'}},
- h2h_agent_operations:{effects:[{prefix:"UPDATE h2h_agent_operations SET sponsor_name=CASE WHEN sponsor_id=? THEN 'Former teammate' ELSE sponsor_name END,agent_name=CASE WHEN sponsor_id=? THEN 'Support agent' ELSE agent_name END,approvers_json=coalesce((SELECT json_group_array(json(CASE WHEN json_extract(value,'$.id')=? THEN json_set(json_remove(value,'$.email'),'$.name','Former teammate') ELSE value END)) FROM json_each(h2h_agent_operations.approvers_json)),'[]')",before:c=>[c.user,c.user,c.user],where:"tool='happytohelp.conversations.draft' AND (sponsor_id=? OR EXISTS(SELECT 1 FROM json_each(approvers_json) WHERE json_extract(value,'$.id')=?))",after:c=>[c.user,c.user]}]},
  conversation_followers:{erase:{column:'user_id',through:'conversation_id'}},
  ticket_handle_sessions:{effects:[{prefix:'UPDATE ticket_handle_sessions SET ended_at=max(started_at,?)',where:'user_id=? AND ended_at IS NULL',before:c=>[c.now],after:c=>[c.user]}]},
  audit_events:{audit:true},

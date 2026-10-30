@@ -10,6 +10,7 @@ import {archivePolicy} from '../../../scripts/installer/portability-policy.mjs'
 // adoption conformance phases and adds no test registrations.
 export async function supportToolsJourney({app,native,call,rpc,adopt,context,owner,settings,existingMemberSub,existingMemberEmail,person,reviewerSub,reviewerEmail}){
  await draftUpgradeJourney()
+ await app.configure({H2H_TEST_CAPTURE_QUEUE:'1'})
  const P=`/api/management/projects/${owner.projectId}`,D=`/api/dashboard/projects/${owner.projectId}`
  const memberEmail='synthetic-draft-person@example.test',memberSub=randomUUID()
  const invite=(await native(P+'/agents',{body:{email:memberEmail}})).data
@@ -191,5 +192,6 @@ export async function supportToolsJourney({app,native,call,rpc,adopt,context,own
   assert.equal(answer.status,200);assert.ok(!answer.data.result.isError,JSON.stringify(answer.data.result))
   assert.deepEqual(answer.data.result._meta['com.runeditrun/decision'].classes.map(item=>({class:item.class,facts:item.facts})),step.expect)
  }
+ await app.configure({H2H_TEST_CAPTURE_QUEUE:undefined})
  console.log('PROBE S5: scoped /mcp case -> saved reply -> Settings -> conversations.draft -> drafts.read -> real persisted reply, zero provider calls/jobs/messages; allowlist='+allowlist.join(','))
 }

@@ -18,6 +18,7 @@ import type {Env} from '../../../platform/env'
 import {legacyArchiveRedaction} from './archive'
 import {erasureInboundEvidenceStatements} from './inbound-evidence'
 import {attempts,contextJobs,contextTables,conversations,generations,localJobs,messages,projectConversations,staged,subject,trackedTables} from './scope'
+import {contactDoorErasure} from '../../../edition/agent-door/erasure'
 
 export interface ErasureRequest {projectId: string; contactId: string; actorId: string; now: number; emails: string[];csvIdentities?:string[]}
 
@@ -99,6 +100,7 @@ export function erasureStatements(env: Env, request: ErasureRequest) {
     ...portalErasureStatements(env,projectId,contactId,request.emails),
     // Copies of the contact's data held outside the canonical rows, removed while those rows still identify them.
     bound(legacyArchiveRedaction),
+    ...contactDoorErasure(env.DB,projectId,contactId),
     ...importErasureStatements(env,projectId,contactId),
     ...eraseSurveyStatements(env,projectId,contactId),
     ...['conversation_ratings','conversation_rating_history'].map(table=>bound(`UPDATE ${table} SET comment='' WHERE resolution_id IN (SELECT id FROM conversation_resolutions WHERE project_id=?1 AND (contact_id=?2 OR conversation_id IN (${conversations}))) AND comment<>''`)),

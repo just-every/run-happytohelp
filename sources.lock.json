@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "effd4148e15b77bf365b6d208b5cd50b58ec977b04b5ddd05a201d0f27636b9b",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "cb0c46db78fd09b2684b6bd295d82a892ef48cb6eeacd18e996d79aabab5d36f",
       "executable": false
     },
     "DEMO.md": {
@@ -1701,7 +1701,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "e8aa82334b5d280d79b056f98688c6a2b25e85a2af3661fbfcd07044683ec2e5",
+      "sha256": "04ca5158ea41fa9691fedeb9c1da20d82cc3b85b5566c453546cfa28249c134a",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -1765,7 +1765,7 @@
       "executable": false
     },
     "docs/moving-in.md": {
-      "sha256": "7900e33ea48380df2d800e8f3ac2d30d2fa90150e80dc7eb6db3f75a71b750d3",
+      "sha256": "7c4fab002392ba8a3916447c58f34822e61cb45389b3a5a9ed3f92f1e95dfb48",
       "executable": false
     },
     "docs/NAVIGATION.md": {
@@ -5613,7 +5613,7 @@
       "executable": false
     },
     "src/modules/integrations/email-threading.ts": {
-      "sha256": "5e41e1051247ad2d05479641dc53ec5b19079aee5a31e118492809c879143a74",
+      "sha256": "95ca4145fa7a1cf0b9220a253cd55d93ffa78f42d11bb441c8abf50881c4a7b9",
       "executable": false
     },
     "src/modules/integrations/email-worker.ts": {
@@ -5681,7 +5681,7 @@
       "executable": false
     },
     "src/modules/integrations/inbound-service.ts": {
-      "sha256": "0226bf2cdb9dbd5ad61dd3d323b3e1290059f13e970f6933ee2bf52e854680a4",
+      "sha256": "2e65a6032ef346a6b6697a30f0ec68355a6c7380ae99c5bf27301b5718cff154",
       "executable": false
     },
     "src/modules/integrations/inbound.ts": {
@@ -12245,7 +12245,7 @@
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {
-      "sha256": "d6fb657a34dfeb41f813f38b1894c75515d90ff3498590b31ed98bac1a81c191",
+      "sha256": "23a1c1491f87d07ec4685f6e2edd1629661e2e1e43c404cbfcccfa62edd81d1f",
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {

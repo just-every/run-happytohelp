@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -826,7 +826,7 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1 · Register R-
 
 #### MOVE-IN-003 — Replies to pre-migration mail land in the imported ticket
 
-Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1 · Register R-12
+Core · target · **done** · Cites BASE-ROLE-001 · Rules D-1 · Register R-12
 
 **Requirement.** Imported tickets keep their email threading keys: every source Message-ID and In-Reply-To/References chain, the source ticket number and each vendor's reply token (Zendesk encoded IDs in `[XXXX-XXXX]` brackets and ticket-number subject tags, Help Scout conversation numbers and reply addresses, Freshdesk `[#ticket]` subjects and reply-to addresses, Intercom conversation reply addresses). After channel cutover, a customer reply to a notification the old system sent is matched by those keys in that priority and lands in the imported conversation with its migrated requester, owner, group and status, reopening it under STATUS-001 when Solved and creating a linked follow-up when Closed. A key that matches more than one record, or a record belonging to a different customer identity, goes to review instead of the wrong ticket; an unmatched reply creates a new ticket marked as a possible pre-migration reply. Keys are imported inertly and are covered by repeat/undo equality and erasure.
 
@@ -834,8 +834,8 @@ Core · target · **partial** · Cites BASE-ROLE-001 · Rules D-1 · Register R-
 1. Import Zendesk, Help Scout, Freshdesk and Intercom datasets that carry documented notification headers, perform cutover, then reply to a pre-cutover notification from each vendor by headers only, by subject token only and by reply address; verify each reply lands in the right imported conversation with its owner and status, reopens a Solved one and links a follow-up to a Closed one.
 2. Send a reply whose token belongs to another customer (held for review) and an unmatched reply (new ticket with the hint); undo the import and verify the keys no longer match.
 
-**Evidence.** Local implementation/fixture evidence: `tests/journeys/email.mjs`, vendorReplies, through `tests/journeys/email.mjs`, completeEmailJourney: all four vendors’ old Message-ID chains and reply addresses; documented Zendesk/Freshdesk/Help Scout subject schemes; explicit current-member/group activation; owner/group/requester preservation on Solved reopening; each supported matching method reopens Solved history and links a follow-up to final Closed history; wrong-customer review and unmatched hints. Exact-repeat, whole-undo, reimport and contact-erasure assertions cover the four vendors’ keys. Role/membership changes refuse stale activation and activation sends nothing. `tests/move-in/review-import.mjs`, lifecycleJourney (steps in “landing: an approved import lands each vendor's history, people, replies, notes, tags and knowledge exactly, keeps notes private, and repeats or repackages as a no-op”): source lifecycle/channel and exact undo of inert keys.
-**Gap.** Implementation/acceptance and live qualification gaps: Intercom has no invented subject-token scheme. Existing older imports without assignment snapshots remain unactivated. Live incumbent notification/export accounts and actual support-channel cutover are required for the outstanding real-mail qualification.
+**Evidence.** `tests/move-in/vendor-replies.mjs`, vendorRepliesJourney, registered inside the existing reviewImportJourney test in `tests/journeys/move-in-admission.mjs`; fixtures and public-door adapters in `tests/move-in/vendor-reply-kit.mjs`: eleven matching paths (Zendesk Message-ID chain, encoded subject and ticket-number subject; Help Scout chain, conversation-number subject and reply address; Freshdesk chain, ticket-number subject and reply address; Intercom chain and reply address, with no invented subject scheme). Every path asserts Open preservation, Solved reopening or a linked Closed follow-up through ticket, transcript and email-followup doors, requester/owner/group preservation, one admitted message and ticket/message/widget-outbox/model/provider deltas. The same journey asserts priority, a single ambiguous key, wrong known customer held in Suspended without either transcript changing, unmatched hints, exact repeat, whole undo with each old path becoming a new hinted ticket, exact key restoration after reimport, stale role/group-membership or group deletion refusal with unchanged assignments, inert cutover, four-vendor key erasure and export replay refusal. Legacy assignment-snapshot fixtures assert zero activatable tickets and no effects. `tests/move-in/review-import.mjs`, reviewImportJourney, retains four-vendor private-note/transcript assertions, source lifecycle mapping and exact inert repeat/undo equality. `tests/journeys/email.mjs`, completeEmailJourney, remains the native ingress/notification regression. `docs/email.md`; `docs/moving-in.md`.
+**Gap.** R-12 UNMET-EXTERNAL: real incumbent migration/export and notification accounts, real channel cutover and actual post-cutover customer mail remain unqualified by these synthetic network-edge fixtures. Older imports without assignment snapshots remain unactivated; their historical ownership is not guessed.
 
 #### MOVE-IN-004 — Bring configuration, not only history
 

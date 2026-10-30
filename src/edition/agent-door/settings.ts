@@ -13,7 +13,7 @@ export function nativeTeam(env:Env):TeamAdapter {
    const statements:D1PreparedStatement[]=[],rows:ManagedMember[]=[],desired=new Set(members.map(m=>m.email))
    // Read the durable anonymized account, not an in-memory denial list. The
    // module has already projected Business IDs onto the incoming email keys.
-   const renewed=new Map<string,string>()
+   const renewed=new Set<string>()
    for(const member of members){
     const marker='erased:'+await hashToken(member.email.toLowerCase())
     const previous=managed.find(row=>row.email===member.email||row.email===marker)
@@ -21,7 +21,7 @@ export function nativeTeam(env:Env):TeamAdapter {
     const account=await env.DB.prepare('SELECT email FROM users WHERE id=?').bind(previous.operatorId).first<{email:string}>()
     if(account?.email!=='erased:'+previous.operatorId)continue
     if(member.invite<=previous.invite)throw new SettingsError('member_erased',409)
-    renewed.set(previous.operatorId,member.email)
+    renewed.add(previous.operatorId)
    }
    for(const previous of managed)if(!desired.has(previous.email)){
     if(previous.operatorId&&renewed.has(previous.operatorId))continue

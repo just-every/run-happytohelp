@@ -1,6 +1,8 @@
 import type {Env} from '../../platform/env'
 
-/** Called inside the guarded write transaction, with a server-minted receipt. */
+/** Called inside the guarded write transaction, with a server-minted receipt.
+ * agent_id attributes the action; assigned_to identifies the copied assignee name
+ * so member erasure remains exact even after that teammate changes their name. */
 export function assignmentHistoryStatement(env:Env,event:{id:string;conversationId:string;actorId:string;agentId:string|null;aiId?:string|null;createdAt:number},accepted:string,args:unknown[]){
  const name=event.aiId?'(SELECT name FROM ai_profiles WHERE id=? AND project_id=c.project_id)':event.agentId?'(SELECT name FROM users WHERE id=?)':"'Unassigned'"
  const role=event.aiId?'(SELECT role FROM ai_profiles WHERE id=? AND project_id=c.project_id)':'NULL'

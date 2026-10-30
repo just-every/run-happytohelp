@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5ac25df32cfff16b7a67252700f51bf18b015130784e10fd28c519eb8236ba7f",
+      "sha256": "93dfde320fffbec6032aeabf12c830ddd3c6bae462e8c6409bf5f2c2c23233a2",
       "executable": false
     },
     "DEMO.md": {
@@ -4200,6 +4200,10 @@
       "sha256": "afd4bb5a6002dd2d4d3f4a9a81c3fe28a959d8704a9f3e5b2371ad212590f776",
       "executable": false
     },
+    "src/edition/agent-door/member-business-erasure.ts": {
+      "sha256": "01913156111985f610241172650a113c8d3c6714124212e096bac2196d7174ee",
+      "executable": false
+    },
     "src/edition/agent-door/people.ts": {
       "sha256": "f7839d4938aac152f7784a906b6354d2e308c47070de1515ead5d8956d3e72ba",
       "executable": false
@@ -4217,7 +4221,7 @@
       "executable": false
     },
     "src/edition/agent-door/settings.ts": {
-      "sha256": "a81087f014d6e471704ad7d9c6f97a8c75e8bd3e76fdea025e6ede18ba431b7c",
+      "sha256": "889293668c89bef038ce8d480a47df3ec5b3e2b9c34190b58b26987f75ac6769",
       "executable": false
     },
     "src/edition/agent-door/tools.ts": {
@@ -7357,7 +7361,7 @@
       "executable": false
     },
     "src/modules/management/tracked-transcript.ts": {
-      "sha256": "f5fb8f0d50ad8bb111c50b9d96360523b0481c8832a0f5d46fb55139e58b650a",
+      "sha256": "7841b5f89c1fe31d256c420276a809c059e80cea60730fd5fe68a9f8505aa946",
       "executable": false
     },
     "src/modules/management/website-address.ts": {
@@ -7605,7 +7609,7 @@
       "executable": false
     },
     "src/modules/outcomes/assignment-history.ts": {
-      "sha256": "b60f462831213058a0b7780a4cb6a6deecb0b52a2047abbd1cac9ff0d841b6de",
+      "sha256": "cbbf4150cc25d597919c045eae34b628fd9cc6edfb9351bea0164ad21c427f75",
       "executable": false
     },
     "src/modules/outcomes/module.json": {
@@ -13758,6 +13762,14 @@
     },
     "tests/helpers/agent-door/journey.mjs": {
       "sha256": "3f9d1bc188080d5fcdda010e6cc7b5bffb2615e217228c2188630e5275df0153",
+      "executable": false
+    },
+    "tests/helpers/agent-door/member-copies.mjs": {
+      "sha256": "9709928dd0aed58a3a3aab751d58a4e57e2d5780298c4536fbabf01a7f42cb73",
+      "executable": false
+    },
+    "tests/helpers/agent-door/member-export.mjs": {
+      "sha256": "dc50d237ff0579c721facccd59ab1c41cf963ef9cdce87489151011f7225fa33",
       "executable": false
     },
     "tests/helpers/agent-door/phase-fixtures.mjs": {

@@ -37,6 +37,8 @@ export async function memberCopies({app,owner,project,native,person,context,call
  for(const token of [taylorSession.token,survivorSession.token])assert.equal((await app.call(erase,{token,body:{}})).status,403,'non-owner member erasure denied')
  const stranger=await app.seedWorkspace('synthetic-happytohelp-cross-tenant')
  assert.equal((await app.call(erase,{token:stranger.tokens.owner,body:{}})).status,403,'cross-tenant member erasure denied')
+ assert.equal((await app.call(`/api/management/projects/${project}/agents/${stranger.users.operator}/erase`,{token:owner.token,body:{}})).status,409,'an owner cannot erase another tenant account')
+ assert.ok(await app.first('SELECT 1 FROM memberships WHERE project_id=? AND user_id=?',stranger.projectId,stranger.users.operator),'other tenant membership survives denied erasure')
  assert.equal((await app.first('SELECT email FROM users WHERE id=?',taylor.id)).email,email,'denied erasures leave personal data unchanged')
  return async()=>{
   await app.configure({})
@@ -57,11 +59,12 @@ export async function memberCopies({app,owner,project,native,person,context,call
   assert.equal((await native(`/api/management/projects/${project}/contacts/${(await native(root)).data.contact.id}`)).data.name,'Avery Buyer','unrelated customer identity survives teammate erasure')
   // Omitting the erased person does not discard their durable frontier.
   assert.equal((await settings(6,[live,...other])).status,200)
+  assert.equal((await settings(7,null)).status,200,'a values-only sync leaves the erasure frontier intact')
   const erasedRoster=await app.sql('SELECT * FROM bs_team'),document=(await app.first('SELECT document FROM bs_settings')).document
   assert.doesNotMatch(JSON.stringify([erasedRoster,document]),/Taylor Support|taylor@example.test/,'E3 stored roster and document copies are anonymized')
   // Same revision, higher revision and changed address under the old Business id
   // all retain the erasure fence. A restart cannot turn it into an invitation.
-  for(const [rev,entry] of [[6,member],[7,member],[8,{...member,email:'synthetic-happytohelp-renamed@example.test'}],[9,{...member,id:undefined}]]){
+  for(const [rev,entry] of [[7,member],[8,member],[9,{...member,email:'synthetic-happytohelp-renamed@example.test'}],[10,{...member,id:undefined}]]){
    const sync=await settings(rev,[entry,live,...other]);assert.equal(sync.status,409,'E3 stale signed sync cannot re-invite an erased identity')
    assert.equal(await app.first('SELECT 1 FROM memberships WHERE project_id=? AND user_id=?',project,taylor.id),null)
    assert.equal(await app.first('SELECT 1 FROM identity_tokens WHERE user_id=?',taylor.id),null)
@@ -71,7 +74,7 @@ export async function memberCopies({app,owner,project,native,person,context,call
   assert.equal((await app.first('SELECT document FROM bs_settings')).document,document)
   // Existing Business authority explicitly permits a larger invite counter.
   // It creates a fresh native account, never reanimates the anonymized one.
-  const fresh=await settings(10,[{...member,invite:2},live,...other]);assert.equal(fresh.status,200,JSON.stringify(fresh.data))
+  const fresh=await settings(11,[{...member,invite:2},live,...other]);assert.equal(fresh.status,200,JSON.stringify(fresh.data))
   const invited=await app.first('SELECT operator_id,state FROM bs_team WHERE business_id=?',sub)
   assert.equal(invited.state,'invited');assert.notEqual(invited.operator_id,taylor.id)
   assert.equal(await app.first('SELECT 1 FROM memberships WHERE user_id=?',taylor.id),null)
@@ -81,7 +84,7 @@ export async function memberCopies({app,owner,project,native,person,context,call
   // incumbent custody journey checks all stores for the removed identity.
   assert.equal((await app.call(`/api/management/projects/${project}/agents/${invited.operator_id}/erase`,{token:owner.token,body:{}})).status,200)
   await app.configure({})
-  assert.equal((await settings(11,[{...member,invite:2},live,...other])).status,409,'restart preserves the new erasure frontier too')
+  assert.equal((await settings(12,[{...member,invite:2},live,...other])).status,409,'restart preserves the new erasure frontier too')
   assert.doesNotMatch(await memberExport(app),/Taylor Support|taylor@example.test/,'retry and restarted stale sync cannot restore exported identity')
   await adopt()
  }

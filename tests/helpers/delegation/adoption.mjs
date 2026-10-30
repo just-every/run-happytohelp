@@ -10,7 +10,7 @@ export const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0
 async function draftRuntime(){
  const app=await startApp({captureQueue:true}),db=app.db,bucket=await app.files
  const request=async(path,body,token,headers={},method=body===undefined?'GET':'POST')=>{const response=await app.request(path,{body,token,headers,method});return {status:response.status,body:await response.json()}}
- const fixture=async({count=1,verified=true,mode='resolve',legacyOnly=false}={})=>{
+ const fixture=async({count=1,verified=true,mode='resolve',legacyOnly=false,followUpMode}={})=>{
   const projectId=randomUUID(),userId=randomUUID(),conversationId=randomUUID(),contactId=randomUUID(),token=randomUUID()
   await db.batch([
    db.prepare('INSERT INTO projects(id,name,widget_key,allowed_origin,created_at) VALUES(?,?,?,?,1)').bind(projectId,'Draft test',randomUUID(),'http://localhost'),
@@ -33,6 +33,7 @@ async function draftRuntime(){
    assert.equal(upload.status,200,await upload.clone().text());localAttachmentIds.push((await upload.json()).data.id)
   }
   const result={summary:'Completed native upload fixture',actions:[],verified,reply_draft:'Legacy editable body',attachment_ids:localAttachmentIds,replies:[{id:'selected',title:'Reply',body:'Editable proposal body',attachment_ids:localAttachmentIds}],follow_up_actions:[]}
+  if(followUpMode)result.follow_up_actions=[{id:'automatic-reply',title:'Prepared work',mode:followUpMode,instructions:'Prepared synthetic follow-up',attachment_ids:[]}]
   if(legacyOnly)delete result.replies
   await post(`/api/local-agents/jobs/${job.id}/result`,{run_id:claim.run_id,event_id:randomUUID(),status:'completed',result},paired.token)
   const draftPath=base+'/'+job.id+'/result/draft',command={proposal_id:'selected',expected_revision:0,expected_last_message_id:null}

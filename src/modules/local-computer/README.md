@@ -19,7 +19,11 @@ membership and device ownership. Authority modes remain investigate, resolve and
 resolve_reply. Presence and actual listening readiness are separate markers.
 
 Result proposals are selected explicitly and receipt identity prevents repeated
-sends or child creation. Presence of a replies key disables legacy automatic
+sends or child creation. Child admission checks live device/grant authority and the
+edition’s `followUpGuard` SQL predicate in the same transaction as the receipt.
+HappyToHelp requires current membership and the investigation’s conversation
+frontier; a stale proposal cannot authorize a new child. Concurrent or later
+replays return the originally approved child. Presence of a replies key disables legacy automatic
 reply delivery. Unverified resolve_reply requires input. Conversation frontier
 checks apply at actual message admission. A failed/uncertain delivery receipt
 requires review and is never silently replayed. Screenshots remain job/device

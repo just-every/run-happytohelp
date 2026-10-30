@@ -35,6 +35,8 @@ export async function deskCollaboration(f){
   const beforeFollower=new Set((await inbox('operator')).map(entry=>entry.id))
   await ok(`/conversations/${id}/notes`,{content:'Private follower update'})
   assert.ok((await inbox('operator')).some(entry=>!beforeFollower.has(entry.id)&&entry.kind==='follower'&&entry.conversation_id===id))
+  assert.equal((await app.call(f.base+`/conversations/${id}/collaboration`,{token:visitor.token})).status,403)
+  assert.ok(!customer.frames.some(frame=>['activity','presence'].includes(frame.type)))
 
   // Personal work stays personal; shared definitions are readable but only maintainers may change them.
   const view=await ok('/ticket-views',{name:'Collaboration queue',visibility:'shared',filters:[],sort:[]})
@@ -87,6 +89,10 @@ export async function deskCollaboration(f){
   assert.equal((await ok(`/ticket-views/${personal.id}`,undefined,'operator')).name,personal.name)
   assert.equal((await ok(`/macros/${reply.id}`,undefined,'operator')).content,reply.content)
   assert.equal((await ok(`/macros/${privateReply.id}`,undefined,'operator')).content,privateReply.content)
+  assert.ok((await ok('/ticket-views',undefined,'operator')).some(saved=>saved.id===personal.id))
+  assert.ok(!(await ok('/ticket-views')).some(saved=>saved.id===personal.id))
+  assert.ok((await ok('/macros',undefined,'operator')).some(saved=>saved.id===privateReply.id))
+  assert.ok(!(await ok('/macros')).some(saved=>saved.id===privateReply.id))
   assert.deepEqual((await publicMessages()).messages.map(message=>message.id),transcript.messages.map(message=>message.id))
   const reconnected=await connect(visitor.token)
   await app.until(()=>reconnected.frames.some(frame=>frame.message?.id===winner.id))

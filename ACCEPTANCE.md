@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -504,7 +504,7 @@ Core · target · **partial** · Cites BASE-ROLE-001
 
 #### QUEUE-003 — Collaboration without conflicting replies
 
-Core · target · **partial** · Cites BASE-ROLE-001
+Core · target · **done** · Cites BASE-ROLE-001
 
 **Requirement.** Internal notes and @mentions notify only permitted teammates; followers (internal CCs, distinct from customer CCs and never shown to the customer) receive updates under NOTIFY-001; viewing, typing and unsent-draft indicators warn of collisions before send. Guarded send still refuses stale replies. Operators save personal/shared work views and reusable replies/macros with scoped permissions; private notes and drafts never appear in customer channels, forwarding or public history.
 
@@ -513,8 +513,8 @@ Core · target · **partial** · Cites BASE-ROLE-001
 2. Confirm early collision warnings, one admitted final reply, scoped mention delivery and no private content in the visitor transcript.
 3. Add a follower and verify updates reach them and never the customer.
 
-**Evidence.** `src/modules/collaboration`; `src/modules/conversations/socket.ts`; `src/modules/tickets`; `src/ui/dashboard/components/collaboration`; `tests/journeys/inbox.mjs`; `tests/journeys/first-run.mjs`
-**Gap.** Carried-done audit: unasserted in the cited Evidence set: two operator typing; scoped mention; view saved; reply saved; competing sends; reload; early collision warning; one admitted final reply; permitted mention delivery; private content absent from visitor transcript; follower receives update; customer receives no follower update. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
+**Evidence.** P1: `tests/journeys/inbox.mjs`, "a replacement request moves through scoped fields, a reviewed macro, shared queue work, private collaboration, routing, schedules and durable automations before closure and erasure", invokes deskCollaboration in `tests/helpers/inbox/desk-collaboration.mjs`: two signed-in operators, socket viewing and typing and draft flags, permitted and refused mentions, personal and shared views and reusable replies with scoped read and edit authority, concurrent sends at one frontier, persistent reload and customer replay. P2: the same journey asserts one admitted reply and one customer-visible reply, stale refusal, duplicate replay without another reply, no private note or draft in visitor history or sockets, and private forwarding refusals. `tests/journeys/inbox-browser.mjs`, "two signed-in operators see viewing, typing and unsent draft warnings before replying and after reload", invokes collaborationBrowser in `tests/helpers/inbox/desk-collaboration.mjs`: native sign-in, both warning directions, private draft isolation and reload at 1440; separate 390 browser proof. `tests/journeys/email.mjs`, "a customer email is admitted once, receives safe scoped replies and notifications, keeps suspicious and partner mail private and never replays an uncertain provider outcome", invokes completeEmailJourney in `tests/helpers/email/complete-email.mjs`: actual provider-edge partner forward, private-note selection refusal and private partner reply exclusion from customer history. P3: deskCollaboration reads the permitted follower's notification inbox after a private update, denies foreign followers and visitor access to collaboration or notifications, and asserts no private activity frame or content reaches the visitor.
+**Gap.** None.
 
 #### MACRO-001 — Action macros with placeholders
 

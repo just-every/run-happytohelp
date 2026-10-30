@@ -11837,7 +11837,7 @@
       "executable": false
     },
     "tests/helpers/inbox/desk-collaboration.mjs": {
-      "sha256": "4d6dd99c6f807248590e7d856fc27b5d3cf364afcd4627c6972b8bf6075335ca",
+      "sha256": "520810244f1619ecc26453b236f8813f5ff1bc50e774fdbb86a394c7eee40ab7",
       "executable": false
     },
     "tests/helpers/inbox/mobile-inbox-browser.mjs": {

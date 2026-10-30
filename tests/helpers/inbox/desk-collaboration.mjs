@@ -183,6 +183,8 @@ export async function deskCollaborationBrowser(){
   await ownerPage.setViewportSize(viewports.mobile)
   await ownerPage.reload()
   await ownerPage.locator('.conversation-presence').filter({hasText:'Casey Operator has an unsent draft'}).waitFor()
+  // Let the phone navigation finish sliding into place before taking its proof.
+  await ownerPage.waitForFunction(()=>{const rect=document.querySelector('#chat .main')?.getBoundingClientRect();return rect&&rect.x>=-1&&rect.right<=innerWidth+1})
   await ownerPage.screenshot({path:shot('warning-390.png'),fullPage:true})
   await ownerPage.setViewportSize(viewports.desktop)
   const saved=await request(base+'/macros',{title:'Replacement status',content:'Saved replacement reply awaiting review',scope:{visibility:'personal'}},teammate.token)

@@ -29,7 +29,9 @@ reply in HappyToHelp.
 
 If a new visitor message arrives while you are reviewing a draft, its earlier
 conversation position cannot authorize a send. Read the new message and request
-a fresh investigation. The earlier proposal remains available to inspect.
+a fresh investigation. The earlier proposal remains available to inspect, but its Run action refuses a
+new fix against the changed conversation. Repeating an approval already recorded
+returns the same child task, including when two approval requests arrive together.
 
 If you revoke a computer while work is running, HappyToHelp withdraws authority
 and records **Authority revoked · local outcome unconfirmed**. Revocation does

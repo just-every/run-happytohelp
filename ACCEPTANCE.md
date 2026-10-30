@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 1 | 74 | 10 | 85 |
+| Core | 2 | 73 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 1 | 74 | 15 | 90 |
+| Full target | 2 | 73 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -221,7 +221,7 @@ Core · published · **partial** · Cites BASE-ROLE-001, BASE-INPUT-001
 
 #### DELEGATION-001 — Explicit local authority
 
-Core · published · **partial** · Cites BASE-AGENT-005, BASE-AGENT-007, BASE-AGENT-008 · Register R-17
+Core · published · **done** · Cites BASE-AGENT-005, BASE-AGENT-007, BASE-AGENT-008 · Register R-17
 
 **Requirement.** Pairing, devices/grants, revocation, tool context and work/result states preserve investigation, resolve and advance-authorized resolve-and-reply distinctions. Revocation withdraws authority and never asserts that a local process stopped: started work becomes terminal with an unconfirmed outcome, and only the device may report cancellation. Local processes remain in the optional connector, never an implicit Worker capability. Agent calls use the company’s policy for their computed classes; any approval or review in this journey is under the held company policy.
 
@@ -229,8 +229,8 @@ Core · published · **partial** · Cites BASE-AGENT-005, BASE-AGENT-007, BASE-A
 1. Under the held company policy, pair the packaged connector, investigate, separately authorize a child fix, obtain a distinct read-only observation and use human Send with exact-request replay.
 2. Under the held company policy, refuse stale/revoked/offline/unverified/uncertain work and distinguish resolve from advance-authorized resolve-and-reply; revocation cannot assert process cancellation.
 
-**Evidence.** `src/modules/local-computer/results.ts`; `src/edition/delegation/routes.ts`; `tests/journeys/delegation.mjs`
-**Gap.** Carried-done audit: unasserted in the cited Evidence set: packaged connector pairing; read-only investigation; separately authorized child fix; distinct read-only observation; human Send; exact-request replay; stale work refused; revoked work refused; offline work refused; unverified work refused; uncertain work not replayed; resolve versus resolve-and-reply; revocation does not assert cancellation. The cited registry invokes the delivered workflow, but its helper assertions are not named in this clause’s old Evidence set; no direct outcome assertion is claimed here.
+**Evidence.** `src/modules/local-computer/results.ts`, `src/modules/local-computer/follow-up.ts`, `src/modules/local-computer/devices.ts`; `src/edition/local-computer.ts`; `tests/helpers/delegation-journey/case.mjs` (runCase: packaged pairing, scoped read-only investigation, explicitly approved child and exact replay, one fixture mutation, distinct observation, human Send once, attributed internal notes); `tests/helpers/delegation-journey/refusals.mjs` (refusals: stale/revoked/offline/unverified work, inspectable uncertain receipt without replay); `tests/helpers/delegation-journey/connector.mjs`; `tests/journeys/delegation.mjs` (agent-fix registration); `tests/helpers/delegation/authority-outcomes.mjs` (authorityOutcomes within tests/journeys/delegation-computers.mjs: same-ticket resolve/resolve_reply, explicit proposal selection and empty replies suppress legacy delivery, unverified reply needs input, legacy advance-authorized delivery once, stale child refusal, concurrent/already-approved child replay, actor refusal, attributed notes and Security log, before/after counts); `tests/helpers/delegation/authority-connector.mjs` (connectorAuthorityOutcomes: real CLI observes device revocation as revoked_unknown and membership loss as withdrawn work, 401/403 late reports refused, queued cancellation, no invented result or customer change); `tests/journeys/delegation-computers.mjs` (grant revocation, started revoked/authority_revoked versus queued cancelled, result replay and Send once); `tests/helpers/delegation/adoption.mjs` (adoptionJourney: Use/Send authority and replay); `tests/journeys/connector.mjs` (packaged Codex/Claude pairing, failure once, interrupted work never replayed, MCP revocation without cancellation).
+**Gap.** UNMET-EXTERNAL: the held company policy deciding each agent call’s approval/review remains Base’s BASE-AGENT-007 policy chokepoint; this evidence requires explicit human action by an authorized member and does not qualify that live policy. R-17 live qualification remains: real authorized customer-system repair, independent recovery observation and later recurrence follow-up; the disposable customer fixture and scripted provider CLIs prove only the local connector journey.
 
 #### TRAINING-001 — Durable evaluation
 

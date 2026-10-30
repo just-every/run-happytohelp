@@ -12,6 +12,8 @@ export interface Integration {
   hasAccess(db: D1Database, userId: string, projectId: string): Promise<boolean>;
   context(db: D1Database, projectId: string, conversationId: string): Promise<Record<string, any>>;
   recordResult(env:LocalEnv, job:Record<string,any>,result:Record<string,any>):Promise<void>;
+  /** SQL predicate over local_jobs j, checked atomically with child admission. */
+  followUpGuard(): string;
   deliveryRevision(env:LocalEnv,projectId:string,conversationId:string):Promise<number>;
   prepareDraft(env: LocalEnv, input: DraftInput): Promise<{ body: string; attachments: Record<string, unknown>[] }>;
   deliver(env: LocalEnv, input: { projectId: string; conversationId: string; operatorId: string; requestId: string; expectedRevision:number; expectedLastMessageId: string | null; body: string; attachmentIds: string[]; resolve: boolean; source?: {jobId:string;proposalId:string|null} }): Promise<{ messageId: string }>;

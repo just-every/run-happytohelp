@@ -15,6 +15,7 @@ import {authoritySnapshotSql,deviceAuthority,mobileActor,retireDevice,scopePermi
 import {frontierGuard,issueFrontier,loadFrontier} from './frontier'
 import {mobileChange,mobileReply,objectBody} from './commands'
 import {mobilePushRoutes} from './push-routes'
+import {mobileApprovalRoutes} from './approval-routes'
 
 export const offlinePolicy={customerCache:'memory-only',draftStorage:'memory-only',backgroundSend:false,purgeOn:['signout','revocation','authority-change','workspace-change','process-exit'],reconnect:'refresh-role-ticket-and-schedules-before-explicit-send'} as const
 export const mobileRoutes=new Hono<AppEnv>()
@@ -87,3 +88,4 @@ mobileRoutes.get('/tickets/:ticketId/knowledge',async c=>{
  await stillAuthorized(c.env,a);return c.json({articles})
 })
 mobileRoutes.route('/',mobilePushRoutes)
+mobileRoutes.route('/',mobileApprovalRoutes)

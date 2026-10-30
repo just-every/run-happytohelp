@@ -191,7 +191,9 @@ only derived device authority, frontier/command receipts and opaque link
 metadata. It migrates no existing session into a mobile credential and enables
 no provider delivery. Existing owners and support history are unchanged. Rer
 archives and sanitized SQL backups exclude device credentials, frontiers, command
-receipts and prepared links; pairing must be repeated after restore.
+receipts and prepared links; pairing must be repeated after restore. Erasing a
+workspace member deletes their devices and dependent receipts in that workspace;
+it never issues replacement credentials.
 
 The existing native admission, role, ticket and notification journeys now also
 exercise these mobile public doors in `tests/helpers/mobile.mjs`. They prove

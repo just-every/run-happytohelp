@@ -5,7 +5,7 @@ import {portalSessionGuard,type PortalIdentity} from './identity'
 
 export async function readPortalPreferences(env:Env,identity:PortalIdentity){
  const guard=portalSessionGuard(identity)
- const row=await env.DB.prepare(`SELECT ct.email,COALESCE(p.locale,'en') locale,COALESCE(p.update_emails,1) updateEmails,NOT EXISTS(SELECT 1 FROM csat_optouts o WHERE o.project_id=ct.project_id AND o.contact_id=ct.id) surveyEmails FROM contacts ct LEFT JOIN portal_preferences p ON p.project_id=ct.project_id AND p.contact_id=ct.id WHERE ct.id=? AND ct.project_id=? AND ${guard.sql}`).bind(identity.actor.id,identity.actor.projectId,...guard.args).first<any>()
+ const row=await env.DB.prepare(`SELECT (SELECT proof.email FROM portal_session_proofs proof WHERE proof.token_hash=?) email,COALESCE(p.locale,'en') locale,COALESCE(p.update_emails,1) updateEmails,NOT EXISTS(SELECT 1 FROM csat_optouts o WHERE o.project_id=ct.project_id AND o.contact_id=ct.id) surveyEmails FROM contacts ct LEFT JOIN portal_preferences p ON p.project_id=ct.project_id AND p.contact_id=ct.id WHERE ct.id=? AND ct.project_id=? AND ${guard.sql}`).bind(identity.sessionHash,identity.actor.id,identity.actor.projectId,...guard.args).first<any>()
  if(!row)throw new HTTPException(401)
  return {...row,surveyEmails:Boolean(row.surveyEmails),updateEmails:Boolean(row.updateEmails)}
 }

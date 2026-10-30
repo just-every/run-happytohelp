@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cc936c9cac8abb44f7878a656d48d4608bd2438f2f89ec939eb8ac2e2f1796bb",
+      "sha256": "ef91a4a792d6cea6c00244bd6fee8a9852e813ac78e0cc63b144348b78a0336f",
       "executable": false
     },
     "AGENTS.md": {
@@ -1613,7 +1613,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d5b584bebf0740e39d69eba914a2c258a1f16a4ae0dea78b7d0b05323e72cd74",
+      "sha256": "e57ab8e7d8d50c7a5db70f694b5fa7316233fbd099194632250e4c1609a22340",
       "executable": false
     },
     "DEMO.md": {
@@ -1693,7 +1693,7 @@
       "executable": false
     },
     "docs/customer-portal.md": {
-      "sha256": "a97c23f56d7a3da56aeb2a2d413364edb8ecf6c2686f0e464259677c18f88680",
+      "sha256": "ba0b1f0bc4b00352abc0ccb65770a9836f9472eb163f21e23972c5d5a6780839",
       "executable": false
     },
     "docs/customer-satisfaction.md": {
@@ -6941,7 +6941,7 @@
       "executable": false
     },
     "src/modules/portal/access.ts": {
-      "sha256": "22ae3bcf3ffdf4eee0a3d379d85fa66ba61d63d90a2a2d3796d16f38fa84596a",
+      "sha256": "f7cf14baee6872bd4c0bbc6c967bbdc61348310cfedf2c115f02460eb49f468a",
       "executable": false
     },
     "src/modules/portal/attachments.ts": {
@@ -6953,7 +6953,7 @@
       "executable": false
     },
     "src/modules/portal/identity.ts": {
-      "sha256": "df0ea238d8b087172f33058571359fd9d1275cf702471676ab8eec708921d201",
+      "sha256": "1f6f32826aea5ad653b4df30472e2a41635135cc986717e20c8cbb0fcc3cc6d5",
       "executable": false
     },
     "src/modules/portal/index.ts": {
@@ -6965,7 +6965,7 @@
       "executable": false
     },
     "src/modules/portal/preferences.ts": {
-      "sha256": "e98554cdc1a1f0afefb3b59665443565c4d4add532ec12486993c7fe48bc0174",
+      "sha256": "211cf97b0daec64700e0b5ad8a2bcc28478d91ff90e662e34750417b814b608d",
       "executable": false
     },
     "src/modules/portal/privacy.ts": {
@@ -11577,7 +11577,7 @@
       "executable": false
     },
     "tests/helpers/customer-portal-journey.mjs": {
-      "sha256": "ba8f151115ebe843b103855e5c2334d9a703e640409b6dbc5430cfdfc750156e",
+      "sha256": "2ab3db17bc3cbeb833a0b597624f962b31672bfe280d89fb3958610d088314f7",
       "executable": false
     },
     "tests/helpers/delegation-journey/browser-ui.mjs": {
@@ -11964,6 +11964,22 @@
       "sha256": "56247486cde1c6ea530869024b41f9ac51e306739edca145afc16bf44ce9ad1b",
       "executable": false
     },
+    "tests/helpers/portal-browser-mail.mjs": {
+      "sha256": "f04064ff916b0f4327b4b2ca5a60ee7aa0e0c575082287efe22cbb6e0ba9930f",
+      "executable": false
+    },
+    "tests/helpers/portal-browser.mjs": {
+      "sha256": "bbae19193baebe31a7fd8960d7aa1043cee0ef5f53fa9f0b9a603eb2ed88ac45",
+      "executable": false
+    },
+    "tests/helpers/portal-outcomes.mjs": {
+      "sha256": "b1d2b1a6383b4b67381d9df24a97add097029fe80d8f1eb1f7790308e663d745",
+      "executable": false
+    },
+    "tests/helpers/portal-recovery.mjs": {
+      "sha256": "f759ca7d8e4bf751f214d35d27cb9d6519b58f2c276d6d16a0c78041dd5c800a",
+      "executable": false
+    },
     "tests/helpers/r4/notifications.mjs": {
       "sha256": "7a276e5c3f7060d6f2b8958f5a4a66d04bd111d188ef072bc56e8e3d349fe16e",
       "executable": false
@@ -12265,7 +12281,7 @@
       "executable": false
     },
     "tests/journeys/public-browser.mjs": {
-      "sha256": "3bcfbad46da7acb449f375ab0afdf32d3f0569b27245f099bd5e7d754711537f",
+      "sha256": "c0a0f723eb9d2f77f32aea517e969238a9880774f814aeaf82efb0af86eaafcd",
       "executable": false
     },
     "tests/journeys/public.mjs": {

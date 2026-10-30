@@ -12440,6 +12440,14 @@
       "sha256": "0da24b9ebe85bb8692c9815d96aa98076f4c0eadf02b2ac259d0a38ef74ab9c6",
       "executable": false
     },
+    "tests/move-in/vendor-replies.mjs": {
+      "sha256": "8429d2863138dedc1d0c04906257882035074758c0ab5e65470949c6ae3f4ec5",
+      "executable": false
+    },
+    "tests/move-in/vendor-reply-kit.mjs": {
+      "sha256": "d9f530063684d21f5badbdb26f6ee25451c2bc085a71ae9d3221a3f4d12a2395",
+      "executable": false
+    },
     "tests/move-in/worker.ts": {
       "sha256": "53a97035c600e8859654cfd4f995d7b63d9ebbae6b5835a9bf1bb5a0daca0c6e",
       "executable": false

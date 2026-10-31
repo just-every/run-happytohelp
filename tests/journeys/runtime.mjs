@@ -6,6 +6,7 @@ import {promisify} from 'node:util'
 import {mkdir,readFile,symlink} from 'node:fs/promises'
 import {join,resolve} from 'node:path'
 import {createRuntime} from '../helpers/emitted-runtime.mjs'
+import {admissionRaces} from '../helpers/conversation/admission-races.mjs'
 import {proxyFaultProbe} from '../helpers/emitted-runtime-proxy-fault.mjs'
 import {client} from './kit/http.mjs'
 const exec=promisify(execFile)
@@ -139,4 +140,5 @@ test('a native support session admits and replays one transcript with its own fi
 
   success=true
  }finally{await runtime.close(success)}
+ await admissionRaces()
 })

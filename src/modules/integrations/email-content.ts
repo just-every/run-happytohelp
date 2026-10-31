@@ -5,8 +5,10 @@ import gfm from 'h2h-widget-gfm'
 import type {Env} from '../../platform/env'
 import type {EmailAttachment} from './email'
 import {emailFileLink} from './email-file-links'
+// @ts-ignore Shared durable-message citation validator has no TypeScript declaration.
+import {messageCitations} from '../conversations/citations.js'
 
-type MailMessage={id:string;actor_id?:string;actor_role:string;content:unknown;created_at?:number;erased_at?:number|null;source_author?:{name?:string|null;role?:string}|null}
+type MailMessage={id:string;actor_id?:string;actor_role:string;content:unknown;citations_json?:string|null;citations?:unknown[];created_at?:number;erased_at?:number|null;source_author?:{name?:string|null;role?:string}|null}
 type RenderInput={projectId:string;conversationId:string;messages:readonly MailMessage[]}
 type Media={id:string;object_key:string;filename:string;content_type:string;size:number}
 type Author={message_index:number;author_json:string|null;actor_found:string|null;name:string|null;email:string|null;metadata_json:string|null}
@@ -93,7 +95,12 @@ async function renderConversation(env:Env,input:RenderInput,loadMetadata:(messag
  for(const [index,message] of input.messages.entries()){
   if(message.erased_at||message.actor_role==='system')continue
   const {name,media}=await loadMetadata(message,index)
-  const content=String(message.content??''),body:string[]=[markdown(content)],files:string[]=[]
+  const content=String(message.content??''),body:string[]=[],files:string[]=[]
+  const disclosure=message.actor_role==='ai'?'This reply was written by an AI assistant.':''
+  const citations:{title:string;url:string}[]=message.actor_role==='ai'?messageCitations(message):[]
+  if(disclosure)body.push(`<p>${disclosure}</p>`)
+  body.push(markdown(content))
+  if(citations.length)body.push(`<ul>${citations.map(citation=>`<li><a href="${escape(citation.url)}">${escape(citation.title)}</a></li>`).join('')}</ul>`)
   for(const file of media){
    const filename=file.filename.replace(/[\x00-\x1f\x7f]/g,'').slice(0,200)||'attachment',encoded=4*Math.ceil(file.size/3)
    const fits=file.size<=maxFileBytes&&encodedBytes+encoded<=maxEncodedBytes
@@ -115,7 +122,7 @@ async function renderConversation(env:Env,input:RenderInput,loadMetadata:(messag
    files.push(`Attachment: ${filename}`)
    body.push(contentId?`<p><img src="cid:${contentId}" alt="${escape(filename)}" style="max-width:100%;height:auto" /></p>`:`<p>Attachment: ${escape(filename)}</p>`)
   }
-  text.push([name,content,...files].filter(Boolean).join('\n'))
+  text.push([name,disclosure,content,...citations.map(citation=>`${citation.title}: ${citation.url}`),...files].filter(Boolean).join('\n'))
   html.push(`<section><p><strong>${escape(name)}</strong></p>${body.join('')}</section>`)
  }
  return {text:text.join('\n\n'),html:`<div>${html.join('<hr />')}</div>`,attachments,omitted}

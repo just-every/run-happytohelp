@@ -1,10 +1,12 @@
 import {portalOutcomes} from './portal-outcomes.mjs'
+import {emailOutcomes} from './outcomes-002-email-outcomes.mjs'
 import {accountLookupJourney} from './account-lookup-journey.mjs'
 import {companyPortalJourney} from './company-portal.mjs'
 import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
 import {selfServiceFixture} from './self-service-fixture.mjs'
 export async function customerPortalJourney(){
+ await emailOutcomes()
  const f=await selfServiceFixture({failSurveys:true}),{app,p,owner,api,form,valid,signin,mail}=f,P=`/api/portal/${p}`
  try{
   await portalOutcomes(f)

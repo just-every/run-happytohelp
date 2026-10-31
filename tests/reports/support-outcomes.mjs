@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {assistantApp} from '../helpers/ai/app.mjs'
 import {openaiToolCall} from '../helpers/openai-stream.mjs'
+import {resolutionFeedbackHistory} from './resolution-feedback.mjs'
 
 // The historical fixture above qualifies distributions. This independent cohort
 // creates its business evidence through public doors; only the provider edge and
@@ -184,6 +185,7 @@ export async function supportOutcomesJourney(){
   assert.equal(replay.duplicate,true);assert.equal(replay.message.id,sentAnswer.message.id)
   assert.equal((await unanswered.transcript()).resolution.outcome,'assisted','replay cannot relabel the admitted answer')
   await app.call(base+url,{token:handed.token,status:401})
+  await resolutionFeedbackHistory()
 
  }finally{await a.close()}
 }

@@ -1,3 +1,4 @@
+import {mobileAuthority} from '../mobile.mjs'
 import assert from 'node:assert/strict'
 import {startApp,sha} from '../../journeys/kit/app.mjs'
 import {challengeOf,consentPage,decide} from '../delegation/applications.mjs'
@@ -10,6 +11,7 @@ import {challengeOf,consentPage,decide} from '../delegation/applications.mjs'
  * loses what a narrowed role loses; the security log refuses edits, honours retention and holds.
  */
 export async function rolesAuditJourney(){
+ await mobileAuthority()
  const app=await startApp({bindings:{RER_INSTALLATION_ID:'roles-installation',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}})
  try{
   assert.deepEqual((await app.call('/_test/unclassified-routes')).data,[],'every mutating door has a role rule')

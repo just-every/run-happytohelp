@@ -11437,7 +11437,7 @@
       "executable": false
     },
     "tests/connections/api001-helpscout-outcomes.mjs": {
-      "sha256": "9fbaec6d840892ebd57cbc2cf6cdd1227c81291de2c6adf2bac091aecf904db4",
+      "sha256": "047515f5828ce5182903653f67e78dfb4d4afb8546d25eabe0f4cad732654167",
       "executable": false
     },
     "tests/connections/api001-outcomes.mjs": {

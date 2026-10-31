@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
-import {archivePolicy} from '../../scripts/installer/portability-policy.mjs'
+import {execFile} from 'node:child_process'
+import {promisify} from 'node:util'
+import {fileURLToPath} from 'node:url'
 import {harness,body} from './harness.mjs'
 import {customer,history} from '../move-in/helpscout-fixtures.mjs'
 const root='/api/management/projects/p/connections/helpscout',imports='/api/move-in/projects/p/imports'
 export async function api001ScoutOutcomes(){
+ // Archive policy imports Wrangler, whose proxy setup changes the Node HTTP
+ // dispatcher. Prove custody in a child, preserving loopback provider transport.
+ await promisify(execFile)(process.execPath,[fileURLToPath(new URL('./api001-archive.mjs',import.meta.url))])
  const h=await harness()
  try{
   let ids=[901],error=null,failThreads=false,changed=false,pageMode=false,badNext=false,oversize=false
@@ -26,7 +31,6 @@ export async function api001ScoutOutcomes(){
   const native=await h.issue();assert.equal((await h.raw(root,{token:native.token})).status,404)
   await connect('synthetic-app-secret')
   const metadata=await h.call(root);assert.equal(metadata.connected,true)
-  const archived=archivePolicy.exportRow('helpscout_connections',{project_id:'p',secret_ciphertext:'secret',claim:'claim',claim_until:99,cursor:'retained'});assert.equal(archived.secret_ciphertext,null);assert.equal(archived.cursor,'retained');assert.equal(archivePolicy.importRow('helpscout_connections',{...archived,secret_ciphertext:'old-secret'}).secret_ciphertext,null)
   const stored=await h.db.prepare("SELECT secret_ciphertext FROM helpscout_connections WHERE project_id='p'").first();assert.ok(!stored.secret_ciphertext.includes('synthetic-app-secret'))
   for(const secret of ['synthetic-app','synthetic-app-secret','synthetic-webhook-secret'])assert.ok(!JSON.stringify(metadata).includes(secret))
   for(const token of ['synthetic-app-secret','synthetic-webhook-secret','synthetic-scout-access']){

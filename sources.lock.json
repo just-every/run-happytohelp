@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b415c0a89b099fdd5532ca788c90ad2d26f1268eee95edb2cb5a8077bc827dd7",
+      "sha256": "9d41fbc56ebbdf298850ee7dbe181e1ef0120779ac9e2f688005a3f586c69812",
       "executable": false
     },
     "DEMO.md": {
@@ -6633,7 +6633,7 @@
       "executable": false
     },
     "src/modules/integrations/routes.ts": {
-      "sha256": "f384413288b992de4e6f7bd0e8c5007ca7ee9aa30744892ec18486642c1abcd9",
+      "sha256": "d57f5ef325966672f7126dfe310d4b6d28acb87a8d42490c15d9ef93b6368d03",
       "executable": false
     },
     "src/modules/integrations/secrets.ts": {
@@ -13964,6 +13964,10 @@
       "sha256": "6c1b939d8773c792865747174526d9a99c06c3151eae550d6f887fbcd59f2658",
       "executable": false
     },
+    "tests/helpers/email/local-mail.mjs": {
+      "sha256": "6beb9ff1d20d8e339ad8528ec5c5adbc0367c73e9ac73ad9f1f5c4a24e340838",
+      "executable": false
+    },
     "tests/helpers/email/mailbox-provider.mjs": {
       "sha256": "eed1ee5b61e04c903d0fc1d79ec2fa02a2e4cb13acb8325591704a040d2684a5",
       "executable": false
@@ -14537,7 +14541,7 @@
       "executable": false
     },
     "tests/journeys/email.mjs": {
-      "sha256": "74bc12e2f56105fa1efcea1aa33dfb22f7c875af66b9bf8de5014b1d02c10d49",
+      "sha256": "7d502f14205c589ce52dcf5d586d732f192d6b3a7ebb2d8cf71195fea7ad591e",
       "executable": false
     },
     "tests/journeys/erasure-browser.mjs": {

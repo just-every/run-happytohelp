@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {replyAttachmentsBrowser} from './reply-attachments-browser.mjs'
+import {deskBrowserProof} from './desk-browser.mjs'
 import {readFile} from 'node:fs/promises'
 import {auditPage,viewports} from '../../journeys/kit/browser.mjs'
 
@@ -7,10 +8,14 @@ import {auditPage,viewports} from '../../journeys/kit/browser.mjs'
 export async function openBrandRequest({browser,origin,brand}){
  const context=await browser.newContext({viewport:viewports.desktop}),page=await context.newPage()
  page.setDefaultTimeout(20000)
+ const policy=await fetch(origin+`/api/management/projects/${brand.id}/widget-settings`,{method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+brand.token},body:JSON.stringify({settings:{collect:{require_name:true,require_email:true},message:{collect_attachments:true}}})})
+ assert.equal(policy.status,200)
  await page.goto(origin+`/help/${brand.id}`)
  await page.addScriptTag({url:origin+'/widget.js'})
  await page.evaluate(options=>window.h2h('init',options),{widgetKey:brand.widgetKey,apiOrigin:origin,open:true,settings:{collector:{enabled:false}}})
  await page.getByText(brand.greeting,{exact:true}).last().waitFor()
+ await page.locator('input[name=name]').fill('Alpha customer')
+ await page.locator('input[name=email]').fill('alpha-customer@example.test')
  await page.locator('textarea[name=content]').fill('Alpha private support request')
  await page.locator('button[name=submit]').click()
  const key=`rer-widget:${origin}:${brand.widgetKey}`
@@ -27,6 +32,7 @@ export async function answerAndReport({origin,brand,visitor,page,shot}){
  await page.getByRole('button',{name:'Send',exact:true}).click()
  await widget.getByText('Here is the answer for Alpha',{exact:true}).waitFor()
  await replyAttachmentsBrowser({page,projectId:brand.id,conversationId:visitor.session.conversationId,evidence:shot('')})
+ await deskBrowserProof({origin,brand,visitor,page,shot})
  await page.locator('.conversation-header-close').click()
  await widget.getByText('Did this answer your question?',{exact:true}).waitFor()
  await widget.getByRole('button',{name:'👍 Yes',exact:true}).click()

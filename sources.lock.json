@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8f3809faf915b47f22ded374839f6832428828dbde2fdfe16f0b33e1c26400f3",
+      "sha256": "76c8076709bc30d2aaa00126d7a7a951c6a21b79bc955b38b21ae6fb346c37d8",
       "executable": false
     },
     "DEMO.md": {
@@ -8577,7 +8577,7 @@
       "executable": false
     },
     "src/modules/widget/js/App.jsx": {
-      "sha256": "e8d724088461393e79dceeeeaa1640083b7d34b5f3dc7f9873619da04ad29ad9",
+      "sha256": "c1e8c45f6ae57a4cbb67aa1609386112280d44514cc9234290d0e7402ec26b27",
       "executable": false
     },
     "src/modules/widget/js/AwayNotice.jsx": {
@@ -8589,7 +8589,7 @@
       "executable": false
     },
     "src/modules/widget/js/CampaignOffer.jsx": {
-      "sha256": "108746005f5a04cdf5eb23397fc503e476b7bbeaf99f0330e91e7d231eb32a15",
+      "sha256": "4db32979ec2eb93c30d59e2e458c302ee286527c9e507be1a0b29f74515aa2c4",
       "executable": false
     },
     "src/modules/widget/js/ChatHeader.jsx": {
@@ -8649,7 +8649,7 @@
       "executable": false
     },
     "src/modules/widget/js/context/ConnectContext.jsx": {
-      "sha256": "8d871ad13554c502614529326ba51274db188cfece99490888e41bfc7b611119",
+      "sha256": "36149aae265b0f7e456a061390fe9ccbf06b4e28a6dcba4369a8009c4ddd10b4",
       "executable": false
     },
     "src/modules/widget/js/context/defaults.js": {
@@ -14456,6 +14456,14 @@
       "sha256": "1e03e92792c056521a2410f438f3846a636ffe9502d81111283c0f8e2a455c79",
       "executable": false
     },
+    "tests/helpers/widget/outcomes-campaigns.mjs": {
+      "sha256": "9ead30212dfbb2cdfe1d2f4645957365c8ed0f56cc4a8d8f15279eb2cbcc4cd8",
+      "executable": false
+    },
+    "tests/helpers/widget/outcomes.mjs": {
+      "sha256": "1839ef7d70e64bfdf762173b97f3c93fb863f3f33dc223e415521963e34bfb7c",
+      "executable": false
+    },
     "tests/helpers/widget/socket.mjs": {
       "sha256": "34763fde5d32922c71ecf8801ae20fb29cab2e7d00c8d64152eab29de98e7ac1",
       "executable": false
@@ -14541,7 +14549,7 @@
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {
-      "sha256": "cc6a98b7e7e5559ea772ff7d91bd901bb78e7c1178349386f6a7af3142ce88f2",
+      "sha256": "e132884183a4b631bd1138833dbdfcde7a3c4217aa08b0f3b2c49791adc17c93",
       "executable": false
     },
     "tests/journeys/inbox.mjs": {

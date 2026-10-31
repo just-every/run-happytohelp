@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "9d2e94036bea5da654e335d99a554ad87ebd28eebe2abdcf59bcee185b6ad62a",
+      "sha256": "19a2434c693c861a7dac1c164a54d5fefec1917bf7c899339387f00b740e1bb3",
       "executable": false
     },
     "DEMO.md": {
@@ -14300,6 +14300,18 @@
       "sha256": "56247486cde1c6ea530869024b41f9ac51e306739edca145afc16bf44ce9ad1b",
       "executable": false
     },
+    "tests/helpers/public-docs-journey.mjs": {
+      "sha256": "fbcefcf934c09b1a5291d65e33ec0b564a329c0e4f943f5b7d8c363028d3e3c5",
+      "executable": false
+    },
+    "tests/helpers/public-site-journey.mjs": {
+      "sha256": "566532e19f122d62efb137a36852a7613d38fa7681f9bc86282148b053acc4b3",
+      "executable": false
+    },
+    "tests/helpers/public-site-motion.mjs": {
+      "sha256": "bb2ed49a24f7909b8a46b2a517cab971d4b354652a858817bd6427462ea49aaf",
+      "executable": false
+    },
     "tests/helpers/r4/notifications.mjs": {
       "sha256": "7a276e5c3f7060d6f2b8958f5a4a66d04bd111d188ef072bc56e8e3d349fe16e",
       "executable": false
@@ -14493,7 +14505,7 @@
       "executable": false
     },
     "tests/homepage-browser.mjs": {
-      "sha256": "1e6d5049f8b437849883f86962b8e47d1f6546af3a9e02560b50c679fdaf842b",
+      "sha256": "510f24617b46ed23277c46bd360e31a1d44ac21e994500631cd395990fda6f67",
       "executable": false
     },
     "tests/journeys/ai-live.mjs": {

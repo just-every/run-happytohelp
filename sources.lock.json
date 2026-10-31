@@ -15213,7 +15213,7 @@
       "executable": false
     },
     "tests/legacy-export/assertions.mjs": {
-      "sha256": "9a84236b9f16252f32e111004c21f42d60439912f4cc5dedbeff7df6150b98a3",
+      "sha256": "c2a4eb394e5dce25fd93a0f59e03223b5fabc79c54c6957499ad24444d9c6c01",
       "executable": false
     },
     "tests/legacy-export/extended-fixture.mjs": {

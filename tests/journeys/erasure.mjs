@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {startApp,sha as hashToken} from './kit/app.mjs'
+import {erasedTranscript} from '../helpers/conversation/erased-transcript.mjs'
 import {rerMailErasureJourney} from '../helpers/email/rer-erasure.mjs'
 
 // Contact erasure through the real application router on real D1 and R2 with every migration applied.
@@ -228,6 +229,7 @@ let first,opAfter
  assert.ok(followupHistory.some(event=>event.type==='AGENT_ASSIGNED'&&JSON.parse(event.payload).agent_id===sender.actor_id),'the follow-up operator reply also records its server-authored handoff')
  const response=await erase(tokens.owner);assert.equal(response.status,200)
  const second=(await response.json()).data
+ await erasedTranscript(app,tokens.owner,['m1a','m1b','m1c',opAfter])
  assert.equal(second.erased_at,first.erased_at);assert.equal(second.erased_by,'admin');assert.equal(second.runs,2);assert.ok(second.last_erased_at>=first.last_erased_at)
  // The operator message written after the first erasure belongs to the erased conversation.
  // A repeat asks the connected webhook again; the latest request replaces the settled one.

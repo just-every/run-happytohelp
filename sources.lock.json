@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "69e19eeba769dbc7deab744b66fd1efa55ce0f2ba7086e007fdfe95ca236db6b",
+      "sha256": "66024bb8d5ecabf75b0af39ec5089be51eaa99f9a7a8e946487a5f7d0b8673fb",
       "executable": false
     },
     "DEMO.md": {
@@ -6853,7 +6853,7 @@
       "executable": false
     },
     "src/modules/knowledge/door.ts": {
-      "sha256": "517be4430ab6605c7a8725780fcce6581f3975875b4a206a6c17feada77a1625",
+      "sha256": "00cade5ea2475b6d422224f68232b8ce148d15b57e5149348ed30474e2bbaa2d",
       "executable": false
     },
     "src/modules/knowledge/entitlements.ts": {

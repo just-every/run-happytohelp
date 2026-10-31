@@ -9,7 +9,7 @@ export const brands=new Hono<AppEnv>()
 brands.get('/projects/:projectId/brands',async c=>{
  const actor=await scope(c,true)
  const ids=[...new Set((c.req.query('projects')||'').split(',').filter(Boolean))]
- if(!ids.length||ids.length>20||!ids.includes(actor.projectId)||ids.some(id=>!/^[-a-zA-Z0-9_]{1,200}$/.test(id)))throw new HTTPException(400,{message:'Explicitly select this brand and up to 19 other brands'})
+ if(ids.length<2||ids.length>20||!ids.includes(actor.projectId)||ids.some(id=>!/^[-a-zA-Z0-9_]{1,200}$/.test(id)))throw new HTTPException(400,{message:'Explicitly select this brand and between 1 and 19 other brands'})
  const permitted=async(id:string)=>{
   const row=await c.env.DB.prepare(`SELECT p.id,p.name,p.allowed_origin,p.widget_key,m.role,s.settings_json FROM projects p
    JOIN memberships m ON m.project_id=p.id AND m.user_id=? LEFT JOIN project_settings s ON s.project_id=p.id

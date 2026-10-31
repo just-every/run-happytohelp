@@ -5,7 +5,7 @@ import {address,mailboxForDelivery,readCredential} from './store'
 import {accessToken} from './oauth-provider'
 import {base64,base64url,bearer,providerJson,providerBytes,MailboxProviderError} from './http'
 import {buildMime,recipients} from './mime'
-import {smtpSend} from './socket'
+import {smtpSend,SmtpRejection} from './socket'
 import type {ImapCredential,MailboxSendInput} from './types'
 import {auditStatement} from '../../audit/record'
 
@@ -60,8 +60,8 @@ export async function sendViaMailbox(env:Env,input:MailboxSendInput):Promise<{id
   await env.DB.batch([env.DB.prepare("UPDATE mailbox_sends SET state='sent',provider_id=?,updated_at=? WHERE id=? AND state='sending'").bind(providerId,Date.now(),input.idempotencyKey),auditStatement(env.DB,{projectId:input.projectId,category:'integration',action:'mailbox.send_accepted',actor:{type:'system'},source:'system',target:{type:'mailbox_delivery',id:input.idempotencyKey}})])
   return {id:providerId,state:'sent'}
  }catch(error){
-  const definitive=error instanceof MailboxProviderError&&error.status>=400&&error.status<500&&error.status!==408
-  await env.DB.batch([env.DB.prepare('UPDATE mailbox_sends SET state=?,error_code=?,updated_at=? WHERE id=? AND state=\'sending\'').bind(definitive?'failed':'uncertain',definitive?`provider_${error.status}`:'outcome_unknown',Date.now(),input.idempotencyKey),auditStatement(env.DB,{projectId:input.projectId,category:'integration',action:definitive?'mailbox.send_rejected':'mailbox.send_uncertain',outcome:'failed',actor:{type:'system'},source:'system',target:{type:'mailbox_delivery',id:input.idempotencyKey}})])
+  const definitive=error instanceof SmtpRejection||error instanceof MailboxProviderError&&error.status>=400&&error.status<500&&error.status!==408
+  await env.DB.batch([env.DB.prepare('UPDATE mailbox_sends SET state=?,error_code=?,updated_at=? WHERE id=? AND state=\'sending\'').bind(definitive?'failed':'uncertain',definitive?`${error instanceof SmtpRejection?'smtp':'provider'}_${error.status}`:'outcome_unknown',Date.now(),input.idempotencyKey),auditStatement(env.DB,{projectId:input.projectId,category:'integration',action:definitive?'mailbox.send_rejected':'mailbox.send_uncertain',outcome:'failed',actor:{type:'system'},source:'system',target:{type:'mailbox_delivery',id:input.idempotencyKey}})])
   throw new HTTPException(502,{message:definitive?'Mailbox provider rejected delivery':'Mailbox delivery outcome unknown; reconcile before retrying'})
  }
 }

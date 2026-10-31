@@ -59,8 +59,8 @@ async function surveyUpgrade(){
   const path=link(f.mail.find(m=>m.text.includes('/api/outcomes/surveys/')).text);await app.ok(path,{body:{score:2,comment:'retained upgrade comment',recovery:'not_recovered'}});
   const schema=async()=>Object.fromEntries((await app.sql("SELECT name,type,tbl_name,sql FROM sqlite_master WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%'")).map(({name,...entry})=>[name,entry]));
   const before=await schema(),tables=['csat_surveys','csat_responses','csat_response_history'],rows=await Promise.all(tables.map(table=>app.sql(`SELECT * FROM ${table}`)));
-  await applyMigrations(app.db,name=>name==='281_messaging_surveys.sql');
-  assert.deepEqual(expectedSchema(before,await schema(),['281_messaging_surveys.sql']),[]);
+  await applyMigrations(app.db,name=>name==='282_messaging_surveys.sql');
+  assert.deepEqual(expectedSchema(before,await schema(),['282_messaging_surveys.sql']),[]);
   for(const [index,table] of tables.entries())assert.deepEqual(await app.sql(`SELECT * FROM ${table}`),rows[index],table+' preserves every prior column and row');
   const response=(await app.ok(`/api/outcomes/projects/${p}/results`,owner)).results.find(r=>r.conversationId===incoming.conversationId).response;
   assert.equal(response.comment,'retained upgrade comment');assert.equal(response.channel,'email');assert.equal(response.recovery,'not_recovered');

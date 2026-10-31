@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "274290120bdc845f0647b1cfd44e764388f125b035eb989e685763d6d5b1baa4",
+      "sha256": "14dfa3f087afce1703aae930209ba3afea23d37751bd2fc9493368cb24e9dfc9",
       "executable": false
     },
     "DEMO.md": {
@@ -1845,7 +1845,7 @@
       "executable": false
     },
     "docs/verify.md": {
-      "sha256": "59553152b0c7d5d261a0d712659b792a006d7079c872fe4fa365a1a36078bfcf",
+      "sha256": "63a82acba4d0a082d6c7d72557cc6324ba40da740c11bc762b57ad217164d109",
       "executable": false
     },
     "docs/voice.md": {
@@ -4697,7 +4697,7 @@
       "executable": false
     },
     "src/modules/ai-support/vendor/ensemble/model_providers/openai.js": {
-      "sha256": "606c4c5b1bc10e5b87473c26dfceabb85bb7c3552ece99429079252933ef855a",
+      "sha256": "110fa77f815c96bb7bcd1aa406fe45d990b1332eaac4b5aa9673447e0ec83a4b",
       "executable": false
     },
     "src/modules/ai-support/vendor/ensemble/model_providers/openrouter.js": {
@@ -4801,7 +4801,7 @@
       "executable": false
     },
     "src/modules/ai-support/vendor/ensemble/utils/provider_usage.js": {
-      "sha256": "1f830d00ed61e412e8dc787063bc86ba4c21350cf3828780789b23d38612dc81",
+      "sha256": "78fb07a787ecfc377cf8fe32c986026bc351a561dfadd69331793e8c0f2a9ee1",
       "executable": false
     },
     "src/modules/ai-support/vendor/ensemble/utils/quota_tracker.js": {
@@ -8169,7 +8169,7 @@
       "executable": false
     },
     "src/modules/training-runs/case-details.ts": {
-      "sha256": "570c9a433522c72e56090d31f38cea469bcdd7fcea44c506952fe16fa7969ca3",
+      "sha256": "f14b863e477c08445e2c5f960899cc06ae8e12abbe7aabd68989fc4abbaec6e4",
       "executable": false
     },
     "src/modules/training-runs/checks/human-voice.d.mts": {
@@ -8221,11 +8221,11 @@
       "executable": false
     },
     "src/modules/training-runs/routes.ts": {
-      "sha256": "be9cdf3206e34f116c5b445445ea80819f40a7a427b3e023894b4f834005b1f0",
+      "sha256": "cfeb41f8b035254a490c5a79117ab7f1f2b6cc4f38639284cc72a60af2afb579",
       "executable": false
     },
     "src/modules/training-runs/runner.ts": {
-      "sha256": "b6f4284dccb6cbb4456990318f85b8d56f4eb7bd435a2bab18959493b1a561e5",
+      "sha256": "286016b90a967366b5c167b49373d4cb102cba56d006cc5383de8ea768204499",
       "executable": false
     },
     "src/modules/training-runs/seed.ts": {
@@ -13828,8 +13828,12 @@
       "sha256": "c5d94f71c129a79a28799bdb56cd29d17eba16abc1453c5f1ae6f085032f7e0f",
       "executable": false
     },
+    "tests/helpers/ai/training-outcomes.mjs": {
+      "sha256": "3e1a3abf94fda2a262cea2b731c5d627141c9f446105e761bedccb3fbded359d",
+      "executable": false
+    },
     "tests/helpers/ai/training.mjs": {
-      "sha256": "0e85e2ef4185ae3da7e779914124d2b263016161d92f02b75b00af928217d86a",
+      "sha256": "d6f3cf21b5abda68dbced0a0db3408c144fccba19eed6fdd6e11510c89bbac30",
       "executable": false
     },
     "tests/helpers/ai/triage-browser.mjs": {

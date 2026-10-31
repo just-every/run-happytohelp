@@ -20,16 +20,27 @@ export async function importPackage(root,target,modules,{expectManifestSha256,ex
   try{
     const runId=`legacy-package:${digest}`,options={context:index.context,objectKeys:index.objectKeys},tables={};
     let objects={uploaded:0,present:0};const env=()=>target?.env;
+    const order=table=>{const i=tableOrder.indexOf(table);return i<0?1000:i};
+    // A chunk is identified by its file and digest, never by its place in the order.
+    const chunks=manifest.chunks.filter(part=>!Object.hasOwn(excluded,part.table)).sort((a,b)=>order(a.table)-order(b.table)).map(part=>({part,chunk:part.file}));
+
     if(target){
+      // Walk all chunks read-only first, including late-table conflicts. A
+      // resumable outage can commit chunks; a known conflict commits none.
+      for(const {part,chunk} of chunks){
+        const rows=await readPart(root,part),table=part.table;
+        const bundle={format:'happytohelp-legacy-v1',source:{repository:manifest.source.repository,revision:manifest.source.revision,exportedAt:manifest.source.exportedAt,projectId:manifest.source.projectId,package:digest,chunk,table,chunkSha256:part.sha256},tables:{[table]:rows}};
+        await importLegacy(env(),bundle,{...options,checkOnly:true});
+        await target.renew?.();
+      }
       const existing=await env().DB.prepare('SELECT bundle_digest FROM legacy_import_runs WHERE id=?').bind(runId).first();
       if(existing&&existing.bundle_digest!==digest)throw Error('Import digest conflict');
+      // Object validation also precedes all writes, including the run journal.
+      await importObjects(target,root,manifest,runId,{concurrency,checkOnly:true});
       await env().DB.prepare("INSERT OR IGNORE INTO legacy_import_runs VALUES(?,?,?,'running',?,NULL)").bind(runId,types.stable(manifest.source),digest,Date.now()).run();
       progress({step:'objects',seconds:seconds(started)});
       objects=await importObjects(target,root,manifest,runId,{concurrency,progress});
     }
-    const order=table=>{const i=tableOrder.indexOf(table);return i<0?1000:i};
-    // A chunk is identified by its file and digest, never by its place in the order.
-    const chunks=manifest.chunks.filter(part=>!Object.hasOwn(excluded,part.table)).sort((a,b)=>order(a.table)-order(b.table)).map(part=>({part,chunk:part.file}));
     // Parent tables finish before their children start; chunks of one table are independent.
     for(const table of [...new Set(chunks.map(c=>c.part.table))]){
       const queue=chunks.filter(c=>c.part.table===table),total=tables[table]={sourceRows:0,mappedRows:0,archivedOnly:0,holds:0,applied:0,replayed:0};

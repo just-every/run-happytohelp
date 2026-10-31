@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {providersJourney} from './providers.mjs'
+import {agent001Outcomes} from './agent001-outcomes.mjs'
 import {repositoryJourney} from './repository.mjs'
 import {cycleOutcomes} from './cycle-outcomes.mjs'
 import {assistantApp} from './app.mjs'
@@ -190,6 +191,7 @@ export async function answersJourney(){
   assert.equal((await app.call(`/api/conversations/${handoff.conversationId}/messages`,{token:a.owner,body:{localId:'operator-reply',content:'Human reply',expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})).data.accepted,true)
   await repositoryJourney(a,handoff)
   await providersJourney(a)
+  await agent001Outcomes(a)
   ai.respond=()=>{throw new DOMException('Connection lost at the provider','TimeoutError')}
   const timed=await a.action(handoff.conversationId,'agentAssist',{options:{request_id:crypto.randomUUID()}});assert.equal(timed.status,202)
   const pending=await app.takeJobs(),beforeTimeout=a.providerCalls();await a.run(pending);await a.run(pending)

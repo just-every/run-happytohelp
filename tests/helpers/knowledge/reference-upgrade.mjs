@@ -14,7 +14,13 @@ export function assertReferenceUpgrade(table,serialized,before,final,startedAt,f
  else if(table==='knowledge_index_dirty'){
   const versions=new Map(parse(before.knowledge_versions).map(row=>[row.id,row]));
   const datasets=new Map(parse(before.knowledge_datasets).map(row=>[row.id,row]));
-  const sources=articles.map(article=>({project_id:article.project_id,source_id:'article:'+article.id,stamp:''}));
+  const retained=new Set([
+   ...parse(before.knowledge_article_history).filter(row=>JSON.parse(row.snapshot_json).status==='published').map(row=>row.article_id),
+   ...parse(final.knowledge_article_publications).map(row=>row.article_id),
+   ...parse(final.knowledge_translation_publications).map(row=>row.article_id),
+   ...parse(before.knowledge_translations).filter(row=>row.published_json!==null).map(row=>row.article_id),
+  ]);
+  const sources=articles.filter(article=>article.status==='published'||retained.has(article.id)).map(article=>({project_id:article.project_id,source_id:'article:'+article.id,stamp:''}));
   for(const document of parse(before.knowledge_documents)){const version=versions.get(document.version_id),dataset=datasets.get(version?.dataset_id);assert.ok(dataset,'indexed document has its retained dataset');sources.push({project_id:dataset.project_id,source_id:'knowledge:'+document.id,stamp:''});}
   for(const generation of parse(final.knowledge_generation_sources))sources.push({project_id:generation.project_id,source_id:'generation:'+generation.generation_id,stamp:''});
   expected=[...new Map(sources.map(row=>[row.project_id+'\0'+row.source_id,row])).values()];

@@ -14765,7 +14765,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/reference-upgrade.mjs": {
-      "sha256": "c1c66dc49f449ea1028cad0231749f7f55cd3464b2c7c9c52327dc5e62499efd",
+      "sha256": "eb9b60cdf2d42c6a5d5a71a216eebceb85c06532000afe45655a53c3ef2b13b5",
       "executable": false
     },
     "tests/helpers/knowledge/references.mjs": {
@@ -14877,11 +14877,15 @@
       "executable": false
     },
     "tests/helpers/recovery/comparison.mjs": {
-      "sha256": "4ef3d35610c060d66e590e7c897893d87dfee48ec6694dca8ac0d198cde02e43",
+      "sha256": "ac57d3f718b59408ab69287d9ed9b11ce60d435e3bb27fdb343e15de67e6d17a",
       "executable": false
     },
     "tests/helpers/recovery/journey.mjs": {
       "sha256": "0dc9a850d8346490bf2db332f9f0cd8a05dd0978b2635711f75044d6b215a0d7",
+      "executable": false
+    },
+    "tests/helpers/recovery/knowledge-ready.mjs": {
+      "sha256": "4568b9605bd295a1c7564ca6156c17640056bc66fc1adf336241b72c4c1e1397",
       "executable": false
     },
     "tests/helpers/recovery/r4-data.mjs": {
@@ -14889,7 +14893,7 @@
       "executable": false
     },
     "tests/helpers/recovery/runtime.mjs": {
-      "sha256": "21bb012314818c6c3e4d5fe038eee873606034bf6ad77a3d62b4260f0805dd92",
+      "sha256": "2d499f84b8d0ad9389578d30211f03554234be3293eb4303fc14b4bca372c0bf",
       "executable": false
     },
     "tests/helpers/recovery/snapshot.mjs": {

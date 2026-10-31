@@ -1,3 +1,4 @@
+import {apiIntegrationRule} from '../api-integrations/permissions'
 import {feedbackRouteRule} from '../feedback/permissions'
 import {assuranceRouteRule} from '../assurance/permissions'
 import {supportChannelRule} from '../support-channels/permissions'
@@ -204,7 +205,7 @@ rules[`POST ${P}/suspended/:id/recover`]='conversations.manage'
 rules[`DELETE ${P}/suspended/:id`]='conversations.manage'
 rules[`POST ${P}/sender-rules`]='settings.manage'
 export function routeRule(method:string,path:string):Rule|undefined{
- const owned=feedbackRouteRule(method,path)??assuranceRouteRule(method,path)
+ const owned=apiIntegrationRule(method,path)??feedbackRouteRule(method,path)??assuranceRouteRule(method,path)
  if(owned)return owned
  if(path==='/api/voice/hooks/:numberId')return 'none'
  if(path.startsWith('/api/voice/projects/:projectId/')){

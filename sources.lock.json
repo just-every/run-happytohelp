@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "009cde4a1118c83e261af6b7eb7ce6d552c44a06231c72bee505fb201bfbefb2",
+      "sha256": "09e1bbfd242fa1473aa40402d6eff50e383d9ceb1bf83ade4790ac8944beec8f",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "54a0c7cef80a234fd18980dbdaa6b0b2f32472acf5331a2ccefe47c0572bb7eb",
+      "sha256": "274290120bdc845f0647b1cfd44e764388f125b035eb989e685763d6d5b1baa4",
       "executable": false
     },
     "DEMO.md": {
@@ -13845,7 +13845,7 @@
       "executable": false
     },
     "tests/helpers/ai/triage.mjs": {
-      "sha256": "dd7df65d1471a4a1c99f31c36e9671f24da1025e07b91d5d1302da825c1988e3",
+      "sha256": "ce270581de97356906a95b1d548a142ad0ab69fc49c693f9c9cf90431f66d28d",
       "executable": false
     },
     "tests/helpers/artifact-payloads.mjs": {

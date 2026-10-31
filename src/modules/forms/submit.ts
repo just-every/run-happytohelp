@@ -1,7 +1,6 @@
 import {attributeKnowledgeTicket} from '../knowledge/ticket-attribution'
 import {withAccountChoices,validateAccountChoices,validateAccountPublication,validateAccountMembership} from './account-lookup'
 import {attributeReadTicket} from '../knowledge/read-attribution'
-import {withAccountChoices,validateAccountChoices,validateAccountPublication,validateAccountMembership} from './account-lookup'
 import {HTTPException} from 'hono/http-exception'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'

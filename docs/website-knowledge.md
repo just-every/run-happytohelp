@@ -169,7 +169,7 @@ this page does not claim passing route, browser, mutation or performance checks.
 
 ## Unreleased migrations, backup and upgrade
 
-Keep main's `257_move_in_attachment_bytes.sql` unchanged. Apply the additive
+Keep main's migrations through `262_feedback_penny.sql` unchanged. Apply the additive
 unreleased migrations in file-name order, once through the existing ledger:
 
 - `284_knowledge_entitlements.sql` adds

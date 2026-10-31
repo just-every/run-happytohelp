@@ -14769,7 +14769,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/reference-browser.mjs": {
-      "sha256": "b1ad15fc988c5c85c71d1d061a48bc8352846882cc26ce416dc960f9faf295b0",
+      "sha256": "f640675f57472689768257798b03ba49082602aa054497bd12503ec0d59e036a",
       "executable": false
     },
     "tests/helpers/knowledge/reference-copies.mjs": {

@@ -93,6 +93,10 @@ export default function ConversationForm({
         for (const recipient of reference.recipients) recipients.set(recipient.id || recipient.label,{...recipient,visible:false});
         return {...previous,...reference,recipients:[...recipients.values()]};
     }));
+    const latestDraft = useRef({content,references:editorReferences});
+    latestDraft.current = {content,references:editorReferences};
+    const mounted = useRef(true);
+    useEffect(() => {mounted.current = true;return () => {mounted.current = false;};},[]);
     const composerRef = useRef(null);
     const textareaRef = useRef(null);
     const insertedCaret = useRef(null);
@@ -108,10 +112,15 @@ export default function ConversationForm({
         enabled:isEnabled && !isComposerLocked && !recipientError,
         onPreview:result => {
             onReferencesChange?.(result.references);
-            if (result.content !== content) onContentChange(result.content);
+            if (result.content !== content) changeContent(result.content);
             setBlockedReferences([]);
         },
     });
+
+    const changeContent = value => {
+        latestDraft.current.content = value;
+        onContentChange(value);
+    };
 
     useEffect(() => {
         onAssistantDisabledChange(Boolean(helper));
@@ -164,7 +173,7 @@ export default function ConversationForm({
         const sentVersion = draftVersionRef?.current;
         onSendMessage(separateReferences(content,editorReferences), sendAndClose, {cc:parseEmailRecipients(emailRecipients.cc),bcc:parseEmailRecipients(emailRecipients.bcc),...(sender.mailboxId?{mailboxId:sender.mailboxId}:{}),...(sender.fromAddress?{fromAddress:sender.fromAddress}:{})}).then(() => {
             setEmailRecipients(noRecipients);
-        }, error => { if (typeof error.data?.content === 'string' && draftVersionRef?.current === sentVersion) onContentChange(error.data.content); setBlockedReferences(error.data?.blockedReferences || []); setSendError(error.data?.reason === 'ticket_closed_followup_required'
+        }, error => { if (typeof error.data?.content === 'string' && draftVersionRef?.current === sentVersion) changeContent(error.data.content); setBlockedReferences(error.data?.blockedReferences || []); setSendError(error.data?.reason === 'ticket_closed_followup_required'
             ? 'Not sent: this ticket was closed and is final. A customer reply opens a new ticket.'
             : `Not sent: ${ error.message || 'the server refused the reply' }`); });
     };
@@ -191,7 +200,7 @@ export default function ConversationForm({
     });
 
     usePluginMessageEvent(event => {
-        onContentChange(event.data.payload);
+        changeContent(event.data.payload);
     }, 'setMessageContent');
 
     const openNoteModal = () => {
@@ -209,16 +218,18 @@ export default function ConversationForm({
 
     // The textarea stays mounted while the picker is open, so its selection is still the cursor the agent left.
     const insertReply = (reply, metadata) => {
-        const insertionReferences = mergeReferences(editorReferences,metadata?.references);
+        if (!mounted.current) return;
+        const insertionReferences = mergeReferences(latestDraft.current.references,metadata?.references);
+        latestDraft.current.references = insertionReferences;
         if (metadata?.references) onReferencesChange?.(insertionReferences);
         if (metadata?.usage_id || metadata?.reply_type) onMacroApplied?.(reply, metadata);
         if (metadata?.reply_type === 'note') { setHelper(null); return; }
         const textarea = textareaRef.current;
-        const draft = content || '';
+        const draft = latestDraft.current.content || '';
         const offset = Number(textarea?.dataset.contentOffset || 0);
         const { text, caret } = insertSavedReply(draft, reply, textarea ? offset + textarea.selectionStart : draft.length, textarea ? offset + textarea.selectionEnd : draft.length, metadata?.references?.find(reference => reference.token === reply)?.mode === 'link' ? ' ' : '\n\n');
         insertedCaret.current = { conversationId, content: separateReferences(text,insertionReferences), caret: separateReferences(text.slice(0,caret),insertionReferences).length };
-        onContentChange(insertedCaret.current.content);
+        changeContent(insertedCaret.current.content);
         setHelper(null);
     };
 
@@ -277,7 +288,7 @@ export default function ConversationForm({
                             placeholder={ finalReason || 'Type your reply…' }
                             aria-label="Reply to conversation"
                             onKeyDown={ handleKeyDown }
-                            onChange={ onContentChange }
+                            onChange={ changeContent }
                             content={ textareaContent }
                             minRows={ 1 }
                             maxRows={ 10 }

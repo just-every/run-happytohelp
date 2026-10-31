@@ -9857,7 +9857,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/ConversationForm.jsx": {
-      "sha256": "44e987e5d39477d8c2c2c1b8609e7a12ba1c7f1be04e42d54578dc5eb6f36474",
+      "sha256": "71c318ccb849ef98dd2c5cf8d0917cce54cbeb2f3a23ceaa2b0a2ca4fc0fdc5a",
       "executable": false
     },
     "src/ui/dashboard/components/ConversationHeader.jsx": {
@@ -11769,7 +11769,7 @@
       "executable": false
     },
     "src/ui/native/pages/macros/MacrosPage.jsx": {
-      "sha256": "46b5e89d8c1b5b6b661257d35410a32a6cfe72ba808483ebc4f784b772127c33",
+      "sha256": "e77ac255918937f7c1aa66685845cbbd7a8d7d19681453a60bed9addfb37b8ba",
       "executable": false
     },
     "src/ui/native/pages/management-parity.css": {
@@ -14769,7 +14769,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/reference-browser.mjs": {
-      "sha256": "5988a61e748707b472636e33c3e97ae2b0cb45c33e336d2c895ad1d36fe16cbc",
+      "sha256": "cb5154e42d48f466eaf900bda8c8068e3042f71baa55101ebba891e5cd37d5f5",
       "executable": false
     },
     "tests/helpers/knowledge/reference-copies.mjs": {

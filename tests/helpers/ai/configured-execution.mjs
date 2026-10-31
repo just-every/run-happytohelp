@@ -173,7 +173,7 @@ async function interruptedAttempt(){
   const unfinished=(await trace(a,v)).traces[0]
   assert.equal(unfinished.state,'running');assert.equal(unfinished.attempts[0].state,'running')
   const before=a.providerCalls();ai.respond=()=>'This replay must never be requested'
-  await a.run(jobs);await app.configure({});await app.scheduled();await a.run();await a.run(jobs)
+  await a.run(jobs);await app.configure({});await app.scheduled({'x-test-clock':'advance'},{after:240001});await a.run();await a.run(jobs)
   const recovered=(await trace(a,v)).traces[0]
   assert.equal(recovered.state,'uncertain');assert.equal(recovered.attempts[0].state,'uncertain')
   assert.equal(recovered.attempts.length,1);assert.equal(a.providerCalls(),before);assert.equal((await replies(v)).length,0)

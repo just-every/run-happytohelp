@@ -1,3 +1,5 @@
+import {HTTPException} from 'hono/http-exception'
+import {auditStatement} from '../audit/record'
 import type {Env} from '../../platform/env'
 import {cronRoom} from '../../platform/cron-budget'
 import {decryptToken} from '../integrations/secrets'
@@ -42,13 +44,13 @@ export async function dispatchMessagingSurveys(env:Env,now:number,filter:Filter=
  const rows=await env.DB.prepare(`SELECT * FROM csat_surveys WHERE channel IN ('sms','whatsapp','instagram','messenger') AND state='pending' AND due_at<=? ${filter.projectId?'AND project_id=?':''} ${filter.conversationId?'AND conversation_id=?':''} ORDER BY due_at,id LIMIT 25`).bind(now,...(filter.projectId?[filter.projectId]:[]),...(filter.conversationId?[filter.conversationId]:[])).all<Survey>()
  let processed=0
  for(const row of rows.results){
-  if(!cronRoom(env,14))break
+  if(!cronRoom(env,15))break
   const url=await surveyURL(env,row,row.channel as SurveySurface),copy=surveyCopy[row.locale],id='csat:'+row.id
   const {t,reason}=await refusal(env,row,now)
   const claim=await env.DB.prepare("INSERT OR IGNORE INTO support_channel_sends VALUES(?,?,?,?,?,?,NULL,?,?)").bind(id,row.project_id,row.conversation_id,t?.connection_id??'',reason?'blocked':'sending',reason?.split(':')[0]??null,now,now).run()
   if(!claim.meta.changes)continue
   processed++
-  let state=reason?'suppressed':'uncertain',sendState=reason?'blocked':'uncertain',error=reason?.split(':')[0]??'provider_outcome_unknown',providerId:string|null=null
+  let state=reason?'suppressed':'uncertain',sendState=reason?'blocked':'uncertain',error=reason?.split(':')[0]??'provider_outcome_unknown',providerId:string|null=null,requested=false
   await env.DB.prepare("UPDATE csat_surveys SET state=?,updated_at=? WHERE id=? AND state='pending'").bind(reason?'suppressed':'sending',now,row.id).run()
   if(!reason)try{
    const current=await connection(env,t.connection_id),token=await decryptToken(env,row.project_id,current.token_cipher!)
@@ -56,15 +58,20 @@ export async function dispatchMessagingSurveys(env:Env,now:number,filter:Filter=
    const fresh=await refusal(env,row,Date.now()),freshConnection=await connection(env,t.connection_id)
    if(fresh.reason||freshConnection.token_cipher!==current.token_cipher){state='suppressed';sendState='blocked';error=fresh.reason?.split(':')[0]??'channel_authority_changed'}
    else{
+    requested=true
     const response=await httpsTransport.send(request),data=(()=>{try{return JSON.parse(response.body)}catch{return null}})()
     providerId=data?.sid??data?.id??data?.messages?.[0]?.id??data?.message_id??null
     if(response.status>=200&&response.status<300&&providerId){state='sent';sendState='accepted';error=''}
     else if(response.status>=400&&response.status<500){state='failed';sendState='failed';error='provider_rejected'}
    }
-  }catch{/* A lost response is terminal uncertainty; never replay this durable claim. */}
+  }catch(cause){
+   if(!requested&&cause instanceof HTTPException&&cause.status===410){state='suppressed';sendState='blocked';error='connection_revoked'}
+   // A lost response is terminal uncertainty; never replay this durable claim.
+  }
   await env.DB.batch([
    env.DB.prepare("UPDATE support_channel_sends SET state=?,error_code=?,provider_id=?,updated_at=? WHERE message_id=? AND error_code IS NOT 'contact_erased'").bind(sendState,error||null,providerId,Date.now(),id),
-   env.DB.prepare("UPDATE csat_surveys SET state=?,updated_at=? WHERE id=? AND revoked_at IS NULL").bind(state,Date.now(),row.id)
+   env.DB.prepare("UPDATE csat_surveys SET state=?,updated_at=? WHERE id=? AND revoked_at IS NULL").bind(state,Date.now(),row.id),
+   auditStatement(env.DB,{projectId:row.project_id,category:'integration',action:'csat.invitation',actor:{type:'system'},source:'system',target:{type:'survey',id:row.id},detail:{state,channel:row.channel,reason:error||null,resolutionId:row.resolution_id}})
   ])
  }
  return processed

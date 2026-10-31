@@ -38,10 +38,12 @@ export async function messagingOutcomes(){
    const cycles=(await app.ok(root+'/results',owner)).results.filter(r=>r.conversationId===t.conversation_id);assert.equal(cycles.length,2);assert.equal(cycles.find(r=>r.ordinal===1).response.revision,2);
    const current=surveyPath(h.sends.at(-1).body);assert.equal((await app.call(current)).status,200);
    await app.ok(root+'/surveys/'+cycles.find(r=>r.ordinal===2).surveyId+'/revoke',{...owner,body:{}});assert.equal((await app.call(current)).status,410);
+   const prior=(await app.ok(`/api/dashboard/projects/${ws.projectId}/conversations/${t.conversation_id}`,owner)).data.resolutionHistory;assert.equal(prior[0].rating.comment,'private messaging feedback '+p);
    const csvBefore=(await app.call(root+'/results?format=csv',owner)).data;assert.ok(csvBefore.includes('private messaging feedback '+p));
    await app.ok(`/api/management/projects/${ws.projectId}/contacts/${t.contact_id}/erase`,{...owner,body:{}});
    const erased=(await app.ok(root+'/results',owner)).results.filter(r=>r.conversationId===t.conversation_id);assert.equal(erased.find(r=>r.response).response.comment,'');
    assert.ok(!(await app.call(root+'/results?format=csv',owner)).data.includes('private messaging feedback '+p));
+   const history=(await app.ok(`/api/dashboard/projects/${ws.projectId}/conversations/${t.conversation_id}`,owner)).data.resolutionHistory;assert.ok(history.every(r=>r.rating===null||r.rating.comment===''));
    for(const table of ['csat_responses','csat_response_history'])assert.ok((await app.sql(`SELECT comment FROM ${table} WHERE contact_id=?`,t.contact_id)).every(r=>r.comment===''));
    assert.ok((await app.sql('SELECT recipient,revoked_at FROM csat_surveys WHERE contact_id=?',t.contact_id)).every(r=>r.recipient===''&&r.revoked_at));assert.equal((await app.call(current)).status,410);
    await app.ok(root+'/settings',{...owner,method:'PUT',body:settings});

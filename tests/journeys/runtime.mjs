@@ -14,13 +14,16 @@ const exec=promisify(execFile)
 // Real transport, with a pong barrier so absence/duplicate assertions see all replayed frames.
 async function deliverySocket(origin,conversationId,token,after=0){
  const frames=[],waiters=[],socket=new WebSocket(origin.replace('http:','ws:')+`/api/conversations/${conversationId}/socket?token=${token}&after=${after}`)
+ // Repeated cleanup reuses the event observed from creation, including a
+ // socket closed by a Worker restart before close() is called again.
+ const closed=new Promise(done=>socket.addEventListener('close',done,{once:true}))
  socket.addEventListener('message',event=>{frames.push(JSON.parse(event.data));for(const wake of waiters.splice(0))wake()})
  await new Promise((done,fail)=>{socket.addEventListener('open',done,{once:true});socket.addEventListener('error',()=>fail(Error('delivery socket upgrade failed')),{once:true})})
  return {socket,async replay(){
   socket.send(JSON.stringify({type:'replay'}))
   await new Promise((done,fail)=>{const timer=setTimeout(()=>fail(Error('delivery replay deadline')),5000);const check=()=>{if(frames.some(frame=>frame.type==='pong')){clearTimeout(timer);done()}else waiters.push(check)};check()})
   return frames.filter(frame=>frame.type==='message')
- },async close(){if(socket.readyState===WebSocket.CLOSED)return;await new Promise(done=>{socket.addEventListener('close',done,{once:true});socket.close()})}}
+ },async close(){if(socket.readyState!==WebSocket.CLOSED)socket.close();await closed}}
 }
 
 // One emitted application, exercised over its real HTTP and WebSocket transport.

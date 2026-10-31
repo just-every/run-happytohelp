@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {computersApp,completed} from '../helpers/delegation/computers.mjs'
 import {adoptionJourney} from '../helpers/delegation/adoption.mjs'
+import {authorityOutcomes} from '../helpers/delegation/authority-outcomes.mjs'
 
 test('a person authorizes a task session, verifies and sends its result once, and revokes started work without pretending the computer stopped',async()=>{
  const t=await computersApp({conversations:['c','next','queued']})
@@ -34,6 +35,7 @@ test('a person authorizes a task session, verifies and sends its result once, an
   assert.equal((await report(next,active,'synthetic-late-report',completed('Late'),worker.token)).status,401)
   assert.equal((await request('/api/local-agents/heartbeat',{},worker.token)).status,401)
  }finally{await t.close()}
+ await authorityOutcomes()
 })
 
 test('Use adopts only the current authorized verified result and its files into an editable draft; ordinary Send admits it once',adoptionJourney)

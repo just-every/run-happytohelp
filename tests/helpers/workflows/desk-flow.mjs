@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
 import {timeAutomationFlow} from './rules.mjs'
+import {queueRoutingProof} from '../inbox/queue-routing.mjs'
 
 export async function deskWorkflows(desk,{initial,id,field,group}){
  const {app,w,visitor,get,patch}=desk,base=desk.base
@@ -23,6 +24,7 @@ export async function deskWorkflows(desk,{initial,id,field,group}){
  await ok('/routing-operators',{operators:[{user_id:w.users.admin,available:false,capacity:100,skills:[]},{user_id:w.users.operator,available:true,capacity:0,skills:[]}]},'PUT')
  await clock(initial+60000)
  const overflow=await create('Replacement awaiting capacity');assert.equal((await get(overflow)).assigned_to,null);assert.equal((await get(overflow)).group_id,team.id)
+ await queueRoutingProof(f,{group,team,route,arrivals,overflow})
  await ok(`/workflow-rules/${route.id}/pause`,{})
 
  const calendar=await ok('/workflow-calendars',{name:'Returns weekdays',timezone:'America/New_York',weekly:[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})),holidays:'none',closures:[]})

@@ -3,6 +3,7 @@ import {handleAgentRequest} from './edition/agent-door/index.ts'
 import {helpscoutWebhooks} from './modules/api-integrations/helpscout'
 import {assuranceRoutes} from './modules/assurance/routes'
 import {channels} from './modules/support-channels/routes'
+import {mobileRoutes} from './modules/mobile/routes'
 import {api as scopedApi} from './modules/api-integrations/routes'
 import {integrationSettings} from './modules/api-integrations/settings'
 import { notFoundResponse, rejectedResponse } from './base/rejected-response'
@@ -85,6 +86,7 @@ app.route('/auth',ownerClaim)
 app.route('/auth',signout)
 app.route('/auth',demoOwnerClaim)
 app.route('/api/identity',identity)
+app.route('/api/mobile/v1',mobileRoutes)
 // A default assistant answers new conversations only once its provider key is installed.
 app.route('/api/conversations',createConversationRoutes(applyMessageEffects,modelReady))
 app.route('/api/conversations',widgetEvents)

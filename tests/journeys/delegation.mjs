@@ -7,6 +7,7 @@ import {startApp} from './kit/app.mjs'
 import {customerFixture} from '../helpers/delegation-journey/fixture.mjs'
 import {client,newVisitor,runCase} from '../helpers/delegation-journey/case.mjs'
 import {refusals} from '../helpers/delegation-journey/refusals.mjs'
+import {push001Outcomes} from '../helpers/delegation/push-001-outcomes.mjs'
 import {consentJourney} from '../helpers/delegation/consent.mjs'
 
 // The agent-fix journey runs the real packaged connector, paired to the real
@@ -28,6 +29,7 @@ test('a visitor\'s report is investigated read-only, an approved resolve child c
 
  const deliveryFault=enabled=>app.db.prepare(enabled?"CREATE TRIGGER journey_delivery_fault BEFORE UPDATE OF status ON local_receipts WHEN NEW.status='sent' BEGIN SELECT RAISE(ABORT,'Journey simulated receipt acknowledgement outage: delivery unconfirmed'); END":'DROP TRIGGER journey_delivery_fault').run()
  await refusals({origin:app.url,api,actor,fixture,directory:join(scratch,'refusals'),deliveryFault})
+ await push001Outcomes({app,api,actor,directory:join(scratch,'push-001')})
 })
 
 test('a connected application gets selected access only through native consent with an exact callback, a single-use code and PKCE; it repairs and publishes an article atomically with exact replay, meets stale, category and audience revisions as conflicts, loses erased evidence, and ends with membership loss or revocation',consentJourney)

@@ -30,7 +30,11 @@ export function registerResults(app:App,integration:Integration){
  // submission must validate its original proposals and attachment authority.
  const submittedAttachments=b.result&&Object.hasOwn(b.result,'provider_error')?null:validateResult(b.result);
  b.result=admitFailureResult(b.result,b.status,Boolean(j.cancel_requested));const attachments=submittedAttachments??validateResult(b.result);for(const a of attachments)requireValue(await c.env.DB.prepare('SELECT id FROM local_attachments a WHERE id=? AND device_id=? AND (job_id=? OR EXISTS(SELECT 1 FROM local_attachment_grants g WHERE g.attachment_id=a.id AND g.job_id=? AND g.device_id=?))').bind(a,d.id,j.id,j.id,d.id).first(),'Attachment belongs to another job',403);
- let status=j.cancel_requested?'cancelled':b.status;if(status==='completed'&&['resolve','resolve_reply'].includes(j.mode)&&!b.result.verified)status='needs_input';
+ // Older/custom hosts can label an unsuccessful observation completed while
+ // explicitly asking for human review. Keep that report awaiting input too;
+ // it must not offer a draft that claims the failed recovery is ready to send.
+ const reviewRequested=typeof b.result.question==='string'&&b.result.question.trim().length>0;
+ let status=j.cancel_requested?'cancelled':b.status;if(status==='completed'&&!b.result.verified&&(['resolve','resolve_reply'].includes(j.mode)||reviewRequested))status='needs_input';
  const cancelledResult=admitFailureResult(b.result,b.status,true); // A cancellation may race this admission before the atomic batch.
 
  await c.env.DB.batch([

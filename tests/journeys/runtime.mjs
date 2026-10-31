@@ -10,6 +10,18 @@ import {proxyFaultProbe} from '../helpers/emitted-runtime-proxy-fault.mjs'
 import {client} from './kit/http.mjs'
 const exec=promisify(execFile)
 
+// Real transport, with a pong barrier so absence/duplicate assertions see all replayed frames.
+async function deliverySocket(origin,conversationId,token,after=0){
+ const frames=[],waiters=[],socket=new WebSocket(origin.replace('http:','ws:')+`/api/conversations/${conversationId}/socket?token=${token}&after=${after}`)
+ socket.addEventListener('message',event=>{frames.push(JSON.parse(event.data));for(const wake of waiters.splice(0))wake()})
+ await new Promise((done,fail)=>{socket.addEventListener('open',done,{once:true});socket.addEventListener('error',()=>fail(Error('delivery socket upgrade failed')),{once:true})})
+ return {socket,async replay(){
+  socket.send(JSON.stringify({type:'replay'}))
+  await new Promise((done,fail)=>{const timer=setTimeout(()=>fail(Error('delivery replay deadline')),5000);const check=()=>{if(frames.some(frame=>frame.type==='pong')){clearTimeout(timer);done()}else waiters.push(check)};check()})
+  return frames.filter(frame=>frame.type==='message')
+ },async close(){if(socket.readyState===WebSocket.CLOSED)return;await new Promise(done=>{socket.addEventListener('close',done,{once:true});socket.close()})}}
+}
+
 // One emitted application, exercised over its real HTTP and WebSocket transport.
 test('a native support session admits and replays one transcript with its own files, refuses foreign and stale writes, delivers live and pairs the shipped connector',async()=>{
  await mobileAdmission()
@@ -38,6 +50,7 @@ test('a native support session admits and replays one transcript with its own fi
   const frames=[],socket=new WebSocket(runtime.origin.replace('http:','ws:')+`/api/conversations/${conversation.id}/socket?token=${visitor.token}`)
   socket.addEventListener('message',event=>frames.push(JSON.parse(event.data)))
   await new Promise((done,fail)=>{socket.addEventListener('open',done,{once:true});socket.addEventListener('error',()=>fail(Error('socket upgrade failed')),{once:true})})
+  const operator=await deliverySocket(runtime.origin,conversation.id,tenant.token)
   try{
   const [one,two]=await Promise.all(['one','two'].map(localId=>call(path,{body:{localId,content:'Hello '+localId,expectedRevision:0,mediaIds:[media.id]},token:visitor.token})))
   assert.deepEqual([one.status,two.status].sort(),[200,409],'competing revisions accept one writer');const accepted=(one.status===200?one:two).data.message
@@ -81,7 +94,48 @@ test('a native support session admits and replays one transcript with its own fi
    assert.equal(dropped.status,500);await dropped.text();assert.equal(proxy.forwarded,forwarded)
    assert.equal((await call('/api/local-agents/pair',{body:{code:next.code,name:'Recovered',provider:'codex',capabilities:['terminal']}})).status,200)
   }finally{await proxy.close()}
-  }finally{socket.close()}
+  const operatorFrames=await operator.replay();assert.deepEqual(operatorFrames.map(frame=>frame.message.id),[accepted.id,takeover.data.message.id],'operator receives the same committed live messages')
+  const cursor=frames.filter(frame=>frame.type==='message').at(-1).eventId
+  assert.equal(operatorFrames.at(-1).eventId,cursor)
+  await new Promise(done=>{socket.addEventListener('close',done,{once:true});socket.close()});await operator.close()
+  // Both clients miss an attachment-bearing commit. Catch up by durable cursor,
+  // then restart the actual Worker and reload the complete transcript from disk.
+  const missedUpload=await request(`/api/conversations/${conversation.id}/media`,{token:tenant.token,method:'POST',raw:true,headers:{'Content-Type':'text/plain','X-Filename':'offline.txt'},body:'committed while disconnected\n'});assert.equal(missedUpload.status,201)
+  const missedMedia=await missedUpload.json()
+  const offline=(await call(path,{token:tenant.token,body:{localId:'offline',content:'Reply with the recovered file',expectedRevision:2,expectedLastMessageId:takeover.data.message.id,mediaIds:[missedMedia.id]},status:200})).data
+  assert.equal(offline.accepted,true)
+  const committed=(await call(path,{token:visitor.token,status:200})).data
+  const recover=async(after,ids)=>{
+   let eventId
+   for(const token of [visitor.token,tenant.token]){
+    const reconnected=await deliverySocket(runtime.origin,conversation.id,token,after)
+    try{
+     const recovered=await reconnected.replay()
+     assert.deepEqual(recovered.map(frame=>frame.message.id),ids,'widget and operator recover each committed message exactly once')
+     for(const frame of recovered){
+      const original=committed.messages.find(message=>message.id===frame.message.id)
+      assert.equal(frame.conversationId,conversation.id);assert.ok(Number(frame.eventId)>Number(after))
+      assert.deepEqual([frame.message.content,frame.message.revision,frame.message.local_id],[original.content,original.revision,original.local_id])
+      assert.deepEqual(frame.message.media.map(file=>[file.id,file.filename,file.content_type,file.size]),original.media.map(file=>[file.id,file.filename,file.content_type,file.size]))
+     }
+     const file=await request(`/api/conversations/${conversation.id}/media/${missedMedia.id}`,{token,status:200});assert.equal(file.status,200);assert.equal(await file.text(),'committed while disconnected\n')
+     if(eventId)assert.equal(recovered.at(-1).eventId,eventId,'both roles replay the same durable event')
+     eventId=recovered.at(-1).eventId
+    }finally{await reconnected.close()}
+   }
+   return eventId
+  }
+  // Keep both roles in each recovery round; the durable cursor is unchanged by restart.
+  const eventId=await recover(cursor,[offline.message.id])
+  await runtime.restart()
+  assert.deepEqual((await call(path,{token:visitor.token,status:200})).data,committed,'restart preserves the committed transcript, revision, frontier and attachment metadata')
+  await recover(cursor,[offline.message.id])
+  await recover(0,committed.messages.map(message=>message.id))
+  const caughtUp=await deliverySocket(runtime.origin,conversation.id,visitor.token,eventId)
+  try{assert.deepEqual(await caughtUp.replay(),[],'an acknowledged cursor never repeats a committed message')}finally{await caughtUp.close()}
+  assert.equal((await call(path,{token:other.token})).status,404,'foreign authority cannot recover the restarted transcript')
+  const unauthorized=await request(`/api/conversations/${conversation.id}/socket?token=${other.token}&after=${cursor}`);assert.equal(unauthorized.status,404,'foreign authority cannot replay the durable cursor')
+  }finally{socket.close();await operator.close()}
 
   success=true
  }finally{await runtime.close(success)}

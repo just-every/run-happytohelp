@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {contextApp,model} from './app.mjs'
+import {assertMonitoringAttribution} from './attribution.mjs'
 
 const evidenceIds=body=>[...new Set(JSON.stringify(body).match(/action:[a-z0-9-]+/g)||[])]
 const actions=(prefix,count,text)=>Array.from({length:count},(_,i)=>({localId:`${prefix}${i}`,action:`${text} ${i}`}))
@@ -34,6 +35,7 @@ export async function monitoringJourney(){
   ai.answer=(name,body)=>{const evidence=evidenceIds(body)[0];return name==='context_analysis'?{decision:'insight',help_type:'support',evidence_ids:[evidence],help:'Help with payment'}:name==='context_insight'?{content:'Would you like help with your payment?',buttons:[{text:'Yes, help me',action:'send'},{text:'Dismiss',action:'close'}],loading:null,evidence_ids:[evidence]}:{summary:'Payment errors were observed.'}}
   await runAll();assert.match(JSON.stringify(ai.calls[0].body),/Seven password reset failures were observed/,'the historical summary informs the next analysis')
   const offered=(await v.widget('insights',{},200)).data.insights;assert.equal(offered.length,1);assert.equal(offered[0].content,'Would you like help with your payment?')
+  await assertMonitoringAttribution(c,subject,offered[0])
   // Choosing an offered response admits the insight and the visitor's reply as one pair, once; a forged response is refused.
   const use=(text,localId)=>app.call(`/api/conversations/${v.conversationId}/widget-events`,{token:v.token,body:{action:'useInsight',data:{insight_id:offered[0].id,text,local_id:localId,ai_message:{local_id:localId+'-ai'}}}})
   assert.equal((await use('Forged button','forged')).status,400)

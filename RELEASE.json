@@ -189,6 +189,10 @@
     {
       "id": "276_voice_media.sql",
       "buyerSteps": "Apply after 275_voice.sql before the updated Worker. Back up D1. Existing call media expires one day after admission; expired and withdrawn content stays unavailable after restore. Provider copies require separate cleanup. Voice launch remains held for sandbox, emergency routing and consent qualification."
+    },
+    {
+      "id": "277_mobile_devices.sql",
+      "buyerSteps": "MOBILE-001 server slice: apply after earlier pending migrations and before the updated Worker serves traffic. Back up D1/R2 and private settings first. Adds scoped device capabilities, reconnect frontiers, command receipts and opaque link metadata. Existing native sessions and customer history are retained; no native client or provider delivery is enabled. Pair devices through native sign-in after upgrade. See docs/mobile-api.md."
     }
   ]
 }

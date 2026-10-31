@@ -340,6 +340,10 @@
     {
       "source": "docs/voice.md",
       "reason": "Partial telephony API, consent, privacy and live-provider qualification limits for maintainers"
+    },
+    {
+      "source": "docs/mobile-api.md",
+      "reason": "Mobile server API and offline client protocol; native clients and provider receipts remain unproved"
     }
   ]
 }

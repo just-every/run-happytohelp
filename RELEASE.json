@@ -205,6 +205,10 @@
     {
       "id": "276_voice_media.sql",
       "buyerSteps": "Apply after 275_voice.sql before the updated Worker. Back up D1. Existing call media expires one day after admission; expired and withdrawn content stays unavailable after restore. Provider copies require separate cleanup. Voice launch remains held for sandbox, emergency routing and consent qualification."
+    },
+    {
+      "id": "281_messaging_surveys.sql",
+      "buyerSteps": "OUTCOMES-002: back up D1 and private settings, then apply after 280 before serving the updated Worker. Rebuilds satisfaction responses and history to admit SMS, WhatsApp, Instagram and Messenger while preserving every prior column and row. Existing invitations and consent are unchanged; unknown sends never replay. Messaging surveys require a live native thread and its current consent/window/registration authority; no templates or in-channel rating replies are enabled."
     }
   ]
 }

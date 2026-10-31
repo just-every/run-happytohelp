@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "274290120bdc845f0647b1cfd44e764388f125b035eb989e685763d6d5b1baa4",
+      "sha256": "b4bf9d86a25d399236cc9585eb7be6e3e7d56a139b0331d27379aefce0832ddb",
       "executable": false
     },
     "DEMO.md": {
@@ -1709,7 +1709,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "e8aa82334b5d280d79b056f98688c6a2b25e85a2af3661fbfcd07044683ec2e5",
+      "sha256": "1bb1f5dd490486e412aaf716b7fb0e065a9dcb754540b16d7cb183c7358fd859",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -6328,6 +6328,10 @@
       "sha256": "0d7b6814102a454ca1d21384bb92e1e62ac4f192f90057ad8af49b646c7748f9",
       "executable": false
     },
+    "src/modules/integrations/email-limits.ts": {
+      "sha256": "22f73c95d8eb84681075289fa4e68f18531f50012f5c27c539ad32106f06a5d9",
+      "executable": false
+    },
     "src/modules/integrations/email-maintenance.ts": {
       "sha256": "7e8421b1f3f994af1822fa36f3fc1db87f32c17d1d92f70b069bf592d289886f",
       "executable": false
@@ -6365,7 +6369,7 @@
       "executable": false
     },
     "src/modules/integrations/email-worker.ts": {
-      "sha256": "3bc77d82756f02eeffcb46c4f0ec3e7bb119b03bdc08b0a42e6f1e961e151aaa",
+      "sha256": "e854f1b1f48f526d058786cb24dddc543ad2389c71a30e3a181a8c4630e2b085",
       "executable": false
     },
     "src/modules/integrations/email.ts": {
@@ -6429,7 +6433,7 @@
       "executable": false
     },
     "src/modules/integrations/inbound-service.ts": {
-      "sha256": "0226bf2cdb9dbd5ad61dd3d323b3e1290059f13e970f6933ee2bf52e854680a4",
+      "sha256": "3ef370dd30b42ddef5ebf6ffd5f936836224f5f0ac5c9a3f3987988847512992",
       "executable": false
     },
     "src/modules/integrations/inbound.ts": {
@@ -6665,7 +6669,7 @@
       "executable": false
     },
     "src/modules/integrations/suspended.ts": {
-      "sha256": "2b6266fa40b6c29ce301e4f96f3ee14fcebb32fbf62edcd06b6f4492affec074",
+      "sha256": "974af6379c0b128e19fed62706c6727378b8b0845d0dbbef0b53e4aeaa467c13",
       "executable": false
     },
     "src/modules/integrations/triggers.ts": {
@@ -13953,7 +13957,7 @@
       "executable": false
     },
     "tests/helpers/email/complete-email.mjs": {
-      "sha256": "54c9cae539b45456ba6709023181abc16f15594894bd2bd2465eb9d8cb836259",
+      "sha256": "ec10ec7d5968ea31b25cd9c2a09e9a21a35677c0459dfbbd2c7cbea8beb68090",
       "executable": false
     },
     "tests/helpers/email/domain.mjs": {

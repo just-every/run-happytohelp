@@ -14,6 +14,9 @@ export const knowledgeSchemaReady=(env:Env)=>{let ready=schemas.get(env.DB);if(!
 /** HTTP's shared door covers all text-bearing fields, including JSON columns and
  * nested list/preview responses. Controller authorization still owns ticket access. */
 export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>){
+ // Uploaded message files are the author's material. Their native ticket and
+ // private-note access rules also apply while stored text is being upgraded.
+ if(/^\/api\/(?:conversations\/[^/]+\/media(?:\/[^/]+)?|portal\/[^/]+\/tickets\/[^/]+\/attachments(?:\/[^/]+)?|(?:management|dashboard)\/projects\/[^/]+\/media)$/.test(c.req.path)){await next();return}
  const rawEnv=c.env
  if(!await knowledgeSchemaReady(rawEnv)){await next();return}
  const context=()=>{const actor=c.get('actor'),authority=(c as any).get('authority');return {projectId:c.req.param('projectId')||c.req.param('project')||authority?.projectId||actor?.projectId,authorContactId:actor?.role==='contact'?actor.contactId||actor.id:undefined}}

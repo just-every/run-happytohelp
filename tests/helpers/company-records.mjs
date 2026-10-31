@@ -1,8 +1,10 @@
+import {customerOutcomes} from './customer-outcomes.mjs'
 import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
 import {startApp,sha} from '../journeys/kit/app.mjs'
 
 export async function companyRecordsJourney(){
+ await customerOutcomes()
  const app=await startApp({captureQueue:true}),w=await app.seedWorkspace('companies'),other=await app.seedWorkspace('foreign-companies'),p=w.projectId,owner={token:w.tokens.owner},B=`/api/management/projects/${p}`
  try{
   const defs={}

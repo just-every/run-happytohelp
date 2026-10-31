@@ -76,3 +76,93 @@ export async function customerEdgeOutcomes(){
  await disconnectedCustomerContext()
  await hubspotContextJourney()
 }
+
+// The existing inbox browser journey supplies this proof without a new registration.
+export async function customerScreenOutcomes(){
+ const {createHmac}=await import('node:crypto'),{createRuntime}=await import('./emitted-runtime.mjs')
+ const {launchBrowser,evidence}=await import('../journeys/kit/browser.mjs')
+ const runtime=await createRuntime(),browser=await launchBrowser(),shot=await evidence('customer-outcomes')
+ let context,passed=false
+ try{
+  const response=await fetch(runtime.origin+'/api/identity/bootstrap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Customer screen team',ownerName:'Screen Reviewer',email:'screen-owner@example.test',password:randomBytes(24).toString('base64url'),allowedOrigin:runtime.origin})})
+  assert.equal(response.status,201)
+  const owner=await response.json(),p=owner.projectId,B='/api/management/projects/'+p
+  context=await browser.newContext({viewport:{width:1440,height:1000}})
+  await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
+  const api=async(path,body,method=body===undefined?'GET':'POST')=>{
+   const result=await context.request.fetch(runtime.origin+path,{method,...(body===undefined?{}:{data:body})})
+   assert.ok(result.ok(),method+' '+path+': '+result.status());return result.json()
+  }
+  await api(B+'/availability',{is_presence_away_enabled:false},'PUT')
+  const settings=await api(B+'/widget-settings')
+  const signed=async(name,email)=>{
+   const result=await context.request.post(runtime.origin+'/api/identity/widget/session',{data:{widgetKey:settings.widgetKey,name,identifier:email,email,contact_hash:createHmac('sha256',settings.verificationSecret).update(email).digest('hex')},headers:{Origin:runtime.origin}})
+   assert.equal(result.status(),201);return result.json()
+  }
+  const primary=await signed('Avery Customer','avery-screen@example.test'),alternate=await signed('Avery alternate','alternate-screen@example.test')
+  const typed=(await api(B+'/contacts',{name:'Typed only',email:'typed-screen@example.test'})).data
+  const company=(await api(B+'/companies',{name:'Screen account'})).company
+  await api(B+'/companies/'+company.id+'/members/'+primary.contactId,{},'PUT')
+  const ticket=await api('/api/conversations',{projectId:p,contactId:alternate.contactId})
+  await api('/api/conversations/'+ticket.id+'/messages',{localId:'screen-linked-history',content:'Alternate support history',expectedRevision:0})
+  const page=await context.newPage();page.setDefaultTimeout(20000)
+  const capture=async name=>{
+   for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:shot(name+'-'+width+'.png'),fullPage:true})}
+   await page.setViewportSize({width:1440,height:1000})
+  }
+  await page.goto(runtime.origin+'/projects/'+p+'/companies')
+  await page.getByRole('button',{name:'View Screen account',exact:true}).click()
+  await page.getByRole('link',{name:'Avery Customer',exact:true}).waitFor()
+  await capture('company')
+  await page.getByRole('link',{name:'Avery Customer',exact:true}).click()
+  await page.getByRole('heading',{name:'Possibly the same customer Context only',exact:true}).waitFor()
+  const choose=async name=>{
+   await page.getByRole('button',{name:'Link a verified identity',exact:true}).click()
+   const region=page.getByRole('region',{name:'Link a verified identity',exact:true})
+   await region.getByLabel('Customer name or email',{exact:true}).fill(name)
+   await region.getByRole('button',{name:'Find customers',exact:true}).click()
+   await region.locator('li').filter({hasText:name}).getByRole('button',{name:'Choose',exact:true}).click()
+   return region
+  }
+  let region=await choose('Typed only')
+  await region.getByLabel('Evidence',{exact:true}).fill('A typed address is not proof')
+  await region.getByRole('button',{name:'Preview link',exact:true}).click()
+  await region.getByRole('alert').filter({hasText:'Both identities require independent verification'}).waitFor()
+  assert.equal((await api(B+'/contacts/'+primary.contactId+'/identity-links')).links.length,0)
+  await region.getByRole('button',{name:'Cancel',exact:true}).click()
+  region=await choose('Avery alternate')
+  const evidenceText='Customer confirmed both signed identities in screen request 10482'
+  await region.getByLabel('Evidence',{exact:true}).fill(evidenceText)
+  await region.getByRole('button',{name:'Preview link',exact:true}).click()
+  await region.getByText('Preview — nothing changed yet',{exact:true}).waitFor()
+  await region.getByText('Nothing is merged',{exact:true}).waitFor()
+  await region.getByText('No message is sent',{exact:true}).waitFor()
+  await region.getByText('Unchanged; each customer sees only their own conversations',{exact:true}).waitFor()
+  assert.equal((await api(B+'/contacts/'+primary.contactId+'/identity-links')).links.length,0)
+  await region.getByRole('button',{name:'Confirm link',exact:true}).click()
+  await page.getByRole('link',{name:'Alternate support history',exact:true}).waitFor()
+  assert.match(await page.locator('.identity-links__meta').textContent(),/Linked by Screen Reviewer · .*\d{4}/)
+  await page.locator('.identity-links__list .identity-links__evidence').filter({hasText:evidenceText}).waitFor()
+  await capture('customer-linked')
+  await page.getByRole('button',{name:'Unlink Avery alternate',exact:true}).click()
+  region=page.getByRole('region',{name:'Unlink Avery alternate',exact:true})
+  const reason='Customer requested separate identities after review'
+  await region.getByLabel('Reason for unlinking',{exact:true}).fill(reason)
+  await region.getByRole('button',{name:'Preview unlink',exact:true}).click()
+  await region.getByRole('button',{name:'Confirm unlink',exact:true}).click()
+  const history=page.locator('.identity-links__decisions')
+  await history.getByText('Unlinked Avery alternate',{exact:true}).waitFor()
+  await history.getByText('Linked Avery alternate',{exact:true}).waitFor()
+  await history.locator('.identity-links__evidence').filter({hasText:reason}).waitFor();await history.locator('.identity-links__evidence').filter({hasText:evidenceText}).waitFor()
+  const times=await history.locator('time').evaluateAll(nodes=>nodes.map(node=>node.dateTime))
+  assert.equal(times.length,2);assert.ok(times.every(time=>Number.isFinite(Date.parse(time))))
+  assert.equal((await api(B+'/contacts/'+primary.contactId+'/identity-links')).links.length,0)
+  await capture('customer-history')
+  await page.goto(runtime.origin+'/projects/'+p+'/security-log')
+  await page.getByText('Customer identity linked',{exact:true}).waitFor()
+  await page.getByText('Customer identity unlinked',{exact:true}).waitFor()
+  await capture('security-log')
+  assert.equal((await api(B+'/contacts/'+typed.id)).data.email,'typed-screen@example.test')
+  passed=true
+ }finally{await context?.close();await browser.close();await runtime.close(passed)}
+}

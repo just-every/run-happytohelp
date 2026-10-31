@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {startApp} from './kit/app.mjs'
 import {ticketsJourney} from '../helpers/inbox/tickets.mjs'
 import {queueBulkJourney} from '../helpers/inbox/queue-bulk.mjs'
+import {statusLifecycleJourney} from '../helpers/inbox/status-lifecycle.mjs'
 import {brandsJourney} from '../helpers/inbox/brands.mjs'
 
 test('a replacement request moves through scoped fields, a reviewed macro, shared queue work, private collaboration, routing, schedules and durable automations before closure and erasure',async()=>{
@@ -37,6 +38,7 @@ test('a replacement request moves through scoped fields, a reviewed macro, share
  }finally{await app.close()}
  await ticketsJourney()
  await queueBulkJourney()
+ await statusLifecycleJourney()
 })
 test('two brands share a permitted team while customer identity, knowledge, routing, sender policy and reports retain their current brand authority',brandsJourney)
 

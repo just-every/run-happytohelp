@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "274290120bdc845f0647b1cfd44e764388f125b035eb989e685763d6d5b1baa4",
+      "sha256": "acd3ffda370aa5eb42921e3514931a3babfc26e356d37d9e670126910c37fbbd",
       "executable": false
     },
     "DEMO.md": {
@@ -14164,6 +14164,10 @@
       "sha256": "11e6cb17c923ab06cce84ea7b89b25d70f9eb6a56c72b7fd6339ac1d5345bd6d",
       "executable": false
     },
+    "tests/helpers/inbox/conversation-actions.mjs": {
+      "sha256": "1dc028df3a8763e8fd613887f1bd356254b2cae505a52e09f34ac2d822fec555",
+      "executable": false
+    },
     "tests/helpers/inbox/desk-collaboration.mjs": {
       "sha256": "ff287efd2caf6fd9bf222b669f711c8f0114e557e1f90d481302bb4ed8f9c3bc",
       "executable": false
@@ -14529,7 +14533,7 @@
       "executable": false
     },
     "tests/journeys/email.mjs": {
-      "sha256": "74bc12e2f56105fa1efcea1aa33dfb22f7c875af66b9bf8de5014b1d02c10d49",
+      "sha256": "aad555e4f9d3ede0e18139b633748b6674792437bab7173e6e394029cff8cbf7",
       "executable": false
     },
     "tests/journeys/erasure-browser.mjs": {

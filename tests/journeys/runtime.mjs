@@ -1,3 +1,4 @@
+import {mobileAdmission} from '../helpers/mobile.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {execFile} from 'node:child_process'
@@ -11,6 +12,7 @@ const exec=promisify(execFile)
 
 // One emitted application, exercised over its real HTTP and WebSocket transport.
 test('a native support session admits and replays one transcript with its own files, refuses foreign and stale writes, delivers live and pairs the shipped connector',async()=>{
+ await mobileAdmission()
  const runtime=await createRuntime({});let success=false
  try{
   const {call,request}=client(runtime.origin)

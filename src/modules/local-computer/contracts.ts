@@ -4,7 +4,7 @@ export type LocalEnv = { DB: D1Database; FILES: R2Bucket };
 export type Principal = { userId: string; projectId: string };
 export type Mode = 'investigate' | 'resolve' | 'resolve_reply';
 export type DraftInput = { projectId: string; conversationId: string; operatorId: string; jobId: string;
-  proposalId: string | null; expectedRevision: number; expectedLastMessageId: string | null };
+  proposalId: string | null; expectedRevision: number; expectedLastMessageId: string | null; guard?: {sql:string;args:unknown[]} };
 export interface Integration {
   authorize(c: Context<any>, projectId: string): Promise<Principal>;
   /** Pairing a computer or approving its authorization installs a credential: the edition may demand more (a recent step-up). */

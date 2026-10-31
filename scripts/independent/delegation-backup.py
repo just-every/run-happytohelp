@@ -8,7 +8,7 @@ import re
 import sqlite3
 from pathlib import Path
 
-CREDENTIAL_TABLES = ('edition_codes', 'edition_consents', 'edition_grants', 'edition_effect_guards')
+CREDENTIAL_TABLES = ('mobile_links', 'mobile_commands', 'mobile_frontiers', 'mobile_devices', 'edition_codes', 'edition_consents', 'edition_grants', 'edition_effect_guards')
 
 def punctuated_end(statement):
     # Wrangler's splitter recognizes END followed by whitespace or a semicolon,

@@ -1,9 +1,10 @@
 import test from 'node:test'
 import {answersJourney} from '../helpers/ai/answers.mjs'
+import {configuredExecutionJourney} from '../helpers/ai/configured-execution.mjs'
 import {triageJourney} from '../helpers/ai/triage.mjs'
 import {trainingJourney} from '../helpers/ai/training.mjs'
 
-test('a visitor gets a source-linked answer from published knowledge, durable replay and a human handoff under current authority',answersJourney)
+test('a visitor gets a source-linked answer from published knowledge, durable replay and a human handoff under current authority',async()=>{await answersJourney();await configuredExecutionJourney()})
 test('reviewed intent labels enable routing while unavailable triage preserves the operator queue and ordinary admission rules',triageJourney)
 test('a confirmed synthetic evaluation records checked replies, paid usage and durable uncertain work without replay',trainingJourney)
 

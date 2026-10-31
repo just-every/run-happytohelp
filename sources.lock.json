@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "274290120bdc845f0647b1cfd44e764388f125b035eb989e685763d6d5b1baa4",
+      "sha256": "5346a4173d9b1415c1e10667b2db92c2814d6e76449b06091c658a600e3d7348",
       "executable": false
     },
     "DEMO.md": {
@@ -14276,6 +14276,10 @@
       "sha256": "1dd4b530da825475213069407b94650fbd44e6f57451fb81006de84366c9bbc6",
       "executable": false
     },
+    "tests/helpers/knowledge/published.mjs": {
+      "sha256": "abc185ed6be0a8b27624b63b3b54210382b0b698cb176abf71942c6d566ce650",
+      "executable": false
+    },
     "tests/helpers/knowledge/sources.mjs": {
       "sha256": "9dcda0c0f2ad2413cf806f1edfecb573b621fd2bef70c2b814d0564a7f3a027f",
       "executable": false
@@ -14585,7 +14589,7 @@
       "executable": false
     },
     "tests/journeys/knowledge.mjs": {
-      "sha256": "fc9c6d5b9068e2f9c88dd1edc508b82c2c935eff20739316f66520d71e280922",
+      "sha256": "7bf0279072b8c0725d865eb20d54a3bbb2ad1cea516dffb56d7d5af418e60d4b",
       "executable": false
     },
     "tests/journeys/legacy.mjs": {

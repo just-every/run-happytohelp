@@ -12,8 +12,24 @@ const {tokens,identifier,folded}=await import(new URL('./generated.mjs',import.m
 // Project additive schema changes onto the historical subsystem inventory.
 // A subsystem omitted from that inventory has no table to alter or index, even
 // when its later evolution lives in a migration outside its original range.
-function omittedSchemaChange(sql,omitted){
+function triggerDefinition(sql){
  const list=tokens(sql),words=list.map(token=>token.quoted?undefined:folded(token.text));
+ if(!['create','drop'].includes(words[0])||words[1]!=='trigger')return;
+ const name=list[words[2]==='if'?(words[0]==='create'?5:4):2];
+ return {name:folded(identifier(name).replace(/;$/,'')),operation:words[0],list,words};
+}
+function omittedTrigger(sql,omitted){
+ const trigger=triggerDefinition(sql);
+ if(trigger?.operation!=='create')return false;
+ // Only table references count; a quoted message or an identically named
+ // column does not make a trigger part of an omitted subsystem.
+ return trigger.list.some((token,index)=>['on','from','join','update','into','references'].includes(trigger.words[index-1])
+  &&token.text[0]!=="'"&&omitted.includes(folded(identifier(token).replace(/;$/,''))));
+}
+function omittedSchemaChange(sql,omitted,omittedTriggers){
+ const list=tokens(sql),words=list.map(token=>token.quoted?undefined:folded(token.text));
+ const trigger=triggerDefinition(sql);
+ if(trigger)return omittedTriggers.has(trigger.name);
  let target;
  if(words[0]==='alter'&&words[1]==='table'&&words[3]==='add')target=list[2];
  else if(words[0]==='create'&&(words[1]==='index'||words[1]==='unique'&&words[2]==='index'))target=list[words.indexOf('on')+1];
@@ -49,13 +65,15 @@ export async function workflowArchivePolicy(root,input,{beforeTickets=false,befo
   // v0.4.2, the last pre-ticket release, ends at 190; every later migration
   // (191's ticket_history index onward) only ever runs after the ticket model.
   // R7b's reserved 172–174 numbers also landed after the pre-ticket release.
-  const names=(await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')&&!/^22[0-9]_/.test(name)&&!/^15[0-9]_/.test(name)&&(!beforeTickets||!/^13[0-9]_/.test(name)&&!/^17[234]_/.test(name)&&name<'191_')&&(!beforeR4||!/^14[0-9]_/.test(name))&&(!beforeEmail||!/^16[0-9]_/.test(name))).sort();
-  // This inventory deliberately has no workflow journal (150 is omitted).
-  // Later replacements of its trigger and the consent trigger on the omitted
-  // workflow_schedules table stay omitted too. Keep the other statements in
-  // mixed migrations, including 241's resolution correction and 266's consent.
-  const plan=await Promise.all(names.map(async name=>unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))
-   .filter(sql=>!/^\s*(?:CREATE|DROP)\s+TRIGGER\s+(?:workflow_changed|support_channel_opted_out_schedule)\b/i.test(sql)&&!omittedSchemaChange(sql,omitted))));
+  const migrations=await Promise.all((await readdir(join(root,'migrations'))).filter(name=>name.endsWith('.sql')).sort()
+   .map(async name=>({name,statements:unstable_splitSqlQuery(await readFile(join(root,'migrations',name),'utf8'))})));
+  // Read definitions even in omitted migrations so later DROP/CREATE pairs
+  // stay together. SQLite validates every trigger when a later table is
+  // renamed; historical inventories cannot retain references to absent stores.
+  const omittedTriggers=new Set(migrations.flatMap(migration=>migration.statements)
+   .filter(sql=>omittedTrigger(sql,omitted)).map(sql=>triggerDefinition(sql).name));
+  const plan=migrations.filter(({name})=>!/^22[0-9]_/.test(name)&&!/^15[0-9]_/.test(name)&&(!beforeTickets||!/^13[0-9]_/.test(name)&&!/^17[234]_/.test(name)&&name<'191_')&&(!beforeR4||!/^14[0-9]_/.test(name))&&(!beforeEmail||!/^16[0-9]_/.test(name)))
+   .map(({statements})=>statements.filter(sql=>!omittedSchemaChange(sql,omitted,omittedTriggers)));
   for(let index=0;index<plan.length;index++){
    for(const sql of plan[index])scratch.exec(sql);
    const tables=scratch.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row=>row.name).filter(name=>!excludedTable(name,result)&&!(result.derivedTables??[]).some(derived=>name===derived||name.startsWith(derived+'_')));

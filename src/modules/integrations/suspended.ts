@@ -1,3 +1,4 @@
+import {inboundAttachmentsOverLimit} from './email-limits'
 import {releaseApiHold} from '../api-integrations/holds'
 import {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
@@ -64,6 +65,9 @@ suspendedRoutes.post(`${base}/:id/recover`,async c=>{
  if(!row)throw new HTTPException(404)
  const input=JSON.parse(row.input_json),auth=JSON.parse(row.auth_json)
  if(input.api_request)return c.json(await releaseApiHold(c.env,actor,c.get('sessionHash'),row))
+ // Refuse before creating a recovery ticket or changing the receipt. A public
+ // recovery cannot turn an over-limit message into a partial ticket.
+ if(body.asNote!==true&&inboundAttachmentsOverLimit((input.attachments||[]).map((file:any)=>file.size)))throw new HTTPException(409,{message:'Mail exceeds the attachment limits. Retain it as a private note or request a smaller replacement.'})
  if(body.asNote!==true&&(!auth.verified||auth.failed||auth.from_unusable))throw new HTTPException(409,{message:'Sender authority is unproven. Recover as a private note after reviewing the message.'})
  const chosen=text(body.conversationId===undefined?row.candidate_conversation_id||'':body.conversationId,200)
  const conversation=chosen?await c.env.DB.prepare('SELECT * FROM conversations WHERE project_id=? AND id=?').bind(actor.projectId,chosen).first<any>():await newRecoveryTicket(c.env,actor,row,body.asNote===true)

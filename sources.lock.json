@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "79816803be638fa40818cd8a0da38555d01086de4d6d2629b8757ff5a49b59cb",
+      "sha256": "c9370b8a7b32ba46d069a4a54e4082da910ce8c194dee649814799f37368d32e",
       "executable": false
     },
     "DEMO.md": {
@@ -4605,7 +4605,7 @@
       "executable": false
     },
     "src/modules/ai-support/service.ts": {
-      "sha256": "09ed34f1a9350370baac1781a94e0239f071eb01a7f146713a9918affda4caa2",
+      "sha256": "43f0edcfbf9e8b4298353a5c3df47205ff27fb3700738ed23b7d78e09544842c",
       "executable": false
     },
     "src/modules/ai-support/tool-trace.ts": {
@@ -13888,6 +13888,30 @@
       "sha256": "d306f2a8ef5c100255d2098cfd261eec04e884d6f226f5651d007800eb6f5135",
       "executable": false
     },
+    "tests/helpers/conversation/admission-races.mjs": {
+      "sha256": "43670b28a6b26150f2f8c60790a51d682bdb0a8e170c5b858713f35d14f06613",
+      "executable": false
+    },
+    "tests/helpers/conversation/erased-transcript.mjs": {
+      "sha256": "9e84579ad8d9f3bbcf084bc277ec3a5ce5afc3f8b89764ea2de0aab70112fc72",
+      "executable": false
+    },
+    "tests/helpers/conversation/import-races.mjs": {
+      "sha256": "6e03181aa592cec7ff181349566017f95f0ff47d9f206e11bafe21a72e2e4658",
+      "executable": false
+    },
+    "tests/helpers/conversation/lost-response.mjs": {
+      "sha256": "5bafa606ee85ba30784ebd4d4ffb8c534bfccb686671cb23ce538aab0cb1a96c",
+      "executable": false
+    },
+    "tests/helpers/conversation/model-races.mjs": {
+      "sha256": "bd02de509e4383ce2c4466fbf8e621bd828efb3c1351c19e3b94769cf9adc521",
+      "executable": false
+    },
+    "tests/helpers/conversation/response-loss.mjs": {
+      "sha256": "7b856da20b90129bb6ba3f15a595fe5677e0fd23101c43d7c3384adb0f6cee6d",
+      "executable": false
+    },
     "tests/helpers/customer-csv.mjs": {
       "sha256": "d70f4b1b1a4acaa43687b69fc207756afe1f2de7c7500ab8fde7cfa27a0cc387",
       "executable": false
@@ -14521,7 +14545,7 @@
       "executable": false
     },
     "tests/journeys/erasure.mjs": {
-      "sha256": "e8a8f7a8914b696997c3f10057634c23384bddc5dda177ab24a8c70048eb9127",
+      "sha256": "d0a07bc87220a8935dbcc64c0218a7f3ae41b31416ca89bd9ea7977c5885458d",
       "executable": false
     },
     "tests/journeys/first-run.mjs": {
@@ -14613,7 +14637,7 @@
       "executable": false
     },
     "tests/journeys/runtime.mjs": {
-      "sha256": "b504e460a6b43354056e8c512efd48db00fdfcd6f279a973d21d4da766c69072",
+      "sha256": "ae6193ad7415d82ebb85199a7299d0ca93842ec3870db2e63d9ca6baa474cb90",
       "executable": false
     },
     "tests/journeys/upgrade-nightly.mjs": {

@@ -17,7 +17,7 @@
 .knowledge-reference-notice{color:var(--ink-soft,var(--bs-secondary-color,#687681))}
 
 body.conversation-workspace #chat .chat-footer .chat-entry-form .knowledge-reference-editor textarea{min-height:44px!important}
-.knowledge-reference-editor:has(.knowledge-reference-card){max-height:min(28rem,42dvh);overflow-y:auto}
+.chat-entry-form .knowledge-reference-editor:has(.knowledge-reference-card){max-height:min(28rem,52dvh);overflow-y:auto}
 
 body.conversation-workspace #chat .chat-footer:has(.knowledge-reference-card) .chat-entry > .flex-grow-1{flex-direction:column!important;align-items:stretch}
 body.conversation-workspace #chat .chat-footer .chat-entry-form:has(.knowledge-reference-card){flex-direction:column;align-items:stretch}

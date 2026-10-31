@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import {openaiStream,openaiToolCall} from '../openai-stream.mjs'
+import {socketClient} from '../widget/sockets.mjs'
+import {message,replyTo} from '../email/app.mjs'
 
 const tokenPattern=/⟦k:[a-f0-9]{32}⟧/u
 const strings=value=>typeof value==='string'?[value]:value&&typeof value==='object'?Object.values(value).flatMap(strings):[]
@@ -38,6 +40,7 @@ export async function referenceAi({k,body,article,category,a,b,c,send,grants,cal
  }
  let answerProvider,participant
  k.provider=async(request,entry)=>{
+  if(new URL(request.url).hostname==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]})
   if(new URL(request.url).hostname==='api.resend.com')return captureMail(request,entry)
   assert.equal(new URL(request.url).hostname,'api.openai.com')
   const input=JSON.parse(entry.body);requests.push(input)
@@ -148,6 +151,48 @@ export async function referenceAi({k,body,article,category,a,b,c,send,grants,cal
    assert.equal((await native()).messages.find(message=>message.id===aiMessage.id).content,answer,label+' re-grant restores the exact pinned output')
    assert.equal((await api()).data.find(message=>message.id===aiMessage.id).content,answer,label+' re-grant restores the pinned output through the API')
   }
+
+  // Automatic replies must use source authorization even when their initiating
+  // actor is the customer. The ordinary own-word control lives in referenceCopies.
+  await app.configure({INBOUND_EMAIL_TOKEN:'reference-fixture-inbound'})
+  assert.equal((await app.call(`/api/knowledge/public/${p}/articles/restoration`,{token:c.token})).status,404,'automatic recipient has no article access')
+  assert.equal((await send(c,body)).status,409,'operator copy is denied for the same automatic recipient')
+  answerProvider=()=>openaiStream(body)
+  await call(`/api/dashboard/projects/${p}/conversations/${c.conversation.id}/actions`,{body:{action:'assignAi',data:{ai_id:profile.id}},status:200})
+  await k.drain()
+  const socket=await socketClient(app)(`/api/conversations/${c.conversation.id}/socket?token=${c.token}`,{Origin:'https://example.com'})
+  assert.equal(socket.status,101)
+  const automatic=[]
+  try{
+   for(const channel of ['widget','email']){
+    let messageId
+    if(channel==='widget'){
+     const head=await transcript(c)
+     messageId=(await app.call(`/api/conversations/${c.conversation.id}/messages`,{token:c.token,body:{localId:crypto.randomUUID(),content:'Please help me understand the recovery process.',expectedRevision:head.revision,expectedLastMessageId:head.lastMessageId},status:200})).data.message.id
+    }else{
+     await app.db.prepare("INSERT INTO email_settings(project_id,from_name,from_address,inbound_address,is_enabled,updated_at) VALUES(?,'Support','support@example.test','knowledge-inbound@example.test',1,1) ON CONFLICT(project_id) DO UPDATE SET inbound_address=excluded.inbound_address,is_enabled=1").bind(p).run()
+     const contact=(await call(`/api/dashboard/projects/${p}/conversations/${c.conversation.id}`,{status:200})).data.data.contact
+     const before=mail.length
+     await call(`/api/dashboard/projects/${p}/conversations/${c.conversation.id}`,{method:'PUT',body:{send_transcript_to:contact.email,idempotencyKey:crypto.randomUUID()},status:200})
+     const address=replyTo(mail.slice(before).at(-1));assert.ok(address)
+     const id=crypto.randomUUID()+'@customer.test'
+     const delivered=await app.email(message({id,to:address,from:contact.email,text:'Please explain the next recovery step.'}),{from:contact.email,to:address,direct:true})
+     assert.equal(delivered.status,200,JSON.stringify(delivered));assert.ok(!delivered.rejected,JSON.stringify(delivered))
+     messageId=(await app.first('SELECT message_id FROM inbound_emails WHERE id=?','<'+id+'>')).message_id
+    }
+    const before=mail.length
+    await k.drain()
+    const id='reply:'+messageId,result=await generation(id)
+    const customer=await transcript(c),connected=(await app.call(`/api/v1/conversations/${c.conversation.id}/messages`,{token:issued.token,status:200})).data
+    // Wait for the customer turn on the live socket before inspecting frames.
+    await socket.next(frame=>frame.type==='message'&&frame.message.id===messageId)
+    assert.ok(!socket.frames.some(frame=>frame.type==='chunk'&&frame.payload?.localId==='generation:'+id),'customer text waits for whole-answer admission')
+    const generated=row=>row.local_id==='generation:'+id&&row.content.includes(body)
+    automatic.push({channel,state:result.state,widget:customer.messages.filter(generated).length,api:connected.data.filter(generated).length,socket:socket.frames.filter(frame=>frame.type==='message'&&generated(frame.message)).length,email:mail.slice(before).filter(item=>JSON.stringify(item).includes(body)).length})
+   }
+  }finally{socket.socket.close()}
+  console.log(JSON.stringify({automaticKnowledge:automatic}))
+  for(const result of automatic)assert.deepEqual(result,{channel:result.channel,state:'superseded',widget:0,api:0,socket:0,email:0})
  }finally{
   if(participant)await call(`/api/dashboard/projects/${p}/conversations/${conversationId}/participants/${participant.pivot.id}`,{method:'DELETE',status:200})
   k.provider=captureMail

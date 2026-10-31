@@ -75,9 +75,9 @@ export async function knowledgeErasureStatements(env:Env,projectId:string,contac
   env.DB.prepare(`DELETE FROM ai_generation_sources WHERE project_id=?1 AND generation_id IN (${supportGenerations})`).bind(projectId,contactId),
   env.DB.prepare(`DELETE FROM knowledge_index_dirty WHERE project_id=?1 AND source_id IN (${generatedSources})`).bind(projectId,contactId),
   env.DB.prepare(`DELETE FROM knowledge_generation_sources WHERE project_id=?1 AND generation_id IN (${modelGenerations})`).bind(projectId,contactId),
-  // Authorship is a personal visibility exception. Erasure removes that link,
-  // while surviving article-copy references keep their ordinary source policy.
-  env.DB.prepare('UPDATE knowledge_reply_blocks SET author_contact_id=NULL WHERE project_id=? AND author_contact_id=?').bind(projectId,contactId),
+  // Authored copies can contain personal text, and their fingerprint includes
+  // the author's id. Delete both; dangling references render as unavailable.
+  env.DB.prepare('DELETE FROM knowledge_reply_blocks WHERE project_id=? AND author_contact_id=?').bind(projectId,contactId),
   env.DB.prepare(`DELETE FROM knowledge_help_links WHERE project_id=? AND email IN (${marks})`).bind(projectId,...normalized),
   env.DB.prepare(`DELETE FROM knowledge_help_sessions WHERE project_id=? AND (contact_id=? OR email IN (${marks}))`).bind(projectId,contactId,...normalized),
   env.DB.prepare(`DELETE FROM knowledge_feedback WHERE project_id=? AND (contact_id=? OR visitor_hash IN (${hashMarks}))`).bind(projectId,contactId,...hashes),

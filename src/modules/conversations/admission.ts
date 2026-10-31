@@ -97,12 +97,17 @@ export async function admitMessage(env:Env,input:MessageInput|AtomicMessageInput
  const autoAssign=actor.role!=='contact'&&!input.generationId&&!input.tokenAuthority&&(!scope.group_id||!!await env.DB.prepare('SELECT 1 FROM ticket_group_members WHERE project_id=? AND group_id=? AND user_id=?').bind(projectId,scope.group_id,actor.id).first())
  const authorship=await authoringSource(env,actor,conversationId,input.authoring,input.generationId)
  const citations=refs.length?await resolvePublicCitations(env,projectId,input.generationId!,refs,currentTicketReaders(projectId,conversationId,{contacts:email?.cc,localId})):[]
+ // A generation may carry its initiating contact actor; only genuine customer
+ // speech receives the own-word exception, never an assistant's final answer.
+ const authorContactId=!input.generationId&&actor.role==='contact'?actor.contactId||actor.id:undefined
+ content=await canonicaliseKnowledge(env,projectId,content,authorContactId,false,input.generationId)
+ // Keep copied-source checks alongside the generation's retrieved-source set.
+ const copiedReferences=referenceIds(content)
  if(input.generationId){const sources=await env.DB.prepare('SELECT source_id FROM ai_generation_sources WHERE project_id=? AND generation_id=?').bind(projectId,input.generationId).all<{source_id:string}>();if(sources.results.length)[content]=await createBlocks(env,projectId,[{kind:'answer',text:content,sources:sources.results.map(row=>row.source_id),generationId:input.generationId}])}
- content=await canonicaliseKnowledge(env,projectId,content,actor.role==='contact'?actor.contactId||actor.id:undefined)
  for(const citation of citations){const [token]=await createBlocks(env,projectId,[{kind:'link',text:`[${citation.title}](${citation.url})`,title:citation.title,url:citation.url,sources:[citation.id],sourceIdentities:articleSourceIdentities(projectId,[citation])}]);content+='\n\n'+token}
  const citationRefs=await createBlocks(env,projectId,citations.map(citation=>({kind:'text' as const,text:JSON.stringify(citation),title:citation.title,url:citation.url,sources:[citation.id],sourceIdentities:articleSourceIdentities(projectId,[citation])})))
  const citationJson=JSON.stringify(citationRefs.map(token=>({knowledge_citation:token})))
- const raw=email?await canonicaliseKnowledge(env,projectId,email.raw,actor.role==='contact'?actor.contactId||actor.id:undefined):undefined
+ const raw=email?await canonicaliseKnowledge(env,projectId,email.raw,authorContactId):undefined
  env=await workflowEnvironment(env)
  const messageId=crypto.randomUUID(),now=workflowNow(env);const predicates=[writableConversationSql('c'),'c.id=?','c.project_id=?','c.revision=?','c.contact_id=?','c.ticket_version=?',followup?"c.status_category='closed'":"c.status_category<>'closed'"];const args:unknown[]=[conversationId,projectId,expectedRevision,scope.contact_id,scope.ticket_version]
  if(input.requireAvailableRequester===true)predicates.push(contactAvailableSql())
@@ -134,7 +139,7 @@ export async function admitMessage(env:Env,input:MessageInput|AtomicMessageInput
  if(input.generationId){predicates.push("EXISTS(SELECT 1 FROM ai_generations g WHERE g.id=? AND g.project_id=c.project_id AND g.conversation_id=c.id AND g.state='running' AND g.source_revision=c.revision AND (SELECT revision FROM context_subjects WHERE project_id=c.project_id AND subject_id=c.contact_id)=g.source_context_revision AND c.resolved_at IS NULL AND EXISTS(SELECT 1 FROM conversation_ai ca JOIN ai_profiles a ON a.id=ca.ai_id WHERE ca.conversation_id=c.id AND a.id=g.ai_id AND a.project_id=c.project_id AND a.is_enabled=1 AND a.model=json_extract(g.ai_profile_json,'$.model') AND a.prompt=json_extract(g.ai_profile_json,'$.prompt')))");args.push(input.generationId)}
  if(authorship.guard){predicates.push(authorship.guard.sql);args.push(...authorship.guard.params)}
  const indexedContent=knowledgeWords(content.replace(tokenPattern,'')).length>=12
- const knowledge=referenceAdmissionPolicy(referenceIds(content),literal(projectId),currentTicketReaders(projectId,conversationId,{contacts:email?.cc,localId}))
+ const knowledge=referenceAdmissionPolicy([...new Set([...copiedReferences,...referenceIds(content)])],literal(projectId),currentTicketReaders(projectId,conversationId,{contacts:email?.cc,localId}))
  predicates.push(knowledge.sql,...(indexedContent?[`NOT EXISTS(SELECT 1 FROM knowledge_index_dirty)`]:[]))
  const citationColumns=',citations_json'+(email?',content_raw':''),citationValues=',?'+(email?',?':'')
  const nextCategory=followup?'open':actor.role!=='contact'&&input.resolve?'solved':actor.role==='contact'?['pending','on_hold','solved'].includes(scope.status_category)?'open':scope.status_category:['solved','new'].includes(scope.status_category)?'open':scope.status_category

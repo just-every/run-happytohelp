@@ -157,7 +157,14 @@ punctuation and whitespace changes and replaces them with references. Its source
 index covers current and retained earlier published text, translations and knowledge-derived AI
 outputs. Shared public text remains readable. A person's paraphrase without a
 copied run remains their own speech. Contact-authored copied spans remain readable
-to their author. Implementation in this candidate does not establish acceptance;
+to their author. Automatic AI output never receives this exception, including
+when a customer's message or assistant assignment initiated the generation.
+Generated narrative is protected before answer wrappers are stored or indexed,
+and admission checks copied sources alongside the full retrieved-source set.
+Generated copies retain generation erasure custody, which grants no source access.
+Customers receive the admitted final answer; provisional text stays with
+operators because a copied run may span provider deltas.
+Implementation in this candidate does not establish acceptance;
 this page does not claim passing route, browser, mutation or performance checks.
 
 ## Unreleased migrations, backup and upgrade
@@ -227,7 +234,12 @@ Restore sanitization removes whole private receipt rows, including unexpected pe
 clears upgrade completion. A restored installation must establish completion again
 before nonmember disclosure. Contact erasure removes grants, personal or
 conversation-linked receipts and linked events, and redacts knowledge-owned
-personal content/provenance while retaining coherent history. Member erasure
+personal content/provenance while retaining coherent history. Customer-authored
+reference blocks are deleted as whole rows, including their pinned payloads and
+author-derived fingerprints; surviving references render as unavailable. Native
+exports after erasure contain none of those rows. SQL backup sanitation and
+native restore also delete blocks whose named author is erased or missing,
+while preserving live authors' own words. Member erasure
 retains scoped pseudonymous grant provenance without making collections public.
 
 ## Desktop model context remains blocked

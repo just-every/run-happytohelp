@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "c19d73f1ce27a7c2fff457c13924d6a0eeaf32d947d1fa097dd78e7a27465177",
+      "sha256": "009cde4a1118c83e261af6b7eb7ce6d552c44a06231c72bee505fb201bfbefb2",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "2714fb1347cdda20b76fbfe6f90142686efe6e1c7f2f1c518e933903ca1fe4df",
+      "sha256": "54a0c7cef80a234fd18980dbdaa6b0b2f32472acf5331a2ccefe47c0572bb7eb",
       "executable": false
     },
     "DEMO.md": {
@@ -7597,7 +7597,7 @@
       "executable": false
     },
     "src/modules/move-in/undo-references.ts": {
-      "sha256": "ac0cede9d59e87c9aa10b5f1c564a933cbd1623a1ebc83a76288cf46db22b4b6",
+      "sha256": "de2c0eb0184d6ccced17fa9253b702dac24562554ae07c947ca4064bf515c158",
       "executable": false
     },
     "src/modules/move-in/uninterpreted-identities.ts": {
@@ -11501,7 +11501,7 @@
       "executable": false
     },
     "src/ui/native/pages/MoveInReview.jsx": {
-      "sha256": "ab94a8694b3042f928c9045eb5387880e3ebca5ecb4a48c757d6c5a2424d09de",
+      "sha256": "b32fc61e91c8236f174299b033271d9300cfbdd07def41f480b494529302fd22",
       "executable": false
     },
     "src/ui/native/pages/notifications/NotificationInbox.jsx": {
@@ -14593,11 +14593,11 @@
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {
-      "sha256": "d6fb657a34dfeb41f813f38b1894c75515d90ff3498590b31ed98bac1a81c191",
+      "sha256": "0a8d0b47220b2e4c47bf01ee9c69d084149a9c22c92792726862937b08764c49",
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
-      "sha256": "0b09f5e2a3520420200cf1b9bfbc78793e4def683a263f14bce3725b6a844312",
+      "sha256": "093b060cbbe3a5083b532b6798fef9cd81fb57ae5b620f4388b720bf459b9a03",
       "executable": false
     },
     "tests/journeys/move-in-capacity.mjs": {
@@ -14721,7 +14721,7 @@
       "executable": false
     },
     "tests/move-in/business-equality.mjs": {
-      "sha256": "e88d7b8ee0a581e6e02211089cd97c566bb59a525935d7f322c29469309e082e",
+      "sha256": "46ccb35680a53087acd45d60adcba62de8aecec0b430006adda05abb63f5a70f",
       "executable": false
     },
     "tests/move-in/capacity-journey.mjs": {
@@ -14770,6 +14770,14 @@
     },
     "tests/move-in/journey-kit.mjs": {
       "sha256": "4945af12370eca667bf9cbbbad42909b28280833c3652c070f2355d553a78e1a",
+      "executable": false
+    },
+    "tests/move-in/outcomes-policy.mjs": {
+      "sha256": "67cf56207466db8c070a8bd540987840ddb209bb23d23fe6b3b85addaeda91a9",
+      "executable": false
+    },
+    "tests/move-in/outcomes.mjs": {
+      "sha256": "cfe1c1b095c107ac73195519d4c54dd3a3b85cb5d8ea6f7262d1b41a4803265d",
       "executable": false
     },
     "tests/move-in/owned-workerd.mjs": {

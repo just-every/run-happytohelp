@@ -1,3 +1,4 @@
+import {publicSiteJourney} from './helpers/public-site-journey.mjs'
 import assert from 'node:assert/strict'
 import {auditPage,viewports} from './journeys/kit/browser.mjs'
 import {freeProductPromise} from './helpers/homepage/free-browser.mjs'
@@ -42,6 +43,7 @@ async function noPromotions(page,source){
 }
 
 export async function homepageJourney({page,origin,shot}){
+ await publicSiteJourney({page,origin,shot})
  const errors=[]
  page.on('pageerror',error=>errors.push(error.message))
  await page.setViewportSize(viewports.desktop)

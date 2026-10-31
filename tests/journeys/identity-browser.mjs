@@ -12,3 +12,6 @@ test('an owner records a deployment profile and executed evidence, sees activati
  const browser=await launchBrowser()
  try{await assuranceBrowserJourney(browser)}finally{await browser.close()}
 })
+
+import {builtOutcomes} from '../helpers/first-run/outcomes.mjs'
+test('first-owner and signed-in creation reach Setup, preserve editable defaults and install the real widget',builtOutcomes)

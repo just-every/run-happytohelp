@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {deskQueueProof} from './desk-proof.mjs'
 
 const ids=rows=>rows.map(row=>row.id).sort()
 function resultsFor(batch,selection,statuses){
@@ -37,6 +38,9 @@ async function bulkAudit(f,batch,action){
 export async function queueWork(f,{field,pending,tag}){
  const {app,w,foreign,id,ok,call,get,patch,visitor}=f
  const [second,reason]=await Promise.all([f.create(1),ok('/ticket-fields',{name:'Replacement reason',type:'dropdown',options:['damaged','wrong_size']})])
+ const foreignVisitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:foreign.widgetKey},headers:{Origin:foreign.allowedOrigin}})
+ const foreignTicket=await app.ok('/api/conversations',{token:foreignVisitor.token,body:{projectId:foreign.projectId}})
+ await deskQueueProof(f,{second,tag,foreignVisitor,foreignTicket})
  const definition=(await ok('/ticket-fields')).find(item=>item.id===reason.id)
  assert.equal(definition.type,'dropdown');assert.deepEqual(definition.options,['damaged','wrong_size'])
  const beforeInvalid=await get(second)
@@ -60,9 +64,7 @@ export async function queueWork(f,{field,pending,tag}){
  assert.deepEqual(ids(await ok(`/conversations?saved_view=${view.id}`,undefined,'operator')),[id])
  assert.ok((await ok('/conversations?search='+encodeURIComponent('TO-48200'))).some(ticket=>ticket.id===id))
 
- const foreignVisitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:foreign.widgetKey},headers:{Origin:foreign.allowedOrigin}})
- const foreignTicket=await app.ok('/api/conversations',{token:foreignVisitor.token,body:{projectId:foreign.projectId}})
- await app.ok(`/api/conversations/${foreignTicket.id}/messages`,{token:foreignVisitor.token,body:{localId:'foreign-order',content:'Private foreign replacement evidence',expectedRevision:0}})
+ await app.ok(`/api/conversations/${foreignTicket.id}/messages`,{token:foreignVisitor.token,body:{localId:'foreign-order',content:'Private foreign replacement evidence',expectedRevision:1}})
  const foreignGet=async()=>(await app.ok(`/api/dashboard/projects/${foreign.projectId}/conversations/${foreignTicket.id}/ticket`,{token:foreign.tokens.owner})).data
  const messages=(ticket,token=visitor.token)=>app.ok(`/api/conversations/${ticket}/messages`,{token}).then(result=>result.messages)
  const [foreignBefore,foreignMessages,foreignAudit]=await Promise.all([foreignGet(),messages(foreignTicket.id,foreignVisitor.token),securityLog(app,foreign)])

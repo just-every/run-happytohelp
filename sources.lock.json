@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "535dae8e2c7014b769613ae850c2ceb4c4392cea7f522a6e97bfa4925cd65136",
+      "sha256": "cd2120c5ccdd4f4dce7e1d3d1bf53837a99cbf6332efb52937bef735cd97d359",
       "executable": false
     },
     "DEMO.md": {
@@ -14188,6 +14188,10 @@
       "sha256": "d583c130037f372ae7a7ffbd18e8bb06f7f89c9f33af4b7daf55fb757ace1c81",
       "executable": false
     },
+    "tests/helpers/inbox/status-lifecycle.mjs": {
+      "sha256": "b6be44677f085949a571cfd9ad03957aab2dcb52d6e66ea1b436de492cd08f11",
+      "executable": false
+    },
     "tests/helpers/inbox/ticket-browser-fixture.mjs": {
       "sha256": "cc816156def0ea7099da7f7d6b523ed2f7d2b80f82cd73295839f83ecb85a23f",
       "executable": false
@@ -14573,7 +14577,7 @@
       "executable": false
     },
     "tests/journeys/inbox.mjs": {
-      "sha256": "33b648c30b0c9c3d0247739f163a17cfa492eb203fc375ebf0216b1b477fb860",
+      "sha256": "db35f9e4b32cf6b56ae4cf08d62c1041e712014f0623ff71df74e7090629a604",
       "executable": false
     },
     "tests/journeys/installer-nightly.mjs": {

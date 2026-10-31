@@ -1,3 +1,4 @@
+import {mobileTicketWork} from '../mobile.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
 import {ticketFixture} from './ticket-fixture.mjs'
@@ -8,6 +9,7 @@ import {queueWork,securityLog} from './queue-work.mjs'
 // One replacement request moves through the shared desk. Previewed operations,
 // private collaboration and automation all use the same native ticket history.
 export async function ticketsJourney(){
+ await mobileTicketWork()
  const initial=Date.parse('2026-11-02T09:00:00Z'),sent=[]
  const f=await ticketFixture({bindings:{H2H_WORKFLOW_NOW:String(initial),INTEGRATION_ENCRYPTION_KEY:randomBytes(32).toString('base64')},outbound:async request=>{
   const host=new URL(request.url).hostname

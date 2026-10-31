@@ -1,4 +1,4 @@
-import {guardKnowledgeWrite} from './write-bindings'
+import {guardKnowledgeWrite,textBindingIndexes} from './write-bindings'
 import type {Env} from '../../platform/env'
 import {canonicaliseFields} from './canonicaliser'
 import {knowledgeWords} from './words'
@@ -17,6 +17,8 @@ export function knowledgeWriteEnvironment(env:Env,scope:()=>KnowledgeWriteScope)
  const source=(sql:string)=>/^\s*(?:INSERT(?:\s+OR\s+\w+)?\s+INTO|REPLACE\s+INTO|UPDATE)\s+(?:knowledge_(?:articles|article_history|translations|translation_history|documents|datasets|versions|reply_blocks|generation_sources|translation_publications|article_publications|retired_articles|source_index|shingles|index_dirty|write_guards|canonicalisation_receipts|upgrade_reports|upgrade_progress|upgrade_permits|categories|article_categories|experience)|projects|users|memberships|sessions|project_settings|brands)\b/i.test(sql)
  async function prepare(sql:string,values:unknown[]){
   if(!mutation(sql)||source(sql)||!values.some(candidate))return {statement:original.prepare(sql).bind(...values),protected:false}
+  const stored=textBindingIndexes(sql).indexes.filter(index=>candidate(values[index]))
+  if(!stored.length)return {statement:original.prepare(sql).bind(...values),protected:false}
   const {projectId:knownProject,authorContactId}=scope()
   const project=async()=>{
    if(knownProject)return knownProject
@@ -24,7 +26,8 @@ export function knowledgeWriteEnvironment(env:Env,scope:()=>KnowledgeWriteScope)
    const rows=await original.prepare(`SELECT id project_id FROM projects WHERE id IN (SELECT value FROM json_each(?1)) UNION SELECT project_id FROM conversations WHERE id IN (SELECT value FROM json_each(?1)) UNION SELECT project_id FROM ai_generations WHERE id IN (SELECT value FROM json_each(?1)) UNION SELECT project_id FROM macros WHERE id IN (SELECT value FROM json_each(?1))`).bind(identifiers).all<{project_id:string}>()
    return rows.results.length===1?rows.results[0].project_id:undefined
   }
-  const normalized=await canonicaliseFields({...env,DB:original},project,values,authorContactId)
+  const normalized=[...values],text=await canonicaliseFields({...env,DB:original},project,stored.map(index=>values[index]),authorContactId)
+  stored.forEach((index,at)=>{normalized[index]=text[at]})
   return {statement:original.prepare(guardKnowledgeWrite(sql)).bind(...normalized),protected:true}
  }
  async function execute(sql:string,values:unknown[],method:'run'|'all'|'first'|'raw',args:any[]){

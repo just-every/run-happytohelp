@@ -1,6 +1,7 @@
 import type {Env} from '../../platform/env'
 import type {Run} from './types'
 import type {D1Sql} from '../import-kit/src/d1/types'
+import {unusedImportedArticleSql} from '../knowledge/import-undo'
 /** A source-owned contact/tag can be used later by a native or another import's
  * conversation. Those references are never part of this job's undo authority. */
 export function undoReferencesClear(run:Run,jobId?:string):D1Sql {
@@ -20,6 +21,6 @@ export function undoReferencesClear(run:Run,jobId?:string):D1Sql {
   // the contact would otherwise fail its session foreign key mid-undo.
   `SELECT 1 FROM sessions session WHERE session.project_id=p.destination AND session.contact_id=p.target_id`
  ]
- return {sql:`NOT EXISTS(SELECT 1 FROM ik_provenance p WHERE ${jobId?'p.job_id=?':'p.job_id IN (SELECT kit_job_id FROM move_in_batches WHERE run_id=?)'} AND p.destination=? AND p.reversed=0 AND ((p.target_kind='contact' AND (EXISTS(${references[0]}) OR EXISTS(${references[1]}) OR EXISTS(${references[2]}) OR EXISTS(${references[4]}))) OR (p.target_kind='company' AND EXISTS(SELECT 1 FROM contact_companies linked WHERE linked.project_id=p.destination AND linked.company_id=p.target_id AND NOT ${ownedContact})) OR (p.target_kind='tag' AND EXISTS(${references[3]})) OR (p.target_kind='category' AND (${categoryReferences})) OR (p.target_kind='field' AND (${fieldReferences})) OR (p.target_kind='form' AND EXISTS(SELECT 1 FROM request_form_submissions s WHERE s.project_id=p.destination AND s.form_id=p.target_id))))`,params:[jobId??run.id,run.project_id]}
+ return {sql:`NOT EXISTS(SELECT 1 FROM ik_provenance p WHERE ${jobId?'p.job_id=?':'p.job_id IN (SELECT kit_job_id FROM move_in_batches WHERE run_id=?)'} AND p.destination=? AND p.reversed=0 AND ((p.target_kind='contact' AND (EXISTS(${references[0]}) OR EXISTS(${references[1]}) OR EXISTS(${references[2]}) OR EXISTS(${references[4]}))) OR (p.target_kind='company' AND EXISTS(SELECT 1 FROM contact_companies linked WHERE linked.project_id=p.destination AND linked.company_id=p.target_id AND NOT ${ownedContact})) OR (p.target_kind='tag' AND EXISTS(${references[3]})) OR (p.target_kind='article' AND NOT (${unusedImportedArticleSql('p.destination','p.target_id')})) OR (p.target_kind='category' AND (${categoryReferences})) OR (p.target_kind='field' AND (${fieldReferences})) OR (p.target_kind='form' AND EXISTS(SELECT 1 FROM request_form_submissions s WHERE s.project_id=p.destination AND s.form_id=p.target_id))))`,params:[jobId??run.id,run.project_id]}
 }
 export async function assertUndoReferences(env:Env,run:Run,jobId?:string){const guard=undoReferencesClear(run,jobId),row=await env.DB.prepare(`SELECT (${guard.sql}) clear`).bind(...guard.params!).first<{clear:number}>();if(!row?.clear)throw new Error('NATIVE_EDIT_CONFLICT')}

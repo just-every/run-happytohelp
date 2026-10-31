@@ -38,7 +38,7 @@ async function refreshKnowledgeIndex(env:Env){
  let remaining=2000
  for(const row of projects.results){if(remaining<=0)throw new Error('KNOWLEDGE_INDEX_NOT_READY');const count=await env.DB.prepare('SELECT count(*) n FROM knowledge_index_dirty WHERE project_id=?').bind(row.project_id).first<{n:number}>();if(!await updateKnowledgeIndex(env,row.project_id,remaining))throw new Error('KNOWLEDGE_INDEX_NOT_READY');remaining-=count?.n||0}
 }
-type Source={id:string;project:string}
+type Source={id:string;project:string;incarnation:string|null}
 type WriteProject=string|undefined|(()=>Promise<string|undefined>)
 type Shingles=ReturnType<typeof wordShingles>
 interface CopySpan {start:number;end:number;sources:Source[];sets:string;token?:string}
@@ -67,7 +67,7 @@ async function canonicaliseLeaves(env:Env,projectId:WriteProject,leaves:TextLeaf
  if(!candidates.length)return
  const unique=new Map<string,{hash:string;words:string}>()
  for(const leaf of candidates)for(const row of leaf.shingles)unique.set(row.words,{hash:row.hash,words:row.words})
- const lookup=()=>env.DB.prepare(`WITH dirty AS MATERIALIZED (SELECT DISTINCT project_id FROM knowledge_index_dirty WHERE ?2=0),matches AS (SELECT s.words,json_group_array(DISTINCT json_object('id',s.source_id,'project',s.project_id)) sources FROM json_each(?1) incoming CROSS JOIN knowledge_shingles s INDEXED BY knowledge_shingles_lookup WHERE NOT EXISTS(SELECT 1 FROM dirty) AND s.hash=json_extract(incoming.value,'$.hash') AND s.words=json_extract(incoming.value,'$.words') GROUP BY s.words) SELECT 'dirty' kind,project_id words,'' sources FROM dirty UNION ALL SELECT 'match',json_group_array(words),sources FROM matches GROUP BY sources`).bind(JSON.stringify([...unique.values()]),indexReady?1:0).all<{kind:string;words:string;sources:string}>()
+ const lookup=()=>env.DB.prepare(`WITH dirty AS MATERIALIZED (SELECT DISTINCT project_id FROM knowledge_index_dirty WHERE ?2=0),matches AS (SELECT s.words,json_group_array(DISTINCT json_object('id',s.source_id,'project',s.project_id,'incarnation',coalesce(a.source_incarnation,retired.source_incarnation))) sources FROM json_each(?1) incoming CROSS JOIN knowledge_shingles s INDEXED BY knowledge_shingles_lookup LEFT JOIN knowledge_articles a ON s.source_id LIKE 'article:%' AND a.id=substr(s.source_id,9) AND a.project_id=s.project_id LEFT JOIN knowledge_retired_articles retired ON s.source_id LIKE 'article:%' AND retired.article_id=substr(s.source_id,9) AND retired.project_id=s.project_id WHERE NOT EXISTS(SELECT 1 FROM dirty) AND s.hash=json_extract(incoming.value,'$.hash') AND s.words=json_extract(incoming.value,'$.words') GROUP BY s.words) SELECT 'dirty' kind,project_id words,'' sources FROM dirty UNION ALL SELECT 'match',json_group_array(words),sources FROM matches GROUP BY sources`).bind(JSON.stringify([...unique.values()]),indexReady?1:0).all<{kind:string;words:string;sources:string}>()
  let rows=await lookup()
  if(rows.results.some(row=>row.kind==='dirty')){await refreshKnowledgeIndex(env);rows=await lookup()}
  const matches=new Map<string,number>(),sourceSets=new Map<number,Source[]>()
@@ -81,7 +81,7 @@ async function canonicaliseLeaves(env:Env,projectId:WriteProject,leaves:TextLeaf
  }
  // One creation batch per owning project, across all text fields in this write.
  for(const [owner,occurrences] of groups){
-  const tokens=await createBlocks(env,owner,occurrences.map(({leaf,span})=>({kind:'copy',text:leaf.text.slice(span.start,span.end),sources:span.sources.map(source=>source.id),authorContactId:targetProject?authorContactId:undefined})))
+  const tokens=await createBlocks(env,owner,occurrences.map(({leaf,span})=>({kind:'copy',text:leaf.text.slice(span.start,span.end),sources:span.sources.map(source=>source.id),sourceIdentities:span.sources.filter(source=>source.id.startsWith('article:')),authorContactId:targetProject?authorContactId:undefined})))
   occurrences.forEach(({span},index)=>span.token=tokens[index])
  }
  for(const leaf of candidates){

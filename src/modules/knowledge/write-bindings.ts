@@ -56,7 +56,7 @@ const conflict=(list:Token[],index:number)=>clause(list[index],['on'])&&keyword(
 /** Zero-based indexes of all stored bound values, including identity columns. Supply
  * PRAGMA table_info column order for INSERTs without an explicit column list.
  * Storage-to-storage SELECT expressions already carry canonical references. */
-function analyse(sql:string,columns?:readonly string[],guardRanges?:Token[][]):{table:string;indexes:number[]|null}{
+function analyse(sql:string,columns?:readonly string[],guardRanges?:Token[][]):{table:string;indexes:number[]}{
  const list=tokens(sql),root=list.findIndex(token=>clause(token,['insert','replace','update','delete']))
  if(root<0||root>0&&!keyword(list[0],'with'))return unsupported('expected write statement')
  const kind=list[root].text.toLowerCase();let at=root+1
@@ -67,7 +67,7 @@ function analyse(sql:string,columns?:readonly string[],guardRanges?:Token[][]):{
  if(list[at]?.text==='.'){at++;table=name(list[at++])}
  if(keyword(list[at],'as')){at++;name(list[at++])}
  if(kind==='delete')return {table,indexes:[]}
- const indexes=new Set<number>();let missingColumns=false
+ const indexes=new Set<number>()
  const rowSources=(expression:Token[],from:number,depth:number)=>{
   if(!keyword(expression[from],'from'))return
   let stop=expression.findIndex((token,index)=>index>from&&token.depth===depth&&token.kind==='word'&&(['where','group','having','window','order','limit','union','intersect','except','returning'].includes(token.text.toLowerCase())||keyword(token,'on')&&keyword(expression[index+1],'conflict')))
@@ -77,7 +77,19 @@ function analyse(sql:string,columns?:readonly string[],guardRanges?:Token[][]):{
  const include=(expression:Token[]):void=>{
   for(let index=0;index<expression.length;index++){
    const token=expression[index]
-   if(keyword(token,'select')){
+   // CASE conditions and EXISTS produce booleans, not stored source bytes.
+   // Their bindings remain exact comparison inputs even inside a projection.
+   if(keyword(token,'when')){
+    let nested=0,end=index+1
+    for(;end<expression.length;end++){
+     if(keyword(expression[end],'case'))nested++
+     else if(keyword(expression[end],'end'))nested--
+     else if(!nested&&expression[end].depth===token.depth&&keyword(expression[end],'then'))break
+    }
+    if(end===expression.length)unsupported('CASE THEN required')
+    index=end
+   }else if(keyword(token,'exists')&&expression[index+1]?.text==='('){index=close(expression,index+1)}
+   else if(keyword(token,'select')){
     let end=expression.findIndex((entry,position)=>position>index&&entry.depth===token.depth&&entry.kind==='word'&&['from','where','group','having','window','order','limit','union','intersect','except'].includes(entry.text.toLowerCase()))
     if(end<0)end=expression.length
     include(expression.slice(index+1,end))
@@ -120,7 +132,6 @@ function analyse(sql:string,columns?:readonly string[],guardRanges?:Token[][]):{
    const end=close(list,at)
    names=split(list.slice(at+1,end),1).map(part=>{if(part.length!==1)unsupported('column name required');return name(part[0])});at=end+1
   }
-  missingColumns=!names
   if(keyword(list[at],'default')){if(!keyword(list[at+1],'values'))unsupported('DEFAULT VALUES required');at+=2}
   else if(keyword(list[at],'values')){
    at++
@@ -161,7 +172,7 @@ function analyse(sql:string,columns?:readonly string[],guardRanges?:Token[][]):{
   }
   if(at<list.length&&!keyword(list[at],'returning'))unsupported('unrecognized INSERT suffix')
  }
- return {table,indexes:missingColumns?null:[...indexes].sort((a,b)=>a-b)}
+ return {table,indexes:[...indexes].sort((a,b)=>a-b)}
 }
 
 export function textBindingIndexes(sql:string,columns?:readonly string[]){return analyse(sql,columns)}

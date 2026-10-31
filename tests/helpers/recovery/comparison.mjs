@@ -90,6 +90,10 @@ try {
   const backup = await readFile(backupFile, 'utf8');
   assert.doesNotMatch(backup, /private-grant-hash|private-code-hash/, 'the backup carries no delegated credential');
   for (const table of ['edition_grants', 'edition_codes','integration_deliveries','native_integration_intents','native_integration_destinations','api_uploads','api_upload_disposals','mobile_devices','mobile_frontiers','mobile_commands','mobile_links']) before.rows[table] = [];
+  // The sanitizer retains business knowledge and references, but a restored
+  // installation must rebuild its own read linkage and canonicalisation proof.
+  for(const table of ['knowledge_read_receipts','knowledge_help_links','knowledge_help_sessions','knowledge_canonicalisation_receipts','knowledge_write_guards','knowledge_upgrade_permits','knowledge_upgrade_progress'])before.rows[table]=[];
+  before.rows.knowledge_upgrade_reports=before.rows.knowledge_upgrade_reports.map(value=>JSON.stringify({...JSON.parse(value),completed_at:null})).sort();
   for(const table of ['integration_tokens','api_credentials','api_requests','api_appends'])before.rows[table]=before.rows[table].map(value=>{
    const row=JSON.parse(value);
    if(table==='api_credentials')row.revoked_at??=Math.max(1,row.created_at);

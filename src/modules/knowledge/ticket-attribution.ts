@@ -1,5 +1,5 @@
 import type {Env} from '../../platform/env'
-import {accessParams,articleAccessSql} from './access'
+import {visibleArticleSql,accessReaders} from './door'
 import {portalSessionGuard,type PortalIdentity} from '../portal/identity'
 import {knowledgeVisitorHash} from './feedback'
 import {activeSourceProjectSql} from './public-sources'
@@ -22,9 +22,9 @@ export async function attributeKnowledgeTicket(env:Env,input:{projectId:string;c
    FROM knowledge_events v JOIN knowledge_articles a ON a.id=v.article_id AND a.project_id=v.project_id
    WHERE v.id=? AND v.project_id=? AND v.kind='view' AND v.created_at BETWEEN ? AND ?
    AND (v.visitor_hash IN (?,?) OR v.contact_id=?) AND a.status='published'
-   AND ${proof.sql} AND ${activeSourceProjectSql('a.project_id')} AND ${articleAccessSql('a','?','?')}
+   AND ${proof.sql} AND ${activeSourceProjectSql('a.project_id')} AND ${visibleArticleSql('a',accessReaders(access))}
    AND EXISTS(SELECT 1 FROM conversations c JOIN messages m ON m.conversation_id=c.id AND m.project_id=c.project_id
      WHERE c.id=? AND c.project_id=v.project_id AND c.contact_id=? AND m.actor_role='contact' AND v.created_at<=c.created_at)`)
-   .bind(`knowledge-ticket:${conversationId}`,contactId,now,viewId,projectId,now-1800000,now,anonymous,identified,contactId,...proof.args,...accessParams(access),conversationId,contactId).run()
+   .bind(`knowledge-ticket:${conversationId}`,contactId,now,viewId,projectId,now-1800000,now,anonymous,identified,contactId,...proof.args,conversationId,contactId).run()
  }catch{console.warn('Knowledge ticket attribution unavailable')}
 }

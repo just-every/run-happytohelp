@@ -89,3 +89,21 @@ redaction review and the source's proven private email-domain collection; generi
 article and collection edits preserve this boundary. Native correction analysis
 uses source and later cited reopened cycles without publishing automatically.
 Apply the pending migrations in RELEASE.json before serving the updated Worker.
+AI retrieval uses `door.ts` for the required reader set: the operator and every
+current ticket recipient must pass the current tenant, publication, lineage,
+brand and account/company rules. Dataset documents remain visible while their
+published dataset contains that URL. IDs are `article:<id>` and `knowledge:<id>`;
+continuations pin the sourceVersion issued by search. Publication snapshots fix
+which text a reference renders; edits and refreshes do not withdraw old replies.
+Unpublication, revocation, lineage moves and deletion do.
+
+`reference-store.ts` owns opaque references and rendering. `canonicaliser.ts`
+recognizes copied normalized word runs, including previous publications and
+translations. `write-boundary.ts` protects bound D1 text writes, while admission
+and mail claims embed the same current visibility predicate. Model transcript
+references render as titles and links; bodies enter through recorded knowledge
+tools. Native links use APP_ORIGIN and `/help/<projectId>/<slug>`.
+
+The round remains partial. The current evidence and limitations, including cached
+desktop provider history outside the server write scope, are recorded in
+[website knowledge](../../../docs/website-knowledge.md).

@@ -32,6 +32,8 @@ export async function writeArticle(env:Env,projectId:string,b:any,guard?:SqlGuar
  if(!preserveCategories)statements.push(
   env.DB.prepare(`DELETE FROM knowledge_article_categories WHERE article_id=? AND EXISTS(SELECT 1 FROM knowledge_articles WHERE id=? AND project_id=?) AND ${predicate}`).bind(articleId,articleId,projectId,...args),
   ...categories.map((category:string)=>env.DB.prepare(`INSERT INTO knowledge_article_categories(article_id,category_id) SELECT ?,? WHERE EXISTS(SELECT 1 FROM knowledge_articles WHERE id=? AND project_id=?) AND ${predicate}`).bind(articleId,category,articleId,projectId,...args)))
- const result=await env.DB.batch(statements);if(!result[0].meta.changes)throw new HTTPException(409,{message:'Article or authority changed'})
+ let result:D1Result[]
+ try{result=await env.DB.batch(statements)}catch(error){if(String(error).includes('knowledge_article_id_retired'))throw new HTTPException(409,{message:'This article ID was retired. Create a new article with a new ID.'});throw error}
+ if(!result[0].meta.changes)throw new HTTPException(409,{message:'Article or authority changed'})
  return {id:articleId}
 }

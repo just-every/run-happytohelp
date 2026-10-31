@@ -1,5 +1,7 @@
 import {remindObligations} from './modules/ai-support/obligations'
 import {expireVoiceMedia} from './modules/voice/media'
+import {canonicaliseExistingProject} from './modules/knowledge/upgrade'
+import {dispatchKnowledgeUpgrades} from './modules/knowledge/upgrade-progress'
 import {sweepUploads} from './modules/api-integrations/upload-lifecycle'
 import {processRerMailbox,recoverRerMailboxes,refreshRerMailbox} from './modules/integrations/rer-mailbox'
 import {consumeTriage,dispatchTriage} from './modules/triage/worker'
@@ -31,6 +33,7 @@ import { pruneCounters } from './platform/usage-counters'
 import {dispatchSurveys} from './modules/outcomes/survey-delivery'
 
 export async function consumeJob(job:Job,env:Env) {
+ if(job.type==='knowledge.upgrade'){await canonicaliseExistingProject(env,job.projectId);await dispatchKnowledgeUpgrades(env);return}
  if(job.type==='rer.mailbox.status'){await refreshRerMailbox(env,job.projectId);return}
  if(job.type==='rer.mailbox'){await processRerMailbox(env,job.projectId);return}
  if(job.type==='reports.schedule'){await dispatchScheduledReports(env);return}
@@ -75,7 +78,7 @@ export async function runScheduled(env:Env) {
  // The hard consumer allocation still reserves every later recovery and prune.
  await visit('Outbox',3,dispatchOutbox,700)
  await visit('Generation',10,async env=>{await remindObligations(env);await recoverQueuedGenerations(env,generationEffects);await dispatchTriage(env)})
- await visit('Knowledge',15,refreshDueDatasets)
+ await visit('Knowledge',15,async env=>{await dispatchKnowledgeUpgrades(env,2);await refreshDueDatasets(env)})
  await visit('Context',5,recoverContextJobs)
  await visit('Ticket continuation',1,recoverTicketContinuations)
  await visit('Training',25,recoverTrainingRuns)

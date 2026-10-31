@@ -3,7 +3,9 @@ import PropTypes from 'prop-types';
 import useFileInput from 'use-file-input';
 import MacrosPicker from './MacrosPicker';
 import ArticlePicker from './ArticlePicker';
-import TextareaAutosize from 'react-textarea-autosize';
+import ReferenceEditor from '../../native/knowledge-references/ReferenceEditor';
+import useReferencePreview from '../../native/knowledge-references/useReferencePreview';
+import {mergeReferences} from '../../native/knowledge-references/reference-text';
 import usePluginMessageEvent from '../hooks/usePluginMessageEvent';
 import FormMedia from './FormMedia';
 import ConversationComposerTools from './ConversationComposerTools';
@@ -19,6 +21,9 @@ import '../styles/components/ConversationForm.scss';
 
 ConversationForm.propTypes = {
     content: PropTypes.string,
+    audienceRevision: PropTypes.string,
+    references: PropTypes.array,
+    onReferencesChange: PropTypes.func,
     conversationId: PropTypes.string,
     draftError: PropTypes.string,
     files: PropTypes.array,
@@ -50,6 +55,9 @@ const noSender = { mailboxId: '', fromAddress: '' };
  */
 export default function ConversationForm({
     content,
+    audienceRevision,
+    references = [],
+    onReferencesChange,
     conversationId,
     draftError,
     files,
@@ -76,6 +84,13 @@ export default function ConversationForm({
     const [ mailboxes, setMailboxes ] = useState([]), [ sender, setSender ] = useState(noSender), [ senderError, setSenderError ] = useState('');
     const recipientError = emailRecipientsError(emailRecipients.cc) || emailRecipientsError(emailRecipients.bcc);
     const [ sendError, setSendError ] = useState('');
+    const [blockedReferences,setBlockedReferences] = useState([]);
+    const editorReferences = mergeReferences(references,blockedReferences.map(reference => {
+        const previous = references.find(item => item.token === reference.token);
+        const recipients = new Map((previous?.recipients || []).map(recipient => [recipient.id || recipient.label,recipient]));
+        for (const recipient of reference.recipients) recipients.set(recipient.id || recipient.label,{...recipient,visible:false});
+        return {...previous,...reference,recipients:[...recipients.values()]};
+    }));
     const composerRef = useRef(null);
     const textareaRef = useRef(null);
     const hasContent = Boolean(content?.trim() || files.length);
@@ -84,6 +99,16 @@ export default function ConversationForm({
     const unresolved = [...new Set([...(content || '').matchAll(/{{\s*([^{}]+?)\s*}}/g)].map(match=>match[1].split('|')[0].trim()))];
     const canSend = Boolean(isEnabled && !helper && !isComposerLocked && hasContent && !unresolved.length && !recipientError);
     const textareaContent = isLoading && loadingContent !== '-loading-' ? loadingContent : content;
+    const referencePreview = useReferencePreview({
+        projectId,conversationId,content,audienceRevision,
+        cc:parseEmailRecipients(emailRecipients.cc),bcc:parseEmailRecipients(emailRecipients.bcc),
+        enabled:isEnabled && !isComposerLocked && !recipientError,
+        onPreview:result => {
+            onReferencesChange?.(result.references);
+            if (result.content !== content) onContentChange(result.content);
+            setBlockedReferences([]);
+        },
+    });
 
     useEffect(() => {
         onAssistantDisabledChange(Boolean(helper));
@@ -113,13 +138,13 @@ export default function ConversationForm({
     const sendMessage = sendAndClose => {
         if (!canSend) return;
 
-        setSendError('');
+        setSendError(''); setBlockedReferences([]);
         onSendMessage(content, sendAndClose, {cc:parseEmailRecipients(emailRecipients.cc),bcc:parseEmailRecipients(emailRecipients.bcc),...(sender.mailboxId?{mailboxId:sender.mailboxId}:{}),...(sender.fromAddress?{fromAddress:sender.fromAddress}:{})}).then(() => {
             onContentChange('');
             setEmailRecipients(noRecipients);
-        }, error => setSendError(error.data?.reason === 'ticket_closed_followup_required'
+        }, error => { if (typeof error.data?.content === 'string') onContentChange(error.data.content); setBlockedReferences(error.data?.blockedReferences || []); setSendError(error.data?.reason === 'ticket_closed_followup_required'
             ? 'Not sent: this ticket was closed and is final. A customer reply opens a new ticket.'
-            : `Not sent: ${ error.message || 'the server refused the reply' }.`));
+            : `Not sent: ${ error.message || 'the server refused the reply' }.`); });
     };
 
     const handleKeyDown = event => {
@@ -152,7 +177,7 @@ export default function ConversationForm({
     };
 
     const toggleMacros = () => {
-        if (isEnabled && !isComposerLocked) setHelper(current => current === 'macros' ? null : 'macros');
+        if (isEnabled && !isComposerLocked) setHelper(current => current ? null : 'macros');
     };
 
     const closeRecipients = returnFocus => {
@@ -162,16 +187,18 @@ export default function ConversationForm({
 
     // The textarea stays mounted while the picker is open, so its selection is still the cursor the agent left.
     const insertReply = (reply, metadata) => {
-        if (metadata) onMacroApplied?.(reply, metadata);
+        if (metadata?.references) onReferencesChange?.(metadata.references);
+        if (metadata?.usage_id || metadata?.reply_type) onMacroApplied?.(reply, metadata);
         if (metadata?.reply_type === 'note') { setHelper(null); return; }
         const textarea = textareaRef.current;
         const draft = content || '';
-        const { text, caret } = insertSavedReply(draft, reply, textarea?.selectionStart ?? draft.length, textarea?.selectionEnd ?? draft.length);
+        const offset = Number(textarea?.dataset.contentOffset || 0);
+        const { text, caret } = insertSavedReply(draft, reply, textarea ? offset + textarea.selectionStart : draft.length, textarea ? offset + textarea.selectionEnd : draft.length);
         onContentChange(text);
         setHelper(null);
         window.requestAnimationFrame(() => {
-            textareaRef.current?.focus({ preventScroll: true });
-            textareaRef.current?.setSelectionRange(caret, caret);
+            const field = [...(composerRef.current?.querySelectorAll('textarea[data-content-offset]') || [])].find(element => {const start=Number(element.dataset.contentOffset);return caret >= start && caret <= start + element.value.length;});
+            if (field) {textareaRef.current=field;field.focus({preventScroll:true});const position=caret-Number(field.dataset.contentOffset);field.setSelectionRange(position,position);}
         });
     };
 
@@ -214,20 +241,24 @@ export default function ConversationForm({
                     { sendError && <p className="conversation-composer__error" role="alert">{ sendError }</p> }
                     <div className={ `chat-entry-form${ loadingContent.length > 0 ? (loadingContent === '-loading-' ? ' loading loading-start' : ' loading') : '' }` }>
                         { helper === 'macros' && <MacrosPicker projectId={ projectId } onPicked={ insertReply } /> }
-                        { helper === 'articles' && <ArticlePicker projectId={ projectId } conversationId={ conversationId } onPicked={ insertReply } /> }
+                        { helper === 'articles' && <ArticlePicker projectId={ projectId } conversationId={ conversationId } cc={parseEmailRecipients(emailRecipients.cc)} bcc={parseEmailRecipients(emailRecipients.bcc)} onPicked={ insertReply } /> }
                         { loadingContent.length > 0 && <div className="form-control form-control-flush loading-content" aria-live="polite">
                             <div className="loading-content-bg"></div>
                             <span className="loading-content-text">{ loadingContent === '-loading-' ? '' : loadingContent }</span>
                         </div> }
                         {unresolved.length > 0 && <p className="conversation-placeholder-warning text-danger" role="alert">Resolve before sending: {unresolved.join(', ')}</p>}
-                        <TextareaAutosize
-                            ref={ textareaRef }
+                        {referencePreview.pending && editorReferences.length > 0 && <p role="status" className="knowledge-reference-notice">Checking article visibility…</p>}
+                        {referencePreview.error && <p role="alert" className="conversation-composer__error">Could not check article visibility: {referencePreview.error}</p>}
+                        <ReferenceEditor
+                            aria-busy={referencePreview.pending}
+                            textareaRef={ textareaRef }
+                            references={ editorReferences }
                             className="form-control form-control-flush"
                             placeholder={ finalReason || 'Type your reply…' }
                             aria-label="Reply to conversation"
                             onKeyDown={ handleKeyDown }
-                            onChange={ event => onContentChange(event.target.value) }
-                            value={ textareaContent }
+                            onChange={ onContentChange }
+                            content={ textareaContent }
                             minRows={ 1 }
                             maxRows={ 10 }
                             readOnly={ isComposerLocked }

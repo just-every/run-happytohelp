@@ -1,4 +1,5 @@
 import {MAX_INBOUND_RAW_BYTES} from './email-limits'
+import {knowledgeWriteEnvironment} from '../knowledge/write-boundary'
 import {plainEmail} from './email-reply'
 import {HTTPException} from 'hono/http-exception'
 import {parseInboundMime,holdRawEmail} from './unreadable-email'
@@ -11,6 +12,8 @@ import {routingCandidates,authenticationVerdict,headerFromAddress} from './inbou
 import {emailAddress} from './inbound-routing'
 const addressList=(entries:any[]|undefined)=>(entries||[]).flatMap((entry:any)=>entry.group?entry.group.map((member:any)=>member.address):[entry.address]).filter(Boolean)
 export async function handleEmail(message:ForwardableEmailMessage,env:Env,execution:ExecutionContext){
+ env=knowledgeWriteEnvironment(env,()=>({}))
+
  const raw=await new Response(message.raw).arrayBuffer()
  // Size refusals keep their bytes in the same review/retention custody as
  // unreadable MIME. The envelope selects the workspace, never sender authority.

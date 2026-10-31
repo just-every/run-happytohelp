@@ -217,6 +217,26 @@
     {
       "id": "283_mobile_devices.sql",
       "buyerSteps": "MOBILE-001 server slice: apply after 282_messaging_surveys.sql and before the updated Worker serves traffic. Back up D1/R2 and private settings first. Adds scoped device capabilities, reconnect frontiers, command receipts and opaque link metadata. Existing native sessions and customer history are retained; no native client or provider delivery is enabled. Pair devices through native sign-in after upgrade. See docs/mobile-api.md."
+    },
+    {
+      "id": "284_knowledge_entitlements.sql",
+      "buyerSteps": "Apply after 283 before serving the updated source; never rename or replace an applied migration. Adds knowledge_categories.requires_entitlement (default 0), knowledge_collection_entitlements for explicit proven-contact grants and provenance, and knowledge_read_receipts for deliberate article request links. Retain collection restrictions and grants in backups. Live read/sign-in receipts do not transfer; restore sanitization removes complete receipt rows. Contact erasure removes grants, receipts and linked events; member erasure retains scoped pseudonymous grant provenance without widening access. The 30-minute receipt validity is not a retention policy. Exact-candidate acceptance remains pending and both knowledge clauses remain partial."
+    },
+    {
+      "id": "285_knowledge_references.sql",
+      "buyerSteps": "Apply after 284 before nonmember traffic. Adds knowledge_company_entitlements, knowledge_reply_blocks, knowledge_generation_sources, knowledge_source_index, knowledge_shingles, knowledge_index_dirty, knowledge_write_guards, knowledge_canonicalisation_receipts, knowledge_upgrade_reports and knowledge_upgrade_permits. Knowledge owns pinned bytes and complete generation source sets, including uncited sources; other text stores carry references. Existing domains collections become selected collections with no grants; suggested companies require a deliberate Save. Retain grants, pinned bytes, generation provenance and indexes together. Exclude live receipts, completion receipts, write guards and transient upgrade permits from backups, clear restored upgrade completion and re-establish it before disclosure. The candidate must index and canonicalise existing customer-, application- and model-bound text without replaying outbound work. Exact-candidate upgrade, mutation and performance acceptance remain pending; no reset is authorized."
+    },
+    {
+      "id": "286_knowledge_publication_history.sql",
+      "buyerSteps": "Apply after 285. Adds knowledge_translation_publications to retain published translation bytes after later reviews; unpublished drafts do not become detector sources. Adds publication and dirty-index triggers so website documents are indexed when their dataset becomes published, even if insert markers were previously consumed. Back up retained publication history with its source/index data. This records an unreleased migration, not an executed upgrade or passing acceptance."
+    },
+    {
+      "id": "287_knowledge_source_identity.sql",
+      "buyerSteps": "Apply after 286. Adds knowledge_article_publications for exact version-pinned article snapshots and knowledge_retired_articles for durable article deletion fences. Captures current and subsequent published versions, seeds known retired IDs from retained provenance/indexes and prevents deleted IDs from being recycled into newly accessible sources. Current publication, lineage and grants still decide visibility; version equality never grants access. Dataset continuations retain their originally issued bytes while the current publication still contains the URL. Main historical snapshots without an exact publication identity cannot be mapped safely and their continuations fail closed. Retain publication snapshots and retired identities in backups and exclude these authoritative stores from generic text canonicalisation. Exact-candidate acceptance remains pending."
+    },
+    {
+      "id": "288_knowledge_upgrade_progress.sql",
+      "buyerSteps": "Apply after 287. Adds knowledge_upgrade_progress for durable table/row cursors, row counters, dispatch state and leases while existing workspaces are canonicalised in bounded queue steps. Existing incomplete reports remain incomplete until all scoped tables have been exhausted and the source index is ready; report updates preserve unpublishedArticles. Workspaces created after this migration start with a completed empty report, while subsequent writes use the normal knowledge boundary. Exclude upgrade progress and leases from portable and native SQL backups along with completion receipts; a restored installation must scan again before nonmember disclosure. Upgrade execution and exact-candidate acceptance remain pending. The desktop connector caches context and resumes model sessions outside this round's local-agent/** write scope, so desktop model-input revocation remains blocked and is not claimed by these server changes."
     }
   ]
 }

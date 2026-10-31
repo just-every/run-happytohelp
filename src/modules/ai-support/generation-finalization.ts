@@ -1,3 +1,4 @@
+import {knowledgeAnswerFields} from '../knowledge/model-door'
 import type { Env, Actor } from '../../platform/env';
 import type { Generation } from './repository';
 import { transition } from './repository';
@@ -18,7 +19,7 @@ export async function finalizeGeneration(env: Env, row: Generation, attemptId: s
           AND a.model=json_extract(ai_profile_json,'$.model')
           AND a.prompt=json_extract(ai_profile_json,'$.prompt')
       )
-    `).bind(JSON.stringify({ result, usage }), new Date().toISOString(), row.id).run();
+    `).bind(JSON.stringify({ result:await knowledgeAnswerFields(env,row.project_id,row.id,result), usage }), new Date().toISOString(), row.id).run();
     if (!completed.meta.changes) await transition(env, row.id, 'superseded', 'Conversation or AI policy changed');
     await finishAttempt(env, attemptId, Boolean(completed.meta.changes));
     return null;

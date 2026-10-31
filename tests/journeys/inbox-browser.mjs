@@ -14,3 +14,4 @@ test('two signed-in operators see viewing, typing and unsent draft warnings befo
 import {outcomesJourney} from '../helpers/widget/outcomes.mjs'
 
 test('installed widget availability, provider-edge answers and consent-aware proactive outcomes',outcomesJourney)
+test('knowledge references remain reviewable in saved replies, ticket insertion, recipient refusals and collection grants at 1440 and 390',async()=>{const {referenceBrowser}=await import('../helpers/knowledge/reference-browser.mjs');await referenceBrowser()})

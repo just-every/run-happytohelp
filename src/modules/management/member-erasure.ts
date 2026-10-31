@@ -54,6 +54,11 @@ const memberPolicies:Record<string,RegistryEntry>={
  integration_token_events:{effects:[{prefix:"INSERT INTO integration_token_events(namespace,id,token_id,at,action,feature) SELECT namespace,lower(hex(randomblob(16))),id,?,'revoked','integrations.tokens' FROM api_credentials",source:'api_credentials',where:'issuer_id=? AND revoked_at IS NULL',before:c=>[c.now],after:c=>[c.user]}]},
  integration_tokens:{effects:[{prefix:"UPDATE integration_tokens SET revoked_at=coalesce(revoked_at,?),token_hash='erased:'||id",where:'credential_id IN (SELECT id FROM api_credentials WHERE namespace=? AND issuer_id=?)',before:c=>[c.now],after:c=>[c.project,c.user]}]},
  api_credentials:{effects:[{prefix:'UPDATE api_credentials SET issuer_id=NULL,revoked_at=coalesce(revoked_at,?)',where:'issuer_id=?',before:c=>[c.now],after:c=>[c.user]}]},
+ // Grants are workspace history, not a capability held by their issuer. Retain
+ // the opaque grantor id after account anonymization; deleting a grant must
+ // never clear the collection's explicit-entitlement requirement.
+ knowledge_collection_entitlements:{},
+ knowledge_company_entitlements:{},
  users:{accountOnly:true,anonymize:true},
  ...Object.fromEntries(['credentials','user_settings','user_factors','recovery_codes','session_factors','webauthn_challenges'].map(table=>[table,accountDelete()])),
  ...Object.fromEntries(['user_project_preferences','member_roles','operator_presence','mobile_devices','support_channel_members','support_channel_link_codes','memberships'].map(table=>[table,workspaceDelete()])),

@@ -1269,3 +1269,45 @@ Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd
 | `SURFACE-003` | Financial, provider and service classifiers | target | missing |  | No remote support-specialist MCP workflow and class/policy conformance proof is implemented for these points. |
 | `SURFACE-004` | Support resources and recovery events | target | missing |  | No remote support-specialist MCP workflow and class/policy conformance proof is implemented for these points. |
 | `SURFACE-005` | A stranger specialist completes a support week | target | missing |  | No remote support-specialist MCP workflow and class/policy conformance proof is implemented for these points. |
+
+## Knowledge policy riders and round-7 design
+
+The binding CT riders below are retained verbatim from 26 October 2026,
+23:35Z. The original clauses and acceptance journeys remain required. Both
+knowledge clauses remain **partial**; this section records design requirements,
+not passing execution evidence.
+
+**KNOWLEDGE-002 policy rider:** Restricted collections deny access without a current explicit entitlement. Owners or admins may grant named, verified workspace customer accounts; email-domain membership alone never creates account or company entitlement. Retain explicit company-entitlement capability as a required target, with current verified membership, deliberate authorization and revocation; named-account grants do not waive it. A requester’s knowledge entitlement is independent of other participants’ ticket visibility. Pending recipient-aware enforcement, deny restricted agent retrieval on tickets containing additional participants, while preserving the requester’s independently authorized help-center access. Before restricted content or citations reach a customer-visible reply, every intended recipient must be authorized. Apply current tenant, brand, collection ancestry, publication, locale and entitlement checks across help pages, search, article APIs, ticket search/preview/insertion, agent tools, connected applications, replay and final-answer admission. Revocation must prevent subsequent disclosure. Preserve reviewed translations, version history/rollback, redirects, failed-refresh preservation, brand/domain publishing and editor-controlled cited proposals. ACCESS-001 and BRANDS-001 inherit these duties. Status remains partial.
+
+**KNOWLEDGE-003 policy rider:** By default, browsing is not automatically associated with a later ticket. A deliberate article request link may carry an opaque, one-use receipt valid for 30 minutes; attribution counts only after an authorized ticket is admitted and remains idempotent across retries. Bind attribution to the correct workspace, brand, article, read locale and authorized identity where known; recheck restricted access at admission. A receipt never grants knowledge or ticket access. Anonymous linkage is receipt possession, not proof of the reader’s identity. Label this metric “Tickets from article request links”; distinguish it from all tickets after reading and from deflection. Unlinked, expired, consent-denied and otherwise unobservable journeys remain unknown, never zero or deflected. Preserve per-article views/votes, searches with and without results, click-through and tickets after reading by brand and locale, with explicit cohorts, denominators, attribution windows and coverage limits. The full attribution/deflection measurement target remains required and in Gap until proved. Disclose linkage before use, honor applicable consent and privacy choices, minimize retained identifiers, define deletion periods for receipts and linked events, and preserve export/erasure obligations. The 30-minute validity window is not a retention policy. FORMS-001 and BRANDS-001 inherit these boundaries. Status remains partial.
+
+Round 7 replaces conversation-bound reply fences with knowledge-owned references
+and one current-visibility door whose reader set is required. References pin text;
+current tenant, brand, publication, collection lineage, reader role/selection and
+contact or company entitlement decide whether it renders. Every collection and
+ancestor must be published. Under the round's R2 default, signed-in collections
+admit any proven customer account; selected collections require a current explicit
+contact or company grant. Domains grant nothing. Company access requires current
+explicit membership and a live, unmerged company. Collaborator seats see public
+knowledge only.
+
+The required canonicaliser recognises copied runs of at least 12 consecutive words
+across case, Unicode compatibility, whitespace, markup and punctuation changes.
+Stored content outside knowledge carries opaque references; every customer,
+connected-application and model door renders for its actual readers. Model inputs
+render references as title/link only; knowledge tools authorize and record source
+bodies. AI answers use the generation's complete source set, cited or not.
+Admission and mail claims recheck current recipients atomically. Reference snapshots
+remain readable after ordinary source edits, but loss of current visibility
+withdraws them without blanking unrelated transcript text.
+
+The upgrade must index existing sources, canonicalise every existing customer-,
+application- or model-bound text row idempotently, and record completion receipts.
+Unprocessed rows fail closed for nonmembers. Existing domain collections become
+selected collections with no grants; matching companies are suggestions only.
+The upgrade report must list articles affected by unpublished collections.
+
+Implementation and acceptance of this design are pending on the exact candidate.
+No route, browser, mutation, upgrade, performance or live-provider result is claimed
+by this documentation change. All named gaps in the Status/evidence rows remain
+open until CT judges the evidence.

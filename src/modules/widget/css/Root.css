@@ -1228,6 +1228,9 @@ html.wf-sacramento-n4-active .happytohelp-title {
 #happytohelp-root .happytohelp-chat-box.happytohelp-chat-box-has-content img:last-child {
   padding-bottom: 8px;
 }
+#happytohelp-root .happytohelp-chat-message .happytohelp-knowledge-unavailable {
+  opacity: 0.75;
+}
 #happytohelp-root .happytohelp-chat-message.happytohelp-chat-message-expanding {
   overflow: hidden;
   will-change: height;

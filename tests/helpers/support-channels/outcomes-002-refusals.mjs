@@ -46,5 +46,6 @@ export async function messagingRefusals(h,{owner,root,settings,resolve}){
   assert.equal((await app.first('SELECT opted_out FROM support_channel_threads WHERE id=?',other.id)).opted_out,1);
   assert.equal((await app.first('SELECT opted_out FROM support_channel_threads WHERE connection_id=? AND recipient=?',foreign.id,t.recipient)).opted_out,1,'START never grants another channel authority');
   await app.ok(`/api/dashboard/projects/${ws.projectId}/conversations/${t.conversation_id}`,{...owner,method:'PUT',body:{resolved:false}});await resolve(t);await app.scheduled();assert.equal(h.sends.length,before+1,'START restores only this number and channel for a new cycle');
+  const active=surveyPath(h.sends.at(-1).body);await h.deliver(c,p,h.event(p,{sender:t.recipient,text:'STOP'}));assert.equal((await app.call(active)).status,410,'STOP also fences an already issued signed survey');
  }
 }

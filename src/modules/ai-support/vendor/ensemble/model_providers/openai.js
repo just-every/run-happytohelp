@@ -622,6 +622,14 @@ export class OpenAIProvider extends BaseModelProvider {
                 user: 'magi',
                 input,
             };
+            // Responses names this limit differently from the shared model settings.
+            // Apply it for every selected OpenAI model, including those without an assist wrapper.
+            if (settings?.max_tokens !== undefined) {
+                if (!Number.isSafeInteger(settings.max_tokens) || settings.max_tokens < 1) {
+                    throw new Error('max_tokens must be a positive integer');
+                }
+                requestParams.max_output_tokens = settings.max_tokens;
+            }
             const parseThinkingBudget = (value) => {
                 if (typeof value !== 'number' || !Number.isFinite(value)) {
                     return null;

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {createRequire} from 'node:module'
 import {assistantApp,model} from './app.mjs'
+import {trainingOutcomes} from './training-outcomes.mjs'
 
 const require=createRequire(import.meta.url),{loadFixture}=require('../../training/fixture.cjs')
 const suggestion=(response,evidence=['message:0'])=>({user_goal:'Help',responses:[{button:'Answer',icon:'circle-question-mark',response,use_when:'',evidence_ids:evidence}],missing_information:[]})
@@ -11,6 +12,7 @@ const card=response=>({button:response.slice(0,20),icon:'circle-question-mark',r
 // Training runs through the operator's routes and the queue: a confirmed synthetic workspace, evaluation cases
 // checked per reply, every evaluation family, and paid outcomes that stay uncertain rather than replaying.
 export async function trainingJourney(){
+ await trainingOutcomes()
  const a=await assistantApp({bindings:{ENABLE_SYNTHETIC_EVALUATION:'true',TRAINING_PRICE_CEILINGS:JSON.stringify({[model]:{inputPerMillion:5,outputPerMillion:20}})}}),{app,ai,p,owner}=a
  const runs=`/api/training/projects/${p}/runs`,call=(path,options={})=>app.call(path,{token:owner,...options}).then(result=>({...result,data:result.data?.data??result.data}))
  const evaluate=async(cases,extra={})=>{const run=(await call(runs,{body:{request_id:crypto.randomUUID(),kind:'evaluation',cases,models:[model],max_cost:1000,max_tokens:100,...extra},status:201})).data;await a.run();return (await call(`${runs}/${run.id}`,{status:200})).data}

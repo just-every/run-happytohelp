@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "92244c9f9438544b41d783006489d7bb21c8285ca79d2278145713ded4bce72a",
+      "sha256": "d141ab41a8be0806e356ead0a713d25fa3f898990fe071f41db207b379adf6bf",
       "executable": false
     },
     "DEMO.md": {
@@ -7105,7 +7105,7 @@
       "executable": false
     },
     "src/modules/management/contact-erasure.ts": {
-      "sha256": "dc2d485d1c8500ba4e474c42706668200997358fea906bba59c9d9a3c4ed1e1c",
+      "sha256": "a237e5924b74cecee4e976a40cc08076f3632952ff27824e4064d12c53ba897c",
       "executable": false
     },
     "src/modules/management/contact-erasure/admitted-identity.ts": {
@@ -7134,6 +7134,10 @@
     },
     "src/modules/management/contact-erasure/objects.ts": {
       "sha256": "9101ec51ab41d7ece3620fbbf31aaac1db0fe3733000a3d9ef7c0e0103a2556c",
+      "executable": false
+    },
+    "src/modules/management/contact-erasure/portability.d.ts": {
+      "sha256": "9f64cbcfd64ca6db58354ae061e946261433a622990ba92a6acc49876a270557",
       "executable": false
     },
     "src/modules/management/contact-erasure/providers.ts": {
@@ -14012,6 +14016,10 @@
       "sha256": "6cd1edb085b51bce6b25116ed7e664348f559c21b2366862d43685606cad3da0",
       "executable": false
     },
+    "tests/helpers/erasure/outcomes.mjs": {
+      "sha256": "5b53bde4862f345104d277332816dcd7ca903bd4cca83a14b59049697528feee",
+      "executable": false
+    },
     "tests/helpers/escalations/edge.mjs": {
       "sha256": "abab982fba7780490094789e324bcaed2737ea9fefc7095ff6d07283d71f50f8",
       "executable": false
@@ -14525,7 +14533,7 @@
       "executable": false
     },
     "tests/journeys/erasure.mjs": {
-      "sha256": "e8a8f7a8914b696997c3f10057634c23384bddc5dda177ab24a8c70048eb9127",
+      "sha256": "34b9d96419a1e4778ba12155f5f0f7cb430fc5f457f07529ad8349c08a774306",
       "executable": false
     },
     "tests/journeys/first-run.mjs": {

@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {startApp,sha as hashToken} from './kit/app.mjs'
 import {rerMailErasureJourney} from '../helpers/email/rer-erasure.mjs'
+import {erasureOutcomes} from '../helpers/erasure/outcomes.mjs'
 
 // Contact erasure through the real application router on real D1 and R2 with every migration applied.
 let app,DB,FILES,env
@@ -304,4 +305,5 @@ let first,opAfter
  }
  }finally{await app.close()}
  await rerMailErasureJourney()
+ await erasureOutcomes()
 })

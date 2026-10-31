@@ -1,3 +1,4 @@
+import {inboundAttachmentsOverLimit} from './email-limits'
 import {trackingStatement} from '../outcomes/state'
 import {HTTPException} from 'hono/http-exception'
 import type {Actor,Env} from '../../platform/env'
@@ -41,7 +42,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
  if(!from||!to.length)throw new HTTPException(400,{message:'Inbound email address is invalid'})
  if(!Array.isArray(input.cc||[]))throw new HTTPException(400,{message:'Invalid CC recipients'})
  // Malformed or excess CC entries are skipped, never a reason to refuse the message.
- let content=visibleEmailReply(raw);const cc=[...new Set((input.cc||[]).map(value=>emailAddress(value)).filter((value):value is string=>Boolean(value)))].sort().slice(0,20)
+ const content=visibleEmailReply(raw);const cc=[...new Set((input.cc||[]).map(value=>emailAddress(value)).filter((value):value is string=>Boolean(value)))].sort().slice(0,20)
  const received=await receivingMailbox(env,[...to,...cc]);if(!received)throw new HTTPException(404,{message:'Inbound mailbox is not configured'})
  const {project,target}=received,unusable=input.fromUnusable===true,authenticated=!unusable&&input.senderFailed!==true&&input.senderAuthenticated!==false
  if(input.conversationId&&target.conversationId&&input.conversationId!==target.conversationId)throw new HTTPException(400,{message:'Conflicting conversation address'})
@@ -57,9 +58,9 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
  const addressed=direct||thread.conversationIds[0]
  const threadConflict=thread.conflict||Boolean(direct&&thread.conversationIds.some(value=>value!==direct))
  const recovering=recovery?await env.DB.prepare("SELECT 1 FROM suspended_emails s JOIN memberships m ON m.project_id=s.project_id WHERE s.id=? AND json_extract(s.input_json,'$.messageId')=? AND s.project_id=? AND m.user_id=? AND m.role IN ('owner','admin','operator') AND s.expires_at>?").bind(recovery.recoveryId,messageId,project.project_id,recovery.actorId,Date.now()).first():null
- // Files past the per-message limits are named in the message instead of refusing it.
- const offered=input.attachments||[],attachments=offered.filter(f=>f.content.byteLength<=20000000).slice(0,20),omitted=offered.filter(f=>!attachments.includes(f)).map(f=>f.filename)
- if(omitted.length)content=[content,`(Not kept, over the 20 MB or 20-file email limit: ${omitted.join(', ')})`].filter(Boolean).join('\n\n')
+ // An over-limit message stays whole in Suspended, rather than admitting a
+ // ticket with selected attachments discarded. Recovery cannot bypass limits.
+ const attachments=input.attachments||[],overLimit=inboundAttachmentsOverLimit(attachments.map(file=>file.content.byteLength))
  if(!content.trim()&&!attachments.length)throw new HTTPException(400,{message:'Invalid message content'})
  const hashes=await Promise.all(attachments.map(async f=>({filename:f.filename,type:f.contentType,hash:Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',f.content))).map(x=>x.toString(16).padStart(2,'0')).join('')})))
  const intent={from,content:raw,conversationId:direct||null,attachments:hashes,...(cc.length?{cc}:{})}
@@ -126,7 +127,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
    await env.DB.prepare("UPDATE inbound_emails SET state='ignored',error=?,conversation_id=? WHERE id=? AND claim_token=?").bind(CLOSED_TICKET_FINAL,addressedConversation.id,recordId,claimToken).run()
    throw refusal(addressedConversation)
   }
-  const suspensionReason=rule?.action==='block'||blocked?'blocked_sender':selfLoop?'mail_loop':threadConflict&&!recovering?'conflicting_thread_keys':isolated?(unusable?'unusable_from':input.senderFailed?'authentication_failed':'sender_unproven'):spam&&!recovering&&rule?.action!=='allow'?'spam':null
+  const suspensionReason=overLimit?'message_too_large':rule?.action==='block'||blocked?'blocked_sender':selfLoop?'mail_loop':threadConflict&&!recovering?'conflicting_thread_keys':isolated?(unusable?'unusable_from':input.senderFailed?'authentication_failed':'sender_unproven'):spam&&!recovering&&rule?.action!=='allow'?'spam':null
   if(suspensionReason)return suspendEmail(env,input,{projectId:project.project_id,receiptId:recordId,claimToken,reason:suspensionReason,candidateId:addressed})
   if(addressedConversation&&!isolated&&(trusted||!grant)){
    actor=await emailActor(env,project.project_id,addressedConversation,from,trusted,possessed)||(possessed?await preferredAddressActor(env,project.project_id,addressedConversation,from):null)

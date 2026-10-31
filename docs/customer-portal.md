@@ -10,8 +10,11 @@ does not grant access to anyone else's tickets.
 
 Enter your email address and request a sign-in link. Open the email within
 15 minutes. Each link works once and opens a customer session for that workspace.
-If a link has expired or was already used, request another one. Use **Sign out**
-when finished on a shared device.
+If a link has expired, was already used, or you lost the email, request another
+one with the same address to recover your requests. An operator changing the
+contact record’s email does not remove access from your proven sign-in address
+or give that history to the edited address. Preferences shows the address you
+proved when signing in. Use **Sign out** when finished on a shared device.
 
 This customer sign-in is separate from teammate accounts. It does not change
 native passwords, passkeys, authenticator apps or team two-factor requirements.

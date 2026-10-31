@@ -11345,11 +11345,11 @@
       "executable": false
     },
     "src/ui/native/knowledge-references/reference-text.js": {
-      "sha256": "735063c2ac8fe8ff888a8aa6b275fbea2addbfd8a093f585516e93f5859cae90",
+      "sha256": "523a96c687a53d2dc60914dec7a29e79e411236c99ca6a30970e5e81e3716df9",
       "executable": false
     },
     "src/ui/native/knowledge-references/ReferenceEditor.jsx": {
-      "sha256": "b9af43e8a48b3b2400acc794d2bef0088ca5bbda6ab74f1b8aa46d3a59e19386",
+      "sha256": "5a49d211eeada48e5c48adb65ba2005004590d6203606d450b9f6d5946f7aa98",
       "executable": false
     },
     "src/ui/native/knowledge-references/refusal-message.js": {
@@ -11729,7 +11729,7 @@
       "executable": false
     },
     "src/ui/native/pages/knowledge/KnowledgeUpgradeReport.jsx": {
-      "sha256": "0fbd1421792657335e02cbc4556771604d8e6da9cc2cedcacdad02d49e6f4c34",
+      "sha256": "595d8395e33d2e44a405350be308bafa118b6b6ed339f027ce3cfbc1b5fe9fd2",
       "executable": false
     },
     "src/ui/native/pages/knowledge/KnowledgeWorkspace.jsx": {
@@ -14769,7 +14769,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/reference-browser.mjs": {
-      "sha256": "2aba534e1409537d5db88d7e14e0f33b591e2f4fd8f00b958081163ceb700ee7",
+      "sha256": "b1ad15fc988c5c85c71d1d061a48bc8352846882cc26ce416dc960f9faf295b0",
       "executable": false
     },
     "tests/helpers/knowledge/reference-copies.mjs": {
@@ -14778,6 +14778,10 @@
     },
     "tests/helpers/knowledge/reference-disclosure.mjs": {
       "sha256": "8717cfadcedce176244e636d5d845cc3f17aa1343307f608ba0b47f5a4903b00",
+      "executable": false
+    },
+    "tests/helpers/knowledge/reference-editing-browser.mjs": {
+      "sha256": "7aaf2997069bdae7ddbd7177a5367143f56763f38be5aa7a649ae005782cb16b",
       "executable": false
     },
     "tests/helpers/knowledge/reference-layout.mjs": {

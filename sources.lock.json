@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "274290120bdc845f0647b1cfd44e764388f125b035eb989e685763d6d5b1baa4",
+      "sha256": "acfcf6e78b9935c3fda9b71e906a9c96ed69d1f0ea97e010f71c7d7c38ce7d1d",
       "executable": false
     },
     "DEMO.md": {
@@ -13777,7 +13777,7 @@
       "executable": false
     },
     "tests/helpers/ai/answers.mjs": {
-      "sha256": "7d59614724c98cf102affd33f32d4e203891d48858dcc78ca478d62da2649485",
+      "sha256": "8e18d753936408b485ca8f015a5ae318ee19848da2dc49354c6edf5a5d2840f7",
       "executable": false
     },
     "tests/helpers/ai/app.mjs": {
@@ -14457,7 +14457,7 @@
       "executable": false
     },
     "tests/helpers/widget/socket.mjs": {
-      "sha256": "34763fde5d32922c71ecf8801ae20fb29cab2e7d00c8d64152eab29de98e7ac1",
+      "sha256": "3a3011892fd2770bc00899eaec98c3c8f8a22696652e639bfd0acc51d6cfcb72",
       "executable": false
     },
     "tests/helpers/widget/sockets.mjs": {
@@ -14629,7 +14629,7 @@
       "executable": false
     },
     "tests/journeys/runtime.mjs": {
-      "sha256": "b504e460a6b43354056e8c512efd48db00fdfcd6f279a973d21d4da766c69072",
+      "sha256": "7a266afa4e7760226ee0c043f23626542ffad60ccba4d9b328d5c002e22ac160",
       "executable": false
     },
     "tests/journeys/upgrade-nightly.mjs": {

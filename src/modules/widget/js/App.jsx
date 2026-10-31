@@ -22,6 +22,8 @@ const Style = React.lazy(() => import(/* webpackChunkName: "Style" */ './Style')
 
 const App = forwardRef(({ config, Collector, onReady }, ref) => {
     const isPreview = isPreviewMode(config);
+    // Server policy may narrow collection, but cannot grant a visitor's local preference.
+    const collectorPreference = useRef(config.settings?.collector?.enabled !== false);
     const connectionRef = useRef(null);
     const shadowHostRef = useRef(null);
     const previewOpenRef = useRef(false);
@@ -97,6 +99,10 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
             setPreviewOpen(normalizedUpdate.update.preview.open);
         }
 
+        if (typeof normalizedUpdate.update?.settings?.collector?.enabled === 'boolean') {
+            collectorPreference.current = normalizedUpdate.update.settings.collector.enabled;
+        }
+
         setContextValues((currentContext) =>
             mergeAdvanced(currentContext, normalizedUpdate.update, { hardMergeEverything: true })
         );
@@ -114,7 +120,12 @@ const App = forwardRef(({ config, Collector, onReady }, ref) => {
     useEffect(() => { onReady?.(); }, [onReady]);
 
     const fetchSettings = useCallback((configuration) => {
-        if (configuration) { setContextValues(current => mergeAdvanced(current, configuration, {hardMergeEverything: true})); return; }
+        if (configuration) {
+            const collector = configuration.settings?.collector;
+            const settings = {...configuration.settings, collector: {...collector, enabled: collector?.enabled !== false && collectorPreference.current}};
+            setContextValues(current => mergeAdvanced(current, {...configuration, settings}, {hardMergeEverything: true}));
+            return;
+        }
         if (isPreview || config.inlineSettings) {
             return;
         }

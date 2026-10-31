@@ -1,9 +1,10 @@
 import {feedbackJourney} from '../helpers/feedback/journeys.mjs'
 import test from 'node:test'
 import {connectionsJourney} from '../connections/api.mjs'
+import {connectionOutcomes} from '../connections/outcomes.mjs'
 import {routingProof,erasureProof} from '../helpers/voice/journeys.mjs'
 
-test('a connected product opens and appends one scoped support request, receives signed events and a safe team notification, then loses access on expiry, erasure and revocation without replaying uncertain delivery',async()=>{await connectionsJourney();await routingProof();await erasureProof()})
+test('a connected product opens and appends one scoped support request, receives signed events and a safe team notification, then loses access on expiry, erasure and revocation without replaying uncertain delivery',async()=>{await connectionOutcomes();await connectionsJourney();await routingProof();await erasureProof()})
 
 import {engineeringJourney} from '../helpers/escalations/journeys.mjs'
 import {hubspotContextJourney} from '../helpers/hubspot-context.mjs'

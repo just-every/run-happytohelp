@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "274290120bdc845f0647b1cfd44e764388f125b035eb989e685763d6d5b1baa4",
+      "sha256": "e3cf2905fb21a084b117b8bc4b5f1581f67d4410d61ef1f83d348ecfdc52690c",
       "executable": false
     },
     "DEMO.md": {
@@ -13696,6 +13696,10 @@
       "sha256": "9185209c9e8bfeb60f2e7f20d1576f949c323f437369a83bfbddbc7c685adf99",
       "executable": false
     },
+    "tests/connections/outcomes.mjs": {
+      "sha256": "c94fdbeb26322c73b707b9e04ca179872323867bfebd018c74e572ca9b8c0490",
+      "executable": false
+    },
     "tests/connections/race-db.ts": {
       "sha256": "c8e44cb3f0ca24f5fce355b2cf5f4e9375e3397cffc6f249a2ffce13da08bfc3",
       "executable": false
@@ -14497,7 +14501,7 @@
       "executable": false
     },
     "tests/journeys/connections.mjs": {
-      "sha256": "793be5e2605ba68bc415fedfef45b528f98697de757803c85850fba0b44bc90f",
+      "sha256": "a019bf800b75baafe31e359691e33fc996d8f8a74230569169e5c2e7ae986026",
       "executable": false
     },
     "tests/journeys/connector.mjs": {

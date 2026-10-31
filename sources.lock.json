@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "54a0c7cef80a234fd18980dbdaa6b0b2f32472acf5331a2ccefe47c0572bb7eb",
+      "sha256": "90bbf993907386a6dee38f5b44e092f192d74dd5ce3799e550d3fce7ebcb66c7",
       "executable": false
     },
     "DEMO.md": {
@@ -4497,7 +4497,7 @@
       "executable": false
     },
     "src/modules/ai-support/generation-provider.ts": {
-      "sha256": "a84a514aa7466fd04f7d08673046c82a33b11b5408e51c9919146687a30e1ab7",
+      "sha256": "eecc650f56d7f44b940039dc5564cbbacdbc5c75949b6440ecdef72a5f95edcd",
       "executable": false
     },
     "src/modules/ai-support/generation-queue.ts": {
@@ -4505,7 +4505,7 @@
       "executable": false
     },
     "src/modules/ai-support/handoff.ts": {
-      "sha256": "a69b67327bfd1af881485a48099063a6d21c0fd4132aef4fd1b126bfa7a84bd7",
+      "sha256": "74b618afad855c0b8deba5046c229110a2ba2f6b8eb9095dfe99bd480735a269",
       "executable": false
     },
     "src/modules/ai-support/knowledge-proposal-tools.ts": {
@@ -6313,7 +6313,7 @@
       "executable": false
     },
     "src/modules/integrations/email-content.ts": {
-      "sha256": "2ae5cb5d74f57bae9a3fb4361de9b8284231afcc750136e9e16e8689a4e782f0",
+      "sha256": "55a77ba92448e083813e015aaa07a6b339e12feccfeb0c4686a2a996648c3b23",
       "executable": false
     },
     "src/modules/integrations/email-erasure.ts": {
@@ -13776,8 +13776,16 @@
       "sha256": "91c304fc4f337ae3904fc36f3e2e86f209b9b43f5e3a5f75479ea9e39d565f8f",
       "executable": false
     },
+    "tests/helpers/ai/agent001-handoff.mjs": {
+      "sha256": "3b940fe6fd68bb6c38d10433d7dcb22a19cfeeac6a64d018d5865c1e4175a1f9",
+      "executable": false
+    },
+    "tests/helpers/ai/agent001-outcomes.mjs": {
+      "sha256": "d36e70cf19330ec700f2b0d778604d5cce760963f5b47010d8fbd143234cedc2",
+      "executable": false
+    },
     "tests/helpers/ai/answers.mjs": {
-      "sha256": "7d59614724c98cf102affd33f32d4e203891d48858dcc78ca478d62da2649485",
+      "sha256": "9b0a03d15cbe5b7497cb784505f79a0969b6ca276eb934d43bfc2b377e9db7de",
       "executable": false
     },
     "tests/helpers/ai/app.mjs": {

@@ -42,7 +42,7 @@ companyRoutes.patch(`${prefix}/:companyId`,async c=>{
  if(body.revision!==undefined&&body.revision!==current.company.revision)throw stale()
  if(body.portalCompanyView!==undefined&&typeof body.portalCompanyView!=='boolean')invalid('Company portal visibility must be boolean')
  const next=changed(current,{name:body.name===undefined?current.company.name:name(body.name),attributes_json:body.attributes===undefined?current.company.attributes_json:JSON.stringify(attributes(body.attributes,definitions)),portal_company_view:body.portalCompanyView===undefined?current.company.portal_company_view:body.portalCompanyView?1:0},body.domains===undefined?current.domains:domains(body.domains))
- await commitChange(c.env,actor,{action:'updated',before:[current],after:[next],guard:together(guard,fieldsGuard(actor.projectId,definitions),freeDomains(actor.projectId,next.domains,[id]))})
+ await commitChange(c.env,actor,{action:'updated',before:[current],after:[next],provenance:{before:companyData(current),after:companyData(next)},guard:together(guard,fieldsGuard(actor.projectId,definitions),freeDomains(actor.projectId,next.domains,[id]))})
  return c.json({company:companyData(next)})
 })
 for(const method of ['put','delete'] as const)companyRoutes[method](`${prefix}/:companyId/members/:contactId`,async c=>{

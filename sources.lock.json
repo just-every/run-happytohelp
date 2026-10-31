@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "92def717e8320782ad99c1d51e1d6b56dde833ac9552ee0e1668c5a4da1ee88f",
+      "sha256": "64df86a02b219e3b2fa24d8ae81e1a1888e66d7abe35f7c3fe30ab29ca0222c0",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "79816803be638fa40818cd8a0da38555d01086de4d6d2629b8757ff5a49b59cb",
+      "sha256": "92244c9f9438544b41d783006489d7bb21c8285ca79d2278145713ded4bce72a",
       "executable": false
     },
     "DEMO.md": {
@@ -14176,6 +14176,10 @@
       "sha256": "b25639ecfd27293df35fbe66323002b91e1d7c836b184e18d3e565f9d74df33b",
       "executable": false
     },
+    "tests/helpers/inbox/queue-bulk.mjs": {
+      "sha256": "3cdd25ba0f75cc87189fdef8b0f90b795a2eebe02fe99cbd87a59ad4eb47a7a9",
+      "executable": false
+    },
     "tests/helpers/inbox/queue-work.mjs": {
       "sha256": "66b3403a002b41352c13d6310310345dc1108cf52a3dfc9426381f545fcc907b",
       "executable": false
@@ -14541,7 +14545,7 @@
       "executable": false
     },
     "tests/journeys/inbox.mjs": {
-      "sha256": "78a4a05d73290fd6fa0ca308fce94c68bdaa953bfa526b3d6f77443168f0b450",
+      "sha256": "33b648c30b0c9c3d0247739f163a17cfa492eb203fc375ebf0216b1b477fb860",
       "executable": false
     },
     "tests/journeys/installer-nightly.mjs": {

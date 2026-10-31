@@ -27,16 +27,17 @@ export default function ArticlePicker({projectId, conversationId, onPicked, cc =
         } catch (failure) { setError(failure.message); }
         finally { setBusy(false); }
     };
+    const visibleArticles = articles?.filter(article => article.insertable || showInternal);
     return <section className="article-picker" aria-label="Insert a help article">
         <h2>Help articles</h2>
         <p>Insert articles visible to every current recipient. Access is checked again when you send.</p>
         <input type="search" className="form-control" aria-label="Search help articles" placeholder="Search help articles" value={query} onChange={event => setQuery(event.target.value)}/>
         {error && <p role="alert">{error}</p>}
         {!articles && !error && <p role="status">Loading articles…</p>}
-        {articles?.length === 0 && <p role="status">No matching articles for this customer.</p>}
+        {visibleArticles?.length === 0 && <p role="status">{articles.length ? <>No articles every recipient can see. Show internal articles to review blocked ones.</> : <>No matching articles for this customer.</>}</p>}
         <label className="article-picker__internal"><input type="checkbox" checked={showInternal} onChange={event => setShowInternal(event.target.checked)}/> Show internal articles</label>
-        <ul>{articles?.filter(article => article.insertable || showInternal).map(article => <li key={article.id} className={article.insertable ? undefined : 'article-picker__blocked'}>
-            <span><strong>{article.title}</strong>{article.summary && <small>{article.summary}</small>}{article.preview && <details><summary>Preview article</summary><pre>{typeof article.preview === 'string' ? article.preview : article.preview.content}</pre></details>}{!article.insertable && <ul className="article-picker__reasons">{article.blockedRecipients?.map((recipient,index) => <li key={index}>Unavailable for {recipient.label}: {recipient.reason}</li>)}</ul>}</span>
+        <ul>{visibleArticles?.map(article => <li key={article.id} className={article.insertable ? undefined : 'article-picker__blocked'}>
+            <span><strong>{article.title}</strong>{article.summary && <small>{article.summary}</small>}{(article.preview ?? article.content) && <details><summary>Preview article</summary><pre>{typeof (article.preview ?? article.content) === 'string' ? article.preview ?? article.content : article.preview.content}</pre></details>}{!article.insertable && <ul className="article-picker__reasons">{article.blockedRecipients?.map((recipient,index) => <li key={index}>Unavailable for {recipient.label}: {recipient.reason}</li>)}</ul>}</span>
             <div><button type="button" className="btn btn-sm btn-white" disabled={busy || !article.insertable} onClick={() => insert(article, 'link')}>Insert link</button><button type="button" className="btn btn-sm btn-white" disabled={busy || !article.insertable} onClick={() => insert(article, 'text')}>Insert text</button></div>
         </li>)}</ul>
     </section>;

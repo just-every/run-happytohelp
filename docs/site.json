@@ -214,6 +214,10 @@
   ],
   "githubOnly": [
     {
+      "source": "docs/knowledge-upgrade-report.md",
+      "reason": "Knowledge upgrade report route authorization and privacy decisions for maintainers"
+    },
+    {
       "source": "AGENTS.md",
       "reason": "Contributor and coding-agent rules, read from the checkout by installer agents"
     },

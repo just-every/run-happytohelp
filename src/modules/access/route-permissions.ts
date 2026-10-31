@@ -65,6 +65,7 @@ const rules:Record<string,Rule>={
  'POST /api/knowledge/:projectId/proposals/:id/analyze-corrections':'knowledge.edit',
  'POST /api/ai-support/projects/:projectId/conversations/:conversationId/obligations/:id/complete':'conversations.manage',
  // Knowledge
+ [`GET ${K}/upgrade-report`]:'settings.manage',
  [`POST ${K}/references/insert`]:'knowledge.read',[`POST ${K}/references/preview`]:'knowledge.read',
  [`POST ${K}/articles`]:'knowledge.publish',[`DELETE ${K}/articles/:articleId`]:'knowledge.publish',[`PUT ${K}/articles/:articleId/categories`]:'knowledge.edit',[`PUT ${K}/articles/:articleId/order`]:'knowledge.edit',
  [`GET ${K}/categories/:categoryId/entitlements`]:'knowledge.publish',[`PUT ${K}/categories/:categoryId/entitlements`]:'knowledge.publish',[`POST ${K}/categories`]:'knowledge.edit',[`PUT ${K}/categories/:categoryId`]:'knowledge.edit',[`DELETE ${K}/categories/:categoryId`]:'knowledge.edit',

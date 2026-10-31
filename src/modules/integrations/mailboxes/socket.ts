@@ -81,10 +81,15 @@ export async function openImap(env:Env,credential:ImapCredential){
   return {session,uidValidity:validity[1],uidNext:Number(next[1])}
  }catch(error){await wire.close();throw error}
 }
+// A complete 4xx/5xx SMTP reply explicitly refuses the command. A missing,
+// malformed or interrupted response still leaves the delivery outcome unknown.
+export class SmtpRejection extends Error {
+ constructor(readonly status:number){super(`SMTP rejected command (${status})`)}
+}
 async function smtpReply(wire:MailSocket,expected:number[]){
  let code=0;for(let i=0;i<100;i++){
   const line=await wire.line();if(!/^\d{3}[- ]/.test(line))throw new Error('Invalid SMTP response')
-  code=Number(line.slice(0,3));if(line[3]===' '){if(!expected.includes(code))throw new Error(`SMTP rejected command (${code})`);return code}
+  code=Number(line.slice(0,3));if(line[3]===' '){if(!expected.includes(code)){if(code>=400&&code<600)throw new SmtpRejection(code);throw new Error(`Unexpected SMTP response (${code})`)};return code}
  }throw new Error('SMTP response exceeds line limit')
 }
 export async function openSmtp(env:Env,credential:ImapCredential){

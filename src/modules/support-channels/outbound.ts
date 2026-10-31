@@ -5,7 +5,7 @@ import {httpsTransport} from '../api-integrations/transport'
 import {auditStatement} from '../audit/record'
 import {memberAccess} from '../access/gate'
 import {thread,connection} from './model'
-import {teamsToken,teamsReplyUrl} from './teams'
+import {channelRequest} from './request'
 import {outboundMedia} from './media'
 export interface Continuation {name:string;language:{code:string};components?:{type:string;parameters:{type:string;text:string}[]}[]}
 export function blocker(t:any,now=Date.now(),continuation=false){
@@ -30,33 +30,12 @@ export async function channelMessage(env:Env,message:Record<string,unknown>,acto
  try{
   const current=await connection(env,t.connection_id),token=await decryptToken(env,actor.projectId,current.token_cipher!),files=await outboundMedia(env,t,String(message.id))
   if(['whatsapp','instagram','messenger'].includes(t.provider)&&files.length>1)throw new HTTPException(422,{message:'one_attachment_per_social_message'})
-  let url='',body='',headers:Record<string,string>={'Content-Type':'application/json','Authorization':'Bearer '+token}
-  const content=String(message.content),file=files[0]
-  if(t.provider==='sms'){
-   url=`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(t.account)}/Messages.json`;headers={'Content-Type':'application/x-www-form-urlencoded','Authorization':'Basic '+btoa(t.account+':'+token)}
-   const form=new URLSearchParams({From:t.sender,To:t.recipient,Body:content});for(const f of files)form.append('MediaUrl',f.url)
-   if(env.APP_ORIGIN)form.set('StatusCallback',new URL('/api/support-channels/webhooks/'+t.connection_id,String(env.APP_ORIGIN)).href)
-   body=form.toString()
-  }else if(t.provider==='teams'){
-   url=teamsReplyUrl(t);headers.Authorization='Bearer '+await teamsToken(env,current);body=JSON.stringify({type:'message',text:content,textFormat:'plain',attachments:files.map(f=>({contentType:f.content_type,contentUrl:f.url,name:f.filename}))})
-  }else if(t.provider==='slack'){
-   url='https://slack.com/api/chat.postMessage';body=JSON.stringify({channel:t.channel_id,thread_ts:t.thread_key,text:content||'Support attachment',attachments:files.map(f=>({fallback:f.filename,title:f.filename,title_link:f.url})),mrkdwn:false,unfurl_links:false,unfurl_media:false,parse:'none'})
-  }else if(t.provider==='whatsapp'){
-   url=`https://graph.facebook.com/v23.0/${encodeURIComponent(t.sender)}/messages`
-   const type=continuation?'template':file?(file.content_type.startsWith('image/')?'image':file.content_type.startsWith('audio/')?'audio':file.content_type.startsWith('video/')?'video':'document'):'text'
-   if(type==='audio'&&content.trim())throw new HTTPException(422,{message:'send_audio_without_caption'})
-   body=JSON.stringify({messaging_product:'whatsapp',to:t.recipient,type,[type]:continuation??(file?{link:file.url,...(type==='document'?{filename:file.filename}:{}),...(content.trim()?{caption:content}:{})}:{body:content})})
-  }else{
-   url=`https://graph.facebook.com/v23.0/${encodeURIComponent(t.sender)}/messages`
-   // Messenger/Instagram do not allow text and attachment in the same message envelope.
-   if(file&&content.trim())throw new HTTPException(422,{message:'send_social_attachment_separately_from_text'})
-   body=JSON.stringify({recipient:{id:t.recipient},message:file?{attachment:{type:file.content_type.startsWith('image/')?'image':file.content_type.startsWith('audio/')?'audio':file.content_type.startsWith('video/')?'video':'file',payload:{url:file.url,is_reusable:false}}}:{text:content},messaging_type:'RESPONSE'})
-  }
+  const request=await channelRequest(env,t,current,token,String(message.content),files,continuation)
   const live=await thread(env,actor.projectId,String(message.conversation_id)),fresh=await connection(env,t.connection_id)
   if(!live||blocker(live,Date.now(),!!continuation)||fresh.token_cipher!==current.token_cipher||(['slack','teams'].includes(live.provider)&&!JSON.parse(fresh.channels_json).includes(live.channel_id))||!(await memberAccess(env.DB,actor.projectId,actor.id))?.permissions.has('conversations.reply')){state='blocked';error='channel_authority_changed'}
   else{
    requested=true
-   const response=await httpsTransport.send({url,headers,body}),data=(()=>{try{return JSON.parse(response.body)}catch{return null}})()
+   const response=await httpsTransport.send(request),data=(()=>{try{return JSON.parse(response.body)}catch{return null}})()
    if(response.status>=200&&response.status<300&&data&&(t.provider!=='slack'||data.ok===true)){
     providerId=data.sid??data.ts??data.id??data.messages?.[0]?.id??data.message_id??null
     if(providerId){state='accepted';error=null}

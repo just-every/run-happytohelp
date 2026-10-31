@@ -1,3 +1,4 @@
+import {scheduleMessagingSurveys,dispatchMessagingSurveys} from './survey-messaging'
 import {cronRoom} from '../../platform/cron-budget'
 import type {Env} from '../../platform/env'
 import {emailConfigured,sendEmail} from '../integrations/email'
@@ -19,12 +20,14 @@ async function scheduleSurveys(env:Env,rows:Candidate[],now:number){
 }
 export async function scheduleConversationSurvey(env:Env,projectId:string,conversationId:string,now=Date.now()){
  await scheduleSurveys(env,[{project_id:projectId,conversation_id:conversationId}],now)
+ await scheduleMessagingSurveys(env,now,{projectId,conversationId})
 }
 /** Bounded poll seam for scheduled/queue execution. Sending/unknown commands are
  * reconciliation-only, including a process lost between claim and provider call. */
 export async function dispatchSurveys(env:Env,options:{now?:number;projectId?:string;conversationId?:string}={}){
  const now=options.now??Date.now()
- if(!cronRoom(env,3))return {processed:0,configured:false}
+ const messaging=await dispatchMessagingSurveys(env,now,options)
+ if(!cronRoom(env,3))return {processed:messaging,configured:false}
  const candidates=await env.DB.prepare(`SELECT r.project_id,r.conversation_id FROM conversation_resolutions r JOIN csat_settings cfg ON cfg.project_id=r.project_id JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id JOIN contacts ct ON ct.id=r.contact_id AND ct.project_id=r.project_id
  WHERE ${liveCycleSql} AND ${surveyRecipientSql} AND NOT EXISTS(SELECT 1 FROM csat_responses v WHERE v.resolution_id=r.id) AND cfg.enabled=1 AND r.resolved_at>=cfg.enabled_at AND r.reopened_at IS NULL AND NOT EXISTS(SELECT 1 FROM csat_surveys s WHERE s.resolution_id=r.id)
  ${options.projectId?'AND r.project_id=?':''} ${options.conversationId?'AND r.conversation_id=?':''} ORDER BY r.resolved_at LIMIT 50`)
@@ -32,10 +35,10 @@ export async function dispatchSurveys(env:Env,options:{now?:number;projectId?:st
  // One bounded page, with the same live-cycle and recipient guards checked in
  // the insert itself. Discovery must not spend one statement per invitation.
  if(candidates.results.length&&cronRoom(env,3))await scheduleSurveys(env,candidates.results,now)
- await env.DB.prepare(`UPDATE csat_surveys SET state='cancelled',revoked_at=COALESCE(revoked_at,?),updated_at=? WHERE state='pending' AND (expires_at<=? OR NOT EXISTS(
+ await env.DB.prepare(`UPDATE csat_surveys SET state='cancelled',revoked_at=COALESCE(revoked_at,?),updated_at=? WHERE channel='email' AND state='pending' AND (expires_at<=? OR NOT EXISTS(
  SELECT 1 ${surveyJoins} WHERE s.id=csat_surveys.id AND ${liveCycleSql} AND ${surveyRecipientSql} AND lower(trim(ct.email))=s.recipient AND EXISTS(SELECT 1 FROM csat_settings cfg WHERE cfg.project_id=s.project_id AND cfg.enabled=1)))`).bind(now,now,now).run()
- if(!emailConfigured(env)||!surveySigningConfigured(env))return {processed:0,configured:false}
- const rows=await env.DB.prepare(`SELECT * FROM csat_surveys WHERE state='pending' AND due_at<=? AND expires_at>? ${options.projectId?'AND project_id=?':''} ${options.conversationId?'AND conversation_id=?':''} ORDER BY due_at,id LIMIT 25`)
+ if(!emailConfigured(env)||!surveySigningConfigured(env))return {processed:messaging,configured:false}
+ const rows=await env.DB.prepare(`SELECT * FROM csat_surveys WHERE channel='email' AND state='pending' AND due_at<=? AND expires_at>? ${options.projectId?'AND project_id=?':''} ${options.conversationId?'AND conversation_id=?':''} ORDER BY due_at,id LIMIT 25`)
  .bind(now,now,...(options.projectId?[options.projectId]:[]),...(options.conversationId?[options.conversationId]:[])).all<Survey>()
  let processed=0
  for(const row of rows.results){
@@ -60,5 +63,5 @@ export async function dispatchSurveys(env:Env,options:{now?:number;projectId?:st
    auditStatement(env.DB,{projectId:row.project_id,category:'integration',action:'csat.invitation',actor:{type:'system'},source:'system',target:{type:'survey',id:row.id},detail:{state,resolutionId:row.resolution_id}})
   ])
  }
- return {processed,configured:true}
+ return {processed:processed+messaging,configured:true}
 }

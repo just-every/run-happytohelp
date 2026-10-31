@@ -20,7 +20,7 @@ export const liveCycleSql=`r.reopened_at IS NULL AND ${isSolvedSql()} AND c.cont
  * A native inbound receipt must identify a real human message in this exact cycle,
  * or a signed widget identity must name this precise mailbox. */
 const portalMailboxProof=`EXISTS(SELECT 1 FROM portal_identities pi WHERE pi.project_id=ct.project_id AND pi.contact_id=ct.id AND pi.email=lower(trim(ct.email)))`
-export const surveyRecipientSql=`(${provenAddressSql('ct')} OR ${portalMailboxProof})
+export const surveyRecipientSql=`c.channel NOT IN ('sms','whatsapp','instagram','messenger') AND (${provenAddressSql('ct')} OR ${portalMailboxProof})
  AND COALESCE(json_extract(ct.metadata_json,'$.unverified_sender'),0)!=1 AND COALESCE(json_extract(ct.metadata_json,'$.unusable_from'),0)!=1
  AND NOT EXISTS(SELECT 1 FROM move_in_conversations mi WHERE mi.conversation_id=c.id)
  AND NOT EXISTS(SELECT 1 FROM reporting_legacy_conversations legacy WHERE legacy.conversation_id=c.id)
@@ -38,7 +38,8 @@ export const surveyRecipientSql=`(${provenAddressSql('ct')} OR ${portalMailboxPr
  ELSE json_extract(ie.evidence_json,'$.header_from') END))=lower(trim(ct.email))))
  AND NOT EXISTS(SELECT 1 FROM csat_optouts o WHERE o.project_id=r.project_id AND o.contact_id=r.contact_id)`
 export const surveyJoins=`FROM csat_surveys s JOIN conversation_resolutions r ON r.id=s.resolution_id AND r.project_id=s.project_id JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id JOIN contacts ct ON ct.id=r.contact_id AND ct.project_id=r.project_id`
-export const activeSurveySql=`${liveCycleSql} AND s.revoked_at IS NULL AND s.expires_at>? AND NOT EXISTS(SELECT 1 FROM csat_optouts o WHERE o.project_id=s.project_id AND o.contact_id=s.contact_id)`
+export const activeSurveySql=`${liveCycleSql} AND s.revoked_at IS NULL AND s.expires_at>? AND NOT EXISTS(SELECT 1 FROM csat_optouts o WHERE o.project_id=s.project_id AND o.contact_id=s.contact_id)
+ AND (s.channel='email' OR EXISTS(SELECT 1 FROM support_channel_threads st JOIN support_channel_connections sc ON sc.id=st.connection_id WHERE st.conversation_id=c.id AND st.project_id=c.project_id AND st.contact_id=ct.id AND st.opted_out=0 AND sc.revoked_at IS NULL AND sc.token_cipher IS NOT NULL AND NOT EXISTS(SELECT 1 FROM support_channel_fences f WHERE f.connection_id=st.connection_id AND f.identity_hash=st.identity_hash)))`
 /** Root erasure runner batches these with its existing contact erasure statements. */
 export function eraseSurveyStatements(env:Env,projectId:string,contactId:string){return [
  env.DB.prepare("UPDATE csat_surveys SET recipient='',revoked_at=?,state=CASE WHEN state='pending' THEN 'cancelled' ELSE state END,updated_at=? WHERE project_id=? AND contact_id=?").bind(Date.now(),Date.now(),projectId,contactId),

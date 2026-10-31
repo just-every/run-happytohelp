@@ -5,7 +5,9 @@ review the stored knowledge upgrade and articles affected by unpublished collect
 lineages. The existing `requireProject` and `scope(c,true)` guards require a current
 native session and current owner/admin membership in the same active workspace.
 The explicit role rule is `settings.manage`, so custom admins must retain that
-permission. Agents, collaborators, customers and integration tokens cannot read
+permission. The native editor's `knowledge.read` or `knowledge.edit` permission
+and article selection also bind the returned titles and links. Agents,
+collaborators, customers and integration tokens cannot read
 the report. Existing article and knowledge body authorization remains unchanged.
 
 The response contains `status` (`pending`, `indexing`, `discovering`, `failed` or
@@ -18,7 +20,8 @@ Responses use `Cache-Control: no-store`.
 
 The affected IDs are the historical migration report, rather than a fresh list of
 all currently unpublished articles. Titles and editor links resolve only against
-current articles in that workspace. Deleted or out-of-workspace IDs contribute to
+current articles in that workspace within the reader's editor selection.
+Deleted, out-of-workspace or unselected IDs contribute to
 `unavailableArticleCount` and expose no ID, title or link. Later publication changes
 do not erase the historical report. Distinct affected IDs determine the counts.
 Article pages contain at most 100 entries, ordered by ID; pass `nextCursor` as

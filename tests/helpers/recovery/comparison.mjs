@@ -122,8 +122,8 @@ try {
   assert.equal(spawnSync('python3', [resolve('scripts/independent/delegation-backup.py'), repeatExport, repeatBackup]).status, 0);
   assert.equal(await readFile(repeatBackup, 'utf8'), backup, 'a backup of the restored install is identical to the backup it came from');
   await restored.start();
-  assert.equal((await call(restored,'/api/mobile/v1/session',undefined,mobile.token)).status,401,'credential-free restore never revives a mobile capability');
   await restoredKnowledgeReady(restored,journey.owner.projectId);
+  assert.equal((await call(restored,'/api/mobile/v1/session',undefined,mobile.token)).status,401,'credential-free restore never revives a mobile capability');
   await verifyAccess(restored, journey, journey.owner.token);
   await verifyFreshLogin(restored, journey);
   await verifyRestoredApi(restored, journey);

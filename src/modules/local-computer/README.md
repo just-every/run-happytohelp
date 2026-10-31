@@ -20,8 +20,10 @@ resolve_reply. Presence and actual listening readiness are separate markers.
 
 Result proposals are selected explicitly and receipt identity prevents repeated
 sends or child creation. Presence of a replies key disables legacy automatic
-reply delivery. Unverified resolve_reply requires input. Conversation frontier
-checks apply at actual message admission. A failed/uncertain delivery receipt
+reply delivery. Unverified resolve_reply requires input. An unsuccessful
+investigation that explicitly asks for human review also stays needs_input,
+including reports from older/custom hosts that label it completed. Conversation
+frontier checks apply at actual message admission. A failed/uncertain delivery receipt
 requires review and is never silently replayed. Screenshots remain job/device
 owned and are private project-scoped R2 artifacts.
 

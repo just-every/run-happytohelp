@@ -35,7 +35,7 @@ export async function referenceBrowser(){
    const captureScreens=async(target,name,measure=false)=>{
     for(const captureWidth of [1440,390]){
      await target.setViewportSize({width:captureWidth,height:captureWidth===390?844:1000})
-     await target.waitForFunction(()=>innerWidth>=1280||!document.body.classList.contains('conversation-workspace')||document.getElementById('conversation-assistant')?.getAttribute('aria-hidden')==='true')
+     await target.waitForFunction(()=>innerWidth>=1280||!document.body.classList.contains('conversation-workspace')||!document.getElementById('conversation-assistant')||document.getElementById('conversation-assistant').getAttribute('aria-hidden')==='true')
 
      if(measure)measurements.push({width:captureWidth,name,...await referenceLayout(target)})
      if(captureWidth===1440&&measure)assert.ok(await target.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${captureWidth} ${name}: no horizontal overflow`)

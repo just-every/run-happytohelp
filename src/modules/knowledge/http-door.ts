@@ -32,6 +32,8 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
   if(!member){await dispatchKnowledgeUpgrades(rawEnv);c.header('Retry-After','1');c.header('Cache-Control','no-store');return c.json({error:'Service temporarily unavailable.'},503)}
  }
  await next()
+ let errorData:any
+ try{
  const nativeProject=context().projectId
  if(nativeProject&&c.res.status<400&&!['GET','HEAD','OPTIONS'].includes(c.req.method)&&/^\/api\/knowledge\/[^/]+\/articles(?:\/|$)/.test(c.req.path))await updateKnowledgeIndex(rawEnv,nativeProject,100)
  if(c.req.path==='/api/local-agents/claim'||c.req.path==='/api/local-agents/heartbeat'||c.req.path.startsWith('/api/local-agents/jobs/')||c.req.path.startsWith('/api/delegation/v1/')||c.req.method==='GET'&&/^\/api\/portal\/[^/]+\/tickets(?:\/|$)/.test(c.req.path))return
@@ -44,6 +46,7 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  const publicKnowledge=c.req.path.startsWith('/api/knowledge/public/'),sourceRead=c.req.path.startsWith('/api/knowledge/')||c.req.path.startsWith('/api/v1/articles')
  const baseReaders=publicKnowledge?accessReaders(await resolveHelpAccess(rawEnv,projectId,c.req.raw)):authority&&c.req.path.startsWith('/api/v1/articles')&&c.req.query('contact_id')?readerSet([{kind:'contact',id:c.req.query('contact_id')!}]):member?memberReaders(actor.id):actor?.role==='contact'?readerSet([{kind:'contact',id:actor.contactId||actor.id}]):conversation?currentTicketReaders(projectId,conversation,{}):anonymousReaders
  let data:any=await c.res.json()
+ if(c.res.status>=400)errorData=data
  if(!sourceRead&&!(member&&data.reason==='knowledge_access_denied'))data=await canonicaliseFields(rawEnv,projectId,data)
  async function render(value:any,inherited:Readers,cid?:string):Promise<any>{
   if(Array.isArray(value))return Promise.all(value.map(row=>render(row,inherited,cid)))
@@ -60,4 +63,13 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
   return output
  }
  const output=await render(data,baseReaders,conversation),headers=new Headers(c.res.headers);headers.delete('Content-Length');c.res=new Response(JSON.stringify(output),{status:c.res.status,headers})
+ }catch(error){
+  if(c.res.status<400)throw error
+  // A durable command may already have returned an honest failure outcome.
+  // Projection must neither replace its status nor disclose unrendered prose
+  // when the same interrupted storage invocation cannot authorize a read.
+  const committed=errorData?.code==='ticket_committed'&&errorData.committed===true
+  const body=committed?{error:'Ticket changes were saved, but refresh or notification failed. Reload before making further changes.',code:'ticket_committed',committed:true,id:errorData.id,ticket_version:errorData.ticket_version}:{error:'Service temporarily unavailable.'}
+  const headers=new Headers(c.res.headers);headers.delete('Content-Length');headers.set('Content-Type','application/json');c.res=new Response(JSON.stringify(body),{status:c.res.status,headers})
+ }
 }

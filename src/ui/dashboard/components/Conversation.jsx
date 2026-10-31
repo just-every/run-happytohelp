@@ -164,6 +164,8 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
             return Promise.reject(new Error('Conversation history is not ready.'));
         }
 
+        const sentEditVersion = draftEditVersion.current;
+        const sentConversationId = conversationId;
         setIsSending(true);
         const message = {
             content: messageContent,
@@ -181,10 +183,15 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
         try {
             await sendAction('sendMessage', message, conversationProjectId);
             setDraftError('');
-            setDraftOrigin(null);
-            setEscalationDraftId(null);
-            setFiles([]);
-            macroDraftUsageRef.current = null;
+            // An acknowledgement owns only the draft it sent. Edits made while
+            // the request was pending belong to the next reply.
+            if (activeConversationIdRef.current === sentConversationId && draftEditVersion.current === sentEditVersion) {
+                macroDraftUsageRef.current = null;
+                updateDraftContent('');
+                setDraftOrigin(null);
+                setEscalationDraftId(null);
+                setFiles([]);
+            }
         } catch (error) { setDraftError(error.message); throw error; } finally {
             setIsSending(false);
         }
@@ -385,6 +392,7 @@ function Conversation({ projectId, conversationId, conversation, buckets }) {
                             key={ conversationId }
                             content={ draftContent }
                             audienceRevision={JSON.stringify([conversation.contact_id,conversation.contact?.email,conversation.participants?.map(participant => [participant.id,participant.email,participant.provided_email])])}
+                            draftVersionRef={draftEditVersion}
                             references={knowledgeReferences}
                             onReferencesChange={incoming => setKnowledgeReferences(current => mergeReferences(current,incoming))}
                             focusRequest={ draftFocusRequest?.conversationId === conversationId ? draftFocusRequest.version : 0 }

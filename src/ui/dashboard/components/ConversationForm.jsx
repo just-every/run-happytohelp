@@ -26,6 +26,7 @@ ConversationForm.propTypes = {
     onReferencesChange: PropTypes.func,
     conversationId: PropTypes.string,
     draftError: PropTypes.string,
+    draftVersionRef: PropTypes.object,
     files: PropTypes.array,
     finalReason: PropTypes.string,
     focusRequest: PropTypes.number,
@@ -60,6 +61,7 @@ export default function ConversationForm({
     onReferencesChange,
     conversationId,
     draftError,
+    draftVersionRef,
     files,
     finalReason,
     focusRequest,
@@ -101,7 +103,7 @@ export default function ConversationForm({
     const canSend = Boolean(isEnabled && !helper && !isComposerLocked && hasContent && !unresolved.length && !recipientError);
     const textareaContent = isLoading && loadingContent !== '-loading-' ? loadingContent : content;
     const referencePreview = useReferencePreview({
-        projectId,conversationId,content,audienceRevision,
+        projectId,conversationId,content,audienceRevision,draftVersionRef,
         cc:parseEmailRecipients(emailRecipients.cc),bcc:parseEmailRecipients(emailRecipients.bcc),
         enabled:isEnabled && !isComposerLocked && !recipientError,
         onPreview:result => {
@@ -159,10 +161,10 @@ export default function ConversationForm({
         if (!canSend) return;
 
         setSendError(''); setBlockedReferences([]);
+        const sentVersion = draftVersionRef?.current;
         onSendMessage(separateReferences(content,editorReferences), sendAndClose, {cc:parseEmailRecipients(emailRecipients.cc),bcc:parseEmailRecipients(emailRecipients.bcc),...(sender.mailboxId?{mailboxId:sender.mailboxId}:{}),...(sender.fromAddress?{fromAddress:sender.fromAddress}:{})}).then(() => {
-            onContentChange('');
             setEmailRecipients(noRecipients);
-        }, error => { if (typeof error.data?.content === 'string') onContentChange(error.data.content); setBlockedReferences(error.data?.blockedReferences || []); setSendError(error.data?.reason === 'ticket_closed_followup_required'
+        }, error => { if (typeof error.data?.content === 'string' && draftVersionRef?.current === sentVersion) onContentChange(error.data.content); setBlockedReferences(error.data?.blockedReferences || []); setSendError(error.data?.reason === 'ticket_closed_followup_required'
             ? 'Not sent: this ticket was closed and is final. A customer reply opens a new ticket.'
             : `Not sent: ${ error.message || 'the server refused the reply' }`); });
     };

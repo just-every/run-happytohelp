@@ -1,15 +1,19 @@
 import {useEffect,useRef,useState} from 'react';
 import {nativeRequest} from '../transport';
 
-/** Only a response for the editor's current text and audience may update its cards. */
-export default function useReferencePreview({projectId,conversationId,content,cc,bcc,audienceRevision,enabled,onPreview}) {
+/** Only a response for the editor's current text and audience may update its cards.
+ * The parent's synchronous edit version also fences the interval before React
+ * commits a new controlled value. */
+export default function useReferencePreview({projectId,conversationId,content,cc,bcc,audienceRevision,enabled,onPreview,draftVersionRef}) {
     const [state,setState] = useState({key:null,pending:false,error:''});
-    const inputKey = JSON.stringify([projectId,conversationId,content,cc,bcc,audienceRevision,enabled]);
+    const editVersion = draftVersionRef?.current;
+    const inputKey = JSON.stringify([projectId,conversationId,content,cc,bcc,audienceRevision,enabled,editVersion]);
     const current = useRef(null);
     current.current = {key:inputKey,onPreview};
     useEffect(() => {
         const controller = new AbortController();
-        const isCurrent = () => !controller.signal.aborted && current.current.key === inputKey;
+        const requestedVersion = editVersion;
+        const isCurrent = () => !controller.signal.aborted && draftVersionRef?.current === requestedVersion && current.current.key === inputKey;
         if (!enabled || !content?.trim()) {
             setState({key:inputKey,pending:false,error:''});
             return () => controller.abort();

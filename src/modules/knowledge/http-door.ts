@@ -7,7 +7,7 @@ import {currentTicketReaders} from './readers'
 import {canonicaliseFields,updateKnowledgeIndex} from './canonicaliser'
 import {renderKnowledgeFields,referenceIds,referenceVisibility} from './reference-store'
 import {knowledgeWriteEnvironment} from './write-boundary'
-import {dispatchKnowledgeUpgrades,queueKnowledgeUpgrade} from './upgrade-progress'
+import {dispatchKnowledgeUpgrades} from './upgrade-progress'
 import {requireActor} from '../../platform/auth'
 const schemas=new WeakMap<object,Promise<boolean>>()
 export const knowledgeSchemaReady=(env:Env)=>{let ready=schemas.get(env.DB);if(!ready){ready=env.DB.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='knowledge_reply_blocks'").first().then(Boolean);schemas.set(env.DB,ready)}return ready}
@@ -24,11 +24,12 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  const requestedProject=context().projectId
  const pending=await rawEnv.DB.prepare('SELECT project_id FROM knowledge_upgrade_reports WHERE completed_at IS NULL AND (?1 IS NULL OR project_id=?1) ORDER BY project_id LIMIT 1').bind(requestedProject||null).first<{project_id:string}>()
  if(pending){
-  await dispatchKnowledgeUpgrades(rawEnv)
   let member=false
   const credential=c.req.header('Authorization')?.replace(/^Bearer /,'')||c.req.header('Cookie')?.match(/(?:^|;\s*)h2h_session=([^;]+)/)?.[1]
   if(credential&&!/^int_[a-f0-9]{64}$/.test(credential))try{const actor=await requireActor(c);member=actor.role!=='contact'&&Boolean(await rawEnv.DB.prepare('SELECT 1 FROM memberships WHERE user_id=? AND project_id=?').bind(actor.id,requestedProject||actor.projectId).first())}catch{}
-  if(!member){c.header('Retry-After','1');c.header('Cache-Control','no-store');return c.json({error:'Service temporarily unavailable.'},503)}
+  // Only the maintenance response wakes recovery here. Member commands leave
+  // upgrade dispatch to the scheduler, so a refusal performs no unrelated writes.
+  if(!member){await dispatchKnowledgeUpgrades(rawEnv);c.header('Retry-After','1');c.header('Cache-Control','no-store');return c.json({error:'Service temporarily unavailable.'},503)}
  }
  await next()
  const nativeProject=context().projectId
@@ -37,8 +38,6 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  if(!c.res.headers.get('Content-Type')?.includes('application/json'))return
  const {projectId}=context(),actor=c.get('actor'),authority=(c as any).get('authority')
  if(!projectId)return
- const report=await rawEnv.DB.prepare('SELECT completed_at FROM knowledge_upgrade_reports WHERE project_id=?').bind(projectId).first<{completed_at:number|null}>()
- if(!report?.completed_at)await queueKnowledgeUpgrade(rawEnv,projectId)
  const member=actor&&actor.role!=='contact'&&!authority,privateComposer=member&&(/\/macros(?:\/|$)|\/macro-draft$/.test(c.req.path)),insertion=member&&/\/knowledge\/.*\/(?:insert|references\/preview)$/.test(c.req.path)
  if(insertion)return
  const conversation=c.req.param('conversationId')||(/\/conversations\//.test(c.req.path)?c.req.param('id'):undefined)

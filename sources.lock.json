@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "54a0c7cef80a234fd18980dbdaa6b0b2f32472acf5331a2ccefe47c0572bb7eb",
+      "sha256": "b058d1c08f812a3bd17f3529b23b06e8ba4adff486dc0176c2a29981f388e7d3",
       "executable": false
     },
     "DEMO.md": {
@@ -1649,7 +1649,7 @@
       "executable": false
     },
     "docs/AGENT-FIX.md": {
-      "sha256": "414e1ca4a7271277346fd8a08d9b3253f1a3fcb417df7a70996c9b51511bf453",
+      "sha256": "4d3c665df48d600282b5ce0417dd8ed005862a693d5a1a1ee89160068e2c7737",
       "executable": false
     },
     "docs/api.md": {
@@ -4305,7 +4305,7 @@
       "executable": false
     },
     "src/edition/local-computer.ts": {
-      "sha256": "0bf1fd4e4903adb39386e1b0e25d59307d1962b22de68151364c2e26906fc213",
+      "sha256": "7dd59d83d1c616ede0d707ff563492b173538ef9bc3a9709c1cd1e69a8582867",
       "executable": false
     },
     "src/edition/local-mail/configuration.ts": {
@@ -6877,11 +6877,15 @@
       "executable": false
     },
     "src/modules/local-computer/contracts.ts": {
-      "sha256": "9408193425161ac3ce62980db02efed508a895d4109e8c0a0a43e84aa607bdd5",
+      "sha256": "ba7c3352d6aa07881f9340146df199b2815f6062273214825d0f7bbd36f30ca4",
       "executable": false
     },
     "src/modules/local-computer/devices.ts": {
       "sha256": "929070286664eb7f12b7420eee93da1965ccf400dca0c00027e68f9d6881948d",
+      "executable": false
+    },
+    "src/modules/local-computer/follow-up.ts": {
+      "sha256": "4366b85f8395d378544f638bbb7b631052f891e4a7192ae04aaa5d13578df3b1",
       "executable": false
     },
     "src/modules/local-computer/index.ts": {
@@ -6909,7 +6913,7 @@
       "executable": false
     },
     "src/modules/local-computer/README.md": {
-      "sha256": "e7ae2e9e7c7b289ff1269f2f0433ae58d8a9469e056de329d71e9218bc93155b",
+      "sha256": "3ca2490642c46d8faacd287379b10a2f389e17c29c558876143c4ab1535cfe52",
       "executable": false
     },
     "src/modules/local-computer/result-validation.ts": {
@@ -6917,7 +6921,7 @@
       "executable": false
     },
     "src/modules/local-computer/results.ts": {
-      "sha256": "6a67f463826981bd928c15eb9885100b4505197d654f855eee707aa5083f71c2",
+      "sha256": "2b5a5c2ee5fb9900f3a0f55e8121d70c1c74806cbc037be0103e73fc4995d08f",
       "executable": false
     },
     "src/modules/local-computer/setup.ts": {
@@ -13936,6 +13940,14 @@
       "sha256": "9b50bb3a21e2448a14d67622c10902206aae0fd7afa5bb596d830c297e091b93",
       "executable": false
     },
+    "tests/helpers/delegation/authority-connector.mjs": {
+      "sha256": "36597a5c6c99350d720353da245d28eed86766c42b62dce263c270d106be1792",
+      "executable": false
+    },
+    "tests/helpers/delegation/authority-outcomes.mjs": {
+      "sha256": "5d8e7ce2eec0c7766e0ecc0d550b3b83e4a2fce4b5b89193efc3d6826979274f",
+      "executable": false
+    },
     "tests/helpers/delegation/browser-use.mjs": {
       "sha256": "9941bbf3556dd33675471048fd36984a9782121790caa0af203cfaabd14db78d",
       "executable": false
@@ -14517,7 +14529,7 @@
       "executable": false
     },
     "tests/journeys/delegation-computers.mjs": {
-      "sha256": "358bd31d5095d5a1b2c11a351718cfa24330c3723cb403390cdcd817f782a818",
+      "sha256": "ea0b2739d0f05a89c364d533afe1e44b2c58e5b485b22378599434de302278a8",
       "executable": false
     },
     "tests/journeys/delegation.mjs": {

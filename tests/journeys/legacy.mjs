@@ -6,6 +6,7 @@ import {mkdtemp,readFile,writeFile,rm,cp} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 import {createHash} from 'node:crypto'
+import {legacyCustodyJourney} from '../helpers/legacy/custody.mjs'
 import {legacyBundle} from '../helpers/legacy-bundle.mjs'
 import {writeLegacyPackage} from '../helpers/legacy-package.mjs'
 import {createRuntime} from '../helpers/emitted-runtime.mjs'
@@ -53,4 +54,5 @@ test('a legacy package is reviewed, imported and replayed through its command; t
   assert.ok(articles.data.some(article=>article.id==='article'))
   assert.equal((await call('/api/identity/setup')).data.available,false)
  }finally{if(runtime)await runtime.close(true);await rm(scratch,{recursive:true,force:true})}
+ await legacyCustodyJourney()
 })

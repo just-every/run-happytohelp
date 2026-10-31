@@ -18,6 +18,8 @@ export async function executeTrainingRun(env:Env,runId:string,execute:TrainingEx
   const admitted=await env.DB.prepare('SELECT id FROM training_cases WHERE id=? AND attempt_id=?').bind(row.id,attempt).first();if(!admitted)continue;
   try{
    await requireActiveProject(env,run.project_id);
+   const selected=JSON.parse(run.config).models,secondary=JSON.parse(row.definition).insightModel;
+   if(!Array.isArray(selected)||!selected.includes(row.model)||(secondary&&!selected.includes(secondary)))throw new Error('Training model is outside the run selection');
    const result=await execute(env,{projectId:run.project_id,model:row.model,variant:row.variant,caseDefinition:JSON.parse(row.definition),maxTokens:run.max_tokens,maxCost:perCase,attemptId:attempt});
    const key='training/'+run.project_id+'/'+runId+'/'+row.id+'/'+attempt+'.json';await env.FILES.put(key,JSON.stringify({attemptId:attempt,definition:JSON.parse(row.definition),...result}),{httpMetadata:{contentType:'application/json'}});
    const stillActive=await isProjectActive(env,run.project_id);const cost=result.usage?.cost,known=typeof cost==='number'&&Number.isFinite(cost)&&cost>=0,checks=evaluateTrainingCase(JSON.parse(row.definition),result,row.variant);

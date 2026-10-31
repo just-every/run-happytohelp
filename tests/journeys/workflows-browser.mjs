@@ -1,10 +1,11 @@
+import {api001Browser} from '../helpers/api001-outcomes-browser.mjs'
 import test from 'node:test'
 import {ticketsBrowser} from '../helpers/inbox/tickets-browser.mjs'
 import {automationOutcomes} from '../helpers/workflows/outcomes.mjs'
 import {triageBrowserJourney} from '../helpers/ai/triage-browser.mjs'
 import {launchBrowser,evidence} from './kit/browser.mjs'
 
-test('a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow',async()=>{await ticketsBrowser();await automationOutcomes()})
+test('a support lead configures ticket fields and a queue, previews and applies bulk changes, then previews, publishes and pauses its versioned workflow',async()=>{await ticketsBrowser();await automationOutcomes();await api001Browser()})
 
 test('a support lead reviews measured triage accuracy, approves prediction routing and corrects the evidence on a real admitted customer ticket',async()=>{
  const browser=await launchBrowser()

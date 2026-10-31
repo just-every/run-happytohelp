@@ -3,6 +3,7 @@ import {DatabaseSync} from 'node:sqlite';
 // Prior schema definitions a migration deliberately replaces. 0110 adds only the
 // native import fence to the two context message triggers' bodies.
 export const schemaExceptions = [
+  {migration:'281_managed_connectors.sql',names:['native_integration_destinations','api_destination_filter'],change:'Adds connector origin and permits workspace-wide Zapier subscriptions while retaining machine/native origin filters'},
   {migration: '0105_edition_delegation.sql', names: ['knowledge_articles'], change: 'Adds source_revision and source_incarnation; original columns retained'},
   {migration: '0108_public_answer_citations.sql', names: ['knowledge_articles', 'messages'], change: 'Adds generated publication_version and citations_json; original definitions retained'},
   {migration: '122_email_content.sql', names: ['messages'], change: 'Adds nullable content_raw TEXT'},
@@ -35,6 +36,7 @@ export function expectedSchema(before, after, added) {
   for (const [name, entry] of Object.entries(before)) {
     const fence = added.includes('0110_move_in.sql') && {context_message_added: 'NEW', context_message_removed: 'OLD'}[name];
     let wanted = fence ? {...entry, sql: entry.sql.replace(' BEGIN ', ` WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=${fence}.project_id AND f.conversation_id=${fence}.conversation_id) BEGIN `)} : entry;
+    if(added.includes('281_managed_connectors.sql')&&name==='api_destination_filter')wanted={...entry,sql:entry.sql.replace("d.credential_id IS NOT NULL AND NOT EXISTS","d.credential_id IS NOT NULL AND NOT (d.connector='zapier' AND EXISTS(SELECT 1 FROM api_credentials c WHERE c.namespace=d.project_id AND c.id=d.credential_id AND c.source_product IS NULL)) AND NOT EXISTS")};
     if (entry.type === 'table') {
       const alters = tableChanges.filter(change => added.includes(change.migration) && change.table === name);
       if (alters.length) {
@@ -84,6 +86,7 @@ END`;
 // Expected additions/replacements are explicit, independent of the migration
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
+  {migration:'281_managed_connectors.sql',table:'native_integration_destinations',sql:"ALTER TABLE native_integration_destinations ADD COLUMN connector TEXT NOT NULL DEFAULT 'native';"},
   {migration:"257_sla_slack.sql",table:"sla_policies",sql:"ALTER TABLE sla_policies ADD COLUMN slack_destination_id TEXT;"},
   {migration:"257_sla_slack.sql",table:"sla_alerts",sql:"ALTER TABLE sla_alerts ADD COLUMN slack_destination_id TEXT; ALTER TABLE sla_alerts ADD COLUMN slack_state TEXT NOT NULL DEFAULT 'not_configured'; ALTER TABLE sla_alerts ADD COLUMN slack_attempts INTEGER NOT NULL DEFAULT 0; ALTER TABLE sla_alerts ADD COLUMN slack_started_at INTEGER; ALTER TABLE sla_alerts ADD COLUMN slack_next_attempt_at INTEGER; ALTER TABLE sla_alerts ADD COLUMN slack_error TEXT;"},
   {migration:"258_teams_escalations.sql",table:"escalation_connections",sql:"ALTER TABLE escalation_connections ADD COLUMN installed_by TEXT;"},

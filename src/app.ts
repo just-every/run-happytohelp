@@ -1,5 +1,6 @@
 import {businessProject} from './edition/agent-door/project.ts'
 import {handleAgentRequest} from './edition/agent-door/index.ts'
+import {helpscoutWebhooks} from './modules/api-integrations/helpscout'
 import {assuranceRoutes} from './modules/assurance/routes'
 import {channels} from './modules/support-channels/routes'
 import {api as scopedApi} from './modules/api-integrations/routes'
@@ -61,6 +62,7 @@ app.route('/api/rer/business-project',businessProject)
 app.route('/api/assurance',assuranceRoutes)
 // The bearer-only API never enters native cookie/project CORS, including errors.
 app.route('/api/v1',scopedApi)
+app.route('/api/helpscout',helpscoutWebhooks)
 app.use('/api/identity/widget/profile',visitorProfileCredential)
 app.use('/api/*',async(c,next)=>{if(c.req.path==='/api/v1'||c.req.path.startsWith('/api/v1/'))return next();return projectCors(c,next)})
 app.onError((error,c) => {

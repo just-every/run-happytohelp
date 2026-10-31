@@ -26,6 +26,7 @@ export class NativeDeliveryRepository extends IntegrationsRepository {
    JOIN native_integration_destinations d ON d.id=i.destination_id AND d.project_id=i.project_id
    JOIN projects p ON p.id=i.project_id
    WHERE v.namespace=? AND v.id=? AND v.state='sending' AND v.claim=? AND v.claim_until>? AND v.envelope=?
+   AND (d.credential_id IS NULL OR EXISTS(SELECT 1 FROM api_credentials cr WHERE cr.namespace=d.project_id AND cr.id=d.credential_id AND cr.revoked_at IS NULL AND (cr.expires_at IS NULL OR cr.expires_at>CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)) AND (d.connector<>'zapier' OR EXISTS(SELECT 1 FROM json_each(cr.scopes) WHERE value=CASE WHEN e.event LIKE 'contact.%' THEN 'contacts:read' WHEN e.event LIKE 'article.%' THEN 'articles:read' ELSE 'conversations:read' END))))
    AND d.id=? AND d.enabled=1 AND d.secret_ciphertext=? AND e.event=? AND e.erased_at IS NULL AND i.error_code IS NULL
    AND ((d.kind='webhook' AND ?='webhook') OR (d.kind='slack' AND ?='slack.'||d.mode||'.v1'))
    AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=p.id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)

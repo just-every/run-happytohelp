@@ -9,3 +9,11 @@
 @media(max-width:600px){.connections-page :is(button,select,input:not([type=checkbox])){min-height:44px}.connections-page label:has(input[type=checkbox]){min-height:44px;display:flex;align-items:center;gap:8px}}
 
 @media(max-width:600px){body:has(:is(.connections-page,.sla-policy-settings,.workflow-panel)) :is(button,a[href],input:not([type=checkbox]):not([type=radio]),select,textarea,summary,[role=button],[role=tab]){min-height:44px!important;min-width:44px!important}body:has(:is(.connections-page,.sla-policy-settings,.workflow-panel)) a[href]{display:inline-flex;align-items:center}}
+
+.connector-catalog{margin-top:32px;padding-top:24px;border-top:1px solid var(--rule)}
+.connector-list{list-style:none;padding:0;margin:16px 0;display:grid;gap:16px}
+.connector-list>li{padding:16px;border:1px solid var(--rule);border-radius:8px;min-width:0}
+.connector-heading{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}
+.connector-heading h3{font-size:1.1rem;margin:0 0 8px}
+.connector-health{font-size:.9rem}.connector-health--failing{color:var(--danger)}
+.connector-list p{margin:8px 0;overflow-wrap:anywhere}.connector-list button{margin:4px 8px 4px 0;white-space:normal}

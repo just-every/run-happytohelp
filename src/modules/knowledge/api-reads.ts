@@ -1,3 +1,5 @@
+import {renderKnowledgeFields} from './reference-store'
+import {currentTicketReaders} from './readers'
 import type {Env} from '../../platform/env'
 import type {TokenAuthority} from '../../platform/integration-authority'
 import {visibleArticleSql,anonymousReaders,readerSet,literal} from './door'
@@ -11,4 +13,14 @@ export function apiArticleVisibility(authority:TokenAuthority,contactId:string|u
 export async function apiArticleRows(env:Env,authority:TokenAuthority,input:{id?:string;contactId?:string;editor:boolean;before?:{time:number;id:string};limit?:number}){
  const filter=apiArticleVisibility(authority,input.contactId,input.editor),before=input.before
  return (await env.DB.prepare(`SELECT * FROM knowledge_articles WHERE project_id=? AND ${filter} ${input.id?'AND id=?':''} ${before?'AND (updated_at<? OR (updated_at=? AND id<?))':''} ORDER BY updated_at DESC,id DESC LIMIT ?`).bind(authority.projectId,...(input.id?[input.id]:[]),...(before?[before.time,before.time,before.id]:[]),input.limit||1).all<any>()).results
+}
+
+/** A managed sample delegates authorization and quota admission to the native
+ * resource route. Its response still crosses the same current-reader door. */
+export async function apiSampleResponse(env:Env,response:Response,resource:string){
+ if(!response.ok||!response.headers.get('Content-Type')?.includes('application/json'))return response
+ const value:any=await response.json()
+ if(Array.isArray(value.data))value.data=await Promise.all(value.data.map((row:any)=>typeof row.project_id==='string'?renderKnowledgeFields(env,row.project_id,row,resource==='conversations'?currentTicketReaders(row.project_id,row.id,{}):anonymousReaders):row))
+ const headers=new Headers(response.headers);headers.delete('Content-Length')
+ return new Response(JSON.stringify(value),{status:response.status,headers})
 }

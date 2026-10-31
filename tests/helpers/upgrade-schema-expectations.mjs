@@ -3,6 +3,7 @@ import {DatabaseSync} from 'node:sqlite';
 // Prior schema definitions a migration deliberately replaces. 0110 adds only the
 // native import fence to the two context message triggers' bodies.
 export const schemaExceptions = [
+  {migration:'284_knowledge_entitlements.sql',names:['knowledge_categories'],change:'Adds requires_entitlement with a closed boolean constraint; every prior column definition is retained'},
   {migration:'281_managed_connectors.sql',names:['native_integration_destinations','api_destination_filter'],change:'Adds connector origin and permits workspace-wide Zapier subscriptions while retaining machine/native origin filters'},
   {migration:'282_messaging_surveys.sql',names:['csat_responses','csat_response_history'],change:'Widens only channel and response-surface checks to the four permitted messaging providers, retaining every column and row'},
   {migration: '0105_edition_delegation.sql', names: ['knowledge_articles'], change: 'Adds source_revision and source_incarnation; original columns retained'},
@@ -88,6 +89,7 @@ END`;
 // Expected additions/replacements are explicit, independent of the migration
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
+  {migration:'284_knowledge_entitlements.sql',table:'knowledge_categories',sql:'ALTER TABLE knowledge_categories ADD COLUMN requires_entitlement INTEGER NOT NULL DEFAULT 0 CHECK(requires_entitlement IN (0,1))'},
   {migration:'281_managed_connectors.sql',table:'native_integration_destinations',sql:"ALTER TABLE native_integration_destinations ADD COLUMN connector TEXT NOT NULL DEFAULT 'native';"},
   {migration:"257_sla_slack.sql",table:"sla_policies",sql:"ALTER TABLE sla_policies ADD COLUMN slack_destination_id TEXT;"},
   {migration:"257_sla_slack.sql",table:"sla_alerts",sql:"ALTER TABLE sla_alerts ADD COLUMN slack_destination_id TEXT; ALTER TABLE sla_alerts ADD COLUMN slack_state TEXT NOT NULL DEFAULT 'not_configured'; ALTER TABLE sla_alerts ADD COLUMN slack_attempts INTEGER NOT NULL DEFAULT 0; ALTER TABLE sla_alerts ADD COLUMN slack_started_at INTEGER; ALTER TABLE sla_alerts ADD COLUMN slack_next_attempt_at INTEGER; ALTER TABLE sla_alerts ADD COLUMN slack_error TEXT;"},

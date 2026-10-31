@@ -32,7 +32,10 @@ async function conversationAudience(c:any,body:any={}){
  const pid=c.req.param('projectId'),cid=c.req.param('conversationId');if(!await c.env.DB.prepare('SELECT 1 FROM conversations WHERE project_id=? AND id=?').bind(pid,cid).first())throw new HTTPException(404,{message:'Not found'})
  return currentTicketReaders(pid,cid,{addresses:envelope(c,body)})
 }
-analyticsRoutes.get('/:projectId/conversations/:conversationId/articles',async c=>c.json(await pickerArticles(c.env,c.req.param('projectId'),c.get('actor').id,await conversationAudience(c),(c.req.query('q')||'').slice(0,200),c.req.query('locale'))))
+analyticsRoutes.get('/:projectId/conversations/:conversationId/articles',async c=>{
+ const articles=await pickerArticles(c.env,c.req.param('projectId'),c.get('actor').id,await conversationAudience(c),(c.req.query('q')||'').slice(0,200),c.req.query('locale'))
+ return c.json(c.req.query('view')==='editor'?articles:articles.filter(article=>article.insertable))
+})
 analyticsRoutes.post('/:projectId/conversations/:conversationId/articles/:articleId/insert',async c=>{
  const body=await c.req.json();if(!['text','link'].includes(body.mode))throw new HTTPException(400,{message:'Invalid insertion mode'})
  return c.json(await insertArticleReference({...c.env,APP_ORIGIN:c.env.APP_ORIGIN||new URL(c.req.url).origin},c.req.param('projectId'),c.req.param('articleId'),c.get('actor').id,await conversationAudience(c,body),body.mode,body.locale))

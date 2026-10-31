@@ -19,6 +19,7 @@ export async function proposalsJourney(){
  const r=await app.first('SELECT id FROM conversation_resolutions WHERE conversation_id=? ORDER BY ordinal DESC LIMIT 1',cid)
  await app.call(`/api/conversations/${cid}/widget-events`,{token:customer.token,body:{action:'rateResolution',data:{resolutionId:r.id,value:1}},status:200})
  const category=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Trusted private guidance',audience:'domains',allowedDomains:['trusted.test']},status:201})).data.id
+ await call(`/api/knowledge/${p}/categories/${category}/entitlements`,{method:'PUT',body:{required:true,contactIds:[customer.contactId,next.contactId],companyIds:[]},status:200})
  const publicCategory=(await call(`/api/knowledge/${p}/categories`,{body:{title:'Public'},status:201})).data.id
  const body={conversationId:cid,resolutionId:r.id,messageId:reply.id,categoryId:category,title:'Export repair',quote}
  assert.equal((await call(`/api/knowledge/${p}/proposals`,{body:{sourceMessageOnly:true},status:400})).status,400)

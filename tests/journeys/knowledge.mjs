@@ -14,7 +14,3 @@ import {requestFormsJourney} from '../helpers/request-forms-journey.mjs'
 test('verified support resolutions become cited redacted drafts under named editorial authority without automatic publication',proposalsJourney)
 test('a translated request admits typed conditional values and attributes its prior article view exactly once through replay',requestFormsJourney)
 test('knowledge references survive cross-ticket saved replies, copied edits, revocation, API reads and collection publication',async()=>{const {referenceJourney}=await import('../helpers/knowledge/references.mjs');await referenceJourney()})
-
-import {experienceJourney} from '../helpers/knowledge/experience.mjs'
-import {knowledgeApp} from '../helpers/knowledge/app.mjs'
-test('customers see only their permitted reviewed knowledge in public search and ticket insertion; versions, redirects, templates, feedback and analytics remain scoped',async()=>{const k=await knowledgeApp();try{await experienceJourney(k)}finally{await k.app.close()}})

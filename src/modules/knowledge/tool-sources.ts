@@ -23,12 +23,12 @@ async function pinSourceFields(env:Env,projectId:string,sources:SourceFields[]){
  for(const [index,{index:sourceIndex,field}] of fields.entries())output[sourceIndex][field]=tokens[index]
  return output
 }
-export async function searchKnowledgeToolSources(env:Env,projectId:string,query:string,readers:Readers){
- const rows=await searchKnowledge(env,projectId,query,readers)
+export async function searchKnowledgeToolSources(env:Env,projectId:string,query:string,readers:Readers,locale?:string){
+ const rows=await searchKnowledge(env,projectId,query,readers,'lexical',locale)
  // Select metadata explicitly: raw slug or future retrieval fields cannot escape
  // via an object spread from the source repository.
  const pinned=await pinSourceFields(env,projectId,rows.map(row=>({id:row.id,sourceVersion:row.sourceVersion,title:row.title,url:row.url,content:row.content})))
- return pinned.map((row,index)=>({...row,score:rows[index].score,evidence_id:row.id,citation_allowed:Boolean(safePublicUrl(rows[index].url))}))
+ return pinned.map((row,index)=>({...row,score:rows[index].score,...(rows[index].requestedLocale?{locale:rows[index].locale,requestedLocale:rows[index].requestedLocale,localeFallback:rows[index].localeFallback}:{}),evidence_id:row.id,citation_allowed:Boolean(safePublicUrl(rows[index].url))}))
 }
 export async function readKnowledgeToolSource(env:Env,projectId:string,ref:PublicReference,readers:Readers,startOffset:number){
  const row=await readKnowledgeSource(env,projectId,ref,readers)

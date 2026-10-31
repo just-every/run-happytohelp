@@ -1,3 +1,4 @@
+import {apiSampleResponse} from '../knowledge/api-reads'
 import type {Hono} from 'hono'
 import {HTTPException} from 'hono/http-exception'
 import {validateDestination} from '../../vendor/base/modules/integrations/index.ts'
@@ -38,6 +39,6 @@ export function zapierApi(app:Hono<ApiEnv>){
   const event=c.req.query('event')??'conversation.created'
   if(!(EVENTS as readonly string[]).includes(event))throw new HTTPException(400)
   const resource=event.startsWith('contact.')?'contacts':event.startsWith('article.')?'articles':'conversations'
-  return app.fetch(new Request('https://managed.internal/'+resource+'?limit=5',{headers:{Authorization:c.req.header('Authorization')??''}}),c.env,c.executionCtx)
+  return apiSampleResponse(c.env,await app.fetch(new Request('https://managed.internal/'+resource+'?limit=5',{headers:{Authorization:c.req.header('Authorization')??''}}),c.env,c.executionCtx),resource)
  })
 }

@@ -14,13 +14,13 @@ INSERT INTO knowledge_translation_publications(id,project_id,article_id,locale,s
  FROM knowledge_translations t JOIN knowledge_articles a ON a.id=t.article_id
  WHERE t.published_json IS NOT NULL;
 
-CREATE TRIGGER knowledge_translation_publication_insert AFTER INSERT ON knowledge_translations
+CREATE TRIGGER knowledge_reference_translation_publication_insert AFTER INSERT ON knowledge_translations
  WHEN NEW.published_json IS NOT NULL BEGIN
  INSERT INTO knowledge_translation_publications(id,project_id,article_id,locale,snapshot_json,created_at)
   SELECT lower(hex(randomblob(16))),a.project_id,NEW.article_id,NEW.locale,NEW.published_json,coalesce(NEW.reviewed_at,NEW.updated_at)
   FROM knowledge_articles a WHERE a.id=NEW.article_id;
 END;
-CREATE TRIGGER knowledge_translation_publication_update AFTER UPDATE OF published_json ON knowledge_translations
+CREATE TRIGGER knowledge_reference_translation_publication_update AFTER UPDATE OF published_json ON knowledge_translations
  WHEN NEW.published_json IS NOT OLD.published_json BEGIN
  INSERT INTO knowledge_translation_publications(id,project_id,article_id,locale,snapshot_json,created_at)
   SELECT lower(hex(randomblob(16))),a.project_id,OLD.article_id,OLD.locale,OLD.published_json,coalesce(OLD.reviewed_at,OLD.updated_at)

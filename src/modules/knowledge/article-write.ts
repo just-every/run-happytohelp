@@ -24,7 +24,7 @@ export async function writeArticle(env:Env,projectId:string,b:any,guard?:SqlGuar
  // transaction, and are scoped to the article admitted by the first statement.
  const protectedCategories=preserveCategories?`EXISTS(SELECT 1 FROM knowledge_articles old WHERE old.id=p.article_id AND (old.category_id=p.category_id OR EXISTS(SELECT 1 FROM knowledge_article_categories ac WHERE ac.article_id=old.id AND ac.category_id=p.category_id)))`:`EXISTS(SELECT 1 FROM json_each(?) WHERE value=p.category_id)`
  args.push(articleId,...(preserveCategories?[]:[JSON.stringify(categories)]))
- const privacyPredicate=`NOT EXISTS(SELECT 1 FROM knowledge_proposals p WHERE p.article_id=? AND (NOT (${protectedCategories}) OR NOT EXISTS(SELECT 1 FROM knowledge_categories k WHERE k.id=p.category_id AND k.project_id=p.project_id AND k.audience='domains' AND json_array_length(k.allowed_domains)=1 AND json_extract(k.allowed_domains,'$[0]')=p.source_domain)))`
+ const privacyPredicate=`NOT EXISTS(SELECT 1 FROM knowledge_proposals p WHERE p.article_id=? AND (NOT (${protectedCategories}) OR NOT EXISTS(SELECT 1 FROM knowledge_categories k WHERE k.id=p.category_id AND k.project_id=p.project_id AND k.audience='signed-in' AND k.requires_entitlement=1 AND json_array_length(k.allowed_domains)=1 AND json_extract(k.allowed_domains,'$[0]')=p.source_domain)))`
  const predicate=`NOT EXISTS(SELECT 1 FROM knowledge_articles WHERE project_id=? AND slug=? AND id<>?) AND NOT EXISTS(SELECT 1 FROM knowledge_slug_redirects WHERE project_id=? AND slug=? AND article_id<>?) AND ${condition} ${categoryGuard} AND ${privacyPredicate}`
  // An API edit without category fields leaves both the primary category and links
  // untouched at commit, including category changes made after its initial read.

@@ -12,7 +12,7 @@ export default function ArticlePicker({projectId, conversationId, onPicked, cc =
     useEffect(() => {
         const controller = new AbortController();
         setArticles(null); setError('');
-        const timer = setTimeout(() => nativeRequest(`${endpoint}?${new URLSearchParams({q:query,cc:JSON.stringify(cc),bcc:JSON.stringify(bcc)})}`, {signal:controller.signal})
+        const timer = setTimeout(() => nativeRequest(`${endpoint}?${new URLSearchParams({view:'editor',q:query,cc:JSON.stringify(cc),bcc:JSON.stringify(bcc)})}`, {signal:controller.signal})
             .then(result => { if (!controller.signal.aborted) setArticles(result.articles || result); })
             .catch(failure => { if (!controller.signal.aborted) setError(failure.message); }), query ? 180 : 0);
         return () => { clearTimeout(timer); controller.abort(); };

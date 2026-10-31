@@ -23,7 +23,7 @@ try{
  const emailConversation=received.conversationId||received.conversation_id
  const nativeContact=(await call(`/api/dashboard/projects/${p}/conversations/${emailConversation}`,{status:200})).data.data.contact.id
  const grants=`/api/knowledge/${p}/categories/${category}/entitlements`
- const nativeBefore=(await call(`/api/knowledge/${p}/conversations/${emailConversation}/articles`,{status:200})).data.find(article=>article.id===aid)
+ const nativeBefore=(await call(`/api/knowledge/${p}/conversations/${emailConversation}/articles?view=editor`,{status:200})).data.find(article=>article.id===aid)
  assert.equal(nativeBefore.insertable,false,'a proven native email and matching domain do not create a selected-account grant')
  assert.ok(nativeBefore.blockedRecipients.some(recipient=>recipient.kind==='contact'&&recipient.id===nativeContact))
  await call(grants,{method:'PUT',body:{required:true,contactIds:[nativeContact],companyIds:[]},status:200})
@@ -51,7 +51,7 @@ try{
  const goodConversation=(await app.call('/api/conversations',{token:good.token,body:{projectId:p},status:201})).data.id
  const badConversation=(await app.call('/api/conversations',{token:bad.token,body:{projectId:p},status:201})).data.id
  assert.ok((await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles?q=Restricted`,{status:200})).data.some(a=>a.id===aid&&a.insertable))
- const blockedArticle=(await call(`/api/knowledge/${p}/conversations/${badConversation}/articles?q=Restricted`,{status:200})).data.find(a=>a.id===aid)
+ const blockedArticle=(await call(`/api/knowledge/${p}/conversations/${badConversation}/articles?q=Restricted&view=editor`,{status:200})).data.find(a=>a.id===aid)
  assert.equal(blockedArticle.insertable,false)
  assert.ok(blockedArticle.blockedRecipients.some(recipient=>recipient.kind==='contact'&&recipient.id===bad.contactId))
  assert.deepEqual((await call(`/api/knowledge/${p}/search?`+new URLSearchParams({q:'Restricted',conversationId:badConversation}),{status:200})).data.citations,[],'recipient-aware retrieval excludes knowledge the target customer cannot read')
@@ -62,10 +62,10 @@ try{
  assert.equal((await call(`/api/knowledge/${p}/conversations/${badConversation}/articles/${aid}/insert`,{body:{mode:'text'}})).status,404)
  const articleLink=(await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles/${aid}/insert`,{body:{mode:'link'},status:200})).data
  const ticket=(await app.call(`/api/conversations/${goodConversation}/messages`,{token:good.token,status:200})).data
- const sent=(await app.call(`/api/conversations/${goodConversation}/messages`,{token:k.token,body:{localId:crypto.randomUUID(),content:articleLink.text,expectedRevision:ticket.revision,expectedLastMessageId:ticket.lastMessageId},status:200})).data
+ const sent=(await app.call(`/api/conversations/${goodConversation}/messages`,{token:k.token,body:{localId:crypto.randomUUID(),content:articleLink.token,expectedRevision:ticket.revision,expectedLastMessageId:ticket.lastMessageId},status:200})).data
  assert.equal(sent.accepted,true)
  const receivedLink=(await app.call(`/api/conversations/${goodConversation}/messages`,{token:good.token,status:200})).data.messages.find(m=>m.id===sent.message.id)
- assert.equal(receivedLink.content,articleLink.text);assert.equal(new URL(articleLink.url).origin,'https://app.example','the inserted native article link is sent through the permitted conversation')
+ assert.equal(receivedLink.content,`[${articleLink.preview.title}](${articleLink.preview.url})`);assert.equal(new URL(articleLink.preview.url).origin,'https://app.example','the inserted native article link is sent through the permitted conversation')
 
 
  await call(`/api/knowledge/${p}/experience`,{method:'PUT',body:{defaultLocale:'en',locales:['en','fr'],templates:{article:'{{title}}\n{{content}}'}},status:200})

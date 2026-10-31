@@ -16,6 +16,7 @@ export async function proposalsBrowserJourney({runtime,browser,shot}){
   assert.ok(cycle?.id,'native conversation identifies the resolution cycle')
   await call(`/api/conversations/${conversation.id}/widget-events`,{token:customer.token,body:{action:'rateResolution',data:{resolutionId:cycle.id,value:1}}})
   const category=await call(`/api/knowledge/${pid}/categories`,{status:201,body:{title:'Trusted customer guidance',audience:'domains',allowedDomains:['trusted.test']}})
+  await call(`/api/knowledge/${pid}/categories/${category.id}/entitlements`,{method:'PUT',body:{required:true,contactIds:[customer.contactId],companyIds:[]}})
   const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage(),errors=[]
   await context.addCookies([{name:'h2h_session',value:tenant.token,url:origin}]);page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());page.setDefaultTimeout(20000)
   try{

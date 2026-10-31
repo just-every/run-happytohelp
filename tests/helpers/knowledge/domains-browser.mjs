@@ -54,6 +54,7 @@ export async function domainsBrowserJourney({runtime,browser,fixture,viewport,sh
   await runtime.execute(`UPDATE projects SET verification_secret='${secret}' WHERE id='${fixture.projectId}'`)
   const session=async email=>call('/api/identity/widget/session',{status:201,body:{widgetKey:(await call(`/api/identity/projects/${fixture.projectId}`)).widget_key,identifier:email,email,contact_hash:createHmac('sha256',secret).update(email).digest('hex')}})
   const member=await session(`member-${width}@trusted.test`),forbidden=await session(`reader-${width}@other.test`)
+  await call(`/api/knowledge/${fixture.projectId}/categories/${category.id}/entitlements`,{method:'PUT',body:{required:true,contactIds:[member.contactId],companyIds:[]}})
   const privateUrl=new URL(`/private-export-${width}?locale=fr`,publicHost).href
   for(const [identity,allowed] of [[null,false],[forbidden,false],[member,true]]){
    const reader=await browser.newContext({viewport}),readerPage=await reader.newPage()

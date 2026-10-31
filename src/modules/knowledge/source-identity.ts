@@ -24,7 +24,7 @@ export function observedArticleSourceSql(source:string,project:string,incarnatio
 export async function registerToolSource(env:Env,table:'ai_generation_sources'|'knowledge_generation_sources',projectId:string,generationId:string,source:{id:string;sourceVersion:string}){
  const observed=articleSourceIdentities(projectId,[source])[0]
  const admitted=observed
-  ? `EXISTS(SELECT 1 FROM knowledge_articles a JOIN knowledge_article_publications publication ON publication.article_id=a.id AND publication.project_id=a.project_id WHERE a.id=substr(?3,9) AND a.project_id=?2 AND a.source_incarnation=?5 AND publication.source_version=?4)`
+  ? `EXISTS(SELECT 1 FROM knowledge_articles a JOIN knowledge_article_publications publication ON publication.article_id=a.id AND publication.project_id=a.project_id WHERE a.id=substr(?3,9) AND a.project_id=?2 AND a.source_incarnation=?5 AND publication.source_version=CASE WHEN instr(?4,'~')>0 THEN substr(?4,1,instr(?4,'~')-1) ELSE ?4 END)`
   : `?3 LIKE 'knowledge:%' AND EXISTS(SELECT 1 FROM knowledge_documents document JOIN knowledge_versions version ON version.id=document.version_id JOIN knowledge_datasets dataset ON dataset.id=version.dataset_id WHERE document.id=substr(?3,11) AND dataset.project_id=?2 AND document.version_id=?4)`
  const args=[generationId,projectId,source.id,source.sourceVersion,...(observed?[observed.incarnation]:[])]
  const result=await env.DB.batch([

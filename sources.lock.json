@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b415c0a89b099fdd5532ca788c90ad2d26f1268eee95edb2cb5a8077bc827dd7",
+      "sha256": "53e9dc96907180de546f40c667abf19fc4290c2ca37f62828b0e1bb07a8639bb",
       "executable": false
     },
     "DEMO.md": {
@@ -1705,7 +1705,7 @@
       "executable": false
     },
     "docs/customer-satisfaction.md": {
-      "sha256": "f65a9075115274d63a7940be77e7cf1389cbf4b46a7e02449f2a3d0f41d3967b",
+      "sha256": "d4bfa9087bc6fbc6e535a35f8b8407594797f66e4ecb76d1f5050fb006f6ac4d",
       "executable": false
     },
     "docs/email.md": {
@@ -1825,7 +1825,7 @@
       "executable": false
     },
     "docs/support-channels.md": {
-      "sha256": "c67a72a2d3eff2160f4384387c97ecee242054f27661b8bb9ac977c85551bf4c",
+      "sha256": "b16c19bba3062327a63fd788f282d1abf915de4946ad4faa63ca90020d82d681",
       "executable": false
     },
     "docs/tickets.md": {
@@ -7661,7 +7661,7 @@
       "executable": false
     },
     "src/modules/outcomes/survey-messaging.ts": {
-      "sha256": "fedb0817745a231426e4e11e306a719c7a6812f622fad6cda2943e6d4bca7cb3",
+      "sha256": "6d825d2e12165d04c81d8dd7c87e4d53425eea8c0a0cbcbf2737e5b2c2c7c54a",
       "executable": false
     },
     "src/modules/outcomes/survey-routes.ts": {
@@ -14309,7 +14309,7 @@
       "executable": false
     },
     "tests/helpers/outcomes-002-email-outcomes.mjs": {
-      "sha256": "4ac223de79589780af37589405e91c16c18ed2631760182840020fa873318faa",
+      "sha256": "08775d1b4b98f194214e6d68a6a124117ba0f6f3e6eca5b39089c0f2943248d1",
       "executable": false
     },
     "tests/helpers/platform-archive.mjs": {
@@ -14405,11 +14405,11 @@
       "executable": false
     },
     "tests/helpers/support-channels/outcomes-002-outcomes.mjs": {
-      "sha256": "d31ce2a735b749d4fe722d26e5323d46c137a838cb35cbabfeef893cd6ce09b3",
+      "sha256": "67dd1c0f3d9c95a0e89d2b067fe48474af13199cbea4d07af8276788852f027b",
       "executable": false
     },
     "tests/helpers/support-channels/outcomes-002-refusals.mjs": {
-      "sha256": "deb73ea7b8d8600c08a7a3525ac37c56555ad8338892d231130effb2a2247c97",
+      "sha256": "f27c79b1034d03f3f1433e1d2ca53ec656ae4cb9f260d98580738316df311340",
       "executable": false
     },
     "tests/helpers/support-channels/restore.mjs": {

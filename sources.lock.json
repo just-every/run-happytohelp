@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "79816803be638fa40818cd8a0da38555d01086de4d6d2629b8757ff5a49b59cb",
+      "sha256": "84f63dea5c9195021450d6e2a5d70ad66ae8407d61c96329c185d0fb50e98503",
       "executable": false
     },
     "DEMO.md": {
@@ -14144,6 +14144,10 @@
       "sha256": "fa22713d174b063a608b67501442000edea429d8bfddc71c28fdb899f7733587",
       "executable": false
     },
+    "tests/helpers/identity/scoped-authority.mjs": {
+      "sha256": "a3f99ce693c79cef0c0d6e1d197499a14ae53e44a4ffdcf377cf8061e368bfe7",
+      "executable": false
+    },
     "tests/helpers/identity/security-browser.mjs": {
       "sha256": "45a9ad6797a37a8036f5622ffe4f5892095ce75177f8b4e0cc837b34be6c847d",
       "executable": false
@@ -14533,7 +14537,7 @@
       "executable": false
     },
     "tests/journeys/identity.mjs": {
-      "sha256": "ac29488f2bb3a1530aec6ba19b319d118c7ba048bb0e10ad36ff80e38fd680ee",
+      "sha256": "1be5e6e3b744768abc0cb9401924277718bf0867ff95f4674c122c918874fa47",
       "executable": false
     },
     "tests/journeys/inbox-browser.mjs": {

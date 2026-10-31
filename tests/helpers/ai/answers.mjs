@@ -4,7 +4,8 @@ import {agent001Outcomes} from './agent001-outcomes.mjs'
 import {repositoryJourney} from './repository.mjs'
 import {cycleOutcomes} from './cycle-outcomes.mjs'
 import {assistantApp} from './app.mjs'
-import {openaiToolCall} from '../openai-stream.mjs'
+import {openaiStream,openaiToolCall} from '../openai-stream.mjs'
+import {socketClient} from '../widget/sockets.mjs'
 
 const trace=async(a,v)=>{
  const response=await a.app.call(`/api/ai-support/projects/${a.p}/conversations/${v.conversationId}/trace`,{token:a.owner,status:200})
@@ -171,6 +172,35 @@ export async function answersJourney(){
   privateSocket.addEventListener('message',event=>privateFrames.push(JSON.parse(event.data)))
   const revokedAnswer=await privateAnswer(revoked,{revoke:true,cite:false})
   assert.equal(revokedAnswer.answers.length,0);assert.ok(!privateFrames.some(frame=>frame.type==='chunk'),'unadmitted model deltas are never customer-visible');privateSocket.close()
+
+  // A real operator takes over between the provider's provisional delta and
+  // completion. Neither the live widget nor later replay may promote that text.
+  const raced=await a.visitor(),racedPath=`/api/conversations/${raced.conversationId}`
+  const live=await socketClient(app)(`${racedPath}/socket?token=${raced.token}`);assert.equal(live.status,101)
+  let deltaSent=false,takeover
+  const provisional='A superseded model answer must never be sent.'
+  ai.respond=async()=>{
+   const body=await openaiStream(provisional).text(),boundary=body.indexOf('\n\n')+2,encode=new TextEncoder();let part=0
+   return new Response(new ReadableStream({async pull(controller){
+    if(part++===0){controller.enqueue(encode.encode(body.slice(0,boundary)));deltaSent=true;return}
+    const current=await raced.transcript();assert.equal(current.messages.filter(message=>message.actor_role==='ai').length,0,'a provisional delta has no durable answer before completion')
+    takeover=(await app.call(racedPath+'/messages',{token:a.owner,body:{localId:'stream-takeover',content:'A teammate is handling this now.',expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})).data
+    assert.equal(takeover.accepted,true)
+    controller.enqueue(encode.encode(body.slice(boundary)));controller.close()
+   }},{highWaterMark:0}),{headers:{'content-type':'text/event-stream'}})
+  }
+  try{
+   const question=await raced.say('Please help with my return'),jobs=await app.takeJobs(),before=a.providerCalls()
+   await a.run(jobs);assert.equal(deltaSent,true);assert.equal(a.providerCalls(),before+1)
+   const superseded=await trace(a,raced);assert.equal(superseded.state,'cancelled','operator admission atomically cancels the superseded generation');assert.equal(superseded.committedAnswer,null)
+   const committed=await raced.transcript();assert.deepEqual(committed.messages.map(message=>message.id),[question.message.id,takeover.message.id]);assert.equal(committed.revision,2)
+   live.socket.send(JSON.stringify({type:'ping'}));await live.next(frame=>frame.type==='pong')
+   assert.deepEqual(live.frames.filter(frame=>frame.type==='message').map(frame=>frame.message.id),committed.messages.map(message=>message.id))
+   assert.ok(!live.frames.some(frame=>frame.type==='chunk'||JSON.stringify(frame).includes(provisional)),'superseded model text never crosses the widget socket')
+   await a.run(jobs);assert.equal(a.providerCalls(),before+1,'redelivery never retries the superseded paid attempt')
+  }finally{live.socket.close()}
+  const replayed=await socketClient(app)(`${racedPath}/socket?token=${raced.token}`);assert.equal(replayed.status,101)
+  try{replayed.socket.send(JSON.stringify({type:'ping'}));await replayed.next(frame=>frame.type==='pong');assert.deepEqual(replayed.frames.filter(frame=>frame.type==='message').map(frame=>frame.message.id),(await raced.transcript()).messages.map(message=>message.id));assert.ok(!JSON.stringify(replayed.frames).includes(provisional),'replay contains only guarded committed replies')}finally{replayed.socket.close()}
 
   // Asking for a person hands the conversation to a human; the assistant writes nothing more and a person can reply.
   ai.respond=async()=>openaiToolCall('switch_agent',{agent_id:'human'},'handoff')

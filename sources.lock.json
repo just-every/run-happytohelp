@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a587ea8829bc54c127d14070d3d7e252880218f84526accf678119778838bf4d",
+      "sha256": "9e0fa61825c3be799a1d6eced460938448c69e6b3d5c1f35715e13988d5f8eb9",
       "executable": false
     },
     "DEMO.md": {
@@ -4621,7 +4621,7 @@
       "executable": false
     },
     "src/modules/ai-support/service.ts": {
-      "sha256": "09ed34f1a9350370baac1781a94e0239f071eb01a7f146713a9918affda4caa2",
+      "sha256": "43f0edcfbf9e8b4298353a5c3df47205ff27fb3700738ed23b7d78e09544842c",
       "executable": false
     },
     "src/modules/ai-support/tool-trace.ts": {
@@ -6977,7 +6977,7 @@
       "executable": false
     },
     "src/modules/local-computer/results.ts": {
-      "sha256": "047103ec4ab65b111ca243fd0e4ec521da5f3b7036d5a02d75092146bb258c72",
+      "sha256": "ef79347c3c0052de2da4c516d4ae87a060aa6d71eb2b2bf2d0e481fad73e73c9",
       "executable": false
     },
     "src/modules/local-computer/setup.ts": {
@@ -14040,6 +14040,30 @@
       "sha256": "e8c2e3b662d0ddb123689d5d567640e1788e6211a052d0c3d31290f31f0a8c05",
       "executable": false
     },
+    "tests/helpers/conversation/admission-races.mjs": {
+      "sha256": "43670b28a6b26150f2f8c60790a51d682bdb0a8e170c5b858713f35d14f06613",
+      "executable": false
+    },
+    "tests/helpers/conversation/erased-transcript.mjs": {
+      "sha256": "9e84579ad8d9f3bbcf084bc277ec3a5ce5afc3f8b89764ea2de0aab70112fc72",
+      "executable": false
+    },
+    "tests/helpers/conversation/import-races.mjs": {
+      "sha256": "6e03181aa592cec7ff181349566017f95f0ff47d9f206e11bafe21a72e2e4658",
+      "executable": false
+    },
+    "tests/helpers/conversation/lost-response.mjs": {
+      "sha256": "5bafa606ee85ba30784ebd4d4ffb8c534bfccb686671cb23ce538aab0cb1a96c",
+      "executable": false
+    },
+    "tests/helpers/conversation/model-races.mjs": {
+      "sha256": "bd02de509e4383ce2c4466fbf8e621bd828efb3c1351c19e3b94769cf9adc521",
+      "executable": false
+    },
+    "tests/helpers/conversation/response-loss.mjs": {
+      "sha256": "7b856da20b90129bb6ba3f15a595fe5677e0fd23101c43d7c3384adb0f6cee6d",
+      "executable": false
+    },
     "tests/helpers/customer-csv.mjs": {
       "sha256": "d70f4b1b1a4acaa43687b69fc207756afe1f2de7c7500ab8fde7cfa27a0cc387",
       "executable": false
@@ -14516,6 +14540,10 @@
       "sha256": "1dd4b530da825475213069407b94650fbd44e6f57451fb81006de84366c9bbc6",
       "executable": false
     },
+    "tests/helpers/knowledge/published.mjs": {
+      "sha256": "abc185ed6be0a8b27624b63b3b54210382b0b698cb176abf71942c6d566ce650",
+      "executable": false
+    },
     "tests/helpers/knowledge/sources.mjs": {
       "sha256": "9dcda0c0f2ad2413cf806f1edfecb573b621fd2bef70c2b814d0564a7f3a027f",
       "executable": false
@@ -14861,7 +14889,7 @@
       "executable": false
     },
     "tests/journeys/erasure.mjs": {
-      "sha256": "e8a8f7a8914b696997c3f10057634c23384bddc5dda177ab24a8c70048eb9127",
+      "sha256": "d0a07bc87220a8935dbcc64c0218a7f3ae41b31416ca89bd9ea7977c5885458d",
       "executable": false
     },
     "tests/journeys/first-run.mjs": {
@@ -14909,7 +14937,7 @@
       "executable": false
     },
     "tests/journeys/knowledge.mjs": {
-      "sha256": "fc9c6d5b9068e2f9c88dd1edc508b82c2c935eff20739316f66520d71e280922",
+      "sha256": "7bf0279072b8c0725d865eb20d54a3bbb2ad1cea516dffb56d7d5af418e60d4b",
       "executable": false
     },
     "tests/journeys/legacy.mjs": {
@@ -14953,7 +14981,7 @@
       "executable": false
     },
     "tests/journeys/runtime.mjs": {
-      "sha256": "fded3304c32b74f0afed62b3c9f85d3fc2adea681154997b2abacecdf0b6f796",
+      "sha256": "7bdd615fb1f653f5cb3e007d73a249d9c3f2dd4cfa5f548b7f191c7d51b36ebc",
       "executable": false
     },
     "tests/journeys/upgrade-nightly.mjs": {

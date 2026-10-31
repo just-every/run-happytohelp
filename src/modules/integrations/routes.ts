@@ -32,7 +32,7 @@ integrations.route('/',emailFollowupRoutes)
 integrations.get('/projects/:projectId/email-settings',async c=>{const a=await scope(c,true),managed=await rerMailboxStatus(c.env,a.projectId),row=await c.env.DB.prepare('SELECT * FROM email_settings WHERE project_id=?').bind(a.projectId).first<any>(),configured=Boolean(emailConfigured(c.env))
  if(managed&&row){row.from_address=managedMailAddress(row.from_address);row.inbound_address=managedMailAddress(row.inbound_address)}
  return c.json({managed,data:row?{...row,email_to_address:row.inbound_address||null}:{email_to_address:null},configured,
-  sending:{mode:emailMode(c.env),provider:configured?selectedEmailProvider(c.env):null,from:configured?mailbox(rerMail(c.env)?row?.from_address||c.env.MAIL_FROM:c.env.EMAIL_FROM):null},
+  sending:{mode:emailMode(c.env),provider:configured?(emailMode(c.env)==='local'?'development':selectedEmailProvider(c.env)):null,from:configured?mailbox(rerMail(c.env)?row?.from_address||c.env.MAIL_FROM:c.env.EMAIL_FROM):null},
   receiving:await receivingState(c.env,row?.inbound_address),installation:installation(c.env,c.req.url)})})
 integrations.put('/projects/:projectId/email-settings',async c=>{
  const a=await scope(c,true),b=await c.req.json()

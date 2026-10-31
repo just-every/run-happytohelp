@@ -47,7 +47,7 @@ export async function receiveEmail(env:Env,input:IncomingEmail,recovery?:{recove
  if(input.conversationId&&target.conversationId&&input.conversationId!==target.conversationId)throw new HTTPException(400,{message:'Conflicting conversation address'})
  const grant=target.replyToken?await replyGrant(env,project.project_id,target.replyToken):null
  if(input.conversationId&&grant&&input.conversationId!==grant.conversation_id)throw new HTTPException(400,{message:'Conflicting conversation address'})
- const thread=await resolveEmailThreadCandidates(env,{projectId:project.project_id,messageId,inReplyTo:input.evidence?.headers['in-reply-to'],references:input.evidence?.headers.references,subject:input.evidence?.subject||undefined,to,headers:input.evidence?.headers})
+ const thread=await resolveEmailThreadCandidates(env,{projectId:project.project_id,messageId,inReplyTo:input.evidence?.headers['in-reply-to'],references:input.evidence?.headers.references,subject:input.evidence?.subject||undefined,to,headers:input.evidence?.headers,mailbox:target.mailbox})
  // An imported vendor reply address can use the same +suffix syntax as our old
  // conversation addresses. Its explicit imported mapping is the candidate; the
  // vendor suffix is not a native conversation id. Sender authority is still

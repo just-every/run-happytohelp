@@ -223,6 +223,8 @@ A Zendesk file can also contain singular `group`, `view`, `schedule`, `trigger` 
 
 New imports retain their explicit lifecycle and channel. Zendesk/Freshdesk distinguish final Closed from Solved; Help Scout/Intercom use a reopenable Closed state, which maps to native Solved. Historical owners are not granted native access or activated. Existing imported records are not rewritten when this mapping changes: a changed mapping meeting earlier native state remains a review conflict.
 
+After import, review the ownership page and explicitly map the recorded historical owners and groups to current workspace members and groups. The chosen owner must still belong to the chosen group when activation applies; changed import authority or membership requires a fresh review. Activation preserves the requester and lifecycle, grants no historical staff access and sends no notifications. Help Scout records one assignee, either a user or a team, so its source does not provide both assignments on one ticket. Older imports without assignment snapshots remain unactivated; historical ownership is never guessed.
+
 
 ### Bounded Zendesk SLA policies
 

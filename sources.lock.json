@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "54a0c7cef80a234fd18980dbdaa6b0b2f32472acf5331a2ccefe47c0572bb7eb",
+      "sha256": "6c175de8fc4513187e598d064cf7e298e286de77a721a3beced613df242eeea6",
       "executable": false
     },
     "DEMO.md": {
@@ -1709,7 +1709,7 @@
       "executable": false
     },
     "docs/email.md": {
-      "sha256": "e8aa82334b5d280d79b056f98688c6a2b25e85a2af3661fbfcd07044683ec2e5",
+      "sha256": "04ca5158ea41fa9691fedeb9c1da20d82cc3b85b5566c453546cfa28249c134a",
       "executable": false
     },
     "docs/feedback-and-assurance.md": {
@@ -1777,7 +1777,7 @@
       "executable": false
     },
     "docs/moving-in.md": {
-      "sha256": "7900e33ea48380df2d800e8f3ac2d30d2fa90150e80dc7eb6db3f75a71b750d3",
+      "sha256": "7c4fab002392ba8a3916447c58f34822e61cb45389b3a5a9ed3f92f1e95dfb48",
       "executable": false
     },
     "docs/NAVIGATION.md": {
@@ -6361,7 +6361,7 @@
       "executable": false
     },
     "src/modules/integrations/email-threading.ts": {
-      "sha256": "5e41e1051247ad2d05479641dc53ec5b19079aee5a31e118492809c879143a74",
+      "sha256": "95ca4145fa7a1cf0b9220a253cd55d93ffa78f42d11bb441c8abf50881c4a7b9",
       "executable": false
     },
     "src/modules/integrations/email-worker.ts": {
@@ -6429,7 +6429,7 @@
       "executable": false
     },
     "src/modules/integrations/inbound-service.ts": {
-      "sha256": "0226bf2cdb9dbd5ad61dd3d323b3e1290059f13e970f6933ee2bf52e854680a4",
+      "sha256": "2e65a6032ef346a6b6697a30f0ec68355a6c7380ae99c5bf27301b5718cff154",
       "executable": false
     },
     "src/modules/integrations/inbound.ts": {
@@ -14593,7 +14593,7 @@
       "executable": false
     },
     "tests/journeys/move-in-admission.mjs": {
-      "sha256": "0a8d0b47220b2e4c47bf01ee9c69d084149a9c22c92792726862937b08764c49",
+      "sha256": "b8585efcd8aacd0f0afab6afd03d8113df58729dfa7d248c985a7559191afe34",
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
@@ -14794,6 +14794,14 @@
     },
     "tests/move-in/supplied-attachments.mjs": {
       "sha256": "0da24b9ebe85bb8692c9815d96aa98076f4c0eadf02b2ac259d0a38ef74ab9c6",
+      "executable": false
+    },
+    "tests/move-in/vendor-replies.mjs": {
+      "sha256": "8429d2863138dedc1d0c04906257882035074758c0ab5e65470949c6ae3f4ec5",
+      "executable": false
+    },
+    "tests/move-in/vendor-reply-kit.mjs": {
+      "sha256": "d9f530063684d21f5badbdb26f6ee25451c2bc085a71ae9d3221a3f4d12a2395",
       "executable": false
     },
     "tests/move-in/worker.ts": {

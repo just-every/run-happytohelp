@@ -15,7 +15,7 @@ surveySettings.put('/projects/:projectId/settings',async c=>{
  if(body.widgetEnabled!==undefined&&typeof body.widgetEnabled!=='boolean')throw new HTTPException(400,{message:'Choose whether to show widget surveys'})
  if(body.widgetEnabled===undefined)body.widgetEnabled=(await readSurveySettings(c.env,actor.projectId)).widgetEnabled
  if(typeof body.enabled!=='boolean'||!['thumbs','five'].includes(body.scale)||!['en','es','fr'].includes(body.locale)||!Number.isInteger(body.delayMinutes)||body.delayMinutes<0||body.delayMinutes>43200||!Number.isInteger(body.expiresDays)||body.expiresDays<1||body.expiresDays>90)throw new HTTPException(400,{message:'Choose a scale, locale, delay (0–43,200 minutes), and link lifetime (1–90 days)'})
- if(body.enabled&&!surveySigningConfigured(c.env))throw new HTTPException(503,{message:'Set INBOUND_EMAIL_TOKEN to at least 16 characters before enabling email surveys'})
+ if(body.enabled&&!surveySigningConfigured(c.env))throw new HTTPException(503,{message:'Set INBOUND_EMAIL_TOKEN to at least 16 characters before enabling surveys'})
  const now=Date.now()
  await c.env.DB.batch([
   c.env.DB.prepare(`INSERT INTO csat_settings(project_id,enabled,scale,delay_minutes,expires_days,locale,enabled_at,updated_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(project_id) DO UPDATE SET enabled=excluded.enabled,scale=excluded.scale,delay_minutes=excluded.delay_minutes,expires_days=excluded.expires_days,locale=excluded.locale,enabled_at=CASE WHEN csat_settings.enabled=0 AND excluded.enabled=1 THEN excluded.enabled_at ELSE csat_settings.enabled_at END,updated_at=excluded.updated_at`).bind(actor.projectId,body.enabled?1:0,body.scale,body.delayMinutes,body.expiresDays,body.locale,now,now),
@@ -56,14 +56,14 @@ publicSurveys.post('/:token',async c=>{
  const recovery=customerRecovery(body.recovery),now=Date.now(),receipt=crypto.randomUUID(),normalized=row.scale==='thumbs'?score:score>=4?1:-1
  const result=await c.env.DB.batch([
   c.env.DB.prepare(`INSERT INTO csat_response_history(id,resolution_id,project_id,contact_id,channel,scale,score,reason,comment,revision,created_at,response_surface,recovery)
-   SELECT ?,r.id,r.project_id,r.contact_id,'email',s.scale,?,?,?,COALESCE((SELECT revision FROM conversation_ratings WHERE resolution_id=r.id),0)+1,?,?,? ${surveyJoins} WHERE s.id=? AND s.token_revision=? AND ${activeSurveySql}`).bind(receipt,score,reason,comment,now,surface,recovery,row.id,revision,now),
+   SELECT ?,r.id,r.project_id,r.contact_id,s.channel,s.scale,?,?,?,COALESCE((SELECT revision FROM conversation_ratings WHERE resolution_id=r.id),0)+1,?,?,? ${surveyJoins} WHERE s.id=? AND s.token_revision=? AND ${activeSurveySql}`).bind(receipt,score,reason,comment,now,surface,recovery,row.id,revision,now),
   c.env.DB.prepare('UPDATE csat_surveys SET token_revision=token_revision+1,updated_at=? WHERE id=? AND token_revision=? AND EXISTS(SELECT 1 FROM csat_response_history WHERE id=?)').bind(now,row.id,revision,receipt),
   c.env.DB.prepare(`INSERT INTO csat_responses(resolution_id,project_id,contact_id,channel,scale,score,reason,comment,revision,updated_at,response_surface,recovery) SELECT resolution_id,project_id,contact_id,channel,scale,score,reason,comment,revision,created_at,response_surface,recovery FROM csat_response_history WHERE id=? ON CONFLICT(resolution_id) DO UPDATE SET channel=excluded.channel,scale=excluded.scale,score=excluded.score,reason=excluded.reason,comment=excluded.comment,revision=excluded.revision,updated_at=excluded.updated_at,response_surface=excluded.response_surface,recovery=excluded.recovery`).bind(receipt),
   c.env.DB.prepare('INSERT INTO conversation_rating_history SELECT id,resolution_id,?,comment,created_at,revision FROM csat_response_history WHERE id=?').bind(normalized,receipt),
   c.env.DB.prepare('INSERT INTO conversation_ratings SELECT resolution_id,?,comment,created_at,revision FROM csat_response_history WHERE id=? ON CONFLICT(resolution_id) DO UPDATE SET value=excluded.value,comment=excluded.comment,updated_at=excluded.updated_at,revision=excluded.revision').bind(normalized,receipt)
  ])
  if(!result[0].meta.changes)throw new HTTPException(409,{message:'This survey was already submitted or is no longer available.'})
- await auditStatement(c.env.DB,{projectId:row.project_id,category:'data',action:'csat.response.recorded',actor:{type:'system'},source:'email',target:{type:'resolution',id:row.resolution_id},detail:{channel:'email',responseSurface:surface}}).run()
+ await auditStatement(c.env.DB,{projectId:row.project_id,category:'data',action:'csat.response.recorded',actor:{type:'system'},source:'email',target:{type:'resolution',id:row.resolution_id},detail:{channel:row.channel,responseSurface:surface}}).run()
  c.executionCtx.waitUntil(publishResolution(c.env,row.project_id,row.conversation_id))
  return c.html(surveyThanks(row,await surveyToken(c.env,{...row,token_revision:revision+1},surface)))
 })

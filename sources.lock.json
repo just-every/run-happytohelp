@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "449bb05bc73de37a7eeb39cfdc1548aa8a5a8afb846b839d602afda890d9eba4",
+      "sha256": "c19d73f1ce27a7c2fff457c13924d6a0eeaf32d947d1fa097dd78e7a27465177",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8f3809faf915b47f22ded374839f6832428828dbde2fdfe16f0b33e1c26400f3",
+      "sha256": "2714fb1347cdda20b76fbfe6f90142686efe6e1c7f2f1c518e933903ca1fe4df",
       "executable": false
     },
     "DEMO.md": {
@@ -1857,7 +1857,7 @@
       "executable": false
     },
     "docs/workflows.md": {
-      "sha256": "aad440925e289937a2c6c9945f2d5999118f2412d937ac74fd802d63dd2a59e9",
+      "sha256": "af576ed1c490525aac546a7ee7c611592beb07b864fef748fba53c37d048b8b8",
       "executable": false
     },
     "docs/WORKSPACE-WORKFLOWS.md": {
@@ -8845,7 +8845,7 @@
       "executable": false
     },
     "src/modules/workflows/notify.ts": {
-      "sha256": "cfb7763edb995e4f0e2036cc57a14a5886f663327a34319ae2404ed0d0af2f90",
+      "sha256": "4a2b81307c2585d513066256f32f743ef17acd6a9b52a0d3636100376e353d95",
       "executable": false
     },
     "src/modules/workflows/presentation.ts": {
@@ -14468,6 +14468,18 @@
       "sha256": "96b18dc2e15a009949e263aea12100f439ca5bbc28026639e3bebe42d997f7a4",
       "executable": false
     },
+    "tests/helpers/workflows/outcomes-network.mjs": {
+      "sha256": "aad88db9669275b23723f5a393cfba91df19118a13d118f69490932bb25a1053",
+      "executable": false
+    },
+    "tests/helpers/workflows/outcomes-runtime.mjs": {
+      "sha256": "12391fe01557ee7fd464da100e9ba7bdfd1f2797781a9e42b012c58c91bdaf88",
+      "executable": false
+    },
+    "tests/helpers/workflows/outcomes.mjs": {
+      "sha256": "8d7075aaeddb0852f6c5745cad6dc0491a4438449437a85fdd77a4efe54c31fb",
+      "executable": false
+    },
     "tests/helpers/workflows/rules.mjs": {
       "sha256": "fbeb178ce821c12cb28de8719fbc4abeeb9425c82d9c3d56bf2f29cd44ceef23",
       "executable": false
@@ -14633,7 +14645,7 @@
       "executable": false
     },
     "tests/journeys/workflows-browser.mjs": {
-      "sha256": "66883df603d949b641a830de55e79bb9239b9aa85db576b3f105e07cdd257b40",
+      "sha256": "ff81696c0c1db864a69cf991f9e138f7b121c907f9595dfbc9185d374db6e401",
       "executable": false
     },
     "tests/legacy-export.mjs": {

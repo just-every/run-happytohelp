@@ -7,7 +7,7 @@ import {recipients, replyTo} from '../email/app.mjs'
 // Only DNS and the outbound mail provider are fixtures. Customer identity,
 // inbox mutations, email admission, portal sessions, SLA and reports use routes.
 export async function statusLifecycleJourney() {
- const initial = Date.parse('2026-11-02T09:00:00Z'), hour = 3600000, mail = []
+ const hour = 3600000, initial = Date.now() + 60000, mail = []
  const app = await startApp({
   captureQueue: true,
   bindings: {APP_ORIGIN: 'https://app.example', H2H_LOCAL: 'true', H2H_WORKFLOW_NOW: String(initial),
@@ -151,7 +151,8 @@ export async function statusLifecycleJourney() {
   await clock(initial + 2 * hour)
   assert.deepEqual((await sla()).clocks, paused.clocks, 'custom Pending charges no business time')
   const start = new Date(original.created_at - 86400000).toISOString().slice(0, 10)
-  const report = await door('/reports/team?period=custom&start=' + start + '&end=2026-11-04')
+  const end = new Date(initial + 3 * 86400000).toISOString().slice(0, 10)
+  const report = await door('/reports/team?period=custom&start=' + start + '&end=' + end)
   assert.equal(report.denominators.cohort, 1)
   assert.equal(report.backlog.total, 1, 'custom Pending remains an unresolved request')
   assert.equal(report.workload.agent.find(row => row.id === w.users.owner).backlog, 1)

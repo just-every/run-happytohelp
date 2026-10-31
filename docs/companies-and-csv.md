@@ -4,7 +4,7 @@ Open **Contacts**, then **Companies**, in a workspace to keep customer accounts 
 
 ## Company attributes
 
-Create an attribute in Companies before filling it in on a company. Attributes can hold text, a number, a date, a choice from a list, or a checkbox. Dates use year-month-day. Choices must come from the options you set.
+Create an attribute in Companies before filling it in on a company. Attributes can hold text, a number, a date, a choice from a list, or a checkbox. Dates use year-month-day. Choices must come from the options you set. After a valid edit, company history records who changed it, when, and the before and after values. An invalid value leaves both the company and its history unchanged.
 
 ## Merge companies
 

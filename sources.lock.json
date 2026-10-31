@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "9d2e94036bea5da654e335d99a554ad87ebd28eebe2abdcf59bcee185b6ad62a",
+      "sha256": "69b3a533df9742310297f6a519f9be9a3e3f5979396a1b504f8c19bc131ad06f",
       "executable": false
     },
     "DEMO.md": {
@@ -1669,7 +1669,7 @@
       "executable": false
     },
     "docs/companies-and-csv.md": {
-      "sha256": "6be07142c47e77e23a0525b6dc10c58c96cb44356c56bf83b6bd9e049f0fe692",
+      "sha256": "df75ce4eaa047437487de6fb2e0334ada8f57bd5f166c80746eb819cf056de31",
       "executable": false
     },
     "docs/connected-applications.md": {
@@ -5265,7 +5265,7 @@
       "executable": false
     },
     "src/modules/customers/company-routes.ts": {
-      "sha256": "4eba33be03f0a44f3b5a12e714dd1a3c0fbc820cc3885234b7c1540f38dab4d8",
+      "sha256": "968eecc48ee020bf7e5d9a0406b56614b359e6bc0217926d8131adaf70c7729a",
       "executable": false
     },
     "src/modules/customers/erasure.ts": {
@@ -13873,7 +13873,7 @@
       "executable": false
     },
     "tests/helpers/company-records.mjs": {
-      "sha256": "123041124f59fa1f03f42c38d52f673e3402452e6fb98b54831e39cd98cba394",
+      "sha256": "4d7bd58d7fd2b5341f643813c916036331639d1aeae967dafeac43e2a0acc9c6",
       "executable": false
     },
     "tests/helpers/context/app.mjs": {
@@ -13890,6 +13890,14 @@
     },
     "tests/helpers/customer-csv.mjs": {
       "sha256": "d70f4b1b1a4acaa43687b69fc207756afe1f2de7c7500ab8fde7cfa27a0cc387",
+      "executable": false
+    },
+    "tests/helpers/customer-outcomes-edges.mjs": {
+      "sha256": "3c7b60a1472a9917a142a5c88453004301ff1a13dcadb54867b94728aada2f3e",
+      "executable": false
+    },
+    "tests/helpers/customer-outcomes.mjs": {
+      "sha256": "866ba36a0ebfc0298f5bfbd0916ddf686cbd810d7db56d66039c02c068ee6e7b",
       "executable": false
     },
     "tests/helpers/customer-portal-journey.mjs": {

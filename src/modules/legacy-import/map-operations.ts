@@ -1,5 +1,5 @@
 import { type Row,type LegacyBundle,type MappedRow,timestamp,text,stable } from './types'
-import {truth,columns,minor,active,publishedFiles} from './mapping-shared'
+import {truth,columns,minor,minorUnits,active,publishedFiles} from './mapping-shared'
 export function mapOperations(table:string,r:Row,b:LegacyBundle):MappedRow[]|undefined {
  const created=timestamp(r.created_at),project=r.project_id&&String(r.project_id),id=r.id&&String(r.id);const one=(table:string,row:Row,key=['id'],hold?:string):MappedRow[]=>[{table,row,key,hold}]
  switch(table){
@@ -21,7 +21,7 @@ export function mapOperations(table:string,r:Row,b:LegacyBundle):MappedRow[]|und
  case 'training_runs':return one(table,{...r,status:active(r.status)?'uncertain':r.status},['id'],active(r.status)?'Imported training reservation requires reconciliation':undefined)
  case 'training_cases':return one(table,{...r,status:active(r.status)?'uncertain':r.status},['id'],active(r.status)?'Imported training case may have uncertain provider usage':undefined)
  case 'billing_accounts':return one(table,r,['project_id'])
- case 'charges':case 'billing_ledger':{if(table==='charges'&&r.status&&r.status!=='succeeded')return one('billing_operations',{id,project_id:project,kind:'legacy_charge',state:r.status==='failed'?'failed':'uncertain',response_json:stable(r),created_at:created},['id'],r.status==='failed'?undefined:'Imported non-settled charge requires provider reconciliation');return one('billing_ledger',{id,project_id:project,kind:r.kind||'legacy_charge',amount_minor:r.amount_minor!==undefined?Number(r.amount_minor):minor(r.amount),currency:r.currency||'usd',provider_id:r.provider_id||r.stripe_id||null,created_at:created})}
+ case 'charges':case 'billing_ledger':{if(table==='charges'&&r.status&&r.status!=='succeeded')return one('billing_operations',{id,project_id:project,kind:'legacy_charge',state:r.status==='failed'?'failed':'uncertain',response_json:stable(r),created_at:created},['id'],r.status==='failed'?undefined:'Imported non-settled charge requires provider reconciliation');return one('billing_ledger',{id,project_id:project,kind:r.kind||'legacy_charge',amount_minor:r.amount_minor!==undefined?minorUnits(r.amount_minor):minor(r.amount),currency:r.currency||'usd',provider_id:r.provider_id||r.stripe_id||null,created_at:created})}
  case 'ai_usages':case 'ai_usage':{const usage=(typeof r.usage==='string'?JSON.parse(r.usage):r.usage||{}) as Row;const cost=r.cost??usage.cost??r.amount;return one('billing_usage_history',{id,project_id:project,model:r.model??null,input_tokens:r.input_tokens??usage.input_tokens??usage.prompt_tokens??null,output_tokens:r.output_tokens??usage.output_tokens??usage.completion_tokens??null,cost_decimal:cost!==undefined?String(cost):null,currency:r.currency||'usd',created_at:created,source_json:stable(r)})}
  case 'billing_operations':return one(table,{...r,state:active(r.state)?'uncertain':r.state},['id'],active(r.state)?'Imported billing operation requires provider reconciliation':undefined)
  default:return undefined

@@ -205,6 +205,10 @@
     {
       "id": "276_voice_media.sql",
       "buyerSteps": "Apply after 275_voice.sql before the updated Worker. Back up D1. Existing call media expires one day after admission; expired and withdrawn content stays unavailable after restore. Provider copies require separate cleanup. Voice launch remains held for sandbox, emergency routing and consent qualification."
+    },
+    {
+      "id": "281_managed_connectors.sql",
+      "buyerSteps": "API-001: back up D1 and private settings, then apply after 280_agent_native.sql before serving the updated Worker. Adds managed connector metadata, encrypted Help Scout custody, cursor and webhook digest fences, Zapier binding and identifier-only contact/article event intents. Existing data and services retain their behavior. Reconnect Help Scout after restore; manual pulls stage reviewed imports and never apply them or replay external writes."
     }
   ]
 }

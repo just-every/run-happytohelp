@@ -7,6 +7,7 @@ import {join} from 'node:path'
 import {readArtifact} from '../helpers/artifact-payloads.mjs'
 import {recoveryRuntime} from '../helpers/recovery/runtime.mjs'
 import {snapshot} from '../helpers/recovery/snapshot.mjs'
+import {restoredKnowledgeReady} from '../helpers/recovery/knowledge-ready.mjs'
 
 // An older populated installation is upgraded in place. Its data and password
 // are read through the current application, rather than pinning migration names.
@@ -56,6 +57,7 @@ export async function priorSchemaUpgrade(){
    }
   })
   await runtime.start()
+  await restoredKnowledgeReady(runtime,project,'receipts')
   const call=async(path,body,token)=>{
    const response=await fetch(runtime.origin+path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body===undefined?undefined:JSON.stringify(body)})
    assert.equal(response.ok,true,`${path}: ${response.status}`);return response.json()

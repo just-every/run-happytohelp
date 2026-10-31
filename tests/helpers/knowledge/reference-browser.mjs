@@ -35,11 +35,13 @@ export async function referenceBrowser(){
    const captureScreens=async(target,name,measure=false)=>{
     for(const captureWidth of [1440,390]){
      await target.setViewportSize({width:captureWidth,height:captureWidth===390?844:1000})
+     await target.waitForFunction(()=>innerWidth>=1280||!document.body.classList.contains('conversation-workspace')||document.getElementById('conversation-assistant')?.getAttribute('aria-hidden')==='true')
+
      if(measure)measurements.push({width:captureWidth,name,...await referenceLayout(target)})
      if(captureWidth===1440&&measure)assert.ok(await target.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${captureWidth} ${name}: no horizontal overflow`)
      if(captureWidth===390&&name==='saved-reply-history')assert.ok(await target.locator('.macro-history td[data-label="Definition"]').evaluate(cell=>cell.getBoundingClientRect().right<=innerWidth),'the whole definition fits without sideways scrolling')
      if(captureWidth===390&&name==='named-refusal'){const box=await target.getByRole('button',{name:'Send',exact:true}).boundingBox();assert.ok(box.y>=0&&box.y+box.height<=844,'the resend toolbar stays in the phone viewport while a knowledge refusal is shown')}
-     await target.screenshot({path:join(evidence,`${captureWidth}-${name}.png`),fullPage:true})
+     await target.screenshot({path:join(evidence,`${captureWidth}-${name}.png`),fullPage:true,animations:'disabled'})
     }
     await target.setViewportSize({width,height:1000})
    }

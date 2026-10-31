@@ -25,6 +25,10 @@ export async function restoreConsent(harness){
    target.app.db.prepare('INSERT INTO sessions(token_hash,actor_id,project_id,role,expires_at) VALUES(?,?,?,?,?)').bind(sha(token),user,target.ws.projectId,'owner',now+3600000),
    target.app.db.prepare("INSERT INTO session_factors(token_hash,user_id,method,verified_at) VALUES(?,?,'password',?)").bind(sha(token),user,now),
   ]);
+  // A sanitized restore completes its new Knowledge conversion before serving
+  // unrelated channel traffic; no completion receipt is invented.
+  await target.app.scheduled()
+  await target.app.until(async()=>!(await target.app.first('SELECT count(*) n FROM knowledge_upgrade_reports WHERE completed_at IS NULL')).n,{timeout:60000,message:'restored knowledge conversion'})
   assert.equal((await target.deliver(c,'sms',target.event('sms'))).status,410);
   await target.connect('sms');await target.reply(previouslyActive);assert.match((await target.call('/conversations/'+previouslyActive.conversation_id)).data.blocked,/customer_opted_out/,'import does not restore an earlier active consent');await target.reply(t);let status=(await target.call('/conversations/'+t.conversation_id)).data;assert.match(status.blocked,/customer_opted_out/);assert.ok(status.sends.every(s=>s.state==='blocked'));
   await target.deliver(c,'sms',target.event('sms',{text:'START'}));assert.equal((await target.call('/conversations/'+t.conversation_id)).data.blocked,null);await target.app.scheduled();assert.equal(target.sends.length,0);assert.equal((await target.call('/conversations/'+t.conversation_id)).data.sends.find(s=>s.message_id===held.message.id).state,'blocked');

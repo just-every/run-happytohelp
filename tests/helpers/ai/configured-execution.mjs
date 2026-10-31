@@ -22,6 +22,7 @@ export async function configuredExecutionJourney(){
  await toolBounds()
  await dailyBounds()
  await interruptedAttempt()
+ await privateNoteFrontier()
 }
 
 // The pre-existing supported-provider cases call this after their native reply.
@@ -185,4 +186,20 @@ async function interruptedAttempt(){
   assert.equal(unknown.state,'uncertain');assert.equal(unknown.attempts.length,1)
   assert.equal(a.providerCalls(),calls+1);assert.equal((await replies(ambiguous)).length,0)
  }finally{release?.();await a.close()}
+}
+
+
+// Retain the candidate's private-note admission assertion in the current
+// configured generation journey, where the consolidated tests run it.
+async function privateNoteFrontier(){
+ const a=await assistantApp(),{app,ai,p,owner}=a
+ try{
+  const visitor=await a.visitor()
+  ai.before=()=>app.call('/api/dashboard/projects/'+p+'/conversations/'+visitor.conversationId+'/notes',{token:owner,body:{content:'New private fact'},status:201})
+  await visitor.say('Answer after reviewing the current private facts')
+  await a.run()
+  const rows=await a.generations(visitor.conversationId)
+  assert.equal(rows.at(-1).state,'superseded','a private note supersedes the old captured context')
+  assert.equal((await replies(visitor)).length,0,'the superseded private-note frontier admits no customer answer')
+ }finally{await a.close()}
 }

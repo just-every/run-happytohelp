@@ -104,7 +104,7 @@ export async function canonicaliseFields<T>(env:Env,projectId:WriteProject,value
  // adjacent values as one sentence. Identical leaves share tokenization/storage.
  const collect=(item:unknown):(()=>unknown)=>{
   if(typeof item==='string'){
-   if(/^[\[{]/.test(item)){let parsed:unknown;try{parsed=JSON.parse(item)}catch{}if(parsed!==undefined){const rebuild=collect(parsed);return ()=>JSON.stringify(rebuild())}}
+   if(/^[\[{]/.test(item)){let parsed:unknown;try{parsed=JSON.parse(item)}catch{}if(parsed!==undefined){const rebuild=collect(parsed),original=JSON.stringify(parsed);return ()=>{const output=JSON.stringify(rebuild());return output===original?item:output}}}
    const leaf=leaves.get(item)||textLeaf(item);leaves.set(item,leaf)
    return ()=>leaf.output
   }

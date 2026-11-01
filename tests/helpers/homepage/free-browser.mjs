@@ -2,11 +2,10 @@ import assert from 'node:assert/strict'
 import {appearance,aqua,disc,inkCard,lineIcon,see} from './visual.mjs'
 
 export async function freeProductPromise({page,section}){
- await see(page,section.getByRole('heading',{name:'Not just better. Free.',exact:true}))
- const statement=await section.locator('.split-copy > p').innerText()
- assert.match(statement,/100% free and open source/i,'the product is free and open source')
- assert.match(statement,/free as in code[\s,]+and free as in cost/i,'both the code and its use are free')
- assert.match(statement,/MIT licensed/i,'the free-product statement names its MIT licence')
+ await see(page,section.getByRole('heading',{name:'Yours to run and change.',exact:true}))
+ const statement=await section.locator('.split-copy > p:not(.free-note)').innerText()
+ assert.equal(statement,'HappyToHelp is open source and MIT licensed, so it’s yours to use, change and run however you like.','the statement names the open source MIT licence')
+ assert.equal(await section.locator('.split-copy > p.free-note').innerText(),'You can also have all the source for free.','the free source is a quiet footnote')
 
  const drawing=section.getByRole('img',{name:/drawing of the MIT licen[cs]e/i})
  await see(page,drawing)

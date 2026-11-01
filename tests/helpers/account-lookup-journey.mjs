@@ -177,7 +177,8 @@ export async function accountLookupJourney(f,customer){
 }
 
 async function accountLookupUpgrade(){
- const f=await selfServiceFixture({migrate:name=>name<'259_account_lookup_fields.sql',beforeRoutes:async app=>{
+ // Stage only the account-field upgrade: the merged knowledge module's independent schema exists before the prior workspace, so no historical Knowledge conversion is pending.
+ const f=await selfServiceFixture({migrate:name=>name<'259_account_lookup_fields.sql'||/^\d+_knowledge_/.test(name),beforeRoutes:async app=>{
   // Stage prior definitions, typed values and a workflow event directly: current
   // native authorization requires the fully migrated schema before serving routes.
   const prior=await app.seedWorkspace('synthetic-hh-account-upgrade')
@@ -192,7 +193,7 @@ async function accountLookupUpgrade(){
   assert.ok(before.fields.length&&before.values.length&&before.events.length,'the historical transition contains definitions, typed values and a workflow journal')
   await applyMigrations(app.db,name=>name==='259_account_lookup_fields.sql')
   assert.deepEqual(await snapshot(),before,'extending the field type retains definitions, typed values and the workflow journal byte for byte')
-  await applyMigrations(app.db,name=>name>'259_account_lookup_fields.sql')
+  await applyMigrations(app.db,name=>name>'259_account_lookup_fields.sql'&&!/^\d+_knowledge_/.test(name))
   // The upgraded current route can edit the retained historical field and journal it.
   await app.ok(`/api/dashboard/projects/${prior.projectId}/conversations/synthetic-hh-prior-ticket/ticket`,{token:prior.tokens.owner,method:'PATCH',body:{fields:{'synthetic-hh-prior-order':'NS-10483'}}})
   assert.equal((await app.first("SELECT value_json FROM ticket_field_values WHERE conversation_id='synthetic-hh-prior-ticket' AND field_id='synthetic-hh-prior-order'")).value_json,JSON.stringify('NS-10483'))

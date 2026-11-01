@@ -7,6 +7,29 @@ import MessageCitations from './MessageCitations';
 import {visibleMessageContent} from '../../conversations/citations.js';
 import AppContext from "./context/AppContext";
 
+const unavailableKnowledge = '[Knowledge unavailable]';
+
+// Wrap text nodes after Markdown parsing so mixed paragraphs, emphasis and
+// links retain their existing structure. All inserted content stays text.
+function mutedKnowledgeNotices() {
+    return tree => {
+        const visit = node => {
+            if (!Array.isArray(node.children)) return;
+            node.children = node.children.flatMap(child => {
+                if (child.type === 'text' && child.value.includes(unavailableKnowledge)) {
+                    return child.value.split(unavailableKnowledge).flatMap((part, index) => [
+                        ...(index ? [{type: 'element', tagName: 'span', properties: {className: ['happytohelp-knowledge-unavailable']}, children: [{type: 'text', value: unavailableKnowledge}]}] : []),
+                        ...(part ? [{type: 'text', value: part}] : []),
+                    ]);
+                }
+                visit(child);
+                return [child];
+            });
+        };
+        visit(tree);
+    };
+}
+
 // Check if a message only contains image media
 function onlyContainsImages(message) {
     if (message.content) return false;
@@ -123,7 +146,7 @@ export default function ChatMessage({ children: media, message, moveHeight = 0 }
             { media }
             <div ref={messageRef} className={messageClasses.join(" ")} style={ messageStyle }>
                 {expand && <div className={fadeClasses.join(" ")}></div> }
-                <ReactMarkdown remarkPlugins={[gfm, externalLinks]}>{visibleMessageContent(message.content)}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[gfm, externalLinks]} rehypePlugins={[mutedKnowledgeNotices]}>{visibleMessageContent(message.content)}</ReactMarkdown>
                 <MessageCitations message={message} />
             </div>
         </div>

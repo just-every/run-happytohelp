@@ -62,9 +62,14 @@ export async function builtOutcomes(){
   const first=await api('/api/identity/session'),P=`/api/management/projects/${first.projectId}`
   await setup(first.projectId)
   const settings=async()=>(await api(P+'/settings')).data
+  const websiteSource=async()=>(await api(`/api/knowledge/${first.projectId}/datasets`)).find(item=>item.url==='https://acme.example.com')
+  const websiteFacts=async()=>(await api(P+'/activation')).data.facts
   const deadline=Date.now()+30000
-  while((await settings()).site_read?.state!=='done'&&Date.now()<deadline)await new Promise(done=>setTimeout(done,150))
-  assert.equal((await settings()).site_read.state,'done','the real website-read queue finishes before inspecting derived values')
+  while(((await websiteSource())?.status!=='ready'||(await websiteFacts()).colour.source!=='site')&&Date.now()<deadline)await new Promise(done=>setTimeout(done,150))
+  const source=await websiteSource()
+  assert.equal(source?.status,'ready','the real website-read queue publishes knowledge before inspecting derived values')
+  assert.ok(source.published_version&&source.page_count>0,'the website read published searchable pages')
+  assert.equal((await websiteFacts()).colour.source,'site','Setup observes the completed website identity')
   assert.equal((await settings()).name,'Acme Widgets & Co');assert.equal((await settings()).primary_color,'#1a7f64')
   const ais=(await api(P+'/ais')).data,email=(await api(P+'/email-settings')).data
   assert.equal(ais.length,1);assert.equal((await settings()).default_visitor_ai_id,ais[0].id)

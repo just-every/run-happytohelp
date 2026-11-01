@@ -14345,11 +14345,11 @@
       "executable": false
     },
     "tests/helpers/first-run/outcomes.mjs": {
-      "sha256": "2a53373931ae7540f8e24bb7ee6e340f13a2bf0628e097169ec0388b96c058ea",
+      "sha256": "08b8144ef1f93b1231d7bc01468f9580bca0048e00949d3da5c5a05269a1b799",
       "executable": false
     },
     "tests/helpers/first-run/provisioning.mjs": {
-      "sha256": "9a3c5c4c4b3a28ba7cf002bb24ca36ca18d665a31ddd4f5922c91216e99a81d3",
+      "sha256": "9416dab3dad21c9ed417f7db04d79d08463331fe1d4bfdce721e24280b522826",
       "executable": false
     },
     "tests/helpers/first-run/site-read.mjs": {
@@ -14461,11 +14461,11 @@
       "executable": false
     },
     "tests/helpers/inbox/brands-outcomes.mjs": {
-      "sha256": "29a82ed55bec1acac509288afa182394d00077f1d6038c790ad90f5203c56c14",
+      "sha256": "26d76219b67de662e0da539a85821fa98d7d09aafb3ca74dbde2b4719fd10be3",
       "executable": false
     },
     "tests/helpers/inbox/brands.mjs": {
-      "sha256": "a5f9784697f8baac0803e20f3c53e74c05522e4aa1b52b7dbddcc8fa6717cd08",
+      "sha256": "bcb2b80a0c6f536ba119fe73a141428902be46e85609121719f4d23744263667",
       "executable": false
     },
     "tests/helpers/inbox/conversation-actions.mjs": {

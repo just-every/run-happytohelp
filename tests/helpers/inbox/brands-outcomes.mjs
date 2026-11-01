@@ -69,7 +69,7 @@ export async function brandsOutcomes({app,alpha,records,owner,shared,selection,r
  assert.equal(combined.aggregate.volume,expected.reduce((sum,row)=>sum+row.volume,0))
  assert.equal(combined.aggregate.resolved,expected.reduce((sum,row)=>sum+row.resolved,0))
  assert.equal((await app.ok(selection,{token:owner})).data.brands[0].policy.collectEmail,false)
- assert.equal((await app.ok(`/api/management/projects/${b.projectId}/settings`,{token:b.brandOwner})).data.collect_email,true)
+ assert.equal((await app.ok(selection,{token:b.brandOwner})).data.brands.find(row=>row.id===b.projectId).policy.collectEmail,true)
  // An Alpha admin has no Beta authority until explicitly invited and accepted.
  const betaDesk=`/api/dashboard/projects/${b.projectId}`
  explained(await app.call(selection,{token:admin}),403,/membership|invite|access/i)

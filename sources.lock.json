@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cdb93702249994a6ac7f971e649187f34661e1c92775980cc24072ca17d9e9ee",
+      "sha256": "e05447c2bc463be6f0aaf43e345a778e0f842d7ff883a6148edb06f3c1c7b524",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "f4666ea2af24b443f046433dc2e2e31b8783182f16613dcc42a19e5337e6b64e",
+      "sha256": "cdcc709b6ede893e60be046b4fc89fa30addfa82186de878c7d5d15609ae3598",
       "executable": false
     },
     "DEMO.md": {
@@ -8729,7 +8729,7 @@
       "executable": false
     },
     "src/modules/widget/js/ChatList.jsx": {
-      "sha256": "1d02a0e0b564da1f672bd5f43cb57cff682d22e1c981b8213eccf9a75244a614",
+      "sha256": "d516f5cef13fff3fa74e7321332e6d9ee8b61bf881b7a79df7ad0f483a86b648",
       "executable": false
     },
     "src/modules/widget/js/ChatMessage.jsx": {
@@ -14441,7 +14441,7 @@
       "executable": false
     },
     "tests/helpers/inbox/brands-browser.mjs": {
-      "sha256": "a73eca3ac1bf6991f3b5ee5a4258939bbc11efb51c3df01d82940c9b2402711b",
+      "sha256": "bcb86be8f28b2677b4776c285f8ba93f4960345b6a7d092fc100154b3b7e62ac",
       "executable": false
     },
     "tests/helpers/inbox/brands-mailbox-outcomes.mjs": {
@@ -14842,6 +14842,10 @@
     },
     "tests/helpers/widget/campaigns.mjs": {
       "sha256": "63d5ee6dd6509b1017a52403c59cb8204dd88cb0d1b825f383244c5974bb65af",
+      "executable": false
+    },
+    "tests/helpers/widget/identity-browser.mjs": {
+      "sha256": "1e03d8b17cc04e507d17d655fadc7a7314744c5d332a2c796ef57b838ad8b2ad",
       "executable": false
     },
     "tests/helpers/widget/mailbox-live.mjs": {

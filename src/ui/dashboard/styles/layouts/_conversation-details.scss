@@ -194,6 +194,17 @@ body.conversation-workspace #chat {
         text-transform: uppercase;
     }
 
+    .ticket-summary__row.ticket-summary__row--history { grid-template-columns: minmax(0, 1fr); }
+
+    .imported-history {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        summary { min-height: 44px; padding-block: 10px; cursor: pointer; }
+        summary:focus-visible { outline: 2px solid var(--accessibility-focus-ring); outline-offset: 2px; box-shadow: 0 0 0 4px var(--accessibility-focus-halo); }
+        button { min-height: 44px; }
+        ol, ul { padding-left: 1.2rem; }
+    }
+
     .ticket-summary__rows { margin: 0; }
 
     .ticket-summary__row {

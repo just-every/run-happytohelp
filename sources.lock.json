@@ -14245,7 +14245,7 @@
       "executable": false
     },
     "tests/helpers/email/outbound-configuration.mjs": {
-      "sha256": "c82060986c3c42c95ad4093cd05a5ac015bb65d9985570d73db9d00c78227b77",
+      "sha256": "fa76a2800773b2b7626fc844e28c89e88a26c7ee2a402c4cde7daa450b48ba5d",
       "executable": false
     },
     "tests/helpers/email/rer-edge.mjs": {
@@ -14501,7 +14501,7 @@
       "executable": false
     },
     "tests/helpers/inbox/new-ticket-configuration.mjs": {
-      "sha256": "0bd80bad98f7c815da77fb8b1efd6193f6f683998228555d559b62a63497057d",
+      "sha256": "7852b17bc5cdc72c88663fced081703721e0dbf6c703d2ed7dd75cbdec39c994",
       "executable": false
     },
     "tests/helpers/inbox/problems.mjs": {

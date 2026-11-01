@@ -3,6 +3,8 @@ import {DatabaseSync} from 'node:sqlite';
 // Prior schema definitions a migration deliberately replaces. 0110 adds only the
 // native import fence to the two context message triggers' bodies.
 export const schemaExceptions = [
+  {migration: '290_native_reply_drafts.sql', names: ['macro_drafts'], change: 'Makes usage_id nullable, adds nullable draft_id and requires exactly one of them; all prior columns and rows retained'},
+  {migration: '293_knowledge_references.sql', names: ['workflow_version_immutable', 'outbound_notice_command_identity'], change: 'Adds only a project/table/row-keyed knowledge upgrade permit to the immutable update guards; original update targets and refusal messages retained'},
   {migration:'292_knowledge_entitlements.sql',names:['knowledge_categories'],change:'Adds requires_entitlement with a closed boolean constraint; every prior column definition is retained'},
   {migration:'281_managed_connectors.sql',names:['native_integration_destinations','api_destination_filter'],change:'Adds connector origin and permits workspace-wide Zapier subscriptions while retaining machine/native origin filters'},
   {migration:'282_messaging_surveys.sql',names:['csat_responses','csat_response_history'],change:'Widens only channel and response-surface checks to the four permitted messaging providers, retaining every column and row'},
@@ -60,6 +62,7 @@ export function expectedSchema(before, after, added) {
     if (added.includes('246_imported_ticket_lifecycle.sql') && name === 'ticket_conversation_defaults') wanted = {...wanted, sql: importedStatusDefaults(wanted.sql)};
     if (added.includes('181_context_message_subjects.sql') && name === 'context_message_added') wanted = {...entry, sql: messageSubjectTrigger};
     if (added.includes('182_import_kit_reversal_retirement.sql') && name === 'ik_d1_stream_revision_update') wanted = {...entry, sql: streamRetirementTrigger};
+    if (added.includes('293_knowledge_references.sql') && knowledgeUpgradeTriggers[name]) wanted = {...entry, sql: knowledgeUpgradeTriggers[name]};
     if (added.includes('121_move_in_categories.sql')) {
       if (name === 'edition_category_insert') {
         if (after[name] !== undefined) changed.push(name);
@@ -93,6 +96,14 @@ END`;
 // Expected additions/replacements are explicit, independent of the migration
 // files under test. Let SQLite serialize ALTER/RENAME without ignoring schema.
 const tableChanges = [
+  {migration: '290_native_reply_drafts.sql', table: 'macro_drafts', sql: `CREATE TABLE native_reply_draft_upgrade(
+ project_id TEXT NOT NULL,conversation_id TEXT NOT NULL,actor_id TEXT NOT NULL,
+ usage_id TEXT REFERENCES macro_usage(id),draft_id TEXT,
+ content TEXT NOT NULL,reply_type TEXT NOT NULL CHECK(reply_type IN ('public','note')),
+ unresolved_json TEXT NOT NULL,media_ids_json TEXT NOT NULL,updated_at INTEGER NOT NULL,
+ PRIMARY KEY(project_id,conversation_id,actor_id),
+ CHECK((usage_id IS NOT NULL AND draft_id IS NULL) OR (usage_id IS NULL AND draft_id IS NOT NULL))
+); DROP TABLE macro_drafts; ALTER TABLE native_reply_draft_upgrade RENAME TO macro_drafts;`},
   {migration:'292_knowledge_entitlements.sql',table:'knowledge_categories',sql:'ALTER TABLE knowledge_categories ADD COLUMN requires_entitlement INTEGER NOT NULL DEFAULT 0 CHECK(requires_entitlement IN (0,1))'},
   {migration:'281_managed_connectors.sql',table:'native_integration_destinations',sql:"ALTER TABLE native_integration_destinations ADD COLUMN connector TEXT NOT NULL DEFAULT 'native';"},
   {migration:"257_sla_slack.sql",table:"sla_policies",sql:"ALTER TABLE sla_policies ADD COLUMN slack_destination_id TEXT;"},
@@ -133,3 +144,10 @@ const tableChanges = [
 ];
 const messageSubjectTrigger = 'CREATE TRIGGER context_message_added AFTER INSERT ON messages WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=NEW.project_id AND f.conversation_id=NEW.conversation_id) BEGIN UPDATE context_subjects SET revision=revision+1 WHERE project_id=NEW.project_id AND subject_id IN (SELECT contact_id FROM conversations WHERE id=NEW.conversation_id AND project_id=NEW.project_id UNION SELECT NEW.actor_id); END';
 const streamRetirementTrigger = "CREATE TRIGGER ik_d1_stream_revision_update BEFORE UPDATE ON ik_d1_stream_revisions WHEN NEW.stream_id IS NOT OLD.stream_id OR NEW.destination IS NOT OLD.destination OR NEW.mapping_version IS NOT OLD.mapping_version OR NEW.principal_id IS NOT OLD.principal_id OR NEW.fingerprint IS NOT OLD.fingerprint OR NEW.total IS NOT OLD.total OR NEW.layout_hash IS NOT OLD.layout_hash OR NEW.layout_revision<OLD.layout_revision OR NEW.progress_revision<=OLD.progress_revision OR ((NEW.namespace IS NOT OLD.namespace OR NEW.operation_key IS NOT OLD.operation_key) AND NOT (NEW.namespace='' AND NEW.operation_key='' AND NOT EXISTS(SELECT 1 FROM ik_d1_streams WHERE id=OLD.stream_id) AND EXISTS(SELECT 1 FROM ik_d1_retirements WHERE id=OLD.stream_id AND kind='stream'))) BEGIN SELECT RAISE(ABORT,'IMPORT_STREAM_REVISION_CHANGED'); END";
+
+// 293 retains both immutable guards except for the exact, row-scoped upgrade
+// permit. Keep their complete expected definitions independent of migrations.
+const knowledgeUpgradeTriggers = {
+  workflow_version_immutable: "CREATE TRIGGER workflow_version_immutable BEFORE UPDATE ON workflow_rule_versions WHEN NOT EXISTS(SELECT 1 FROM knowledge_upgrade_permits WHERE project_id=OLD.project_id AND table_name='workflow_rule_versions' AND row_key=json_array(OLD.rule_id,OLD.version)) BEGIN SELECT RAISE(ABORT,'Published workflow versions are immutable'); END",
+  outbound_notice_command_identity: "CREATE TRIGGER outbound_notice_command_identity BEFORE UPDATE OF id,project_id,actor_id,intent_key,created_at,outcome,detail_json ON outbound_notice_commands WHEN NOT EXISTS(SELECT 1 FROM knowledge_upgrade_permits WHERE project_id=OLD.project_id AND table_name='outbound_notice_commands' AND row_key=json_array(OLD.id,OLD.project_id)) BEGIN SELECT RAISE(ABORT,'notice_command_immutable'); END",
+};

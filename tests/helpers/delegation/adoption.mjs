@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
 import {startApp,sha} from '../../journeys/kit/app.mjs'
+import {delegatedTicketScopeAssertions} from './ticket-scope.mjs'
 import {mobileAdoption} from '../mobile-adoption.mjs'
 
 export const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aS1sAAAAASUVORK5CYII=','base64')
@@ -97,10 +98,23 @@ export async function adoptionJourney(){
   await run('INSERT INTO memberships VALUES(?,?,?)',s.projectId,other.userId,'operator');const peerToken=randomUUID()
   await run('INSERT INTO sessions VALUES(?,?,?,?,NULL,?,NULL)',sha(peerToken),other.userId,s.projectId,'operator',Date.now()+3600000)
   assert.equal((await request(s.draftPath,s.command,peerToken)).status,409,'a same-project peer does not own this job')
-  assert.equal((await request(s.draftPath.replace(s.conversationId,other.conversationId),s.command,s.token)).status,409)
+  assert.equal((await request(s.draftPath.replace(s.conversationId,other.conversationId),s.command,s.token)).status,404)
   assert.equal((await request(s.draftPath.replace(s.jobId,other.jobId),s.command,s.token)).status,409)
   assert.equal((await request(s.draftPath.replace(s.projectId,other.projectId),s.command,s.token)).status,403)
   await run('UPDATE local_devices SET user_id=? WHERE id=?',other.userId,s.deviceId);assert.equal((await s.adopt()).status,409);await noAdoption(s)
+
+  // A live scope restriction at the final media INSERT cannot adopt prepared
+  // local screenshots. Retain the draft's existing guard and byte cleanup.
+  const scoped=await fixture(),role=await request(`/api/management/projects/${scoped.projectId}/roles`,{name:'Synthetic S5 draft scope',base:'operator',permissions:['conversations.reply']},scoped.token)
+  assert.equal(role.status,201)
+  await run('INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES(?,?,?,1)',scoped.projectId,scoped.userId,role.body.data.id)
+  const empty=JSON.stringify({groupIds:[],includeUngrouped:false})
+  const lostDraft=await scoped.adopt({}, {'x-test-statement':'INSERT INTO media','x-test-before-statement':`UPDATE project_roles SET ticket_scope_json='${empty}' WHERE id='${role.body.data.id}'`})
+  assert.equal(lostDraft.status,409);await noAdoption(scoped)
+  assert.equal((await scoped.adopt()).status,404);await noAdoption(scoped)
+  await run('UPDATE project_roles SET ticket_scope_json=NULL WHERE id=?',role.body.data.id)
+  assert.equal((await scoped.adopt()).status,200);assert.equal((await scoped.media()).length,1)
+  console.log('PROBE ACCESS-001 P7: POST native result/draft; scope narrowed at media commit -> 409, no media/messages/copied bytes; next request 404; NULL retry 200')
 
   // Proposal selection, the immutable frontier and required fields are checked.
   const v=await fixture()
@@ -158,4 +172,5 @@ export async function adoptionJourney(){
   assert.equal((await one("SELECT status FROM local_receipts WHERE job_id=? AND proposal_id='legacy'",l.jobId)).status,'sent')
   const delivered=await l.media();assert.equal(delivered.length,1);assert.equal(delivered[0].uploaded_by,l.userId);assert.equal((await l.messages()).length,1);assert.deepEqual(await bytes(delivered[0].object_key),png)
  }finally{await runtime.close()}
+ await delegatedTicketScopeAssertions()
 }

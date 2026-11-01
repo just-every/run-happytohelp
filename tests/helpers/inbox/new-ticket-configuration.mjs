@@ -41,10 +41,12 @@ export async function newTicketConfigurationBrowser(){
    const context=await browser.newContext({viewport:{width,height:width===390?844:1000}})
    await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
    const page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message))
-   const capture=async name=>{
+   const capture=async(name,focus)=>{
     for(const proofWidth of [1440,390]){
      await page.setViewportSize({width:proofWidth,height:proofWidth===390?844:1000})
-     await page.screenshot({path:join(evidenceDir,`${proofWidth}-${name}.png`),fullPage:true})
+     await page.waitForTimeout(300)
+     if(focus)await focus.scrollIntoViewIfNeeded()
+     await page.screenshot({path:join(evidenceDir,`${proofWidth}-${name}.png`),fullPage:true,animations:'disabled'})
     }
     await page.setViewportSize({width:1440,height:1000})
    }
@@ -90,7 +92,7 @@ export async function newTicketConfigurationBrowser(){
    await dialog.getByText('Delivery reference: Value does not match the required pattern',{exact:true}).first().waitFor()
    assert.equal(await dialog.getByLabel('Subject',{exact:true}).inputValue(),subject,'refusal retains editable draft')
    await page.waitForFunction(id=>document.activeElement?.id===`new-ticket-field-${id}`,reference.id)
-   await capture('configuration-error')
+   await capture('configuration-error',dialog.getByLabel('Delivery reference *',{exact:true}))
    await dialog.getByLabel('Delivery reference *',{exact:true}).fill('DEL-1048')
    const createdResponse=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
    await dialog.getByRole('button',{name:'Create and email',exact:true}).click()
@@ -109,7 +111,7 @@ export async function newTicketConfigurationBrowser(){
    await page.getByLabel('Delivery reference',{exact:false}).waitFor()
    await capture('configured-ticket')
    await page.getByLabel('Delivery reference',{exact:false}).scrollIntoViewIfNeeded()
-   await capture('stored-field-values')
+   await capture('stored-field-values',page.getByLabel('Delivery reference',{exact:false}))
    const replay=await request(command);assert.equal(replay.status,200);assert.equal(replay.body.conversation.id,created.conversation.id);assert.equal(replay.body.duplicate,true);await delivered(base,created.conversation.id,content)
    // The API door selects the existing requester rather than making another.
    const apiCommand={kind:'email',localId:`synthetic-happytohelp-api-${width}`,requesterId:created.conversation.contact_id,mailboxId:mailbox.id,subject:`Delivery update ${width}`,content:`Your parcel is ready for collection (${width}).`}
@@ -147,13 +149,13 @@ export async function newTicketConfigurationBrowser(){
    assert.equal((await request({...apiCall,localId:`synthetic-happytohelp-call-cc-${width}`,cc:['synthetic-happytohelp-1@customer.example']})).status,400)
    assert.equal(copies().length,beforeCalls,'dialog/API call logs send no mail, including retries')
    // Narrow the current native role while retaining workspace membership.
-   await runtime.execute(`INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES('${projectId}','${owner.actor.id}','collaborator',1)`)
+   await runtime.execute(`UPDATE memberships SET role='operator' WHERE project_id='${projectId}' AND user_id='${owner.actor.id}'; UPDATE sessions SET role='operator' WHERE project_id='${projectId}' AND actor_id='${owner.actor.id}'; INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES('${projectId}','${owner.actor.id}','collaborator',1)`)
    await open()
    await dialog.getByRole('alert').filter({hasText:/allow|authority|permission/i}).waitFor()
    assert.equal(await dialog.getByRole('button',{name:'Create and email',exact:true}).isDisabled(),true)
    await capture('denied-create-authority')
    await dialog.getByRole('button',{name:'Cancel',exact:true}).click()
-   await runtime.execute(`DELETE FROM member_roles WHERE project_id='${projectId}' AND user_id='${owner.actor.id}'`)
+   await runtime.execute(`DELETE FROM member_roles WHERE project_id='${projectId}' AND user_id='${owner.actor.id}'; UPDATE memberships SET role='owner' WHERE project_id='${projectId}' AND user_id='${owner.actor.id}'; UPDATE sessions SET role='owner' WHERE project_id='${projectId}' AND actor_id='${owner.actor.id}'`)
    await context.close()
   }
   assert.deepEqual(errors,[]);success=true

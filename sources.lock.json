@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "3ac122f66f655a3dcad6fb5e63619b8afe099a8a71afcae87aad74d3fd15cef4",
+      "sha256": "f5036daba10315dd595786d135809bc6f6f7315f129b1e1862fc0e9c59387731",
       "executable": false
     },
     "DEMO.md": {
@@ -14501,7 +14501,7 @@
       "executable": false
     },
     "tests/helpers/inbox/new-ticket-configuration.mjs": {
-      "sha256": "b2694a0cac40a541afeee32ffa99b3e4bb785ffbdcba1103bb6594f656faa102",
+      "sha256": "0bd80bad98f7c815da77fb8b1efd6193f6f683998228555d559b62a63497057d",
       "executable": false
     },
     "tests/helpers/inbox/problems.mjs": {

@@ -3,7 +3,7 @@ import {HTTPException} from 'hono/http-exception'
 import type {AppEnv} from '../../platform/env'
 import {scope} from './common'
 import {requireReportPermission} from '../reports/permission'
-import {readReport} from '../reports/read'
+import {readReport,ordinaryReportGuard,type ReportScopeCheck} from '../reports/read'
 import {reportRange,validTimezone} from '../reports/calendar'
 
 export const brandReports=new Hono<AppEnv>()
@@ -21,17 +21,19 @@ brandReports.get('/projects/:projectId/brands/reports',async c=>{
   await requireReportPermission(c,{id:actor.id,projectId:id,role:row.role},'reports.view')
   return row
  }
- const brands=[]
+ const brands=[],checks:ReportScopeCheck[]=[]
  for(const id of ids){
   const row=await permitted(id),timezone=JSON.parse(row.settings_json||'{}').timezone||'UTC'
   if(!validTimezone(timezone))throw new HTTPException(422,{message:'Configure a valid timezone for every selected brand'})
-  const report=await readReport(c.env,id,reportRange(query,timezone))
+  checks.push((await ordinaryReportGuard(c.env,id,actor.id)).check)
+  const report=await readReport(c.env,id,reportRange(query,timezone),actor.id)
   // Detailed comments and conversation IDs stay within the individual brand door.
   const {comments,...metrics}=report
   brands.push({id,name:row.name,...metrics})
  }
  // A membership narrowed while another brand was being read cannot expose its data.
  for(const id of ids)await permitted(id)
+ for(const check of checks)await check()
  const aggregate=brands.reduce((sum,brand)=>({volume:sum.volume+brand.volume,resolved:sum.resolved+brand.aiResolution.total,ai:sum.ai+brand.aiResolution.count,rated:sum.rated+brand.satisfaction.total,positive:sum.positive+brand.satisfaction.positive}),{volume:0,resolved:0,ai:0,rated:0,positive:0})
  return c.json({data:{brands,aggregate:{...aggregate,aiResolutionRate:aggregate.resolved?aggregate.ai/aggregate.resolved:null,satisfactionRate:aggregate.rated?aggregate.positive/aggregate.rated:null},explanation:'Only explicitly selected brands with current membership and report permission are included. Each uses its own calendar timezone; customer identities, comments and credentials are excluded. Cross-brand medians and percentiles are not combined.'}})
 })

@@ -1,11 +1,14 @@
 import type {Env} from '../../platform/env'
+import type {ReportScopeCheck} from './read'
 
 type Row=Record<string,unknown>&{id:string;conversationId:string}
 /** Global keyset pages keep both long transcripts and large workspaces bounded. */
-export async function* transcriptRecords(env:Env,sql:string,args:unknown[],order:'id'|'revision'='id'){
+export async function* transcriptRecords(env:Env,sql:string,args:unknown[],order:'id'|'revision'='id',check:ReportScopeCheck=async()=>{}){
  let conversationId='',position:unknown=order==='revision'?0:''
  for(;;){
+  await check()
   const {results}=await env.DB.prepare(`SELECT * FROM (${sql}) WHERE conversationId>? OR (conversationId=? AND ${order}>?) ORDER BY conversationId,${order} LIMIT 100`).bind(...args,conversationId,conversationId,position).all<Row>()
+  await check()
   for(const row of results)yield row
   if(results.length<100)return
   const last=results[results.length-1];conversationId=last.conversationId;position=last[order]
@@ -18,6 +21,7 @@ export function transcriptGroups(rows:AsyncGenerator<Row>){
  return {
   async *take(conversationId:string){
    pending??=await rows.next()
+   while(!pending.done&&pending.value.conversationId<conversationId)pending=await rows.next()
    while(!pending.done&&pending.value.conversationId===conversationId){
     const {conversationId:_,...row}=pending.value
     yield row

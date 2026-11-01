@@ -7345,7 +7345,7 @@
       "executable": false
     },
     "src/modules/management/brand-reports.ts": {
-      "sha256": "8baf6559d19e74bddd559c27163f22f8baf8e72e1dd9dc0f6f203a044178df82",
+      "sha256": "68fe1f1c57d6755d18bd2ace17e6e05f52e335ebd0ea62f3e27a87e984b3e355",
       "executable": false
     },
     "src/modules/management/brands.ts": {
@@ -8137,7 +8137,7 @@
       "executable": false
     },
     "src/modules/reports/csv.ts": {
-      "sha256": "95ab063a42f0320ed6a33a9052903fb88fe624502fb053cafc063e27dda60442",
+      "sha256": "f5e37795eb6f2a44d12e4859da208ac57c69fd02e9c066902ecd3e83b18194b3",
       "executable": false
     },
     "src/modules/reports/metrics.ts": {
@@ -8153,7 +8153,7 @@
       "executable": false
     },
     "src/modules/reports/read.ts": {
-      "sha256": "871f1b514cb3e79a9777ca8e19488225f1df6fc0e4a6dbbbd0697906a2366b5b",
+      "sha256": "e5fd8405f9e7b4a5621001b68ebb5376e510420f3aa92ca4a65d522b01bb022d",
       "executable": false
     },
     "src/modules/reports/README.md": {
@@ -8161,7 +8161,7 @@
       "executable": false
     },
     "src/modules/reports/routes.ts": {
-      "sha256": "9912ea379b09363c90a7471d887da6cf1ae0d78cbaa4f7d8f734ccb656fc29b9",
+      "sha256": "33ce0969739ef10fba8987f4e4af19de947639a7d0109a0627ef6a1ed721e27a",
       "executable": false
     },
     "src/modules/reports/schedule-calendar.ts": {
@@ -8185,7 +8185,7 @@
       "executable": false
     },
     "src/modules/reports/surveys.ts": {
-      "sha256": "ef5b8dcb6b655fac8910ddde939d37cdefe77845a118ed476e50cb54c6fb82a4",
+      "sha256": "24c77eb5e0993ac87f75143b2c026a84e06635caffc672ec1266d8dfde019cff",
       "executable": false
     },
     "src/modules/reports/team-breakdowns.ts": {
@@ -8229,11 +8229,11 @@
       "executable": false
     },
     "src/modules/reports/transcript-records.ts": {
-      "sha256": "88ddae7fac72406dfe9f7372a0e10762b43888f158e7eb2146610825bbab5449",
+      "sha256": "0f3bf5ac4d7d522aad75bfeded114db8c80f24cf439ecd482a37ec67d2e372ff",
       "executable": false
     },
     "src/modules/reports/transcripts.ts": {
-      "sha256": "0957c7f689dbdaeb71589efb4784f6259a527afb2be519a3110e588151d99c5f",
+      "sha256": "723ba7c97c7e73f9ab79e0945063b654eeedc0a39bd2c14e55be0f258fe59b9a",
       "executable": false
     },
     "src/modules/sendgrid-email/module.json": {
@@ -15080,6 +15080,10 @@
       "sha256": "fba87097978b24c1ad84335db06bcc813d2fa9659cbeb7b87676897bc0f33a5e",
       "executable": false
     },
+    "tests/helpers/reports/ticket-scope.mjs": {
+      "sha256": "1b1e7b607a6333523a33ddbc16f681abc44130927eb652cd3a8ecb7bd954a91a",
+      "executable": false
+    },
     "tests/helpers/request-forms-journey.mjs": {
       "sha256": "8b9d1d0683a38d3adac42a13d04c145e5068f640fdd7675407ab61b6b7dc74e0",
       "executable": false
@@ -15597,7 +15601,7 @@
       "executable": false
     },
     "tests/reports/figures.mjs": {
-      "sha256": "c56589722aa79bb256b2693a3846d7eb0b9ace292c6b660d1fe918b270c8473a",
+      "sha256": "b2c9336b04b4ed66f1ae38aefd51af658ae98a0914e666303f6d0ee980117cdd",
       "executable": false
     },
     "tests/reports/harness.mjs": {

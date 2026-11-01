@@ -10,27 +10,39 @@ import {auditStatement} from '../audit/record'
 import {activeSurveySql,surveyJoins,type Survey} from '../outcomes/survey-store'
 import {surveyURL} from '../outcomes/survey-links'
 import {portalSessionGuard,type PortalIdentity} from './identity'
+import {canonicaliseFields} from '../knowledge/canonicaliser'
+import {readerSet} from '../knowledge/door'
+import {renderKnowledgeFields} from '../knowledge/reference-store'
 
 const publicColumns="c.id,c.subject,CASE WHEN c.status_category IN ('solved','closed') THEN 'solved' ELSE 'open' END status,c.created_at,c.updated_at,c.revision,c.last_message_id lastMessageId"
+/** Company ticket visibility never changes the knowledge reader: each viewer
+ * sees references as themself, including on the server-rendered portal pages. */
+async function publicPortalFields<T>(env:Env,identity:PortalIdentity,value:T,authorContactId?:string){
+ const projectId=identity.actor.projectId,fields=await canonicaliseFields(env,projectId,value,authorContactId)
+ return renderKnowledgeFields(env,projectId,fields,readerSet([{kind:'contact',id:identity.actor.contactId||identity.actor.id}]))
+}
 export async function listPortalRequests(env:Env,identity:PortalIdentity,before?:number){
  const session=portalSessionGuard(identity),visibility=portalTicketScope(identity),guard={sql:`${session.sql} AND ${visibility.sql}`,args:[...session.args,...visibility.args]},cursor=typeof before==='number'&&Number.isSafeInteger(before)&&before>0?before:Number.MAX_SAFE_INTEGER
- return (await env.DB.prepare(`SELECT ${publicColumns} FROM conversations c WHERE c.project_id=? AND c.updated_at<? AND c.revision>0 AND ${guard.sql} ORDER BY c.updated_at DESC,c.id LIMIT 100`).bind(identity.actor.projectId,cursor,...guard.args).all()).results
+ const rows=(await env.DB.prepare(`SELECT ${publicColumns} FROM conversations c WHERE c.project_id=? AND c.updated_at<? AND c.revision>0 AND ${guard.sql} ORDER BY c.updated_at DESC,c.id LIMIT 100`).bind(identity.actor.projectId,cursor,...guard.args).all()).results
+ return publicPortalFields(env,identity,rows)
 }
 export async function portalRequest(env:Env,identity:PortalIdentity,ticketId:string){
  const session=portalSessionGuard(identity),visibility=portalTicketScope(identity),guard={sql:`${session.sql} AND ${visibility.sql}`,args:[...session.args,...visibility.args]}
  const ticket=await env.DB.prepare(`SELECT ${publicColumns} FROM conversations c WHERE c.id=? AND c.project_id=? AND c.revision>0 AND ${guard.sql}`).bind(ticketId,identity.actor.projectId,...guard.args).first<any>()
  if(!ticket)throw new HTTPException(404,{message:'Request not found'})
- return ticket
+ return publicPortalFields(env,identity,ticket)
 }
 export async function portalRequestDetail(env:Env,identity:PortalIdentity,ticketId:string){
  const ticket=await portalRequest(env,identity,ticketId),session=portalSessionGuard(identity),visibility=portalTicketScope(identity),guard={sql:`${session.sql} AND ${visibility.sql}`,args:[...session.args,...visibility.args]}
  const [messages,media,surveys]=await env.DB.batch<any>([
-  env.DB.prepare(`SELECT m.id,m.content,m.created_at,CASE WHEN m.actor_role='contact' THEN 'customer' ELSE 'support' END author FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE c.id=? AND c.project_id=? AND m.erased_at IS NULL AND ${guard.sql} ORDER BY m.revision LIMIT 1000`).bind(ticketId,identity.actor.projectId,...guard.args),
+  env.DB.prepare(`SELECT m.id,m.content,m.created_at,CASE WHEN m.actor_role='contact' THEN m.actor_id END knowledge_author_contact_id,CASE WHEN m.actor_role='contact' THEN 'customer' ELSE 'support' END author FROM messages m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE c.id=? AND c.project_id=? AND m.erased_at IS NULL AND ${guard.sql} ORDER BY m.revision LIMIT 1000`).bind(ticketId,identity.actor.projectId,...guard.args),
   env.DB.prepare(`SELECT m.id,m.message_id,m.filename,m.content_type,m.size FROM media m JOIN conversations c ON c.id=m.conversation_id AND c.project_id=m.project_id WHERE c.id=? AND c.project_id=? AND m.message_id IS NOT NULL AND ${guard.sql}`).bind(ticketId,identity.actor.projectId,...guard.args),
   env.DB.prepare(`SELECT s.* ${surveyJoins} WHERE c.id=? AND c.project_id=? AND ct.id=? AND ${activeSurveySql} AND s.due_at<=? AND s.state<>'cancelled' AND s.token_revision=0 AND NOT EXISTS(SELECT 1 FROM csat_responses response WHERE response.resolution_id=s.resolution_id) AND ${guard.sql} LIMIT 1`).bind(ticketId,identity.actor.projectId,identity.actor.id,Date.now(),Date.now(),...guard.args)
  ])
  const survey=surveys.results[0] as Survey|undefined
- return {ticket,messages:messages.results.map((message:any)=>({...message,attachments:media.results.filter((item:any)=>item.message_id===message.id).map(({message_id,...item}:any)=>item)})),survey:survey?{state:'available',url:await surveyURL(env,survey,'portal')}:{state:ticket.status==='solved'?'unavailable':'open'}}
+ const renderedMessages=await Promise.all(messages.results.map(({knowledge_author_contact_id,...message}:any)=>publicPortalFields(env,identity,{...message,attachments:media.results.filter((item:any)=>item.message_id===message.id).map(({message_id,...item}:any)=>item)},knowledge_author_contact_id||undefined)))
+ const renderedSurvey=await publicPortalFields(env,identity,survey?{state:'available',url:await surveyURL(env,survey,'portal')}:{state:ticket.status==='solved'?'unavailable':'open'})
+ return {ticket,messages:renderedMessages,survey:renderedSurvey}
 }
 export async function replyPortalRequest(env:Env,identity:PortalIdentity,ticketId:string,body:any,defer?:DeferEmailDelivery){
  await portalRequest(env,identity,ticketId)

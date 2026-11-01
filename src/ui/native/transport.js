@@ -1,3 +1,4 @@
+import {knowledgeRefusalMessage} from './knowledge-references/refusal-message';
 import {takeInitialWorkspaceRead} from './initial-workspace-reads.js';
 /** Native command transport. Commands are persisted by the server before UI acknowledgement. */
 export async function nativeRequest(path, init = {}) {
@@ -14,7 +15,7 @@ export async function nativeRequest(path, init = {}) {
     // A sensitive action asks for a recent step-up; once confirmed, the same request runs once more.
     if (response.status === 403 && body.code === 'step_up_required' && !init.stepUpRetried && await confirmStepUp(body)) return nativeRequest(path, { ...init, stepUpRetried: true });
     notifyExpiredSession(path, response.status, body);
-    if (!response.ok) throw Object.assign(new Error(body.error?.message || body.error || `Request failed (${response.status})`), { status: response.status, data: body });
+    if (!response.ok) throw Object.assign(new Error(knowledgeRefusalMessage(body) || body.error?.message || body.error || `Request failed (${response.status})`), { status: response.status, data: body });
     return body;
 }
 /** Downloads a file the server may guard with a step-up (exports), asking for it the same way. */

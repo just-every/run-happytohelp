@@ -1,3 +1,4 @@
+import {parseTicketScope,type TicketScope} from './ticket-scope'
 import type {Context} from 'hono'
 import {matchedRoutes} from 'hono/route'
 import {HTTPException} from 'hono/http-exception'
@@ -7,18 +8,18 @@ import {routeRule} from './route-permissions'
 import {auditStatement,requestSource} from '../audit/record'
 import {jsonResponse} from '../../platform/json-response'
 
-export interface MemberAccess {key:string;name:string;base:'owner'|'admin'|'operator'|'collaborator';permissions:Set<Permission>;custom:boolean;knowledgeArticleIds:string[]|null}
+export interface MemberAccess {key:string;name:string;base:'owner'|'admin'|'operator'|'collaborator';permissions:Set<Permission>;custom:boolean;knowledgeArticleIds:string[]|null;ticketScope:TicketScope}
 
 /** A member's effective role in one workspace: built-in, the collaborator role, or a custom role over a base. */
 export async function memberAccess(db:D1Database,projectId:string,userId:string):Promise<MemberAccess|null>{
- const row=await db.prepare('SELECT m.role,mr.role_key,pr.name,pr.base,pr.permissions_json,pr.knowledge_article_ids FROM memberships m LEFT JOIN member_roles mr ON mr.project_id=m.project_id AND mr.user_id=m.user_id LEFT JOIN project_roles pr ON pr.project_id=m.project_id AND pr.id=mr.role_key WHERE m.project_id=? AND m.user_id=?').bind(projectId,userId).first<{role:'owner'|'admin'|'operator';role_key:string|null;name:string|null;base:'admin'|'operator'|'collaborator'|null;permissions_json:string|null;knowledge_article_ids:string|null}>()
+ const row=await db.prepare('SELECT m.role,mr.role_key,pr.name,pr.base,pr.permissions_json,pr.knowledge_article_ids,pr.ticket_scope_json FROM memberships m LEFT JOIN member_roles mr ON mr.project_id=m.project_id AND mr.user_id=m.user_id LEFT JOIN project_roles pr ON pr.project_id=m.project_id AND pr.id=mr.role_key WHERE m.project_id=? AND m.user_id=?').bind(projectId,userId).first<{role:'owner'|'admin'|'operator';role_key:string|null;name:string|null;base:'admin'|'operator'|'collaborator'|null;permissions_json:string|null;knowledge_article_ids:string|null;ticket_scope_json:string|null}>()
  if(!row)return null
- if(row.role_key==='collaborator'&&row.role==='operator')return {key:'collaborator',name:ROLE_LABELS.collaborator,base:'collaborator',permissions:new Set(BASE_PERMISSIONS.collaborator),custom:false,knowledgeArticleIds:null}
+ if(row.role_key==='collaborator'&&row.role==='operator')return {key:'collaborator',name:ROLE_LABELS.collaborator,base:'collaborator',permissions:new Set(BASE_PERMISSIONS.collaborator),custom:false,knowledgeArticleIds:null,ticketScope:null}
  if(row.base&&row.name&&row.role!=='owner'){
   let requested:unknown=[];try{requested=JSON.parse(row.permissions_json||'[]')}catch{}
-  return {key:row.role_key!,name:row.name,base:row.base,permissions:new Set(customPermissions(row.base,requested)),custom:true,knowledgeArticleIds:row.knowledge_article_ids===null?null:JSON.parse(row.knowledge_article_ids)}
+  return {key:row.role_key!,name:row.name,base:row.base,permissions:new Set(customPermissions(row.base,requested)),custom:true,knowledgeArticleIds:row.knowledge_article_ids===null?null:JSON.parse(row.knowledge_article_ids),ticketScope:parseTicketScope(row.ticket_scope_json)}
  }
- return {key:row.role,name:ROLE_LABELS[row.role],base:row.role,permissions:new Set(BASE_PERMISSIONS[row.role]),custom:false,knowledgeArticleIds:null}
+ return {key:row.role,name:ROLE_LABELS[row.role],base:row.role,permissions:new Set(BASE_PERMISSIONS[row.role]),custom:false,knowledgeArticleIds:null,ticketScope:null}
 }
 
 /** The registered route that will answer this request (middleware calls see the final handler too). */

@@ -4,7 +4,8 @@ import {startApp,applyMigrations} from '../../journeys/kit/app.mjs'
 /** Stage an actual prior-schema native draft, upgrade in place and read it through
  * the staff composer. Existing macro receipts and content must survive exactly. */
 export async function draftUpgradeJourney(){
- const app=await startApp({migrate:name=>parseInt(name,10)<290})
+ // Keep the prior draft table while installing current authorization schema.
+ const app=await startApp({migrate:name=>parseInt(name,10)!==290})
  try{
   const workspace=await app.seedWorkspace('synthetic-happytohelp-draft-upgrade'),project=workspace.projectId,actor=workspace.users.owner
   const native=(path,options={})=>app.ok(path,{token:workspace.tokens.owner,...options})

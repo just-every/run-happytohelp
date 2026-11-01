@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {nativeAgentAuthority,type NativeAgentAuthority} from '../../platform/agent-authority'
 import {workspaceAccountOptions} from './account-options'
 import {batchRead} from './request-batch'
@@ -16,7 +17,7 @@ export const priorities=['low','normal','high','urgent'] as const
 export function invalid(message:string):never{throw new HTTPException(400,{message})}
 export function named(value:unknown,max=120){if(typeof value!=='string'||!value.trim()||value.length>max)invalid(`Enter text of 1–${max} characters`);return value.trim()}
 export function object(value:unknown):Record<string,any>{if(!value||typeof value!=='object'||Array.isArray(value))invalid('Expected an object');return value as Record<string,any>}
-export async function ticketAuthority(env:Env,actor:Actor,authority:TicketAuthority,permission:Permission='conversations.manage'){
+export async function ticketAuthority(env:Env,actor:Actor,authority:TicketAuthority,permission:Permission='conversations.manage',conversationId?:string){
  if(authority.tokenAuthority){if(permission!=='conversations.manage')throw new HTTPException(403);const guard=tokenGuard(authority.tokenAuthority,actor.projectId,'conversations:write');return {...guard,access:null as MemberAccess|null}}
  if(authority[nativeAgentAuthority]){
   const capability=authority[nativeAgentAuthority]!,access=await memberAccess(env.DB,actor.projectId,actor.id)
@@ -34,7 +35,8 @@ export async function ticketAuthority(env:Env,actor:Actor,authority:TicketAuthor
  const external=authority[externalTicketAuthority]
  const sql=external?`SELECT 1 FROM memberships m WHERE m.project_id=? AND m.user_id=? AND m.role=? AND (${external.sql}) AND (SELECT role_key FROM member_roles WHERE project_id=m.project_id AND user_id=m.user_id) IS ? AND (SELECT pr.updated_at FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=m.project_id AND mr.user_id=m.user_id) IS ? AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`:`SELECT 1 FROM memberships m JOIN sessions s ON s.token_hash=? WHERE m.project_id=? AND m.user_id=? AND m.role=? AND s.actor_id=m.user_id AND s.role<>'contact' AND s.revoked_at IS NULL AND s.expires_at>max(?,CAST((julianday('now')-2440587.5)*86400000 AS INTEGER)) AND (s.project_id IS NULL AND s.role='operator' OR s.project_id=m.project_id AND s.role=m.role) AND (SELECT role_key FROM member_roles WHERE project_id=m.project_id AND user_id=m.user_id) IS ? AND (SELECT pr.updated_at FROM member_roles mr JOIN project_roles pr ON pr.project_id=mr.project_id AND pr.id=mr.role_key WHERE mr.project_id=m.project_id AND mr.user_id=m.user_id) IS ? AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=m.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`
  const params=external?[actor.projectId,actor.id,actor.role,...external.params,role?.role_key??null,role?.updated_at??null]:[authority.sessionHash,actor.projectId,actor.id,actor.role,Date.now(),role?.role_key??null,role?.updated_at??null]
- return {sql:sql+(authority.guard?` AND (${authority.guard.sql})`:""),params:[...params,...(authority.guard?.params??[])],access}
+ const scoped=conversationId?` AND EXISTS(SELECT 1 FROM conversations scope_ticket WHERE scope_ticket.id=? AND scope_ticket.project_id=m.project_id AND ${ticketScopeSql('m.user_id','scope_ticket')})`:''
+ return {sql:sql+scoped+(authority.guard?` AND (${authority.guard.sql})`:""),params:[...params,...(conversationId?[conversationId]:[]),...(authority.guard?.params??[])],access}
 }
 export async function ticketReadAccess(env:Env,actor:Actor){
  if(actor.role==='contact')throw new HTTPException(403)
@@ -52,7 +54,7 @@ export function fieldData(field:any,access:MemberAccess|null){const {options_jso
 export async function getTicket(env:Env,actor:Actor,id:string,tokenAuthority?:TokenAuthority){
  const access=tokenAuthority?null:await ticketReadAccess(env,actor)
  const token=tokenAuthority?tokenGuard(tokenAuthority,actor.projectId,tokenAuthority.scope):null
- const row=await env.DB.prepare(`SELECT c.* FROM conversations c WHERE c.project_id=? AND c.id=? ${token?`AND EXISTS(${token.sql})`:''} AND ${contactAvailableSql()} AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`).bind(actor.projectId,id,...(token?.params??[])).first<any>();if(!row)throw new HTTPException(404)
+ const row=await env.DB.prepare(`SELECT c.* FROM conversations c WHERE c.project_id=? AND c.id=? ${token?`AND EXISTS(${token.sql})`:`AND ${ticketScopeSql('?')}`} AND ${contactAvailableSql()} AND NOT EXISTS(SELECT 1 FROM project_settings ps WHERE ps.project_id=c.project_id AND json_extract(ps.settings_json,'$.deleted_at') IS NOT NULL)`).bind(actor.projectId,id,...(token?.params??[actor.id])).first<any>();if(!row)throw new HTTPException(404)
  const [fields,history,status,tags,api]=await Promise.all([
   env.DB.prepare('SELECT f.*,v.value_json FROM ticket_fields f LEFT JOIN ticket_field_values v ON v.project_id=f.project_id AND v.field_id=f.id AND v.conversation_id=? WHERE f.project_id=?').bind(id,actor.projectId).all<any>(),
   env.DB.prepare("SELECT h.*,op.agent_name,op.sponsor_name,op.approvers_json FROM ticket_history h LEFT JOIN h2h_agent_operations op ON op.project_id=h.project_id AND json_extract(op.result_json,'$.history_id')=h.id WHERE h.project_id=? AND h.conversation_id=? ORDER BY h.at DESC,h.id DESC LIMIT 200").bind(actor.projectId,id).all<any>(),

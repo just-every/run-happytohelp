@@ -948,6 +948,12 @@
       "name": "290_native_reply_drafts.sql",
       "sha256": "6521b033c9b029bc19e3017e6c788c87876a6c7dd838a5d507254bcec4e439a1",
       "sql": "-- Keep the existing per-person composer slot and every macro-owned draft.\n-- Direct reply drafts use an opaque version instead of inventing a macro use.\nCREATE TABLE native_reply_draft_upgrade(\n project_id TEXT NOT NULL,conversation_id TEXT NOT NULL,actor_id TEXT NOT NULL,\n usage_id TEXT REFERENCES macro_usage(id),draft_id TEXT,\n content TEXT NOT NULL,reply_type TEXT NOT NULL CHECK(reply_type IN ('public','note')),\n unresolved_json TEXT NOT NULL,media_ids_json TEXT NOT NULL,updated_at INTEGER NOT NULL,\n PRIMARY KEY(project_id,conversation_id,actor_id),\n CHECK((usage_id IS NOT NULL AND draft_id IS NULL) OR (usage_id IS NULL AND draft_id IS NOT NULL))\n);\nINSERT INTO native_reply_draft_upgrade(project_id,conversation_id,actor_id,usage_id,content,reply_type,unresolved_json,media_ids_json,updated_at)\n SELECT project_id,conversation_id,actor_id,usage_id,content,reply_type,unresolved_json,media_ids_json,updated_at FROM macro_drafts;\nDROP TABLE macro_drafts;\nALTER TABLE native_reply_draft_upgrade RENAME TO macro_drafts;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "291_native_ticket_scope.sql",
+      "sha256": "c0e7bdf31ea9c43f5188f5e8dfbcf9591527e043b46a91ee84a68b4e0f83428e",
+      "sql": "-- Additive custody only. Native role-management does not yet expose narrowing.\n-- NULL preserves every existing custom role's ticket visibility.\nALTER TABLE project_roles ADD COLUMN ticket_scope_json TEXT\n CHECK(ticket_scope_json IS NULL OR coalesce((json_valid(ticket_scope_json) AND json_type(ticket_scope_json)='object' AND json_type(ticket_scope_json,'$.groupIds')='array' AND json_type(ticket_scope_json,'$.includeUngrouped') IN ('true','false')),0));\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

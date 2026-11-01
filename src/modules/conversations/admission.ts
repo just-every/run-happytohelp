@@ -2,7 +2,7 @@ import {knowledgeWords} from '../knowledge/words'
 import {referenceAdmissionPolicy} from '../knowledge/reference-policy'
 import {referenceIds,tokenPattern} from '../knowledge/reference-store'
 import {literal,readerSet} from '../knowledge/door'
-import {canonicaliseKnowledge} from '../knowledge/canonicaliser'
+import {canonicaliseKnowledge,ticketCustody} from '../knowledge/canonicaliser'
 import {createBlocks,referencesAdmittedSql,referenceVisibility} from '../knowledge/reference-store'
 import {articleSourceIdentities} from '../knowledge/source-identity'
 import {currentTicketReaders,combineReaders} from '../knowledge/readers'
@@ -44,7 +44,7 @@ export async function admitMessage(env:Env,input:AtomicMessageInput):Promise<Mes
 export async function admitMessage(env:Env,input:MessageInput):Promise<MessageResult>;
 export async function admitMessage(env:Env,input:MessageInput|AtomicMessageInput):Promise<MessageResult&{results?:D1Result[]}>{
  if(atomicMessage in input){
-  const contents=await Promise.all(input.messages.map(message=>canonicaliseKnowledge(env,input.projectId,message.content,message.authorContactId))),readers=input.newRequesterId?combineReaders(currentTicketReaders(input.projectId,input.conversationId,{}),readerSet([{kind:'contact',id:input.newRequesterId}])):currentTicketReaders(input.projectId,input.conversationId,{}),knowledge=referenceAdmissionPolicy(referenceIds(contents.join('\n')),literal(input.projectId),readers),id=crypto.randomUUID()
+  const contents=await Promise.all(input.messages.map(message=>canonicaliseKnowledge(env,input.projectId,message.content,message.authorContactId,false,ticketCustody(input.conversationId)))),readers=input.newRequesterId?combineReaders(currentTicketReaders(input.projectId,input.conversationId,{}),readerSet([{kind:'contact',id:input.newRequesterId}])):currentTicketReaders(input.projectId,input.conversationId,{}),knowledge=referenceAdmissionPolicy(referenceIds(contents.join('\n')),literal(input.projectId),readers),id=crypto.randomUUID()
   const guard=env.DB.prepare(`${knowledge.prefix}INSERT INTO knowledge_write_guards(id,valid) SELECT ?,CASE WHEN ${knowledge.sql} AND ${contents.some(content=>knowledgeWords(content.replace(tokenPattern,'')).length>=12)?'NOT EXISTS(SELECT 1 FROM knowledge_index_dirty)':'1=1'} THEN 1 ELSE 0 END`).bind(...knowledge.params,id)
   try{const result=await env.DB.batch([guard,...input.commit(contents),env.DB.prepare('DELETE FROM knowledge_write_guards WHERE id=?').bind(id)]);return {accepted:true,results:result.slice(1,-1)}}catch(error){
    if(await env.DB.prepare(`${knowledge.prefix}SELECT 1 WHERE ${knowledge.sql}`).bind(...knowledge.params).first())throw error
@@ -104,14 +104,16 @@ export async function admitMessage(env:Env,input:MessageInput|AtomicMessageInput
  // A generation may carry its initiating contact actor; only genuine customer
  // speech receives the own-word exception, never an assistant's final answer.
  const authorContactId=!input.generationId&&actor.role==='contact'?actor.contactId||actor.id:undefined
- content=await canonicaliseKnowledge(env,projectId,content,authorContactId,false,input.generationId)
+ // Whoever writes into a ticket, copied spans stay in that ticket's custody;
+ // an assistant's answer keeps its generation's custody inside the same ticket.
+ content=await canonicaliseKnowledge(env,projectId,content,authorContactId,false,input.generationId??ticketCustody(targetId))
  // Keep copied-source checks alongside the generation's retrieved-source set.
  const copiedReferences=referenceIds(content)
  if(input.generationId){const sources=await env.DB.prepare('SELECT source_id FROM ai_generation_sources WHERE project_id=? AND generation_id=?').bind(projectId,input.generationId).all<{source_id:string}>();if(sources.results.length)[content]=await createBlocks(env,projectId,[{kind:'answer',text:content,sources:sources.results.map(row=>row.source_id),generationId:input.generationId}])}
  for(const citation of citations){const [token]=await createBlocks(env,projectId,[{kind:'link',text:`[${citation.title}](${citation.url})`,title:citation.title,url:citation.url,sources:[citation.id],sourceIdentities:articleSourceIdentities(projectId,[citation])}]);content+='\n\n'+token}
  const citationRefs=await createBlocks(env,projectId,citations.map(citation=>({kind:'text' as const,text:JSON.stringify(citation),title:citation.title,url:citation.url,sources:[citation.id],sourceIdentities:articleSourceIdentities(projectId,[citation])})))
  const citationJson=JSON.stringify(citationRefs.map(token=>({knowledge_citation:token})))
- const raw=email?await canonicaliseKnowledge(env,projectId,email.raw,authorContactId):undefined
+ const raw=email?await canonicaliseKnowledge(env,projectId,email.raw,authorContactId,false,ticketCustody(targetId)):undefined
  env=await workflowEnvironment(env)
  const messageId=crypto.randomUUID(),now=workflowNow(env);const predicates=[writableConversationSql('c'),'c.id=?','c.project_id=?','c.revision=?','c.contact_id=?','c.ticket_version=?',followup?"c.status_category='closed'":"c.status_category<>'closed'"];const args:unknown[]=[conversationId,projectId,expectedRevision,scope.contact_id,scope.ticket_version]
  if(input.requireAvailableRequester===true)predicates.push(contactAvailableSql())

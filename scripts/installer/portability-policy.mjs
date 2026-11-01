@@ -22,6 +22,11 @@ async function knowledgeArchiveSafety({db,tables}){
    ${tables.contact_erasures?`AND NOT EXISTS(SELECT 1 FROM ${quoted('contact_erasures')} erased WHERE erased.project_id=contact.project_id AND erased.contact_id=contact.id)`:''})`:'0';
   // Remove personal payloads and author-derived fingerprints from older archives.
   statements.push(db.prepare(`DELETE FROM ${quoted('knowledge_reply_blocks')} AS block WHERE author_contact_id IS NOT NULL AND NOT (${live})`));
+  // Copies written into an erased customer's ticket, by anyone, carry that
+  // ticket as custody; erasure blanks every message there.
+  if(tables.conversations&&tables.contacts)statements.push(db.prepare(`DELETE FROM ${quoted('knowledge_reply_blocks')} AS block WHERE generation_id LIKE 'ticket:%' AND EXISTS(SELECT 1 FROM ${quoted('conversations')} ticket JOIN ${quoted('contacts')} contact ON contact.project_id=ticket.project_id AND contact.id=ticket.contact_id
+   WHERE ticket.project_id=block.project_id AND 'ticket:'||ticket.id=block.generation_id AND (coalesce(json_extract(contact.metadata_json,'$.is_erasing'),0)=1 OR coalesce(json_extract(contact.metadata_json,'$.is_erased'),0)=1
+   ${tables.contact_erasures?`OR EXISTS(SELECT 1 FROM ${quoted('contact_erasures')} erased WHERE erased.project_id=contact.project_id AND erased.contact_id=contact.id)`:''}))`));
  }
  if(statements.length)await db.batch(statements);
 }

@@ -4,7 +4,7 @@ import type {Context} from 'hono'
 import type {AppEnv,Env} from '../../platform/env'
 import {readerSet,memberReaders,anonymousReaders,type Readers} from './door'
 import {currentTicketReaders} from './readers'
-import {canonicaliseFields,updateKnowledgeIndex} from './canonicaliser'
+import {canonicaliseFields,updateKnowledgeIndex,ticketCustody} from './canonicaliser'
 import {renderKnowledgeFields,referenceIds,referenceVisibility} from './reference-store'
 import {knowledgeWriteEnvironment} from './write-boundary'
 import {dispatchKnowledgeUpgrades} from './upgrade-progress'
@@ -19,7 +19,7 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  if(/^\/api\/(?:conversations\/[^/]+\/media(?:\/[^/]+)?|portal\/[^/]+\/tickets\/[^/]+\/attachments(?:\/[^/]+)?|(?:management|dashboard)\/projects\/[^/]+\/media)$/.test(c.req.path)){await next();return}
  const rawEnv=c.env
  if(!await knowledgeSchemaReady(rawEnv)){await next();return}
- const context=()=>{const actor=c.get('actor'),authority=(c as any).get('authority');return {projectId:c.req.param('projectId')||c.req.param('project')||authority?.projectId||actor?.projectId,authorContactId:actor?.role==='contact'?actor.contactId||actor.id:undefined}}
+ const context=()=>{const actor=c.get('actor'),authority=(c as any).get('authority');return {projectId:c.req.param('projectId')||c.req.param('project')||authority?.projectId||actor?.projectId,authorContactId:actor?.role==='contact'?actor.contactId||actor.id:undefined,conversationId:c.req.param('conversationId')||(/\/conversations\//.test(c.req.path)?c.req.param('id'):undefined)}}
  c.env=knowledgeWriteEnvironment(c.env,context)
  const requestedProject=context().projectId
  const pending=await rawEnv.DB.prepare('SELECT project_id FROM knowledge_upgrade_reports WHERE completed_at IS NULL AND (?1 IS NULL OR project_id=?1) ORDER BY project_id LIMIT 1').bind(requestedProject||null).first<{project_id:string}>()
@@ -42,12 +42,14 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  if(!projectId)return
  const member=actor&&actor.role!=='contact'&&!authority,privateComposer=member&&(/\/macros(?:\/|$)|\/macro-draft$/.test(c.req.path)),insertion=member&&/\/knowledge\/.*\/(?:insert|references\/preview)$/.test(c.req.path)
  if(insertion)return
- const conversation=c.req.param('conversationId')||(/\/conversations\//.test(c.req.path)?c.req.param('id'):undefined)
+ const conversation=context().conversationId
  const publicKnowledge=c.req.path.startsWith('/api/knowledge/public/'),sourceRead=c.req.path.startsWith('/api/knowledge/')||c.req.path.startsWith('/api/v1/articles')
  const baseReaders=publicKnowledge?accessReaders(await resolveHelpAccess(rawEnv,projectId,c.req.raw)):authority&&c.req.path.startsWith('/api/v1/articles')&&c.req.query('contact_id')?readerSet([{kind:'contact',id:c.req.query('contact_id')!}]):member?memberReaders(actor.id):actor?.role==='contact'?readerSet([{kind:'contact',id:actor.contactId||actor.id}]):conversation?currentTicketReaders(projectId,conversation,{}):anonymousReaders
  let data:any=await c.res.json()
  if(c.res.status>=400)errorData=data
- if(!sourceRead&&!(member&&data.reason==='knowledge_access_denied'))data=await canonicaliseFields(rawEnv,projectId,data)
+ // Copied text first recognised in a ticket's response stays in that ticket's custody.
+ const custody=conversation?async(project:string)=>(await rawEnv.DB.prepare('SELECT 1 FROM conversations WHERE id=? AND project_id=?').bind(conversation,project).first())?ticketCustody(conversation):undefined:undefined
+ if(!sourceRead&&!(member&&data.reason==='knowledge_access_denied'))data=await canonicaliseFields(rawEnv,projectId,data,undefined,false,custody)
  async function render(value:any,inherited:Readers,cid?:string):Promise<any>{
   if(Array.isArray(value))return Promise.all(value.map(row=>render(row,inherited,cid)))
   if(!value||typeof value!=='object')return renderKnowledgeFields(rawEnv,projectId!,value,inherited)

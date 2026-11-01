@@ -40,6 +40,12 @@ async function refreshKnowledgeIndex(env:Env){
 }
 type Source={id:string;project:string;incarnation:string|null}
 type WriteProject=string|undefined|(()=>Promise<string|undefined>)
+/** Erasure custody of copied spans: the generation that produced them, or the
+ * ticket they were written into. Custody is part of a block's fingerprint, so a
+ * ticket's copies are never shared with another ticket, a macro or an article
+ * insertion, and erasing the ticket's customer deletes them with its messages. */
+type Custody=string|undefined|((project:string)=>Promise<string|undefined>)
+export const ticketCustody=(conversationId:string)=>`ticket:${conversationId}`
 type Shingles=ReturnType<typeof wordShingles>
 interface CopySpan {start:number;end:number;sources:Source[];sets:string;token?:string}
 interface TextLeaf {text:string;output:string;shingles:Shingles;spans:CopySpan[]}
@@ -60,7 +66,7 @@ function copySpans(shingles:Shingles,matches:Map<string,number>,sourceSets:Map<n
  return spans
 }
 
-async function canonicaliseLeaves(env:Env,projectId:WriteProject,leaves:TextLeaf[],authorContactId:string|undefined,indexReady:boolean,generationId?:string){
+async function canonicaliseLeaves(env:Env,projectId:WriteProject,leaves:TextLeaf[],authorContactId:string|undefined,indexReady:boolean,custody?:Custody){
  const candidates=leaves.filter(leaf=>leaf.shingles.length)
  // Short fields never consult D1, including the dirty-index refresh. Notification
  // envelopes can contain hundreds of identifiers and other nonmatching leaves.
@@ -74,6 +80,7 @@ async function canonicaliseLeaves(env:Env,projectId:WriteProject,leaves:TextLeaf
  for(const row of rows.results){const sources=(JSON.parse(row.sources) as Source[]).sort((a,b)=>(a.project+'\0'+a.id).localeCompare(b.project+'\0'+b.id)),key=sourceSets.size;sourceSets.set(key,sources);for(const words of JSON.parse(row.words))matches.set(words,key)}
  if(!matches.size)return
  const targetProject=typeof projectId==='function'?await projectId():projectId
+ const generationId=typeof custody==='function'?targetProject?await custody(targetProject):undefined:custody
  const groups=new Map<string,{leaf:TextLeaf;span:CopySpan}[]>()
  for(const leaf of candidates){
   leaf.spans=copySpans(leaf.shingles,matches,sourceSets)
@@ -92,13 +99,13 @@ async function canonicaliseLeaves(env:Env,projectId:WriteProject,leaves:TextLeaf
  }
 }
 
-export async function canonicaliseKnowledge(env:Env,projectId:string|undefined,text:string,authorContactId?:string,indexReady=false,generationId?:string){
+export async function canonicaliseKnowledge(env:Env,projectId:string|undefined,text:string,authorContactId?:string,indexReady=false,custody?:Custody){
  const leaf=textLeaf(text)
- await canonicaliseLeaves(env,projectId,[leaf],authorContactId,indexReady,generationId)
+ await canonicaliseLeaves(env,projectId,[leaf],authorContactId,indexReady,custody)
  return leaf.output
 }
 
-export async function canonicaliseFields<T>(env:Env,projectId:WriteProject,value:T,authorContactId?:string,indexReady=false):Promise<T>{
+export async function canonicaliseFields<T>(env:Env,projectId:WriteProject,value:T,authorContactId?:string,indexReady=false,custody?:Custody):Promise<T>{
  const leaves=new Map<string,TextLeaf>()
  // Rebuilders preserve JSON-string containers without treating serialized keys or
  // adjacent values as one sentence. Identical leaves share tokenization/storage.
@@ -113,6 +120,6 @@ export async function canonicaliseFields<T>(env:Env,projectId:WriteProject,value
   return ()=>item
  }
  const rebuild=collect(value)
- await canonicaliseLeaves(env,projectId,[...leaves.values()],authorContactId,indexReady)
+ await canonicaliseLeaves(env,projectId,[...leaves.values()],authorContactId,indexReady,custody)
  return rebuild() as T
 }

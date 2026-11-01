@@ -67,6 +67,18 @@ def sanitize(sql):
                         + fence + ')')
             db.execute('DELETE FROM knowledge_reply_blocks AS block '
                        'WHERE author_contact_id IS NOT NULL AND NOT (' + live + ')')
+            if 'conversations' in tables and 'contacts' in tables:
+                # Copies written into an erased customer's ticket, by anyone, carry
+                # that ticket as custody; erasure blanks every message there.
+                fence = (" OR EXISTS(SELECT 1 FROM contact_erasures erased WHERE "
+                         "erased.project_id=contact.project_id AND erased.contact_id=contact.id)"
+                         if 'contact_erasures' in tables else '')
+                db.execute("DELETE FROM knowledge_reply_blocks AS block WHERE generation_id LIKE 'ticket:%' "
+                           "AND EXISTS(SELECT 1 FROM conversations ticket JOIN contacts contact "
+                           "ON contact.project_id=ticket.project_id AND contact.id=ticket.contact_id "
+                           "WHERE ticket.project_id=block.project_id AND 'ticket:'||ticket.id=block.generation_id "
+                           "AND (coalesce(json_extract(contact.metadata_json,'$.is_erasing'),0)=1 "
+                           "OR coalesce(json_extract(contact.metadata_json,'$.is_erased'),0)=1" + fence + "))")
         if 'api_credentials' in tables:
             revisions = list(db.execute('SELECT policy_revision,namespace,id FROM api_credentials'))
             db.execute("UPDATE api_credentials SET revoked_at=coalesce(revoked_at,max(1,created_at))")

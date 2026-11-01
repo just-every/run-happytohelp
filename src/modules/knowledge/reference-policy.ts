@@ -1,8 +1,9 @@
 import {policyCtes,activeProjectSql,literal,type Readers} from './door'
 /** One relational evaluation for a whole set of blocks. A copied span is an OR
  * of source occurrences for each reader; an answer is an AND of its generation's
- * full source set. A copy's generation id is erasure custody, not an alternative
- * source occurrence. References never grant authority by possession. */
+ * full source set. A copy's generation id is erasure custody (its generation or
+ * its ticket), not an alternative source occurrence. References never grant
+ * authority by possession. */
 export function referencePolicyCtes(selected:string,project:string,readers:Readers){
  const prelude=`selected AS MATERIALIZED (${selected}), original_readers AS MATERIALIZED (${readers.sql}),
  targets AS MATERIALIZED (SELECT b.id block_id,b.kind,b.author_contact_id,r.kind reader_kind,r.id reader_id,json_array(b.id,r.kind,r.id) target_key FROM selected b CROSS JOIN original_readers r),

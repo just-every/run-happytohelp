@@ -67,7 +67,10 @@ export async function knowledgeErasureStatements(env:Env,projectId:string,contac
   env.DB.prepare(`DELETE FROM knowledge_canonicalisation_receipts WHERE project_id=?1 AND EXISTS(SELECT 1 FROM json_each(CASE WHEN json_valid(row_key) THEN row_key ELSE '[]' END) key WHERE key.value IN (${relatedKeys}))`).bind(projectId,contactId),
   // Run before engine rows are erased: answers can contain personal data even
   // without an author link. Copied answer spans share the generation source id.
-  env.DB.prepare(`DELETE FROM knowledge_reply_blocks WHERE project_id=?1 AND (generation_id IN (${modelGenerations}) OR EXISTS(SELECT 1 FROM json_each(CASE WHEN json_valid(sources_json) THEN sources_json ELSE '[]' END) source WHERE source.value IN (${generatedSources})))`).bind(projectId,contactId),
+  // Copies anyone wrote into the contact's tickets (a colleague's email, an
+  // operator reply or note) carry that ticket's custody (canonicaliser.ts) and
+  // go with the messages erasure blanks there.
+  env.DB.prepare(`DELETE FROM knowledge_reply_blocks WHERE project_id=?1 AND (generation_id IN (${modelGenerations}) OR generation_id IN (SELECT 'ticket:'||id FROM (${conversations})) OR EXISTS(SELECT 1 FROM json_each(CASE WHEN json_valid(sources_json) THEN sources_json ELSE '[]' END) source WHERE source.value IN (${generatedSources})))`).bind(projectId,contactId),
   env.DB.prepare(`DELETE FROM knowledge_shingles WHERE project_id=?1 AND source_id IN (${generatedSources})`).bind(projectId,contactId),
   env.DB.prepare(`DELETE FROM knowledge_source_index WHERE project_id=?1 AND source_id IN (${generatedSources})`).bind(projectId,contactId),
   // Remove the support mirror too: scrubbing output_json below must not enqueue

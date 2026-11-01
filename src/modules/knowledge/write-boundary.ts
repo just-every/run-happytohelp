@@ -1,9 +1,9 @@
 import {guardKnowledgeWrite,textBindingIndexes} from './write-bindings'
 import type {Env} from '../../platform/env'
-import {canonicaliseFields} from './canonicaliser'
+import {canonicaliseFields,ticketCustody} from './canonicaliser'
 import {knowledgeWords} from './words'
 
-export interface KnowledgeWriteScope {projectId?:string;authorContactId?:string}
+export interface KnowledgeWriteScope {projectId?:string;authorContactId?:string;conversationId?:string}
 const boundaries=new WeakSet<object>()
 /** Source bytes and the author's own help templates stay in their owning stores.
  * Every other D1 writer, including SQL/JSON content movers, uses this boundary.
@@ -19,14 +19,21 @@ export function knowledgeWriteEnvironment(env:Env,scope:()=>KnowledgeWriteScope)
   if(!mutation(sql)||source(sql)||!values.some(candidate))return {statement:original.prepare(sql).bind(...values),protected:false}
   const stored=textBindingIndexes(sql).indexes.filter(index=>candidate(values[index]))
   if(!stored.length)return {statement:original.prepare(sql).bind(...values),protected:false}
-  const {projectId:knownProject,authorContactId}=scope()
+  const {projectId:knownProject,authorContactId,conversationId}=scope()
+  const identifiers=JSON.stringify(values.filter(value=>typeof value==='string'&&value.length<201))
   const project=async()=>{
    if(knownProject)return knownProject
-   const identifiers=JSON.stringify(values.filter(value=>typeof value==='string'&&value.length<201))
    const rows=await original.prepare(`SELECT id project_id FROM projects WHERE id IN (SELECT value FROM json_each(?1)) UNION SELECT project_id FROM conversations WHERE id IN (SELECT value FROM json_each(?1)) UNION SELECT project_id FROM ai_generations WHERE id IN (SELECT value FROM json_each(?1)) UNION SELECT project_id FROM macros WHERE id IN (SELECT value FROM json_each(?1))`).bind(identifiers).all<{project_id:string}>()
    return rows.results.length===1?rows.results[0].project_id:undefined
   }
-  const normalized=[...values],text=await canonicaliseFields({...env,DB:original},project,stored.map(index=>values[index]),authorContactId)
+  // Copied spans belong to the one ticket this statement writes (a ticket, a
+  // message or a note it names), otherwise to the request's ticket.
+  const custody=async(projectId:string)=>{
+   const rows=await original.prepare(`SELECT 'statement' origin,id FROM conversations WHERE project_id=?2 AND id IN (SELECT value FROM json_each(?1)) UNION SELECT 'statement',conversation_id FROM messages WHERE project_id=?2 AND id IN (SELECT value FROM json_each(?1)) UNION SELECT 'statement',note.conversation_id FROM conversation_notes note JOIN conversations ticket ON ticket.id=note.conversation_id AND ticket.project_id=?2 WHERE note.id IN (SELECT value FROM json_each(?1)) UNION SELECT 'request',id FROM conversations WHERE project_id=?2 AND id=?3`).bind(identifiers,projectId,conversationId??null).all<{origin:string;id:string}>()
+   const named=rows.results.filter(row=>row.origin==='statement'),ticket=named.length===1?named[0].id:rows.results.find(row=>row.origin==='request')?.id
+   return ticket?ticketCustody(ticket):undefined
+  }
+  const normalized=[...values],text=await canonicaliseFields({...env,DB:original},project,stored.map(index=>values[index]),authorContactId,false,custody)
   stored.forEach((index,at)=>{normalized[index]=text[at]})
   return {statement:original.prepare(guardKnowledgeWrite(sql)).bind(...normalized),protected:true}
  }

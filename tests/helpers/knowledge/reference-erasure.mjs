@@ -41,6 +41,17 @@ export async function referenceErasure(){
   const generated=await app.sql('SELECT b.* FROM knowledge_reply_blocks b JOIN ai_generations g ON g.id=b.generation_id AND g.project_id=b.project_id WHERE g.project_id=? AND g.conversation_id=?',p,ticket)
   assert.ok(generated.some(row=>row.kind==='copy'&&!row.author_contact_id),'generated copies retain generation custody without author authority: '+JSON.stringify({turn,generations:await app.sql('SELECT state FROM ai_generations WHERE project_id=? AND conversation_id=?',p,ticket),kinds:generated.map(row=>row.kind)}))
   assert.equal((await app.first('SELECT state FROM ai_generations WHERE project_id=? AND conversation_id=?',p,ticket)).state,'superseded')
+  // Others' copies in the erased customer's ticket: an operator reply and an
+  // internal note quote a public article with the customer's profile link inside.
+  const guide='The lantern helpdesk explains every public recovery step in plain language so customers can follow the published checklist without waiting for an agent.'
+  await call(`/api/knowledge/${p}/articles`,{body:{title:'Public recovery checklist',content:guide,status:'published'},status:201})
+  const profile='https://profiles.example.test/u/erasure-ticket-quote',quoted=guide.replace('every public',`every [public](${profile})`)
+  const head=(await app.call(`/api/conversations/${ticket}/messages`,{token:erased.token,status:200})).data
+  await call(`/api/conversations/${ticket}/messages`,{body:{localId:'operator-quote',content:'> '+quoted+'\n\nThanks, we are checking this now.',expectedRevision:head.revision,expectedLastMessageId:head.lastMessageId},status:200})
+  await call(`/api/dashboard/projects/${p}/conversations/${ticket}/notes`,{body:{content:'Customer wrote: '+quoted},status:201})
+  const quotedBlocks=(await app.sql('SELECT * FROM knowledge_reply_blocks WHERE project_id=?',p)).filter(row=>row.payload_json.includes(profile))
+  assert.ok(quotedBlocks.length&&quotedBlocks.every(row=>!row.author_contact_id),'operator copies in the customer ticket are canonicalised')
+  ids.push(...quotedBlocks.map(row=>row.id));fingerprints.push(...quotedBlocks.map(row=>row.fingerprint))
   await call(`/api/management/projects/${p}/contacts/${erased.contactId}/erase`,{body:{},status:200})
   const surviving=await app.sql('SELECT * FROM knowledge_reply_blocks WHERE project_id=?',p)
   assert.ok(!surviving.some(row=>generated.some(before=>before.id===row.id||before.fingerprint===row.fingerprint)),'erasure deletes generated copies and their fingerprints too')
@@ -50,7 +61,7 @@ export async function referenceErasure(){
   // documented SQL backup; other business stores are unchanged by sanitation.
   const insert=(table,row)=>'INSERT INTO '+table+'('+Object.keys(row).join(',')+') VALUES('+Object.values(row).map(value=>value===null?'NULL':typeof value==='number'?value:"'"+String(value).replaceAll("'","''")+"'").join(',')+');'
   const statements=[]
-  for(const table of ['contacts','contact_erasures','knowledge_reply_blocks']){
+  for(const table of ['contacts','contact_erasures','conversations','knowledge_reply_blocks']){
    statements.push((await app.first('SELECT sql FROM sqlite_master WHERE type=\'table\' AND name=?',table)).sql+';')
    statements.push(...(await app.sql('SELECT * FROM '+table)).map(row=>insert(table,row)))
   }
@@ -58,7 +69,7 @@ export async function referenceErasure(){
   // Inspect those too without reintroducing erased data into the live database.
   const dump=statements.join('\n')
   const source=join(app.directory,'raw.sql'),backup=join(app.directory,'sanitized.sql')
-  await writeFile(source,dump+'\n'+erased.blocks.filter(row=>!surviving.some(live=>live.id===row.id)).map(row=>insert('knowledge_reply_blocks',row)).join('\n'))
+  await writeFile(source,dump+'\n'+[...erased.blocks,...quotedBlocks].filter(row=>!surviving.some(live=>live.id===row.id)).map(row=>insert('knowledge_reply_blocks',row)).join('\n'))
   execFileSync('python3',[resolve('scripts/independent/delegation-backup.py'),source,backup])
   const sanitized=await readFile(backup,'utf8')
   const backupRows=JSON.parse(execFileSync('python3',['-c',"import sqlite3,sys,json; db=sqlite3.connect(':memory:'); db.executescript(open(sys.argv[1]).read()); print(json.dumps([row[0] for row in db.execute('SELECT fingerprint FROM knowledge_reply_blocks')]))",backup],{encoding:'utf8'}))
@@ -73,7 +84,7 @@ export async function referenceErasure(){
    // Prior exporter fixture: retain an authored row beside an erased contact's
    // metadata at the native import's existing staged-validation boundary.
    const table=input.tables.knowledge_reply_blocks
-   for(const row of erased.blocks)await input.db.prepare(insert('"'+table+'"',row)).run()
+   for(const row of [...erased.blocks,...quotedBlocks])await input.db.prepare(insert('"'+table+'"',row)).run()
    await archivePolicy.validateStaged(input)
    legacyRestore=(await input.db.prepare('SELECT fingerprint FROM "'+table+'"').all()).results.filter(row=>fingerprints.includes(row.fingerprint)).length
    return true
@@ -87,6 +98,7 @@ export async function referenceErasure(){
   console.log(JSON.stringify({knowledgeErasure:observations,authoredBlocks:erased.blocks.length,retainedBlocks:retained.blocks.length}))
   assert.deepEqual(observations,{live:0,backup:0,export:0,restore:0,legacyRestore:0},'erasure leaves neither personal payload nor recomputable fingerprint')
   for(const fingerprint of fingerprints)assert.ok(!sanitized.includes(fingerprint))
+  assert.ok(!sanitized.includes(profile)&&!bytes.includes(profile),'neither the backup nor the export keeps the erased customer\'s quoted link')
   assert.ok(exported.some(row=>row.author_contact_id===retained.contactId),'native export preserves a live author')
   assert.ok(restoredRows.some(row=>row.author_contact_id===retained.contactId),'native restore preserves a live author')
  }finally{await destination?.close();await k.close()}

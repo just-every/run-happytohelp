@@ -238,10 +238,14 @@ before nonmember disclosure. Contact erasure removes grants, personal or
 conversation-linked receipts and linked events, and redacts knowledge-owned
 personal content/provenance while retaining coherent history. Customer-authored
 reference blocks are deleted as whole rows, including their pinned payloads and
-author-derived fingerprints; surviving references render as unavailable. Native
-exports after erasure contain none of those rows. SQL backup sanitation and
-native restore also delete blocks whose named author is erased or missing,
-while preserving live authors' own words. Member erasure
+author-derived fingerprints; surviving references render as unavailable. Copies
+anyone writes into a ticket (a Cc'd colleague's email, an operator reply or
+internal note) carry that ticket as erasure custody, are never shared with
+another ticket, macro or article insertion, and are deleted with the erased
+customer's tickets, as erasure blanks every message there. Native exports after
+erasure contain none of those rows. SQL backup sanitation and native restore
+also delete blocks whose named author is erased or missing, and copies in an
+erased customer's tickets, while preserving live authors' own words. Member erasure
 retains scoped pseudonymous grant provenance without making collections public.
 
 ## Desktop model context remains blocked

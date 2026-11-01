@@ -1,5 +1,5 @@
 import type {Env} from '../../platform/env'
-import {canonicaliseFields,updateKnowledgeIndex} from './canonicaliser'
+import {canonicaliseFields,updateKnowledgeIndex,ticketCustody} from './canonicaliser'
 import {hashToken} from '../../platform/auth'
 import {boundedDatabase} from '../../platform/d1-budget'
 import {claimUpgrade,releaseUpgrade,completeUpgrade,type UpgradeProgress} from './upgrade-progress'
@@ -64,7 +64,7 @@ export async function canonicaliseExistingProject(originalEnv:Env,projectId:stri
     const rowKey=String(row.__knowledge_upgrade_key),fingerprint=await hashToken(JSON.stringify(text.map(key=>row[key])))
     const receipt=await env.DB.prepare('SELECT fingerprint FROM knowledge_canonicalisation_receipts WHERE project_id=? AND table_name=? AND row_key=?').bind(projectId,table.name,rowKey).first<{fingerprint:string}>()
     let normalized:Record<string,unknown>=Object.fromEntries(text.map(key=>[key,row[key]])),altered:string[]=[]
-    if(receipt?.fingerprint!==fingerprint){const author=row.actor_role==='contact'?String(row.actor_id):undefined;normalized=await canonicaliseFields(env,projectId,normalized,author);altered=text.filter(key=>normalized[key]!==row[key])}
+    if(receipt?.fingerprint!==fingerprint){const author=row.actor_role==='contact'?String(row.actor_id):undefined,ticket=table.name==='conversations'?row.id:row.conversation_id;normalized=await canonicaliseFields(env,projectId,normalized,author,false,typeof ticket==='string'?ticketCustody(ticket):undefined);altered=text.filter(key=>normalized[key]!==row[key])}
     const after=await hashToken(JSON.stringify(text.map(key=>normalized[key]))),statements:D1PreparedStatement[]=[]
     const permit=altered.length&&['workflow_rule_versions','outbound_notice_commands'].includes(table.name)
     if(permit)statements.push(env.DB.prepare('INSERT OR REPLACE INTO knowledge_upgrade_permits VALUES(?,?,?)').bind(projectId,table.name,rowKey))

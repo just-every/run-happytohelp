@@ -1,3 +1,4 @@
+import {ticketAuthority} from '../tickets/model'
 import {inboxCounts} from './inbox-counts'
 import {publishActivity} from '../conversations/activity'
 import {recordMessageReads} from '../conversations/reads'
@@ -35,11 +36,11 @@ dashboardActions.post(`${prefix}/participants`,async c=>{
  if(contact){const metadata=JSON.parse(String(contact.metadata_json||'{}'));if(metadata.is_erasing||metadata.is_erased||metadata.is_blocked)throw new HTTPException(409,{message:'This customer cannot be added as a recipient'})}
  else{const key=id();await c.env.DB.prepare('INSERT INTO contacts(id,project_id,email,created_at) VALUES(?,?,?,?)').bind(key,actor.projectId,email,Date.now()).run();contact=await c.env.DB.prepare('SELECT * FROM contacts WHERE id=? AND project_id=?').bind(key,actor.projectId).first<any>()}
  if(contact.id===conversation.contact_id)throw new HTTPException(409,{message:'This customer is already the primary recipient'})
- await dashboardAccess(c)
+ const guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'conversations.manage',conversation.id)
  // An operator adding a recipient vouches for it, including one that first arrived in a Cc header.
- await c.env.DB.prepare("INSERT INTO conversation_participants(id,conversation_id,contact_id,created_at,joined_via) SELECT ?,c.id,ct.id,?,'operator' FROM conversations c JOIN contacts ct ON ct.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND ct.id=? ON CONFLICT(conversation_id,contact_id) DO UPDATE SET joined_via='operator' WHERE joined_via='cc_header'").bind(id(),Date.now(),conversation.id,actor.projectId,contact.id).run()
+ await c.env.DB.prepare(`INSERT INTO conversation_participants(id,conversation_id,contact_id,created_at,joined_via) SELECT ?,c.id,ct.id,?,'operator' FROM conversations c JOIN contacts ct ON ct.project_id=c.project_id WHERE c.id=? AND c.project_id=? AND ct.id=? AND EXISTS(${guard.sql}) ON CONFLICT(conversation_id,contact_id) DO UPDATE SET joined_via='operator' WHERE joined_via='cc_header'`).bind(id(),Date.now(),conversation.id,actor.projectId,contact.id,...guard.params).run()
  const row=await c.env.DB.prepare('SELECT * FROM conversation_participants WHERE conversation_id=? AND contact_id=?').bind(conversation.id,contact.id).first()
  if(!row)throw new HTTPException(409,{message:'The recipient could not be added'})
  return c.json({data:participantData(contact,row)},201)
 })
-dashboardActions.delete(`${prefix}/participants/:participantId`,async c=>{const {conversation}=await dashboardAccess(c);const r=await c.env.DB.prepare('DELETE FROM conversation_participants WHERE id=? AND conversation_id=?').bind(c.req.param('participantId'),conversation.id).run();if(!r.meta.changes)throw new HTTPException(404);return c.json({deleted:true})})
+dashboardActions.delete(`${prefix}/participants/:participantId`,async c=>{const {actor,conversation}=await dashboardAccess(c),guard=await ticketAuthority(c.env,actor,{sessionHash:c.get('sessionHash')},'conversations.manage',conversation.id);const r=await c.env.DB.prepare(`DELETE FROM conversation_participants WHERE id=? AND conversation_id=? AND EXISTS(${guard.sql})`).bind(c.req.param('participantId'),conversation.id,...guard.params).run();if(!r.meta.changes)throw new HTTPException(404);return c.json({deleted:true})})

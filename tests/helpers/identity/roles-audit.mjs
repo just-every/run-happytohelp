@@ -1,3 +1,4 @@
+import {nativeTicketScopeAssertions} from './ticket-scope.mjs'
 import {mobileAuthority} from '../mobile.mjs'
 import assert from 'node:assert/strict'
 import {startApp,sha} from '../../journeys/kit/app.mjs'
@@ -14,6 +15,7 @@ export async function rolesAuditJourney(){
  await mobileAuthority()
  const app=await startApp({bindings:{RER_INSTALLATION_ID:'roles-installation',H2H_LOCAL:'true',EMAIL_PROVIDER:'development',EMAIL_FROM:'support@localhost.test'}})
  try{
+  await nativeTicketScopeAssertions(app)
   assert.deepEqual((await app.call('/_test/unclassified-routes')).data,[],'every mutating door has a role rule')
   const call=(path,body,token,method)=>app.call(path,{body,token,method})
   const w=await app.seedWorkspace('roles'),P=`/api/management/projects/${w.projectId}`,C=`/api/dashboard/projects/${w.projectId}/conversations/conv-r`

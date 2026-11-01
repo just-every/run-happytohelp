@@ -14973,7 +14973,7 @@
       "executable": false
     },
     "tests/journeys/move-in-browser.mjs": {
-      "sha256": "093b060cbbe3a5083b532b6798fef9cd81fb57ae5b620f4388b720bf459b9a03",
+      "sha256": "2c03cd227f50f6c2479e156b973df16ec6b77dbec4e5a21b0a288ab01a93fec3",
       "executable": false
     },
     "tests/journeys/move-in-capacity.mjs": {
@@ -15101,7 +15101,7 @@
       "executable": false
     },
     "tests/move-in/capacity-journey.mjs": {
-      "sha256": "26b2017cec5419fa2935208bdfcab4d1ac965249dab80ca881e1ddc4dfce3c7b",
+      "sha256": "eeabc24fb04635f4b3dc0b338b07754216f67cf6274f2da5bc6edcec458eb87f",
       "executable": false
     },
     "tests/move-in/configuration-review.mjs": {
@@ -15129,7 +15129,7 @@
       "executable": false
     },
     "tests/move-in/generator.mjs": {
-      "sha256": "99b1ad3ca96c03ec0fb1447b9ed9226483639fa3ddaaedc8ee6c46a211fb8c76",
+      "sha256": "6c63a958dfe1761e19c66195e5717db5cfbcc46fa03ac57f8b7bd4c5c6179a6a",
       "executable": false
     },
     "tests/move-in/harness.mjs": {
@@ -15161,7 +15161,7 @@
       "executable": false
     },
     "tests/move-in/review-import.mjs": {
-      "sha256": "fa34a06e860744c08cce36d762f54141bed3147e3e629fccf7cc3b07b92b314e",
+      "sha256": "3b2bd414556d93a39418f1a6afbb0ad85502725cde898acd4cd93a3aeb8c5765",
       "executable": false
     },
     "tests/move-in/snapshot.mjs": {
@@ -15182,6 +15182,18 @@
     },
     "tests/move-in/worker.ts": {
       "sha256": "53a97035c600e8859654cfd4f995d7b63d9ebbae6b5835a9bf1bb5a0daca0c6e",
+      "executable": false
+    },
+    "tests/move-in/zendesk-offline-browser.mjs": {
+      "sha256": "df4ecb3efdca0bd1e97dde3cf3e9f97ead09491b069c4c44d7363e29e4b62697",
+      "executable": false
+    },
+    "tests/move-in/zendesk-offline-fixture.mjs": {
+      "sha256": "744d64bd31291d67076d0556daad7119cd61fd93e14e993d7a1bbe88f30f1d6b",
+      "executable": false
+    },
+    "tests/move-in/zendesk-offline.mjs": {
+      "sha256": "2384fcacb68e5079a959a61d4f9c53abb1bb404db95841c66583cc6486a9575b",
       "executable": false
     },
     "tests/move-in/zip.mjs": {

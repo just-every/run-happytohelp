@@ -41,9 +41,18 @@ export async function newTicketConfigurationBrowser(){
    const context=await browser.newContext({viewport:{width,height:width===390?844:1000}})
    await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
    const page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message))
+   const capture=async name=>{
+    for(const proofWidth of [1440,390]){
+     await page.setViewportSize({width:proofWidth,height:proofWidth===390?844:1000})
+     await page.screenshot({path:join(evidenceDir,`${proofWidth}-${name}.png`),fullPage:true})
+    }
+    await page.setViewportSize({width:1440,height:1000})
+   }
    const request=async(body,path=base+'/tickets')=>page.evaluate(async({path,body})=>{const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:response.status,body:await response.json()}},{path,body})
    const open=async()=>{await page.goto(`${runtime.origin}/projects/${projectId}/conversations`);await page.getByRole('button',{name:'New ticket',exact:true}).click();await page.getByRole('dialog',{name:'New ticket',exact:true}).waitFor()}
-   await page.route('**'+base+'/tickets/options',async route=>{const response=await route.fetch();await new Promise(resolve=>setTimeout(resolve,600));try{await route.fulfill({response})}catch{}},{times:1})
+   let releaseOld
+   const oldReleased=new Promise(resolve=>{releaseOld=resolve})
+   await page.route('**'+base+'/tickets/options',async route=>{const response=await route.fetch();await oldReleased;try{await route.fulfill({response})}catch{}},{times:1})
    await open()
    const dialog=page.getByRole('dialog',{name:'New ticket',exact:true}),requester=`synthetic-happytohelp-${width}@customer.example`,subject=`Replacement parcel ${width}`,content=`Your replacement parcel ships today (${width}).`
    if(width===1440){const close=dialog.getByRole('button',{name:'Close',exact:true}),target=await close.boundingBox();assert.ok(target.width>=44&&target.height>=44);await dialog.getByLabel('Brand workspace',{exact:true}).focus();await page.keyboard.press('Shift+Tab');await page.locator('.ui-tooltip').filter({hasText:'Close'}).waitFor({state:'visible'})}
@@ -51,12 +60,15 @@ export async function newTicketConfigurationBrowser(){
    await dialog.getByLabel('Brand workspace',{exact:true}).selectOption(other.id)
    await dialog.getByText('No connected mailboxes are available.',{exact:false}).waitFor()
    assert.equal(await dialog.getByLabel('Requester email',{exact:true}).inputValue(),'')
-   await page.screenshot({path:join(evidenceDir,`${width}-empty-brand.png`),fullPage:true})
+   releaseOld();await page.waitForTimeout(100)
+   assert.equal(await dialog.getByLabel('Request form',{exact:true}).locator('option').count(),1,'late old-brand choices cannot repaint the empty workspace')
+   assert.equal(await dialog.getByLabel('Send from mailbox',{exact:true}).count(),0)
+   await capture('empty-brand')
    await dialog.getByLabel('Brand workspace',{exact:true}).selectOption(projectId)
    await dialog.getByLabel('Find requester by name, email or phone',{exact:true}).fill(requester)
    await dialog.getByRole('button',{name:new RegExp(`Synthetic parcel customer ${requester.replaceAll('.','\\.')}`)}).click()
    await dialog.getByLabel('Send from mailbox',{exact:true}).scrollIntoViewIfNeeded()
-   await page.screenshot({path:join(evidenceDir,`${width}-configured-sender.png`),fullPage:true})
+   await capture('configured-sender')
    if(width===1440){await dialog.locator('summary').filter({hasText:'Optional ticket fields'}).click();assert.equal(await dialog.getByLabel('Delivery reference',{exact:true}).getAttribute('required'),null,'required-to-solve remains optional at creation without a selected form')}
    await dialog.getByLabel('Request form',{exact:true}).selectOption(form.id)
    await dialog.getByLabel('Delivery reason *',{exact:true}).selectOption('question')
@@ -70,14 +82,14 @@ export async function newTicketConfigurationBrowser(){
    await dialog.getByLabel('Subject',{exact:true}).fill(subject);await dialog.getByLabel('Message',{exact:true}).fill(content)
    await dialog.getByRole('button',{name:'Create and email',exact:true}).waitFor({state:'visible'})
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${width}: New ticket fits`)
-   await page.screenshot({path:join(evidenceDir,`${width}-new-email.png`),fullPage:true})
+   await capture('new-email')
    const refusalResponse=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
    await dialog.getByRole('button',{name:'Create and email',exact:true}).click()
    assert.equal((await refusalResponse).status(),422)
    await dialog.getByText('Delivery reference: Value does not match the required pattern',{exact:true}).first().waitFor()
    assert.equal(await dialog.getByLabel('Subject',{exact:true}).inputValue(),subject,'refusal retains editable draft')
    await page.waitForFunction(id=>document.activeElement?.id===`new-ticket-field-${id}`,reference.id)
-   await page.screenshot({path:join(evidenceDir,`${width}-configuration-error.png`),fullPage:true})
+   await capture('configuration-error')
    await dialog.getByLabel('Delivery reference *',{exact:true}).fill('DEL-1048')
    const createdResponse=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
    await dialog.getByRole('button',{name:'Create and email',exact:true}).click()
@@ -94,9 +106,9 @@ export async function newTicketConfigurationBrowser(){
    await page.getByRole('tab',{name:'Ticket',exact:true}).click()
    await page.locator('#ticket-section-fields-heading').click()
    await page.getByLabel('Delivery reference',{exact:false}).waitFor()
-   await page.screenshot({path:join(evidenceDir,`${width}-configured-ticket.png`),fullPage:true})
+   await capture('configured-ticket')
    await page.getByLabel('Delivery reference',{exact:false}).scrollIntoViewIfNeeded()
-   await page.screenshot({path:join(evidenceDir,`${width}-stored-field-values.png`),fullPage:true})
+   await capture('stored-field-values')
    const replay=await request(command);assert.equal(replay.status,200);assert.equal(replay.body.conversation.id,created.conversation.id);assert.equal(replay.body.duplicate,true);await delivered(base,created.conversation.id,content)
    // The API door selects the existing requester rather than making another.
    const apiCommand={kind:'email',localId:`synthetic-happytohelp-api-${width}`,requesterId:created.conversation.contact_id,mailboxId:mailbox.id,subject:`Delivery update ${width}`,content:`Your parcel is ready for collection (${width}).`}
@@ -107,7 +119,7 @@ export async function newTicketConfigurationBrowser(){
    assert.equal((await request({...apiCommand,localId:`synthetic-happytohelp-invalid-${width}`,subject:'Header\r\nBcc: forged@example.test'})).status,400)
    await page.goto(`${runtime.origin}/projects/${projectId}/conversations/${api.body.conversation.id}`)
    await page.locator('.transcript-message-content').getByText(apiCommand.content,{exact:true}).waitFor()
-   await page.screenshot({path:join(evidenceDir,`${width}-api-email.png`),fullPage:true})
+   await capture('api-email')
    // The dialog's call path records a private note; the API call path is the
    // same durable command with the existing requester and no mailbox/copies.
    const beforeCalls=copies().length
@@ -118,12 +130,12 @@ export async function newTicketConfigurationBrowser(){
    await dialog.getByLabel('Parcel count',{exact:true}).fill('1')
    await dialog.getByLabel('Assignee',{exact:true}).selectOption('')
    assert.equal(await dialog.getByLabel('CC',{exact:true}).count(),0)
-   await page.screenshot({path:join(evidenceDir,`${width}-new-call.png`),fullPage:true})
+   await capture('new-call')
    let lostCall
    await page.route('**'+base+'/tickets',async route=>{const response=await route.fetch();assert.equal(response.status(),201);lostCall=await response.json();await route.abort('failed')},{times:1})
    await dialog.getByRole('button',{name:'Log call',exact:true}).click()
    await dialog.getByRole('button',{name:'Check same request',exact:true}).waitFor()
-   await page.screenshot({path:join(evidenceDir,`${width}-configured-call-lost-response.png`),fullPage:true})
+   await capture('configured-call-lost-response')
    const callResponse=page.waitForResponse(response=>new URL(response.url()).pathname===base+'/tickets'&&response.request().method()==='POST')
    await dialog.getByRole('button',{name:'Check same request',exact:true}).click();const logged=await callResponse;assert.equal(logged.status(),200)
    const callTicket=await logged.json();assert.equal(callTicket.conversation.id,lostCall.conversation.id);assert.equal(callTicket.duplicate,true);assert.equal(callTicket.conversation.channel,'phone');assert.notEqual(callTicket.conversation.contact_id,created.conversation.contact_id);assert.equal(callTicket.conversation.assigned_to,null);assert.equal(callTicket.note.content,`Confirmed collection time (${width}).`)
@@ -133,6 +145,14 @@ export async function newTicketConfigurationBrowser(){
    assert.equal((await request(apiCall)).body.note.id,loggedApi.body.note.id)
    assert.equal((await request({...apiCall,localId:`synthetic-happytohelp-call-cc-${width}`,cc:['synthetic-happytohelp-1@customer.example']})).status,400)
    assert.equal(copies().length,beforeCalls,'dialog/API call logs send no mail, including retries')
+   // Narrow the current native role while retaining workspace membership.
+   await runtime.execute(`INSERT INTO member_roles(project_id,user_id,role_key,assigned_at) VALUES('${projectId}','${owner.actor.id}','collaborator',1)`)
+   await open()
+   await dialog.getByRole('alert').filter({hasText:/allow|authority|permission/i}).waitFor()
+   assert.equal(await dialog.getByRole('button',{name:'Create and email',exact:true}).isDisabled(),true)
+   await capture('denied-create-authority')
+   await dialog.getByRole('button',{name:'Cancel',exact:true}).click()
+   await runtime.execute(`DELETE FROM member_roles WHERE project_id='${projectId}' AND user_id='${owner.actor.id}'`)
    await context.close()
   }
   assert.deepEqual(errors,[]);success=true

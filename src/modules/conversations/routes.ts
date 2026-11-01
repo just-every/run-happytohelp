@@ -31,6 +31,15 @@ routes.get('/',async c=>{const actor=await requireActor(c);const rows=await c.en
 routes.post('/',async c=>{const b=await c.req.json();const actor=await requireProject(c,requiredString(b.projectId,'projectId'));const contactId=actor.role==='contact'?actor.contactId:requiredString(b.contactId,'contactId');if(actor.role==='contact')await enforceRateLimits(c.env,[['conversationsPerContactHour',contactId!],['conversationsPerIpHour',`${actor.projectId}|${clientAddress(c.req)}`],['conversationsPerProjectHour',actor.projectId]]);const now=workflowNow(await workflowEnvironment(c.env)),conversationId=id(),responder=await readyResponder(c.env,actor.projectId,contactId!);const result=await c.env.DB.batch([c.env.DB.prepare('INSERT INTO conversations(id,project_id,contact_id,created_at,updated_at,submitter_id,submitter_type,ticket_actor_id,ticket_actor_type,ticket_source) SELECT ?,project_id,id,?,?,?,?,?,?,? FROM contacts WHERE id=? AND project_id=?').bind(conversationId,now,now,actor.id,actor.role==='contact'?'contact':'agent',actor.id,actor.role==='contact'?'contact':'user',actor.role==='contact'?'widget':'dashboard',contactId!,actor.projectId),...(responder?[c.env.DB.prepare(`INSERT INTO conversation_ai(conversation_id,ai_id) SELECT ?,responder.id FROM (${defaultResponderSql}) responder WHERE responder.id=? AND EXISTS(SELECT 1 FROM conversations WHERE id=?)`).bind(conversationId,actor.projectId,contactId!,responder,conversationId)]:[]),trackingStatement(c.env,conversationId,true)]);if(!result[0].meta.changes)throw new HTTPException(404);const created=await c.env.DB.prepare('SELECT * FROM conversations WHERE id=?').bind(conversationId).first();return c.json(actor.role==='contact'?customerTicket(created):created,201)})
 routes.get('/:id',async c=>{const {actor,conversation}=await access(c);return c.json(actor.role==='contact'?customerTicket(conversation):conversation)})
 // The original email body (content_raw) is operator-only transcript data; customer sessions never receive it.
+// Private imported event custody follows current ticket authority. It is never
+// returned to a customer, including the requester of this ticket.
+routes.get('/:id/imported-history',async c=>{
+ const {actor,conversation}=await access(c);if(actor.role==='contact')throw new HTTPException(404)
+ const row=await c.env.DB.prepare("SELECT source_json FROM move_in_origins WHERE project_id=? AND target_kind='conversation' AND target_id=? AND vendor='zendesk'").bind(actor.projectId,conversation.id).first<{source_json:string}>()
+ if(!row)throw new HTTPException(404)
+ const source=JSON.parse(row.source_json)
+ return c.json({sourceId:source.id,history:source.history??{metrics:'missing',audits:'missing',events:[]}})
+})
 routes.get('/:id/messages',async c=>{const {actor,conversation}=await access(c);const [messages,media]=await c.env.DB.batch<any>([
  c.env.DB.prepare('SELECT * FROM messages WHERE conversation_id=? ORDER BY revision').bind(conversation.id),
  c.env.DB.prepare('SELECT id,message_id,filename,content_type,size FROM media WHERE conversation_id=? AND message_id IS NOT NULL').bind(conversation.id)

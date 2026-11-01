@@ -176,6 +176,10 @@
     {
       "id": "280_agent_native.sql",
       "buyerSteps": "Link an unambiguous existing native owner workspace and retain separate agent/sponsor attribution after migration 279. Ambiguous installations require an explicit owner workspace choice. No customer message is sent."
+    },
+    {
+      "id": "291_native_ticket_scope.sql",
+      "buyerSteps": "Apply after 290 and before the updated Worker serves traffic. Add nullable stored ticket-group scope to custom roles. Existing roles retain NULL and keep their prior authority; no activating backfill or public scope controls are introduced. Preserve role selections with the existing project_roles data during backup and restore."
     }
   ],
   "breaking": false,

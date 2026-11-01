@@ -2041,7 +2041,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "9a13e85ba73636d5e7f341294225a9eeebb247c7178768996c5c723f339bf76d",
+      "sha256": "d852d9a24a7bc0e434645d649ae6125ee5524b0286d4df1feaa23f2a2ba8b534",
       "executable": false
     },
     "management/integration/environment.ts": {
@@ -2708,6 +2708,10 @@
       "sha256": "6521b033c9b029bc19e3017e6c788c87876a6c7dd838a5d507254bcec4e439a1",
       "executable": false
     },
+    "migrations/291_native_ticket_scope.sql": {
+      "sha256": "c0e7bdf31ea9c43f5188f5e8dfbcf9591527e043b46a91ee84a68b4e0f83428e",
+      "executable": false
+    },
     "OPERATIONS.json": {
       "sha256": "7e329ca7ef7078ddfd3d57e0e685056275d4ebc9ef18a5a8aae129ca2efe33ec",
       "executable": false
@@ -2793,7 +2797,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "8ebaada33c3672c310c698220412919fd1c2074ea811fd4a39f8b931f2b3f79a",
+      "sha256": "8009779372d892d00fb75cafcbc377f58735a605ef616761a2a58900f6e74797",
       "executable": false
     },
     "rer-project.json": {
@@ -4409,7 +4413,7 @@
       "executable": false
     },
     "src/modules/access/gate.ts": {
-      "sha256": "f316b27a36768a9c6cdfd6c8a4efbf515c6a78444554e52f1b688fb273d3483d",
+      "sha256": "2585242458d8f34b6c2a176617c2ab68590ee196c3a12f035c7b1f6212953fa9",
       "executable": false
     },
     "src/modules/access/r4-route-permissions.ts": {
@@ -4434,6 +4438,10 @@
     },
     "src/modules/access/self-service-routes.ts": {
       "sha256": "b788bccd6e615d1d5032ad3915c454839e02a09a7c2a6532dda1245d562825bd",
+      "executable": false
+    },
+    "src/modules/access/ticket-scope.ts": {
+      "sha256": "fe85243f58e1557efdf58d7cea9f1994a394c433e3b7c02a27b1abd0cfe3d0a9",
       "executable": false
     },
     "src/modules/ai-support/advice-procedures.ts": {
@@ -5089,7 +5097,7 @@
       "executable": false
     },
     "src/modules/collaboration/authority.ts": {
-      "sha256": "669c91caebcb33dec091dbdb1f390eac78317712b117b186aed2f8aaadad9fc7",
+      "sha256": "6d9d961690d1c45aefe7644bf916a105c16515be522d2e3a7125ca221308b88e",
       "executable": false
     },
     "src/modules/collaboration/erasure.ts": {
@@ -7245,7 +7253,7 @@
       "executable": false
     },
     "src/modules/management/dashboard-actions.ts": {
-      "sha256": "0d61795ba5caa6c10bb5694ff398f7a60bfcc8768a90c2b450e88fc82f0ad1b8",
+      "sha256": "0f0b7455b91a0a5f2171c7a81977d7feae0e707467a2b1b0808e225288bbe2cc",
       "executable": false
     },
     "src/modules/management/dashboard-data.ts": {
@@ -7437,7 +7445,7 @@
       "executable": false
     },
     "src/modules/management/tags.ts": {
-      "sha256": "aa73c32655d1c88ad7bd51a4750a7a2c0879cbd2a4610de2fb6fad9265705822",
+      "sha256": "fdb3fbfe16ab3d6f714db10475d7bd49b69304537f53703600f1e279318daf77",
       "executable": false
     },
     "src/modules/management/tracked-transcript.ts": {
@@ -8193,11 +8201,11 @@
       "executable": false
     },
     "src/modules/tickets/model.ts": {
-      "sha256": "ab76b11a76c17b457401a3cb8d1edee0206ecfcaed47c3942f5d307d6193c975",
+      "sha256": "a8082dbcda71efbe93899873028cbc25da4017f9120c35bdec869bf80d51f5ad",
       "executable": false
     },
     "src/modules/tickets/mutate-validation.ts": {
-      "sha256": "32c2e23ff32dc2a52d1f3388af66b4d3b85b492f93ca3bffc60a3362a4f696af",
+      "sha256": "29278a8f421f811b0f03c7ed358594bcdd585f3f5f12f6c7f8e40ebb0a79ef90",
       "executable": false
     },
     "src/modules/tickets/mutate.ts": {
@@ -8249,7 +8257,7 @@
       "executable": false
     },
     "src/modules/tickets/request-batch.ts": {
-      "sha256": "69378dcd34e35255afc0b25a72fefe8f938846d22cf04d7dd6c861672989777a",
+      "sha256": "53798958f7a42339f4d1487ace78c9bc800a7d7aa9536bec129c4c2c0f2cdb1d",
       "executable": false
     },
     "src/modules/tickets/routes-settings.ts": {
@@ -13889,7 +13897,7 @@
       "executable": false
     },
     "tests/helpers/account-lookup-journey.mjs": {
-      "sha256": "b585d3cf0927081296f1f5cef94bb61f85ae5125270512566a1390d1cf905c86",
+      "sha256": "3396b896084b71d1f15c49e295ee99456f44e73840fdca4d3e0a2090b8b44fb6",
       "executable": false
     },
     "tests/helpers/agent-door/custody.mjs": {
@@ -13897,7 +13905,7 @@
       "executable": false
     },
     "tests/helpers/agent-door/draft-upgrade.mjs": {
-      "sha256": "e00d3932162eecce446f863d2515d9f8d4887e088efc3ce0356484657158c56b",
+      "sha256": "8a885cb12d1bc1fafe156320a5158ee05fb035581c92096c60932042c9e9f914",
       "executable": false
     },
     "tests/helpers/agent-door/feedback.mjs": {
@@ -14417,7 +14425,7 @@
       "executable": false
     },
     "tests/helpers/identity/roles-audit.mjs": {
-      "sha256": "f8b30edc672787d11873bd90a976dbf95d508216085c742b4e683b635ea08a8f",
+      "sha256": "91cb703ab0c57234a722decc85e794ff69b78249caf41a551afb755efffbac44",
       "executable": false
     },
     "tests/helpers/identity/scoped-authority.mjs": {
@@ -14426,6 +14434,10 @@
     },
     "tests/helpers/identity/security-browser.mjs": {
       "sha256": "45a9ad6797a37a8036f5622ffe4f5892095ce75177f8b4e0cc837b34be6c847d",
+      "executable": false
+    },
+    "tests/helpers/identity/ticket-scope.mjs": {
+      "sha256": "c66f0230d647fb66b342cdb5d5fc3df944afae7a60aec51905ff666c38ee1e64",
       "executable": false
     },
     "tests/helpers/identity/two-factor-outcomes.mjs": {
@@ -14749,7 +14761,7 @@
       "executable": false
     },
     "tests/helpers/self-service-fixture.mjs": {
-      "sha256": "f00293c5e944a4109cc25f9d3a2ca52851e5ffe2def88d6996dd5e6c963c8331",
+      "sha256": "d8ae6537534c5b8bd010bf6db1be551d9d54c9e8ae2cfa9d14147f670820b91c",
       "executable": false
     },
     "tests/helpers/serving-capacity.mjs": {
@@ -14817,7 +14829,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "5f9eae056387a4a0f4c02e3f70f7aad2b99efbd9224e0b7d38540b8e09067c16",
+      "sha256": "a3e7932b7f7517b80b880e239a04606f37c3d3edf842f10e6fd13463a2d3d55c",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

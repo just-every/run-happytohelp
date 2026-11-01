@@ -14681,7 +14681,7 @@
       "executable": false
     },
     "tests/helpers/release-upgrade.mjs": {
-      "sha256": "c6e5f2bdcdb2b0a0999d234ce9c46210b671cd07f54bb172083c3e4de477f7c6",
+      "sha256": "fad7eecb5697684c8378deb1cc1aa60137640a461f632ab434a2f0f895d1ccfc",
       "executable": false
     },
     "tests/helpers/reports-portable.mjs": {
@@ -14781,7 +14781,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "ede569402215e79b0197d5320023becae37fd1ab36c861704cf2d6d8e9e8bfe1",
+      "sha256": "5f9eae056387a4a0f4c02e3f70f7aad2b99efbd9224e0b7d38540b8e09067c16",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

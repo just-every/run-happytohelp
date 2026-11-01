@@ -14817,7 +14817,7 @@
       "executable": false
     },
     "tests/helpers/upgrade-schema-expectations.mjs": {
-      "sha256": "5f9eae056387a4a0f4c02e3f70f7aad2b99efbd9224e0b7d38540b8e09067c16",
+      "sha256": "a91971e77e35a97a5bb1d113085e92a5f84620ce91225192819c4603b0d05fb2",
       "executable": false
     },
     "tests/helpers/upgrade-snapshot.mjs": {

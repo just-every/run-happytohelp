@@ -41,14 +41,23 @@ export async function newTicketConfigurationBrowser(){
    const context=await browser.newContext({viewport:{width,height:width===390?844:1000}})
    await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
    const page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',error=>errors.push(error.message))
+   const showTicketFields=async()=>{
+    if(await page.locator('#conversation-assistant').getAttribute('aria-hidden')==='true')await page.getByRole('button',{name:'Show conversation panel',exact:true}).click()
+    await page.getByRole('tab',{name:'Ticket',exact:true}).click()
+    const fields=page.locator('#ticket-section-fields-heading')
+    if(await fields.getAttribute('aria-expanded')!=='true')await fields.click()
+   }
    const capture=async(name,focus)=>{
     for(const proofWidth of [1440,390]){
      await page.setViewportSize({width:proofWidth,height:proofWidth===390?844:1000})
      await page.waitForTimeout(300)
+     if(['configured-ticket','stored-field-values'].includes(name))await showTicketFields()
      if(focus)await focus.scrollIntoViewIfNeeded()
      await page.screenshot({path:join(evidenceDir,`${proofWidth}-${name}.png`),fullPage:true,animations:'disabled'})
     }
     await page.setViewportSize({width:1440,height:1000})
+    await page.waitForTimeout(300)
+    if(['configured-ticket','stored-field-values'].includes(name))await showTicketFields()
    }
    const request=async(body,path=base+'/tickets')=>page.evaluate(async({path,body})=>{const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:response.status,body:await response.json()}},{path,body})
    const open=async()=>{await page.goto(`${runtime.origin}/projects/${projectId}/conversations`);await page.getByRole('button',{name:'New ticket',exact:true}).click();await page.getByRole('dialog',{name:'New ticket',exact:true}).waitFor()}

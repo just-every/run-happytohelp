@@ -73,6 +73,11 @@ export async function outboundConfigurationJourney(){
   const callCommand={kind:'call',localId:'configured-inline-call',requesterEmail:'new@customer.example',requesterName:'Synthetic Rosa',subject:'Collection call',content:'Confirmed collection privately.',formId:form.id,fields:{[choice.id]:'return',[count.id]:1},groupId:null,assigneeId:null}
   const call=await app.ok(base,{...operator,body:callCommand});assert.equal(call.conversation.assigned_to,null);assert.equal(call.conversation.group_id,null);assert.notEqual(call.conversation.contact_id,contact.id);assert.equal(call.conversation.requester_id,call.conversation.contact_id);assert.equal(call.conversation.submitter_id,workspace.users.operator);assert.equal(call.message,undefined);assert.equal(sent.length,1)
   assert.equal((await app.ok(base,{...operator,body:callCommand})).note.id,call.note.id)
+  const storedCall=(await app.ok(`/api/dashboard/projects/${p}/conversations/${call.conversation.id}/ticket`,operator)).data
+  assert.deepEqual(storedCall.fields,callCommand.fields)
+  assert.equal(storedCall.history.find(h=>h.changes.form).changes.form.formId,form.id)
+  assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',call.conversation.id)).n,0)
+  assert.equal((await app.first('SELECT count(*) n FROM conversation_outbox WHERE conversation_id=?',call.conversation.id)).n,0)
   // A previously admitted command has the old exact normalized identity, with no new optional keys.
   const legacy={kind:'call',localId:'previously-admitted',requesterId:contact.id,subject:'Legacy call',content:'Original private note.'},old=await app.ok(base,{...operator,body:legacy})
   const normalized={kind:'call',localId:legacy.localId,requesterId:contact.id,requesterEmail:null,requesterName:'',subject:legacy.subject,content:legacy.content,mailboxId:null,fromAddress:null,cc:[],bcc:[]}

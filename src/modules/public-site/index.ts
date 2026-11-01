@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+import {renderPublicKnowledgeHtml} from '../knowledge/public-html'
 import {portalPages} from './portal-pages'
 import {requestFormPages} from './request-pages'
 import { Hono } from 'hono'
@@ -18,6 +19,15 @@ export async function isPublicSitePath(path: string, env: Env) {
 }
 
 export const publicSiteRoutes = new Hono<AppEnv>()
+publicSiteRoutes.use('*',async(c,next)=>{
+ await next()
+ if(!c.res.headers.get('Content-Type')?.includes('text/html'))return
+ const parts=c.req.path.split('/').filter(Boolean),key=['help','portal'].includes(parts[0])?parts[1]:parts[0]
+ if(!key)return
+ const project=await resolvePublicProject(c.env,decodeURIComponent(key))
+ if(!project)return
+ const body=await renderPublicKnowledgeHtml(c.env,project.id,c.req.raw,await c.res.text()),headers=new Headers(c.res.headers);headers.delete('Content-Length');c.res=new Response(body,{status:c.res.status,headers})
+})
 publicSiteRoutes.route('/',requestFormPages)
 publicSiteRoutes.route('/',portalPages)
 publicSiteRoutes.route('/', helpCenterRoutes)

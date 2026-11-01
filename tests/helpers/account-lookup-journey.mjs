@@ -177,7 +177,9 @@ export async function accountLookupJourney(f,customer){
 }
 
 async function accountLookupUpgrade(){
- const f=await selfServiceFixture({migrate:name=>name<'259_account_lookup_fields.sql'}),{app,p,owner,signin,api,form,valid}=f
+ // Stage only the account-field upgrade: the merged knowledge module's
+ // independent schema must already exist for current portal mail admission.
+ const f=await selfServiceFixture({migrate:name=>name<'259_account_lookup_fields.sql'||/^\d+_knowledge_/.test(name)}),{app,p,owner,signin,api,form,valid}=f
  try{
   const customer=await signin('synthetic-hh-upgrade@example.com'),ticket=(await app.call(`${api}/${form.id}/submissions`,{...customer,body:valid,status:201})).data.ticket
   const snapshot=async()=>({fields:await app.sql('SELECT * FROM ticket_fields ORDER BY project_id,id'),values:await app.sql('SELECT * FROM ticket_field_values ORDER BY project_id,conversation_id,field_id'),events:await app.sql('SELECT * FROM workflow_events ORDER BY id')})
@@ -185,7 +187,7 @@ async function accountLookupUpgrade(){
   await applyMigrations(app.db,name=>name==='259_account_lookup_fields.sql')
   assert.deepEqual(await snapshot(),before,'extending the field type retains definitions, typed values and the workflow journal byte for byte')
   // The upgrade applies its remaining pending migrations before the current app serves an edit.
-  await applyMigrations(app.db,name=>name>'259_account_lookup_fields.sql')
+  await applyMigrations(app.db,name=>name>'259_account_lookup_fields.sql'&&!/^\d+_knowledge_/.test(name))
   await app.ok(`/api/dashboard/projects/${p}/conversations/${ticket.id}/ticket`,{...owner,method:'PATCH',body:{fields:{[f.order.id]:'NS-10483'}}})
   assert.equal((await app.first('SELECT value_json FROM ticket_field_values WHERE conversation_id=? AND field_id=?',ticket.id,f.order.id)).value_json,'"NS-10483"')
   assert.ok((await app.sql('SELECT after_json FROM workflow_events WHERE conversation_id=?',ticket.id)).some(row=>JSON.parse(row.after_json).fields?.[f.order.id]==='NS-10483'),'editing a retained field still journals its new typed value')

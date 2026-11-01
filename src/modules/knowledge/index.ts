@@ -1,7 +1,7 @@
 export { routes } from './routes'
 export { consumeJob,searchKnowledge,refreshDataset,refreshDueDatasets } from './service'
 
-export {isArticleEligibleForAI} from './public-sources'
+export {articleVisible} from './door'
 
 export {resolveHelpAccess,accessForContact,type HelpAccess} from './access'
 export {getKnowledgeExperience,selectKnowledgeLocale,listAccessibleCategories,listAccessibleArticles,lookupAccessibleArticle} from './experience'

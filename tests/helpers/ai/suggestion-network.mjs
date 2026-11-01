@@ -4,6 +4,12 @@ import {openaiStream,formatName,openaiToolCall} from '../openai-stream.mjs'
 export default async request=>{
  if(new URL(request.url).hostname!=='api.openai.com')return new Response('Unexpected outbound request',{status:599})
  const body=await request.json(),evidence=JSON.stringify(body).match(/message:[0-9a-f-]{36}/)?.[0]
+ // Synthetic reply evaluations have a scoped packet without a live ticket.
+ // Keep their default provider response separate from production retrieval.
+ const textParts=(body.input||[]).flatMap(item=>typeof item.content==='string'?[item.content]:Array.isArray(item.content)?item.content.map(part=>part.text).filter(text=>typeof text==='string'):[])
+ const packetText=textParts.find(text=>text.startsWith('Scoped customer-reply context:\n'))
+ const packet=packetText?JSON.parse(packetText.slice(packetText.indexOf('\n')+1)):null
+ if(packet?.schema==='happytohelp.customer-reply-context.v1'&&!packet.conversation)return openaiStream('Thanks for your message.')
  if(JSON.stringify(body).includes('trace-browser')&&body.tools?.some(t=>t.name==='search_knowledge')){
   const calls=body.input.filter(item=>item.type==='function_call')
   if(!calls.some(item=>item.name==='search_knowledge'))return openaiToolCall('search_knowledge',{query:'refund'},'trace-search')

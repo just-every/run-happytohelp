@@ -1,3 +1,7 @@
+import {renderKnowledgeFields,referenceVisibility} from '../knowledge/reference-store'
+import {canonicaliseFields} from '../knowledge/canonicaliser'
+import {memberReaders,readerSet} from '../knowledge/door'
+import {currentTicketReaders} from '../knowledge/readers'
 import {DurableObject} from 'cloudflare:workers'
 import type {Env} from '../../platform/env'
 import {hashToken} from '../../platform/auth'
@@ -28,7 +32,7 @@ export class ConversationSocket extends DurableObject<Env>{
   for(const row of rows.results){
    if(actor.role==='contact')delete row.content_raw
    row.media=(await this.env.DB.prepare('SELECT id,filename,content_type,size FROM media WHERE message_id=?').bind(row.id).all()).results
-   ws.send(JSON.stringify({type:a.projectId?'conversation':'message',eventId:row.eventId,conversationId:row.conversation_id,message:row}));a.cursor=Number(row.eventId)
+   const projectId=String(row.project_id),readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id),normalized=await canonicaliseFields(this.env,projectId,row,row.actor_role==='contact'?String(row.actor_id):undefined),rendered=await renderKnowledgeFields(this.env,projectId,normalized,readers);if(actor.role!=='contact')(rendered as any).knowledgeReferences=await referenceVisibility(this.env,projectId,String(row.content||''),actor.actor_id,currentTicketReaders(projectId,String(row.conversation_id),{}));ws.send(JSON.stringify({type:a.projectId?'conversation':'message',eventId:row.eventId,conversationId:row.conversation_id,message:rendered}));a.cursor=Number(row.eventId)
   }
   const latest=ws.deserializeAttachment() as Attachment
   ws.serializeAttachment({...latest,cursor:Math.max(latest.cursor,a.cursor)})
@@ -75,7 +79,7 @@ export class ConversationSocket extends DurableObject<Env>{
     const actor=await this.authorized(a)
     if(!actor){await this.releaseOnline(ws);ws.close(1008,'Session revoked');continue}
     if(event.operatorOnly===true&&actor.role==='contact')continue
-    ws.send(JSON.stringify(event))
+    const scope=await this.env.DB.prepare('SELECT project_id FROM conversations WHERE id=?').bind(event.conversationId).first<{project_id:string}>();if(!scope)continue;const readers=actor.role==='contact'?readerSet([{kind:'contact',id:actor.actor_id}]):memberReaders(actor.actor_id);ws.send(JSON.stringify(await renderKnowledgeFields(this.env,scope.project_id,await canonicaliseFields(this.env,scope.project_id,event),readers)))
    }
    return new Response('ok')
   }

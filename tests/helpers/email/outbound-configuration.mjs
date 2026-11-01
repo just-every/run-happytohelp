@@ -27,6 +27,7 @@ export async function outboundConfigurationJourney(){
   await refused({assigneeId:foreign.users.operator},'assigneeId')
   await refused({assigneeId:workspace.users.operator},'assigneeId')
   await refused({groupId:'missing-group'},'groupId')
+  await refused({fromAddress:'unauthorized@support.example'},null,409)
   const foreignForm=(await app.ok(`/api/forms/projects/${foreign.projectId}/forms`,{token:foreign.tokens.owner,body:{title:'Other brand form',enabled:true,fields:[]}})).data
   await refused({formId:foreignForm.id},'formId')
   await refused({brandId:foreign.projectId},null,400)

@@ -57,7 +57,12 @@ export async function admitMessage(env:Env,input:MessageInput):Promise<MessageRe
  ])
  const scope=observations[0].results[0]
  if(!scope||(!input.generationId&&actor.role==='contact'&&!email&&!companyReply&&!sharedSender&&scope.contact_id!==(actor.contactId||actor.id)))return {accepted:false,reason:'conversation_access_denied'}
- if(checkMembership&&scope&&!scope.native_scope_allowed)await requireTicketScope(env,actor.id,projectId,conversationId,email?'email':'dashboard')
+ if(checkMembership&&!scope.native_scope_allowed){
+  // A scheduled attempt needs a definite refusal so it can settle as cancelled.
+  // Keep HTTP concealment for native callers and the live scope predicate at commit.
+  if(input[scheduledAdmission])return {accepted:false,reason:'conversation_access_denied'}
+  await requireTicketScope(env,actor.id,projectId,conversationId,email?'email':'dashboard')
+ }
  if(checkMembership&&!observations[2].results[0])return {accepted:false,reason:'conversation_access_denied'}
  const generation=input.generationId?observations[2].results[0]:null
  if(input.generationId&&!generation)return {accepted:false,reason:'generation_not_found'}

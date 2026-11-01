@@ -5177,7 +5177,7 @@
       "executable": false
     },
     "src/modules/conversations/admission.ts": {
-      "sha256": "5c7458c523f233475c66abfac90aedb6bfc598150f293b1ee6d7274da86780a6",
+      "sha256": "99f2748b4c988f5e7fe1456a1940fcd886835ad7493c174be39ee7d801585292",
       "executable": false
     },
     "src/modules/conversations/citations.js": {
@@ -9773,7 +9773,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/CreateEmailTicket.jsx": {
-      "sha256": "70fa35e1d9a70c2447f8f6ff8ee9f6fd8a0bd0ef1529b5a5968142f9513c4fa3",
+      "sha256": "2a8d2afef10570f3bbbf41d9e94c4be98231e97bf824eefd539018938edbc5d0",
       "executable": false
     },
     "src/ui/dashboard/components/DelegationAttachments.jsx": {
@@ -10149,7 +10149,7 @@
       "executable": false
     },
     "src/ui/dashboard/components/useNewTicketChoices.js": {
-      "sha256": "1a13f341f55578368e80640c93b3087b614c2752a35891f50f807fef65582f7c",
+      "sha256": "e542936be69940947ff68444340c2406821142c518f5dd7e31c769bf975c3a05",
       "executable": false
     },
     "src/ui/dashboard/components/voice/VoicePanel.jsx": {
@@ -14524,8 +14524,12 @@
       "sha256": "904d9c6ea50d2f90a766df9f47f71da2ba0d9d24f160559cb23fd50778e59a34",
       "executable": false
     },
+    "tests/helpers/inbox/new-ticket-brand-orderings.mjs": {
+      "sha256": "bcb021c3da52d19106a494cf44dc8896be31c8119142ad34839a0ba2992966c1",
+      "executable": false
+    },
     "tests/helpers/inbox/new-ticket-configuration.mjs": {
-      "sha256": "7852b17bc5cdc72c88663fced081703721e0dbf6c703d2ed7dd75cbdec39c994",
+      "sha256": "e950b62c3644ed0fc8da0799b24a4d0fbb51b820e850fdbbf81bbb1b75a70598",
       "executable": false
     },
     "tests/helpers/inbox/problems.mjs": {

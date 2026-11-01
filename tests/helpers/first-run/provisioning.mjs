@@ -35,7 +35,7 @@ export async function provisioningJourney(){
   const row=(data,id)=>data.steps.find(item=>item.id===id)
   const settings=await get('/settings'),assistants=await get('/ais'),mailbox=await get('/email-settings')
   assert.equal(assistants.length,1);const starter=assistants[0]
-  assert.ok(starter.is_enabled);assert.equal(settings.default_visitor_ai_id,starter.id);assert.equal(settings.default_responder,starter.id)
+  assert.ok(starter.is_enabled);assert.equal(settings.default_visitor_ai_id,starter.id);assert.equal((await get('/ai')).assistant.id,starter.id)
   assert.ok(mailbox.inbound_address,'the workspace has a provisioned mailbox; local transport suppression is checked through sends below')
   assert.equal((await get('/ai')).ready,false)
   const before=app.requests.length,fresh=await setup()
@@ -59,7 +59,8 @@ export async function provisioningJourney(){
   const transcript=async()=>(await app.call(`/api/conversations/${conversation.id}/messages`,{token:session.token,status:200})).data
   const say=async content=>{const current=await transcript();return (await app.call(`/api/conversations/${conversation.id}/messages`,{token:session.token,body:{localId:crypto.randomUUID(),content,expectedRevision:current.revision,expectedLastMessageId:current.lastMessageId},status:200})).data}
   await say('Can I return my tent?');await app.drainJobs()
-  assert.equal((await get('/settings')).site_read.state,'done')
+  const siteSource=(await app.call(`/api/knowledge/${p}/datasets`,{token,status:200})).data.find(item=>item.url==='https://owner.example')
+  assert.equal(siteSource?.status,'ready');assert.ok(siteSource.published_version&&siteSource.page_count>0,'the website read published searchable pages')
   const source=(await app.call(`/api/knowledge/${p}/search?q=Returnmarker`,{token,status:200})).data.citations;assert.ok(source.some(item=>item.url==='https://owner.example/help/returns'))
   const localHead=await transcript();await app.call(`/api/conversations/${conversation.id}/messages`,{token,body:{localId:'local-owner-reply',content:'A local teammate reply',expectedRevision:localHead.revision,expectedLastMessageId:localHead.lastMessageId},status:200})
   await app.scheduled(undefined,{after:61000})

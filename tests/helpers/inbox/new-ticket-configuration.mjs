@@ -4,6 +4,7 @@ import {join,resolve} from 'node:path'
 import {tmpdir} from 'node:os'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {launchBrowser} from '../../journeys/kit/browser.mjs'
+import {newTicketBrandOrderings,ticketOrderingBrands} from './new-ticket-brand-orderings.mjs'
 
 export async function newTicketConfigurationBrowser(){
  const evidenceDir=join(process.env.H2H_EVIDENCE_DIR?resolve(process.env.H2H_EVIDENCE_DIR):tmpdir(),'outbound-tickets')
@@ -37,6 +38,7 @@ export async function newTicketConfigurationBrowser(){
    const form=(await call(`/api/forms/projects/${projectId}/forms`,{title:'Replacement delivery',enabled:true,fields:[{fieldId:reason.id,required:true},{fieldId:reference.id,required:true,condition:{fieldId:reason.id,operator:'equals',value:'replacement'}},{fieldId:parcels.id}]},owner.token)).data
    const group=(await call(management+'/ticket-groups',{name:'Delivery team',members:[owner.actor.id]},owner.token)).data
    const other=await call('/api/management/projects',{name:`Synthetic empty brand ${width}`,allowedOrigin:runtime.origin},owner.token)
+   const orderingBrands=await ticketOrderingBrands({call,token:owner.token,origin:runtime.origin})
    const existingRequester=(await call(management+'/contacts',{name:'Synthetic parcel customer',email:`synthetic-happytohelp-${width}@customer.example`},owner.token)).data
    const context=await browser.newContext({viewport:{width,height:width===390?844:1000}})
    await context.addCookies([{name:'h2h_session',value:owner.token,url:runtime.origin}])
@@ -61,17 +63,20 @@ export async function newTicketConfigurationBrowser(){
    }
    const request=async(body,path=base+'/tickets')=>page.evaluate(async({path,body})=>{const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:response.status,body:await response.json()}},{path,body})
    const open=async()=>{await page.goto(`${runtime.origin}/projects/${projectId}/conversations`);await page.getByRole('button',{name:'New ticket',exact:true}).click();await page.getByRole('dialog',{name:'New ticket',exact:true}).waitFor()}
+   const dialog=page.getByRole('dialog',{name:'New ticket',exact:true})
+   await newTicketBrandOrderings({page,origin:runtime.origin,dialog,...orderingBrands,capture})
    let releaseOld
    const oldReleased=new Promise(resolve=>{releaseOld=resolve})
    await page.route('**'+base+'/tickets/options',async route=>{const response=await route.fetch();await oldReleased;try{await route.fulfill({response})}catch{}},{times:1})
    await open()
-   const dialog=page.getByRole('dialog',{name:'New ticket',exact:true}),requester=`synthetic-happytohelp-${width}@customer.example`,subject=`Replacement parcel ${width}`,content=`Your replacement parcel ships today (${width}).`
+   const requester=`synthetic-happytohelp-${width}@customer.example`,subject=`Replacement parcel ${width}`,content=`Your replacement parcel ships today (${width}).`
    if(width===1440){const close=dialog.getByRole('button',{name:'Close',exact:true}),target=await close.boundingBox();assert.ok(target.width>=44&&target.height>=44);await dialog.getByLabel('Brand workspace',{exact:true}).focus();await page.keyboard.press('Shift+Tab');await page.locator('.ui-tooltip').filter({hasText:'Close'}).waitFor({state:'visible'})}
    await dialog.getByLabel('Requester email',{exact:true}).fill('draft@customer.example')
    await dialog.getByLabel('Brand workspace',{exact:true}).selectOption(other.id)
    await dialog.getByText('No connected mailboxes are available.',{exact:false}).waitFor()
    assert.equal(await dialog.getByLabel('Requester email',{exact:true}).inputValue(),'')
    releaseOld();await page.waitForTimeout(100)
+   await dialog.getByLabel('Request form',{exact:true}).waitFor()
    assert.equal(await dialog.getByLabel('Request form',{exact:true}).locator('option').count(),1,'late old-brand choices cannot repaint the empty workspace')
    assert.equal(await dialog.getByLabel('Send from mailbox',{exact:true}).locator('option').count(),1)
    await capture('empty-brand')

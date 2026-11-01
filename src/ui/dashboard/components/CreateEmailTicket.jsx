@@ -13,7 +13,8 @@ import DialogHeader from './DialogHeader';
 export default function CreateEmailTicket({projectId:initialProjectId, onHide, onCreated}) {
  const [projectId,setProjectId]=useState(initialProjectId),[brands,setBrands]=useState([]),[errorField,setErrorField]=useState('');
  const [draft, setDraft] = useState({kind:'email',requesterEmail:'',requesterName:'',subject:'',content:'',mailboxId:'',fromAddress:'',cc:'',bcc:'',fields:{},formId:''});
- const {mailboxes,options,error:choicesError}=useNewTicketChoices(projectId,draft.requesterId);
+ const [switching,setSwitching]=useState(false);
+ const {mailboxes,options,error:choicesError}=useNewTicketChoices(projectId,draft.requesterId,switching);
  const [error,setError] = useState(''), [busy,setBusy] = useState(false);
  const [preview,setPreview] = useState(null), [results,setResults] = useState(null);
  const intent = useRef(null), [uncertain,setUncertain] = useState(false);
@@ -24,11 +25,11 @@ export default function CreateEmailTicket({projectId:initialProjectId, onHide, o
   return ()=>{active=false;};
  },[]);
  useEffect(()=>{if(errorField&&!busy){const control=document.getElementById(`new-ticket-field-${errorField}`)||document.getElementById(`new-ticket-${errorField}`);control?.focus();control?.scrollIntoView({block:'center'});}},[errorField,busy]);
- useEffect(()=>{if(mailboxes)setDraft(current=>current.mailboxId?current:{...current,mailboxId:mailboxes[0]?.id||''});},[mailboxes]);
+ useEffect(()=>{if(mailboxes)setDraft(current=>mailboxes.some(mailbox=>mailbox.id===current.mailboxId)?current:{...current,mailboxId:mailboxes[0]?.id||'',fromAddress:''});},[mailboxes]);
  const switchBrand=async value=>{
   if(busy||uncertain)return;
-  setBusy(true);setDraft(current=>({...current,requesterId:undefined,requesterEmail:'',requesterName:'',mailboxId:'',fromAddress:'',cc:'',bcc:'',formId:'',fields:{},groupId:undefined,assigneeId:undefined}));setError('');setErrorField('');intent.current=null;
-  try{await nativeRequest('/api/identity/switch-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId:value})});setProjectId(value);}catch(failure){setError(failure.message);}finally{setBusy(false);}
+  setBusy(true);setSwitching(true);setDraft(current=>({...current,requesterId:undefined,requesterEmail:'',requesterName:'',mailboxId:'',fromAddress:'',cc:'',bcc:'',formId:'',fields:{},groupId:undefined,assigneeId:undefined}));setError('');setErrorField('');intent.current=null;
+  try{await nativeRequest('/api/identity/switch-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId:value})});setProjectId(value);}catch(failure){setError(failure.message);}finally{setSwitching(false);setBusy(false);}
  };
  const close=async()=>{
   if(busy||uncertain)return;

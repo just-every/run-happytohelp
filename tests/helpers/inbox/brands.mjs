@@ -81,7 +81,7 @@ export async function brandsJourney(){
    assert.equal((await app.call(`/api/management/projects/${own.projectId}/mailboxes/${foreign.box.id}`,{token:own.brandOwner,method:'PATCH',body:{senderAddress:foreign.box.address}})).status,404)
   }
   await app.ok(`/api/management/projects/${a.projectId}/settings`,{token:owner,method:'PUT',body:{collect_email:false}})
-  assert.equal((await app.ok(`/api/management/projects/${b.projectId}/settings`,{token:owner})).data.collect_email,true)
+  assert.equal((await app.ok(selection,{token:owner})).data.brands.find(row=>row.id===b.projectId).policy.collectEmail,true)
   const manifest=(await app.ok(selection,{token:owner})).data
   assert.deepEqual(manifest.brands.map(r=>r.policy.collectEmail),[false,true]);assert.notEqual(manifest.brands[0].widgetKey,manifest.brands[1].widgetKey)
   assert.deepEqual(manifest.brands.map(r=>r.helpCenterContextUrl),['https://help.alpha.example.test/','https://help.beta.example.test/'])

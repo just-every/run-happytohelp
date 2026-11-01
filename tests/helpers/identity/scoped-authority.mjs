@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
 import {startApp,sha} from '../../journeys/kit/app.mjs'
+import {nativeSettingsAuthority} from './native-settings-authority.mjs'
 
 // IDENTITY-001: real routes, current authority and default D1 admission limits.
 // Only the mail provider is replaced; no limiter, clock or auth code is mocked.
@@ -11,6 +12,7 @@ export async function scopedAuthorityJourney(){
   mail.push(await request.json());return Response.json({id:'scoped-mail-'+mail.length})
  }})
  try{
+  await nativeSettingsAuthority(app)
   await tenantAuthority(app)
   await providerAuthority(app)
   await admissionLimits(app,mail)

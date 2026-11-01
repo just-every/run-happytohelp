@@ -1,13 +1,15 @@
 import type {Env} from '../../platform/env'
 import type {EmailInput} from '../integrations/email'
 import {envelopeReaders} from './readers'
-import {canonicaliseFields} from './canonicaliser'
+import {canonicaliseFields,ticketCustody} from './canonicaliser'
 import {referenceAdmissionPolicy} from './reference-policy'
 import {referenceIds,renderKnowledgeFields,renderKnowledge} from './reference-store'
 import {literal} from './door'
 export async function mailConversation(env:Env,input:EmailInput){
  const message=/^message:([^:]+):/.exec(input.idempotencyKey)
  if(message&&input.projectId)return (await env.DB.prepare('SELECT conversation_id FROM messages WHERE id=? AND project_id=?').bind(message[1],input.projectId).first<{conversation_id:string}>())?.conversation_id
+ // Unread digests are assembled per ticket; their durable notice owns that ticket.
+ if(input.idempotencyKey.startsWith('unread:')&&input.projectId)return (await env.DB.prepare('SELECT conversation_id FROM operator_notifications WHERE id=? AND project_id=?').bind(input.idempotencyKey,input.projectId).first<{conversation_id:string}>())?.conversation_id
  // Explicit transcript/partner/problem mail includes its conversation identity.
  const match=/(?:transcript|conversation|problem)[^:]*:([^:]+)/.exec(input.idempotencyKey)
  if(match&&input.projectId)return (await env.DB.prepare('SELECT id FROM conversations WHERE id=? AND project_id=?').bind(match[1],input.projectId).first<{id:string}>())?.id
@@ -15,7 +17,8 @@ export async function mailConversation(env:Env,input:EmailInput){
 }
 export async function canonicaliseMail(env:Env,input:EmailInput):Promise<EmailInput>{
  if(!input.projectId){if(referenceIds(JSON.stringify(input)).length)throw new Error('Knowledge mail needs a workspace');return input}
- const protectedFields=await canonicaliseFields(env,input.projectId,{subject:input.subject,text:input.text,html:input.html})
+ const custody=async()=>{const conversation=await mailConversation(env,input);return conversation?ticketCustody(conversation):undefined}
+ const protectedFields=await canonicaliseFields(env,input.projectId,{subject:input.subject,text:input.text,html:input.html},undefined,false,custody)
  return {...input,...protectedFields}
 }
 export async function mailClaimSql(env:Env,input:EmailInput){

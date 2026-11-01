@@ -4,7 +4,8 @@ import type {Context} from 'hono'
 import type {AppEnv,Env} from '../../platform/env'
 import {readerSet,memberReaders,anonymousReaders,type Readers} from './door'
 import {currentTicketReaders} from './readers'
-import {canonicaliseFields,updateKnowledgeIndex,ticketCustody} from './canonicaliser'
+import {updateKnowledgeIndex} from './canonicaliser'
+import {canonicaliseResponse,responseConversation} from './http-copies'
 import {renderKnowledgeFields,referenceIds,referenceVisibility} from './reference-store'
 import {knowledgeWriteEnvironment} from './write-boundary'
 import {dispatchKnowledgeUpgrades} from './upgrade-progress'
@@ -47,13 +48,11 @@ export async function knowledgeHttpDoor(c:Context<AppEnv>,next:()=>Promise<void>
  const baseReaders=publicKnowledge?accessReaders(await resolveHelpAccess(rawEnv,projectId,c.req.raw)):authority&&c.req.path.startsWith('/api/v1/articles')&&c.req.query('contact_id')?readerSet([{kind:'contact',id:c.req.query('contact_id')!}]):member?memberReaders(actor.id):actor?.role==='contact'?readerSet([{kind:'contact',id:actor.contactId||actor.id}]):conversation?currentTicketReaders(projectId,conversation,{}):anonymousReaders
  let data:any=await c.res.json()
  if(c.res.status>=400)errorData=data
- // Copied text first recognised in a ticket's response stays in that ticket's custody.
- const custody=conversation?async(project:string)=>(await rawEnv.DB.prepare('SELECT 1 FROM conversations WHERE id=? AND project_id=?').bind(conversation,project).first())?ticketCustody(conversation):undefined:undefined
- if(!sourceRead&&!(member&&data.reason==='knowledge_access_denied'))data=await canonicaliseFields(rawEnv,projectId,data,undefined,false,custody)
+ if(!sourceRead&&!(member&&data.reason==='knowledge_access_denied'))data=await canonicaliseResponse(rawEnv,projectId,data,conversation,privateComposer)
  async function render(value:any,inherited:Readers,cid?:string):Promise<any>{
   if(Array.isArray(value))return Promise.all(value.map(row=>render(row,inherited,cid)))
   if(!value||typeof value!=='object')return renderKnowledgeFields(rawEnv,projectId!,value,inherited)
-  const ownConversation=typeof value.conversation_id==='string'?value.conversation_id:typeof value.conversationId==='string'?value.conversationId:typeof value.contact_id==='string'&&typeof value.id==='string'&&'revision' in value?value.id:privateComposer&&typeof value.id==='string'&&('draft' in value||'changes' in value)?value.id:cid
+  const ownConversation=responseConversation(value,cid,privateComposer)
   const readers=authority&&ownConversation?currentTicketReaders(projectId!,ownConversation,{}):inherited
   if(typeof value.knowledge_provenance==='string'||typeof value.knowledge_citation==='string')return renderKnowledgeFields(rawEnv,projectId!,value,readers)
   const output:any={}

@@ -84,7 +84,7 @@ const rules:Record<string,Rule>={
  [`PATCH ${D}/report-schedules/:scheduleId`]:'data.export',
  [`DELETE ${D}/report-schedules/:scheduleId`]:'data.export',
  // Workspace settings
- 'POST /api/management/projects':'settings.manage',[`PUT ${P}/settings`]:'settings.manage',[`DELETE ${P}`]:'data.erase',
+ 'POST /api/management/projects':'settings.manage',[`GET ${P}/settings`]:'settings.manage',[`PUT ${P}/settings`]:'settings.manage',[`DELETE ${P}`]:'data.erase',
  [`PUT ${P}/appearance`]:'settings.manage',[`PUT ${P}/artwork`]:'settings.manage',[`PUT ${P}/widget-settings`]:'settings.manage',[`PUT ${P}/widget-campaigns/:campaignId`]:'settings.manage',[`PUT ${P}/availability`]:'settings.manage',[`PUT ${P}/ai`]:'settings.manage',
  [`POST ${P}/brand-media`]:'settings.manage',[`POST ${P}/activation/check`]:'settings.manage',[`POST ${P}/activation/skip`]:'settings.manage',[`POST ${P}/activation/local-trial`]:'settings.manage',[`POST ${P}/activation/test-mail`]:'settings.manage',
  [`POST ${P}/email-settings/managed/reconcile`]:'settings.manage',[`POST ${P}/email-settings/managed/retry`]:'settings.manage',

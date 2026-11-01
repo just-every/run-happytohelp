@@ -39,7 +39,10 @@ export function expectedSchema(before, after, added) {
     let wanted = fence ? {...entry, sql: entry.sql.replace(' BEGIN ', ` WHEN NOT EXISTS(SELECT 1 FROM move_in_native_fences f WHERE f.project_id=${fence}.project_id AND f.conversation_id=${fence}.conversation_id) BEGIN `)} : entry;
     if(added.includes('281_managed_connectors.sql')&&name==='api_destination_filter')wanted={...entry,sql:entry.sql.replace("d.credential_id IS NOT NULL AND NOT EXISTS","d.credential_id IS NOT NULL AND NOT (d.connector='zapier' AND EXISTS(SELECT 1 FROM api_credentials c WHERE c.namespace=d.project_id AND c.id=d.credential_id AND c.source_product IS NULL)) AND NOT EXISTS")};
     if (entry.type === 'table') {
-      const alters = tableChanges.filter(change => added.includes(change.migration) && change.table === name);
+      // Multiple migrations can extend the same prior table. Apply the exact
+      // declared transformations in the collected migration sequence.
+      const alters = tableChanges.filter(change => added.includes(change.migration) && change.table === name)
+        .sort((a, b) => added.indexOf(a.migration) - added.indexOf(b.migration));
       if (alters.length) {
         const db = new DatabaseSync(':memory:');
         try {

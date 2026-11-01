@@ -1,5 +1,6 @@
 import {dispatchPendingTeammateNotifications} from './notification-teammate-delivery'
 import {teammateTicketNotification} from './notification-teammates'
+import {freezeAssignmentNotifications} from './assignment-freeze'
 import type {Env} from '../../platform/env'
 import {boundedDatabase} from '../../platform/d1-budget'
 import {cronConsumer,cronRoom} from '../../platform/cron-budget'
@@ -113,7 +114,9 @@ export async function dispatchOperatorNotifications(env:Env,options:{projectId?:
  env=cronConsumer(env,limit-budget.statements)
  const pending=await env.DB.prepare(`${operatorPendingSql} WHERE o.state='pending' ${options.projectId?'AND o.project_id=?':''} ${options.conversationId?'AND o.conversation_id=?':''} ORDER BY o.created_at,o.id LIMIT 100`)
  .bind(...(options.projectId?[options.projectId]:[]),...(options.conversationId?[options.conversationId]:[])).all<Notification>()
+ const frozen=await freezeAssignmentNotifications(env,pending.results)
  for(const row of pending.results){
+  if(frozen.completed.has(row.id))continue
   // Rendering is two bulk reads, even for a full 100-message digest. Admission
   // includes assignment's one-recipient fan-out and every failure receipt.
   if(!cronRoom(env,operatorAdmission(row)))break
@@ -121,5 +124,5 @@ export async function dispatchOperatorNotifications(env:Env,options:{projectId?:
  }
  // Pending work may be empty or cheaper than its admission. Let the teammate
  // queue spend that settled remainder instead of leaving it idle.
- if(teammatesDeferred&&limit-budget.statements>=19)await dispatchPendingTeammateNotifications(cronConsumer(deliveryEnv,limit-budget.statements),options)
+ if((teammatesDeferred||frozen.queued)&&limit-budget.statements>=19)await dispatchPendingTeammateNotifications(cronConsumer(deliveryEnv,limit-budget.statements),options)
 }

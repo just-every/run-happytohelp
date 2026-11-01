@@ -1,3 +1,4 @@
+import {canonicaliseMail,mailClaimSql,renderMail} from '../knowledge/mail-door'
 import {notificationFetch,notificationSendSignal,withNotificationSendWindow} from './email-send-window'
 import {enforceRateLimit,RateLimitExceeded} from '../../platform/rate-limits'
 import {rerMail,managedMailbox} from './rer-mail-contract'
@@ -72,6 +73,8 @@ function sendGridFailure(error:unknown){
  * refusal instant of a held command being sent again. */
 async function submitClaimed(env:Env,input:EmailInput,from:string,hold?:{since?:number}):Promise<EmailOutcome>{
  try{
+  const guard=await mailClaimSql(env,input),claimed=guard.prefix||guard.sql!=='1=1'?await env.DB.prepare(`${guard.prefix}UPDATE email_deliveries SET updated_at=? WHERE id=? AND state='sending' AND ${guard.sql} RETURNING id`).bind(...guard.params,Date.now(),input.idempotencyKey).all():undefined;if(claimed&&!claimed.results.length){await updateDelivery(env,input.idempotencyKey,'failed','Knowledge access changed; edit and resend for the current recipients');return {id:null,state:'failed'}}
+  input=await renderMail(env,input)
   // Only the durable delivery claimant takes rate capacity. Queue replay and
   // concurrent retries cannot charge or send the same first notice again.
   const first=/^message:([^:]+):notification$/.exec(input.idempotencyKey)
@@ -126,19 +129,19 @@ async function suppressDevelopment(env:Env,input:EmailInput,from:string):Promise
  return {id:null,state:'suppressed',mode:'local'}
 }
 export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelivery,holdable=false):Promise<EmailOutcome>{
- input=await prepareConversationEmail(env,input)
+ input=await canonicaliseMail(env,await prepareConversationEmail(env,input))
  if(!input.mailboxId&&!emailConfigured(env))throw new HTTPException(503,{message:'Email provider is not configured'})
  const from=await senderFor(env,input)
  validateEmailInput(input,from)
- if(localMailOrigin(env))return suppressDevelopment(env,input,from)
+ if(localMailOrigin(env))return suppressDevelopment(env,await renderMail(env,input),from)
  const intentHash=await hashToken(JSON.stringify({...input,from})),existing=await env.DB.prepare('SELECT state,provider_id,intent_hash FROM email_deliveries WHERE id=?').bind(input.idempotencyKey).first<DeliveryRow>()
  if(existing){
   if(existing.intent_hash!==intentHash)throw new HTTPException(409,{message:'Email command identity conflict'})
   if(existing.state==='sent')return {id:existing.provider_id,state:'sent',...(emailMode(env)==='local'?{mode:'local' as const}:{})}
   throw new HTTPException(409,{message:`Email delivery ${existing.state}; reconcile before retrying`})
  }
- const now=Date.now(),claimed=await env.DB.prepare("INSERT OR IGNORE INTO email_deliveries VALUES(?,?,?,?,?,'sending',NULL,NULL,?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now).run()
- if(!claimed.meta.changes)throw new HTTPException(409)
+ const now=Date.now(),guard=await mailClaimSql(env,input),claimed=await env.DB.prepare(`${guard.prefix}INSERT OR IGNORE INTO email_deliveries SELECT ?,?,?,?,?,'sending',NULL,NULL,?,? WHERE ${guard.sql}`).bind(...guard.params,input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now).run()
+ if(!claimed.meta.changes){await env.DB.prepare("INSERT OR IGNORE INTO email_deliveries VALUES(?,?,?,?,?,'failed',NULL,'Knowledge access changed; edit and resend',?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now).run();throw new HTTPException(409,{message:'Knowledge access changed; edit and resend'})}
  const delivery=withNotificationSendWindow([input.idempotencyKey],now,()=>submitClaimed(env,input,from,holdable?{}:undefined))
  if(defer){defer(delivery);return {id:null,state:'sending'}}
  return delivery
@@ -148,14 +151,15 @@ export async function sendEmail(env:Env,input:EmailInput,defer?:DeferEmailDelive
  * never a partially reconstructed recipient list on automatic outbox replay. */
 export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:DeferEmailDelivery,holdable=false):Promise<EmailOutcome[]>{
  if(!inputs.length)return []
- inputs=await Promise.all(inputs.map(input=>prepareConversationEmail(env,input)))
+ inputs=await Promise.all(inputs.map(async input=>canonicaliseMail(env,await prepareConversationEmail(env,input))))
  if(inputs.some(input=>!input.mailboxId)&&!emailConfigured(env))throw new HTTPException(503,{message:'Email provider is not configured'})
  const prepared=await Promise.all(inputs.map(async input=>{const from=await senderFor(env,input);validateEmailInput(input,from);return {input,from,intentHash:await hashToken(JSON.stringify({...input,from}))}}))
- if(localMailOrigin(env))return Promise.all(prepared.map(({input,from})=>suppressDevelopment(env,input,from)))
+ if(localMailOrigin(env))return Promise.all(prepared.map(async({input,from})=>suppressDevelopment(env,await renderMail(env,input),from)))
  const now=Date.now()
  // D1 batch is one transaction. A duplicate primary claim rolls back every
  // participant claim; only the process that owns the whole set may submit it.
- await env.DB.batch(prepared.map(({input,intentHash})=>env.DB.prepare("INSERT INTO email_deliveries VALUES(?,?,?,?,?,'sending',NULL,NULL,?,?)").bind(input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now)))
+ const guards=await Promise.all(prepared.map(({input})=>mailClaimSql(env,input)))
+ await env.DB.batch(prepared.map(({input,intentHash},index)=>env.DB.prepare(`${guards[index].prefix}INSERT INTO email_deliveries SELECT ?,?,?,?,?,'sending',NULL,NULL,?,? WHERE ${guards[index].sql}`).bind(...guards[index].params,input.idempotencyKey,input.projectId||null,input.to,input.subject,intentHash,now,now)))
  const delivery=withNotificationSendWindow(prepared.map(({input})=>input.idempotencyKey),now,()=>Promise.all(prepared.map(async({input,from})=>{
   try{return {...await submitClaimed(env,input,from,holdable?{}:undefined),recipient:input.to}}
   catch(error){
@@ -174,7 +178,7 @@ export async function sendEmails(env:Env,inputs:readonly EmailInput[],defer?:Def
 export async function resendHeldEmails(env:Env,inputs:readonly EmailInput[]){
  await Promise.all(inputs.map(async input=>{
   try{
-   input=await prepareConversationEmail(env,input)
+   input=await canonicaliseMail(env,await prepareConversationEmail(env,input))
    const from=await senderFor(env,input)
    validateEmailInput(input,from)
    const started=Date.now(),since=await claimRerMailHold(env,input)

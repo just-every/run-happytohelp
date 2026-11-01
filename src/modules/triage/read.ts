@@ -10,5 +10,5 @@ export async function triageData(env:Env,actor:Actor,conversationId:string){
  const allPredictions=row?.predictions_json?JSON.parse(row.predictions_json):{},predictions:any={},values:any={}
  for(const field of visible)if(allPredictions[field])predictions[field]=allPredictions[field]
  for(const field of visible){const corrected=labels.find(l=>l.job_id===row?.id&&l.field===field);if(corrected)values[field]=corrected.value;else if(predictions[field])values[field]=predictions[field].value}
- return {state:row?(row.state==='running'?'pending':row.state):s.enabled?'unavailable':'disabled',reason:row?.reason??(s.enabled&&!row?'No customer message has been classified yet':null),predictions,values,taxonomy:s.taxonomy,labels:labels.filter(l=>visible.has(l.field)),permissions:{correct:access.permissions.has('conversations.manage')&&!!row&&row.state==='complete'}}
+ return {...(allPredictions.knowledge_provenance?{knowledge_provenance:allPredictions.knowledge_provenance}:{}),state:row?(row.state==='running'?'pending':row.state):s.enabled?'unavailable':'disabled',reason:row?.reason??(s.enabled&&!row?'No customer message has been classified yet':null),predictions,values,taxonomy:s.taxonomy,labels:labels.filter(l=>visible.has(l.field)),permissions:{correct:access.permissions.has('conversations.manage')&&!!row&&row.state==='complete'}}
 }

@@ -20,7 +20,7 @@ export async function api001Outcomes(){
    const table=resource==='contacts'?'contacts':'knowledge_articles',column=resource==='contacts'?'created_at':'updated_at'
    await h.db.prepare(`UPDATE ${table} SET ${column}=100 WHERE project_id='p'`).run()
    const ids=[];let cursor
-   do{const page=await h.call('/api/v1/'+resource+'?limit=1'+(cursor?'&cursor='+encodeURIComponent(cursor):''),{token});ids.push(...page.data.map(r=>r.id));cursor=page.next_cursor}while(cursor)
+   do{const page=await h.call('/api/v1/'+resource+'?limit=1'+(resource==='articles'?'&view=editor':'')+(cursor?'&cursor='+encodeURIComponent(cursor):''),{token});ids.push(...page.data.map(r=>r.id));cursor=page.next_cursor}while(cursor)
    const expected=(await h.db.prepare(`SELECT id FROM ${table} WHERE project_id='p' ORDER BY id`).all()).results.map(r=>r.id)
    assert.deepEqual(ids.sort(),expected);assert.equal(new Set(ids).size,expected.length)
    const before=(await h.db.prepare(`SELECT * FROM ${table} WHERE project_id='p' ORDER BY id`).all()).results

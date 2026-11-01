@@ -8,10 +8,10 @@ The primary journey: Set up the workspace, bring in support history, connect cus
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 2 | 73 | 10 | 85 |
+| Core | 3 | 72 | 10 | 85 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 2 | 73 | 15 | 90 |
+| Full target | 3 | 72 | 15 | 90 |
 
 Judged from the code and tests at commit `82de9ed83c8d4f0b75c378fdd3e234015dc5fd5b` (22 October 2026). Field proof register: 21 rows; 0 passed, 0 failed, 21 not run.
 
@@ -147,15 +147,15 @@ Core · published · **partial** · Cites BASE-DATA-003, BASE-ROLE-001, BASE-AGE
 
 #### REPORTS-001 — Workspace calendar reports
 
-Core · published · **partial** · Cites BASE-ROLE-001, BASE-DATA-001 · Rules D-2
+Core · published · **done** · Cites BASE-ROLE-001, BASE-DATA-001 · Rules D-2
 
 **Requirement.** Native conversations created in the workspace IANA calendar range with at least one persisted message form the cohort; Move in and legacy imports are excluded. First visitor-to-visible-answer response and creation-to-first known-resolution durations use median and nearest-rank p90. Each conversation contributes its latest closed cycle once to outcome and satisfaction rates. Reopened conversations leave those denominators. Aggregate queries return bounded data; CSV streams every matching conversation with formula-safe cells. Empty widget conversations stay durable but are excluded from Reports and its analytics CSVs. A separate step-up guarded JSON export includes all workspace conversations, messages, private notes and attachment names across dates and imports; attachment bytes stay in the portable backup.
 
 **Acceptance.**
 1. Compare Reports and formula-safe CSV to hand-calculated response/resolution median and p90, latest-cycle outcome and satisfaction cohorts across DST and tenants, including more than 10,000 rows and excluded imports/reopened cycles.
 
-**Evidence.** `src/modules/reports/routes.ts`; `src/modules/reports/metrics.ts`; `tests/reports/figures.mjs` (report export journey: independent calendar oracles, complete bounded CSV and transcript export; workspace deletion journey: retained links, invitations and commit races never restore report authority); `tests/journeys/reports.mjs`; `tests/reports/nightly.mjs` — “Reports streams every conversation above 10,000 while aggregates and summary stay complete” (`tests/reports/scale.mjs`, “reportScaleJourney”: cohort 10,001, every CSV ID exactly once, full transcripts and aggregate/summary completeness; run by “pnpm run test:scale” in `.github/workflows/installer-journeys.yml`, “Installer / import-and-report-scale”, on scheduled/release qualification); Candidate assertion coverage: `src/modules/reports/read.ts`; `src/modules/reports/csv.ts`; `tests/reports/scale-oracles.mjs`; `tests/reports/scale-seed.mjs`; independently sorted response/resolution median and nearest-rank p90; latest-cycle outcome and satisfaction rates excluding reopened rows; bounded aggregates; exact DST daily cohorts and tenant refusal; complete streamed CSV with every ID and last row; summary counts; all six formula prefixes including tab/CR; analytics exclusions and step-up guarded complete transcripts. Scale remains in pnpm test:scale (nightly), outside push Verify; these assertions add evidence without changing main’s partial judgment.
-**Gap.** Main re-audit: unasserted in the cited Evidence set: cohort above 10000 rows; complete CSV above 10000 rows. Asserted: response median; response p90; resolution median; resolution p90; latest-cycle outcome rate; satisfaction cohort; DST calendar range; formula-safe CSV; imported history excluded; reopened row remains open in detail; tenant isolation. The scale assertions now live in `tests/reports/scale.mjs`, outside this clause’s carried Evidence set; they do not establish completion here.
+**Evidence.** `src/modules/reports/routes.ts`; `src/modules/reports/metrics.ts`; `tests/reports/figures.mjs` (report export journey: independent calendar oracles, complete bounded CSV and transcript export; workspace deletion journey: retained links, invitations and commit races never restore report authority); `tests/journeys/reports.mjs`; `tests/reports/nightly.mjs` — “Reports streams every conversation above 10,000 while aggregates and summary stay complete” (`tests/reports/scale.mjs`, “reportScaleJourney”: cohort 10,001, every CSV ID exactly once, full transcripts and aggregate/summary completeness; run by “pnpm run test:scale” in `.github/workflows/installer-journeys.yml`, “Installer / import-and-report-scale”, on scheduled/release qualification); Candidate assertion coverage: `src/modules/reports/read.ts`; `src/modules/reports/csv.ts`; `tests/reports/scale-oracles.mjs`; `tests/reports/scale-seed.mjs`; independently sorted response/resolution median and nearest-rank p90; latest-cycle outcome and satisfaction rates excluding reopened rows; bounded aggregates; exact DST daily cohorts and tenant refusal; complete streamed CSV with every ID and last row; summary counts; all six formula prefixes including tab/CR; analytics exclusions and step-up guarded complete transcripts. Scale remains in pnpm test:scale (nightly), outside push Verify; Recorded completion proof: `tests/reports/scale.mjs`, reportScaleJourney (10,001 conversations), passed in Verify workflow_dispatch run https://github.com/just-every/run-happytohelp/actions/runs/41235416567 (job 124638087981, commit cd1bc4f4, 4/4 pass).
+**Gap.** None.
 
 #### CONNECTIONS-001 — Workspace integrations
 

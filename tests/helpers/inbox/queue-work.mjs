@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {deskQueueProof} from './desk-proof.mjs'
+import {ticketScopeSchedule} from './ticket-scope-schedule.mjs'
 
 const ids=rows=>rows.map(row=>row.id).sort()
 function resultsFor(batch,selection,statuses){
@@ -37,6 +38,7 @@ async function bulkAudit(f,batch,action){
 // bulk authority and editable macro drafts through the application's HTTP doors.
 export async function queueWork(f,{field,pending,tag}){
  const {app,w,foreign,id,ok,call,get,patch,visitor}=f
+ await ticketScopeSchedule(app)
  const [second,reason]=await Promise.all([f.create(1),ok('/ticket-fields',{name:'Replacement reason',type:'dropdown',options:['damaged','wrong_size']})])
  const foreignVisitor=await app.ok('/api/identity/widget/session',{body:{widgetKey:foreign.widgetKey},headers:{Origin:foreign.allowedOrigin}})
  const foreignTicket=await app.ok('/api/conversations',{token:foreignVisitor.token,body:{projectId:foreign.projectId}})

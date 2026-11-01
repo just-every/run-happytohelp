@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import {Hono,type Context} from 'hono'
 import {emptyCommand} from './command-body'
 import {HTTPException} from 'hono/http-exception'
@@ -70,7 +71,7 @@ for(const state of ['pause','cancel'] as const)workflowRuleRoutes.post(`${base}/
 })
 workflowRuleRoutes.get('/projects/:projectId/workflow-runs',async c=>{
  const actor=await workflowScope(c),limit=Math.min(500,Math.max(1,Number(c.req.query('limit'))||200)),conversation=c.req.query('conversation_id'),[rows,visible]=await Promise.all([
-  c.env.DB.prepare(`SELECT r.*,v.definition_json FROM workflow_runs r LEFT JOIN workflow_rule_versions v ON v.rule_id=r.rule_id AND v.version=r.version JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id WHERE r.project_id=? AND ${availableTicketSql()} ${conversation?'AND r.conversation_id=?':''} ORDER BY r.created_at DESC,r.id DESC LIMIT ?`).bind(actor.projectId,...(conversation?[conversation]:[]),limit).all<any>(),
+  c.env.DB.prepare(`SELECT r.*,v.definition_json FROM workflow_runs r LEFT JOIN workflow_rule_versions v ON v.rule_id=r.rule_id AND v.version=r.version JOIN conversations c ON c.id=r.conversation_id AND c.project_id=r.project_id WHERE r.project_id=? AND ${availableTicketSql()} AND ${ticketScopeSql('?')} ${conversation?'AND r.conversation_id=?':''} ORDER BY r.created_at DESC,r.id DESC LIMIT ?`).bind(actor.projectId,actor.id,...(conversation?[conversation]:[]),limit).all<any>(),
   workflowVisibleFields(c.env,actor.projectId,actor.id)
  ])
  const allowed=new Set(visible.fields.filter(f=>fieldAllowed(f,visible.access)).map(f=>f.id))
@@ -82,7 +83,7 @@ workflowRuleRoutes.get('/projects/:projectId/workflow-runs',async c=>{
 workflowRuleRoutes.post('/projects/:projectId/workflow-runs/:runId/reconcile',async c=>{
  const actor=await workflowScope(c,true),body=object(await c.req.json()),note=named(body.note,2000),reference=named(body.reference,500)
  if(!Number.isSafeInteger(body.expected_updated_at))throw new HTTPException(400,{message:'Provide the last inspected run timestamp'})
- const run=await c.env.DB.prepare(`SELECT r.*,v.definition_json FROM workflow_runs r JOIN conversations c ON c.project_id=r.project_id AND c.id=r.conversation_id LEFT JOIN workflow_rule_versions v ON v.rule_id=r.rule_id AND v.version=r.version WHERE r.id=? AND r.project_id=? AND ${availableTicketSql()}`).bind(c.req.param('runId'),actor.projectId).first<any>()
+ const run=await c.env.DB.prepare(`SELECT r.*,v.definition_json FROM workflow_runs r JOIN conversations c ON c.project_id=r.project_id AND c.id=r.conversation_id LEFT JOIN workflow_rule_versions v ON v.rule_id=r.rule_id AND v.version=r.version WHERE r.id=? AND r.project_id=? AND ${availableTicketSql()} AND ${ticketScopeSql('?')}`).bind(c.req.param('runId'),actor.projectId,actor.id).first<any>()
  if(!run)throw new HTTPException(404)
  const visible=await workflowVisibleFields(c.env,actor.projectId,actor.id)
  if(run.definition_json&&!definitionVisible(JSON.parse(run.definition_json),visible.fields,visible.access))throw new HTTPException(403,{message:'Your role cannot inspect fields used by this workflow'})
@@ -90,6 +91,6 @@ workflowRuleRoutes.post('/projects/:projectId/workflow-runs/:runId/reconcile',as
  const at=Math.max(workflowNow(c.env),run.updated_at+1),detail={run_id:run.id,previous_state:run.state,cursor:run.cursor,note,reference,disposition:'remaining_actions_cancelled',provider_outcome:'unchanged'}
  await commitWorkflowSettings(c,actor,'workflow.run.reconciled',run.id,(accepted,args)=>[
   c.env.DB.prepare(`UPDATE workflow_runs SET state='cancelled',reason='Manually reviewed; remaining actions cancelled. Existing delivery outcomes are unchanged.',next_attempt_at=NULL,updated_at=? WHERE id=? AND project_id=? AND ${accepted}`).bind(at,run.id,actor.projectId,...args),
- ],{sql:`EXISTS(SELECT 1 FROM workflow_runs r JOIN conversations c ON c.project_id=r.project_id AND c.id=r.conversation_id WHERE r.id=? AND r.project_id=? AND r.state=? AND r.updated_at=? AND ${availableTicketSql()})`,params:[run.id,actor.projectId,run.state,run.updated_at]},detail)
+ ],{sql:`EXISTS(SELECT 1 FROM workflow_runs r JOIN conversations c ON c.project_id=r.project_id AND c.id=r.conversation_id WHERE r.id=? AND r.project_id=? AND r.state=? AND r.updated_at=? AND ${availableTicketSql()} AND ${ticketScopeSql('?')})`,params:[run.id,actor.projectId,run.state,run.updated_at,actor.id]},detail)
  return c.json({run_id:run.id,state:'cancelled',provider_outcome:'unchanged',updated_at:at})
 })

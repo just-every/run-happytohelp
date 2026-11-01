@@ -1,3 +1,4 @@
+import {requireTicketScope,ticketScopeSql} from '../../modules/access/ticket-scope'
 import {evidenceAudience} from './evidence-audience'
 import {connectedArticleSnapshot,connectedArticleStatus} from '../../modules/knowledge/connected-articles'
 import {renderConnectedConversation} from '../../modules/knowledge/connected-door'
@@ -7,6 +8,7 @@ export function articleContent(row:any){return {title:row.title,content:row.cont
 export function articleSnapshot(row:any,categories:any[]){return {id:row.id,slug:row.slug,categoryId:row.category_id,position:row.position,sourceRevision:row.source_revision,sourceIncarnation:row.source_incarnation,...articleContent(row),categories}}
 export async function audience(env:Env,g:Grant,target:string,operation='',intendedStatus?:string){
  const parts=targetParts(target,g.project_id)
+ if(parts.kind==='conversations')await requireTicketScope(env,g.principal_id,g.project_id,parts.id,'api',false)
  if(operation&&operation!=='happytohelp.article.update')fail('UNSUPPORTED_OPERATION',422)
  if(intendedStatus!==undefined&&!['draft','published'].includes(intendedStatus))fail('INVALID_REQUEST')
  if(operation&&(parts.kind!=='articles'||!JSON.parse(g.scopes).includes('knowledge.article.update')))fail('SCOPE_DENIED',403)
@@ -17,7 +19,7 @@ export async function audience(env:Env,g:Grant,target:string,operation='',intend
  if(!current)fail('NOT_FOUND',404)
  const status=intendedStatus??current.status
  if(operation&&(status==='published'||current.status==='published')&&!JSON.parse(g.scopes).includes('knowledge.article.publish'))fail('SCOPE_DENIED',403)
- const {body,principalIds}=await evidenceAudience(env,g.project_id,parts.kind,parts.id,status),epoch=Number(revision?.revision)
+ const {body,principalIds}=await (parts.kind==='conversations'?conversationAudience(env,g,parts.id):evidenceAudience(env,g.project_id,parts.kind,parts.id,status)),epoch=Number(revision?.revision)
  return {...body,audienceRevision:await digest({target,operation,intendedStatus:status??null,currentStatus:current.status??null,audience:body,principalIds,epoch}),epoch}
 }
 export async function evidence(env:Env,g:Grant,target:string,origin:string){
@@ -29,6 +31,7 @@ export async function evidence(env:Env,g:Grant,target:string,origin:string){
   if(!result)fail('NOT_FOUND',404)
   row=result.row;categories=result.categories;snapshot=articleSnapshot(row,categories);title=row.title
  }else{
+  await requireTicketScope(env,g.principal_id,g.project_id,p.id,'api',false)
   const result=await env.DB.batch([
    env.DB.prepare("SELECT c.id,c.revision,c.resolved_at,c.contact_id,COALESCE(json_extract(ct.metadata_json,'$.is_erased'),0) erased FROM conversations c JOIN contacts ct ON ct.id=c.contact_id WHERE c.id=? AND c.project_id=?").bind(p.id,g.project_id),
    env.DB.prepare('SELECT id,actor_role,actor_id knowledge_actor_id,content,revision,created_at,erased_at FROM messages WHERE conversation_id=? AND project_id=? AND (? IS NULL OR revision>=?) AND (? IS NULL OR revision<=?) ORDER BY revision LIMIT 1002').bind(p.id,g.project_id,p.from,p.from,p.to,p.to)
@@ -41,6 +44,15 @@ export async function evidence(env:Env,g:Grant,target:string,origin:string){
  }
  const text=canonical(snapshot)
  if(new TextEncoder().encode(text).length>2*1024*1024)fail('SOURCE_TOO_LARGE',413)
- const {body:readAudience}=await evidenceAudience(env,g.project_id,p.kind,p.id,row.status)
+ const {body:readAudience}=await (p.kind==='conversations'?conversationAudience(env,g,p.id):evidenceAudience(env,g.project_id,p.kind,p.id,row.status))
  return {wire:{...identity(env,g),target,revision:await digest(snapshot),title,text,observedAt:Date.now(),audience:readAudience,canonicalUrl:origin+`/projects/${encodeURIComponent(g.project_id)}/${p.kind}/${encodeURIComponent(p.id)}`},row,categories}
+}
+
+// Conversation audiences use the same live membership predicate as the reader.
+// Article audiences retain their independent knowledge authority.
+async function conversationAudience(env:Env,g:Grant,id:string){
+ await requireTicketScope(env,g.principal_id,g.project_id,id,'api',false)
+ const rows=await env.DB.prepare(`SELECT m.user_id FROM memberships m JOIN conversations c ON c.project_id=m.project_id WHERE c.id=? AND c.project_id=? AND ${ticketScopeSql('m.user_id','c','c.group_id',false)} ORDER BY m.user_id`).bind(id,g.project_id).all<{user_id:string}>()
+ const principalIds=rows.results.map(row=>row.user_id)
+ return {body:{kind:'source-principals' as const,principalIds},principalIds}
 }

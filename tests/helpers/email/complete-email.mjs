@@ -1,3 +1,4 @@
+import {outboundConfigurationJourney} from './outbound-configuration.mjs'
 import {senderDomainJourney} from './domain.mjs'
 import {sendgridInboundJourney} from './sendgrid-inbound.mjs'
 import {unreadableMailJourney} from './unreadable-mail.mjs'
@@ -14,6 +15,7 @@ import {workflowNotices,workflowGroupNotices} from './workflow-notices.mjs'
 // One real mail conversation: verified ingress, safe rich reply, reviewed held
 // mail, private partner work and terminal provider outcomes in the same store.
 export async function completeEmailJourney(){
+ await outboundConfigurationJourney()
  const m=await mailApp(),{app,mail,operator}=m
  try{
   const id=await notificationTriggersJourney(m),base='/api/management/projects/p',ticket=`/api/dashboard/projects/p/conversations/${id}`

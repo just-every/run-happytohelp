@@ -4,7 +4,8 @@ import type {Actor,AppEnv,Env} from '../../platform/env'
 import type {DeferEmailDelivery} from '../integrations/email'
 import {requestRoom} from '../integrations/notification-budget'
 import {requireProject} from '../../platform/auth'
-import {admitMessage,messageCommitStatements} from '../conversations/admission'
+import {outboundOptionsRoutes} from './outbound-options'
+import {admitMessage,messageCommitStatements,preserveAssignment} from '../conversations/admission'
 import {noticeCommand,outboundTicketInput,type OutboundTicketInput} from './outbound-ticket-input'
 import {previewOutboundNotices,confirmOutboundNotices} from './outbound-notices'
 import {logOutboundCall,reserveOutboundTicket} from './outbound-ticket-store'
@@ -13,6 +14,7 @@ export type OutboundTicketCommitted=(env:Env,message:Record<string,unknown>,acto
  * requester authority: only the current operator can create an outbound ticket. */
 export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCommitted){
  const routes=new Hono<AppEnv>()
+ routes.route('/',outboundOptionsRoutes())
  async function create(c:Context<AppEnv>,actor:Actor,input:OutboundTicketInput,notice=false){
   const sessionHash=c.get('sessionHash')
   if(input.kind==='email'&&!onCommittedMessage)throw new HTTPException(503,{message:'Outbound email delivery is unavailable'})
@@ -22,7 +24,7 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
    const note=await logOutboundCall(c.env,actor,sessionHash,reservation.conversationId,input.content)
    return {accepted:true,duplicate:reservation.duplicate,conversation,note}
   }
-  const result=await admitMessage(c.env,{requireAvailableRequester:true,projectId:actor.projectId,conversationId:reservation.conversationId,actor,sessionHash,localId:input.localId,content:input.content,expectedRevision:0,expectedLastMessageId:null,...(input[noticeCommand]?{[messageCommitStatements]:(messageId:string)=>[c.env.DB.prepare(`UPDATE outbound_notice_commands SET receipts_json=json_set(receipts_json,?,?) WHERE project_id=? AND id=? AND outcome='succeeded' AND EXISTS(SELECT 1 FROM conversation_outbox WHERE project_id=? AND conversation_id=? AND message_id=?)`).bind(`$."${input.localId}".messageId`,messageId,actor.projectId,input[noticeCommand],actor.projectId,reservation.conversationId,messageId)]}:{})})
+  const result=await admitMessage(c.env,{[preserveAssignment]:true,requireAvailableRequester:true,projectId:actor.projectId,conversationId:reservation.conversationId,actor,sessionHash,localId:input.localId,content:input.content,expectedRevision:0,expectedLastMessageId:null,...(input[noticeCommand]?{[messageCommitStatements]:(messageId:string)=>[c.env.DB.prepare(`UPDATE outbound_notice_commands SET receipts_json=json_set(receipts_json,?,?) WHERE project_id=? AND id=? AND outcome='succeeded' AND EXISTS(SELECT 1 FROM conversation_outbox WHERE project_id=? AND conversation_id=? AND message_id=?)`).bind(`$."${input.localId}".messageId`,messageId,actor.projectId,input[noticeCommand],actor.projectId,reservation.conversationId,messageId)]}:{})})
   if(!result.accepted)return {...result,conversation}
   let generationError:string|undefined
   if(notice){
@@ -39,6 +41,7 @@ export function createOutboundTicketRoutes(onCommittedMessage?:OutboundTicketCom
  }
  routes.post('/projects/:projectId/tickets',async c=>{
   const actor=await requireProject(c,c.req.param('projectId'),true),body=await c.req.json()
+  if(body.brandId!==undefined&&body.brandId!==actor.projectId)throw new HTTPException(400,{message:'Choose the brand workspace before creating a ticket'})
   if(body.requesters!==undefined)throw new HTTPException(400,{message:'Use the service notice preview before sending to several requesters'})
   const result=await create(c,actor,outboundTicketInput(body))
   return c.json(result,!result.accepted?409:result.duplicate?200:201)

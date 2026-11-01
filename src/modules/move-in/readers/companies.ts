@@ -17,13 +17,13 @@ export function mapCompanies({projectId,vendor,source}:MappingInput,result:Prepa
    const target=nativeId(projectId,vendor,'company',record.sourceId),knownTimes=vendor!=='helpscout',at=knownTimes?time(p.created_at,vendor==='intercom'?'unix':'iso'):Date.now(),updated=knownTimes?time(p.updated_at,vendor==='intercom'?'unix':'iso'):at
    const claimed=domains(vendor==='zendesk'?p.domain_names??[]:vendor==='intercom'?[]:p.domains??[])
    const omissions=result.omissions.get(key)??[]
-   const used=new Set(['id','type','kind','name','created_at','updated_at',vendor==='zendesk'?'domain_names':vendor==='intercom'?'':'domains'])
+   const used=new Set(['id','type','kind','_offline_provenance','name','created_at','updated_at',vendor==='zendesk'?'domain_names':vendor==='intercom'?'':'domains'])
    for(const field of Object.keys(p))if(!used.has(field))omissions.push('company_metadata_retained_in_original_only:'+field)
    omissions.push('company_portal_access_not_activated')
    if(!knownTimes)omissions.push('company_source_times_unavailable_import_time_used')
    if(p.organization_fields||p.custom_fields||p.custom_attributes||p.properties)omissions.push('company_custom_attributes_retained_in_original_only')
    if(vendor==='intercom'&&p.website)omissions.push('company_website_not_inferred_as_membership_domain')
-   const value={tables:{companies:[{id:target,project_id:projectId,name:name(p.name),attributes_json:'{}',portal_company_view:0,revision:1,created_at:at,updated_at:updated,merged_into:null}],company_domains:claimed.map(domain=>({project_id:projectId,company_id:target,domain}))},source:{vendor,kind,id:record.sourceId,created_at:knownTimes?p.created_at:null,updated_at:knownTimes?p.updated_at:null}}
+   const value={tables:{companies:[{id:target,project_id:projectId,name:name(p.name),attributes_json:'{}',portal_company_view:0,revision:1,created_at:at,updated_at:updated,merged_into:null}],company_domains:claimed.map(domain=>({project_id:projectId,company_id:target,domain}))},source:{vendor,kind,id:record.sourceId,...(vendor==='zendesk'&&Array.isArray(p._offline_provenance)?{packedProvenance:p._offline_provenance}:{}),created_at:knownTimes?p.created_at:null,updated_at:knownTimes?p.updated_at:null}}
    result.effects.set(key,[{targetKind:'company',targetId:target,value:completeNativeValue('company',value) as any}]);result.omissions.set(key,omissions)
    for(const domain of claimed)domainOwners.set(domain,[...(domainOwners.get(domain)??[]),key])
   }catch(error){result.rejections.set(key,error instanceof Error?error.message:'company_mapping_failed');result.effects.set(key,[])}

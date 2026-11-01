@@ -28,11 +28,13 @@ import {writableConversationSql} from '../conversation-actions/merge-read'
 export const reservedLocalId=(localId:unknown)=>typeof localId==='string'&&/^(?:email|erased|away|schedule|problem):/.test(localId)
 /** An internal authority may add a transaction predicate; JSON callers cannot mint this symbol. */
 export const messageAuthority=Symbol('messageAuthority')
+/** Operator ticket reservation has already chosen its assignment, including unassigned. */
+export const preserveAssignment=Symbol('preserveAssignment')
 export const messageCommit=Symbol('messageCommit')
 /** Internal atomic receipt updates; never populated from request JSON. */
 export const messageCommitStatements=Symbol('messageCommitStatements')
 export const sharedChannelParticipant=Symbol('sharedChannelParticipant')
-export interface MessageInput {[sharedChannelParticipant]?:true;[messageCommitStatements]?:(messageId:string)=>D1PreparedStatement[];[messageCommit]?:(messageId:string,conversationId:string,now:number)=>D1PreparedStatement[];[companyPortalReply]?:true;[messageAuthority]?:{sql:string;args:unknown[]};requireAvailableRequester?:true;[scheduledAdmission]?:ScheduledAdmission;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
+export interface MessageInput {[preserveAssignment]?:true;[sharedChannelParticipant]?:true;[messageCommitStatements]?:(messageId:string)=>D1PreparedStatement[];[messageCommit]?:(messageId:string,conversationId:string,now:number)=>D1PreparedStatement[];[companyPortalReply]?:true;[messageAuthority]?:{sql:string;args:unknown[]};requireAvailableRequester?:true;[scheduledAdmission]?:ScheduledAdmission;[inboundAuthority]?:InboundAuthority;projectId:string;conversationId:string;actor:Actor;localId:string;content:string;expectedRevision:number;expectedLastMessageId?:string|null;mediaIds?:string[];resolve?:boolean;generationId?:string;citations?:PublicReference[];authoring?:Authoring;sessionHash?:string;tokenAuthority?:TokenAuthority}
 export interface MessageResult {accepted:boolean;duplicate?:boolean;message?:any;reason?:string;content?:string;blockedReferences?:unknown[];followupConversationId?:string}
 export const atomicMessage=Symbol('atomicMessage')
 export interface AtomicMessageInput {
@@ -94,7 +96,7 @@ export async function admitMessage(env:Env,input:MessageInput|AtomicMessageInput
  if(scope.status_category==='closed'&&!followup)return {accepted:false,reason:'ticket_closed_followup_required'}
  const targetId=followup?await followupId(projectId,conversationId,actor.id,localId):conversationId
  if(followup){const replay=await env.DB.prepare('SELECT * FROM messages WHERE project_id=? AND conversation_id=? AND local_id=?').bind(projectId,targetId,localId).first<any>();if(replay){if(replay.actor_id!==writerId||replay.intent_hash!==intentHash)return {accepted:false,reason:'local_id_conflict'};return replayAdmitted(replay,targetId)}}
- const autoAssign=actor.role!=='contact'&&!input.generationId&&!input.tokenAuthority&&(!scope.group_id||!!await env.DB.prepare('SELECT 1 FROM ticket_group_members WHERE project_id=? AND group_id=? AND user_id=?').bind(projectId,scope.group_id,actor.id).first())
+ const autoAssign=input[preserveAssignment]!==true&&actor.role!=='contact'&&!input.generationId&&!input.tokenAuthority&&(!scope.group_id||!!await env.DB.prepare('SELECT 1 FROM ticket_group_members WHERE project_id=? AND group_id=? AND user_id=?').bind(projectId,scope.group_id,actor.id).first())
  const authorship=await authoringSource(env,actor,conversationId,input.authoring,input.generationId)
  const issued=input.generationId?(await env.DB.prepare('SELECT source_id id,source_version sourceVersion FROM ai_generation_sources WHERE generation_id=? AND project_id=?').bind(input.generationId,projectId).all<PublicReference>()).results:[]
  for(const source of issued)if(!await readKnowledgeSource(env,projectId,source,currentTicketReaders(projectId,conversationId,{contacts:email?.cc,localId})))return {accepted:false,reason:'knowledge_authority_changed'}

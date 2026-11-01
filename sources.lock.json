@@ -14461,7 +14461,11 @@
       "executable": false
     },
     "tests/helpers/identity/native-settings-authority.mjs": {
-      "sha256": "eb551ce7a05e19a25c5283c44b3d54ee4aa84dac2fa770fdec988e4b56130953",
+      "sha256": "a53f53fff974d695c49b028065dd885493dd6c684fca466e7a6cd2c407a73ec2",
+      "executable": false
+    },
+    "tests/helpers/identity/native-settings-browser.mjs": {
+      "sha256": "e2541dff7c8fed79e420bab2f3be32651e1bc37119579775af08e903890fa949",
       "executable": false
     },
     "tests/helpers/identity/retained-native.mjs": {
@@ -14497,7 +14501,7 @@
       "executable": false
     },
     "tests/helpers/inbox/brands-browser.mjs": {
-      "sha256": "bcb86be8f28b2677b4776c285f8ba93f4960345b6a7d092fc100154b3b7e62ac",
+      "sha256": "270ad999466e7a12a12ef438bf6c4a15fb9c01e8ba3163940d6374f5ca8b13b5",
       "executable": false
     },
     "tests/helpers/inbox/brands-mailbox-outcomes.mjs": {

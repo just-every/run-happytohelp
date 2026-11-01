@@ -1861,7 +1861,7 @@
       "executable": false
     },
     "docs/website-knowledge.md": {
-      "sha256": "ec81b17d41a90ec332907590edd8c7da5b1f29fda091da38e0342b1021f878d1",
+      "sha256": "7b2ae664039b08a18a131401f3f550c92284b94f5401e39d91ce094b99b822bf",
       "executable": false
     },
     "docs/workflows.md": {
@@ -5189,7 +5189,7 @@
       "executable": false
     },
     "src/modules/conversations/admission.ts": {
-      "sha256": "691e180a47f82d7b9781951f9b26d0f61f9b978c3fcbbf261a4029fb8220dd22",
+      "sha256": "616555d87400438e5892b872c23bf658c0b1d231da8d471c3cd4064f8adad6a8",
       "executable": false
     },
     "src/modules/conversations/citations.js": {
@@ -6973,7 +6973,7 @@
       "executable": false
     },
     "src/modules/knowledge/public-sources.ts": {
-      "sha256": "60740b96c10470e8a05f2b5a1c3583e22851fe52049ffce8c940ab19870c0e82",
+      "sha256": "3fb1c8aacd1a52ca724f26eff4ceaae37b568a4252aa4f42eb6e1c3c1bb5db67",
       "executable": false
     },
     "src/modules/knowledge/read-attribution.ts": {
@@ -14129,7 +14129,7 @@
       "executable": false
     },
     "tests/helpers/ai/answers.mjs": {
-      "sha256": "a37529c5138830fb09b55f4f8b1f3b212ddba8bb69dcc92038b64a995aeb21d0",
+      "sha256": "1dbb4ddb9817062a50b4de6f96a0c286ba57f43eb9ad80481c31f3c9861b7a46",
       "executable": false
     },
     "tests/helpers/ai/app.mjs": {

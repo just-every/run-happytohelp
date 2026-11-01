@@ -58,8 +58,12 @@ export async function knowledgeCatalog(env:Env,projectId:string,readers:Readers)
 
 
 export function articlePublicationSql(alias='a',version='issued.source_version'){return `(${alias}.publication_version=${version} OR EXISTS(SELECT 1 FROM knowledge_experience ke,json_each(ke.locales_json) locale WHERE ke.project_id=${alias}.project_id AND ((EXISTS(SELECT 1 FROM knowledge_translations t WHERE t.article_id=${alias}.id AND t.locale=locale.value AND t.published_source_version=${alias}.publication_version AND t.published_json IS NOT NULL AND ${alias}.publication_version||'~'||t.locale||'~'||t.publication_version||'~'||ke.default_locale=${version})) OR (${alias}.publication_version||'~'||locale.value||'~base~'||ke.default_locale=${version} AND NOT EXISTS(SELECT 1 FROM knowledge_translations t WHERE t.article_id=${alias}.id AND t.locale=locale.value AND t.locale<>ke.default_locale AND t.published_source_version=${alias}.publication_version AND t.published_json IS NOT NULL)))))`}
-/** Locale-specific evidence retains main's exact publication and configuration
- * fence, including uncited sources. Ordinary source-language snapshots can pin edits. */
-export function translatedSourcesAdmissionGuard(generationId:string){
- return {sql:`NOT EXISTS(SELECT 1 FROM ai_generation_sources issued WHERE issued.generation_id=? AND issued.project_id=c.project_id AND instr(issued.source_version,'~')>0 AND NOT EXISTS(SELECT 1 FROM knowledge_articles a WHERE 'article:'||a.id=issued.source_id AND a.project_id=c.project_id AND ${articlePublicationSql()}))`,args:[generationId]}
+/** Every retrieved source retains main's exact publication fence at final
+ * admission, including uncited and locale-specific evidence. Stored references
+ * can retain pinned snapshots without authorizing a stale generated answer. */
+export function knowledgeRetrievalAdmissionGuard(generationId:string){
+ return {sql:`NOT EXISTS(SELECT 1 FROM ai_generation_sources issued WHERE issued.generation_id=? AND issued.project_id=c.project_id AND (
+ (substr(issued.source_id,1,8)='article:' AND NOT EXISTS(SELECT 1 FROM knowledge_articles a WHERE a.id=substr(issued.source_id,9) AND a.project_id=c.project_id AND ${articlePublicationSql()})) OR
+ (substr(issued.source_id,1,10)='knowledge:' AND NOT EXISTS(SELECT 1 FROM knowledge_documents f JOIN knowledge_datasets d ON d.published_version=f.version_id WHERE f.id=substr(issued.source_id,11) AND d.project_id=c.project_id AND f.version_id=issued.source_version)) OR
+ (substr(issued.source_id,1,8)<>'article:' AND substr(issued.source_id,1,10)<>'knowledge:')))`,args:[generationId]}
 }

@@ -215,7 +215,9 @@ still contains that URL. An edit or refresh does not itself withdraw an earlier
 reference. Main's older article edit history did not record exact publication
 identities; an unmapped legacy continuation fails closed instead of substituting
 new text. Stored reference payloads retain their pinned text under current access
-rules.
+rules. New AI replies still require every retrieved source, including uncited
+evidence, to match its current publication at final admission; locale settings
+and translated publications retain the same fence.
 
 Back up before applying missing migrations; never reset to upgrade. The upgrade
 must index retained sources, canonicalise existing text that customers, connected
@@ -256,8 +258,8 @@ history require a separate authorized change and public-door evidence. This is a
 remaining acceptance block; this candidate claims no desktop cache or resumed
 model-session revocation guarantee.
 
-Both knowledge clauses remain partial. The binding riders and retained named gaps
-are in [the contract](../CONTRACT.md#knowledge-policy-riders-and-round-7-design)
-and [acceptance map](../CONTRACT.md#knowledge-policy-riders-and-round-7-design).
+Both knowledge clauses remain partial. Their requirements and retained named gaps
+are in the contract under [governed knowledge](../CONTRACT.md#knowledge-002--governed-private-and-multilingual-knowledge)
+and [knowledge in the ticket](../CONTRACT.md#knowledge-003--branded-help-center-article-feedback-and-knowledge-in-the-ticket).
 
 `289_knowledge_indexable_sources.sql` keeps never-published drafts out of the detector dirty queue while retaining every indexed or published source. Strict undo removes an unused import’s own publication and index rows only after checking retained references, generation sources and later native activity. New reference and tool-source writes check the incarnation observed with source bytes inside their insert, so delayed writes cannot borrow a replacement article’s authority. Ordinary article deletion retains history and retired identity.

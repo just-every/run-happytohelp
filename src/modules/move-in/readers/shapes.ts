@@ -3,7 +3,7 @@ import {freshdeskShapes} from './freshdesk-shapes'
 import {object,sourceId,time} from './common'
 import type {Vendor} from '../types'
 
-type Shape={type:'string'|'boolean'|'integer'|'id'|'iso'|'unix'|'visibility'|'opaque'|'object'|'array'|'action'|'condition';nullable?:boolean;values?:string[];fields?:Record<string,Shape>;item?:Shape;required?:string[];person?:boolean;reference?:boolean}
+type Shape={type:'string'|'number'|'boolean'|'integer'|'id'|'iso'|'unix'|'visibility'|'opaque'|'object'|'array'|'action'|'condition'|'zendesk-audit';nullable?:boolean;values?:string[];fields?:Record<string,Shape>;item?:Shape;required?:string[];person?:boolean;reference?:boolean}
 const string:Shape={type:'string'},boolean:Shape={type:'boolean'},integer:Shape={type:'integer'},id:Shape={type:'id'},opaque:Shape={type:'opaque'}
 const nullable=(shape:Shape):Shape=>({...shape,nullable:true})
 const oneOf=(...values:string[]):Shape=>({...string,values})
@@ -54,6 +54,12 @@ export const recordShapes:Record<string,Shape>={
 Object.assign(recordShapes,helpScoutShapes({record,array,nullable,string,integer,id,reference,opaque,boolean}),freshdeskShapes({record,array,nullable,string,integer,id,reference,opaque,boolean}))
 for(const [plural,singular] of Object.entries({organizations:'organization',conversations:'conversation',customers:'contact',tags:'tag'}))recordShapes[`helpscout/inbox-list:${plural}`]=record({_embedded:record({[plural]:array(recordShapes[`helpscout/${singular}`])}),page:recordShapes['helpscout/$page'].fields!.value,_links:recordShapes['helpscout/$links'].fields!.value})
 for(const [plural,singular] of Object.entries({collections:'collection',categories:'category',articles:'article-ref'}))recordShapes[`helpscout/docs-list:${plural}`]=record({page:integer,pages:integer,count:integer,items:array(recordShapes[`helpscout/${singular}`])})
+const packedProvenance=record({file:string,sha256:string,row:integer,pointer:string},['file','sha256','row','pointer'])
+for(const kind of ['user','organization','ticket_field'])recordShapes[`zendesk/${kind}`].fields!._offline_provenance=array(packedProvenance)
+const sourceSla=record({target:{type:'number'},unit:string,business_hours:boolean,policy:record({id,title:string,description:nullable(string)},['id'])})
+const offlineAttachment=record({attachment_id:id,comment_id:id,path:string,sha256:string,base64:string},['attachment_id','comment_id','path','sha256','base64'])
+const offline=record({format:string,comments_complete:boolean,redacted_urls:integer,attachments:array(offlineAttachment),history:record({metrics:oneOf('missing','supplied'),audits:oneOf('missing','supplied')}),metric_events:array(record({id,ticket_id:id,instance_id:id,type:string,metric:string,time:{type:'iso'},status:record({calendar:{type:'number'},business:{type:'number'}}),sla:sourceSla,deleted:boolean},['id','ticket_id','instance_id','type','metric','time'])),audits:array(record({id,ticket_id:id,author_id:reference,created_at:{type:'iso'},events:array({type:'zendesk-audit'})},['id','ticket_id','created_at','events'])),provenance:array(packedProvenance)},['format'])
+Object.assign(recordShapes['zendesk/ticket'].fields!,{_offline:offline,comment_count:integer,comments_truncated:boolean,comments_incomplete:boolean,has_more:boolean,next_page:nullable(string),custom_status_id:nullable(id)})
 for(const [key,schema] of Object.entries(recordShapes)){const kind=key.split('/')[1];if(!key.startsWith('helpscout/')&&!key.startsWith('freshdesk/')&&!kind.startsWith('$')){schema.fields!.type=oneOf(kind);schema.fields!.kind=oneOf(kind)}}
 // The wrapper determines Zendesk record kind. Ticket type is a nullable
 // business classification, not the Intercom document discriminator.
@@ -77,6 +83,10 @@ export function auditShape(vendor:Vendor,kind:string,payload:unknown):ShapeAudit
   if(!count(path))return
   if(value===null&&schema.nullable)return
   if(schema.type==='opaque'){issue('opaque_source_field',path,'retained_value_not_identity_indexed');result.uninterpreted.push(value);return}
+  if(schema.type==='zendesk-audit'){
+   const status=object(value)&&['Change','Create'].includes(value.type)&&value.field_name==='status'
+   visit(value,record({id,type:string,field_name:string,previous_value:status?string:opaque,value:status?string:opaque,sla:sourceSla},['id','type']),path);return
+  }
   if(schema.type==='condition'){
    const field=object(value)?value.field:undefined
    const valueShape:Shape=['group_id','assignee_id','requester_id'].includes(field)?reference:['status','priority','tags'].includes(field)?string:typeof field==='string'&&field.startsWith('hours_since_')?(typeof (value as any).value==='number'?integer:string):opaque
@@ -97,6 +107,7 @@ export function auditShape(vendor:Vendor,kind:string,payload:unknown):ShapeAudit
   let valid=false
   if(schema.type==='id'){try{sourceId(value,vendor);valid=true}catch{}}
   else if(schema.type==='iso'||schema.type==='unix'){try{time(value,schema.type);valid=true}catch{}}
+  else if(schema.type==='number')valid=typeof value==='number'&&Number.isFinite(value)
   else if(schema.type==='integer')valid=typeof value==='number'&&Number.isSafeInteger(value)&&value>=0
   else if(schema.type==='visibility')valid=typeof value==='boolean'||value==='true'||value==='false'
   else valid=typeof value===schema.type

@@ -1,3 +1,4 @@
+import ImportedHistory from './ImportedHistory';
 import React, { useContext, useId, useState } from 'react';
 import PropTypes from 'prop-types';
 import { ChatContext } from '../../contexts/ChatContext';
@@ -106,6 +107,7 @@ export default function TicketSummary({ conversation, record, workflows, escalat
                 { conversation.imported.subject && <p className="import-source-note">Source subject: { conversation.imported.subject }</p> }
                 <p className="import-source-note">Imported from { conversation.imported.vendor }; source { conversation.imported.source_id }, { conversation.imported.source_state }. Excluded from Reports.</p>
             </Row> }
+            { conversation.imported?.vendor === 'zendesk' && <Row label="History" className="ticket-summary__row--history"><ImportedHistory key={conversation.id} conversation={conversation} /></Row> }
         </dl>
     </section>;
 }

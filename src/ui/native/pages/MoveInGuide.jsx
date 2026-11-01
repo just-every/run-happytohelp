@@ -8,6 +8,7 @@ const link = (href, text) => <a href={href} target="_blank" rel="noreferrer">{te
 /** How to produce the file Move in accepts, step by step, from each vendor's own export or API. */
 export const vendorGuides = {
  zendesk: {label: 'Zendesk', accept: '.json,.jsonl,.ndjson,.zip', guide: <>
+  <p>Already have offline exports? <a href="/docs/moving-in#offline-zendesk-account-files">Pack local ticket, user, organization, comment and history files with supplied attachments</a>. This path needs no token and never downloads a link.</p>
   <ol>
    <li>In Zendesk Admin Center, open <b>Apps and integrations</b>, <b>APIs</b>, <b>API tokens</b>, and add a token. Copy it.</li>
    <li>Copy this script and run it. {tools} It asks for your Zendesk address, the admin’s email and the token.<CopyCommand text={zendeskScript}/></li>

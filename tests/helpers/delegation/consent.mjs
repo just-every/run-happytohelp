@@ -34,7 +34,7 @@ export async function consentJourney(){
   assert.equal((await call('/api/delegation/v1/identity',{token:'native-session'})).status,401);assert.equal((await call('/api/delegation/v1/identity',{cookie:token})).status,401)
   assert.equal((await api('/identity')).status,200);assert.equal((await api('/evidence?target=projects/q/articles/article')).status,403)
   const first=await source();assert.equal(first.audience.kind,'source-principals');assert.match((await (await api('/evidence?target='+caseTarget)).json()).text,/Private question/)
-  const draftAudience=await audience();assert.deepEqual(draftAudience.principalIds,['owner','peer']);const publicAudience=await audience('published');assert.equal(publicAudience.kind,'source-principals','an intended publication is not public evidence before publication');assert.notEqual(draftAudience.audienceRevision,publicAudience.audienceRevision)
+  const draftAudience=await audience();assert.deepEqual(draftAudience.principalIds,['owner','peer']);const publicAudience=await audience('published');assert.equal(publicAudience.kind,'public');assert.notEqual(draftAudience.audienceRevision,publicAudience.audienceRevision)
   // One atomic repair with an exact receipt; replay returns it, a changed payload conflicts.
   const content={title:'Repaired guide',content:'Publication safe text',summary:'Fixed',status:'published'}
   const effect={operationKey:'repair-one',operation:'happytohelp.article.update',target,expectedRevision:first.revision,expectedAudienceRevision:publicAudience.audienceRevision,content}

@@ -4325,7 +4325,7 @@
       "executable": false
     },
     "src/edition/delegation/evidence-audience.ts": {
-      "sha256": "4fa69a1b051a49cb386cadcfc9f06334430da8646ee6d86aefc64c99a3b4aa84",
+      "sha256": "6c6933df81b92a517d1b2acb400921f7323039ac6a607782ad4def8f2fe6aaad",
       "executable": false
     },
     "src/edition/delegation/evidence.ts": {
@@ -6833,7 +6833,7 @@
       "executable": false
     },
     "src/modules/knowledge/connected-articles.ts": {
-      "sha256": "6a6cb3ecceb726569c85a470c67f21c6ef4f2f1896089ec0967fd90193e0411c",
+      "sha256": "4aeddc50629cc7fe944f28399aefaeb4042579c7a4fbbab54c2f3734614c25fb",
       "executable": false
     },
     "src/modules/knowledge/connected-door.ts": {
@@ -14353,7 +14353,7 @@
       "executable": false
     },
     "tests/helpers/delegation/consent.mjs": {
-      "sha256": "9f1e4de2df89c0c72962b771055592f8480c2d28fdec1054eb4df635394b8810",
+      "sha256": "1de23244ca1b47cbd987b37917341aad1098c8ac5786a66c94e63c6c2275fcd2",
       "executable": false
     },
     "tests/helpers/delegation/push-001-outcomes.mjs": {
@@ -14593,7 +14593,7 @@
       "executable": false
     },
     "tests/helpers/identity/roles-audit.mjs": {
-      "sha256": "01dde5ec94862d2ab543b0482f61467098db908fbf4c55636aca04ee96072778",
+      "sha256": "f8b30edc672787d11873bd90a976dbf95d508216085c742b4e683b635ea08a8f",
       "executable": false
     },
     "tests/helpers/identity/scoped-authority.mjs": {
@@ -14745,7 +14745,7 @@
       "executable": false
     },
     "tests/helpers/knowledge/experience.mjs": {
-      "sha256": "39267af6335019c6c4ea8fca8bc083e87eee90e50956d6b7fac9d812403d78c5",
+      "sha256": "360258be1340e1bd33c2099b8fedff5b69d0230f451822710b2f4401b5eb4365",
       "executable": false
     },
     "tests/helpers/knowledge/github.mjs": {

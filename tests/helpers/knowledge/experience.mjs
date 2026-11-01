@@ -51,6 +51,7 @@ try{
  const goodConversation=(await app.call('/api/conversations',{token:good.token,body:{projectId:p},status:201})).data.id
  const badConversation=(await app.call('/api/conversations',{token:bad.token,body:{projectId:p},status:201})).data.id
  assert.ok((await call(`/api/knowledge/${p}/conversations/${goodConversation}/articles?q=Restricted`,{status:200})).data.some(a=>a.id===aid&&a.insertable))
+ assert.ok(!(await call(`/api/knowledge/${p}/conversations/${badConversation}/articles?q=Restricted`,{status:200})).data.some(a=>a.id===aid))
  const blockedArticle=(await call(`/api/knowledge/${p}/conversations/${badConversation}/articles?q=Restricted&view=editor`,{status:200})).data.find(a=>a.id===aid)
  assert.equal(blockedArticle.insertable,false)
  assert.ok(blockedArticle.blockedRecipients.some(recipient=>recipient.kind==='contact'&&recipient.id===bad.contactId))

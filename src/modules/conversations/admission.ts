@@ -6,6 +6,7 @@ import {canonicaliseKnowledge,ticketCustody} from '../knowledge/canonicaliser'
 import {createBlocks,referencesAdmittedSql,referenceVisibility} from '../knowledge/reference-store'
 import {articleSourceIdentities} from '../knowledge/source-identity'
 import {currentTicketReaders,combineReaders} from '../knowledge/readers'
+import {ticketScopeSql,requireTicketScope} from '../access/ticket-scope'
 import {companyPortalReply,portalTicketScope} from '../portal/company-visibility'
 import {workflowNow,workflowEnvironment} from '../workflows/clock'
 import {followupId,createFollowupStatement,carryFollowupStatements} from '../workflows/followups'
@@ -68,19 +69,26 @@ export async function admitMessage(env:Env,input:MessageInput|AtomicMessageInput
  const sharedSender=input[sharedChannelParticipant]===true&&actor.role==='contact'&&!!input[messageAuthority]
  const companyReply=input[companyPortalReply]===true&&actor.role==='contact'&&!!input.sessionHash&&!!input[messageAuthority]
  const authority=input[messageAuthority]
- const replayPredicate=(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')
- const replayArgs=[...(replayGuard?.params||[]),...(authority?.args||[])]
+ const nativeReplay=!input.tokenAuthority&&!input.generationId&&actor.role!=='contact'
+ const replayPredicate=(nativeReplay?` AND EXISTS(SELECT 1 FROM conversations scope_ticket WHERE scope_ticket.id=messages.conversation_id AND scope_ticket.project_id=messages.project_id AND ${ticketScopeSql('?','scope_ticket')})`:'')+(replayGuard?`AND erased_at IS NULL AND EXISTS(${replayGuard.sql}) AND EXISTS(SELECT 1 FROM conversations c WHERE c.id=messages.conversation_id AND c.project_id=messages.project_id AND ${contactAvailableSql()})`:'')+(authority?` AND (${authority.sql})`:'')
+ const replayArgs=[...(nativeReplay?[actor.id]:[]),...(replayGuard?.params||[]),...(authority?.args||[])]
  const checkMembership=!input.tokenAuthority&&!input.generationId&&actor.role!=='contact'
  // These observations are independent. Keep denial/replay precedence below,
  // and keep every live-authority and frontier predicate in the write itself.
  const observations=await env.DB.batch<any>([
-  env.DB.prepare('SELECT c.contact_id,c.resolved_at,c.assigned_to,c.group_id,c.status_id,c.status_category,c.ticket_version,(SELECT MAX(ordinal) FROM conversation_resolutions WHERE conversation_id=c.id) ordinal FROM conversations c WHERE c.id=? AND c.project_id=?').bind(conversationId,projectId),
+  env.DB.prepare(`SELECT c.contact_id,c.resolved_at,c.assigned_to,c.group_id,c.status_id,c.status_category,c.ticket_version,${checkMembership?ticketScopeSql('?'):'1'} native_scope_allowed,(SELECT MAX(ordinal) FROM conversation_resolutions WHERE conversation_id=c.id) ordinal FROM conversations c WHERE c.id=? AND c.project_id=?`).bind(...(checkMembership?[actor.id]:[]),conversationId,projectId),
   env.DB.prepare(`SELECT * FROM messages WHERE conversation_id=? AND project_id=? AND local_id=? ${replayPredicate}`).bind(conversationId,projectId,localId,...replayArgs),
   ...(checkMembership?[env.DB.prepare('SELECT 1 FROM memberships WHERE project_id=? AND user_id=? AND role=?').bind(projectId,actor.id,actor.role)]:[]),
   ...(input.generationId?[env.DB.prepare('SELECT ai_id FROM ai_generations WHERE id=? AND project_id=? AND conversation_id=?').bind(input.generationId,projectId,conversationId)]:[])
  ])
  const scope=observations[0].results[0]
  if(!scope||(!input.generationId&&actor.role==='contact'&&!email&&!companyReply&&!sharedSender&&scope.contact_id!==(actor.contactId||actor.id)))return {accepted:false,reason:'conversation_access_denied'}
+ if(checkMembership&&!scope.native_scope_allowed){
+  // A scheduled attempt needs a definite refusal so it can settle as cancelled.
+  // Keep HTTP concealment for native callers and the live scope predicate at commit.
+  if(input[scheduledAdmission])return {accepted:false,reason:'conversation_access_denied'}
+  await requireTicketScope(env,actor.id,projectId,conversationId,email?'email':'dashboard')
+ }
  if(checkMembership&&!observations[2].results[0])return {accepted:false,reason:'conversation_access_denied'}
  const generation=input.generationId?observations[2].results[0]:null
  if(input.generationId&&!generation)return {accepted:false,reason:'generation_not_found'}
@@ -139,6 +147,7 @@ export async function admitMessage(env:Env,input:MessageInput|AtomicMessageInput
    args.push(actor.id,actor.role,email.sender)
   }
  }
+ if(checkMembership){predicates.push(ticketScopeSql('?'));args.push(actor.id)}
  if(input[scheduledAdmission]){const guard=input[scheduledAdmission]!;predicates.push(guard.sql);args.push(...guard.params)}
  if(input.sessionHash){predicates.push(activeSourceProjectSql('c.project_id'));predicates.push("EXISTS(SELECT 1 FROM sessions s WHERE s.token_hash=? AND s.actor_id=? AND s.revoked_at IS NULL AND s.expires_at>? AND (s.role='contact' AND s.project_id=c.project_id AND s.contact_id="+(companyReply?'?':'c.contact_id')+" OR s.role<>'contact' AND (s.project_id IS NULL AND s.role='operator' OR s.project_id=c.project_id AND EXISTS(SELECT 1 FROM memberships live WHERE live.project_id=s.project_id AND live.user_id=s.actor_id AND live.role=s.role))))");args.push(input.sessionHash,actor.id,Date.now(),...(companyReply?[actor.contactId||actor.id]:[]))}
  if(authority){predicates.push(`(${authority.sql})`);args.push(...authority.args)}

@@ -4433,7 +4433,7 @@
       "executable": false
     },
     "src/modules/access/route-permissions.ts": {
-      "sha256": "951e523c111ba7a5f647be7d4a7e7ad6aee28e716dce8cd3e8b9586920144e3f",
+      "sha256": "c7b7b4f176374cfe407895e9a82ff0a94ae9062b138969d32e80d3ca2c1ba837",
       "executable": false
     },
     "src/modules/access/routes.ts": {
@@ -7348,6 +7348,10 @@
       "sha256": "5a377ef75580f537b943a23c9a5c16d9c0eb8bd9f16e62212a3b6d1f5c119b88",
       "executable": false
     },
+    "src/modules/management/native-settings-read.ts": {
+      "sha256": "f82142b8c290a17891ddd893f95ba14b772635bee2b348e1a3a886742382bf70",
+      "executable": false
+    },
     "src/modules/management/outbound-configuration.ts": {
       "sha256": "00b147848ce795936e771b28b6f393d05acf4f035259f0c3afd78491ee37d965",
       "executable": false
@@ -7377,7 +7381,7 @@
       "executable": false
     },
     "src/modules/management/projects.ts": {
-      "sha256": "8ce21fbb43d50b59e519959888367ee2edef879e5f1c6cec0788c1359d86d5a0",
+      "sha256": "e6f1b482fd97f9d69908c6065287c8646316927d18f3f9717734a42dae07855c",
       "executable": false
     },
     "src/modules/management/provisioning/condition.ts": {
@@ -14456,6 +14460,10 @@
       "sha256": "ca04edd456168aec7348cb93ace6b61095bf22aff3ac826723f2b513d6d14bde",
       "executable": false
     },
+    "tests/helpers/identity/native-settings-authority.mjs": {
+      "sha256": "eb551ce7a05e19a25c5283c44b3d54ee4aa84dac2fa770fdec988e4b56130953",
+      "executable": false
+    },
     "tests/helpers/identity/retained-native.mjs": {
       "sha256": "e00027c88340f5f040e9a884d77c00ea3df695231c613b1c1ecfd13a2d0336f6",
       "executable": false
@@ -14465,7 +14473,7 @@
       "executable": false
     },
     "tests/helpers/identity/scoped-authority.mjs": {
-      "sha256": "a3f99ce693c79cef0c0d6e1d197499a14ae53e44a4ffdcf377cf8061e368bfe7",
+      "sha256": "18bc511514e855c999887eca274a9ff8ad596582bbd2fdf7845d600d837aab67",
       "executable": false
     },
     "tests/helpers/identity/security-browser.mjs": {

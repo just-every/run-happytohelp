@@ -20,7 +20,8 @@ import {websiteAddress} from './website-address'
 import {requireStepUp} from '../identity/two-factor/step-up'
 import {auditStatement,requestSource} from '../audit/record'
 import {accountAudit} from '../identity/two-factor/factors'
-import {readProjectSettings} from './read-settings'
+import {readNativeSettings} from './native-settings-read'
+import {memberAccess} from '../access/gate'
 import {projectAccess} from '../access/catalogue'
 export const projects=new Hono<AppEnv>()
 projects.route('/',brandReports).route('/',brands)
@@ -70,7 +71,11 @@ projects.post('/projects',async c=>{
  await defaults.after()
  return c.json({id:projectId,name,allowed_origin:origin},201)
 })
-projects.get('/projects/:projectId/settings',async c=>{const a=await scope(c);return c.json({data:await readProjectSettings(c.env,a.projectId)})})
+projects.get('/projects/:projectId/settings',async c=>{
+ const a=await scope(c,true),access=await memberAccess(c.env.DB,a.projectId,a.id)
+ if(!access?.permissions.has('settings.manage'))throw new HTTPException(403,{message:'Workspace settings permission required. Ask your owner for access.'})
+ return c.json({data:await readNativeSettings(c.env,a.projectId)})
+})
 projects.put('/projects/:projectId/settings',async c=>{
  const a=await scope(c,true),b=await c.req.json(),appearance=appearanceSettings(b)
  if('timezone' in b&&!validTimezone(b.timezone))throw new HTTPException(400,{message:'Choose a valid IANA timezone'})

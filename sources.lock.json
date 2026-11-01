@@ -1593,7 +1593,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "6089b27062a240a433cf5b3c21854846fc6f4c80c259f11750fd43d2b3b0621b",
+      "sha256": "020eec63681c02be989edd1dcf2e7820b1237b4d22a31c0218ae6f6438688d99",
       "executable": false
     },
     "agent-surface.json": {
@@ -1617,7 +1617,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "976879aaa35b5cfabd74eb04f689123a066c345e8c7d89ce8eb521fe5e863e9f",
+      "sha256": "aa9dc85ffbc9f4810efdb6412230fced68c6b3bd76f53ca458d202c4f175e97a",
       "executable": false
     },
     "DEMO.md": {
@@ -14265,7 +14265,7 @@
       "executable": false
     },
     "tests/helpers/email/outbound-configuration.mjs": {
-      "sha256": "c82060986c3c42c95ad4093cd05a5ac015bb65d9985570d73db9d00c78227b77",
+      "sha256": "fa76a2800773b2b7626fc844e28c89e88a26c7ee2a402c4cde7daa450b48ba5d",
       "executable": false
     },
     "tests/helpers/email/rer-edge.mjs": {
@@ -14525,7 +14525,7 @@
       "executable": false
     },
     "tests/helpers/inbox/new-ticket-configuration.mjs": {
-      "sha256": "b2694a0cac40a541afeee32ffa99b3e4bb785ffbdcba1103bb6594f656faa102",
+      "sha256": "7852b17bc5cdc72c88663fced081703721e0dbf6c703d2ed7dd75cbdec39c994",
       "executable": false
     },
     "tests/helpers/inbox/problems.mjs": {

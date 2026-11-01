@@ -5,7 +5,7 @@ import {startApp} from '../../journeys/kit/app.mjs'
 export async function outboundConfigurationJourney(){
  const sent=[],mail=[],app=await startApp({captureQueue:true,bindings:{APP_ORIGIN:'https://app.example',EMAIL_PROVIDER:'resend',EMAIL_API_KEY:'synthetic-fixture',EMAIL_FROM:'support@example.test'},outbound:async request=>{if(new URL(request.url).hostname==='cloudflare-dns.com')return Response.json({Status:0,Answer:[{type:15,data:'10 mx.example.test.'}]});assert.equal(new URL(request.url).hostname,'api.resend.com');const copy=await request.json();mail.push(copy);if(copy.headers?.['Message-ID'])sent.push(copy);return Response.json({id:'synthetic-config-'+mail.length})}})
  try{
-  const workspace=await app.seedWorkspace('configuration'),foreign=await app.seedWorkspace('configuration-other'),p=workspace.projectId,owner={token:workspace.tokens.owner},operator={token:workspace.tokens.operator},management=`/api/management/projects/${p}`,base=`/api/dashboard/projects/${p}/tickets`
+  const workspace=await app.seedWorkspace('synthetic-hh-1'),foreign=await app.seedWorkspace('synthetic-hh-2'),p=workspace.projectId,owner={token:workspace.tokens.owner},operator={token:workspace.tokens.operator},management=`/api/management/projects/${p}`,base=`/api/dashboard/projects/${p}/tickets`
   const field=async body=>(await app.ok(management+'/ticket-fields',{...owner,body})).data
   const text=await field({name:'Delivery detail',type:'text',required:true}),count=await field({name:'Parcels',type:'number'}),decimal=await field({name:'Weight',type:'decimal'}),date=await field({name:'Delivery date',type:'date'}),choice=await field({name:'Delivery reason',type:'dropdown',options:['replacement','return']}),multi=await field({name:'Handling',type:'multiselect',options:['fragile','signature']}),check=await field({name:'Confirmed',type:'checkbox'}),regex=await field({name:'Order reference',type:'regex',validation:{pattern:'^[A-Z]+$'}}),account=await field({name:'Support account',type:'account'}),secret=await field({name:'Owner detail',type:'text',read_roles:['owner'],write_roles:['owner']})
   let form=(await app.ok(`/api/forms/projects/${p}/forms`,{...owner,body:{title:'Replacement shipment',enabled:true,fields:[{fieldId:choice.id,required:true},{fieldId:text.id,required:true,condition:{fieldId:choice.id,operator:'equals',value:'replacement'}},...[count,decimal,date,multi,check,regex,account].map(f=>({fieldId:f.id}))]}})).data
@@ -14,7 +14,8 @@ export async function outboundConfigurationJourney(){
   const mailbox=(await app.ok(management+'/mailboxes',{...owner,body:{provider:'forwarding',address:'help@support.example',displayName:'Parcel support'}})).data
   const command={kind:'email',localId:'configured-existing',requesterId:contact.id,mailboxId:mailbox.id,subject:'Your replacement shipment',content:'Your replacement leaves today.',formId:form.id,fields:{[choice.id]:'replacement',[text.id]:'Leave at reception',[count.id]:2,[decimal.id]:1.25,[date.id]:'2026-11-03',[multi.id]:['fragile','signature'],[check.id]:false,[regex.id]:'ORDER'},groupId:group.id,assigneeId:workspace.users.admin}
   const options=await app.ok(base+'/options',{...operator});assert.equal(options.actorId,workspace.users.operator);assert.ok(!options.fields.some(f=>f.id===secret.id));assert.equal(options.forms[0].id,form.id)
-  for(const q of ['Maya','maya@customer.example'])assert.equal((await app.ok(base+'/requesters?q='+encodeURIComponent(q),operator)).data[0].id,contact.id)
+  await app.ok(management+`/contacts/${contact.id}`,{...owner,method:'PUT',body:{phone:'+12025550123'}})
+  for(const q of ['Maya','maya@customer.example','+12025550123'])assert.equal((await app.ok(base+'/requesters?q='+encodeURIComponent(q),operator)).data[0].id,contact.id)
   const before=async()=>(await app.first('SELECT count(*) n FROM conversations WHERE project_id=?',p)).n
   const refused=async(patch,expectedField,status=422,headers)=>{const n=await before(),attempt=await app.call(base,{...operator,body:{...command,localId:crypto.randomUUID(),...patch},headers});assert.equal(attempt.status,status,JSON.stringify(attempt.data));if(expectedField)assert.equal(attempt.data.field,expectedField);assert.equal(await before(),n,'refused configuration creates no ticket');assert.equal(sent.length,0,'refusal sends nothing')}
   await refused({fields:{...command.fields,[count.id]:'2'}},count.id)
@@ -57,6 +58,10 @@ export async function outboundConfigurationJourney(){
   assert.deepEqual((await app.ok(base+'/options?requesterId='+contact.id,operator)).accounts,[{value:company.id,label:'Synthetic account'}])
   await refused({},account.id,422,{'x-test-statement':'INSERT OR IGNORE INTO conversations','x-test-before-statement':`DELETE FROM contact_companies WHERE project_id='${p}' AND contact_id='${contact.id}'`})
   await app.ok(management+`/companies/${company.id}/members/${contact.id}`,{...owner,method:'PUT',body:{}})
+  await app.db.prepare("INSERT INTO member_roles VALUES(?,?,'collaborator',?)").bind(p,workspace.users.operator,Date.now()).run()
+  await refused({},null,403)
+  assert.equal((await app.call(base+'/options',operator)).status,403)
+  await app.db.prepare('DELETE FROM member_roles WHERE project_id=? AND user_id=?').bind(p,workspace.users.operator).run()
   const result=await app.ok(base,{...operator,body:command}),id=result.conversation.id
   await app.until(()=>sent.length===1,{message:'configured first email sent'})
   assert.equal(result.conversation.assigned_to,workspace.users.admin);assert.equal(result.conversation.group_id,group.id);assert.equal(result.conversation.requester_id,contact.id);assert.equal(result.conversation.submitter_id,workspace.users.operator)
@@ -79,5 +84,24 @@ export async function outboundConfigurationJourney(){
   await app.ok(`/api/forms/projects/${p}/forms/${form.id}`,{...owner,method:'PATCH',body:{updatedAt:form.updatedAt,enabled:false}})
   assert.equal((await app.ok(base,{...operator,body:command})).conversation.id,id)
   assert.equal((await app.ok(base,{...operator,body:legacy})).conversation.id,old.conversation.id)
+  // Stop just after the reservation transaction. The real stored ticket already
+  // has its form, typed answers and deliberate assignment before any message exists.
+  const interrupted={...command,localId:'synthetic-hh-reservation'}
+  // Re-enable the same form for this separate command.
+  await app.ok(`/api/forms/projects/${p}/forms/${form.id}`,{...owner,method:'PATCH',body:{updatedAt:(await app.first('SELECT updated_at FROM request_forms WHERE id=?',form.id)).updated_at,enabled:true}})
+  assert.equal((await app.call(base,{...operator,body:interrupted,headers:{'x-test-fault':'db-interrupt','x-test-statement':'INSERT OR IGNORE INTO conversations'}})).status,500)
+  const reserved=await app.first('SELECT c.* FROM conversations c JOIN operator_ticket_commands cmd ON cmd.conversation_id=c.id WHERE cmd.project_id=? AND cmd.local_id=?',p,interrupted.localId)
+  assert.equal(reserved.assigned_to,workspace.users.admin);assert.equal(reserved.group_id,group.id)
+  assert.equal((await app.first('SELECT count(*) n FROM messages WHERE conversation_id=?',reserved.id)).n,0)
+  assert.deepEqual((await app.ok(`/api/dashboard/projects/${p}/conversations/${reserved.id}/ticket`,operator)).data.fields,command.fields)
+  assert.equal(sent.length,2)
+  const resumed=await app.ok(base,{...operator,body:interrupted});assert.equal(resumed.conversation.id,reserved.id)
+  await app.until(()=>sent.length===3,{message:'one recovered configured email'})
+  assert.equal((await app.ok(base,{...operator,body:interrupted})).conversation.id,reserved.id);assert.equal(sent.length,3)
+  // Erasure uses the existing native contact door and removes both answers and
+  // historical values, including reservation-time form provenance.
+  await app.ok(management+`/contacts/${contact.id}/erase`,{...owner,body:{}})
+  assert.equal((await app.first('SELECT count(*) n FROM ticket_field_values WHERE conversation_id=?',id)).n,0)
+  assert.ok((await app.sql('SELECT changes_json FROM ticket_history WHERE conversation_id=?',id)).every(row=>row.changes_json==='{"erased":true}'))
  }finally{await app.close()}
 }

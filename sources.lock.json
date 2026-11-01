@@ -14560,6 +14560,10 @@
       "sha256": "5113b37e337a5bdf554aa0416f94dca13d33a74c75d3ea7319f539ade6acf257",
       "executable": false
     },
+    "tests/helpers/inbox/ticket-scope-schedule.mjs": {
+      "sha256": "9f556b31aa892a92b36d0d2eca426fff4be16b92fa3ebe1acce95925ac6c8d1d",
+      "executable": false
+    },
     "tests/helpers/inbox/tickets-browser.mjs": {
       "sha256": "09a7d3ee20304e2b13e4714fc317b16a3d20d8a6b57bb62e7acdd2744429bac5",
       "executable": false

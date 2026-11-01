@@ -8,6 +8,7 @@ import {installSlack,assertSlack} from './slack.mjs'
 // A connected product installs scoped credentials, opens a real support request
 // and observes its signed lifecycle. Network receivers are the only fakes.
 export async function connectionsJourney(){
+ await knowledgeOwnership()
  await api001Outcomes()
  await api001ScoutOutcomes()
  const h=await harness(),settings='/api/management/projects/p/connections'
@@ -70,5 +71,12 @@ export async function connectionsJourney(){
   assert.equal((await create({...input,source_ref:{...input.source_ref,ref:'cannot-recreate'}},'after-erasure')).status,409)
   await h.call(settings+'/tokens/'+full.data.id,{method:'DELETE'});assert.equal((await h.raw('/api/v1/contacts',{token:full.token})).status,401)
   assert.equal(h.external,0)
+ }finally{await h.close()}
+}
+
+async function knowledgeOwnership(){
+ const h=await harness();try{
+  await h.contact();await h.db.prepare("INSERT INTO knowledge_categories(id,project_id,name,slug) VALUES('cat-a','p','A','a'),('cat-b','p','B','b')").run();await h.call('/api/knowledge/p/articles',body({id:'changing-owner',title:'Original',content:'Original',categoryIds:['cat-a']}));
+  const foreign=await h.issue(['articles:read','articles:write'],'q'),moved=await h.raw('/api/v1/articles/changing-owner',{token:foreign.token,...body({title:'Attempt',content:'Attempt',categoryIds:['cat-b']}),method:'PUT'}),missing=await h.raw('/api/v1/articles/missing',{token:foreign.token,...body({title:'Attempt',content:'Attempt'}),method:'PUT'});assert.equal(moved.status,404);assert.deepEqual(await moved.json(),await missing.json());assert.deepEqual((await h.db.prepare("SELECT category_id FROM knowledge_article_categories WHERE article_id='changing-owner'").all()).results,[{category_id:'cat-a'}]);assert.equal((await h.db.prepare("SELECT title FROM knowledge_articles WHERE id='changing-owner'").first()).title,'Original');
  }finally{await h.close()}
 }

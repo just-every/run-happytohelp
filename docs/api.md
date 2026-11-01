@@ -104,21 +104,23 @@ header = "Content-Type: application/json"
 EOF_CURL
 ```
 
-List articles, including drafts (`articles:read`):
+List articles in the editor view (`articles:read` and `articles:write`, issued by a member with knowledge editing permission):
 
 ```sh
-curl --silent --show-error --config - "$H2H_URL/api/v1/articles" <<EOF_CURL
+curl --silent --show-error --config - "$H2H_URL/api/v1/articles?view=editor" <<EOF_CURL
 header = "Authorization: Bearer $H2H_TOKEN"
 EOF_CURL
 ```
 
-Get an article (`articles:read`):
+Get an article in the editor view (the same permissions apply):
 
 ```sh
-curl --silent --show-error --config - "$H2H_URL/api/v1/articles/$ARTICLE_ID" <<EOF_CURL
+curl --silent --show-error --config - "$H2H_URL/api/v1/articles/$ARTICLE_ID?view=editor" <<EOF_CURL
 header = "Authorization: Bearer $H2H_TOKEN"
 EOF_CURL
 ```
+
+Without `view=editor`, article reads use anonymous current publication and collection access. Use `?contact_id=` to evaluate one customer. Editor access never follows from `articles:read` alone.
 
 Create a draft (`articles:write`):
 

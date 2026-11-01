@@ -11,3 +11,9 @@ body.conversation-workspace #chat .chat-footer:has(.article-picker) .chat-entry 
 .article-picker summary {cursor:pointer; padding:.5rem 0;}
 .article-picker li > div {display: flex; gap: .5rem;}
 .article-picker .btn {min-height: 2.75rem;}
+
+.article-picker__internal {display:flex;align-items:center;gap:.6rem;min-height:44px;margin-top:.5rem;cursor:pointer;}
+.article-picker .article-picker__reasons {margin:.4rem 0 0;color:#8b4b20;}
+.article-picker .article-picker__reasons li {display:block;border:0;padding:.2rem 0;font-size:.875rem;}
+.article-picker summary {min-height:44px;}
+.article-picker__blocked strong {color:var(--bs-secondary-color,#687681);}

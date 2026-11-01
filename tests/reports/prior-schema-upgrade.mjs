@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {assertReferenceUpgrade} from '../helpers/knowledge/reference-upgrade.mjs'
 import {pbkdf2Sync,randomBytes} from 'node:crypto'
 import {mkdtemp,writeFile,rm} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
@@ -6,6 +7,7 @@ import {join} from 'node:path'
 import {readArtifact} from '../helpers/artifact-payloads.mjs'
 import {recoveryRuntime} from '../helpers/recovery/runtime.mjs'
 import {snapshot} from '../helpers/recovery/snapshot.mjs'
+import {restoredKnowledgeReady} from '../helpers/recovery/knowledge-ready.mjs'
 
 // An older populated installation is upgraded in place. Its data and password
 // are read through the current application, rather than pinning migration names.
@@ -36,10 +38,17 @@ export async function priorSchemaUpgrade(){
    await write('INSERT INTO knowledge_articles(id,project_id,slug,title,content,summary,status,updated_at) VALUES(?,?,?,?,?,?,?,?)',['synthetic-article',project,'receipts','Receipt guide','Your receipt remains available.','', 'published',5])
    before=await snapshot(storage)
   })
-  for(const migration of migrations)await writeFile(join(runtime.directory,'migrations',migration.name),migration.sql)
+  for(const migration of migrations.filter(m=>parseInt(m.name,10)<291))await writeFile(join(runtime.directory,'migrations',migration.name),migration.sql)
   await runtime.run(['d1','migrations','apply','DB','--local','--persist-to','.wrangler/state'])
+  let beforeKnowledge
+  await runtime.withStorage(async storage=>{beforeKnowledge=await snapshot(storage)})
+  const knowledgeStarted=Date.now()
+  for(const migration of migrations.filter(m=>parseInt(m.name,10)>=291))await writeFile(join(runtime.directory,'migrations',migration.name),migration.sql)
+  await runtime.run(['d1','migrations','apply','DB','--local','--persist-to','.wrangler/state'])
+  const knowledgeFinished=Date.now()
   await runtime.withStorage(async storage=>{
    const after=await snapshot(storage)
+   for(const table of ['knowledge_article_publications','knowledge_generation_sources','knowledge_index_dirty','knowledge_upgrade_reports','knowledge_upgrade_progress'])assert.equal(assertReferenceUpgrade(table,after.rows[table],beforeKnowledge.rows,after.rows,knowledgeStarted,knowledgeFinished),true)
    assert.deepEqual(after.objects,before.objects,'all prior attachment bytes and metadata survive')
    for(const [table,rows] of Object.entries(before.rows)){
     if(['sqlite_sequence','d1_migrations','owner_setup'].includes(table))continue
@@ -48,6 +57,7 @@ export async function priorSchemaUpgrade(){
    }
   })
   await runtime.start()
+  await restoredKnowledgeReady(runtime,project,'receipts')
   const call=async(path,body,token)=>{
    const response=await fetch(runtime.origin+path,{method:body===undefined?'GET':'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body===undefined?undefined:JSON.stringify(body)})
    assert.equal(response.ok,true,`${path}: ${response.status}`);return response.json()

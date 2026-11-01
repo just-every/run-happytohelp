@@ -6,7 +6,7 @@ import { shell, type HelpProject } from './shell'
  * missing, so an unpublished draft is indistinguishable from an article that never existed.
  */
 export function missingArticlePage(project: HelpProject, base: string) {
- return shell(project, base, `<h1>Article not found</h1><p class="help-center-notice">We can’t find that article. It may have been moved, renamed or unpublished. Search the ${e(project.name)} Help Center above, or <a href="${base || '/'}">browse all articles</a>.</p>`, { title: `Article not found · ${project.name} Help Center`, noindex: true })
+ return shell(project, base, `<h1>Article not found</h1><p class="help-center-notice">We can’t find that article. Restricted collections require an explicit account grant; sharing an email domain does not grant access. It may have been moved, renamed or unpublished. Search the ${e(project.name)} Help Center above, or <a href="${base || '/'}">browse all articles</a>.</p>`, { title: `Article not found · ${project.name} Help Center`, noindex: true })
 }
 
 /** No project is known (unknown, deleted or unroutable address): the page is HappyToHelp's, with its brand and no search to offer. */

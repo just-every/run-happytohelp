@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {webcrypto,randomUUID,randomBytes} from 'node:crypto'
 import {startApp} from '../../journeys/kit/app.mjs'
 import {protectedFeedback} from './feedback.mjs'
+import {supportToolsJourney} from './support-tools.mjs'
 import initializeReviewer from './initialize-reviewer.mjs'
 import {doorCustody,slackEdge} from './custody.mjs'
 import {accessToken,autonomousPolicy,policyEnvelope,signJws,seconds} from '../../../src/vendor/agent-base/modules/agent-door/conformance/crypto.mjs'
@@ -25,9 +26,13 @@ export async function agentDoorJourney(){
   await app.ok('/api/identity/accept-token',{body:{token:new URL(invite.invitationUrl).searchParams.get('token'),name:'Jordan Support',password:'Disposable-native-jordan-693!zz'}})
   const member=await app.ok('/api/identity/login',{body:{email:memberEmail,password:'Disposable-native-jordan-693!zz'}})
   assert.equal((await app.first('SELECT project_id FROM h2h_business_project WHERE singleton=1')).project_id,project)
+  let settingsRevision=0
   const settings=async(rev,team=null)=>{
+   rev=Math.max(rev,settingsRevision+1)
    const iat=seconds(),settings=await signJws(pair.privateKey,kid,'rer-business-settings+jwt',{v:1,iss:issuer,aud:origin,sub:installationId,business:'support-company',email,owner_id:sub,jti:randomUUID(),iat,exp:iat+300,rev,values:{},logo:null,team})
-   return app.call('/api/rer/business-settings',{body:{settings}})
+   const response=await app.call('/api/rer/business-settings',{body:{settings}})
+   if(response.status===200)settingsRevision=rev
+   return response
   }
   const paired=await settings(1);assert.equal(paired.status,200,JSON.stringify(paired.data))
   const team=await settings(2,[{id:memberSub,email:memberEmail,name:'Jordan Support',role:'member',invite:1},{id:reviewerSub,email:reviewerEmail,name:'Riley Quality',role:'member',invite:1}]);assert.equal(team.status,200,JSON.stringify(team.data))
@@ -53,6 +58,8 @@ export async function agentDoorJourney(){
   assert.deepEqual(unsetAudit.classes,[{class:'standard',facts:{measure:1}}])
   assert.deepEqual(unsetAudit.rules,[{class:'standard',rule:null,do:'unset'}])
   assert.equal((await app.first('SELECT count(*) n FROM conversation_notes WHERE conversation_id=?',conversation.id)).n,0)
+  assert.equal((await call('happytohelp.conversations.draft',{id:conversation.id,content:'Unset policy must not save a draft',draft_id:null,revision:conversation.revision,last_message_id:conversation.last_message_id,idempotency_key:randomUUID()})).code,'policy_unset')
+  assert.equal((await app.first('SELECT count(*) n FROM macro_drafts')).n,0)
   const adopt=async(document=autonomousPolicy(),options={})=>{
    const envelope=await policyEnvelope(context,document,options),response=await app.call('/api/rer/agent-policy',{body:{policy:envelope.policy}})
    assert.equal(response.status,200,JSON.stringify(response.data));context.revision=envelope.payload.revision;context.seq=envelope.payload.seq
@@ -107,6 +114,7 @@ export async function agentDoorJourney(){
    ['conversations.list',{}],['context.read',{id:conversation.id}],['articles.list',{}],['jobs.read',{id:job.id}],['operations.read',{id:note.result.operation}],
    ['reports.read',{start:day(Date.now()-86400000),end:day(Date.now()+86400000)}],['people.read',{}],['workflows.read',{}],['ai.read',{}],['integrations.read',{}],['events.list',{}],
   ]){const read=await call('happytohelp.'+name,args);assert.equal(read.outcome,'done',name+': '+JSON.stringify(read))}
+  await supportToolsJourney({app,native,call,rpc,adopt,context,owner,settings,existingMemberSub:memberSub,existingMemberEmail:memberEmail,person,reviewerSub,reviewerEmail})
   const observedJob=(await call('happytohelp.jobs.read',{id:job.id})).result.job
   assert.equal(observedJob.status,'queued');assert.match(observedJob.observation,/unconfirmed/)
   const report=await rpc('tools/call',{name:'happytohelp.reports.read',arguments:{start:day(Date.now()-86400000),end:day(Date.now()+86400000)}})

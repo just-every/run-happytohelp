@@ -1,3 +1,4 @@
+import {knowledgeModelProvider} from '../../../../knowledge/model-door';
 import {assistProvider} from '../utils/provider_contract.js';
 import {ClaudeProvider} from './claude.js';
 import {GeminiProvider} from './gemini.js';
@@ -299,11 +300,11 @@ export async function getModelFromClass(modelClass, excludeModels, disabledModel
     return defaultModel;
 }
 export function getModelProvider(model) {
- const runtime=workerRuntime();if(runtime.provider)return runtime.provider;
+ const runtime=workerRuntime();if(runtime.provider)return knowledgeModelProvider(runtime.provider,runtime);
  const provider=getProviderFromModel(model),selected=selectedProviders[provider];
  if(!selected)throw new Error(`PROVIDER_NOT_SELECTED: ${provider}`);
  const key=scopedKey(provider);if(!key)throw new Error(`CONFIGURATION_REQUIRED: ${selected[1]}`);
- return assistProvider(new selected[0](key));
+ return knowledgeModelProvider(assistProvider(new selected[0](key)),runtime);
 }
 export async function canRunAgent(agent) {
     if (agent.model) {

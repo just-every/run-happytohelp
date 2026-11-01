@@ -1,3 +1,4 @@
+import {knowledgeAnswerFields} from '../knowledge/model-door'
 import {finalizeGeneration} from './generation-finalization'
 import type { Env, Job } from '../../platform/env';
 import type { Generation } from './repository';
@@ -50,7 +51,7 @@ export async function handleGeneration(env: Env, job: Job, effects: GenerationEf
         await checkCurrent();
         const { result, usage: usageResult } = await executeGenerationProvider(env, row, attemptId, abort, checkCurrent, effects, () => { providerStarted = true; });
         // A generation cancelled meanwhile (by an operator or contact erasure) does not keep provider output.
-        await env.DB.prepare("UPDATE ai_generations SET output_json=? WHERE id=? AND state<>'cancelled'").bind(JSON.stringify({ result, usage: usageResult }), row.id).run();
+        await env.DB.prepare("UPDATE ai_generations SET output_json=? WHERE id=? AND state<>'cancelled'").bind(JSON.stringify({ result:await knowledgeAnswerFields(env,row.project_id,row.id,result), usage: usageResult }), row.id).run();
         await checkCurrent();
         const admitted = await finalizeGeneration(env,row,attemptId,result,usageResult);
         finalCommitted = admitted?.accepted ?? false;

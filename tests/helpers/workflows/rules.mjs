@@ -55,7 +55,7 @@ export async function timeAutomationFlow(f){
  await clock(nudgeAt)
  // Stop after the first action and its durable cursor commit, before the note or
  // notification. Dispose/recreate the Worker, losing all in-memory wakeups.
- const stopped=await app.call('/_test/scheduled',{body:{after:0},headers:{'x-test-fault':'db-interrupt','x-test-statement':'UPDATE workflow_runs SET cursor=max'}})
+ const stopped=await app.call('/_test/scheduled',{body:{after:0},headers:{'x-test-fault':'db-interrupt','x-test-statement':'UPDATE workflow_runs SET cursor='}})
  assert.equal(stopped.status,500,'the interrupted invocation cannot finish its remaining consumers')
  const interrupted=(await runs(pending)).find(run=>run.rule_id===nudge.id)
  assert.ok(interrupted);assert.equal(interrupted.cursor,1);assert.equal(interrupted.state,'running');assert.equal((await get(pending)).priority,'high')

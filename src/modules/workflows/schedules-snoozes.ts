@@ -1,3 +1,4 @@
+import {ticketScopeSql} from '../access/ticket-scope'
 import type {Env} from '../../platform/env'
 import type {Spent} from './budget'
 
@@ -5,7 +6,7 @@ export const liveScheduleTicketSql=`NOT EXISTS(SELECT 1 FROM project_settings ps
 const CHUNK=200
 const dueSnoozes=`SELECT id FROM (SELECT ws.id,ws.project_id,ws.due_at,ws.created_at,coalesce(q.turn,0) served,row_number() OVER (PARTITION BY ws.project_id ORDER BY ws.due_at,ws.created_at,ws.id) workspace_turn
  FROM workflow_schedules ws JOIN conversations c ON c.id=ws.conversation_id AND c.project_id=ws.project_id JOIN contacts ct ON ct.id=c.contact_id AND ct.project_id=c.project_id LEFT JOIN workflow_queue_turns q ON q.queue='schedule-snoozes' AND q.project_id=ws.project_id
- WHERE ws.kind='snooze' AND ws.state='pending' AND ((ws.due_at IS NOT NULL AND ws.due_at<=?1) OR EXISTS(SELECT 1 FROM conversations d WHERE d.project_id=ws.project_id AND d.id=ws.dependency_id AND d.status_category IN ('solved','closed'))) AND ${liveScheduleTicketSql}) ORDER BY workspace_turn,served,due_at,created_at,project_id,id LIMIT ${CHUNK}`
+ WHERE ws.kind='snooze' AND ws.state='pending' AND ((ws.due_at IS NOT NULL AND ws.due_at<=?1) OR EXISTS(SELECT 1 FROM conversations d WHERE d.project_id=ws.project_id AND d.id=ws.dependency_id AND d.status_category IN ('solved','closed'))) AND ${liveScheduleTicketSql} AND ${ticketScopeSql('ws.sender_id','c','c.group_id',false)}) ORDER BY workspace_turn,served,due_at,created_at,project_id,id LIMIT ${CHUNK}`
 
 /** Claim and wake a whole chunk atomically. Only the rows actually woken are
  * published, once per workspace; project activity refreshes the active inbox. */

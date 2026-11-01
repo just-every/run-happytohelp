@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import {createRuntime} from '../emitted-runtime.mjs'
 import {launchBrowser,auditPage,viewports,evidence} from '../../journeys/kit/browser.mjs'
 import {openBrandRequest,answerAndReport} from './brand-support-browser.mjs'
+import {widgetIdentityBrowser} from '../widget/identity-browser.mjs'
 
 export async function brandsBrowser(){
  const runtime=await createRuntime({vars:{APP_ORIGIN:'http://127.0.0.1',PUBLIC_HELP_HOSTS:JSON.stringify({'alpha.localhost':'brand-alpha-help','beta.localhost':'brand-beta-help'})}})
@@ -83,6 +84,8 @@ export async function brandsBrowser(){
   assert.deepEqual(config.data.brands.map(b=>b.helpHosts),[['alpha.localhost'],['beta.localhost']])
   const report=await req(`/api/management/projects/${brands[0].id}/brands/reports?projects=${selected}&period=7`,undefined,brands[0].token)
   assert.equal(report.data.aggregate.volume,2)
-  assert.deepEqual(errors,[]);passed=true
+  assert.deepEqual(errors,[])
+  await widgetIdentityBrowser({browser,shot})
+  passed=true
  }finally{await visitor?.context.close();await browser.close();await runtime.close(passed)}
 }
